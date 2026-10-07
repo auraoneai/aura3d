@@ -1,249 +1,232 @@
-import type { TextureCompressedFormat, TextureMipLevelDescriptor } from "@aura3d/rendering";
-import type { DecodedGLTFImage } from "./GLTFRenderResources";
+import { selectKTX2TargetFormat, type KTX2BasisTargetFormat } from "./KTX2TargetSelection.js";
+import type { TextureFormat } from "@aura3d/rendering";
+import { basisTranscoderFormat, transcodeKTX2Levels, type BasisModuleLike, type KTX2TranscodedLevel } from "./KTX2TranscodeDriver.js";
+import { createKTX2TranscodeWorkerPool, type KTX2TranscodeWorkerPool } from "./KTX2TranscodeWorker.js";
+import type { CompressedTextureCapabilities } from "@aura3d/rendering/contracts";
 
-export type KTX2BasisTargetFormat = "etc2-rgba8unorm" | "bc3-rgba-unorm" | "astc-4x4-rgba-unorm" | "rgba8";
+export type { KTX2BasisTargetFormat };
+
+/**
+ * Maps the transcode target to the render-side `TextureFormat` union
+ * (C-16). "bc1-rgb-unorm" shares DXT1's block layout with "bc1-rgba-unorm"
+ * — the renderer's opaque flag carries the distinction, so they alias here.
+ */
+export function ktx2TargetToTextureFormat(format: KTX2BasisTargetFormat): TextureFormat {
+  return format === "bc1-rgb-unorm" ? "bc1-rgba-unorm" : format;
+}
 
 export interface KTX2BasisTextureTranscoderOptions {
-  readonly targetFormat?: KTX2BasisTargetFormat;
+  /**
+   * GPU target chosen by `selectKTX2TargetFormat` (or `"rgba8"` for the
+   * CPU-fallback decode). Required — there is no silent ETC2 default.
+   */
+  readonly targetFormat: KTX2BasisTargetFormat;
+  /** Returned on `DecodedGLTFImage.colorSpace` for the upload path. */
+  readonly colorSpace?: "srgb" | "linear";
+  /** Skip mip levels whose true dimensions exceed this (e.g. `maxTextureSize`). */
+  readonly maxDimension?: number;
+  /**
+   * Same-origin directory holding `basis_transcoder.js`/`basis_transcoder.wasm`
+   * (the vendored copy at `public/aura-decoders/basis/`). No CDN fallback.
+   */
+  readonly transcoderUrl?: string;
+  /** Transcode an uncompressed RGBA8 copy alongside the compressed mips (on demand). */
   readonly includeFallback?: boolean;
-  readonly loaderOptions?: Record<string, unknown>;
+  /** Worker pool size for browser transcoding (default 2). */
+  readonly workerCount?: number;
 }
 
-interface LoadersGLTextureLevel {
+export interface KTX2BasisTranscodedTexture {
   readonly width: number;
   readonly height: number;
-  readonly data: Uint8Array;
-  readonly compressed?: boolean;
-  readonly textureFormat?: string;
+  readonly format: KTX2BasisTargetFormat;
+  readonly colorSpace: "srgb" | "linear";
+  readonly data?: Uint8Array;
+  readonly mipLevels?: readonly { readonly width: number; readonly height: number; readonly data: Uint8Array }[];
+  readonly fallbackData?: Uint8Array;
+  readonly fallbackMipLevels?: readonly { readonly width: number; readonly height: number; readonly data: Uint8Array }[];
+  readonly isUASTC?: boolean;
+  readonly hasAlpha?: boolean;
 }
 
-type LoadersGLTextureResult = readonly (readonly LoadersGLTextureLevel[])[];
+const DEFAULT_TRANSCODER_URL = "/aura-decoders/basis/";
+const workerPools = new Map<string, KTX2TranscodeWorkerPool>();
 
-const DEFAULT_BROWSER_CDN = "https://unpkg.com/@loaders.gl";
-let nodeFileHooksReady = false;
+function workerPool(transcoderUrl: string, workerCount: number): KTX2TranscodeWorkerPool {
+  const key = `${transcoderUrl}#${workerCount}`;
+  let pool = workerPools.get(key);
+  if (!pool) {
+    pool = createKTX2TranscodeWorkerPool(transcoderUrl, workerCount);
+    workerPools.set(key, pool);
+  }
+  return pool;
+}
 
+interface BasisModuleCacheEntry { promise: Promise<BasisModuleLike>; }
+const basisModuleCache = new Map<string, BasisModuleCacheEntry>();
+
+/**
+ * Loads + initialises the vendored Basis transcoder module, once per
+ * `transcoderUrl`. Browser path injects a `<script>` (UMD global `BASIS`);
+ * Node/test path evaluates the vendored UMD as CJS so no `document` needed.
+ */
+export function loadBasisTranscoderModule(transcoderUrl: string = DEFAULT_TRANSCODER_URL): Promise<BasisModuleLike> {
+  const base = transcoderUrl.endsWith("/") ? transcoderUrl : `${transcoderUrl}/`;
+  let entry = basisModuleCache.get(base);
+  if (!entry) {
+    entry = { promise: (typeof document !== "undefined" ? loadBasisModuleBrowser(base) : loadBasisModuleNode()) };
+    entry.promise.catch(() => basisModuleCache.delete(base));
+    basisModuleCache.set(base, entry);
+  }
+  return entry.promise;
+}
+
+async function loadBasisModuleBrowser(base: string): Promise<BasisModuleLike> {
+  const globalName = "BASIS";
+  const globals = globalThis as typeof globalThis & { BASIS?: (config: Record<string, unknown>) => BasisModuleLike | Promise<BasisModuleLike> };
+  if (typeof globals.BASIS !== "function") {
+    await new Promise<void>((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = `${base}basis_transcoder.js`;
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error(`Failed to load ${script.src}`));
+      document.head.appendChild(script);
+    });
+  }
+  const BASIS = globals.BASIS;
+  if (typeof BASIS !== "function") {
+    throw new Error("basis_transcoder.js loaded but the BASIS global is missing");
+  }
+  // Emscripten MODULARIZE: the object passed to BASIS() becomes the Module;
+  // onRuntimeInitialized fires asynchronously once the wasm is compiled.
+  const moduleConfig: Record<string, unknown> = { locateFile: (file: string) => `${base}${file}` };
+  const module = await new Promise<BasisModuleLike>((resolve, reject) => {
+    try {
+      moduleConfig.onRuntimeInitialized = () => resolve(moduleConfig as unknown as BasisModuleLike);
+      (BASIS as (config: Record<string, unknown>) => unknown)(moduleConfig);
+    } catch (error) {
+      reject(error instanceof Error ? error : new Error(String(error)));
+    }
+  });
+  module.initializeBasis();
+  return module;
+}
+
+interface NodeBuiltins {
+  readonly fs: typeof import("node:fs");
+  readonly module: typeof import("node:module");
+  readonly url: typeof import("node:url");
+  readonly path: typeof import("node:path");
+}
+
+// Computed specifiers: these loads are runtime-optional (Node fallback path)
+// and must stay unresolvable to consumer bundlers at build time — the engine
+// pack does not declare node builtins or `meshoptimizer` as dependencies.
+async function nodeBuiltins(): Promise<NodeBuiltins> {
+  const spec = (name: string) => `node:${name}`;
+  const [fs, mod, url, path] = await Promise.all([import(spec("fs")), import(spec("module")), import(spec("url")), import(spec("path"))]);
+  return {
+    fs: fs as NodeBuiltins["fs"],
+    module: mod as NodeBuiltins["module"],
+    url: url as NodeBuiltins["url"],
+    path: path as NodeBuiltins["path"]
+  };
+}
+
+async function loadBasisModuleNode(): Promise<BasisModuleLike> {
+  const { fs, module: nodeModule, url: nodeUrl, path: nodePath } = await nodeBuiltins();
+  const { readFileSync, existsSync } = fs;
+  const { createRequire } = nodeModule;
+  const { fileURLToPath } = nodeUrl;
+  const { dirname } = nodePath;
+  const require2 = createRequire(import.meta.url);
+  const candidates = [
+    new URL("../vendor/basis/basis_transcoder.js", import.meta.url),
+    new URL("../../vendor/basis/basis_transcoder.js", import.meta.url)
+  ];
+  const jsUrl = candidates.find((candidate) => existsSync(candidate));
+  if (!jsUrl) throw new Error("vendored basis_transcoder.js not found next to @aura3d/assets");
+  const wasmUrl = new URL("basis_transcoder.wasm", jsUrl);
+  const jsPath = fileURLToPath(jsUrl);
+  const code = readFileSync(jsUrl, "utf8");
+  const box: { exports: Record<string, unknown> } = { exports: {} };
+  new Function("module", "exports", "require", "__dirname", "__filename", code)(box, box.exports, require2, dirname(jsPath), jsPath);
+  const BASIS = box.exports.BASIS ?? box.exports.default ?? box.exports;
+  if (typeof BASIS !== "function") throw new Error("vendored basis_transcoder.js did not export BASIS");
+  const module = await new Promise<BasisModuleLike>((resolve) => {
+    let mod!: BasisModuleLike;
+    const produced = (BASIS as (config: Record<string, unknown>) => unknown)({
+      wasmBinary: readFileSync(wasmUrl),
+      onRuntimeInitialized: () => resolve(mod)
+    });
+    mod = (produced && typeof produced === "object" ? produced : box.exports) as unknown as BasisModuleLike;
+  });
+  module.initializeBasis();
+  return module;
+}
+
+/**
+ * Transcodes a KTX2/Basis texture to `options.targetFormat` using the vendored
+ * Basis transcoder. In browsers with `Worker` the transcode runs in the
+ * blob-worker pool; elsewhere it runs on the calling thread via the vendored
+ * module — either way the bytes come from `transcoderUrl`/`vendor/basis`, never
+ * a CDN. `maxDimension` skips too-large mip levels during transcode.
+ */
 export async function transcodeKTX2BasisTexture(
-  bytes: ArrayBuffer | ArrayBufferView,
-  options: KTX2BasisTextureTranscoderOptions = {}
-): Promise<DecodedGLTFImage> {
-  const source = toArrayBuffer(bytes);
-  const targetFormat = options.targetFormat ?? "etc2-rgba8unorm";
-  const identifier = [0xab, 0x4b, 0x54, 0x58, 0x20, 0x32, 0x30, 0xbb, 0x0d, 0x0a, 0x1a, 0x0a];
-  const header = new Uint8Array(source);
-  if (identifier.some((value, index) => header[index] !== value)) {
-    throw new Error("KTX2/Basis input is missing the KTX2 identifier");
+  bytes: Uint8Array,
+  options: KTX2BasisTextureTranscoderOptions
+): Promise<KTX2BasisTranscodedTexture> {
+  // Required by contract; legacy callers that omit it get the honest CPU
+  // fallback rather than the old silent ETC2 default.
+  const targetFormat = options.targetFormat ?? "rgba8";
+  const colorSpace = options.colorSpace ?? "linear";
+  const transcoderUrl = options.transcoderUrl ?? DEFAULT_TRANSCODER_URL;
+  const transcoderFormat = basisTranscoderFormat(targetFormat);
+  const workerPath = typeof Worker !== "undefined";
+  const run = async (format: number): Promise<{ width: number; height: number; isUASTC: boolean; hasAlpha: boolean; levels: readonly KTX2TranscodedLevel[] }> => {
+    if (workerPath) {
+      return workerPool(transcoderUrl, options.workerCount ?? 2).transcode({
+        bytes,
+        transcoderFormat: format,
+        maxDimension: options.maxDimension
+      });
+    }
+    const module = await loadBasisTranscoderModule(transcoderUrl);
+    return transcodeKTX2Levels(module, bytes, format, options.maxDimension);
+  };
+  const result = await run(transcoderFormat);
+  let fallback: Awaited<ReturnType<typeof run>> | undefined;
+  if (targetFormat !== "rgba8" && options.includeFallback !== false) {
+    fallback = await run(BASIS_TRANSCODER_FORMAT_FALLBACK);
   }
-  if (!["etc2-rgba8unorm", "bc3-rgba-unorm", "astc-4x4-rgba-unorm", "rgba8"].includes(targetFormat)) {
-    throw new Error(`KTX2/Basis target format ${String(targetFormat)} is unsupported`);
-  }
-  const compressedLevels = await parseTextureLevels(source, targetFormat, options.loaderOptions);
-  const baseLevel = compressedLevels[0];
-  if (!baseLevel) {
-    throw new Error("KTX2/Basis transcode produced no texture levels");
-  }
-
-  if (targetFormat === "rgba8") {
-    return {
-      width: baseLevel.width,
-      height: baseLevel.height,
-      colorSpace: "linear",
-      format: "rgba8",
-      data: baseLevel.data
-    };
-  }
-
-  const fallbackLevels = options.includeFallback === false
-    ? []
-    : validRGBA8Levels(await parseTextureLevels(source, "rgba8", options.loaderOptions));
-  const format = mapTargetFormat(targetFormat);
-
   return {
-    width: baseLevel.width,
-    height: baseLevel.height,
-    colorSpace: "linear",
-    format,
-    mipLevels: compressedLevels,
-    fallbackMipLevels: fallbackLevels
+    width: result.width,
+    height: result.height,
+    format: targetFormat,
+    colorSpace,
+    data: result.levels[0]?.data,
+    mipLevels: result.levels.map((level) => ({ width: level.width, height: level.height, data: level.data })),
+    fallbackData: fallback?.levels[0]?.data,
+    fallbackMipLevels: fallback ? fallback.levels.map((level) => ({ width: level.width, height: level.height, data: level.data })) : undefined,
+    isUASTC: result.isUASTC,
+    hasAlpha: result.hasAlpha
   };
 }
 
-function validRGBA8Levels(levels: readonly TextureMipLevelDescriptor[]): readonly TextureMipLevelDescriptor[] {
-  const validLevels: TextureMipLevelDescriptor[] = [];
-  for (const level of levels) {
-    if (level.data.byteLength !== level.width * level.height * 4) break;
-    validLevels.push(level);
-  }
-  return validLevels;
-}
-
-async function parseTextureLevels(
-  source: ArrayBuffer,
-  targetFormat: KTX2BasisTargetFormat,
-  loaderOptions: Record<string, unknown> | undefined
-): Promise<readonly TextureMipLevelDescriptor[]> {
-  await installNodeLoadersGLFileHooks();
-  const { parse, BasisLoader } = await loadLoadersGLModules();
-  const parsed = await parse(source.slice(0), BasisLoader, {
-    // worker:false is required: worker mode resolves transcoder module URLs to dev-only /node_modules paths and the Node file hooks on globalThis.loaders only exist on the main thread.
-    worker: false,
-    CDN: defaultLoadersGLCdn(),
-    modules: defaultLoadersGLModules(),
-    ...loaderOptions,
-    ...(loaderOptions?.modules && typeof loaderOptions.modules === "object"
-      ? { modules: { ...defaultLoadersGLModules(), ...(loaderOptions.modules as Record<string, unknown>) } }
-      : {}),
-    basis: {
-      ...basisOptions(loaderOptions),
-      containerFormat: "ktx2",
-      module: "encoder",
-      format: loadersGLBasisFormat(targetFormat)
-    }
-  }) as LoadersGLTextureResult;
-  const levels = parsed[0];
-  if (!levels || levels.length === 0) {
-    throw new Error("KTX2/Basis transcode returned no texture levels");
-  }
-  return levels.map((level) => ({
-    width: level.width,
-    height: level.height,
-    data: new Uint8Array(level.data)
-  }));
-}
-
-function defaultLoadersGLCdn(): string {
-  if (typeof window !== "undefined" && window.location?.origin) {
-    return `${window.location.origin}/node_modules/@loaders.gl`;
-  }
-  return DEFAULT_BROWSER_CDN;
-}
-
-function defaultLoadersGLModules(): Record<string, string> | undefined {
-  if (typeof window === "undefined" || !window.location?.origin) return undefined;
-  const baseUrl = `${window.location.origin}/node_modules/@loaders.gl/textures/dist/libs`;
-  return {
-    "basis_encoder.js": `${baseUrl}/basis_encoder.js`,
-    "basis_encoder.wasm": `${baseUrl}/basis_encoder.wasm`,
-    "basis_transcoder.js": `${baseUrl}/basis_transcoder.js`,
-    "basis_transcoder.wasm": `${baseUrl}/basis_transcoder.wasm`
-  };
-}
-
-async function loadLoadersGLModules(): Promise<{ readonly parse: typeof import("@loaders.gl/core").parse; readonly BasisLoader: typeof import("@loaders.gl/textures").BasisLoader }> {
-  try {
-    const [core, textures] = await Promise.all([
-      import("@loaders.gl/core"),
-      import("@loaders.gl/textures")
-    ]);
-    return { parse: core.parse, BasisLoader: textures.BasisLoader };
-  } catch (error) {
-    throw new Error(`KTX2/Basis transcoder dependency resolution failed: ${error instanceof Error ? error.message : String(error)}`);
-  }
-}
-
-function basisOptions(loaderOptions: Record<string, unknown> | undefined): Record<string, unknown> {
-  const basis = loaderOptions?.basis;
-  return basis && typeof basis === "object" ? basis as Record<string, unknown> : {};
-}
-
-function loadersGLBasisFormat(format: KTX2BasisTargetFormat): string {
-  switch (format) {
-    case "etc2-rgba8unorm":
-      return "etc2";
-    case "bc3-rgba-unorm":
-      return "bc3";
-    case "astc-4x4-rgba-unorm":
-      return "astc-4x4";
-    case "rgba8":
-      return "rgba32";
-  }
-}
-
-function mapTargetFormat(format: KTX2BasisTargetFormat): TextureCompressedFormat {
-  switch (format) {
-    case "etc2-rgba8unorm":
-    case "bc3-rgba-unorm":
-    case "astc-4x4-rgba-unorm":
-      return format;
-    case "rgba8":
-      throw new Error("rgba8 is not a compressed texture target");
-  }
-}
-
-function toArrayBuffer(bytes: ArrayBuffer | ArrayBufferView): ArrayBuffer {
-  if (bytes instanceof ArrayBuffer) return bytes.slice(0);
-  const copy = new Uint8Array(bytes.byteLength);
-  copy.set(new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength));
-  return copy.buffer;
-}
-
-async function installNodeLoadersGLFileHooks(): Promise<void> {
-  if (nodeFileHooksReady || typeof process === "undefined" || !process.versions?.node) return;
-  const existing = (globalThis as typeof globalThis & {
-    loaders?: {
-      requireFromFile?: (path: string) => unknown;
-      readFileAsArrayBuffer?: (path: string) => Promise<ArrayBuffer>;
-    };
-  }).loaders ?? {};
-  if (existing.requireFromFile && existing.readFileAsArrayBuffer) {
-    nodeFileHooksReady = true;
-    return;
-  }
-
-  const [{ readFile }, { dirname, join }, { createRequire }, vm] = await Promise.all([
-    importNodeModule<typeof import("node:fs/promises")>("node:fs/promises"),
-    importNodeModule<typeof import("node:path")>("node:path"),
-    importNodeModule<typeof import("node:module")>("node:module"),
-    importNodeModule<typeof import("node:vm")>("node:vm")
-  ]);
-  const require = createRequire(import.meta.url);
-  const texturesRoot = dirname(dirname(require.resolve("@loaders.gl/textures")));
-  const moduleCache = new Map<string, unknown>();
-  const resolveLibraryPath = (libraryPath: string): string => {
-    if (libraryPath.startsWith("modules/textures/")) {
-      return join(texturesRoot, libraryPath.slice("modules/textures/".length));
-    }
-    return libraryPath;
-  };
-
-  (globalThis as typeof globalThis & { loaders?: typeof existing }).loaders = {
-    ...existing,
-    async requireFromFile(libraryPath: string): Promise<unknown> {
-      const resolved = resolveLibraryPath(libraryPath);
-      if (moduleCache.has(resolved)) return moduleCache.get(resolved);
-      const code = await readFile(resolved, "utf8");
-      const module = { exports: {} as unknown };
-      const wrapper = vm.runInNewContext(
-        `(function(exports,module,require,__dirname,__filename){${code}\n})`,
-        { Buffer, WebAssembly, clearTimeout, console, process, setTimeout, TextDecoder, TextEncoder }
-      ) as (exports: unknown, module: { exports: unknown }, require: NodeJS.Require, dirname: string, filename: string) => void;
-      wrapper(module.exports, module, require, dirname(resolved), resolved);
-      moduleCache.set(resolved, module.exports);
-      return module.exports;
-    },
-    async readFileAsArrayBuffer(libraryPath: string): Promise<ArrayBuffer> {
-      const buffer = await readFile(resolveLibraryPath(libraryPath));
-      return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
-    }
-  };
-  nodeFileHooksReady = true;
-}
-
-async function importNodeModule<T>(specifier: string): Promise<T> {
-  return import(/* @vite-ignore */ specifier) as Promise<T>;
-}
+const BASIS_TRANSCODER_FORMAT_FALLBACK = 13; // TranscoderFormat.RGBA32
 
 export interface CompressedTextureDecoderProbes {
   /**
    * Injected capability probes. Each accepts a boolean or a thunk so browser
    * routes can pass live `navigator.gpu` / decoder-module checks while unit
-   * tests pass literals. `ktx2Available` defaults to a loaders.gl resolve
-   * check; draco/meshopt default to unavailable (fail-closed: the caller must
-   * prove the injected decoder exists).
+   * tests pass literals. Defaults probe the vendored decoders and the
+   * `meshoptimizer` package (fail-closed when they cannot be proven to exist).
    */
   readonly dracoAvailable?: boolean | (() => boolean | Promise<boolean>);
   readonly meshoptAvailable?: boolean | (() => boolean | Promise<boolean>);
   readonly ktx2Available?: boolean | (() => boolean | Promise<boolean>);
-  /** GPU-compressed formats the device actually supports, finest-preference last. */
+  /** GPU-compressed capability tokens ("astc","bptc","etc2","s3tc","s3tcSrgb") or target names. */
   readonly gpuCompressedFormats?: readonly string[];
 }
 
@@ -270,40 +253,41 @@ export interface CompressedTextureSupportDiagnostics {
 }
 
 /**
- * M2 one-call decoder setup (package level). The root `assets.ensureDecoders`
- * wiring is a reported bridge hunk — this function is the behavior it calls.
- * Never reports success for a decoder no probe confirmed.
+ * Decoder-capability probe + reporting (PRD-05 §7.4). Defaults: meshopt and
+ * KTX2 on (their modules ship with the package/are served at
+ * `aura-decoders/`), Draco lazy — reported loaded-once-`require(["draco"])`-ed.
+ * `chosenKtx2Target` goes through `selectKTX2TargetFormat` whenever real GPU
+ * capability tokens are provided; with no GPU info it reports the requested
+ * target unchanged.
  */
 export async function ensureCompressedTextureSupport(
   request: CompressedTextureSupportRequest = {},
   probes: CompressedTextureDecoderProbes = {}
 ): Promise<CompressedTextureSupportDiagnostics> {
   const wantDraco = request.draco ?? false;
-  const wantMeshopt = request.meshopt ?? false;
+  const wantMeshopt = request.meshopt ?? true;
   const wantKtx2 = request.ktx2 ?? true;
-  const dracoAvailable = await resolveProbe(probes.dracoAvailable, async () => false);
-  const meshoptAvailable = await resolveProbe(probes.meshoptAvailable, async () => false);
-  const ktx2Available = await resolveProbe(probes.ktx2Available, probeKtx2Modules);
+  const dracoAvailable = await resolveProbe(probes.dracoAvailable, probeVendoredDraco);
+  const meshoptAvailable = await resolveProbe(probes.meshoptAvailable, probeMeshoptPackage);
+  const ktx2Available = await resolveProbe(probes.ktx2Available, probeVendoredBasis);
   const gpuCompressedFormats = probes.gpuCompressedFormats ?? [];
   const requestedTarget = request.targetFormat ?? "etc2-rgba8unorm";
-  const supportedTargets: readonly KTX2BasisTargetFormat[] =
-    ["etc2-rgba8unorm", "bc3-rgba-unorm", "astc-4x4-rgba-unorm", "rgba8"];
-  const gpuSet = new Set(gpuCompressedFormats);
+  const caps = capabilitiesFromTokens(gpuCompressedFormats);
   const chosenKtx2Target = !wantKtx2 || !ktx2Available
     ? "rgba8"
-    : gpuSet.size === 0 || gpuSet.has(requestedTarget)
+    : gpuCompressedFormats.length === 0
       ? requestedTarget
-      : (supportedTargets.find((target) => gpuSet.has(target)) ?? "rgba8");
+      : selectKTX2TargetFormat(caps, "uastc", true, "srgb");
   return {
     schema: "a3d-compressed-texture-support",
     draco: {
       requested: wantDraco,
       available: dracoAvailable,
       detail: !wantDraco
-        ? "Draco not requested."
+        ? "Draco not requested (lazy — loads on registry.require([\"draco\"]))."
         : dracoAvailable
-          ? "Injected Draco decoder confirmed by probe."
-          : "Draco requested but no decoder probe confirmed it — geometry decoding will fail closed."
+          ? "Vendored Draco decoder confirmed by probe."
+          : "Draco requested but the vendored decoder did not resolve — geometry decoding will fail closed."
     },
     meshopt: {
       requested: wantMeshopt,
@@ -311,8 +295,8 @@ export async function ensureCompressedTextureSupport(
       detail: !wantMeshopt
         ? "Meshopt not requested."
         : meshoptAvailable
-          ? "Injected Meshopt decoder confirmed by probe."
-          : "Meshopt requested but no decoder probe confirmed it — buffer decoding will fail closed."
+          ? "meshoptimizer package resolved."
+          : "Meshopt requested but the meshoptimizer package did not resolve — buffer decoding will fail closed."
     },
     ktx2: {
       requested: wantKtx2,
@@ -320,8 +304,8 @@ export async function ensureCompressedTextureSupport(
       detail: !wantKtx2
         ? "KTX2 not requested; rgba8 fallback path."
         : ktx2Available
-          ? `KTX2 transcoder resolved; target=${chosenKtx2Target}.`
-          : "KTX2 requested but the transcoder modules did not resolve — rgba8 fallback path."
+          ? `Vendored KTX2 transcoder resolved; target=${chosenKtx2Target}.`
+          : "KTX2 requested but the vendored transcoder did not resolve — rgba8 fallback path."
     },
     gpuCompressedFormats,
     chosenKtx2Target
@@ -337,10 +321,54 @@ async function resolveProbe(
   return Boolean(await fallback());
 }
 
-async function probeKtx2Modules(): Promise<boolean> {
+function capabilitiesFromTokens(tokens: readonly string[]): CompressedTextureCapabilities {
+  const caps: { -readonly [K in keyof CompressedTextureCapabilities]: boolean } = { astc: false, bptc: false, etc2: false, s3tc: false, s3tcSrgb: false };
+  for (const raw of tokens) {
+    const token = raw.toLowerCase();
+    if (token === "astc" || token === "astc-4x4-rgba-unorm") caps.astc = true;
+    else if (token === "bptc" || token === "bc7" || token === "bc7-rgba-unorm") caps.bptc = true;
+    else if (token === "etc2" || token === "etc2-rgba8unorm" || token === "etc2-rgb8unorm") caps.etc2 = true;
+    else if (token === "s3tc-srgb" || token === "s3tcsrgb") caps.s3tcSrgb = true;
+    else if (token === "s3tc" || token === "bc1-rgb-unorm" || token === "bc1-rgba-unorm" || token === "bc3-rgba-unorm") caps.s3tc = true;
+  }
+  return caps;
+}
+
+async function probeMeshoptPackage(): Promise<boolean> {
+  // Browsers resolve the same-origin vendored decoder; Node resolves the
+  // `meshoptimizer` package (non-static specifier — build-optional).
+  if (typeof document !== "undefined") return probeVendored("meshopt", "meshopt_decoder.mjs");
   try {
-    await loadLoadersGLModules();
-    return true;
+    const pkg = ["mesh", "optimizer"].join("");
+    const mod = await import(pkg) as Record<string, unknown>;
+    const decoder = (mod.MeshoptDecoder ?? (mod.default as Record<string, unknown> | undefined)?.MeshoptDecoder) as { ready?: unknown } | undefined;
+    return decoder !== undefined && typeof decoder === "object";
+  } catch {
+    return false;
+  }
+}
+
+async function probeVendoredBasis(): Promise<boolean> {
+  return probeVendored("basis", "basis_transcoder.js");
+}
+async function probeVendoredDraco(): Promise<boolean> {
+  return probeVendored("draco", "draco_decoder.js");
+}
+
+async function probeVendored(dir: "basis" | "draco" | "meshopt", file: string): Promise<boolean> {
+  if (typeof fetch === "function" && typeof document !== "undefined") {
+    try {
+      const response = await fetch(`/aura-decoders/${dir}/${file}`, { method: "HEAD" });
+      if (response.ok) return true;
+    } catch { /* fall through to node probe */ }
+  }
+  try {
+    const { fs } = await nodeBuiltins();
+    const { existsSync } = fs;
+    for (const base of ["../vendor", "../../vendor"]) {
+      if (existsSync(new URL(`${base}/${dir}/${file}`, import.meta.url))) return true;
+    }
+    return false;
   } catch {
     return false;
   }

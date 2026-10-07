@@ -8,7 +8,9 @@
 
 import { registerCliCommand } from "../../contracts/commands.js";
 import type { AuraCliAssetRole } from "../../asset-core-types.js";
-import { admitAsset } from "./admit.js";
+import { admitAsset, admitAssetMeasured } from "./admit.js";
+import { dispatchLookdevRun } from "./lookdev.js";
+import { optimizeAssetsVerb } from "./optimize.js";
 import { reviewAsset } from "./review.js";
 
 function readFlag(argv: readonly string[], name: string): string | undefined {
@@ -54,7 +56,10 @@ registerCliCommand({
       io.stderr(`Unsupported --quality value "${quality}". Use prototype, candidate, or release.`);
       return 2;
     }
-    const result = admitAsset({ projectDir: io.cwd, assetId: id, quality, role: readFlag(argv, "--role") as AuraCliAssetRole | undefined });
+    const result = quality === "release"
+      ? await admitAssetMeasured({ projectDir: io.cwd, assetId: id, quality, role: readFlag(argv, "--role") as AuraCliAssetRole | undefined })
+      : admitAsset({ projectDir: io.cwd, assetId: id, quality, role: readFlag(argv, "--role") as AuraCliAssetRole | undefined });
+    for (const issue of result.rendererIssues) io.stdout(`  renderer-issue: ${issue} (file a qr-ic-regression, not an asset failure)`);
     for (const check of result.checks) io.stdout(`  ${check.gate} ${check.verdict} — ${check.message}`);
     if (result.ok) {
       io.stdout(`${id}: admitted at quality "${result.quality}".`);
@@ -108,8 +113,36 @@ function phaseStub(name: string, phase: string, summary: string, usage: string):
   });
 }
 
-phaseStub("assets optimize", "Phase 2 (tools/asset-optimize)", "Optimize assets through the §6.3 step pipeline (lands in Phase 2).", "aura3d assets optimize <id...> [--profile <id>] [--geometry meshopt|draco|none] [--textures ktx2|webp|source] [--dry-run]");
-phaseStub("assets lookdev", "Phase 4 (apps/asset-lookdev)", "Dispatch the look-dev capture workflow for assets.", "aura3d assets lookdev <id...> [--group <route>]");
+registerCliCommand({
+  name: "assets optimize",
+  owner: "prd05",
+  summary: "Optimize assets through the §6.3 step pipeline (tools/asset-optimize).",
+  usage: "aura3d assets optimize <id...> [--profile <id>] [--geometry meshopt|draco|none] [--dry-run] [--allow-local-small] [--ktx <path>] [--report <file>] [--out-dir <dir>] [--no-manifest]",
+  run: async (argv, io) =>
+    optimizeAssetsVerb({ projectDir: io.cwd, argv, stdout: io.stdout, stderr: io.stderr }),
+});
+registerCliCommand({
+  name: "assets lookdev",
+  owner: "prd05",
+  summary: "Dispatch the §6.7 look-dev capture workflow (apps/asset-lookdev) for assets.",
+  usage: "aura3d assets lookdev <id...> [--group <route>] [--stage <v>]",
+  run: async (argv, io) => {
+    const ids = argv.filter((arg) => !arg.startsWith("--") && argv[argv.indexOf(arg) - 1] !== "--group" && argv[argv.indexOf(arg) - 1] !== "--stage");
+    if (ids.length === 0) {
+      io.stderr("Usage: aura3d assets lookdev <id...> [--group <route>] [--stage <v>]");
+      return 2;
+    }
+    const result = dispatchLookdevRun({
+      projectDir: io.cwd,
+      assetIds: ids,
+      group: readFlag(argv, "--group"),
+      stage: readFlag(argv, "--stage"),
+      stdout: io.stdout,
+      stderr: io.stderr,
+    });
+    return result.ok ? 0 : 2;
+  },
+});
 phaseStub("assets budget", "Phase 2 (budget measurement)", "Report per-tier asset budgets (lands in Phase 2).", "aura3d assets budget [--route apps/<app>] [--tier low|medium|high|ultra] [--json]");
 phaseStub("assets library", "Phase 5 (curated library)", "List/add/sync the curated asset library (lands in Phase 5).", "aura3d assets library list|add|sync");
 phaseStub("assets prune", "Phase 6 (manifest hygiene)", "Prune stale/orphaned manifest entries (lands in Phase 6).", "aura3d assets prune [--dry-run]");

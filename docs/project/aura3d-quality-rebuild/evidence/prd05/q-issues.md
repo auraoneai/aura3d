@@ -173,3 +173,201 @@ Meanwhile: generator emits the shape in §6.9.
 Add optional `RenderItem.lodLevel?: number` and `lodLevels?: number` beside
 the pre-declared `lodFade?` (used only by the integrated shadow-LOD request
 Q-02-1).
+
+## Q-04-3 → lane 04 (C-16 seam, informational)
+
+`GLTFRenderResources.ts` is lane-04-owned but carries the PRD-05 C-16 decode
+channel: `GLTFRenderResourceOptions.qrAssets` (flag channel — assets has no
+flag resolver), `ktx2BasisTranscoderOptions.colorSpace` flattened to the §7.4
+contract shape (replacing the ad-hoc `loaderOptions.colorSpace` nest), and
+per-image `maxDimension` forwarding into the ktx2 decode. All additive;
+flag-off decode paths are byte-identical.
+
+Meanwhile: edits shipped in lane-05 Phase 1; lane 04 may reclaim the seam
+when their texture work moves in.
+
+## Q-13-1 → lane 13 (C-16, template vendoring)
+
+Templates under `packages/create-aura3d/templates/*/public/` ship
+`aura-assets/` but have no `aura-decoders/`. App-scaffolded consumers of the
+C-16 registry (`basePath "/aura-decoders/"`) need the vendored
+`basis/` + `draco/` + `meshopt/` files copied into each template's
+`public/aura-decoders/` (or the scaffold's template-public copy step).
+Source of truth: `public/aura-decoders/` (lane 05, sha256-verified).
+
+Meanwhile: repo apps serve them from the root `public/` dir; scaffolds
+fall back to `AssetDecoderUnavailable` until the templates vendor them.
+
+## Q-15-5 → lane 15 (root manifest, pruned scripts still referenced by workflows)
+
+QR-15's T7 prune deleted `check:skills`, `check:agent-docs` and `skills:sync`
+from root `package.json`, but `.github/workflows/agent-skills.yml` still runs
+`pnpm check:skills` (and `check:release` still references `check:agent-docs`).
+Every PR's "Skills gate + agent docs" job now fails with
+`ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL Command "check:skills" not found`.
+
+Options: restore the three script entries, or delete the workflow/job. The
+tools (`tools/agent-skills/check.ts`, `sync.ts`) and canonical skills dir
+still exist on main.
+
+Meanwhile: verified 2026-10-07 — same failure reproduces on origin/main, so it
+is repo-wide, not lane-05. Lane 05 is not re-adding the scripts (root
+package.json is lane 15's).
+
+## Q-13-2 → lane 13 (skills content rot after T7 deletions)
+
+With `check:skills` runnable again, 11 real failures remain, all in
+lane-13-owned skills text: `manifest.templates` keys ≠ `CREATE_AURA3D_TEMPLATES`
+(`arena-shooter` removed from templates but still referenced); and stale
+GitHub links/API claims in `aura3d-materials-environments` (MaterialValidation.ts,
+HDRIEnvironment.ts) and `aura3d-threejs-migration` (three-compat sources +
+approximation-ledger exports deleted by T7). Also `pnpm skills:sync` rewrites
+`packages/create-aura3d/skills/manifest.json` (drops the `arena-shooter` row) —
+the committed copy is stale.
+
+Meanwhile: skills gate stays red on those rows until lane 13 repairs the
+skill text and regenerates the mirrors; lane 05 is not touching
+`packages/aura3d-cli/skills/**`.
+
+## Q-15-6 → lane 15 (pnpm workspace does not cover `tools/asset-optimize`)
+
+CONTRACTS §4.4 allows `tools/*` manifests, but `pnpm-workspace.yaml` only
+globs `packages/*` and `workers/*`. `tools/asset-optimize/package.json` needs
+`tools/asset-optimize` (or `tools/*`) added to the workspace packages so
+`pnpm install --frozen-lockfile` installs its pinned deps on CI. Until then
+the workflow installs them via `npm ci --prefix tools/asset-optimize`
+(committed package-lock.json); repo `tsc -p tsconfig.build.json` reports
+module-resolution errors for its files on runners that skipped that step.
+
+Meanwhile: `asset-optimize.yml` runs `npm ci` first; tool unit tests skip when
+`tools/asset-optimize/node_modules` is absent so shared lanes stay green.
+
+## Q-15-7 → lane 15 (`arch:check` fails repo-wide on drifted sibling files)
+
+`tools/arch-gates/index.ts` (fail mode) reports 38 enforced findings on the
+merged tree — layering `compiler/ → app/` + SCC-153 in
+`packages/engine/src/agent-api/**`, `single-renderer` hits in prd01
+`outputSurface.ts` + `renderer/PixelRatio.ts`, `glsl-location` in
+`terrain/PlanetMaterial.ts`, `vfx/ribbon.glsl.ts` and ~5 more, six
+`unique-ownership` export collisions (`slerpQuat`, `AudioBus`, `createGame`,
+`captureFromUrl`, `GameFxKind`, `TouchPreset`), and `deps-truth` on root
+(missing `@aura3d/game`). Zero findings touch lane-05 paths
+(`tools/asset-optimize`, `benchmarks/**/prd05`, `commands/prd05`,
+`packages/assets`). Reproduced on `qr-prd15-arch-gates` run
+37569303330 on `qr/prd05-optimize-toolchain` — identical findings exist on
+main because the gate scans the whole tree regardless of the diff.
+
+Meanwhile: lane 05 adds no GLSL strings, no package exports, and no
+`packages/*/src` value-imports across the banned boundaries; the failure is
+informational for this lane.
+
+## Q-15-5 → lane 15 (per-frame camera channel for `prd05.typed-glb-actor-lod`)
+
+`registerTypedGLBActorExtension`'s `collectRenderItems(actor, items)` (PR
+0b-3) carries no frame-camera input, and `actor.pipeline.camera` is frozen
+at pipeline load (`ProductionGLTFRenderPipeline.ts:259` — a one-shot
+`toRendererInput` framing camera). `compiler/renderInput.ts` computes the
+live `viewProjectionMatrix` at :131 before calling
+`entry.actor.collectRenderItems({ modelMatrix, wrinkleStrength })`, so the
+LOD selector sees a stale camera and coverage never follows a dolly in-app.
+
+Ask: forward the frame camera through `TypedGLBActorTransformOptions`
+(`viewProjectionMatrix`/`viewMatrix`/`projectionMatrix` — the fields the
+`LodCamera` interface already consumes), or publish a mutable frame camera
+onto actor pipelines before item collection. Lane-05 side consumes either;
+`TypedGLBActorLod.ts` already reads `camera:` from a `LodCamera`-shaped
+object and just needs the live instance.
+
+Meanwhile: the standalone gate `tests/qr/prd05/browser/assets-lod-transition`
+drives `collectRenderItems` per frame against a mutated `pipeline.camera`,
+which proves selection, hysteresis, and per-chain switching end-to-end; the
+integrated per-frame path activates the moment the request lands.
+
+## Q-05-7 → lane 01 (`layout(binding=N)` UBOs illegal in GLSL ES 3.00)
+
+`resources/UniformBlock.ts` `uniformBlockGlsl` emits
+`layout(std140, binding = N) uniform AuraFrame` — the `binding` layout
+qualifier is not legal in GLSL ES 3.00 — so **every C-02 generated program
+fails shader compile on real WebGL2** (verified: `WebGL shader compile
+failed`, `ERROR: 'binding' : invalid layout qualifier`). No
+`gl.uniformBlockBinding` call exists anywhere in the codebase to substitute.
+ChunkHarness's own AuraFrame fixture (`contracts/testing/ChunkHarness.ts:24`)
+correctly writes `layout(std140)` without binding, which is why the gap
+never surfaced. Ask: emit `layout(std140)` and call
+`gl.uniformBlockBinding(program, getUniformBlockIndex(program,"AuraFrame"), 0)`
+at link time in WebGL2Device.
+
+Meanwhile: `apps/asset-lookdev` shims `device.createShaderProgram`
+(`installGeneratedProgramUboShim`) — strips the qualifier and binds named
+blocks to their C-08 points post-link.
+
+## Q-05-8 → lane 01 (`hookSplice` emits `requires` AFTER the requiring chunk)
+
+`program/ProgramGenerator.ts:132-153`: chunk dependencies are pushed onto
+`pending` and spliced **after** the chunk that declared them — so a
+`fragment:end` chunk with `requires` gets its dependencies inlined *inside
+`main()`* (uniform declarations at function scope → `uniform: only allowed
+at global scope`), and a `fragment:pars` chunk's helpers land after the code
+that calls them (`use-before-def` — e.g. `a3d_prd04_debug_view` references
+`A3DPrd04Lobes` before `a3d_prd04_bsdf_lobes_common` defines it → syntax
+error). Needs post-order DFS (requires first, then the chunk) at minimum for
+pars-stage deps.
+
+Meanwhile: lane-05 chunks declare `requires: []` and reach every hook via
+the feature's own `hooks`/`chunks` lists.
+
+## Q-05-9 → lane 04 (`prd04.debugView` is never invoked on the generated path)
+
+`shaders/physical/debug_view.glsl.ts` (chunk `a3d_prd04_debug_view`, spliced
+at `fragment:end` by feature `prd04.debugView`) only **defines**
+`A3DPrd04DebugInput` + `a3dPrd04DebugView()` — nothing calls it and nothing
+writes `a3dColor`. Combined with Q-05-8 (its `requires` land inside main and
+break compile outright), the C-15 debug channels are dead on the generated
+path end-to-end.
+
+Meanwhile: `prd05.debugView` owns the material channels itself (channels
+5-10 in `shaders/debug-view.glsl.ts`: baseColor/worldNormal/roughness/
+metallic/occlusion/uvLayout read `a3dBaseColor`/`v_normal`/`a3dRoughness`/
+`a3dMetallic`/`u_occlusionMap` in scope at `fragment:end`).
+
+## Q-05-10 → lane 01 (`ProgramCache.options.flags` never set → features dead)
+
+`qrSubFlags.ts` `rendererProgramCache` calls
+`programCacheSlot.get(flags)(device)` — the slot factory signature is
+`(device, options) => new ProgramCache(device, options)` but **no options
+are ever passed**, so `options.flags` is `undefined` →
+`generateProgramImpl(features, {flags: undefined})` → `contributingFeatures`
+early-returns (`if (!flags) return out`) → no registered feature ever
+contributes chunks/defines. Every `material.programFeatures().features[...]`
+bit is silently dropped on the real path.
+
+Meanwhile: the look-dev adapter hands the singleton the resolved flags
+post-construction (`cache.options.flags = resolved`).
+
+## Q-05-6 (referenced; filed earlier — forward path never calls
+`select`/`bindUniforms`): feature activation on forward draws comes solely
+from `material.programFeatures(ctx).features` — the look-dev adapter
+injects the bit via a cloned material (`LookdevDebugMaterial`) and stamps
+the feature uniforms (`a3d_prd05_debugSampler`, `u_prd05LodLevel`,
+`u_prd05TexelBand`) the uninvoked `bindUniforms` would have produced.
+
+## Q-15-8 → lane 15 (lane-owned alias ordering in vite configs)
+
+Generated `vite.aliases.generated.ts` is lane 15's; the look-dev app's own
+`vite.config.ts` must sort aliases longest-first or `/packages/engine`
+shadows `/packages/engine/src/...` subpaths. Filed here since the file is
+lane-owned; workaround is local (explicit sorted alias table in
+`apps/asset-lookdev/vite.config.ts`).
+
+## Q-02-2 → lane 02 (`HdrEquirect.ts` uses `Buffer` at module scope)
+
+`packages/rendering/src/environment/HdrEquirect.ts` evaluates `Buffer`
+helpers at module top level → `ReferenceError: Buffer is not defined` in
+browser bundles. `apps/asset-lookdev` ships `src/buffer-polyfill.ts` as its
+first import; the file should declare its dependency or guard the calls.
+
+## Q-15-9 → lane 15/asset-corpus barrel (`node:crypto` in browser bundles)
+
+`packages/assets/src/asset-corpus` barrel evaluates `node:crypto` at module
+scope → crash in the browser bundle; consumers must import
+`ProductionGLTFRenderPipeline.js` directly, bypassing the index.

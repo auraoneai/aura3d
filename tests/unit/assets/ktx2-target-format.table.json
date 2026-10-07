@@ -1,0 +1,3330 @@
+[
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "bc1-rgb-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "bc3-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "bc1-rgb-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "bc3-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "bc1-rgb-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "bc3-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "bc1-rgb-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "bc3-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": false
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "bc1-rgb-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "bc3-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "bc1-rgb-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "bc3-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "bc1-rgb-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "bc3-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "bc1-rgb-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "bc3-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": false,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "rgba8"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "bc1-rgb-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "bc1-rgb-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "bc3-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "bc3-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "bc1-rgb-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "bc1-rgb-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "bc3-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "bc3-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "bc1-rgb-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "bc1-rgb-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "bc3-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "bc3-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "bc1-rgb-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "bc1-rgb-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "bc3-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": false,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "bc3-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": false,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "bc7-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": false,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "uastc",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "astc-4x4-rgba-unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": false,
+  "colorSpace": "linear",
+  "expect": "etc2-rgb8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "srgb",
+  "expect": "etc2-rgba8unorm"
+ },
+ {
+  "caps": {
+   "astc": true,
+   "bptc": true,
+   "etc2": true,
+   "s3tc": true,
+   "s3tcSrgb": true
+  },
+  "source": "etc1s",
+  "hasAlpha": true,
+  "colorSpace": "linear",
+  "expect": "etc2-rgba8unorm"
+ }
+]

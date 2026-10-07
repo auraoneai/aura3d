@@ -45,6 +45,7 @@ export interface RenderItem {
   readonly previousMorphWeights?: Float32Array;
   readonly writesReactive?: boolean;                                  // particles/transparents (C-07-IN-8)
   readonly lodFade?: number;                                          // PRD 05 (C-17 LOD cross-fade)
+  readonly lodLevel?: number;                                         // PRD 05 (active MSFT_lod level; look-dev LOD strip)
   readonly cameraFade?: number;                                       // PRD 08 (C-22 cut fade)
   readonly instanceEmissive?: Float32Array | readonly number[];       // PRD 11 (C-27 batching)
 }

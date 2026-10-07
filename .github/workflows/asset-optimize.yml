@@ -1,0 +1,107 @@
+name: QR PRD-05 asset optimize
+
+# Lane 05 (PRD-05) Phase 2: runs tools/asset-optimize over manifest entries.
+# Triggered for PRs touching the tool or asset sources, and manually via
+# workflow_dispatch (optionally with an explicit asset id list).
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools/asset-optimize/**'
+      - 'packages/aura3d-cli/src/commands/prd05/**'
+      - 'packages/aura3d-cli/src/asset-manifest.ts'
+      - 'public/aura-assets/**'
+      - 'aura.assets.json'
+      - '.github/workflows/asset-optimize.yml'
+  push:
+    branches: ['qr/prd05-**', 'qr/prd05/**']
+  workflow_dispatch:
+    inputs:
+      ids:
+        description: 'Comma-separated manifest asset ids to optimize (empty = --dry-run all models)'
+        required: false
+        type: string
+
+concurrency:
+  group: asset-optimize-${{ github.ref }}-${{ github.event.inputs.ids }}
+  cancel-in-progress: true
+
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true # GLB sources are LFS-tracked
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: install tool dependencies
+        # root .gitignore forbids committed package-lock.json (pnpm repo);
+        # package.json carries exact pins so `npm install` is deterministic.
+        run: npm install --no-audit --no-fund --prefix tools/asset-optimize
+
+      - name: install ktx from tool-versions.json
+        id: ktx
+        run: |
+          set -euo pipefail
+          tool="tools/asset-optimize"
+          url=$(jq -r '.tools.ktx.url' "$tool/tool-versions.json")
+          sha=$(jq -r '.tools.ktx.sha256' "$tool/tool-versions.json")
+          bin=$(jq -r '.tools.ktx.binary' "$tool/tool-versions.json")
+          tarball=/tmp/ktx.tar.bz2
+          curl -sSfL "$url" -o "$tarball"
+          echo "$sha  $tarball" | sha256sum -c -
+          mkdir -p "$tool/.ktx"
+          tar -xjf "$tarball" -C "$tool/.ktx"
+          ktx_bin="$tool/.ktx/$bin"
+          chmod +x "$ktx_bin"
+          # ktx links libktx.so.4 from its install's lib/ dir
+          ktx_lib="$(dirname "$(dirname "$ktx_bin")")/lib"
+          echo "LD_LIBRARY_PATH=$ktx_lib" >> "$GITHUB_ENV"
+          echo "ktx_bin=$ktx_bin" >> "$GITHUB_OUTPUT"
+          LD_LIBRARY_PATH="$ktx_lib" "$ktx_bin" --version
+
+      - name: validate ktx flag contract vs tool source
+        run: |
+          set -euo pipefail
+          # profiles.ts hard-codes the ktx create flags used for every texture
+          # codec; if upstream ktx drops or renames one, fail here instead of
+          # during a texture run.
+          help=$(LD_LIBRARY_PATH="$LD_LIBRARY_PATH" "${{ steps.ktx.outputs.ktx_bin }}" create --help 2>&1)
+          missing=0
+          while IFS= read -r flag; do
+            [ -z "$flag" ] && continue
+            if ! grep -q -- "$flag" <<<"$help"; then
+              echo "::error::ktx create no longer supports required flag: $flag"
+              missing=1
+            fi
+          done < <(grep -oE '"--[a-z0-9-]+"' tools/asset-optimize/types.ts | tr -d '"' | sort -u)
+          [ "$missing" -eq 0 ]
+
+      - name: run optimize
+        run: |
+          set -euo pipefail
+          ktx="$(pwd)/${{ steps.ktx.outputs.ktx_bin }}"
+          ids="${{ github.event.inputs.ids }}"
+          args=(--ktx "$ktx" --report evidence/prd05/assets/optimize-ci.json --out-dir optimize-out)
+          if [ -n "$ids" ]; then
+            args+=(--ids "$ids" --allow-local-small --no-manifest)
+          else
+            args+=(--dry-run)
+          fi
+          node_modules/.bin/tsx --tsconfig tsconfig.base.json tools/asset-optimize/index.ts "${args[@]}"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: asset-optimize-${{ github.sha }}
+          path: |
+            evidence/prd05/assets/optimize-ci.json
+            optimize-out/
+          retention-days: 14

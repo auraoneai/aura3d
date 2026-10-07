@@ -220,6 +220,9 @@ export type {
 export { createDracoDecoder, createMeshoptDecoder } from "./GLTFCompressionDecoders";
 export { ensureCompressedTextureSupport, transcodeKTX2BasisTexture } from "./KTX2BasisTextureTranscoder";
 export type { CompressedTextureDecoderProbes, CompressedTextureDecoderStatus, CompressedTextureSupportDiagnostics, CompressedTextureSupportRequest, KTX2BasisTargetFormat, KTX2BasisTextureTranscoderOptions } from "./KTX2BasisTextureTranscoder";
+export { selectKTX2TargetFormat } from "./KTX2TargetSelection";
+export { AssetDecoderUnavailable, createAssetDecoderRegistry, probeKTX2Header } from "./AssetDecoderRegistry";
+export type { AssetDecoderId, AssetDecoderRegistry, AssetDecoderRegistryDiagnostics, AssetDecoderRegistryOptions, AuraAssetDecoderSet } from "./AssetDecoderRegistry";
 export type {
   GLTFDracoAttribute,
   GLTFDracoDecoderBuffer,

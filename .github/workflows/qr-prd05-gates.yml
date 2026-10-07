@@ -37,6 +37,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: tool deps (sharp for G6 texture-sanity decode)
+        run: npm install --prefix tools/asset-optimize --no-audit --no-fund
       - name: no in-repo caller may pass --legacy-release-gates
         run: |
           # The flag implementation itself (cli.ts) and docs about it are
@@ -46,4 +48,4 @@ jobs:
             exit 1
           fi
       - name: admission gate unit tests
-        run: pnpm exec vitest run tests/unit/aura3d-cli/admission-gates.test.ts tests/unit/aura3d-cli/release-gates-no-waiver.test.ts tests/unit/aura3d-cli/asset-manifest-schema.test.ts
+        run: pnpm exec vitest run tests/unit/aura3d-cli/admission-gates.test.ts tests/unit/aura3d-cli/admission-gates-phase4.test.ts tests/unit/aura3d-cli/release-gates-no-waiver.test.ts tests/unit/aura3d-cli/asset-manifest-schema.test.ts

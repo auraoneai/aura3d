@@ -118,6 +118,12 @@ export interface GLTFRenderResourceOptions {
   readonly textureBudget?: number;
   /** Optional max texture dimension applied during resource creation (C-27 policy, PRD-04 P2-11). */
   readonly maxTextureSize?: number;
+  /**
+   * PRD-05 flag channel: `A3D_QR_ASSETS` state forwarded by the caller. The
+   * assets package has no flag resolver of its own; flag-on enables
+   * decode-time PNG/JPEG downscaling to `maxTextureSize`. Flag-off is unchanged.
+   */
+  readonly qrAssets?: boolean;
   /** Optional sampler anisotropy ceiling override (declaration-only seam, C-18). */
   readonly anisotropy?: number;
   /**
@@ -493,7 +499,7 @@ export async function createGLTFRenderResources(
   });
 
   // P5-1: per-image colour-space intent, resolved once from material slot usage and passed
-  // into the C-16 decode options (`ktx2BasisTranscoderOptions.loaderOptions.colorSpace`) so a
+  // into the C-16 decode options (`ktx2BasisTranscoderOptions.colorSpace`) so a
   // once-per-image transcode knows the intended space. Conflicts become `loadIssues`.
   const colorSpaceIntent = imageColorSpaceIntent(asset);
   const loadIssues: GLTFRenderResourceLoadIssue[] = colorSpaceIntent.conflicts.map((conflict) => ({
@@ -506,12 +512,9 @@ export async function createGLTFRenderResources(
           ...options,
           ktx2BasisTranscoderOptions: {
             ...options.ktx2BasisTranscoderOptions,
-            loaderOptions: {
-              ...options.ktx2BasisTranscoderOptions?.loaderOptions,
-              // Flag-on only: pre-intent decode options stay byte-identical off-flag.
-              colorSpace: colorSpaceIntent.intent.get(imageIndex) ?? "linear"
-            }
-          }
+            // Flag-on only: pre-intent decode options stay byte-identical off-flag.
+            colorSpace: colorSpaceIntent.intent.get(imageIndex) ?? "linear"
+          } as GLTFRenderResourceOptions["ktx2BasisTranscoderOptions"]
         }
       : options;
 
