@@ -68,7 +68,7 @@ export default defineArtDirection({
     { feature: "rigged thief + guard clips", file: "src/v2/scene/world.ts", request: "R-14-15", removeWhen: "K6 humanoid rigs admitted" },
     { feature: "K8 surface footsteps + barks", file: "src/v2/audio.ts", request: "R-14-15", removeWhen: "K8 set admitted" }
   ],
-  criticalCategories: ["animation_quality", "lighting_mood"],
+  criticalCategories: ["animation_quality", "lighting"],
   tiers: {
     low: { particles: 200, shadowMap: 1024, cascades: 2, textureMax: 1024 },
     medium: { particles: 500, shadowMap: 2048, cascades: 3, textureMax: 2048 },
