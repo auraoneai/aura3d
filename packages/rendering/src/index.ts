@@ -72,6 +72,8 @@ export type { Bounds3, BoxGeometryOptions, CapsuleGeometryOptions, CylinderGeome
 export { createPrimitiveGeometry, clearPrimitiveGeometryCache, primitiveGeometryCacheSize } from "./geometry/Primitives";
 export type { AuraPrimitiveKind } from "./geometry/Primitives";
 export { InstanceBuffer } from "./resources/InstanceBuffer";
+export { UniformBlock, FrameUniforms, layoutStd140, uniformBlockGlsl, AURA_FRAME_BINDING, AURA_LIGHTS_BINDING } from "./resources/UniformBlock";
+export type { Std140Field, Std140Layout } from "./resources/UniformBlock";
 export { blendQueueForState, blendStateIsTransparent, blendModeDefaultDepthWrite, blendEquationName, QUEUE_BY_MODE } from "./BlendModes";
 export type { BlendQueue } from "./BlendModes";
 export { ResolutionGovernor, RESOLUTION_GOVERNOR_STEP, RESOLUTION_GOVERNOR_DOWN_FACTOR, RESOLUTION_GOVERNOR_UP_FACTOR } from "./ResolutionGovernor";
