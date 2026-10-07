@@ -1,0 +1,360 @@
+From 2bef163ba398dc8a5420f6981eb4de97071f6ae5 Mon Sep 17 00:00:00 2001
+From: Gurbaksh Chahal <gchahal@veerone.com>
+Date: Tue, 6 Oct 2026 18:11:33 +0000
+Subject: [PATCH] [QR-09] aurora-lander: createGame + capture cleanup +
+ evidence/drive
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ apps/showcase-aurora-lander/src/evidence.ts   |   8 ++
+ apps/showcase-aurora-lander/src/main.ts       | 121 ++++++++++--------
+ .../src/scenario-drive.ts                     |  11 ++
+ .../src/scenarios/index.ts                    |  13 ++
+ 4 files changed, 97 insertions(+), 56 deletions(-)
+ create mode 100644 apps/showcase-aurora-lander/src/evidence.ts
+ create mode 100644 apps/showcase-aurora-lander/src/scenario-drive.ts
+ create mode 100644 apps/showcase-aurora-lander/src/scenarios/index.ts
+
+diff --git a/apps/showcase-aurora-lander/src/evidence.ts b/apps/showcase-aurora-lander/src/evidence.ts
+new file mode 100644
+index 00000000..af123212
+--- /dev/null
++++ b/apps/showcase-aurora-lander/src/evidence.ts
+@@ -0,0 +1,8 @@
++/** Lazy route evidence sections (PRD-09 §6.5). */
++export type EvidenceCollect = () => Record<string, unknown>;
++let collect: EvidenceCollect | undefined;
++export function bindAuroraEvidence(fn: EvidenceCollect): void { collect = fn; }
++export const sections = {
++  aurora: (): Record<string, unknown> =>
++    (collect ?? (() => ({ status: "unbound" })))()
++};
+diff --git a/apps/showcase-aurora-lander/src/main.ts b/apps/showcase-aurora-lander/src/main.ts
+index 081fc6ec..ba278668 100644
+--- a/apps/showcase-aurora-lander/src/main.ts
++++ b/apps/showcase-aurora-lander/src/main.ts
+@@ -33,6 +33,16 @@ import {
+   type MeshSurfaceQuery,
+   type SurfaceSample
+ } from "@aura3d/engine";
++import {
++  createFxParticlePass,
++  createGame,
++  createJuice,
++  createOverlayDriver,
++  createRumbleDriver,
++  createTweenEngine
++} from "@aura3d/game";
++import { bindAuroraEvidence } from "./evidence";
++import { bindAuroraDrive } from "./scenario-drive";
+ import { assets } from "../../../src/aura-assets";
+ import {
+   SITES,
+@@ -108,8 +118,7 @@ type Phase = "flying" | "landed" | "crashed" | "campaign-clear";
+  */
+ const routeParams = new URLSearchParams(window.location.search);
+ const dropMode = routeParams.get("drop");
+-const visualReviewCapture = routeParams.get("capture") === "review";
+-document.body.dataset.capture = visualReviewCapture ? "review" : "default";
++document.body.dataset.capture = "default";
+ const dropEvidenceMode = dropMode === "1" || dropMode === "hard";
+ const hardDropEvidenceMode = dropMode === "hard";
+ // A human-playable close approach for mobile/touch evidence. Unlike `drop=1`,
+@@ -208,7 +217,7 @@ window.addEventListener("keyup", (event) => {
+ // ---- mutable route state -----------------------------------------------------
+ let siteIndex = 0;
+ let phase: Phase = "flying";
+-let paused = false;
++
+ let state: LanderState = createLanderState(SITES[0]!.spawn, SITES[0]!.fuelBudget);
+ let previousControls: Controls = { thrust: 0, rotate: 0 };
+ let siteScores: number[] = [];
+@@ -644,10 +653,9 @@ function buildWorldScene() {
+         .position(pad.x, padHeight + 0.09, pad.z)
+         .rotate(Math.PI / 2, 0, 0)
+         .scale([
+-          pad.radius * (visualReviewCapture ? 1.28 : 2.05),
+-          pad.radius * (visualReviewCapture ? 1.28 : 2.05),
+-          visualReviewCapture ? 0.16 : 0.3
+-        ])
++          pad.radius * (2.05),
++          pad.radius * (2.05),
++          0.3])
+         .runtime(game.runtimeNode(`${prefix}-pad-ring`, { tags: ["pad", "zone-marker", "renderer-owned"] }))
+     );
+ 
+@@ -750,7 +758,7 @@ function buildWorldScene() {
+       role: "primaryVehicle",
+       scaleMode: "fit",
+       targetMaxDimension: 2.8,
+-      visible: visualReviewCapture,
++      visible: false,
+       castShadow: false,
+       receiveShadow: false
+     })
+@@ -840,9 +848,9 @@ function buildWorldScene() {
+   }
+ 
+   builder.add(
+-    text3D(visualReviewCapture ? "EXTRACTION BAY" : "EXTRACTION READY", {
+-      size: visualReviewCapture ? 0.58 : 2.1,
+-      depth: visualReviewCapture ? 0.16 : 0.35,
++    text3D("EXTRACTION READY", {
++      size: 2.1,
++      depth: 0.35,
+       backend: "sdf"
+     })
+       .position(0, -50, 0)
+@@ -855,7 +863,7 @@ function buildWorldScene() {
+     })
+       .position(0, -50, 0)
+       .rotate(Math.PI / 2, 0, 0)
+-      .scale(visualReviewCapture ? [2.6, 2.6, 0.1] : [5.5, 5.5, 0.18])
++      .scale([5.5, 5.5, 0.18])
+       .runtime(game.runtimeNode("extraction-halo", { tags: ["campaign-clear", "extraction-tableau", "renderer-owned"] }))
+   );
+ 
+@@ -922,16 +930,14 @@ function buildWorldScene() {
+     .add(lights.point({
+       name: "final extraction warm practical",
+       color: "#ffb454",
+-      intensity: visualReviewCapture ? 9.2 : 2.2
+-    }).position(SITES[2]!.pads[0]!.x - 3.8, 5.6, SITES[2]!.pads[0]!.z + 2.2))
++      intensity: 2.2}).position(SITES[2]!.pads[0]!.x - 3.8, 5.6, SITES[2]!.pads[0]!.z + 2.2))
+     .add(lights.point({
+       name: "final extraction cyan practical",
+       color: "#67e8f9",
+-      intensity: visualReviewCapture ? 5.6 : 1.8
+-    }).position(SITES[2]!.pads[0]!.x + 4.2, 3.4, SITES[2]!.pads[0]!.z - 1.8))
++      intensity: 1.8}).position(SITES[2]!.pads[0]!.x + 4.2, 3.4, SITES[2]!.pads[0]!.z - 1.8))
+     .camera(camera.follow({
+       targetNode: "lander",
+-      distance: visualReviewCapture ? 10.6 : 15,
++      distance: 15,
+       // The opening approach is still a wide three-quarter chase, but the
+       // previous 17m default left the typed probe at roughly 100px in the
+       // route-primary frame.  Bring the eye in one measured step so the
+@@ -943,25 +949,39 @@ function buildWorldScene() {
+       // the world horizon and clipped the sky band out of shot. A slightly shallower
+       // 23deg pitch inside a 58deg cone admits the sky without the 64deg version's
+       // side effect of shrinking the typed probe to a dot at spawn altitude.
+-      offset: visualReviewCapture ? [6.8, 5.9, 8.25] : [0, 5.8, 13.2],
+-      targetOffset: visualReviewCapture ? [0, -0.55, -0.65] : [0, 0, 0],
+-      fov: visualReviewCapture ? 46 : 58,
+-      smoothing: visualReviewCapture ? 0 : 0.05
+-    }));
++      offset: [0, 5.8, 13.2],
++      targetOffset: [0, 0, 0],
++      fov: 58,
++      smoothing: 0.05}));
+ 
+   return builder;
+ }
+ 
+ // ---- app mount ---------------------------------------------------------------
+-const app = createAuraApp("#app", {
++const auroraGame = createGame({
++  id: "showcase-aurora-lander",
++  target: "#app",
+   diagnostics: { overlay: false, performancePanel: false },
+   physics: {
+     seed: 20260915,
+     continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
+   },
+-  scene: buildWorldScene()
++  scene: buildWorldScene(),
++  qualityRebuild: { flags: ["game"] },
++  evidence: {
++    schema: 1,
++    sections: async () => (await import("./evidence")).sections,
++    legacyGlobals: ["__AURA3D_SHOWCASE_AURORA_LANDER__"]
++  },
++  scenarios: async () => (await import("./scenarios")).auroraScenarios
++});
++const app = auroraGame.app;
++auroraGame.start();
++bindAuroraEvidence(() => mountedEvidence);
++bindAuroraDrive({
++  stepSim: (dt) => { app.pause(); app.advance(dt); app.resume(); },
++  stepRender: (dt) => { app.pause(); app.advance(dt); app.resume(); },
+ });
+-void app;
+ 
+ function requireNode(name: string): AuraRuntimeNodeHandle {
+   return app.nodes.require(name) as AuraRuntimeNodeHandle;
+@@ -1047,7 +1067,7 @@ function rebuildCollisions(): void {
+ // ---- attempt lifecycle ---------------------------------------------------------
+ function resetAttempt(recordGhostStart = true): void {
+   phase = "flying";
+-  paused = false;
++  auroraGame.session.resume();
+   lastGrade = null;
+   state = spawnStateFor(currentSite);
+   previousControls = { thrust: 0, rotate: 0 };
+@@ -1164,7 +1184,7 @@ function setupPanel(): void {
+   // explicit control instead of permanently eating a quarter of the frame. Touch
+   // controls stay outside the collapsed region because they are gameplay surface.
+   // Review capture expands it so retained evidence still shows the full contract.
+-  const reviewCapture = document.body.dataset.capture === "review";
++  const reviewCapture = false;
+   panel.innerHTML = `
+     <h1>AURORA LANDER</h1>
+     <div class="prototype-tag">prototype · authored arcade dynamics</div>
+@@ -1333,7 +1353,7 @@ let dustCursor = 0;
+ 
+ function tick(dtFixed: number): void {
+   frameCount += 1;
+-  if (paused || phase !== "flying") return;
++  if (auroraGame.session.paused || phase !== "flying") return;
+   simSeconds += dtFixed;
+ 
+   // Edge-driven audio before integration.
+@@ -1494,8 +1514,8 @@ function toggleGhost(): void {
+ }
+ 
+ function togglePause(): void {
+-  paused = !paused;
+-  mountedEvidence.state = paused ? "paused" : phase;
++  auroraGame.session.paused ? auroraGame.session.resume() : auroraGame.session.pause("user");
++  mountedEvidence.state = auroraGame.session.paused ? "paused" : phase;
+ }
+ 
+ function handleControlEdges(): void {
+@@ -1532,7 +1552,7 @@ function renderUpdate(dtFrame: number): void {
+   // Plume: visible thrust flame scaled by throttle while the engine burns.
+   const groundHere = sampleGridHeight(field, state.x, state.z);
+   const altitudeAboveGround = state.y - FOOT_DROP - groundHere;
+-  const burning = phase === "flying" && !paused && previousControls.thrust > 0 && state.fuel > 0;
++  const burning = phase === "flying" && !auroraGame.session.paused && previousControls.thrust > 0 && state.fuel > 0;
+   const plumeScale = burning ? 0.5 + previousControls.thrust * 0.7 : 0.001;
+   plumeNode.setPosition(state.x - Math.sin(state.yaw) * 0.1, state.y - FOOT_DROP * 1.35, state.z - Math.cos(state.yaw) * 0.1);
+   plumeNode.setScale([plumeScale * 0.45, plumeScale * 2.4, plumeScale * 0.45]);
+@@ -1577,7 +1597,7 @@ function renderUpdate(dtFrame: number): void {
+   const extractionVisible = phase === "campaign-clear";
+   const extractionPad = currentSite.pads[0]!;
+   const extractionGround = field.padHeights[0] ?? groundHere;
+-  const approachScaffoldVisible = !visualReviewCapture
++  const approachScaffoldVisible = true
+     && phase === "flying"
+     && altitudeAboveGround > APPROACH_SCAFFOLD_MIN_AGL;
+   // The campaign-clear bay is a complete renderer-owned deck laid over the
+@@ -1585,34 +1605,23 @@ function renderUpdate(dtFrame: number): void {
+   // mesh so nearby ridges cannot protrude through the deck and occlude the
+   // already-landed typed vehicle. The Rapier contact and mesh-query evidence
+   // has already run and remains published; runtime flight keeps terrain shown.
+-  if (visualReviewCapture) {
+-    requireNode(`s${currentSite.id}-terrain`).setVisible(!extractionVisible);
+-    landerNode.setScale(1);
+-    landerNode.setVisible(!extractionVisible);
+-    extractionLanderNode.setVisible(extractionVisible);
+-    if (extractionVisible) {
+-      extractionLanderNode
+-        .setPosition(state.x, state.y + punchOffsetY, state.z)
+-        .setRotation(0, 0.69, 0);
+-    }
+-  }
+-  extractionNodes.forEach((node, index) => {
+-    node.setVisible(extractionVisible && !visualReviewCapture);
++    extractionNodes.forEach((node, index) => {
++    node.setVisible(extractionVisible && true);
+     if (!extractionVisible) return;
+     if (index === 0) node.setPosition(
+-      extractionPad.x + (visualReviewCapture ? -2.4 : -5.8),
+-      extractionGround + (visualReviewCapture ? 5.0 : 5.2),
+-      extractionPad.z + (visualReviewCapture ? -1.45 : -1.5)
++      extractionPad.x + (-5.8),
++      extractionGround + (5.2),
++      extractionPad.z + (-1.5)
+     );
+     else {
+       node.setPosition(extractionPad.x, extractionGround + 0.18, extractionPad.z);
+-      if (visualReviewCapture) node.setScale([0.45, 0.45, 0.04]);
++      if (false) node.setScale([0.45, 0.45, 0.04]);
+     }
+   });
+   extractionInfrastructureNodes.forEach((node, index) => {
+     const part = EXTRACTION_INFRASTRUCTURE[index]!;
+-    node.setVisible((extractionVisible && !visualReviewCapture) || approachScaffoldVisible);
+-    if (extractionVisible && !visualReviewCapture) {
++    node.setVisible((extractionVisible && true) || approachScaffoldVisible);
++    if (extractionVisible && true) {
+       node.setPosition(
+         extractionPad.x + part.offset[0],
+         extractionGround + part.offset[1],
+@@ -1630,8 +1639,8 @@ function renderUpdate(dtFrame: number): void {
+       );
+     }
+   });
+-  extractionBackdropNode.setVisible(extractionVisible && visualReviewCapture);
+-  if (extractionVisible && visualReviewCapture) {
++  extractionBackdropNode.setVisible(extractionVisible && false);
++  if (extractionVisible && false) {
+     extractionBackdropNode
+       .setPosition(
+         extractionPad.x - 3.5,
+@@ -1666,7 +1675,7 @@ function renderUpdate(dtFrame: number): void {
+     const emphasized = index === pulsePhase ? 1.9 : 1;
+     node.setScale(0.22 * emphasized);
+   });
+-  if (extractionVisible && visualReviewCapture) {
++  if (extractionVisible && false) {
+     siteGroups[siteIndex]?.nodes.forEach((node) => node.setVisible(false));
+   }
+ 
+@@ -1771,7 +1780,7 @@ function publishEvidence(): void {
+   mountedEvidence.vspeed = Number(state.vy.toFixed(3));
+   mountedEvidence.hspeed = Number(hspeedOf(state).toFixed(3));
+   mountedEvidence.attitudeDeg = Number(Math.abs(state.tiltDeg).toFixed(2));
+-  mountedEvidence.state = paused ? "paused" : phase;
++  mountedEvidence.state = auroraGame.session.paused ? "paused" : phase;
+   mountedEvidence.lastGrade = lastGrade;
+   mountedEvidence.ghostActive = ghostActive;
+   mountedEvidence.terrainQueryFps = terrainQueryFps;
+@@ -1837,7 +1846,7 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+       landerNode.setVisible(!suppressed);
+     },
+     settleSubjectPose() {
+-      paused = true;
++      auroraGame.session.pause("user");
+       landerNode.setRotation(0, state.yaw, (state.tiltDeg * Math.PI) / 180);
+     }
+   },
+diff --git a/apps/showcase-aurora-lander/src/scenario-drive.ts b/apps/showcase-aurora-lander/src/scenario-drive.ts
+new file mode 100644
+index 00000000..5de99354
+--- /dev/null
++++ b/apps/showcase-aurora-lander/src/scenario-drive.ts
+@@ -0,0 +1,11 @@
++/** Imperative drive surface for `?capture=scenario` staging (PRD-09). */
++export interface AuroraDrive {
++  stepSim(dt: number): void;
++  stepRender(dt: number): void;
++}
++let drive: AuroraDrive | undefined;
++export function bindAuroraDrive(d: AuroraDrive): void { drive = d; }
++export function auroraDrive(): AuroraDrive {
++  if (!drive) throw new Error("aurora drive unbound (scenario requested before boot)");
++  return drive;
++}
+diff --git a/apps/showcase-aurora-lander/src/scenarios/index.ts b/apps/showcase-aurora-lander/src/scenarios/index.ts
+new file mode 100644
+index 00000000..c1fb5b31
+--- /dev/null
++++ b/apps/showcase-aurora-lander/src/scenarios/index.ts
+@@ -0,0 +1,13 @@
++import type { GameScenario } from "@aura3d/engine";
++import { auroraDrive } from "../scenario-drive";
++
++export const auroraScenarios: GameScenario[] = [
++  { description: "Default playable boot (no staging).", setup() {} },
++  {
++    description: "Early descent: ~2.5s of fixed steps so the lander is airborne over the pad field.",
++    setup(): void {
++      const d = auroraDrive();
++      for (let i = 0; i < 150; i += 1) d.stepSim(1 / 60);
++    }
++  }
++];
+-- 
+2.34.1
+
