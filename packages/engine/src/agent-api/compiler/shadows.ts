@@ -3,11 +3,31 @@
 import type { AuraRendererRuntimeObservation, AuraSceneSnapshot, AuraVec3 } from "../index.js";
 import { groups, resolveProductionRuntimeShadowTuning, resolveRendererSceneCategory } from "../index.js";
 import { createSpotShadowProjection, selectSpotShadowAtlasTier, type CollectedLight, type RendererShadowOptions } from "@aura3d/rendering";
+import { collectPrd02Lights, prd02LightingOn, readLightingKillSwitches, resolveLightingTier, selectShadowedLights, type Prd02LightingKillSwitches } from "./lights.js";
+
+/** PRD-02 flag path returns a RendererShadowOptions-shaped view of the
+ *  resolved `ShadowSystemConfig` plus the config itself on `prd02Shadows`
+ *  (additive member; legacy consumers ignore it). */
+export interface Prd02ShadowOptions extends RendererShadowOptions {
+  readonly prd02Shadows?: ShadowSystemConfig;
+  /** `effects.contactShadows()` opt-in consumed by the prd02.contactShadows
+   *  contributor (PRD-02 §6.5; additive member, legacy consumers ignore it). */
+  readonly prd02Contact?: {
+    readonly length?: number;
+    readonly thickness?: number;
+    readonly steps?: number;
+    readonly intensity?: number;
+    readonly lights?: "sun" | "shadowed";
+  };
+  /** `?a3dLighting=` kill switches resolved at compile (PRD-02 §6.5). */
+  readonly prd02KillSwitches?: Prd02LightingKillSwitches;
+}
 
 export function createProductionRuntimeShadowOptions(
   snapshot: AuraSceneSnapshot,
   collectedLights: readonly CollectedLight[]
 ): RendererShadowOptions {
+  if (prd02LightingOn()) return createPrd02ShadowOptions(snapshot);
   const nodes = groups.flatten(snapshot.nodes);
   const names = nodes.map((node) => "name" in node ? node.name?.toLowerCase() ?? "" : "");
   const category = resolveRendererSceneCategory(snapshot, names);
@@ -165,5 +185,56 @@ export function resolveShadowSystemConfig(
     bias: sunOptions?.bias ?? 0,
     normalBias: sunOptions?.normalBias ?? 1.5 * texelWorld,
     sceneRadius: radius
+  };
+}
+
+/**
+ * `lighting.quality: "auto"` resolves through the C-27 stub (PRD-02 §6.8):
+ * "high" on desktop, "medium" on coarse pointers. The real compile-context
+ * quality arrives via `resolveLightingTier` once C-36 ctx wiring lands.
+ */
+export function prd02ResolveTier(requested: AuraQualityTier | "auto" | undefined): AuraQualityTier {
+  if (requested && requested !== "auto") return requested;
+  const coarse = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+  return resolveLightingTier(undefined, { quality: { tier: coarse ? "medium" : "high" } });
+}
+
+/**
+ * Flag-path shadow options (PRD-02 §6.4): `collectPrd02Lights` →
+ * `selectShadowedLights` (explicit shadow first, autoSun promotes one
+ * directional, max = 1 sun + tier localShadowLights) →
+ * `resolveShadowSystemConfig` (strength 1.0, C-27 map size, bias 0, normalBias
+ * auto). Legacy `resolveProductionShadowCasterIndex` /
+ * `resolveProductionRuntimeShadowTuning` are not consulted on this path.
+ */
+export function createPrd02ShadowOptions(
+  snapshot: AuraSceneSnapshot,
+  options: { readonly tier?: AuraQualityTier | "auto"; readonly cameraFar?: number } = {}
+): Prd02ShadowOptions {
+  const tier = prd02ResolveTier(options.tier);
+  const collected = collectPrd02Lights(snapshot);
+  const selection = selectShadowedLights(collected.descriptors, {
+    autoSunShadow: true,
+    max: 1 + QUALITY_TIERS[tier].shadow.localShadowLights
+  });
+  const config = resolveShadowSystemConfig(snapshot, collected.descriptors, tier, { cameraFar: options.cameraFar });
+  const contactNode = groups.flatten(snapshot.nodes).find(
+    (node) => node.kind === "effect" && (node.effect as string) === "contact-shadows"
+  );
+  const contactRequest = contactNode && "contactShadows" in contactNode
+    ? (contactNode as { readonly contactShadows?: Prd02ShadowOptions["prd02Contact"] }).contactShadows
+    : undefined;
+  return {
+    enabled: config.enabled && selection.casters.length > 0,
+    size: config.mapSize,
+    strength: config.strength,
+    bias: config.bias,
+    filter: "pcf",
+    cascadeCount: config.cascades,
+    cascadeLambda: config.splitLambda,
+    label: `aura3d-prd02-${tier}-${config.mapSize}px-${config.cascades}casc-shadow-map`,
+    prd02Shadows: config,
+    ...(contactRequest ? { prd02Contact: contactRequest } : {}),
+    prd02KillSwitches: readLightingKillSwitches()
   };
 }
