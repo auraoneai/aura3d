@@ -141,11 +141,28 @@ export interface DayNightSpec {
   readonly cloudLimit?: number;
 }
 
-/** S14 — exponential fog; three gets FogExp2, Aura gets atmosphere.setFog (P4). */
+/** S14/P4 — scene fog; three gets the closest FogExp2 approximation (partial for non-exp2 modes), Aura gets `effects.fog`/`app.atmosphere.setFog`. */
 export interface FogSpec {
-  readonly mode: "exp2";
+  readonly mode: "exp2" | "height" | "exp" | "linear" | "absorption";
   readonly color: string;
   readonly density: number;
+  readonly heightDensity?: number;
+  readonly heightFalloff?: number;
+  readonly heightReference?: number;
+  readonly start?: number;
+  readonly maxOpacity?: number;
+  readonly absorption?: readonly [number, number, number];
+  readonly near?: number;
+  readonly far?: number;
+  readonly transitionSeconds?: number;
+}
+
+/** P4-T8 — a second fog spec applied via `app.atmosphere.setFog` partway through the capture clock (transitionSeconds on the target). */
+export interface FogTransitionSpec {
+  readonly from: FogSpec;
+  readonly to: FogSpec;
+  /** Seconds into `spec.time` when the `to` spec is set. */
+  readonly atSeconds: number;
 }
 
 export interface Prd07SceneSpec extends Omit<SceneSpec, "objects"> {
@@ -156,8 +173,12 @@ export interface Prd07SceneSpec extends Omit<SceneSpec, "objects"> {
   readonly dayNight?: DayNightSpec;
   /** P3-T7 — direct preetham spec (Aura `sky.preetham`; three `Sky.js`). */
   readonly skyPreetham?: { readonly elevationDeg: number; readonly azimuthDeg: number; readonly turbidity?: number };
-  /** P3-T7/P4 — scene fog (Aura adapter: `app.atmosphere.setFog`, flag-gated). */
+  /** P3-T7/P4 — scene fog (Aura adapter: `effects.fog` node → §6.6 live state, flag-gated). */
   readonly fog?: FogSpec;
+  /** P4-T8 — staged `app.atmosphere.setFog` transition (Aura-only; no three equivalent). */
+  readonly fogTransition?: FogTransitionSpec;
+  /** P4-T8 — local fog volumes (`effects.fogVolume`, Aura-only). */
+  readonly fogVolumes?: readonly { readonly position: readonly number[]; readonly size: readonly number[]; readonly density?: number; readonly shape?: "box" | "ellipsoid" }[];
 }
 
 const RES = { width: 1280, height: 720, devicePixelRatio: 1 } as const;
@@ -556,6 +577,153 @@ export const outdoorSky: Prd07SceneSpec = {
   ]
 };
 
+/**
+ * S15 — height fog: C-21 default (σd 0.004, σh 0.008, b 0.2) over receding
+ * ridges — fog thickens toward the ground plane, sky cleared above. The three
+ * adapter approximates with FogExp2 at the eye-level equivalent density.
+ */
+export const fogHeight: Prd07SceneSpec = {
+  ...base("prd07-fog-height", 708, "Height fog", "C-21 default height fog over receding ridges"),
+  qrFlags: ["vfx", "vfx.sky", "vfx.fog"] as const,
+  primaryCriterion: "atmosphere",
+  primaryRegion: "frame",
+  time: 0.2,
+  camera: { position: [0, 1.6, 10], target: [0, 2.5, -20], fov: 55, near: 0.05, far: 300 },
+  background: { kind: "color", color: "#a9bccf" },
+  lights: [
+    { kind: "ambient", name: "ambient", color: "#ffffff", intensity: 0.35 },
+    { kind: "directional", name: "sun", color: "#fff2e0", intensity: 0.9, position: [30, 40, 20], target: [0, 0, -30], castShadow: true }
+  ],
+  skyPreetham: { elevationDeg: 55, azimuthDeg: 210, turbidity: 4 },
+  fog: { mode: "height", color: "#a9bccf", density: 0.004, heightDensity: 0.008, heightFalloff: 0.2, start: 2 },
+  objects: [
+    {
+      kind: "primitive",
+      name: "ground",
+      shape: "plane",
+      size: [120, 1, 120],
+      position: [0, 0, -30],
+      material: { color: "#4a5a38", roughness: 0.95, metalness: 0 },
+      castShadow: false,
+      receiveShadow: true
+    },
+    {
+      kind: "primitive",
+      name: "near ridge",
+      shape: "box",
+      size: [60, 5, 5],
+      position: [0, 2, -35],
+      material: { color: "#43515c", roughness: 1, metalness: 0 },
+      castShadow: false,
+      receiveShadow: false
+    },
+    {
+      kind: "primitive",
+      name: "far ridge",
+      shape: "box",
+      size: [80, 8, 5],
+      position: [0, 3.5, -80],
+      material: { color: "#4a5a68", roughness: 1, metalness: 0 },
+      castShadow: false,
+      receiveShadow: false
+    }
+  ]
+};
+
+/**
+ * S16 — fog transition: `app.atmosphere.setFog(from)` then `setFog(to,
+ * {transitionSeconds: 1})` mid-clock — captured at the midpoint so the frame
+ * blends the two densities/colours. Aura-only (C-30).
+ */
+export const fogTransition: Prd07SceneSpec = {
+  ...base("prd07-fog-transition", 709, "Fog transition", "setFog transitionSeconds midpoint capture"),
+  qrFlags: ["vfx", "vfx.fog"] as const,
+  primaryCriterion: "atmosphere",
+  primaryRegion: "frame",
+  time: 0.9, // atSeconds (0.4) + half the 1 s transition → midpoint capture
+  admittedAsReference: false,
+  camera: { position: [0, 2.0, 12], target: [0, 2.0, -15], fov: 55, near: 0.05, far: 200 },
+  background: { kind: "color", color: "#a9bccf" },
+  lights: [{ kind: "ambient", name: "ambient", color: "#ffffff", intensity: 0.35 }],
+  fogTransition: {
+    from: { mode: "exp", color: "#a9bccf", density: 0.008 },
+    to: { mode: "exp", color: "#c97b3a", density: 0.03, transitionSeconds: 1 },
+    atSeconds: 0.4
+  },
+  objects: [
+    {
+      kind: "primitive",
+      name: "ground",
+      shape: "plane",
+      size: [80, 1, 80],
+      position: [0, 0, -20],
+      material: { color: "#4a5a38", roughness: 0.95, metalness: 0 },
+      castShadow: false,
+      receiveShadow: true
+    },
+    {
+      kind: "primitive",
+      name: "markers",
+      shape: "box",
+      size: [50, 6, 4],
+      position: [0, 2.5, -55],
+      material: { color: "#5a4a3a", roughness: 1, metalness: 0 },
+      castShadow: false,
+      receiveShadow: false
+    }
+  ]
+};
+
+/**
+ * S17 — underwater absorption: per-channel σ = (0.42, 0.11, 0.07) extinguishes
+ * red in ~10 m; objects sink into the blue-green water colour. Aura-only —
+ * three has no per-channel absorption fog (C-30).
+ */
+export const underwater: Prd07SceneSpec = {
+  ...base("prd07-underwater", 710, "Underwater absorption fog", "σ=(0.42,0.11,0.07) absorption — red dies by 10 m"),
+  qrFlags: ["vfx", "vfx.fog"] as const,
+  primaryCriterion: "atmosphere",
+  primaryRegion: "frame",
+  time: 0.2,
+  admittedAsReference: false,
+  camera: { position: [0, 1.6, 8], target: [0, 1.2, -12], fov: 55, near: 0.05, far: 120 },
+  background: { kind: "color", color: "#0a2438" },
+  lights: [{ kind: "ambient", name: "ambient", color: "#7fb3d5", intensity: 0.5 }],
+  fog: { mode: "absorption", color: "#0a2438", density: 0, absorption: [0.42, 0.11, 0.07] },
+  objects: [
+    {
+      kind: "primitive",
+      name: "seabed",
+      shape: "plane",
+      size: [60, 1, 60],
+      position: [0, -0.2, -25],
+      material: { color: "#c2b49a", roughness: 1, metalness: 0 },
+      castShadow: false,
+      receiveShadow: false
+    },
+    {
+      kind: "primitive",
+      name: "red buoy",
+      shape: "sphere",
+      size: [2, 2, 2],
+      position: [-3, 1.2, -14],
+      material: { color: "#c23b2a", roughness: 0.6, metalness: 0 },
+      castShadow: false,
+      receiveShadow: false
+    },
+    {
+      kind: "primitive",
+      name: "far buoy",
+      shape: "sphere",
+      size: [2, 2, 2],
+      position: [3, 1.2, -28],
+      material: { color: "#c23b2a", roughness: 0.6, metalness: 0 },
+      castShadow: false,
+      receiveShadow: false
+    }
+  ]
+};
+
 export const prd07Specs = {
   "prd07-particles-fountain": particlesFountain,
   "prd07-flipbook": flipbook,
@@ -563,7 +731,10 @@ export const prd07Specs = {
   "prd07-impact-library": impactLibrary,
   "prd07-trails-beams": trailsBeams,
   "prd07-sky-timeofday": skyTimeOfDay,
-  "prd07-outdoor-sky": outdoorSky
+  "prd07-outdoor-sky": outdoorSky,
+  "prd07-fog-height": fogHeight,
+  "prd07-fog-transition": fogTransition,
+  "prd07-underwater": underwater
 } as const;
 
 export type Prd07SceneId = keyof typeof prd07Specs;

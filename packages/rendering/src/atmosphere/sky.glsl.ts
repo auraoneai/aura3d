@@ -4,6 +4,7 @@
 
 import { registerShaderChunk, type ShaderChunk } from "../contracts/program";
 import type { SkyProgramDefines } from "./SkyEval";
+import { PRD07_FOG_CHUNK_GLSL } from "./shaders/fog.glsl";
 
 export const SKY_SHADER_MARKER = "aura3d.prd07.sky";
 
@@ -147,6 +148,15 @@ float starfield(vec3 direction) {
   return star * mag * u_starIntensity;
 }
 
+#if SKY_FOG
+// P4-T7 — fog on the background: apply §8.4 a3dApplyFog at backgroundDistance.
+// A3D_PRD07_FOG_ENV_UNIFORMS is pre-defined so the chunk does not redeclare
+// u_sunDirection (bound by this program already); we provide camera/sunColor.
+uniform vec3 u_cameraPosition;
+uniform vec3 u_sunColor;
+uniform float u_fogBackgroundDistance;
+#endif
+
 void main() {
   vec4 world4 = u_invViewProj * vec4(v_clip, 1.0, 1.0);
   vec3 direction = normalize(world4.xyz / world4.w);
@@ -184,6 +194,9 @@ void main() {
     color = mix(color, cloudColor, cloudMask * u_cloudDensity);
   }
 #endif
+#if SKY_FOG
+  color = a3dApplyFog(color, u_cameraPosition + direction * u_fogBackgroundDistance);
+#endif
   o_color = vec4(color, 1.0);
 }
 `;
@@ -195,7 +208,8 @@ function defines(d: SkyProgramDefines): string {
     `${d.model === "COLOR" ? "#define MODEL_COLOR 1\n" : ""}` +
     `${d.stars ? "#define SKY_STARS 1\n" : "#define SKY_STARS 0\n"}` +
     `${d.clouds ? "#define SKY_CLOUDS 1\n" : "#define SKY_CLOUDS 0\n"}` +
-    `${d.moon ? "#define SKY_MOON 1\n" : "#define SKY_MOON 0\n"}`
+    `${d.moon ? "#define SKY_MOON 1\n" : "#define SKY_MOON 0\n"}` +
+    `${d.fog ? "#define SKY_FOG 1\n#define A3D_PRD07_FOG_ENV_UNIFORMS 1\n" : "#define SKY_FOG 0\n"}`
   );
 }
 
@@ -204,7 +218,7 @@ export function skyVertexSource(): string {
 }
 
 export function skyFragmentSource(d: SkyProgramDefines): string {
-  return `#version 300 es\n${defines(d)}${FRAG}`;
+  return `#version 300 es\n${defines(d)}${d.fog ? `${PRD07_FOG_CHUNK_GLSL}\n` : ""}${FRAG}`;
 }
 
 export const SKY_CHUNKS: readonly ShaderChunk[] = [

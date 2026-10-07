@@ -1885,22 +1885,22 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
 
 ### Phase 4: fog (day 0)
 
-- [ ] **P4-T1** `atmosphere/HeightFog.ts`. CPU mirrors `heightFogTau`, `fogAmount`, `legacyEnvironmentFogFactor` (a
+- [x] **P4-T1** `atmosphere/HeightFog.ts`. CPU mirrors `heightFogTau`, `fogAmount`, `legacyEnvironmentFogFactor` (a
   verbatim JS port of `ShaderChunks.ts:475-491`), `packLegacy(spec, camera)` and `packV2(spec)`. Tests:
   - `fog-height-integral.test.ts`: `heightFogTau` vs a 1,000-step numeric ray-march within 1% for 50 random rays,
     including `v.y ≈ 0` and `b = 0`;
   - `fog-legacy-parity.test.ts`: the GLSL legacy-parity mode CPU mirror equals `legacyEnvironmentFogFactor` within 1e-6
     on 1,000 points.
-- [ ] **P4-T2** `atmosphere/shaders/fog.glsl.ts` + `atmosphere/chunks.ts`. Register chunk `a3d_prd07_fog` (C-21 names) and
+- [x] **P4-T2** `atmosphere/shaders/fog.glsl.ts` + `atmosphere/chunks.ts`. Register chunk `a3d_prd07_fog` (C-21 names) and
   `ShaderFeature` `prd07.fog` (hook `fragment:fog`; the `select` returns `"height"`/`"volumetric"` only when
   `A3D_QR_VFX_FOG` is on). Browser test `C-21` chunk compile in ChunkHarness.
-- [ ] **P4-T3** `production-runtime/effects/LiveAtmosphere.ts` + `agent-api/vfx/atmosphere-api.ts`.
+- [x] **P4-T3** `production-runtime/effects/LiveAtmosphere.ts` + `agent-api/vfx/atmosphere-api.ts`.
   - `WeakMap<AuraEffectNode, LiveFogState>` updated on `onFrame` from handle visibility.
   - `setFog` handle extension (C-37).
   - `app.atmosphere.setFog/setSky/setWetness/state`, with transitions (density linear, colour linear RGB).
   - Test: Skyline-style scene with five fog nodes toggled via `setVisible`; the resolved density equals the visible
     act's density on the next frame. With `transitionSeconds: 1`, the midpoint value at 0.5 s is within 2%.
-- [ ] **P4-T4** Carved `agent-api/compiler/fog.ts` (`createProductionRuntimeEnvironmentFog`).
+- [x] **P4-T4** Carved `agent-api/compiler/fog.ts` (`createProductionRuntimeEnvironmentFog`).
   - Flag off: body byte-identical.
   - With `A3D_QR_VFX_FOG`:
     - read `LiveAtmosphere` for the active node;
@@ -1912,15 +1912,15 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
     - flag-off return is deep-equal to the `85aafcd0` fixture for the 18 base scene snapshots;
     - default fog at 10/50/100 m, horizontal from 1.6 m, is within ±1.5% of 7/37/62% (CPU mirror of the shipped uniforms);
     - a legacy `density`-only call keeps exp2 with `maxOpacity` 1.
-- [ ] **P4-T5** `atmosphere/FogVolumes.ts`. Ray/box and ray/ellipsoid segment length, used by `effects.fogVolume` in
+- [x] **P4-T5** `atmosphere/FogVolumes.ts`. Ray/box and ray/ellipsoid segment length, used by `effects.fogVolume` in
   PRD 07 programs. On forward geometry it applies only on the generator path (I3). Test: matches a numeric march within
   1%.
-- [ ] **P4-T6** Absorption mode in `a3d_prd07_fog`. Test: `T = exp(-σ·d)` per channel at 10 m for σ = (0.42, 0.11, 0.07),
+- [x] **P4-T6** Absorption mode in `a3d_prd07_fog`. Test: `T = exp(-σ·d)` per channel at 10 m for σ = (0.42, 0.11, 0.07),
   within 1e-5.
-- [ ] **P4-T7** Background fog. `prd07.sky` calls `a3dApplyFog` at `backgroundDistance` when `affectsBackground`. A
+- [x] **P4-T7** Background fog. `prd07.sky` calls `a3dApplyFog` at `backgroundDistance` when `affectsBackground`. A
   solid-colour background with fog draws as a fogged fullscreen colour pass. Browser test `fog-background-match.spec.ts`:
   a fogged horizon pixel and a fogged far-plane geometry pixel differ by ≤ 3/255 (flags `vfx`, legacy forward path).
-- [ ] **P4-T8** Lane scenes `prd07-fog-height`, `prd07-fog-transition` and `prd07-underwater` (absorption in PRD 07
+- [x] **P4-T8** Lane scenes `prd07-fog-height`, `prd07-fog-transition` and `prd07-underwater` (absorption in PRD 07
   programs, plus geometry on the legacy approximation), each with a three r185 adapter or `admittedAsReference: false`.
 
 ### Phase 5: GPU sim, weather, volumetric

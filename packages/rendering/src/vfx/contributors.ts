@@ -18,6 +18,16 @@ import { ParticleBatchPass, type ParticlePassDiagnostics } from "./ParticleBatch
 import { BeamPass, type BeamDrawSpec } from "./BeamPass";
 import { MeshParticlePass, type MeshParticleFeed } from "./MeshParticlePass";
 import { RibbonBatch } from "./RibbonBatch";
+import {
+  PRD07_FOG_DEFAULTS,
+  packV2,
+  parseFogColor,
+  resolvePrd07FogSpec,
+  skyHorizonRadiance,
+  type Vec3
+} from "../atmosphere/HeightFog";
+import { packFogVolumes, type Prd07FogVolume } from "../atmosphere/FogVolumes";
+import { evaluateSky, skyFrame } from "../atmosphere/SkyEval";
 import { RibbonPass } from "./RibbonPass";
 import { contextViewProjection, skyDrawPassFor } from "../atmosphere/SkyBackgroundPass";
 
@@ -178,8 +188,97 @@ const skyContributor: FrameContributor = {
     const pass = skyDrawPassFor(ctx.device);
     pass.setSpec(atmosphere.sky, ctx.timeSeconds);
     pass.setViewProjection(contextViewProjection(ctx));
+    // P4-T7 — the prd07.fog contributor's collect ran first this frame; when the
+    // spec affects the background, bind its packed §8.4 uniforms (mode, colour,
+    // volumes) + camera/sun so a3dApplyFog shades the sky at backgroundDistance.
+    const fogEntry = ctx.flags.on("A3D_QR_VFX_FOG")
+      ? (ctx.blackboard.get("prd07.fog") as
+          | {
+              uniforms: ReturnType<typeof packV2>;
+              volumes: readonly Prd07FogVolume[];
+              sunColor: Vec3;
+              affectsBackground: boolean;
+              backgroundDistance: number;
+            }
+          | undefined)
+      : undefined;
+    pass.setFog(
+      fogEntry && fogEntry.affectsBackground
+        ? {
+            uniforms: fogEntry.uniforms,
+            volumes: packFogVolumes(fogEntry.volumes),
+            sunColor: fogEntry.sunColor,
+            cameraPosition: ctx.camera?.position ?? [0, 0, 0],
+            backgroundDistance: fogEntry.backgroundDistance
+          }
+        : null
+    );
     return [pass];
   }
+};
+
+/**
+ * P4-T4 — prd07.fog: notes the camera pose on LiveAtmosphere (the compiler's
+ * packLegacy path reads it) and publishes the packed §8.4 uniforms +
+ * fog-volume segments on the blackboard for the prd07.sky pass and any
+ * C-02 generator material that binds `a3d_prd07_fog`.
+ */
+const fogContributor: FrameContributor = {
+  id: "prd07.fog",
+  owner: "prd07",
+  flag: "A3D_QR_VFX_FOG",
+  phases: ["background"],
+  collect: (items, ctx) => {
+    const atmosphere = (ctx.source as Prd07FrameSource).atmosphere as {
+      resolveFog?: (t: number) => Record<string, unknown> | null;
+      fogVolumes?: () => readonly unknown[];
+      noteCamera?: (position: readonly [number, number, number], forward: readonly [number, number, number]) => void;
+      clockNow?: () => number;
+      sky?: Record<string, unknown> | null;
+    } | undefined;
+    if (!atmosphere) return items;
+    const cam = ctx.camera;
+    const forward: readonly [number, number, number] = cam
+      ? [-cam.viewMatrix[2], -cam.viewMatrix[6], -cam.viewMatrix[10]]
+      : [0, 0, -1];
+    if (cam) atmosphere.noteCamera?.(cam.position, forward);
+    const spec = atmosphere.resolveFog?.(atmosphere.clockNow?.() ?? ctx.timeSeconds) ?? null;
+    const resolved = resolvePrd07FogSpec(spec as Parameters<typeof resolvePrd07FogSpec>[0]);
+    const sky = atmosphere.sky ?? null;
+    const azimuth = Math.atan2(forward[0], forward[2]);
+    const fogColor = resolved.color === "sky"
+      ? skyHorizonRadiance(sky, azimuth) ?? PRD07_FOG_DEFAULTS.fallbackColor
+      : parseFogColor(resolved.color, PRD07_FOG_DEFAULTS.fallbackColor);
+    // Legacy generator (C-04 stub) → parity-mode slots; real C-02 → v2 slots.
+    const parity = ctx.flags.values["A3D_QR_CORE"] !== "v2";
+    const packed = packV2(resolved, {
+      fogColor,
+      cameraY: cam?.position[1] ?? 0,
+      parity
+    });
+    // §6.6 sun inscatter colour — sky radiance at the sun direction (clamped);
+    // only multiplied by sunInscatter (default 0) so the approximation is inert.
+    let sunColor: Vec3 = [1, 1, 1];
+    if (sky) {
+      try {
+        const frame = skyFrame(sky as Parameters<typeof skyFrame>[0]);
+        const sunDir = frame.preetham?.sunDirection ?? frame.gradient?.sunDirection ?? ([0, 1, 0] as Vec3);
+        const e = evaluateSky(frame, sunDir);
+        sunColor = [Math.min(e[0], 8), Math.min(e[1], 8), Math.min(e[2], 8)];
+      } catch {
+        // keep the unit fallback
+      }
+    }
+    ctx.blackboard.set("prd07.fog", {
+      uniforms: packed,
+      volumes: (atmosphere.fogVolumes?.() ?? []) as readonly Prd07FogVolume[],
+      sunColor,
+      affectsBackground: resolved.affectsBackground !== false,
+      backgroundDistance: resolved.backgroundDistance ?? cam?.far ?? 1000
+    });
+    return items;
+  },
+  passes: () => []
 };
 
 const decalsContributor: FrameContributor = {
@@ -200,7 +299,7 @@ const volumetricContributor: FrameContributor = {
 
 /** Idempotent lane registration (P1-T1): safe on repeated barrel imports. */
 export function registerPrd07Contributors(): void {
-  for (const contributor of [particlesContributor, lightsContributor, ribbonContributor, beamContributor, meshContributor, skyContributor, decalsContributor, volumetricContributor]) {
+  for (const contributor of [particlesContributor, lightsContributor, ribbonContributor, beamContributor, meshContributor, fogContributor, skyContributor, decalsContributor, volumetricContributor]) {
     try {
       registerFrameContributor(contributor);
     } catch (error) {

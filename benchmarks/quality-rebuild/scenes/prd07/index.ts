@@ -5,7 +5,7 @@
  * prefix and both adapters.
  */
 import type { BenchSceneRegistration } from "../../shared/registry";
-import { flipbook, impactLibrary, outdoorSky, particlesFountain, particlesStress, skyTimeOfDay, trailsBeams } from "./specs";
+import { flipbook, fogHeight, fogTransition, impactLibrary, outdoorSky, particlesFountain, particlesStress, skyTimeOfDay, trailsBeams, underwater } from "./specs";
 
 export const scenes: readonly BenchSceneRegistration[] = [
   { id: particlesFountain.id, spec: particlesFountain },
@@ -14,7 +14,10 @@ export const scenes: readonly BenchSceneRegistration[] = [
   { id: impactLibrary.id, spec: impactLibrary },
   { id: trailsBeams.id, spec: trailsBeams },
   { id: skyTimeOfDay.id, spec: skyTimeOfDay },
-  { id: outdoorSky.id, spec: outdoorSky }
+  { id: outdoorSky.id, spec: outdoorSky },
+  { id: fogHeight.id, spec: fogHeight },
+  { id: fogTransition.id, spec: fogTransition },
+  { id: underwater.id, spec: underwater }
 ];
 
 export { getPrd07SceneSpec, prd07Specs } from "./specs";

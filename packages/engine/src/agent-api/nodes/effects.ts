@@ -40,14 +40,26 @@ function withEmitterOptions<T extends AuraEffectNode>(value: T, options: Readonl
 }
 
 export const vfxEffectBuilders = {
-  fog: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
-    new AuraNodeBuilder<AuraEffectNode>({
-      kind: "effect",
-      effect: "fog",
-      density: options.density ?? 0.12,
-      color: options.color ?? "#9fb7d9",
-      intensity: options.intensity
-    }),
+  /**
+   * §6.6/F-07-01 — the builder records ONLY authored fields; C-21 defaults are
+   * applied at resolve time by compiler/fog.ts under A3D_QR_VFX_FOG (a bare
+   * `effects.fog()` → height defaults; a legacy `density`-only call → exp2 +
+   * maxOpacity 1). Flag-off compile reads `?? 0.12`/`?? "#9fb7d9"` so the
+   * uniforms are unchanged.
+   */
+  fog: (options: VfxNodeOptions = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>(
+      withEmitterOptions(
+        {
+          kind: "effect",
+          effect: "fog",
+          ...(options.density !== undefined ? { density: options.density as number } : {}),
+          ...(options.color !== undefined ? { color: options.color as string } : {}),
+          intensity: options.intensity
+        },
+        options as Readonly<Record<string, unknown>>
+      )
+    ),
   cinematicBloom: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
     effects.bloom({
       intensity: options.intensity ?? 0.58,
