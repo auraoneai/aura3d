@@ -231,7 +231,7 @@ async function main(): Promise<void> {
   } else if (command === "doctor") {
     print(doctor());
   } else if (command === "animation") {
-    runAnimationCommand(args[1]);
+    await runAnimationCommand(args[1]);
   } else if (command === "check-deploy") {
     print(checkDeploy({ distDir: readOption("--dist"), ...readAssetValidationOptions() }));
   } else if (command === "init") {
@@ -259,7 +259,7 @@ async function main(): Promise<void> {
   }
 }
 
-function runAnimationCommand(action: string | undefined): void {
+async function runAnimationCommand(action: string | undefined): Promise<void> {
   const scriptByAction: Record<string, string> = {
     plan: "episode:plan",
     preview: "episode:preview",
@@ -273,6 +273,20 @@ function runAnimationCommand(action: string | undefined): void {
   };
   const script = action ? scriptByAction[action] : undefined;
   if (!script) {
+    // C-39: lane-registered `aura3d animation <sub>` commands (prd06's
+    // `animation inspect-clips`, T0.7) resolve through the registry before the
+    // delegated-script usage error fires.
+    if (action) {
+      const registered = cliCommandFor(`animation ${action}`);
+      if (registered) {
+        process.exitCode = await registered.run(args.slice(2), {
+          cwd: process.cwd(),
+          stdout: (line) => console.log(line),
+          stderr: (line) => console.error(line)
+        });
+        return;
+      }
+    }
     throw new Error("Usage: aura3d animation plan|preview|render|package|review|verify|scene [--dry-run]");
   }
   const command = process.env.npm_execpath && process.env.npm_execpath.includes("pnpm")

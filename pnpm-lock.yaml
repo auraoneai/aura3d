@@ -337,9 +337,21 @@ importers:
 
   packages/game:
     dependencies:
+      '@aura3d/audio':
+        specifier: workspace:*
+        version: link:../audio
+      '@aura3d/engine':
+        specifier: workspace:*
+        version: link:../..
       '@aura3d/engine-runtime':
         specifier: workspace:*
         version: link:../engine
+      '@aura3d/input':
+        specifier: workspace:*
+        version: link:../input
+      '@aura3d/math':
+        specifier: workspace:*
+        version: link:../math
       '@aura3d/rendering':
         specifier: workspace:*
         version: link:../rendering

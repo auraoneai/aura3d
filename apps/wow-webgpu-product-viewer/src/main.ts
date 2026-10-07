@@ -48,23 +48,9 @@ void startWebGPUShowcase({
         toneMapping: { operator: "filmic", exposure: 1, whitePoint: 11.2 }
       })
     ]);
-    for (const material of scene.resources.materialLibrary.values()) {
-      const roughness = material.getParameter("u_roughness");
-      const metallic = material.getParameter("u_metallic");
-      const clearcoat = material.getParameter("u_clearcoatFactor");
-      if (typeof roughness === "number") material.setParameter("u_roughness", Math.min(1, Math.max(0.88, roughness * 1.12)));
-      if (typeof metallic === "number") material.setParameter("u_metallic", Math.min(0.04, Math.max(0, metallic * 0.12)));
-      if (typeof clearcoat === "number") material.setParameter("u_clearcoatFactor", Math.min(0.08, Math.max(0, clearcoat * 0.2)));
-      material.setParameter("u_materialEnvironmentSpecularScale", 0.08);
-      material.setParameter("u_productColorSmoothing", 1);
-      material.setParameter("u_transmissionTextureEnabled", 0);
-      material.setParameter("u_transmissionFactor", 0);
-      material.setParameter("u_diffuseTransmissionFactor", 0);
-      material.setParameter("u_transmissionFallbackEnergy", 0);
-      material.setParameter("u_transmissionParallaxStrength", 0);
-      material.setParameter("u_transmissionBounceCount", 0);
-      material.setParameter("u_transmissionCausticStrength", 0);
-    }
+    // PRD-04 P2-13: the material clamp loop (roughness/metallic/clearcoat clamps plus
+    // product-color-smoothing and transmission zeroing) is deleted — materials now keep
+    // the glTF-authored factors end to end; PRD 12 re-baselines the route.
     const assetPresentationScale = 1.0;
     scene.resources.scene.root.transform
       .setScale(assetPresentationScale, assetPresentationScale, assetPresentationScale)
