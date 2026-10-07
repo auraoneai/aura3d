@@ -21,7 +21,11 @@ test.describe("PRD-03 Phase 2 — display LUT bake + cache", () => {
   let server: ExampleDevServer;
   let result: Phase2Result;
 
-  test.beforeAll(async ({ browser }) => {
+  test.beforeAll(async ({ browser }, testInfo) => {
+    // beforeAll hooks keep the 60s config timeout even when
+    // describe.configure raises per-test budgets — extend the hook
+    // itself for cold dev-server transforms on CI.
+    testInfo.setTimeout(240_000);
     server = await startExampleDevServer();
     const page = await browser.newPage();
     await page.goto(`${server.origin}/tests/browser/qr-prd03-phase2-harness.html`);

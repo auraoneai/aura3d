@@ -35,7 +35,11 @@ test.describe("PRD-03 Phase 3 — §6.9 CPU-readback ban", () => {
   let server: ExampleDevServer;
   let result: NoReadbackResult;
 
-  test.beforeAll(async ({ browser }) => {
+  test.beforeAll(async ({ browser }, testInfo) => {
+    // beforeAll hooks keep the 60s config timeout even when
+    // describe.configure raises per-test budgets — extend the hook
+    // itself for cold dev-server transforms on CI.
+    testInfo.setTimeout(240_000);
     server = await startExampleDevServer();
     const page = await browser.newPage();
     await page.goto(`${server.origin}/tests/browser/qr-prd03-no-readback-harness.html`);

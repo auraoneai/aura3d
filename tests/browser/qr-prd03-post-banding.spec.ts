@@ -37,7 +37,11 @@ test.describe("PRD-03 Phase 1 — dither banding + depthRange DOF", () => {
   let server: ExampleDevServer;
   let harness: HarnessResult;
 
-  test.beforeAll(async ({ browser }) => {
+  test.beforeAll(async ({ browser }, testInfo) => {
+    // beforeAll hooks keep the 60s config timeout even when
+    // describe.configure raises per-test budgets — extend the hook
+    // itself for cold dev-server transforms on CI.
+    testInfo.setTimeout(240_000);
     server = await startExampleDevServer();
     const page = await browser.newPage();
     await page.goto(`${server.origin}/tests/browser/qr-prd03-post-harness.html`);

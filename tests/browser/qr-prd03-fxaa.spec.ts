@@ -33,7 +33,11 @@ test.describe("PRD-03 Phase 1 — FXAA r185 port vs three FXAAShader", () => {
   test.describe.configure({ timeout: 240_000 });
   let server: ExampleDevServer;
 
-  test.beforeAll(async () => {
+  test.beforeAll(async ({}, testInfo) => {
+    // beforeAll hooks keep the 60s config timeout even when
+    // describe.configure raises per-test budgets — extend the hook
+    // itself for cold dev-server transforms on CI.
+    testInfo.setTimeout(240_000);
     server = await startExampleDevServer();
   });
   test.afterAll(async () => {
