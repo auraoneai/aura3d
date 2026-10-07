@@ -1,0 +1,330 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@aura3d/engine/assets/production-runtime": [
+        "packages/engine/src/deprecated/assets-production-runtime.ts"
+      ],
+      "@aura3d/engine/assets/gltf-runtime": [
+        "packages/engine/src/deprecated/assets-gltf-runtime.ts"
+      ],
+      "@aura3d/engine/animation/browser": [
+        "packages/engine/src/deprecated/animation-browser.ts"
+      ],
+      "@aura3d/engine/scene-kits/product-viewer": [
+        "packages/engine/src/deprecated/scene-kits-product-viewer.ts"
+      ],
+      "@aura3d/engine/scene-kits/humanoid-walk": [
+        "packages/engine/src/deprecated/scene-kits-humanoid-walk.ts"
+      ],
+      "@aura3d/engine/scene-kits/particle-fountain": [
+        "packages/engine/src/deprecated/scene-kits-particle-fountain.ts"
+      ],
+      "@aura3d/engine/rendering/production-runtime": [
+        "packages/engine/src/deprecated/rendering-production-runtime.ts"
+      ],
+      "@aura3d/engine/rendering/advanced-runtime": [
+        "packages/engine/src/deprecated/rendering-advanced-runtime.ts"
+      ],
+      "@aura3d/engine/assets/browser": [
+        "packages/engine/src/deprecated/assets-browser.ts"
+      ],
+      "@aura3d/engine/workflows/production": [
+        "packages/engine/src/deprecated/workflows-production.ts"
+      ],
+      "@aura3d/engine/assets/asset-corpus": [
+        "packages/engine/src/deprecated/assets-asset-corpus.ts"
+      ],
+      "@aura3d/engine/assets/advanced-gallery": [
+        "packages/engine/src/deprecated/assets-advanced-gallery.ts"
+      ],
+      "@aura3d/engine/rendering/webgpu": [
+        "packages/engine/src/deprecated/rendering-webgpu.ts"
+      ],
+      "@aura3d/engine/workflows/production-runtime": [
+        "packages/engine/src/deprecated/workflows-production-runtime.ts"
+      ],
+      "@aura3d/engine/debug": [
+        "packages/engine/src/deprecated/debug.ts"
+      ],
+      "@aura3d/engine/editor": [
+        "packages/engine/src/deprecated/editor.ts"
+      ],
+      "@aura3d/engine/create-aura3d": [
+        "packages/engine/src/deprecated/create-aura3d.ts"
+      ],
+      "@aura3d/engine/engine-runtime": [
+        "packages/engine/src/deprecated/engine-runtime.ts"
+      ],
+      "@aura3d/engine/product-studio": [
+        "packages/engine/src/deprecated/product-studio.ts"
+      ],
+      "@aura3d/engine/materials": [
+        "packages/engine/src/deprecated/materials.ts"
+      ],
+      "@aura3d/engine/environments": [
+        "packages/engine/src/deprecated/environments.ts"
+      ],
+      "@aura3d/engine/core": [
+        "packages/engine/src/deprecated/core.ts"
+      ],
+      "@aura3d/engine/lean-product": [
+        "packages/engine/src/deprecated/lean-product.ts"
+      ],
+      "@aura3d/engine/lean-game": [
+        "packages/engine/src/deprecated/lean-game.ts"
+      ],
+      "@aura3d/engine/lean": [
+        "packages/engine/src/deprecated/lean.ts"
+      ],
+      "@aura3d/engine/rendering": [
+        "packages/engine/src/deprecated/rendering.ts"
+      ],
+      "@aura3d/engine/apps": [
+        "packages/engine/src/deprecated/apps.ts"
+      ],
+      "@aura3d/engine/engine": [
+        "packages/engine/src/deprecated/engine.ts"
+      ],
+      "@aura3d/engine/production-runtime": [
+        "packages/engine/src/deprecated/production-runtime.ts"
+      ],
+      "@aura3d/engine/advanced-runtime": [
+        "packages/engine/src/deprecated/advanced-runtime.ts"
+      ],
+      "@aura3d/engine/contracts": [
+        "packages/engine/src/deprecated/contracts.ts"
+      ],
+      "@aura3d/engine/lanes": [
+        "packages/engine/src/lanes/index.ts"
+      ],
+      "@aura3d/engine/assets": [
+        "packages/assets/src/index.ts"
+      ],
+      "@aura3d/engine/media-node": [
+        "packages/engine/src/deprecated/media-node.ts"
+      ],
+      "@aura3d/engine/scene": [
+        "packages/scene/src/index.ts"
+      ],
+      "@aura3d/rendering/contracts/flags.state": [
+        "packages/rendering/src/contracts/flags.state.ts"
+      ],
+      "@aura3d/lean/product": [
+        "packages/lean/src/product.ts"
+      ],
+      "@aura3d/lean/game": [
+        "packages/lean/src/game.ts"
+      ],
+      "@aura3d/scene/math": [
+        "packages/scene/src/MathTypes.ts"
+      ],
+      "@aura3d/rendering/contracts": [
+        "packages/rendering/src/contracts/index.ts"
+      ],
+      "@aura3d/rendering/lanes": [
+        "packages/rendering/src/lanes/index.ts"
+      ],
+      "@aura3d/rendering/extension-scalar-atlas": [
+        "packages/rendering/src/extension-scalar-atlas.ts"
+      ],
+      "@aura3d/rendering/reflection-surfaces": [
+        "packages/rendering/src/reflection-surfaces.ts"
+      ],
+      "@aura3d/engine-runtime/contracts": [
+        "packages/engine/src/contracts/index.ts"
+      ],
+      "@aura3d/engine-runtime/lanes": [
+        "packages/engine/src/lanes/index.ts"
+      ],
+      "@aura3d/physics/solverless": [
+        "packages/physics/src/solverless.ts"
+      ],
+      "@aura3d/physics/world": [
+        "packages/physics/src/world.ts"
+      ],
+      "@aura3d/assets/browser": [
+        "packages/assets/src/browser-index.ts"
+      ],
+      "@aura3d/assets/gltf-runtime": [
+        "packages/assets/src/gltf-runtime.ts"
+      ],
+      "@aura3d/animation/pose": [
+        "packages/animation/src/contracts/pose.ts"
+      ],
+      "@aura3d/assets/contracts": [
+        "packages/assets/src/contracts/decoders.ts"
+      ],
+      "@aura3d/audio/contracts": [
+        "packages/audio/src/contracts/gameSound.ts"
+      ],
+      "@aura3d/cli/contracts": [
+        "packages/aura3d-cli/src/contracts/commands.ts"
+      ],
+      "@aura3d/game/art": [
+        "packages/game/src/art/index.ts"
+      ],
+      "@aura3d/game/capture": [
+        "packages/game/src/capture/index.ts"
+      ],
+      "/packages/*": [
+        "packages/*"
+      ],
+      "@aura3d/lean": [
+        "packages/lean/src/index.ts"
+      ],
+      "@aura3d/cli": [
+        "packages/aura3d-cli/src/index.ts"
+      ],
+      "@aura3d/react": [
+        "packages/react/src/index.ts"
+      ],
+      "@aura3d/math": [
+        "packages/math/src/index.ts"
+      ],
+      "@aura3d/core": [
+        "packages/core/src/index.ts"
+      ],
+      "@aura3d/scene": [
+        "packages/scene/src/index.ts"
+      ],
+      "@aura3d/ecs": [
+        "packages/ecs/src/index.ts"
+      ],
+      "@aura3d/rendering/production-runtime": [
+        "packages/rendering/src/production-runtime/index.ts"
+      ],
+      "@aura3d/rendering/webgpu": [
+        "packages/rendering/src/webgpu.ts"
+      ],
+      "@aura3d/rendering/advanced-runtime": [
+        "packages/rendering/src/advanced-runtime/index.ts"
+      ],
+      "@aura3d/rendering": [
+        "packages/rendering/src/index.ts"
+      ],
+      "@aura3d/controls": [
+        "packages/controls/src/index.ts"
+      ],
+      "@aura3d/engine-runtime": [
+        "packages/engine/src/index.ts"
+      ],
+      "@aura3d/apps": [
+        "packages/apps/src/index.ts"
+      ],
+      "@aura3d/create-aura3d": [
+        "packages/create-aura3d/src/index.ts"
+      ],
+      "@aura3d/physics-rapier": [
+        "packages/physics-rapier/src/index.ts"
+      ],
+      "@aura3d/physics": [
+        "packages/physics/src/index.ts"
+      ],
+      "@aura3d/navigation-recast": [
+        "packages/navigation-recast/src/index.ts"
+      ],
+      "@aura3d/product-studio": [
+        "packages/product-studio/src/index.ts"
+      ],
+      "@aura3d/animation/browser": [
+        "packages/animation/src/browser-index.ts"
+      ],
+      "@aura3d/animation/lanes": [
+        "packages/animation/src/lanes/index.ts"
+      ],
+      "@aura3d/animation": [
+        "packages/animation/src/index.ts"
+      ],
+      "@aura3d/assets/asset-corpus": [
+        "packages/assets/src/asset-corpus/index.ts"
+      ],
+      "@aura3d/assets/advanced-gallery": [
+        "packages/assets/src/advanced-gallery/index.ts"
+      ],
+      "@aura3d/assets": [
+        "packages/assets/src/index.ts"
+      ],
+      "@aura3d/input": [
+        "packages/input/src/index.ts"
+      ],
+      "@aura3d/audio": [
+        "packages/audio/src/index.ts"
+      ],
+      "@aura3d/scripting": [
+        "packages/scripting/src/index.ts"
+      ],
+      "@aura3d/workflows/production-runtime": [
+        "packages/workflows/src/production-runtime/index.ts"
+      ],
+      "@aura3d/workflows": [
+        "packages/workflows/src/index.ts"
+      ],
+      "@aura3d/editor-runtime": [
+        "packages/editor-runtime/src/index.ts"
+      ],
+      "@aura3d/debug": [
+        "packages/debug/src/index.ts"
+      ],
+      "@aura3d/asset-index": [
+        "packages/asset-index/src/index.ts"
+      ],
+      "@aura3d/game": [
+        "packages/game/src/index.ts"
+      ],
+      "create-aura3d": [
+        "packages/create-aura3d/src/index.ts"
+      ],
+      "@aura3d/engine/scene/math": [
+        "packages/scene/src/MathTypes.ts"
+      ],
+      "@aura3d/engine/physics/solverless": [
+        "packages/physics/src/solverless.ts"
+      ],
+      "@aura3d/engine/physics/world": [
+        "packages/physics/src/world.ts"
+      ],
+      "@aura3d/engine/math": [
+        "packages/math/src/index.ts"
+      ],
+      "@aura3d/engine/ecs": [
+        "packages/ecs/src/index.ts"
+      ],
+      "@aura3d/engine/controls": [
+        "packages/controls/src/index.ts"
+      ],
+      "@aura3d/engine/physics": [
+        "packages/physics/src/index.ts"
+      ],
+      "@aura3d/engine/animation": [
+        "packages/animation/src/index.ts"
+      ],
+      "@aura3d/engine/input": [
+        "packages/input/src/index.ts"
+      ],
+      "@aura3d/engine/audio": [
+        "packages/audio/src/index.ts"
+      ],
+      "@aura3d/engine/scripting": [
+        "packages/scripting/src/index.ts"
+      ],
+      "@aura3d/engine/workflows": [
+        "packages/workflows/src/index.ts"
+      ],
+      "@aura3d/engine/editor-runtime": [
+        "packages/editor-runtime/src/index.ts"
+      ],
+      "@aura3d/engine/renderer": [
+        "packages/engine/src/public/renderer.ts"
+      ],
+      "@aura3d/engine/devtools": [
+        "packages/engine/src/public/devtools.ts"
+      ],
+      "@aura3d/engine": [
+        "packages/engine/src/public/index.ts"
+      ],
+      "@aura3d/rendering/world": [
+        "packages/rendering/src/world/index.ts"
+      ]
+    }
+  }
+}

@@ -12,6 +12,7 @@
 import {
   createGameApp,
   normalizeSceneSnapshot,
+  type AuraAppTarget,
   type AuraCreateGameAppOptions,
   type AuraSceneBuilder,
   type AuraSceneSnapshot,
@@ -34,6 +35,15 @@ import { lookSignature, type LookSource } from "./capture/lookSignature";
 import { installGameBeacon } from "./evidence/beacon";
 import { installEvidenceChannel, createPerfRing, type EvidenceChannelContract } from "./evidence/channel";
 import { GameShellImpl, GameHudImpl, GameFxLayerImpl } from "./components";
+import { mountHud } from "./hud/HudKit";
+import { mountTouchControls } from "./touch/TouchControls";
+import { createJuice, type Juice, type JuiceCamera, type JuiceEventMap } from "./juice/Juice";
+import type { HudDocument, HudElement } from "./hud/dom";
+import { createOverlayDriver } from "./juice/overlay";
+import { createRumbleDriver } from "./juice/rumble";
+import { createTweenEngine } from "./juice/tween";
+import { createGameAudio, type GameAudio, type GameAudioOptions } from "@aura3d/engine";
+import type { Hud, TouchControls } from "@aura3d/engine/contracts";
 
 
 const currentUrl = (): URL | undefined =>
@@ -51,20 +61,21 @@ export interface Prd09Game<TCue extends string, TEvent extends string> extends G
   readonly sessionImpl: GameSessionImpl;
   /** The mounted input controller when `options.input` was provided. */
   readonly input: RuntimeInput;
+  /** The juice driver built from `options.juice` (juice.define event map). */
+  readonly juice: Juice<TEvent>;
+  /** The C-25 audio facade when `options.sound` was provided. */
+  readonly sound?: GameAudio<TCue>;
 }
 
 /** createGame options plus the PRD-09 scenario registry (§7.4) and the
  * createGameApp fields a route already owns (input/loop/physics/diagnostics). */
 export type Prd09CreateGameOptions<TCue extends string, TEvent extends string> =
-  CreateGameOptions<TCue, TEvent> & {
+  Omit<CreateGameOptions<TCue, TEvent>, "target"> & Omit<AuraCreateGameAppOptions, "scene"> & {
+    /** AuraAppTarget — element, canvas, or CSS selector (unlike the narrower contract type). */
+    readonly target: AuraAppTarget;
     readonly scenarios?: Readonly<Record<string, GameScenario>>;
     /** Wired into the session lifecycle (suspend/dispose/unlock on tab events). */
     readonly soundAdapter?: LifecycleSound;
-    readonly input?: AuraCreateGameAppOptions["input"];
-    readonly loop?: AuraCreateGameAppOptions["loop"];
-    readonly physics?: AuraCreateGameAppOptions["physics"];
-    readonly diagnostics?: AuraCreateGameAppOptions["diagnostics"];
-    readonly runtimeEvidence?: AuraCreateGameAppOptions["runtimeEvidence"];
     /** Route evidence sections + legacy global aliases (C-24 §6.5). */
     readonly evidence?: EvidenceChannelContract;
   };
@@ -81,14 +92,15 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
   );
   let lookSource: LookSource = authoredScene as unknown as LookSource;
 
+  const {
+    id: _id, target: _target, layout: _layout, hud: _hud, touch: _touch, sound: _sound,
+    juice: _juice, scenarios: _scenarios, soundAdapter, evidence: _evidence,
+    ...appOptions
+  } = options;
   const runtime = createGameApp(options.target, {
+    ...appOptions,
     scene: authoredScene,
-    qualityRebuild: options.qualityRebuild as { flags?: readonly string[] },
-    input: options.input,
-    loop: options.loop,
-    physics: options.physics,
-    diagnostics: options.diagnostics,
-    runtimeEvidence: options.runtimeEvidence
+    qualityRebuild: options.qualityRebuild as { flags?: readonly string[] }
   });
   const app = runtime.app;
   // Delegate to the real controller when one is mounted on the app.
@@ -100,9 +112,50 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
   session.setAccessibility(accessibility.values);
   const accessibilityUnsub = accessibility.onChange((v) => session.setAccessibility(v));
 
+  const hasDom = typeof document !== "undefined" && typeof window !== "undefined";
+
   const shell = new GameShellImpl(session);
-  const hud = new GameHudImpl();
   const fx = new GameFxLayerImpl();
+
+  // §7.7 HUD (mountHud) + §6.11 touch controls mount only in DOM contexts;
+  // node/test contexts keep the contract stubs. `target` may be a selector,
+  // so the HUD/touch root resolves to the element when one is found.
+  const targetEl = hasDom
+    ? (typeof options.target === "string"
+      ? (document.querySelector(options.target) as HTMLElement | null)
+      : options.target instanceof HTMLElement ? options.target : null)
+    : null;
+  const hud: Hud = hasDom && options.hud
+    ? (mountHud(
+      { root: (targetEl ?? document.body) as unknown as HudElement, doc: document as unknown as HudDocument },
+      options.hud as Parameters<typeof mountHud>[1]
+    ) as unknown as Hud)
+    : new GameHudImpl();
+
+  const touch: TouchControls | null = hasDom && options.touch && runtime.input
+    ? mountTouchControls(
+      runtime.input,
+      { preset: options.touch.preset, bindings: options.touch.bindings },
+      { doc: document as unknown as HudDocument, root: (targetEl ?? document.body) as unknown as HudElement }
+    )
+    : null;
+
+  // C-25: options.sound is a GameAudioOptions<TCue> cue map; the facade owns
+  // the browser context and is threaded through the session lifecycle so tab
+  // suspend/visibility pauses and disposes it with the game.
+  const audio: GameAudio<TCue> | undefined =
+    !options.soundAdapter && options.sound && hasDom
+      ? createGameAudio<TCue>({
+        browserContext: true,
+        ...(options.sound as GameAudioOptions<TCue>),
+        qualityRebuild: { flags: options.qualityRebuild?.flags }
+      })
+      : undefined;
+  const lifecycleSound: LifecycleSound | undefined = options.soundAdapter ?? (audio && {
+    suspend: () => { void audio.setMuted(true); },
+    dispose: () => { void audio.dispose(); },
+    unlock: () => { void audio.unlock(); }
+  });
 
   let firstFrameAt: number | null = null;
   const armFirstPresented = () => {
@@ -128,7 +181,25 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
     perfRing.record(frame.dt * 1000);
   });
 
-  const detachLifecycle = attachSessionLifecycle({ session, sound: options.soundAdapter });
+  // AuraCameraController already carries shake/punch/evidence (JuiceCamera);
+  // OverlayApp needs the optional C-38 setOutputOverlay — DOM fallback covers
+  // runtimes that do not expose it.
+  const overlayApp = (app as { setOutputOverlay?: unknown }).setOutputOverlay
+    ? (app as unknown as Parameters<typeof createOverlayDriver>[0]["app"])
+    : undefined;
+
+  const juice: Juice<TEvent> = createJuice<TEvent, TCue>({
+    events: (options.juice ?? {}) as JuiceEventMap<TEvent, TCue>,
+    camera: app.camera as unknown as JuiceCamera,
+    session,
+    fx,
+    overlay: createOverlayDriver({ app: overlayApp }),
+    tweens: createTweenEngine(),
+    rumble: createRumbleDriver(),
+    sound: audio ? { cue: (cue) => { void audio.cue(cue); } } : undefined
+  });
+
+  const detachLifecycle = attachSessionLifecycle({ session, sound: lifecycleSound });
 
   let disposed = false;
   let readyPromise: Promise<void> | null = null;
@@ -141,8 +212,10 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
     sessionImpl: session,
     shell,
     hud,
-    touch: null,
+    touch,
     fx,
+    juice,
+    sound: audio,
     capture,
     lookSignature: () => lookSignature(lookSource),
     lookSource: () => lookSource,
@@ -186,6 +259,7 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
       channel.dispose();
       session.transition("disposed");
       hud.dispose();
+      touch?.dispose();
       runtime.dispose();
       await app.dispose();
     }

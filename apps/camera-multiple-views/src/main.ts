@@ -1,5 +1,5 @@
 import { Geometry, PBRMaterial, type RenderItem } from "@aura3d/rendering";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Renderer } from "@aura3d/engine/renderer";
 
 declare global {
   interface Window {
@@ -30,7 +30,7 @@ type ViewLabel = "hero" | "top" | "detail";
 interface ViewRuntime {
   readonly label: ViewLabel;
   readonly canvas: HTMLCanvasElement;
-  readonly renderer: A3DRenderer;
+  readonly renderer: Renderer;
   readonly width: number;
   readonly height: number;
   readonly cameraPosition: readonly [number, number, number];
@@ -170,7 +170,7 @@ async function createViewports(): Promise<readonly ViewRuntime[]> {
     }
     canvas.width = config.width;
     canvas.height = config.height;
-    const renderer = await A3DRenderer.create({
+    const renderer = await Renderer.create({
       backend: "webgl2",
       canvas,
       width: config.width,

@@ -1,0 +1,172 @@
+{
+  "schema": "aura3d.game-scorecard/1",
+  "gameId": "showcase-patrol-wing",
+  "commit": "c08d8acbd7e3150774f213c45f825ebbae0489cb",
+  "round": "baseline-c08d8acb",
+  "countedRound": 0,
+  "qrFlags": [],
+  "enginePending": [],
+  "captureRunId": "37289688772",
+  "env": {
+    "runner": "macos-14",
+    "gpu": "apple-silicon",
+    "browser": "chromium"
+  },
+  "vision": [
+    {
+      "gameId": "showcase-patrol-wing",
+      "round": "baseline-c08d8acb",
+      "judge": {
+        "kind": "vision-model",
+        "id": "research/21-game-vision-judgment"
+      },
+      "scores": {
+        "environment_world": 2.0,
+        "modeling_assets": 4.0,
+        "texture_quality": 3.0,
+        "material_quality": 4.0,
+        "pbr_credibility": 3.0,
+        "lighting": 3.0,
+        "shadows": 2.0,
+        "ambient_lighting": 3.0,
+        "ibl_reflections": 1.0,
+        "tone_mapping": 4.0,
+        "color_management": 5.0,
+        "anti_aliasing": 5.0,
+        "postprocessing": 3.0,
+        "vfx": 2.0,
+        "particles": 2.0,
+        "animation_quality": 4.0,
+        "character_presentation": 6.0,
+        "camera": 3.0,
+        "composition": 2.0,
+        "scale_depth_perception": 1.0,
+        "atmospheric_effects": 1.0,
+        "gameplay_readability": 3.0,
+        "ui_hud": 6.0,
+        "typography": 6.0,
+        "polish_juice": 3.0,
+        "mobile_presentation": 3.0,
+        "overall_visual_quality": 3.0
+      },
+      "observations": [
+        {
+          "category": "environment_world",
+          "seen": "Faceted flat-green hill, floating slab runway, 3 rocks, a few cone trees. Two of three frames have no world at all."
+        },
+        {
+          "category": "modeling_assets",
+          "seen": "The plane is a credible, detailed GLB (~7). Everything else is primitive boxes, cones, and capsules (~2)."
+        },
+        {
+          "category": "texture_quality",
+          "seen": "The plane livery is fine. Terrain, runway, and rocks are untextured flat albedo."
+        },
+        {
+          "category": "material_quality",
+          "seen": "Plane paint has plausible gloss and a separate canopy material. The world is single-color lambert-looking surfaces."
+        },
+        {
+          "category": "pbr_credibility",
+          "seen": "Nothing in the world reads as a real material. With no environment, even the plane's metal and glass have nothing to reflect."
+        },
+        {
+          "category": "lighting",
+          "seen": "A single key light and a generic ambient. No \"evening\" mood despite the brief. No rim or sun direction readable in the void shots."
+        },
+        {
+          "category": "shadows",
+          "seen": "No visible plane shadow on the runway. The only dark shape is the runway slab's underside. No terrain self-shadowing."
+        },
+        {
+          "category": "ambient_lighting",
+          "seen": "Flat uniform fill. No AO or sky/ground hemisphere tint visible."
+        },
+        {
+          "category": "ibl_reflections",
+          "seen": "Canopy and fuselage show no environment reflection. Glass reads as flat dark teal."
+        },
+        {
+          "category": "tone_mapping",
+          "seen": "No crushing, but highlights clip hard (white square in the ring) and the overall image is low-contrast and flat."
+        },
+        {
+          "category": "color_management",
+          "seen": "Colors are coherent (orange hero on blue is good complementary contrast) and sRGB looks correct. The palette is just thin."
+        },
+        {
+          "category": "anti_aliasing",
+          "seen": "Edges are mostly clean at 1080p. Thin streak lines and bollards shimmer-prone (inferred)."
+        },
+        {
+          "category": "postprocessing",
+          "seen": "Emissive bloom on strips and sprites only. No grading, vignette, DOF, or motion blur. Bloom on the ring blows out."
+        },
+        {
+          "category": "vfx",
+          "seen": "Line-segment speed streaks and glow dots. No muzzle, contrail, wingtip vortex, or prop disc."
+        },
+        {
+          "category": "particles",
+          "seen": "Static-looking discrete dashes and sprites. No visible particle systems."
+        },
+        {
+          "category": "animation_quality",
+          "seen": "Bank poses look physically plausible. The prop is rendered as crisp blades with no motion blur or disc, so it reads as frozen."
+        },
+        {
+          "category": "character_presentation",
+          "seen": "The plane is the clear hero, well lit enough, and attractive. It is the best thing on screen."
+        },
+        {
+          "category": "camera",
+          "seen": "The chase cam loses the ground and horizon entirely in 2 of 3 frames. Distance changes a lot (very close in mid, far in action)."
+        },
+        {
+          "category": "composition",
+          "seen": "A subject floating in a void. The opening frame is cluttered with a giant clipped ring top-right and random streaks over grass."
+        },
+        {
+          "category": "scale_depth_perception",
+          "seen": "With no horizon, fog, ground, or parallax, altitude, speed, and orientation are unreadable."
+        },
+        {
+          "category": "atmospheric_effects",
+          "seen": "No fog, haze, clouds, aerial perspective, or sunset sky."
+        },
+        {
+          "category": "gameplay_readability",
+          "seen": "The objective pill is clear, but the ring target is not visible in mid/action and there is no direction indicator. Sprite meaning (drones? sensors?) is unclear."
+        },
+        {
+          "category": "ui_hud",
+          "seen": "A clean, consistent dark glass panel with good hierarchy. It reads as a dev control panel, though, and is not diegetic or flight-like."
+        },
+        {
+          "category": "typography",
+          "seen": "Legible sans with tidy micro-labels. Generic web-app styling, and debug lines (\"Backend rapier\", \"Flight mode authored\") are shipped."
+        },
+        {
+          "category": "polish_juice",
+          "seen": "No feedback effects. Debug metadata is visible, and the \"action\" frame shows no engagement."
+        },
+        {
+          "category": "mobile_presentation",
+          "seen": "Readable layout, but 11 discrete text buttons for a flight game, no HUD stats, and the same empty void."
+        },
+        {
+          "category": "overall_visual_quality",
+          "seen": "A good plane in an empty, unlit, unatmospheric scene. Reads as an early prototype."
+        }
+      ],
+      "captureRunId": "37289688772",
+      "rubricPromptVersion": "rubric-v1-qr0"
+    }
+  ],
+  "human": [],
+  "perf": [],
+  "verdict": "rejected",
+  "findings": [
+    "baseline audit (research/20+21, run 37289688772): rebuild in progress under A3D_QR_ROUTE_* flag"
+  ]
+}

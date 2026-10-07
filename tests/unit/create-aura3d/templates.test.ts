@@ -47,6 +47,7 @@ describe("create-aura3d templates", () => {
       expect(readFileSync(join(targetDir, "AGENTS.md"), "utf8")).toBe(canonical);
       expect(readFileSync(join(targetDir, ".claude", "CLAUDE.md"), "utf8")).toBe(canonical);
       const workflow = readFileSync(join(targetDir, ".github", "workflows", "aura3d-lookdev.yml"), "utf8");
+      // invariant: source must keep `workflow_dispatch` — create-aura3d templates
       expect(workflow).toContain("workflow_dispatch");
       expect(workflow).toContain("macos-14");
       expect(workflow).not.toContain("secrets:");

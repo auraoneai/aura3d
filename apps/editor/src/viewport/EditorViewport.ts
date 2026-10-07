@@ -1,6 +1,6 @@
 import { Ray, Vector3 } from "@aura3d/math";
 import { Geometry, UnlitMaterial, type RenderDeviceDiagnostics } from "@aura3d/rendering";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Renderer } from "@aura3d/engine/renderer";
 import type { EditorDiagnosticsResource } from "@aura3d/editor-runtime";
 import type { SceneNode } from "@aura3d/scene";
 import type { EditorShell } from "../EditorShell";
@@ -11,7 +11,7 @@ export class EditorViewport {
   readonly overlayCanvas: HTMLCanvasElement;
   viewMode: "shaded" | "wireframe" | "collider" | "bounds" | "lighting" = "shaded";
   snapEnabled = true;
-  private renderer?: A3DRenderer;
+  private renderer?: Renderer;
   private diagnostics: RenderDeviceDiagnostics | undefined;
   private orbitYaw = 0;
   private orbitPitch = 20;
@@ -201,14 +201,13 @@ export class EditorViewport {
   }
 
   async initialize(): Promise<void> {
-    this.renderer = await A3DRenderer.create({
+    this.renderer = await Renderer.create({
       backend: "webgl2",
       canvas: this.canvas,
       width: this.canvas.width,
       height: this.canvas.height,
       clearColor: [0.07, 0.1, 0.15, 1],
-      preserveDrawingBuffer: true
-    });
+          });
     this.syncViewportState();
     this.render();
   }

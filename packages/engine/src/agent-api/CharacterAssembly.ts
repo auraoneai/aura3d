@@ -1,4 +1,4 @@
-import type { AuraAssetRef, AuraColor, AuraVec3 } from "./index.js";
+import type { AuraAssetRef, AuraColor, AuraVec3 } from "./nodes/types.js";
 import {
   createGameAssetValidationIssue,
   gameAssetValidationContractVersion,
@@ -11,6 +11,7 @@ import {
   type GameAssetValidationIssue,
   type GameAssetValidationStatus
 } from "./GameAssetValidation.js";
+import { material } from "./nodes/material.js";
 
 export type CharacterAssemblyPartRole =
   | "base-body"

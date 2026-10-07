@@ -3,8 +3,8 @@
 // a `world.water({ kind: "lake" })` node (preset → Gerstner preset mapping)
 // instead of the opaque band/foam/box-boat fixture; flag off is unchanged.
 
-import type { AuraSceneNode } from "../index.js";
-import { primitives } from "../index.js";
+import type { AuraSceneNode } from "../nodes/types.js";
+import { primitives } from "../nodes/primitives.js";
 import { createWaterSurface, sampleOceanFixture, type WaterSurfaceBoat, type WaterSurfacePreset } from "@aura3d/rendering";
 import { material } from "./material.js";
 import { worldWater, type AuraWaterNode } from "../world/water.js";

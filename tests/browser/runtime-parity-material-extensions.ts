@@ -2,7 +2,8 @@ import { GLTFLoader } from "/packages/assets/src/GLTFLoader.js";
 import { LoadContext } from "/packages/assets/src/LoadContext.js";
 import { createGLTFRenderResources } from "/packages/assets/src/GLTFRenderResources.js";
 import {
-  ProductionWebGL2Renderer,
+  Renderer,
+  rendererProofCapture,
   createProductionEnvironmentLightingResources,
   createProductionPbrHdrPipelineFromRadiance,
   summarizeProductionWebGL2Proof
@@ -112,7 +113,7 @@ async function run(): Promise<void> {
     throw new Error(`Unknown runtime material extension asset: ${requestedAssetId}`);
   }
   const assets = await Promise.all(selectedAssets.map((asset) => loadExtensionAsset(asset, canvas, lighting.lighting)));
-  const renderer = await ProductionWebGL2Renderer.create({
+  const renderer = await Renderer.create({
     canvas,
     width: canvas.width,
     height: canvas.height,
@@ -161,7 +162,7 @@ async function run(): Promise<void> {
     environmentId: hdrPipeline.id,
     hdrEnvironmentUri: hdrUri
   };
-  const proof = renderer.renderImportedAsset({
+  const proof = rendererProofCapture(renderer, {
     source: staged.source,
     camera: staged.camera,
     metadata

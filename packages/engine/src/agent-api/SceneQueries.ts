@@ -20,7 +20,7 @@
  * `PhysicsWorld` when a route has one.
  */
 
-import type { AuraPrimitiveNode, AuraSceneNode, AuraVec3 } from "./index.js";
+import type { AuraPrimitiveNode, AuraSceneNode, AuraVec3 } from "./nodes/types.js";
 import { placedBounds, type PlacedBounds } from "./SpatialAnchoring.js";
 
 export interface SceneRay {

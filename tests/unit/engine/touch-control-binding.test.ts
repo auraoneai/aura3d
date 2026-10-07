@@ -3,10 +3,11 @@ import {
   bindGameTouchControls,
   bindGameTouchLayoutPreset,
   touchLayoutBindingsForGenre,
+  type GameTouchLayoutGenre,
   type TouchControlElement,
   type TouchControlHost
 } from "../../../packages/engine/src/agent-api/TouchControlBinding";
-import { createTouchLayoutPreset, type TouchLayoutGenre } from "../../../packages/input/src/index";
+import { createTouchLayoutPreset } from "../../../packages/input/src/index";
 
 /**
  * Reusable on-screen control binding, extracted after the replicability metric's repeated-cluster detector
@@ -172,7 +173,7 @@ describe("bindGameTouchControls", () => {
 
 describe("genre touch-layout presets (I2)", () => {
   it("engine button maps match the input-package presets per genre", () => {
-    const genres: readonly TouchLayoutGenre[] = ["fight", "race", "platform"];
+    const genres: readonly GameTouchLayoutGenre[] = ["fight", "race", "platform"];
     for (const genre of genres) {
       const engine = touchLayoutBindingsForGenre(genre);
       const input = createTouchLayoutPreset(genre);

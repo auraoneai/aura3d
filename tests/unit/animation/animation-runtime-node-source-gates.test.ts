@@ -1,10 +1,10 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readFileSync, readdirSync } from "node:fs";
+import { resolve, join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("animation runtime-node source gates", () => {
   it("keeps runtime-node clip playback bound through public node handles", () => {
-    const agentApi = readSource("packages/engine/src/agent-api/index.ts");
+    const agentApi = readSourceDir("packages/engine/src/agent-api");
     const shotTimeline = readSource("packages/engine/src/agent-api/ShotTimeline.ts");
 
     expectIncludesAll(agentApi, [
@@ -27,6 +27,11 @@ describe("animation runtime-node source gates", () => {
 
 function readSource(file: string): string {
   return readFileSync(resolve(process.cwd(), file), "utf8");
+}
+function readSourceDir(dir: string): string {
+  return readdirSync(dir, { withFileTypes: true })
+    .flatMap((e) => (e.isDirectory() ? readSourceDir(join(dir, e.name)) : e.name.endsWith(".ts") ? [readSource(join(dir, e.name))] : []))
+    .join("\n");
 }
 
 function expectIncludesAll(source: string, tokens: readonly string[]): void {

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, test } from "vitest";
 
@@ -7,7 +7,10 @@ import { describe, test } from "vitest";
 // package-only tools must stay package-only. This audit reads source + README
 // as text so it stays hermetic (no engine barrel import).
 const ROOT = process.cwd();
-const AGENT_API = readFileSync(resolve(ROOT, "packages/engine/src/agent-api/index.ts"), "utf8");
+const AGENT_API = (function agentApiSource() {
+  const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(resolve(d, e.name)) : e.name.endsWith(".ts") ? [resolve(d, e.name)] : []);
+  return walk("packages/engine/src/agent-api").map((f) => readFileSync(f, "utf8")).join("\n");
+})();
 const EDITOR_README = readFileSync(resolve(ROOT, "packages/editor-runtime/README.md"), "utf8");
 
 describe("O3 editor label audit", () => {

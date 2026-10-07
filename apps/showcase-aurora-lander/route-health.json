@@ -19,7 +19,7 @@
       "typedRef": "assets.auroraLanderProbe",
       "role": "primaryVehicle",
       "status": "typed-primary-asset",
-      "quality": "release",
+      "quality": "candidate",
       "hash": "sha256-bff8e15b8a4004d6631f42d55d2b5d664b3fe77c1564c9fa7def85dcd61b40cd",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis"
@@ -28,7 +28,7 @@
       "typedRef": "assets.auroraPadBeacon",
       "role": "landingZoneProp",
       "status": "typed-primary-asset",
-      "quality": "release",
+      "quality": "candidate",
       "hash": "sha256-c94a5b6b45fa0c3d52fa5c9b3e863aaa37c540e1d9fb57ec09c46956f4af14ef",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis"
@@ -216,5 +216,8 @@
     },
     "notes": "Machine evidence is current and passing. Automated visual checks are not independent human approval; the route remains prototype-blocked and absent from the public card slate.",
     "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-aurora-lander/dist --release --source apps/showcase-aurora-lander/src --asset auroraLanderProbe --asset auroraPadBeacon"
+  },
+  "qualityGate": {
+    "status": "in-rebuild"
   }
 }

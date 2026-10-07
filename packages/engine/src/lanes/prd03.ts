@@ -37,7 +37,15 @@ export {
   resetSubmittedPostprocess,
   recordAuthoredPostContext,
   latestAuthoredPostContext,
-  resetAuthoredPostContext
+  resetAuthoredPostContext,
+  // Phase 2 (§7.1): the v2 post bridge — field allowlists + root pipeline.
+  POST_EFFECT_COMMON_FIELDS,
+  POST_EFFECT_FIELDS,
+  POST_EFFECT_DEPRECATED_FIELDS,
+  validatePostEffectNode,
+  createRootPostPipeline,
+  mapBloomOptionsV2,
+  type PostFieldDiagnostic
 } from "../agent-api/postBridge.js";
 export { PRD03_DIAGNOSTIC_ONLY_FIELDS, PRD03_OPTION_COVERAGE } from "../agent-api/compiler/diagnosticOnly.prd03.js";
 // Re-export the bridge entry point so lane tests (and later, the v2 compiler)

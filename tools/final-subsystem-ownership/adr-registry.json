@@ -60,8 +60,8 @@
     "packages/lean/src/game.ts": "docs/architecture/adr/0010-lean-entrypoints-compose-existing-owners.md",
     "packages/lean/src/index.ts": "docs/architecture/adr/0010-lean-entrypoints-compose-existing-owners.md",
     "packages/lean/src/product.ts": "docs/architecture/adr/0010-lean-entrypoints-compose-existing-owners.md",
-    "packages/materials/src/GameReadyMaterialLibrary.ts": "docs/architecture/adr/0013-game-visual-surface-first-party.md",
-    "packages/materials/src/node.ts": "docs/architecture/adr/0008-browser-roots-and-node-utilities-are-separated.md",
+    "packages/engine/src/devtools/materials/GameReadyMaterialLibrary.ts": "docs/architecture/adr/0013-game-visual-surface-first-party.md",
+    "packages/engine/src/devtools/materials/node.ts": "docs/architecture/adr/0008-browser-roots-and-node-utilities-are-separated.md",
     "packages/navigation-recast/src/index.ts": "docs/architecture/adr/0005-navigation-is-optional-recast-detour.md",
     "packages/physics-rapier/src/HeightfieldLayout.ts": "docs/architecture/adr/0004-physical-simulation-is-optional-rapier.md",
     "packages/physics-rapier/src/index.ts": "docs/architecture/adr/0004-physical-simulation-is-optional-rapier.md",
@@ -105,8 +105,6 @@
     "packages/rendering/src/shadows/SpotShadowMaps.ts": "docs/architecture/adr/0013-game-visual-surface-first-party.md",
     "packages/rendering/src/webgpu/WebGPUPostShaders.ts": "docs/architecture/adr/0013-game-visual-surface-first-party.md",
     "packages/rendering/src/webgpu/WebGPUTemporal.ts": "docs/architecture/adr/0011-public-rendering-adapters-remain-owned-by-rendering.md",
-    "packages/scripting/src/VisualScriptingRoot.ts": "docs/architecture/adr/0013-game-visual-surface-first-party.md",
-    "packages/three-compat/src/ApproximationLedger.ts": "docs/architecture/adr/0013-game-visual-surface-first-party.md",
-    "packages/three-compat/src/migration/R3fMigration.ts": "docs/architecture/adr/0013-game-visual-surface-first-party.md"
+    "packages/scripting/src/VisualScriptingRoot.ts": "docs/architecture/adr/0013-game-visual-surface-first-party.md"
   }
 }

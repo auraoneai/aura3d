@@ -56,6 +56,7 @@ it('initial readiness is published after the first real submission without waiti
 
 it('Smart City enlarges its bounds-derived command vehicle for the compact composition probe', () => {
   const source = readFileSync('apps/showcase-smart-city-control/src/main.ts', 'utf8');
+  // invariant: source must keep `window.innerWidth < 700` — Smart City publishes mounted control state while paused and ignores superseded completions
   expect(source).toContain('window.innerWidth < 700');
   expect(source).toContain('extent: [0.35, 0.1, 0.35] as const');
   expect(source).toContain(': VEHICLE_STATION_FOOTPRINT_REGION');

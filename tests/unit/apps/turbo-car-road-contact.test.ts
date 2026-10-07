@@ -37,6 +37,7 @@ describe("Turbo car is seated on the visible road", () => {
     // contact surface. It is now only the reference elevation the binding seats the track
     // asset against; contact comes from the sampled road mesh. The invariant this test
     // protects is unchanged: no lift and no underhang correction.
+    // invariant: source must keep `const CAR_REFERENCE_Y = TRACK_REFERENCE_Y;` — grounds the car on the track surface with no lift or underhang correction
     expect(source).toContain("const CAR_REFERENCE_Y = TRACK_REFERENCE_Y;");
     // The retracted defect-43 form added a lift constant.
     expect(source).not.toContain("VISIBLE_ROAD_LIFT");

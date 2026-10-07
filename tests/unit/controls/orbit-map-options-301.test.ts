@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { InputSnapshot, PointerDevice, OrbitControls as InputOrbit } from "@aura3d/input";
+import { InputSnapshot, PointerDevice } from "@aura3d/input";
+import { OrbitControlsEngine as InputOrbit } from "@aura3d/controls";
 import { MapControls, OrbitControls } from "../../../packages/controls/src";
 
 const camera = () => ({ position: { x: 0, y: 0, z: 10 }, fov: 60, aspect: 2, lookAt() {} });

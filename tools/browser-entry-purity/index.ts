@@ -52,11 +52,7 @@ const BROWSER_ENTRIES = [
   { id: "apps", path: "packages/apps/src/index.ts", label: "@aura3d/apps" },
   { id: "workflows", path: "packages/workflows/src/index.ts", label: "@aura3d/workflows" },
   { id: "editor-runtime", path: "packages/editor-runtime/src/index.ts", label: "@aura3d/editor-runtime" },
-  { id: "editor", path: "packages/editor/src/index.ts", label: "@aura3d/editor" },
   { id: "debug", path: "packages/debug/src/index.ts", label: "@aura3d/debug" },
-  { id: "materials", path: "packages/materials/src/index.ts", label: "@aura3d/materials" },
-  { id: "environments", path: "packages/environments/src/index.ts", label: "@aura3d/environments" },
-  { id: "three-compat", path: "packages/three-compat/src/index.ts", label: "@aura3d/three-compat" },
   { id: "react", path: "packages/react/src/index.ts", label: "@aura3d/react" }
 ] as const;
 
@@ -66,8 +62,6 @@ const BROWSER_ENTRIES = [
  */
 const NODE_ENTRIES = [
   { id: "media-node", path: "packages/engine/src/agent-api/media-node.ts", label: "@aura3d/engine/media-node", expects: "node:child_process, node:fs/promises, node:os, node:path" },
-  { id: "materials-node", path: "packages/materials/src/node.ts", label: "@aura3d/materials/node", expects: "node:fs, node:path" },
-  { id: "environments-node", path: "packages/environments/src/node.ts", label: "@aura3d/environments/node", expects: "node:fs, node:path, node:crypto" }
 ] as const;
 
 const OFFLINE_MEDIA_MODULES = [
@@ -111,13 +105,9 @@ function auraSourceAlias(): Plugin {
     ["@aura3d/ecs", "packages/ecs/src/index.ts"],
     ["@aura3d/workflows", "packages/workflows/src/index.ts"],
     ["@aura3d/editor-runtime", "packages/editor-runtime/src/index.ts"],
-    ["@aura3d/editor", "packages/editor/src/index.ts"],
     ["@aura3d/debug", "packages/debug/src/index.ts"],
     ["@aura3d/scripting", "packages/scripting/src/index.ts"],
-    ["@aura3d/materials", "packages/materials/src/index.ts"],
-    ["@aura3d/environments", "packages/environments/src/index.ts"],
-    ["@aura3d/asset-index", "packages/asset-index/src/index.ts"],
-    ["@aura3d/three-compat", "packages/three-compat/src/index.ts"]
+    ["@aura3d/asset-index", "packages/asset-index/src/index.ts"]
   ]);
   return {
     name: "aura3d-source-alias",

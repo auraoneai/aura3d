@@ -1,5 +1,6 @@
 import { normalizePromptAnimationTime, type PromptAnimationId, type PromptAnimationSeconds } from "./PromptAnimationContract.js";
 import type { ShotTimelineArtifact, ShotTimelineShot, ShotTransition } from "./ShotTimeline.js";
+import { timeline } from "./nodes/timeline.js";
 
 export type ShotTransitionKind = ShotTransition | "crossfade" | "dip-to-black";
 export type WipeDirection = "left" | "right" | "up" | "down";

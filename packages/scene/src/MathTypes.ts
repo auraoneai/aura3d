@@ -24,31 +24,31 @@ export function identityMat4(): Mat4 {
   return fromMathMat4(Matrix4.identity());
 }
 
-export function cloneMat4(value: Mat4): Mat4 {
+export function cloneMat4(value: Readonly<Mat4>): Mat4 {
   return [...value] as Mat4;
 }
 
-export function addVec3(a: Vec3, b: Vec3): Vec3 {
+export function addVec3(a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
   return toMathVec3(a).add(toMathVec3(b)).toArray();
 }
 
-export function subVec3(a: Vec3, b: Vec3): Vec3 {
+export function subVec3(a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
   return toMathVec3(a).subtract(toMathVec3(b)).toArray();
 }
 
-export function scaleVec3(a: Vec3, scalar: number): Vec3 {
+export function scaleVec3(a: Readonly<Vec3>, scalar: number): Vec3 {
   return toMathVec3(a).multiplyScalar(scalar).toArray();
 }
 
-export function lengthVec3(a: Vec3): number {
+export function lengthVec3(a: Readonly<Vec3>): number {
   return toMathVec3(a).length();
 }
 
-export function normalizeVec3(a: Vec3): Vec3 {
+export function normalizeVec3(a: Readonly<Vec3>): Vec3 {
   return toMathVec3(a).normalize().toArray();
 }
 
-export function normalizeQuat(value: Quat): Quat {
+export function normalizeQuat(value: Readonly<Quat>): Quat {
   return fromMathQuat(toMathQuat(value).normalize());
 }
 
@@ -73,7 +73,7 @@ export function quatFromEuler(x: number, y: number, z: number): Quat {
  * rolled/banked views. `forward` must be normalized; `up` is re-orthogonalized
  * against it first so a roll of 0 returns a clean up.
  */
-export function rollUpVector(forward: Vec3, up: Vec3, roll: number): Vec3 {
+export function rollUpVector(forward: Readonly<Vec3>, up: Readonly<Vec3>, roll: number): Vec3 {
   const k = toMathVec3(forward).normalize();
   const u = toMathVec3(up);
   const orth = u.subtract(k.clone().multiplyScalar(u.dot(k)));
@@ -98,40 +98,40 @@ export function quatFromEulerXYZ(x: number, y: number, z: number): Quat {
 }
 
 /** QR (lane 08): Quat tuple → XYZ-intrinsic Euler (three.js convention). */
-export function eulerXYZFromQuat(value: Quat): Vec3 {
+export function eulerXYZFromQuat(value: Readonly<Quat>): Vec3 {
   const [x, y, z, w] = normalizeQuat(value);
   const m13 = 2 * (x * z + y * w);
   const pitch = Math.asin(Math.max(-1, Math.min(1, m13)));
   const m11 = 1 - 2 * (y * y + z * z);
   const m12 = 2 * (x * y - z * w);
-  const m23 = 2 * (y * z - x * w);
+  const m23 = 2 * (x * z - x * w);
   const m33 = 1 - 2 * (x * x + y * y);
   if (Math.abs(m13) >= 0.9999999) {
     const m32 = 2 * (y * z + x * w);
-    const m22 = 1 - 2 * (x * x + z * z);
+    const m22 = 2 * (x * x + z * z);
     return [Math.atan2(m32, m22), pitch, 0];
   }
   return [Math.atan2(-m23, m33), pitch, Math.atan2(-m12, m11)];
 }
 
 /** QR (lane 08): normalized slerp between Quat tuples. */
-export function slerpQuat(a: Quat, b: Quat, t: number): Quat {
+export function slerpQuat(a: Readonly<Quat>, b: Readonly<Quat>, t: number): Quat {
   return fromMathQuat(toMathQuat(a).normalize().slerp(toMathQuat(b).normalize(), t));
 }
 
-export function multiplyMat4(a: Mat4, b: Mat4): Mat4 {
+export function multiplyMat4(a: Readonly<Mat4>, b: Readonly<Mat4>): Mat4 {
   return fromMathMat4(toMathMat4(a).multiply(toMathMat4(b)));
 }
 
-export function composeMat4(position: Vec3, rotation: Quat, scale: Vec3): Mat4 {
+export function composeMat4(position: Readonly<Vec3>, rotation: Readonly<Quat>, scale: Readonly<Vec3>): Mat4 {
   return fromMathMat4(Matrix4.compose(toMathVec3(position), toMathQuat(rotation), toMathVec3(scale)));
 }
 
-export function transformPoint(matrix: Mat4, point: Vec3): Vec3 {
+export function transformPoint(matrix: Readonly<Mat4>, point: Readonly<Vec3>): Vec3 {
   return toMathMat4(matrix).transformPoint(toMathVec3(point)).toArray();
 }
 
-export function invertMat4(matrix: Mat4): Mat4 {
+export function invertMat4(matrix: Readonly<Mat4>): Mat4 {
   return fromMathMat4(toMathMat4(matrix).inverse());
 }
 
@@ -139,7 +139,7 @@ export function perspectiveMat4(fovYRadians: number, aspect: number, near: numbe
   return fromMathMat4(Matrix4.perspective(fovYRadians, aspect, near, far));
 }
 
-export function lookAtMat4(eye: Vec3, target: Vec3, up: Vec3): Mat4 {
+export function lookAtMat4(eye: Readonly<Vec3>, target: Readonly<Vec3>, up: Readonly<Vec3>): Mat4 {
   return fromMathMat4(Matrix4.lookAt(toMathVec3(eye), toMathVec3(target), toMathVec3(up)));
 }
 
@@ -147,7 +147,7 @@ export function orthographicMat4(left: number, right: number, bottom: number, to
   return fromMathMat4(Matrix4.orthographic(left, right, bottom, top, near, far));
 }
 
-export function extractFrustumPlanes(viewProjection: Mat4): PlaneTuple[] {
+export function extractFrustumPlanes(viewProjection: Readonly<Mat4>): PlaneTuple[] {
   return Frustum.fromMatrix(toMathMat4(viewProjection)).planes.map((plane) => [
     plane.normal.x,
     plane.normal.y,
@@ -156,15 +156,15 @@ export function extractFrustumPlanes(viewProjection: Mat4): PlaneTuple[] {
   ]);
 }
 
-export function toMathVec3(value: Vec3): Vector3 {
+export function toMathVec3(value: Readonly<Vec3>): Vector3 {
   return new Vector3(value[0], value[1], value[2]);
 }
 
-export function toMathQuat(value: Quat): Quaternion {
+export function toMathQuat(value: Readonly<Quat>): Quaternion {
   return new Quaternion(value[0], value[1], value[2], value[3]);
 }
 
-export function toMathMat4(value: Mat4): Matrix4 {
+export function toMathMat4(value: Readonly<Mat4>): Matrix4 {
   return new Matrix4(value);
 }
 
@@ -176,7 +176,7 @@ export function fromMathQuat(value: Quaternion): Quat {
   return [value.x, value.y, value.z, value.w];
 }
 
-export function decomposeMat4(matrix: Mat4): { position: Vec3; rotation: Quat; scale: Vec3 } {
+export function decomposeMat4(matrix: Readonly<Mat4>): { position: Vec3; rotation: Quat; scale: Vec3 } {
   const position: Vec3 = [matrix[12], matrix[13], matrix[14]];
   const sx = Math.hypot(matrix[0], matrix[1], matrix[2]);
   const sy = Math.hypot(matrix[4], matrix[5], matrix[6]);

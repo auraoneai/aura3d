@@ -10,7 +10,7 @@ import { join, resolve } from "node:path";
 import {
   AURA_ENVIRONMENT_PRESETS,
   validateAuraEnvironmentPresets
-} from "../../../../packages/environments/src/EnvironmentRegistry.js";
+} from "../../../../packages/engine/src/devtools/environments/EnvironmentRegistry.js";
 
 const DIR = resolve("public/aura-environments");
 

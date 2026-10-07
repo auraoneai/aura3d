@@ -1,4 +1,4 @@
-import { createGLTFRenderResources, GLTFLoader, LoadContext, type DecodedGLTFImage } from "@aura3d/assets";
+import { createGLTFRenderResources, GLTFLoader, LoadContext, type DecodedGLTFImage } from "@aura3d/assets/browser";
 import type { ProductAsset, ProductAssetLoadOptions, ProductManifest } from "./ProductTypes";
 
 export async function loadProductAsset(options: ProductAssetLoadOptions): Promise<ProductAsset> {

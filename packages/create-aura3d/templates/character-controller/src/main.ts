@@ -1,9 +1,11 @@
 // Character controller: keyboard input -> kinematic speed -> locomotion state
 // -> the E1 humanoid rig driven through its certified clip (playback speed
 // tracks locomotion) -> shoulder camera + DOM HUD + live proof object.
+// PRD-09: mounted via the shared runtime — createGame owns mount/lifecycle,
+// the §7.7 sci-fi-telemetry HUD theme, the §6.11 dpad-2btn touch preset,
+// game-sfx-core cues, and the juice event map.
 import {
   camera,
-  createAuraApp,
   game,
   looks,
   material,
@@ -12,6 +14,7 @@ import {
   scene,
   type AuraRuntimeNodeHandle
 } from "@aura3d/engine";
+import { createGame, sfxUrl } from "@aura3d/engine/game";
 import { createPerformanceGovernor, createTopDownGameRenderPreset } from "@aura3d/engine/production-runtime";
 import { createLocomotionKit } from "@aura3d/animation";
 import { assets } from "./aura-assets.js";
@@ -65,8 +68,42 @@ let debugDraw = false;
 
 // Full-bleed canvas: the app mounts straight into #app, which flexes to fill
 // the viewport (see index.html).
-const app = createAuraApp("#app", {
-  scene: scene()
+const controllerGame = createGame({
+  id: "character-controller",
+  target: "#app",
+  autoStart: true,
+  input: {
+    actions: {
+      left: ["KeyA", "ArrowLeft"],
+      right: ["KeyD", "ArrowRight"],
+      run: ["ShiftLeft", "ShiftRight"],
+      debug: ["KeyT"]
+    },
+    bufferMs: 100
+  },
+  hud: { theme: "sci-fi-telemetry", widgets: [] },
+  touch: {
+    preset: "dpad-2btn",
+    bindings: { left: "left", right: "right", dash: "run", jump: "debug", attack: "debug" }
+  },
+  sound: {
+    cues: {
+      step: { id: "step", asset: { url: sfxUrl("footsteps.grass.00") }, volume: 0.4 },
+      "run-start": { id: "run-start", asset: { url: sfxUrl("vehicle.boost") }, volume: 0.4 },
+      "debug-toggle": { id: "debug-toggle", asset: { url: sfxUrl("ui.toggle.00") }, volume: 0.5 }
+    }
+  },
+  juice: {
+    "run-start": { punch: { fovDeg: 1.4, ms: 260 } },
+    "debug-toggle": { flash: { color: "#9fc7ff", peak: 0.12, ms: 120 } }
+  },
+  qualityRebuild: { flags: ["game"] },
+  evidence: {
+    schema: 1,
+    sections: { characterController: () => window.__AURA3D_CHARACTER_CONTROLLER_PROOF__ ?? { status: "unbound" } },
+    legacyGlobals: ["__AURA3D_CHARACTER_CONTROLLER_PROOF__"]
+  },
+  scene: () => scene()
     .add(looks.preset(LOOK_ID))
     .add(primitives.box({ name: "walkable ground", size: [30, 0.1, 30], position: [0, -0.05, 0], material: material.pbr({ color: "#4a6b3a", roughness: 0.92 }), receiveShadow: true }))
     .add(primitives.box({ name: "distance marker north", size: [0.4, 1.4, 0.4], position: [0, 0.7, -6], material: material.pbr({ color: "#d97a3a", roughness: 0.6 }), castShadow: true }))
@@ -81,6 +118,7 @@ const app = createAuraApp("#app", {
     )
     .camera(camera.perspective({ position: [0.55, 1.75, -2.8], target: [0, 1.35, 1.1], fov: 55 }))
 });
+const app = controllerGame.app;
 
 const heroNode: AuraRuntimeNodeHandle = app.nodes.require("hero");
 // C-22: present the shoulder rig once; the per-frame setPose below keeps it
@@ -98,13 +136,21 @@ app.onFrame(({ dt }: { readonly dt: number }) => {
   if (held.has("KeyT")) {
     debugDraw = !debugDraw;
     held.delete("KeyT");
+    controllerGame.juice.fire("debug-toggle");
+    void controllerGame.sound?.cue("debug-toggle");
   }
 
   const dx = (held.has("KeyD") || held.has("ArrowRight") ? 1 : 0) - (held.has("KeyA") || held.has("ArrowLeft") ? 1 : 0);
   const dz = (held.has("KeyS") || held.has("ArrowDown") ? 1 : 0) - (held.has("KeyW") || held.has("ArrowUp") ? 1 : 0);
   const moving = [...held].some((code) => moveKeys.has(code));
   const running = held.has("ShiftLeft") || held.has("ShiftRight");
+  const wasRunning = state.speed >= tuning.runSpeed - 0.01;
   state = stepCharacterSpeed(state, { move: moving, run: running }, seconds, tuning);
+  const isRunning = state.speed >= tuning.runSpeed - 0.01;
+  if (isRunning && !wasRunning) {
+    controllerGame.juice.fire("run-start");
+    void controllerGame.sound?.cue("run-start");
+  }
 
   if (dx !== 0 || dz !== 0) {
     const length = Math.hypot(dx, dz);

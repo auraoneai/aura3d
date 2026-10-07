@@ -1,5 +1,5 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readFileSync, readdirSync } from "node:fs";
+import { resolve, join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { createAuraApp, defineAuraAssets, game, lights, model, scene } from "../../../packages/engine/src";
 
@@ -31,7 +31,7 @@ describe("game runtime frame-loop and package source contracts", () => {
   it("keeps the @aura3d/engine public root import mapped to browser-safe tree-shakable source", () => {
     const rootPackage = readJson<RootPackageJson>("package.json");
     const publicRoot = rootPackage.exports?.["."];
-    const agentApi = readSource("packages/engine/src/agent-api/index.ts");
+    const agentApi = readSourceDir("packages/engine/src/agent-api");
     const frameLoop = readSource("packages/engine/src/agent-api/FrameLoop.ts");
     const appHandle = readSource("packages/engine/src/agent-api/AuraAppHandle.ts");
     const runtimeNodeHandle = readSource("packages/engine/src/agent-api/RuntimeNodeHandle.ts");
@@ -46,14 +46,15 @@ describe("game runtime frame-loop and package source contracts", () => {
       type: "module",
       sideEffects: false
     });
+    // PRD-15 §6.1: "." resolves to the explicit public surface entry.
     expect(publicRoot).toMatchObject({
-      types: "./dist/engine/agent-api/index.d.ts",
-      browser: "./dist/engine/agent-api/index.js",
-      import: "./dist/engine/agent-api/index.js",
-      default: "./dist/engine/agent-api/index.js"
+      types: "./dist/engine/public/index.d.ts",
+      browser: "./dist/engine/public/index.js",
+      import: "./dist/engine/public/index.js",
+      default: "./dist/engine/public/index.js"
     });
     expect(agentApi).toContain("export function createAuraApp");
-    expect(agentApi).toContain("export const game = {");
+    expect(agentApi).toContain("export const game = lazyNamespace(() => ({");
     expect(agentApi).toContain("runtimeNode: createRuntimeNodeSpec");
     expect(agentApi).toContain("export function model");
     expect(agentApi).toContain("export function scene");
@@ -183,6 +184,11 @@ describe("game runtime frame-loop and package source contracts", () => {
 
 function readSource(file: string): string {
   return readFileSync(resolve(process.cwd(), file), "utf8");
+}
+function readSourceDir(dir: string): string {
+  return readdirSync(dir, { withFileTypes: true })
+    .flatMap((e) => (e.isDirectory() ? readSourceDir(join(dir, e.name)) : e.name.endsWith(".ts") ? [readSource(join(dir, e.name))] : []))
+    .join("\n");
 }
 
 function readJson<T>(file: string): T {

@@ -1,0 +1,579 @@
+{
+  "files": 91,
+  "rows": [
+    {
+      "file": "packages/create-aura3d/templates/episode-builder/src/render-plan.ts",
+      "line": 2,
+      "construct": "import { collectPromptAnimationEvidence } from \"@aura3d/engine\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/devtools"
+    },
+    {
+      "file": "packages/create-aura3d/templates/episode-builder/src/render-plan.ts",
+      "line": 6,
+      "construct": "import { createCaptionTimingProof } from \"@aura3d/engine\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/devtools"
+    },
+    {
+      "file": "packages/create-aura3d/templates/episode-builder/src/render-plan.ts",
+      "line": 12,
+      "construct": "import { evaluatePromptAnimationPublishReadiness } from \"@aura3d/engine\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/devtools"
+    },
+    {
+      "file": "packages/create-aura3d/templates/episode-builder/src/render-plan.ts",
+      "line": 2,
+      "construct": "import { collectPromptAnimationEvidence } from \"@aura3d/engine\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/devtools"
+    },
+    {
+      "file": "packages/create-aura3d/templates/episode-builder/src/render-plan.ts",
+      "line": 6,
+      "construct": "import { createCaptionTimingProof } from \"@aura3d/engine\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/devtools"
+    },
+    {
+      "file": "packages/create-aura3d/templates/episode-builder/src/render-plan.ts",
+      "line": 12,
+      "construct": "import { evaluatePromptAnimationPublishReadiness } from \"@aura3d/engine\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/devtools"
+    },
+    {
+      "file": "packages/create-aura3d/templates/character-controller/src/main.ts",
+      "line": 5,
+      "construct": "import { createPerformanceGovernor } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/character-controller/src/main.ts",
+      "line": 5,
+      "construct": "import { createTopDownGameRenderPreset } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/character-controller/src/main.ts",
+      "line": 5,
+      "construct": "import { createPerformanceGovernor } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/character-controller/src/main.ts",
+      "line": 5,
+      "construct": "import { createTopDownGameRenderPreset } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-channel/src/render-plan.ts",
+      "line": 2,
+      "construct": "import { collectPromptAnimationEvidence } from \"@aura3d/engine\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/devtools"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-channel/src/render-plan.ts",
+      "line": 6,
+      "construct": "import { createCaptionTimingProof } from \"@aura3d/engine\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/devtools"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-channel/src/render-plan.ts",
+      "line": 12,
+      "construct": "import { evaluatePromptAnimationPublishReadiness } from \"@aura3d/engine\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/devtools"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-channel/src/render-plan.ts",
+      "line": 2,
+      "construct": "import { collectPromptAnimationEvidence } from \"@aura3d/engine\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/devtools"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-channel/src/render-plan.ts",
+      "line": 6,
+      "construct": "import { createCaptionTimingProof } from \"@aura3d/engine\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/devtools"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-channel/src/render-plan.ts",
+      "line": 12,
+      "construct": "import { evaluatePromptAnimationPublishReadiness } from \"@aura3d/engine\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/devtools"
+    },
+    {
+      "file": "packages/create-aura3d/templates/prompt-animation-channel/src/render-plan.ts",
+      "line": 2,
+      "construct": "import { collectPromptAnimationEvidence } from \"@aura3d/engine\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/devtools"
+    },
+    {
+      "file": "packages/create-aura3d/templates/prompt-animation-channel/src/render-plan.ts",
+      "line": 6,
+      "construct": "import { createCaptionTimingProof } from \"@aura3d/engine\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/devtools"
+    },
+    {
+      "file": "packages/create-aura3d/templates/prompt-animation-channel/src/render-plan.ts",
+      "line": 12,
+      "construct": "import { evaluatePromptAnimationPublishReadiness } from \"@aura3d/engine\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/devtools"
+    },
+    {
+      "file": "packages/create-aura3d/templates/prompt-animation-channel/src/render-plan.ts",
+      "line": 2,
+      "construct": "import { collectPromptAnimationEvidence } from \"@aura3d/engine\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/devtools"
+    },
+    {
+      "file": "packages/create-aura3d/templates/prompt-animation-channel/src/render-plan.ts",
+      "line": 6,
+      "construct": "import { createCaptionTimingProof } from \"@aura3d/engine\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/devtools"
+    },
+    {
+      "file": "packages/create-aura3d/templates/prompt-animation-channel/src/render-plan.ts",
+      "line": 12,
+      "construct": "import { evaluatePromptAnimationPublishReadiness } from \"@aura3d/engine\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/devtools"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/procedural-hdri.ts",
+      "line": 25,
+      "construct": "import { Sampler } from \"@aura3d/engine/rendering\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/rendering\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/procedural-hdri.ts",
+      "line": 25,
+      "construct": "import { Texture } from \"@aura3d/engine/rendering\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/rendering\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/procedural-hdri.ts",
+      "line": 25,
+      "construct": "import { TextureBinding } from \"@aura3d/engine/rendering\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/rendering\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/procedural-hdri.ts",
+      "line": 25,
+      "construct": "import { Sampler } from \"@aura3d/engine/rendering\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/rendering\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/procedural-hdri.ts",
+      "line": 25,
+      "construct": "import { Texture } from \"@aura3d/engine/rendering\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/rendering\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/procedural-hdri.ts",
+      "line": 25,
+      "construct": "import { TextureBinding } from \"@aura3d/engine/rendering\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/rendering\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/scripts/render-live.ts",
+      "line": 40,
+      "construct": "import { createFfmpegFrameEncoderAdapter } from \"@aura3d/engine/media-node\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/media-node\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/scripts/render-live.ts",
+      "line": 40,
+      "construct": "import { createFfmpegFrameEncoderAdapter } from \"@aura3d/engine/media-node\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/media-node\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/scripts/render-core.ts",
+      "line": 19,
+      "construct": "import { quantizeToonBand } from \"@aura3d/engine/rendering\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/rendering\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/scripts/render-core.ts",
+      "line": 22,
+      "construct": "import { createFfmpegFrameEncoderAdapter } from \"@aura3d/engine/media-node\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/media-node\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/scripts/render-core.ts",
+      "line": 19,
+      "construct": "import { quantizeToonBand } from \"@aura3d/engine/rendering\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/rendering\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/scripts/render-core.ts",
+      "line": 22,
+      "construct": "import { createFfmpegFrameEncoderAdapter } from \"@aura3d/engine/media-node\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/media-node\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+      "line": 16,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/advanced-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+      "line": 16,
+      "construct": "import { TextureBinding } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/advanced-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+      "line": 17,
+      "construct": "import { createPerformanceGovernor } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+      "line": 17,
+      "construct": "import { createSideViewGameRenderPreset } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+      "line": 17,
+      "construct": "import { createStudioLighting } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+      "line": 17,
+      "construct": "import { createTypedGLBActor } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+      "line": 17,
+      "construct": "import { TypedGLBActor } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+      "line": 28,
+      "construct": "import { Geometry } from \"@aura3d/engine/rendering\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/rendering\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+      "line": 28,
+      "construct": "import { PBRMaterial } from \"@aura3d/engine/rendering\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/rendering\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+      "line": 28,
+      "construct": "import { CollectedLight } from \"@aura3d/engine/rendering\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/rendering\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+      "line": 28,
+      "construct": "import { RenderItem } from \"@aura3d/engine/rendering\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/rendering\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+      "line": 28,
+      "construct": "import { RenderSource } from \"@aura3d/engine/rendering\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/rendering\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+      "line": 16,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/renderer"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+      "line": 16,
+      "construct": "import { TextureBinding } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/advanced-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+      "line": 17,
+      "construct": "import { createPerformanceGovernor } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+      "line": 17,
+      "construct": "import { createSideViewGameRenderPreset } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+      "line": 17,
+      "construct": "import { createStudioLighting } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+      "line": 17,
+      "construct": "import { createTypedGLBActor } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+      "line": 17,
+      "construct": "import { TypedGLBActor } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+      "line": 28,
+      "construct": "import { Geometry } from \"@aura3d/engine/rendering\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/rendering\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+      "line": 28,
+      "construct": "import { PBRMaterial } from \"@aura3d/engine/rendering\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/rendering\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+      "line": 28,
+      "construct": "import { CollectedLight } from \"@aura3d/engine/rendering\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/rendering\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+      "line": 28,
+      "construct": "import { RenderItem } from \"@aura3d/engine/rendering\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/rendering\" stub until 4.0.0"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+      "line": 28,
+      "construct": "import { RenderSource } from \"@aura3d/engine/rendering\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/rendering\" stub until 4.0.0"
+    },
+    {
+      "file": "templates/production-material-studio/src/main.ts",
+      "line": 1,
+      "construct": "import { runProductionExample } from \"@aura3d/engine/workflows/production\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/workflows/production\" stub until 4.0.0"
+    },
+    {
+      "file": "templates/production-material-studio/src/main.ts",
+      "line": 1,
+      "construct": "import { runProductionExample } from \"@aura3d/engine/workflows/production\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/workflows/production\" stub until 4.0.0"
+    },
+    {
+      "file": "templates/external-parity-asset-gallery/src/main.ts",
+      "line": 1,
+      "construct": "import { createA3DApp } from \"@aura3d/engine\"",
+      "mapping": "none",
+      "note": "deleted from \".\" in 4.0.0 — migrate the call site manually"
+    },
+    {
+      "file": "templates/external-parity-asset-gallery/src/main.ts",
+      "line": 1,
+      "construct": "import { createA3DApp } from \"@aura3d/engine\"",
+      "mapping": "none",
+      "note": "deleted from \".\" in 4.0.0 — migrate the call site manually"
+    },
+    {
+      "file": "templates/production-architecture-viewer/src/main.ts",
+      "line": 1,
+      "construct": "import { runProductionExample } from \"@aura3d/engine/workflows/production\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/workflows/production\" stub until 4.0.0"
+    },
+    {
+      "file": "templates/production-architecture-viewer/src/main.ts",
+      "line": 1,
+      "construct": "import { runProductionExample } from \"@aura3d/engine/workflows/production\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/workflows/production\" stub until 4.0.0"
+    },
+    {
+      "file": "templates/production-product-viewer/src/main.ts",
+      "line": 1,
+      "construct": "import { createProductViewer } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "templates/production-product-viewer/src/main.ts",
+      "line": 1,
+      "construct": "import { loadGltfScene } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "templates/production-product-viewer/src/main.ts",
+      "line": 1,
+      "construct": "import { loadHdrEnvironment } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "templates/production-product-viewer/src/main.ts",
+      "line": 1,
+      "construct": "import { createProductViewer } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "templates/production-product-viewer/src/main.ts",
+      "line": 1,
+      "construct": "import { loadGltfScene } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "templates/production-product-viewer/src/main.ts",
+      "line": 1,
+      "construct": "import { loadHdrEnvironment } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "templates/production-product-configurator/src/main.ts",
+      "line": 1,
+      "construct": "import { runProductionExample } from \"@aura3d/engine/workflows/production\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/workflows/production\" stub until 4.0.0"
+    },
+    {
+      "file": "templates/production-product-configurator/src/main.ts",
+      "line": 1,
+      "construct": "import { runProductionExample } from \"@aura3d/engine/workflows/production\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/workflows/production\" stub until 4.0.0"
+    },
+    {
+      "file": "templates/external-parity-interactive-scene/src/main.ts",
+      "line": 1,
+      "construct": "import { createA3DApp } from \"@aura3d/engine\"",
+      "mapping": "none",
+      "note": "deleted from \".\" in 4.0.0 — migrate the call site manually"
+    },
+    {
+      "file": "templates/external-parity-interactive-scene/src/main.ts",
+      "line": 1,
+      "construct": "import { createA3DApp } from \"@aura3d/engine\"",
+      "mapping": "none",
+      "note": "deleted from \".\" in 4.0.0 — migrate the call site manually"
+    },
+    {
+      "file": "templates/production-asset-inspector/src/main.ts",
+      "line": 1,
+      "construct": "import { runProductionExample } from \"@aura3d/engine/workflows/production\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/workflows/production\" stub until 4.0.0"
+    },
+    {
+      "file": "templates/production-asset-inspector/src/main.ts",
+      "line": 1,
+      "construct": "import { runProductionExample } from \"@aura3d/engine/workflows/production\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/workflows/production\" stub until 4.0.0"
+    },
+    {
+      "file": "templates/external-parity-material-studio/src/main.ts",
+      "line": 1,
+      "construct": "import { createA3DApp } from \"@aura3d/engine\"",
+      "mapping": "none",
+      "note": "deleted from \".\" in 4.0.0 — migrate the call site manually"
+    },
+    {
+      "file": "templates/external-parity-material-studio/src/main.ts",
+      "line": 1,
+      "construct": "import { createA3DApp } from \"@aura3d/engine\"",
+      "mapping": "none",
+      "note": "deleted from \".\" in 4.0.0 — migrate the call site manually"
+    },
+    {
+      "file": "templates/production-webgpu-starter/src/main.ts",
+      "line": 1,
+      "construct": "import { runProductionExample } from \"@aura3d/engine/workflows/production\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/workflows/production\" stub until 4.0.0"
+    },
+    {
+      "file": "templates/production-webgpu-starter/src/main.ts",
+      "line": 1,
+      "construct": "import { runProductionExample } from \"@aura3d/engine/workflows/production\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/workflows/production\" stub until 4.0.0"
+    },
+    {
+      "file": "templates/external-parity-product-viewer/src/main.ts",
+      "line": 1,
+      "construct": "import { createA3DApp } from \"@aura3d/engine\"",
+      "mapping": "none",
+      "note": "deleted from \".\" in 4.0.0 — migrate the call site manually"
+    },
+    {
+      "file": "templates/external-parity-product-viewer/src/main.ts",
+      "line": 1,
+      "construct": "import { createA3DApp } from \"@aura3d/engine\"",
+      "mapping": "none",
+      "note": "deleted from \".\" in 4.0.0 — migrate the call site manually"
+    }
+  ]
+}

@@ -5,7 +5,7 @@ import {
   listThreeCompatPbrMaterials,
   summarizeThreeCompatMaterialLibrary,
   THREE_COMPAT_REQUIRED_MATERIAL_CLASSES
-} from "../../../packages/materials/src/node";
+} from "../../../packages/engine/src/devtools/materials/node";
 
 describe("ThreeCompat PBR material library", () => {
   it("covers the required production material classes, texture sets, and proof channels", () => {

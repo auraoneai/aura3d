@@ -21,6 +21,7 @@ describe("Blockfall line-clear beat does not occlude the board", () => {
   const boardWidthUnits = CELL * BOARD_WIDTH;
 
   it("does not restore the old arbitrary foreground sphere", () => {
+    // invariant: source must keep `const radius = 0.1 + (1 - burstProgress) * 0.52` — does not restore the old arbitrary foreground sphere
     expect(source).not.toContain("const radius = 0.1 + (1 - burstProgress) * 0.52");
     expect(source).toContain('primitives.box({ name: "line clear reactor charge"');
     expect(source).not.toContain('primitives.sphere({ name: "line clear reactor charge"');

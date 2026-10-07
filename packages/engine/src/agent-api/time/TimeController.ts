@@ -13,7 +13,7 @@
 
 import type { AuraRuntimeNodeHandle, AuraVec3 } from "../index.js";
 import type { AuraTimeController } from "../../contracts/time.js";
-import { QR_TIME_SCALE_MAX } from "../app/frameLoopDefaults.js";
+import { QR_TIME_SCALE_MAX } from "../nodes/game/frameLoopDefaults.js";
 
 export interface TimeControllerScopeEntry {
   readonly handle: AuraRuntimeNodeHandle;

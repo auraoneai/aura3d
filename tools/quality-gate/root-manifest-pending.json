@@ -274,6 +274,11 @@
       "script": "visual-scripting:unit:raw",
       "path": "tests/scripting.test.ts",
       "reason": "missing-path"
+    },
+    {
+      "script": "test:visual",
+      "path": "tools/visual-baseline/index.ts",
+      "reason": "deleted-quarantined: superseded by the quality gate (T3.8); root manifest swap to quality:gate is Q-15-1"
     }
   ]
 }

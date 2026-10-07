@@ -4,7 +4,7 @@ import {
   createGLTFRenderResources,
   type GLTFRenderResources
 } from "@aura3d/assets";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Renderer, a3dRenderFrame } from "@aura3d/engine/renderer";
 
 declare global {
   interface Window {
@@ -68,12 +68,11 @@ async function run(): Promise<void> {
       type: "obj"
     }, new LoadContext());
     const resources = await createGLTFRenderResources(asset);
-    const renderer = await A3DRenderer.create({
+    const renderer = await Renderer.create({
       canvas,
       width: WIDTH,
       height: HEIGHT,
-      preserveDrawingBuffer: true,
-      clearColor: [0.014, 0.016, 0.02, 1]
+            clearColor: [0.014, 0.016, 0.02, 1]
     });
     const featureSet = new Set(asset.loaderDiagnostics.features);
     runtime = createRuntime("ready", "Ready", startedAt, {
@@ -101,7 +100,7 @@ async function run(): Promise<void> {
           fpsFrames = 0;
           fpsFrom = now;
         }
-        const result = renderer.renderFrame(createRendererInput(resources, now / 1000));
+        const result = a3dRenderFrame(renderer, createRendererInput(resources, now / 1000));
         runtime = createRuntime(frameCount === 1 ? "ready" : "running", frameCount === 1 ? "Ready" : "Running", startedAt, {
           frameCount,
           drawCalls: result.diagnostics.drawCalls,
@@ -133,7 +132,7 @@ async function run(): Promise<void> {
   }
 }
 
-function createRendererInput(resources: GLTFRenderResources, time: number): Parameters<A3DRenderer["renderFrame"]>[0] {
+function createRendererInput(resources: GLTFRenderResources, time: number): Parameters<typeof a3dRenderFrame>[1] {
   const input = resources.toRendererInput({ width: WIDTH, height: HEIGHT }, {
     qualityPreset: "studio-preview",
     postprocess: { fxaa: true },

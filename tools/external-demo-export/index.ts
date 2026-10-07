@@ -339,12 +339,22 @@ function expectedContentMarkers(relativePath: string): readonly string[] {
 }
 
 function workspacePackagePlugin(root: string): Plugin {
+  const exportsManifest = JSON.parse(readFileSync(join(root, "aura.exports.json"), "utf8")) as {
+    readonly paths?: ReadonlyArray<readonly [string, string]>;
+  };
+  const pathTable = new Map((exportsManifest.paths ?? []).map(([specifier, source]) => [specifier, source] as const));
   return {
     name: "aura3d-workspace-packages",
     setup(buildApi) {
-      buildApi.onResolve({ filter: /^@aura3d\/[^/]+$/ }, (args) => {
-        const packageName = args.path.replace(/^@aura3d\//, "");
-        const path = join(root, "packages", packageName, "src", "index.ts");
+      buildApi.onResolve({ filter: /^@aura3d\// }, (args) => {
+        const mapped = pathTable.get(args.path);
+        if (mapped) {
+          const path = join(root, mapped);
+          if (existsSync(path)) return { path };
+        }
+        const packageMatch = /^@aura3d\/([^/]+)$/.exec(args.path);
+        if (!packageMatch) return undefined;
+        const path = join(root, "packages", packageMatch[1]!, "src", "index.ts");
         return existsSync(path) ? { path } : undefined;
       });
     }

@@ -1,18 +1,20 @@
 import {
   camera,
-  createAuraApp,
   game,
   instances,
   looks,
   material,
   model,
   scene,
-  type AuraApp,
   type AuraColor,
   type AuraNodeInput,
   type AuraRuntimeNodeHandle,
   type AuraTransformSpec
 } from "@aura3d/engine";
+// PRD-09: mounted via the shared runtime — createGame owns mount/lifecycle,
+// the §7.7 arcade-neon HUD theme, the §6.11 dpad-2btn touch preset,
+// game-sfx-core cues, and the juice event map (no route-local hit-stop).
+import { createGame, sfxUrl } from "@aura3d/engine/game";
 import { assets } from "./aura-assets";
 
 declare global {
@@ -124,7 +126,7 @@ const activeShapes: Record<Piece, readonly (readonly { readonly x: number; reado
   ]
 };
 
-const input = game.input({
+const inputOptions = {
   actions: {
     left: ["KeyA", "ArrowLeft"],
     right: ["KeyD", "ArrowRight"],
@@ -136,7 +138,7 @@ const input = game.input({
     reset: ["KeyR"]
   },
   bufferMs: 100
-});
+} as const;
 
 const falling = game.fallingBlocks({
   width: boardWidth,
@@ -147,19 +149,53 @@ const falling = game.fallingBlocks({
   lockDelayFrames: 18
 });
 const routeEvents = game.eventLog({ label: "falling blocks starter events", maxEvents: 18 });
-const hud = game.hud.bindings([
-  game.hud.score({ valuePath: "appState.score" }),
-  game.hud.objective({ valuePath: "appState.objective" }),
-  game.hud.eventLog({ valuePath: "appState.events" })
-]);
+// HUD bindings as descriptor literals (the deprecated game.hud.* helpers are
+// replaced by the createGame `hud` option + evidence channel sections).
+const hudBindings = [
+  { kind: "aura-game-hud-binding", owner: "app", binding: "score", id: "hud:score", label: "score", source: "app-state", valuePath: "appState.score", format: "number", a11yLabel: "score" },
+  { kind: "aura-game-hud-binding", owner: "app", binding: "objective", id: "hud:objective", label: "objective", source: "app-state", valuePath: "appState.objective", format: "text", a11yLabel: "current objective" },
+  { kind: "aura-game-hud-binding", owner: "app", binding: "event-log", id: "hud:event-log", label: "event log", source: "app-state", valuePath: "appState.events", format: "text", a11yLabel: "game event log", debugOnly: true }
+];
 
 setupPracticeBoard();
 
 const evidenceMode = navigator.webdriver;
-const app: AuraApp = createAuraApp("#app", {
+const blockfallGame = createGame({
+  id: "falling-blocks-starter",
+  target: "#app",
   autoStart: !evidenceMode,
-  scene: buildScene(falling.snapshot().board)
+  diagnostics: { overlay: true, performancePanel: true },
+  scene: () => buildScene(falling.snapshot().board),
+  input: inputOptions,
+  hud: { theme: "arcade-neon", widgets: [] },
+  touch: {
+    preset: "dpad-2btn",
+    bindings: { left: "left", right: "right", dash: "softDrop", jump: "rotateRight", attack: "hardDrop" }
+  },
+  sound: {
+    cues: {
+      move: { id: "move", asset: { url: sfxUrl("ui.toggle.00") }, volume: 0.3 },
+      rotate: { id: "rotate", asset: { url: sfxUrl("ui.toggle.01") }, volume: 0.35 },
+      "hard-drop": { id: "hard-drop", asset: { url: sfxUrl("impact.wood.medium.00") }, volume: 0.6 },
+      "line-clear": { id: "line-clear", asset: { url: sfxUrl("pickup.coin.00") }, volume: 0.8 },
+      "game-over": { id: "game-over", asset: { url: sfxUrl("stinger.lose.00") }, volume: 0.8 }
+    }
+  },
+  juice: {
+    "hard-drop": { hitStop: 0.03, shake: 0.25, rumble: { strong: 0.4, ms: 120 } },
+    "line-clear": { flash: { color: "#5ed7df", peak: 0.22, ms: 240 }, punch: { fovDeg: 1.8, ms: 220 }, rumble: { weak: 0.5, ms: 200 } },
+    "game-over": { flash: { color: "#d88791", peak: 0.3, ms: 400 }, vignette: { amount: 0.6, ms: 900 } }
+  },
+  qualityRebuild: { flags: ["game"] },
+  evidence: {
+    schema: 1,
+    sections: { fallingBlocksStarter: () => window.__AURA3D_FALLING_BLOCKS_STARTER__ ?? { status: "unbound" } },
+    legacyGlobals: ["__AURA3D_FALLING_BLOCKS_STARTER__"]
+  }
 });
+const app = blockfallGame.app;
+const input = blockfallGame.input;
+if (!input) throw new Error("create-aura3d falling-blocks-starter failed to create runtime-owned input.");
 
 // Runtime handles are re-required after every setScene rebuild because the
 // instanced settled board is mount-time data, not a mutable runtime spec.
@@ -176,8 +212,7 @@ let flashRows: { readonly rows: readonly number[]; readonly until: number } = { 
 let activeKind: Piece | null = null;
 let holdKind: Piece | null = null;
 
-app.onFrame(({ dt }: { readonly dt: number }) => {
-  input.update(dt);
+app.onFrame(({ dt }) => {
   if (input.pressed("reset")) {
     setupPracticeBoard();
     flashRows = { rows: [], until: 0 };
@@ -245,6 +280,11 @@ function recordKitEvents(state: KitState): void {
     if (event.type === "hold") objective = "Held piece. Press R or continue.";
     if (event.type === "rotate") objective = "Rotation accepted.";
     if (event.type === "move") objective = "Move accepted.";
+    if (event.type === "move" || event.type === "rotate") void blockfallGame.sound?.cue(event.type);
+    if (event.type === "hard-drop" || event.type === "line-clear" || event.type === "game-over") {
+      blockfallGame.juice.fire(event.type);
+      void blockfallGame.sound?.cue(event.type);
+    }
   }
 }
 
@@ -499,7 +539,7 @@ function publishEvidence(state: KitState): void {
   const evidence = app.evidence({
     input,
     events: routeEvents,
-    hud,
+    hud: hudBindings,
     appState: {
       score: state.score,
       objective,

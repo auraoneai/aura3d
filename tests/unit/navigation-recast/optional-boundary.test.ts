@@ -13,6 +13,7 @@ describe("optional Recast navigation boundary", () => {
     expect(root.optionalDependencies).toEqual({ "recast-navigation": "0.43.1" });
 
     for (const path of ["packages/rendering/package.json", "packages/product-studio/package.json"]) {
+      // invariant: source must keep `@aura3d/navigation-recast` — enters the engine only as an optional peer and stays out of recommended runtime dependenci
       expect(readFileSync(path, "utf8"), path).not.toContain("@aura3d/navigation-recast");
       expect(readFileSync(path, "utf8"), path).not.toContain("recast-navigation");
     }

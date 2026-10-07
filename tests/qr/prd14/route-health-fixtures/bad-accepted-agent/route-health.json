@@ -1,0 +1,11 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "appId": "bad-accepted-agent",
+  "publicShowcase": false,
+  "qualityGate": {
+    "status": "accepted",
+    "acceptedBy": [
+      "devin-9f8a7b6c5d"
+    ]
+  }
+}

@@ -46,17 +46,23 @@ test.describe("current WebGPU architecture", () => {
       fallbackCanvas.width = 96;
       fallbackCanvas.height = 96;
       document.body.append(fallbackCanvas);
-      const fallbackRenderer = await production.ProductionRuntimeRenderer.create({
+      // T2.6: backend routing moved out of the deleted runtime wrapper —
+      // resolve through resolveProductionRuntimeRendererBackend, then the
+      // single C-29 Renderer.create submits on the selected device.
+      const selection = production.resolveProductionRuntimeRendererBackend({
         backend: "auto",
-        webgpu: unavailableGpu,
+        webgpu: unavailableGpu
+      });
+      const fallbackRenderer = await production.Renderer.create({
+        backend: selection.selectedBackend,
         canvas: fallbackCanvas,
         width: 96,
         height: 96,
         preserveDrawingBuffer: true
       });
       const fallback = {
-        backend: fallbackRenderer.backend,
-        selection: fallbackRenderer.backendSelection,
+        backend: fallbackRenderer.device.kind,
+        selection,
         deviceBackend: fallbackRenderer.getDiagnostics().contextLost === false ? "initialized" : "lost"
       };
       fallbackRenderer.dispose();
@@ -67,9 +73,12 @@ test.describe("current WebGPU architecture", () => {
       document.body.append(explicitCanvas);
       let explicitError = "";
       try {
-        await production.ProductionRuntimeRenderer.create({
+        const explicitSelection = production.resolveProductionRuntimeRendererBackend({
           backend: "webgpu",
-          webgpu: unavailableGpu,
+          webgpu: unavailableGpu
+        });
+        await production.Renderer.create({
+          backend: explicitSelection.selectedBackend,
           canvas: explicitCanvas,
           width: 96,
           height: 96
@@ -115,8 +124,11 @@ test.describe("current WebGPU architecture", () => {
     });
     expect(browser.fallback.selection.reason).toContain("attempted WebGPU");
     expect(browser.fallback.selection.reason).toContain("WEBGPU_ADAPTER_MISSING");
-    expect(browser.explicitError).toContain("Explicit WebGPU renderer initialization failed");
-    expect(browser.explicitError).toContain("will not silently use WebGL2");
+    // T2.6: explicit-backend failures surface the device-level RenderDeviceError —
+    // no WebGL2 silent substitution happens anywhere on this path.
+    expect(browser.explicitError).toContain("RenderDeviceError");
+    expect(browser.explicitError).toContain("WebGPU adapter");
+    expect(browser.explicitError).not.toContain("WebGL2");
 
     const currentBaseline = JSON.parse(readFileSync(resolve("tests/reports/current-threejs-baseline.json"), "utf8")) as {
       readonly pass: boolean;

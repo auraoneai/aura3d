@@ -1,0 +1,24 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-aurora-lander",
+  "entries": [
+    {
+      "file": "references/aurora-sky.json",
+      "source": "shipped comparable: aurora-lit night skies (Death Stranding north / FS night ops)",
+      "licence": "reference-only",
+      "why": "Moving aurora ribbons over a star field — the game's title promise — read the K1 starfield targets"
+    },
+    {
+      "file": "references/icy-regolith.json",
+      "source": "shipped comparable: icy moon surfaces (Moon in Kerbal / Deliver Us Mars surface runs)",
+      "licence": "reference-only",
+      "why": "Triplanar regolith/ice albedo + normal + detail layering the far-ring terrain is built from"
+    },
+    {
+      "file": "references/lander-craft.json",
+      "source": "admitted auroraLanderProbe GLB (460 tris) to be replaced by a panel-lined 3-5k lander",
+      "licence": "reference-only",
+      "why": "Panel-lined descent craft silhouette with nozzle assembly — the hero body every shot frames"
+    }
+  ]
+}

@@ -12,6 +12,8 @@ import {
   type PromptAnimationYouTubeDraftMetadata
 } from "./PromptAnimationContract.js";
 import { getShotTimelineCaptureTimes, type ShotTimelineArtifact } from "./ShotTimeline.js";
+import { round } from "./GameRuntime.js";
+import { shotTimeline } from "./ShotTimeline.js";
 
 export interface AnimationViewport {
   readonly width: number;

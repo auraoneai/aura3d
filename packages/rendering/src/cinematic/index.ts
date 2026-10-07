@@ -1,5 +1,6 @@
 export * from "./CinematicEvidence";
-export * from "./CinematicMaterialPresets";
+export { createCinematicMaterialPreset, createCinematicPBRMaterial, listCinematicMaterialPresets, resolveCinematicMaterialPresetId } from "../MaterialPresets.js";
+export type { CinematicMaterialPreset, CinematicMaterialPresetId } from "../MaterialPresets.js";
 export * from "./CinematicLightingRig";
 export * from "./CinematicPostProcess";
 export * from "./BloomPass";

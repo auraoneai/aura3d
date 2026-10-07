@@ -17,6 +17,7 @@ describe("game-kit shared runtime ownership", () => {
     const platformer = between(genreSource, "export function createGamePlatformerKit", "export function createGameAssetBoundPlatformerLevel");
     const racing = between(genreSource, "export function createGameRacingKit", "const FALLING_BLOCK_SHAPES");
 
+    // invariant: source must keep `createGameKinematicBody` — delegates continuous racing and platformer pose integration
     expect(platformer).toContain("createGameKinematicBody");
     expect(platformer).toContain("body.update(step)");
     expect(platformer).not.toMatch(/state\.player\.[xy]\s*\+=\s*state\.player\.v[xy]\s*\*\s*step/);

@@ -1,9 +1,21 @@
 export {
-  ProductionWebGL2Renderer,
   analyzePixels,
   summarizeProductionProductionProof,
-  summarizeProductionWebGL2Proof
-} from "./ProductionWebGL2Renderer";
+  summarizeProductionWebGL2Proof,
+  validateProductionRendererInput,
+  rendererFeatureReport,
+  rendererInteractiveFeatureReport,
+  rendererShadowReport,
+  rendererProofCapture
+} from "./renderProofs";
+export * from "./backendSelection";
+// T2.6 — the `ProductionWebGL2Renderer` and `ProductionRuntimeRenderer` wrapper
+// classes were deleted; both names now alias the C-29 `Renderer` (deprecated
+// until Phase 8 prunes the public surface). The moved proof/feature/shadow
+// reports live in `@aura3d/engine`'s agent-api devtools as
+// `rendererProofCapture`/`rendererFeatureReport`/`rendererShadowReport`.
+export { Renderer } from "../Renderer";
+export { Renderer as ProductionWebGL2Renderer, Renderer as ProductionRuntimeRenderer } from "../Renderer";
 export {
   bindTransmissionBackdropCapture,
   createSceneColorMipLevels,
@@ -11,7 +23,7 @@ export {
   normalizeTransmissionBackdropCapture
 } from "./TransmissionBackdropCapture";
 export type { TransmissionBackdropSource } from "./TransmissionBackdropCapture";
-export type { ProductionWebGL2RendererOptions } from "./ProductionWebGL2Renderer";
+export type { ProductionWebGL2RendererOptions } from "./backendSelection";
 export {
   createDualProbeEnvironmentLightingResources,
   createProductionEnvironmentLightingResources,
@@ -19,10 +31,6 @@ export {
   createProductionToneMappingPolicy,
   parseProductionRadianceHDR
 } from "./PBRHDRPipeline";
-export {
-  createProductionEffectsRenderSource,
-  summarizeProductionEffectsProof
-} from "./ProductionEffectsPipeline";
 export {
   ProductionWebGPURenderer,
   createProductionWebGPUReport,
@@ -44,10 +52,6 @@ export type {
   ProductionToneMappingOperator,
   ProductionToneMappingPolicy
 } from "./PBRHDRPipeline";
-export type {
-  ProductionEffectsOptions,
-  ProductionEffectsSummary
-} from "./ProductionEffectsPipeline";
 export type {
   ProductionWebGPUAdapterLike,
   ProductionWebGPULike,
@@ -72,6 +76,7 @@ export {
   RUNTIME_PARITY_WEBGPU_REQUIRED_FEATURES
 } from "./ProductionRendererTypes";
 export type {
+  RendererTimingDiagnostics,
   ProductionImportedAssetRenderMetadata,
   ProductionPixelMetrics,
   ProductionProductionRenderer,
@@ -80,11 +85,11 @@ export type {
   ProductionRendererFeature,
   ProductionRendererFeatureState,
   ProductionRendererInput,
-  RuntimeParityFrameRenderResult,
+  RendererFrameResult,
   RuntimeParityTransmissionBackdropCaptureOptions,
   RuntimeParityTransmissionBackdropCaptureProof
 } from "./ProductionRendererTypes";
-export * from "./ProductionRuntimeRenderer";
+
 export * from "./backends/RendererBackend";
 export * from "./backends/WebGL2RendererBackend";
 export * from "./backends/WebGPURendererBackend";

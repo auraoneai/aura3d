@@ -19,8 +19,6 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/scene/math", "/packages/scene/src/MathTypes.ts"],
   ["@aura3d/scene", "/packages/scene/src/index.ts"],
   ["@aura3d/ecs", "/packages/ecs/src/index.ts"],
-  ["@aura3d/rendering/lean-runtime", "/packages/rendering/src/lean-runtime.ts"],
-  ["@aura3d/rendering/lean-core-runtime", "/packages/rendering/src/lean-core-runtime.ts"],
   ["@aura3d/rendering/reflection-surfaces", "/packages/rendering/src/reflection-surfaces.ts"],
   // Every published `@aura3d/rendering` subpath must be aliased here, and each must
   // precede the bare specifier because the first prefix match wins. Omitting one does not
@@ -30,6 +28,11 @@ const packageEntryPoints = new Map<string, string>([
   // ("Failed to resolve module specifier '@aura3d/rendering/extension-scalar-atlas'").
   ["@aura3d/rendering/extension-scalar-atlas", "/packages/rendering/src/extension-scalar-atlas.ts"],
   ["@aura3d/rendering/webgpu", "/packages/rendering/src/webgpu.ts"],
+  // contracts/world subpaths used by QR lane code (prd07 flagged the gap when
+  // browser specs timed out with unresolved bare specifiers).
+  ["@aura3d/rendering/contracts/flags.state", "/packages/rendering/src/contracts/flags.state.ts"],
+  ["@aura3d/rendering/contracts", "/packages/rendering/src/contracts/index.ts"],
+  ["@aura3d/rendering/world", "/packages/rendering/src/world/index.ts"],
   ["@aura3d/rendering", "/packages/rendering/src/index.ts"],
   ["@aura3d/engine/lean-product", "/packages/engine/src/agent-api/lean-product.ts"],
   ["@aura3d/engine/lean-game", "/packages/engine/src/agent-api/lean-game.ts"],
@@ -55,6 +58,9 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/physics/solverless", "/packages/physics/src/solverless.ts"],
   ["@aura3d/physics/world", "/packages/physics/src/world.ts"],
   ["@aura3d/engine/rendering/webgpu", "/packages/rendering/src/webgpu.ts"],
+  ["@aura3d/engine/contracts", "/packages/engine/src/contracts/index.ts"],
+  ["@aura3d/engine-runtime/contracts", "/packages/engine/src/contracts/index.ts"],
+  ["@aura3d/engine-runtime", "/packages/engine/src/index.ts"],
   ["@aura3d/engine/media-node", "/packages/engine/src/agent-api/media-node.ts"],
   ["@aura3d/animation", "/packages/animation/src/browser-index.ts"],
   ["@aura3d/assets", "/packages/assets/src/browser-index.ts"],

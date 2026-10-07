@@ -1,0 +1,13 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "appId": "bad-freetext",
+  "publicShowcase": false,
+  "claim": "particle-heavy impact presentation",
+  "systems": "full ECS gameplay",
+  "primitiveStatus": {
+    "sourceOccurrences": 14
+  },
+  "qualityGate": {
+    "status": "in-rebuild"
+  }
+}

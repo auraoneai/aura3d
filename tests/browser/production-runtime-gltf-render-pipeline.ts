@@ -1,6 +1,7 @@
 import { loadProductionGLTFRenderPipeline } from "/packages/assets/src/asset-corpus/ProductionGLTFRenderPipeline.js";
 import {
-  ProductionWebGL2Renderer,
+  Renderer,
+  rendererProofCapture,
   createProductionEnvironmentLightingResources,
   createProductionPbrHdrPipelineFromRadiance,
   summarizeProductionWebGL2Proof
@@ -44,7 +45,7 @@ async function run(): Promise<void> {
         cameraPolicy: "require"
       }
     });
-    const renderer = await ProductionWebGL2Renderer.create({
+    const renderer = await Renderer.create({
       canvas,
       width: canvas.width,
       height: canvas.height,
@@ -61,7 +62,7 @@ async function run(): Promise<void> {
       floorColor: item.id === "clear-coat-test" ? [0.38, 0.39, 0.4, 1] : [0.34, 0.36, 0.37, 1],
       backdropColor: [0.15, 0.17, 0.19, 1]
     });
-    const proof = renderer.renderImportedAsset({
+    const proof = rendererProofCapture(renderer, {
       source: staged.source,
       camera: staged.camera,
       metadata: {

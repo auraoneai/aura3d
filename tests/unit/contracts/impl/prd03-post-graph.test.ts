@@ -4,7 +4,8 @@ import {
   postPipelineSlot,
   resolvePostGraph,
   planPostGraph,
-  PostGraph
+  PostGraph,
+  POST_STAGE_DESCRIPTORS
 } from "@aura3d/rendering";
 import { registerPostPass } from "@aura3d/rendering/contracts";
 import type { PostPipelineOptions } from "@aura3d/rendering/contracts";
@@ -50,7 +51,7 @@ describe("C-13 postPipelineSlot (impl: prd03)", () => {
     release();
   });
 
-  it("real plan orders stages per the v2 graph and withholds them with a named reason", () => {
+  it("real plan orders stages per the §6.1 graph and defers unimplemented stages with a phase reason", () => {
     const options: PostPipelineOptions = {
       ...baseOptions,
       ao: { radius: 1 },
@@ -64,19 +65,26 @@ describe("C-13 postPipelineSlot (impl: prd03)", () => {
       lut: {}
     };
     const report = planPostGraph(options, { width: 128, height: 72 });
-    const names = report.skipped.map((s) => s.name);
-    // Depth consumer present → linearize planned before its consumers.
-    expect(names.indexOf("S1-linearize-depth")).toBeLessThan(names.indexOf("S2-gtao"));
-    expect(names.indexOf("S2-gtao")).toBeLessThan(names.indexOf("S4-ssr"));
-    expect(names.indexOf("S8-taa")).toBeLessThan(names.indexOf("S9-bloom"));
-    expect(names.indexOf("S10a-output")).toBeLessThan(names.indexOf("S10b-grade"));
-    expect(names.indexOf("S11-aa-fxaa")).toBeLessThan(names.indexOf("S12-dither"));
-    expect(report.skipped.every((s) => s.reason.includes("post-graph-v2-pending"))).toBe(true);
+    const names = [...report.stages.map((s) => s.name), ...report.skipped.map((s) => s.name)];
+    // §6.1 order: depth prep → GTAO → SSR → god rays → TAA → DOF → MB →
+    // auto-exposure → bloom → composite → OUT → display grade → post-AA → finalize.
+    expect(names.indexOf("S1-depth-prep")).toBeLessThan(names.indexOf("S2-gtao"));
+    expect(names.indexOf("S2-gtao")).toBeLessThan(names.indexOf("S3-ssr"));
+    expect(names.indexOf("S3-ssr")).toBeLessThan(names.indexOf("S5-taa"));
+    expect(names.indexOf("S5-taa")).toBeLessThan(names.indexOf("S9-bloom"));
+    expect(names.indexOf("S9-bloom")).toBeLessThan(names.indexOf("S10-composite"));
+    expect(names.indexOf("S10-composite")).toBeLessThan(names.indexOf("OUT-output-pass"));
+    expect(names.indexOf("OUT-output-pass")).toBeLessThan(names.indexOf("S10b-display-grade"));
+    expect(names.indexOf("S10b-display-grade")).toBeLessThan(names.indexOf("S11-post-aa"));
+    expect(names.indexOf("S11-post-aa")).toBeLessThan(names.indexOf("S12-finalize"));
+    expect(report.skipped.every((s) => s.reason.startsWith("post-v2-deferred") || s.reason === "disabled")).toBe(true);
   });
 
-  it("no depth consumer → S1 is withheld with 'no depth consumer'", () => {
+  it("no depth consumer → S1 is not planned", () => {
     const report = planPostGraph({ ...baseOptions, bloom: {} }, { width: 64, height: 64 });
-    expect(report.skipped.some((s) => s.name === "S1-linearize-depth" && s.reason === "no depth consumer")).toBe(true);
+    const names = report.stages.map((s) => s.name);
+    expect(names).not.toContain("S1-depth-prep");
+    expect(names).not.toContain("S2-gtao");
   });
 
   it("real execute() fails closed until the GPU chain lands", () => {

@@ -11,6 +11,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
+    "@aura3d/controls": "workspace:*",
     "@aura3d/math": "workspace:*",
     "@aura3d/scene": "workspace:*"
   },

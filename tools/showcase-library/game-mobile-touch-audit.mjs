@@ -84,6 +84,35 @@ const collect = () => {
       const flags = value.touch === true ? ["touch:true"] : [];
       return [...controls, ...flags];
     });
+  /* C-24 channel: migrated routes publish touch claims as evidence sections
+   * instead of a route-named global; fold those claims into the same pool.
+   * (Inline read — `collect` is serialized into the page, so module imports
+   * cannot be referenced here.) */
+  const gameBeacon = window.__AURA3D_GAME__ ?? null;
+  const gameRegistry =
+    window.__AURA3D_GAME_EVIDENCE__ && typeof window.__AURA3D_GAME_EVIDENCE__ === "object"
+      ? window.__AURA3D_GAME_EVIDENCE__
+      : null;
+  let gameEvidence = null;
+  if (gameRegistry) {
+    for (const key of Object.keys(gameRegistry)) {
+      try {
+        const value = gameRegistry[key];
+        if (value && typeof value === "object") { gameEvidence = value; break; }
+      } catch { /* lazy getter threw — skip */ }
+    }
+  }
+  const channel = { migrated: Boolean(gameBeacon), beacon: gameBeacon, evidence: gameEvidence };
+  if (channel.migrated) {
+    const sections = channel.evidence?.sections ?? {};
+    for (const value of Object.values(sections)) {
+      if (!value || typeof value !== "object") continue;
+      if (Array.isArray(value.controls)) evidenceBlobs.push(...value.controls.map(String));
+      if (value.touch === true || value.touchControls === true) evidenceBlobs.push("touch:true");
+      if (typeof value.touchPreset === "string") evidenceBlobs.push(`touch-preset:${value.touchPreset}`);
+    }
+    if (channel.beacon) evidenceBlobs.push(`beacon:${channel.beacon.state}`);
+  }
   const labelledTouch = [...document.querySelectorAll("[aria-label]")]
     .map((el) => el.getAttribute("aria-label") ?? "")
     .filter((label) => /touch/i.test(label));

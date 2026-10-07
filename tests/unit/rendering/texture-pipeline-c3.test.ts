@@ -4,7 +4,7 @@ import {
   findThreeCompatTextureSet,
   listThreeCompatPbrMaterials,
   THREE_COMPAT_TEXTURE_SETS
-} from "../../../packages/materials/src/node";
+} from "../../../packages/engine/src/devtools/materials/node";
 import {
   DEFAULT_SAMPLER_ANISOTROPY,
   EXTERNAL_PARITY_TEXTURE_COLOR_POLICY,

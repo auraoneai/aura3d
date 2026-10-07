@@ -1,0 +1,80 @@
+name: QR-15 bundle size
+
+# PRD-15 T0.3 — bundle baseline. tools/bundle-size/lit-scene.ts does
+# production Vite builds of the three lit targets (01-simple-geometry scene,
+# showcase-siege-golf, templates/product-viewer as a packed consumer) and
+# writes evidence/prd15/bundle-baseline.json. Runs on every PR touching the
+# engine/package surface so regressions show up against the recorded
+# baseline; T4.10 re-runs it for BUNDLE_SIZES.md.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "package.json"
+      - "aura.exports.json"
+      - "packages/*/package.json"
+      - "packages/engine/**"
+      - "packages/assets/**"
+      - "packages/rendering/**"
+      - "apps/showcase-siege-golf/**"
+      - "templates/product-viewer/**"
+      - "benchmarks/quality-rebuild/**"
+      - "tools/bundle-size/**"
+      - "tools/packed-consumer-check/**"
+      - ".github/workflows/qr-prd15-bundle-size.yml"
+  push:
+    branches: ["qr/**", "main"]
+    paths:
+      - "package.json"
+      - "aura.exports.json"
+      - "packages/*/package.json"
+      - "packages/engine/**"
+      - "packages/assets/**"
+      - "packages/rendering/**"
+      - "apps/showcase-siege-golf/**"
+      - "templates/product-viewer/**"
+      - "benchmarks/quality-rebuild/**"
+      - "tools/bundle-size/**"
+      - "tools/packed-consumer-check/**"
+      - ".github/workflows/qr-prd15-bundle-size.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: qr-prd15-bundle-size-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bundle-size:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # The packed consumer build needs a real dist/ tarball.
+      - run: pnpm build:raw
+      - name: Measure bundle baseline
+        run: pnpm exec tsx --tsconfig tsconfig.base.json tools/bundle-size/lit-scene.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bundle-baseline-${{ github.run_id }}
+          path: docs/project/aura3d-quality-rebuild/evidence/prd15/bundle-baseline.json
+          if-no-files-found: warn
+      - name: Commit baseline on main pushes
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          git config user.name "devin-ai-integration[bot]"
+          git config user.email "158243242+devin-ai-integration[bot]@users.noreply.github.com"
+          git add docs/project/aura3d-quality-rebuild/evidence/prd15/bundle-baseline.json
+          git diff --cached --quiet || git commit -m "chore(prd15): bundle baseline refresh [skip ci]
+
+          Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>"
+          git push

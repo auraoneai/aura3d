@@ -1,5 +1,35 @@
 export type Vec3 = readonly [number, number, number];
 
+// physics is tier 0 — these tuple helpers are defined locally so the package
+// keeps zero Aura3D dependencies (scene/MathTypes lives at tier 1). Helpers
+// return mutable tuples so callers may assign them into mutable positions.
+export const EPSILON = 1e-8;
+
+export function vec3(x = 0, y = 0, z = 0): [number, number, number] {
+  return [x, y, z];
+}
+
+export function addVec3(a: Vec3, b: Vec3): [number, number, number] {
+  return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+}
+
+export function subVec3(a: Vec3, b: Vec3): [number, number, number] {
+  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+}
+
+export function scaleVec3(a: Vec3, scalar: number): [number, number, number] {
+  return [a[0] * scalar, a[1] * scalar, a[2] * scalar];
+}
+
+export function lengthVec3(a: Vec3): number {
+  return Math.sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
+}
+
+function normalizeCanonicalVec3(a: Vec3): [number, number, number] {
+  const len = lengthVec3(a);
+  return [a[0] / len, a[1] / len, a[2] / len];
+}
+
 export type BoxShape = {
   readonly kind: "box";
   readonly halfExtents: Vec3;
@@ -49,42 +79,19 @@ export type Bounds = {
   readonly max: Vec3;
 };
 
-export const EPSILON = 1e-9;
-
-export function vec3(x = 0, y = 0, z = 0): [number, number, number] {
-  return [x, y, z];
-}
-
 export function cloneVec3(value: Vec3): [number, number, number] {
   return [value[0], value[1], value[2]];
-}
-
-export function addVec3(a: Vec3, b: Vec3): [number, number, number] {
-  return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
-}
-
-export function subVec3(a: Vec3, b: Vec3): [number, number, number] {
-  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
-}
-
-export function scaleVec3(value: Vec3, scalar: number): [number, number, number] {
-  return [value[0] * scalar, value[1] * scalar, value[2] * scalar];
 }
 
 export function dotVec3(a: Vec3, b: Vec3): number {
   return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }
 
-export function lengthVec3(value: Vec3): number {
-  return Math.hypot(value[0], value[1], value[2]);
-}
-
 export function normalizeVec3(value: Vec3): [number, number, number] {
-  const length = lengthVec3(value);
-  if (length <= EPSILON) {
+  if (lengthVec3(value) <= EPSILON) {
     throw new Error("Cannot normalize a zero-length vector.");
   }
-  return [value[0] / length, value[1] / length, value[2] / length];
+  return normalizeCanonicalVec3(value);
 }
 
 export function minVec3(a: Vec3, b: Vec3): [number, number, number] {

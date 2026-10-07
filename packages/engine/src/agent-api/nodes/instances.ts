@@ -5,13 +5,19 @@
 // to a `scatter` node under `A3D_QR_WORLD`; flag off consumes the model node
 // exactly as before.
 
-import type { AuraAssetRef, AuraColor, AuraModelNode, AuraModelOptions, AuraPrimitiveNode, AuraPrimitiveOptions, AuraTransformSpec, AuraVec3 } from "../index.js";
-import { AuraNodeBuilder, colorToRgba, geometry, model, primitive } from "../index.js";
+import type { AuraAssetRef, AuraColor, AuraModelNode, AuraModelOptions, AuraPrimitiveNode, AuraPrimitiveOptions, AuraTransformSpec, AuraVec3 } from "../nodes/types.js";
+import { AuraNodeBuilder } from "../nodes/builder.js";
+import { colorToRgba } from "../colorUtils.js";
+import { geometry } from "../nodes/geometry.js";
+import { model } from "../nodes/model.js";
+import { primitive } from "../nodes/primitives.js";
 import { createInstancedModelNode, type InstancedModelVec3 } from "../../instances-model/InstancedModel.js";
 import { defineAuraCustomGeometry, type AuraCustomGeometrySpec } from "../RootGeometry.js";
 import { material } from "./material.js";
+import { lazyNamespace } from "../lazyNamespace.js";
 
-export const instances = {
+
+export const instances = lazyNamespace(() => ({
   box: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("box", options),
   sphere: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("sphere", options),
   plane: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("plane", options),
@@ -89,7 +95,7 @@ export const instances = {
     };
     return new AuraNodeBuilder<AuraModelNode>(node);
   }
-} as const;
+} as const));
 
 /** §7.1.5 scatter placements block carried on a model node pending promotion. */
 export interface AuraScatterPlacement {

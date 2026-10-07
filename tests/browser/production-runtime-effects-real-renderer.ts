@@ -2,13 +2,14 @@ import { loadProductionGLTFRenderPipeline } from "/packages/assets/src/asset-cor
 import {
   Geometry,
   PBRMaterial,
-  ProductionWebGL2Renderer,
+  Renderer,
   createProductionEffectsRenderSource,
   createProductionEnvironmentLightingResources,
   createProductionPbrHdrPipelineFromRadiance,
   summarizeProductionEffectsProof,
   summarizeProductionWebGL2Proof
 } from "/packages/rendering/src/index.js";
+import { rendererProofCapture } from "/packages/rendering/src/production-runtime/index.js";
 import { createProductionProductionStageScene } from "/tests/browser/production-runtime-production-scene-tools.js";
 
 declare global {
@@ -66,7 +67,7 @@ async function run(): Promise<void> {
     ...pipeline.source,
     renderItems: [...(pipeline.source.renderItems ?? []), transparentOverlay]
   }, { transparentItemCount: 1 });
-  const renderer = await ProductionWebGL2Renderer.create({
+  const renderer = await Renderer.create({
     canvas,
     width: canvas.width,
     height: canvas.height,
@@ -83,7 +84,7 @@ async function run(): Promise<void> {
     floorColor: [0.31, 0.34, 0.36, 1],
     backdropColor: [0.13, 0.16, 0.19, 1]
   });
-  const proof = renderer.renderImportedAsset({
+  const proof = rendererProofCapture(renderer, {
     source: staged.source,
     camera: staged.camera,
     metadata: {

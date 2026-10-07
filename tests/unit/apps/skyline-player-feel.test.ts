@@ -184,6 +184,7 @@ describe("Skyline player feel", () => {
       hudSource.indexOf('class="metrics-row game-metrics"'),
       hudSource.indexOf("checkpoint-row")
     );
+    // invariant: source must keep `aria-label", "Skyline Runner game HUD"` — changes act palette signatures across the five acts
     expect(hudSource).toContain('aria-label", "Skyline Runner game HUD"');
     expect(hudSource).toContain("publicSkylineHudShowsRawX");
     expect(hudSource).toContain('debug ? requireElement("x-value") : null');

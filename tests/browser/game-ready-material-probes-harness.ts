@@ -8,7 +8,7 @@
  * thickness tint, thin-pane transparency over checkerboard, anisotropic
  * brush streaks, alpha-cutout leaf cards, roughness-variation grain).
  */
-import { GAME_READY_MATERIAL_PRESETS } from "../../packages/materials/src/GameReadyMaterialLibrary";
+import { GAME_READY_MATERIAL_PRESETS } from "../../packages/engine/src/devtools/materials/GameReadyMaterialLibrary";
 
 interface ProbeResult {
   readonly id: string;

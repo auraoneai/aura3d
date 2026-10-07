@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.human-review/1",
+  "gameId": "showcase-bank-shot",
+  "round": "IC-4",
+  "human": {
+    "judge": {
+      "kind": "human",
+      "id": "example-reviewer"
+    },
+    "device": "MacBook Air M2 / Safari 18",
+    "tier": "high",
+    "playedMinutes": 7,
+    "visual": {
+      "environment_world": 7.0,
+      "modeling_assets": 7.0,
+      "texture_quality": 7.0,
+      "material_quality": 7.0,
+      "pbr_credibility": 7.0,
+      "lighting": 7.0,
+      "shadows": 7.0,
+      "ambient_lighting": 7.0,
+      "ibl_reflections": 7.0,
+      "tone_mapping": 7.0,
+      "color_management": 7.0,
+      "anti_aliasing": 7.0,
+      "postprocessing": 7.0,
+      "vfx": 7.0,
+      "particles": 7.0,
+      "animation_quality": 7.0,
+      "character_presentation": 7.0,
+      "camera": 7.0,
+      "composition": 7.0,
+      "scale_depth_perception": 7.0,
+      "atmospheric_effects": 7.0,
+      "gameplay_readability": 7.0,
+      "ui_hud": 7.0,
+      "typography": 7.0,
+      "polish_juice": 7.0,
+      "mobile_presentation": 7.0,
+      "overall_visual_quality": 7.0
+    },
+    "nonVisual": {
+      "sound_audio": 6.5,
+      "controls": 7.5,
+      "physics_feel": 6.5,
+      "game_feel": 7.0,
+      "loading_transitions": 6.5
+    },
+    "measuredFps": {
+      "p50": 59.8,
+      "p95": 55.1
+    },
+    "competitiveWithModernThree": true,
+    "notes": "Example export for human-review.schema.json. The table lamp pools warm light on the felt and the clearcoat rails read correctly; ball shadows ground every roll. Pocket drops trigger a satisfying burst and the power-charge ghost line communicates the shot. The room beyond the lamp cone falls away into readable darkness without hiding the rack silhouette. This text exists to satisfy the 200-character notes requirement."
+  }
+}

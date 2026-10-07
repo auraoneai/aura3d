@@ -1,5 +1,7 @@
 import type { AnimationPose } from "@aura3d/animation";
 import type { AuraResolvedFootPlanting } from "./FootPlanting.js";
+import { footPlanting } from "./FootPlanting.js";
+import { animation } from "./nodes/animation.js";
 
 export type RuntimeNodeVec3 = readonly [number, number, number];
 export type RuntimeNodeMorphTargetWeights = Readonly<Record<string, number>>;

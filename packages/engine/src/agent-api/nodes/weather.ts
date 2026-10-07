@@ -4,8 +4,10 @@
 // the effect system when the flag is on and the real volume/wetness path
 // draws instead.
 
-import type { AuraSceneNode } from "../index.js";
-import { AuraNodeBuilder, effects, primitives } from "../index.js";
+import type { AuraSceneNode } from "./types.js";
+import { AuraNodeBuilder } from "./builder.js";
+import { effects } from "./effects.composite.js";
+import { primitives } from "./primitives.js";
 import { createWeatherState, describeWetMaterial, type WeatherType } from "@aura3d/rendering";
 import { lights } from "./lights.js";
 import { material } from "./material.js";

@@ -1,0 +1,223 @@
+{
+ "codemod": "renderer-imports",
+ "files": 9,
+ "filesWithChanges": 4,
+ "entries": [
+  {
+   "file": "apps/aura-clash-showcase/README.md",
+   "wouldChange": false,
+   "rows": []
+  },
+  {
+   "file": "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
+   "wouldChange": false,
+   "rows": [
+    {
+     "file": "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
+     "line": 4,
+     "construct": "import attachRootRenderSource",
+     "mapping": "none",
+     "note": "not exported by @aura3d/engine/renderer; stays on deprecated subpath @aura3d/engine/production-runtime"
+    },
+    {
+     "file": "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
+     "line": 5,
+     "construct": "import createSideViewGameRenderPreset",
+     "mapping": "none",
+     "note": "not exported by @aura3d/engine/renderer; stays on deprecated subpath @aura3d/engine/production-runtime"
+    },
+    {
+     "file": "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
+     "line": 6,
+     "construct": "import createTypedGLBActor",
+     "mapping": "none",
+     "note": "not exported by @aura3d/engine/renderer; stays on deprecated subpath @aura3d/engine/production-runtime"
+    },
+    {
+     "file": "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
+     "line": 7,
+     "construct": "import TypedGLBActor",
+     "mapping": "none",
+     "note": "not exported by @aura3d/engine/renderer; stays on deprecated subpath @aura3d/engine/production-runtime"
+    }
+   ]
+  },
+  {
+   "file": "apps/aura-clash-showcase/src/playable/animation/fighterSecondaryMotion.ts",
+   "wouldChange": false,
+   "rows": [
+    {
+     "file": "apps/aura-clash-showcase/src/playable/animation/fighterSecondaryMotion.ts",
+     "line": 18,
+     "construct": "import TypedGLBActor",
+     "mapping": "none",
+     "note": "not exported by @aura3d/engine/renderer; stays on deprecated subpath @aura3d/engine/production-runtime"
+    }
+   ]
+  },
+  {
+   "file": "apps/aura-clash-showcase/tests/performance-budget.spec.ts",
+   "wouldChange": false,
+   "rows": [
+    {
+     "file": "apps/aura-clash-showcase/tests/performance-budget.spec.ts",
+     "line": 5,
+     "construct": "import createSideViewGameRenderPreset",
+     "mapping": "none",
+     "note": "not exported by @aura3d/engine/renderer; stays on deprecated subpath @aura3d/engine/production-runtime"
+    }
+   ]
+  },
+  {
+   "file": "apps/loader-ktx2/src/main.ts",
+   "wouldChange": true,
+   "rows": [
+    {
+     "file": "apps/loader-ktx2/src/main.ts",
+     "line": 8,
+     "construct": "import A3DRenderer",
+     "mapping": "exact",
+     "target": "@aura3d/engine/renderer"
+    },
+    {
+     "file": "apps/loader-ktx2/src/main.ts",
+     "line": 95,
+     "construct": "preserveDrawingBuffer",
+     "mapping": "approximate",
+     "note": "removed on Renderer.create — capture goes through the C-05 toBlob stub after a synchronous render"
+    },
+    {
+     "file": "apps/loader-ktx2/src/main.ts",
+     "line": 123,
+     "construct": "renderer.renderFrame(…)",
+     "mapping": "approximate",
+     "target": "a3dRenderFrame(renderer, …)",
+     "note": "receiver assumed to be a Renderer — verify"
+    },
+    {
+     "file": "apps/loader-ktx2/src/main.ts",
+     "line": 152,
+     "construct": "Parameters<A3DRenderer[\"renderFrame\"]>[0]",
+     "mapping": "approximate",
+     "target": "Parameters<typeof a3dRenderFrame>[1]",
+     "note": "receiver injected as param 0 — index shifted"
+    },
+    {
+     "file": "apps/loader-ktx2/src/main.ts",
+     "line": 354,
+     "construct": "preserveDrawingBuffer",
+     "mapping": "approximate",
+     "note": "removed on Renderer.create — capture goes through the C-05 toBlob stub after a synchronous render"
+    },
+    {
+     "file": "apps/loader-ktx2/src/main.ts",
+     "line": 91,
+     "construct": "A3DRenderer",
+     "mapping": "exact",
+     "target": "Renderer"
+    }
+   ]
+  },
+  {
+   "file": "apps/postprocessing-bloom/src/main.ts",
+   "wouldChange": true,
+   "rows": [
+    {
+     "file": "apps/postprocessing-bloom/src/main.ts",
+     "line": 6,
+     "construct": "import A3DRenderer",
+     "mapping": "exact",
+     "target": "@aura3d/engine/renderer"
+    },
+    {
+     "file": "apps/postprocessing-bloom/src/main.ts",
+     "line": 54,
+     "construct": "A3DRenderer",
+     "mapping": "exact",
+     "target": "Renderer"
+    }
+   ]
+  },
+  {
+   "file": "apps/postprocessing-depth-outline/src/main.ts",
+   "wouldChange": true,
+   "rows": [
+    {
+     "file": "apps/postprocessing-depth-outline/src/main.ts",
+     "line": 6,
+     "construct": "import A3DRenderer",
+     "mapping": "exact",
+     "target": "@aura3d/engine/renderer"
+    },
+    {
+     "file": "apps/postprocessing-depth-outline/src/main.ts",
+     "line": 57,
+     "construct": "A3DRenderer",
+     "mapping": "exact",
+     "target": "Renderer"
+    }
+   ]
+  },
+  {
+   "file": "apps/showcase-smart-city-control/src/main.ts",
+   "wouldChange": false,
+   "rows": []
+  },
+  {
+   "file": "apps/wow-webgpu-product-viewer/src/main.ts",
+   "wouldChange": true,
+   "rows": [
+    {
+     "file": "apps/wow-webgpu-product-viewer/src/main.ts",
+     "line": 5,
+     "construct": "import createCameraFrame",
+     "mapping": "none",
+     "note": "not exported by @aura3d/engine/renderer; stays on deprecated subpath @aura3d/engine/production-runtime"
+    },
+    {
+     "file": "apps/wow-webgpu-product-viewer/src/main.ts",
+     "line": 6,
+     "construct": "import createGroundedStage",
+     "mapping": "none",
+     "note": "not exported by @aura3d/engine/renderer; stays on deprecated subpath @aura3d/engine/production-runtime"
+    },
+    {
+     "file": "apps/wow-webgpu-product-viewer/src/main.ts",
+     "line": 7,
+     "construct": "import createStudioLighting",
+     "mapping": "none",
+     "note": "not exported by @aura3d/engine/renderer; stays on deprecated subpath @aura3d/engine/production-runtime"
+    },
+    {
+     "file": "apps/wow-webgpu-product-viewer/src/main.ts",
+     "line": 8,
+     "construct": "import loadGltfScene",
+     "mapping": "none",
+     "note": "not exported by @aura3d/engine/renderer; stays on deprecated subpath @aura3d/engine/production-runtime"
+    },
+    {
+     "file": "apps/wow-webgpu-product-viewer/src/main.ts",
+     "line": 9,
+     "construct": "import loadHdrEnvironment",
+     "mapping": "none",
+     "note": "not exported by @aura3d/engine/renderer; stays on deprecated subpath @aura3d/engine/production-runtime"
+    },
+    {
+     "file": "apps/wow-webgpu-product-viewer/src/main.ts",
+     "line": 84,
+     "construct": "preserveDrawingBuffer",
+     "mapping": "approximate",
+     "note": "removed on Renderer.create — capture goes through the C-05 toBlob stub after a synchronous render"
+    },
+    {
+     "file": "apps/wow-webgpu-product-viewer/src/main.ts",
+     "line": 122,
+     "construct": "renderer.renderFrameAsync(…)",
+     "mapping": "approximate",
+     "target": "a3dRenderFrameAsync(renderer, …)",
+     "note": "receiver assumed to be a Renderer — verify"
+    }
+   ]
+  }
+ ]
+}

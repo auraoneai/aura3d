@@ -61,16 +61,28 @@ describe("aura3d-boundaries/no-upward-package-import", () => {
   });
 
   it("resolves a subpath to the package it truly aliases, not its prefix", async () => {
-    // `@aura3d/engine/rendering` aliases into packages/rendering (tier 2), NOT packages/engine
-    // (tier 5). `assets` is tier 3, so importing rendering is legal and importing engine would not
+    // `@aura3d/engine/scene` aliases into packages/scene (tier 2), NOT packages/engine
+    // (tier 5). `assets` is tier 3, so importing scene is legal and importing engine would not
     // be. A prefix-based implementation would resolve this to `engine` and wrongly report it. This
     // is the case that makes alias resolution mandatory.
+    const messages = await lintAs(
+      "packages/assets/src/Probe.ts",
+      `import { Scene } from "@aura3d/engine/scene";\nexport const x = Scene;\n`,
+      "no-upward-package-import"
+    );
+    expect(messages).toEqual([]);
+  });
+
+  it("attributes deprecated collapsed subpaths to engine, not their old package", async () => {
+    // PRD-15 T5.6: `@aura3d/engine/rendering` is a deprecated subpath stub living in
+    // packages/engine, so the boundary rule must now report it as an upward import of
+    // engine — exactly what the deprecation is meant to surface.
     const messages = await lintAs(
       "packages/assets/src/Probe.ts",
       `import { WebGL2Device } from "@aura3d/engine/rendering";\nexport const x = WebGL2Device;\n`,
       "no-upward-package-import"
     );
-    expect(messages).toEqual([]);
+    expect(messages.map((m) => m.messageId)).toEqual(["upward"]);
   });
 
   it("reports an unknown @aura3d specifier rather than silently passing it", async () => {

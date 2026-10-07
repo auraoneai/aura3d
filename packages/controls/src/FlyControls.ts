@@ -1,8 +1,8 @@
+import { InputSnapshot } from "@aura3d/input";
 import {
   EditorFlyControls as InputFlyControls,
-  InputSnapshot,
   type EditorFlyControlsOptions
-} from "@aura3d/input";
+} from "./engine/EditorFlyControls.js";
 import { createDefaultControlState, type ThreeCompatControlState } from "./ControlState";
 import type { Vector3Like } from "./NativeControlTypes";
 

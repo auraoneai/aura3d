@@ -1,7 +1,10 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraColor, AuraEffectNode, AuraFountainParticleLayer, WebGLModel } from "../index.js";
-import { colorToRgb, createBuffer, getParticleLife, identity4, primitives, seededRange, writeParticlePosition } from "../index.js";
+import type { AuraColor, AuraEffectNode, AuraFountainParticleLayer, WebGLModel } from "../nodes/types.js";
+import { primitives } from "../nodes/primitives.js";
+import { colorToRgb, identity4, seededRange } from "../sceneMath.js";
+import { getParticleLife, writeParticlePosition } from "./effects.js";
+import { createBuffer } from "./webglRuntime.js";
 
 export function createWebGLRainModel(gl: WebGL2RenderingContext): WebGLModel {
   const lineCount = 90;

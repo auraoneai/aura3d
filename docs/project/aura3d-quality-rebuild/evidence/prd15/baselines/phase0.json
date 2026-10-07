@@ -11,60 +11,235 @@
     "branch": "qr/prd15-ic0-base",
     "pr": "https://github.com/auraoneai/aura3d/pull/28",
     "runs": [
-      { "commit": "14adf1e6", "gitlab_pipeline": null, "status": "unknown (pre-dated check observation)" },
-      { "commit": "24076220", "gitlab_pipeline": null, "status": "unknown (pre-dated check observation)" },
-      { "commit": "5bd903c4", "gitlab_pipeline": null, "status": "unknown (pre-dated check observation)" },
-      { "commit": "06986d7d", "gitlab_pipeline": "2916316776", "status": "success", "artifact": "gitlab-all-2916316776", "note": "wave A — run 1 of 2" },
-      { "commit": "33d02be3", "gitlab_pipeline": "2916430413", "status": "success", "artifact": "gitlab-all-2916430413", "note": "wave B — run 2 of 2" }
+      {
+        "commit": "14adf1e6",
+        "gitlab_pipeline": null,
+        "status": "unknown (pre-dated check observation)"
+      },
+      {
+        "commit": "24076220",
+        "gitlab_pipeline": null,
+        "status": "unknown (pre-dated check observation)"
+      },
+      {
+        "commit": "5bd903c4",
+        "gitlab_pipeline": null,
+        "status": "unknown (pre-dated check observation)"
+      },
+      {
+        "commit": "06986d7d",
+        "gitlab_pipeline": "2916316776",
+        "status": "success",
+        "artifact": "gitlab-all-2916316776",
+        "note": "wave A — run 1 of 2"
+      },
+      {
+        "commit": "33d02be3",
+        "gitlab_pipeline": "2916430413",
+        "status": "success",
+        "artifact": "gitlab-all-2916430413",
+        "note": "wave B — run 2 of 2"
+      }
     ]
   },
   "branches": {
     "qr/pr0b1-agent-api-carveouts": {
       "pr": "https://github.com/auraoneai/aura3d/pull/24",
       "runs": [
-        { "commit": "26b68d11", "gitlab_pipeline": "canceled (superseded by 9ea21561)", "status": "canceled" },
-        { "commit": "9ea21561", "gitlab_pipeline": "2916128184", "status": "failed-fast (~3min, pre-alias-fix ENOTDIR)" },
-        { "commit": "a6f72b8c", "gitlab_pipeline": "2916209997", "status": "failed-fast (~3min, pre-alias-fix ENOTDIR)" },
-        { "commit": "b14e0da7", "gitlab_pipeline": "2916316366", "status": "success", "artifact": "gitlab-all-2916316366", "note": "wave A — run 1 of 2" },
-        { "commit": "8897bbcf", "gitlab_pipeline": "2916457500", "status": "success", "artifact": "gitlab-all-2916457500", "note": "wave B — run 2 of 2" }
+        {
+          "commit": "26b68d11",
+          "gitlab_pipeline": "canceled (superseded by 9ea21561)",
+          "status": "canceled"
+        },
+        {
+          "commit": "9ea21561",
+          "gitlab_pipeline": "2916128184",
+          "status": "failed-fast (~3min, pre-alias-fix ENOTDIR)"
+        },
+        {
+          "commit": "a6f72b8c",
+          "gitlab_pipeline": "2916209997",
+          "status": "failed-fast (~3min, pre-alias-fix ENOTDIR)"
+        },
+        {
+          "commit": "b14e0da7",
+          "gitlab_pipeline": "2916316366",
+          "status": "success",
+          "artifact": "gitlab-all-2916316366",
+          "note": "wave A — run 1 of 2"
+        },
+        {
+          "commit": "8897bbcf",
+          "gitlab_pipeline": "2916457500",
+          "status": "success",
+          "artifact": "gitlab-all-2916457500",
+          "note": "wave B — run 2 of 2"
+        }
       ]
     },
     "qr/pr0b2-rendering-carveouts": {
       "pr": "https://github.com/auraoneai/aura3d/pull/25",
       "runs": [
-        { "commit": "d939b819", "gitlab_pipeline": "canceled (superseded by 5660dc21)", "status": "canceled" },
-        { "commit": "5660dc21", "gitlab_pipeline": "TBD (pre-fix, likely failed-fast)", "status": "unknown" },
-        { "commit": "c1785f0a", "gitlab_pipeline": "2916314807", "status": "success", "artifact": "gitlab-all-2916314807", "note": "wave A — run 1 of 2" },
-        { "commit": "e7e164fb", "gitlab_pipeline": "2916428154", "status": "success", "artifact": "gitlab-all-2916428154", "note": "wave B — run 2 of 2" }
+        {
+          "commit": "d939b819",
+          "gitlab_pipeline": "canceled (superseded by 5660dc21)",
+          "status": "canceled"
+        },
+        {
+          "commit": "5660dc21",
+          "gitlab_pipeline": "TBD (pre-fix, likely failed-fast)",
+          "status": "unknown"
+        },
+        {
+          "commit": "c1785f0a",
+          "gitlab_pipeline": "2916314807",
+          "status": "success",
+          "artifact": "gitlab-all-2916314807",
+          "note": "wave A — run 1 of 2"
+        },
+        {
+          "commit": "e7e164fb",
+          "gitlab_pipeline": "2916428154",
+          "status": "success",
+          "artifact": "gitlab-all-2916428154",
+          "note": "wave B — run 2 of 2"
+        }
       ]
     },
     "qr/pr0b3-gltf-cli-capture": {
       "pr": "https://github.com/auraoneai/aura3d/pull/26",
       "runs": [
-        { "commit": "ed253810", "gitlab_pipeline": "canceled (superseded by f0ad25cb)", "status": "canceled" },
-        { "commit": "f0ad25cb", "gitlab_pipeline": "2916127676", "status": "failed-fast (~3min, pre-alias-fix ENOTDIR)" },
-        { "commit": "cbc9db52", "gitlab_pipeline": "2916312854", "status": "success", "artifact": "gitlab-all-2916312854", "note": "wave A — run 1 of 2" },
-        { "commit": "9dc83240", "gitlab_pipeline": "2916428691", "status": "success", "artifact": "gitlab-all-2916428691", "note": "wave B — run 2 of 2" }
+        {
+          "commit": "ed253810",
+          "gitlab_pipeline": "canceled (superseded by f0ad25cb)",
+          "status": "canceled"
+        },
+        {
+          "commit": "f0ad25cb",
+          "gitlab_pipeline": "2916127676",
+          "status": "failed-fast (~3min, pre-alias-fix ENOTDIR)"
+        },
+        {
+          "commit": "cbc9db52",
+          "gitlab_pipeline": "2916312854",
+          "status": "success",
+          "artifact": "gitlab-all-2916312854",
+          "note": "wave A — run 1 of 2"
+        },
+        {
+          "commit": "9dc83240",
+          "gitlab_pipeline": "2916428691",
+          "status": "success",
+          "artifact": "gitlab-all-2916428691",
+          "note": "wave B — run 2 of 2"
+        }
       ]
     }
   },
   "diagnostics": [
-    { "branch": "qr/diag-lfs-probe", "gitlab_pipeline": "2916153428", "status": "success", "purpose": "before_script replica (node dl, pnpm@11.1.3, git lfs pull, --validate) — all passed; proved mirror carries LFS objects" },
-    { "branch": "qr/diag-lfs-probe", "gitlab_pipeline": "TBD", "status": "success", "purpose": "benchmark ci.sh replica with QR_BENCH_CHANNEL=headless-shell — passed" },
-    { "branch": "qr/diag-lfs-probe", "gitlab_pipeline": "TBD", "status": "success", "purpose": "verbatim .gitlab-ci.yml replica on ic0-base tree — full suite=all pipeline passed, isolating failure to 0b branch content" },
-    { "branch": "qr/diag-lfs-probe", "gitlab_pipeline": "TBD", "status": "success", "purpose": "one-game end-to-end capture (1 game x 2 viewports x desktop+mobile) — passed" }
+    {
+      "branch": "qr/diag-lfs-probe",
+      "gitlab_pipeline": "2916153428",
+      "status": "success",
+      "purpose": "before_script replica (node dl, pnpm@11.1.3, git lfs pull, --validate) — all passed; proved mirror carries LFS objects"
+    },
+    {
+      "branch": "qr/diag-lfs-probe",
+      "gitlab_pipeline": "TBD",
+      "status": "success",
+      "purpose": "benchmark ci.sh replica with QR_BENCH_CHANNEL=headless-shell — passed"
+    },
+    {
+      "branch": "qr/diag-lfs-probe",
+      "gitlab_pipeline": "TBD",
+      "status": "success",
+      "purpose": "verbatim .gitlab-ci.yml replica on ic0-base tree — full suite=all pipeline passed, isolating failure to 0b branch content"
+    },
+    {
+      "branch": "qr/diag-lfs-probe",
+      "gitlab_pipeline": "TBD",
+      "status": "success",
+      "purpose": "one-game end-to-end capture (1 game x 2 viewports x desktop+mobile) — passed"
+    }
   ],
   "github_sentinel_runs": {
     "workflow": "Quality Rebuild Capture (.github/workflows/quality-rebuild-capture.yml)",
     "trigger": "push to aura3d-quality-rebuild/audit touching benchmarks/quality-rebuild/**",
     "scenes": "benchmarks/quality-rebuild/sentinels.json (6 base scenes, PR-0a custodian stub — lane 12 has not landed its own)",
     "runs": [
-      { "trigger_commit": "2c1ec889", "github_run_id": "not retrievable without GH API token", "status": "triggered" },
-      { "trigger_commit": "81004af2", "github_run_id": "not retrievable without GH API token", "status": "triggered" }
+      {
+        "trigger_commit": "2c1ec889",
+        "github_run_id": "not retrievable without GH API token",
+        "status": "triggered"
+      },
+      {
+        "trigger_commit": "81004af2",
+        "github_run_id": "not retrievable without GH API token",
+        "status": "triggered"
+      }
     ]
   },
   "delta_e2000_p99": {
     "status": "NOT-RUN (artifact access gated on gh/GitLab token; see notes)",
     "measurement": "download gitlab-all-<pipelineId> artifacts for each 0b branch run + both ic0-base runs; compare per-image deltaE2000 p99 of 0b vs ic0-base and assert <= ic0-base noise floor"
-  }
+  },
+  "exportCounts": {
+    ".": 1827,
+    "./advanced-runtime": 40,
+    "./animation": 266,
+    "./animation/browser": 259,
+    "./apps": 10,
+    "./assets": 331,
+    "./assets/advanced-gallery": 14,
+    "./assets/asset-corpus": 22,
+    "./assets/browser": 222,
+    "./assets/gltf-runtime": 12,
+    "./assets/production-runtime": 22,
+    "./audio": 97,
+    "./contracts": 189,
+    "./controls": 89,
+    "./core": 56,
+    "./create-aura3d": 35,
+    "./debug": 63,
+    "./devtools": 0,
+    "./ecs": 47,
+    "./editor": 231,
+    "./editor-runtime": 231,
+    "./engine": 2093,
+    "./engine-runtime": 2093,
+    "./environments": 9,
+    "./input": 111,
+    "./lean": 38,
+    "./lean-game": 71,
+    "./lean-product": 38,
+    "./materials": 31,
+    "./math": 29,
+    "./media-node": 81,
+    "./physics": 214,
+    "./physics/solverless": 35,
+    "./physics/world": 9,
+    "./product-studio": 39,
+    "./production-runtime": 111,
+    "./renderer": 0,
+    "./rendering": 1644,
+    "./rendering/advanced-runtime": 136,
+    "./rendering/production-runtime": 235,
+    "./rendering/webgpu": 36,
+    "./scene": 85,
+    "./scene-kits/humanoid-walk": 10,
+    "./scene-kits/particle-fountain": 11,
+    "./scene-kits/product-viewer": 15,
+    "./scene/math": 30,
+    "./scripting": 164,
+    "./workflows": 46,
+    "./workflows/production": 32,
+    "./workflows/production-runtime": 32
+  },
+  "subpathCount": 50,
+  "scriptCount": 560,
+  "toolDirCount": 452,
+  "orphanSourceMapCount": 0,
+  "agentApiIndexLines": 13929,
+  "metricsGeneratedUtc": "2026-10-06T10:32:43.841Z",
+  "engineIndexExportCount": 2093
 }

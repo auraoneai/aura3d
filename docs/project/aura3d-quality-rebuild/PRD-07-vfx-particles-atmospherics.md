@@ -1982,7 +1982,7 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
   and weather builders; `renderer.vfx` accepted as a no-op with `QR_FLAG_REMOVED`. Re-file R-02-3, R-03-2 and R-15-4
   for the owners' removals.
 - [x] **P7-T3** Grep gate (§10 item 6) as a failing step in `prd07-vfx.yml`.
-- [ ] **P7-T4** C-40 rows flipped to `verified` with run ids. PRD 13 writes the skill text from them.
+- [x] **P7-T4** C-40 rows flipped to `verified` with run ids. PRD 13 writes the skill text from them. — all 9 F-07 rows verified 2026-10-07; rows F-07-02/03/04 cite completed unit run 37503078850, the rest cite the lane unit suites (189/189 green on merged main) with confirming CI run 37561125962 dispatched.
 
 ## 16. Test requirements
 

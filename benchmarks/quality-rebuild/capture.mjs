@@ -354,6 +354,8 @@ async function main() {
       node: process.version,
       ci: Boolean(process.env.CI),
       runner: process.env.RUNNER_OS ? `${process.env.RUNNER_OS}/${process.env.RUNNER_ARCH ?? ""}` : null,
+      // T3.7: hosted runner image identity — goldens bind to this; drift triggers re-calibration.
+      runnerImage: process.env.ImageOS ? `${process.env.ImageOS}${process.env.ImageVersion ? `/${process.env.ImageVersion}` : ""}` : null,
       githubRunId: process.env.GITHUB_RUN_ID ?? null,
       ciProvider: process.env.GITLAB_CI ? "gitlab" : process.env.GITHUB_ACTIONS ? "github" : "local",
       gitlabPipeline: process.env.CI_PIPELINE_ID ?? null,

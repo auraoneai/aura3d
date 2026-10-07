@@ -188,6 +188,24 @@ export interface FogSpec {
   readonly density: number;
 }
 
+/** §9.1/§9.3 showcase-tier overrides — only read when referenceProfile === "showcase". */
+export interface ShowcaseSpec {
+  /** GTAO settings; null/absent disables the pass. */
+  readonly ao?: { readonly radius: number; readonly distanceExponent: number } | null;
+  readonly aa?: "msaa4+smaa" | "msaa4";
+  /** Product-scene contact shadows (depth silhouette + blur, §9.1). */
+  readonly contactShadows?: { readonly size: number; readonly blur: number; readonly darkness: number } | null;
+  readonly background?: "hdri" | "grounded-skybox" | "color";
+  readonly backgroundBlurriness?: number;
+  /** Non-HDRI environment stand-ins (§9.3): RoomEnvironment for interiors. */
+  readonly environmentStandIn?: "room-environment";
+  readonly anisotropy?: "max";
+  /** Shadow-map radius applied by the showcase pipeline (ShadowSpec carries size/bias). */
+  readonly shadowRadius?: number;
+  /** "stand-in" while a §9.3 2k HDRI / kit request is pending; written to ready.json. */
+  readonly assetTier?: "stand-in" | "admitted";
+}
+
 export interface SceneSpec {
   readonly id: string;
   readonly index: number;
@@ -216,6 +234,8 @@ export interface SceneSpec {
   readonly masks?: readonly import("./contracts").MaskId[];
   readonly brokenControls?: readonly import("./contracts").BrokenControlId[];
   readonly strip?: import("./contracts").StripSpec;
+  /** Showcase-tier pipeline overrides (§9.1). Only for referenceProfile "showcase". */
+  readonly showcase?: ShowcaseSpec;
   readonly primaryCriterion?: string;
   readonly primaryRegion?: import("./contracts").RegionId;
   readonly qrFlags?: readonly string[];

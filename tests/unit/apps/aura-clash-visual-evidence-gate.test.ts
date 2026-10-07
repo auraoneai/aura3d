@@ -18,6 +18,7 @@ const SOURCE = readFileSync("apps/aura-clash-showcase/scripts/capture-first-fram
 
 describe("Aura Clash machine visual table cannot pass on page declarations", () => {
   it("no longer treats a page declaration as sufficient", () => {
+    // invariant: source must keep `hasPageDeclaration || hasVisibleDomSignal ? \` — no longer treats a page declaration as sufficient
     expect(SOURCE).not.toContain("hasPageDeclaration || hasVisibleDomSignal ? \"pass\"");
     expect(SOURCE).toContain("declarationAloneIsInsufficient");
   });

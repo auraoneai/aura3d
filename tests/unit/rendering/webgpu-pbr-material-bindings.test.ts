@@ -6,6 +6,7 @@ describe("WebGPU PBR material bindings", () => {
   it("keeps glTF PBR texture channels wired into the WebGPU submission path", () => {
     const source = readFileSync(resolve("packages/rendering/src/WebGPUDevice.ts"), "utf8");
 
+    // invariant: source must keep `actualBaseColor` — keeps glTF PBR texture channels wired into the WebGPU submission path
     expect(source).toContain("actualBaseColor");
     expect(source).toContain("actualNormal");
     expect(source).toContain("actualMetallicRoughness");

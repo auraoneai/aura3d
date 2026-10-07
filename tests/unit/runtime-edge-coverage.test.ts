@@ -44,8 +44,8 @@ const runtimeSuiteMappings: Record<string, RuntimeSuiteMapping> = {
     suites: [
       "tests/unit/controls/interaction-controls.test.ts",
       "tests/unit/controls/picking-contract.test.ts",
-      "tests/unit/controls/three-compat-controls.test.ts",
-      "tests/unit/controls/transform-controls-three-parity.test.ts"
+      "tests/unit/controls/transform-controls-three-parity.test.ts",
+      "tests/qr/prd15/controls/controls-equivalence.test.ts"
     ],
     edgeTerms: [/pointer/i, /drag/i, /dispose/i, /invalid/i, /selection/i]
   },
@@ -81,14 +81,6 @@ const runtimeSuiteMappings: Record<string, RuntimeSuiteMapping> = {
     suites: ["tests/unit/workstream5-runtime.test.ts", "tests/unit/workstream5-input-audio-scripting-editor.test.ts"],
     edgeTerms: [/undo/i, /redo/i, /rollback/i, /delete/i, /selection/i]
   },
-  environments: {
-    suites: [
-      "tests/unit/environments/production-runtime-hdr-environment-corpus.test.ts",
-      "tests/unit/environments/three-compat-environments.test.ts",
-      "tests/unit/rendering/environment-platform.test.ts"
-    ],
-    edgeTerms: [/HDR/i, /missing/i, /diagnostics?/i, /fallback/i, /PMREM/i]
-  },
   input: {
     suites: [
       "tests/unit/input/camera-controls.test.ts",
@@ -108,15 +100,6 @@ const runtimeSuiteMappings: Record<string, RuntimeSuiteMapping> = {
   math: {
     suites: ["tests/unit/math/edge-cases.test.ts", "tests/unit/math/geometry-random.test.ts", "tests/unit/math/vector-matrix.test.ts"],
     edgeTerms: [/degenerate/i, /rejects?/i, /undefined/i, /deterministic/i, /singular/i]
-  },
-  materials: {
-    suites: [
-      "tests/unit/materials/three-compat-material-library.test.ts",
-      "tests/unit/rendering/material-binding.test.ts",
-      "tests/unit/rendering/material-presets.test.ts",
-      "tests/unit/rendering/physical-material-presets.test.ts"
-    ],
-    edgeTerms: [/invalid/i, /texture/i, /diagnostics?/i, /preset/i, /material/i]
   },
   physics: {
     suites: ["tests/unit/workstream4.physics-animation.test.ts", "tests/integration/physics-animation-scene-ecs.test.ts"],
@@ -166,15 +149,6 @@ const runtimeSuiteMappings: Record<string, RuntimeSuiteMapping> = {
   scripting: {
     suites: ["tests/unit/workstream5-input-audio-scripting-editor.test.ts", "tests/integration/scripting-scene-ecs.test.ts"],
     edgeTerms: [/validation/i, /execution order/i, /event/i, /serialization/i, /deterministic/i]
-  },
-  "three-compat": {
-    suites: [
-      "tests/unit/three-compat/three-compat-core-compat.test.ts",
-      "tests/unit/three-compat/three-compat-material-geometry-compat.test.ts",
-      "tests/unit/three-compat/three-compat-migration.test.ts",
-      "tests/unit/three-compat/three-compat-threejs-inventory.test.ts"
-    ],
-    edgeTerms: [/compat/i, /migration/i, /warnings?/i, /unsupported/i, /inventory/i]
   },
   workflows: {
     suites: [
@@ -330,7 +304,7 @@ describe("runtime edge-case coverage audit", () => {
       "packages/input/src/Haptics.ts:* `{ played: false, reason }` instead of fake success on unsupported hosts.",
       "packages/input/src/Haptics.ts:parts.push(vibrate ? \"navigator.vibrate available\" : \"navigator.vibrate unavailable\");",
       "packages/input/src/Haptics.ts:parts.push(gamepadRumble ? \"gamepad rumble available\" : \"gamepad rumble unavailable\");",
-      "packages/materials/src/GameReadyMaterialLibrary.ts:{ name: \"opacity\", default: 0.35, range: \"0..1\", effect: \"Blend fallback where transmission is unavailable.\" }",
+      "packages/engine/src/devtools/materials/GameReadyMaterialLibrary.ts:{ name: \"opacity\", default: 0.35, range: \"0..1\", effect: \"Blend fallback where transmission is unavailable.\" }",
       // 3.0.1: missing/invalidated native SSR output, absent native queue
       // completion, and absent particle adapter metadata are real capability
       // failures. Keep these fail-closed diagnostics visible, not disguised.
@@ -341,6 +315,19 @@ describe("runtime edge-case coverage audit", () => {
       // Resident GPU particles fail closed if the required WebGPU canvas
       // context is absent; this is an explicit capability failure, not a stub.
       "packages/rendering/src/effects/ResidentGPUParticleRenderer.ts:if (!context) throw new Error(\"Resident particles: WebGPU canvas unavailable.\");",
+      // PRD-15 T3.1 split: moved out of agent-api/index.ts (excluded path) into
+      // leaf modules — same honest fail-closed markers, new file locations.
+      "packages/aura3d-cli/src/codemods/renderer-imports.ts:// toBlob stub after a synchronous render. Removed with its comma.",
+      "packages/aura3d-cli/src/codemods/renderer-imports.ts:note: \"removed on Renderer.create — capture goes through the C-05 toBlob stub after a synchronous render\"",
+      "packages/engine/src/agent-api/app/canvas.ts:`Aura3D could not find canvas target \"${target}\" because document is unavailable. Suggested fix: run createAuraApp in a browser or pass an HTMLCanvasElement.`",
+      "packages/engine/src/agent-api/app/createAuraApp.ts:\"Aura3D cannot render this scene on the canvas you supplied: it has renderable nodes but WebGL2 is unavailable in this context. It will NOT fall back to the Canvas 2D diagnostic preview, because that draws a gradient schematic rather than your scene and has silently hidden defects before — world labels once reached the scene graph but were drawn only in that path. Suggested fix: run in a browser context with WebGL2 available, or inspect diagnostics().errors for the underlying device failure.\"",
+      "packages/engine/src/agent-api/app/createAuraApp.ts:throw new Error(`Aura3D asynchronous submission unavailable: ${diagnosticsState.errors.join(\"; \" ) || \"a production renderer is required\"}`);",
+      "packages/engine/src/agent-api/compiler/actors.ts:* 2. Manifest `boundsMetadata` min/max, when loaded bounds are unavailable.",
+      "packages/engine/src/agent-api/compiler/textures.ts:if (!context) throw new Error(\"2d canvas unavailable for texture compositing\");",
+      "packages/engine/src/agent-api/compiler/textures.ts:if (!context) throw fail(\"2d canvas unavailable for texture compositing\");",
+      "packages/engine/src/agent-api/diagnostics.ts:message: asset.url ? undefined : \"Optional placeholder asset has no URL yet.\"",
+      "packages/engine/src/agent-api/nodes/types.ts:/** Submit a native asynchronous production frame. Rejects unavailable or disposed renderers. */",
+      "packages/engine/src/agent-api/rendererDiagnostics.ts:: \"procedural fallback environment requested only; runtime environment prefilter status is unavailable until render\"",
     ]);
     const markerPattern = /\b(?:unavailable|not implemented|placeholder|stub|fake success|deferred)\b/i;
     const failures: string[] = [];

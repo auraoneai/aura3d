@@ -4,7 +4,8 @@ import { createGLTFRenderResources } from "/packages/assets/src/GLTFRenderResour
 import {
   createProductionEnvironmentLightingResources,
   createProductionPbrHdrPipelineFromRadiance,
-  ProductionWebGL2Renderer,
+  Renderer,
+  rendererProofCapture,
   summarizeProductionWebGL2Proof
 } from "/packages/rendering/src/production-runtime/index.js";
 import { createProductionComposedProductionStageScene } from "/tests/browser/production-runtime-production-scene-tools.js";
@@ -37,7 +38,7 @@ async function run(): Promise<void> {
     loadSceneAsset("boom-box", "boom-box.glb", "Boom Box", canvas, lighting.lighting),
     loadSceneAsset("antique-camera", "antique-camera.glb", "Antique Camera", canvas, lighting.lighting)
   ]);
-  const renderer = await ProductionWebGL2Renderer.create({
+  const renderer = await Renderer.create({
     canvas,
     width: canvas.width,
     height: canvas.height,
@@ -83,7 +84,7 @@ async function run(): Promise<void> {
     }
   });
   const primary = assets[0]!;
-  const proof = renderer.renderImportedAsset({
+  const proof = rendererProofCapture(renderer, {
     source: staged.source,
     camera: staged.camera,
     metadata: {

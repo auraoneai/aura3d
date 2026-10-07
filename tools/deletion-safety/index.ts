@@ -434,7 +434,13 @@ function bindsSymbol(line: string, symbol: string, referencingPath: string): boo
   const boundary = new RegExp(`\\b${escapeRegExp(symbol)}\\b`);
 
   // 1. `import { X } from "..."`, `export { X } from "..."`, `const { X } = require("...")`.
-  if (/^\s*(?:import|export)\b/.test(code) || /\brequire\s*\(/.test(code)) {
+  //    A declaration whose own keyword follows `export` (interface/class/enum/type alias/
+  //    function) puts its braces on a member list, not a binding list — a one-line
+  //    `export interface I { readonly frame: number }` is not a consumer of `frame`.
+  //    `export type { X }` stays a binding export, so it is excluded from the declaration test.
+  const isBracedExport = /^\s*export\s*(?:type\s*)?\{/.test(code);
+  const isDeclaration = !isBracedExport && /^\s*export\s+(?:declare\s+)?(?:abstract\s+)?(?:interface|type|class|function|enum|namespace|async)\b/.test(code);
+  if ((/^\s*(?:import|export)\b/.test(code) || /\brequire\s*\(/.test(code)) && !isDeclaration) {
     for (const braced of code.match(/\{[^}]*\}/g) ?? []) {
       if (boundary.test(braced)) return true;
     }

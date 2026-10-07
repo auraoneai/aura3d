@@ -1,0 +1,24 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-neon-swarm",
+  "entries": [
+    {
+      "file": "references/night-plaza.json",
+      "source": "shipped comparable: neon-lit plaza arenas (Geometry Wars / Ghostrunner plaza)",
+      "licence": "reference-only",
+      "why": "Overhead readability, baked emissive grid and night-atmosphere the arena targets"
+    },
+    {
+      "file": "references/drone-swarm.json",
+      "source": "admitted neonSwarmInterceptFleet / neonSwarmEngineHiveFleet GLBs (45k tris)",
+      "licence": "reference-only",
+      "why": "Two rigged+skinned drone families already admitted — silhouette and emissive budget"
+    },
+    {
+      "file": "references/mech-hero.json",
+      "source": "admitted neonSwarmMechHero GLB (28.7k tris, 124 joints, 37 clips)",
+      "licence": "reference-only",
+      "why": "The hero mech — clip list defines run/strafe/fire/staff states to wire"
+    }
+  ]
+}

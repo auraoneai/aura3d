@@ -4,7 +4,7 @@ import {
   QR_MAX_FRAME_DT,
   resolveMaxSubSteps,
   type AuraLoopOverloadPolicy
-} from "./app/frameLoopDefaults.js";
+} from "./nodes/game/frameLoopDefaults.js";
 
 export type FrameLoopSource = "raf" | "manual" | "fixed";
 

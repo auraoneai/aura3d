@@ -23,6 +23,7 @@ describe("public showcase gameplay regressions", () => {
     const turbo = readFileSync("apps/showcase-turbo-drift-circuit/src/main.ts", "utf8");
     const blockfall = readFileSync("apps/showcase-blockfall-reactor/src/main.ts", "utf8");
 
+    // invariant: source must keep `completed: false` — does not self-author completion or visual approval before mounted interaction
     expect(skyline).toContain("completed: false");
     expect(skyline).toContain("state.status === \"completed\"");
     expect(skyline).toContain("!completionProof.completed");

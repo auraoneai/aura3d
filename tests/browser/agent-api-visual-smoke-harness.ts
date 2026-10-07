@@ -1,24 +1,5 @@
-import {
-  camera,
-  character,
-  charts,
-  city,
-  collectAuraSceneEvidence,
-  createAuraApp,
-  defineAuraAssets,
-  effects,
-  games,
-  groups,
-  interactions,
-  lights,
-  physics,
-  prefabs,
-  scene,
-  shadows,
-  timeline,
-  type AuraSceneBuilder,
-  type AuraSceneNode
-} from "@aura3d/engine";
+import { camera, character, charts, city, createAuraApp, defineAuraAssets, effects, games, groups, interactions, lights, physics, prefabs, scene, shadows, timeline, type AuraSceneBuilder, type AuraSceneNode } from "@aura3d/engine";
+import { collectAuraSceneEvidence } from "@aura3d/engine/devtools";
 
 interface ImageMetrics {
   readonly nonDarkPixels: number;
