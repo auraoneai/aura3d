@@ -457,3 +457,26 @@ ready-poll 60s→150s repo-wide, release-render generator stepped-capture.
 Local verification: 11-template batch (`tpl-verify.log`) — all five classes
 re-verified green on packaged copies (large-scene browser PASSED, previously
 screenshot-timeout; arena-shooter `failures=0` earlier wave).
+
+## Wave 8 — verify batch results + character-controller starvation fix
+
+11-template local verification of the wave-7 capture rewrite (packaged copies,
+same harness command as Skills gate):
+
+| Template | Result |
+|---|---|
+| product-viewer, cinematic-scene, mini-game, episode-builder, three-compat-premium-product-viewer, -architecture-interior, -material-authoring, -asset-inspector, -large-scene | browser passed |
+| character-controller | browser passed (after two extra fixes below) |
+| animation-studio | fails identically on `origin/main` — lane-13 bug, filed as `requests/Q-13-12-animation-studio-flat-canvas.md` |
+
+character-controller needed two more fixes, verified `failures=0` after:
+- `route-health.spec.ts` had no `test.setTimeout`: the default 30s expired
+  under the new 180s threshold-hold budget — set 300_000 (matches the
+  screenshot spec).
+- `canvas.toBeVisible()` / bare `page.evaluate` starve behind the continuous
+  rAF render loop on software GL; moved the visibility assert into
+  `waitForFunction` (raf-polled, always gets a slot inside the frame).
+
+animation-studio is NOT a regression: identical uniqueBuckets failure on the
+`origin/main` worktree (7758a2710) — `renderer.render` leaves the canvas
+backbuffer uniform in that template on any runner. Lane 13 owns it (Q-13-12).

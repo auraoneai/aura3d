@@ -2,6 +2,11 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 
+// The locomotion proof's threshold hold alone can need most of a slow
+// software-GL minute; give the whole spec the same 300s headroom the
+// screenshot spec gets.
+test.setTimeout(300_000);
+
 test("character controller route exposes a live locomotion proof", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -37,8 +42,16 @@ test("character controller route exposes a live locomotion proof", async ({ page
   expect(sum).toBeGreaterThan(0.9);
   expect(sum).toBeLessThan(1.1);
   expect(errors).toEqual([]);
-  const canvas = page.locator("canvas").first();
-  await expect(canvas).toBeVisible();
+  // Playwright's visibility engine and bare evaluate() can starve behind the
+  // continuously rendering main thread just like boundingBox() below.
+  // waitForFunction polls inside the page's own animation frame, so it always
+  // gets a slot — assert the same semantics there.
+  await page.waitForFunction(() => {
+    const element = document.querySelector("canvas");
+    if (!(element instanceof HTMLCanvasElement)) return false;
+    const style = getComputedStyle(element);
+    return style.display !== "none" && style.visibility !== "hidden";
+  }, undefined, { timeout: 60_000 });
   // Locator boundingBox() can block behind the continuously rendering main
   // thread even after Playwright has resolved the canvas as visible. Read the
   // same layout rectangle synchronously in the page, as the proof reads its
