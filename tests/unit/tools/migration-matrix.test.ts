@@ -21,7 +21,10 @@ describe("Aura3D 2.0 version and package migration matrix", () => {
       .filter((name) => !name.endsWith(".md"));
     const now = readdirSync("packages", { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name);
     const removed = atBase.filter((name) => !now.includes(name));
-    expect(removed).toEqual([REMOVED_PRIVATE_PACKAGE]);
+    // PRD-15 T6.2/T6.5/T6.6 + earlier phases: editor, environments, materials and
+    // three-compat are intentionally deleted (surfaces moved into engine devtools /
+    // the CLI codemod / deprecated stubs).
+    expect(removed).toEqual(["editor", "environments", "materials", REMOVED_PRIVATE_PACKAGE, "three-compat"]);
     expect(JSON.parse(showAtBase(`packages/${REMOVED_PRIVATE_PACKAGE}/package.json`))).toMatchObject({ private: true });
     for (const selectedOwner of ["lean", "navigation-recast", "physics-rapier"]) expect(now).toContain(selectedOwner);
   });
@@ -34,7 +37,7 @@ describe("Aura3D 2.0 version and package migration matrix", () => {
     const released = manifests
       .map((path) => ({ path, manifest: JSON.parse(readFileSync(path, "utf8")) as { private?: boolean; name?: string; version?: string } }))
       .filter(({ manifest }) => manifest.private !== true);
-    expect(released.length).toBe(29);
+    expect(released.length).toBe(25);
     // 3.0.0 train (muse3jsparity L1 retarget): the coordinated major moved 2.0 -> 3.0.
     expect(coordinatedVersion).toMatch(/^3\.0\.\d+$/);
     expect(released.every(({ manifest }) => manifest.version === coordinatedVersion)).toBe(true);
@@ -47,10 +50,9 @@ describe("Aura3D 2.0 version and package migration matrix", () => {
     const removed = Object.keys(before.exports ?? {}).filter((key) => !(key in (after.exports ?? {})));
     expect(removed).toEqual(["./three-compat"]);
     expect((before.files ?? []).some((entry) => entry.includes("three-compat"))).toBe(false);
-    expect(JSON.parse(readFileSync("packages/three-compat/package.json", "utf8"))).toMatchObject({
-      name: "@aura3d/three-compat",
-      version: coordinatedVersion
-    });
+    // PRD-15 T6.2: the compatibility package was deleted; its migration surface moved to
+    // `aura3d migrate three` in packages/aura3d-cli (mapping engine constructs, not a runtime shim).
+    expect(() => readFileSync("packages/three-compat/package.json", "utf8")).toThrow();
   });
 
   it("documents every intentional physical/navigation removal and its semantic replacement", () => {

@@ -1,8 +1,8 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraApp, AuraGameLoopPlan, AuraGameRuntimeEvidence } from "../../nodes/types.js";
-import { DEFAULT_MAX_SUBSTEPS } from "../../app/frameLoopDefaults.js";
-import { createAuraGameRuntime } from "../../app/createAuraGameRuntime.js";
+import { DEFAULT_MAX_SUBSTEPS } from "./frameLoopDefaults.js";
+import { createAuraGameRuntime } from "./runtime.js";
 import { certifyPublicPlatformerPresentation, certifyPublicRacingPresentation, createGamePlatformerCameraRig, createGamePlatformerCheckpointNodes, createGamePlatformerFinishNodes, createGamePlatformerGroundMeshNodes, createGamePlatformerHazardNodes, createGamePlatformerPlatformMeshNodes, createGamePlatformerPresentationSurfaceNodes, createGamePublicPlatformerPresentationNodes, createGamePublicRacingPresentationNodes, createGameRacingCheckpointGateNodes, createGameRacingPresentationTrackNodes, createGameRacingRoadMeshNodes, createGameRacingStartFinishNodes } from "../../nodes/prefabs/gamePresentation.js";
 import { gameRules } from "../../gameRules.js";
 import { createFrameLoop } from "../../FrameLoop.js";

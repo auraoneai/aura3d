@@ -2,10 +2,10 @@
 
 Generated from `v1.5.2` and the current source tree. This audit covers every non-private package manifest, export subpath, recursively re-exported runtime/type symbol, CLI binary/command detected in source, and scaffold template name.
 
-- Baseline packages: **26**; current packages: **29**
-- Baseline export subpaths: **68**; current export subpaths: **96**
-- Baseline symbols: **13007**; current symbols: **15276**
-- Classified removals: **2267**; unclassified removals: **0**
+- Baseline packages: **26**; current packages: **25**
+- Baseline export subpaths: **68**; current export subpaths: **88**
+- Baseline symbols: **13007**; current symbols: **14822**
+- Classified removals: **2230**; unclassified removals: **0**
 - Incompatible retained-symbol declaration changes: **0**
 - Compatible retained-symbol declaration additions: **0**
 - Public schema identifiers: **25** baseline; **28** current
@@ -70,6 +70,7 @@ Generated from `v1.5.2` and the current source tree. This audit covers every non
 | `@aura3d/audio` | type-symbol | `AudioEqBandFixture` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/audio` | type-symbol | `AudioOcclusionLevel` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/audio` | type-symbol | `AudioSpectrumBandFixture` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
+| `@aura3d/editor` | package | `@aura3d/editor` | documented-prd15-6-honest-packages-deleted |
 | `@aura3d/editor-runtime` | runtime-symbol | `sampleLocalizationAccessibilityFixture` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/editor-runtime` | type-symbol | `EditorAccessibilityElementSample` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/editor-runtime` | type-symbol | `EditorAccessibilityRole` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
@@ -1979,26 +1980,7 @@ Generated from `v1.5.2` and the current source tree. This audit covers every non
 | `@aura3d/engine/scripting` | type-symbol | `ProceduralContentAdaptationOptions` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/engine/scripting` | type-symbol | `ProxemicZone` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/engine` | export-subpath | `./three-compat` | broken-1.5.2-root-alias-replaced-by-@aura3d/three-compat |
-| `@aura3d/environments` | runtime-symbol | `createProductionEnvironmentCorpusSummary` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/environments` | runtime-symbol | `createThreeCompatEnvironmentDiagnostics` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/environments` | runtime-symbol | `createThreeCompatEnvironmentGalleryModel` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/environments` | runtime-symbol | `findThreeCompatEnvironmentPreset` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/environments` | runtime-symbol | `inspectProductionHDR` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/environments` | runtime-symbol | `listThreeCompatEnvironmentPresets` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/environments` | runtime-symbol | `loadProductionEnvironmentManifest` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/environments` | runtime-symbol | `loadThreeCompatEnvironmentManifest` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/environments` | runtime-symbol | `summarizeThreeCompatEnvironmentLibrary` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/environments` | runtime-symbol | `verifyThreeCompatHdriFile` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/environments` | type-symbol | `ProductionEnvironmentCorpusSummary` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/environments` | type-symbol | `ProductionEnvironmentManifest` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/environments` | type-symbol | `ProductionEnvironmentProbeType` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/environments` | type-symbol | `ProductionEnvironmentReadinessEntry` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/environments` | type-symbol | `ProductionEnvironmentRequirements` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/environments` | type-symbol | `ProductionHDREnvironment` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/environments` | type-symbol | `ProductionHDRInspection` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/environments` | type-symbol | `ProductionPMREMPreset` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/environments` | type-symbol | `ThreeCompatEnvironmentLibrarySummary` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/environments` | type-symbol | `ThreeCompatEnvironmentManifest` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
+| `@aura3d/environments` | package | `@aura3d/environments` | documented-prd15-6-honest-packages-deleted |
 | `@aura3d/input` | runtime-symbol | `sampleGestureHapticsFixture` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/input` | runtime-symbol | `sampleInputActionBindingFixture` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/input` | runtime-symbol | `sampleXRRuntimeFixture` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
@@ -2011,8 +1993,7 @@ Generated from `v1.5.2` and the current source tree. This audit covers every non
 | `@aura3d/input` | type-symbol | `XRFixtureOptions` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/input` | type-symbol | `XRFixtureSessionMode` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/input` | type-symbol | `XRRuntimeFixture` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/materials` | runtime-symbol | `summarizeThreeCompatMaterialLibrary` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/materials` | type-symbol | `ThreeCompatMaterialLibrarySummary` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
+| `@aura3d/materials` | package | `@aura3d/materials` | documented-prd15-6-honest-packages-deleted |
 | `@aura3d/physics` | runtime-symbol | `arriveSteering` | documented-2.0-physics-navigation-owner-removal |
 | `@aura3d/physics` | runtime-symbol | `blendSteeringForces` | documented-2.0-physics-navigation-owner-removal |
 | `@aura3d/physics` | runtime-symbol | `buildNativeNarrowPhaseContact` | documented-2.0-physics-navigation-owner-removal |
@@ -2264,25 +2245,7 @@ Generated from `v1.5.2` and the current source tree. This audit covers every non
 | `@aura3d/scripting` | type-symbol | `ProceduralContentAdaptationFixture` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/scripting` | type-symbol | `ProceduralContentAdaptationOptions` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/scripting` | type-symbol | `ProxemicZone` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/three-compat` | runtime-symbol | `ColorGradingPassCompat` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/three-compat` | runtime-symbol | `CustomShaderMaterialCompat` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/three-compat` | runtime-symbol | `DepthOfFieldPassCompat` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/three-compat` | runtime-symbol | `diagnoseThreeCompatShader` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/three-compat` | runtime-symbol | `EffectComposerCompat` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/three-compat` | runtime-symbol | `FXAAPassCompat` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/three-compat` | runtime-symbol | `NodeMaterialCompat` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/three-compat` | runtime-symbol | `OutlinePassCompat` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/three-compat` | runtime-symbol | `RawShaderMaterialCompat` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/three-compat` | runtime-symbol | `RenderPassCompat` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/three-compat` | runtime-symbol | `SHADER_CHUNKS_THREE_COMPAT` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/three-compat` | runtime-symbol | `ShaderPassCompat` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/three-compat` | runtime-symbol | `SMAAPassCompat` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/three-compat` | runtime-symbol | `SSAOPassCompat` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/three-compat` | runtime-symbol | `TAAPassCompat` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/three-compat` | runtime-symbol | `UniformsCompat` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/three-compat` | runtime-symbol | `UnrealBloomPassCompat` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/three-compat` | runtime-symbol | `VignettePassCompat` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/three-compat` | export-subpath | `./postprocessing` | non-rendering-compat-fabrication-removed-with-actionable-warning |
+| `@aura3d/three-compat` | package | `@aura3d/three-compat` | documented-major-removal-or-migration |
 
 ## Retained declaration-contract changes
 
@@ -2559,6 +2522,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/engine:type:PlatformerMotionSolution` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:ProjectedLabel` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:RegisteredAnimationClip` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine:type:Vec3` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:VehicleChassisSpec` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:VehicleSurfaceSample` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:WorldLabel` — reviewed-2.0-public-declaration-contract-change
@@ -2693,23 +2657,33 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/engine-runtime:type:PlatformerMotionSolution` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:ProjectedLabel` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:RegisteredAnimationClip` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine-runtime:type:Vec3` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:VehicleChassisSpec` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:VehicleSurfaceSample` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:WorldLabel` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:WorldLabelLayer` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/input:runtime:ActionMap` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/input:runtime:FirstPersonControls` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/input:runtime:OrbitControls` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/input:runtime:PointerLockControls` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/input:type:A3DXRFrameLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/input:type:A3DXRInputSourceLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/input:type:A3DXRSessionLike` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/input:type:FirstPersonControlsOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/input:type:OrbitControlsOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/input:type:PointerEventLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/input:type:WebXRFrameSample` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/physics:runtime:addVec3` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/physics:runtime:Constraint` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/physics:runtime:EPSILON` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/physics:runtime:FightingCharacterController` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/physics:runtime:lengthVec3` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/physics:runtime:PhysicsDebugDraw` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/physics:runtime:PhysicsWorld` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/physics:runtime:RigidBody` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/physics:runtime:scaleVec3` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/physics:runtime:subVec3` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/physics:runtime:vec3` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/physics:type:ConstraintDescriptor` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/physics:type:ConstraintType` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/physics:type:DebugLine` — reviewed-2.0-public-declaration-contract-change
@@ -2718,6 +2692,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/physics:type:PhysicsContinuousCollisionSelection` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/physics:type:PhysicsWorldDescriptor` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/physics:type:RaycastOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/physics:type:Vec3` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/production-runtime:runtime:A3DRenderer` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/production-runtime:type:A3DFrameRenderResult` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/production-runtime:type:GameAppRuntime` — reviewed-2.0-public-declaration-contract-change
@@ -2831,22 +2806,47 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/rendering/production-runtime:type:ProductionRenderProof` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering/production-runtime:type:RenderPass` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering/production-runtime:type:RenderPassExecutionContext` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/scene:runtime:addVec3` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/scene:runtime:cloneMat4` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/scene:runtime:composeMat4` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/scene:runtime:decomposeMat4` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/scene:runtime:extractFrustumPlanes` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/scene:runtime:invertMat4` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/scene:runtime:lengthVec3` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/scene:runtime:multiplyMat4` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/scene:runtime:normalizeQuat` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/scene:runtime:normalizeVec3` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/scene:runtime:scaleVec3` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/scene:runtime:Scene` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/scene:runtime:subVec3` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/scene:runtime:toMathMat4` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/scene:runtime:toMathQuat` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/scene:runtime:toMathVec3` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/scene:runtime:transformPoint` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/scripting:type:VisualGraphExecutionContext` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/scripting:type:VisualNodeCategory` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/input:runtime:ActionMap` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/input:runtime:FirstPersonControls` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/input:runtime:OrbitControls` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/input:runtime:PointerLockControls` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/input:type:A3DXRFrameLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/input:type:A3DXRInputSourceLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/input:type:A3DXRSessionLike` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/input:type:FirstPersonControlsOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/input:type:OrbitControlsOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/input:type:PointerEventLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/input:type:WebXRFrameSample` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/physics:runtime:addVec3` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/physics:runtime:Constraint` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/physics:runtime:EPSILON` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/physics:runtime:FightingCharacterController` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/physics:runtime:lengthVec3` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/physics:runtime:PhysicsDebugDraw` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/physics:runtime:PhysicsWorld` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/physics:runtime:RigidBody` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/physics:runtime:scaleVec3` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/physics:runtime:subVec3` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/physics:runtime:vec3` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/physics:type:ConstraintDescriptor` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/physics:type:ConstraintType` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/physics:type:DebugLine` — reviewed-2.0-public-declaration-contract-change
@@ -2855,6 +2855,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/physics:type:PhysicsContinuousCollisionSelection` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/physics:type:PhysicsWorldDescriptor` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/physics:type:RaycastOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/physics:type:Vec3` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/react:runtime:Model` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/react:type:AuraCanvasProps` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/react:type:ModelProps` — reviewed-2.0-public-declaration-contract-change
@@ -2929,41 +2930,25 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/rendering:type:WebGPUDeviceLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:WebGPUParticleBackendOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:WebGPUQueueLike` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/scene:runtime:addVec3` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/scene:runtime:cloneMat4` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/scene:runtime:composeMat4` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/scene:runtime:decomposeMat4` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/scene:runtime:extractFrustumPlanes` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/scene:runtime:invertMat4` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/scene:runtime:lengthVec3` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/scene:runtime:multiplyMat4` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/scene:runtime:normalizeQuat` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/scene:runtime:normalizeVec3` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/scene:runtime:scaleVec3` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/scene:runtime:Scene` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/scene:runtime:subVec3` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/scene:runtime:toMathMat4` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/scene:runtime:toMathQuat` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/scene:runtime:toMathVec3` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/scene:runtime:transformPoint` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/scripting:type:VisualGraphExecutionContext` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/scripting:type:VisualNodeCategory` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat:runtime:AnimationActionCompat` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat:runtime:AnimationClipCompat` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat:runtime:AnimationMixerCompat` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat:runtime:DragControls` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat:runtime:FirstPersonControls` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat:runtime:FlyControls` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat:runtime:MapControls` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat:runtime:MorphTargetMixerCompat` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat:runtime:OrbitControls` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat:runtime:Picking` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat:runtime:PointerLockControls` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat:runtime:SelectionManager` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat:runtime:SkeletonCompat` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat:runtime:SkinnedMeshCompat` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat:runtime:TrackballControls` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat:runtime:TransformControls` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat:type:ThreeCompatControlState` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat:type:ThreeCompatPickResult` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat:type:TransformControlMode` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat/controls:runtime:DragControls` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat/controls:runtime:FirstPersonControls` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat/controls:runtime:FlyControls` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat/controls:runtime:MapControls` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat/controls:runtime:OrbitControls` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat/controls:runtime:Picking` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat/controls:runtime:PointerLockControls` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat/controls:runtime:SelectionManager` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat/controls:runtime:TrackballControls` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat/controls:runtime:TransformControls` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat/controls:type:ThreeCompatControlState` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat/controls:type:ThreeCompatPickResult` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/three-compat/controls:type:TransformControlMode` — reviewed-2.0-public-declaration-contract-change
 - `create-aura3d:type:CreateA3DProjectOptions` — reviewed-2.0-public-declaration-contract-change
 - `create-aura3d:type:CreateA3DProjectResult` — reviewed-2.0-public-declaration-contract-change
 - `create-aura3d:type:ShowcaseRacingTrackTopology` — reviewed-2.0-public-declaration-contract-change

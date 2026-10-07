@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { createThreeCompatEnvironmentGalleryModel } from "../../packages/environments/src";
+import { createThreeCompatEnvironmentGalleryModel } from "../../packages/engine/src/devtools/environments";
 
 test("ThreeCompat environment gallery renders all probe types for every environment", async ({ page }) => {
   const gallery = createThreeCompatEnvironmentGalleryModel();

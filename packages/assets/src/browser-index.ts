@@ -10,7 +10,8 @@ export type { AssetLoadOptions, AssetManagerOptions } from "./AssetManager";
 export { AssetRegistry } from "./AssetRegistry";
 export { ImageLoader } from "./ImageLoader";
 export type { ImageAsset } from "./ImageLoader";
-export { GLTFLoader, normalizeSkinWeights, parseMaterialVariantSelection, resolveAnimationPointerBinding, serializeMaterialVariantSelection } from "./GLTFLoader";
+export { GLTFLoader, normalizeSkinWeights, parseGlbDocument, parseMaterialVariantSelection, resolveAnimationPointerBinding, serializeMaterialVariantSelection } from "./GLTFLoader";
+export type { GLBDocumentInspection } from "./GLTFLoader";
 export { autoFitGLTFScene, computeAutoFitTransform } from "./GLTFAutoFit";
 export type { AutoFitOptions, AutoFitTransform, GLTFUpAxis } from "./GLTFAutoFit";
 export type {

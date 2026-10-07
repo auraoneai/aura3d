@@ -1,4 +1,17 @@
-export type Vec3 = readonly [number, number, number];
+import {
+  EPSILON,
+  addVec3,
+  lengthVec3,
+  normalizeVec3 as normalizeCanonicalVec3,
+  scaleVec3,
+  subVec3,
+  vec3
+} from "@aura3d/scene/math";
+import type { Vec3 as CanonicalVec3 } from "@aura3d/scene/math";
+
+export type Vec3 = Readonly<CanonicalVec3>;
+
+export { EPSILON, addVec3, lengthVec3, scaleVec3, subVec3, vec3 };
 
 export type BoxShape = {
   readonly kind: "box";
@@ -49,42 +62,19 @@ export type Bounds = {
   readonly max: Vec3;
 };
 
-export const EPSILON = 1e-9;
-
-export function vec3(x = 0, y = 0, z = 0): [number, number, number] {
-  return [x, y, z];
-}
-
 export function cloneVec3(value: Vec3): [number, number, number] {
   return [value[0], value[1], value[2]];
-}
-
-export function addVec3(a: Vec3, b: Vec3): [number, number, number] {
-  return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
-}
-
-export function subVec3(a: Vec3, b: Vec3): [number, number, number] {
-  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
-}
-
-export function scaleVec3(value: Vec3, scalar: number): [number, number, number] {
-  return [value[0] * scalar, value[1] * scalar, value[2] * scalar];
 }
 
 export function dotVec3(a: Vec3, b: Vec3): number {
   return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }
 
-export function lengthVec3(value: Vec3): number {
-  return Math.hypot(value[0], value[1], value[2]);
-}
-
 export function normalizeVec3(value: Vec3): [number, number, number] {
-  const length = lengthVec3(value);
-  if (length <= EPSILON) {
+  if (lengthVec3(value) <= EPSILON) {
     throw new Error("Cannot normalize a zero-length vector.");
   }
-  return [value[0] / length, value[1] / length, value[2] / length];
+  return normalizeCanonicalVec3(value);
 }
 
 export function minVec3(a: Vec3, b: Vec3): [number, number, number] {

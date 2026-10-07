@@ -2,7 +2,8 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
 import { OrbitControls as ThreeOrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { InputSnapshot, OrbitControls } from "../../../packages/input/src";
+import { InputSnapshot } from "@aura3d/input";
+import { OrbitControls } from "../../../packages/controls/src/engine/OrbitControls";
 
 describe("OrbitControls Three.js parity", () => {
   it("matches Three.js orbit rotation and wheel dolly for the same pointer sequence", () => {

@@ -113,8 +113,6 @@ describe("verification tools", () => {
       "ecs",
       "rendering",
       "controls",
-      "environments",
-      "materials",
       "engine",
       "apps",
       "physics",
@@ -124,25 +122,26 @@ describe("verification tools", () => {
       "input",
       "audio",
       "create-aura3d",
-      "three-compat",
       "asset-index",
       "aura3d-cli",
       "react",
       "scripting",
       "workflows",
       "editor-runtime",
-      "editor",
       "debug",
       "lean",
       "navigation-recast",
-      "physics-rapier"
+      "physics-rapier",
+      "game"
     ];
     for (const packageName of packages) {
       mkdirSync(join(root, "packages", packageName, "src"), { recursive: true });
       writeFileSync(join(root, "packages", packageName, "src", "index.ts"), "export {};\n");
-      writeFileSync(join(root, "packages", packageName, "package.json"), JSON.stringify({
-        name: expectedPackageName(packageName)
-      }));
+      writeFileSync(join(root, "packages", packageName, "package.json"), JSON.stringify(
+        packageName === "game"
+          ? { name: expectedPackageName(packageName), private: true }
+          : { name: expectedPackageName(packageName) }
+      ));
     }
     writeFileSync(join(root, "packages", "rendering", "src", "Renderer.ts"), "export class Renderer {}\n");
     writeFileSync(join(root, "packages", "rendering", "src", "ShaderLibrary.ts"), "export class ShaderLibrary {}\n");
@@ -150,7 +149,7 @@ describe("verification tools", () => {
     writeFileSync(join(root, "packages", "core", "src", "EventBus.ts"), "export class EventBus {}\n");
     writeFileSync(join(root, "packages", "scene", "src", "Hierarchy.ts"), "export class Hierarchy {}\n");
 
-    const exportsMap = Object.fromEntries(packages.map((packageName) => [`./${packageName}`, `./dist/${packageName}/index.js`]));
+    const exportsMap = Object.fromEntries(packages.filter((packageName) => packageName !== "game").map((packageName) => [`./${packageName}`, `./dist/${packageName}/index.js`]));
     const scripts = Object.fromEntries([
       "typecheck",
       "build",
@@ -222,8 +221,6 @@ describe("verification tools", () => {
       "ecs",
       "rendering",
       "controls",
-      "environments",
-      "materials",
       "engine",
       "apps",
       "physics",
@@ -233,25 +230,26 @@ describe("verification tools", () => {
       "input",
       "audio",
       "create-aura3d",
-      "three-compat",
       "asset-index",
       "aura3d-cli",
       "react",
       "scripting",
       "workflows",
       "editor-runtime",
-      "editor",
       "debug",
       "lean",
       "navigation-recast",
-      "physics-rapier"
+      "physics-rapier",
+      "game"
     ];
     for (const packageName of packages) {
       mkdirSync(join(root, "packages", packageName, "src"), { recursive: true });
       writeFileSync(join(root, "packages", packageName, "src", "index.ts"), "export {};\n");
-      writeFileSync(join(root, "packages", packageName, "package.json"), JSON.stringify({
-        name: expectedPackageName(packageName)
-      }));
+      writeFileSync(join(root, "packages", packageName, "package.json"), JSON.stringify(
+        packageName === "game"
+          ? { name: expectedPackageName(packageName), private: true }
+          : { name: expectedPackageName(packageName) }
+      ));
     }
     writeFileSync(join(root, "packages", "rendering", "src", "Renderer.ts"), "export class Renderer {}\n");
     writeFileSync(join(root, "packages", "rendering", "src", "ShaderLibrary.ts"), "export class ShaderLibrary {}\n");
@@ -259,7 +257,7 @@ describe("verification tools", () => {
     writeFileSync(join(root, "packages", "core", "src", "EventBus.ts"), "export class EventBus {}\n");
     writeFileSync(join(root, "packages", "scene", "src", "Hierarchy.ts"), "export class Hierarchy {}\n");
 
-    const exportsMap = Object.fromEntries(packages.map((packageName) => [`./${packageName}`, `./dist/${packageName}/index.js`]));
+    const exportsMap = Object.fromEntries(packages.filter((packageName) => packageName !== "game").map((packageName) => [`./${packageName}`, `./dist/${packageName}/index.js`]));
     const scripts = Object.fromEntries([
       "typecheck",
       "build",

@@ -5,7 +5,7 @@ export function createMaterialInspector(...args: Parameters<typeof _mt.createMat
 export function minimumMaterialFeatureDistance(specs: Parameters<typeof _mt.minimumMaterialFeatureDistance>[0]): ReturnType<typeof _mt.minimumMaterialFeatureDistance> { return _mt.minimumMaterialFeatureDistance(specs); }
 export { PHYSICAL_SPEC_KEYS } from "./nodes/materialTools.js";
 
-import * as _createAuraGameRuntime from "./app/createAuraGameRuntime.js";
+import * as _createAuraGameRuntime from "./nodes/game/runtime.js";
 export function createAuraGameRuntime(...args: Parameters<typeof _createAuraGameRuntime.createAuraGameRuntime>): ReturnType<typeof _createAuraGameRuntime.createAuraGameRuntime> { return _createAuraGameRuntime.createAuraGameRuntime(...args); }
 
 import * as _gamePresentation from "./nodes/prefabs/gamePresentation.js";
@@ -289,9 +289,9 @@ export { createGameRacingTopDownCamera } from "./nodes/prefabs/gamePresentation.
 export { prefabs } from "./nodes/prefabs/index.js";
 export { primitive, primitives } from "./nodes/primitives.js";
 export { product } from "./nodes/product.js";
-export { definePromptPlan, compilePromptPlan } from "./nodes/prompt/promptPlan.js";
+export { definePromptPlan, compilePromptPlan, promptPlanToScene } from "./nodes/prompt/promptPlan.js";
 export { promptRecipes } from "./nodes/prompt/promptRecipes.js";
-export { promptSubjectIsResolved, resolvePromptPlanSubject, promptPlanToScene } from "./nodes/promptPlans.js";
+export { promptSubjectIsResolved, resolvePromptPlanSubject } from "./nodes/promptPlans.js";
 export { resolveFrameAssetRenderScale, AuraSceneBuilder, scene } from "./nodes/scene.js";
 export { solarMaterialPresetsInNodes, solar } from "./nodes/solar.js";
 export { rootSdfFontAtlas, text3D } from "./nodes/text3d.js";

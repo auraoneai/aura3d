@@ -681,7 +681,6 @@ Maintained scene-kit families include physics playgrounds, particle fountains, s
 - `@aura3d/cli`: typed GLB/glTF asset workflow, diagnostics, and deploy checks.
 - `@aura3d/react`: optional thin React adapter.
 - `create-aura3d`: Vite templates for product viewers, cinematic scenes, and mini-games.
-- `@aura3d/three-compat`: optional migration compatibility package, installed separately when a Three.js migration workflow needs it.
 
 ## Production browser 3D workflow
 

@@ -66,7 +66,6 @@ const report = {
     "benchmarks/threejs/**",
     "tools/**threejs**/**",
     "tests/**threejs**/**",
-    "packages/three-compat/**",
     "docs and comparison prose"
   ],
   findings

@@ -316,6 +316,11 @@ function classifyRemoval(scope: string, name: string): string {
     return "documented-prd15-t2-t4-production-effects-and-parity-contracts-deleted";
   }
   if (scope === "@aura3d/three-compat" && name === "./postprocessing") return "non-rendering-compat-fabrication-removed-with-actionable-warning";
+  // PRD-15 §6 (T6.2/T6.5/T6.6): the three packages are deleted outright — their
+  // real surfaces moved into engine devtools barrels and the aura3d CLI codemod.
+  if (["@aura3d/editor", "@aura3d/environments", "@aura3d/materials"].includes(scope)) {
+    return "documented-prd15-6-honest-packages-deleted";
+  }
   // WS-2.3/2.6 deliberately removed the public data generators and descriptor
   // facades that claimed runtime behavior without owning it. Keep this pattern
   // explicit: a new unrelated removal must remain unclassified and fail.

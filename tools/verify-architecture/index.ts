@@ -44,8 +44,6 @@ const publicPackages = [
   "ecs",
   "rendering",
   "controls",
-  "environments",
-  "materials",
   "engine",
   "apps",
   "physics",
@@ -55,7 +53,6 @@ const publicPackages = [
   "input",
   "audio",
   "create-aura3d",
-  "three-compat",
   // Published `@aura3d/*` packages that predate this allow-list and were reported as
   // "outside the target repository structure" purely because the list was never updated.
   "asset-index",
@@ -64,14 +61,13 @@ const publicPackages = [
   "scripting",
   "workflows",
   "editor-runtime",
-  "editor",
   "debug",
   "lean",
   "navigation-recast",
   "physics-rapier"
 ] as const;
 
-const privatePackages = [] as const;
+const privatePackages = ["game"] as const;
 const requiredPackages = [...publicPackages, ...privatePackages] as const;
 
 const requiredTestDirs = [
@@ -157,7 +153,6 @@ const packagesWithoutRootSubpathExport = [
   "aura3d-cli",
   "asset-index",
   "react",
-  "three-compat",
   "navigation-recast",
   "physics-rapier"
 ] as const;

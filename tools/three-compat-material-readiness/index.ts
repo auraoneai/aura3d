@@ -6,7 +6,7 @@ import {
   listThreeCompatPbrMaterials,
   summarizeThreeCompatMaterialLibrary,
   THREE_COMPAT_REQUIRED_MATERIAL_CLASSES
-} from "../../packages/materials/src/node";
+} from "../../packages/engine/src/devtools/materials/node";
 
 interface ThreeCompatMaterialManifest {
   readonly schema: "a3d-three-compat-material-library";
@@ -30,11 +30,11 @@ interface ThreeCompatMaterialReadinessCheck {
 const requiredFiles = [
   "fixtures/three-compat/materials/manifest.json",
   "fixtures/three-compat/materials/licenses.md",
-  "packages/materials/src/PBRMaterialLibrary.ts",
-  "packages/materials/src/MaterialPreset.ts",
-  "packages/materials/src/TextureSet.ts",
-  "packages/materials/src/MaterialValidation.ts",
-  "packages/materials/src/MaterialPreviewScene.ts",
+  "packages/engine/src/devtools/materials/PBRMaterialLibrary.ts",
+  "packages/engine/src/devtools/materials/MaterialPreset.ts",
+  "packages/engine/src/devtools/materials/TextureSet.ts",
+  "packages/engine/src/devtools/materials/MaterialValidation.ts",
+  "packages/engine/src/devtools/materials/MaterialPreviewScene.ts",
   "tests/unit/materials/three-compat-material-library.test.ts",
   "tests/browser/three-compat-material-library.spec.ts"
 ] as const;

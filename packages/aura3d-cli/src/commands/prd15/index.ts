@@ -54,3 +54,39 @@ registerCliCommand({
     return 0;
   }
 });
+
+import { globSync as globSyncMigrate } from "node:fs";
+import { readFileSync as readMigrateFile, writeFileSync as writeMigrateFile } from "node:fs";
+import { emitMigratedSource } from "../../migrate-three/emit.js";
+import { buildMigrateReport, formatMigrateReport } from "../../migrate-three/report.js";
+
+registerCliCommand({
+  name: "migrate three",
+  owner: "prd15",
+  summary: "Rewrite Three.js source to @aura3d/engine constructs via the T6.1 mapping table.",
+  usage: "aura3d migrate three <glob> [--write] [--report]",
+  async run(argv, io) {
+    const glob = argv[0];
+    if (!glob) {
+      io.stderr("usage: aura3d migrate three <glob> [--write] [--report]");
+      return 2;
+    }
+    const write = argv.includes("--write");
+    const files = globSyncMigrate(glob, { cwd: io.cwd, exclude: (p) => p.includes("node_modules") }).filter((f) => f.endsWith(".ts") || f.endsWith(".js") || f.endsWith(".tsx") || f.endsWith(".jsx"));
+    const allRows: import("../../migrate-three/emit.js").MigrateRow[] = [];
+    let changed = 0;
+    for (const file of files) {
+      const source = readMigrateFile(file, "utf8");
+      const { code, rows } = emitMigratedSource(source);
+      allRows.push(...rows.map((r) => ({ ...r })));
+      if (code !== source) {
+        changed++;
+        if (write) writeMigrateFile(file, code);
+      }
+    }
+    const report = buildMigrateReport(allRows);
+    io.stdout(formatMigrateReport(report));
+    io.stderr(`migrate-three: ${files.length} files, ${changed} changed, ${report.counts.approximate} approximate, ${report.counts.none} unmapped`);
+    return 0;
+  }
+});

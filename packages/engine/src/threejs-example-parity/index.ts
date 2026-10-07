@@ -19,7 +19,7 @@ import type { CollectedLight } from "../../../rendering/src/LightCollector";
 import {
   createCinematicMaterialPreset,
   createCinematicPBRMaterial
-} from "../../../rendering/src/cinematic/CinematicMaterialPresets";
+} from "../../../rendering/src/MaterialPresets";
 import { createEmissivePracticalLightSystem } from "../../../rendering/src/cinematic/EmissivePracticalLightSystem";
 import { createFogVolumeSystem } from "../../../rendering/src/cinematic/FogVolumeSystem";
 import { createRainParticleSystem } from "../../../rendering/src/cinematic/RainParticleSystem";
@@ -57,7 +57,7 @@ import {
   resolveCurrentRoutesEnvironment,
   type CurrentRoutesEnvironmentId,
   type CurrentRoutesEnvironmentPreset
-} from "../../../environments/src/threejs-example-parity/index";
+} from "./environments.js";
 import { PointLight, composeMat4 } from "../../../scene/src/index";
 
 export {

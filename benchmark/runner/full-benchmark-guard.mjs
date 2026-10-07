@@ -83,7 +83,7 @@ const approvedPrefixes = [
   "packages/engine/src/agent-api/index.ts",
   "packages/physics/",
   "packages/rendering/",
-  "packages/materials/",
+  "packages/engine/src/devtools/materials/",
   "packages/product-studio/",
   "benchmark/runner/",
   "benchmark/context/",

@@ -28,12 +28,9 @@ const sourceRoots = [
   "packages/controls/src",
   "packages/core/src",
   "packages/ecs/src",
-  "packages/editor/src",
   "packages/editor-runtime/src",
   "packages/engine/src",
-  "packages/environments/src",
   "packages/input/src",
-  "packages/materials/src",
   "packages/math/src",
   "packages/physics/src",
   "packages/product-studio/src",
@@ -53,9 +50,7 @@ const distRoots = [
   "dist/editor",
   "dist/editor-runtime",
   "dist/engine",
-  "dist/environments",
   "dist/input",
-  "dist/materials",
   "dist/math",
   "dist/physics",
   "dist/product-studio",
@@ -177,7 +172,6 @@ writeReport(reportPath, "a3d-package-no-three-runtime", checks, {
   distRootsScanned: distRoots.filter((root) => existsSync(resolve(root))),
   allowedThreeUsage: [
     "root devDependencies for local parity and migration tests",
-    "packages/three-compat/** source (adapters and string-literal import maps only, never a three runtime import)",
     "benchmarks/**",
     "tools/**threejs**/**",
     "tests explicitly scoped to Three.js parity or @aura3d/three-compat"
@@ -249,7 +243,7 @@ function runPackDryRun(): PackResult | undefined {
 function scanPackFiles(files: readonly PackFile[]): ImportFinding[] {
   const findings: ImportFinding[] = [];
   for (const file of files) {
-    if (!/^dist\/(?:animation|assets|audio|controls|core|ecs|editor|editor-runtime|engine|environments|input|materials|math|physics|product-studio|react|rendering|scene|scripting|workflows)\//.test(file.path)) continue;
+    if (!/^dist\/(?:animation|assets|audio|controls|core|ecs|editor|editor-runtime|engine|input|math|physics|product-studio|react|rendering|scene|scripting|workflows)\//.test(file.path)) continue;
     if (!/\.(js|mjs|cjs|d\.ts)$/i.test(file.path)) continue;
     if (!existsSync(resolve(file.path))) continue;
     scanFile(file.path, findings);

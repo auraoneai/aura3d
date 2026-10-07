@@ -5,7 +5,7 @@ import { AuraNodeBuilder } from "../../nodes/builder.js";
 import { effects } from "../../nodes/effects.composite.js";
 import { interactions } from "../../nodes/interactions.js";
 import { promptSubjectIsResolved } from "../../nodes/promptPlans.js";
-import { scene } from "../../nodes/scene.js";
+import { AuraSceneBuilder, scene } from "../../nodes/scene.js";
 import { camera } from "../camera.js";
 import { promptRecipes } from "./promptRecipes.js";
 
@@ -49,11 +49,7 @@ export function requireResolvedPromptSubject(plan: AuraPromptPlan): AuraPromptRe
   return plan.subject;
 }
 
-export function interactionNode(mode: AuraPromptInteractionMode, target?: string): AuraNodeBuilder<AuraInteractionNode> {
-  if (mode === "keyboard") return interactions.keyboard({ target });
-  if (mode === "pointer") return interactions.pointer({ target });
-  return interactions.orbit({ target });
-}
+// APPLIED BY LANE 15 (T6.11 no-cycles): interactionNode moved to promptRecipes.ts.
 
 export function defaultCameraPreset(sceneType: AuraPromptSceneType): AuraPromptCameraPreset {
   if (sceneType === "cinematic-scene") return "cinematic-dolly";
@@ -160,4 +156,10 @@ export function promptPlanWarnings(plan: AuraPromptPlan): readonly string[] {
     warnings.push("PromptPlan negative criteria are missing; default anti-patterns were applied.");
   }
   return warnings;
+}
+
+// APPLIED BY LANE 15 (T6.11 no-cycles): moved from ../promptPlans.ts so that file
+// no longer imports this module (SCC-3 broke the layering gate).
+export function promptPlanToScene(plan: AuraPromptPlan): AuraSceneBuilder {
+  return compilePromptPlan(plan).scene;
 }

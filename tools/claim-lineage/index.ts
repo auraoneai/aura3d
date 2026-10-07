@@ -50,8 +50,6 @@ const PUBLIC_ENTRY_SPECIFIERS = [
   "@aura3d/math",
   "@aura3d/core",
   "@aura3d/apps",
-  "@aura3d/materials",
-  "@aura3d/environments",
   "@aura3d/product-studio",
   "@aura3d/workflows",
   "@aura3d/cli",

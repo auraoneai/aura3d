@@ -207,13 +207,9 @@ function auraSourceAlias(): Plugin {
     ["@aura3d/ecs", "packages/ecs/src/index.ts"],
     ["@aura3d/workflows", "packages/workflows/src/index.ts"],
     ["@aura3d/editor-runtime", "packages/editor-runtime/src/index.ts"],
-    ["@aura3d/editor", "packages/editor/src/index.ts"],
     ["@aura3d/debug", "packages/debug/src/index.ts"],
     ["@aura3d/scripting", "packages/scripting/src/index.ts"],
-    ["@aura3d/materials", "packages/materials/src/index.ts"],
-    ["@aura3d/environments", "packages/environments/src/index.ts"],
-    ["@aura3d/asset-index", "packages/asset-index/src/index.ts"],
-    ["@aura3d/three-compat", "packages/three-compat/src/index.ts"]
+    ["@aura3d/asset-index", "packages/asset-index/src/index.ts"]
   ]);
   return {
     name: "aura3d-source-alias",

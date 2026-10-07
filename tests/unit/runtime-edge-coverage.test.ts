@@ -44,8 +44,8 @@ const runtimeSuiteMappings: Record<string, RuntimeSuiteMapping> = {
     suites: [
       "tests/unit/controls/interaction-controls.test.ts",
       "tests/unit/controls/picking-contract.test.ts",
-      "tests/unit/controls/three-compat-controls.test.ts",
-      "tests/unit/controls/transform-controls-three-parity.test.ts"
+      "tests/unit/controls/transform-controls-three-parity.test.ts",
+      "tests/qr/prd15/controls/controls-equivalence.test.ts"
     ],
     edgeTerms: [/pointer/i, /drag/i, /dispose/i, /invalid/i, /selection/i]
   },
@@ -81,14 +81,6 @@ const runtimeSuiteMappings: Record<string, RuntimeSuiteMapping> = {
     suites: ["tests/unit/workstream5-runtime.test.ts", "tests/unit/workstream5-input-audio-scripting-editor.test.ts"],
     edgeTerms: [/undo/i, /redo/i, /rollback/i, /delete/i, /selection/i]
   },
-  environments: {
-    suites: [
-      "tests/unit/environments/production-runtime-hdr-environment-corpus.test.ts",
-      "tests/unit/environments/three-compat-environments.test.ts",
-      "tests/unit/rendering/environment-platform.test.ts"
-    ],
-    edgeTerms: [/HDR/i, /missing/i, /diagnostics?/i, /fallback/i, /PMREM/i]
-  },
   input: {
     suites: [
       "tests/unit/input/camera-controls.test.ts",
@@ -108,15 +100,6 @@ const runtimeSuiteMappings: Record<string, RuntimeSuiteMapping> = {
   math: {
     suites: ["tests/unit/math/edge-cases.test.ts", "tests/unit/math/geometry-random.test.ts", "tests/unit/math/vector-matrix.test.ts"],
     edgeTerms: [/degenerate/i, /rejects?/i, /undefined/i, /deterministic/i, /singular/i]
-  },
-  materials: {
-    suites: [
-      "tests/unit/materials/three-compat-material-library.test.ts",
-      "tests/unit/rendering/material-binding.test.ts",
-      "tests/unit/rendering/material-presets.test.ts",
-      "tests/unit/rendering/physical-material-presets.test.ts"
-    ],
-    edgeTerms: [/invalid/i, /texture/i, /diagnostics?/i, /preset/i, /material/i]
   },
   physics: {
     suites: ["tests/unit/workstream4.physics-animation.test.ts", "tests/integration/physics-animation-scene-ecs.test.ts"],
@@ -166,15 +149,6 @@ const runtimeSuiteMappings: Record<string, RuntimeSuiteMapping> = {
   scripting: {
     suites: ["tests/unit/workstream5-input-audio-scripting-editor.test.ts", "tests/integration/scripting-scene-ecs.test.ts"],
     edgeTerms: [/validation/i, /execution order/i, /event/i, /serialization/i, /deterministic/i]
-  },
-  "three-compat": {
-    suites: [
-      "tests/unit/three-compat/three-compat-core-compat.test.ts",
-      "tests/unit/three-compat/three-compat-material-geometry-compat.test.ts",
-      "tests/unit/three-compat/three-compat-migration.test.ts",
-      "tests/unit/three-compat/three-compat-threejs-inventory.test.ts"
-    ],
-    edgeTerms: [/compat/i, /migration/i, /warnings?/i, /unsupported/i, /inventory/i]
   },
   workflows: {
     suites: [
@@ -330,7 +304,7 @@ describe("runtime edge-case coverage audit", () => {
       "packages/input/src/Haptics.ts:* `{ played: false, reason }` instead of fake success on unsupported hosts.",
       "packages/input/src/Haptics.ts:parts.push(vibrate ? \"navigator.vibrate available\" : \"navigator.vibrate unavailable\");",
       "packages/input/src/Haptics.ts:parts.push(gamepadRumble ? \"gamepad rumble available\" : \"gamepad rumble unavailable\");",
-      "packages/materials/src/GameReadyMaterialLibrary.ts:{ name: \"opacity\", default: 0.35, range: \"0..1\", effect: \"Blend fallback where transmission is unavailable.\" }",
+      "packages/engine/src/devtools/materials/GameReadyMaterialLibrary.ts:{ name: \"opacity\", default: 0.35, range: \"0..1\", effect: \"Blend fallback where transmission is unavailable.\" }",
       // 3.0.1: missing/invalidated native SSR output, absent native queue
       // completion, and absent particle adapter metadata are real capability
       // failures. Keep these fail-closed diagnostics visible, not disguised.

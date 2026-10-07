@@ -15,9 +15,7 @@
     "@aura3d/math": "workspace:*",
     "@aura3d/scene": "workspace:*"
   },
-  "devDependencies": {
-    "@aura3d/engine": "workspace:*"
-  },
+  "devDependencies": {},
   "description": "Runtime editor command history, selection state, picking, inspector models, play-mode snapshots, material variants, and transform gizmos for Aura3D.",
   "keywords": [
     "aura3d",

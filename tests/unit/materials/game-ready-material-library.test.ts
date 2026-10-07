@@ -5,7 +5,7 @@ import {
   listGameReadyMaterials,
   validateGameReadyMaterialLibrary,
   validateGameReadyMaterialPreset
-} from "../../../packages/materials/src/node";
+} from "../../../packages/engine/src/devtools/materials/node";
 
 const EXPECTED_KINDS = ["carPaint", "skinSSS-approx", "glassThin", "brushedMetal", "foliage", "concreteAsphalt"] as const;
 

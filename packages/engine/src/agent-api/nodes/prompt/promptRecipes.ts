@@ -1,7 +1,9 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraAssetRef, AuraPromptPlan } from "../../nodes/types.js";
+import type { AuraAssetRef, AuraInteractionNode, AuraPromptInteractionMode, AuraPromptPlan } from "../../nodes/types.js";
 import { prefabs } from "../prefabs/index.js";
+import { AuraNodeBuilder } from "../builder.js";
+import { interactions } from "../interactions.js";
 import { AuraSceneBuilder } from "../scene.js";
 import { effects } from "../effects.composite.js";
 import { model } from "../model.js";
@@ -11,7 +13,8 @@ import { timeline } from "../timeline.js";
 import { camera } from "../camera.js";
 import { lights } from "../lights.js";
 import { material } from "../material.js";
-import { interactionNode } from "./promptPlan.js";
+// APPLIED BY LANE 15 (T6.11 no-cycles): verbatim move from promptPlan.ts — importing it back created the prompt SCC.
+
 
 export const promptRecipes = {
 	  "product-viewer": (asset: AuraAssetRef<"model">, plan: AuraPromptPlan): AuraSceneBuilder =>
@@ -117,3 +120,9 @@ export const promptRecipes = {
       .camera(camera.perspective({ position: [0.15, 1.35, 4.1], target: [0.25, 0.45, -0.75], fov: 43 }))
       .timeline(timeline.loop({ seconds: 8 }))
 } as const;
+
+export function interactionNode(mode: AuraPromptInteractionMode, target?: string): AuraNodeBuilder<AuraInteractionNode> {
+  if (mode === "keyboard") return interactions.keyboard({ target });
+  if (mode === "pointer") return interactions.pointer({ target });
+  return interactions.orbit({ target });
+}

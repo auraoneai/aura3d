@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { createProductionAssetCorpusSummary } from "../../packages/assets/src/asset-corpus";
-import { createProductionEnvironmentCorpusSummary } from "../../packages/environments/src/production-runtime";
+import { createProductionEnvironmentCorpusSummary } from "../../packages/engine/src/devtools/environments/production-runtime";
 
 const reportPath = resolve("tests/reports/production-runtime-asset-readiness.json");
 const assetSummary = createProductionAssetCorpusSummary();

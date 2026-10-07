@@ -1,7 +1,7 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraAssetRef, AuraMaterialSpec, AuraMaterialTextureInput, AuraPrimitiveNode, AuraProceduralTextureSpec, AuraTextureTransform, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource } from "../nodes/types.js";
-import { AuraRuntimeError } from "../app/errors.js";
+import { AuraRuntimeError } from "./errors.js";
 import { colorToLinearRgb } from "../colorUtils.js";
 import { createProductionPrimitiveMaterial, resolveProductionPrimitiveScalars } from "../compiler/primitives.js";
 import { primitive } from "../nodes/primitives.js";

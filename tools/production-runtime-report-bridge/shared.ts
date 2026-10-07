@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, statSync, copyFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { createProductionAssetCorpusSummary, loadProductionAssetManifest } from '../../packages/assets/src/asset-corpus/ProductionAssetCorpus';
-import { createProductionEnvironmentCorpusSummary, loadProductionEnvironmentManifest } from '../../packages/environments/src/production-runtime/ProductionEnvironmentCorpus';
+import { createProductionEnvironmentCorpusSummary, loadProductionEnvironmentManifest } from '../../packages/engine/src/devtools/environments/production-runtime/ProductionEnvironmentCorpus';
 import { readProductionPngStats, type ProductionPngStats } from './pngStats';
 
 type Json = Record<string, unknown>;

@@ -103,7 +103,7 @@ const trackTitles: Record<Track, string> = {
 const trackPackages: Record<Track, readonly string[]> = {
   A: ["packages/scene", "packages/math", "packages/engine"],
   B: ["packages/rendering"],
-  C: ["packages/rendering", "packages/environments", "packages/materials"],
+  C: ["packages/rendering", "packages/engine/src/devtools/materials"],
   D: ["packages/assets"],
   E: ["packages/animation", "packages/assets", "packages/rendering"],
   F: ["packages/controls", "packages/input", "packages/editor-runtime"],

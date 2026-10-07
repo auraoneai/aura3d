@@ -7,4 +7,4 @@ if (!warned.has(key)) {
   // eslint-disable-next-line no-console
   console.warn(`[aura3d] ${key} is deprecated and resolves to ./editor-runtime; it will be removed in 4.0.0.`);
 }
-export * from "@aura3d/editor";
+export * from "@aura3d/editor-runtime";

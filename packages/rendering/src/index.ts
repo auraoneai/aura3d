@@ -405,7 +405,8 @@ export type { TextureBindingDescriptor, TextureBindingValidation, TextureTransfo
  * constants: a test that could not fail. Ten 4-line facade apps existed to give it a consumer, which is how
  * it satisfied the "parity requires a consumer" rule.
  *
- * `packages/three-compat/` is a DIFFERENT thing and is real — it is the migration on-ramp and stays.
+ * `packages/three-compat/` was a DIFFERENT thing and is now deleted (PRD-15 T6.2); its migration
+ * surface lives in `aura3d migrate three` (packages/aura3d-cli/src/migrate-three/).
  * `packages/animation/src/threejs-compatibility/` is also different and also real: it holds
  * `AnimationMixerThreeCompat`, `SkeletonThreeCompat` and `MorphTargetMixerThreeCompat`, the symbols WS-1.6
  * found the parity generator was failing to grep. Only the rendering one was fabricated.
@@ -901,12 +902,12 @@ export {
   architecturalMaterialDescriptor,
   createArchitecturalMaterial,
   createArchitecturalMaterialCatalog
-} from "./ArchitecturalMaterialCatalog";
+} from "./MaterialPresets";
 export type {
   ArchitecturalMaterialCatalogSummary,
   ArchitecturalMaterialCategory,
   ArchitecturalMaterialDescriptor
-} from "./ArchitecturalMaterialCatalog";
+} from "./MaterialPresets";
 export { createArchitecturalLightingState } from "./ArchitecturalLighting";
 export type {
   ArchitectureInteriorLight,
@@ -1236,14 +1237,14 @@ export type { ColorWriteMask, PolygonOffsetState, ScissorRect, StencilCompare, S
 export type { RaycastHit, RaycastTarget } from "./Raycaster.js";
 export type { CubeCameraReflectionCaptureOptions, CubeCameraReflectionCaptureResult, CubeCameraReflectionFace, CubeCameraReflectionFaceRenderer, ReflectionProbe } from "./ReflectionProbe.js";
 export type { ReflectionSurface, ReflectionSurfaceKind, ReflectionSurfaceOptions, ReflectionSurfaceReport, ReflectionSurfaceSupportStatus } from "./ReflectionSurfaces.js";
-export type { AnimationMaterialTreatment } from "./animation/AnimationMaterialStyle.js";
+export type { AnimationMaterialTreatment } from "./MaterialPresets.js";
 export type { AnimationToonMaterialOptions, AnimationToonShaderRegistrar, ToonShadeInputs } from "./animation/AnimationToonMaterial.js";
 export type { AnimationRenderPresetLightingDescriptor, ApplyAnimationRenderPresetFrame, ApplyAnimationRenderPresetOptions, ApplyAnimationRenderPresetResult } from "./animation/applyAnimationRenderPreset.js";
 export type { CinematicBloomPass } from "./cinematic/BloomPass.js";
 export type { CinematicDepthCompositionPlan } from "./cinematic/CinematicDepthComposition.js";
 export type { CinematicDomOverlayRejection } from "./cinematic/CinematicEvidence.js";
 export type { CinematicLightRole, CinematicLightType, CinematicLightingRig, CinematicLightingRigId } from "./cinematic/CinematicLightingRig.js";
-export type { CinematicMaterialPreset, CinematicMaterialPresetId } from "./cinematic/CinematicMaterialPresets.js";
+export type { CinematicMaterialPreset, CinematicMaterialPresetId } from "./MaterialPresets.js";
 export type { CinematicColorGradePreset, CinematicPostProcessStack } from "./cinematic/CinematicPostProcess.js";
 export type { CinematicDepthHazePass } from "./cinematic/DepthHazePass.js";
 export type { CinematicEmissivePractical, CinematicEmissivePracticalLightSystem } from "./cinematic/EmissivePracticalLightSystem.js";

@@ -21,6 +21,7 @@ import { checkGlslLocation } from "./rules/glslLocation";
 import { checkSingleRenderer } from "./rules/singleRenderer";
 import { checkExportBudget, checkNoEvidenceInRuntime } from "./rules/exportBudget";
 import { checkUniqueOwnership } from "./rules/uniqueOwnership";
+import { checkDepsTruth } from "./rules/depsTruth";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -152,10 +153,13 @@ export function runGates(root: string): GateReport {
     "glsl-location": { findings: checkGlslLocation(root) },
     "export-budget": { findings: checkExportBudget(root) },
     "no-evidence-in-runtime": { findings: checkNoEvidenceInRuntime(root) },
-    "unique-ownership": { findings: checkUniqueOwnership(root) }
+    "unique-ownership": { findings: checkUniqueOwnership(root) },
+    // T6.11: per-manifest severity — 15-owned manifests enforce, the rest warn
+    // and are forwarded to Q-ALL-1.
+    "deps-truth": { findings: checkDepsTruth(root) }
   };
   const findings = Object.values(rules).reduce((sum, r) => sum + r.findings.length, 0);
-  return { generatedAt: new Date().toISOString(), mode: "warn", rules, totals: { rules: 12, findings } };
+  return { generatedAt: new Date().toISOString(), mode: "warn", rules, totals: { rules: Object.keys(rules).length, findings } };
 }
 
 function main(): void {
