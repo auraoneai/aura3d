@@ -5,14 +5,16 @@
  * prefix and both adapters.
  */
 import type { BenchSceneRegistration } from "../../shared/registry";
-import { flipbook, impactLibrary, particlesFountain, particlesStress, trailsBeams } from "./specs";
+import { flipbook, impactLibrary, outdoorSky, particlesFountain, particlesStress, skyTimeOfDay, trailsBeams } from "./specs";
 
 export const scenes: readonly BenchSceneRegistration[] = [
   { id: particlesFountain.id, spec: particlesFountain },
   { id: flipbook.id, spec: flipbook },
   { id: particlesStress.id, spec: particlesStress },
   { id: impactLibrary.id, spec: impactLibrary },
-  { id: trailsBeams.id, spec: trailsBeams }
+  { id: trailsBeams.id, spec: trailsBeams },
+  { id: skyTimeOfDay.id, spec: skyTimeOfDay },
+  { id: outdoorSky.id, spec: outdoorSky }
 ];
 
 export { getPrd07SceneSpec, prd07Specs } from "./specs";

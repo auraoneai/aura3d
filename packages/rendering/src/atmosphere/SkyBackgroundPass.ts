@@ -191,6 +191,12 @@ export function skyUniforms(
   uniforms.set("u_cloudDensity", frame.clouds.density);
   uniforms.set("u_cloudElevation", frame.clouds.elevation);
   uniforms.set("u_cloudScaleSpeed", [frame.clouds.scale, frame.clouds.speed]);
+  const moon = frame.moon;
+  uniforms.set("u_moonDirection", moon?.direction ?? [0, -1, 0]);
+  uniforms.set("u_moonColor", moon?.color ?? [0, 0, 0]);
+  uniforms.set("u_moonPhase", moon?.phase ?? 0);
+  uniforms.set("u_moonIntensity", moon?.intensity ?? 0);
+  uniforms.set("u_moonAngularCos", moon ? Math.cos(moon.size) : 1);
   return uniforms;
 }
 

@@ -5,6 +5,7 @@
  * quality settings. No Aura3D flags apply to the reference side.
  */
 import * as THREE from "three";
+import { Sky } from "three/examples/jsm/objects/Sky.js";
 import { particlePositions } from "../../../shared/procedural";
 import type { CapabilityEntry, CapabilityStatus, MaterialSpec, ReadyPayload } from "../../../shared/types";
 import type { EmitterMemberSpec, Prd07SceneSpec } from "../../../scenes/prd07/specs";
@@ -181,7 +182,44 @@ export async function runPrd07ThreeScene(spec: Prd07SceneSpec, host: HTMLElement
   camera.updateMatrixWorld();
 
   if (spec.background.kind === "color") scene.background = new THREE.Color(spec.background.color);
-  if (spec.fog) scene.fog = new THREE.FogExp2(new THREE.Color(spec.fog.color), spec.fog.density);
+  if (spec.fog) {
+    scene.fog = new THREE.FogExp2(new THREE.Color(spec.fog.color), spec.fog.density);
+    log.add("fog-exp2", "supported", `FogExp2 ${spec.fog.color} density ${spec.fog.density}`);
+  }
+
+  // P3-T7 sky scenes — r185 Sky.js at the same sun as the Aura spec.
+  if (spec.skyPreetham) {
+    const skyMesh = new Sky();
+    skyMesh.scale.setScalar(450000);
+    const theta = (spec.skyPreetham.azimuthDeg * Math.PI) / 180;
+    const phi = Math.PI / 2 - (spec.skyPreetham.elevationDeg * Math.PI) / 180;
+    const sun = new THREE.Vector3().setFromSphericalCoords(1, phi, theta);
+    const uniforms = skyMesh.material.uniforms;
+    uniforms.sunPosition!.value.copy(sun);
+    uniforms.turbidity!.value = spec.skyPreetham.turbidity ?? 10;
+    uniforms.rayleigh!.value = 3;
+    uniforms.mieCoefficient!.value = 0.005;
+    uniforms.mieDirectionalG!.value = 0.8;
+    scene.add(skyMesh);
+    log.add("sky-preetham", "supported", `Sky.js turbidity ${spec.skyPreetham.turbidity ?? 10}, rayleigh 3, sun ${spec.skyPreetham.elevationDeg}°/${spec.skyPreetham.azimuthDeg}°`);
+  }
+  if (spec.dayNight) {
+    const skyMesh = new Sky();
+    skyMesh.scale.setScalar(450000);
+    // Mirror createDayNightSky: azimuth = (hour-6)/12·π, elevation = sin(azimuth)·1.1.
+    const angle = ((spec.dayNight.hour - 6) / 12) * Math.PI;
+    const elevation = Math.sin(angle) * 1.1;
+    const phi = Math.PI / 2 - elevation;
+    const sun = new THREE.Vector3().setFromSphericalCoords(1, phi, angle);
+    const uniforms = skyMesh.material.uniforms;
+    uniforms.sunPosition!.value.copy(sun);
+    uniforms.turbidity!.value = 10;
+    uniforms.rayleigh!.value = 2;
+    uniforms.mieCoefficient!.value = 0.005;
+    uniforms.mieDirectionalG!.value = 0.7;
+    scene.add(skyMesh);
+    log.add("dayNight", "partial", `Sky.js sun at hour ${spec.dayNight.hour} (elevation ${(elevation * 180 / Math.PI).toFixed(1)}°); no stars/moon on the three side`);
+  }
 
   for (const light of spec.lights) {
     if (light.kind === "ambient") {

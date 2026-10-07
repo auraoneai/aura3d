@@ -83,4 +83,18 @@ describe("prd07 lane scene registrations (C-30)", () => {
     const particles = fountain.objects.find((object) => object.kind === "particles")!;
     expect(particles).toMatchObject({ kind: "particles", count: 2000, seed: 1414, blending: "additive", size: 0.06, color: "#ff9a3c" });
   });
+
+  it("P3-T7 sky scenes carry vfx.sky flags + sky/fog spec fields", () => {
+    const tod = scenes.find((entry) => entry.id === "prd07-sky-timeofday")!.spec as Prd07SceneSpec;
+    expect(tod.dayNight?.hour).toBe(19);
+    expect(tod.qrFlags).toContain("vfx.sky");
+    const outdoor = scenes.find((entry) => entry.id === "prd07-outdoor-sky")!.spec as Prd07SceneSpec;
+    expect(outdoor.skyPreetham?.elevationDeg).toBeGreaterThan(0);
+    expect(outdoor.fog?.mode).toBe("exp2");
+    expect(outdoor.fog?.density).toBeGreaterThan(0);
+    expect(outdoor.qrFlags).toContain("vfx.sky");
+    // Both are parity ids — three adapters exist (admittedAsReference default).
+    expect(tod.admittedAsReference).not.toBe(false);
+    expect(outdoor.admittedAsReference).not.toBe(false);
+  });
 });
