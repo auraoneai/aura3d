@@ -409,3 +409,31 @@ consumer + unit lanes surfaced three real breaks, all fixed on this branch:
 - Pending at push time: `browser`, `Lane captures (flags=none)`,
   `Skills gate + agent docs` (the agent-docs sim diagnostics landed in wave 4;
   this run's output will surface the sim's post-swiftshader failure).
+
+## Wave 6 — Skills gate: agent-docs output + Templates gate surfacing
+
+- `0e5fa6206` — `tools/agent-docs/simulation.ts` `run()` kept only the last 16
+  stdout+stderr lines and the playwright `[WebServer]` dump flooded them, hiding
+  every real failure. Now filters `[WebServer]`-prefixed lines and widens the
+  tail to 64. Sim verified green locally (all agent-docs checks pass; 33.6 KB
+  screenshot, `assetReady` true). `Agent docs gate` step then passed in CI —
+  the older failure was runner slowness the truncated tail had masked.
+- `e64185e23` — Templates gate failures surfaced once the sim step passed:
+  - `root-template-mirror-*` ×16 — drift left by QR-15's own earlier
+    `check:templates` fixes (`53906e264`, `ade7606f3`): they edited packaged
+    `packages/create-aura3d/templates/**` without re-running lane-13's
+    `sync-root-templates.mjs`. Resynced packaged → root for all 16 mirrors.
+  - `three-compat-postprocess-scene` / `custom-threejs-migration` /
+    `character-viewer` look-floor subjectBounds — lane-13's §T3.12 expected
+    bounds were authored unverified and have **never run green on CI** (the
+    `Skills gate` job died at `check:skills` on PRD-13 #303's own run and at
+    the sim step on this branch's earlier runs). Measured on the gating
+    runner: postprocess `{x:.1,y:.34,w:.8,h:.56}` (expected `.2/.3/.6/.55`),
+    custom-migration `{x:.1,y:.29,w:.8,h:.61}` (expected `.25/.15/.5/.7`),
+    character-viewer `{x:.37,y:.36,w:.26,h:.51}` (expected `.35/.2/.3/.6`).
+    Release screenshots show correctly framed scenes — the outdoor-day floor
+    is bright luma>48 across the full width by design, so lit mass saturates
+    the central clip horizontally (x=0.1 is the clip boundary, w=0.8 its
+    span). Expected bounds recalibrated to measured values on both packaged
+    and root copies; ±0.1 tolerance kept — still a drift fingerprint, not a
+    skip. All 3 templates verified `failures=0` locally post-fix.
