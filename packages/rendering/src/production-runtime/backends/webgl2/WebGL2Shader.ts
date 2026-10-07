@@ -1,2 +1,2 @@
-export interface WebGL2ShaderDescriptor { readonly label: string; readonly backend?: 'webgl2'; readonly detail?: string; }
-export class WebGL2Shader { readonly backend = 'webgl2' as const; constructor(readonly descriptor: WebGL2ShaderDescriptor) {} }
+/** @deprecated PRD 11 Phase 1 WebGPU freeze: placeholder removed; barrel export pending Q-15-5. */
+export {};

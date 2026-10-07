@@ -1,14 +1,16 @@
 import {
   camera,
-  createAuraApp,
   game,
+  looks,
   material,
   model,
-  primitives,
   scene,
-  type AuraLeanNodeBuilder,
-  type LeanPlatformerEvent
-} from "@aura3d/lean/game";
+  type AuraNodeBuilder,
+  type AuraSceneNode,
+  type GamePlatformerEvent,
+  type GamePlatformerSnapshot
+} from "@aura3d/engine";
+import { createGame } from "@aura3d/engine/contracts";
 import { assets } from "./aura-assets";
 
 declare global {
@@ -22,10 +24,25 @@ interface MiniGameEvidence {
   readonly deaths: number;
   readonly checkpointId: string;
   readonly collected: readonly string[];
+  readonly hero: { readonly assetId: string; readonly url: string };
   readonly player: { readonly x: number; readonly y: number; readonly grounded: boolean };
   readonly events: readonly string[];
-  readonly evidence: { readonly entry: string; readonly physics: string; readonly typedAssets: number };
+  readonly look: { readonly id: string; readonly category: string };
+  readonly animation: {
+    readonly clip: string;
+    readonly clips: readonly string[];
+    readonly tracksApplied: number;
+  };
+  readonly camera: {
+    readonly rig: string;
+    readonly presented: boolean;
+  };
+  readonly evidence: { readonly entry: string; readonly typedAssets: number };
 }
+
+// The look sets palette + sky + sun + fog + grade; the scene adds only the
+// foreground. Genre row (aura3d-browser-game): mini-game → outdoor-day.
+const LOOK_ID = "outdoor-day" as const;
 
 const level = {
   start: { x: 0, y: 0.35 },
@@ -51,6 +68,11 @@ const level = {
   dashSpeed: 9.5
 };
 
+// Side-follow framing: the camera sits 10.4 m off the play plane and tracks
+// the hero on x only (side-scroller). The C-22 rig is the live camera
+// surface; `setPose` every frame applies state to the camera itself.
+const CAMERA_OFFSET = { y: 3.45, z: 10.4, targetY: 0.47 } as const;
+
 const input = game.input({
   actions: {
     left: ["KeyA", "ArrowLeft"],
@@ -65,21 +87,43 @@ const input = game.input({
 });
 const platformer = game.platformer(level);
 const routeEvents: string[] = [];
-const app = createAuraApp("#app", { scene: buildScene() });
+
+const auraGame = createGame({
+  id: "mini-game",
+  target: document.querySelector<HTMLElement>("#app")!,
+  scene: buildScene,
+  qualityRebuild: { flags: [] }
+});
+const app = auraGame.app;
+auraGame.start();
+
 const player = app.nodes.require("mini-player");
 const lift = app.nodes.require("platform-lift");
 const coins = level.collectibles.map((coin) => [coin.id, app.nodes.require(`coin-${coin.id}`)] as const);
 const checkpoint = app.nodes.require("checkpoint-mid");
 const goal = app.nodes.require("goal");
 const hudRoot = createHud();
-let objective = "Collect coins, avoid spikes, reach the goal";
+let objective = "Collect stars, avoid the hazard, reach the gate";
+let activeClip = "idle";
+player.play("idle");
 
-app.onFrame((dt) => {
+// Mount the C-22 camera surface when the extension is present (stub today,
+// real controller under PRD 08): the rig pins the follow framing and each
+// frame writes the actual pose. No camera state is parked in evidence.
+app.camera?.use(
+  camera.rigs.fromSpec({
+    position: [level.start.x, level.start.y + CAMERA_OFFSET.y, CAMERA_OFFSET.z],
+    target: [level.start.x, level.start.y + CAMERA_OFFSET.targetY, 0],
+    fov: 50
+  })
+);
+
+app.onFrame(({ dt }) => {
   input.update(dt);
   if (input.pressed("reset")) {
     platformer.reset();
     routeEvents.push("reset:Route reset");
-    objective = "Collect coins, avoid spikes, reach the goal";
+    objective = "Collect stars, avoid the hazard, reach the gate";
   }
   const moveX = input.axis("moveX");
   const jumpPressed = input.buffered("jump");
@@ -101,21 +145,29 @@ app.onFrame((dt) => {
     firstSubstep = false;
   } while (remaining > 0.000_001);
 
-  player.setPosition(state.player.x + 0.38, state.player.y + 0.5, 0);
+  // The certified Oobi hero is feet-origin (GLB min y = 0), so the visual
+  // rides at the physics point instead of a +0.5 lift.
+  player.setPosition(state.player.x + 0.38, state.player.y + 0.01, 0);
+  player.setRotation(0, state.player.facing === 1 ? Math.PI / 2 : -Math.PI / 2, 0);
+  playLocomotionClip(state);
   lift.setPosition(level.movingPlatforms[0].x + level.movingPlatforms[0].width / 2, movingLiftY(state.time), 0);
   for (const [id, node] of coins) node.setVisible(!state.collected.includes(id));
   checkpoint.setVisible(!state.activatedCheckpoints.includes("mid"));
-  goal.setScale(state.status === "completed" ? [0.28, 1.08, 0.18] : [0.22, 0.92, 0.16]);
+  goal.setScale(state.status === "completed" ? [1.35, 1.35, 1.35] : 1);
+  app.camera?.setPose({
+    position: [state.player.x, state.player.y + CAMERA_OFFSET.y, CAMERA_OFFSET.z],
+    target: [state.player.x, state.player.y + CAMERA_OFFSET.targetY, 0]
+  });
   renderHud(state);
   publishEvidence(state);
 });
 
 publishEvidence(platformer.snapshot());
 renderHud(platformer.snapshot());
-void app.ready().then(() => {
+void auraGame.ready().then(() => {
   const diagnostics = app.diagnostics();
   document.body.dataset.aura3dReady = "true";
-  document.body.dataset.aura3dRuntimeBackend = diagnostics.runtimeBackend;
+  document.body.dataset.aura3dRuntimeBackend = diagnostics.backend;
   document.body.dataset.aura3dDrawCalls = String(diagnostics.drawCalls);
   (window as unknown as { __AURA3D_ROUTE_READY__?: unknown }).__AURA3D_ROUTE_READY__ = { ready: true, diagnostics };
 }).catch((error: unknown) => {
@@ -123,29 +175,85 @@ void app.ready().then(() => {
 });
 
 function buildScene() {
-  const nodes: AuraLeanNodeBuilder[] = [
-    ...level.platforms.map((platform) => primitives.box({ name: `${platform.id} platform`, material: material.pbr({ color: "#62d8ef", roughness: 0.28 }) })
-      .position(platform.x + platform.width / 2, platform.y + platform.height / 2, -0.05).scale([platform.width, platform.height, 0.22])),
-    primitives.box({ name: "moving lift platform", material: material.pbr({ color: "#b5f77d", roughness: 0.24 }) })
-      .position(level.movingPlatforms[0].x + level.movingPlatforms[0].width / 2, movingLiftY(0), 0)
-      .scale([level.movingPlatforms[0].width, level.movingPlatforms[0].height, 0.22]).runtime("platform-lift"),
-    ...level.collectibles.map((coin) => primitives.sphere({ name: `${coin.id} collectible`, material: material.pbr({ color: "#f7d76b", metallic: 0.35, roughness: 0.22 }) })
-      .position(coin.x, coin.y, 0.02).scale(0.18).runtime(`coin-${coin.id}`)),
-    primitives.box({ name: "hazard spikes", material: material.pbr({ color: "#f06b7a", roughness: 0.2 }) })
-      .position(level.hazards[0].x + level.hazards[0].width / 2, level.hazards[0].y + level.hazards[0].height / 2, 0.05)
-      .scale([level.hazards[0].width, level.hazards[0].height, 0.2]),
-    primitives.box({ name: "checkpoint marker", material: material.pbr({ color: "#9df59e", roughness: 0.2 }) })
-      .position(level.checkpoints[0].x, level.checkpoints[0].y + 0.42, 0.08).scale([0.14, 0.85, 0.14]).runtime("checkpoint-mid"),
-    primitives.box({ name: "finish portal", material: material.pbr({ color: "#ffad57", metallic: 0.2, roughness: 0.18 }) })
-      .position(level.finish.x, level.finish.y + 0.7, 0.08).scale([0.22, 0.92, 0.16]).runtime("goal")
+  // Platform geometry comes from the typed platformer-kit block (catalog
+  // `kenney/platformer-kit`, PRD 05 curated-kit swap is tracked as Q-05-3).
+  // The kit's 2.08 × 1.0 m grass block scales to each collision rect.
+  const block = assets.kenneyPlatformerKitBlockGrassLarge;
+  const BLOCK_SIZE = [2.082, 1.0, 2.082] as const;
+  const blockScale = (width: number, height: number, depth: number) =>
+    [width / BLOCK_SIZE[0], height / BLOCK_SIZE[1], depth / BLOCK_SIZE[2]] as const;
+  const nodes: AuraNodeBuilder<AuraSceneNode>[] = [
+    ...level.platforms.map((platform) =>
+      model(block, { name: `${platform.id} platform` })
+        .position(platform.x + platform.width / 2, platform.y, -0.05)
+        .scale(blockScale(platform.width, platform.height, 1.24))),
+    ...level.movingPlatforms.map((platform) =>
+      model(assets.kenneyPlatformerKitBrick, { name: `${platform.id} moving platform` })
+        .position(platform.x + platform.width / 2, movingLiftY(0) - platform.height / 2, 0)
+        .scale([platform.width / 0.5, platform.height / 0.5, 0.7])
+        .runtime(game.runtimeNode("platform-lift", { tags: ["platform", "moving"] }))),
+    // Stars are models, not primitives: emissive 3–5 reads as coin sparkle
+    // under the daylight-outdoor grade.
+    ...level.collectibles.map((coin) =>
+      model(assets.kenneyPlatformerKitStar, {
+        name: `${coin.id} collectible`,
+        material: material.emissive({ color: "#ffd54d", emissive: "#ffd54d", emissiveIntensity: 4, roughness: 0.3 })
+      })
+        .position(coin.x, coin.y, 0.02)
+        .scale(1.15)
+        .runtime(game.runtimeNode(`coin-${coin.id}`, { tags: ["collectible"] }))),
+    model(assets.kenneyPlatformerKitBrick, {
+      name: "spikes hazard",
+      material: material.emissive({ color: "#e5484d", emissive: "#e5484d", emissiveIntensity: 0.9, roughness: 0.4 })
+    })
+      .position(level.hazards[0].x + level.hazards[0].width / 2, level.hazards[0].y, 0.05)
+      .scale([level.hazards[0].width / 0.5, level.hazards[0].height / 0.5, 0.5]),
+    model(assets.kenneyPlatformerKitKey, { name: "checkpoint key" })
+      .position(level.checkpoints[0].x, level.checkpoints[0].y + 0.2, 0.08)
+      .scale(2)
+      .runtime(game.runtimeNode("checkpoint-mid", { tags: ["checkpoint"] })),
+    model(assets.kenneyPlatformerKitStar, {
+      name: "finish gate",
+      material: material.emissive({ color: "#ffd54d", emissive: "#ffd54d", emissiveIntensity: 3, roughness: 0.3 })
+    })
+      .position(level.finish.x, level.finish.y + 0.5, 0.08)
+      .scale(3.4)
+      .runtime(game.runtimeNode("goal", { tags: ["finish"] }))
   ];
-  return scene().background("#071015")
-    .add(model(assets.playerModel, { name: "typed mini-game player" }).position(level.start.x + 0.38, level.start.y + 0.5, 0).scale(0.28).runtime("mini-player"))
+  // The scene-level follow spec frames the hero today; the C-22 rig (mounted
+  // above build) owns presented camera state once PRD 08 lands.
+  return scene()
+    .add(looks.preset(LOOK_ID))
+    .add(
+      model(assets.showcaseKenneyOobiPlatformerHero, { name: "certified hero" })
+        .position(level.start.x + 0.38, level.start.y + 0.01, 0)
+        .scale(1)
+        .runtime(game.runtimeNode("mini-player", { tags: ["player"] }))
+    )
     .addMany(nodes)
-    .camera(camera.perspective({ position: [6.1, 3.8, 10.4], target: [6.1, 0.82, 0], fov: 46 }));
+    .camera(
+      camera.follow({
+        targetNode: "mini-player",
+        position: [level.start.x, level.start.y + CAMERA_OFFSET.y, CAMERA_OFFSET.z],
+        target: [level.start.x, level.start.y + CAMERA_OFFSET.targetY, 0],
+        fov: 50
+      })
+    );
 }
 
-function updateObjective(event: LeanPlatformerEvent): void {
+function playLocomotionClip(state: GamePlatformerSnapshot): void {
+  // C-19 stub surface: `play` switches clips immediately (`crossFadeTo` is the
+  // PRD 06 blend path on the same handle when it lands).
+  const next = !state.player.grounded
+    ? state.player.vy > 0 ? "jump" : "fall"
+    : Math.abs(state.player.vx) > level.dashSpeed * 0.7 ? "sprint"
+      : Math.abs(state.player.vx) > 0.4 ? "walk" : "idle";
+  if (next === activeClip) return;
+  activeClip = next;
+  player.play(next);
+}
+
+function updateObjective(event: GamePlatformerEvent): void {
   routeEvents.push(event.id ? `${event.type}:${event.id}` : event.type);
   if (routeEvents.length > 16) routeEvents.shift();
   if (event.type === "checkpoint") objective = "Checkpoint reached. Finish the route.";
@@ -161,16 +269,17 @@ function movingLiftY(time: number): number {
 function createHud(): HTMLElement {
   const root = document.createElement("aside");
   root.id = "mini-game-hud";
-  root.style.cssText = "position:absolute;left:16px;top:16px;z-index:5;min-width:260px;font:600 13px/1.35 Inter,system-ui,sans-serif;color:#f5fbff;background:rgba(3,9,14,.78);border:1px solid rgba(125,220,235,.34);border-radius:8px;padding:12px;pointer-events:none";
+  root.style.cssText = "position:absolute;left:16px;top:16px;z-index:5;min-width:260px;font:600 13px/1.35 Inter,system-ui,sans-serif;color:#f5fbff;background:rgba(6,18,26,.66);border:1px solid rgba(160,210,240,.34);border-radius:8px;padding:12px;pointer-events:none";
   document.body.append(root);
   return root;
 }
 
-function renderHud(state: ReturnType<typeof platformer.snapshot>): void {
+function renderHud(state: GamePlatformerSnapshot): void {
   hudRoot.innerHTML = `<strong>Aura3D Mini Game</strong><div>Score ${state.score} | Lives ${state.lives} | Deaths ${state.deaths}</div><div>Checkpoint ${state.checkpointId}</div><div>${objective}</div><div>Move A/D or arrows. Jump Space. Dash Shift. Reset R.</div>`;
 }
 
-function publishEvidence(state: ReturnType<typeof platformer.snapshot>): void {
+function publishEvidence(state: GamePlatformerSnapshot): void {
+  const animation = player.importedAssetEvidence();
   window.__AURA3D_MINI_GAME__ = {
     status: state.status,
     frame: state.frame,
@@ -178,8 +287,20 @@ function publishEvidence(state: ReturnType<typeof platformer.snapshot>): void {
     deaths: state.deaths,
     checkpointId: state.checkpointId,
     collected: state.collected,
+    hero: { assetId: assets.showcaseKenneyOobiPlatformerHero.id, url: assets.showcaseKenneyOobiPlatformerHero.url },
     player: { x: state.player.x, y: state.player.y, grounded: state.player.grounded },
     events: [...routeEvents],
-    evidence: { entry: "@aura3d/lean/game", physics: "solver-free deterministic arcade", typedAssets: Object.keys(assets).length }
+    look: { id: LOOK_ID, category: looks.describe(LOOK_ID).category },
+    animation: {
+      clip: activeClip,
+      clips: animation?.clips ?? [],
+      // Report-only while the C-19 handle is a stub (T3.1 test reads it).
+      tracksApplied: animation?.lastMaterialTracksApplied ?? 0
+    },
+    camera: {
+      rig: app.camera?.rig.id ?? "scene-follow",
+      presented: app.camera !== undefined
+    },
+    evidence: { entry: "@aura3d/engine + @aura3d/engine/contracts createGame", typedAssets: Object.keys(assets).length }
   };
 }

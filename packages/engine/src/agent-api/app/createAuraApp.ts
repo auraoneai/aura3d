@@ -14,6 +14,8 @@ import { appExtensionsAll } from "../../contracts/app.js";
 import { diagnosticsSectionsAll } from "../../contracts/diagnostics.js";
 import { resolveTierSettings } from "@aura3d/rendering/contracts";
 import { createAuraRuntimeNodeRegistry } from "./runtimeNodes.js";
+import { setPrd01ModelMatrixCache } from "../compiler/renderInput.js";
+import { createModelMatrixCache } from "../sceneGraph.js";
 import { collectGeneratedCodeWarnings } from "../looks/generatedCodeWarnings.js";
 import { material } from "../nodes/material.js";
 
@@ -24,6 +26,9 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   // PR 0 seams (CONTRACTS.md §3.2): flag resolution, C-27 quality-tier resolve, C-38
   // app-extension mount and C-31 diagnostics sections are fixed call sites owned by PRD 15.
   const qrFlags = resolveQrFlags({ options: options.qualityRebuild?.flags });
+  // PRD-01 §15 Phase-6: install the fingerprinted static-node matrix cache on
+  // the compiler seam. Flag-off leaves renderInput on verbatim calls (C-01).
+  setPrd01ModelMatrixCache(qrFlags.on("A3D_QR_CORE") ? createModelMatrixCache() : null);
   const qrQualityTier = resolveTierSettings("high");
   void qrQualityTier;
   const diagnosticsState = createInitialDiagnostics(renderSnapshot, options.renderer);
@@ -221,7 +226,11 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     diagnosticsState.warnings = [...fresh.warnings];
     diagnosticsState.errors = [];
     validateSceneAssets(renderSnapshot, diagnosticsState.assets);
-    diagnosticsState.warnings.push(...collectGeneratedCodeWarnings(renderSnapshot));
+    diagnosticsState.warnings.push(
+      ...collectGeneratedCodeWarnings(renderSnapshot, qrFlags, {
+        production: options.renderer?.qualityProfile === "production"
+      })
+    );
   };
   const render = (time = performanceNow()) => {
     if (disposed) return;
@@ -340,6 +349,12 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
           }
           productionController = controller;
           productionMountPending = false;
+          // PRD-01 Q-15-1 seam: hang the live `Renderer` for lane diagnostics
+          // and the C-05 output surface (`prd01.output` extension reads it).
+          const auraRenderer = (controller as { auraRenderer?: unknown }).auraRenderer;
+          if (auraRenderer) {
+            (app as unknown as Record<symbol, unknown>)[Symbol.for("a3d.prd01.renderer")] = auraRenderer;
+          }
           attachDeviceListeners(controller);
           settleMount();
           markRouteReady(snapshot, diagnosticsState);

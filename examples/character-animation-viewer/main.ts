@@ -1,4 +1,14 @@
-import { camera, createAuraApp, game, lights, material, model, primitives, scene } from "@aura3d/engine";
+import {
+  camera,
+  createAuraApp,
+  game,
+  lights,
+  looks,
+  material,
+  model,
+  primitives,
+  scene
+} from "@aura3d/engine";
 import { assets } from "../../src/aura-assets.js";
 
 const characterAsset = assets.showcaseExpressiveRobot;
@@ -61,7 +71,7 @@ async function boot(): Promise<void> {
     scene: scene()
       .background("#05080d")
       .camera(camera.perspective({ position: [0, 1.35, 6.4], target: [0, 1.12, 0], fov: 34 }))
-      .add(lights.ambient({ intensity: 0.46, color: "#dbeafe" }))
+      .add(looks.preset("outdoor-day") /* TODO: pick the scene's genre look — see aura3d look rubric */)
       .add(lights.directional({ position: [6, 10, 8], intensity: 2.7, color: "#fff1d6" }))
       .add(lights.directional({ position: [-5, 5, -3], intensity: 1.15, color: "#5eead4" }))
       .add(primitives.box({ name: "animation floor", material: material.pbr({ color: "#101a29", roughness: 0.78, metallic: 0.08 }) }).position(-1.35, -0.08, 0).scale([3.1, 0.16, 2.7]))

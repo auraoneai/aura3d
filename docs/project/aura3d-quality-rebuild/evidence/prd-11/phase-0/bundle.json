@@ -1,0 +1,119 @@
+{
+  "schema": "prd11/phase-0-bundle-baseline/1.0",
+  "generatedAt": "2026-10-06T12:16:13.804Z",
+  "note": "Phase-0 baseline for PRD-11. mainBaseline measured on origin/main with only the @aura3d/rendering/contracts esbuild aliases from this PR applied (the tool could not resolve contracts imports before them). Pre-existing: template-cinematic-scene was already 410074 gzip vs the 400000 budget before lane-11 code landed (+344B from phase 0).",
+  "targets": [
+    {
+      "id": "core-agent-api",
+      "budget": 80000,
+      "enforced": true,
+      "mainBaseline": {
+        "gzipBytes": 77817,
+        "jsBytes": 323244
+      },
+      "phase0": {
+        "gzipBytes": 77817,
+        "jsBytes": 323244
+      },
+      "deltaGzipBytes": 0
+    },
+    {
+      "id": "compatibility-root-observation",
+      "budget": 80000,
+      "enforced": false,
+      "mainBaseline": {
+        "gzipBytes": 588761,
+        "jsBytes": 2190436
+      },
+      "phase0": {
+        "gzipBytes": 589109,
+        "jsBytes": 2191951
+      },
+      "deltaGzipBytes": 348
+    },
+    {
+      "id": "react-adapter",
+      "budget": 15000,
+      "enforced": true,
+      "mainBaseline": {
+        "gzipBytes": 3247,
+        "jsBytes": 7634
+      },
+      "phase0": {
+        "gzipBytes": 3247,
+        "jsBytes": 7634
+      },
+      "deltaGzipBytes": 0
+    },
+    {
+      "id": "devtools",
+      "budget": 20000,
+      "enforced": true,
+      "mainBaseline": {
+        "gzipBytes": 710,
+        "jsBytes": 1297
+      },
+      "phase0": {
+        "gzipBytes": 710,
+        "jsBytes": 1297
+      },
+      "deltaGzipBytes": 0
+    },
+    {
+      "id": "presets-effects",
+      "budget": 45000,
+      "enforced": true,
+      "mainBaseline": {
+        "gzipBytes": 13855,
+        "jsBytes": 50869
+      },
+      "phase0": {
+        "gzipBytes": 13855,
+        "jsBytes": 50869
+      },
+      "deltaGzipBytes": 0
+    },
+    {
+      "id": "template-product-viewer",
+      "budget": 250000,
+      "enforced": true,
+      "mainBaseline": {
+        "gzipBytes": 212400,
+        "jsBytes": 935030
+      },
+      "phase0": {
+        "gzipBytes": 212757,
+        "jsBytes": 936545
+      },
+      "deltaGzipBytes": 357
+    },
+    {
+      "id": "template-cinematic-scene",
+      "budget": 400000,
+      "enforced": true,
+      "mainBaseline": {
+        "gzipBytes": 410074,
+        "jsBytes": 1605971
+      },
+      "phase0": {
+        "gzipBytes": 410418,
+        "jsBytes": 1607486
+      },
+      "deltaGzipBytes": 344
+    },
+    {
+      "id": "template-mini-game",
+      "budget": 250000,
+      "enforced": true,
+      "mainBaseline": {
+        "gzipBytes": 218496,
+        "jsBytes": 952011
+      },
+      "phase0": {
+        "gzipBytes": 218854,
+        "jsBytes": 953526
+      },
+      "deltaGzipBytes": 358
+    }
+  ]
+}

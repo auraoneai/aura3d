@@ -10,7 +10,7 @@
 // added, no draws happen, and the frame is pixel-identical.
 
 import { Scene, identityMat4, type Mat4 } from "@aura3d/scene";
-import type { RenderDevice } from "../RenderDevice";
+import type { RenderDevice, RenderTarget } from "../RenderDevice";
 import type { RenderGraph } from "../RenderGraph";
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass";
 import type { RenderItem } from "../ForwardPass";
@@ -84,11 +84,14 @@ export interface RendererFrameHooksInput {
   readonly tier?: AuraQualityTierSettings;
 }
 
-const STUB_SCENE_DEPTH = {
-  texture: null,
-  available: false,
-  linearize: { near: 0.1, far: 1000, orthographic: false }
-} as const;
+/** C-01 blackboard key for the forward color target (R-01-1). */
+export const PRD01_FORWARD_TARGET = "prd01.forwardTarget";
+
+/** C-13 (Q-03-1): lane 03 publishes grade × auto-exposure here; OutputPass multiplies it in. */
+export const PRD03_EXPOSURE = "prd03.exposure";
+
+/** C-01 (§8.4 step 1): resolved scene-depth copy target published for after-opaque consumers. */
+export const AURA_SCENE_DEPTH_COPY = "aura.scene.depth.copy";
 
 class ContributorTransparentPass extends BaseRenderPass {
   constructor(
@@ -124,7 +127,35 @@ export class RendererFrameHooks {
         : source;
   }
 
+  private forwardTarget: RenderTarget | null = null;
+
+  /**
+   * R-01-1: the Renderer hands the forward color target in after
+   * `ensureForwardColorTarget`; `ctx.sceneDepth` then exposes the real depth
+   * texture and the blackboard publishes it at `"prd01.forwardTarget"`.
+   */
+  setForwardTarget(target: RenderTarget | null): void {
+    this.forwardTarget = target;
+  }
+
+  private sceneDepthCopy: RenderTarget | null = null;
+
+  /** Lane 01 publishes the scene-depth copy target before the after-opaque phase. */
+  setSceneDepthCopy(target: RenderTarget | null): void {
+    this.sceneDepthCopy = target;
+    if (target) this.blackboard.set(AURA_SCENE_DEPTH_COPY, target);
+  }
+
+  /** Read a blackboard value published by a contributor (or lane 01 itself). */
+  blackboardValue<T>(key: string): T | undefined {
+    return this.blackboard.get(key) as T | undefined;
+  }
+
   private context(items: readonly RenderItem[]): FrameContributorContext {
+    const depthTexture = this.forwardTarget?.depthTexture ?? null;
+    if (this.forwardTarget) {
+      this.blackboard.set(PRD01_FORWARD_TARGET, this.forwardTarget);
+    }
     return {
       device: this.input.device,
       width: this.input.width,
@@ -136,7 +167,15 @@ export class RendererFrameHooks {
       items,
       tier: this.input.tier ?? QUALITY_TIERS.high,
       flags: this.flags,
-      sceneDepth: STUB_SCENE_DEPTH,
+      sceneDepth: {
+        texture: depthTexture,
+        available: depthTexture !== null,
+        linearize: {
+          near: this.input.camera?.near ?? 0.1,
+          far: this.input.camera?.far ?? 1000,
+          orthographic: this.input.camera?.projection === "orthographic"
+        }
+      },
       blackboard: this.blackboard
     };
   }
@@ -162,6 +201,7 @@ export class RendererFrameHooks {
     for (const contributor of contributors) {
       if (!contributor.phases.includes(phase)) continue;
       for (const pass of contributor.passes?.(phase, ctx) ?? []) {
+        assertPhaseSpace(phase, pass, contributor);
         graph.addPass(pass);
       }
       if (phase === "transparent") {
@@ -169,6 +209,36 @@ export class RendererFrameHooks {
         if (queue && queue.length > 0) {
           graph.addPass(new ContributorTransparentPass(queue, ctx));
         }
+      }
+    }
+  }
+
+  /**
+   * "transparent" phase queue: contributor `TransparentQueueItem`s plus the
+   * context they draw with, so the Renderer can interleave them with forward
+   * transparents by `sortDepth` (§8.4 step 1) instead of drawing them in a
+   * block after the pass. Empty when no contributor emits queue items.
+   */
+  transparentQueues(items: readonly RenderItem[]): { readonly ctx: FrameContributorContext; readonly queues: readonly TransparentQueueItem[] } {
+    const ctx = this.context(items);
+    const queues: TransparentQueueItem[] = [];
+    for (const contributor of frameContributors(this.flags)) {
+      if (!contributor.phases.includes("transparent")) continue;
+      const queue = contributor.transparentItems?.(ctx);
+      if (queue) queues.push(...queue);
+    }
+    return { ctx, queues };
+  }
+
+  /** Contributor `passes("transparent")` only — queue items are handled by transparentQueues(). */
+  addTransparentContributorPasses(graph: RenderGraph, items: readonly RenderItem[]): void {
+    const contributors = frameContributors(this.flags);
+    if (contributors.length === 0) return;
+    const ctx = this.context(items);
+    for (const contributor of contributors) {
+      if (!contributor.phases.includes("transparent")) continue;
+      for (const pass of contributor.passes?.("transparent", ctx) ?? []) {
+        graph.addPass(pass);
       }
     }
   }
@@ -186,6 +256,7 @@ export class RendererFrameHooks {
         continue;
       }
       for (const pass of contributor.passes?.(phase, ctx) ?? []) {
+        assertPhaseSpace(phase, pass, contributor);
         pass.execute(passContext);
       }
     }
@@ -203,6 +274,7 @@ export class RendererFrameHooks {
         continue;
       }
       for (const pass of contributor.passes?.(phase, ctx) ?? []) {
+        assertPhaseSpace(phase, pass, contributor);
         if (pass.executeAsync) {
           await pass.executeAsync(passContext);
         } else {
@@ -210,6 +282,17 @@ export class RendererFrameHooks {
         }
       }
     }
+  }
+}
+
+/**
+ * §8.4 step 4 (lane 01's half of C-13): a contributor pass in `post-hdr` that
+ * declares display space is rejected — everything upstream of OutputPass is
+ * linear scene-referred.
+ */
+function assertPhaseSpace(phase: AuraFramePhase, pass: { readonly name: string; readonly space?: "linear-hdr" | "display" }, contributor: { readonly id: string }): void {
+  if (phase === "post-hdr" && pass.space === "display") {
+    throw new Error(`FRAME_PHASE_SPACE_MISMATCH:${phase}:${contributor.id}:${pass.name}`);
   }
 }
 

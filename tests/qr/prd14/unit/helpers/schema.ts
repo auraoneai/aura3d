@@ -13,8 +13,13 @@ interface SchemaObject {
   readonly properties?: Readonly<Record<string, SchemaObject>>;
   readonly items?: SchemaObject;
   readonly enum?: readonly unknown[];
+  readonly const?: unknown;
   readonly minimum?: number;
   readonly maximum?: number;
+  readonly exclusiveMinimum?: number;
+  readonly multipleOf?: number;
+  readonly minLength?: number;
+  readonly minItems?: number;
   readonly additionalProperties?: boolean | SchemaObject;
   readonly definitions?: Readonly<Record<string, SchemaObject>>;
 }
@@ -49,9 +54,22 @@ export function validateJsonSchema(value: unknown, schema: SchemaObject, root: S
   if (resolved.enum !== undefined && !resolved.enum.some((entry) => entry === value)) {
     errors.push(`${at}: ${JSON.stringify(value)} not in enum`);
   }
+  if (resolved.const !== undefined && value !== resolved.const) {
+    errors.push(`${at}: ${JSON.stringify(value)} !== const ${JSON.stringify(resolved.const)}`);
+  }
   if (typeof value === "number") {
     if (resolved.minimum !== undefined && value < resolved.minimum) errors.push(`${at}: ${value} < minimum ${resolved.minimum}`);
     if (resolved.maximum !== undefined && value > resolved.maximum) errors.push(`${at}: ${value} > maximum ${resolved.maximum}`);
+    if (resolved.exclusiveMinimum !== undefined && !(value > resolved.exclusiveMinimum)) errors.push(`${at}: ${value} <= exclusiveMinimum ${resolved.exclusiveMinimum}`);
+    if (resolved.multipleOf !== undefined && Math.abs(value / resolved.multipleOf - Math.round(value / resolved.multipleOf)) > 1e-9) {
+      errors.push(`${at}: ${value} not a multiple of ${resolved.multipleOf}`);
+    }
+  }
+  if (typeof value === "string") {
+    if (resolved.minLength !== undefined && value.length < resolved.minLength) errors.push(`${at}: length ${value.length} < minLength ${resolved.minLength}`);
+  }
+  if (Array.isArray(value) && resolved.minItems !== undefined && value.length < resolved.minItems) {
+    errors.push(`${at}: ${value.length} items < minItems ${resolved.minItems}`);
   }
   if (typeOf(value) === "object") {
     const record = value as Record<string, unknown>;

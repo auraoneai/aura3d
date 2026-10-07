@@ -8,7 +8,11 @@
     "readyFallbackMs": 6000,
     "fpsSampleMs": 5000,
     "mobileStopAfterShot": "03-mid",
-    "requiredShots": ["02-opening", "03-mid", "04-action"]
+    "requiredShots": [
+      "02-opening",
+      "03-mid",
+      "04-action"
+    ]
   },
   "games": [
     {
@@ -18,45 +22,162 @@
       "appDir": "aura-clash-showcase",
       "deployed": true,
       "route": "/apps/aura-clash-showcase/",
-      "altRoutes": ["/showcase/aura-clash/playable/"],
+      "altRoutes": [
+        "/showcase/aura-clash/playable/"
+      ],
       "evidenceGlobal": "__AURA_CLASH_ARENA_PROOF__",
       "readyExpr": "window.__AURA_CLASH_ARENA_PROOF__?.status === 'running'",
-      "focus": { "selector": ".aca", "method": "focus" },
+      "focus": {
+        "selector": ".aca",
+        "method": "focus"
+      },
       "notes": "Round auto-starts (1.35s ROUND intro). Controls from src/playable/AuraClashArenaApp.ts actionKeys: A/D move, W jump, S down, Space dash, Shift/Q guard, J light, K heavy, L special (meter-gated), P pause, R reset. Action shot waits for proof.totalHits to increase.",
       "wave": 1,
       "rebuildTier": "S-presentation",
       "artDirection": "apps/aura-clash-showcase/art/direction.ts",
       "requiredConditions": [
-        { "shot": "04-action", "expr": "combat.hitStopActive === true && fx.liveCount > 0", "deadlineMs": 12000 },
-        { "shot": "03-mid", "expr": "framing.subjectHeightFraction >= 0.45 && framing.subjectHeightFraction <= 0.6", "deadlineMs": 12000 }
+        {
+          "shot": "04-action",
+          "expr": "combat.hitStopActive === true && fx.liveCount > 0",
+          "deadlineMs": 12000
+        },
+        {
+          "shot": "03-mid",
+          "expr": "framing.subjectHeightFraction >= 0.45 && framing.subjectHeightFraction <= 0.6",
+          "deadlineMs": 12000
+        }
       ],
       "acceptance": {
         "minOverall": 7,
         "minVisualCategory": 5,
-        "critical": { "lighting": 7.5, "vfx": 7.5, "animation_quality": 7.5, "camera": 7.5 },
-        "minNonVisual": { "sound_audio": 6, "controls": 7, "game_feel": 6.5, "loading_transitions": 6 }
+        "critical": {
+          "lighting": 7.5,
+          "vfx": 7.5,
+          "animation_quality": 7.5,
+          "camera": 7.5
+        },
+        "minNonVisual": {
+          "sound_audio": 6,
+          "controls": 7,
+          "game_feel": 6.5,
+          "loading_transitions": 6
+        }
       },
       "budgets": {
         "transferToPlayableMB": 15,
         "routeJsGzipKB": 80,
-        "drawCalls": { "low": 150, "medium": 150, "high": 150, "ultra": 300 },
+        "drawCalls": {
+          "low": 150,
+          "medium": 150,
+          "high": 150,
+          "ultra": 300
+        },
         "gameLogicCpuMs": 4
       },
-      "qrFlags": ["A3D_QR_ROUTE_AURA_CLASH"],
+      "qrFlags": [
+        "A3D_QR_ROUTE_AURA_CLASH"
+      ],
       "timeline": [
-        { "fps": 5000 },
-        { "down": "KeyD" }, { "wait": 2000 }, { "shot": "02-opening" }, { "up": "KeyD" },
-        { "repeat": 6, "steps": [
-          { "hold": "KeyD", "ms": 250 },
-          { "press": "KeyJ" }, { "wait": 220 },
-          { "press": "KeyJ" }, { "wait": 220 },
-          { "press": "KeyK" }, { "wait": 380 }
-        ] },
-        { "down": "KeyD" }, { "press": "KeyJ" }, { "wait": 120 }, { "shot": "03-mid" }, { "up": "KeyD" },
-        { "until": "(window.__AURA_CLASH_ARENA_PROOF__?.totalHits ?? 0) > s", "capture": "window.__AURA_CLASH_ARENA_PROOF__?.totalHits ?? 0", "timeout": 6000,
-          "loop": [{ "press": "KeyJ" }, { "wait": 50 }, { "press": "KeyK" }, { "wait": 50 }] },
-        { "shot": "04-action" },
-        { "press": "KeyL" }, { "wait": 320 }, { "shot": "05-special" }
+        {
+          "fps": 5000
+        },
+        {
+          "down": "KeyD"
+        },
+        {
+          "wait": 2000
+        },
+        {
+          "shot": "02-opening"
+        },
+        {
+          "up": "KeyD"
+        },
+        {
+          "repeat": 6,
+          "steps": [
+            {
+              "hold": "KeyD",
+              "ms": 250
+            },
+            {
+              "press": "KeyJ"
+            },
+            {
+              "wait": 220
+            },
+            {
+              "press": "KeyJ"
+            },
+            {
+              "wait": 220
+            },
+            {
+              "press": "KeyK"
+            },
+            {
+              "wait": 380
+            }
+          ]
+        },
+        {
+          "down": "KeyD"
+        },
+        {
+          "press": "KeyJ"
+        },
+        {
+          "wait": 120
+        },
+        {
+          "shot": "03-mid"
+        },
+        {
+          "up": "KeyD"
+        },
+        {
+          "until": "(window.__AURA_CLASH_ARENA_PROOF__?.totalHits ?? 0) > s",
+          "capture": "window.__AURA_CLASH_ARENA_PROOF__?.totalHits ?? 0",
+          "timeout": 6000,
+          "loop": [
+            {
+              "press": "KeyJ"
+            },
+            {
+              "wait": 50
+            },
+            {
+              "press": "KeyK"
+            },
+            {
+              "wait": 50
+            }
+          ]
+        },
+        {
+          "shot": "04-action"
+        },
+        {
+          "press": "KeyL"
+        },
+        {
+          "wait": 320
+        },
+        {
+          "shot": "05-special"
+        }
+      ],
+      "integratedCritical": [
+        "C-05",
+        "C-10",
+        "C-13",
+        "C-15",
+        "C-19",
+        "C-20",
+        "C-21",
+        "C-24",
+        "C-25",
+        "C-27"
       ]
     },
     {
@@ -72,33 +193,150 @@
       "rebuildTier": "S-presentation",
       "artDirection": "apps/showcase-blockfall-reactor/art/direction.ts",
       "requiredConditions": [
-        { "shot": "04-action", "expr": "board.linesClearedThisRound >= 1 && fx.liveCount > 0", "deadlineMs": 20000 },
-        { "shot": "03-mid", "expr": "board.stackHeight >= 4", "deadlineMs": 20000 }
+        {
+          "shot": "04-action",
+          "expr": "board.linesClearedThisRound >= 1 && fx.liveCount > 0",
+          "deadlineMs": 20000
+        },
+        {
+          "shot": "03-mid",
+          "expr": "board.stackHeight >= 4",
+          "deadlineMs": 20000
+        }
       ],
       "acceptance": {
         "minOverall": 7,
         "minVisualCategory": 5,
-        "critical": { "vfx": 7, "camera": 7, "polish_juice": 7.5 },
-        "minNonVisual": { "sound_audio": 6, "controls": 7, "game_feel": 6.5, "loading_transitions": 6 }
+        "critical": {
+          "vfx": 7,
+          "camera": 7,
+          "polish_juice": 7.5
+        },
+        "minNonVisual": {
+          "sound_audio": 6,
+          "controls": 7,
+          "game_feel": 6.5,
+          "loading_transitions": 6
+        }
       },
       "budgets": {
         "transferToPlayableMB": 12,
         "routeJsGzipKB": 80,
-        "drawCalls": { "low": 120, "medium": 150, "high": 150, "ultra": 300 },
+        "drawCalls": {
+          "low": 120,
+          "medium": 150,
+          "high": 150,
+          "ultra": 300
+        },
         "gameLogicCpuMs": 4
       },
-      "qrFlags": ["A3D_QR_ROUTE_BLOCKFALL_REACTOR"],
+      "qrFlags": [
+        "A3D_QR_ROUTE_BLOCKFALL_REACTOR"
+      ],
       "timeline": [
-        { "fps": 5000 },
-        { "press": "KeyA" }, { "wait": 300 }, { "press": "KeyW" }, { "wait": 500 }, { "press": "Space" }, { "wait": 1200 },
-        { "shot": "02-opening" },
-        { "repeat": 5, "steps": [
-          { "press": "KeyD" }, { "wait": 150 }, { "press": "KeyD" }, { "wait": 200 }, { "press": "KeyW" }, { "wait": 350 }, { "press": "Space" }, { "wait": 650 }
-        ] },
-        { "press": "KeyA" }, { "press": "KeyA" }, { "press": "KeyA" }, { "wait": 200 },
-        { "down": "KeyS" }, { "wait": 500 }, { "shot": "03-mid" }, { "up": "KeyS" },
-        { "press": "KeyC" }, { "wait": 400 },
-        { "press": "Space" }, { "wait": 60 }, { "shot": "04-action" }
+        {
+          "fps": 5000
+        },
+        {
+          "press": "KeyA"
+        },
+        {
+          "wait": 300
+        },
+        {
+          "press": "KeyW"
+        },
+        {
+          "wait": 500
+        },
+        {
+          "press": "Space"
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "shot": "02-opening"
+        },
+        {
+          "repeat": 5,
+          "steps": [
+            {
+              "press": "KeyD"
+            },
+            {
+              "wait": 150
+            },
+            {
+              "press": "KeyD"
+            },
+            {
+              "wait": 200
+            },
+            {
+              "press": "KeyW"
+            },
+            {
+              "wait": 350
+            },
+            {
+              "press": "Space"
+            },
+            {
+              "wait": 650
+            }
+          ]
+        },
+        {
+          "press": "KeyA"
+        },
+        {
+          "press": "KeyA"
+        },
+        {
+          "press": "KeyA"
+        },
+        {
+          "wait": 200
+        },
+        {
+          "down": "KeyS"
+        },
+        {
+          "wait": 500
+        },
+        {
+          "shot": "03-mid"
+        },
+        {
+          "up": "KeyS"
+        },
+        {
+          "press": "KeyC"
+        },
+        {
+          "wait": 400
+        },
+        {
+          "press": "Space"
+        },
+        {
+          "wait": 60
+        },
+        {
+          "shot": "04-action"
+        }
+      ],
+      "integratedCritical": [
+        "C-05",
+        "C-07",
+        "C-10",
+        "C-13",
+        "C-15",
+        "C-20",
+        "C-24",
+        "C-25",
+        "C-27"
       ]
     },
     {
@@ -114,30 +352,119 @@
       "rebuildTier": "S-presentation",
       "artDirection": "apps/showcase-skyline-runner/art/direction.ts",
       "requiredConditions": [
-        { "shot": "04-action", "expr": "player.airborne === true && fx.liveCount > 0", "deadlineMs": 10000 },
-        { "shot": "03-mid", "expr": "level.act >= 2", "deadlineMs": 10000 }
+        {
+          "shot": "04-action",
+          "expr": "player.airborne === true && fx.liveCount > 0",
+          "deadlineMs": 10000
+        },
+        {
+          "shot": "03-mid",
+          "expr": "level.act >= 2",
+          "deadlineMs": 10000
+        }
       ],
       "acceptance": {
         "minOverall": 7,
         "minVisualCategory": 5,
-        "critical": { "vfx": 7 },
-        "minNonVisual": { "sound_audio": 6, "controls": 7, "game_feel": 6.5, "loading_transitions": 6 }
+        "critical": {
+          "vfx": 7
+        },
+        "minNonVisual": {
+          "sound_audio": 6,
+          "controls": 7,
+          "game_feel": 6.5,
+          "loading_transitions": 6
+        }
       },
       "budgets": {
         "transferToPlayableMB": 15,
         "routeJsGzipKB": 80,
-        "drawCalls": { "low": 150, "medium": 250, "high": 250, "ultra": 500 },
+        "drawCalls": {
+          "low": 150,
+          "medium": 250,
+          "high": 250,
+          "ultra": 500
+        },
         "gameLogicCpuMs": 4
       },
-      "qrFlags": ["A3D_QR_ROUTE_SKYLINE_RUNNER"],
+      "qrFlags": [
+        "A3D_QR_ROUTE_SKYLINE_RUNNER"
+      ],
       "timeline": [
-        { "fps": 5000 },
-        { "down": "KeyD" }, { "wait": 900 }, { "press": "Space" }, { "wait": 1100 }, { "shot": "02-opening" },
-        { "repeat": 6, "steps": [{ "wait": 650 }, { "press": "Space" }, { "wait": 450 }] },
-        { "press": "ShiftLeft" }, { "wait": 250 },
-        { "press": "Space" }, { "wait": 220 }, { "shot": "03-mid" },
-        { "wait": 600 }, { "press": "KeyJ" }, { "wait": 120 }, { "shot": "04-action" },
-        { "up": "KeyD" }
+        {
+          "fps": 5000
+        },
+        {
+          "down": "KeyD"
+        },
+        {
+          "wait": 900
+        },
+        {
+          "press": "Space"
+        },
+        {
+          "wait": 1100
+        },
+        {
+          "shot": "02-opening"
+        },
+        {
+          "repeat": 6,
+          "steps": [
+            {
+              "wait": 650
+            },
+            {
+              "press": "Space"
+            },
+            {
+              "wait": 450
+            }
+          ]
+        },
+        {
+          "press": "ShiftLeft"
+        },
+        {
+          "wait": 250
+        },
+        {
+          "press": "Space"
+        },
+        {
+          "wait": 220
+        },
+        {
+          "shot": "03-mid"
+        },
+        {
+          "wait": 600
+        },
+        {
+          "press": "KeyJ"
+        },
+        {
+          "wait": 120
+        },
+        {
+          "shot": "04-action"
+        },
+        {
+          "up": "KeyD"
+        }
+      ],
+      "integratedCritical": [
+        "C-05",
+        "C-10",
+        "C-13",
+        "C-15",
+        "C-19",
+        "C-20",
+        "C-21",
+        "C-24",
+        "C-25",
+        "C-27"
       ]
     },
     {
@@ -153,32 +480,123 @@
       "rebuildTier": "S-world",
       "artDirection": "apps/showcase-turbo-drift-circuit/art/direction.ts",
       "requiredConditions": [
-        { "shot": "04-action", "expr": "car.drifting === true && fx.liveCount > 0", "deadlineMs": 15000 },
-        { "shot": "03-mid", "expr": "car.speedKph >= 120", "deadlineMs": 15000 }
+        {
+          "shot": "04-action",
+          "expr": "car.drifting === true && fx.liveCount > 0",
+          "deadlineMs": 15000
+        },
+        {
+          "shot": "03-mid",
+          "expr": "car.speedKph >= 120",
+          "deadlineMs": 15000
+        }
       ],
       "acceptance": {
         "minOverall": 7,
         "minVisualCategory": 5,
-        "critical": { "environment_world": 7.5, "shadows": 7.5, "vfx": 7 },
-        "minNonVisual": { "sound_audio": 6, "controls": 7, "game_feel": 6.5, "loading_transitions": 6, "physics_feel": 6 }
+        "critical": {
+          "environment_world": 7.5,
+          "shadows": 7.5,
+          "vfx": 7
+        },
+        "minNonVisual": {
+          "sound_audio": 6,
+          "controls": 7,
+          "game_feel": 6.5,
+          "loading_transitions": 6,
+          "physics_feel": 6
+        }
       },
       "budgets": {
         "transferToPlayableMB": 15,
         "routeJsGzipKB": 80,
-        "drawCalls": { "low": 150, "medium": 300, "high": 350, "ultra": 700 },
+        "drawCalls": {
+          "low": 150,
+          "medium": 300,
+          "high": 350,
+          "ultra": 700
+        },
         "gameLogicCpuMs": 4
       },
-      "qrFlags": ["A3D_QR_ROUTE_TURBO_DRIFT_CIRCUIT"],
+      "qrFlags": [
+        "A3D_QR_ROUTE_TURBO_DRIFT_CIRCUIT"
+      ],
       "timeline": [
-        { "fps": 5000 },
-        { "down": "KeyW" }, { "wait": 2000 }, { "shot": "02-opening" },
-        { "wait": 4000 },
-        { "hold": "KeyA", "ms": 500 },
-        { "wait": 700 },
-        { "down": "KeyD" }, { "down": "Space" }, { "wait": 1300 }, { "shot": "03-mid" }, { "up": "Space" }, { "up": "KeyD" },
-        { "wait": 900 },
-        { "down": "KeyA" }, { "down": "Space" }, { "wait": 1000 }, { "shot": "04-action" }, { "up": "Space" }, { "up": "KeyA" },
-        { "up": "KeyW" }
+        {
+          "fps": 5000
+        },
+        {
+          "down": "KeyW"
+        },
+        {
+          "wait": 2000
+        },
+        {
+          "shot": "02-opening"
+        },
+        {
+          "wait": 4000
+        },
+        {
+          "hold": "KeyA",
+          "ms": 500
+        },
+        {
+          "wait": 700
+        },
+        {
+          "down": "KeyD"
+        },
+        {
+          "down": "Space"
+        },
+        {
+          "wait": 1300
+        },
+        {
+          "shot": "03-mid"
+        },
+        {
+          "up": "Space"
+        },
+        {
+          "up": "KeyD"
+        },
+        {
+          "wait": 900
+        },
+        {
+          "down": "KeyA"
+        },
+        {
+          "down": "Space"
+        },
+        {
+          "wait": 1000
+        },
+        {
+          "shot": "04-action"
+        },
+        {
+          "up": "Space"
+        },
+        {
+          "up": "KeyA"
+        },
+        {
+          "up": "KeyW"
+        }
+      ],
+      "integratedCritical": [
+        "C-05",
+        "C-10",
+        "C-13",
+        "C-15",
+        "C-20",
+        "C-24",
+        "C-25",
+        "C-26",
+        "C-27"
       ]
     },
     {
@@ -194,32 +612,114 @@
       "rebuildTier": "S-world",
       "artDirection": "apps/showcase-siege-golf/art/direction.ts",
       "requiredConditions": [
-        { "shot": "04-action", "expr": "structures.toppledThisShot >= 1", "deadlineMs": 12000 },
-        { "shot": "04-action", "expr": "loading.sceneSwaps === 0", "deadlineMs": 12000 },
-        { "shot": "05-charge", "expr": "shot.power > 0.5", "deadlineMs": 27000 }
+        {
+          "shot": "04-action",
+          "expr": "structures.toppledThisShot >= 1",
+          "deadlineMs": 12000
+        },
+        {
+          "shot": "04-action",
+          "expr": "loading.sceneSwaps === 0",
+          "deadlineMs": 12000
+        },
+        {
+          "shot": "05-charge",
+          "expr": "shot.power > 0.5",
+          "deadlineMs": 27000
+        }
       ],
       "acceptance": {
         "minOverall": 7,
         "minVisualCategory": 5,
-        "critical": { "environment_world": 7.5, "modeling_assets": 7 },
-        "minNonVisual": { "sound_audio": 6, "controls": 7, "game_feel": 6.5, "loading_transitions": 6, "physics_feel": 6 }
+        "critical": {
+          "environment_world": 7.5,
+          "modeling_assets": 7
+        },
+        "minNonVisual": {
+          "sound_audio": 6,
+          "controls": 7,
+          "game_feel": 6.5,
+          "loading_transitions": 6,
+          "physics_feel": 6
+        }
       },
       "budgets": {
         "transferToPlayableMB": 15,
         "routeJsGzipKB": 80,
-        "drawCalls": { "low": 120, "medium": 200, "high": 200, "ultra": 400 },
+        "drawCalls": {
+          "low": 120,
+          "medium": 200,
+          "high": 200,
+          "ultra": 400
+        },
         "gameLogicCpuMs": 4
       },
-      "qrFlags": ["A3D_QR_ROUTE_SIEGE_GOLF"],
+      "qrFlags": [
+        "A3D_QR_ROUTE_SIEGE_GOLF"
+      ],
       "timeline": [
-        { "fps": 5000 },
-        { "hold": "Space", "ms": 800 }, { "wait": 1200 }, { "shot": "02-opening" },
-        { "wait": 3500 },
-        { "hold": "ArrowLeft", "ms": 200 },
-        { "hold": "Space", "ms": 950 }, { "wait": 1400 }, { "shot": "03-mid" },
-        { "wait": 1200 }, { "shot": "04-action" },
-        { "wait": 2500 },
-        { "down": "Space" }, { "wait": 600 }, { "shot": "05-charge" }, { "up": "Space" }
+        {
+          "fps": 5000
+        },
+        {
+          "hold": "Space",
+          "ms": 800
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "shot": "02-opening"
+        },
+        {
+          "wait": 3500
+        },
+        {
+          "hold": "ArrowLeft",
+          "ms": 200
+        },
+        {
+          "hold": "Space",
+          "ms": 950
+        },
+        {
+          "wait": 1400
+        },
+        {
+          "shot": "03-mid"
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "shot": "04-action"
+        },
+        {
+          "wait": 2500
+        },
+        {
+          "down": "Space"
+        },
+        {
+          "wait": 600
+        },
+        {
+          "shot": "05-charge"
+        },
+        {
+          "up": "Space"
+        }
+      ],
+      "integratedCritical": [
+        "C-05",
+        "C-10",
+        "C-13",
+        "C-15",
+        "C-20",
+        "C-24",
+        "C-25",
+        "C-26",
+        "C-27"
       ]
     },
     {
@@ -235,8 +735,16 @@
       "rebuildTier": "S-world",
       "artDirection": "apps/showcase-aurora-lander/art/direction.ts",
       "requiredConditions": [
-        { "shot": "04-action", "expr": "lander.touchdown === \"landed\"", "deadlineMs": 40000 },
-        { "shot": "03-mid", "expr": "lander.altitude < 30 && framing.padInFrame === true", "deadlineMs": 40000 }
+        {
+          "shot": "04-action",
+          "expr": "lander.touchdown === \"landed\"",
+          "deadlineMs": 40000
+        },
+        {
+          "shot": "03-mid",
+          "expr": "lander.altitude < 30 && framing.padInFrame === true",
+          "deadlineMs": 40000
+        }
       ],
       "canvasBlankCheck": {
         "maxDarkFraction": 0.95,
@@ -246,25 +754,112 @@
       "acceptance": {
         "minOverall": 7,
         "minVisualCategory": 5,
-        "critical": { "environment_world": 7, "atmospheric_effects": 7.5 },
-        "minNonVisual": { "sound_audio": 6, "controls": 7, "game_feel": 6.5, "loading_transitions": 6, "physics_feel": 6 }
+        "critical": {
+          "environment_world": 7,
+          "atmospheric_effects": 7.5
+        },
+        "minNonVisual": {
+          "sound_audio": 6,
+          "controls": 7,
+          "game_feel": 6.5,
+          "loading_transitions": 6,
+          "physics_feel": 6
+        }
       },
       "budgets": {
         "transferToPlayableMB": 15,
         "routeJsGzipKB": 80,
-        "drawCalls": { "low": 120, "medium": 150, "high": 150, "ultra": 300 },
+        "drawCalls": {
+          "low": 120,
+          "medium": 150,
+          "high": 150,
+          "ultra": 300
+        },
         "gameLogicCpuMs": 4
       },
-      "qrFlags": ["A3D_QR_ROUTE_AURORA_LANDER"],
+      "qrFlags": [
+        "A3D_QR_ROUTE_AURORA_LANDER"
+      ],
       "timeline": [
-        { "fps": 5000 },
-        { "down": "KeyW" }, { "wait": 2000 }, { "shot": "02-opening" }, { "up": "KeyW" },
-        { "repeat": 5, "steps": [
-          { "wait": 350 }, { "down": "KeyW" }, { "down": "KeyD" }, { "wait": 550 }, { "up": "KeyD" }, { "wait": 250 }, { "up": "KeyW" }
-        ] },
-        { "down": "KeyW" }, { "wait": 500 }, { "shot": "03-mid" }, { "up": "KeyW" },
-        { "until": "/land|touch|crash|fail|success|complete/i.test(String(window.__AURORA_LANDER_EVIDENCE__?.state ?? window.__AURORA_LANDER_EVIDENCE__?.phase ?? ''))", "timeout": 7000, "loop": [{ "wait": 80 }] },
-        { "wait": 150 }, { "shot": "04-action" }
+        {
+          "fps": 5000
+        },
+        {
+          "down": "KeyW"
+        },
+        {
+          "wait": 2000
+        },
+        {
+          "shot": "02-opening"
+        },
+        {
+          "up": "KeyW"
+        },
+        {
+          "repeat": 5,
+          "steps": [
+            {
+              "wait": 350
+            },
+            {
+              "down": "KeyW"
+            },
+            {
+              "down": "KeyD"
+            },
+            {
+              "wait": 550
+            },
+            {
+              "up": "KeyD"
+            },
+            {
+              "wait": 250
+            },
+            {
+              "up": "KeyW"
+            }
+          ]
+        },
+        {
+          "down": "KeyW"
+        },
+        {
+          "wait": 500
+        },
+        {
+          "shot": "03-mid"
+        },
+        {
+          "up": "KeyW"
+        },
+        {
+          "until": "/land|touch|crash|fail|success|complete/i.test(String(window.__AURORA_LANDER_EVIDENCE__?.state ?? window.__AURORA_LANDER_EVIDENCE__?.phase ?? ''))",
+          "timeout": 7000,
+          "loop": [
+            {
+              "wait": 80
+            }
+          ]
+        },
+        {
+          "wait": 150
+        },
+        {
+          "shot": "04-action"
+        }
+      ],
+      "integratedCritical": [
+        "C-05",
+        "C-10",
+        "C-13",
+        "C-15",
+        "C-20",
+        "C-24",
+        "C-25",
+        "C-26",
+        "C-27"
       ]
     },
     {
@@ -280,33 +875,134 @@
       "rebuildTier": "S-world",
       "artDirection": "apps/showcase-neon-swarm/art/direction.ts",
       "requiredConditions": [
-        { "shot": "04-action", "expr": "swarm.killsThisWave >= 3 && fx.liveCount > 0", "deadlineMs": 15000 },
-        { "shot": "05-burst", "expr": "fx.liveCount >= 20", "deadlineMs": 30000 }
+        {
+          "shot": "04-action",
+          "expr": "swarm.killsThisWave >= 3 && fx.liveCount > 0",
+          "deadlineMs": 15000
+        },
+        {
+          "shot": "05-burst",
+          "expr": "fx.liveCount >= 20",
+          "deadlineMs": 30000
+        }
       ],
       "acceptance": {
         "minOverall": 7,
         "minVisualCategory": 5,
-        "critical": { "environment_world": 7, "vfx": 7.5, "polish_juice": 7.5 },
-        "minNonVisual": { "sound_audio": 6, "controls": 7, "game_feel": 6.5, "loading_transitions": 6 }
+        "critical": {
+          "environment_world": 7,
+          "vfx": 7.5,
+          "polish_juice": 7.5
+        },
+        "minNonVisual": {
+          "sound_audio": 6,
+          "controls": 7,
+          "game_feel": 6.5,
+          "loading_transitions": 6
+        }
       },
       "budgets": {
         "transferToPlayableMB": 15,
         "routeJsGzipKB": 80,
-        "drawCalls": { "low": 120, "medium": 150, "high": 150, "ultra": 300 },
+        "drawCalls": {
+          "low": 120,
+          "medium": 150,
+          "high": 150,
+          "ultra": 300
+        },
         "gameLogicCpuMs": 4
       },
-      "qrFlags": ["A3D_QR_ROUTE_NEON_SWARM"],
+      "qrFlags": [
+        "A3D_QR_ROUTE_NEON_SWARM"
+      ],
       "timeline": [
-        { "fps": 5000 },
-        { "down": "KeyJ" },
-        { "hold": "KeyW", "ms": 900 }, { "hold": "KeyD", "ms": 1100 }, { "shot": "02-opening" },
-        { "repeat": 4, "steps": [{ "hold": "KeyA", "ms": 650 }, { "hold": "KeyS", "ms": 550 }, { "hold": "KeyD", "ms": 500 }] },
-        { "down": "KeyW" }, { "wait": 400 }, { "shot": "03-mid" }, { "up": "KeyW" },
-        { "until": "(window.__NEON_SWARM_EVIDENCE__?.kills ?? 0) > s", "capture": "window.__NEON_SWARM_EVIDENCE__?.kills ?? 0", "timeout": 6000,
-          "loop": [{ "hold": "KeyA", "ms": 120 }, { "hold": "KeyD", "ms": 120 }] },
-        { "shot": "04-action" },
-        { "press": "Space" }, { "wait": 120 }, { "shot": "05-burst" },
-        { "up": "KeyJ" }
+        {
+          "fps": 5000
+        },
+        {
+          "down": "KeyJ"
+        },
+        {
+          "hold": "KeyW",
+          "ms": 900
+        },
+        {
+          "hold": "KeyD",
+          "ms": 1100
+        },
+        {
+          "shot": "02-opening"
+        },
+        {
+          "repeat": 4,
+          "steps": [
+            {
+              "hold": "KeyA",
+              "ms": 650
+            },
+            {
+              "hold": "KeyS",
+              "ms": 550
+            },
+            {
+              "hold": "KeyD",
+              "ms": 500
+            }
+          ]
+        },
+        {
+          "down": "KeyW"
+        },
+        {
+          "wait": 400
+        },
+        {
+          "shot": "03-mid"
+        },
+        {
+          "up": "KeyW"
+        },
+        {
+          "until": "(window.__NEON_SWARM_EVIDENCE__?.kills ?? 0) > s",
+          "capture": "window.__NEON_SWARM_EVIDENCE__?.kills ?? 0",
+          "timeout": 6000,
+          "loop": [
+            {
+              "hold": "KeyA",
+              "ms": 120
+            },
+            {
+              "hold": "KeyD",
+              "ms": 120
+            }
+          ]
+        },
+        {
+          "shot": "04-action"
+        },
+        {
+          "press": "Space"
+        },
+        {
+          "wait": 120
+        },
+        {
+          "shot": "05-burst"
+        },
+        {
+          "up": "KeyJ"
+        }
+      ],
+      "integratedCritical": [
+        "C-03",
+        "C-05",
+        "C-10",
+        "C-13",
+        "C-15",
+        "C-20",
+        "C-24",
+        "C-25",
+        "C-27"
       ]
     },
     {
@@ -322,7 +1018,11 @@
       "rebuildTier": "S-world",
       "artDirection": "apps/showcase-gravity-post/art/direction.ts",
       "requiredConditions": [
-        { "shot": "04-action", "expr": "pod.state === \"in-flight\" && pod.launchedBy === \"keyboard\"", "deadlineMs": 10000 }
+        {
+          "shot": "04-action",
+          "expr": "pod.state === \"in-flight\" && pod.launchedBy === \"keyboard\"",
+          "deadlineMs": 10000
+        }
       ],
       "canvasBlankCheck": {
         "maxDarkFraction": 0.95,
@@ -332,24 +1032,104 @@
       "acceptance": {
         "minOverall": 7,
         "minVisualCategory": 5,
-        "critical": { "lighting": 7 },
-        "minNonVisual": { "sound_audio": 6, "controls": 7, "game_feel": 6.5, "loading_transitions": 6, "physics_feel": 6 }
+        "critical": {
+          "lighting": 7
+        },
+        "minNonVisual": {
+          "sound_audio": 6,
+          "controls": 7,
+          "game_feel": 6.5,
+          "loading_transitions": 6,
+          "physics_feel": 6
+        }
       },
       "budgets": {
         "transferToPlayableMB": 15,
         "routeJsGzipKB": 80,
-        "drawCalls": { "low": 100, "medium": 120, "high": 120, "ultra": 240 },
+        "drawCalls": {
+          "low": 100,
+          "medium": 120,
+          "high": 120,
+          "ultra": 240
+        },
         "gameLogicCpuMs": 4
       },
-      "qrFlags": ["A3D_QR_ROUTE_GRAVITY_POST"],
+      "qrFlags": [
+        "A3D_QR_ROUTE_GRAVITY_POST"
+      ],
       "timeline": [
-        { "fps": 5000 },
-        { "wait": 300 },
-        { "drag": { "selector": "[data-testid='gravity-post-stage'] canvas", "from": [0.5, 0.5], "by": [-4, -79], "ms": 700, "steps": 14, "shotBeforeRelease": "02a-aim" } },
-        { "wait": 900 }, { "shot": "02-opening" },
-        { "down": "Space" }, { "wait": 5500 }, { "shot": "03-mid" }, { "up": "Space" },
-        { "press": "KeyW" }, { "wait": 90 }, { "shot": "04-action" },
-        { "down": "Space" }, { "wait": 3000 }, { "shot": "05-late-coast" }, { "up": "Space" }
+        {
+          "fps": 5000
+        },
+        {
+          "wait": 300
+        },
+        {
+          "drag": {
+            "selector": "[data-testid='gravity-post-stage'] canvas",
+            "from": [
+              0.5,
+              0.5
+            ],
+            "by": [
+              -4,
+              -79
+            ],
+            "ms": 700,
+            "steps": 14,
+            "shotBeforeRelease": "02a-aim"
+          }
+        },
+        {
+          "wait": 900
+        },
+        {
+          "shot": "02-opening"
+        },
+        {
+          "down": "Space"
+        },
+        {
+          "wait": 5500
+        },
+        {
+          "shot": "03-mid"
+        },
+        {
+          "up": "Space"
+        },
+        {
+          "press": "KeyW"
+        },
+        {
+          "wait": 90
+        },
+        {
+          "shot": "04-action"
+        },
+        {
+          "down": "Space"
+        },
+        {
+          "wait": 3000
+        },
+        {
+          "shot": "05-late-coast"
+        },
+        {
+          "up": "Space"
+        }
+      ],
+      "integratedCritical": [
+        "C-03",
+        "C-05",
+        "C-10",
+        "C-13",
+        "C-15",
+        "C-20",
+        "C-24",
+        "C-25",
+        "C-27"
       ]
     },
     {
@@ -361,35 +1141,123 @@
       "route": "/apps/showcase-courier-rush/",
       "evidenceGlobal": "__COURIER_RUSH_EVIDENCE__",
       "readyExpr": "document.body?.dataset?.aura3dReady === 'true'",
-      "focus": { "selector": "canvas", "method": "click" },
+      "focus": {
+        "selector": "canvas",
+        "method": "click"
+      },
       "notes": "Playable spec clicks the canvas before driving. W throttle, S brake, A/D steer, Space handbrake, E interact, P pause, R reset. 03-mid is a held handbrake turn; action waits for a collision strike (evidence strikes) else times out.",
       "wave": 2,
       "rebuildTier": "S-world",
       "artDirection": "apps/showcase-courier-rush/art/direction.ts",
       "requiredConditions": [
-        { "shot": "04-action", "expr": "delivery.completed >= 1", "deadlineMs": 45000 }
+        {
+          "shot": "04-action",
+          "expr": "delivery.completed >= 1",
+          "deadlineMs": 45000
+        }
       ],
       "acceptance": {
         "minOverall": 7,
         "minVisualCategory": 5,
-        "critical": { "environment_world": 7, "ibl_reflections": 7, "atmospheric_effects": 7 },
-        "minNonVisual": { "sound_audio": 6, "controls": 7, "game_feel": 6.5, "loading_transitions": 6, "physics_feel": 6 }
+        "critical": {
+          "environment_world": 7,
+          "ibl_reflections": 7,
+          "atmospheric_effects": 7
+        },
+        "minNonVisual": {
+          "sound_audio": 6,
+          "controls": 7,
+          "game_feel": 6.5,
+          "loading_transitions": 6,
+          "physics_feel": 6
+        }
       },
       "budgets": {
         "transferToPlayableMB": 15,
         "routeJsGzipKB": 80,
-        "drawCalls": { "low": 150, "medium": 300, "high": 300, "ultra": 600 },
+        "drawCalls": {
+          "low": 150,
+          "medium": 300,
+          "high": 300,
+          "ultra": 600
+        },
         "gameLogicCpuMs": 4
       },
-      "qrFlags": ["A3D_QR_ROUTE_COURIER_RUSH"],
+      "qrFlags": [
+        "A3D_QR_ROUTE_COURIER_RUSH"
+      ],
       "timeline": [
-        { "fps": 5000 },
-        { "down": "KeyW" }, { "wait": 2000 }, { "shot": "02-opening" },
-        { "hold": "KeyD", "ms": 900 }, { "wait": 1800 }, { "hold": "KeyA", "ms": 700 }, { "wait": 1600 },
-        { "down": "KeyD" }, { "down": "Space" }, { "wait": 800 }, { "shot": "03-mid" }, { "up": "Space" }, { "up": "KeyD" },
-        { "until": "(window.__COURIER_RUSH_EVIDENCE__?.strikes ?? 0) > s", "capture": "window.__COURIER_RUSH_EVIDENCE__?.strikes ?? 0", "timeout": 4500, "loop": [{ "wait": 100 }] },
-        { "shot": "04-action" },
-        { "up": "KeyW" }
+        {
+          "fps": 5000
+        },
+        {
+          "down": "KeyW"
+        },
+        {
+          "wait": 2000
+        },
+        {
+          "shot": "02-opening"
+        },
+        {
+          "hold": "KeyD",
+          "ms": 900
+        },
+        {
+          "wait": 1800
+        },
+        {
+          "hold": "KeyA",
+          "ms": 700
+        },
+        {
+          "wait": 1600
+        },
+        {
+          "down": "KeyD"
+        },
+        {
+          "down": "Space"
+        },
+        {
+          "wait": 800
+        },
+        {
+          "shot": "03-mid"
+        },
+        {
+          "up": "Space"
+        },
+        {
+          "up": "KeyD"
+        },
+        {
+          "until": "(window.__COURIER_RUSH_EVIDENCE__?.strikes ?? 0) > s",
+          "capture": "window.__COURIER_RUSH_EVIDENCE__?.strikes ?? 0",
+          "timeout": 4500,
+          "loop": [
+            {
+              "wait": 100
+            }
+          ]
+        },
+        {
+          "shot": "04-action"
+        },
+        {
+          "up": "KeyW"
+        }
+      ],
+      "integratedCritical": [
+        "C-05",
+        "C-10",
+        "C-13",
+        "C-15",
+        "C-21",
+        "C-24",
+        "C-25",
+        "C-27",
+        "C-29"
       ]
     },
     {
@@ -405,30 +1273,124 @@
       "rebuildTier": "S-presentation",
       "artDirection": "apps/showcase-pulse-tunnel/art/direction.ts",
       "requiredConditions": [
-        { "shot": "04-action", "expr": "gates.passedOnBeat >= 2 && fx.liveCount > 0", "deadlineMs": 12000 },
-        { "shot": "03-mid", "expr": "framing.canvasMatchesViewport === true", "deadlineMs": 12000 }
+        {
+          "shot": "04-action",
+          "expr": "gates.passedOnBeat >= 2 && fx.liveCount > 0",
+          "deadlineMs": 12000
+        },
+        {
+          "shot": "03-mid",
+          "expr": "framing.canvasMatchesViewport === true",
+          "deadlineMs": 12000
+        }
       ],
       "acceptance": {
         "minOverall": 7,
         "minVisualCategory": 5,
-        "critical": { "postprocessing": 7.5, "camera": 7, "mobile_presentation": 6.5 },
-        "minNonVisual": { "sound_audio": 6, "controls": 7, "game_feel": 6.5, "loading_transitions": 6 }
+        "critical": {
+          "postprocessing": 7.5,
+          "camera": 7,
+          "mobile_presentation": 6.5
+        },
+        "minNonVisual": {
+          "sound_audio": 6,
+          "controls": 7,
+          "game_feel": 6.5,
+          "loading_transitions": 6
+        }
       },
       "budgets": {
         "transferToPlayableMB": 12,
         "routeJsGzipKB": 80,
-        "drawCalls": { "low": 120, "medium": 200, "high": 200, "ultra": 400 },
+        "drawCalls": {
+          "low": 120,
+          "medium": 200,
+          "high": 200,
+          "ultra": 400
+        },
         "gameLogicCpuMs": 4
       },
-      "qrFlags": ["A3D_QR_ROUTE_PULSE_TUNNEL"],
+      "qrFlags": [
+        "A3D_QR_ROUTE_PULSE_TUNNEL"
+      ],
       "timeline": [
-        { "fps": 5000 },
-        { "press": "Space" }, { "wait": 1900 }, { "shot": "02-opening" },
-        { "repeat": 6, "steps": [{ "press": "KeyD" }, { "wait": 450 }, { "press": "KeyW" }, { "wait": 450 }, { "press": "KeyA" }, { "wait": 300 }] },
-        { "press": "KeyW" }, { "wait": 160 }, { "shot": "03-mid" },
-        { "until": "(window.__PULSE_TUNNEL_EVIDENCE__?.score ?? 0) > s", "capture": "window.__PULSE_TUNNEL_EVIDENCE__?.score ?? 0", "timeout": 3000,
-          "loop": [{ "press": "KeyA" }, { "wait": 180 }, { "press": "KeyD" }, { "wait": 180 }] },
-        { "shot": "04-action" }
+        {
+          "fps": 5000
+        },
+        {
+          "press": "Space"
+        },
+        {
+          "wait": 1900
+        },
+        {
+          "shot": "02-opening"
+        },
+        {
+          "repeat": 6,
+          "steps": [
+            {
+              "press": "KeyD"
+            },
+            {
+              "wait": 450
+            },
+            {
+              "press": "KeyW"
+            },
+            {
+              "wait": 450
+            },
+            {
+              "press": "KeyA"
+            },
+            {
+              "wait": 300
+            }
+          ]
+        },
+        {
+          "press": "KeyW"
+        },
+        {
+          "wait": 160
+        },
+        {
+          "shot": "03-mid"
+        },
+        {
+          "until": "(window.__PULSE_TUNNEL_EVIDENCE__?.score ?? 0) > s",
+          "capture": "window.__PULSE_TUNNEL_EVIDENCE__?.score ?? 0",
+          "timeout": 3000,
+          "loop": [
+            {
+              "press": "KeyA"
+            },
+            {
+              "wait": 180
+            },
+            {
+              "press": "KeyD"
+            },
+            {
+              "wait": 180
+            }
+          ]
+        },
+        {
+          "shot": "04-action"
+        }
+      ],
+      "integratedCritical": [
+        "C-05",
+        "C-10",
+        "C-13",
+        "C-15",
+        "C-20",
+        "C-21",
+        "C-24",
+        "C-25",
+        "C-27"
       ]
     },
     {
@@ -444,36 +1406,180 @@
       "rebuildTier": "S-world",
       "artDirection": "apps/showcase-mech-hangar/art/direction.ts",
       "requiredConditions": [
-        { "shot": "04-action", "expr": "combat.lastHit === \"heavy\" && fx.liveCount > 0", "deadlineMs": 20000 },
-        { "shot": "02b-arena-opening", "expr": "loading.sceneId === \"pit\"", "deadlineMs": 20000 },
-        { "shot": "02-opening", "expr": "loading.fetchCount.mechHeroDecimated === 1", "deadlineMs": 20000 },
-        { "shot": "02b-arena-opening", "expr": "loading.fetchCount.mechHeroDecimated === 1", "deadlineMs": 20000 },
-        { "shot": "03-mid", "expr": "loading.fetchCount.mechHeroDecimated === 1", "deadlineMs": 20000 },
-        { "shot": "04-action", "expr": "loading.fetchCount.mechHeroDecimated === 1", "deadlineMs": 20000 },
-        { "shot": "05-special", "expr": "loading.fetchCount.mechHeroDecimated === 1", "deadlineMs": 35000 }
+        {
+          "shot": "04-action",
+          "expr": "combat.lastHit === \"heavy\" && fx.liveCount > 0",
+          "deadlineMs": 20000
+        },
+        {
+          "shot": "02b-arena-opening",
+          "expr": "loading.sceneId === \"pit\"",
+          "deadlineMs": 20000
+        },
+        {
+          "shot": "02-opening",
+          "expr": "loading.fetchCount.mechHeroDecimated === 1",
+          "deadlineMs": 20000
+        },
+        {
+          "shot": "02b-arena-opening",
+          "expr": "loading.fetchCount.mechHeroDecimated === 1",
+          "deadlineMs": 20000
+        },
+        {
+          "shot": "03-mid",
+          "expr": "loading.fetchCount.mechHeroDecimated === 1",
+          "deadlineMs": 20000
+        },
+        {
+          "shot": "04-action",
+          "expr": "loading.fetchCount.mechHeroDecimated === 1",
+          "deadlineMs": 20000
+        },
+        {
+          "shot": "05-special",
+          "expr": "loading.fetchCount.mechHeroDecimated === 1",
+          "deadlineMs": 35000
+        }
       ],
       "acceptance": {
         "minOverall": 7,
         "minVisualCategory": 5,
-        "critical": { "modeling_assets": 7.5, "animation_quality": 7 },
-        "minNonVisual": { "sound_audio": 6, "controls": 7, "game_feel": 6.5, "loading_transitions": 6 }
+        "critical": {
+          "modeling_assets": 7.5,
+          "animation_quality": 7
+        },
+        "minNonVisual": {
+          "sound_audio": 6,
+          "controls": 7,
+          "game_feel": 6.5,
+          "loading_transitions": 6
+        }
       },
       "budgets": {
         "transferToPlayableMB": 15,
         "routeJsGzipKB": 80,
-        "drawCalls": { "low": 150, "medium": 250, "high": 250, "ultra": 500 },
+        "drawCalls": {
+          "low": 150,
+          "medium": 250,
+          "high": 250,
+          "ultra": 500
+        },
         "gameLogicCpuMs": 4
       },
-      "qrFlags": ["A3D_QR_ROUTE_MECH_HANGAR"],
+      "qrFlags": [
+        "A3D_QR_ROUTE_MECH_HANGAR"
+      ],
       "timeline": [
-        { "fps": 5000 },
-        { "press": "Digit1" }, { "wait": 250 }, { "press": "ArrowRight" }, { "wait": 500 },
-        { "press": "Digit2" }, { "wait": 250 }, { "press": "ArrowRight" }, { "wait": 900 }, { "shot": "02-opening" },
-        { "press": "Enter" }, { "wait": 2200 }, { "shot": "02b-arena-opening" },
-        { "repeat": 3, "steps": [{ "hold": "KeyD", "ms": 700 }, { "press": "KeyJ" }, { "wait": 280 }, { "press": "KeyJ" }, { "wait": 280 }, { "press": "KeyK" }, { "wait": 550 }] },
-        { "down": "KeyD" }, { "press": "KeyJ" }, { "wait": 140 }, { "shot": "03-mid" }, { "up": "KeyD" },
-        { "press": "KeyK" }, { "wait": 180 }, { "shot": "04-action" },
-        { "press": "KeyL" }, { "wait": 300 }, { "shot": "05-special" }
+        {
+          "fps": 5000
+        },
+        {
+          "press": "Digit1"
+        },
+        {
+          "wait": 250
+        },
+        {
+          "press": "ArrowRight"
+        },
+        {
+          "wait": 500
+        },
+        {
+          "press": "Digit2"
+        },
+        {
+          "wait": 250
+        },
+        {
+          "press": "ArrowRight"
+        },
+        {
+          "wait": 900
+        },
+        {
+          "shot": "02-opening"
+        },
+        {
+          "press": "Enter"
+        },
+        {
+          "wait": 2200
+        },
+        {
+          "shot": "02b-arena-opening"
+        },
+        {
+          "repeat": 3,
+          "steps": [
+            {
+              "hold": "KeyD",
+              "ms": 700
+            },
+            {
+              "press": "KeyJ"
+            },
+            {
+              "wait": 280
+            },
+            {
+              "press": "KeyJ"
+            },
+            {
+              "wait": 280
+            },
+            {
+              "press": "KeyK"
+            },
+            {
+              "wait": 550
+            }
+          ]
+        },
+        {
+          "down": "KeyD"
+        },
+        {
+          "press": "KeyJ"
+        },
+        {
+          "wait": 140
+        },
+        {
+          "shot": "03-mid"
+        },
+        {
+          "up": "KeyD"
+        },
+        {
+          "press": "KeyK"
+        },
+        {
+          "wait": 180
+        },
+        {
+          "shot": "04-action"
+        },
+        {
+          "press": "KeyL"
+        },
+        {
+          "wait": 300
+        },
+        {
+          "shot": "05-special"
+        }
+      ],
+      "integratedCritical": [
+        "C-05",
+        "C-10",
+        "C-13",
+        "C-15",
+        "C-19",
+        "C-24",
+        "C-25",
+        "C-27"
       ]
     },
     {
@@ -489,30 +1595,130 @@
       "rebuildTier": "S-world",
       "artDirection": "apps/showcase-vault-breakers/art/direction.ts",
       "requiredConditions": [
-        { "shot": "04-action", "expr": "table.bumperHitsThisBall >= 1 && fx.liveCount > 0", "deadlineMs": 20000 },
-        { "shot": "03-mid", "expr": "ball.inPlay === true", "deadlineMs": 20000 }
+        {
+          "shot": "04-action",
+          "expr": "table.bumperHitsThisBall >= 1 && fx.liveCount > 0",
+          "deadlineMs": 20000
+        },
+        {
+          "shot": "03-mid",
+          "expr": "ball.inPlay === true",
+          "deadlineMs": 20000
+        }
       ],
       "acceptance": {
         "minOverall": 7,
         "minVisualCategory": 5,
-        "critical": { "modeling_assets": 7.5, "material_quality": 7.5 },
-        "minNonVisual": { "sound_audio": 6, "controls": 7, "game_feel": 6.5, "loading_transitions": 6, "physics_feel": 6 }
+        "critical": {
+          "modeling_assets": 7.5,
+          "material_quality": 7.5
+        },
+        "minNonVisual": {
+          "sound_audio": 6,
+          "controls": 7,
+          "game_feel": 6.5,
+          "loading_transitions": 6,
+          "physics_feel": 6
+        }
       },
       "budgets": {
         "transferToPlayableMB": 15,
         "routeJsGzipKB": 80,
-        "drawCalls": { "low": 100, "medium": 100, "high": 100, "ultra": 200 },
+        "drawCalls": {
+          "low": 100,
+          "medium": 100,
+          "high": 100,
+          "ultra": 200
+        },
         "gameLogicCpuMs": 4
       },
-      "qrFlags": ["A3D_QR_ROUTE_VAULT_BREAKERS"],
+      "qrFlags": [
+        "A3D_QR_ROUTE_VAULT_BREAKERS"
+      ],
       "timeline": [
-        { "fps": 5000 },
-        { "hold": "Space", "ms": 1800 }, { "wait": 350 }, { "shot": "02-opening" },
-        { "repeat": 8, "steps": [{ "wait": 400 }, { "hold": "KeyA", "ms": 180 }, { "wait": 150 }, { "hold": "KeyD", "ms": 180 }] },
-        { "down": "KeyA" }, { "down": "KeyD" }, { "wait": 120 }, { "shot": "03-mid" }, { "up": "KeyA" }, { "up": "KeyD" },
-        { "until": "(window.__VAULT_BREAKERS_EVIDENCE__?.score ?? 0) > s", "capture": "window.__VAULT_BREAKERS_EVIDENCE__?.score ?? 0", "timeout": 5000,
-          "loop": [{ "hold": "KeyA", "ms": 140 }, { "wait": 60 }, { "hold": "KeyD", "ms": 140 }, { "wait": 60 }] },
-        { "shot": "04-action" }
+        {
+          "fps": 5000
+        },
+        {
+          "hold": "Space",
+          "ms": 1800
+        },
+        {
+          "wait": 350
+        },
+        {
+          "shot": "02-opening"
+        },
+        {
+          "repeat": 8,
+          "steps": [
+            {
+              "wait": 400
+            },
+            {
+              "hold": "KeyA",
+              "ms": 180
+            },
+            {
+              "wait": 150
+            },
+            {
+              "hold": "KeyD",
+              "ms": 180
+            }
+          ]
+        },
+        {
+          "down": "KeyA"
+        },
+        {
+          "down": "KeyD"
+        },
+        {
+          "wait": 120
+        },
+        {
+          "shot": "03-mid"
+        },
+        {
+          "up": "KeyA"
+        },
+        {
+          "up": "KeyD"
+        },
+        {
+          "until": "(window.__VAULT_BREAKERS_EVIDENCE__?.score ?? 0) > s",
+          "capture": "window.__VAULT_BREAKERS_EVIDENCE__?.score ?? 0",
+          "timeout": 5000,
+          "loop": [
+            {
+              "hold": "KeyA",
+              "ms": 140
+            },
+            {
+              "wait": 60
+            },
+            {
+              "hold": "KeyD",
+              "ms": 140
+            },
+            {
+              "wait": 60
+            }
+          ]
+        },
+        {
+          "shot": "04-action"
+        }
+      ],
+      "integratedCritical": [
+        "C-05",
+        "C-10",
+        "C-13",
+        "C-15",
+        "C-24",
+        "C-25",
+        "C-27"
       ]
     },
     {
@@ -528,32 +1734,124 @@
       "rebuildTier": "S-world",
       "artDirection": "apps/showcase-rooftop-buckets/art/direction.ts",
       "requiredConditions": [
-        { "shot": "04-action", "expr": "shot.result === \"make\" && characters.skinnedVisible >= 2", "deadlineMs": 20000 },
-        { "shot": "05-charge", "expr": "shot.meter > 0.5", "deadlineMs": 35000 }
+        {
+          "shot": "04-action",
+          "expr": "shot.result === \"make\" && characters.skinnedVisible >= 2",
+          "deadlineMs": 20000
+        },
+        {
+          "shot": "05-charge",
+          "expr": "shot.meter > 0.5",
+          "deadlineMs": 35000
+        }
       ],
       "acceptance": {
         "minOverall": 7,
         "minVisualCategory": 5,
-        "critical": { "environment_world": 7, "animation_quality": 7 },
-        "minNonVisual": { "sound_audio": 6, "controls": 7, "game_feel": 6.5, "loading_transitions": 6, "physics_feel": 6 }
+        "critical": {
+          "environment_world": 7,
+          "animation_quality": 7
+        },
+        "minNonVisual": {
+          "sound_audio": 6,
+          "controls": 7,
+          "game_feel": 6.5,
+          "loading_transitions": 6,
+          "physics_feel": 6
+        }
       },
       "budgets": {
         "transferToPlayableMB": 15,
         "routeJsGzipKB": 80,
-        "drawCalls": { "low": 150, "medium": 200, "high": 200, "ultra": 400 },
+        "drawCalls": {
+          "low": 150,
+          "medium": 200,
+          "high": 200,
+          "ultra": 400
+        },
         "gameLogicCpuMs": 4
       },
-      "qrFlags": ["A3D_QR_ROUTE_ROOFTOP_BUCKETS"],
+      "qrFlags": [
+        "A3D_QR_ROUTE_ROOFTOP_BUCKETS"
+      ],
       "timeline": [
-        { "fps": 5000 },
-        { "hold": "Space", "ms": 480 }, { "wait": 1500 }, { "shot": "02-opening" },
-        { "wait": 1400 },
-        { "press": "KeyD" }, { "wait": 700 }, { "hold": "Space", "ms": 520 }, { "wait": 1700 },
-        { "press": "KeyA" }, { "wait": 700 },
-        { "down": "Space" }, { "wait": 450 }, { "shot": "05-charge" }, { "up": "Space" },
-        { "wait": 650 }, { "shot": "03-mid" },
-        { "until": "(window.__ROOFTOP_BUCKETS_EVIDENCE__?.makes ?? 0) > s", "capture": "window.__ROOFTOP_BUCKETS_EVIDENCE__?.makes ?? 0", "timeout": 3500, "loop": [{ "wait": 80 }] },
-        { "shot": "04-action" }
+        {
+          "fps": 5000
+        },
+        {
+          "hold": "Space",
+          "ms": 480
+        },
+        {
+          "wait": 1500
+        },
+        {
+          "shot": "02-opening"
+        },
+        {
+          "wait": 1400
+        },
+        {
+          "press": "KeyD"
+        },
+        {
+          "wait": 700
+        },
+        {
+          "hold": "Space",
+          "ms": 520
+        },
+        {
+          "wait": 1700
+        },
+        {
+          "press": "KeyA"
+        },
+        {
+          "wait": 700
+        },
+        {
+          "down": "Space"
+        },
+        {
+          "wait": 450
+        },
+        {
+          "shot": "05-charge"
+        },
+        {
+          "up": "Space"
+        },
+        {
+          "wait": 650
+        },
+        {
+          "shot": "03-mid"
+        },
+        {
+          "until": "(window.__ROOFTOP_BUCKETS_EVIDENCE__?.makes ?? 0) > s",
+          "capture": "window.__ROOFTOP_BUCKETS_EVIDENCE__?.makes ?? 0",
+          "timeout": 3500,
+          "loop": [
+            {
+              "wait": 80
+            }
+          ]
+        },
+        {
+          "shot": "04-action"
+        }
+      ],
+      "integratedCritical": [
+        "C-05",
+        "C-10",
+        "C-13",
+        "C-15",
+        "C-19",
+        "C-20",
+        "C-24",
+        "C-25",
+        "C-27"
       ]
     },
     {
@@ -570,8 +1868,16 @@
       "rebuildTier": "S-world",
       "artDirection": "apps/showcase-gallery-shift/art/direction.ts",
       "requiredConditions": [
-        { "shot": "04-action", "expr": "guard.state === \"alert\" && fx.conesVisible >= 1", "deadlineMs": 30000 },
-        { "shot": "03-mid", "expr": "characters.thiefTracksApplied > 0 && characters.thiefYawErrorDeg <= 15", "deadlineMs": 30000 }
+        {
+          "shot": "04-action",
+          "expr": "guard.state === \"alert\" && fx.conesVisible >= 1",
+          "deadlineMs": 30000
+        },
+        {
+          "shot": "03-mid",
+          "expr": "characters.thiefTracksApplied > 0 && characters.thiefYawErrorDeg <= 15",
+          "deadlineMs": 30000
+        }
       ],
       "canvasBlankCheck": {
         "maxDarkFraction": 0.93,
@@ -581,25 +1887,111 @@
       "acceptance": {
         "minOverall": 7,
         "minVisualCategory": 5,
-        "critical": { "lighting": 7.5, "shadows": 7, "animation_quality": 7 },
-        "minNonVisual": { "sound_audio": 6, "controls": 7, "game_feel": 6.5, "loading_transitions": 6 }
+        "critical": {
+          "lighting": 7.5,
+          "shadows": 7,
+          "animation_quality": 7
+        },
+        "minNonVisual": {
+          "sound_audio": 6,
+          "controls": 7,
+          "game_feel": 6.5,
+          "loading_transitions": 6
+        }
       },
       "budgets": {
         "transferToPlayableMB": 15,
         "routeJsGzipKB": 80,
-        "drawCalls": { "low": 150, "medium": 250, "high": 250, "ultra": 500 },
+        "drawCalls": {
+          "low": 150,
+          "medium": 250,
+          "high": 250,
+          "ultra": 500
+        },
         "gameLogicCpuMs": 4
       },
-      "qrFlags": ["A3D_QR_ROUTE_GALLERY_SHIFT"],
+      "qrFlags": [
+        "A3D_QR_ROUTE_GALLERY_SHIFT"
+      ],
       "timeline": [
-        { "fps": 5000 },
-        { "down": "KeyW" }, { "wait": 2000 }, { "shot": "02-opening" }, { "up": "KeyW" },
-        { "hold": "KeyD", "ms": 1200 },
-        { "down": "ShiftLeft" }, { "hold": "KeyW", "ms": 1500 }, { "up": "ShiftLeft" },
-        { "hold": "KeyA", "ms": 1000 },
-        { "hold": "KeyE", "ms": 900 },
-        { "down": "KeyX" }, { "down": "KeyW" }, { "wait": 1200 }, { "shot": "03-mid" }, { "up": "KeyW" }, { "up": "KeyX" },
-        { "down": "KeyE" }, { "wait": 500 }, { "shot": "04-action" }, { "up": "KeyE" }
+        {
+          "fps": 5000
+        },
+        {
+          "down": "KeyW"
+        },
+        {
+          "wait": 2000
+        },
+        {
+          "shot": "02-opening"
+        },
+        {
+          "up": "KeyW"
+        },
+        {
+          "hold": "KeyD",
+          "ms": 1200
+        },
+        {
+          "down": "ShiftLeft"
+        },
+        {
+          "hold": "KeyW",
+          "ms": 1500
+        },
+        {
+          "up": "ShiftLeft"
+        },
+        {
+          "hold": "KeyA",
+          "ms": 1000
+        },
+        {
+          "hold": "KeyE",
+          "ms": 900
+        },
+        {
+          "down": "KeyX"
+        },
+        {
+          "down": "KeyW"
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "shot": "03-mid"
+        },
+        {
+          "up": "KeyW"
+        },
+        {
+          "up": "KeyX"
+        },
+        {
+          "down": "KeyE"
+        },
+        {
+          "wait": 500
+        },
+        {
+          "shot": "04-action"
+        },
+        {
+          "up": "KeyE"
+        }
+      ],
+      "integratedCritical": [
+        "C-05",
+        "C-10",
+        "C-13",
+        "C-15",
+        "C-19",
+        "C-20",
+        "C-24",
+        "C-25",
+        "C-27"
       ]
     },
     {
@@ -615,11 +2007,31 @@
       "rebuildTier": "S-world",
       "artDirection": "apps/showcase-deep-recovery/art/direction.ts",
       "requiredConditions": [
-        { "shot": "04-action", "expr": "salvage.grappled >= 1", "deadlineMs": 40000 },
-        { "shot": "02-opening", "expr": "render.readbacksThisFrame === 0", "deadlineMs": 40000 },
-        { "shot": "03-mid", "expr": "render.readbacksThisFrame === 0", "deadlineMs": 40000 },
-        { "shot": "04-action", "expr": "render.readbacksThisFrame === 0", "deadlineMs": 40000 },
-        { "shot": "05-grapple", "expr": "render.readbacksThisFrame === 0", "deadlineMs": 55000 }
+        {
+          "shot": "04-action",
+          "expr": "salvage.grappled >= 1",
+          "deadlineMs": 40000
+        },
+        {
+          "shot": "02-opening",
+          "expr": "render.readbacksThisFrame === 0",
+          "deadlineMs": 40000
+        },
+        {
+          "shot": "03-mid",
+          "expr": "render.readbacksThisFrame === 0",
+          "deadlineMs": 40000
+        },
+        {
+          "shot": "04-action",
+          "expr": "render.readbacksThisFrame === 0",
+          "deadlineMs": 40000
+        },
+        {
+          "shot": "05-grapple",
+          "expr": "render.readbacksThisFrame === 0",
+          "deadlineMs": 55000
+        }
       ],
       "canvasBlankCheck": {
         "maxDarkFraction": 0.95,
@@ -629,27 +2041,112 @@
       "acceptance": {
         "minOverall": 7,
         "minVisualCategory": 5,
-        "critical": { "lighting": 7, "atmospheric_effects": 7.5, "performance": 7 },
-        "minNonVisual": { "sound_audio": 6, "controls": 7, "game_feel": 6.5, "loading_transitions": 6 }
+        "critical": {
+          "lighting": 7,
+          "atmospheric_effects": 7.5,
+          "performance": 7
+        },
+        "minNonVisual": {
+          "sound_audio": 6,
+          "controls": 7,
+          "game_feel": 6.5,
+          "loading_transitions": 6
+        }
       },
       "budgets": {
         "transferToPlayableMB": 15,
         "routeJsGzipKB": 80,
-        "drawCalls": { "low": 150, "medium": 200, "high": 200, "ultra": 400 },
+        "drawCalls": {
+          "low": 150,
+          "medium": 200,
+          "high": 200,
+          "ultra": 400
+        },
         "gameLogicCpuMs": 4
       },
-      "qrFlags": ["A3D_QR_ROUTE_DEEP_RECOVERY"],
+      "qrFlags": [
+        "A3D_QR_ROUTE_DEEP_RECOVERY"
+      ],
       "timeline": [
-        { "fps": 5000 },
-        { "down": "KeyW" }, { "wait": 2000 }, { "shot": "02-opening" },
-        { "press": "Space" }, { "wait": 800 },
-        { "hold": "KeyD", "ms": 1000 },
-        { "hold": "KeyQ", "ms": 1200 },
-        { "down": "ShiftLeft" }, { "wait": 2600 }, { "up": "ShiftLeft" },
-        { "down": "KeyA" }, { "wait": 500 }, { "shot": "03-mid" }, { "up": "KeyA" },
-        { "press": "Space" }, { "wait": 250 }, { "shot": "04-action" },
-        { "press": "KeyF" }, { "wait": 350 }, { "shot": "05-grapple" },
-        { "up": "KeyW" }
+        {
+          "fps": 5000
+        },
+        {
+          "down": "KeyW"
+        },
+        {
+          "wait": 2000
+        },
+        {
+          "shot": "02-opening"
+        },
+        {
+          "press": "Space"
+        },
+        {
+          "wait": 800
+        },
+        {
+          "hold": "KeyD",
+          "ms": 1000
+        },
+        {
+          "hold": "KeyQ",
+          "ms": 1200
+        },
+        {
+          "down": "ShiftLeft"
+        },
+        {
+          "wait": 2600
+        },
+        {
+          "up": "ShiftLeft"
+        },
+        {
+          "down": "KeyA"
+        },
+        {
+          "wait": 500
+        },
+        {
+          "shot": "03-mid"
+        },
+        {
+          "up": "KeyA"
+        },
+        {
+          "press": "Space"
+        },
+        {
+          "wait": 250
+        },
+        {
+          "shot": "04-action"
+        },
+        {
+          "press": "KeyF"
+        },
+        {
+          "wait": 350
+        },
+        {
+          "shot": "05-grapple"
+        },
+        {
+          "up": "KeyW"
+        }
+      ],
+      "integratedCritical": [
+        "C-05",
+        "C-10",
+        "C-13",
+        "C-15",
+        "C-20",
+        "C-21",
+        "C-24",
+        "C-25",
+        "C-27"
       ]
     },
     {
@@ -666,34 +2163,130 @@
       "rebuildTier": "S-world",
       "artDirection": "apps/showcase-patrol-wing/art/direction.ts",
       "requiredConditions": [
-        { "shot": "04-action", "expr": "drones.hitsThisSortie >= 1 && fx.liveCount > 0", "deadlineMs": 30000 },
-        { "shot": "03-mid", "expr": "rings.inFrame >= 1 && flight.throttle > 0.4", "deadlineMs": 30000 }
+        {
+          "shot": "04-action",
+          "expr": "drones.hitsThisSortie >= 1 && fx.liveCount > 0",
+          "deadlineMs": 30000
+        },
+        {
+          "shot": "03-mid",
+          "expr": "rings.inFrame >= 1 && flight.throttle > 0.4",
+          "deadlineMs": 30000
+        }
       ],
       "acceptance": {
         "minOverall": 7,
         "minVisualCategory": 5,
-        "critical": { "environment_world": 7.5, "camera": 7.5, "atmospheric_effects": 7.5 },
-        "minNonVisual": { "sound_audio": 6, "controls": 7, "game_feel": 6.5, "loading_transitions": 6, "physics_feel": 6 }
+        "critical": {
+          "environment_world": 7.5,
+          "camera": 7.5,
+          "atmospheric_effects": 7.5
+        },
+        "minNonVisual": {
+          "sound_audio": 6,
+          "controls": 7,
+          "game_feel": 6.5,
+          "loading_transitions": 6,
+          "physics_feel": 6
+        }
       },
       "budgets": {
         "transferToPlayableMB": 15,
         "routeJsGzipKB": 80,
-        "drawCalls": { "low": 150, "medium": 230, "high": 230, "ultra": 460 },
+        "drawCalls": {
+          "low": 150,
+          "medium": 230,
+          "high": 230,
+          "ultra": 460
+        },
         "gameLogicCpuMs": 4
       },
-      "qrFlags": ["A3D_QR_ROUTE_PATROL_WING"],
+      "qrFlags": [
+        "A3D_QR_ROUTE_PATROL_WING"
+      ],
       "timeline": [
-        { "fps": 5000 },
-        { "down": "ShiftLeft" }, { "wait": 2000 }, { "shot": "02-opening" },
-        { "wait": 1500 }, { "up": "ShiftLeft" },
-        { "hold": "KeyS", "ms": 700 },
-        { "wait": 800 },
-        { "hold": "KeyD", "ms": 900 },
-        { "hold": "KeyE", "ms": 700 },
-        { "wait": 800 },
-        { "down": "Space" }, { "wait": 300 }, { "shot": "03-mid" },
-        { "wait": 500 }, { "shot": "04-action" }, { "up": "Space" },
-        { "hold": "KeyA", "ms": 900 }, { "down": "Space" }, { "wait": 400 }, { "shot": "05-banked-fire" }, { "up": "Space" }
+        {
+          "fps": 5000
+        },
+        {
+          "down": "ShiftLeft"
+        },
+        {
+          "wait": 2000
+        },
+        {
+          "shot": "02-opening"
+        },
+        {
+          "wait": 1500
+        },
+        {
+          "up": "ShiftLeft"
+        },
+        {
+          "hold": "KeyS",
+          "ms": 700
+        },
+        {
+          "wait": 800
+        },
+        {
+          "hold": "KeyD",
+          "ms": 900
+        },
+        {
+          "hold": "KeyE",
+          "ms": 700
+        },
+        {
+          "wait": 800
+        },
+        {
+          "down": "Space"
+        },
+        {
+          "wait": 300
+        },
+        {
+          "shot": "03-mid"
+        },
+        {
+          "wait": 500
+        },
+        {
+          "shot": "04-action"
+        },
+        {
+          "up": "Space"
+        },
+        {
+          "hold": "KeyA",
+          "ms": 900
+        },
+        {
+          "down": "Space"
+        },
+        {
+          "wait": 400
+        },
+        {
+          "shot": "05-banked-fire"
+        },
+        {
+          "up": "Space"
+        }
+      ],
+      "integratedCritical": [
+        "C-05",
+        "C-10",
+        "C-13",
+        "C-15",
+        "C-20",
+        "C-21",
+        "C-24",
+        "C-25",
+        "C-26",
+        "C-27"
       ]
     },
     {
@@ -709,23 +2302,49 @@
       "rebuildTier": "S-presentation",
       "artDirection": "apps/showcase-bank-shot/art/direction.ts",
       "requiredConditions": [
-        { "shot": "04-action", "expr": "table.pottedThisShot >= 1", "deadlineMs": 15000 },
-        { "shot": "03-mid", "expr": "balls.maxAngularSpeed > 0", "deadlineMs": 15000 }
+        {
+          "shot": "04-action",
+          "expr": "table.pottedThisShot >= 1",
+          "deadlineMs": 15000
+        },
+        {
+          "shot": "03-mid",
+          "expr": "balls.maxAngularSpeed > 0",
+          "deadlineMs": 15000
+        }
       ],
       "acceptance": {
         "minOverall": 7,
         "minVisualCategory": 5,
-        "critical": { "material_quality": 8, "lighting": 8, "shadows": 8 },
-        "minNonVisual": { "sound_audio": 6, "controls": 7, "game_feel": 6.5, "loading_transitions": 6, "physics_feel": 6 }
+        "critical": {
+          "material_quality": 8,
+          "lighting": 8,
+          "shadows": 8
+        },
+        "minNonVisual": {
+          "sound_audio": 6,
+          "controls": 7,
+          "game_feel": 6.5,
+          "loading_transitions": 6,
+          "physics_feel": 6
+        }
       },
       "budgets": {
         "transferToPlayableMB": 12,
         "routeJsGzipKB": 80,
-        "drawCalls": { "low": 100, "medium": 120, "high": 120, "ultra": 240 },
+        "drawCalls": {
+          "low": 100,
+          "medium": 120,
+          "high": 120,
+          "ultra": 240
+        },
         "gameLogicCpuMs": 4
       },
-      "qrFlags": ["A3D_QR_ROUTE_BANK_SHOT"],
+      "qrFlags": [
+        "A3D_QR_ROUTE_BANK_SHOT"
+      ],
       "timeline": [
+<<<<<<< HEAD
         { "fps": 5000 },
         { "wait": 300 }, { "hold": "Space", "ms": 850 }, { "wait": 500 }, { "shot": "02-opening" },
         { "wait": 4600 },
@@ -734,6 +2353,82 @@
         { "wait": 400 }, { "shot": "03-mid" },
         { "until": "(window.__AURA3D_GAME_EVIDENCE__?.['showcase-bank-shot']?.table?.pottedThisShot ?? window.__BANK_SHOT_EVIDENCE__?.potted?.length ?? 0) > s || (window.__AURA3D_GAME_EVIDENCE__?.['showcase-bank-shot']?.table?.score ?? window.__BANK_SHOT_EVIDENCE__?.score ?? 0) > t", "capture": "window.__AURA3D_GAME_EVIDENCE__?.['showcase-bank-shot']?.table?.pottedThisShot ?? window.__BANK_SHOT_EVIDENCE__?.potted?.length ?? 0", "capture2": "window.__AURA3D_GAME_EVIDENCE__?.['showcase-bank-shot']?.table?.score ?? window.__BANK_SHOT_EVIDENCE__?.score ?? 0", "timeout": 4000, "loop": [{ "wait": 80 }] },
         { "shot": "04-action" }
+||||||| 7a31f18a
+        { "fps": 5000 },
+        { "wait": 300 }, { "hold": "Space", "ms": 850 }, { "wait": 500 }, { "shot": "02-opening" },
+        { "wait": 4600 },
+        { "hold": "KeyD", "ms": 400 },
+        { "down": "Space" }, { "wait": 700 }, { "shot": "05-charge" }, { "up": "Space" },
+        { "wait": 400 }, { "shot": "03-mid" },
+        { "until": "(window.__BANK_SHOT_EVIDENCE__?.potted?.length ?? 0) > s || (window.__BANK_SHOT_EVIDENCE__?.score ?? 0) > t", "capture": "window.__BANK_SHOT_EVIDENCE__?.potted?.length ?? 0", "capture2": "window.__BANK_SHOT_EVIDENCE__?.score ?? 0", "timeout": 4000, "loop": [{ "wait": 80 }] },
+        { "shot": "04-action" }
+=======
+        {
+          "fps": 5000
+        },
+        {
+          "wait": 300
+        },
+        {
+          "hold": "Space",
+          "ms": 850
+        },
+        {
+          "wait": 500
+        },
+        {
+          "shot": "02-opening"
+        },
+        {
+          "wait": 4600
+        },
+        {
+          "hold": "KeyD",
+          "ms": 400
+        },
+        {
+          "down": "Space"
+        },
+        {
+          "wait": 700
+        },
+        {
+          "shot": "05-charge"
+        },
+        {
+          "up": "Space"
+        },
+        {
+          "wait": 400
+        },
+        {
+          "shot": "03-mid"
+        },
+        {
+          "until": "(window.__BANK_SHOT_EVIDENCE__?.potted?.length ?? 0) > s || (window.__BANK_SHOT_EVIDENCE__?.score ?? 0) > t",
+          "capture": "window.__BANK_SHOT_EVIDENCE__?.potted?.length ?? 0",
+          "capture2": "window.__BANK_SHOT_EVIDENCE__?.score ?? 0",
+          "timeout": 4000,
+          "loop": [
+            {
+              "wait": 80
+            }
+          ]
+        },
+        {
+          "shot": "04-action"
+        }
+      ],
+      "integratedCritical": [
+        "C-03",
+        "C-05",
+        "C-10",
+        "C-13",
+        "C-15",
+        "C-24",
+        "C-25",
+        "C-27"
+>>>>>>> origin/main
       ]
     },
     {
@@ -750,8 +2445,16 @@
       "rebuildTier": "F",
       "artDirection": "apps/showcase-orbital-defense/art/direction.ts",
       "requiredConditions": [
-        { "shot": "04-action", "expr": "fx.explosionsLive >= 1", "deadlineMs": 20000 },
-        { "shot": "03-mid", "expr": "framing.dronesUnderHud === 0", "deadlineMs": 20000 }
+        {
+          "shot": "04-action",
+          "expr": "fx.explosionsLive >= 1",
+          "deadlineMs": 20000
+        },
+        {
+          "shot": "03-mid",
+          "expr": "framing.dronesUnderHud === 0",
+          "deadlineMs": 20000
+        }
       ],
       "canvasBlankCheck": {
         "maxDarkFraction": 0.95,
@@ -761,27 +2464,126 @@
       "acceptance": {
         "minOverall": 7,
         "minVisualCategory": 5,
-        "critical": { "environment_world": 7, "modeling_assets": 7, "vfx": 7.5 },
-        "minNonVisual": { "sound_audio": 6, "controls": 7, "game_feel": 6.5, "loading_transitions": 6 }
+        "critical": {
+          "environment_world": 7,
+          "modeling_assets": 7,
+          "vfx": 7.5
+        },
+        "minNonVisual": {
+          "sound_audio": 6,
+          "controls": 7,
+          "game_feel": 6.5,
+          "loading_transitions": 6
+        }
       },
       "budgets": {
         "transferToPlayableMB": 12,
         "routeJsGzipKB": 80,
-        "drawCalls": { "low": 80, "medium": 80, "high": 80, "ultra": 160 },
+        "drawCalls": {
+          "low": 80,
+          "medium": 80,
+          "high": 80,
+          "ultra": 160
+        },
         "gameLogicCpuMs": 4
       },
-      "qrFlags": ["A3D_QR_ROUTE_ORBITAL_DEFENSE"],
+      "qrFlags": [
+        "A3D_QR_ROUTE_ORBITAL_DEFENSE"
+      ],
       "timeline": [
-        { "fps": 5000 },
-        { "down": "KeyD" },
-        { "repeat": 6, "steps": [{ "press": "Space" }, { "wait": 300 }] },
-        { "shot": "02-opening" }, { "up": "KeyD" },
-        { "repeat": 10, "steps": [{ "down": "KeyA" }, { "press": "Space" }, { "wait": 300 }, { "up": "KeyA" }, { "press": "Space" }, { "wait": 300 }] },
-        { "press": "Space" }, { "wait": 80 }, { "shot": "03-mid" },
-        { "until": "(window.__AURA3D_SHOWCASE_ORBITAL_DEFENSE__?.score ?? 0) > s", "capture": "window.__AURA3D_SHOWCASE_ORBITAL_DEFENSE__?.score ?? 0", "timeout": 4000,
-          "loop": [{ "press": "Space" }, { "hold": "KeyD", "ms": 120 }] },
-        { "shot": "04-action" },
-        { "press": "KeyQ" }, { "wait": 150 }, { "shot": "05-shield" }
+        {
+          "fps": 5000
+        },
+        {
+          "down": "KeyD"
+        },
+        {
+          "repeat": 6,
+          "steps": [
+            {
+              "press": "Space"
+            },
+            {
+              "wait": 300
+            }
+          ]
+        },
+        {
+          "shot": "02-opening"
+        },
+        {
+          "up": "KeyD"
+        },
+        {
+          "repeat": 10,
+          "steps": [
+            {
+              "down": "KeyA"
+            },
+            {
+              "press": "Space"
+            },
+            {
+              "wait": 300
+            },
+            {
+              "up": "KeyA"
+            },
+            {
+              "press": "Space"
+            },
+            {
+              "wait": 300
+            }
+          ]
+        },
+        {
+          "press": "Space"
+        },
+        {
+          "wait": 80
+        },
+        {
+          "shot": "03-mid"
+        },
+        {
+          "until": "(window.__AURA3D_SHOWCASE_ORBITAL_DEFENSE__?.score ?? 0) > s",
+          "capture": "window.__AURA3D_SHOWCASE_ORBITAL_DEFENSE__?.score ?? 0",
+          "timeout": 4000,
+          "loop": [
+            {
+              "press": "Space"
+            },
+            {
+              "hold": "KeyD",
+              "ms": 120
+            }
+          ]
+        },
+        {
+          "shot": "04-action"
+        },
+        {
+          "press": "KeyQ"
+        },
+        {
+          "wait": 150
+        },
+        {
+          "shot": "05-shield"
+        }
+      ],
+      "integratedCritical": [
+        "C-03",
+        "C-04",
+        "C-05",
+        "C-10",
+        "C-13",
+        "C-15",
+        "C-20",
+        "C-24",
+        "C-25",
+        "C-27"
       ]
     }
   ]

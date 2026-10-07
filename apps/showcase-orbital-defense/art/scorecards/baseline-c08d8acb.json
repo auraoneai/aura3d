@@ -1,0 +1,172 @@
+{
+  "schema": "aura3d.game-scorecard/1",
+  "gameId": "showcase-orbital-defense",
+  "commit": "c08d8acbd7e3150774f213c45f825ebbae0489cb",
+  "round": "baseline-c08d8acb",
+  "countedRound": 0,
+  "qrFlags": [],
+  "enginePending": [],
+  "captureRunId": "37289688772",
+  "env": {
+    "runner": "macos-14",
+    "gpu": "apple-silicon",
+    "browser": "chromium"
+  },
+  "vision": [
+    {
+      "gameId": "showcase-orbital-defense",
+      "round": "baseline-c08d8acb",
+      "judge": {
+        "kind": "vision-model",
+        "id": "research/21-game-vision-judgment"
+      },
+      "scores": {
+        "environment_world": 1.0,
+        "modeling_assets": 1.0,
+        "texture_quality": 0.5,
+        "material_quality": 1.5,
+        "pbr_credibility": 1.0,
+        "lighting": 1.5,
+        "shadows": 0.0,
+        "ambient_lighting": 1.5,
+        "ibl_reflections": 0.0,
+        "tone_mapping": 2.5,
+        "color_management": 3.5,
+        "anti_aliasing": 4.0,
+        "postprocessing": 0.5,
+        "vfx": 0.5,
+        "particles": 0.0,
+        "animation_quality": 1.0,
+        "character_presentation": 1.0,
+        "camera": 2.0,
+        "composition": 2.0,
+        "scale_depth_perception": 1.0,
+        "atmospheric_effects": 0.0,
+        "gameplay_readability": 4.0,
+        "ui_hud": 4.0,
+        "typography": 5.0,
+        "polish_juice": 0.5,
+        "mobile_presentation": 1.0,
+        "overall_visual_quality": 1.5
+      },
+      "observations": [
+        {
+          "category": "environment_world",
+          "seen": "Solid near-black clear color. No starfield, skybox, nebula, or distant bodies."
+        },
+        {
+          "category": "modeling_assets",
+          "seen": "Low-segment UV sphere with a visibly faceted silhouette, a flat disk ring, two untextured boxes, and squashed spheres for enemies."
+        },
+        {
+          "category": "texture_quality",
+          "seen": "No textures anywhere. Every surface is a single flat color."
+        },
+        {
+          "category": "material_quality",
+          "seen": "Uniform matte/unlit-looking materials. The only variation is one blurry specular blob on the planet."
+        },
+        {
+          "category": "pbr_credibility",
+          "seen": "Nothing reads as metal, rock, gas, or ice. There's no roughness variation and no Fresnel."
+        },
+        {
+          "category": "lighting",
+          "seen": "No visible terminator or day/night side. The planet is almost uniformly lit, so the sun direction is unreadable."
+        },
+        {
+          "category": "shadows",
+          "seen": "None: no planet shadow on the ring, no ring shadow on the planet, no self-shadowing."
+        },
+        {
+          "category": "ambient_lighting",
+          "seen": "Flat high ambient washes the planet to a pastel. No occlusion or hemisphere tint."
+        },
+        {
+          "category": "ibl_reflections",
+          "seen": "No environment map and no reflections."
+        },
+        {
+          "category": "tone_mapping",
+          "seen": "Pastels sit in a narrow mid range. No HDR highlights, and the planet looks washed rather than exposed."
+        },
+        {
+          "category": "color_management",
+          "seen": "The mint/lavender/salmon palette is coherent but low-contrast and toy-like. It doesn't read as space."
+        },
+        {
+          "category": "anti_aliasing",
+          "seen": "Edges are acceptable at 1080p, but the sphere faceting and thin ring edges show stair-stepping."
+        },
+        {
+          "category": "postprocessing",
+          "seen": "No bloom, vignette, grading, or chromatic/film treatment."
+        },
+        {
+          "category": "vfx",
+          "seen": "No muzzle flash, hit, explosion, shield, or trail is visible in any frame, including \"action\"."
+        },
+        {
+          "category": "particles",
+          "seen": "None."
+        },
+        {
+          "category": "animation_quality",
+          "seen": "Static camera and static planet/ring across frames. Only drone positions change. No rotation, bob, or banking cues."
+        },
+        {
+          "category": "character_presentation",
+          "seen": "The player defense is a grey or green box. The player can't easily tell which object they control."
+        },
+        {
+          "category": "camera",
+          "seen": "Locked, flat, straight-on orthographic-feeling view with a lot of dead space. No motion, shake, or framing response."
+        },
+        {
+          "category": "composition",
+          "seen": "A small centered subject in a black void, HUD hugging the corners, and action clipping under panels."
+        },
+        {
+          "category": "scale_depth_perception",
+          "seen": "No parallax, fog, size cues, or lighting falloff. It reads as a 2D diagram."
+        },
+        {
+          "category": "atmospheric_effects",
+          "seen": "No planetary atmosphere rim, glow, haze, or space dust."
+        },
+        {
+          "category": "gameplay_readability",
+          "seen": "Pink-on-black enemies are easy to spot, but the player turret, firing arc, threat direction, and shield state are not communicated. Entities hide under the HUD."
+        },
+        {
+          "category": "ui_hud",
+          "seen": "Clean card layout and a decent heat gradient bar. However, the \"SYSTEMS\" panel and checksum are developer/marketing text, and panels occlude the playfield."
+        },
+        {
+          "category": "typography",
+          "seen": "Competent sans-serif with a clear hierarchy. Generic, with no game identity."
+        },
+        {
+          "category": "polish_juice",
+          "seen": "No feedback for score, damage, or 98% heat. Frames are interchangeable."
+        },
+        {
+          "category": "mobile_presentation",
+          "seen": "HUD covers two-thirds of the screen, the planet renders behind panels, there are no touch controls, and the layout is effectively unplayable."
+        },
+        {
+          "category": "overall_visual_quality",
+          "seen": "Placeholder primitives on a clear color with debug UI. Below early-2000s tech-demo level."
+        }
+      ],
+      "captureRunId": "37289688772",
+      "rubricPromptVersion": "rubric-v1-qr0"
+    }
+  ],
+  "human": [],
+  "perf": [],
+  "verdict": "rejected",
+  "findings": [
+    "baseline audit (research/20+21, run 37289688772): rebuild in progress under A3D_QR_ROUTE_* flag"
+  ]
+}

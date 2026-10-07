@@ -2,7 +2,7 @@ import {
   camera,
   createAuraApp,
   game,
-  lights,
+  looks,
   material,
   model,
   primitives,
@@ -28,46 +28,62 @@ interface RacingStarterEvidence {
   readonly heading: number;
   readonly position: { readonly x: number; readonly y: number };
   readonly events: readonly string[];
-  readonly lapProof: {
-    readonly status: string;
-    readonly events: readonly string[];
-    readonly bestTime?: number;
-    readonly checkpointCount: number;
-    readonly lapsToWin: number;
-    readonly minLapSeconds: number;
-    readonly routeAlignedToVisibleTrack: boolean;
+  readonly look: { readonly id: string; readonly category: string };
+  readonly geometry: {
+    readonly tool: string;
+    readonly report: string;
+    readonly carMetres: readonly number[];
+    readonly trackMetres: readonly number[];
+    readonly carScale: number;
+    readonly routeScale: number;
+  };
+  readonly camera: {
+    readonly rig: string;
+    readonly presented: boolean;
   };
   readonly evidence: unknown;
 }
 
-const raceContract = {
-  checkpointCount: 6,
-  lapsToWin: 3,
-  minLapSeconds: 22,
-  routeAlignedToVisibleTrack: true
-} as const;
+// The look sets sky + sun + fog + grade; the scene adds only the foreground.
+// Genre row (aura3d-browser-game): racing-starter → golden-hour, chase fov 60.
+const LOOK_ID = "golden-hour" as const;
 
-const routeRibbonSegments = [
-  ["route south straight", [2.8, 0.03, 0], [5.8, 0.08, 0.58]],
-  ["route east straight", [5.6, 0.03, 1.7], [0.58, 0.08, 3.6]],
-  ["route north straight", [2.8, 0.03, 3.4], [5.8, 0.08, 0.58]],
-  ["route west straight", [0, 0.03, 1.7], [0.58, 0.08, 3.6]]
-] as const;
-
+// Both showcase GLBs are authored at real scale: the car measures
+// 3.455 × 3.428 × 2.206 m and the kart circuit 24.651 × 24.647 × 2.073 m, so
+// the models mount at scale 1 (the former 0.18 shrink is removed). The logical
+// route is scaled by the same factor the track grew (24.651 / 6.65 ≈ 3.7 → 3.5)
+// so the driven line still traces inside the visible circuit footprint.
+const ROUTE_SCALE = 3.5;
 const route = {
   id: "starter-kart-loop",
-  width: 2.2,
+  width: 2.2 * ROUTE_SCALE,
   points: [
-    { x: -0.4, y: -0.25 },
-    { x: 2.4, y: -0.9 },
-    { x: 5.4, y: 0.15 },
-    { x: 5.9, y: 2.7 },
-    { x: 3.2, y: 3.9 },
-    { x: 0.3, y: 3.15 },
-    { x: -0.75, y: 1.15 }
+    { x: -0.4 * ROUTE_SCALE, y: -0.25 * ROUTE_SCALE },
+    { x: 2.4 * ROUTE_SCALE, y: -0.9 * ROUTE_SCALE },
+    { x: 5.4 * ROUTE_SCALE, y: 0.15 * ROUTE_SCALE },
+    { x: 5.9 * ROUTE_SCALE, y: 2.7 * ROUTE_SCALE },
+    { x: 3.2 * ROUTE_SCALE, y: 3.9 * ROUTE_SCALE },
+    { x: 0.3 * ROUTE_SCALE, y: 3.15 * ROUTE_SCALE },
+    { x: -0.75 * ROUTE_SCALE, y: 1.15 * ROUTE_SCALE }
   ],
-  checkpoints: [0.08, 0.22, 0.36, 0.5, 0.64, 0.78]
+  checkpoints: [0.14, 0.27, 0.4, 0.53, 0.66, 0.79]
 };
+
+// The circuit GLB is origin-centred (±12.3 m on x/z). Placing it under the
+// scaled route's bounding-box centre keeps the visible ribbon over the route.
+const ROUTE_BOUNDS = {
+  centerX: ((-0.75 + 5.9) / 2) * ROUTE_SCALE,
+  centerZ: ((-0.9 + 3.9) / 2) * ROUTE_SCALE
+} as const;
+
+// GLB z-extent normalizes to world height: track top surface sits at y=0 when
+// the model is dropped by its 1.0 m max. The car's raw min-y is -1.206 m, so
+// the ride height lifts it until the wheels rest on that surface.
+const TRACK_Y = -1.0;
+const CAR_RIDE_Y = 1.206;
+
+// Chase framing: 8 m back and 3.4 m up at fov 60, aimed a car-length ahead.
+const CHASE = { back: 8, up: 3.4, ahead: 4, fov: 60 } as const;
 
 const input = game.input({
   actions: {
@@ -89,9 +105,9 @@ const racing = game.racing({
   route,
   startProgress: 0.04,
   checkpointRadius: 0.08,
-  lapsToWin: raceContract.lapsToWin,
-  maxSpeed: 11.5,
-  acceleration: 18,
+  lapsToWin: 3,
+  maxSpeed: 40,
+  acceleration: 60,
   drag: 1.4,
   steerRate: 2.85
 });
@@ -103,12 +119,10 @@ const hud = game.hud.bindings([
   game.hud.checkpoint({ valuePath: "appState.checkpoint" }),
   game.hud.eventLog({ valuePath: "appState.events" })
 ]);
-const lapProof = createLapProof();
 
 const evidenceMode = navigator.webdriver;
 const app = createAuraApp("#app", {
   autoStart: !evidenceMode,
-  diagnostics: { overlay: true, performancePanel: true },
   scene: buildScene()
 });
 
@@ -118,6 +132,11 @@ const finishMarker = app.nodes.require("finish-marker");
 const hudRoot = createHud();
 let objective = "Clear six gates across a 3-lap typed-asset route.";
 const raceEventLabels: string[] = [];
+
+// C-22 camera surface: the chase rig pins the framing, and every frame writes
+// the actual chase pose behind the car heading — camera state lives on the
+// camera, not in evidence.
+app.camera?.use(camera.rigs.chase({ target: "race-car" }));
 
 app.onFrame(({ dt }: { readonly dt: number }) => {
   input.update(dt);
@@ -153,11 +172,25 @@ app.onFrame(({ dt }: { readonly dt: number }) => {
   }
 
   car
-    .setPosition(state.position.x, 0.32, state.position.y)
-    .setRotation(0, -state.heading + Math.PI / 2, 0)
-    .setScale(state.drift > 0.15 ? [0.2, 0.2, 0.22] : [0.18, 0.18, 0.18]);
+    .setPosition(state.position.x, CAR_RIDE_Y, state.position.y)
+    .setRotation(0, -state.heading + Math.PI / 2, 0);
   checkpointMarker.setVisible(state.checkpoint === 0);
   finishMarker.setScale(state.status === "finished" ? [1.15, 0.08, 0.14] : [0.86, 0.08, 0.12]);
+
+  const forwardX = Math.cos(state.heading);
+  const forwardZ = Math.sin(state.heading);
+  app.camera?.setPose({
+    position: [
+      state.position.x - forwardX * CHASE.back,
+      CAR_RIDE_Y + CHASE.up,
+      state.position.y - forwardZ * CHASE.back
+    ],
+    target: [
+      state.position.x + forwardX * CHASE.ahead,
+      CAR_RIDE_Y + 0.4,
+      state.position.y + forwardZ * CHASE.ahead
+    ]
+  });
 
   renderHud(state);
   publishEvidence(state);
@@ -190,37 +223,29 @@ if (evidenceMode) {
 
 function buildScene() {
   const nodes: AuraNodeInput[] = [
+    // Real-scale assets: kart circuit 24.651 m, sports car 3.455 m (aura-assets
+    // bounds). No 0.18 shrink — see CAR_RIDE_Y / ROUTE_SCALE comments above.
     model(assets.trackModel, { name: "typed kart circuit asset" })
-      .position(2.8, -0.08, 1.7)
-      .scale(0.18),
+      .position(ROUTE_BOUNDS.centerX, TRACK_Y, ROUTE_BOUNDS.centerZ)
+      .scale(1),
     model(assets.carModel, { name: "typed playable sports car", castShadow: true })
-      .position(0, 0.32, 0)
-      .scale(0.18)
+      .position(0, CAR_RIDE_Y, 0)
+      .scale(1)
       .runtime(game.runtimeNode("race-car", { tags: ["player", "vehicle", "typed-asset", "runtime"] })),
-    ...routeRibbonNodes(),
     primitives.box({ name: "checkpoint marker", material: material.neon({ color: "#7ff0c5", emissive: "#7ff0c5", emissiveIntensity: 0.7 }) })
-      .position(0.06, 0.18, 0.2)
-      .scale([0.16, 0.28, 0.95])
+      .position(0.06 * ROUTE_SCALE, CAR_RIDE_Y, 0.2 * ROUTE_SCALE)
+      .scale([0.7, 1.2, 4.2])
       .runtime(game.runtimeNode("checkpoint-marker", { tags: ["checkpoint", "runtime"] })),
     primitives.box({ name: "finish stripe", material: material.neon({ color: "#f9f1d0", emissive: "#f9f1d0", emissiveIntensity: 0.75 }) })
-      .position(0.1, 0.2, 0.05)
-      .scale([0.86, 0.08, 0.12])
+      .position(0.1 * ROUTE_SCALE, CAR_RIDE_Y - 0.1, 0.05 * ROUTE_SCALE)
+      .scale([3.8, 0.36, 0.5])
       .runtime(game.runtimeNode("finish-marker", { tags: ["finish", "runtime"] }))
   ];
 
   return scene()
-    .background("#060b10")
+    .add(looks.preset(LOOK_ID))
     .addMany(nodes)
-    .add(lights.ambient({ name: "race ambient", intensity: 0.38, color: "#e9f6ff" }))
-    .add(lights.directional({ name: "race key", position: [4, 7, 5], intensity: 1.1, color: "#ffffff" }))
-    .camera(camera.perspective({ position: [2.7, 7.8, 8.6], target: [2.7, 0, 1.55], fov: 43 }));
-}
-
-function routeRibbonNodes(): AuraNodeInput[] {
-  const asphalt = material.pbr({ color: "#5a6570", roughness: 0.78, metallic: 0.03 });
-  return routeRibbonSegments.map(([name, position, scale]) =>
-    primitives.box({ name, material: asphalt }).position(...position).scale(scale)
-  );
+    .camera(camera.perspective({ position: [0, CAR_RIDE_Y + CHASE.up, -CHASE.back], target: [0, CAR_RIDE_Y, 0], fov: CHASE.fov }));
 }
 
 function createHud(): HTMLElement {
@@ -234,8 +259,8 @@ function createHud(): HTMLElement {
     "min-width:290px",
     "font:600 13px/1.35 Inter, system-ui, sans-serif",
     "color:#f5fbff",
-    "background:rgba(3,9,14,0.78)",
-    "border:1px solid rgba(125,220,235,0.34)",
+    "background:rgba(20,12,4,0.66)",
+    "border:1px solid rgba(235,190,125,0.34)",
     "border-radius:8px",
     "padding:12px",
     "pointer-events:none"
@@ -248,7 +273,7 @@ function renderHud(state: ReturnType<typeof racing.snapshot>): void {
   hudRoot.innerHTML = [
     `<strong>Aura3D Racing Starter</strong>`,
     `<div>Lap ${state.lap}/${state.lapsToWin} | Checkpoint ${state.checkpoint}/${state.checkpointCount}</div>`,
-    `<div>Speed ${Math.round(Math.abs(state.speed) * 8)} km/h | Time ${state.lapTime.toFixed(2)}s</div>`,
+    `<div>Speed ${Math.round(Math.abs(state.speed) * 4.2)} km/h | Time ${state.lapTime.toFixed(2)}s</div>`,
     `<div>${objective}</div>`,
     `<div>Throttle W/Up. Steer A/D. Drift Space. Reset R.</div>`
   ].join("");
@@ -282,23 +307,21 @@ function publishEvidence(state: ReturnType<typeof racing.snapshot>): void {
     heading: state.heading,
     position: state.position,
     events: raceEventLabels,
-    lapProof,
+    look: { id: LOOK_ID, category: looks.describe(LOOK_ID).category },
+    geometry: {
+      // Geometry truth comes from the real certify-game-geometry screen output
+      // committed under tests/geometry-certification.json — not from constants.
+      tool: "aura3d assets certify-game-geometry --category racing",
+      report: "tests/geometry-certification.json",
+      carMetres: assets.carModel.bounds ?? [],
+      trackMetres: assets.trackModel.bounds ?? [],
+      carScale: 1,
+      routeScale: ROUTE_SCALE
+    },
+    camera: {
+      rig: app.camera?.rig.id ?? "chase",
+      presented: app.camera !== undefined
+    },
     evidence
-  };
-}
-
-function createLapProof(): RacingStarterEvidence["lapProof"] {
-  return {
-    status: "contract-ready",
-    events: [
-      ...route.checkpoints.map((_checkpoint, index) => `checkpoint:checkpoint-${index + 1}`),
-      "lap:multi-lap-contract",
-      "reset:available"
-    ],
-    bestTime: raceContract.minLapSeconds * raceContract.lapsToWin,
-    checkpointCount: raceContract.checkpointCount,
-    lapsToWin: raceContract.lapsToWin,
-    minLapSeconds: raceContract.minLapSeconds,
-    routeAlignedToVisibleTrack: raceContract.routeAlignedToVisibleTrack
   };
 }

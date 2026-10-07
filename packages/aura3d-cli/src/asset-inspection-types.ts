@@ -16,6 +16,14 @@ export interface AuraCliAnimationClipInspection {
   readonly samplerCount: number;
   readonly targetPaths: readonly string[];
   readonly targetNodes: readonly string[];
+  /**
+   * PRD-06 T0.7 (06): resolved clip metadata, populated by lane 05's Q-05-1
+   * wiring of `inspectAnimationClips` (commands/prd06/) into
+   * `inspectGltfAnimations`. Optional until that lands.
+   */
+  readonly duration?: number;
+  readonly hasRootMotionCandidate?: boolean;
+  readonly frameRate?: number;
 }
 
 export interface AuraCliSkeletonInspection {

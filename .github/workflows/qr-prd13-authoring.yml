@@ -1,0 +1,35 @@
+name: QR prd13 authoring
+
+# Lane-13 (PRD-13) authoring gate: typecheck, lint, the lane's unit tests, and
+# the tests/qr/prd13 delta suite (its own vitest config — the repo config's
+# include list is prd15-owned). Runs on PRs to main and pushes to qr/*.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: ['qr/**', 'aura3d-quality-rebuild/**']
+  workflow_dispatch:
+
+concurrency:
+  group: qr-prd13-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck:raw
+      - run: pnpm exec eslint packages/engine/src/agent-api/looks packages/engine/src/agent-api/nodes/prompt packages/engine/src/lanes/prd13.ts tests/qr tests/unit/agent-api/looks.test.ts tests/unit/agent-api/look-lint.test.ts tests/unit/agent-api/prompt-plan-v2.test.ts tests/unit/agent-api/structural-qa.test.ts tests/unit/contracts/impl
+      # Lane-scoped: 3 unrelated agent-api files (paused-render-clock,
+      # production-bridge-boundary, canvas2d) fail on the whole stack today.
+      - run: pnpm exec vitest run tests/unit/agent-api/looks.test.ts tests/unit/agent-api/look-lint.test.ts tests/unit/agent-api/prompt-plan-v2.test.ts tests/unit/agent-api/structural-qa.test.ts tests/unit/agent-api/agent-api.test.ts tests/unit/contracts
+      - name: PRD-13 delta suite (bundle delta ≤ 12 KB gz)
+        run: pnpm exec vitest run --config tests/qr/prd13/vitest.qr-prd13.config.ts

@@ -23,6 +23,32 @@ on:
         description: "QrFlag list passed to captures as a3d-qr=<list> (none|all|comma list)"
         required: false
         default: "none"
+      artifact_suffix:
+        description: "Suffix appended to uploaded artifact names (checkpoint rounds need distinct names)"
+        required: false
+        default: ""
+  workflow_call:
+    inputs:
+      games:
+        type: string
+        required: false
+        default: ""
+      local_build_all:
+        type: boolean
+        required: false
+        default: false
+      viewports:
+        type: string
+        required: false
+        default: "1920x1080,1280x720"
+      qr_flags:
+        type: string
+        required: false
+        default: "none"
+      artifact_suffix:
+        type: string
+        required: false
+        default: ""
   push:
     branches: ["aura3d-quality-rebuild/audit"]
     paths:
@@ -46,10 +72,10 @@ jobs:
     runs-on: macos-14
     timeout-minutes: 120
     env:
-      QRC_GAMES: ${{ github.event_name == 'workflow_dispatch' && inputs.games || '' }}
-      QRC_VIEWPORTS: ${{ github.event_name == 'workflow_dispatch' && inputs.viewports || '1920x1080,1280x720' }}
-      QRC_LOCAL_BUILD: ${{ github.event_name == 'workflow_dispatch' && inputs.local_build_all && 'true' || 'false' }}
-      QRC_FLAGS: ${{ github.event_name == 'workflow_dispatch' && inputs.qr_flags || 'none' }}
+      QRC_GAMES: ${{ inputs.games || '' }}
+      QRC_VIEWPORTS: ${{ inputs.viewports || '1920x1080,1280x720' }}
+      QRC_LOCAL_BUILD: ${{ inputs.local_build_all && 'true' || 'false' }}
+      QRC_FLAGS: ${{ inputs.qr_flags || 'none' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -92,7 +118,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: game-captures
+          name: game-captures${{ inputs.artifact_suffix }}
           path: |
             tools/quality-rebuild-capture/out/
             tools/quality-rebuild-capture/.build/build-report.json
@@ -152,7 +178,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: threejs-benchmark
+          name: threejs-benchmark${{ inputs.artifact_suffix }}
           path: benchmarks/quality-rebuild/out/
           retention-days: 30
           if-no-files-found: warn

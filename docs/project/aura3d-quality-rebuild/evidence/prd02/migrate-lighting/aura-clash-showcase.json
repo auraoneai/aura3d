@@ -1,0 +1,28 @@
+{
+  "root": "apps/aura-clash-showcase",
+  "files": 114,
+  "changed": 0,
+  "rows": [
+    {
+      "file": "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
+      "line": 1496,
+      "construct": "lights.spot(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/rendering/GameLighting.ts",
+      "line": 187,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/rendering/GameLighting.ts",
+      "line": 192,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    }
+  ]
+}

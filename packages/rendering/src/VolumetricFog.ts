@@ -142,3 +142,93 @@ export function resolveVolumetricFog(
     lightKind: light ? light.kind : params.lightColor ? "authored" : null
   };
 }
+
+/* ------------------------------------------------------------------ *
+ * PRD-07 P5-T7 — §6.7 QR resolver: `effects.volumetricFog` maps onto the
+ * C-27 `volumetricFog` tier ("analytic" | "froxel-medium" | "froxel-high")
+ * instead of the legacy screen-space kernel above. `color` is honoured:
+ * it feeds the packed inscatter colour the inject pass multiplies into
+ * both the sun lobe and the ambient term.
+ * ------------------------------------------------------------------ */
+
+export type QrVolumetricMode = "analytic" | "froxel-medium" | "froxel-high";
+
+export interface QrVolumetricFogParams {
+  readonly density?: number;
+  readonly color?: string | readonly [number, number, number];
+  readonly intensity?: number;
+  readonly anisotropy?: number;
+  readonly noiseScale?: number;
+  readonly noiseSpeed?: number;
+  readonly noiseStrength?: number;
+  readonly heightFalloff?: number;
+  readonly heightReference?: number;
+}
+
+export interface QrVolumetricResolution {
+  readonly mode: QrVolumetricMode;
+  /** Uniform values for the inject pass (density coefficients + lighting). */
+  readonly packed: {
+    readonly fogDensity: readonly [number, number, number, number]; // σd, σh, b, h0
+    readonly sunColor: readonly [number, number, number];           // light color × intensity
+    readonly ambientColor: readonly [number, number, number];       // dimmed color
+    readonly anisotropy: number;
+    readonly noiseScale: number;
+    readonly noiseSpeed: number;
+    readonly noiseStrength: number;
+  };
+  /** True when scene depth is required and the froxel pass can run. */
+  readonly needsSceneDepth: boolean;
+}
+
+/** "froxel" mode for the tier's C-27 volumetricFog value. */
+export function qrVolumetricModeForTier(settings: { readonly volumetricFog: QrVolumetricMode }): QrVolumetricMode {
+  return settings.volumetricFog;
+}
+
+/** hex "#rrggbb" or array → linear RGB. */
+export function qrVolumetricColor(color: QrVolumetricFogParams["color"]): readonly [number, number, number] {
+  if (Array.isArray(color)) return [color[0] ?? 0.7, color[1] ?? 0.74, color[2] ?? 0.82];
+  if (typeof color === "string") {
+    const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(color.trim());
+    if (m) {
+      const srgb = (v: number): number => (v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+      return [srgb(parseInt(m[1]!, 16) / 255), srgb(parseInt(m[2]!, 16) / 255), srgb(parseInt(m[3]!, 16) / 255)];
+    }
+  }
+  return [0.663, 0.737, 0.812]; // #a9bccf — the lane fallback
+}
+
+/**
+ * §6.7 tier mapping: Low/Medium ("analytic") → analytic height fog +
+ * volumes; High → froxel-medium; Ultra → froxel-high. The froxel path also
+ * needs scene depth; when the caller knows it's unavailable it should keep
+ * the analytic path (VOLUMETRIC_DEPTH_PENDING).
+ */
+export function resolveQrVolumetricFog(
+  params: QrVolumetricFogParams,
+  settings: { readonly volumetricFog: QrVolumetricMode }
+): QrVolumetricResolution {
+  const mode = qrVolumetricModeForTier(settings);
+  const color = qrVolumetricColor(params.color);
+  const intensity = Math.min(1, Math.max(0, params.intensity ?? 0.55));
+  const density = Math.max(0, params.density ?? 0.01);
+  return {
+    mode,
+    packed: {
+      fogDensity: [
+        density,
+        params.heightFalloff !== undefined ? density * 2 : density * 1.6,  // σh
+        params.heightFalloff ?? 0.12,                                       // b
+        params.heightReference ?? 0                                          // h0
+      ],
+      sunColor: [color[0] * intensity * 4, color[1] * intensity * 4, color[2] * intensity * 4],
+      ambientColor: [color[0] * intensity * 0.35, color[1] * intensity * 0.35, color[2] * intensity * 0.35],
+      anisotropy: params.anisotropy ?? 0.6,
+      noiseScale: params.noiseScale ?? 0,
+      noiseSpeed: params.noiseSpeed ?? 0,
+      noiseStrength: params.noiseStrength ?? 0
+    },
+    needsSceneDepth: mode !== "analytic"
+  };
+}

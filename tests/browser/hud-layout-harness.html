@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HUD layout harness</title>
+    <style>
+      html, body { margin: 0; padding: 0; height: 100%; background: #0a0c12; }
+      #stage { position: absolute; inset: 0; }
+      #app { position: absolute; inset: 0; }
+      .a3g-game-hud { position: absolute; inset: 0; pointer-events: none; }
+      .a3g-game-hud .a3g-tc { pointer-events: auto; }
+      /* minimal slot layout mirroring styles/hud-base.css so browser specs can
+         measure real geometry without a route. */
+      .a3g-hud { position: absolute; inset: 0; }
+      .a3g-hud-slot { position: absolute; display: flex; flex-direction: column; gap: 4px; }
+      .a3g-a-top-left { top: 12px; left: 12px; align-items: flex-start; }
+      .a3g-a-top { top: 12px; left: 50%; transform: translateX(-50%); align-items: center; }
+      .a3g-a-top-right { top: 12px; right: 12px; align-items: flex-end; }
+      .a3g-a-left { top: 50%; left: 12px; transform: translateY(-50%); align-items: flex-start; }
+      .a3g-a-center { inset: 0; }
+      .a3g-a-right { top: 50%; right: 12px; transform: translateY(-50%); align-items: flex-end; }
+      .a3g-a-bottom-left { bottom: 12px; left: 12px; align-items: flex-start; }
+      .a3g-a-bottom { bottom: 12px; left: 50%; transform: translateX(-50%); align-items: center; }
+      .a3g-a-bottom-right { bottom: 12px; right: 12px; align-items: flex-end; }
+      .a3g-w { display: inline-flex; gap: 6px; padding: 4px 10px; background: rgba(8,10,16,.78); border-radius: 4px; color: #e8ecf4; font: 600 13px/1.2 system-ui; }
+      .a3g-w-label { opacity: .7; }
+      .a3g-hidden { display: none !important; }
+      .a3g-meter-track { position: relative; width: 140px; height: 10px; background: rgba(255,255,255,.14); border-radius: 3px; overflow: hidden; }
+      .a3g-meter-fill, .a3g-meter-ghost { position: absolute; inset: 0 auto 0 0; }
+      .a3g-lives-pips { display: inline-flex; gap: 4px; }
+      .a3g-life-pip { width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+      .a3g-banner { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font: 800 40px/1 system-ui; }
+      .a3g-toasts { position: absolute; bottom: 18%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 6px; }
+      .a3g-toast { padding: 6px 12px; background: rgba(8,10,16,.9); border-radius: 4px; }
+      .a3g-damage, .a3g-dmg { position: absolute; inset: 0; pointer-events: none; }
+      .a3g-mobile-hidden { display: none; }
+      .a3g-touch { position: absolute; inset: 0; }
+      .a3g-tc { position: absolute; width: 48px; height: 48px; border-radius: 8px; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.3); }
+      #keyhint { position: absolute; top: 45%; left: 12px; padding: 4px 8px; background: #223; }
+    </style>
+  </head>
+  <body>
+    <div id="stage"><div id="app"><span id="keyhint" data-a3g-keyhint>A/D aim - Space charge</span></div></div>
+    <script type="module" src="./hud-layout-harness.ts"></script>
+  </body>
+</html>

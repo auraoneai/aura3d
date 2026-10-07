@@ -1,0 +1,31 @@
+{
+  "schema": "aura3d.assets/1.0",
+  "assetBasePath": "/aura-assets/",
+  "outputDir": "public/aura-assets",
+  "typegen": "src/aura-assets.ts",
+  "assets": [
+    {
+      "id": "hero",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/hero-fixture.glb",
+      "outputPath": "public/aura-assets/hero-fixture.glb",
+      "url": "/aura-assets/hero-fixture.glb",
+      "hash": "sha256-4028ccbce11eb924936dad9bfee2af2aecf4b72203feb8a6b9dfdc458093e656",
+      "sizeBytes": 3773916,
+      "bounds": [
+        2.2,
+        1.6,
+        1.8
+      ],
+      "materials": [
+        "weathered metal",
+        "visor glass",
+        "scratched paint"
+      ],
+      "animations": [],
+      "textures": [],
+      "thumbnailUrl": "/aura-assets/hero.thumb.svg"
+    }
+  ]
+}

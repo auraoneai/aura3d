@@ -1,0 +1,107 @@
+name: Template lookdev
+
+# T0.2 — builds every create-aura3d template from packed release tarballs and captures
+# opening/mid/action screenshots at 1920x1080 and 390x844 (DPR 3) on an Apple-silicon
+# GPU runner (ANGLE Metal, full Chromium — the GitHub provider of CI-ROUTING.md).
+# Output is the look-dev artifact set under tools/agent-templates/out/template-lookdev/
+# (PNGs + report.json). No secrets are used; artifacts always upload.
+# Never runs untrusted fork code: triggers are dispatch and push to main only.
+
+on:
+  workflow_dispatch:
+    inputs:
+      templates:
+        description: "Comma-separated template dirs under packages/create-aura3d/templates (empty = all)"
+        required: false
+        default: ""
+      qr_flags:
+        description: "QrFlag list appended to captured URLs as a3d-qr=<list> (none|all|comma list)"
+        required: false
+        default: "none"
+      skip_pack:
+        description: "Reuse the last packed release tarballs instead of repacking"
+        type: boolean
+        required: false
+        default: false
+  push:
+    branches: [main]
+    paths:
+      - "packages/create-aura3d/templates/**"
+      - "packages/create-aura3d/src/**"
+      - "tools/agent-templates/**"
+      - ".github/workflows/template-lookdev.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: template-lookdev-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  QRC_GPU_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+
+jobs:
+  capture:
+    name: Template captures (macos-14, ANGLE Metal)
+    runs-on: macos-14
+    timeout-minutes: 240
+    env:
+      QRC_TEMPLATES: ${{ github.event_name == 'workflow_dispatch' && inputs.templates || '' }}
+      QRC_FLAGS: ${{ github.event_name == 'workflow_dispatch' && inputs.qr_flags || 'none' }}
+      QRC_SKIP_PACK: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_pack && 'true' || 'false' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Templates ship their GLBs as plain git objects (not LFS); skipping
+          # the LFS smudge keeps checkout fast without changing packed bytes.
+          lfs: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build workspace packages (release tarballs ship dist/)
+        run: pnpm build:raw
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install chromium
+
+      - name: Capture templates
+        id: capture
+        continue-on-error: true
+        run: node tools/agent-templates/capture-templates.mjs
+
+      - name: Upload template lookdev artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: template-lookdev
+          path: |
+            tools/agent-templates/out/template-lookdev/
+            tests/reports/release-tarballs/release-plan.json
+          retention-days: 30
+          if-no-files-found: warn
+
+      # PRD-13 T3.13 — runtime look floor: probe every built template's first
+      # frame for specular>0 / shadow≥0.8 / pixelRatio≥min(dpr,2) / look.lint
+      # clean. Reuses the capture tool's scaffolded dist/ trees.
+      - name: Look floor (runtime)
+        run: node tools/agent-templates/look-floor.mjs --runtime --work tools/agent-templates/out/template-lookdev/work
+
+      - name: Report capture outcome
+        if: always()
+        run: |
+          echo "capture=${{ steps.capture.outcome }}"
+          test "${{ steps.capture.outcome }}" = "success"

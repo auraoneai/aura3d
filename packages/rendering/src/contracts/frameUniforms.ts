@@ -2,8 +2,9 @@
  * C-08 — frame uniforms and CameraLike (CONTRACTS.md). Provider: PRD 01. Flag: A3D_QR_CORE.
  */
 
-import type { RenderBuffer } from "../RenderDevice";
+import type { RenderBuffer, RenderDevice } from "../RenderDevice";
 import type { FrameCamera } from "./frameGraph";
+import { defineContractSlot, type ContractSlot } from "./core";
 
 export interface CameraLike {                                     // superset of today's Renderer CameraLike
   readonly viewMatrix?: Float32Array;
@@ -48,3 +49,7 @@ class StubFrameUniforms implements FrameUniformsLike {
 export function createStubFrameUniforms(): FrameUniformsLike {
   return new StubFrameUniforms();
 }
+
+/** Provider: `resources/UniformBlock.ts` `FrameUniforms` (AuraFrame @ binding 0). */
+export const frameUniformsSlot: ContractSlot<(device: RenderDevice) => FrameUniformsLike> =
+  defineContractSlot("C-08", "prd01", "A3D_QR_CORE", () => createStubFrameUniforms());

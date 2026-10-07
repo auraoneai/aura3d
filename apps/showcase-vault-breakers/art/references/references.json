@@ -1,0 +1,24 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-vault-breakers",
+  "entries": [
+    {
+      "file": "references/dark-arcade-hdri.json",
+      "source": "K1 dark-arcade / bar-interior HDRI set (CC0)",
+      "licence": "reference-only",
+      "why": "Dim arcade reflections the chrome ball and clearcoat playfield need to read metallic"
+    },
+    {
+      "file": "references/pinball-playfield-art.json",
+      "source": "shipped comparable: licensed pinball playfield boards",
+      "licence": "reference-only",
+      "why": "Printed playfield art density, lane markings and insert layout the 4k texture targets"
+    },
+    {
+      "file": "references/vault-breakers-cabinet.json",
+      "source": "admitted Sketchfab cabinet (vaultBreakersCabinet, 12 PBR maps)",
+      "licence": "reference-only",
+      "why": "The cabinet to promote — its map set defines the shell material budget"
+    }
+  ]
+}

@@ -18,43 +18,43 @@
     {
       "typedRef": "assets.rooftopCourt",
       "hash": "sha256-332627363b17a85fdb6f34aa1f397c2451cd3844f14856186873bfeff34b7bf8",
-      "quality": "release",
+      "quality": "candidate",
       "role": "world"
     },
     {
       "typedRef": "assets.rooftopVenueV2",
       "hash": "sha256-222289e3dc07ed20f45f73022be4413537594645762cfea852f4b15bab3e0cdc",
-      "quality": "release",
+      "quality": "candidate",
       "role": "environment"
     },
     {
       "typedRef": "assets.rooftopBackboard",
       "hash": "sha256-d2d48af6e4ea2e6274c968a19873565f1445bceeadbb35540d29bcd4a17c529e",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.rooftopRim",
       "hash": "sha256-6ebed2bc98fa62f4750afd35707a7be6fbb1dac770b7c89fa7310d867c774023",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.rooftopBall",
       "hash": "sha256-0254c7b974d15d377597c7b59552eeb53bcac228e73ded83bc850a063fb07739",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.rooftopLayupScorer",
       "hash": "sha256-03a093f24ef11e534a39278710db5a56111eaf2bb093264683cd1c44a6d0ed4a",
-      "quality": "release",
+      "quality": "candidate",
       "role": "character"
     },
     {
       "typedRef": "assets.rooftopDefender",
       "hash": "sha256-6c43f9e1c341b0aaa0dee159fa70cac33828aad4c9b57b9c78f9ef84bc5e0e6b",
-      "quality": "release",
+      "quality": "candidate",
       "role": "character"
     }
   ],
@@ -237,43 +237,43 @@
           {
             "id": "rooftopBackboard",
             "hash": "sha256-d2d48af6e4ea2e6274c968a19873565f1445bceeadbb35540d29bcd4a17c529e",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           },
           {
             "id": "rooftopBall",
             "hash": "sha256-0254c7b974d15d377597c7b59552eeb53bcac228e73ded83bc850a063fb07739",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           },
           {
             "id": "rooftopCourt",
             "hash": "sha256-332627363b17a85fdb6f34aa1f397c2451cd3844f14856186873bfeff34b7bf8",
-            "quality": "release",
+            "quality": "candidate",
             "role": "world"
           },
           {
             "id": "rooftopDefender",
             "hash": "sha256-6c43f9e1c341b0aaa0dee159fa70cac33828aad4c9b57b9c78f9ef84bc5e0e6b",
-            "quality": "release",
+            "quality": "candidate",
             "role": "character"
           },
           {
             "id": "rooftopLayupScorer",
             "hash": "sha256-03a093f24ef11e534a39278710db5a56111eaf2bb093264683cd1c44a6d0ed4a",
-            "quality": "release",
+            "quality": "candidate",
             "role": "character"
           },
           {
             "id": "rooftopRim",
             "hash": "sha256-6ebed2bc98fa62f4750afd35707a7be6fbb1dac770b7c89fa7310d867c774023",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           },
           {
             "id": "rooftopVenueV2",
             "hash": "sha256-222289e3dc07ed20f45f73022be4413537594645762cfea852f4b15bab3e0cdc",
-            "quality": "release",
+            "quality": "candidate",
             "role": "environment"
           }
         ],
@@ -440,5 +440,8 @@
       "check-deploy --release --source apps/showcase-rooftop-buckets/src --asset <7 model assets>",
       "check-deploy --release --source apps/showcase-rooftop-buckets/src --no-assets"
     ]
+  },
+  "qualityGate": {
+    "status": "in-rebuild"
   }
 }

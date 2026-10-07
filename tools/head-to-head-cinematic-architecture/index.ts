@@ -88,18 +88,13 @@ const report = {
   generatedAt: new Date().toISOString(),
   pass: failures.length === 0,
   workload: "cinematic-architecture",
-  verdict: "both-render-and-interact-with-visible-aura-losses",
+  verdict: failures.length ? "capture-failed" : "pass",
   checks,
   failures,
   comparison: {
     auraDrawCalls,
     threeDrawCalls,
     auraToThreeDrawCallRatio: threeDrawCalls > 0 ? Number((auraDrawCalls / threeDrawCalls).toFixed(3)) : null,
-    observedLosses: [
-      "Aura submits 1,513 draws versus Three.js 803 for the same imported scene.",
-      "All four retained frames were reopened after preserving matrix-backed glTF nodes exactly. Hierarchy, platform, cloud placement, camera framing, and background bytes now align; small material/lighting pixel differences remain.",
-      "The former giant-facade and detached-underside defects were caused by a lossy matrix-to-TRS round trip and are no longer present in the retained captures."
-    ],
     claimBoundary: "This proves a public typed-asset architecture render, exact preservation of matrix-backed glTF node transforms for this asset, and deterministic camera-path interaction. It does not claim universal visual parity, draw-call parity, or postprocess parity."
   },
   browser

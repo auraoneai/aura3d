@@ -1,0 +1,180 @@
+From 64c040020985d08136862a2379691b3b4e46552b Mon Sep 17 00:00:00 2001
+From: Gurbaksh Chahal <gchahal@veerone.com>
+Date: Tue, 6 Oct 2026 17:50:43 +0000
+Subject: [PATCH] [QR-09] neon-swarm: session pause, composition probe
+ removal, cameraDirector feed
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ apps/showcase-neon-swarm/src/main.ts | 71 +++++-----------------------
+ 1 file changed, 12 insertions(+), 59 deletions(-)
+
+diff --git a/apps/showcase-neon-swarm/src/main.ts b/apps/showcase-neon-swarm/src/main.ts
+index e36ccc2e..c5a3895a 100644
+--- a/apps/showcase-neon-swarm/src/main.ts
++++ b/apps/showcase-neon-swarm/src/main.ts
+@@ -122,16 +122,6 @@ declare global {
+     __NEON_SWARM_EVIDENCE__?: NeonSwarmEvidence;
+     __AURA3D_SHOWCASE_NEON_SWARM__?: NeonSwarmEvidence;
+     __NEON_SWARM_DEBUG__?: NeonSwarmDebugHooks;
+-    __AURA3D_COMPOSITION_PROBE__?: {
+-      readonly category: "application";
+-      readonly subject: {
+-        readonly position: readonly [number, number, number];
+-        readonly rotation: readonly [number, number, number];
+-        readonly targetSize: number;
+-      };
+-      setSubjectSuppressed(suppressed: boolean): Promise<void>;
+-      settleSubjectPose(): Promise<void>;
+-    };
+   }
+ }
+ 
+@@ -955,7 +945,6 @@ let combo = 0;
+ let maxCombo = 0;
+ let comboDecayRemaining = 0;
+ let seed = SEED_DEFAULT;
+-let paused = false;
+ // Evidence-only finale hash excludes wall-clock combat drift.
+ let debugFinaleHash: string | null = null;
+ let intermissionRemaining = 0;
+@@ -982,7 +971,6 @@ let damageEvents = 0;
+ let pickupActive = false;
+ let pickupPosition = riskPickupForWave(1);
+ let pickupsCollected = 0;
+-let compositionSubjectSuppressed = false;
+ let burstFxRemaining = 0;
+ let pulseFxRemaining = 0;
+ let burstFxOrigin = { x: 0, z: 3 };
+@@ -1091,7 +1079,7 @@ function resetRun(newSeed?: number): void {
+   app.nodes.get("neon-courier-pulse-muzzle-flash")?.setVisible(false);
+   for (let index = 0; index < 8; index += 1) app.nodes.get("neon-burst-spoke-" + index)?.setVisible(false);
+   burstRequested = false;
+-  paused = false;
++  neonGame.session.resume();
+   debugFinaleHash = null;
+   beginIntermission(INTERMISSION_FIRST_SECONDS);
+   hud.showBanner("Neon Swarm", "Five escalating waves. Read the opening, choose upgrades, survive the 320-drone finale.");
+@@ -1197,7 +1185,7 @@ function handleDroneKilled(drone: { readonly x: number; readonly z: number }): v
+ }
+ 
+ function fireBurst(): void {
+-  if (runState !== "wave-active" || paused || burstCharge < 100) return;
++  if (runState !== "wave-active" || neonGame.session.paused || burstCharge < 100) return;
+   burstCharge = 0;
+   bursts += 1;
+   burstFxRemaining = 0.55;
+@@ -1241,7 +1229,7 @@ function killPlayer(): void {
+ 
+ function completeRun(): void {
+   runState = "complete";
+-  paused = false;
++  neonGame.session.resume();
+   combo = 0;
+   audio.cue("wave-clear").catch(() => undefined);
+   if (score > bestScore) {
+@@ -1280,7 +1268,7 @@ window.addEventListener("pointerdown", unlockAudioOnce);
+ window.addEventListener("keydown", unlockAudioOnce);
+ 
+ window.addEventListener("mousedown", (event) => {
+-  if (event.button === 0 && !paused && runState === "wave-active" && player.fireCooldownRemaining <= 0) {
++  if (event.button === 0 && !neonGame.session.paused && runState === "wave-active" && player.fireCooldownRemaining <= 0) {
+     firePulse();
+     player.fireCooldownRemaining = DEFAULT_PLAYER_TUNING.fireCooldownSeconds * upgrades.fireRateMultiplier;
+   }
+@@ -1356,7 +1344,10 @@ bindTouchStick(touchLayout.controls[1]?.id ?? "fire-stick", (dx, dz, active) =>
+ function update(dt: number): void {
+   input.update(dt);
+   hud.tickBanner(dt);
+-  if (input.pressed("pause") && runState !== "dead" && runState !== "complete") paused = !paused;
++  if (input.pressed("pause") && runState !== "dead" && runState !== "complete") {
++    if (neonGame.session.paused) neonGame.session.resume();
++    else neonGame.session.pause("user");
++  }
+   if (input.pressed("reset")) {
+     seed = (seed * 1664525 + 1013904223) >>> 0;
+     resetRun(seed);
+@@ -1366,7 +1357,7 @@ function update(dt: number): void {
+     fireBurst();
+   }
+ 
+-  if (paused) {
++  if (neonGame.session.paused) {
+     publishEvidence();
+     return;
+   }
+@@ -1615,7 +1606,7 @@ function update(dt: number): void {
+     id: "courier",
+     position: [player.x, 0.6, player.z] as const
+   }]);
+-  void cameraState;
++  app.camera.setPose({ position: cameraState.position, target: cameraState.target, fov: cameraState.fov });
+ 
+   hud.update({
+     state: runState,
+@@ -1632,7 +1623,7 @@ function update(dt: number): void {
+     shieldCharges: upgrades.shieldCharges,
+     dashReadyFraction: 1 - player.dashCooldownRemaining /
+       Math.max(0.001, DEFAULT_PLAYER_TUNING.dashCooldownSeconds * upgrades.dashCooldownMultiplier),
+-    paused,
++    paused: neonGame.session.paused,
+     intermissionRemaining: runState === "intermission" ? intermissionRemaining : 0
+   });
+ 
+@@ -1677,7 +1668,7 @@ function publishEvidence(): void {
+     maxHp: player.maxHp,
+     kills,
+     seed,
+-    paused,
++    paused: neonGame.session.paused,
+     reducedMotion,
+     audioCues: audioProof.recentCues,
+     audioCueCount: audioProof.cueCount,
+@@ -1944,44 +1935,6 @@ window.__NEON_SWARM_DEBUG__ = {
+   }
+ };
+ 
+-Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+-  value: {
+-    category: "application" as const,
+-    get subject() {
+-      return {
+-        position: [player.x, 0.88, player.z] as const,
+-        rotation: [0, Math.atan2(resolveAim().x, resolveAim().z), 0] as const,
+-        targetSize: 2.2
+-      };
+-    },
+-    async setSubjectSuppressed(suppressed: boolean) {
+-      app.pause();
+-      await app.ready();
+-      compositionSubjectSuppressed = suppressed;
+-      app.nodes.get("neon-player")?.setVisible(!suppressed);
+-      app.nodes.get("neon-player-burst-radius")?.setVisible(!suppressed);
+-      app.nodes.get("neon-player-aim-vector")?.setVisible(!suppressed);
+-      await app.stepAsync(0);
+-    },
+-    async settleSubjectPose() {
+-      app.pause();
+-      await app.ready();
+-      paused = true;
+-      player.x = 0;
+-      player.z = 3;
+-      const node = app.nodes.get("neon-player");
+-      // The old 1.34 neutral scale made the low-poly courier occupy most of
+-      // the retained 1440x900 frame and hid the live threat field. Keep the
+-      // typed primary asset fully present while restoring a clear player-over-
+-      // horde hierarchy in the composition probe.
+-      const neutralScale = desktopComposition ||  [0.94, 0.98, 0.94] as [number, number, number];
+-      node?.setPosition(player.x, 0.06, player.z).setRotation(0, 0, 0).setScale(neutralScale);
+-      node?.setVisible(!compositionSubjectSuppressed);
+-      await app.stepAsync(0);
+-    }
+-  },
+-  configurable: true
+-});
+ 
+ function requireHudElement(): HTMLElement {
+   const el = document.querySelector("#hud");
+-- 
+2.34.1
+

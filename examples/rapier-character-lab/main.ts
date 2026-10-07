@@ -1,4 +1,15 @@
-import { camera, createAuraApp, game, lights, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
+import {
+  camera,
+  createAuraApp,
+  game,
+  lights,
+  looks,
+  material,
+  model,
+  primitives,
+  scene,
+  type AuraApp
+} from "@aura3d/engine";
 import { createRapierPhysics, type RapierBodyHandle, type RapierCharacterControllerHandle, type RapierCharacterMovement, type RapierPhysicsWorld } from "@aura3d/physics-rapier";
 import { assets } from "../../src/aura-assets.js";
 
@@ -103,7 +114,7 @@ async function createVisual(): Promise<AuraApp> {
     scene: scene()
       .background("#05080d")
       .camera(camera.perspective({ position: [0, 2.7, 8.3], target: [0, 0.82, 0], fov: 38 }))
-      .add(lights.ambient({ intensity: 0.42, color: "#dbeafe" }))
+      .add(looks.preset("outdoor-day") /* TODO: pick the scene's genre look — see aura3d look rubric */)
       .add(lights.directional({ name: "character key", position: [7, 12, 8], intensity: 3.2, color: "#fff0d4" }))
       .add(lights.directional({ name: "character rim", position: [-6, 5, -2], intensity: 1.35, color: "#65d9ff" }))
       .add(primitives.box({ name: "Rapier ground", material: material.pbr({ color: "#142030", roughness: 0.78, metallic: 0.08 }) }).position(0, -0.1, 0).scale([9, 0.2, 4]))

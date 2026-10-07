@@ -20,6 +20,9 @@ export const postEffectBuilders = {
       threshold: options.threshold ?? 0.7,
       antiBlowout,
       maxIntensity,
+      // CCR-03-3: authored keys, inert on the legacy bridge. Delegating
+      // factories pass their own caller's list through `postAuthored`.
+      postAuthored: options.postAuthored ?? Object.keys(options).filter((key) => key !== "postAuthored"),
       ...(options.quality !== undefined ? { quality: options.quality } : {}),
       ...(options.softKnee !== undefined ? { softKnee: options.softKnee } : {}),
       ...(options.shoulder !== undefined ? { shoulder: options.shoulder } : {})
@@ -33,6 +36,7 @@ export const postEffectBuilders = {
       threshold: options.threshold ?? 0.68,
       antiBlowout: options.antiBlowout ?? true,
       maxIntensity: options.maxIntensity ?? 0.92,
+      postAuthored: Object.keys(options).filter((key) => key !== "postAuthored"),
       ...(options.quality !== undefined ? { quality: options.quality } : {}),
       ...(options.softKnee !== undefined ? { softKnee: options.softKnee } : {}),
       ...(options.shoulder !== undefined ? { shoulder: options.shoulder } : {})
@@ -45,7 +49,8 @@ export const postEffectBuilders = {
       intensity: options.intensity ?? 0.42,
       radius: options.radius ?? 0.74,
       density: options.density ?? 0.58,
-      color: options.color ?? "#020617"
+      color: options.color ?? "#020617",
+      postAuthored: options.postAuthored ?? Object.keys(options).filter((key) => key !== "postAuthored")
     }),
   contactOcclusion: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
     new AuraNodeBuilder<AuraEffectNode>({
@@ -55,7 +60,8 @@ export const postEffectBuilders = {
       intensity: options.intensity ?? 0.36,
       radius: options.radius ?? 0.52,
       density: options.density ?? 0.7,
-      color: options.color ?? "#020617"
+      color: options.color ?? "#020617",
+      postAuthored: options.postAuthored ?? Object.keys(options).filter((key) => key !== "postAuthored")
     }),
   /**
    * Root color-grade node (muse3jsparity-PRD A3). contrast/saturation execute
@@ -71,6 +77,7 @@ export const postEffectBuilders = {
       exposure: options.exposure ?? 1,
       contrast: options.contrast ?? 1,
       saturation: options.saturation ?? 1,
+      postAuthored: options.postAuthored ?? Object.keys(options).filter((key) => key !== "postAuthored"),
       ...(options.shadows !== undefined ? { shadows: options.shadows } : {}),
       ...(options.highlights !== undefined ? { highlights: options.highlights } : {}),
       ...(options.lut !== undefined ? { lut: options.lut } : {})
@@ -86,6 +93,10 @@ export const postEffectBuilders = {
       effect: "anti-alias",
       name: options.name ?? "anti alias",
       mode: options.mode ?? "fxaa",
-      intensity: options.intensity ?? 1
+      intensity: options.intensity ?? 1,
+      // `postAuthored` — not `mode` — carries the authored/default split: the
+      // factory keeps its legacy `mode ?? "fxaa"` fill, so the bridge reads
+      // `postAuthored` for "mode actually authored" (absent → `auto`).
+      postAuthored: options.postAuthored ?? Object.keys(options).filter((key) => key !== "postAuthored")
     }),
 };

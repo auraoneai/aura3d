@@ -8,6 +8,8 @@ export interface RenderQueueSortItem<T = unknown> {
   readonly batchKey?: string;
   readonly instanceCount?: number;
   readonly renderOrder?: number;
+  /** C-04 (§6.8): sub-order inside the transparent bucket — 0 = sorted back-to-front group (alpha/premultiplied/custom), 1 = unordered group drawn after it (additive/multiply). */
+  readonly blendRank?: number;
 }
 
 export interface RenderQueueSortOptions {
@@ -58,7 +60,10 @@ export function sortRenderQueueItems<T>(
     if (bucketDelta !== 0) return bucketDelta;
 
     if (left.bucket === "transparent" || right.bucket === "transparent") {
-      if (transparentBackToFront) {
+      // C-04: additive/multiply draw after the back-to-front alpha group.
+      const rankDelta = (left.blendRank ?? 0) - (right.blendRank ?? 0);
+      if (rankDelta !== 0) return rankDelta;
+      if (transparentBackToFront && (left.blendRank ?? 0) === 0) {
         const depthDelta = right.depth - left.depth;
         if (Math.abs(depthDelta) > 1e-6) return depthDelta;
       }

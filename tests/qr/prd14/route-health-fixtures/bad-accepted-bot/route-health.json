@@ -1,0 +1,11 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "appId": "bad-accepted-bot",
+  "publicShowcase": false,
+  "qualityGate": {
+    "status": "accepted",
+    "acceptedBy": [
+      "dependabot[bot]"
+    ]
+  }
+}

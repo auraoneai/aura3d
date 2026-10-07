@@ -1,0 +1,67 @@
+{
+  "schema": "prd11-perf-budgets/1.0",
+  "note": "Rows evaluated by tools/perf-gate/index.mjs over a lane capture report (scenes/prd11/capture.mjs). gating:false rows are recorded but never fail the gate until their phase lands. metric paths read into report.scenes[].engines[engine] (e.g. 'frame.fps', 'frame.intervalMs.p50', 'payload.drawCalls').",
+  "rows": [
+    {
+      "id": "telemetry.frames",
+      "scene": "prd11-tier-ladder",
+      "engine": "aura3d",
+      "flags": "tiers",
+      "metric": "frame.frames",
+      "comparator": ">=",
+      "threshold": 30,
+      "gating": true,
+      "phase": 0,
+      "comment": "S1: frame telemetry accumulates >= 30 real frames under the tiers flag."
+    },
+    {
+      "id": "telemetry.fps",
+      "scene": "prd11-tier-ladder",
+      "engine": "aura3d",
+      "flags": "tiers",
+      "metric": "frame.fps",
+      "comparator": "!=",
+      "threshold": null,
+      "gating": true,
+      "phase": 0,
+      "comment": "S1: fps is a number (never the fake constant) once >= 30 samples exist."
+    },
+    {
+      "id": "telemetry.flag-off-absent",
+      "scene": "prd11-tier-ladder",
+      "engine": "aura3d",
+      "flags": "none",
+      "metric": "frame.fps",
+      "comparator": "==",
+      "threshold": null,
+      "gating": true,
+      "phase": 0,
+      "comment": "C-34 flag-off: no frame telemetry measured when tiers is off (report is schema-valid with nulls)."
+    },
+    {
+      "id": "S3-p50-ratio",
+      "scene": "prd11-tier-ladder",
+      "engine": "aura3d",
+      "flags": "tiers",
+      "metric": "frame.intervalMs.p50",
+      "comparator": "ratio<=",
+      "threshold": 1.5,
+      "relative": { "engine": "three", "metric": "payload.loadMs" },
+      "gating": false,
+      "phase": 3,
+      "comment": "Placeholder for the phase-3 head-to-head; the relative metric becomes three's own frame p50 once its adapter reports frame timing."
+    },
+    {
+      "id": "S3-draw-calls",
+      "scene": "prd11-tier-ladder",
+      "engine": "aura3d",
+      "flags": "tiers",
+      "metric": "frame.drawCalls",
+      "comparator": "<=",
+      "threshold": 40,
+      "gating": false,
+      "phase": 4,
+      "comment": "Section 17.3 draw budget for the tier-ladder scene (matches base 18's <=40 target). Fills in once frame.drawCalls is populated by the counters delta."
+    }
+  ]
+}
