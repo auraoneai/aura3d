@@ -94,10 +94,27 @@ function validateRouteGateConfig(config, configPath) {
     }
     if (ids.has(route.id)) throw new Error(`${configPath} duplicates route id ${route.id}`);
     if (paths.has(route.path)) throw new Error(`${configPath} duplicates route path ${route.path}`);
-    if (globals.has(route.globalName)) throw new Error(`${configPath} duplicates route global ${route.globalName}`);
+    // PRD-09 Phase 6: migrated routes share the C-24 channel global — its
+    // per-route key lives inside `__AURA3D_GAME_EVIDENCE__[route.id]`, so it is
+    // exempt from the legacy-global uniqueness check but must declare
+    // `captureContractMigrated: true` (Q-14-3). Legacy route globals still
+    // must be unique.
+    if (route.captureContractMigrated !== undefined && typeof route.captureContractMigrated !== "boolean") {
+      throw new Error(`${configPath} route ${route.id} captureContractMigrated must be a boolean`);
+    }
+    if (route.globalName === "__AURA3D_GAME_EVIDENCE__") {
+      if (route.captureContractMigrated !== true) {
+        throw new Error(`${configPath} route ${route.id} uses the C-24 channel global and must set captureContractMigrated: true`);
+      }
+    } else {
+      if (route.captureContractMigrated === true) {
+        throw new Error(`${configPath} route ${route.id} sets captureContractMigrated without the channel global`);
+      }
+      if (globals.has(route.globalName)) throw new Error(`${configPath} duplicates route global ${route.globalName}`);
+      globals.add(route.globalName);
+    }
     ids.add(route.id);
     paths.add(route.path);
-    globals.add(route.globalName);
 
     if (!Array.isArray(route.primaryAssets)) {
       throw new Error(`${configPath} route ${route.id} must define primaryAssets`);

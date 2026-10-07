@@ -16,6 +16,7 @@ import { mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "@playwright/test";
+import { readGameChannel } from "./game-channel.mjs";
 
 const repoRoot = resolve(fileURLToPath(new URL(".", import.meta.url)), "..", "..");
 const args = process.argv.slice(2);
@@ -33,7 +34,8 @@ const browser = await chromium.launch({
 });
 
 async function measure(page) {
-  return page.evaluate(() => {
+  const channel = await readGameChannel(page);
+  const base = await page.evaluate(() => {
     const c = document.querySelector("canvas");
     const r = c?.getBoundingClientRect();
     const de = document.documentElement;
@@ -48,6 +50,7 @@ async function measure(page) {
       dpr: devicePixelRatio,
     };
   }).catch((e) => ({ error: String(e).slice(0, 160) }));
+  return { ...base, game: { beacon: channel.beacon, migrated: channel.migrated } };
 }
 
 async function run(label, { start, end }) {
