@@ -7,10 +7,11 @@
 // same rejection on the render side, and flags resolve from URL/env per §5.2.
 
 import type { AnimationPose } from "@aura3d/animation";
+import type { GLTFSceneAnimationApplyResult } from "@aura3d/assets/gltf-runtime";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import { resolveQrFlags } from "../../contracts/flags.js";
-import type { AuraRuntimeNodeAnimationPoseBindingMetadata } from "../RuntimeNodeHandle.js";
-import { StubActorAnimationApi, type AuraActorAnimationApi, type AuraResolvedClipInfo } from "../../contracts/animation.js";
+import type { AuraRuntimeNodeAnimationBindingMetadata, AuraRuntimeNodeAnimationPoseBindingMetadata } from "../RuntimeNodeHandle.js";
+import { StubActorAnimationApi, type AuraActorAnimationApi, type AuraActorAnimationStateSnapshot, type AuraAnimationDiagnostics, type AuraBoneSocket, type AuraResolvedClipInfo } from "../../contracts/animation.js";
 import type { AuraRuntimeNodeHandle } from "../index.js";
 
 let overrideQrAnimationFlags: QrFlags | undefined;
@@ -214,9 +215,89 @@ export function resolveAnimationClipsForNode(nodeId: string): Promise<readonly A
   });
 }
 
+/* ------------------------------------------------------------------------ */
+/* T0.18 (PRD-06) — C-19 `animationState()` + the `socket()` bone lookup and   */
+/* the C-31 `animation` diagnostics rows. The `prd06.animation` TypedGLBActor  */
+/* extension publishes, per actor id, the runtime's last apply result and a   */
+/* bone→world-matrix lookup; the handle-side api merges those with the        */
+/* node's bound-clip samples. `bones?` per-bone samples stay with CCR-06-4 —  */
+/* until then callers read bones through `socket(bone)`.                      */
+/* ------------------------------------------------------------------------ */
+
+/** Latest `apply*` result from the loaded actor's animation runtime. */
+export type ActorAnimationApplySource = () => GLTFSceneAnimationApplyResult | null | undefined;
+
+/** Bone name → the scene node's current world matrix (a fresh copy each call). */
+export type ActorBoneMatrixSource = (bone: string) => readonly number[] | Float32Array | null | undefined;
+
+const actorAnimationApplySources = new Map<string, ActorAnimationApplySource>();
+const actorBoneMatrixSources = new Map<string, ActorBoneMatrixSource>();
+
+function registerSource<T>(map: Map<string, T>, actorId: string, source: T): () => void {
+  map.set(actorId, source);
+  return () => {
+    if (map.get(actorId) === source) map.delete(actorId);
+  };
+}
+
+/** Registered from the `prd06.animation` actor extension's `onLoad`. */
+export function registerActorAnimationApplySource(actorId: string, source: ActorAnimationApplySource): () => void {
+  return registerSource(actorAnimationApplySources, actorId, source);
+}
+
+/** Registered from the `prd06.animation` actor extension's `onLoad`. */
+export function registerActorBoneMatrixSource(actorId: string, source: ActorBoneMatrixSource): () => void {
+  return registerSource(actorBoneMatrixSources, actorId, source);
+}
+
+/** Test seam: drop every state source between specs. */
+export function resetActorAnimationStateSources(): void {
+  actorAnimationApplySources.clear();
+  actorBoneMatrixSources.clear();
+}
+
+/**
+ * C-31 `animation` section collect (T0.18): one row per actor with a published
+ * apply source. Fields the runtime does not yet instrument — mixerMs,
+ * constraintsMs, springsMs, paletteBytes, cpuMs — report 0 and stay listed in
+ * `diagnosticOnly.prd06.ts` until Phase 1+ wires them.
+ */
+export function collectPrd06AnimationDiagnostics(): AuraAnimationDiagnostics {
+  const actors = [...actorAnimationApplySources.entries()].map(([id, source]) => {
+    const apply = source() ?? null;
+    return {
+      id,
+      activeClip: apply?.clipName ?? null,
+      tracksApplied: apply?.tracksApplied ?? 0,
+      activeActions: apply?.blendedClipCount ?? (apply ? 1 : 0),
+      mixerMs: 0,
+      constraintsMs: 0,
+      springsMs: 0,
+      paletteBytes: 0,
+      morphActive: apply?.morphWeightTracksApplied ?? 0,
+      morphDropped: apply?.missingTargets.length ?? 0,
+      cpuMs: 0
+    };
+  });
+  return { actors };
+}
+
+interface RuntimeNodeHandleAnimationSnapshot {
+  readonly animation?: { readonly clip?: string };
+  readonly animationBinding?: AuraRuntimeNodeAnimationBindingMetadata & {
+    readonly clipSamples?: readonly {
+      readonly clipName: string;
+      readonly localTime: number;
+      readonly weight: number;
+      readonly layer?: string;
+    }[];
+  };
+}
+
 /**
  * The `prd06.animation` C-37 extension's `create` factory. Everything besides
- * `resolveAnimationClips` keeps the PR 0a stub semantics until T0.18/T1.10.
+ * `resolveAnimationClips`, `animationState` and `socket` keeps the PR 0a stub
+ * semantics until T1.x.
  */
 export function createPrd06ActorAnimationApi(handle: AuraRuntimeNodeHandle): AuraActorAnimationApi {
   return new (class extends StubActorAnimationApi {
@@ -228,6 +309,47 @@ export function createPrd06ActorAnimationApi(handle: AuraRuntimeNodeHandle): Aur
         return Promise.resolve([]);
       }
       return resolveAnimationClipsForNode(handle.id);
+    }
+    override animationState(): AuraActorAnimationStateSnapshot | undefined {
+      if (handle.kind !== "model") return undefined;
+      const snapshot = handle.snapshot() as RuntimeNodeHandleAnimationSnapshot | undefined;
+      const binding = snapshot?.animationBinding;
+      const lastApply = actorAnimationApplySources.get(handle.id)?.() ?? null;
+      const activeActions = (binding?.clipSamples ?? []).map((sample) => ({
+        clip: sample.clipName,
+        layer: sample.layer ?? "base",
+        weight: sample.weight,
+        time: sample.localTime
+      }));
+      const activeClip = lastApply?.clipName ?? binding?.activeClipId ?? snapshot?.animation?.clip ?? null;
+      if (activeClip === null && activeActions.length === 0 && lastApply === null) return undefined;
+      return {
+        activeClip,
+        tracksApplied: lastApply?.tracksApplied ?? 0,
+        activeActions,
+        timeScale: binding?.speed ?? 1
+      };
+    }
+    override socket(bone: string): AuraBoneSocket {
+      const matrix = (): Float32Array | null => {
+        const value = actorBoneMatrixSources.get(handle.id)?.(bone);
+        return value ? Float32Array.from(value).subarray(0, 16) : null;
+      };
+      return {
+        bone,
+        worldMatrix: (out?: Float32Array) => {
+          const current = matrix();
+          if (!current) return out ?? new Float32Array(16);
+          if (out) {
+            out.set(current);
+            return out;
+          }
+          return current;
+        },
+        get valid() {
+          return matrix() !== null;
+        }
+      };
     }
   })();
 }
