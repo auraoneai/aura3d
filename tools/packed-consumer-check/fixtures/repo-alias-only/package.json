@@ -1,0 +1,17 @@
+{
+  "name": "aura3d-fixture-repo-alias-only",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@aura3d/engine": "^3.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
+  }
+}
