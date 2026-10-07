@@ -1,0 +1,854 @@
+{
+  "generatedAt": "2026-10-06T18:57:18.405Z",
+  "trees": {
+    "baseline": "main@5f5d6088 (route-composition on clean main worktree)",
+    "after": "shadow-migrated tree: all migration/patches/* applied via git am on the same main rev"
+  },
+  "gate": "PRD-09 1777: each shadow-migrated route evidence share <= 10% of classified LOC",
+  "routes": {
+    "aura-clash-showcase": {
+      "evidenceLoc": {
+        "before": 16279,
+        "after": 16256,
+        "delta": -23
+      },
+      "evidencePct": {
+        "before": 26,
+        "after": 25.9
+      },
+      "locAfter": {
+        "evidence": 16256,
+        "presentation": 3524,
+        "gameplay": 42948,
+        "generated": 3862,
+        "classified": 62728,
+        "evidencePct": 25.9
+      },
+      "captureBranches": {
+        "before": {
+          "ART": 0,
+          "FRAMING": 0,
+          "TRANSIENT": 0,
+          "UNKNOWN": 2
+        },
+        "after": {
+          "ART": 0,
+          "FRAMING": 0,
+          "TRANSIENT": 0,
+          "UNKNOWN": 2
+        }
+      },
+      "cues": {
+        "sample": 22,
+        "synth": 0,
+        "html-audio": 0
+      },
+      "globals": [
+        "__AURA3D_CLASH_CROWD_PROBE__",
+        "__AURA3D_CLASH_SPOTLIGHT_PROBE__",
+        "__AURA3D_GAME_EVIDENCE__",
+        "__AURA3D_GAME_RUNTIME__",
+        "__AURA_CLASH_ARENA_PROOF__",
+        "__AURA_CLASH_ARENA_TEST_DRIVER__",
+        "__AURA_CLASH_BLEND_PROOF__",
+        "__AURA_CLASH_EVENT_TRACKS_PROOF__",
+        "__AURA_CLASH_INERTIALIZATION_PROOF__",
+        "__AURA_CLASH_SECONDARY_MOTION_PROOF__",
+        "__AURA_CLASH_VISUAL_REVIEW__"
+      ]
+    },
+    "showcase-aurora-lander": {
+      "evidenceLoc": {
+        "before": 1595,
+        "after": 1627,
+        "delta": 32
+      },
+      "evidencePct": {
+        "before": 31.5,
+        "after": 31.4
+      },
+      "locAfter": {
+        "evidence": 1627,
+        "presentation": 952,
+        "gameplay": 2603,
+        "generated": 0,
+        "classified": 5182,
+        "evidencePct": 31.4
+      },
+      "captureBranches": {
+        "before": {
+          "ART": 1,
+          "FRAMING": 4,
+          "TRANSIENT": 0,
+          "UNKNOWN": 25
+        },
+        "after": {
+          "ART": 0,
+          "FRAMING": 0,
+          "TRANSIENT": 0,
+          "UNKNOWN": 4
+        }
+      },
+      "cues": {
+        "sample": 0,
+        "synth": 13,
+        "html-audio": 0
+      },
+      "globals": [
+        "__AURA3D_COMPOSITION_PROBE__",
+        "__AURA3D_SHOWCASE_AURORA_LANDER__",
+        "__AURORA_LANDER_EVIDENCE__"
+      ]
+    },
+    "showcase-bank-shot": {
+      "evidenceLoc": {
+        "before": 1879,
+        "after": 1371,
+        "delta": -508
+      },
+      "evidencePct": {
+        "before": 32.5,
+        "after": 25.8
+      },
+      "locAfter": {
+        "evidence": 1371,
+        "presentation": 1514,
+        "gameplay": 2426,
+        "generated": 0,
+        "classified": 5311,
+        "evidencePct": 25.8
+      },
+      "captureBranches": {
+        "before": {
+          "ART": 13,
+          "FRAMING": 2,
+          "TRANSIENT": 0,
+          "UNKNOWN": 5
+        },
+        "after": {
+          "ART": 0,
+          "FRAMING": 0,
+          "TRANSIENT": 0,
+          "UNKNOWN": 0
+        }
+      },
+      "cues": {
+        "sample": 0,
+        "synth": 11,
+        "html-audio": 0
+      },
+      "globals": [
+        "__AURA3D_COMPOSITION_PROBE__",
+        "__AURA3D_EVIDENCE_OPT_IN__",
+        "__AURA3D_SHOWCASE_BANK_SHOT__",
+        "__BANK_SHOT_EVIDENCE__",
+        "__BS_PUMP__",
+        "__BS_SHOT__"
+      ]
+    },
+    "showcase-blockfall-reactor": {
+      "evidenceLoc": {
+        "before": 1727,
+        "after": 1548,
+        "delta": -179
+      },
+      "evidencePct": {
+        "before": 24.2,
+        "after": 21.4
+      },
+      "locAfter": {
+        "evidence": 1548,
+        "presentation": 1002,
+        "gameplay": 4670,
+        "generated": 0,
+        "classified": 7220,
+        "evidencePct": 21.4
+      },
+      "captureBranches": {
+        "before": {
+          "ART": 8,
+          "FRAMING": 12,
+          "TRANSIENT": 0,
+          "UNKNOWN": 21
+        },
+        "after": {
+          "ART": 0,
+          "FRAMING": 0,
+          "TRANSIENT": 0,
+          "UNKNOWN": 0
+        }
+      },
+      "cues": {
+        "sample": 0,
+        "synth": 14,
+        "html-audio": 0
+      },
+      "globals": [
+        "__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__"
+      ]
+    },
+    "showcase-courier-rush": {
+      "evidenceLoc": {
+        "before": 859,
+        "after": 487,
+        "delta": -372
+      },
+      "evidencePct": {
+        "before": 17.2,
+        "after": 11.2
+      },
+      "locAfter": {
+        "evidence": 487,
+        "presentation": 1129,
+        "gameplay": 2715,
+        "generated": 0,
+        "classified": 4331,
+        "evidencePct": 11.2
+      },
+      "captureBranches": {
+        "before": {
+          "ART": 2,
+          "FRAMING": 7,
+          "TRANSIENT": 4,
+          "UNKNOWN": 6
+        },
+        "after": {
+          "ART": 0,
+          "FRAMING": 0,
+          "TRANSIENT": 0,
+          "UNKNOWN": 0
+        }
+      },
+      "cues": {
+        "sample": 0,
+        "synth": 12,
+        "html-audio": 0
+      },
+      "globals": [
+        "__AURA3D_COMPOSITION_PROBE__",
+        "__AURA3D_ROUTE_READY__",
+        "__AURA3D_SHOWCASE_COURIER_RUSH__",
+        "__COURIER_RUSH_DEBUG__",
+        "__COURIER_RUSH_EVIDENCE__",
+        "__PW_PUMP__"
+      ]
+    },
+    "showcase-deep-recovery": {
+      "evidenceLoc": {
+        "before": 1684,
+        "after": 1481,
+        "delta": -203
+      },
+      "evidencePct": {
+        "before": 33.5,
+        "after": 29.8
+      },
+      "locAfter": {
+        "evidence": 1481,
+        "presentation": 1099,
+        "gameplay": 2397,
+        "generated": 0,
+        "classified": 4977,
+        "evidencePct": 29.8
+      },
+      "captureBranches": {
+        "before": {
+          "ART": 5,
+          "FRAMING": 7,
+          "TRANSIENT": 0,
+          "UNKNOWN": 9
+        },
+        "after": {
+          "ART": 0,
+          "FRAMING": 0,
+          "TRANSIENT": 0,
+          "UNKNOWN": 0
+        }
+      },
+      "cues": {
+        "sample": 0,
+        "synth": 0,
+        "html-audio": 17
+      },
+      "globals": [
+        "__AURA3D_COMPOSITION_PROBE__",
+        "__AURA3D_SHOWCASE_DEEP_RECOVERY__",
+        "__DEEP_RECOVERY_EVIDENCE__",
+        "__DR_CAPTURE_PAUSE__",
+        "__DR_CAPTURE_RESUME__",
+        "__DR_IMPACT__",
+        "__DR_PUMP__",
+        "__DR_REPAIR__",
+        "__DR_SET_OXYGEN__",
+        "__DR_TELEPORT_CRATE__",
+        "__DR_TELEPORT__"
+      ]
+    },
+    "showcase-gallery-shift": {
+      "evidenceLoc": {
+        "before": 1794,
+        "after": 1688,
+        "delta": -106
+      },
+      "evidencePct": {
+        "before": 23.2,
+        "after": 21.7
+      },
+      "locAfter": {
+        "evidence": 1688,
+        "presentation": 2023,
+        "gameplay": 4071,
+        "generated": 0,
+        "classified": 7782,
+        "evidencePct": 21.7
+      },
+      "captureBranches": {
+        "before": {
+          "ART": 5,
+          "FRAMING": 2,
+          "TRANSIENT": 0,
+          "UNKNOWN": 10
+        },
+        "after": {
+          "ART": 0,
+          "FRAMING": 0,
+          "TRANSIENT": 0,
+          "UNKNOWN": 0
+        }
+      },
+      "cues": {
+        "sample": 0,
+        "synth": 11,
+        "html-audio": 0
+      },
+      "globals": [
+        "__AURA3D_COMPOSITION_PROBE__",
+        "__AURA3D_SHOWCASE_GALLERY_SHIFT__",
+        "__GALLERY_SHIFT_EVIDENCE__",
+        "__GS_PUMP__",
+        "__GS_RESET_CAPTURE__",
+        "__GS_SHOT__",
+        "__GS_TELEPORT__"
+      ]
+    },
+    "showcase-gravity-post": {
+      "evidenceLoc": {
+        "before": 3510,
+        "after": 2885,
+        "delta": -625
+      },
+      "evidencePct": {
+        "before": 50.7,
+        "after": 42.7
+      },
+      "locAfter": {
+        "evidence": 2885,
+        "presentation": 944,
+        "gameplay": 2928,
+        "generated": 0,
+        "classified": 6757,
+        "evidencePct": 42.7
+      },
+      "captureBranches": {
+        "before": {
+          "ART": 9,
+          "FRAMING": 4,
+          "TRANSIENT": 0,
+          "UNKNOWN": 60
+        },
+        "after": {
+          "ART": 0,
+          "FRAMING": 0,
+          "TRANSIENT": 0,
+          "UNKNOWN": 0
+        }
+      },
+      "cues": {
+        "sample": 0,
+        "synth": 10,
+        "html-audio": 0
+      },
+      "globals": [
+        "__AURA3D_SHOWCASE_GRAVITY_POST__",
+        "__GRAVITY_POST_CAPTURE__",
+        "__GRAVITY_POST_EVIDENCE_SNAPSHOT__",
+        "__GRAVITY_POST_EVIDENCE__",
+        "__GRAVITY_POST_PHYSICS__",
+        "__GRAVITY_POST_PLANET_PROBE__",
+        "__GRAVITY_POST_SIM_STEP__",
+        "__GRAVITY_POST_STEP__"
+      ]
+    },
+    "showcase-mech-hangar": {
+      "evidenceLoc": {
+        "before": 2238,
+        "after": 2127,
+        "delta": -111
+      },
+      "evidencePct": {
+        "before": 29.2,
+        "after": 27.8
+      },
+      "locAfter": {
+        "evidence": 2127,
+        "presentation": 1311,
+        "gameplay": 4200,
+        "generated": 0,
+        "classified": 7638,
+        "evidencePct": 27.8
+      },
+      "captureBranches": {
+        "before": {
+          "ART": 0,
+          "FRAMING": 3,
+          "TRANSIENT": 0,
+          "UNKNOWN": 2
+        },
+        "after": {
+          "ART": 0,
+          "FRAMING": 0,
+          "TRANSIENT": 0,
+          "UNKNOWN": 0
+        }
+      },
+      "cues": {
+        "sample": 0,
+        "synth": 0,
+        "html-audio": 0
+      },
+      "globals": [
+        "__AURA3D_SHOWCASE_MECH_HANGAR__",
+        "__MECH_HANGAR_EVIDENCE__",
+        "__MECH_HANGAR_SET_TIME_WARP__",
+        "__MECH_HANGAR_SIM_TICK__",
+        "__MECH_HANGAR_VALIDATION_PROBE__"
+      ]
+    },
+    "showcase-neon-swarm": {
+      "evidenceLoc": {
+        "before": 1663,
+        "after": 1329,
+        "delta": -334
+      },
+      "evidencePct": {
+        "before": 29.5,
+        "after": 23.7
+      },
+      "locAfter": {
+        "evidence": 1329,
+        "presentation": 1561,
+        "gameplay": 2718,
+        "generated": 0,
+        "classified": 5608,
+        "evidencePct": 23.7
+      },
+      "captureBranches": {
+        "before": {
+          "ART": 4,
+          "FRAMING": 5,
+          "TRANSIENT": 0,
+          "UNKNOWN": 50
+        },
+        "after": {
+          "ART": 0,
+          "FRAMING": 0,
+          "TRANSIENT": 0,
+          "UNKNOWN": 0
+        }
+      },
+      "cues": {
+        "sample": 0,
+        "synth": 12,
+        "html-audio": 0
+      },
+      "globals": [
+        "__AURA3D_SHOWCASE_NEON_SWARM__",
+        "__NEON_SWARM_DEBUG__",
+        "__NEON_SWARM_EVIDENCE__"
+      ]
+    },
+    "showcase-orbital-defense": {
+      "evidenceLoc": {
+        "before": 49,
+        "after": 49,
+        "delta": 0
+      },
+      "evidencePct": {
+        "before": 7.1,
+        "after": 7.1
+      },
+      "locAfter": {
+        "evidence": 49,
+        "presentation": 98,
+        "gameplay": 545,
+        "generated": 0,
+        "classified": 692,
+        "evidencePct": 7.1
+      },
+      "captureBranches": {
+        "before": {
+          "ART": 0,
+          "FRAMING": 0,
+          "TRANSIENT": 0,
+          "UNKNOWN": 0
+        },
+        "after": {
+          "ART": 0,
+          "FRAMING": 0,
+          "TRANSIENT": 0,
+          "UNKNOWN": 0
+        }
+      },
+      "cues": {
+        "sample": 0,
+        "synth": 0,
+        "html-audio": 0
+      },
+      "globals": [
+        "__AURA3D_SHOWCASE_ORBITAL_DEFENSE__"
+      ]
+    },
+    "showcase-patrol-wing": {
+      "evidenceLoc": {
+        "before": 1571,
+        "after": 1529,
+        "delta": -42
+      },
+      "evidencePct": {
+        "before": 28.6,
+        "after": 27.5
+      },
+      "locAfter": {
+        "evidence": 1529,
+        "presentation": 1848,
+        "gameplay": 2184,
+        "generated": 0,
+        "classified": 5561,
+        "evidencePct": 27.5
+      },
+      "captureBranches": {
+        "before": {
+          "ART": 4,
+          "FRAMING": 4,
+          "TRANSIENT": 0,
+          "UNKNOWN": 14
+        },
+        "after": {
+          "ART": 0,
+          "FRAMING": 0,
+          "TRANSIENT": 0,
+          "UNKNOWN": 0
+        }
+      },
+      "cues": {
+        "sample": 0,
+        "synth": 14,
+        "html-audio": 0
+      },
+      "globals": [
+        "__AURA3D_SHOWCASE_PATROL_WING__",
+        "__PATROL_WING_EVIDENCE__",
+        "__PW_DAMAGE__",
+        "__PW_PUMP__",
+        "__PW_SCENARIO__",
+        "__PW_SHOT__"
+      ]
+    },
+    "showcase-pulse-tunnel": {
+      "evidenceLoc": {
+        "before": 7189,
+        "after": 4722,
+        "delta": -2467
+      },
+      "evidencePct": {
+        "before": 71.7,
+        "after": 60.5
+      },
+      "locAfter": {
+        "evidence": 4722,
+        "presentation": 640,
+        "gameplay": 2443,
+        "generated": 0,
+        "classified": 7805,
+        "evidencePct": 60.5
+      },
+      "captureBranches": {
+        "before": {
+          "ART": 24,
+          "FRAMING": 4,
+          "TRANSIENT": 7,
+          "UNKNOWN": 49
+        },
+        "after": {
+          "ART": 0,
+          "FRAMING": 0,
+          "TRANSIENT": 0,
+          "UNKNOWN": 0
+        }
+      },
+      "cues": {
+        "sample": 0,
+        "synth": 3,
+        "html-audio": 0
+      },
+      "globals": [
+        "__AURA3D_SHOWCASE_PULSE_TUNNEL__",
+        "__PULSE_TUNNEL_EVIDENCE__",
+        "__PULSE_TUNNEL_TEST__"
+      ]
+    },
+    "showcase-rooftop-buckets": {
+      "evidenceLoc": {
+        "before": 2967,
+        "after": 2108,
+        "delta": -859
+      },
+      "evidencePct": {
+        "before": 40.4,
+        "after": 30.9
+      },
+      "locAfter": {
+        "evidence": 2108,
+        "presentation": 1187,
+        "gameplay": 3523,
+        "generated": 0,
+        "classified": 6818,
+        "evidencePct": 30.9
+      },
+      "captureBranches": {
+        "before": {
+          "ART": 21,
+          "FRAMING": 4,
+          "TRANSIENT": 0,
+          "UNKNOWN": 76
+        },
+        "after": {
+          "ART": 0,
+          "FRAMING": 0,
+          "TRANSIENT": 0,
+          "UNKNOWN": 0
+        }
+      },
+      "cues": {
+        "sample": 0,
+        "synth": 2,
+        "html-audio": 0
+      },
+      "globals": [
+        "__AURA3D_COMPOSITION_PROBE__",
+        "__AURA3D_EVIDENCE_OPT_IN__",
+        "__AURA3D_SHOWCASE_ROOFTOP_BUCKETS__",
+        "__RB_PUMP__",
+        "__RB_SHOOT__",
+        "__ROOFTOP_BUCKETS_EVIDENCE__"
+      ]
+    },
+    "showcase-siege-golf": {
+      "evidenceLoc": {
+        "before": 1474,
+        "after": 1411,
+        "delta": -63
+      },
+      "evidencePct": {
+        "before": 26,
+        "after": 24.9
+      },
+      "locAfter": {
+        "evidence": 1411,
+        "presentation": 1216,
+        "gameplay": 3036,
+        "generated": 0,
+        "classified": 5663,
+        "evidencePct": 24.9
+      },
+      "captureBranches": {
+        "before": {
+          "ART": 0,
+          "FRAMING": 2,
+          "TRANSIENT": 0,
+          "UNKNOWN": 14
+        },
+        "after": {
+          "ART": 0,
+          "FRAMING": 0,
+          "TRANSIENT": 0,
+          "UNKNOWN": 0
+        }
+      },
+      "cues": {
+        "sample": 0,
+        "synth": 9,
+        "html-audio": 0
+      },
+      "globals": [
+        "__AURA3D_SHOWCASE_SIEGE_GOLF__",
+        "__SG_SHOT__",
+        "__SIEGE_GOLF_EVIDENCE__"
+      ]
+    },
+    "showcase-skyline-runner": {
+      "evidenceLoc": {
+        "before": 3369,
+        "after": 3075,
+        "delta": -294
+      },
+      "evidencePct": {
+        "before": 26.5,
+        "after": 24.3
+      },
+      "locAfter": {
+        "evidence": 3075,
+        "presentation": 5737,
+        "gameplay": 3846,
+        "generated": 2570,
+        "classified": 12658,
+        "evidencePct": 24.3
+      },
+      "captureBranches": {
+        "before": {
+          "ART": 11,
+          "FRAMING": 2,
+          "TRANSIENT": 0,
+          "UNKNOWN": 41
+        },
+        "after": {
+          "ART": 0,
+          "FRAMING": 0,
+          "TRANSIENT": 0,
+          "UNKNOWN": 6
+        }
+      },
+      "cues": {
+        "sample": 0,
+        "synth": 20,
+        "html-audio": 0
+      },
+      "globals": [
+        "__AURA3D_SHOWCASE_SKYLINE_RUNNER__",
+        "__AURA3D_SKYLINE_GHOST_SEED__",
+        "__AURA3D_SKYLINE_PUMP__"
+      ]
+    },
+    "showcase-turbo-drift-circuit": {
+      "evidenceLoc": {
+        "before": 18744,
+        "after": 17863,
+        "delta": -881
+      },
+      "evidencePct": {
+        "before": 35.8,
+        "after": 34.5
+      },
+      "locAfter": {
+        "evidence": 17863,
+        "presentation": 16030,
+        "gameplay": 17904,
+        "generated": 27869,
+        "classified": 51797,
+        "evidencePct": 34.5
+      },
+      "captureBranches": {
+        "before": {
+          "ART": 7,
+          "FRAMING": 5,
+          "TRANSIENT": 0,
+          "UNKNOWN": 80
+        },
+        "after": {
+          "ART": 0,
+          "FRAMING": 0,
+          "TRANSIENT": 0,
+          "UNKNOWN": 0
+        }
+      },
+      "cues": {
+        "sample": 0,
+        "synth": 13,
+        "html-audio": 0
+      },
+      "globals": [
+        "__AURA3D_COMPOSITION_PROBE__",
+        "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__",
+        "__AURA3D_TURBO_ACCEPTANCE_CAPTURE__"
+      ]
+    },
+    "showcase-vault-breakers": {
+      "evidenceLoc": {
+        "before": 1523,
+        "after": 1503,
+        "delta": -20
+      },
+      "evidencePct": {
+        "before": 30.1,
+        "after": 29.2
+      },
+      "locAfter": {
+        "evidence": 1503,
+        "presentation": 1294,
+        "gameplay": 2344,
+        "generated": 0,
+        "classified": 5141,
+        "evidencePct": 29.2
+      },
+      "captureBranches": {
+        "before": {
+          "ART": 0,
+          "FRAMING": 2,
+          "TRANSIENT": 0,
+          "UNKNOWN": 1
+        },
+        "after": {
+          "ART": 0,
+          "FRAMING": 0,
+          "TRANSIENT": 0,
+          "UNKNOWN": 0
+        }
+      },
+      "cues": {
+        "sample": 0,
+        "synth": 11,
+        "html-audio": 0
+      },
+      "globals": [
+        "__AURA3D_SHOWCASE_VAULT_BREAKERS__",
+        "__VAULT_BREAKERS_EVIDENCE__",
+        "__VB_PUMP__",
+        "__VB_SCENARIO__",
+        "__VB_SHOT__"
+      ]
+    }
+  },
+  "totals": {
+    "evidenceLoc": {
+      "before": 70114,
+      "after": 63059,
+      "delta": -7055
+    },
+    "locAfter": {
+      "evidence": 63059,
+      "presentation": 43109,
+      "gameplay": 107501,
+      "generated": 34301
+    },
+    "captureBranches": {
+      "before": {
+        "ART": 114,
+        "FRAMING": 69,
+        "TRANSIENT": 11,
+        "UNKNOWN": 465
+      },
+      "after": {
+        "ART": 0,
+        "FRAMING": 0,
+        "TRANSIENT": 0,
+        "UNKNOWN": 12
+      }
+    }
+  },
+  "notes": [
+    "Capture-flag branches: 0 ART / 0 FRAMING / 0 TRANSIENT fleet-wide on the shadow tree (395 -> 0). 13 UNKNOWN token hits remain (kept identifiers/comments in aura-clash, aurora-lander, skyline-runner).",
+    "Evidence-share gate: no migrated route reaches <=10% because each app dir still carries its full test/evidence corpus (e.g. showcase-evidence-checklist.json ~14k LOC on turbo, scripts/ asset builders, spec/proof fixtures) which the migration deliberately keeps. The migration reduced route-level evidence LOC per route; residual share is the route test corpus, not capture-review code.",
+    "aura-clash pilot keeps its adapter path (createAuraApp inside ArenaClashArenaApp) and showcaseProofBoot; pending createGame conversion documented in its guide.",
+    "sound.engine live loops landed on courier (van), aurora (thruster), deep (sub + thruster), patrol (props), turbo (engine 520-6400rpm)."
+  ]
+}
