@@ -3,6 +3,7 @@ import { bloomPixels, fxaaPixels, toneMapPixels, type PostProcessColorSpace, typ
 import { Sampler } from "./Sampler";
 import { Texture } from "./Texture";
 import { TextureBinding } from "./TextureBinding";
+import { rendererQrFlags } from "./renderer/FrameGraph";
 import type { EnvironmentLightingOptions } from "./ForwardPass";
 
 export type ExternalParityRenderPresetFeature =
@@ -166,7 +167,14 @@ export function createExternalParityEnvironmentLighting(preset: ExternalParityEn
   const environmentMapTexture = new TextureBinding({
     name: "u_environmentMapTexture",
     texture: environmentTexture,
-    sampler: new Sampler({ minFilter: "linear", magFilter: "linear", addressU: "repeat", addressV: "clamp-to-edge" }),
+    // PRD-02/C-12: trilinear so roughness reads prefiltered mips (E4); the
+    // 1-level texture case still downgrades to LINEAR in the sampler registry.
+    sampler: new Sampler({
+      minFilter: rendererQrFlags().on("A3D_QR_LIGHTING") ? "linear-mipmap-linear" : "linear",
+      magFilter: "linear",
+      addressU: "repeat",
+      addressV: "clamp-to-edge"
+    }),
     expectedColorSpace: "srgb",
     required: true
   });

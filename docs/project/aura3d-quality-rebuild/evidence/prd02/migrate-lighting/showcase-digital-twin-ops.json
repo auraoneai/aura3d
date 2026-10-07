@@ -1,0 +1,37 @@
+{
+  "root": "apps/showcase-digital-twin-ops",
+  "files": 2,
+  "changed": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-digital-twin-ops/src/main.ts",
+      "line": 398,
+      "construct": "lights.point({ intensity: 1.15 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 14 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-digital-twin-ops/src/main.ts",
+      "line": 398,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-digital-twin-ops/src/main.ts",
+      "line": 399,
+      "construct": "lights.point({ intensity: 1.08 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 14 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-digital-twin-ops/src/main.ts",
+      "line": 399,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    }
+  ]
+}

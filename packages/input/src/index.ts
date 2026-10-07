@@ -12,7 +12,7 @@ export type {
   NavigatorVibrateLike
 } from "./Haptics";
 export { TOUCH_LAYOUT_GENRES, createTouchLayoutPreset } from "./TouchLayouts";
-export type { TouchLayoutButtonBinding, TouchLayoutGenre, TouchLayoutPreset, TouchLayoutPresetOptions } from "./TouchLayouts";
+export type { TouchLayoutButtonBinding, TouchLayoutGenre, TouchLayoutPreset, TouchLayoutPresetOptions, TouchLayoutRect } from "./TouchLayouts";
 export { GamepadDevice } from "./GamepadDevice";
 export type { GamepadButtonLike, GamepadLike } from "./GamepadDevice";
 export { GestureRecognizer } from "./GestureRecognizer";

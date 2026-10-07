@@ -1,4 +1,7 @@
+import type { MaterialFeatureContext } from "./contracts/materialLobes";
 import { Material, type RenderState } from "./Material";
+import { legacyPhysicalDescriptor, physicalFeatureSet } from "./materials/PhysicalFeatures";
+import type { PhysicalFeatureSet } from "./materials/PhysicalMaterial";
 import { DEFAULT_PBR_ENVIRONMENT_INTENSITY, DEFAULT_PBR_PROCEDURAL_ENVIRONMENT_MAP } from "./PBRLightingDefaults";
 import type { PBRProceduralEnvironmentMapOptions } from "./PBRMaterial";
 import { MAX_UNIFORM_SKINNING_JOINTS } from "./ShaderChunks";
@@ -78,6 +81,7 @@ export interface SkinnedLitMaterialOptions {
 
 export class SkinnedLitMaterial extends Material {
   public readonly maxJoints: number;
+  private readonly prd04Options: SkinnedLitMaterialOptions;
   public readonly extraInfluences: boolean;
 
   constructor(options: SkinnedLitMaterialOptions = {}) {
@@ -323,6 +327,18 @@ export class SkinnedLitMaterial extends Material {
     });
     this.maxJoints = maxJoints;
     this.extraInfluences = extraInfluences;
+    this.prd04Options = options;
+  }
+
+  /** C-03 `ProgramFeatureSource` (PRD-04 P3-1): generated-path features from this material's options. Pure — unread by the legacy path. */
+  programFeatures(ctx: MaterialFeatureContext): PhysicalFeatureSet {
+    const maxJoints = this.prd04Options.maxJoints ?? MAX_UNIFORM_SKINNING_JOINTS;
+    return physicalFeatureSet(legacyPhysicalDescriptor(this.prd04Options), ctx, {
+      skinning: {
+        influences: this.prd04Options.extraInfluences ? 8 : 4,
+        palette: maxJoints > MAX_UNIFORM_SKINNING_JOINTS ? "texture" : "uniform"
+      }
+    });
   }
 }
 

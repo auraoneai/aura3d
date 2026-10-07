@@ -1,0 +1,93 @@
+name: QR-03 post quality
+
+# Lane 03 (PRD-03) postprocessing quality gate. PR-triggered on lane paths and
+# anything under packages/rendering — unit checks on ubuntu, lane browser specs
+# on macos-14 with ANGLE Metal (PRD-03 §15.2). `@integrated` specs are skipped
+# in PR runs; they run at checkpoints with qr_flags=all.
+# No secrets.
+
+on:
+  pull_request:
+    paths:
+      - "packages/rendering/**"
+      - "packages/engine/src/agent-api/postBridge.ts"
+      - "packages/engine/src/agent-api/postPresets.ts"
+      - "packages/engine/src/agent-api/compiler/postprocess.ts"
+      - "packages/engine/src/agent-api/compiler/diagnosticOnly.prd03.ts"
+      - "packages/engine/src/agent-api/nodes/effects.post.ts"
+      - "packages/engine/src/lanes/prd03.ts"
+      - "packages/rendering/src/lanes/prd03.ts"
+      - "benchmarks/quality-rebuild/scenes/prd03/**"
+      - "benchmarks/quality-rebuild/aura3d/scenes/prd03/**"
+      - "benchmarks/quality-rebuild/three/scenes/prd03/**"
+      - "tests/unit/contracts/impl/prd03-*"
+      - "tests/browser/post-*.spec.ts"
+      - "tests/browser/qr-prd03-*.spec.ts"
+      - "tools/quality-rebuild/codemods/**"
+      - "packages/aura3d-cli/src/commands/prd03/**"
+      - "evidence/prd03/**"
+      - ".github/workflows/post-quality.yml"
+      - ".github/workflows/qr-prd03-captures.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: post-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    name: Lane 03 unit (ubuntu)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck:raw
+      - run: pnpm exec vitest run tests/unit/contracts/impl
+      - name: Ownership audit (all changed files resolve to lane 03)
+        run: git diff --name-only origin/main...HEAD | xargs node tools/qr-ownership/check.mjs
+
+  browser:
+    name: Lane 03 browser specs (macos-14, ANGLE Metal)
+    runs-on: macos-14
+    timeout-minutes: 45
+    env:
+      QRC_GPU_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: Lane 03 post specs (@integrated skipped)
+        # post-*.spec.ts files land phase by phase; the glob is empty in Phase 0.
+        run: |
+          shopt -s nullglob
+          specs=(tests/browser/post-*.spec.ts)
+          if [ ${#specs[@]} -eq 0 ]; then
+            echo "no post-*.spec.ts specs yet (Phase 0)" | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          pnpm exec playwright test "${specs[@]}" --grep-invert @integrated
+      - name: Upload spec artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qr03-post-quality-${{ github.run_id }}
+          path: |
+            tests/reports/browser.json
+            test-results/
+          retention-days: 30
+          if-no-files-found: warn

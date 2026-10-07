@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=1280, initial-scale=1" />
+    <title>QR lane 01 harness</title>
+    <style>
+      html, body { margin: 0; padding: 0; background: #000; overflow: hidden; }
+      #stage { width: 1280px; height: 720px; position: relative; overflow: hidden; }
+      #stage canvas { display: block; }
+      #status { position: fixed; left: 8px; bottom: 8px; color: #9fb2c8; font: 12px/1.4 monospace; pointer-events: none; }
+    </style>
+  </head>
+  <body>
+    <main id="stage" aria-label="Lane 01 render stage"></main>
+    <div id="status"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

@@ -3,6 +3,10 @@ import { Sampler } from "./Sampler";
 import { Texture } from "./Texture";
 import { TextureBinding } from "./TextureBinding";
 import { TexturedUnlitMaterial } from "./TexturedUnlitMaterial";
+// T4.1 (PRD-10): the wave evaluator moved to world/water/GerstnerWaves.ts;
+// re-exported here so this module's public surface is unchanged.
+import { evaluateWaves, oceanPresetWaves, waveCompression } from "./world/water/GerstnerWaves.js";
+export { evaluateWaves, oceanPresetWaves, waveCompression };
 import {
   computeObliqueClipProjection,
   computePlanarMirrorCamera,
@@ -168,93 +172,6 @@ export function sampleOceanFixture(options: OceanFixtureOptions = {}): OceanFixt
   };
 }
 
-function oceanPresetWaves(preset: OceanFixturePreset): readonly OceanWaveDescriptor[] {
-  if (preset === "calm") {
-    return [
-      wave(0.045, 0.9, 0.55, [1, 0.12], 0.2),
-      wave(0.026, 0.48, 0.42, [0.58, 0.82], 0.18)
-    ];
-  }
-  if (preset === "rough") {
-    return [
-      wave(0.13, 1.4, 0.86, [1, 0.08], 0.58),
-      wave(0.09, 0.82, 0.72, [0.86, 0.5], 0.48),
-      wave(0.052, 0.46, 0.58, [0.54, 0.84], 0.42),
-      wave(0.032, 0.28, 0.48, [0.35, 0.94], 0.36)
-    ];
-  }
-  if (preset === "storm") {
-    return [
-      wave(0.18, 1.75, 1.02, [1, 0.06], 0.72),
-      wave(0.13, 1.08, 0.88, [0.92, 0.39], 0.62),
-      wave(0.082, 0.62, 0.75, [0.76, 0.65], 0.54),
-      wave(0.052, 0.36, 0.62, [0.48, 0.88], 0.48),
-      wave(0.034, 0.22, 0.52, [0.28, 0.96], 0.42)
-    ];
-  }
-  return [
-    wave(0.08, 1.1, 0.72, [1, 0.1], 0.38),
-    wave(0.055, 0.68, 0.58, [0.8, 0.6], 0.32),
-    wave(0.036, 0.38, 0.46, [0.6, 0.8], 0.28)
-  ];
-}
-
-function wave(amplitude: number, wavelength: number, speed: number, direction: readonly [number, number], steepness: number): OceanWaveDescriptor {
-  const length = Math.hypot(direction[0], direction[1]) || 1;
-  return {
-    amplitude,
-    wavelength,
-    speed,
-    direction: [round3(direction[0] / length), round3(direction[1] / length)],
-    steepness: Math.min(1, steepness)
-  };
-}
-
-function evaluateWaves(waves: readonly OceanWaveDescriptor[], x: number, z: number, time: number): {
-  readonly height: number;
-  readonly horizontalDisplacement: readonly [number, number];
-  readonly normal: readonly [number, number, number];
-} {
-  let height = 0;
-  let dx = 0;
-  let dz = 0;
-  let nx = 0;
-  let ny = 1;
-  let nz = 0;
-  for (const descriptor of waves) {
-    const k = (2 * Math.PI) / descriptor.wavelength;
-    const omega = descriptor.speed * k;
-    const phase = k * (descriptor.direction[0] * x + descriptor.direction[1] * z) - omega * time;
-    const sin = Math.sin(phase);
-    const cos = Math.cos(phase);
-    const q = descriptor.steepness / Math.max(0.0001, descriptor.amplitude * k * waves.length);
-    const waveAmplitude = k * descriptor.amplitude;
-    height += descriptor.amplitude * sin;
-    dx += q * descriptor.amplitude * descriptor.direction[0] * cos;
-    dz += q * descriptor.amplitude * descriptor.direction[1] * cos;
-    nx -= descriptor.direction[0] * waveAmplitude * cos;
-    ny -= q * waveAmplitude * sin;
-    nz -= descriptor.direction[1] * waveAmplitude * cos;
-  }
-  const normalLength = Math.hypot(nx, ny, nz) || 1;
-  return {
-    height: round3(height),
-    horizontalDisplacement: [round3(dx), round3(dz)],
-    normal: [round3(nx / normalLength), round3(ny / normalLength), round3(nz / normalLength)]
-  };
-}
-
-function waveCompression(waves: readonly OceanWaveDescriptor[], x: number, z: number, time: number): number {
-  let compression = 1;
-  for (const descriptor of waves) {
-    const k = (2 * Math.PI) / descriptor.wavelength;
-    const omega = descriptor.speed * k;
-    const phase = k * (descriptor.direction[0] * x + descriptor.direction[1] * z) - omega * time;
-    compression -= descriptor.steepness * descriptor.amplitude * k * Math.sin(phase) * 0.35;
-  }
-  return round3(compression);
-}
-
 function calculateBuoyancy(waves: readonly OceanWaveDescriptor[], time: number, cameraX: number): OceanBuoyancySample {
   const position: [number, number, number] = [round3(cameraX * 0.04), -0.12, 0.44];
   const velocity: [number, number, number] = [0.18, 0, -0.04];
@@ -385,6 +302,12 @@ export interface WaterReflectionRefractionResult {
  * `resolveWaterReflectionRefraction`: shallow water shows the refracted bed
  * color, deep water absorbs toward the tint color and favors reflection.
  * The composite is exposed as `u_waterReflectionRefractionTexture`.
+ *
+ * @deprecated PRD-10 T4.7 — superseded by `world/water/ReflectionViewPass`
+ *   (planar) and `world/water/SceneCopyFallback` (refraction) under
+ *   `A3D_QR_WORLD`. Kept while owner-01/owner-15 importers exist
+ *   (`rendering/index.ts`, `agent-api` `water.surface`, reflection-surfaces
+ *   tests); deletion tracked under qr-request Q-14-1.
  */
 export class WaterReflectionRefractionCapture {
   public readonly planeY: number;
