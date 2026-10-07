@@ -123,8 +123,8 @@ const checks: ReleaseCheck[] = [
   ]),
   fileIncludes("templates/mini-game/src/main.ts", ["createGame", "game.platformer"], "mini-game packaged root game api"),
   fileIncludes("packages/create-aura3d/templates/mini-game/src/main.ts", ["createGame", "game.platformer"], "mini-game public game api"),
-  fileIncludes("templates/product-viewer/src/main.ts", ["@aura3d/lean/product"], "product-viewer packaged root lean-product entry"),
-  fileIncludes("packages/create-aura3d/templates/product-viewer/src/main.ts", ["@aura3d/lean/product"], "product-viewer public lean-product entry"),
+  fileIncludes("templates/product-viewer/src/main.ts", ["@aura3d/engine"], "product-viewer packaged root engine entry"),
+  fileIncludes("packages/create-aura3d/templates/product-viewer/src/main.ts", ["@aura3d/engine"], "product-viewer public engine entry"),
   fileIncludes("templates/mini-game/src/main.ts", ["@aura3d/engine"], "mini-game packaged root engine entry"),
   fileIncludes("packages/create-aura3d/templates/mini-game/src/main.ts", ["@aura3d/engine"], "mini-game public engine entry"),
   ...rootPackagedTemplates.flatMap((template) => [
@@ -404,7 +404,7 @@ function templateApiFile(template: string): string {
 }
 
 function templatePublicPackage(template: string): string {
-  if (template === "product-viewer") return "@aura3d/lean/product";
+  if (template === "product-viewer") return "@aura3d/engine";
   return "@aura3d/engine";
 }
 
