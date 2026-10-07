@@ -32,6 +32,8 @@ import {
 import { QualityGovernor, type GovernorStep } from "./QualityGovernor";
 import { createRenderScaleController } from "./RenderScaleController";
 import { isQualityTier } from "./QualityTier";
+import { retainDecodedSourcesForRestore } from "./RetentionPolicy";
+import { sharedResourceRegistry } from "../resources/ResourceRegistry";
 
 const CALIBRATION_FRAMES = 30;
 
@@ -126,6 +128,9 @@ export class AuraQuality implements AuraQualityController {
     const from = this.currentTier;
     this.currentTier = tier;
     this.decisionValue = decision;
+    // §6.9 memory policy: Medium and below release decoded CPU sources and
+    // refetch on restore; High/Ultra retain for fast rebuild (RetentionPolicy).
+    sharedResourceRegistry().setRetentionPolicy(retainDecodedSourcesForRestore(tier));
     if (from !== tier) {
       for (const listener of this.listeners) listener({ from, to: tier, reason: decision.reason });
     }

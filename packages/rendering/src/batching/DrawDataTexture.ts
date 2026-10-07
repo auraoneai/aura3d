@@ -29,6 +29,7 @@ export class DrawDataTexture {
   private readonly data: Float32Array;
   private texture: Texture | null = null;
   private dirty = true;
+  private restoreRegistered = false;
 
   constructor(readonly maxDraws: number) {
     if (!Number.isInteger(maxDraws) || maxDraws <= 0) {
@@ -81,6 +82,24 @@ export class DrawDataTexture {
       this.dirty = false;
     }
     return this.texture;
+  }
+
+  /**
+   * PRD 11 Phase 5 (§6.9): register with the C-29 `ResourceRegistry` once.
+   * The CPU-side `data` array IS the retained source — the restore rebuild
+   * marks the texture dirty and re-uploads it.
+   */
+  registerForRestore(registry: { register<T extends object>(handle: T, descriptor: { kind: string; rebuild: () => Promise<void> | void }): T }): void {
+    if (this.restoreRegistered) return;
+    this.restoreRegistered = true;
+    registry.register(this, {
+      kind: "a3d-prd11-draw-data",
+      rebuild: () => {
+        this.texture?.dispose();
+        this.texture = null;
+        this.upload();
+      }
+    });
   }
 
   /** `sampler2D` binding ready for `uniforms.set("u_a3dDrawData", ...)`. */

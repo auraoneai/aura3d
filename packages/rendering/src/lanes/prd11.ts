@@ -8,12 +8,13 @@
  */
 
 import { frameStatsSlot, renderTargetPoolSlot, type DeviceCounters, type FrameStatsSample } from "../contracts/device";
+import { resourceRegistrySlot } from "../contracts/rendererFactory";
 import { registerFrameContributor, type FrameContributorContext } from "../contracts/frameGraph";
 import type { AuraQualityTierSettings } from "../contracts/quality";
 import type { QrFlags } from "../contracts/core";
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass";
 import type { RenderDevice } from "../RenderDevice";
-import { setRendererQrFlags } from "../renderer/FrameGraph";
+import { rendererQrFlags, setRendererQrFlags } from "../renderer/FrameGraph";
 import { FrameStats, diffDeviceCounters } from "../quality/FrameStats";
 import { gpuTimingBackendForDevice } from "../quality/DeviceProbe";
 import { RenderTargetPool } from "../resources/RenderTargetPool";
@@ -22,6 +23,8 @@ import { batchPlanCacheFor, prd11LatestBatchPlanReport } from "../renderer/Culli
 import { registerPrd11DrawIdShader } from "../batching/shaders/drawId.glsl";
 import { registerPrd11InstanceEmissiveShader } from "../batching/shaders/instanceEmissive.glsl";
 import { prd11TickQualityControllers } from "../quality/QualityController";
+import { sharedResourceRegistry } from "../resources/ResourceRegistry";
+import { installDeviceRestoreRebuild } from "../renderer/DeviceLifecycle";
 
 /** Everything the `frame`/`quality`/`renderer.batching` diagnostics sections need, keyed by device. */
 export interface Prd11FrameTelemetry {
@@ -89,7 +92,21 @@ frameStatsSlot.provide((capacity = 240) => new FrameStats(capacity));
 
 // Phase 2 (§6.8): real C-28 render-target pool — post chains reuse targets
 // keyed by (w, h, format, samples, depth); wired into post execution by Q-03-1.
-renderTargetPoolSlot.provide((device) => new RenderTargetPool(device));
+renderTargetPoolSlot.provide((device) => {
+  const pool = new RenderTargetPool(device);
+  // Phase 5 (§6.9): pool targets die with the GL context — register the pool
+  // so `installDeviceRestoreRebuild` clears it and `acquire` re-creates.
+  sharedResourceRegistry().register(pool, {
+    kind: "a3d-prd11-rt-pool",
+    rebuild: () => pool.rebuildForRestore()
+  });
+  return pool;
+});
+
+// Phase 5 (§6.9): real C-29 registry — records creation descriptors + CPU
+// sources for eager rebuild after context restore. Consumers observe the real
+// impl only under `A3D_QR_WEBGPU`; flag-off stays on the contract stub (IC-0).
+resourceRegistrySlot.provide(() => sharedResourceRegistry());
 
 // Phase 3 (§6.6): C-02 chunk/feature registrations for the multi-draw and
 // per-instance-emissive paths. Inert until a real program generator consumes
@@ -192,3 +209,41 @@ export {
   registerAuraQualityController
 } from "../quality/QualityController";
 export type { AuraQualityControllerEnv, QualityDiagnostics } from "../quality/QualityController";
+
+/**
+ * Phase 5 (§6.9): `prd11.contextRestore` contributor (flag `A3D_QR_TIERS`).
+ * First `collect` per device installs `installDeviceRestoreRebuild` on the
+ * device's `WebGL2ContextLifecycle` — on `webglcontextrestored` it runs
+ * invalidateGpuObjects?.() → `resourceRegistry.rebuild(device)` → C-02
+ * `programCache.precompile` (active keys arrive via Q-15-3), and only then do
+ * `deviceRestoredListeners`/`app.onDeviceRestored` fire. Flag-off never
+ * reaches this contributor, so the carve-out notification path is untouched.
+ */
+const restoreInstalled = new WeakSet<RenderDevice>();
+
+registerFrameContributor({
+  id: "prd11.contextRestore",
+  owner: "prd11",
+  flag: "A3D_QR_TIERS",
+  phases: ["collect"],
+  order: -990,
+  collect(items, ctx: FrameContributorContext) {
+    if (!restoreInstalled.has(ctx.device)) {
+      restoreInstalled.add(ctx.device);
+      installDeviceRestoreRebuild(ctx.device, {
+        registry: sharedResourceRegistry(),
+        flags: rendererQrFlags()
+      });
+    }
+    return items;
+  }
+});
+
+/** Phase 5 (§6.9): context-restore surfaces — real C-29 registry, the §6.9
+ * memory policy helper, the restore-ordering installer, and the pool's
+ * rebuild method for tests/engine diagnostics. */
+export { ResourceRegistry, sharedResourceRegistry } from "../resources/ResourceRegistry";
+export type { ResourceDescriptor } from "../resources/ResourceRegistry";
+export { retainDecodedSourcesForRestore } from "../quality/RetentionPolicy";
+export { installDeviceRestoreRebuild } from "../renderer/DeviceLifecycle";
+export type { DeviceRestoreRebuildOptions } from "../renderer/DeviceLifecycle";

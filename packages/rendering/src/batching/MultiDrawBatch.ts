@@ -19,6 +19,7 @@ import { DrawDataTexture } from "./DrawDataTexture";
 import type { MultiDrawGroup } from "./StaticMergePlanner";
 import type { RenderItem } from "../contracts/renderItem";
 import { MaterialInstance } from "../MaterialInstance";
+import { sharedResourceRegistry } from "../resources/ResourceRegistry";
 
 export interface MultiDrawBatch {
   readonly group: MultiDrawGroup;
@@ -69,6 +70,10 @@ function colorOf(item: RenderItem): readonly number[] | undefined {
  */
 export function buildMultiDrawBatch(group: MultiDrawGroup, pool = new BatchedGeometryPool()): MultiDrawBatch {
   const drawData = new DrawDataTexture(Math.max(group.members.length, 1));
+  // Phase 5 (§6.9): CPU arrays are retained sources — register both so the
+  // C-29 registry rebuilds the arenas and data texture after context restore.
+  pool.registerForRestore(sharedResourceRegistry());
+  drawData.registerForRestore(sharedResourceRegistry());
   const entries: PackedGeometryEntry[] = [];
   group.members.forEach((item, drawIndex) => {
     const entry = pool.pack(item.geometry);
