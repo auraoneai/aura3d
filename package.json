@@ -161,6 +161,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "check:meshy-secrets": "tsx --tsconfig tsconfig.base.json tools/meshy-secret-scan/index.ts",
+    "arch:baseline": "tsx --tsconfig tsconfig.base.json tools/arch-gates/baseline.ts",
     "typecheck:raw": "tsc -p tsconfig.build.json --noEmit",
     "typecheck:ws1": "tsc -p tsconfig.build.json --noEmit",
     "test": "pnpm test:unit && pnpm test:integration",
