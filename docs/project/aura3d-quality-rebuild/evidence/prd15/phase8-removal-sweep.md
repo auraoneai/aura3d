@@ -203,3 +203,52 @@ with this commit (its path triggers could never fire again and a manual
 dispatch would fail on missing inputs). Phase-4 local evidence (fixture
 pack-build assertions, 207,889-byte lit scenes) remains recorded in
 `phase4-no-silent-fallback.md`.
+
+## T8.2 merge-surfaced repairs (2085d58bc → ab2405a22)
+
+Merging origin/main (`7758a2710`, lane-05 #358/#360/#365) and the packed-
+consumer + unit lanes surfaced three real breaks, all fixed on this branch:
+
+1. **Merge-order TDZ in `agent-api/postPresets.ts`** (bf97ed78e) —
+   lane-03's file constructs `new AuraNodeBuilder` at module-eval inside
+   the 158-member agent-api SCC; on the merge order it evaluated while
+   `nodes/builder.ts` was mid-cycle (`AuraNodeBuilder` TDZ crash — every
+   unit/dist lane red). Rebuilt the preset table lazily behind a Proxy so
+   construction happens on first access, not import.
+2. **Umbrella deps truth** (2e8d0ddec) — lane-05's merged physics-rapier
+   LOD work imports `@gltf-transform/{core,extensions}` + `meshoptimizer`
+   at runtime; assets' decoder registry imports `ktx-parse`;
+   navigation-recast lazy-imports `recast-navigation`. The `@aura3d/engine`
+   umbrella tarball declares every external its packed dist imports;
+   missing any one fails `bundle-size`/pack:check-style consumers on the
+   merge. Added the union to root `dependencies` (versions match the
+   declaring packages); lockfile resynced. `pnpm pack:check` re-verified
+   27/27 locally post-merge.
+3. **`@aura3d/engine` workspace dep missing in editor-runtime**
+   (ab2405a22) — lane-02's merged test imports
+   `createAuraVoiceVisemeTrack` from the umbrella with no dep declared →
+   `ERR_MODULE_NOT_FOUND` in Distribution Package Tests (identical on
+   main — pre-existing). editor-runtime is defaultOwner-15; declared
+   `"@aura3d/engine": "workspace:*"` like `packages/game` does. 24/24
+   green locally.
+4. **Honest kept-deprecated metadata** (2085d58bc) — §6.6 step-3 kept
+   entries stay exported at 4.0.0 but claimed `removeIn 4.0.0` /
+   "Deleted from '.' in 4.0.0" in map, stub warnings and JSDoc. Bumped
+   the 10 kept subpaths to `removeIn 4.1.0`, reworded the 10 deprecated
+   stubs, the 66 JSDoc tags in `public/index.ts`, and the scaffold
+   generator so regeneration stays consistent.
+
+### Fresh-failure audit vs main (7758a2710)
+- `check:skills` stale-AGENTS.md failure on the old merge commit was
+  transient — new main carries regenerated files; `pnpm skills:sync` is a
+  no-op on this branch.
+- `prd12-registry`, `prd05-debug-view`, `prd03-post-cube-lut` vitest
+  failures reproduce identically on clean main — lane-12 test drift vs
+  lane-05 registry rows, not merge-caused.
+- `tools/_quarantine` stragglers (`external-parity-*`, `muse3jsparity-*`,
+  `threejs-parity-*` survivors importing deleted dirs) fail tsc on main
+  identically — lane-12 quarantine debt, not merge-caused.
+- `check:templates` run 3 (in progress): all failures so far are lane-13
+  template look-floor assertions (subject-bounds tolerances, lit-subject
+  mass) under the software-GL environment — the Q-13-15 class, not
+  structural breaks.
