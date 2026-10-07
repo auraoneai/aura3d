@@ -391,6 +391,8 @@ tests/browser/fixtures/*
 # Local AI-agent control files; public guidance lives in llms.txt and docs/agents/.
 AGENTS.md
 **/AGENTS.md
+# Generated skill-mirror copies are committed (check:skills mirrors canonical).
+!**/skills/agent-files/AGENTS.md
 .claude/*
 !.claude/skills/
 .cursor/rules/
