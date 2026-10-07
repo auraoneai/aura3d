@@ -6,7 +6,7 @@
 import { expect, test } from "@playwright/test";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { startExampleDevServer, type ExampleDevServer } from "../../../browser/example-dev-server";
+import { startPrd04DevServer as startExampleDevServer, type ExampleDevServer } from "../dev-server";
 
 test.describe("PRD-04 lobe chunks compile in ChunkHarness", () => {
 	let server: ExampleDevServer;
