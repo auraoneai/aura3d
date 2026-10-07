@@ -151,3 +151,19 @@ the generated PBR program for a skinned PBR item has no `prd06.deform` key to
 select on. T2.4's unified path needs material features to carry the deform
 stamp (`skin4`/`skin8`/morph bucket) — the parity spec verifies the deform
 program against a static twin with the stamp applied manually.
+
+## Q-13-3 — apply the `character-hero` reference module to the character-controller template
+
+T4.3 ships `benchmarks/quality-rebuild/aura3d/scenes/prd06/characterHero.ts`
+(the `characterAnimation(controller, hero, spec)` wiring that replaces the
+template's `.animate({ clip: "Take 001" })` + HUD-only `createLocomotionKit`
+weights; `binding.snapshot().weights` is the HUD source) plus the clip map and
+the `template-hero` validator profile (T4.6). Lane request: rename the
+`character-controller` template to `character-hero` (or add it alongside),
+swap the 1-clip hero `showcaseWalkAnimatedGirl`
+(`templates/character-controller/src/aura-assets.ts:12`) for a C-17-admitted
+hero that passes `template-hero` (≥15 k tris, ≥50 joints, the §6.9 clip set —
+Q-05-2 admits it), wire `bindCharacterHero(controller, hero)` in `main.ts`,
+and add the template test mirroring
+`tests/qr/prd06/unit/character-controller-binding.test.ts` (required clips
+exist on the hero; `animationState().activeActions.length ≥ 2` mid-ramp).

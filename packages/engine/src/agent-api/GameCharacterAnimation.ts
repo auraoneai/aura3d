@@ -125,6 +125,8 @@ export function validateClipMap<State extends string>(
 /* ------------------------------------------------------------------------ */
 
 import type { AuraBoneMaskSpec, AuraRootMotionSpec } from "../contracts/animation.js";
+import { createPrd06ActorAnimationApi } from "./app/actorAnimationHandle.js";
+import type { AuraRuntimeNodeHandle } from "./nodes/types/runtime.js";
 import type { FootIkConstraintSpec } from "../../../animation/src/FootIk.js";
 import type { LookAtConstraintSpec } from "../../../animation/src/pose/LookAtConstraint.js";
 
@@ -146,6 +148,8 @@ export interface AuraCharacterControllerSnapshot {
 
 /** Structural controller union — physics + animation controllers all read. */
 export interface AuraCharacterControllerLike {
+  /** State fields when the controller IS its own state bag (`{ speed }`). */
+  readonly [key: string]: unknown;
   readonly snapshot?: () => Readonly<Record<string, unknown>>;
   readonly state?: Readonly<Record<string, unknown>>;
 }
@@ -234,7 +238,7 @@ export interface AuraCharacterAnimationBinding {
 }
 
 /** Optional duration source: the node's `animation` api resolving clip info. */
-interface AnimationHandleLike {
+export interface AnimationHandleLike {
   readonly animation?: {
     readonly resolveAnimationClips?: () => Promise<readonly { readonly clip?: string; readonly name?: string; readonly duration: number }[]>;
     readonly ik?: { readonly add: (spec: unknown) => void; readonly clear: () => void };
@@ -242,6 +246,7 @@ interface AnimationHandleLike {
   };
   readonly setAnimationBinding?: (binding: unknown) => unknown;
   readonly timeScale?: number;
+  readonly [key: string]: unknown;
 }
 
 /* C-23 app-time-scale provider — installed by the game/app seam the same way
@@ -252,7 +257,12 @@ export function setCharacterAnimationAppTimeScale(provider: (() => number) | und
 }
 
 function readControllerSnapshot(controller: AuraCharacterControllerLike): AuraCharacterControllerSnapshot {
-  const raw = typeof controller.snapshot === "function" ? controller.snapshot() : (controller.state ?? {});
+  // Controllers may expose `snapshot()` (Arcade/Fighting), a `.state` bag
+  // (procedural LocomotionController), or BE the state bag itself (the
+  // character-controller template's `{ speed }` — Q-13-3 reference path).
+  const raw = typeof controller.snapshot === "function"
+    ? controller.snapshot()
+    : (controller.state ?? (controller as unknown as Readonly<Record<string, unknown>>));
   const velocity = (raw as { readonly velocity?: readonly [number, number, number] }).velocity;
   const speed = typeof (raw as { readonly speed?: unknown }).speed === "number"
     ? (raw as { readonly speed: number }).speed
@@ -346,7 +356,7 @@ let characterAnimationCounter = 0;
 
 export function characterAnimation(
   controller: AuraCharacterControllerLike,
-  node: AnimationHandleLike,
+  node: AnimationHandleLike | AuraRuntimeNodeHandle,
   spec: AuraCharacterAnimationSpec
 ): AuraCharacterAnimationBinding {
   const syncGroup = spec.locomotion.syncGroup ?? "locomotion";
@@ -356,14 +366,22 @@ export function characterAnimation(
   for (const entry of spec.locomotion.clips) if (entry.duration !== undefined) durations.set(entry.clip, entry.duration);
   for (const action of Object.values(spec.actions ?? {})) if (action.duration !== undefined) durations.set(action.clip, action.duration);
 
-  const handle = node as AnimationHandleLike;
-  const animationApi = handle.animation;
+  const handle = node as unknown as AnimationHandleLike;
+  // §7.1's `node.animation` resolves one of two ways: test/dev seams may
+  // attach the api object directly, real runtime handles get it through the
+  // `prd06.animation` C-37 extension — build that api when the structural
+  // read misses (a node's `.animation` spec field is an AuraAnimationSpec,
+  // not the api).
+  const animationApi =
+    handle.animation?.ik !== undefined || handle.animation?.resolveAnimationClips !== undefined
+      ? handle.animation
+      : createPrd06ActorAnimationApi(node as unknown as AuraRuntimeNodeHandle);
 
   // Clip durations: explicit spec fields win, else the node's resolve pass.
   if (animationApi?.resolveAnimationClips) {
     void animationApi.resolveAnimationClips().then((clips) => {
       for (const clip of clips) {
-        const name = clip.clip ?? clip.name;
+        const name = ("clip" in clip ? clip.clip : undefined) ?? clip.name;
         if (name !== undefined && !durations.has(name)) durations.set(name, clip.duration);
       }
     }).catch(() => undefined);
