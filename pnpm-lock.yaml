@@ -299,6 +299,9 @@ importers:
       '@aura3d/animation':
         specifier: workspace:*
         version: link:../animation
+      '@aura3d/engine':
+        specifier: workspace:*
+        version: link:../..
       '@aura3d/math':
         specifier: workspace:*
         version: link:../math
