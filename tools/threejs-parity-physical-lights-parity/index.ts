@@ -383,7 +383,7 @@ function computeDiff(left: ImageData, right: ImageData): DiffStats {
     if (delta > 8) changedPixels += 1;
   }
   const meanDelta = totalDelta / (left.width * left.height);
-  return { meanDelta: Number(meanDelta.toFixed(4)), maxDelta: Number(maxDelta.toFixed(4)), changedPixels, 1 - meanDelta / 255).toFixed(4)) };
+  return { meanDelta: Number(meanDelta.toFixed(4)), maxDelta: Number(maxDelta.toFixed(4)), changedPixels, };
 }
 
 async function drawSideBySide(canvas: HTMLCanvasElement, a3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {

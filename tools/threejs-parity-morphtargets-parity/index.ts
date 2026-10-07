@@ -404,7 +404,7 @@ function computeDiff(a: ImageData, b: ImageData): DiffStats {
     if (delta > 22) changedPixels += 1;
   }
   const meanDelta = total / (a.width * a.height);
-  return { meanDelta: round(meanDelta), maxDelta: round(maxDelta), changedPixels, 1 - meanDelta / 255)) };
+  return { meanDelta: round(meanDelta), maxDelta: round(maxDelta), changedPixels, };
 }
 
 async function drawSideBySide(canvas: HTMLCanvasElement, a3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {

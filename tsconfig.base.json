@@ -20,6 +20,15 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
+      "/packages/*": [
+        "packages/*"
+      ],
+      "/tests/*": [
+        "tests/*"
+      ],
+      "/benchmarks/*": [
+        "benchmarks/*"
+      ],
       "@aura3d/math": [
         "packages/math/src/index.ts"
       ],

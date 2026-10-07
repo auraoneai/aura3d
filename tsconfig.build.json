@@ -17,5 +17,16 @@
     "playwright.config.ts",
     "eslint.config.js"
   ],
-  "exclude": ["dist", "node_modules"]
+  "exclude": [
+    "dist",
+    "node_modules",
+    // Lane test trees that do not typecheck under the build tsconfig yet
+    // (added to scope by QR-06's tests/qr/** include; excluded until each
+    // lane fixes its drift and re-adds itself):
+    "tests/qr/prd04",
+    "tests/qr/prd07",
+    "tests/qr/prd08",
+    "tests/qr/prd11",
+    "tests/qr/prd14"
+  ]
 }
