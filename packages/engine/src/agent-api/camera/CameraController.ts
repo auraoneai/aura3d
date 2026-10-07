@@ -22,7 +22,15 @@ import type {
   AuraCameraSubject,
   AuraEaseName
 } from "../../contracts/camera.js";
-import { stubCameraRigFactories } from "../../contracts/camera.js";
+import { createChaseRig, type ChaseRigOptions } from "./rigs/chase.js";
+import { createFlightRig, type FlightRigOptions } from "./rigs/flight.js";
+import { createFollow2dRig, type Follow2dRigOptions } from "./rigs/follow2d.js";
+import { createFightingRig, type FightingRigOptions } from "./rigs/fighting.js";
+import { createShoulderRig, type ShoulderRigOptions } from "./rigs/shoulder.js";
+import { createOrbitRig, type OrbitRigOptions } from "./rigs/orbit.js";
+import { createTopDownRig, type TopDownRigOptions } from "./rigs/topDown.js";
+import { createAltitudeRig, type AltitudeRigOptions } from "./rigs/altitude.js";
+import { createRailRig } from "./rigs/rail.js";
 import {
   lookAtMat4,
   multiplyMat4,
@@ -121,8 +129,8 @@ export interface AuraCameraControllerImpl extends AuraCameraController {
   makeContext(realDt: number, timeMs: number): AuraCameraRigContext;
   readonly lookAt: AuraLookAtLayer;
   /**
-   * `camera.rigs` (C-22): static + fromSpec are real; the other nine factories
-   * are the contract stubs until their rig implementations land (phase 3).
+   * `camera.rigs` (C-22): all ten factories are real implementations
+   * (R-1..R-9, Q-2).
    */
   readonly rigs: AuraCameraRigFactories;
   /** View-projection captured at the end of the last `update` (C-5 helper backing). */
@@ -284,7 +292,15 @@ export function createCameraController(deps: AuraCameraControllerDeps = {}): Aur
   }
 
   const rigs: AuraCameraRigFactories = {
-    ...stubCameraRigFactories,
+    chase: (o) => createChaseRig(o as ChaseRigOptions),
+    flight: (o) => createFlightRig(o as FlightRigOptions),
+    follow2d: (o) => createFollow2dRig(o as Follow2dRigOptions),
+    fighting: (o) => createFightingRig(o as FightingRigOptions),
+    shoulder: (o) => createShoulderRig(o as ShoulderRigOptions),
+    orbit: (o) => createOrbitRig(o as OrbitRigOptions),
+    topDown: (o) => createTopDownRig(o as TopDownRigOptions),
+    altitude: (o) => createAltitudeRig(o as unknown as AltitudeRigOptions),
+    rail: (o) => createRailRig(o),
     static: (pose) => staticRig(pose, "static"),
     fromSpec: (spec) => createFromSpecRig(spec as LegacyCameraSpec, deps.specDeps)
   };

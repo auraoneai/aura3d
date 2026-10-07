@@ -1373,18 +1373,18 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
   `tests/qr/prd08/unit/camera-spring.test.ts`: from rest, remaining gap at t = halflife is 0.500 ± 0.01 for `damp` and
   0.597 ± 0.01 for springs; frame-rate independence (60 vs 144 vs a seeded variable dt stream: positions at t = 1 s
   within 1e-3 of each other); no overshoot from rest for springs; `springAngle` from 350° to 10° moves through 0°.
-- [ ] C-9 New `camera/Probe.ts`: `sphereCast` via `sphereCastCollider` (`packages/physics/src/Raycast.ts:87`, lane 08)
+- [x] C-9 New `camera/Probe.ts`: `sphereCast` via `sphereCastCollider` (`packages/physics/src/Raycast.ts:87`, lane 08)
   over the bodies of `app.physics` when a world exists; else an AABB-list sphere sweep over runtime-handle `bounds()`
   (C18) and static scene node bounds; `occluders()` returns node ids whose AABB intersects the eye→subject segment. A
   BVH path is used only if Q-11-2 exports one (feature-detected). Unit tests: wall between subject and desired eye →
   `hit` with distance within 0.01 of analytic; no wall → `hit: false`.
-- [ ] C-10 Collision helper used by chase/shoulder/orbit/flight: asymmetric half-lives (pull-in 0.04, push-out 0.35),
+- [x] C-10 Collision helper used by chase/shoulder/orbit/flight: asymmetric half-lives (pull-in 0.04, push-out 0.35),
   radius 0.2; reuse `createCollisionAwareOrbit` math (GameCameraRigs.ts:190-279).
 - [ ] C-11 New `camera/OccluderFade.ts`: per-node fade spring to 0.3 for nodes in `probe.occluders()` that are not the
   subject and not tagged `cameraOpaque`; C-01 `collect` contributor `prd08.occluderFade` writes
   `RenderItem.cameraFade` and `cameraFadeOffset` (S-1). Unit test: contributor output for a 3-item list with one
   occluder sets `cameraFade` only on that item and returns the input array unchanged with the flag off.
-- [ ] C-12 Near-plane auto-adjust for chase/fighting/altitude rigs (`near = clamp(0.02·d, 0.05, 0.5)`, written through
+- [x] C-12 Near-plane auto-adjust for chase/fighting/altitude rigs (`near = clamp(0.02·d, 0.05, 0.5)`, written through
   `setPose` into the existing `AuraCameraSpec.near`), unless the route passes `near` explicitly.
 - [ ] C-13 Carved `nodes/game/racingCamera.ts` (from `index.ts:7641-7650`): delete the composition-report/verdict-string
   gate in `createGameRacingCameraRig` (extra arguments ignored, no throw). The turbo call-site cleanup
@@ -1396,34 +1396,34 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
 
 ### Rigs (R)
 
-- [ ] R-1 `camera/rigs/chase.ts` per `ChaseRigOptions` (§7.1), arm-space damping (§6.3): yaw spring on subject heading,
+- [x] R-1 `camera/rigs/chase.ts` per `ChaseRigOptions` (§7.1), arm-space damping (§6.3): yaw spring on subject heading,
   distance/height springs, look-point spring, look-ahead from subject velocity (`clamp(v·seconds, max)` springed with
   `halflife` default 0.25), speed-aware distance and FOV, bank from lateral acceleration, framing solver, collision.
   Unit tests: constant 20 u/s straight line, look-ahead off → eye-to-subject distance within 2 % of `distance(v)` and
   projected subject centre within 3 % frame height of rest after 1 s; the legacy `smoothing 0.045` follow spec on the
   same path fails the distance assertion (proves the test discriminates); FOV at `v = maxSpeed` equals
   `base + perSpeed·v` clamped to `max`; 90° turn at 20 u/s → camera yaw lags subject yaw by 5°–25° at the turn midpoint.
-- [ ] R-2 `camera/rigs/flight.ts`: arm in subject local frame (pitch included), `horizonLock` blend of up vector
+- [x] R-2 `camera/rigs/flight.ts`: arm in subject local frame (pitch included), `horizonLock` blend of up vector
   between world-up and subject-up, bank gain default 0.6, max 25°. Tests: subject pitched 30° → camera pitch ≥ 20° with
   `horizonLock 0.3`; subject rolled 60° (steady state) → presented roll 36° ± 1° with `maxDeg 45`, and 25° ± 0.5° with the default `maxDeg 25`; projected
   ground plane occupies ≥ 15 % of the frame in all frames of a scripted 60° banked turn at 50 m altitude.
-- [ ] R-3 `camera/rigs/follow2d.ts`: dead zone (default 0.18 × 0.22 of frame), forward lead 1.2 u in facing direction
+- [x] R-3 `camera/rigs/follow2d.ts`: dead zone (default 0.18 × 0.22 of frame), forward lead 1.2 u in facing direction
   springed, platform snap on Y. Tests: jump inside dead zone causes no vertical camera motion until landing; landing on
   a platform 2 u higher moves the camera Y to the new rest within 0.4 s; reversing facing moves the lead to the other
   side within 0.5 s.
-- [ ] R-4 `camera/rigs/fighting.ts`: midpoint target, distance solved to keep both fighters' bounds inside 15 %–85 %
+- [x] R-4 `camera/rigs/fighting.ts`: midpoint target, distance solved to keep both fighters' bounds inside 15 %–85 %
   horizontal band and height fraction 0.5; zoom on distance only; camera stays on the fight plane's normal. Test:
   fighters 1 u vs 6 u apart both fit inside the band; FOV constant; camera yaw relative to the fight-plane normal stays
   0° ± 0.5° through a 10 s scripted fight (no mid-fight orbit).
-- [ ] R-5 `camera/rigs/shoulder.ts` wrapping `createShoulderCamera` (GameCameraRigs.ts:94-153) + C-10 collision. Test:
+- [x] R-5 `camera/rigs/shoulder.ts` wrapping `createShoulderCamera` (GameCameraRigs.ts:94-153) + C-10 collision. Test:
   output equals `createShoulderCamera` for the same inputs when no collider is present (1e-6).
-- [ ] R-6 `camera/rigs/orbit.ts` (yaw/pitch springs, pitch limits, optional collision) + `rigs.orbit.bindPointer(canvas,
+- [x] R-6 `camera/rigs/orbit.ts` (yaw/pitch springs, pitch limits, optional collision) + `rigs.orbit.bindPointer(canvas,
   rig, { sensitivity = 0.25°/px })` mapping pointer/touch drag to yaw/pitch targets. Tests: pitch clamps to limits;
   synthetic 100 px drag changes target yaw by 25° ± 0.1°.
-- [ ] R-7 `camera/rigs/topDown.ts` with centroid of one or many targets, dead zone, arena bounds clamp, up-vector
+- [x] R-7 `camera/rigs/topDown.ts` with centroid of one or many targets, dead zone, arena bounds clamp, up-vector
   handling (§6.4). Tests: target at arena corner → all four arena-edge points stay inside the frame; `pitchDeg 90`
   gives a finite matrix.
-- [ ] R-8 `camera/rigs/altitude.ts`: distance = f(altitude) so ground point and goal both inside frame; subject fraction
+- [x] R-8 `camera/rigs/altitude.ts`: distance = f(altitude) so ground point and goal both inside frame; subject fraction
   0.10; lead 30 % toward goal. Test with aurora-lander-like altitudes 2/20/80 u: ground point and goal project inside
   NDC [−0.9, 0.9] in all three; subject height fraction 0.08–0.12.
 - [x] R-9 `camera/rigs/static.ts`: fixed pose from `Partial<AuraCameraPose>` (defaults from the current spec). Test:
@@ -1488,7 +1488,7 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
 - [x] Q-1 `camera/Spline.ts`: centripetal Catmull-Rom (alpha 0.5), closed/open, arc-length LUT (256 samples),
   `pointAt(u)`, `tangentAt(u)`. Tests: passes through control points; C1 continuity at joints (tangent angle Δ < 1°);
   constant-speed parameterisation within 2 %.
-- [ ] Q-2 `camera/rigs/rail.ts` per `AuraCameraRailOptions`; look-at track as node, point, or second spline; FOV per point
+- [x] Q-2 `camera/rigs/rail.ts` per `AuraCameraRailOptions`; look-at track as node, point, or second spline; FOV per point
   interpolated with the same u.
 - [ ] Q-3 `camera/Sequence.ts`: `controller.play(sequence)` → shots with blend-in, bars, `skip()`; `onEnd: "return"` blends
   back to the previous rig.
