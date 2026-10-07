@@ -480,3 +480,19 @@ character-controller needed two more fixes, verified `failures=0` after:
 animation-studio is NOT a regression: identical uniqueBuckets failure on the
 `origin/main` worktree (7758a2710) — `renderer.render` leaves the canvas
 backbuffer uniform in that template on any runner. Lane 13 owns it (Q-13-12).
+
+## Wave 9 — Skills-gate port-leak cascade + browser stage timeout
+
+CI run on `7894ba92c` (job 113037115817): product-viewer + cinematic-scene
+passed under the rewritten look-floor, then mini-game's first browser attempt
+was SIGKILLed at exactly 480s — `command.mjs`'s `browser` stage default
+(`spawnSync` timeout). The kill orphaned the playwright `webServer` vite
+preview on port 4173; every subsequent template's browser run then failed
+instantly on "port already used" — one kill cascaded through 18 templates.
+
+Fixes in `tools/agent-templates/`:
+- `index.ts`: `freePreviewPort()` reaps any 4173 listener before every
+  browser attempt (lsof + SIGKILL), so an orphaned preview cannot cascade.
+- `index.ts`: browser run now passes `timeoutMs: 900_000` — the 480s budget
+  was calibrated for 90s specs; the wave-7 spec bumps (240s timeouts,
+  4 specs serial + preview boot) legitimately exceed it on slow runners.

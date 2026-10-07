@@ -1,6 +1,7 @@
 import { runTemplateCommand } from "./command.mjs";
 import { templateCli, shellArgument } from "./cli.mjs";
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { loadValidatedReleasePlan } from "../release/exact-release-plan.mjs";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { basename, resolve } from "node:path";
@@ -268,7 +269,14 @@ function runScaffoldSmoke(): {
       for (;;) {
         browserAttempts += 1;
         try {
-          run(process.execPath, [templateCli(targetDir, "playwright"), "test", ...browserSpecs.map((spec) => `tests/${spec}`), "--config", resolve(targetDir, "playwright.config.ts"), "--reporter=line", "--workers=1"], targetDir);
+          // A previous browser run that died hard (the command timeout's
+          // SIGKILL, runner reaping, OOM) can orphan the vite preview that
+          // playwright spawned through webServer — the next template then
+          // fails instantly on "port 4173 already used" and the failure
+          // cascades through every later template. Reap the listener before
+          // every attempt so one kill cannot poison the whole suite.
+          freePreviewPort();
+          runTemplateCommand(process.execPath, [templateCli(targetDir, "playwright"), "test", ...browserSpecs.map((spec) => `tests/${spec}`), "--config", resolve(targetDir, "playwright.config.ts"), "--reporter=line", "--workers=1"], targetDir, { timeoutMs: 900_000 });
           break;
         } catch (error) {
           if (browserAttempts >= 2) throw error;
@@ -632,4 +640,25 @@ function installPackedTemplateDependencies(targetDir: string): readonly { name: 
 
 function run(command: string, args: readonly string[], cwd: string): void {
   runTemplateCommand(command,args,cwd);
+}
+
+// The generated playwright.config always binds the preview server to
+// 127.0.0.1:4173 (writeReleaseRenderSpec / scaffolded configs share the
+// convention), and templates run serially — so a listener on 4173 between
+// attempts can only be an orphan from a killed run.
+function freePreviewPort(): void {
+  try {
+    const pids = execFileSync("lsof", ["-ti", "tcp:4173"], { encoding: "utf8" })
+      .split(/\s+/)
+      .filter(Boolean);
+    for (const pid of pids) {
+      try {
+        process.kill(Number(pid), "SIGKILL");
+      } catch {
+        // already exited
+      }
+    }
+  } catch {
+    // no listener (or no lsof) — nothing to reap
+  }
 }
