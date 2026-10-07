@@ -11,10 +11,6 @@
 import type { OptionCoverageRow } from "../../contracts/compiler.js";
 
 export const PRD06_DIAGNOSTIC_ONLY_FIELDS: Readonly<Record<string, { readonly reason: string; readonly ownerPrd: number }>> = {
-  "animation.crossFade": { reason: "C-19: fade lives on the controller binding, not the node spec", ownerPrd: 6 },
-  "animation.transition": { reason: "C-19: crossfade/inertialize transitions are PoseMixer-era", ownerPrd: 6 },
-  "animation.warp": { reason: "C-19: clip time-warp is PoseMixer-era", ownerPrd: 6 },
-  "animation.syncGroup": { reason: "C-19: sync groups are PoseMixer-era", ownerPrd: 6 },
   "animation.diagnostics.mixerMs": { reason: "C-19/C-31: mixer timing not instrumented until Phase 1", ownerPrd: 6 },
   "animation.diagnostics.constraintsMs": { reason: "C-19/C-31: IK/constraint timing not instrumented until T3.x", ownerPrd: 6 },
   "animation.diagnostics.springsMs": { reason: "C-19/C-31: spring-bone timing not instrumented until T4.x", ownerPrd: 6 },
