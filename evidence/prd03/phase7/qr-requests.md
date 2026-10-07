@@ -1,0 +1,6 @@
+# PRD-03 Phase 7 — qr-requests (cross-lane asks)
+
+| id | to | ask | status |
+|----|----|-----|--------|
+| QR-03-1 (open since P0) | lane 15/custodian | `tests/unit/agent-api/` + `tests/unit/tools/` + `tests/unit/rendering/` aren't lane-03 slots — the naga unit spec sits at `tests/unit/contracts/impl/prd03-post-wgsl-compile.test.ts`. Same for `tests/qr/prd03/` (lane 15): the PRD names `tests/qr/prd03/wgsl-compile.spec.ts` but the browser spec lives at `tests/browser/qr-prd03-wgsl-compile.spec.ts` under the `qr-prd03-` slot. | open |
+| QR-03-21 | lane 11 | Q-11-2 input landed: `post/shaders/*.wgsl.ts` (34 modules + `POST_COMMON_WGSL`) — all naga-validated; each template is a drop-in `createShaderModule` source (consumer adds the fullscreen-triangle VS or adapts per backend vertex convention). `webgpu/WebGPUPostShaders.ts` is edited under §Phase 7's lane-03 assignment (linear-exposure + `POST_WGSL_LEGACY_REMOVED` deletions for the J2 FXAA/soft-knee). Note for the execution twin: uniforms are `var<uniform>` blocks (bool → `i32`), GL `#define` tier constants are `override` pipeline constants, `textureLod` → `textureSampleLevel`, and the fused pass resolves `fxaa_sample`/`FXAA_LUMA_ALPHA` per module. | filed |

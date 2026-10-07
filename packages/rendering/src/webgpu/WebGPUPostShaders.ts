@@ -1,3 +1,22 @@
+import { rendererQrFlags } from "../renderer/FrameGraph";
+
+/**
+ * PRD-03 Phase 7 — the §6.4 exposure semantic under `A3D_QR_POST` is a
+ * linear multiplier (same as three `toneMappingExposure`), not an EV —
+ * `webgpuColorGradeFragment` selects the expression per flag.
+ * `webgpuFxaaFragment` (the 2-tap approximation) and the uncapped
+ * `webgpuSoftKneeWeight` mirror are deleted under the flag: the real r185
+ * FXAA WGSL twin lives in `post/shaders/fxaa.wgsl.ts` and the §6.6-capped
+ * knee in `post/shaders/bloom.wgsl.ts` (execution twin is Q-11-2, lane 11).
+ */
+function webgpuPostFlagOn(): boolean {
+  return rendererQrFlags()?.on("A3D_QR_POST") === true;
+}
+
+function postWgslLegacyRemoved(name: string): never {
+  throw new Error(`POST_WGSL_LEGACY_REMOVED:${name}`);
+}
+
 /**
  * muse3jsparity-PRD J2 — native WebGPU post-process WGSL sources.
  *
@@ -207,7 +226,9 @@ export interface NormalizedWebGPUColorGrade {
 }
 
 export function normalizeWebGPUColorGradeOptions(options: WebGPUColorGradeOptions = {}): NormalizedWebGPUColorGrade {
-  const exposure = options.exposure ?? 0;
+  // PRD-03 Phase 7: flag-on exposure is a linear multiplier (identity 1.0);
+  // flag-off keeps the J2 stops semantic (identity 0).
+  const exposure = options.exposure ?? (webgpuPostFlagOn() ? 1 : 0);
   const contrast = options.contrast ?? 1;
   const saturation = options.saturation ?? 1;
   if (!Number.isFinite(exposure)) throw new RangeError("WebGPU color-grade exposure must be finite.");
@@ -222,6 +243,9 @@ export interface WebGPUFxaaOptions {
 
 /** CPU mirror of the WGSL soft-knee gate (unit oracle, never the shader output). */
 export function webgpuSoftKneeWeight(luma: number, threshold: number, knee: number): number {
+  // Deleted under the flag (PRD-03 Phase 7): the uncapped J2 soft-knee mirror
+  // is superseded by the §6.6 quadratic knee in post/shaders/bloom.wgsl.ts.
+  if (webgpuPostFlagOn()) postWgslLegacyRemoved("webgpuSoftKneeWeight");
   if (knee <= 0) return luma >= threshold ? 1 : 0;
   const lo = threshold - knee;
   const hi = threshold + knee;
@@ -232,6 +256,11 @@ export function webgpuSoftKneeWeight(luma: number, threshold: number, knee: numb
 }
 
 export function webgpuColorGradeFragment(): string {
+  // PRD-03 Phase 7: flag-on exposure is the same linear multiplier as three
+  // `toneMappingExposure`; flag-off keeps the J2 EV (`exp2`) semantic.
+  const exposureLine = webgpuPostFlagOn()
+    ? "color = color * u_grade.exposure;"
+    : "color = color * exp2(u_grade.exposure);";
   return `struct GradeUniforms {
   exposure: f32,
   contrast: f32,
@@ -250,7 +279,7 @@ fn fs_grade(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
   // saturation around luma, then contrast around middle gray.
   // NOTE: all three MUST be read from u_grade (not baked): an unreferenced
   // uniform is stripped, which invalidates bind-group entry 0.
-  color = color * exp2(u_grade.exposure);
+  ${exposureLine}
   let luma = dot(color, vec3<f32>(0.2126, 0.7152, 0.0722));
   color = mix(vec3<f32>(luma), color, u_grade.saturation);
   color = (color - vec3<f32>(0.5)) * u_grade.contrast + vec3<f32>(0.5);
@@ -260,6 +289,9 @@ fn fs_grade(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
 }
 
 export function webgpuFxaaFragment(): string {
+  // Deleted under the flag (PRD-03 Phase 7): the 2-tap J2 "FXAA" is
+  // superseded by the three r185 FXAA twin in post/shaders/fxaa.wgsl.ts.
+  if (webgpuPostFlagOn()) postWgslLegacyRemoved("webgpuFxaaFragment");
   return `struct FxaaUniforms {
   texel: vec2<f32>,
   _pad0: f32,

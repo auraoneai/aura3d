@@ -23,6 +23,7 @@ on:
       - "tests/unit/contracts/impl/prd03-*"
       - "tests/browser/post-*.spec.ts"
       - "tests/browser/qr-prd03-*.spec.ts"
+      - "tests/browser/qr-prd03-*harness.*"
       - "tools/quality-rebuild/codemods/**"
       - "packages/aura3d-cli/src/commands/prd03/**"
       - "evidence/prd03/**"
@@ -81,6 +82,8 @@ jobs:
             exit 0
           fi
           pnpm exec playwright test "${specs[@]}" --grep-invert @integrated
+      - name: Lane 03 WGSL compile gate (PRD-03 §8.18)
+        run: pnpm exec playwright test tests/browser/qr-prd03-wgsl-compile.spec.ts
       - name: Upload spec artifacts
         if: always()
         uses: actions/upload-artifact@v4
