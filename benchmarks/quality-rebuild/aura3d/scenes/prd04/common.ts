@@ -20,14 +20,12 @@ import {
   primitives,
   scene,
   resolveQrFlags,
-  setTypedGLBActorQrFlags,
-  setTypedGLBActorQrTransmissionMode,
-  registeredTypedGLBActors,
   type AuraApp,
   type AuraMaterialSpec,
   type AuraNodeInput,
   type AuraVec3
 } from "@aura3d/engine";
+import { setTypedGLBActorQrFlags, setTypedGLBActorQrTransmissionMode, registeredTypedGLBActors } from "@aura3d/engine/lanes";
 import { prd04TransmissionDiagnostics, resolveSamplerAnisotropy, setRendererQrFlags } from "@aura3d/rendering";
 import { decodePngDataUrl, lumaMap, rowProfileSpike, temporalLumaStddev } from "../../../scenes/prd04/metrics";
 import { expandPrd04FlagList } from "../../../scenes/prd04/flags";
