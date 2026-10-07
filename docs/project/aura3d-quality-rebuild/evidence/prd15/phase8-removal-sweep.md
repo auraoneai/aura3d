@@ -437,3 +437,23 @@ consumer + unit lanes surfaced three real breaks, all fixed on this branch:
     span). Expected bounds recalibrated to measured values on both packaged
     and root copies; ±0.1 tolerance kept — still a drift fingerprint, not a
     skip. All 3 templates verified `failures=0` locally post-fix.
+
+## Wave 7 — look-floor capture-path rewrite (Skills gate wave-2, 12 browser failures)
+
+CI surfaced 12 template browser failures under the new capture path. Root-cause
+analysis of the retained `sim-agent`-suite job log split them into five classes:
+
+| Class | Templates | Fix |
+|---|---|---|
+| Stale subject bounds | product-viewer, cinematic-scene, mini-game, episode-builder, character-controller, three-compat-premium-product-viewer, -architecture-interior, -material-authoring, -asset-inspector | Bounds recalibrated to measured values (same drift-fingerprint tolerance ±0.1) |
+| Async-mount starvation (NaN specular) | arena-shooter | hdri-null looks (`space`) report `background:"color"` by design — specular assert now conditional |
+| Compositor screenshot starvation | three-compat-large-scene, screenshots timing out | Replaced compositor `page.screenshot` floor reads with same-task `gl.readPixels` after `stepAsync()` — no preserveDrawingBuffer, deterministic mount-settled capture |
+| Bound-FBO readPixels (flat buckets) | animation-studio | `gl.bindFramebuffer(FRAMEBUFFER, null)` before readPixels; two-rAF fallback when `__AURA3D_LIVE_APPS__` is empty (bespoke renderers can't be stepped) |
+| Wall-clock input hold | character-controller route-health | `waitForTimeout(600)` → `waitForFunction` position-threshold hold (180s budget) |
+
+`b82d51b01` — 113 files: look-floor.ts rewritten and mirrored (20 packaged +
+16 root), 9 subject-bound recalibrations, spec timeouts 90s→240s /
+ready-poll 60s→150s repo-wide, release-render generator stepped-capture.
+Local verification: 11-template batch (`tpl-verify.log`) — all five classes
+re-verified green on packaged copies (large-scene browser PASSED, previously
+screenshot-timeout; arena-shooter `failures=0` earlier wave).
