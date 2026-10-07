@@ -9,7 +9,15 @@ export default defineConfig({
     // nothing: vitest treats positional arguments as filters against `include`, reported
     // "No test files found", and existing scripts silently ran fewer files than they named
     // (animation-runtime:unit:raw named three files and executed two).
-    include: ["tests/unit/**/*.test.ts", "tests/integration/**/*.test.ts", "tests/assets/**/*.test.ts"],
+    // `tests/qr/**` unit specs follow the same rule (PRD-06 T0.9a
+    // `tests/qr/prd06/unit/`); browser specs under `tests/qr/*/browser/` are
+    // playwright `.spec.ts` files and stay outside the glob.
+    include: [
+      "tests/unit/**/*.test.ts",
+      "tests/integration/**/*.test.ts",
+      "tests/assets/**/*.test.ts",
+      "tests/qr/**/*.test.ts"
+    ],
     setupFiles: [],
     // Workspace packages publish `exports` to ./dist, which does not exist in a
     // source checkout; externalizing them would bypass the resolve.alias entries
@@ -36,6 +44,7 @@ export default defineConfig({
       "@aura3d/rendering/contracts/flags.state": new URL("./packages/rendering/src/contracts/flags.state.ts", import.meta.url).pathname,
       "@aura3d/rendering/contracts": new URL("./packages/rendering/src/contracts/index.ts", import.meta.url).pathname,
       "@aura3d/rendering/lanes": new URL("./packages/rendering/src/lanes/index.ts", import.meta.url).pathname,
+      "@aura3d/rendering/world": new URL("./packages/rendering/src/world/index.ts", import.meta.url).pathname,
       "@aura3d/rendering": new URL("./packages/rendering/src/index.ts", import.meta.url).pathname,
       "@aura3d/controls": new URL("./packages/controls/src/index.ts", import.meta.url).pathname,
       "@aura3d/engine/rendering/production-runtime": new URL("./packages/rendering/src/production-runtime/index.ts", import.meta.url).pathname,

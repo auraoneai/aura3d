@@ -1,0 +1,107 @@
+{
+  "schema": "aura3d.agent-eval-prompts/1",
+  "description": "The 12 standard agent-eval prompts (PRD-13 §18.3). Texts are verbatim; rubricCategories name the C-32 GAME_VISUAL_CATEGORIES each prompt is judged on, plus the play-through categories controls/game_feel for game prompts (PRD-13 §18.3 note). referenceFrames name threejs.org examples until the C-30 v2 refs store lands (PRD-13 T2.6).",
+  "rubricVersion": "rubric-v1-qr0",
+  "prompts": [
+    {
+      "id": "P01",
+      "category": "product",
+      "text": "Build a product page hero for this sneaker (./sneaker.glb) that the visitor can orbit.",
+      "allowedAssets": ["benchmark/assets/sneaker.glb"],
+      "rubricCategories": ["lighting", "shadows", "ibl_reflections", "environment_world", "atmospheric_effects", "material_quality", "modeling_assets", "composition", "camera", "postprocessing", "animation_quality", "ui_hud"],
+      "referenceFrames": ["webgl_loader_gltf", "webgl_loader_gltf_sheen"]
+    },
+    {
+      "id": "P02",
+      "category": "product",
+      "text": "Show a vintage film camera on a slowly turning stand, lit like a premium product shot.",
+      "allowedAssets": [],
+      "rubricCategories": ["lighting", "shadows", "ibl_reflections", "environment_world", "atmospheric_effects", "material_quality", "modeling_assets", "composition", "camera", "postprocessing", "animation_quality", "ui_hud"],
+      "referenceFrames": ["webgl_loader_gltf", "webgl_lights_physical"]
+    },
+    {
+      "id": "P03",
+      "category": "product",
+      "text": "Make a car paint configurator with three paint colours and visible reflections.",
+      "allowedAssets": [],
+      "rubricCategories": ["lighting", "shadows", "ibl_reflections", "environment_world", "atmospheric_effects", "material_quality", "modeling_assets", "composition", "camera", "postprocessing", "animation_quality", "ui_hud"],
+      "referenceFrames": ["webgl_materials_car"]
+    },
+    {
+      "id": "P04",
+      "category": "character",
+      "text": "An animated knight idling and waving in a small stone courtyard.",
+      "allowedAssets": [],
+      "rubricCategories": ["lighting", "shadows", "ibl_reflections", "environment_world", "atmospheric_effects", "material_quality", "modeling_assets", "composition", "camera", "postprocessing", "animation_quality", "ui_hud"],
+      "referenceFrames": ["webgl_animation_skinning_blending"]
+    },
+    {
+      "id": "P05",
+      "category": "character",
+      "text": "A robot walking in a loop on a stage while the camera slowly orbits it.",
+      "allowedAssets": [],
+      "rubricCategories": ["lighting", "shadows", "ibl_reflections", "environment_world", "atmospheric_effects", "material_quality", "modeling_assets", "composition", "camera", "postprocessing", "animation_quality", "ui_hud"],
+      "referenceFrames": ["webgl_animation_skinning_blending", "webgl_animation_skinning_morph"]
+    },
+    {
+      "id": "P06",
+      "category": "environment",
+      "text": "A misty pine-forest clearing at golden hour.",
+      "allowedAssets": [],
+      "rubricCategories": ["lighting", "shadows", "ibl_reflections", "environment_world", "atmospheric_effects", "material_quality", "modeling_assets", "composition", "camera", "postprocessing", "animation_quality", "ui_hud"],
+      "referenceFrames": ["webgl_geometry_terrain_fog", "webgl_shaders_sky"]
+    },
+    {
+      "id": "P07",
+      "category": "environment",
+      "text": "A cosy cabin interior at night lit by a fireplace and two lamps.",
+      "allowedAssets": [],
+      "rubricCategories": ["lighting", "shadows", "ibl_reflections", "environment_world", "atmospheric_effects", "material_quality", "modeling_assets", "composition", "camera", "postprocessing", "animation_quality", "ui_hud"],
+      "referenceFrames": ["webgl_lights_pointlights", "webgl_shadowmap_pointlight"]
+    },
+    {
+      "id": "P08",
+      "category": "game",
+      "genre": "platformer",
+      "text": "A 3D platformer level: collect five coins and reach the flag.",
+      "allowedAssets": [],
+      "rubricCategories": ["environment_world", "modeling_assets", "texture_quality", "material_quality", "pbr_credibility", "lighting", "shadows", "ambient_lighting", "ibl_reflections", "tone_mapping", "color_management", "anti_aliasing", "postprocessing", "vfx", "particles", "animation_quality", "character_presentation", "camera", "composition", "scale_depth_perception", "atmospheric_effects", "gameplay_readability", "ui_hud", "typography", "polish_juice", "mobile_presentation", "overall_visual_quality", "controls", "game_feel"],
+      "referenceFrames": ["webgl_animation_skinning_blending"]
+    },
+    {
+      "id": "P09",
+      "category": "game",
+      "genre": "racing",
+      "text": "A one-lap time-trial racing game on a coastal track.",
+      "allowedAssets": [],
+      "rubricCategories": ["environment_world", "modeling_assets", "texture_quality", "material_quality", "pbr_credibility", "lighting", "shadows", "ambient_lighting", "ibl_reflections", "tone_mapping", "color_management", "anti_aliasing", "postprocessing", "vfx", "particles", "animation_quality", "character_presentation", "camera", "composition", "scale_depth_perception", "atmospheric_effects", "gameplay_readability", "ui_hud", "typography", "polish_juice", "mobile_presentation", "overall_visual_quality", "controls", "game_feel"],
+      "referenceFrames": ["webgl_materials_car", "webgl_shaders_ocean"]
+    },
+    {
+      "id": "P10",
+      "category": "game",
+      "genre": "fighting",
+      "text": "A one-versus-one arena fighting game with two characters.",
+      "allowedAssets": [],
+      "rubricCategories": ["environment_world", "modeling_assets", "texture_quality", "material_quality", "pbr_credibility", "lighting", "shadows", "ambient_lighting", "ibl_reflections", "tone_mapping", "color_management", "anti_aliasing", "postprocessing", "vfx", "particles", "animation_quality", "character_presentation", "camera", "composition", "scale_depth_perception", "atmospheric_effects", "gameplay_readability", "ui_hud", "typography", "polish_juice", "mobile_presentation", "overall_visual_quality", "controls", "game_feel"],
+      "referenceFrames": ["webgl_animation_skinning_blending"]
+    },
+    {
+      "id": "P11",
+      "category": "game",
+      "genre": "arcade",
+      "text": "A top-down arena shooter in space with waves of drones.",
+      "allowedAssets": [],
+      "rubricCategories": ["environment_world", "modeling_assets", "texture_quality", "material_quality", "pbr_credibility", "lighting", "shadows", "ambient_lighting", "ibl_reflections", "tone_mapping", "color_management", "anti_aliasing", "postprocessing", "vfx", "particles", "animation_quality", "character_presentation", "camera", "composition", "scale_depth_perception", "atmospheric_effects", "gameplay_readability", "ui_hud", "typography", "polish_juice", "mobile_presentation", "overall_visual_quality", "controls", "game_feel"],
+      "referenceFrames": ["webgl_materials_envmaps_exr", "webgl_lensflares"]
+    },
+    {
+      "id": "P12",
+      "category": "cinematic",
+      "text": "A rainy neon street at night with a slow dolly toward a parked motorbike.",
+      "allowedAssets": [],
+      "rubricCategories": ["lighting", "shadows", "ibl_reflections", "environment_world", "atmospheric_effects", "material_quality", "modeling_assets", "composition", "camera", "postprocessing", "animation_quality", "ui_hud"],
+      "referenceFrames": ["webgl_postprocessing_unreal_bloom", "webgl_loader_gltf"]
+    }
+  ]
+}

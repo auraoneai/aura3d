@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": [
+    "index.ts",
+    "specs.ts",
+    "masks.ts",
+    "controls.ts",
+    "lane-main.ts",
+    "vite.lane.config.ts",
+    "../../aura3d/scenes/prd02/**/*.ts",
+    "../../three/scenes/prd02/**/*.ts",
+    "../../../tests/qr/prd02/metrics/**/*.ts"
+  ]
+}

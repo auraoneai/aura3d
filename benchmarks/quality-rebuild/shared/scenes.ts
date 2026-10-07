@@ -7,6 +7,7 @@
  * without it and records the gap in its capability log.
  */
 import { cityBuildings, instancingGrid } from "./procedural";
+import type { BrokenControlId, MaskId, RegionId } from "./contracts";
 import {
   RESOLUTION,
   type LightSpec,
@@ -61,9 +62,54 @@ function sun(intensity: number, position: Vec3, castShadow: boolean, color = "#f
   return { kind: "directional", name: "sun", color, intensity, position, target: [0, 0, 0], castShadow };
 }
 
-function base(id: string, index: number, title: string, purpose: string): Pick<SceneSpec, "id" | "index" | "title" | "purpose" | "resolution" | "toneMapping" | "exposure" | "time" | "settleFrames"> {
-  return { id, index, title, purpose, resolution: RESOLUTION, toneMapping: "aces-filmic", exposure: 1, time: CAPTURE_TIME, settleFrames: SETTLE_FRAMES };
+function base(id: string, index: number, title: string, purpose: string): Pick<SceneSpec, "id" | "index" | "title" | "purpose" | "resolution" | "toneMapping" | "exposure" | "time" | "settleFrames" | "owner" | "referenceProfile"> {
+  return { id, index, title, purpose, resolution: RESOLUTION, toneMapping: "aces-filmic", exposure: 1, time: CAPTURE_TIME, settleFrames: SETTLE_FRAMES, owner: "prd12", referenceProfile: "contract" };
 }
+
+// --- C-30 registry fields (T1.1) ---------------------------------------------
+// masks + brokenControls are derived from spec content so they can never drift:
+// shadow-receiver only where shadow-casting exists, sky only on HDRI backgrounds,
+// metal where a spec material is metallic or the object is a glTF model (metalness
+// may live in the map); broken controls only features the scene uses.
+function deriveMasks(spec: SceneSpec): readonly MaskId[] {
+  const masks = new Set<MaskId>(["object-id", "silhouette-edge"]);
+  if (spec.shadows || spec.csm || spec.lights.some((light) => "castShadow" in light && light.castShadow)) masks.add("shadow-receiver");
+  if (spec.background.kind === "hdri") masks.add("sky");
+  const specMetal = spec.objects.some((object) => "material" in object && object.material.metalness > 0);
+  const hasModel = spec.objects.some((object) => object.kind === "model");
+  if (specMetal || hasModel) masks.add("metal");
+  return [...masks];
+}
+
+function deriveBrokenControls(spec: SceneSpec): readonly BrokenControlId[] {
+  const controls: BrokenControlId[] = ["no-aa", "no-tonemap", "dpr-half", "albedo-only"];
+  if (spec.lights.some((light) => (light.kind === "directional" || light.kind === "spot") && light.castShadow)) controls.push("no-shadows");
+  if (spec.environment) controls.push("no-ibl");
+  if (spec.background.kind === "hdri") controls.push("flat-sky");
+  return controls;
+}
+
+/** One line: the single visual behaviour the scene exists to test (judged first). */
+const CRITERIA: Record<string, { readonly primaryCriterion: string; readonly primaryRegion: RegionId }> = {
+  "01-simple-geometry": { primaryCriterion: "Primitive shapes sit on the ground plane with a coherent directional shadow and no missing geometry", primaryRegion: "subject" },
+  "02-pbr-product": { primaryCriterion: "Textured metal/rough antique camera reads as a studio product shot on the plinth", primaryRegion: "subject" },
+  "03-damaged-helmet": { primaryCriterion: "Normal/ORM/emissive layers of DamagedHelmet read under IBL alone", primaryRegion: "subject" },
+  "04-clearcoat": { primaryCriterion: "KHR_materials_clearcoat adds a second glossy lobe over the base coat", primaryRegion: "subject" },
+  "05-transmission": { primaryCriterion: "KHR_materials_transmission sphere shows the checker refracted through it", primaryRegion: "object:0" },
+  "06-metal-roughness-sweep": { primaryCriterion: "Roughness sweeps metal and dielectric monotonically from mirror to diffuse", primaryRegion: "subject" },
+  "07-sheen-fabric": { primaryCriterion: "KHR_materials_sheen adds the grazing-angle fabric highlight across the grid", primaryRegion: "subject" },
+  "08-skinned-character": { primaryCriterion: "Skinned humanoid renders in bind pose with a coherent cast shadow", primaryRegion: "subject" },
+  "09-outdoor-environment": { primaryCriterion: "Outdoor HDRI background plus IBL ground a varied scene with sun shadows and fog", primaryRegion: "frame" },
+  "10-indoor-environment": { primaryCriterion: "Multiple point and spot lights produce readable interior illumination and one spot shadow", primaryRegion: "frame" },
+  "11-multiple-lights": { primaryCriterion: "Ten colored point lights tint glossy subjects distinctly around the ring", primaryRegion: "subject" },
+  "12-shadows": { primaryCriterion: "Directional and spot shadows attach to their casters with believable penumbra", primaryRegion: "shadow-receiver" },
+  "13-ibl-only": { primaryCriterion: "IBL alone differentiates chrome, gold and plastic through reflections", primaryRegion: "sky" },
+  "14-particles": { primaryCriterion: "Additive fountain particles are present, lit and distributed in the volume", primaryRegion: "subject" },
+  "15-animation-skinning": { primaryCriterion: "Walk clips sample correctly at t=1.25s with skinned shadows under the feet", primaryRegion: "subject" },
+  "16-instancing": { primaryCriterion: "10,000 instanced boxes render once with per-instance color", primaryRegion: "subject" },
+  "17-large-environment": { primaryCriterion: "576 building meshes under CSM sun shadows read as a coherent city with fog depth", primaryRegion: "frame" },
+  "18-game-scene": { primaryCriterion: "Gameplay-distance framing keeps character, props and pickups readable under bloom and fog", primaryRegion: "frame" }
+};
 
 // --- 06: roughness sweep -----------------------------------------------------
 const sweepObjects: ObjectSpec[] = [];
@@ -100,7 +146,7 @@ const trees: ObjectSpec[] = treeSpots.flatMap(([x, , z], index) => [
   primitive(`tree canopy ${index}`, "sphere", [2.2, 2.4, 2.2], [x, 3.1, z], { color: "#3f6b2e", roughness: 0.85, metalness: 0 })
 ]);
 
-export const sceneSpecs = {
+const baseSpecs = {
   "01-simple-geometry": {
     ...base("01-simple-geometry", 1, "Simple geometry", "Primitives, one directional + ambient, shadow"),
     camera: { position: [0, 2.4, 6], target: [0, 0.5, 0], fov: 45, near: 0.1, far: 100 },
@@ -361,12 +407,25 @@ export const sceneSpecs = {
   }
 } as const satisfies Record<string, SceneSpec>;
 
-export type SceneId = keyof typeof sceneSpecs;
+// Inject derived C-30 fields; a spec that gains a feature automatically gains
+// its mask/broken-control so the registry stays honest without hand edits.
+export const sceneSpecs: Record<string, SceneSpec> = Object.fromEntries(
+  Object.entries(baseSpecs).map(([id, spec]) => [id, {
+    ...spec,
+    masks: deriveMasks(spec),
+    brokenControls: deriveBrokenControls(spec),
+    ...CRITERIA[id]
+  }])
+);
+
+export type SceneId = keyof typeof baseSpecs;
 
 export const sceneIds = Object.keys(sceneSpecs) as SceneId[];
 
-export function getSceneSpec(id: string): SceneSpec {
+export function getSceneSpec(id: string): SceneSpec;
+export function getSceneSpec(id: string, optional: true): SceneSpec | undefined;
+export function getSceneSpec(id: string, optional?: boolean): SceneSpec | undefined {
   const spec = (sceneSpecs as Record<string, SceneSpec>)[id];
-  if (!spec) throw new Error(`Unknown quality-rebuild scene "${id}". Known: ${sceneIds.join(", ")}`);
+  if (!spec && !optional) throw new Error(`Unknown quality-rebuild scene "${id}". Known: ${sceneIds.join(", ")}`);
   return spec;
 }

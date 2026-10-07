@@ -846,8 +846,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/auroraExtractionBayBackdrop.thumb.svg",
-      "quality": "release",
-      "role": "set-dressing",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Decorative non-primary extraction-bay background set dressing behind the live typed Aurora lander and certified landing state; it never supplies gameplay geometry.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/auroraExtractionBayBackdrop.png",
@@ -1007,8 +1007,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/auroraExtractionLanderHero.thumb.svg",
-      "quality": "release",
-      "role": "vehicle",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Project-original front-readable arctic extraction lander vehicle presentation with declared +Z forward orientation, driven by the live Aurora lander transform in the exact review lens; static visual card only, with no dynamics claim.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/auroraExtractionLanderHero.png",
@@ -1364,7 +1364,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/auroraLanderProbe.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "vehicle",
       "suitabilityReason": "Original typed precision-flight vehicle with a declared +Z forward orientation, grounded landing-leg footprint, and readable hull/nozzle/gear silhouette. Its intentionally untextured stylized flat-color solid materials are verified by the hash-bound root probe and mounted side/three-quarter route evidence.",
       "renderedProbe": {
@@ -1539,7 +1539,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/auroraPadBeacon.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original grounded polar pad beacon with readable base, pylon, and lamp silhouette; paired beacons visibly identify landing zones in current desktop and mobile artifacts.",
       "renderedProbe": {
@@ -2290,7 +2290,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/bankShotBall00.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 unit-normalized readable cue-ball prop with stylized flat-color ivory material, scaled to a regulation 0.07 metre diameter and synchronized to its public Rapier sphere body.",
       "renderedProbe": {
@@ -2460,7 +2460,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/bankShotBall01.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 unit-normalized readable billiards-ball prop 1 with stylized flat-color solid/stripe identity and high-contrast top number mark, scaled to a regulation 0.07 metre route diameter and synchronized to public Rapier.",
       "renderedProbe": {
@@ -2630,7 +2630,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/bankShotBall02.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 unit-normalized readable billiards-ball prop 2 with stylized flat-color solid/stripe identity and high-contrast top number mark, scaled to a regulation 0.07 metre route diameter and synchronized to public Rapier.",
       "renderedProbe": {
@@ -2800,7 +2800,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/bankShotBall03.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 unit-normalized readable billiards-ball prop 3 with stylized flat-color solid/stripe identity and high-contrast top number mark, scaled to a regulation 0.07 metre route diameter and synchronized to public Rapier.",
       "renderedProbe": {
@@ -2970,7 +2970,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/bankShotBall04.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 unit-normalized readable billiards-ball prop 4 with stylized flat-color solid/stripe identity and high-contrast top number mark, scaled to a regulation 0.07 metre route diameter and synchronized to public Rapier.",
       "renderedProbe": {
@@ -3140,7 +3140,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/bankShotBall05.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 unit-normalized readable billiards-ball prop 5 with stylized flat-color solid/stripe identity and high-contrast top number mark, scaled to a regulation 0.07 metre route diameter and synchronized to public Rapier.",
       "renderedProbe": {
@@ -3310,7 +3310,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/bankShotBall06.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 unit-normalized readable billiards-ball prop 6 with stylized flat-color solid/stripe identity and high-contrast top number mark, scaled to a regulation 0.07 metre route diameter and synchronized to public Rapier.",
       "renderedProbe": {
@@ -3480,7 +3480,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/bankShotBall07.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 unit-normalized readable billiards-ball prop 7 with stylized flat-color solid/stripe identity and high-contrast top number mark, scaled to a regulation 0.07 metre route diameter and synchronized to public Rapier.",
       "renderedProbe": {
@@ -3650,7 +3650,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/bankShotBall08.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 unit-normalized readable billiards-ball prop 8 with stylized flat-color solid/stripe identity and high-contrast top number mark, scaled to a regulation 0.07 metre route diameter and synchronized to public Rapier.",
       "renderedProbe": {
@@ -3830,7 +3830,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/bankShotBall09.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 unit-normalized readable billiards-ball prop 9 with stylized flat-color solid/stripe identity and high-contrast top number mark, scaled to a regulation 0.07 metre route diameter and synchronized to public Rapier.",
       "renderedProbe": {
@@ -4010,7 +4010,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/bankShotBall10.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 unit-normalized readable billiards-ball prop 10 with stylized flat-color solid/stripe identity and high-contrast top number mark, scaled to a regulation 0.07 metre route diameter and synchronized to public Rapier.",
       "renderedProbe": {
@@ -4190,7 +4190,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/bankShotBall11.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 unit-normalized readable billiards-ball prop 11 with stylized flat-color solid/stripe identity and high-contrast top number mark, scaled to a regulation 0.07 metre route diameter and synchronized to public Rapier.",
       "renderedProbe": {
@@ -4370,7 +4370,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/bankShotBall12.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 unit-normalized readable billiards-ball prop 12 with stylized flat-color solid/stripe identity and high-contrast top number mark, scaled to a regulation 0.07 metre route diameter and synchronized to public Rapier.",
       "renderedProbe": {
@@ -4550,7 +4550,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/bankShotBall13.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 unit-normalized readable billiards-ball prop 13 with stylized flat-color solid/stripe identity and high-contrast top number mark, scaled to a regulation 0.07 metre route diameter and synchronized to public Rapier.",
       "renderedProbe": {
@@ -4730,7 +4730,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/bankShotBall14.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 unit-normalized readable billiards-ball prop 14 with stylized flat-color solid/stripe identity and high-contrast top number mark, scaled to a regulation 0.07 metre route diameter and synchronized to public Rapier.",
       "renderedProbe": {
@@ -4910,7 +4910,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/bankShotBall15.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 unit-normalized readable billiards-ball prop 15 with stylized flat-color solid/stripe identity and high-contrast top number mark, scaled to a regulation 0.07 metre route diameter and synchronized to public Rapier.",
       "renderedProbe": {
@@ -5262,7 +5262,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/bankShotCue.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 metre-scale readable gameplay prop with stylized flat-color materials, a tapered shaft, tip at local origin, and +X strike orientation; posed from live aim and charge state.",
       "renderedProbe": {
@@ -6179,7 +6179,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/bankShotTable.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 metre-scale readable gameplay prop with tournament-blue felt, cushioned walnut rails, six pocket mouths with authored collars, and grounded legs for the fixed public Rapier play envelope.",
       "renderedProbe": {
@@ -7309,8 +7309,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/blockfallReactorArenaBackdrop.thumb.svg",
-      "quality": "release",
-      "role": "set-dressing",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Decorative non-primary Blockfall Reactor championship arena background set dressing behind the live renderer-owned board; the card supplies no gameplay geometry, collision, scoring, or state.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/blockfallReactorArenaBackdrop.png",
@@ -7551,8 +7551,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/blockfallReactorMechanicHero.thumb.svg",
-      "quality": "release",
-      "role": "set-dressing",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Project-original front-readable reactor mechanic used as decorative, non-primary character set dressing during a real quad event; gameplay remains entirely renderer-owned.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/blockfallReactorMechanicHero.png",
@@ -7712,8 +7712,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/blockfallReactorPlasmaRival.thumb.svg",
-      "quality": "release",
-      "role": "set-dressing",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Project-original front-readable plasma rival used as decorative, non-primary character set dressing during a real quad event; gameplay remains entirely renderer-owned.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/blockfallReactorPlasmaRival.png",
@@ -8444,7 +8444,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/courierParcel.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Release-validated typed textured parcel prop with readable materials, retained root-safe rendered probe, durable CC-BY provenance, and visible route attachment state; supporting cargo, not a primary subject.",
       "renderedProbe": {
@@ -9169,7 +9169,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/courierTrafficHatch.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "vehicle",
       "suitabilityReason": "Release-validated typed textured traffic vehicle with normalized camera-fit scale, readable car footprint, hash-bound +Z forward orientation, retained root-safe rendered probe, and durable CC-BY provenance; authored lane-loop behavior only.",
       "renderedProbe": {
@@ -9642,7 +9642,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/courierTrafficSedan.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "vehicle",
       "suitabilityReason": "Release-validated typed textured traffic vehicle with normalized camera-fit scale, readable car footprint, hash-bound +Z forward orientation, retained root-safe rendered probe, and durable CC-BY provenance; authored lane-loop behavior only.",
       "renderedProbe": {
@@ -9981,7 +9981,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/courierVan.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "vehicle",
       "suitabilityReason": "Release-validated typed textured primary delivery vehicle with normalized camera-fit scale, readable van footprint, hash-bound +Z forward orientation, retained root-safe rendered probe, current bounds, and durable CC-BY provenance; arcade handling only.",
       "renderedProbe": {
@@ -10482,7 +10482,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/courierZoneAwning.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Typed textured awning used as a readable pickup and drop landmark alongside real route-local sensor state.",
       "renderedProbe": {
@@ -10708,7 +10708,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/courierZoneBollard.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Typed textured bollard used as zone and curb set dressing; it is not the sensor or primary subject.",
       "renderedProbe": {
@@ -11163,8 +11163,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/deepRecoveryBuoyBeacon.thumb.svg",
-      "quality": "release",
-      "role": "prop",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Original CC0 stylized flat-color readable surface recovery buoy prop with pontoons, mast, docking structure, and beacon; route-local bank, repair, oxygen, and surface zones are separately tested.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/deepRecoveryBuoyBeacon.png",
@@ -11436,8 +11436,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/deepRecoveryCrateHeavy.thumb.svg",
-      "quality": "release",
-      "role": "prop",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Original CC0 stylized flat-color readable amber reinforced salvage prop, visually distinct from the standard family; route-local heavy mass begins at 280 kg.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/deepRecoveryCrateHeavy.png",
@@ -11618,8 +11618,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/deepRecoveryCrateStandard.thumb.svg",
-      "quality": "release",
-      "role": "prop",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Original CC0 blue standard salvage pod with readable latch and trim; route-local mass is 120 kg.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/deepRecoveryCrateStandard.png",
@@ -12366,8 +12366,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/deepRecoverySub.thumb.svg",
-      "quality": "release",
-      "role": "vehicle",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Original CC0 stylized flat-color primary vehicle at an inspected 3.14 metre length, +Y up and +Z forward, with a readable hull, cockpit, lamps, thrusters, fins, and grapple hardware; route-local authored motion owns gameplay.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/deepRecoverySub.png",
@@ -12649,8 +12649,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/deepRecoveryWreckHull.thumb.svg",
-      "quality": "release",
-      "role": "prop",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Original CC0 stylized flat-color readable metre-scale wreck prop with a 6.4 metre extent, hull ribs, and machinery used as the mission structure; matching authored collision and sonar-occlusion volumes are route-local.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/deepRecoveryWreckHull.png",
@@ -13637,7 +13637,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/galleryShiftCutawayMuseumWorld.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "environment",
       "suitabilityReason": "Original CC0 stylized-material roofless museum world: fourteen authored untextured PBR material groups deliberately use limestone, graphite, terrazzo, marble, smoked oak, garnet carpet, blue slate, brass, walnut, travertine, bronze, jade emissive, and cobalt artwork color/roughness/metallic contrast as an explicit stylized-material rationale; texture-free materials are intentional. FloorLayout remains collision, LOS, patrol, network, objective, and gameplay authority.",
       "renderedProbe": {
@@ -13810,7 +13810,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/galleryShiftDisplayCase.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 readable glass-and-steel prop used as visible Skyline Wing cover and paired with a matching LOS occluder.",
       "renderedProbe": {
@@ -13972,7 +13972,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/galleryShiftExhibitA.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 readable gold-ring lunar-orb prop used as the first theft objective at a verified 0.44 metre extent.",
       "renderedProbe": {
@@ -14134,7 +14134,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/galleryShiftExhibitB.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 readable stacked-statue prop used as the second theft objective at a verified 0.48 metre height.",
       "renderedProbe": {
@@ -14296,7 +14296,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/galleryShiftExhibitC.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 readable capsule prop used as the third theft objective and alarm trigger at a verified 0.31 metre height.",
       "renderedProbe": {
@@ -15053,7 +15053,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/galleryShiftMuseumInterior.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "environment",
       "suitabilityReason": "Original CC0 metre-scale stylized flat-color museum environment establishing differentiated foyer, rotunda, archive, treasury, and service-vault rooms with readable portal circulation, exhibit coves, and illumination anchors. Its intentional untextured procedural materials are a stylized-material rationale; FloorLayout remains collision and LOS authority.",
       "renderedProbe": {
@@ -15215,7 +15215,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/galleryShiftPedestal.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 metre-scale readable prop used as a visible exhibit objective fixture and LOS occluder.",
       "renderedProbe": {
@@ -16854,7 +16854,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/gravityPostCourierSkiff.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "vehicle",
       "suitabilityReason": "Original CC0 +Y-up, +Z-forward primary courier skiff with a compact working-vehicle silhouette, layered beveled armor, swept hover wings, grounded four-point contact language, readable cockpit-to-drive direction, and a large visually integrated detachable amber parcel carrying guards, an illuminated latch, a dorsal dispatch fin, and a raised envelope badge. Its readable color-separated PBR groups use embedded deterministic micro-panel paint textures plus emissive running lights, and are verified by the current hash-bound root probe and exact mounted route evidence. The GLB carries no collider, dynamics, or imported animation claim; immutable route-local pod state, Rust-to-Gale coordinates, Rapier sensors, scoring, and authored velocity-aligned yaw remain authoritative.",
       "renderedProbe": {
@@ -17165,7 +17165,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/gravityPostDockBeacon.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Typed textured dock landmark with readable body and solar-panel silhouette, current manifest bounds, durable CC-BY provenance, and route-authored static presentation; no physical satellite behavior claim.",
       "renderedProbe": {
@@ -19030,7 +19030,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/gravityPostFreightDistrict.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "world",
       "suitabilityReason": "Original CC0 +Y-up, +X-forward non-colliding freight world authored at a gameplay-scale footprint and fitted to the real Rust Exchange to Gale Terminal vector. Its nine readable color-separated PBR groups combine embedded deterministic micro-panel paint textures with bevelled geometry: connected chamfered deck, service rails, dispatch building, gabled loading hangar, articulated crane, stacked cargo modules, tank farm, outer loading towers, elevated dispatch bridges, backline skyline, and asymmetric terminal/dock destination. Route-local pod motion, wells, dock sensors, collision, scoring, and camera remain authoritative.",
       "renderedProbe": {
@@ -19624,7 +19624,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/gravityPostMailPod.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "vehicle",
       "suitabilityReason": "Typed textured primary courier vehicle with a readable ship nose-to-engine silhouette, eight retained textures, current manifest bounds, durable CC-BY provenance, and probe-bound +Z forward orientation used by route-authored velocity-aligned yaw; no physical spacecraft claim.",
       "renderedProbe": {
@@ -28537,8 +28537,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/mechArmsA.thumb.svg",
-      "quality": "release",
-      "role": "prop",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Original CC0 faceted MH-2M primary modular arm module: paired shoulder, elbow, wrist, hand, and grip plates authored at metre scale around the shared chest socket; continuous +X/−X joints and separated armor/trim/emissive materials make shoulder-to-hand contact readable. Rigid route-local attachment only.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechArmsA.png",
@@ -28707,8 +28707,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/mechArmsB.thumb.svg",
-      "quality": "release",
-      "role": "prop",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Original CC0 faceted MH-2M primary modular arm module: paired shoulder, elbow, wrist, hand, and grip plates authored at metre scale around the shared chest socket; continuous +X/−X joints and separated armor/trim/emissive materials make shoulder-to-hand contact readable. Rigid route-local attachment only.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechArmsB.png",
@@ -28877,8 +28877,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/mechArmsC.thumb.svg",
-      "quality": "release",
-      "role": "prop",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Original CC0 faceted MH-2M primary modular arm module: paired shoulder, elbow, wrist, hand, and grip plates authored at metre scale around the shared chest socket; continuous +X/−X joints and separated armor/trim/emissive materials make shoulder-to-hand contact readable. Rigid route-local attachment only.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechArmsC.png",
@@ -29047,8 +29047,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/mechArmsD.thumb.svg",
-      "quality": "release",
-      "role": "prop",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Original CC0 faceted MH-2M primary modular arm module: paired shoulder, elbow, wrist, hand, and grip plates authored at metre scale around the shared chest socket; continuous +X/−X joints and separated armor/trim/emissive materials make shoulder-to-hand contact readable. Rigid route-local attachment only.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechArmsD.png",
@@ -29227,8 +29227,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/mechChassisA.thumb.svg",
-      "quality": "release",
-      "role": "character",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Original CC0 faceted MH-2M primary readable character chassis authored at metre scale for the shared root socket envelope; chamfered shoulder pods, collar joint, chest reactor, lower skirt, and separated armor/trim/emissive materials form the continuous torso interface. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. This is a rigid static character module whose behavior is limited to route-local node mounting and combat transforms.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechChassisA.png",
@@ -29407,8 +29407,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/mechChassisB.thumb.svg",
-      "quality": "release",
-      "role": "character",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Original CC0 faceted MH-2M primary readable character chassis authored at metre scale for the shared root socket envelope; chamfered shoulder pods, collar joint, chest reactor, lower skirt, and separated armor/trim/emissive materials form the continuous torso interface. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. This is a rigid static character module whose behavior is limited to route-local node mounting and combat transforms.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechChassisB.png",
@@ -29587,8 +29587,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/mechChassisC.thumb.svg",
-      "quality": "release",
-      "role": "character",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Original CC0 faceted MH-2M primary readable character chassis authored at metre scale for the shared root socket envelope; chamfered shoulder pods, collar joint, chest reactor, lower skirt, and separated armor/trim/emissive materials form the continuous torso interface. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. This is a rigid static character module whose behavior is limited to route-local node mounting and combat transforms.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechChassisC.png",
@@ -29767,8 +29767,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/mechChassisD.thumb.svg",
-      "quality": "release",
-      "role": "character",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Original CC0 faceted MH-2M primary readable character chassis authored at metre scale for the shared root socket envelope; chamfered shoulder pods, collar joint, chest reactor, lower skirt, and separated armor/trim/emissive materials form the continuous torso interface. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. This is a rigid static character module whose behavior is limited to route-local node mounting and combat transforms.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechChassisD.png",
@@ -30417,8 +30417,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/mechLegsA.thumb.svg",
-      "quality": "release",
-      "role": "prop",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Original CC0 faceted MH-2M primary readable prop leg module: paired hip, knee, piston, ankle, and planted foot assemblies authored at metre scale around the shared hips socket; the shortened depth envelope keeps both feet grounded beneath the chassis with separated armor/trim/emissive materials. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. Rigid route-local attachment only.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechLegsA.png",
@@ -30587,8 +30587,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/mechLegsB.thumb.svg",
-      "quality": "release",
-      "role": "prop",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Original CC0 faceted MH-2M primary readable prop leg module: paired hip, knee, piston, ankle, and planted foot assemblies authored at metre scale around the shared hips socket; the shortened depth envelope keeps both feet grounded beneath the chassis with separated armor/trim/emissive materials. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. Rigid route-local attachment only.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechLegsB.png",
@@ -30757,8 +30757,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/mechLegsC.thumb.svg",
-      "quality": "release",
-      "role": "prop",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Original CC0 faceted MH-2M primary readable prop leg module: paired hip, knee, piston, ankle, and planted foot assemblies authored at metre scale around the shared hips socket; the shortened depth envelope keeps both feet grounded beneath the chassis with separated armor/trim/emissive materials. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. Rigid route-local attachment only.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechLegsC.png",
@@ -30927,8 +30927,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/mechLegsD.thumb.svg",
-      "quality": "release",
-      "role": "prop",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Original CC0 faceted MH-2M primary readable prop leg module: paired hip, knee, piston, ankle, and planted foot assemblies authored at metre scale around the shared hips socket; the shortened depth envelope keeps both feet grounded beneath the chassis with separated armor/trim/emissive materials. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. Rigid route-local attachment only.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechLegsD.png",
@@ -31527,8 +31527,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/mechWeaponA.thumb.svg",
-      "quality": "release",
-      "role": "weapon",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Original CC0 faceted MH-2M readable held weapon authored at metre scale around the shared right-hand socket with declared +Z working orientation; grip, body, barrel/muzzle, mechanism, and emissive energy materials establish a continuous hand-to-muzzle contact line. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. Combat behavior remains route-local.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechWeaponA.png",
@@ -31697,8 +31697,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/mechWeaponB.thumb.svg",
-      "quality": "release",
-      "role": "weapon",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Original CC0 faceted MH-2M readable held weapon authored at metre scale around the shared right-hand socket with declared +Z working orientation; grip, body, barrel/muzzle, mechanism, and emissive energy materials establish a continuous hand-to-muzzle contact line. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. Combat behavior remains route-local.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechWeaponB.png",
@@ -31867,8 +31867,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/mechWeaponC.thumb.svg",
-      "quality": "release",
-      "role": "weapon",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Original CC0 faceted MH-2M readable held weapon authored at metre scale around the shared right-hand socket with declared +Z working orientation; grip, body, barrel/muzzle, mechanism, and emissive energy materials establish a continuous hand-to-muzzle contact line. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. Combat behavior remains route-local.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechWeaponC.png",
@@ -32037,8 +32037,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/mechWeaponD.thumb.svg",
-      "quality": "release",
-      "role": "weapon",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Original CC0 faceted MH-2M readable held weapon authored at metre scale around the shared right-hand socket with declared +Z working orientation; grip, body, barrel/muzzle, mechanism, and emissive energy materials establish a continuous hand-to-muzzle contact line. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. Combat behavior remains route-local.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechWeaponD.png",
@@ -32484,7 +32484,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/neonBarricadeProp.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Typed textured street barricade prop with route-normalized placement through targetMaxDimension 2.7; its current hash-bound rendered foreground proves a readable orange-white obstacle around the abstract swarm.",
       "renderedProbe": {
@@ -32898,7 +32898,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/neonCourierAvatar.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "character",
       "suitabilityReason": "Static untextured stylized flat-color primary courier character with upright readable player-avatar height, current hash-bound material pixels, and a manifest-override +Z neutral orientation before route-authored yaw.",
       "renderedProbe": {
@@ -33059,8 +33059,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/neonCrownMothElite.thumb.svg",
-      "quality": "release",
-      "role": "character",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Project-original pale armored crown moth enemy character presentation with declared +Z forward attack orientation, bound one-for-one to live elite enemy slots in the exact review lens.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/neonCrownMothElite.png",
@@ -33900,8 +33900,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/neonRainCourierHero.thumb.svg",
-      "quality": "release",
-      "role": "character",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Project-original direct-overhead rain courier character presentation with declared +Z forward firing orientation, driven by the live player transform in the exact review lens.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/neonRainCourierHero.png",
@@ -34058,8 +34058,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/neonRainGardenArenaBackdrop.thumb.svg",
-      "quality": "release",
-      "role": "set-dressing",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Project-original rain-garden arena background set dressing with release-readable shallow volume for the exact review lens; it never represents live enemies, combat, or progression.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/neonRainGardenArenaBackdrop.png",
@@ -34444,7 +34444,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/neonStreetLampProp.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Typed textured street-lamp prop with route-normalized camera-fit placement through targetMaxDimension 4.2; its current hash-bound rendered foreground proves a readable post and luminaire arena landmark.",
       "renderedProbe": {
@@ -35215,7 +35215,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/patrolWingDroneA.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "vehicle",
       "suitabilityReason": "Original CC0 stylized flat-color heavy pursuit-drone vehicle with a readable swept-wing silhouette and verified +X-forward and +Y-up orientation; seeded pursuit and combat-world hit truth are separately route-tested.",
       "renderedProbe": {
@@ -35407,7 +35407,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/patrolWingDroneB.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "vehicle",
       "suitabilityReason": "Original CC0 stylized flat-color fast pursuit-drone vehicle with a readable alternate swept-wing silhouette and verified +X-forward and +Y-up orientation; seeded pursuit and combat-world hit truth are separately route-tested.",
       "renderedProbe": {
@@ -35953,7 +35953,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/patrolWingPadBeacon.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 stylized flat-color readable metre-scale 4.4 metre frontier landing-pad and cyan/amber beacon prop; it is role-ready as the landing objective while route-local pad sensor and touchdown bounds are separately tested.",
       "renderedProbe": {
@@ -36256,7 +36256,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/patrolWingPlane.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "vehicle",
       "suitabilityReason": "Original CC0 stylized flat-color primary aircraft vehicle with a readable swept-wing silhouette, verified +X-forward and +Y-up orientation, and normalized route placement; route-local authored arcade motion owns gameplay and no aerodynamic claim is inferred.",
       "renderedProbe": {
@@ -39378,7 +39378,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/pulseReactorEncounterWorld.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "world",
       "suitabilityReason": "Original CC0 V11 Pulse reactor encounter world with a continuous chamfered deck, recessed exchange runway, textured panel tiling, service conduits, forged arched ribs, overhead cabinets, and a layered terminal iris chamber. This is a rigid decorative world asset; route-local lanes, gates, projectiles, collisions, scoring, and audio timing remain authoritative.",
       "renderedProbe": {
@@ -39641,7 +39641,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/pulseRunnerCraft.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "vehicle",
       "suitabilityReason": "Original CC0 V11 compact Pulse runner craft with a continuous arrowhead fuselage, packed panel shell, raised smoked cockpit, broad delta foils, ceramic/copper leading edges, ventral keel, turbine nacelles, emissive apertures, stabilizers, rivets, and forward shield collar. Route-local lane, jump, slide, shield, collision, and scoring systems remain authoritative.",
       "renderedProbe": {
@@ -40395,7 +40395,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/pulseTerminalSentry.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "character",
       "suitabilityReason": "Original CC0 V11 rigid Pulse terminal warden character with a readable +Z orientation, connected layered thorax, textured gunmetal shell, ceramic brow and wings, recessed furnace/optic rings, articulated copper spars, rotary cannons, reverse-jointed legs, crown hardware, and grounded talons. It is static presentation geometry; route-local targeting, projectile timing, damage, and outcomes remain authoritative.",
       "renderedProbe": {
@@ -40708,7 +40708,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/robotcand.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "character",
       "suitabilityReason": "Continuous textured robot/mech visual shell with ceramic armor, metal mechanisms, cable details, and optic materials. Grounding, selected hardpoint mounting, build stats, and arena combat remain route-local; no modular, skinning, animation, or reusable-mech-kit capability is claimed.",
       "renderedProbe": {
@@ -40954,7 +40954,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/rooftopAthleteDefender.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "character",
       "suitabilityReason": "Static, continuous textured contest defender variant with an asymmetric raised-arm silhouette. It is a visual player variant derived from the same licensed source identity; route-local contest and collision-region state remain authoritative.",
       "renderedProbe": {
@@ -41200,7 +41200,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/rooftopAthleteShooter.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "character",
       "suitabilityReason": "Static, continuous textured basketball shooter in a readable raised-ball release pose. Route-local transforms stage charge, release, airborne contest, and follow-through; this asset makes no controller-capability claim.",
       "renderedProbe": {
@@ -41350,7 +41350,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/rooftopBackboard.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 metre-scale flat-color 1.8 by 1.05 metre backboard prop, synchronized to the composed route-local board contact region and kept visible in the fixed shooting camera.",
       "renderedProbe": {
@@ -41500,7 +41500,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/rooftopBall.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 unit-normalized flat-color basketball prop, scaled by the route to a regulation 0.24 metre diameter and synchronized to the authored deterministic flight state.",
       "renderedProbe": {
@@ -43037,7 +43037,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/rooftopCourt.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "world",
       "suitabilityReason": "Provenance-bound Rooftop Buckets streetball venue with a sealed 16 by 14 metre court slab, stepped rear and side bleachers, railings, sponsor banners, flood bars, and spectator crowd dressing. The stylized flat-color material rationale is intentional: this authored venue uses readable solid-color materials instead of image textures, with the retained browser probe proving visibility and separation. It deliberately contains no hoop, backboard, ball, collider, or scoring authority; the route owns those gameplay regions and typed props.",
       "renderedProbe": {
@@ -44626,7 +44626,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/rooftopDefender.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "character",
       "suitabilityReason": "Provenance-bound CC-BY-4.0 textured humanoid defender derived from Sketchfab Man Player, with one 191-joint skin, a distinct crimson uniform material family, +Y-up/+Z-forward orientation metadata, and truthful Plant, Telegraph, Jump, and Contest clips. The route owns defender root placement, telegraph timing, composed block region, ballistics, and contest scoring; no reusable sports kit is claimed.",
       "renderedProbe": {
@@ -45002,7 +45002,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/rooftopDefenderV2.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "character",
       "suitabilityReason": "Original CC0 metre-scale Rooftop Buckets defender with seven readable uniform/body materials, a real 12-joint skin, and exact Plant, Telegraph, Jump, and Contest clips. It faces +Z and stands +Y-up; route-local contest and collision-region state own gameplay truth.",
       "renderedProbe": {
@@ -46593,7 +46593,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/rooftopLayupScorer.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "character",
       "suitabilityReason": "Provenance-bound CC-BY-4.0 textured humanoid athlete derived from Sketchfab Man Player, with one 191-joint skin, retained image materials, +Y-up/+Z-forward orientation metadata, and truthful route-authored Ready, Load, Release, and FollowThrough clips. The route owns root translation, the separate typed basketball, ballistic flight, contact sensors, and score state.",
       "renderedProbe": {
@@ -46743,7 +46743,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/rooftopRim.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 metre-scale flat-color 0.48 metre hoop prop, synchronized to the composed route-local rim and top-to-bottom scoring regions without claiming reusable physics.",
       "renderedProbe": {
@@ -46989,7 +46989,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/rooftopShooter.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "character",
       "suitabilityReason": "Static textured 1.95 metre basketball shooter character with continuous body, raised release pose, readable uniform, +Y up orientation, and no embedded ball. Route-local root transforms present charge and follow-through states while the separate typed ball owns all ballistics.",
       "renderedProbe": {
@@ -47474,7 +47474,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/rooftopShooterV2.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "character",
       "suitabilityReason": "Original CC0 metre-scale Rooftop Buckets shooter with seven readable uniform/body materials, a real 12-joint skin, and exact Load, Release, and FollowThrough clips. It faces +Z and stands +Y-up; route-local ballistics, scoring, and input own gameplay truth.",
       "renderedProbe": {
@@ -47770,7 +47770,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/rooftopVenueV2.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "environment",
       "suitabilityReason": "Original CC0 metre-scale surrounding rooftop streetball venue with material-varied bleachers, service towers, floodlights, banners, and water tower. Its authored stylized flat-color material rationale keeps structural tiers and sponsor accents readable without image textures. It surrounds the existing active court and deliberately contains no hoop, net, or collision authority.",
       "renderedProbe": {
@@ -49005,7 +49005,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/showcaseArcadeCabinet.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Blockfall Reactor supporting arcade cabinet prop with durable Objaverse provenance, CC-BY-4.0 license, texture references, readable material metadata, route-visible set-dressing placement, and isolated root release probe proving a readable secondary cabinet foreground.",
       "renderedProbe": {
@@ -49225,7 +49225,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/showcaseArcadeController.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Readable controller prop with durable Objaverse provenance, CC-BY-4.0 license, texture references, material metadata, retained release probe foreground proof, and secondary diagnostic dashboard terminal anchor suitability when used as a non-primary supporting console prop.",
       "renderedProbe": {
@@ -51538,7 +51538,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/showcaseBlockfallCabinet.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Blockfall Reactor hero arcade machine prop with durable Objaverse provenance, CC-BY-4.0 license, texture references, readable material metadata, route-visible arcade-machine placement, gameplay cabinet context, and isolated root release probe proving a readable cabinet foreground.",
       "renderedProbe": {
@@ -53929,7 +53929,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/showcaseCc0FormulaRaceCar.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "vehicle",
       "suitabilityReason": "Release Formula-style racing hero with durable OpenGameArt CC0 provenance, authored red-white-graphite materials, four-wheel silhouette, explicit +Z-forward orientation, isolated root-rendered asset proof, and current route-primary plus gameplay contact evidence.",
       "renderedProbe": {
@@ -54283,7 +54283,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/showcaseCcByFormulaOpponent.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "vehicle",
       "suitabilityReason": "Release blue-and-black Formula rival with retained Objaverse CC-BY-4.0 provenance and attribution, thirteen authored materials, three textures, distinct open-wheel silhouette, explicit +Z-forward orientation, isolated root-rendered asset proof, and independent opponent-driver gameplay evidence.",
       "renderedProbe": {
@@ -54461,7 +54461,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/showcaseCityVehicle.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "vehicle",
       "suitabilityReason": "Smart City Control primary vehicle with durable Objaverse provenance, CC-BY-4.0 license, four texture references, readable material metadata, retained route-primary evidence, isolated release probe foreground proof, and route-normalized placement as the single typed hero vehicle.",
       "renderedProbe": {
@@ -58202,7 +58202,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/showcaseExpressiveRobot.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "character",
       "suitabilityReason": "Typed animated guard presentation asset; route-local authored movement and perception remain gameplay authority.",
       "renderedProbe": {
@@ -58735,7 +58735,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/showcaseHeadphones.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "product",
       "suitabilityReason": "Product configurator primary headphones asset with durable Objaverse provenance, CC-BY-4.0 license, readable material evidence, four texture references, normalized route placement, and retained createAuraApp product-view renderedProbe evidence.",
       "renderedProbe": {
@@ -61274,7 +61274,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/showcaseKenneyNeonRaceCircuit.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "track",
       "suitabilityReason": "Release stylized flat-color racing track with durable Kenney CC0 provenance, coherent neon circuit venue, readable named materials, normalized camera-fit placement, retained browser-rendered probe, and hash-bound mesh-extracted road topology.",
       "renderedProbe": {
@@ -62211,7 +62211,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/showcaseKenneyOobiPlatformerHero.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "character",
       "suitabilityReason": "Release stylized flat-color platformer character with durable Kenney CC0 provenance, readable named material evidence, normalized camera-fit placement, explicit +Z forward orientation, retained browser-rendered probe, and certified world-scale contact evidence.",
       "renderedProbe": {
@@ -62417,7 +62417,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/showcaseKenneyRaceCarRed.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "vehicle",
       "suitabilityReason": "Release stylized flat-color racing vehicle with durable Kenney CC0 provenance, readable named materials, normalized camera-fit placement, explicit +Z forward orientation, retained browser-rendered probe, and certified route-scale contact evidence for Turbo Drift Circuit.",
       "renderedProbe": {
@@ -68081,7 +68081,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/showcaseMiniRaceTrack.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "track",
       "suitabilityReason": "Release racing track with mesh-extracted ordered centerline and checkpoints, normalized camera-fit placement, readable textured road materials, gameplay-scale route extent, and durable CC-BY provenance.",
       "renderedProbe": {
@@ -70436,7 +70436,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/showcaseOrangeIndustrialRobot.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Industrial terminal sentry with durable Objaverse CC-BY-4.0 provenance, textured readable material metadata, and current root probe evidence; used only as a non-colliding finale renderer-owned terminal in Pulse Tunnel.",
       "renderedProbe": {
@@ -70616,7 +70616,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/showcaseParticleCore.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "abstract",
       "suitabilityReason": "Abstract diagnostic data anchor with durable Objaverse provenance, CC-BY-4.0 license, texture references, readable material metadata, normalized camera-fit release probe foreground proof, and explicit diagnostic non-primary rationale for data/particle internal routes.",
       "renderedProbe": {
@@ -73769,7 +73769,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "Textures/texture-a.png"
       ],
       "thumbnailUrl": "/aura-assets/showcasePlatformHero.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "character",
       "suitabilityReason": "Release stylized character with readable height, reviewed +Z orientation, retained materials, and a current hash-bound root browser probe; used here as the route-local pressure defender without claiming a reusable sports character kit.",
       "renderedProbe": {
@@ -78398,7 +78398,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/showcaseRoboticWeldingWorkcell.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Release optimized industrial workcell prop derived from the Objaverse robotic welding workcell source, kept under the release asset size limit, with retained root rendered-probe proof, material metadata, texture evidence, and camera-fit normalized route placement for the Digital Twin visual operations scene.",
       "renderedProbe": {
@@ -79200,7 +79200,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "Textures/texture-e.png"
       ],
       "thumbnailUrl": "/aura-assets/showcaseRunnerGirl.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "character",
       "suitabilityReason": "CC0 Kenney animated adult character used as Gallery Shift's readable player infiltrator; embedded idle, walk, sprint, pick-up, and holding-both clips are presentation only while authored movement, sneak noise, collision, LOS, and objectives remain route-owned.",
       "renderedProbe": {
@@ -80494,7 +80494,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "Textures/texture-a.png"
       ],
       "thumbnailUrl": "/aura-assets/showcaseSidekickRunner.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "character",
       "suitabilityReason": "Release platformer sidekick character with readable height, reviewed +Z orientation, embedded locomotion animation clips, textured material, normalized camera-fit placement, and retained browser proof.",
       "renderedProbe": {
@@ -80966,7 +80966,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/showcaseSideScrollerPlatformLevel.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "world",
       "suitabilityReason": "Release side-scroller platform world with a mesh-extracted 16.616-unit traversable route, normalized camera-fit placement, readable textured materials, broad gameplay footprint, and durable CC-BY provenance.",
       "renderedProbe": {
@@ -81629,7 +81629,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/showcaseSideScrollerWorld.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "world",
       "suitabilityReason": "Skyline Runner secondary side-scroller world asset with durable Objaverse provenance, CC-BY-4.0 license, readable material and texture metadata, gameplay-scale footprint, camera-fit placement scale evidence, retained route-primary secondary-presence proof, and current root release probe showing a readable normalized world foreground.",
       "renderedProbe": {
@@ -84175,7 +84175,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/showcaseSkylineCity.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "world",
       "suitabilityReason": "Release city world with a mesh-extracted 13.514-unit traversable platform route, normalized camera-fit placement, readable textured materials, broad gameplay footprint, and durable CC-BY provenance.",
       "renderedProbe": {
@@ -88957,7 +88957,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/showcaseTexturedSportsCar.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "vehicle",
       "suitabilityReason": "Public racing presentation release hero vehicle with durable Objaverse provenance, CC-BY-4.0 license, textured material evidence, normalized camera-fit route placement, retained route-primary proof, gameplay-visible drivable car evidence, and isolated root release probe proving a readable car foreground and forward orientation view.",
       "renderedProbe": {
@@ -89443,7 +89443,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/showcaseTsukubaCircuit.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "track",
       "suitabilityReason": "Public racing presentation topology provenance asset with durable Objaverse provenance, CC-BY-4.0 license, texture references, readable material metadata, gameplay-scale footprint, retained generated-circuit topology evidence, and isolated root release probe proving a readable circuit foreground.",
       "renderedProbe": {
@@ -104416,7 +104416,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/showcaseVoxelBuilding.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "environment",
       "suitabilityReason": "Architecture environment replacement candidate with durable Objaverse provenance, CC-BY-4.0 license, texture references, readable material metadata, normalized camera-fit release probe foreground proof, and bounds-approved structure scale for architecture/environment route use.",
       "renderedProbe": {
@@ -105638,7 +105638,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/showcaseWalkAnimatedGirl.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "character",
       "suitabilityReason": "Skyline Runner primary character with durable Objaverse provenance, CC-BY-4.0 license, embedded Take 001 animation clip, skeleton/skin metadata, fourteen texture references, normalized camera-fit route placement, bounds-approved scale evidence, retained route-primary proof, and isolated root release probe showing readable character foreground.",
       "renderedProbe": {
@@ -106195,7 +106195,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/siegeGolfBall.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Siege Golf primary gameplay prop: a readable white dimpled ball whose normalized route render and camera-fit placement are proven by the current hash-bound root probe and exact gameplay captures.",
       "renderedProbe": {
@@ -106434,7 +106434,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/siegeGolfCourseWorld.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "world",
       "suitabilityReason": "Original CC0 metre-scale continuous Siege Golf world with an explicit stylized procedural-material palette: one compact tee-to-obstacle-to-sensor ribbon with connected curving shot-line bands, full-length spectator fencing, grounded orchard forms, directional pennants, cloud banks, an attached obstacle bay, and an open fortified goal court. Route-local Rapier felt and rails remain the documented collision owner.",
       "renderedProbe": {
@@ -106819,7 +106819,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/siegePlankSet.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Siege Golf primary jointed-structure prop: a textured wooden plank with readable elongated geometry, normalized route render, camera-fit placement, physics synchronization, and current hash-bound root probe evidence.",
       "renderedProbe": {
@@ -107286,7 +107286,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/siegeWoodenBarrel.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Siege Golf primary structure prop: a textured timber-and-iron barrel whose large source units use explicit camera-fit normalization evidence, normalized route placement, physics synchronization, and a current hash-bound root probe.",
       "renderedProbe": {
@@ -107511,7 +107511,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/siegeWoodenCrate.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Siege Golf primary destructible-structure prop: a textured timber crate with readable silhouette, normalized route render, camera-fit placement, physics synchronization, and current hash-bound root probe evidence.",
       "renderedProbe": {
@@ -107915,8 +107915,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/skylineArcticRunnerHero.thumb.svg",
-      "quality": "release",
-      "role": "character",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Original renderer-owned low-poly arctic relay runner character card with a readable airborne silhouette; mounted as the live review player visual and driven by platformer state, with no rigging claim.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/skylineArcticRunnerHero.png",
@@ -108844,8 +108844,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/skylineIceLedgeCompact.thumb.svg",
-      "quality": "release",
-      "role": "set-dressing",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Decorative non-primary compact ice-ledge set dressing aligned to certified Skyline Runner collision surfaces; it never supplies collision geometry.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/skylineIceLedgeCompact.png",
@@ -109003,8 +109003,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/skylineIceLedgeLong.thumb.svg",
-      "quality": "release",
-      "role": "set-dressing",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Decorative non-primary long ice-ledge set dressing aligned to certified Skyline Runner collision surfaces; it never supplies collision geometry.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/skylineIceLedgeLong.png",
@@ -109162,8 +109162,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/skylineIceLedgeMedium.thumb.svg",
-      "quality": "release",
-      "role": "set-dressing",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Decorative non-primary medium ice-ledge set dressing aligned to certified Skyline Runner collision surfaces; it never supplies collision geometry.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/skylineIceLedgeMedium.png",
@@ -109812,8 +109812,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/skylineWinterParallaxBackdrop.thumb.svg",
-      "quality": "release",
-      "role": "set-dressing",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Decorative non-primary background set dressing only: a project-original faceted winter-night panorama behind certified Skyline Runner gameplay geometry.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/skylineWinterParallaxBackdrop.png",
@@ -110969,8 +110969,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/turboFormulaCircuit.thumb.svg",
-      "quality": "release",
-      "role": "track",
+      "quality": "prototype",
+      "role": "proxy",
       "suitabilityReason": "Original CC0 +Y-up, +Z-forward primary racing track with a continuous gameplay-scale closed asphalt ribbon, authored centreline, start straight, red-white kerbs, runoff, barriers, tyre walls, pit buildings, and route-bound topology. Its intentionally untextured stylized flat-color material palette is the finished track art direction, not missing texture evidence; the GLB is renderer-owned visual geometry while route-local Rapier contact, checkpoints, laps, and scoring remain authoritative.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/turboFormulaCircuit.png",
@@ -126653,7 +126653,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/turboRaceCar.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "vehicle",
       "suitabilityReason": "Public racing route hero vehicle with four separately modelled wheel meshes on a dedicated tires material carrying base-colour, metallic-roughness, normal and occlusion maps; wheels reach the body silhouette and are geometrically verified visible by tools/asset-geometry-audit/wheel-detect.mjs rather than assumed from a thumbnail. Authored at 377.939-unit source scale and rescaled for route placement through camera-fit scale normalization: the route binds it with scaleMode fit and targetMaxDimension 1.1, and derives its scene height from assets.turboRaceCar.bounds so no hardcoded constant can drift from the asset.",
       "renderedProbe": {
@@ -127631,7 +127631,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/vaultBreakersBall.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 readable prop at a verified 0.28 metre scale, synchronized to the route's dynamic Rapier ball body without implying angular-spin simulation.",
       "renderedProbe": {
@@ -128160,7 +128160,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/vaultBreakersFlipper.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 readable metre-scale prop with an authored hinge-pivot origin, synchronized to the two pinned route-local motorised joints.",
       "renderedProbe": {
@@ -128476,7 +128476,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/vaultBreakersMechanisms.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 readable metre-scale prop overlay for Vault Breakers bumpers, target banks, orbit markers, and vault focus; route-local Rapier bodies and sensors remain gameplay authority.",
       "renderedProbe": {
@@ -128696,7 +128696,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/vaultBreakersTable.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 readable stylized flat-color pinball-table prop with a measured 6.2 by 9.57 metre route scale; route-local Rapier bodies and mechanisms remain simulation authority.",
       "renderedProbe": {
@@ -128876,7 +128876,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/vaultBreakersVaultDoor.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "Original CC0 metre-scale vault-door prop synchronized to the route's authored door-opening and multiball mission state.",
       "renderedProbe": {

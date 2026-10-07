@@ -1,6 +1,5 @@
 import {
   createEnvironmentCapabilityReport,
-  createEnvironmentPreset,
   type EnvironmentCapabilityId,
   type EnvironmentPreset as EnvironmentPlatformPreset,
   type EnvironmentPresetBackground,
@@ -107,6 +106,13 @@ export function listNamedEnvironmentPresets(): readonly NamedEnvironmentPresetDe
   return Object.values(NAMED_ENVIRONMENT_PRESETS);
 }
 
+/**
+ * @deprecated removed-world-planner (PRD-10): the named-preset factory let a
+ * preset claim environment capabilities the runtime never wired. Kept as a
+ * throwing stub for one minor version; author environments through
+ * `createEnvironmentPreset` with explicit capability disclosure, or the
+ * PRD-10 world environment path behind `A3D_QR_WORLD`.
+ */
 export function createNamedEnvironmentPreset(
   id: NamedEnvironmentPresetId,
   overrides: Omit<EnvironmentPresetOptions, "type" | "lighting" | "background" | "ground" | "fog"> & {
@@ -117,16 +123,11 @@ export function createNamedEnvironmentPreset(
     readonly fog?: EnvironmentPresetOptions["fog"];
   } = {}
 ): EnvironmentPlatformPreset {
-  const descriptor = NAMED_ENVIRONMENT_PRESETS[id];
-  const fog = overrides.fog ?? (descriptor.defaultFog ? undefined : false);
-  return createEnvironmentPreset({
-    ...overrides,
-    type: overrides.type ?? descriptor.type,
-    lighting: overrides.lighting ?? descriptor.lighting,
-    background: overrides.background ?? descriptor.background,
-    ground: overrides.ground ?? descriptor.ground,
-    fog
-  });
+  void id;
+  void overrides;
+  throw new Error(
+    "removed-world-planner: createNamedEnvironmentPreset was removed by PRD-10 — named presets claimed environment capabilities the runtime never wired. Use createEnvironmentPreset with explicit options instead."
+  );
 }
 
 export function createEnvironmentPresetReport(

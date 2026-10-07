@@ -9,7 +9,6 @@ const allowed = [
   "packages/three-compat/",
   "packages/engine/src/production-runtime/",
   "apps/three-compat-threejs-migration-lab/",
-  "apps/threejs-parity-lab/",
   "apps/example-parity-lab/"
 ] as const;
 const files = roots.flatMap((root) => walk(root)).filter((file) => /\.(ts|tsx|js|mjs)$/.test(file));

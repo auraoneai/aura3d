@@ -18,7 +18,7 @@ export type {
   ShaderSources,
   UniformValue
 } from "./RenderDevice";
-export { MockRenderBuffer, MockRenderDevice, MockShaderProgram, RenderDeviceError } from "./RenderDevice";
+export { MockRenderBuffer, MockRenderDevice, MockRenderTarget, MockShaderProgram, RenderDeviceError } from "./RenderDevice";
 export {
   buildGpuTargetInventory,
   GPU_TARGET_BUDGET_BYTES,
@@ -68,7 +68,39 @@ export type { VertexAttributeDescriptor, VertexAttributeSemantic, VertexAttribut
 export { VertexBuffer } from "./VertexBuffer";
 export { IndexBuffer } from "./IndexBuffer";
 export { Geometry, computeBounds } from "./Geometry";
-export type { Bounds3, CapsuleGeometryOptions, CylinderGeometryOptions, ScreenSpaceLineSegment, UVSphereGeometryOptions } from "./Geometry";
+export type { Bounds3, BoxGeometryOptions, CapsuleGeometryOptions, CylinderGeometryOptions, PlaneGeometryOptions, ScreenSpaceLineSegment, TorusGeometryOptions, UVSphereGeometryOptions } from "./Geometry";
+export { createPrimitiveGeometry, clearPrimitiveGeometryCache, primitiveGeometryCacheSize } from "./geometry/Primitives";
+export type { AuraPrimitiveKind } from "./geometry/Primitives";
+export { InstanceBuffer } from "./resources/InstanceBuffer";
+export { UniformBlock, FrameUniforms, layoutStd140, uniformBlockGlsl, AURA_FRAME_BINDING, AURA_LIGHTS_BINDING } from "./resources/UniformBlock";
+export type { Std140Field, Std140Layout } from "./resources/UniformBlock";
+export { normalizeProgramFeatures, DEFAULT_PROGRAM_FEATURES, totalLightCount } from "./program/ProgramFeatures";
+export { programKey } from "./program/ProgramKey";
+export { generateProgramImpl, registerProgramWgslEmitter, programDegradationLog, GENERATED_PROGRAM_MARKER } from "./program/ProgramGenerator";
+export type { ProgramDegradation, GenerateProgramOptions } from "./program/ProgramGenerator";
+export { ProgramCache } from "./program/ProgramCache";
+export { ProgramWarmup, collectWarmupFeatures } from "./program/ProgramWarmup";
+export type { WarmupInput, WarmupResult } from "./program/ProgramWarmup";
+export { defaultProgramFeatures, materialFeatureWarning, materialUsesGeneratedProgram, ALLOWLIST_PROGRAM_SHADERS } from "./program/MaterialFeatures";
+export { qrCoreGeneratorOn, qrCoreOutputOn, rendererProgramCache, rendererProgramCachePeek, rendererAuraFrame, rendererOutputPass } from "./renderer/qrSubFlags";
+export { OutputPass } from "./output/OutputPass";
+export { createHdrTarget, ensureHdrTarget, type HdrTargetOptions } from "./output/HdrTarget";
+export {
+  OUTPUT_VERTEX_GLSL,
+  OUTPUT_FRAGMENT_PROLOGUE_GLSL,
+  OUTPUT_FRAGMENT_EPILOGUE_GLSL,
+  TONE_MAPPING_OPERATORS_GLSL,
+  TONE_MAP_OPERATOR_FUNCTIONS,
+  outputFragmentGlsl
+} from "./output/ToneMappingOperators.glsl";
+export { InterleavedTransparentPass, mergeTransparentSegments, type TransparentEngineItem } from "./renderer/InterleavedTransparentPass";
+export { SceneDepthCopyPass, ensureSceneDepthCopyTarget } from "./renderer/SceneDepthCopyPass";
+export { blendQueueForState, blendStateIsTransparent, blendModeDefaultDepthWrite, blendEquationName, QUEUE_BY_MODE } from "./BlendModes";
+export type { BlendQueue } from "./BlendModes";
+export { ResolutionGovernor, RESOLUTION_GOVERNOR_STEP, RESOLUTION_GOVERNOR_DOWN_FACTOR, RESOLUTION_GOVERNOR_UP_FACTOR } from "./ResolutionGovernor";
+export type { ResolutionGovernorOptions } from "./ResolutionGovernor";
+export { resolveCanvasPixelRatio, resolveCanvasContextAttributes, watchDevicePixelRatio } from "./renderer/PixelRatio";
+export type { AuraResolutionOptions, AuraCanvasContextAttributes } from "./renderer/PixelRatio";
 export { applyMorphTargets, computeMorphTargetEnvelopeBounds, computeMorphTargetWeightedBounds } from "./MorphTarget";
 export type { MorphTargetDelta } from "./MorphTarget";
 export { computeAnimatedSkinnedBoundsUnion, computeSkinnedGeometryBounds, computeSkinnedMorphTargetEnvelopeBounds, computeSkinnedMorphTargetWeightedBounds } from "./SkinningBounds";
@@ -298,13 +330,6 @@ export {
   sortExternalParityAlphaItems
 } from "./materials/AlphaSorting";
 export type { ExternalParityAlphaSortItem } from "./materials/AlphaSorting";
-export {
-  evaluateExternalParityTransmission
-} from "./materials/TransmissionPass";
-export type {
-  ExternalParityTransmissionResult,
-  ExternalParityTransmissionSample
-} from "./materials/TransmissionPass";
 export { createExternalParityContactShadow } from "./shadows/ContactShadows";
 export type { ExternalParityContactShadow, ExternalParityContactShadowOptions } from "./shadows/ContactShadows";
 export { createExternalParityCascadedShadowPipeline } from "./shadows/CascadedShadowPipeline";
@@ -630,7 +655,7 @@ export type {
   RendererTimingSampleSource,
   RendererTimingSnapshot
 } from "./RendererTiming";
-export { ForwardPass, SkinningPaletteUploadManager, applyForwardSpotShadowMapUniforms } from "./ForwardPass";
+export { ForwardPass, SkinningPaletteUploadManager, applyForwardSpotShadowMapUniforms, forwardPassFeatureAxes, splitForwardItems, forwardItemBucket, type ForwardBucket } from "./ForwardPass";
 export { MAX_GPU_INSTANCES, MAX_GPU_MORPH_TARGETS, MAX_GPU_MORPH_VERTICES, MAX_SKINNING_JOINTS } from "./ForwardPass";
 export {
   createSpotShadowProjection,
@@ -790,7 +815,7 @@ export type {
   FrameVisualQualityResult,
   FrameVisualQualityThresholds
 } from "./FrameVisualMetrics";
-export { LightCollector } from "./LightCollector";
+export { LightCollector, collectLight } from "./LightCollector";
 export type { CollectedLight, CollectedLightKind, LightCollectorOptions } from "./LightCollector";
 export { LightUniforms, MAX_DIRECT_LIGHTS } from "./LightUniforms";
 export type { PackedLightUniforms } from "./LightUniforms";
@@ -1061,7 +1086,7 @@ export type {
 } from "./CascadedShadowMaps";
 export { DEFAULT_RENDERER_AUTO_FRAME_OPTIONS, DEFAULT_RENDERER_DIRECT_LIGHTING, DEFAULT_RENDERER_ENVIRONMENT_LIGHTING, Renderer } from "./Renderer";
 export { pickSceneRenderableHits, pickSceneRenderables } from "./Renderer";
-export type { CameraLike, RendererAnimationLoop, RendererCameraFrameOptions, RendererCameraPolicy, RendererCameraProjection, RendererFrameCapture, RendererFrameCaptureDiagnosticsSummary, RendererFrameCaptureMetadata, RendererFrameCapturePixelDigest, RendererFrameCapturePixelStats, RendererFrameCaptureRenderSize, RendererFrameCaptureWithMetadata, RendererInput, RendererOptions, RendererPostProcessOptions, RendererShadowOptions, RenderSource, ResizeToDisplayOptions, ResizeToDisplayResult, ScenePickHit, ScenePickOptions } from "./Renderer";
+export type { CameraLike, RendererAnimationLoop, RendererCameraFrameOptions, RendererCameraPolicy, RendererCameraProjection, RendererFrameCapture, RendererFrameCaptureDiagnosticsSummary, RendererFrameCaptureMetadata, RendererFrameCapturePixelDigest, RendererFrameCapturePixelStats, RendererFrameCaptureRenderSize, RendererFrameCaptureWithMetadata, RendererAppliedOutput, RendererInput, RendererOptions, RendererOutputOptions, RendererPostProcessOptions, RendererShadowOptions, RenderSource, ResizeToDisplayOptions, ResizeToDisplayResult, ScenePickHit, ScenePickOptions } from "./Renderer";
 export { createRendererPostprocessPasses, createRendererPostprocessPlanDiagnostics } from "./RendererPostprocessPlan";
 export type { RendererPostProcessPassName, RendererPostProcessPassPlan, RendererPostprocessChainCostEstimate, RendererPostprocessExecutionMode, RendererPostprocessPassDiagnostics, RendererPostprocessPlanContext, RendererPostprocessPlanDiagnostics, RendererPostprocessPlannedVsActual, RendererPostprocessPlanOptions, RendererPostprocessTargetFormat } from "./RendererPostprocessPlan";
 export { assertRendererFeatures, createRendererFeatureReport, rendererFeatureCatalog } from "./RendererFeatureGates";
