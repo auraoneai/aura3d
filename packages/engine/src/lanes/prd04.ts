@@ -29,3 +29,10 @@ export {
   type AuthoredMaterialSnapshot,
   type TypedGLBActorMaterialOverride
 } from "../production-runtime/ModelMaterialOverrides.js";
+// P4-3: QR flag + `renderer.transmission` seams. Lane-15 wires these at
+// createAuraApp eventually (qr-request); harnesses set them directly until then.
+export { setTypedGLBActorQrFlags } from "../production-runtime/actor/extensions.js";
+export {
+  setTypedGLBActorQrTransmissionMode,
+  typedGLBActorQrTransmissionMode
+} from "../production-runtime/TypedGLBActor.js";

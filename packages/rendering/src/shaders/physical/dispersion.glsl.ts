@@ -14,6 +14,7 @@
  * (a3dVolumeAttenuation).
  */
 import type { ShaderChunk } from "../../contracts/program";
+import A3D_PRD04_DISPERSION_WGSL from "../physical-wgsl/dispersion.wgsl.js";
 
 const glsl = /* glsl */ `
 #if defined( A3D_TRANSMISSION ) && defined( A3D_DISPERSION )
@@ -75,6 +76,7 @@ export const A3D_PRD04_DISPERSION: ShaderChunk = {
 	name: "a3d_prd04_dispersion",
 	owner: "prd04",
 	glsl,
+	wgsl: A3D_PRD04_DISPERSION_WGSL,
 	stage: "fragment",
 	requires: ["brdf", "a3d_prd04_bsdf_lobes_common", "a3d_prd04_volume", "a3d_prd04_transmission"]
 };

@@ -14,6 +14,7 @@
  * Self-contained (no requires). Stage fragment.
  */
 import type { ShaderChunk } from "../../contracts/program";
+import A3D_PRD04_UV_TRANSFORM_WGSL from "../physical-wgsl/uv_transform.wgsl.js";
 
 const glsl = /* glsl */ `
 // Apply a KHR_texture_transform matrix to the requested UV set.
@@ -40,6 +41,7 @@ export const A3D_PRD04_UV_TRANSFORM: ShaderChunk = {
 	name: "a3d_prd04_uv_transform",
 	owner: "prd04",
 	glsl,
+	wgsl: A3D_PRD04_UV_TRANSFORM_WGSL,
 	stage: "fragment",
 	requires: []
 };

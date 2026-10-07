@@ -11,10 +11,12 @@
 import { registerPrd04ShaderChunks } from "../shaders/physical/index.js";
 import { registerPrd04MaterialLobes } from "../materials/lobes.js";
 import { registerPrd04ShaderFeatures } from "../materials/features.js";
+import { registerPrd04TransmissionContributor } from "../forward/Transmission.js";
 
 registerPrd04ShaderChunks();
 registerPrd04MaterialLobes();
 registerPrd04ShaderFeatures();
+registerPrd04TransmissionContributor();
 
 export { registerPrd04ShaderChunks };
 export { registerPrd04MaterialLobes } from "../materials/lobes.js";
@@ -35,9 +37,21 @@ export {
 } from "../ProceduralMaterialTextures.js";
 export { TransmissionRenderTarget } from "../TransmissionRenderTarget.js";
 export {
+  transmissionFrameContributor,
+  registerPrd04TransmissionContributor,
+  prd04TransmissionDiagnostics,
+  TRANSMISSION_BLACKBOARD_KEY,
+  TRANSMISSION_LANE_RESOURCE,
+  itemReportsTransmissionLobe,
+  type Prd04TransmissionDiagnostics
+} from "../forward/Transmission.js";
+export {
   applyTextureBudget,
   resetTextureBudgetLedger,
   textureBudgetReport,
   DEFAULT_TEXTURE_BUDGET_POLICY,
   type TextureBudgetPolicy
 } from "../textures/TextureBudget.js";
+// P4-1: frame-graph flag seam — lane-15 wires `setRendererQrFlags` inside
+// createAuraApp eventually (qr-request); harnesses set it directly until then.
+export { setRendererQrFlags, rendererQrFlags } from "../renderer/FrameGraph.js";

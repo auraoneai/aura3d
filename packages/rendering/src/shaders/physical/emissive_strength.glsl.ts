@@ -14,6 +14,7 @@
  * the identity.
  */
 import type { ShaderChunk } from "../../contracts/program";
+import A3D_PRD04_EMISSIVE_STRENGTH_WGSL from "../physical-wgsl/emissive_strength.wgsl.js";
 
 const glsl = /* glsl */ `
 // Emissive term: emissiveFactor * emissiveTex.rgb * emissiveStrength
@@ -30,6 +31,7 @@ export const A3D_PRD04_EMISSIVE_STRENGTH: ShaderChunk = {
 	name: "a3d_prd04_emissive_strength",
 	owner: "prd04",
 	glsl,
+	wgsl: A3D_PRD04_EMISSIVE_STRENGTH_WGSL,
 	stage: "fragment",
 	requires: ["brdf"]
 };

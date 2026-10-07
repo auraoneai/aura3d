@@ -301,13 +301,6 @@ export {
   sortExternalParityAlphaItems
 } from "./materials/AlphaSorting";
 export type { ExternalParityAlphaSortItem } from "./materials/AlphaSorting";
-export {
-  evaluateExternalParityTransmission
-} from "./materials/TransmissionPass";
-export type {
-  ExternalParityTransmissionResult,
-  ExternalParityTransmissionSample
-} from "./materials/TransmissionPass";
 export { createExternalParityContactShadow } from "./shadows/ContactShadows";
 export type { ExternalParityContactShadow, ExternalParityContactShadowOptions } from "./shadows/ContactShadows";
 export { createExternalParityCascadedShadowPipeline } from "./shadows/CascadedShadowPipeline";

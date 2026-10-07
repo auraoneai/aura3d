@@ -15,6 +15,7 @@
  * Requires `a3d_prd04_bsdf_lobes_common` (A3DPrd04Lobes) and `brdf`.
  */
 import type { ShaderChunk } from "../../contracts/program";
+import A3D_PRD04_DEBUG_VIEW_WGSL from "../physical-wgsl/debug_view.wgsl.js";
 
 const glsl = /* glsl */ `
 struct A3DPrd04DebugInput {
@@ -61,6 +62,7 @@ export const A3D_PRD04_DEBUG_VIEW: ShaderChunk = {
 	name: "a3d_prd04_debug_view",
 	owner: "prd04",
 	glsl,
+	wgsl: A3D_PRD04_DEBUG_VIEW_WGSL,
 	stage: "fragment",
 	requires: ["brdf", "a3d_prd04_bsdf_lobes_common"]
 };
