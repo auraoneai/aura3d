@@ -42,6 +42,13 @@ export interface TextureDescriptor {
   readonly fallbackMipLevels?: readonly TextureMipLevelDescriptor[];
   /** C-18 (PR 0a): layer count when `dimension` is "2d-array" (morph textures). */
   readonly layers?: number;
+  /**
+   * C-18 (PRD-06 T0.10a): mark a flat 2D data texture for repeated
+   * `update()`-driven re-uploads. Devices allocate immutable storage once
+   * (`texStorage2D`) and refresh it via `texSubImage2D`; non-dynamic textures
+   * keep the legacy `texImage2D` path.
+   */
+  readonly dynamic?: boolean;
 }
 
 export class Texture {
@@ -57,6 +64,10 @@ export class Texture {
   public readonly source: TexImageSource | null;
   public readonly fallbackData: Uint8Array | null;
   public readonly fallbackMipLevels: readonly TextureMipLevel[];
+  /** C-18: layer count for `2d-array` textures; 1 for 2d/cube. */
+  public readonly layers: number;
+  /** C-18 (T0.10a): true when constructed for `update()`-driven re-uploads. */
+  public readonly dynamic: boolean;
   public disposed = false;
 
   constructor(descriptor: TextureDescriptor) {
@@ -90,6 +101,14 @@ export class Texture {
     this.source = descriptor.source ?? null;
     this.fallbackData = descriptor.fallbackData ? new Uint8Array(descriptor.fallbackData) : null;
     this.fallbackMipLevels = descriptor.fallbackMipLevels ? cloneMipLevels(descriptor.fallbackMipLevels, "fallbackMipLevels") : [];
+    this.dynamic = descriptor.dynamic === true;
+    this.layers = descriptor.layers ?? 1;
+    if (this.dimension === "2d-array" && (!Number.isInteger(this.layers) || this.layers < 1)) {
+      throw new Error("2d-array textures require layers to be a positive integer");
+    }
+    if (this.dynamic && (this.dimension !== "2d" || this.mipLevels.length > 0 || this.source || isCompressedTextureFormat(this.format) || this.format === "depth24")) {
+      throw new Error("dynamic textures must be flat, non-compressed 2D textures without an image source");
+    }
     if (this.dimension === "cube") {
       if (this.data || this.mipLevels.length > 0 || this.source || this.fallbackData || this.fallbackMipLevels.length > 0) {
         throw new Error("Cube textures must define cubeFaces instead of 2D data, mipLevels, source, or fallbacks");
@@ -142,7 +161,8 @@ export class Texture {
         validateTextureMipLevels(this.mipLevels, this.width, this.height, this.format, "mipLevels");
       }
       if (this.data) {
-        validateTexturePixelData(this.data, this.width, this.height, this.format, "texture data");
+        // C-18: 2d-array content is width*height*bpp per layer.
+        validateTexturePixelData(this.data, this.width * this.layers, this.height, this.format, "texture data");
       }
       if (this.fallbackData) {
         throw new Error("fallbackData is only valid for compressed textures");
@@ -168,7 +188,7 @@ export class Texture {
     if (this.mipLevels.length > 0) {
       return this.mipLevels.reduce((total, level) => total + level.data.byteLength, 0);
     }
-    return this.width * this.height * bytesPerPixel(this.format);
+    return this.width * this.height * this.layers * bytesPerPixel(this.format);
   }
 
   get fallbackByteLength(): number {
@@ -189,18 +209,92 @@ export class Texture {
   public revision = 0;
 
   /**
-   * C-18 (PR 0a): replace pixel content in place and bump `revision`. The
-   * device observes the revision to decide whether to re-upload (morph data).
+   * C-18: the pending sub-region recorded by the last `update`. Consumed by the
+   * device's texture upload path and cleared after the re-upload is issued.
    */
-  public update(descriptor: { readonly data?: TexturePixelData; readonly mipLevels?: readonly TextureMipLevelDescriptor[]; readonly layers?: number }): void {
-    if (descriptor.data !== undefined) {
-      (this as { data: TexturePixelData | null }).data = clonePixelData(descriptor.data);
+  public pendingUpdateRegion: TextureUpdateRegion | null = null;
+
+  /**
+   * C-18 (PRD-06 §7.3): replace pixel content in place and bump `revision`.
+   *
+   * The caller keeps ownership of `data` — it is stored by reference with no
+   * clone, unlike the constructor. The device observes the revision to decide
+   * whether to re-upload; `webgl2/TextureUpload.ts` re-uploads with
+   * `texSubImage2D`/`texSubImage3D` rather than reallocating. Compressed and
+   * mip-mapped textures cannot be updated this way and throw.
+   */
+  public update(data: TexturePixelData, region?: TextureUpdateRegion): void {
+    if (this.disposed) {
+      throw new Error("Cannot update a disposed texture");
     }
-    if (descriptor.mipLevels !== undefined) {
-      (this as { mipLevels: readonly TextureMipLevel[] }).mipLevels = cloneMipLevels(descriptor.mipLevels, "mipLevels");
+    if (isCompressedTextureFormat(this.format)) {
+      throw new Error(`Compressed texture format ${this.format} cannot be updated via Texture.update`);
     }
-    void descriptor.layers;
+    if (this.dimension === "cube") {
+      throw new Error("Cube textures cannot be updated via Texture.update");
+    }
+    if (this.format === "depth24") {
+      throw new Error("Depth textures cannot be updated via Texture.update");
+    }
+    if (this.mipLevels.length > 0) {
+      throw new Error("Mip-mapped textures cannot be updated via Texture.update; update the flat data path instead");
+    }
+    if (this.dimension === "2d-array") {
+      validateArrayUpdateData(data, this);
+    } else if (region) {
+      validateUpdatePixelData(data, region.width * region.height * bytesPerPixel(this.format), this.format, "texture update region");
+      validateUpdateRegion(region, this.width, this.height);
+    } else {
+      validateUpdatePixelData(data, this.width * this.height * bytesPerPixel(this.format), this.format, "texture update data");
+    }
+    (this as { data: TexturePixelData | null }).data = data;
+    this.pendingUpdateRegion = region ?? null;
     this.revision += 1;
+  }
+}
+
+export interface TextureUpdateRegion {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+  /** Layer index for `2d-array` textures (texSubImage3D). */
+  readonly layer?: number;
+}
+
+function validateUpdateRegion(region: TextureUpdateRegion, textureWidth: number, textureHeight: number): void {
+  if (!Number.isInteger(region.x) || !Number.isInteger(region.y) || region.x < 0 || region.y < 0) {
+    throw new Error("Texture update region origin must be non-negative integers");
+  }
+  if (!Number.isInteger(region.width) || !Number.isInteger(region.height) || region.width <= 0 || region.height <= 0) {
+    throw new Error("Texture update region size must be positive integers");
+  }
+  if (region.x + region.width > textureWidth || region.y + region.height > textureHeight) {
+    throw new Error("Texture update region exceeds the texture bounds");
+  }
+}
+
+function validateUpdatePixelData(data: TexturePixelData, expectedBytes: number, format: TextureFormat, label: string): void {
+  if (format === "rgba8" && !(data instanceof Uint8Array) && !(data instanceof Uint8ClampedArray)) {
+    throw new Error(`${label} for rgba8 textures must be Uint8Array or Uint8ClampedArray`);
+  }
+  if (format === "rgba16f" && !(data instanceof Uint16Array)) {
+    throw new Error(`${label} for rgba16f textures must be Uint16Array half-float data`);
+  }
+  if (format === "rgba32f" && !(data instanceof Float32Array)) {
+    throw new Error(`${label} for rgba32f textures must be Float32Array data`);
+  }
+  if (data.byteLength !== expectedBytes) {
+    throw new Error(`${label} for ${format} must contain exactly ${expectedBytes} bytes`);
+  }
+}
+
+function validateArrayUpdateData(data: TexturePixelData, texture: Texture): void {
+  if (!(data instanceof Float32Array) && !(data instanceof Uint16Array) && !(data instanceof Uint8Array) && !(data instanceof Uint8ClampedArray)) {
+    throw new Error("texture update data for a 2d-array texture must be a typed pixel array");
+  }
+  if (data.byteLength % (texture.width * texture.height * bytesPerPixel(texture.format)) !== 0) {
+    throw new Error(`texture update data for a 2d-array ${texture.format} texture must be a multiple of a layer's ${texture.width * texture.height * bytesPerPixel(texture.format)} bytes`);
   }
 }
 

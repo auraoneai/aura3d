@@ -471,8 +471,21 @@ export interface RenderDevice {
   executePostGraph?(graph: unknown): void;
   /** C-28 (PR 0a): device capability probe. */
   readonly probe?: import("./contracts/device").DeviceProbe;
-  /** C-28 (PR 0a): frame counters. */
+  /**
+   * C-28 (PR 0a): frame counters — measured, never estimated.
+   *
+   * Per-frame fields (`drawCalls`, `bufferCreates`, `textureUploads`,
+   * `readbacks`, `renderTargetsCreated`, `programCompiles`) accumulate between
+   * `resetFrameCounters()` calls, i.e. they describe "this frame so far".
+   * Live gauges (`liveBuffers`, `liveVertexArrays`, `textureBytes`,
+   * `renderTargetBytes`) are instantaneous device state and are never reset.
+   */
   counters?(): import("./contracts/device").DeviceCounters;
+  /**
+   * Zeroes the per-frame counter fields only; live gauges are unaffected.
+   * Called once per render frame by the `A3D_QR_TIERS` frame contributor at
+   * `collect`, before `FrameStats.begin`.
+   */
   resetFrameCounters?(): void;
   /** C-02 (PR 0a): asynchronous shader compile when the backend supports it. */
   compileAsync?(sources: ShaderSources): Promise<RenderShaderProgram>;
@@ -588,6 +601,8 @@ export class MockRenderDevice implements RenderDevice {
   private viewportWidth = 0;
   private viewportHeight = 0;
   private clearColor: readonly [number, number, number, number] = [0, 0, 0, 1];
+  /** C-28 (PRD 11): per-frame fields; zeroed by resetFrameCounters(). Live gauges come from getDiagnostics(). */
+  private frameCounters = { drawCalls: 0, bufferCreates: 0, textureUploads: 0, readbacks: 0, renderTargetsCreated: 0, programCompiles: 0 };
 
   createBuffer(usage: BufferUsage, byteLength: number, initialData?: ArrayBufferView): RenderBuffer {
     this.assertAlive();
@@ -596,6 +611,7 @@ export class MockRenderDevice implements RenderDevice {
     }
     const buffer = new MockRenderBuffer(this.nextId++, usage, byteLength, initialData);
     this.buffers.add(buffer);
+    this.frameCounters.bufferCreates += 1;
     return buffer;
   }
 
@@ -641,6 +657,7 @@ export class MockRenderDevice implements RenderDevice {
     }
     const program = new MockShaderProgram(this.nextId++, sources.label, sources.marker, reflectShaderSources(sources));
     this.shaders.add(program);
+    this.frameCounters.programCompiles += 1;
     return program;
   }
 
@@ -670,6 +687,7 @@ export class MockRenderDevice implements RenderDevice {
       descriptor.sampleCount ?? 1
     );
     this.renderTargets.add(target);
+    this.frameCounters.renderTargetsCreated += 1;
     return target;
   }
 
@@ -698,6 +716,7 @@ export class MockRenderDevice implements RenderDevice {
       });
     }
     mockTarget.colorPixels.set(pixels);
+    this.frameCounters.textureUploads += 1;
     if (mockTarget.colorFloatPixels) {
       for (let index = 0; index < pixels.length; index += 4) {
         mockTarget.colorFloatPixels[index] = (pixels[index] ?? 0) / 255;
@@ -718,6 +737,11 @@ export class MockRenderDevice implements RenderDevice {
   }
 
   readPixels(x: number, y: number, width: number, height: number): Uint8Array {
+    this.frameCounters.readbacks += 1;
+    return this.readPixelsImpl(x, y, width, height);
+  }
+
+  private readPixelsImpl(x: number, y: number, width: number, height: number): Uint8Array {
     this.assertAlive();
     if (![x, y, width, height].every(Number.isInteger) || x < 0 || y < 0 || width <= 0 || height <= 0) {
       throw new RenderDeviceError("Readback rectangle must be positive and in bounds", "INVALID_READBACK_RECT", { x, y, width, height });
@@ -759,6 +783,7 @@ export class MockRenderDevice implements RenderDevice {
   }
 
   readFloatPixels(x: number, y: number, width: number, height: number): Float32Array {
+    this.frameCounters.readbacks += 1;
     this.assertAlive();
     if (![x, y, width, height].every(Number.isInteger) || x < 0 || y < 0 || width <= 0 || height <= 0) {
       throw new RenderDeviceError("Float readback rectangle must be positive and in bounds", "INVALID_READBACK_RECT", { x, y, width, height });
@@ -805,12 +830,13 @@ export class MockRenderDevice implements RenderDevice {
       }
       return output;
     }
-    const bytes = this.readPixels(x, y, width, height);
+    const bytes = this.readPixelsImpl(x, y, width, height);
     for (let index = 0; index < bytes.length; index += 1) output[index] = bytes[index]! / 255;
     return output;
   }
 
   readDepthPixels(x: number, y: number, width: number, height: number): Float32Array {
+    this.frameCounters.readbacks += 1;
     this.assertAlive();
     if (![x, y, width, height].every(Number.isInteger) || x < 0 || y < 0 || width <= 0 || height <= 0) {
       throw new RenderDeviceError("Depth readback rectangle must be positive and in bounds", "INVALID_READBACK_RECT", { x, y, width, height });
@@ -927,12 +953,37 @@ export class MockRenderDevice implements RenderDevice {
       });
     }
     this.drawCommands.push(command);
+    this.frameCounters.drawCalls += 1;
   }
 
   endFrame(): void {
     this.assertAlive();
     this.assertFrame();
     this.frameActive = false;
+  }
+
+  /** C-28 (PRD 11): native measured counters. Per-frame fields describe the frame in progress; live gauges come from diagnostics. */
+  counters(): import("./contracts/device").DeviceCounters {
+    const diag = this.getDiagnostics();
+    return {
+      drawCalls: this.frameCounters.drawCalls,
+      bufferCreates: this.frameCounters.bufferCreates,
+      textureUploads: this.frameCounters.textureUploads,
+      readbacks: this.frameCounters.readbacks,
+      renderTargetsCreated: this.frameCounters.renderTargetsCreated,
+      programCompiles: this.frameCounters.programCompiles,
+      liveBuffers: diag.buffers,
+      // The mock has no vertex-array concept; C-28 types this `number` so there
+      // is no "unmeasured" sentinel available.
+      liveVertexArrays: 0,
+      textureBytes: diag.textureBytes ?? 0,
+      renderTargetBytes: diag.gpuTargetBytes ?? 0
+    };
+  }
+
+  /** Zeroes the per-frame counter fields only; live gauges are unaffected. */
+  resetFrameCounters(): void {
+    this.frameCounters = { drawCalls: 0, bufferCreates: 0, textureUploads: 0, readbacks: 0, renderTargetsCreated: 0, programCompiles: 0 };
   }
 
   captureState(): ReadonlyMap<string, string | number | boolean | null> {

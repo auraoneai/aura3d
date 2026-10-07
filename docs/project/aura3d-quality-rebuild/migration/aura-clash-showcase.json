@@ -1,0 +1,66 @@
+{
+  "schema": "aura3d.quality-rebuild.route-composition/1",
+  "generatedAt": "2026-10-06T15:04:01.641Z",
+  "root": "/tmp/ac-shadow",
+  "routes": {
+    "aura-clash-showcase": {
+      "route": "aura-clash-showcase",
+      "appDir": "apps/aura-clash-showcase",
+      "loc": {
+        "evidence": 16279,
+        "presentation": 3383,
+        "gameplay": 42941,
+        "generated": 3862,
+        "classified": 62603,
+        "evidencePct": 26
+      },
+      "globals": [
+        "__AURA3D_CLASH_CROWD_PROBE__",
+        "__AURA3D_CLASH_SPOTLIGHT_PROBE__",
+        "__AURA3D_GAME_EVIDENCE__",
+        "__AURA3D_GAME_RUNTIME__",
+        "__AURA_CLASH_ARENA_PROOF__",
+        "__AURA_CLASH_ARENA_TEST_DRIVER__",
+        "__AURA_CLASH_BLEND_PROOF__",
+        "__AURA_CLASH_EVENT_TRACKS_PROOF__",
+        "__AURA_CLASH_INERTIALIZATION_PROOF__",
+        "__AURA_CLASH_SECONDARY_MOTION_PROOF__",
+        "__AURA_CLASH_VISUAL_REVIEW__"
+      ],
+      "captureBranches": {
+        "ART": 0,
+        "FRAMING": 0,
+        "TRANSIENT": 0,
+        "UNKNOWN": 2
+      },
+      "captureFlag": [
+        "?capture"
+      ],
+      "cues": {
+        "sample": 16,
+        "synth": 0,
+        "html-audio": 0
+      },
+      "postPass": null
+    }
+  },
+  "totals": {
+    "loc": {
+      "evidence": 16279,
+      "presentation": 3383,
+      "gameplay": 42941,
+      "generated": 3862
+    },
+    "captureBranches": {
+      "ART": 0,
+      "FRAMING": 0,
+      "TRANSIENT": 0,
+      "UNKNOWN": 2
+    },
+    "cues": {
+      "sample": 16,
+      "synth": 0,
+      "html-audio": 0
+    }
+  }
+}

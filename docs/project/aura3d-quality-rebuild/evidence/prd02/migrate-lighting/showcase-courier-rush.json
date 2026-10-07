@@ -1,0 +1,322 @@
+{
+  "root": "apps/showcase-courier-rush",
+  "files": 13,
+  "changed": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 250,
+      "construct": "lights.point({ intensity: 5.2 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 65 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 250,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 251,
+      "construct": "lights.point({ intensity: 4.8 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 60 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 251,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 252,
+      "construct": "lights.point({ intensity: 4.2 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 53 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 252,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 425,
+      "construct": "lights.point({ intensity: 2 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 25 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 425,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 426,
+      "construct": "lights.point({ intensity: 1.8 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 23 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 426,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 427,
+      "construct": "lights.point({ intensity: 2.15 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 27 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 427,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 428,
+      "construct": "lights.point({ intensity: 1.45 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 18 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 428,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 429,
+      "construct": "lights.point({ intensity: 1.35 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 17 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 429,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 430,
+      "construct": "lights.point({ intensity: 1.8 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 23 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 430,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 431,
+      "construct": "lights.point({ intensity: 1.65 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 21 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 431,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 432,
+      "construct": "lights.point({ intensity: 1.4 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 18 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 432,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 531,
+      "construct": "lights.point({ intensity: 2.3 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 29 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 531,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 532,
+      "construct": "lights.point({ intensity: 2.2 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 28 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 532,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 533,
+      "construct": "lights.point({ intensity: 2 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 25 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 533,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 699,
+      "construct": "lights.point({ intensity: 4 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 50 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/city.ts",
+      "line": 699,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/main.ts",
+      "line": 307,
+      "construct": "lights.point({ intensity: 1.9 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 24 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/main.ts",
+      "line": 307,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/main.ts",
+      "line": 308,
+      "construct": "lights.point({ intensity: 1.1 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 14 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/main.ts",
+      "line": 308,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/main.ts",
+      "line": 309,
+      "construct": "lights.point({ intensity: 1.9 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 24 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/main.ts",
+      "line": 309,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/main.ts",
+      "line": 310,
+      "construct": "lights.point({ intensity: 2.1 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 26 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/main.ts",
+      "line": 310,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/main.ts",
+      "line": 311,
+      "construct": "lights.point({ intensity: 1.7 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 21 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/main.ts",
+      "line": 311,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/main.ts",
+      "line": 312,
+      "construct": "lights.point({ intensity: 1.25 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 16 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/main.ts",
+      "line": 312,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    }
+  ]
+}

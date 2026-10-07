@@ -1,0 +1,14 @@
+/* §7.7 theme "arcade-neon" — mirror of HUD_THEMES["arcade-neon"] in hud/themes.ts (runtime source of truth). */
+.a3g-hud.a3g-theme-arcade-neon {
+  --a3g-font: "A3G Orbitron","Orbitron",system-ui,sans-serif;
+  --a3g-fg: #e8fbff;
+  --a3g-fg-dim: #9ad9e6;
+  --a3g-accent: #39f5ff;
+  --a3g-accent2: #ff42c8;
+  --a3g-warn: #ffd166;
+  --a3g-danger: #ff4d6d;
+  --a3g-bg: rgba(6,10,26,0.72);
+  --a3g-edge: rgba(57,245,255,0.55);
+  --a3g-glow: 0 0 12px rgba(57,245,255,0.6);
+  --a3g-radius: 4px;
+}
