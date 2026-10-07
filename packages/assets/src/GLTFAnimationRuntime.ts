@@ -557,10 +557,29 @@ interface RuntimeSkinningBinding {
   readonly mesh: GLTFMeshAsset;
   readonly skin: GLTFSkinAsset;
   readonly bindWorldMatrix: Mat4;
+  /**
+   * PRD-06 T0.11: the persistent joint palette buffer — allocated once at bind,
+   * written in place every frame. The binding object itself is also the C-18
+   * `paletteKey` (stable per skin instance for the actor runtime's lifetime).
+   */
+  readonly paletteMatrices: Float32Array;
 }
 
 type WeightedAccumulator = { value: AnimationValue; weight: number; type: TrackValueType };
 type TargetAccumulator = { type: TrackValueType; base?: WeightedAccumulator; additive?: AnimationValue };
+
+/** Column-major mat4 multiply written into a Float32Array slot — the T0.11 no-alloc palette path. */
+function multiplyMat4Into(out: Float32Array, outOffset: number, a: ArrayLike<number>, b: ArrayLike<number>): void {
+  for (let col = 0; col < 4; col += 1) {
+    for (let row = 0; row < 4; row += 1) {
+      out[outOffset + col * 4 + row] =
+        a[0 * 4 + row]! * b[col * 4 + 0]! +
+        a[1 * 4 + row]! * b[col * 4 + 1]! +
+        a[2 * 4 + row]! * b[col * 4 + 2]! +
+        a[3 * 4 + row]! * b[col * 4 + 3]!;
+    }
+  }
+}
 
 export class GLTFSceneAnimationRuntime {
   private readonly clipsByName = new Map<string, AnimationClip>();
@@ -574,6 +593,8 @@ export class GLTFSceneAnimationRuntime {
   private footPlanting: GLTFootPlantingConfig | undefined;
   private footRig: FootIkRig | undefined;
   private lastApply?: GLTFSceneAnimationApplyResult;
+  /** T0.11 scratch for the per-joint palette multiply (inverseMeshWorld * jointWorld). */
+  private readonly paletteScratch = new Float32Array(16);
 
   constructor(private readonly options: GLTFSceneAnimationRuntimeOptions) {
     for (const clip of options.clips) {
@@ -964,7 +985,7 @@ export class GLTFSceneAnimationRuntime {
         const mesh = meshesByName.get(renderable.geometry);
         const skin = mesh?.skinIndex === undefined ? undefined : this.options.asset.skins[mesh.skinIndex];
         if (!mesh || !skin || skin.joints.length > MAX_RENDERABLE_SKINNING_JOINTS) continue;
-        this.skinningBindings.push({ node, renderable, mesh, skin, bindWorldMatrix: [...node.transform.worldMatrix] as Mat4 });
+        this.skinningBindings.push({ node, renderable, mesh, skin, bindWorldMatrix: [...node.transform.worldMatrix] as Mat4, paletteMatrices: new Float32Array(skin.joints.length * 16) });
       }
     }
   }
@@ -1267,7 +1288,9 @@ export class GLTFSceneAnimationRuntime {
     let updated = 0;
     const missingTargets: string[] = [];
     for (const binding of this.skinningBindings) {
-      const matrices = new Float32Array(binding.skin.joints.length * 16);
+      // T0.11: write into the binding's persistent palette buffer — no per-frame
+      // Float32Array allocation, and the renderer's C-18 cache can key on it.
+      const matrices = binding.paletteMatrices;
       const inverseMeshWorld = invertMat4(binding.node.transform.worldMatrix);
       let complete = true;
       for (let index = 0; index < binding.skin.jointNames.length; index += 1) {
@@ -1279,14 +1302,19 @@ export class GLTFSceneAnimationRuntime {
           complete = false;
           break;
         }
-        const jointMatrix = multiplyMat4(multiplyMat4(inverseMeshWorld, jointNode.transform.worldMatrix), inverseBind as Mat4);
-        matrices.set(jointMatrix, index * 16);
+        // (inverseMeshWorld * jointWorld) * inverseBind, straight into the palette.
+        multiplyMat4Into(this.paletteScratch, 0, inverseMeshWorld, jointNode.transform.worldMatrix);
+        multiplyMat4Into(matrices, index * 16, this.paletteScratch, inverseBind);
       }
       if (!complete) continue;
-      binding.renderable.skinning = {
+      const skinningPalette = {
         jointCount: binding.skin.joints.length,
         matrices
       };
+      // C-18/§9.2: the stable per-skin key the palette cache binds on is this
+      // binding object, not the per-frame `renderable.skinning` wrapper (E40).
+      (skinningPalette as { paletteKey?: object }).paletteKey = binding;
+      binding.renderable.skinning = skinningPalette;
       updated += 1;
     }
     return { updated, missingTargets };
