@@ -9,7 +9,7 @@
  * counts, and pause freezes the whole controller because main stops updating it.
  */
 import type { RuntimeNodeHandleLike } from "@aura3d/engine";
-import type { BoutEvent } from "./mech-fight";
+import type { BoutEvent } from "../../gameplay/arena/mech-fight";
 
 const HIDDEN_SCALE: readonly [number, number, number] = [0.0001, 0.0001, 0.0001];
 

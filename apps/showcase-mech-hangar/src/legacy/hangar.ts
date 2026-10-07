@@ -15,8 +15,8 @@ import {
   selectedParts,
   type BuildSelection,
   type MechSlot
-} from "./parts-catalog";
-import { aggregateStats } from "./stats";
+} from "../gameplay/parts-catalog";
+import { aggregateStats } from "../gameplay/stats";
 
 export interface HangarStateSnapshot {
   readonly selection: BuildSelection;

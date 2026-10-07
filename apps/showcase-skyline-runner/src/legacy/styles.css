@@ -756,3 +756,57 @@ body[data-capture="review"] .act-title-card .act-title-message {
   color: #cfd8de;
   border-color: rgba(207, 216, 222, 0.4);
 }
+
+/* T1.12 (§6.9.15 P0): run-over results overlay — shown once the kit's authored
+ * lives are exhausted; Restart restores the run through the shared reset path. */
+.skyline-results {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4, 10, 16, 0.72);
+  z-index: 40;
+}
+
+.skyline-results[hidden] {
+  display: none;
+}
+
+.skyline-results__card {
+  min-width: 260px;
+  padding: 22px 28px;
+  text-align: center;
+  border: 1px solid rgba(142, 240, 255, 0.4);
+  border-radius: 8px;
+  background: rgba(8, 22, 30, 0.92);
+  color: #eafcff;
+  box-shadow: 0 0 24px rgba(94, 224, 255, 0.18);
+}
+
+.skyline-results__card h2 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  letter-spacing: 0.14em;
+}
+
+.skyline-results__stats {
+  margin: 0 0 16px;
+  font-size: 12px;
+  color: #bfe9f2;
+}
+
+.skyline-results__restart {
+  padding: 8px 18px;
+  border: 1px solid rgba(142, 240, 255, 0.55);
+  border-radius: 4px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: #eafcff;
+  background: rgba(20, 44, 56, 0.9);
+  cursor: pointer;
+}
+
+.skyline-results__restart:hover {
+  background: rgba(30, 62, 78, 0.95);
+}
