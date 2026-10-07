@@ -1,0 +1,24 @@
+{
+  "schema": "aura3d.assets/1.0",
+  "assetBasePath": "/aura-assets/",
+  "outputDir": "public/aura-assets",
+  "typegen": "src/aura-assets.ts",
+  "assets": [
+    {
+      "id": "room",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/kenneyModularDungeonRoomSmall.a7e74a5f.glb",
+      "outputPath": "public/aura-assets/kenneyModularDungeonRoomSmall.a7e74a5f.glb",
+      "url": "/aura-assets/kenneyModularDungeonRoomSmall.a7e74a5f.glb",
+      "hash": "sha256-a7e74a5f2c91ce0503190bcda140259545478d7c80f60243d2c13a897e01af20",
+      "sizeBytes": 412996,
+      "bounds": [12, 5.233, 12],
+      "materials": ["colormap"],
+      "animations": [],
+      "textures": [],
+      "license": "CC0-1.0",
+      "provenance": "Kenney Modular Dungeon Kit room-small (CC0)"
+    }
+  ]
+}

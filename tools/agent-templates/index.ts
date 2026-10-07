@@ -7,6 +7,7 @@ import { basename, resolve } from "node:path";
 import { checkDeploy } from "../../packages/aura3d-cli/src/index";
 import { CREATE_AURA3D_TEMPLATES, createA3DProject, type CreateA3DTemplate } from "../../packages/create-aura3d/src/index";
 import { lookFloorStaticFindings, TEMPLATE_LOOK_FLOOR } from "./look-floor.mjs";
+import { drift as rootTemplateDrift, mirroredTemplateNames } from "./sync-root-templates.mjs";
 import { existsCheck, fileIncludes, writeReport, type ReleaseCheck } from "../check-common";
 
 const exactReleasePlan = loadValidatedReleasePlan();
@@ -148,6 +149,16 @@ const checks: ReleaseCheck[] = [
     pass: templates.every((template) => template in TEMPLATE_LOOK_FLOOR),
     detail: `look floor covers ${Object.keys(TEMPLATE_LOOK_FLOOR).length} templates`
   },
+  // PRD-13 T3.14 — root `templates/` dirs sharing a name with a create-aura3d
+  // template are a generated mirror (tools/agent-templates/sync-root-templates.mjs).
+  ...mirroredTemplateNames().map((template) => {
+    const findings = rootTemplateDrift(template);
+    return {
+      id: `root-template-mirror-${template}`,
+      pass: findings.length === 0,
+      detail: findings.length === 0 ? `templates/${template} mirrors packaged source` : findings.join("; ")
+    };
+  }),
   fileIncludes("packages/create-aura3d/src/index.ts", templates, "create command templates"),
   {
     id: "root-package-template-scope",

@@ -1,4 +1,14 @@
-import { camera, createAuraApp, game, lights, material, model, primitives, scene } from "@aura3d/engine";
+import {
+  camera,
+  createAuraApp,
+  game,
+  lights,
+  looks,
+  material,
+  model,
+  primitives,
+  scene
+} from "@aura3d/engine";
 import { assets } from "../../src/aura-assets.js";
 
 declare global {
@@ -39,7 +49,7 @@ export async function mountExternalCharacterViewer(id: string): Promise<void> {
     scene: scene()
       .background("#05080d")
       .camera(camera.perspective({ position: [0, 1.35, 5.4], target: [0, 1.12, 0], fov: 38 }))
-      .add(lights.ambient({ intensity: 0.42, color: "#dbeafe" }))
+      .add(looks.preset("outdoor-day") /* TODO: pick the scene's genre look — see aura3d look rubric */)
       .add(lights.directional({ position: [6, 10, 8], intensity: 2.5, color: "#fff1d6" }))
       .add(primitives.box({ name: "animation floor", material: material.pbr({ color: "#172131", roughness: 0.9 }) }).position(0, -0.08, 0).scale([5.6, 0.16, 3.2]))
       .add(model(characterAsset, { name: "typed expressive robot", scaleMode: "fit", targetHeight: 2.35 })

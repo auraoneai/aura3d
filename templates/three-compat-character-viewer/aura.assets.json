@@ -1,0 +1,24 @@
+{
+  "schema": "aura3d.assets/1.0",
+  "assetBasePath": "/aura-assets/",
+  "outputDir": "public/aura-assets",
+  "typegen": "src/aura-assets.ts",
+  "assets": [
+    {
+      "id": "character",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/kenneyMiniForestCharacterArcher.0fd0f92e.glb",
+      "outputPath": "public/aura-assets/kenneyMiniForestCharacterArcher.0fd0f92e.glb",
+      "url": "/aura-assets/kenneyMiniForestCharacterArcher.0fd0f92e.glb",
+      "hash": "sha256-0fd0f92e452ffab13529e51037cc804edf6ff3134f6bdd614b7aaea9ae6feb3b",
+      "sizeBytes": 239124,
+      "bounds": [2, 2, 2],
+      "materials": ["colormap"],
+      "animations": ["static", "idle", "walk", "sprint", "jump", "fall", "crouch", "sit", "drive", "die"],
+      "textures": [],
+      "license": "CC0-1.0",
+      "provenance": "Kenney Mini Forest character-archer, rigged (2 skins, 32 clips) (CC0)"
+    }
+  ]
+}
