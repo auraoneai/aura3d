@@ -706,6 +706,26 @@ export class GLTFSceneAnimationRuntime {
   }
 
   /**
+   * T0.6 (PRD-06) — the C-19 `AuraResolvedClipInfo` surface that backs the
+   * `prd06.animation` handle extension's `resolveAnimationClips()`: real GLB
+   * clip durations (plus channel counts and the 5 cm XZ-displacement
+   * root-motion candidate heuristic of T0.7) after the asset has loaded.
+   */
+  resolvedClipInfos(): readonly {
+    readonly name: string;
+    readonly duration: number;
+    readonly channelCount: number;
+    readonly hasRootMotionCandidate: boolean;
+  }[] {
+    return [...this.clipsByName.values()].map((clip) => ({
+      name: clip.name,
+      duration: clip.duration,
+      channelCount: clip.tracks.length,
+      hasRootMotionCandidate: clipHasRootMotionCandidate(clip)
+    }));
+  }
+
+  /**
    * Resolve a requested clip name to the best available registered clip name
    * using fuzzy matching (exact -> synonym group -> substring -> first clip).
    * Returns `undefined` when the runtime has no clips.
@@ -2140,4 +2160,39 @@ function multiplyQuat(a: [number, number, number, number], b: [number, number, n
     a[3] * b[2] + a[0] * b[1] - a[1] * b[0] + a[2] * b[3],
     a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2]
   ];
+}
+
+/**
+ * T0.6/T0.7 (PRD-06) — a clip "has a root-motion candidate" when a translation
+ * track on a hips/root-named target nets more than 5 cm of XZ displacement
+ * between its first and last keyframes.
+ */
+function clipHasRootMotionCandidate(clip: AnimationClip): boolean {
+  for (const track of clip.tracks) {
+    const target = parseAnimationTarget(track.target);
+    if (target?.kind !== "node" || target.path !== "translation") continue;
+    if (!/hips|root|pelvis/i.test(target.nodeName)) continue;
+    const keys = track.keyframes ?? [];
+    if (keys.length < 2) continue;
+    const first = vec3OfKeyframeValue(keys[0]!.value);
+    const last = vec3OfKeyframeValue(keys[keys.length - 1]!.value);
+    if (!first || !last) continue;
+    const dx = last[0] - first[0];
+    const dz = last[2] - first[2];
+    if (Math.hypot(dx, dz) > 0.05) return true;
+  }
+  return false;
+}
+
+function vec3OfKeyframeValue(value: unknown): [number, number, number] | undefined {
+  if (Array.isArray(value) || ArrayBuffer.isView(value)) {
+    const arr = value as ArrayLike<number>;
+    if (arr.length >= 3) return [arr[0]!, arr[1]!, arr[2]!];
+    return undefined;
+  }
+  if (value && typeof value === "object") {
+    const v = value as { x?: number; y?: number; z?: number };
+    if (typeof v.x === "number" && typeof v.z === "number") return [v.x, v.y ?? 0, v.z];
+  }
+  return undefined;
 }

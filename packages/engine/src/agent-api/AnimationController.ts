@@ -25,7 +25,7 @@ import {
   type AuraFootPlantingOptions,
   type AuraResolvedFootPlanting
 } from "./FootPlanting.js";
-import type { AuraBoneMaskSpec } from "../contracts/animation.js";
+import type { AuraBoneMaskSpec, AuraResolvedClipInfo } from "../contracts/animation.js";
 import { qrAnimationFlags } from "./app/actorAnimationHandle.js";
 
 export type {
@@ -448,6 +448,15 @@ export interface AuraAnimationRuntimeNodeBindingOptions<TClipId extends string =
   readonly layer?: string;
   readonly applyOnUpdate?: boolean;
   readonly applyPose?: boolean;
+  /**
+   * T0.4 (PRD-06) — pose drive mode. `"clips"` (the `A3D_QR_ANIMATION` default)
+   * skips `setAnimationPose` unless the active clip produces a pose (authored
+   * sampler or non-empty tracks); `"pose"` applies sampled poses for every
+   * clip. `applyPose` remains the deprecated §11 alias: explicit
+   * `applyPose: true` → `"pose"`, `applyPose: false` → `"clips"`. Flag-off
+   * ignores `drive` entirely.
+   */
+  readonly drive?: "clips" | "pose";
   readonly applyMorphTargets?: boolean;
   readonly applyImportedRuntime?: boolean;
   readonly importedRuntime?: AuraAnimationImportedRuntimeLike;
@@ -632,6 +641,11 @@ export interface AuraRegisteredAnimationClip<
   readonly fallbackPose?: AnimationPose;
   readonly poseBakedFallback?: AuraPoseBakedFallbackRuntimeMetadata<TClipId>;
   readonly metadata?: AuraAnimationClipMetadata;
+  /** T0.4 — true when the clip definition carried an authored `sample`
+   * (as opposed to the fallback sampler synthesized from tracks/fallbackPose).
+   * Distinguishes clips that produce real poses from embedded-name clips that
+   * wait for `resolveAnimationClips` / clip-drive. */
+  readonly authoredSample?: boolean;
   readonly sample?: (context: AuraAnimationClipSampleContext<TClipId, TEvent>) => AnimationPose;
 }
 
@@ -673,6 +687,12 @@ interface InternalRuntimeNodeBinding<TClipId extends string> {
   readonly id: string;
   readonly node: RuntimeNodeHandleLike;
   readonly options: AuraAnimationRuntimeNodeBindingOptions<TClipId>;
+  /** T0.4 — resolved at bind (flags are env-static): `"clips"` skips pose
+   * application unless the active clip produces a pose. */
+  readonly drive: "clips" | "pose";
+  /** T0.6 — true while `resolveAnimationClips()` is in flight; the binding is
+   * skipped by `applyRuntimeNodeBinding` until it settles. */
+  pendingClips?: boolean;
   readonly resolvedFootPlanting?: AuraResolvedFootPlanting;
   snapshot?: AuraAnimationRuntimeNodeBindingSnapshot<TClipId>;
 }
@@ -862,9 +882,12 @@ export class AnimationController<
     options: AuraAnimationRuntimeNodeBindingOptions<TClipId> = {}
   ): AuraAnimationRuntimeNodeBinding<TClipId> {
     const id = options.id ?? `${node.id}:animation`;
+    const flagOn = qrAnimationFlags().on("A3D_QR_ANIMATION");
+    const drive = resolveRuntimeBindingDrive(options, flagOn);
     const binding: InternalRuntimeNodeBinding<TClipId> = {
       id,
       node,
+      drive,
       options: {
         applyOnUpdate: true,
         applyPose: true,
@@ -877,8 +900,50 @@ export class AnimationController<
       },
       ...(options.footPlanting ? { resolvedFootPlanting: resolveFootPlanting(options.footPlanting) } : {})
     };
+    // T0.4/§11 — explicit `applyPose: true` aliases drive:"pose"; warn when the
+    // registry holds clips that produce no pose (they would write empty poses).
+    if (flagOn && drive === "pose" && options.drive === undefined && options.applyPose === true) {
+      const unsampled = this.listClips()
+        .filter((clip) => !clip.authoredSample && clip.tracks.length === 0)
+        .map((clip) => clip.id)
+        .slice(0, 3);
+      if (unsampled.length > 0) {
+        console.warn(
+          `[animation] bindRuntimeNode "${id}": explicit applyPose keeps drive:"pose" — ` +
+            `clips without samplers (${unsampled.join(", ")}) will write empty poses. ` +
+            `Prefer drive:"clips" or omit applyPose under A3D_QR_ANIMATION.`
+        );
+      }
+    }
     this.runtimeNodeBindings.set(id, binding);
-    binding.snapshot = this.applyRuntimeNodeBinding(binding);
+
+    // T0.6 — C-19 `resolveAnimationClips` (model handles via the prd06.animation
+    // node-handle extension) delivers real clip durations after the actor
+    // loads. The binding stays synchronous and pending until the promise
+    // settles; flag-off never calls it. On resolve, `durationSource:"defaulted"`
+    // clips adopt the runtime duration; on reject we warn and stay pending.
+    if (flagOn) {
+      const resolve = runtimeNodeResolveAnimationClips(node);
+      if (resolve) {
+        binding.pendingClips = true;
+        resolve
+          .then((infos) => {
+            this.applyResolvedClipDurations(infos);
+            binding.pendingClips = false;
+            this.applyRuntimeNodeBinding(binding);
+          })
+          .catch((error: unknown) => {
+            console.warn(
+              `ANIMATION_CLIP_RESOLVE_FAILED: binding "${id}" could not resolve animation clips; ` +
+                `the binding stays pending.`,
+              error
+            );
+          });
+      }
+    }
+    if (!binding.pendingClips) {
+      binding.snapshot = this.applyRuntimeNodeBinding(binding);
+    }
 
     return {
       id,
@@ -1252,9 +1317,10 @@ export class AnimationController<
       ? this.selectStates(options.clipId)
       : this.getInternalStates().filter((state) => effectiveWeight(state) > 0);
 
-    const pose = options.time !== undefined && options.clipId
-      ? this.sampleSinglePose(this.requireClip(options.clipId), options.time, undefined, options.suppressRootMotion)
-      : this.blendStates(states, options.suppressRootMotion);
+    const pose =
+      (options.time !== undefined && options.clipId
+        ? this.sampleSinglePose(this.requireClip(options.clipId), options.time, undefined, options.suppressRootMotion)
+        : this.blendStates(states, options.suppressRootMotion)) ?? emptyPose();
 
     const diagnostics = this.diagnostics();
     const snapshot: AuraAnimationPoseSnapshot<TClipId> = {
@@ -1496,7 +1562,10 @@ export class AnimationController<
       clonePose(definition.fallbackPose) ??
       clonePose(extractPoseBakedFallback(definition.metadata?.poseBakedFallback)) ??
       clonePose(this.poseBakedFallback) ??
-      createIdentityPose(this.skeleton);
+      // T0.5 — flag-on stops using the synthesized identity pose as the
+      // implicit fallback: embedded clips without authored poses produce no
+      // pose at all instead of a 1-bone identity (research/19 C16).
+      (qrAnimationFlags().on("A3D_QR_ANIMATION") ? undefined : createIdentityPose(this.skeleton));
     const tracks = [...(definition.tracks ?? [])];
     const layer = definition.layer ?? definition.metadata?.layer?.id ?? this.defaultLayer;
     const layerMetadata = cloneLayerMetadata(definition.layerMetadata ?? definition.metadata?.layer ?? this.layerMetadata.get(layer) ?? inferLayerMetadata(layer));
@@ -1555,6 +1624,7 @@ export class AnimationController<
       externalHumanoidLibrary,
       fallbackPose,
       poseBakedFallback: poseBakedFallbackMetadata,
+      authoredSample: Boolean(definition.sample),
       sample
     };
 
@@ -1695,7 +1765,7 @@ export class AnimationController<
     this.emit("crossfadeEnd", event);
   }
 
-  private blendStates(states: readonly InternalPlaybackState<TClipId, TEvent>[], suppressRootMotion?: boolean): AnimationPose {
+  private blendStates(states: readonly InternalPlaybackState<TClipId, TEvent>[], suppressRootMotion?: boolean): AnimationPose | undefined {
     const weightedStates = states.filter((state) => effectiveWeight(state) > 0);
     if (weightedStates.length === 0) {
       const fallback = clonePose(this.poseBakedFallback) ?? createIdentityPose(this.skeleton);
@@ -1721,8 +1791,11 @@ export class AnimationController<
     let poseBakedFallback = false;
     let poseBakedFallbackMetadata: AuraPoseBakedFallbackRuntimeMetadata<TClipId> | undefined;
 
+    let sampledPoses = 0;
     for (const state of weightedStates) {
       const pose = this.sampleSinglePose(state.clip, state.localTime, state, suppressRootMotion);
+      if (!pose) continue; // T0.5 — clips that produce no pose contribute nothing
+      sampledPoses += 1;
       const weight = effectiveWeight(state);
       totalWeight += weight;
       rootMotionSuppressed = rootMotionSuppressed || Boolean(pose.metadata?.rootMotionSuppressed);
@@ -1753,6 +1826,11 @@ export class AnimationController<
           weight
         );
       }
+    }
+
+    if (sampledPoses === 0) {
+      // T0.5 — propagate undefined: every contributing clip produced no pose.
+      return undefined;
     }
 
     const bones: Record<string, AnimationPoseTransform> = {};
@@ -1789,7 +1867,18 @@ export class AnimationController<
     time: number,
     state?: InternalPlaybackState<TClipId, TEvent>,
     suppressRootMotion?: boolean
-  ): AnimationPose {
+  ): AnimationPose | undefined {
+    if (
+      qrAnimationFlags().on("A3D_QR_ANIMATION") &&
+      !clip.authoredSample &&
+      clip.tracks.length === 0 &&
+      clip.metadata?.source === "embedded-glb-animation-name"
+    ) {
+      // T0.5 — an embedded clip with no authored sampler and no tracks produces
+      // no pose (not the emptyPose that T0.2 rejects); the clip is driven by
+      // name resolution + clipSamples instead.
+      return undefined;
+    }
     const localTime = normalizeStateTime(time, clip.duration, clip.loop ? "loop" : "once");
     const sampled = clip.sample?.({
       clip,
@@ -1797,19 +1886,24 @@ export class AnimationController<
       normalizedTime: clip.duration > 0 ? localTime / clip.duration : 0,
       playbackState: state ? cloneState(state) : undefined
     });
-    const pose = isAnimationPose(sampled) ? sampled : clonePose(clip.fallbackPose) ?? emptyPose({ poseBakedFallback: true });
+    const pose = isAnimationPose(sampled) ? sampled : clonePose(clip.fallbackPose);
+    const resolvedPose = pose ?? emptyPose({ poseBakedFallback: true });
     const shouldSuppress = suppressRootMotion ?? state?.rootMotionSuppressed ?? clip.suppressRootMotion ?? this.suppressRootMotion;
-    return shouldSuppress ? suppressPoseRootMotion(pose, clip.rootMotion ?? this.rootMotion) : clonePose(pose) ?? emptyPose();
+    return shouldSuppress ? suppressPoseRootMotion(resolvedPose, clip.rootMotion ?? this.rootMotion) : clonePose(resolvedPose) ?? emptyPose();
   }
 
   private applyRuntimeNodeBindings(): void {
     for (const binding of this.runtimeNodeBindings.values()) {
-      if (binding.options.applyOnUpdate === false) continue;
+      if (binding.options.applyOnUpdate === false || binding.pendingClips) continue;
       this.applyRuntimeNodeBinding(binding);
     }
   }
 
   private applyRuntimeNodeBinding(binding: InternalRuntimeNodeBinding<TClipId>): AuraAnimationRuntimeNodeBindingSnapshot<TClipId> {
+    if (binding.pendingClips) {
+      // T0.6 — nothing is pushed while resolveAnimationClips() is pending.
+      return binding.snapshot ?? this.createRuntimeNodeBindingSnapshot(binding);
+    }
     let snapshot = this.createRuntimeNodeBindingSnapshot(binding);
     const animation = createRuntimeNodeAnimationSpec(snapshot, binding.options);
 
@@ -1827,7 +1921,18 @@ export class AnimationController<
       binding.node.setAnimationBinding(createRuntimeNodeAnimationBindingMetadata(snapshot));
     }
 
-    if (binding.options.applyPose !== false && snapshot.pose && typeof binding.node.setAnimationPose === "function") {
+    // T0.4 — with A3D_QR_ANIMATION and drive:"clips", poses are applied only
+    // for clips that actually produce them (authored sampler or non-empty
+    // tracks); flag-off keeps the verbatim applyPose gate.
+    const clipsDriven =
+      qrAnimationFlags().on("A3D_QR_ANIMATION") && binding.drive === "clips";
+    const activeClip = snapshot.appliedClipId ? this.clips.get(snapshot.appliedClipId) : undefined;
+    if (
+      binding.options.applyPose !== false &&
+      (!clipsDriven || clipProducesPose(activeClip)) &&
+      snapshot.pose &&
+      typeof binding.node.setAnimationPose === "function"
+    ) {
       binding.node.setAnimationPose(snapshot.pose, createRuntimeNodeAnimationPoseBindingMetadata(snapshot));
     }
 
@@ -1844,6 +1949,27 @@ export class AnimationController<
 
     binding.snapshot = snapshot;
     return snapshot;
+  }
+
+  /** T0.6 — after `resolveAnimationClips()` settles, replace
+   * `durationSource: "defaulted"` durations with the runtime values (matched by
+   * clip name/id) so looping/wrapping uses the real GLB duration. */
+  private applyResolvedClipDurations(infos: readonly AuraResolvedClipInfo[]): void {
+    if (infos.length === 0) return;
+    const byName = new Map(infos.map((info) => [info.name, info]));
+    for (const clip of this.clips.values()) {
+      const metadata = clip.metadata as { durationSource?: string } | undefined;
+      if (metadata?.durationSource !== "defaulted") continue;
+      const info = byName.get(clip.name ?? clip.id) ?? byName.get(clip.id);
+      if (!info || !Number.isFinite(info.duration) || info.duration <= 0) continue;
+      (clip as { duration: number }).duration = info.duration;
+      metadata.durationSource = "runtime";
+      for (const state of this.getInternalStates()) {
+        if (state.clipId !== clip.id) continue;
+        (state as { duration: number }).duration = info.duration;
+        state.normalizedTime = state.localTime / info.duration;
+      }
+    }
   }
 
   private createRuntimeNodeBindingSnapshot(binding: InternalRuntimeNodeBinding<TClipId>): AuraAnimationRuntimeNodeBindingSnapshot<TClipId> {
@@ -3042,6 +3168,47 @@ function suppressPoseRootMotion(pose: AnimationPose, metadata?: AuraAnimationRoo
 
 function isAnimationPose(value: unknown): value is AnimationPose {
   return isObject(value) && isObject((value as { readonly bones?: unknown }).bones);
+}
+
+/** T0.4 — resolve the binding's drive mode. Flag-on defaults to "clips";
+ * `applyPose` stays the §11 alias (explicit true → "pose", false → "clips").
+ * Flag-off always resolves "pose" so every downstream gate is a no-op. */
+function resolveRuntimeBindingDrive<TClipId extends string>(
+  options: AuraAnimationRuntimeNodeBindingOptions<TClipId>,
+  flagOn: boolean
+): "clips" | "pose" {
+  if (options.drive) return options.drive;
+  if (!flagOn) return "pose";
+  if (options.applyPose === true) return "pose";
+  return "clips";
+}
+
+/** T0.4 — a clip produces a pose when it has an authored sampler or non-empty
+ * tracks; embedded-name clips (fallback sampler, no tracks) do not. */
+function clipProducesPose<TClipId extends string, TEvent extends AnimationClipEvent>(
+  clip: AuraRegisteredAnimationClip<TClipId, TEvent> | undefined
+): boolean {
+  return Boolean(clip && (clip.authoredSample || clip.tracks.length > 0));
+}
+
+/** T0.6 — the C-19 `resolveAnimationClips` member, surfaced directly on the
+ * handle or via the C-37 `animation` node-handle extension. */
+function runtimeNodeResolveAnimationClips(
+  node: RuntimeNodeHandleLike
+): Promise<readonly AuraResolvedClipInfo[]> | undefined {
+  const extended = node as RuntimeNodeHandleLike & {
+    resolveAnimationClips?: () => Promise<readonly AuraResolvedClipInfo[]>;
+    animation?: { resolveAnimationClips?: () => Promise<readonly AuraResolvedClipInfo[]> };
+  };
+  const direct = extended.resolveAnimationClips;
+  const viaExtension = extended.animation?.resolveAnimationClips;
+  const fn = direct ?? viaExtension;
+  if (typeof fn !== "function") return undefined;
+  try {
+    return fn.call(direct ? node : extended.animation);
+  } catch {
+    return Promise.reject(new Error(`resolveAnimationClips threw synchronously for node "${node.id}".`));
+  }
 }
 
 function emptyPose(metadata: Record<string, unknown> = {}): AnimationPose {
