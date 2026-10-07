@@ -7,6 +7,8 @@
 
 import type { AuraApp } from "../../agent-api/index";
 import type { AuraOutputSurface } from "../../contracts/output";
+import { rendererProgramCachePeek } from "@aura3d/rendering";
+import type { DeviceCounters } from "@aura3d/rendering/contracts";
 
 /** The output surface keeps its own state block for the diagnostics section. */
 export const PRD01_OUTPUT_STATE = Symbol.for("a3d.prd01.output-state");
@@ -66,6 +68,17 @@ interface Prd01RendererLike {
     readonly backingHeight: number;
   };
   readonly renderScale?: number;
+  readonly device?: {
+    counters?: () => Partial<DeviceCounters>;
+  };
+  readonly frameStats?: {
+    percentiles(field: "cpuSubmitMs" | "cpuFrameMs" | "gpuMs"): {
+      readonly p50: number;
+      readonly p95: number;
+      readonly p99: number;
+      readonly max: number;
+    };
+  };
 }
 
 export function collectResolution(app: AuraApp): unknown {
@@ -109,24 +122,57 @@ export function collectResolution(app: AuraApp): unknown {
   };
 }
 
-export function collectPrograms(_app: AuraApp): unknown {
-  // The program generator/cache is Phase 3; report the honest empty state.
+export function collectPrograms(app: AuraApp): unknown {
+  // Phase 6 (C-31): read the live generator cache + C-28 counters off the
+  // PRD01_RENDERER seam. Peek (never create) so a stub can't get planted.
+  const renderer = (app as { [PRD01_RENDERER]?: Prd01RendererLike })[PRD01_RENDERER];
+  const device = renderer?.device;
+  const counters = device?.counters?.();
+  const cache = device ? rendererProgramCachePeek(device as Parameters<typeof rendererProgramCachePeek>[0]) : undefined;
+  if (!cache) {
+    return {
+      stub: cache === undefined && device === undefined,
+      compiled: null,
+      pending: null,
+      failed: null,
+      compileMsTotal: null,
+      reused: null,
+      active: null,
+      cacheKeys: [] as const,
+      programs: [] as const,
+      deviceProgramCompiles: counters?.programCompiles ?? null
+    };
+  }
+  const stats = cache.stats();
+  const introspective = cache as { keys?: () => readonly string[]; reused?: number };
   return {
-    stub: true,
-    compiled: null,
-    reused: null,
-    active: null,
-    cacheKeys: [] as const,
-    programs: [] as const
+    stub: false,
+    compiled: stats.compiled,
+    pending: stats.pending,
+    failed: stats.failed,
+    compileMsTotal: stats.compileMsTotal,
+    reused: introspective.reused ?? null,
+    active: stats.compiled,
+    cacheKeys: introspective.keys?.() ?? ([] as const),
+    programs: introspective.keys?.() ?? ([] as const),
+    deviceProgramCompiles: counters?.programCompiles ?? null
   };
 }
 
-export function collectFrameAllocations(_app: AuraApp): unknown {
-  // Frame-graph allocations land with Phase 3/4; nothing observable yet.
+export function collectFrameAllocations(app: AuraApp): unknown {
+  // Phase 6 (C-31/C-28): steady-state deltas on device counters are the lane's
+  // zero-creation signal; cpuSubmitMs percentiles come off the C-28 monitor.
+  const renderer = (app as { [PRD01_RENDERER]?: Prd01RendererLike })[PRD01_RENDERER];
+  const counters = renderer?.device?.counters?.();
+  const cpuSubmit = renderer?.frameStats?.percentiles("cpuSubmitMs") ?? null;
+  const cpuFrame = renderer?.frameStats?.percentiles("cpuFrameMs") ?? null;
   return {
-    stub: true,
-    targets: null,
+    stub: renderer === undefined,
+    targets: counters?.renderTargetsCreated ?? null,
     passes: null,
-    frameBytes: null
+    frameBytes: null,
+    device: counters ?? null,
+    cpuSubmitMs: cpuSubmit,
+    cpuFrameMs: cpuFrame
   };
 }

@@ -20,6 +20,8 @@ import { blendQueueForState, blendStateIsTransparent } from "./BlendModes";
 import { renderStateKey } from "./contracts/blend";
 import type { RenderCommandState } from "./RenderDevice";
 import { type RenderItem } from "./contracts/renderItem";
+import { instanceBufferSlot, type InstanceBufferLike } from "./contracts/geometry";
+import { type VertexFormat } from "./VertexFormat";
 import { type ClusteredForwardLightingResources } from "./ClusteredForwardLighting";
 import { programCacheSlot, type ProgramCacheLike, type ProgramFeatures } from "./contracts/program";
 import { normalizeProgramFeatures } from "./program/ProgramFeatures";
@@ -263,6 +265,21 @@ export class ForwardPass extends BaseRenderPass {
   private clusteredLighting: ClusteredForwardLightingResources | null = null;
   private generatorProgramCache: ProgramCacheLike | undefined;
 
+  // PRD-01 Phase 6 (submission performance): device-keyed pools — ForwardPass
+  // instances are rebuilt per frame/segment, so pass-level caches would never
+  // hit. Keyed by device they survive pass reconstruction (same precedent as
+  // `shaderCaches`) and die with the device.
+  private static readonly pipelineCaches = new WeakMap<RenderDevice, Map<string, RenderPipeline>>();
+  private static readonly uniformPacketPools = new WeakMap<RenderDevice, { free: Map<string, UniformValue>[]; used: Map<string, UniformValue>[] }>();
+  private static readonly instanceSlotPools = new WeakMap<RenderDevice, { buffer: InstanceBufferLike; colors: boolean; capacity: number }[]>();
+  private instanceSlotCursor = 0;
+  private static readonly vertexFormatIds = new WeakMap<VertexFormat, number>();
+  private static nextVertexFormatId = 1;
+  private static readonly renderStateIds = new WeakMap<RenderState, number>();
+  private static nextRenderStateId = 1;
+  private static readonly requiredAttributeIds = new WeakMap<readonly string[], number>();
+  private static nextRequiredAttributeId = 1;
+
   constructor(private readonly options: ForwardPassOptions) {
     super(
       options.framePass?.name ?? "forward",
@@ -274,6 +291,7 @@ export class ForwardPass extends BaseRenderPass {
 
   execute(context: RenderPassContext): void {
     this.skinningPaletteUploads.beginFrame();
+    this.beginFramePools(context.device);
     this.clusteredLighting = resolveForwardClusteredLighting(this.options.lights, context.width, context.height, this.options.cameraViewProjectionMatrix);
     const flags = rendererQrFlags();
     if (qrCoreGeneratorOn(flags)) {
@@ -317,31 +335,36 @@ export class ForwardPass extends BaseRenderPass {
     const material = item.material ?? new UnlitMaterial();
     const baseMaterial = getBaseMaterial(material);
     this.applyLightUniforms(material);
-    const shader = this.getShader(baseMaterial, device);
+    const shader = this.getShader(baseMaterial, device, item);
     if (shader === undefined) return; // A3D_QR_CORE_GENERATOR async-skip (C-02 §A.2)
+    const generated = qrCoreGeneratorOn(rendererQrFlags()) && materialUsesGeneratedProgram(baseMaterial);
     if (item.instanceTransforms && baseMaterial.renderState.cullMode !== "none" && instancedItemNeedsPerInstanceCullState(item)) {
       for (const expanded of expandInstancedRenderItem(item)) {
         this.drawItem(device, expanded);
       }
       return;
     }
-    if (item.instanceTransforms && !supportsInstanceAttributes(shader) && instanceTransformCount(item) > MAX_GPU_INSTANCES) {
+    // Phase 6: generated programs only know attribute-matrix instancing — the
+    // uniform fallback (`u_instanceMatrices[64]`) exists only in the frozen
+    // legacy library, so the >64 split and no-support expansion never apply
+    // on this path.
+    if (item.instanceTransforms && !generated && !supportsInstanceAttributes(shader) && instanceTransformCount(item) > MAX_GPU_INSTANCES) {
       for (const batch of splitInstanceTransforms(item.instanceTransforms)) {
         this.drawItem(device, { ...item, instanceTransforms: batch });
       }
       return;
     }
-    if (item.instanceTransforms && !supportsInstanceAttributes(shader) && !supportsInstanceUniforms(shader)) {
+    if (item.instanceTransforms && !generated && !supportsInstanceAttributes(shader) && !supportsInstanceUniforms(shader)) {
       for (const expanded of expandInstancedRenderItem(item)) {
         this.drawItem(device, expanded);
       }
       return;
     }
-    const generated = qrCoreGeneratorOn(rendererQrFlags()) && materialUsesGeneratedProgram(baseMaterial);
+    const uniforms = generated ? this.acquireUniformPacket(device) : new Map<string, UniformValue>();
     const binding = generated
-      ? this.materialBinding.bindGenerated(material, shader, this.lastProgramFeatures)
+      ? this.materialBinding.bindGenerated(material, shader, this.lastProgramFeatures, uniforms)
       : this.materialBinding.bind(material, shader);
-    const uniforms = new Map<string, UniformValue>(binding.uniforms);
+    if (!generated) for (const [k, v] of binding.uniforms) uniforms.set(k, v);
     applyClusteredLightingUniforms(this.clusteredLighting, shader, uniforms);
     applyEnvironmentLightingUniforms(this.options.environmentLighting, item, shader, uniforms);
     applyEnvironmentFogUniforms(this.options.environmentFog, item, shader, uniforms);
@@ -360,7 +383,7 @@ export class ForwardPass extends BaseRenderPass {
     if (item.skinning) {
       this.skinningPaletteUploads.bind(item, item.skinning, baseMaterial, shader, uniforms);
     }
-    const instanceBinding = item.instanceTransforms ? applyInstanceBinding(device, item, shader, uniforms) : { count: 1 };
+    const instanceBinding = item.instanceTransforms ? this.applyInstanceBinding(device, item, shader, uniforms, generated) : { count: 1 };
     const gpuMorph = item.morphTargets || item.morphWeights ? applyGpuMorphUniforms(item, shader, uniforms) : false;
     const geometry = gpuMorph ? item.geometry : resolveRenderGeometry(item);
     validateMaterialGeometryContract(item, baseMaterial, geometry);
@@ -368,14 +391,7 @@ export class ForwardPass extends BaseRenderPass {
       const vertexBuffer = geometry.vertexBuffer.upload(device);
       const indexBuffer = geometry.indexBuffer?.upload(device);
       const drawRange = resolveDrawRange(geometry, item.drawRange);
-      const pipeline = new RenderPipeline({
-        label: item.label ?? baseMaterial.name,
-        shader,
-        vertexFormat: geometry.vertexBuffer.format,
-        topology: geometry.topology,
-        renderState: renderStateForItem(baseMaterial.renderState, item),
-        requiredAttributes: baseMaterial.requiredAttributes
-      });
+      const pipeline = this.pipelineFor(device, item, baseMaterial, shader, geometry);
       submitDraw(device, pipeline, geometry, instanceBinding.count, drawRange, { item, vertexBuffer, indexBuffer, drawRange, uniforms, instanceBinding });
     } finally {
       for (const buffer of instanceBinding.buffers ?? []) buffer.dispose();
@@ -383,6 +399,55 @@ export class ForwardPass extends BaseRenderPass {
         geometry.dispose();
       }
     }
+  }
+
+  /**
+   * Generated-path instancing (Phase 6): attribute matrices only — the
+   * `u_instanceMatrices[64]` uniform path exists solely in the frozen legacy
+   * library. Matrices (and colors) ride a persistent per-slot `InstanceBuffer`;
+   * `buffers` carries only transient extra-attribute buffers, which the draw
+   * finally-block disposes.
+   */
+  private applyInstanceBinding(
+    device: RenderDevice,
+    item: RenderItem,
+    shader: RenderShaderProgram,
+    uniforms: Map<string, UniformValue>,
+    generated: boolean
+  ): { readonly count: number; readonly attributes?: readonly InstanceVertexAttribute[]; readonly buffers?: readonly RenderBuffer[] } {
+    if (!generated) return applyInstanceBinding(device, item, shader, uniforms);
+    const source = validateInstanceTransformSource(item);
+    const count = source.length / 16;
+    const slot = this.instanceSlotFor(device, count, item.instanceColors !== undefined);
+    slot.buffer.setMatrices(source instanceof Float32Array ? source : new Float32Array(source), count);
+    if (item.instanceColors) {
+      slot.buffer.setColors(item.instanceColors instanceof Float32Array ? item.instanceColors : new Float32Array(item.instanceColors));
+    }
+    const bound = slot.buffer.bind();
+    const extra = createExtraInstanceAttributeBindings(device, item, count, false);
+    return {
+      count,
+      attributes: [
+        ...INSTANCE_MATRIX_ATTRIBUTE_NAMES.map((shaderName, column) => ({
+          buffer: bound.matrixBuffer,
+          shaderName,
+          components: 4 as const,
+          offset: column * 16,
+          stride: 64,
+          divisor: 1
+        })),
+        ...(bound.colorBuffer ? [{
+          buffer: bound.colorBuffer,
+          shaderName: "a_instanceColor",
+          components: 4 as const,
+          offset: 0,
+          stride: 16,
+          divisor: 1
+        }] : []),
+        ...extra.attributes
+      ],
+      ...(extra.buffers.length > 0 ? { buffers: extra.buffers } : {})
+    };
   }
 
   private applyLightUniforms(material: RenderMaterial): void {
@@ -400,13 +465,13 @@ export class ForwardPass extends BaseRenderPass {
     }
   }
 
-  private getShader(material: Material, device: RenderDevice): RenderShaderProgram | undefined {
+  private getShader(material: Material, device: RenderDevice, item?: RenderItem): RenderShaderProgram | undefined {
     const flags = rendererQrFlags();
     this.lastProgramFeatures = undefined;
     if (qrCoreGeneratorOn(flags) && materialUsesGeneratedProgram(material)) {
       const warning = materialFeatureWarning(material);
       if (warning) console.warn(`[prd01] ${warning}`);
-      this.lastProgramFeatures = this.programFeaturesFor(material);
+      this.lastProgramFeatures = this.programFeaturesFor(material, item);
       const handle = this.programCache(device).acquire(this.lastProgramFeatures);
       // async-skip: a not-yet-ready or failed program skips the draw this frame
       // (C-02 §A.2 semantics; warm-then-block warmup renders them ready up front).
@@ -432,7 +497,7 @@ export class ForwardPass extends BaseRenderPass {
     return this.generatorProgramCache;
   }
 
-  private programFeaturesFor(material: Material): ProgramFeatures {
+  private programFeaturesFor(material: Material, item?: RenderItem): ProgramFeatures {
     const flags = rendererQrFlags();
     const tier = this.options.qualityTier ?? QUALITY_TIERS.high;
     const mf = material.programFeatures({ flags, tier });
@@ -440,10 +505,117 @@ export class ForwardPass extends BaseRenderPass {
     return normalizeProgramFeatures({
       ...mf,
       ...axes,
+      // Phase 6: instancing is item-driven — a material's own feature record
+      // only declares it when authored instanced; the draw's program must
+      // cover the union (attribute matrices are the only generated path).
+      ...(item?.instanceTransforms ? { instancing: { color: item.instanceColors !== undefined } } : {}),
       backgroundCoverage: this.options.backgroundCoverage === true,
       pass: "forward",
       target: "glsl300es"
     });
+  }
+
+  // ── Phase 6 submission-perf pools ──────────────────────────────────────
+
+  private static packetPoolFor(device: RenderDevice): { free: Map<string, UniformValue>[]; used: Map<string, UniformValue>[] } {
+    let pool = ForwardPass.uniformPacketPools.get(device);
+    if (!pool) {
+      pool = { free: [], used: [] };
+      ForwardPass.uniformPacketPools.set(device, pool);
+    }
+    return pool;
+  }
+
+  private beginFramePools(device: RenderDevice): void {
+    const pool = ForwardPass.packetPoolFor(device);
+    if (pool.used.length > 0) {
+      pool.free.push(...pool.used);
+      pool.used = [];
+    }
+    this.instanceSlotCursor = 0;
+  }
+
+  /** A cleared per-item scratch map; recycled after the next execute begins. */
+  private acquireUniformPacket(device: RenderDevice): Map<string, UniformValue> {
+    const pool = ForwardPass.packetPoolFor(device);
+    const packet = pool.free.pop() ?? new Map<string, UniformValue>();
+    packet.clear();
+    pool.used.push(packet);
+    return packet;
+  }
+
+  /** Identity ids for the pipeline key — avoids serializing descriptors per draw. */
+  private static weakId<T extends object>(map: WeakMap<T, number>, next: () => number, key: T): number {
+    const existing = map.get(key);
+    if (existing !== undefined) return existing;
+    const id = next();
+    map.set(key, id);
+    return id;
+  }
+
+  /**
+   * One `RenderPipeline` per (shader, vertex format, topology, render state,
+   * required attributes) — previously constructed per item per frame. The
+   * pipeline is a pure descriptor: no GL resources, safe to reuse.
+   */
+  private pipelineFor(
+    device: RenderDevice,
+    item: RenderItem,
+    baseMaterial: Material,
+    shader: RenderShaderProgram,
+    geometry: { readonly vertexBuffer: { readonly format: VertexFormat }; readonly topology?: RenderItem["geometry"]["topology"] }
+  ): RenderPipeline {
+    const renderState = renderStateForItem(baseMaterial.renderState, item);
+    const vertexFormatId = ForwardPass.weakId(ForwardPass.vertexFormatIds, () => ForwardPass.nextVertexFormatId++, geometry.vertexBuffer.format);
+    const renderStateId = ForwardPass.weakId(ForwardPass.renderStateIds, () => ForwardPass.nextRenderStateId++, baseMaterial.renderState);
+    const attrsId = ForwardPass.weakId(ForwardPass.requiredAttributeIds, () => ForwardPass.nextRequiredAttributeId++, baseMaterial.requiredAttributes);
+    // `renderStateForItem` returns the SAME object for the unflipped case, so
+    // the flip bit is the only per-item term needed in the key.
+    const key = `${shader.id}|${vertexFormatId}|${geometry.topology ?? "triangles"}|${renderStateId}:${renderState === baseMaterial.renderState ? 0 : 1}|${attrsId}`;
+    let cache = ForwardPass.pipelineCaches.get(device);
+    if (!cache) {
+      cache = new Map();
+      ForwardPass.pipelineCaches.set(device, cache);
+    }
+    let pipeline = cache.get(key);
+    if (!pipeline || pipeline.shader !== shader) {
+      pipeline = new RenderPipeline({
+        label: item.label ?? baseMaterial.name,
+        shader,
+        vertexFormat: geometry.vertexBuffer.format,
+        topology: geometry.topology,
+        renderState,
+        requiredAttributes: baseMaterial.requiredAttributes
+      });
+      cache.set(key, pipeline);
+    }
+    return pipeline;
+  }
+
+  /**
+   * Persistent attribute-matrix slot for the generated path (Phase 6): slots
+   * are reused in draw order; capacity/colors mismatches retire the old
+   * buffer (its VAOs are evicted by the §6.1 dispose fix).
+   */
+  private instanceSlotFor(device: RenderDevice, count: number, colors: boolean): { readonly buffer: InstanceBufferLike; readonly capacity: number } {
+    const index = this.instanceSlotCursor;
+    this.instanceSlotCursor += 1;
+    const capacity = Math.max(64, 2 ** Math.ceil(Math.log2(Math.max(1, count))));
+    let slots = ForwardPass.instanceSlotPools.get(device);
+    if (!slots) {
+      slots = [];
+      ForwardPass.instanceSlotPools.set(device, slots);
+    }
+    const existing = slots[index];
+    if (existing && existing.colors === colors && existing.capacity >= count) {
+      return existing;
+    }
+    existing?.buffer.dispose();
+    const buffer = instanceBufferSlot.get(rendererQrFlags())(device, capacity, { colors });
+    const slot = { buffer, colors, capacity };
+    slots[index] = slot;
+    if (slots.length > index + 64) slots.length = index + 64;
+    return slot;
   }
 }
 
@@ -1440,10 +1612,11 @@ function applyInstanceBinding(
 function createExtraInstanceAttributeBindings(
   device: RenderDevice,
   item: RenderItem,
-  instanceCount: number
+  instanceCount: number,
+  includeColors = true
 ): { readonly attributes: readonly InstanceVertexAttribute[]; readonly buffers: readonly RenderBuffer[] } {
   const descriptors: RenderItemInstanceAttribute[] = [];
-  if (item.instanceColors) {
+  if (item.instanceColors && includeColors) {
     descriptors.push({
       shaderName: "a_instanceColor",
       components: 4,

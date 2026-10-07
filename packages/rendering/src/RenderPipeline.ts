@@ -40,7 +40,14 @@ export class RenderPipeline {
   public disposed = false;
   private readonly requiredAttributes: readonly string[];
 
+  /**
+   * Dev counter (PRD-01 Phase 6): total constructions since module load. The
+   * `prd01-draw-throughput` lane asserts this stops moving after frame 2.
+   */
+  public static constructedCount = 0;
+
   constructor(descriptor: RenderPipelineDescriptor) {
+    RenderPipeline.constructedCount += 1;
     if (descriptor.shader.disposed) {
       throw new Error("RenderPipeline shader must not be disposed.");
     }

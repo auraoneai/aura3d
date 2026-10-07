@@ -344,6 +344,20 @@ export async function runAuraScene(spec: SceneSpec, host: HTMLElement): Promise<
   }
   await nextFrame();
 
+  // PRD-01 Phase 6 (§15/I8): the flagged path must compile nothing after
+  // ready+settle — read the C-31 programs section before and after an extra
+  // window so a warmup straggler can't hide behind the settle loop.
+  const programsBefore = (app.diagnostics() as unknown as { programs?: { deviceProgramCompiles?: number | null } }).programs?.deviceProgramCompiles ?? null;
+  for (let frame = 0; frame < 30; frame += 1) {
+    app.step(0);
+    await nextFrame();
+  }
+  const programsAfter = (app.diagnostics() as unknown as { programs?: { deviceProgramCompiles?: number | null } }).programs?.deviceProgramCompiles ?? null;
+  if (programsBefore !== null || programsAfter !== null) {
+    const delta = (programsAfter ?? 0) - (programsBefore ?? 0);
+    log.add("zero-program-compiles", delta === 0 ? "supported" : "missing", `programCompiles delta ${delta} over 30 extra frames`);
+  }
+
   const diagnostics = app.diagnostics();
   const renderer = rendererDiagnostics(app);
   const assetErrors = diagnostics.assets.filter((asset) => asset.status !== "ready");

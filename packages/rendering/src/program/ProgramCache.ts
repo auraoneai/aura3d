@@ -42,6 +42,7 @@ export class ProgramCache implements ProgramCacheLike {
   private readonly entries = new Map<string, CacheEntry>();
   private readonly parallel: boolean;
   private compileMsTotal = 0;
+  private reuseCount = 0;
   private disposed = false;
 
   constructor(
@@ -55,7 +56,10 @@ export class ProgramCache implements ProgramCacheLike {
     const normalized = normalizeProgramFeatures(features);
     const key = programKey(normalized);
     const existing = this.entries.get(key);
-    if (existing) return this.toHandle(existing);
+    if (existing) {
+      this.reuseCount += 1;
+      return this.toHandle(existing);
+    }
 
     const entry: CacheEntry = { key, status: "pending" };
     this.entries.set(key, entry);
@@ -124,6 +128,16 @@ export class ProgramCache implements ProgramCacheLike {
       else failed++;
     }
     return { compiled, pending, failed, compileMsTotal: this.compileMsTotal };
+  }
+
+  /** PRD-01 Phase 6 C-31: introspection for the lane's `programs` section. */
+  keys(): readonly string[] {
+    return [...this.entries.keys()];
+  }
+
+  /** Acquires served from an existing entry (cache hits). */
+  get reused(): number {
+    return this.reuseCount;
   }
 
   dispose(): void {
