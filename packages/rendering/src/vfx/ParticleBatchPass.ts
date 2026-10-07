@@ -8,6 +8,7 @@ import type { ParticleBatchDescriptor, ParticleBatchHandle } from "../contracts/
 import { TextureBinding } from "../TextureBinding";
 import { ParticleInstanceRing, createParticleQuad, particleInstanceAttributes } from "./ParticleInstanceLayout";
 import { consumeBlendFallbackReport, resolveVfxBlend } from "./BlendFallback";
+import { LowResAutoBudget, LowResParticleTarget } from "./LowResParticles";
 import { ParticleSort } from "./ParticleSort";
 import { resolveOutputColorSpace, resolveSceneDepth } from "./SceneDepthAdapter";
 import {
@@ -24,6 +25,8 @@ export interface ParticlePassDiagnostics {
   drawCalls: number;
   instancesDrawn: number;
   readonly errors: { code: string; nodeId: string; message: string }[];
+  /** P6-T4: half-res path state for this frame. */
+  readonly lowRes?: { readonly active: boolean; readonly batches: number };
   /** C-28 device counters snapshot at report time (e.g. `readbacks` must stay 0). */
   readonly deviceCounters?: { readonly readbacks: number };
 }
@@ -48,8 +51,30 @@ export class ParticleBatchPass {
   private frameDepth: ReturnType<typeof resolveSceneDepth> | null = null;
   private frameOutputColorSpace: "linear" | "srgb" = "srgb";
   private honoursBlendMode: boolean | null = null;
+  // P6-T4 half-res particle path: off by default; auto via noteGpuMs budget.
+  private lowResManual: boolean | null = null;
+  private lowResAuto = false;
+  private readonly lowResBudget = new LowResAutoBudget();
+  private lowRes: LowResParticleTarget | null = null;
+  private lowResUnsupportedWarned = false;
 
   constructor(private readonly device: RenderDevice) {}
+
+  /* ---------------- P6-T4 half-res path ---------------- */
+
+  /** Force the half-res path on/off; `null` restores budget auto-control. */
+  setLowResEnabled(on: boolean): void {
+    this.lowResManual = on;
+  }
+
+  /** Measured particle-GPU-ms sample; auto-enables above the tier budget. */
+  noteGpuMs(particleGpuMs: number, budgetMs: number): void {
+    this.lowResAuto = this.lowResBudget.note(particleGpuMs, budgetMs, this.lowResAuto);
+  }
+
+  get lowResActive(): boolean {
+    return (this.lowResManual ?? this.lowResAuto) && typeof this.device.getRenderTarget === "function";
+  }
 
   /* ---------------- C-20 ParticleRenderHook ---------------- */
 
@@ -130,9 +155,62 @@ export class ParticleBatchPass {
     }
     const order = this.sorter.sort(rest, basis);
     const items: TransparentQueueItem[] = [];
-    for (const i of order) items.push(this.queueItem(rest[i], ctx));
-    for (const b of additive) items.push(this.queueItem(b, ctx));
+
+    // P6-T4: eligible batches divert into the half-res target when active.
+    const lowResBatches = this.lowResEligible() ? [...Array.from(order, (i) => rest[i]), ...additive].filter((b) => b.desc.lowRes === true) : [];
+    const lowResKeys = new Set(lowResBatches.map((b) => b.key));
+    if (lowResBatches.length > 0) {
+      const offscreen = this.lowResOffscreenItem(lowResBatches, ctx);
+      if (offscreen) items.push(offscreen);
+      this.frameDiagnostics = { ...this.frameDiagnostics, lowRes: { active: true, batches: lowResBatches.length } };
+    }
+    for (const i of order) if (!lowResKeys.has(rest[i].key)) items.push(this.queueItem(rest[i], ctx));
+    for (const b of additive) if (!lowResKeys.has(b.key)) items.push(this.queueItem(b, ctx));
+    if (lowResBatches.length > 0) {
+      // Composite last: the low-res buffer already contains every diverted
+      // batch merged in draw order, so it lands over the other transparents.
+      items.push({
+        sortDepth: Math.max(...lowResBatches.map((b) => b.sortDepth)),
+        draw: () => this.lowResComposite(ctx)
+      });
+    }
     return items;
+  }
+
+  /** Half-res path engages only when the pass is enabled AND the device can
+   *  report the bound target (needed to restore after the divert). */
+  private lowResEligible(): boolean {
+    const enabled = this.lowResManual ?? this.lowResAuto;
+    if (!enabled) return false;
+    if (typeof this.device.getRenderTarget !== "function") {
+      if (!this.lowResUnsupportedWarned) {
+        this.lowResUnsupportedWarned = true;
+        this.note("LOWRES_UNSUPPORTED", null, "half-res particles need device.getRenderTarget(); staying at full res");
+      }
+      return false;
+    }
+    return true;
+  }
+
+  private lowResOffscreenItem(batches: readonly BatchState[], ctx: FrameContributorContext): TransparentQueueItem | null {
+    if (this.lowRes === null) this.lowRes = new LowResParticleTarget(this.device);
+    const lowRes = this.lowRes;
+    return {
+      sortDepth: Number.POSITIVE_INFINITY,
+      draw: () => {
+        const previous = this.device.getRenderTarget?.() ?? null;
+        const target = lowRes.acquire(ctx.width, ctx.height);
+        this.device.setRenderTarget(target);
+        this.device.clear([0, 0, 0, 0]);
+        for (const batch of batches) this.drawBatch(batch, ctx);
+        this.device.setRenderTarget(previous);
+      }
+    };
+  }
+
+  private lowResComposite(ctx: FrameContributorContext): void {
+    this.lowRes?.composite(this.frameDepth);
+    this.frameDiagnostics.drawCalls += 1;
   }
 
   private queueItem(batch: BatchState, ctx: FrameContributorContext): TransparentQueueItem {
@@ -249,6 +327,8 @@ export class ParticleBatchPass {
     this.batches.clear();
     for (const program of this.programs.values()) program.dispose?.();
     this.programs.clear();
+    this.lowRes?.dispose();
+    this.lowRes = null;
   }
 }
 

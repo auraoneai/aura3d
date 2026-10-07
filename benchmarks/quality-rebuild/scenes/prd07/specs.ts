@@ -136,6 +136,28 @@ export interface WeatherObjectSpec {
   readonly wind?: readonly [number, number, number];
 }
 
+/**
+ * §6.9 decal object (P6-T7). The Aura adapter authors a `decals.project`
+ * quad (which stamps the `prd07.legacyDecal` carve tag — flag-on the
+ * primitive hides and the merged DecalBatch draws it); the three adapter
+ * projects r185 DecalGeometry onto the primitive named by `target`.
+ * `runtime: true` spawns through `app.effects.decal` instead of a scene
+ * node (the runtime-instance decal path).
+ */
+export interface DecalObjectSpec {
+  readonly kind: "decal";
+  readonly name: string;
+  readonly target: string;
+  readonly position: Vec3;
+  readonly normal?: Vec3;
+  readonly size: readonly [number, number];
+  readonly color: string;
+  readonly opacity?: number;
+  /** Yaw in degrees around the surface normal. */
+  readonly rotationDeg?: number;
+  readonly runtime?: boolean;
+}
+
 export type Prd07ObjectSpec =
   | ObjectSpec
   | FlipbookObjectSpec
@@ -146,7 +168,8 @@ export type Prd07ObjectSpec =
   | LightConeObjectSpec
   | AuroraObjectSpec
   | MeshParticlesObjectSpec
-  | WeatherObjectSpec;
+  | WeatherObjectSpec
+  | DecalObjectSpec;
 
 /** S13/S14 — `sky.dayNight` parameters both adapters honour (hour 0..24). */
 export interface DayNightSpec {
@@ -1008,6 +1031,109 @@ export const waterInterleave: Prd07SceneSpec = {
   ]
 };
 
+/**
+ * D1 — prd07-decals (P6-T7): §6.9 merged decal pass — scorch, tyre-track
+ * and puddle decals on the asphalt floor, a crack decal on the wall, one
+ * runtime decal spawned through `app.effects.decal`, and a surface-oriented
+ * trail riding the same pass under A3D_QR_VFX_DECALS (P6-T3). All five
+ * decals share no texture → one flat page → one draw call under the flag.
+ * Three side: r185 DecalGeometry projected onto the host primitives.
+ */
+export const decalsScene: Prd07SceneSpec = {
+  ...base("prd07-decals", 717, "Merged decals + surface trail", "§6.9 — five decals in one merged draw; surface trail via decal pass"),
+  qrFlags: ["vfx", "vfx.decals"] as const,
+  primaryCriterion: "vfx",
+  primaryRegion: "frame",
+  camera: { position: [0, 3.2, 7.2], target: [0, 0.4, -0.6], fov: 50, near: 0.05, far: 60 },
+  background: { kind: "color", color: "#0b0d11" },
+  lights: [
+    { kind: "ambient", name: "ambient", color: "#ffffff", intensity: 0.2 },
+    { kind: "directional", name: "key", color: "#ffe9c8", intensity: 1.0, position: [8, 10, 6], target: [0, 0, 0], castShadow: true }
+  ],
+  objects: [
+    {
+      kind: "primitive",
+      name: "asphalt floor",
+      shape: "plane",
+      size: [18, 1, 18],
+      position: [0, 0, 0],
+      material: { color: "#23262c", roughness: 0.95, metalness: 0 },
+      castShadow: false,
+      receiveShadow: true
+    },
+    {
+      kind: "primitive",
+      name: "back wall",
+      shape: "box",
+      size: [18, 4, 0.4],
+      position: [0, 2, -4.6],
+      material: { color: "#2c3038", roughness: 0.85, metalness: 0 },
+      castShadow: true,
+      receiveShadow: true
+    },
+    {
+      kind: "decal",
+      name: "scorch mark",
+      target: "asphalt floor",
+      position: [-1.6, 0.012, 0.5],
+      normal: [0, 1, 0],
+      size: [1.8, 1.8],
+      color: "#0a0a0c",
+      opacity: 0.92
+    },
+    {
+      kind: "decal",
+      name: "tyre track",
+      target: "asphalt floor",
+      position: [1.2, 0.012, 1.2],
+      normal: [0, 1, 0],
+      size: [0.55, 3.2],
+      color: "#14161a",
+      opacity: 0.8,
+      rotationDeg: 14
+    },
+    {
+      kind: "decal",
+      name: "puddle",
+      target: "asphalt floor",
+      position: [2.4, 0.012, -0.8],
+      normal: [0, 1, 0],
+      size: [1.4, 1.0],
+      color: "#3a4c60",
+      opacity: 0.7
+    },
+    {
+      kind: "decal",
+      name: "wall crack",
+      target: "back wall",
+      position: [-2.4, 1.6, -4.39],
+      normal: [0, 0, 1],
+      size: [1.6, 2.2],
+      color: "#101216",
+      opacity: 0.9
+    },
+    {
+      kind: "decal",
+      name: "impact splash",
+      target: "asphalt floor",
+      position: [0.4, 0.014, 2.2],
+      normal: [0, 1, 0],
+      size: [0.9, 0.9],
+      color: "#c33b22",
+      opacity: 0.85,
+      runtime: true
+    },
+    {
+      kind: "trail",
+      name: "skid trail",
+      path: [[-3, 0.02, 3.4], [-1.4, 0.02, 2.2], [0.2, 0.02, 1.4], [1.8, 0.02, 0.9], [3.2, 0.02, 0.7]],
+      color: "#2a2e36",
+      width: 0.34,
+      orientation: "surface"
+    }
+  ]
+};
+
 export const prd07Specs = {
   "prd07-particles-fountain": particlesFountain,
   "prd07-flipbook": flipbook,
@@ -1024,7 +1150,8 @@ export const prd07Specs = {
   "prd07-volumetric-shafts": volumetricShafts,
   "prd07-lit-smoke": litSmoke,
   "prd07-soft-particles": softParticles,
-  "prd07-water-interleave": waterInterleave
+  "prd07-water-interleave": waterInterleave,
+  "prd07-decals": decalsScene
 } as const;
 
 export type Prd07SceneId = keyof typeof prd07Specs;

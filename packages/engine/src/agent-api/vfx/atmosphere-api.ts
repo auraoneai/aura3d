@@ -22,6 +22,7 @@ export function createAtmosphereExtension(app: AuraApp, ctx: { flags: QrFlags })
   system.setSkyFlagOn(ctx.flags.on("A3D_QR_VFX_SKY"));
   // §8.6 — flag-on hides the tagged prd07.legacyWeather.* primitives.
   system.setWeatherFlagOn(ctx.flags.on("A3D_QR_VFX"));
+  system.setDecalFlagOn(ctx.flags.on("A3D_QR_VFX_DECALS"));
   // §6.6 — flag-on makes the carved compiler/fog.ts read this app's live fog.
   bindPrd07FogRuntime({ flags: ctx.flags, atmosphere: system.atmosphere });
   if (app.canvas) attachVfxBridge(app.canvas, system);

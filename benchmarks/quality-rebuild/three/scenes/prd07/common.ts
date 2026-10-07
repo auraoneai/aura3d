@@ -6,6 +6,7 @@
  */
 import * as THREE from "three";
 import { Sky } from "three/examples/jsm/objects/Sky.js";
+import { DecalGeometry } from "three/examples/jsm/geometries/DecalGeometry.js";
 import { createRng, particlePositions } from "../../../shared/procedural";
 import type { CapabilityEntry, CapabilityStatus, MaterialSpec, ReadyPayload } from "../../../shared/types";
 import type { EmitterMemberSpec, Prd07SceneSpec } from "../../../scenes/prd07/specs";
@@ -351,6 +352,7 @@ export async function runPrd07ThreeScene(spec: Prd07SceneSpec, host: HTMLElement
   const spriteTexture = createSpriteTexture();
   const flipbooks: FlipbookHandle[] = [];
 
+  const meshesByName = new Map<string, THREE.Mesh>();
   for (const object of spec.objects) {
     if (object.kind === "primitive") {
       const mesh = new THREE.Mesh(createGeometry(object.shape, object.size), createMaterial(object.material));
@@ -360,6 +362,42 @@ export async function runPrd07ThreeScene(spec: Prd07SceneSpec, host: HTMLElement
       mesh.castShadow = object.castShadow;
       mesh.receiveShadow = object.receiveShadow;
       scene.add(mesh);
+      meshesByName.set(object.name, mesh);
+    } else if (object.kind === "decal") {
+      // §6.9 — r185 DecalGeometry projected onto the named host primitive.
+      // `runtime` decals render identically on the three side.
+      const host = meshesByName.get(object.target);
+      const normal = new THREE.Vector3(...(object.normal ?? [0, 1, 0])).normalize();
+      const projector = new THREE.Object3D();
+      projector.position.set(...object.position);
+      projector.lookAt(projector.position.clone().add(normal));
+      projector.rotateZ(((object.rotationDeg ?? 0) * Math.PI) / 180);
+      const material = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(object.color),
+        transparent: true,
+        opacity: object.opacity ?? 0.85,
+        polygonOffset: true,
+        polygonOffsetFactor: -4,
+        polygonOffsetUnits: -4,
+        depthTest: true,
+        depthWrite: false,
+        roughness: 0.9,
+        metalness: 0
+      });
+      if (host) {
+        const geometry = new DecalGeometry(
+          host,
+          projector.position,
+          projector.rotation.clone(),
+          new THREE.Vector3(object.size[0], object.size[1], 0.6)
+        );
+        const decalMesh = new THREE.Mesh(geometry, material);
+        decalMesh.name = object.name;
+        scene.add(decalMesh);
+        log.add("decal", "supported", `DecalGeometry "${object.name}" on "${object.target}" (${object.size[0]}×${object.size[1]})`);
+      } else {
+        log.add("decal", "missing", `target "${object.target}" not a scene primitive`);
+      }
     } else if (object.kind === "particles") {
       scene.add(pointsFor({ name: object.name, seed: object.seed, count: object.count, center: object.center, radius: object.radius, height: object.height, color: object.color, size: object.size, blending: object.blending }, spriteTexture));
       log.add("particles", "supported", `THREE.Points x${object.count}, seeded positions, ${object.blending}`);

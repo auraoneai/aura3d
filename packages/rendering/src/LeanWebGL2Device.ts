@@ -762,6 +762,10 @@ export class LeanWebGL2Device implements RenderDevice {
     this.stateCache.viewport(0, 0, target.width, target.height, () => this.gl.viewport(0, 0, target.width, target.height));
   }
 
+  getRenderTarget(): RenderTarget | null {
+    return this.activeRenderTarget;
+  }
+
   private resolveMultisampleTarget(target: WebGL2RenderTarget): void {
     if (target.sampleCount <= 1 || !target.needsResolve) return;
     const previousFramebuffer = this.gl.getParameter(this.gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;

@@ -22,5 +22,7 @@ export const adapterSceneIds = [
   "prd07-volumetric-shafts",
   "prd07-lit-smoke",
   "prd07-soft-particles",
-  "prd07-water-interleave"
+  "prd07-water-interleave",
+  // P6-T7 §6.9 merged decals + surface trail.
+  "prd07-decals"
 ] as const;

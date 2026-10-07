@@ -8,12 +8,17 @@ import type { RenderDevice } from "../RenderDevice";
 import type { BlendMode } from "./blend";
 import { defineContractSlot, type ContractSlot } from "./core";
 
-export interface ParticleBatchDescriptor { readonly key: string; readonly capacity: number; readonly source: "cpu" | "gpu" | "procedural" | "compute"; readonly atlas: Texture; readonly blend: BlendMode; readonly shading: "unlit" | "lit"; readonly softDepth: boolean; readonly softDistance?: number; readonly nearFade?: number; readonly stretch: boolean; readonly frameBlend: boolean; }
+export interface ParticleBatchDescriptor { readonly key: string; readonly capacity: number; readonly source: "cpu" | "gpu" | "procedural" | "compute"; readonly atlas: Texture; readonly blend: BlendMode; readonly shading: "unlit" | "lit"; readonly softDepth: boolean; readonly softDistance?: number; readonly nearFade?: number; readonly stretch: boolean; readonly frameBlend: boolean; /** P6-T4: eligible for the optional half-resolution particle target. */ readonly lowRes?: boolean; }
 export interface ParticleBatchHandle { readonly key: string; readonly liveCount: number; }
 export interface ParticleRenderHook {
   upsertBatch(desc: ParticleBatchDescriptor): ParticleBatchHandle;
   writeInstances(h: ParticleBatchHandle, data: Float32Array, liveCount: number): void;
   removeBatch(h: ParticleBatchHandle): void;
+  /** P6-T4: force the half-res particle path on/off (off by default). */
+  setLowResEnabled?(on: boolean): void;
+  /** P6-T4: feed a measured particle-GPU-ms sample; auto-enables the half-res
+   *  path when the EWMA exceeds `budgetMs` (and disables below 75% of it). */
+  noteGpuMs?(particleGpuMs: number, budgetMs: number): void;
 }
 /** PRD 07 registers a C-01 FrameContributor "prd07.particles" (phase "transparent") that draws all batches. */
 

@@ -33,6 +33,16 @@ jobs:
           pnpm exec vitest run --config tests/qr/prd07/vitest.config.ts
           pnpm exec vitest run tests/unit/contracts/impl/prd07-registration.test.ts
 
+  grep-gate:
+    # P7-T3 / §10 item 6 — fails when a legacy-seam symbol appears outside the
+    # allowlist (new seams are forbidden; after the removal PR the emptied
+    # allowlist makes any leftover fail).
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Grep gate
+        run: bash tests/qr/prd07/grep-gate.sh
+
   typecheck:
     runs-on: macos-14
     steps:
@@ -55,7 +65,7 @@ jobs:
       - name: Re-bake atlas and diff against committed output
         run: |
           node tools/vfx-atlas-bake/bake.mjs --seed 7 --size 2048 --out /tmp/vfx-baked
-          for f in manifest.json aura-vfx-1k.png aura-vfx-2k.png LICENSE.md; do
+          for f in manifest.json aura-vfx-1k.png aura-vfx-2k.png aura-vfx-2k-decals.png aura-vfx-2k-decals-normal.png aura-vfx-2k-decals-roughness.png aura-vfx-2k-decals-half.png aura-vfx-2k-decals-half-normal.png aura-vfx-2k-decals-half-roughness.png LICENSE.md; do
             shasum -a 256 "packages/engine/assets/vfx/$f" "/tmp/vfx-baked/$f"
             cmp "packages/engine/assets/vfx/$f" "/tmp/vfx-baked/$f" || { echo "::error::bake drift on $f — re-run bake.mjs and commit"; exit 1; }
           done
@@ -98,7 +108,7 @@ jobs:
     timeout-minutes: 90
     env:
       QR_BENCH_CHROME_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
-      SCENE_LIST: "14-particles,09-outdoor-environment,17-large-environment,18-game-scene,prd07-particles-fountain,prd07-flipbook,prd07-particles-stress,prd07-impact-library,prd07-trails-beams,prd07-sky-timeofday,prd07-outdoor-sky,prd07-fog-height,prd07-fog-transition,prd07-underwater,prd07-rain-night,prd07-snow,prd07-volumetric-shafts,prd07-lit-smoke,prd07-soft-particles,prd07-water-interleave"
+      SCENE_LIST: "14-particles,09-outdoor-environment,17-large-environment,18-game-scene,prd07-particles-fountain,prd07-flipbook,prd07-particles-stress,prd07-impact-library,prd07-trails-beams,prd07-sky-timeofday,prd07-outdoor-sky,prd07-fog-height,prd07-fog-transition,prd07-underwater,prd07-rain-night,prd07-snow,prd07-volumetric-shafts,prd07-lit-smoke,prd07-soft-particles,prd07-water-interleave,prd07-decals"
     steps:
       - uses: actions/checkout@v4
         with:

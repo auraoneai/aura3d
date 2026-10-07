@@ -1,0 +1,28 @@
+# PRD-07 §10 item 6 grep gate — allowlist (file-level).
+#
+# `rg "RootGpuParticleWorkload|prd07\.legacy|legacyPrimitiveNodes" packages
+# apps templates examples` may only hit these files while the flags are
+# dev/proposed:
+#
+#   packages/engine/src/agent-api/nodes/sky.ts            — stamps prd07.legacySky.<n> carve tags
+#   packages/engine/src/agent-api/nodes/weather.ts        — stamps prd07.legacyWeather.<n> carve tags
+#   packages/engine/src/agent-api/Decals.ts               — stamps prd07.legacyDecal.<n> carve tags
+#   packages/engine/src/agent-api/vfx/atmosphere-api.ts   — flag setter bindings (legacy tag prefixes)
+#   packages/engine/src/agent-api/vfx/gameEffects.ts      — legacyPrimitiveNodes automount seam (E24)
+#   packages/engine/src/production-runtime/effects/ProductionEffectSystem.ts — hide loops over the tags
+#   packages/engine/src/production-runtime/RootGpuParticleWorkload.ts        — §5 Delete-list file itself
+#   packages/engine/src/production-runtime/index.ts       — its re-export (removal is R-15-4)
+#   packages/rendering/src/vfx/contributors.ts            — contributor docstring
+#
+# A hit in ANY other file fails the workflow — nobody may grow new legacy
+# seams. At P7-T2 (flag removal) this file is emptied wholesale so any
+# remaining occurrence fails.
+packages/engine/src/agent-api/Decals.ts
+packages/engine/src/agent-api/nodes/sky.ts
+packages/engine/src/agent-api/nodes/weather.ts
+packages/engine/src/agent-api/vfx/atmosphere-api.ts
+packages/engine/src/agent-api/vfx/gameEffects.ts
+packages/engine/src/production-runtime/RootGpuParticleWorkload.ts
+packages/engine/src/production-runtime/effects/ProductionEffectSystem.ts
+packages/engine/src/production-runtime/index.ts
+packages/rendering/src/vfx/contributors.ts

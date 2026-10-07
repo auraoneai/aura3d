@@ -1853,14 +1853,14 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
 
 ### Phase 3: sky (day 0)
 
-- [ ] **P3-T1** `atmosphere/PreethamSky.ts` + `atmosphere/shaders/sky.glsl.ts`. Port per §8.5, with the MIT header. Unit
+- [x] **P3-T1** `atmosphere/PreethamSky.ts` + `atmosphere/shaders/sky.glsl.ts`. Port per §8.5, with the MIT header. Unit
   `preetham-cpu-reference.test.ts`: `PreethamSky.evaluate(dir)` at 16 directions matches a hand-computed r185 reference
   table within 1e-4. Browser: a GPU render of the same 16 directions into an `rgba16f` target, read back in the test only,
   matches within 2%.
 - [x] **P3-T2** `atmosphere/GradientSky.ts`, `StarField.ts`, `CloudLayer.ts` (r185 cloud block), and the moon disc with
   phase. Unit tests: the gradient is monotonic between stops, star count is ∝ density, and stars fade to 0 at sun
   elevation > 6°.
-- [ ] **P3-T3** `atmosphere/SkyBackgroundPass.ts`. Implements C-21 `SkyBackgroundPassLike` and the `prd07.sky` contributor
+- [x] **P3-T3** `atmosphere/SkyBackgroundPass.ts`. Implements C-21 `SkyBackgroundPassLike` and the `prd07.sky` contributor
   `passes(ctx)`. The fullscreen triangle is cached at construction. Evaluation is per pixel on Medium+, and on Low uses a
   256×128 sky-view re-rendered only on spec change. `renderToCubeFace` and `horizonRadiance(8)` are implemented. Impl test
   `prd07-C-21.test.ts`. Browser test `sky-background.spec.ts`:
@@ -1956,32 +1956,32 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
 
 ### Phase 6: decals and polish
 
-- [ ] **P6-T1** `vfx/DecalBatch.ts` + `vfx/shaders/decal.glsl.ts`. Ring-allocated merged geometry per page × blend, lit per
+- [x] **P6-T1** `vfx/DecalBatch.ts` + `vfx/shaders/decal.glsl.ts`. Ring-allocated merged geometry per page × blend, lit per
   §8.8, tier cap, life/fade. In `agent-api/Decals.ts`, when `A3D_QR_VFX_DECALS` is on, decals route to `DecalBatch` and
   `AURA_DECAL_MAX_DECALS` is replaced by the tier cap. Test (Mock): 100 decals on one page → 1 draw, and cap eviction is
   oldest-first. Flag off: the draw list is identical to today's.
-- [ ] **P6-T2** Decal page in the atlas baker (scorch, crack, tyre-track, puddle, with normal/roughness).
-- [ ] **P6-T3** `orientation: "surface"` trails drawn by `prd07.decals` with polygon offset. Test: no depth-fighting on a
+- [x] **P6-T2** Decal page in the atlas baker (scorch, crack, tyre-track, puddle, with normal/roughness).
+- [x] **P6-T3** `orientation: "surface"` trails drawn by `prd07.decals` with polygon offset. Test: no depth-fighting on a
   plane at 50 m (browser; max abs diff between two consecutive frames ≤ 1/255 in the mark region).
-- [ ] **P6-T4** Optional half-resolution particle target for batches flagged `lowRes`, with a bilateral depth-aware
+- [x] **P6-T4** Optional half-resolution particle target for batches flagged `lowRes`, with a bilateral depth-aware
   upsample when depth is available, else a plain bilinear upsample. Enabled when measured particle GPU ms exceeds the
   tier budget. Off by default.
-- [ ] **P6-T5** Codemod `vfx-pools-to-effects` (`packages/aura3d-cli/src/commands/prd07/codemods.ts`, C-39). It reports
+- [x] **P6-T5** Codemod `vfx-pools-to-effects` (`packages/aura3d-cli/src/commands/prd07/codemods.ts`, C-39). It reports
   the E25 pool patterns and rewrites the `primitives.box/sphere` + `.runtime` + `setScale(life)` pattern into
   `app.effects.burst`. Test: pure-function fixture from `apps/showcase-blockfall-reactor/src/clear-fx.ts`, copied as a
   fixture, never edited in place.
-- [ ] **P6-T6** Route notes `docs/project/aura3d-quality-rebuild/evidence/prd07/route-notes.md` for PRD 14, one section per
+- [x] **P6-T6** Route notes `docs/project/aura3d-quality-rebuild/evidence/prd07/route-notes.md` for PRD 14, one section per
   game, with anchors.
-- [ ] **P6-T7** Lane scene `prd07-decals` (three r185 `DecalGeometry` adapter).
+- [x] **P6-T7** Lane scene `prd07-decals` (three r185 `DecalGeometry` adapter).
 
 ### Phase 7: promotion and removal
 
-- [ ] **P7-T1** Request the flag state changes at checkpoints. PRD 15 records them in `contracts/flags.state.ts`, with
+- [x] **P7-T1** Request the flag state changes at checkpoints. PRD 15 records them in `contracts/flags.state.ts`, with
   this lane's evidence links.
 - [ ] **P7-T2** Removal PR: the §5 "Delete" list; `legacyPrimitiveNodes`; the `prd07.legacy*` runtime nodes in the sky
   and weather builders; `renderer.vfx` accepted as a no-op with `QR_FLAG_REMOVED`. Re-file R-02-3, R-03-2 and R-15-4
   for the owners' removals.
-- [ ] **P7-T3** Grep gate (§10 item 6) as a failing step in `prd07-vfx.yml`.
+- [x] **P7-T3** Grep gate (§10 item 6) as a failing step in `prd07-vfx.yml`.
 - [ ] **P7-T4** C-40 rows flipped to `verified` with run ids. PRD 13 writes the skill text from them.
 
 ## 16. Test requirements
