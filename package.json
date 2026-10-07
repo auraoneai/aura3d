@@ -276,8 +276,13 @@
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "0.20.0",
+    "@gltf-transform/core": "4.5.1",
+    "@gltf-transform/extensions": "4.5.1",
     "@loaders.gl/core": "4.4.1",
-    "@loaders.gl/textures": "4.4.1"
+    "@loaders.gl/textures": "4.4.1",
+    "ktx-parse": "1.0.1",
+    "meshoptimizer": "1.2.0",
+    "recast-navigation": "0.43.1"
   },
   "sideEffects": false,
   "description": "Build AI-authored browser 3D apps with TypeScript, typed GLB/glTF assets, Vite templates, scene kits, diagnostics, screenshots, and deploy checks.",

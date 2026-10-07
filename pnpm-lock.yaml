@@ -14,12 +14,24 @@ importers:
       '@dimforge/rapier3d-compat':
         specifier: 0.20.0
         version: 0.20.0
+      '@gltf-transform/core':
+        specifier: 4.5.1
+        version: 4.5.1
+      '@gltf-transform/extensions':
+        specifier: 4.5.1
+        version: 4.5.1
       '@loaders.gl/core':
         specifier: 4.4.1
         version: 4.4.1
       '@loaders.gl/textures':
         specifier: 4.4.1
         version: 4.4.1(@loaders.gl/core@4.4.1)
+      ktx-parse:
+        specifier: 1.0.1
+        version: 1.0.1
+      meshoptimizer:
+        specifier: 1.2.0
+        version: 1.2.0
     devDependencies:
       '@aura3d/animation':
         specifier: workspace:*
@@ -147,9 +159,6 @@ importers:
       eslint:
         specifier: ^9.26.0
         version: 9.39.4
-      meshoptimizer:
-        specifier: 1.2.0
-        version: 1.2.0
       react:
         specifier: ^19.2.8
         version: 19.2.8
