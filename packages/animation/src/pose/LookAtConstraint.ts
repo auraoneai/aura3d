@@ -195,10 +195,14 @@ export function createLookAtConstraint(spec: LookAtConstraintSpec): LookAtConstr
       const crossY = forwardFlat[2] * targetFlat[0] - forwardFlat[0] * targetFlat[2];
       const yaw = Math.atan2(crossY, forwardFlat[0] * targetFlat[0] + forwardFlat[2] * targetFlat[2]);
 
-      // Pitch = the rotation about the yawed RIGHT axis needed to reach the
-      // target's elevation. R_x(+θ) pitches +Z forward DOWN, so elevation up
-      // is a negative right-axis rotation.
-      const pitch = -Math.atan2(toTarget[1], Math.max(1e-9, Math.hypot(toTarget[0], toTarget[2])));
+      // Pitch = the rotation about the yawed RIGHT axis needed to lift the
+      // CURRENT forward to the target's elevation — a delta, not the target's
+      // absolute elevation (an animated forward already pitched by the clip
+      // would otherwise keep its pitch residual forever). R_x(+θ) pitches +Z
+      // DOWN, so the correction is forwardElev − targetElev.
+      const pitch =
+        Math.atan2(forward[1], Math.max(1e-9, Math.hypot(forward[0], forward[2]))) -
+        Math.atan2(toTarget[1], Math.max(1e-9, Math.hypot(toTarget[0], toTarget[2])));
 
       let targetYaw = Math.max(-yawLimit, Math.min(yawLimit, yaw));
       const targetPitch = Math.max(-pitchLimit, Math.min(pitchLimit, pitch));
@@ -224,8 +228,17 @@ export function createLookAtConstraint(spec: LookAtConstraintSpec): LookAtConstr
         const pitchShare = state.pitch * entry.weight;
         const yawQ = axisAngle(UP, yawShare);
         const afterYaw = multiplyQuat(yawQ, frame.rotation);
-        // Pitch about the post-yaw right axis (yawed +X).
-        const right = rotateVec3(yawQ, [1, 0, 0]);
+        // Pitch about the bone's post-yaw RIGHT axis — the horizontal axis
+        // perpendicular to its current forward (`cross(UP, fwd)` = +X yawed by
+        // the forward's own azimuth). Using the yawed model +X instead pitches
+        // about an axis off by the whole azimuth, leaking the share into
+        // roll/yaw and leaving a residual that grows with off-axis targets.
+        const postYawForward = rotateVec3(afterYaw, axis);
+        const right = normalize([
+          postYawForward[2],
+          0,
+          -postYawForward[0]
+        ]);
         const pitchQ = axisAngle(right, pitchShare);
         const world = multiplyQuat(pitchQ, afterYaw);
         const l = Math.hypot(world[0], world[1], world[2], world[3]) || 1;

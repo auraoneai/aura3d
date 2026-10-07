@@ -89,6 +89,7 @@ const auraModelAssets = defineAuraAssets({
   compareTransmission: modelDefinition("compareTransmission"),
   sheenTestGrid: modelDefinition("sheenTestGrid"),
   soldier: modelDefinition("soldier"),
+  auraClashPlayerRig: modelDefinition("auraClashPlayerRig"),
   cesiumMan: modelDefinition("cesiumMan"),
   robotExpressive: modelDefinition("robotExpressive"),
   fox: modelDefinition("fox"),

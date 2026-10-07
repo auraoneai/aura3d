@@ -9,7 +9,9 @@ import { AuraNodeBuilder } from "../nodes/builder.js";
  * `nodes/types.ts` touch (qr-request filed); this local widening keeps the
  * factories typed until the union lands.
  */
-interface PostV3EffectOptions extends Omit<AuraEffectNode, "kind" | "effect"> {
+// Exported so declaration emit can name it through the `effects` namespace
+// spread in effects.composite.ts (build:raw TS4023).
+export interface PostV3EffectOptions extends Omit<AuraEffectNode, "kind" | "effect"> {
   readonly smoothness?: number;
   readonly roundness?: number;
   readonly size?: number;

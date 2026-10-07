@@ -691,6 +691,12 @@ export class GLTFSceneAnimationRuntime {
    */
   private poseConstraintModelMatrix?: () => readonly number[] | Float32Array;
 
+  /**
+   * Wall-clock (ms) of the last constraint evaluation under `applyClips` —
+   * its caller passes no dt, so constraint dynamics measure the real gap.
+   */
+  private lastConstraintEvalAtMs?: number;
+
   constructor(private readonly options: GLTFSceneAnimationRuntimeOptions) {
     for (const clip of options.clips) {
       this.clipsByName.set(clip.name, clip);
@@ -1020,8 +1026,16 @@ export class GLTFSceneAnimationRuntime {
     if (poseSpecs.length > 0) {
       pose.mixer.evaluateSamples(poseSpecs, pose.pose);
       // T3.5 — constraints apply to the freshly-mixed pose before palette
-      // build; touched joints union into the emitted sampled targets.
-      const constrained = this.runPoseConstraints(pose.pose, pose.binding, 1 / 60);
+      // build; touched joints union into the emitted sampled targets. Their
+      // dynamics (look-at half-life, spring substeps) integrate in wall-clock
+      // seconds, so measure the real gap between applies — a hardcoded 1/60
+      // makes smoothing converge ~6× too slowly in sub-60fps sessions.
+      const nowMs = typeof performance !== "undefined" ? performance.now() : Date.now();
+      const constraintDt = this.lastConstraintEvalAtMs === undefined
+        ? 1 / 60
+        : Math.min(0.25, Math.max(1e-4, (nowMs - this.lastConstraintEvalAtMs) / 1000));
+      this.lastConstraintEvalAtMs = nowMs;
+      const constrained = this.runPoseConstraints(pose.pose, pose.binding, constraintDt);
       for (const boneIndex of constrained) touchedBones.add(boneIndex);
       for (const boneIndex of touchedBones) {
         const name = pose.binding.jointNames[boneIndex]!;
@@ -1136,6 +1150,7 @@ export class GLTFSceneAnimationRuntime {
     pose.mixer.evaluate(pose.pose);
     // T3.5 — constraints evaluate post-mixer / pre-palette; their touched
     // bones union into `covered` so the write-back emits them.
+    this.lastConstraintEvalAtMs = typeof performance !== "undefined" ? performance.now() : Date.now();
     const constrained = this.runPoseConstraints(pose.pose, pose.binding, dt);
 
     const actions = pose.mixer.activeActions();
@@ -1478,6 +1493,7 @@ export class GLTFSceneAnimationRuntime {
 
   reindexScene(): void {
     this.poseState = undefined;
+    this.lastConstraintEvalAtMs = undefined;
     this.options.scene.updateWorldTransforms();
     this.footBindMatrices.clear();
     this.footOrientationLocks.clear();

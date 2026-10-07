@@ -73,7 +73,7 @@ registerNodeHandleExtension({
   flag: "A3D_QR_ANIMATION",
   member: "animation",
   appliesTo: ["model"],
-  create: (handle) => createPrd06ActorAnimationApi(handle)
+  create: (handle, app) => createPrd06ActorAnimationApi(handle, app)
 });
 
 /**

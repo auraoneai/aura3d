@@ -154,6 +154,23 @@ export function applyProductionActorAnimation(
   runtimeNodes?: AuraRuntimeNodeRegistry
 ): void {
   const animation = node.animation;
+  // T4.2 — a bound controller that publishes clip samples (C-19 §5.2, e.g.
+  // `characterAnimation`) drives `applyClips` directly, with no
+  // `node.animation.clip` required. Hoisted above the clip gate so the
+  // samples-only binding reaches the actor; flag-off keeps this unreachable.
+  {
+    const clipSamples = qrAnimationFlags().on("A3D_QR_ANIMATION")
+      ? resolveRuntimeBindingClipSamples(entry, animationBinding, runtimeWarnings)
+      : undefined;
+    if (clipSamples && clipSamples.length > 0) {
+      // Pose constraints (ik/look-at/spring) solve in the frame this
+      // modelMatrix maps to: install the live provider before applyClips so
+      // world-space targets land correctly under node translate/rotate.
+      entry.actor.animation.setPoseConstraintModelMatrix(() => modelMatrix);
+      entry.actor.animation.applyClips(clipSamples);
+      return;
+    }
+  }
   if (!animation?.clip || isModelTransformAnimationClip(animation.clip)) return;
   const clipName = entry.actor.animation.resolveClipName(animation.clip, resolveClipNameOptionsForSpec(animation));
   if (!clipName) {
@@ -279,16 +296,11 @@ export function applyProductionActorAnimation(
         return;
       }
       entry.rootMotionCursors = undefined;
-      // T0.3 — when the bound controller published clip samples (C-19 §5.2) and the
-      // lane flag is on, drive the GLB blend directly so retimed/weighted playback
-      // reaches the actor instead of a single unweighted clip. Flag-off keeps the
-      // single-clip path byte-identical.
-      const clipSamples = qrAnimationFlags().on("A3D_QR_ANIMATION")
-        ? resolveRuntimeBindingClipSamples(entry, animationBinding, runtimeWarnings)
-        : undefined;
-      if (clipSamples && clipSamples.length > 0) {
-        entry.actor.animation.applyClips(clipSamples);
-      } else if (
+      // T0.3's clip-samples dispatch moved to the top of this function (T4.2):
+      // bound samples reach `applyClips` even without `node.animation.clip`.
+      // What remains is the single-clip path for bindings that did not publish
+      // samples — flag-gated PoseMixer when available, else legacy clip play.
+      if (
         qrAnimationFlags().on("A3D_QR_ANIMATION") &&
         !animation.rootMotion &&
         typeof entry.actor.animation.mixer === "function" &&
@@ -348,6 +360,9 @@ export function applyProductionActorAnimation(
         state.lastTimeMs = time;
         const appScale = actorAnimationAppTimeScale?.() ?? 1;
         const scaledDt = rawDt * appScale * actorHandleTimeScale(runtimeNodes, (node.runtime as { readonly id?: string } | undefined)?.id);
+        // Same modelMatrix install as the applyClips dispatch: pose
+        // constraints (ik.add / lookAt) solve against world-space targets.
+        runtime.setPoseConstraintModelMatrix?.(() => modelMatrix);
         runtime.applyPoseMixer(scaledDt, { label: clipName, restPoseReset: animation.restPoseReset ?? true });
       } else {
         entry.actor.playClip(clipName, resolveProductionActorAnimationSeconds(animation, animationBinding, time));

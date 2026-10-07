@@ -118,6 +118,35 @@ describe("T3.3 — LookAtConstraint", () => {
     }
   });
 
+  it("an animated forward already pitched down still converges onto the target", () => {
+    // Head animated ~40° below flat: the constraint must correct the DELTA to
+    // the target's elevation, not just re-apply the target's elevation on top
+    // of the clip's pitch (T4.4 §17.2 exercised this with the running rig).
+    const skeleton = makeSkeleton();
+    const pose = createPoseBuffer(3);
+    copyPose(pose, skeleton.restPose);
+    const pitchDown = (deg: number): Quat => {
+      const half = (deg * Math.PI) / 360;
+      return [Math.sin(half), 0, 0, Math.cos(half)]; // R_x(+θ) pitches +Z down
+    };
+    pose.rotations[8] = pitchDown(40)[0]; // head local R_x(+40°)
+    pose.rotations[11] = pitchDown(40)[3];
+    const constraint = createLookAtConstraint({ bones: [{ bone: "head", weight: 1 }], halfLife: 0.01 });
+    const target: Vec3 = [0, 2.2, 2.5]; // above the head
+    for (let i = 0; i < 120; i += 1) {
+      // Re-seed the animated pitch each frame, exactly as a mixer does.
+      pose.rotations[8] = pitchDown(40)[0];
+      pose.rotations[11] = pitchDown(40)[3];
+      constraint.apply(pose, skeleton, IDENTITY, target, 1 / 60);
+    }
+    const f = headForward(pose, skeleton);
+    const headPos: Vec3 = [0, 1.6, 0];
+    const to: Vec3 = [target[0] - headPos[0], target[1] - headPos[1], target[2] - headPos[2]];
+    const l = Math.hypot(to[0], to[1], to[2]);
+    const dot = f[0] * to[0] + f[1] * to[1] + f[2] * to[2];
+    expect(Math.acos(Math.max(-1, Math.min(1, dot / l))) * 180 / Math.PI).toBeLessThan(5);
+  });
+
   it("eye bones aim directly at the target", () => {
     const node = (name: string, position: Vec3) => ({ name, position, rotation: [0, 0, 0, 1] as const, scale: [1, 1, 1] as Vec3 });
     const nodes = [

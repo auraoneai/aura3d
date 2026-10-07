@@ -29,7 +29,7 @@ import {
   type AuraBoneSocket,
   type AuraResolvedClipInfo
 } from "../../contracts/animation.js";
-import type { AuraRuntimeNodeHandle } from "../index.js";
+import type { AuraApp, AuraRuntimeNodeHandle } from "../index.js";
 import type { TypedGLBActor } from "../../production-runtime/TypedGLBActor.js";
 
 let overrideQrAnimationFlags: QrFlags | undefined;
@@ -343,7 +343,11 @@ const authoredClipName = (clipName: string): string => clipName.split("#additive
  * not loaded, or the runtime predates the PoseMixer path.
  */
 class Prd06ActorAnimationApi extends StubActorAnimationApi {
-  constructor(private readonly nodeId: string, private readonly nodeHandle: AuraRuntimeNodeHandle) {
+  constructor(
+    private readonly nodeId: string,
+    private readonly nodeHandle: AuraRuntimeNodeHandle,
+    private readonly app: AuraApp | undefined
+  ) {
     super(nodeHandle);
   }
 
@@ -433,15 +437,30 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
     const runtime = this.actor!.animation;
     const lastApply = typeof runtime.snapshot === "function" ? runtime.snapshot().lastApply : undefined;
     const base = mixer.baseAction();
+    // T4.2 — `applyClips` bindings (characterAnimation) drive the pose
+    // pipeline without registering mixer actions; report the published
+    // clipSamples so the snapshot still describes what's playing.
+    const mixerActions = mixer.activeActionEntries().map(({ action, layer }) => ({
+      clip: authoredClipName(action.clipName),
+      layer,
+      weight: action.effectiveWeight,
+      time: action.time
+    }));
+    let bindingSamples: { clip: string; layer: string; weight: number; time: number }[] = [];
+    if (mixerActions.length === 0 && typeof this.nodeHandle.snapshot === "function") {
+      const snapshot = this.nodeHandle.snapshot() as RuntimeNodeHandleAnimationSnapshot | undefined;
+      bindingSamples = (snapshot?.animationBinding?.clipSamples ?? []).map((sample) => ({
+        clip: sample.clipName,
+        layer: sample.layer ?? "base",
+        weight: sample.weight,
+        time: sample.localTime
+      }));
+    }
+    const activeActions = mixerActions.length > 0 ? mixerActions : bindingSamples;
     return {
-      activeClip: base === null ? null : authoredClipName(base.clipName),
+      activeClip: base === null ? (lastApply?.clipName ?? null) : authoredClipName(base.clipName),
       tracksApplied: (lastApply?.transformTracksApplied ?? 0) + (lastApply?.morphWeightTracksApplied ?? 0),
-      activeActions: mixer.activeActionEntries().map(({ action, layer }) => ({
-        clip: authoredClipName(action.clipName),
-        layer,
-        weight: action.effectiveWeight,
-        time: action.time
-      })),
+      activeActions,
       timeScale: base?.timeScale ?? 1
     };
   }
@@ -460,7 +479,7 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
         return () => { /* stub no-op */ };
       }
       return addPrd06ActorConstraint(actor, spec as Prd06ConstraintSpec, (ref) =>
-        prd06ConstraintTargetPosition(actor, ref)
+        prd06ConstraintTargetPosition(actor, ref, this.app)
       );
     },
     clear: (): void => {
@@ -563,12 +582,25 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
  */
 function prd06ConstraintTargetPosition(
   actor: TypedGLBActor,
-  ref: string | { readonly socket: string }
+  ref: string | { readonly socket: string },
+  app: AuraApp | undefined
 ): readonly [number, number, number] | null {
   if (typeof ref !== "string") {
     const matrix = actorBoneMatrixSources.get(actor.id)?.(ref.socket) ?? null;
     return matrix === null ? null : [matrix[12]!, matrix[13]!, matrix[14]!];
   }
+  // App-level runtime nodes first: constraint targets live outside the
+  // actor's GLB scene graph (e.g. a scripted look-target primitive), so the
+  // registry — not `scene.traverse` — is where a name/id resolves.
+  if (app !== undefined) {
+    for (const handle of app.nodes.all()) {
+      if (handle.id === ref || handle.name === ref) {
+        return [handle.position[0], handle.position[1], handle.position[2]];
+      }
+    }
+  }
+  // Fallback: node names inside the actor's own glTF scene (target a mesh
+  // or empties embedded in the model).
   let found: readonly [number, number, number] | null = null;
   actor.pipeline.resources.scene.traverse((node) => {
     if (found !== null) return;
@@ -583,8 +615,8 @@ function prd06ConstraintTargetPosition(
 /**
  * The `prd06.animation` C-37 extension's `create` factory.
  */
-export function createPrd06ActorAnimationApi(handle: AuraRuntimeNodeHandle): AuraActorAnimationApi {
-  return new Prd06ActorAnimationApi(handle.id, handle);
+export function createPrd06ActorAnimationApi(handle: AuraRuntimeNodeHandle, app?: AuraApp): AuraActorAnimationApi {
+  return new Prd06ActorAnimationApi(handle.id, handle, app);
 }
 
 /** Test seam: drop every resolver/waiter/actor between specs. */

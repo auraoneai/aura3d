@@ -8,6 +8,10 @@ const rootDist = join(root, "dist");
 const packageNames = readdirSync(packageRoot, { withFileTypes: true })
   .filter((entry) => entry.isDirectory())
   .map((entry) => entry.name)
+  // A src-less directory is not a package (e.g. the QR-15 `packages/editor`
+  // stub whose contents were deleted in T6.1-T6.11) — it has nothing to emit
+  // or copy, so it must not fail the dist layout.
+  .filter((name) => existsSync(join(packageRoot, name, "src")))
   .sort();
 const packageNameSet = new Set(packageNames);
 // `game` ships inside the root tarball: `@aura3d/game` stays private while the

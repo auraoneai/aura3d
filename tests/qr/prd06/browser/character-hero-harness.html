@@ -1,0 +1,17 @@
+<!doctype html>
+<!-- PRD-06 T4.4 harness: runs the prd06-character-hero lane adapters
+     (?engine=aura3d|three). ReadyPayload publishes on
+     window.__PRD06_CHARACTER_HERO_READY__ (aura) /
+     __PRD06_CHARACTER_HERO_READY_THREE__ (three); the §17.2 frame sampler
+     lives on __PRD06_CHARACTER_HERO__ / __PRD06_CHARACTER_HERO_THREE__. -->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>prd06 character-hero harness</title>
+    <style>html, body { margin: 0; background: #202329; } #stage { width: 1280px; height: 720px; }</style>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <script type="module" src="./character-hero-harness.ts"></script>
+  </body>
+</html>

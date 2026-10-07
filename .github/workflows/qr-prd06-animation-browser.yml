@@ -29,6 +29,7 @@ on:
       - "packages/rendering/src/webgl2/TextureUpload.ts"
       - "packages/rendering/src/renderer/SkinnedBounds.ts"
       - "tests/qr/prd06/**"
+      - "benchmarks/quality-rebuild/**"
       - "tests/unit/contracts/impl/prd06-*"
       - "tests/unit/agent-api/production-actor-dispatch.test.ts"
       - "tests/unit/agent-api/runtime-node-empty-pose.test.ts"

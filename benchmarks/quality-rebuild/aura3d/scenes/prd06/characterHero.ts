@@ -9,7 +9,7 @@
 // tests/qr/prd06/unit/character-controller-binding.test.ts. Q-13-3 swaps the
 // template's `showcaseWalkAnimatedGirl` for a C-17-admitted rig (Q-05-2) that
 // passes the `template-hero` validator profile (T4.6).
-import type { AuraRuntimeNodeHandle } from "@aura3d/engine";
+import type { AuraApp, AuraRuntimeNodeHandle } from "@aura3d/engine";
 import {
   characterAnimation,
   type AuraCharacterAnimationBinding,
@@ -41,6 +41,7 @@ export const characterHeroClips = {
 } as const;
 
 export type CharacterHeroAction = keyof typeof characterHeroClips;
+export type CharacterHeroClipMap = typeof characterHeroClips;
 
 /**
  * §7.1 spec matching the character-controller template's tuning
@@ -48,7 +49,7 @@ export type CharacterHeroAction = keyof typeof characterHeroClips;
  * the T4.4 lane scene wires the rig's real leg chains and head bone.
  */
 export function characterHeroAnimationSpec(
-  clips: Readonly<Record<string, string>> = characterHeroClips
+  clips: Readonly<CharacterHeroClipMap> | Readonly<Record<string, string>> = characterHeroClips
 ): AuraCharacterAnimationSpec {
   return {
     locomotion: {
@@ -84,7 +85,8 @@ export function characterHeroAnimationSpec(
 export function bindCharacterHero(
   controller: AuraCharacterControllerLike,
   hero: AuraRuntimeNodeHandle,
-  spec: AuraCharacterAnimationSpec = characterHeroAnimationSpec()
+  spec: AuraCharacterAnimationSpec = characterHeroAnimationSpec(),
+  options?: { readonly app?: AuraApp }
 ): AuraCharacterAnimationBinding {
-  return characterAnimation(controller, hero, spec);
+  return characterAnimation(controller, hero, spec, options);
 }

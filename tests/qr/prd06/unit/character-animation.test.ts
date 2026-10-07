@@ -171,6 +171,21 @@ describe("T4.2 characterAnimation — airborne + actions", () => {
     expect(binding.snapshot().activeAction).toBe("wave");
   });
 
+  it("state-bag controller carrying a `state: string` label still resolves numeric fields", () => {
+    // T4.4 regression: the bag IS the controller and `state: "walk"` is its
+    // free-form label — `.state` only counts as a bag when it's an object.
+    const bag = { speed: 2.4, grounded: true, jumped: false, turnRate: 0.2, state: "walk" };
+    const { node, calls } = makeNode();
+    const binding = characterAnimation(bag, node, SPEC);
+    binding.update(1 / 60);
+    const samples = samplesAt(calls[calls.length - 1]!);
+    // 2.4 m/s is between Walk(1.5) and Run(5) — both must carry weight.
+    expect(samples.get("Walk")!.weight).toBeGreaterThan(0);
+    expect(samples.get("Run")!.weight).toBeGreaterThan(0);
+    expect(samples.get("Idle"), "Idle weight 0 — filtered from published samples").toBeUndefined();
+    expect(binding.snapshot().speed).toBeCloseTo(2.4, 3);
+  });
+
   it("footIk + lookAt specs register constraints at bind; dispose clears", () => {
     const controller = { snapshot: () => ({ speed: 0, grounded: true }) };
     const { node, ikAdds, ikClears } = makeNode();

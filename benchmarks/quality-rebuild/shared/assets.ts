@@ -21,6 +21,7 @@ export type ModelAssetId =
   | "compareTransmission"
   | "sheenTestGrid"
   | "soldier"
+  | "auraClashPlayerRig"
   | "cesiumMan"
   | "robotExpressive"
   | "fox"
@@ -122,6 +123,17 @@ export const modelAssets: Readonly<Record<ModelAssetId, ModelAssetEntry>> = {
     animations: ["Idle", "Run", "TPose", "Walk"],
     gltfExtensions: [],
     provenance: "three.js examples Soldier.glb (Mixamo). Byte-identical to the Aura3D bundled humanoid fixture."
+  },
+  auraClashPlayerRig: {
+    id: "auraClashPlayerRig",
+    repoPath: "public/aura-assets/auraClashPlayerRig.3318d671.glb",
+    url: `${base}auraClashPlayerRig.glb`,
+    sha256: "sha256-3318d671632878ed27b8af6de88c6e5ca647e0d4a04cf03780d555fa07cec087",
+    lfs: false,
+    worldSize: [1.669, 1.802, 0.377],
+    animations: ["Crouch_Idle_Loop", "Death01", "Hit_Chest", "Hit_Head", "Idle_Loop", "Jump_Loop", "Punch_Cross", "Punch_Jab", "Sprint_Loop", "Sword_Attack", "Walk_Loop", "Sword_Block"],
+    gltfExtensions: [],
+    provenance: "Aura Clash player rig (Female Ranger, 65 joints / 12 clips / 11,376-ish tris, admitted). PRD-06 §6.9 standalone hero."
   },
   cesiumMan: {
     id: "cesiumMan",

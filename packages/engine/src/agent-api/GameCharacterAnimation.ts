@@ -126,9 +126,8 @@ export function validateClipMap<State extends string>(
 
 import type { AuraBoneMaskSpec, AuraRootMotionSpec } from "../contracts/animation.js";
 import { createPrd06ActorAnimationApi } from "./app/actorAnimationHandle.js";
-import type { AuraRuntimeNodeHandle } from "./nodes/types/runtime.js";
-import type { FootIkConstraintSpec } from "../../../animation/src/FootIk.js";
-import type { LookAtConstraintSpec } from "../../../animation/src/pose/LookAtConstraint.js";
+import type { AuraApp, AuraRuntimeNodeHandle } from "./nodes/types/runtime.js";
+import type { FootIkConstraintSpec, LookAtConstraintSpec } from "@aura3d/animation/lanes";
 
 /** Normalized controller state the binding consumes each frame. */
 export interface AuraCharacterControllerSnapshot {
@@ -151,7 +150,11 @@ export interface AuraCharacterControllerLike {
   /** State fields when the controller IS its own state bag (`{ speed }`). */
   readonly [key: string]: unknown;
   readonly snapshot?: () => Readonly<Record<string, unknown>>;
-  readonly state?: Readonly<Record<string, unknown>>;
+  /**
+   * `.state` as a state BAG (procedural controllers); a plain string is a
+   * state label, not a bag — the snapshot reader keys on the object check.
+   */
+  readonly state?: Readonly<Record<string, unknown>> | string;
 }
 
 export interface AuraLocomotionClipEntry {
@@ -202,7 +205,13 @@ export interface AuraCharacterAnimationSpec {
     readonly duration?: number;
   }>>;
   readonly footIk?: boolean | FootIkConstraintSpec;
-  readonly lookAt?: false | LookAtConstraintSpec;
+  /**
+   * Look-at constraint. `target` resolves per frame like `ik.add` — a Vec3,
+   * a scene-node id/name, or `{ socket }` on the same actor (C-19 §7.1).
+   */
+  readonly lookAt?: false | (LookAtConstraintSpec & {
+    readonly target?: readonly [number, number, number] | string | { readonly socket: string };
+  });
   readonly rootMotion?: false | AuraRootMotionSpec;
 }
 
@@ -260,9 +269,14 @@ function readControllerSnapshot(controller: AuraCharacterControllerLike): AuraCh
   // Controllers may expose `snapshot()` (Arcade/Fighting), a `.state` bag
   // (procedural LocomotionController), or BE the state bag itself (the
   // character-controller template's `{ speed }` — Q-13-3 reference path).
+  // `.state` counts as the bag only when it IS an object — a plain string is
+  // the controller's free-form state LABEL (`snapshot().state`-style), and a
+  // state-bag controller may carry that label on itself.
   const raw = typeof controller.snapshot === "function"
     ? controller.snapshot()
-    : (controller.state ?? (controller as unknown as Readonly<Record<string, unknown>>));
+    : typeof controller.state === "object" && controller.state !== null
+      ? controller.state
+      : (controller as unknown as Readonly<Record<string, unknown>>);
   const velocity = (raw as { readonly velocity?: readonly [number, number, number] }).velocity;
   const speed = typeof (raw as { readonly speed?: unknown }).speed === "number"
     ? (raw as { readonly speed: number }).speed
@@ -357,7 +371,8 @@ let characterAnimationCounter = 0;
 export function characterAnimation(
   controller: AuraCharacterControllerLike,
   node: AnimationHandleLike | AuraRuntimeNodeHandle,
-  spec: AuraCharacterAnimationSpec
+  spec: AuraCharacterAnimationSpec,
+  options?: { readonly app?: AuraApp }
 ): AuraCharacterAnimationBinding {
   const syncGroup = spec.locomotion.syncGroup ?? "locomotion";
   const smoothing = spec.locomotion.smoothing ?? 0;
@@ -375,7 +390,7 @@ export function characterAnimation(
   const animationApi =
     handle.animation?.ik !== undefined || handle.animation?.resolveAnimationClips !== undefined
       ? handle.animation
-      : createPrd06ActorAnimationApi(node as unknown as AuraRuntimeNodeHandle);
+      : createPrd06ActorAnimationApi(node as unknown as AuraRuntimeNodeHandle, options?.app);
 
   // Clip durations: explicit spec fields win, else the node's resolve pass.
   if (animationApi?.resolveAnimationClips) {
@@ -442,8 +457,12 @@ export function characterAnimation(
   }
   const sampleMask = (clip: string) => maskByClip.get(clip);
   function clipTime(clip: string): number {
+    // Layered/one-shot entries carry their own clock (jump-start, land,
+    // actions); locomotion samples map the shared sync-group phase.
+    const live = layers.find((l) => l.clip === clip);
+    if (live !== undefined && (live.layer !== undefined || live.oneShot)) return live.time;
     const duration = durations.get(clip);
-    return duration !== undefined && duration > 0 ? sharedPhase * duration : layers.find((l) => l.clip === clip)?.time ?? 0;
+    return duration !== undefined && duration > 0 ? sharedPhase * duration : live?.time ?? 0;
   }
 
   function locomotionWeights(speed: number, velocity?: readonly [number, number, number]): readonly { clip: string; weight: number }[] {
@@ -498,7 +517,9 @@ export function characterAnimation(
       const duration = durations.get(w.clip);
       return rate + w.weight * (duration !== undefined && duration > 0 ? 1 / duration : 1);
     }, 0);
-    if (loco.length > 0 && snap.speed > 0.01) sharedPhase = (sharedPhase + dt * Math.max(phaseRate, 1e-6)) % 1;
+    // Advance whenever the sync group is live — idle at speed 0 must still
+    // cycle its clip (a frozen localTime renders a static pose, not a loop).
+    if (loco.length > 0) sharedPhase = (sharedPhase + dt * Math.max(phaseRate, 1e-6)) % 1;
 
     // Turn-in-place override: near-zero speed + turn rate above threshold.
     let turn: { clip: string; weight: number } | undefined;
