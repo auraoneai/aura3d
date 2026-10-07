@@ -197,19 +197,16 @@ export async function runExposureProbe() {
     for (let f = 0; f < 150 && settleFrame < 0; f++) {
       await runFrames(1, dt);
       luma = centerPatchLuma(read(), 256, 256);
-      // Auto-exposure holds rendered luma near the same mapped target; the
-      // residual EV error is |log2(luma/brightLuma)| — wait: bright/dark are
-      // different patches, so converge on frame-over-frame stability + the
-      // expected direction (darker scene → exposure rises → rendered luma
-      // lands within 0.1 EV of its own converged value).
+      // §8.9/§14: the meter normalizes rendered center luma to the same
+      // mapped target for a wall that fills the metering region, so the
+      // residual EV error vs the pre-step settled value is
+      // |log2(luma/brightLuma)|. Settled = the error stays < 0.1 EV for
+      // 10 consecutive frames (adaptation is exponential — first entry into
+      // the band is the "reached" time).
       trace.push({ f, luma, evError: Math.log2(Math.max(luma, 1e-4) / Math.max(brightLuma, 1e-4)) });
-      if (f > 30) {
-        // Settled = rendered luma inside ±0.1 EV of the frame-30..35 window mean
-        // (a window past the first swings), and stable across 10 frames.
-        const recent = trace.slice(-10).map((t) => t.luma);
-        const mean = recent.reduce((a, b) => a + b, 0) / recent.length;
-        const err = Math.abs(Math.log2(Math.max(luma, 1e-4) / Math.max(mean, 1e-4)));
-        if (err < 0.1) settleFrame = f;
+      const tail = trace.slice(-10);
+      if (tail.length === 10 && tail.every((t) => Math.abs(t.evError) < 0.1)) {
+        settleFrame = tail[0].f;
       }
     }
     return {
