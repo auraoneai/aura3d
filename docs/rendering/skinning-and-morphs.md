@@ -53,20 +53,26 @@ joints; "drive" is a static pose, certifies with "walk"), and the runner hero's
 "FacialExpressions" clip for the face slot (`showcaseMorphExpression` is a
 single-triangle morph unit card, not a face).
 
-Certified 2026-09-03 (`tests/browser/certified-hero-rigs.spec.ts` 6/6, production-runtime
-backend, stable camera, per-rig evidence in `tests/reports/certified-hero-rigs/`):
+A rig certifies only on §17.3 motion-quality metrics (PRD-06), sampled from
+bone data — never pixel counts — in the lane harness
+(`packages/animation/src/pose/MotionMetrics.ts`): transition continuity
+C ≤ 1.5 across blend windows, foot slide ≤ 2 cm per contact phase walking and
+≤ 3 cm running, shadow-silhouette IoU agreement on the posed rig, and
+`animationState().tracksApplied > 0` on every clip in the rig's set. The
+roster below is the working set; certification stays open until the metrics
+suite reports green per rig.
 
-Certified rigs:
+Candidate rigs (§17.3 metrics suite pending):
 
-- humanoid-a: `showcaseWalkAnimatedGirl` / "Take 001" — 78 joints, 7 skinned items, 24,274 changed px.
-- humanoid-b: `showcaseAnimatedRunnerHero` / "OffensiveIdle" — 136 joints (data-texture palette path), 6 skinned items, 55,150 changed px.
-- creature: `showcaseRunnerRobot` / "WALK" — 34 joints, 6 skinned items, 64,530 changed px.
-- vehicle-driver: `showcaseKenneyOobiPlatformerHero` / "walk" — 6 joints, 1 skinned item, 95,949 changed px.
-- face: `showcaseAnimatedRunnerHero` / "FacialExpressions" — 136 joints, 6 skinned items, 10,640 changed px.
+- humanoid-a: `showcaseWalkAnimatedGirl` / "Take 001" — 78 joints, 7 skinned items.
+- humanoid-b: `showcaseAnimatedRunnerHero` / "OffensiveIdle" — 136 joints (data-texture palette path), 6 skinned items.
+- creature: `showcaseRunnerRobot` / "WALK" — 34 joints, 6 skinned items.
+- vehicle-driver: `showcaseKenneyOobiPlatformerHero` / "walk" — 6 joints, 1 skinned item.
+- face: `showcaseAnimatedRunnerHero` / "FacialExpressions" — 136 joints, face morph slot.
 
-Only these rigs may be claimed as certified. The earlier module-load collision
-(`AssetDecoders.ts` vs the assets browser barrel) was resolved — both barrels
-export `ensureCompressedTextureSupport` — and the proof ran green after the fix.
+Only rigs with a green §17.3 metrics row may be claimed as certified. The
+earlier module-load collision (`AssetDecoders.ts` vs the assets browser
+barrel) was resolved — both barrels export `ensureCompressedTextureSupport`.
 
 ## Acceptance Criteria For Public Claims
 
