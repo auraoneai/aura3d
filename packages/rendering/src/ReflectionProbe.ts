@@ -3,6 +3,7 @@ import type { RenderDevice, RenderTarget } from "./RenderDevice";
 import { Sampler } from "./Sampler";
 import { Texture, type TextureCubeFace } from "./Texture";
 import { TextureBinding } from "./TextureBinding";
+import { rendererQrFlags } from "./renderer/FrameGraph";
 
 export interface ReflectionProbe {
   readonly id: string;
@@ -160,7 +161,9 @@ export class CubeCameraReflectionCapture {
       name: "u_environmentCubeMapTexture",
       texture: this.texture,
       sampler: new Sampler({
-        minFilter: "linear",
+        // PRD-02/C-12: probe bindings go mip-mapped under the flag; single-level
+        // captures still downgrade to LINEAR in the sampler registry.
+        minFilter: rendererQrFlags().on("A3D_QR_LIGHTING") ? "linear-mipmap-linear" : "linear",
         magFilter: "linear",
         addressU: "clamp-to-edge",
         addressV: "clamp-to-edge"

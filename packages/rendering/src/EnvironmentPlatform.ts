@@ -154,6 +154,10 @@ export interface EnvironmentStageOptions {
   readonly includeGroundGrid?: boolean;
   readonly includeStageAccents?: boolean;
   readonly contactGrounding?: EnvironmentContactGroundingMode | EnvironmentContactGroundingOptions;
+  /** E34 (PRD-02 §6.5): when `A3D_QR_LIGHTING` is on, the lane's
+   *  `ContactShadowPass` replaces the ExternalParity blob plan — under the
+   *  flag `createEnvironmentStage` emits no contact-grounding layers. */
+  readonly flags?: { on(name: string): boolean };
 }
 
 export interface EnvironmentContactGroundingOptions {
@@ -424,7 +428,9 @@ export function createEnvironmentStage(options: EnvironmentStageOptions = {}): E
   const includeStageShell = options.includeStageShell !== false;
   const includeGroundGrid = options.includeGroundGrid !== false;
   const includeStageAccents = options.includeStageAccents !== false;
-  const contactGrounding = createStageContactGrounding(preset, size, floorY, studioTone, options.contactGrounding);
+  const contactGrounding = options.flags?.on("A3D_QR_LIGHTING")
+    ? undefined
+    : createStageContactGrounding(preset, size, floorY, studioTone, options.contactGrounding);
 
   if (options.includeSkyDome !== false) {
     items.push(createProceduralSkyDome({ preset, radius: size * 3.5, color: [...palette.sky, 1], y: floorY }));
