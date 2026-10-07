@@ -145,3 +145,49 @@ consumes via `@aura3d/input` (request **Q-13-10**).
 - Resolution maps regenerated (`tools/generate-resolution-maps --write`):
   tsconfig.paths.generated.json 107→82 engine rows, vite.aliases.generated.ts,
   finalize-dist manifest, package.json exports/files, devDep drop all clean.
+## T8.2 gate results (cb109f16)
+
+### pack:check — PASS (27/27)
+`pnpm pack:check` green after three repairs that were also broken on main
+(masked by stale gitignored `dist/`):
+
+1. **Cross-package relative imports** — lane-02 files (`lanes/prd02.ts`,
+   `agent-api/compiler/environment.ts`, `compiler/lights.ts`) plus 15-owned
+   `threejs-example-parity/*` emitted `../../../rendering/src/*.js` specifiers
+   that resolve to a sibling package's SOURCE tree — legal in-repo, dead in
+   the packed tarball (`dist/<pkg>/...` layout drops the `src/` segment).
+   Fixed centrally in `tools/finalize-dist/index.ts`: `rewriteSpecifier` now
+   remaps a relative specifier that escapes the emitting package and enters
+   `<other-pkg>/src/` onto the sibling's emitted mirror (`dist/<pkg>/...`
+   root pass, `packages/<pkg>/dist/...` local pass). 19 template vite builds
+   unblocked.
+2. **"." surface gaps** — shipped create-aura3d templates imported
+   `compilePromptPlanV2`, `createFightingGameKit`, `FightingGameSnapshot`,
+   `GamePlatformerSnapshot`, `GameRacingKit` — all live agent-api exports
+   never published on ".". Added to `public/index.ts`. (`AuraAsset` in
+   `apps/showcase-asset-audition` is a lane-14 app bug — nonexistent type,
+   not a packed template; not fixed here.)
+3. **`Buffer` in shipped `.d.ts`** — `rendering/environment/HdrEquirect.ts`
+   declared `decodeHdrEquirect(buf: Uint8Array | Buffer)`, leaking the
+   Node-only `Buffer` type into packed declarations (3 templates red) — and
+   `Buffer.from` at module top-level would crash on import in a real browser.
+   Converted to `Uint8Array` throughout (identical bytes/behavior; `Buffer`
+   is a `Uint8Array` subclass so Node callers still typecheck).
+   Courtesy request: **Q-02-3**.
+
+### arch:check — 32 enforced errors, all pre-existing (main baseline: 33)
+Branch is **net −1 vs merged main**. Cleared: engine unused deps
+`@aura3d/debug`/`create-aura3d` (T8.1 removed the only importers) and root
+`@aura3d/game` missing-dependency. Remaining findings are other lanes'
+pre-existing surface: glsl-location (shader files, lanes 02/03/10/12),
+layering (promptPlanV2 → rendering/contracts; compiler → app/ — lane-11/13
+allowlist territory), no-cycles SCC-153, single-renderer `getContext`
+calls (prd01 outputSurface, rendering PixelRatio), unique-ownership
+`AudioBus` (audio vs game), deps-truth residual WARNs.
+
+### Remaining T8.2 items
+- §16.1 36 strict captures (identity vs Phase 7) — dispatched via the
+  GitLab capture lane / captures workflow on this PR (packed-consumer-check
+  touched → `qr-prd15-captures` triggers).
+- 4.0.0 publish — `release.yml` is `workflow_dispatch`-only; coordinator
+  action post-merge per runbook, not this lane.
