@@ -2,8 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { A3DAppLifecycle, Geometry, PBRMaterial } from "@aura3d/engine/advanced-runtime";
 import { a3dRendererEvidence } from "../../../packages/engine/src/agent-api/devtools/rendererReports.js";
 import { MockRenderDevice } from "@aura3d/rendering";
-import { Renderer as AdvancedRenderer } from "@aura3d/rendering/advanced-runtime";
-import { createRenderableScene } from "@aura3d/assets/advanced-gallery";
+import { Renderer as AdvancedRenderer } from "@aura3d/rendering";
+import { createRenderableScene } from "@aura3d/assets";
 import { A3DRenderer, A3DScene } from "@aura3d/engine/renderer";
 import { GLTFLoader } from "@aura3d/engine/assets";
 

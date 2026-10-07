@@ -14,7 +14,7 @@ Every entry below is deleted in 4.0.0. Rewrite imports of the form
 
 | Removed subpath | Import from instead | Symbols defined in |
 |---|---|---|
-| `./animation/browser` | `.` (or `@aura3d/animation/browser`) | `packages/animation/src/browser-index.ts` |
+| `./animation/browser` | `.` | `packages/animation/src/browser-index.ts` |
 | `./assets/advanced-gallery` | `@aura3d/assets` | `packages/assets/src/advanced-gallery/index.ts` |
 | `./assets/asset-corpus` | `@aura3d/assets` | `packages/assets/src/asset-corpus/index.ts` |
 | `./assets/gltf-runtime` | `@aura3d/assets` | `packages/assets/src/gltf-runtime.ts` |
@@ -22,7 +22,7 @@ Every entry below is deleted in 4.0.0. Rewrite imports of the form
 | `./core` | `.` | `packages/core/src/index.ts` |
 | `./create-aura3d` | `create-aura3d` | `packages/create-aura3d/src/index.ts` |
 | `./debug` | `.` | `packages/debug/src/index.ts` |
-| `./editor` | `.` (or `@aura3d/engine/editor-runtime`) | `packages/editor-runtime/src/index.ts` |
+| `./editor` | `.` (or `@aura3d/editor-runtime`) | `packages/editor-runtime/src/index.ts` |
 | `./engine` | `.` | `packages/engine/src/index.ts` |
 | `./engine-runtime` | `.` | `packages/engine/src/index.ts` |
 | `./environments` | `.` | `packages/engine/src/devtools/environmentDiagnostics.ts` |

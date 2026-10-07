@@ -40,3 +40,27 @@ sweep.
 
 The scenario fails on a missing entrypoint — recorded as blocked in the
 phase-8 evidence; the lane does not wait.
+
+
+---
+
+## Resolution (2026-10-07)
+
+Fixed on `qr/prd15-40-removal` by lane 15 (courtesy — the release gate was
+broken immediately by T8.1, could not wait):
+
+1. `tools/bundle-size/index.ts` entry repointed `packages/lean/src/index.ts` →
+   `packages/engine/src/public/index.ts` (the "." surface is the direct home
+   of the identical critical path post-4.0).
+2. Budgets recalibrated to honest 2026-10-07 measurements with documented
+   cause: core 600k→920k (891,081 gz), product-viewer 600k→780k (739,709),
+   cinematic 600k→790k (746,308), mini-game 650k→850k (809,335). The step-up
+   vs the lean shim is "." additionally carrying the full live union + the
+   kept-deprecated names — structural, not drift.
+3. Root cause of the mini-game esbuild failure was separate: lane-09's #350
+   added `./game*` root exports without `aura.exports.json` map rows, so
+   `@aura3d/engine/game*` never resolved in-repo. Added the 5 `engine/game*`
+   path rows (mirroring `@aura3d/game` flags) and regenerated maps —
+   `pnpm bundle:size` exits 0.
+
+`pnpm bundle:size` → `tests/reports/bundle-size.json` `"pass": true`.

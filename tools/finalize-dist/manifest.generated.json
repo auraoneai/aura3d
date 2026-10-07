@@ -137,6 +137,36 @@
       "browser301": false
     },
     {
+      "name": "@aura3d/engine/game/capture",
+      "file": "packages/game/src/capture/index.ts",
+      "devOnly": true,
+      "browser301": false
+    },
+    {
+      "name": "@aura3d/engine/game/art",
+      "file": "packages/game/src/art/index.ts",
+      "devOnly": true,
+      "browser301": false
+    },
+    {
+      "name": "@aura3d/engine/game/util",
+      "file": "packages/game/src/util/index.ts",
+      "devOnly": true,
+      "browser301": false
+    },
+    {
+      "name": "@aura3d/engine/game/styles.css",
+      "file": "packages/game/src/styles.css",
+      "devOnly": true,
+      "browser301": false
+    },
+    {
+      "name": "@aura3d/engine/game",
+      "file": "packages/game/src/index.ts",
+      "devOnly": true,
+      "browser301": false
+    },
+    {
       "name": "@aura3d/game/art",
       "file": "packages/game/src/art/index.ts",
       "devOnly": true,
@@ -452,6 +482,35 @@
       "source": "packages/engine/src/public/devtools.ts",
       "dist": "./dist/engine/public/devtools.js",
       "conditions": true
+    },
+    {
+      "name": "./game",
+      "source": "packages/game/src/index.ts",
+      "dist": "./dist/game/index.js",
+      "conditions": true
+    },
+    {
+      "name": "./game/capture",
+      "source": "packages/game/src/capture/index.ts",
+      "dist": "./dist/game/capture/index.js",
+      "conditions": true
+    },
+    {
+      "name": "./game/art",
+      "source": "packages/game/src/art/index.ts",
+      "dist": "./dist/game/art/index.js",
+      "conditions": true
+    },
+    {
+      "name": "./game/util",
+      "source": "packages/game/src/util/index.ts",
+      "dist": "./dist/game/util/index.js",
+      "conditions": true
+    },
+    {
+      "name": "./game/styles.css",
+      "source": "packages/game/src/styles.css",
+      "dist": "./dist/game/styles.css"
     }
   ],
   "deprecated": [

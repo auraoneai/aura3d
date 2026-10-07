@@ -19,7 +19,26 @@ const packTarball = (cwd: string): string => {
   return join(reportDir, basename(name));
 };
 const tarballPath = packTarball(root);
-const createA3DTarballPath = packTarball(resolve("packages/create-aura3d"));
+// `npm pack` preserves `"workspace:*"` deps verbatim, which plain `npm install`
+// in the isolated smoke project rejects. Pack the asset-index dep, temporarily
+// rewrite create-aura3d's manifest to the file: tarball, pack, then restore —
+// the same rewrite publish flows perform.
+const assetIndexTarballPath = packTarball(resolve("packages/asset-index"));
+const createA3DManifestPath = resolve("packages/create-aura3d/package.json");
+const createA3DManifest = readFileSync(createA3DManifestPath, "utf8");
+writeFileSync(
+  createA3DManifestPath,
+  createA3DManifest.replace(
+    /"(@aura3d\/asset-index)"\s*:\s*"workspace:[^"]*"/,
+    `"$1": "file:${assetIndexTarballPath}"`
+  )
+);
+let createA3DTarballPath: string;
+try {
+  createA3DTarballPath = packTarball(resolve("packages/create-aura3d"));
+} finally {
+  writeFileSync(createA3DManifestPath, createA3DManifest);
+}
 const tempRoot = mkdtempSync(join(tmpdir(), "a3d-package-smoke-"));
 const scaffoldRoot = join(tempRoot, "scaffolded");
 

@@ -58,6 +58,25 @@
     "./devtools": {
       "source": "packages/engine/src/public/devtools.ts",
       "conditions": true
+    },
+    "./game": {
+      "source": "packages/game/src/index.ts",
+      "conditions": true
+    },
+    "./game/capture": {
+      "source": "packages/game/src/capture/index.ts",
+      "conditions": true
+    },
+    "./game/art": {
+      "source": "packages/game/src/art/index.ts",
+      "conditions": true
+    },
+    "./game/util": {
+      "source": "packages/game/src/util/index.ts",
+      "conditions": true
+    },
+    "./game/styles.css": {
+      "source": "packages/game/src/styles.css"
     }
   },
   "deprecated": {
@@ -283,6 +302,46 @@
     [
       "@aura3d/cli/contracts",
       "packages/aura3d-cli/src/contracts/commands.ts",
+      {
+        "vite": false,
+        "browser301": false
+      }
+    ],
+    [
+      "@aura3d/engine/game/capture",
+      "packages/game/src/capture/index.ts",
+      {
+        "vite": false,
+        "browser301": false
+      }
+    ],
+    [
+      "@aura3d/engine/game/art",
+      "packages/game/src/art/index.ts",
+      {
+        "vite": false,
+        "browser301": false
+      }
+    ],
+    [
+      "@aura3d/engine/game/util",
+      "packages/game/src/util/index.ts",
+      {
+        "vite": false,
+        "browser301": false
+      }
+    ],
+    [
+      "@aura3d/engine/game/styles.css",
+      "packages/game/src/styles.css",
+      {
+        "vite": false,
+        "browser301": false
+      }
+    ],
+    [
+      "@aura3d/engine/game",
+      "packages/game/src/index.ts",
       {
         "vite": false,
         "browser301": false

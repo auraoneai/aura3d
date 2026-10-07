@@ -62,21 +62,17 @@
     "./scripting": "./dist/scripting/index.js",
     "./workflows": "./dist/workflows/index.js",
     "./editor-runtime": "./dist/editor-runtime/index.js",
-    "./editor": "./dist/editor/index.js",
-    "./debug": "./dist/debug/index.js",
-    "./rendering/production-runtime": "./dist/rendering/production-runtime/index.js",
-    "./rendering/webgpu": "./dist/rendering/webgpu.js",
-    "./rendering/advanced-runtime": "./dist/rendering/advanced-runtime/index.js",
-    "./assets/asset-corpus": "./dist/assets/asset-corpus/index.js",
-    "./assets/production-runtime": "./dist/assets/asset-corpus/index.js",
-    "./assets/advanced-gallery": "./dist/assets/advanced-gallery/index.js",
-    "./production-runtime": "./dist/engine/production-runtime/index.js",
-    "./advanced-runtime": "./dist/engine/advanced-runtime/index.js",
-    "./contracts": {
-      "types": "./dist/engine/contracts/index.d.ts",
-      "browser": "./dist/engine/contracts/index.js",
-      "import": "./dist/engine/contracts/index.js",
-      "default": "./dist/engine/contracts/index.js"
+    "./renderer": {
+      "types": "./dist/engine/public/renderer.d.ts",
+      "browser": "./dist/engine/public/renderer.js",
+      "import": "./dist/engine/public/renderer.js",
+      "default": "./dist/engine/public/renderer.js"
+    },
+    "./devtools": {
+      "types": "./dist/engine/public/devtools.d.ts",
+      "browser": "./dist/engine/public/devtools.js",
+      "import": "./dist/engine/public/devtools.js",
+      "default": "./dist/engine/public/devtools.js"
     },
     "./game": {
       "types": "./dist/game/index.d.ts",
@@ -103,18 +99,6 @@
       "default": "./dist/game/util/index.js"
     },
     "./game/styles.css": "./dist/game/styles.css",
-    "./renderer": {
-      "types": "./dist/engine/public/renderer.d.ts",
-      "browser": "./dist/engine/public/renderer.js",
-      "import": "./dist/engine/public/renderer.js",
-      "default": "./dist/engine/public/renderer.js"
-    },
-    "./devtools": {
-      "types": "./dist/engine/public/devtools.d.ts",
-      "browser": "./dist/engine/public/devtools.js",
-      "import": "./dist/engine/public/devtools.js",
-      "default": "./dist/engine/public/devtools.js"
-    },
     "./media-node": "./dist/engine/deprecated/media-node.js",
     "./apps": "./dist/engine/deprecated/apps.js",
     "./contracts": "./dist/engine/deprecated/contracts.js",
@@ -182,6 +166,7 @@
     "test": "pnpm test:unit && pnpm test:integration",
     "test:browser": "playwright test tests/browser/advanced-examples-gallery.spec.ts tests/browser/current-routes-route-health.spec.ts tests/browser/wow-showcase-screenshots.spec.ts tests/browser/showcase-route-primary-probes.spec.ts tests/browser/product-demos.spec.ts tests/browser/loader-instancing-evidence.spec.ts tests/browser/current-routes-parity-evidence.spec.ts",
     "test:integration": "vitest run tests/integration --reporter=default --reporter=json --outputFile=tests/reports/integration.json",
+    "test:packages": "pnpm exec tsx --tsconfig tsconfig.base.json --test packages/assets/tests/assets.test.ts packages/audio/tests/audio.test.ts packages/ecs/tests/ecs.test.ts packages/editor-runtime/tests/editor-runtime.test.ts packages/input/tests/input.test.ts packages/scene/tests/scene.test.ts packages/scripting/tests/scripting.test.ts",
     "test:packages:dist": "node --import tsx --test packages/assets/tests/assets.test.ts packages/audio/tests/audio.test.ts packages/ecs/tests/ecs.test.ts packages/editor-runtime/tests/editor-runtime.test.ts packages/input/tests/input.test.ts packages/scene/tests/scene.test.ts packages/scripting/tests/scripting.test.ts",
     "test:performance": "pnpm threejs-parity:performance && pnpm superiority:performance",
     "test:unit": "vitest run tests/unit --maxWorkers=2 --reporter=default --reporter=json --outputFile=tests/reports/unit.json",

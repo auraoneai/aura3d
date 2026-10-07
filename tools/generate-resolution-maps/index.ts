@@ -47,10 +47,19 @@ export function distTarget(source: string, ext: "js" | "d.ts"): string {
   return `./dist/${match[1]}/${match[2]}.${ext}`;
 }
 
+/** Asset-like entry sources (css/binary) ship under the same dist mirror path
+ * verbatim — no .js emit exists for them. */
+const ASSET_SOURCE = /^packages\/([^/]+)\/src\/(.+\.(?:css|glb|gltf|hdr|jpg|jpeg|ktx2|png|svg|webp|bin))$/i;
+
 export function buildPackageExports(aura: AuraExportsFile): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [subpath, entry] of Object.entries(aura.entries)) {
     if (!entry.source) throw new Error(`entry ${subpath} is missing source`);
+    const asset = ASSET_SOURCE.exec(entry.source);
+    if (asset) {
+      out[subpath] = `./dist/${asset[1]}/${asset[2]}`;
+      continue;
+    }
     const dist = distTarget(entry.source, "js");
     const dts = distTarget(entry.source, "d.ts");
     if (entry.conditions || entry.browser) {
@@ -119,7 +128,11 @@ export function buildManifest(aura: AuraExportsFile): Record<string, unknown> {
   const subpaths = Object.entries(aura.entries).map(([name, entry]) => ({
     name,
     source: entry.source,
-    dist: entry.source ? distTarget(entry.source, "js") : undefined,
+    dist: entry.source
+      ? ASSET_SOURCE.exec(entry.source)
+        ? `./dist/${ASSET_SOURCE.exec(entry.source)![1]}/${ASSET_SOURCE.exec(entry.source)![2]}`
+        : distTarget(entry.source, "js")
+      : undefined,
     ...(entry.conditions ? { conditions: true } : {}),
     ...(entry.browser ? { browser: entry.browser, browserDist: distTarget(entry.browser, "js") } : {}),
     ...(entry.devOnly ? { devOnly: true } : {})

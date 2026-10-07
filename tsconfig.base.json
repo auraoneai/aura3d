@@ -91,6 +91,21 @@
       "@aura3d/cli/contracts": [
         "packages/aura3d-cli/src/contracts/commands.ts"
       ],
+      "@aura3d/engine/game/capture": [
+        "packages/game/src/capture/index.ts"
+      ],
+      "@aura3d/engine/game/art": [
+        "packages/game/src/art/index.ts"
+      ],
+      "@aura3d/engine/game/util": [
+        "packages/game/src/util/index.ts"
+      ],
+      "@aura3d/engine/game/styles.css": [
+        "packages/game/src/styles.css"
+      ],
+      "@aura3d/engine/game": [
+        "packages/game/src/index.ts"
+      ],
       "@aura3d/game/art": [
         "packages/game/src/art/index.ts"
       ],
