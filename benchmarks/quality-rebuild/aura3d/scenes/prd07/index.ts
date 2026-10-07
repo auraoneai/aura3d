@@ -15,5 +15,12 @@ export const adapterSceneIds = [
   // P4-T8 fog scenes — fog-transition and underwater are Aura-only (C-30).
   "prd07-fog-height",
   "prd07-fog-transition",
-  "prd07-underwater"
+  "prd07-underwater",
+  // P5-T8 weather/volumetric/I2 scenes.
+  "prd07-rain-night",
+  "prd07-snow",
+  "prd07-volumetric-shafts",
+  "prd07-lit-smoke",
+  "prd07-soft-particles",
+  "prd07-water-interleave"
 ] as const;

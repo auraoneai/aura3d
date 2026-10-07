@@ -19,7 +19,7 @@ export const PRD07_FOG_CHUNK_GLSL = `
 #endif
 uniform vec4 u_fogA;   // σ_d, σ_h, b, h0 — mode 6: density, heightFalloff, heightReference, legacyMode
 uniform vec4 u_fogB;   // start, maxOpacity, sunInscatter, anisotropy g — mode 6: near, far, maxOpacity, 0
-uniform vec3 u_fogColor; uniform vec3 u_fogAbsorption; uniform int u_fogMode;  // 0 off,1 height,2 exp,3 exp2,4 linear,5 absorption,6 legacy-parity
+uniform vec3 u_fogColor; uniform vec3 u_fogAbsorption; uniform float u_fogMode;  // 0 off,1 height,2 exp,3 exp2,4 linear,5 absorption,6 legacy-parity
 uniform float u_fogNear; uniform float u_fogFar;                               // linear (mode 4) + legacy-parity distances
 uniform vec4 u_fogVolumes[2 * A3D_MAX_FOG_VOLUMES];             // centre.xyz+shape, halfSize.xyz+density
 #ifndef A3D_PRD07_FOG_ENV_UNIFORMS
@@ -87,7 +87,7 @@ float a3dFogVolumesTau(vec3 c, vec3 v, float d) {
 }
 
 float a3dLegacyFogFactor(vec3 worldPosition) {
-  // u_fogMode == 6 — verbatim a3dEnvironmentFogFactor over the aliased slots.
+  // u_fogMode == 6.0 — verbatim a3dEnvironmentFogFactor over the aliased slots.
   float distanceToCamera = length(u_cameraPosition - worldPosition);
   float factor = 0.0;
   float legacyMode = u_fogA.w;
@@ -106,13 +106,13 @@ float a3dLegacyFogFactor(vec3 worldPosition) {
 }
 
 float a3dFogAmount(vec3 worldPos) {
-  if (u_fogMode == 6) return a3dLegacyFogFactor(worldPos);
+  if (u_fogMode == 6.0) return a3dLegacyFogFactor(worldPos);
   vec3 r = worldPos - u_cameraPosition; float d = length(r); vec3 v = r / max(d, 1e-5);
-  float tau = (u_fogMode == 1) ? a3dHeightFogTau(u_cameraPosition, v, d)
-            : (u_fogMode == 2) ? u_fogA.x * d
-            : (u_fogMode == 3) ? (u_fogA.x * d) * (u_fogA.x * d) : 0.0;
+  float tau = (u_fogMode == 1.0) ? a3dHeightFogTau(u_cameraPosition, v, d)
+            : (u_fogMode == 2.0) ? u_fogA.x * d
+            : (u_fogMode == 3.0) ? (u_fogA.x * d) * (u_fogA.x * d) : 0.0;
   tau += a3dFogVolumesTau(u_cameraPosition, v, d);
-  float f = (u_fogMode == 4) ? clamp((d - u_fogNear) / (u_fogFar - u_fogNear), 0.0, 1.0) : 1.0 - exp(-tau);
+  float f = (u_fogMode == 4.0) ? clamp((d - u_fogNear) / (u_fogFar - u_fogNear), 0.0, 1.0) : 1.0 - exp(-tau);
   return min(f, u_fogB.y);
 }
 
@@ -123,9 +123,9 @@ vec3 a3dFogInscatter(vec3 v) {
 }
 
 vec3 a3dApplyFog(vec3 color, vec3 worldPos) {                  // stable entry point (PRD 10)
-  if (u_fogMode == 0) return color;
+  if (u_fogMode == 0.0) return color;
   vec3 r = worldPos - u_cameraPosition; vec3 v = normalize(r);
-  if (u_fogMode == 5) { vec3 T = exp(-u_fogAbsorption * length(r)); return color * T + u_fogColor * (1.0 - T); }
+  if (u_fogMode == 5.0) { vec3 T = exp(-u_fogAbsorption * length(r)); return color * T + u_fogColor * (1.0 - T); }
 #if defined(FOG_VOLUMETRIC)
   vec4 s = a3dSampleFroxel(worldPos);                          // rgb inscatter, a transmittance
   color = color * s.a + s.rgb;                                 // near part from the volume
@@ -133,7 +133,7 @@ vec3 a3dApplyFog(vec3 color, vec3 worldPos) {                  // stable entry p
   float f = a3dFogAmount(worldPos);
   // Mode 6 (legacy parity): the legacy formula has no sun inscatter — u_fogB.z
   // is maxOpacity, NOT sunInscatter. Blend to the plain fog colour.
-  vec3 fogged = (u_fogMode == 6) ? u_fogColor : a3dFogInscatter(v);
+  vec3 fogged = (u_fogMode == 6.0) ? u_fogColor : a3dFogInscatter(v);
   return mix(color, fogged, f);
 }
 #endif // A3D_PRD07_FOG_CHUNK

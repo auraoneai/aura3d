@@ -6,7 +6,7 @@
  */
 import * as THREE from "three";
 import { Sky } from "three/examples/jsm/objects/Sky.js";
-import { particlePositions } from "../../../shared/procedural";
+import { createRng, particlePositions } from "../../../shared/procedural";
 import type { CapabilityEntry, CapabilityStatus, MaterialSpec, ReadyPayload } from "../../../shared/types";
 import type { EmitterMemberSpec, Prd07SceneSpec } from "../../../scenes/prd07/specs";
 
@@ -26,8 +26,101 @@ function createMaterial(spec: MaterialSpec): THREE.MeshStandardMaterial {
     color: new THREE.Color(spec.color),
     roughness: spec.roughness,
     metalness: spec.metalness,
+    transparent: spec.opacity !== undefined && spec.opacity < 1,
+    opacity: spec.opacity ?? 1,
     ...(spec.emissive !== undefined ? { emissive: new THREE.Color(spec.emissive), emissiveIntensity: spec.emissiveIntensity ?? 1 } : {})
   });
+}
+
+/**
+ * S8 — three r185 instanced-streak rain reference: thin boxes in a
+ * camera-following volume, positions advanced to the capture time by the
+ * same fall speed the Aura side uses (9 m/s scaled by intensity).
+ */
+function rainStreaks(count: number, seed: number, extent: [number, number, number], cameraTarget: readonly number[], time: number, intensity: number): THREE.InstancedMesh {
+  const geometry = new THREE.BoxGeometry(0.016, 0.42, 0.016);
+  const material = new THREE.MeshBasicMaterial({ color: new THREE.Color("#8fa8c9"), transparent: true, opacity: 0.4, depthWrite: false });
+  const mesh = new THREE.InstancedMesh(geometry, material, count);
+  mesh.name = "instanced rain streaks";
+  const rng = createRng(seed);
+  const fall = 9 * (0.6 + intensity * 0.8);
+  const tilt = new THREE.Matrix4().makeRotationZ(0.06);
+  const dummy = new THREE.Object3D();
+  for (let i = 0; i < count; i += 1) {
+    const ox = (rng() - 0.5) * extent[0];
+    const oy = rng() * extent[1];
+    const oz = (rng() - 0.5) * extent[2];
+    const raw = oy - fall * time;
+    const y = ((raw % extent[1]) + extent[1]) % extent[1] - extent[1] / 2;
+    dummy.position.set(cameraTarget[0] + ox, cameraTarget[1] + y, cameraTarget[2] + oz);
+    dummy.matrixAutoUpdate = false;
+    dummy.matrix.copy(new THREE.Matrix4().setPosition(dummy.position).multiply(tilt));
+    dummy.updateMatrixWorld();
+    mesh.setMatrixAt(i, dummy.matrix);
+  }
+  mesh.instanceMatrix.needsUpdate = true;
+  return mesh;
+}
+
+/** S9 — three r185 snow: Points + radial sprite, depth-varied sizes. */
+function snowPoints(count: number, seed: number, extent: [number, number, number], cameraTarget: readonly number[], time: number): THREE.Points {
+  const rng = createRng(seed);
+  const positions = new Float32Array(count * 3);
+  const fall = 1.1;
+  const swayFreq = 0.5;
+  for (let i = 0; i < count; i += 1) {
+    const ox = (rng() - 0.5) * extent[0];
+    const oy = rng() * extent[1];
+    const oz = (rng() - 0.5) * extent[2];
+    const phase = rng() * Math.PI * 2;
+    const raw = oy - fall * time;
+    const y = ((raw % extent[1]) + extent[1]) % extent[1] - extent[1] / 2;
+    positions[i * 3] = cameraTarget[0] + ox + Math.sin(time * swayFreq + phase) * 0.6;
+    positions[i * 3 + 1] = cameraTarget[1] + y;
+    positions[i * 3 + 2] = cameraTarget[2] + oz;
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  // Snowflake-ish map: soft disc with a sharper core.
+  const canvas = document.createElement("canvas");
+  canvas.width = 32; canvas.height = 32;
+  const ctx = canvas.getContext("2d")!;
+  const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+  grad.addColorStop(0, "rgba(255,255,255,1)");
+  grad.addColorStop(0.5, "rgba(240,246,255,0.85)");
+  grad.addColorStop(1, "rgba(240,246,255,0)");
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, 32, 32);
+  const map = new THREE.CanvasTexture(canvas);
+  map.colorSpace = THREE.SRGBColorSpace;
+  const material = new THREE.PointsMaterial({
+    color: new THREE.Color("#ffffff"), size: 0.14, sizeAttenuation: true,
+    map, transparent: true, depthWrite: false
+  });
+  const points = new THREE.Points(geometry, material);
+  points.name = "snow points";
+  return points;
+}
+
+/** I4 — three r185 light-cone approximation for volumetric shafts. */
+function lightConeMesh(options: { position: readonly number[]; direction: readonly number[]; length?: number; coneAngle?: number; color: string; intensity?: number }): THREE.Mesh {
+  const length = options.length ?? 6;
+  const radius = Math.tan(options.coneAngle ?? 0.3) * length;
+  const geometry = new THREE.CylinderGeometry(0.02, radius, length, 24, 1, true);
+  geometry.translate(0, -length / 2, 0);
+  const material = new THREE.MeshBasicMaterial({
+    color: new THREE.Color(options.color),
+    transparent: true,
+    opacity: 0.1 * (options.intensity ?? 0.7),
+    blending: THREE.AdditiveBlending,
+    side: THREE.DoubleSide,
+    depthWrite: false
+  });
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.name = "light cone approx";
+  mesh.position.set(options.position[0]!, options.position[1]!, options.position[2]!);
+  const dir = new THREE.Vector3(options.direction[0]!, options.direction[1]!, options.direction[2]!).normalize();
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), dir);
+  return mesh;
 }
 
 function createGeometry(shape: string, size: readonly [number, number, number]): THREE.BufferGeometry {
@@ -297,7 +390,26 @@ export async function runPrd07ThreeScene(spec: Prd07SceneSpec, host: HTMLElement
     } else if (object.kind === "emitterSet") {
       for (const member of object.emitters) scene.add(pointsFor(member, spriteTexture));
       log.add("emitterSet", "supported", `${object.emitters.length} emitters, ${object.emitters.reduce((s, e) => s + e.count, 0)} points total`);
+    } else if (object.kind === "weather") {
+      const extent: [number, number, number] = object.weather === "snow" ? [36, 18, 36] : [40, 24, 40];
+      const count = object.weather === "snow" ? 4000 : 3500;
+      if (object.weather === "snow") {
+        scene.add(snowPoints(count, object.seed ?? 1, extent, spec.camera.target, spec.time));
+        log.add("weather-snow", "supported", `THREE.Points ${count} flakes, seeded, advanced to t=${spec.time}`);
+      } else {
+        scene.add(rainStreaks(count, object.seed ?? 1, extent, spec.camera.target, spec.time, object.intensity));
+        log.add("weather-rain", "supported", `InstancedMesh ${count} streaks, advanced to t=${spec.time}`);
+      }
+    } else if (object.kind === "lightCone") {
+      scene.add(lightConeMesh(object));
+      log.add("lightCone", "partial", "additive cone approximation (no inscatter)");
     }
+  }
+  if (spec.volumetric) {
+    // I4 approximation: a global FogExp2 at the volumetric density — froxel
+    // shafts have no three equivalent without a custom raymarch pass.
+    scene.fog = new THREE.FogExp2(new THREE.Color(spec.volumetric.color ?? "#cfd8e6"), spec.volumetric.density * 3);
+    log.add("volumetric", "partial", `FogExp2 approximation at density ${spec.volumetric.density * 3} — no froxel shafts`);
   }
 
   for (const fb of flipbooks) setFlipbookFrame(fb.texture, fb.columns, fb.rows, fb.frame);
