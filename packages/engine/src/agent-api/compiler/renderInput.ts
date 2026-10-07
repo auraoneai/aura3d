@@ -154,7 +154,7 @@ export function createProductionRuntimeRendererInput(
       const actorNormalizeRefresh = shouldNormalizeModelNode(currentNode);
       modelMatrix = [...(prd01ModelMatrixCache?.modelMatrix(currentNode, actorBoundsRefresh, actorNormalizeRefresh, time) ?? createModelMatrix(currentNode, actorBoundsRefresh, actorNormalizeRefresh, time))];
       applyProductionActorFootPlanting(entry, currentState.animationBinding, modelMatrix, runtimeWarnings, degrade);
-    });
+    }, runtimeNodes);
     applyProductionActorMorphTargets(entry, currentState.morphTargets, runtimeWarnings, degrade);
     // Wrinkle detail (E1 face-rig demo): resolve morph weights through the model's hook.
     // Absent hook (or empty weights) resolves to 0 = today's rendering exactly.

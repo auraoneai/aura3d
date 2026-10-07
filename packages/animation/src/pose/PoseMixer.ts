@@ -413,6 +413,25 @@ export class PoseMixer {
   }
 
   /**
+   * Every currently-playing, enabled action across the base layer and named
+   * layers — the set `update`/`evaluate` will contribute this frame (T1.9
+   * uses it to sample non-pose tracks at each action's own clock/weight and
+   * to compute covered-bone sets for `restPoseReset: false`).
+   */
+  activeActions(): readonly PoseAction[] {
+    const all: PoseAction[] = [];
+    for (const action of this.actions) {
+      if (action.playing && action.enabled) all.push(action);
+    }
+    for (const layer of this.layers) {
+      for (const action of layer.actions) {
+        if (action.playing && action.enabled) all.push(action);
+      }
+    }
+    return all;
+  }
+
+  /**
    * `crossFadeTo(clip, seconds, options)` — mirrors `node.play` semantics:
    * the current active base action fades out over `seconds` (default driven by
    * caller), the new one fades in; `warp` warps timescales by the duration

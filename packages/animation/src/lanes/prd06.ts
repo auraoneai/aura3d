@@ -13,5 +13,5 @@ export type { AdditiveReference } from "../pose/makeClipAdditive.js";
 export { compileTrack, compileClip, createTrackCursors, sampleTrackInto, sampleTrackRaw } from "../pose/CompiledClip.js";
 export type { CompiledClip, CompiledTrack, CompiledTrackCursor } from "../pose/CompiledClip.js";
 export { PoseMixer, PoseAction } from "../pose/PoseMixer.js";
-export type { PoseActionOptions, PoseBlendMode, PoseChannel, PoseCrossFadeOptions, PoseLayer, PoseLayerOptions, PoseLoopMode, PoseTransition } from "../pose/PoseMixer.js";
+export type { PoseActionOptions, PoseBlendMode, PoseChannel, PoseCrossFadeOptions, PoseLayer, PoseLayerOptions, PoseLoopMode, PoseSampleSpec, PoseTransition } from "../pose/PoseMixer.js";
 export { PoseInertializer, DEFAULT_POSE_TRANSITION_HALF_LIFE } from "../pose/PoseInertializer.js";

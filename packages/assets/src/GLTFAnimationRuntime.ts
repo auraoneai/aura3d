@@ -936,6 +936,81 @@ export class GLTFSceneAnimationRuntime {
     return this.poseRuntime().mixer;
   }
 
+  /**
+   * T1.9 (PRD-06 §10) — advance the per-runtime `PoseMixer` by `dt` seconds
+   * and write the evaluated pose to scene nodes in `applySampledTargets`
+   * order. `restPoseReset !== false` writes every bound bone (rest-filled
+   * channels reset); `false` writes only the bones covered by active actions'
+   * bound tracks, so uncovered bones keep their current scene values.
+   * Non-pose tracks (morph weights, material/light pointer, node tracks
+   * aimed at nodes outside the binding) keep the legacy accumulator path,
+   * sampled at each active action's own clock and effective weight.
+   */
+  applyPoseMixer(dt: number, options?: { readonly label?: string; readonly restPoseReset?: boolean }): GLTFSceneAnimationApplyResult {
+    const pose = this.poseRuntime();
+    pose.mixer.update(dt);
+    pose.mixer.evaluate(pose.pose);
+
+    const actions = pose.mixer.activeActions();
+    let covered: ReadonlySet<number> | undefined;
+    if (options?.restPoseReset === false) {
+      const set = new Set<number>();
+      for (const action of actions) {
+        for (const binding of action.bindings) set.add(binding.boneIndex);
+      }
+      covered = set;
+    }
+
+    const sampledTargets = new Map<string, AnimationValue>();
+    const writeBone = (boneIndex: number): void => {
+      const name = pose.binding.jointNames[boneIndex]!;
+      const p = boneIndex * 3;
+      const q = boneIndex * 4;
+      sampledTargets.set(`${name}.translation`, [pose.pose.positions[p]!, pose.pose.positions[p + 1]!, pose.pose.positions[p + 2]!]);
+      sampledTargets.set(`${name}.rotation`, [pose.pose.rotations[q]!, pose.pose.rotations[q + 1]!, pose.pose.rotations[q + 2]!, pose.pose.rotations[q + 3]!]);
+      sampledTargets.set(`${name}.scale`, [pose.pose.scales[p]!, pose.pose.scales[p + 1]!, pose.pose.scales[p + 2]!]);
+    };
+    if (covered === undefined) {
+      for (let i = 0; i < pose.binding.boneCount; i += 1) writeBone(i);
+    } else {
+      for (const boneIndex of covered) writeBone(boneIndex);
+    }
+
+    // Legacy accumulator path for every track the pose binding does not
+    // cover — sampled at each action's clock and effective weight, in active
+    // action order (same semantics as `applyClips`' per-sample partition).
+    const accumulators = new Map<string, TargetAccumulator>();
+    const unsupportedTracks: string[] = [];
+    for (const action of actions) {
+      const source = this.clipsByName.get(action.clipName);
+      if (source === undefined) continue;
+      for (const track of source.tracks) {
+        const target = parseAnimationTarget(track.target);
+        if (target === undefined) {
+          unsupportedTracks.push(track.target);
+          continue;
+        }
+        if (target.kind === "node" && target.path !== "weights") {
+          const boneIndices = pose.binding.jointIndicesByName.get(target.nodeName);
+          if (boneIndices !== undefined && boneIndices.length > 0) continue; // bound → mixer path
+        }
+        blendInto(accumulators, track.target, track.valueType, track.sample(action.time), action.effectiveWeight, action.additive);
+      }
+    }
+    for (const [target, accumulator] of accumulators) {
+      sampledTargets.set(target, finalizeTargetBlend(accumulator));
+    }
+
+    const active = actions.filter((action) => action.effectiveWeight > 0);
+    this.lastApply = this.applySampledTargets(
+      `mixer:${options?.label ?? (actions.map((action) => action.clipName).join("+") || "idle")}`,
+      active[0]?.time ?? 0,
+      { sampledTargets, unsupportedTracks },
+      actions.length > 0 ? actions.length : undefined
+    );
+    return this.lastApply;
+  }
+
   private poseRuntime(): { readonly binding: SkeletonBinding; readonly mixer: PoseMixer; readonly compiled: Map<string, CompiledClip>; readonly pose: PoseBuffer } {
     if (this.poseState === undefined) {
       const nodes: SceneNode[] = [];
