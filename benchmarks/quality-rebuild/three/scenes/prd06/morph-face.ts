@@ -17,7 +17,7 @@ import { prd06MorphFace } from "../../../scenes/prd06/morph-face";
 declare const __THREE_VERSION__: string;
 declare global {
   interface Window {
-    __QR_THREE_GRAPH__?: unknown;
+    __QR_THREE_GRAPH__?: import("../../common").ThreeGraph;
   }
 }
 
@@ -130,7 +130,7 @@ export default async function run(host: HTMLElement, opts?: { variant?: string; 
     dpr: opts?.dpr ?? 1,
     appliedToneMapping: "aces-filmic",
     appliedExposure: spec.exposure,
-    lightUnits: "physical",
+    lightUnits: "three-physical",
     shadows: null,
     fallbackLightsActive: null,
     assetHashes: { robotExpressive: modelAssets.robotExpressive.sha256 },

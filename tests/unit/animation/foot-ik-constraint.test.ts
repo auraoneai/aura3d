@@ -190,4 +190,50 @@ describe("T3.2 — solveFootIkConstraint on a 20° slope", () => {
       expect(Math.abs(ankle[1] - 0.035)).toBeLessThanOrEqual(0.01);
     }
   });
+
+  it("pelvis drop maps through the parent frame — scaled/rotated glTF roots put 'up' off +Y and off unit scale", () => {
+    // Soldier-style rig: `character` carries scale 0.01 and a −90° X rotation,
+    // so the pelvis' local +Z is the up axis in pose space and its translation
+    // units are centimetres. A naive `positions[pelvis*3+1] += drop` would nudge
+    // the pelvis sideways by a hundredth of the intended amount instead.
+    const s = 0.01;
+    const rxNeg90 = [-Math.SQRT1_2, 0, 0, Math.SQRT1_2] as const;
+    const node = (name: string, position: Vec3, rotation: readonly [number, number, number, number] = [0, 0, 0, 1], scale = [1, 1, 1] as Vec3) =>
+      ({ name, position, rotation, scale });
+    const nodes = [
+      node("character", [0, 0, 0], rxNeg90, [s, s, s]),
+      node("pelvis", [0, 0, 100]),
+      node("l_thigh", [-30, 0, 0]), node("l_knee", [0, 0, -45]), node("l_ankle", [0, 0, -45]),
+      node("r_thigh", [30, 0, 0]), node("r_knee", [0, 0, -45]), node("r_ankle", [0, 0, -45])
+    ];
+    const skeleton = bindSkeleton({
+      joints: [0, 1, 2, 3, 4, 5, 6, 7],
+      resolveNode: (i) => nodes[i] as never,
+      parentIndices: [-1, 0, 1, 2, 3, 1, 5, 6]
+    });
+    const pose = createPoseBuffer(8);
+    copyPose(pose, skeleton.restPose);
+
+    const flat = createHeightFieldGround(() => ({ height: 0, normal: [0, 1, 0] }));
+    const results = solveFootIkConstraint(pose, skeleton, IDENTITY, {
+      legs: [
+        { root: "l_thigh", mid: "l_knee", tip: "l_ankle", ankleHeight: 0.035 },
+        { root: "r_thigh", mid: "r_knee", tip: "r_ankle", ankleHeight: 0.035 }
+      ],
+      ground: flat,
+      pelvis: "pelvis"
+    });
+
+    // Ankles sit at 0.10 m in pose space; sole target is 0.035 → drop −0.065 m,
+    // expressed locally as −6.5 on the pelvis' Z (cm, mapped-down axis).
+    expect(pose.positions[3]).toBeCloseTo(0, 6);
+    expect(pose.positions[4]).toBeCloseTo(0, 6);
+    expect(pose.positions[5]).toBeGreaterThan(90);
+    expect(pose.positions[5]).toBeLessThan(100);
+    expect(100 - pose.positions[5]!).toBeGreaterThan(5);
+    expect(100 - pose.positions[5]!).toBeLessThan(8);
+    for (const result of results) {
+      expect(result.verticalCorrection).toBeLessThan(0);
+    }
+  });
 });

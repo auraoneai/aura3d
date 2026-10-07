@@ -65,6 +65,35 @@ export interface ModelAnimationSpec {
   readonly clip: string;
   /** Clip-local sample time in seconds; the pose is frozen here. */
   readonly time: number;
+  /**
+   * PRD-06 T3.9: foot-IK request for the frozen pose. Serializable so the spec
+   * stays data-only; each adapter builds its own ground query from
+   * `SceneSpec.terrain` (aura3d binds `footPlanting`, three drives
+   * `CCDIKSolver`).
+   */
+  readonly footIk?: ModelFootIkSpec;
+}
+
+export interface ModelFootIkSpec {
+  readonly legs: readonly ModelFootIkLegSpec[];
+  /** Pelvis/hips bone — dropped by the deepest required correction. */
+  readonly pelvis?: string;
+  /**
+   * Runtime node id the aura adapter registers on the model node
+   * (`.runtime({ id })`) so lane collectors can address `nodes.get(id)` for
+   * socket/`ik.add` access. Required whenever foot IK is requested.
+   */
+  readonly runtimeId: string;
+}
+
+export interface ModelFootIkLegSpec {
+  readonly side: "left" | "right";
+  /** Bone names of the hip (root), knee (mid), and ankle (end) of the leg chain. */
+  readonly hip: string;
+  readonly knee: string;
+  readonly ankle: string;
+  /** Joint-to-sole offset for the ankle bone (meters). */
+  readonly ankleHeight?: number;
 }
 
 export interface ModelObjectSpec extends TransformSpec {
@@ -239,6 +268,13 @@ export interface SceneSpec {
   readonly primaryCriterion?: string;
   readonly primaryRegion?: import("./contracts").RegionId;
   readonly qrFlags?: readonly string[];
+  /**
+   * PRD-06 T3.9: analytic terrain the lane adapters raycast against (foot-IK
+   * ground). Geometry that visualizes the terrain stays in `objects`; this
+   * block only parameterizes the height query so both engines test the same
+   * surface.
+   */
+  readonly terrain?: import("./terrain").RampStairsTerrainSpec;
 }
 
 export type CapabilityStatus = "supported" | "partial" | "missing" | "not-applicable";

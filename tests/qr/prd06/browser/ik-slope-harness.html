@@ -1,0 +1,15 @@
+<!doctype html>
+<!-- PRD-06 T3.9 harness: runs the prd06-ik-slope lane adapters
+     (?engine=aura3d|three). ReadyPayload publishes on
+     window.__PRD06_IK_SLOPE__ (aura) / __PRD06_IK_SLOPE_THREE__ (three). -->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>prd06 ik-slope harness</title>
+    <style>html, body { margin: 0; background: #202329; } #stage { width: 1280px; height: 720px; }</style>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <script type="module" src="./ik-slope-harness.ts"></script>
+  </body>
+</html>

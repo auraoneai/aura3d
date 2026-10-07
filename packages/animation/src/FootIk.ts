@@ -546,11 +546,28 @@ export function solveFootIkConstraint(
   if (plans.length === 0) return [];
 
   // Pelvis drop = MINIMUM per-foot delta (deepest needed correction), clamped.
+  // The correction is expressed in pose space; the pelvis node's local
+  // translation lives in its parent frame, whose up axis need not be +Y and
+  // whose units need not be pose units (e.g. cm under a scaled glTF root) —
+  // map (0, drop, 0) through the parent frame's inverse rotation and scale.
   if (spec.pelvis) {
     const pelvisIndex = jointIndex(skeleton, spec.pelvis);
     const minDelta = Math.min(0, ...plans.map((plan) => plan.deltaY));
     const drop = Math.max(-maxPelvisDrop, minDelta);
-    pose.positions[pelvisIndex * 3 + 1] = pose.positions[pelvisIndex * 3 + 1]! + drop;
+    if (drop !== 0) {
+      const parentIndex = skeleton.parentIndices[pelvisIndex] ?? -1;
+      const parentFrame = parentIndex >= 0 && parentIndex < skeleton.boneCount ? fkFrame(pose, skeleton, parentIndex) : undefined;
+      if (parentFrame !== undefined) {
+        const invRot: readonly [number, number, number, number] = [-parentFrame.rotation[0], -parentFrame.rotation[1], -parentFrame.rotation[2], parentFrame.rotation[3]];
+        const dir = rotateVec3(invRot, [0, drop, 0]);
+        const sx = parentFrame.scale[0] || 1, sy = parentFrame.scale[1] || 1, sz = parentFrame.scale[2] || 1;
+        pose.positions[pelvisIndex * 3] = pose.positions[pelvisIndex * 3]! + dir[0] / sx;
+        pose.positions[pelvisIndex * 3 + 1] = pose.positions[pelvisIndex * 3 + 1]! + dir[1] / sy;
+        pose.positions[pelvisIndex * 3 + 2] = pose.positions[pelvisIndex * 3 + 2]! + dir[2] / sz;
+      } else {
+        pose.positions[pelvisIndex * 3 + 1] = pose.positions[pelvisIndex * 3 + 1]! + drop;
+      }
+    }
   }
 
   // Pass 2 — solve legs + tilt feet.

@@ -8,7 +8,7 @@ import { runThreeScene } from "../../common";
 const spec = {
   ...prd06SkinnedCharacterPosed,
   objects: prd06SkinnedCharacterPosed.objects.map((object) =>
-    object.animation?.clip === "animation-0"
+    object.kind === "model" && object.animation?.clip === "animation-0"
       ? { ...object, animation: { ...object.animation, clip: "animation_0" } }
       : object)
 };

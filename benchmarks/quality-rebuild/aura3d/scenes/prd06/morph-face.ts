@@ -42,10 +42,15 @@ export default async function run(host: HTMLElement, opts?: { variant?: string; 
     }
   } as const);
 
-  const built = scene({ background: spec.background.kind === "color" ? { color: spec.background.color } : {} });
-  built.add(camera.perspective({ fov: spec.camera.fov, near: spec.camera.near, far: spec.camera.far })
-    .position(...spec.camera.position)
-    .lookAt(...spec.camera.target));
+  const built = scene();
+  if (spec.background.kind === "color") built.background(spec.background.color);
+  built.camera(camera.perspective({
+    position: spec.camera.position,
+    target: spec.camera.target,
+    fov: spec.camera.fov,
+    near: spec.camera.near,
+    far: spec.camera.far
+  }));
   built.add(environments.hdri({ texture: auraAssets.studioSmall08, intensity: spec.environment!.intensity, rotation: spec.environment!.rotation }));
   const sun = spec.lights[0] as Extract<(typeof spec.lights)[number], { kind: "directional" }>;
   built.add(lights.directional({ name: sun.name, position: sun.position, intensity: sun.intensity, color: sun.color, shadow: sun.castShadow })
