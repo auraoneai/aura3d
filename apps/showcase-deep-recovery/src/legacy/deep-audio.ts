@@ -1,7 +1,7 @@
 /**
  * Typed audio controller for Deep Recovery.
  */
-import { assets } from "../../../src/aura-assets";
+import { assets } from "../../../../src/aura-assets";
 
 export type DeepAudioCue =
   | "sonar-ping"

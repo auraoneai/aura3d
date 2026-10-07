@@ -9,7 +9,7 @@
  * volume; the ambient wind bed loops quietly underneath everything.
  */
 import { createGameAudio, type GameAudio } from "@aura3d/engine";
-import { assets } from "../../../src/aura-assets";
+import { assets } from "../../../../src/aura-assets";
 
 export type WingAudioCue =
   | "engine-loop"

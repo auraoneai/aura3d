@@ -5,7 +5,7 @@
  * is proven by Aura3D-rendered pixels and runtime telemetry elsewhere; this module
  * just keeps the player informed and exposes stable ids the browser specs read.
  */
-import { HARD_TOUCHDOWN_MAX_VSPEED } from "./touchdown";
+import { HARD_TOUCHDOWN_MAX_VSPEED } from "../gameplay/touchdown";
 
 export interface HudBindings {
   readonly siteName: HTMLElement;
