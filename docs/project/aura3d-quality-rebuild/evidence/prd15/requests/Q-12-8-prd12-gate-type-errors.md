@@ -1,4 +1,4 @@
-# Q-12-1: prd12-gate.test.ts has 2 type errors (repo typecheck)
+# Q-12-8: prd12-gate.test.ts has 2 type errors (repo typecheck)
 
 **To:** lane 12 (`tests/unit/contracts/impl/prd12-gate.test.ts` owner)
 **From:** lane 15 (Phase 8 verification)
