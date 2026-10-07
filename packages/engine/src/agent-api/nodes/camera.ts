@@ -7,6 +7,7 @@ import { resolveCameraClipping } from "../RootRuntimeSupport.js";
 import { boundsFromAsset, boundsSize } from "../SceneGroundingUtils.js";
 import { stubCameraRigFactories } from "../../contracts/camera.js";
 
+
 import { resolveQrFlags } from "../../contracts/flags.js";
 import { smoothingToHalflife } from "../camera/Spring.js";
 
@@ -24,6 +25,7 @@ function warnSmoothingDeprecated(options: object | undefined): void {
     `(use rig halflife options on app.camera rigs instead).`
   );
 }
+
 
 
 export const camera = {
