@@ -32,6 +32,14 @@ on:
         type: boolean
         required: false
         default: true
+      ref:
+        description: "Git ref to check out (e.g. a baseline commit like c08d8acb for T1.12 detectors)"
+        required: false
+        default: ""
+      title_repeats:
+        description: "Extra 01-title recaptures per game for determinism measurement (T1.13)"
+        required: false
+        default: "0"
   workflow_call:
     inputs:
       games:
@@ -58,6 +66,14 @@ on:
         type: boolean
         required: false
         default: true
+      ref:
+        type: string
+        required: false
+        default: ""
+      title_repeats:
+        type: string
+        required: false
+        default: "0"
   push:
     branches: ["aura3d-quality-rebuild/audit"]
     paths:
@@ -85,10 +101,12 @@ jobs:
       QRC_VIEWPORTS: ${{ inputs.viewports || '1920x1080,1280x720' }}
       QRC_LOCAL_BUILD: ${{ inputs.local_build_all && 'true' || 'false' }}
       QRC_FLAGS: ${{ inputs.qr_flags || 'none' }}
+      QRC_TITLE_REPEATS: ${{ inputs.title_repeats || '0' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.ref || github.sha }}
           # Production captures and the Orbital Defense source build need no LFS blobs; only the
           # local_build_all mode serves typed GLB/audio assets from public/ and apps/*/assets.
           lfs: ${{ github.event_name == 'workflow_dispatch' && inputs.local_build_all }}
@@ -152,6 +170,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.ref || github.sha }}
           lfs: false
 
       - name: Setup pnpm
