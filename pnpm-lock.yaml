@@ -299,15 +299,16 @@ importers:
       '@aura3d/animation':
         specifier: workspace:*
         version: link:../animation
-      '@aura3d/engine':
-        specifier: workspace:*
-        version: link:../..
       '@aura3d/math':
         specifier: workspace:*
         version: link:../math
       '@aura3d/scene':
         specifier: workspace:*
         version: link:../scene
+    devDependencies:
+      '@aura3d/engine':
+        specifier: workspace:*
+        version: link:../..
 
   packages/engine:
     dependencies:
