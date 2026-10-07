@@ -22,7 +22,7 @@ import {
   shadowQuartileLuma,
   subjectMask,
 } from "../../../../benchmarks/quality-rebuild/scenes/prd04/metrics";
-import { startExampleDevServer, type ExampleDevServer } from "../../../browser/example-dev-server";
+import { startPrd04DevServer as startExampleDevServer, type ExampleDevServer } from "../dev-server";
 import { RESOLUTION } from "../../../../benchmarks/quality-rebuild/shared/types";
 import { loadProbe, probeFrame, type Prd04ProbePayload } from "./probe";
 

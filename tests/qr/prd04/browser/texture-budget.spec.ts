@@ -15,7 +15,7 @@
 import { expect, test } from "@playwright/test";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { startExampleDevServer, type ExampleDevServer } from "../../../browser/example-dev-server";
+import { startPrd04DevServer as startExampleDevServer, type ExampleDevServer } from "../dev-server";
 import { loadProbe, type Prd04ProbePayload } from "./probe";
 
 const HERO = "/aura-assets/courierVanMeshyV2Decimated.6f509ab0.glb";
