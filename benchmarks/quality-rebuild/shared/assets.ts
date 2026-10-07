@@ -25,7 +25,9 @@ export type ModelAssetId =
   | "fox"
   | "rockA"
   | "rockB"
-  | "crate";
+  | "crate"
+  | "carConcept"
+  | "littlestTokyo";
 
 export type HdriAssetId = "studioSmall08" | "autumnFieldPuresky" | "kloppenheim06Puresky";
 
@@ -174,6 +176,28 @@ export const modelAssets: Readonly<Record<ModelAssetId, ModelAssetEntry>> = {
     animations: [],
     gltfExtensions: [],
     provenance: "Aura3D typed catalog prop (public/aura-assets)"
+  },
+  carConcept: {
+    id: "carConcept",
+    repoPath: "fixtures/threejs-parity/assets/vehicles/car-concept.glb",
+    url: `${base}car-concept.glb`,
+    sha256: "sha256-1d1df2377481bd7f6b9d5a746a997747347009826b68ff74753181b737c5cd50",
+    lfs: false,
+    worldSize: [2.472, 4.559, 1.739],
+    animations: [],
+    gltfExtensions: ["KHR_materials_clearcoat", "KHR_materials_emissive_strength", "KHR_materials_iridescence", "KHR_materials_transmission", "KHR_materials_variants", "KHR_texture_transform"],
+    provenance: "Khronos/glTF-Sample-SceneInfo car-concept concept car (ref-01 automotive-studio)"
+  },
+  littlestTokyo: {
+    id: "littlestTokyo",
+    repoPath: "fixtures/threejs-parity/assets/showcase/littlest-tokyo.glb",
+    url: `${base}littlest-tokyo.glb`,
+    sha256: "sha256-8375c2aa6808e28ad1cb9c0d43e1513f57ffd7865244bf66bbbd5bb0e907e06d",
+    lfs: false,
+    worldSize: [545.069, 552.042, 434.327],
+    animations: ["Take 001"],
+    gltfExtensions: ["KHR_draco_mesh_compression"],
+    provenance: "three.js r185 webgl_animation_skinning_additive_blending LittlestTokyo (Draco; ref-02 diorama)"
   }
 };
 
@@ -205,6 +229,9 @@ export const hdriAssets: Readonly<Record<HdriAssetId, HdriAssetEntry>> = {
 export function benchmarkAssetFiles(): readonly { readonly repoPath: string; readonly url: string }[] {
   return [
     ...Object.values(modelAssets).map(({ repoPath, url }) => ({ repoPath, url })),
-    ...Object.values(hdriAssets).map(({ repoPath, url }) => ({ repoPath, url }))
+    ...Object.values(hdriAssets).map(({ repoPath, url }) => ({ repoPath, url })),
+    // DRACO decoder runtime for Draco-compressed GLBs (littlestTokyo); served at /qr-assets/draco/.
+    { repoPath: "fixtures/asset-corpus/decoders/draco_decoder.js", url: `${base}draco/draco_decoder.js` },
+    { repoPath: "fixtures/asset-corpus/decoders/draco_decoder_gltf.wasm", url: `${base}draco/draco_decoder.wasm` }
   ];
 }

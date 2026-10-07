@@ -51,20 +51,8 @@ declare global {
   }
 }
 
-function applyVariantSpec(spec: SceneSpec, variant: string | undefined): SceneSpec {
-  if (!variant || variant === "default" || variant === "aura3d-tuned") return spec;
-  if (variant === "no-shadows") {
-    return { ...spec, lights: spec.lights.map((light) => ("castShadow" in light ? { ...light, castShadow: false } : light)) };
-  }
-  if (variant === "no-ibl") {
-    return { ...spec, environment: spec.environment ? { ...spec.environment, intensity: 0 } : spec.environment };
-  }
-  if (variant === "flat-sky") {
-    if (spec.background.kind !== "hdri") return spec;
-    return { ...spec, background: { kind: "color", color: spec.background.fallbackColor } };
-  }
-  return spec;
-}
+// Variant machinery lives in three/lib/variants.ts (T2.5, §6.4).
+import { applyVariantSpec, variantAntialias, variantDprScale, variantToneMapped } from "./lib/variants";
 
 declare const __THREE_VERSION__: string;
 
@@ -171,12 +159,12 @@ export async function runThreeScene(rawSpec: SceneSpec, host: HTMLElement, opts:
   if (THREE.REVISION !== "185") errors.push(`Expected three r185 (0.185.1); loaded r${THREE.REVISION}.`);
 
   const { width, height } = spec.resolution;
-  const devicePixelRatio = (variant === "dpr-half" ? 0.5 : 1) * (opts.dpr ?? spec.resolution.devicePixelRatio);
-  const renderer = new THREE.WebGLRenderer({ antialias: variant !== "no-aa", preserveDrawingBuffer: true, powerPreference: "high-performance" });
+  const devicePixelRatio = variantDprScale(variant) * (opts.dpr ?? spec.resolution.devicePixelRatio);
+  const renderer = new THREE.WebGLRenderer({ antialias: variantAntialias(variant), preserveDrawingBuffer: true, powerPreference: "high-performance" });
   renderer.setPixelRatio(devicePixelRatio);
   renderer.setSize(width, height);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = variant === "no-tonemap" ? THREE.NoToneMapping : THREE.ACESFilmicToneMapping;
+  renderer.toneMapping = variantToneMapped(variant) ? THREE.ACESFilmicToneMapping : THREE.NoToneMapping;
   renderer.toneMappingExposure = spec.exposure;
   renderer.shadowMap.enabled = Boolean(spec.shadows || spec.csm) && variant !== "no-shadows";
   // Explicit PCFShadowMap (not PCFSoft): removes the r185 deprecation remap (§9.2).

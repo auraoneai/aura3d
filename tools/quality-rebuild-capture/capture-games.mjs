@@ -21,7 +21,7 @@
  * <out>/index.html. Exit code is 0 unless --strict is passed and a game failed to capture.
  */
 import { spawnSync } from "node:child_process";
-import { createReadStream, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync, appendFileSync } from "node:fs";
+import { createReadStream, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync, appendFileSync } from "node:fs";
 import { createServer } from "node:http";
 import os from "node:os";
 import path from "node:path";
@@ -49,7 +49,12 @@ const truthy = (value) => /^(1|true|yes|on)$/i.test(String(value ?? ""));
 const outDir = path.resolve(repoRoot, opt("--out", "QRC_OUT", "tools/quality-rebuild-capture/out"));
 const buildRoot = path.resolve(repoRoot, opt("--build-dir", "QRC_BUILD_DIR", "tools/quality-rebuild-capture/.build"));
 const productionOrigin = validateOrigin(opt("--base-url", "QRC_BASE_URL", gamesConfig.productionOrigin));
-const localBuildAll = flag("--local-build") || truthy(process.env.QRC_LOCAL_BUILD);
+// T5.1 (§9.6): --pr-build builds every selected game from the checked-out commit
+// and serves it locally; it is the default on pull_request runs. `--source production`
+// stays for post-deploy verification.
+const sourceOpt = String(opt("--source", "QRC_SOURCE", "")).toLowerCase();
+const prBuild = flag("--pr-build") || (process.env.GITHUB_EVENT_NAME === "pull_request" && sourceOpt !== "production");
+const localBuildAll = flag("--local-build") || truthy(process.env.QRC_LOCAL_BUILD) || prBuild;
 const buildOnly = flag("--build-only");
 const skipBuild = flag("--skip-build") || truthy(process.env.QRC_SKIP_BUILD);
 const strict = flag("--strict");
@@ -342,6 +347,27 @@ const INIT_SCRIPT = `(() => {
   }
 })();`;
 
+// T5.2 (§6.6/§9.6): forbidden-param probe. Wraps URLSearchParams get/has/getAll and
+// records every read of a forbidden key (?capture=review|overview, debug params)
+// into window.__QR_FORBIDDEN_READS__ for the run record. On games with
+// captureContractMigrated the record fails with `forbidden-capture-flag`.
+const FORBIDDEN_PARAM_SCRIPT = `(() => {
+  const FORBIDDEN = new Set(["capture", "review", "debug", "a3d-debug", "qr-debug", "overview"]);
+  if (!window.__QR_FORBIDDEN_READS__) window.__QR_FORBIDDEN_READS__ = [];
+  for (const name of ["get", "has", "getAll"]) {
+    const orig = URLSearchParams.prototype[name];
+    if (typeof orig !== "function") continue;
+    URLSearchParams.prototype[name] = function (key, ...rest) {
+      if (FORBIDDEN.has(String(key))) {
+        try {
+          window.__QR_FORBIDDEN_READS__.push({ param: String(key), href: location.href.slice(0, 200), stack: String(new Error("forbidden-param").stack).slice(0, 600) });
+        } catch {}
+      }
+      return orig.call(this, key, ...rest);
+    };
+  }
+})();`;
+
 /** Evaluated in page: readiness signals. */
 function pageReadiness() {
   const canvases = [...document.querySelectorAll("canvas")];
@@ -412,6 +438,7 @@ function pageSnapshot(evidenceGlobal) {
         const byStatus = {};
         for (const a of assets) { const k = String(a?.status ?? a?.state ?? "unknown"); byStatus[k] = (byStatus[k] ?? 0) + 1; }
         return { backend: d.backend, fps: d.fps, drawCalls: d.drawCalls, renderSize: d.renderSize, assets: byStatus,
+          frameTiming: d.frameTiming ?? null,
           warnings: (d.warnings ?? []).length, warningSample: (d.warnings ?? []).slice(0, 4), errors: (d.errors ?? []).slice(0, 6) };
       } catch (e) { return { error: String(e).slice(0, 160) }; }
     }) : null;
@@ -672,11 +699,27 @@ class Timeline {
 // ---------------------------------------------------------------------------------------------
 // One run = fresh context + navigation + readiness + title + timeline
 // ---------------------------------------------------------------------------------------------
+// Deep-search a timeline for a step key (strip/webm plugin steps can nest under repeat).
+function timelineHasStep(steps, key) {
+  if (!Array.isArray(steps)) return false;
+  for (const step of steps) {
+    if (!step || typeof step !== "object") continue;
+    if (key in step) return true;
+    if (Array.isArray(step.steps) && timelineHasStep(step.steps, key)) return true;
+    if (Array.isArray(step.loop) && timelineHasStep(step.loop, key)) return true;
+  }
+  return false;
+}
+
 async function captureRun(browser, game, run, url, gameDir, options = {}) {
   const record = {
     run: run.name, url, viewport: { width: run.width, height: run.height }, deviceScaleFactor: run.dpr, mobile: run.mobile,
     shots: [], conditions: [], consoleErrors: [], consoleWarningCount: 0, consoleWarningSample: [], pageErrors: [], failedRequests: []
   };
+  // Video is enabled only when the timeline carries a webm step (steps/webm.mjs);
+  // the file finalizes on context.close().
+  const wantsWebm = timelineHasStep(game.timeline, "webm");
+  const videoDir = path.join(gameDir, ".video");
   const context = await browser.newContext({
     viewport: { width: run.width, height: run.height },
     deviceScaleFactor: run.dpr,
@@ -684,9 +727,11 @@ async function captureRun(browser, game, run, url, gameDir, options = {}) {
     hasTouch: run.mobile,
     ...(run.mobile ? { userAgent: MOBILE_UA } : {}),
     ignoreHTTPSErrors: false,
-    serviceWorkers: "block"
+    serviceWorkers: "block",
+    ...(wantsWebm ? { recordVideo: { dir: videoDir, size: { width: run.width, height: run.height } } } : {})
   });
   await context.addInitScript(INIT_SCRIPT);
+  await context.addInitScript(FORBIDDEN_PARAM_SCRIPT);
   const page = await context.newPage();
   page.on("console", (msg) => {
     const type = msg.type();
@@ -778,11 +823,34 @@ async function captureRun(browser, game, run, url, gameDir, options = {}) {
     }
     record.fps = await page.evaluate(pageReadFps).catch(() => null);
     record.engineAtEnd = (await page.evaluate(pageSnapshot, game.evidenceGlobal ?? null).catch(() => null))?.engine ?? null;
+    record.forbiddenParamReads = await page.evaluate(() => window.__QR_FORBIDDEN_READS__ ?? []).catch(() => []);
+    // T5.2: on migrated routes a forbidden read fails the run.
+    if (game.captureContractMigrated === true && (record.forbiddenParamReads?.length ?? 0) > 0) {
+      (record.flags ??= []).push("forbidden-capture-flag");
+      record.error = record.error ?? `forbidden-capture-flag: ${record.forbiddenParamReads.length} forbidden param read(s)`;
+    }
+    // T5.5 (§9.6): engine self-reported fps (diagnostics().fps / frameTiming) vs the
+    // rAF sampler — disagreement > 20% is recorded as fps-self-report-mismatch.
+    const selfFps = Number(record.engineAtEnd?.[0]?.frameTiming?.fps ?? record.engineAtEnd?.[0]?.fps ?? NaN);
+    const rafFps = Number(record.fps?.fps ?? NaN);
+    if (Number.isFinite(selfFps) && Number.isFinite(rafFps) && rafFps > 0) {
+      const rel = Math.abs(selfFps - rafFps) / rafFps;
+      record.fpsSelfReport = { engineFps: selfFps, rafFps, relDiff: +rel.toFixed(4) };
+      if (rel > 0.2) (record.flags ??= []).push("fps-self-report-mismatch");
+    }
   } catch (e) {
     record.error = String(e?.message ?? e).slice(0, 600);
   } finally {
     clearTimeout(watchdog);
     await context.close().catch(() => undefined);
+    if (wantsWebm) {
+      // Finalize the recorded run video next to the shots.
+      const vpath = await page.video()?.path().catch(() => null);
+      if (vpath && existsSync(vpath)) {
+        const out = path.join(gameDir, `${run.name}__capture.webm`);
+        try { renameSync(vpath, out); record.webm = path.relative(outDir, out); } catch { record.webm = path.relative(outDir, vpath); }
+      }
+    }
   }
   const shotNames = record.shots.filter((s) => !s.error).map((s) => s.name);
   const required = options.stopAfterShot ? ["01-title"] : ["01-title", ...(defaults.requiredShots ?? [])];

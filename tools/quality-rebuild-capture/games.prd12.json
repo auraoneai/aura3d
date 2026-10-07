@@ -1,150 +1,1028 @@
 {
   "$comment": "PRD-12 (lane 12) overlay for games.json, merged UNDER it (C-33): games.json wins per field. Supplies lane-12 capture fields until lane 14 lands them in games.json (Q-14-1).",
-  "$doc": "titleDeterministic is MEASURED, never assumed: it stays null until the determinism run captures each game's 01-title 5x in one runner job and FLIP between repeats is <= floor (T1.13). scenarios/hudSelectors/keyboardHintSelectors are proposed in Phase 5 (T5.3) and stay empty until then.",
+  "$doc": "titleDeterministic is MEASURED, never assumed: it stays null until the determinism run captures each game's 01-title 5x in one runner job and FLIP between repeats is <= floor (T1.13). T5.3 landed: scenarios mirror each game's own timeline shot ids (gameplay, seeded); hudSelectors/keyboardHintSelectors are sourced from the app's DOM (ids/classes/data-hud) with generic fallbacks \u2014 lane 14 owns the final copy in games.json (Q-14-1).",
   "schema": "aura3d.capture.games.prd12-overlay/1.0",
   "games": [
     {
       "id": "aura-clash-showcase",
       "titleDeterministic": null,
-      "scenarios": [],
-      "hudSelectors": [],
-      "keyboardHintSelectors": [],
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "05-special",
+          "query": {
+            "scenario": "05-special",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#clip-status",
+        "#combo-count",
+        "#combo-flash",
+        "#player-health",
+        "#player-meter",
+        "#render-status",
+        "#rival-health",
+        "#rival-meter",
+        "#round-timer",
+        ".aca-combo"
+      ],
+      "keyboardHintSelectors": [
+        ".aca-controls",
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
+      ],
       "qrFlags": []
     },
     {
       "id": "showcase-blockfall-reactor",
       "titleDeterministic": null,
-      "scenarios": [],
-      "hudSelectors": [],
-      "keyboardHintSelectors": [],
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#hud-actions",
+        "#reactor-meter",
+        "#stat-combo",
+        "#stat-score",
+        "#status-mode",
+        "#status-speed",
+        ".hud-panel",
+        ".hud-panel--actions",
+        ".hud-panel--evidence",
+        ".hud-panel--preview"
+      ],
+      "keyboardHintSelectors": [
+        ".controls-strip",
+        ".touch-cluster",
+        ".touch-cluster--left",
+        ".touch-cluster--right",
+        ".touch-cluster--session",
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
+      ],
       "qrFlags": []
     },
     {
       "id": "showcase-skyline-runner",
       "titleDeterministic": null,
-      "scenarios": [],
-      "hudSelectors": [],
-      "keyboardHintSelectors": [],
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#checkpoint-pips",
+        "#lives-value",
+        "#objective-value",
+        "#score-value",
+        ".checkpoint-label",
+        ".checkpoint-pip",
+        ".checkpoint-pips",
+        ".checkpoint-row",
+        ".game-hud",
+        ".metric--lives"
+      ],
+      "keyboardHintSelectors": [
+        "#dash-control",
+        "#fire-control",
+        "#ghost-control",
+        "#jump-control",
+        "#left-control",
+        "#reset-control",
+        "#right-control",
+        ".controls-list"
+      ],
       "qrFlags": []
     },
     {
       "id": "showcase-turbo-drift-circuit",
       "titleDeterministic": null,
-      "scenarios": [],
-      "hudSelectors": [],
-      "keyboardHintSelectors": [],
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#alignment-status",
+        "#checkpoint-value",
+        "#speed-value",
+        "#status-value",
+        ".contract-status",
+        ".metric--speed",
+        ".metric--status",
+        "[data-hud]",
+        ".hud",
+        "#hud"
+      ],
+      "keyboardHintSelectors": [
+        "#brake-control",
+        "#drift-control",
+        "#ghost-toggle-control",
+        "#left-control",
+        "#reset-control",
+        "#right-control",
+        "#throttle-control",
+        ".control-cluster"
+      ],
       "qrFlags": []
     },
     {
       "id": "showcase-siege-golf",
       "titleDeterministic": null,
-      "scenarios": [],
-      "hudSelectors": [],
-      "keyboardHintSelectors": [],
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "05-charge",
+          "query": {
+            "scenario": "05-charge",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#sg-hole-banner",
+        ".hole-banner",
+        ".mobile-power-meter",
+        ".power-meter",
+        "[data-hud]",
+        ".hud",
+        "#hud"
+      ],
+      "keyboardHintSelectors": [
+        "#siege-golf-mobile-controls",
+        ".controls-list",
+        ".mobile-shot-controls",
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
+      ],
       "qrFlags": []
     },
     {
       "id": "showcase-aurora-lander",
       "titleDeterministic": null,
-      "scenarios": [],
-      "hudSelectors": [],
-      "keyboardHintSelectors": [],
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#hud-altitude",
+        "#hud-attitude",
+        "#hud-banner",
+        "#hud-fuel",
+        "#hud-fuel-fill",
+        "#hud-fuel-label",
+        "#hud-ghost",
+        "#hud-ghost-flag",
+        "#hud-gust",
+        "#hud-gust-flag"
+      ],
+      "keyboardHintSelectors": [
+        "#touch-ghost",
+        "#touch-left",
+        "#touch-pause",
+        "#touch-restart",
+        "#touch-right",
+        "#touch-thrust",
+        ".panel-hint",
+        ".touch-button"
+      ],
       "qrFlags": []
     },
     {
       "id": "showcase-neon-swarm",
       "titleDeterministic": null,
-      "scenarios": [],
-      "hudSelectors": [],
-      "keyboardHintSelectors": [],
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "05-burst",
+          "query": {
+            "scenario": "05-burst",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#ns-banner",
+        "#ns-combo-bar",
+        "#ns-score",
+        "#ns-shield",
+        "#ns-timer",
+        "#ns-timer-label",
+        "#ns-wave",
+        ".ns-banner",
+        ".ns-combo",
+        "[data-hud]"
+      ],
+      "keyboardHintSelectors": [
+        "#ns-touch",
+        ".ns-help",
+        ".ns-touch-knob",
+        ".ns-touch-stick",
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
+      ],
       "qrFlags": []
     },
     {
       "id": "showcase-gravity-post",
       "titleDeterministic": null,
-      "scenarios": [],
-      "hudSelectors": [],
-      "keyboardHintSelectors": [],
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "05-late-coast",
+          "query": {
+            "scenario": "05-late-coast",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#gp-score-card",
+        ".gp-fuel",
+        ".gp-scorecard",
+        ".gp-status",
+        "[data-hud]",
+        ".hud",
+        "#hud"
+      ],
+      "keyboardHintSelectors": [
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
+      ],
       "qrFlags": []
     },
     {
       "id": "showcase-courier-rush",
       "titleDeterministic": null,
-      "scenarios": [],
-      "hudSelectors": [],
-      "keyboardHintSelectors": [],
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#courier-combo",
+        "#courier-objective",
+        "#courier-score",
+        "#courier-timer",
+        "#courier-timer-fill",
+        ".combo-chip",
+        ".dispatch-card__objective",
+        ".score-line",
+        ".status-strip",
+        ".timer-bar"
+      ],
+      "keyboardHintSelectors": [
+        "#brake-control",
+        "#interact-control",
+        "#left-control",
+        "#reverse-control",
+        "#right-control",
+        "#throttle-control",
+        ".controls-help",
+        ".overlay__hint"
+      ],
       "qrFlags": []
     },
     {
       "id": "showcase-pulse-tunnel",
       "titleDeterministic": null,
-      "scenarios": [],
-      "hudSelectors": [],
-      "keyboardHintSelectors": [],
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#pulse-hud",
+        "#pulse-score",
+        "#pulse-shields",
+        "#pulse-state-banner",
+        ".pulse-hud",
+        ".pulse-meter",
+        ".pulse-meter-fill",
+        ".pulse-shields",
+        "[data-hud]",
+        ".hud"
+      ],
+      "keyboardHintSelectors": [
+        "#pulse-jump-control",
+        "#pulse-left-control",
+        "#pulse-reset-control",
+        "#pulse-right-control",
+        "#pulse-slide-control",
+        ".pulse-touch",
+        ".pulse-touch-column",
+        ".pulse-touch-pad"
+      ],
       "qrFlags": []
     },
     {
       "id": "showcase-mech-hangar",
       "titleDeterministic": null,
-      "scenarios": [],
-      "hudSelectors": [],
-      "keyboardHintSelectors": [],
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "02b-arena-opening",
+          "query": {
+            "scenario": "02b-arena-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "05-special",
+          "query": {
+            "scenario": "05-special",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "[data-hud]",
+        ".hud",
+        "#hud"
+      ],
+      "keyboardHintSelectors": [
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
+      ],
       "qrFlags": []
     },
     {
       "id": "showcase-vault-breakers",
       "titleDeterministic": null,
-      "scenarios": [],
-      "hudSelectors": [],
-      "keyboardHintSelectors": [],
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#stat-score",
+        "#vb-banner",
+        ".hole-banner",
+        ".power-meter",
+        "[data-hud]",
+        ".hud",
+        "#hud"
+      ],
+      "keyboardHintSelectors": [
+        ".controls-list",
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
+      ],
       "qrFlags": []
     },
     {
       "id": "showcase-rooftop-buckets",
       "titleDeterministic": null,
-      "scenarios": [],
-      "hudSelectors": [],
-      "keyboardHintSelectors": [],
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "05-charge",
+          "query": {
+            "scenario": "05-charge",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "[data-hud]",
+        ".hud",
+        "#hud"
+      ],
+      "keyboardHintSelectors": [
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
+      ],
       "qrFlags": []
     },
     {
       "id": "showcase-gallery-shift",
       "titleDeterministic": null,
-      "scenarios": [],
-      "hudSelectors": [],
-      "keyboardHintSelectors": [],
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#gs-banner",
+        "#stat-score",
+        ".detection-meter",
+        ".hall-banner",
+        ".lift-progress",
+        ".meter-label",
+        ".meter-ticks",
+        ".speed",
+        "[data-hud]",
+        ".hud"
+      ],
+      "keyboardHintSelectors": [
+        ".controls-list",
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
+      ],
       "qrFlags": []
     },
     {
       "id": "showcase-deep-recovery",
       "titleDeterministic": null,
-      "scenarios": [],
-      "hudSelectors": [],
-      "keyboardHintSelectors": [],
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "05-grapple",
+          "query": {
+            "scenario": "05-grapple",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "[data-hud]",
+        ".hud",
+        "#hud"
+      ],
+      "keyboardHintSelectors": [
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
+      ],
       "qrFlags": []
     },
     {
       "id": "showcase-patrol-wing",
       "titleDeterministic": null,
-      "scenarios": [],
-      "hudSelectors": [],
-      "keyboardHintSelectors": [],
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "05-banked-fire",
+          "query": {
+            "scenario": "05-banked-fire",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#pw-banner",
+        "#pw-hull-fill",
+        "#pw-hull-label",
+        "#review-hull",
+        "#review-hull-fill",
+        "#review-speed",
+        "#review-wave",
+        "#stat-wave",
+        ".flight-banner",
+        ".hull-meter"
+      ],
+      "keyboardHintSelectors": [
+        ".controls-list",
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
+      ],
       "qrFlags": []
     },
     {
       "id": "showcase-bank-shot",
       "titleDeterministic": null,
-      "scenarios": [],
-      "hudSelectors": [],
-      "keyboardHintSelectors": [],
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "05-charge",
+          "query": {
+            "scenario": "05-charge",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#bs-banner",
+        "#stat-combo",
+        "#stat-score",
+        ".hole-banner",
+        ".power-meter",
+        ".sweet-zone",
+        "[data-hud]",
+        ".hud",
+        "#hud"
+      ],
+      "keyboardHintSelectors": [
+        ".controls-list",
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
+      ],
       "qrFlags": []
     },
     {
       "id": "showcase-orbital-defense",
       "titleDeterministic": null,
-      "scenarios": [],
-      "hudSelectors": [],
-      "keyboardHintSelectors": [],
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "05-shield",
+          "query": {
+            "scenario": "05-shield",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        ".heat",
+        "[data-hud]",
+        ".hud",
+        "#hud"
+      ],
+      "keyboardHintSelectors": [
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
+      ],
       "qrFlags": []
     }
   ]
