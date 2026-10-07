@@ -103,36 +103,63 @@ test("agent docs hello-world scene renders the typed robot asset", async ({ page
     console.log("[sim-ready-timeout] html:", (await page.content().catch(() => "")).slice(0, 1500));
     throw err;
   }
-  const canvas = page.locator("canvas");
-  await expect(canvas).toBeVisible();
-  // The element screenshot carries browser-composited pixels, so profiling it
-  // does not depend on preserveDrawingBuffer (the app's context keeps the
-  // default framebuffer attribute; a post-composite gl.readPixels reads a
-  // cleared buffer).
-  const png = await canvas.screenshot();
-  const profile = await page.evaluate(async (dataUrl) => {
-    const img = new Image();
-    await new Promise<void>((resolvePromise, rejectPromise) => {
-      img.onload = () => resolvePromise();
-      img.onerror = () => rejectPromise(new Error("screenshot decode failed"));
-      img.src = dataUrl;
-    });
+  // Playwright visibility/stability probes starve behind the continuous rAF
+  // render loop on software GL, and a compositor canvas.screenshot() stalls the
+  // same way ("waiting for element to be stable" never resolves on CI).
+  // waitForFunction polls inside the page's own animation frame, and the
+  // readPixels capture below runs in the same evaluate task as a stepped
+  // render — deterministic, no preserveDrawingBuffer, no compositor.
+  await page.waitForFunction(() => {
+    const element = document.querySelector("canvas");
+    if (!(element instanceof HTMLCanvasElement)) return false;
+    const style = getComputedStyle(element);
+    return style.display !== "none" && style.visibility !== "hidden";
+  }, undefined, { timeout: 60_000 });
+  const capture = await page.evaluate(async () => {
+    type LiveApp = { stepAsync?: (dt: number) => Promise<void>; step?: (dt: number) => void };
+    const apps = (window as unknown as { __AURA3D_LIVE_APPS__?: LiveApp[] }).__AURA3D_LIVE_APPS__ ?? [];
+    if (apps.length > 0) {
+      for (const app of apps) {
+        if (app.stepAsync) await app.stepAsync(1 / 60);
+        else app.step?.(1 / 60);
+      }
+    } else {
+      await new Promise<void>((resolvePromise) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolvePromise()));
+      });
+    }
+    const element = [...document.querySelectorAll("canvas")]
+      .find((candidate) => (candidate.getContext("webgl2") ?? candidate.getContext("webgl")) !== null);
+    const gl = element ? (element.getContext("webgl2") ?? element.getContext("webgl")) : null;
+    if (!gl) return { error: "no-webgl-context", pngBase64: "", centerObjectPixels: 0, assetReady: false, uniqueBuckets: 0 };
+    // readPixels reads the currently bound framebuffer: rebind the default so
+    // a renderer that ended its frame on an offscreen target still yields the
+    // canvas backbuffer.
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    const width = gl.drawingBufferWidth;
+    const height = gl.drawingBufferHeight;
+    const pixels = new Uint8Array(width * height * 4);
+    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
     const target = document.createElement("canvas");
-    target.width = img.naturalWidth;
-    target.height = img.naturalHeight;
+    target.width = width;
+    target.height = height;
     const ctx = target.getContext("2d");
-    if (!ctx) return { error: "missing-2d", centerObjectPixels: 0, assetReady: false, uniqueBuckets: 0 };
-    ctx.drawImage(img, 0, 0);
-    const pixels = ctx.getImageData(0, 0, target.width, target.height).data;
+    if (!ctx) return { error: "missing-2d", pngBase64: "", centerObjectPixels: 0, assetReady: false, uniqueBuckets: 0 };
+    const image = ctx.createImageData(width, height);
+    // readPixels rows run bottom-up; flip into top-down image space.
+    for (let y = 0; y < height; y += 1) {
+      image.data.set(pixels.subarray((height - 1 - y) * width * 4, (height - y) * width * 4), y * width * 4);
+    }
+    ctx.putImageData(image, 0, 0);
     const buckets = new Set<string>();
     let centerObjectPixels = 0;
     for (let y = 0; y < target.height; y += 4) {
       for (let x = 0; x < target.width; x += 4) {
         if (x > target.width * 0.76 && y > target.height * 0.74) continue;
         const offset = (y * target.width + x) * 4;
-        const r = pixels[offset] ?? 0;
-        const g = pixels[offset + 1] ?? 0;
-        const b = pixels[offset + 2] ?? 0;
+        const r = image.data[offset] ?? 0;
+        const g = image.data[offset + 1] ?? 0;
+        const b = image.data[offset + 2] ?? 0;
         const luminance = r * 0.2126 + g * 0.7152 + b * 0.0722;
         if (luminance > 28) buckets.add(\`\${r >> 5}-\${g >> 5}-\${b >> 5}\`);
         const inCenter = x > target.width * 0.32 && x < target.width * 0.68 && y > target.height * 0.22 && y < target.height * 0.82;
@@ -141,12 +168,19 @@ test("agent docs hello-world scene renders the typed robot asset", async ({ page
     }
     const route = (window as unknown as { __AURA3D_ROUTE_READY__?: { diagnostics?: { assets?: Array<{ id: string; status: string }> } } }).__AURA3D_ROUTE_READY__;
     return {
+      pngBase64: target.toDataURL("image/png").split(",")[1] ?? "",
       centerObjectPixels,
       assetReady: route?.diagnostics?.assets?.some((asset) => asset.id === "robot" && asset.status === "ready") ?? false,
       uniqueBuckets: buckets.size
     };
-  }, \`data:image/png;base64,\${png.toString("base64")}\`);
-  const screenshot = await canvas.screenshot();
+  });
+  const screenshot = Buffer.from(capture.pngBase64 ?? "", "base64");
+  const profile = {
+    centerObjectPixels: capture.centerObjectPixels,
+    assetReady: capture.assetReady,
+    uniqueBuckets: capture.uniqueBuckets,
+    error: capture.error
+  };
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/screenshot.png"), screenshot);
   writeFileSync(resolve("tests/reports/screenshot.json"), \`\${JSON.stringify({ bytes: screenshot.byteLength, profile }, null, 2)}\\n\`);
