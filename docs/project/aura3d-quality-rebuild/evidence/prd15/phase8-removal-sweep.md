@@ -322,3 +322,40 @@ consumer + unit lanes surfaced three real breaks, all fixed on this branch:
   passes locally (✓ built in 7.71 s). These are cross-lane consumer fixes
   (lane-04 harness + shared benchmark scenes); cross-lane edits are
   covered by the §6.6 convention since the names only moved import path.
+
+## Post-merge CI repair (3rd wave, commits 4611beaaa + 165659cc3)
+
+- `arch-gates` failure is the enforced-finding set: locally 31 enforced
+  findings, all a strict subset of main's 33 at 7758a2710 (zero new;
+  main carries the extra `unique-ownership`/`deps-truth`/`layering`
+  errors my sweep actually removed). One self-inflicted nit surfaced and
+  was fixed in `4611beaaa`: `tools/finalize-dist/manifest.generated.json`
+  drifted after the kept stubs' `removeIn` moved to 4.1.0 — regenerated
+  via `tools/generate-resolution-maps --write`; `resolution-single-truth`
+  findings are empty locally after the regen.
+- Lane 03 browser specs follow-on fix in `165659cc3`: phase6 still failed
+  with `"beforeAll" hook timeout of 60000ms exceeded` —
+  `test.describe.configure({ timeout })` covers per-test budgets but
+  Playwright keeps the 60s config timeout on `beforeAll`/`afterAll`
+  hooks. Added `testInfo.setTimeout(240_000)` as the first line of each
+  of the 8 specs' `beforeAll` hooks.
+- Remaining failures all verified pre-existing (every failing spec/impl
+  file byte-identical to main at 7758a2710):
+  - `unit`, `Type Check`, `Build and Test on Node 22`, `Lane 03 unit`:
+    lane-12 `tools/_quarantine` moves leave sibling tools importing
+    `../external-parity-reporting`, `../muse3jsparity-docs-audit`,
+    `../production-runtime-report-bridge`, `../threejs-parity-common`
+    (dirs absent on main too — quarantine debt, not merge-caused).
+  - `T1.x unit tests`: other-lane contract-impl failures
+    (`prd13-looks` LOOK_RULE_DUPLICATE, `prd14` flatVehicleSurface,
+    `prd01` cube faces, `prd03` missing .cube fixture, `prd05`
+    debug-view, `prd12` registry) — test + impl files identical to main.
+  - `unit (prd02)`: `aura3d/common.ts:290` smaa-not-assignable — file
+    identical to main.
+  - `all-routes-shadow`: lane-09 `git am` replay fails on
+    `apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts`, deleted
+    on main by lane 14 — same failure on base.
+  - `Analytic pixel specs`: `skinned-animation-pixels` 10 s
+    waitForFunction timeout — spec identical to main.
+  - 5× Chromium Browser And Visual Checks shards: all specs identical
+    to main; GPU-less ubuntu flake class documented in the Phase-7 audit.
