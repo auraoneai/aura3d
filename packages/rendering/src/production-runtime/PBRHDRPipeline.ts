@@ -17,6 +17,14 @@ import {
   type CubemapPMREMResources,
   type CubemapPMREMShaderContract
 } from "./environment/PMREMGenerator";
+import { rendererQrFlags } from "../renderer/FrameGraph";
+
+// PRD-02 §phase-3: under A3D_QR_LIGHTING the C-09 probe supplies the IBL — the
+// legacy 0.08 fill-lighting fudge is disabled (ambient intensity 0) and the
+// 1.1× three-parity specular gain is skipped.
+function prd02LightingOn(): boolean {
+  return rendererQrFlags().on("A3D_QR_LIGHTING");
+}
 
 export type ProductionToneMappingOperator = "aces" | "filmic" | "linear" | "reinhard";
 
@@ -252,20 +260,21 @@ export function createProductionEnvironmentLightingResources(
       })
     }))
   });
+  const flagOn = prd02LightingOn();
   return {
     environmentTexture,
     environmentCubeTexture,
     brdfLutTexture,
     lighting: {
       color: [1, 1, 1],
-      intensity: 0.08,
+      intensity: flagOn ? 0 : 0.08,
       proceduralMap: {
         skyColor: [0.2, 0.24, 0.32],
         horizonColor: [0.22, 0.2, 0.18],
         groundColor: [0.03, 0.035, 0.045],
         specularColor: [1, 1, 1],
-        intensity: 0.06,
-        specularIntensity: 0.1
+        intensity: flagOn ? 0 : 0.06,
+        specularIntensity: flagOn ? 0 : 0.1
       },
       environmentMapTexture: new TextureBinding({
         name: "u_environmentMapTexture",
@@ -284,7 +293,8 @@ export function createProductionEnvironmentLightingResources(
       // specular response. Multiplying the specular lobe by 0.38 made metals and
       // clearcoat systematically darker than the same HDR/exposure in current
       // Three.js, even though callers supplied intensity 1 to both engines.
-      environmentMapSpecularIntensity: pipeline.intensity * 1.1,
+      // (Skipped under A3D_QR_LIGHTING — the C-09 probe is already physical.)
+      environmentMapSpecularIntensity: flagOn ? pipeline.intensity : pipeline.intensity * 1.1,
       environmentMapRotation: pipeline.rotation,
       environmentMapMipCount: pipeline.cubemapPMREM.mipCount,
       environmentMapEncoding: "linear",
@@ -395,20 +405,21 @@ export function createDualProbeEnvironmentLightingResources(
       })
     }))
   });
+  const flagOnDual = prd02LightingOn();
   return {
     environmentTexture,
     environmentCubeTexture,
     brdfLutTexture,
     lighting: {
       color: [1, 1, 1],
-      intensity: 0.08,
+      intensity: flagOnDual ? 0 : 0.08,
       proceduralMap: {
         skyColor: [0.2, 0.24, 0.32],
         horizonColor: [0.22, 0.2, 0.18],
         groundColor: [0.03, 0.035, 0.045],
         specularColor: [1, 1, 1],
-        intensity: 0.06,
-        specularIntensity: 0.1
+        intensity: flagOnDual ? 0 : 0.06,
+        specularIntensity: flagOnDual ? 0 : 0.1
       },
       environmentMapTexture: new TextureBinding({
         name: "u_environmentMapTexture",
@@ -424,9 +435,9 @@ export function createDualProbeEnvironmentLightingResources(
       }),
       // The public environment intensity is the IBL contract split per probe:
       // diffuse follows illumination, specular follows reflection (same 1.1
-      // three.js parity factor as the single-probe path).
+      // three.js parity factor as the single-probe path — skipped under the flag).
       environmentMapIntensity: illuminationIntensity,
-      environmentMapSpecularIntensity: reflectionIntensity * 1.1,
+      environmentMapSpecularIntensity: prd02LightingOn() ? reflectionIntensity : reflectionIntensity * 1.1,
       environmentMapRotation: options.reflection.rotation,
       environmentMapMipCount: composedPmrem.mipCount,
       environmentMapEncoding: "linear",

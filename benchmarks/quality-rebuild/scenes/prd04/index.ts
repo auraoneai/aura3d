@@ -107,6 +107,21 @@ export const prd04SceneSpecs: Record<string, Prd04SceneSpec> = {
     ],
     primaryCriterion: "anisotropy-direction"
   },
+  "prd04-transmission": {
+    ...base,
+    id: "prd04-transmission",
+    index: 410,
+    title: "Transmission capture target (P4-4)",
+    purpose: "KHR_materials_transmission drives the lane's transmission capture target (CompareTransmission sample).",
+    camera: { position: [0, 0.5, 3.1], target: [0, 0.3, 0], fov: 38, near: 0.05, far: 50 },
+    background: { kind: "hdri", hdri: "studioSmall08", fallbackColor: "#26292d", intensity: 1.0 },
+    environment: { hdri: "studioSmall08", intensity: 1.0, rotation: 0 },
+    lights: [sun(2.0, [2, 4, 3])],
+    objects: [
+      { kind: "model", name: "compare-transmission", asset: "compareTransmission", position: [0, -0.55, 0], scale: 1.6, castShadow: false, receiveShadow: false }
+    ],
+    primaryCriterion: "transmission-capture-active"
+  },
   "prd04-dispersion": {
     ...base,
     id: "prd04-dispersion",
@@ -256,6 +271,21 @@ export const prd04SceneSpecs: Record<string, Prd04SceneSpec> = {
       { kind: "model", name: "alpha-panels", asset: "alphaBlendModeTest", position: [0, -0.7, 0], castShadow: false, receiveShadow: false }
     ],
     primaryCriterion: "alpha-mask-edges"
+  },
+  "prd04-damaged-helmet": {
+    ...base,
+    id: "prd04-damaged-helmet",
+    index: 411,
+    title: "Damaged helmet under tint override",
+    purpose: "S3 second subject: DamagedHelmet keeps authored maps under a tint override (C-15 bridge).",
+    camera: { position: [0, 0.15, 3.2], target: [0, 0, 0], fov: 40, near: 0.05, far: 50 },
+    background: { kind: "hdri", hdri: "studioSmall08", fallbackColor: "#2a2c30", intensity: 0.9 },
+    environment: { hdri: "studioSmall08", intensity: 0.9, rotation: 0 },
+    lights: [{ kind: "ambient", name: "fill", color: "#ffffff", intensity: 0.15 }, sun(2.2, [4, 5, 3])],
+    objects: [
+      { kind: "model", name: "helmet", asset: "damagedHelmet", position: [0, -0.5, 0], scale: 1.4, castShadow: false, receiveShadow: false }
+    ],
+    primaryCriterion: "tinted-texture-retention"
   }
 };
 

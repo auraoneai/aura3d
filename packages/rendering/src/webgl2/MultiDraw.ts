@@ -1,6 +1,8 @@
 // PR 0b-2 carve-out (CONTRACTS.md §3.3) — verbatim move from WebGL2Device.ts; 0 changed logic lines.
 
 import { RenderDeviceError, type DrawCommand, type InstanceVertexAttribute, type RenderBuffer, type RenderShaderProgram } from "../RenderDevice";
+import { resolveBlendMode } from "../contracts/blend";
+import type { BlendEquation, BlendFactor } from "../contracts/blend";
 import { isTextureBinding } from "../TextureBinding";
 import type { VertexAttribute, VertexFormat } from "../VertexFormat";
 import { WebGL2Buffer, WebGL2ShaderProgram } from "../WebGL2Device";
@@ -110,7 +112,9 @@ export class WebGL2DrawCallBinder {
         throw new RenderDeviceError("Material tried to bind a missing shader uniform", "MISSING_UNIFORM", { name });
       }
       if (isTextureBinding(value)) {
-        this.host.samplers.uploadTextureUniform(location, value, textureUnit);
+        // lane 06 Q-01-3: pass the declared uniform type so sampler2DArray
+        // uniforms bind TEXTURE_2D_ARRAY units even when texture.dimension is absent.
+        this.host.samplers.uploadTextureUniform(location, value, textureUnit, shader.reflection.uniformDetails.get(name)?.type);
         textureUnit += 1;
       } else if (typeof value === "number") {
         this.host.gl.uniform1f(location, value);
@@ -359,7 +363,13 @@ export class WebGL2DrawCallBinder {
       else this.host.gl.disable(this.host.gl.DEPTH_TEST);
     });
     this.host.stateCache.depthMask(renderState.depthWrite, () => this.host.gl.depthMask(renderState.depthWrite));
-    this.host.stateCache.depthFunc(renderState.depthCompare === "always" ? this.host.gl.ALWAYS : this.host.gl.LEQUAL, () => this.host.gl.depthFunc(renderState.depthCompare === "always" ? this.host.gl.ALWAYS : this.host.gl.LEQUAL));
+    const depthCompare = renderState.depthCompareV2 ?? renderState.depthCompare;
+    const depthFuncEnum = this.depthCompareEnum(depthCompare);
+    this.host.stateCache.depthFunc(depthFuncEnum, () => this.host.gl.depthFunc(depthFuncEnum));
+    this.host.stateCache.setEnabled(this.host.gl.SAMPLE_ALPHA_TO_COVERAGE, renderState.alphaToCoverage === true, () => {
+      if (renderState.alphaToCoverage === true) this.host.gl.enable(this.host.gl.SAMPLE_ALPHA_TO_COVERAGE);
+      else this.host.gl.disable(this.host.gl.SAMPLE_ALPHA_TO_COVERAGE);
+    });
     const colorWrite = renderState.colorWrite ?? [true, true, true, true] as const;
     this.host.stateCache.colorMask(colorWrite[0], colorWrite[1], colorWrite[2], colorWrite[3], () => this.host.gl.colorMask(colorWrite[0], colorWrite[1], colorWrite[2], colorWrite[3]));
     if (renderState.scissor) {
@@ -398,11 +408,70 @@ export class WebGL2DrawCallBinder {
       this.host.stateCache.setEnabled(this.host.gl.CULL_FACE, true, () => this.host.gl.enable(this.host.gl.CULL_FACE));
       this.host.stateCache.cullFace(renderState.cullMode === "front" ? this.host.gl.FRONT : this.host.gl.BACK, () => this.host.gl.cullFace(renderState.cullMode === "front" ? this.host.gl.FRONT : this.host.gl.BACK));
     }
-    if (renderState.blend) {
+    if (renderState.blendMode !== undefined) {
+      // C-04 (§6.8): blendMode wins over `blend`; full factor/equation vocab.
+      const resolved = resolveBlendMode(renderState);
+      if (resolved === "opaque") {
+        this.host.stateCache.setEnabled(this.host.gl.BLEND, false, () => this.host.gl.disable(this.host.gl.BLEND));
+      } else {
+        this.host.stateCache.setEnabled(this.host.gl.BLEND, true, () => this.host.gl.enable(this.host.gl.BLEND));
+        const colorEq = this.blendEquationEnum(resolved.color.equation);
+        const alphaEq = this.blendEquationEnum(resolved.alpha.equation);
+        this.host.stateCache.blendEquation(colorEq, alphaEq, () => this.host.gl.blendEquationSeparate(colorEq, alphaEq));
+        const sC = this.blendFactorEnum(resolved.color.src);
+        const dC = this.blendFactorEnum(resolved.color.dst);
+        const sA = this.blendFactorEnum(resolved.alpha.src);
+        const dA = this.blendFactorEnum(resolved.alpha.dst);
+        this.host.stateCache.blendFuncSeparate(sC, dC, sA, dA, () => this.host.gl.blendFuncSeparate(sC, dC, sA, dA));
+      }
+    } else if (renderState.blend) {
       this.host.stateCache.setEnabled(this.host.gl.BLEND, true, () => this.host.gl.enable(this.host.gl.BLEND));
+      // C-04: restore FUNC_ADD only after a blendMode draw changed the equation;
+      // a fresh context is already FUNC_ADD so nothing is emitted flag-off.
+      if (this.host.stateCache.blendEquationDiffers(this.host.gl.FUNC_ADD, this.host.gl.FUNC_ADD)) {
+        this.host.stateCache.blendEquation(this.host.gl.FUNC_ADD, this.host.gl.FUNC_ADD, () => this.host.gl.blendEquationSeparate(this.host.gl.FUNC_ADD, this.host.gl.FUNC_ADD));
+      }
       this.host.stateCache.blendFunc(this.host.gl.SRC_ALPHA, this.host.gl.ONE_MINUS_SRC_ALPHA, () => this.host.gl.blendFunc(this.host.gl.SRC_ALPHA, this.host.gl.ONE_MINUS_SRC_ALPHA));
     } else {
       this.host.stateCache.setEnabled(this.host.gl.BLEND, false, () => this.host.gl.disable(this.host.gl.BLEND));
+    }
+  }
+
+  depthCompareEnum(compare: string): GLenum {
+    switch (compare) {
+      case "never": return this.host.gl.NEVER;
+      case "less": return this.host.gl.LESS;
+      case "equal": return this.host.gl.EQUAL;
+      case "less-equal": return this.host.gl.LEQUAL;
+      case "greater": return this.host.gl.GREATER;
+      case "not-equal": return this.host.gl.NOTEQUAL;
+      case "greater-equal": return this.host.gl.GEQUAL;
+      default: return this.host.gl.ALWAYS;
+    }
+  }
+
+  blendEquationEnum(equation: BlendEquation): GLenum {
+    switch (equation) {
+      case "add": return this.host.gl.FUNC_ADD;
+      case "subtract": return this.host.gl.FUNC_SUBTRACT;
+      case "reverse-subtract": return this.host.gl.FUNC_REVERSE_SUBTRACT;
+      case "min": return this.host.gl.MIN;
+      case "max": return this.host.gl.MAX;
+    }
+  }
+
+  blendFactorEnum(factor: BlendFactor): GLenum {
+    switch (factor) {
+      case "zero": return this.host.gl.ZERO;
+      case "one": return this.host.gl.ONE;
+      case "src-color": return this.host.gl.SRC_COLOR;
+      case "one-minus-src-color": return this.host.gl.ONE_MINUS_SRC_COLOR;
+      case "src-alpha": return this.host.gl.SRC_ALPHA;
+      case "one-minus-src-alpha": return this.host.gl.ONE_MINUS_SRC_ALPHA;
+      case "dst-color": return this.host.gl.DST_COLOR;
+      case "one-minus-dst-color": return this.host.gl.ONE_MINUS_DST_COLOR;
+      case "dst-alpha": return this.host.gl.DST_ALPHA;
+      case "one-minus-dst-alpha": return this.host.gl.ONE_MINUS_DST_ALPHA;
     }
   }
 

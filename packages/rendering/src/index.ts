@@ -18,7 +18,7 @@ export type {
   ShaderSources,
   UniformValue
 } from "./RenderDevice";
-export { MockRenderBuffer, MockRenderDevice, MockShaderProgram, RenderDeviceError } from "./RenderDevice";
+export { MockRenderBuffer, MockRenderDevice, MockRenderTarget, MockShaderProgram, RenderDeviceError } from "./RenderDevice";
 export {
   buildGpuTargetInventory,
   GPU_TARGET_BUDGET_BYTES,
@@ -72,6 +72,23 @@ export type { Bounds3, BoxGeometryOptions, CapsuleGeometryOptions, CylinderGeome
 export { createPrimitiveGeometry, clearPrimitiveGeometryCache, primitiveGeometryCacheSize } from "./geometry/Primitives";
 export type { AuraPrimitiveKind } from "./geometry/Primitives";
 export { InstanceBuffer } from "./resources/InstanceBuffer";
+export { UniformBlock, FrameUniforms, layoutStd140, uniformBlockGlsl, AURA_FRAME_BINDING, AURA_LIGHTS_BINDING } from "./resources/UniformBlock";
+export type { Std140Field, Std140Layout } from "./resources/UniformBlock";
+export { normalizeProgramFeatures, DEFAULT_PROGRAM_FEATURES, totalLightCount } from "./program/ProgramFeatures";
+export { programKey } from "./program/ProgramKey";
+export { generateProgramImpl, registerProgramWgslEmitter, programDegradationLog, GENERATED_PROGRAM_MARKER } from "./program/ProgramGenerator";
+export type { ProgramDegradation, GenerateProgramOptions } from "./program/ProgramGenerator";
+export { ProgramCache } from "./program/ProgramCache";
+export { ProgramWarmup, collectWarmupFeatures } from "./program/ProgramWarmup";
+export type { WarmupInput, WarmupResult } from "./program/ProgramWarmup";
+export { defaultProgramFeatures, materialFeatureWarning, materialUsesGeneratedProgram, ALLOWLIST_PROGRAM_SHADERS } from "./program/MaterialFeatures";
+export { qrCoreGeneratorOn, qrCoreOutputOn, rendererProgramCache, rendererAuraFrame } from "./renderer/qrSubFlags";
+export { blendQueueForState, blendStateIsTransparent, blendModeDefaultDepthWrite, blendEquationName, QUEUE_BY_MODE } from "./BlendModes";
+export type { BlendQueue } from "./BlendModes";
+export { ResolutionGovernor, RESOLUTION_GOVERNOR_STEP, RESOLUTION_GOVERNOR_DOWN_FACTOR, RESOLUTION_GOVERNOR_UP_FACTOR } from "./ResolutionGovernor";
+export type { ResolutionGovernorOptions } from "./ResolutionGovernor";
+export { resolveCanvasPixelRatio, resolveCanvasContextAttributes, watchDevicePixelRatio } from "./renderer/PixelRatio";
+export type { AuraResolutionOptions, AuraCanvasContextAttributes } from "./renderer/PixelRatio";
 export { applyMorphTargets, computeMorphTargetEnvelopeBounds, computeMorphTargetWeightedBounds } from "./MorphTarget";
 export type { MorphTargetDelta } from "./MorphTarget";
 export { computeAnimatedSkinnedBoundsUnion, computeSkinnedGeometryBounds, computeSkinnedMorphTargetEnvelopeBounds, computeSkinnedMorphTargetWeightedBounds } from "./SkinningBounds";
@@ -301,13 +318,6 @@ export {
   sortExternalParityAlphaItems
 } from "./materials/AlphaSorting";
 export type { ExternalParityAlphaSortItem } from "./materials/AlphaSorting";
-export {
-  evaluateExternalParityTransmission
-} from "./materials/TransmissionPass";
-export type {
-  ExternalParityTransmissionResult,
-  ExternalParityTransmissionSample
-} from "./materials/TransmissionPass";
 export { createExternalParityContactShadow } from "./shadows/ContactShadows";
 export type { ExternalParityContactShadow, ExternalParityContactShadowOptions } from "./shadows/ContactShadows";
 export { createExternalParityCascadedShadowPipeline } from "./shadows/CascadedShadowPipeline";
@@ -633,7 +643,7 @@ export type {
   RendererTimingSampleSource,
   RendererTimingSnapshot
 } from "./RendererTiming";
-export { ForwardPass, SkinningPaletteUploadManager, applyForwardSpotShadowMapUniforms } from "./ForwardPass";
+export { ForwardPass, SkinningPaletteUploadManager, applyForwardSpotShadowMapUniforms, forwardPassFeatureAxes } from "./ForwardPass";
 export { MAX_GPU_INSTANCES, MAX_GPU_MORPH_TARGETS, MAX_GPU_MORPH_VERTICES, MAX_SKINNING_JOINTS } from "./ForwardPass";
 export {
   createSpotShadowProjection,
@@ -793,7 +803,7 @@ export type {
   FrameVisualQualityResult,
   FrameVisualQualityThresholds
 } from "./FrameVisualMetrics";
-export { LightCollector } from "./LightCollector";
+export { LightCollector, collectLight } from "./LightCollector";
 export type { CollectedLight, CollectedLightKind, LightCollectorOptions } from "./LightCollector";
 export { LightUniforms, MAX_DIRECT_LIGHTS } from "./LightUniforms";
 export type { PackedLightUniforms } from "./LightUniforms";

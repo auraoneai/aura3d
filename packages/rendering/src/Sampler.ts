@@ -32,11 +32,18 @@ export class Sampler {
   public readonly addressV: TextureAddressMode;
   public readonly maxAnisotropy: number;
 
+  public readonly compare: "less-equal" | "greater-equal" | undefined;
+  public readonly addressW: TextureAddressMode | undefined;
+  public readonly mirror: boolean;
+
   constructor(descriptor: SamplerDescriptor = {}) {
     this.minFilter = descriptor.minFilter ?? "linear";
     this.magFilter = descriptor.magFilter ?? "linear";
     this.addressU = descriptor.addressU ?? "clamp-to-edge";
     this.addressV = descriptor.addressV ?? "clamp-to-edge";
+    this.compare = descriptor.compare;
+    this.addressW = descriptor.addressW;
+    this.mirror = descriptor.mirror ?? false;
     const maxAnisotropy = descriptor.maxAnisotropy ?? 1;
     if (!Number.isFinite(maxAnisotropy) || maxAnisotropy < 1) {
       throw new RangeError("Sampler maxAnisotropy must be finite and at least 1");

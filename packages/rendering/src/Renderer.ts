@@ -30,6 +30,18 @@ import { Sampler } from "./Sampler";
 import { type TextureFormat } from "./Texture";
 import { TextureBinding } from "./TextureBinding";
 import { computeOrthographicCameraFrame, computePerspectiveCameraFrame, type OrthographicCameraFrameOptions, type PerspectiveCameraFrameOptions } from "./CameraFraming";
+import { ResolutionGovernor } from "./ResolutionGovernor";
+import { frameStatsSlot, type FrameStatsLike } from "./contracts/device";
+import { resolveCanvasPixelRatio, watchDevicePixelRatio, type AuraResolutionOptions } from "./renderer/PixelRatio";
+import type { AuraQualityTier, AuraQualityTierSettings } from "./contracts/quality";
+import { QUALITY_TIERS } from "./contracts/quality";
+import { MaterialInstance } from "./MaterialInstance";
+import { materialUsesGeneratedProgram } from "./program/MaterialFeatures";
+import { ProgramWarmup } from "./program/ProgramWarmup";
+import { rendererQrFlags } from "./renderer/FrameGraph";
+import { qrCoreGeneratorOn, rendererProgramCache } from "./renderer/qrSubFlags";
+import { forwardPassFeatureAxes } from "./ForwardPass";
+import { resolveForwardClusteredLighting } from "./forward/Lighting";
 import { assertRendererFeatures, createRendererFeatureReport, type RendererFeature, type RendererFeatureReport } from "./RendererFeatureGates";
 import { batchStaticRenderItems, type StaticBatchOptions, type StaticBatchInput } from "./SceneOptimization";
 import { createStaticMeshConsolidationCache, type MeshConsolidationInput, type MeshConsolidationOptions } from "./MeshConsolidation";
@@ -38,6 +50,15 @@ export interface RendererOptions extends RenderBackendOptions {
   readonly width?: number;
   readonly height?: number;
   readonly clearColor?: readonly [number, number, number, number];
+  /**
+   * §6.9 resolution policy (C-27 consumer surface): pixel-ratio request and
+   * the resolution-governor knobs. Absent → legacy DPR behaviour, bit-identical.
+   */
+  readonly resolution?: AuraResolutionOptions;
+  /** Quality tier settings that cap the canvas pixel ratio and floor the governor. */
+  readonly qualityTier?: Pick<AuraQualityTierSettings, "maxPixelRatio" | "minRenderScale">;
+  /** C-02 warm-then-block tier (default "high") for the generated-program warmup under A3D_QR_CORE. */
+  readonly qualityTierName?: AuraQualityTier;
   readonly shaderLibrary?: ShaderLibrary;
   readonly requiredFeatures?: readonly RendererFeature[];
 }
@@ -237,6 +258,12 @@ export interface RendererShadowOptions extends ShadowMapOptions {
 export interface RendererPostProcessOptions extends RendererPostprocessPlanOptions {
   readonly targetFormat?: RendererPostprocessTargetFormat;
   readonly sampleCount?: number;
+  /**
+   * CCR-03-1 (additive): real camera depth range for the legacy chain's
+   * depth-gated passes. Forwarded into `presentLdrPostprocess`; when C-08 is
+   * real the frame camera's near/far takes precedence.
+   */
+  readonly depthRange?: { readonly near: number; readonly far: number; readonly projection?: "perspective" | "orthographic" };
   /** C-13 (PR 0a): post pipeline descriptor for the graph path. */
   readonly pipeline?: unknown;
   /** C-13 (PR 0a): post graph v2 opt-in. */
@@ -320,6 +347,16 @@ export class Renderer {
   private disposed = false;
   private animationLoop: RendererAnimationLoopImpl | null = null;
   private readonly fusedLdrPostprocessScratch: FusedLdrPostProcessScratch = {};
+  // §6.9 resolution policy state (present only when `options.resolution` is set).
+  private readonly resolutionOptions?: AuraResolutionOptions;
+  private readonly qualityTier?: Pick<AuraQualityTierSettings, "maxPixelRatio" | "minRenderScale">;
+  private readonly qualityTierName?: AuraQualityTier;
+  private programWarmup?: ProgramWarmup;
+  private resolutionGovernor?: ResolutionGovernor;
+  private renderScaleCeiling = 1;
+  private readonly unsubscribeDprWatch?: () => void;
+  /** C-28 FrameStats feeding the governor (intervalMs until lane 11's gpuMs lands). */
+  private readonly frameStats?: FrameStatsLike;
   constructor(device: RenderDevice, options: RendererOptions & { readonly shaderLibrary: ShaderLibrary }, temporalHistory: TemporalHistory) {
     this.device = device;
     this.temporalHistory = temporalHistory;
@@ -341,6 +378,28 @@ export class Renderer {
     Object.defineProperty(host, "shadowDepthTarget", { enumerable: true, get: () => this.shadowDepthTarget, set: (value: RenderTarget | null) => { this.shadowDepthTarget = value; } });
     this.host.post = new RendererPostprocessPipeline(this.host);
     this.host.shadows = new RendererShadowOrchestrator(this.host);
+    this.resolutionOptions = options.resolution;
+    this.qualityTier = options.qualityTier;
+    this.qualityTierName = options.qualityTierName;
+    if (options.resolution !== undefined && options.resolution.dynamic !== false) {
+      this.resolutionGovernor = new ResolutionGovernor({
+        targetFrameMs: options.resolution.targetFrameMs ?? 16.7,
+        minRenderScale: options.resolution.minRenderScale ?? options.qualityTier?.minRenderScale ?? 0.5,
+        maxRenderScale: 1,
+        devicePixelRatio: typeof globalThis !== "undefined" ? globalThis.devicePixelRatio : undefined,
+        allowSubCssResolution: options.resolution.allowSubCssResolution
+      });
+      // C-28 slot: the default impl is a real FrameStats (gpuMs stays null
+      // until prd11's timer queries land); flags would pick prd11's provider.
+      this.frameStats = frameStatsSlot.get({ values: {}, on: () => false })(240);
+    }
+    // §6.9: re-evaluate the canvas pixel ratio when the display DPR changes.
+    this.unsubscribeDprWatch = options.resolution !== undefined && this.canvas
+      ? watchDevicePixelRatio(() => {
+          if (this.disposed) return;
+          try { this.resizeToDisplay(); } catch { /* keep the current backing size on transient reads */ }
+        })
+      : undefined;
     this.resizeCanvas(this.width, this.height);
   }
   static create(options: RendererOptions = {}): Promise<Renderer> {
@@ -380,7 +439,14 @@ export class Renderer {
     }
     const cssWidth = options.cssWidth ?? readCanvasCssSize(this.canvas, "width");
     const cssHeight = options.cssHeight ?? readCanvasCssSize(this.canvas, "height");
-    const devicePixelRatio = options.devicePixelRatio ?? globalThis.devicePixelRatio ?? 1;
+    // §6.9: explicit override ?? resolution.pixelRatio ?? min(dpr, tier cap) —
+    // identical to `globalThis.devicePixelRatio` while `resolution`/`tier` are unset.
+    const devicePixelRatio = resolveCanvasPixelRatio({
+      devicePixelRatio: globalThis.devicePixelRatio ?? 1,
+      tier: this.qualityTier ?? { maxPixelRatio: Number.POSITIVE_INFINITY },
+      explicit: options.devicePixelRatio,
+      resolution: this.resolutionOptions
+    });
     if (![cssWidth, cssHeight, devicePixelRatio].every(Number.isFinite) || cssWidth <= 0 || cssHeight <= 0 || devicePixelRatio <= 0) {
       throw new RenderDeviceError("Display size and DPR must be finite positive values", "INVALID_DISPLAY_SIZE", {
         cssWidth,
@@ -396,6 +462,49 @@ export class Renderer {
     }
     return { resized, cssWidth, cssHeight, devicePixelRatio, width, height };
   }
+
+  /**
+   * §6.9 manual render-scale ceiling (AuraPerformanceQuality.resolutionScale,
+   * request Q-15-1). Caps the scene target only; the canvas backing size is
+   * untouched. `renderScale` reports `min(ceiling, governor)`.
+   */
+  setRenderScaleCeiling(scale: number): void {
+    this.assertAlive();
+    if (!Number.isFinite(scale) || scale <= 0) {
+      throw new RenderDeviceError("Render-scale ceiling must be a positive finite value", "INVALID_RENDER_SCALE", { scale });
+    }
+    this.renderScaleCeiling = Math.min(scale, 1);
+  }
+
+  get renderScaleCeilingValue(): number {
+    return this.renderScaleCeiling;
+  }
+
+  /** Effective render scale: `min(setRenderScaleCeiling, ResolutionGovernor)`. */
+  get renderScale(): number {
+    return Math.min(this.renderScaleCeiling, this.resolutionGovernor?.scale ?? 1);
+  }
+
+  /** C-31 `resolution` section values observed by the renderer. */
+  get resolutionReport(): { readonly pixelRatio: number; readonly renderScale: number; readonly renderScaleCeiling: number; readonly backingWidth: number; readonly backingHeight: number } {
+    const cssWidth = this.canvas ? readCanvasCssSize(this.canvas, "width") : this.width;
+    return {
+      pixelRatio: cssWidth > 0 ? this.width / cssWidth : 1,
+      renderScale: this.renderScale,
+      renderScaleCeiling: this.renderScaleCeiling,
+      backingWidth: this.width,
+      backingHeight: this.height
+    };
+  }
+
+  /**
+   * Feeds one frame's timings to the resolution governor (C-28 `gpuMs` wins
+   * over the CPU interval when lane 11's timer queries provide it).
+   */
+  sampleResolutionGovernor(frameMs: number, gpuMs?: number | null): number {
+    return this.resolutionGovernor?.sample(frameMs, gpuMs) ?? this.renderScale;
+  }
+
   startAnimationLoop(callback: (timeMs: number, renderer: Renderer) => void): RendererAnimationLoop {
     this.assertAlive();
     this.animationLoop?.stop();
@@ -412,6 +521,8 @@ export class Renderer {
   render(source: RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RenderDeviceDiagnostics;
   render(sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RenderDeviceDiagnostics {
     this.assertAlive();
+    // §6.9: FrameStats samples every render while a governor exists (resolution opt-in).
+    this.frameStats?.begin(typeof performance !== "undefined" ? performance.now() : Date.now());
     const { source, camera: inputCamera } = normalizeRendererInput(sourceOrInput, camera);
     sceneFromSource(source)?.updateWorldTransforms();
     const cameraPolicy = collectCameraPolicy(source);
@@ -575,6 +686,10 @@ export class Renderer {
       throw error;
     } finally {
       this.device.endFrame();
+      if (this.resolutionGovernor && this.frameStats) {
+        const frameSample = this.frameStats.end();
+        this.resolutionGovernor.sample(frameSample.intervalMs, frameSample.gpuMs);
+      }
       for (const shadowPass of ownedShadowPasses) {
         shadowPass.dispose();
       }
@@ -597,6 +712,7 @@ export class Renderer {
   renderAsync(source: RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): Promise<RenderDeviceDiagnostics>;
   async renderAsync(sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): Promise<RenderDeviceDiagnostics> {
     this.assertAlive();
+    this.frameStats?.begin(typeof performance !== "undefined" ? performance.now() : Date.now());
     const { source, camera: inputCamera } = normalizeRendererInput(sourceOrInput, camera);
     sceneFromSource(source)?.updateWorldTransforms();
     const cameraPolicy = collectCameraPolicy(source);
@@ -618,6 +734,9 @@ export class Renderer {
     const environmentFog = collectEnvironmentFog(source);
     const explicitShadowMap = collectForwardShadowMap(source);
     const shadowOptions = collectRendererShadowOptions(source);
+    // C-02 (PRD-01 §403): pre-render warm-then-block compile of the generated
+    // programs this scene needs. Flag-off: nothing (sync path untouched).
+    await this.warmGeneratedPrograms(items, lights, environmentLighting, environmentFog, explicitShadowMap, cameraViewProjection);
     const sourceCameraPosition = collectSourceCameraPosition(source);
     const explicitRenderTarget = collectRenderTarget(source);
     validateExplicitRenderTarget(explicitRenderTarget, this.width, this.height);
@@ -760,6 +879,10 @@ export class Renderer {
       throw error;
     } finally {
       this.device.endFrame();
+      if (this.resolutionGovernor && this.frameStats) {
+        const frameSample = this.frameStats.end();
+        this.resolutionGovernor.sample(frameSample.intervalMs, frameSample.gpuMs);
+      }
       for (const shadowPass of ownedShadowPasses) {
         shadowPass.dispose();
       }
@@ -778,6 +901,46 @@ export class Renderer {
       rendererDepthAvailable: Boolean(postprocess && postprocessRequiresDepthTexture(postprocess) && this.device.info.capabilities?.includes("depth-textures"))
     }));
   }
+  /**
+   * C-02 (PRD-01 §8.2/§403): warm-then-block. Under `A3D_QR_CORE_GENERATOR`
+   * (default-on under `A3D_QR_CORE`), precompiles the generated programs for
+   * every allow-listed material in the frame — at the current tier and the
+   * next-lower one — before the first draw, so the pass never async-skips in
+   * steady state. Flag-off and non-generated materials are no-ops.
+   */
+  private async warmGeneratedPrograms(
+    items: readonly RenderItem[],
+    lights: readonly CollectedLight[],
+    environmentLighting: EnvironmentLightingOptions | undefined,
+    environmentFog: ForwardEnvironmentFogOptions | false | undefined,
+    shadowMap: ForwardShadowMapOptions | undefined,
+    cameraViewProjection: Float32Array | readonly number[] | undefined
+  ): Promise<void> {
+    const flags = rendererQrFlags();
+    if (!qrCoreGeneratorOn(flags)) return;
+    const tier: AuraQualityTier = this.qualityTierName ?? "high";
+    const materials = new Map<string, import("./Material").Material>();
+    for (const item of items) {
+      const m = item.material instanceof MaterialInstance ? item.material.baseMaterial : item.material;
+      if (m && materialUsesGeneratedProgram(m)) materials.set(`${m.shaderKey}:${m.getRevision()}`, m);
+    }
+    if (materials.size === 0) return;
+    const clustered = resolveForwardClusteredLighting(lights, this.width, this.height, cameraViewProjection);
+    const axes = forwardPassFeatureAxes({ lights, shadowMap, environmentLighting, environmentFog }, clustered !== null);
+    clustered?.dispose();
+    const ctx = { flags, tier: QUALITY_TIERS[tier] };
+    const warmup = (this.programWarmup ??= new ProgramWarmup(rendererProgramCache(this.device, flags)));
+    await warmup.warm(
+      {
+        materials: [...materials.values()].map((m) => m.programFeatures(ctx)),
+        lights: [axes.lights],
+        shadows: axes.shadows ? [axes.shadows] : [],
+        environments: [axes.environment]
+      },
+      tier
+    );
+  }
+
   renderScene(scene: RenderSource | Scene, camera?: CameraLike): RenderDeviceDiagnostics {
     return this.render(scene, camera);
   }
@@ -814,6 +977,7 @@ export class Renderer {
     this.forwardColorTarget?.target.dispose();
     this.forwardColorTarget = null;
     this.unsubscribeTemporalDeviceLoss?.();
+    this.unsubscribeDprWatch?.();
     this.temporalHistory.dispose();
     this.device.dispose();
     this.disposed = true;

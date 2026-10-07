@@ -36,6 +36,73 @@ lane 01 does until the change lands.
 | ID | To | File / exact change | Reason |
 |---|---|---|---|
 | QR-OWN-1 | 15 | `.github/QR_OWNERSHIP.json`: add `tests/qr/prdNN/` (or `tests/qr/`) per-lane ownership mapping | `tests/qr/prd01/**` resolves to owner 15 today, but PRD-01 §16.4 assigns `tests/qr/prd01/` to lane 01. Lane 01 proceeds in these files; this request reconciles the JSON. |
+| Q-15-8 | 15 | Migrate the 45 owner-15 class-(b) readback rows (`tests/browser/*`, `tools/*-parity/*`, `tests/visual/pbr-environment-pixels.spec.ts`, `apps/advanced-examples-gallery/src/main.ts`) to `app.capture()`; keep `agent-api/index.ts` `screenshot()` on same-task readback once `A3D_QR_CORE` removes `preserveDrawingBuffer` | C-05 | `evidence/prd01/readback-triage.json` |
+| Q-12-2 | 12 | `tools/compare-engines/index.ts` root-canvas `toDataURL` readback → `app.capture()` | C-05 | `evidence/prd01/readback-triage.json` (class b) |
+| Q-13-2 | 13 | `tools/agent-docs/simulation.ts` + `tools/agent-dogfood/index.ts` class-(b) readbacks → `app.capture()` | C-05 | `evidence/prd01/readback-triage.json` (class b) |
+| Q-15-9 | 15 | `index.ts:9608` safe-basic catch: emit C-36 degradation `{code:"renderer-mount-failed"}` (lands in `diagnostics().degradations` + `onDegradation`) and honor `renderer.strictMount` (reject `ready()`, no safe-basic draw) under `A3D_QR_CORE` | C-36, C-05 | `onRendererError` forwarding handles the code verbatim once emitted; `renderer-mount-failure.spec.ts` asserts (1)-(3) today, (4) + no-safe-basic-draw at integrated I9 |
+
+## PR D (Phase 2: resolution + readback) status notes — 2026-10-06
+
+- §6.9: `renderer/PixelRatio.ts` `resolveCanvasPixelRatio` (explicit ??
+  `resolution.pixelRatio` ?? `min(dpr, tier.maxPixelRatio)`, no [1,2] clamp —
+  Ultra@DPR3 = 3), `resolveCanvasContextAttributes` (flag-on
+  `{antialias:false, alpha:false, preserveDrawingBuffer:false,
+  powerPreference:"high-performance"}`; flag-off baseline unchanged;
+  `renderer.debug.preserveDrawingBuffer` opt-in + dev warning),
+  `watchDevicePixelRatio` (matchMedia `(resolution: Xdppx)` re-arm chain).
+- `ResolutionGovernor.ts`: `sample(frameMs, gpuMs?)` uses `gpuMs ?? frameMs`
+  (C-28), renderScale in `[tier.minRenderScale, 1]` stepping 0.1 — down after
+  30 consecutive > `targetFrameMs·1.1`, up after 120 < `targetFrameMs·0.8`;
+  HiDPI floor `1/devicePixelRatio` unless `allowSubCssResolution`.
+- `Renderer`: `options.resolution`/`qualityTier` opt-in (absent → bit-identical),
+  `setRenderScaleCeiling`, `renderScale = min(ceiling, governor)`, per-frame
+  `governor.sample` at `device.endFrame()` in both `render`/`renderAsync`,
+  `resolutionReport` getter backing C-31 `resolution`
+  (`pixelRatio/renderScale/ceiling/backing`), `resizeToDisplay` DPR through
+  `resolveCanvasPixelRatio`, DPR-change watcher disposed with the renderer.
+- `WebGL2DeviceOptions.powerPreference` plumbed to `getContext("webgl2", …)`
+  (Q-15-3's call site stays lane 15's).
+- C-31 `resolution`: `collectResolution` reads `Symbol.for("a3d.prd01.renderer")`
+  (`PRD01_RENDERER`, the Q-15-1 seam) for the renderer report, else falls back
+  to `screenshot()`/`app.canvas` for real backing/CSS dims; unobservable fields
+  stay null.
+- C-05 real `capture()` in the `lanes/prd01` output factory: `app.step()`
+  renders a frame synchronously, then `readPixels` the default framebuffer in
+  the same task (before compositing — `preserveDrawingBuffer` never set), rows
+  flipped, `ImageBitmap`/`OffscreenCanvas→PNG Blob`; falls back to
+  `app.screenshot()` on non-webgl2/disposed surfaces. `onRendererError` now
+  forwards `diagnostics().degradations` verbatim (C-36 codes incl.
+  `renderer-mount-failed`) before the plain `errors` pass-through.
+- Readback triage committed (`evidence/prd01/readback-triage.json`,
+  `tools/quality-rebuild-codemods/readback-triage.mjs`): 229 files, class
+  a=176 / b=52 / c=1. No lane-01-owned class-(b) rows exist, so there was
+  nothing to migrate in-tree; requests filed for the rest — Q-13-1 (templates),
+  Q-14-1 (`apps/showcase-gravity-post`), Q-15-8 (45 owner-15 rows incl.
+  `apps/advanced-examples-gallery`), Q-12-2 (`tools/compare-engines`), Q-13-2
+  (`tools/agent-docs`/`agent-dogfood`). The single class-(c) row
+  (`tests/clean-room/renderer-extension`) is owner 15.
+- `Renderer.captureFrame` already did same-task readPixels; it is the provider
+  readback (class a), not a class-(b) consumer.
+- Harness `?tools=` routes: `canvas-dpr` (deviceScaleFactor:2 → backing 2× CSS,
+  §6.9 attrs via `resolveCanvasContextAttributes`), `app-capture` (capture() vs
+  same-task `toDataURL` MAD ≤ 1/255 at `a3d-qr=none`+`core`),
+  `renderer-mount-failure` (patched `ProductionRuntimeRenderer.create` reject →
+  ready() resolves, errors recorded, onRendererError fires; strictMount +
+  `renderer-mount-failed` code recorded, asserted at I9 per spec note).
+- `RenderBackendOptions.powerPreference` forwarded → `WebGL2DeviceOptions` →
+  `getContext`; lane canvases pick the §6.9 attribute set via
+  `resolveCanvasContextAttributes({flagOn})` (app mount's context attrs remain
+  lane-15 wiring, Q-15-3).
+- C-39 codemod `core-v2` (`tools/quality-rebuild-codemods/core-v2.ts` + `run.ts`):
+  pure `source → code + rows` — pixelRatio overrides (`Math.min(cap,dpr)` and
+  literal `1` → `renderer.resolution.maxPixelRatio`, other absolutes →
+  `resolution.pixelRatio`; Turbo-Drift capture-only spread rewritten in place),
+  `qualityProfile` → `quality` (production→high, safe-basic→low, else
+  approximate), safe-basic classification rows, ambient irradiance review rows.
+  Registered via `registerCodemod` + `core inspect-programs` in
+  `commands/prd01/index.ts`. Evidence generated: `safe-basic-inventory.json`
+  (140 entries / 94 files: 102 mode-select, 33 doc, 5 warning-assert) and
+  `ambient-review.json` (48 sites, intensity→intensity/π).
 
 ## Incoming requests to lane 01
 
@@ -67,3 +134,74 @@ camera-fade patch (declined under §3.7).
   filled from the forward target's depth texture; set in both render paths.
   Unflagged, additive-only plumbing (nothing consumes it yet → flag-off
   pixel-identical).
+
+## PR C (Phase 2: blend modes + render targets) status notes — 2026-10-06
+
+- C-04 blend modes: `BlendModes.ts` (queue policy), §6.8 factor tables +
+  `renderStateKey` packing in `contracts/blend.ts`, `Material` C-04 fields
+  (`blendMode`, `depthCompareV2`, `alphaToCoverage`; non-opaque →
+  `depthWrite:false` default), `WebGL2StateCache` separate func/equation dedupe.
+- Legacy custom-blend reachability (lane 03 Q-01-1): `{srcRGB, dstRGB, srcAlpha:ZERO, dstAlpha:ONE}` preserved verbatim through `resolveBlendMode` → `blendFuncSeparate`; the lane-03 case is pinned in `prd01-blend.test.ts`.
+- ForwardPass: transparent bucket orders by `blendRank` (additive/multiply after the alpha group, order-independent), then back-to-front distance inside rank 0; `isTransparentRenderItem` consults `blendStateIsTransparent` (additive/multiply/custom are transparent even with `blend:false`); opaque items keep `blendRank` undefined → flag-off sort identical.
+- Non-01 file edits (QR-OWN gaps; per PRD §5.1 assignment + ledger convention):
+  - `webgl2/MultiDraw.ts` (owner 11): `blendMode`/`depthCompareV2`/`alphaToCoverage` application; legacy reset emitted only via `blendEquationDiffers` so flag-off never emits `blendEquationSeparate` on a fresh context; `uploadTextureUniform` now receives the declared uniform type for `GL_SAMPLER_2D_ARRAY` → `TEXTURE_2D_ARRAY` (lane 06 Q-01-3).
+  - `webgl2/Samplers.ts` (owner 02): declared-type → target map (`sampler2DShadow`→2d, `samplerCube*`→cube, `sampler2DArray*`→2d-array) with `texture.dimension` fallback.
+  - `webgl2/ContextLifecycle.ts` (owner 11): `clearRenderTarget(color, attachment?)` → `clearBufferfv` path.
+  - `webgl2/Probe.ts` (owner 11): `readPixels(..., attachment?)` → `readBuffer` select/restore.
+  - `RenderDevice.ts` (owner 11): descriptor +5 PR 0a fields, `RenderTarget` optional `dimension`/`layers`/`colorTextures`/`layerTargets`, `MockRenderDevice` builds feature targets incl. per-layer children + per-attachment pixel buffers.
+  - `Texture.ts` (owner 06): `layers` stored; face-less cube allowed for GPU-attachment textures (upload path still requires `cubeFaces` for CPU data).
+  - `WebGPUDevice.ts`/`LeanWebGL2Device.ts` (owner 15): `UNSUPPORTED_RENDER_TARGET_FEATURE` on the new fields.
+- `RENDER_TARGET_FEATURE_PENDING`: no throw sites existed in trunk creation
+  code (the PR 0a stub contract listed it as pending); `createRenderTarget`
+  now implements `dimension`/`layers`/`depthOnly`/`depthCompare`/`colorAttachments`
+  in `createFeatureRenderTarget` (per-layer child targets sharing parent GL
+  resources, MRT `drawBuffers`, `TEXTURE_COMPARE_MODE` compare, depth-only
+  `readBuffer(NONE)`).
+- Appendix B: F-01-02 (`material.blend`) published verified.
+- Browser spec `tests/qr/prd01/browser/render-targets.spec.ts` covers the §15:1096
+  acceptance (depth-only cube 6 faces, 2-attachment distinct clears, sampler2DArray
+  layer 3) via `?tools=render-targets` in the lane harness.
+
+## PR E (Phase 3a: AuraFrame UBO) status notes — 2026-10-06
+
+- `resources/UniformBlock.ts`: std140 packer (`layoutStd140`, `uniformBlockGlsl`,
+  `UniformBlock`) + `FrameUniforms` binding the frozen `AURA_FRAME_BLOCK` at
+  binding 0 (304 bytes; offsets 0/64/128/192/256/272/288).
+- `frameUniformsSlot.provide` in `lanes/prd01.ts`; C-08 conformance covered by
+  `tests/unit/contracts/impl/prd01-frame-uniforms.test.ts`.
+- Non-01 file edits (QR-OWN gaps):
+  - `RenderDevice.ts` (owner 11): optional `bindUniformBuffer(buffer, binding)`
+    on the interface + `MockRenderDevice.uniformBufferBindings` records
+    `{bufferId, binding}` and validates `usage === "uniform"`. Custodian-neutral
+    seam: flag-off call sites never reach it.
+  - `WebGL2Device.ts`: `createBuffer` maps `usage:"uniform"` →
+    `gl.UNIFORM_BUFFER`; `bindUniformBuffer` → `bindBufferBase`.
+
+## PR F (Phase 3b: program generator) status notes — 2026-10-06
+
+- `program/ProgramFeatures.ts` (canonical normalize; sparse and explicit
+  records share a key), `program/ProgramKey.ts` (re-export of frozen
+  `computeProgramKey`), `program/ProgramGenerator.ts` (§6.4 assembly: defines,
+  AuraFrame chunks, hook splicing in (order,id) order, default bodies,
+  extension-lobe-pending C-36 sink, WGSL_PROGRAM_MISSING).
+- `program/chunks/*.glsl.ts` (owner-11 directory for WGSL twins): lane-01
+  GLSL chunks land there per PRD-01 §15's own file list — `common`, `colorspace`,
+  `brdf` (r185 port), `normal`, `instancing`, `alpha`, `lights_legacy`,
+  `indirect_default`, `fog_default`, `depth`. Lane 11's WGSL twins + UniformLayout
+  are unaffected; no conflict expected (separate filenames).
+- `contracts/program.ts`: `generateProgram` keeps the frozen signature and now
+  delegates to the lane-01 impl via `installProgramGenerator` (installed by
+  `lanes/prd01.ts` import). `PROGRAM_GENERATOR_PENDING` still throws if the lane
+  barrel is never loaded.
+- Splice convention (documented in ProgramGenerator.ts): feature `chunks[i]`
+  lands at `hooks[min(i, len-1)]`, deduped by name; `*:pars` hooks emit at
+  global scope, body hooks emit inside `main` replacing the lane-01 default.
+  `vertex:deform` is canonical — the generator emits `a3dDeform(pos,nrm,tan)`
+  iff a registered feature contributes, else the C-18 passthrough comment.
+- Conformance: `tests/unit/contracts/impl/prd01-program-generator.test.ts`
+  (23 tests: 13 representative snapshots incl. balanced braces + banned-token
+  scan, bucketed/clustered lights, §8.5 order, §8.7 depth/distance, WGSL throw,
+  500-record key-uniqueness, hook splice order, extension-lobe-pending,
+  deform passthrough↔call, contract delegation). Browser spec
+  `tests/qr/prd01/browser/program-generator-compile.spec.ts` compiles+links all
+  13 cases on real WebGL2 via `?tools=program-compile`.

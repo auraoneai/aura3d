@@ -1,0 +1,14 @@
+/* §7.7 theme "fighting" — mirror of HUD_THEMES["fighting"] in hud/themes.ts (runtime source of truth). */
+.a3g-hud.a3g-theme-fighting {
+  --a3g-font: "A3G Russo One","Russo One",sans-serif;
+  --a3g-fg: #fff6e8;
+  --a3g-fg-dim: #d9c9a8;
+  --a3g-accent: #ffcc00;
+  --a3g-accent2: #ff5722;
+  --a3g-warn: #ffa726;
+  --a3g-danger: #ff1744;
+  --a3g-bg: rgba(20,8,4,0.78);
+  --a3g-edge: rgba(255,204,0,0.6);
+  --a3g-glow: 0 2px 0 rgba(0,0,0,0.6);
+  --a3g-radius: 3px;
+}

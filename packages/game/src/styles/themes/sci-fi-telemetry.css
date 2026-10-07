@@ -1,0 +1,14 @@
+/* §7.7 theme "sci-fi-telemetry" — mirror of HUD_THEMES["sci-fi-telemetry"] in hud/themes.ts (runtime source of truth). */
+.a3g-hud.a3g-theme-sci-fi-telemetry {
+  --a3g-font: "A3G IBM Plex Mono","IBM Plex Mono",ui-monospace,monospace;
+  --a3g-fg: #c9ffe8;
+  --a3g-fg-dim: #6fbf9d;
+  --a3g-accent: #00ff9f;
+  --a3g-accent2: #7bd5ff;
+  --a3g-warn: #f7b32b;
+  --a3g-danger: #ff5c5c;
+  --a3g-bg: rgba(4,16,12,0.7);
+  --a3g-edge: rgba(0,255,159,0.4);
+  --a3g-glow: 0 0 8px rgba(0,255,159,0.35);
+  --a3g-radius: 0px;
+}

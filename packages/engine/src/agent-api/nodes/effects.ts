@@ -3,7 +3,41 @@
 import type { AuraEffectNode, AuraVec3 } from "../index.js";
 import { AuraNodeBuilder, effects } from "../index.js";
 import { createBeamDescriptor, resolveFlipbookUv } from "@aura3d/rendering";
+import type { AuraBlendMode } from "@aura3d/rendering/contracts";
+import type { AuraLegacyParticleFields, AuraParticleEmitterOptions } from "../../contracts/effects.js";
 import { particles } from "./particles.js";
+
+/**
+ * Lane node-option surface: `AuraEffectNode` (shared `agent-api/index.ts`,
+ * prd15) does not yet declare the PRD-07 §6.2.9–11 fields, so the builders
+ * take a widened option bag and copy defined fields through
+ * `withEmitterOptions` — identical to the §6.2 emitter-option pattern above.
+ */
+type VfxNodeOptions = Omit<AuraEffectNode, "kind" | "effect"> & Record<string, unknown>;
+
+/**
+ * Lane effect kinds ("trail", "lightCone", "auroraRibbon", "meshParticles",
+ * "fogVolume") are not yet members of the shared `AuraEffectType` union
+ * (prd15-owned; union append filed as a ccr request). The runtime lowering
+ * (`EffectNodeLowering.ts`) switches on the plain string, so the cast is
+ * type-surface only — no runtime difference, flag-on or flag-off.
+ */
+function vfxEffect(kind: string): AuraEffectNode["effect"] {
+  return kind as unknown as AuraEffectNode["effect"];
+}
+
+/**
+ * Copy every defined PRD-07 §6.2 emitter option onto the node value so it
+ * reaches `EffectNodeLowering` on the raw spec object (AuraEffectNode carries
+ * no typed slots for the new surface yet — fields ride through as data).
+ */
+function withEmitterOptions<T extends AuraEffectNode>(value: T, options: Readonly<Record<string, unknown>>): T {
+  const target = value as Record<string, unknown>;
+  for (const [key, optionValue] of Object.entries(options)) {
+    if (optionValue !== undefined) target[key] = optionValue;
+  }
+  return value;
+}
 
 export const vfxEffectBuilders = {
   fog: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
@@ -132,11 +166,17 @@ export const vfxEffectBuilders = {
    * recorded with validated sheet geometry, but withheld — root has no
    * native sprite-sheet sampler yet, so no pass is submitted.
    */
-  flipbook: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) => {
+  flipbook: (options: Omit<AuraEffectNode, "kind" | "effect"> & {
+    readonly blend?: AuraBlendMode;
+    readonly size?: number | readonly [number, number];
+    readonly seed?: number;
+    readonly loop?: boolean;
+    readonly sprite?: AuraParticleEmitterOptions["sprite"];
+  } = {}) => {
     const columns = options.spriteColumns ?? 4;
     const rows = options.spriteRows ?? 4;
     resolveFlipbookUv(0, columns, rows);
-    return new AuraNodeBuilder<AuraEffectNode>({
+    return new AuraNodeBuilder<AuraEffectNode>(withEmitterOptions({
       kind: "effect",
       effect: "flipbook-sprite",
       name: options.name ?? "flipbook explosion sprite",
@@ -145,7 +185,7 @@ export const vfxEffectBuilders = {
       spriteColumns: columns,
       spriteRows: rows,
       frameRate: options.frameRate ?? 24
-    });
+    }, options));
   },
   /**
    * Additive thick light beam / fence strip (muse3jsparity-PRD D4): recorded
@@ -171,17 +211,21 @@ export const vfxEffectBuilders = {
       segmentCount: descriptor.segmentCount
     });
   },
-  particles: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
-	    new AuraNodeBuilder<AuraEffectNode>({
+  /**
+   * PRD-07 §6.2 emitter surface: accepts `AuraParticleEmitterOptions` plus the
+   * legacy fields; every defined option rides the node to lowering.
+   */
+  particles: (options: AuraParticleEmitterOptions & AuraLegacyParticleFields & Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>(withEmitterOptions({
       kind: "effect",
       effect: "particles",
-      name: options.name ?? `${options.emitter ?? "swirl"} particle system`,
+      name: options.name ?? `${options.emitter ?? "fountain"} particle system`,
       intensity: options.intensity ?? 0.8,
       density: options.density ?? 1,
       color: options.color ?? "#7dfcff",
       speed: options.speed ?? 1,
       particleCount: options.particleCount ?? 2400,
-	      emitter: options.emitter ?? "swirl",
+	      emitter: options.emitter ?? "fountain",
 	      radius: options.radius ?? 1.15,
 	      height: options.height ?? 2.4,
 	      emissionRate: options.emissionRate,
@@ -195,5 +239,101 @@ export const vfxEffectBuilders = {
 	      velocityOverLife: options.velocityOverLife ?? [1, 0.82, 0.28],
 	      turbulence: options.turbulence ?? 0.16,
 	      noise: options.noise ?? 0.22
-	    }),
+	    }, options as unknown as Record<string, unknown>)),
+
+  /**
+   * P2-T5 §6.2.9 trail ribbon: the node carries the ring options; lowering
+   * maps it to a `RibbonTrail` on the prd07 RibbonBatch. `target` is a runtime
+   * node id, `handle.socket(bone)` (C-19), or a callback — resolved by the
+   * production system, never by the builder.
+   */
+  trail: (options: VfxNodeOptions = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>(withEmitterOptions({
+      kind: "effect",
+      effect: vfxEffect("trail"),
+      name: options.name ?? "trail ribbon",
+      color: options.color ?? "#7dfcff",
+      intensity: options.intensity ?? 1,
+      width: options.width ?? 0.3,
+      maxPoints: options.maxPoints ?? 48,
+      minVertexDistance: options.minVertexDistance ?? 0.05,
+      orientation: options.orientation ?? "camera"
+    }, options as unknown as Record<string, unknown>)),
+
+  /**
+   * P2-T5 §6.2.10 / PRD 14 §8.9 light cone: open additive cone mesh attached to
+   * a spot light (or free-standing via `position`/`direction`), depth-write
+   * off, axial + radial falloff, soft depth.
+   */
+  lightCone: (options: VfxNodeOptions = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>(withEmitterOptions({
+      kind: "effect",
+      effect: vfxEffect("lightCone"),
+      name: options.name ?? "light cone",
+      color: options.color ?? "#ffe9b0",
+      intensity: options.intensity ?? 1,
+      position: options.position ?? [0, 0, 0],
+      direction: options.direction ?? [0, -1, 0],
+      length: options.length ?? 6,
+      coneAngle: options.coneAngle ?? 0.35,
+      softness: options.softness ?? 0.4
+    }, options as unknown as Record<string, unknown>)),
+
+  /**
+   * P2-T5 aurora ribbon (PRD 14 §8.2 geometry/fragment): an animated curtain —
+   * a ribbon strip whose fragment adds curtain fold + scrolling shimmer.
+   */
+  auroraRibbon: (options: VfxNodeOptions = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>(withEmitterOptions({
+      kind: "effect",
+      effect: vfxEffect("auroraRibbon"),
+      name: options.name ?? "aurora ribbon",
+      color: options.color ?? "#54f0a8",
+      colorTop: options.colorTop ?? "#7a5cff",
+      intensity: options.intensity ?? 1.4,
+      width: options.width ?? 12,
+      height: options.height ?? 8,
+      segments: options.segments ?? 96,
+      sway: options.sway ?? 1,
+      shimmer: options.shimmer ?? 0.6
+    }, options as unknown as Record<string, unknown>)),
+
+  /**
+   * P2-T5 §6.2.11 mesh particles: instanced one-mesh draw (primitive or
+   * single-primitive GLB) with CPU sim — gravity, drag, spin, ground bounce,
+   * sleep. Transforms come from MeshParticleBatch, never
+   * `createProductionInstanceTransforms` (E17 regression guard).
+   */
+  meshParticles: (options: VfxNodeOptions = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>(withEmitterOptions({
+      kind: "effect",
+      effect: vfxEffect("meshParticles"),
+      name: options.name ?? "mesh particles",
+      particleCount: options.particleCount ?? 32,
+      color: options.color ?? "#b0a89a",
+      gravity: options.gravity ?? -9.8,
+      drag: options.drag ?? 0.1,
+      spin: options.spin ?? 1,
+      groundBounce: options.groundBounce ?? 0.35,
+      castShadow: options.castShadow ?? false,
+      mesh: options.mesh ?? "tetrahedron"
+    }, options as unknown as Record<string, unknown>)),
+
+  /**
+   * P2-T5 fog volume: a bounded density box for the volumetric path — distinct
+   * from scene `fog`/`volumetric-fog` (global). Height falloff and scattering
+   * ride through to the P4 volumetric pass.
+   */
+  fogVolume: (options: VfxNodeOptions = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>(withEmitterOptions({
+      kind: "effect",
+      effect: vfxEffect("fogVolume"),
+      name: options.name ?? "fog volume",
+      color: options.color ?? "#9fb7d9",
+      density: options.density ?? 0.25,
+      position: options.position ?? [0, 0, 0],
+      size: options.size ?? [8, 4, 8],
+      scatteringAnisotropy: options.scatteringAnisotropy ?? 0.3,
+      heightFalloff: options.heightFalloff ?? 0.5
+    }, options as unknown as Record<string, unknown>)),
 };
