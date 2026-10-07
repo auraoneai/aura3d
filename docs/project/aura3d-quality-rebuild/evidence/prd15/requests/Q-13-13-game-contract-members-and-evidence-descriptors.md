@@ -24,3 +24,14 @@ Files: `packages/engine/src/contracts/game.ts`, `contracts/stubs/game.ts`, `agen
 - `format: "seconds"` → `"clock"` in fighting-game + racing-starter
   hudBindings (`GameHudValueFormat` has no "seconds"; `clock` renders the
   intended `m:ss`).
+- fighting-game specs re-aligned to the createGame lifecycle surface:
+  `route-health.spec.ts` expected `{kind: "aura-game-app-runtime",
+  usesCreateGameApp: true, runtimeEvidenceGlobal}` and
+  `gameplay-smoke.spec.ts` expected `runtime.kind ===
+  "aura-game-app-runtime-evidence"` + status/startCount/inputControllers —
+  all pre-PRD-09 GameAppRuntime evidence. After the template's createGame
+  migration the emitted surface is `{kind: "createGame", usesCreateGameApp:
+  false, usesCreateGame: true, beaconGlobal, evidenceGlobal}` and
+  `__AURA3D_GAME_RUNTIME__ = {kind: "createGame", beacon, frame}`. Specs now
+  assert the createGame surface; all `evidence.systems.*`, `replay.hitCount`
+  and `source.readiness.*` assertions preserved verbatim.
