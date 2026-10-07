@@ -1,0 +1,136 @@
+{
+  "generatedAt": "2026-10-06T14:34:50.454Z",
+  "routes": [
+    {
+      "route": "showcase-courier-rush",
+      "counts": {
+        "ART": 2,
+        "FRAMING": 7,
+        "TRANSIENT": 4,
+        "UNKNOWN": 6
+      },
+      "findings": [
+        {
+          "file": "apps/showcase-courier-rush/src/city.ts",
+          "line": 759,
+          "kind": "UNKNOWN",
+          "text": "export function buildCityDressing(assets: CityAssetRefs, reviewCapture = false): CityZoneDressing {"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/city.ts",
+          "line": 762,
+          "kind": "UNKNOWN",
+          "text": "const staticNodes: AuraNodeInput[] = reviewCapture"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/city.ts",
+          "line": 778,
+          "kind": "UNKNOWN",
+          "text": "staticNodes.push(...pressureMomentNodes(assets, reviewCapture ? 15.3 : 0, 10.6));"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/city.ts",
+          "line": 781,
+          "kind": "ART",
+          "text": "for (const site of reviewCapture ? [] : ZONE_SITES) {"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 153,
+          "kind": "UNKNOWN",
+          "text": "const dressing = buildCityDressing(assets, visualReviewCapture);"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 250,
+          "kind": "FRAMING",
+          "text": "targetOffset: visualReviewCapture ? [0, 1.16, -0.05] : [0, 1.22, -1.05],"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 252,
+          "kind": "FRAMING",
+          "text": "offset: visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 255,
+          "kind": "FRAMING",
+          "text": "fov: visualReviewCapture ? 55 : 56,"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 258,
+          "kind": "FRAMING",
+          "text": "smoothing: visualReviewCapture ? 0.1 : CHASE_CAMERA.smoothing"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 324,
+          "kind": "UNKNOWN",
+          "text": "targetMaxDimension: visualReviewCapture ? 4.2 : VAN_TARGET_LENGTH,"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 341,
+          "kind": "ART",
+          "text": ".addMany(visualReviewCapture ? [] : ["
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 367,
+          "kind": "UNKNOWN",
+          "text": "targetMaxDimension: visualReviewCapture ? 0.58 : 0.76,"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 1257,
+          "kind": "TRANSIENT",
+          "text": ".setPosition(vanAfter.x + fx * 0.08, visualReviewCapture ? 1.7 : 1.56, vanAfter.z + fz * 0.08)"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 1261,
+          "kind": "TRANSIENT",
+          "text": ".setPosition(vanAfter.x + fx * 0.08, visualReviewCapture ? 1.92 : 1.82, vanAfter.z + fz * 0.08)"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 1301,
+          "kind": "TRANSIENT",
+          "text": "parcelNode.setPosition(vanAfter.x - fx * 0.08, visualReviewCapture ? 1.5 : 1.36, vanAfter.z - fz * 0.3)"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 1365,
+          "kind": "TRANSIENT",
+          "text": ".setVisible(!reducedMotion && (visualReviewCapture || car.speed > 0.15));"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 1393,
+          "kind": "FRAMING",
+          "text": "const offset = chaseOffsetForBlend(chaseBlend, visualReviewCapture ? 11.4 : undefined);"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 1396,
+          "kind": "FRAMING",
+          "text": "visualReviewCapture ? 0.66 + offset.offsetX * 0.12 : offset.offsetX,"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 1397,
+          "kind": "FRAMING",
+          "text": "visualReviewCapture ? 3.28 : offset.offsetY,"
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "ART": 2,
+    "FRAMING": 7,
+    "TRANSIENT": 4,
+    "UNKNOWN": 6
+  }
+}
