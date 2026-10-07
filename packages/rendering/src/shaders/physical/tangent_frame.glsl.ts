@@ -23,6 +23,7 @@
  * the frame. Self-contained (no requires).
  */
 import type { ShaderChunk } from "../../contracts/program";
+import A3D_PRD04_TANGENT_FRAME_WGSL from "../physical-wgsl/tangent_frame.wgsl.js";
 
 const glsl = /* glsl */ `
 #ifdef A3D_STAGE_VERTEX
@@ -90,6 +91,7 @@ export const A3D_PRD04_TANGENT_FRAME: ShaderChunk = {
 	name: "a3d_prd04_tangent_frame",
 	owner: "prd04",
 	glsl,
+	wgsl: A3D_PRD04_TANGENT_FRAME_WGSL,
 	stage: "both",
 	requires: []
 };

@@ -319,6 +319,8 @@ test-data/
 fixtures/
 # Immutable, hash-bound showcase compiler specs and evidence.
 !tests/fixtures/
+# PRD-09 lane-09 owns packages/game/fixtures/ (route fixture code for specs).
+!packages/game/fixtures/
 !tests/fixtures/showcase-spec/
 !tests/fixtures/showcase-spec/**
 # QR lane fixtures are tracked source (PRD-06 T0.9a tests/qr/prd06/fixtures/).

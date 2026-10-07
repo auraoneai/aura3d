@@ -14,6 +14,11 @@
 import { registerAppExtension } from "../contracts/app.js";
 import { StubFeelBus, StubTimeController } from "../contracts/time.js";
 import { createTimeController } from "../agent-api/time/TimeController.js";
+import {
+  createAuraCameraController,
+  createStubCameraController
+} from "../agent-api/camera/extension.js";
+import type { AuraCameraController } from "../contracts/camera.js";
 import type { AuraRuntimeNodeHandle } from "../agent-api/index.js";
 
 // Lane public surface — the agent-api barrel (`index.ts`) is lane-15's, so
@@ -69,10 +74,57 @@ export {
   quatFromEulerXYZ as cameraQuatFromEulerXYZ,
   quatMultiply as cameraQuatMultiply,
   quatNormalize as cameraQuatNormalize,
+  quatRotateVec3 as cameraQuatRotateVec3,
   quatSlerp as cameraQuatSlerp,
   quatToEulerXYZ as cameraQuatToEulerXYZ
 } from "../agent-api/camera/quat.js";
 export { createNoise1D, perlin1 } from "../agent-api/feel/Noise.js";
+export {
+  createCameraController,
+  presentedViewProjection,
+  type AuraCameraControllerDeps,
+  type AuraCameraControllerImpl
+} from "../agent-api/camera/CameraController.js";
+export {
+  createAuraCameraController
+} from "../agent-api/camera/extension.js";
+export {
+  createFromSpecRig,
+  staticRig,
+  LegacySpecRig,
+  DEFAULT_POSE as CAMERA_DEFAULT_POSE,
+  type LegacyCameraSpec,
+  type LegacySpecRigDeps,
+  type LegacyTargetSource
+} from "../agent-api/camera/rigs/fromSpec.js";
+export { createChaseRig, type ChaseRigOptions } from "../agent-api/camera/rigs/chase.js";
+export { createFlightRig, type FlightRigOptions } from "../agent-api/camera/rigs/flight.js";
+export { createFollow2dRig, type Follow2dRigOptions } from "../agent-api/camera/rigs/follow2d.js";
+export { createFightingRig, type FightingRigOptions } from "../agent-api/camera/rigs/fighting.js";
+export { createShoulderRig, type ShoulderRigOptions } from "../agent-api/camera/rigs/shoulder.js";
+export { createOrbitRig, bindOrbitPointer, type OrbitRigOptions, type AuraOrbitRig } from "../agent-api/camera/rigs/orbit.js";
+export { createTopDownRig, type TopDownRigOptions } from "../agent-api/camera/rigs/topDown.js";
+export { createAltitudeRig, type AltitudeRigOptions } from "../agent-api/camera/rigs/altitude.js";
+export { createRailRig } from "../agent-api/camera/rigs/rail.js";
+export {
+  createCameraProbe,
+  type AuraCameraProbeDeps,
+  type ProbeBoundsEntry,
+  type ProbePhysicsEntry
+} from "../agent-api/camera/Probe.js";
+export {
+  createCollisionDamper,
+  type CollisionDamper,
+  type CollisionDamperOptions
+} from "../agent-api/camera/collision.js";
+export {
+  createFovKickLayer,
+  createLookAtLayer,
+  createPunchLayer,
+  createTraumaLayer,
+  type AuraLookAtLayer
+} from "../agent-api/camera/layers/index.js";
+export { ease } from "../agent-api/camera/ease.js";
 export {
   BicycleModel,
   createBicycleModel,
@@ -102,6 +154,24 @@ registerAppExtension({
   flag: "A3D_QR_CAMERA",
   member: "feel",
   create: () => new StubFeelBus()
+});
+
+registerAppExtension({
+  id: "prd08.camera",
+  owner: "prd08",
+  flag: "A3D_QR_CAMERA",
+  member: "camera",
+  create: (app, ctx): AuraCameraController => {
+    const cameraOptions =
+      (ctx.options as { camera?: { legacy?: boolean; freezeSpecs?: boolean } } | undefined)?.camera ?? {};
+    if (cameraOptions.legacy === true || !ctx.flags.on("A3D_QR_CAMERA")) {
+      // `camera.legacy` forces the stub even when the flag is on (C-22).
+      return createStubCameraController(
+        () => (app.scene as { camera?: { position?: readonly number[]; target?: readonly number[]; fov?: number; near?: number; far?: number; orthographicSize?: number } } | undefined)?.camera as never
+      );
+    }
+    return createAuraCameraController(app, { freezeSpecs: cameraOptions.freezeSpecs === true });
+  }
 });
 
 export {};

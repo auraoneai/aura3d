@@ -99,6 +99,20 @@ export function quatFromAxisAngle(axis: AuraVec3, angle: number): AuraQuat {
 }
 
 /** q * p (apply p's rotation first, then q's). */
+/** Rotate a vector by a quaternion (v' = q · v · q*, via the cross-product form). */
+export function quatRotateVec3(q: AuraQuat, v: AuraVec3): AuraVec3 {
+  const [x, y, z, w] = q;
+  // t = 2 * q.xyz × v
+  const tx = 2 * (y * v[2] - z * v[1]);
+  const ty = 2 * (z * v[0] - x * v[2]);
+  const tz = 2 * (x * v[1] - y * v[0]);
+  return [
+    v[0] + w * tx + y * tz - z * ty,
+    v[1] + w * ty + z * tx - x * tz,
+    v[2] + w * tz + x * ty - y * tx
+  ];
+}
+
 export function quatMultiply(q: AuraQuat, p: AuraQuat): AuraQuat {
   const [ax, ay, az, aw] = q;
   const [bx, by, bz, bw] = p;

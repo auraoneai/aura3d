@@ -1,7 +1,10 @@
 /**
- * Lane prd03 scene index (CONTRACTS.md §3.8). Scene ids are `<owner>-<slug>`.
- * Empty array until lane 03 lands its scenes.
+ * Lane prd03 three.js adapter index (CONTRACTS.md §3.8, C-30). Reference side
+ * of every lane scene: same spec through `runThreeScene` (three r185).
  */
 import type { BenchSceneRegistration } from "../../../shared/registry";
+import { PRD03_SCENE_SPECS } from "../../../scenes/prd03/specs";
 
-export const scenes: readonly BenchSceneRegistration[] = [];
+export const scenes: readonly BenchSceneRegistration[] = (
+  Object.keys(PRD03_SCENE_SPECS) as (keyof typeof PRD03_SCENE_SPECS)[]
+).map((id) => ({ id, spec: PRD03_SCENE_SPECS[id] }));

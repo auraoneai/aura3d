@@ -229,7 +229,7 @@ export class PositionalEmitter {
     this.lastDoppler = this.dopplerEnabled
       ? computeDopplerShift(this.positionRef, this.velocityRef, listenerPosition, listenerVelocity, this.dopplerOptions)
       : 1;
-    this.source.playbackRate = this.lastDoppler;
+    this.source.setPlaybackRate(this.lastDoppler, 50);
     this.applyGain();
     return this.evidence();
   }

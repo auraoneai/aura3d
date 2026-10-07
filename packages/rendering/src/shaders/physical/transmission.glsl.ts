@@ -21,6 +21,7 @@
  * (a3dPrd04EnvironmentBRDF) and `a3d_prd04_volume` (a3dVolumeAttenuation).
  */
 import type { ShaderChunk } from "../../contracts/program";
+import A3D_PRD04_TRANSMISSION_WGSL from "../physical-wgsl/transmission.wgsl.js";
 
 const glsl = /* glsl */ `
 #ifdef A3D_TRANSMISSION
@@ -215,6 +216,7 @@ export const A3D_PRD04_TRANSMISSION: ShaderChunk = {
 	name: "a3d_prd04_transmission",
 	owner: "prd04",
 	glsl,
+	wgsl: A3D_PRD04_TRANSMISSION_WGSL,
 	stage: "fragment",
 	requires: ["brdf", "a3d_prd04_bsdf_lobes_common", "a3d_prd04_volume"]
 };

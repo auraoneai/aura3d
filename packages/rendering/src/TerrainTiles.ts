@@ -76,7 +76,14 @@ export function createTerrainTileGrid(_options: TerrainTileGridOptions = {}): re
 
 export type TerrainBlendLayer = "rock" | "grass" | "sand" | "snow";
 
-/** Slope-based material blend weights; steep slopes expose rock, flats take grass/sand. */
+/**
+ * Slope-based material blend weights; steep slopes expose rock, flats take grass/sand.
+ *
+ * @deprecated PRD-10 T2.8 — kept exported for back-compat only; the
+ * `world.terrain` auto-splat (`evalSplatRules`/`defaultSplatRules` in
+ * `@aura3d/engine-runtime/agent-api/world/terrain`) is the slope/height blend
+ * going forward. The GPU SplatBake runs the same formula.
+ */
 export function resolveTerrainSlopeBlend(slopeDegrees: number, height: number, snowline: number): Record<TerrainBlendLayer, number> {
   if (!Number.isFinite(slopeDegrees) || slopeDegrees < 0 || slopeDegrees > 90) {
     throw new RangeError("Terrain slope must be in [0, 90] degrees.");

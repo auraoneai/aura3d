@@ -6,10 +6,24 @@
  */
 import type { ReadyPayload } from "../../../shared/types";
 import { prd04SceneSpecs } from "../../../scenes/prd04/index";
-import { runPrd04AuraScene } from "./common";
+import { runPrd04AuraScene, type Prd04AuraSceneOptions } from "./common";
 
-export type Prd04AdapterFn = (host: HTMLElement, options?: { readonly qrFlags?: readonly string[] }) => Promise<ReadyPayload>;
+export type Prd04AdapterFn = (host: HTMLElement, options?: {
+  readonly qrFlags?: readonly string[];
+} & Prd04AuraSceneOptions) => Promise<ReadyPayload>;
 
 export const adapters: Record<string, Prd04AdapterFn> = Object.fromEntries(
-  Object.keys(prd04SceneSpecs).map((id) => [id, (host, options) => runPrd04AuraScene(prd04SceneSpecs[id], host, options?.qrFlags ?? [])])
+  Object.keys(prd04SceneSpecs).map((id) => [id, (host, options) => runPrd04AuraScene(
+    prd04SceneSpecs[id],
+    host,
+    options?.qrFlags ?? [],
+    {
+      ...(options?.transmission !== undefined ? { transmission: options.transmission } : {}),
+      ...(options?.quality !== undefined ? { quality: options.quality } : {}),
+      ...(options?.strip !== undefined ? { strip: options.strip } : {}),
+      ...(options?.tint !== undefined ? { tint: options.tint } : {}),
+      ...(options?.lightsOff !== undefined ? { lightsOff: options.lightsOff } : {}),
+      ...(options?.pixels !== undefined ? { pixels: options.pixels } : {})
+    }
+  )])
 );

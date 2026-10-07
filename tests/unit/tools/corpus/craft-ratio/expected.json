@@ -1,0 +1,27 @@
+{
+  "comment": "research/12 §1.2 table (docs/project/aura3d-quality-rebuild/research/12-agent-authoring.md). Columns: [nonBlankLines, evidenceOnly, visualOnly, both]. countMode records how the research-era count reproduces: 'raw' = every non-whitespace line, 'prose' = non-blank minus ``` fence markers (skills rows are raw; llms.txt/docs rows are prose).",
+  "files": {
+    "packages/aura3d-cli/skills/aura3d-browser-game/SKILL.md": { "countMode": "raw", "expected": [103, 28, 0, 1] },
+    "packages/aura3d-cli/skills/aura3d-core/SKILL.md": { "countMode": "raw", "expected": [81, 19, 2, 0] },
+    "packages/aura3d-cli/skills/aura3d-scene-authoring/SKILL.md": { "countMode": "raw", "expected": [95, 25, 8, 3] },
+    "packages/aura3d-cli/skills/aura3d-evidence-review/SKILL.md": { "countMode": "raw", "expected": [87, 54, 4, 4] },
+    "packages/aura3d-cli/skills/aura3d-materials-environments/SKILL.md": { "countMode": "raw", "expected": [101, 24, 20, 5] },
+    "packages/aura3d-cli/skills/aura3d-assets/SKILL.md": { "countMode": "raw", "expected": [98, 23, 0, 1] },
+    "packages/aura3d-cli/skills/aura3d-character-animation/SKILL.md": { "countMode": "raw", "expected": [99, 21, 1, 0] },
+    "packages/aura3d-cli/skills/aura3d-performance/SKILL.md": { "countMode": "raw", "expected": [76, 21, 1, 1] },
+    "packages/aura3d-cli/skills/aura3d-retexture/SKILL.md": { "countMode": "raw", "expected": [92, 30, 4, 0] },
+    "packages/aura3d-cli/skills/aura3d-game-art/SKILL.md": { "countMode": "raw", "expected": [88, 13, 7, 1] },
+    "packages/aura3d-cli/skills/aura3d-threejs-migration/SKILL.md": { "countMode": "raw", "expected": [99, 20, 4, 0] },
+    "packages/aura3d-cli/skills/aura3d-animation-studio/SKILL.md": { "countMode": "raw", "expected": [125, 25, 1, 1] },
+    "packages/aura3d-cli/skills/meshy-cli/SKILL.md": { "countMode": "raw", "expected": [103, 19, 5, 0] },
+    "packages/aura3d-cli/skills/aura3d-core/references/boundaries.md": { "countMode": "raw", "expected": [71, 32, 1, 1] },
+    "llms.txt": { "countMode": "prose", "expected": [246, 70, 12, 8] },
+    "docs/guides/build-a-browser-game.md": { "countMode": "prose", "expected": [251, 37, 1, 2] },
+    "docs/agents/game-example-standards.md": { "countMode": "prose", "expected": [74, 19, 3, 0] },
+    "docs/agents/cinematic-scene-quality.md": { "countMode": "prose", "expected": [79, 4, 26, 3] }
+  },
+  "totals": {
+    "skills": { "countMode": "raw", "expected": [1318, 354, 58, 18] },
+    "docsAgentsGuides": { "countMode": "prose", "expected": [2159, 541, 148, 46] }
+  }
+}

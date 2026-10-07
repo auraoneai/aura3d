@@ -1,0 +1,82 @@
+{
+  "root": "apps/showcase-vault-breakers",
+  "files": 17,
+  "changed": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-vault-breakers/src/environment.ts",
+      "line": 22,
+      "construct": "lights.point({ intensity: 1.35 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 17 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/environment.ts",
+      "line": 22,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/environment.ts",
+      "line": 23,
+      "construct": "lights.point({ intensity: 1.2 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 15 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/environment.ts",
+      "line": 23,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/environment.ts",
+      "line": 24,
+      "construct": "lights.point({ intensity: 1.05 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 13 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/environment.ts",
+      "line": 24,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/environment.ts",
+      "line": 59,
+      "construct": "lights.point({ intensity: 4.5 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 57 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/environment.ts",
+      "line": 59,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/environment.ts",
+      "line": 60,
+      "construct": "lights.point({ intensity: 3.8 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 48 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/environment.ts",
+      "line": 60,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    }
+  ]
+}

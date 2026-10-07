@@ -1,0 +1,14 @@
+{
+  "version": "1.1",
+  "assets": {
+    "world/noise/wind-gust-64": {
+      "file": "noise/wind-gust-64.rg8",
+      "format": "rg8",
+      "width": 64,
+      "height": 64,
+      "hash": "sha256:0b555d94f52b9a9f3dd8f4adb857b60684c493035f4110218c96146584ebc4e1",
+      "license": "CC0",
+      "generated": "procedural twin of WindField.gustNoiseData()"
+    }
+  }
+}

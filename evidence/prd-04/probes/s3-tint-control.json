@@ -1,0 +1,10 @@
+{
+  "probe": "s3-tint",
+  "spec": "tests/qr/prd04/browser/model-material-override.spec.ts",
+  "control": {
+    "description": "flag-off red tint (#e85d75) becomes the legacy emissive tint — Laplacian rises (glow fills detail) and shadow-side luma exceeds the flag-on multiply cap",
+    "expected": "fail",
+    "asserts": ["lapOff >= 0.9 * lapBase fails OR shadowOff <= 1.1 * shadowBase fails — the control must differ measurably"]
+  },
+  "status": "awaiting first flagged CI capture — values land here from tests/reports/prd04/probes/s3-tint-control.json"
+}
