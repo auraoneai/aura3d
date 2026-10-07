@@ -210,6 +210,9 @@ importers:
       '@aura3d/asset-index':
         specifier: workspace:*
         version: link:../asset-index
+      '@aura3d/audio':
+        specifier: workspace:*
+        version: link:../audio
       create-aura3d:
         specifier: workspace:*
         version: link:../create-aura3d
