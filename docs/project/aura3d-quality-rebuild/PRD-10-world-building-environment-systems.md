@@ -1816,19 +1816,21 @@ Every task edits only PRD 10-owned paths (§Parallel execution) unless it says "
 repo root; "flag" means `A3D_QR_WORLD` (or the named sub-flag) gates the behaviour.
 
 Phase 1 (day 0):
-- [ ] T1.1 `packages/rendering/src/TerrainHeightfield.ts:133-141`: replace the `Math.round` texel pick (`:134-135`) with
+- [x] T1.1 `packages/rendering/src/TerrainHeightfield.ts:133-141`: replace the `Math.round` texel pick (`:134-135`) with
   bilinear interpolation of the 4 neighbours; add `toHeightTexture(fixture): { data: Float32Array; width; height }`.
   Test `tests/qr/prd10/unit/terrain-bilinear.test.ts`: midpoint of a 2×2 ramp equals the mean ±1e-6.
-- [ ] T1.2 `packages/rendering/src/TerrainTiles.ts`: delete `createTerrainTileGrid` and `TerrainTilePlan` (`:15-96`),
+  (landed at `tests/unit/contracts/impl/prd10-terrain-bilinear.test.ts` — `tests/qr/` is not lane-owned or vitest-included)
+- [x] T1.2 `packages/rendering/src/TerrainTiles.ts`: delete `createTerrainTileGrid` and `TerrainTilePlan` (`:15-96`),
   replace the `:1-13` header with "budget and query utilities only"; keep a `@deprecated` `createTerrainTileGrid` that
-  throws `AuraRuntimeError("removed-world-planner")`.
-- [ ] T1.3 `packages/rendering/src/VegetationScatter.ts:134`: claim boundary names `world.scatter` as the runtime and
+  throws `AuraRuntimeError("removed-world-planner")`. (types kept as `@deprecated` — index.ts re-export is lane-01's)
+- [x] T1.3 `packages/rendering/src/VegetationScatter.ts:134`: claim boundary names `world.scatter` as the runtime and
   this module as an offline placement helper.
-- [ ] T1.4 `packages/rendering/src/EnvironmentPreset.ts`: delete `createNamedEnvironmentPreset` (`:47-128`) after
+- [x] T1.4 `packages/rendering/src/EnvironmentPreset.ts`: delete `createNamedEnvironmentPreset` (`:47-128`) after
   `rg -n createNamedEnvironmentPreset packages apps examples templates` shows only its definition; leave a throwing
   `@deprecated` export.
-- [ ] T1.5 `fixtures/three-compat/environments/manifest.json`: delete `industrial-sunset-puresky`, `spruit-sunrise`,
-  `venice-sunset`; `rg` the ids in `benchmarks/` and file Q-12-1 with any hit.
+- [x] T1.5 `fixtures/three-compat/environments/manifest.json`: delete `industrial-sunset-puresky`, `spruit-sunrise`,
+  `venice-sunset`; `rg` the ids in `benchmarks/` and file Q-12-1 with any hit. (no `benchmarks/` hits — Q-12-1 not needed;
+  `flagshipBindings` repointed to the canonical ids; `requirements` corrected to the honest 9 presets / 3 real HDRIs)
 - [ ] T1.6 `packages/engine/src/agent-api/world/types.ts`, `biomes.ts`: types of §7.1.1-7.1.2 re-exporting C-26
   types; `BIOME_RIGS: Readonly<Record<AuraBiomeId, AuraBiomeRigDetail>>` from the §6.3 table (all 11 ids, deep-frozen);
   `describeBiome(id, tier)` applying the Low-tier variant rule; `listBiomes()`.
