@@ -161,8 +161,6 @@ export {
 export type {
   AuthoredPostContext,
   AuthoredPostSummary,
-  ExposureSectionReport,
-  PostSectionReport,
   SubmittedPostprocessRecord
 } from "../agent-api/postBridge.js";
 export { createProductionRuntimePostprocess } from "../agent-api/compiler/postprocess.js";

@@ -93,8 +93,10 @@ export function checkExportBudget(root: string): GateFinding[] {
     }
   }
 
-  // §6.1 topology: exactly the listed subpaths, no extras.
-  const allowed = new Set([".", "./renderer", "./devtools", "./assets", "./animation", "./physics", "./audio", "./input", "./controls", "./scene", "./math", "./scripting", "./editor-runtime", "./workflows", "./ecs", "./scene/math", "./physics/solverless", "./physics/world"]);
+  // §6.1 topology: exactly the listed subpaths. "./game*" is a domain-package
+  // subpath (packages/game) in the same class as ./animation etc. — added when
+  // lane 09 split the game package; the §6.1 table predates it.
+  const allowed = new Set([".", "./renderer", "./devtools", "./assets", "./animation", "./physics", "./audio", "./input", "./controls", "./scene", "./math", "./scripting", "./editor-runtime", "./workflows", "./ecs", "./game", "./game/capture", "./game/art", "./game/util", "./game/styles.css", "./scene/math", "./physics/solverless", "./physics/world"]);
   for (const subpath of Object.keys(entries)) {
     if (!allowed.has(subpath)) {
       findings.push({ rule: "export-budget", file: "aura.exports.json", detail: `non-§6.1 subpath "${subpath}" still live (move to deprecated map)`, enforced: true });
