@@ -11,6 +11,7 @@
     "tests/integration/**/*.ts",
     "tests/performance/**/*.ts",
     "tests/visual/**/*.ts",
+    "tests/qr/**/*.ts",
     "tools/**/*.ts",
     "vitest.config.ts",
     "playwright.config.ts",

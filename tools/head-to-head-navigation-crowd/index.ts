@@ -24,7 +24,7 @@ const report = {
   generatedAt: new Date().toISOString(),
   pass: failures.length === 0,
   workload: "navigation-crowd",
-  verdict: "selected-adapter-matches-direct-recast-crowd-trace",
+  verdict: failures.length ? "capture-failed" : "pass",
   checks,
   failures,
   comparison: {
@@ -32,10 +32,6 @@ const report = {
     threePositions: browser.after?.three?.positions,
     auraDrawCalls: browser.after?.aura?.drawCalls,
     threeDrawCalls: browser.after?.three?.drawCalls,
-    observedLosses: [
-      "Personal inspection of both rerendered before/after pairs confirms aligned camera, deck, obstacle, frozen skyline, lead character, corrected marker size, exact backgrounds, and a clearly visible split around both sides of the obstacle. Small character/material/raster differences remain; normalized paired RMSE is 0.0307563 before and 0.0313358 after.",
-      "Aura submits 1,565 draws versus Three's 829 for this asset-heavy scene. This exact deterministic six-agent trace proves the selected adapter delegates path and crowd state identically; it does not establish broad navigation authoring, off-mesh-link, dynamic-obstacle, visual, draw-call, or performance parity."
-    ],
     claimBoundary: "Optional @aura3d/navigation-recast adapter workload; not root createAuraApp navigation simulation."
   },
   browser

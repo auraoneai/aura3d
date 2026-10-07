@@ -1,0 +1,42 @@
+{
+  "root": "apps/showcase-blockfall-reactor",
+  "files": 15,
+  "changed": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-blockfall-reactor/src/main.ts",
+      "line": 653,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/main.ts",
+      "line": 654,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/main.ts",
+      "line": 655,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/main.ts",
+      "line": 656,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/main.ts",
+      "line": 657,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    }
+  ]
+}

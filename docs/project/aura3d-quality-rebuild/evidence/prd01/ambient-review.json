@@ -1,0 +1,304 @@
+{
+  "generatedBy": "tools/quality-rebuild-codemods/run.ts evidence",
+  "note": "ambient review list for lane 14 retune — effective irradiance changes intensity→intensity/π under physical lighting",
+  "entries": 48,
+  "rows": [
+    {
+      "file": "apps/aura-clash-showcase/README.md",
+      "line": 32,
+      "intensity": 0.36,
+      "effectiveIrradianceBefore": 0.36,
+      "effectiveIrradianceAfter": 0.1146
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/rendering/GameLighting.ts",
+      "line": 178
+    },
+    {
+      "file": "apps/camera-path/src/main.ts",
+      "line": 31,
+      "intensity": 0.16,
+      "effectiveIrradianceBefore": 0.16,
+      "effectiveIrradianceAfter": 0.0509
+    },
+    {
+      "file": "apps/context-loss-recovery/src/main.ts",
+      "line": 118,
+      "intensity": 0.22,
+      "effectiveIrradianceBefore": 0.22,
+      "effectiveIrradianceAfter": 0.07
+    },
+    {
+      "file": "apps/hello-world-typed-asset/src/main.ts",
+      "line": 18,
+      "intensity": 0.18,
+      "effectiveIrradianceBefore": 0.18,
+      "effectiveIrradianceAfter": 0.0573
+    },
+    {
+      "file": "apps/material-lighting/src/main.ts",
+      "line": 19,
+      "intensity": 0.24,
+      "effectiveIrradianceBefore": 0.24,
+      "effectiveIrradianceAfter": 0.0764
+    },
+    {
+      "file": "apps/showcase-asset-audition/src/main.ts",
+      "line": 59,
+      "intensity": 0.46,
+      "effectiveIrradianceBefore": 0.46,
+      "effectiveIrradianceAfter": 0.1464
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/main.ts",
+      "line": 918,
+      "intensity": 0.4,
+      "effectiveIrradianceBefore": 0.4,
+      "effectiveIrradianceAfter": 0.1273
+    },
+    {
+      "file": "apps/showcase-bank-shot/src/main.ts",
+      "line": 351
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/main.ts",
+      "line": 651
+    },
+    {
+      "file": "apps/showcase-cinematic-architecture/src/main.ts",
+      "line": 411,
+      "intensity": 0.2,
+      "effectiveIrradianceBefore": 0.2,
+      "effectiveIrradianceAfter": 0.0637
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/main.ts",
+      "line": 302,
+      "intensity": 1.25,
+      "effectiveIrradianceBefore": 1.25,
+      "effectiveIrradianceAfter": 0.3979
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/environment.ts",
+      "line": 38
+    },
+    {
+      "file": "apps/showcase-digital-twin-ops/src/main.ts",
+      "line": 395,
+      "intensity": 0.6,
+      "effectiveIrradianceBefore": 0.6,
+      "effectiveIrradianceAfter": 0.191
+    },
+    {
+      "file": "apps/showcase-gallery-shift/art-candidates/museum-world-aug31/main.js",
+      "line": 64,
+      "intensity": 0.64,
+      "effectiveIrradianceBefore": 0.64,
+      "effectiveIrradianceAfter": 0.2037
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/environment.ts",
+      "line": 612,
+      "intensity": 1.18,
+      "effectiveIrradianceBefore": 1.18,
+      "effectiveIrradianceAfter": 0.3756
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/main.ts",
+      "line": 1067
+    },
+    {
+      "file": "apps/showcase-gravity-post/scripts/courier-skiff-preview/main.ts",
+      "line": 63,
+      "intensity": 0.5,
+      "effectiveIrradianceBefore": 0.5,
+      "effectiveIrradianceAfter": 0.1592
+    },
+    {
+      "file": "apps/showcase-gravity-post/scripts/freight-district-preview/main.ts",
+      "line": 44,
+      "intensity": 0.52,
+      "effectiveIrradianceBefore": 0.52,
+      "effectiveIrradianceAfter": 0.1655
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/main.ts",
+      "line": 1194
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/main.ts",
+      "line": 722,
+      "intensity": 0.72,
+      "effectiveIrradianceBefore": 0.72,
+      "effectiveIrradianceAfter": 0.2292
+    },
+    {
+      "file": "apps/showcase-meshy-relic-pilot/src/main.ts",
+      "line": 43,
+      "intensity": 0.42,
+      "effectiveIrradianceBefore": 0.42,
+      "effectiveIrradianceAfter": 0.1337
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/environment.ts",
+      "line": 16
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/main.ts",
+      "line": 92,
+      "intensity": 0.18,
+      "effectiveIrradianceBefore": 0.18,
+      "effectiveIrradianceAfter": 0.0573
+    },
+    {
+      "file": "apps/showcase-patrol-wing/src/sky.ts",
+      "line": 234,
+      "intensity": 0.56,
+      "effectiveIrradianceBefore": 0.56,
+      "effectiveIrradianceAfter": 0.1783
+    },
+    {
+      "file": "apps/showcase-product-configurator/src/main.ts",
+      "line": 324,
+      "intensity": 0.16,
+      "effectiveIrradianceBefore": 0.16,
+      "effectiveIrradianceAfter": 0.0509
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v4-probe.ts",
+      "line": 60,
+      "intensity": 0.72,
+      "effectiveIrradianceBefore": 0.72,
+      "effectiveIrradianceAfter": 0.2292
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v4.ts",
+      "line": 140,
+      "intensity": 0.66,
+      "effectiveIrradianceBefore": 0.66,
+      "effectiveIrradianceAfter": 0.2101
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v7.ts",
+      "line": 26,
+      "intensity": 0.4,
+      "effectiveIrradianceBefore": 0.4,
+      "effectiveIrradianceAfter": 0.1273
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-kit-v2.ts",
+      "line": 87,
+      "intensity": 1.8,
+      "effectiveIrradianceBefore": 1.8,
+      "effectiveIrradianceAfter": 0.573
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-high-fidelity-v5-probe.ts",
+      "line": 66,
+      "intensity": 0.55,
+      "effectiveIrradianceBefore": 0.55,
+      "effectiveIrradianceAfter": 0.1751
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-high-fidelity-v5.ts",
+      "line": 161,
+      "intensity": 0.42,
+      "effectiveIrradianceBefore": 0.42,
+      "effectiveIrradianceAfter": 0.1337
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-quaternius-presentation-v10.ts",
+      "line": 16,
+      "intensity": 0.55,
+      "effectiveIrradianceBefore": 0.55,
+      "effectiveIrradianceAfter": 0.1751
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-quaternius-source-v9.ts",
+      "line": 26,
+      "intensity": 0.48,
+      "effectiveIrradianceBefore": 0.48,
+      "effectiveIrradianceAfter": 0.1528
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-source-character-v8.ts",
+      "line": 15,
+      "intensity": 0.42,
+      "effectiveIrradianceBefore": 0.42,
+      "effectiveIrradianceAfter": 0.1337
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-structural-encounter-v3.ts",
+      "line": 188,
+      "intensity": 0.92,
+      "effectiveIrradianceBefore": 0.92,
+      "effectiveIrradianceAfter": 0.2928
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-texture-identity-v6.ts",
+      "line": 130,
+      "intensity": 0.36,
+      "effectiveIrradianceBefore": 0.36,
+      "effectiveIrradianceAfter": 0.1146
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/main.ts",
+      "line": 1480
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/main.ts",
+      "line": 379
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/main.ts",
+      "line": 849,
+      "intensity": 0.24,
+      "effectiveIrradianceBefore": 0.24,
+      "effectiveIrradianceAfter": 0.0764
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/main.ts",
+      "line": 1396
+    },
+    {
+      "file": "apps/showcase-smart-city-control/src/main.ts",
+      "line": 540
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/main.ts",
+      "line": 3383
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/environment.ts",
+      "line": 18,
+      "intensity": 0.82,
+      "effectiveIrradianceBefore": 0.82,
+      "effectiveIrradianceAfter": 0.261
+    },
+    {
+      "file": "apps/showcase-webgpu-particle-lab/src/main.ts",
+      "line": 242,
+      "intensity": 0.18,
+      "effectiveIrradianceBefore": 0.18,
+      "effectiveIrradianceAfter": 0.0573
+    },
+    {
+      "file": "tools/agent-dogfood/index.ts",
+      "line": 788,
+      "intensity": 0.2,
+      "effectiveIrradianceBefore": 0.2,
+      "effectiveIrradianceAfter": 0.0637
+    },
+    {
+      "file": "tools/agent-dogfood/index.ts",
+      "line": 1216,
+      "intensity": 0.18,
+      "effectiveIrradianceBefore": 0.18,
+      "effectiveIrradianceAfter": 0.0573
+    },
+    {
+      "file": "tools/production-path-benchmark/index.ts",
+      "line": 256
+    }
+  ]
+}

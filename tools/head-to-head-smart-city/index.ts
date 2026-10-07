@@ -30,20 +30,13 @@ const report = {
   generatedAt: new Date().toISOString(),
   pass: failures.length === 0,
   workload: "smart-city",
-  verdict: "both-render-the-exact-city-descriptor-and-typed-vehicle-through-the-selected-state-change",
+  verdict: failures.length ? "capture-failed" : "pass",
   checks,
   failures,
   comparison: {
     auraDrawCalls,
     threeDrawCalls,
     auraToThreeDrawCallRatio: threeDrawCalls > 0 ? Number((auraDrawCalls / threeDrawCalls).toFixed(3)) : null,
-    observedLosses: [
-      `Aura submits ${auraDrawCalls} draws versus Three.js ${threeDrawCalls} for the selected night/core city state.`,
-      `Aura reports ${browser.before?.aura?.nativeInstancedSubmissions ?? 0} native instanced submissions for the tower family, but the comparison does not yet close the route's combined LOD/culling requirement.`,
-      `The same daylight clear-colour input differs by up to ${maxChannelDelta(browser.after?.aura?.backgroundPixel, browser.after?.three?.backgroundPixel)} output byte levels because the renderer colour pipelines do not transform the bright background identically.`,
-      "The comparison covers the exact public 8-block descriptor, frozen command vehicle, camera, lighting, background, district overlay, and night/core to day/industrial transition; labels, route UI, telemetry animation, camera modes, performance non-inferiority, and GIS data are outside this workload.",
-      "Passing checks establish matched inputs and visible state changes, not aesthetic or pixel parity; all four retained native-canvas PNGs require manual inspection."
-    ],
     claimBoundary: "Selected deterministic 8-block city, exact frozen vehicle, and two-state district/day-night comparison against current Three r185. It is not universal smart-city, GIS, traffic simulation, pixel, or performance parity."
   },
   browser

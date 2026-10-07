@@ -1,0 +1,49 @@
+name: QR PRD-05 admission gates
+
+# Lane 05 (PRD-05) gate honesty: runs the admission-gate unit suite and fails
+# if anything in the tree uses `--legacy-release-gates` — the escape hatch
+# exists only so `assets add` can warn; nothing in the repo may pass it.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'packages/aura3d-cli/**'
+      - 'packages/asset-index/**'
+      - 'tools/asset-optimize/**'
+      - 'assets/**'
+      - 'public/aura-assets/**'
+      - 'aura.assets.json'
+      - 'tests/unit/aura3d-cli/**'
+      - '.github/workflows/qr-prd05-gates.yml'
+  push:
+    branches: ['qr/prd05-**', 'qr/prd05/**']
+  workflow_dispatch:
+
+concurrency:
+  group: qr-prd05-gates-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true # GLB fixtures are LFS-tracked; pointer files fail "Invalid GLB header"
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: no in-repo caller may pass --legacy-release-gates
+        run: |
+          # The flag implementation itself (cli.ts) and docs about it are
+          # allowed; every other hit is a caller bypassing `assets admit`.
+          if rg -l -g '!packages/aura3d-cli/src/cli.ts' -g '!docs/**' -g '!*.md' -g '!.github/workflows/qr-prd05-gates.yml' -- '--legacy-release-gates'; then
+            echo "::error::--legacy-release-gates used outside its own CLI implementation"
+            exit 1
+          fi
+      - name: admission gate unit tests
+        run: pnpm exec vitest run tests/unit/aura3d-cli/admission-gates.test.ts tests/unit/aura3d-cli/release-gates-no-waiver.test.ts tests/unit/aura3d-cli/asset-manifest-schema.test.ts

@@ -11,6 +11,7 @@ import type {
   CliAssetSearchProfile,
   CliResolveConstraints,
 } from "./pull-bridge.js";
+import { assetRoleUsage } from "./cli-help.js";
 
 export function createCliOptionReaders(args: readonly string[]) {
   function readOption(name: string): string | undefined {
@@ -113,8 +114,10 @@ export function createCliOptionReaders(args: readonly string[]) {
     const value = readOption("--role");
     if (!value) return undefined;
     if (
+      value === "hero" ||
       value === "character" ||
       value === "vehicle" ||
+      value === "enemy" ||
       value === "world" ||
       value === "environment" ||
       value === "track" ||
@@ -122,11 +125,17 @@ export function createCliOptionReaders(args: readonly string[]) {
       value === "weapon" ||
       value === "prop" ||
       value === "set-dressing" ||
+      value === "backdrop" ||
+      value === "proxy" ||
+      value === "hdri" ||
+      value === "texture-set" ||
+      value === "vfx-atlas" ||
+      value === "audio" ||
       value === "debug" ||
       value === "abstract" ||
       value === "unknown"
     ) return value;
-    throw new Error(`Unsupported --role value "${value}". Use character, vehicle, world, environment, track, product, weapon, prop, set-dressing, debug, abstract, or unknown.`);
+    throw new Error(`Unsupported --role value "${value}". Use ${assetRoleUsage}.`);
   }
 
   function readOrientation(): AuraCliOrientationInspection | undefined {
@@ -141,6 +150,26 @@ export function createCliOptionReaders(args: readonly string[]) {
       throw new Error("--orientation-json must contain a manifest-override orientation with messages.");
     }
     return orientation as AuraCliOrientationInspection;
+  }
+
+  function readNumberOption(name: string): number | undefined {
+    const value = readOption(name);
+    if (value === undefined) return undefined;
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) throw new Error(`Expected ${name} <number>, got "${value}".`);
+    return parsed;
+  }
+
+  function readAudioMetadata(): { readonly loudnessLufs?: number; readonly truePeakDb?: number; readonly author?: string; readonly sourceUrl?: string } | undefined {
+    const loudnessLufs = readNumberOption("--loudness-lufs");
+    const truePeakDb = readNumberOption("--true-peak-db");
+    const audio = {
+      ...(loudnessLufs !== undefined ? { loudnessLufs } : {}),
+      ...(truePeakDb !== undefined ? { truePeakDb } : {}),
+      ...(readOption("--author") !== undefined ? { author: readOption("--author") } : {}),
+      ...(readOption("--source-url") !== undefined ? { sourceUrl: readOption("--source-url") } : {}),
+    };
+    return Object.keys(audio).length > 0 ? audio : undefined;
   }
 
   function readRenderedProbe(): AuraCliRenderedProbe | undefined {
@@ -193,6 +222,8 @@ export function createCliOptionReaders(args: readonly string[]) {
     readAssetRole,
     readAssetType,
     readAssetValidationOptions,
+    readAudioMetadata,
+    readNumberOption,
     readCliAssetProfile,
     readEvidenceOutput,
     readInspectFile,

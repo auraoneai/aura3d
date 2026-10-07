@@ -1,0 +1,2631 @@
+{
+  "commit": "e7bcafc4754e166a6c5edb1c770d6fd71019b6af",
+  "generated": "2026-10-06T14:21:03.712Z",
+  "auditCommit": "c08d8acb",
+  "classes": {
+    "a": "reads a canvas/target it renders itself (non-root) — unaffected by preserveDrawingBuffer:false",
+    "b": "reads the root createAuraApp canvas after the frame — migrate to app.capture()",
+    "c": "third-party / unmigratable — temporarily renderer.debug.preserveDrawingBuffer:true with tracking comment"
+  },
+  "counts": {
+    "total": 229,
+    "a": 176,
+    "b": 52,
+    "c": 1
+  },
+  "files": [
+    {
+      "path": "apps/advanced-examples-gallery/src/cubemapSixFaceProof.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "apps/advanced-examples-gallery/src/equirectPanoramaProof.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "apps/advanced-examples-gallery/src/main.ts",
+      "owner": "15",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": []
+    },
+    {
+      "path": "apps/aura-clash-showcase/launch-evidence/cross-runtime-evidence.json",
+      "owner": "14",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "apps/aura-clash-showcase/launch-evidence/readiness.json",
+      "owner": "14",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
+      "owner": "14",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "apps/character-viewer/README.md",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "apps/flagship-ibl-states/src/main.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "apps/materials-transmission/src/main.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "apps/parallax-barrier/src/main.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "apps/postprocessing-bloom/src/main.ts",
+      "owner": "03",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "apps/postprocessing-depth-outline/src/main.ts",
+      "owner": "03",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "apps/shadow-cascade-evidence/src/main.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "apps/showcase-cinematic-architecture/src/main.ts",
+      "owner": "14",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b"
+      ]
+    },
+    {
+      "path": "apps/showcase-gravity-post/src/main.ts",
+      "owner": "14",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:app\\.canvas\\b"
+      ]
+    },
+    {
+      "path": "apps/showcase-smart-city-control/src/main.ts",
+      "owner": "14",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "apps/wow-webgpu-render-target/src/main.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "templates/cinematic-scene/tests/screenshot.spec.ts",
+      "owner": "13",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:locator\\([\"'`]canvas",
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "templates/mini-game/tests/screenshot.spec.ts",
+      "owner": "13",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:locator\\([\"'`]canvas",
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "templates/product-viewer/tests/screenshot.spec.ts",
+      "owner": "13",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:locator\\([\"'`]canvas",
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser-probe/to-data-url.probe.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/advanced-examples-gallery.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/agent-api-side-by-side-comparison.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:\\.screenshot\\(",
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/animation-browser-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/animation-pointer-material-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b"
+      ]
+    },
+    {
+      "path": "tests/browser/animation-studio-preview-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/anisotropic-rotation-q1-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b"
+      ]
+    },
+    {
+      "path": "tests/browser/asset-compression-browser.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/asset-material-fidelity-external-parity.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/asset-material-fidelity.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/asset-texture-browser-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/asset-viewer-browser.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:\\.screenshot\\(",
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/asset-viewer-external-parity.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/batch-consolidator-shootout-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:\\.screenshot\\(",
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/certified-hero-rigs-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b"
+      ]
+    },
+    {
+      "path": "tests/browser/clustered-lighting-b5-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/contact-shimmer-b1b2.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/context-recovery-lab.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:locator\\([\"'`]canvas",
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/controls-hover-focus-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/createAuraApp-animation-bridge-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b"
+      ]
+    },
+    {
+      "path": "tests/browser/createAuraApp-asset-probe-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b"
+      ]
+    },
+    {
+      "path": "tests/browser/createAuraApp-camera-frame-asset-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b"
+      ]
+    },
+    {
+      "path": "tests/browser/createAuraApp-material-pbr-contract-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b"
+      ]
+    },
+    {
+      "path": "tests/browser/createAuraApp-model-sizing-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/createAuraApp-postprocess-contract-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b"
+      ]
+    },
+    {
+      "path": "tests/browser/createAuraApp-production-bridge-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b"
+      ]
+    },
+    {
+      "path": "tests/browser/createAuraApp-shadow-contract-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b"
+      ]
+    },
+    {
+      "path": "tests/browser/crowd-instancing-adoption-301.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/cube-camera-reflections-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/data-galaxy-reference-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/deep-recovery-scene.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:document\\.querySelector\\([^)]*canvas",
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/editor-authoring-external-parity.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/editor-gizmo-snap-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/environment-background-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/environment-fog-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/examples-route-health.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:locator\\([\"'`]canvas",
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/external-parity-ibl-evidence-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/external-parity-shadow-cascade-evidence.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:\\.screenshot\\(",
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/foot-planting-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b"
+      ]
+    },
+    {
+      "path": "tests/browser/framegraph-native-301-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/game-performance-governor-hold.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/game-runtime-visual.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/game-visual-superiority-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:\\.screenshot\\(",
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/game-visual-superiority-perf-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/gpu-particle-a4.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:\\.screenshot\\(",
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/head-to-head-cinematic-architecture.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/head-to-head-custom-material-shader.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/head-to-head-digital-twin-data.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/head-to-head-gltf-product-viewer.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/head-to-head-instancing-lod.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/head-to-head-navigation-crowd.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/head-to-head-physical-character.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/head-to-head-physical-vehicle.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/head-to-head-postprocessed-scene.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/head-to-head-primitive-scene.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/head-to-head-product-configurator.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/head-to-head-resource-lifecycle.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/head-to-head-scaffold-to-deploy.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/head-to-head-skinned-morph-animation.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/head-to-head-smart-city.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/head-to-head-xr-interaction.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/khronos-gltf-visual-external-parity.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/label-occlusion-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:querySelector\\([\"'`]canvas",
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/large-scene-culling-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/loader-instancing-evidence.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/multipart-primitive-draw-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/muse3jsparity-301-engine-perf-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/muse3jsparity-301-glyph-quality.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/muse3jsparity-301-root-governor-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/muse3jsparity-301-water-pair.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/native-bloom-pyramid-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:app\\.canvas\\b",
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/native-bloom-pyramid.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/native-outline-pixel-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/neon-corridor-release-asset-probe-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b"
+      ]
+    },
+    {
+      "path": "tests/browser/neon-corridor-strike-quality.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/neon-swarm-instancing.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:document\\.querySelector\\([^)]*canvas",
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/orbit-map-options-301-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/part-o1-navigation-crowd.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:locator\\([\"'`]canvas",
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/part-o2-visual-scripting.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:locator\\([\"'`]canvas",
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/part-o3-editor-surface.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:locator\\([\"'`]canvas",
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/physics-sandbox-browser.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/postprocess-comprehensive-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/product-configurator-material-matrix-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/product-configurator-reference-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/product-demos.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/production-runtime-large-scene-performance.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/production-runtime-threejs-parity.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/production-runtime-threejs-parity.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/public-hdr-file-loader-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/rapier-character-lab.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:locator\\([\"'`]canvas",
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/recast-crowd-lab.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:locator\\([\"'`]canvas",
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/rect-area-light-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/reflection-surfaces-b4-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/rendering-camera-scene-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/rendering-context-lifecycle.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/rendering-resize-stress.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/rendering-root-quality-gate.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/rendering-webgl2-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/rendering-webgpu.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createFakeWebGL2Context|createFakeCanvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/rig-pair-rendered-301-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b",
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/rooftop-animation-debug.ts",
+      "owner": "15",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:querySelector\\([\"'`]canvas",
+        "root:document\\.querySelector\\([^)]*canvas",
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/rooftop-buckets-shot-visual.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:querySelector\\([\"'`]canvas",
+        "root:document\\.querySelector\\([^)]*canvas",
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/rooftop-camera-debug.ts",
+      "owner": "15",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:querySelector\\([\"'`]canvas",
+        "root:document\\.querySelector\\([^)]*canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/rooftop-dressing-debug.ts",
+      "owner": "15",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:querySelector\\([\"'`]canvas",
+        "root:document\\.querySelector\\([^)]*canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/root-effects-a3-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b",
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/root-extension-instancing-301-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/root-geometry-instancing-lod-text-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/root-ibl-b3-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b"
+      ]
+    },
+    {
+      "path": "tests/browser/root-motion-locomotion-301-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/root-path-integrity.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:querySelector\\([\"'`]canvas",
+        "root:locator\\([\"'`]canvas",
+        "root:document\\.querySelector\\([^)]*canvas",
+        "root:\\.screenshot\\(",
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/root-sdf-text-g1-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b"
+      ]
+    },
+    {
+      "path": "tests/browser/root-skin-palette-witness-301.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/root-spot-hdri-n1m3-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b"
+      ]
+    },
+    {
+      "path": "tests/browser/root-spot-shadow-n1-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b"
+      ]
+    },
+    {
+      "path": "tests/browser/root-texture-streaming-m2-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b"
+      ]
+    },
+    {
+      "path": "tests/browser/root-textured-c1-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b",
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/runtime-character-controller.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/runtime-external-parity.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/runtime-parity-contact-shadow-parity.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/runtime-parity-material-extension-parity.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/runtime-parity-material-extensions.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/runtime-parity-pbr-shadow-map.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/runtime-parity-pmrem-parity.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/runtime-parity-product-viewer.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:\\.screenshot\\(",
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/runtime-parity-webgpu-imported-asset.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/runtime-parity-webgpu-product-viewer.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/runtime-parity-webgpu-threejs-delta.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/shadow-family-b1-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/shadow-stability-301-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/showcase-gameplay-proof.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:querySelector\\([\"'`]canvas",
+        "root:locator\\([\"'`]canvas",
+        "root:document\\.querySelector\\([^)]*canvas",
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/showcase-release-asset-probe-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b"
+      ]
+    },
+    {
+      "path": "tests/browser/showcase-route-primary-probes.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:querySelector\\([\"'`]canvas",
+        "root:\\.screenshot\\(",
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/skinning-over-cap-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/spatial-audio-lab.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:locator\\([\"'`]canvas",
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/spatial-text-lab.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:querySelector\\([\"'`]canvas",
+        "root:locator\\([\"'`]canvas",
+        "root:document\\.querySelector\\([^)]*canvas",
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/spotlight-route-adoption-301.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/terrain-heightfield-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/texture-pipeline-c3-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b"
+      ]
+    },
+    {
+      "path": "tests/browser/three-node-postprocess-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/threejs-parity-fat-lines-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/threejs-parity-public-scene.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:querySelector\\([\"'`]canvas",
+        "root:document\\.querySelector\\([^)]*canvas"
+      ]
+    },
+    {
+      "path": "tests/browser/threejs-parity-transform-controls-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/transmission-refraction-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/turbo-vehicle-grounding.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:querySelector\\([\"'`]canvas",
+        "root:document\\.querySelector\\([^)]*canvas",
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/vehicle-wheel-visibility-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b"
+      ]
+    },
+    {
+      "path": "tests/browser/volumetric-light-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/webgl-input-audio.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/browser/webgpu-basic-color-301-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/webgpu-bloom-hdr-301-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/webgpu-extension-atlas-301-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/webgpu-parity.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/webgpu-post-j2-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/webgpu-spot-shadow-j2-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/webgpu-temporal-device-loss-301-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/browser/wow-concept-car-cinema-car-stability.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tests/browser/wrinkle-hook-harness.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:app\\.canvas\\b"
+      ]
+    },
+    {
+      "path": "tests/clean-room/renderer-extension/src/main.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "c",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/fixtures/visual-examples/material-lab/main.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:querySelector\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/fixtures/visual-examples/pbr-camera-comparison/main.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/fixtures/visual-examples/pbr-material-lab/main.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:querySelector\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/fixtures/visual-examples/postprocess-lab/main.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:querySelector\\([\"'`]canvas",
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/performance/webgpu-vs-webgl2-baseline.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/qr/prd01/harness/renderTargets.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/unit/contracts/impl/prd01-render-targets.test.ts",
+      "owner": "01",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/unit/rendering/current-routes-interactive-renderer-api.test.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/unit/rendering/current-routes-webgl2-hot-path.test.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/unit/rendering/external-parity-color-management.test.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/unit/rendering/framegraph-passes-t3.test.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/unit/rendering/postprocess-composer.test.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/unit/rendering/render-graph.test.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/unit/rendering/render-resources.test.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/unit/rendering/render-state-leaks.test.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createFakeWebGL2Context|createFakeCanvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/unit/rendering/renderer.test.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/unit/rendering/webgpu-skinning-parity.test.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tests/unit/scripting/weapon-system.test.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/visual/pbr-environment-pixels.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:\\.screenshot\\(",
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tests/visual/product-demos.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tests/visual/rendering-pixels.spec.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tools/agent-docs/simulation.ts",
+      "owner": "13",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:locator\\([\"'`]canvas",
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tools/agent-dogfood/index.ts",
+      "owner": "13",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:locator\\([\"'`]canvas",
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tools/compare-engines/index.ts",
+      "owner": "12",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "b",
+      "signals": [
+        "root:\\.screenshot\\(",
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tools/current-routes-route-health/index.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:querySelector\\([\"'`]canvas",
+        "root:document\\.querySelector\\([^)]*canvas",
+        "root:\\.screenshot\\(",
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tools/current-routes-threejs-parity/index.ts",
+      "owner": "15",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tools/developer-friction/install-to-first-cube.ts",
+      "owner": "15",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": [
+        "root:querySelector\\([\"'`]canvas",
+        "root:document\\.querySelector\\([^)]*canvas"
+      ]
+    },
+    {
+      "path": "tools/external-deployment-smoke/index.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:locator\\([\"'`]canvas",
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tools/external-parity-gltf-loader-visual-parity/index.ts",
+      "owner": "12",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tools/external-parity-hdr-visual-parity/index.ts",
+      "owner": "12",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tools/external-parity-pbr-visual-parity/index.ts",
+      "owner": "12",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tools/external-parity-product-visual-parity/index.ts",
+      "owner": "12",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tools/external-parity-shadow-visual-parity/index.ts",
+      "owner": "12",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tools/material-structural-parity/index.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:\\.screenshot\\(",
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tools/quality-rebuild-capture/gpu-probe.mjs",
+      "owner": "12",
+      "mechanisms": [
+        "readPixels"
+      ],
+      "class": "a",
+      "signals": []
+    },
+    {
+      "path": "tools/sketchfab-asset-corpus/index.ts",
+      "owner": "15",
+      "mechanisms": [
+        "app-screenshot",
+        "readPixels"
+      ],
+      "class": "b",
+      "signals": [
+        "root:locator\\([\"'`]canvas",
+        "root:\\.screenshot\\("
+      ]
+    },
+    {
+      "path": "tools/threejs-parity-animation-keyframes-parity/index.ts",
+      "owner": "12",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tools/threejs-parity-animation-multiple-parity/index.ts",
+      "owner": "12",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tools/threejs-parity-animation-walk-parity/index.ts",
+      "owner": "12",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tools/threejs-parity-decals-parity/index.ts",
+      "owner": "12",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tools/threejs-parity-gltf-parity/index.ts",
+      "owner": "12",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tools/threejs-parity-loader-material-extensions-parity/index.ts",
+      "owner": "12",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tools/threejs-parity-material-grid-parity/index.ts",
+      "owner": "12",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tools/threejs-parity-morphtargets-parity/index.ts",
+      "owner": "12",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tools/threejs-parity-parallax-parity/index.ts",
+      "owner": "12",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tools/threejs-parity-physical-lights-parity/index.ts",
+      "owner": "12",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tools/threejs-parity-shadowmap-parity/index.ts",
+      "owner": "12",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tools/threejs-parity-skinning-additive-parity/index.ts",
+      "owner": "12",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tools/threejs-parity-skinning-blending-parity/index.ts",
+      "owner": "12",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tools/threejs-parity-skinning-ik-parity/index.ts",
+      "owner": "12",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    },
+    {
+      "path": "tools/threejs-parity-stereo-parity/index.ts",
+      "owner": "12",
+      "mechanisms": [
+        "readPixels",
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas",
+        "self:createRenderTarget|device\\.readPixels|pr"
+      ]
+    },
+    {
+      "path": "tools/threejs-parity-unreal-bloom-parity/index.ts",
+      "owner": "12",
+      "mechanisms": [
+        "toDataURL"
+      ],
+      "class": "a",
+      "signals": [
+        "self:createElement\\([\"'`]canvas"
+      ]
+    }
+  ]
+}

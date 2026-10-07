@@ -1,0 +1,336 @@
+{
+  "version": 1,
+  "pages": [
+    {
+      "id": "aura-vfx-2k",
+      "uri": "aura-vfx-2k.png",
+      "size": 2048,
+      "premultiplied": true,
+      "colorSpace": "srgb"
+    },
+    {
+      "id": "aura-vfx-1k",
+      "uri": "aura-vfx-1k.png",
+      "size": 1024,
+      "premultiplied": true,
+      "colorSpace": "srgb"
+    }
+  ],
+  "sequences": {
+    "soft-dot": {
+      "page": "aura-vfx-2k",
+      "rect": [
+        4,
+        4,
+        256,
+        256
+      ],
+      "columns": 1,
+      "rows": 1,
+      "frames": 1
+    },
+    "glow": {
+      "page": "aura-vfx-2k",
+      "rect": [
+        264,
+        4,
+        256,
+        256
+      ],
+      "columns": 1,
+      "rows": 1,
+      "frames": 1
+    },
+    "flare": {
+      "page": "aura-vfx-2k",
+      "rect": [
+        524,
+        4,
+        256,
+        256
+      ],
+      "columns": 1,
+      "rows": 1,
+      "frames": 1
+    },
+    "spark-streak": {
+      "page": "aura-vfx-2k",
+      "rect": [
+        784,
+        4,
+        256,
+        256
+      ],
+      "columns": 1,
+      "rows": 1,
+      "frames": 1
+    },
+    "ring": {
+      "page": "aura-vfx-2k",
+      "rect": [
+        1044,
+        4,
+        256,
+        256
+      ],
+      "columns": 1,
+      "rows": 1,
+      "frames": 1
+    },
+    "ring-thin": {
+      "page": "aura-vfx-2k",
+      "rect": [
+        1304,
+        4,
+        256,
+        256
+      ],
+      "columns": 1,
+      "rows": 1,
+      "frames": 1
+    },
+    "dust-mote": {
+      "page": "aura-vfx-2k",
+      "rect": [
+        1564,
+        4,
+        256,
+        256
+      ],
+      "columns": 1,
+      "rows": 1,
+      "frames": 1
+    },
+    "bubble": {
+      "page": "aura-vfx-2k",
+      "rect": [
+        4,
+        264,
+        256,
+        256
+      ],
+      "columns": 1,
+      "rows": 1,
+      "frames": 1
+    },
+    "rain-streak": {
+      "page": "aura-vfx-2k",
+      "rect": [
+        264,
+        264,
+        256,
+        256
+      ],
+      "columns": 1,
+      "rows": 1,
+      "frames": 1
+    },
+    "snowflake": {
+      "page": "aura-vfx-2k",
+      "rect": [
+        524,
+        264,
+        256,
+        256
+      ],
+      "columns": 1,
+      "rows": 1,
+      "frames": 1
+    },
+    "smoke-a": {
+      "page": "aura-vfx-2k",
+      "rect": [
+        784,
+        264,
+        512,
+        512
+      ],
+      "columns": 2,
+      "rows": 2,
+      "frames": 4,
+      "fps": 12,
+      "loop": true
+    },
+    "smoke-b": {
+      "page": "aura-vfx-2k",
+      "rect": [
+        1304,
+        264,
+        512,
+        512
+      ],
+      "columns": 2,
+      "rows": 2,
+      "frames": 4,
+      "fps": 12,
+      "loop": true
+    },
+    "fireball": {
+      "page": "aura-vfx-2k",
+      "rect": [
+        4,
+        524,
+        1024,
+        512
+      ],
+      "columns": 4,
+      "rows": 2,
+      "frames": 8,
+      "fps": 24
+    },
+    "flame-loop": {
+      "page": "aura-vfx-2k",
+      "rect": [
+        4,
+        784,
+        1024,
+        512
+      ],
+      "columns": 4,
+      "rows": 2,
+      "frames": 8,
+      "fps": 16,
+      "loop": true
+    },
+    "muzzle": {
+      "page": "aura-vfx-2k",
+      "rect": [
+        1044,
+        784,
+        256,
+        256
+      ],
+      "columns": 1,
+      "rows": 1,
+      "frames": 1
+    },
+    "splash": {
+      "page": "aura-vfx-2k",
+      "rect": [
+        1304,
+        784,
+        512,
+        512
+      ],
+      "columns": 2,
+      "rows": 2,
+      "frames": 4,
+      "fps": 10
+    },
+    "electric": {
+      "page": "aura-vfx-2k",
+      "rect": [
+        4,
+        1044,
+        512,
+        256
+      ],
+      "columns": 2,
+      "rows": 1,
+      "frames": 2,
+      "fps": 30,
+      "loop": true
+    },
+    "debris-chips": {
+      "page": "aura-vfx-2k",
+      "rect": [
+        524,
+        1044,
+        512,
+        256
+      ],
+      "columns": 2,
+      "rows": 1,
+      "frames": 2,
+      "fps": 6
+    }
+  },
+  "decals": {
+    "entries": {
+      "scorch": {
+        "page": "aura-vfx-2k-decals",
+        "rect": [
+          0,
+          0,
+          1024,
+          1024
+        ]
+      },
+      "crack": {
+        "page": "aura-vfx-2k-decals",
+        "rect": [
+          1024,
+          0,
+          1024,
+          1024
+        ]
+      },
+      "tyre-track": {
+        "page": "aura-vfx-2k-decals",
+        "rect": [
+          0,
+          1024,
+          1024,
+          1024
+        ]
+      },
+      "puddle": {
+        "page": "aura-vfx-2k-decals",
+        "rect": [
+          1024,
+          1024,
+          1024,
+          1024
+        ]
+      }
+    },
+    "albedo": [
+      {
+        "id": "aura-vfx-2k-decals",
+        "uri": "aura-vfx-2k-decals.png",
+        "size": 2048,
+        "premultiplied": true,
+        "colorSpace": "srgb"
+      },
+      {
+        "id": "aura-vfx-2k-decals-half",
+        "uri": "aura-vfx-2k-decals-half.png",
+        "size": 1024,
+        "premultiplied": true,
+        "colorSpace": "srgb"
+      }
+    ],
+    "normal": [
+      {
+        "id": "aura-vfx-2k-decals-normal",
+        "uri": "aura-vfx-2k-decals-normal.png",
+        "size": 2048,
+        "premultiplied": false,
+        "colorSpace": "linear"
+      },
+      {
+        "id": "aura-vfx-2k-decals-half-normal",
+        "uri": "aura-vfx-2k-decals-half-normal.png",
+        "size": 1024,
+        "premultiplied": false,
+        "colorSpace": "linear"
+      }
+    ],
+    "roughness": [
+      {
+        "id": "aura-vfx-2k-decals-roughness",
+        "uri": "aura-vfx-2k-decals-roughness.png",
+        "size": 2048,
+        "premultiplied": false,
+        "colorSpace": "linear"
+      },
+      {
+        "id": "aura-vfx-2k-decals-half-roughness",
+        "uri": "aura-vfx-2k-decals-half-roughness.png",
+        "size": 1024,
+        "premultiplied": false,
+        "colorSpace": "linear"
+      }
+    ]
+  }
+}

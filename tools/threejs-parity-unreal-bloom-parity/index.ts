@@ -70,7 +70,6 @@ interface DiffStats {
   readonly meanDelta: number;
   readonly maxDelta: number;
   readonly changedPixels: number;
-  readonly structuralSimilarityProxy: number;
 }
 
 interface FrameCost { readonly samples: number; readonly medianMs: number; readonly p95Ms: number }
@@ -144,7 +143,7 @@ async function run(): Promise<void> {
       },
       dataUrls: { a3d: a3d.dataUrl, threejs: threejs.dataUrl, sideBySide },
       humanNotes: [
-        `Mean RGB delta is ${diff.meanDelta}; structural similarity proxy is ${diff.structuralSimilarityProxy}.`,
+        `Mean RGB delta is ${diff.meanDelta}.`,
         "Three.js reference uses an actual EffectComposer with RenderPass and UnrealBloomPass.",
         "This artifact gates bounded threshold/radius/halo behavior for the CurrentRoutes bloom workload; it is not a blanket postprocessing equality claim."
       ]
@@ -396,8 +395,7 @@ function computeDiff(left: ImageData, right: ImageData): DiffStats {
   return {
     meanDelta: Number(meanDelta.toFixed(4)),
     maxDelta: Number(maxDelta.toFixed(4)),
-    changedPixels,
-    structuralSimilarityProxy: Number(Math.max(0, 1 - meanDelta / 255).toFixed(4))
+    changedPixels, 1 - meanDelta / 255).toFixed(4))
   };
 }
 
@@ -416,7 +414,7 @@ async function drawSideBySide(canvas: HTMLCanvasElement, a3dDataUrl: string, thr
   context.fillText("Left: A3D bloom chain | Right: Three.js EffectComposer + UnrealBloomPass", 20, SCENE.height + 28);
   context.fillStyle = "#aeb8c6";
   context.font = "16px system-ui, sans-serif";
-  context.fillText(`mean delta ${diff.meanDelta} | changed ${diff.changedPixels} | SSIM proxy ${diff.structuralSimilarityProxy}`, 20, SCENE.height + 50);
+  context.fillText(`mean delta ${diff.meanDelta} | changed ${diff.changedPixels}`, 20, SCENE.height + 50);
   return canvas.toDataURL("image/png");
 }
 
