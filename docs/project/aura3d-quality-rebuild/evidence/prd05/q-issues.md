@@ -260,3 +260,25 @@ main because the gate scans the whole tree regardless of the diff.
 Meanwhile: lane 05 adds no GLSL strings, no package exports, and no
 `packages/*/src` value-imports across the banned boundaries; the failure is
 informational for this lane.
+
+## Q-15-5 → lane 15 (per-frame camera channel for `prd05.typed-glb-actor-lod`)
+
+`registerTypedGLBActorExtension`'s `collectRenderItems(actor, items)` (PR
+0b-3) carries no frame-camera input, and `actor.pipeline.camera` is frozen
+at pipeline load (`ProductionGLTFRenderPipeline.ts:259` — a one-shot
+`toRendererInput` framing camera). `compiler/renderInput.ts` computes the
+live `viewProjectionMatrix` at :131 before calling
+`entry.actor.collectRenderItems({ modelMatrix, wrinkleStrength })`, so the
+LOD selector sees a stale camera and coverage never follows a dolly in-app.
+
+Ask: forward the frame camera through `TypedGLBActorTransformOptions`
+(`viewProjectionMatrix`/`viewMatrix`/`projectionMatrix` — the fields the
+`LodCamera` interface already consumes), or publish a mutable frame camera
+onto actor pipelines before item collection. Lane-05 side consumes either;
+`TypedGLBActorLod.ts` already reads `camera:` from a `LodCamera`-shaped
+object and just needs the live instance.
+
+Meanwhile: the standalone gate `tests/qr/prd05/browser/assets-lod-transition`
+drives `collectRenderItems` per frame against a mutated `pipeline.camera`,
+which proves selection, hysteresis, and per-chain switching end-to-end; the
+integrated per-frame path activates the moment the request lands.

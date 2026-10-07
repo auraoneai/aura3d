@@ -8,8 +8,24 @@
  */
 import { resolveCompressedTextureFormatSlot } from "../contracts/textureFormats.js";
 import { probeCompressedTextureCapabilities, resolveCompressedTextureFormatReal } from "../webgl2/TextureFormats.js";
+import { registerShaderChunk, registerShaderFeature } from "../contracts/program.js";
+import { registerDepthVariantFeature } from "../contracts/shadows.js";
+import {
+  lodDitherParsChunk,
+  lodDitherDiscardChunk,
+  lodDitherFeature,
+  lodDitherDepthFeature
+} from "../shaders/lod-dither.glsl.js";
 
 resolveCompressedTextureFormatSlot().provide(resolveCompressedTextureFormatReal);
+
+// PRD-05 §6.3.8 — `a3d_prd05_lod_dither` chunks + forward/depth features.
+// Registration is inert while `A3D_QR_ASSETS_LOD` is off; the feature only
+// selects draws that carry `RenderItem.lodFade`.
+registerShaderChunk(lodDitherParsChunk);
+registerShaderChunk(lodDitherDiscardChunk);
+registerShaderFeature(lodDitherFeature);
+registerDepthVariantFeature(lodDitherDepthFeature);
 
 export { probeCompressedTextureCapabilities, resolveCompressedTextureFormatReal } from "../webgl2/TextureFormats.js";
 export { resolveCompressedTextureFormatSlot } from "../contracts/textureFormats.js";

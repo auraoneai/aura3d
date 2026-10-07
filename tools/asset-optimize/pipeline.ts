@@ -4,7 +4,7 @@
  */
 
 import { NodeIO } from "@gltf-transform/core";
-import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
+import { ALL_EXTENSIONS, EXTMeshoptCompression } from "@gltf-transform/extensions";
 import { MeshoptDecoder, MeshoptEncoder } from "meshoptimizer";
 import { createDecoderModule, createEncoderModule } from "draco3d";
 import { mkdtempSync, rmSync } from "node:fs";
@@ -17,6 +17,8 @@ import { stepJoin } from "./steps/join.js";
 import { stepPalette } from "./steps/palette.js";
 import { stepResize } from "./steps/resize.js";
 import { stepTangents } from "./steps/tangents.js";
+import { stepLod } from "./steps/lod.js";
+import { stepColliders } from "./steps/colliders.js";
 import { stepQuantize } from "./steps/quantize.js";
 import { stepCompress } from "./steps/compress.js";
 import { stepKtx2 } from "./steps/ktx2.js";
@@ -36,6 +38,8 @@ export interface OptimizeGlbOptions {
 export interface OptimizeGlbResult {
   readonly glb: Uint8Array;
   readonly mobile?: Uint8Array;
+  /** `<id>.<hash8>.collision.glb` sidecar bytes when the profile asks for colliders. */
+  readonly collisionGlb?: Uint8Array;
   readonly budget: AssetBudgetMeasurement;
   readonly budgetBefore: AssetBudgetMeasurement;
   readonly steps: readonly OptimizeStepRecord[];
@@ -56,7 +60,7 @@ export async function makeOptimizeIo(): Promise<NodeIO> {
     });
 }
 
-const STEP_ORDER = [stepWeld, stepDedup, stepJoin, stepPalette, stepResize, stepTangents, stepQuantize, stepCompress, stepKtx2] as const;
+const STEP_ORDER = [stepWeld, stepDedup, stepJoin, stepPalette, stepResize, stepTangents, stepLod, stepColliders, stepQuantize, stepCompress, stepKtx2] as const;
 
 async function runSteps(
   source: Uint8Array,
@@ -64,7 +68,7 @@ async function runSteps(
   opts: OptimizeGlbOptions,
   io: NodeIO,
   workDir: string
-): Promise<{ glb: Uint8Array; ctx: OptimizeStepContext; budget: AssetBudgetMeasurement; budgetBefore: AssetBudgetMeasurement }> {
+): Promise<{ glb: Uint8Array; collisionGlb?: Uint8Array; ctx: OptimizeStepContext; budget: AssetBudgetMeasurement; budgetBefore: AssetBudgetMeasurement }> {
   const doc = await io.readBinary(source);
   const budgetBefore = measureBudget(doc);
   const ctx: OptimizeStepContext = {
@@ -80,7 +84,17 @@ async function runSteps(
   };
   for (const step of STEP_ORDER) await step(doc, ctx);
   const glb = await io.writeBinary(doc);
-  return { glb, ctx, budget: measureBudget(doc, ctx), budgetBefore };
+  let collisionGlb: Uint8Array | undefined;
+  if (ctx.collisionDoc) {
+    // §6.3.7 "meshopt-compressed": encode bufferViews through
+    // EXT_meshopt_compression WITHOUT the reorder/quantize transforms — the
+    // sidecar keeps float positions so any glTF reader (physics-rapier's
+    // sidecar parser included) decodes exact vertices.
+    await MeshoptEncoder.ready;
+    ctx.collisionDoc.createExtension(EXTMeshoptCompression).setRequired(true);
+    collisionGlb = await io.writeBinary(ctx.collisionDoc);
+  }
+  return { glb, collisionGlb, ctx, budget: measureBudget(doc, ctx), budgetBefore };
 }
 
 export async function optimizeGLB(source: Uint8Array, opts: OptimizeGlbOptions): Promise<OptimizeGlbResult> {
@@ -88,6 +102,7 @@ export async function optimizeGLB(source: Uint8Array, opts: OptimizeGlbOptions):
   const workDir = mkdtempSync(join(tmpdir(), "asset-optimize-"));
   try {
     const main = await runSteps(source, opts.profile, opts, io, workDir);
+    const collisionGlb = main.collisionGlb;
     let mobile: Uint8Array | undefined;
     if (opts.mobileCap && opts.profile.textures.maxSize > opts.mobileCap) {
       const mobileProfile = { ...opts.profile, textures: { ...opts.profile.textures, maxSize: opts.mobileCap } };
@@ -102,6 +117,7 @@ export async function optimizeGLB(source: Uint8Array, opts: OptimizeGlbOptions):
     ].filter((d): d is "meshopt" | "draco" | "ktx2" => d !== undefined);
     return {
       glb: main.glb,
+      collisionGlb,
       mobile,
       budget: main.budget,
       budgetBefore: main.budgetBefore,

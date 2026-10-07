@@ -60,7 +60,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install chromium
       - name: Compressed GLB decoder gate (ANGLE Metal)
-        run: pnpm exec playwright test --config tests/qr/prd05/playwright.config.ts --grep "PRD-05 compressed GLB"
+        run: pnpm exec playwright test --config tests/qr/prd05/playwright.config.ts --grep "PRD-05"
       - name: Upload reports
         if: always()
         uses: actions/upload-artifact@v4

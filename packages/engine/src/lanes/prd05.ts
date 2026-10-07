@@ -8,6 +8,7 @@
  * both go through these.
  */
 import type { AssetDecoderRegistry } from "@aura3d/assets/browser";
+import "../agent-api/compiler/diagnosticOnly.prd05.js";
 
 export {
   createAppAssetDecoders,
