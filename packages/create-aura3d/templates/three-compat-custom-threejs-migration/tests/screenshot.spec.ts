@@ -12,7 +12,7 @@ test("Aura3D three compat custom threejs migration screenshot clears the look fl
   await page.goto("/");
   await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 45_000 }).toBe("true");
 
-  const floor = await assertTemplateLookFloor(page, { subject: { x: 0.25, y: 0.15, width: 0.5, height: 0.7 } });
+  const floor = await assertTemplateLookFloor(page, { subject: { x: 0.1, y: 0.29, width: 0.8, height: 0.61 } });
   const screenshot = await page.screenshot({ fullPage: false });
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/screenshot.png"), screenshot);

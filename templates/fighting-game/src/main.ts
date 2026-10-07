@@ -1,4 +1,8 @@
-import { camera, createGameApp, effects, game, lights, looks, scene, ui } from "@aura3d/engine";
+import { camera, effects, game, lights, looks, scene, ui } from "@aura3d/engine";
+// PRD-09: mounted via the shared runtime — createGame owns mount/lifecycle,
+// the §7.7 fighting HUD theme, the §6.11 dpad-4btn touch preset,
+// game-sfx-core cues, and the juice event map.
+import { createGame, sfxUrl } from "@aura3d/engine/game";
 import { assets } from "./aura-assets";
 import {
   animationLayer,
@@ -26,6 +30,7 @@ import {
 import "./styles.css";
 
 type Aura3DGameWindow = Window & {
+  __AURA3D_GAME__?: { readonly state?: string };
   __AURA3D_GAME_DEBUG__?: unknown;
   __AURA3D_GAME_EVIDENCE__?: unknown;
   __AURA3D_GAME_RUNTIME__?: unknown;
@@ -86,36 +91,53 @@ const hudReplay = ui.text("#hud-replay");
 const replayButton = ui.button("#hud-replay-button");
 const pauseButton = ui.button("#hud-pause-button");
 
-const hudBindings = game.hud.bindings([
-  game.hud.health({ actorId: "player", label: "Player health", a11yLabel: "player health" }),
-  game.hud.health({ actorId: "rival", label: "Rival health", a11yLabel: "rival health" }),
-  game.hud.meter({ actorId: "player", label: "Player meter", a11yLabel: "player special meter" }),
-  game.hud.timer({ label: "Round timer", valuePath: "round.timeRemaining", a11yLabel: "round timer" }),
-  game.hud.combo({ actorId: "player", label: "Player combo", valuePath: "combat.player.combo", a11yLabel: "player combo" }),
-  game.hud.round({ label: "Round", valuePath: "round.index", a11yLabel: "round index" }),
-  game.hud.debugToggle({ label: "Runtime evidence", action: "debug", statePath: "debug.visible" })
-]);
+// Descriptor literals replace the deprecated game.hud.* / game.accessibility.*
+// helpers — same evidence shape, no factory call.
+const hudBindings = [
+  { kind: "aura-game-hud-binding", owner: "app", binding: "health", id: "hud:player:health", label: "Player health", source: "combat", targetId: "player", valuePath: "combat.actors.player.health", maxPath: "rules.maxHealth", format: "percent", a11yLabel: "player health" },
+  { kind: "aura-game-hud-binding", owner: "app", binding: "health", id: "hud:rival:health", label: "Rival health", source: "combat", targetId: "rival", valuePath: "combat.actors.rival.health", maxPath: "rules.maxHealth", format: "percent", a11yLabel: "rival health" },
+  { kind: "aura-game-hud-binding", owner: "app", binding: "meter", id: "hud:player:meter", label: "Player meter", source: "combat", targetId: "player", valuePath: "combat.actors.player.meter", maxPath: "rules.maxMeter", format: "percent", a11yLabel: "player super meter value" },
+  { kind: "aura-game-hud-binding", owner: "app", binding: "timer", id: "hud:round:timer", label: "Round timer", source: "app-state", valuePath: "round.timeRemaining", format: "clock", a11yLabel: "round timer" },
+  { kind: "aura-game-hud-binding", owner: "app", binding: "combo", id: "hud:player:combo", label: "Player combo", source: "combat", targetId: "player", valuePath: "combat.player.combo", format: "number", a11yLabel: "player combo" },
+  { kind: "aura-game-hud-binding", owner: "app", binding: "round", id: "hud:round:index", label: "Round", source: "app-state", valuePath: "round.index", format: "number", a11yLabel: "round index" },
+  { kind: "aura-game-hud-binding", owner: "app", binding: "debug-toggle", id: "hud:debug:toggle", label: "Runtime evidence", source: "app-state", valuePath: "debug.visible", format: "boolean", a11yLabel: "runtime evidence toggle", debugOnly: true }
+] as const;
 
 const accessibilitySources = [
-  game.accessibility.label({
-    targetId: "hud",
+  {
+    kind: "aura-game-accessibility-source", feature: "label", id: "a11y:hud:label", owner: "app",
     label: "Live fighting game HUD with health, timer, stage, assets, and replay status.",
-    live: true
-  }),
-  game.accessibility.focus({
-    scopeId: "hud-controls",
-    label: "HUD controls",
-    targets: ["#hud-replay-button", "#hud-pause-button"]
-  }),
-  game.accessibility.reducedMotion({ enabled: reducedMotion }),
-  game.accessibility.reducedFlash({ enabled: reducedFlash }),
-  game.accessibility.highContrast({ enabled: highContrast }),
-  game.accessibility.pauseControls({
-    actions: ["pause", "Escape"],
-    resumeActions: ["pause", "Enter"],
-    menuId: "hud-controls"
-  })
-];
+    targetId: "hud", role: "status", actions: [], source: "dom",
+    evidence: "App owns an aria-live label for this gameplay target."
+  },
+  {
+    kind: "aura-game-accessibility-source", feature: "focus", id: "a11y:hud-controls:focus", owner: "app",
+    label: "HUD controls", targetId: "hud-controls",
+    actions: ["#hud-replay-button", "#hud-pause-button"], source: "dom",
+    evidence: "Focus is scoped to the replay and pause controls."
+  },
+  {
+    kind: "aura-game-accessibility-source", feature: "reduced-motion", id: "a11y:reduced-motion", owner: "app",
+    label: "reduced motion", actions: [], source: "media-query",
+    evidence: reducedMotion ? "prefers-reduced-motion is enabled." : "prefers-reduced-motion is not set."
+  },
+  {
+    kind: "aura-game-accessibility-source", feature: "reduced-flash", id: "a11y:reduced-flash", owner: "app",
+    label: "reduced flash", actions: [], source: "media-query",
+    evidence: reducedFlash ? "Reduced flash enabled via reduced-motion preference." : "Reduced flash not required."
+  },
+  {
+    kind: "aura-game-accessibility-source", feature: "high-contrast", id: "a11y:high-contrast", owner: "app",
+    label: "high contrast", actions: [], source: "media-query",
+    evidence: highContrast ? "prefers-contrast: more is enabled." : "prefers-contrast: more is not set."
+  },
+  {
+    kind: "aura-game-accessibility-source", feature: "pause-controls", id: "a11y:pause-controls", owner: "app",
+    label: "pause controls", targetId: "hud-controls",
+    actions: ["pause", "Escape"], source: "app-state",
+    evidence: "Pause/resume through the pause action or Escape; resume via pause or Enter."
+  }
+] as const;
 
 const inputOptions = {
   actions: {
@@ -145,15 +167,48 @@ const arena = scene()
   ])
   .camera(camera.perspective({ position: [0, 1.75, 5.8], target: [0, 0.85, 0], fov: 42 }));
 
-const gameApp = createGameApp("#app", {
+const fightingGame = createGame({
+  id: "fighting-game",
+  target: "#app",
+  autoStart: true,
   diagnostics: { overlay: false, performancePanel: false },
   input: inputOptions,
   loop: { fixedDt: 1 / 60 },
-  scene: arena
+  scene: () => arena,
+  hud: { theme: "fighting", widgets: [] },
+  touch: {
+    preset: "dpad-4btn",
+    bindings: { left: "left", right: "right", block: "guard", light: "light", heavy: "heavy", special: "special", jump: "jump" }
+  },
+  sound: {
+    cues: {
+      hit: { id: "hit", asset: { url: sfxUrl("impact.flesh.medium.00") }, volume: 0.7 },
+      blocked: { id: "blocked", asset: { url: sfxUrl("impact.metal.light.00") }, volume: 0.6 },
+      special: { id: "special", asset: { url: sfxUrl("impact.energy.heavy.00") }, volume: 0.8 },
+      dash: { id: "dash", asset: { url: sfxUrl("vehicle.boost") }, volume: 0.35 },
+      "replay-start": { id: "replay-start", asset: { url: sfxUrl("ui.confirm.00") }, volume: 0.5 }
+    }
+  },
+  juice: {
+    hit: { hitStop: 0.045, shake: 0.32, punch: { fovDeg: 1.8, ms: 160 }, rumble: { strong: 0.5, ms: 140 } },
+    blocked: { shake: 0.14, rumble: { weak: 0.4, ms: 100 } },
+    special: { hitStop: 0.06, punch: { fovDeg: 2.4, ms: 260 }, flash: { color: "#45f5bb", peak: 0.2, ms: 240 }, rumble: { strong: 0.7, ms: 260 } },
+    dash: { punch: { fovDeg: 1.1, ms: 120 } }
+  },
+  qualityRebuild: { flags: ["game"] },
+  evidence: {
+    schema: 1,
+    sections: {
+      fightingGame: () => ({
+        replay: gameWindow.__AURA3D_GAME_REPLAY__ ?? { status: "unbound" },
+        debug: gameWindow.__AURA3D_GAME_DEBUG__ ?? { status: "unbound" },
+        source: gameWindow.__AURA3D_GAME_SOURCE__ ?? { status: "unbound" }
+      })
+    }
+  }
 });
-
-const app = gameApp.app;
-const input = gameApp.input;
+const app = fightingGame.app;
+const input = fightingGame.input;
 if (!input) throw new Error("create-aura3d fighting-game template failed to create runtime-owned input.");
 const replayInput = game.input({ ...inputOptions, autoListen: false, gamepad: false });
 const openingReplay = game.inputReplay(
@@ -212,9 +267,11 @@ gameWindow.__AURA3D_GAME_SOURCE__ = {
   publicEngineApi: true,
   look: { id: LOOK_ID, category: "studio", biome: "interior-industrial" },
   lifecycle: {
-    kind: gameApp.kind,
-    usesCreateGameApp: true,
-    runtimeEvidenceGlobal: "__AURA3D_GAME_RUNTIME__"
+    kind: "createGame",
+    usesCreateGameApp: false,
+    usesCreateGame: true,
+    beaconGlobal: "__AURA3D_GAME__",
+    evidenceGlobal: "__AURA3D_GAME_EVIDENCE__"
   },
   typedAssetPattern: "src/aura-assets.ts",
   typedAssetKeys: REQUIRED_FIGHTER_ASSETS,
@@ -246,6 +303,7 @@ let playerClip: FighterClip = "idle";
 let rivalClip: FighterClip = "idle";
 
 ui.onClick(replayButton, () => {
+  void fightingGame.sound?.cue("replay-start");
   replayActive = true;
   replayHitCount = 0;
   replayDriver.reset();
@@ -255,13 +313,11 @@ ui.onClick(replayButton, () => {
 
 ui.onClick(pauseButton, () => setPaused(!paused));
 
-gameApp.onFrame(({ dt }) => {
+app.onFrame(({ dt }) => {
   const activeInput = replayActive ? replayInput : input;
   if (replayActive) {
     replayDriver.step(dt);
     if (replayDriver.snapshot().complete) replayActive = false;
-  } else {
-    input.update(dt);
   }
 
   if (activeInput.pressed("pause")) setPaused(!paused);
@@ -279,6 +335,8 @@ gameApp.onFrame(({ dt }) => {
   if (activeInput.pressed("dash")) {
     playerBody.dash([playerBody.facing, 0, 0], 8);
     runtimeEffects.dashTrail(playerBody.position, { ownerId: "player", intensity: 0.55 });
+    fightingGame.juice.fire("dash");
+    void fightingGame.sound?.cue("dash");
   }
 
   aiCooldown -= dt;
@@ -301,7 +359,11 @@ gameApp.onFrame(({ dt }) => {
         : undefined;
   if (playerAttack) {
     combat.beginAttack("player", playerAttack);
-    if (playerAttack.id.includes("special")) runtimeEffects.auraBurst(playerBody.position, { ownerId: "player", intensity: 0.7 });
+    if (playerAttack.id.includes("special")) {
+      runtimeEffects.auraBurst(playerBody.position, { ownerId: "player", intensity: 0.7 });
+      fightingGame.juice.fire("special");
+      void fightingGame.sound?.cue("special");
+    }
   }
 
   playerBody.update(dt);
@@ -320,6 +382,8 @@ gameApp.onFrame(({ dt }) => {
         totalHitCount += 1;
         if (replayActive || replayDriver.snapshot().frame > 0) replayHitCount += 1;
       }
+      fightingGame.juice.fire(event.type);
+      void fightingGame.sound?.cue(event.type);
       if (event.targetId === "player") playerBody.applyKnockback([event.attackerId === "rival" ? -2.2 : 2.2, 1.5, 0]);
       if (event.targetId === "rival") rivalBody.applyKnockback([event.attackerId === "player" ? 2.2 : -2.2, 1.5, 0]);
     }
@@ -396,7 +460,11 @@ gameApp.onFrame(({ dt }) => {
     totalHitCount,
     liveInputEvents: input.recorded()
   };
-  gameWindow.__AURA3D_GAME_RUNTIME__ = gameApp.evidence;
+  gameWindow.__AURA3D_GAME_RUNTIME__ = {
+    kind: "createGame",
+    beacon: gameWindow.__AURA3D_GAME__ ?? { state: "unbound" },
+    frame: app.runtime.frame
+  };
   gameWindow.__AURA3D_GAME_DEBUG__ = game.debug.overlay({
     runtime: app.runtime,
     input: activeInput,
@@ -434,8 +502,8 @@ function setPaused(next: boolean): void {
   paused = next;
   ui.setPressed(pauseButton, paused);
   ui.setText(pauseButton, paused ? "Resume" : "Pause");
-  if (paused) gameApp.pause();
-  else gameApp.resume();
+  if (paused) app.pause();
+  else app.resume();
 }
 
 function syncFighterAnimation(controller: ReturnType<typeof createFighterAnimationController>, clip: FighterClip, dt: number): void {

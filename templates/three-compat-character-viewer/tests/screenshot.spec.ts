@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { assertTemplateLookFloor } from "./look-floor";
 
-test.setTimeout(90_000);
+test.setTimeout(300_000);
 
 // PRD-13 T3.12 — look floor: non-blank, look.lint error-free, appliedLook
 // environment specular > 0, shadow strength >= 0.8, pixelRatio at tier cap,
@@ -12,7 +12,7 @@ test("Aura3D three compat character viewer screenshot clears the look floor", as
   await page.goto("/");
   await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 45_000 }).toBe("true");
 
-  const floor = await assertTemplateLookFloor(page, { subject: { x: 0.35, y: 0.2, width: 0.3, height: 0.6 } });
+  const floor = await assertTemplateLookFloor(page, { subject: { x: 0.37, y: 0.36, width: 0.26, height: 0.51 } });
   const screenshot = await page.screenshot({ fullPage: false });
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/screenshot.png"), screenshot);

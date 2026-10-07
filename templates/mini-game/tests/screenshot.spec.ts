@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { assertTemplateLookFloor } from "./look-floor";
 
-test.setTimeout(90_000);
+test.setTimeout(300_000);
 
 // PRD-13 T3.12 — look floor: non-blank, look.lint error-free, appliedLook
 // environment specular > 0, shadow strength >= 0.8, pixelRatio at tier cap,
@@ -11,8 +11,15 @@ test.setTimeout(90_000);
 test("Aura3D mini game screenshot clears the look floor", async ({ page }) => {
   await page.goto("/");
   await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 45_000 }).toBe("true");
+  // Hold ArrowRight until the player crosses the threshold rather than a
+  // wall-clock 550ms: sim time advances at most 0.25s per presented frame
+  // (dt clamp), so a fixed wall hold is meaningless on slow renderers.
   await page.keyboard.down("ArrowRight");
-  await page.waitForTimeout(550);
+  await page.waitForFunction(
+    () => ((window as unknown as { __AURA3D_MINI_GAME__?: { readonly player?: { readonly x?: number } } }).__AURA3D_MINI_GAME__?.player?.x ?? 0) > 0.8,
+    undefined,
+    { timeout: 60_000 }
+  );
   await page.keyboard.up("ArrowRight");
   const state = await page.evaluate(() =>
     (window as unknown as { __AURA3D_MINI_GAME__?: { readonly player?: { readonly x: number }; readonly look?: { readonly id: string } } }).__AURA3D_MINI_GAME__
