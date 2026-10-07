@@ -87,6 +87,8 @@ const isLocal = (game) => localBuildAll || game.deployed === false;
 // C-33 (PR 0b-3): --flags passthrough. Appends `a3d-qr=<list>` to every captured URL; the
 // engine's resolveQrFlags reads the same param. Per-game `qrFlags[]` union in on top.
 const qrFlags = opt("--flags", "QRC_FLAGS", "none");
+// T1.13: extra 01-title recaptures per run so title determinism can be measured on the runner.
+const titleRepeats = Math.max(0, Number(opt("--title-repeats", "QRC_TITLE_REPEATS", "0")) || 0);
 if (qrFlags !== "none" && qrFlags !== "all" && !/^[A-Za-z0-9_,.-]+$/.test(qrFlags)) {
   console.error(`--flags must be "none", "all", or a comma list of flag ids; got "${qrFlags}"`);
   process.exit(2);
@@ -814,6 +816,13 @@ async function captureRun(browser, game, run, url, gameDir, options = {}) {
     record.dpr = snapshot?.dpr ?? null;
     record.engineAtTitle = snapshot?.engine ?? null;
 
+    // T1.13: repeat the title frame N times in the same run (after a settle, same context)
+    // so determinism = byte-identical across repeats can be asserted offline.
+    for (let k = 1; k <= (options.titleRepeats ?? 0); k++) {
+      await sleep(400);
+      await timeline.shot(`01-title.repeat-${k}`);
+    }
+
     await timeline.play(game.timeline);
     // Let a still-running FPS sample finish (it starts with the timeline's first step).
     for (let i = 0; i < 70; i++) {
@@ -1009,7 +1018,7 @@ async function main() {
       if (includeMobile) runs.push(MOBILE_RUN);
       for (const run of runs) {
         if (Date.now() - gameStarted > gameTimeoutMs) { result.error = "game timeout"; break; }
-        const record = await captureRun(browser, game, run, captureUrlFor(game, `${origin}${game.route}`), gameDir, run.mobile ? { stopAfterShot: defaults.mobileStopAfterShot ?? "03-mid" } : {});
+        const record = await captureRun(browser, game, run, captureUrlFor(game, `${origin}${game.route}`), gameDir, { titleRepeats, ...(run.mobile ? { stopAfterShot: defaults.mobileStopAfterShot ?? "03-mid" } : {}) });
         result.runs.push(record);
         environment.probeRenderer ??= record.gl?.probe?.unmaskedRenderer ?? record.gl?.probe?.renderer ?? null;
         log(`  ${run.name}: shots=${record.shots.length} fps=${record.fps?.fps ?? "?"} firstDraw=${record.timing?.firstDrawCallMs ?? "?"}ms ready=${record.timing?.readiness ?? "?"} err=${record.consoleErrors.length}/${record.pageErrors.length} net=${record.failedRequests.length}${record.error ? ` ERROR ${record.error.slice(0, 120)}` : ""}`);
