@@ -1330,10 +1330,10 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
 - [x] T-5 `slowMo(scale, seconds, { easeOut })` + `scaleTo(value, halflife)` using `damp`. Unit test: `scaleTo(0.25, 0.1)`
   reaches 0.625 ± 0.01 after 0.1 s; `slowMo(0.3, 1, { easeOut: 0.2 })` returns to 1 ± 0.01 at t = 1.2 s.
 - [x] T-6 `app.time` via the C-38 `time` factory; `GameSession` delegation is PRD 09's (R15) and needs no request.
-- [ ] T-7 `GameRuntime.ts:3596, 3617` (`resolveAttack`): combat world, on hit event with `hitStop > 0` (seconds), calls
+- [x] T-7 `GameRuntime.ts:3596, 3617` (`resolveAttack`): combat world, on hit event with `hitStop > 0` (seconds), calls
   `app.time.hitStop(hitStop, { scope: [attackerId, defenderId] })` when the world is bound to an app (`combat({ app })` or
   `bind(app)`); option `autoHitStop` default true under the flag. Unit test with a fake app.
-- [ ] T-8 `GameFeel.ts:136-140`: when `gameFeel.attach(app)` is called, `hitStop(durationMs)` forwards to
+- [x] T-8 `GameFeel.ts:136-140`: when `gameFeel.attach(app)` is called, `hitStop(durationMs)` forwards to
   `app.time.hitStop(durationMs / 1000)`; `timeScale()` reads `app.time.scale`; `effectiveDt(dtMs)` keeps its ms contract.
   Update `tests/unit/engine/game-feel.test.ts` (lane 08) with a unit-conversion assertion (70 ms → 0.07 s).
 
@@ -1386,7 +1386,7 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
   occluder sets `cameraFade` only on that item and returns the input array unchanged with the flag off.
 - [x] C-12 Near-plane auto-adjust for chase/fighting/altitude rigs (`near = clamp(0.02·d, 0.05, 0.5)`, written through
   `setPose` into the existing `AuraCameraSpec.near`), unless the route passes `near` explicitly.
-- [ ] C-13 Carved `nodes/game/racingCamera.ts` (from `index.ts:7641-7650`): delete the composition-report/verdict-string
+- [x] C-13 Carved `nodes/game/racingCamera.ts` (from `index.ts:7641-7650`): delete the composition-report/verdict-string
   gate in `createGameRacingCameraRig` (extra arguments ignored, no throw). The turbo call-site cleanup
   (`apps/showcase-turbo-drift-circuit/src/main.ts:2789-2794`) is request Q-14-2.
 - [x] C-14 Golden tests `tests/qr/prd08/unit/camera-controller.test.ts`: record 40 (spec, time, subject) tuples from the
@@ -1431,13 +1431,13 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
 - [x] R-10 Framing solver `camera/framing.ts`: `distanceForFraction(h, fovDeg, p) = h / (2·tan(fov/2)·p)` and inverse
   `fractionForDistance`; for portrait aspects solve on the narrower (horizontal) axis using `ctx.aspect`. Unit tests
   round-trip within 1e-9 and a 390×844 case.
-- [ ] R-11 `GameSceneGeometryBindings.ts` (`createGameRacingPresentationCamera` `:469-531`, `createGamePlatformerPresentationCamera`
+- [x] R-11 `GameSceneGeometryBindings.ts` (`createGameRacingPresentationCamera` `:469-531`, `createGamePlatformerPresentationCamera`
   `:676-733`) and carved `nodes/game/racingCamera.ts` (from `index.ts:7605-7639`): with the flag on,
   `game.racingCameraRig` → `rigs.chase`, `game.platformerCameraRig` → `rigs.follow2d`, racing top-down → `rigs.topDown`;
   remove every hard-coded `smoothing` constant listed in §2.1 C10 from the flag-on path. `{ legacySpec: true }` and
   flag off return today's spec unchanged (snapshot test). The `game.*` keys in PRD 09's `nodes/game/index.ts` already
   reference these functions; no edit there.
-- [ ] R-12 `GameRuntime.ts:2734-2798`: re-implement `createGameCameraDirector` over `rigs.fighting` + controller shake;
+- [x] R-12 `GameRuntime.ts:2734-2798`: re-implement `createGameCameraDirector` over `rigs.fighting` + controller shake;
   keep `update()` return type; add `bind(app)`.
 
 ### Layers (Y)

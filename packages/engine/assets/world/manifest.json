@@ -9,6 +9,276 @@
       "hash": "sha256:0b555d94f52b9a9f3dd8f4adb857b60684c493035f4110218c96146584ebc4e1",
       "license": "CC0",
       "generated": "procedural twin of WindField.gustNoiseData()"
+    },
+    "world/kits/city/tower-8x8": {
+      "file": "kits/city/tower-8x8.glb",
+      "format": "glb",
+      "width": 0,
+      "height": 0,
+      "hash": "sha256:1fd4702b2eeb8751a5dd1a9c9936fa190512f7eca535d2e7eb7e304e19c6d5d6",
+      "license": "CC0",
+      "generated": "procedural kit mesh — tower-8x8"
+    },
+    "world/kits/city/wall-slab-4x3": {
+      "file": "kits/city/wall-slab-4x3.glb",
+      "format": "glb",
+      "width": 0,
+      "height": 0,
+      "hash": "sha256:11a63cec8d05bdb954335c7ce3a85deaa69d4320947fb0968a6613c3b05fdfc8",
+      "license": "CC0",
+      "generated": "procedural kit mesh — wall-slab-4x3"
+    },
+    "world/kits/city/street-lamp": {
+      "file": "kits/city/street-lamp.glb",
+      "format": "glb",
+      "width": 0,
+      "height": 0,
+      "hash": "sha256:707bb2a3fde80123cc203e8c28fdef9ed5f1a026345b7c0d22ee5a359b634350",
+      "license": "CC0",
+      "generated": "procedural kit mesh — street-lamp"
+    },
+    "world/kits/city/planter-2x1": {
+      "file": "kits/city/planter-2x1.glb",
+      "format": "glb",
+      "width": 0,
+      "height": 0,
+      "hash": "sha256:8cc47429f06866b7ce2a04472ade068f16af919d0efa1d277d9478d7a9bd691a",
+      "license": "CC0",
+      "generated": "procedural kit mesh — planter-2x1"
+    },
+    "world/kits/city/roof-unit-2x2": {
+      "file": "kits/city/roof-unit-2x2.glb",
+      "format": "glb",
+      "width": 0,
+      "height": 0,
+      "hash": "sha256:5f3dd5da78fa18427b6cc012f2cb5a8cf89319465d74f68972ac10d2542fd185",
+      "license": "CC0",
+      "generated": "procedural kit mesh — roof-unit-2x2"
+    },
+    "world/kits/city/barrier-2x1": {
+      "file": "kits/city/barrier-2x1.glb",
+      "format": "glb",
+      "width": 0,
+      "height": 0,
+      "hash": "sha256:92c7f84098f3b9cd3581a7c473f40e62dae5072027ee571769b9d6102cddc040",
+      "license": "CC0",
+      "generated": "procedural kit mesh — barrier-2x1"
+    },
+    "world/kits/interior/wall-seg-4x3": {
+      "file": "kits/interior/wall-seg-4x3.glb",
+      "format": "glb",
+      "width": 0,
+      "height": 0,
+      "hash": "sha256:968854f17304d63963985eea51012ff3a73a34330da35f8fddb9b0b71e52af1b",
+      "license": "CC0",
+      "generated": "procedural kit mesh — wall-seg-4x3"
+    },
+    "world/kits/interior/floor-tile-4x4": {
+      "file": "kits/interior/floor-tile-4x4.glb",
+      "format": "glb",
+      "width": 0,
+      "height": 0,
+      "hash": "sha256:554e10ee9189693e865f17e03d8c9420c68a84e400eb47a1e67b236e68de8bab",
+      "license": "CC0",
+      "generated": "procedural kit mesh — floor-tile-4x4"
+    },
+    "world/kits/interior/door-1x2": {
+      "file": "kits/interior/door-1x2.glb",
+      "format": "glb",
+      "width": 0,
+      "height": 0,
+      "hash": "sha256:5311f3045d01a887a0b4c225f9d23877335ac6cb1e0a92b8974e86375d65971f",
+      "license": "CC0",
+      "generated": "procedural kit mesh — door-1x2"
+    },
+    "world/kits/interior/ceiling-lamp": {
+      "file": "kits/interior/ceiling-lamp.glb",
+      "format": "glb",
+      "width": 0,
+      "height": 0,
+      "hash": "sha256:936447fc47a4a1cfd5ffac91a634015d99c4e9118a7b7202b1a7ea3493cb5913",
+      "license": "CC0",
+      "generated": "procedural kit mesh — ceiling-lamp"
+    },
+    "world/kits/interior/crate-1x1": {
+      "file": "kits/interior/crate-1x1.glb",
+      "format": "glb",
+      "width": 0,
+      "height": 0,
+      "hash": "sha256:711842e8a2f7dcc77989584813c60970fe2865e971beb3a5b8292556dcaac88f",
+      "license": "CC0",
+      "generated": "procedural kit mesh — crate-1x1"
+    },
+    "world/kits/interior/table-2x1": {
+      "file": "kits/interior/table-2x1.glb",
+      "format": "glb",
+      "width": 0,
+      "height": 0,
+      "hash": "sha256:358e5d770d79a7e7b1dda596c20e9fea13f1c0a958068c88283139edf68c07d1",
+      "license": "CC0",
+      "generated": "procedural kit mesh — table-2x1"
+    },
+    "world/kits/trackside/barrier-4x1": {
+      "file": "kits/trackside/barrier-4x1.glb",
+      "format": "glb",
+      "width": 0,
+      "height": 0,
+      "hash": "sha256:7c56baacd6c80197381cf061727ffd90ad2c115841b77a4875eb1389afbf0f98",
+      "license": "CC0",
+      "generated": "procedural kit mesh — barrier-4x1"
+    },
+    "world/kits/trackside/fence-seg-4x2": {
+      "file": "kits/trackside/fence-seg-4x2.glb",
+      "format": "glb",
+      "width": 0,
+      "height": 0,
+      "hash": "sha256:6cb3bcfc4299652d93d592d577a9f3cf2dcd20701db6355a260c176ea61264ce",
+      "license": "CC0",
+      "generated": "procedural kit mesh — fence-seg-4x2"
+    },
+    "world/kits/trackside/gantry-16x6": {
+      "file": "kits/trackside/gantry-16x6.glb",
+      "format": "glb",
+      "width": 0,
+      "height": 0,
+      "hash": "sha256:46e7387c07493dfe4f1c4ec8696a8953a5350d7ce4601fd34cd5c8702f7ebb47",
+      "license": "CC0",
+      "generated": "procedural kit mesh — gantry-16x6"
+    },
+    "world/kits/trackside/marshal-post-2x3": {
+      "file": "kits/trackside/marshal-post-2x3.glb",
+      "format": "glb",
+      "width": 0,
+      "height": 0,
+      "hash": "sha256:3a3d1b23517a41eeb83c13e8a63cb31d29e6e0a29590bcb1f3d021357b260837",
+      "license": "CC0",
+      "generated": "procedural kit mesh — marshal-post-2x3"
+    },
+    "world/kits/trackside/cone": {
+      "file": "kits/trackside/cone.glb",
+      "format": "glb",
+      "width": 0,
+      "height": 0,
+      "hash": "sha256:cbb818197a10c42bb3ad7930567ee4ce15904cce9bb2cae2d07903f976c8a760",
+      "license": "CC0",
+      "generated": "procedural kit mesh — cone"
+    },
+    "world/kits/trackside/sign-3x2": {
+      "file": "kits/trackside/sign-3x2.glb",
+      "format": "glb",
+      "width": 0,
+      "height": 0,
+      "hash": "sha256:bf342935f78afe1daf0d7d65573e1fe43c8107b1747c8c1c0470b00bdf2a2415",
+      "license": "CC0",
+      "generated": "procedural kit mesh — sign-3x2"
+    },
+    "world/kits/space/module-hub": {
+      "file": "kits/space/module-hub.glb",
+      "format": "glb",
+      "width": 0,
+      "height": 0,
+      "hash": "sha256:10ad57cc7e471a7d949058e1536eb8c12e6c9144d6eacead0d5afb80df187616",
+      "license": "CC0",
+      "generated": "procedural kit mesh — module-hub"
+    },
+    "world/kits/space/module-tube-6": {
+      "file": "kits/space/module-tube-6.glb",
+      "format": "glb",
+      "width": 0,
+      "height": 0,
+      "hash": "sha256:d461c7fc855dc9383474ab1649e97574b9fdef54deab05942c8025b2751b6a2f",
+      "license": "CC0",
+      "generated": "procedural kit mesh — module-tube-6"
+    },
+    "world/kits/space/panel-8x3": {
+      "file": "kits/space/panel-8x3.glb",
+      "format": "glb",
+      "width": 0,
+      "height": 0,
+      "hash": "sha256:17979138bb2a48f9c537719abca1b464279b3fdcff3291ec8a4732ce18d250e7",
+      "license": "CC0",
+      "generated": "procedural kit mesh — panel-8x3"
+    },
+    "world/kits/space/antenna": {
+      "file": "kits/space/antenna.glb",
+      "format": "glb",
+      "width": 0,
+      "height": 0,
+      "hash": "sha256:ff503f9151a3b4c6d9c4f9e3be73af3d378eb0ab551276323c2429ea16c79001",
+      "license": "CC0",
+      "generated": "procedural kit mesh — antenna"
+    },
+    "world/kits/space/truss-6": {
+      "file": "kits/space/truss-6.glb",
+      "format": "glb",
+      "width": 0,
+      "height": 0,
+      "hash": "sha256:d8db93977dc21b2aada119b461cb2a6fca3cb4d1b54248f1a2da5c477414bbfd",
+      "license": "CC0",
+      "generated": "procedural kit mesh — truss-6"
+    },
+    "world/kits/space/airlock-2x2": {
+      "file": "kits/space/airlock-2x2.glb",
+      "format": "glb",
+      "width": 0,
+      "height": 0,
+      "hash": "sha256:d8f8c64c5235ee026961fe1c31cdd17293e43ca91c3012adf3359a40ee168e24",
+      "license": "CC0",
+      "generated": "procedural kit mesh — airlock-2x2"
+    },
+    "world/water/water-normal-0-512": {
+      "file": "water/water-normal-0-512.rgba",
+      "format": "rgba8",
+      "width": 512,
+      "height": 512,
+      "hash": "sha256:52e24890f73ffacb35c48624692b9b9b76a74e95eaca56ec118c5913cb9ffca9",
+      "license": "CC0",
+      "generated": "gradient-wave normal field, seed 11"
+    },
+    "world/water/water-normal-1-512": {
+      "file": "water/water-normal-1-512.rgba",
+      "format": "rgba8",
+      "width": 512,
+      "height": 512,
+      "hash": "sha256:9b2a90bbc1b814a33b501b1ed95f8bb07a3d16820dcdbde69d93535f77f4a88d",
+      "license": "CC0",
+      "generated": "gradient-wave normal field, seed 43"
+    },
+    "world/water/water-foam-512": {
+      "file": "water/water-foam-512.rgba",
+      "format": "rgba8",
+      "width": 512,
+      "height": 512,
+      "hash": "sha256:b42d0642e7ab3185ed54116073a6d72337567568ee2d49d467acea32e109fe0e",
+      "license": "CC0",
+      "generated": "worley foam coverage, seed 7"
+    },
+    "world/water/water-caustics-4x4-1024": {
+      "file": "water/water-caustics-4x4-1024.rgba",
+      "format": "rgba8",
+      "width": 1024,
+      "height": 1024,
+      "hash": "sha256:31db0ca59c51260950899bbf05a4aa99c0ccccac1a474c94548c04898fdac72d",
+      "license": "CC0",
+      "generated": "16-frame worley caustics atlas, seed 19"
+    },
+    "world/noise/macro-variation-512": {
+      "file": "noise/macro-variation-512.rgba",
+      "format": "rgba8",
+      "width": 512,
+      "height": 512,
+      "hash": "sha256:1512be062eac6357fe96f0ad31394868601d56b4d2be4756944f7261c31ff29f",
+      "license": "CC0",
+      "generated": "4-octave tiling value noise, seed 23"
+    },
+    "world/noise/blue-noise-64": {
+      "file": "noise/blue-noise-64.rgba",
+      "format": "rgba8",
+      "width": 64,
+      "height": 64,
+      "hash": "sha256:12508049a1df9fd66cb9425867e1c210330c4bb706e523650047ebff96ef6e56",
+      "license": "CC0",
+      "generated": "high-pass (blue-noise approx), seed 37"
     }
   }
 }

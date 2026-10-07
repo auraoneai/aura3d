@@ -65,6 +65,8 @@ interface TerrainGpuState {
   readonly layerTintOrm: Float32Array;
   readonly morph: Float32Array;
   readonly layerCount: number;
+  /** Height-grid revision baked into `heightTex`; conformToTerrain bumps it. */
+  readonly gridVersion: number;
 }
 
 interface DeviceTerrainState {
@@ -292,7 +294,8 @@ function buildTerrainState(device: RenderDevice, ds: DeviceTerrainState, record:
     layerParams,
     layerTintOrm,
     morph,
-    layerCount
+    layerCount,
+    gridVersion: record.gridVersion ?? 0
   };
   ds.terrains.set(record.node.id, state);
   return state;
@@ -341,6 +344,17 @@ export function drawTerrains(
     const record = terrainRecordFor(id);
     if (!record?.grid) continue;
     let st = ds.terrains.get(id);
+    if (st && st.gridVersion !== (record.gridVersion ?? 0)) {
+      // conformToTerrain edited `record.grid` after the last upload — rebuild.
+      st.heightTex.dispose();
+      st.splatTex0.dispose();
+      st.splatTex1?.dispose();
+      st.holesTex.dispose();
+      st.macroTex.dispose();
+      st.instBuf.dispose();
+      ds.terrains.delete(id);
+      st = undefined;
+    }
     if (!st) {
       st = buildTerrainState(device, ds, record, tier) ?? undefined;
       if (!st) continue;
