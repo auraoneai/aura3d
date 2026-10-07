@@ -42,6 +42,18 @@ export function textureUploadFormat(gl: WebGL2RenderingContext, texture: Texture
     });
   }
 
+/**
+ * Internalformat for `texStorage2D`/`texStorage3D` — the storage APIs require
+ * a *sized* internalformat, so linear `rgba8` must resolve to `RGBA8` (the
+ * `texImage2D` path keeps the unsized `RGBA` accepted by the spec).
+ */
+export function textureStorageInternalFormat(gl: WebGL2RenderingContext, texture: Texture): GLenum {
+  if (texture.format === "rgba8") {
+    return texture.colorSpace === "srgb" ? gl.SRGB8_ALPHA8 : gl.RGBA8;
+  }
+  return textureUploadFormat(gl, texture).internalFormat;
+}
+
 export function resolveRenderTargetFormat(gl: WebGL2RenderingContext, format: "rgba8" | "rgba16f" | "rgba32f"): { readonly internalFormat: GLenum; readonly type: GLenum } {
     if (format === "rgba8") {
       return { internalFormat: gl.RGBA, type: gl.UNSIGNED_BYTE };

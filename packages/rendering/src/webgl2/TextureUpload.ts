@@ -8,7 +8,7 @@ import { Texture, bytesPerPixel, isCompressedTextureFormat, isFloatColorTextureF
 import { WEBGL_CUBE_FACES } from "../WebGL2Device";
 import { applyTextureBudget, DEFAULT_TEXTURE_BUDGET_POLICY } from "../textures/TextureBudget";
 import type { WebGL2DeviceHost } from "./DeviceHost";
-import { cubeFaceTarget, resolveCompressedTextureFormat, rgba8TextureInternalFormat, textureUploadFormat } from "./TextureFormats";
+import { cubeFaceTarget, resolveCompressedTextureFormat, rgba8TextureInternalFormat, textureStorageInternalFormat, textureUploadFormat } from "./TextureFormats";
 
 export class WebGL2TextureRegistry {
   constructor(readonly host: WebGL2DeviceHost) {}
@@ -101,7 +101,9 @@ export class WebGL2TextureRegistry {
       this.textureUploadRevisions.set(texture, texture.revision);
       return handle;
     }
-    this.host.gl.bindTexture(this.host.gl.TEXTURE_2D, handle);
+    // A texture object is permanently assigned to the first target it binds
+    // to — bind TEXTURE_2D_ARRAY before texStorage3D or the upload is 0x502.
+    this.host.gl.bindTexture(texture.dimension === "2d-array" ? this.host.gl.TEXTURE_2D_ARRAY : this.host.gl.TEXTURE_2D, handle);
     if (isCompressedTextureFormat(texture.format)) {
       const compressed = resolveCompressedTextureFormat(this.host.gl, texture.format);
       if (compressed) {
@@ -165,7 +167,7 @@ export class WebGL2TextureRegistry {
       // storage; initial content and later update()s go through texSubImage3D
       // per layer — no reallocation per frame (E19).
       const uploadFormat = textureUploadFormat(this.host.gl, texture);
-      this.host.gl.texStorage3D(this.host.gl.TEXTURE_2D_ARRAY, 1, uploadFormat.internalFormat, texture.width, texture.height, texture.layers);
+      this.host.gl.texStorage3D(this.host.gl.TEXTURE_2D_ARRAY, 1, textureStorageInternalFormat(this.host.gl, texture), texture.width, texture.height, texture.layers);
       if (texture.data) {
         const layerElements = (texture.width * texture.height * bytesPerPixel(texture.format)) / texture.data.BYTES_PER_ELEMENT;
         for (let layer = 0; layer < texture.layers; layer += 1) {
@@ -194,7 +196,7 @@ export class WebGL2TextureRegistry {
       // texStorage2D; initial content (if any) goes through texSubImage2D and
       // every later Texture.update() re-uploads the sub-image in place.
       const uploadFormat = textureUploadFormat(this.host.gl, texture);
-      this.host.gl.texStorage2D(this.host.gl.TEXTURE_2D, 1, uploadFormat.internalFormat, texture.width, texture.height);
+      this.host.gl.texStorage2D(this.host.gl.TEXTURE_2D, 1, textureStorageInternalFormat(this.host.gl, texture), texture.width, texture.height);
       if (texture.data) {
         this.host.gl.texSubImage2D(
           this.host.gl.TEXTURE_2D,
@@ -268,6 +270,9 @@ export class WebGL2TextureRegistry {
       this.host.gl.bindTexture(this.host.gl.TEXTURE_2D_ARRAY, handle);
       const layerElements = (texture.width * texture.height * bytesPerPixel(texture.format)) / (texture.data ? texture.data.BYTES_PER_ELEMENT : 1);
       const layers = texture.data ? Math.max(1, Math.floor(texture.data.byteLength / (texture.width * texture.height * bytesPerPixel(texture.format)))) : 0;
+      // `region.layer` is the destination layer offset for per-layer updates;
+      // without it the provided planes start at layer 0.
+      const startLayer = texture.pendingUpdateRegion?.layer ?? 0;
       for (let layer = 0; layer < layers; layer += 1) {
         const layerData = texture.data ? texture.data.subarray(layer * layerElements, (layer + 1) * layerElements) : null;
         this.host.gl.texSubImage3D(
@@ -275,7 +280,7 @@ export class WebGL2TextureRegistry {
           0,
           0,
           0,
-          layer,
+          startLayer + layer,
           texture.width,
           texture.height,
           1,
