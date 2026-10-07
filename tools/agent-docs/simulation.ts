@@ -215,7 +215,11 @@ function run(command: string, args: readonly string[], cwd: string): void {
     const output = error instanceof Error && "stdout" in error
       ? `${String((error as { stdout?: unknown }).stdout ?? "")}${String((error as { stderr?: unknown }).stderr ?? "")}`
       : String(error);
-    const message = output.trim().split("\n").slice(-16).join("\n");
+    // Playwright dumps the whole buffered [WebServer] log at the tail of a
+    // failed run; a 16-line tail keeps only vite noise and loses the actual
+    // spec failure. Strip those lines and keep a wider window.
+    const lines = output.trim().split("\n").filter((line) => !line.trimStart().startsWith("[WebServer]"));
+    const message = lines.slice(-64).join("\n");
     throw new Error(message || `${command} ${args.join(" ")} failed`);
   }
 }
