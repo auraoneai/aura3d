@@ -1,0 +1,53 @@
+name: QR-15 architecture gates
+
+# PRD-15 T1.8 — warn-mode architecture gates. Runs tools/arch-gates and
+# uploads the JSON report as an artifact. Warn mode today; a later task in
+# the lane flips the same job to --strict once the findings drain to zero.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "aura.exports.json"
+      - "tsconfig*.json"
+      - "vite.aliases.generated.ts"
+      - "packages/*/src/**"
+      - "tools/arch-gates/**"
+      - "tools/generate-resolution-maps/**"
+      - ".github/workflows/qr-prd15-arch-gates.yml"
+  push:
+    branches: ["qr/**"]
+    paths:
+      - "aura.exports.json"
+      - "tsconfig*.json"
+      - "vite.aliases.generated.ts"
+      - "packages/*/src/**"
+      - "tools/arch-gates/**"
+      - "tools/generate-resolution-maps/**"
+      - ".github/workflows/qr-prd15-arch-gates.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: qr-prd15-arch-gates-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  arch-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Run architecture gates (warn mode)
+        run: pnpm arch:check -- --out artifacts/arch-gates-report.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: arch-gates-report-${{ github.run_id }}
+          path: artifacts/arch-gates-report.json
+          if-no-files-found: warn

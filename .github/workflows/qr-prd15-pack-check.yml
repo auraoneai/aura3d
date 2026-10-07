@@ -1,0 +1,55 @@
+name: QR-15 packed consumer check
+
+# PRD-15 T1.6 — prove every template the package ships, and every
+# create-aura3d scaffold template, installs and builds against the PACKED
+# @aura3d/engine tarball (not repo path aliases). Runs on macos-14 — the same
+# runner class as quality-rebuild-capture.yml, where real consumers' vite
+# builds behave like CI-verified browser bundles.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "package.json"
+      - "aura.exports.json"
+      - "tsconfig*.json"
+      - "packages/engine/**"
+      - "templates/**"
+      - "packages/create-aura3d/templates/**"
+      - "tools/packed-consumer-check/**"
+      - ".github/workflows/qr-prd15-pack-check.yml"
+  push:
+    branches: ["qr/**"]
+    paths:
+      - "package.json"
+      - "aura.exports.json"
+      - "tsconfig*.json"
+      - "packages/engine/**"
+      - "templates/**"
+      - "packages/create-aura3d/templates/**"
+      - "tools/packed-consumer-check/**"
+      - ".github/workflows/qr-prd15-pack-check.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: qr-prd15-pack-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pack-check:
+    runs-on: macos-14
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # dist/ must exist so the packed tarball carries real output.
+      - run: pnpm build:raw
+      - name: Packed consumer check
+        run: pnpm exec tsx --tsconfig tsconfig.base.json tools/packed-consumer-check/index.ts --baseline tools/packed-consumer-check/baseline.json
+        env:
+          CI: "true"

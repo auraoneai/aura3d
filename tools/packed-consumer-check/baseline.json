@@ -1,0 +1,21 @@
+{
+  "note": "Expected packed-consumer-check failures. Every entry tolerates failure at exactly the named stage for that template; any failure at a different stage (or for an unlisted template) fails the gate. Drop an entry when the upstream request lands — the tool prints a NOTE when a baselined template passes.",
+  "expectedFailures": [
+    { "template": "packages/create-aura3d/templates/character-controller", "stage": "typecheck", "request": "Q-13-7" },
+    { "template": "packages/create-aura3d/templates/cinematic-scene", "stage": "typecheck", "request": "Q-13-7" },
+    { "template": "packages/create-aura3d/templates/fighting-game", "stage": "typecheck", "request": "Q-13-7" },
+    { "template": "packages/create-aura3d/templates/mini-game", "stage": "typecheck", "request": "Q-13-7" },
+    { "template": "packages/create-aura3d/templates/product-viewer", "stage": "typecheck", "request": "Q-13-7" },
+    { "template": "packages/create-aura3d/templates/three-compat-architecture-interior", "stage": "typecheck", "request": "Q-13-7" },
+    { "template": "packages/create-aura3d/templates/three-compat-asset-inspector", "stage": "typecheck", "request": "Q-13-7" },
+    { "template": "packages/create-aura3d/templates/three-compat-character-viewer", "stage": "typecheck", "request": "Q-13-7" },
+    { "template": "packages/create-aura3d/templates/three-compat-custom-threejs-migration", "stage": "typecheck", "request": "Q-13-7" },
+    { "template": "packages/create-aura3d/templates/three-compat-large-scene", "stage": "typecheck", "request": "Q-13-7" },
+    { "template": "packages/create-aura3d/templates/three-compat-material-authoring", "stage": "typecheck", "request": "Q-13-7" },
+    { "template": "packages/create-aura3d/templates/three-compat-postprocess-scene", "stage": "typecheck", "request": "Q-13-7" },
+    { "template": "packages/create-aura3d/templates/three-compat-premium-product-viewer", "stage": "typecheck", "request": "Q-13-7" },
+    { "template": "templates/cinematic-scene", "stage": "typecheck", "request": "Q-13-7" },
+    { "template": "templates/mini-game", "stage": "typecheck", "request": "Q-13-7" },
+    { "template": "templates/product-viewer", "stage": "typecheck", "request": "Q-13-7" }
+  ]
+}
