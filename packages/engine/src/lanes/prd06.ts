@@ -35,6 +35,9 @@ import {
   registerPrd06AnimationActor
 } from "../agent-api/app/actorAnimationHandle.js";
 import { PRD06_DIAGNOSTIC_ONLY_FIELDS, PRD06_OPTION_COVERAGE } from "../agent-api/compiler/diagnosticOnly.prd06.js";
+import { beginPrd06ShaderWarmup, disposePrd06ShaderWarmup, filterPrd06ShaderWarmupItems, setPrd06ShaderWarmupCompiler, type Prd06ShaderWarmupCompiler } from "../production-runtime/actor/TypedGLBActorAnimation.js";
+import { createPrd06ProgramCacheWarmup, type Prd06ShaderWarmupOptions } from "@aura3d/rendering";
+import { collectTypedGLBActorRenderItems } from "../production-runtime/TypedGLBActor.js";
 
 // T1.11 (PRD-06 §10): `@aura3d/animation` cannot import the engine's flag
 // machinery, so the lane installs the `A3D_QR_ANIMATION_POSE_MIXER` read here
@@ -96,7 +99,7 @@ registerTypedGLBActorExtension({
   id: "prd06.animation",
   owner: "prd06",
   flag: "A3D_QR_ANIMATION",
-  onLoad: (actor) => {
+  onLoad: (actor, pipeline) => {
     actorClipInfoDisposers.set(
       actor.id,
       registerActorClipInfoSource(actor.id, () => actor.animation.resolvedClipInfos())
@@ -106,8 +109,13 @@ registerTypedGLBActorExtension({
       registerActorAnimationApplySource(actor.id, () => actor.animation.snapshot().lastApply),
       registerActorBoneMatrixSource(actor.id, createActorBoneMatrixLookup(actor))
     ]);
+    // T2.8 §9.7 — shader warm-up: precompile the skinned/morph programs and
+    // withhold those items from collectRenderItems until linked.
+    beginPrd06ShaderWarmup(actor, collectTypedGLBActorRenderItems(actor));
   },
+  collectRenderItems: (actor, items) => filterPrd06ShaderWarmupItems(actor, items),
   dispose: (actor) => {
+    disposePrd06ShaderWarmup(actor);
     for (const key of [actor.id, `${actor.id}:actor`]) {
       actorClipInfoDisposers.get(key)?.();
       actorClipInfoDisposers.delete(key);
@@ -165,3 +173,19 @@ registerTypedGLBActorExtension({
     return stampedAll;
   }
 });
+
+/* ------------------------------------------------------------ T2.8 §9.7 */
+
+/**
+ * T2.8 wiring: once a RenderDevice exists (app/bootstrap — lane-15's
+ * createAuraApp owns the real call site), install the device-side half of the
+ * warm-up seam: `rendererProgramCache(device, flags).precompile` over each
+ * warm item's forward + depth (+ velocity) feature records. A no-op until
+ * called; `passes` lets the app add velocity when its TAA path is on.
+ */
+export function installPrd06ShaderWarmup(options: Prd06ShaderWarmupOptions): void {
+  setPrd06ShaderWarmupCompiler(createPrd06ProgramCacheWarmup(options));
+}
+
+export type { Prd06ShaderWarmupCompiler };
+export { setPrd06ShaderWarmupCompiler };

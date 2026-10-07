@@ -83,6 +83,7 @@ export { ProgramWarmup, collectWarmupFeatures } from "./program/ProgramWarmup";
 export type { WarmupInput, WarmupResult } from "./program/ProgramWarmup";
 export { defaultProgramFeatures, materialFeatureWarning, materialUsesGeneratedProgram, ALLOWLIST_PROGRAM_SHADERS } from "./program/MaterialFeatures";
 export { qrCoreGeneratorOn, qrCoreOutputOn, rendererProgramCache, rendererProgramCachePeek, rendererAuraFrame, rendererOutputPass } from "./renderer/qrSubFlags";
+export { createPrd06ProgramCacheWarmup, type Prd06ShaderWarmupOptions } from "./renderer/Prd06ShaderWarmup";
 export { OutputPass } from "./output/OutputPass";
 export { createHdrTarget, ensureHdrTarget, type HdrTargetOptions } from "./output/HdrTarget";
 export {

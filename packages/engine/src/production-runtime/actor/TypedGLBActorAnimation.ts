@@ -219,3 +219,87 @@ function typedGLBActorMorphTargetAliases(
   }
   return [...aliases];
 }
+
+/* ------------------------------------------------------------ T2.8 §9.7 */
+
+/**
+ * Shader warm-up (PRD-06 §9.7). The `prd06.animation` extension's `onLoad`
+ * starts compiling the forward + depth (+ velocity) programs for every
+ * skinned/morph render item and keeps them out of `collectRenderItems` until
+ * the compile resolves — the first visible frame never pays a program-link
+ * hitch (research/09's depth-recompile stall).
+ *
+ * The actor layer has no device, so the compile itself runs through a seam:
+ * whoever owns the device installs a {@link Prd06ShaderWarmupCompiler} —
+ * `installPrd06ShaderWarmup(device, flags)` in `lanes/prd06.ts` routes through
+ * C-02 `ProgramCacheLike.precompile` (which is the C-28 stub semantics:
+ * resolves after a synchronous compile; `device.compileAsync` real parallel
+ * compile is the GPU/tiers lane's). With no compiler installed the warm-up is
+ * a no-op and nothing is withheld.
+ */
+
+export type Prd06ShaderWarmupCompiler = (items: readonly RenderItem[]) => Promise<void> | void;
+
+let activeShaderWarmupCompiler: Prd06ShaderWarmupCompiler | null = null;
+
+export function setPrd06ShaderWarmupCompiler(compiler: Prd06ShaderWarmupCompiler | null): void {
+  activeShaderWarmupCompiler = compiler;
+}
+
+export function prd06ShaderWarmupCompiler(): Prd06ShaderWarmupCompiler | null {
+  return activeShaderWarmupCompiler;
+}
+
+interface Prd06ShaderWarmupState {
+  pending: Promise<void>;
+  ready: boolean;
+}
+
+const shaderWarmupByActor = new WeakMap<TypedGLBActor, Prd06ShaderWarmupState>();
+
+/** Items whose programs the warm-up covers — the skinned/morph set. */
+function prd06WarmupItem(item: RenderItem): boolean {
+  return item.skinning !== undefined || item.morphWeights !== undefined;
+}
+
+/**
+ * Begin the warm-up for `actor` over `items` (the load-time collect; the
+ * extension resolves them through `collectTypedGLBActorRenderItems` so the
+ * list is the raw set, not extension-transformed).
+ */
+export function beginPrd06ShaderWarmup(actor: TypedGLBActor, items: readonly RenderItem[]): void {
+  const compiler = activeShaderWarmupCompiler;
+  const warm = items.filter(prd06WarmupItem);
+  const state: Prd06ShaderWarmupState = { pending: Promise.resolve(), ready: true };
+  if (compiler && warm.length > 0) {
+    state.ready = false;
+    try {
+      state.pending = Promise.resolve(compiler(warm)).then(() => {
+        state.ready = true;
+      });
+    } catch (error) {
+      state.pending = Promise.reject(error);
+      // A synchronously-throwing compiler degrades to "no warm-up" rather than
+      // withholding the actor's items forever — the next collect draws them.
+      state.ready = true;
+    }
+  }
+  shaderWarmupByActor.set(actor, state);
+}
+
+/**
+ * Withhold the actor's skinned/morph items while the warm-up is unresolved.
+ * Static items pass through immediately; when every compile has resolved (or
+ * no compiler is installed) the actor's full set is returned as-is. A
+ * synchronous-compile stub resolves on the first microtask, so at most one
+ * presented frame is withheld.
+ */
+export function filterPrd06ShaderWarmupItems(actor: TypedGLBActor, items: readonly RenderItem[]): RenderItem[] {
+  const state = shaderWarmupByActor.get(actor);
+  if (!state || state.ready) return items as RenderItem[];
+  return items.filter((item) => !prd06WarmupItem(item));
+}
+
+export function disposePrd06ShaderWarmup(actor: TypedGLBActor): void {
+  shaderWarmupByActor.delete(actor);
+}
