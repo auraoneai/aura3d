@@ -14,6 +14,12 @@ export interface ProductionGLTFRenderPipelineOptions {
   readonly sceneIndex?: GLTFRenderResourceOptions["sceneIndex"];
   readonly sceneName?: GLTFRenderResourceOptions["sceneName"];
   readonly materialRenderStateOverrides?: GLTFRenderResourceOptions["materialRenderStateOverrides"];
+  /** GPU-bytes texture budget forwarded to resource creation (C-27, PRD-04 P2-11). */
+  readonly textureBudget?: GLTFRenderResourceOptions["textureBudget"];
+  /** Max texture dimension forwarded to resource creation (C-27, PRD-04 P2-11). */
+  readonly maxTextureSize?: GLTFRenderResourceOptions["maxTextureSize"];
+  /** `A3D_QR_MATERIALS` state forwarded by `createTypedGLBActor` (PRD-04 flag channel). */
+  readonly materialsR185?: GLTFRenderResourceOptions["materialsR185"];
   readonly rendererInput?: GLTFRendererInputOptions;
   readonly width?: number;
   readonly height?: number;
@@ -92,6 +98,9 @@ export async function loadProductionGLTFRenderPipeline(options: ProductionGLTFRe
       ...(options.sceneIndex !== undefined ? { sceneIndex: options.sceneIndex } : {}),
       ...(options.sceneName !== undefined ? { sceneName: options.sceneName } : {}),
       ...(options.materialRenderStateOverrides ? { materialRenderStateOverrides: options.materialRenderStateOverrides } : {}),
+      ...(options.textureBudget !== undefined ? { textureBudget: options.textureBudget } : {}),
+      ...(options.maxTextureSize !== undefined ? { maxTextureSize: options.maxTextureSize } : {}),
+      ...(options.materialsR185 ? { materialsR185: true } : {}),
       ...(options.deduplicateIdenticalMaterials ? { deduplicateIdenticalMaterials: true } : {})
     });
     rendererInput = resources.toRendererInput(

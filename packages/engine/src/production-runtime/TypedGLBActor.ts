@@ -8,10 +8,17 @@ import {
   type ProductionGLTFRenderPipeline
 } from "@aura3d/assets/gltf-runtime";
 
-import type { GLTFMaterialRenderStateOverride } from "@aura3d/assets";
+import type { GLTFImageDecoder, GLTFMaterialRenderStateOverride } from "@aura3d/assets";
 import type { AuraAssetDecodersOption, AuraModelLodOption } from "../contracts/assets";
+import type { AuraResolvedMaterialInfo } from "../contracts/materials";
+import {
+  applyMaterialOverrides,
+  snapshotMaterials,
+  type AuthoredMaterialSnapshot,
+  type TypedGLBActorMaterialOverride
+} from "./ModelMaterialOverrides";
 import { createGLBActorAnimationMaterialResolver, createTypedGLBActorAnimationTrack, createTypedGLBActorEvidence } from "./actor/TypedGLBActorAnimation";
-import { typedGLBActorExtensions } from "./actor/extensions";
+import { typedGLBActorExtensions, typedGLBActorQrFlags } from "./actor/extensions";
 import "./actor/TypedGLBActorLod";
 
 export { createGLBActorAnimationMaterialResolver, createTypedGLBActorEvidence } from "./actor/TypedGLBActorAnimation";
@@ -56,12 +63,20 @@ export interface TypedGLBActorOptions {
    * Intended for large static world GLBs; moving/skinned/morphed actors are rejected.
    */
   readonly consolidateStaticMeshes?: boolean;
-  /** Optional per-material render-state overrides forwarded to the pipeline load (declaration-only seam, C-32). */
-  readonly materialOverrides?: readonly GLTFMaterialRenderStateOverride[];
+  /**
+   * Per-material overrides forwarded to the pipeline. Entries with a `renderState` field are C-32
+   * render-state overrides passed to the GLB resources; the remaining entries are C-15 uniform
+   * overrides applied from the post-load authored snapshot (PRD-04 P2-1/P2-3).
+   */
+  readonly materialOverrides?: readonly (GLTFMaterialRenderStateOverride | TypedGLBActorMaterialOverride)[];
+  /** `KHR_materials_variants` material variant name selected at load (C-15/R11). */
+  readonly materialVariant?: string;
   /** Optional asset variant selector (declaration-only seam, C-17). */
   readonly variant?: "optimized" | "source" | "mobile";
   /** Optional decoder configuration forwarded to the asset pipeline (declaration-only seam, C-16/C-17). */
   readonly decoders?: AuraAssetDecodersOption;
+  /** Optional image decoder forwarded to the GLB resource pipeline (headless/test decode seam, C-16). */
+  readonly imageDecoder?: GLTFImageDecoder;
   /** Optional GPU-bytes texture budget for the pipeline load (declaration-only seam, C-17). */
   readonly textureBudget?: number;
   /** Optional max texture dimension for the pipeline load (declaration-only seam, C-17). */
@@ -174,17 +189,46 @@ export interface TypedGLBActor {
   applyMorphTargets(weights: Readonly<Record<string, number>>): TypedGLBActorMorphApplyResult;
   collectRenderItems(options?: TypedGLBActorTransformOptions): RenderItem[];
   snapshot(): GLTFSceneAnimationRuntimeSnapshot;
+  /**
+   * C-15: re-apply the given uniform overrides from the post-load authored snapshot — idempotent,
+   * never accumulates (the legacy `setTint` mutated in place). Empty list restores authored state.
+   */
+  setMaterialOverrides(overrides: readonly TypedGLBActorMaterialOverride[]): void;
+  /** C-15/R11: switch the actor to a declared `KHR_materials_variants` variant (`null` = authored). */
+  setMaterialVariant(name: string | null): void;
+  /** C-15: every `KHR_materials_variants` name declared across the actor's renderable bindings. */
+  materialVariants(): readonly string[];
+  /** C-15: per-runtime-material inspection for diagnostics (P2-1). */
+  inspectMaterials(): readonly AuraResolvedMaterialInfo[];
+  /**
+   * Legacy tint seam. With `A3D_QR_MATERIALS` on it lowers to `setMaterialOverrides` (P2-2: writes
+   * only explicitly given fields — no /joint/i heuristic, no 0.28/0.38/0.16 defaults, no
+   * emissive=baseColor fallback); flag off it is byte-identical to the legacy in-place mutation.
+   */
   setTint(options: TypedGLBActorTintOptions): void;
   dispose(): void;
 }
 
 export async function createTypedGLBActor(options: TypedGLBActorOptions): Promise<TypedGLBActor> {
+  const qrMaterials = typedGLBActorQrFlags().on("A3D_QR_MATERIALS");
+  const renderStateOverrides = (options.materialOverrides ?? []).filter(
+    (override): override is GLTFMaterialRenderStateOverride => "renderState" in override
+  );
+  const typedOverrides = (options.materialOverrides ?? []).filter(
+    (override): override is TypedGLBActorMaterialOverride => !("renderState" in override)
+  );
   const pipeline = await loadProductionGLTFRenderPipeline({
     url: options.asset.url,
     assetId: options.id,
     assetName: options.name ?? options.id,
     width: options.width,
     height: options.height,
+    ...(options.imageDecoder ? { imageDecoder: options.imageDecoder } : {}),
+    ...(options.materialVariant !== undefined ? { materialVariant: options.materialVariant } : {}),
+    ...(renderStateOverrides.length > 0 ? { materialRenderStateOverrides: renderStateOverrides } : {}),
+    ...(options.textureBudget !== undefined ? { textureBudget: options.textureBudget } : {}),
+    ...(options.maxTextureSize !== undefined ? { maxTextureSize: options.maxTextureSize } : {}),
+    ...(qrMaterials ? { materialsR185: true } : {}),
     ...(options.deduplicateIdenticalMaterials ? { deduplicateIdenticalMaterials: true } : {})
   });
   pipeline.resources.scene.root.name = `${options.id}-scene-root`;
@@ -200,7 +244,49 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
     asset: pipeline.asset,
     resolveAnimationMaterial: createGLBActorAnimationMaterialResolver(pipeline.resources)
   });
-  const setTint = (tint: TypedGLBActorTintOptions): void => tintTypedGLBActorMaterials(pipeline, tint);
+
+  // P2-1: authored snapshot taken immediately post-load; every override application restores from
+  // it first, so overrides are idempotent and never accumulate.
+  let materialSnapshot: AuthoredMaterialSnapshot = snapshotMaterials(pipeline.resources.materialLibrary.values());
+  let activeMaterialOverrides: readonly TypedGLBActorMaterialOverride[] = [];
+  const setMaterialOverrides = (overrides: readonly TypedGLBActorMaterialOverride[]): void => {
+    activeMaterialOverrides = overrides;
+    applyMaterialOverrides(materialSnapshot, pipeline.resources.materialLibrary.values(), overrides);
+  };
+  const setTint = (tint: TypedGLBActorTintOptions): void => {
+    if (typedGLBActorQrFlags().on("A3D_QR_MATERIALS")) {
+      // P2-2: lower the tint to an explicit override — only fields actually given are written;
+      // the /joint/i heuristic, 0.28/0.38/0.16 constants and emissive=baseColor fallback never run.
+      setMaterialOverrides([{
+        baseColorReplace: tint.baseColor,
+        replaceTextures: true,
+        ...(tint.emissiveColor !== undefined ? { emissiveColor: tint.emissiveColor } : {}),
+        ...(tint.emissiveStrength !== undefined ? { emissiveStrength: tint.emissiveStrength } : {}),
+        ...(tint.roughness !== undefined ? { roughness: tint.roughness } : {}),
+        ...(tint.metallic !== undefined ? { metallic: tint.metallic } : {}),
+        ...(tint.clearcoat !== undefined ? { clearcoat: tint.clearcoat } : {}),
+        ...(tint.clearcoatRoughness !== undefined ? { clearcoatRoughness: tint.clearcoatRoughness } : {})
+      }]);
+      return;
+    }
+    tintTypedGLBActorMaterials(pipeline, tint);
+  };
+  const materialVariantIssues: string[] = [];
+  const setMaterialVariant = (name: string | null): void => {
+    // R11: rebind by rebuilding each renderable's material binding from the asset; an unknown
+    // variant leaves the authored materials in place and records `variant-unknown`.
+    void pipeline.resources.setMaterialVariant(name).then((result) => {
+      if (result === "variant-unknown") {
+        if (!materialVariantIssues.includes(`variant-unknown:${name ?? ""}`)) {
+          materialVariantIssues.push(`variant-unknown:${name ?? ""}`);
+        }
+        return;
+      }
+      materialSnapshot = snapshotMaterials(pipeline.resources.materialLibrary.values());
+      applyMaterialOverrides(materialSnapshot, pipeline.resources.materialLibrary.values(), activeMaterialOverrides);
+    });
+  };
+  if (typedOverrides.length > 0) setMaterialOverrides(typedOverrides);
   if (options.tint) setTint(options.tint);
   const staticConsolidation = options.consolidateStaticMeshes
     ? createTypedGLBActorStaticConsolidation(pipeline, options.id)
@@ -252,6 +338,46 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
     },
     snapshot() {
       return animation.snapshot();
+    },
+    setMaterialOverrides,
+    materialVariants() {
+      const variants = new Set<string>();
+      for (const binding of pipeline.resources.renderableBindings) {
+        for (const entry of binding.materialVariants) variants.add(entry.variant);
+      }
+      return [...variants].sort();
+    },
+    setMaterialVariant,
+    inspectMaterials() {
+      const infos: AuraResolvedMaterialInfo[] = [];
+      for (const [key, material] of pipeline.resources.materialLibrary) {
+        const params = material.getParameters();
+        const enabledMaps: string[] = [];
+        for (const [name, value] of params) {
+          if (name.startsWith("u_") && name.endsWith("TextureEnabled") && Number(value) > 0) {
+            const slot = name.slice(2, -"TextureEnabled".length);
+            enabledMaps.push(slot.endsWith("Texture") ? slot.slice(0, -"Texture".length) : slot);
+          }
+        }
+        const baseColor = params.get("u_baseColorFactor") ?? params.get("u_baseColor");
+        infos.push({
+          name: material.name ?? key,
+          featureKey: material.shaderKey ?? "unknown",
+          baseColorFactor: Array.isArray(baseColor)
+            ? [baseColor[0] ?? 1, baseColor[1] ?? 1, baseColor[2] ?? 1, baseColor[3] ?? 1]
+            : [1, 1, 1, 1],
+          enabledMaps,
+          extensions: [],
+          lightsEvaluated: "uniform-16",
+          warnings: [
+            ...materialVariantIssues,
+            // P2-8: hardwareWrap requested but the legacy textured shader lacks Q-01-2's
+            // `mode > 2.5` passthrough — the material surfaces it for inspection.
+            ...((material as { hardwareWrapPending?: boolean }).hardwareWrapPending ? ["hardware-wrap-pending"] : [])
+          ]
+        });
+      }
+      return infos;
     },
     setTint,
     dispose() {

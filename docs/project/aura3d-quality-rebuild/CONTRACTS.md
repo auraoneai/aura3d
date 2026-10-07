@@ -2790,4 +2790,9 @@ column cites a passing test or a capture run id.
 | F-11-01 | 11 | Tier table per C-27 (R9 anisotropy L4/M8/H16/U16; R10 Ultra froxel 240x135x128) | `app.quality` | 2026-10-05 | — | proposed |
 | F-02-01 | 02 | `lights.ambient` is additive to IBL under `model: "physical"`. It never replaces IBL. | `lights.ambient` | 2026-10-05 (C-09) | — | proposed |
 | F-01-01 | 01 | Exactly one tone map per frame, in OutputPass. `DEFAULT_TONE_MAPPING = "aces"` until the PRD 12 AgX A/B. | `output.toneMapping` | 2026-10-05 (C-05) | — | proposed |
+| F-06-01 | 06 | With `A3D_QR_ANIMATION`, `bindRuntimeNode(hero, { defaultClipId })` drives GLB clips; never pass `applyPose`. | `AnimationController.bindRuntimeNode` | 2026-10-06 (PRD-06 T0.16) | `tests/qr/prd06/unit/character-animation-skill-snippet.test.ts` | verified |
+| F-06-02 | 06 | Map actions to the asset's real clip names from `assets.hero.metadata.animations`; run `aura3d animation inspect-clips` first. | `assets.hero.metadata.animations`, `aura3d animation inspect-clips` | 2026-10-06 (PRD-06 T0.16) | `tests/qr/prd06/unit/character-animation-skill-snippet.test.ts`, `tests/unit/aura3d-cli/asset-inspection-animation.test.ts` | verified |
+| F-06-03 | 06 | `createAuraApp(..., { animation: { strict: true } })` throws on empty poses and unknown clips. | `AuraCreateAppAnimationOptions.strict` | 2026-10-06 (PRD-06 T0.16) | `tests/qr/prd06/unit/character-animation-skill-snippet.test.ts` | verified |
+| F-06-04 | 06 | `animationState().tracksApplied > 0` is a precondition, not proof of quality. | `animationState().tracksApplied` | 2026-10-06 (PRD-06 T0.16) | `tests/qr/prd06/unit/character-animation-skill-snippet.test.ts` | verified |
+| F-06-05 | 06 | No `poseBakedFallback` / `tracks: []` clips. | `AnimationClipDefinition` | 2026-10-06 (PRD-06 T0.16) | `tests/qr/prd06/unit/character-animation-skill-snippet.test.ts` | verified |
 

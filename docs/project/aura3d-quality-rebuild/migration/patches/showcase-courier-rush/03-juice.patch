@@ -1,0 +1,126 @@
+From 1b8f9874caed6fc02f0b0a3c6b70910dc13e5279 Mon Sep 17 00:00:00 2001
+From: Gurbaksh Chahal <gchahal@veerone.com>
+Date: Tue, 6 Oct 2026 18:53:16 +0000
+Subject: [PATCH] [QR-09] courier-rush: juice.define replaces DOM flash +
+ effects pool
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ apps/showcase-courier-rush/package.json |  4 ++-
+ apps/showcase-courier-rush/src/main.ts  | 36 +++++++++++++++++--------
+ 2 files changed, 28 insertions(+), 12 deletions(-)
+
+diff --git a/apps/showcase-courier-rush/package.json b/apps/showcase-courier-rush/package.json
+index 18071c15..8119aad3 100644
+--- a/apps/showcase-courier-rush/package.json
++++ b/apps/showcase-courier-rush/package.json
+@@ -16,7 +16,9 @@
+     "evidence:route-health": "node scripts/write-route-health.mjs"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "workspace:*"
++    "@aura3d/engine": "workspace:*",
++    "@aura3d/game": "workspace:*",
++    "@aura3d/audio": "workspace:*"
+   },
+   "devDependencies": {
+     "typescript": "^5.8.3",
+diff --git a/apps/showcase-courier-rush/src/main.ts b/apps/showcase-courier-rush/src/main.ts
+index 5d9be146..dfa35e37 100644
+--- a/apps/showcase-courier-rush/src/main.ts
++++ b/apps/showcase-courier-rush/src/main.ts
+@@ -68,7 +68,6 @@ import {
+   decayHudEffects,
+   hideShiftSummary,
+   mountCourierHud,
+-  pulseStrikeFlash,
+   showRadioToast,
+   showShiftSummary,
+   updateCourierHud
+@@ -118,7 +117,6 @@ const accessibilitySettings = game.accessibility.settings([
+   game.accessibility.reducedMotion({ enabled: prefersReducedMotion })
+ ]);
+ const reducedMotion = accessibilitySettings.reducedMotion;
+-const runtimeEffects = game.effects({ poolSize: 40, reducedMotion, reducedFlash: false });
+ 
+ // ---- audio ------------------------------------------------------------------
+ const courierAudio: CourierAudioController = createCourierAudio(reducedMotion);
+@@ -420,6 +418,26 @@ const courierGame = createGame({
+ const app = courierGame.runtime;
+ courierGame.start();
+ 
++// ---- juice (PRD-09 §7.6) ----------------------------------------------------
++// `fire` composes fx/camera/overlay/rumble per event; the DOM strike flash and
++// the hand-rolled `game.effects` pool are gone (C-05 backend + C-20 bursts).
++const courierTween = createTweenEngine();
++const courierFx = createFxParticlePass(app.effects);
++const courierJuice = createJuice<"pickup" | "deliver" | "combo" | "strike", CourierCue>({
++  events: {
++    pickup: {},
++    deliver: { fx: { kind: "ring", count: 18, color: "#7ce8ff" }, shake: 0.18 },
++    combo: { fx: { kind: "ring", count: 24, color: "#ffd166" }, punch: { fovDeg: 4, ms: 160 } },
++    strike: { flash: { color: "#ff8d6a", peak: 0.3, ms: 160 }, shake: 0.4, rumble: { ms: 140, strong: 0.65 } }
++  },
++  camera: app.camera,
++  session: courierGame.session,
++  fx: courierFx,
++  overlay: createOverlayDriver({ app }),
++  tweens: courierTween,
++  rumble: createRumbleDriver()
++});
++
+ /** Two warm emissive pools ahead of the van: readable headlight practicals. */
+ function vanHeadlightPools() {
+   return ["left", "right"].map((side) =>
+@@ -690,7 +708,7 @@ const mountedEvidence = {
+     vehicle: "engine.createGameArcadeVehicle",
+     driverAi: "engine.createVehicleDriverAi",
+     cityKit: "city.cityBlock night preset",
+-    effects: "game.effects",
++    effects: "@aura3d/game juice (C-20 bursts)",
+     input: "game.input"
+   },
+   diagnostics: undefined as unknown
+@@ -838,11 +856,7 @@ function handleCourierEvents(
+         playCue("drop");
+         if (event.early) playCue("early-bonus");
+         if (!reducedMotion) {
+-          runtimeEffects.ringShockwave([vanX, 0.25, vanZ], {
+-            color: event.early ? "#ffd166" : "#7ce8ff",
+-            intensity: 0.8,
+-            radius: 2.4
+-          });
++          courierJuice.fire(event.early ? "combo" : "deliver", { position: [vanX, 0.25, vanZ] });
+           dropLookbackRemainingSeconds = DROP_LOOKBACK_SECONDS;
+         }
+         showRadioToast(
+@@ -865,7 +879,7 @@ function handleCourierEvents(
+           timerMs: Math.round(dispatch.timerMs)
+         });
+         playCue("strike");
+-        pulseStrikeFlash(hud);
++        courierJuice.fire("strike");
+         showRadioToast(hud, "<strong>Strike " + event.strikes + "/" + MAX_STRIKES + ".</strong> Watch the panel work!", 2.2);
+         break;
+       case "timerFail":
+@@ -1183,7 +1197,7 @@ app.onFrame(({ dt }) => {
+       vanAfter = vanVehicle.constrain({ x: pushed.x, z: pushed.z, speedMultiplier: 0.35 });
+       impactFeedbackRemainingSeconds = reducedMotion ? 0.12 : IMPACT_FEEDBACK_SECONDS;
+       if (!reducedMotion) {
+-        runtimeEffects.hitSpark([contactX, 0.52, contactZ], { color: "#ff8d6a", intensity: 0.82, radius: 1.08 });
++        courierFx.burst("spark", [contactX, 0.52, contactZ], { count: 16, color: "#ff8d6a" });
+       }
+       (mountedEvidence as unknown as { lastImpact: unknown }).lastImpact = {
+         source: hit.id,
+@@ -1394,7 +1408,7 @@ app.onFrame(({ dt }) => {
+     ] as const
+   });
+ 
+-  runtimeEffects.update(stepSeconds);
++  courierTween.tick(stepSeconds);
+   impactFeedbackRemainingSeconds = Math.max(0, impactFeedbackRemainingSeconds - stepSeconds);
+   if (frameCount % 30 === 0) mountedEvidence.diagnostics = app.diagnostics();
+   updateMountedEvidence();
+-- 
+2.34.1
+
