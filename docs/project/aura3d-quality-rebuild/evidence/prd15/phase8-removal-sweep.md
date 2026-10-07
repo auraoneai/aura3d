@@ -359,3 +359,28 @@ consumer + unit lanes surfaced three real breaks, all fixed on this branch:
     waitForFunction timeout — spec identical to main.
   - 5× Chromium Browser And Visual Checks shards: all specs identical
     to main; GPU-less ubuntu flake class documented in the Phase-7 audit.
+
+## Wave 4 — module-transform ceiling fix + sim diagnostics (commit `a95283d3c`)
+
+- Root cause found for the persisting Lane 03 browser phase6 failure:
+  `tests/browser/example-dev-server.ts` serves each module via
+  `ts.transpileModule` + specifier rewrite per request (~1,300 modules
+  for the engine umbrella). Locally the phase6 global lands in 10.3 s;
+  on contended CI runners the per-module transform latency exceeded the
+  150 s `waitForFunction` budget on both cold and cache-warm loads.
+- Fix: entries under `tests/browser/` are now served as a single esbuild
+  bundle (`bundleForBrowser` + `auraResolvePlugin` mirroring
+  `packageEntryPoints` exact-match semantics; `.css` inline loader,
+  `node:` externals, `dataurl` asset loaders). Per-module transpile path
+  remains as fallback on bundle failure. Verified: phase6 global lands
+  in ~600 ms locally; 14/14 `*-harness.ts` entries bundle cleanly.
+- `qr-prd03-phase6.spec.ts` gained console/pageerror/requestfailed/4xx
+  listeners for CI diagnosis of any residual failure.
+- `tools/agent-docs/simulation.ts` (`2ea1c1c48`): swiftshader launch
+  flags in the generated playwright config, `test.setTimeout(180_000)`,
+  page console/pageerror listeners, and a ready-timeout dump — to
+  surface why the agent-docs sim died silently at ~170 s post-swiftshader.
+- `unit`-job deep audit (from wave-3 triage): `game-runtime`'s
+  `package:raw` script absent on main and branch (gate expectation
+  fails identically); bank-shot `main.ts` is 27 lines while the gate
+  lints line 49; all failing gate/test files byte-identical to main.
