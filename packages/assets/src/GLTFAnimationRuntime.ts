@@ -241,6 +241,23 @@ export interface GLTFSceneAnimationApplyResult {
   readonly unsupportedTracks: readonly string[];
 }
 
+/**
+ * T3.5 (PRD-06 §7.1) — a pose-space constraint entry on the runtime. Evaluated
+ * after the mixer writes the pose and before skinning palettes are built.
+ * `bones` lists the joint indices `evaluate` may touch so the runtime unions
+ * them into the emitted sampled targets even when no clip covers them.
+ */
+export interface GLTFPoseConstraint {
+  /** Joints this constraint may write (SkeletonBinding indices). */
+  readonly bones: readonly number[];
+  /**
+   * Apply the constraint onto `pose`. `modelMatrix` maps world→model space
+   * (skeleton-root space); `context.dt` is the frame dt (applyPoseMixer) or the
+   * nominal 1/60 for stateless `applyClips` evaluation.
+   */
+  evaluate(pose: PoseBuffer, binding: SkeletonBinding, modelMatrix: readonly number[] | Float32Array, context: { readonly dt: number }): void;
+}
+
 export interface GLTFSceneAnimationRuntimeSnapshot {
   readonly clipCount: number;
   readonly nodeTargetCount: number;
@@ -646,7 +663,21 @@ export class GLTFSceneAnimationRuntime {
     readonly mixer: PoseMixer;
     readonly compiled: Map<string, CompiledClip>;
     readonly pose: PoseBuffer;
+    /**
+     * T3.5 (PRD-06 §7.1) — ordered pose-space constraints evaluated after the
+     * mixer writes `pose` and before `applySampledTargets` builds skinning
+     * palettes. Empty by default; entries register via the `prd06.animation`
+     * lane (`node.animation.ik.add`), so flag-off cost is a length check.
+     */
+    constraints: GLTFPoseConstraint[];
   };
+
+  /**
+   * T3.5 — world→model matrix provider for pose constraints. Defaults to the
+   * scene root's world matrix; the `prd06.animation` actor extension installs
+   * the app-node transform when one is known.
+   */
+  private poseConstraintModelMatrix?: () => readonly number[] | Float32Array;
 
   constructor(private readonly options: GLTFSceneAnimationRuntimeOptions) {
     for (const clip of options.clips) {
@@ -894,6 +925,10 @@ export class GLTFSceneAnimationRuntime {
     const sampledTargets = new Map<string, AnimationValue>();
     if (poseSpecs.length > 0) {
       pose.mixer.evaluateSamples(poseSpecs, pose.pose);
+      // T3.5 — constraints apply to the freshly-mixed pose before palette
+      // build; touched joints union into the emitted sampled targets.
+      const constrained = this.runPoseConstraints(pose.pose, pose.binding, 1 / 60);
+      for (const boneIndex of constrained) touchedBones.add(boneIndex);
       for (const boneIndex of touchedBones) {
         const name = pose.binding.jointNames[boneIndex]!;
         const p = boneIndex * 3;
@@ -950,6 +985,9 @@ export class GLTFSceneAnimationRuntime {
     const pose = this.poseRuntime();
     pose.mixer.update(dt);
     pose.mixer.evaluate(pose.pose);
+    // T3.5 — constraints evaluate post-mixer / pre-palette; their touched
+    // bones union into `covered` so the write-back emits them.
+    const constrained = this.runPoseConstraints(pose.pose, pose.binding, dt);
 
     const actions = pose.mixer.activeActions();
     let covered: ReadonlySet<number> | undefined;
@@ -958,8 +996,11 @@ export class GLTFSceneAnimationRuntime {
       for (const action of actions) {
         for (const binding of action.bindings) set.add(binding.boneIndex);
       }
+      for (const boneIndex of constrained) set.add(boneIndex);
       covered = set;
     }
+    // `covered === undefined` already emits every bound bone below — the
+    // constraint union matters only on the covered path.
 
     const sampledTargets = new Map<string, AnimationValue>();
     const writeBone = (boneIndex: number): void => {
@@ -1042,7 +1083,56 @@ export class GLTFSceneAnimationRuntime {
     return this.poseRuntime().binding.jointNames;
   }
 
-  private poseRuntime(): { readonly binding: SkeletonBinding; readonly mixer: PoseMixer; readonly compiled: Map<string, CompiledClip>; readonly pose: PoseBuffer } {
+  /**
+   * T3.5 — register a pose constraint. Entries evaluate in insertion order
+   * after each mixer write; returns a disposer that removes exactly this
+   * constraint (by identity — a duplicate spec stays).
+   */
+  addPoseConstraint(constraint: GLTFPoseConstraint): () => void {
+    const state = this.poseRuntime();
+    state.constraints.push(constraint);
+    let live = true;
+    return () => {
+      if (!live) return;
+      live = false;
+      const index = state.constraints.indexOf(constraint);
+      if (index >= 0) state.constraints.splice(index, 1);
+    };
+  }
+
+  /** T3.5 — drop every pose constraint (constant-time identity sweep). */
+  clearPoseConstraints(): void {
+    if (this.poseState === undefined) return;
+    this.poseState.constraints.length = 0;
+  }
+
+  /** T3.5 — the count of live pose constraints (diagnostics/tests). */
+  poseConstraintCount(): number {
+    return this.poseState?.constraints.length ?? 0;
+  }
+
+  /** T3.5 — install the world→model matrix provider (actor extension). */
+  setPoseConstraintModelMatrix(provider: (() => readonly number[] | Float32Array) | undefined): void {
+    this.poseConstraintModelMatrix = provider;
+  }
+
+  /**
+   * T3.5 — evaluate the constraint list in order onto the just-mixed pose and
+   * return the union of touched joint indices (empty when no constraints).
+   */
+  private runPoseConstraints(pose: PoseBuffer, binding: SkeletonBinding, dt: number): Set<number> {
+    const touched = new Set<number>();
+    const constraints = this.poseState?.constraints;
+    if (constraints === undefined || constraints.length === 0) return touched;
+    const modelMatrix = this.poseConstraintModelMatrix?.() ?? this.options.scene.root.transform.worldMatrix;
+    for (const constraint of constraints) {
+      constraint.evaluate(pose, binding, modelMatrix, { dt });
+      for (const bone of constraint.bones) touched.add(bone);
+    }
+    return touched;
+  }
+
+  private poseRuntime(): { readonly binding: SkeletonBinding; readonly mixer: PoseMixer; readonly compiled: Map<string, CompiledClip>; readonly pose: PoseBuffer; constraints: GLTFPoseConstraint[] } {
     if (this.poseState === undefined) {
       const nodes: SceneNode[] = [];
       this.options.scene.traverse((node) => nodes.push(node));
@@ -1064,7 +1154,7 @@ export class GLTFSceneAnimationRuntime {
         compiled.set(name, compiledClip);
         mixer.addCompiledClip(name, compiledClip, clip);
       }
-      this.poseState = { binding, mixer, compiled, pose: createPoseBuffer(binding.boneCount) };
+      this.poseState = { binding, mixer, compiled, pose: createPoseBuffer(binding.boneCount), constraints: [] };
     }
     return this.poseState;
   }

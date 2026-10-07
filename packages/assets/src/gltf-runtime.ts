@@ -6,6 +6,7 @@ export type {
   GLTFootPlantingLegConfig,
   GLTFSceneAnimationApplyResult,
   GLTFSceneAnimationMaterialSink,
+  GLTFPoseConstraint,
   GLTFSceneAnimationRuntime,
   GLTFSceneAnimationRuntimeOptions,
   GLTFSceneAnimationRuntimeSnapshot,

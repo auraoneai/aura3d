@@ -303,3 +303,174 @@ export function filterPrd06ShaderWarmupItems(actor: TypedGLBActor, items: readon
 export function disposePrd06ShaderWarmup(actor: TypedGLBActor): void {
   shaderWarmupByActor.delete(actor);
 }
+
+/* -------------------------------------------------------------- T3.5 §7.1 */
+
+import type { GLTFPoseConstraint } from "@aura3d/assets/gltf-runtime";
+import type {
+  CcdIkConstraintSpec,
+  FootIkConstraintSpec,
+  LookAtConstraintSpec,
+  TwoBoneIkConstraintSpec
+} from "@aura3d/animation/lanes";
+import {
+  createLookAtConstraint,
+  solveCcdIk,
+  solveFootIkConstraint,
+  solveTwoBoneIkRotations
+} from "@aura3d/animation/lanes";
+import type { SkeletonBinding } from "@aura3d/animation/lanes";
+
+type Vec3 = readonly [number, number, number];
+
+/**
+ * T3.5 — lane-internal `AuraConstraintSpec` (CCR-06-4 still pending, so the
+ * C-19 `ik.add(spec)` handle carries `unknown`; this is the typed lane shape).
+ * World-space `target` accepts a literal vector, a runtime node id/name, or a
+ * `{ socket: bone }` ref resolved per frame by the registering context.
+ */
+export type Prd06ConstraintSpec =
+  | ({ readonly kind: "two-bone" } & TwoBoneIkConstraintSpec & { readonly target: Vec3 | string | { readonly socket: string } })
+  | ({ readonly kind: "foot-ik" } & FootIkConstraintSpec)
+  | ({ readonly kind: "look-at" } & LookAtConstraintSpec & { readonly target: Vec3 | string | { readonly socket: string } })
+  | ({ readonly kind: "ccd" } & CcdIkConstraintSpec & { readonly target: Vec3 | string | { readonly socket: string } });
+
+export interface Prd06PoseConstraintContext {
+  readonly binding: SkeletonBinding;
+  /**
+   * Per-frame world-position resolver for non-literal targets — node id/name
+   * or `{ socket: bone }`. Returns null when unresolvable (constraint skipped
+   * for the frame, never faked).
+   */
+  readonly resolveTarget?: (ref: string | { readonly socket: string }) => Vec3 | null;
+}
+
+/** True when the spec's total applied weight is 0 — bitwise no-op guarantee. */
+function constraintInert(spec: Prd06ConstraintSpec): boolean {
+  switch (spec.kind) {
+    case "two-bone":
+      return (spec.weight ?? 1) <= 0;
+    case "ccd":
+      return (spec.weight ?? 1) <= 0;
+    case "look-at":
+      return spec.bones.every((bone) => bone.weight <= 0);
+    case "foot-ik":
+      return spec.legs.every((leg) => (leg.weight ?? 1) <= 0);
+  }
+}
+
+function resolveJointIndex(binding: SkeletonBinding, name: string): number {
+  const indices = binding.jointIndicesByName.get(name);
+  if (indices === undefined || indices.length === 0) {
+    throw new Error(`PRD06_CONSTRAINT_UNKNOWN_BONE:${name}`);
+  }
+  return indices[0]!;
+}
+
+/**
+ * T3.5 — build the runtime-side {@link GLTFPoseConstraint} for a lane spec:
+ * per-kind bone union (so the runtime emits sampled targets for the bones even
+ * when no clip covers them), the target resolver, and the per-kind evaluator.
+ */
+export function createPrd06PoseConstraint(
+  spec: Prd06ConstraintSpec,
+  context: Prd06PoseConstraintContext
+): GLTFPoseConstraint {
+  const binding = context.binding;
+  const targetResolver = (target: Vec3 | string | { readonly socket: string } | undefined): Vec3 | null => {
+    if (target === undefined) return null;
+    // Literal vectors arrive as a readonly [x,y,z] tuple — `Array.isArray`
+    // does not narrow readonly tuples, so check the object ref shape instead.
+    if (typeof target !== "string" && !("socket" in target)) return target;
+    return context.resolveTarget?.(target) ?? null;
+  };
+
+  switch (spec.kind) {
+    case "two-bone": {
+      const bones = [resolveJointIndex(binding, spec.root), resolveJointIndex(binding, spec.mid), resolveJointIndex(binding, spec.tip)];
+      if (spec.twistBone !== undefined) bones.push(resolveJointIndex(binding, spec.twistBone));
+      return {
+        bones,
+        evaluate: (pose, bound, modelMatrix) => {
+          const target = targetResolver(spec.target);
+          if (target === null) return;
+          solveTwoBoneIkRotations(pose, bound, modelMatrix, spec, target);
+        }
+      };
+    }
+    case "foot-ik": {
+      const bones: number[] = [];
+      for (const leg of spec.legs) {
+        bones.push(resolveJointIndex(binding, leg.root), resolveJointIndex(binding, leg.mid), resolveJointIndex(binding, leg.tip));
+        if (leg.twistBone !== undefined) bones.push(resolveJointIndex(binding, leg.twistBone));
+      }
+      if (spec.pelvis !== undefined) bones.push(resolveJointIndex(binding, spec.pelvis));
+      return {
+        bones,
+        evaluate: (pose, bound, modelMatrix) => {
+          solveFootIkConstraint(pose, bound, modelMatrix, spec);
+        }
+      };
+    }
+    case "look-at": {
+      const bones = spec.bones.map((bone) => resolveJointIndex(binding, bone.bone));
+      for (const eye of spec.eyes ?? []) bones.push(resolveJointIndex(binding, eye));
+      const lookAt = createLookAtConstraint(spec);
+      return {
+        bones,
+        evaluate: (pose, bound, modelMatrix, ctx) => {
+          const target = targetResolver(spec.target);
+          if (target === null) return;
+          lookAt.apply(pose, bound, modelMatrix, target, ctx.dt);
+        }
+      };
+    }
+    case "ccd": {
+      const bones = spec.chain.map((bone) => resolveJointIndex(binding, bone));
+      return {
+        bones,
+        evaluate: (pose, bound, modelMatrix) => {
+          const target = targetResolver(spec.target);
+          if (target === null) return;
+          solveCcdIk(pose, bound, modelMatrix, spec, target);
+        }
+      };
+    }
+  }
+}
+
+/**
+ * T3.5 — `ik.add(spec)` on the node handle resolves through this: validates the
+ * spec, instantiates the constraint against the runtime's skeleton binding and
+ * registers it. Weight-0 specs are stored but inert — their evaluate returns
+ * without writes, keeping the emitted pose bitwise equal to the pure clip.
+ */
+export function addPrd06ActorConstraint(
+  actor: TypedGLBActor,
+  spec: Prd06ConstraintSpec,
+  resolveTarget?: Prd06PoseConstraintContext["resolveTarget"]
+): () => void {
+  const runtime = actor.animation;
+  if (runtime === undefined || typeof runtime.skeletons !== "function") {
+    throw new Error("PRD06_CONSTRAINT_RUNTIME_UNAVAILABLE");
+  }
+  const binding = runtime.skeletons()[0];
+  if (binding === undefined) {
+    throw new Error("PRD06_CONSTRAINT_NO_SKELETON");
+  }
+  const constraint = createPrd06PoseConstraint(spec, { binding, resolveTarget });
+  const inert = constraintInert(spec);
+  return runtime.addPoseConstraint({
+    bones: constraint.bones,
+    evaluate: inert
+      ? () => { /* bitwise no-op — weight 0 equals the pure clip */ }
+      : constraint.evaluate
+  });
+}
+
+/** T3.5 — `ik.clear()` on the node handle. */
+export function clearPrd06ActorConstraints(actor: TypedGLBActor): void {
+  const runtime = actor.animation;
+  if (runtime === undefined || typeof runtime.clearPoseConstraints !== "function") return;
+  runtime.clearPoseConstraints();
+}

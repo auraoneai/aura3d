@@ -7,6 +7,11 @@
 // same rejection on the render side, and flags resolve from URL/env per §5.2.
 
 import type { AnimationPose } from "@aura3d/animation";
+import {
+  addPrd06ActorConstraint,
+  clearPrd06ActorConstraints,
+  type Prd06ConstraintSpec
+} from "../../production-runtime/actor/TypedGLBActorAnimation.js";
 import { createBoneMask } from "@aura3d/animation/lanes";
 import type { GLTFSceneAnimationApplyResult } from "@aura3d/assets/gltf-runtime";
 import type { QrFlags } from "@aura3d/rendering/contracts";
@@ -433,6 +438,30 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
     };
   }
 
+  /**
+   * T3.5 (PRD-06 §7.1, CCR-06-4) — `node.animation.ik`. `add` registers a
+   * pose-space constraint evaluated post-mixer/pre-palette on the actor's
+   * runtime and returns a disposer removing exactly that constraint;
+   * `clear()` empties the list. Degrades to the no-op stub while the flag is
+   * off or the actor is not loaded.
+   */
+  override readonly ik = {
+    add: (spec: unknown): (() => void) => {
+      const actor = this.actor;
+      if (!qrAnimationFlags().on("A3D_QR_ANIMATION") || actor === undefined || actor.animation === undefined) {
+        return () => { /* stub no-op */ };
+      }
+      return addPrd06ActorConstraint(actor, spec as Prd06ConstraintSpec, (ref) =>
+        prd06ConstraintTargetPosition(actor, ref)
+      );
+    },
+    clear: (): void => {
+      const actor = this.actor;
+      if (actor === undefined) return;
+      clearPrd06ActorConstraints(actor);
+    }
+  };
+
   override socket(bone: string): AuraBoneSocket {
     // T0.18 — live `transform.worldMatrix` reads through the actor extension's
     // bone-matrix source (lanes/prd06.ts); `valid: false` until it loads.
@@ -456,6 +485,30 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
       }
     };
   }
+}
+
+/**
+ * T3.5 — resolve a constraint's non-literal target to a world position:
+ * - `{ socket: bone }` → the live bone world matrix's translation column.
+ * - `string` → a scene node id-or-name's world translation.
+ */
+function prd06ConstraintTargetPosition(
+  actor: TypedGLBActor,
+  ref: string | { readonly socket: string }
+): readonly [number, number, number] | null {
+  if (typeof ref !== "string") {
+    const matrix = actorBoneMatrixSources.get(actor.id)?.(ref.socket) ?? null;
+    return matrix === null ? null : [matrix[12]!, matrix[13]!, matrix[14]!];
+  }
+  let found: readonly [number, number, number] | null = null;
+  actor.pipeline.resources.scene.traverse((node) => {
+    if (found !== null) return;
+    if (node.id === ref || node.name === ref) {
+      const m = node.transform.worldMatrix;
+      found = [m[12]!, m[13]!, m[14]!];
+    }
+  });
+  return found;
 }
 
 /**
