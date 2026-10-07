@@ -13,6 +13,7 @@ const SHOWCASE_BASE = {
   masks: ["object-id", "shadow-receiver", "metal", "silhouette-edge"] as const,
   brokenControls: ["no-shadows", "no-ibl", "dpr-half", "no-aa", "no-tonemap", "flat-sky", "albedo-only"] as const,
   resolution: RESOLUTION,
+  pixelRatioScale: 0.5,
   dprs: [1, 2] as const,
   settleFrames: 6,
   time: 0
