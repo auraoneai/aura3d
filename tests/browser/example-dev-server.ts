@@ -120,6 +120,19 @@ for (const entry of installedAuraPackageAliases()) {
 }
 
 export async function startExampleDevServer(root = process.cwd()): Promise<ExampleDevServer> {
+  // Transforms are deterministic per (file, mtime); engine graphs pull ~1,300
+  // modules through this handler and re-running ts.transpileModule plus the
+  // specifier rewrites per request is what pushes cold module-load past the
+  // spec budgets on CI runners. Cache for the server's lifetime only.
+  const transformCache = new Map<string, { mtimeMs: number; output: string | Buffer }>();
+  const transformed = (file: string, produce: () => string | Buffer): string | Buffer => {
+    const mtimeMs = statSync(file).mtimeMs;
+    const hit = transformCache.get(file);
+    if (hit && hit.mtimeMs === mtimeMs) return hit.output;
+    const output = produce();
+    transformCache.set(file, { mtimeMs, output });
+    return output;
+  };
   const server = createServer((request, response) => {
     try {
       const url = new URL(request.url ?? "/", "http://localhost");
@@ -157,14 +170,14 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
       }
 
       if (file.endsWith(".ts")) {
-        const source = readFileSync(file, "utf8");
+        const output = transformed(file, () => transpileForBrowser(readFileSync(file, "utf8"), file, root));
         response.writeHead(200, { "content-type": "application/javascript; charset=utf-8" });
-        response.end(transpileForBrowser(source, file, root));
+        response.end(output);
         return;
       }
 
       const content = file.endsWith(".js") || file.endsWith(".mjs")
-        ? rewriteModuleSpecifiers(rewritePackageImports(readFileSync(file, "utf8")), file, root)
+        ? transformed(file, () => rewriteModuleSpecifiers(rewritePackageImports(readFileSync(file, "utf8")), file, root))
         : readFileSync(file);
       response.writeHead(200, { "content-type": contentType(file) });
       response.end(content);

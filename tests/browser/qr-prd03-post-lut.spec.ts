@@ -31,9 +31,19 @@ test.describe("PRD-03 Phase 2 — display LUT bake + cache", () => {
     await page.goto(`${server.origin}/tests/browser/qr-prd03-phase2-harness.html`);
     // Deferred module script may still be resolving after `load` — wait for the
     // harness global before evaluating (was flaky: `run is not a function`).
-    await page.waitForFunction(
+    try {
+      await page.waitForFunction(
       () => typeof (window as { runQrPrd03Phase2?: unknown }).runQrPrd03Phase2 === "function",
     );
+    } catch {
+      // Cold CI transform of the engine module graph can outrun one
+      // budget; the dev server caches transpiled modules, so a reload
+      // re-serves the whole graph from cache and lands the global.
+      await page.reload();
+      await page.waitForFunction(
+      () => typeof (window as { runQrPrd03Phase2?: unknown }).runQrPrd03Phase2 === "function",
+    );
+    }
     const all = await page.evaluate(async () => {
       const run = (window as { runQrPrd03Phase2?: () => Promise<{ lut: Phase2Result["lut"]; rebake: Phase2Result["rebake"] }> }).runQrPrd03Phase2!;
       const { lut, rebake } = await run();

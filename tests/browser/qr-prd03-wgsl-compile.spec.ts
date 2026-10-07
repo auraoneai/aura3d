@@ -44,9 +44,19 @@ test.describe("PRD-03 Phase 7 — WGSL twins compile (getCompilationInfo)", () =
     await page.goto(`${server.origin}/tests/browser/qr-prd03-wgsl-harness.html`);
     // Deferred module script may still be resolving after `load` — wait for the
     // harness global before evaluating (was flaky: `run is not a function`).
-    await page.waitForFunction(
+    try {
+      await page.waitForFunction(
       () => typeof (window as { runQrPrd03Wgsl?: unknown }).runQrPrd03Wgsl === "function",
     );
+    } catch {
+      // Cold CI transform of the engine module graph can outrun one
+      // budget; the dev server caches transpiled modules, so a reload
+      // re-serves the whole graph from cache and lands the global.
+      await page.reload();
+      await page.waitForFunction(
+      () => typeof (window as { runQrPrd03Wgsl?: unknown }).runQrPrd03Wgsl === "function",
+    );
+    }
     const result = await page.evaluate(async () => {
       const run = (window as { runQrPrd03Wgsl?: () => Promise<WgslRunResult> }).runQrPrd03Wgsl!;
       return await run();

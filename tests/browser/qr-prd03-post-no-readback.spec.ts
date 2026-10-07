@@ -45,9 +45,19 @@ test.describe("PRD-03 Phase 3 — §6.9 CPU-readback ban", () => {
     await page.goto(`${server.origin}/tests/browser/qr-prd03-no-readback-harness.html`);
     // Deferred module script may still be resolving after `load` — wait for the
     // harness global before evaluating (was flaky: `run is not a function`).
-    await page.waitForFunction(
+    try {
+      await page.waitForFunction(
       () => typeof (window as { runQrPrd03NoReadback?: unknown }).runQrPrd03NoReadback === "function",
     );
+    } catch {
+      // Cold CI transform of the engine module graph can outrun one
+      // budget; the dev server caches transpiled modules, so a reload
+      // re-serves the whole graph from cache and lands the global.
+      await page.reload();
+      await page.waitForFunction(
+      () => typeof (window as { runQrPrd03NoReadback?: unknown }).runQrPrd03NoReadback === "function",
+    );
+    }
     result = await page.evaluate(async () => {
       const run = (window as { runQrPrd03NoReadback?: () => Promise<NoReadbackResult> }).runQrPrd03NoReadback!;
       return run(300);
