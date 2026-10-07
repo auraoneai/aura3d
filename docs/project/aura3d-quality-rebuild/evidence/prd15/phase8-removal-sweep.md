@@ -189,7 +189,17 @@ calls (prd01 outputSurface, rendering PixelRatio), unique-ownership
 
 ### Remaining T8.2 items
 - §16.1 36 strict captures (identity vs Phase 7) — dispatched via the
-  GitLab capture lane / captures workflow on this PR (packed-consumer-check
-  touched → `qr-prd15-captures` triggers).
+  `[qr-gitlab:all flags=strict]` commit tag on this PR.
 - 4.0.0 publish — `release.yml` is `workflow_dispatch`-only; coordinator
   action post-merge per runbook, not this lane.
+
+### §16.3 lean-fixture captures — closed by deletion
+The `prd15-lean-product` / `prd15-lean-minigame` fixture scenes existed to
+prove the deprecated `@aura3d/lean` shim rendered lights/environment/
+rotation through `Renderer` (Phase-4 exit). T8.1 deleted `packages/lean`,
+the fixture scenes and `tools/lean-fixture-capture` together, so the
+acceptance item no longer has a subject; `qr-prd15-captures.yml` is removed
+with this commit (its path triggers could never fire again and a manual
+dispatch would fail on missing inputs). Phase-4 local evidence (fixture
+pack-build assertions, 207,889-byte lit scenes) remains recorded in
+`phase4-no-silent-fallback.md`.
