@@ -21,6 +21,7 @@ import { installPrd11DeviceCounters } from "../webgl2/Counters";
 import { batchPlanCacheFor, prd11LatestBatchPlanReport } from "../renderer/CullingBatching";
 import { registerPrd11DrawIdShader } from "../batching/shaders/drawId.glsl";
 import { registerPrd11InstanceEmissiveShader } from "../batching/shaders/instanceEmissive.glsl";
+import { prd11TickQualityControllers } from "../quality/QualityController";
 
 /** Everything the `frame`/`quality`/`renderer.batching` diagnostics sections need, keyed by device. */
 export interface Prd11FrameTelemetry {
@@ -145,6 +146,30 @@ registerFrameContributor({
 });
 
 /**
+ * Phase 4 governor contributor (`prd11.governor`, flag
+ * `A3D_QR_TIERS_GOVERNOR`): attaches the device probe to each registered
+ * `AuraQuality` controller once, then feeds the previous frame's
+ * `FrameStatsSample` into `tickFrame` — calibration (§6.4 step 4) and the
+ * render-scale/feature governor (§6.5) live entirely inside the controller.
+ */
+registerFrameContributor({
+  id: "prd11.governor",
+  owner: "prd11",
+  flag: "A3D_QR_TIERS_GOVERNOR",
+  phases: ["collect"],
+  order: 950,
+  collect(items, ctx: FrameContributorContext) {
+    const last = prd11TelemetryForDevice(ctx.device).lastSample;
+    if (last) {
+      prd11TickQualityControllers(ctx.device.probe, last.intervalMs, last.gpuMs);
+    } else {
+      prd11TickQualityControllers(ctx.device.probe, 0, null);
+    }
+    return items;
+  }
+});
+
+/**
  * Engine-side wire (C-38 seam): `createAuraApp` resolves QR flags but owns the
  * call into `renderer/FrameGraph.ts`'s module-level flag store. Lane 11's
  * `quality` app extension (`packages/engine/src/lanes/prd11.ts`) forwards the
@@ -157,3 +182,13 @@ export function prd11SetRendererQrFlags(flags: QrFlags): void {
 
 /** C-31 `renderer.batching` report surface for the engine diagnostics collector. */
 export { prd11LatestBatchPlanReport };
+
+/** Phase 4 (§6.4-§6.5): engine `quality` extension instantiates `AuraQuality`
+ * and registers it on the lane bus; the diagnostics collector reads the live
+ * decision/steps via `prd11LatestQualityDiagnostics`. */
+export {
+  AuraQuality,
+  prd11LatestQualityDiagnostics,
+  registerAuraQualityController
+} from "../quality/QualityController";
+export type { AuraQualityControllerEnv, QualityDiagnostics } from "../quality/QualityController";
