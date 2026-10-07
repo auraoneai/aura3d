@@ -83,13 +83,6 @@ const WEBGPU_NATIVE_TONE_FRAGMENT = `
  return vec4<f32>(c, sample.a);
 }`;
 
-interface ForwardShadowUniforms {
-  readonly texture: TextureBinding;
-  readonly matrix: readonly number[];
-  readonly strength: number;
-  readonly bias: number;
-}
-
 export interface WebGPULike {
   requestAdapter(): Promise<WebGPUAdapterLike | null>;
   getPreferredCanvasFormat?(): string;
@@ -393,10 +386,6 @@ class WebGPURenderTarget implements RenderTarget {
   public disposed = false;
   public nativeNeedsClear = true;
   public nativeClearColor: readonly [number, number, number, number] = [0, 0, 0, 1];
-  public readonly colorPixels: Uint8Array;
-  public readonly colorFloatPixels: Float32Array | null;
-  public readonly depthPixels: Float32Array | null;
-
   constructor(
     public readonly id: number,
     public readonly width: number,
@@ -413,11 +402,6 @@ class WebGPURenderTarget implements RenderTarget {
     public readonly nativeMultisampleTexture: WebGPUTextureLike | null,
     public readonly nativeMultisampleView: unknown | null
   ) {
-    this.colorPixels = new Uint8Array(width * height * 4);
-    this.colorFloatPixels = colorTexture.format === "rgba16f" || colorTexture.format === "rgba32f"
-      ? new Float32Array(width * height * 4)
-      : null;
-    this.depthPixels = hasDepth ? new Float32Array(width * height).fill(1) : null;
   }
 
   dispose(): void {
@@ -486,9 +470,6 @@ export class WebGPUDevice implements RenderDevice {
   private readonly renderTargets = new Set<WebGPURenderTarget>();
   private readonly nativeSampledTextures = new Map<Texture, { readonly texture: WebGPUTextureLike; readonly view: unknown }>();
   private activeRenderTarget: WebGPURenderTarget | null = null;
-  private backbufferPixels: Uint8Array | null = null;
-  private backbufferWidth = 0;
-  private backbufferHeight = 0;
   private canvasDepthTexture: WebGPUTextureLike | null = null;
   private canvasDepthView: unknown | null = null;
   private canvasDepthWidth = 0;
@@ -547,8 +528,7 @@ export class WebGPUDevice implements RenderDevice {
         ...(supportsCanvasSurface ? ["canvas-surface" as const] : [])
       ],
       limitations: [
-        "Synchronous readPixels remains CPU-shadowed for deterministic tests; use readPixelsAsync for native WebGPU texture-to-buffer readback when available.",
-        "Renderer.render() stays synchronous and uses CPU-shadowed readback for deterministic compatibility; use Renderer.renderAsync() when renderer-owned WebGPU postprocess must read native render targets.",
+        "Synchronous readPixels/readFloatPixels throw WEBGPU_SYNC_READBACK_UNSUPPORTED; use readPixelsAsync/readFloatPixelsAsync for native texture-to-buffer readback.",
         "Sampleable WebGPU depth render-target textures are not advertised until native texture binding and depth readback evidence exists.",
         ...(supportsNativeRenderPipeline ? [] : ["native WebGPU render-pipeline submission requires createRenderPipeline, createTexture, and createCommandEncoder."]),
         ...(hasNativeSampledTextureBinding(device) ? [] : ["native WebGPU sampled texture binding requires createSampler, createTexture, and queue.writeTexture."]),
@@ -778,12 +758,6 @@ export class WebGPUDevice implements RenderDevice {
         actualLength: pixels.length
       });
     }
-    webgpuTarget.colorPixels.set(pixels);
-    if (webgpuTarget.colorFloatPixels) {
-      for (let index = 0; index < pixels.length; index += 1) {
-        webgpuTarget.colorFloatPixels[index] = pixels[index]! / 255;
-      }
-    }
     if (webgpuTarget.nativeTexture && webgpuTarget.colorTexture.format === "rgba8" && hasNativeTextureUpload(this.device)) {
       this.device.queue.writeTexture(
         { texture: webgpuTarget.nativeTexture },
@@ -805,51 +779,20 @@ export class WebGPUDevice implements RenderDevice {
         format: target.colorTexture.format
       });
     }
-    this.backbufferPixels = target.colorPixels.slice();
-    this.backbufferWidth = target.width;
-    this.backbufferHeight = target.height;
     this.activeRenderTarget = null;
     this.canvasSubmissions += 1;
   }
 
   readPixels(x: number, y: number, width: number, height: number): Uint8Array {
     this.assertAlive();
-    if (![x, y, width, height].every(Number.isInteger) || x < 0 || y < 0 || width <= 0 || height <= 0) {
-      throw new RenderDeviceError("Readback rectangle must be positive and in bounds", "INVALID_READBACK_RECT", { x, y, width, height });
-    }
-    const boundsWidth = this.activeRenderTarget?.width ?? (this.backbufferPixels ? this.backbufferWidth : this.viewportWidth);
-    const boundsHeight = this.activeRenderTarget?.height ?? (this.backbufferPixels ? this.backbufferHeight : this.viewportHeight);
-    if (x + width > boundsWidth || y + height > boundsHeight) {
-      throw new RenderDeviceError("Readback rectangle exceeds framebuffer bounds", "READBACK_OUT_OF_BOUNDS", {
-        x,
-        y,
-        width,
-        height,
-        boundsWidth,
-        boundsHeight
-      });
-    }
-    const output = new Uint8Array(width * height * 4);
-    const target = this.activeRenderTarget;
-    if (!target) {
-      if (this.backbufferPixels) {
-        for (let row = 0; row < height; row += 1) {
-          const sourceOffset = ((y + row) * this.backbufferWidth + x) * 4;
-          const destOffset = row * width * 4;
-          output.set(this.backbufferPixels.subarray(sourceOffset, sourceOffset + width * 4), destOffset);
-        }
-        return output;
-      }
-      const bytes = rgbaBytes(this.clearColor);
-      for (let index = 0; index < output.length; index += 4) output.set(bytes, index);
-      return output;
-    }
-    for (let row = 0; row < height; row += 1) {
-      const sourceOffset = ((y + row) * target.width + x) * 4;
-      const destOffset = row * width * 4;
-      output.set(target.colorPixels.subarray(sourceOffset, sourceOffset + width * 4), destOffset);
-    }
-    return output;
+    // PRD 11 Phase 1 freeze: the CPU-shadowed framebuffer is removed. Synchronous
+    // byte readback never existed on real WebGPU — use `readPixelsAsync`
+    // (native copyTextureToBuffer) or the MockRenderDevice CPU raster in tests.
+    throw new RenderDeviceError(
+      "Synchronous WebGPU readPixels is unsupported; use readPixelsAsync or MockRenderDevice",
+      "WEBGPU_SYNC_READBACK_UNSUPPORTED",
+      { x, y, width, height }
+    );
   }
 
   async readPixelsAsync(x: number, y: number, width: number, height: number): Promise<Uint8Array> {
@@ -1032,48 +975,13 @@ export class WebGPUDevice implements RenderDevice {
 
   readFloatPixels(x: number, y: number, width: number, height: number): Float32Array {
     this.assertAlive();
-    if (![x, y, width, height].every(Number.isInteger) || x < 0 || y < 0 || width <= 0 || height <= 0) {
-      throw new RenderDeviceError("Float readback rectangle must be positive and in bounds", "INVALID_READBACK_RECT", { x, y, width, height });
-    }
-    const boundsWidth = this.activeRenderTarget?.width ?? (this.backbufferPixels ? this.backbufferWidth : this.viewportWidth);
-    const boundsHeight = this.activeRenderTarget?.height ?? (this.backbufferPixels ? this.backbufferHeight : this.viewportHeight);
-    if (x + width > boundsWidth || y + height > boundsHeight) {
-      throw new RenderDeviceError("Float readback rectangle exceeds framebuffer bounds", "READBACK_OUT_OF_BOUNDS", {
-        x,
-        y,
-        width,
-        height,
-        boundsWidth,
-        boundsHeight
-      });
-    }
-    const output = new Float32Array(width * height * 4);
-    const target = this.activeRenderTarget;
-    if (!target) {
-      if (this.backbufferPixels) {
-        const bytes = this.readPixels(x, y, width, height);
-        for (let index = 0; index < bytes.length; index += 1) output[index] = bytes[index]! / 255;
-        return output;
-      }
-      for (let index = 0; index < output.length; index += 4) {
-        output[index] = this.clearColor[0];
-        output[index + 1] = this.clearColor[1];
-        output[index + 2] = this.clearColor[2];
-        output[index + 3] = this.clearColor[3];
-      }
-      return output;
-    }
-    if (target.colorFloatPixels) {
-      for (let row = 0; row < height; row += 1) {
-        const sourceOffset = ((y + row) * target.width + x) * 4;
-        const destOffset = row * width * 4;
-        output.set(target.colorFloatPixels.subarray(sourceOffset, sourceOffset + width * 4), destOffset);
-      }
-      return output;
-    }
-    const bytes = this.readPixels(x, y, width, height);
-    for (let index = 0; index < bytes.length; index += 1) output[index] = bytes[index]! / 255;
-    return output;
+    // PRD 11 Phase 1 freeze: same removal as `readPixels` — the float shadow was
+    // a CPU-only convenience; use `readFloatPixelsAsync` for real WebGPU reads.
+    throw new RenderDeviceError(
+      "Synchronous WebGPU readFloatPixels is unsupported; use readFloatPixelsAsync or MockRenderDevice",
+      "WEBGPU_SYNC_READBACK_UNSUPPORTED",
+      { x, y, width, height }
+    );
   }
 
   beginFrame(width: number, height: number): void {
@@ -1158,7 +1066,6 @@ export class WebGPUDevice implements RenderDevice {
       });
     }
     this.submitNativeRenderPass(command, vertexBuffer);
-    this.rasterizeDraw(command, vertexBuffer);
     this.drawCalls += 1;
   }
 
@@ -1727,76 +1634,6 @@ export class WebGPUDevice implements RenderDevice {
     return target;
   }
 
-  private rasterizeDraw(command: DrawCommand, vertexBuffer: WebGPURenderBuffer): void {
-    if (!this.activeRenderTarget || !command.vertexFormat?.hasAttribute("position")) return;
-    const position = command.vertexFormat.getAttribute("position");
-    const colorAttribute = command.vertexFormat.hasAttribute("color") ? command.vertexFormat.getAttribute("color") : null;
-    const uvAttribute = command.vertexFormat.hasAttribute("uv") ? command.vertexFormat.getAttribute("uv") : null;
-    if (position.components < 2) return;
-    const indices = this.indicesFor(command);
-    const color = uniformColor(command.uniforms);
-    const texture = uniformBaseColorTextureBinding(command.uniforms);
-    const shadow = uniformForwardShadow(command.uniforms);
-    const instanceMatrices = uniformRasterMatrices(command.uniforms, command.instanceCount ?? 1);
-    const modelMatrices = uniformRasterModelMatrices(command.uniforms, command.instanceCount ?? 1);
-    const depthTest = command.renderState?.depthTest !== false && this.activeRenderTarget.depthPixels !== null;
-    const depthWrite = command.renderState?.depthWrite !== false;
-    // Full joint-palette skinning (up to 96 joints, WebGL2 parity). readLocal applies morph then skin.
-    const jointPalette = jointPaletteFor(command.uniforms);
-    const format = command.vertexFormat;
-    const readLocal = (index: number): readonly [number, number, number] =>
-      skinLocalPosition(
-        readMorphedPosition(vertexBuffer.bytes, format.stride, position.offset, index, command.uniforms),
-        vertexBuffer.bytes,
-        format,
-        index,
-        jointPalette
-      );
-    for (let instanceIndex = 0; instanceIndex < instanceMatrices.length; instanceIndex += 1) {
-      const matrix = instanceMatrices[instanceIndex] ?? identityMatrix();
-      const modelMatrix = modelMatrices[instanceIndex] ?? identityMatrix();
-      if (command.topology === "triangles") {
-        for (let offset = 0; offset + 2 < indices.length; offset += 3) {
-          const indexA = indices[offset]!;
-          const indexB = indices[offset + 1]!;
-          const indexC = indices[offset + 2]!;
-          const localA = readLocal(indexA);
-          const localB = readLocal(indexB);
-          const localC = readLocal(indexC);
-          const a = transformPosition(localA, matrix);
-          const b = transformPosition(localB, matrix);
-          const c = transformPosition(localC, matrix);
-          const worldA = transformPosition(localA, modelMatrix);
-          const worldB = transformPosition(localB, modelMatrix);
-          const worldC = transformPosition(localC, modelMatrix);
-          const colorA = readVertexColor(vertexBuffer.bytes, command.vertexFormat.stride, colorAttribute?.offset, indexA, colorAttribute?.components);
-          const colorB = readVertexColor(vertexBuffer.bytes, command.vertexFormat.stride, colorAttribute?.offset, indexB, colorAttribute?.components);
-          const colorC = readVertexColor(vertexBuffer.bytes, command.vertexFormat.stride, colorAttribute?.offset, indexC, colorAttribute?.components);
-          const uvA = readVertexUv(vertexBuffer.bytes, command.vertexFormat.stride, uvAttribute?.offset, indexA);
-          const uvB = readVertexUv(vertexBuffer.bytes, command.vertexFormat.stride, uvAttribute?.offset, indexB);
-          const uvC = readVertexUv(vertexBuffer.bytes, command.vertexFormat.stride, uvAttribute?.offset, indexC);
-          rasterizeTriangle(this.activeRenderTarget, a, b, c, worldA, worldB, worldC, color, colorA, colorB, colorC, uvA, uvB, uvC, texture, shadow, depthTest, depthWrite);
-        }
-      } else if (command.topology === "lines") {
-        for (let offset = 0; offset + 1 < indices.length; offset += 2) {
-          const indexA = indices[offset]!;
-          const indexB = indices[offset + 1]!;
-          const a = transformPosition(readLocal(indexA), matrix);
-          const b = transformPosition(readLocal(indexB), matrix);
-          const colorA = readVertexColor(vertexBuffer.bytes, command.vertexFormat.stride, colorAttribute?.offset, indexA, colorAttribute?.components);
-          const colorB = readVertexColor(vertexBuffer.bytes, command.vertexFormat.stride, colorAttribute?.offset, indexB, colorAttribute?.components);
-          rasterizeLine(this.activeRenderTarget, a, b, color, colorA, colorB, depthTest, depthWrite);
-        }
-      } else {
-        for (const index of indices) {
-          const point = transformPosition(readLocal(index), matrix);
-          const vertexColor = readVertexColor(vertexBuffer.bytes, command.vertexFormat.stride, colorAttribute?.offset, index, colorAttribute?.components);
-          rasterizePoint(this.activeRenderTarget, point, multiplyColor(color, vertexColor), depthTest, depthWrite);
-        }
-      }
-    }
-  }
-
   private submitNativeRenderPass(command: DrawCommand, vertexBuffer: WebGPURenderBuffer): void {
     const resolveView = this.activeRenderTarget?.nativeView ?? null;
     const nativeView = this.activeRenderTarget?.nativeMultisampleView ?? resolveView ?? this.currentCanvasView();
@@ -2242,7 +2079,7 @@ export class WebGPUDevice implements RenderDevice {
     data[167] = 1;
     data[168] = uniformNumber(command.uniforms?.get("u_metallicRoughnessTextureEnabled"), metallicRoughnessBinding ? 1 : 0);
     data[169] = uniformNumber(command.uniforms?.get("u_occlusionTextureEnabled"), occlusionBinding ? 1 : 0);
-    data[170] = uniformNumber(command.uniforms?.get("u_productColorSmoothing"), 0);
+    data[170] = 0; // materialFlags.z was u_productColorSmoothing — removed in the PRD 11 Phase 1 freeze
     data[171] = uniformNumber(command.uniforms?.get("u_clusteredLightEnabled"), 0);
     data.set(uniformMat4(command.uniforms?.get("u_normalMatrix")) ?? identityMatrix(), 172);
     const modelMatrix = uniformMat4(command.uniforms?.get("u_modelMatrix")) ?? identityMatrix();
@@ -2414,21 +2251,9 @@ export class WebGPUDevice implements RenderDevice {
 
   private clearActiveRenderTarget(color: readonly [number, number, number, number]): void {
     if (!this.activeRenderTarget) return;
-    const bytes = rgbaBytes(color);
-    for (let index = 0; index < this.activeRenderTarget.colorPixels.length; index += 4) {
-      this.activeRenderTarget.colorPixels.set(bytes, index);
-    }
+    // Phase 1 freeze: clears are native-load-op state only (no CPU shadow).
     this.activeRenderTarget.nativeNeedsClear = true;
     this.activeRenderTarget.nativeClearColor = color;
-    this.activeRenderTarget.depthPixels?.fill(1);
-    if (this.activeRenderTarget.colorFloatPixels) {
-      for (let index = 0; index < this.activeRenderTarget.colorFloatPixels.length; index += 4) {
-        this.activeRenderTarget.colorFloatPixels[index] = color[0];
-        this.activeRenderTarget.colorFloatPixels[index + 1] = color[1];
-        this.activeRenderTarget.colorFloatPixels[index + 2] = color[2];
-        this.activeRenderTarget.colorFloatPixels[index + 3] = color[3];
-      }
-    }
   }
 
   private indicesFor(command: DrawCommand): readonly number[] {
@@ -2706,10 +2531,6 @@ function writeAlignedQueueBuffer(
   queue.writeBuffer(buffer, alignedOffset, padded);
 }
 
-function rgbaBytes(color: readonly [number, number, number, number]): Uint8Array {
-  return new Uint8Array(color.map((channel) => Math.round(Math.max(0, Math.min(1, channel)) * 255)));
-}
-
 function halfFloatToNumber(bits: number): number {
   const sign = (bits & 0x8000) ? -1 : 1;
   const exponent = (bits >> 10) & 0x1f;
@@ -2788,403 +2609,13 @@ function uniformMat4Array(value: UniformValue | undefined, count: number): reado
   });
 }
 
-function uniformRasterMatrices(uniforms: DrawCommand["uniforms"], instanceCount: number): readonly (readonly number[])[] {
-  const modelViewProjection = uniformMat4(uniforms?.get("u_modelViewProjection")) ?? identityMatrix();
-  const value = uniforms?.get("u_instanceMatrices");
-  const numbers = value instanceof Float32Array || Array.isArray(value) ? Array.from(value) : [];
-  if (numbers.length < instanceCount * 16 || !numbers.slice(0, instanceCount * 16).every(Number.isFinite)) {
-    return Array.from({ length: instanceCount }, () => modelViewProjection);
-  }
-  return Array.from({ length: instanceCount }, (_, index) => multiplyMat4(modelViewProjection, numbers.slice(index * 16, index * 16 + 16)));
-}
-
-function uniformRasterModelMatrices(uniforms: DrawCommand["uniforms"], instanceCount: number): readonly (readonly number[])[] {
-  const modelMatrix = uniformMat4(uniforms?.get("u_modelMatrix")) ?? identityMatrix();
-  const value = uniforms?.get("u_instanceMatrices");
-  const numbers = value instanceof Float32Array || Array.isArray(value) ? Array.from(value) : [];
-  if (numbers.length < instanceCount * 16 || !numbers.slice(0, instanceCount * 16).every(Number.isFinite)) {
-    return Array.from({ length: instanceCount }, () => modelMatrix);
-  }
-  return Array.from({ length: instanceCount }, (_, index) => multiplyMat4(modelMatrix, numbers.slice(index * 16, index * 16 + 16)));
-}
-
-function uniformForwardShadow(uniforms: DrawCommand["uniforms"]): ForwardShadowUniforms | null {
-  if (!uniforms) return null;
-  const enabled = uniforms.get("u_shadowMapEnabled");
-  if (typeof enabled !== "number" || enabled < 0.5) return null;
-  const texture = uniforms.get("u_shadowMapTexture");
-  const matrix = uniformMat4(uniforms.get("u_shadowMapMatrix")) ?? identityMatrix();
-  if (!isTextureBinding(texture) || !texture.texture || texture.texture.disposed || !texture.validate().ok) {
-    return null;
-  }
-  const strengthValue = uniforms.get("u_shadowMapStrength");
-  const biasValue = uniforms.get("u_shadowMapBias");
-  const strength = typeof strengthValue === "number" && Number.isFinite(strengthValue) ? Math.max(0, Math.min(1, strengthValue)) : 0.65;
-  const bias = typeof biasValue === "number" && Number.isFinite(biasValue) ? Math.max(0, biasValue) : 0.001;
-  return { texture, matrix, strength, bias };
-}
-
 function uniformMat4(value: UniformValue | undefined): readonly number[] | null {
   const numbers = value instanceof Float32Array || Array.isArray(value) ? Array.from(value) : [];
   return numbers.length === 16 && numbers.every(Number.isFinite) ? numbers : null;
 }
 
-function multiplyMat4(left: readonly number[], right: readonly number[]): readonly number[] {
-  const out = new Array<number>(16);
-  for (let row = 0; row < 4; row += 1) {
-    for (let column = 0; column < 4; column += 1) {
-      out[column * 4 + row] =
-        (left[0 * 4 + row] ?? 0) * (right[column * 4 + 0] ?? 0) +
-        (left[1 * 4 + row] ?? 0) * (right[column * 4 + 1] ?? 0) +
-        (left[2 * 4 + row] ?? 0) * (right[column * 4 + 2] ?? 0) +
-        (left[3 * 4 + row] ?? 0) * (right[column * 4 + 3] ?? 0);
-    }
-  }
-  return out;
-}
-
-function transformPosition(position: readonly [number, number, number], matrix: readonly number[]): readonly [number, number, number] {
-  const x = (matrix[0] ?? 1) * position[0] + (matrix[4] ?? 0) * position[1] + (matrix[8] ?? 0) * position[2] + (matrix[12] ?? 0);
-  const y = (matrix[1] ?? 0) * position[0] + (matrix[5] ?? 1) * position[1] + (matrix[9] ?? 0) * position[2] + (matrix[13] ?? 0);
-  const z = (matrix[2] ?? 0) * position[0] + (matrix[6] ?? 0) * position[1] + (matrix[10] ?? 1) * position[2] + (matrix[14] ?? 0);
-  const w = (matrix[3] ?? 0) * position[0] + (matrix[7] ?? 0) * position[1] + (matrix[11] ?? 0) * position[2] + (matrix[15] ?? 1);
-  const inverseW = Math.abs(w) > 1e-8 ? 1 / w : 1;
-  return [
-    x * inverseW,
-    y * inverseW,
-    z * inverseW
-  ];
-}
-
-function toDepth(ndcZ: number): number {
-  return Math.max(0, Math.min(1, ndcZ * 0.5 + 0.5));
-}
-
-function passesDepthTest(target: WebGPURenderTarget, pixelIndex: number, depth: number, enabled: boolean, write: boolean): boolean {
-  if (!enabled || !target.depthPixels) return true;
-  if (depth > (target.depthPixels[pixelIndex] ?? 1) + 1e-6) return false;
-  if (write) target.depthPixels[pixelIndex] = depth;
-  return true;
-}
-
-function readPosition(bytes: Uint8Array, stride: number, offset: number, vertexIndex: number): readonly [number, number, number] {
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  const base = vertexIndex * stride + offset;
-  return [
-    view.getFloat32(base, true),
-    view.getFloat32(base + 4, true),
-    view.getFloat32(base + 8, true)
-  ];
-}
-
-function readMorphedPosition(bytes: Uint8Array, stride: number, offset: number, vertexIndex: number, uniforms: DrawCommand["uniforms"]): readonly [number, number, number] {
-  const basePosition = readPosition(bytes, stride, offset, vertexIndex);
-  const packed = uniforms?.get("u_morphPositionDeltas");
-  const weights = uniforms?.get("u_morphWeights");
-  const targetCountValue = uniforms?.get("u_morphTargetCount");
-  if (!(packed instanceof Float32Array) || !(weights instanceof Float32Array) || typeof targetCountValue !== "number") {
-    return basePosition;
-  }
-  const targetCount = Math.max(0, Math.min(weights.length, Math.floor(targetCountValue)));
-  let x = basePosition[0];
-  let y = basePosition[1];
-  let z = basePosition[2];
-  for (let target = 0; target < targetCount; target += 1) {
-    const weight = weights[target] ?? 0;
-    const deltaOffset = (target * 64 + vertexIndex) * 4;
-    x += (packed[deltaOffset] ?? 0) * weight;
-    y += (packed[deltaOffset + 1] ?? 0) * weight;
-    z += (packed[deltaOffset + 2] ?? 0) * weight;
-  }
-  return [x, y, z];
-}
-
-function toPixel(position: readonly [number, number, number], width: number, height: number): readonly [number, number, number] {
-  return [
-    (position[0] * 0.5 + 0.5) * (width - 1),
-    (1 - (position[1] * 0.5 + 0.5)) * (height - 1),
-    toDepth(position[2])
-  ];
-}
-
 function identityMatrix(): readonly number[] {
   return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-}
-
-function readVec4Attribute(bytes: Uint8Array, stride: number, offset: number, vertexIndex: number): readonly [number, number, number, number] {
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  const base = vertexIndex * stride + offset;
-  return [
-    view.getFloat32(base, true),
-    view.getFloat32(base + 4, true),
-    view.getFloat32(base + 8, true),
-    view.getFloat32(base + 12, true)
-  ];
-}
-
-// CPU skinning for the WebGPU emulation rasterizer: blend the joint palette (up to the full
-// WebGL2-parity 96-joint count) by the vertex's 4 joint indices + weights, then transform the local
-// position by the blended matrix. Mirrors the WebGL2 skinning path so a skinned character deforms
-// identically on both backends. `palette` may hold up to 96 matrices (parity with WebGL2).
-function skinLocalPosition(
-  local: readonly [number, number, number],
-  bytes: Uint8Array,
-  format: VertexFormat,
-  vertexIndex: number,
-  palette: readonly (readonly number[])[]
-): readonly [number, number, number] {
-  if (palette.length === 0 || !format.hasAttribute("joints") || !format.hasAttribute("weights")) {
-    return local;
-  }
-  const joints = readVec4Attribute(bytes, format.stride, format.getAttribute("joints").offset, vertexIndex);
-  const weights = readVec4Attribute(bytes, format.stride, format.getAttribute("weights").offset, vertexIndex);
-  const weightSum = weights[0] + weights[1] + weights[2] + weights[3];
-  if (weightSum <= 1e-4) return local;
-  const blended = new Array<number>(16).fill(0);
-  const maxJoint = palette.length - 1;
-  for (let influence = 0; influence < 4; influence += 1) {
-    const weight = weights[influence] ?? 0;
-    if (weight === 0) continue;
-    const jointIndex = Math.max(0, Math.min(maxJoint, Math.round(joints[influence] ?? 0)));
-    const jointMatrix = palette[jointIndex] ?? identityMatrix();
-    for (let k = 0; k < 16; k += 1) blended[k] += (jointMatrix[k] ?? 0) * weight;
-  }
-  return transformPosition(local, blended);
-}
-
-function jointPaletteFor(uniforms: DrawCommand["uniforms"]): readonly (readonly number[])[] {
-  const value = uniforms?.get("u_jointMatrices");
-  const length = value instanceof Float32Array || Array.isArray(value) ? (value as ArrayLike<number>).length : 0;
-  const count = Math.min(MAX_WEBGPU_SKINNING_JOINTS, Math.floor(length / 16));
-  return count > 0 ? uniformMat4Array(value, count) : [];
-}
-
-function readVertexColor(bytes: Uint8Array, stride: number, offset: number | undefined, vertexIndex: number, components = 4): readonly [number, number, number, number] {
-  if (offset === undefined) return [1, 1, 1, 1];
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  const base = vertexIndex * stride + offset;
-  return [
-    view.getFloat32(base, true),
-    view.getFloat32(base + 4, true),
-    view.getFloat32(base + 8, true),
-    components >= 4 ? view.getFloat32(base + 12, true) : 1
-  ];
-}
-
-function readVertexUv(bytes: Uint8Array, stride: number, offset: number | undefined, vertexIndex: number): readonly [number, number] {
-  if (offset === undefined) return [0, 0];
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  const base = vertexIndex * stride + offset;
-  return [view.getFloat32(base, true), view.getFloat32(base + 4, true)];
-}
-
-function rasterizeTriangle(
-  target: WebGPURenderTarget,
-  a: readonly [number, number, number],
-  b: readonly [number, number, number],
-  c: readonly [number, number, number],
-  worldA: readonly [number, number, number],
-  worldB: readonly [number, number, number],
-  worldC: readonly [number, number, number],
-  color: readonly [number, number, number, number],
-  colorA: readonly [number, number, number, number],
-  colorB: readonly [number, number, number, number],
-  colorC: readonly [number, number, number, number],
-  uvA: readonly [number, number],
-  uvB: readonly [number, number],
-  uvC: readonly [number, number],
-  texture: TextureBinding | null,
-  shadow: ForwardShadowUniforms | null,
-  depthTest: boolean,
-  depthWrite: boolean
-): void {
-  const pa = toPixel(a, target.width, target.height);
-  const pb = toPixel(b, target.width, target.height);
-  const pc = toPixel(c, target.width, target.height);
-  const minX = clampInt(Math.floor(Math.min(pa[0], pb[0], pc[0])), 0, target.width - 1);
-  const maxX = clampInt(Math.ceil(Math.max(pa[0], pb[0], pc[0])), 0, target.width - 1);
-  const minY = clampInt(Math.floor(Math.min(pa[1], pb[1], pc[1])), 0, target.height - 1);
-  const maxY = clampInt(Math.ceil(Math.max(pa[1], pb[1], pc[1])), 0, target.height - 1);
-  const area = edge(pa, pb, pc);
-  if (Math.abs(area) < 1e-6) return;
-  for (let y = minY; y <= maxY; y += 1) {
-    for (let x = minX; x <= maxX; x += 1) {
-      const p = [x + 0.5, y + 0.5] as const;
-      const w0 = edge(pb, pc, p);
-      const w1 = edge(pc, pa, p);
-      const w2 = edge(pa, pb, p);
-      if ((w0 >= 0 && w1 >= 0 && w2 >= 0) || (w0 <= 0 && w1 <= 0 && w2 <= 0)) {
-        const invArea = 1 / area;
-        const wa = w0 * invArea;
-        const wb = w1 * invArea;
-        const wc = w2 * invArea;
-        const uv: readonly [number, number] = [
-          uvA[0] * wa + uvB[0] * wb + uvC[0] * wc,
-          uvA[1] * wa + uvB[1] * wb + uvC[1] * wc
-        ];
-        const worldPosition: readonly [number, number, number] = [
-          worldA[0] * wa + worldB[0] * wb + worldC[0] * wc,
-          worldA[1] * wa + worldB[1] * wb + worldC[1] * wc,
-          worldA[2] * wa + worldB[2] * wb + worldC[2] * wc
-        ];
-        const pixelIndex = y * target.width + x;
-        const depth = pa[2] * wa + pb[2] * wb + pc[2] * wc;
-        if (!passesDepthTest(target, pixelIndex, depth, depthTest, depthWrite)) continue;
-        const shadedColor = multiplyColor(
-          multiplyColor(color, interpolateColor(colorA, colorB, colorC, wa, wb, wc)),
-          texture ? sampleTextureBinding(texture, uv) : [1, 1, 1, 1]
-        );
-        target.colorPixels.set(rgbaBytes(multiplyColor(shadedColor, shadowFactor(shadow, worldPosition))), pixelIndex * 4);
-      }
-    }
-  }
-}
-
-function rasterizeLine(
-  target: WebGPURenderTarget,
-  a: readonly [number, number, number],
-  b: readonly [number, number, number],
-  color: readonly [number, number, number, number],
-  colorA: readonly [number, number, number, number],
-  colorB: readonly [number, number, number, number],
-  depthTest: boolean,
-  depthWrite: boolean
-): void {
-  const pa = toPixel(a, target.width, target.height);
-  const pb = toPixel(b, target.width, target.height);
-  const x0 = clampInt(Math.round(pa[0]), 0, target.width - 1);
-  const y0 = clampInt(Math.round(pa[1]), 0, target.height - 1);
-  const x1 = clampInt(Math.round(pb[0]), 0, target.width - 1);
-  const y1 = clampInt(Math.round(pb[1]), 0, target.height - 1);
-  const dx = Math.abs(x1 - x0);
-  const dy = Math.abs(y1 - y0);
-  const steps = Math.max(dx, dy, 1);
-  const shadedA = multiplyColor(color, colorA);
-  const shadedB = multiplyColor(color, colorB);
-  for (let step = 0; step <= steps; step += 1) {
-    const t = step / steps;
-    const x = clampInt(Math.round(x0 + (x1 - x0) * t), 0, target.width - 1);
-    const y = clampInt(Math.round(y0 + (y1 - y0) * t), 0, target.height - 1);
-    const pixelIndex = y * target.width + x;
-    const depth = pa[2] + (pb[2] - pa[2]) * t;
-    if (!passesDepthTest(target, pixelIndex, depth, depthTest, depthWrite)) continue;
-    const shaded = lerpColor(shadedA, shadedB, t);
-    target.colorPixels.set(rgbaBytes(shaded), pixelIndex * 4);
-  }
-}
-
-function rasterizePoint(
-  target: WebGPURenderTarget,
-  point: readonly [number, number, number],
-  color: readonly [number, number, number, number],
-  depthTest: boolean,
-  depthWrite: boolean
-): void {
-  const pixel = toPixel(point, target.width, target.height);
-  const centerX = clampInt(Math.round(pixel[0]), 0, target.width - 1);
-  const centerY = clampInt(Math.round(pixel[1]), 0, target.height - 1);
-  const bytes = rgbaBytes(color);
-  for (let y = centerY - 2; y <= centerY + 2; y += 1) {
-    if (y < 0 || y >= target.height) continue;
-    for (let x = centerX - 2; x <= centerX + 2; x += 1) {
-      if (x < 0 || x >= target.width) continue;
-      const pixelIndex = y * target.width + x;
-      if (!passesDepthTest(target, pixelIndex, pixel[2], depthTest, depthWrite)) continue;
-      target.colorPixels.set(bytes, pixelIndex * 4);
-    }
-  }
-}
-
-function sampleTextureBinding(binding: TextureBinding, uv: readonly [number, number]): readonly [number, number, number, number] {
-  const texture = binding.texture;
-  if (!texture || texture.disposed) return [1, 1, 1, 1];
-  const level = texture.textureLevels[0] ?? texture.fallbackTextureLevels[0];
-  if (!level || level.data.length < level.width * level.height * 4) return [1, 1, 1, 1];
-  const transformed = binding.transformUV(uv);
-  const u = addressCoordinate(transformed[0], binding.sampler.addressU);
-  const v = addressCoordinate(transformed[1], binding.sampler.addressV);
-  const x = clampInt(Math.round(u * (level.width - 1)), 0, level.width - 1);
-  const y = clampInt(Math.round(v * (level.height - 1)), 0, level.height - 1);
-  const offset = (y * level.width + x) * 4;
-  const r = (level.data[offset] ?? 255) / 255;
-  const g = (level.data[offset + 1] ?? 255) / 255;
-  const b = (level.data[offset + 2] ?? 255) / 255;
-  return [
-    texture.colorSpace === "srgb" ? srgbToLinear(r) : r,
-    texture.colorSpace === "srgb" ? srgbToLinear(g) : g,
-    texture.colorSpace === "srgb" ? srgbToLinear(b) : b,
-    (level.data[offset + 3] ?? 255) / 255
-  ];
-}
-
-function srgbToLinear(value: number): number {
-  return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-}
-
-function shadowFactor(shadow: ForwardShadowUniforms | null, worldPosition: readonly [number, number, number]): readonly [number, number, number, number] {
-  if (!shadow) return [1, 1, 1, 1];
-  const projected = transformPosition(worldPosition, shadow.matrix);
-  if (projected[0] < -1 || projected[0] > 1 || projected[1] < -1 || projected[1] > 1 || projected[2] < -1 || projected[2] > 1) {
-    return [1, 1, 1, 1];
-  }
-  const uv: readonly [number, number] = [projected[0] * 0.5 + 0.5, projected[1] * 0.5 + 0.5];
-  const storedDepth = sampleTextureBinding(shadow.texture, uv)[0];
-  const receiverDepth = projected[2] * 0.5 + 0.5 - shadow.bias;
-  const visibility = receiverDepth > storedDepth ? 1 - shadow.strength : 1;
-  return [visibility, visibility, visibility, 1];
-}
-
-function addressCoordinate(value: number, mode: "clamp-to-edge" | "repeat" | "mirror-repeat"): number {
-  if (mode === "repeat") return value - Math.floor(value);
-  if (mode === "mirror-repeat") {
-    const repeated = value - Math.floor(value);
-    return Math.floor(value) % 2 === 0 ? repeated : 1 - repeated;
-  }
-  return Math.min(1, Math.max(0, value));
-}
-
-function lerpColor(
-  a: readonly [number, number, number, number],
-  b: readonly [number, number, number, number],
-  t: number
-): readonly [number, number, number, number] {
-  return [
-    a[0] + (b[0] - a[0]) * t,
-    a[1] + (b[1] - a[1]) * t,
-    a[2] + (b[2] - a[2]) * t,
-    a[3] + (b[3] - a[3]) * t
-  ];
-}
-
-function interpolateColor(
-  a: readonly [number, number, number, number],
-  b: readonly [number, number, number, number],
-  c: readonly [number, number, number, number],
-  wa: number,
-  wb: number,
-  wc: number
-): readonly [number, number, number, number] {
-  return [
-    a[0] * wa + b[0] * wb + c[0] * wc,
-    a[1] * wa + b[1] * wb + c[1] * wc,
-    a[2] * wa + b[2] * wb + c[2] * wc,
-    a[3] * wa + b[3] * wb + c[3] * wc
-  ];
-}
-
-function multiplyColor(
-  a: readonly [number, number, number, number],
-  b: readonly [number, number, number, number]
-): readonly [number, number, number, number] {
-  return [a[0] * b[0], a[1] * b[1], a[2] * b[2], a[3] * b[3]];
-}
-
-function edge(a: readonly number[], b: readonly number[], c: readonly number[]): number {
-  return (c[0] - a[0]) * (b[1] - a[1]) - (c[1] - a[1]) * (b[0] - a[0]);
-}
-
-function clampInt(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value));
 }
 
 function createNativeShaderSources(sources: ShaderSources): {
@@ -3229,50 +2660,15 @@ function createNativeShaderSources(sources: ShaderSources): {
   if (sources.marker.includes("morph-unlit")) {
     return { ...nativeMorphUnlitShader(vertexEntry, fragmentEntry, sources.marker), entryPoints: [vertexEntry, fragmentEntry], uniformLayout: "generated-morph-unlit" };
   }
-  if (/sampler2D/.test(sources.fragment) && /layout\s*\(\s*location\s*=\s*2\s*\)\s*in\s+vec2/.test(sources.vertex)) {
-    const colorInput = /layout\s*\(\s*location\s*=\s*(\d+)\s*\)\s*in\s+(?:lowp\s+|mediump\s+|highp\s+)?vec([34])\s+(?:a_color|color)\s*;/.exec(sources.vertex);
-    const colorParameter = colorInput ? `, @location(${colorInput[1]}) vertexColor: vec${colorInput[2]}<f32>` : "";
-    const drawUniforms = `struct DrawUniforms {
-  modelViewProjection: mat4x4<f32>,
-  color: vec4<f32>,
-};
-@group(0) @binding(0) var<uniform> u_draw: DrawUniforms;`;
-    const vertexOutput = `struct VertexOutput {
-  @builtin(position) position: vec4<f32>,
-  @location(0) uv: vec2<f32>,
-  ${colorInput ? "@location(1) color: vec4<f32>," : ""}
-};`;
-    const vertex = `// ${sources.marker}
-${drawUniforms}
-${vertexOutput}
-@vertex
-fn ${vertexEntry}(@location(0) position: vec3<f32>, @location(2) uv: vec2<f32>${colorParameter}) -> VertexOutput {
-  var output: VertexOutput;
-  let clipPosition = u_draw.modelViewProjection * vec4<f32>(position, 1.0);
-  output.position = vec4<f32>(clipPosition.x, clipPosition.y, clipPosition.z * 0.5 + clipPosition.w * 0.5, clipPosition.w);
-  output.uv = uv;
-  ${colorInput ? `output.color = ${colorInput[2] === "3" ? "vec4<f32>(vertexColor, 1.0)" : "vertexColor"};` : ""}
-  return output;
-}
-`;
-    return {
-      vertex,
-      colorDefaultVertex: colorInput ? vertex.replace(colorParameter, "").replace(
-        /output\.color = [^;]+;/, "output.color = vec4<f32>(1.0);"
-      ) : undefined,
-      fragment: `// ${sources.marker}
-${drawUniforms}
-${vertexOutput}
-@group(0) @binding(1) var u_textureSampler: sampler;
-@group(0) @binding(2) var u_texture: texture_2d<f32>;
-@fragment
-fn ${fragmentEntry}(input: VertexOutput) -> @location(0) vec4<f32> {
-  return u_draw.color * textureSample(u_texture, u_textureSampler, input.uv)${colorInput ? " * input.color" : ""};
-}
-`,
-      entryPoints: [vertexEntry, fragmentEntry],
-      uniformLayout: "generated-texture"
-    };
+  // PRD 11 Phase 1 freeze: only the encoded-depth program keeps a generated
+  // WGSL fallback (it is a real packed-depth shader, not a flat-colour stub).
+  // Every other shader without a portable, passthrough, or marker WGSL program
+  // throws at creation instead of silently rendering flat colour.
+  if (!sources.marker.includes(DEFAULT_DEPTH_SHADER_MARKER)) {
+    throw new RenderDeviceError("No WGSL program for shader", "WGSL_PROGRAM_MISSING", {
+      marker: sources.marker,
+      label: sources.label
+    });
   }
   // Basic GLSL programs (including unlit primitives and particle sprites)
   // declare their color input explicitly. Preserve that location and component
@@ -3563,41 +2959,6 @@ fn encodePbrOutput(linearColor: vec3<f32>) -> vec3<f32> {
   return pow(filmic, vec3<f32>(1.0 / 2.2, 1.0 / 2.2, 1.0 / 2.2));
 }
 
-fn productPropBodyGate(baseColor: vec3<f32>, strength: f32) -> f32 {
-  let maxChannel = max(max(baseColor.r, baseColor.g), baseColor.b);
-  let minChannel = min(min(baseColor.r, baseColor.g), baseColor.b);
-  let normalized = baseColor / max(maxChannel, 0.001);
-  let warm = clamp(strength, 0.0, 1.0)
-    * smoothstep(0.18, 0.42, maxChannel)
-    * smoothstep(0.04, 0.2, maxChannel - minChannel)
-    * smoothstep(0.64, 0.84, normalized.r)
-    * (1.0 - smoothstep(0.12, 0.32, normalized.b));
-  return warm * smoothstep(0.46, 0.64, normalized.g) * (1.0 - smoothstep(0.74, 0.94, normalized.b));
-}
-
-fn productPropOrangeGate(baseColor: vec3<f32>, strength: f32) -> f32 {
-  let maxChannel = max(max(baseColor.r, baseColor.g), baseColor.b);
-  let minChannel = min(min(baseColor.r, baseColor.g), baseColor.b);
-  let normalized = baseColor / max(maxChannel, 0.001);
-  let warm = clamp(strength, 0.0, 1.0)
-    * smoothstep(0.32, 0.58, maxChannel)
-    * smoothstep(0.05, 0.24, maxChannel - minChannel)
-    * smoothstep(0.68, 0.88, normalized.r)
-    * (1.0 - smoothstep(0.1, 0.28, normalized.b));
-  return warm * (1.0 - smoothstep(0.34, 0.58, normalized.g)) * smoothstep(0.012, 0.08, baseColor.g);
-}
-
-fn productPropAlbedo(baseColor: vec3<f32>, strength: f32) -> vec3<f32> {
-  let orangeGate = productPropOrangeGate(baseColor, strength);
-  let bodyGate = productPropBodyGate(baseColor, strength) * (1.0 - orangeGate * 0.92);
-  let maxChannel = max(max(baseColor.r, baseColor.g), baseColor.b);
-  let bodyLuma = mix(0.98, 1.03, smoothstep(0.24, 0.9, maxChannel));
-  let beakLuma = mix(0.94, 1.02, smoothstep(0.2, 0.82, maxChannel));
-  var color = mix(baseColor, vec3<f32>(1.0, 0.88, 0.012) * bodyLuma, clamp(bodyGate * 0.995, 0.0, 0.995));
-  color = mix(color, vec3<f32>(1.0, 0.24, 0.018) * beakLuma, clamp(orangeGate * 0.99, 0.0, 0.99));
-  return color;
-}
-
 fn perturbNormal(normalInput: vec3<f32>, tangentFrame: vec4<f32>, normalSample: vec3<f32>, normalScale: f32) -> vec3<f32> {
   let n = normalize(normalInput);
   let tangent = normalize(tangentFrame.xyz);
@@ -3682,11 +3043,6 @@ fn shadePbr(normalInput: vec3<f32>, tangentFrame: vec4<f32>, uv: vec2<f32>, worl
     baseColor = baseColor * baseSample.rgb;
     materialAlpha = materialAlpha * baseSample.a;
   }
-  let sourceProductBaseColor = baseColor;
-  let productOrangeGate = productPropOrangeGate(sourceProductBaseColor, u_draw.materialFlags.z);
-  let productBodyGate = productPropBodyGate(sourceProductBaseColor, u_draw.materialFlags.z) * (1.0 - productOrangeGate * 0.92);
-  let productSurfaceGate = clamp(productBodyGate + productOrangeGate * 0.72, 0.0, 1.0);
-  baseColor = productPropAlbedo(sourceProductBaseColor, u_draw.materialFlags.z);
   ${atlas ? "" : "if (materialAlpha < u_draw.material.x) { discard; }"}
   let transmission = clamp(max(u_draw.material.y, u_draw.material.z), 0.0, 1.0);
   let metallicRoughnessSample = textureSample(u_metallicRoughnessTexture, u_metallicRoughnessSampler, ${atlas ? "atlasUv(2u, uv, uv1)" : "uv"});
@@ -3698,8 +3054,6 @@ fn shadePbr(normalInput: vec3<f32>, tangentFrame: vec4<f32>, uv: vec2<f32>, worl
   let metallic = mix(clamp(u_draw.params.x, 0.0, 1.0), sampledMetallic, metallicRoughnessEnabled);
   let roughness = mix(clamp(u_draw.params.y, 0.045, 1.0), sampledRoughness, metallicRoughnessEnabled);
   let occlusion = mix(1.0, sampledOcclusion, occlusionEnabled);
-  let smoothedProductNormal = normalize(vec3<f32>(normal.x * 0.42, max(normal.y, 0.28), normal.z * 0.42));
-  normal = normalize(mix(normal, smoothedProductNormal, productBodyGate * 0.46 + productOrangeGate * 0.84));
   let nDotL = max(dot(normal, lightDirection), 0.0);
   let nDotV = max(dot(normal, viewDirection), 0.001);
   let nDotH = max(dot(normal, halfVector), 0.001);
@@ -3776,12 +3130,7 @@ fn shadePbr(normalInput: vec3<f32>, tangentFrame: vec4<f32>, uv: vec2<f32>, worl
   let legacyDirect = (diffuse + specular) * nDotL * 2.25 * shadow;
   let litOpaqueLinearColor = environment + select(legacyDirect, clusteredDirect, u_draw.materialFlags.w > 0.5)
     ${atlas ? "+ atlasExtensionLighting(normal, tangentFrame, viewDirection, lightDirection, uv, uv1, shadow, environmentExtensionRadiance, f0, roughness) + u_atlas.emissive.rgb * u_atlas.factors.y * mix(vec3<f32>(1.0), textureSample(u_emissiveTexture, u_emissiveSampler, atlasUv(4u, uv, uv1)).rgb, u_atlas.maps[4].control.z)" : ""};
-  let smoothedBodyColor = mix(baseColor, vec3<f32>(1.0, 0.88, 0.012), productBodyGate * 0.32);
-  let smoothedBeakColor = mix(baseColor, vec3<f32>(1.0, 0.24, 0.018), productOrangeGate * 0.82);
-  let softBodyProduct = smoothedBodyColor * (1.5 + 0.06 * nDotL) + specular * nDotL * 0.018;
-  let softBeakProduct = smoothedBeakColor * (1.08 + 0.05 * nDotL) + specular * nDotL * 0.018;
-  var opaqueLinearColor = mix(litOpaqueLinearColor, softBodyProduct, productBodyGate * 0.78);
-  opaqueLinearColor = mix(opaqueLinearColor, softBeakProduct, productOrangeGate * 0.95);
+  let opaqueLinearColor = litOpaqueLinearColor;
   let transmittedTint = baseColor * u_draw.params.w * (0.18 + 0.42 * clamp(1.0 - roughness, 0.0, 1.0)) + environmentSpecularContribution * 1.35;
   let linearColor = mix(opaqueLinearColor, opaqueLinearColor * 0.22 + transmittedTint, transmission);
   let outputAlpha = mix(materialAlpha, min(materialAlpha, 0.22), transmission);

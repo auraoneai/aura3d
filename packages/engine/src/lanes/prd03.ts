@@ -34,7 +34,10 @@ export {
   collectExposureSection,
   recordSubmittedPostprocess,
   latestSubmittedPostprocess,
-  resetSubmittedPostprocess
+  resetSubmittedPostprocess,
+  recordAuthoredPostContext,
+  latestAuthoredPostContext,
+  resetAuthoredPostContext
 } from "../agent-api/postBridge.js";
 export { PRD03_DIAGNOSTIC_ONLY_FIELDS, PRD03_OPTION_COVERAGE } from "../agent-api/compiler/diagnosticOnly.prd03.js";
 // Re-export the bridge entry point so lane tests (and later, the v2 compiler)

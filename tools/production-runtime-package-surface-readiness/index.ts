@@ -28,7 +28,7 @@ const workflowRuntime = existsSync(resolve("dist/workflows/production-runtime/Pr
 const checks = [
   { id: "required-exports", pass: requiredExports.every((key) => packageJson.exports?.[key]), detail: requiredExports.join(", ") },
   { id: "required-dist", pass: requiredDist.every((file) => existsSync(resolve(file))), detail: requiredDist.join(", ") },
-  { id: "production-runtime-template-files", pass: ["templates/production-product-viewer", "templates/production-product-configurator", "templates/production-asset-inspector", "templates/production-material-studio", "templates/production-architecture-viewer", "templates/production-webgpu-starter"].every((file) => packageJson.files?.includes(file)), detail: "root package files include Production runtime templates" },
+  { id: "production-runtime-template-files", pass: ["templates/production-product-viewer", "templates/production-product-configurator", "templates/production-asset-inspector", "templates/production-material-studio", "templates/production-architecture-viewer"].every((file) => packageJson.files?.includes(file)), detail: "root package files include Production runtime templates" },
   { id: "browser-safe-production-runtime-runtime", pass: workflowRuntime.includes("@aura3d/engine/assets/browser") && workflowRuntime.includes("@aura3d/engine/rendering") && !workflowRuntime.includes("@aura3d/assets\""), detail: "Production runtime runtime imports browser-safe package subpaths" },
   { id: "browser-safe-animation-dist", pass: read("dist/assets/GLTFLoader.js").includes("../animation/browser-index.js"), detail: "GLTFLoader uses browser-safe animation dist" }
 ];
