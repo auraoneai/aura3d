@@ -19,7 +19,8 @@ import type { ReadyPayload } from "./shared/types";
 declare global {
   interface Window {
     __QR_READY__?: ReadyPayload;
-    __QR_ERROR__?: string;
+    // Lane-main pages may write richer objects; declared unknown like prd02's.
+    __QR_ERROR__?: unknown;
     __QR_SCENES__?: readonly string[];
     __QR_MASKS__?: Readonly<Record<string, { dataUrl: string; width: number; height: number; bytes: number }>>;
     __QR_MASK_INDEX__?: readonly string[];
