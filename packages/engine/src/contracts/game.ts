@@ -4,6 +4,7 @@
  */
 
 import type { AuraVec3, AuraSceneSnapshot, AuraApp } from "../agent-api/index";
+import type { GameAudio } from "../game/GameAudio";
 
 export type GameSessionState = "booting" | "loading" | "title" | "playing" | "paused" | "results" | "transitioning" | "context-lost" | "disposed";
 export type PauseReason = "user" | "blur" | "visibility" | "menu" | "context-lost";
@@ -24,7 +25,9 @@ export interface GameBeacon { readonly route: string; readonly state: GameSessio
 // window.__AURA3D_GAME__: GameBeacon; readiness: window.__AURA3D_GAME__?.state === "playing"
 // window.__AURA3D_GAME_EVIDENCE__[route]: lazy getter object with sections session/sound/juice/hud/perf/capture (+ route sections)
 export interface CreateGameOptions<TCue extends string, TEvent extends string> { readonly id: string; readonly target: HTMLElement; readonly scene: () => unknown; readonly layout?: GameShellLayout; readonly hud?: HudMountOptions; readonly touch?: { readonly preset: TouchPreset; readonly bindings: Readonly<Record<string, string>> }; readonly sound?: unknown /* C-25 GameSoundOptions<TCue> */; readonly juice?: Readonly<Record<TEvent, unknown>>; readonly qualityRebuild?: { readonly flags?: readonly string[] }; }
-export interface Game<TCue extends string = string, TEvent extends string = string> { readonly id: string; readonly app: AuraApp; readonly session: GameSession; readonly shell: GameShell; readonly hud: Hud; readonly touch: TouchControls | null; readonly fx: GameFxLayer; readonly capture: CaptureContext; ready(): Promise<void>; start(): void; setScene(scene: AuraSceneSnapshot, o?: { transition?: TransitionSpec | false }): Promise<void>; dispose(): Promise<void>; }
+/** Juice driver facade (PRD-09 §7.6): `fire(event)` maps a game event to synchronized fx/audio/rumble. */
+export interface GameJuice<TEvent extends string = string> { fire(event: TEvent, at?: { position?: AuraVec3; strength?: number; actors?: readonly string[] }): void; }
+export interface Game<TCue extends string = string, TEvent extends string = string> { readonly id: string; readonly app: AuraApp; readonly session: GameSession; readonly shell: GameShell; readonly hud: Hud; readonly touch: TouchControls | null; readonly fx: GameFxLayer; readonly capture: CaptureContext; /** Juice driver built from `options.juice`. */ readonly juice: GameJuice<TEvent>; /** C-25 audio facade; present only when `options.sound` was provided. */ readonly sound?: GameAudio<TCue>; ready(): Promise<void>; start(): void; setScene(scene: AuraSceneSnapshot, o?: { transition?: TransitionSpec | false }): Promise<void>; dispose(): Promise<void>; }
 export { createGame } from "./stubs/game";
 
 /** PR 0a: real — pure URL parsing. `?capture=review|overview` warns and is ignored. */

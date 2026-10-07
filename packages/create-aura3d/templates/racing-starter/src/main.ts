@@ -123,7 +123,7 @@ const hudBindings = [
   { kind: "aura-game-hud-binding", owner: "app", binding: "timer", id: "hud:round:timer", label: "Round timer", source: "app-state", valuePath: "appState.lapTime", format: "seconds", a11yLabel: "lap timer" },
   { kind: "aura-game-hud-binding", owner: "app", binding: "checkpoint", id: "hud:checkpoint", label: "checkpoint", source: "app-state", valuePath: "appState.checkpoint", format: "text", a11yLabel: "current checkpoint" },
   { kind: "aura-game-hud-binding", owner: "app", binding: "event-log", id: "hud:event-log", label: "event log", source: "app-state", valuePath: "appState.events", format: "text", a11yLabel: "game event log", debugOnly: true }
-];
+] as const;
 
 const evidenceMode = navigator.webdriver;
 const racingGame = createGame({
@@ -163,8 +163,7 @@ const racingGame = createGame({
   qualityRebuild: { flags: ["game"] },
   evidence: {
     schema: 1,
-    sections: { racingStarter: () => window.__AURA3D_RACING_STARTER__ ?? { status: "unbound" } },
-    legacyGlobals: ["__AURA3D_RACING_STARTER__"]
+    sections: { racingStarter: () => window.__AURA3D_RACING_STARTER__ ?? { status: "unbound" } }
   }
 });
 const app = racingGame.app;

@@ -101,7 +101,7 @@ const hudBindings = [
   { kind: "aura-game-hud-binding", owner: "app", binding: "combo", id: "hud:player:combo", label: "Player combo", source: "combat", targetId: "player", valuePath: "combat.player.combo", format: "number", a11yLabel: "player combo" },
   { kind: "aura-game-hud-binding", owner: "app", binding: "round", id: "hud:round:index", label: "Round", source: "app-state", valuePath: "round.index", format: "number", a11yLabel: "round index" },
   { kind: "aura-game-hud-binding", owner: "app", binding: "debug-toggle", id: "hud:debug:toggle", label: "Runtime evidence", source: "app-state", valuePath: "debug.visible", format: "boolean", a11yLabel: "runtime evidence toggle", debugOnly: true }
-];
+] as const;
 
 const accessibilitySources = [
   {
@@ -134,10 +134,10 @@ const accessibilitySources = [
   {
     kind: "aura-game-accessibility-source", feature: "pause-controls", id: "a11y:pause-controls", owner: "app",
     label: "pause controls", targetId: "hud-controls",
-    actions: ["pause", "Escape"], source: "app",
+    actions: ["pause", "Escape"], source: "app-state",
     evidence: "Pause/resume through the pause action or Escape; resume via pause or Enter."
   }
-];
+] as const;
 
 const inputOptions = {
   actions: {
@@ -204,8 +204,7 @@ const fightingGame = createGame({
         debug: gameWindow.__AURA3D_GAME_DEBUG__ ?? { status: "unbound" },
         source: gameWindow.__AURA3D_GAME_SOURCE__ ?? { status: "unbound" }
       })
-    },
-    legacyGlobals: ["__AURA3D_GAME_REPLAY__", "__AURA3D_GAME_DEBUG__", "__AURA3D_GAME_RUNTIME__", "__AURA3D_GAME_SOURCE__"]
+    }
   }
 });
 const app = fightingGame.app;

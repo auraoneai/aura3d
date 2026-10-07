@@ -30,6 +30,7 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/rendering/contracts/flags.state", "/packages/rendering/src/contracts/flags.state.ts"],
   ["@aura3d/rendering/contracts", "/packages/rendering/src/contracts/index.ts"],
   ["@aura3d/rendering/world", "/packages/rendering/src/world/index.ts"],
+  ["@aura3d/rendering/production-runtime", "/packages/rendering/src/production-runtime/index.ts"],
   ["@aura3d/rendering", "/packages/rendering/src/index.ts"],
   ["@aura3d/engine", "/packages/engine/src/public/index.ts"],
   ["@aura3d/engine/scene", "/packages/scene/src/index.ts"],
@@ -133,7 +134,8 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
         response.end();
         return;
       }
-      const file = resolveRequest(root, decodeURIComponent(url.pathname));
+      const pathname = decodeURIComponent(url.pathname);
+      const file = resolveRequest(root, pathname);
 
       if (!file) {
         response.writeHead(404, { "content-type": "text/plain" });
@@ -141,15 +143,28 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
         return;
       }
 
+      // Canonicalize module URLs onto the real file path. Importers reach the
+      // same `.ts` file via `x`, `x.js`, and `x.ts` specifiers (extensionless
+      // relative imports are the repo convention); served verbatim those are
+      // three distinct module instances, which breaks singleton registries
+      // (REGISTRY_DUPLICATE). Redirecting non-canonical specifiers makes the
+      // browser cache them as one module — the same resolution vite/TS apply.
+      const canonical = `/${relative(resolve(root), resolve(file)).replace(/\\/g, "/")}`;
+      if (file.endsWith(".ts") && normalize(pathname).replace(/\\/g, "/") !== canonical) {
+        response.writeHead(302, { location: canonical });
+        response.end();
+        return;
+      }
+
       if (file.endsWith(".ts")) {
         const source = readFileSync(file, "utf8");
         response.writeHead(200, { "content-type": "application/javascript; charset=utf-8" });
-        response.end(transpileForBrowser(source, file));
+        response.end(transpileForBrowser(source, file, root));
         return;
       }
 
       const content = file.endsWith(".js") || file.endsWith(".mjs")
-        ? rewritePackageImports(readFileSync(file, "utf8"))
+        ? rewriteModuleSpecifiers(rewritePackageImports(readFileSync(file, "utf8")), file, root)
         : readFileSync(file);
       response.writeHead(200, { "content-type": contentType(file) });
       response.end(content);
@@ -231,6 +246,12 @@ function resolveRequest(root: string, pathname: string): string | undefined {
   if (normalizedPath.endsWith(".js")) {
     candidates.push(join(root, normalizedPath.replace(/\.js$/, ".ts")));
   }
+  // Vite/TS resolve `foo.glsl`-style specifiers onto sibling `foo.glsl.ts`
+  // modules (shader and lane sources follow that convention). Mirror it so
+  // importing the full "." union in a browser harness finds them.
+  if (extname(normalizedPath)) {
+    candidates.push(join(root, `${normalizedPath}.ts`));
+  }
 
   const loadersVersioned = normalizedPath.match(/^[/\\]node_modules[/\\]@loaders\.gl[/\\]([^/\\]+)@[^/\\]+([/\\].*)$/);
   if (loadersVersioned) {
@@ -284,7 +305,7 @@ function browserMappedLoadersGLPath(pathname: string): string | undefined {
   return undefined;
 }
 
-function transpileForBrowser(source: string, fileName: string): string {
+function transpileForBrowser(source: string, fileName: string, rootDir: string): string {
   const withCssInjected = source.replace(/^\s*import\s+["']([^"']+\.css)["'];?\s*$/gm, (_statement, specifier: string) => {
     const cssPath = specifier.startsWith(".")
       ? resolve(dirname(fileName), specifier)
@@ -294,7 +315,7 @@ function transpileForBrowser(source: string, fileName: string): string {
     }
     return `(() => { const style = document.createElement("style"); style.setAttribute("data-aura3d-dev-css", ${JSON.stringify(relative(process.cwd(), cssPath))}); style.textContent = ${JSON.stringify(readFileSync(cssPath, "utf8"))}; document.head.appendChild(style); })();`;
   });
-  const rewritten = rewritePackageImports(withCssInjected);
+  const rewritten = rewriteModuleSpecifiers(rewritePackageImports(withCssInjected), fileName, rootDir);
   const result = ts.transpileModule(rewritten, {
     fileName,
     compilerOptions: {
@@ -329,6 +350,57 @@ function rewritePackageImports(source: string): string {
     );
   }
   return output;
+}
+
+/**
+ * Rewrites relative (`./x`, `../x`) and root-absolute (`/x`) specifiers to the
+ * canonical root-relative URL of the file they resolve to — `../a/b`,
+ * `../a/b.js`, and `../a/b.ts` all become `/…/a/b.ts`. The browser keys its
+ * module map on the requested specifier URL, so without this the same file is
+ * evaluated once per specifier shape and singleton registries throw
+ * REGISTRY_DUPLICATE. Mirrors `resolveRequest`'s candidate order (`.ts`,
+ * `/index.ts`, `.js`→`.ts`, `foo.glsl`→`foo.glsl.ts`).
+ */
+function rewriteModuleSpecifiers(source: string, fileName: string, root: string): string {
+  const resolveSpecifier = (specifier: string): string | undefined => {
+    const resolved = resolveModuleSpecifier(fileName, root, specifier);
+    return resolved;
+  };
+  const patterns = [
+    /(\bfrom\s*["'])(\.{1,2}\/[^"']+|\/[^"']+)(["'])/g,
+    /(\bimport\s*["'])(\.{1,2}\/[^"']+|\/[^"']+)(["'])/g,
+    /(\bimport\s*\(\s*(?:\/\*[^]*?\*\/\s*)?["'])(\.{1,2}\/[^"']+|\/[^"']+)(["']\s*\))/g,
+  ];
+  let output = source;
+  for (const pattern of patterns) {
+    output = output.replace(pattern, (_m, head: string, specifier: string, tail: string) => {
+      const canonical = resolveSpecifier(specifier);
+      return canonical ? `${head}${canonical}${tail}` : _m;
+    });
+  }
+  return output;
+}
+
+function resolveModuleSpecifier(fromFile: string, root: string, specifier: string): string | undefined {
+  const base = specifier.startsWith("/")
+    ? join(root, specifier)
+    : resolve(dirname(fromFile), specifier);
+  const candidates = [
+    base,
+    ...(base.endsWith(".js") ? [base.replace(/\.js$/, ".ts")] : []),
+    `${base}.ts`,
+    `${base}.js`,
+    join(base, "index.ts"),
+    join(base, "index.js"),
+  ];
+  for (const candidate of candidates) {
+    const resolved = resolve(candidate);
+    if (!resolved.startsWith(resolve(root))) continue;
+    if (existsSync(resolved) && statSync(resolved).isFile()) {
+      return `/${relative(resolve(root), resolved).replace(/\\/g, "/")}`;
+    }
+  }
+  return undefined;
 }
 
 function escapeRegExp(value: string): string {

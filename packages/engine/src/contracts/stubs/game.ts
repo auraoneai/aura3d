@@ -132,6 +132,12 @@ export function createGame<TCue extends string, TEvent extends string>(options: 
     touch: null as TouchControls | null,
     fx,
     capture,
+    juice: {
+      fire: () => {
+        // Stub surface: no fx/audio/rumble drivers exist here; firing is a no-op.
+      }
+    },
+    sound: undefined,
     ready(): Promise<void> {
       if (!readyPromise) {
         readyPromise = app.ready().then(() => {
