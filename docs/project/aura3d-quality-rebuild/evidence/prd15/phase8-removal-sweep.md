@@ -496,3 +496,40 @@ Fixes in `tools/agent-templates/`:
 - `index.ts`: browser run now passes `timeoutMs: 900_000` — the 480s budget
   was calibrated for 90s specs; the wave-7 spec bumps (240s timeouts,
   4 specs serial + preview boot) legitimately exceed it on slow runners.
+
+## Wave 10 — agent-docs sim spec: same compositor-starvation class
+
+CI run on `36171d48d` (job 113048759015): `check:agent-docs` reached the
+generated `agent-simulation-app/tests/screenshot.spec.ts` and died at
+`canvas.screenshot()` — "waiting for element to be stable" under the 180s
+test timeout. Same class as the template browser specs: compositor
+screenshots and Playwright stability probes starve behind the continuous
+rAF loop on software GL.
+
+Fix in `tools/agent-docs/simulation.ts` (`writeAgentSimulationScreenshotSpec`):
+- visibility now asserted via `waitForFunction` (raf-polled, 60s) instead of
+  `expect(locator).toBeVisible()`;
+- capture steps `__AURA3D_LIVE_APPS__` `stepAsync` (with two-rAF fallback),
+  binds `gl.FRAMEBUFFER` to null, `gl.readPixels` in the same evaluate task,
+  flips rows, and encodes the PNG in-page via a 2d canvas `toDataURL` — no
+  compositor probe anywhere;
+- thresholds unchanged: `centerObjectPixels > 600`, `uniqueBuckets > 10`,
+  `assetReady`, `screenshot.byteLength > 1000`.
+
+Local verify: `runAgentSimulation` pass=true — built product-viewer, ran
+route health, wrote 62,694-byte screenshot.png
+(profile: centerObjectPixels 2318, assetReady true, uniqueBuckets 30).
+
+Cycle status on `a538201fe` (job set 113058*): Skills gate runs the full
+template loop (~90-120 min worst case with 2-strike retries);
+animation-studio will still burn its full budget before failing on the
+pre-existing flat-canvas defect (Q-13-12). All other reds in the cycle are
+the verified pre-existing set: unit/Type-Check tools/ baseline (missing
+sibling dirs absent on main too), Lane 03 browser+unit (qr-prd03-phase6
+post-quality specs), all-routes-shadow (lane-09 git-am patch targets
+`playable/AuraClashArenaApp.ts`, moved to `legacy/` by QR-14 — fails
+identically on main), Chromium shards ×5 (GPU-less Ubuntu flake), unit
+prd02, T1.x unit, Build and Test, arch-gates (net −7 vs main).
+`browser` attempt 1 passed on this SHA; retry failed in lane-04's
+material-conformance suite — same-SHA pass→fail = nondeterministic ANGLE
+Metal flake.
