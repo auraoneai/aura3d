@@ -59,8 +59,14 @@ test.describe("PRD-06 deform light view (T0.14)", () => {
     }
     writeFileSync(join(ARTIFACT_DIR, "iou.json"), JSON.stringify({ iou, stats: result!.stats, previousDelta: result!.previousDelta, selftestDelta: result!.selftestDelta }, null, 2));
 
+    const diag = () =>
+      `iou=${JSON.stringify(iou)} selftest=${JSON.stringify(result!.selftestDelta)} prev=${JSON.stringify(result!.previousDelta)} stats=${JSON.stringify(result!.stats)}`;
+    // Numeric ground truth first: the deform path's per-vertex positions must
+    // match the CPU deform within 1e-3 — if this holds while silhouette IoU
+    // fails, the IoU delta is rasterization noise, not a deform bug.
+    expect(result!.selftestDelta!.maxDelta, diag()).toBeLessThanOrEqual(1e-3);
     // The deformed path must land on the CPU-skinned silhouette.
-    expect(iou.deformVsCpu).toBeGreaterThanOrEqual(0.98);
+    expect(iou.deformVsCpu, diag()).toBeGreaterThanOrEqual(0.98);
     // Scene-08 bind pose resolves §2: the depth path must also reproduce it
     // exactly (GPU bind palette vs CPU-skinned bind pose).
     expect(iou.bindPoseGpuVsCpu).toBeGreaterThanOrEqual(0.98);
@@ -90,7 +96,10 @@ test.describe("PRD-06 deform light view (T0.14)", () => {
     }
 
     const iou = result!.iou!;
-    expect(iou.deformVsCpu).toBeGreaterThanOrEqual(0.98);
+    const diag191 = () =>
+      `iou=${JSON.stringify(iou)} selftest=${JSON.stringify(result!.selftestDelta)} prev=${JSON.stringify(result!.previousDelta)}`;
+    expect(result!.selftestDelta!.maxDelta, diag191()).toBeLessThanOrEqual(1e-3);
+    expect(iou.deformVsCpu, diag191()).toBeGreaterThanOrEqual(0.98);
     expect(iou.bindPoseGpuVsCpu).toBeGreaterThanOrEqual(0.98);
     expect(iou.controlRawVsCpu).toBeLessThan(0.8);
     expect(iou.animatedVsBindCpu).toBeLessThan(0.8);
