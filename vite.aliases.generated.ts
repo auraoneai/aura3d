@@ -57,6 +57,7 @@ export const aliasEntries = [
   ["@aura3d/rendering/production-runtime", "./packages/rendering/src/production-runtime/index.ts"],
   ["@aura3d/rendering/webgpu", "./packages/rendering/src/webgpu.ts"],
   ["@aura3d/rendering/advanced-runtime", "./packages/rendering/src/advanced-runtime/index.ts"],
+  ["@aura3d/rendering/world", "./packages/rendering/src/world/index.ts"],
   ["@aura3d/rendering", "./packages/rendering/src/index.ts"],
   ["@aura3d/controls", "./packages/controls/src/index.ts"],
   ["@aura3d/engine-runtime", "./packages/engine/src/index.ts"],
@@ -96,5 +97,4 @@ export const aliasEntries = [
   ["@aura3d/engine/renderer", "./packages/engine/src/public/renderer.ts"],
   ["@aura3d/engine/devtools", "./packages/engine/src/public/devtools.ts"],
   ["@aura3d/engine", "./packages/engine/src/public/index.ts"],
-  ["@aura3d/rendering/world", "./packages/rendering/src/world/index.ts"],
 ] as const;
