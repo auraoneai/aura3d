@@ -244,7 +244,11 @@ ${aliasEntries}
 
 function run(command: string, args: readonly string[], cwd: string): void {
   try {
-    execFileSync(command, [...args], { cwd, encoding: "utf8", stdio: "pipe" });
+    // Bounded: execFileSync without a timeout lets a wedged child (chromium
+    // under swiftshader, a stalled vite webServer) hold the whole gate job
+    // open indefinitely — the spec's own 180s test timeout cannot fire once
+    // the browser process itself refuses to exit.
+    execFileSync(command, [...args], { cwd, encoding: "utf8", stdio: "pipe", timeout: 600_000, killSignal: "SIGKILL" });
   } catch (error) {
     const output = error instanceof Error && "stdout" in error
       ? `${String((error as { stdout?: unknown }).stdout ?? "")}${String((error as { stderr?: unknown }).stderr ?? "")}`
