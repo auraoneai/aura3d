@@ -45,9 +45,16 @@ concurrency:
 
 jobs:
   unit:
-    runs-on: ubuntu-latest
+    # §13 fixed micro-budgets are specified "Node on GH macos-14" — the timing
+    # gates are calibrated to that runner class; ubuntu shared vCPUs measure
+    # ~1.7x slower and fail the gate on otherwise-correct code.
+    runs-on: macos-14
     steps:
+      # Real GLBs — LFS-tracked; without this the checkout serves pointer text
+      # and clip-fixture tests fall back to the synthetic manifest.
       - uses: actions/checkout@v4
+        with:
+          lfs: true
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -64,7 +71,12 @@ jobs:
       matrix:
         project: [chromium, webkit, firefox]
     steps:
+      # Real GLBs — specs fetch LFS-tracked rigs/showcase assets over HTTP;
+      # a pointer checkout fails scene loads with "version https://git-lfs…"
+      # JSON errors (same convention as browser-matrix.yml).
       - uses: actions/checkout@v4
+        with:
+          lfs: true
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:

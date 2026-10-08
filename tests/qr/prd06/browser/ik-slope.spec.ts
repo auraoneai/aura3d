@@ -42,7 +42,10 @@ function expectFootIk(payload: ReadyLike | undefined, engine: string): void {
   const feet = footIk!.feet ?? [];
   expect(feet.length, `${engine} expected 2 planted feet`).toBe(2);
   for (const foot of feet) {
-    expect(foot.locked, `${engine} foot ${foot.side} not locked`).toBe(true);
+    expect(
+      foot.locked,
+      `${engine} foot ${foot.side} not locked (contactError=${foot.contactError.toFixed(4)}, pos=[${foot.worldPosition.map((v) => v.toFixed(3)).join(",")}])`
+    ).toBe(true);
     expect(foot.contactError, `${engine} foot ${foot.side} contactError ${foot.contactError}`).toBeLessThanOrEqual(MAX_CONTACT_ERROR);
   }
   const ikEntry = payload!.capabilityLog.find((entry) => entry.feature.startsWith("footIk:"));
