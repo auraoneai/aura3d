@@ -45,8 +45,19 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   const rendererSelection = normalizeCreateAppRendererOptions(options.renderer);
   // PR 0 seams (CONTRACTS.md §3.2): flag resolution, C-27 quality-tier resolve, C-38
   // app-extension mount and C-31 diagnostics sections are fixed call sites owned by PRD 15.
+  // C-38 source chain (contracts/flags.ts §source order): `qualityRebuild.flags`
+  // wins over URL `?a3d-qr=` — `resolveQrFlags` applies options first and
+  // `setEntry` never overwrites an earlier key. URL flags apply unless the app
+  // opts out (`allowUrlFlags:false`); without this the `a3d-qr` param was dead
+  // for every app — lane extensions, actor sources and clip-drive all gated on
+  // the resolved flags and silently ran flag-off under `?a3d-qr=animation`.
   const qrFlags = qrFlagsWithAnimationMixer(
-    resolveQrFlags({ options: options.qualityRebuild?.flags }),
+    resolveQrFlags({
+      options: options.qualityRebuild?.flags,
+      url: options.qualityRebuild?.allowUrlFlags === false
+        ? undefined
+        : typeof location !== "undefined" ? location.href : undefined
+    }),
     options.animation?.mixer
   );
   // PRD-06 §10 app-side install (C-37): `qrAnimationFlags()` reads this first
@@ -704,6 +715,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   // the subtree-compile path bound by compiler/renderer.ts.
   runtimeNodes.configure({
     flags: qrFlags,
+    app,
     getScene: () => snapshot,
     setScene: (next) => app.setScene(next),
     diagnostic: (message) => { diagnosticsState.warnings = [...diagnosticsState.warnings, message]; }

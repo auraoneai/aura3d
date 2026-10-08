@@ -186,3 +186,20 @@ mix — `packages/animation/src/Keyframe.ts#multiplyMat4` computes in
 every GLSL `mat4(c0..c3)` consumer read **column-major**? If the former,
 the legacy skinned paths need the same w-pin; if the latter, the writer
 needs the convention fix.
+
+## C-37 (cross-lane 06→15, landed in lane-15 file) — node-handle extension attach consumer
+
+PRD line 956 assigns `app/runtimeNodes.ts` to lane 15 as "the C-37 consumer",
+but nothing in `packages/`/`apps/` ever called the registered
+`NodeHandleExtension`s — `handle.animation` (C-19, prd06) was write-only and
+the T0.17 games helpers read `available:false` → `tracksApplied = -1` in CI.
+Landed in lane-15's file because every lane's member attach is dead code
+without it: `createAuraRuntimeNodeRegistry` now flattens every registered
+extension whose `appliesTo` covers the node kind and whose flag is on onto
+the handle, lazily on `get`/`require`/`all`/`add` (handles are collected
+before `configure` delivers flags); `AuraRuntimeNodeRegistryDeps` gained an
+optional `app` (wired in `createAuraApp`'s `runtimeNodes.configure`) for
+extensions whose `create(handle, app)` needs it. Flag-off keeps the member
+absent — the `?a3d-qr=none` handle shape is unchanged. Regression test:
+`tests/unit/contracts/C-37-runtime-nodes.test.ts` ("registered node-handle
+extensions flatten onto matching handles").

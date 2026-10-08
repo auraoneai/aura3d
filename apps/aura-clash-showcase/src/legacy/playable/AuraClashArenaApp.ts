@@ -2246,6 +2246,14 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   // throttled workers because the normal continuous loop is intentionally off.
   if (!testDriverEnabled) installTestDriver();
   if (testDriverEnabled) {
+    // Install the driver BEFORE the cold + steady-state rAF windows: specs that
+    // gate on the driver's existence (rather than `status === "running"`) must
+    // not pay either warmup window, which starves shared-Metal CI for minutes.
+    // The status semantics are unchanged — the proof still reports "loading"
+    // until the performance window closes, so a test acting early and landing a
+    // hit still observes the historical status ordering (the `pauseOnNextHit`
+    // frozen-proof bug was about the status field, not driver presence).
+    installTestDriver();
     // Pace cold production frames through the same RAF boundary as shipped play,
     // then discard them. Shader compilation, resource upload and the first GPU
     // submissions are startup evidence, not steady gameplay performance.
@@ -2258,14 +2266,6 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     // Retain a separate complete steady-state window. Back-to-back synchronous
     // submissions artificially saturate the browser/GPU queue, so each measured
     // production frame crosses the same RAF boundary as normal play.
-    // Install the driver BEFORE the rAF-paced warmup: specs that gate on the
-    // driver's existence (rather than `status === "running"`) must not pay the
-    // whole warmup window, which starves shared-Metal CI for minutes. The
-    // status semantics are unchanged — the proof still reports "loading" until
-    // the performance window closes, so a test acting early and landing a hit
-    // still observes the historical status ordering (the `pauseOnNextHit`
-    // frozen-proof bug was about the status field, not driver presence).
-    installTestDriver();
     for (let sample = 0; sample < performanceSampleCount; sample += 1) {
       await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
       performanceEvidenceReady = sample === performanceSampleCount - 1;

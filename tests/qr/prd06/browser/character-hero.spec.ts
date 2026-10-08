@@ -65,12 +65,35 @@ function framesIn(frames: readonly FrameSample[], from: number, to: number): Mot
 function horizontalSpeed(frames: readonly FrameSample[], bone: string, from: number, to: number): number[] {
   const out: number[] = [];
   const window = frames.filter((f) => f.t >= from && f.t <= to);
-  for (let i = 1; i < window.length; i += 1) {
-    const a = window[i - 1]!.motion.bones[bone]?.position;
-    const b = window[i]!.motion.bones[bone]?.position;
-    if (!a || !b) continue;
-    const dt = Math.max(1e-6, window[i]!.t - window[i - 1]!.t);
-    out.push(Math.hypot(b[0] - a[0], b[2] - a[2]) / dt);
+  // Headless rAF pacing is bursty — a 30-50 ms pair reads the idle clip's
+  // pelvis sway (cm-scale oscillation) as >0.1 m/s while the same sway over
+  // a ≥0.18 s span stays a true speed. Pair each sample with the first later
+  // sample at least `minDt` away; a persistent glide survives pairing, pose
+  // sway does not. Fall back to consecutive pairs when the window is too
+  // sparse for the span (extremely starved runners).
+  const minDt = 0.18;
+  let pairs = 0;
+  for (let i = 0; i < window.length; i += 1) {
+    const a = window[i]!.motion.bones[bone]?.position;
+    if (!a) continue;
+    for (let j = i + 1; j < window.length; j += 1) {
+      const dt = window[j]!.t - window[i]!.t;
+      if (dt < minDt) continue;
+      const b = window[j]!.motion.bones[bone]?.position;
+      if (!b) break;
+      out.push(Math.hypot(b[0] - a[0], b[2] - a[2]) / dt);
+      pairs += 1;
+      break;
+    }
+  }
+  if (pairs === 0) {
+    for (let i = 1; i < window.length; i += 1) {
+      const a = window[i - 1]!.motion.bones[bone]?.position;
+      const b = window[i]!.motion.bones[bone]?.position;
+      if (!a || !b) continue;
+      const dt = Math.max(1e-6, window[i]!.t - window[i - 1]!.t);
+      out.push(Math.hypot(b[0] - a[0], b[2] - a[2]) / dt);
+    }
   }
   return out;
 }

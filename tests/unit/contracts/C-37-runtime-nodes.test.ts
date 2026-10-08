@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import "@aura3d/engine";
-import { compileScene, updateCompiledScene } from "@aura3d/engine/contracts";
+import { compileScene, updateCompiledScene, registerNodeHandleExtension } from "@aura3d/engine/contracts";
 import type { MountSceneCompileContext } from "../../../packages/engine/src/agent-api/compiler/compileScene";
 import { asRuntimeImpl } from "../../../packages/engine/src/agent-api/compiler/compileScene";
 import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
@@ -58,6 +58,33 @@ describe("C-37 runtime nodes", () => {
     handle.setVisible(false);
     handle.setMaterial({} as never);
     expect(handle.version).toBe(5);
+  });
+
+  it("registered node-handle extensions flatten onto matching handles; flag-off keeps the member absent", () => {
+    const unregister = registerNodeHandleExtension({
+      id: "c37-test.timeScale",
+      owner: "prd06",
+      flag: "A3D_QR_ANIMATION",
+      member: "timeScale",
+      appliesTo: ["primitive"],
+      create: () => 1.5
+    });
+    try {
+      const on = resolveQrFlags({ options: ["animation"] });
+      const registry = createAuraRuntimeNodeRegistry(bigScene(2), { flags: on });
+      expect((registry.require("rt-node-0") as { timeScale?: number }).timeScale).toBe(1.5);
+      expect((registry.get("rt-node-1") as { timeScale?: number } | undefined)?.timeScale).toBe(1.5);
+      expect(registry.all().every((h) => (h as { timeScale?: number }).timeScale === 1.5)).toBe(true);
+      const added = registry.add(taggedPrimitive("late", 9)) as { timeScale?: number };
+      expect(added.timeScale).toBe(1.5);
+
+      const off = resolveQrFlags({ options: [] });
+      const registryOff = createAuraRuntimeNodeRegistry(bigScene(2), { flags: off });
+      expect((registryOff.require("rt-node-0") as { timeScale?: number }).timeScale).toBeUndefined();
+      expect(registryOff.all().every((h) => (h as { timeScale?: number }).timeScale === undefined)).toBe(true);
+    } finally {
+      unregister();
+    }
   });
 
   it("flag on: add/remove take the subtree path — no remount, no scene rewrite", async () => {

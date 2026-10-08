@@ -6,7 +6,7 @@
 // keyboard input and samples `__AURA_CLASH_ARENA_PROOF__`.
 
 import { expect, test, type Page } from "@playwright/test";
-import { startExampleDevServer, type ExampleDevServer } from "../../../browser/example-dev-server";
+import { startGameDevServer, type GameDevServer } from "../games/helpers";
 import { AURA_CLASH_REQUIRED_CLIP_KEYS, auraClashPlayerClips } from "../../../../apps/aura-clash-showcase/src/playable/animation/auraClashClipMaps";
 
 type Driver = {
@@ -74,10 +74,15 @@ async function tracksWhileClip(page: Page, clip: string, arm: () => Promise<void
 }
 
 test.describe("PRD-06 Aura Clash tracksApplied A/B (S13)", () => {
-  let server: ExampleDevServer;
+  let server: GameDevServer;
 
   test.beforeAll(async () => {
-    server = await startExampleDevServer();
+    // The app's own vite dev server (`pnpm dev`) serves pre-bundled deps and
+    // esbuild transforms — the bespoke tests/browser file server re-transforms
+    // every .ts module per request and starves a shared-Metal CI worker for
+    // minutes before the app can boot (the sibling games spec on the same
+    // route boots in ~47 s).
+    server = await startGameDevServer("aura-clash-showcase", 5322);
   });
 
   test.afterAll(async () => {
@@ -87,7 +92,7 @@ test.describe("PRD-06 Aura Clash tracksApplied A/B (S13)", () => {
   for (const qr of ["none", "animation"] as const) {
     test(`required clip keys report identical tracksApplied under ?a3d-qr=${qr}`, async ({ page }) => {
       test.setTimeout(480_000);
-      await page.goto(`${server.origin}/apps/aura-clash-showcase/?auraTestDriver=1&a3d-qr=${qr}`, { waitUntil: "domcontentloaded" });
+      await page.goto(`${server.origin}/playable/?auraTestDriver=1&a3d-qr=${qr}`, { waitUntil: "domcontentloaded" });
       // Shared-Metal CI runners starve rAF badly — `status === "running"` is
       // gated behind a 15-frame rAF-paced performance warmup that can take
       // minutes. This spec only needs the test driver + resolved clips, both

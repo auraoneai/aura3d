@@ -414,7 +414,7 @@ export interface AuraCreateAppOptions {
   readonly resize?: boolean;
   // C-38 additions (PR 0a, all optional)
   readonly pixelRatio?: number | { readonly max?: number; readonly min?: number };
-  readonly qualityRebuild?: { readonly flags?: readonly string[] };
+  readonly qualityRebuild?: { readonly flags?: readonly string[]; readonly allowUrlFlags?: boolean };
   readonly lighting?: import("../../../contracts/lighting").AuraLightingOptions;
   readonly output?: import("../../../contracts/output").AuraOutputOptions;
   readonly assets?: import("../../../contracts/assets").AuraAssetsOption;
