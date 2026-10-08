@@ -250,14 +250,19 @@ function buildAuraScene(spec: SceneSpec, log: CapabilityLog) {
       if (object.rotation) node = node.rotate(...object.rotation);
       if (object.scale !== undefined) node = node.scale(object.scale);
       if (object.animation) {
-        // loop:false + captureTime pins the sampled pose (resolveAnimationSeconds).
-        node = node.animate({ clip: object.animation.clip, loop: false, captureTime: object.animation.time });
+        // loop:false + captureTime pins the sampled pose (resolveAnimationSeconds);
+        // loop:true keeps the clip playing across captured frames (perf-tier).
+        node = node.animate(object.animation.loop
+          ? { clip: object.animation.clip, loop: true, startTime: object.animation.time }
+          : { clip: object.animation.clip, loop: false, captureTime: object.animation.time });
         if (object.animation.footIk) {
           if (!spec.terrain) {
             throw new Error(`${spec.id}: animation.footIk requires SceneSpec.terrain for the analytic ground`);
           }
           // Runtime id the lane collector uses for nodes.get() → socket().
           node = node.runtime({ id: object.animation.footIk.runtimeId });
+        } else if (object.animation.runtimeId !== undefined) {
+          node = node.runtime({ id: object.animation.runtimeId });
         }
       }
       nodes.push(node);
@@ -463,6 +468,30 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
       log.add(`footIk:${object.name}`, "supported", `ik.add foot-ik, ${object.animation.footIk.legs.length} legs on analytic terrain`);
     } catch (error) {
       log.add(`footIk:${object.name}`, "missing", `ik.add threw: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  // PRD-06 T4.1/§13: spec-declared `animation.springChains` register spring-bone
+  // constraints on the actor (after foot-IK, so springs see the post-IK pose).
+  for (const object of spec.objects) {
+    if (object.kind !== "model" || !object.animation?.springChains?.length) continue;
+    const runtimeId = object.animation.runtimeId ?? object.animation.footIk?.runtimeId;
+    const handle = runtimeId !== undefined ? app.nodes.get(runtimeId) : undefined;
+    if (!handle) {
+      log.add(`springChains:${object.name}`, "missing", `runtime node "${runtimeId ?? "(none)"}" not found`);
+      continue;
+    }
+    const extension = nodeHandleExtensionFor("animation");
+    const animationApi = extension?.create(handle, app) as AuraActorAnimationApi | undefined;
+    if (!animationApi?.springBones) {
+      log.add(`springChains:${object.name}`, "missing", "node.animation.springBones unavailable (A3D_QR_ANIMATION off or non-model node)");
+      continue;
+    }
+    try {
+      animationApi.springBones.add({ chains: object.animation.springChains });
+      log.add(`springChains:${object.name}`, "supported", `springBones.add, ${object.animation.springChains.length} chains`);
+    } catch (error) {
+      log.add(`springChains:${object.name}`, "missing", `springBones.add threw: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 

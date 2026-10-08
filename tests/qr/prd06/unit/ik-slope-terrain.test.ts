@@ -48,8 +48,9 @@ describe("prd06-ik-slope spec (T3.9)", () => {
     const spec = prd06IkSlope;
     expect(spec.id).toBe("prd06-ik-slope");
     expect(spec.terrain).toBe(T);
-    expect(spec.terrain!.slopeDeg).toBe(20);
-    expect(spec.terrain!.stepHeight).toBe(0.18);
+    if (spec.terrain?.kind !== "ramp-stairs") throw new Error("prd06-ik-slope terrain must be ramp-stairs");
+    expect(spec.terrain.slopeDeg).toBe(20);
+    expect(spec.terrain.stepHeight).toBe(0.18);
     const soldier = spec.objects.find((o) => o.kind === "model" && o.name === spec.ikSlope.modelName);
     expect(soldier?.kind).toBe("model");
     if (soldier?.kind !== "model") return;

@@ -2,6 +2,7 @@ import { AnimationAction, AnimationClip, AnimationMixer, consumeRootMotion, extr
 import { bindSkeleton, compileClip, createPoseBuffer, makeClipAdditive, PoseMixer, type CompiledClip, type PoseBuffer, type PoseSampleSpec, type SkeletonBinding } from "@aura3d/animation/lanes";
 import { AURA3D_RETARGET_ENGINE_VERSION, bakeClipsInWorker, bakeRetargetedClipMap, createRetargetWorker, decompileCompiledClip, readRetargetCache, retargetCacheKey, retargetClipsHash, retargetSkeletonHash, writeRetargetCache, type BakeRetargetedClipsOptions } from "@aura3d/animation/lanes";
 import { composeMat4, decomposeMat4, invertMat4, MAX_RENDERABLE_SKINNING_JOINTS, multiplyMat4, Renderable, Scene, transformPoint, type Light, type Mat4, type Quat, type SceneNode, type Vec3 } from "@aura3d/scene";
+import { skinningPaletteCache } from "@aura3d/rendering";
 import type { GLTFAsset, GLTFMeshAsset, GLTFSkinAsset } from "./GLTFLoader";
 
 /**
@@ -648,6 +649,14 @@ interface RuntimeSkinningBinding {
   readonly skin: GLTFSkinAsset;
   readonly bindWorldMatrix: Mat4;
   /**
+   * PRD-06 §13: joint scene nodes resolved once per binding (a `nodesByName`
+   * string lookup per joint per frame was ~30% of the palette budget).
+   * Rebuilt while any joint is still missing so late-registered nodes resolve.
+   */
+  jointNodes?: (SceneNode | undefined)[];
+  /** §13: persistent palette view — `matrices` is rewritten in place per frame. */
+  paletteView?: { readonly jointCount: number; readonly matrices: Float32Array; paletteKey?: object };
+  /**
    * PRD-06 T0.11: the persistent joint palette buffer — allocated once at bind,
    * written in place every frame. The binding object itself is also the C-18
    * `paletteKey` (stable per skin instance for the actor runtime's lifetime).
@@ -663,17 +672,65 @@ function nowMs(): number {
   return typeof performance !== "undefined" ? performance.now() : Date.now();
 }
 
-/** Column-major mat4 multiply written into a Float32Array slot — the T0.11 no-alloc palette path. */
-function multiplyMat4Into(out: Float32Array, outOffset: number, a: ArrayLike<number>, b: ArrayLike<number>): void {
+/** Column-major mat4 multiply written into a Float32Array slot — the T0.11 no-alloc palette path. Exported so the §13 palette-build micro-budget test measures the exact per-joint write the runtime performs. `a` is hoisted into scalars once per call so the inner writes are pure FMA-grade flops — the indexed-read loop measured ~1.3× over the §13 palette budget. */
+export function multiplyMat4Into(out: Float32Array, outOffset: number, a: ArrayLike<number>, b: ArrayLike<number>): void {
+  const a00 = a[0]!, a10 = a[1]!, a20 = a[2]!, a30 = a[3]!;
+  const a01 = a[4]!, a11 = a[5]!, a21 = a[6]!, a31 = a[7]!;
+  const a02 = a[8]!, a12 = a[9]!, a22 = a[10]!, a32 = a[11]!;
+  const a03 = a[12]!, a13 = a[13]!, a23 = a[14]!, a33 = a[15]!;
   for (let col = 0; col < 4; col += 1) {
-    for (let row = 0; row < 4; row += 1) {
-      out[outOffset + col * 4 + row] =
-        a[0 * 4 + row]! * b[col * 4 + 0]! +
-        a[1 * 4 + row]! * b[col * 4 + 1]! +
-        a[2 * 4 + row]! * b[col * 4 + 2]! +
-        a[3 * 4 + row]! * b[col * 4 + 3]!;
-    }
+    const b0 = b[col * 4 + 0]!, b1 = b[col * 4 + 1]!, b2 = b[col * 4 + 2]!, b3 = b[col * 4 + 3]!;
+    out[outOffset + col * 4 + 0] = a00 * b0 + a01 * b1 + a02 * b2 + a03 * b3;
+    out[outOffset + col * 4 + 1] = a10 * b0 + a11 * b1 + a12 * b2 + a13 * b3;
+    out[outOffset + col * 4 + 2] = a20 * b0 + a21 * b1 + a22 * b2 + a23 * b3;
+    out[outOffset + col * 4 + 3] = a30 * b0 + a31 * b1 + a32 * b2 + a33 * b3;
   }
+}
+
+/** Column-major general 4×4 inverse into `out` (adjugate / determinant, gl-matrix layout). §13: `invertMat4` allocates two objects per call — over 600 frames that alone blows the steady-state budget. */
+export function invertMat4Into(out: Float32Array, a: ArrayLike<number>): Float32Array {
+  const a00 = a[0]!, a01 = a[1]!, a02 = a[2]!, a03 = a[3]!;
+  const a10 = a[4]!, a11 = a[5]!, a12 = a[6]!, a13 = a[7]!;
+  const a20 = a[8]!, a21 = a[9]!, a22 = a[10]!, a23 = a[11]!;
+  const a30 = a[12]!, a31 = a[13]!, a32 = a[14]!, a33 = a[15]!;
+
+  const b00 = a00 * a11 - a01 * a10;
+  const b01 = a00 * a12 - a02 * a10;
+  const b02 = a00 * a13 - a03 * a10;
+  const b03 = a01 * a12 - a02 * a11;
+  const b04 = a01 * a13 - a03 * a11;
+  const b05 = a02 * a13 - a03 * a12;
+  const b06 = a20 * a31 - a21 * a30;
+  const b07 = a20 * a32 - a22 * a30;
+  const b08 = a20 * a33 - a23 * a30;
+  const b09 = a21 * a32 - a22 * a31;
+  const b10 = a21 * a33 - a23 * a31;
+  const b11 = a22 * a33 - a23 * a32;
+
+  let det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+  if (!det) {
+    out.fill(0);
+    return out;
+  }
+  det = 1.0 / det;
+
+  out[0] = (a11 * b11 - a12 * b10 + a13 * b09) * det;
+  out[1] = (a02 * b10 - a01 * b11 - a03 * b09) * det;
+  out[2] = (a31 * b05 - a32 * b04 + a33 * b03) * det;
+  out[3] = (a22 * b04 - a21 * b05 - a23 * b03) * det;
+  out[4] = (a12 * b08 - a10 * b11 - a13 * b07) * det;
+  out[5] = (a00 * b11 - a02 * b08 + a03 * b07) * det;
+  out[6] = (a32 * b02 - a30 * b05 - a33 * b01) * det;
+  out[7] = (a20 * b04 - a22 * b02 + a23 * b01) * det;
+  out[8] = (a10 * b10 - a11 * b08 + a13 * b06) * det;
+  out[9] = (a01 * b08 - a00 * b10 - a03 * b06) * det;
+  out[10] = (a30 * b03 - a31 * b02 + a33 * b00) * det;
+  out[11] = (a21 * b01 - a20 * b03 - a22 * b00) * det;
+  out[12] = (a11 * b07 - a10 * b09 - a12 * b06) * det;
+  out[13] = (a00 * b09 - a01 * b07 + a02 * b06) * det;
+  out[14] = (a31 * b01 - a30 * b02 - a32 * b00) * det;
+  out[15] = (a20 * b02 - a21 * b01 + a22 * b00) * det;
+  return out;
 }
 
 export class GLTFSceneAnimationRuntime {
@@ -681,6 +738,7 @@ export class GLTFSceneAnimationRuntime {
   private readonly nodesByName = new Map<string, SceneNode[]>();
   private readonly morphRenderablesByNodeName = new Map<string, Renderable[]>();
   private readonly skinningBindings: RuntimeSkinningBinding[] = [];
+  private disposed = false;
   private readonly footBindMatrices = new Map<string, { world: Mat4; local: Mat4 }>();
   private readonly footOrientationLocks = new Map<string, Mat4>();
   private readonly footDescendantLocks = new Map<string, Map<string, Mat4>>();
@@ -690,6 +748,10 @@ export class GLTFSceneAnimationRuntime {
   private lastApply?: GLTFSceneAnimationApplyResult;
   /** T0.11 scratch for the per-joint palette multiply (inverseMeshWorld * jointWorld). */
   private readonly paletteScratch = new Float32Array(16);
+  /** §13: reusable scratch for the per-binding inverse world matrix (no alloc/frame). */
+  private readonly inverseWorldScratch = new Float32Array(16);
+  /** §13: persistent result object for `refreshSkinningPalettes` (0 bytes/frame). */
+  private readonly paletteResult = { updated: 0, missingTargets: [] as string[] };
   /**
    * T1.7 (PRD-06) — the per-runtime pose pipeline backing `applyClips`: a
    * scene-wide SkeletonBinding (every traversed node in order, rest pose = the
@@ -1399,6 +1461,22 @@ export class GLTFSceneAnimationRuntime {
   }
 
   /**
+   * §16 S3 (PRD-06) — teardown frees the C-18 palette textures this runtime
+   * stamped, keyed on each skin binding (`skinningPaletteCache.release`).
+   * Morph array textures and CPU-morph scratch are released by the actor's
+   * own teardown (`prd06.animation` extension dispose / pipeline lifecycle),
+   * which is the layer that can see resolved `Geometry` objects — the scene
+   * layer here only knows geometry handles.
+   */
+  dispose(): void {
+    if (this.disposed) return;
+    for (const binding of this.skinningBindings) {
+      skinningPaletteCache.release(binding.paletteView?.paletteKey ?? binding);
+    }
+    this.disposed = true;
+  }
+
+  /**
    * Render-time bridge: drive the loaded GLB from an externally-computed pose whose keys are GLB
    * **node names** (e.g. the output of `@aura3d/animation`'s `retargetHumanoidPose`, whose
    * `bones` keys are the target rig node names). Each bone transform's `position`/`rotation`/`scale`
@@ -1876,23 +1954,38 @@ export class GLTFSceneAnimationRuntime {
   }
 
   private refreshSkinningPalettes(): { readonly updated: number; readonly missingTargets: readonly string[] } {
+    const result = this.paletteResult;
+    result.updated = 0;
+    result.missingTargets.length = 0;
     if (this.skinningBindings.length === 0) {
-      return { updated: 0, missingTargets: [] };
+      return result;
     }
-    let updated = 0;
-    const missingTargets: string[] = [];
+    const missingTargets = result.missingTargets;
     for (const binding of this.skinningBindings) {
       // T0.11: write into the binding's persistent palette buffer — no per-frame
       // Float32Array allocation, and the renderer's C-18 cache can key on it.
       const matrices = binding.paletteMatrices;
-      const inverseMeshWorld = invertMat4(binding.node.transform.worldMatrix);
+      const inverseMeshWorld = invertMat4Into(this.inverseWorldScratch, binding.node.transform.worldMatrix);
+      // §13: joint nodes resolved once per binding instead of a string Map
+      // lookup per joint per frame; the cache rebuilds while any joint is
+      // missing so late-registered nodes still resolve.
+      let jointNodes = binding.jointNodes;
+      if (!jointNodes) {
+        jointNodes = new Array(binding.skin.jointNames.length);
+        let allResolved = true;
+        for (let index = 0; index < binding.skin.jointNames.length; index += 1) {
+          const node = this.nodesByName.get(binding.skin.jointNames[index]!)?.[0];
+          jointNodes[index] = node;
+          if (!node) allResolved = false;
+        }
+        if (allResolved) binding.jointNodes = jointNodes;
+      }
       let complete = true;
       for (let index = 0; index < binding.skin.jointNames.length; index += 1) {
-        const jointName = binding.skin.jointNames[index]!;
-        const jointNode = this.nodesByName.get(jointName)?.[0];
+        const jointNode = jointNodes[index];
         const inverseBind = binding.skin.inverseBindMatrices[index];
         if (!jointNode || !inverseBind) {
-          missingTargets.push(`${binding.skin.name}.${jointName}`);
+          missingTargets.push(`${binding.skin.name}.${binding.skin.jointNames[index]!}`);
           complete = false;
           break;
         }
@@ -1901,17 +1994,21 @@ export class GLTFSceneAnimationRuntime {
         multiplyMat4Into(matrices, index * 16, this.paletteScratch, inverseBind);
       }
       if (!complete) continue;
-      const skinningPalette = {
-        jointCount: binding.skin.joints.length,
-        matrices
-      };
+      let skinningPalette = binding.paletteView;
+      if (!skinningPalette) {
+        skinningPalette = {
+          jointCount: binding.skin.joints.length,
+          matrices
+        };
+        binding.paletteView = skinningPalette;
+      }
       // C-18/§9.2: the stable per-skin key the palette cache binds on is this
       // binding object, not the per-frame `renderable.skinning` wrapper (E40).
-      (skinningPalette as { paletteKey?: object }).paletteKey = binding;
+      skinningPalette.paletteKey = binding;
       binding.renderable.skinning = skinningPalette;
-      updated += 1;
+      result.updated += 1;
     }
-    return { updated, missingTargets };
+    return result;
   }
 
   private inspectClipBinding(clip: AnimationClip): GLTFSceneAnimationClipBindingDiagnostics {

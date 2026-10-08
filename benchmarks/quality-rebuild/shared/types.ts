@@ -63,8 +63,31 @@ export interface PrimitiveObjectSpec extends TransformSpec {
 
 export interface ModelAnimationSpec {
   readonly clip: string;
-  /** Clip-local sample time in seconds; the pose is frozen here. */
+  /**
+   * Clip-local sample time in seconds. With `loop` unset/false the pose is
+   * frozen at `time` (captureTime semantics); with `loop: true` the clip plays
+   * continuously and `time` is the start offset.
+   */
   readonly time: number;
+  /**
+   * PRD-06 perf-tier scenes (S12): `true` keeps the clip playing across the
+   * captured frames instead of freezing the sampled pose — the mixer cost is
+   * the thing being measured.
+   */
+  readonly loop?: boolean;
+  /**
+   * Runtime node id registered on the model node (`.runtime({ id })`) so lane
+   * collectors can address `nodes.get(id)`. `footIk.runtimeId` remains the
+   * required spelling inside the foot-IK block; this top-level alias covers
+   * objects that need runtime access without foot IK (e.g. spring chains).
+   */
+  readonly runtimeId?: string;
+  /**
+   * PRD-06 T4.1 spring chains on the actor (`node.animation.springBones.add`).
+   * Serializable so the spec stays data-only; wired through the actor
+   * extension when `runtimeId`/`footIk.runtimeId` resolves a runtime node.
+   */
+  readonly springChains?: readonly ModelSpringChainSpec[];
   /**
    * PRD-06 T3.9: foot-IK request for the frozen pose. Serializable so the spec
    * stays data-only; each adapter builds its own ground query from
@@ -72,6 +95,17 @@ export interface ModelAnimationSpec {
    * `CCDIKSolver`).
    */
   readonly footIk?: ModelFootIkSpec;
+}
+
+/** T4.1 spring chain — bones in chain order; >= 3 names (the middle bones lag). */
+export interface ModelSpringChainSpec {
+  readonly bones: readonly string[];
+  readonly stiffness: number;
+  readonly damping: number;
+  readonly relativeDamping?: number;
+  readonly gravityScale?: number;
+  /** Fixed substep rate (Hz) for the constraint integration. */
+  readonly substepHz: number;
 }
 
 export interface ModelFootIkSpec {
@@ -274,7 +308,7 @@ export interface SceneSpec {
    * block only parameterizes the height query so both engines test the same
    * surface.
    */
-  readonly terrain?: import("./terrain").RampStairsTerrainSpec;
+  readonly terrain?: import("./terrain").TerrainSpec;
 }
 
 export type CapabilityStatus = "supported" | "partial" | "missing" | "not-applicable";

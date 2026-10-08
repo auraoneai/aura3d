@@ -41,6 +41,7 @@ import {
 import type { UniformValue, RenderShaderProgram } from "../../RenderDevice.js";
 import type { Geometry } from "../../Geometry.js";
 import type { MorphTargetDelta } from "../../MorphTarget.js";
+import type { Texture } from "../../Texture.js";
 import { TextureBinding } from "../../TextureBinding.js";
 import type { SkinningPaletteTextureCache } from "../../SkinningPaletteTextureCache.js";
 import { bindBoneTexture } from "../../SkinningUniforms.js";
@@ -171,6 +172,7 @@ export const PRD06_MORPH_TEXTURE_LIMITS: MorphTextureLimits = { maxTextureSize: 
 // safely in both cases.
 var morphTextureBuilder: MorphTextureBuilder | null | undefined;
 var morphTextureCache: WeakMap<Geometry, { targets: readonly MorphTargetDelta[]; result: MorphTargetTextureResult }> | undefined;
+var liveMorphTextures: Set<Texture> | undefined;
 
 /** WeakMap: geometry → last-built result. Rebuilds only when the targets array identity changes. */
 function morphTextureFor(item: RenderItem): MorphTargetTextureResult | undefined {
@@ -179,9 +181,56 @@ function morphTextureFor(item: RenderItem): MorphTargetTextureResult | undefined
   morphTextureCache ??= new WeakMap();
   const cached = morphTextureCache.get(item.geometry);
   if (cached && cached.targets === targets) return cached.result;
+  if (cached !== undefined && "texture" in cached.result) {
+    cached.result.texture.dispose();
+    liveMorphTextures?.delete(cached.result.texture);
+  }
   const result = morphTextureBuilder(item.geometry, targets, PRD06_MORPH_TEXTURE_LIMITS);
   morphTextureCache.set(item.geometry, { targets, result });
+  if ("texture" in result) {
+    liveMorphTextures ??= new Set();
+    liveMorphTextures.add(result.texture);
+  }
   return result;
+}
+
+/**
+ * §16 S3 — public acquire seam: build-or-return the §8.2 morph array texture
+ * for an item, exactly the call the feature's `bindUniforms` makes per frame.
+ * Exported so teardown paths and the lifecycle spec's acquisition step use
+ * the same cache the feature binds from (no second morph-texture source).
+ */
+export function ensureMorphTargetTexture(item: RenderItem): MorphTargetTextureResult | undefined {
+  return morphTextureFor(item);
+}
+
+/**
+ * §16 S3 — actor teardown frees its morph array texture: the cached
+ * `Texture` is disposed (dropping it from the WebGL2 live-texture count) and
+ * the geometry's cache entry cleared so a later load rebuilds fresh. Mirrors
+ * `releasePalette`'s seam — `GLTFSceneAnimationRuntime.dispose` and the
+ * `prd06.animation` actor-extension dispose call it per renderable geometry.
+ */
+export function releaseMorphTargetTexture(geometry: Geometry): void {
+  const cached = morphTextureCache?.get(geometry);
+  if (cached === undefined) return;
+  if ("texture" in cached.result) {
+    cached.result.texture.dispose();
+    liveMorphTextures?.delete(cached.result.texture);
+  }
+  morphTextureCache?.delete(geometry);
+}
+
+/** §16 S3 counter — live (non-disposed) morph array textures + bytes. */
+export function morphTextureDiagnostics(): { readonly textures: number; readonly bytes: number } {
+  let bytes = 0;
+  let textures = 0;
+  for (const texture of liveMorphTextures ?? []) {
+    if (texture.disposed) continue;
+    textures += 1;
+    bytes += texture.byteLength;
+  }
+  return { textures, bytes };
 }
 
 /**

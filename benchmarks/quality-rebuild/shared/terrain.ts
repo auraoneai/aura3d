@@ -10,6 +10,13 @@
  * quantize the same rise over the same run. The surface splits along
  * `splitZ`: z < splitZ gets the smooth ramp, z >= splitZ gets the staircase.
  */
+/** Flat y=0 ground — the prd06-perf-tier scenes' terrain (PRD-06 §13). */
+export interface FlatTerrainSpec {
+  readonly kind: "flat";
+}
+
+export type TerrainSpec = RampStairsTerrainSpec | FlatTerrainSpec;
+
 export interface RampStairsTerrainSpec {
   readonly kind: "ramp-stairs";
   /** Ramp slope in degrees (20 per T3.9). */
@@ -27,15 +34,17 @@ export interface RampStairsTerrainSpec {
   readonly splitZ: number;
 }
 
-export function rampStairsRise(terrain: RampStairsTerrainSpec): number {
+export function rampStairsRise(terrain: TerrainSpec): number {
+  if (terrain.kind === "flat") return 0;
   return terrain.rampLength * Math.tan((terrain.slopeDeg * Math.PI) / 180);
 }
 
 export function rampStairsHeightAt(
-  terrain: RampStairsTerrainSpec,
+  terrain: TerrainSpec,
   x: number,
   z: number
 ): { height: number; normal: readonly [number, number, number] } {
+  if (terrain.kind === "flat") return { height: 0, normal: [0, 1, 0] };
   const rise = rampStairsRise(terrain);
   if (x < terrain.rampStartX) return { height: 0, normal: [0, 1, 0] };
   const onSlope = x < terrain.rampStartX + terrain.rampLength;

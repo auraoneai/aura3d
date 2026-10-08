@@ -18,7 +18,7 @@
 
 import { registerNodeHandleExtension } from "../contracts/runtimeNodes.js";
 import { registerTypedGLBActorExtension } from "../production-runtime/actor/extensions.js";
-import { skinningPaletteCache, paletteKeyOf } from "@aura3d/rendering";
+import { releaseMorphScratchGeometry, releaseMorphTargetTexture, skinningPaletteCache, paletteKeyOf } from "@aura3d/rendering";
 import type { RenderItem } from "@aura3d/rendering";
 import { setPoseMixerBlendFlagProvider } from "@aura3d/animation/lanes";
 import { registerDiagnosticsSection } from "../contracts/diagnostics.js";
@@ -116,6 +116,15 @@ registerTypedGLBActorExtension({
   collectRenderItems: (actor, items) => filterPrd06ShaderWarmupItems(actor, items),
   dispose: (actor) => {
     disposePrd06ShaderWarmup(actor);
+    // §16 S3 — actor teardown frees the C-18 palette textures its runtime
+    // stamped plus the §8.2 morph array textures and CPU-morph scratch keyed
+    // on each resolved render-item geometry (the lifecycle spec requires all
+    // three counters to return to their pre-load values).
+    actor.animation.dispose();
+    for (const item of collectTypedGLBActorRenderItems(actor)) {
+      releaseMorphTargetTexture(item.geometry);
+      releaseMorphScratchGeometry(item.geometry);
+    }
     for (const key of [actor.id, `${actor.id}:actor`]) {
       actorClipInfoDisposers.get(key)?.();
       actorClipInfoDisposers.delete(key);

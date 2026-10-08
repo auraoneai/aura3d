@@ -671,7 +671,8 @@ export function forwardPassFeatureAxes(
   };
 }
 
-export { SkinningPaletteUploadManager } from "./forward/Deform.js";
+export { SkinningPaletteUploadManager, releaseMorphScratchGeometry } from "./forward/Deform.js";
+export { ensureMorphTargetTexture, releaseMorphTargetTexture, morphTextureDiagnostics } from "./shaders/deform/forwardFeature.js";
 
 interface ShaderCacheRecord {
   revision: number;

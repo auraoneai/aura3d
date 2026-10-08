@@ -17,6 +17,7 @@ import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPa
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import { CSM } from "three/examples/jsm/csm/CSM.js";
 import { CCDIKSolver } from "three/examples/jsm/animation/CCDIKSolver.js";
+import { clone as skeletonUtilsClone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { hdriAssets, modelAssets, type HdriAssetId, type ModelAssetId } from "../shared/assets";
 import { fetchOnce } from "../shared/fetch-once";
 import { rampStairsHeightAt } from "../shared/terrain";
@@ -294,6 +295,8 @@ export async function runThreeScene(rawSpec: SceneSpec, host: HTMLElement, opts:
     return pending;
   };
   const mixers: THREE.AnimationMixer[] = [];
+  // Looping mixers (perf-tier scenes) — stepped per rendered frame below.
+  const loopMixers: THREE.AnimationMixer[] = [];
   const csmMaterials: THREE.Material[] = [];
   // PRD-06 T3.9: CCDIKSolver jobs keyed by model; solved once after every
   // mixer has setTime'd its frozen pose (mirrors the aura adapter's
@@ -329,9 +332,18 @@ export async function runThreeScene(rawSpec: SceneSpec, host: HTMLElement, opts:
       scene.add(mesh);
     } else if (object.kind === "model") {
       const gltf = await loadGltf(modelAssets[object.asset].url);
-      // Reused assets (crates, rocks) are static, so Object3D.clone is enough; skinned
-      // actors (soldier, fox, CesiumMan) appear at most once per scene and use the original.
-      const root = countUses(spec, object.asset) > 1 ? gltf.scene.clone(true) : gltf.scene;
+      // Reused assets (crates, rocks) are static, so Object3D.clone is enough.
+      // Skinned actors (prd06 perf-tier spawns N instances) must go through
+      // SkeletonUtils.clone — SkinnedMesh.clone shares the source skeleton, so
+      // every animated clone would drive the first instance's bones.
+      let root: THREE.Object3D;
+      if (countUses(spec, object.asset) > 1) {
+        let skinned = false;
+        gltf.scene.traverse((child) => { if ((child as THREE.SkinnedMesh).isSkinnedMesh) skinned = true; });
+        root = skinned ? skeletonUtilsClone(gltf.scene) : gltf.scene.clone(true);
+      } else {
+        root = gltf.scene;
+      }
       root.name = object.name;
       applyTransform(root, object);
       registerShadow(root, object.castShadow, object.receiveShadow);
@@ -346,7 +358,8 @@ export async function runThreeScene(rawSpec: SceneSpec, host: HTMLElement, opts:
           action.play();
           mixer.setTime(object.animation.time);
           mixers.push(mixer);
-          log.add(`animation:${object.name}`, "supported", `AnimationMixer.setTime(${object.animation.time}) on "${clip.name}"`);
+          if (object.animation.loop) loopMixers.push(mixer);
+          log.add(`animation:${object.name}`, "supported", `AnimationMixer${object.animation.loop ? " loop" : `.setTime(${object.animation.time})`} on "${clip.name}"`);
         }
       }
       if (object.animation?.footIk) {
@@ -513,9 +526,13 @@ export async function runThreeScene(rawSpec: SceneSpec, host: HTMLElement, opts:
     }
   }
   for (let frame = 0; frame < spec.settleFrames; frame += 1) {
+    // Looping mixers advance one frame-tick each rendered frame (perf-tier
+    // scenes measure live animation cost); frozen mixers already setTime'd.
+    for (const mixer of loopMixers) mixer.update(1 / 60);
     renderFrame();
     await nextFrame();
   }
+  for (const mixer of loopMixers) mixer.update(1 / 60);
   renderFrame();
   await nextFrame();
 

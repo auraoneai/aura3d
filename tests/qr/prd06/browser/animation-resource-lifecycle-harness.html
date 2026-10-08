@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PRD-06 animation resource lifecycle harness</title>
+  </head>
+  <body>
+    <canvas id="stage" width="128" height="128"></canvas>
+    <script>
+      window.addEventListener("error", (event) => {
+        if (!window.__AURA3D_QR_ANIMATION_LIFECYCLE__) {
+          window.__AURA3D_QR_ANIMATION_LIFECYCLE__ = { done: false, error: `harness module failed: ${event.message}` };
+        }
+      });
+      window.addEventListener("unhandledrejection", (event) => {
+        if (!window.__AURA3D_QR_ANIMATION_LIFECYCLE__) {
+          window.__AURA3D_QR_ANIMATION_LIFECYCLE__ = { done: false, error: `harness module rejected: ${String(event.reason)}`, stack: event.reason && event.reason.stack ? String(event.reason.stack) : undefined };
+        }
+      });
+    </script>
+    <script type="importmap">
+      {
+        "imports": {
+          "@aura3d/rendering/contracts/flags.state": "/packages/rendering/src/contracts/flags.state.ts",
+          "@aura3d/rendering/contracts": "/packages/rendering/src/contracts/index.ts",
+          "@aura3d/rendering/contracts/": "/packages/rendering/src/contracts/"
+        }
+      }
+    </script>
+    <script type="module" src="./animation-resource-lifecycle-harness.ts"></script>
+  </body>
+</html>

@@ -370,9 +370,36 @@ export class PoseMixer {
   private inertializerHalfLife = 0.15;
   private scratchClip = new Float32Array(4);
 
+  // §13 micro-budget — the accumulate paths must run in single-digit µs for a
+  // 191-joint rig, so per-(bone,channel) state lives in flat arrays + touched
+  // lists, not Maps: a Uint32Array push is ~1ns where Map.get/set ~50ns each
+  // was the whole 60 µs budget on its own.
+  private readonly accWeight: Float32Array;
+  private readonly addWeight: Float32Array;
+  private readonly addQuat: Float32Array;
+  private readonly addVec: Float32Array;
+  private readonly accTouched: Uint32Array;
+  private readonly addTouched: Uint32Array;
+  private accTouchedCount = 0;
+  private addTouchedCount = 0;
+
   constructor(options: { skeleton: SkeletonBinding; inertializer?: PoseInertializer }) {
     this.skeleton = options.skeleton;
     this.inertializer = options.inertializer ?? null;
+    const slots = this.skeleton.boneCount * 3;
+    this.accWeight = new Float32Array(slots);
+    this.addWeight = new Float32Array(slots);
+    this.addQuat = new Float32Array(slots * 4);
+    this.addVec = new Float32Array(slots * 3);
+    this.accTouched = new Uint32Array(slots);
+    this.addTouched = new Uint32Array(slots);
+  }
+
+  private resetAccumulators(): void {
+    for (let i = 0; i < this.accTouchedCount; i += 1) this.accWeight[this.accTouched[i]!] = 0;
+    for (let i = 0; i < this.addTouchedCount; i += 1) this.addWeight[this.addTouched[i]!] = 0;
+    this.accTouchedCount = 0;
+    this.addTouchedCount = 0;
   }
 
   setEffectiveTimeScale(timeScale: number): this {
@@ -668,13 +695,10 @@ export class PoseMixer {
     out.rotations.set(rest.rotations);
     out.scales.set(rest.scales);
 
-    this.accWeight.clear();
-    this.addWeight.clear();
+    this.resetAccumulators();
     this.applyBase(out);
     this.applyRestFill(out);
     this.applyAdditiveAccumulators(out);
-    this.accWeight.clear();
-    this.addWeight.clear();
 
     for (const layer of this.layers) {
       this.applyLayer(out, layer);
@@ -683,7 +707,13 @@ export class PoseMixer {
     if (this.inertializer !== null && this.inertializerElapsed !== Infinity && Number.isFinite(this.inertializerElapsed)) {
       this.inertializer.apply(out, out, this.inertializerElapsed);
     }
-    this.latestPose = clonePoseInto(out, this.latestPose, n);
+    // §13: the latestPose/previousPose snapshots only feed the inertialize
+    // transition — skip the 4·boneCount store clone when no inertializer
+    // exists (the common path, ~1-2µs on a 191-bone rig).
+    if (this.inertializer !== null) {
+      this.latestPose = clonePoseInto(out, this.latestPose, n);
+    }
+    this.resetAccumulators();
   }
 
   /**
@@ -698,8 +728,7 @@ export class PoseMixer {
     out.positions.set(rest.positions);
     out.rotations.set(rest.rotations);
     out.scales.set(rest.scales);
-    this.accWeight.clear();
-    this.addWeight.clear();
+    this.resetAccumulators();
     const scratch = this.scratchClip;
     for (const sample of samples) {
       const entry = this.clips.get(sample.clipName);
@@ -722,8 +751,7 @@ export class PoseMixer {
     }
     this.applyRestFill(out);
     this.applyAdditiveAccumulators(out);
-    this.accWeight.clear();
-    this.addWeight.clear();
+    this.resetAccumulators();
   }
 
   private applyBase(out: PoseBuffer): void {
@@ -758,12 +786,6 @@ export class PoseMixer {
     }
   }
 
-  // Per-(bone,channel) accumulation state, reset each evaluate.
-  private readonly accWeight = new Map<number, number>();
-  private readonly addWeight = new Map<number, number>();
-  private readonly addQuat = new Map<number, Float32Array>();
-  private readonly addVec = new Map<number, Float32Array>();
-
   private accuKey(boneIndex: number, channel: PoseChannel): number {
     return boneIndex * 3 + (channel === "position" ? 0 : channel === "rotation" ? 1 : 2);
   }
@@ -776,56 +798,63 @@ export class PoseMixer {
       this.accumulateAdditiveAccu(binding, sample, weight);
       return;
     }
-    const prevWeight = this.accWeight.get(key) ?? 0;
+    const prevWeight = this.accWeight[key]!;
     if (prevWeight === 0) {
+      this.accTouched[this.accTouchedCount++] = key;
       this.writeSample(out, b, binding.channel, sample);
-      this.accWeight.set(key, weight);
+      this.accWeight[key] = weight;
       return;
     }
     const cumulative = prevWeight + weight;
     const mix = weight / cumulative;
     this.mixInPlace(out, b, binding.channel, sample, mix);
-    this.accWeight.set(key, cumulative);
+    this.accWeight[key] = cumulative;
   }
 
   /** r185 `accumulateAdditive`: quats chain-multiply `add = slerp(add, add·delta, w)`; vecs `add += delta·w`. */
   private accumulateAdditiveAccu(binding: TrackBinding, delta: Float32Array, weight: number): void {
     const key = this.accuKey(binding.boneIndex, binding.channel);
-    const prev = this.addWeight.get(key) ?? 0;
+    const prev = this.addWeight[key]!;
+    if (prev === 0) this.addTouched[this.addTouchedCount++] = key;
     if (binding.channel === "rotation") {
-      let acc = this.addQuat.get(key);
-      if (acc === undefined || prev === 0) {
-        acc = new Float32Array([0, 0, 0, 1]);
-        this.addQuat.set(key, acc);
+      const off = key * 4;
+      if (prev === 0) {
+        this.addQuat[off] = 0;
+        this.addQuat[off + 1] = 0;
+        this.addQuat[off + 2] = 0;
+        this.addQuat[off + 3] = 1;
       }
       const work = scratchMul;
-      multiplyQuatFlat(work, 0, acc, 0, delta, 0);
-      slerpQuatFlat(acc, 0, acc, 0, work, 0, weight);
+      multiplyQuatFlat(work, 0, this.addQuat, off, delta, 0);
+      slerpQuatFlat(this.addQuat, off, this.addQuat, off, work, 0, weight);
     } else {
-      let acc = this.addVec.get(key);
-      if (acc === undefined || prev === 0) {
-        acc = new Float32Array(3);
-        this.addVec.set(key, acc);
+      const off = key * 3;
+      if (prev === 0) {
+        this.addVec[off] = 0;
+        this.addVec[off + 1] = 0;
+        this.addVec[off + 2] = 0;
       }
-      for (let k = 0; k < 3; k += 1) acc[k]! += delta[k]! * weight;
+      this.addVec[off]! += delta[0]! * weight;
+      this.addVec[off + 1]! += delta[1]! * weight;
+      this.addVec[off + 2]! += delta[2]! * weight;
     }
-    this.addWeight.set(key, prev + weight);
+    this.addWeight[key] = prev + weight;
   }
 
   /** r185 `apply` additive stage: `accu = slerp(accu, accu·add, 1)` / `accu += add`. */
   private applyAdditiveAccumulators(out: PoseBuffer): void {
-    for (const key of this.addWeight.keys()) {
-      const boneIndex = Math.floor(key / 3);
+    for (let t = 0; t < this.addTouchedCount; t += 1) {
+      const key = this.addTouched[t]!;
+      const boneIndex = (key / 3) | 0;
       const channel: PoseChannel = key % 3 === 0 ? "position" : key % 3 === 1 ? "rotation" : "scale";
       if (channel === "rotation") {
-        const add = this.addQuat.get(key)!;
-        multiplyQuatFlat(scratchMul, 0, out.rotations, boneIndex * 4, add, 0);
+        multiplyQuatFlat(scratchMul, 0, out.rotations, boneIndex * 4, this.addQuat, key * 4);
         slerpQuatFlat(out.rotations, boneIndex * 4, out.rotations, boneIndex * 4, scratchMul, 0, 1);
       } else {
-        const add = this.addVec.get(key)!;
         const off = boneIndex * 3;
+        const src = key * 3;
         const dst = channel === "position" ? out.positions : out.scales;
-        for (let k = 0; k < 3; k += 1) dst[off + k]! += add[k]!;
+        for (let k = 0; k < 3; k += 1) dst[off + k]! += this.addVec[src + k]!;
       }
     }
   }
@@ -833,28 +862,37 @@ export class PoseMixer {
   /** After base accumulate: fill below-1 remainder from rest pose. Call once per channel per evaluate. */
   private applyRestFill(out: PoseBuffer): void {
     const rest = this.skeleton.restPose;
-    for (const [key, weight] of this.accWeight) {
+    for (let t = 0; t < this.accTouchedCount; t += 1) {
+      const key = this.accTouched[t]!;
+      const weight = this.accWeight[key]!;
       if (weight >= 1) continue;
       const boneIndex = Math.floor(key / 3);
       const channel: PoseChannel = key % 3 === 0 ? "position" : key % 3 === 1 ? "rotation" : "scale";
-      const t = 1 - weight;
+      const remainder = 1 - weight;
       if (channel === "rotation") {
-        slerpQuatFlat(out.rotations, boneIndex * 4, out.rotations, boneIndex * 4, rest.rotations, boneIndex * 4, t);
+        slerpQuatFlat(out.rotations, boneIndex * 4, out.rotations, boneIndex * 4, rest.rotations, boneIndex * 4, remainder);
       } else {
         const off = boneIndex * 3;
         const dst = channel === "position" ? out.positions : out.scales;
         const src = channel === "position" ? rest.positions : rest.scales;
-        lerpVec3Flat(dst, off, dst, off, src, off, t);
+        lerpVec3Flat(dst, off, dst, off, src, off, remainder);
       }
     }
   }
 
   private writeSample(out: PoseBuffer, boneIndex: number, channel: PoseChannel, sample: Float32Array): void {
     if (channel === "rotation") {
-      out.rotations.set(sample.subarray(0, 4), boneIndex * 4);
+      const off = boneIndex * 4;
+      out.rotations[off] = sample[0]!;
+      out.rotations[off + 1] = sample[1]!;
+      out.rotations[off + 2] = sample[2]!;
+      out.rotations[off + 3] = sample[3]!;
     } else {
+      const off = boneIndex * 3;
       const dst = channel === "position" ? out.positions : out.scales;
-      dst.set(sample.subarray(0, 3), boneIndex * 3);
+      dst[off] = sample[0]!;
+      dst[off + 1] = sample[1]!;
+      dst[off + 2] = sample[2]!;
     }
   }
 
