@@ -329,9 +329,9 @@ function buildAuraScene(spec: SceneSpec, log: CapabilityLog) {
   return built;
 }
 
-/** Structural mirror of `Prd03PostExtras` in `scenes/prd03/specs.ts` (kept inline so common.ts does not import lane spec files). */
+/** Structural mirror of `Prd03PostExtras` in `scenes/prd03/specs.ts` (kept inline so common.ts does not import lane spec files). The engine node accepts only `fxaa`/`taa`/`off` (msaa/smaa were dropped from `AuraEffectNode.mode`). */
 interface Prd03PostExtrasLike {
-  readonly antiAlias?: "fxaa" | "smaa" | "msaa" | "taa" | "off";
+  readonly antiAlias?: "fxaa" | "taa" | "off";
   readonly motionBlur?: {
     readonly intensity?: number;
     readonly shutter?: number;

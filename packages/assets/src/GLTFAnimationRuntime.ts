@@ -251,6 +251,22 @@ export interface GLTFSceneAnimationApplyResult {
   readonly skinningPalettesUpdated: number;
   readonly missingTargets: readonly string[];
   readonly unsupportedTracks: readonly string[];
+  /**
+   * PRD-06 §9.8/§13 — wall-clock split of this apply's animation phase, in
+   * ms. Published only by the pose paths (`applyClips`, `applyPoseMixer`);
+   * `cpuMs` covers the whole call (mixer + constraints + springs + target
+   * application + palette build).
+   */
+  readonly phaseTimings?: GLTFSceneAnimationPhaseTimings;
+}
+
+/** PRD-06 §9.8 — per-phase wall-clock timings for one animation apply (ms). */
+export interface GLTFSceneAnimationPhaseTimings {
+  readonly mixerMs: number;
+  readonly constraintsMs: number;
+  readonly springsMs: number;
+  readonly paletteBytes: number;
+  readonly cpuMs: number;
 }
 
 /**
@@ -262,6 +278,11 @@ export interface GLTFSceneAnimationApplyResult {
 export interface GLTFPoseConstraint {
   /** Joints this constraint may write (SkeletonBinding indices). */
   readonly bones: readonly number[];
+  /**
+   * PRD-06 §9.8 — `"springs"` tags spring-chain constraints so the runtime's
+   * phase timings can split `springsMs` from `constraintsMs`.
+   */
+  readonly kind?: "springs";
   /**
    * Apply the constraint onto `pose`. `modelMatrix` maps world→model space
    * (skeleton-root space); `context.dt` is the frame dt (applyPoseMixer) or the
@@ -637,6 +658,11 @@ interface RuntimeSkinningBinding {
 type WeightedAccumulator = { value: AnimationValue; weight: number; type: TrackValueType };
 type TargetAccumulator = { type: TrackValueType; base?: WeightedAccumulator; additive?: AnimationValue };
 
+/** PRD-06 §9.8 — wall clock, ms (`performance.now` where it exists). */
+function nowMs(): number {
+  return typeof performance !== "undefined" ? performance.now() : Date.now();
+}
+
 /** Column-major mat4 multiply written into a Float32Array slot — the T0.11 no-alloc palette path. */
 function multiplyMat4Into(out: Float32Array, outOffset: number, a: ArrayLike<number>, b: ArrayLike<number>): void {
   for (let col = 0; col < 4; col += 1) {
@@ -956,6 +982,10 @@ export class GLTFSceneAnimationRuntime {
     if (samples.length === 0) {
       throw new Error("glTF animation runtime blend requires at least one clip sample.");
     }
+    const phaseStart = nowMs();
+    let mixerMs = 0;
+    let constraintsMs = 0;
+    let springsMs = 0;
     const accumulators = new Map<string, TargetAccumulator>();
     const unsupportedTracks: string[] = [];
     let maxTime = 0;
@@ -1024,19 +1054,23 @@ export class GLTFSceneAnimationRuntime {
 
     const sampledTargets = new Map<string, AnimationValue>();
     if (poseSpecs.length > 0) {
+      const mixerStart = nowMs();
       pose.mixer.evaluateSamples(poseSpecs, pose.pose);
+      mixerMs = nowMs() - mixerStart;
       // T3.5 — constraints apply to the freshly-mixed pose before palette
       // build; touched joints union into the emitted sampled targets. Their
       // dynamics (look-at half-life, spring substeps) integrate in wall-clock
       // seconds, so measure the real gap between applies — a hardcoded 1/60
       // makes smoothing converge ~6× too slowly in sub-60fps sessions.
-      const nowMs = typeof performance !== "undefined" ? performance.now() : Date.now();
+      const now = nowMs();
       const constraintDt = this.lastConstraintEvalAtMs === undefined
         ? 1 / 60
-        : Math.min(0.25, Math.max(1e-4, (nowMs - this.lastConstraintEvalAtMs) / 1000));
-      this.lastConstraintEvalAtMs = nowMs;
+        : Math.min(0.25, Math.max(1e-4, (now - this.lastConstraintEvalAtMs) / 1000));
+      this.lastConstraintEvalAtMs = now;
       const constrained = this.runPoseConstraints(pose.pose, pose.binding, constraintDt);
-      for (const boneIndex of constrained) touchedBones.add(boneIndex);
+      constraintsMs = constrained.constraintsMs;
+      springsMs = constrained.springsMs;
+      for (const boneIndex of constrained.touched) touchedBones.add(boneIndex);
       for (const boneIndex of touchedBones) {
         const name = pose.binding.jointNames[boneIndex]!;
         const p = boneIndex * 3;
@@ -1054,7 +1088,8 @@ export class GLTFSceneAnimationRuntime {
       `blend:${names.join(",")}`,
       maxTime,
       { sampledTargets, unsupportedTracks },
-      samples.length
+      samples.length,
+      { mixerMs, constraintsMs, springsMs, paletteBytes: this.paletteBufferBytes(), cpuMs: nowMs() - phaseStart }
     );
     return this.lastApply;
   }
@@ -1145,13 +1180,18 @@ export class GLTFSceneAnimationRuntime {
    * sampled at each active action's own clock and effective weight.
    */
   applyPoseMixer(dt: number, options?: { readonly label?: string; readonly restPoseReset?: boolean }): GLTFSceneAnimationApplyResult {
+    const phaseStart = nowMs();
     const pose = this.poseRuntime();
+    const mixerStart = nowMs();
     pose.mixer.update(dt);
     pose.mixer.evaluate(pose.pose);
+    const mixerMs = nowMs() - mixerStart;
     // T3.5 — constraints evaluate post-mixer / pre-palette; their touched
     // bones union into `covered` so the write-back emits them.
-    this.lastConstraintEvalAtMs = typeof performance !== "undefined" ? performance.now() : Date.now();
+    this.lastConstraintEvalAtMs = nowMs();
     const constrained = this.runPoseConstraints(pose.pose, pose.binding, dt);
+    const constraintsMs = constrained.constraintsMs;
+    const springsMs = constrained.springsMs;
 
     const actions = pose.mixer.activeActions();
     let covered: ReadonlySet<number> | undefined;
@@ -1160,7 +1200,7 @@ export class GLTFSceneAnimationRuntime {
       for (const action of actions) {
         for (const binding of action.bindings) set.add(binding.boneIndex);
       }
-      for (const boneIndex of constrained) set.add(boneIndex);
+      for (const boneIndex of constrained.touched) set.add(boneIndex);
       covered = set;
     }
     // `covered === undefined` already emits every bound bone below — the
@@ -1211,7 +1251,8 @@ export class GLTFSceneAnimationRuntime {
       `mixer:${options?.label ?? (actions.map((action) => action.clipName).join("+") || "idle")}`,
       active[0]?.time ?? 0,
       { sampledTargets, unsupportedTracks },
-      actions.length > 0 ? actions.length : undefined
+      actions.length > 0 ? actions.length : undefined,
+      { mixerMs, constraintsMs, springsMs, paletteBytes: this.paletteBufferBytes(), cpuMs: nowMs() - phaseStart }
     );
     return this.lastApply;
   }
@@ -1282,18 +1323,33 @@ export class GLTFSceneAnimationRuntime {
 
   /**
    * T3.5 — evaluate the constraint list in order onto the just-mixed pose and
-   * return the union of touched joint indices (empty when no constraints).
+   * return the union of touched joint indices (empty when no constraints),
+   * plus the §9.8 wall-clock split between `"springs"`-tagged constraints and
+   * the rest.
    */
-  private runPoseConstraints(pose: PoseBuffer, binding: SkeletonBinding, dt: number): Set<number> {
+  private runPoseConstraints(pose: PoseBuffer, binding: SkeletonBinding, dt: number): { readonly touched: Set<number>; readonly constraintsMs: number; readonly springsMs: number } {
     const touched = new Set<number>();
     const constraints = this.poseState?.constraints;
-    if (constraints === undefined || constraints.length === 0) return touched;
+    let constraintsMs = 0;
+    let springsMs = 0;
+    if (constraints === undefined || constraints.length === 0) return { touched, constraintsMs, springsMs };
     const modelMatrix = this.poseConstraintModelMatrix?.() ?? this.options.scene.root.transform.worldMatrix;
     for (const constraint of constraints) {
+      const start = nowMs();
       constraint.evaluate(pose, binding, modelMatrix, { dt });
+      const elapsed = nowMs() - start;
+      if (constraint.kind === "springs") springsMs += elapsed;
+      else constraintsMs += elapsed;
       for (const bone of constraint.bones) touched.add(bone);
     }
-    return touched;
+    return { touched, constraintsMs, springsMs };
+  }
+
+  /** §9.8/§13 — CPU-side palette payload this runtime owns, bytes (16 f32/joint). */
+  private paletteBufferBytes(): number {
+    let bytes = 0;
+    for (const binding of this.skinningBindings) bytes += binding.skin.joints.length * 16 * 4;
+    return bytes;
   }
 
   private poseRuntime(): { readonly binding: SkeletonBinding; readonly mixer: PoseMixer; readonly compiled: Map<string, CompiledClip>; readonly pose: PoseBuffer; constraints: GLTFPoseConstraint[] } {
@@ -1945,7 +2001,8 @@ export class GLTFSceneAnimationRuntime {
     clipName: string,
     time: number,
     sampled: { readonly sampledTargets: ReadonlyMap<string, AnimationValue>; readonly unsupportedTracks: readonly string[] },
-    blendedClipCount?: number
+    blendedClipCount?: number,
+    phaseTimings?: GLTFSceneAnimationPhaseTimings
   ): GLTFSceneAnimationApplyResult {
     let transformTracksApplied = 0;
     let morphWeightTracksApplied = 0;
@@ -2015,7 +2072,8 @@ export class GLTFSceneAnimationRuntime {
       ...(measuredFootPlanting === undefined ? {} : { footPlanting: measuredFootPlanting }),
       skinningPalettesUpdated: skinning.updated,
       missingTargets: [...missingTargets, ...skinning.missingTargets],
-      unsupportedTracks: sampled.unsupportedTracks
+      unsupportedTracks: sampled.unsupportedTracks,
+      ...(phaseTimings === undefined ? {} : { phaseTimings })
     };
   }
 }

@@ -24,7 +24,11 @@ declare global {
     __AURA3D_LIVE_APPS__?: {
       count(): number;
       all(): readonly {
-        nodes: { get(id: string): unknown };
+        nodes: {
+          get(id: string): unknown;
+          all(): readonly unknown[];
+          ids?(): readonly string[];
+        };
         diagnostics(): unknown;
       }[];
     };

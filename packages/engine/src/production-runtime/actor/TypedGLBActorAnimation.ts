@@ -568,6 +568,7 @@ export function createPrd06SpringConstraint(
     for (const index of indices) bones.add(index);
   }
   return {
+    kind: "springs",
     bones: [...bones],
     evaluate: (pose, _bound, _modelMatrix, ctx) => {
       for (const bound of bounds) bound.step(pose, ctx.dt);

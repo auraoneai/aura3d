@@ -281,25 +281,26 @@ export function resetActorAnimationStateSources(): void {
 
 /**
  * C-31 `animation` section collect (T0.18): one row per actor with a published
- * apply source. Fields the runtime does not yet instrument — mixerMs,
- * constraintsMs, springsMs, paletteBytes, cpuMs — report 0 and stay listed in
- * `diagnosticOnly.prd06.ts` until Phase 1+ wires them.
+ * apply source. `phaseTimings` (PRD-06 §9.8) flows from the pose paths —
+ * `applyClips`/`applyPoseMixer` instrument mixer, constraint, spring, palette
+ * and whole-call cpuMs; legacy applies report 0.
  */
 export function collectPrd06AnimationDiagnostics(): AuraAnimationDiagnostics {
   const actors = [...actorAnimationApplySources.entries()].map(([id, source]) => {
     const apply = source() ?? null;
+    const timings = apply?.phaseTimings;
     return {
       id,
       activeClip: apply?.clipName ?? null,
       tracksApplied: apply?.tracksApplied ?? 0,
       activeActions: apply?.blendedClipCount ?? (apply ? 1 : 0),
-      mixerMs: 0,
-      constraintsMs: 0,
-      springsMs: 0,
-      paletteBytes: 0,
+      mixerMs: timings?.mixerMs ?? 0,
+      constraintsMs: timings?.constraintsMs ?? 0,
+      springsMs: timings?.springsMs ?? 0,
+      paletteBytes: timings?.paletteBytes ?? 0,
       morphActive: apply?.morphWeightTracksApplied ?? 0,
       morphDropped: apply?.missingTargets.length ?? 0,
-      cpuMs: 0
+      cpuMs: timings?.cpuMs ?? 0
     };
   });
   return { actors };
