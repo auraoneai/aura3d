@@ -22,9 +22,17 @@ import { createPrd06ActorAnimationApi } from "../../../../packages/engine/src/ag
 import type { AuraRuntimeNodeHandle } from "../../../../packages/engine/src/agent-api/index.js";
 
 const LANE_HERO_GLB = resolve(__dirname, "../../../../public/aura-assets/auraClashPlayerRig.3318d671.glb");
+const LANE_HERO_CLIP_MANIFEST = resolve(__dirname, "../fixtures/lane-hero-clips.json");
 
+/** Clip names on the admitted lane hero. `public/aura-assets/*.glb` is
+ * LFS-tracked and the unit lane checks out without `lfs: true`, so an LFS
+ * pointer falls back to the committed manifest (same contract). */
 function laneHeroClipNames(): ReadonlySet<string> {
   const buffer = readFileSync(LANE_HERO_GLB);
+  if (buffer.subarray(0, 20).toString("latin1").startsWith("version https://git-lfs")) {
+    const manifest = JSON.parse(readFileSync(LANE_HERO_CLIP_MANIFEST, "utf8")) as { clips: string[] };
+    return new Set(manifest.clips);
+  }
   const { json, bin } = readGlbDocument(buffer);
   return new Set(inspectAnimationClips(json, bin).map((clip) => clip.name));
 }

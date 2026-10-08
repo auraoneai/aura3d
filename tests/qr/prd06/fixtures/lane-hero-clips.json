@@ -1,0 +1,18 @@
+{
+  "$comment": "Clip names baked out of public/aura-assets/auraClashPlayerRig.3318d671.glb (LFS). Unit CI doesn't fetch LFS; tests read this manifest when the GLB is a pointer. Regenerate with inspectAnimationClips on the real GLB when the asset changes.",
+  "asset": "public/aura-assets/auraClashPlayerRig.3318d671.glb",
+  "clips": [
+    "Crouch_Idle_Loop",
+    "Death01",
+    "Hit_Chest",
+    "Hit_Head",
+    "Idle_Loop",
+    "Jump_Loop",
+    "Punch_Cross",
+    "Punch_Jab",
+    "Sprint_Loop",
+    "Sword_Attack",
+    "Sword_Block",
+    "Walk_Loop"
+  ]
+}

@@ -154,24 +154,27 @@ export function applyProductionActorAnimation(
   runtimeNodes?: AuraRuntimeNodeRegistry
 ): void {
   const animation = node.animation;
+  const clipSpecified = animation?.clip !== undefined && !isModelTransformAnimationClip(animation.clip);
   // T4.2 — a bound controller that publishes clip samples (C-19 §5.2, e.g.
-  // `characterAnimation`) drives `applyClips` directly, with no
-  // `node.animation.clip` required. Hoisted above the clip gate so the
-  // samples-only binding reaches the actor; flag-off keeps this unreachable.
-  {
+  // `characterAnimation`) drives `applyClips` directly when no
+  // `node.animation.clip` selects a clip. When a clip IS specified the
+  // merged flow below resolves it first (T1.8: a top-level miss warns +
+  // degrades without touching applyClips) and the samples ride the
+  // non-root-motion else-branch so root-motion cursors stay consistent.
+  if (!clipSpecified) {
     const clipSamples = qrAnimationFlags().on("A3D_QR_ANIMATION")
       ? resolveRuntimeBindingClipSamples(entry, animationBinding, runtimeWarnings)
       : undefined;
     if (clipSamples && clipSamples.length > 0) {
+      entry.rootMotionCursors = undefined;
       // Pose constraints (ik/look-at/spring) solve in the frame this
       // modelMatrix maps to: install the live provider before applyClips so
       // world-space targets land correctly under node translate/rotate.
-      entry.actor.animation.setPoseConstraintModelMatrix(() => modelMatrix);
+      entry.actor.animation.setPoseConstraintModelMatrix?.(() => modelMatrix);
       entry.actor.animation.applyClips(clipSamples);
-      return;
     }
+    return;
   }
-  if (!animation?.clip || isModelTransformAnimationClip(animation.clip)) return;
   const clipName = entry.actor.animation.resolveClipName(animation.clip, resolveClipNameOptionsForSpec(animation));
   if (!clipName) {
     const available = entry.actor.animation.clipNames();
@@ -296,11 +299,17 @@ export function applyProductionActorAnimation(
         return;
       }
       entry.rootMotionCursors = undefined;
-      // T0.3's clip-samples dispatch moved to the top of this function (T4.2):
-      // bound samples reach `applyClips` even without `node.animation.clip`.
-      // What remains is the single-clip path for bindings that did not publish
-      // samples — flag-gated PoseMixer when available, else legacy clip play.
-      if (
+      // T0.3 — with a specified clip resolved, a bound controller's clip
+      // samples still drive the GLB blend directly (C-19 §5.2); bindings
+      // that did not publish samples fall through to the flag-gated
+      // PoseMixer / legacy clip play below.
+      const clipSamples = qrAnimationFlags().on("A3D_QR_ANIMATION")
+        ? resolveRuntimeBindingClipSamples(entry, animationBinding, runtimeWarnings)
+        : undefined;
+      if (clipSamples && clipSamples.length > 0) {
+        entry.actor.animation.setPoseConstraintModelMatrix?.(() => modelMatrix);
+        entry.actor.animation.applyClips(clipSamples);
+      } else if (
         qrAnimationFlags().on("A3D_QR_ANIMATION") &&
         !animation.rootMotion &&
         typeof entry.actor.animation.mixer === "function" &&
