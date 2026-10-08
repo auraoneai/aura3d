@@ -362,6 +362,17 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
+/** Column-major affine mat4 × point (w divide for non-TRS safety). */
+function mulMat4Point(m: Float32Array | readonly number[], p: Vec3): Vec3 {
+  const x = p[0], y = p[1], z = p[2];
+  const w = m[3]! * x + m[7]! * y + m[11]! * z + m[15]! || 1;
+  return [
+    (m[0]! * x + m[4]! * y + m[8]! * z + m[12]!) / w,
+    (m[1]! * x + m[5]! * y + m[9]! * z + m[13]!) / w,
+    (m[2]! * x + m[6]! * y + m[10]! * z + m[14]!) / w
+  ];
+}
+
 function round(value: number): number {
   return Number(value.toFixed(4));
 }
@@ -577,7 +588,11 @@ export function solveFootIkConstraint(
       results.push({ leg: plan.index, grounded: true, verticalCorrection: 0, tiltDeg: 0 });
       continue;
     }
-    solveTwoBoneIkRotations(pose, skeleton, modelMatrix, plan.spec, plan.target);
+    // `solveTwoBoneIkRotations` takes a WORLD-space target (it maps the target
+    // back to model space via invertTRS(modelMatrix)); `plan.target` is model
+    // space — lift it to world or the mount transform is applied twice and the
+    // ankle aims past the real terrain.
+    solveTwoBoneIkRotations(pose, skeleton, modelMatrix, plan.spec, mulMat4Point(modelMatrix, plan.target));
 
     // Foot tilt: rotate the tip bone so its local +Y (sole normal) matches the
     // ground normal, capped at maxFootTiltDeg — applied in the tip's parent frame.

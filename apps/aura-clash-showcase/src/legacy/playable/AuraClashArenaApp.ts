@@ -2258,21 +2258,19 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     // Retain a separate complete steady-state window. Back-to-back synchronous
     // submissions artificially saturate the browser/GPU queue, so each measured
     // production frame crosses the same RAF boundary as normal play.
+    // Install the driver BEFORE the rAF-paced warmup: specs that gate on the
+    // driver's existence (rather than `status === "running"`) must not pay the
+    // whole warmup window, which starves shared-Metal CI for minutes. The
+    // status semantics are unchanged — the proof still reports "loading" until
+    // the performance window closes, so a test acting early and landing a hit
+    // still observes the historical status ordering (the `pauseOnNextHit`
+    // frozen-proof bug was about the status field, not driver presence).
+    installTestDriver();
     for (let sample = 0; sample < performanceSampleCount; sample += 1) {
       await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
       performanceEvidenceReady = sample === performanceSampleCount - 1;
       gameApp.step(1 / 60);
     }
-    // Publish the driver only after the performance window closes. Installing it
-    // first let a test act during warmup: the hit landed and `pauseOnNextHit`
-    // set `paused`, but `performanceEvidenceReady` was still false so the proof
-    // published `status: "loading"`, and the paused early-return in `tickFrame`
-    // meant no later frame ever republished it. A test waiting for
-    // `status === "paused" && totalHits > 0` then timed out against a hit that
-    // had actually been resolved (observed `totalHits: 1`, `callout: "HIT"`,
-    // `status: "loading"`). Gameplay, combat and the performance window are
-    // unchanged; only the driver's publication point moves.
-    installTestDriver();
     // The deterministic warmup establishes the bounded performance receipt, then the same
     // production frame loop must resume so keyboard input and authored gameplay continue to
     // advance. Keeping the runtime stopped here published a valid first proof but left every

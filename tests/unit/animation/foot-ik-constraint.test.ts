@@ -191,6 +191,65 @@ describe("T3.2 — solveFootIkConstraint on a 20° slope", () => {
     }
   });
 
+  it("non-identity modelMatrix: mounts with translate/rotate plant feet on the world terrain", () => {
+    // Regression: `plan.target` is built in model space while
+    // `solveTwoBoneIkRotations` expects world space — feeding it directly
+    // applies the mount transform twice and the ankle aims ~mount-offset past
+    // the terrain (ik-slope left foot missed by 0.37 m on a yaw+translate
+    // mount). The caster contract stays model-space (the scene wraps the
+    // world heightfield); only the solver target is lifted to world.
+    const mount: Float32Array = Float32Array.from([
+      // translate [0.95, 0.4, 0] · rotY(+90°), column-major
+      0, 0, -1, 0,
+      0, 1, 0, 0,
+      1, 0, 0, 0,
+      0.95, 0.4, 0, 1
+    ]);
+    const forward = (p: Vec3): Vec3 => [p[2] + 0.95, p[1] + 0.4, -p[0]];
+    const inverse = (p: Vec3): Vec3 => {
+      const q: Vec3 = [p[0] - 0.95, p[1] - 0.4, p[2]];
+      return [-q[2], q[1], q[0]];
+    };
+    // World-space slope h_w(x, z) = tan(20°)·x, wrapped to model space the
+    // same way `modelSpaceHeightAt` wraps scene heightfields.
+    const worldNormal: Vec3 = (() => {
+      const n: Vec3 = [-SLOPE_TAN, 1, 0];
+      const l = Math.hypot(n[0], n[1], n[2]);
+      return [n[0] / l, n[1] / l, n[2] / l];
+    })();
+    const inverseDir = (v: Vec3): Vec3 => [-v[2], v[1], v[0]];
+    const modelGround = {
+      raycastDown(origin: Vec3, maxDistance: number) {
+        const [wx, , wz] = forward([origin[0], 0, origin[2]]);
+        const [, ly] = inverse([wx, SLOPE_TAN * wx, wz]);
+        const distance = origin[1] - ly;
+        if (distance < 0 || distance > maxDistance) return undefined;
+        return { point: [origin[0], ly, origin[2]] as Vec3, normal: inverseDir(worldNormal), distance };
+      }
+    };
+
+    const skeleton = makeTwoLegSkeleton();
+    const pose = createPoseBuffer(7);
+    copyPose(pose, skeleton.restPose);
+    solveFootIkConstraint(pose, skeleton, mount, {
+      legs: LEGS,
+      ground: modelGround,
+      pelvis: "pelvis",
+      maxPelvisDrop: 0.4
+    });
+
+    // Post-solve: lift each ankle to world and check the sole sits on the
+    // world slope at the ankle's own (x, z).
+    for (const ankleIndex of [3, 6]) {
+      const ankleM = jointWorld(pose, skeleton, ankleIndex);
+      const ankleW = forward(ankleM);
+      const groundY = SLOPE_TAN * ankleW[0];
+      const soleY = ankleW[1] - 0.035;
+      expect(soleY - groundY, `world float for ankle ${ankleIndex}`).toBeLessThanOrEqual(0.03);
+      expect(groundY - soleY, `world penetration for ankle ${ankleIndex}`).toBeLessThanOrEqual(0.03);
+    }
+  });
+
   it("pelvis drop maps through the parent frame — scaled/rotated glTF roots put 'up' off +Y and off unit scale", () => {
     // Soldier-style rig: `character` carries scale 0.01 and a −90° X rotation,
     // so the pelvis' local +Z is the up axis in pose space and its translation

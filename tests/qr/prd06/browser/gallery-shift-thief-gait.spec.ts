@@ -107,12 +107,20 @@ test.describe("PRD-06 T0.17 gallery-shift thief gait", () => {
   });
 
   test("thief + guard-2 report tracksApplied every frame and sprint vs sneak hip heights differ", async ({ page }) => {
-    test.setTimeout(420_000);
+    test.setTimeout(540_000);
     await page.goto(`${server.origin}/apps/showcase-gallery-shift/?a3d-qr=animation`, { waitUntil: "domcontentloaded" });
     // Shared-Metal CI runners starve rAF — first-frame plumbing takes minutes.
-    await page.waitForFunction(() => (window.__AURA3D_LIVE_APPS__?.count() ?? 0) > 0, undefined, { timeout: 180_000 });
-    await page.waitForFunction(() => !!window.__GS_PUMP__, undefined, { timeout: 60_000 });
-    await page.waitForFunction(() => window.__GALLERY_SHIFT_EVIDENCE__?.animation?.thiefActiveClip != null, undefined, { timeout: 180_000 });
+    // One merged wait (was 180+60+180s serial): app mounted, deterministic
+    // pump installed, and the thief's clip wired — `polling` on a timer so the
+    // predicate isn't itself throttled by rAF starvation.
+    await page.waitForFunction(
+      () =>
+        (window.__AURA3D_LIVE_APPS__?.count() ?? 0) > 0 &&
+        !!window.__GS_PUMP__ &&
+        window.__GALLERY_SHIFT_EVIDENCE__?.animation?.thiefActiveClip != null,
+      undefined,
+      { timeout: 360_000, polling: 2_000 }
+    );
 
     // Phase-0 exit criteria: tracksApplied > 0 on every pumped frame, thief + guard-2.
     const thiefFrames: number[] = [];

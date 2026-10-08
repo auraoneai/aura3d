@@ -22,7 +22,7 @@ declare global {
       status?: string;
       player?: { x?: number; activeClip?: string };
       rival?: { x?: number };
-      animation?: { playerLastTracks?: number };
+      animation?: { playerLastTracks?: number; clipReadiness?: { ok?: boolean } };
     };
   }
 }
@@ -88,10 +88,16 @@ test.describe("PRD-06 Aura Clash tracksApplied A/B (S13)", () => {
     test(`required clip keys report identical tracksApplied under ?a3d-qr=${qr}`, async ({ page }) => {
       test.setTimeout(480_000);
       await page.goto(`${server.origin}/apps/aura-clash-showcase/?auraTestDriver=1&a3d-qr=${qr}`, { waitUntil: "domcontentloaded" });
-      // Shared-Metal CI runners starve rAF badly — the showcase page needs
-      // minutes to reach "running", not the 60 s a healthy laptop needs.
-      await page.waitForFunction(() => window.__AURA_CLASH_ARENA_PROOF__?.status === "running", undefined, { timeout: 240_000 });
-      await page.waitForFunction(() => !!window.__AURA_CLASH_ARENA_TEST_DRIVER__, undefined, { timeout: 60_000 });
+      // Shared-Metal CI runners starve rAF badly — `status === "running"` is
+      // gated behind a 15-frame rAF-paced performance warmup that can take
+      // minutes. This spec only needs the test driver + resolved clips, both
+      // available as soon as the app boots (the driver now installs ahead of
+      // the warmup loop), so gate on those instead of the perf readiness.
+      await page.waitForFunction(
+        () => !!window.__AURA_CLASH_ARENA_TEST_DRIVER__ && window.__AURA_CLASH_ARENA_PROOF__?.animation?.clipReadiness?.ok === true,
+        undefined,
+        { timeout: 240_000, polling: 2_000 }
+      );
 
       const observed: Record<string, number> = {};
       observed.idle = await tracksWhileClip(page, PLAYER_CLIPS.idle, async () => {
