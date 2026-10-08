@@ -29,7 +29,7 @@ const LANE_HERO_CLIP_MANIFEST = resolve(__dirname, "../fixtures/lane-hero-clips.
  * pointer falls back to the committed manifest (same contract). */
 function laneHeroClipNames(): ReadonlySet<string> {
   const buffer = readFileSync(LANE_HERO_GLB);
-  if (buffer.subarray(0, 20).toString("latin1").startsWith("version https://git-lfs")) {
+  if (buffer.subarray(0, 64).toString("latin1").startsWith("version https://git-lfs")) {
     const manifest = JSON.parse(readFileSync(LANE_HERO_CLIP_MANIFEST, "utf8")) as { clips: string[] };
     return new Set(manifest.clips);
   }

@@ -37,7 +37,12 @@ function runBench(): BenchResults {
     cwd: REPO_ROOT,
     timeout: 120_000,
     encoding: "utf8",
-    stdio: ["ignore", "pipe", "pipe"]
+    stdio: ["ignore", "pipe", "pipe"],
+    env: {
+      ...process.env,
+      // Resolve @aura3d/* specifiers to packages/*/src: CI has no built dist/.
+      TSX_TSCONFIG_PATH: fileURLToPath(new URL("../../../../tsconfig.check.json", import.meta.url))
+    }
   });
   const line = stdout.trim().split("\n").at(-1)!;
   return JSON.parse(line) as BenchResults;
