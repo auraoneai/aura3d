@@ -51,12 +51,36 @@ try {
   controller.play("Walk");
   controller.bindRuntimeNode(hero as never, { id: "hero-animation" });
 
-  const binding = hero.snapshot().animationBinding as { readonly kind?: string; readonly clipSamples?: readonly unknown[] } | undefined;
-  window.__PRD06_CLIP_SAMPLES__ = {
-    status: "ready",
-    bindingKind: binding?.kind,
-    clipSamples: binding?.clipSamples as readonly { clipName?: string; weight?: number }[] | undefined
+  // Flag-on `bindRuntimeNode` defers the binding publish until
+  // `resolveAnimationClips` settles (the C-19 api needs the actor loaded, i.e.
+  // mount). Poll the snapshot instead of reading once — the flag-off leg has
+  // no pendingClips and publishes synchronously, so this resolves on the
+  // first tick there.
+  const deadline = Date.now() + 240_000;
+  const readBinding = () => hero.snapshot().animationBinding as
+    | { readonly kind?: string; readonly clipSamples?: readonly unknown[] }
+    | undefined;
+  const waitForBinding = async (): Promise<void> => {
+    while (Date.now() < deadline) {
+      if (readBinding()?.kind !== undefined) return;
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
   };
+  waitForBinding()
+    .then(() => {
+      const binding = readBinding();
+      window.__PRD06_CLIP_SAMPLES__ = {
+        status: "ready",
+        bindingKind: binding?.kind,
+        clipSamples: binding?.clipSamples as readonly { clipName?: string; weight?: number }[] | undefined
+      };
+    })
+    .catch((error: unknown) => {
+      window.__PRD06_CLIP_SAMPLES__ = {
+        status: "error",
+        error: error instanceof Error ? error.message : String(error)
+      };
+    });
 } catch (error) {
   window.__PRD06_CLIP_SAMPLES__ = {
     status: "error",

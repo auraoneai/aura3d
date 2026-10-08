@@ -62,10 +62,20 @@ async function tracksWhileClip(page: Page, clip: string, arm: () => Promise<void
   const counts = new Map<number, number>();
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
+    // Pump deterministic frames — the starved rAF loop can take seconds per
+    // frame on shared runners, so clip transitions and applies happen here
+    // instead of waiting for the ambient loop.
+    await page.evaluate(() => {
+      const driver = window.__AURA_CLASH_ARENA_TEST_DRIVER__ as { advanceFrame?: () => void } | undefined;
+      for (let i = 0; i < 12; i += 1) driver?.advanceFrame?.();
+    });
     const { clip: active, tracks } = await proof(page);
     if (active === clip && tracks > 0) {
       counts.set(tracks, (counts.get(tracks) ?? 0) + 1);
-      if ((counts.get(tracks) ?? 0) >= 4) return tracks; // stable value seen 4 polls in a row-ish
+      // 3 matching polls is enough consensus — each `proof` evaluate costs
+      // seconds on a starved runner, and 10 clips × extra polls pushed the
+      // spec past its 480 s budget on CI.
+      if ((counts.get(tracks) ?? 0) >= 3) return tracks; // stable value seen 3 polls
     }
     await page.waitForTimeout(50);
   }
@@ -91,7 +101,7 @@ test.describe("PRD-06 Aura Clash tracksApplied A/B (S13)", () => {
 
   for (const qr of ["none", "animation"] as const) {
     test(`required clip keys report identical tracksApplied under ?a3d-qr=${qr}`, async ({ page }) => {
-      test.setTimeout(480_000);
+      test.setTimeout(660_000);
       await page.goto(`${server.origin}/playable/?auraTestDriver=1&a3d-qr=${qr}`, { waitUntil: "domcontentloaded" });
       // Shared-Metal CI runners starve rAF badly — `status === "running"` is
       // gated behind a 15-frame rAF-paced performance warmup that can take

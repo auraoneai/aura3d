@@ -107,19 +107,50 @@ test.describe("PRD-06 T0.17 gallery-shift thief gait", () => {
   });
 
   test("thief + guard-2 report tracksApplied every frame and sprint vs sneak hip heights differ", async ({ page }) => {
-    test.setTimeout(540_000);
+    test.setTimeout(780_000);
     await page.goto(`${server.origin}/apps/showcase-gallery-shift/?a3d-qr=animation`, { waitUntil: "domcontentloaded" });
     // Shared-Metal CI runners starve rAF — first-frame plumbing takes minutes.
     // One merged wait (was 180+60+180s serial): app mounted, deterministic
     // pump installed, and the thief's clip wired — `polling` on a timer so the
     // predicate isn't itself throttled by rAF starvation.
     await page.waitForFunction(
-      () =>
-        (window.__AURA3D_LIVE_APPS__?.count() ?? 0) > 0 &&
-        !!window.__GS_PUMP__ &&
-        window.__GALLERY_SHIFT_EVIDENCE__?.animation?.thiefActiveClip != null,
+      () => {
+        const app = window.__AURA3D_LIVE_APPS__?.all()[0] as
+          | { ready?: () => Promise<unknown>; nodes: { get(id: string): unknown } }
+          | undefined;
+        if (!app || !window.__GS_PUMP__ || window.__GALLERY_SHIFT_EVIDENCE__?.animation?.thiefActiveClip == null) return false;
+        // Mount settle: the production renderer mounts asynchronously — actors
+        // (skinned GLBs) finish loading well after `thiefActiveClip` publishes.
+        // `step()` renders nothing until the mount resolves, so `lastApply`
+        // can only be set — and `tracksApplied` can only turn positive — after
+        // `ready()`. Latch the promise once; polling re-enters every 2 s.
+        const w = window as unknown as { __GS_MOUNT_READY__?: Promise<boolean> };
+        w.__GS_MOUNT_READY__ ??= Promise.resolve(app.ready?.()).then(() => true).catch(() => false);
+        return w.__GS_MOUNT_READY__;
+      },
       undefined,
-      { timeout: 360_000, polling: 2_000 }
+      { timeout: 420_000, polling: 2_000 }
+    );
+
+    // Flag-on `bindRuntimeNode` keeps the binding pending until the C-19
+    // `resolveAnimationClips` promise settles — which needs the actor loaded
+    // (i.e. mount). `animationBinding` + `clipSamples` publish only then, so
+    // `applyClips` can start. Pump inside the poll so renders keep running,
+    // and wait until both actors report a real apply.
+    await page.waitForFunction(
+      () => {
+        const app = window.__AURA3D_LIVE_APPS__?.all()[0] as
+          | { nodes: { get(id: string): unknown } }
+          | undefined;
+        const read = (id: string) => {
+          const h = app?.nodes.get(id) as { animation?: { animationState?: () => { tracksApplied?: number } } } | undefined;
+          return typeof h?.animation?.animationState === "function" ? h.animation.animationState().tracksApplied ?? 0 : -1;
+        };
+        window.__GS_PUMP__?.(1);
+        return read("thief") > 0 && read("guard-2") > 0;
+      },
+      undefined,
+      { timeout: 300_000, polling: 1_000 }
     );
 
     // Phase-0 exit criteria: tracksApplied > 0 on every pumped frame, thief + guard-2.
