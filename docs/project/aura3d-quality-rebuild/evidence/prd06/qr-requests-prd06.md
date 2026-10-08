@@ -167,3 +167,22 @@ Q-05-2 admits it), wire `bindCharacterHero(controller, hero)` in `main.ts`,
 and add the template test mirroring
 `tests/qr/prd06/unit/character-controller-binding.test.ts` (required clips
 exist on the hero; `animationState().activeActions.length ≥ 2` mid-ramp).
+
+## Q-XX — `renderable.skinning.matrices` bottom row carries non-affine data (needs owner adjudication)
+
+Found while root-causing the deform-light-view chromium failure: every joint
+slot's row-3 (elements 3, 7, 11, 15 read col-major) holds a structured
+`(unit 3-vector, scalar ∈ 0.5–1.4)` instead of `(0,0,0,1)` — measured on the
+posed CesiumMan palette in-browser (`paletteRow3` probe in
+`tests/qr/prd06/browser/deform-light-view-harness.ts`). The affine 3×4 block
+is correct (GPU↔CPU `posedDelta` 2.4e-7), so consumers that keep the vec4
+(`s * vec4(p,1)`) leak a projective warp into `gl_Position` — every skinned
+shader in the codebase (`a3dDeform`, legacy `u_jointMatrices`/`u_jointPaletteTexture`
+paths, prd02 depth skinned) does exactly that. PRD-06's deform chunk now pins
+`localPos.w = 1` (IoU 0.86 → 1.0). Owner question: is the row-3 payload
+deliberate (packed per-joint data another consumer reads), or a convention
+mix — `packages/animation/src/Keyframe.ts#multiplyMat4` computes in
+**row-major** convention while `GLTFAnimationRuntime.multiplyMat4Into` and
+every GLSL `mat4(c0..c3)` consumer read **column-major**? If the former,
+the legacy skinned paths need the same w-pin; if the latter, the writer
+needs the convention fix.

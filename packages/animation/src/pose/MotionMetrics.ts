@@ -130,14 +130,30 @@ export function boneAngularSpeeds(
 
 /** Max deg/s across all bones inside [start, end] (0 when empty). */
 export function maxAngularSpeedInWindow(frames: readonly MotionFrame[], start: number, end: number, isBone = isHumanoidMotionBone): number {
+  return maxAngularSpeedDetailInWindow(frames, start, end, isBone).speed;
+}
+
+/** The single fastest bone→speed sample inside [start, end], with attribution. */
+export function maxAngularSpeedDetailInWindow(
+  frames: readonly MotionFrame[],
+  start: number,
+  end: number,
+  isBone = isHumanoidMotionBone
+): { readonly speed: number; readonly bone?: string; readonly at?: number } {
   let max = 0;
+  let bone: string | undefined;
+  let at: number | undefined;
   for (const series of boneAngularSpeeds(frames, isBone)) {
     for (let i = 0; i < series.speeds.length; i += 1) {
       const t = series.times[i]!;
-      if (t >= start && t <= end) max = Math.max(max, series.speeds[i]!);
+      if (t >= start && t <= end && series.speeds[i]! > max) {
+        max = series.speeds[i]!;
+        bone = series.bone;
+        at = t;
+      }
     }
   }
-  return max;
+  return { speed: max, ...(bone !== undefined ? { bone } : {}), ...(at !== undefined ? { at } : {}) };
 }
 
 /* ------------------------------------------------------------------ */
@@ -149,6 +165,9 @@ export interface ContinuityResult {
   readonly continuity: number;
   readonly maxAngularSpeedDegPerSec: number;
   readonly baselineDegPerSec: number;
+  /** Attribution for the fastest sample (diagnostics on gate failures). */
+  readonly maxBone?: string;
+  readonly maxAt?: number;
 }
 
 /**
@@ -173,7 +192,8 @@ export function transitionContinuity(
   const isBone = options.isBone ?? isHumanoidMotionBone;
   const start = options.transitionTime - (options.windowBefore ?? 0.1);
   const end = options.transitionTime + (options.windowAfter ?? 0.3);
-  const maxAngularSpeed = maxAngularSpeedInWindow(frames, start, end, isBone);
+  const fastest = maxAngularSpeedDetailInWindow(frames, start, end, isBone);
+  const maxAngularSpeed = fastest.speed;
 
   let baseline = options.baselineDegPerSec ?? 0;
   for (const [wStart, wEnd] of options.baselineWindows ?? []) {
@@ -183,7 +203,9 @@ export function transitionContinuity(
   return {
     continuity: maxAngularSpeed / baseline,
     maxAngularSpeedDegPerSec: maxAngularSpeed,
-    baselineDegPerSec: baseline
+    baselineDegPerSec: baseline,
+    ...(fastest.bone !== undefined ? { maxBone: fastest.bone } : {}),
+    ...(fastest.at !== undefined ? { maxAt: fastest.at } : {})
   };
 }
 

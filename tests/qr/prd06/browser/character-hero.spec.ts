@@ -217,7 +217,7 @@ test.describe("PRD-06 character-hero (T4.4, §17.2)", () => {
     const baselines: [number, number][] = [[PHASES.idleEnd + 0.4, PHASES.walkEnd - 0.1], [PHASES.walkEnd + 0.4, PHASES.runEnd - 0.1], [0.3, PHASES.idleEnd - 0.1]];
     for (const boundary of [PHASES.idleEnd, PHASES.walkEnd, PHASES.runEnd, PHASES.stopEnd, PHASES.airEnd]) {
       const c = transitionContinuity(motionFrames, { transitionTime: boundary, baselineWindows: baselines });
-      expect(c.continuity, `continuity @${boundary}s (${c.maxAngularSpeedDegPerSec.toFixed(0)}°/s vs baseline ${c.baselineDegPerSec.toFixed(0)}°/s)`).toBeLessThanOrEqual(1.5);
+      expect(c.continuity, `continuity @${boundary}s (${c.maxAngularSpeedDegPerSec.toFixed(0)}°/s at ${c.maxBone ?? "?"} t=${c.maxAt?.toFixed(2) ?? "?"} vs baseline ${c.baselineDegPerSec.toFixed(0)}°/s)`).toBeLessThanOrEqual(1.5);
     }
 
     // Gate 3 — stop: pelvis XZ speed → 0 within 0.4 s; hips settle ≥ 2 cm.

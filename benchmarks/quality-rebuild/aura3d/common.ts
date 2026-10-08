@@ -51,7 +51,7 @@ export interface RunOptions {
    * imported-asset evidence such as foot-planting feet) and returns fields
    * merged into ReadyPayload.extra.
    */
-  readonly collectExtra?: (app: AuraApp) => Readonly<Record<string, unknown>>;
+  readonly collectExtra?: (app: AuraApp) => Readonly<Record<string, unknown>> | Promise<Readonly<Record<string, unknown>>>;
 }
 
 // Variant machinery lives in aura3d/lib/variants.ts (T2.4, §8.4).
@@ -633,7 +633,7 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
     assetHashes,
     qrFlags: opts.qrFlags ?? spec.qrFlags ?? [],
     extra: {
-      ...(opts.collectExtra?.(app) ?? {}),
+      ...(await opts.collectExtra?.(app) ?? {}),
       backend: diagnostics.backend,
       renderSize: diagnostics.renderSize,
       reportedToneMapping: renderer?.toneMapping,

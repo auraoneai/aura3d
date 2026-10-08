@@ -17,14 +17,21 @@ declare global {
       readonly error?: string;
       readonly iou?: {
         readonly deformVsCpu: number;
+        readonly deformVsCpuTolerant: number;
         readonly bindPoseGpuVsCpu: number;
+        readonly bindPoseGpuVsCpuTolerant: number;
         readonly controlRawVsCpu: number;
         readonly animatedVsBindCpu: number;
       };
+      readonly maskStats?: Record<string, { count: number; cx: number; cy: number; minX: number; minY: number; maxX: number; maxY: number }>;
       readonly stats?: { readonly joints: number; readonly vertices: number; readonly pixels: number };
       readonly masks?: Record<"deform" | "cpu" | "bindGpu" | "bindCpu" | "control", string>;
       readonly previousDelta?: { readonly maxDelta: number; readonly vertexCount: number; readonly exceeding?: number; readonly firstBad?: number };
       readonly selftestDelta?: { readonly maxDelta: number; readonly vertexCount: number };
+      readonly posedDelta?: { readonly maxDelta: number; readonly vertexCount: number; readonly exceeding?: number; readonly firstBad?: number };
+      readonly ndcDelta?: { readonly maxDelta: number; readonly worstVertex: number; readonly maxAbsW: number };
+      readonly row3?: { readonly maxAbs: number; readonly worstVertex: number; readonly worstRow: readonly number[] };
+      readonly paletteRow3?: { readonly maxAbs: number; readonly worstJoint: number; readonly worst: readonly number[]; readonly joint0: readonly number[]; readonly bindJoint0: readonly number[]; readonly tails: readonly (readonly number[])[] };
     };
   }
 }
@@ -60,16 +67,23 @@ test.describe("PRD-06 deform light view (T0.14)", () => {
     writeFileSync(join(ARTIFACT_DIR, "iou.json"), JSON.stringify({ iou, stats: result!.stats, previousDelta: result!.previousDelta, selftestDelta: result!.selftestDelta }, null, 2));
 
     const diag = () =>
-      `iou=${JSON.stringify(iou)} selftest=${JSON.stringify(result!.selftestDelta)} prev=${JSON.stringify(result!.previousDelta)} stats=${JSON.stringify(result!.stats)}`;
+      `iou=${JSON.stringify(iou)} posed=${JSON.stringify(result!.posedDelta)} ndc=${JSON.stringify(result!.ndcDelta)} row3=${JSON.stringify(result!.row3)} pal=${JSON.stringify(result!.paletteRow3)} selftest=${JSON.stringify(result!.selftestDelta)} prev=${JSON.stringify(result!.previousDelta)} stats=${JSON.stringify(result!.stats)} masks=${JSON.stringify(result!.maskStats)}`;
     // Numeric ground truth first: the deform path's per-vertex positions must
     // match the CPU deform within 1e-3 — if this holds while silhouette IoU
     // fails, the IoU delta is rasterization noise, not a deform bug.
     expect(result!.selftestDelta!.maxDelta, diag()).toBeLessThanOrEqual(1e-3);
-    // The deformed path must land on the CPU-skinned silhouette.
-    expect(iou.deformVsCpu, diag()).toBeGreaterThanOrEqual(0.98);
+    // The bind-palette selftest is vacuous for ordering (identity matrices
+    // read the same however texels land) — the POSED deform must also match
+    // the CPU skinned positions component-wise before silhouettes are judged.
+    expect(result!.posedDelta!.maxDelta, diag()).toBeLessThanOrEqual(1e-3);
+    // The deformed path must land on the CPU-skinned silhouette. The
+    // boundary-tolerant (2px) IoU is the gate: ANGLE-Metal rasterizes the same
+    // vertex positions ~10% raw-IoU differently than SwiftShader, while the
+    // deform numerics above prove position equality.
+    expect(iou.deformVsCpuTolerant, diag()).toBeGreaterThanOrEqual(0.98);
     // Scene-08 bind pose resolves §2: the depth path must also reproduce it
     // exactly (GPU bind palette vs CPU-skinned bind pose).
-    expect(iou.bindPoseGpuVsCpu).toBeGreaterThanOrEqual(0.98);
+    expect(iou.bindPoseGpuVsCpuTolerant, diag()).toBeGreaterThanOrEqual(0.98);
     // Control: today's raw a_position capture is the failing baseline.
     expect(iou.controlRawVsCpu).toBeLessThan(0.8);
     // The pose at t=0.5s must actually move the silhouette vs bind pose.
@@ -97,10 +111,11 @@ test.describe("PRD-06 deform light view (T0.14)", () => {
 
     const iou = result!.iou!;
     const diag191 = () =>
-      `iou=${JSON.stringify(iou)} selftest=${JSON.stringify(result!.selftestDelta)} prev=${JSON.stringify(result!.previousDelta)}`;
+      `iou=${JSON.stringify(iou)} posed=${JSON.stringify(result!.posedDelta)} ndc=${JSON.stringify(result!.ndcDelta)} row3=${JSON.stringify(result!.row3)} pal=${JSON.stringify(result!.paletteRow3)} selftest=${JSON.stringify(result!.selftestDelta)} prev=${JSON.stringify(result!.previousDelta)} masks=${JSON.stringify(result!.maskStats)}`;
     expect(result!.selftestDelta!.maxDelta, diag191()).toBeLessThanOrEqual(1e-3);
-    expect(iou.deformVsCpu, diag191()).toBeGreaterThanOrEqual(0.98);
-    expect(iou.bindPoseGpuVsCpu).toBeGreaterThanOrEqual(0.98);
+    expect(result!.posedDelta!.maxDelta, diag191()).toBeLessThanOrEqual(1e-3);
+    expect(iou.deformVsCpuTolerant, diag191()).toBeGreaterThanOrEqual(0.98);
+    expect(iou.bindPoseGpuVsCpuTolerant, diag191()).toBeGreaterThanOrEqual(0.98);
     expect(iou.controlRawVsCpu).toBeLessThan(0.8);
     expect(iou.animatedVsBindCpu).toBeLessThan(0.8);
     expect(result!.previousDelta!.maxDelta).toBeLessThanOrEqual(1e-3);

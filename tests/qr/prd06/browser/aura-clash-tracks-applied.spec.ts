@@ -57,7 +57,7 @@ async function proof(page: Page) {
 }
 
 /** Arms `arm`, then polls until `activeClip === clip`; returns the modal tracksApplied while that clip plays alone. */
-async function tracksWhileClip(page: Page, clip: string, arm: () => Promise<void>, timeoutMs = 10_000): Promise<number> {
+async function tracksWhileClip(page: Page, clip: string, arm: () => Promise<void>, timeoutMs = 30_000): Promise<number> {
   await arm();
   const counts = new Map<number, number>();
   const deadline = Date.now() + timeoutMs;
@@ -86,9 +86,12 @@ test.describe("PRD-06 Aura Clash tracksApplied A/B (S13)", () => {
 
   for (const qr of ["none", "animation"] as const) {
     test(`required clip keys report identical tracksApplied under ?a3d-qr=${qr}`, async ({ page }) => {
+      test.setTimeout(480_000);
       await page.goto(`${server.origin}/apps/aura-clash-showcase/?auraTestDriver=1&a3d-qr=${qr}`, { waitUntil: "domcontentloaded" });
-      await page.waitForFunction(() => window.__AURA_CLASH_ARENA_PROOF__?.status === "running", undefined, { timeout: 60_000 });
-      await page.waitForFunction(() => !!window.__AURA_CLASH_ARENA_TEST_DRIVER__, undefined, { timeout: 15_000 });
+      // Shared-Metal CI runners starve rAF badly — the showcase page needs
+      // minutes to reach "running", not the 60 s a healthy laptop needs.
+      await page.waitForFunction(() => window.__AURA_CLASH_ARENA_PROOF__?.status === "running", undefined, { timeout: 240_000 });
+      await page.waitForFunction(() => !!window.__AURA_CLASH_ARENA_TEST_DRIVER__, undefined, { timeout: 60_000 });
 
       const observed: Record<string, number> = {};
       observed.idle = await tracksWhileClip(page, PLAYER_CLIPS.idle, async () => {

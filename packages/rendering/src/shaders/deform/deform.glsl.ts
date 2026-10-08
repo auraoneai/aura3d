@@ -47,7 +47,13 @@ void a3dDeform(out vec4 localPos, out vec3 localNormal, out vec4 localTangent) {
 #endif
   if (a3d_wsum > 1e-4) {
     mat4 s = a3dSkin(u_boneTexture);
-    localPos = s * vec4(p, 1.0);
+    // Affine output (three.js transformed parity): the skinned point is the
+    // blend's xyz with w pinned to 1. Some palette producers pack per-joint
+    // data in the matrix bottom row; letting it into gl_Position would
+    // projectively warp the rasterized silhouette away from the positions
+    // a CPU skinning reference computes.
+    vec4 a3d_skinned = s * vec4(p, 1.0);
+    localPos = vec4(a3d_skinned.xyz, 1.0);
     localNormal = mat3(s) * n;
     localTangent = vec4(mat3(s) * tg.xyz, tg.w);
   } else {
@@ -73,7 +79,8 @@ void a3dDeformPrevious(out vec4 pos) {
   a3d_wsum += a_weights1.x + a_weights1.y + a_weights1.z + a_weights1.w;
 #endif
   if (a3d_wsum > 1e-4) {
-    pos = a3dSkin(u_prevBoneTexture) * vec4(p, 1.0);
+    vec4 a3d_prev = a3dSkin(u_prevBoneTexture) * vec4(p, 1.0);
+    pos = vec4(a3d_prev.xyz, 1.0);
   } else {
     pos = vec4(p, 1.0);
   }
