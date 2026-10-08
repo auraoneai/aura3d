@@ -75,3 +75,26 @@ spec passes, look-floor reaches a real floor report.
 - `look-floor.ts` edits are lane-13-owned template sources — review the
   420 s budget constant; it is deliberately above the local ~90-120 s
   settle cost and below the spec timeout.
+
+## Addendum — fighting-game tab crash under sustained software-GL rendering
+
+Same cycle surfaced a second, unrelated failure: `fighting-game`'s
+`gameplay-smoke.spec.ts` crashed the page twice on CI (`Target closed` during
+`waitForFunction`, and a stall inside the "Run replay" click). Root cause is
+not a mount problem and not a memory leak (renderer RSS flat at ~680 MB
+locally) — it is a swiftshader/ANGLE tab-crash window (~80 s of sustained
+full-quality skinned rendering) that lands inside the spec's 120 s budget on
+the 7 GB CI runner. Replay evidence is satisfied only after ~45 s of GPU-bound
+frames, so the crash wins the race.
+
+Fix shipped on this branch (lane-15 CI unblock, template code is lane-13's):
+`packages/create-aura3d/templates/fighting-game/src/main.ts` now passes
+`performanceQuality` (`resolutionScale: 0.5`, `particleScale: 0.5`,
+`lodBias: 2`, `shadowSize: 512`) when `navigator.webdriver` is true. All spec
+assertions are resolution/shadow independent; local browser stage is 3/3 in
+1.1 min. Lane 13 may want the same evidence-mode budget on other
+skinned/heavy templates if their specs start racing the same crash window.
+
+Open item for lane 13 (unchanged): no scaffold ships `public/hdri/*.hdr`, so
+`environment.hdriStatus` is `fallback` everywhere and look floors stay
+marginal (racing-starter 0.0186 vs 0.02).

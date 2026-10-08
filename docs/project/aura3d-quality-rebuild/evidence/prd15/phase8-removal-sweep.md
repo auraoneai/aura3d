@@ -590,3 +590,27 @@ Skills gate re-runs (~3h40m). Expected residual template reds: the
 pre-existing animation-studio flat-canvas defect (Q-13-12); possible
 marginal floor fractions on dark scenes (swiftshader). All other cycle
 reds remain the verified pre-existing set (see wave-10 section).
+
+## Wave 13 — fighting-game evidence-mode render budget
+
+After wave 12 cleared the mount deadlock everywhere, the skills gate ran the
+full 20-template loop in ~1h45m (job 113248846842): 18/20 templates fully
+green. The two remaining failures:
+
+- **animation-studio** — `uniqueBuckets 3` (known pre-existing flat-canvas
+  defect, already tracked as Q-13-12; lane-13 owns the fix).
+- **fighting-game** — the page crashed twice inside `gameplay-smoke.spec.ts`,
+  once at `page.waitForFunction` (`Target page, context or browser has been
+  closed`), once mid-"Run replay" click. Local reproduction showed the replay
+  evidence satisfied around frame ~45 (~45s on software GL) but the tab dying
+  ~80s into sustained full-quality skinned rendering, with renderer RSS flat —
+  no leak, just a swiftshader crash window that the 7 GB CI runner reaches
+  before `waitForFunction` re-polls.
+
+Fix (this commit): the template now passes
+`performanceQuality: { resolutionScale: 0.5, particleScale: 0.5, lodBias: 2,
+shadowSize: 512 }` when `navigator.webdriver` is true — the public
+`AuraPerformanceQuality` budget knob, applied before the first frame. All
+spec assertions are resolution/shadow-size independent, so nothing is
+weakened; interactive use keeps authored quality. Local scaffold run: browser
+stage 3/3 in 1.1 min. Cross-lane scope recorded in Q-13-16.
