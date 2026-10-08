@@ -1,0 +1,588 @@
+{
+  "codemod": "post-v2",
+  "files": 33,
+  "changed": 2,
+  "written": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/v2/boot.ts",
+      "line": 71,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "neon-night",
+      "note": "added output block"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/v2/boot.ts",
+      "line": 298,
+      "construct": "renderer.toneMapping",
+      "mapping": "exact",
+      "target": "output.toneMapping (ACES/AgX/Neutral/linear/reinhard/none)"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/v2/evidence/index.ts",
+      "line": 22,
+      "construct": "renderer.toneMapping",
+      "mapping": "exact",
+      "target": "output.toneMapping (ACES/AgX/Neutral/linear/reinhard/none)"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 1280,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.06 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 1425,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.71 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 1473,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.88 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 1495,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.84 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 1596,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.26 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 1603,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.06 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 2084,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.16 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 2181,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.54 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 2190,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.28 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 2280,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.66 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 2981,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "neon-night",
+      "note": "added output block"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 3207,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.56 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 3228,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.28 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 3307,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.00 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 3360,
+      "construct": "effects.ambientOcclusion",
+      "mapping": "approximate",
+      "target": "v2 S2-gtao",
+      "note": "radius/density re-derived from GTAO world-space params"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 3361,
+      "construct": "effects.contactOcclusion",
+      "mapping": "approximate",
+      "target": "v2 ambientOcclusion (one AO stage)"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 3361,
+      "construct": "effects.contactOcclusion",
+      "mapping": "approximate",
+      "note": "merged into ambientOcclusion; kept AO call (one S2-gtao stage)"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 3366,
+      "construct": "effects.neonBloom",
+      "mapping": "exact",
+      "target": "v2 S9-bloom preset"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 3366,
+      "construct": "effects.neonBloom",
+      "mapping": "exact",
+      "note": "removed softKnee/shoulder/quality"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 3367,
+      "construct": "effects.colorGrade",
+      "mapping": "approximate",
+      "target": "v2 S10b-grade",
+      "note": "exposure real since Phase 1; shadows/highlights/lut land Phase 5"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 3368,
+      "construct": "effects.antiAlias",
+      "mapping": "approximate",
+      "target": "v2 S11-aa tier",
+      "note": "mode maps to tier AA (never FXAA on MSAA); TAA behind A3D_QR_POST_TAA"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 3368,
+      "construct": "effects.antiAlias",
+      "mapping": "exact",
+      "note": "deleted — tier auto (never FXAA on MSAA)"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 3368,
+      "construct": "fxaa",
+      "mapping": "exact",
+      "target": "v2 S11-aa-fxaa (r185 port + dither)"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 3464,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.02 < 1.0 — invisible under bloom threshold 1.0"
+    }
+  ],
+  "reports": [
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/acceptance-driver.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/feel.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/ghost.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/main.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/opponent-ai.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/passing-lane.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/race-proof.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/track-props.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/v2/boot.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/v2/env-assets.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/v2/race-setup.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/v2/scene/camera.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/v2/scene/fx.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/v2/scene/lighting.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/v2/scene/materials.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/v2/scene/world.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/v2/scenarios/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/v2/evidence/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/acceptance-driver.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/audio-cues.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/hud.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+            "line": 1280,
+            "emissive": "#b66e42",
+            "emissiveIntensity": 0.12,
+            "lumaXstrength": 0.057
+          },
+          {
+            "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+            "line": 1425,
+            "emissive": "#ffb38c",
+            "emissiveIntensity": 0.72,
+            "lumaXstrength": 0.706
+          },
+          {
+            "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+            "line": 1473,
+            "emissive": "#ffb347",
+            "emissiveIntensity": 0.9,
+            "lumaXstrength": 0.883
+          },
+          {
+            "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+            "line": 1495,
+            "emissive": "#ff00ff",
+            "emissiveIntensity": 0.9,
+            "lumaXstrength": 0.835
+          },
+          {
+            "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+            "line": 1596,
+            "emissive": "#dc4e35",
+            "emissiveIntensity": 0.34,
+            "lumaXstrength": 0.264
+          },
+          {
+            "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+            "line": 1603,
+            "emissive": "#00ffff",
+            "emissiveIntensity": 0.9,
+            "lumaXstrength": 0.065
+          },
+          {
+            "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+            "line": 2084,
+            "emissive": "#e7a160",
+            "emissiveIntensity": 0.28,
+            "lumaXstrength": 0.162
+          },
+          {
+            "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+            "line": 2181,
+            "emissive": "#ffb066",
+            "emissiveIntensity": 0.55,
+            "lumaXstrength": 0.539
+          },
+          {
+            "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+            "line": 2190,
+            "emissive": "#57e6ff",
+            "emissiveIntensity": 0.6,
+            "lumaXstrength": 0.283
+          },
+          {
+            "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+            "line": 2280,
+            "emissive": "#57e6ff",
+            "emissiveIntensity": 1.4,
+            "lumaXstrength": 0.661
+          },
+          {
+            "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+            "line": 3197,
+            "emissive": "#ff3d2e",
+            "emissiveIntensity": 1.2,
+            "lumaXstrength": 1.131
+          },
+          {
+            "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+            "line": 3207,
+            "emissive": "#4ccfff",
+            "emissiveIntensity": 0.82,
+            "lumaXstrength": 0.563
+          },
+          {
+            "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+            "line": 3228,
+            "emissive": "#2f9dd8",
+            "emissiveIntensity": 0.35,
+            "lumaXstrength": 0.275
+          },
+          {
+            "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+            "line": 3307,
+            "emissive": "#102f38",
+            "emissiveIntensity": 0.12,
+            "lumaXstrength": 0.003
+          },
+          {
+            "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+            "line": 3464,
+            "emissive": "#46545c",
+            "emissiveIntensity": 0.06,
+            "lumaXstrength": 0.022
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/scenery.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/signage.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/track-props.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/turbo-audio.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/generated/game-geometry.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/gameplay/boost-rings.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/gameplay/feel.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/gameplay/ghost.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/gameplay/opponent-ai.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/gameplay/passing-lane.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/gameplay/race-proof.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    }
+  ]
+}

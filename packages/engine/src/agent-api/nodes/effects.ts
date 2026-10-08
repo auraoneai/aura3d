@@ -136,7 +136,12 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
       focus: options.focus ?? 0.02,
       aperture: options.aperture ?? 0.35,
       maxBlur: options.maxBlur ?? 4,
-      intensity: options.intensity ?? 1
+      intensity: options.intensity ?? 1,
+      // CCR-03-11 (PRD-03 §8.9): v2 metric fields pass through to the bridge.
+      ...(options.focusDistance !== undefined ? { focusDistance: options.focusDistance } : {}),
+      ...(options.fStop !== undefined ? { fStop: options.fStop } : {}),
+      ...(options.focalLength !== undefined ? { focalLength: options.focalLength } : {}),
+      postAuthored: options.postAuthored ?? Object.keys(options).filter((key) => key !== "postAuthored")
     }),
   /**
    * Root motion-blur node: renderer-owned GPU velocity for opaque rigid geometry.
@@ -147,7 +152,15 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
       kind: "effect",
       effect: "motion-blur",
       name: options.name ?? "motion blur",
-      intensity: options.intensity ?? 0.5
+      intensity: options.intensity ?? 0.5,
+      // CCR-03-11 (PRD-03 §8.8): carry the v2-executed fields into the node bag;
+      // the v2 bridge reads shutter/maxBlur/samples/tileSize/timeScale here.
+      ...(options.shutter !== undefined ? { shutter: options.shutter } : {}),
+      ...(options.maxBlur !== undefined ? { maxBlur: options.maxBlur } : {}),
+      ...(options.samples !== undefined ? { samples: options.samples } : {}),
+      ...(options.tileSize !== undefined ? { tileSize: options.tileSize } : {}),
+      ...(options.timeScale !== undefined ? { timeScale: options.timeScale } : {}),
+      postAuthored: options.postAuthored ?? Object.keys(options).filter((key) => key !== "postAuthored")
     }),
   rain: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
     new AuraNodeBuilder<AuraEffectNode>({

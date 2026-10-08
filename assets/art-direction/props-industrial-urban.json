@@ -1,0 +1,21 @@
+{
+  "id": "props-industrial-urban",
+  "shading": "pbr",
+  "genre": "urban",
+  "fantasy": "Working-city clutter \u2014 barrels, crates, signs \u2014 worn but legible.",
+  "palette": {
+    "primary": [
+      "#4c566a",
+      "#d08770",
+      "#a3be8c"
+    ],
+    "accent": "#ebcb8b"
+  },
+  "texelDensity": 256,
+  "referenceImages": [],
+  "mix": [
+    "environments-modular",
+    "vehicles-road"
+  ],
+  "notes": "\u2264 5k tris each per \u00a76.6; ORM-driven wear."
+}

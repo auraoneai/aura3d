@@ -1,0 +1,380 @@
+{
+  "codemod": "post-v2",
+  "files": 17,
+  "changed": 1,
+  "written": 0,
+  "rows": [
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 315,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.28 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 323,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.61 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 327,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.66 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 331,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.77 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 339,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.58 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 343,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.31 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 347,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.66 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 481,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.73 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 508,
+      "construct": "effects.ambientOcclusion",
+      "mapping": "approximate",
+      "target": "v2 S2-gtao",
+      "note": "radius/density re-derived from GTAO world-space params"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 509,
+      "construct": "effects.contactOcclusion",
+      "mapping": "approximate",
+      "target": "v2 ambientOcclusion (one AO stage)"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 509,
+      "construct": "effects.contactOcclusion",
+      "mapping": "approximate",
+      "note": "merged into ambientOcclusion; kept AO call (one S2-gtao stage)"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 511,
+      "construct": "effects.bloom",
+      "mapping": "exact",
+      "target": "v2 S9-bloom (native HDR bloom)",
+      "note": "field names survive; intensity/threshold rescale under v2 definitions"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 511,
+      "construct": "effects.bloom",
+      "mapping": "exact",
+      "note": "removed softKnee/shoulder/quality; threshold <1 → 1.0 (was 0.82)"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 512,
+      "construct": "effects.colorGrade",
+      "mapping": "approximate",
+      "target": "v2 S10b-grade",
+      "note": "exposure real since Phase 1; shadows/highlights/lut land Phase 5"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 513,
+      "construct": "effects.antiAlias",
+      "mapping": "approximate",
+      "target": "v2 S11-aa tier",
+      "note": "mode maps to tier AA (never FXAA on MSAA); TAA behind A3D_QR_POST_TAA"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 513,
+      "construct": "effects.antiAlias",
+      "mapping": "exact",
+      "note": "deleted — tier auto (never FXAA on MSAA)"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 513,
+      "construct": "fxaa",
+      "mapping": "exact",
+      "target": "v2 S11-aa-fxaa (r185 port + dither)"
+    }
+  ],
+  "reports": [
+    {
+      "file": "examples/neon-corridor-strike/src/aura-assets.ts",
+      "report": {
+        "emissive": [],
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/fps-globals.d.ts",
+      "report": {
+        "emissive": [],
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/main.ts",
+      "report": {
+        "emissive": [],
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/audio.ts",
+      "report": {
+        "emissive": [],
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/enemies.ts",
+      "report": {
+        "emissive": [],
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/fire-bus.ts",
+      "report": {
+        "emissive": [],
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/greebles.ts",
+      "report": {
+        "emissive": [],
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/hud.ts",
+      "report": {
+        "emissive": [],
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/input.ts",
+      "report": {
+        "emissive": [],
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "examples/neon-corridor-strike/src/game/level.ts",
+            "line": 315,
+            "emissive": "#3dffb0",
+            "emissiveIntensity": 0.38,
+            "lumaXstrength": 0.279
+          },
+          {
+            "file": "examples/neon-corridor-strike/src/game/level.ts",
+            "line": 323,
+            "emissive": "#168bc9",
+            "emissiveIntensity": 1.8,
+            "lumaXstrength": 0.61
+          },
+          {
+            "file": "examples/neon-corridor-strike/src/game/level.ts",
+            "line": 327,
+            "emissive": "#168fd0",
+            "emissiveIntensity": 1.95,
+            "lumaXstrength": 0.661
+          },
+          {
+            "file": "examples/neon-corridor-strike/src/game/level.ts",
+            "line": 331,
+            "emissive": "#0876be",
+            "emissiveIntensity": 1.85,
+            "lumaXstrength": 0.768
+          },
+          {
+            "file": "examples/neon-corridor-strike/src/game/level.ts",
+            "line": 339,
+            "emissive": "#f05a1c",
+            "emissiveIntensity": 2.45,
+            "lumaXstrength": 0.58
+          },
+          {
+            "file": "examples/neon-corridor-strike/src/game/level.ts",
+            "line": 343,
+            "emissive": "#3dffb0",
+            "emissiveIntensity": 0.42,
+            "lumaXstrength": 0.309
+          },
+          {
+            "file": "examples/neon-corridor-strike/src/game/level.ts",
+            "line": 347,
+            "emissive": "#38d6ff",
+            "emissiveIntensity": 1.35,
+            "lumaXstrength": 0.657
+          },
+          {
+            "file": "examples/neon-corridor-strike/src/game/level.ts",
+            "line": 351,
+            "emissive": "#ff4fd0",
+            "emissiveIntensity": 1.15,
+            "lumaXstrength": 1.089
+          },
+          {
+            "file": "examples/neon-corridor-strike/src/game/level.ts",
+            "line": 363,
+            "emissive": "#ffb020",
+            "emissiveIntensity": 1.5,
+            "lumaXstrength": 1.471
+          },
+          {
+            "file": "examples/neon-corridor-strike/src/game/level.ts",
+            "line": 367,
+            "emissive": "#ffb020",
+            "emissiveIntensity": 1.5,
+            "lumaXstrength": 1.471
+          },
+          {
+            "file": "examples/neon-corridor-strike/src/game/level.ts",
+            "line": 371,
+            "emissive": "#9be7ff",
+            "emissiveIntensity": 1.7,
+            "lumaXstrength": 1.223
+          },
+          {
+            "file": "examples/neon-corridor-strike/src/game/level.ts",
+            "line": 375,
+            "emissive": "#9be7ff",
+            "emissiveIntensity": 1.5,
+            "lumaXstrength": 1.079
+          },
+          {
+            "file": "examples/neon-corridor-strike/src/game/level.ts",
+            "line": 379,
+            "emissive": "#ffb020",
+            "emissiveIntensity": 1.4,
+            "lumaXstrength": 1.373
+          },
+          {
+            "file": "examples/neon-corridor-strike/src/game/level.ts",
+            "line": 468,
+            "emissive": "#7ef8ff",
+            "emissiveIntensity": 2.6,
+            "lumaXstrength": 2.181
+          },
+          {
+            "file": "examples/neon-corridor-strike/src/game/level.ts",
+            "line": 481,
+            "emissive": "#38d6ff",
+            "emissiveIntensity": 1.5,
+            "lumaXstrength": 0.73
+          },
+          {
+            "file": "examples/neon-corridor-strike/src/game/level.ts",
+            "line": 489,
+            "emissive": "#ff4fd0",
+            "emissiveIntensity": 1.4,
+            "lumaXstrength": 1.326
+          },
+          {
+            "file": "examples/neon-corridor-strike/src/game/level.ts",
+            "line": 497,
+            "emissive": "#3dffb0",
+            "emissiveIntensity": 1.6,
+            "lumaXstrength": 1.175
+          }
+        ],
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/pickups.ts",
+      "report": {
+        "emissive": [],
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/player.ts",
+      "report": {
+        "emissive": [],
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/props.ts",
+      "report": {
+        "emissive": [],
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/shot-fx.ts",
+      "report": {
+        "emissive": [],
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/state.ts",
+      "report": {
+        "emissive": [],
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/touch.ts",
+      "report": {
+        "emissive": [],
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/weapons.ts",
+      "report": {
+        "emissive": [],
+        "notMigrated": false
+      }
+    }
+  ]
+}

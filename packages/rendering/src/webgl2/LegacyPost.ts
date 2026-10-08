@@ -2771,6 +2771,18 @@ export function executePostGraphWebGL2(
     readonly v2?: typeof import("../post/v2Entry");
     /** C-38 frame camera for the v2 HDR stages (S1/S2/S4) — Phase 3. */
     readonly cameraFrame?: FrameCamera;
+    /** CCR-03-12 (Phase 6): `source`/`items`/`sceneDepth` for C-13 custom-pass callbacks. */
+    readonly frameContext?: {
+      readonly source: unknown;
+      readonly items: readonly import("../ForwardPass").RenderItem[];
+      readonly sceneDepth: {
+        readonly texture: import("../Texture").Texture | null;
+        readonly available: boolean;
+        readonly linearize: { readonly near: number; readonly far: number; readonly orthographic: boolean };
+      };
+    };
+    /** Phase 4: flag-on TemporalHistory bindings (C-14 matrices + surfaces). */
+    readonly temporal?: import("../TemporalHistory").TemporalGpuBindings;
     readonly outputTarget?: RenderTarget;
     readonly depthRange?: { readonly near: number; readonly far: number };
   }
@@ -2784,7 +2796,7 @@ export function executePostGraphWebGL2(
   // present; S10b/S11/S12 run as the LDR tail after it.
   let workSource = source;
   if (v2) {
-    workSource = v2.runV2HdrStages(host, source, pipeline, request.cameraFrame).target;
+    workSource = v2.runV2HdrStages(host, source, pipeline, request.cameraFrame, request.temporal, request.frameContext).target;
   }
   const needsTail = Boolean(v2 && v2.v2NeedsLdrTail(pipeline));
   const ldrTailTarget = needsTail && v2
@@ -2819,7 +2831,7 @@ export function executePostGraphWebGL2(
   });
   if (workSource !== source && v2) v2.releaseV2Target(host, workSource);
   if (ldrTailTarget && v2) {
-    v2.runV2LdrTail(host, ldrTailTarget, pipeline, request.outputTarget);
+    v2.runV2LdrTail(host, ldrTailTarget, pipeline, request.outputTarget, request.frameContext);
     v2.releaseV2Target(host, ldrTailTarget);
   }
 }

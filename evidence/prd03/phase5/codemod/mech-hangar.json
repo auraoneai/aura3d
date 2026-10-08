@@ -1,0 +1,765 @@
+{
+  "codemod": "post-v2",
+  "files": 28,
+  "changed": 2,
+  "written": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/boot.ts",
+      "line": 50,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "arena-fight",
+      "note": "added output block"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/materials.ts",
+      "line": 11,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.14 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/materials.ts",
+      "line": 12,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.91 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/materials.ts",
+      "line": 14,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.21 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/materials.ts",
+      "line": 19,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.36 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/materials.ts",
+      "line": 22,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.25 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/materials.ts",
+      "line": 23,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.88 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/materials.ts",
+      "line": 25,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.78 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 236,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.00 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 275,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.24 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 294,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.54 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 326,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.27 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 408,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.14 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 422,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.62 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 428,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.73 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 479,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.17 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 483,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.36 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 506,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.34 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 538,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.46 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 543,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.29 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 550,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.62 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 560,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.28 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 571,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.49 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 600,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.21 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 646,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.60 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 664,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.70 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 672,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.16 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 675,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "arena-fight",
+      "note": "added output block"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 686,
+      "construct": "effects.bloom",
+      "mapping": "exact",
+      "target": "v2 S9-bloom (native HDR bloom)",
+      "note": "field names survive; intensity/threshold rescale under v2 definitions"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 686,
+      "construct": "effects.bloom",
+      "mapping": "exact",
+      "note": "removed softKnee/shoulder/quality; threshold <1 → 1.0 (was 0.72)"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 687,
+      "construct": "effects.colorGrade",
+      "mapping": "approximate",
+      "target": "v2 S10b-grade",
+      "note": "exposure real since Phase 1; shadows/highlights/lut land Phase 5"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 688,
+      "construct": "effects.antiAlias",
+      "mapping": "approximate",
+      "target": "v2 S11-aa tier",
+      "note": "mode maps to tier AA (never FXAA on MSAA); TAA behind A3D_QR_POST_TAA"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 688,
+      "construct": "effects.antiAlias",
+      "mapping": "exact",
+      "note": "deleted — tier auto (never FXAA on MSAA)"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 688,
+      "construct": "effects.contactOcclusion",
+      "mapping": "exact",
+      "target": "effects.ambientOcclusion",
+      "note": "radius kept via spread over the 0.2 m default"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 688,
+      "construct": "fxaa",
+      "mapping": "exact",
+      "target": "v2 S11-aa-fxaa (r185 port + dither)"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "line": 689,
+      "construct": "effects.contactOcclusion",
+      "mapping": "approximate",
+      "target": "v2 ambientOcclusion (one AO stage)"
+    }
+  ],
+  "reports": [
+    {
+      "file": "apps/showcase-mech-hangar/src/assembly.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/hud.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/main.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/parts-catalog.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/parts-generated.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/stats.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/boot.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/env-assets.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/camera.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/fx.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/lighting.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/materials.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-mech-hangar/src/v2/scene/materials.ts",
+            "line": 11,
+            "emissive": "#61dfff",
+            "emissiveIntensity": 0.7,
+            "lumaXstrength": 0.137
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/v2/scene/materials.ts",
+            "line": 12,
+            "emissive": "#9fdcff",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.905
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/v2/scene/materials.ts",
+            "line": 14,
+            "emissive": "#62f8e7",
+            "emissiveIntensity": 0.85,
+            "lumaXstrength": 0.215
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/v2/scene/materials.ts",
+            "line": 19,
+            "emissive": "#47cfff",
+            "emissiveIntensity": 0.8,
+            "lumaXstrength": 0.359
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/v2/scene/materials.ts",
+            "line": 22,
+            "emissive": "#62f8e7",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.253
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/v2/scene/materials.ts",
+            "line": 23,
+            "emissive": "#ffb454",
+            "emissiveIntensity": 0.9,
+            "lumaXstrength": 0.883
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/v2/scene/materials.ts",
+            "line": 25,
+            "emissive": "#ffb454",
+            "emissiveIntensity": 0.8,
+            "lumaXstrength": 0.785
+          }
+        ],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/world.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scenarios/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/evidence/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/hangar-audio.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/hangar.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 236,
+            "emissive": "#000000",
+            "emissiveIntensity": 0,
+            "lumaXstrength": 0
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 240,
+            "emissive": "#ffb454",
+            "emissiveIntensity": 2.2,
+            "lumaXstrength": 2.158
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 260,
+            "emissive": "#ff9d42",
+            "emissiveIntensity": 2.35,
+            "lumaXstrength": 2.282
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 261,
+            "emissive": "#c8f4ff",
+            "emissiveIntensity": 2.1,
+            "lumaXstrength": 1.31
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 275,
+            "emissive": "#22c9ff",
+            "emissiveIntensity": 1.3,
+            "lumaXstrength": 0.236
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 276,
+            "emissive": "#ff3f79",
+            "emissiveIntensity": 1.2,
+            "lumaXstrength": 1.131
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 294,
+            "emissive": "#25d6ff",
+            "emissiveIntensity": 1.65,
+            "lumaXstrength": 0.543
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 295,
+            "emissive": "#ff9b3e",
+            "emissiveIntensity": 1.55,
+            "lumaXstrength": 1.505
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 296,
+            "emissive": "#ff3e9c",
+            "emissiveIntensity": 1.7,
+            "lumaXstrength": 1.602
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 297,
+            "emissive": "#ff653f",
+            "emissiveIntensity": 1.6,
+            "lumaXstrength": 1.531
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 326,
+            "emissive": "#22c9ff",
+            "emissiveIntensity": 1.5,
+            "lumaXstrength": 0.272
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 333,
+            "emissive": "#ff3f79",
+            "emissiveIntensity": 1.35,
+            "lumaXstrength": 1.272
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 408,
+            "emissive": "#61dfff",
+            "emissiveIntensity": 0.7,
+            "lumaXstrength": 0.137
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 422,
+            "emissive": "#6fdcff",
+            "emissiveIntensity": 0.72,
+            "lumaXstrength": 0.621
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 428,
+            "emissive": "#5fdcff",
+            "emissiveIntensity": 0.86,
+            "lumaXstrength": 0.73
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 479,
+            "emissive": "#176b8f",
+            "emissiveIntensity": 0.46,
+            "lumaXstrength": 0.173
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 483,
+            "emissive": "#47cfff",
+            "emissiveIntensity": 0.8,
+            "lumaXstrength": 0.359
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 506,
+            "emissive": "#38d6ff",
+            "emissiveIntensity": 0.7,
+            "lumaXstrength": 0.341
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 530,
+            "emissive": "#5ee7ff",
+            "emissiveIntensity": 1.25,
+            "lumaXstrength": 1.007
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 538,
+            "emissive": "#f472b6",
+            "emissiveIntensity": 1.05,
+            "lumaXstrength": 0.459
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 543,
+            "emissive": "#4cc9e8",
+            "emissiveIntensity": 0.42,
+            "lumaXstrength": 0.288
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 550,
+            "emissive": "#59d7ff",
+            "emissiveIntensity": 1.1,
+            "lumaXstrength": 0.619
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 560,
+            "emissive": "#65e6ff",
+            "emissiveIntensity": 0.72,
+            "lumaXstrength": 0.281
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 571,
+            "emissive": "#ff9055",
+            "emissiveIntensity": 0.5,
+            "lumaXstrength": 0.486
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 600,
+            "emissive": "#54e7ff",
+            "emissiveIntensity": 0.64,
+            "lumaXstrength": 0.211
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 646,
+            "emissive": "#8aeaff",
+            "emissiveIntensity": 0.92,
+            "lumaXstrength": 0.605
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 664,
+            "emissive": "#ff8aa8",
+            "emissiveIntensity": 0.72,
+            "lumaXstrength": 0.696
+          },
+          {
+            "file": "apps/showcase-mech-hangar/src/legacy/main.ts",
+            "line": 672,
+            "emissive": "#61dcff",
+            "emissiveIntensity": 0.82,
+            "lumaXstrength": 0.16
+          }
+        ],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/legacy/arena/feel.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/gameplay/assembly.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/gameplay/hud.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/gameplay/parts-catalog.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/gameplay/parts-generated.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/gameplay/stats.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/gameplay/arena/mech-fight.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/gameplay/arena/rival.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/arena/mech-fight.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/arena/rival.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    }
+  ]
+}

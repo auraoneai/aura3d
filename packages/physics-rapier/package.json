@@ -6,7 +6,10 @@
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "@dimforge/rapier3d-compat": "0.20.0"
+    "@dimforge/rapier3d-compat": "0.20.0",
+    "@gltf-transform/core": "4.5.1",
+    "@gltf-transform/extensions": "4.5.1",
+    "meshoptimizer": "1.2.0"
   },
   "exports": {
     ".": {

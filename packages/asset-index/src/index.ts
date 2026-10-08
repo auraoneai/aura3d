@@ -68,6 +68,9 @@ export { FederatedResolver } from "./federate.js";
 export { createKhronosAdapter } from "./adapters/khronos.js";
 export { createOS3AAdapter } from "./adapters/os3a.js";
 export { createPolyHavenAdapter } from "./adapters/poly-haven.js";
+export { createAmbientCgAdapter } from "./adapters/ambientcg.js";
+export { createAuraLibraryAdapter } from "./adapters/aura-library.js";
+export type { AuraLibraryAdapterOptions, AuraLibraryEntryShape, AuraLibraryManifestShape } from "./adapters/aura-library.js";
 export { createPolyPizzaAdapter } from "./adapters/poly-pizza.js";
 export type { PolyPizzaAdapterOptions } from "./adapters/poly-pizza.js";
 export { createSketchfabAdapter } from "./adapters/sketchfab.js";
@@ -96,6 +99,7 @@ import type { SourceAdapter } from "./SourceAdapter.js";
 import { createKhronosAdapter } from "./adapters/khronos.js";
 import { createOS3AAdapter } from "./adapters/os3a.js";
 import { createPolyHavenAdapter } from "./adapters/poly-haven.js";
+import { createAmbientCgAdapter } from "./adapters/ambientcg.js";
 import { createJsDelivrMirrorAdapter } from "./adapters/jsdelivr-mirror.js";
 import { createAnimationStarterPackAdapter } from "./animation-starter-pack.js";
 
@@ -117,6 +121,7 @@ export function defaultAdapters(): SourceAdapter[] {
     createKhronosAdapter(),
     createOS3AAdapter(),
     createPolyHavenAdapter(),
+    createAmbientCgAdapter(),
     createJsDelivrMirrorAdapter(),
   ];
 }

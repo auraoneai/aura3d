@@ -1,0 +1,1015 @@
+{
+  "codemod": "post-v2",
+  "files": 29,
+  "changed": 2,
+  "written": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-blockfall-reactor/src/v2/boot.ts",
+      "line": 113,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "neon-night",
+      "note": "added output block"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/v2/scene/materials.ts",
+      "line": 15,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.16 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/v2/scene/materials.ts",
+      "line": 23,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.47 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/v2/scene/materials.ts",
+      "line": 31,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 1.00 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/legacy/clear-fx.ts",
+      "line": 50,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.69 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/legacy/main.ts",
+      "line": 120,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.16 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/legacy/main.ts",
+      "line": 121,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.47 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/legacy/main.ts",
+      "line": 503,
+      "construct": "effects.neonBloom",
+      "mapping": "exact",
+      "target": "v2 S9-bloom preset"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/legacy/main.ts",
+      "line": 503,
+      "construct": "effects.neonBloom",
+      "mapping": "exact",
+      "note": "removed softKnee/shoulder/quality; threshold <1 → 1.0 (was 0.55)"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/legacy/main.ts",
+      "line": 636,
+      "construct": "effects.contactOcclusion",
+      "mapping": "approximate",
+      "note": "merged into ambientOcclusion; kept AO call (one S2-gtao stage)"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/legacy/main.ts",
+      "line": 639,
+      "construct": "effects.ambientOcclusion",
+      "mapping": "approximate",
+      "target": "v2 S2-gtao",
+      "note": "radius/density re-derived from GTAO world-space params"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/legacy/main.ts",
+      "line": 639,
+      "construct": "effects.antiAlias",
+      "mapping": "exact",
+      "note": "deleted — tier auto (never FXAA on MSAA)"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/legacy/main.ts",
+      "line": 640,
+      "construct": "effects.contactOcclusion",
+      "mapping": "approximate",
+      "target": "v2 ambientOcclusion (one AO stage)"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/legacy/main.ts",
+      "line": 642,
+      "construct": "effects.colorGrade",
+      "mapping": "approximate",
+      "target": "v2 S10b-grade",
+      "note": "exposure real since Phase 1; shadows/highlights/lut land Phase 5"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/legacy/main.ts",
+      "line": 643,
+      "construct": "effects.antiAlias",
+      "mapping": "approximate",
+      "target": "v2 S11-aa tier",
+      "note": "mode maps to tier AA (never FXAA on MSAA); TAA behind A3D_QR_POST_TAA"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/legacy/main.ts",
+      "line": 643,
+      "construct": "fxaa",
+      "mapping": "exact",
+      "target": "v2 S11-aa-fxaa (r185 port + dither)"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/legacy/main.ts",
+      "line": 649,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "neon-night",
+      "note": "added output block"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/board-view.ts",
+      "line": 300,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.95 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/board-view.ts",
+      "line": 301,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.49 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/board-view.ts",
+      "line": 302,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.97 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 31,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.08 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 32,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.03 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 33,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.08 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 34,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.17 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 35,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.09 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 36,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.08 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 37,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.08 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 60,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.04 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 65,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.12 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 66,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.14 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 67,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.45 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 68,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.30 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 71,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.30 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 76,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.76 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 82,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.90 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 84,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.49 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 85,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.56 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 89,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.89 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 93,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 1.00 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 101,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.44 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 107,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.65 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 108,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.33 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 109,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.17 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 118,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.27 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 119,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.79 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 121,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.77 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 126,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.41 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 456,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.72 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 464,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.63 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 478,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.33 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 479,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.18 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 553,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.08 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "line": 554,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.12 < 1.0 — invisible under bloom threshold 1.0"
+    }
+  ],
+  "reports": [
+    {
+      "file": "apps/showcase-blockfall-reactor/src/attract.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/blockfall-audio-manifest.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/board-view.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/camera-feel.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/clear-fx.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/expert-run-data.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/main.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/reactor-audio.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/reactor-scene.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/rules.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/v2/boot.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/v2/env-assets.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/v2/scene/camera.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/v2/scene/fx.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/v2/scene/lighting.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/v2/scene/materials.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-blockfall-reactor/src/v2/scene/materials.ts",
+            "line": 15,
+            "emissive": "#082c3a",
+            "emissiveIntensity": 0.42,
+            "lumaXstrength": 0.164
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/v2/scene/materials.ts",
+            "line": 23,
+            "emissive": "#48d9e5",
+            "emissiveIntensity": 0.94,
+            "lumaXstrength": 0.471
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/v2/scene/materials.ts",
+            "line": 31,
+            "emissive": "#ff5ed8",
+            "emissiveIntensity": 1.05,
+            "lumaXstrength": 0.999
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/v2/scene/world.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/v2/scenarios/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/v2/evidence/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/legacy/attract.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/legacy/camera-feel.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/legacy/clear-fx.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-blockfall-reactor/src/legacy/clear-fx.ts",
+            "line": 50,
+            "emissive": "#ff7a38",
+            "emissiveIntensity": 0.72,
+            "lumaXstrength": 0.692
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/legacy/expert-run-data.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/legacy/main.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-blockfall-reactor/src/legacy/main.ts",
+            "line": 114,
+            "emissive": "#ffb35a",
+            "emissiveIntensity": 1.05,
+            "lumaXstrength": 1.03
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/legacy/main.ts",
+            "line": 115,
+            "emissive": "#fff08a",
+            "emissiveIntensity": 1.45,
+            "lumaXstrength": 1.45
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/legacy/main.ts",
+            "line": 120,
+            "emissive": "#082c3a",
+            "emissiveIntensity": 0.42,
+            "lumaXstrength": 0.164
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/legacy/main.ts",
+            "line": 121,
+            "emissive": "#48d9e5",
+            "emissiveIntensity": 0.94,
+            "lumaXstrength": 0.471
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/blockfall-audio-manifest.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/board-view.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/board-view.ts",
+            "line": 300,
+            "emissive": "#ffe866",
+            "emissiveIntensity": 0.95,
+            "lumaXstrength": 0.945
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/board-view.ts",
+            "line": 301,
+            "emissive": "#39f6ff",
+            "emissiveIntensity": 0.9,
+            "lumaXstrength": 0.489
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/board-view.ts",
+            "line": 302,
+            "emissive": "#8dffae",
+            "emissiveIntensity": 1.2,
+            "lumaXstrength": 0.967
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-audio.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 31,
+            "emissive": "#087e99",
+            "emissiveIntensity": 0.2,
+            "lumaXstrength": 0.083
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 32,
+            "emissive": "#233a9d",
+            "emissiveIntensity": 0.18,
+            "lumaXstrength": 0.033
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 33,
+            "emissive": "#a64b12",
+            "emissiveIntensity": 0.18,
+            "lumaXstrength": 0.08
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 34,
+            "emissive": "#9e7410",
+            "emissiveIntensity": 0.2,
+            "lumaXstrength": 0.166
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 35,
+            "emissive": "#19743b",
+            "emissiveIntensity": 0.18,
+            "lumaXstrength": 0.086
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 36,
+            "emissive": "#76228b",
+            "emissiveIntensity": 0.2,
+            "lumaXstrength": 0.079
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 37,
+            "emissive": "#972039",
+            "emissiveIntensity": 0.18,
+            "lumaXstrength": 0.085
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 60,
+            "emissive": "#041722",
+            "emissiveIntensity": 0.22,
+            "lumaXstrength": 0.043
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 65,
+            "emissive": "#072a3d",
+            "emissiveIntensity": 0.34,
+            "lumaXstrength": 0.117
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 66,
+            "emissive": "#1d9cad",
+            "emissiveIntensity": 0.2,
+            "lumaXstrength": 0.135
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 67,
+            "emissive": "#69eff4",
+            "emissiveIntensity": 0.78,
+            "lumaXstrength": 0.454
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 68,
+            "emissive": "#62f8e7",
+            "emissiveIntensity": 1.18,
+            "lumaXstrength": 0.298
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 69,
+            "emissive": "#ff9d45",
+            "emissiveIntensity": 1.32,
+            "lumaXstrength": 1.282
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 71,
+            "emissive": "#5bd6d8",
+            "emissiveIntensity": 0.46,
+            "lumaXstrength": 0.303
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 76,
+            "emissive": "#ff9b35",
+            "emissiveIntensity": 0.78,
+            "lumaXstrength": 0.757
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 81,
+            "emissive": "#9dffb4",
+            "emissiveIntensity": 1.5,
+            "lumaXstrength": 1.229
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 82,
+            "emissive": "#ff4d5f",
+            "emissiveIntensity": 0.95,
+            "lumaXstrength": 0.9
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 83,
+            "emissive": "#9ff9ff",
+            "emissiveIntensity": 1.4,
+            "lumaXstrength": 1.281
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 84,
+            "emissive": "#65ff88",
+            "emissiveIntensity": 1.25,
+            "lumaXstrength": 0.495
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 85,
+            "emissive": "#77ff96",
+            "emissiveIntensity": 1.1,
+            "lumaXstrength": 0.556
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 88,
+            "emissive": "#ffe866",
+            "emissiveIntensity": 1.15,
+            "lumaXstrength": 1.144
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 89,
+            "emissive": "#ffd05d",
+            "emissiveIntensity": 0.9,
+            "lumaXstrength": 0.891
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 93,
+            "emissive": "#ff5ed8",
+            "emissiveIntensity": 1.05,
+            "lumaXstrength": 0.999
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 101,
+            "emissive": "#55e5ff",
+            "emissiveIntensity": 1.18,
+            "lumaXstrength": 0.444
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 102,
+            "emissive": "#ff72c9",
+            "emissiveIntensity": 1.12,
+            "lumaXstrength": 1.077
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 107,
+            "emissive": "#8ff7ff",
+            "emissiveIntensity": 0.72,
+            "lumaXstrength": 0.649
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 108,
+            "emissive": "#39f6ff",
+            "emissiveIntensity": 0.6,
+            "lumaXstrength": 0.326
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 109,
+            "emissive": "#74ff91",
+            "emissiveIntensity": 0.48,
+            "lumaXstrength": 0.174
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 110,
+            "emissive": "#ffe866",
+            "emissiveIntensity": 1.1,
+            "lumaXstrength": 1.095
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 118,
+            "emissive": "#73f7ff",
+            "emissiveIntensity": 0.86,
+            "lumaXstrength": 0.27
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 119,
+            "emissive": "#ff89ad",
+            "emissiveIntensity": 0.82,
+            "lumaXstrength": 0.792
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 121,
+            "emissive": "#7ef7ff",
+            "emissiveIntensity": 0.92,
+            "lumaXstrength": 0.772
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 126,
+            "emissive": "#48d9e5",
+            "emissiveIntensity": 0.82,
+            "lumaXstrength": 0.411
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 456,
+            "emissive": "#ffe866",
+            "emissiveIntensity": 0.72,
+            "lumaXstrength": 0.717
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 464,
+            "emissive": "#39f6ff",
+            "emissiveIntensity": 1.15,
+            "lumaXstrength": 0.625
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 478,
+            "emissive": "#39f6ff",
+            "emissiveIntensity": 0.6,
+            "lumaXstrength": 0.326
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 479,
+            "emissive": "#e279ff",
+            "emissiveIntensity": 0.56,
+            "lumaXstrength": 0.183
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 553,
+            "emissive": "#d3a23c",
+            "emissiveIntensity": 0.22,
+            "lumaXstrength": 0.083
+          },
+          {
+            "file": "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts",
+            "line": 554,
+            "emissive": "#69dd83",
+            "emissiveIntensity": 0.2,
+            "lumaXstrength": 0.115
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/gameplay/rules.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    }
+  ]
+}

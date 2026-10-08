@@ -1,0 +1,830 @@
+{
+  "codemod": "post-v2",
+  "files": 47,
+  "changed": 2,
+  "written": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-skyline-runner/src/v2/boot.ts",
+      "line": 75,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "neon-night",
+      "note": "added output block"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/v2/scene/materials.ts",
+      "line": 23,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.33 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 281,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.34 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 343,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.01 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 948,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.74 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 949,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.62 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 953,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.63 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 955,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.64 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 956,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.99 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 957,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.99 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 958,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.57 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 959,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.90 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 1255,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.56 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 1288,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.57 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 1570,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.03 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 1597,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.58 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 1825,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.52 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 1857,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "neon-night",
+      "note": "added output block"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 1879,
+      "construct": "createApp.pixelRatio",
+      "mapping": "approximate",
+      "target": "output.renderScale / C-27 minRenderScale",
+      "note": "skyline-runner DPR cap — lane 14 decides (Q-14-1)"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 1999,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.58 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 2012,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.42 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 2025,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.10 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 2046,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 1.00 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 2093,
+      "construct": "effects.neonBloom",
+      "mapping": "exact",
+      "target": "v2 S9-bloom preset"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 2093,
+      "construct": "effects.neonBloom",
+      "mapping": "exact",
+      "note": "removed softKnee/shoulder/quality"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 2094,
+      "construct": "effects.colorGrade",
+      "mapping": "approximate",
+      "target": "v2 S10b-grade",
+      "note": "exposure real since Phase 1; shadows/highlights/lut land Phase 5"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 2095,
+      "construct": "effects.antiAlias",
+      "mapping": "approximate",
+      "target": "v2 S11-aa tier",
+      "note": "mode maps to tier AA (never FXAA on MSAA); TAA behind A3D_QR_POST_TAA"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 2095,
+      "construct": "effects.antiAlias",
+      "mapping": "exact",
+      "note": "deleted — tier auto (never FXAA on MSAA)"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 2095,
+      "construct": "fxaa",
+      "mapping": "exact",
+      "target": "v2 S11-aa-fxaa (r185 port + dither)"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 2096,
+      "construct": "effects.ambientOcclusion",
+      "mapping": "approximate",
+      "target": "v2 S2-gtao",
+      "note": "radius/density re-derived from GTAO world-space params"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 2096,
+      "construct": "effects.contactOcclusion",
+      "mapping": "approximate",
+      "note": "merged into ambientOcclusion; kept AO call (one S2-gtao stage)"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 2097,
+      "construct": "effects.contactOcclusion",
+      "mapping": "approximate",
+      "target": "v2 ambientOcclusion (one AO stage)"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 2928,
+      "construct": "fxaa",
+      "mapping": "exact",
+      "target": "v2 S11-aa-fxaa (r185 port + dither)"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/gameplay/backdrop.ts",
+      "line": 104,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.10 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/gameplay/backdrop.ts",
+      "line": 111,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.08 < 1.0 — invisible under bloom threshold 1.0"
+    }
+  ],
+  "reports": [
+    {
+      "file": "apps/showcase-skyline-runner/src/act-palette.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/audio-cues.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/backdrop.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/camera-readability.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/character-world.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/districts.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/feel.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/foliage.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/ghost.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/hud.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/level-layout.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/level-proof.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/level.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/main.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/runner-challenge.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/skyline-audio-manifest.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/skyline-audio.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/visual-language.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/v2/boot.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/v2/env-assets.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/v2/scene/binding.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/v2/scene/camera.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/v2/scene/fx.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/v2/scene/lighting.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/v2/scene/materials.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-skyline-runner/src/v2/scene/materials.ts",
+            "line": 23,
+            "emissive": "#bfe4f4",
+            "emissiveIntensity": 0.35,
+            "lumaXstrength": 0.328
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/v2/scene/world.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/v2/scenarios/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/v2/evidence/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/audio-cues.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/camera-readability.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/character-world.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/feel.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/foliage.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+            "line": 281,
+            "emissive": "#9fcf72",
+            "emissiveIntensity": 0.38,
+            "lumaXstrength": 0.342
+          },
+          {
+            "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+            "line": 343,
+            "emissive": "#071321",
+            "emissiveIntensity": 0.035,
+            "lumaXstrength": 0.012
+          },
+          {
+            "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+            "line": 948,
+            "emissive": "#7cecff",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.739
+          },
+          {
+            "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+            "line": 949,
+            "emissive": "#c8ffe9",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.624
+          },
+          {
+            "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+            "line": 953,
+            "emissive": "#d8d0ff",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.628
+          },
+          {
+            "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+            "line": 954,
+            "emissive": "#fff1a8",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 1
+          },
+          {
+            "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+            "line": 955,
+            "emissive": "#d8fbff",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.638
+          },
+          {
+            "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+            "line": 956,
+            "emissive": "#ffd0d7",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.99
+          },
+          {
+            "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+            "line": 957,
+            "emissive": "#ffd08a",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.99
+          },
+          {
+            "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+            "line": 958,
+            "emissive": "#d8fbff",
+            "emissiveIntensity": 0.9,
+            "lumaXstrength": 0.574
+          },
+          {
+            "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+            "line": 959,
+            "emissive": "#fff1a8",
+            "emissiveIntensity": 0.9,
+            "lumaXstrength": 0.9
+          },
+          {
+            "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+            "line": 1255,
+            "emissive": "#dbe7ff",
+            "emissiveIntensity": 0.72,
+            "lumaXstrength": 0.559
+          },
+          {
+            "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+            "line": 1288,
+            "emissive": "#ffb870",
+            "emissiveIntensity": 0.58,
+            "lumaXstrength": 0.569
+          },
+          {
+            "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+            "line": 1570,
+            "emissive": "#12a5c7",
+            "emissiveIntensity": 0.18,
+            "lumaXstrength": 0.028
+          },
+          {
+            "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+            "line": 1597,
+            "emissive": "#5ee0ff",
+            "emissiveIntensity": 0.72,
+            "lumaXstrength": 0.58
+          },
+          {
+            "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+            "line": 1825,
+            "emissive": "#5ee7f7",
+            "emissiveIntensity": 0.65,
+            "lumaXstrength": 0.524
+          },
+          {
+            "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+            "line": 1999,
+            "emissive": "#a6ffe0",
+            "emissiveIntensity": 1.15,
+            "lumaXstrength": 0.575
+          },
+          {
+            "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+            "line": 2012,
+            "emissive": "#5ee0bd",
+            "emissiveIntensity": 0.52,
+            "lumaXstrength": 0.419
+          },
+          {
+            "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+            "line": 2025,
+            "emissive": "#70e8d0",
+            "emissiveIntensity": 0.58,
+            "lumaXstrength": 0.097
+          },
+          {
+            "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+            "line": 2046,
+            "emissive": "#ffe9a8",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.995
+          },
+          {
+            "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+            "line": 2086,
+            "emissive": "#ffd08a",
+            "emissiveIntensity": 1.4,
+            "lumaXstrength": 1.387
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/skyline-audio-manifest.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/skyline-audio.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/visual-language.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/generated/game-geometry.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/gameplay/act-palette.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/gameplay/backdrop.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-skyline-runner/src/gameplay/backdrop.ts",
+            "line": 104,
+            "emissive": "#23405e",
+            "emissiveIntensity": 0.5,
+            "lumaXstrength": 0.095
+          },
+          {
+            "file": "apps/showcase-skyline-runner/src/gameplay/backdrop.ts",
+            "line": 111,
+            "emissive": "#152738",
+            "emissiveIntensity": 0.32,
+            "lumaXstrength": 0.084
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/gameplay/districts.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/gameplay/ghost.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/gameplay/hud.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/gameplay/level-layout.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/gameplay/level-proof.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/gameplay/level.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/gameplay/runner-challenge.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    }
+  ]
+}

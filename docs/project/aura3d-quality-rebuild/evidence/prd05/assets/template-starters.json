@@ -1,0 +1,148 @@
+{
+  "schema": "aura3d.template-starters/1.0",
+  "generatedAt": "2026-10-07T11:05:00.000Z",
+  "phase": "PRD-05 Phase 6",
+  "notes": [
+    "Lane-13 deliverable (Q-13-2): each entry maps a starter template's aura.assets.json ids to admitted aura.library.json entries.",
+    "Models are library `candidate` quality today — they ship to templates only after optimize+look-dev admission or as prototype starters; texture-set/hdri entries carry no model gates.",
+    "Approximation notes flag the gaps the §6.6 kits cannot cover yet (no star/coin/key collectibles)."
+  ],
+  "templates": [
+    {
+      "template": "product-viewer",
+      "replaces": [
+        {
+          "id": "product",
+          "type": "model",
+          "libraryId": "quaternius-sports-car",
+          "libraryKit": "vehicles/road",
+          "notes": "Turntable hero product — a stylized vehicle reads well under studio lighting; swap for a real product model once the library admits one."
+        },
+        {
+          "id": "studioEnvironment",
+          "type": "environment",
+          "libraryId": "studio-soft-2k",
+          "libraryKit": "hdri",
+          "notes": "Studio softbox HDRI measured with sunDirection/luminanceP99/whiteBalanceK (§6.7); 4k variant exists (studio-soft-4k)."
+        }
+      ]
+    },
+    {
+      "template": "racing-starter",
+      "replaces": [
+        {
+          "id": "carModel",
+          "type": "model",
+          "libraryId": "quaternius-sports-car",
+          "libraryKit": "vehicles/road",
+          "notes": "≤5k-tri road vehicle, fits hero-vehicle band after optimize."
+        },
+        {
+          "id": "trackModel",
+          "type": "model",
+          "libraryId": "kenney-modular-road-kit",
+          "libraryKit": "environments/modular",
+          "notes": "Modular road kit stands in for a full track shell until a circuit module is admitted."
+        },
+        {
+          "id": "asphaltTexture",
+          "type": "texture",
+          "libraryId": "acg-asphalt033",
+          "libraryKit": "textures/tiling",
+          "optional": true,
+          "notes": "Optional tiling PBR set for the road surface (1024+2048 variants)."
+        }
+      ]
+    },
+    {
+      "template": "mini-game",
+      "replaces": [
+        {
+          "id": "showcaseKenneyOobiPlatformerHero",
+          "type": "model",
+          "libraryId": "kaykit-barbarian",
+          "libraryKit": "characters/humanoid-pbr",
+          "notes": "76 clips cover idle/walk/run/jump/fall/land + combat; larger silhouette than Kenney hero — may need 0.8 scale."
+        },
+        {
+          "id": "kenneyPlatformerKitBlockGrassLarge",
+          "type": "model",
+          "libraryId": "quaternius-crate",
+          "libraryKit": "props/industrial-urban",
+          "notes": "Crate reads as a platform block; no grass-textured block in the kit yet."
+        },
+        {
+          "id": "kenneyPlatformerKitBrick",
+          "type": "model",
+          "libraryId": "quaternius-cube-crate",
+          "libraryKit": "props/industrial-urban",
+          "notes": "Smaller cube variant for second block type."
+        },
+        {
+          "id": "kenneyPlatformerKitStar",
+          "type": "model",
+          "libraryId": "spiky-ball",
+          "libraryKit": "props/sports-tabletop",
+          "notes": "GAP: no star/coin collectible exists in the kit; spiky-ball is the closest pickup-shaped prop. File a kit-add request rather than shipping this."
+        },
+        {
+          "id": "kenneyPlatformerKitKey",
+          "type": "model",
+          "libraryId": "baseball-bat",
+          "libraryKit": "props/sports-tabletop",
+          "notes": "GAP: no key model; listed so the gap is explicit, not as a recommended replacement."
+        }
+      ]
+    },
+    {
+      "template": "fighting-game",
+      "replaces": [
+        {
+          "id": "showcaseWalkAnimatedGirl",
+          "type": "model",
+          "libraryId": "auraclash-player-rig",
+          "libraryKit": "characters/humanoid-pbr",
+          "notes": "Hero rigged fighter: 35.5k tris, 65 joints, 12 clips + 2 skinned LOD levels + capsule collider (derived GLB already in kit dir). Clip gaps (kick/fall/land) recorded in character-kit.json."
+        },
+        {
+          "id": "showcaseRunnerRobot",
+          "type": "model",
+          "libraryId": "auraclash-rival-rig",
+          "libraryKit": "characters/humanoid-pbr",
+          "notes": "Matching fighter pair for the vs read; same rig conventions."
+        }
+      ]
+    },
+    {
+      "template": "character-controller",
+      "replaces": [
+        {
+          "id": "showcaseWalkAnimatedGirl",
+          "type": "model",
+          "libraryId": "auraclash-player-rig",
+          "libraryKit": "characters/humanoid-pbr",
+          "notes": "Hero humanoid w/ LODs + collision sidecar — the controller template's reference body. kaykit-barbarian is the lighter alternative (6.5k tris, 76 clips)."
+        }
+      ]
+    },
+    {
+      "template": "falling-blocks-starter",
+      "replaces": [
+        {
+          "id": "blockCell",
+          "type": "model",
+          "libraryId": "quaternius-cube-crate",
+          "libraryKit": "props/industrial-urban",
+          "notes": "Uniform cube reads cleanly as a falling-block cell at any tint."
+        },
+        {
+          "id": "cabinetModel",
+          "type": "model",
+          "libraryId": "quaternius-wall-modular",
+          "libraryKit": "environments/modular",
+          "notes": "Approximation: modular wall piece stands in for the arcade cabinet silhouette until a cabinet prop is admitted."
+        }
+      ]
+    }
+  ]
+}

@@ -16,6 +16,7 @@ import { identityMat4 } from "@aura3d/scene/math";
 import { applyProductionActorAnimation, applySpecRootMotionTransform } from "./animation.js";
 import { createProductionRuntimeEnvironmentFog } from "./fog.js";
 import { createProductionRuntimePostprocess } from "./postprocess.js";
+import { authoredPostContextFor } from "../postBridge.js";
 import { createProductionInstanceColors, createProductionInstanceTransforms, createProductionModelInstanceTransforms, resolveProductionPrimitiveRuntimeState, selectProductionPrimitiveResource } from "./primitives.js";
 import { createProductionRuntimeShadowOptions } from "./shadows.js";
 import { camera } from "../nodes/camera.js";
@@ -44,6 +45,10 @@ export function setPrd01ModelMatrixCache(cache: AuraStaticModelMatrixCache | nul
 const prd01InstanceTransformCache = new WeakMap<readonly AuraTransformSpec[], { fp: number; primitive: unknown; result: Float32Array }>();
 const prd01InstanceColorCache = new WeakMap<readonly AuraColor[], { fp: number; count: number; result: Float32Array | undefined }>();
 const prd01ModelInstanceCache = new WeakMap<readonly AuraTransformSpec[], { fp: number; node: object; bounds: Float64Array; result: Float32Array }>();
+
+/** PRD-03 Phase 4: measured per-canvas frame delta (seconds) for the §8.8
+ * shutter scale — `time` is the seconds timestamp the caller passes. */
+const productionFrameTimes = new WeakMap<HTMLCanvasElement, number>();
 
 function instanceTransformFp(transforms: readonly AuraTransformSpec[]): number {
   let h = transforms.length;
@@ -265,11 +270,29 @@ export function createProductionRuntimeRendererInput(
   const temporalRequested = groups.flatten(snapshot.nodes).some(node => node.kind === "effect" && (node.effect === "motion-blur" || (node.effect === "anti-alias" && node.mode === "taa")));
   for (const warning of runtimeWarnings) if (warning.startsWith("TEMPORAL_UNSUPPORTED_GEOMETRY:")) runtimeWarnings.delete(warning);
   if (temporalRequested && unsupportedTemporal) runtimeWarnings.add(`TEMPORAL_UNSUPPORTED_GEOMETRY: ${unsupportedTemporal.label}; requires opaque rigid noninstanced triangles`);
+  // PRD-03 Phase 4: under flag-on a compatibility-injected postprocess chain is
+  // a legacy catalog — warn and drop it; the v2 builder is the single chain.
+  const injectedPostprocess = compatibility?.source.postprocess;
+  const postFlagOn = authoredPostContextFor(canvas)?.flags.post === true;
+  if (injectedPostprocess && postFlagOn) {
+    runtimeWarnings.add("POST_LEGACY_POSTPROCESS: compatibility source.postprocess dropped on the v2 post chain (POST_POSTPROCESSES_MIGRATED)");
+  }
+  const buildPostprocess = () => {
+    const prevTime = productionFrameTimes.get(canvas);
+    const frameTime = prevTime === undefined ? 1 / 60 : Math.min(1, Math.max(0, time - prevTime));
+    productionFrameTimes.set(canvas, time);
+    return createProductionRuntimePostprocess(snapshot, collectedLights, canvas.width, canvas.height, !unsupportedTemporal, { canvas, frameTime });
+  };
+  const builtPostprocess = (postFlagOn ? undefined : injectedPostprocess) ?? buildPostprocess();
   const source: RenderSource = {
     ...(compatibility?.source ?? {}),
     collectRenderItems: () => items,
     cameraPolicy: compatibility?.source.cameraPolicy ?? "require",
-    staticBatching: !temporalRequested,
+    // Flag-on the resolved AA (tier/auto → TAA) decides batching too — a scene
+    // whose postprocess carries a temporal bag can't static-batch (velocity).
+    staticBatching: postFlagOn
+      ? (typeof builtPostprocess === "object" && builtPostprocess !== null ? !builtPostprocess.temporal : true)
+      : !temporalRequested,
     frustumCulling: true,
     collectedLights: [...collectedLights, ...(compatibility?.source.collectedLights ?? [])],
     environmentLighting: compatibility?.source.environmentLighting ?? environmentLighting,
@@ -278,7 +301,7 @@ export function createProductionRuntimeRendererInput(
     // compositor failure is reported as fallback rather than claimed as a pass.
     // CCR-03-1: `attach.canvas` keys the submitted record/context stores so a
     // second app's compile never overwrites the first's post diagnostics.
-    postprocess: compatibility?.source.postprocess ?? createProductionRuntimePostprocess(snapshot, collectedLights, canvas.width, canvas.height, !unsupportedTemporal, { canvas }),
+    postprocess: builtPostprocess,
     shadow: { ...createProductionRuntimeShadowOptions(snapshot, collectedLights), ...(getRootPerformanceQuality(canvas) ? { size: getRootPerformanceQuality(canvas)!.shadowSize } : {}) },
     environmentFog: compatibility?.source.environmentFog ?? createProductionRuntimeEnvironmentFog(snapshot, collectedLights, canvas.width, canvas.height),
     ...(compatibility?.source.cameraPolicy === "auto-frame" ? {} : { cameraPosition })

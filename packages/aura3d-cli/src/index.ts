@@ -1,7 +1,7 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
-import { dirname, extname, join, relative, resolve } from "node:path";
+import { dirname, extname, join, relative, resolve, sep } from "node:path";
 import { inflateSync } from "node:zlib";
 import { writeAgentSkills, type AuraSkillMode } from "create-aura3d";
 import { admitAssetForRole } from "./asset-role-admission.js";
@@ -1010,13 +1010,49 @@ export function checkDeploy(options: CheckDeployOptions = {}): AssetValidationRe
   const distDir = normalizeRelativePath(options.distDir ?? "dist");
   const failures: string[] = [];
   const warnings: string[] = [];
+  const referencedServed = new Set<string>();
   for (const asset of manifest.assets) {
+    referencedServed.add(normalizeServedUrl(asset.url));
     const distPath = resolve(projectDir, distDir, asset.url.replace(/^\//, ""));
     const publicPath = resolve(projectDir, asset.outputPath);
     if (!existsSync(distPath) && !existsSync(publicPath)) {
       failures.push(`Deploy check missing hashed asset for "${asset.id}": expected ${asset.url} in ${distDir} or ${asset.outputPath}`);
     }
     if (!/[a-f0-9]{8}\.[^.]+$/i.test(asset.url)) warnings.push(`${asset.id}: URL is not fingerprinted: ${asset.url}`);
+    // §6.8: copy referenced derived files (url/mobile/collision) into the dist
+    // tree so a deploy ships exactly what the manifest points at.
+    const derived = asset.derived;
+    if (derived) {
+      for (const served of [derived.url, derived.mobileUrl, derived.collisionUrl]) {
+        if (!served) continue;
+        referencedServed.add(normalizeServedUrl(served));
+        const target = resolve(projectDir, distDir, served.replace(/^\//, ""));
+        const derivedOutput = served === derived.url && derived.outputPath
+          ? derived.outputPath
+          : join(dirname(derived.outputPath ?? join("public", manifest.assetBasePath)), served.split("/").pop() ?? served);
+        const source = resolve(projectDir, derivedOutput);
+        if (!existsSync(source)) {
+          failures.push(`Deploy check missing derived asset for "${asset.id}": expected ${derivedOutput} (url ${served})`);
+          continue;
+        }
+        if (!existsSync(target) || !sameBytes(source, target)) {
+          mkdirSync(dirname(target), { recursive: true });
+          copyFileSync(source, target);
+        }
+      }
+    }
+  }
+  // §6.8: schema 1.1 manifests make the deploy subset exact — a file in
+  // <dist>/<assetBasePath> that no manifest entry references fails the check.
+  if (manifest.schema === "aura3d.assets/1.1") {
+    const base = manifest.assetBasePath.replace(/\/$/, "");
+    const servedRoot = resolve(projectDir, distDir, base.replace(/^\//, ""));
+    for (const file of walkFilesUnder(servedRoot)) {
+      const asServed = normalizeServedUrl(`${base}${file.slice(servedRoot.length).split(sep).join("/")}`);
+      if (!referencedServed.has(asServed)) {
+        failures.push(`Deploy check found unreferenced file in ${distDir}: ${file.slice(projectDir.length + 1)}`);
+      }
+    }
   }
   const validation = validateAssets({
     projectDir,
@@ -3697,6 +3733,30 @@ function sortManifest(manifest: AuraCliAssetManifest): AuraCliAssetManifest {
 function normalizePublicPath(path: string): string {
   const withStart = path.startsWith("/") || path.startsWith("http") ? path : `/${path}`;
   return withStart.endsWith("/") ? withStart : `${withStart}/`;
+}
+
+function normalizeServedUrl(url: string): string {
+  const withSlash = url.startsWith("/") ? url : `/${url}`;
+  return withSlash.replace(/\/+/g, "/");
+}
+
+function sameBytes(a: string, b: string): boolean {
+  const as = statSync(a);
+  const bs = statSync(b);
+  return as.size === bs.size && readFileSync(a).equals(readFileSync(b));
+}
+
+function* walkFilesUnder(dir: string): Generator<string> {
+  if (!existsSync(dir)) return;
+  const stack = [dir];
+  while (stack.length > 0) {
+    const current = stack.pop()!;
+    for (const entry of readdirSync(current, { withFileTypes: true })) {
+      const path = join(current, entry.name);
+      if (entry.isDirectory()) stack.push(path);
+      else if (entry.isFile()) yield path;
+    }
+  }
 }
 
 function normalizeRelativePath(path: string): string {

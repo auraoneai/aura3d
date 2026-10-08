@@ -84,7 +84,7 @@ describe("Aura3D Meshy ingestion", () => {
     });
   });
 
-  test("rejects direct release certification", () => {
+  test("rejects direct release certification without the §6.5 derived chain", () => {
     const project = createProject();
     createRun(project, "release");
     expect(() => importMeshyAsset({
@@ -93,8 +93,30 @@ describe("Aura3D Meshy ingestion", () => {
       name: "releaseAttempt",
       rightsEvidence: "artifacts/meshy/release/rights.json",
       quality: "release"
-    })).toThrow(/cannot certify release quality/);
+    })).toThrow(/Meshy release import refused.*--source-entry/s);
     expect(existsSync(join(project, "aura.assets.json"))).toBe(false);
+  });
+
+  test("lists each missing §6.5 link when release evidence is partial", () => {
+    const project = createProject();
+    createRun(project, "release");
+    // A candidate entry exists but has no derived record yet.
+    addAsset({
+      projectDir: project,
+      file: "artifacts/meshy/release/model.glb",
+      name: "meshyCandidate",
+      type: "model",
+      quality: "candidate",
+      copy: false
+    });
+    expect(() => importMeshyAsset({
+      projectDir: project,
+      input: "artifacts/meshy/release",
+      name: "releaseAttempt2",
+      rightsEvidence: "artifacts/meshy/release/rights.json",
+      quality: "release",
+      sourceEntry: "meshyCandidate"
+    })).toThrow(/no derived record/);
   });
 
   test("retains a local thumbnail as candidate evidence without signed URLs", () => {

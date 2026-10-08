@@ -28,7 +28,7 @@ import type { ShaderLibrary } from "./ShaderLibraryCore";
 import { ShadowMap, type ShadowFilterKernel, type ShadowMapOptions } from "./ShadowMap";
 import { ShadowPass } from "./ShadowPass";
 import { Sampler } from "./Sampler";
-import { type TextureFormat } from "./Texture";
+import { type Texture, type TextureFormat } from "./Texture";
 import { TextureBinding } from "./TextureBinding";
 import { computeOrthographicCameraFrame, computePerspectiveCameraFrame, type OrthographicCameraFrameOptions, type PerspectiveCameraFrameOptions } from "./CameraFraming";
 import { ResolutionGovernor } from "./ResolutionGovernor";
@@ -306,6 +306,22 @@ export interface RendererPostProcessOptions extends RendererPostprocessPlanOptio
    * submit time; ignored flag-off.
    */
   readonly cameraFrame?: FrameCamera | null;
+  /**
+   * CCR-03-12 (PRD-03 Phase 6, additive): the pieces of the
+   * `FrameContributorContext` a C-13 custom post pass's `enabled()`/
+   * `uniforms()` callback may read — `source`, `items`, `sceneDepth`. Bound
+   * by the Renderer at submit time alongside `cameraFrame`; ignored
+   * flag-off.
+   */
+  readonly postFrameContext?: {
+    readonly source: unknown;
+    readonly items: readonly RenderItem[];
+    readonly sceneDepth: {
+      readonly texture: Texture | null;
+      readonly available: boolean;
+      readonly linearize: { readonly near: number; readonly far: number; readonly orthographic: boolean };
+    };
+  } | null;
 }
 
 export type RenderResourceLookup<T> = ReadonlyMap<string, T> | Readonly<Record<string, T>>;
@@ -585,9 +601,12 @@ export class Renderer {
     return loop;
   }
   private readonly temporalHistory: TemporalHistory;
+  /** PRD-03 Phase 4: camera position at the last temporal frame — the >5 m
+   * auto-cut detector. */
+  private lastTemporalCameraPosition?: [number, number, number];
   private readonly unsubscribeTemporalDeviceLoss?: () => void;
 
-  resetTemporalHistory(_reason = "explicit-reset"): void { this.temporalHistory.reset(); }
+  resetTemporalHistory(_reason = "explicit-reset"): void { this.temporalHistory.reset(); this.lastTemporalCameraPosition = undefined; }
   render(input: RendererInput): RenderDeviceDiagnostics;
   render(source: RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RenderDeviceDiagnostics;
   render(sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RenderDeviceDiagnostics {
@@ -635,7 +654,7 @@ export class Renderer {
       }
     }
     let postprocess = collectPostprocess(source);
-    if (!postprocess?.temporal || (!postprocess.motionBlur && !postprocess.taa)) this.temporalHistory.reset();
+    if (!postprocess?.temporal || (!postprocess.motionBlur && !postprocess.taa)) { this.temporalHistory.reset(); this.lastTemporalCameraPosition = undefined; }
     const ownedTargets: RenderTarget[] = [];
     const ownedShadowPasses: Array<{ dispose(): void }> = [];
     this.graph.clear();
@@ -745,9 +764,24 @@ export class Renderer {
         }));
         frameHooks.addPasses(this.graph, "background", items);
       }
+      // PRD-03 Phase 4 (flag-on): >5 m of camera translation within one frame
+      // is a cut — reprojection would smear everything, so seed fresh history.
+      let temporalPrevVp: Float32Array | undefined;
+      let temporalAutoReset = false;
+      if (postprocess?.temporal && (postprocess.motionBlur || postprocess.taa) && cameraPosition && rendererQrFlags().on("A3D_QR_POST")) {
+        const prev = this.lastTemporalCameraPosition;
+        if (prev) {
+          const dx = (cameraPosition as readonly number[])[0]! - prev[0];
+          const dy = (cameraPosition as readonly number[])[1]! - prev[1];
+          const dz = (cameraPosition as readonly number[])[2]! - prev[2];
+          temporalAutoReset = dx * dx + dy * dy + dz * dz > 25;
+        }
+        this.lastTemporalCameraPosition = [(cameraPosition as readonly number[])[0]!, (cameraPosition as readonly number[])[1]!, (cameraPosition as readonly number[])[2]!];
+      }
       if (postprocess?.temporal && (postprocess.motionBlur || postprocess.taa)) {
         if (postprocess.execution === "cpu-deterministic" || !this.device.presentLdrPostprocess) throw new RenderDeviceError("Renderer temporal effects require native GPU presentation", "TEMPORAL_NATIVE_REQUIRED");
-        const temporal = this.temporalHistory.prepare(this.device, this.width, this.height, items, cameraViewProjection, { ...postprocess.temporal, jitter: Boolean(postprocess.taa) });
+        const temporal = this.temporalHistory.prepare(this.device, this.width, this.height, items, cameraViewProjection, { ...postprocess.temporal, jitter: Boolean(postprocess.taa), ...(temporalAutoReset ? { reset: true } : {}) });
+        temporalPrevVp = temporal.v2?.previous;
         items = this.temporalHistory.renderItems;
         postprocess = { ...postprocess, ...(postprocess.motionBlur ? {motionBlur: { ...postprocess.motionBlur, temporal }} : {}), ...(postprocess.taa ? {taa: { ...postprocess.taa, temporal }} : {}) };
         this.device.setRenderTarget(ownedTargets[0]!);
@@ -820,7 +854,24 @@ export class Renderer {
       this.graph.execute({ device: this.device, width: this.width, height: this.height });
       if (postprocess) {
         postprocess = bindRendererSsrProjection(postprocess, cameraViewProjection ?? identityMat4());
-        postprocess = { ...postprocess, cameraFrame: toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition) };
+        const frameCamera = toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition);
+        postprocess = {
+          ...postprocess,
+          cameraFrame: frameCamera && temporalPrevVp ? { ...frameCamera, previousViewProjectionMatrix: temporalPrevVp } : frameCamera,
+          postFrameContext: {
+            source,
+            items,
+            sceneDepth: {
+              texture: ownedTargets[0]?.depthTexture ?? null,
+              available: (ownedTargets[0]?.depthTexture ?? null) !== null,
+              linearize: {
+                near: frameCamera?.near ?? 0.1,
+                far: frameCamera?.far ?? 1000,
+                orthographic: frameCamera?.projection === "orthographic"
+              }
+            }
+          }
+        };
         frameHooks.runPhase("post-hdr", items, postprocess !== undefined);
         this.executePostprocess(postprocess, ownedTargets, explicitRenderTarget);
         if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.temporalHistory.commit();
@@ -906,7 +957,7 @@ export class Renderer {
       }
     }
     let postprocess = collectPostprocess(source);
-    if (!postprocess?.temporal || (!postprocess.motionBlur && !postprocess.taa)) this.temporalHistory.reset();
+    if (!postprocess?.temporal || (!postprocess.motionBlur && !postprocess.taa)) { this.temporalHistory.reset(); this.lastTemporalCameraPosition = undefined; }
     const ownedTargets: RenderTarget[] = [];
     const ownedShadowPasses: Array<{ dispose(): void }> = [];
     this.graph.clear();
@@ -1016,9 +1067,24 @@ export class Renderer {
         }));
         frameHooks.addPasses(this.graph, "background", items);
       }
+      // PRD-03 Phase 4 (flag-on): >5 m of camera translation within one frame
+      // is a cut — reprojection would smear everything, so seed fresh history.
+      let temporalPrevVp: Float32Array | undefined;
+      let temporalAutoReset = false;
+      if (postprocess?.temporal && (postprocess.motionBlur || postprocess.taa) && cameraPosition && rendererQrFlags().on("A3D_QR_POST")) {
+        const prev = this.lastTemporalCameraPosition;
+        if (prev) {
+          const dx = (cameraPosition as readonly number[])[0]! - prev[0];
+          const dy = (cameraPosition as readonly number[])[1]! - prev[1];
+          const dz = (cameraPosition as readonly number[])[2]! - prev[2];
+          temporalAutoReset = dx * dx + dy * dy + dz * dz > 25;
+        }
+        this.lastTemporalCameraPosition = [(cameraPosition as readonly number[])[0]!, (cameraPosition as readonly number[])[1]!, (cameraPosition as readonly number[])[2]!];
+      }
       if (postprocess?.temporal && (postprocess.motionBlur || postprocess.taa)) {
         if (postprocess.execution === "cpu-deterministic" || !this.device.presentLdrPostprocess) throw new RenderDeviceError("Renderer temporal effects require native GPU presentation", "TEMPORAL_NATIVE_REQUIRED");
-        const temporal = this.temporalHistory.prepare(this.device, this.width, this.height, items, cameraViewProjection, { ...postprocess.temporal, jitter: Boolean(postprocess.taa) });
+        const temporal = this.temporalHistory.prepare(this.device, this.width, this.height, items, cameraViewProjection, { ...postprocess.temporal, jitter: Boolean(postprocess.taa), ...(temporalAutoReset ? { reset: true } : {}) });
+        temporalPrevVp = temporal.v2?.previous;
         items = this.temporalHistory.renderItems;
         postprocess = { ...postprocess, ...(postprocess.motionBlur ? {motionBlur: { ...postprocess.motionBlur, temporal }} : {}), ...(postprocess.taa ? {taa: { ...postprocess.taa, temporal }} : {}) };
         this.device.setRenderTarget(ownedTargets[0]!);
@@ -1091,7 +1157,24 @@ export class Renderer {
       this.graph.execute({ device: this.device, width: this.width, height: this.height });
       if (postprocess) {
         postprocess = bindRendererSsrProjection(postprocess, cameraViewProjection ?? identityMat4());
-        postprocess = { ...postprocess, cameraFrame: toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition) };
+        const frameCamera = toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition);
+        postprocess = {
+          ...postprocess,
+          cameraFrame: frameCamera && temporalPrevVp ? { ...frameCamera, previousViewProjectionMatrix: temporalPrevVp } : frameCamera,
+          postFrameContext: {
+            source,
+            items,
+            sceneDepth: {
+              texture: ownedTargets[0]?.depthTexture ?? null,
+              available: (ownedTargets[0]?.depthTexture ?? null) !== null,
+              linearize: {
+                near: frameCamera?.near ?? 0.1,
+                far: frameCamera?.far ?? 1000,
+                orthographic: frameCamera?.projection === "orthographic"
+              }
+            }
+          }
+        };
         await frameHooks.runPhaseAsync("post-hdr", items, postprocess !== undefined);
         await this.executePostprocessAsync(postprocess, ownedTargets, explicitRenderTarget);
         if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.temporalHistory.commit();

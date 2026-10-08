@@ -1,7 +1,8 @@
 import * as assetIndex from "@aura3d/asset-index";
 import type { SourceAdapter } from "@aura3d/asset-index";
+import { readAuraLibrary } from "../library-manifest.js";
 
-const { defaultAdapters } = assetIndex;
+const { defaultAdapters, createAuraLibraryAdapter } = assetIndex;
 
 type AdapterFactory = () => SourceAdapter;
 
@@ -17,18 +18,31 @@ function hasEnv(name: string, env: NodeJS.ProcessEnv): boolean {
 
 export function buildSearchAdapters(
   env: NodeJS.ProcessEnv = process.env,
+  projectDir: string = process.cwd(),
 ): SourceAdapter[] {
   const starterPack = optionalFactory("createAnimationStarterPackAdapter");
   const starterAdapters = starterPack ? [starterPack()] : [];
 
-  const auraIndex = optionalFactory("createAuraIndexAdapter");
-  if (auraIndex) return [...starterAdapters, auraIndex()];
+  // §6.6: the curated library is always the first source — its entries resolve
+  // first in ranking via library/lookDevApproved/artDirection terms and pull
+  // via local copy in runResolve.
+  const library = readAuraLibrary(projectDir);
+  const libraryAdapters = library && typeof createAuraLibraryAdapter === "function"
+    ? [createAuraLibraryAdapter({ manifest: library })]
+    : [];
 
-  const adapters: SourceAdapter[] = [...starterAdapters, ...defaultAdapters()];
+  const auraIndex = optionalFactory("createAuraIndexAdapter");
+  if (auraIndex) return [...libraryAdapters, ...starterAdapters, auraIndex()];
+
+  const adapters: SourceAdapter[] = [...libraryAdapters, ...starterAdapters, ...defaultAdapters()];
 
   const polyHaven = optionalFactory("createPolyHavenAdapter");
   if (polyHaven && !adapters.some((a) => a.id === "polyhaven")) {
     adapters.push(polyHaven());
+  }
+  if (!adapters.some((a) => a.id === "ambientcg")) {
+    const ambientcg = optionalFactory("createAmbientCgAdapter");
+    if (ambientcg) adapters.push(ambientcg());
   }
 
   if (hasEnv("SKETCHFAB_API_TOKEN", env) || hasEnv("SKETCHFAB_TOKEN", env)) {

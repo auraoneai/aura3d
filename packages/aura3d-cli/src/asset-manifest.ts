@@ -118,7 +118,7 @@ export function writeTypedAssets(projectDir: string, manifest = readAssetManifes
   return path;
 }
 
-function resolveTypedAssetApi(projectDir: string): "@aura3d/lean" | "@aura3d/engine" {
+export function resolveTypedAssetApi(projectDir: string): "@aura3d/lean" | "@aura3d/engine" {
   const packagePath = resolve(projectDir, "package.json");
   if (!existsSync(packagePath)) return "@aura3d/engine";
   try {

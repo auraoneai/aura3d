@@ -6,7 +6,16 @@ function extractFunctionBody(source: string, name: string): string {
   const match = new RegExp(`(?:async\\s+)?function\\s+${name}\\s*\\(`).exec(source);
   expect(match, `expected function ${name} to exist`).toBeTruthy();
 
-  const braceStart = source.indexOf("{", match!.index);
+  // The body `{` is the first brace AFTER the parameter list's matching `)` —
+  // params may carry inline object types (`attach?: { canvas?: ... }`).
+  let parenDepth = 0;
+  let paramEnd = match!.index + match![0].length - 1;
+  for (; paramEnd < source.length; paramEnd += 1) {
+    const char = source[paramEnd];
+    if (char === "(") parenDepth += 1;
+    if (char === ")") { parenDepth -= 1; if (parenDepth === 0) { paramEnd += 1; break; } }
+  }
+  const braceStart = source.indexOf("{", paramEnd);
   expect(braceStart, `expected function ${name} to have a body`).toBeGreaterThanOrEqual(0);
 
   let depth = 0;
@@ -76,7 +85,10 @@ describe("createAuraApp production bridge boundary", () => {
 
     expect(postprocess).toContain("authoredBloom");
     expect(postprocess).toContain("bloomRequested");
-    expect(postprocess).toContain('operator: "aces"');
+    // PRD-03 §6.4 (flag-on): the operator resolves from authored
+    // `output.toneMapping` with an "aces" fallback; flag-off stays "aces".
+    expect(postprocess).toContain("operator: postFlagOn");
+    expect(postprocess).toContain("authoredPostContext.output.toneMapping");
     // muse3jsparity-PRD A3: color-grade / outline / fxaa / ssr / depth-of-field
     // submit real native options. R02 now binds temporal history for supported
     // geometry; motion blur/TAA remain gated rather than submitted unconditionally.
@@ -91,7 +103,7 @@ describe("createAuraApp production bridge boundary", () => {
     expect(postprocess).toContain("depthOfField: {");
     expect(postprocess).toContain("const temporalRequested = temporalSupported &&");
     expect(postprocess).toContain("...(temporalRequested ? {");
-    expect(postprocess).toContain("temporal: { sceneKey }");
+    expect(postprocess).toContain("temporal: { sceneKey,");
     expect(postprocess).toContain("motionBlur: {");
     expect(postprocess).toContain("taa: {");
     expect(shadows).toContain("resolveRendererSceneCategory(snapshot, names)");

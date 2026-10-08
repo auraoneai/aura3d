@@ -14,6 +14,7 @@ import { Scene } from "@aura3d/scene";
 import type { PostPipelineOptions } from "../contracts/post";
 import { webgl2DeviceHost } from "../webgl2/Counters";
 import { executePostGraphWebGL2 } from "../webgl2/LegacyPost";
+import type { TemporalGpuBindings } from "../TemporalHistory";
 
 /* v2 module warm cache — the sync `render()` route cannot `import()`; the
  * first flag-on frame fires it, later frames run the real S1–S12 stages. */
@@ -94,8 +95,10 @@ export function postprocessRequiresDepthTexture(postprocess: RendererPostProcess
 
 function v2PipelineNeedsDepth(pipeline: unknown): boolean {
   if (pipeline === null || typeof pipeline !== "object") return false;
-  const bag = pipeline as { ao?: unknown; godRays?: unknown; dof?: unknown; motionBlur?: unknown; ssr?: unknown };
-  return Boolean(bag.ao ?? bag.godRays ?? bag.dof ?? bag.motionBlur ?? bag.ssr);
+  const bag = pipeline as { ao?: unknown; godRays?: unknown; dof?: unknown; motionBlur?: unknown; ssr?: unknown; taa?: unknown; antiAliasing?: unknown };
+  // S5 TAA reads linear Z for disocclusion and S1-C reads device depth for
+  // camera velocity — the depth attachment is required on the forward target.
+  return Boolean(bag.ao ?? bag.godRays ?? bag.dof ?? bag.motionBlur ?? bag.ssr ?? bag.taa) || bag.antiAliasing === "taa";
 }
 
 export function defaultPostprocessTargetFormat(
@@ -172,11 +175,18 @@ export class RendererPostprocessPipeline {
       name: pass.name,
       options: pass.options as Readonly<Record<string, unknown>>
     })) as readonly LdrPostprocessPassDescriptor[];
+    // Phase 4: the Renderer stamps the flag-on TemporalHistory bindings onto
+    // `taa.temporal` / `motionBlur.temporal` — lift them for the v2 stages.
+    const temporal =
+      (postprocess.taa as { temporal?: TemporalGpuBindings } | undefined)?.temporal ??
+      (postprocess.motionBlur as { temporal?: TemporalGpuBindings } | undefined)?.temporal;
     executePostGraphWebGL2(webgl2DeviceHost(this.host.device), current, {
       pipeline: pipeline as PostPipelineOptions,
       passes: descriptors,
       ...(v2Modules ? { v2: v2Modules } : {}),
       ...(postprocess.cameraFrame ? { cameraFrame: postprocess.cameraFrame } : {}),
+      ...(postprocess.postFrameContext ? { frameContext: postprocess.postFrameContext } : {}),
+      ...(temporal ? { temporal } : {}),
       ...(outputTarget ? { outputTarget } : {}),
       ...(postprocess.depthRange ? { depthRange: postprocess.depthRange } : {})
     });

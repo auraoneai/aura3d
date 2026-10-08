@@ -1,0 +1,5485 @@
+{
+  "generatedAt": "2026-10-07T03:37:45.531Z",
+  "dryRun": true,
+  "rows": [
+    {
+      "id": "auroraExtractionBayBackdrop",
+      "budget": {
+        "triangles": 4,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 1398205,
+          "medium": 3495357,
+          "high": 3495357,
+          "ultra": 3495357
+        },
+        "downloadBytes": 1403551
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 4,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 4 tris outside [500, 15000]"
+        },
+        {
+          "gate": "G8",
+          "verdict": "fail",
+          "measured": {
+            "flag": "texture-waste"
+          },
+          "message": "texture larger than profile max on below-floor geometry"
+        }
+      ]
+    },
+    {
+      "id": "auroraExtractionLanderHero",
+      "budget": {
+        "triangles": 4,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 1398205,
+          "medium": 4817768,
+          "high": 4817768,
+          "ultra": 4817768
+        },
+        "downloadBytes": 1318763
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 4,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 4 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "auroraLanderProbe",
+      "budget": {
+        "triangles": 460,
+        "drawCalls": 4,
+        "gpuBytesByTier": {
+          "low": 14472,
+          "medium": 14472,
+          "high": 14472,
+          "ultra": 14472
+        },
+        "downloadBytes": 14472
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 460,
+            "floor": 8000,
+            "ceiling": 80000
+          },
+          "message": "LOD0 460 tris outside [8000, 80000]"
+        }
+      ]
+    },
+    {
+      "id": "auroraPadBeacon",
+      "budget": {
+        "triangles": 66,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 2148,
+          "medium": 2148,
+          "high": 2148,
+          "ultra": 2148
+        },
+        "downloadBytes": 2148
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 66,
+            "floor": 100,
+            "ceiling": 5000
+          },
+          "message": "LOD0 66 tris outside [100, 5000]"
+        }
+      ]
+    },
+    {
+      "id": "bankShotBall00",
+      "budget": {
+        "triangles": 1800,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 21624,
+          "medium": 21624,
+          "high": 21624,
+          "ultra": 21624
+        },
+        "downloadBytes": 21624
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 1800,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 1800 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "bankShotBall01",
+      "budget": {
+        "triangles": 1828,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 22260,
+          "medium": 22260,
+          "high": 22260,
+          "ultra": 22260
+        },
+        "downloadBytes": 22260
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 1828,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 1828 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "bankShotBall02",
+      "budget": {
+        "triangles": 1834,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 22440,
+          "medium": 22440,
+          "high": 22440,
+          "ultra": 22440
+        },
+        "downloadBytes": 22440
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 1834,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 1834 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "bankShotBall03",
+      "budget": {
+        "triangles": 1834,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 22440,
+          "medium": 22440,
+          "high": 22440,
+          "ultra": 22440
+        },
+        "downloadBytes": 22440
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 1834,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 1834 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "bankShotBall04",
+      "budget": {
+        "triangles": 1832,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 22380,
+          "medium": 22380,
+          "high": 22380,
+          "ultra": 22380
+        },
+        "downloadBytes": 22380
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 1832,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 1832 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "bankShotBall05",
+      "budget": {
+        "triangles": 1834,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 22440,
+          "medium": 22440,
+          "high": 22440,
+          "ultra": 22440
+        },
+        "downloadBytes": 22440
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 1834,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 1834 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "bankShotBall06",
+      "budget": {
+        "triangles": 1836,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 22500,
+          "medium": 22500,
+          "high": 22500,
+          "ultra": 22500
+        },
+        "downloadBytes": 22500
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 1836,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 1836 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "bankShotBall07",
+      "budget": {
+        "triangles": 1830,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 22320,
+          "medium": 22320,
+          "high": 22320,
+          "ultra": 22320
+        },
+        "downloadBytes": 22320
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 1830,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 1830 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "bankShotBall08",
+      "budget": {
+        "triangles": 1838,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 22560,
+          "medium": 22560,
+          "high": 22560,
+          "ultra": 22560
+        },
+        "downloadBytes": 22560
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 1838,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 1838 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "bankShotBall09",
+      "budget": {
+        "triangles": 972,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 12996,
+          "medium": 12996,
+          "high": 12996,
+          "ultra": 12996
+        },
+        "downloadBytes": 12996
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 972,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 972 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "bankShotBall10",
+      "budget": {
+        "triangles": 976,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 13116,
+          "medium": 13116,
+          "high": 13116,
+          "ultra": 13116
+        },
+        "downloadBytes": 13116
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 976,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 976 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "bankShotBall11",
+      "budget": {
+        "triangles": 968,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 12876,
+          "medium": 12876,
+          "high": 12876,
+          "ultra": 12876
+        },
+        "downloadBytes": 12876
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 968,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 968 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "bankShotBall12",
+      "budget": {
+        "triangles": 974,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 13056,
+          "medium": 13056,
+          "high": 13056,
+          "ultra": 13056
+        },
+        "downloadBytes": 13056
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 974,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 974 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "bankShotBall13",
+      "budget": {
+        "triangles": 974,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 13056,
+          "medium": 13056,
+          "high": 13056,
+          "ultra": 13056
+        },
+        "downloadBytes": 13056
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 974,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 974 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "bankShotBall14",
+      "budget": {
+        "triangles": 972,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 12996,
+          "medium": 12996,
+          "high": 12996,
+          "ultra": 12996
+        },
+        "downloadBytes": 12996
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 972,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 972 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "bankShotBall15",
+      "budget": {
+        "triangles": 974,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 13056,
+          "medium": 13056,
+          "high": 13056,
+          "ultra": 13056
+        },
+        "downloadBytes": 13056
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 974,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 974 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "bankShotCue",
+      "budget": {
+        "triangles": 170,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 5136,
+          "medium": 5136,
+          "high": 5136,
+          "ultra": 5136
+        },
+        "downloadBytes": 5136
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 170,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 170 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "bankShotTable",
+      "budget": {
+        "triangles": 10060,
+        "drawCalls": 14,
+        "gpuBytesByTier": {
+          "low": 363720,
+          "medium": 363720,
+          "high": 363720,
+          "ultra": 363720
+        },
+        "downloadBytes": 363720
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 10060,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 10060 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "blockfallReactorArenaBackdrop",
+      "budget": {
+        "triangles": 4,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 1398205,
+          "medium": 3495357,
+          "high": 3495357,
+          "ultra": 3495357
+        },
+        "downloadBytes": 1590701
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 4,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 4 tris outside [500, 15000]"
+        },
+        {
+          "gate": "G8",
+          "verdict": "fail",
+          "measured": {
+            "flag": "texture-waste"
+          },
+          "message": "texture larger than profile max on below-floor geometry"
+        }
+      ]
+    },
+    {
+      "id": "blockfallReactorMechanicHero",
+      "budget": {
+        "triangles": 4,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 1398205,
+          "medium": 3724733,
+          "high": 3724733,
+          "ultra": 3724733
+        },
+        "downloadBytes": 836206
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 4,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 4 tris outside [500, 15000]"
+        },
+        {
+          "gate": "G8",
+          "verdict": "fail",
+          "measured": {
+            "flag": "texture-waste"
+          },
+          "message": "texture larger than profile max on below-floor geometry"
+        }
+      ]
+    },
+    {
+      "id": "blockfallReactorPlasmaRival",
+      "budget": {
+        "triangles": 4,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 1398205,
+          "medium": 5242984,
+          "high": 5242984,
+          "ultra": 5242984
+        },
+        "downloadBytes": 1557503
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 4,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 4 tris outside [500, 15000]"
+        },
+        {
+          "gate": "G8",
+          "verdict": "fail",
+          "measured": {
+            "flag": "texture-waste"
+          },
+          "message": "texture larger than profile max on below-floor geometry"
+        }
+      ]
+    },
+    {
+      "id": "courierParcel",
+      "budget": {
+        "triangles": 216,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 2802203,
+          "medium": 2802203,
+          "high": 2802203,
+          "ultra": 2802203
+        },
+        "downloadBytes": 395089
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 216,
+            "floor": 100,
+            "ceiling": 5000
+          },
+          "message": "LOD0 216 tris in [100, 5000]"
+        }
+      ]
+    },
+    {
+      "id": "courierTrafficHatch",
+      "budget": {
+        "triangles": 10101,
+        "drawCalls": 26,
+        "gpuBytesByTier": {
+          "low": 8673986,
+          "medium": 33839810,
+          "high": 33839810,
+          "ultra": 33839810
+        },
+        "downloadBytes": 3778132
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 10101,
+            "floor": 8000,
+            "ceiling": 80000
+          },
+          "message": "LOD0 10101 tris in [8000, 80000]"
+        }
+      ]
+    },
+    {
+      "id": "courierTrafficSedan",
+      "budget": {
+        "triangles": 21556,
+        "drawCalls": 60,
+        "gpuBytesByTier": {
+          "low": 20117647,
+          "medium": 70449295,
+          "high": 70449295,
+          "ultra": 70449295
+        },
+        "downloadBytes": 9238184
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 21556,
+            "floor": 8000,
+            "ceiling": 80000
+          },
+          "message": "LOD0 21556 tris in [8000, 80000]"
+        }
+      ]
+    },
+    {
+      "id": "courierVan",
+      "budget": {
+        "triangles": 3603,
+        "drawCalls": 10,
+        "gpuBytesByTier": {
+          "low": 14084339,
+          "medium": 56027379,
+          "high": 56027379,
+          "ultra": 56027379
+        },
+        "downloadBytes": 5277755
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 3603,
+            "floor": 8000,
+            "ceiling": 80000
+          },
+          "message": "LOD0 3603 tris outside [8000, 80000]"
+        }
+      ]
+    },
+    {
+      "id": "courierZoneAwning",
+      "budget": {
+        "triangles": 466,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 4217164,
+          "medium": 16800076,
+          "high": 16800076,
+          "ultra": 16800076
+        },
+        "downloadBytes": 3837259
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 466,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 466 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "courierZoneBollard",
+      "budget": {
+        "triangles": 632,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 2816459,
+          "medium": 11205067,
+          "high": 11205067,
+          "ultra": 11205067
+        },
+        "downloadBytes": 2191863
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 632,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 632 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "deepRecoveryBuoyBeacon",
+      "budget": {
+        "triangles": 456,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 13800,
+          "medium": 13800,
+          "high": 13800,
+          "ultra": 13800
+        },
+        "downloadBytes": 13800
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 456,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 456 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "deepRecoveryCrateHeavy",
+      "budget": {
+        "triangles": 240,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 7716,
+          "medium": 7716,
+          "high": 7716,
+          "ultra": 7716
+        },
+        "downloadBytes": 7716
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 240,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 240 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "deepRecoveryCrateStandard",
+      "budget": {
+        "triangles": 232,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 7524,
+          "medium": 7524,
+          "high": 7524,
+          "ultra": 7524
+        },
+        "downloadBytes": 7524
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 232,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 232 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "deepRecoverySub",
+      "budget": {
+        "triangles": 2068,
+        "drawCalls": 5,
+        "gpuBytesByTier": {
+          "low": 58668,
+          "medium": 58668,
+          "high": 58668,
+          "ultra": 58668
+        },
+        "downloadBytes": 58668
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 2068,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 2068 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "deepRecoveryWreckHull",
+      "budget": {
+        "triangles": 1192,
+        "drawCalls": 4,
+        "gpuBytesByTier": {
+          "low": 36888,
+          "medium": 36888,
+          "high": 36888,
+          "ultra": 36888
+        },
+        "downloadBytes": 36888
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 1192,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 1192 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "deliveryCar",
+      "checks": [],
+      "error": "Cannot resolve external images with binaryToJSON()."
+    },
+    {
+      "id": "galleryShiftCutawayMuseumWorld",
+      "budget": {
+        "triangles": 16776,
+        "drawCalls": 14,
+        "gpuBytesByTier": {
+          "low": 449592,
+          "medium": 449592,
+          "high": 449592,
+          "ultra": 449592
+        },
+        "downloadBytes": 449592
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 16776,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 16776 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "galleryShiftDisplayCase",
+      "budget": {
+        "triangles": 24,
+        "drawCalls": 2,
+        "gpuBytesByTier": {
+          "low": 540,
+          "medium": 540,
+          "high": 540,
+          "ultra": 540
+        },
+        "downloadBytes": 540
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 24,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 24 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "galleryShiftExhibitA",
+      "budget": {
+        "triangles": 284,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 9144,
+          "medium": 9144,
+          "high": 9144,
+          "ultra": 9144
+        },
+        "downloadBytes": 9144
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 284,
+            "floor": 100,
+            "ceiling": 5000
+          },
+          "message": "LOD0 284 tris in [100, 5000]"
+        }
+      ]
+    },
+    {
+      "id": "galleryShiftExhibitB",
+      "budget": {
+        "triangles": 60,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 1920,
+          "medium": 1920,
+          "high": 1920,
+          "ultra": 1920
+        },
+        "downloadBytes": 1920
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 60,
+            "floor": 100,
+            "ceiling": 5000
+          },
+          "message": "LOD0 60 tris outside [100, 5000]"
+        }
+      ]
+    },
+    {
+      "id": "galleryShiftExhibitC",
+      "budget": {
+        "triangles": 120,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 3756,
+          "medium": 3756,
+          "high": 3756,
+          "ultra": 3756
+        },
+        "downloadBytes": 3756
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 120,
+            "floor": 100,
+            "ceiling": 5000
+          },
+          "message": "LOD0 120 tris in [100, 5000]"
+        }
+      ]
+    },
+    {
+      "id": "galleryShiftMuseumInterior",
+      "budget": {
+        "triangles": 1668,
+        "drawCalls": 15,
+        "gpuBytesByTier": {
+          "low": 44628,
+          "medium": 44628,
+          "high": 44628,
+          "ultra": 44628
+        },
+        "downloadBytes": 44628
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 1668,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 1668 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "galleryShiftPedestal",
+      "budget": {
+        "triangles": 40,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 1248,
+          "medium": 1248,
+          "high": 1248,
+          "ultra": 1248
+        },
+        "downloadBytes": 1248
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 40,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 40 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "gravityPlanetEarth",
+      "budget": {
+        "triangles": 3072,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 2856635,
+          "medium": 8449040,
+          "high": 8449040,
+          "ultra": 8449040
+        },
+        "downloadBytes": 1116074
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 3072,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 3072 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "gravityPlanetJupiter",
+      "budget": {
+        "triangles": 3072,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 1442917,
+          "medium": 4239120,
+          "high": 4239120,
+          "ultra": 4239120
+        },
+        "downloadBytes": 927773
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 3072,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 3072 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "gravityPlanetMars",
+      "budget": {
+        "triangles": 3072,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 2861123,
+          "medium": 8453528,
+          "high": 8453528,
+          "ultra": 8453528
+        },
+        "downloadBytes": 1275854
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 3072,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 3072 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "gravityPlanetMercury",
+      "budget": {
+        "triangles": 3072,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 1447525,
+          "medium": 4243728,
+          "high": 4243728,
+          "ultra": 4243728
+        },
+        "downloadBytes": 857562
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 3072,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 3072 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "gravityPlanetNeptune",
+      "budget": {
+        "triangles": 6048,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 1495629,
+          "medium": 2893731,
+          "high": 2893731,
+          "ultra": 2893731
+        },
+        "downloadBytes": 540643
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 6048,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 6048 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "gravityPostCourierSkiff",
+      "budget": {
+        "triangles": 14096,
+        "drawCalls": 10,
+        "gpuBytesByTier": {
+          "low": 560560,
+          "medium": 560560,
+          "high": 560560,
+          "ultra": 560560
+        },
+        "downloadBytes": 512833
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 14096,
+            "floor": 8000,
+            "ceiling": 80000
+          },
+          "message": "LOD0 14096 tris in [8000, 80000]"
+        }
+      ]
+    },
+    {
+      "id": "gravityPostDockBeacon",
+      "budget": {
+        "triangles": 14278,
+        "drawCalls": 26,
+        "gpuBytesByTier": {
+          "low": 6063249,
+          "medium": 22840465,
+          "high": 22840465,
+          "ultra": 22840465
+        },
+        "downloadBytes": 4405551
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 14278,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 14278 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "gravityPostDockGate",
+      "budget": {
+        "triangles": 29000,
+        "drawCalls": 50,
+        "gpuBytesByTier": {
+          "low": 20080419,
+          "medium": 78800675,
+          "high": 78800675,
+          "ultra": 78800675
+        },
+        "downloadBytes": 17503908
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 29000,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 29000 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "gravityPostDockRing",
+      "budget": {
+        "triangles": 1756030,
+        "drawCalls": 217,
+        "gpuBytesByTier": {
+          "low": 60128691,
+          "medium": 144014771,
+          "high": 144014771,
+          "ultra": 144014771
+        },
+        "downloadBytes": 53861600
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 1756030,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 1756030 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "gravityPostFreightDistrict",
+      "budget": {
+        "triangles": 26916,
+        "drawCalls": 9,
+        "gpuBytesByTier": {
+          "low": 1066648,
+          "medium": 1066648,
+          "high": 1066648,
+          "ultra": 1066648
+        },
+        "downloadBytes": 1018989
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 26916,
+            "floor": 0,
+            "ceiling": 250000
+          },
+          "message": "LOD0 26916 tris in [0, 250000]"
+        }
+      ]
+    },
+    {
+      "id": "gravityPostMailPod",
+      "budget": {
+        "triangles": 17087,
+        "drawCalls": 37,
+        "gpuBytesByTier": {
+          "low": 11872021,
+          "medium": 45426453,
+          "high": 45426453,
+          "ultra": 45426453
+        },
+        "downloadBytes": 6920351
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 17087,
+            "floor": 8000,
+            "ceiling": 80000
+          },
+          "message": "LOD0 17087 tris in [8000, 80000]"
+        }
+      ]
+    },
+    {
+      "id": "gravityPostStationRing",
+      "budget": {
+        "triangles": 44977,
+        "drawCalls": 142,
+        "gpuBytesByTier": {
+          "low": 60100778,
+          "medium": 141889706,
+          "high": 141889706,
+          "ultra": 141889706
+        },
+        "downloadBytes": 11624196
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 44977,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 44977 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "helperChar",
+      "checks": [],
+      "error": "Cannot resolve external images with binaryToJSON()."
+    },
+    {
+      "id": "mechArmsA",
+      "budget": {
+        "triangles": 608,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 15120,
+          "medium": 15120,
+          "high": 15120,
+          "ultra": 15120
+        },
+        "downloadBytes": 15120
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 608,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 608 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "mechArmsB",
+      "budget": {
+        "triangles": 608,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 15120,
+          "medium": 15120,
+          "high": 15120,
+          "ultra": 15120
+        },
+        "downloadBytes": 15120
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 608,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 608 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "mechArmsC",
+      "budget": {
+        "triangles": 608,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 15120,
+          "medium": 15120,
+          "high": 15120,
+          "ultra": 15120
+        },
+        "downloadBytes": 15120
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 608,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 608 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "mechArmsD",
+      "budget": {
+        "triangles": 608,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 15120,
+          "medium": 15120,
+          "high": 15120,
+          "ultra": 15120
+        },
+        "downloadBytes": 15120
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 608,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 608 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "mechChassisA",
+      "budget": {
+        "triangles": 400,
+        "drawCalls": 4,
+        "gpuBytesByTier": {
+          "low": 9168,
+          "medium": 9168,
+          "high": 9168,
+          "ultra": 9168
+        },
+        "downloadBytes": 9168
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 400,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 400 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "mechChassisB",
+      "budget": {
+        "triangles": 400,
+        "drawCalls": 4,
+        "gpuBytesByTier": {
+          "low": 9168,
+          "medium": 9168,
+          "high": 9168,
+          "ultra": 9168
+        },
+        "downloadBytes": 9168
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 400,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 400 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "mechChassisC",
+      "budget": {
+        "triangles": 400,
+        "drawCalls": 4,
+        "gpuBytesByTier": {
+          "low": 9168,
+          "medium": 9168,
+          "high": 9168,
+          "ultra": 9168
+        },
+        "downloadBytes": 9168
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 400,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 400 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "mechChassisD",
+      "budget": {
+        "triangles": 400,
+        "drawCalls": 4,
+        "gpuBytesByTier": {
+          "low": 9168,
+          "medium": 9168,
+          "high": 9168,
+          "ultra": 9168
+        },
+        "downloadBytes": 9168
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 400,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 400 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "mechLegsA",
+      "budget": {
+        "triangles": 576,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 14352,
+          "medium": 14352,
+          "high": 14352,
+          "ultra": 14352
+        },
+        "downloadBytes": 14352
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 576,
+            "floor": 100,
+            "ceiling": 5000
+          },
+          "message": "LOD0 576 tris in [100, 5000]"
+        }
+      ]
+    },
+    {
+      "id": "mechLegsB",
+      "budget": {
+        "triangles": 576,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 14352,
+          "medium": 14352,
+          "high": 14352,
+          "ultra": 14352
+        },
+        "downloadBytes": 14352
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 576,
+            "floor": 100,
+            "ceiling": 5000
+          },
+          "message": "LOD0 576 tris in [100, 5000]"
+        }
+      ]
+    },
+    {
+      "id": "mechLegsC",
+      "budget": {
+        "triangles": 576,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 14352,
+          "medium": 14352,
+          "high": 14352,
+          "ultra": 14352
+        },
+        "downloadBytes": 14352
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 576,
+            "floor": 100,
+            "ceiling": 5000
+          },
+          "message": "LOD0 576 tris in [100, 5000]"
+        }
+      ]
+    },
+    {
+      "id": "mechLegsD",
+      "budget": {
+        "triangles": 576,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 14352,
+          "medium": 14352,
+          "high": 14352,
+          "ultra": 14352
+        },
+        "downloadBytes": 14352
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 576,
+            "floor": 100,
+            "ceiling": 5000
+          },
+          "message": "LOD0 576 tris in [100, 5000]"
+        }
+      ]
+    },
+    {
+      "id": "mechWeaponA",
+      "budget": {
+        "triangles": 144,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 3600,
+          "medium": 3600,
+          "high": 3600,
+          "ultra": 3600
+        },
+        "downloadBytes": 3600
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 144,
+            "floor": 100,
+            "ceiling": 5000
+          },
+          "message": "LOD0 144 tris in [100, 5000]"
+        }
+      ]
+    },
+    {
+      "id": "mechWeaponB",
+      "budget": {
+        "triangles": 96,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 2424,
+          "medium": 2424,
+          "high": 2424,
+          "ultra": 2424
+        },
+        "downloadBytes": 2424
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 96,
+            "floor": 100,
+            "ceiling": 5000
+          },
+          "message": "LOD0 96 tris outside [100, 5000]"
+        }
+      ]
+    },
+    {
+      "id": "mechWeaponC",
+      "budget": {
+        "triangles": 128,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 3192,
+          "medium": 3192,
+          "high": 3192,
+          "ultra": 3192
+        },
+        "downloadBytes": 3192
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 128,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 128 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "mechWeaponD",
+      "budget": {
+        "triangles": 160,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 3240,
+          "medium": 3240,
+          "high": 3240,
+          "ultra": 3240
+        },
+        "downloadBytes": 3240
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 160,
+            "floor": 100,
+            "ceiling": 5000
+          },
+          "message": "LOD0 160 tris in [100, 5000]"
+        }
+      ]
+    },
+    {
+      "id": "neonBarricadeProp",
+      "budget": {
+        "triangles": 3192,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 5672565,
+          "medium": 22449781,
+          "high": 22449781,
+          "ultra": 22449781
+        },
+        "downloadBytes": 4310930
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 3192,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 3192 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "neonCourierAvatar",
+      "budget": {
+        "triangles": 3254,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 57414,
+          "medium": 57414,
+          "high": 57414,
+          "ultra": 57414
+        },
+        "downloadBytes": 57414
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 3254,
+            "floor": 5000,
+            "ceiling": 60000
+          },
+          "message": "LOD0 3254 tris outside [5000, 60000]"
+        }
+      ]
+    },
+    {
+      "id": "neonCrownMothElite",
+      "budget": {
+        "triangles": 4,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 1398205,
+          "medium": 4806077,
+          "high": 4806077,
+          "ultra": 4806077
+        },
+        "downloadBytes": 1088255
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 4,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 4 tris outside [500, 15000]"
+        },
+        {
+          "gate": "G8",
+          "verdict": "fail",
+          "measured": {
+            "flag": "texture-waste"
+          },
+          "message": "texture larger than profile max on below-floor geometry"
+        }
+      ]
+    },
+    {
+      "id": "neonRainCourierHero",
+      "budget": {
+        "triangles": 4,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 1398205,
+          "medium": 5177448,
+          "high": 5177448,
+          "ultra": 5177448
+        },
+        "downloadBytes": 810390
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 4,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 4 tris outside [500, 15000]"
+        },
+        {
+          "gate": "G8",
+          "verdict": "fail",
+          "measured": {
+            "flag": "texture-waste"
+          },
+          "message": "texture larger than profile max on below-floor geometry"
+        }
+      ]
+    },
+    {
+      "id": "neonRainGardenArenaBackdrop",
+      "budget": {
+        "triangles": 4,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 1398205,
+          "medium": 3495357,
+          "high": 3495357,
+          "ultra": 3495357
+        },
+        "downloadBytes": 1446454
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 4,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 4 tris outside [500, 15000]"
+        },
+        {
+          "gate": "G8",
+          "verdict": "fail",
+          "measured": {
+            "flag": "texture-waste"
+          },
+          "message": "texture larger than profile max on below-floor geometry"
+        }
+      ]
+    },
+    {
+      "id": "neonStreetLampProp",
+      "budget": {
+        "triangles": 211284,
+        "drawCalls": 19,
+        "gpuBytesByTier": {
+          "low": 13385324,
+          "medium": 38551148,
+          "high": 38551148,
+          "ultra": 38551148
+        },
+        "downloadBytes": 11723134
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 211284,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 211284 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "patrolWingDroneA",
+      "budget": {
+        "triangles": 108,
+        "drawCalls": 4,
+        "gpuBytesByTier": {
+          "low": 3756,
+          "medium": 3756,
+          "high": 3756,
+          "ultra": 3756
+        },
+        "downloadBytes": 3756
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 108,
+            "floor": 8000,
+            "ceiling": 80000
+          },
+          "message": "LOD0 108 tris outside [8000, 80000]"
+        }
+      ]
+    },
+    {
+      "id": "patrolWingDroneB",
+      "budget": {
+        "triangles": 108,
+        "drawCalls": 4,
+        "gpuBytesByTier": {
+          "low": 3756,
+          "medium": 3756,
+          "high": 3756,
+          "ultra": 3756
+        },
+        "downloadBytes": 3756
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 108,
+            "floor": 8000,
+            "ceiling": 80000
+          },
+          "message": "LOD0 108 tris outside [8000, 80000]"
+        }
+      ]
+    },
+    {
+      "id": "patrolWingPadBeacon",
+      "budget": {
+        "triangles": 88,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 2712,
+          "medium": 2712,
+          "high": 2712,
+          "ultra": 2712
+        },
+        "downloadBytes": 2712
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 88,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 88 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "patrolWingPlane",
+      "budget": {
+        "triangles": 220,
+        "drawCalls": 6,
+        "gpuBytesByTier": {
+          "low": 7344,
+          "medium": 7344,
+          "high": 7344,
+          "ultra": 7344
+        },
+        "downloadBytes": 7344
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 220,
+            "floor": 8000,
+            "ceiling": 80000
+          },
+          "message": "LOD0 220 tris outside [8000, 80000]"
+        }
+      ]
+    },
+    {
+      "id": "propBoulder",
+      "budget": {
+        "triangles": 10136,
+        "drawCalls": 158,
+        "gpuBytesByTier": {
+          "low": 1695293,
+          "medium": 5889597,
+          "high": 5889597,
+          "ultra": 5889597
+        },
+        "downloadBytes": 335144
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 10136,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 10136 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "propConifer",
+      "budget": {
+        "triangles": 724,
+        "drawCalls": 6,
+        "gpuBytesByTier": {
+          "low": 70323,
+          "medium": 70323,
+          "high": 70323,
+          "ultra": 70323
+        },
+        "downloadBytes": 26941
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 724,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 724 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "propPineTree",
+      "budget": {
+        "triangles": 29030,
+        "drawCalls": 9,
+        "gpuBytesByTier": {
+          "low": 6056865,
+          "medium": 15843575,
+          "high": 15843575,
+          "ultra": 15843575
+        },
+        "downloadBytes": 7587027
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 29030,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 29030 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "propRockA",
+      "budget": {
+        "triangles": 30006,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 5057068,
+          "medium": 5057068,
+          "high": 5057068,
+          "ultra": 5057068
+        },
+        "downloadBytes": 2137998
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 30006,
+            "floor": 100,
+            "ceiling": 5000
+          },
+          "message": "LOD0 30006 tris outside [100, 5000]"
+        }
+      ]
+    },
+    {
+      "id": "propRockB",
+      "budget": {
+        "triangles": 10596,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 2995571,
+          "medium": 11384179,
+          "high": 11384179,
+          "ultra": 11384179
+        },
+        "downloadBytes": 2993801
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 10596,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 10596 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "pulseReactorEncounterWorld",
+      "budget": {
+        "triangles": 72748,
+        "drawCalls": 8,
+        "gpuBytesByTier": {
+          "low": 1978029,
+          "medium": 1978029,
+          "high": 1978029,
+          "ultra": 1978029
+        },
+        "downloadBytes": 1721526
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 72748,
+            "floor": 0,
+            "ceiling": 250000
+          },
+          "message": "LOD0 72748 tris in [0, 250000]"
+        }
+      ]
+    },
+    {
+      "id": "pulseRunnerCraft",
+      "budget": {
+        "triangles": 16484,
+        "drawCalls": 6,
+        "gpuBytesByTier": {
+          "low": 458435,
+          "medium": 458435,
+          "high": 458435,
+          "ultra": 458435
+        },
+        "downloadBytes": 288191
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 16484,
+            "floor": 8000,
+            "ceiling": 80000
+          },
+          "message": "LOD0 16484 tris in [8000, 80000]"
+        }
+      ]
+    },
+    {
+      "id": "pulseTerminalSentry",
+      "budget": {
+        "triangles": 32676,
+        "drawCalls": 6,
+        "gpuBytesByTier": {
+          "low": 699787,
+          "medium": 699787,
+          "high": 699787,
+          "ultra": 699787
+        },
+        "downloadBytes": 529524
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 32676,
+            "floor": 5000,
+            "ceiling": 60000
+          },
+          "message": "LOD0 32676 tris in [5000, 60000]"
+        }
+      ]
+    },
+    {
+      "id": "robotcand",
+      "budget": {
+        "triangles": 100612,
+        "drawCalls": 7,
+        "gpuBytesByTier": {
+          "low": 2694380,
+          "medium": 2694380,
+          "high": 2694380,
+          "ultra": 2694380
+        },
+        "downloadBytes": 2054661
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 100612,
+            "floor": 5000,
+            "ceiling": 60000
+          },
+          "message": "LOD0 100612 tris outside [5000, 60000]"
+        }
+      ]
+    },
+    {
+      "id": "rooftopAthleteDefender",
+      "budget": {
+        "triangles": 15432,
+        "drawCalls": 4,
+        "gpuBytesByTier": {
+          "low": 1628905,
+          "medium": 5823209,
+          "high": 5823209,
+          "ultra": 5823209
+        },
+        "downloadBytes": 2235336
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 15432,
+            "floor": 5000,
+            "ceiling": 60000
+          },
+          "message": "LOD0 15432 tris in [5000, 60000]"
+        }
+      ]
+    },
+    {
+      "id": "rooftopAthleteShooter",
+      "budget": {
+        "triangles": 15432,
+        "drawCalls": 4,
+        "gpuBytesByTier": {
+          "low": 1628905,
+          "medium": 5823209,
+          "high": 5823209,
+          "ultra": 5823209
+        },
+        "downloadBytes": 2454898
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 15432,
+            "floor": 5000,
+            "ceiling": 60000
+          },
+          "message": "LOD0 15432 tris in [5000, 60000]"
+        }
+      ]
+    },
+    {
+      "id": "rooftopBackboard",
+      "budget": {
+        "triangles": 12,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 360,
+          "medium": 360,
+          "high": 360,
+          "ultra": 360
+        },
+        "downloadBytes": 360
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 12,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 12 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "rooftopBall",
+      "budget": {
+        "triangles": 504,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 6264,
+          "medium": 6264,
+          "high": 6264,
+          "ultra": 6264
+        },
+        "downloadBytes": 6264
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 504,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 504 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "rooftopCourt",
+      "budget": {
+        "triangles": 10900,
+        "drawCalls": 10,
+        "gpuBytesByTier": {
+          "low": 433867,
+          "medium": 433867,
+          "high": 433867,
+          "ultra": 433867
+        },
+        "downloadBytes": 431424
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 10900,
+            "floor": 0,
+            "ceiling": 250000
+          },
+          "message": "LOD0 10900 tris in [0, 250000]"
+        }
+      ]
+    },
+    {
+      "id": "rooftopDefender",
+      "budget": {
+        "triangles": 44612,
+        "drawCalls": 17,
+        "gpuBytesByTier": {
+          "low": 58676547,
+          "medium": 58676547,
+          "high": 58676547,
+          "ultra": 58676547
+        },
+        "downloadBytes": 10925599
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 44612,
+            "floor": 5000,
+            "ceiling": 60000
+          },
+          "message": "LOD0 44612 tris in [5000, 60000]"
+        }
+      ]
+    },
+    {
+      "id": "rooftopDefenderV2",
+      "budget": {
+        "triangles": 8460,
+        "drawCalls": 23,
+        "gpuBytesByTier": {
+          "low": 207784,
+          "medium": 207784,
+          "high": 207784,
+          "ultra": 207784
+        },
+        "downloadBytes": 207784
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 8460,
+            "floor": 5000,
+            "ceiling": 60000
+          },
+          "message": "LOD0 8460 tris in [5000, 60000]"
+        }
+      ]
+    },
+    {
+      "id": "rooftopLayupScorer",
+      "budget": {
+        "triangles": 44612,
+        "drawCalls": 17,
+        "gpuBytesByTier": {
+          "low": 58676547,
+          "medium": 58676547,
+          "high": 58676547,
+          "ultra": 58676547
+        },
+        "downloadBytes": 10925599
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 44612,
+            "floor": 5000,
+            "ceiling": 60000
+          },
+          "message": "LOD0 44612 tris in [5000, 60000]"
+        }
+      ]
+    },
+    {
+      "id": "rooftopRim",
+      "budget": {
+        "triangles": 360,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 4668,
+          "medium": 4668,
+          "high": 4668,
+          "ultra": 4668
+        },
+        "downloadBytes": 4668
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 360,
+            "floor": 100,
+            "ceiling": 5000
+          },
+          "message": "LOD0 360 tris in [100, 5000]"
+        }
+      ]
+    },
+    {
+      "id": "rooftopShooter",
+      "budget": {
+        "triangles": 15432,
+        "drawCalls": 4,
+        "gpuBytesByTier": {
+          "low": 1628905,
+          "medium": 5823209,
+          "high": 5823209,
+          "ultra": 5823209
+        },
+        "downloadBytes": 2454898
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 15432,
+            "floor": 5000,
+            "ceiling": 60000
+          },
+          "message": "LOD0 15432 tris in [5000, 60000]"
+        }
+      ]
+    },
+    {
+      "id": "rooftopShooterV2",
+      "budget": {
+        "triangles": 7396,
+        "drawCalls": 23,
+        "gpuBytesByTier": {
+          "low": 180256,
+          "medium": 180256,
+          "high": 180256,
+          "ultra": 180256
+        },
+        "downloadBytes": 180256
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 7396,
+            "floor": 5000,
+            "ceiling": 60000
+          },
+          "message": "LOD0 7396 tris in [5000, 60000]"
+        }
+      ]
+    },
+    {
+      "id": "rooftopVenueV2",
+      "budget": {
+        "triangles": 1280,
+        "drawCalls": 6,
+        "gpuBytesByTier": {
+          "low": 33096,
+          "medium": 33096,
+          "high": 33096,
+          "ultra": 33096
+        },
+        "downloadBytes": 33096
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 1280,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 1280 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseAdventurerRunner",
+      "budget": {
+        "triangles": 5086,
+        "drawCalls": 2,
+        "gpuBytesByTier": {
+          "low": 2873719,
+          "medium": 11262327,
+          "high": 11262327,
+          "ultra": 11262327
+        },
+        "downloadBytes": 1332230
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 5086,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 5086 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseAnimatedRunnerHero",
+      "budget": {
+        "triangles": 23300,
+        "drawCalls": 19,
+        "gpuBytesByTier": {
+          "low": 26877141,
+          "medium": 78606891,
+          "high": 78606891,
+          "ultra": 78606891
+        },
+        "downloadBytes": 15672683
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 23300,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 23300 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseArcadeCabinet",
+      "budget": {
+        "triangles": 1270,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 4226404,
+          "medium": 16809316,
+          "high": 16809316,
+          "ultra": 16809316
+        },
+        "downloadBytes": 3519317
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 1270,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 1270 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseArcadeController",
+      "budget": {
+        "triangles": 29557,
+        "drawCalls": 8,
+        "gpuBytesByTier": {
+          "low": 17493430,
+          "medium": 67825078,
+          "high": 67825078,
+          "ultra": 67825078
+        },
+        "downloadBytes": 9947922
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 29557,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 29557 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseArchitectureCityBlock",
+      "budget": {
+        "triangles": 281327,
+        "drawCalls": 615,
+        "gpuBytesByTier": {
+          "low": 5837700,
+          "medium": 5837700,
+          "high": 5837700,
+          "ultra": 5837700
+        },
+        "downloadBytes": 5837700
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 281327,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 281327 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseAssemblyLine",
+      "budget": {
+        "triangles": 20364,
+        "drawCalls": 20,
+        "gpuBytesByTier": {
+          "low": 5868521,
+          "medium": 22645737,
+          "high": 22645737,
+          "ultra": 22645737
+        },
+        "downloadBytes": 3714949
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 20364,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 20364 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseBeachRaceMap",
+      "budget": {
+        "triangles": 54881,
+        "drawCalls": 63,
+        "gpuBytesByTier": {
+          "low": 3330499,
+          "medium": 7524803,
+          "high": 7524803,
+          "ultra": 7524803
+        },
+        "downloadBytes": 1949291
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 54881,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 54881 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseBetterLowPolyTrack",
+      "budget": {
+        "triangles": 2862,
+        "drawCalls": 4,
+        "gpuBytesByTier": {
+          "low": 72108,
+          "medium": 72108,
+          "high": 72108,
+          "ultra": 72108
+        },
+        "downloadBytes": 72108
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 2862,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 2862 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseBlockfallCabinet",
+      "budget": {
+        "triangles": 3426,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 5701593,
+          "medium": 22478809,
+          "high": 22478809,
+          "ultra": 22478809
+        },
+        "downloadBytes": 2320217
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 3426,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 3426 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseButterflyCircuit",
+      "budget": {
+        "triangles": 113714,
+        "drawCalls": 130,
+        "gpuBytesByTier": {
+          "low": 7222924,
+          "medium": 19805836,
+          "high": 19805836,
+          "ultra": 19805836
+        },
+        "downloadBytes": 3685416
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 113714,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 113714 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseCartoonPlatformWorld",
+      "budget": {
+        "triangles": 20046,
+        "drawCalls": 8,
+        "gpuBytesByTier": {
+          "low": 496584,
+          "medium": 496584,
+          "high": 496584,
+          "ultra": 496584
+        },
+        "downloadBytes": 496584
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 20046,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 20046 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseCartoonRunnerHero",
+      "budget": {
+        "triangles": 15020,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 578749,
+          "medium": 578749,
+          "high": 578749,
+          "ultra": 578749
+        },
+        "downloadBytes": 236642
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 15020,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 15020 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseCc0FormulaRaceCar",
+      "budget": {
+        "triangles": 5464,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 1525509,
+          "medium": 5714352,
+          "high": 11039408,
+          "ultra": 11039408
+        },
+        "downloadBytes": 197399
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 5464,
+            "floor": 8000,
+            "ceiling": 80000
+          },
+          "message": "LOD0 5464 tris outside [8000, 80000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseCcByFormulaOpponent",
+      "budget": {
+        "triangles": 31176,
+        "drawCalls": 19,
+        "gpuBytesByTier": {
+          "low": 3832220,
+          "medium": 12220828,
+          "high": 12220828,
+          "ultra": 12220828
+        },
+        "downloadBytes": 1128425
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 31176,
+            "floor": 8000,
+            "ceiling": 80000
+          },
+          "message": "LOD0 31176 tris in [8000, 80000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseCityVehicle",
+      "budget": {
+        "triangles": 792,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 5608101,
+          "medium": 22385317,
+          "high": 22385317,
+          "ultra": 22385317
+        },
+        "downloadBytes": 3900550
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 792,
+            "floor": 8000,
+            "ceiling": 80000
+          },
+          "message": "LOD0 792 tris outside [8000, 80000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseCleanRaceTrack",
+      "budget": {
+        "triangles": 2862,
+        "drawCalls": 4,
+        "gpuBytesByTier": {
+          "low": 72108,
+          "medium": 72108,
+          "high": 72108,
+          "ultra": 72108
+        },
+        "downloadBytes": 72108
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 2862,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 2862 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseCleanSportsCar",
+      "budget": {
+        "triangles": 8494,
+        "drawCalls": 7,
+        "gpuBytesByTier": {
+          "low": 143784,
+          "medium": 143784,
+          "high": 143784,
+          "ultra": 143784
+        },
+        "downloadBytes": 143784
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 8494,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 8494 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseCuteRunnerHero",
+      "budget": {
+        "triangles": 4398,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 1480169,
+          "medium": 5674473,
+          "high": 5674473,
+          "ultra": 5674473
+        },
+        "downloadBytes": 1477215
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 4398,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 4398 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseDataStation",
+      "checks": [],
+      "error": "Cannot resolve external images with binaryToJSON()."
+    },
+    {
+      "id": "showcaseDesertRaceMap",
+      "budget": {
+        "triangles": 51772,
+        "drawCalls": 45,
+        "gpuBytesByTier": {
+          "low": 3454989,
+          "medium": 7649293,
+          "high": 7649293,
+          "ultra": 7649293
+        },
+        "downloadBytes": 2073781
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 51772,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 51772 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseDetailedRaceCircuit",
+      "budget": {
+        "triangles": 10162,
+        "drawCalls": 12,
+        "gpuBytesByTier": {
+          "low": 38074468,
+          "medium": 151320676,
+          "high": 151320676,
+          "ultra": 151320676
+        },
+        "downloadBytes": 26369575
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 10162,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 10162 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseDungeonGameLevel",
+      "budget": {
+        "triangles": 69581,
+        "drawCalls": 796,
+        "gpuBytesByTier": {
+          "low": 34522322,
+          "medium": 135185618,
+          "high": 135185618,
+          "ultra": 135185618
+        },
+        "downloadBytes": 19625942
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 69581,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 69581 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseExpressiveRobot",
+      "budget": {
+        "triangles": 3237,
+        "drawCalls": 19,
+        "gpuBytesByTier": {
+          "low": 242830,
+          "medium": 242830,
+          "high": 242830,
+          "ultra": 242830
+        },
+        "downloadBytes": 242830
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 3237,
+            "floor": 5000,
+            "ceiling": 60000
+          },
+          "message": "LOD0 3237 tris outside [5000, 60000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseFloatingIslandMap",
+      "budget": {
+        "triangles": 64351,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 6037858,
+          "medium": 18620770,
+          "high": 18620770,
+          "ultra": 18620770
+        },
+        "downloadBytes": 8187705
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 64351,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 64351 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseFloatingIslandWorld",
+      "budget": {
+        "triangles": 173115,
+        "drawCalls": 23,
+        "gpuBytesByTier": {
+          "low": 29684307,
+          "medium": 96793171,
+          "high": 96793171,
+          "ultra": 96793171
+        },
+        "downloadBytes": 22014738
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 173115,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 173115 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseHeadphones",
+      "budget": {
+        "triangles": 3688,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 5681253,
+          "medium": 22458469,
+          "high": 22458469,
+          "ultra": 22458469
+        },
+        "downloadBytes": 2128301
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 3688,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 3688 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseHighpolySportsCar",
+      "budget": {
+        "triangles": 657558,
+        "drawCalls": 2,
+        "gpuBytesByTier": {
+          "low": 12691256,
+          "medium": 12691256,
+          "high": 12691256,
+          "ultra": 12691256
+        },
+        "downloadBytes": 12691256
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 657558,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 657558 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseIndustrialAssemblyArm",
+      "budget": {
+        "triangles": 3422,
+        "drawCalls": 12,
+        "gpuBytesByTier": {
+          "low": 133872,
+          "medium": 133872,
+          "high": 133872,
+          "ultra": 133872
+        },
+        "downloadBytes": 133872
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 3422,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 3422 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseIsometricRaceTrack",
+      "budget": {
+        "triangles": 13955,
+        "drawCalls": 82,
+        "gpuBytesByTier": {
+          "low": 1717943,
+          "medium": 5912247,
+          "high": 5912247,
+          "ultra": 5912247
+        },
+        "downloadBytes": 525857
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 13955,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 13955 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseKartCircuitTrack",
+      "budget": {
+        "triangles": 2862,
+        "drawCalls": 4,
+        "gpuBytesByTier": {
+          "low": 72108,
+          "medium": 72108,
+          "high": 72108,
+          "ultra": 72108
+        },
+        "downloadBytes": 72108
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 2862,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 2862 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseKenneyNeonRaceCircuit",
+      "budget": {
+        "triangles": 25440,
+        "drawCalls": 13,
+        "gpuBytesByTier": {
+          "low": 772704,
+          "medium": 772704,
+          "high": 772704,
+          "ultra": 772704
+        },
+        "downloadBytes": 772704
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 25440,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 25440 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseKenneyOobiPlatformerHero",
+      "budget": {
+        "triangles": 1096,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 1450249,
+          "medium": 1450249,
+          "high": 1450249,
+          "ultra": 1450249
+        },
+        "downloadBytes": 66672
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 1096,
+            "floor": 5000,
+            "ceiling": 60000
+          },
+          "message": "LOD0 1096 tris outside [5000, 60000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseKenneyRaceCarRed",
+      "budget": {
+        "triangles": 1430,
+        "drawCalls": 4,
+        "gpuBytesByTier": {
+          "low": 39120,
+          "medium": 39120,
+          "high": 39120,
+          "ultra": 39120
+        },
+        "downloadBytes": 39120
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 1430,
+            "floor": 8000,
+            "ceiling": 80000
+          },
+          "message": "LOD0 1430 tris outside [8000, 80000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseKenneyVerdantPlatformerWorld",
+      "budget": {
+        "triangles": 51284,
+        "drawCalls": 6,
+        "gpuBytesByTier": {
+          "low": 2039757,
+          "medium": 2039757,
+          "high": 2039757,
+          "ultra": 2039757
+        },
+        "downloadBytes": 2038638
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 51284,
+            "floor": 0,
+            "ceiling": 250000
+          },
+          "message": "LOD0 51284 tris in [0, 250000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseLowPolyCharacterPack",
+      "budget": {
+        "triangles": 2152,
+        "drawCalls": 17,
+        "gpuBytesByTier": {
+          "low": 63300,
+          "medium": 63300,
+          "high": 63300,
+          "ultra": 63300
+        },
+        "downloadBytes": 63300
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 2152,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 2152 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseLowPolyGameLevel",
+      "budget": {
+        "triangles": 69581,
+        "drawCalls": 796,
+        "gpuBytesByTier": {
+          "low": 34522322,
+          "medium": 135185618,
+          "high": 135185618,
+          "ultra": 135185618
+        },
+        "downloadBytes": 19625942
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 69581,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 69581 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseLowPolyKidRunner",
+      "budget": {
+        "triangles": 1504,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 1480629,
+          "medium": 5674933,
+          "high": 5674933,
+          "ultra": 5674933
+        },
+        "downloadBytes": 542415
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 1504,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 1504 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseLowPolyRaceTrackAlt",
+      "budget": {
+        "triangles": 2862,
+        "drawCalls": 4,
+        "gpuBytesByTier": {
+          "low": 72108,
+          "medium": 72108,
+          "high": 72108,
+          "ultra": 72108
+        },
+        "downloadBytes": 72108
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 2862,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 2862 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseMarbleTrack",
+      "budget": {
+        "triangles": 37290,
+        "drawCalls": 12,
+        "gpuBytesByTier": {
+          "low": 514764,
+          "medium": 514764,
+          "high": 514764,
+          "ultra": 514764
+        },
+        "downloadBytes": 514764
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 37290,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 37290 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseMiniRaceTrack",
+      "budget": {
+        "triangles": 53431,
+        "drawCalls": 5,
+        "gpuBytesByTier": {
+          "low": 6959787,
+          "medium": 23737003,
+          "high": 23737003,
+          "ultra": 23737003
+        },
+        "downloadBytes": 3623435
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 53431,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 53431 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseModernBuildingOne",
+      "budget": {
+        "triangles": 1596,
+        "drawCalls": 35,
+        "gpuBytesByTier": {
+          "low": 48588,
+          "medium": 48588,
+          "high": 48588,
+          "ultra": 48588
+        },
+        "downloadBytes": 48588
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 1596,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 1596 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseModernOfficeBuilding",
+      "budget": {
+        "triangles": 187281,
+        "drawCalls": 191,
+        "gpuBytesByTier": {
+          "low": 7816179,
+          "medium": 24593395,
+          "high": 24593395,
+          "ultra": 24593395
+        },
+        "downloadBytes": 4261033
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 187281,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 187281 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseModularTrackRoads",
+      "budget": {
+        "triangles": 1049,
+        "drawCalls": 8,
+        "gpuBytesByTier": {
+          "low": 48919,
+          "medium": 48919,
+          "high": 48919,
+          "ultra": 48919
+        },
+        "downloadBytes": 27483
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 1049,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 1049 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseMorphCube",
+      "budget": {
+        "triangles": 968,
+        "drawCalls": 4,
+        "gpuBytesByTier": {
+          "low": 19853,
+          "medium": 19853,
+          "high": 19853,
+          "ultra": 19853
+        },
+        "downloadBytes": 19939
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 968,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 968 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseMorphExpression",
+      "checks": [],
+      "error": "Invalid glTF 2.0 binary."
+    },
+    {
+      "id": "showcaseMotocrossTrack",
+      "budget": {
+        "triangles": 999999,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 22260769,
+          "medium": 26455073,
+          "high": 26455073,
+          "ultra": 26455073
+        },
+        "downloadBytes": 23689598
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 999999,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 999999 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseNeonRoadLoop",
+      "budget": {
+        "triangles": 718570,
+        "drawCalls": 15,
+        "gpuBytesByTier": {
+          "low": 24594904,
+          "medium": 24594904,
+          "high": 24594904,
+          "ultra": 24594904
+        },
+        "downloadBytes": 24594904
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 718570,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 718570 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseOrangeIndustrialRobot",
+      "budget": {
+        "triangles": 10892,
+        "drawCalls": 2,
+        "gpuBytesByTier": {
+          "low": 8514044,
+          "medium": 33679868,
+          "high": 33679868,
+          "ultra": 33679868
+        },
+        "downloadBytes": 7862535
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 10892,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 10892 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseParticleCore",
+      "budget": {
+        "triangles": 30576,
+        "drawCalls": 2,
+        "gpuBytesByTier": {
+          "low": 11133565,
+          "medium": 40493693,
+          "high": 40493693,
+          "ultra": 40493693
+        },
+        "downloadBytes": 10484086
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 30576,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 30576 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcasePlatformerBasicPack",
+      "budget": {
+        "triangles": 10635,
+        "drawCalls": 92,
+        "gpuBytesByTier": {
+          "low": 110640,
+          "medium": 110640,
+          "high": 110640,
+          "ultra": 110640
+        },
+        "downloadBytes": 110640
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 10635,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 10635 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcasePlatformerWorldLevel",
+      "budget": {
+        "triangles": 69581,
+        "drawCalls": 796,
+        "gpuBytesByTier": {
+          "low": 34522322,
+          "medium": 135185618,
+          "high": 135185618,
+          "ultra": 135185618
+        },
+        "downloadBytes": 19625942
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 69581,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 69581 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcasePlatformHero",
+      "checks": [],
+      "error": "Cannot resolve external images with binaryToJSON()."
+    },
+    {
+      "id": "showcasePlatformRunnerHero",
+      "budget": {
+        "triangles": 23300,
+        "drawCalls": 19,
+        "gpuBytesByTier": {
+          "low": 26877141,
+          "medium": 78606891,
+          "high": 78606891,
+          "ultra": 78606891
+        },
+        "downloadBytes": 15672683
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 23300,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 23300 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseRaceCar",
+      "budget": {
+        "triangles": 2834,
+        "drawCalls": 15,
+        "gpuBytesByTier": {
+          "low": 83364,
+          "medium": 83364,
+          "high": 83364,
+          "ultra": 83364
+        },
+        "downloadBytes": 83364
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 2834,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 2834 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseRaceGameEnvironment",
+      "budget": {
+        "triangles": 470867,
+        "drawCalls": 2,
+        "gpuBytesByTier": {
+          "low": 22398467,
+          "medium": 22398467,
+          "high": 22398467,
+          "ultra": 22398467
+        },
+        "downloadBytes": 21428485
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 470867,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 470867 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseRaceRoadTracks",
+      "budget": {
+        "triangles": 35176,
+        "drawCalls": 34,
+        "gpuBytesByTier": {
+          "low": 2386344,
+          "medium": 6580648,
+          "high": 6580648,
+          "ultra": 6580648
+        },
+        "downloadBytes": 953181
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 35176,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 35176 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseRaceTestTrack",
+      "budget": {
+        "triangles": 248863,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 7272537,
+          "medium": 11466841,
+          "high": 11466841,
+          "ultra": 11466841
+        },
+        "downloadBytes": 7871014
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 248863,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 248863 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseRaceTrack",
+      "budget": {
+        "triangles": 2862,
+        "drawCalls": 4,
+        "gpuBytesByTier": {
+          "low": 72108,
+          "medium": 72108,
+          "high": 72108,
+          "ultra": 72108
+        },
+        "downloadBytes": 72108
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 2862,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 2862 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseRacingTrack",
+      "budget": {
+        "triangles": 64064,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 2305296,
+          "medium": 2305296,
+          "high": 2305296,
+          "ultra": 2305296
+        },
+        "downloadBytes": 2305296
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 64064,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 64064 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseReadableKartCircuit",
+      "budget": {
+        "triangles": 24493,
+        "drawCalls": 100,
+        "gpuBytesByTier": {
+          "low": 612714,
+          "medium": 612714,
+          "high": 612714,
+          "ultra": 612714
+        },
+        "downloadBytes": 612714
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 24493,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 24493 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseReadablePlatformLevel",
+      "budget": {
+        "triangles": 8121,
+        "drawCalls": 52,
+        "gpuBytesByTier": {
+          "low": 9946731,
+          "medium": 39306859,
+          "high": 39306859,
+          "ultra": 39306859
+        },
+        "downloadBytes": 3493325
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 8121,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 8121 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseRoboticWeldingWorkcell",
+      "budget": {
+        "triangles": 645355,
+        "drawCalls": 156,
+        "gpuBytesByTier": {
+          "low": 13971255,
+          "medium": 13971255,
+          "high": 13971255,
+          "ultra": 13971255
+        },
+        "downloadBytes": 13829353
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 645355,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 645355 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseRooftopParkourWorld",
+      "budget": {
+        "triangles": 3196,
+        "drawCalls": 2,
+        "gpuBytesByTier": {
+          "low": 8539160,
+          "medium": 33704984,
+          "high": 33704984,
+          "ultra": 33704984
+        },
+        "downloadBytes": 11314331
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 3196,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 3196 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseRunnerGirl",
+      "checks": [],
+      "error": "Cannot resolve external images with binaryToJSON()."
+    },
+    {
+      "id": "showcaseRunnerLevel",
+      "budget": {
+        "triangles": 20046,
+        "drawCalls": 8,
+        "gpuBytesByTier": {
+          "low": 496584,
+          "medium": 496584,
+          "high": 496584,
+          "ultra": 496584
+        },
+        "downloadBytes": 496584
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 20046,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 20046 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseRunnerRobot",
+      "budget": {
+        "triangles": 20780,
+        "drawCalls": 6,
+        "gpuBytesByTier": {
+          "low": 9183625,
+          "medium": 34349449,
+          "high": 34349449,
+          "ultra": 34349449
+        },
+        "downloadBytes": 4345652
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 20780,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 20780 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseSidekickRunner",
+      "checks": [],
+      "error": "Cannot resolve external images with binaryToJSON()."
+    },
+    {
+      "id": "showcaseSideScrollerPlatformLevel",
+      "budget": {
+        "triangles": 3588,
+        "drawCalls": 19,
+        "gpuBytesByTier": {
+          "low": 23874741,
+          "medium": 82594997,
+          "high": 82594997,
+          "ultra": 82594997
+        },
+        "downloadBytes": 16753536
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 3588,
+            "floor": 0,
+            "ceiling": 250000
+          },
+          "message": "LOD0 3588 tris in [0, 250000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseSideScrollerWorld",
+      "budget": {
+        "triangles": 3588,
+        "drawCalls": 19,
+        "gpuBytesByTier": {
+          "low": 23874741,
+          "medium": 82594997,
+          "high": 82594997,
+          "ultra": 82594997
+        },
+        "downloadBytes": 16753536
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 3588,
+            "floor": 0,
+            "ceiling": 250000
+          },
+          "message": "LOD0 3588 tris in [0, 250000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseSkylineCity",
+      "budget": {
+        "triangles": 197247,
+        "drawCalls": 450,
+        "gpuBytesByTier": {
+          "low": 24919856,
+          "medium": 59872389,
+          "high": 59872389,
+          "ultra": 59872389
+        },
+        "downloadBytes": 7125183
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 197247,
+            "floor": 0,
+            "ceiling": 250000
+          },
+          "message": "LOD0 197247 tris in [0, 250000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseSlotCarTrack",
+      "budget": {
+        "triangles": 3624,
+        "drawCalls": 17,
+        "gpuBytesByTier": {
+          "low": 8709635,
+          "medium": 31079256,
+          "high": 31079256,
+          "ultra": 31079256
+        },
+        "downloadBytes": 5891419
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 3624,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 3624 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseSmallCarRacingEnvironment",
+      "budget": {
+        "triangles": 1175,
+        "drawCalls": 19,
+        "gpuBytesByTier": {
+          "low": 9816395,
+          "medium": 39176523,
+          "high": 39176523,
+          "ultra": 39176523
+        },
+        "downloadBytes": 8308531
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 1175,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 1175 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseSouthGardaTrack",
+      "budget": {
+        "triangles": 24483,
+        "drawCalls": 28,
+        "gpuBytesByTier": {
+          "low": 5339245,
+          "medium": 13727853,
+          "high": 13727853,
+          "ultra": 13727853
+        },
+        "downloadBytes": 849526
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 24483,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 24483 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseSouthGardaTrack2",
+      "budget": {
+        "triangles": 24483,
+        "drawCalls": 28,
+        "gpuBytesByTier": {
+          "low": 5339245,
+          "medium": 13727853,
+          "high": 13727853,
+          "ultra": 13727853
+        },
+        "downloadBytes": 849526
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 24483,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 24483 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseStadiumSeats",
+      "budget": {
+        "triangles": 3832,
+        "drawCalls": 26,
+        "gpuBytesByTier": {
+          "low": 409069,
+          "medium": 409069,
+          "high": 409069,
+          "ultra": 409069
+        },
+        "downloadBytes": 125525
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 3832,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 3832 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseStylizedMaleRunner",
+      "budget": {
+        "triangles": 20972,
+        "drawCalls": 10,
+        "gpuBytesByTier": {
+          "low": 22085675,
+          "medium": 85000235,
+          "high": 85000235,
+          "ultra": 85000235
+        },
+        "downloadBytes": 13292511
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 20972,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 20972 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseStylizedMiniFloatingIsland",
+      "budget": {
+        "triangles": 173115,
+        "drawCalls": 23,
+        "gpuBytesByTier": {
+          "low": 29684307,
+          "medium": 96793171,
+          "high": 96793171,
+          "ultra": 96793171
+        },
+        "downloadBytes": 22014738
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 173115,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 173115 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseStylizedSkeletonRunner",
+      "budget": {
+        "triangles": 10146,
+        "drawCalls": 86,
+        "gpuBytesByTier": {
+          "low": 4404196,
+          "medium": 16987108,
+          "high": 16987108,
+          "ultra": 16987108
+        },
+        "downloadBytes": 3897985
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 10146,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 10146 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseTeaHouse",
+      "budget": {
+        "triangles": 79869,
+        "drawCalls": 463,
+        "gpuBytesByTier": {
+          "low": 1338480,
+          "medium": 1338480,
+          "high": 1338480,
+          "ultra": 1338480
+        },
+        "downloadBytes": 1338480
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 79869,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 79869 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseTexturedSportsCar",
+      "budget": {
+        "triangles": 33700,
+        "drawCalls": 7,
+        "gpuBytesByTier": {
+          "low": 24464971,
+          "medium": 74796619,
+          "high": 74796619,
+          "ultra": 74796619
+        },
+        "downloadBytes": 16341613
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 33700,
+            "floor": 8000,
+            "ceiling": 80000
+          },
+          "message": "LOD0 33700 tris in [8000, 80000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseTsukubaCircuit",
+      "budget": {
+        "triangles": 17407,
+        "drawCalls": 64,
+        "gpuBytesByTier": {
+          "low": 13305291,
+          "medium": 27373686,
+          "high": 27373686,
+          "ultra": 27373686
+        },
+        "downloadBytes": 3718029
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 17407,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 17407 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseVoxelBuilding",
+      "budget": {
+        "triangles": 16204,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 464803,
+          "medium": 464803,
+          "high": 464803,
+          "ultra": 464803
+        },
+        "downloadBytes": 462637
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 16204,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 16204 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseVrPlatformLevel",
+      "budget": {
+        "triangles": 8121,
+        "drawCalls": 52,
+        "gpuBytesByTier": {
+          "low": 9946731,
+          "medium": 39306859,
+          "high": 39306859,
+          "ultra": 39306859
+        },
+        "downloadBytes": 3493325
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 8121,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 8121 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "showcaseWalkAnimatedGirl",
+      "budget": {
+        "triangles": 6602,
+        "drawCalls": 7,
+        "gpuBytesByTier": {
+          "low": 19891663,
+          "medium": 40863183,
+          "high": 40863183,
+          "ultra": 40863183
+        },
+        "downloadBytes": 3902679
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 6602,
+            "floor": 5000,
+            "ceiling": 60000
+          },
+          "message": "LOD0 6602 tris in [5000, 60000]"
+        }
+      ]
+    },
+    {
+      "id": "siegeGolfBall",
+      "budget": {
+        "triangles": 76800,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 925860,
+          "medium": 925860,
+          "high": 925860,
+          "ultra": 925860
+        },
+        "downloadBytes": 925860
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 76800,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 76800 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "siegeGolfCourseWorld",
+      "budget": {
+        "triangles": 4032,
+        "drawCalls": 9,
+        "gpuBytesByTier": {
+          "low": 158859,
+          "medium": 158859,
+          "high": 158859,
+          "ultra": 158859
+        },
+        "downloadBytes": 156402
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 4032,
+            "floor": 0,
+            "ceiling": 250000
+          },
+          "message": "LOD0 4032 tris in [0, 250000]"
+        }
+      ]
+    },
+    {
+      "id": "siegePlankSet",
+      "budget": {
+        "triangles": 12,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 2796851,
+          "medium": 11185459,
+          "high": 11185459,
+          "ultra": 11185459
+        },
+        "downloadBytes": 2170252
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 12,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 12 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "siegeWoodenBarrel",
+      "budget": {
+        "triangles": 846,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 1415129,
+          "medium": 5609433,
+          "high": 5609433,
+          "ultra": 5609433
+        },
+        "downloadBytes": 2356804
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 846,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 846 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "siegeWoodenCrate",
+      "budget": {
+        "triangles": 636,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 4217704,
+          "medium": 16800616,
+          "high": 16800616,
+          "ultra": 16800616
+        },
+        "downloadBytes": 4936261
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 636,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 636 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "skylineArcticRunnerHero",
+      "budget": {
+        "triangles": 4,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 1398205,
+          "medium": 4145256,
+          "high": 4145256,
+          "ultra": 4145256
+        },
+        "downloadBytes": 969242
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 4,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 4 tris outside [500, 15000]"
+        },
+        {
+          "gate": "G8",
+          "verdict": "fail",
+          "measured": {
+            "flag": "texture-waste"
+          },
+          "message": "texture larger than profile max on below-floor geometry"
+        }
+      ]
+    },
+    {
+      "id": "skylineIceLedgeCompact",
+      "budget": {
+        "triangles": 4,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 737384,
+          "medium": 907304,
+          "high": 907304,
+          "ultra": 907304
+        },
+        "downloadBytes": 299349
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 4,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 4 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "skylineIceLedgeLong",
+      "budget": {
+        "triangles": 4,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 477971,
+          "medium": 955837,
+          "high": 955837,
+          "ultra": 955837
+        },
+        "downloadBytes": 289789
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 4,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 4 tris outside [500, 15000]"
+        },
+        {
+          "gate": "G8",
+          "verdict": "fail",
+          "measured": {
+            "flag": "texture-waste"
+          },
+          "message": "texture larger than profile max on below-floor geometry"
+        }
+      ]
+    },
+    {
+      "id": "skylineIceLedgeMedium",
+      "budget": {
+        "triangles": 4,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 712808,
+          "medium": 1411592,
+          "high": 1411592,
+          "ultra": 1411592
+        },
+        "downloadBytes": 499440
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 4,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 4 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "skylineWinterParallaxBackdrop",
+      "budget": {
+        "triangles": 4,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 1398205,
+          "medium": 3145832,
+          "high": 3145832,
+          "ultra": 3145832
+        },
+        "downloadBytes": 1281747
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 4,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 4 tris outside [500, 15000]"
+        },
+        {
+          "gate": "G8",
+          "verdict": "fail",
+          "measured": {
+            "flag": "texture-waste"
+          },
+          "message": "texture larger than profile max on below-floor geometry"
+        }
+      ]
+    },
+    {
+      "id": "turboAlpineVenueBackdrop",
+      "budget": {
+        "triangles": 4,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 931261,
+          "medium": 931261,
+          "high": 931261,
+          "ultra": 931261
+        },
+        "downloadBytes": 264585
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 4,
+            "floor": 100,
+            "ceiling": 5000
+          },
+          "message": "LOD0 4 tris outside [100, 5000]"
+        },
+        {
+          "gate": "G8",
+          "verdict": "fail",
+          "measured": {
+            "flag": "texture-waste"
+          },
+          "message": "texture larger than profile max on below-floor geometry"
+        }
+      ]
+    },
+    {
+      "id": "turboCircuitEnvironmentV2",
+      "budget": {
+        "triangles": 75504,
+        "drawCalls": 28,
+        "gpuBytesByTier": {
+          "low": 2781149,
+          "medium": 2781149,
+          "high": 2781149,
+          "ultra": 2781149
+        },
+        "downloadBytes": 2776133
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 75504,
+            "floor": 100,
+            "ceiling": 5000
+          },
+          "message": "LOD0 75504 tris outside [100, 5000]"
+        }
+      ]
+    },
+    {
+      "id": "turboFormulaCircuit",
+      "budget": {
+        "triangles": 4112,
+        "drawCalls": 9,
+        "gpuBytesByTier": {
+          "low": 127008,
+          "medium": 127008,
+          "high": 127008,
+          "ultra": 127008
+        },
+        "downloadBytes": 127008
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 4112,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 4112 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "turboHairpinVenueKit",
+      "budget": {
+        "triangles": 3764,
+        "drawCalls": 11,
+        "gpuBytesByTier": {
+          "low": 109416,
+          "medium": 109416,
+          "high": 109416,
+          "ultra": 109416
+        },
+        "downloadBytes": 109416
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 3764,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 3764 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "turboHeroCar",
+      "budget": {
+        "triangles": 71426,
+        "drawCalls": 483,
+        "gpuBytesByTier": {
+          "low": 1043514,
+          "medium": 1043514,
+          "high": 1043514,
+          "ultra": 1043514
+        },
+        "downloadBytes": 1043514
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 71426,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 71426 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "turboRaceCar",
+      "budget": {
+        "triangles": 11344,
+        "drawCalls": 5,
+        "gpuBytesByTier": {
+          "low": 8622104,
+          "medium": 33787928,
+          "high": 33787928,
+          "ultra": 33787928
+        },
+        "downloadBytes": 7412583
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 11344,
+            "floor": 8000,
+            "ceiling": 80000
+          },
+          "message": "LOD0 11344 tris in [8000, 80000]"
+        }
+      ]
+    },
+    {
+      "id": "turboTsukubaVisualTrack",
+      "budget": {
+        "triangles": 17407,
+        "drawCalls": 64,
+        "gpuBytesByTier": {
+          "low": 13305291,
+          "medium": 27373686,
+          "high": 27373686,
+          "ultra": 27373686
+        },
+        "downloadBytes": 3718029
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 17407,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 17407 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "vaultBreakersBall",
+      "budget": {
+        "triangles": 960,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 29352,
+          "medium": 29352,
+          "high": 29352,
+          "ultra": 29352
+        },
+        "downloadBytes": 29352
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 960,
+            "floor": 100,
+            "ceiling": 5000
+          },
+          "message": "LOD0 960 tris in [100, 5000]"
+        }
+      ]
+    },
+    {
+      "id": "vaultBreakersCabinet",
+      "budget": {
+        "triangles": 5616,
+        "drawCalls": 5,
+        "gpuBytesByTier": {
+          "low": 16927264,
+          "medium": 67258912,
+          "high": 67258912,
+          "ultra": 67258912
+        },
+        "downloadBytes": 11083649
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 5616,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 5616 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "vaultBreakersCabinetHigan",
+      "budget": {
+        "triangles": 23632,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 734661,
+          "medium": 734661,
+          "high": 734661,
+          "ultra": 734661
+        },
+        "downloadBytes": 733705
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 23632,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 23632 tris outside [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "vaultBreakersFlipper",
+      "budget": {
+        "triangles": 1256,
+        "drawCalls": 3,
+        "gpuBytesByTier": {
+          "low": 38808,
+          "medium": 38808,
+          "high": 38808,
+          "ultra": 38808
+        },
+        "downloadBytes": 38808
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 1256,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 1256 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "vaultBreakersFlipperReal",
+      "budget": {
+        "triangles": 1084,
+        "drawCalls": 1,
+        "gpuBytesByTier": {
+          "low": 1414941,
+          "medium": 5609245,
+          "high": 5609245,
+          "ultra": 5609245
+        },
+        "downloadBytes": 238839
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 1084,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 1084 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "vaultBreakersMechanisms",
+      "budget": {
+        "triangles": 5436,
+        "drawCalls": 5,
+        "gpuBytesByTier": {
+          "low": 159000,
+          "medium": 159000,
+          "high": 159000,
+          "ultra": 159000
+        },
+        "downloadBytes": 159000
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 5436,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 5436 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "vaultBreakersTable",
+      "budget": {
+        "triangles": 1012,
+        "drawCalls": 8,
+        "gpuBytesByTier": {
+          "low": 30120,
+          "medium": 30120,
+          "high": 30120,
+          "ultra": 30120
+        },
+        "downloadBytes": 30120
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 1012,
+            "floor": 500,
+            "ceiling": 15000
+          },
+          "message": "LOD0 1012 tris in [500, 15000]"
+        }
+      ]
+    },
+    {
+      "id": "vaultBreakersVaultDoor",
+      "budget": {
+        "triangles": 386,
+        "drawCalls": 4,
+        "gpuBytesByTier": {
+          "low": 11688,
+          "medium": 11688,
+          "high": 11688,
+          "ultra": 11688
+        },
+        "downloadBytes": 11688
+      },
+      "checks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 386,
+            "floor": 100,
+            "ceiling": 5000
+          },
+          "message": "LOD0 386 tris in [100, 5000]"
+        }
+      ]
+    }
+  ]
+}

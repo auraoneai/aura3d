@@ -88,6 +88,93 @@ export function resolveCompressedTextureFormat(gl: WebGL2RenderingContext, forma
     }
   }
 
+// ---------------------------------------------------------------------------
+// C-16 real implementation (PRD-05 Phase 1) — `resolveCompressedTextureFormatSlot`
+// provider. Adds the bc7/etc2-rgb8unorm members plus the sRGB internal-format
+// variants (sRGB × the DXT/ASTC/BPTC extension's sRGB constants); flag-off the
+// slot keeps serving the () => null stub so `resolveCompressedTextureFormat`
+// above is untouched.
+// ---------------------------------------------------------------------------
+
+const GL_COMPRESSED_RGB8_ETC2 = 0x9274;
+const GL_COMPRESSED_SRGB8_ETC2 = 0x9275;
+const GL_COMPRESSED_RGBA8_ETC2_EAC = 0x9278;
+const GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC = 0x9279;
+
+/**
+ * C-16 real: map a `TextureCompressedFormat` + colour space to a WebGL2
+ * internal-format enum, `null` when the backing extension is absent.
+ *   bc1/bc3 → WEBGL_compressed_texture_s3tc (sRGB needs _s3tc_srgb too)
+ *   bc7     → EXT_texture_compression_bptc
+ *   astc    → WEBGL_compressed_texture_astc
+ *   etc2    → core WebGL2 (the WEBGL_compressed_texture_etc gate only matters
+ *             on non-core contexts; on WebGL2 the formats are guaranteed)
+ */
+export function resolveCompressedTextureFormatReal(
+  format: TextureCompressedFormat,
+  colorSpace: "srgb" | "linear",
+  gl: WebGL2RenderingContext
+): number | null {
+  const srgb = colorSpace === "srgb";
+  switch (format) {
+    case "bc1-rgba-unorm": {
+      const s3tc = gl.getExtension("WEBGL_compressed_texture_s3tc");
+      if (!s3tc) return null;
+      if (srgb) {
+        const s3tcSrgb = gl.getExtension("WEBGL_compressed_texture_s3tc_srgb");
+        return s3tcSrgb ? s3tcSrgb.COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT : null;
+      }
+      return s3tc.COMPRESSED_RGBA_S3TC_DXT1_EXT;
+    }
+    case "bc3-rgba-unorm": {
+      const s3tc = gl.getExtension("WEBGL_compressed_texture_s3tc");
+      if (!s3tc) return null;
+      if (srgb) {
+        const s3tcSrgb = gl.getExtension("WEBGL_compressed_texture_s3tc_srgb");
+        return s3tcSrgb ? s3tcSrgb.COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT : null;
+      }
+      return s3tc.COMPRESSED_RGBA_S3TC_DXT5_EXT;
+    }
+    case "bc7-rgba-unorm": {
+      const bptc = gl.getExtension("EXT_texture_compression_bptc");
+      if (!bptc) return null;
+      return srgb ? bptc.COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT : bptc.COMPRESSED_RGBA_BPTC_UNORM_EXT;
+    }
+    case "astc-4x4-rgba-unorm": {
+      const astc = gl.getExtension("WEBGL_compressed_texture_astc");
+      if (!astc) return null;
+      return srgb ? astc.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR : astc.COMPRESSED_RGBA_ASTC_4x4_KHR;
+    }
+    case "etc2-rgba8unorm":
+      return srgb ? GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC : GL_COMPRESSED_RGBA8_ETC2_EAC;
+    case "etc2-rgb8unorm":
+      return srgb ? GL_COMPRESSED_SRGB8_ETC2 : GL_COMPRESSED_RGB8_ETC2;
+    default:
+      throw new Error(`UNSUPPORTED_COMPRESSED_FORMAT:${String(format)}`);
+  }
+}
+
+/**
+ * C-16 §7.4 probe: which compressed-texture families this context can consume.
+ * `etc2` is a WebGL2-core guarantee; the other four map 1:1 onto their
+ * WebGL extension objects (S3TC sRGB lives in its own extension).
+ */
+export function probeCompressedTextureCapabilities(gl: WebGL2RenderingContext): {
+  readonly astc: boolean;
+  readonly bptc: boolean;
+  readonly etc2: boolean;
+  readonly s3tc: boolean;
+  readonly s3tcSrgb: boolean;
+} {
+  return {
+    astc: gl.getExtension("WEBGL_compressed_texture_astc") !== null,
+    bptc: gl.getExtension("EXT_texture_compression_bptc") !== null,
+    etc2: true,
+    s3tc: gl.getExtension("WEBGL_compressed_texture_s3tc") !== null,
+    s3tcSrgb: gl.getExtension("WEBGL_compressed_texture_s3tc_srgb") !== null
+  };
+}
+
 export function magFilter(gl: WebGL2RenderingContext, filter: TextureMagFilter): GLenum {
     return filter === "nearest" ? gl.NEAREST : gl.LINEAR;
   }

@@ -679,3 +679,173 @@ export async function createRapierPhysics(options: RapierPhysicsOptions = {}): P
 export function createRapierPhysicsSync(options: Omit<RapierPhysicsOptions, "moduleLoader"> = {}): RapierPhysicsWorld {
   return new RapierPhysicsWorld(defaultRapierModule, options.gravity ?? [0, -9.81, 0]);
 }
+
+/**
+ * PRD-05 §6.3.7 — consume a generated `<id>.<hash8>.collision.glb` sidecar.
+ *
+ * The sidecar (written by `tools/asset-optimize` step `colliders`) carries one
+ * node per mesh-bearing scene node; each mesh's `extras.aura3dCollider` names
+ * the shape: `trimesh` / `convex-hull` geometry verbatim, or analytic `box` /
+ * `capsule` parameters baked from bounds. Node-local TRS is baked into the
+ * produced shape so colliders sit where the source mesh sits.
+ *
+ * `source` is a fetchable URL or the sidecar bytes. `transform` places the
+ * fixed body all colliders attach to — it is the model's world transform
+ * (Q-15-2 wires `model(asset, { physics, collider: "auto" })` to call this).
+ * `options.collider` passes density/friction/etc. through to every collider.
+ */
+export interface ColliderSidecarTransform {
+  readonly position?: PhysicsVec3;
+  readonly rotation?: readonly [number, number, number, number];
+}
+
+export interface ColliderSidecarOptions extends ColliderSidecarTransform {
+  readonly body?: RapierBodyHandle;
+  readonly collider?: Readonly<Partial<Omit<RapierColliderSpec, "shape">>>;
+}
+
+export interface ColliderSidecarResult {
+  readonly body: RapierBodyHandle;
+  readonly colliders: readonly RapierColliderHandle[];
+  /** Per-collider `extras.aura3dCollider.sourceNode` in creation order. */
+  readonly sourceNodes: readonly string[];
+}
+
+interface Aura3dColliderExtra {
+  readonly shape?: "box" | "capsule" | "convex" | "trimesh";
+  readonly sourceNode?: string;
+  /** Column-major 4x4 world transform of the source node (incl. ancestors). */
+  readonly nodeWorldMatrix?: readonly number[];
+  readonly halfExtents?: readonly [number, number, number];
+  readonly radius?: number;
+  readonly halfHeight?: number;
+  readonly center?: readonly [number, number, number];
+}
+
+function transformPoint(m: readonly number[], p: readonly [number, number, number]): PhysicsVec3 {
+  const [x, y, z] = p;
+  return [
+    m[0]! * x + m[4]! * y + m[8]! * z + m[12]!,
+    m[1]! * x + m[5]! * y + m[9]! * z + m[13]!,
+    m[2]! * x + m[6]! * y + m[10]! * z + m[14]!
+  ];
+}
+
+/** Largest column length — uniform-scale estimate for baking node scale into collider params. */
+function transformScale(m: readonly number[]): number {
+  let max = 0;
+  for (let c = 0; c < 3; c++) {
+    const len = Math.hypot(m[c * 4]!, m[c * 4 + 1]!, m[c * 4 + 2]!);
+    if (len > max) max = len;
+  }
+  return max || 1;
+}
+
+export async function createCollidersFromSidecar(
+  world: RapierPhysicsWorld,
+  source: string | Uint8Array,
+  options: ColliderSidecarOptions = {}
+): Promise<ColliderSidecarResult> {
+  const bytes = typeof source === "string"
+    ? new Uint8Array(await (await fetch(source)).arrayBuffer())
+    : source;
+  const [{ WebIO }, { ALL_EXTENSIONS }, { MeshoptDecoder }] = await Promise.all([
+    import("@gltf-transform/core"),
+    import("@gltf-transform/extensions"),
+    import("meshoptimizer")
+  ]);
+  const io = new WebIO()
+    .registerExtensions(ALL_EXTENSIONS)
+    .registerDependencies({ "meshopt.decoder": MeshoptDecoder });
+  await MeshoptDecoder.ready;
+  const doc = await io.readBinary(bytes);
+
+  const body = options.body ?? world.createRigidBody({
+    type: "fixed",
+    position: options.position,
+    rotation: options.rotation
+  });
+  const colliders: RapierColliderHandle[] = [];
+  const sourceNodes: string[] = [];
+  for (const node of doc.getRoot().listNodes()) {
+    const mesh = node.getMesh();
+    if (!mesh) continue;
+    const extras = (mesh.getExtras() as { aura3dCollider?: Aura3dColliderExtra }).aura3dCollider;
+    if (!extras?.shape) continue;
+    const m = extras.nodeWorldMatrix && extras.nodeWorldMatrix.length === 16 ? extras.nodeWorldMatrix : node.getWorldMatrix();
+    const scale = transformScale(m);
+    let shape: RapierShapeSpec;
+    if (extras.shape === "box") {
+      if (!extras.halfExtents || !extras.center) throw new Error(`collider sidecar node ${node.getName()}: box shape missing halfExtents/center`);
+      const center = transformPoint(m, [extras.center[0]!, extras.center[1]!, extras.center[2]!]);
+      // Rapier cuboids are axis-aligned in collider space; rotation-baked boxes
+      // become the AABB of the rotated corners (documented approximation).
+      const h = extras.halfExtents;
+      const corners: PhysicsVec3[] = [];
+      for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) {
+        corners.push(transformPoint(m, [extras.center[0]! + sx * h[0]!, extras.center[1]! + sy * h[1]!, extras.center[2]! + sz * h[2]!]));
+      }
+      const min: [number, number, number] = [Infinity, Infinity, Infinity];
+      const max: [number, number, number] = [-Infinity, -Infinity, -Infinity];
+      for (const c of corners) for (let i = 0; i < 3; i++) {
+        if (c[i]! < min[i]!) min[i] = c[i]!;
+        if (c[i]! > max[i]!) max[i] = c[i]!;
+      }
+      const half: PhysicsVec3 = [(max[0] - min[0]) / 2, (max[1] - min[1]) / 2, (max[2] - min[2]) / 2];
+      if (half.every((v, i) => Math.abs(v - (h[i]! * scale)) < 1e-4) && center.every((v) => Math.abs(v) < 1e-6)) {
+        shape = { kind: "box", halfExtents: [h[0]! * scale, h[1]! * scale, h[2]! * scale] };
+      } else {
+        // Off-center or rotated: encode the AABB as a trimesh-free box by
+        // wrapping it in a convex hull of the 8 transformed corners.
+        shape = { kind: "convex-hull", vertices: corners };
+      }
+    } else if (extras.shape === "capsule") {
+      if (extras.radius === undefined || extras.halfHeight === undefined || !extras.center) {
+        throw new Error(`collider sidecar node ${node.getName()}: capsule shape missing radius/halfHeight/center`);
+      }
+      const center = transformPoint(m, [extras.center[0]!, extras.center[1]!, extras.center[2]!]);
+      if (center.some((v) => Math.abs(v) > 1e-6)) {
+        // Capsules are origin-centred in collider space; an off-centre capsule
+        // is approximated by a convex hull over both cap spheres.
+        const vertices: PhysicsVec3[] = [];
+        for (const sign of [-1, 1]) {
+          for (let a = 0; a < 8; a++) {
+            const t = (a / 8) * Math.PI * 2;
+            const c = transformPoint(m, [
+              extras.center[0]! + Math.cos(t) * extras.radius,
+              extras.center[1]! + sign * extras.halfHeight,
+              extras.center[2]! + Math.sin(t) * extras.radius
+            ]);
+            vertices.push(c);
+          }
+        }
+        shape = { kind: "convex-hull", vertices };
+      } else {
+        shape = { kind: "capsule", halfHeight: extras.halfHeight * scale, radius: extras.radius * scale };
+      }
+    } else {
+      const vertices: PhysicsVec3[] = [];
+      const indices: number[] = [];
+      const el: [number, number, number] = [0, 0, 0];
+      for (const prim of mesh.listPrimitives()) {
+        const pos = prim.getAttribute("POSITION");
+        if (!pos) continue;
+        const idx = prim.getIndices()?.getArray();
+        const base = vertices.length;
+        // getElement dequantizes — the sidecar is meshopt-compressed and its
+        // POSITION accessors are KHR_mesh_quantization integers.
+        for (let i = 0; i < pos.getCount(); i += 1) {
+          pos.getElement(i, el);
+          vertices.push(transformPoint(m, [el[0], el[1], el[2]]));
+        }
+        if (idx) for (const i of idx) indices.push(base + i);
+        else for (let i = 0; i < pos.getCount(); i++) indices.push(base + i);
+      }
+      if (vertices.length === 0) continue;
+      shape = extras.shape === "convex" ? { kind: "convex-hull", vertices } : { kind: "mesh", vertices, indices };
+    }
+    colliders.push(world.createCollider(body, { ...options.collider, shape }));
+    sourceNodes.push(extras.sourceNode ?? node.getName());
+  }
+  return { body, colliders, sourceNodes };
+}

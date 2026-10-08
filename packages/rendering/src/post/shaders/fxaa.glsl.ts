@@ -237,7 +237,12 @@ void main() {
   vec2 uv = gl_FragCoord.xy * u_outputTexel;
   vec4 color = ApplyFXAA( u_source, u_texelSize, uv );
   // S12: the triangular-PDF dither belongs to the last write to the 8-bit
-  // output — the legacy present's missing banding fix lands here.
-  outColor = vec4(color.rgb + triangularDither(gl_FragCoord.xy, 0.0), color.a);
+  // output — on the legacy present this program IS the last write; on the v2
+  // unfused tail S12-finalize follows, so it compiles with AURA_FXAA_NO_DITHER.
+  outColor = vec4(color.rgb
+#if !defined(AURA_FXAA_NO_DITHER)
+    + triangularDither(gl_FragCoord.xy, 0.0)
+#endif
+    , color.a);
 }
 `;

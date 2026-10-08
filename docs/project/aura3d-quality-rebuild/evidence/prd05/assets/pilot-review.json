@@ -1,0 +1,19 @@
+{
+  "schema": "aura3d.pilot-review/1.0",
+  "generatedAt": "2026-10-07T11:25:00.000Z",
+  "phase": "PRD-05 Phase 7",
+  "procedure": [
+    "At each CONTRACTS §7 G-PANEL round (IC-4 2026-11-05, IC-8 2026-12-03, IC-12 2026-12-31): read the lane-14 tools/quality-rebuild-capture records for the six pilot routes at their default URLs (no ?capture=review) and append one review row per game.",
+    "deltas are per-G-PANEL asset changes: which replacement-lists.json picks shipped, visual delta vs the previous checkpoint capture (rubric axes from the lookdev record), and VRAM/draw/ready-byte movement vs tier-measurements.json.",
+    "Every pilot requires a named human sign-off (pass|fail + notes). Misses are filed as qr-ic-regression issues, attributed per game by leave-one-out: re-run the pilot with one replacement reverted; the delta isolates the offending asset."
+  ],
+  "rounds": [],
+  "pilots": [
+    { "game": "showcase-skyline-runner", "title": "Skyline Runner", "status": "awaiting-g-panel", "signOff": null, "deltas": [] },
+    { "game": "showcase-mech-hangar", "title": "Mech Hangar", "status": "awaiting-g-panel", "signOff": null, "deltas": [] },
+    { "game": "showcase-courier-rush", "title": "Courier Rush", "status": "awaiting-g-panel", "signOff": null, "deltas": [] },
+    { "game": "showcase-vault-breakers", "title": "Vault Breakers", "status": "awaiting-g-panel", "signOff": null, "deltas": [] },
+    { "game": "showcase-gravity-post", "title": "Gravity Post", "status": "awaiting-g-panel", "signOff": null, "deltas": [] },
+    { "game": "showcase-bank-shot", "title": "Bank Shot", "status": "awaiting-g-panel", "signOff": null, "deltas": [] }
+  ]
+}

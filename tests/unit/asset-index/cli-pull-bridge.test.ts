@@ -16,6 +16,7 @@ import {
 import {
   buildSearchAdapters,
   defaultDownloadFile,
+  partitionResolveCandidates,
   scoreResolveCandidate,
   runResolve,
   runSearch,
@@ -644,8 +645,8 @@ describe("asset resolve ranking preservation", () => {
     expect(downloaded).toEqual(["https://example.test/clean.glb"]);
   });
 
-  it("penalizes missing material and texture metadata for non-abstract visual roles", () => {
-    const score = scoreResolveCandidate(candidate(asset({
+  it("penalizes missing material metadata and excludes zero-texture rows for texture-required roles", () => {
+    const bare = scoreResolveCandidate(candidate(asset({
       id: "catalog:bare-product",
       title: "Product Shoe",
       url: "https://example.test/shoe.glb",
@@ -655,10 +656,54 @@ describe("asset resolve ranking preservation", () => {
       roleSuitability: "Commerce product candidate.",
     })), { query: "product shoe" });
 
-    expect(score.penalties).toEqual(expect.arrayContaining([
+    expect(bare.penalties).toEqual(expect.arrayContaining([
       "missing material metadata for visual model role",
+    ]));
+    // The old "-6 missing texture metadata" penalty is gone: missing textures
+    // exclude for texture-required roles, and unknown texture metadata is free.
+    expect(bare.penalties).not.toEqual(expect.arrayContaining([
       "missing texture metadata for visual model role",
     ]));
+
+    const zeroTex = scoreResolveCandidate(candidate(asset({
+      id: "catalog:zero-tex-product",
+      title: "Product Shoe",
+      url: "https://example.test/shoe.glb",
+      sourcePage: "https://example.test/shoe",
+      license: normalizeLicense("CC0", "https://example.test/shoe"),
+      intendedRole: "product",
+      materialCount: 1,
+      textureCount: 0,
+      roleSuitability: "Commerce product candidate.",
+    })), { query: "product shoe" });
+
+    expect(zeroTex.exclusions.some((e) => e.includes("texture-required role"))).toBe(true);
+    expect(zeroTex.total).toBe(0);
+  });
+
+  it("filters unverifiable licences out of the ranked pool entirely (licence = filter, not score)", () => {
+    const untrusted = candidate(asset({
+      id: "catalog:untrusted",
+      title: "Mystery Mesh",
+      url: "https://example.test/mesh.glb",
+      license: normalizeLicense(undefined),
+    }), 200);
+    const clean = candidate(asset({
+      id: "catalog:clean",
+      title: "CC0 Cube",
+      url: "https://example.test/cube.glb",
+      sourcePage: "https://example.test/cube",
+      license: normalizeLicense("CC0", "https://example.test/cube"),
+      materialCount: 2,
+      textureCount: 3,
+    }), 10);
+    const { ranked, excluded } = partitionResolveCandidates([untrusted, clean], { query: "cube" });
+    expect(ranked.map((c) => c.asset.id)).toEqual(["catalog:clean"]);
+    expect(excluded.map((e) => e.candidate.asset.id)).toEqual(["catalog:untrusted"]);
+    expect(excluded[0]!.exclusions.some((e) => e.includes("license"))).toBe(true);
+    const score = scoreResolveCandidate(clean, { query: "cube" });
+    expect(score.exclusions).toEqual([]);
+    expect(score.total).toBeGreaterThan(0);
   });
 
   it("ranks durable role-fit metadata above a weak first result", () => {
@@ -698,10 +743,13 @@ describe("runSearch", () => {
       makeResolver: () => stubResolver([candidate(cc0, 20), candidate(unverified, 10)]) as never,
     });
     expect(report.profile).toBe("general");
-    expect(report.candidates).toHaveLength(2);
-    expect(report.rejectedCandidates).toHaveLength(0);
+    // §6.6: the unverified-license row is excluded into rejectedCandidates
+    // (with exclusionReasons), not listed as a candidate.
+    expect(report.candidates).toHaveLength(1);
+    expect(report.rejectedCandidates).toHaveLength(1);
     expect(report.candidates.find((c) => c.id === "os3a:a")?.autoPullable).toBe(true);
-    expect(report.candidates.find((c) => c.id === "khronos:b")?.autoPullable).toBe(false);
+    expect(report.rejectedCandidates.find((c) => c.id === "khronos:b")?.autoPullable).toBe(false);
+    expect(report.rejectedCandidates.find((c) => c.id === "khronos:b")?.exclusionReasons?.join(" ")).toContain("license");
   });
 
   it("annotates fighting-character candidates with suitability and rejection reasons", async () => {

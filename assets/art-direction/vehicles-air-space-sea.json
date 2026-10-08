@@ -1,0 +1,20 @@
+{
+  "id": "vehicles-air-space-sea",
+  "shading": "pbr",
+  "genre": "space",
+  "fantasy": "Utilitarian craft across air/space/sea \u2014 panel lines and matte hulls.",
+  "palette": {
+    "primary": [
+      "#d8dee9",
+      "#4c566a",
+      "#5e81ac"
+    ],
+    "accent": "#d08770"
+  },
+  "texelDensity": 256,
+  "referenceImages": [],
+  "mix": [
+    "planets-space"
+  ],
+  "notes": "Set pieces seen at distance; texture budget biased to silhouette."
+}

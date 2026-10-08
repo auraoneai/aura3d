@@ -1,0 +1,961 @@
+{
+  "codemod": "post-v2",
+  "files": 25,
+  "changed": 2,
+  "written": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/boot.ts",
+      "line": 73,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "neon-night",
+      "note": "added output block"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/scene/materials.ts",
+      "line": 11,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.18 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/scene/materials.ts",
+      "line": 12,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.78 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/scene/materials.ts",
+      "line": 14,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.45 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/scene/materials.ts",
+      "line": 15,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.42 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/scene/materials.ts",
+      "line": 16,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.32 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/scene/materials.ts",
+      "line": 18,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.42 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 25,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.36 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 30,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.10 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 35,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.70 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 73,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.13 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 78,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.27 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 83,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.11 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 88,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.32 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 99,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.25 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 112,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.79 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 142,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.97 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 322,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.37 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 335,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.13 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 472,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.77 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 477,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.37 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 517,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 1.00 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 554,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.20 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 555,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.49 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 556,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.34 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 715,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.32 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 721,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.58 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 838,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.46 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 844,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.37 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 850,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.18 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 1018,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.68 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "line": 1024,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.19 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 316,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.13 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 326,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.65 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 342,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.70 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 346,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.38 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 350,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.38 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 351,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.28 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 352,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.14 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 353,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.18 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 355,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.47 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 357,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.45 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 358,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.42 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 360,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.46 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 364,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.18 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 374,
+      "construct": "effects.neonBloom",
+      "mapping": "exact",
+      "target": "v2 S9-bloom preset"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 374,
+      "construct": "effects.neonBloom",
+      "mapping": "exact",
+      "note": "removed softKnee/shoulder/quality"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 375,
+      "construct": "effects.colorGrade",
+      "mapping": "approximate",
+      "target": "v2 S10b-grade",
+      "note": "exposure real since Phase 1; shadows/highlights/lut land Phase 5"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 376,
+      "construct": "effects.antiAlias",
+      "mapping": "approximate",
+      "target": "v2 S11-aa tier",
+      "note": "mode maps to tier AA (never FXAA on MSAA); TAA behind A3D_QR_POST_TAA"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 376,
+      "construct": "effects.antiAlias",
+      "mapping": "exact",
+      "note": "deleted — tier auto (never FXAA on MSAA)"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 376,
+      "construct": "fxaa",
+      "mapping": "exact",
+      "target": "v2 S11-aa-fxaa (r185 port + dither)"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 730,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "neon-night",
+      "note": "added output block"
+    }
+  ],
+  "reports": [
+    {
+      "file": "apps/showcase-rooftop-buckets/src/buckets-audio.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/court.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/hoop-sim.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/main.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/rim.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/scoring.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/shot.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/boot.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/env-assets.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/scene/camera.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/scene/fx.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/scene/lighting.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/scene/materials.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-rooftop-buckets/src/v2/scene/materials.ts",
+            "line": 11,
+            "emissive": "#93c5fd",
+            "emissiveIntensity": 0.56,
+            "lumaXstrength": 0.184
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/v2/scene/materials.ts",
+            "line": 12,
+            "emissive": "#f97316",
+            "emissiveIntensity": 1.15,
+            "lumaXstrength": 0.777
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/v2/scene/materials.ts",
+            "line": 13,
+            "emissive": "#f97316",
+            "emissiveIntensity": 2.2,
+            "lumaXstrength": 1.486
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/v2/scene/materials.ts",
+            "line": 14,
+            "emissive": "#e11d48",
+            "emissiveIntensity": 1.8,
+            "lumaXstrength": 0.452
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/v2/scene/materials.ts",
+            "line": 15,
+            "emissive": "#c026d3",
+            "emissiveIntensity": 2.35,
+            "lumaXstrength": 0.422
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/v2/scene/materials.ts",
+            "line": 16,
+            "emissive": "#0284c7",
+            "emissiveIntensity": 2.4,
+            "lumaXstrength": 0.321
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/v2/scene/materials.ts",
+            "line": 17,
+            "emissive": "#ffb35c",
+            "emissiveIntensity": 2.4,
+            "lumaXstrength": 2.354
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/v2/scene/materials.ts",
+            "line": 18,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 0.85,
+            "lumaXstrength": 0.42
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/scene/world.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/scenarios/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/evidence/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/buckets-audio.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 25,
+            "emissive": "#172554",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.358
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 30,
+            "emissive": "#701a75",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.104
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 35,
+            "emissive": "#ea580c",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.699
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 73,
+            "emissive": "#0284c7",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.134
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 78,
+            "emissive": "#d97706",
+            "emissiveIntensity": 0.42,
+            "lumaXstrength": 0.272
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 83,
+            "emissive": "#e11d48",
+            "emissiveIntensity": 0.42,
+            "lumaXstrength": 0.105
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 88,
+            "emissive": "#dc2626",
+            "emissiveIntensity": 0.42,
+            "lumaXstrength": 0.322
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 99,
+            "emissive": "#2bb7dd",
+            "emissiveIntensity": 0.42,
+            "lumaXstrength": 0.254
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 112,
+            "emissive": "#ffcf70",
+            "emissiveIntensity": 0.8,
+            "lumaXstrength": 0.788
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 142,
+            "emissive": "#ff9b52",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.971
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 322,
+            "emissive": "#94a3b8",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.366
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 335,
+            "emissive": "#0284c7",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.134
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 472,
+            "emissive": "#dc2626",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.766
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 477,
+            "emissive": "#94a3b8",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.366
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 517,
+            "emissive": "#ffedd5",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.995
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 554,
+            "emissive": "#334155",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.205
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 555,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.494
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 556,
+            "emissive": "#06b6d4",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.339
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 715,
+            "emissive": "#f97316",
+            "emissiveIntensity": 0.48,
+            "lumaXstrength": 0.324
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 721,
+            "emissive": "#fb923c",
+            "emissiveIntensity": 0.74,
+            "lumaXstrength": 0.577
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 838,
+            "emissive": "#f97316",
+            "emissiveIntensity": 0.68,
+            "lumaXstrength": 0.459
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 844,
+            "emissive": "#0891b2",
+            "emissiveIntensity": 0.86,
+            "lumaXstrength": 0.365
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 850,
+            "emissive": "#e11d48",
+            "emissiveIntensity": 0.72,
+            "lumaXstrength": 0.181
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 1018,
+            "emissive": "#f97316",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.675
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/environment.ts",
+            "line": 1024,
+            "emissive": "#22d3ee",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.186
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+            "line": 316,
+            "emissive": "#0284c7",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.134
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+            "line": 326,
+            "emissive": "#d97706",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.647
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+            "line": 342,
+            "emissive": "#ea580c",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.699
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+            "line": 346,
+            "emissive": "#f97316",
+            "emissiveIntensity": 0.56,
+            "lumaXstrength": 0.378
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+            "line": 350,
+            "emissive": "#f97316",
+            "emissiveIntensity": 0.56,
+            "lumaXstrength": 0.378
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+            "line": 351,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 0.56,
+            "lumaXstrength": 0.277
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+            "line": 352,
+            "emissive": "#e11d48",
+            "emissiveIntensity": 0.56,
+            "lumaXstrength": 0.141
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+            "line": 353,
+            "emissive": "#93c5fd",
+            "emissiveIntensity": 0.56,
+            "lumaXstrength": 0.184
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+            "line": 355,
+            "emissive": "#f472d0",
+            "emissiveIntensity": 1.08,
+            "lumaXstrength": 0.472
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+            "line": 356,
+            "emissive": "#f97316",
+            "emissiveIntensity": 2.2,
+            "lumaXstrength": 1.486
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+            "line": 357,
+            "emissive": "#e11d48",
+            "emissiveIntensity": 1.8,
+            "lumaXstrength": 0.452
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+            "line": 358,
+            "emissive": "#c026d3",
+            "emissiveIntensity": 2.35,
+            "lumaXstrength": 0.422
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+            "line": 359,
+            "emissive": "#fb923c",
+            "emissiveIntensity": 2.15,
+            "lumaXstrength": 1.678
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+            "line": 360,
+            "emissive": "#a21caf",
+            "emissiveIntensity": 1.9,
+            "lumaXstrength": 0.46
+          },
+          {
+            "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+            "line": 364,
+            "emissive": "#c026d3",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.18
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/gameplay/court.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/gameplay/hoop-sim.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/gameplay/rim.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/gameplay/scoring.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/gameplay/shot.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    }
+  ]
+}

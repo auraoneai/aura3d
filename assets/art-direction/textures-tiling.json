@@ -1,0 +1,18 @@
+{
+  "id": "textures-tiling",
+  "shading": "pbr",
+  "genre": "generic",
+  "fantasy": "Real-material tiling sets \u2014 ground, rock, metal, wood, fabric.",
+  "palette": {
+    "primary": [
+      "#8fbcbb",
+      "#d8dee9",
+      "#4c566a"
+    ],
+    "accent": "#ebcb8b"
+  },
+  "texelDensity": 512,
+  "referenceImages": [],
+  "mix": [],
+  "notes": "\u226516 sets at 1024+2048 per \u00a76.6; ORM packed, normal +Y."
+}

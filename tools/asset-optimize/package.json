@@ -1,0 +1,19 @@
+{
+  "name": "@aura3d/asset-optimize",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "PRD-05 asset-optimize toolchain (lane-owned workspace manifest, CONTRACTS §4.4). Exact pins only.",
+  "scripts": {
+    "optimize": "tsx --tsconfig ../../tsconfig.base.json ./index.ts"
+  },
+  "dependencies": {
+    "@gltf-transform/core": "4.5.1",
+    "@gltf-transform/functions": "4.5.1",
+    "@gltf-transform/extensions": "4.5.1",
+    "mikktspace": "1.1.1",
+    "sharp": "0.33.5",
+    "meshoptimizer": "1.2.0",
+    "draco3d": "1.5.7"
+  }
+}

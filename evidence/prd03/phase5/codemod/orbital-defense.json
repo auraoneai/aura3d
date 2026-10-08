@@ -1,0 +1,338 @@
+{
+  "codemod": "post-v2",
+  "files": 12,
+  "changed": 1,
+  "written": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-orbital-defense/src/v2/boot.ts",
+      "line": 214,
+      "construct": "renderer.toneMapping",
+      "mapping": "exact",
+      "target": "output.toneMapping (ACES/AgX/Neutral/linear/reinhard/none)"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/v2/boot.ts",
+      "line": 223,
+      "construct": "renderer.toneMapping",
+      "mapping": "exact",
+      "target": "output.toneMapping (ACES/AgX/Neutral/linear/reinhard/none)"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/v2/scene/materials.ts",
+      "line": 20,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.63 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/v2/scene/materials.ts",
+      "line": 67,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.52 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/v2/scene/materials.ts",
+      "line": 75,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.27 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/v2/evidence/index.ts",
+      "line": 22,
+      "construct": "renderer.toneMapping",
+      "mapping": "exact",
+      "target": "output.toneMapping (ACES/AgX/Neutral/linear/reinhard/none)"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/legacy/main.ts",
+      "line": 72,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.71 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/legacy/main.ts",
+      "line": 73,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.48 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/legacy/main.ts",
+      "line": 74,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.51 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/legacy/main.ts",
+      "line": 77,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.41 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/legacy/main.ts",
+      "line": 78,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.75 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/legacy/main.ts",
+      "line": 83,
+      "construct": "effects.bloom",
+      "mapping": "exact",
+      "target": "v2 S9-bloom (native HDR bloom)",
+      "note": "field names survive; intensity/threshold rescale under v2 definitions"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/legacy/main.ts",
+      "line": 91,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.77 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/legacy/main.ts",
+      "line": 99,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.49 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/legacy/main.ts",
+      "line": 107,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.41 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/legacy/main.ts",
+      "line": 115,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "space",
+      "note": "added output block"
+    }
+  ],
+  "reports": [
+    {
+      "file": "apps/showcase-orbital-defense/src/main.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/v2/boot.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/v2/scene/camera.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/v2/scene/fx.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/v2/scene/lighting.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/v2/scene/materials.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-orbital-defense/src/v2/scene/materials.ts",
+            "line": 20,
+            "emissive": "#7cf4ff",
+            "emissiveIntensity": 0.85,
+            "lumaXstrength": 0.632
+          },
+          {
+            "file": "apps/showcase-orbital-defense/src/v2/scene/materials.ts",
+            "line": 28,
+            "emissive": "#ffc46b",
+            "emissiveIntensity": 2.4,
+            "lumaXstrength": 2.365
+          },
+          {
+            "file": "apps/showcase-orbital-defense/src/v2/scene/materials.ts",
+            "line": 53,
+            "emissive": "#ff5a3c",
+            "emissiveIntensity": 2,
+            "lumaXstrength": 1.904
+          },
+          {
+            "file": "apps/showcase-orbital-defense/src/v2/scene/materials.ts",
+            "line": 60,
+            "emissive": "#7cf4ff",
+            "emissiveIntensity": 3.2,
+            "lumaXstrength": 2.379
+          },
+          {
+            "file": "apps/showcase-orbital-defense/src/v2/scene/materials.ts",
+            "line": 67,
+            "emissive": "#7cf4ff",
+            "emissiveIntensity": 0.7,
+            "lumaXstrength": 0.521
+          },
+          {
+            "file": "apps/showcase-orbital-defense/src/v2/scene/materials.ts",
+            "line": 75,
+            "emissive": "#3d5a80",
+            "emissiveIntensity": 0.4,
+            "lumaXstrength": 0.275
+          },
+          {
+            "file": "apps/showcase-orbital-defense/src/v2/scene/materials.ts",
+            "line": 89,
+            "emissive": "#dbeafe",
+            "emissiveIntensity": 1.9,
+            "lumaXstrength": 1.475
+          }
+        ],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/v2/scene/world.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/v2/scenarios/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/v2/evidence/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/legacy/hud-diff.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/legacy/main.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-orbital-defense/src/legacy/main.ts",
+            "line": 72,
+            "emissive": "#2dd4bf",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.711
+          },
+          {
+            "file": "apps/showcase-orbital-defense/src/legacy/main.ts",
+            "line": 73,
+            "emissive": "#38bdf8",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.477
+          },
+          {
+            "file": "apps/showcase-orbital-defense/src/legacy/main.ts",
+            "line": 74,
+            "emissive": "#a78bfa",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.514
+          },
+          {
+            "file": "apps/showcase-orbital-defense/src/legacy/main.ts",
+            "line": 77,
+            "emissive": "#75f2cf",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.41
+          },
+          {
+            "file": "apps/showcase-orbital-defense/src/legacy/main.ts",
+            "line": 78,
+            "emissive": "#facc15",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.747
+          },
+          {
+            "file": "apps/showcase-orbital-defense/src/legacy/main.ts",
+            "line": 91,
+            "emissive": "#fb7185",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.771
+          },
+          {
+            "file": "apps/showcase-orbital-defense/src/legacy/main.ts",
+            "line": 99,
+            "emissive": "#67e8f9",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.486
+          },
+          {
+            "file": "apps/showcase-orbital-defense/src/legacy/main.ts",
+            "line": 107,
+            "emissive": "#75f2cf",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.41
+          }
+        ],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/gameplay/waves.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    }
+  ]
+}

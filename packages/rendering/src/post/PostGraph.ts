@@ -17,6 +17,7 @@
 import { defineContractSlot, type QrFlags } from "../contracts/core";
 import {
   registeredPostPasses,
+  validatePostPassSpace as contractsValidatePostPassSpace,
   type PostGraphReport,
   type PostInsertAt,
   type PostPassDescriptor,
@@ -178,7 +179,7 @@ function depthPrepEnabled(options: PostPipelineOptions): boolean {
 }
 
 function autoExposureRequested(options: PostPipelineOptions): boolean {
-  const value = (options as { readonly autoExposure?: unknown }).autoExposure;
+  const value = options.autoExposure as AutoExposureOptionsV2 | false | undefined;
   return Boolean(value) && value !== false;
 }
 
@@ -229,7 +230,7 @@ export const POST_STAGE_DESCRIPTORS: readonly PostStageDescriptor[] = [
   {
     id: "S8-auto-exposure", space: "linear-hdr", inputs: ["color"],
     output: { format: "r32f", scale: 1 }, fixedSize: [1, 1],
-    enabled: autoExposureRequested, phase: 6
+    enabled: autoExposureRequested, implemented: () => true, phase: 6
   },
   {
     id: "S9-bloom", space: "linear-hdr", inputs: ["color"],
@@ -256,8 +257,8 @@ export const POST_STAGE_DESCRIPTORS: readonly PostStageDescriptor[] = [
     id: "S11-post-aa", space: "display", inputs: ["color"],
     output: { format: "rgba8", scale: 1 },
     enabled: (o) => o.antiAliasing === "fxaa" || o.antiAliasing === "smaa",
-    implemented: (o) => o.antiAliasing === "fxaa", // SMAA lands in Phase 6
-    phase: 2
+    implemented: (o) => o.antiAliasing === "fxaa" || o.antiAliasing === "smaa",
+    phase: 6
   },
   {
     // Writes the default framebuffer: grain, RCAS, triangular dither.
@@ -282,10 +283,7 @@ export const POST_INSERT_ANCHORS: Record<PostInsertAt, { readonly after?: string
 
 /** C-13 rule: `space` must be "linear-hdr" unless insertAt === "after-tonemap". */
 export function validatePostPassSpace(pass: Pick<PostPassDescriptor, "id" | "insertAt" | "space">): void {
-  const anchor = POST_INSERT_ANCHORS[pass.insertAt];
-  if (anchor && pass.space !== anchor.space) {
-    throw new Error(`POSTPROCESS_SPACE_INVALID:${pass.id}`);
-  }
+  contractsValidatePostPassSpace(pass);
 }
 
 function stageSize(descriptor: PostStageDescriptor, frame: PostGraphFrame): { width: number; height: number } {
@@ -343,7 +341,7 @@ export function planPostGraph(options: PostPipelineOptions, frame: PostGraphFram
       anchor: anchor.before ?? anchor.after ?? "S10-composite",
       after: anchor.after !== undefined,
       custom: true,
-      deferredReason: "post-v2-deferred:phase-6"
+      deferredReason: null // C-13 execution landed in Phase 6
     });
   }
 

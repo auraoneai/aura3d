@@ -66,7 +66,10 @@ export const postEffectBuilders = {
       radius: options.radius ?? 0.74,
       density: options.density ?? 0.58,
       color: options.color ?? "#020617",
-      postAuthored: options.postAuthored ?? Object.keys(options).filter((key) => key !== "postAuthored")
+      postAuthored: options.postAuthored ?? Object.keys(options).filter((key) => key !== "postAuthored"),
+      // §8.3 v2 fields (CCR-03-11): pass-through so authored values reach the bridge.
+      ...(options.falloff !== undefined ? { falloff: options.falloff } : {}),
+      ...(options.multiBounce !== undefined ? { multiBounce: options.multiBounce } : {})
     }),
   contactOcclusion: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
     new AuraNodeBuilder<AuraEffectNode>({
@@ -77,7 +80,9 @@ export const postEffectBuilders = {
       radius: options.radius ?? 0.52,
       density: options.density ?? 0.7,
       color: options.color ?? "#020617",
-      postAuthored: options.postAuthored ?? Object.keys(options).filter((key) => key !== "postAuthored")
+      postAuthored: options.postAuthored ?? Object.keys(options).filter((key) => key !== "postAuthored"),
+      ...(options.falloff !== undefined ? { falloff: options.falloff } : {}),
+      ...(options.multiBounce !== undefined ? { multiBounce: options.multiBounce } : {})
     }),
   /**
    * Root color-grade node (muse3jsparity-PRD A3). contrast/saturation execute

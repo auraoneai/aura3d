@@ -32,7 +32,30 @@ const DEFERRED_ONLY_INPUTS = [
   "packages/rendering/src/post/shaders/depthDownsample.glsl.ts",
   "packages/rendering/src/post/shaders/gtao.glsl.ts",
   "packages/rendering/src/post/shaders/gtaoDenoise.glsl.ts",
-  "packages/rendering/src/post/shaders/godrays.glsl.ts"
+  "packages/rendering/src/post/shaders/godrays.glsl.ts",
+  // Phase 6: S8 auto-exposure + S11 SMAA GLSL, and the §8.14 lazy texture
+  // chunk (reached only via `import("./smaa/textures.js")` inside v2Stages).
+  "packages/rendering/src/post/shaders/exposure.glsl.ts",
+  "packages/rendering/src/post/shaders/smaa.glsl.ts",
+  "packages/rendering/src/post/smaa/textures.ts",
+  // Phase 7: §8.18 WGSL mirrors (lane-11 consumes them via Q-11-2; nothing in
+  // the root chunk may import them).
+  "packages/rendering/src/post/shaders/common.wgsl.ts",
+  "packages/rendering/src/post/shaders/exposure.wgsl.ts",
+  "packages/rendering/src/post/shaders/gtao.wgsl.ts",
+  "packages/rendering/src/post/shaders/gtaoDenoise.wgsl.ts",
+  "packages/rendering/src/post/shaders/godrays.wgsl.ts",
+  "packages/rendering/src/post/shaders/taa.wgsl.ts",
+  "packages/rendering/src/post/shaders/dof.wgsl.ts",
+  "packages/rendering/src/post/shaders/motionBlur.wgsl.ts",
+  "packages/rendering/src/post/shaders/velocityDilate.wgsl.ts",
+  "packages/rendering/src/post/shaders/depthDownsample.wgsl.ts",
+  "packages/rendering/src/post/shaders/bloom.wgsl.ts",
+  "packages/rendering/src/post/shaders/composite.wgsl.ts",
+  "packages/rendering/src/post/shaders/displayGrade.wgsl.ts",
+  "packages/rendering/src/post/shaders/finalize.wgsl.ts",
+  "packages/rendering/src/post/shaders/fxaa.wgsl.ts",
+  "packages/rendering/src/post/shaders/smaa.wgsl.ts"
 ];
 
 function workspaceAliasPlugin(): Plugin {
@@ -74,7 +97,8 @@ function criticalPathChunks(metafile: Metafile, entryKey: string): Set<string> {
 describe("post v2 bundle split (§9 gate)", () => {
   it("structural: PostprocessExecution reaches post/ only via import(); the lane barrel re-exports no v2 GPU values", () => {
     const exec = readFileSync(resolve(root, "packages/rendering/src/renderer/PostprocessExecution.ts"), "utf8");
-    // The deferred edge exists.
+    // invariant: the §9 bundle gate requires v2 GPU code to load only via a
+    // dynamic import() edge — a static string keeps it splittable by esbuild.
     expect(exec).toContain('import("../post/v2Entry")');
     // No static `import { ... } from "<post module>"` of phase-2 GPU code.
     const staticPostImports = exec.match(/^import\s.*from\s+"[^"]*post\//gm) ?? [];

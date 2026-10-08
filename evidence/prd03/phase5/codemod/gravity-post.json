@@ -1,0 +1,1090 @@
+{
+  "codemod": "post-v2",
+  "files": 28,
+  "changed": 2,
+  "written": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-gravity-post/src/v2/boot.ts",
+      "line": 139,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "space",
+      "note": "added output block"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+      "line": 18,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.44 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+      "line": 32,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.34 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+      "line": 38,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.62 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+      "line": 44,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.19 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+      "line": 50,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.54 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+      "line": 62,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.66 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+      "line": 68,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.24 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+      "line": 74,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.09 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+      "line": 80,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.13 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+      "line": 86,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.41 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+      "line": 92,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.32 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+      "line": 110,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.15 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scene/world.ts",
+      "line": 131,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.03 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 307,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.13 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 308,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.41 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 309,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.32 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 332,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.39 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 372,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.25 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 378,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.22 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 386,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.26 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 392,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.26 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 400,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.30 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 408,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.68 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 436,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.38 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 442,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.62 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 497,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.03 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 508,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.49 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 529,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.12 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 541,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.58 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 548,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.87 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 567,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.53 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 574,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.92 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 581,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.29 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 588,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.96 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 602,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.94 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 1151,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.86 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 1172,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.78 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 1182,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.21 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 1188,
+      "construct": "effects.neonBloom",
+      "mapping": "exact",
+      "target": "v2 S9-bloom preset"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 1188,
+      "construct": "effects.neonBloom",
+      "mapping": "exact",
+      "note": "removed softKnee/shoulder/quality; threshold <1 → 1.0 (was 0.62)"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 1189,
+      "construct": "effects.colorGrade",
+      "mapping": "approximate",
+      "target": "v2 S10b-grade",
+      "note": "exposure real since Phase 1; shadows/highlights/lut land Phase 5"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 1190,
+      "construct": "effects.antiAlias",
+      "mapping": "approximate",
+      "target": "v2 S11-aa tier",
+      "note": "mode maps to tier AA (never FXAA on MSAA); TAA behind A3D_QR_POST_TAA"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 1190,
+      "construct": "effects.antiAlias",
+      "mapping": "exact",
+      "note": "deleted — tier auto (never FXAA on MSAA)"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 1190,
+      "construct": "fxaa",
+      "mapping": "exact",
+      "target": "v2 S11-aa-fxaa (r185 port + dither)"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 1242,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "space",
+      "note": "added output block"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+      "line": 324,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.05 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+      "line": 325,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.06 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+      "line": 326,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.06 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+      "line": 327,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.06 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+      "line": 328,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.06 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+      "line": 331,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.19 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+      "line": 334,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.30 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+      "line": 335,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.00 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+      "line": 336,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.41 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+      "line": 337,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.02 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+      "line": 338,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.39 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+      "line": 339,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.33 < 1.0 — invisible under bloom threshold 1.0"
+    }
+  ],
+  "reports": [
+    {
+      "file": "apps/showcase-gravity-post/src/contracts.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/flyby.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/freightway.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/main.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/pod.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/prediction.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/scoring.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/stations.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/wells.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/boot.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/env-assets.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scene/camera.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scene/fx.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scene/lighting.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+            "line": 12,
+            "emissive": "#fb923c",
+            "emissiveIntensity": 2.4,
+            "lumaXstrength": 1.873
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+            "line": 18,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 0.9,
+            "lumaXstrength": 0.445
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+            "line": 32,
+            "emissive": "#3d5f9e",
+            "emissiveIntensity": 0.5,
+            "lumaXstrength": 0.343
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+            "line": 38,
+            "emissive": "#59d7ff",
+            "emissiveIntensity": 1.1,
+            "lumaXstrength": 0.619
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+            "line": 44,
+            "emissive": "#22d3ee",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.186
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+            "line": 50,
+            "emissive": "#e8b04a",
+            "emissiveIntensity": 0.85,
+            "lumaXstrength": 0.538
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+            "line": 56,
+            "emissive": "#ffd166",
+            "emissiveIntensity": 1.6,
+            "lumaXstrength": 1.585
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+            "line": 62,
+            "emissive": "#8b5cf6",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.662
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+            "line": 68,
+            "emissive": "#22d3ee",
+            "emissiveIntensity": 1.3,
+            "lumaXstrength": 0.242
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+            "line": 74,
+            "emissive": "#60a5fa",
+            "emissiveIntensity": 0.7,
+            "lumaXstrength": 0.093
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+            "line": 80,
+            "emissive": "#22d3ee",
+            "emissiveIntensity": 0.72,
+            "lumaXstrength": 0.134
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+            "line": 86,
+            "emissive": "#8b5cf6",
+            "emissiveIntensity": 0.62,
+            "lumaXstrength": 0.41
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+            "line": 92,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 0.64,
+            "lumaXstrength": 0.316
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+            "line": 104,
+            "emissive": "#ffd166",
+            "emissiveIntensity": 1.2,
+            "lumaXstrength": 1.188
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/v2/scene/materials.ts",
+            "line": 110,
+            "emissive": "#e11d48",
+            "emissiveIntensity": 0.6,
+            "lumaXstrength": 0.151
+          }
+        ],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scene/world.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-gravity-post/src/v2/scene/world.ts",
+            "line": 131,
+            "emissive": "#22d3ee",
+            "emissiveIntensity": 0.18,
+            "lumaXstrength": 0.034
+          }
+        ],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scenarios/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/evidence/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 307,
+            "emissive": "#22d3ee",
+            "emissiveIntensity": 0.72,
+            "lumaXstrength": 0.134
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 308,
+            "emissive": "#8b5cf6",
+            "emissiveIntensity": 0.62,
+            "lumaXstrength": 0.41
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 309,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 0.64,
+            "lumaXstrength": 0.316
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 332,
+            "emissive": "#1aa6c7",
+            "emissiveIntensity": 0.72,
+            "lumaXstrength": 0.388
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 372,
+            "emissive": "#e7e5e4",
+            "emissiveIntensity": 0.42,
+            "lumaXstrength": 0.252
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 378,
+            "emissive": "#a78bfa",
+            "emissiveIntensity": 0.42,
+            "lumaXstrength": 0.216
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 386,
+            "emissive": "#38bdf8",
+            "emissiveIntensity": 0.54,
+            "lumaXstrength": 0.258
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 392,
+            "emissive": "#67e8f9",
+            "emissiveIntensity": 0.54,
+            "lumaXstrength": 0.263
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 400,
+            "emissive": "#34d399",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.296
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 408,
+            "emissive": "#f97316",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.675
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 436,
+            "emissive": "#49c6e8",
+            "emissiveIntensity": 0.7,
+            "lumaXstrength": 0.381
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 442,
+            "emissive": "#fb7185",
+            "emissiveIntensity": 0.8,
+            "lumaXstrength": 0.617
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 497,
+            "emissive": "#22d3ee",
+            "emissiveIntensity": 0.18,
+            "lumaXstrength": 0.034
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 508,
+            "emissive": "#67e8f9",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.486
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 529,
+            "emissive": "#0e5268",
+            "emissiveIntensity": 0.18,
+            "lumaXstrength": 0.124
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 541,
+            "emissive": "#67e8f9",
+            "emissiveIntensity": 1.2,
+            "lumaXstrength": 0.583
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 548,
+            "emissive": "#fb923c",
+            "emissiveIntensity": 1.12,
+            "lumaXstrength": 0.874
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 567,
+            "emissive": "#67e8f9",
+            "emissiveIntensity": 1.1,
+            "lumaXstrength": 0.535
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 574,
+            "emissive": "#fb923c",
+            "emissiveIntensity": 1.18,
+            "lumaXstrength": 0.921
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 581,
+            "emissive": "#22d3ee",
+            "emissiveIntensity": 1.55,
+            "lumaXstrength": 0.289
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 588,
+            "emissive": "#f97316",
+            "emissiveIntensity": 1.42,
+            "lumaXstrength": 0.959
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 595,
+            "emissive": "#fbbf24",
+            "emissiveIntensity": 1.28,
+            "lumaXstrength": 1.011
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 602,
+            "emissive": "#fb496d",
+            "emissiveIntensity": 1.24,
+            "lumaXstrength": 0.938
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 1137,
+            "emissive": "#fb923c",
+            "emissiveIntensity": 1.8,
+            "lumaXstrength": 1.405
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 1151,
+            "emissive": "#facc15",
+            "emissiveIntensity": 1.15,
+            "lumaXstrength": 0.859
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 1162,
+            "emissive": "#ffe7a3",
+            "emissiveIntensity": 1.55,
+            "lumaXstrength": 1.543
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 1172,
+            "emissive": "#7dd3fc",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.782
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+            "line": 1182,
+            "emissive": "#c084fc",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.209
+          }
+        ],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/post-audio.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/gameplay/contracts.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/gameplay/flyby.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+            "line": 324,
+            "emissive": "#153746",
+            "emissiveIntensity": 0.18,
+            "lumaXstrength": 0.048
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+            "line": 325,
+            "emissive": "#48261f",
+            "emissiveIntensity": 0.14,
+            "lumaXstrength": 0.063
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+            "line": 326,
+            "emissive": "#3f2526",
+            "emissiveIntensity": 0.08,
+            "lumaXstrength": 0.061
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+            "line": 327,
+            "emissive": "#1b3740",
+            "emissiveIntensity": 0.1,
+            "lumaXstrength": 0.055
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+            "line": 328,
+            "emissive": "#182d38",
+            "emissiveIntensity": 0.16,
+            "lumaXstrength": 0.065
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+            "line": 331,
+            "emissive": "#55bdc9",
+            "emissiveIntensity": 0.52,
+            "lumaXstrength": 0.188
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+            "line": 334,
+            "emissive": "#3ea4b3",
+            "emissiveIntensity": 0.4,
+            "lumaXstrength": 0.303
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+            "line": 335,
+            "emissive": "#102b37",
+            "emissiveIntensity": 0.1,
+            "lumaXstrength": 0.002
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+            "line": 336,
+            "emissive": "#e97324",
+            "emissiveIntensity": 0.62,
+            "lumaXstrength": 0.41
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+            "line": 337,
+            "emissive": "#223747",
+            "emissiveIntensity": 0.16,
+            "lumaXstrength": 0.022
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+            "line": 338,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 0.78,
+            "lumaXstrength": 0.386
+          },
+          {
+            "file": "apps/showcase-gravity-post/src/gameplay/freightway.ts",
+            "line": 339,
+            "emissive": "#67e8f9",
+            "emissiveIntensity": 0.68,
+            "lumaXstrength": 0.331
+          }
+        ],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/gameplay/pod.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/gameplay/prediction.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/gameplay/scoring.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/gameplay/stations.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/gameplay/wells.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    }
+  ]
+}

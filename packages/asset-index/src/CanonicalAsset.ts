@@ -36,7 +36,31 @@ export interface AuraAssetLicense {
   readonly sourcePage?: string;
 }
 
-export type AuraAssetFormat = "glb" | "gltf";
+/**
+ * `glb`/`gltf` for models; `hdr` for radiance environment maps; `texture-set`
+ * for a PBR map bundle (base/normal/ORM/...) assembled per-source; `image` for
+ * a standalone texture file. PRD-05 §6.6 added the non-model values so HDRI and
+ * texture sources federate through the same canonical record.
+ */
+export type AuraAssetFormat = "glb" | "gltf" | "hdr" | "texture-set" | "image";
+
+/** One directly-fetchable file belonging to a canonical record. */
+export interface AuraAssetFileEntry {
+  readonly name: string;
+  readonly url: string;
+  readonly sizeBytes?: number;
+  readonly md5?: string;
+}
+
+/** Membership of the curated §6.6 library (aura.library.json). */
+export interface AuraLibraryMembership {
+  /** Kit id, e.g. "characters/humanoid-pbr" or "hdri". */
+  readonly kitId: string;
+  /** Entry id inside the kit. */
+  readonly entryId: string;
+  /** Repo-relative path of the admitted bytes (e.g. assets/library/hdri/x.hdr). */
+  readonly path: string;
+}
 
 /** Whether the file can be fetched directly or is a discovery deep-link only. */
 export type AuraAssetAccess = "direct-download" | "deep-link-only";
@@ -114,6 +138,24 @@ export interface AuraCanonicalAsset {
   readonly qualityWarnings?: readonly string[];
   readonly duplicateHash?: string;
   readonly duplicateOkReason?: string;
+  /**
+   * Multi-file pull set (PRD-05 §6.6): HDRIs carry one entry per resolution;
+   * texture-sets carry one entry per map/zip. `url`/`downloadUrl` remain the
+   * canonical single-file choice when the source has one.
+   */
+  readonly downloadFileset?: readonly AuraAssetFileEntry[];
+  /** §6.6 library membership — set only for entries read from aura.library.json. */
+  readonly library?: AuraLibraryMembership;
+  /** True when the entry carries an approved §6.7 look-dev record (G9). */
+  readonly lookDevApproved?: boolean;
+  /** `assets/art-direction/<id>.json` id the entry was admitted under (G10). */
+  readonly artDirection?: string;
+  /** §6.7 HDRI: dominant-light direction (unit vector, equirect). */
+  readonly sunDirection?: readonly [number, number, number];
+  /** §6.7 HDRI: 99th-percentile relative luminance. */
+  readonly luminanceP99?: number;
+  /** §6.7 HDRI: estimated white balance (McCamy CCT, kelvin). */
+  readonly whiteBalanceK?: number;
   readonly rawCatalogMetadata?: Readonly<Record<string, unknown>>;
 }
 

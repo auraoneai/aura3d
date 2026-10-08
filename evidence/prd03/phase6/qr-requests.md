@@ -1,0 +1,8 @@
+# PRD-03 Phase 6 — qr-requests (cross-lane asks)
+
+| id | to | ask | status |
+|----|----|-----|--------|
+| QR-03-1 (open since P0) | lane 15/custodian | `tests/unit/agent-api/` + `tests/unit/tools/` aren't in the ownership map — lane tests land in `tests/unit/contracts/impl/prd03-*` slots. Phase-6 unit coverage lives in `impl/prd03-post-phase6.test.ts` until the map gains test slots. | open |
+| QR-03-18 | lane 13 | `apps/postprocessing-custom` (new lane-03 app) isn't in `tools/agent-examples/index.ts` (lane-13 file) — add the route to the catalog when convenient; the app runs at `/apps/postprocessing-custom/index.html` regardless. | filed |
+| QR-03-19 | lane 15 | `tools/naming-taxonomy/contextualAliases.ts` (lane-15 file): needs a `routeAlias("postprocessing-custom", "current-routes-postprocessing-custom", …)` row matching the `postprocessing-bloom` convention. Same file-owner note: `packages/engine/src/contracts/post.ts` gained the CCR-03-2 `compensationEv?: number` field on `AuraAutoExposureOptions` (additive, F-03-32). | filed |
+| QR-03-20 | lane 01 | F-03-32 declared: `packages/rendering/src/contracts/post.ts` gained (a) `PostPipelineOptions.autoExposure?: unknown` per CCR-03-2, (b) canonical `validatePostPassSpace` (PostGraph re-exports — single impl), (c) `registerPostPass` space + gpuOnly guards (`POSTPROCESS_SPACE_INVALID`/`POSTPROCESS_PASS_NOT_GPU`). `packages/rendering/src/Renderer.ts` gained CCR-03-12: `postFrameContext {source, items, sceneDepth}` additive field stamped beside `cameraFrame` at both submit sites. All additive — no field removed, no signature change. | declared |

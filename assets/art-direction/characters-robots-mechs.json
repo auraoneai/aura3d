@@ -1,0 +1,20 @@
+{
+  "id": "characters-robots-mechs",
+  "shading": "pbr",
+  "genre": "fighting",
+  "fantasy": "Industrial robots and mech enemies \u2014 hard-surface, worn paint over raw metal.",
+  "palette": {
+    "primary": [
+      "#3b4252",
+      "#5e81ac",
+      "#a3be8c"
+    ],
+    "accent": "#d08770"
+  },
+  "texelDensity": 384,
+  "referenceImages": [],
+  "mix": [
+    "characters-humanoid-pbr"
+  ],
+  "notes": "Metallic/roughness-driven; emissive allowed for eyes/lights only."
+}
