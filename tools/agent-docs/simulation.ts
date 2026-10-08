@@ -208,7 +208,9 @@ export default defineConfig({
     }
   },
   webServer: {
-    command: "pnpm exec vite --host 127.0.0.1 --port 48273 --strictPort",
+    // vite preview serves the dist built above — no cold dev-server
+    // transform pipeline on the browser run.
+    command: "pnpm exec vite preview --host 127.0.0.1 --port 48273 --strictPort",
     url: "http://127.0.0.1:48273",
     reuseExistingServer: false,
     timeout: 120_000

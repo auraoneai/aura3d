@@ -375,10 +375,23 @@ test("release matrix retains a visible Aura3D canvas", async ({ page }) => {
     });
   });` : ""}
   await page.goto("/");
-  const canvas = page.locator("canvas").first();
-  await expect(canvas).toBeVisible({ timeout: 120_000 });
-  await page.waitForTimeout(750);
-  const box = await canvas.boundingBox();
+  // Compositor-free readiness + bounds: toBeVisible/boundingBox poll through
+  // the compositor and starve behind a continuously-rendering software-GL
+  // page. waitForFunction polls inside the page's own animation frame and
+  // getBoundingClientRect is a plain DOM read.
+  await page.waitForFunction(() => {
+    const element = document.querySelector("canvas");
+    if (!(element instanceof HTMLCanvasElement)) return false;
+    const style = getComputedStyle(element);
+    const rect = element.getBoundingClientRect();
+    return style.display !== "none" && style.visibility !== "hidden" && rect.width > 100 && rect.height > 100;
+  }, undefined, { timeout: 120_000 });
+  const box = await page.evaluate(() => {
+    const element = document.querySelector("canvas");
+    if (!element) return null;
+    const rect = element.getBoundingClientRect();
+    return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
+  });
   expect(box?.width ?? 0).toBeGreaterThan(100);
   expect(box?.height ?? 0).toBeGreaterThan(100);
   expect(pageErrors).toEqual([]);
@@ -404,25 +417,64 @@ test("release matrix retains a visible Aura3D canvas", async ({ page }) => {
     interactionEvents.push("pointer-drag", "wheel", "keyboard-input");
   }
   expect(pageErrors).toEqual([]);
-  // Pause the live render loop and step one deterministic frame before the
-  // protocol capture. A continuously-rendering scene on a software-GL runner
-  // saturates the compositor — presents take seconds each — and
-  // Page.captureScreenshot can starve past the test timeout while the page
-  // looks healthy. Paused, the compositor settles and returns the last frame.
-  await page.evaluate(() => {
-    const registry = (globalThis as { __AURA3D_LIVE_APPS__?: { pauseAll?: () => number; all?: () => readonly { step?: (dt?: number) => void }[] } }).__AURA3D_LIVE_APPS__;
+  // Pause the live render loop, step one deterministic frame, and read the
+  // WebGL backbuffer directly — zero compositor involvement. The previous
+  // version still ran Page.captureScreenshot after pausing: even a paused
+  // software-GL page can leave the compositor backed up behind seconds-long
+  // presents, and the protocol capture starved past the test timeout on the
+  // CI runners (product-viewer, cinematic-scene, mini-game, episode-builder,
+  // character-controller all failed browser smoke this way). readPixels in
+  // the same task as the stepped render is deterministic and bounded.
+  const captureData = await page.evaluate(async () => {
+    type LiveApp = { step?: (dt?: number) => void; stepAsync?: (dt?: number) => Promise<unknown> };
+    const registry = (globalThis as { __AURA3D_LIVE_APPS__?: { pauseAll?: () => number; all?: () => readonly LiveApp[] } }).__AURA3D_LIVE_APPS__;
     registry?.pauseAll?.();
-    for (const app of registry?.all?.() ?? []) app.step?.(1 / 60);
+    const apps = [...(registry?.all?.() ?? [])];
+    for (const app of apps) {
+      try {
+        if (app.stepAsync) await app.stepAsync(1 / 60);
+        else app.step?.(1 / 60);
+      } catch { /* a non-steppable app still leaves its last presented frame */ }
+    }
+    // Renderers outside the liveApps registry cannot be stepped; two rAFs let
+    // one full render complete inside this task before readPixels.
+    if (apps.length === 0) {
+      await new Promise<void>((resolvePromise) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolvePromise()));
+      });
+    }
+    const element = Array.from(document.querySelectorAll("canvas"))
+      .find((candidate) => (candidate.getContext("webgl2") ?? candidate.getContext("webgl")) !== null);
+    const gl = element ? (element.getContext("webgl2") ?? element.getContext("webgl")) : null;
+    if (!gl) return null;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    const width = gl.drawingBufferWidth;
+    const height = gl.drawingBufferHeight;
+    const pixels = new Uint8Array(width * height * 4);
+    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    const target = document.createElement("canvas");
+    target.width = width;
+    target.height = height;
+    const ctx = target.getContext("2d");
+    if (!ctx) return null;
+    const image = ctx.createImageData(width, height);
+    // readPixels rows run bottom-up; flip into top-down image space.
+    for (let y = 0; y < height; y += 1) {
+      image.data.set(pixels.subarray((height - 1 - y) * width * 4, (height - y) * width * 4), y * width * 4);
+    }
+    ctx.putImageData(image, 0, 0);
+    return target.toDataURL("image/png").split(",")[1] ?? null;
   });
-  const capture = await cdp.send("Page.captureScreenshot", {
-    format: "png",
-    fromSurface: true,
-    captureBeyondViewport: false,
-    clip: { x: canvasBounds.x, y: canvasBounds.y, width: canvasBounds.width, height: canvasBounds.height, scale: 1 }
-  });
-  // The session is closed with the page. Explicit detach can itself block
-  // behind a saturated renderer after the screenshot has already completed.
-  const screenshot = Buffer.from(capture.data, "base64");
+  // Fall back to the protocol capture only when the page exposes no WebGL
+  // canvas at all — the only case readPixels cannot answer.
+  const screenshot = captureData
+    ? Buffer.from(captureData, "base64")
+    : Buffer.from((await cdp.send("Page.captureScreenshot", {
+        format: "png",
+        fromSurface: true,
+        captureBeyondViewport: false,
+        clip: { x: canvasBounds.x, y: canvasBounds.y, width: canvasBounds.width, height: canvasBounds.height, scale: 1 }
+      })).data, "base64");
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/release-screenshot.png"), screenshot);
   writeFileSync(resolve("tests/reports/release-screenshot.json"), JSON.stringify({
@@ -467,7 +519,10 @@ export default defineConfig({
     } : {})
   },
   webServer: {
-    command: ${JSON.stringify(`${shellArgument(process.execPath)} ${shellArgument(templateCli(targetDir, "vite"))} --host 127.0.0.1 --port 4173 --strictPort`)},
+    // vite preview serves the already-built dist statically — the dev
+    // server's cold per-request transform pipeline is what made GLB-heavy
+    // templates boot past the specs' ready timeouts on shared CI runners.
+    command: ${JSON.stringify(`${shellArgument(process.execPath)} ${shellArgument(templateCli(targetDir, "vite"))} preview --host 127.0.0.1 --port 4173 --strictPort`)},
     url: "http://127.0.0.1:4173",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000

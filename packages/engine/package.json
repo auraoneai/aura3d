@@ -51,7 +51,18 @@
     "@aura3d/scripting": "workspace:*",
     "@aura3d/workflows": "workspace:*"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./src/lanes/**/*.ts",
+    "./src/agent-api/compiler/diagnosticOnly.*.ts",
+    "./src/agent-api/compiler/optionCoverage.ts",
+    "./src/agent-api/feel/lint/evidenceOnlyFeel.ts",
+    "./src/agent-api/looks/lookLint.ts",
+    "./dist/lanes/**/*.js",
+    "./dist/agent-api/compiler/diagnosticOnly.*.js",
+    "./dist/agent-api/compiler/optionCoverage.js",
+    "./dist/agent-api/feel/lint/evidenceOnlyFeel.js",
+    "./dist/agent-api/looks/lookLint.js"
+  ],
   "peerDependencies": {
     "@aura3d/navigation-recast": "workspace:*"
   },
