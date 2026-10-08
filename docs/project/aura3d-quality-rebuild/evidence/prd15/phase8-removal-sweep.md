@@ -533,3 +533,60 @@ prd02, T1.x unit, Build and Test, arch-gates (net −7 vs main).
 `browser` attempt 1 passed on this SHA; retry failed in lane-04's
 material-conformance suite — same-SHA pass→fail = nondeterministic ANGLE
 Metal flake.
+
+## Wave 11 — `04ad39f2e`: sideEffects tree-shake + compositor starvation
+
+`packages/engine/package.json` `sideEffects: false` dropped every
+`src/lanes/prdNN.ts` registrant barrel and five `agent-api` registrant
+modules from built bundles → `diagnostics().appliedLook` missing in dist
+apps (6 template failures). Replaced with an explicit side-effect glob for
+`src|dist/lanes/**` + the registrant modules. Also fixed compositor
+starvation in `writeReleaseRenderSpec`/`simulation.ts` (waitForFunction +
+in-page readPixels) and moved scaffold `webServer` to `vite preview
+--strictPort` (dev-server transform latency was the original ready-poll
+blowout).
+
+Side-effect of the sideEffects fix: `__AURA3D_LIVE_APPS__` now populates in
+built apps, which exposed the wave-12 deadlock — before, the empty registry
+made look-floor's step loop a no-op.
+
+## Wave 12 — `2e0f0701d`: entry ↔ dynamic-chunk mount deadlock
+
+Skills gate 113162408026 (~3h40m): 12/20 template browser failures, one
+unified root cause. Under `vite preview` the mount pends forever in
+`await import("../../production-runtime/TypedGLBActor.js")`
+(`agent-api/compiler/renderer.ts:55` — WS-2.2 lazy GLTF load):
+
+- generated `vite.config.ts` aliases `@aura3d/*` → `packages/*/src/**`, so
+  rollup homes shared engine modules in the ENTRY chunk;
+- the TypedGLBActor dynamic chunk statically imports the entry;
+- template mains TLA `app.ready()` in evidence mode → entry stays
+  `evaluating-async` → chunk eval queues behind it → `import()` pends →
+  mount never settles → `data-aura3d-ready`/`__AURA3D_GAME_SOURCE__` never
+  set; look-floor's 45×~6-9s `stepAsync` chain then exhausts the 300s
+  budget.
+
+Probes: entry re-import pends (still evaluating); TypedGLBActor +
+ProductionGLTFRenderPipeline chunks pend (dep on entry); leaf chunks
+resolve. `vite dev` mounts in <10s — no entry chunk, deps already
+evaluated.
+
+Fix: `manualChunks` pins `/packages/` modules to a non-entry
+`aura3d-vendor` chunk in both generated-config generators
+(`tools/agent-templates/index.ts`, `tools/agent-docs/simulation.ts`).
+Vendor evaluates at load before entry code → dynamic chunks dep on an
+evaluated module → mount completes. Hardening alongside: look-floor
+settle wall-clock 420s, screenshot spec 600s, browser stage cap 1200s.
+
+Local verify (racing-starter, vite preview): `data-aura3d-ready="true"`,
+216 drawCalls (dev-identical), route-health spec green, look-floor emits a
+real floor report (margin analysis → Q-13-16). Lane-13 ownership request
+filed: `requests/Q-13-16-vite-preview-mount-deadlock.md` — packaged-app
+consumers can hit the same TLA × chunk-cycle; docs guidance requested.
+
+## Cycle status after `2e0f0701d`
+
+Skills gate re-runs (~3h40m). Expected residual template reds: the
+pre-existing animation-studio flat-canvas defect (Q-13-12); possible
+marginal floor fractions on dark scenes (swiftshader). All other cycle
+reds remain the verified pre-existing set (see wave-10 section).
