@@ -1,0 +1,52 @@
+{
+ "$schema": "IC-0 identity check of merged PR 0 on main (coordinator addendum to phase0.json)",
+ "generated_utc": "2026-10-06",
+ "candidate": {
+  "branch": "qr/prd15-ic0-main-check",
+  "main_commit": "5f5d6088",
+  "captured_sha": "fcb8fcaf",
+  "gitlab_pipeline": 2917361132,
+  "github_run": 37451329593,
+  "mode": "local-build-all",
+  "browserChannel": "headless-shell"
+ },
+ "noise_floor": {
+  "pipelines": [
+   2916316776,
+   2916430413
+  ],
+  "branch": "qr/prd15-ic0-base",
+  "bench_p99_median": 0.932,
+  "game_p99_median": 1.685
+ },
+ "result": {
+  "benchmark": {
+   "images": 36,
+   "over_noise_plus_0_5": 0,
+   "verdict": "PASS (identical within noise)"
+  },
+  "games": {
+   "images": 226,
+   "p99_median": 1.666,
+   "over_noise_plus_0_5": 29,
+   "pageErrors": 0,
+   "blankShots": 0,
+   "outliers_vision_checked": [
+    "showcase-pulse-tunnel desktop-1920x1080__04-action",
+    "showcase-siege-golf desktop-1920x1080__02-opening",
+    "showcase-courier-rush mobile-390x844__02-opening"
+   ],
+   "outlier_verdict": "timing-only (gameplay state / camera path position); lighting, materials, post and HUD styling identical",
+   "verdict": "PASS (median within noise; outliers are scripted-capture timing variance)"
+  }
+ },
+ "finding_pr0b1_branch": {
+  "gitlab_pipeline": 2916457500,
+  "commit": "8897bbcf",
+  "pageErrors": 51,
+  "blankShots": 125,
+  "error": "ReferenceError: Cannot access 'E1' before initialization (ESM cycle barrel <-> nodes/game)",
+  "status": "fixed on main by PR #29 (8337cc9f); the earlier ledger marked this run green because the pipeline succeeded, not because frames matched"
+ },
+ "method": "per-image CIE dE2000 99th percentile (sRGB->Lab D65, images downscaled to 1280 long edge) vs first ic0-base run; noise floor = dE2000 p99 between the two ic0-base runs; flag = candidate > noise + 0.5"
+}
