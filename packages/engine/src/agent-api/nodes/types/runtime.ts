@@ -414,7 +414,7 @@ export interface AuraCreateAppOptions {
   readonly resize?: boolean;
   // C-38 additions (PR 0a, all optional)
   readonly pixelRatio?: number | { readonly max?: number; readonly min?: number };
-  readonly qualityRebuild?: { readonly flags?: readonly string[] };
+  readonly qualityRebuild?: { readonly flags?: readonly string[]; readonly allowUrlFlags?: boolean };
   readonly lighting?: import("../../../contracts/lighting").AuraLightingOptions;
   readonly output?: import("../../../contracts/output").AuraOutputOptions;
   readonly assets?: import("../../../contracts/assets").AuraAssetsOption;
@@ -496,6 +496,20 @@ export interface ProductionRuntimeActorEntry {
   readonly node: AuraModelNode;
   readonly actor: TypedGLBActor;
   rootMotionCursors?: Map<string, number>;
+  /**
+   * T3.7 (PRD-06 §6.8) — spec-level `animation.rootMotion` apply-mode state for
+   * nodes without a runtime-node handle: the accumulated world-space offset and
+   * yaw integrated into the node's model matrix each frame.
+   */
+  rootMotionOffset?: [number, number, number];
+  rootMotionYaw?: number;
+  /** Last spec-level root-motion consumption (also the "extract-only" report). */
+  rootMotionReport?: {
+    readonly requested: readonly [number, number, number];
+    readonly accepted: readonly [number, number, number];
+    readonly rejected: readonly [number, number, number];
+    readonly yawDelta?: number;
+  };
 }
 
 export interface ProductionRuntimePrimitiveEntry {

@@ -11,6 +11,80 @@ export interface SkinningBoundsPalette {
   readonly matrices: Float32Array | readonly number[];
 }
 
+/**
+ * T2.6 (PRD-06 §T2.6) — per-joint local AABBs in bind space. For each joint,
+ * the AABB of every vertex that joint influences with weight > 0.01 (the same
+ * 0.01 cutoff the legacy skinned-unlit path used). `bindSkeleton` carries no
+ * vertex data, so the computation is keyed on `Geometry` and cached in a
+ * WeakMap — recomputed only if a geometry binds a different joint count.
+ * Layout: jointCount * 6 floats — [minX, minY, minZ, maxX, maxY, maxZ] per
+ * joint, or Infinity/-Infinity for an unused joint.
+ */
+export function computeGeometryJointLocalBounds(geometry: Geometry, jointCount: number): Float32Array {
+  const cached = geometryJointLocalBoundsCache.get(geometry);
+  if (cached && cached.jointCount === jointCount) return cached.boxes;
+  const boxes = new Float32Array(jointCount * 6);
+  for (let joint = 0; joint < jointCount; joint += 1) {
+    boxes[joint * 6 + 0] = Infinity;
+    boxes[joint * 6 + 1] = Infinity;
+    boxes[joint * 6 + 2] = Infinity;
+    boxes[joint * 6 + 3] = -Infinity;
+    boxes[joint * 6 + 4] = -Infinity;
+    boxes[joint * 6 + 5] = -Infinity;
+  }
+  if (geometry.vertexBuffer.format.hasAttribute("position") && geometry.vertexBuffer.format.hasAttribute("joints") && geometry.vertexBuffer.format.hasAttribute("weights")) {
+    for (let vertex = 0; vertex < geometry.vertexBuffer.vertexCount; vertex += 1) {
+      const position = geometry.vertexBuffer.getAttribute(vertex, "position");
+      const joints = geometry.vertexBuffer.getAttribute(vertex, "joints");
+      const weights = geometry.vertexBuffer.getAttribute(vertex, "weights");
+      for (let slot = 0; slot < joints.length && slot < 4; slot += 1) {
+        const weight = weights[slot] ?? 0;
+        if (weight <= 0.01) continue;
+        const joint = Math.max(0, Math.min(jointCount - 1, Math.trunc(joints[slot] ?? 0)));
+        const base = joint * 6;
+        for (let axis = 0; axis < 3; axis += 1) {
+          const value = position[axis] ?? 0;
+          if (value < boxes[base + axis]!) boxes[base + axis] = value;
+          if (value > boxes[base + 3 + axis]!) boxes[base + 3 + axis] = value;
+        }
+      }
+    }
+  }
+  geometryJointLocalBoundsCache.set(geometry, { jointCount, boxes });
+  return boxes;
+}
+
+const geometryJointLocalBoundsCache = new WeakMap<Geometry, { readonly jointCount: number; readonly boxes: Float32Array }>();
+
+/**
+ * Union each joint's local box transformed by that joint's palette matrix —
+ * the 8 corners of the bind-space box mapped through `matrices[j*16..]`.
+ * Conservative for any pose (each influenced vertex lives in its joint's box,
+ * so its skinned position lands inside that joint's transformed box), and
+ * much tighter than the whole-geometry bound for articulated rigs.
+ */
+export function computeSkinnedGeometryBoundsFromJointBoxes(geometry: Geometry, skinning: SkinningBoundsPalette | undefined): Bounds3 {
+  if (!skinning) return geometry.bounds;
+  const boxes = computeGeometryJointLocalBounds(geometry, skinning.jointCount);
+  const min: [number, number, number] = [Infinity, Infinity, Infinity];
+  const max: [number, number, number] = [-Infinity, -Infinity, -Infinity];
+  for (let joint = 0; joint < skinning.jointCount; joint += 1) {
+    const base = joint * 6;
+    if (!Number.isFinite(boxes[base]!)) continue;
+    const offset = joint * 16;
+    for (let corner = 0; corner < 8; corner += 1) {
+      const point: readonly [number, number, number] = [
+        boxes[base + (corner & 1) * 3]!,
+        boxes[base + ((corner >> 1) & 1) * 3 + 1]!,
+        boxes[base + ((corner >> 2) & 1) * 3 + 2]!
+      ];
+      includeBoundsPoint(min, max, transformPoint(skinning.matrices, offset, point));
+    }
+  }
+  if (!Number.isFinite(min[0]) || !Number.isFinite(max[0])) return geometry.bounds;
+  return { min, max };
+}
+
 export function computeSkinnedGeometryBounds(geometry: Geometry, skinning: SkinningBoundsPalette | undefined): Bounds3 {
   if (!skinning || !geometry.vertexBuffer.format.hasAttribute("position") || !geometry.vertexBuffer.format.hasAttribute("joints") || !geometry.vertexBuffer.format.hasAttribute("weights")) {
     return geometry.bounds;

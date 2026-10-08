@@ -1,0 +1,16 @@
+<!doctype html>
+<!-- PRD-06 T2.4 harness: draws CesiumMan's skinned mesh in bind pose through a
+     generated lit PBR program stamped with `features["prd06.deform"]="skin4"`
+     and through the rigid twin, then compares ΔE2000 pixel parity.
+     Report publishes on window.__PRD06_SKINNED_PBR_PARITY__. -->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>prd06 skinned-pbr-parity harness</title>
+    <style>html, body { margin: 0; background: #202329; }</style>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <script type="module" src="./skinned-pbr-parity-harness.ts"></script>
+  </body>
+</html>

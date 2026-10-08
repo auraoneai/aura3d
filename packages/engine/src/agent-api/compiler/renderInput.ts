@@ -13,7 +13,7 @@ import { productionRenderErrorMessage } from "./observations.js";
 import { composeModelInstanceMatrices, getRootPerformanceQuality, getRootRenderSource, includeRootSourceMetadata } from "../RootRuntimeSupport.js";
 import { resolveSdfTextFrameOpacity, resolveWrinkleMapStrength, warnOnInstancingFallback, type CameraLike, type CollectedLight, type EnvironmentLightingOptions, type ProductionRendererInput, type RenderItem, type RenderSource } from "@aura3d/rendering";
 import { identityMat4 } from "@aura3d/scene/math";
-import { applyProductionActorAnimation } from "./animation.js";
+import { applyProductionActorAnimation, applySpecRootMotionTransform } from "./animation.js";
 import { createProductionRuntimeEnvironmentFog } from "./fog.js";
 import { createProductionRuntimePostprocess } from "./postprocess.js";
 import { authoredPostContextFor } from "../postBridge.js";
@@ -141,6 +141,9 @@ export function createProductionRuntimeRendererInput(
     const actorBounds = productionActorModelBounds(currentNode.asset, entry.actor);
     const actorNormalize = shouldNormalizeModelNode(currentNode);
     let modelMatrix = [...(prd01ModelMatrixCache?.modelMatrix(currentNode, actorBounds, actorNormalize, time) ?? createModelMatrix(currentNode, actorBounds, actorNormalize, time))];
+    // T3.7 — spec-level root motion on a node without a runtime handle folds its
+    // accumulated offset/yaw into the model matrix (no-op when unset).
+    applySpecRootMotionTransform(entry, modelMatrix);
     // The foot-planting post-pass solves in the same world space this matrix draws into;
     // refresh its matrix before the clip plays so the solve uses this frame, not the last.
     applyProductionActorFootPlanting(entry, currentState.animationBinding, modelMatrix, runtimeWarnings, degrade);
@@ -158,8 +161,9 @@ export function createProductionRuntimeRendererInput(
       const actorBoundsRefresh = productionActorModelBounds(currentNode.asset, entry.actor);
       const actorNormalizeRefresh = shouldNormalizeModelNode(currentNode);
       modelMatrix = [...(prd01ModelMatrixCache?.modelMatrix(currentNode, actorBoundsRefresh, actorNormalizeRefresh, time) ?? createModelMatrix(currentNode, actorBoundsRefresh, actorNormalizeRefresh, time))];
+      applySpecRootMotionTransform(entry, modelMatrix);
       applyProductionActorFootPlanting(entry, currentState.animationBinding, modelMatrix, runtimeWarnings, degrade);
-    });
+    }, runtimeNodes);
     applyProductionActorMorphTargets(entry, currentState.morphTargets, runtimeWarnings, degrade);
     // Wrinkle detail (E1 face-rig demo): resolve morph weights through the model's hook.
     // Absent hook (or empty weights) resolves to 0 = today's rendering exactly.

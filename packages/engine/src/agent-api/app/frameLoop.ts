@@ -14,7 +14,7 @@ import { groups } from "../nodes/groups.js";
 import { isWebGLRenderableNode, productionRenderErrorMessage } from "../compiler/observations.js";
 import { labels } from "../nodes/labels.js";
 import { normalizeCreateAppRendererOptions } from "./rendererOptions.js";
-import { resolveQrFlags } from "../../contracts/flags.js";
+import { qrFlagsWithAnimationMixer, resolveQrFlags } from "../../contracts/flags.js";
 import { renderer } from "../rendererDiagnostics.js";
 import { resolveCameraFrame } from "../compiler/camera.js";
 import { text3D } from "../nodes/text3d.js";
@@ -56,7 +56,19 @@ export async function startProductionRender(
       );
   }
 
-  const qrFlags = resolveQrFlags({ options: options.qualityRebuild?.flags });
+  const qrFlags = qrFlagsWithAnimationMixer(
+    resolveQrFlags({
+      options: options.qualityRebuild?.flags,
+      // Same C-38 source chain as createAuraApp: URL `?a3d-qr=` applies unless
+      // the app opted out — otherwise a re-mount resolved flag-off and the
+      // compiled-scene gate silently diverged from the flags the app started
+      // with (e.g. `?a3d-qr=compiler` dead after any scene swap).
+      url: options.qualityRebuild?.allowUrlFlags === false
+        ? undefined
+        : typeof location !== "undefined" ? location.href : undefined
+    }),
+    options.animation?.mixer
+  );
   const renderer = await createProductionSceneRenderer(canvas, snapshot, options.renderer, runtimeNodes, qrFlags, { strict: options.strict, onDegradation: options.onDegradation });
   diagnosticsState.renderer = renderer.diagnostics;
   const sceneWantsFrames = shouldContinuouslyRender(snapshot);

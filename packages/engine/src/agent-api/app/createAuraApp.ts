@@ -25,7 +25,9 @@ import { createPhysicsRuntime, type AuraPhysicsRuntime } from "../PhysicsRuntime
 import { applyRootParticleQuality, hasRootRenderableContent, initializeRootPerformanceQuality, readRootDiagnosticSnapshot, setRootPerformanceQuality, supportsRootParticleQuality, validateRootPerformanceQuality } from "../RootRuntimeSupport.js";
 import { PhysicsWorld } from "@aura3d/physics/world";
 import { normalizeCreateAppRendererOptions } from "./rendererOptions.js";
-import { resolveQrFlags } from "../../contracts/flags.js";
+import { qrFlagsWithAnimationMixer, resolveQrFlags } from "../../contracts/flags.js";
+import { setTypedGLBActorQrFlags } from "../../production-runtime/actor/extensions.js";
+import { setQrAnimationFlags } from "./actorAnimationHandle.js";
 import { appExtensionsAll } from "../../contracts/app.js";
 import { diagnosticsSectionsAll } from "../../contracts/diagnostics.js";
 import { resolveTierSettings, type AuraQualityTier } from "@aura3d/rendering/contracts";
@@ -43,7 +45,28 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   const rendererSelection = normalizeCreateAppRendererOptions(options.renderer);
   // PR 0 seams (CONTRACTS.md §3.2): flag resolution, C-27 quality-tier resolve, C-38
   // app-extension mount and C-31 diagnostics sections are fixed call sites owned by PRD 15.
-  const qrFlags = resolveQrFlags({ options: options.qualityRebuild?.flags });
+  // C-38 source chain (contracts/flags.ts §source order): `qualityRebuild.flags`
+  // wins over URL `?a3d-qr=` — `resolveQrFlags` applies options first and
+  // `setEntry` never overwrites an earlier key. URL flags apply unless the app
+  // opts out (`allowUrlFlags:false`); without this the `a3d-qr` param was dead
+  // for every app — lane extensions, actor sources and clip-drive all gated on
+  // the resolved flags and silently ran flag-off under `?a3d-qr=animation`.
+  const qrFlags = qrFlagsWithAnimationMixer(
+    resolveQrFlags({
+      options: options.qualityRebuild?.flags,
+      url: options.qualityRebuild?.allowUrlFlags === false
+        ? undefined
+        : typeof location !== "undefined" ? location.href : undefined
+    }),
+    options.animation?.mixer
+  );
+  // PRD-06 §10 app-side install (C-37): `qrAnimationFlags()` reads this first
+  // (then ?a3d-qr / env) and `typedGLBActorExtensions()` gates the actor
+  // extension onLoad publishes — without it the lane flag resolves false in an
+  // app context and `handle.animation` sources never attach. Same install-once
+  // pattern as setPrd01ModelMatrixCache below.
+  setQrAnimationFlags(qrFlags);
+  setTypedGLBActorQrFlags(qrFlags);
   // PRD-01 §15 Phase-6: install the fingerprinted static-node matrix cache on
   // the compiler seam. Flag-off leaves renderInput on verbatim calls (C-01).
   setPrd01ModelMatrixCache(qrFlags.on("A3D_QR_CORE") ? createModelMatrixCache() : null);
@@ -692,6 +715,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   // the subtree-compile path bound by compiler/renderer.ts.
   runtimeNodes.configure({
     flags: qrFlags,
+    app,
     getScene: () => snapshot,
     setScene: (next) => app.setScene(next),
     diagnostic: (message) => { diagnosticsState.warnings = [...diagnosticsState.warnings, message]; }

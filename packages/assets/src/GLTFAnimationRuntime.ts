@@ -1,5 +1,8 @@
 import { AnimationAction, AnimationClip, AnimationMixer, consumeRootMotion, extractRootMotion, createFootIkRig, type RootMotionConsumption, type RootMotionSample, normalizeQuat, slerpQuat, solveTwoBoneIk, type AnimationEvent, type AnimationMixerOptions, type AnimationValue, type FootIkRig, type GroundRaycaster, type LoopMode, type TrackValueType, type TwoBoneIkResult } from "@aura3d/animation";
+import { bindSkeleton, compileClip, createPoseBuffer, makeClipAdditive, PoseMixer, type CompiledClip, type PoseBuffer, type PoseSampleSpec, type SkeletonBinding } from "@aura3d/animation/lanes";
+import { AURA3D_RETARGET_ENGINE_VERSION, bakeClipsInWorker, bakeRetargetedClipMap, createRetargetWorker, decompileCompiledClip, readRetargetCache, retargetCacheKey, retargetClipsHash, retargetSkeletonHash, writeRetargetCache, type BakeRetargetedClipsOptions } from "@aura3d/animation/lanes";
 import { composeMat4, decomposeMat4, invertMat4, MAX_RENDERABLE_SKINNING_JOINTS, multiplyMat4, Renderable, Scene, transformPoint, type Light, type Mat4, type Quat, type SceneNode, type Vec3 } from "@aura3d/scene";
+import { skinningPaletteCache } from "@aura3d/rendering";
 import type { GLTFAsset, GLTFMeshAsset, GLTFSkinAsset } from "./GLTFLoader";
 
 /**
@@ -7,6 +10,17 @@ import type { GLTFAsset, GLTFMeshAsset, GLTFSkinAsset } from "./GLTFLoader";
  * structural (instead of importing the rendering `Material`) so the animation runtime stays
  * decoupled from the renderer; the production bridge adapts the live material library.
  */
+/**
+ * T3.8 (PRD-06 §7.2) — options for `addClipsFrom`: the bake options plus the
+ * cache/worker plumbing (`cache`/`worker` default on, `engineVersion` defaults
+ * to the lane's retarget version key).
+ */
+export interface AddClipsFromRuntimeOptions extends BakeRetargetedClipsOptions {
+  readonly engineVersion?: string;
+  readonly cache?: boolean;
+  readonly worker?: boolean;
+}
+
 export interface GLTFSceneAnimationMaterialSink {
   readonly name: string;
   setAnimationParameter(parameter: string, value: number | readonly number[]): void;
@@ -107,9 +121,47 @@ function normalizeClipToken(name: string): string {
  *
  * Returns `undefined` only when there are no available clips.
  */
+export type ResolveGLTFClipNameFallback = "error" | "first";
+
+export interface ResolveGLTFClipNameOptions {
+  /**
+   * What to return when levels 1-3 (exact/synonym/substring) all miss.
+   * `"first"` keeps the legacy pick-the-first-clip behavior; `"error"`
+   * returns `undefined` so the caller can warn and degrade. When omitted,
+   * the default follows the QR defaults resolution (§5.2 env/URL sources):
+   * `"error"` under 3.1 (`A3D_QR_ANIMATION`/`A3D_QR`/`?a3d-qr=` flag on),
+   * `"first"` otherwise. Callers that know the resolved flags (the
+   * compiler) should pass it explicitly.
+   */
+  readonly fallback?: ResolveGLTFClipNameFallback;
+}
+
+const animationClipDefaultsAre31 = (): boolean => {
+  const parseList = (value: string | undefined): string[] =>
+    value === undefined ? [] : value.split(/[\s,]+/).map((entry) => entry.trim().toLowerCase()).filter((entry) => entry !== "");
+  const env = typeof process !== "undefined" ? process.env : undefined;
+  if (env !== undefined) {
+    const scoped = env["A3D_QR_ANIMATION"];
+    if (scoped !== undefined && scoped !== "0" && scoped.toLowerCase() !== "false" && scoped.toLowerCase() !== "off") return true;
+    const root = parseList(env["A3D_QR"] ?? env["A3D_QR_FLAGS"]);
+    if (root.includes("animation") || root.includes("all") || root.includes("true")) return true;
+  }
+  if (typeof location !== "undefined" && typeof location.search === "string") {
+    try {
+      const params = new URLSearchParams(location.search);
+      const urlFlags = parseList(params.get("a3d-qr") ?? undefined);
+      if (urlFlags.includes("animation") || urlFlags.includes("all") || urlFlags.includes("true")) return true;
+    } catch {
+      // malformed URLSearchParams input — ignore URL source
+    }
+  }
+  return false;
+};
+
 export function resolveGLTFClipName(
   requested: string,
-  available: readonly string[]
+  available: readonly string[],
+  options?: ResolveGLTFClipNameOptions
 ): string | undefined {
   if (available.length === 0) return undefined;
   const requestedToken = normalizeClipToken(requested);
@@ -132,7 +184,8 @@ export function resolveGLTFClipName(
     }
   }
 
-  return available[0];
+  const fallback = options?.fallback ?? (animationClipDefaultsAre31() ? "error" : "first");
+  return fallback === "first" ? available[0] : undefined;
 }
 
 export interface GLTFSceneAnimationClipBoneMask {
@@ -199,6 +252,44 @@ export interface GLTFSceneAnimationApplyResult {
   readonly skinningPalettesUpdated: number;
   readonly missingTargets: readonly string[];
   readonly unsupportedTracks: readonly string[];
+  /**
+   * PRD-06 §9.8/§13 — wall-clock split of this apply's animation phase, in
+   * ms. Published only by the pose paths (`applyClips`, `applyPoseMixer`);
+   * `cpuMs` covers the whole call (mixer + constraints + springs + target
+   * application + palette build).
+   */
+  readonly phaseTimings?: GLTFSceneAnimationPhaseTimings;
+}
+
+/** PRD-06 §9.8 — per-phase wall-clock timings for one animation apply (ms). */
+export interface GLTFSceneAnimationPhaseTimings {
+  readonly mixerMs: number;
+  readonly constraintsMs: number;
+  readonly springsMs: number;
+  readonly paletteBytes: number;
+  readonly cpuMs: number;
+}
+
+/**
+ * T3.5 (PRD-06 §7.1) — a pose-space constraint entry on the runtime. Evaluated
+ * after the mixer writes the pose and before skinning palettes are built.
+ * `bones` lists the joint indices `evaluate` may touch so the runtime unions
+ * them into the emitted sampled targets even when no clip covers them.
+ */
+export interface GLTFPoseConstraint {
+  /** Joints this constraint may write (SkeletonBinding indices). */
+  readonly bones: readonly number[];
+  /**
+   * PRD-06 §9.8 — `"springs"` tags spring-chain constraints so the runtime's
+   * phase timings can split `springsMs` from `constraintsMs`.
+   */
+  readonly kind?: "springs";
+  /**
+   * Apply the constraint onto `pose`. `modelMatrix` maps world→model space
+   * (skeleton-root space); `context.dt` is the frame dt (applyPoseMixer) or the
+   * nominal 1/60 for stateless `applyClips` evaluation.
+   */
+  evaluate(pose: PoseBuffer, binding: SkeletonBinding, modelMatrix: readonly number[] | Float32Array, context: { readonly dt: number }): void;
 }
 
 export interface GLTFSceneAnimationRuntimeSnapshot {
@@ -558,6 +649,14 @@ interface RuntimeSkinningBinding {
   readonly skin: GLTFSkinAsset;
   readonly bindWorldMatrix: Mat4;
   /**
+   * PRD-06 §13: joint scene nodes resolved once per binding (a `nodesByName`
+   * string lookup per joint per frame was ~30% of the palette budget).
+   * Rebuilt while any joint is still missing so late-registered nodes resolve.
+   */
+  jointNodes?: (SceneNode | undefined)[];
+  /** §13: persistent palette view — `matrices` is rewritten in place per frame. */
+  paletteView?: { readonly jointCount: number; readonly matrices: Float32Array; paletteKey?: object };
+  /**
    * PRD-06 T0.11: the persistent joint palette buffer — allocated once at bind,
    * written in place every frame. The binding object itself is also the C-18
    * `paletteKey` (stable per skin instance for the actor runtime's lifetime).
@@ -568,17 +667,70 @@ interface RuntimeSkinningBinding {
 type WeightedAccumulator = { value: AnimationValue; weight: number; type: TrackValueType };
 type TargetAccumulator = { type: TrackValueType; base?: WeightedAccumulator; additive?: AnimationValue };
 
-/** Column-major mat4 multiply written into a Float32Array slot — the T0.11 no-alloc palette path. */
-function multiplyMat4Into(out: Float32Array, outOffset: number, a: ArrayLike<number>, b: ArrayLike<number>): void {
+/** PRD-06 §9.8 — wall clock, ms (`performance.now` where it exists). */
+function nowMs(): number {
+  return typeof performance !== "undefined" ? performance.now() : Date.now();
+}
+
+/** Column-major mat4 multiply written into a Float32Array slot — the T0.11 no-alloc palette path. Exported so the §13 palette-build micro-budget test measures the exact per-joint write the runtime performs. `a` is hoisted into scalars once per call so the inner writes are pure FMA-grade flops — the indexed-read loop measured ~1.3× over the §13 palette budget. */
+export function multiplyMat4Into(out: Float32Array, outOffset: number, a: ArrayLike<number>, b: ArrayLike<number>): void {
+  const a00 = a[0]!, a10 = a[1]!, a20 = a[2]!, a30 = a[3]!;
+  const a01 = a[4]!, a11 = a[5]!, a21 = a[6]!, a31 = a[7]!;
+  const a02 = a[8]!, a12 = a[9]!, a22 = a[10]!, a32 = a[11]!;
+  const a03 = a[12]!, a13 = a[13]!, a23 = a[14]!, a33 = a[15]!;
   for (let col = 0; col < 4; col += 1) {
-    for (let row = 0; row < 4; row += 1) {
-      out[outOffset + col * 4 + row] =
-        a[0 * 4 + row]! * b[col * 4 + 0]! +
-        a[1 * 4 + row]! * b[col * 4 + 1]! +
-        a[2 * 4 + row]! * b[col * 4 + 2]! +
-        a[3 * 4 + row]! * b[col * 4 + 3]!;
-    }
+    const b0 = b[col * 4 + 0]!, b1 = b[col * 4 + 1]!, b2 = b[col * 4 + 2]!, b3 = b[col * 4 + 3]!;
+    out[outOffset + col * 4 + 0] = a00 * b0 + a01 * b1 + a02 * b2 + a03 * b3;
+    out[outOffset + col * 4 + 1] = a10 * b0 + a11 * b1 + a12 * b2 + a13 * b3;
+    out[outOffset + col * 4 + 2] = a20 * b0 + a21 * b1 + a22 * b2 + a23 * b3;
+    out[outOffset + col * 4 + 3] = a30 * b0 + a31 * b1 + a32 * b2 + a33 * b3;
   }
+}
+
+/** Column-major general 4×4 inverse into `out` (adjugate / determinant, gl-matrix layout). §13: `invertMat4` allocates two objects per call — over 600 frames that alone blows the steady-state budget. */
+export function invertMat4Into(out: Float32Array, a: ArrayLike<number>): Float32Array {
+  const a00 = a[0]!, a01 = a[1]!, a02 = a[2]!, a03 = a[3]!;
+  const a10 = a[4]!, a11 = a[5]!, a12 = a[6]!, a13 = a[7]!;
+  const a20 = a[8]!, a21 = a[9]!, a22 = a[10]!, a23 = a[11]!;
+  const a30 = a[12]!, a31 = a[13]!, a32 = a[14]!, a33 = a[15]!;
+
+  const b00 = a00 * a11 - a01 * a10;
+  const b01 = a00 * a12 - a02 * a10;
+  const b02 = a00 * a13 - a03 * a10;
+  const b03 = a01 * a12 - a02 * a11;
+  const b04 = a01 * a13 - a03 * a11;
+  const b05 = a02 * a13 - a03 * a12;
+  const b06 = a20 * a31 - a21 * a30;
+  const b07 = a20 * a32 - a22 * a30;
+  const b08 = a20 * a33 - a23 * a30;
+  const b09 = a21 * a32 - a22 * a31;
+  const b10 = a21 * a33 - a23 * a31;
+  const b11 = a22 * a33 - a23 * a32;
+
+  let det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+  if (!det) {
+    out.fill(0);
+    return out;
+  }
+  det = 1.0 / det;
+
+  out[0] = (a11 * b11 - a12 * b10 + a13 * b09) * det;
+  out[1] = (a02 * b10 - a01 * b11 - a03 * b09) * det;
+  out[2] = (a31 * b05 - a32 * b04 + a33 * b03) * det;
+  out[3] = (a22 * b04 - a21 * b05 - a23 * b03) * det;
+  out[4] = (a12 * b08 - a10 * b11 - a13 * b07) * det;
+  out[5] = (a00 * b11 - a02 * b08 + a03 * b07) * det;
+  out[6] = (a32 * b02 - a30 * b05 - a33 * b01) * det;
+  out[7] = (a20 * b04 - a22 * b02 + a23 * b01) * det;
+  out[8] = (a10 * b10 - a11 * b08 + a13 * b06) * det;
+  out[9] = (a01 * b08 - a00 * b10 - a03 * b06) * det;
+  out[10] = (a30 * b03 - a31 * b02 + a33 * b00) * det;
+  out[11] = (a21 * b01 - a20 * b03 - a22 * b00) * det;
+  out[12] = (a11 * b07 - a10 * b09 - a12 * b06) * det;
+  out[13] = (a00 * b09 - a01 * b07 + a02 * b06) * det;
+  out[14] = (a31 * b01 - a30 * b02 - a32 * b00) * det;
+  out[15] = (a20 * b02 - a21 * b01 + a22 * b00) * det;
+  return out;
 }
 
 export class GLTFSceneAnimationRuntime {
@@ -586,6 +738,7 @@ export class GLTFSceneAnimationRuntime {
   private readonly nodesByName = new Map<string, SceneNode[]>();
   private readonly morphRenderablesByNodeName = new Map<string, Renderable[]>();
   private readonly skinningBindings: RuntimeSkinningBinding[] = [];
+  private disposed = false;
   private readonly footBindMatrices = new Map<string, { world: Mat4; local: Mat4 }>();
   private readonly footOrientationLocks = new Map<string, Mat4>();
   private readonly footDescendantLocks = new Map<string, Map<string, Mat4>>();
@@ -595,6 +748,42 @@ export class GLTFSceneAnimationRuntime {
   private lastApply?: GLTFSceneAnimationApplyResult;
   /** T0.11 scratch for the per-joint palette multiply (inverseMeshWorld * jointWorld). */
   private readonly paletteScratch = new Float32Array(16);
+  /** §13: reusable scratch for the per-binding inverse world matrix (no alloc/frame). */
+  private readonly inverseWorldScratch = new Float32Array(16);
+  /** §13: persistent result object for `refreshSkinningPalettes` (0 bytes/frame). */
+  private readonly paletteResult = { updated: 0, missingTargets: [] as string[] };
+  /**
+   * T1.7 (PRD-06) — the per-runtime pose pipeline backing `applyClips`: a
+   * scene-wide SkeletonBinding (every traversed node in order, rest pose = the
+   * node's local TRS at bind time), one PoseMixer, and the compiled clips.
+   * Rebuilt whenever `reindexScene` re-reads the node set.
+   */
+  private poseState?: {
+    readonly binding: SkeletonBinding;
+    readonly mixer: PoseMixer;
+    readonly compiled: Map<string, CompiledClip>;
+    readonly pose: PoseBuffer;
+    /**
+     * T3.5 (PRD-06 §7.1) — ordered pose-space constraints evaluated after the
+     * mixer writes `pose` and before `applySampledTargets` builds skinning
+     * palettes. Empty by default; entries register via the `prd06.animation`
+     * lane (`node.animation.ik.add`), so flag-off cost is a length check.
+     */
+    constraints: GLTFPoseConstraint[];
+  };
+
+  /**
+   * T3.5 — world→model matrix provider for pose constraints. Defaults to the
+   * scene root's world matrix; the `prd06.animation` actor extension installs
+   * the app-node transform when one is known.
+   */
+  private poseConstraintModelMatrix?: () => readonly number[] | Float32Array;
+
+  /**
+   * Wall-clock (ms) of the last constraint evaluation under `applyClips` —
+   * its caller passes no dt, so constraint dynamics measure the real gap.
+   */
+  private lastConstraintEvalAtMs?: number;
 
   constructor(private readonly options: GLTFSceneAnimationRuntimeOptions) {
     for (const clip of options.clips) {
@@ -692,6 +881,88 @@ export class GLTFSceneAnimationRuntime {
     return { motion, applyResult: this.lastApply };
   }
 
+  /**
+   * T3.7 (PRD-06 §6.8) — resolve the root-motion translation track target for
+   * spec-level `play(clip, {rootMotion})`: with `bone` set, the bone's own
+   * `translation`/`position` track; without it, the clip's root-motion
+   * candidate (largest planar displacement on a hips/root/pelvis node, then
+   * any translation track by displacement). Throws when nothing qualifies.
+   */
+  rootMotionTargetFor(clipName: string, bone?: string): string {
+    const clip = this.clipsByName.get(clipName);
+    if (!clip) throw new Error(`glTF animation clip "${clipName}" was not found.`);
+    const isTranslation = (target: string) => target.endsWith(".translation") || target.endsWith(".position");
+    if (bone !== undefined) {
+      for (const leaf of ["translation", "position"] as const) {
+        const candidate = `${bone}.${leaf}`;
+        if (clip.tracks.some(track => track.target === candidate && track.valueType === "vector3")) return candidate;
+      }
+      throw new Error(`Root motion bone "${bone}" has no translation track in glTF animation clip "${clipName}".`);
+    }
+    let best: string | undefined;
+    let bestDistance = -1;
+    let fallback: string | undefined;
+    for (const track of clip.tracks) {
+      if (track.valueType !== "vector3" || !isTranslation(track.target)) continue;
+      fallback ??= track.target;
+      const keys = track.keyframes ?? [];
+      if (keys.length < 2) continue;
+      const first = vec3OfKeyframeValue(keys[0]!.value);
+      const last = vec3OfKeyframeValue(keys[keys.length - 1]!.value);
+      if (!first || !last) continue;
+      const distance = Math.hypot(last[0] - first[0], last[2] - first[2]);
+      const rooted = /hips|root|pelvis/i.test(track.target);
+      if (distance > 0.05 && (rooted || best === undefined || distance > bestDistance)) {
+        if (rooted || best === undefined || !/hips|root|pelvis/i.test(best)) {
+          best = track.target;
+          bestDistance = distance;
+        }
+      }
+    }
+    const resolved = best ?? fallback;
+    if (resolved === undefined) {
+      throw new Error(`glTF animation clip "${clipName}" has no translation track for root motion.`);
+    }
+    return resolved;
+  }
+
+  /**
+   * T3.7 — yaw delta (radians, about local Y) authored on `bone`'s rotation
+   * track between `fromTime`/`toTime` (loop-aware). Returns 0 when the clip
+   * has no matching rotation track.
+   */
+  rootMotionYawDelta(clipName: string, bone: string | undefined, fromTime: number, toTime: number, loop: boolean): number {
+    const clip = this.clipsByName.get(clipName);
+    if (!clip) throw new Error(`glTF animation clip "${clipName}" was not found.`);
+    const node = bone ?? this.rootMotionTargetFor(clipName).replace(/\.(translation|position)$/, "");
+    const track = clip.tracks.find(candidate =>
+      candidate.valueType === "quaternion" &&
+      (candidate.target === `${node}.rotation` || candidate.target === `${node}.quaternion`)
+    );
+    if (!track) return 0;
+    const yawAt = (time: number): number => {
+      const q = track.sample(time);
+      const arr = (Array.isArray(q) || ArrayBuffer.isView(q)) ? q as ArrayLike<number> : undefined;
+      const [x, y, z, w] = arr !== undefined && arr.length >= 4
+        ? [arr[0]!, arr[1]!, arr[2]!, arr[3]!]
+        : [0, 0, 0, 1];
+      // forward = q * (0,0,1); yaw = atan2(forward.x, forward.z)
+      const fx = 2 * (x * z + w * y);
+      const fz = 1 - 2 * (x * x + y * y);
+      return Math.atan2(fx, fz);
+    };
+    const wrap01 = (t: number) => ((t % clip.duration) + clip.duration) % clip.duration;
+    const unwrap = (delta: number) => delta - Math.round(delta / (Math.PI * 2)) * Math.PI * 2;
+    if (!loop || clip.duration <= 0) {
+      const clamp = (t: number) => Math.max(0, Math.min(clip.duration, t));
+      return unwrap(yawAt(clamp(toTime)) - yawAt(clamp(fromTime)));
+    }
+    // Continuous-loop yaw: same-cycle delta plus per-cycle contribution per wrap.
+    const perCycle = unwrap(yawAt(clip.duration) - yawAt(0));
+    const crossings = Math.floor(toTime / clip.duration) - Math.floor(fromTime / clip.duration);
+    return unwrap(yawAt(wrap01(toTime)) - yawAt(wrap01(fromTime))) + crossings * perCycle;
+  }
+
   applyClipByName(name: string, time: number): GLTFSceneAnimationApplyResult {
     const clip = this.clipsByName.get(name);
     if (!clip) {
@@ -730,8 +1001,8 @@ export class GLTFSceneAnimationRuntime {
    * using fuzzy matching (exact -> synonym group -> substring -> first clip).
    * Returns `undefined` when the runtime has no clips.
    */
-  resolveClipName(name: string): string | undefined {
-    return resolveGLTFClipName(name, this.clipNames());
+  resolveClipName(name: string, options?: ResolveGLTFClipNameOptions): string | undefined {
+    return resolveGLTFClipName(name, this.clipNames(), options);
   }
 
   /**
@@ -756,14 +1027,36 @@ export class GLTFSceneAnimationRuntime {
     return this.lastApply;
   }
 
+  /**
+   * T1.7 (PRD-06 §10) — re-implemented on the per-runtime `PoseMixer` in
+   * stateless mode (`evaluateSamples` with explicit per-sample times). Node
+   * translation/rotation/scale tracks bound to a scene node go through the
+   * pose pipeline (incremental-weight accumulate + rest fill + additive
+   * accumulators, three r185 `AnimationMixer` order); morph-weight, material
+   * and light pointer tracks keep the existing accumulator path, and so do
+   * node tracks aimed at nodes the binding does not cover (they keep their
+   * `missingTargets` reporting). Two documented semantic changes vs the old
+   * accumulator blend: partial-weight mixes fill the remainder from the rest
+   * pose instead of renormalising (rest blend), and a bone covered by the
+   * blend but not by a given channel resets that channel to rest (rest reset).
+   */
   applyClips(samples: readonly GLTFSceneAnimationClipSample[]): GLTFSceneAnimationApplyResult {
     if (samples.length === 0) {
       throw new Error("glTF animation runtime blend requires at least one clip sample.");
     }
+    const phaseStart = nowMs();
+    let mixerMs = 0;
+    let constraintsMs = 0;
+    let springsMs = 0;
     const accumulators = new Map<string, TargetAccumulator>();
     const unsupportedTracks: string[] = [];
     let maxTime = 0;
     const names: string[] = [];
+
+    const pose = this.poseRuntime();
+    const poseSpecs: PoseSampleSpec[] = [];
+    const touchedBones = new Set<number>();
+    const maskWeights = new Map<GLTFSceneAnimationClipBoneMask, Float32Array>();
 
     for (const sample of samples) {
       const clip = this.clipsByName.get(sample.clipName);
@@ -781,19 +1074,74 @@ export class GLTFSceneAnimationRuntime {
       const wrappedTime = clip.duration > 0 && sample.time > clip.duration ? sample.time % clip.duration : Math.min(sample.time, clip.duration);
       maxTime = Math.max(maxTime, wrappedTime);
       names.push(`${clip.name}@${Number(wrappedTime.toFixed(4))}x${Number(weight.toFixed(4))}${sample.additive ? "+add" : ""}`);
+
+      let bindsNodes = false;
       for (const track of clip.tracks) {
         const target = parseAnimationTarget(track.target);
         if (!target) {
           unsupportedTracks.push(track.target);
           continue;
         }
-        // Bone masks filter node tracks only; material/light property tracks always apply.
-        if (target.kind === "node" && !clipMaskAllowsNode(sample.mask, target.nodeName)) continue;
+        if (target.kind === "node" && target.path !== "weights") {
+          // Node TRS: pose path when the name binds and the mask allows it.
+          const boneIndices = pose.binding.jointIndicesByName.get(target.nodeName);
+          if (boneIndices !== undefined && boneIndices.length > 0 && clipMaskAllowsNode(sample.mask, target.nodeName)) {
+            bindsNodes = true;
+            touchedBones.add(boneIndices[0]!);
+          } else if (boneIndices === undefined) {
+            // Track points at a node absent from the scene — legacy path so
+            // `missingTargets` reporting is unchanged.
+            blendInto(accumulators, track.target, track.valueType, track.sample(wrappedTime), weight, sample.additive === true);
+          }
+          continue;
+        }
         blendInto(accumulators, track.target, track.valueType, track.sample(wrappedTime), weight, sample.additive === true);
+      }
+      if (bindsNodes) {
+        let mask: Float32Array | null = null;
+        if (sample.mask !== undefined) {
+          let cached = maskWeights.get(sample.mask);
+          if (cached === undefined) {
+            cached = new Float32Array(pose.binding.boneCount);
+            for (let i = 0; i < pose.binding.boneCount; i += 1) {
+              cached[i] = clipMaskAllowsNode(sample.mask, pose.binding.jointNames[i]!) ? 1 : 0;
+            }
+            maskWeights.set(sample.mask, cached);
+          }
+          mask = cached;
+        }
+        poseSpecs.push({ clipName: clip.name, time: wrappedTime, weight, additive: sample.additive === true, mask });
       }
     }
 
     const sampledTargets = new Map<string, AnimationValue>();
+    if (poseSpecs.length > 0) {
+      const mixerStart = nowMs();
+      pose.mixer.evaluateSamples(poseSpecs, pose.pose);
+      mixerMs = nowMs() - mixerStart;
+      // T3.5 — constraints apply to the freshly-mixed pose before palette
+      // build; touched joints union into the emitted sampled targets. Their
+      // dynamics (look-at half-life, spring substeps) integrate in wall-clock
+      // seconds, so measure the real gap between applies — a hardcoded 1/60
+      // makes smoothing converge ~6× too slowly in sub-60fps sessions.
+      const now = nowMs();
+      const constraintDt = this.lastConstraintEvalAtMs === undefined
+        ? 1 / 60
+        : Math.min(0.25, Math.max(1e-4, (now - this.lastConstraintEvalAtMs) / 1000));
+      this.lastConstraintEvalAtMs = now;
+      const constrained = this.runPoseConstraints(pose.pose, pose.binding, constraintDt);
+      constraintsMs = constrained.constraintsMs;
+      springsMs = constrained.springsMs;
+      for (const boneIndex of constrained.touched) touchedBones.add(boneIndex);
+      for (const boneIndex of touchedBones) {
+        const name = pose.binding.jointNames[boneIndex]!;
+        const p = boneIndex * 3;
+        const q = boneIndex * 4;
+        sampledTargets.set(`${name}.translation`, [pose.pose.positions[p]!, pose.pose.positions[p + 1]!, pose.pose.positions[p + 2]!]);
+        sampledTargets.set(`${name}.rotation`, [pose.pose.rotations[q]!, pose.pose.rotations[q + 1]!, pose.pose.rotations[q + 2]!, pose.pose.rotations[q + 3]!]);
+        sampledTargets.set(`${name}.scale`, [pose.pose.scales[p]!, pose.pose.scales[p + 1]!, pose.pose.scales[p + 2]!]);
+      }
+    }
     for (const [target, accumulator] of accumulators) {
       sampledTargets.set(target, finalizeTargetBlend(accumulator));
     }
@@ -802,9 +1150,295 @@ export class GLTFSceneAnimationRuntime {
       `blend:${names.join(",")}`,
       maxTime,
       { sampledTargets, unsupportedTracks },
-      samples.length
+      samples.length,
+      { mixerMs, constraintsMs, springsMs, paletteBytes: this.paletteBufferBytes(), cpuMs: nowMs() - phaseStart }
     );
     return this.lastApply;
+  }
+
+  /**
+   * §10 (PRD-06) — the scene-wide pose binding the pose path evaluates on.
+   * Joints are every scene node in `traverse` order, resolved by node index
+   * (duplicate names bind all slots); the rest pose is each node's local TRS
+   * captured at bind time.
+   */
+  skeletons(): readonly SkeletonBinding[] {
+    return [this.poseRuntime().binding];
+  }
+
+  /** §10 (PRD-06) — the per-clip compiled tracks used by the pose path. */
+  compiledClips(): ReadonlyMap<string, CompiledClip> {
+    return this.poseRuntime().compiled;
+  }
+
+  /** §10 (PRD-06) — the per-runtime PoseMixer `applyClips` evaluates on. */
+  mixer(): PoseMixer {
+    return this.poseRuntime().mixer;
+  }
+
+  /**
+   * T3.8 (PRD-06 §7.2, C-19) — `actor.animation.addClipsFrom(source)` retarget-
+   * bakes another skeleton's compiled clips onto this runtime's skeleton and
+   * registers them by name (raw + compiled + mixer) so `play`/`playLayer`
+   * resolve them like loaded clips. The bake runs in `pose/retarget.worker.ts`
+   * when the platform has workers, otherwise in-process, and its output is
+   * cached in IndexedDB under `(engineVersion, sourceHash, targetHash)` so a
+   * rollback ignores newer caches. Returns the registered clip names.
+   */
+  async addClipsFrom(
+    source:
+      | { readonly skeleton: SkeletonBinding; readonly clips: ReadonlyMap<string, CompiledClip> }
+      | Pick<GLTFSceneAnimationRuntime, "skeletons" | "compiledClips">,
+    options: AddClipsFromRuntimeOptions = {}
+  ): Promise<readonly string[]> {
+    const pose = this.poseRuntime();
+    const sourceSkeleton = "skeletons" in source ? source.skeletons()[0] : source.skeleton;
+    const sourceClips = "compiledClips" in source ? source.compiledClips() : source.clips;
+    if (sourceSkeleton === undefined) {
+      throw new Error("addClipsFrom: source has no skeleton to retarget from.");
+    }
+    const engineVersion = options.engineVersion ?? AURA3D_RETARGET_ENGINE_VERSION;
+    const sourceHash = `${retargetSkeletonHash(sourceSkeleton)}:${retargetClipsHash(sourceClips)}`;
+    const targetHash = retargetSkeletonHash(pose.binding);
+    const key = retargetCacheKey(engineVersion, sourceHash, targetHash);
+    let baked = options.cache === false ? undefined : await readRetargetCache(key);
+    if (baked === undefined) {
+      const bakeOptions: BakeRetargetedClipsOptions = {
+        ...(options.map !== undefined ? { map: options.map } : {}),
+        hipsScale: options.hipsScale ?? "leg-length",
+        ...(options.fingers !== undefined ? { fingers: options.fingers } : {}),
+        ...(options.retarget !== undefined ? { retarget: options.retarget } : {})
+      };
+      const worker = options.worker === false ? undefined : createRetargetWorker();
+      baked = worker !== undefined
+        ? await bakeClipsInWorker(worker, {
+            sourceSkeleton,
+            targetSkeleton: pose.binding,
+            clips: sourceClips,
+            options: bakeOptions
+          })
+        : bakeRetargetedClipMap({ skeleton: sourceSkeleton, clips: sourceClips }, pose.binding, bakeOptions);
+      if (options.cache !== false) void writeRetargetCache(key, baked);
+    }
+    const names: string[] = [];
+    for (const [name, compiled] of baked) {
+      const raw = decompileCompiledClip(name, compiled);
+      this.clipsByName.set(name, raw);
+      pose.compiled.set(name, compiled);
+      pose.mixer.addCompiledClip(name, compiled, raw);
+      names.push(name);
+    }
+    return names;
+  }
+
+  /**
+   * T1.9 (PRD-06 §10) — advance the per-runtime `PoseMixer` by `dt` seconds
+   * and write the evaluated pose to scene nodes in `applySampledTargets`
+   * order. `restPoseReset !== false` writes every bound bone (rest-filled
+   * channels reset); `false` writes only the bones covered by active actions'
+   * bound tracks, so uncovered bones keep their current scene values.
+   * Non-pose tracks (morph weights, material/light pointer, node tracks
+   * aimed at nodes outside the binding) keep the legacy accumulator path,
+   * sampled at each active action's own clock and effective weight.
+   */
+  applyPoseMixer(dt: number, options?: { readonly label?: string; readonly restPoseReset?: boolean }): GLTFSceneAnimationApplyResult {
+    const phaseStart = nowMs();
+    const pose = this.poseRuntime();
+    const mixerStart = nowMs();
+    pose.mixer.update(dt);
+    pose.mixer.evaluate(pose.pose);
+    const mixerMs = nowMs() - mixerStart;
+    // T3.5 — constraints evaluate post-mixer / pre-palette; their touched
+    // bones union into `covered` so the write-back emits them.
+    this.lastConstraintEvalAtMs = nowMs();
+    const constrained = this.runPoseConstraints(pose.pose, pose.binding, dt);
+    const constraintsMs = constrained.constraintsMs;
+    const springsMs = constrained.springsMs;
+
+    const actions = pose.mixer.activeActions();
+    let covered: ReadonlySet<number> | undefined;
+    if (options?.restPoseReset === false) {
+      const set = new Set<number>();
+      for (const action of actions) {
+        for (const binding of action.bindings) set.add(binding.boneIndex);
+      }
+      for (const boneIndex of constrained.touched) set.add(boneIndex);
+      covered = set;
+    }
+    // `covered === undefined` already emits every bound bone below — the
+    // constraint union matters only on the covered path.
+
+    const sampledTargets = new Map<string, AnimationValue>();
+    const writeBone = (boneIndex: number): void => {
+      const name = pose.binding.jointNames[boneIndex]!;
+      const p = boneIndex * 3;
+      const q = boneIndex * 4;
+      sampledTargets.set(`${name}.translation`, [pose.pose.positions[p]!, pose.pose.positions[p + 1]!, pose.pose.positions[p + 2]!]);
+      sampledTargets.set(`${name}.rotation`, [pose.pose.rotations[q]!, pose.pose.rotations[q + 1]!, pose.pose.rotations[q + 2]!, pose.pose.rotations[q + 3]!]);
+      sampledTargets.set(`${name}.scale`, [pose.pose.scales[p]!, pose.pose.scales[p + 1]!, pose.pose.scales[p + 2]!]);
+    };
+    if (covered === undefined) {
+      for (let i = 0; i < pose.binding.boneCount; i += 1) writeBone(i);
+    } else {
+      for (const boneIndex of covered) writeBone(boneIndex);
+    }
+
+    // Legacy accumulator path for every track the pose binding does not
+    // cover — sampled at each action's clock and effective weight, in active
+    // action order (same semantics as `applyClips`' per-sample partition).
+    const accumulators = new Map<string, TargetAccumulator>();
+    const unsupportedTracks: string[] = [];
+    for (const action of actions) {
+      const source = this.clipsByName.get(action.clipName);
+      if (source === undefined) continue;
+      for (const track of source.tracks) {
+        const target = parseAnimationTarget(track.target);
+        if (target === undefined) {
+          unsupportedTracks.push(track.target);
+          continue;
+        }
+        if (target.kind === "node" && target.path !== "weights") {
+          const boneIndices = pose.binding.jointIndicesByName.get(target.nodeName);
+          if (boneIndices !== undefined && boneIndices.length > 0) continue; // bound → mixer path
+        }
+        blendInto(accumulators, track.target, track.valueType, track.sample(action.time), action.effectiveWeight, action.additive);
+      }
+    }
+    for (const [target, accumulator] of accumulators) {
+      sampledTargets.set(target, finalizeTargetBlend(accumulator));
+    }
+
+    const active = actions.filter((action) => action.effectiveWeight > 0);
+    this.lastApply = this.applySampledTargets(
+      `mixer:${options?.label ?? (actions.map((action) => action.clipName).join("+") || "idle")}`,
+      active[0]?.time ?? 0,
+      { sampledTargets, unsupportedTracks },
+      actions.length > 0 ? actions.length : undefined,
+      { mixerMs, constraintsMs, springsMs, paletteBytes: this.paletteBufferBytes(), cpuMs: nowMs() - phaseStart }
+    );
+    return this.lastApply;
+  }
+
+  /**
+   * T1.10 (PRD-06 §10, C-19 `blendMode: "additive"`/`additiveReference`) — lazily
+   * compile an additive variant of `clipName` via `makeClipAdditive` (reference
+   * defaults to the clip's own first frame) and register it on the mixer under
+   * a synthesized name. Returns the registered clip key for `clipAction`/`playLayer`.
+   */
+  ensureAdditiveClip(clipName: string, reference?: { readonly clip?: string; readonly time?: number }): string {
+    const pose = this.poseRuntime();
+    const source = this.clipsByName.get(clipName);
+    if (source === undefined) {
+      return clipName;
+    }
+    const referenceClip = reference?.clip === undefined ? undefined : this.clipsByName.get(reference.clip);
+    const referenceTime = reference?.time ?? 0;
+    const name = `${clipName}#additive:${reference?.clip ?? "self"}:${referenceTime}`;
+    if (!pose.compiled.has(name)) {
+      const additive = makeClipAdditive(source, referenceClip === undefined ? referenceTime : { clip: referenceClip, time: referenceTime });
+      const compiledClip = compileClip(additive);
+      pose.compiled.set(name, compiledClip);
+      pose.mixer.addCompiledClip(name, compiledClip, additive);
+    }
+    return name;
+  }
+
+  /**
+   * T1.10 (C-19 `animation.mask`) — bind-order joint names for `createBoneMask`.
+   */
+  skeletonJointNames(): readonly string[] {
+    return this.poseRuntime().binding.jointNames;
+  }
+
+  /**
+   * T3.5 — register a pose constraint. Entries evaluate in insertion order
+   * after each mixer write; returns a disposer that removes exactly this
+   * constraint (by identity — a duplicate spec stays).
+   */
+  addPoseConstraint(constraint: GLTFPoseConstraint): () => void {
+    const state = this.poseRuntime();
+    state.constraints.push(constraint);
+    let live = true;
+    return () => {
+      if (!live) return;
+      live = false;
+      const index = state.constraints.indexOf(constraint);
+      if (index >= 0) state.constraints.splice(index, 1);
+    };
+  }
+
+  /** T3.5 — drop every pose constraint (constant-time identity sweep). */
+  clearPoseConstraints(): void {
+    if (this.poseState === undefined) return;
+    this.poseState.constraints.length = 0;
+  }
+
+  /** T3.5 — the count of live pose constraints (diagnostics/tests). */
+  poseConstraintCount(): number {
+    return this.poseState?.constraints.length ?? 0;
+  }
+
+  /** T3.5 — install the world→model matrix provider (actor extension). */
+  setPoseConstraintModelMatrix(provider: (() => readonly number[] | Float32Array) | undefined): void {
+    this.poseConstraintModelMatrix = provider;
+  }
+
+  /**
+   * T3.5 — evaluate the constraint list in order onto the just-mixed pose and
+   * return the union of touched joint indices (empty when no constraints),
+   * plus the §9.8 wall-clock split between `"springs"`-tagged constraints and
+   * the rest.
+   */
+  private runPoseConstraints(pose: PoseBuffer, binding: SkeletonBinding, dt: number): { readonly touched: Set<number>; readonly constraintsMs: number; readonly springsMs: number } {
+    const touched = new Set<number>();
+    const constraints = this.poseState?.constraints;
+    let constraintsMs = 0;
+    let springsMs = 0;
+    if (constraints === undefined || constraints.length === 0) return { touched, constraintsMs, springsMs };
+    const modelMatrix = this.poseConstraintModelMatrix?.() ?? this.options.scene.root.transform.worldMatrix;
+    for (const constraint of constraints) {
+      const start = nowMs();
+      constraint.evaluate(pose, binding, modelMatrix, { dt });
+      const elapsed = nowMs() - start;
+      if (constraint.kind === "springs") springsMs += elapsed;
+      else constraintsMs += elapsed;
+      for (const bone of constraint.bones) touched.add(bone);
+    }
+    return { touched, constraintsMs, springsMs };
+  }
+
+  /** §9.8/§13 — CPU-side palette payload this runtime owns, bytes (16 f32/joint). */
+  private paletteBufferBytes(): number {
+    let bytes = 0;
+    for (const binding of this.skinningBindings) bytes += binding.skin.joints.length * 16 * 4;
+    return bytes;
+  }
+
+  private poseRuntime(): { readonly binding: SkeletonBinding; readonly mixer: PoseMixer; readonly compiled: Map<string, CompiledClip>; readonly pose: PoseBuffer; constraints: GLTFPoseConstraint[] } {
+    if (this.poseState === undefined) {
+      const nodes: SceneNode[] = [];
+      this.options.scene.traverse((node) => nodes.push(node));
+      const indexByNode = new Map<SceneNode, number>(nodes.map((node, index) => [node, index]));
+      const binding = bindSkeleton({
+        joints: nodes.map((_, index) => index),
+        resolveNode: (index) => {
+          const node = nodes[index];
+          if (node === undefined) return undefined;
+          return { name: node.name, position: node.transform.position, rotation: node.transform.rotation, scale: node.transform.scale };
+        },
+        jointNames: nodes.map((node) => node.name),
+        parentIndices: nodes.map((node) => (node.parent === null ? -1 : indexByNode.get(node.parent) ?? -1))
+      });
+      const mixer = new PoseMixer({ skeleton: binding });
+      const compiled = new Map<string, CompiledClip>();
+      for (const [name, clip] of this.clipsByName) {
+        const compiledClip = compileClip(clip);
+        compiled.set(name, compiledClip);
+        mixer.addCompiledClip(name, compiledClip, clip);
+      }
+      this.poseState = { binding, mixer, compiled, pose: createPoseBuffer(binding.boneCount), constraints: [] };
+    }
+    return this.poseState;
   }
 
   applyAnimationValues(
@@ -824,6 +1458,22 @@ export class GLTFSceneAnimationRuntime {
       unsupportedTracks
     });
     return this.lastApply;
+  }
+
+  /**
+   * §16 S3 (PRD-06) — teardown frees the C-18 palette textures this runtime
+   * stamped, keyed on each skin binding (`skinningPaletteCache.release`).
+   * Morph array textures and CPU-morph scratch are released by the actor's
+   * own teardown (`prd06.animation` extension dispose / pipeline lifecycle),
+   * which is the layer that can see resolved `Geometry` objects — the scene
+   * layer here only knows geometry handles.
+   */
+  dispose(): void {
+    if (this.disposed) return;
+    for (const binding of this.skinningBindings) {
+      skinningPaletteCache.release(binding.paletteView?.paletteKey ?? binding);
+    }
+    this.disposed = true;
   }
 
   /**
@@ -976,6 +1626,8 @@ export class GLTFSceneAnimationRuntime {
   }
 
   reindexScene(): void {
+    this.poseState = undefined;
+    this.lastConstraintEvalAtMs = undefined;
     this.options.scene.updateWorldTransforms();
     this.footBindMatrices.clear();
     this.footOrientationLocks.clear();
@@ -1302,23 +1954,38 @@ export class GLTFSceneAnimationRuntime {
   }
 
   private refreshSkinningPalettes(): { readonly updated: number; readonly missingTargets: readonly string[] } {
+    const result = this.paletteResult;
+    result.updated = 0;
+    result.missingTargets.length = 0;
     if (this.skinningBindings.length === 0) {
-      return { updated: 0, missingTargets: [] };
+      return result;
     }
-    let updated = 0;
-    const missingTargets: string[] = [];
+    const missingTargets = result.missingTargets;
     for (const binding of this.skinningBindings) {
       // T0.11: write into the binding's persistent palette buffer — no per-frame
       // Float32Array allocation, and the renderer's C-18 cache can key on it.
       const matrices = binding.paletteMatrices;
-      const inverseMeshWorld = invertMat4(binding.node.transform.worldMatrix);
+      const inverseMeshWorld = invertMat4Into(this.inverseWorldScratch, binding.node.transform.worldMatrix);
+      // §13: joint nodes resolved once per binding instead of a string Map
+      // lookup per joint per frame; the cache rebuilds while any joint is
+      // missing so late-registered nodes still resolve.
+      let jointNodes = binding.jointNodes;
+      if (!jointNodes) {
+        jointNodes = new Array(binding.skin.jointNames.length);
+        let allResolved = true;
+        for (let index = 0; index < binding.skin.jointNames.length; index += 1) {
+          const node = this.nodesByName.get(binding.skin.jointNames[index]!)?.[0];
+          jointNodes[index] = node;
+          if (!node) allResolved = false;
+        }
+        if (allResolved) binding.jointNodes = jointNodes;
+      }
       let complete = true;
       for (let index = 0; index < binding.skin.jointNames.length; index += 1) {
-        const jointName = binding.skin.jointNames[index]!;
-        const jointNode = this.nodesByName.get(jointName)?.[0];
+        const jointNode = jointNodes[index];
         const inverseBind = binding.skin.inverseBindMatrices[index];
         if (!jointNode || !inverseBind) {
-          missingTargets.push(`${binding.skin.name}.${jointName}`);
+          missingTargets.push(`${binding.skin.name}.${binding.skin.jointNames[index]!}`);
           complete = false;
           break;
         }
@@ -1327,17 +1994,21 @@ export class GLTFSceneAnimationRuntime {
         multiplyMat4Into(matrices, index * 16, this.paletteScratch, inverseBind);
       }
       if (!complete) continue;
-      const skinningPalette = {
-        jointCount: binding.skin.joints.length,
-        matrices
-      };
+      let skinningPalette = binding.paletteView;
+      if (!skinningPalette) {
+        skinningPalette = {
+          jointCount: binding.skin.joints.length,
+          matrices
+        };
+        binding.paletteView = skinningPalette;
+      }
       // C-18/§9.2: the stable per-skin key the palette cache binds on is this
       // binding object, not the per-frame `renderable.skinning` wrapper (E40).
-      (skinningPalette as { paletteKey?: object }).paletteKey = binding;
+      skinningPalette.paletteKey = binding;
       binding.renderable.skinning = skinningPalette;
-      updated += 1;
+      result.updated += 1;
     }
-    return { updated, missingTargets };
+    return result;
   }
 
   private inspectClipBinding(clip: AnimationClip): GLTFSceneAnimationClipBindingDiagnostics {
@@ -1427,7 +2098,8 @@ export class GLTFSceneAnimationRuntime {
     clipName: string,
     time: number,
     sampled: { readonly sampledTargets: ReadonlyMap<string, AnimationValue>; readonly unsupportedTracks: readonly string[] },
-    blendedClipCount?: number
+    blendedClipCount?: number,
+    phaseTimings?: GLTFSceneAnimationPhaseTimings
   ): GLTFSceneAnimationApplyResult {
     let transformTracksApplied = 0;
     let morphWeightTracksApplied = 0;
@@ -1497,7 +2169,8 @@ export class GLTFSceneAnimationRuntime {
       ...(measuredFootPlanting === undefined ? {} : { footPlanting: measuredFootPlanting }),
       skinningPalettesUpdated: skinning.updated,
       missingTargets: [...missingTargets, ...skinning.missingTargets],
-      unsupportedTracks: sampled.unsupportedTracks
+      unsupportedTracks: sampled.unsupportedTracks,
+      ...(phaseTimings === undefined ? {} : { phaseTimings })
     };
   }
 }

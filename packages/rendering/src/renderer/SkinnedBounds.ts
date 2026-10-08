@@ -5,11 +5,25 @@ import type { SkinningPaletteBinding } from "../ForwardPass";
 import type { RenderItem } from "../contracts/renderItem.js";
 import type { SkinnedBoundsProvider } from "../contracts/shadows.js";
 import { type Bounds3, Geometry } from "../Geometry";
-import { computeSkinnedGeometryBounds } from "../SkinningBounds";
+import { computeSkinnedGeometryBounds, computeSkinnedGeometryBoundsFromJointBoxes } from "../SkinningBounds";
+import { paletteKeyOf } from "../SkinningUniforms";
+import { rendererQrFlags } from "./FrameGraph";
 import { toMat4 } from "./RenderShared";
 import { Bounds3 as SceneBounds3, identityMat4 } from "@aura3d/scene";
 
 export function skinnedItemLocalBounds(geometry: Geometry, skinning: SkinningPaletteBinding): Bounds3 {
+  if (rendererQrFlags().on("A3D_QR_ANIMATION")) {
+    // T2.6 — per-joint AABBs keyed on `paletteKey`: two actors sharing one
+    // geometry keep independent caches (E26); actors without a stamped
+    // palette key fall back to their own geometry-keyed bucket — kept separate
+    // from the legacy map so a joint-box bound never answers a legacy lookup.
+    const key = (paletteKeyOf(skinning) as object | null) ?? geometry;
+    const cached = skinnedJointBoxBoundsCache.get(key);
+    if (cached && float32ArraysEqual(cached.matrices, skinning.matrices)) return cached.bounds;
+    const bounds = computeSkinnedGeometryBoundsFromJointBoxes(geometry, skinning);
+    skinnedJointBoxBoundsCache.set(key, { matrices: new Float32Array(skinning.matrices), bounds });
+    return bounds;
+  }
   const cached = skinnedCullingBoundsCache.get(geometry);
   if (cached && float32ArraysEqual(cached.matrices, skinning.matrices)) {
     return cached.bounds;
@@ -19,7 +33,8 @@ export function skinnedItemLocalBounds(geometry: Geometry, skinning: SkinningPal
   return bounds;
 }
 
-const skinnedCullingBoundsCache = new WeakMap<Geometry, { readonly matrices: Float32Array; readonly bounds: Bounds3 }>();
+const skinnedCullingBoundsCache = new WeakMap<object, { readonly matrices: Float32Array; readonly bounds: Bounds3 }>();
+const skinnedJointBoxBoundsCache = new WeakMap<object, { readonly matrices: Float32Array; readonly bounds: Bounds3 }>();
 
 function float32ArraysEqual(left: Float32Array, right: Float32Array): boolean {
   if (left.length !== right.length) return false;

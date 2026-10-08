@@ -31,6 +31,10 @@
     "./devtools": {
       "types": "./dist/devtools/index.d.ts",
       "import": "./dist/devtools/index.js"
+    },
+    "./lanes": {
+      "types": "./dist/lanes/index.d.ts",
+      "import": "./dist/lanes/index.js"
     }
   },
   "main": "./dist/index.js",

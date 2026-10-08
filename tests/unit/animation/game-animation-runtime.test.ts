@@ -1,8 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { AnimationClip } from "../../../packages/animation/src/AnimationClip";
 import { AnimationController, type AnimationPose } from "../../../packages/animation/src/AnimationController";
 import { AnimationMixer, type AnimationTarget } from "../../../packages/animation/src/AnimationMixer";
 import { AnimationTrack } from "../../../packages/animation/src/AnimationTrack";
+import { setPoseMixerBlendFlagProvider } from "../../../packages/animation/src/pose/poseMixerFlags";
 
 type ClipId = "idle" | "walk" | "jump" | "guard" | "attack" | "hit" | "ko";
 
@@ -141,5 +142,131 @@ describe("game animation runtime semantics", () => {
 
     expect(attack.playing).toBe(false);
     expect(events.map((event) => `${event.clipName}:${event.name}`)).toEqual(["attack:active"]);
+  });
+});
+
+describe("T1.11 pose-mixer facade (A3D_QR_ANIMATION_POSE_MIXER)", () => {
+  afterEach(() => {
+    setPoseMixerBlendFlagProvider(undefined);
+    vi.restoreAllMocks();
+  });
+
+  const positionTrack = (x: number) =>
+    new AnimationTrack({
+      target: "root.position",
+      valueType: "vector3",
+      keyframes: [
+        { time: 0, value: [x, 0, 0] },
+        { time: 1, value: [x, 0, 0] }
+      ]
+    });
+
+  const trackClipController = (id: string, x: number) => {
+    const controller = new AnimationController<string>();
+    controller.registerClip({ id, duration: 1, loop: true, tracks: [positionTrack(x)] });
+    return controller;
+  };
+
+  it("keyframe clips blend through PoseMixer; weight < 1 fills the remainder from rest", () => {
+    setPoseMixerBlendFlagProvider(() => true);
+    const controller = trackClipController("clip", 10);
+    controller.play("clip", { weight: 0.3 });
+    const pose = controller.capturePose().pose;
+    // three r185 PropertyMixer mixes the unclaimed weight remainder with the
+    // binding's original value — the delegate's rest is identity ([0,0,0]
+    // position), so x = 10*0.3 + 0*0.7 = 3. The legacy renormalising blend
+    // below returns 10 for the same input.
+    expect(pose.bones.root?.position?.x).toBeCloseTo(3, 6);
+  });
+
+  it("flag-off keeps the legacy path, which cannot sample tracks-only clips (E38)", () => {
+    const controller = trackClipController("clip", 10);
+    controller.play("clip", { weight: 0.3 });
+    const pose = controller.capturePose().pose;
+    // Legacy `blendStates` feeds every state through `clip.sample`; a
+    // keyframe-only clip has no sampler, so it contributes `emptyPose()` —
+    // the renormalising path's E38 blind spot that the flag-on delegate fixes.
+    expect(pose.bones.root).toBeUndefined();
+  });
+
+  it("0.5/0.5 weighted keyframe pair yields the r185 incremental-mix midpoint", () => {
+    setPoseMixerBlendFlagProvider(() => true);
+    const controller = new AnimationController<string>();
+    controller.registerClip({ id: "a", duration: 1, loop: true, tracks: [positionTrack(0)] });
+    controller.registerClip({ id: "b", duration: 1, loop: true, tracks: [positionTrack(10)] });
+    controller.play("a", { weight: 0.5 });
+    controller.play("b", { weight: 0.5 });
+    const pose = controller.capturePose().pose;
+    // three r185 PropertyMixer.accumulate: second contribution takes
+    // t = 0.5/(0.5+0.5) = 0.5 of the interval → x = 0 + (10-0)*0.5 = 5.
+    expect(pose.bones.root?.position?.x).toBeCloseTo(5, 6);
+  });
+
+  it("sampler-function clips keep the legacy path and warn once (E38)", () => {
+    setPoseMixerBlendFlagProvider(() => true);
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const controller = new AnimationController<"clip">();
+    controller.registerClip({ id: "clip", duration: 1, loop: true, sample: () => pose("clip") });
+    controller.play("clip", { weight: 0.3 });
+    const first = controller.capturePose().pose;
+    // Fallback keeps renormalising: w=0.3 → full clip pose (root.x = 4).
+    expect(first.bones.root?.position?.x).toBeCloseTo(4, 6);
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(String(warn.mock.calls[0]![0])).toContain("renormalising");
+    controller.capturePose();
+    expect(warn).toHaveBeenCalledTimes(1);
+  });
+
+  it("AnimationMixer facade routes blendBase/additiveContribution through the pose kernels", () => {
+    const captureValues = (flagOn: boolean) => {
+      setPoseMixerBlendFlagProvider(flagOn ? () => true : undefined);
+      const mixer = new AnimationMixer();
+      const idle = new AnimationClip({ name: "a", duration: 1, tracks: [positionTrack(0)] });
+      const walk = new AnimationClip({ name: "b", duration: 1, tracks: [positionTrack(10)] });
+      const turn = new AnimationClip({
+        name: "c",
+        duration: 1,
+        tracks: [
+          new AnimationTrack({
+            target: "root.rotation",
+            valueType: "quaternion",
+            keyframes: [
+              { time: 0, value: [0, 0, 0, 1] },
+              { time: 1, value: [0, 0, 0, 1] }
+            ]
+          })
+        ]
+      });
+      const turn90 = new AnimationClip({
+        name: "d",
+        duration: 1,
+        tracks: [
+          new AnimationTrack({
+            target: "root.rotation",
+            valueType: "quaternion",
+            keyframes: [
+              { time: 0, value: [0, Math.SQRT1_2, 0, Math.SQRT1_2] },
+              { time: 1, value: [0, Math.SQRT1_2, 0, Math.SQRT1_2] }
+            ]
+          })
+        ]
+      });
+      mixer.play(idle).setWeight(0.5);
+      mixer.play(walk).setWeight(0.5);
+      mixer.play(turn).setWeight(0.5);
+      mixer.play(turn90).setWeight(0.5);
+      mixer.update(0.1);
+      return mixer.snapshot().values;
+    };
+
+    const off = captureValues(false);
+    const on = captureValues(true);
+    // r185 incremental mix t = 0.5/(0.5+0.5) → position [5,0,0]; quaternion
+    // slerp(identity, 90°Y, 0.5) = 45°Y ≈ [0, 0.382683, 0, 0.923880].
+    expect(on["root.position"]).toEqual([5, 0, 0]);
+    const quat = on["root.rotation"] as [number, number, number, number];
+    expect(quat[1]).toBeCloseTo(Math.sin(Math.PI / 8), 5);
+    expect(quat[3]).toBeCloseTo(Math.cos(Math.PI / 8), 5);
+    expect(on).toEqual(off);
   });
 });

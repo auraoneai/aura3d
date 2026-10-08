@@ -11,6 +11,10 @@
       "types": "./dist/webgpu.d.ts",
       "import": "./dist/webgpu.js"
     },
+    "./production-runtime": {
+      "types": "./dist/production-runtime/index.d.ts",
+      "import": "./dist/production-runtime/index.js"
+    },
     "./extension-scalar-atlas": {
       "types": "./dist/extension-scalar-atlas.d.ts",
       "import": "./dist/extension-scalar-atlas.js"

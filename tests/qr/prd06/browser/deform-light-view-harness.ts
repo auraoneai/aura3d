@@ -9,11 +9,18 @@
 // DepthPass: the vertex stage here is exactly the `vertex:deform` splice the
 // feature composes (§8.4 reference program).
 
+// Buffer shim FIRST — a transitive module (`environment/HdrEquirect.ts`
+// `HDR_MAGIC`) evaluates `Buffer.from` at load, before this module's body.
+import "./buffer-shim.js";
 import { GLTFLoader, LoadContext, createGLTFSceneAnimationRuntime } from "@aura3d/assets";
 import type { GLTFAsset, GLTFMeshAsset } from "@aura3d/assets";
 import { shaderChunk } from "@aura3d/rendering/contracts";
 // Side-effect: registers the a3d_prd06_* chunks + provides the C-18 slot.
-import "@aura3d/rendering/lanes/prd06";
+// Relative path — `@aura3d/rendering/lanes/prd06` is not a published package
+// subpath, so the dev-server alias map does not rewrite it and the browser
+// fails with "Failed to resolve module specifier" (the spec then times out
+// waiting on a report that never publishes).
+import "../../../../packages/rendering/src/lanes/prd06.js";
 
 declare global {
   interface Window {
@@ -22,12 +29,21 @@ declare global {
       readonly error?: string;
       readonly iou?: {
         readonly deformVsCpu: number;
+        readonly deformVsCpuTolerant: number;
         readonly bindPoseGpuVsCpu: number;
+        readonly bindPoseGpuVsCpuTolerant: number;
         readonly controlRawVsCpu: number;
         readonly animatedVsBindCpu: number;
       };
+      readonly maskStats?: Record<string, { count: number; cx: number; cy: number; minX: number; minY: number; maxX: number; maxY: number }>;
       readonly stats?: { readonly joints: number; readonly vertices: number; readonly pixels: number };
       readonly masks?: Record<"deform" | "cpu" | "bindGpu" | "bindCpu" | "control", string>;
+      readonly previousDelta?: { readonly maxDelta: number; readonly vertexCount: number; readonly exceeding?: number; readonly firstBad?: number };
+      readonly selftestDelta?: { readonly maxDelta: number; readonly vertexCount: number };
+      readonly posedDelta?: { readonly maxDelta: number; readonly vertexCount: number; readonly exceeding?: number; readonly firstBad?: number };
+      readonly ndcDelta?: { readonly maxDelta: number; readonly worstVertex: number; readonly maxAbsW: number };
+      readonly row3?: { readonly maxAbs: number; readonly worstVertex: number; readonly worstRow: readonly number[] };
+      readonly paletteRow3?: { readonly maxAbs: number; readonly worstJoint: number; readonly worst: readonly number[]; readonly joint0: readonly number[]; readonly bindJoint0: readonly number[]; readonly tails: readonly (readonly number[])[] };
     };
   }
 }
@@ -134,7 +150,7 @@ function lightViewProjection(center: number[], radius: number): Mat4 {
 }
 
 // --- GL plumbing ---
-function compileProgram(gl: WebGL2RenderingContext, vs: string, fs: string): WebGLProgram {
+function compileProgram(gl: WebGL2RenderingContext, vs: string, fs: string, tfVaryings?: readonly string[]): WebGLProgram {
   const make = (type: number, src: string) => {
     const shader = gl.createShader(type)!;
     gl.shaderSource(shader, src);
@@ -148,6 +164,7 @@ function compileProgram(gl: WebGL2RenderingContext, vs: string, fs: string): Web
   gl.attachShader(program, make(gl.VERTEX_SHADER, vs));
   gl.attachShader(program, make(gl.FRAGMENT_SHADER, fs));
   gl.bindAttribLocation(program, 0, "a_position");
+  if (tfVaryings) gl.transformFeedbackVaryings(program, [...tfVaryings], gl.SEPARATE_ATTRIBS);
   gl.linkProgram(program);
   if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
     throw new Error(`program link failed: ${gl.getProgramInfoLog(program)}`);
@@ -230,6 +247,68 @@ function iou(a: Uint8Array, b: Uint8Array): number {
   return union === 0 ? 1 : inter / union;
 }
 
+/** 8-neighbour dilation — `radius` iterations on the SIZE² mask. */
+function dilate(mask: Uint8Array, radius: number): Uint8Array {
+  let cur = mask;
+  for (let r = 0; r < radius; r += 1) {
+    const next = new Uint8Array(SIZE * SIZE);
+    for (let y = 0; y < SIZE; y += 1) {
+      for (let x = 0; x < SIZE; x += 1) {
+        const i = y * SIZE + x;
+        if (cur[i]! === 1) {
+          for (let dy = -1; dy <= 1; dy += 1) {
+            const yy = y + dy;
+            if (yy < 0 || yy >= SIZE) continue;
+            for (let dx = -1; dx <= 1; dx += 1) {
+              const xx = x + dx;
+              if (xx < 0 || xx >= SIZE) continue;
+              next[yy * SIZE + xx] = 1;
+            }
+          }
+        }
+      }
+    }
+    cur = next;
+  }
+  return cur;
+}
+
+/**
+ * Boundary-tolerant IoU: each covered pixel of `a` counts when `b` covers any
+ * pixel within `radius` px (and vice versa, averaged symmetrically). Catches
+ * structural mismatches (missing/extra geometry) while absorbing sub-pixel
+ * rasterization conventions that differ across GL drivers (ANGLE-Metal vs
+ * SwiftShader measure ~10% raw IoU on identical vertex positions — the
+ * deform numerics themselves are gated to 1e-3 by selftestDelta).
+ */
+function iouTolerant(a: Uint8Array, b: Uint8Array, radius: number): number {
+  const aDil = dilate(a, radius);
+  const bDil = dilate(b, radius);
+  let ab = 0, ba = 0, na = 0, nb = 0;
+  for (let i = 0; i < a.length; i += 1) {
+    if (a[i]! === 1) { na += 1; if (bDil[i]! === 1) ab += 1; }
+    if (b[i]! === 1) { nb += 1; if (aDil[i]! === 1) ba += 1; }
+  }
+  const denom = na + nb;
+  return denom === 0 ? 1 : (ab + ba) / denom;
+}
+
+/** Per-mask geometry stats for failure diagnosis. */
+function maskStats(mask: Uint8Array): { count: number; cx: number; cy: number; minX: number; minY: number; maxX: number; maxY: number } {
+  let count = 0, sx = 0, sy = 0;
+  let minX = SIZE, minY = SIZE, maxX = -1, maxY = -1;
+  for (let y = 0; y < SIZE; y += 1) {
+    for (let x = 0; x < SIZE; x += 1) {
+      if (mask[y * SIZE + x]! === 1) {
+        count += 1; sx += x; sy += y;
+        if (x < minX) minX = x; if (x > maxX) maxX = x;
+        if (y < minY) minY = y; if (y > maxY) maxY = y;
+      }
+    }
+  }
+  return { count, cx: count ? sx / count : 0, cy: count ? sy / count : 0, minX, minY, maxX, maxY };
+}
+
 function maskToPng(mask: Uint8Array): string {
   const canvas = document.createElement("canvas");
   const scale = SIZE / 256;
@@ -248,6 +327,72 @@ function maskToPng(mask: Uint8Array): string {
   return canvas.toDataURL("image/png");
 }
 
+/** A mat4 that rotates about Z around the point (0, py, 0) — pivot at the joint's own height. */
+function rotZAboutY(theta: number, py: number): Mat4 {
+  const c = Math.cos(theta), s = Math.sin(theta);
+  // T(0,py,0) · R_z(θ) · T(0,-py,0): rows of Rz, translation column carries the pivot.
+  return new Float32Array([
+    c, s, 0, 0,
+    -s, c, 0, 0,
+    0, 0, 1, 0,
+    s * py, py - c * py, 0, 1
+  ]);
+}
+
+interface SyntheticRig {
+  jointCount: number;
+  positions: [number, number, number][];
+  joints: number[][];
+  weights: number[][];
+  indices: number[];
+  bindPalette: Float32Array;
+  posePalette: Float32Array;
+}
+
+/**
+ * T1.12 — a 191-joint skinned rig, procedurally generated: a 6-column vertical
+ * ribbon whose vertex rows weight 100% to the joint for that height. The posed
+ * palette curls the ribbon upward (progressively larger Z-rotations pivoting at
+ * each joint's height) so GPU-vs-CPU IoU exercises the bone-texture path well
+ * above the ≤96 uniform-array cap.
+ */
+function syntheticRig(jointCount: number): SyntheticRig {
+  const rows = 32;
+  const cols = 6;
+  const positions: [number, number, number][] = [];
+  const joints: number[][] = [];
+  const weights: number[][] = [];
+  const indices: number[] = [];
+  for (let r = 0; r <= rows; r += 1) {
+    const y = -0.8 + (r / rows) * 1.6;
+    const j = Math.min(jointCount - 1, Math.floor((r / rows) * jointCount));
+    for (let c = 0; c < cols; c += 1) {
+      const x = -0.24 + (c / (cols - 1)) * 0.48;
+      positions.push([x, y, 0]);
+      joints.push([j, 0, 0, 0]);
+      weights.push([1, 0, 0, 0]);
+    }
+  }
+  for (let r = 0; r < rows; r += 1) {
+    for (let c = 0; c < cols - 1; c += 1) {
+      const a = r * cols + c, b = a + 1, d = a + cols, e = d + 1;
+      indices.push(a, d, b, b, d, e);
+    }
+  }
+  const bindPalette = new Float32Array(jointCount * 16);
+  const posePalette = new Float32Array(jointCount * 16);
+  for (let j = 0; j < jointCount; j += 1) {
+    bindPalette[j * 16 + 0] = 1; bindPalette[j * 16 + 5] = 1; bindPalette[j * 16 + 10] = 1; bindPalette[j * 16 + 15] = 1;
+    // ~0.9 rad of curl at the top joint — a large, unambiguous silhouette change.
+    // Pivot at the ribbon base (py = -0.8): pivoting at each row's own height
+    // only squeezes width (cosθ), which barely moves the silhouette and leaves
+    // the control-below-0.8 guard untested.
+    const m = rotZAboutY((j / (jointCount - 1)) * 0.9, -0.8);
+    posePalette.set(m, j * 16);
+  }
+  return { jointCount, positions, joints, weights, indices, bindPalette, posePalette };
+}
+
 async function main(): Promise<void> {
   const chunks = ["a3d_prd06_skinning_common", "a3d_prd06_morph_texture", "a3d_prd06_deform"].map((name) => {
     const chunk = shaderChunk(name);
@@ -255,39 +400,79 @@ async function main(): Promise<void> {
     return chunk.glsl;
   });
 
-  const asset: GLTFAsset = await new GLTFLoader().load(
-    { url: `${location.origin}/tests/assets/corpus/khronos/CesiumMan/CesiumMan.glb` },
-    new LoadContext()
-  );
-  const clip = asset.animations[0];
-  if (!clip) throw new Error("CesiumMan has no clip 0");
-  const mesh: GLTFMeshAsset | undefined = asset.meshes.find((m) => m.skinIndex !== undefined);
-  const skin = mesh?.skinIndex !== undefined ? asset.skins[mesh.skinIndex] : undefined;
-  if (!mesh || !skin) throw new Error("CesiumMan skinned mesh missing");
-  const jointCount = skin.joints.length;
+  const rig = new URLSearchParams(location.search).get("rig") ?? "cesium-man";
+  let jointCount: number;
+  let positions: readonly (readonly [number, number, number])[];
+  let joints: readonly (readonly number[])[];
+  let weights: readonly (readonly number[])[];
+  let indices: readonly number[];
+  let bindPalette: Float32Array;
+  let posePalette: Float32Array;
+  if (rig.startsWith("synthetic-")) {
+    const synthetic = syntheticRig(Number(rig.slice("synthetic-".length)) || 191);
+    ({ jointCount, positions, joints, weights, indices, bindPalette, posePalette } = synthetic);
+  } else {
+    const asset: GLTFAsset = await new GLTFLoader().load(
+      { url: `${location.origin}/tests/assets/corpus/khronos/CesiumMan/CesiumMan.glb` },
+      new LoadContext()
+    );
+    const clip = asset.animations[0];
+    if (!clip) throw new Error("CesiumMan has no clip 0");
+    const mesh: GLTFMeshAsset | undefined = asset.meshes.find((m) => m.skinIndex !== undefined);
+    const skin = mesh?.skinIndex !== undefined ? asset.skins[mesh.skinIndex] : undefined;
+    if (!mesh || !skin) throw new Error("CesiumMan skinned mesh missing");
+    jointCount = skin.joints.length;
 
-  const scene = asset.createScene();
-  const runtime = createGLTFSceneAnimationRuntime({ scene, clips: asset.animations, asset });
+    const scene = asset.createScene();
+    const runtime = createGLTFSceneAnimationRuntime({ scene, clips: asset.animations, asset });
 
-  // Bind pose: refresh before any clip sample so the palette is jointWorld_bind x IBM.
-  scene.updateWorldTransforms();
-  runtime.applyPose({ bones: {} });
-  const renderableEntry = scene.collectRenderables().find(({ renderable }) => renderable.skinning && renderable.skinning.jointCount === jointCount);
-  if (!renderableEntry) throw new Error("skinned renderable not bound");
-  const bindPalette = new Float32Array(renderableEntry.renderable.skinning!.matrices);
+    // Bind pose: refresh before any clip sample so the palette is jointWorld_bind x IBM.
+    scene.updateWorldTransforms();
+    runtime.applyPose({ bones: {} });
+    const renderableEntry = scene.collectRenderables().find(({ renderable }) => renderable.skinning && renderable.skinning.jointCount === jointCount);
+    if (!renderableEntry) throw new Error("skinned renderable not bound");
+    bindPalette = new Float32Array(renderableEntry.renderable.skinning!.matrices);
 
-  // Posed: clip 0 at t = 0.5 s.
-  runtime.applyClip(clip, 0.5);
-  const posePalette = new Float32Array(renderableEntry.renderable.skinning!.matrices);
+    // Posed: clip 0 at t = 0.5 s.
+    runtime.applyClip(clip, 0.5);
+    posePalette = new Float32Array(renderableEntry.renderable.skinning!.matrices);
 
-  const positions = mesh.positions as readonly (readonly [number, number, number])[];
-  const joints = mesh.joints;
-  const weights = mesh.weights;
-  const indices = mesh.indices;
-  if (!indices) throw new Error("CesiumMan mesh has no index buffer");
+    positions = mesh.positions as readonly (readonly [number, number, number])[];
+    joints = mesh.joints;
+    weights = mesh.weights;
+    if (!mesh.indices) throw new Error("CesiumMan mesh has no index buffer");
+    indices = mesh.indices;
+  }
 
   const cpuAnimated = cpuSkin(positions, joints, weights, posePalette);
   const cpuBind = cpuSkin(positions, joints, weights, bindPalette);
+
+  // Palette layout probe: a column-major affine mat4 has m[3]=m[7]=m[11]=0 and
+  // m[15]=1. If row 3 carries real values the buffer is transposed/row-major —
+  // both GPU and CPU then agree on xyz (posedDelta stays clean) while the GPU's
+  // localPos.w diverges, projectively warping the silhouette.
+  const paletteRow3 = (() => {
+    let maxAbs = 0; let worstJoint = -1; const vals: number[] = [];
+    for (let j = 0; j < jointCount; j += 1) {
+      const m3 = posePalette[j * 16 + 3]!; const m7 = posePalette[j * 16 + 7]!;
+      const m11 = posePalette[j * 16 + 11]!; const m15 = posePalette[j * 16 + 15]!;
+      const d = Math.max(Math.abs(m3), Math.abs(m7), Math.abs(m11), Math.abs(m15 - 1));
+      if (d > maxAbs) { maxAbs = d; worstJoint = j; vals.splice(0, vals.length, m3, m7, m11, m15); }
+    }
+    return {
+      maxAbs, worstJoint, worst: vals,
+      joint0: Array.from(posePalette.subarray(0, 16)).map((v) => Number(v.toFixed(4))),
+      bindJoint0: Array.from(bindPalette.subarray(0, 16)).map((v) => Number(v.toFixed(4))),
+      // The last four floats of each 16-slot across all joints — affine
+      // col-major keeps these at (0,0,0,1); their actual values name the layout.
+      tails: Array.from({ length: jointCount }, (_, j) => [
+        Number(posePalette[j * 16 + 3]!.toFixed(4)),
+        Number(posePalette[j * 16 + 7]!.toFixed(4)),
+        Number(posePalette[j * 16 + 11]!.toFixed(4)),
+        Number(posePalette[j * 16 + 15]!.toFixed(4))
+      ])
+    };
+  })();
   const rawPositions = new Float32Array(positions.length * 3);
   positions.forEach((p, i) => { rawPositions[i * 3] = p[0]; rawPositions[i * 3 + 1] = p[1]; rawPositions[i * 3 + 2] = p[2]; });
 
@@ -322,13 +507,14 @@ async function main(): Promise<void> {
 
   // Bone palette texture, identical texel layout to the §8.1 chunk contract.
   const paletteTex = gl.createTexture()!;
-  const uploadPalette = (palette: Float32Array) => {
+  const uploadPalette = (palette: Float32Array, tex = paletteTex) => {
     const texels = jointCount * 4;
     const width = Math.min(1024, Math.ceil(Math.ceil(Math.sqrt(texels)) / 4) * 4);
     const height = Math.ceil(texels / width);
     const data = new Float32Array(width * height * 4);
     data.set(palette);
-    gl.bindTexture(gl.TEXTURE_2D, paletteTex);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, width, height, 0, gl.RGBA, gl.FLOAT, data);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -343,6 +529,224 @@ async function main(): Promise<void> {
   const deformProgram = compileProgram(gl, deformVs, DEPTH_FS);
   const passVs = `${PREAMBLE}\nvoid main() { gl_Position = u_lightViewProjection * vec4(a_position, 1.0); }`;
   const passProgram = compileProgram(gl, passVs, DEPTH_FS);
+
+  // T2.5 §8.5 — `a3dDeformPrevious` numerics: rasterize each vertex's
+  // previous-frame local position into an RGBA32F point-grid target
+  // (gl_VertexID → grid cell), readPixels it back, and compare component-wise
+  // against the CPU previous-frame deform (bind pose standing in for frame
+  // N-1). The spec asserts max |component| ≤ 1e-3.
+  const vertexCount = positions.length;
+  const GRID_W = Math.ceil(Math.sqrt(vertexCount));
+  const GRID_H = Math.ceil(vertexCount / GRID_W);
+  const gridFs = `#version 300 es\nprecision highp float;\nin vec3 a3dPosOut;\nlayout(location = 0) out vec4 fragColor;\nvoid main() { fragColor = vec4(a3dPosOut, 1.0); }`;
+  const makeGridVs = (defines: string, call: string) =>
+    `${PREAMBLE}\n#define A3D_SKINNING 4\n${defines}\nout vec3 a3dPosOut;\n${chunks.join("\n")}\n` +
+    `void main() { vec4 p; ${call} a3dPosOut = p.xyz;\n` +
+    `  const int GW = ${GRID_W};\n` +
+    `  float x = float(gl_VertexID % GW); float y = float(gl_VertexID / GW);\n` +
+    `  gl_Position = vec4((x + 0.5) / float(GW) * 2.0 - 1.0, (y + 0.5) / float(${GRID_H}) * 2.0 - 1.0, 0.0, 1.0);\n` +
+    `  gl_PointSize = 1.0; }`;
+  const prevProgram = compileProgram(gl, makeGridVs("#define A3D_VELOCITY", "a3dDeformPrevious(p);"), gridFs);
+  // Self-test capture: same grid readback on the *current* deform path —
+  // isolates capture machinery vs the A3D_VELOCITY branch.
+  const selftestProgram = compileProgram(gl, makeGridVs("", "vec3 n; vec4 t; a3dDeform(p, n, t);"), gridFs);
+  // NDC capture: the same deform output pushed through the full mask-draw
+  // projection (u_lightViewProjection * u_modelMatrix * localPos). Emits
+  // (ndc.x, ndc.y, w) per vertex — the quantity the rasterizer actually sees,
+  // catching divergences the localPos-only selftest cannot.
+  const ndcProgram = compileProgram(
+    gl,
+    `${PREAMBLE}\n#define A3D_SKINNING 4\n#define A3D_DEPTH_ONLY\nout vec3 a3dPosOut;\n${chunks.join("\n")}\n` +
+      `void main() { vec4 p; vec3 n; vec4 t; a3dDeform(p, n, t);\n` +
+      `  vec4 clip = u_lightViewProjection * (u_modelMatrix * p);\n` +
+      `  a3dPosOut = vec3(clip.x, clip.y, clip.w);\n` +
+      `  const int GW = ${GRID_W};\n` +
+      `  float x = float(gl_VertexID % GW); float y = float(gl_VertexID / GW);\n` +
+      `  gl_Position = vec4((x + 0.5) / float(GW) * 2.0 - 1.0, (y + 0.5) / float(${GRID_H}) * 2.0 - 1.0, 0.0, 1.0);\n` +
+      `  gl_PointSize = 1.0; }`,
+    gridFs
+  );
+
+  const readPreviousDeform = (prevPalette: Float32Array, cpuPrev: Float32Array, program = prevProgram, prevUniform = "u_prevBoneTexture"): { maxDelta: number; vertexCount: number; exceeding: number; firstBad: number } => {
+    const posTex = gl.createTexture()!;
+    gl.bindTexture(gl.TEXTURE_2D, posTex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, GRID_W, GRID_H, 0, gl.RGBA, gl.FLOAT, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    const posFb = gl.createFramebuffer()!;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, posFb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, posTex, 0);
+    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
+      throw new Error("position-grid framebuffer incomplete");
+    }
+    gl.viewport(0, 0, GRID_W, GRID_H);
+    const prevTex = gl.createTexture()!;
+    const prevWidth = uploadPalette(prevPalette, prevTex);
+    gl.useProgram(program);
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, prevTex);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.uniform1i(gl.getUniformLocation(program, prevUniform), 1);
+    // `u_boneTextureWidth` is `float` (no integer uploads yet) — uniform1f, not uniform1i.
+    gl.uniform1f(gl.getUniformLocation(program, "u_boneTextureWidth"), prevWidth);
+    // `draw()` is the only place that binds attribute 0 — replicate it here so
+    // a_position reads the raw positions instead of the disabled default.
+    const positionBuffer = gl.createBuffer()!;
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, rawPositions, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+    gl.drawArrays(gl.POINTS, 0, vertexCount);
+    const out = new Float32Array(GRID_W * GRID_H * 4);
+    gl.readPixels(0, 0, GRID_W, GRID_H, gl.RGBA, gl.FLOAT, out);
+    // Back to the light-view target for the mask draws.
+    gl.bindFramebuffer(gl.FRAMEBUFFER, target.framebuffer);
+    gl.viewport(0, 0, SIZE, SIZE);
+    gl.deleteFramebuffer(posFb);
+    gl.deleteTexture(posTex);
+    let maxDelta = 0;
+    let exceeding = 0;
+    let firstBad = -1;
+    for (let v = 0; v < vertexCount; v += 1) {
+      for (let c = 0; c < 3; c += 1) {
+        const d = Math.abs(out[v * 4 + c]! - cpuPrev[v * 3 + c]!);
+        maxDelta = Math.max(maxDelta, d);
+        if (d > 1e-3) {
+          exceeding += 1;
+          if (firstBad < 0) firstBad = v * 3 + c;
+        }
+      }
+    }
+    return { maxDelta, vertexCount, exceeding, firstBad };
+  };
+
+  // Full-pipeline check: per-vertex NDC from the mask-draw deform program vs
+  // the same projection applied in JS to the CPU-skinned positions. A nonzero
+  // ndcDelta places the divergence inside gl_Position math (uniforms, w); a
+  // zero one proves the mask disagreement is rasterization convention only.
+  // Row-3 capture: emits the blended skin matrix's projective row
+  // (s[0][3], s[1][3], s[2][3]) — 0 everywhere for an affine blend.
+  const row3Program = compileProgram(
+    gl,
+    `${PREAMBLE}\n#define A3D_SKINNING 4\n#define A3D_DEPTH_ONLY\nout vec3 a3dPosOut;\n${chunks.join("\n")}\n` +
+      `void main() {\n` +
+      `  mat4 s = a3dSkin(u_boneTexture);\n` +
+      `  a3dPosOut = vec3(s[0][3], s[1][3], s[2][3]);\n` +
+      `  const int GW = ${GRID_W};\n` +
+      `  float x = float(gl_VertexID % GW); float y = float(gl_VertexID / GW);\n` +
+      `  gl_Position = vec4((x + 0.5) / float(GW) * 2.0 - 1.0, (y + 0.5) / float(${GRID_H}) * 2.0 - 1.0, 0.0, 1.0);\n` +
+      `  gl_PointSize = 1.0; }`,
+    gridFs
+  );
+
+  const readNdcDeform = (palette: Float32Array, cpuPos: Float32Array): { maxDelta: number; worstVertex: number; maxAbsW: number } => {
+    const posTex = gl.createTexture()!;
+    gl.bindTexture(gl.TEXTURE_2D, posTex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, GRID_W, GRID_H, 0, gl.RGBA, gl.FLOAT, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    const posFb = gl.createFramebuffer()!;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, posFb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, posTex, 0);
+    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
+      throw new Error("ndc framebuffer incomplete");
+    }
+    gl.viewport(0, 0, GRID_W, GRID_H);
+    const palTex = gl.createTexture()!;
+    const palWidth = uploadPalette(palette, palTex);
+    gl.useProgram(ndcProgram);
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, palTex);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.uniform1i(gl.getUniformLocation(ndcProgram, "u_boneTexture"), 1);
+    gl.uniform1f(gl.getUniformLocation(ndcProgram, "u_boneTextureWidth"), palWidth);
+    gl.uniformMatrix4fv(gl.getUniformLocation(ndcProgram, "u_lightViewProjection"), false, lightVP as Float32Array);
+    gl.uniformMatrix4fv(gl.getUniformLocation(ndcProgram, "u_modelMatrix"), false, model);
+    const positionBuffer = gl.createBuffer()!;
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, rawPositions, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+    gl.drawArrays(gl.POINTS, 0, vertexCount);
+    const out = new Float32Array(GRID_W * GRID_H * 4);
+    gl.readPixels(0, 0, GRID_W, GRID_H, gl.RGBA, gl.FLOAT, out);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, target.framebuffer);
+    gl.viewport(0, 0, SIZE, SIZE);
+    gl.deleteFramebuffer(posFb);
+    gl.deleteTexture(posTex);
+    gl.deleteTexture(palTex);
+    let maxDelta = 0;
+    let worstVertex = -1;
+    let maxAbsW = 0;
+    for (let v = 0; v < vertexCount; v += 1) {
+      const gw = out[v * 4 + 2]!;
+      const gx = out[v * 4 + 0]! / gw;
+      const gy = out[v * 4 + 1]! / gw;
+      const px = cpuPos[v * 3]!; const py = cpuPos[v * 3 + 1]!; const pz = cpuPos[v * 3 + 2]!;
+      const cw = lightVP[3]! * px + lightVP[7]! * py + lightVP[11]! * pz + lightVP[15]!;
+      const cx = (lightVP[0]! * px + lightVP[4]! * py + lightVP[8]! * pz + lightVP[12]!) / cw;
+      const cy = (lightVP[1]! * px + lightVP[5]! * py + lightVP[9]! * pz + lightVP[13]!) / cw;
+      const d = Math.max(Math.abs(gx - cx), Math.abs(gy - cy));
+      if (d > maxDelta) { maxDelta = d; worstVertex = v; }
+      maxAbsW = Math.max(maxAbsW, Math.abs(gw - 1));
+    }
+    return { maxDelta, worstVertex, maxAbsW };
+  };
+
+  // Blended-matrix row 3 per vertex — identical machinery to readNdcDeform so
+  // palette/attrib state match the mask draw exactly. Affine skinning keeps
+  // every component at 0; a nonzero value names the divergence.
+  const readRow3 = (palette: Float32Array): { maxAbs: number; worstVertex: number; worstRow: readonly number[] } => {
+    const posTex = gl.createTexture()!;
+    gl.bindTexture(gl.TEXTURE_2D, posTex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, GRID_W, GRID_H, 0, gl.RGBA, gl.FLOAT, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    const posFb = gl.createFramebuffer()!;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, posFb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, posTex, 0);
+    gl.viewport(0, 0, GRID_W, GRID_H);
+    const palTex = gl.createTexture()!;
+    const palWidth = uploadPalette(palette, palTex);
+    gl.useProgram(row3Program);
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, palTex);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.uniform1i(gl.getUniformLocation(row3Program, "u_boneTexture"), 1);
+    gl.uniform1f(gl.getUniformLocation(row3Program, "u_boneTextureWidth"), palWidth);
+    const positionBuffer = gl.createBuffer()!;
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, rawPositions, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+    gl.drawArrays(gl.POINTS, 0, vertexCount);
+    const out = new Float32Array(GRID_W * GRID_H * 4);
+    gl.readPixels(0, 0, GRID_W, GRID_H, gl.RGBA, gl.FLOAT, out);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, target.framebuffer);
+    gl.viewport(0, 0, SIZE, SIZE);
+    gl.deleteFramebuffer(posFb);
+    gl.deleteTexture(posTex);
+    gl.deleteTexture(palTex);
+    let maxAbs = 0;
+    let worstVertex = -1;
+    let worstRow: readonly number[] = [0, 0, 0];
+    for (let v = 0; v < vertexCount; v += 1) {
+      const r = [out[v * 4]!, out[v * 4 + 1]!, out[v * 4 + 2]!] as const;
+      const d = Math.max(Math.abs(r[0]), Math.abs(r[1]), Math.abs(r[2]));
+      if (d > maxAbs) { maxAbs = d; worstVertex = v; worstRow = r; }
+    }
+    return { maxAbs, worstVertex, worstRow };
+  };
+
+  const previousDelta = readPreviousDeform(bindPalette, cpuBind);
+  const selftestDelta = readPreviousDeform(bindPalette, cpuBind, selftestProgram, "u_boneTexture");
+  // The real numeric gate for the silhouette test: the POSED palette's per-vertex
+  // deform output vs the CPU skinned positions. The bind-palette selftest above
+  // can't see ordering bugs — every identity matrix reads the same however the
+  // texels land — but a pose palette's rotations expose a wrong fetch at 1e-3.
+  const posedDelta = readPreviousDeform(posePalette, cpuAnimated, selftestProgram, "u_boneTexture");
+  const ndcDelta = readNdcDeform(posePalette, cpuAnimated);
+  const row3 = readRow3(posePalette);
 
   const draw = (program: WebGLProgram, positionData: Float32Array, palette?: Float32Array): Uint8Array => {
     gl.clearColor(1, 1, 1, 1);
@@ -361,7 +765,10 @@ async function main(): Promise<void> {
       const width = uploadPalette(palette);
       gl.activeTexture(gl.TEXTURE0);
       gl.uniform1i(gl.getUniformLocation(program, "u_boneTexture"), 0);
-      gl.uniform1i(gl.getUniformLocation(program, "u_boneTextureWidth"), width);
+      // `u_boneTextureWidth` is declared `float` in the chunk (§8.1: no integer
+      // uploads yet) — uniform1i is a type mismatch that leaves it at 0.0 and
+      // sends a3dBone's texel math to /0.
+      gl.uniform1f(gl.getUniformLocation(program, "u_boneTextureWidth"), width);
     }
     gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_INT, 0);
     return readMask(gl, target);
@@ -377,18 +784,32 @@ async function main(): Promise<void> {
     status: "ready" as const,
     iou: {
       deformVsCpu: iou(maskDeform, maskCpu),
+      deformVsCpuTolerant: iouTolerant(maskDeform, maskCpu, 2),
       bindPoseGpuVsCpu: iou(maskBindGpu, maskBindCpu),
+      bindPoseGpuVsCpuTolerant: iouTolerant(maskBindGpu, maskBindCpu, 2),
       controlRawVsCpu: iou(maskControl, maskCpu),
       animatedVsBindCpu: iou(maskCpu, maskBindCpu)
     },
     stats: { joints: jointCount, vertices: positions.length, pixels: SIZE * SIZE },
+    maskStats: {
+      deform: maskStats(maskDeform),
+      cpu: maskStats(maskCpu),
+      bindGpu: maskStats(maskBindGpu),
+      bindCpu: maskStats(maskBindCpu)
+    },
     masks: {
       deform: maskToPng(maskDeform),
       cpu: maskToPng(maskCpu),
       bindGpu: maskToPng(maskBindGpu),
       bindCpu: maskToPng(maskBindCpu),
       control: maskToPng(maskControl)
-    }
+    },
+    previousDelta,
+    selftestDelta,
+    posedDelta,
+    ndcDelta,
+    row3,
+    paletteRow3
   };
   window.__PRD06_DEFORM_LIGHT_VIEW__ = result;
 }

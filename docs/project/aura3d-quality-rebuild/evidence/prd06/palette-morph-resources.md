@@ -36,6 +36,19 @@ bind, T0.11 in-place runtime palettes + `paletteKey`, C-18 chunk registration +
   `qr/prd06-**` pushes (chromium/webkit/firefox on macos-14). IoU targets:
   deform-vs-CPU ≥ 0.98, bind-pose GPU-vs-CPU ≥ 0.98, raw `a_position` control
   < 0.8, animated-vs-bind < 0.8. Mask PNGs upload as `test-results/` artifacts.
+
+  **Post-merge follow-up (chromium lane red root-caused + fixed):** the first
+  remote run scored raw IoU ≈ 0.86. In-harness probes (`posedDelta`/`ndcDelta`/
+  `row3`/`paletteRow3`) showed per-vertex skinned positions bit-exact between
+  GPU and CPU (`maxDelta` 2.4e-7) but `clip.w = localPos.w` deviating up to
+  0.41 — every palette slot's bottom row carries per-joint `(dir, dist)`-style
+  data (`|dir| ≈ 1`, dist 0.5–1.4) instead of `(0,0,0,1)`, so
+  `localPos = s * vec4(p,1)` fed a non-unit w into `gl_Position` and the
+  perspective divide projectively warped the silhouette ~14% while positions
+  stayed identical. `a3dDeform`/`a3dDeformPrevious` now pin `w = 1`
+  (three.js `transformed` semantics — skinned output is affine): rerun scores
+  `deformVsCpu = bindPoseGpuVsCpu = 1.0`. The probes remain as
+  `selftestDelta`/`posedDelta` ≤ 1e-3 gates plus diag fields on the IoU asserts.
 - Aura Clash `tracksApplied` A/B (S13) — `tests/qr/prd06/browser/aura-clash-tracks-applied.spec.ts`
   written (drives the live route via `__AURA_CLASH_ARENA_TEST_DRIVER__` + keyboard;
   all 11 `AURA_CLASH_REQUIRED_CLIP_KEYS` sampled under `?a3d-qr=none` and

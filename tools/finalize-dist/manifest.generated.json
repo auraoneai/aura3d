@@ -291,6 +291,10 @@
       "file": "packages/rendering/src/advanced-runtime/index.ts"
     },
     {
+      "name": "@aura3d/rendering/world",
+      "file": "packages/rendering/src/world/index.ts"
+    },
+    {
       "name": "@aura3d/rendering",
       "file": "packages/rendering/src/index.ts"
     },
@@ -329,6 +333,10 @@
     {
       "name": "@aura3d/animation/browser",
       "file": "packages/animation/src/browser-index.ts"
+    },
+    {
+      "name": "@aura3d/animation/lanes",
+      "file": "packages/animation/src/lanes/index.ts"
     },
     {
       "name": "@aura3d/animation",
@@ -454,10 +462,6 @@
     {
       "name": "@aura3d/engine",
       "file": "packages/engine/src/public/index.ts"
-    },
-    {
-      "name": "@aura3d/rendering/world",
-      "file": "packages/rendering/src/world/index.ts"
     }
   ],
   "subpaths": [

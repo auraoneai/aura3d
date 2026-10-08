@@ -24,6 +24,15 @@ export interface AuraActorAnimationApi {
   socket(bone: string): AuraBoneSocket;
   readonly ik: { add(spec: unknown): () => void; clear(): void };          // concrete specs: PRD 06 TwoBoneIk/LookAt/Ccd/FootIk
   readonly springBones: { add(spec: unknown): () => void; clear(): void };
+  /**
+   * T3.8 (PRD-06 §7.2) — retarget-bake another skeleton's compiled clips onto
+   * this actor's skeleton and register them by clip name. `source` is either a
+   * `{skeleton, clips}` pair or another actor's animation runtime (its
+   * `skeletons()`/`compiledClips()`); `map` is a prebuilt
+   * `HumanoidRetargetingMap` (CCR-06-4 type pending). Worker + IndexedDB cache
+   * are on by default. Returns the registered clip names.
+   */
+  addClipsFrom(source: unknown, options?: { map?: unknown; hipsScale?: "leg-length" | number; fingers?: boolean }): Promise<readonly string[]>;
 }
 // AuraRuntimeNodeHandle gains these members on model nodes (via C-37 extension "prd06.animation")
 export interface AuraCreateAppAnimationOptions { readonly strict?: boolean; readonly defaults?: "3.0" | "3.1"; readonly mixer?: "pose" | "legacy"; readonly tier?: AuraQualityTier; }
@@ -64,4 +73,7 @@ export class StubActorAnimationApi implements AuraActorAnimationApi {
   }
   readonly ik = { add: (_spec: unknown) => () => { /* noop */ }, clear: () => { /* noop */ } };
   readonly springBones = { add: (_spec: unknown) => () => { /* noop */ }, clear: () => { /* noop */ } };
+  async addClipsFrom(_source: unknown, _options?: { map?: unknown; hipsScale?: "leg-length" | number; fingers?: boolean }): Promise<readonly string[]> {
+    return [];
+  }
 }

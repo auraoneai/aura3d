@@ -152,6 +152,7 @@ export default defineConfig({
       // re-export through; must precede the bare package rows (prefix match).
       "@aura3d/animation/browser": new URL("./packages/animation/src/browser-index.ts", import.meta.url).pathname,
       "@aura3d/workflows/production-runtime": new URL("./packages/workflows/src/production-runtime/index.ts", import.meta.url).pathname,
+      "@aura3d/animation/lanes": new URL("./packages/animation/src/lanes/index.ts", import.meta.url).pathname,
       "@aura3d/animation": new URL("./packages/animation/src/index.ts", import.meta.url).pathname,
       "@aura3d/assets/asset-corpus": new URL("./packages/assets/src/asset-corpus/index.ts", import.meta.url).pathname,
       "@aura3d/assets/advanced-gallery": new URL("./packages/assets/src/advanced-gallery/index.ts", import.meta.url).pathname,

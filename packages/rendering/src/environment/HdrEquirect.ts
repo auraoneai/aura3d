@@ -21,20 +21,35 @@ export class HdrDecodeError extends Error {
   }
 }
 
-const HDR_MAGIC = Buffer.from("#?");
+// Browser-safe byte ops — this module is loaded through the dev-server source
+// chain, where Node's `Buffer` global does not exist (PRD-06 T5.x found the
+// route boot crashing here). `Buffer` inputs still work: Buffer is a
+// Uint8Array subclass, so the uint8 views below are equivalent.
+const HDR_MAGIC = [0x23, 0x3f] as const; // "#?"
+
+function indexOfByte(b: Uint8Array, byte: number, from: number): number {
+  for (let i = from; i < b.length; i += 1) if (b[i] === byte) return i;
+  return -1;
+}
+
+function latin1(b: Uint8Array, start: number, end: number): string {
+  let s = "";
+  for (let i = start; i < end; i += 1) s += String.fromCharCode(b[i]!);
+  return s;
+}
 
 /** Decode a Radiance RGBE `.hdr` file (flat or per-scanline RLE). */
-export function decodeHdrEquirect(buf: Uint8Array | Buffer): HdrImage {
-  const b = buf instanceof Buffer ? buf : Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength);
-  if (b.length < 32 || !b.subarray(0, 2).equals(HDR_MAGIC)) {
+export function decodeHdrEquirect(buf: Uint8Array): HdrImage {
+  const b = buf;
+  if (b.length < 32 || b[0] !== HDR_MAGIC[0] || b[1] !== HDR_MAGIC[1]) {
     throw new HdrDecodeError("ENV_HDR_MAGIC");
   }
   // Header: text lines until an empty line, then a resolution line " -Y h +X w".
   let p = 0;
   const readLine = (): string => {
-    const nl = b.indexOf(0x0a, p);
+    const nl = indexOfByte(b, 0x0a, p);
     if (nl < 0) throw new HdrDecodeError("ENV_HDR_TRUNCATED_HEADER");
-    const line = b.subarray(p, nl).toString("latin1");
+    const line = latin1(b, p, nl);
     p = nl + 1;
     return line;
   };
@@ -49,7 +64,7 @@ export function decodeHdrEquirect(buf: Uint8Array | Buffer): HdrImage {
   const height = Number(m[1]);
   const width = Number(m[2]);
   const data = new Float32Array(width * height * 3);
-  const rgbe = Buffer.alloc(4);
+  const rgbe = new Uint8Array(4);
 
   const flatScanline = (y: number): void => {
     const base = p;
@@ -61,7 +76,7 @@ export function decodeHdrEquirect(buf: Uint8Array | Buffer): HdrImage {
       throw new HdrDecodeError("ENV_HDR_RLE_WIDTH");
     }
     p += 4;
-    const chan = Buffer.alloc(width * 4);
+    const chan = new Uint8Array(width * 4);
     let w = 0;
     while (w < width * 4) {
       const count = b[p]!; p += 1;
@@ -86,7 +101,7 @@ export function decodeHdrEquirect(buf: Uint8Array | Buffer): HdrImage {
   return { width, height, data };
 }
 
-function writeRgbe(data: Float32Array, width: number, _h: number, y: number, x: number, src: Buffer, off: number): void {
+function writeRgbe(data: Float32Array, width: number, _h: number, y: number, x: number, src: Uint8Array, off: number): void {
   const r = src[off]!, g = src[off + 1]!, bl = src[off + 2]!, e = src[off + 3]!;
   const i = (y * width + x) * 3;
   if (e === 0) { data[i] = 0; data[i + 1] = 0; data[i + 2] = 0; return; }

@@ -243,7 +243,11 @@ describe("GLTFSceneAnimationRuntime", () => {
     ]);
 
     expect(result.blendedClipCount).toBe(3);
-    expect(result.transformTracksApplied).toBe(1);
+    // T1.7 rest-reset semantics (PRD-06 §10): the pose path writes every
+    // channel of every covered bone (rest-filled), so one bone counts 3
+    // transform writes — translation + rotation + scale — vs the old
+    // accumulator's 1 (only channels present in the source clips).
+    expect(result.transformTracksApplied).toBe(3);
     expect(result.morphWeightTracksApplied).toBe(1);
     expect(result.missingTargets).toEqual([]);
     expect(node.transform.position[0]).toBeCloseTo(5);
@@ -560,6 +564,70 @@ describe("GLTFSceneAnimationRuntime", () => {
       cloneCount: 2,
       lastSampleCount: 2
     });
+  });
+
+  it("advances the stateful PoseMixer and evaluates two clips through a 0.2s crossfade (T1.9)", () => {
+    const scene = new Scene();
+    const node = scene.createNode("AnimatedNode");
+    scene.root.addChild(node);
+    const idle = new AnimationClip({
+      name: "idle",
+      duration: 1,
+      tracks: [new AnimationTrack({ target: "AnimatedNode.translation", valueType: "vector3", keyframes: [
+        { time: 0, value: [0, 0, 0] },
+        { time: 1, value: [0, 0, 0] }
+      ] })]
+    });
+    const run = new AnimationClip({
+      name: "run",
+      duration: 1,
+      tracks: [new AnimationTrack({ target: "AnimatedNode.translation", valueType: "vector3", keyframes: [
+        { time: 0, value: [0, 0, 0] },
+        { time: 1, value: [4, 0, 0] }
+      ] })]
+    });
+    const runtime = createGLTFSceneAnimationRuntime({ scene, clips: [idle, run] });
+    const boneCount = runtime.skeletons()[0]?.boneCount ?? 0;
+
+    runtime.mixer().play("idle");
+    const first = runtime.applyPoseMixer(0);
+    // Rest-reset default: every bound bone gets all three channels written.
+    expect(first.transformTracksApplied).toBe(3 * boneCount);
+    expect(first.blendedClipCount).toBe(1);
+
+    runtime.mixer().crossFadeTo("run", 0.2);
+    const midFade = runtime.applyPoseMixer(0.1);
+    // Mid-fade the idle action is fading out while run fades in → two-clip evaluation.
+    expect(runtime.mixer().activeActions()).toHaveLength(2);
+    expect(midFade.blendedClipCount).toBe(2);
+
+    runtime.applyPoseMixer(0.25);
+    // 0.35s elapsed > 0.2s fade → only the run action remains.
+    expect(runtime.mixer().activeActions()).toHaveLength(1);
+    expect(node.transform.position[0]).toBeGreaterThan(0);
+  });
+
+  it("applyPoseMixer restPoseReset:false writes only the bones covered by active actions (T1.9)", () => {
+    const scene = new Scene();
+    const driven = scene.createNode("DrivenNode");
+    const untouched = scene.createNode("UntouchedNode");
+    scene.root.addChild(driven);
+    scene.root.addChild(untouched);
+    untouched.transform.position = [9, 9, 9];
+    const clip = new AnimationClip({
+      name: "clip",
+      duration: 1,
+      tracks: [new AnimationTrack({ target: "DrivenNode.translation", valueType: "vector3", keyframes: [
+        { time: 0, value: [0, 0, 0] },
+        { time: 1, value: [2, 0, 0] }
+      ] })]
+    });
+    const runtime = createGLTFSceneAnimationRuntime({ scene, clips: [clip] });
+    runtime.mixer().play("clip");
+    const result = runtime.applyPoseMixer(0.5, { restPoseReset: false });
+    // Only DrivenNode is covered → 3 channel writes, and the untouched node keeps its pose.
+    expect(result.transformTracksApplied).toBe(3);
+    expect(untouched.transform.position).toEqual([9, 9, 9]);
   });
 });
 

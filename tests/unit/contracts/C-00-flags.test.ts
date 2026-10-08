@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { qrFlagsWithAnimationMixer, resolveQrFlags } from "@aura3d/engine/contracts";
 
 describe("C-00 flags", () => {
   it("options list enables named flags", () => {
@@ -16,5 +16,19 @@ describe("C-00 flags", () => {
   it("no input disables everything", () => {
     const flags = resolveQrFlags({});
     expect(flags.on("A3D_QR_CORE")).toBe(false);
+  });
+  it("T1.11: animation.mixer:\"pose\" aliases A3D_QR_ANIMATION_POSE_MIXER; an explicit flags value wins", () => {
+    const base = resolveQrFlags({ options: [] });
+    const aliased = qrFlagsWithAnimationMixer(base, "pose");
+    expect(aliased.on("A3D_QR_ANIMATION_POSE_MIXER")).toBe(true);
+    // the sub-flag alone does not imply the lane flag
+    expect(aliased.on("A3D_QR_ANIMATION")).toBe(false);
+    expect(qrFlagsWithAnimationMixer(base, "legacy").on("A3D_QR_ANIMATION_POSE_MIXER")).toBe(false);
+    expect(qrFlagsWithAnimationMixer(base, undefined).on("A3D_QR_ANIMATION_POSE_MIXER")).toBe(false);
+    const explicitOff = qrFlagsWithAnimationMixer(
+      resolveQrFlags({ options: { A3D_QR_ANIMATION_POSE_MIXER: false } }),
+      "pose"
+    );
+    expect(explicitOff.on("A3D_QR_ANIMATION_POSE_MIXER")).toBe(false);
   });
 });

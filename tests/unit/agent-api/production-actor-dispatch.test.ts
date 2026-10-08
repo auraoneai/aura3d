@@ -20,7 +20,10 @@ import {
 } from "../../../packages/engine/src/agent-api/app/actorAnimationHandle";
 import {
   applyProductionActorAnimation,
-  dispatchActorAnimation
+  dispatchActorAnimation,
+  resetProductionActorPoseStates,
+  setActorAnimationAppTimeScale,
+  takeClipApplyDegradations
 } from "../../../packages/engine/src/agent-api/compiler/animation";
 
 const BONE_POSE: AnimationPose = {
@@ -35,21 +38,85 @@ const BONE_POSE: AnimationPose = {
 };
 
 const IDENTITY_MAT4 = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-const FAKE_NODE = { kind: "model", asset: { id: "a" }, animation: { clip: "walk" } } as never;
+const FAKE_NODE_BASE = { kind: "model", asset: { id: "a" }, animation: { clip: "walk" } };
+const FAKE_NODE = FAKE_NODE_BASE as never;
 
 function qrFlags(...shortNames: string[]) {
   return resolveQrFlags({ options: shortNames, env: {} });
 }
 
-function fakeActorEntry(calls: { applyClips?: unknown[]; playClip?: unknown[]; applyRetargetedPose?: unknown[] }) {
+type FakePoseAction = {
+  clipName: string;
+  playing: boolean;
+  time: number;
+  timeScale: number;
+  additive: boolean;
+  bindings: { readonly boneIndex: number }[];
+  effectiveWeight: number;
+  clip: { readonly duration: number };
+  fadeSeconds: number | undefined;
+  warp: boolean | undefined;
+  clampWhenFinished: boolean;
+  setEffectiveTimeScale(value: number): void;
+  setLoop(mode: string, repetitions?: number): void;
+};
+
+function makeFakePoseMixer() {
+  const actions: FakePoseAction[] = [];
+  return {
+    actions,
+    crossFadeTo(clipName: string, seconds: number, options: { readonly warp?: boolean } = {}) {
+      const action: FakePoseAction = {
+        clipName,
+        playing: true,
+        time: 0,
+        timeScale: 1,
+        additive: false,
+        bindings: [],
+        effectiveWeight: 1,
+        clip: { duration: 2 },
+        fadeSeconds: seconds,
+        warp: options.warp,
+        clampWhenFinished: false,
+        setEffectiveTimeScale(value) {
+          action.timeScale = value;
+        },
+        setLoop() {}
+      };
+      actions.push(action);
+      return action;
+    },
+    update(dt: number) {
+      for (const action of actions) if (action.playing) action.time += dt * action.timeScale;
+      return [];
+    },
+    activeActions() {
+      return actions.filter((action) => action.playing);
+    }
+  };
+}
+
+function fakeActorEntry(calls: { applyClips?: unknown[]; playClip?: unknown[]; applyRetargetedPose?: unknown[]; mixer?: ReturnType<typeof makeFakePoseMixer>; applyPoseMixer?: unknown[] }) {
   const actor = {
     id: "actor-1",
     animation: {
-      resolveClipName: (name: string) => (name === "walk" || name === "idle" || name === "run" ? name : undefined),
+      resolveClipName: (name: string, options?: { readonly fallback?: "error" | "first" }) =>
+        name === "walk" || name === "idle" || name === "run"
+          ? name
+          : options?.fallback === "error" ? undefined : "walk",
+      clipNames: () => ["walk", "idle", "run"],
       applyClips: (samples: unknown) => {
         calls.applyClips?.push(samples);
         return {};
-      }
+      },
+      ...(calls.mixer === undefined ? {} : {
+        mixer: () => calls.mixer,
+        applyPoseMixer: (dt: number, options: unknown) => {
+          calls.applyPoseMixer?.push([dt, options]);
+          calls.mixer?.update(dt);
+          return {};
+        }
+      })
     },
     applyRetargetedPose: (pose: AnimationPose, time: number) => {
       calls.applyRetargetedPose?.push([pose, time]);
@@ -73,6 +140,8 @@ function fakeActorEntry(calls: { applyClips?: unknown[]; playClip?: unknown[]; a
 afterEach(() => {
   resetQrAnimationFlags();
   resetEmptyPoseRejections();
+  resetProductionActorPoseStates();
+  setActorAnimationAppTimeScale(undefined);
 });
 
 describe("dispatchActorAnimation (T0.1)", () => {
@@ -177,6 +246,35 @@ describe("clipSamples dispatch (T0.3, flag-gated)", () => {
     expect(calls.playClip).toEqual([["walk", 2]]);
   });
 
+  it("records a clip-apply-failed degradation + ANIMATION_CLIP_NOT_FOUND on a top-level miss (T1.8)", () => {
+    setQrAnimationFlags(qrFlags("animation"));
+    takeClipApplyDegradations();
+    const calls = { applyClips: [] as unknown[], playClip: [] as unknown[] };
+    const entry = fakeActorEntry(calls);
+    const warnings = new Set<string>();
+    const node = { ...FAKE_NODE_BASE, animation: { clip: "missing" } } as never;
+    applyProductionActorAnimation(entry, node, bindingWithSamples, 2000, warnings, IDENTITY_MAT4, () => undefined);
+    expect(calls.playClip).toHaveLength(0);
+    expect(calls.applyClips).toHaveLength(0);
+    expect([...warnings].some((w) => w.startsWith("ANIMATION_CLIP_NOT_FOUND") && w.includes('"missing"') && w.includes("walk"))).toBe(true);
+    const degradations = takeClipApplyDegradations();
+    expect(degradations.some((d) => d.code === "clip-apply-failed" && d.message.includes('"missing"'))).toBe(true);
+  });
+
+  it("keeps the first-clip fallback for a top-level miss when the flag is off (T1.8)", () => {
+    setQrAnimationFlags(qrFlags());
+    takeClipApplyDegradations();
+    const calls = { applyClips: [] as unknown[], playClip: [] as unknown[] };
+    const entry = fakeActorEntry(calls);
+    const node = { ...FAKE_NODE_BASE, animation: { clip: "missing" } } as never;
+    applyProductionActorAnimation(entry, node, bindingWithSamples, 2000, new Set(), IDENTITY_MAT4, () => undefined);
+    // Flag off: the miss fuzzy-resolves to the first clip ("walk" in the stub)
+    // and plays — no warning, no clip-apply-failed degradation.
+    expect(calls.applyClips).toHaveLength(0);
+    expect(calls.playClip).toEqual([["walk", 2]]);
+    expect(takeClipApplyDegradations().some((d) => d.code === "clip-apply-failed")).toBe(false);
+  });
+
   it("drives a real controller crossfade into applyClips with ~0.5/0.5 weights (T0.3 spec)", () => {
     setQrAnimationFlags(qrFlags("animation"));
     const controller = createAnimationController({ id: "ctrl-dispatch" });
@@ -211,5 +309,88 @@ describe("clipSamples dispatch (T0.3, flag-gated)", () => {
       expect(sample.weight).toBeGreaterThan(0.49);
       expect(sample.weight).toBeLessThan(0.51);
     }
+  });
+});
+
+describe("applyProductionActorAnimation — T1.9 stateful PoseMixer (A3D_QR_ANIMATION)", () => {
+  const applyAt = (
+    entry: ProductionRuntimeActorEntry,
+    animation: Record<string, unknown>,
+    timeMs: number,
+    runtimeNodes?: never
+  ) =>
+    applyProductionActorAnimation(
+      entry,
+      { kind: "model", asset: { id: "a" }, animation, runtime: { id: "node-1" } } as never,
+      undefined,
+      timeMs,
+      new Set<string>(),
+      IDENTITY_MAT4,
+      () => undefined,
+      runtimeNodes as never
+    );
+
+  it("crossfades Idle→Walk over 0.2s yielding two-clip evaluation during the fade", () => {
+    setQrAnimationFlags(qrFlags("animation"));
+    const mixer = makeFakePoseMixer();
+    const calls = { applyPoseMixer: [] as [number, unknown][], playClip: [] as unknown[] };
+    const entry = fakeActorEntry({ ...calls, mixer });
+    applyAt(entry, { clip: "idle" }, 0);
+    applyAt(entry, { clip: "walk" }, 500);
+    expect(mixer.actions.map((a) => a.clipName)).toEqual(["idle", "walk"]);
+    expect(mixer.actions[1]?.fadeSeconds).toBe(0.2);
+    // The fading-out base action and the fading-in action are both playing →
+    // the mixer evaluates two clips until the 0.2s fade completes.
+    expect(mixer.activeActions()).toHaveLength(2);
+    expect(calls.applyPoseMixer).toHaveLength(2);
+    expect(calls.playClip).toHaveLength(0);
+  });
+
+  it("honours speed: 0.5 by halving clip-time advance", () => {
+    setQrAnimationFlags(qrFlags("animation"));
+    const mixer = makeFakePoseMixer();
+    const calls = { applyPoseMixer: [] as [number, unknown][], playClip: [] as unknown[] };
+    const entry = fakeActorEntry({ ...calls, mixer });
+    applyAt(entry, { clip: "walk", speed: 0.5 }, 1000);
+    applyAt(entry, { clip: "walk", speed: 0.5 }, 2000);
+    const action = mixer.actions[0];
+    expect(action?.timeScale).toBe(0.5);
+    // rawDt = 1.0s → action.time advanced by 1.0 * 0.5.
+    expect(action?.time).toBe(0.5);
+    expect(calls.applyPoseMixer.at(-1)?.[0]).toBe(1);
+  });
+
+  it("freezes clip advance when handle.timeScale is 0 (C-23 hit-stop)", () => {
+    setQrAnimationFlags(qrFlags("animation"));
+    const mixer = makeFakePoseMixer();
+    const calls = { applyPoseMixer: [] as [number, unknown][], playClip: [] as unknown[] };
+    const entry = fakeActorEntry({ ...calls, mixer });
+    const runtimeNodes = { get: () => ({ timeScale: 0 }) } as never;
+    applyAt(entry, { clip: "walk" }, 1000, runtimeNodes);
+    applyAt(entry, { clip: "walk" }, 2000, runtimeNodes);
+    expect(calls.applyPoseMixer.at(-1)?.[0]).toBe(0);
+    expect(mixer.actions[0]?.time).toBe(0);
+  });
+
+  it("composes app.time.scale into the per-actor dt", () => {
+    setQrAnimationFlags(qrFlags("animation"));
+    setActorAnimationAppTimeScale(() => 0.25);
+    const mixer = makeFakePoseMixer();
+    const calls = { applyPoseMixer: [] as [number, unknown][], playClip: [] as unknown[] };
+    const entry = fakeActorEntry({ ...calls, mixer });
+    applyAt(entry, { clip: "walk" }, 1000);
+    applyAt(entry, { clip: "walk" }, 2000);
+    expect(calls.applyPoseMixer.at(-1)?.[0]).toBe(0.25);
+  });
+
+  it("flag-off reproduces today's playClip call sequence exactly (mixer never touched)", () => {
+    setQrAnimationFlags(qrFlags());
+    const mixer = makeFakePoseMixer();
+    const calls = { applyPoseMixer: [] as [number, unknown][], playClip: [] as unknown[] };
+    const entry = fakeActorEntry({ ...calls, mixer });
+    applyAt(entry, { clip: "walk" }, 2000);
+    expect(calls.playClip).toEqual([["walk", 2]]);
+    expect(calls.applyPoseMixer).toHaveLength(0);
+    expect(mixer.actions).toHaveLength(0);
   });
 });

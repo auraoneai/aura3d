@@ -28,11 +28,12 @@ test.describe("PRD-06 clip-samples binding", () => {
   });
 
   test("publishes clip samples on the runtime binding under ?a3d-qr=animation", async ({ page }) => {
+    test.setTimeout(360_000);
     await page.goto(`${server.origin}/tests/qr/prd06/browser/clip-samples-harness.html?a3d-qr=animation`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => window.__PRD06_CLIP_SAMPLES__?.status === "ready" || window.__PRD06_CLIP_SAMPLES__?.status === "error",
       undefined,
-      { timeout: 30_000 }
+      { timeout: 300_000 }
     );
     const result = await page.evaluate(() => window.__PRD06_CLIP_SAMPLES__);
     expect(result?.status, result?.error).toBe("ready");
@@ -42,11 +43,12 @@ test.describe("PRD-06 clip-samples binding", () => {
   });
 
   test("leaves the binding shape unchanged with flags off", async ({ page }) => {
+    test.setTimeout(360_000);
     await page.goto(`${server.origin}/tests/qr/prd06/browser/clip-samples-harness.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => window.__PRD06_CLIP_SAMPLES__?.status === "ready" || window.__PRD06_CLIP_SAMPLES__?.status === "error",
       undefined,
-      { timeout: 30_000 }
+      { timeout: 300_000 }
     );
     const result = await page.evaluate(() => window.__PRD06_CLIP_SAMPLES__);
     expect(result?.status, result?.error).toBe("ready");

@@ -25,6 +25,7 @@ function mockGl() {
     TEXTURE_CUBE_MAP: 0x8513,
     RGBA32F: 0x8814,
     RGBA16F: 0x881a,
+    RGBA8: 0x8058,
     RGBA: 0x1908,
     FLOAT: 0x1406,
     HALF_FLOAT: 0x140b,
@@ -145,6 +146,49 @@ describe("Texture.update sub-image upload (T0.10a)", () => {
     expect(callCount(calls, "texSubImage3D")).toBe(layers * 2);
     expect(callCount(calls, "texImage2D")).toBe(0);
     expect(callCount(calls, "texImage3D")).toBe(0);
+  });
+
+  it("2d-array uploads bind TEXTURE_2D_ARRAY first and use a sized internalformat", () => {
+    const { gl, args, calls } = mockGl();
+    const registry = registryFor(gl);
+    const texture = new Texture({
+      width: 4,
+      height: 4,
+      layers: 2,
+      dimension: "2d-array",
+      format: "rgba8",
+      colorSpace: "linear",
+      data: new Uint8Array(4 * 4 * 4 * 2)
+    });
+    registry.getTextureHandle(texture);
+    // A texture object is locked to the first target it binds — texStorage3D
+    // on a handle first bound to TEXTURE_2D throws GL_INVALID_OPERATION.
+    const firstBind = args.get("bindTexture")![0]!;
+    expect(firstBind[0]).toBe(0x8c1a); // TEXTURE_2D_ARRAY
+    // texStorage* requires a sized internalformat: RGBA8, not unsized RGBA.
+    const storageArgs = args.get("texStorage3D")![0]!;
+    expect(storageArgs.slice(0, 4)).toEqual([0x8c1a, 1, 0x8058, 4]); // (target, levels, RGBA8, width)
+  });
+
+  it("2d-array update with region.layer offsets texSubImage3D zoffset", () => {
+    const { gl, args } = mockGl();
+    const registry = registryFor(gl);
+    const texture = new Texture({
+      width: 4,
+      height: 4,
+      layers: 3,
+      dimension: "2d-array",
+      format: "rgba8",
+      colorSpace: "linear",
+      data: new Uint8Array(4 * 4 * 4 * 3)
+    });
+    registry.getTextureHandle(texture);
+    texture.update(new Uint8Array(4 * 4 * 4), { x: 0, y: 0, width: 4, height: 4, layer: 2 });
+    registry.getTextureHandle(texture);
+    const call = args.get("texSubImage3D")!.at(-1)!;
+    // (target, level, x, y, zoffset, w, h, depth, format, type, data)
+    expect(call[4]).toBe(2);
+    expect(call[7]).toBe(1);
   });
 
   it("non-dynamic textures keep the whole-level texImage2D re-upload stub semantic", () => {

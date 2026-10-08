@@ -13,6 +13,8 @@
 /** Joint-palette capacity of the WebGPU skinning path — parity with the WebGL2 `u_jointMatrices[96]`. */
 export const MAX_WEBGPU_SKINNING_JOINTS = 96;
 
+import { MAX_SKINNING_JOINTS } from "./ForwardPass.js";
+
 /**
  * Machine-readable reason a skinned mesh takes (or avoids) the CPU skinning fallback.
  * Reported in diagnostics so gates can distinguish "too many joints" from "no GPU path
@@ -23,6 +25,10 @@ export type SkinningCpuFallbackReason =
   | "none-uniform-array"
   /** Joint count exceeds the uniform array but fits the data-texture palette path. */
   | "none-data-texture"
+  /** T1.12 — the program includes `a3d_prd06_skinning_common`; the bone texture carries the palette. */
+  | "none-bone-texture"
+  /** T1.12 — a bone-texture program whose joint count exceeds even the cache ceiling. */
+  | "joint-count-exceeds-bone-texture-limit"
   /** Joint count exceeds even the data-texture ceiling — CPU skinning is the only option. */
   | "joint-count-exceeds-data-texture-limit"
   /** The shader has no data-texture palette uniforms, so palettes above the uniform cap fall back. */
@@ -54,15 +60,30 @@ export function decideSkinningPalettePath(options: {
   readonly maxDataTextureJoints?: number;
   readonly shaderHasDataTexturePalette?: boolean;
   readonly shaderHasSkinningUniforms?: boolean;
+  /** T1.12 — program includes `a3d_prd06_skinning_common` (`u_boneTexture`). */
+  readonly shaderHasBoneTexture?: boolean;
 }): SkinningPaletteDecision {
   const jointCount = options.jointCount;
   if (!Number.isInteger(jointCount) || jointCount < 0) {
     throw new Error("decideSkinningPalettePath jointCount must be a non-negative integer.");
   }
   const maxUniformJoints = options.maxUniformJoints ?? MAX_WEBGPU_SKINNING_JOINTS;
-  const maxDataTextureJoints = options.maxDataTextureJoints ?? MAX_WEBGPU_SKINNING_JOINTS;
+  // T2.7 (PRD-06): the data-texture/storage palette ceiling defaults to the
+  // renderer-wide `MAX_SKINNING_JOINTS` (1024) — the 06 bone-texture/storage
+  // path carries every rig up to the cache ceiling, not the 96-joint uniform
+  // parity bound. Callers may still pin a smaller device cap explicitly.
+  const maxDataTextureJoints = options.maxDataTextureJoints ?? MAX_SKINNING_JOINTS;
   const shaderHasSkinningUniforms = options.shaderHasSkinningUniforms ?? true;
   const shaderHasDataTexturePalette = options.shaderHasDataTexturePalette ?? true;
+  const shaderHasBoneTexture = options.shaderHasBoneTexture ?? false;
+  // T1.12: the `a3d_prd06_skinning_common` program has no u_jointMatrices/
+  // u_jointPaletteMode — the cached bone texture carries the palette for every
+  // joint count up to the data-texture limit.
+  if (shaderHasBoneTexture) {
+    return jointCount <= maxDataTextureJoints
+      ? { jointCount, path: "data-texture" as const, reason: "none-bone-texture" as const, cpuFallback: false }
+      : { jointCount, path: "cpu" as const, reason: "joint-count-exceeds-bone-texture-limit" as const, cpuFallback: true };
+  }
   if (jointCount <= maxUniformJoints && shaderHasSkinningUniforms) {
     return { jointCount, path: "uniform-array", reason: "none-uniform-array", cpuFallback: false };
   }

@@ -16,8 +16,11 @@ import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import { CSM } from "three/examples/jsm/csm/CSM.js";
+import { CCDIKSolver } from "three/examples/jsm/animation/CCDIKSolver.js";
+import { clone as skeletonUtilsClone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { hdriAssets, modelAssets, type HdriAssetId, type ModelAssetId } from "../shared/assets";
 import { fetchOnce } from "../shared/fetch-once";
+import { rampStairsHeightAt } from "../shared/terrain";
 import { particlePositions } from "../shared/procedural";
 import type { BrokenControlId } from "../shared/contracts";
 import type { CapabilityEntry, CapabilityStatus, MaterialSpec, ReadyPayload, SceneSpec, TransformSpec } from "../shared/types";
@@ -292,7 +295,22 @@ export async function runThreeScene(rawSpec: SceneSpec, host: HTMLElement, opts:
     return pending;
   };
   const mixers: THREE.AnimationMixer[] = [];
+  // Looping mixers (perf-tier scenes) — stepped per rendered frame below.
+  const loopMixers: THREE.AnimationMixer[] = [];
   const csmMaterials: THREE.Material[] = [];
+  // PRD-06 T3.9: CCDIKSolver jobs keyed by model; solved once after every
+  // mixer has setTime'd its frozen pose (mirrors the aura adapter's
+  // footPlanting heightfield binding against the same analytic terrain).
+  interface FootIkJob {
+    readonly leg: { readonly side: "left" | "right"; readonly ankleHeight?: number };
+    readonly ankle: THREE.Bone;
+  }
+  interface FootIkSolve {
+    readonly solver: CCDIKSolver;
+    readonly root: THREE.Object3D;
+    readonly jobs: FootIkJob[];
+  }
+  const footIkSolves: FootIkSolve[] = [];
   const registerShadow = (root: THREE.Object3D, cast: boolean, receive: boolean): void => {
     root.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
@@ -314,9 +332,18 @@ export async function runThreeScene(rawSpec: SceneSpec, host: HTMLElement, opts:
       scene.add(mesh);
     } else if (object.kind === "model") {
       const gltf = await loadGltf(modelAssets[object.asset].url);
-      // Reused assets (crates, rocks) are static, so Object3D.clone is enough; skinned
-      // actors (soldier, fox, CesiumMan) appear at most once per scene and use the original.
-      const root = countUses(spec, object.asset) > 1 ? gltf.scene.clone(true) : gltf.scene;
+      // Reused assets (crates, rocks) are static, so Object3D.clone is enough.
+      // Skinned actors (prd06 perf-tier spawns N instances) must go through
+      // SkeletonUtils.clone — SkinnedMesh.clone shares the source skeleton, so
+      // every animated clone would drive the first instance's bones.
+      let root: THREE.Object3D;
+      if (countUses(spec, object.asset) > 1) {
+        let skinned = false;
+        gltf.scene.traverse((child) => { if ((child as THREE.SkinnedMesh).isSkinnedMesh) skinned = true; });
+        root = skinned ? skeletonUtilsClone(gltf.scene) : gltf.scene.clone(true);
+      } else {
+        root = gltf.scene;
+      }
       root.name = object.name;
       applyTransform(root, object);
       registerShadow(root, object.castShadow, object.receiveShadow);
@@ -331,7 +358,66 @@ export async function runThreeScene(rawSpec: SceneSpec, host: HTMLElement, opts:
           action.play();
           mixer.setTime(object.animation.time);
           mixers.push(mixer);
-          log.add(`animation:${object.name}`, "supported", `AnimationMixer.setTime(${object.animation.time}) on "${clip.name}"`);
+          if (object.animation.loop) loopMixers.push(mixer);
+          log.add(`animation:${object.name}`, "supported", `AnimationMixer${object.animation.loop ? " loop" : `.setTime(${object.animation.time})`} on "${clip.name}"`);
+        }
+      }
+      if (object.animation?.footIk) {
+        if (!spec.terrain) {
+          errors.push(`${spec.id}: animation.footIk requires SceneSpec.terrain`);
+        } else {
+          let skinned: THREE.SkinnedMesh | undefined;
+          root.traverse((child) => {
+            if (!skinned && (child as THREE.SkinnedMesh).isSkinnedMesh) skinned = child as THREE.SkinnedMesh;
+          });
+          if (!skinned) {
+            errors.push(`${spec.id}: footIk requested on "${object.name}" but the model has no SkinnedMesh`);
+          } else {
+            root.updateMatrixWorld(true);
+            const iks: { target: number; effector: number; links: { index: number }[]; iteration: number }[] = [];
+            const jobs: FootIkJob[] = [];
+            // glTF node names reach three bones through
+            // PropertyBinding.sanitizeNodeName (e.g. "mixamorig:LeftUpLeg" ->
+            // "mixamorigLeftUpLeg"); match either spelling.
+            const boneIndex = (name: string) => skinned!.skeleton.bones.findIndex(
+              (bone) => bone.name === name || bone.name === THREE.PropertyBinding.sanitizeNodeName(name)
+            );
+            for (const leg of object.animation.footIk.legs) {
+              const hipIdx = boneIndex(leg.hip);
+              const kneeIdx = boneIndex(leg.knee);
+              const ankleIdx = boneIndex(leg.ankle);
+              if (hipIdx < 0 || kneeIdx < 0 || ankleIdx < 0) {
+                errors.push(`${spec.id}: footIk leg ${leg.side} bones not found on ${object.name}`);
+                continue;
+              }
+              const ankle = skinned.skeleton.bones[ankleIdx];
+              const ankleWorld = ankle.getWorldPosition(new THREE.Vector3());
+              const ground = rampStairsHeightAt(spec.terrain, ankleWorld.x, ankleWorld.z);
+              // Target = ankle's x/z pinned to the analytic ground, expressed in
+              // the model's local space via a dedicated target bone.
+              const target = new THREE.Bone();
+              target.name = `__ik_target_${leg.side}`;
+              root.add(target);
+              target.position.copy(
+                root.worldToLocal(new THREE.Vector3(ankleWorld.x, ground.height + (leg.ankleHeight ?? 0), ankleWorld.z))
+              );
+              // Skeleton.update() iterates bones × boneInverses — the pushed
+              // target bone needs a matching (identity) inverse or it crashes.
+              skinned.skeleton.bones.push(target);
+              skinned.skeleton.boneInverses.push(new THREE.Matrix4());
+              iks.push({
+                target: skinned.skeleton.bones.length - 1,
+                effector: ankleIdx,
+                links: [{ index: kneeIdx }, { index: hipIdx }],
+                iteration: 8
+              });
+              jobs.push({ leg, ankle });
+            }
+            if (iks.length > 0) {
+              footIkSolves.push({ solver: new CCDIKSolver(skinned, iks), root, jobs });
+              log.add(`footIk:${object.name}`, "supported", `CCDIKSolver ${iks.length} leg chains`);
+            }
+          }
         }
       }
     } else if (object.kind === "instanced") {
@@ -414,10 +500,39 @@ export async function runThreeScene(rawSpec: SceneSpec, host: HTMLElement, opts:
   // Warm up shader compilation, then render settle frames at the fixed time.
   await renderer.compileAsync(scene, camera);
   for (const mixer of mixers) mixer.update(0);
+  // Solve foot IK once against the settled pose, then hold it for the settle
+  // frames (the mixers are already at their frozen sample time).
+  const footIkExtra: { feet: { side: "left" | "right"; worldPosition: readonly [number, number, number]; contactError: number; locked: boolean }[]; configured: boolean; maxContactError: number } = {
+    configured: footIkSolves.length > 0,
+    feet: [],
+    maxContactError: 0
+  };
+  const footIkMaxContactError = (spec as SceneSpec & { ikSlope?: { maxContactError?: number } }).ikSlope?.maxContactError ?? 0.03;
+  for (const solve of footIkSolves) {
+    solve.root.updateMatrixWorld(true);
+    solve.solver.update();
+    solve.root.updateMatrixWorld(true);
+    for (const job of solve.jobs) {
+      const ankleWorld = job.ankle.getWorldPosition(new THREE.Vector3());
+      const ground = rampStairsHeightAt(spec.terrain!, ankleWorld.x, ankleWorld.z);
+      const error = Math.abs(ankleWorld.y - (ground.height + (job.leg.ankleHeight ?? 0)));
+      footIkExtra.feet.push({
+        side: job.leg.side,
+        worldPosition: [ankleWorld.x, ankleWorld.y, ankleWorld.z],
+        contactError: error,
+        locked: error <= footIkMaxContactError
+      });
+      footIkExtra.maxContactError = Math.max(footIkExtra.maxContactError, error);
+    }
+  }
   for (let frame = 0; frame < spec.settleFrames; frame += 1) {
+    // Looping mixers advance one frame-tick each rendered frame (perf-tier
+    // scenes measure live animation cost); frozen mixers already setTime'd.
+    for (const mixer of loopMixers) mixer.update(1 / 60);
     renderFrame();
     await nextFrame();
   }
+  for (const mixer of loopMixers) mixer.update(1 / 60);
   renderFrame();
   await nextFrame();
 
@@ -462,6 +577,7 @@ export async function runThreeScene(rawSpec: SceneSpec, host: HTMLElement, opts:
     assetHashes,
     qrFlags: opts.qrFlags ?? spec.qrFlags ?? [],
     extra: {
+      ...(footIkExtra.configured ? { footIk: footIkExtra } : {}),
       revision: THREE.REVISION,
       programs: renderer.info.programs?.length ?? 0,
       maxAnisotropy: renderer.capabilities.getMaxAnisotropy()

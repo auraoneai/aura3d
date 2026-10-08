@@ -15,7 +15,7 @@ import type { SkinningPaletteBinding, SkinningPalettePath } from "./ForwardPass.
 import type { RenderItem } from "./contracts/renderItem.js";
 import { MAX_SKINNING_JOINTS, MAX_UNIFORM_SKINNING_JOINTS, isFiniteArrayLike } from "./ForwardPass.js";
 import { Material } from "./Material.js";
-import { RenderDeviceError, type RenderShaderProgram, type UniformValue } from "./RenderDevice.js";
+import { RenderDeviceError, type RenderDevice, type RenderShaderProgram, type UniformValue } from "./RenderDevice.js";
 import { Sampler } from "./Sampler.js";
 import { Texture } from "./Texture.js";
 import { TextureBinding } from "./TextureBinding.js";
@@ -140,8 +140,17 @@ export function applySkinningUniformsCached(
   material: Material,
   shader: RenderShaderProgram,
   uniforms: Map<string, UniformValue>,
-  cache: SkinningPaletteTextureCache
+  cache: SkinningPaletteTextureCache,
+  device?: RenderDevice
 ): SkinningPalettePath {
+  // T1.12 — a program that includes `a3d_prd06_skinning_common` declares
+  // `u_boneTexture`/`u_boneTextureWidth` and never `u_jointMatrices`/
+  // `u_jointPaletteMode`: the cached bone texture binds for EVERY joint count
+  // (65- and 191-joint alike). `u_jointMatrices` is still uploaded only when
+  // the device is WebGPU, which consumes it until Q-11-1.
+  if (shader.reflection.uniforms.has("u_boneTexture")) {
+    return applyBoneTextureSkinningUniforms(skinning, material, shader, uniforms, cache, device);
+  }
   if (!shader.reflection.uniforms.has("u_jointMatrices") || !shader.reflection.uniforms.has("u_jointCount")) {
     throw new RenderDeviceError("Skinned render item requires a shader with joint palette uniforms", "SKINNING_SHADER_CONTRACT", {
       material: material.name
@@ -211,6 +220,19 @@ export function bindBoneTexture(
 ): boolean {
   const skinning = item.skinning;
   if (!skinning) return false;
+  return bindBoneTextureForSkinning(set, cache, skinning);
+}
+
+/**
+ * T1.12 — the bone-texture bind shared by the depth-feature setter and the
+ * forward `uniforms` map path. Same cache entry, same dedupe semantics as
+ * `bindBoneTexture`.
+ */
+export function bindBoneTextureForSkinning(
+  set: (name: string, value: UniformValue) => void,
+  cache: SkinningPaletteTextureCache,
+  skinning: SkinningPaletteBinding
+): boolean {
   const key = paletteKeyOf(skinning);
   if (!key) return false;
   // paletteUniformSet materialises the per-key entry (first bind only); upload()
@@ -222,4 +244,58 @@ export function bindBoneTexture(
   set("u_boneTextureWidth", palette.textureSize[0]);
   set("u_prevBoneTexture", palette.previousBinding);
   return true;
+}
+
+/**
+ * T1.12 — the `a3d_prd06_skinning_common` program bind: bone texture for every
+ * joint count; `u_jointMatrices` only on WebGPU until Q-11-1. Unstamped
+ * producers keep the verbatim path (flag-off byte-identical).
+ */
+function applyBoneTextureSkinningUniforms(
+  skinning: SkinningPaletteBinding,
+  material: Material,
+  shader: RenderShaderProgram,
+  uniforms: Map<string, UniformValue>,
+  cache: SkinningPaletteTextureCache,
+  device: RenderDevice | undefined
+): SkinningPalettePath {
+  if (!Number.isInteger(skinning.jointCount) || skinning.jointCount <= 0 || skinning.jointCount > MAX_SKINNING_JOINTS) {
+    throw new RenderDeviceError(`Skinning jointCount must be an integer in [1, ${MAX_SKINNING_JOINTS}]`, "INVALID_SKINNING_PALETTE", {
+      jointCount: skinning.jointCount,
+      maxUniformJoints: MAX_UNIFORM_SKINNING_JOINTS,
+      maxJoints: MAX_SKINNING_JOINTS
+    });
+  }
+  if (skinning.matrices.length !== skinning.jointCount * 16) {
+    throw new RenderDeviceError("Skinning matrix palette length must equal jointCount * 16", "INVALID_SKINNING_PALETTE", {
+      jointCount: skinning.jointCount,
+      matrixScalars: skinning.matrices.length
+    });
+  }
+  const key = paletteKeyOf(skinning);
+  if (!key) {
+    return applySkinningUniforms(skinning, material, shader, uniforms);
+  }
+  const palette = cache.paletteUniformSet(key, skinning.jointCount);
+  if (!palette.finiteValidated) {
+    if (!isFiniteArrayLike(skinning.matrices)) {
+      throw new RenderDeviceError("Skinning matrix palette must contain finite values", "INVALID_SKINNING_PALETTE", {
+        jointCount: skinning.jointCount
+      });
+    }
+    palette.markFiniteValidated();
+  }
+  bindBoneTextureForSkinning((name, value) => uniforms.set(name, value), cache, skinning);
+  if (shader.reflection.uniforms.has("u_jointCount")) {
+    uniforms.set("u_jointCount", skinning.jointCount);
+  }
+  if (!shader.reflection.uniforms.has("u_prevBoneTexture")) {
+    uniforms.delete("u_prevBoneTexture");
+  }
+  // WebGPU still consumes u_jointMatrices until Q-11-1 — the uniform array is
+  // uploaded only there (the chunk program never declares it on WebGL).
+  if (device?.kind === "webgpu" && shader.reflection.uniforms.has("u_jointMatrices")) {
+    uniforms.set("u_jointMatrices", skinning.matrices);
+  }
+  return "data-texture";
 }

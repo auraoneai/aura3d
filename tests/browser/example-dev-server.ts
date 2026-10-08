@@ -33,6 +33,7 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/rendering/contracts/flags.state", "/packages/rendering/src/contracts/flags.state.ts"],
   ["@aura3d/rendering/contracts", "/packages/rendering/src/contracts/index.ts"],
   ["@aura3d/rendering/world", "/packages/rendering/src/world/index.ts"],
+  ["@aura3d/rendering/production-runtime", "/packages/rendering/src/production-runtime/index.ts"],
   ["@aura3d/rendering", "/packages/rendering/src/index.ts"],
   ["@aura3d/engine/lean-product", "/packages/engine/src/agent-api/lean-product.ts"],
   ["@aura3d/engine/lean-game", "/packages/engine/src/agent-api/lean-game.ts"],
@@ -62,6 +63,7 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/engine-runtime/contracts", "/packages/engine/src/contracts/index.ts"],
   ["@aura3d/engine-runtime", "/packages/engine/src/index.ts"],
   ["@aura3d/engine/media-node", "/packages/engine/src/agent-api/media-node.ts"],
+  ["@aura3d/animation/lanes", "/packages/animation/src/lanes/index.ts"],
   ["@aura3d/animation", "/packages/animation/src/browser-index.ts"],
   ["@aura3d/assets", "/packages/assets/src/browser-index.ts"],
   ["@aura3d/assets/browser", "/packages/assets/src/browser-index.ts"],
@@ -106,7 +108,9 @@ const packageEntryPoints = new Map<string, string>([
   ["three/addons/loaders/DRACOLoader.js", "/node_modules/three/examples/jsm/loaders/DRACOLoader.js"],
   ["three/addons/loaders/KTX2Loader.js", "/node_modules/three/examples/jsm/loaders/KTX2Loader.js"],
   ["three/addons/loaders/RGBELoader.js", "/node_modules/three/examples/jsm/loaders/RGBELoader.js"],
+  ["three/addons/loaders/HDRLoader.js", "/node_modules/three/examples/jsm/loaders/HDRLoader.js"],
   ["three/addons/controls/OrbitControls.js", "/node_modules/three/examples/jsm/controls/OrbitControls.js"],
+  ["three/addons/csm/CSM.js", "/node_modules/three/examples/jsm/csm/CSM.js"],
   ["three/addons/environments/RoomEnvironment.js", "/node_modules/three/examples/jsm/environments/RoomEnvironment.js"],
   ["three/addons/objects/Reflector.js", "/node_modules/three/examples/jsm/objects/Reflector.js"],
   ["three/addons/libs/meshopt_decoder.module.js", "/node_modules/three/examples/jsm/libs/meshopt_decoder.module.js"],
@@ -153,6 +157,19 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
       }
 
       if (file.endsWith(".ts")) {
+        // Canonicalize every dotted specifier onto the `.ts` URL: two callers
+        // importing `./foo.glsl` and `./foo.glsl.ts` (or `./foo.js` vs `.ts`)
+        // must hit one module instance, or side-effect registries double-fire
+        // (REGISTRY_DUPLICATE).
+        const canonical = normalize(contextualPathForLegacyPath(decodeURIComponent(url.pathname)));
+        if (!canonical.endsWith(".ts")) {
+          const target = canonical.endsWith(".js") ? canonical.replace(/\.js$/, ".ts") : `${canonical}.ts`;
+          if (file.endsWith(target) || file === resolve(join(root, target.replace(/^[/\\]/, "")))) {
+            response.writeHead(302, { location: `${target}${url.search}` });
+            response.end();
+            return;
+          }
+        }
         const source = readFileSync(file, "utf8");
         response.writeHead(200, { "content-type": "application/javascript; charset=utf-8" });
         response.end(transpileForBrowser(source, file));
@@ -243,6 +260,14 @@ function resolveRequest(root: string, pathname: string): string | undefined {
     candidates.push(join(root, normalizedPath.replace(/\.js$/, ".ts")));
   }
 
+  // Dotted-suffix sources resolve the same way TypeScript does: a specifier
+  // like `./chunks/common.glsl` or `./diagnosticOnly.prd07` maps onto the
+  // `.ts` file of the same dotted name (`common.glsl.ts`,
+  // `diagnosticOnly.prd07.ts`). Only applies when the literal file is absent.
+  if (extname(normalizedPath) && !normalizedPath.endsWith(".ts") && !normalizedPath.endsWith(".js") && !normalizedPath.endsWith(".mjs")) {
+    candidates.push(join(root, `${normalizedPath}.ts`));
+  }
+
   const loadersVersioned = normalizedPath.match(/^[/\\]node_modules[/\\]@loaders\.gl[/\\]([^/\\]+)@[^/\\]+([/\\].*)$/);
   if (loadersVersioned) {
     candidates.push(join(root, "node_modules", "@loaders.gl", loadersVersioned[1]!, loadersVersioned[2]!));
@@ -305,7 +330,7 @@ function transpileForBrowser(source: string, fileName: string): string {
     }
     return `(() => { const style = document.createElement("style"); style.setAttribute("data-aura3d-dev-css", ${JSON.stringify(relative(process.cwd(), cssPath))}); style.textContent = ${JSON.stringify(readFileSync(cssPath, "utf8"))}; document.head.appendChild(style); })();`;
   });
-  const rewritten = rewritePackageImports(withCssInjected);
+  const rewritten = rewriteRelativeSpecifiers(rewritePackageImports(withCssInjected), fileName);
   const result = ts.transpileModule(rewritten, {
     fileName,
     compilerOptions: {
@@ -320,6 +345,39 @@ function transpileForBrowser(source: string, fileName: string): string {
   });
 
   return result.outputText;
+}
+
+/**
+ * Canonicalize relative import specifiers onto the `.ts` file they resolve to
+ * (`./x.js` → `./x.ts`, `./x.glsl` → `./x.glsl.ts`, `./dir` → `./dir/index.ts`).
+ * Chromium keys its module map on the *request* URL — a 302 from `.js` to `.ts`
+ * still registers a second module instance, which double-fires side-effect
+ * registries (REGISTRY_DUPLICATE). Rewriting the specifier makes every
+ * importer request one canonical URL.
+ */
+function rewriteRelativeSpecifiers(source: string, fileName: string): string {
+  const dir = dirname(fileName);
+  const tryResolve = (specifier: string): string | undefined => {
+    if (!specifier.startsWith("./") && !specifier.startsWith("../")) return undefined;
+    const candidates = specifier.endsWith(".ts")
+      ? []
+      : specifier.endsWith(".js")
+        ? [specifier.replace(/\.js$/, ".ts")]
+        : extname(specifier)
+          ? [`${specifier}.ts`]
+          : [`${specifier}.ts`, `${specifier.replace(/\/+$/, "")}/index.ts`];
+    for (const candidate of candidates) {
+      if (existsSync(resolve(dir, candidate))) return candidate;
+    }
+    return undefined;
+  };
+  return source.replace(
+    /(\bfrom\s*|\bimport\s*\(\s*(?:\/\*[^]*?\*\/\s*)?|\bimport\s*)(["'])(\.{1,2}\/[^"']+)(["'])/g,
+    (match, pre: string, open: string, specifier: string, close: string) => {
+      const resolved = tryResolve(specifier);
+      return resolved === undefined ? match : `${pre}${open}${resolved}${close}`;
+    },
+  );
 }
 
 function rewritePackageImports(source: string): string {

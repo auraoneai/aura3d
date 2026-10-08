@@ -18,7 +18,9 @@ import type { RenderDevice } from "../RenderDevice.js";
 import { A3D_PRD06_SKINNING_COMMON_GLSL } from "../shaders/deform/skinning.glsl.js";
 import { A3D_PRD06_MORPH_TEXTURE_GLSL } from "../shaders/deform/morph.glsl.js";
 import { A3D_PRD06_DEFORM_GLSL } from "../shaders/deform/deform.glsl.js";
+import { registerPrd06WgslTwins } from "../shaders/deform/twins.js";
 import { registerPrd06DeformDepthFeature } from "../shaders/deform/depthFeature.js";
+import { registerPrd06DeformFeature } from "../shaders/deform/forwardFeature.js";
 import { registerSkinnedBoundsProvider } from "../contracts/shadows.js";
 import { prd06SkinnedBounds } from "../renderer/SkinnedBounds.js";
 
@@ -170,10 +172,32 @@ export const deformResources: ContractSlot<DeformResources> = defineContractSlot
 /** One process-wide cache: forward binds and depth variants share it (§9.1). */
 export const skinningPaletteCache = new SkinningPaletteTextureCache();
 
+/**
+ * §970 (T2.1): the real `buildMorphTargetTexture` is provided under
+ * `A3D_QR_ANIMATION_GPU_MORPH` — the sub-flag off (alias
+ * `renderer.morph: "cpu"`) returns the C-18 cpu fallback so
+ * `resolveRenderGeometry` stays on the persistent-VBO path (T2.3). The read
+ * defers to call time so app-installed flags win over import-order.
+ */
+const buildMorphTargetTextureProvided: DeformResources["buildMorphTargetTexture"] = (geometry, targets, limits, format) =>
+  prd06FlagsOn("A3D_QR_ANIMATION_GPU_MORPH")
+    ? buildMorphTargetTexture(geometry, targets, limits, format)
+    : { fallback: "cpu", reason: "A3D_QR_ANIMATION_GPU_MORPH off" };
+
 deformResources.provide({
   skinningPalettes: skinningPaletteCache,
-  buildMorphTargetTexture
+  buildMorphTargetTexture: buildMorphTargetTextureProvided
 });
+
+/* --------------------------------------------------------- forward feature */
+
+// T2.2 (PRD-06 §269/§1145): the forward `prd06.deform` C-02 feature. Registered
+// unconditionally — the registry entry's `A3D_QR_ANIMATION` flag gates
+// contribution through `shaderFeaturesFor(flags)`, so flag-off programs stay
+// byte-identical and import order cannot strand the registration. The morph
+// builder keeps its GPU_MORPH deferral: with the sub-flag off, `select` emits
+// no morph segment and `bindUniforms` falls back to CPU morphs.
+registerPrd06DeformFeature(skinningPaletteCache, buildMorphTargetTextureProvided);
 
 /* ------------------------------------------------- deform shader chunks */
 
@@ -181,7 +205,12 @@ registerShaderChunk({
   name: "a3d_prd06_skinning_common",
   owner: "prd06",
   glsl: A3D_PRD06_SKINNING_COMMON_GLSL,
-  stage: "vertex"
+  stage: "vertex",
+  // `requires` emits AFTER this chunk in hookSplice's per-hook BFS — this is the
+  // splice-order vehicle that lands `a3d_prd06_morph_texture` behind it at
+  // `vertex:pars` (the feature pairs chunks[i] with hooks[i], one per index).
+  // The morph chunk is `#ifdef A3D_MORPH`-guarded, so it costs nothing off.
+  requires: ["a3d_prd06_morph_texture"]
 });
 registerShaderChunk({
   name: "a3d_prd06_morph_texture",
@@ -193,9 +222,19 @@ registerShaderChunk({
   name: "a3d_prd06_deform",
   owner: "prd06",
   glsl: A3D_PRD06_DEFORM_GLSL,
-  stage: "vertex",
-  requires: ["a3d_prd06_skinning_common", "a3d_prd06_morph_texture"]
+  stage: "vertex"
+  // No `requires`: `hookSplice` dedupes per hook call, not across the program —
+  // a require here would re-emit skinning/morph decls already spliced at
+  // `vertex:pars` (duplicate attribute/uniform declarations). Helpers land via
+  // the feature's `chunks`/`hooks` pairing instead.
 });
+
+/* T2.7 — WGSL twins (C-02 `ShaderChunk.wgsl` equivalent via the lane-11 twin
+ * manifest, which C-02 consumers already read). Storage-buffer bones sized to
+ * the rig + prevBones (skinning twin), morph `texture_2d_array` (morph twin),
+ * and the deform entry helpers. Emitted/validated by tools/wgsl-validate;
+ * Q-11-1 owns the device-side binding. */
+registerPrd06WgslTwins();
 
 // `buildMorphTargetTexture` collides with the PR-0a contracts/deform stub export;
 // reach the real impl through `deformResources.get(flags)` or the direct module.
@@ -205,7 +244,7 @@ export {
   type MorphTargetTextureResult,
   type MorphTextureLimits
 } from "../resources/MorphTargetTexture.js";
-export { applySkinningUniformsCached, bindBoneTexture, paletteKeyOf } from "../SkinningUniforms.js";
+export { applySkinningUniformsCached, bindBoneTexture, bindBoneTextureForSkinning, paletteKeyOf } from "../SkinningUniforms.js";
 
 /* --------------------------------------- T0.13 depth variant + bounds provider */
 

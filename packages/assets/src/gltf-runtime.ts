@@ -1,11 +1,13 @@
 /** Narrow browser runtime used by typed GLB actors without the inspection/fixture barrel. */
 export { createGLTFSceneAnimationRuntime } from "./GLTFAnimationRuntime.js";
 export type {
+  AddClipsFromRuntimeOptions,
   GLTFootPlantingApplyResult,
   GLTFootPlantingConfig,
   GLTFootPlantingLegConfig,
   GLTFSceneAnimationApplyResult,
   GLTFSceneAnimationMaterialSink,
+  GLTFPoseConstraint,
   GLTFSceneAnimationRuntime,
   GLTFSceneAnimationRuntimeOptions,
   GLTFSceneAnimationRuntimeSnapshot,

@@ -83,6 +83,7 @@ export { ProgramWarmup, collectWarmupFeatures } from "./program/ProgramWarmup";
 export type { WarmupInput, WarmupResult } from "./program/ProgramWarmup";
 export { defaultProgramFeatures, materialFeatureWarning, materialUsesGeneratedProgram, ALLOWLIST_PROGRAM_SHADERS } from "./program/MaterialFeatures";
 export { qrCoreGeneratorOn, qrCoreOutputOn, rendererProgramCache, rendererProgramCachePeek, rendererAuraFrame, rendererOutputPass } from "./renderer/qrSubFlags";
+export { createPrd06ProgramCacheWarmup, type Prd06ShaderWarmupOptions } from "./renderer/Prd06ShaderWarmup";
 export { OutputPass } from "./output/OutputPass";
 export { createHdrTarget, ensureHdrTarget, type HdrTargetOptions } from "./output/HdrTarget";
 export {
@@ -659,6 +660,7 @@ export type {
 } from "./RendererTiming";
 export { ForwardPass, SkinningPaletteUploadManager, applyForwardSpotShadowMapUniforms, forwardPassFeatureAxes, splitForwardItems, forwardItemBucket, type ForwardBucket } from "./ForwardPass";
 export { MAX_GPU_INSTANCES, MAX_GPU_MORPH_TARGETS, MAX_GPU_MORPH_VERTICES, MAX_SKINNING_JOINTS } from "./ForwardPass";
+export { ensureMorphTargetTexture, releaseMorphScratchGeometry, releaseMorphTargetTexture, morphTextureDiagnostics } from "./ForwardPass";
 export {
   createSpotShadowProjection,
   defaultSpotShadowKernel,

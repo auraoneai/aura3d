@@ -19,14 +19,18 @@ import {
   lights,
   material,
   model,
+  nodeHandleExtensionFor,
   primitives,
   scene,
   type AuraApp,
+  type AuraActorAnimationApi,
   type AuraMaterialSpec,
   type AuraNodeInput
 } from "@aura3d/engine";
 import { hdriAssets, modelAssets, type HdriAssetId, type ModelAssetId } from "../shared/assets";
 import { installFetchDedupe } from "../shared/fetch-once";
+import { modelSpaceHeightAt, rampStairsHeightAt } from "../shared/terrain";
+import { createHeightFieldGround } from "@aura3d/animation";
 import type { BrokenControlId } from "../shared/contracts";
 import type { CapabilityEntry, CapabilityStatus, MaterialSpec, ReadyPayload, SceneSpec } from "../shared/types";
 
@@ -42,6 +46,12 @@ export interface RunOptions {
   readonly variant?: "default" | "aura3d-tuned" | BrokenControlId;
   readonly dpr?: 1 | 2;
   readonly qrFlags?: readonly string[];
+  /**
+   * PRD-06 T3.9: adapter hook that reads live app state after settle (e.g.
+   * imported-asset evidence such as foot-planting feet) and returns fields
+   * merged into ReadyPayload.extra.
+   */
+  readonly collectExtra?: (app: AuraApp) => Readonly<Record<string, unknown>> | Promise<Readonly<Record<string, unknown>>>;
 }
 
 // Variant machinery lives in aura3d/lib/variants.ts (T2.4, §8.4).
@@ -79,7 +89,9 @@ const auraModelAssets = defineAuraAssets({
   compareTransmission: modelDefinition("compareTransmission"),
   sheenTestGrid: modelDefinition("sheenTestGrid"),
   soldier: modelDefinition("soldier"),
+  auraClashPlayerRig: modelDefinition("auraClashPlayerRig"),
   cesiumMan: modelDefinition("cesiumMan"),
+  robotExpressive: modelDefinition("robotExpressive"),
   fox: modelDefinition("fox"),
   rockA: modelDefinition("rockA"),
   rockB: modelDefinition("rockB"),
@@ -238,8 +250,20 @@ function buildAuraScene(spec: SceneSpec, log: CapabilityLog) {
       if (object.rotation) node = node.rotate(...object.rotation);
       if (object.scale !== undefined) node = node.scale(object.scale);
       if (object.animation) {
-        // loop:false + captureTime pins the sampled pose (resolveAnimationSeconds).
-        node = node.animate({ clip: object.animation.clip, loop: false, captureTime: object.animation.time });
+        // loop:false + captureTime pins the sampled pose (resolveAnimationSeconds);
+        // loop:true keeps the clip playing across captured frames (perf-tier).
+        node = node.animate(object.animation.loop
+          ? { clip: object.animation.clip, loop: true, startTime: object.animation.time }
+          : { clip: object.animation.clip, loop: false, captureTime: object.animation.time });
+        if (object.animation.footIk) {
+          if (!spec.terrain) {
+            throw new Error(`${spec.id}: animation.footIk requires SceneSpec.terrain for the analytic ground`);
+          }
+          // Runtime id the lane collector uses for nodes.get() → socket().
+          node = node.runtime({ id: object.animation.footIk.runtimeId });
+        } else if (object.animation.runtimeId !== undefined) {
+          node = node.runtime({ id: object.animation.runtimeId });
+        }
       }
       nodes.push(node);
     } else if (object.kind === "instanced") {
@@ -310,9 +334,9 @@ function buildAuraScene(spec: SceneSpec, log: CapabilityLog) {
   return built;
 }
 
-/** Structural mirror of `Prd03PostExtras` in `scenes/prd03/specs.ts` (kept inline so common.ts does not import lane spec files). */
+/** Structural mirror of `Prd03PostExtras` in `scenes/prd03/specs.ts` (kept inline so common.ts does not import lane spec files). The engine node accepts only `fxaa`/`taa`/`off` (msaa/smaa were dropped from `AuraEffectNode.mode`). */
 interface Prd03PostExtrasLike {
-  readonly antiAlias?: "fxaa" | "smaa" | "msaa" | "taa" | "off";
+  readonly antiAlias?: "fxaa" | "taa" | "off";
   readonly motionBlur?: {
     readonly intensity?: number;
     readonly shutter?: number;
@@ -372,7 +396,14 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
     pixelRatio: (variant === "dpr-half" ? 0.5 : 1) * (opts.dpr ?? spec.resolution.devicePixelRatio),
     resize: false,
-    autoStart: false
+    autoStart: false,
+    // createAuraApp resolves flags from options only — a URL ?a3d-qr list is
+    // never consulted once the app installs its resolved set, so lane scenes
+    // must pass spec/harness qrFlags through here (e.g. "animation" for the
+    // prd06 actor-extension onLoad publishes + handle.animation sources).
+    ...((opts.qrFlags ?? spec.qrFlags)?.length
+      ? { qualityRebuild: { flags: [...(opts.qrFlags ?? spec.qrFlags)!] } }
+      : {})
   });
   await app.ready();
 
@@ -396,6 +427,72 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
     const diagnostics = app.diagnostics();
     if (diagnostics.drawCalls > 0 || diagnostics.errors.length > 0) break;
     await sleep(50);
+  }
+
+  // PRD-06 T3.9: spec-declared `animation.footIk` registers the foot-ik pose
+  // constraint on the actor once it is loaded (draw-wait above guarantees the
+  // mount); the analytic GroundRaycaster comes from the shared terrain spec.
+  for (const object of spec.objects) {
+    if (object.kind !== "model" || !object.animation?.footIk) continue;
+    const terrain = spec.terrain!;
+    const handle = app.nodes.get(object.animation.footIk.runtimeId);
+    if (!handle) {
+      log.add(`footIk:${object.name}`, "missing", `runtime node "${object.animation.footIk.runtimeId}" not found`);
+      continue;
+    }
+    const extension = nodeHandleExtensionFor("animation");
+    const animationApi = extension?.create(handle, app) as AuraActorAnimationApi | undefined;
+    if (!animationApi?.ik) {
+      log.add(`footIk:${object.name}`, "missing", "node.animation.ik unavailable (A3D_QR_ANIMATION off or non-model node)");
+      continue;
+    }
+    try {
+      animationApi.ik.add({
+        kind: "foot-ik",
+        legs: object.animation.footIk.legs.map((leg) => ({
+          root: leg.hip,
+          mid: leg.knee,
+          tip: leg.ankle,
+          ...(leg.ankleHeight !== undefined ? { ankleHeight: leg.ankleHeight } : {})
+        })),
+        // The constraint + socket matrices live in the actor's own space; wrap
+        // the world-space heightfield with the model node's transform so feet
+        // plant on the terrain under the model, not at the origin.
+        ground: createHeightFieldGround(
+          // The solver raycasts in the actor's model space (mm.col-major mount
+          // transform inverts to world units); wrap the world-space heightAt.
+          modelSpaceHeightAt((x: number, z: number) => rampStairsHeightAt(terrain, x, z), object)
+        ),
+        ...(object.animation.footIk.pelvis !== undefined ? { pelvis: object.animation.footIk.pelvis } : {})
+      });
+      log.add(`footIk:${object.name}`, "supported", `ik.add foot-ik, ${object.animation.footIk.legs.length} legs on analytic terrain`);
+    } catch (error) {
+      log.add(`footIk:${object.name}`, "missing", `ik.add threw: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  // PRD-06 T4.1/§13: spec-declared `animation.springChains` register spring-bone
+  // constraints on the actor (after foot-IK, so springs see the post-IK pose).
+  for (const object of spec.objects) {
+    if (object.kind !== "model" || !object.animation?.springChains?.length) continue;
+    const runtimeId = object.animation.runtimeId ?? object.animation.footIk?.runtimeId;
+    const handle = runtimeId !== undefined ? app.nodes.get(runtimeId) : undefined;
+    if (!handle) {
+      log.add(`springChains:${object.name}`, "missing", `runtime node "${runtimeId ?? "(none)"}" not found`);
+      continue;
+    }
+    const extension = nodeHandleExtensionFor("animation");
+    const animationApi = extension?.create(handle, app) as AuraActorAnimationApi | undefined;
+    if (!animationApi?.springBones) {
+      log.add(`springChains:${object.name}`, "missing", "node.animation.springBones unavailable (A3D_QR_ANIMATION off or non-model node)");
+      continue;
+    }
+    try {
+      animationApi.springBones.add({ chains: object.animation.springChains });
+      log.add(`springChains:${object.name}`, "supported", `springBones.add, ${object.animation.springChains.length} chains`);
+    } catch (error) {
+      log.add(`springChains:${object.name}`, "missing", `springBones.add threw: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   // Wait for the HDRI chain to swap in (or fail loudly).
@@ -536,6 +633,7 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
     assetHashes,
     qrFlags: opts.qrFlags ?? spec.qrFlags ?? [],
     extra: {
+      ...(await opts.collectExtra?.(app) ?? {}),
       backend: diagnostics.backend,
       renderSize: diagnostics.renderSize,
       reportedToneMapping: renderer?.toneMapping,

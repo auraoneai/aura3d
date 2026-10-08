@@ -59,6 +59,39 @@ test("resolveGLTFClipName falls back to substring then first clip", () => {
   assert.equal(resolveGLTFClipName("anything", []), undefined);
 });
 
+// T1.8 (PRD-06 §10): fuzzy misses are errors under 3.1 defaults, first-clip under 3.0.
+test("resolveGLTFClipName fallback option gates the first-clip fallback (T1.8)", () => {
+  const env = process.env;
+  const scoped = env["A3D_QR_ANIMATION"];
+  const root = env["A3D_QR"];
+  delete env["A3D_QR_ANIMATION"];
+  delete env["A3D_QR"];
+  try {
+    // Flag off (3.0 defaults): misses keep the legacy first-clip fallback.
+    assert.equal(resolveGLTFClipName("idle-ready", ["Take 001"]), "Take 001");
+    // Levels 1-3 are unaffected in either mode.
+    assert.equal(resolveGLTFClipName("idle", ["Loops", "Sprint"]), "Loops");
+    // Explicit options override the ambient default both ways.
+    assert.equal(resolveGLTFClipName("idle-ready", ["Take 001"], { fallback: "first" }), "Take 001");
+    assert.equal(resolveGLTFClipName("idle-ready", ["Take 001"], { fallback: "error" }), undefined);
+    assert.equal(resolveGLTFClipName("idle-ready", ["Take 001"], { fallback: "first" }), "Take 001");
+
+    // Flag on (3.1 defaults): a fuzzy miss resolves to undefined so callers warn + degrade.
+    env["A3D_QR_ANIMATION"] = "1";
+    assert.equal(resolveGLTFClipName("idle-ready", ["Take 001"]), undefined);
+    assert.equal(resolveGLTFClipName("idle", ["Loops", "Sprint"]), "Loops");
+    // The opt-in restores the first-clip fallback even under 3.1.
+    assert.equal(resolveGLTFClipName("idle-ready", ["Take 001"], { fallback: "first" }), "Take 001");
+
+    delete env["A3D_QR_ANIMATION"];
+    env["A3D_QR"] = "animation";
+    assert.equal(resolveGLTFClipName("idle-ready", ["Take 001"]), undefined);
+  } finally {
+    if (scoped === undefined) delete env["A3D_QR_ANIMATION"]; else env["A3D_QR_ANIMATION"] = scoped;
+    if (root === undefined) delete env["A3D_QR"]; else env["A3D_QR"] = root;
+  }
+});
+
 test("computeAutoFitTransform scales tall and tiny models to the target height", () => {
   const big = computeAutoFitTransform({ min: [-900, 0, -900], max: [900, 1821, 900] }, { targetHeight: 1.6 });
   assert.ok(Math.abs(big.fittedHeight - 1.6) < 1e-6);

@@ -19,7 +19,7 @@ export * from "./ECSAnimationBridge.js";
 export * from "./IK.js";
 export * from "./FootIk.js";
 export * from "./SpringBones.js";
-export * from "./CrowdAnimation.js";
+export * from "./experimental/CrowdAnimation.js";
 export * from "./AnimationClipEvents.js";
 export { AnimationClipRegistry, createAnimationClipRegistry, validateAnimationClipMap, validateAnimationStudioClipMap } from "./AnimationClipRegistry.js";
 export { createAnimationAnimationStateGraph, createLocomotionAnimationStateGraph, sampleAnimationAnimationStateGraph } from "./AnimationStateGraph.js";

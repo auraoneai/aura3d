@@ -187,6 +187,8 @@ downloads/
 *.backup
 .probe-scratch/
 scratchpad/
+tools/scratch-probe/
+artifacts/prd06/
 tmp-*
 vb-lane-probe.ts
 

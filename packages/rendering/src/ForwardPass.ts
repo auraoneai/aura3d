@@ -381,7 +381,7 @@ export class ForwardPass extends BaseRenderPass {
     applyTransformUniforms(item, shader, uniforms);
     bindVelocityUniforms?.(item, uniforms);
     if (item.skinning) {
-      this.skinningPaletteUploads.bind(item, item.skinning, baseMaterial, shader, uniforms);
+      this.skinningPaletteUploads.bind(item, item.skinning, baseMaterial, shader, uniforms, device);
     }
     const instanceBinding = item.instanceTransforms ? this.applyInstanceBinding(device, item, shader, uniforms, generated) : { count: 1 };
     const gpuMorph = item.morphTargets || item.morphWeights ? applyGpuMorphUniforms(item, shader, uniforms) : false;
@@ -671,7 +671,8 @@ export function forwardPassFeatureAxes(
   };
 }
 
-export { SkinningPaletteUploadManager } from "./forward/Deform.js";
+export { SkinningPaletteUploadManager, releaseMorphScratchGeometry } from "./forward/Deform.js";
+export { ensureMorphTargetTexture, releaseMorphTargetTexture, morphTextureDiagnostics } from "./shaders/deform/forwardFeature.js";
 
 interface ShaderCacheRecord {
   revision: number;

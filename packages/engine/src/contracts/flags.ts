@@ -97,6 +97,29 @@ function applyPerFlagEnv(out: Record<string, QrFlagValue>, env: Readonly<Record<
   }
 }
 
+/**
+ * T1.11 (PRD-06 §10): `animation.mixer: "pose"` is the documented alias for
+ * the `A3D_QR_ANIMATION_POSE_MIXER` sub-flag. Compose it onto a resolved
+ * `QrFlags`; an explicit value already resolved for the sub-flag wins, so a
+ * caller can still turn it off through `qualityRebuild.flags`.
+ */
+export function qrFlagsWithAnimationMixer(flags: QrFlags, mixer: "pose" | "legacy" | undefined): QrFlags {
+  if (mixer !== "pose" || flags.values.A3D_QR_ANIMATION_POSE_MIXER !== undefined) {
+    return flags;
+  }
+  const values: Readonly<Partial<Record<QrFlagName, QrFlagValue>>> = Object.freeze({
+    ...flags.values,
+    A3D_QR_ANIMATION_POSE_MIXER: true
+  });
+  return {
+    values,
+    on(name: QrFlagName): boolean {
+      const v = values[name];
+      return v !== undefined && v !== false && v !== "0" && v !== "off" && v !== "";
+    }
+  };
+}
+
 export function resolveQrFlags(input: { readonly options?: QrFlagInput; readonly url?: URL | string; readonly env?: Readonly<Record<string, string | undefined>> }): QrFlags {
   const values: Record<string, QrFlagValue> = {};
   if (input.options !== undefined) applyInput(values, input.options);

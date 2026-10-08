@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PRD-06 skinned shadow-onscreen harness</title>
+  </head>
+  <body>
+    <canvas id="stage" width="256" height="256"></canvas>
+    <script>
+      window.addEventListener("error", (event) => {
+        if (!window.__AURA3D_QR_SKINNED_SHADOW_ONSCREEN__) {
+          window.__AURA3D_QR_SKINNED_SHADOW_ONSCREEN__ = { done: false, error: `harness module failed: ${event.message}` };
+        }
+      });
+      window.addEventListener("unhandledrejection", (event) => {
+        if (!window.__AURA3D_QR_SKINNED_SHADOW_ONSCREEN__) {
+          window.__AURA3D_QR_SKINNED_SHADOW_ONSCREEN__ = { done: false, error: `harness module rejected: ${String(event.reason)}`, stack: event.reason && event.reason.stack ? String(event.reason.stack) : undefined };
+        }
+      });
+    </script>
+    <script type="importmap">
+      {
+        "imports": {
+          "@aura3d/rendering/contracts/flags.state": "/packages/rendering/src/contracts/flags.state.ts",
+          "@aura3d/rendering/contracts": "/packages/rendering/src/contracts/index.ts",
+          "@aura3d/rendering/contracts/": "/packages/rendering/src/contracts/"
+        }
+      }
+    </script>
+    <script type="module" src="./skinned-shadow-onscreen-harness.ts"></script>
+  </body>
+</html>

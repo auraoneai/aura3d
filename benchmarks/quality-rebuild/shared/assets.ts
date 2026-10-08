@@ -21,7 +21,9 @@ export type ModelAssetId =
   | "compareTransmission"
   | "sheenTestGrid"
   | "soldier"
+  | "auraClashPlayerRig"
   | "cesiumMan"
+  | "robotExpressive"
   | "fox"
   | "rockA"
   | "rockB"
@@ -122,6 +124,17 @@ export const modelAssets: Readonly<Record<ModelAssetId, ModelAssetEntry>> = {
     gltfExtensions: [],
     provenance: "three.js examples Soldier.glb (Mixamo). Byte-identical to the Aura3D bundled humanoid fixture."
   },
+  auraClashPlayerRig: {
+    id: "auraClashPlayerRig",
+    repoPath: "public/aura-assets/auraClashPlayerRig.3318d671.glb",
+    url: `${base}auraClashPlayerRig.glb`,
+    sha256: "sha256-3318d671632878ed27b8af6de88c6e5ca647e0d4a04cf03780d555fa07cec087",
+    lfs: false,
+    worldSize: [1.669, 1.802, 0.377],
+    animations: ["Crouch_Idle_Loop", "Death01", "Hit_Chest", "Hit_Head", "Idle_Loop", "Jump_Loop", "Punch_Cross", "Punch_Jab", "Sprint_Loop", "Sword_Attack", "Walk_Loop", "Sword_Block"],
+    gltfExtensions: [],
+    provenance: "Aura Clash player rig (Female Ranger, 65 joints / 12 clips / 11,376-ish tris, admitted). PRD-06 §6.9 standalone hero."
+  },
   cesiumMan: {
     id: "cesiumMan",
     repoPath: "fixtures/three-compat/assets/corpus/cesium-man.glb",
@@ -132,6 +145,17 @@ export const modelAssets: Readonly<Record<ModelAssetId, ModelAssetEntry>> = {
     animations: ["(unnamed clip 0)"],
     gltfExtensions: [],
     provenance: "Khronos glTF-Sample-Assets CesiumMan (CC BY 4.0)"
+  },
+  robotExpressive: {
+    id: "robotExpressive",
+    repoPath: "fixtures/threejs-parity/assets/character/robot-expressive.glb",
+    url: `${base}robot-expressive.glb`,
+    sha256: "sha256-047f5e5fb3bb6d378bd1df16ca6137f2a596c99b3a1b5690b4020c05aaf6f319",
+    lfs: false,
+    worldSize: [6.619, 4.599, 3.122],
+    animations: ["Dance", "Death", "Idle", "Jump", "No", "Punch", "Running", "Sitting", "Standing", "ThumbsUp", "Walking", "WalkJump", "Wave", "Yes"],
+    gltfExtensions: [],
+    provenance: "three.js examples RobotExpressive.glb (CC BY 3.0). PRD-06 T2.9 stand-in for an ARKit-52 morph head pending Q-05-2."
   },
   fox: {
     id: "fox",
