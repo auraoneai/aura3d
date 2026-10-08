@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { PhysicsWorld } from "@aura3d/physics";
-import { createCollisionLayers, createPhysicsRuntime } from "@aura3d/engine";
+import {
+  createCollisionLayers
+} from "@aura3d/engine";
+import { createPhysicsRuntime } from "../../../packages/engine/src/agent-api/PhysicsRuntime.js";
 import { LOS_RADIUS, enemyLineOfSight } from "../../../examples/neon-corridor-strike/src/game/enemies";
 import { layers } from "../../../examples/neon-corridor-strike/src/game/level";
 

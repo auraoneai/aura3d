@@ -1,16 +1,15 @@
 import {
   camera,
-  collectDecalBudgetTelemetry,
   createAuraApp,
   decals,
   lights,
   material,
   primitives,
-  resolveDecalFadeOpacity,
   scene,
   type AuraSceneNode,
-  type AuraVec3,
+  type AuraVec3
 } from "@aura3d/engine";
+import { collectDecalBudgetTelemetry, resolveDecalFadeOpacity } from "../../packages/engine/src/agent-api/Decals.js";
 
 interface DecalViewProbe {
   readonly view: string;

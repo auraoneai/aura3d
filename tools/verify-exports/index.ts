@@ -31,10 +31,6 @@ const approvedSubpathExports: Record<string, Readonly<Record<string, ApprovedSub
     "./browser": { types: "./dist/browser-index.d.ts", import: "./dist/browser-index.js" },
     "./gltf-runtime": { types: "./dist/gltf-runtime.d.ts", import: "./dist/gltf-runtime.js" }
   },
-  "@aura3d/lean": {
-    "./product": { types: "./dist/product.d.ts", import: "./dist/product.js" },
-    "./game": { types: "./dist/game.d.ts", import: "./dist/game.js" }
-  },
   "@aura3d/physics": {
     "./solverless": { types: "./dist/solverless.d.ts", import: "./dist/solverless.js" },
     "./world": { types: "./dist/world.d.ts", import: "./dist/world.js" }

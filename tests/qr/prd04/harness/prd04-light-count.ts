@@ -22,11 +22,10 @@ import {
   model,
   resolveQrFlags,
   scene,
-  setTypedGLBActorQrFlags,
-  setTypedGLBActorQrTransmissionMode,
   unsafeModelUrl,
   type AuraApp
 } from "@aura3d/engine";
+import { setTypedGLBActorQrFlags, setTypedGLBActorQrTransmissionMode } from "@aura3d/engine/lanes";
 import { setRendererQrFlags } from "@aura3d/rendering";
 import { decodePngDataUrl } from "/benchmarks/quality-rebuild/scenes/prd04/metrics.js";
 import { expandPrd04FlagList } from "/benchmarks/quality-rebuild/scenes/prd04/flags.js";

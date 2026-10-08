@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 
 test("fighting-game route loads", async ({ page }) => {
-  test.setTimeout(90_000);
+  test.setTimeout(240_000);
   await page.goto("/");
   await expect(page.locator("#app")).toBeVisible();
   await page.waitForFunction(() =>
@@ -16,10 +16,15 @@ test("fighting-game route loads", async ({ page }) => {
   const source = await page.evaluate(() => (window as any).__AURA3D_GAME_SOURCE__);
   expect(source.readiness.route).toBe("/");
   expect(source.look.id).toBe("arena-fight");
+  // createGame mounts through createGameApp internally but reports the
+  // createGame lifecycle surface (PRD-09 migration) — the runtime publishes
+  // `__AURA3D_GAME_RUNTIME__` per frame with kind "createGame".
   expect(source.lifecycle).toMatchObject({
-    kind: "aura-game-app-runtime",
-    usesCreateGameApp: true,
-    runtimeEvidenceGlobal: "__AURA3D_GAME_RUNTIME__"
+    kind: "createGame",
+    usesCreateGameApp: false,
+    usesCreateGame: true,
+    beaconGlobal: "__AURA3D_GAME__",
+    evidenceGlobal: "__AURA3D_GAME_EVIDENCE__"
   });
   expect(source.readiness.buildDeclarations.routeHealthSpec).toBe("tests/route-health.spec.ts");
   const canvas = page.locator("canvas").first();

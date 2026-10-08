@@ -246,7 +246,7 @@ function main(): void {
 
   // `--extra-pkg <dir>:<specifier>` packs additional workspace packages and
   // rewrites that specifier to its tarball in consumer package.json files
-  // (PRD-15 T4.7: fixtures depend on both @aura3d/engine and @aura3d/lean).
+  // (PRD-15 T4.7: fixtures may depend on additional workspace packages.)
   const extraDeps: Record<string, string> = {};
   for (const entry of extraPkgs) {
     const sep = entry.lastIndexOf(":");

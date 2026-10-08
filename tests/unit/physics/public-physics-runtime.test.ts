@@ -1,9 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
-  createCollisionLayers,
-  createPhysicsRuntime,
-  AURA_SPEC_CONSTRUCTIBLE_SHAPES
+  createCollisionLayers
 } from "@aura3d/engine";
+import { createPhysicsRuntime, AURA_SPEC_CONSTRUCTIBLE_SHAPES } from "../../../packages/engine/src/agent-api/PhysicsRuntime.js";
 import { PhysicsWorld } from "@aura3d/physics";
 
 /**

@@ -31,13 +31,39 @@ interface HarnessResult {
 }
 
 test.describe("PRD-03 Phase 1 — dither banding + depthRange DOF", () => {
+  // Cold dev-server transform of the engine module graph can exceed the
+  // global 60s budget on CI runners before the harness global registers.
+  test.describe.configure({ timeout: 240_000 });
   let server: ExampleDevServer;
   let harness: HarnessResult;
 
-  test.beforeAll(async ({ browser }) => {
+  test.beforeAll(async ({ browser }, testInfo) => {
+    // beforeAll hooks keep the 60s config timeout even when
+    // describe.configure raises per-test budgets — extend the hook
+    // itself for cold dev-server transforms on CI.
+    testInfo.setTimeout(240_000);
     server = await startExampleDevServer();
     const page = await browser.newPage();
     await page.goto(`${server.origin}/tests/browser/qr-prd03-post-harness.html`);
+    // Deferred module script may still be resolving after `load` — wait for the
+    // harness global before evaluating (was flaky: `run is not a function`).
+    try {
+      await page.waitForFunction(
+      () => typeof (window as { runQrPrd03Post?: unknown }).runQrPrd03Post === "function",
+      undefined,
+      { timeout: 150_000 },
+    );
+    } catch {
+      // Cold CI transform of the engine module graph can outrun one
+      // budget; the dev server caches transpiled modules, so a reload
+      // re-serves the whole graph from cache and lands the global.
+      await page.reload();
+      await page.waitForFunction(
+      () => typeof (window as { runQrPrd03Post?: unknown }).runQrPrd03Post === "function",
+      undefined,
+      { timeout: 150_000 },
+    );
+    }
     harness = await page.evaluate(async () => {
       const run = (window as { runQrPrd03Post?: () => Promise<HarnessResult> }).runQrPrd03Post!;
       const { banding, dof } = await run();

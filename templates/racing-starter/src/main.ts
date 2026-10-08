@@ -1,6 +1,5 @@
 import {
   camera,
-  createAuraApp,
   game,
   looks,
   material,
@@ -9,6 +8,10 @@ import {
   scene,
   type AuraNodeInput
 } from "@aura3d/engine";
+// PRD-09: mounted via the shared runtime — createGame owns mount/lifecycle,
+// the §7.7 HUD theme, the §6.11 steer-pedals touch preset, game-sfx-core
+// cues, and the juice event map (no route-local flash/hit-stop code).
+import { createGame, sfxUrl } from "@aura3d/engine/game";
 import { assets } from "./aura-assets";
 
 declare global {
@@ -85,7 +88,7 @@ const CAR_RIDE_Y = 1.206;
 // Chase framing: 8 m back and 3.4 m up at fov 60, aimed a car-length ahead.
 const CHASE = { back: 8, up: 3.4, ahead: 4, fov: 60 } as const;
 
-const input = game.input({
+const inputOptions = {
   actions: {
     throttle: ["KeyW", "ArrowUp"],
     brake: ["KeyS", "ArrowDown"],
@@ -99,7 +102,7 @@ const input = game.input({
     steer: { negative: "left", positive: "right" }
   },
   bufferMs: 80
-});
+} as const;
 
 const racing = game.racing({
   route,
@@ -113,18 +116,59 @@ const racing = game.racing({
 });
 
 const routeEvents = game.eventLog({ label: "racing starter events", maxEvents: 16 });
-const hud = game.hud.bindings([
-  game.hud.objective({ valuePath: "appState.objective" }),
-  game.hud.timer({ valuePath: "appState.lapTime" }),
-  game.hud.checkpoint({ valuePath: "appState.checkpoint" }),
-  game.hud.eventLog({ valuePath: "appState.events" })
-]);
+// HUD bindings as descriptor literals (the deprecated game.hud.* helpers are
+// replaced by the createGame `hud` option + evidence channel sections).
+const hudBindings = [
+  { kind: "aura-game-hud-binding", owner: "app", binding: "objective", id: "hud:objective", label: "objective", source: "app-state", valuePath: "appState.objective", format: "text", a11yLabel: "current objective" },
+  { kind: "aura-game-hud-binding", owner: "app", binding: "timer", id: "hud:round:timer", label: "Round timer", source: "app-state", valuePath: "appState.lapTime", format: "clock", a11yLabel: "lap timer" },
+  { kind: "aura-game-hud-binding", owner: "app", binding: "checkpoint", id: "hud:checkpoint", label: "checkpoint", source: "app-state", valuePath: "appState.checkpoint", format: "text", a11yLabel: "current checkpoint" },
+  { kind: "aura-game-hud-binding", owner: "app", binding: "event-log", id: "hud:event-log", label: "event log", source: "app-state", valuePath: "appState.events", format: "text", a11yLabel: "game event log", debugOnly: true }
+] as const;
 
 const evidenceMode = navigator.webdriver;
-const app = createAuraApp("#app", {
+const racingGame = createGame({
+  id: "racing-starter",
+  target: "#app",
   autoStart: !evidenceMode,
-  scene: buildScene()
+  diagnostics: { overlay: true, performancePanel: true },
+  scene: buildScene,
+  input: inputOptions,
+  hud: { theme: "motorsport", widgets: [] },
+  touch: {
+    preset: "steer-pedals",
+    bindings: {
+      "steer-left": "left",
+      "steer-right": "right",
+      throttle: "throttle",
+      brake: "brake",
+      boost: "boost",
+      reset: "reset"
+    }
+  },
+  sound: {
+    cues: {
+      checkpoint: { id: "checkpoint", asset: { url: sfxUrl("stinger.checkpoint.00") }, volume: 0.7 },
+      lap: { id: "lap", asset: { url: sfxUrl("ui.confirm.00") }, volume: 0.7 },
+      finish: { id: "finish", asset: { url: sfxUrl("stinger.win.00") }, volume: 0.8 },
+      "off-track": { id: "off-track", asset: { url: sfxUrl("impact.rubber-ball.light.00") }, volume: 0.5 },
+      boost: { id: "boost", asset: { url: sfxUrl("vehicle.boost") }, volume: 0.6 }
+    }
+  },
+  juice: {
+    checkpoint: { punch: { fovDeg: 1.4, ms: 160 }, flash: { color: "#7ff0c5", peak: 0.14, ms: 180 } },
+    lap: { shake: 0.2, punch: { fovDeg: 2, ms: 240 } },
+    finish: { hitStop: 0.05, punch: { fovDeg: 2.6, ms: 320 }, rumble: { strong: 0.6, ms: 300 } },
+    "off-track": { shake: 0.35, rumble: { weak: 0.5, ms: 160 } }
+  },
+  qualityRebuild: { flags: ["game"] },
+  evidence: {
+    schema: 1,
+    sections: { racingStarter: () => window.__AURA3D_RACING_STARTER__ ?? { status: "unbound" } }
+  }
 });
+const app = racingGame.app;
+const input = racingGame.input;
+if (!input) throw new Error("create-aura3d racing-starter failed to create runtime-owned input.");
 
 const car = app.nodes.require("race-car");
 const checkpointMarker = app.nodes.require("checkpoint-marker");
@@ -138,8 +182,7 @@ const raceEventLabels: string[] = [];
 // camera, not in evidence.
 app.camera?.use(camera.rigs.chase({ target: "race-car" }));
 
-app.onFrame(({ dt }: { readonly dt: number }) => {
-  input.update(dt);
+app.onFrame(({ dt }) => {
   if (input.pressed("reset")) {
     racing.reset(0);
     routeEvents.push({ type: "reset", label: "reset" });
@@ -169,7 +212,12 @@ app.onFrame(({ dt }: { readonly dt: number }) => {
     if (event.type === "lap") objective = `Lap ${state.lap}/${state.lapsToWin}. Keep the line.`;
     if (event.type === "finish") objective = "Finished. Press R to run it again.";
     if (event.type === "off-track") objective = "Back onto the racing line.";
+    if (event.type === "checkpoint" || event.type === "lap" || event.type === "finish" || event.type === "off-track") {
+      racingGame.juice.fire(event.type);
+      void racingGame.sound?.cue(event.type);
+    }
   }
+  if (input.pressed("boost")) void racingGame.sound?.cue("boost");
 
   car
     .setPosition(state.position.x, CAR_RIDE_Y, state.position.y)
@@ -283,7 +331,7 @@ function publishEvidence(state: ReturnType<typeof racing.snapshot>): void {
   const evidence = app.evidence({
     input,
     events: routeEvents,
-    hud,
+    hud: hudBindings,
     appState: {
       objective,
       lapTime: state.lapTime,

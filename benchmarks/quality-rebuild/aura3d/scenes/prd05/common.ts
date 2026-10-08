@@ -16,10 +16,10 @@ import {
   scene,
   material,
   resolveQrFlags,
-  setTypedGLBActorQrFlags,
   type AuraApp,
   type AuraSceneNode
 } from "@aura3d/engine";
+import { setTypedGLBActorQrFlags } from "@aura3d/engine/lanes";
 import { setRendererQrFlags } from "@aura3d/rendering";
 import { hdriAssets } from "../../../shared/assets";
 import type { CapabilityEntry, CapabilityStatus, ReadyPayload } from "../../../shared/types";

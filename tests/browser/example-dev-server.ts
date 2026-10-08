@@ -1,7 +1,8 @@
-import { createServer, type Server } from "node:http";
+import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { dirname, extname, join, normalize, relative, resolve } from "node:path";
 import ts from "typescript";
+import * as esbuild from "esbuild";
 import { contextualPathForLegacyPath } from "../../tools/naming-taxonomy/contextualAliases";
 import { installedAuraPackageAliases } from "./installed-package-resolve";
 
@@ -11,9 +12,6 @@ export interface ExampleDevServer {
 }
 
 const packageEntryPoints = new Map<string, string>([
-  ["@aura3d/lean/product", "/packages/lean/src/product.ts"],
-  ["@aura3d/lean/game", "/packages/lean/src/game.ts"],
-  ["@aura3d/lean", "/packages/lean/src/index.ts"],
   ["@aura3d/math", "/packages/math/src/index.ts"],
   ["@aura3d/core", "/packages/core/src/index.ts"],
   ["@aura3d/scene/math", "/packages/scene/src/MathTypes.ts"],
@@ -35,10 +33,7 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/rendering/world", "/packages/rendering/src/world/index.ts"],
   ["@aura3d/rendering/production-runtime", "/packages/rendering/src/production-runtime/index.ts"],
   ["@aura3d/rendering", "/packages/rendering/src/index.ts"],
-  ["@aura3d/engine/lean-product", "/packages/engine/src/agent-api/lean-product.ts"],
-  ["@aura3d/engine/lean-game", "/packages/engine/src/agent-api/lean-game.ts"],
-  ["@aura3d/engine/lean", "/packages/engine/src/agent-api/lean.ts"],
-  ["@aura3d/engine", "/packages/engine/src/index.ts"],
+  ["@aura3d/engine", "/packages/engine/src/public/index.ts"],
   ["@aura3d/engine/scene", "/packages/scene/src/index.ts"],
   ["@aura3d/cli", "/packages/aura3d-cli/src/index.ts"],
   ["@aura3d/react", "/packages/react/src/index.ts"],
@@ -46,7 +41,6 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/engine/advanced-runtime", "/packages/engine/src/advanced-runtime/index.ts"],
   ["@aura3d/apps", "/packages/apps/src/index.ts"],
   ["@aura3d/engine/apps", "/packages/apps/src/index.ts"],
-  ["@aura3d/engine/engine", "/packages/engine/src/index.ts"],
   ["@aura3d/product-studio", "/packages/product-studio/src/index.ts"],
   ["@aura3d/physics", "/packages/physics/src/index.ts"],
   ["@aura3d/physics-rapier", "/packages/physics-rapier/src/index.ts"],
@@ -68,12 +62,9 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/assets", "/packages/assets/src/browser-index.ts"],
   ["@aura3d/assets/browser", "/packages/assets/src/browser-index.ts"],
   ["@aura3d/assets/gltf-runtime", "/packages/assets/src/gltf-runtime.ts"],
-  ["@aura3d/engine/assets/asset-corpus", "/packages/assets/src/asset-corpus/index.ts"],
-  ["@aura3d/engine/assets/advanced-gallery", "/packages/assets/src/advanced-gallery/index.ts"],
   ["@aura3d/engine/assets/browser", "/packages/assets/src/browser-index.ts"],
   ["@aura3d/engine/rendering", "/packages/rendering/src/index.ts"],
   ["@aura3d/engine/rendering/production-runtime", "/packages/rendering/src/production-runtime/index.ts"],
-  ["@aura3d/engine/rendering/advanced-runtime", "/packages/rendering/src/advanced-runtime/index.ts"],
   ["@aura3d/input", "/packages/input/src/index.ts"],
   ["@aura3d/controls", "/packages/controls/src/index.ts"],
   ["@aura3d/audio", "/packages/audio/src/index.ts"],
@@ -82,7 +73,6 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/engine/workflows/production", "/packages/workflows/src/production-runtime/index.ts"],
   ["@aura3d/engine/workflows", "/packages/workflows/src/index.ts"],
   ["@aura3d/editor-runtime", "/packages/editor-runtime/src/index.ts"],
-  ["@aura3d/editor", "/packages/editor/src/index.ts"],
   ["@aura3d/debug", "/packages/debug/src/index.ts"],
   ["@loaders.gl/core", "/node_modules/@loaders.gl/core/dist/index.js"],
   ["@loaders.gl/images", "/node_modules/.pnpm/@loaders.gl+images@4.4.1_@loaders.gl+core@4.4.1/node_modules/@loaders.gl/images/dist/index.js"],
@@ -134,7 +124,104 @@ for (const entry of installedAuraPackageAliases()) {
 }
 
 export async function startExampleDevServer(root = process.cwd()): Promise<ExampleDevServer> {
+  // Transforms are deterministic per (file, mtime); engine graphs pull ~1,300
+  // modules through this handler and re-running ts.transpileModule plus the
+  // specifier rewrites per request is what pushes cold module-load past the
+  // spec budgets on CI runners. Cache for the server's lifetime only.
+  const transformCache = new Map<string, { mtimeMs: number; output: string | Buffer }>();
+  const transformed = (file: string, produce: () => string | Buffer): string | Buffer => {
+    const mtimeMs = statSync(file).mtimeMs;
+    const hit = transformCache.get(file);
+    if (hit && hit.mtimeMs === mtimeMs) return hit.output;
+    const output = produce();
+    transformCache.set(file, { mtimeMs, output });
+    return output;
+  };
+  // Harness entries pull ~1,300 modules through per-request transpile; bundling
+  // the entry once drops the whole graph to a single module (~1s esbuild vs
+  // minutes on contended CI). Falls back to per-module serving if bundling
+  // ever fails so the path is strictly non-worse.
+  const bundleCache = new Map<string, { mtimeMs: number; output: string }>();
+  const auraResolvePlugin: esbuild.Plugin = {
+    name: "aura3d-dev-server-resolve",
+    setup: (build) => {
+      build.onResolve({ filter: /.*/ }, (args) => {
+        // Entry points and already-absolute filesystem paths pass through.
+        if (resolve(args.path) === args.path && existsSync(args.path)) {
+          return { path: args.path };
+        }
+        if (args.path.startsWith("node:")) {
+          // Node builtins appear inside dormant dynamic imports in deps
+          // (e.g. @gltf-transform node helpers); keep them lazy like the
+          // per-module path does — they 404 only if ever executed.
+          return { path: args.path, external: true };
+        }
+        if (!args.path.startsWith(".") && !args.path.startsWith("/")) {
+          const mapped = packageEntryPoints.get(args.path);
+          if (mapped === undefined) {
+            // Unmapped bare specifier: package.json/node_modules resolution
+            // (deps like `three`), or a static-only miss — let esbuild decide.
+            return undefined;
+          }
+          const file = resolve(join(root, mapped));
+          // Hoist layout varies across environments (e.g. which ktx-parse
+          // version lands at .pnpm/node_modules); a missing mapped file must
+          // defer to esbuild's own node resolution — emitting the specifier
+          // external would deliver a bare import the browser cannot resolve.
+          if (!existsSync(file)) return undefined;
+          return { path: file };
+        }
+        const canonical = resolveModuleSpecifier(args.importer, root, args.path);
+        return canonical ? { path: resolve(join(root, canonical)) } : undefined;
+      });
+      build.onLoad({ filter: /\.css$/ }, (args) => ({
+        loader: "js",
+        contents: `(() => { const style = document.createElement("style"); style.setAttribute("data-aura3d-dev-css", ${JSON.stringify(relative(root, args.path))}); style.textContent = ${JSON.stringify(readFileSync(args.path, "utf8"))}; document.head.appendChild(style); })();`,
+      }));
+    },
+  };
+  const bundleForBrowser = async (file: string): Promise<string | undefined> => {
+    const mtimeMs = statSync(file).mtimeMs;
+    const hit = bundleCache.get(file);
+    if (hit && hit.mtimeMs === mtimeMs) return hit.output;
+    try {
+      const result = await esbuild.build({
+        entryPoints: [file],
+        bundle: true,
+        format: "esm",
+        platform: "browser",
+        write: false,
+        logLevel: "silent",
+        plugins: [auraResolvePlugin],
+        loader: {
+          ".glsl": "text",
+          ".glb": "dataurl",
+          ".png": "dataurl",
+          ".jpg": "dataurl",
+          ".jpeg": "dataurl",
+          ".webp": "dataurl",
+          ".hdr": "dataurl",
+          ".exr": "dataurl",
+          ".bin": "dataurl",
+          ".wasm": "dataurl",
+          ".mp3": "dataurl",
+          ".wav": "dataurl",
+          ".ogg": "dataurl",
+        },
+      });
+      const output = result.outputFiles[0]?.text;
+      if (!output) return undefined;
+      bundleCache.set(file, { mtimeMs, output });
+      return output;
+    } catch (error) {
+      console.log("[example-dev-server] esbuild bundle failed for", file, "- falling back to per-module transform:", String(error).slice(0, 300));
+      return undefined;
+    }
+  };
   const server = createServer((request, response) => {
+    void handleRequest(request, response);
+  });
+  const handleRequest = async (request: IncomingMessage, response: ServerResponse): Promise<void> => {
     try {
       const url = new URL(request.url ?? "/", "http://localhost");
       if (isBrowserIconProbe(url.pathname)) {
@@ -148,7 +235,8 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
         response.end();
         return;
       }
-      const file = resolveRequest(root, decodeURIComponent(url.pathname));
+      const pathname = decodeURIComponent(url.pathname);
+      const file = resolveRequest(root, pathname);
 
       if (!file) {
         response.writeHead(404, { "content-type": "text/plain" });
@@ -156,28 +244,34 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
         return;
       }
 
+      // Canonicalize module URLs onto the real file path. Importers reach the
+      // same `.ts` file via `x`, `x.js`, and `x.ts` specifiers (extensionless
+      // relative imports are the repo convention); served verbatim those are
+      // three distinct module instances, which breaks singleton registries
+      // (REGISTRY_DUPLICATE). Redirecting non-canonical specifiers makes the
+      // browser cache them as one module — the same resolution vite/TS apply.
+      const canonical = `/${relative(resolve(root), resolve(file)).replace(/\\/g, "/")}`;
+      if (file.endsWith(".ts") && normalize(pathname).replace(/\\/g, "/") !== canonical) {
+        response.writeHead(302, { location: canonical });
+        response.end();
+        return;
+      }
+
       if (file.endsWith(".ts")) {
-        // Canonicalize every dotted specifier onto the `.ts` URL: two callers
-        // importing `./foo.glsl` and `./foo.glsl.ts` (or `./foo.js` vs `.ts`)
-        // must hit one module instance, or side-effect registries double-fire
-        // (REGISTRY_DUPLICATE).
-        const canonical = normalize(contextualPathForLegacyPath(decodeURIComponent(url.pathname)));
-        if (!canonical.endsWith(".ts")) {
-          const target = canonical.endsWith(".js") ? canonical.replace(/\.js$/, ".ts") : `${canonical}.ts`;
-          if (file.endsWith(target) || file === resolve(join(root, target.replace(/^[/\\]/, "")))) {
-            response.writeHead(302, { location: `${target}${url.search}` });
-            response.end();
-            return;
-          }
-        }
-        const source = readFileSync(file, "utf8");
+        // Entries under tests/browser are page-level module scripts: serve them
+        // as a single esbuild bundle so the browser evaluates one module
+        // instead of ~1,300 individually transformed files.
+        const bundled = normalize(pathname).replace(/\\/g, "/").startsWith("/tests/browser/")
+          ? await bundleForBrowser(file)
+          : undefined;
+        const output = bundled ?? transformed(file, () => transpileForBrowser(readFileSync(file, "utf8"), file, root));
         response.writeHead(200, { "content-type": "application/javascript; charset=utf-8" });
-        response.end(transpileForBrowser(source, file));
+        response.end(output);
         return;
       }
 
       const content = file.endsWith(".js") || file.endsWith(".mjs")
-        ? rewritePackageImports(readFileSync(file, "utf8"))
+        ? transformed(file, () => rewriteModuleSpecifiers(rewritePackageImports(readFileSync(file, "utf8")), file, root))
         : readFileSync(file);
       response.writeHead(200, { "content-type": contentType(file) });
       response.end(content);
@@ -185,7 +279,7 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
       response.writeHead(500, { "content-type": "text/plain" });
       response.end(error instanceof Error ? error.stack : String(error));
     }
-  });
+  };
 
   await listen(server);
   const address = server.address();
@@ -259,6 +353,12 @@ function resolveRequest(root: string, pathname: string): string | undefined {
   if (normalizedPath.endsWith(".js")) {
     candidates.push(join(root, normalizedPath.replace(/\.js$/, ".ts")));
   }
+  // Vite/TS resolve `foo.glsl`-style specifiers onto sibling `foo.glsl.ts`
+  // modules (shader and lane sources follow that convention). Mirror it so
+  // importing the full "." union in a browser harness finds them.
+  if (extname(normalizedPath)) {
+    candidates.push(join(root, `${normalizedPath}.ts`));
+  }
 
   // Dotted-suffix sources resolve the same way TypeScript does: a specifier
   // like `./chunks/common.glsl` or `./diagnosticOnly.prd07` maps onto the
@@ -320,7 +420,7 @@ function browserMappedLoadersGLPath(pathname: string): string | undefined {
   return undefined;
 }
 
-function transpileForBrowser(source: string, fileName: string): string {
+function transpileForBrowser(source: string, fileName: string, rootDir: string): string {
   const withCssInjected = source.replace(/^\s*import\s+["']([^"']+\.css)["'];?\s*$/gm, (_statement, specifier: string) => {
     const cssPath = specifier.startsWith(".")
       ? resolve(dirname(fileName), specifier)
@@ -330,7 +430,7 @@ function transpileForBrowser(source: string, fileName: string): string {
     }
     return `(() => { const style = document.createElement("style"); style.setAttribute("data-aura3d-dev-css", ${JSON.stringify(relative(process.cwd(), cssPath))}); style.textContent = ${JSON.stringify(readFileSync(cssPath, "utf8"))}; document.head.appendChild(style); })();`;
   });
-  const rewritten = rewriteRelativeSpecifiers(rewritePackageImports(withCssInjected), fileName);
+  const rewritten = rewriteModuleSpecifiers(rewritePackageImports(withCssInjected), fileName, rootDir);
   const result = ts.transpileModule(rewritten, {
     fileName,
     compilerOptions: {
@@ -345,39 +445,6 @@ function transpileForBrowser(source: string, fileName: string): string {
   });
 
   return result.outputText;
-}
-
-/**
- * Canonicalize relative import specifiers onto the `.ts` file they resolve to
- * (`./x.js` → `./x.ts`, `./x.glsl` → `./x.glsl.ts`, `./dir` → `./dir/index.ts`).
- * Chromium keys its module map on the *request* URL — a 302 from `.js` to `.ts`
- * still registers a second module instance, which double-fires side-effect
- * registries (REGISTRY_DUPLICATE). Rewriting the specifier makes every
- * importer request one canonical URL.
- */
-function rewriteRelativeSpecifiers(source: string, fileName: string): string {
-  const dir = dirname(fileName);
-  const tryResolve = (specifier: string): string | undefined => {
-    if (!specifier.startsWith("./") && !specifier.startsWith("../")) return undefined;
-    const candidates = specifier.endsWith(".ts")
-      ? []
-      : specifier.endsWith(".js")
-        ? [specifier.replace(/\.js$/, ".ts")]
-        : extname(specifier)
-          ? [`${specifier}.ts`]
-          : [`${specifier}.ts`, `${specifier.replace(/\/+$/, "")}/index.ts`];
-    for (const candidate of candidates) {
-      if (existsSync(resolve(dir, candidate))) return candidate;
-    }
-    return undefined;
-  };
-  return source.replace(
-    /(\bfrom\s*|\bimport\s*\(\s*(?:\/\*[^]*?\*\/\s*)?|\bimport\s*)(["'])(\.{1,2}\/[^"']+)(["'])/g,
-    (match, pre: string, open: string, specifier: string, close: string) => {
-      const resolved = tryResolve(specifier);
-      return resolved === undefined ? match : `${pre}${open}${resolved}${close}`;
-    },
-  );
 }
 
 function rewritePackageImports(source: string): string {
@@ -398,6 +465,57 @@ function rewritePackageImports(source: string): string {
     );
   }
   return output;
+}
+
+/**
+ * Rewrites relative (`./x`, `../x`) and root-absolute (`/x`) specifiers to the
+ * canonical root-relative URL of the file they resolve to — `../a/b`,
+ * `../a/b.js`, and `../a/b.ts` all become `/…/a/b.ts`. The browser keys its
+ * module map on the requested specifier URL, so without this the same file is
+ * evaluated once per specifier shape and singleton registries throw
+ * REGISTRY_DUPLICATE. Mirrors `resolveRequest`'s candidate order (`.ts`,
+ * `/index.ts`, `.js`→`.ts`, `foo.glsl`→`foo.glsl.ts`).
+ */
+function rewriteModuleSpecifiers(source: string, fileName: string, root: string): string {
+  const resolveSpecifier = (specifier: string): string | undefined => {
+    const resolved = resolveModuleSpecifier(fileName, root, specifier);
+    return resolved;
+  };
+  const patterns = [
+    /(\bfrom\s*["'])(\.{1,2}\/[^"']+|\/[^"']+)(["'])/g,
+    /(\bimport\s*["'])(\.{1,2}\/[^"']+|\/[^"']+)(["'])/g,
+    /(\bimport\s*\(\s*(?:\/\*[^]*?\*\/\s*)?["'])(\.{1,2}\/[^"']+|\/[^"']+)(["']\s*\))/g,
+  ];
+  let output = source;
+  for (const pattern of patterns) {
+    output = output.replace(pattern, (_m, head: string, specifier: string, tail: string) => {
+      const canonical = resolveSpecifier(specifier);
+      return canonical ? `${head}${canonical}${tail}` : _m;
+    });
+  }
+  return output;
+}
+
+function resolveModuleSpecifier(fromFile: string, root: string, specifier: string): string | undefined {
+  const base = specifier.startsWith("/")
+    ? join(root, specifier)
+    : resolve(dirname(fromFile), specifier);
+  const candidates = [
+    base,
+    ...(base.endsWith(".js") ? [base.replace(/\.js$/, ".ts")] : []),
+    `${base}.ts`,
+    `${base}.js`,
+    join(base, "index.ts"),
+    join(base, "index.js"),
+  ];
+  for (const candidate of candidates) {
+    const resolved = resolve(candidate);
+    if (!resolved.startsWith(resolve(root))) continue;
+    if (existsSync(resolved) && statSync(resolved).isFile()) {
+      return `/${relative(resolve(root), resolved).replace(/\\/g, "/")}`;
+    }
+  }
+  return undefined;
 }
 
 function escapeRegExp(value: string): string {

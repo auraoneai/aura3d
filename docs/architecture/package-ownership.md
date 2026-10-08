@@ -37,8 +37,8 @@ and fails the gate.
 | 1 | Core data model | `core`, `scene` |
 | 2 | Subsystems over the data model | `animation`, `rendering`, `input`, `audio`, `ecs` |
 | 3 | Subsystems composing other subsystems | `assets`, `controls`, `materials`, `environments`, `debug`, `editor-runtime` |
-| 4 | Product surfaces | `product-studio`, `apps`, `workflows`, `editor`, `lean` |
-| 5 | Aggregate runtime | `engine` |
+| 4 | Product surfaces | `product-studio`, `apps`, `workflows`, `editor` |
+| 5 | Aggregate runtime | `engine`, `game` |
 | 6 | Consumers of the aggregate / standalone tools | `react`, `three-compat`, `aura3d-cli`, `create-aura3d` |
 
 Nothing may depend on tier 5 or 6 except tier 6.
@@ -72,8 +72,8 @@ Nothing may depend on tier 5 or 6 except tier 6.
 | `apps` | 4 | 162 | `@aura3d/apps` | application shell contracts. **`engine` depends on it** | `core`, `rendering`, `workflows` |
 | `workflows` | 4 | 1,174 | `@aura3d/workflows` | composed authoring workflows, production example runtime | `animation`, `assets`, `product-studio`, `rendering`, `scene` |
 | `editor` | 4 | 1 | `@aura3d/editor` | placeholder aggregate over `editor-runtime` | `editor-runtime` |
-| `lean` | 4 | 971 | `@aura3d/lean`, `/product`, `/game` | dependency-isolated WebGL2 primitive, typed-product, and solver-free deterministic arcade runtime | `assets`, `rendering`, `scene` |
-| `engine` | 5 | 57,044 | `@aura3d/engine` (root) | compatibility-heavy agent API, game runtime, kits, production runtime, plus deprecated lean aliases and isolated `media-node`. Private as `@aura3d/engine-runtime` | `animation`, `apps`, `assets`, `audio`, `core`, `ecs`, `editor-runtime`, `input`, `lean`, `navigation-recast`, `physics`, `product-studio`, `rendering`, `scene`, `scripting`, `workflows` |
+| `engine` | 5 | 57,044 | `@aura3d/engine` (root) | compatibility-heavy agent API, game runtime, kits, production runtime, plus isolated `media-node`. Private as `@aura3d/engine-runtime` | `animation`, `apps`, `assets`, `audio`, `core`, `ecs`, `editor-runtime`, `input`, `navigation-recast`, `physics`, `product-studio`, `rendering`, `scene`, `scripting`, `workflows` |
+| `game` | 5 | 6,116 | `@aura3d/game`, `@aura3d/engine/game`, `/game/art`, `/game/capture`, `/game/util` | genre kits, game runtime implementation, HUD/evidence, juice, capture, art-direction, util | `audio`, `engine`, `input`, `math`, `rendering` |
 | `react` | 6 | 173 | `@aura3d/react` | React bindings | `engine` |
 | `three-compat` | 6 | 1,234 | `@aura3d/three-compat` | Three.js migration surface | `animation`, `controls`, `debug`, `rendering` |
 | `aura3d-cli` | 6 | 8,777 | `@aura3d/cli` | asset pipeline CLI | `asset-index` |

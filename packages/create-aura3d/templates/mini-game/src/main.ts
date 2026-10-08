@@ -123,8 +123,7 @@ const miniGame = createGame({
   qualityRebuild: { flags: ["game"] },
   evidence: {
     schema: 1,
-    sections: { miniGame: () => window.__AURA3D_MINI_GAME__ ?? { status: "unbound" } },
-    legacyGlobals: ["__AURA3D_MINI_GAME__"]
+    sections: { miniGame: () => window.__AURA3D_MINI_GAME__ ?? { status: "unbound" } }
   }
 });
 const app = miniGame.app;

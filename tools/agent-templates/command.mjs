@@ -28,6 +28,11 @@ export function runTemplateCommand(command,args,cwd,options={}) {
  if(result.pid&&process.platform!=='win32'){try{process.kill(-result.pid,'SIGKILL');}catch{}}
  const completed={...record,status:result.status===0&&!result.error?'passed':'failed',endedAt:new Date().toISOString(),exitCode:result.status,signal:result.signal,error:result.error?.message};
  writeFileSync(metadata,JSON.stringify(completed,null,2)+'\n');console.log(`[template ${cwd.split('/').at(-1)}] ${stage} ${completed.status}; exit=${result.status}; signal=${result.signal??'none'}`);
- if(completed.status!=='passed'){const tail=readFileSync(log,'utf8').split('\n').slice(-24).join('\n');throw new Error(`${stage} failed: ${result.error?.message??`exit ${result.status}, signal ${result.signal}`}; retained ${metadata}\n${tail}`);}
+ if(completed.status!=='passed'){const tail=readFileSync(log,'utf8').split('\n').slice(-24).join('\n');
+ // Echo the tail immediately: the failures summary only prints when the whole
+ // loop finishes, so a cancelled or runner-killed job otherwise leaves zero
+ // evidence of what actually failed.
+ console.log(`[template ${cwd.split('/').at(-1)}] ${stage} failure tail:\n${tail}`);
+ throw new Error(`${stage} failed: ${result.error?.message??`exit ${result.status}, signal ${result.signal}`}; retained ${metadata}\n${tail}`);}
  return completed;
 }

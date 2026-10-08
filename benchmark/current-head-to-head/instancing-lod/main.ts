@@ -8,9 +8,9 @@ import {
   material,
   model,
   scene,
-  selectAuraRootLodLevel,
   type AuraTransformSpec
 } from "@aura3d/engine";
+import { selectAuraRootLodLevel } from "@aura3d/engine-runtime";
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import Stats from "stats.js";

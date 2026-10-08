@@ -16,9 +16,9 @@ pnpm verify:api-docs
 | `@aura3d/animation` | `3.0.1` | `packages/animation/src/index.ts` | 46 |
 | `@aura3d/apps` | `3.0.1` | `packages/apps/src/index.ts` | 10 |
 | `@aura3d/asset-index` | `3.0.1` | `packages/asset-index/src/index.ts` | 32 |
-| `@aura3d/assets` | `3.0.1` | `packages/assets/src/index.ts` | 78 |
+| `@aura3d/assets` | `3.0.1` | `packages/assets/src/index.ts` | 79 |
 | `@aura3d/assets/gltf-runtime` | `3.0.1` | `packages/assets/src/gltf-runtime.ts` | 4 |
-| `@aura3d/audio` | `3.0.1` | `packages/audio/src/index.ts` | 31 |
+| `@aura3d/audio` | `3.0.1` | `packages/audio/src/index.ts` | 46 |
 | `@aura3d/cli` | `3.0.1` | `packages/aura3d-cli/src/index.ts` | 37 |
 | `@aura3d/controls` | `3.0.1` | `packages/controls/src/index.ts` | 46 |
 | `@aura3d/core` | `3.0.1` | `packages/core/src/index.ts` | 14 |
@@ -28,9 +28,6 @@ pnpm verify:api-docs
 | `@aura3d/editor-runtime` | `3.0.1` | `packages/editor-runtime/src/index.ts` | 82 |
 | `@aura3d/engine` | `3.0.1` | `packages/engine/src/index.ts` | 21 |
 | `@aura3d/input` | `3.0.1` | `packages/input/src/index.ts` | 48 |
-| `@aura3d/lean` | `3.0.1` | `packages/lean/src/index.ts` | 1 |
-| `@aura3d/lean/game` | `3.0.1` | `packages/lean/src/game.ts` | 3 |
-| `@aura3d/lean/product` | `3.0.1` | `packages/lean/src/product.ts` | 1 |
 | `@aura3d/math` | `3.0.1` | `packages/math/src/index.ts` | 18 |
 | `@aura3d/navigation-recast` | `3.0.1` | `packages/navigation-recast/src/index.ts` | 16 |
 | `@aura3d/physics` | `3.0.1` | `packages/physics/src/index.ts` | 24 |
@@ -38,8 +35,8 @@ pnpm verify:api-docs
 | `@aura3d/physics/solverless` | `3.0.1` | `packages/physics/src/solverless.ts` | 13 |
 | `@aura3d/physics/world` | `3.0.1` | `packages/physics/src/world.ts` | 2 |
 | `@aura3d/product-studio` | `3.0.1` | `packages/product-studio/src/index.ts` | 12 |
-| `@aura3d/react` | `3.0.1` | `packages/react/src/index.ts` | 37 |
-| `@aura3d/rendering` | `3.0.1` | `packages/rendering/src/index.ts` | 357 |
+| `@aura3d/react` | `3.0.1` | `packages/react/src/index.ts` | 39 |
+| `@aura3d/rendering` | `3.0.1` | `packages/rendering/src/index.ts` | 379 |
 | `@aura3d/rendering/extension-scalar-atlas` | `3.0.1` | `packages/rendering/src/extension-scalar-atlas.ts` | 2 |
 | `@aura3d/rendering/reflection-surfaces` | `3.0.1` | `packages/rendering/src/reflection-surfaces.ts` | 4 |
 | `@aura3d/rendering/webgpu` | `3.0.1` | `packages/rendering/src/webgpu.ts` | 8 |
@@ -220,7 +217,8 @@ export { applyCarConceptMaterialStability, carConceptMaterialVisualRole, carConc
 export type { CarConceptMaterialBaseline, CarConceptMaterialVisualRole, CarConceptMaterialStabilityOptions, CarConceptMaterialStabilityProfile } from "./CarConceptMaterialStability";
 export { ImageLoader } from "./ImageLoader";
 export type { ImageAsset } from "./ImageLoader";
-export { GLTFLoader, normalizeSkinWeights, parseMaterialVariantSelection, resolveAnimationPointerBinding, serializeMaterialVariantSelection } from "./GLTFLoader";
+export { GLTFLoader, normalizeSkinWeights, parseGlbDocument, parseMaterialVariantSelection, resolveAnimationPointerBinding, serializeMaterialVariantSelection } from "./GLTFLoader";
+export type { GLBDocumentInspection } from "./GLTFLoader";
 export { autoFitGLTFScene, computeAutoFitTransform } from "./GLTFAutoFit";
 export type { AutoFitOptions, AutoFitTransform, GLTFUpAxis } from "./GLTFAutoFit";
 export type { GLTFAsset, GLTFAnimationPointerBinding, GLTFCameraAsset, GLTFClearcoatMaterialExtension, GLTFDracoDecodeDescriptor, GLTFDracoDecodedPrimitive, GLTFDracoDecoder, GLTFGeometryAsset, GLTFImageAsset, GLTFLightAsset, GLTFJson, GLTFLoaderOptions, GLTFLoaderDiagnostics, GLTFMaterialVariantSceneState, SkinWeightNormalizationStats, GLTFMaterialAsset, GLTFMaterialVariantAsset, GLTFMaterialVariantMappingAsset, GLTFMeshAsset, GLTFMeshoptDecodeDescriptor, GLTFMeshoptDecoder, GLTFPBRSpecularGlossinessMaterialExtension, GLTFResolvedTextureInfo, GLTFSamplerAsset, GLTFSceneAsset, GLTFSceneCreateOptions, GLTFSheenMaterialExtension, GLTFSkinAsset, GLTFSpecularMaterialExtension, GLTFTextureAsset, GLTFTransmissionMaterialExtension, GLTFVolumeMaterialExtension, SerializedGLTFAsset } from "./GLTFLoader";
@@ -312,6 +310,21 @@ export { SpatialAudio } from "./SpatialAudio";
 export type { SpatialAudioOptions } from "./SpatialAudio";
 export { FilterEffect } from "./effects/Filter";
 export { ReverbEffect } from "./effects/Reverb";
+export { createGameSoundEngine } from "./game-sound/GameSoundEngine";
+export type { GameSoundOptions, SoundCueSpec, AudioAssetRef, EngineLoopSpec, GameBusId } from "./game-sound/GameSoundEngine";
+export type { SoundGraphContext } from "./game-sound/types";
+export { createMasterChain, safetyClipCurve } from "./game-sound/MasterChain";
+export { createSpatialNode, occlusionHz } from "./game-sound/SpatialVoice";
+export { createEngineLoop, gainsForRpm } from "./game-sound/EngineLoop";
+export { MusicControllerImpl } from "./game-sound/MusicController";
+export { createReverbSend, IR_BUDGET_SECONDS, PRESET_IR_SECONDS } from "./game-sound/ReverbSend";
+export { probeFormat, formatExtension } from "./game-sound/formatProbe";
+export { measureLoudness, gainForTarget, MASTERING_TARGETS } from "./game-sound/loudness";
+export type { LoudnessInput, LoudnessMeasurement, SfxMasteringClass } from "./game-sound/loudness";
+export { VoicePool } from "./game-sound/Voice";
+export type { VoiceCueSpec, VoiceRecord, VoicePriority } from "./game-sound/Voice";
+export { syncListener } from "./game-sound/listenerSync";
+export type { ListenerLike } from "./game-sound/listenerSync";
 ```
 
 ## @aura3d/cli
@@ -684,7 +697,7 @@ export type { ComboDefinition, ComboEvent, ComboFrameInput } from "./ComboDetect
 export { playHaptic, probeHaptics } from "./Haptics";
 export type { GamepadRumbleActuatorLike, HapticRequest, HapticResult, HapticsCapability, HapticProbeInput, NavigatorVibrateLike } from "./Haptics";
 export { TOUCH_LAYOUT_GENRES, createTouchLayoutPreset } from "./TouchLayouts";
-export type { TouchLayoutButtonBinding, TouchLayoutGenre, TouchLayoutPreset, TouchLayoutPresetOptions } from "./TouchLayouts";
+export type { TouchLayoutButtonBinding, TouchLayoutGenre, TouchLayoutPreset, TouchLayoutPresetOptions, TouchLayoutRect } from "./TouchLayouts";
 export { GamepadDevice } from "./GamepadDevice";
 export type { GamepadButtonLike, GamepadLike } from "./GamepadDevice";
 export { GestureRecognizer } from "./GestureRecognizer";
@@ -725,44 +738,6 @@ export { DEFAULT_ORBIT_MAX_POLAR, OrbitControls } from "./controls/OrbitControls
 export type { OrbitControlsOptions } from "./controls/OrbitControls";
 export { ThirdPersonFollowControls } from "./controls/ThirdPersonFollowControls";
 export type { ThirdPersonFollowControlsOptions } from "./controls/ThirdPersonFollowControls";
-```
-
-## @aura3d/lean
-
-- Version: `3.0.1`
-- Package manifest: `packages/lean/package.json`
-- Public entrypoint: `packages/lean/src/index.ts`
-
-### Export Declarations
-
-```ts
-export { createAuraApp, scene, model, primitives, material, lights, camera, environments, interactions, defineAuraAssets } from "@aura3d/engine";
-```
-
-## @aura3d/lean/game
-
-- Version: `3.0.1`
-- Package manifest: `packages/lean/package.json`
-- Public entrypoint: `packages/lean/src/game.ts`
-
-### Export Declarations
-
-```ts
-export { createAuraApp, scene, model, primitives, material, lights, camera, environments, interactions, defineAuraAssets, game } from "@aura3d/engine";
-export type { AuraNodeBuilder as AuraLeanNodeBuilder } from "@aura3d/engine";
-export type { GamePlatformerEvent as LeanPlatformerEvent } from "@aura3d/engine";
-```
-
-## @aura3d/lean/product
-
-- Version: `3.0.1`
-- Package manifest: `packages/lean/package.json`
-- Public entrypoint: `packages/lean/src/product.ts`
-
-### Export Declarations
-
-```ts
-export { createAuraApp, scene, model, primitives, material, lights, camera, environments, interactions, defineAuraAssets } from "@aura3d/engine";
 ```
 
 ## @aura3d/math
@@ -958,6 +933,9 @@ export type * from "./ProductShowcaseLayout";
 ### Export Declarations
 
 ```ts
+export interface AuraFrameInfo { readonly dt: number;
+export type AuraFrameCallback = (frame: AuraFrameInfo) => void;
+export interface AuraTimelineSpec { readonly mode: "loop" | "once";
 export interface AuraCanvasProps { readonly children?: ReactNode;
 export interface SceneProps { readonly children?: ReactNode;
 export interface ModelProps extends AuraModelOptions { readonly asset: AuraAssetRef<"model">;
@@ -969,7 +947,6 @@ export function useAuraApp(): AuraApp | undefined { return useContext(AuraAppCon
 export interface FrameSubscriberHost { onFrame(callback: AuraFrameCallback): () => void;
 export interface FrameScheduler { subscribe(callback: AuraFrameCallback, priority?: number): () => void;
 export function createFrameScheduler(host: FrameSubscriberHost): FrameScheduler { const entries: { readonly callback: AuraFrameCallback; readonly priority: number; readonly order: number }[] = [];
-export type { AuraFrameCallback, AuraFrameInfo } from "@aura3d/engine";
 export function useAuraFrame(callback: AuraFrameCallback, priority = 0): void { const app = useAuraApp();
 export interface AuraCanvasEventHandlers { readonly onPointerDown?: (event: PointerEvent) => void;
 export function eventInteractionNodes(target?: string) { return [ interactions.pointer(target ? { target } : {}), interactions.hover(target ? { target } : {}) ] as const;
@@ -1007,7 +984,7 @@ export function productViewerScene(asset: AuraAssetRef<"model">, material?: Aura
 
 ```ts
 export type { BufferUsage, DrawCommand, IndexType, PrimitiveTopology, RenderBackendKind, RenderBuffer, RenderDeviceCapability, RenderDevice, RenderDeviceDiagnostics, RenderDeviceInfo, RenderTarget, RenderTargetDescriptor, RenderShaderProgram, ShaderAttributeReflection, ShaderReflection, ShaderUniformReflection, ShaderSources, UniformValue } from "./RenderDevice";
-export { MockRenderBuffer, MockRenderDevice, MockShaderProgram, RenderDeviceError } from "./RenderDevice";
+export { MockRenderBuffer, MockRenderDevice, MockRenderTarget, MockShaderProgram, RenderDeviceError } from "./RenderDevice";
 export { buildGpuTargetInventory, GPU_TARGET_BUDGET_BYTES, resolveGpuTargetOwner, spreadGpuTargetInventory } from "./RenderDevice";
 export type { GpuTargetInventory, GpuTargetInventoryEntry, GpuTargetKind, GpuTargetOwner } from "./RenderDevice";
 export { createRenderDevice } from "./RenderBackend";
@@ -1021,14 +998,38 @@ export type { SkinningCpuFallbackReason, SkinningPaletteDecision } from "./WebGP
 export type { WebGPUAdapterLike, WebGPUBufferDescriptorLike, WebGPUBufferLike, WebGPUDeviceLike, WebGPUDeviceOptions, WebGPULike, WebGPUQueueLike, WebGPUSamplerDescriptorLike } from "./WebGPUDevice";
 export { isWebGPURenderTarget, runWebGPURenderToTextureProof } from "./WebGPURenderToTextureProof";
 export type { WebGPURenderToTextureProof, WebGPURenderToTextureProofOptions } from "./WebGPURenderToTextureProof";
-export { AdvancedRenderer } from "./advanced-runtime";
-export type { AdvancedRendererOptions, AdvancedRendererSource } from "./advanced-runtime";
+export type { AdvancedRendererSource } from "./advanced-runtime";
 export { VertexAttribute, VertexFormat } from "./VertexFormat";
 export type { VertexAttributeDescriptor, VertexAttributeSemantic, VertexAttributeType } from "./VertexFormat";
 export { VertexBuffer } from "./VertexBuffer";
 export { IndexBuffer } from "./IndexBuffer";
 export { Geometry, computeBounds } from "./Geometry";
-export type { Bounds3, CapsuleGeometryOptions, CylinderGeometryOptions, ScreenSpaceLineSegment, UVSphereGeometryOptions } from "./Geometry";
+export type { Bounds3, BoxGeometryOptions, CapsuleGeometryOptions, CylinderGeometryOptions, PlaneGeometryOptions, ScreenSpaceLineSegment, TorusGeometryOptions, UVSphereGeometryOptions } from "./Geometry";
+export { createPrimitiveGeometry, clearPrimitiveGeometryCache, primitiveGeometryCacheSize } from "./geometry/Primitives";
+export type { AuraPrimitiveKind } from "./geometry/Primitives";
+export { InstanceBuffer } from "./resources/InstanceBuffer";
+export { UniformBlock, FrameUniforms, layoutStd140, uniformBlockGlsl, AURA_FRAME_BINDING, AURA_LIGHTS_BINDING } from "./resources/UniformBlock";
+export type { Std140Field, Std140Layout } from "./resources/UniformBlock";
+export { normalizeProgramFeatures, DEFAULT_PROGRAM_FEATURES, totalLightCount } from "./program/ProgramFeatures";
+export { programKey } from "./program/ProgramKey";
+export { generateProgramImpl, registerProgramWgslEmitter, programDegradationLog, GENERATED_PROGRAM_MARKER } from "./program/ProgramGenerator";
+export type { ProgramDegradation, GenerateProgramOptions } from "./program/ProgramGenerator";
+export { ProgramCache } from "./program/ProgramCache";
+export { ProgramWarmup, collectWarmupFeatures } from "./program/ProgramWarmup";
+export type { WarmupInput, WarmupResult } from "./program/ProgramWarmup";
+export { defaultProgramFeatures, materialFeatureWarning, materialUsesGeneratedProgram, ALLOWLIST_PROGRAM_SHADERS } from "./program/MaterialFeatures";
+export { qrCoreGeneratorOn, qrCoreOutputOn, rendererProgramCache, rendererProgramCachePeek, rendererAuraFrame, rendererOutputPass } from "./renderer/qrSubFlags";
+export { OutputPass } from "./output/OutputPass";
+export { createHdrTarget, ensureHdrTarget, type HdrTargetOptions } from "./output/HdrTarget";
+export { OUTPUT_VERTEX_GLSL, OUTPUT_FRAGMENT_PROLOGUE_GLSL, OUTPUT_FRAGMENT_EPILOGUE_GLSL, TONE_MAPPING_OPERATORS_GLSL, TONE_MAP_OPERATOR_FUNCTIONS, outputFragmentGlsl } from "./output/ToneMappingOperators.glsl";
+export { InterleavedTransparentPass, mergeTransparentSegments, type TransparentEngineItem } from "./renderer/InterleavedTransparentPass";
+export { SceneDepthCopyPass, ensureSceneDepthCopyTarget } from "./renderer/SceneDepthCopyPass";
+export { blendQueueForState, blendStateIsTransparent, blendModeDefaultDepthWrite, blendEquationName, QUEUE_BY_MODE } from "./BlendModes";
+export type { BlendQueue } from "./BlendModes";
+export { ResolutionGovernor, RESOLUTION_GOVERNOR_STEP, RESOLUTION_GOVERNOR_DOWN_FACTOR, RESOLUTION_GOVERNOR_UP_FACTOR } from "./ResolutionGovernor";
+export type { ResolutionGovernorOptions } from "./ResolutionGovernor";
+export { resolveCanvasPixelRatio, resolveCanvasContextAttributes, watchDevicePixelRatio } from "./renderer/PixelRatio";
+export type { AuraResolutionOptions, AuraCanvasContextAttributes } from "./renderer/PixelRatio";
 export { applyMorphTargets, computeMorphTargetEnvelopeBounds, computeMorphTargetWeightedBounds } from "./MorphTarget";
 export type { MorphTargetDelta } from "./MorphTarget";
 export { computeAnimatedSkinnedBoundsUnion, computeSkinnedGeometryBounds, computeSkinnedMorphTargetEnvelopeBounds, computeSkinnedMorphTargetWeightedBounds } from "./SkinningBounds";
@@ -1072,8 +1073,6 @@ export { EXTERNAL_PARITY_PHYSICAL_MATERIAL_MATRIX, ExternalParityPhysicalMateria
 export type { ExternalParityMaterialKind, ExternalParityPhysicalMaterialAnalysis, ExternalParityPhysicalMaterialDescriptor } from "./materials/PhysicalMaterial";
 export { sortExternalParityAlphaItems } from "./materials/AlphaSorting";
 export type { ExternalParityAlphaSortItem } from "./materials/AlphaSorting";
-export { evaluateExternalParityTransmission } from "./materials/TransmissionPass";
-export type { ExternalParityTransmissionResult, ExternalParityTransmissionSample } from "./materials/TransmissionPass";
 export { createExternalParityContactShadow } from "./shadows/ContactShadows";
 export type { ExternalParityContactShadow, ExternalParityContactShadowOptions } from "./shadows/ContactShadows";
 export { createExternalParityCascadedShadowPipeline } from "./shadows/CascadedShadowPipeline";
@@ -1163,7 +1162,7 @@ export { buildRenderDebugOverlaySnapshot, captureRenderDebugIssue, formatRenderD
 export type { RenderDebugIssue, RenderDebugIssueKind, RenderDebugOverlaySnapshot } from "./RendererDebugOverlay";
 export { RendererTimingCollector, createCpuFallbackGpuTimingBackend, createImmediateGpuTimingBackend, createWebGL2GpuTimingBackend } from "./RendererTiming";
 export type { RendererGpuTimingBackend, RendererGpuTimingResult, RendererGpuTimingToken, RendererTimingCollectorOptions, RendererTimingSample, RendererTimingSampleSource, RendererTimingSnapshot } from "./RendererTiming";
-export { ForwardPass, SkinningPaletteUploadManager, applyForwardSpotShadowMapUniforms } from "./ForwardPass";
+export { ForwardPass, SkinningPaletteUploadManager, applyForwardSpotShadowMapUniforms, forwardPassFeatureAxes, splitForwardItems, forwardItemBucket, type ForwardBucket } from "./ForwardPass";
 export { MAX_GPU_INSTANCES, MAX_GPU_MORPH_TARGETS, MAX_GPU_MORPH_VERTICES, MAX_SKINNING_JOINTS } from "./ForwardPass";
 export { createSpotShadowProjection, defaultSpotShadowKernel, projectSpotShadowUv, resolveSpotShadowFactor, selectSpotShadowAtlasTier, } from "./shadows/SpotShadowMaps";
 export type { ForwardSpotShadowMapOptions, SpotShadowAtlasTier, SpotShadowFactorInput, SpotShadowProjection } from "./shadows/SpotShadowMaps";
@@ -1200,7 +1199,7 @@ export type { CinematicEvidenceFeature, CinematicRendererEvidenceFlag, Cinematic
 export type { AnaglyphCompositePlan, AnaglyphPixelComposite, AnaglyphPixelCompositeOptions, ParallaxBarrierInterleavePlan, ParallaxBarrierPixelComposite, ParallaxBarrierPixelCompositeOptions, StereoEffectMode, StereoEffectPlan, StereoEffectPlanOptions } from "./StereoEffects";
 export { analyzeRgbaFrameMotionRegions, analyzeRgbaFrameVisualMetrics, evaluateFrameVisualQuality } from "./FrameVisualMetrics";
 export type { FrameVisualBounds, FrameVisualMetrics, FrameVisualMetricsOptions, FrameMotionRegion, FrameMotionRegionMetrics, FrameVisualQualityResult, FrameVisualQualityThresholds } from "./FrameVisualMetrics";
-export { LightCollector } from "./LightCollector";
+export { LightCollector, collectLight } from "./LightCollector";
 export type { CollectedLight, CollectedLightKind, LightCollectorOptions } from "./LightCollector";
 export { LightUniforms, MAX_DIRECT_LIGHTS } from "./LightUniforms";
 export type { PackedLightUniforms } from "./LightUniforms";
@@ -1259,7 +1258,7 @@ export { CascadedShadowMaps, CascadedShadowPass, supportsCascadedShadowLight } f
 export type { CascadedShadowMapsOptions, CascadedShadowPassOptions, CascadedShadowPassResult, CascadeShadowPassResult, CascadeSplit, CascadeSplitOptions, ShadowCascade } from "./CascadedShadowMaps";
 export { DEFAULT_RENDERER_AUTO_FRAME_OPTIONS, DEFAULT_RENDERER_DIRECT_LIGHTING, DEFAULT_RENDERER_ENVIRONMENT_LIGHTING, Renderer } from "./Renderer";
 export { pickSceneRenderableHits, pickSceneRenderables } from "./Renderer";
-export type { CameraLike, RendererAnimationLoop, RendererCameraFrameOptions, RendererCameraPolicy, RendererCameraProjection, RendererFrameCapture, RendererFrameCaptureDiagnosticsSummary, RendererFrameCaptureMetadata, RendererFrameCapturePixelDigest, RendererFrameCapturePixelStats, RendererFrameCaptureRenderSize, RendererFrameCaptureWithMetadata, RendererInput, RendererOptions, RendererPostProcessOptions, RendererShadowOptions, RenderSource, ResizeToDisplayOptions, ResizeToDisplayResult, ScenePickHit, ScenePickOptions } from "./Renderer";
+export type { CameraLike, RendererAnimationLoop, RendererCameraFrameOptions, RendererCameraPolicy, RendererCameraProjection, RendererFrameCapture, RendererFrameCaptureDiagnosticsSummary, RendererFrameCaptureMetadata, RendererFrameCapturePixelDigest, RendererFrameCapturePixelStats, RendererFrameCaptureRenderSize, RendererFrameCaptureWithMetadata, RendererAppliedOutput, RendererInput, RendererOptions, RendererOutputOptions, RendererPostProcessOptions, RendererShadowOptions, RenderSource, ResizeToDisplayOptions, ResizeToDisplayResult, ScenePickHit, ScenePickOptions } from "./Renderer";
 export { createRendererPostprocessPasses, createRendererPostprocessPlanDiagnostics } from "./RendererPostprocessPlan";
 export type { RendererPostProcessPassName, RendererPostProcessPassPlan, RendererPostprocessChainCostEstimate, RendererPostprocessExecutionMode, RendererPostprocessPassDiagnostics, RendererPostprocessPlanContext, RendererPostprocessPlanDiagnostics, RendererPostprocessPlannedVsActual, RendererPostprocessPlanOptions, RendererPostprocessTargetFormat } from "./RendererPostprocessPlan";
 export { assertRendererFeatures, createRendererFeatureReport, rendererFeatureCatalog } from "./RendererFeatureGates";

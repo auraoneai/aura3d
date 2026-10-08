@@ -1,30 +1,11 @@
 {
-  "extends": ["./tsconfig.paths.generated.json"],
+  "extends": [
+    "./tsconfig.paths.generated.json"
+  ],
   "compilerOptions": {
     "paths": {
-      "@aura3d/engine/assets/production-runtime": [
-        "packages/engine/src/deprecated/assets-production-runtime.ts"
-      ],
-      "@aura3d/engine/assets/gltf-runtime": [
-        "packages/engine/src/deprecated/assets-gltf-runtime.ts"
-      ],
-      "@aura3d/engine/animation/browser": [
-        "packages/engine/src/deprecated/animation-browser.ts"
-      ],
-      "@aura3d/engine/scene-kits/product-viewer": [
-        "packages/engine/src/deprecated/scene-kits-product-viewer.ts"
-      ],
-      "@aura3d/engine/scene-kits/humanoid-walk": [
-        "packages/engine/src/deprecated/scene-kits-humanoid-walk.ts"
-      ],
-      "@aura3d/engine/scene-kits/particle-fountain": [
-        "packages/engine/src/deprecated/scene-kits-particle-fountain.ts"
-      ],
       "@aura3d/engine/rendering/production-runtime": [
         "packages/engine/src/deprecated/rendering-production-runtime.ts"
-      ],
-      "@aura3d/engine/rendering/advanced-runtime": [
-        "packages/engine/src/deprecated/rendering-advanced-runtime.ts"
       ],
       "@aura3d/engine/assets/browser": [
         "packages/engine/src/deprecated/assets-browser.ts"
@@ -32,59 +13,14 @@
       "@aura3d/engine/workflows/production": [
         "packages/engine/src/deprecated/workflows-production.ts"
       ],
-      "@aura3d/engine/assets/asset-corpus": [
-        "packages/engine/src/deprecated/assets-asset-corpus.ts"
-      ],
-      "@aura3d/engine/assets/advanced-gallery": [
-        "packages/engine/src/deprecated/assets-advanced-gallery.ts"
-      ],
       "@aura3d/engine/rendering/webgpu": [
         "packages/engine/src/deprecated/rendering-webgpu.ts"
-      ],
-      "@aura3d/engine/workflows/production-runtime": [
-        "packages/engine/src/deprecated/workflows-production-runtime.ts"
-      ],
-      "@aura3d/engine/debug": [
-        "packages/engine/src/deprecated/debug.ts"
-      ],
-      "@aura3d/engine/editor": [
-        "packages/engine/src/deprecated/editor.ts"
-      ],
-      "@aura3d/engine/create-aura3d": [
-        "packages/engine/src/deprecated/create-aura3d.ts"
-      ],
-      "@aura3d/engine/engine-runtime": [
-        "packages/engine/src/deprecated/engine-runtime.ts"
-      ],
-      "@aura3d/engine/product-studio": [
-        "packages/engine/src/deprecated/product-studio.ts"
-      ],
-      "@aura3d/engine/materials": [
-        "packages/engine/src/deprecated/materials.ts"
-      ],
-      "@aura3d/engine/environments": [
-        "packages/engine/src/deprecated/environments.ts"
-      ],
-      "@aura3d/engine/core": [
-        "packages/engine/src/deprecated/core.ts"
-      ],
-      "@aura3d/engine/lean-product": [
-        "packages/engine/src/deprecated/lean-product.ts"
-      ],
-      "@aura3d/engine/lean-game": [
-        "packages/engine/src/deprecated/lean-game.ts"
-      ],
-      "@aura3d/engine/lean": [
-        "packages/engine/src/deprecated/lean.ts"
       ],
       "@aura3d/engine/rendering": [
         "packages/engine/src/deprecated/rendering.ts"
       ],
       "@aura3d/engine/apps": [
         "packages/engine/src/deprecated/apps.ts"
-      ],
-      "@aura3d/engine/engine": [
-        "packages/engine/src/deprecated/engine.ts"
       ],
       "@aura3d/engine/production-runtime": [
         "packages/engine/src/deprecated/production-runtime.ts"
@@ -104,17 +40,14 @@
       "@aura3d/engine/media-node": [
         "packages/engine/src/deprecated/media-node.ts"
       ],
+      "@aura3d/engine/scene/math": [
+        "packages/scene/src/MathTypes.ts"
+      ],
       "@aura3d/engine/scene": [
         "packages/scene/src/index.ts"
       ],
       "@aura3d/rendering/contracts/flags.state": [
         "packages/rendering/src/contracts/flags.state.ts"
-      ],
-      "@aura3d/lean/product": [
-        "packages/lean/src/product.ts"
-      ],
-      "@aura3d/lean/game": [
-        "packages/lean/src/game.ts"
       ],
       "@aura3d/scene/math": [
         "packages/scene/src/MathTypes.ts"
@@ -161,6 +94,21 @@
       "@aura3d/cli/contracts": [
         "packages/aura3d-cli/src/contracts/commands.ts"
       ],
+      "@aura3d/engine/game/capture": [
+        "packages/game/src/capture/index.ts"
+      ],
+      "@aura3d/engine/game/art": [
+        "packages/game/src/art/index.ts"
+      ],
+      "@aura3d/engine/game/util": [
+        "packages/game/src/util/index.ts"
+      ],
+      "@aura3d/engine/game/styles.css": [
+        "packages/game/src/styles.css"
+      ],
+      "@aura3d/engine/game": [
+        "packages/game/src/index.ts"
+      ],
       "@aura3d/game/art": [
         "packages/game/src/art/index.ts"
       ],
@@ -169,9 +117,6 @@
       ],
       "/packages/*": [
         "packages/*"
-      ],
-      "@aura3d/lean": [
-        "packages/lean/src/index.ts"
       ],
       "@aura3d/cli": [
         "packages/aura3d-cli/src/index.ts"
@@ -277,9 +222,6 @@
       ],
       "create-aura3d": [
         "packages/create-aura3d/src/index.ts"
-      ],
-      "@aura3d/engine/scene/math": [
-        "packages/scene/src/MathTypes.ts"
       ],
       "@aura3d/engine/physics/solverless": [
         "packages/physics/src/solverless.ts"

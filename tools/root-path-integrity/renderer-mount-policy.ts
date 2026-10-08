@@ -8,8 +8,10 @@
  *   holds the core `Renderer` as `readonly renderer` (:47) and every
  *   `render`/`renderAsync` overload delegates to it (:76-106) — a
  *   lifecycle/evidence wrapper, not a second renderer.
- * - `AdvancedRenderer` (`packages/rendering/src/advanced-runtime/`) wraps the
- *   same core `Renderer`; zero routes mount it (enforced below).
+ * - `AdvancedRenderer` was an alias (`Renderer as AdvancedRenderer`) in
+ *   `packages/rendering/src/advanced-runtime/`; it was removed in 4.0.0
+ *   (PRD-15 T8.1e). The mount check below stays as a tripwire against
+ *   reintroducing an alias-shaped mount.
  * - 11 evidence/perf routes mount the bare core `Renderer.create` from
  *   `@aura3d/rendering` directly (e.g. `apps/shadow-cascade-evidence`,
  *   `apps/instancing-performance`); these are rendering-internals evidence
@@ -109,7 +111,7 @@ export function classifyRouteMount(path: string, source: string): {
       classification: null,
       violation: {
         path,
-        reason: "AdvancedRenderer is a documented zero-route alias; a route mounts it",
+        reason: "AdvancedRenderer was a zero-route alias removed in 4.0.0; a route mounts it",
       },
     };
   }

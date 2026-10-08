@@ -379,22 +379,6 @@ function main(): void {
 
   const publishedCycles = cycles.filter((c) => c.every((n) => byName.get(n)?.published !== false || n === "engine"));
 
-  const leanClosure = new Set<string>();
-  const visitLeanDependency = (name: string): void => {
-    if (leanClosure.has(name)) return;
-    leanClosure.add(name);
-    for (const dependency of union.get(name) ?? []) visitLeanDependency(dependency);
-  };
-  visitLeanDependency("lean");
-  const forbiddenLeanDependencies = [
-    "engine",
-    "physics",
-    "physics-rapier",
-    "navigation-recast",
-    "editor",
-    "editor-runtime"
-  ].filter((name) => leanClosure.has(name));
-
   const checks: ReleaseCheck[] = [
     {
       id: "every-package-tiered",
@@ -421,13 +405,6 @@ function main(): void {
       pass: layerViolations.length === 0,
       detail: layerViolations.length === 0 ? "all edges point down-tier" : layerViolations.join("; ")
     },
-    {
-      id: "lean-package-excludes-compatibility-physics-navigation-editor-media",
-      pass: forbiddenLeanDependencies.length === 0,
-      detail: forbiddenLeanDependencies.length === 0
-        ? `@aura3d/lean transitive Aura closure is ${[...leanClosure].sort().join(", ")}; compatibility engine, physics, navigation, editor, and Node-media ownership are absent`
-        : `@aura3d/lean reaches forbidden package owners: ${forbiddenLeanDependencies.join(", ")}`
-    }
   ];
 
   // --- Proof obligation 1: the recorded graph matches what pnpm actually resolved and linked. ---

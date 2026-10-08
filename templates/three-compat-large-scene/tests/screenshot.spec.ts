@@ -3,14 +3,14 @@ import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { assertTemplateLookFloor } from "./look-floor";
 
-test.setTimeout(90_000);
+test.setTimeout(600_000);
 
 // PRD-13 T3.12 — look floor: non-blank, look.lint error-free, appliedLook
 // environment specular > 0, shadow strength >= 0.8, pixelRatio at tier cap,
 // subject bounds within ±10% — plus this template's bespoke assertions.
 test("Aura3D three compat large scene screenshot clears the look floor", async ({ page }) => {
   await page.goto("/");
-  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 45_000 }).toBe("true");
+  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 150_000 }).toBe("true");
 
   const floor = await assertTemplateLookFloor(page, { subject: { x: 0.05, y: 0.2, width: 0.9, height: 0.7 } });
   const screenshot = await page.screenshot({ fullPage: false });

@@ -54,7 +54,7 @@ export function attachErrorOverlay(
     background: "#7f1d1d",
     color: "#ffffff",
     fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
-    fontSize: "13px",
+    fontSize: "16px",
     lineHeight: "1.5"
   } satisfies Partial<CSSStyleDeclaration>);
 
@@ -63,6 +63,7 @@ export function attachErrorOverlay(
   overlay.append(title);
 
   const message = doc.createElement("div");
+  message.style.overflowWrap = "anywhere";
   message.textContent = details.message;
   overlay.append(message);
 
@@ -70,6 +71,9 @@ export function attachErrorOverlay(
     const stack = doc.createElement("pre");
     stack.style.margin = "0";
     stack.style.whiteSpace = "pre-wrap";
+    // Long unbreakable tokens (file URLs, paths) must wrap too — otherwise the
+    // overlay scrolls horizontally on narrow viewports (§1945: readable at 390px).
+    stack.style.overflowWrap = "anywhere";
     stack.textContent = details.stackLines.join("\n");
     overlay.append(stack);
   }

@@ -19,8 +19,12 @@ export type EvidenceSectionCollect = () => unknown;
 /** Contract shape (C-24): route evidence sections load lazily by opt-in only. */
 export interface EvidenceChannelContract {
   readonly schema: number;
-  /** Lazy section loaders; imported only when evidence is opted in. */
-  readonly sections?: () => Promise<Readonly<Record<string, EvidenceSectionCollect>>>;
+  /** Lazy section loaders; imported only when evidence is opted in. Either an
+   * async loader returning the section map, or the section map itself (each
+   * value is still a lazy getter evaluated per read). */
+  readonly sections?:
+    | (() => Promise<Readonly<Record<string, EvidenceSectionCollect>>>)
+    | Readonly<Record<string, EvidenceSectionCollect>>;
   readonly legacyGlobals?: readonly string[];
 }
 

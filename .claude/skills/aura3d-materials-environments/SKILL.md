@@ -134,6 +134,6 @@ per round.
 - [Environment lighting](https://github.com/auraoneai/aura3d/blob/main/docs/rendering/environment-lighting.md)
 - [HDR, IBL, tone mapping, and color](https://github.com/auraoneai/aura3d/blob/main/docs/rendering/lighting-environment-color.md)
 - [Texture compression (KTX2/Basis)](https://github.com/auraoneai/aura3d/blob/main/docs/rendering/texture-compression.md)
-- [Material validation source](https://github.com/auraoneai/aura3d/blob/main/packages/materials/src/MaterialValidation.ts)
-- [HDRI environment source](https://github.com/auraoneai/aura3d/blob/main/packages/environments/src/HDRIEnvironment.ts)
+- [Material validation source](https://github.com/auraoneai/aura3d/blob/main/packages/engine/src/devtools/materials/MaterialValidation.ts)
+- [HDRI environment source](https://github.com/auraoneai/aura3d/blob/main/packages/engine/src/devtools/environments/HDRIEnvironment.ts)
 - [Sky, weather, and water browser harness](https://github.com/auraoneai/aura3d/blob/main/tests/browser/d3-atmosphere-water-harness.ts)

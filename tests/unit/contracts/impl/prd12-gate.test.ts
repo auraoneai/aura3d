@@ -45,7 +45,7 @@ describe("calibrate (§6.4)", () => {
     });
     const t = report.thresholds.find((x) => x.metric === "flip" && x.region === "frame")!;
     expect(t.noiseMax).toBe(0.008);
-    expect(t.threshold).toBe(Math.max(3 * 0.008, G_REG_FLOORS.flip));
+    expect(t.threshold).toBe(Math.max(3 * 0.008, G_REG_FLOORS.flip!));
     // T = 0.024 ≤ 0.5 * 0.2 and 0.5 * 0.3 → both controls rejected by this triple.
     expect(t.rejects).toEqual(expect.arrayContaining(["no-shadows", "dpr-half"]));
     expect(report.uncoveredControls).toEqual([]);
@@ -76,7 +76,7 @@ describe("golden store (§7.5)", () => {
     expect(compareToGolden(ITEM, GOLDEN_ENTRY, [mv("flip", 0.01)]).verdict).toBe("pass");
   });
   it("proposeGoldenUpdate refuses without a passing aggregate", () => {
-    const badRound = { ...ROUND, aggregates: [{ itemId: "bench:01", median: 2, classes: [], verdict: "fail" as const }] };
+    const badRound = { ...ROUND, aggregates: [{ itemId: "bench:01", median: 2, classes: [], verdict: "regression" as const }] };
     expect(() => proposeGoldenUpdate({
       items: [ITEM], round: badRound, calibrations: new Map(),
       runnerImage: ENV.runnerImage, gpuRenderer: ENV.gpuRenderer

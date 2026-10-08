@@ -2,9 +2,13 @@ import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 export const AURA3D_2_SPECIFIER_MIGRATIONS = {
-  "@aura3d/engine/lean": "@aura3d/lean",
-  "@aura3d/engine/lean-product": "@aura3d/lean/product",
-  "@aura3d/engine/lean-game": "@aura3d/lean/game",
+  // 4.0.0 (T8.1): @aura3d/lean itself is gone — every lean specifier lands on ".".
+  "@aura3d/lean": "@aura3d/engine",
+  "@aura3d/lean/product": "@aura3d/engine",
+  "@aura3d/lean/game": "@aura3d/engine",
+  "@aura3d/engine/lean": "@aura3d/engine",
+  "@aura3d/engine/lean-product": "@aura3d/engine",
+  "@aura3d/engine/lean-game": "@aura3d/engine",
   "@aura3d/engine/ecs": "@aura3d/ecs",
   "@aura3d/engine/scripting": "@aura3d/scripting"
 } as const;

@@ -34,6 +34,16 @@ export interface GameRuntimeEvidenceApp {
   };
 }
 
+/**
+ * Hud binding descriptor accepted by `evidence({ hud })`: the canonical
+ * `GameHudBinding` minus the fields the runtime defaults (`debugOnly`,
+ * `interactive` — both false when omitted, mirroring createGameHudBinding).
+ */
+export type GameHudBindingDescriptor = Omit<GameHudBinding, "debugOnly" | "interactive"> & {
+  readonly debugOnly?: boolean;
+  readonly interactive?: boolean;
+};
+
 export interface GameRuntimeEvidenceOptions {
   readonly input?: GameInputController;
   readonly bodies?: readonly GameKinematicBody[] | Record<string, GameKinematicBody>;
@@ -73,7 +83,7 @@ export interface GameRuntimeEvidenceOptions {
     readonly bounds?: unknown;
     readonly warnings?: readonly string[];
   };
-  readonly hud?: readonly GameHudBinding[];
+  readonly hud?: readonly GameHudBindingDescriptor[];
   readonly accessibility?: readonly GameAccessibilitySource[];
   readonly ownership?: readonly GameRuntimeSubsystemOwnership[];
   readonly appState?: Record<string, unknown>;
@@ -597,7 +607,7 @@ function collectSubsystemOwnership(options: {
   return [...defaults, ...(options.additional ?? [])];
 }
 
-function collectHudWarnings(bindings: readonly GameHudBinding[], expectsGame: boolean): readonly string[] {
+function collectHudWarnings(bindings: readonly GameHudBindingDescriptor[], expectsGame: boolean): readonly string[] {
   if (!expectsGame) return [];
   if (bindings.length === 0) return ["No HUD source bindings were supplied. Add game.hud helpers for score/objective/event-log or fighting health/meter/timer/combo/round/debug toggles."];
   const present = new Set(bindings.map((binding) => binding.binding));

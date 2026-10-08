@@ -155,7 +155,7 @@ const hudBindings = [
   { kind: "aura-game-hud-binding", owner: "app", binding: "score", id: "hud:score", label: "score", source: "app-state", valuePath: "appState.score", format: "number", a11yLabel: "score" },
   { kind: "aura-game-hud-binding", owner: "app", binding: "objective", id: "hud:objective", label: "objective", source: "app-state", valuePath: "appState.objective", format: "text", a11yLabel: "current objective" },
   { kind: "aura-game-hud-binding", owner: "app", binding: "event-log", id: "hud:event-log", label: "event log", source: "app-state", valuePath: "appState.events", format: "text", a11yLabel: "game event log", debugOnly: true }
-];
+] as const;
 
 setupPracticeBoard();
 
@@ -189,8 +189,7 @@ const blockfallGame = createGame({
   qualityRebuild: { flags: ["game"] },
   evidence: {
     schema: 1,
-    sections: { fallingBlocksStarter: () => window.__AURA3D_FALLING_BLOCKS_STARTER__ ?? { status: "unbound" } },
-    legacyGlobals: ["__AURA3D_FALLING_BLOCKS_STARTER__"]
+    sections: { fallingBlocksStarter: () => window.__AURA3D_FALLING_BLOCKS_STARTER__ ?? { status: "unbound" } }
   }
 });
 const app = blockfallGame.app;

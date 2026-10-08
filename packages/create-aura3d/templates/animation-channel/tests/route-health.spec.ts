@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 
 test("animation channel route loads", async ({ page }) => {
-  test.setTimeout(90_000);
+  test.setTimeout(240_000);
   await page.goto("/");
   await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 60_000 }).toBe("true");
   await expect(page.locator("#app")).toBeVisible();

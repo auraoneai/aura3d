@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { assertTemplateLookFloor } from "./look-floor";
 
-test.setTimeout(90_000);
+test.setTimeout(600_000);
 
 // PRD-13 T3.12 — look floor: non-blank, look.lint error-free, appliedLook
 // environment specular > 0, shadow strength >= 0.8, pixelRatio at tier cap,
@@ -18,7 +18,7 @@ test("Aura3D animation studio screenshot clears the look floor", async ({ page }
           if (w.__AURA_LIVE_ROUTE_ERROR__) return `error: ${w.__AURA_LIVE_ROUTE_ERROR__}`;
           return w.__AURA_LIVE_ROUTE_READY__?.ready === true ? "ready" : "pending";
         }),
-      { timeout: 45_000 }
+      { timeout: 150_000 }
     )
     .toBe("ready");
 

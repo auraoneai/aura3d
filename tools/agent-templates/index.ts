@@ -1,6 +1,7 @@
 import { runTemplateCommand } from "./command.mjs";
 import { templateCli, shellArgument } from "./cli.mjs";
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { loadValidatedReleasePlan } from "../release/exact-release-plan.mjs";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { basename, resolve } from "node:path";
@@ -268,7 +269,17 @@ function runScaffoldSmoke(): {
       for (;;) {
         browserAttempts += 1;
         try {
-          run(process.execPath, [templateCli(targetDir, "playwright"), "test", ...browserSpecs.map((spec) => `tests/${spec}`), "--config", resolve(targetDir, "playwright.config.ts"), "--reporter=line", "--workers=1"], targetDir);
+          // A previous browser run that died hard (the command timeout's
+          // SIGKILL, runner reaping, OOM) can orphan the vite preview that
+          // playwright spawned through webServer — the next template then
+          // fails instantly on "port 4173 already used" and the failure
+          // cascades through every later template. Reap the listener before
+          // every attempt so one kill cannot poison the whole suite.
+          freePreviewPort();
+          // Budget covers the spec ceilings in series: route-health (~150s
+          // ready-poll) + screenshot spec (600s) + release-render spec (240s)
+          // plus browser/webServer boot slack on software-GL runners.
+          runTemplateCommand(process.execPath, [templateCli(targetDir, "playwright"), "test", ...browserSpecs.map((spec) => `tests/${spec}`), "--config", resolve(targetDir, "playwright.config.ts"), "--reporter=line", "--workers=1"], targetDir, { timeoutMs: 1_200_000 });
           break;
         } catch (error) {
           if (browserAttempts >= 2) throw error;
@@ -356,7 +367,7 @@ import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 
 test("release matrix retains a visible Aura3D canvas", async ({ page }) => {
-  test.setTimeout(90_000);
+  test.setTimeout(240_000);
   const pageErrors: string[] = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
   ${template === "fighting-game" ? `await page.addInitScript(() => {
@@ -367,10 +378,23 @@ test("release matrix retains a visible Aura3D canvas", async ({ page }) => {
     });
   });` : ""}
   await page.goto("/");
-  const canvas = page.locator("canvas").first();
-  await expect(canvas).toBeVisible({ timeout: 45_000 });
-  await page.waitForTimeout(750);
-  const box = await canvas.boundingBox();
+  // Compositor-free readiness + bounds: toBeVisible/boundingBox poll through
+  // the compositor and starve behind a continuously-rendering software-GL
+  // page. waitForFunction polls inside the page's own animation frame and
+  // getBoundingClientRect is a plain DOM read.
+  await page.waitForFunction(() => {
+    const element = document.querySelector("canvas");
+    if (!(element instanceof HTMLCanvasElement)) return false;
+    const style = getComputedStyle(element);
+    const rect = element.getBoundingClientRect();
+    return style.display !== "none" && style.visibility !== "hidden" && rect.width > 100 && rect.height > 100;
+  }, undefined, { timeout: 120_000 });
+  const box = await page.evaluate(() => {
+    const element = document.querySelector("canvas");
+    if (!element) return null;
+    const rect = element.getBoundingClientRect();
+    return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
+  });
   expect(box?.width ?? 0).toBeGreaterThan(100);
   expect(box?.height ?? 0).toBeGreaterThan(100);
   expect(pageErrors).toEqual([]);
@@ -396,15 +420,64 @@ test("release matrix retains a visible Aura3D canvas", async ({ page }) => {
     interactionEvents.push("pointer-drag", "wheel", "keyboard-input");
   }
   expect(pageErrors).toEqual([]);
-  const capture = await cdp.send("Page.captureScreenshot", {
-    format: "png",
-    fromSurface: true,
-    captureBeyondViewport: false,
-    clip: { x: canvasBounds.x, y: canvasBounds.y, width: canvasBounds.width, height: canvasBounds.height, scale: 1 }
+  // Pause the live render loop, step one deterministic frame, and read the
+  // WebGL backbuffer directly — zero compositor involvement. The previous
+  // version still ran Page.captureScreenshot after pausing: even a paused
+  // software-GL page can leave the compositor backed up behind seconds-long
+  // presents, and the protocol capture starved past the test timeout on the
+  // CI runners (product-viewer, cinematic-scene, mini-game, episode-builder,
+  // character-controller all failed browser smoke this way). readPixels in
+  // the same task as the stepped render is deterministic and bounded.
+  const captureData = await page.evaluate(async () => {
+    type LiveApp = { step?: (dt?: number) => void; stepAsync?: (dt?: number) => Promise<unknown> };
+    const registry = (globalThis as { __AURA3D_LIVE_APPS__?: { pauseAll?: () => number; all?: () => readonly LiveApp[] } }).__AURA3D_LIVE_APPS__;
+    registry?.pauseAll?.();
+    const apps = [...(registry?.all?.() ?? [])];
+    for (const app of apps) {
+      try {
+        if (app.stepAsync) await app.stepAsync(1 / 60);
+        else app.step?.(1 / 60);
+      } catch { /* a non-steppable app still leaves its last presented frame */ }
+    }
+    // Renderers outside the liveApps registry cannot be stepped; two rAFs let
+    // one full render complete inside this task before readPixels.
+    if (apps.length === 0) {
+      await new Promise<void>((resolvePromise) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolvePromise()));
+      });
+    }
+    const element = Array.from(document.querySelectorAll("canvas"))
+      .find((candidate) => (candidate.getContext("webgl2") ?? candidate.getContext("webgl")) !== null);
+    const gl = element ? (element.getContext("webgl2") ?? element.getContext("webgl")) : null;
+    if (!gl) return null;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    const width = gl.drawingBufferWidth;
+    const height = gl.drawingBufferHeight;
+    const pixels = new Uint8Array(width * height * 4);
+    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    const target = document.createElement("canvas");
+    target.width = width;
+    target.height = height;
+    const ctx = target.getContext("2d");
+    if (!ctx) return null;
+    const image = ctx.createImageData(width, height);
+    // readPixels rows run bottom-up; flip into top-down image space.
+    for (let y = 0; y < height; y += 1) {
+      image.data.set(pixels.subarray((height - 1 - y) * width * 4, (height - y) * width * 4), y * width * 4);
+    }
+    ctx.putImageData(image, 0, 0);
+    return target.toDataURL("image/png").split(",")[1] ?? null;
   });
-  // The session is closed with the page. Explicit detach can itself block
-  // behind a saturated renderer after the screenshot has already completed.
-  const screenshot = Buffer.from(capture.data, "base64");
+  // Fall back to the protocol capture only when the page exposes no WebGL
+  // canvas at all — the only case readPixels cannot answer.
+  const screenshot = captureData
+    ? Buffer.from(captureData, "base64")
+    : Buffer.from((await cdp.send("Page.captureScreenshot", {
+        format: "png",
+        fromSurface: true,
+        captureBeyondViewport: false,
+        clip: { x: canvasBounds.x, y: canvasBounds.y, width: canvasBounds.width, height: canvasBounds.height, scale: 1 }
+      })).data, "base64");
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/release-screenshot.png"), screenshot);
   writeFileSync(resolve("tests/reports/release-screenshot.json"), JSON.stringify({
@@ -449,7 +522,10 @@ export default defineConfig({
     } : {})
   },
   webServer: {
-    command: ${JSON.stringify(`${shellArgument(process.execPath)} ${shellArgument(templateCli(targetDir, "vite"))} --host 127.0.0.1 --port 4173 --strictPort`)},
+    // vite preview serves the already-built dist statically — the dev
+    // server's cold per-request transform pipeline is what made GLB-heavy
+    // templates boot past the specs' ready timeouts on shared CI runners.
+    command: ${JSON.stringify(`${shellArgument(process.execPath)} ${shellArgument(templateCli(targetDir, "vite"))} preview --host 127.0.0.1 --port 4173 --strictPort`)},
     url: "http://127.0.0.1:4173",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000
@@ -473,7 +549,7 @@ function writeWorkspaceViteConfig(targetDir: string, sourceAliases: boolean): vo
     .sort((a, b) => b[0].length - a[0].length)
     .map(([specifier, path]) => {
       const replacement = specifier === "@aura3d/engine"
-        ? resolve("packages/engine/src/agent-api/index.ts")
+        ? resolve("packages/engine/src/public/index.ts")
         : specifier === "@aura3d/animation"
           ? resolve("packages/animation/src/browser-index.ts")
           : specifier === "@aura3d/assets"
@@ -489,6 +565,26 @@ export default defineConfig({
     alias: [
 ${aliasEntries}
     ]
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        /*
+         * Workspace-source aliases make the generated entry chunk the home of
+         * every shared package module. Dynamic chunks (e.g. TypedGLBActor,
+         * loaded lazily for typed GLBs) then statically import the entry
+         * itself — while template mains top-level-await app.ready() in
+         * evidence mode, so the entry's evaluation never finishes and the
+         * mount's dynamic import deadlocks under vite preview. Pinning all
+         * workspace package modules into a non-entry vendor chunk breaks the
+         * cycle: the vendor chunk is a static dependency of the entry and is
+         * fully evaluated before the entry's own code runs.
+         */
+        manualChunks(id: string) {
+          if (id.includes("/packages/")) return "aura3d-vendor";
+        }
+      }
+    }
   }
 });
 `);
@@ -622,4 +718,25 @@ function installPackedTemplateDependencies(targetDir: string): readonly { name: 
 
 function run(command: string, args: readonly string[], cwd: string): void {
   runTemplateCommand(command,args,cwd);
+}
+
+// The generated playwright.config always binds the preview server to
+// 127.0.0.1:4173 (writeReleaseRenderSpec / scaffolded configs share the
+// convention), and templates run serially — so a listener on 4173 between
+// attempts can only be an orphan from a killed run.
+function freePreviewPort(): void {
+  try {
+    const pids = execFileSync("lsof", ["-ti", "tcp:4173"], { encoding: "utf8" })
+      .split(/\s+/)
+      .filter(Boolean);
+    for (const pid of pids) {
+      try {
+        process.kill(Number(pid), "SIGKILL");
+      } catch {
+        // already exited
+      }
+    }
+  } catch {
+    // no listener (or no lsof) — nothing to reap
+  }
 }

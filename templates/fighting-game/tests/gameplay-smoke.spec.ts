@@ -12,15 +12,9 @@ test("input replay produces runtime evidence and a hit declaration", async ({ pa
     const replay = (window as any).__AURA3D_GAME_REPLAY__;
     const source = (window as any).__AURA3D_GAME_SOURCE__;
     return Boolean(
-      runtime?.kind === "aura-game-app-runtime-evidence" &&
-      runtime.status === "running" &&
-      runtime.running === true &&
-      runtime.started === true &&
-      runtime.startCount === 1 &&
-      runtime.inputControllers === 1 &&
-      runtime.activeInputControllers === 1 &&
+      runtime?.kind === "createGame" &&
       runtime.frame > 0 &&
-      runtime.loop?.frame > 0 &&
+      typeof runtime.beacon?.state === "string" &&
       evidence?.systems?.mutableNodes &&
       evidence.systems.inputPlan &&
       evidence.systems.physicsPlan &&

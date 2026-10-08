@@ -35,13 +35,48 @@ interface Phase6Result {
 }
 
 test.describe("PRD-03 Phase 6 — SMAA / auto-exposure / custom passes", () => {
+  // Cold dev-server transform of the engine module graph can exceed the
+  // global 60s budget on CI runners before the harness global registers.
+  test.describe.configure({ timeout: 240_000 });
   let server: ExampleDevServer;
   let result: Phase6Result;
 
-  test.beforeAll(async ({ browser }) => {
+  test.beforeAll(async ({ browser }, testInfo) => {
+    // beforeAll hooks keep the 60s config timeout even when
+    // describe.configure raises per-test budgets — extend the hook
+    // itself for cold dev-server transforms on CI.
+    testInfo.setTimeout(240_000);
     server = await startExampleDevServer();
     const page = await browser.newPage();
+    // CI debugging: the harness global periodically fails to land on this
+    // spec while sibling specs pass — surface page-side errors/failed
+    // requests in the job log so the stall is diagnosable from CI output.
+    page.on("console", (msg) => console.log("[phase6-console]", msg.type(), msg.text().slice(0, 200)));
+    page.on("pageerror", (err) => console.log("[phase6-pageerror]", String(err).slice(0, 300)));
+    page.on("requestfailed", (req) => console.log("[phase6-reqfail]", req.url().slice(0, 160)));
+    page.on("response", (res) => {
+      if (res.status() >= 400) console.log("[phase6-status]", res.status(), res.url().slice(0, 160));
+    });
     await page.goto(`${server.origin}/tests/browser/qr-prd03-phase6-harness.html`);
+    // Deferred module script may still be resolving after `load` — wait for the
+    // harness global before evaluating (was flaky: `run is not a function`).
+    try {
+      await page.waitForFunction(
+      () => typeof (window as { runQrPrd03Phase6?: unknown }).runQrPrd03Phase6 === "function",
+      undefined,
+      { timeout: 150_000 },
+    );
+    } catch {
+      // Cold CI transform of the engine module graph can outrun one
+      // budget; the dev server caches transpiled modules, so a reload
+      // re-serves the whole graph from cache and lands the global.
+      await page.reload();
+      await page.waitForFunction(
+      () => typeof (window as { runQrPrd03Phase6?: unknown }).runQrPrd03Phase6 === "function",
+      undefined,
+      { timeout: 150_000 },
+    );
+    }
     result = await page.evaluate(async () => {
       const run = (window as { runQrPrd03Phase6?: () => Promise<Phase6Result> }).runQrPrd03Phase6!;
       return run();

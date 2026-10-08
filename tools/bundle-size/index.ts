@@ -53,15 +53,18 @@ const BROWSER_EXTERNAL_NODE_BUILTINS = [] as const;
 const targets: readonly BundleTarget[] = [
   {
     id: "core-agent-api",
-    label: "@aura3d/lean core primitive critical path",
-    entryPoint: "packages/lean/src/index.ts",
-    // 600_000 against a 2026-10-07 honest measurement of 545,089 gzip bytes
-    // (2,042,461 js). T4.6 made @aura3d/lean re-export engine builders, and
-    // T3's agent-api split placed rendererReports — which statically imports
-    // production-runtime — on the "." critical path, so the lean entry now
-    // reaches the full engine barrel. Structural PRD-15 cost, not drift; the
-    // lit-scene lane tracks the user-facing bundle floor separately.
-    budget: 600_000,
+    label: "@aura3d/engine \".\" core primitive critical path",
+    entryPoint: "packages/engine/src/public/index.ts",
+    // 920_000 against a 2026-10-07 honest measurement of 891,081 gzip bytes
+    // (3,154,095 js). The lean shim entry measured 545,089 the same day —
+    // it re-exported only a slice of this barrel; "." additionally carries
+    // the full live union plus the kept-deprecated names, and T3's
+    // agent-api split placed rendererReports — which statically imports
+    // production-runtime — on the "." path. T8.1 deleted packages/lean and
+    // "." is now the direct home of the identical critical path.
+    // Structural PRD-15 cost, not drift; the lit-scene lane tracks the
+    // user-facing bundle floor separately.
+    budget: 920_000,
     external: ["react", "three", "three/examples/jsm/loaders/GLTFLoader.js"]
   },
   {
@@ -101,30 +104,34 @@ const targets: readonly BundleTarget[] = [
     id: "template-product-viewer",
     label: "product-viewer starter app before user assets",
     entryPoint: "packages/create-aura3d/templates/product-viewer/src/main.ts",
-    // 600_000 against 545,633 gzip measured 2026-10-07 — templates inherit the
-    // monolithic "." entry (see core-agent-api note).
-    budget: 600_000,
+    // 780_000 against 739,709 gzip measured 2026-10-07 — templates inherit
+    // the monolithic "." entry plus the kept-deprecated union (see
+    // core-agent-api note; was 545,633 pre-T8.1).
+    budget: 780_000,
     external: ["react"]
   },
   {
     id: "template-cinematic-scene",
     label: "cinematic-scene starter app before user assets",
     entryPoint: "packages/create-aura3d/templates/cinematic-scene/src/main.ts",
-    // 600_000 against 549,641 gzip measured 2026-10-07 (was 384,326 on
-    // 2026-09-05; growth is the monolithic "." entry — see core-agent-api).
-    // Composition verified genuine: three (tree-shaken) + engine barrels +
-    // cinematic presets + postprocessing addons; the recast engine is absent
-    // from the critical path (lazy dynamic edge).
-    budget: 600_000,
+    // 790_000 against 746,308 gzip measured 2026-10-07 (was 549,641 earlier
+    // the same day, 384,326 on 2026-09-05; latest step is the T8.1 removal
+    // of the lean indirection — "." now carries the kept-deprecated union —
+    // see core-agent-api). Composition verified genuine: three (tree-shaken)
+    // + engine barrels + cinematic presets + postprocessing addons; the
+    // recast engine is absent from the critical path (lazy dynamic edge).
+    budget: 790_000,
     external: ["react"]
   },
   {
     id: "template-mini-game",
     label: "mini-game starter app before user assets",
     entryPoint: "packages/create-aura3d/templates/mini-game/src/main.ts",
-    // 650_000 against 580,359 gzip measured 2026-10-07 — the game kits pull
-    // more builder surface than the viewers; same monolithic-entry cause.
-    budget: 650_000,
+    // 850_000 against 809,335 gzip measured 2026-10-07 (was 580,359 earlier
+    // the same day; step-up is the T8.1 "." union — see core-agent-api) —
+    // the game kits pull more builder surface than the viewers; same
+    // monolithic-entry cause.
+    budget: 850_000,
     external: ["react"]
   }
 ];

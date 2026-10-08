@@ -20,9 +20,9 @@ import {
   resolveSemanticRegion,
   scene,
   type AuraNodeInput,
-  type HelperPlacementClaim,
   type SemanticRegion
 } from "@aura3d/engine";
+import type { HelperPlacementClaim } from "@aura3d/engine/devtools";
 import { assets } from "../../../src/aura-assets";
 import "./styles.css";
 

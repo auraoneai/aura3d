@@ -60,8 +60,7 @@ export type {
   WebGPURenderToTextureProof,
   WebGPURenderToTextureProofOptions
 } from "./WebGPURenderToTextureProof";
-export { AdvancedRenderer } from "./advanced-runtime";
-export type { AdvancedRendererOptions, AdvancedRendererSource } from "./advanced-runtime";
+export type { AdvancedRendererSource } from "./advanced-runtime";
 
 export { VertexAttribute, VertexFormat } from "./VertexFormat";
 export type { VertexAttributeDescriptor, VertexAttributeSemantic, VertexAttributeType } from "./VertexFormat";

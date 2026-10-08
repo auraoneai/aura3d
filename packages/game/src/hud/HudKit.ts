@@ -132,7 +132,10 @@ export function mountHud(deps: HudKitDeps, options: HudMountOptions): Hud {
   const schedule: HudScheduler =
     deps.schedule ??
     (typeof requestAnimationFrame === "function"
-      ? rafScheduler({ requestAnimationFrame, cancelAnimationFrame })
+      ? rafScheduler({
+          requestAnimationFrame: (cb) => requestAnimationFrame(cb),
+          cancelAnimationFrame: (id) => cancelAnimationFrame(id)
+        })
       : (cb) => {
           cb();
           return { cancel: () => {} };

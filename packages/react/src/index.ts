@@ -28,14 +28,42 @@ import {
   type AuraColor,
   type AuraCreateAppOptions,
   type AuraEffectNode,
-  type AuraFrameCallback,
-  type AuraFrameInfo,
   type AuraLightNode,
   type AuraMaterialSpec,
   type AuraModelOptions,
-  type AuraSceneBuilder,
-  type AuraTimelineSpec
+  type AuraSceneBuilder
 } from "@aura3d/engine";
+
+/**
+ * Declared locally: the engine removed these names from "." in 4.0.0
+ * (PRD-15 T8.1). React's public API keeps them as its own structurally
+ * identical types — the engine-side definitions live in
+ * `packages/engine/src/agent-api/nodes/types/runtime.ts` and
+ * `packages/engine/src/agent-api/nodes/types.ts` if these drift.
+ */
+export interface AuraFrameInfo {
+  readonly dt: number;
+  readonly fixedDt: number;
+  readonly time: number;
+  readonly frame: number;
+  readonly alpha: number;
+  readonly paused: boolean;
+  readonly source: "raf" | "manual" | "fixed";
+  readonly substep: number;
+  readonly substeps: number;
+}
+
+export type AuraFrameCallback = (frame: AuraFrameInfo) => void;
+
+export interface AuraTimelineSpec {
+  readonly mode: "loop" | "once";
+  readonly seconds?: number;
+  readonly startTime?: number;
+  readonly duration?: number;
+  readonly loop?: boolean;
+  readonly easing?: "linear" | "easeInOut";
+  readonly captureTime?: number;
+}
 
 export interface AuraCanvasProps {
   readonly children?: ReactNode;
@@ -182,7 +210,6 @@ function schedulerForApp(app: FrameSubscriberHost & object): FrameScheduler {
  * never fires rather than throwing during the mount pass. Detect that case
  * with `useAuraApp() !== undefined`.
  */
-export type { AuraFrameCallback, AuraFrameInfo } from "@aura3d/engine";
 
 export function useAuraFrame(callback: AuraFrameCallback, priority = 0): void {
   const app = useAuraApp();

@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
 
-test.setTimeout(90_000);
+test.setTimeout(240_000);
 
 /**
  * E1 certified-rig mount proof for the fighting-game template.

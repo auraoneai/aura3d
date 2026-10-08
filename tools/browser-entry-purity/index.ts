@@ -24,14 +24,7 @@ const REPORT_PATH = "tests/reports/browser-entry-purity.json";
 
 /** Entry points a browser consumer is documented to import. */
 const BROWSER_ENTRIES = [
-  { id: "lean", path: "packages/lean/src/index.ts", label: "@aura3d/lean" },
-  { id: "lean-product", path: "packages/lean/src/product.ts", label: "@aura3d/lean/product" },
-  { id: "lean-game", path: "packages/lean/src/game.ts", label: "@aura3d/lean/game" },
   { id: "engine-agent-api", path: "packages/engine/src/agent-api/index.ts", label: "@aura3d/engine (root public entry)" },
-  { id: "engine-lean", path: "packages/engine/src/agent-api/lean.ts", label: "@aura3d/engine/lean" },
-  { id: "engine-lean-product", path: "packages/engine/src/agent-api/lean-product.ts", label: "@aura3d/engine/lean-product" },
-  { id: "engine-lean-game", path: "packages/engine/src/agent-api/lean-game.ts", label: "@aura3d/engine/lean-game" },
-  { id: "engine-barrel", path: "packages/engine/src/index.ts", label: "@aura3d/engine/engine" },
   { id: "rendering", path: "packages/rendering/src/index.ts", label: "@aura3d/engine/rendering" },
   { id: "rendering-webgpu", path: "packages/rendering/src/webgpu.ts", label: "@aura3d/engine/rendering/webgpu" },
   { id: "physics", path: "packages/physics/src/index.ts", label: "@aura3d/engine/physics" },
@@ -40,7 +33,7 @@ const BROWSER_ENTRIES = [
   { id: "physics-rapier", path: "packages/physics-rapier/src/index.ts", label: "@aura3d/physics-rapier" },
   { id: "navigation-recast", path: "packages/navigation-recast/src/index.ts", label: "@aura3d/navigation-recast" },
   { id: "assets-browser", path: "packages/assets/src/browser-index.ts", label: "@aura3d/engine/assets/browser" },
-  { id: "animation-browser", path: "packages/animation/src/browser-index.ts", label: "@aura3d/engine/animation/browser" },
+  { id: "animation-browser", path: "packages/animation/src/browser-index.ts", label: "@aura3d/animation/browser" },
   { id: "scene", path: "packages/scene/src/index.ts", label: "@aura3d/engine/scene" },
   { id: "input", path: "packages/input/src/index.ts", label: "@aura3d/engine/input" },
   { id: "audio", path: "packages/audio/src/index.ts", label: "@aura3d/engine/audio" },
@@ -78,9 +71,6 @@ const OFFLINE_MEDIA_MODULES = [
 
 function auraSourceAlias(): Plugin {
   const aliases = new Map([
-    ["@aura3d/lean", "packages/lean/src/index.ts"],
-    ["@aura3d/lean/product", "packages/lean/src/product.ts"],
-    ["@aura3d/lean/game", "packages/lean/src/game.ts"],
     ["@aura3d/engine", "packages/engine/src/agent-api/index.ts"],
     ["@aura3d/engine/media-node", "packages/engine/src/agent-api/media-node.ts"],
     ["@aura3d/rendering", "packages/rendering/src/index.ts"],

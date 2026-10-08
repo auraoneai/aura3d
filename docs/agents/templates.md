@@ -2,7 +2,8 @@
 
 Current `create-aura3d` templates: `product-viewer`, `cinematic-scene`,
 `mini-game`, `racing-starter`, `falling-blocks-starter`, `fighting-game`,
-`animation-channel`, `prompt-animation-channel`, `animation-studio`,
+`arena-shooter`, `animation-channel`, `prompt-animation-channel`,
+`animation-studio`,
 `episode-builder`, `character-controller`, `three-compat-premium-product-viewer`,
 `three-compat-architecture-interior`, `three-compat-material-authoring`,
 `three-compat-asset-inspector`, `three-compat-character-viewer`,
@@ -16,6 +17,8 @@ Current `create-aura3d` templates: `product-viewer`, `cinematic-scene`,
   jump, scoring, reset, HUD/event evidence, and screenshot gates for a starter.
   Do not use it as proof of production art, skinned animation, racing,
   falling-block, or commercial game quality.
+- `arena-shooter`: wave-based arena shooter starter (space look, wave
+  spawner). Same evidence contract as the other game starters.
 
 Template routes are not allowed to hide missing engine features behind primitive
 slop. Object-focused, character-focused, vehicle-focused, and world-focused

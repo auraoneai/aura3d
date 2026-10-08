@@ -10,7 +10,10 @@ import {
   type GamePlatformerEvent,
   type GamePlatformerSnapshot
 } from "@aura3d/engine";
-import { createGame } from "@aura3d/engine/contracts";
+// PRD-09: mounted via the shared runtime — createGame owns mount/lifecycle,
+// the §7.7 tabletop HUD theme, the §6.11 dpad-2btn touch preset, game-sfx-core
+// cues, and the juice event map.
+import { createGame, sfxUrl } from "@aura3d/engine/game";
 import { assets } from "./aura-assets";
 
 declare global {
@@ -73,7 +76,7 @@ const level = {
 // surface; `setPose` every frame applies state to the camera itself.
 const CAMERA_OFFSET = { y: 3.45, z: 10.4, targetY: 0.47 } as const;
 
-const input = game.input({
+const inputOptions = {
   actions: {
     left: ["KeyA", "ArrowLeft"],
     right: ["KeyD", "ArrowRight"],
@@ -84,18 +87,48 @@ const input = game.input({
   },
   axes: { moveX: { negative: "left", positive: "right" } },
   bufferMs: 140
-});
+} as const;
 const platformer = game.platformer(level);
 const routeEvents: string[] = [];
 
-const auraGame = createGame({
+const miniGame = createGame({
   id: "mini-game",
-  target: document.querySelector<HTMLElement>("#app")!,
+  target: "#app",
+  autoStart: true,
   scene: buildScene,
-  qualityRebuild: { flags: [] }
+  input: inputOptions,
+  hud: { theme: "tabletop", widgets: [] },
+  touch: {
+    preset: "dpad-2btn",
+    bindings: { left: "left", right: "right", dash: "dash", jump: "jump", attack: "down" }
+  },
+  sound: {
+    cues: {
+      collect: { id: "collect", asset: { url: sfxUrl("pickup.coin.00") }, volume: 0.7 },
+      checkpoint: { id: "checkpoint", asset: { url: sfxUrl("stinger.checkpoint.00") }, volume: 0.7 },
+      complete: { id: "complete", asset: { url: sfxUrl("stinger.win.00") }, volume: 0.8 },
+      hazard: { id: "hazard", asset: { url: sfxUrl("impact.rubber-ball.heavy.00") }, volume: 0.7 },
+      land: { id: "land", asset: { url: sfxUrl("impact.rubber-ball.light.00") }, volume: 0.35 },
+      jump: { id: "jump", asset: { url: sfxUrl("ui.toggle.00") }, volume: 0.4 }
+    }
+  },
+  juice: {
+    collect: { punch: { fovDeg: 1.2, ms: 140 }, flash: { color: "#f7d76b", peak: 0.12, ms: 160 } },
+    checkpoint: { punch: { fovDeg: 1.6, ms: 200 }, flash: { color: "#9df59e", peak: 0.16, ms: 220 } },
+    complete: { hitStop: 0.06, punch: { fovDeg: 2.4, ms: 360 }, rumble: { strong: 0.7, ms: 320 } },
+    hazard: { shake: 0.45, hitStop: 0.04, flash: { color: "#f06b7a", peak: 0.28, ms: 240 }, rumble: { strong: 0.5, ms: 200 } },
+    land: { shake: 0.12 },
+    jump: {}
+  },
+  qualityRebuild: { flags: ["game"] },
+  evidence: {
+    schema: 1,
+    sections: { miniGame: () => window.__AURA3D_MINI_GAME__ ?? { status: "unbound" } }
+  }
 });
-const app = auraGame.app;
-auraGame.start();
+const app = miniGame.app;
+const input = miniGame.input;
+if (!input) throw new Error("create-aura3d mini-game failed to create runtime-owned input.");
 
 const player = app.nodes.require("mini-player");
 const lift = app.nodes.require("platform-lift");
@@ -119,7 +152,6 @@ app.camera?.use(
 );
 
 app.onFrame(({ dt }) => {
-  input.update(dt);
   if (input.pressed("reset")) {
     platformer.reset();
     routeEvents.push("reset:Route reset");
@@ -140,7 +172,14 @@ app.onFrame(({ dt }) => {
       dashPressed: firstSubstep && dashPressed,
       fastFall: input.held("down")
     });
-    for (const event of state.events) updateObjective(event);
+    for (const event of state.events) {
+      updateObjective(event);
+      if (event.type === "collect" || event.type === "checkpoint" || event.type === "complete" || event.type === "hazard" || event.type === "land") {
+        miniGame.juice.fire(event.type);
+        void miniGame.sound?.cue(event.type);
+      }
+      if (event.type === "jump") void miniGame.sound?.cue("jump");
+    }
     remaining -= substep;
     firstSubstep = false;
   } while (remaining > 0.000_001);
@@ -164,7 +203,7 @@ app.onFrame(({ dt }) => {
 
 publishEvidence(platformer.snapshot());
 renderHud(platformer.snapshot());
-void auraGame.ready().then(() => {
+void miniGame.ready().then(() => {
   const diagnostics = app.diagnostics();
   document.body.dataset.aura3dReady = "true";
   document.body.dataset.aura3dRuntimeBackend = diagnostics.backend;
@@ -301,6 +340,6 @@ function publishEvidence(state: GamePlatformerSnapshot): void {
       rig: app.camera?.rig.id ?? "scene-follow",
       presented: app.camera !== undefined
     },
-    evidence: { entry: "@aura3d/engine + @aura3d/engine/contracts createGame", typedAssets: Object.keys(assets).length }
+    evidence: { entry: "@aura3d/engine/game createGame", typedAssets: Object.keys(assets).length }
   };
 }

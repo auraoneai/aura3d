@@ -48,7 +48,11 @@ export const assets = defineAuraAssets({
     writeWorkspaceViteConfig(appDir);
     writeWorkspacePlaywrightConfig(appDir);
     run("pnpm", ["exec", "vite", "build", "--config", resolve(appDir, "vite.config.ts")], appDir);
-    run("pnpm", ["exec", "playwright", "test", "tests/route-health.spec.ts", "tests/screenshot.spec.ts", "--config", resolve(appDir, "playwright.config.ts"), "--reporter=line", "--workers=1"], appDir);
+    // Only the generated screenshot spec runs here: the template's own
+    // route-health spec asserts template-main.ts globals
+    // (__AURA3D_PRODUCT_VIEWER__) that the hello-world main.ts never sets.
+    // check:templates runs it per-template against the real template main.ts.
+    run("pnpm", ["exec", "playwright", "test", "tests/screenshot.spec.ts", "--config", resolve(appDir, "playwright.config.ts"), "--reporter=line", "--workers=1"], appDir);
     const screenshotPath = resolve(appDir, "tests/reports/screenshot.png");
     const screenshotReport = JSON.parse(readFileSync(resolve(appDir, "tests/reports/screenshot.json"), "utf8")) as {
       readonly profile?: Record<string, unknown>;
@@ -76,31 +80,86 @@ function writeAgentSimulationScreenshotSpec(targetDir: string): void {
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 
-test.setTimeout(120_000);
+test.setTimeout(180_000);
 
 test("agent docs hello-world scene renders the typed robot asset", async ({ page }) => {
+  // Surface page-side errors in CI logs: the sim otherwise dies with only
+  // vite stdout, which makes GPU/app failures invisible.
+  page.on("console", (msg) => {
+    const text = msg.text();
+    if (msg.type() === "error" || msg.type() === "warning") console.log("[sim-console]", msg.type(), text.slice(0, 300));
+  });
+  page.on("pageerror", (err) => console.log("[sim-pageerror]", String(err).slice(0, 400)));
   await page.goto("/");
   // Match the scaffold's cold-start route-health budget. The agent-doc gate compiles every
   // TypeScript snippet immediately before this browser run, so WebGL startup can exceed the
   // warm, isolated runtime without indicating a broken generated application.
-  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 90_000 }).toBe("true");
-  const canvas = page.locator("canvas");
-  await expect(canvas).toBeVisible();
-  const profile = await canvas.evaluate((element) => {
-    const target = element as HTMLCanvasElement;
-    const gl = target.getContext("webgl2", { preserveDrawingBuffer: true });
-    if (!gl) return { error: "missing-webgl2", centerObjectPixels: 0, assetReady: false, uniqueBuckets: 0 };
-    const pixels = new Uint8Array(target.width * target.height * 4);
-    gl.readPixels(0, 0, target.width, target.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  try {
+    await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 90_000 }).toBe("true");
+  } catch (err) {
+    const attrs = await page.locator("body").evaluate((el) =>
+      Array.from(el.attributes).map((a) => a.name + "=" + a.value).join(" ")).catch(() => "<no-body>");
+    console.log("[sim-ready-timeout] body attrs:", attrs);
+    console.log("[sim-ready-timeout] html:", (await page.content().catch(() => "")).slice(0, 1500));
+    throw err;
+  }
+  // Playwright visibility/stability probes starve behind the continuous rAF
+  // render loop on software GL, and a compositor canvas.screenshot() stalls the
+  // same way ("waiting for element to be stable" never resolves on CI).
+  // waitForFunction polls inside the page's own animation frame, and the
+  // readPixels capture below runs in the same evaluate task as a stepped
+  // render — deterministic, no preserveDrawingBuffer, no compositor.
+  await page.waitForFunction(() => {
+    const element = document.querySelector("canvas");
+    if (!(element instanceof HTMLCanvasElement)) return false;
+    const style = getComputedStyle(element);
+    return style.display !== "none" && style.visibility !== "hidden";
+  }, undefined, { timeout: 60_000 });
+  const capture = await page.evaluate(async () => {
+    type LiveApp = { stepAsync?: (dt: number) => Promise<void>; step?: (dt: number) => void };
+    const apps = (window as unknown as { __AURA3D_LIVE_APPS__?: LiveApp[] }).__AURA3D_LIVE_APPS__ ?? [];
+    if (apps.length > 0) {
+      for (const app of apps) {
+        if (app.stepAsync) await app.stepAsync(1 / 60);
+        else app.step?.(1 / 60);
+      }
+    } else {
+      await new Promise<void>((resolvePromise) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolvePromise()));
+      });
+    }
+    const element = [...document.querySelectorAll("canvas")]
+      .find((candidate) => (candidate.getContext("webgl2") ?? candidate.getContext("webgl")) !== null);
+    const gl = element ? (element.getContext("webgl2") ?? element.getContext("webgl")) : null;
+    if (!gl) return { error: "no-webgl-context", pngBase64: "", centerObjectPixels: 0, assetReady: false, uniqueBuckets: 0 };
+    // readPixels reads the currently bound framebuffer: rebind the default so
+    // a renderer that ended its frame on an offscreen target still yields the
+    // canvas backbuffer.
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    const width = gl.drawingBufferWidth;
+    const height = gl.drawingBufferHeight;
+    const pixels = new Uint8Array(width * height * 4);
+    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    const target = document.createElement("canvas");
+    target.width = width;
+    target.height = height;
+    const ctx = target.getContext("2d");
+    if (!ctx) return { error: "missing-2d", pngBase64: "", centerObjectPixels: 0, assetReady: false, uniqueBuckets: 0 };
+    const image = ctx.createImageData(width, height);
+    // readPixels rows run bottom-up; flip into top-down image space.
+    for (let y = 0; y < height; y += 1) {
+      image.data.set(pixels.subarray((height - 1 - y) * width * 4, (height - y) * width * 4), y * width * 4);
+    }
+    ctx.putImageData(image, 0, 0);
     const buckets = new Set<string>();
     let centerObjectPixels = 0;
     for (let y = 0; y < target.height; y += 4) {
       for (let x = 0; x < target.width; x += 4) {
         if (x > target.width * 0.76 && y > target.height * 0.74) continue;
         const offset = (y * target.width + x) * 4;
-        const r = pixels[offset] ?? 0;
-        const g = pixels[offset + 1] ?? 0;
-        const b = pixels[offset + 2] ?? 0;
+        const r = image.data[offset] ?? 0;
+        const g = image.data[offset + 1] ?? 0;
+        const b = image.data[offset + 2] ?? 0;
         const luminance = r * 0.2126 + g * 0.7152 + b * 0.0722;
         if (luminance > 28) buckets.add(\`\${r >> 5}-\${g >> 5}-\${b >> 5}\`);
         const inCenter = x > target.width * 0.32 && x < target.width * 0.68 && y > target.height * 0.22 && y < target.height * 0.82;
@@ -109,12 +168,19 @@ test("agent docs hello-world scene renders the typed robot asset", async ({ page
     }
     const route = (window as unknown as { __AURA3D_ROUTE_READY__?: { diagnostics?: { assets?: Array<{ id: string; status: string }> } } }).__AURA3D_ROUTE_READY__;
     return {
+      pngBase64: target.toDataURL("image/png").split(",")[1] ?? "",
       centerObjectPixels,
       assetReady: route?.diagnostics?.assets?.some((asset) => asset.id === "robot" && asset.status === "ready") ?? false,
       uniqueBuckets: buckets.size
     };
   });
-  const screenshot = await canvas.screenshot();
+  const screenshot = Buffer.from(capture.pngBase64 ?? "", "base64");
+  const profile = {
+    centerObjectPixels: capture.centerObjectPixels,
+    assetReady: capture.assetReady,
+    uniqueBuckets: capture.uniqueBuckets,
+    error: capture.error
+  };
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/screenshot.png"), screenshot);
   writeFileSync(resolve("tests/reports/screenshot.json"), \`\${JSON.stringify({ bytes: screenshot.byteLength, profile }, null, 2)}\\n\`);
@@ -133,10 +199,18 @@ function writeWorkspacePlaywrightConfig(targetDir: string): void {
 export default defineConfig({
   testDir: "./tests",
   use: {
-    baseURL: "http://127.0.0.1:48273"
+    baseURL: "http://127.0.0.1:48273",
+    // Force software WebGL so the sim is deterministic on GPU-less CI
+    // runners (ubuntu-latest): without these flags WebGL2 availability is a
+    // dice roll and data-aura3d-ready can stall until the 90s poll times out.
+    launchOptions: {
+      args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"]
+    }
   },
   webServer: {
-    command: "pnpm exec vite --host 127.0.0.1 --port 48273 --strictPort",
+    // vite preview serves the dist built above — no cold dev-server
+    // transform pipeline on the browser run.
+    command: "pnpm exec vite preview --host 127.0.0.1 --port 48273 --strictPort",
     url: "http://127.0.0.1:48273",
     reuseExistingServer: false,
     timeout: 120_000
@@ -154,9 +228,7 @@ function writeWorkspaceViteConfig(targetDir: string): void {
   // real browser consumers never reach.
   const aliasEntries = generatedAliasEntries
     .map(([specifier, path]) => {
-      const replacement = specifier === "@aura3d/engine"
-        ? resolve("packages/engine/src/agent-api/index.ts")
-        : resolve(path);
+      const replacement = resolve(path);
       return `      { find: ${JSON.stringify(specifier)}, replacement: ${JSON.stringify(replacement)} }`;
     })
     .join(",\n");
@@ -167,6 +239,19 @@ export default defineConfig({
     alias: [
 ${aliasEntries}
     ]
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        // See tools/agent-templates/index.ts writeWorkspaceViteConfig: shared
+        // package modules must not land in the generated entry chunk, or lazy
+        // chunks that statically import them deadlock against mains that
+        // top-level-await app readiness.
+        manualChunks(id: string) {
+          if (id.includes("/packages/")) return "aura3d-vendor";
+        }
+      }
+    }
   }
 });
 `);
@@ -174,12 +259,20 @@ ${aliasEntries}
 
 function run(command: string, args: readonly string[], cwd: string): void {
   try {
-    execFileSync(command, [...args], { cwd, encoding: "utf8", stdio: "pipe" });
+    // Bounded: execFileSync without a timeout lets a wedged child (chromium
+    // under swiftshader, a stalled vite webServer) hold the whole gate job
+    // open indefinitely — the spec's own 180s test timeout cannot fire once
+    // the browser process itself refuses to exit.
+    execFileSync(command, [...args], { cwd, encoding: "utf8", stdio: "pipe", timeout: 600_000, killSignal: "SIGKILL" });
   } catch (error) {
     const output = error instanceof Error && "stdout" in error
       ? `${String((error as { stdout?: unknown }).stdout ?? "")}${String((error as { stderr?: unknown }).stderr ?? "")}`
       : String(error);
-    const message = output.trim().split("\n").slice(-16).join("\n");
+    // Playwright dumps the whole buffered [WebServer] log at the tail of a
+    // failed run; a 16-line tail keeps only vite noise and loses the actual
+    // spec failure. Strip those lines and keep a wider window.
+    const lines = output.trim().split("\n").filter((line) => !line.trimStart().startsWith("[WebServer]"));
+    const message = lines.slice(-64).join("\n");
     throw new Error(message || `${command} ${args.join(" ")} failed`);
   }
 }

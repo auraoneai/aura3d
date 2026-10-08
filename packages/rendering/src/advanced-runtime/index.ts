@@ -1,6 +1,3 @@
-/** @deprecated PRD-15 T2.7 — the wrapper collapsed onto `Renderer`; removed in Phase 8. */
-export { Renderer as AdvancedRenderer } from "../Renderer";
-export type { RendererOptions as AdvancedRendererOptions } from "../Renderer";
 export type { RendererInput, CameraLike, RenderSource } from "../Renderer";
 import type { RendererInput } from "../Renderer";
 import type { RenderSource } from "../Renderer";

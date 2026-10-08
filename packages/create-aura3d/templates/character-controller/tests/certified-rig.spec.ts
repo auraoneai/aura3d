@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
 
-test.setTimeout(60_000);
+test.setTimeout(240_000);
 
 /**
  * E1 certified-rig mount proof for the character-controller template.
@@ -38,7 +38,7 @@ test("character-controller hero mounts the certified humanoid-a rig", async ({ p
   await page.waitForFunction(
     () => Boolean((window as unknown as { __AURA3D_CHARACTER_CONTROLLER_PROOF__?: unknown }).__AURA3D_CHARACTER_CONTROLLER_PROOF__),
     undefined,
-    { timeout: 45_000 }
+    { timeout: 150_000 }
   );
   const hero = await page.evaluate(
     () =>

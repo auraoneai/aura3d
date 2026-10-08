@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { auraAppRegistry } from "@aura3d/engine";
+import { auraAppRegistry } from "../../../packages/engine/src/agent-api/app/liveApps.js";
 
 /**
  * The app registry exists so capture tooling can freeze a scene it did not create.

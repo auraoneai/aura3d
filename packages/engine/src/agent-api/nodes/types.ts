@@ -969,25 +969,11 @@ export interface AuraRendererQualityPreset {
 
 export type AuraRendererQualityProfileId = "safe-basic" | "production" | "cinematic" | "experimental-webgpu";
 
-/**
- * @deprecated CCR-15-1 (PRD-15 T4.5): renderer selection is collapsed onto
- * `Renderer`; use `renderer.quality` for feature levels. Removed in 4.0.0 —
- * under A3D_QR_STRICT passing it throws `AuraMigrationError`.
- */
-export type AuraRendererMode = "safe-basic" | "production";
-
-/**
- * @deprecated CCR-15-1 (PRD-15 T4.5): there is no silent fallback renderer;
- * `renderer.quality` owns feature levels. Removed in 4.0.0 — under
- * A3D_QR_STRICT passing it throws `AuraMigrationError`.
- */
-export type AuraRendererFallbackMode = "safe-basic";
-
 export interface AuraRendererQualityProfile {
   readonly kind: "aura-renderer-quality-profile";
   readonly id: AuraRendererQualityProfileId;
   readonly label: string;
-  readonly rendererMode: AuraRendererMode;
+  readonly rendererMode: "safe-basic" | "production";
   readonly status: "supported" | "fallback-only" | "experimental";
   readonly antialiasing: "msaa" | "msaa-plus-high-dpi";
   readonly pixelRatio: number;
@@ -1024,13 +1010,13 @@ export interface AuraCreateAppRendererOptions {
    * @deprecated CCR-15-1 (PRD-15 T4.5): use `quality` for feature levels.
    * Removed in 4.0.0 — under A3D_QR_STRICT it throws `AuraMigrationError`.
    */
-  readonly mode?: AuraRendererMode;
+  readonly mode?: "safe-basic" | "production";
   /**
    * @deprecated CCR-15-1 (PRD-15 T4.5): no fallback renderer exists; use
    * `quality` for feature levels. Removed in 4.0.0 — under A3D_QR_STRICT it
    * throws `AuraMigrationError`.
    */
-  readonly fallback?: AuraRendererFallbackMode;
+  readonly fallback?: "safe-basic";
   readonly qualityProfile?: AuraRendererQualityProfileId;
   /**
    * M2 texture streaming budget in bytes (muse3jsparity-PRD). Funds the
@@ -1066,8 +1052,8 @@ export interface AuraCreateAppRendererOptions {
 export interface AuraRendererDiagnosticReport {
   readonly kind: "aura-renderer-diagnostics";
   readonly colorManagement: AuraRendererColorManagementPreset;
-  readonly rendererMode: AuraRendererMode;
-  readonly fallbackMode?: AuraRendererFallbackMode;
+  readonly rendererMode: "safe-basic" | "production";
+  readonly fallbackMode?: "safe-basic";
   readonly qualityProfile: AuraRendererQualityProfile;
   readonly sceneCategory: AuraSceneCategory;
   readonly exposure: AuraSceneExposurePreset;
