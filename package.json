@@ -63,6 +63,47 @@
     "./scripting": "./dist/scripting/index.js",
     "./workflows": "./dist/workflows/index.js",
     "./editor-runtime": "./dist/editor-runtime/index.js",
+    "./editor": "./dist/editor/index.js",
+    "./debug": "./dist/debug/index.js",
+    "./rendering/production-runtime": "./dist/rendering/production-runtime/index.js",
+    "./rendering/webgpu": "./dist/rendering/webgpu.js",
+    "./rendering/advanced-runtime": "./dist/rendering/advanced-runtime/index.js",
+    "./assets/asset-corpus": "./dist/assets/asset-corpus/index.js",
+    "./assets/production-runtime": "./dist/assets/asset-corpus/index.js",
+    "./assets/advanced-gallery": "./dist/assets/advanced-gallery/index.js",
+    "./production-runtime": "./dist/engine/production-runtime/index.js",
+    "./advanced-runtime": "./dist/engine/advanced-runtime/index.js",
+    "./contracts": {
+      "types": "./dist/engine/contracts/index.d.ts",
+      "browser": "./dist/engine/contracts/index.js",
+      "import": "./dist/engine/contracts/index.js",
+      "default": "./dist/engine/contracts/index.js"
+    },
+    "./game": {
+      "types": "./dist/game/index.d.ts",
+      "browser": "./dist/game/index.js",
+      "import": "./dist/game/index.js",
+      "default": "./dist/game/index.js"
+    },
+    "./game/capture": {
+      "types": "./dist/game/capture/index.d.ts",
+      "browser": "./dist/game/capture/index.js",
+      "import": "./dist/game/capture/index.js",
+      "default": "./dist/game/capture/index.js"
+    },
+    "./game/art": {
+      "types": "./dist/game/art/index.d.ts",
+      "browser": "./dist/game/art/index.js",
+      "import": "./dist/game/art/index.js",
+      "default": "./dist/game/art/index.js"
+    },
+    "./game/util": {
+      "types": "./dist/game/util/index.d.ts",
+      "browser": "./dist/game/util/index.js",
+      "import": "./dist/game/util/index.js",
+      "default": "./dist/game/util/index.js"
+    },
+    "./game/styles.css": "./dist/game/styles.css",
     "./renderer": {
       "types": "./dist/engine/public/renderer.d.ts",
       "browser": "./dist/engine/public/renderer.js",
