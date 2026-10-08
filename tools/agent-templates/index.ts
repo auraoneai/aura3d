@@ -276,7 +276,10 @@ function runScaffoldSmoke(): {
           // cascades through every later template. Reap the listener before
           // every attempt so one kill cannot poison the whole suite.
           freePreviewPort();
-          runTemplateCommand(process.execPath, [templateCli(targetDir, "playwright"), "test", ...browserSpecs.map((spec) => `tests/${spec}`), "--config", resolve(targetDir, "playwright.config.ts"), "--reporter=line", "--workers=1"], targetDir, { timeoutMs: 900_000 });
+          // Budget covers the spec ceilings in series: route-health (~150s
+          // ready-poll) + screenshot spec (600s) + release-render spec (240s)
+          // plus browser/webServer boot slack on software-GL runners.
+          runTemplateCommand(process.execPath, [templateCli(targetDir, "playwright"), "test", ...browserSpecs.map((spec) => `tests/${spec}`), "--config", resolve(targetDir, "playwright.config.ts"), "--reporter=line", "--workers=1"], targetDir, { timeoutMs: 1_200_000 });
           break;
         } catch (error) {
           if (browserAttempts >= 2) throw error;
@@ -562,6 +565,26 @@ export default defineConfig({
     alias: [
 ${aliasEntries}
     ]
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        /*
+         * Workspace-source aliases make the generated entry chunk the home of
+         * every shared package module. Dynamic chunks (e.g. TypedGLBActor,
+         * loaded lazily for typed GLBs) then statically import the entry
+         * itself — while template mains top-level-await app.ready() in
+         * evidence mode, so the entry's evaluation never finishes and the
+         * mount's dynamic import deadlocks under vite preview. Pinning all
+         * workspace package modules into a non-entry vendor chunk breaks the
+         * cycle: the vendor chunk is a static dependency of the entry and is
+         * fully evaluated before the entry's own code runs.
+         */
+        manualChunks(id: string) {
+          if (id.includes("/packages/")) return "aura3d-vendor";
+        }
+      }
+    }
   }
 });
 `);

@@ -239,6 +239,19 @@ export default defineConfig({
     alias: [
 ${aliasEntries}
     ]
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        // See tools/agent-templates/index.ts writeWorkspaceViteConfig: shared
+        // package modules must not land in the generated entry chunk, or lazy
+        // chunks that statically import them deadlock against mains that
+        // top-level-await app readiness.
+        manualChunks(id: string) {
+          if (id.includes("/packages/")) return "aura3d-vendor";
+        }
+      }
+    }
   }
 });
 `);

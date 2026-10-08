@@ -113,10 +113,22 @@ export async function assertTemplateLookFloor(page: Page, options: LookFloorOpti
       }
       app.step?.(dt);
     };
+    /*
+     * Wall-clock bound on the settle loop: on software-GL CI runners a single
+     * stepped render of a heavy scene costs several seconds, so an unbounded
+     * 45-step loop outlives the test budget and fails with a bare timeout and
+     * no report. Cap the stepping and always take the dt=0 settle frame — a
+     * partially settled scene still yields a readable floor report.
+     */
+    const STEP_WALLCLOCK_BUDGET_MS = 420_000;
+    const settleStartedAt = Date.now();
     for (const app of apps) {
       app.pause?.();
       app.resetRuntimeClock?.();
-      for (let index = 0; index < 45; index += 1) await stepApp(app, 1 / 60);
+      for (let index = 0; index < 45; index += 1) {
+        if (Date.now() - settleStartedAt > STEP_WALLCLOCK_BUDGET_MS) break;
+        await stepApp(app, 1 / 60);
+      }
       await stepApp(app, 0);
     }
     /*
