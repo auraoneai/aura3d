@@ -32,11 +32,11 @@
       "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-008/23dfdeb55dc24970b36065afaab7a8a5.glb",
       "artDirection": "templates-stylized-flat",
       "derived": {
-        "url": "/aura-assets/carModel.d2616216.glb",
-        "hash": "sha256:d2616216d12fa686992833bed3de1ef40e52de9161d4e68e51cd34ac84dfb305",
-        "mobileUrl": "/aura-assets/carModel.d2616216.mobile.glb",
-        "collisionUrl": "/aura-assets/carModel.d2616216.collision.glb",
-        "profile": "prop-large",
+        "url": "/aura-assets/carModel.fc907767.glb",
+        "hash": "sha256:fc9077678064df2691e60604d6185a27a9fa08f2c3eb42b91f4bca038f3286ae",
+        "mobileUrl": "/aura-assets/carModel.fc907767.mobile.glb",
+        "collisionUrl": "/aura-assets/carModel.fc907767.collision.glb",
+        "profile": "hero-vehicle",
         "steps": [
           {
             "step": "weld",
@@ -64,49 +64,49 @@
           },
           {
             "step": "resize",
-            "ms": 0,
+            "ms": 1,
             "bytesBefore": 236604,
             "bytesAfter": 236604
           },
           {
             "step": "tangents",
-            "ms": 4,
+            "ms": 3,
             "bytesBefore": 236604,
             "bytesAfter": 236604
           },
           {
             "step": "lod",
-            "ms": 15,
+            "ms": 19,
             "bytesBefore": 236604,
-            "bytesAfter": 301740
+            "bytesAfter": 333972
           },
           {
             "step": "colliders",
             "ms": 2,
-            "bytesBefore": 301740,
-            "bytesAfter": 301740
+            "bytesBefore": 333972,
+            "bytesAfter": 333972
           },
           {
             "step": "quantize",
-            "ms": 20,
-            "bytesBefore": 301740,
-            "bytesAfter": 176592
+            "ms": 22,
+            "bytesBefore": 333972,
+            "bytesAfter": 199884
           },
           {
             "step": "compress",
-            "ms": 17,
-            "bytesBefore": 176592,
-            "bytesAfter": 253044
+            "ms": 19,
+            "bytesBefore": 199884,
+            "bytesAfter": 306648
           },
           {
             "step": "ktx2",
-            "ms": 1,
-            "bytesBefore": 253044,
-            "bytesAfter": 253044
+            "ms": 0,
+            "bytesBefore": 306648,
+            "bytesAfter": 306648
           }
         ],
         "sourceHash": "sha256:1c69283fa2b3fb96b3dc3418f2d0dede842e6984f1776a8ca00b099836fc9c14",
-        "outputPath": "public/aura-assets/carModel.d2616216.glb",
+        "outputPath": "public/aura-assets/carModel.fc907767.glb",
         "extensionsUsed": [
           "EXT_meshopt_compression",
           "KHR_materials_clearcoat",
@@ -130,18 +130,19 @@
             "downloadBytes": 349512
           },
           "after": {
-            "triangles": 13922,
-            "drawCalls": 21,
+            "triangles": 16608,
+            "drawCalls": 28,
             "gpuBytesByTier": {
-              "low": 253044,
-              "medium": 253044,
-              "high": 253044,
-              "ultra": 253044
+              "low": 306648,
+              "medium": 306648,
+              "high": 306648,
+              "ultra": 306648
             },
-            "downloadBytes": 253044
+            "downloadBytes": 306648
           }
         }
-      }
+      },
+      "role": "vehicle"
     },
     {
       "id": "trackModel",
@@ -173,21 +174,21 @@
       "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-034/2fc89fcd8c034bc9ba05eac24c9bf537.glb",
       "artDirection": "templates-stylized-flat",
       "derived": {
-        "url": "/aura-assets/trackModel.2ff17e0f.glb",
-        "hash": "sha256:2ff17e0f5433ddb408fc5c9977b6ea2ff3e9333fa81ca9ac4bdbb98fac495118",
-        "mobileUrl": "/aura-assets/trackModel.2ff17e0f.mobile.glb",
-        "collisionUrl": "/aura-assets/trackModel.2ff17e0f.collision.glb",
-        "profile": "prop-large",
+        "url": "/aura-assets/trackModel.d0133478.glb",
+        "hash": "sha256:d013347843e552040f2cc623312c14f4f7d44cfe76e9f89b35bc521b4f2a1c98",
+        "mobileUrl": "/aura-assets/trackModel.d0133478.mobile.glb",
+        "collisionUrl": "/aura-assets/trackModel.d0133478.collision.glb",
+        "profile": "world-chunk",
         "steps": [
           {
             "step": "weld",
-            "ms": 15,
+            "ms": 14,
             "bytesBefore": 1545148,
             "bytesAfter": 1398190
           },
           {
             "step": "dedup",
-            "ms": 13,
+            "ms": 12,
             "bytesBefore": 1398190,
             "bytesAfter": 1085382
           },
@@ -199,55 +200,55 @@
           },
           {
             "step": "palette",
-            "ms": 0,
+            "ms": 13,
             "bytesBefore": 1085382,
-            "bytesAfter": 1085382
+            "bytesAfter": 1398714
           },
           {
             "step": "resize",
-            "ms": 0,
-            "bytesBefore": 1085382,
-            "bytesAfter": 1085382
+            "ms": 3,
+            "bytesBefore": 1398714,
+            "bytesAfter": 1398714
           },
           {
             "step": "tangents",
-            "ms": 1,
-            "bytesBefore": 1085382,
-            "bytesAfter": 1085382
+            "ms": 0,
+            "bytesBefore": 1398714,
+            "bytesAfter": 1398714
           },
           {
             "step": "lod",
-            "ms": 24,
-            "bytesBefore": 1085382,
-            "bytesAfter": 1558374
+            "ms": 22,
+            "bytesBefore": 1398714,
+            "bytesAfter": 1871694
           },
           {
             "step": "colliders",
             "ms": 8,
-            "bytesBefore": 1558374,
-            "bytesAfter": 1558374
+            "bytesBefore": 1871694,
+            "bytesAfter": 1871694
           },
           {
             "step": "quantize",
-            "ms": 59,
-            "bytesBefore": 1558374,
-            "bytesAfter": 760314
+            "ms": 81,
+            "bytesBefore": 1871694,
+            "bytesAfter": 917596
           },
           {
             "step": "compress",
-            "ms": 73,
-            "bytesBefore": 760314,
-            "bytesAfter": 1245846
+            "ms": 96,
+            "bytesBefore": 917596,
+            "bytesAfter": 1566604
           },
           {
             "step": "ktx2",
             "ms": 0,
-            "bytesBefore": 1245846,
-            "bytesAfter": 1245846
+            "bytesBefore": 1566604,
+            "bytesAfter": 1566604
           }
         ],
         "sourceHash": "sha256:5cbb912e511e5e82363c347210096d59dd3007db12c363fd0c9f07919f5ebbd0",
-        "outputPath": "public/aura-assets/trackModel.2ff17e0f.glb",
+        "outputPath": "public/aura-assets/trackModel.d0133478.glb",
         "extensionsUsed": [
           "EXT_meshopt_compression",
           "KHR_mesh_quantization",
@@ -270,18 +271,19 @@
             "downloadBytes": 1545148
           },
           "after": {
-            "triangles": 63909,
+            "triangles": 63908,
             "drawCalls": 300,
             "gpuBytesByTier": {
-              "low": 1245846,
-              "medium": 1245846,
-              "high": 1245846,
-              "ultra": 1245846
+              "low": 1577003,
+              "medium": 1577003,
+              "high": 1577003,
+              "ultra": 1577003
             },
-            "downloadBytes": 1245846
+            "downloadBytes": 1566604
           }
         }
-      }
+      },
+      "role": "world"
     }
   ]
 }
