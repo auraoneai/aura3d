@@ -10,18 +10,18 @@ import {
 
 export type FighterId = "player" | "rival";
 /**
- * Certified E1 hero rigs mounted as the two fighters. The asset keys ARE the
- * certification roster ids (docs/rendering/skinning-and-morphs.md), so the
- * mounted asset id asserts directly against the roster:
- * - player: showcaseWalkAnimatedGirl (humanoid-a) / "Take 001"
- * - rival: showcaseRunnerRobot (creature) / "WALK"
+ * Library humanoid rigs mounted as the two fighters (#481 mapping;
+ * characters/humanoid-pbr kit). The asset keys ARE the manifest ids, so the
+ * mounted asset id asserts directly against the template manifest:
+ * - player: auraclashPlayerRig / "Idle_Loop"
+ * - rival:  auraclashRivalRig  / "Zombie_Walk_Fwd_Loop"
  */
-export const PLAYER_FIGHTER_ASSET = "showcaseWalkAnimatedGirl" as const;
-export const RIVAL_FIGHTER_ASSET = "showcaseRunnerRobot" as const;
+export const PLAYER_FIGHTER_ASSET = "auraclashPlayerRig" as const;
+export const RIVAL_FIGHTER_ASSET = "auraclashRivalRig" as const;
 export type FighterAssetKey = typeof PLAYER_FIGHTER_ASSET | typeof RIVAL_FIGHTER_ASSET;
 export const FIGHTER_CERTIFIED_CLIP: Record<FighterId, string> = {
-  player: "Take 001",
-  rival: "WALK"
+  player: "Idle_Loop",
+  rival: "Zombie_Walk_Fwd_Loop"
 };
 export type FighterClip = "idle" | "walk" | "jump" | "dash" | "guard" | "light" | "heavy" | "special" | "hitstun";
 
@@ -47,10 +47,10 @@ export const REQUIRED_FIGHTER_CLIPS: readonly FighterClip[] = [
 ];
 
 export const publicAssetInstructions = [
-  "certified default heroes: showcaseWalkAnimatedGirl (player) + showcaseRunnerRobot (rival)",
+  "certified default heroes: auraclashPlayerRig (player) + auraclashRivalRig (rival)",
   "npx @aura3d/cli@latest assets search \"animated humanoid fighting character\" --profile fighting-character --json",
-  "npx @aura3d/cli@latest assets resolve \"animated humanoid fighting character\" --name showcaseWalkAnimatedGirl --profile fighting-character",
-  "npx @aura3d/cli@latest assets resolve \"animated creature fighting character\" --name showcaseRunnerRobot --profile fighting-character",
+  "npx @aura3d/cli@latest assets resolve \"animated humanoid fighting character\" --name auraclashPlayerRig --profile fighting-character",
+  "npx @aura3d/cli@latest assets resolve \"animated creature fighting character\" --name auraclashRivalRig --profile fighting-character",
   "npx @aura3d/cli@latest assets validate-game --profile fighting-character --json"
 ] as const;
 
