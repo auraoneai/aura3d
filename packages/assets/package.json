@@ -63,6 +63,7 @@
   },
   "files": [
     "README.md",
-    "dist"
+    "dist",
+    "vendor"
   ]
 }
