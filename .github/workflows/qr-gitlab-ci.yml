@@ -30,9 +30,9 @@ on:
   workflow_dispatch:
     inputs:
       suite:
-        description: "all | games | benchmark | unit | probe"
+        description: "all | games | benchmark | unit | probe | flags-bisect"
         type: choice
-        options: [all, games, benchmark, unit, probe]
+        options: [all, games, benchmark, unit, probe, flags-bisect]
         default: all
       games:
         description: "Comma-separated game ids (empty = all 18)"
@@ -55,6 +55,19 @@ on:
         description: "A3D_QR_* flag set. Only 'none' works until C-33 (PR 0b-3) lands"
         required: false
         default: "none"
+      bench_scenes:
+        description: "Comma-separated benchmark scene ids (empty = all)"
+        required: false
+        default: ""
+      bench_engines:
+        description: "aura3d | three | aura3d,three"
+        type: choice
+        options: [aura3d, three, "aura3d,three"]
+        default: "aura3d,three"
+      bench_flag_sets:
+        description: "';'-separated flag sets for suite=flags-bisect (one job, one build)"
+        required: false
+        default: ""
       requester:
         description: "Lane tag, e.g. prd02 (recorded in the report)"
         required: false
@@ -132,6 +145,9 @@ jobs:
           IN_LOCAL: ${{ inputs.local_build }}
           IN_MOBILE: ${{ inputs.mobile }}
           IN_FLAGS: ${{ inputs.qr_flags }}
+          IN_BSCENES: ${{ inputs.bench_scenes }}
+          IN_BENGINES: ${{ inputs.bench_engines }}
+          IN_BSETS: ${{ inputs.bench_flag_sets }}
           IN_REQ: ${{ inputs.requester }}
           REF: ${{ github.ref_name }}
         run: |
@@ -139,6 +155,7 @@ jobs:
           set -f
           suite="${IN_SUITE:-all}"; games="${IN_GAMES:-}"; viewports="${IN_VIEWPORTS:-1920x1080,1280x720}"
           local_build="${IN_LOCAL:-auto}"; mobile="${IN_MOBILE:-true}"; flags="${IN_FLAGS:-none}"; requester="${IN_REQ:-manual}"
+          bscenes="${IN_BSCENES:-}"; bengines="${IN_BENGINES:-aura3d,three}"; bsets="${IN_BSETS:-}"
           if [ "$EVENT" = "push" ]; then
             tag="$(printf '%s' "$MSG" | grep -o '\[qr-gitlab:[^]]*\]' | head -1 | tr -d '[]' || true)"
             [ -n "$tag" ] || { echo "::error::malformed [qr-gitlab:...] tag in the head commit message (missing closing ']')"; exit 1; }
@@ -161,7 +178,10 @@ jobs:
           if [ "$local_build" = "auto" ]; then
             case "$REF" in qr/*) local_build=true ;; *) local_build=false ;; esac
           fi
-          [[ "$suite" =~ ^(all|games|benchmark|unit|probe)$ ]] || { echo "::error::suite must be all|games|benchmark|unit|probe"; exit 1; }
+          [[ "$suite" =~ ^(all|games|benchmark|unit|probe|flags-bisect)$ ]] || { echo "::error::suite must be all|games|benchmark|unit|probe|flags-bisect"; exit 1; }
+          [[ "$bscenes" =~ ^[a-z0-9,-]*$ ]] || { echo "::error::bench_scenes must match ^[a-z0-9,-]*$"; exit 1; }
+          [[ "$bengines" =~ ^(aura3d|three)(,(aura3d|three))?$ ]] || { echo "::error::bench_engines must be aura3d|three|aura3d,three"; exit 1; }
+          [[ "$bsets" =~ ^[A-Za-z0-9_,.;=-]*$ ]] || { echo "::error::invalid bench_flag_sets"; exit 1; }
           [[ "$games" =~ ^[a-z0-9,-]*$ ]] || { echo "::error::games must match ^[a-z0-9,-]*$"; exit 1; }
           [[ "$viewports" =~ ^[0-9x,]+$ ]] || { echo "::error::viewports must match ^[0-9x,]+$"; exit 1; }
           [[ "$flags" =~ ^[A-Za-z0-9_,.-]+$ ]] || { echo "::error::invalid flags"; exit 1; }
@@ -171,6 +191,7 @@ jobs:
           {
             echo "suite=$suite"; echo "games=$games"; echo "viewports=$viewports"; echo "local=$local_build"
             echo "mobile=$mobile"; echo "flags=$flags"; echo "requester=$requester"
+            echo "bscenes=$bscenes"; echo "bengines=$bengines"; echo "bsets=$bsets"
           } >> "$GITHUB_OUTPUT"
           echo "suite=$suite games=${games:-all} viewports=$viewports local=$local_build mobile=$mobile flags=$flags requester=$requester" >> "$GITHUB_STEP_SUMMARY"
 
@@ -185,6 +206,9 @@ jobs:
           LOCAL_BUILD: ${{ steps.plan.outputs.local }}
           MOBILE: ${{ steps.plan.outputs.mobile }}
           QR_FLAGS: ${{ steps.plan.outputs.flags }}
+          BSCENES: ${{ steps.plan.outputs.bscenes }}
+          BENGINES: ${{ steps.plan.outputs.bengines }}
+          BSETS: ${{ steps.plan.outputs.bsets }}
           REQUESTER: ${{ steps.plan.outputs.requester }}
         run: |
           set -euo pipefail
@@ -192,8 +216,10 @@ jobs:
           body="$(jq -n --arg token "$TRIGGER_TOKEN" --arg ref "$REF" --arg suite "$SUITE" --arg games "$GAMES" \
             --arg viewports "$VIEWPORTS" --argjson local "$LOCAL_BUILD" --argjson mobile "$MOBILE" \
             --arg flags "$QR_FLAGS" --arg requester "$REQUESTER" --arg run "$GITHUB_RUN_ID" \
+            --arg bs "$BSCENES" --arg be "$BENGINES" --arg bf "$BSETS" \
             '{token:$token, ref:$ref, inputs:{suite:$suite, games:$games, viewports:$viewports, local_build:$local,
-              mobile:$mobile, qr_flags:$flags, requester:$requester, github_run:$run}}')"
+              mobile:$mobile, qr_flags:$flags, requester:$requester, github_run:$run,
+              bench_scenes:$bs, bench_engines:$be, bench_flag_sets:$bf}}')"
           resp="$(curl -sS --max-time 60 -X POST -H "Content-Type: application/json" --data-binary @- \
             "$GITLAB_API/projects/$GITLAB_PROJECT_ID/trigger/pipeline" <<< "$body")"
           id="$(echo "$resp" | jq -r '.id // empty')"; url="$(echo "$resp" | jq -r '.web_url // empty')"
