@@ -1258,6 +1258,8 @@ is recorded, it does not accept.
 - Exit: S17 (doctor rule + codemod report on `apps/` and templates committed), S19 (per-tier budgets on the lane
   harness), every §12.3 item filed with an issue link in `evidence/prd08/requests.md`; flag `A3D_QR_CAMERA` moves to
   `standalone-accepted` (CONTRACTS §5.3) when S1–S19 are green on one lane CI run.
+- **Status (P-54): NOT MET.** Phase 5 was effectively ticked while S9 scenes are skeletons and S19 has no fixture;
+  it re-opens until S17 and S19 carry remote run ids.
 
 **Phase 6 — Integrated acceptance (checkpoint-driven, never blocks merges).**
 - Exit (= completion, §21): §16A criteria met at a G-PANEL round with `A3D_QR_CAMERA` on in `all`; human + vision
@@ -1389,7 +1391,8 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
 - [x] C-13 Carved `nodes/game/racingCamera.ts` (from `index.ts:7641-7650`): delete the composition-report/verdict-string
   gate in `createGameRacingCameraRig` (extra arguments ignored, no throw). The turbo call-site cleanup
   (`apps/showcase-turbo-drift-circuit/src/main.ts:2789-2794`) is request Q-14-2.
-- [x] C-14 Golden tests `tests/qr/prd08/unit/camera-controller.test.ts`: record 40 (spec, time, subject) tuples from the
+- [ ] C-14 Golden tests `tests/qr/prd08/unit/camera-controller.test.ts`: record 40 (spec, time, subject) tuples from the
+  *(unticked 2026-10-09, P-54: the cited test file does not exist — `camera-fromspec-parity.test.ts` carries the 40-tuple golden parity today; re-tick when a remote run id backs it)*
   unchanged legacy resolution — read through the C-22 **stub** `presented()` with `A3D_QR_CAMERA` off, which calls the
   existing `resolveCameraFrame` path — into `tests/qr/prd08/fixtures/legacy-frames.json` on day 0; assert `fromSpec`
   equality within 1e-6. Re-recording requires a written reason and the diff in `evidence/prd08/goldens.md`.
@@ -1575,8 +1578,9 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
   `presentation: false`.
 - [x] P-4 Emit `land`/`jump` feel events (F-6).
 - [x] P-5 Kit camera default: `rigs.follow2d` with framing 0.28.
-- [x] P-6 Tests `tests/qr/prd08/unit/platformer-accel.test.ts`: S13 timings; `tests/unit/engine/platformer-motion.test.ts`
+- [ ] P-6 Tests `tests/qr/prd08/unit/platformer-accel.test.ts`: S13 timings; `tests/unit/engine/platformer-motion.test.ts`
   (lane 08) updated for new flag-on defaults, flag-off assertions unchanged.
+  *(unticked 2026-10-09, P-54: `platformer-accel.test.ts` does not exist; re-tick when a remote run id backs it)*
 
 ### Input and controls (I)
 
@@ -1595,10 +1599,12 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
 - [x] I-5 Per-action `bufferMs` and `consume(action)`; defaults jump 130 ms, attack 150 ms, others 120 ms (existing).
 - [x] I-6 Haptics: `Haptics` (packages/input/src/Haptics.ts) reachable via feel bus; gamepad `vibrationActuator`,
   touch `navigator.vibrate(ms)`; respects a `haptics: false` user setting.
-- [x] I-7 Tests: new `tests/qr/prd08/unit/touch-controls-mount.test.ts` (jsdom: pointer events → axis values) and
+- [ ] I-7 Tests: new `tests/qr/prd08/unit/touch-controls-mount.test.ts` (jsdom: pointer events → axis values) and
   `tests/qr/prd08/unit/touch-device-prompts.test.ts` (I-3); browser test in `tests/qr/prd08/browser/camera-feel.spec.ts`
   with Playwright touch emulation on the lane harness. `tests/unit/engine/touch-control-binding.test.ts` (owner 15 by
   first import, `TouchControlBinding.ts`) is not edited.
+  *(unticked 2026-10-09, P-54: `touch-device-prompts.test.ts` and `browser/camera-feel.spec.ts` do not exist; re-tick
+  when a remote run id backs them — `touch-controls-mount.test.ts` itself exists)*
 
 ### Audio (A) — lane-08 glue only; the playback graph is PRD 09's (R17, C-25)
 
@@ -1639,7 +1645,9 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
   (F-3), `app.time` usage, touch kit usage, screen-feel reference behaviour (§8.3) and the forbidden evidence-only
   pattern. Skill text itself is Q-13-2.
 - [x] D-7 `tests/templates` assertions → request Q-13-3.
-- [x] D-8 `tools/camera-cast-codemod/index.mjs` registered as C-39 codemod `camera-cast` + fixture tests for the five
+- [ ] D-8 `tools/camera-cast-codemod/index.mjs` registered as C-39 codemod `camera-cast` + fixture tests for the five
+  *(unticked 2026-10-09, P-54/P-38: the `style-{a,b}.ts` fixtures were hidden by `.gitignore:325` and the codemod test
+  failed 4/5; re-tick when `camera-cast-codemod.test.ts` is 5/5 in a remote run)*
   style-(a) cast sites and the cinematic-architecture cast (§2.2 G1, excerpts copied into `fixtures/`), plus
   "reported, not rewritten" fixtures for the two style-(b) sites. Report-mode run over `apps/` and
   `packages/create-aura3d/templates/` committed to `evidence/prd08/camera-cast-report.md`.
