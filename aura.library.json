@@ -6623,6 +6623,141 @@
       "source": "file",
       "outputPath": "",
       "url": "",
+      "hash": "sha256-7fbcdb9322a84d89fb7b7dfc2ff95a1ade9e6b574c63a05d3132f6c573f55d60",
+      "sizeBytes": 8268,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "Kenney Road Kit street lamp (crossbar)",
+      "role": "prop",
+      "artDirection": "environments-modular",
+      "license": "CC0",
+      "sourcePage": "https://kenney.nl/assets/road-kit",
+      "author": "Kenney",
+      "attribution": "Kenney",
+      "retrievedAt": "2026-10-09T10:24:41.452Z",
+      "tags": [
+        "street",
+        "lamp",
+        "urban"
+      ],
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "streetLampKenneyCross",
+      "kit": "environments/modular",
+      "libraryPath": "assets/library/environments/modular/streetLampKenneyCross.glb",
+      "sha256": "7fbcdb9322a84d89fb7b7dfc2ff95a1ade9e6b574c63a05d3132f6c573f55d60",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 134,
+              "floor": 100,
+              "ceiling": 5000,
+              "profile": "prop-small"
+            },
+            "message": "G1: 134 tris inside prop-small band."
+          },
+          {
+            "gate": "G2",
+            "verdict": "fail",
+            "measured": {
+              "measured": 0
+            },
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
+          },
+          {
+            "gate": "G3",
+            "verdict": "waived-by-role",
+            "measured": {
+              "role": "prop",
+              "profile": "prop-small"
+            },
+            "message": "G3: role does not require PBR texture coverage."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 134,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "fail",
+            "measured": {
+              "noUvRatio": 1,
+              "noUvTriangles": 134,
+              "total": 134
+            },
+            "message": "G5: no TEXCOORD_0 on 100.0% of area (> 10%)."
+          },
+          {
+            "gate": "G6",
+            "verdict": "pass",
+            "measured": {
+              "textures": 0
+            },
+            "message": "G6: no textures to sanity-check."
+          },
+          {
+            "gate": "G7",
+            "verdict": "fail",
+            "measured": {},
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "pass",
+            "measured": {
+              "artDirection": "environments-modular",
+              "shading": "pbr",
+              "palette": 0,
+              "texelDensity": 256
+            },
+            "message": "G10: art direction \"environments-modular\" (pbr) on file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T10:24:41.494Z",
+        "derivedHash": "sha256-7fbcdb9322a84d89fb7b7dfc2ff95a1ade9e6b574c63a05d3132f6c573f55d60",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
       "hash": "sha256-312f2320db1f8c7057a5f3e90ee10fa7ff2f16acd8e14460fdb6041a8e985af1",
       "sizeBytes": 8877352,
       "materials": [],
