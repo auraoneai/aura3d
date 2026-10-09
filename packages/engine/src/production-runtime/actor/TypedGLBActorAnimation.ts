@@ -262,6 +262,15 @@ function prd06WarmupItem(item: RenderItem): boolean {
   return item.skinning !== undefined || item.morphWeights !== undefined;
 }
 
+/** Warm-up compile rejections, counted so "no warm-up" degradations stay observable. */
+let warmupRejectionCount = 0;
+const warmupRejectionReasons = new Set<string>();
+
+/** Degradation surface: how many warm-up compiles rejected, and why. */
+export function prd06ShaderWarmupRejections(): { readonly count: number; readonly reasons: readonly string[] } {
+  return { count: warmupRejectionCount, reasons: [...warmupRejectionReasons] };
+}
+
 /**
  * Begin the warm-up for `actor` over `items` (the load-time collect; the
  * extension resolves them through `collectTypedGLBActorRenderItems` so the
@@ -276,12 +285,20 @@ export function beginPrd06ShaderWarmup(actor: TypedGLBActor, items: readonly Ren
     try {
       state.pending = Promise.resolve(compiler(warm)).then(() => {
         state.ready = true;
+      }).catch((error: unknown) => {
+        // A rejected compile degrades to "no warm-up" — without this the
+        // actor's skinned/morph items are withheld forever (character never
+        // draws) and the rejection escapes as an unhandledrejection mid-frame.
+        state.ready = true;
+        warmupRejectionCount += 1;
+        warmupRejectionReasons.add(error instanceof Error ? error.message : String(error));
       });
     } catch (error) {
-      state.pending = Promise.reject(error);
       // A synchronously-throwing compiler degrades to "no warm-up" rather than
       // withholding the actor's items forever — the next collect draws them.
       state.ready = true;
+      warmupRejectionCount += 1;
+      warmupRejectionReasons.add(error instanceof Error ? error.message : String(error));
     }
   }
   shaderWarmupByActor.set(actor, state);
