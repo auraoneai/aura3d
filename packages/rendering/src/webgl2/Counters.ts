@@ -9,6 +9,7 @@ export class WebGL2Counters {
   multiDrawSubmissions = 0;
   /** #180: entries folded into those multi-draw calls. */
   multiDrawMembers = 0;
+  inactiveUniformBindCount = 0;
   nativeEnvironmentBindings = 0;
   nativeInstancedSubmissions = 0;
   nativeShadowMapBindings = 0;
