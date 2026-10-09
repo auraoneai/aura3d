@@ -156,7 +156,8 @@ const game = createGame({
       "blackout": { asset: "deepRecoveryBlackoutSfx" },
       "surface-break": { asset: "deepRecoverySurfaceBreakSfx" },
       "ambient-deep": { asset: "deepRecoveryAmbientDeepSfx" }
-    }
+    },
+    reverb: "underwater"
   },
   juice: {
     "breach": { hitStopMs: 50, trauma: 0.3 },

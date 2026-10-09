@@ -60,7 +60,9 @@ export function createDeepRig(state: DeepRigState): AuraCameraRig {
     },
     update: (ctx: AuraCameraRigContext): AuraCameraPose => {
       const dt = Math.min(Math.max(ctx.dt, 0.001), 0.1);
-      const k = Math.min(1, dt / 0.22);
+      // §14.4 smoothing 0.15 — the chase pose eases over a 0.15 s time
+      // constant, fast enough to keep the sub framed through turns.
+      const k = Math.min(1, dt / 0.15);
       const want = deepPoseFor(state);
       for (let i = 0; i < 3; i += 1) {
         eye[i] += (want.position[i]! - eye[i]) * k;
