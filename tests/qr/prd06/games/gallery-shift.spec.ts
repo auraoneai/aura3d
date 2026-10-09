@@ -29,11 +29,11 @@ test.describe("PRD-06 T5.6 gallery-shift §17.4 gates", () => {
   });
 
   test("flag-on: thief + both guards are clip-driven rigged characters", async ({ page }) => {
-    // Expected to FAIL until Q-14-6 swaps the voxel thief and the archive
-    // guard-1 sentry for C-17-admitted rigs — S11 failing control. (guard-2's
-    // tracksApplied leg already passes under the lane flag; T0.17's gait spec
-    // covers the sprint-vs-sneak hip-height gate.)
-    test.fail();
+    // S11 named gate (P-21): expected-red until Q-14-6 swaps the voxel thief
+    // and the archive guard-1 sentry for C-17-admitted rigs — the spec fails
+    // ONLY on the named gate below; a timeout or crash fails honestly.
+    // (guard-2's tracksApplied leg already passes under the lane flag;
+    // T0.17's gait spec covers the sprint-vs-sneak hip-height gate.)
     test.setTimeout(180_000);
     await page.goto(`${server.origin}/?a3d-qr=animation`, { waitUntil: "domcontentloaded" });
     await waitForApps(page);
@@ -42,7 +42,7 @@ test.describe("PRD-06 T5.6 gallery-shift §17.4 gates", () => {
 
     const hips = await findHipsBone(page, "thief");
     writeFileSync(join(ARTIFACT_DIR, "thief-hips.json"), JSON.stringify({ hips }, null, 2));
-    expect(hips, "thief has no Hips socket — still the voxel figure, not a rigged character").not.toBeNull();
+    expect(hips, "S11 gate (expected-red until Q-14-6): thief has no Hips socket — still the voxel figure, not a rigged character").not.toBeNull();
     expect(await socketValid(page, "thief", hips!), `thief socket("${hips}") invalid`).toBe(true);
 
     for (const id of ["thief", "guard-1", "guard-2"]) {

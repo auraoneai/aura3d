@@ -32,8 +32,8 @@ test.describe("PRD-06 T5.2 rooftop-buckets §17.4 gates", () => {
   });
 
   test("flag-on: skinned athletes visible in normal play, root sways deleted", async ({ page }) => {
-    // Expected to FAIL until Q-14-2 lands — S11 failing control.
-    test.fail();
+    // S11 named gate (P-21): expected-red until Q-14-2 lands — the spec
+    // fails ONLY on the named gate below; a timeout or crash fails honestly.
     test.setTimeout(180_000);
     await page.goto(`${server.origin}/?a3d-qr=animation`, { waitUntil: "domcontentloaded" });
     await waitForApps(page);
@@ -43,7 +43,7 @@ test.describe("PRD-06 T5.2 rooftop-buckets §17.4 gates", () => {
     const defender = await readNodeTransform(page, "contest-defender-mesh");
     writeFileSync(join(ARTIFACT_DIR, "athlete-mounts.json"), JSON.stringify({ shooter, defender }, null, 2));
 
-    expect(shooter.exists && shooter.visible === true, "shooter-player-mesh not visible in normal play").toBe(true);
+    expect(shooter.exists && shooter.visible === true, "S11 gate (expected-red until Q-14-2): shooter-player-mesh not visible in normal play").toBe(true);
     expect(defender.exists && defender.visible === true, "contest-defender-mesh not visible in normal play").toBe(true);
 
     // Skinned rigs bound on the visible athletes.

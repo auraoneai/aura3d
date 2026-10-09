@@ -32,13 +32,13 @@ test.describe("PRD-06 T5.4 neon-swarm §17.4 gates", () => {
   });
 
   test("flag-on: courier passes hero-character, bound skeleton, masked fire layer, no bob", async ({ page }) => {
-    // Expected to FAIL until Q-14-4 lands — S11 failing control.
-    test.fail();
+    // S11 named gate (P-21): expected-red until Q-14-4 lands — the spec
+    // fails ONLY on the named gate below; a timeout or crash fails honestly.
     test.setTimeout(180_000);
 
     const report = validateHeroGlb(new Uint8Array(readFileSync(COURIER_GLB)));
     writeFileSync(join(ARTIFACT_DIR, "hero-validator.json"), JSON.stringify({ ok: report.ok, reasonCodes: report.reasonCodes }, null, 2));
-    expect(report.ok, `neonCourierAvatar fails hero-character: ${report.reasonCodes.join(", ")}`).toBe(true);
+    expect(report.ok, `S11 gate (expected-red until Q-14-4): neonCourierAvatar fails hero-character: ${report.reasonCodes.join(", ")}`).toBe(true);
 
     await page.goto(`${server.origin}/?a3d-qr=animation`, { waitUntil: "domcontentloaded" });
     await waitForApps(page);
