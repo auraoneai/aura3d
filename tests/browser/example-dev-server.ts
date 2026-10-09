@@ -93,7 +93,11 @@ const packageEntryPoints = new Map<string, string>([
   ["@recast-navigation/core", "/node_modules/.pnpm/@recast-navigation+core@0.43.1/node_modules/@recast-navigation/core/dist/index.mjs"],
   ["@recast-navigation/wasm", "/node_modules/.pnpm/@recast-navigation+wasm@0.43.1/node_modules/@recast-navigation/wasm/dist/recast-navigation.wasm-compat.js"],
   ["flatbuffers", "/node_modules/.pnpm/flatbuffers@25.9.23/node_modules/flatbuffers/mjs/flatbuffers.js"],
-  ["ktx-parse", "/node_modules/.pnpm/node_modules/ktx-parse/dist/ktx-parse.modern.js"],
+  // ktx-parse resolves through the pnpm public-hoist link — the nested
+  // `.pnpm/node_modules/` store layout varies by platform (404s on
+  // windows-latest) while the hoisted `node_modules/ktx-parse` symlink exists
+  // on every install.
+  ["ktx-parse", "/node_modules/ktx-parse/dist/ktx-parse.modern.js"],
   ["three/addons/loaders/GLTFLoader.js", "/node_modules/three/examples/jsm/loaders/GLTFLoader.js"],
   ["three/addons/loaders/DRACOLoader.js", "/node_modules/three/examples/jsm/loaders/DRACOLoader.js"],
   ["three/addons/loaders/KTX2Loader.js", "/node_modules/three/examples/jsm/loaders/KTX2Loader.js"],
