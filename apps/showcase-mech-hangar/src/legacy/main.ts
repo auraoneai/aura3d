@@ -12,7 +12,6 @@
 import {
   characterAssembly,
   camera,
-  createAuraApp,
   effects,
   lights,
   material,
@@ -23,6 +22,16 @@ import {
   text3D,
   type RuntimeNodeHandleLike
 } from "@aura3d/engine";
+import {
+  createFxParticlePass,
+  createGame,
+  createJuice,
+  createOverlayDriver,
+  createRumbleDriver,
+  createTweenEngine
+} from "@aura3d/game";
+import { bindMechEvidence } from "../evidence";
+import { bindMechDrive } from "../scenario-drive";
 import { AGGRESSION_PRESETS, RIVAL_LOADOUTS, aggregateStats, presetForBout } from "../gameplay/stats";
 import { createHangarAudio, AMBIENT_LOOP_SECONDS, HANGAR_AUDIO_CUES } from "./hangar-audio";
 import { createHangarController } from "./hangar";
@@ -58,9 +67,7 @@ const AGGRESSION_PRESET_COUNT = AGGRESSION_PRESETS.length;
 
 const reducedMotion = typeof window !== "undefined"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const visualReviewCapture = typeof window !== "undefined"
-  && new URLSearchParams(window.location.search).get("capture") === "review";
-if (typeof document !== "undefined") document.body.dataset.capture = visualReviewCapture ? "review" : "default";
+if (typeof document !== "undefined") document.body.dataset.capture = "default";
 
 
 // ---- world layout -----------------------------------------------------------
@@ -82,6 +89,37 @@ const input = game.input({
     pause: ["KeyP"]
   },
   bufferMs: 90
+});
+
+bindMechEvidence(() => collectMechEvidence());
+bindMechDrive({
+  pumpFrames: (n) => {
+    const bounded = Math.max(0, Math.min(30000, Math.floor(n)));
+    app.pause();
+    for (let i = 0; i < bounded; i += 1) app.advance(1 / 60);
+    app.resume();
+  },
+  enterArena
+});
+
+const mechTween = createTweenEngine();
+const mechFx = createFxParticlePass(app.effects);
+const mechJuice = createJuice<"light-hit" | "heavy-hit" | "blocked" | "guard-break" | "special" | "ko" | "lock">({
+  events: {
+    "light-hit": { fx: { kind: "spark", count: 8, color: "#8fd8ff" }, shake: 0.06 },
+    "heavy-hit": { fx: { kind: "spark", count: 16, color: "#ffd58a" }, shake: 0.16, punch: { fovDeg: 1.6, ms: 150 }, rumble: { strong: 0.5, ms: 130 } },
+    blocked: { fx: { kind: "ring", count: 6, color: "#76dff1" } },
+    "guard-break": { flash: { color: "#ff4d4d", peak: 0.16, ms: 240 }, shake: 0.2, hitStop: 0.04 },
+    special: { fx: { kind: "burst", count: 18, color: "#b48cff" }, punch: { fovDeg: 2.0, ms: 180 }, rumble: { strong: 0.7, ms: 180 } },
+    ko: { flash: { color: "#ffe866", peak: 0.3, ms: 420 }, vignette: { amount: 0.4, ms: 700, color: "#160408" }, hitStop: 0.08, shake: 0.28 },
+    lock: { fx: { kind: "ring", count: 14, color: "#9df2b6" }, flash: { color: "#9df2b6", peak: 0.12, ms: 260 } }
+  },
+  camera: app.camera,
+  session: mechGame.session,
+  fx: mechFx,
+  overlay: createOverlayDriver({ app }),
+  tweens: mechTween,
+  rumble: createRumbleDriver()
 });
 
 // Hangar + meta keys ride raw keydown because they are UI, not held sim actions.
@@ -672,7 +710,9 @@ const pitSignBuilders = [
     material: material.emissive({ name: "pit mh2m sign", color: "#163c54", emissive: "#61dcff", emissiveIntensity: 0.82 })
   }).position(-0.78, 4.58, ARENA_CENTER_Z - 4.45)
 ];
-const app = createAuraApp("#app", {
+const mechGame = createGame({
+  id: "showcase-mech-hangar",
+  target: "#app",
   diagnostics: { overlay: false, performancePanel: false },
   renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
   physics: {
@@ -740,7 +780,7 @@ const app = createAuraApp("#app", {
     ])
     .camera(camera.follow({
       targetNode: "mech-cam-anchor",
-      distance: visualReviewCapture ? 5.55 : 6.55,
+      distance: 6.55,
       // target-yaw rotates the offset by the anchor's yaw, so spinning the anchor
       // orbits the camera around the framed point while still looking at it.
       offsetMode: "target-yaw",
@@ -748,13 +788,22 @@ const app = createAuraApp("#app", {
       // and both 1.7m fighters inside the frame while retaining a readable
       // three-quarter arena view; the wider combat framing prevents a close
       // strike from cropping one silhouette out of the review frame.
-      offset: visualReviewCapture ? [0, 1.82, 4.62] : [0, 1.66, 5.28],
-      fov: visualReviewCapture ? 52 : (reducedMotion ? 53 : 54),
+      offset: [0, 1.66, 5.28],
+      fov: reducedMotion ? 53 : 54,
       // Exact review captures must frame the current exchange, not the camera
       // anchor's prior location. Runtime play keeps the eased chase motion.
-      smoothing: visualReviewCapture ? 0 : 0.16
-    }))
+      smoothing: 0.16
+    })),
+  qualityRebuild: { flags: ["game"] },
+  evidence: {
+    schema: 1,
+    sections: async () => (await import("../evidence")).sections,
+    legacyGlobals: ["__AURA3D_SHOWCASE_MECH_HANGAR__"]
+  },
+  scenarios: async () => (await import("../scenarios")).mechScenarios
 });
+const app = mechGame.runtime;
+mechGame.start();
 
 // ---- runtime handles --------------------------------------------------------
 // No `await app.ready()` here. A top-level await in this entry deadlocks the
@@ -811,8 +860,6 @@ const footContactNodes = new Map<"player" | "rival", {
 // The route-primary visual probe isolates the same typed modular assembly that
 // human reviewers see. Keep suppression state in the route so the regular mount
 // pass cannot immediately re-show the subject during the two-frame comparison.
-let compositionSubjectSuppressed = false;
-let compositionProbeActive = false;
 
 const feel = createMechHangarFeel({ reducedMotion, arenaZ: ARENA_CENTER_Z, sparkNodes, dustNodes, impactNodes: impactRingNodes });
 
@@ -844,11 +891,7 @@ function mountSide(
       // the hangar preview, arena fighters, and swap captures, so the default
       // and every valid option prove a connected modular assembly rather than a
       // whole-body fallback with cosmetic overlays.
-      if (compositionSubjectSuppressed) {
-        handle.setVisible(false);
-        continue;
-      }
-      const t = mountTransformForPart(def, parts, rootPosition, yaw);
+            const t = mountTransformForPart(def, parts, rootPosition, yaw);
       handle.setVisible(true);
       handle.setPosition(t.position[0] - familyBackX, t.position[1], t.position[2] - familyBackZ);
       handle.setRotation(0, t.yaw, 0);
@@ -863,11 +906,11 @@ function mountSide(
     const markerRadius = side === "player" ? 0.84 : 0.78;
     // Subject-isolation captures must hide every presentation cue alongside
     // the family; otherwise a tiny marker becomes the measured "hero".
-    marker.ring.setVisible(!compositionSubjectSuppressed);
+    marker.ring.setVisible(true);
     marker.ring.setPosition(rootPosition[0], 0.21, rootPosition[2]);
     marker.ring.setRotation(Math.PI / 2, 0, 0);
     marker.ring.setScale([markerRadius, markerRadius, 0.032]);
-    marker.chevron.setVisible(!compositionSubjectSuppressed);
+    marker.chevron.setVisible(true);
     // Keep the badge on the chest plane rather than floating above the head;
     // the silhouette stays dominant while the color key remains visible. The
     // Meshy hero chest now leads the family core, so the badge rides ahead of
@@ -888,9 +931,6 @@ function mountSide(
   // feet on the deck plane, and hides with the subject for isolation evidence.
   const hero = heroNodes.get(side);
   if (hero) {
-    if (compositionSubjectSuppressed) {
-      hero.setVisible(false);
-    } else {
       hero.setVisible(true);
       hero.setPosition(
         rootPosition[0] + Math.sin(yaw) * HERO_FORWARD,
@@ -899,13 +939,12 @@ function mountSide(
       );
       hero.setRotation(0, yaw, 0);
     }
-  }
 
   const selectedWeapon = parts.find((part) => part.slot === "weapon");
   for (const weaponDef of PART_OPTIONS.weapon) {
     const accent = weaponAccentNodes.get(side + ":" + weaponDef.assetKey);
     if (!accent) continue;
-    const active = !compositionSubjectSuppressed && selectedWeapon?.assetKey === weaponDef.assetKey;
+    const active = selectedWeapon?.assetKey === weaponDef.assetKey;
     accent.setVisible(active);
     if (!active) {
       accent.setScale([0.001, 0.001, 0.001]);
@@ -937,7 +976,7 @@ function mountSide(
     const selectedWeaponTransform = selectedWeapon
       ? mountTransformForPart(selectedWeapon, parts, [rootPosition[0] - familyBackX, rootPosition[1], rootPosition[2] - familyBackZ], yaw)
       : undefined;
-    const visible = Boolean(selectedWeaponTransform) && !compositionSubjectSuppressed;
+    const visible = Boolean(selectedWeaponTransform) && true;
     hardpoint.metal.setVisible(visible);
     hardpoint.lock.setVisible(visible);
     if (selectedWeaponTransform) {
@@ -979,12 +1018,23 @@ function mountSide(
       const localZ = 0.02;
       const x = rootPosition[0] + offset * Math.cos(yaw) + localZ * Math.sin(yaw);
       const z = rootPosition[2] - offset * Math.sin(yaw) + localZ * Math.cos(yaw);
-      const receiver = footHandles[index]!;
-      receiver.setVisible(!compositionSubjectSuppressed);
+      const [receiver, seal] = footHandles[index]!;
+      const visible = true;
+      receiver.setVisible(visible);
+      seal.setVisible(visible);
       receiver.setPosition(x, 0.16, z);
       receiver.setRotation(0, yaw, 0);
       receiver.setScale([0.24, 0.035, 0.17]);
     }
+  }
+  // The contact shadow tracks the fighter root on the deck plane like the
+  // receivers, and hides with the subject for isolation evidence.
+  const shadow = contactShadowNodes.get(side);
+  if (shadow) {
+    const visible = true;
+    shadow.setVisible(visible);
+    shadow.setPosition(rootPosition[0], 0.115, rootPosition[2]);
+    shadow.setScale([1.6, 0.012, 1.6]);
   }
 }
 
@@ -1017,7 +1067,6 @@ function remountPreview(): void {
 const RIVAL_FIXED_LOADOUT = RIVAL_LOADOUTS[1]!;
 
 let bout: ReturnType<typeof createMechBout> | null = null;
-let paused = false;
 let walkCueCooldown = 0;
 
 function enterArena(): void {
@@ -1028,7 +1077,8 @@ function enterArena(): void {
     return;
   }
   mode = "arena";
-  paused = false;
+  mechGame.session.resume();
+  mechJuice.fire("lock");
   // The arena HUD is a full-width review surface.  Collapse the hangar's
   // side-column layout while it is active so the follow camera has the whole
   // viewport for the typed fighters and pit instead of rendering into a
@@ -1059,7 +1109,7 @@ function startBout(): void {
 
 function leaveToHangar(): void {
   mode = "hangar";
-  paused = false;
+  mechGame.session.resume();
   bout = null;
   panelHost.parentElement?.classList.remove("is-arena");
   hangar.unlockForRematchEdit();
@@ -1251,7 +1301,7 @@ let timeWarp = 1;
   strike?: "none" | "light" | "heavy" | "special";
   guard?: boolean;
 }) => {
-  if (!bout || paused) return null;
+  if (!bout || mechGame.session.paused) return null;
   const strikeEvery = options?.strike && options.strike !== "none" ? 34 : Number.MAX_SAFE_INTEGER;
   for (let index = 0; index < frames; index += 1) {
     const gap = lastFighterPositions.rivalX - lastFighterPositions.playerX;
@@ -1311,12 +1361,12 @@ let timeWarp = 1;
   return { ready: report.ready, errors: report.summary.errors };
 };
 
-function publishEvidence(snapshot?: BoutSnapshot): void {
+function collectMechEvidence(snapshot?: BoutSnapshot): MechHangarEvidence {
   const diagnostics = app.diagnostics();
   const selected = selectedParts(hangar.selection);
   const orbitSnapshot = hangar.snapshot();
   const evidence: MechHangarEvidence = {
-    status: mode === "hangar" ? (catalogReady ? "ready" : "curation-pending") : paused ? "paused" : "playing",
+    status: mode === "hangar" ? (catalogReady ? "ready" : "curation-pending") : mechGame.session.paused ? "paused" : "playing",
     label: CLAIM_BOUNDARY.label,
     claimBoundary: CLAIM_BOUNDARY,
     // Section-7 classification: the bout is authored arcade fighting. Hit windows,
@@ -1339,7 +1389,7 @@ function publishEvidence(snapshot?: BoutSnapshot): void {
     catalogReady,
     curationVerdict: PART_CURATION_VERDICT,
     outcomeHash: lastOutcomeHash,
-    pauseFreezesSimulation: paused,
+    pauseFreezesSimulation: mechGame.session.paused,
     reducedMotion,
     registeredAudioCues: HANGAR_AUDIO_CUES.length,
     diagnostics: {
@@ -1363,43 +1413,12 @@ function publishEvidence(snapshot?: BoutSnapshot): void {
   // point at the same live object.
   window.__MECH_HANGAR_EVIDENCE__ = evidence;
   Object.defineProperty(window, "__AURA3D_SHOWCASE_MECH_HANGAR__", { value: evidence, configurable: true, writable: true });
+  return evidence;
 }
 
-// Bind the shared image-QA contract to the actual visible review hero. This is
-// intentionally an application-category subject: Mech Hangar has no
-// route-primary play-space projection requirement, but it still needs an honest
-// full hero-plus-assembly isolation check. Suppression hides the Meshy hero
-// body with every selected typed slot and presentation cue, never a hidden
-// whole-body proxy.
-Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
-  configurable: true,
-  value: {
-    category: "application",
-    subject: { position: [0, 1.36, 0], rotation: [0, 0, 0], targetSize: 2.72 },
-    async setSubjectSuppressed(suppressed: boolean) {
-      app.pause();
-      await app.ready();
-      compositionProbeActive = true;
-      compositionSubjectSuppressed = suppressed;
-      if (mode === "hangar") {
-        mountSide("player", hangar.selection, HANGAR_CENTER, hangar.snapshot().turntableYaw, playerNodes);
-      } else if (bout) {
-        mountSide("player", hangar.selection, [lastFighterPositions.playerX, 0, ARENA_CENTER_Z], Math.PI / 2, playerNodes);
-        mountSide("rival", RIVAL_FIXED_LOADOUT.selection, [lastFighterPositions.rivalX, 0, ARENA_CENTER_Z], -Math.PI / 2, rivalNodes);
-      }
-      // Present the hidden state used by the pixel diff. On restore, mutate the
-      // live nodes back without an unused third full-frame submission.
-      if (suppressed) app.step(0);
-    },
-    async settleSubjectPose() {
-      app.pause();
-      await app.ready();
-      // Freeze the current authored pose for the visible/suppressed pair.
-      compositionProbeActive = true;
-      app.step(0);
-    }
-  }
-});
+function publishEvidence(snapshot?: BoutSnapshot): void {
+  collectMechEvidence(snapshot);
+}
 
 // ---- frame loop -------------------------------------------------------------
 let frameCount = 0;
@@ -1408,24 +1427,25 @@ remountPreview();
 
 function handleBoutEvent(event: BoutEvent): void {
   if (!bout) return;
-  if (event.type === "hit") void audio.cue(event.heavy ? "mechHeavyHitSfx" : "mechLightHitSfx");
-  else if (event.type === "blocked") void audio.cue("mechGuardBlockSfx");
-  else if (event.type === "guardBreak") void audio.cue("mechGuardBreakSfx");
-  else if (event.type === "specialFire") void audio.cue("mechSpecialFireSfx");
+  if (event.type === "hit") {
+    void audio.cue(event.heavy ? "mechHeavyHitSfx" : "mechLightHitSfx");
+    mechJuice.fire(event.heavy ? "heavy-hit" : "light-hit", { position: [event.x, 1.1, ARENA_CENTER_Z] });
+  }
+  else if (event.type === "blocked") { void audio.cue("mechGuardBlockSfx"); mechJuice.fire("blocked"); }
+  else if (event.type === "guardBreak") { void audio.cue("mechGuardBreakSfx"); mechJuice.fire("guard-break"); }
+  else if (event.type === "specialFire") { void audio.cue("mechSpecialFireSfx"); mechJuice.fire("special"); }
   else if (event.type === "ko") {
     void audio.cue("mechKoStingSfx");
+    mechJuice.fire("ko");
     publishedKoEvents.push({ victimId: event.victimId, x: event.x, frame: event.frame });
     showKoCard(arenaHud, event.victimId === "rival", bout.preset());
   }
 }
 
 app.onFrame(({ dt }) => {
+  mechTween.tick(dt);
   // Manual zero-delta presentation must not advance the live turntable or bout.
-  if (compositionProbeActive) {
-    publishEvidence();
-    return;
-  }
-  const stepDt = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
+    const stepDt = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
   frameCount += 1;
   elapsed += stepDt;
   input.update(stepDt);
@@ -1455,11 +1475,11 @@ app.onFrame(({ dt }) => {
   // for a short input window, which would flip the state twice on consecutive
   // frames; consume only the actual press edge so the simulation stays frozen.
   if (input.pressed("pause")) {
-    paused = !paused;
+    if (mechGame.session.paused) mechGame.session.resume(); else mechGame.session.pause("user");
     publishEvidence(bout.snapshot());
     return;
   }
-  if (paused) {
+  if (mechGame.session.paused) {
     // Pause freezes BOTH mechs + AI: no sim step, no feel tick, no cues.
     publishEvidence(bout.snapshot());
     return;

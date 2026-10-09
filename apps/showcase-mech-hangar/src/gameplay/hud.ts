@@ -1,13 +1,12 @@
 /**
  * Mech Hangar HUD — DOM chrome for both modes.
  *
- * The panel is UI only (PRD section 6): stat holograms, bout cards and the asset
- * passport are information surfaces. Every 3D claim lives in the rendered scene,
- * not here. Elements carry stable data-testid hooks for the route specs.
+ * The panel is UI only (PRD section 6): stat holograms and bout cards are
+ * information surfaces. Every 3D claim lives in the rendered scene, not here.
+ * Elements carry stable data-testid hooks for the route specs.
  */
 import type { AggressionPreset, MechStats } from "./stats";
 import { MECH_SLOTS, PART_OPTIONS, type BuildSelection, type MechSlot } from "./parts-catalog";
-import { selectedParts } from "./parts-catalog";
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
@@ -54,22 +53,8 @@ export interface HangarHudHandles {
     specialCost: ReturnType<typeof createBar>;
   };
   readonly assemblyStatus: HTMLElement;
-  readonly passport: HTMLElement;
   readonly lockButton: HTMLButtonElement;
 }
-
-/**
- * The passport names the same four typed models that are mounted in the
- * canvas. It is deliberately concise: provenance is useful to a reviewer,
- * while the rendered GLBs (not this DOM card) remain the evidence for visual
- * quality and socket contact.
- */
-const FAMILY_PASSPORT = {
-  name: "MH-2M // TYPED MODULAR FAMILY",
-  asset: "assets.mechChassisA + assets.mechArmsA + assets.mechLegsA + assets.mechWeaponA",
-  provenance: "Aura3D original MH-2M family - CC0-1.0",
-  boundary: "Rigid root-safe sockets (chassis, chest, hips, right-hand); no skeletal retargeting or reusable combat-kit claim."
-} as const;
 
 export function setupHangarHud(host: HTMLElement, selection: BuildSelection): HangarHudHandles {
   host.textContent = "";
@@ -107,19 +92,14 @@ export function setupHangarHud(host: HTMLElement, selection: BuildSelection): Ha
   const assemblyStatus = el("div", "mech-assembly-status");
   assemblyStatus.dataset.testid = "assembly-status";
 
-  const passportTitle = el("div", "mech-section-title");
-  passportTitle.textContent = "ASSET PASSPORT";
-  const passport = el("div", "mech-passport");
-  passport.dataset.testid = "passport";
-
   const lockButton = el("button", "mech-lock-button");
   lockButton.type = "button";
   lockButton.dataset.testid = "lock-button";
   lockButton.textContent = "ENTER  LOCK BUILD -> ARENA";
 
-  host.append(title, slotsBox, barsTitle, armor.root, speed.root, guard.root, power.root, specialCost.root, assemblyStatus, passportTitle, passport, lockButton);
+   host.append(title, slotsBox, barsTitle, armor.root, speed.root, guard.root, power.root, specialCost.root, assemblyStatus, lockButton);
 
-  return { root: host, slotButtons, optionLabels, bars: { armor, speed, guard, power, specialCost }, assemblyStatus, passport, lockButton };
+  return { root: host, slotButtons, optionLabels, bars: { armor, speed, guard, power, specialCost }, assemblyStatus, lockButton };
 }
 
 /** Refresh hangar panel contents from state (called on every change, not every frame). */
@@ -152,47 +132,7 @@ export function updateHangarHud(
   handles.assemblyStatus.classList.toggle("is-bad", !args.assemblyReady);
   handles.lockButton.disabled = !args.assemblyReady || !args.catalogReady;
 
-  // Asset passport: provenance lines straight from the curation records.
-  handles.passport.textContent = "";
-
-  // This identity card is a compact summary; each slot card below maps to the
-  // exact typed GLB currently mounted by the assembly plan.
-  const familyCard = el("div", "mech-passport-card");
-  familyCard.dataset.testid = "modular-family-passport";
-  const familyHead = el("div", "mech-passport-head");
-  familyHead.textContent = FAMILY_PASSPORT.name;
-  familyCard.appendChild(familyHead);
-  for (const text of [FAMILY_PASSPORT.asset, FAMILY_PASSPORT.provenance, FAMILY_PASSPORT.boundary]) {
-    const line = el("div", "mech-passport-line");
-    line.textContent = text;
-    familyCard.appendChild(line);
-  }
-  handles.passport.appendChild(familyCard);
-
-  if (!args.catalogReady) {
-    const line = el("div", "mech-passport-line is-warn");
-    line.textContent = "MH-2M family curation pending - mount disabled.";
-    handles.passport.appendChild(line);
-    return;
-  }
-  for (const part of selectedParts(args.selection)) {
-    const card = el("div", "mech-passport-card");
-    const head = el("div", "mech-passport-head");
-    head.textContent = part.slot.toUpperCase() + ": " + part.displayName;
-    const lines = [
-      part.provenance.title + " - " + part.provenance.source,
-      part.provenance.author + " - " + part.provenance.license
-    ];
-    card.appendChild(head);
-    for (const text of lines) {
-      const line = el("div", "mech-passport-line");
-      line.textContent = text;
-      card.appendChild(line);
-    }
-    handles.passport.appendChild(card);
-  }
 }
-
 export interface ArenaHudHandles {
   readonly root: HTMLElement;
   readonly hpPlayer: ReturnType<typeof createBar>;

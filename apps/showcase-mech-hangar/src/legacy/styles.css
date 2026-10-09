@@ -191,37 +191,11 @@ body[data-capture="review"] .mech-ko-card {
   color: var(--mech-danger);
 }
 
-.mech-passport {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
 
-.mech-passport-card {
-  border: 1px solid var(--mech-edge);
-  border-left: 3px solid var(--mech-accent);
-  border-radius: 4px;
-  padding: 6px 8px;
-}
 
-.mech-passport-head {
-  font-weight: 700;
-  letter-spacing: 0.08em;
-}
 
-.mech-passport-line {
-  color: var(--mech-dim);
-  font-size: 11px;
-}
 
-.mech-passport-line.is-warn {
-  color: var(--mech-warm);
-}
 
-.mech-passport-link {
-  font-size: 11px;
-  color: var(--mech-accent);
-}
 
 .mech-lock-button {
   width: 100%;

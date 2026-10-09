@@ -13,8 +13,8 @@ import { MECH_SLOTS, PART_OPTIONS, selectedParts, type BuildSelection, type Part
 import { mountTransformForPart } from "../gameplay/assembly";
 import { createHangarController } from "../legacy/hangar";
 import { createHangarAudio } from "../legacy/hangar-audio";
-import { publishMechEvidence } from "./evidence";
-import { applyMechScenario, mechScenarioLook, parseMechScenario, type MechScenario } from "./scenarios";
+import { publishMechEvidence } from "../evidence";
+import { applyMechScenario, mechScenarioLook, parseMechScenario, type MechScenario } from "../scenarios";
 import { createMechRig, mechCameraSpec, mechPoseFor, MECH_CAMERA_FOV, MECH_CAMERA_DISTANCE } from "./scene/camera";
 import { wireMechFx } from "./scene/fx";
 import { mechLighting } from "./scene/lighting";
