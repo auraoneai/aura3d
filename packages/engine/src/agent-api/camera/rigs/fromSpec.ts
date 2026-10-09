@@ -245,28 +245,12 @@ export class LegacySpecRig implements AuraCameraRig {
   }
 }
 
-export const DEFAULT_POSE: AuraCameraPose = {
-  position: [0, 1.6, 5],
-  target: [0, 1, 0],
-  up: [0, 1, 0],
-  roll: 0,
-  fov: 50,
-  near: 0.1,
-  far: 1000
-};
-
-/** `rigs.static` — fixed pose; layers still apply to it downstream. */
-export function staticRig(pose: Partial<AuraCameraPose> = {}, id = "static"): AuraCameraRig {
-  const full: AuraCameraPose = { ...DEFAULT_POSE, ...pose };
-  return {
-    id,
-    update: () => full,
-    reset: () => {
-      /* static rig keeps its authored pose */
-    }
-  };
-}
+export { DEFAULT_POSE, staticRig } from "./static.js";
 
 export function createFromSpecRig(spec: LegacyCameraSpec, deps: LegacySpecRigDeps = {}): AuraCameraRig {
   return new LegacySpecRig(spec, deps);
 }
+import { registerRigFactory } from "./registry.js";
+
+registerRigFactory("fromSpec", (spec: unknown, deps?: unknown) =>
+  createFromSpecRig(spec as LegacyCameraSpec, deps as LegacySpecRigDeps | undefined));

@@ -19,6 +19,12 @@
  */
 
 import type { GameVec3 } from "./GameRuntime.js";
+import { assertFinite, assertVec3, dampFactor, lerpTuple } from "./camera/rigDamping.js";
+import { createShoulderCamera } from "./camera/rigs/shoulderCamera.js";
+import type { ShoulderCamera, ShoulderCameraOptions } from "./camera/rigs/shoulderCamera.js";
+
+export { createShoulderCamera } from "./camera/rigs/shoulderCamera.js";
+export type { ShoulderCamera, ShoulderCameraOptions } from "./camera/rigs/shoulderCamera.js";
 
 export type GameCameraRigVec3 = GameVec3;
 
@@ -47,112 +53,6 @@ export interface GameCameraEvidence {
   readonly clearance: number;
 }
 
-function assertFinite(value: number, api: string, field: string): void {
-  if (!Number.isFinite(value)) {
-    throw new RangeError(`${api} ${field} must be finite (received ${String(value)}).`);
-  }
-}
-
-function assertVec3(value: GameCameraRigVec3, api: string, field: string): void {
-  if (!Array.isArray(value) || value.length !== 3 || value.some((component) => !Number.isFinite(component))) {
-    throw new RangeError(`${api} ${field} must be a finite [x, y, z] tuple.`);
-  }
-}
-
-function dampFactor(rate: number, dt: number): number {
-  return 1 - Math.exp(-Math.max(0, rate) * Math.max(0, dt));
-}
-
-function lerpTuple(a: GameCameraRigVec3, b: GameCameraRigVec3, alpha: number): GameCameraRigVec3 {
-  return [
-    a[0] + (b[0] - a[0]) * alpha,
-    a[1] + (b[1] - a[1]) * alpha,
-    a[2] + (b[2] - a[2]) * alpha
-  ];
-}
-
-// ---------------------------------------------------------------------------
-// Shoulder camera
-// ---------------------------------------------------------------------------
-
-export interface ShoulderCameraOptions {
-  readonly side?: "right" | "left";
-  readonly sideOffset?: number;
-  readonly heightOffset?: number;
-  readonly distance?: number;
-  readonly lookAhead?: number;
-  readonly smoothing?: number;
-  readonly fov?: number;
-}
-
-export interface ShoulderCamera {
-  update(dt: number, target: GameCameraRigTarget, overrides?: { readonly distance?: number }): GameCameraRigSnapshot;
-  snapshot(): GameCameraRigSnapshot;
-  reset(eye: GameCameraRigVec3): void;
-}
-
-export function createShoulderCamera(options: ShoulderCameraOptions = {}): ShoulderCamera {
-  const api = "camera.shoulder";
-  const sideSign = options.side === "left" ? -1 : 1;
-  const sideOffset = options.sideOffset ?? 0.85;
-  const heightOffset = options.heightOffset ?? 1.55;
-  const distance = options.distance ?? 2.6;
-  const lookAhead = options.lookAhead ?? 2.2;
-  const smoothing = options.smoothing ?? 10;
-  const fov = options.fov ?? 55;
-  for (const [field, value] of [["sideOffset", sideOffset], ["heightOffset", heightOffset], ["distance", distance], ["lookAhead", lookAhead], ["smoothing", smoothing], ["fov", fov]] as const) {
-    assertFinite(value, api, field);
-  }
-  if (distance < 0) throw new RangeError(`${api} distance must be >= 0.`);
-  if (smoothing < 0) throw new RangeError(`${api} smoothing must be >= 0.`);
-
-  let eye: GameCameraRigVec3 = [sideSign * sideOffset, heightOffset, distance];
-  let look: GameCameraRigVec3 = [0, 1, -lookAhead];
-  let currentFov = fov;
-
-  const solve = (target: GameCameraRigTarget, dist = distance): { eye: GameCameraRigVec3; look: GameCameraRigVec3 } => {
-    assertVec3(target.position, api, "target.position");
-    const yaw = target.facing ?? 0;
-    assertFinite(yaw, api, "target.facing");
-    const forward: GameCameraRigVec3 = [Math.sin(yaw), 0, -Math.cos(yaw)];
-    const right: GameCameraRigVec3 = [Math.cos(yaw), 0, Math.sin(yaw)];
-    const [px, py, pz] = target.position;
-    return {
-      eye: [
-        px - forward[0] * dist + right[0] * sideSign * sideOffset,
-        py + heightOffset,
-        pz - forward[2] * dist + right[2] * sideSign * sideOffset
-      ],
-      look: [px + forward[0] * lookAhead, py + heightOffset * 0.55, pz + forward[2] * lookAhead]
-    };
-  };
-
-  const snap = (): GameCameraRigSnapshot => ({
-    kind: "aura-game-shoulder-camera",
-    position: eye,
-    target: look,
-    fov: currentFov
-  });
-
-  return {
-    update(dt: number, target: GameCameraRigTarget, overrides?: { readonly distance?: number }): GameCameraRigSnapshot {
-      assertFinite(dt, api, "dt");
-      // #76: `overrides.distance` lets the shoulder rig re-solve the back-off
-      // each frame (framing.subjectHeightFraction); absent → fixed distance.
-      const solved = solve(target, overrides?.distance ?? distance);
-      const alpha = dampFactor(smoothing, dt);
-      eye = lerpTuple(eye, solved.eye, alpha);
-      look = lerpTuple(look, solved.look, alpha);
-      currentFov = fov;
-      return snap();
-    },
-    snapshot: snap,
-    reset(nextEye: GameCameraRigVec3): void {
-      assertVec3(nextEye, api, "eye");
-      eye = [...nextEye] as GameCameraRigVec3;
-    }
-  };
-}
 
 // ---------------------------------------------------------------------------
 // Collision-aware orbit (wall slide)
