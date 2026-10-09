@@ -517,13 +517,14 @@ function recordActualPath(): void {
 
 function syncActualPath(): void {
   for (let index = 0; index < ACTUAL_PATH_BEADS; index += 1) {
-    const node = handle("actual-path-bead-" + index);
+    const bead = world.pools.actualBeads[index]!;
     const point = actualPath[index];
-    if (!node || !point) {
-      node?.setVisible(false);
+    if (!point) {
+      bead.scale = [0, 0, 0];
       continue;
     }
-    node.setPosition(point[0], PLAY_PLANE_Y + 0.025, point[1]).setVisible(true);
+    bead.position = [point[0], PLAY_PLANE_Y + 0.025, point[1]];
+    bead.scale = [0.052, 0.02, 0.052];
   }
 }
 
@@ -557,34 +558,35 @@ function updatePrediction(): void {
   predictionSteps = path.samples.length;
   const beads = buildPredictionBeads({ samples: path.samples, maxBeads: PREDICTION_BEADS });
   for (let index = 0; index < PREDICTION_BEADS; index += 1) {
-    const node = handle("pred-bead-" + index);
+    const slot = world.pools.predBeads[index]!;
     const bead = beads[index];
-    if (!node || !bead) {
-      node?.setVisible(false);
+    if (!bead) {
+      slot.scale = [0, 0, 0];
       continue;
     }
-    node.setVisible(true);
-    node.setPosition(bead.x, PLAY_PLANE_Y + 0.03, bead.z);
+    slot.position = [bead.x, PLAY_PLANE_Y + 0.03, bead.z];
+    slot.scale = [0.028, 0.014, 0.028];
   }
 }
 
 function syncLaunchPredictionPath(): void {
   const beads = buildPredictionBeads({ samples: launchPrediction, maxBeads: PREDICTION_BEADS });
   for (let index = 0; index < PREDICTION_BEADS; index += 1) {
-    const node = handle("pred-bead-" + index);
+    const slot = world.pools.predBeads[index]!;
     const bead = beads[index];
-    if (!node || !bead) {
-      node?.setVisible(false);
+    if (!bead) {
+      slot.scale = [0, 0, 0];
       continue;
     }
-    node.setPosition(bead.x, PLAY_PLANE_Y - 0.045, bead.z).setScale(0.052).setVisible(true);
+    slot.position = [bead.x, PLAY_PLANE_Y - 0.045, bead.z];
+    slot.scale = [0.052, 0.052, 0.052];
   }
 }
 
 function hidePrediction(): void {
   predictionSteps = 0;
   for (let index = 0; index < PREDICTION_BEADS; index += 1) {
-    handle("pred-bead-" + index)?.setVisible(false);
+    world.pools.predBeads[index]!.scale = [0, 0, 0];
   }
 }
 
@@ -612,14 +614,16 @@ function syncPodVisual(): void {
   }
   // Trail streaks trail the flown velocity while coasting.
   for (let index = 0; index < TRAIL_STREAKS; index += 1) {
-    const streak = handle("mail-pod-trail-" + index);
-    if (!streak) continue;
+    const streak = world.pools.trailStreaks[index]!;
     const active = pod.state === "coasting" && speed > 0.05 && actualPath.length > index + 1;
-    streak.setVisible(active);
-    if (active) {
-      const back = actualPath[actualPath.length - 1 - index]!;
-      streak.setPosition(back[0], PLAY_PLANE_Y + 0.03, back[1]).setRotation(0, yaw, 0);
+    if (!active) {
+      streak.scale = [0, 0, 0];
+      continue;
     }
+    const back = actualPath[actualPath.length - 1 - index]!;
+    streak.position = [back[0], PLAY_PLANE_Y + 0.03, back[1]];
+    streak.rotation = [0, yaw, 0];
+    streak.scale = [0.05 - index * 0.004, 0.012, 0.12 - index * 0.012];
   }
 }
 
@@ -642,40 +646,41 @@ function syncSparks(dt: number): void {
   if (sparkLife > 0) sparkLife = Math.max(0, sparkLife - dt);
   const core = stationWorld(contract().destinationStationId);
   for (let index = 0; index < SPARK_COUNT; index += 1) {
-    const node = handle("dock-spark-" + index);
-    if (!node) continue;
+    const spark = world.pools.dockSparks[index]!;
     if (sparkLife <= 0) {
-      node.setPosition(0, -4, 0).setVisible(false);
+      spark.position = [0, -4, 0];
+      spark.scale = [0, 0, 0];
       continue;
     }
     const travel = (0.7 - sparkLife) * 1.4;
     const dir = sparkDirections[index]!;
-    node.setPosition(
+    spark.position = [
       core.x + dir[0] * travel,
       PLAY_PLANE_Y + 0.05 + sparkLife * 0.3,
       core.z + dir[1] * travel
-    ).setVisible(true);
+    ];
+    spark.scale = [0.05, 0.05, 0.05];
   }
 }
 
 function syncFlybyDrones(progress: number | null): void {
   const body = flybyBody(flyby.bodyId);
   for (let index = 0; index < FLYBY_DRONES; index += 1) {
-    const node = handle("flyby-drone-" + index);
-    if (!node) continue;
+    const drone = world.pools.flybyDrones[index]!;
     if (progress === null || !body) {
-      node.setPosition(0, -4, 0).setVisible(false);
+      drone.position = [0, -4, 0];
+      drone.scale = [0, 0, 0];
       continue;
     }
-    node.setVisible(true);
     const angle = (index / FLYBY_DRONES) * Math.PI * 2 + progress * 2.4;
     const radius = body.visualRadius + 0.32 - progress * 0.12;
     const yLift = reducedMotion ? 0 : Math.sin(progress * Math.PI) * 0.22;
-    node.setPosition(
+    drone.position = [
       body.position[0] + Math.cos(angle) * radius,
       PLAY_PLANE_Y + yLift,
       body.position[1] + Math.sin(angle) * radius
-    );
+    ];
+    drone.scale = [0.06, 0.03, 0.06];
   }
 }
 
