@@ -13,6 +13,7 @@ on:
       - 'packages/aura3d-cli/src/asset-manifest.ts'
       - 'public/aura-assets/**'
       - 'aura.assets.json'
+      - 'tests/unit/asset-optimize/**'
       - '.github/workflows/asset-optimize.yml'
   push:
     branches: ['qr/prd05-**', 'qr/prd05/**']
@@ -45,6 +46,12 @@ jobs:
         # root .gitignore forbids committed package-lock.json (pnpm repo);
         # package.json carries exact pins so `npm install` is deterministic.
         run: npm install --no-audit --no-fund --prefix tools/asset-optimize
+
+      - name: optimize determinism test
+        # PRD-16 05-S5: the pipeline must be byte-deterministic — this job is
+        # the only place tools/asset-optimize/node_modules exists, so the
+        # runIf(hasDeps) guard in the spec only goes live here.
+        run: node_modules/.bin/vitest run tests/unit/asset-optimize/determinism.test.ts
 
       - name: install ktx from tool-versions.json
         id: ktx
