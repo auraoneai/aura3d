@@ -1,0 +1,60 @@
+name: qr-prd07-browsers
+# PRD-07 §19 / 07-BROWSERS — the lane browser suite on the non-Chromium
+# engines (macos-14 WebKit + Firefox): shader compile matrix,
+# particles-production, sky-background, fog background match and the
+# GPU-sim fallback path. Same specs as prd07-vfx.yml's browser job, selected
+# via PRD07_BROWSER in tests/qr/prd07/playwright.config.ts.
+
+on:
+  pull_request:
+    paths:
+      - "packages/rendering/src/{vfx,atmosphere}/**"
+      - "packages/rendering/src/lanes/prd07.ts"
+      - "packages/engine/src/{agent-api/vfx,production-runtime/effects}/**"
+      - "tests/qr/prd07/**"
+      - ".github/workflows/qr-prd07-*.yml"
+  workflow_dispatch: {}
+
+concurrency:
+  group: qr-prd07-browsers-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browsers:
+    runs-on: macos-14
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [webkit, firefox]
+    env:
+      PRD07_BROWSER: ${{ matrix.browser }}
+      PLAYWRIGHT_JSON_OUTPUT_NAME: tests/reports/prd07-browser-${{ matrix.browser }}.json
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install ${{ matrix.browser }}
+      - name: Lane browser subset (${{ matrix.browser }})
+        # §19 coverage: shader compile matrix, particles-production,
+        # sky-background, fog background match, GPU-sim fallback.
+        run: |
+          pnpm exec playwright test --config tests/qr/prd07/playwright.config.ts \
+            browser/particle-shader-compile.spec.ts \
+            browser/fog-chunk-compile.spec.ts \
+            browser/particles-production.spec.ts \
+            browser/sky-background.spec.ts \
+            browser/fog-background-match.spec.ts \
+            browser/gpu-sim-parity.spec.ts
+      - name: Upload browser report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd07-browser-${{ matrix.browser }}-${{ github.run_id }}
+          path: tests/reports/prd07-browser-${{ matrix.browser }}.json
+          retention-days: 30
+          if-no-files-found: warn
