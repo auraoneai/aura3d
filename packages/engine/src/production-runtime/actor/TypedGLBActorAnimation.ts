@@ -268,6 +268,10 @@ function prd06WarmupItem(item: RenderItem): boolean {
  * list is the raw set, not extension-transformed).
  */
 export function beginPrd06ShaderWarmup(actor: TypedGLBActor, items: readonly RenderItem[]): void {
+  // 06-S12: actor load is the flag-on entry — start the lazy solver chunk here
+  // so constraint/spring evaluation resolves on the same settle window as the
+  // warm-up itself rather than mid-scene.
+  ensureAnimationLane();
   const compiler = activeShaderWarmupCompiler;
   const warm = items.filter(prd06WarmupItem);
   const state: Prd06ShaderWarmupState = { pending: Promise.resolve(), ready: true };
@@ -313,13 +317,31 @@ import type {
   LookAtConstraintSpec,
   TwoBoneIkConstraintSpec
 } from "@aura3d/animation/lanes";
-import {
-  createLookAtConstraint,
-  solveCcdIk,
-  solveFootIkConstraint,
-  solveTwoBoneIkRotations
-} from "@aura3d/animation/lanes";
 import type { SkeletonBinding } from "@aura3d/animation/lanes";
+
+// 06-S12 lazy edge: the pose-constraint solver tree (IK/look-at/spring) stays
+// off the "." critical path. `@aura3d/animation` is sideEffects-free but the
+// static edge would still pull the whole solver set into the eager bundle;
+// behind the flag the actor's frame path degrades one evaluate until the chunk
+// resolves instead.
+type AnimationLaneModule = typeof import("@aura3d/animation/lanes");
+let animationLane: AnimationLaneModule | undefined;
+let animationLaneLoading: Promise<unknown> | undefined;
+const ensureAnimationLane = (): void => {
+  animationLaneLoading ??= import("@aura3d/animation/lanes").then((m) => {
+    animationLane = m;
+  });
+};
+
+/**
+ * Resolves once the lazy solver lane is loaded (or immediately when it already
+ * is). Frame-path callers degrade without it; synchronous consumers — unit
+ * tests, tooling — await this before evaluating a solver-backed constraint.
+ */
+export function prd06ConstraintLaneReady(): Promise<unknown> {
+  ensureAnimationLane();
+  return animationLaneLoading ?? Promise.resolve();
+}
 
 type Vec3 = readonly [number, number, number];
 
@@ -394,7 +416,7 @@ export function createPrd06PoseConstraint(
         evaluate: (pose, bound, modelMatrix) => {
           const target = targetResolver(spec.target);
           if (target === null) return;
-          solveTwoBoneIkRotations(pose, bound, modelMatrix, spec, target);
+          animationLane?.solveTwoBoneIkRotations(pose, bound, modelMatrix, spec, target);
         }
       };
     }
@@ -408,20 +430,21 @@ export function createPrd06PoseConstraint(
       return {
         bones,
         evaluate: (pose, bound, modelMatrix) => {
-          solveFootIkConstraint(pose, bound, modelMatrix, spec);
+          animationLane?.solveFootIkConstraint(pose, bound, modelMatrix, spec);
         }
       };
     }
     case "look-at": {
       const bones = spec.bones.map((bone) => resolveJointIndex(binding, bone.bone));
       for (const eye of spec.eyes ?? []) bones.push(resolveJointIndex(binding, eye));
-      const lookAt = createLookAtConstraint(spec);
+      let lookAt = animationLane?.createLookAtConstraint(spec);
       return {
         bones,
         evaluate: (pose, bound, modelMatrix, ctx) => {
           const target = targetResolver(spec.target);
           if (target === null) return;
-          lookAt.apply(pose, bound, modelMatrix, target, ctx.dt);
+          lookAt ??= animationLane?.createLookAtConstraint(spec);
+          lookAt?.apply(pose, bound, modelMatrix, target, ctx.dt);
         }
       };
     }
@@ -432,7 +455,7 @@ export function createPrd06PoseConstraint(
         evaluate: (pose, bound, modelMatrix) => {
           const target = targetResolver(spec.target);
           if (target === null) return;
-          solveCcdIk(pose, bound, modelMatrix, spec, target);
+          animationLane?.solveCcdIk(pose, bound, modelMatrix, spec, target);
         }
       };
     }
@@ -458,6 +481,7 @@ export function addPrd06ActorConstraint(
   if (binding === undefined) {
     throw new Error("PRD06_CONSTRAINT_NO_SKELETON");
   }
+  ensureAnimationLane();
   const constraint = createPrd06PoseConstraint(spec, { binding, resolveTarget });
   const inert = constraintInert(spec);
   return runtime.addPoseConstraint({
@@ -477,11 +501,6 @@ export function clearPrd06ActorConstraints(actor: TypedGLBActor): void {
 
 /* -------------------------------------------------------------- T4.1 §7.1 */
 
-import {
-  bindSpringChainToSkeleton,
-  createSpringChain,
-  createSpringChainFromPreset
-} from "@aura3d/animation/lanes";
 import type {
   BoundSpringChain,
   SpringBonePreset,
@@ -536,42 +555,52 @@ export function createPrd06SpringConstraint(
   context: { readonly binding: SkeletonBinding }
 ): GLTFPoseConstraint {
   const binding = context.binding;
-  const bounds: BoundSpringChain[] = [];
   const bones = new Set<number>();
   for (const chainSpec of spec.chains) {
     if (chainSpec.bones.length < 2) {
       throw new Error("PRD06_SPRING_CHAIN_TOO_SHORT");
     }
-    const indices = chainSpec.bones.map((name) => resolveJointIndex(binding, name));
-    const restWorld = indices.map((joint) => fkWorldPosition(binding.restPose, binding, joint));
-    const options = {
-      bones: restWorld,
-      ...(chainSpec.name !== undefined ? { name: chainSpec.name } : {}),
-      ...(chainSpec.stiffness !== undefined ? { stiffness: chainSpec.stiffness } : {}),
-      ...(chainSpec.damping !== undefined ? { damping: chainSpec.damping } : {}),
-      ...(chainSpec.gravity !== undefined ? { gravity: chainSpec.gravity } : {}),
-      ...(chainSpec.colliders !== undefined ? { colliders: chainSpec.colliders } : {}),
-      ...(chainSpec.substeps !== undefined ? { substeps: chainSpec.substeps } : {}),
-      relativeDamping: chainSpec.relativeDamping ?? 12
-    };
-    const chain = chainSpec.preset !== undefined
-      ? createSpringChainFromPreset(chainSpec.preset, {
-          ...options,
-          ...(chainSpec.gravityScale !== undefined ? { gravityScale: chainSpec.gravityScale } : {})
-        })
-      : createSpringChain(options);
-    bounds.push(
-      bindSpringChainToSkeleton(chain, binding, chainSpec.bones, {
-        ...(chainSpec.substepHz !== undefined ? { substepHz: chainSpec.substepHz } : {})
-      })
-    );
-    for (const index of indices) bones.add(index);
+    for (const name of chainSpec.bones) bones.add(resolveJointIndex(binding, name));
   }
+  // 06-S12: chains build on first evaluate once the lazy solver module has
+  // resolved (creating them eagerly would strand springs unbound forever).
+  let bounds: BoundSpringChain[] | undefined;
+  const ensureBounds = (): readonly BoundSpringChain[] => {
+    if (bounds || !animationLane) return bounds ?? [];
+    const built: BoundSpringChain[] = [];
+    for (const chainSpec of spec.chains) {
+      const indices = chainSpec.bones.map((name) => resolveJointIndex(binding, name));
+      const restWorld = indices.map((joint) => fkWorldPosition(binding.restPose, binding, joint));
+      const options = {
+        bones: restWorld,
+        ...(chainSpec.name !== undefined ? { name: chainSpec.name } : {}),
+        ...(chainSpec.stiffness !== undefined ? { stiffness: chainSpec.stiffness } : {}),
+        ...(chainSpec.damping !== undefined ? { damping: chainSpec.damping } : {}),
+        ...(chainSpec.gravity !== undefined ? { gravity: chainSpec.gravity } : {}),
+        ...(chainSpec.colliders !== undefined ? { colliders: chainSpec.colliders } : {}),
+        ...(chainSpec.substeps !== undefined ? { substeps: chainSpec.substeps } : {}),
+        relativeDamping: chainSpec.relativeDamping ?? 12
+      };
+      const chain = chainSpec.preset !== undefined
+        ? animationLane.createSpringChainFromPreset(chainSpec.preset, {
+            ...options,
+            ...(chainSpec.gravityScale !== undefined ? { gravityScale: chainSpec.gravityScale } : {})
+          })
+        : animationLane.createSpringChain(options);
+      built.push(
+        animationLane.bindSpringChainToSkeleton(chain, binding, chainSpec.bones, {
+          ...(chainSpec.substepHz !== undefined ? { substepHz: chainSpec.substepHz } : {})
+        })
+      );
+    }
+    bounds = built;
+    return bounds;
+  };
   return {
     kind: "springs",
     bones: [...bones],
     evaluate: (pose, _bound, _modelMatrix, ctx) => {
-      for (const bound of bounds) bound.step(pose, ctx.dt);
+      for (const bound of ensureBounds()) bound.step(pose, ctx.dt);
     }
   };
 }
@@ -621,6 +650,7 @@ export function addPrd06ActorSpringBones(actor: TypedGLBActor, spec: Prd06Spring
   if (binding === undefined) {
     throw new Error("PRD06_SPRING_NO_SKELETON");
   }
+  ensureAnimationLane();
   const constraint = createPrd06SpringConstraint(spec, { binding });
   const dispose = runtime.addPoseConstraint(constraint);
   const list = springChainDisposers.get(actor) ?? [];
