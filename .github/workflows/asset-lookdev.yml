@@ -7,6 +7,16 @@ name: Asset look-dev
 # contact.jpg, debug.jpg, gameplay.jpg, metrics.json, review.json per asset.
 
 on:
+  # Push trigger lets the lane prove 05-S8 without workflow_dispatch (the
+  # git-manager proxy 403s dispatches — Q-CI-1). Empty inputs fall back to
+  # the §6.7 ten-id corpus (5 known-good + 5 known-bad).
+  push:
+    branches: ['qr/prd05-**']
+    paths:
+      - 'apps/asset-lookdev/**'
+      - 'packages/aura3d-cli/src/commands/prd05/**'
+      - '.github/workflows/asset-lookdev.yml'
+      - 'lookdev.stage.json'
   workflow_dispatch:
     inputs:
       assets:
@@ -30,6 +40,8 @@ concurrency:
 
 env:
   A3D_LOOKDEV_CHROMIUM_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+  # Push events have no inputs — default to the PRD-05 §6.7 corpus.
+  LOOKDEV_ASSETS: ${{ github.event.inputs.assets || 'DamagedHelmet,AntiqueCamera,Soldier,mechHeroDecimated,patrolAircraftMeshy,courierTrafficSedan,showcaseHeadphones,bankShotTable,skylineArcticRunnerHero,siegeGolfBall' }}
 
 jobs:
   capture:
@@ -51,11 +63,11 @@ jobs:
       - run: npm install --prefix tools/asset-optimize
       - run: pnpm exec playwright install chromium
       - name: Look-dev capture (ANGLE Metal, no SwiftShader)
-        run: node apps/asset-lookdev/capture.mjs --assets "${{ inputs.assets }}" --out tests/reports/lookdev
+        run: node apps/asset-lookdev/capture.mjs --assets "$LOOKDEV_ASSETS" --out tests/reports/lookdev
       - name: Upload look-dev artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: asset-lookdev-${{ inputs.assets }}
+          name: asset-lookdev-${{ github.sha }}
           path: tests/reports/lookdev/**
           if-no-files-found: warn
