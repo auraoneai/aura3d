@@ -196,7 +196,7 @@ exist on the hero; `animationState().activeActions.length ≥ 2` mid-ramp).
 
 ## Q-XX — `renderable.skinning.matrices` bottom row carries non-affine data (needs owner adjudication)
 
-**Filed:** #494.
+**Filed:** #494. **Resolved by fix:** PR #517 — the convention-mix half confirmed and fixed: `Keyframe.multiplyMat4` computed B·A (row-major read); now column-major A·B, with `tests/qr/prd06/unit/palette-affine-row.test.ts` pinning row 3 == (0,0,0,1) and canonical parity. The packed-payload alternative was not substantiated — both palette consumers copy `matrixPalette()` verbatim. Deform w-pin kept.
 
 Found while root-causing the deform-light-view chromium failure: every joint
 slot's row-3 (elements 3, 7, 11, 15 read col-major) holds a structured
