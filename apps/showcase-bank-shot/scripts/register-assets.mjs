@@ -12,7 +12,6 @@ const probeDir = resolve(repoRoot, "tests/reports/showcase-release-asset-probes"
 if (!existsSync(cli)) throw new Error("Build packages/aura3d-cli before registering Bank Shot assets.");
 
 execFileSync("node", [resolve(appDir, "scripts/build-models.mjs")], { cwd: repoRoot, stdio: "inherit" });
-execFileSync("node", [resolve(appDir, "scripts/build-sfx.mjs")], { cwd: repoRoot, stdio: "inherit" });
 
 const models = [
   {
@@ -63,40 +62,5 @@ for (const model of models) {
   console.log(`registered ${model.id} (${hasProbe ? "release + retained probe" : "candidate; probe pending"})`);
 }
 
-const audio = [
-  ["ambientHall", "bankShotAmbientHallSfx", "Looping after-hours hall ambience unlocked by a real user gesture."],
-  ["ballHit", "bankShotBallHitSfx", "Rate-limited ball-on-ball impact cue driven by live contact events."],
-  ["comboChime", "bankShotComboChimeSfx", "Combo extension cue driven by a legal consecutive pocket outcome."],
-  ["cueStrike", "bankShotCueStrikeSfx", "Cue strike cue driven by a successful settled-state strike."],
-  ["cushionHit", "bankShotCushionHitSfx", "Rate-limited cushion contact cue driven by live rail impact."],
-  ["eightWin", "bankShotEightWinSfx", "Eight-ball win sting driven only by the ordered legal-eight outcome."],
-  ["foulWhistle", "bankShotFoulWhistleSfx", "Foul cue driven by scratch, no-rail, or wrong-first-contact truth."],
-  ["pocketDrop", "bankShotPocketDropSfx", "Pocket drop cue driven by a once-per-entry captured ball."],
-  ["rackClear", "bankShotRackClearSfx", "Rack-clear cue driven by a completed non-final rack."],
-  ["rackFail", "bankShotRackFailSfx", "Rack-fail cue driven by clock, foul-limit, or illegal-eight failure."]
-];
-for (const [fileName, id, suitability] of audio) {
-  const source = resolve(appDir, `assets/sfx/${fileName}.wav`);
-  execFileSync("node", [cli,
-    "assets", "add", source,
-    "--name", id,
-    "--type", "audio",
-    "--license", "CC0-1.0",
-    "--license-name", "CC0 1.0 Universal",
-    "--license-url", "https://creativecommons.org/publicdomain/zero/1.0/",
-    "--author", "Aura3D synthesis",
-    "--source-family", "aura3d-original",
-    "--source-page", "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-bank-shot/scripts/build-sfx.mjs",
-    "--download-url", `https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-bank-shot/assets/sfx/${fileName}.wav`,
-    "--attribution", "Aura3D synthesis — original CC0 Bank Shot audio",
-    "--provenance-evidence", "Deterministically synthesized from the committed in-repository oscillator/noise generator; contains no sampled material.",
-    "--retrieved-at", "2026-08-23T23:00:00.000Z",
-    "--quality", "candidate",
-    "--role", "unknown",
-    "--suitability", suitability
-  ], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
-  console.log(`registered ${id} (candidate)`);
-}
-
 execFileSync("node", [cli, "assets", "typegen"], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
-console.log(`Bank Shot registration complete: ${models.length} models, ${audio.length} audio cues.`);
+console.log(`Bank Shot registration complete: ${models.length} models (audio cues now come from the shared game-sfx-core pack).`);

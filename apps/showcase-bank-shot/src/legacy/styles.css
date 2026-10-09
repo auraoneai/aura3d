@@ -191,3 +191,7 @@ body { overflow: hidden; }
   .pocket-toast { top: 42px; max-width: calc(100% - 20px); overflow: hidden; text-overflow: ellipsis; }
   .result-card { min-width: 0; width: calc(100% - 24px); padding: 18px; }
 }
+
+/* PRD-09 Phase 4: shared HUD kit host over the stage (replaces #hud/#panel). */
+.a3g-game-hud { position: absolute; inset: 0; pointer-events: none; z-index: 40; }
+.a3g-game-hud .a3g-tc { pointer-events: auto; }

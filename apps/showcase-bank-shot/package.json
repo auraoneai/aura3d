@@ -9,15 +9,14 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "build:sfx": "node scripts/build-sfx.mjs",
     "build:models": "node scripts/build-models.mjs",
     "register:assets": "node scripts/register-assets.mjs",
-    "evidence:performance": "tsx --tsconfig ../../tsconfig.base.json scripts/write-performance-report.ts",
     "evidence:deploy": "node scripts/write-deploy-report.mjs",
     "write:route-health": "node scripts/write-route-health.mjs"
   },
   "dependencies": {
-    "@aura3d/engine": "workspace:*"
+    "@aura3d/engine": "workspace:*",
+    "@aura3d/game": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.8.3",

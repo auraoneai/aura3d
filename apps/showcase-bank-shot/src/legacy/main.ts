@@ -12,7 +12,6 @@
  */
 import {
   camera,
-  createGameApp,
   effects,
   game,
   lights,
@@ -20,18 +19,32 @@ import {
   model,
   primitives,
   scene,
-  ui,
   type AuraRuntimeNodeHandle,
   type AuraSceneNode,
   type AuraDiagnostics
 } from "@aura3d/engine";
+import {
+  createFxParticlePass,
+  createGame,
+  createJuice,
+  createOverlayDriver,
+  createRumbleDriver,
+  createTweenEngine,
+  mountHud,
+  mountTouchControls,
+  type HudDocument
+} from "@aura3d/game";
+import { bankShotScenarios } from "../scenarios";
+import { bindBankShotDrive } from "../scenario-drive";
+import { bindBankShotEvidence } from "../evidence";
 import { assets } from "../../../../src/aura-assets";
 import { CueController, AIM_STEP, SPIN_STEP } from "../gameplay/cue";
 import { RulesEngine, type ShotRecord, type ShotOutcome } from "../gameplay/rules";
 import { rackConfigFor, RACK_COUNT } from "../gameplay/racks";
 import { createTableSimulation, CUE_SPOT, BALL_RADIUS, PLAY_HALF_X, PLAY_HALF_Z, POCKET_CENTERS, rackSpotFor } from "../gameplay/table";
 import { ballEulerFromBody } from "../gameplay/ball-visuals";
-import { createBilliardsAudio } from "./billiards-audio";
+import { createBankShotSound } from "../sound";
+>>>>>>> /tmp/mig-base/apps/showcase-bank-shot/src/main.ts
 import { createPoolHallSetDressing } from "./environment";
 import "./styles.css";
 
@@ -41,14 +54,10 @@ type BankShotWindow = Window & {
   __AURA3D_COMPOSITION_PROBE__?: unknown;
   __BS_SHOT__?: () => string;
   __BS_PUMP__?: (frames: number) => number;
-  __BS_SCENARIO__?: (scenario: "pocket" | "foul" | "eight-finish" | "rack-fail") => string;
 };
 const bankWindow = window as BankShotWindow;
-const reducedMotion = typeof window.matchMedia === "function"
-  && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const portraitComposition = window.innerWidth <= 700 || window.innerHeight > window.innerWidth * 1.25;
-const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
-document.body.dataset.capture = visualReviewCapture ? "review" : "default";
+document.body.dataset.capture = "default";
 
 const APP_ID = "showcase-bank-shot";
 // Keep the Rapier bodies at regulation radius while giving the typed ball
@@ -70,59 +79,12 @@ const ROUTE_SYSTEMS = {
 } as const;
 
 // ---------------------------------------------------------------- HUD markup --
-ui.html("#hud", `
-  <div class="hole-banner" id="bs-banner" aria-live="polite">BANK SHOT - AIM WITH A/D, HOLD SPACE TO CHARGE</div>
-  <div class="pocket-toast is-hidden" id="bs-toast" aria-live="polite"></div>
-  <div class="result-card is-hidden" id="bs-result" data-testid="bank-shot-result">
-    <h2 id="bs-result-title">Rack over</h2>
-    <p id="bs-result-detail"></p>
-    <div class="action-row"><button id="bs-again-button" type="button">Re-rack</button></div>
-  </div>
-`);
 
-ui.html("#panel", `
-  <section class="bs-brand">
-    <p class="eyebrow">Aura3D Prototype</p>
-    <h1>Bank Shot</h1>
-    <p class="blurb">Arcade 8-ball after close: 16 live balls, one lamp, three racks on shrinking clocks. Clear your suit, bank your leave, sink the 8.</p>
-  </section>
-  <section class="stat-grid" aria-label="Rack status">
-    <article><span>Rack</span><strong id="stat-rack">1 OF 3</strong></article>
-    <article><span>Clock</span><strong id="stat-clock">4:00</strong></article>
-    <article><span>Score</span><strong id="stat-score">0</strong></article>
-    <article><span>Combo</span><strong id="stat-combo">X1</strong></article>
-    <article><span>Suit</span><strong id="stat-suit">OPEN</strong></article>
-    <article><span>Fouls</span><strong id="stat-fouls">0 OF 3</strong></article>
-    <article><span>Balls left</span><strong id="stat-balls">15</strong></article>
-    <article><span>Suit left</span><strong id="stat-suit-balls">-</strong></article>
-    <article><span>Live balls</span><strong id="stat-live">16</strong></article>
-  </section>
-  <div class="power-meter" aria-label="Strike power"><span class="sweet-zone"></span><span class="fill" id="bs-power-fill"></span></div>
-  <div class="power-meta"><span id="bs-power-label">Strike</span><span>hold Space - sweet zone marked</span></div>
-  <p class="mission-line" id="bs-mission" aria-live="polite">OPEN TABLE - AIM WITH A/D, HOLD SPACE TO CHARGE</p>
-  <ul class="controls-list" aria-label="Keyboard controls">
-    <li>Aim <b>A</b>/<b>D</b> or <b>&larr;/&rarr;</b> (spin contact point <b>W</b>/<b>S</b>)</li>
-    <li>Strike <b>hold Space</b>, release</li>
-    <li>Ball in hand: move <b>A/D/W/S</b>, <b>Space</b> to place</li>
-    <li>Re-rack <b>R</b> - Pause <b>P</b></li>
-  </ul>
-  <section class="action-row" aria-label="Game actions">
-    <button id="bs-aim-left-button" type="button">Aim &larr;</button>
-    <button id="bs-aim-right-button" type="button">Aim &rarr;</button>
-    <button id="bs-charge-button" type="button">Charge + strike</button>
-    <button id="bs-spin-top-button" type="button">Top</button>
-    <button id="bs-spin-draw-button" type="button">Draw</button>
-    <button id="bs-reset-button" type="button">Re-rack</button>
-    <button id="bs-pause-button" type="button">Pause</button>
-  </section>
-  <section class="evidence-strip" aria-label="Route evidence">
-    <span>Backend <code id="bs-ev-backend">booting</code></span>
-    <span>Sensors <code id="bs-ev-sensors">0</code> - Bodies <code id="bs-ev-bodies">0</code></span>
-  </section>
-`);
+
+
 
 // ---------------------------------------------------------------- audio ------
-const audio = createBilliardsAudio();
+const audio = createBankShotSound();
 let ambientStarted = false;
 window.addEventListener("pointerdown", () => {
   void audio.unlock().then(() => {
@@ -147,7 +109,6 @@ const rules = new RulesEngine(1);
 const cueController = new CueController();
 /** True while a struck shot is in flight (facts come from sim.shotFacts()). */
 let shotInFlight = false;
-let paused = false;
 let frameCount = 0;
 let sensorEventCount = 0;
 const audioCueLog: string[] = [];
@@ -161,7 +122,6 @@ let stalledFrames = 0;
 let shootingFrames = 0;
 let pottedThisShot: number[] = [];
 let ghost = { x: CUE_SPOT[0], z: CUE_SPOT[1] };
-let toastTimer = 0;
 let sessionScoreAtRackStart = 0;
 let evidenceScenarioActive = false;
 
@@ -178,7 +138,7 @@ function cueReady(name: string, gapFrames: number): boolean {
 }
 
 // ---------------------------------------------------------------- scene ------
-const AIM_LINE_MATERIAL = material.emissive({ name: "aim line", color: "#38bdf8", emissive: "#0ea5e9", opacity: visualReviewCapture ? 0.62 : 0.9 });
+const AIM_LINE_MATERIAL = material.emissive({ name: "aim line", color: "#38bdf8", emissive: "#0ea5e9", opacity: 0.9 });
 const AIM_BANK_MATERIAL = material.emissive({ name: "aim bank", color: "#f59e0b", emissive: "#d97706", opacity: 0.85 });
 const AIM_MARKER_MATERIAL = material.emissive({ name: "aim marker", color: "#38bdf8", emissive: "#7dd3fc" });
 const GHOST_MATERIAL = material.emissive({ name: "cue ghost", color: "#38bdf8", emissive: "#0284c7", opacity: 0.55 });
@@ -271,7 +231,7 @@ function visualNodes(): AuraSceneNode[] {
   // Fine renderer-owned felt guides remain available in the playable route,
   // but the review capture relies on the typed table's integrated cloth marks
   // so no oversized route-side ring competes with the live break.
-  for (const z of visualReviewCapture ? [] : [-0.52, -0.26, 0.26, 0.52]) {
+  for (const z of [-0.52, -0.26, 0.26, 0.52]) {
     nodes.push(
       primitives.box({ name: `felt-guide-${z}`, material: FELT_GUIDE_MATERIAL })
         .position(0, 0.022, z)
@@ -302,6 +262,8 @@ function visualNodes(): AuraSceneNode[] {
 }
 
 function buildScene(): ReturnType<typeof scene> {
+  const reducedMotion = typeof window.matchMedia === "function"
+    && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const sceneCamera = portraitComposition
     // Put the table's long axis up the portrait viewport so all six pockets,
     // every ball, the cue, and the first line of action remain visible.
@@ -323,12 +285,12 @@ function buildScene(): ReturnType<typeof scene> {
       // then tightened around the break zone so balls are not thumbnail-sized.
       // The camera remains table-centric; the panel-free review frame has no
       // need to reserve pixels for the DOM controls.
-      position: visualReviewCapture ? [-0.34, 2.18, 2.18] : [-0.067, 2.514, 2.641],
+      position: [-0.067, 2.514, 2.641],
       // The default route keeps the opaque HUD panel clear of the table's
       // right rail.  Shifting the camera target a fraction toward the foot
       // keeps every pocket in the canvas while the controls stay readable.
-      target: visualReviewCapture ? [0.16, -0.02, 0.0] : [0.32, -0.02, 0.0],
-      fov: visualReviewCapture ? 39 : 48
+      target: [0.32, -0.02, 0.0],
+      fov: 48
     });
   return scene()
     .background("#10182a")
@@ -338,38 +300,41 @@ function buildScene(): ReturnType<typeof scene> {
       effects.neonBloom({ intensity: reducedMotion ? 0.07 : 0.2, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
       effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.1 }),
       effects.antiAlias({ mode: "fxaa" }),
-      effects.ambientOcclusion({ intensity: visualReviewCapture ? 0.74 : 0.26 }),
+      effects.ambientOcclusion({ intensity: 0.26 }),
       effects.contactOcclusion({ name: "ball-to-felt contact", intensity: 0.36, radius: 0.52 }),
       effects.fog({
         name: "hall haze",
-        density: visualReviewCapture ? 0.0035 : 0.011,
+        density: 0.011,
         color: "#10182a",
-        intensity: visualReviewCapture ? 0.07 : 0.16
+        intensity: 0.16
       }),
       // A restrained ambient floor preserves the lacquer highlights and the
       // ball-to-felt contact gradient.  The previous broad blue fill flattened
       // every PBR response into the same midtone.
-      lights.ambient({ name: "slate ambient", color: "#35435a", intensity: visualReviewCapture ? 0.1 : 0.24 }),
+      lights.ambient({ name: "slate ambient", color: "#35435a", intensity: 0.24 }),
       // An asymmetric three-lamp pool-room key. The offset sources create a
       // visible luminance falloff across felt, walnut bevels, and ball lacquer
       // instead of washing every surface with the same frontal value.
-      lights.point({ name: "pendant-light-mid", color: "#fff5d8", intensity: visualReviewCapture ? 5.0 : 4.85 }).position(-1.2, 1.55, 0.92),
-      lights.point({ name: "pendant-light-head", color: "#ffe9bd", intensity: visualReviewCapture ? 2.9 : 3.6 }).position(0.2, 1.8, -0.7),
-      lights.point({ name: "pendant-light-foot", color: "#ffd99c", intensity: visualReviewCapture ? 1.9 : 3.6 }).position(1.25, 1.35, 0.35),
-      lights.rect({ name: "table overhead softbox", color: "#fff4dc", intensity: visualReviewCapture ? 1.45 : 1.8, width: 2.8, height: 1.25 })
+      lights.point({ name: "pendant-light-mid", color: "#fff5d8", intensity: 4.85 }).position(-1.2, 1.55, 0.92),
+      lights.point({ name: "pendant-light-head", color: "#ffe9bd", intensity: 3.6 }).position(0.2, 1.8, -0.7),
+      lights.point({ name: "pendant-light-foot", color: "#ffd99c", intensity: 3.6 }).position(1.25, 1.35, 0.35),
+      lights.rect({ name: "table overhead softbox", color: "#fff4dc", intensity: 1.8, width: 2.8, height: 1.25 })
         .position(0, 2.25, 0.15),
       // Cool fill & rim lights
-      lights.directional({ name: "cool rim key", color: "#83bdff", intensity: visualReviewCapture ? 1.35 : 1.35 }).position(3.2, 4.5, 2.2),
-      lights.directional({ name: "warm room fill", color: "#f2a65e", intensity: visualReviewCapture ? 0.78 : 0.32 }).position(-3.0, 3.5, -2.0),
-      lights.point({ name: "felt cyan bounce", color: "#55baff", intensity: visualReviewCapture ? 0.18 : 0.7 }).position(0, 0.75, 2.0),
-      lights.point({ name: "rack magenta rim", color: "#ff78ad", intensity: visualReviewCapture ? 0.28 : 0.72 }).position(1.65, 0.72, -0.58),
-      lights.point({ name: "cue teal rim", color: "#55e2d2", intensity: visualReviewCapture ? 0.24 : 0.62 }).position(-1.45, 0.62, 0.62)
+      lights.directional({ name: "cool rim key", color: "#83bdff", intensity: 1.35 }).position(3.2, 4.5, 2.2),
+      lights.directional({ name: "warm room fill", color: "#f2a65e", intensity: 0.32 }).position(-3.0, 3.5, -2.0),
+      lights.point({ name: "felt cyan bounce", color: "#55baff", intensity: 0.7 }).position(0, 0.75, 2.0),
+      lights.point({ name: "rack magenta rim", color: "#ff78ad", intensity: 0.72 }).position(1.65, 0.72, -0.58),
+      lights.point({ name: "cue teal rim", color: "#55e2d2", intensity: 0.62 }).position(-1.45, 0.62, 0.62)
     ])
     .camera(sceneCamera);
 }
 
 // ---------------------------------------------------------------- mount ------
-const gameApp = createGameApp("#app", {
+const bankGame = createGame({
+  id: "showcase-bank-shot",
+  target: "#app",
+  scene: buildScene,
   diagnostics: { overlay: false, performancePanel: false },
   physics: {
     seed: 20260905,
@@ -382,7 +347,6 @@ const gameApp = createGameApp("#app", {
       spinTop: ["KeyW", "ArrowUp"],
       spinDraw: ["KeyS", "ArrowDown"],
       charge: ["Space"],
-      pause: ["KeyP", "Escape"],
       reset: ["KeyR"]
     },
     bufferMs: 80,
@@ -390,11 +354,38 @@ const gameApp = createGameApp("#app", {
     touch: true
   },
   loop: { fixedDt: 1 / 60, maxSubSteps: 2 },
-  scene: buildScene()
+  scenarios: bankShotScenarios,
+  evidence: {
+    schema: 1,
+    sections: async () => (await import("./evidence")).sections,
+    legacyGlobals: ["__BANK_SHOT_EVIDENCE__", "__AURA3D_SHOWCASE_BANK_SHOT__"]
+  },
+  qualityRebuild: { flags: ["game"] }
 });
-const app = gameApp.app;
-const input = gameApp.input!;
+const app = bankGame.app;
+const input = bankGame.input!;
 if (!input) throw new Error("Bank Shot failed to create Aura3D input.");
+bankGame.start();
+
+// ---- juice (PRD-09 §7.6) ----------------------------------------------------
+// pot/foul/cushion/combo composed through the shared facade: fx -> C-20 bursts,
+// flash/vignette -> C-05, hitStop -> the real GameSession time controller.
+const bankTween = createTweenEngine();
+const bankFx = createFxParticlePass(app.effects);
+const bankJuice = createJuice<"pot" | "foul" | "cushion" | "combo">({
+  events: {
+    pot: { fx: { kind: "ring", count: 16, color: "#ffd166" }, hitStop: 0.045 },
+    foul: { flash: { color: "#ff4d4d", peak: 0.22, ms: 200 }, shake: 0.2 },
+    cushion: { fx: { kind: "dust", count: 5, color: "#9fb4c8" } },
+    combo: { fx: { kind: "ring", count: 14, color: "#7ce8ff" }, punch: { fovDeg: 3, ms: 140 } }
+  },
+  camera: app.camera,
+  session: bankGame.session,
+  fx: bankFx,
+  overlay: createOverlayDriver({ app }),
+  tweens: bankTween,
+  rumble: createRumbleDriver()
+});
 
 const ballHandles = new Map<string, AuraRuntimeNodeHandle>();
 const ballShadowHandles = new Map<string, AuraRuntimeNodeHandle>();
@@ -474,64 +465,60 @@ Object.defineProperty(bankWindow, "__AURA3D_COMPOSITION_PROBE__", {
 });
 
 // ---------------------------------------------------------------- HUD --------
-const banner = document.getElementById("bs-banner")!;
-const toast = document.getElementById("bs-toast")!;
-const resultCard = document.getElementById("bs-result")!;
-const resultTitle = document.getElementById("bs-result-title")!;
-const resultDetail = document.getElementById("bs-result-detail")!;
-const againButton = document.getElementById("bs-again-button") as HTMLButtonElement;
-const powerFill = document.getElementById("bs-power-fill")!;
-const powerLabel = document.getElementById("bs-power-label")!;
-
-function formatClock(ms: number): string {
-  const total = Math.max(0, Math.ceil(ms / 1000));
-  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
-}
+// Shared HUD kit (PRD-09 Phase 4): tabletop theme. The #hud/#panel markup -
+// stat grid, power meter, controls list, evidence strip, action buttons and
+// the brand blurb - is deleted; brand/prose moves to the shell `about` menu
+// when the route adopts it.
+const hudHost = document.createElement("div");
+hudHost.className = "a3g-game-hud";
+document.getElementById("app")!.appendChild(hudHost);
+const hud = mountHud(
+  { root: hudHost, doc: document as unknown as HudDocument },
+  {
+    theme: "tabletop",
+    maxScreenFraction: 0.15,
+    widgets: [
+      { id: "clock", kind: "timer", mode: "countdown", warnAt: 45, anchor: "top", label: "Rack" },
+      { id: "score", kind: "score", anchor: "top-right", label: "Score", rollMs: 200 },
+      { id: "combo", kind: "combo", anchor: "top-right" },
+      { id: "objective", kind: "objective", anchor: "bottom-left" },
+      { id: "prompt", kind: "prompt", anchor: "bottom" },
+      { id: "strike", kind: "meter", max: 1, anchor: "bottom-right", label: "Strike", color: "#d4a94f" }
+    ]
+  }
+);
 
 function showToast(text: string): void {
-  toast.textContent = text;
-  toast.classList.remove("is-hidden");
-  toast.style.opacity = "1";
-  toastTimer = 90;
+  hud.toast(text, { ms: 2600 });
 }
 
 function hideResultCard(): void {
-  resultCard.classList.add("is-hidden");
+  // hud.banner expires on its own; nothing to clear eagerly.
 }
 
 function syncHud(): void {
   const snap = rules.snapshot();
   const cueState = cueController.state();
-  ui.setText("#stat-rack", `${snap.rack} OF ${RACK_COUNT}`);
-  ui.setText("#stat-clock", formatClock(snap.clockMs));
-  ui.setText("#stat-score", String(snap.score));
-  ui.setText("#stat-combo", `X${snap.combo.toFixed(2).replace(/0+$/, "").replace(/\.$/, "")}`);
-  ui.setText("#stat-suit", snap.suit === null ? "OPEN" : snap.suit.toUpperCase());
-  ui.setText("#stat-fouls", `${snap.fouls} OF 3`);
-  ui.setText("#stat-balls", String(snap.ballsRemaining));
-  ui.setText("#stat-suit-balls", snap.suit === null ? "-" : String(snap.ballsRemainingInSuit));
-  ui.setText("#stat-live", String(evidenceScenarioActive ? snap.ballsRemaining + 1 : sim.liveBallCount()));
-  ui.setText("#bs-mission", snap.banner);
-  powerFill.style.width = Math.round(cueState.charge * 100) + "%";
-  powerLabel.textContent = cueState.charging
-    ? `Strike ${Math.round(cueState.charge * 100)}%${cueState.inSweetZone ? " SWEET" : ""}`
-    : "Strike";
-  const chargeBtn = document.getElementById("bs-charge-button") as HTMLButtonElement | null;
-  if (chargeBtn) {
-    if (snap.phase === "ball-in-hand") chargeBtn.textContent = "Place Cue Ball";
-    else if (snap.phase === "rack-won" && snap.sessionComplete) chargeBtn.textContent = "Session complete";
-    else if (snap.phase === "rack-won") chargeBtn.textContent = "Next Rack (Space)";
-    else chargeBtn.textContent = "Charge + strike";
-    chargeBtn.disabled = snap.phase === "rack-won" && snap.sessionComplete;
-  }
-  ui.setText("#bs-ev-backend", sim.backend);
-  ui.setText("#bs-ev-sensors", String(sensorEventCount));
-  ui.setText("#bs-ev-bodies", String(sim.world.snapshot().bodies));
-  banner.textContent = paused
-    ? "PAUSED - P TO RESUME"
-    : snap.phase === "rack-won" && snap.sessionComplete
-      ? "SESSION CLEAR - R TO RE-RACK"
-      : snap.banner;
+  hud.set("clock", snap.clockMs / 1000);
+  hud.set("score", snap.score);
+  hud.set("combo", snap.combo);
+  hud.set(
+    "objective",
+    `${snap.suit === null ? "OPEN TABLE" : snap.suit.toUpperCase()} - ${snap.ballsRemaining} balls - fouls ${snap.fouls}/3`
+  );
+  hud.set("strike", cueState.charge);
+  hud.set(
+    "prompt",
+    bankGame.session.paused
+      ? "PAUSED - P TO RESUME"
+      : snap.phase === "rack-won" && snap.sessionComplete
+        ? "SESSION CLEAR - R TO RE-RACK"
+        : snap.phase === "ball-in-hand"
+          ? "BALL IN HAND - A/D/W/S to place, Space to set"
+          : cueState.charging
+            ? `Strike ${Math.round(cueState.charge * 100)}%${cueState.inSweetZone ? " - SWEET" : ""}`
+            : snap.banner
+  );
 }
 
 // ------------------------------------------------------------- shot glue -----
@@ -564,6 +551,10 @@ function consumeShotEvents(): void {
       if (cueReady("ball-hit", 5)) pushCue("ball-hit");
     } else if (fact.type === "cushion-touch") {
       if (cueReady("cushion-hit", 6)) pushCue("cushion-hit");
+      const body = sim.debugBallBody(fact.ball);
+      if (body && !bankGame.session.reducedMotion) {
+        bankJuice.fire("cushion", { position: body.position });
+      }
     }
   }
   // Cluster clacks from the polled contact events (slower, persistent pairs).
@@ -573,6 +564,8 @@ function consumeShotEvents(): void {
   for (const pot of sim.consumePotEvents()) {
     pottedThisShot.push(pot.ball);
     pushCue("pocket-drop");
+    const center = POCKET_CENTERS.find((p) => p.id === pot.pocket);
+    bankJuice.fire("pot", { position: center ? [center.x, 0.06, center.z] : undefined });
     showToast(pot.ball === 0 ? "SCRATCH" : `BALL ${pot.ball} DOWN`);
   }
 }
@@ -580,18 +573,20 @@ function consumeShotEvents(): void {
 function applyOutcome(outcome: ShotOutcome): void {
   if (outcome.rackWon) {
     pushCue("eight-win");
-    resultTitle.textContent = rules.sessionComplete ? "Session clear" : "Rack clear";
-    resultDetail.textContent = rules.sessionComplete
-      ? `All ${RACK_COUNT} racks cleared with ${rules.score} points.`
-      : `Rack ${rules.rack} cleared: ${outcome.winReason}. Score ${rules.score}.`;
-    resultCard.classList.remove("is-hidden");
+    void hud.banner(rules.sessionComplete ? "SESSION CLEAR" : "RACK CLEAR", { holdMs: 3600, style: "clear" });
+    hud.toast(
+      rules.sessionComplete
+        ? `All ${RACK_COUNT} racks cleared with ${rules.score} points.`
+        : `Rack ${rules.rack} cleared: ${outcome.winReason}. Score ${rules.score}.`,
+      { ms: 5200 }
+    );
   } else if (outcome.rackLost) {
     pushCue("rack-fail");
-    resultTitle.textContent = "Rack lost";
-    resultDetail.textContent = `Rack ${rules.rack} lost: ${outcome.lossReason}. Score ${rules.score}.`;
-    resultCard.classList.remove("is-hidden");
+    void hud.banner("RACK LOST", { holdMs: 3200, style: "fail" });
+    hud.toast(`Rack ${rules.rack} lost: ${outcome.lossReason}. Score ${rules.score}.`, { ms: 5200 });
   } else if (outcome.foul) {
     pushCue("foul-whistle");
+    bankJuice.fire("foul");
     let freeX = CUE_SPOT[0];
     let freeZ = CUE_SPOT[1];
     if (!sim.canPlaceCue(freeX, freeZ)) {
@@ -610,6 +605,8 @@ function applyOutcome(outcome: ShotOutcome): void {
     ghost = { x: freeX, z: freeZ };
   } else if (outcome.pottedLegal.length > 0) {
     pushCue("combo-chime");
+    const cueBody = sim.debugBallBody(0);
+    bankJuice.fire("combo", { position: cueBody?.position });
   }
 }
 
@@ -667,10 +664,6 @@ function advanceRack(): void {
 
 function resetSession(): void {
   evidenceScenarioActive = false;
-  toastTimer = 0;
-  toast.style.opacity = "0";
-  toast.textContent = "";
-  toast.classList.add("is-hidden");
   rules.rerack();
   sim.resetRack();
   cueController.cancelCharge();
@@ -687,11 +680,15 @@ function resetSession(): void {
 }
 
 function togglePause(): void {
-  paused = !paused;
+  // Session owns pause state (user + visibility + menu stack).
+  if (bankGame.session.paused) {
+    bankGame.session.resume();
+    app.resume();
+  } else {
+    bankGame.session.pause("user");
+    app.pause();
+  }
   syncHud();
-  publishEvidence();
-  if (paused) app.pause();
-  else app.resume();
 }
 
 // --------------------------------------------------------- per-frame sync ----
@@ -826,30 +823,30 @@ function syncVisuals(): void {
   // The review capture keeps the line hairline-thin and subdued so it reads as
   // a real tactical cue rather than a UI banner; the playable route retains a
   // stronger training guide and bank preview.
-  poseLine(aimLineHandle, cueInfo.x, cueInfo.z, sweep.ghostX, sweep.ghostZ, BALL_SURFACE_Y + 0.002, visualReviewCapture ? 0.0035 : 0.006);
+  poseLine(aimLineHandle, cueInfo.x, cueInfo.z, sweep.ghostX, sweep.ghostZ, BALL_SURFACE_Y + 0.002, 0.006);
   aimMarkerHandle?.setPosition(sweep.ghostX, BALL_SURFACE_Y, sweep.ghostZ);
   if (sweep.kind === "cushion") {
     const dot = dirX * sweep.normalX + dirZ * sweep.normalZ;
     const bankX = dirX - 2 * dot * sweep.normalX;
     const bankZ = dirZ - 2 * dot * sweep.normalZ;
-    poseLine(aimBankHandle, sweep.ghostX, sweep.ghostZ, sweep.ghostX + bankX * 0.45, sweep.ghostZ + bankZ * 0.45, BALL_SURFACE_Y + 0.002, visualReviewCapture ? 0.003 : 0.005);
+    poseLine(aimBankHandle, sweep.ghostX, sweep.ghostZ, sweep.ghostX + bankX * 0.45, sweep.ghostZ + bankZ * 0.45, BALL_SURFACE_Y + 0.002, 0.005);
   } else {
     parkNode(aimBankHandle);
   }
 }
 
 // ------------------------------------------------------------- evidence ------
-function publishEvidence(): void {
+function collectRouteEvidence(): Record<string, unknown> {
   const snap = rules.snapshot();
   const cueState = cueController.state();
   const diagnostics: AuraDiagnostics = app.diagnostics();
-  const evidence = {
+  const evidence: Record<string, unknown> = {
     // Contract keys from the PRD evidence section.
     status: "ready",
     mounted: true,
     primaryAssets: ["assets.bankShotTable", "assets.bankShotCue", "assets.bankShotBall00"],
     rack: snap.rack,
-    state: paused ? "paused" : snap.phase,
+    state: bankGame.session.paused ? "paused" : snap.phase,
     score: snap.score,
     combo: snap.combo,
     suit: snap.suit,
@@ -877,7 +874,7 @@ function publishEvidence(): void {
     // Route-local extras consumed by specs and route-health.
     appId: APP_ID,
     backend: sim.backend,
-    phase: paused ? snap.phase : snap.phase,
+    phase: snap.phase,
     frameCount,
     aimAngle: cueState.aimAngle,
     charge: cueState.charge,
@@ -897,11 +894,10 @@ function publishEvidence(): void {
     controls: ["A/Left aim left", "D/Right aim right", "W top spin", "S draw", "hold Space charge", "R re-rack", "P pause", "touch buttons"],
     systems: ROUTE_SYSTEMS,
     claimBoundary: "Aura3D prototype: route-local arcade 8-ball on the public physics surface (16 dynamic spheres, cushion restitution, pocket sensors); authored spin is a velocity nudge, no angular simulation; no reusable cue-sports kit claimed.",
-    mountedAtEpochMs: Date.now()
+    collectedAtEpochMs: Date.now()
   };
   void sessionScoreAtRackStart;
-  bankWindow.__BANK_SHOT_EVIDENCE__ = evidence;
-  Object.defineProperty(window, "__AURA3D_SHOWCASE_BANK_SHOT__", { value: evidence, configurable: true, writable: true });
+  return evidence;
 }
 
 // Renderer-owned capture used by specs and probes (no compositor dependency).
@@ -926,11 +922,14 @@ bankWindow.__BS_PUMP__ = (frames: number): number => {
  * play. Actual contacts/pockets/settling remain separately proven by public
  * Rapier simulation tests and the naturally driven browser break.
  */
-bankWindow.__BS_SCENARIO__ = (scenario) => {
-  resetSession();
-  evidenceScenarioActive = true;
-  const resolveFixture = (record: ShotRecord): ShotOutcome => {
-    if (!rules.beginShot()) throw new Error(`Bank Shot evidence fixture could not begin ${scenario}.`);
+bindBankShotEvidence(collectRouteEvidence);
+bindBankShotDrive({
+  resetForFixture: () => {
+    resetSession();
+    evidenceScenarioActive = true;
+  },
+  resolve: (record) => {
+    if (!rules.beginShot()) throw new Error(`Bank Shot evidence fixture could not begin a shot.`);
     const outcome = rules.resolveShot(record);
     rules.finishResolution();
     applyOutcome(outcome);
@@ -943,33 +942,20 @@ bankWindow.__BS_SCENARIO__ = (scenario) => {
           : outcome.pottedLegal.length > 0
             ? `potted:${outcome.pottedLegal.join(",")}`
             : "miss";
-    lastShotObject = { fixture: scenario, ...record, outcome };
+    lastShotObject = { ...record, outcome };
     return outcome;
-  };
-  if (scenario === "pocket") {
-    resolveFixture({ firstContact: 1, cushionAfterContact: true, potted: [1] });
-    showToast("BALL 1 DOWN");
-  } else if (scenario === "foul") {
-    resolveFixture({ firstContact: 1, cushionAfterContact: true, potted: [0] });
-    showToast("SCRATCH — BALL IN HAND");
-  } else if (scenario === "rack-fail") {
-    resolveFixture({ firstContact: 8, cushionAfterContact: true, potted: [8] });
-  } else {
-    for (let rack = 1; rack <= RACK_COUNT; rack += 1) {
-      resolveFixture({ firstContact: 1, cushionAfterContact: true, potted: [1, 2, 3, 4, 5, 6, 7] });
-      resolveFixture({ firstContact: 8, cushionAfterContact: true, potted: [8] });
-      if (rack < RACK_COUNT) {
-        rules.advanceRack();
-        sim.resetRack();
-        hideResultCard();
-      }
-    }
+  },
+  advanceRack: () => {
+    rules.advanceRack();
+    sim.resetRack();
+    hideResultCard();
+  },
+  toast: showToast,
+  sync: () => {
+    syncVisuals();
+    syncHud();
   }
-  syncVisuals();
-  syncHud();
-  publishEvidence();
-  return lastShotSummary;
-};
+});
 
 // ---------------------------------------------------------------- input -------
 /*
@@ -990,7 +976,7 @@ function manualEdge(code: string): "pressed" | "released" | "held" | "idle" {
 }
 
 function manualAdvanceFrame(): void {
-  for (const code of ["Space", "KeyA", "KeyD", "KeyW", "KeyS", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "KeyP", "Escape", "KeyR"]) {
+  for (const code of ["Space", "KeyA", "KeyD", "KeyW", "KeyS", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "KeyR"]) {
     manualPrev.set(code, manualHeld.has(code));
   }
 }
@@ -1019,7 +1005,6 @@ function confirmBallInHand(): void {
   if (!sim.restoreCueAt(targetX, targetZ)) return;
   if (rules.confirmBallInHand()) pushCue("ball-hit");
   syncHud();
-  publishEvidence();
 }
 
 window.addEventListener("keydown", (event) => {
@@ -1035,8 +1020,7 @@ window.addEventListener("keydown", (event) => {
     }
   }
   if (event.repeat) return;
-  if (event.code === "KeyP" || event.code === "Escape") togglePause();
-  else if (event.code === "KeyR") resetSession();
+  if (event.code === "KeyR") resetSession();
 }, { passive: true });
 window.addEventListener("keyup", (event) => {
   manualHeld.delete(event.code);
@@ -1051,44 +1035,48 @@ window.addEventListener("keydown", (event) => {
   }
 }, { passive: false });
 
-function bindHoldButton(selector: string, onDown: () => void, onUp: () => void): void {
-  const button = document.querySelector(selector) as HTMLButtonElement | null;
-  if (!button) return;
-  button.addEventListener("pointerdown", (event) => { event.preventDefault(); onDown(); }, { passive: false });
-  button.addEventListener("pointerup", () => onUp());
-  button.addEventListener("pointerleave", () => onUp());
-}
-bindHoldButton("#bs-aim-left-button", () => manualHeld.add("KeyA"), () => manualHeld.delete("KeyA"));
-bindHoldButton("#bs-aim-right-button", () => manualHeld.add("KeyD"), () => manualHeld.delete("KeyD"));
-bindHoldButton("#bs-spin-top-button", () => manualHeld.add("KeyW"), () => manualHeld.delete("KeyW"));
-bindHoldButton("#bs-spin-draw-button", () => manualHeld.add("KeyS"), () => manualHeld.delete("KeyS"));
-bindHoldButton("#bs-charge-button", () => {
-  if (rules.phase === "ball-in-hand") confirmBallInHand();
-  else if (rules.phase === "rack-won") advanceRack();
-  else if (rules.phase === "aiming" && !cueController.charging && sim.cueAtRest()) cueController.beginCharge();
-}, () => {
-  if (cueController.charging) doStrike();
-});
-ui.onClick("#bs-reset-button", () => resetSession());
-ui.onClick("#bs-pause-button", () => togglePause());
-againButton.addEventListener("click", () => resetSession());
+// aim-drag preset (PRD-09 1767): the left stick aims/spins, the right
+// (non-returning) stick fine-aims, charge holds Space. Writes land in the same
+// `manualHeld` code set the keyboard path feeds, so touch and keys share the
+// aim/charge logic below.
+const touchControls = mountTouchControls(
+  {
+    press: (code) => manualHeld.add(code),
+    release: (code) => manualHeld.delete(code),
+    setAction: (code, held) => (held ? manualHeld.add(code) : manualHeld.delete(code))
+  },
+  {
+    preset: "aim-drag",
+    bindings: {
+      "stick.left": "KeyA",
+      "stick.right": "KeyD",
+      "stick.up": "KeyW",
+      "stick.down": "KeyS",
+      "rstick.left": "KeyA",
+      "rstick.right": "KeyD",
+      charge: "Space",
+      confirm: "Space",
+      cancel: "KeyR"
+    }
+  },
+  {
+    doc: document as unknown as HudDocument,
+    root: hudHost,
+    coarsePointer: () => matchMedia("(pointer: coarse)").matches
+  }
+);
 
 // ------------------------------------------------------------- frame loop ----
 const BALL_IN_HAND_STEP = 0.03;
 
-gameApp.onFrame(({ dt }) => {
+bankGame.app.onFrame(({ dt }) => {
   input.update(dt);
+  bankTween.tick(dt);
   frameCount += 1;
 
-    if (toastTimer > 0) {
-      toastTimer -= 1;
-    if (toastTimer === 0) {
-      toast.style.opacity = "0";
-      toast.classList.add("is-hidden");
-    }
-  }
+  touchControls.update();
 
-  if (paused) {
+  if (bankGame.session.paused) {
     manualAdvanceFrame();
     return;
   }
@@ -1125,17 +1113,14 @@ gameApp.onFrame(({ dt }) => {
 
   if (rules.tickClock(dt * 1000)) {
     pushCue("rack-fail");
-    resultTitle.textContent = "Rack lost";
-    resultDetail.textContent = `Rack ${rules.rack} lost: clock expired. Score ${rules.score}.`;
-    resultCard.classList.remove("is-hidden");
+    void hud.banner("RACK LOST", { holdMs: 3200, style: "fail" });
+    hud.toast(`Rack ${rules.rack} lost: clock expired. Score ${rules.score}.`, { ms: 5200 });
     syncHud();
   }
 
   syncVisuals();
   if (frameCount % 6 === 0) syncHud();
-  publishEvidence();
 });
 
 void rackSpotFor;
 syncHud();
-publishEvidence();
