@@ -1,27 +1,34 @@
-From 33cf4e0a2bea55b397359d419e18ac3ea3621b06 Mon Sep 17 00:00:00 2001
+From 039eec3a0d018ca26f168e0f0823e026ac84dde0 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
-Date: Fri, 9 Oct 2026 13:40:36 +0000
+Date: Fri, 9 Oct 2026 13:45:50 +0000
 Subject: [PATCH] [qr-prd09] showcase-gravity-post: delete evidence
  files+blocks (T5.8)
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- .../scripts/build-sfx.mjs                     | 200 ------
+ .../performance-report.json                   | 105 --
+ .../scripts/build-courier-skiff.py            | 422 --------
+ .../scripts/build-freight-district.py         | 606 ------------
+ .../scripts/build-sfx.mjs                     | 200 ----
  .../scripts/capture-courier-skiff-preview.mjs |  58 --
  .../capture-freight-district-preview.mjs      |  61 --
  .../scripts/courier-skiff-preview/index.html  |  16 -
- .../scripts/courier-skiff-preview/main.ts     | 119 ----
+ .../scripts/courier-skiff-preview/main.ts     | 119 ---
  .../freight-district-preview/index.html       |  16 -
- .../scripts/freight-district-preview/main.ts  |  73 ---
- .../scripts/register-models.mjs               | 112 ----
- .../scripts/register-sfx.mjs                  |  46 --
- .../scripts/verify-contracts.ts               | 150 -----
- .../scripts/write-performance-report.ts       | 117 ----
- .../scripts/write-route-health.mjs            | 225 -------
- apps/showcase-gravity-post/src/legacy/main.ts | 570 ------------------
- .../src/legacy/styles.css                     | 132 ----
- .../src/v2/evidence/index.ts                  | 190 ------
- 15 files changed, 2085 deletions(-)
+ .../scripts/freight-district-preview/main.ts  |  73 --
+ .../scripts/inspect-freight-district.py       |  57 --
+ .../scripts/register-models.mjs               | 112 ---
+ .../scripts/register-sfx.mjs                  |  46 -
+ .../scripts/verify-contracts.ts               | 150 ---
+ .../scripts/write-performance-report.ts       | 117 ---
+ .../scripts/write-route-health.mjs            | 225 -----
+ apps/showcase-gravity-post/src/legacy/main.ts | 918 ------------------
+ apps/showcase-gravity-post/src/main.ts        |  10 -
+ .../src/v2/evidence/index.ts                  | 190 ----
+ 19 files changed, 3501 deletions(-)
+ delete mode 100644 apps/showcase-gravity-post/performance-report.json
+ delete mode 100644 apps/showcase-gravity-post/scripts/build-courier-skiff.py
+ delete mode 100644 apps/showcase-gravity-post/scripts/build-freight-district.py
  delete mode 100644 apps/showcase-gravity-post/scripts/build-sfx.mjs
  delete mode 100644 apps/showcase-gravity-post/scripts/capture-courier-skiff-preview.mjs
  delete mode 100644 apps/showcase-gravity-post/scripts/capture-freight-district-preview.mjs
@@ -29,6 +36,7 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  delete mode 100644 apps/showcase-gravity-post/scripts/courier-skiff-preview/main.ts
  delete mode 100644 apps/showcase-gravity-post/scripts/freight-district-preview/index.html
  delete mode 100644 apps/showcase-gravity-post/scripts/freight-district-preview/main.ts
+ delete mode 100644 apps/showcase-gravity-post/scripts/inspect-freight-district.py
  delete mode 100644 apps/showcase-gravity-post/scripts/register-models.mjs
  delete mode 100644 apps/showcase-gravity-post/scripts/register-sfx.mjs
  delete mode 100644 apps/showcase-gravity-post/scripts/verify-contracts.ts
@@ -36,6 +44,1157 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  delete mode 100644 apps/showcase-gravity-post/scripts/write-route-health.mjs
  delete mode 100644 apps/showcase-gravity-post/src/v2/evidence/index.ts
 
+diff --git a/apps/showcase-gravity-post/performance-report.json b/apps/showcase-gravity-post/performance-report.json
+deleted file mode 100644
+index f0f4b7732..000000000
+--- a/apps/showcase-gravity-post/performance-report.json
++++ /dev/null
+@@ -1,105 +0,0 @@
+-{
+-  "schema": "aura3d-gravity-post-performance/1.0",
+-  "generatedAt": "2026-09-03T08:53:57.972Z",
+-  "scope": "Headless route-local fixed-step and bounded-prediction timing over exact integer-drag fixtures. GPU/frame-time parity is not claimed.",
+-  "budgets": {
+-    "fixedStepP95Ms": 1,
+-    "boundedPredictionP95Ms": 3,
+-    "maximumRouteSeconds": 48,
+-    "campaignCompleteDrawCalls": 600
+-  },
+-  "observed": {
+-    "maxFixedStepP95Ms": 0.004,
+-    "maxPredictionP95Ms": 0.1804,
+-    "campaignCompleteDrawCalls": 503
+-  },
+-  "routes": [
+-    {
+-      "contractId": "GP-CON-1",
+-      "capture": true,
+-      "elapsedSeconds": 3.242,
+-      "arrivalSpeed": 0,
+-      "assists": [],
+-      "requiredAssists": [],
+-      "assistPass": true,
+-      "fixedStepMs": {
+-        "samples": 389,
+-        "p95": 0.004,
+-        "max": 0.3971
+-      },
+-      "predictionMs": {
+-        "samples": 50,
+-        "p95": 0.1804,
+-        "max": 0.2959
+-      }
+-    },
+-    {
+-      "contractId": "GP-CON-2",
+-      "capture": true,
+-      "elapsedSeconds": 7.267,
+-      "arrivalSpeed": 0,
+-      "assists": [
+-        "verdance"
+-      ],
+-      "requiredAssists": [
+-        "verdance"
+-      ],
+-      "assistPass": true,
+-      "fixedStepMs": {
+-        "samples": 872,
+-        "p95": 0.001,
+-        "max": 0.0813
+-      },
+-      "predictionMs": {
+-        "samples": 50,
+-        "p95": 0.1001,
+-        "max": 0.1242
+-      }
+-    },
+-    {
+-      "contractId": "GP-CON-3",
+-      "capture": true,
+-      "elapsedSeconds": 17.4,
+-      "arrivalSpeed": 0,
+-      "assists": [
+-        "sol",
+-        "gale"
+-      ],
+-      "requiredAssists": [
+-        "sol",
+-        "gale"
+-      ],
+-      "assistPass": true,
+-      "fixedStepMs": {
+-        "samples": 2088,
+-        "p95": 0.001,
+-        "max": 0.086
+-      },
+-      "predictionMs": {
+-        "samples": 50,
+-        "p95": 0.0862,
+-        "max": 0.1175
+-      }
+-    },
+-    {
+-      "contractId": "GP-CON-4",
+-      "capture": true,
+-      "elapsedSeconds": 3.383,
+-      "arrivalSpeed": 0,
+-      "assists": [],
+-      "requiredAssists": [],
+-      "assistPass": true,
+-      "fixedStepMs": {
+-        "samples": 406,
+-        "p95": 0.0004,
+-        "max": 0.0118
+-      },
+-      "predictionMs": {
+-        "samples": 50,
+-        "p95": 0.0815,
+-        "max": 0.0962
+-      }
+-    }
+-  ],
+-  "pass": true
+-}
+diff --git a/apps/showcase-gravity-post/scripts/build-courier-skiff.py b/apps/showcase-gravity-post/scripts/build-courier-skiff.py
+deleted file mode 100644
+index ab3560e35..000000000
+--- a/apps/showcase-gravity-post/scripts/build-courier-skiff.py
++++ /dev/null
+@@ -1,422 +0,0 @@
+-#!/usr/bin/env python3
+-"""Build the original CC0 Gravity Post courier-skiff candidate.
+-
+-Copyright 2026 Aura3D contributors. Dedicated to the public domain under CC0
+-1.0: https://creativecommons.org/publicdomain/zero/1.0/
+-
+-The asset is +Y-up after glTF export and +Z-forward. It is an art candidate:
+-this script writes only route-local candidate/probe files and never edits the
+-shared manifest or public asset directory.
+-"""
+-
+-from __future__ import annotations
+-
+-import json
+-import math
+-import struct
+-from pathlib import Path
+-
+-import bpy
+-from mathutils import Vector
+-
+-
+-APP_DIR = Path(__file__).resolve().parent.parent
+-OUT_DIR = APP_DIR / "assets" / "candidates"
+-OUT_PATH = OUT_DIR / "gravityPostCourierSkiff.candidate.glb"
+-PREVIEW_PATH = OUT_DIR / "gravityPostCourierSkiff.preview.png"
+-GROUPS: dict[str, list[bpy.types.Object]] = {}
+-
+-
+-def image_material(name: str, color: tuple[float, float, float, float], metallic: float,
+-                   roughness: float, stripe: tuple[float, float, float, float] | None = None,
+-                   emission: tuple[float, float, float] | None = None,
+-                   strength: float = 0.0) -> bpy.types.Material:
+-    """Create a glTF-safe authored paint material with a tiny packed texture.
+-
+-    A flat base color was the largest visual weakness in the previous skiff:
+-    every panel collapsed into one undifferentiated color at gameplay distance.
+-    The deterministic two-tone image is intentionally small and packed into the
+-    GLB, so the route has real material evidence without a runtime URL or a
+-    network dependency.  Blender's primitive UVs carry the pattern across the
+-    beveled panel pieces.
+-    """
+-    value = bpy.data.materials.new(name)
+-    value.use_nodes = True
+-    value.diffuse_color = color
+-    value.metallic = metallic
+-    value.roughness = roughness
+-    nodes = value.node_tree.nodes
+-    links = value.node_tree.links
+-    bsdf = nodes.get("Principled BSDF")
+-    if bsdf is None:
+-        return value
+-    bsdf.inputs["Metallic"].default_value = metallic
+-    bsdf.inputs["Roughness"].default_value = roughness
+-    if emission:
+-        key = "Emission Color" if "Emission Color" in bsdf.inputs else "Emission"
+-        bsdf.inputs[key].default_value = (*emission, 1.0)
+-        if "Emission Strength" in bsdf.inputs:
+-            bsdf.inputs["Emission Strength"].default_value = strength
+-    texture = bpy.data.images.new(name + " packed paint", width=32, height=32, alpha=False)
+-    accent = stripe or color
+-    pixels: list[float] = []
+-    for y in range(32):
+-        for x in range(32):
+-            # Fine diagonal micro-stripes break up broad surfaces while keeping
+-            # the working courier's navy/cyan/amber language coherent.
+-            use_accent = ((x + y * 2) // 4) % 2 == 1
+-            source = accent if use_accent else color
+-            pixels.extend(source[:3])
+-            pixels.append(1.0)
+-    texture.pixels = pixels
+-    texture.pack()
+-    image_node = nodes.new("ShaderNodeTexImage")
+-    image_node.name = name + " packed texture"
+-    image_node.image = texture
+-    image_node.interpolation = "Linear"
+-    texcoord = nodes.new("ShaderNodeTexCoord")
+-    links.new(texcoord.outputs["UV"], image_node.inputs["Vector"])
+-    links.new(image_node.outputs["Color"], bsdf.inputs["Base Color"])
+-    return value
+-
+-
+-def reset() -> None:
+-    bpy.ops.wm.read_factory_settings(use_empty=True)
+-
+-
+-def mat(name: str, color: tuple[float, float, float, float], metallic: float,
+-        roughness: float, emission: tuple[float, float, float] | None = None,
+-        strength: float = 0.0) -> bpy.types.Material:
+-    value = bpy.data.materials.new(name)
+-    value.use_nodes = True
+-    value.diffuse_color = color
+-    value.metallic = metallic
+-    value.roughness = roughness
+-    bsdf = value.node_tree.nodes.get("Principled BSDF")
+-    if bsdf:
+-        bsdf.inputs["Base Color"].default_value = color
+-        bsdf.inputs["Metallic"].default_value = metallic
+-        bsdf.inputs["Roughness"].default_value = roughness
+-        if emission:
+-            key = "Emission Color" if "Emission Color" in bsdf.inputs else "Emission"
+-            bsdf.inputs[key].default_value = (*emission, 1.0)
+-            if "Emission Strength" in bsdf.inputs:
+-                bsdf.inputs["Emission Strength"].default_value = strength
+-    return value
+-
+-
+-def finish(obj: bpy.types.Object, material: bpy.types.Material, name: str,
+-           bevel: float = 0.018) -> bpy.types.Object:
+-    obj.name = name
+-    obj.data.materials.append(material)
+-    if bevel:
+-        bpy.context.view_layer.objects.active = obj
+-        modifier = obj.modifiers.new("machined edge", "BEVEL")
+-        modifier.width = bevel
+-        modifier.segments = 2
+-        modifier.limit_method = "ANGLE"
+-        bpy.ops.object.modifier_apply(modifier=modifier.name)
+-    obj["aura3d_art_role"] = "primary courier vehicle"
+-    obj["aura3d_non_colliding"] = True
+-    # Keep the tiny UV islands from primitive panels intact for the packed
+-    # material textures.  Custom wedge surfaces remain valid flat-color faces.
+-    if obj.type == "MESH" and len(obj.data.uv_layers) == 0:
+-        bpy.context.view_layer.objects.active = obj
+-        obj.select_set(True)
+-        bpy.ops.object.mode_set(mode="EDIT")
+-        bpy.ops.mesh.select_all(action="SELECT")
+-        bpy.ops.uv.smart_project(angle_limit=1.15192, island_margin=0.03)
+-        bpy.ops.object.mode_set(mode="OBJECT")
+-        obj.select_set(False)
+-    GROUPS.setdefault(material.name, []).append(obj)
+-    return obj
+-
+-
+-def box(name: str, location: tuple[float, float, float],
+-        dimensions: tuple[float, float, float], material: bpy.types.Material,
+-        rotation: tuple[float, float, float] = (0, 0, 0),
+-        bevel: float = 0.018) -> bpy.types.Object:
+-    bpy.ops.mesh.primitive_cube_add(size=1, location=location, rotation=rotation)
+-    obj = bpy.context.object
+-    obj.dimensions = dimensions
+-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+-    return finish(obj, material, name, min(bevel, min(dimensions) * 0.15))
+-
+-
+-def cylinder(name: str, location: tuple[float, float, float], radius: float,
+-             depth: float, material: bpy.types.Material,
+-             rotation: tuple[float, float, float] = (0, 0, 0),
+-             vertices: int = 24) -> bpy.types.Object:
+-    bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius,
+-                                       depth=depth, location=location,
+-                                       rotation=rotation)
+-    return finish(bpy.context.object, material, name, 0.012)
+-
+-
+-def torus(name: str, location: tuple[float, float, float], major: float,
+-          minor: float, material: bpy.types.Material,
+-          rotation: tuple[float, float, float] = (0, 0, 0)) -> bpy.types.Object:
+-    bpy.ops.mesh.primitive_torus_add(
+-        major_radius=major,
+-        minor_radius=minor,
+-        major_segments=24,
+-        minor_segments=8,
+-        location=location,
+-        rotation=rotation,
+-    )
+-    return finish(bpy.context.object, material, name, min(minor * 0.35, 0.008))
+-
+-
+-def wedge(name: str, location: tuple[float, float, float],
+-          dimensions: tuple[float, float, float], material: bpy.types.Material,
+-          forward: bool = True) -> bpy.types.Object:
+-    x, y, z = (value / 2 for value in dimensions)
+-    sign = 1 if forward else -1
+-    verts = [
+-        (-x, -y, -z), (x, -y, -z), (-x, y, -z), (x, y, -z),
+-        (-x * 0.62, -y, sign * z), (x * 0.62, -y, sign * z),
+-        (-x * 0.62, y, sign * z), (x * 0.62, y, sign * z),
+-    ]
+-    faces = [(0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1),
+-             (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)]
+-    mesh = bpy.data.meshes.new(name + " mesh")
+-    mesh.from_pydata(verts, [], faces)
+-    mesh.update()
+-    obj = bpy.data.objects.new(name, mesh)
+-    bpy.context.collection.objects.link(obj)
+-    obj.location = location
+-    return finish(obj, material, name, 0.025)
+-
+-
+-def build() -> None:
+-    reset()
+-    OUT_DIR.mkdir(parents=True, exist_ok=True)
+-
+-    # Real packed two-tone paint maps keep the route's broad panels from
+-    # collapsing into single flat color patches.  Every texture is generated
+-    # deterministically and embedded in the candidate GLB by image_material.
+-    graphite = image_material("GPCS graphite armored hull", (0.035, 0.065, 0.085, 1), 0.72, 0.27,
+-                             (0.075, 0.13, 0.16, 1))
+-    navy = image_material("GPCS postal navy", (0.025, 0.16, 0.22, 1), 0.5, 0.31,
+-                          (0.04, 0.25, 0.31, 1))
+-    alloy = image_material("GPCS brushed alloy", (0.43, 0.58, 0.64, 1), 0.8, 0.2,
+-                           (0.22, 0.36, 0.42, 1))
+-    canopy = image_material("GPCS cyan canopy", (0.025, 0.38, 0.47, 1), 0.24, 0.12,
+-                            (0.02, 0.23, 0.3, 1), (0.02, 0.38, 0.48), 0.65)
+-    parcel = image_material("GPCS parcel amber", (0.82, 0.22, 0.025, 1), 0.36, 0.36,
+-                            (0.48, 0.09, 0.012, 1), (0.55, 0.07, 0.005), 0.18)
+-    parcel_light = image_material("GPCS parcel cream", (0.9, 0.62, 0.17, 1), 0.22, 0.42,
+-                                  (0.64, 0.3, 0.045, 1))
+-    cyan = image_material("GPCS cyan running light", (0.01, 0.26, 0.34, 1), 0.18, 0.2,
+-                          (0.02, 0.12, 0.17, 1), (0.0, 0.9, 1.0), 4.0)
+-    amber = mat("GPCS amber drive light", (0.34, 0.06, 0.005, 1), 0.2, 0.24,
+-                (1.0, 0.22, 0.015), 4.5)
+-    rubber = image_material("GPCS landing skid", (0.015, 0.022, 0.027, 1), 0.1, 0.68,
+-                            (0.035, 0.045, 0.05, 1))
+-    white = image_material("GPCS postal identity", (0.78, 0.91, 0.93, 1), 0.34, 0.32,
+-                           (0.36, 0.58, 0.63, 1), (0.2, 0.55, 0.62), 0.25)
+-
+-    # Low, forward-weighted hull — clearly a working courier skiff, not a
+-    # capital ship. +Z is the declared travel direction.
+-    wedge("courier armored nose", (0, 0.42, 0.56), (1.26, 0.36, 1.18), navy)
+-    box("courier central chassis", (0, 0.34, -0.22), (1.34, 0.34, 1.08), graphite)
+-    box("courier belly pan", (0, 0.2, 0), (1.18, 0.13, 1.92), alloy)
+-    # Layered shoulder and keel plates make the hull read as a purpose-built
+-    # courier rather than a cube with a payload box.  Their bevels catch the
+-    # route's cool key and warm rim at the same scale as the parcel hardware.
+-    for side in (-1, 1):
+-        wedge(f"courier shoulder fairing {side}", (side * 0.62, 0.42, 0.08),
+-              (0.26, 0.3, 1.38), navy, forward=True)
+-        box(f"courier side armor inset {side}", (side * 0.7, 0.34, -0.08),
+-            (0.055, 0.2, 0.78), alloy, bevel=0.012)
+-        box(f"courier route stripe {side}", (side * 0.73, 0.49, 0.33),
+-            (0.025, 0.075, 0.74), cyan, bevel=0.006)
+-    box("courier lower keel blade", (0, 0.12, 0.18), (0.5, 0.08, 1.34), graphite, bevel=0.014)
+-    wedge("courier cyan canopy", (0, 0.66, 0.47), (0.76, 0.31, 0.64), canopy)
+-    box("canopy center mullion", (0, 0.72, 0.47), (0.035, 0.33, 0.66), graphite, bevel=0.006)
+-    for side in (-1, 1):
+-        box(f"canopy side frame {side}", (side * 0.31, 0.68, 0.47), (0.055, 0.08, 0.58), alloy, bevel=0.008)
+-    box("courier canopy visor", (0, 0.83, 0.64), (0.5, 0.045, 0.16), canopy, bevel=0.01)
+-
+-    # Swept side wings and luminous hover emitters establish a recognisable
+-    # delivery-skiff silhouette at the route's small review scale.  The prior
+-    # candidate read as a short slab with four wheel-like pods; these tapered
+-    # outriggers widen the craft, expose a clear nose-to-tail axis, and keep the
+-    # working-vehicle language grounded in the same CC0 material family. They
+-    # are render-only geometry: route-local pod state still owns all motion and
+-    # the Rapier body remains the sole gameplay collider.
+-    for side in (-1, 1):
+-        wedge(
+-            f"courier swept hover wing {side}",
+-            (side * 0.92, 0.3, 0.06),
+-            (0.5, 0.16, 1.18),
+-            navy,
+-            forward=False,
+-        )
+-        box(
+-            f"courier wing root brace {side}",
+-            (side * 0.78, 0.26, -0.05),
+-            (0.12, 0.18, 0.72),
+-            alloy,
+-            bevel=0.012,
+-        )
+-        box(
+-            f"courier wing route light {side}",
+-            (side * 1.12, 0.34, 0.28),
+-            (0.035, 0.045, 0.58),
+-            cyan,
+-            bevel=0.006,
+-        )
+-        cylinder(
+-            f"courier hover emitter {side}",
+-            (side * 1.1, 0.18, -0.34),
+-            0.13,
+-            0.12,
+-            cyan,
+-            rotation=(0, math.pi / 2, 0),
+-            vertices=20,
+-        )
+-
+-    # A shallow dorsal dispatch fin turns the parcel module into part of the
+-    # craft's load-bearing architecture instead of an isolated orange cube.
+-    wedge("courier dorsal dispatch fin", (0, 0.66, -0.13), (0.52, 0.42, 0.38), parcel_light, forward=False)
+-    box("courier dispatch fin spine", (0, 0.88, -0.1), (0.08, 0.06, 0.44), amber, bevel=0.008)
+-
+-    # A large, unmistakable detachable parcel module occupies the rear third.
+-    # Its corner guards, straps and illuminated latch remain readable from the
+-    # route's high oblique camera.
+-    box("detachable express parcel", (0, 0.62, -0.58), (0.92, 0.62, 0.75), parcel, bevel=0.055)
+-    for x in (-0.43, 0.43):
+-        box(f"parcel vertical corner guard {x}", (x, 0.62, -0.58),
+-            (0.07, 0.68, 0.79), alloy, bevel=0.01)
+-    for z in (-0.84, -0.32):
+-        box(f"parcel horizontal guard {z}", (0, 0.62, z),
+-            (0.96, 0.08, 0.08), parcel_light, bevel=0.012)
+-    for side in (-1, 1):
+-        box(f"parcel side route chevron {side}", (side * 0.475, 0.62, -0.58),
+-            (0.025, 0.36, 0.26), parcel_light, rotation=(0, side * 0.45, 0), bevel=0.006)
+-    box("parcel lower shock cradle", (0, 0.27, -0.58), (1.02, 0.09, 0.84), graphite, bevel=0.018)
+-    box("parcel illuminated latch", (0, 0.64, -0.975), (0.3, 0.18, 0.035), amber, bevel=0.008)
+-    # Raised envelope glyph: rectangular letter plus diagonal fold lines.
+-    box("postal envelope badge", (0, 0.95, -0.58), (0.46, 0.025, 0.3), white, bevel=0.016)
+-    for side in (-1, 1):
+-        box(f"postal envelope fold {side}", (side * 0.105, 0.968, -0.58),
+-            (0.028, 0.02, 0.31), parcel, rotation=(0, side * 0.58, 0), bevel=0.004)
+-
+-    # Four grounded skid / drive pods establish deck contact in an action
+-    # frame; bright hubs and low shadowable feet avoid the floating-toy read.
+-    for x in (-0.68, 0.68):
+-        for z in (-0.55, 0.5):
+-            box(f"drive arm {x} {z}", (x * 0.82, 0.26, z), (0.3, 0.12, 0.18), alloy)
+-            box(f"drive arm outer brace {x} {z}", (x * 0.92, 0.16, z), (0.12, 0.1, 0.36), graphite, bevel=0.01)
+-            cylinder(f"contact drive pod {x} {z}", (x, 0.2, z), 0.2, 0.19,
+-                     rubber, rotation=(0, math.pi / 2, 0))
+-            cylinder(f"drive hub {x} {z}", (x + (0.101 if x > 0 else -0.101), 0.2, z),
+-                     0.11, 0.025, cyan if z > 0 else amber,
+-                     rotation=(0, math.pi / 2, 0), vertices=20)
+-            box(f"ground contact pad {x} {z}", (x, 0.055, z), (0.31, 0.07, 0.24), rubber)
+-            torus(f"drive pod rim {x} {z}", (x + (0.101 if x > 0 else -0.101), 0.2, z), 0.135, 0.018,
+-                  alloy, rotation=(0, math.pi / 2, 0))
+-
+-    # Direction and propulsion: twin aft nozzles plus long illuminated postal
+-    # rails make the nose/engine relationship legible even at thumbnail scale.
+-    for x in (-0.43, 0.43):
+-        cylinder(f"aft thruster nozzle {x}", (x, 0.34, -1.03), 0.16, 0.18,
+-                 graphite, rotation=(math.pi / 2, 0, 0))
+-        cylinder(f"aft thruster core {x}", (x, 0.34, -1.13), 0.09, 0.035,
+-                 amber, rotation=(math.pi / 2, 0, 0), vertices=20)
+-        box(f"postal running rail {x}", (x, 0.53, 0.08), (0.045, 0.045, 1.65), cyan, bevel=0.008)
+-    box("front dispatch lightbar", (0, 0.45, 1.08), (0.7, 0.06, 0.05), cyan, bevel=0.01)
+-    box("front dispatch bumper", (0, 0.3, 1.1), (0.82, 0.16, 0.08), alloy, bevel=0.018)
+-    for side in (-1, 1):
+-        cylinder(f"front nav lens {side}", (side * 0.33, 0.44, 1.11), 0.045, 0.028,
+-                 cyan if side > 0 else amber, rotation=(math.pi / 2, 0, 0), vertices=16)
+-    box("parcel route number plate", (0, 0.53, -1.01), (0.42, 0.18, 0.025), white, bevel=0.008)
+-
+-    # Bake every authored placement before material merging. Blender joins into
+-    # the active object's local frame; baking first prevents repeated material
+-    # groups from inheriting an arbitrary component origin.
+-    bpy.ops.object.select_all(action="SELECT")
+-    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+-
+-    # Merge by material into a production-appropriate small draw footprint.
+-    for material_name, objects in list(GROUPS.items()):
+-        bpy.ops.object.select_all(action="DESELECT")
+-        for obj in objects:
+-            obj.select_set(True)
+-        bpy.context.view_layer.objects.active = objects[0]
+-        bpy.ops.object.join()
+-        objects[0].name = material_name
+-
+-    # Calls above are authored directly in Aura coordinates (X right, Y up,
+-    # +Z forward). Rotate that assembly into Blender's Z-up space before its
+-    # glTF exporter performs the inverse axis conversion.
+-    bpy.ops.object.select_all(action="SELECT")
+-    for obj in bpy.context.selected_objects:
+-        obj.rotation_euler.rotate_axis("X", math.pi / 2)
+-    bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
+-    bpy.ops.export_scene.gltf(filepath=str(OUT_PATH), export_format="GLB",
+-                              use_selection=True, export_apply=True,
+-                              export_materials="EXPORT")
+-
+-    # A reproducible Blender workbench-style presentation; release proof still
+-    # requires the repository's root createAuraApp probe after registration.
+-    bpy.ops.object.camera_add(location=(3.5, -4.1, 2.7))
+-    camera = bpy.context.object
+-    direction = Vector((0, 0, 0.45)) - camera.location
+-    camera.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
+-    camera.data.lens = 58
+-    bpy.context.scene.camera = camera
+-    bpy.ops.object.light_add(type="AREA", location=(2.6, -3.2, 4.0))
+-    bpy.context.object.data.energy = 1100
+-    bpy.context.object.data.shape = "DISK"
+-    bpy.context.object.data.size = 4.0
+-    bpy.ops.object.light_add(type="AREA", location=(-3.0, -1.0, 2.0))
+-    bpy.context.object.data.energy = 700
+-    bpy.context.object.data.color = (0.2, 0.65, 1.0)
+-    bpy.context.object.data.size = 3.0
+-    scene = bpy.context.scene
+-    scene.render.engine = "BLENDER_EEVEE"
+-    scene.render.resolution_x = 960
+-    scene.render.resolution_y = 720
+-    scene.render.resolution_percentage = 100
+-    scene.render.image_settings.file_format = "PNG"
+-    scene.render.filepath = str(PREVIEW_PATH)
+-    scene.world = bpy.data.worlds.new("courier preview world")
+-    scene.world.color = (0.004, 0.008, 0.014)
+-    bpy.ops.render.render(write_still=True)
+-
+-
+-def canonicalize(path: Path) -> None:
+-    payload = bytearray(path.read_bytes())
+-    json_length, json_type = struct.unpack_from("<II", payload, 12)
+-    if payload[:4] != b"glTF" or json_type != 0x4E4F534A:
+-        raise RuntimeError("unexpected GLB layout")
+-    json_start = 20
+-    document = json.loads(bytes(payload[json_start:json_start + json_length]).decode("utf-8"))
+-    bin_header = json_start + json_length
+-    _, bin_type = struct.unpack_from("<II", payload, bin_header)
+-    if bin_type != 0x004E4942:
+-        raise RuntimeError("GLB has no binary chunk")
+-    bin_start = bin_header + 8
+-    counts = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4, "MAT2": 4, "MAT3": 9, "MAT4": 16}
+-    views = document.get("bufferViews", [])
+-    for accessor in document.get("accessors", []):
+-        if accessor.get("componentType") != 5126 or "bufferView" not in accessor or accessor.get("sparse"):
+-            continue
+-        view = views[accessor["bufferView"]]
+-        components = counts[accessor["type"]]
+-        stride = view.get("byteStride", components * 4)
+-        base = bin_start + view.get("byteOffset", 0) + accessor.get("byteOffset", 0)
+-        for element in range(accessor["count"]):
+-            for component in range(components):
+-                offset = base + element * stride + component * 4
+-                value = struct.unpack_from("<f", payload, offset)[0]
+-                struct.pack_into("<f", payload, offset, 0.0 if abs(value) < 0.0000005 else round(value, 6))
+-    path.write_bytes(payload)
+-
+-
+-if __name__ == "__main__":
+-    build()
+-    canonicalize(OUT_PATH)
+-    print(OUT_PATH)
+diff --git a/apps/showcase-gravity-post/scripts/build-freight-district.py b/apps/showcase-gravity-post/scripts/build-freight-district.py
+deleted file mode 100644
+index b86551b45..000000000
+--- a/apps/showcase-gravity-post/scripts/build-freight-district.py
++++ /dev/null
+@@ -1,606 +0,0 @@
+-#!/usr/bin/env python3
+-"""Build the original CC0 Gravity Post freight-district candidate.
+-
+-Copyright 2026 Aura3D contributors. Dedicated to the public domain under CC0
+-1.0: https://creativecommons.org/publicdomain/zero/1.0/
+-
+-This is an art-only candidate generator. It writes one route-local GLB and
+-does not register the asset, edit a manifest, or alter gameplay/collision.
+-The district is authored in route-local space: +X runs from Rust Exchange to
+-Gale Terminal, Z is up in Blender, and the open courier channel is centered on
+-Y=0. Blender's glTF Y-up export maps this to the Aura3D +X/+Y/-Z convention.
+-"""
+-
+-from __future__ import annotations
+-
+-import math
+-import json
+-import struct
+-import sys
+-from pathlib import Path
+-
+-import bpy
+-from mathutils import Vector
+-
+-
+-SCRIPT_DIR = Path(__file__).resolve().parent
+-APP_DIR = SCRIPT_DIR.parent
+-OUT_DIR = APP_DIR / "assets" / "candidates"
+-OUT_PATH = OUT_DIR / "gravityPostFreightDistrict.candidate.glb"
+-
+-OBJECTS_BY_MATERIAL: dict[str, list[bpy.types.Object]] = {}
+-
+-
+-def canonicalize_glb_float_accessors(path: Path) -> None:
+-    """Round exported float accessors so repeated Blender runs hash identically.
+-
+-    Blender's evaluated bevel normals can differ by signed zero or one ULP
+-    between background processes. Both render identically, but an asset
+-    pipeline needs byte-stable hashes. This rewrites only FLOAT accessor values
+-    in the GLB BIN chunk, preserving JSON, indices, layout, and chunk sizes.
+-    """
+-    payload = bytearray(path.read_bytes())
+-    if payload[:4] != b"glTF" or len(payload) < 20:
+-        raise RuntimeError(f"Not a GLB file: {path}")
+-    json_length, json_type = struct.unpack_from("<II", payload, 12)
+-    if json_type != 0x4E4F534A:
+-        raise RuntimeError("GLB first chunk is not JSON")
+-    json_start = 20
+-    document = json.loads(bytes(payload[json_start:json_start + json_length]).decode("utf-8"))
+-    bin_header = json_start + json_length
+-    bin_length, bin_type = struct.unpack_from("<II", payload, bin_header)
+-    if bin_type != 0x004E4942:
+-        raise RuntimeError("GLB second chunk is not BIN")
+-    bin_start = bin_header + 8
+-    component_counts = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4, "MAT2": 4, "MAT3": 9, "MAT4": 16}
+-    views = document.get("bufferViews", [])
+-    for accessor in document.get("accessors", []):
+-        if accessor.get("componentType") != 5126 or "bufferView" not in accessor or accessor.get("sparse"):
+-            continue
+-        view = views[accessor["bufferView"]]
+-        components = component_counts[accessor["type"]]
+-        element_size = components * 4
+-        stride = view.get("byteStride", element_size)
+-        base = bin_start + view.get("byteOffset", 0) + accessor.get("byteOffset", 0)
+-        for element in range(accessor["count"]):
+-            for component in range(components):
+-                offset = base + element * stride + component * 4
+-                value = struct.unpack_from("<f", payload, offset)[0]
+-                canonical = 0.0 if abs(value) < 0.0000005 else round(value, 6)
+-                struct.pack_into("<f", payload, offset, canonical)
+-    path.write_bytes(payload)
+-
+-
+-def reset_scene() -> None:
+-    bpy.ops.wm.read_factory_settings(use_empty=True)
+-    for datablocks in (bpy.data.meshes, bpy.data.curves, bpy.data.materials, bpy.data.cameras, bpy.data.lights):
+-        for datablock in list(datablocks):
+-            if datablock.users == 0:
+-                datablocks.remove(datablock)
+-
+-
+-def material(
+-    name: str,
+-    color: tuple[float, float, float, float],
+-    metallic: float,
+-    roughness: float,
+-    emissive: tuple[float, float, float] | None = None,
+-    emission_strength: float = 0.0,
+-    stripe: tuple[float, float, float, float] | None = None,
+-) -> bpy.types.Material:
+-    mat = bpy.data.materials.new(name)
+-    mat.use_nodes = True
+-    mat.diffuse_color = color
+-    mat.metallic = metallic
+-    mat.roughness = roughness
+-    mat["aura3d_material_role"] = "freight-district-surface"
+-    bsdf = mat.node_tree.nodes.get("Principled BSDF") if mat.node_tree else None
+-    if bsdf:
+-        if "Base Color" in bsdf.inputs:
+-            bsdf.inputs["Base Color"].default_value = color
+-        if "Metallic" in bsdf.inputs:
+-            bsdf.inputs["Metallic"].default_value = metallic
+-        if "Roughness" in bsdf.inputs:
+-            bsdf.inputs["Roughness"].default_value = roughness
+-        if emissive is not None:
+-            if "Emission Color" in bsdf.inputs:
+-                bsdf.inputs["Emission Color"].default_value = (*emissive, 1.0)
+-            elif "Emission" in bsdf.inputs:
+-                bsdf.inputs["Emission"].default_value = (*emissive, 1.0)
+-            if "Emission Strength" in bsdf.inputs:
+-                bsdf.inputs["Emission Strength"].default_value = emission_strength
+-        if stripe is not None:
+-            # Packed micro-panel paint gives the authored freight district a
+-            # genuine material hierarchy at gameplay distance. The image is
+-            # deterministic, embedded in the GLB, and intentionally tiny: it
+-            # is not a runtime URL, CSS texture, or external dependency.
+-            image = bpy.data.images.new(name + " packed panel paint", width=32, height=32, alpha=False)
+-            pixels: list[float] = []
+-            for y in range(32):
+-                for x in range(32):
+-                    # Fine diagonal bands break large wall planes while still
+-                    # preserving the district's restrained cargo palette.
+-                    source = stripe if ((x + y * 2) // 5) % 2 else color
+-                    pixels.extend(source[:3])
+-                    pixels.append(1.0)
+-            image.pixels = pixels
+-            image.pack()
+-            nodes = mat.node_tree.nodes
+-            links = mat.node_tree.links
+-            texcoord = nodes.new("ShaderNodeTexCoord")
+-            image_node = nodes.new("ShaderNodeTexImage")
+-            image_node.name = name + " packed panel texture"
+-            image_node.image = image
+-            image_node.interpolation = "Linear"
+-            links.new(texcoord.outputs["UV"], image_node.inputs["Vector"])
+-            links.new(image_node.outputs["Color"], bsdf.inputs["Base Color"])
+-    return mat
+-
+-
+-def track(obj: bpy.types.Object, mat: bpy.types.Material, name: str) -> bpy.types.Object:
+-    obj.name = name
+-    if len(obj.data.materials) == 0:
+-        obj.data.materials.append(mat)
+-    else:
+-        obj.data.materials[0] = mat
+-    obj["aura3d_non_colliding"] = True
+-    obj["aura3d_art_role"] = "renderer-owned freight-world"
+-    # Blender's primitive generators provide UVs, but the authored footprint
+-    # and beam meshes do not.  Unwrap those custom surfaces before material
+-    # merge so a packed base-color texture never exports a `texCoord: -1`
+-    # binding that would force the production bridge to fall back.
+-    if obj.type == "MESH" and len(obj.data.uv_layers) == 0:
+-        bpy.ops.object.select_all(action="DESELECT")
+-        obj.select_set(True)
+-        bpy.context.view_layer.objects.active = obj
+-        bpy.ops.object.mode_set(mode="EDIT")
+-        bpy.ops.mesh.select_all(action="SELECT")
+-        bpy.ops.uv.smart_project(angle_limit=1.15192, island_margin=0.03)
+-        bpy.ops.object.mode_set(mode="OBJECT")
+-        obj.select_set(False)
+-    OBJECTS_BY_MATERIAL.setdefault(mat.name, []).append(obj)
+-    return obj
+-
+-
+-def bevel(obj: bpy.types.Object, width: float, segments: int = 2) -> None:
+-    if width <= 0:
+-        return
+-    bpy.context.view_layer.objects.active = obj
+-    modifier = obj.modifiers.new(name="machined edge bevel", type="BEVEL")
+-    modifier.width = width
+-    modifier.segments = segments
+-    modifier.limit_method = "ANGLE"
+-    bpy.ops.object.modifier_apply(modifier=modifier.name)
+-
+-
+-def box(
+-    name: str,
+-    loc: tuple[float, float, float],
+-    dims: tuple[float, float, float],
+-    mat: bpy.types.Material,
+-    edge: float = 0.012,
+-    rot: tuple[float, float, float] = (0.0, 0.0, 0.0),
+-) -> bpy.types.Object:
+-    bpy.ops.mesh.primitive_cube_add(size=1.0, location=loc, rotation=rot)
+-    obj = bpy.context.object
+-    obj.dimensions = dims
+-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+-    bevel(obj, min(edge, min(dims) * 0.18), 2)
+-    return track(obj, mat, name)
+-
+-
+-def cylinder(
+-    name: str,
+-    loc: tuple[float, float, float],
+-    radius: float,
+-    depth: float,
+-    mat: bpy.types.Material,
+-    vertices: int = 16,
+-    rot: tuple[float, float, float] = (0.0, 0.0, 0.0),
+-    edge: float = 0.008,
+-) -> bpy.types.Object:
+-    bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=loc, rotation=rot)
+-    obj = bpy.context.object
+-    bevel(obj, edge, 2)
+-    return track(obj, mat, name)
+-
+-
+-def torus(
+-    name: str,
+-    loc: tuple[float, float, float],
+-    major: float,
+-    minor: float,
+-    mat: bpy.types.Material,
+-    rot: tuple[float, float, float] = (0.0, 0.0, 0.0),
+-) -> bpy.types.Object:
+-    bpy.ops.mesh.primitive_torus_add(
+-        major_radius=major,
+-        minor_radius=minor,
+-        major_segments=32,
+-        minor_segments=8,
+-        location=loc,
+-        rotation=rot,
+-    )
+-    return track(bpy.context.object, mat, name)
+-
+-
+-def beam_between(
+-    name: str,
+-    a: tuple[float, float, float],
+-    b: tuple[float, float, float],
+-    width: float,
+-    mat: bpy.types.Material,
+-) -> bpy.types.Object:
+-    start = Vector(a)
+-    end = Vector(b)
+-    delta = end - start
+-    midpoint = (start + end) * 0.5
+-    bpy.ops.mesh.primitive_cube_add(size=1.0, location=midpoint)
+-    obj = bpy.context.object
+-    obj.dimensions = (width, width, delta.length)
+-    obj.rotation_mode = "QUATERNION"
+-    obj.rotation_quaternion = Vector((0.0, 0.0, 1.0)).rotation_difference(delta.normalized())
+-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+-    bevel(obj, width * 0.12, 2)
+-    return track(obj, mat, name)
+-
+-
+-def extruded_footprint(
+-    name: str,
+-    points: list[tuple[float, float]],
+-    z_bottom: float,
+-    z_top: float,
+-    mat: bpy.types.Material,
+-    edge: float = 0.015,
+-) -> bpy.types.Object:
+-    count = len(points)
+-    verts = [(x, y, z_bottom) for x, y in points] + [(x, y, z_top) for x, y in points]
+-    faces: list[tuple[int, ...]] = []
+-    faces.append(tuple(range(count - 1, -1, -1)))
+-    faces.append(tuple(range(count, count * 2)))
+-    for index in range(count):
+-        nxt = (index + 1) % count
+-        faces.append((index, nxt, count + nxt, count + index))
+-    mesh = bpy.data.meshes.new(name + " mesh")
+-    mesh.from_pydata(verts, [], faces)
+-    mesh.update()
+-    obj = bpy.data.objects.new(name, mesh)
+-    bpy.context.collection.objects.link(obj)
+-    bevel(obj, edge, 2)
+-    return track(obj, mat, name)
+-
+-
+-def gable_hangar(
+-    name: str,
+-    center: tuple[float, float],
+-    length: float,
+-    width: float,
+-    wall_height: float,
+-    roof_height: float,
+-    mat: bpy.types.Material,
+-) -> bpy.types.Object:
+-    cx, cy = center
+-    x0, x1 = cx - length / 2, cx + length / 2
+-    y0, y1 = cy - width / 2, cy + width / 2
+-    z0, zw, zr = 0.02, wall_height, wall_height + roof_height
+-    verts = [
+-        (x0, y0, z0), (x1, y0, z0), (x1, y1, z0), (x0, y1, z0),
+-        (x0, y0, zw), (x1, y0, zw), (x1, y1, zw), (x0, y1, zw),
+-        (x0, 0.5 * (y0 + y1), zr), (x1, 0.5 * (y0 + y1), zr),
+-    ]
+-    faces = [
+-        (0, 3, 2, 1), (0, 1, 5, 4), (3, 7, 6, 2),
+-        (0, 4, 8, 7, 3), (1, 2, 6, 9, 5),
+-        (4, 5, 9, 8), (8, 9, 6, 7),
+-    ]
+-    mesh = bpy.data.meshes.new(name + " mesh")
+-    mesh.from_pydata(verts, [], faces)
+-    mesh.update()
+-    obj = bpy.data.objects.new(name, mesh)
+-    bpy.context.collection.objects.link(obj)
+-    bevel(obj, 0.018, 2)
+-    return track(obj, mat, name)
+-
+-
+-def build() -> None:
+-    reset_scene()
+-    OUT_DIR.mkdir(parents=True, exist_ok=True)
+-
+-    deck = material("GPFD deck graphite", (0.055, 0.095, 0.125, 1.0), 0.62, 0.34,
+-                    stripe=(0.095, 0.16, 0.19, 1.0))
+-    alloy = material("GPFD structural alloy", (0.42, 0.55, 0.61, 1.0), 0.78, 0.24,
+-                     stripe=(0.27, 0.38, 0.43, 1.0))
+-    dark = material("GPFD machinery navy", (0.075, 0.14, 0.18, 1.0), 0.54, 0.38,
+-                    stripe=(0.11, 0.2, 0.24, 1.0))
+-    rust = material("GPFD oxidized cargo cladding", (0.46, 0.19, 0.105, 1.0), 0.32, 0.5,
+-                    stripe=(0.62, 0.26, 0.12, 1.0))
+-    cargo_blue = material("GPFD cargo blue", (0.08, 0.27, 0.35, 1.0), 0.34, 0.46,
+-                          stripe=(0.13, 0.37, 0.43, 1.0))
+-    cargo_cream = material("GPFD cargo cream", (0.56, 0.49, 0.35, 1.0), 0.26, 0.54,
+-                           stripe=(0.7, 0.59, 0.4, 1.0))
+-    glass = material("GPFD operations glass", (0.045, 0.22, 0.27, 1.0), 0.18, 0.16, (0.03, 0.38, 0.46), 0.36,
+-                     stripe=(0.08, 0.34, 0.39, 1.0))
+-    cyan = material("GPFD cyan guidance", (0.01, 0.25, 0.3, 1.0), 0.18, 0.22, (0.0, 0.92, 1.0), 5.2,
+-                    stripe=(0.025, 0.12, 0.17, 1.0))
+-    amber = material("GPFD amber hazard", (0.32, 0.095, 0.02, 1.0), 0.16, 0.28, (1.0, 0.27, 0.025), 4.6,
+-                     stripe=(0.64, 0.18, 0.025, 1.0))
+-
+-    # One connected, chamfered deck with broad outer service aprons and an
+-    # unobstructed central courier channel. The asymmetrical outline keeps the
+-    # district from reading as a flat rectangular blockout.
+-    extruded_footprint(
+-        "connected freight deck",
+-        [(-0.58, -1.2), (-0.18, -1.72), (1.86, -1.84), (3.15, -1.62), (3.62, -1.08),
+-         (3.72, -0.7), (3.72, 0.72), (3.5, 1.18), (2.62, 1.72), (0.02, 1.82), (-0.58, 1.22)],
+-        -0.28,
+-        -0.02,
+-        deck,
+-        0.035,
+-    )
+-    # Underslung structural keel, side rails, and three inlaid transit rails.
+-    box("underslung district spine", (1.55, 0.0, -0.32), (4.25, 0.62, 0.18), dark, 0.035)
+-    for side in (-1.0, 1.0):
+-        box(f"outer crash rail {side:+.0f}", (1.5, side * 1.47, 0.12), (3.65, 0.11, 0.24), alloy, 0.028)
+-        for x in (-0.05, 0.75, 1.55, 2.35, 3.15):
+-            box(f"rail stanchion {side:+.0f} {x:.2f}", (x, side * 1.47, 0.0), (0.09, 0.14, 0.38), alloy, 0.012)
+-    for lateral in (-0.56, 0.0, 0.56):
+-        box(f"recessed mag rail {lateral:+.2f}", (1.48, lateral, 0.015), (3.7, 0.055, 0.035), cyan if lateral else alloy, 0.006)
+-    for x in (-0.32, 0.2, 0.72, 1.24, 1.76, 2.28):
+-        box(f"deck transverse seam {x:.2f}", (x, 0.0, 0.005), (0.025, 1.32, 0.022), dark, 0.003)
+-
+-    # Rust-side dispatch offices: a stepped, glazed operations building with
+-    # an actual awning and machinery roofline, not a stack of anonymous cubes.
+-    box("dispatch office lower volume", (0.0, 1.38, 0.31), (0.94, 0.62, 0.66), rust, 0.045)
+-    box("dispatch office upper bridge", (0.08, 1.38, 0.78), (0.64, 0.54, 0.32), dark, 0.04)
+-    box("dispatch office panoramic glass", (-0.12, 1.055, 0.76), (0.42, 0.035, 0.16), glass, 0.008)
+-    box("dispatch office cargo awning", (0.26, 0.96, 0.46), (0.72, 0.5, 0.075), alloy, 0.018, (0.06, 0.0, 0.0))
+-    cylinder("dispatch comms mast", (0.12, 1.42, 1.18), 0.035, 0.54, alloy, 12)
+-    torus("dispatch comms crown", (0.12, 1.42, 1.46), 0.13, 0.018, cyan, (math.pi / 2, 0.0, 0.0))
+-
+-    # Opposite-side loading hangar with a readable gabled roof, deep door,
+-    # articulated lintel, and ventilation stack.
+-    gable_hangar("loading hangar shell", (0.78, -1.46), 1.36, 0.74, 0.52, 0.24, rust)
+-    box("loading hangar dark door", (0.16, -1.085, 0.3), (0.54, 0.035, 0.46), dark, 0.012)
+-    box("loading hangar door header", (0.16, -1.055, 0.57), (0.66, 0.075, 0.1), alloy, 0.016)
+-    for x in (0.02, 0.31):
+-        box(f"hangar door division {x:.2f}", (x, -1.045, 0.3), (0.028, 0.035, 0.42), amber, 0.004)
+-    cylinder("hangar ventilation stack", (1.12, -1.48, 0.93), 0.075, 0.46, dark, 16)
+-    cylinder("hangar stack rain cap", (1.12, -1.48, 1.18), 0.12, 0.045, alloy, 16)
+-
+-    # A longitudinal container crane lives outside the flight channel. Its
+-    # tapered bracing, trolley, hook, and boom make the district immediately
+-    # identifiable as freight infrastructure without forming a camera canyon.
+-    for x in (1.15, 2.08):
+-        beam_between(f"crane outer leg {x:.2f}", (x, 1.35, 0.04), (x, 1.58, 1.16), 0.09, alloy)
+-        beam_between(f"crane inner leg {x:.2f}", (x, 0.95, 0.04), (x, 1.32, 1.16), 0.09, alloy)
+-        beam_between(f"crane cross brace {x:.2f}", (x, 1.02, 0.43), (x, 1.53, 0.9), 0.055, dark)
+-        beam_between(f"crane opposite brace {x:.2f}", (x, 1.53, 0.43), (x, 1.02, 0.9), 0.055, dark)
+-    box("crane longitudinal boom", (1.68, 1.44, 1.21), (1.52, 0.13, 0.13), alloy, 0.028)
+-    box("crane counterweight", (1.12, 1.44, 1.04), (0.26, 0.28, 0.24), cargo_cream, 0.025)
+-    box("crane trolley", (1.82, 1.42, 1.08), (0.24, 0.22, 0.18), dark, 0.024)
+-    cylinder("crane hook cable", (1.82, 1.42, 0.77), 0.012, 0.52, dark, 8)
+-    torus("crane cargo hook", (1.82, 1.42, 0.49), 0.075, 0.018, amber, (math.pi / 2, 0.0, 0.0))
+-
+-    # Varied cargo units are grouped on outer loading aprons. Their positions,
+-    # sizes, and colors are intentionally irregular so they establish worksite
+-    # density without becoming the rejected repetitive-fixture canyon.
+-    cargo_units = [
+-        (0.8, 1.14, 0.16, 0.46, 0.34, 0.3, cargo_blue),
+-        (1.3, 1.13, 0.14, 0.5, 0.34, 0.26, cargo_cream),
+-        (1.55, -1.16, 0.17, 0.62, 0.38, 0.32, cargo_blue),
+-        (2.15, -1.28, 0.16, 0.48, 0.32, 0.29, cargo_cream),
+-        (2.42, 1.2, 0.2, 0.66, 0.38, 0.38, cargo_blue),
+-    ]
+-    for index, (x, y, z, dx, dy, dz, cargo_mat) in enumerate(cargo_units):
+-        box(f"cargo module {index + 1}", (x, y, z), (dx, dy, dz), cargo_mat, 0.022)
+-        for rib in (-0.32, 0.0, 0.32):
+-            box(f"cargo module {index + 1} rib {rib:+.2f}", (x + rib * dx, y - math.copysign(dy * 0.51, y), z), (0.025, 0.025, dz * 0.86), alloy, 0.004)
+-
+-    # Liquid-freight tank farm and connected transfer pipes provide a second,
+-    # curved industrial vocabulary behind the hangar.
+-    for index, x in enumerate((1.52, 1.9, 2.28)):
+-        cylinder(f"cryogenic tank {index + 1}", (x, -1.55, 0.46), 0.17, 0.76, cargo_cream, 20)
+-        torus(f"tank band lower {index + 1}", (x, -1.55, 0.25), 0.174, 0.018, alloy)
+-        torus(f"tank band upper {index + 1}", (x, -1.55, 0.66), 0.174, 0.018, alloy)
+-        cylinder(f"tank valve {index + 1}", (x, -1.55, 0.87), 0.04, 0.12, amber, 12)
+-    box("tank transfer manifold", (1.9, -1.19, 0.14), (1.15, 0.07, 0.07), alloy, 0.015)
+-    for x in (1.52, 1.9, 2.28):
+-        cylinder(f"tank transfer riser {x:.2f}", (x, -1.25, 0.31), 0.028, 0.42, alloy, 12)
+-
+-    # Gale Terminal: an asymmetrical operations tower and two purpose-built
+-    # swept docking jaws frame a bright open destination. This is not a copy or
+-    # repetition of gravityPostDockGate; it is original district architecture.
+-    box("terminal west headhouse", (3.14, 1.16, 0.58), (0.88, 0.78, 1.18), dark, 0.065)
+-    box("terminal west armor shell", (3.08, 1.17, 0.57), (0.62, 0.86, 0.78), rust, 0.045)
+-    box("terminal east headhouse", (3.18, -1.18, 0.43), (0.76, 0.72, 0.86), dark, 0.055)
+-    box("terminal east service canopy", (2.91, -1.05, 0.85), (0.72, 0.92, 0.1), alloy, 0.026, (0.0, -0.09, 0.0))
+-    beam_between("terminal port docking jaw", (2.64, 0.52, 0.06), (3.02, 1.12, 1.25), 0.13, alloy)
+-    beam_between("terminal starboard docking jaw", (2.64, -0.52, 0.06), (3.02, -1.12, 1.11), 0.13, alloy)
+-    beam_between("terminal port jaw cyan inset", (2.67, 0.49, 0.11), (3.0, 1.02, 1.16), 0.035, cyan)
+-    beam_between("terminal starboard jaw cyan inset", (2.67, -0.49, 0.11), (3.0, -1.02, 1.02), 0.035, cyan)
+-    torus("terminal destination pad ring", (2.75, 0.0, 0.025), 0.54, 0.035, cyan)
+-    torus("terminal inner lock ring", (2.75, 0.0, 0.032), 0.36, 0.018, alloy)
+-    for side in (-1.0, 1.0):
+-        box(f"terminal landing chevron {side:+.0f}", (2.45, side * 0.22, 0.035), (0.42, 0.055, 0.026), amber, 0.004, (0.0, side * 0.38, 0.0))
+-
+-    # Operations tower, bridge, radar, and windows create a unique destination
+-    # skyline behind the pad while leaving the center visually open.
+-    extruded_footprint(
+-        "terminal control tower",
+-        [(3.27, 0.86), (3.53, 0.94), (3.62, 1.27), (3.46, 1.52), (3.16, 1.46), (3.08, 1.12)],
+-        0.0,
+-        1.62,
+-        alloy,
+-        0.04,
+-    )
+-    box("terminal control room", (3.34, 1.2, 1.66), (0.54, 0.62, 0.28), glass, 0.045)
+-    box("terminal control roof", (3.34, 1.2, 1.86), (0.68, 0.74, 0.12), dark, 0.035)
+-    cylinder("terminal radar mast", (3.34, 1.2, 2.14), 0.035, 0.48, alloy, 12)
+-    torus("terminal radar array", (3.34, 1.2, 2.4), 0.2, 0.026, cyan, (math.pi / 2, 0.0, 0.0))
+-    box("terminal elevated service bridge", (3.24, 0.28, 1.18), (0.46, 1.35, 0.16), dark, 0.026)
+-    for y in (-0.2, 0.08, 0.36, 0.64, 0.92):
+-        box(f"terminal bridge window {y:+.2f}", (3.005, y, 1.18), (0.03, 0.14, 0.075), glass, 0.004)
+-
+-    # Small perimeter lamps and hazard markers lead toward—not compete with—
+-    # the destination. There are only four pairs, each integrated into rails.
+-    for index, x in enumerate((0.05, 0.82, 1.59, 2.36)):
+-        for side in (-1.0, 1.0):
+-            box(f"approach lamp post {index} {side:+.0f}", (x, side * 0.86, 0.16), (0.035, 0.035, 0.3), dark, 0.005)
+-            box(f"approach lamp head {index} {side:+.0f}", (x, side * 0.84, 0.32), (0.08, 0.07, 0.055), cyan if index > 1 else amber, 0.008)
+-
+-    # Additional verticality and material cadence are deliberately confined to
+-    # the outer aprons.  These open loading towers, stacked freight modules,
+-    # and service bridges establish a layered city depth behind the live
+-    # courier channel instead of another row of anonymous ground slabs.
+-    for index, (x, side, height, width) in enumerate([
+-        (0.34, -1.02, 1.18, 0.56),
+-        (1.18, 1.06, 1.42, 0.68),
+-        (2.02, -1.08, 1.08, 0.62),
+-        (2.78, 1.02, 1.58, 0.72),
+-    ]):
+-        tower_mat = dark if index % 2 else rust
+-        box(f"outer loading tower shell {index + 1}", (x, side, height * 0.5),
+-            (width, 0.28, height), tower_mat, 0.035)
+-        # Three inset window bands produce readable occupancy and scale without
+-        # creating separate material/draw submissions after the merge.
+-        for band in range(3):
+-            z = 0.26 + band * (height * 0.24)
+-            box(f"outer loading tower window {index + 1} {band + 1}",
+-                (x - width * 0.12, side - math.copysign(0.151, side), z),
+-                (width * 0.48, 0.026, 0.085), glass, 0.004)
+-        box(f"outer loading tower cap {index + 1}", (x, side, height + 0.06),
+-            (width * 1.18, 0.36, 0.09), alloy, 0.012)
+-        box(f"outer loading tower beacon {index + 1}",
+-            (x + width * 0.32, side - math.copysign(0.17, side), height * 0.75),
+-            (0.045, 0.03, 0.14), cyan if index % 2 else amber, 0.004)
+-
+-    # Staggered container stacks give the district a believable freight rhythm;
+-    # each stack has a contrasting cap and a recessed label stripe, rather than
+-    # the repetitive untextured block silhouettes that failed the prior review.
+-    stack_specs = [
+-        (0.42, -1.43, 0.34, cargo_blue), (0.42, -1.43, 0.68, cargo_cream),
+-        (1.1, 1.42, 0.34, cargo_cream), (1.1, 1.42, 0.68, cargo_blue),
+-        (1.9, -1.5, 0.34, cargo_cream), (2.42, 1.43, 0.34, cargo_blue),
+-        (2.42, 1.43, 0.68, cargo_cream),
+-    ]
+-    for index, (x, y, z, cargo_mat) in enumerate(stack_specs):
+-        box(f"stacked freight crate {index + 1}", (x, y, z), (0.52, 0.32, 0.26), cargo_mat, 0.026)
+-        box(f"stacked freight crate label {index + 1}",
+-            (x, y - math.copysign(0.167, y), z + 0.015),
+-            (0.26, 0.018, 0.07), amber if index % 2 else cyan, 0.004)
+-
+-    # Elevated dispatch bridges frame (but do not cover) the courier corridor.
+-    # Their diagonal braces and alternating signal bars create perspective
+-    # depth toward the Gale terminal, with all geometry still renderer-owned.
+-    for index, x in enumerate((0.54, 1.48, 2.42)):
+-        bridge_height = 1.42 + (index % 2) * 0.16
+-        for side in (-1.0, 1.0):
+-            beam_between(f"dispatch bridge upright {index} {side:+.0f}",
+-                         (x, side * 1.04, 0.18), (x, side * 1.04, bridge_height),
+-                         0.065, alloy)
+-            beam_between(f"dispatch bridge diagonal {index} {side:+.0f}",
+-                         (x - 0.26, side * 1.04, 0.24), (x + 0.18, side * 1.04, bridge_height - 0.12),
+-                         0.04, dark)
+-        box(f"dispatch bridge crown {index}", (x, 0.0, bridge_height),
+-            (0.14, 2.24, 0.08), alloy, 0.012)
+-        box(f"dispatch bridge route beacon {index}", (x + 0.04, 0.0, bridge_height + 0.055),
+-            (0.24, 0.08, 0.026), cyan if index > 0 else amber, 0.004)
+-
+-    # A pair of deep backline silhouettes provides the terminal with an actual
+-    # skyline, while remaining low enough that the destination crown and
+-    # courier parcel remain the focal subjects in the review lens.
+-    for index, (x, y, width, height, facade) in enumerate([
+-        (0.2, -2.0, 0.66, 1.1, rust),
+-        (1.05, 2.05, 0.52, 1.34, dark),
+-        (2.02, -2.02, 0.72, 1.5, dark),
+-        (2.9, 2.04, 0.58, 1.22, rust),
+-    ]):
+-        box(f"backline freight skyline {index + 1}", (x, y, height * 0.5),
+-            (width, 0.26, height), facade, 0.038)
+-        for row in range(3):
+-            box(f"backline skyline window {index + 1} {row + 1}",
+-                (x - width * 0.08, y - math.copysign(0.14, y), 0.26 + row * 0.3),
+-                (width * 0.36, 0.02, 0.085), glass, 0.003)
+-
+-    # Convert and merge strictly by material. The detailed authored district
+-    # therefore remains an estimated nine draw submissions rather than one per
+-    # fixture, container, pipe, or architectural part.
+-    merged: list[bpy.types.Object] = []
+-    for material_name, objects in OBJECTS_BY_MATERIAL.items():
+-        bpy.ops.object.select_all(action="DESELECT")
+-        mesh_objects: list[bpy.types.Object] = []
+-        for obj in objects:
+-            obj.select_set(True)
+-            bpy.context.view_layer.objects.active = obj
+-            if obj.type != "MESH":
+-                bpy.ops.object.convert(target="MESH")
+-            # Apply every authored rotation before joining. Leaving quaternion
+-            # transforms on beam objects allowed the exporter to emit signed
+-            # zero and one-ULP variations between otherwise identical runs.
+-            bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
+-            mesh_objects.append(obj)
+-        bpy.context.view_layer.objects.active = mesh_objects[0]
+-        bpy.ops.object.join()
+-        joined = bpy.context.object
+-        joined.name = material_name.replace(" ", "_")
+-        for vertex in joined.data.vertices:
+-            vertex.co = tuple(0.0 if abs(component) < 0.0000005 else round(component, 6) for component in vertex.co)
+-        for polygon in joined.data.polygons:
+-            polygon.use_smooth = False
+-        joined.data.validate(clean_customdata=True)
+-        joined.data.update(calc_edges=True)
+-        joined["aura3d_merged_draw_group"] = material_name
+-        joined["aura3d_original_cc0"] = True
+-        merged.append(joined)
+-
+-    root = bpy.data.objects.new("GravityPostFreightDistrict_ROOT", None)
+-    bpy.context.collection.objects.link(root)
+-    root["asset_name"] = "Gravity Post Freight District"
+-    root["license"] = "CC0-1.0"
+-    root["license_url"] = "https://creativecommons.org/publicdomain/zero/1.0/"
+-    root["author"] = "Aura3D contributors"
+-    root["asset_role"] = "original non-colliding freight-world candidate"
+-    root["route_local_forward_axis"] = "+X Rust Exchange to Gale Terminal"
+-    root["open_flight_channel"] = "Y +/- 0.72, gameplay/collision ownership excluded"
+-    for obj in merged:
+-        # Author the release world at a truthful gameplay-scale footprint. The
+-        # route fits this 3x-authored geometry back to the same Rust-to-Gale
+-        # endpoints, so this changes source bounds without changing the final
+-        # review composition or gameplay ownership.
+-        for vertex in obj.data.vertices:
+-            vertex.co *= 3.0
+-        obj.parent = root
+-
+-    scene = bpy.context.scene
+-    scene["asset_license"] = "CC0-1.0"
+-    scene["asset_scope"] = "art-only candidate; no gameplay, collision, or manifest ownership"
+-    scene["generator"] = "apps/showcase-gravity-post/scripts/build-freight-district.py"
+-    scene["blender_version"] = bpy.app.version_string
+-
+-    bpy.ops.object.select_all(action="DESELECT")
+-    root.select_set(True)
+-    for obj in merged:
+-        obj.select_set(True)
+-
+-    bpy.ops.export_scene.gltf(
+-        filepath=str(OUT_PATH),
+-        export_format="GLB",
+-        use_selection=True,
+-        export_yup=True,
+-        export_apply=True,
+-        export_materials="EXPORT",
+-        export_extras=True,
+-        export_cameras=False,
+-        export_lights=False,
+-        export_animations=False,
+-        export_attributes=False,
+-    )
+-    canonicalize_glb_float_accessors(OUT_PATH)
+-    print(f"WROTE {OUT_PATH}")
+-    print(f"MERGED_MESHES {len(merged)}")
+-    print(f"MATERIALS {len(OBJECTS_BY_MATERIAL)}")
+-    print(f"BLENDER {bpy.app.version_string}")
+-
+-
+-if __name__ == "__main__":
+-    build()
 diff --git a/apps/showcase-gravity-post/scripts/build-sfx.mjs b/apps/showcase-gravity-post/scripts/build-sfx.mjs
 deleted file mode 100644
 index 4f5e30fed..000000000
@@ -621,6 +1780,69 @@ index ce35aa430..000000000
 -    }
 -  };
 -});
+diff --git a/apps/showcase-gravity-post/scripts/inspect-freight-district.py b/apps/showcase-gravity-post/scripts/inspect-freight-district.py
+deleted file mode 100644
+index ecd4f5148..000000000
+--- a/apps/showcase-gravity-post/scripts/inspect-freight-district.py
++++ /dev/null
+@@ -1,57 +0,0 @@
+-#!/usr/bin/env python3
+-"""Inspect the route-local freight-district candidate through Blender."""
+-
+-from __future__ import annotations
+-
+-import json
+-from pathlib import Path
+-
+-import bpy
+-from mathutils import Vector
+-
+-
+-APP_DIR = Path(__file__).resolve().parent.parent
+-ASSET = APP_DIR / "assets" / "candidates" / "gravityPostFreightDistrict.candidate.glb"
+-
+-
+-bpy.ops.wm.read_factory_settings(use_empty=True)
+-bpy.ops.import_scene.gltf(filepath=str(ASSET))
+-
+-meshes = [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]
+-corners = [obj.matrix_world @ Vector(corner) for obj in meshes for corner in obj.bound_box]
+-minimum = [min(point[axis] for point in corners) for axis in range(3)]
+-maximum = [max(point[axis] for point in corners) for axis in range(3)]
+-dimensions = [maximum[axis] - minimum[axis] for axis in range(3)]
+-triangles = 0
+-vertices = 0
+-primitives = 0
+-for obj in meshes:
+-    mesh = obj.data
+-    mesh.calc_loop_triangles()
+-    triangles += len(mesh.loop_triangles)
+-    vertices += len(mesh.vertices)
+-    primitives += max(1, len(mesh.materials))
+-
+-report = {
+-    "asset": str(ASSET),
+-    "blender": bpy.app.version_string,
+-    "nodes": len(list(bpy.context.scene.objects)),
+-    "meshNodes": len(meshes),
+-    "materials": len(bpy.data.materials),
+-    "estimatedDrawSubmissions": primitives,
+-    "vertices": vertices,
+-    "triangles": triangles,
+-    "boundsBlenderXYZ": {
+-        "min": [round(value, 6) for value in minimum],
+-        "max": [round(value, 6) for value in maximum],
+-        "dimensions": [round(value, 6) for value in dimensions],
+-    },
+-    "boundsAuraXYZ": {
+-        "min": [round(minimum[0], 6), round(minimum[2], 6), round(-maximum[1], 6)],
+-        "max": [round(maximum[0], 6), round(maximum[2], 6), round(-minimum[1], 6)],
+-        "dimensions": [round(dimensions[0], 6), round(dimensions[2], 6), round(dimensions[1], 6)],
+-    },
+-    "meshNames": sorted(obj.name for obj in meshes),
+-    "materialNames": sorted(mat.name for mat in bpy.data.materials),
+-}
+-print("FREIGHT_DISTRICT_INSPECT=" + json.dumps(report, separators=(",", ":")))
 diff --git a/apps/showcase-gravity-post/scripts/register-models.mjs b/apps/showcase-gravity-post/scripts/register-models.mjs
 deleted file mode 100644
 index b0bc00b68..000000000
@@ -1302,7 +2524,7 @@ index b79c8e0c5..000000000
 -console.log("Wrote apps/showcase-gravity-post/route-health.json");
 -console.log(JSON.stringify({ machinePass: true, primitiveOccurrences, performancePass: performance.pass }));
 diff --git a/apps/showcase-gravity-post/src/legacy/main.ts b/apps/showcase-gravity-post/src/legacy/main.ts
-index b5308393a..da666bcc9 100644
+index b5308393a..32fd43ded 100644
 --- a/apps/showcase-gravity-post/src/legacy/main.ts
 +++ b/apps/showcase-gravity-post/src/legacy/main.ts
 @@ -1,15 +1,3 @@
@@ -1537,23 +2759,24 @@ index b5308393a..da666bcc9 100644
  function solarKitBackdrop(): readonly AuraSceneNode[] {
    // The kit's animated planets jump at their 18-second loop wrap, so gameplay
    // cannot anchor to them: keep the static sun family, starfield, dust, light,
-@@ -284,7 +121,6 @@ function solarKitBackdrop(): readonly AuraSceneNode[] {
+@@ -284,16 +121,7 @@ function solarKitBackdrop(): readonly AuraSceneNode[] {
      return /(star|dust|sun|corona|glow)/i.test(name);
    });
  }
 -
  const stations = buildStations();
- const reviewRustStation = stations.find((station) => station.id === "rust-exchange")!;
- const reviewGaleStation = stations.find((station) => station.id === "gale-terminal")!;
-@@ -293,7 +129,6 @@ const reviewRouteDz = reviewGaleStation.z - reviewRustStation.z;
- const reviewRouteLength = Math.hypot(reviewRouteDx, reviewRouteDz);
- const reviewRoutePerpX = -reviewRouteDz / reviewRouteLength;
- const reviewRoutePerpZ = reviewRouteDx / reviewRouteLength;
+-const reviewRustStation = stations.find((station) => station.id === "rust-exchange")!;
+-const reviewGaleStation = stations.find((station) => station.id === "gale-terminal")!;
+-const reviewRouteDx = reviewGaleStation.x - reviewRustStation.x;
+-const reviewRouteDz = reviewGaleStation.z - reviewRustStation.z;
+-const reviewRouteLength = Math.hypot(reviewRouteDx, reviewRouteDz);
+-const reviewRoutePerpX = -reviewRouteDz / reviewRouteLength;
+-const reviewRoutePerpZ = reviewRouteDx / reviewRouteLength;
 -
  let sceneBuilder = scene()
    // The review corridor uses a lifted blue-hour sky so the courier's navy
    // hull, amber parcel, and cyan hardware separate from the freightway rather
-@@ -302,26 +137,11 @@ let sceneBuilder = scene()
+@@ -302,223 +130,11 @@ let sceneBuilder = scene()
    // and the aim line read in a default screenshot instead of a dark void.
    .background(visualReviewCapture ? "#28546a" : "#0e3346")
    .addMany(solarKitBackdrop());
@@ -1577,39 +2800,197 @@ index b5308393a..da666bcc9 100644
 -));
 -
 -// Orbital faint ellipse guide rings around Sol
- for (const body of WELL_BODIES) {
-   if (body.id === "sol") continue;
-   if (visualReviewCapture) continue;
-@@ -333,8 +153,6 @@ for (const body of WELL_BODIES) {
-     }).position(0, PLAY_PLANE_Y - 0.01, 0).rotate(1.5708, 0, 0).scale([dist * 1.92, dist * 1.92, 0.002])
-   );
- }
+-for (const body of WELL_BODIES) {
+-  if (body.id === "sol") continue;
+-  if (visualReviewCapture) continue;
+-  const dist = Math.hypot(body.position[0], body.position[1]);
+-  sceneBuilder = sceneBuilder.add(
+-    primitives.torus({
+-      name: body.name + " orbit path ring guide",
+-      material: material.emissive({ color: "#071522", emissive: "#1aa6c7", emissiveIntensity: 0.72, opacity: 0.1 })
+-    }).position(0, PLAY_PLANE_Y - 0.01, 0).rotate(1.5708, 0, 0).scale([dist * 1.92, dist * 1.92, 0.002])
+-  );
+-}
 -
 -// Authored well bodies at static positions — the game board.
- for (const body of WELL_BODIES) {
-   if (body.id === "sol") continue; // sun family comes from the kit backdrop
-   // The review frame is the constructed Rust -> Gale delivery corridor. The
-@@ -427,7 +245,6 @@ for (const body of WELL_BODIES) {
-     );
-   }
- }
+-for (const body of WELL_BODIES) {
+-  if (body.id === "sol") continue; // sun family comes from the kit backdrop
+-  // The review frame is the constructed Rust -> Gale delivery corridor. The
+-  // planning board still shows every authored well, but detached planet balls
+-  // do not belong inside the close freightway composition.
+-  if (visualReviewCapture) continue;
+-  const planetAsset = WELL_PLANET_ASSETS[body.id as keyof typeof WELL_PLANET_ASSETS];
+-  if (!planetAsset) throw new Error(`Missing typed visual planet for ${body.id}`);
+-  const planetDiameter = body.visualRadius * 4.8;
+-  const planetBounds = planetAsset.bounds ?? [1, 1, 1];
+-  const planetHeight = planetDiameter * planetBounds[1] / Math.max(...planetBounds);
+-  sceneBuilder = sceneBuilder.add(
+-    model(planetAsset, {
+-      name: body.name + " typed gravity-well planet",
+-      role: "primaryWorld",
+-      scaleMode: "fit",
+-      targetMaxDimension: planetDiameter,
+-      castShadow: true,
+-      receiveShadow: true
+-    })
+-      // Fit models are grounded at min-Y; center this spherical visual on the
+-      // unchanged well position. No collider, force, orbit or contract changes.
+-      .position(body.position[0], PLAY_PLANE_Y - planetHeight * 0.5, body.position[1])
+-      .runtime(game.runtimeNode(`gravity-post-planet-${body.id}`, {
+-        tags: ["typed-planet", "gravity-well-visual", "non-colliding"]
+-      }))
+-  );
 -
- for (const body of WELL_BODIES) {
-   if (visualReviewCapture) continue;
-   sceneBuilder = sceneBuilder.add(
-@@ -443,8 +260,6 @@ for (const body of WELL_BODIES) {
-     }).position(body.position[0], PLAY_PLANE_Y + 0.012, body.position[1]).rotate(1.5708, 0, 0).scale([body.visualRadius * 3.2, body.visualRadius * 3.2, 0.005])
-   );
- }
+-  // Atmospheric and celestial planet accessories
+-  if (body.id === "gale") {
+-    // Planetary ring system for Gale (gas giant)
+-    if (!visualReviewCapture) sceneBuilder = sceneBuilder.add(
+-      primitives.torus({
+-        name: "Gale planetary ring system",
+-        material: material.emissive({ color: "#78716c", emissive: "#e7e5e4", opacity: 0.32 })
+-      }).position(body.position[0], PLAY_PLANE_Y, body.position[1]).rotate(1.2, 0.35, 0).scale([body.visualRadius * (visualReviewCapture ? 1.8 : 5.05), body.visualRadius * (visualReviewCapture ? 1.8 : 5.05), 0.006])
+-    );
+-    if (!visualReviewCapture) sceneBuilder = sceneBuilder.add(
+-      primitives.torus({
+-        name: "Gale secondary atmosphere band",
+-        material: material.emissive({ color: "#6d5ca8", emissive: "#a78bfa", emissiveIntensity: 0.42, opacity: 0.24 })
+-      }).position(body.position[0], PLAY_PLANE_Y + 0.018, body.position[1]).rotate(0.72, -0.42, 0.18).scale([body.visualRadius * (visualReviewCapture ? 1.5 : 4.2), body.visualRadius * (visualReviewCapture ? 1.5 : 4.2), 0.004])
+-    );
+-  } else if (body.id === "aquaria") {
+-    // Ocean world luminous ionosphere
+-    sceneBuilder = sceneBuilder.add(
+-      primitives.sphere({
+-        name: "Aquaria ionosphere glow",
+-        material: material.emissive({ color: "#0369a1", emissive: "#38bdf8", opacity: 0.18 })
+-      }).position(body.position[0], PLAY_PLANE_Y, body.position[1]).scale(body.visualRadius * 3.28)
+-    );
+-    sceneBuilder = sceneBuilder.add(
+-      primitives.torus({
+-        name: "Aquaria equator highlight",
+-        material: material.emissive({ color: "#0e7490", emissive: "#67e8f9", emissiveIntensity: 0.54, opacity: 0.3 })
+-      }).position(body.position[0], PLAY_PLANE_Y + 0.016, body.position[1]).rotate(1.48, 0.22, 0).scale([body.visualRadius * 3.7, body.visualRadius * 3.7, 0.003])
+-    );
+-  } else if (body.id === "verdance") {
+-    // Bio-world luminous atmosphere
+-    sceneBuilder = sceneBuilder.add(
+-      primitives.sphere({
+-        name: "Verdance atmosphere haze",
+-        material: material.emissive({ color: "#065f46", emissive: "#34d399", opacity: 0.16 })
+-      }).position(body.position[0], PLAY_PLANE_Y, body.position[1]).scale(body.visualRadius * 3.28)
+-    );
+-  } else if (body.id === "rust") {
+-    // Terracotta dust atmospheric rim
+-    sceneBuilder = sceneBuilder.add(
+-      primitives.sphere({
+-        name: "Rust dust atmospheric rim",
+-        material: material.emissive({ color: "#7c2d12", emissive: "#f97316", opacity: 0.16 })
+-      }).position(body.position[0], PLAY_PLANE_Y, body.position[1]).scale(body.visualRadius * 3.28)
+-    );
+-  }
+-
+-  // Small authored moons break the single-color planet read into a more
+-  // dimensional solar-system composition. They are presentation geometry
+-  // around the typed well body; route-local gravity still samples WELL_BODIES.
+-  const moonMaterial = material.pbr({
+-    name: body.name + " moonlet material",
+-    color: "#d8e4ef",
+-    roughness: 0.72,
+-    metallic: 0.08
+-  });
+-  for (const [offsetX, offsetY, offsetZ] of BODY_MOONS[body.id] ?? []) {
+-    sceneBuilder = sceneBuilder.add(
+-      primitives.sphere({ name: body.name + " moonlet", material: moonMaterial })
+-        .position(body.position[0] + offsetX, PLAY_PLANE_Y + offsetY, body.position[1] + offsetZ)
+-        .scale(Math.max(0.055, body.visualRadius * 0.64))
+-    );
+-  }
+-}
+-
+-for (const body of WELL_BODIES) {
+-  if (visualReviewCapture) continue;
+-  sceneBuilder = sceneBuilder.add(
+-    primitives.torus({
+-      name: body.name + " well boundary ring readability guide",
+-      material: material.emissive({ color: "#071522", emissive: "#49c6e8", emissiveIntensity: 0.7, opacity: body.id === "sol" ? 0.05 : 0.085 })
+-    }).position(body.position[0], PLAY_PLANE_Y + 0.005, body.position[1]).rotate(1.5708, 0, 0).scale([body.wellRadius * 1.86, body.wellRadius * 1.86, 0.003])
+-  );
+-  sceneBuilder = sceneBuilder.add(
+-    primitives.torus({
+-      name: body.name + " red collision exclusion ring",
+-      material: material.emissive({ color: "#3f0a16", emissive: "#fb7185", emissiveIntensity: 0.8, opacity: 0.28 })
+-    }).position(body.position[0], PLAY_PLANE_Y + 0.012, body.position[1]).rotate(1.5708, 0, 0).scale([body.visualRadius * 3.2, body.visualRadius * 3.2, 0.005])
+-  );
+-}
 -
 -// Stations: typed GLB beacon props + pulsing capture-window rings.
- for (const station of stations) {
-   const reviewStationRelevant = station.id === "gale-terminal";
-   // A tiny scale still submits every GLB primitive. Omit off-camera station
-@@ -513,12 +328,6 @@ for (const station of stations) {
-         .runtime(game.runtimeNode(station.pulseNodeId))
-   );
- }
+-for (const station of stations) {
+-  const reviewStationRelevant = station.id === "gale-terminal";
+-  // A tiny scale still submits every GLB primitive. Omit off-camera station
+-  // hardware from the evidence-only action composition entirely; the live
+-  // station sensor/ring state remains present while Gale keeps the typed
+-  // arrival beacon and gate. The completed Rust origin no longer competes
+-  // with the parcel-bearing courier in the foreground.
+-  if (!visualReviewCapture || reviewStationRelevant) {
+-    sceneBuilder = sceneBuilder.add(
+-      model(assets.gravityPostDockBeacon, { name: station.nodeId })
+-        // Offset the release-probed satellite beside Gale's capture center so
+-        // its solar-panel silhouette reads as destination hardware instead of
+-        // stacking over the courier lane. Sensor coordinates remain owned by
+-        // stations.ts and are not moved.
+-        .position(
+-          station.x + (visualReviewCapture && reviewStationRelevant ? reviewRoutePerpX * 0.7 : 0),
+-          PLAY_PLANE_Y + 0.06,
+-          station.z + (visualReviewCapture && reviewStationRelevant ? reviewRoutePerpZ * 0.7 : 0)
+-        )
+-        .rotate(0, 0.6, 0)
+-        // The review destination is one of only two live endpoint silhouettes;
+-        // keep the typed beacon large enough to read beside the courier while
+-        // preserving the same station coordinates and sensor ownership.
+-        // The satellite's authored wingspan is 13 world units; the full
+-        // planning-board scale would project the panels into the lower-left
+-        // foreground of the close freight lens. Keep the typed beacon present
+-        // as a destination identity cue, but compact enough to sit beside the
+-        // Gale gate instead of reading as a second vehicle.
+-        .scale(visualReviewCapture ? 0.075 : 0.14)
+-        .runtime(game.runtimeNode(station.nodeId))
+-    );
+-  }
+-  if (!visualReviewCapture || station.id === "gale-terminal") {
+-    sceneBuilder = sceneBuilder.add(
+-      // Typed gate hardware gives every destination a readable silhouette;
+-      // the pulse ring below remains the live capture-window state indicator.
+-      model(assets.gravityPostDockGate, {
+-        name: station.id + " dock gate",
+-        role: "setDressing",
+-        scaleMode: "fit",
+-          // The arrival gate is deliberately legible at the review distance;
+-          // this is a scale relationship to the existing typed asset, not a
+-          // duplicate gate or a screen-space marker.
+-          targetMaxDimension: visualReviewCapture ? 0.82 : 0.98,
+-        material: material.pbr({
+-          name: station.id + " dock gate finish",
+-          color: "#b7f4ff",
+-          roughness: 0.26,
+-          metallic: 0.42,
+-          emissive: "#22d3ee",
+-          emissiveIntensity: 0.18
+-        })
+-      })
+-        .position(station.x, PLAY_PLANE_Y + 0.12, station.z)
+-        .runtime(game.runtimeNode(station.id + "-dock-gate", { tags: ["typed-asset", "destination-gate"] }))
+-    );
+-  }
+-  sceneBuilder = sceneBuilder.add(
+-      primitives.torus({
+-        name: station.pulseNodeId + " capture window pulse ring",
+-        material: material.emissive({ color: "#0b2230", emissive: "#67e8f9", opacity: 0.64 })
+-      }).position(station.x, PLAY_PLANE_Y + 0.01, station.z).rotate(1.5708, 0, 0)
+-        .scale(visualReviewCapture && !reviewStationRelevant
+-          ? [0.001, 0.001, 0.001]
+-          : [DOCK_SENSOR_RADIUS * 2.8, DOCK_SENSOR_RADIUS * 2.8, 0.014])
+-        .runtime(game.runtimeNode(station.pulseNodeId))
+-  );
+-}
 -
 -// The final contract terminates at Gale Terminal. Build one renderer-owned
 -// freight corridor on the real Rust -> Gale route so the review frame reads as
@@ -1619,7 +3000,7 @@ index b5308393a..da666bcc9 100644
  const galeTerminal = stations.find((station) => station.id === "gale-terminal")!;
  const rustExchange = stations.find((station) => station.id === "rust-exchange")!;
  const terminalDeck = material.pbr({
-@@ -556,11 +365,6 @@ const courierContactShadow = material.pbr({
+@@ -556,11 +172,6 @@ const courierContactShadow = material.pbr({
    metallic: 0.02,
    opacity: 0.74
  });
@@ -1631,7 +3012,7 @@ index b5308393a..da666bcc9 100644
  const courierIdentityCyan = material.emissive({
    name: "Courier postal cyan livery",
    color: "#0b4355",
-@@ -610,20 +414,9 @@ const routeUnitX = routeDx / routeLength;
+@@ -610,20 +221,9 @@ const routeUnitX = routeDx / routeLength;
  const routeUnitZ = routeDz / routeLength;
  const routePerpX = -routeUnitZ;
  const routePerpZ = routeUnitX;
@@ -1652,7 +3033,7 @@ index b5308393a..da666bcc9 100644
  const approachYaw = -Math.atan2(routeDz, routeDx);
  const acrossRouteYaw = approachYaw + Math.PI / 2;
  const corridorPoint = (progress: number, lateral = 0): readonly [number, number] => [
-@@ -696,80 +489,6 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
+@@ -696,80 +296,6 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
      );
    }
  }
@@ -1733,7 +3114,7 @@ index b5308393a..da666bcc9 100644
  const terminalRunwayPanels = Array.from({ length: 7 }, (_, index) => {
    const progress = index / 6;
    const [x, z] = corridorPoint(0.69 + progress * 0.27);
-@@ -784,89 +503,7 @@ const terminalRunwayPanels = Array.from({ length: 7 }, (_, index) => {
+@@ -784,89 +310,7 @@ const terminalRunwayPanels = Array.from({ length: 7 }, (_, index) => {
  const terminalDeckCenter = corridorPoint(0.835);
  const terminalDockCenter = corridorPoint(0.975);
  const terminalDeckLength = routeLength * 0.34;
@@ -1823,7 +3204,7 @@ index b5308393a..da666bcc9 100644
  const courierParcelMaxDimension = courierParcelMaxDimensionBase * courierParcelScaleRatio;
  sceneBuilder = sceneBuilder.add(
    model(assets.courierParcel, {
-@@ -880,37 +517,6 @@ sceneBuilder = sceneBuilder.add(
+@@ -880,37 +324,6 @@ sceneBuilder = sceneBuilder.add(
        tags: ["typed-asset", "courier-cargo", "renderer-owned", "non-colliding", "live-velocity-feedback"]
      }))
  );
@@ -1861,7 +3242,7 @@ index b5308393a..da666bcc9 100644
  sceneBuilder = sceneBuilder
    .add(
      model(assets.gravityPostCourierSkiff, {
-@@ -978,11 +584,6 @@ sceneBuilder = sceneBuilder
+@@ -978,11 +391,6 @@ sceneBuilder = sceneBuilder
          tags: ["pod-contact-shadow", "renderer-owned", "non-colliding"]
        }))
    );
@@ -1873,7 +3254,7 @@ index b5308393a..da666bcc9 100644
  for (const side of [-1, 1] as const) {
    sceneBuilder = sceneBuilder.add(
      primitives.box({
-@@ -1056,11 +657,6 @@ sceneBuilder = sceneBuilder
+@@ -1056,11 +464,6 @@ sceneBuilder = sceneBuilder
          tags: ["courier-cargo", "delivery-state", "renderer-owned", "non-colliding"]
        }))
    );
@@ -1885,7 +3266,7 @@ index b5308393a..da666bcc9 100644
  const courierDriveOffsets = [
    [-1, -0.38],
    [1, -0.38],
-@@ -1090,10 +686,6 @@ for (let index = 0; index < courierDriveOffsets.length; index += 1) {
+@@ -1090,10 +493,6 @@ for (let index = 0; index < courierDriveOffsets.length; index += 1) {
        }))
    );
  }
@@ -1896,7 +3277,7 @@ index b5308393a..da666bcc9 100644
  for (let index = 0; index < TRAIL_STREAK_COUNT; index += 1) {
    sceneBuilder = sceneBuilder.add(
      primitives.box({
-@@ -1104,10 +696,6 @@ for (let index = 0; index < TRAIL_STREAK_COUNT; index += 1) {
+@@ -1104,10 +503,6 @@ for (let index = 0; index < TRAIL_STREAK_COUNT; index += 1) {
        .runtime(game.runtimeNode("mail-pod-trail-" + index, { tags: ["pod-trail", "renderer-owned", "non-colliding"] }))
    );
  }
@@ -1907,7 +3288,7 @@ index b5308393a..da666bcc9 100644
  for (let index = 0; index < CONTACT_WAKE_COUNT; index += 1) {
    for (const side of [-1, 1] as const) {
      sceneBuilder = sceneBuilder.add(
-@@ -1126,7 +714,6 @@ for (let index = 0; index < CONTACT_WAKE_COUNT; index += 1) {
+@@ -1126,7 +521,6 @@ for (let index = 0; index < CONTACT_WAKE_COUNT; index += 1) {
      );
    }
  }
@@ -1915,7 +3296,7 @@ index b5308393a..da666bcc9 100644
  sceneBuilder = sceneBuilder.add(
    primitives.box({
      name: "mail-pod live thrust plume",
-@@ -1142,8 +729,6 @@ sceneBuilder = sceneBuilder.add(
+@@ -1142,8 +536,6 @@ sceneBuilder = sceneBuilder.add(
      tags: ["pod-trail", "renderer-owned", "live-velocity-feedback", "non-colliding"]
    }))
  );
@@ -1924,26 +3305,27 @@ index b5308393a..da666bcc9 100644
  for (let index = 0; index < PREDICTION_BEADS; index += 1) {
    sceneBuilder = sceneBuilder.add(
      primitives.sphere({
-@@ -1152,9 +737,6 @@ for (let index = 0; index < PREDICTION_BEADS; index += 1) {
+@@ -1152,19 +544,6 @@ for (let index = 0; index < PREDICTION_BEADS; index += 1) {
      }).position(0, PLAY_PLANE_Y + 0.03, 0).scale(0.065).runtime(game.runtimeNode("pred-bead-" + index))
    );
  }
 -
 -// Cream actual-path beads persist after launch so prediction and flown truth
 -// remain visually separable through assists, hazards, and docking.
- for (let index = 0; index < ACTUAL_PATH_BEADS; index += 1) {
-   sceneBuilder = sceneBuilder.add(
-     primitives.sphere({
-@@ -1163,8 +745,6 @@ for (let index = 0; index < ACTUAL_PATH_BEADS; index += 1) {
-     }).position(0, -4, 0).scale(visualReviewCapture ? 0.026 : 0.085).runtime(game.runtimeNode("actual-path-bead-" + index))
-   );
- }
+-for (let index = 0; index < ACTUAL_PATH_BEADS; index += 1) {
+-  sceneBuilder = sceneBuilder.add(
+-    primitives.sphere({
+-      name: "actual path bead " + (index + 1),
+-      material: material.emissive({ color: "#6b4b1b", emissive: "#ffe7a3", emissiveIntensity: 1.55, opacity: 0.98 })
+-    }).position(0, -4, 0).scale(visualReviewCapture ? 0.026 : 0.085).runtime(game.runtimeNode("actual-path-bead-" + index))
+-  );
+-}
 -
 -// Dock spark burst pool (in-scene FX).
  for (let index = 0; index < SPARK_COUNT; index += 1) {
    sceneBuilder = sceneBuilder.add(
      primitives.sphere({
-@@ -1173,8 +753,6 @@ for (let index = 0; index < SPARK_COUNT; index += 1) {
+@@ -1173,8 +552,6 @@ for (let index = 0; index < SPARK_COUNT; index += 1) {
      }).position(0, -4, 0).scale(0.08).runtime(game.runtimeNode("dock-spark-" + index))
    );
  }
@@ -1952,7 +3334,7 @@ index b5308393a..da666bcc9 100644
  for (let index = 0; index < FLYBY_DRONES; index += 1) {
    sceneBuilder = sceneBuilder.add(
      primitives.box({
-@@ -1183,37 +761,6 @@ for (let index = 0; index < FLYBY_DRONES; index += 1) {
+@@ -1183,63 +560,6 @@ for (let index = 0; index < FLYBY_DRONES; index += 1) {
      }).position(0, -4, 0).scale([0.05, 0.02, 0.12]).runtime(game.runtimeNode("flyby-drone-" + index))
    );
  }
@@ -1987,19 +3369,36 @@ index b5308393a..da666bcc9 100644
 -// review capture is a renderer-first action frame. Omitting these DOM-backed
 -// annotations only for that query keeps the live pod, route geometry, and dock
 -// hardware visually legible without changing gameplay or evidence state.
- if (!visualReviewCapture) {
-   for (const body of WELL_BODIES) {
-     sceneBuilder = sceneBuilder.add(
-@@ -1238,8 +785,6 @@ if (!visualReviewCapture) {
-     );
-   }
- }
+-if (!visualReviewCapture) {
+-  for (const body of WELL_BODIES) {
+-    sceneBuilder = sceneBuilder.add(
+-      labels.anchor(body.name, body.name + " gravity-well body tag", {
+-        name: body.name + " body label",
+-        position: [body.position[0], PLAY_PLANE_Y + 0.34 + body.visualRadius, body.position[1]],
+-        size: 0.14,
+-        collisionAvoidance: true,
+-        occlusionAware: true
+-      })
+-    );
+-  }
+-  for (const station of stations) {
+-    sceneBuilder = sceneBuilder.add(
+-      labels.anchor(station.name, station.name + " dock label", {
+-        name: station.id + " station label",
+-        position: [station.x, PLAY_PLANE_Y + 0.3, station.z],
+-        size: 0.11,
+-        collisionAvoidance: true,
+-        occlusionAware: true
+-      })
+-    );
+-  }
+-}
 -
 -
  const app = createAuraApp("#app", {
    diagnostics: { overlay: false },
    physics: {
-@@ -1278,25 +823,14 @@ const app = createAuraApp("#app", {
+@@ -1278,25 +598,14 @@ const app = createAuraApp("#app", {
      fov: 41
    }))
  });
@@ -2025,7 +3424,7 @@ index b5308393a..da666bcc9 100644
  physics.onTriggerEnter((event) => {
    const names = [event.nodeA, event.nodeB];
    const sensorName = names.find((name) => typeof name === "string" && name.startsWith("dock-sensor-"));
-@@ -1304,7 +838,6 @@ physics.onTriggerEnter((event) => {
+@@ -1304,7 +613,6 @@ physics.onTriggerEnter((event) => {
    if (!names.includes(POD_BODY_SPEC.name)) return;
    pendingDocks.push(sensorName.slice("dock-sensor-".length));
  });
@@ -2033,7 +3432,7 @@ index b5308393a..da666bcc9 100644
  const audio: GravityPostAudio = createGravityPostAudio();
  const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
  let rendererMounted = false;
-@@ -1336,20 +869,14 @@ const input = app.input({
+@@ -1336,20 +644,14 @@ const input = app.input({
      launch: ["Enter"]
    }
  });
@@ -2054,7 +3453,7 @@ index b5308393a..da666bcc9 100644
  let contractIndex = 0;
  let score = 0;
  let failedContracts = 0;
-@@ -1365,16 +892,7 @@ let launchPrediction: readonly TrajectorySample[] = [];
+@@ -1365,16 +667,7 @@ let launchPrediction: readonly TrajectorySample[] = [];
  let predictionComparedSamples = 0;
  let predictionMaxDivergence = 0;
  let compositionSubjectSuppressed = false;
@@ -2071,7 +3470,7 @@ index b5308393a..da666bcc9 100644
  let previousVisualVelocity: readonly [number, number] = [0, 0];
  let visualVelocityInitialized = false;
  const actualPath: Array<readonly [number, number]> = [];
-@@ -1389,20 +907,14 @@ const sparkDirections = Array.from({ length: SPARK_COUNT }, (_, index) => {
+@@ -1389,20 +682,14 @@ const sparkDirections = Array.from({ length: SPARK_COUNT }, (_, index) => {
  });
  const aimStart = { x: 0, y: 0 };
  const aimCurrent = { x: 0, y: 0 };
@@ -2092,7 +3491,7 @@ index b5308393a..da666bcc9 100644
  function currentAimVector(): { readonly dirX: number; readonly dirZ: number; readonly power: number } | null {
    const dx = aimCurrent.x - aimStart.x;
    const dy = aimCurrent.y - aimStart.y;
-@@ -1411,20 +923,10 @@ function currentAimVector(): { readonly dirX: number; readonly dirZ: number; rea
+@@ -1411,20 +698,10 @@ function currentAimVector(): { readonly dirX: number; readonly dirZ: number; rea
    const power = Math.min(1, lengthPx / AIM_DRAG_PIXEL_RANGE);
    return { dirX: dx / lengthPx, dirZ: dy / lengthPx, power };
  }
@@ -2113,7 +3512,7 @@ index b5308393a..da666bcc9 100644
  function resetKeyboardAim(): void {
    const from = originStation();
    const to = destinationStation();
-@@ -1434,7 +936,6 @@ function resetKeyboardAim(): void {
+@@ -1434,7 +711,6 @@ function resetKeyboardAim(): void {
    keyboardAimPower = 0.6;
  }
  resetKeyboardAim();
@@ -2121,7 +3520,7 @@ index b5308393a..da666bcc9 100644
  function keyboardAimVector(): { readonly dirX: number; readonly dirZ: number; readonly power: number } {
    return {
      dirX: Math.sin(keyboardAimBearing),
-@@ -1442,20 +943,15 @@ function keyboardAimVector(): { readonly dirX: number; readonly dirZ: number; re
+@@ -1442,20 +718,15 @@ function keyboardAimVector(): { readonly dirX: number; readonly dirZ: number; re
      power: keyboardAimPower
    };
  }
@@ -2142,23 +3541,57 @@ index b5308393a..da666bcc9 100644
  function launchActiveAim(): boolean {
    const vector = activeAimVector();
    if (!vector || vector.power < MIN_LAUNCH_POWER) return false;
-@@ -1463,7 +959,6 @@ function launchActiveAim(): boolean {
+@@ -1463,49 +734,7 @@ function launchActiveAim(): boolean {
    launchWithPrediction([vector.dirX, vector.dirZ], speed);
    return true;
  }
 -
  const canvas = app.canvas;
- if (canvas) {
-   canvas.style.touchAction = "none";
-@@ -1505,7 +1000,6 @@ if (canvas) {
-   canvas.addEventListener("pointerup", releaseAim);
-   canvas.addEventListener("pointercancel", releaseAim);
- }
+-if (canvas) {
+-  canvas.style.touchAction = "none";
+-  canvas.addEventListener("pointerdown", (event) => {
+-    audio.unlock();
+-    if (pod.state !== "ready" || paused || flyby.active) return;
+-    aiming = true;
+-    aimStart.x = event.clientX;
+-    aimStart.y = event.clientY;
+-    aimCurrent.x = event.clientX;
+-    aimCurrent.y = event.clientY;
+-    // Pointer capture is useful for a real pointer leaving the canvas, but a
+-    // browser-driven evidence run may deliver a synthetic PointerEvent while
+-    // software WebGL is busy.  In that case the browser has no active native
+-    // pointer to capture and throws NotFoundError; capture is an input
+-    // convenience, not part of the launch contract, so keep the actual aim
+-    // state alive and continue without it.
+-    try {
+-      canvas.setPointerCapture(event.pointerId);
+-    } catch {
+-      // The pointerdown/move/up handlers remain the same; only capture is
+-      // unavailable for this synthetic evidence delivery.
+-    }
+-  });
+-  canvas.addEventListener("pointermove", (event) => {
+-    if (!aiming) return;
+-    aimCurrent.x = event.clientX;
+-    aimCurrent.y = event.clientY;
+-  });
+-  const releaseAim = (): void => {
+-    if (!aiming) return;
+-    aiming = false;
+-    const vector = currentAimVector();
+-    if (vector && vector.power >= MIN_LAUNCH_POWER) {
+-      const speed = MIN_LAUNCH_POWER + vector.power * (MAX_LAUNCH_SPEED - MIN_LAUNCH_POWER);
+-      launchWithPrediction([vector.dirX, vector.dirZ], speed);
+-    }
+-  };
+-  canvas.addEventListener("pointerup", releaseAim);
+-  canvas.addEventListener("pointercancel", releaseAim);
+-}
 -
  window.addEventListener("keydown", () => {
    audio.unlock();
    if (flyby.active) {
-@@ -1516,10 +1010,6 @@ window.addEventListener("keydown", () => {
+@@ -1516,10 +745,6 @@ window.addEventListener("keydown", () => {
      updateFlyby(flyby, 0);
    }
  });
@@ -2169,7 +3602,7 @@ index b5308393a..da666bcc9 100644
  function emitPodEvents(events: readonly PodEvent[]): void {
    for (const event of events) {
      if (event.type === "launch") audio.play("launch-whoosh");
-@@ -1529,16 +1019,13 @@ function emitPodEvents(events: readonly PodEvent[]): void {
+@@ -1529,16 +754,13 @@ function emitPodEvents(events: readonly PodEvent[]): void {
      else if (event.type === "too-fast") audio.play("bounce-off");
    }
  }
@@ -2186,7 +3619,7 @@ index b5308393a..da666bcc9 100644
  function handleDock(stationId: string): void {
    if (pod.state !== "coasting") return;
    if (stationId !== contract().destinationStationId) return;
-@@ -1566,7 +1053,6 @@ function handleDock(stationId: string): void {
+@@ -1566,7 +788,6 @@ function handleDock(stationId: string): void {
    }
    if (dockEventLog.length > 12) dockEventLog.shift();
  }
@@ -2194,7 +3627,7 @@ index b5308393a..da666bcc9 100644
  function resetCampaign(): void {
    lastFailReason = null;
    contractIndex = 0;
-@@ -1585,7 +1071,6 @@ function resetCampaign(): void {
+@@ -1585,7 +806,6 @@ function resetCampaign(): void {
    hidePrediction();
    audio.play("ui-confirm");
  }
@@ -2202,7 +3635,7 @@ index b5308393a..da666bcc9 100644
  function nextContract(): void {
    if (pod.state !== "docked") return;
    audio.play("ui-confirm");
-@@ -1598,7 +1083,6 @@ function nextContract(): void {
+@@ -1598,7 +818,6 @@ function nextContract(): void {
    resetPodForContract(pod, contract());
    resetPredictionTelemetry();
  }
@@ -2210,7 +3643,7 @@ index b5308393a..da666bcc9 100644
  function retryContract(): void {
    if (shiftOver || campaignComplete) {
      resetCampaign();
-@@ -1618,7 +1102,6 @@ function retryContract(): void {
+@@ -1618,7 +837,6 @@ function retryContract(): void {
    resetPodForContract(pod, contract());
    resetPredictionTelemetry();
  }
@@ -2218,7 +3651,7 @@ index b5308393a..da666bcc9 100644
  function resetPredictionTelemetry(): void {
    launchPrediction = [];
    predictionComparedSamples = 0;
-@@ -1626,7 +1109,6 @@ function resetPredictionTelemetry(): void {
+@@ -1626,7 +844,6 @@ function resetPredictionTelemetry(): void {
    actualPath.length = 0;
    syncActualPath();
  }
@@ -2226,7 +3659,7 @@ index b5308393a..da666bcc9 100644
  function launchWithPrediction(direction: readonly [number, number], speed: number): void {
    const result = launch(pod, direction, speed);
    if (result.length === 0) return;
-@@ -1645,7 +1127,6 @@ function launchWithPrediction(direction: readonly [number, number], speed: numbe
+@@ -1645,7 +862,6 @@ function launchWithPrediction(direction: readonly [number, number], speed: numbe
    syncActualPath();
    emitPodEvents(result);
  }
@@ -2234,7 +3667,7 @@ index b5308393a..da666bcc9 100644
  function recordActualPath(): void {
    const last = actualPath[actualPath.length - 1];
    if (last && Math.hypot(last[0] - pod.kinematic.position[0], last[1] - pod.kinematic.position[1]) < 0.12) return;
-@@ -1653,7 +1134,6 @@ function recordActualPath(): void {
+@@ -1653,7 +869,6 @@ function recordActualPath(): void {
    if (actualPath.length > ACTUAL_PATH_BEADS) actualPath.shift();
    syncActualPath();
  }
@@ -2242,7 +3675,7 @@ index b5308393a..da666bcc9 100644
  function syncActualPath(): void {
    for (let index = 0; index < ACTUAL_PATH_BEADS; index += 1) {
      const node = app.nodes.get("actual-path-bead-" + index);
-@@ -1665,7 +1145,6 @@ function syncActualPath(): void {
+@@ -1665,7 +880,6 @@ function syncActualPath(): void {
      node.setPosition(point[0], PLAY_PLANE_Y + 0.025, point[1]).setVisible(true);
    }
  }
@@ -2250,7 +3683,7 @@ index b5308393a..da666bcc9 100644
  function samplePredictionDivergence(): void {
    if (pod.correctionsUsed > 0 || launchPrediction.length === 0) return;
    const sampleIndex = Math.max(0, Math.round(pod.simulationSeconds / FIXED_DT) - 1);
-@@ -1678,10 +1157,6 @@ function samplePredictionDivergence(): void {
+@@ -1678,10 +892,6 @@ function samplePredictionDivergence(): void {
    predictionComparedSamples = sampleIndex + 1;
    predictionMaxDivergence = Math.max(predictionMaxDivergence, error);
  }
@@ -2261,7 +3694,7 @@ index b5308393a..da666bcc9 100644
  function updatePrediction(): void {
    const vector = aiming ? currentAimVector() : null;
    if (!vector || pod.state !== "ready") {
-@@ -1713,7 +1188,6 @@ function updatePrediction(): void {
+@@ -1713,7 +923,6 @@ function updatePrediction(): void {
      node.setPosition(bead.x, PLAY_PLANE_Y + 0.03, bead.z);
    }
  }
@@ -2269,7 +3702,7 @@ index b5308393a..da666bcc9 100644
  function syncLaunchPredictionPath(): void {
    const beads = buildPredictionBeads({ samples: launchPrediction, maxBeads: PREDICTION_BEADS });
    for (let index = 0; index < PREDICTION_BEADS; index += 1) {
-@@ -1729,17 +1203,12 @@ function syncLaunchPredictionPath(): void {
+@@ -1729,17 +938,12 @@ function syncLaunchPredictionPath(): void {
        .setVisible(!visualReviewCapture || index % 2 === 0);
    }
  }
@@ -2287,7 +3720,7 @@ index b5308393a..da666bcc9 100644
  function syncPodVisual(): void {
    // The physics body mirrors the authored integration so real sensor overlaps
    // fire; zero-gravity world + matching velocity keep the mirror exact.
-@@ -2033,7 +1502,6 @@ function syncPodVisual(): void {
+@@ -2033,7 +1237,6 @@ function syncPodVisual(): void {
        .setVisible(!compositionSubjectSuppressed);
    }
  }
@@ -2295,7 +3728,7 @@ index b5308393a..da666bcc9 100644
  function syncStationPulses(): void {
    const destination = destinationStation();
    for (const station of stations) {
-@@ -2065,7 +1533,6 @@ function syncStationPulses(): void {
+@@ -2065,7 +1268,6 @@ function syncStationPulses(): void {
      pulse.setScale([station.dockRadius * reviewScale * breathe, station.dockRadius * reviewScale * breathe, 0.02]);
    }
  }
@@ -2303,7 +3736,7 @@ index b5308393a..da666bcc9 100644
  function syncSparks(dt: number): void {
    if (sparkLife > 0) sparkLife = Math.max(0, sparkLife - dt);
    const core = stationWorld(contract().destinationStationId);
-@@ -2083,7 +1550,6 @@ function syncSparks(dt: number): void {
+@@ -2083,7 +1285,6 @@ function syncSparks(dt: number): void {
      node.setVisible(true);
    }
  }
@@ -2311,7 +3744,7 @@ index b5308393a..da666bcc9 100644
  function syncFlybyDrones(progress: number | null): void {
    const body = flybyBody(flyby.bodyId);
    for (let index = 0; index < FLYBY_DRONES; index += 1) {
-@@ -2101,10 +1567,6 @@ function syncFlybyDrones(progress: number | null): void {
+@@ -2101,10 +1302,6 @@ function syncFlybyDrones(progress: number | null): void {
      node.setPosition(body.position[0] + Math.cos(angle) * radius, PLAY_PLANE_Y + yLift, body.position[1] + Math.sin(angle) * radius);
    }
  }
@@ -2322,7 +3755,7 @@ index b5308393a..da666bcc9 100644
  function escapeHtml(value: string): string {
    return value.replace(/[&<>"']/g, (char) => ({
      "&": "&amp;",
-@@ -2114,7 +1576,6 @@ function escapeHtml(value: string): string {
+@@ -2114,7 +1311,6 @@ function escapeHtml(value: string): string {
      "'": "&#39;"
    })[char] ?? char);
  }
@@ -2330,7 +3763,7 @@ index b5308393a..da666bcc9 100644
  function renderHud(): void {
    const active = contract();
    const origin = originStation();
-@@ -2203,21 +1664,15 @@ function renderHud(): void {
+@@ -2203,21 +1399,15 @@ function renderHud(): void {
    hud.querySelector("#gp-correct-retro")?.addEventListener("click", () => { audio.unlock(); emitPodEvents(applyCorrection(pod, -1)); });
    bindHold("#gp-warp", () => { touchWarp = true; }, () => { touchWarp = false; });
  }
@@ -2352,7 +3785,7 @@ index b5308393a..da666bcc9 100644
  function publishEvidence(): void {
    const proof = audio.proof();
    let drawCalls = 0;
-@@ -2298,12 +1753,7 @@ function publishEvidence(): void {
+@@ -2298,12 +1488,7 @@ function publishEvidence(): void {
    document.body.dataset.gravityPostReady = "true";
    document.body.dataset.aura3dShowcaseReady = "true";
  }
@@ -2365,7 +3798,7 @@ index b5308393a..da666bcc9 100644
  function updateGameplay(dt: number): void {
    frame += 1;
    audio.tick(dt);
-@@ -2384,28 +1834,12 @@ function updateGameplay(dt: number): void {
+@@ -2384,112 +1569,9 @@ function updateGameplay(dt: number): void {
    renderHud();
    publishEvidence();
  }
@@ -2391,336 +3824,124 @@ index b5308393a..da666bcc9 100644
 -};
 -// Render + readback inside ONE task: the compositor cannot clear the drawing
 -// buffer between the render and the read, so pixel evidence is race-free.
- window.__GRAVITY_POST_CAPTURE__ = () => {
-   app.step(1 / 30);
-   const canvas = document.querySelector<HTMLCanvasElement>("#app canvas");
-@@ -2435,10 +1869,6 @@ if (new URLSearchParams(location.search).has("planetProbe")) {
-     }
-   };
- }
+-window.__GRAVITY_POST_CAPTURE__ = () => {
+-  app.step(1 / 30);
+-  const canvas = document.querySelector<HTMLCanvasElement>("#app canvas");
+-  if (!canvas) throw new Error("Gravity Post canvas missing.");
+-  return canvas.toDataURL("image/png");
+-};
+-if (new URLSearchParams(location.search).has("planetProbe")) {
+-  (window as unknown as Record<string, unknown>).__GRAVITY_POST_PLANET_PROBE__ = {
+-    async capture(visible: boolean) {
+-      paused = true;
+-      app.pause();
+-      await app.ready();
+-      const planets = WELL_BODIES.filter(body => body.id !== "sol").map(body => {
+-        const handle = app.nodes.require(`gravity-post-planet-${body.id}`);
+-        handle.setVisible(visible);
+-        return { id: body.id, handle };
+-      });
+-      await app.stepAsync(0);
+-      const canvas = app.canvas;
+-      const gl = canvas?.getContext("webgl2");
+-      if (!canvas || !gl) throw new Error("Typed planet proof requires actual mounted WebGL2 output.");
+-      const pixels = new Uint8Array(canvas.width * canvas.height * 4);
+-      gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+-      return { width: canvas.width, height: canvas.height, pixels: Array.from(pixels),
+-        planets: planets.map(({ id, handle }) => ({ id, imported: handle.importedAssetEvidence(), node: handle.snapshot() })),
+-        diagnostics: app.diagnostics() };
+-    }
+-  };
+-}
 -/** Debug/test surface: the mounted physics runtime. */
 -(window as unknown as Record<string, unknown>).__GRAVITY_POST_PHYSICS__ = physics;
 -window.__GRAVITY_POST_EVIDENCE_SNAPSHOT__ = () => window.__GRAVITY_POST_EVIDENCE__;
 -
- Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
-   value: {
-     category: "application" as const,
-diff --git a/apps/showcase-gravity-post/src/legacy/styles.css b/apps/showcase-gravity-post/src/legacy/styles.css
-index 87375e69e..30daa4190 100644
---- a/apps/showcase-gravity-post/src/legacy/styles.css
-+++ b/apps/showcase-gravity-post/src/legacy/styles.css
-@@ -1,4 +1,3 @@
--/* Gravity Post — HUD chrome (DOM is UI only; all gameplay visuals are scene geometry). */
- :root {
-   color-scheme: dark;
-   --gp-ink: #e2e8f0;
-@@ -8,11 +7,9 @@
-   --gp-accent: #67e8f9;
-   --gp-gold: #facc15;
+-Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+-  value: {
+-    category: "application" as const,
+-    get subject() {
+-      const speed = Math.hypot(pod.kinematic.velocity[0], pod.kinematic.velocity[1]);
+-      const [displayX, displayZ] = visualReviewCapture && compositionPresentationOverride
+-        ? corridorPoint(REVIEW_COURIER_PROGRESS, REVIEW_COURIER_LATERAL)
+-        : [pod.kinematic.position[0], pod.kinematic.position[1]] as const;
+-      return {
+-        position: [displayX, PLAY_PLANE_Y, displayZ] as const,
+-        rotation: [0, speed > 1e-4 ? Math.atan2(pod.kinematic.velocity[0], pod.kinematic.velocity[1]) : 0, 0] as const,
+-        targetSize: 3.8
+-      };
+-    },
+-    async setSubjectSuppressed(suppressed: boolean) {
+-      // Visibility mutates retained nodes; it does not present pixels. Freeze
+-      // the RAF owner and explicitly await the frame containing this mutation
+-      // so a busy browser cannot capture the previous visible frame twice.
+-      paused = true;
+-      app.pause();
+-      await app.ready();
+-      compositionSubjectSuppressed = suppressed;
+-      app.nodes.get("mail-pod")?.setVisible(!suppressed);
+-      app.nodes.get("mail-pod-courier-operator")?.setVisible(!suppressed && pod.state !== "lost");
+-      app.nodes.get("mail-pod-courier-handoff-parcel")?.setVisible(!suppressed && pod.state !== "lost");
+-      app.nodes.get("mail-pod-textured-delivery-parcel")?.setVisible(!suppressed);
+-      app.nodes.get("mail-pod-contact-shadow")?.setVisible(!suppressed && pod.state !== "lost");
+-      app.nodes.get("mail-pod-delivery-scan-ring")?.setVisible(!suppressed);
+-      app.nodes.get("mail-pod-parcel-restraint-cyan")?.setVisible(!suppressed);
+-      app.nodes.get("mail-pod-parcel-restraint-amber")?.setVisible(!suppressed);
+-      app.nodes.get("mail-pod-rear-route-signal")?.setVisible(!suppressed);
+-      app.nodes.get("mail-pod-roof-postal-light-bar")?.setVisible(!suppressed);
+-      for (const side of [-1, 1] as const) app.nodes.get(`mail-pod-livery-${side}`)?.setVisible(!suppressed);
+-      for (let index = 0; index < courierDriveOffsets.length; index += 1) {
+-        app.nodes.get(`mail-pod-drive-contact-${index + 1}`)?.setVisible(!suppressed);
+-        app.nodes.get(`mail-pod-drive-contact-ring-${index + 1}`)?.setVisible(!suppressed);
+-      }
+-      for (let index = 0; index < TRAIL_STREAK_COUNT; index += 1) app.nodes.get("mail-pod-trail-" + index)?.setVisible(false);
+-      await app.stepAsync(0);
+-    },
+-    async settleSubjectPose() {
+-      paused = true;
+-      app.pause();
+-      await app.ready();
+-      compositionPresentationOverride = visualReviewCapture;
+-      resetPodForContract(pod, contract());
+-      app.nodes.get("mail-pod")?.setVisible(!compositionSubjectSuppressed);
+-      syncPodVisual();
+-      publishEvidence();
+-      await app.stepAsync(0);
+-    }
+-  },
+-  configurable: true
+-});
+diff --git a/apps/showcase-gravity-post/src/main.ts b/apps/showcase-gravity-post/src/main.ts
+index 68ddd1ad5..f3e3a814c 100644
+--- a/apps/showcase-gravity-post/src/main.ts
++++ b/apps/showcase-gravity-post/src/main.ts
+@@ -1,14 +1,6 @@
+-// apps/showcase-gravity-post/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
+-// Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-gravity-post`
+-// (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
+-// acceptance (§10 step 5).
+ import { resolveQrFlags } from "@aura3d/engine/contracts";
+-
+ const ROUTE_FLAG = "A3D_QR_ROUTE_GRAVITY_POST" as const;
+ const DEFAULT_ON = false;
+-
+-/** Accepts `?a3d-qr=…,route-gravity-post` and `?a3d-qr=…,A3D_QR_ROUTE_GRAVITY_POST`.
+- *  Returns undefined when the flag is absent (CCR-14-2 replaces this helper). */
+ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const raw = new URL(loc.href).searchParams.get("a3d-qr");
+   if (raw === null) return undefined;
+@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+     ? true
+     : undefined;
  }
 -
- * {
-   box-sizing: border-box;
- }
+ const flags = resolveQrFlags({
+   url: location.href,
+   env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR },
+   options: { [ROUTE_FLAG]: routeFlagFromUrl(location, ROUTE_FLAG) ?? DEFAULT_ON }
+ });
 -
- html,
- body {
-   margin: 0;
-@@ -21,7 +18,6 @@ body {
-   color: var(--gp-ink);
-   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
- }
--
- .gp-shell {
-   position: relative;
-   display: block;
-@@ -29,7 +25,6 @@ body {
-   height: 100vh;
-   padding: 14px;
- }
--
- .gp-viewport {
-   position: relative;
-   width: 100%;
-@@ -39,18 +34,15 @@ body {
-   border: 1px solid var(--gp-edge);
-   background: radial-gradient(circle at 50% 42%, #0b2238 0%, #04060d 72%);
- }
--
- .gp-stage {
-   position: absolute;
-   inset: 0;
- }
--
- .gp-stage canvas {
-   display: block;
-   width: 100% !important;
-   height: 100% !important;
- }
--
- .gp-hud {
-   display: flex;
-   flex-direction: column;
-@@ -58,34 +50,29 @@ body {
-   overflow-y: auto;
-   scrollbar-width: thin;
- }
--
- .gp-panel {
-   border: 1px solid var(--gp-edge);
-   background: var(--gp-panel);
-   border-radius: 16px;
-   padding: 12px 14px;
- }
--
- .gp-eyebrow {
-   font-size: 11px;
-   letter-spacing: 0.16em;
-   text-transform: uppercase;
-   color: var(--gp-accent);
- }
--
- .gp-briefing h1 {
-   margin: 6px 0 8px;
-   font-size: 19px;
-   line-height: 1.25;
- }
--
- .gp-brief {
-   margin: 0 0 10px;
-   color: var(--gp-dim);
-   font-size: 13px;
-   line-height: 1.45;
- }
--
- .gp-route {
-   display: flex;
-   align-items: center;
-@@ -93,63 +80,53 @@ body {
-   font-weight: 600;
-   font-size: 13px;
- }
--
- .gp-route i {
-   color: var(--gp-accent);
-   font-style: normal;
- }
--
- .gp-meta {
-   margin: 8px 0 0;
-   color: var(--gp-dim);
-   font-size: 12px;
- }
--
- .gp-readouts {
-   display: flex;
-   flex-direction: column;
-   gap: 8px;
- }
--
- .gp-row {
-   display: flex;
-   flex-wrap: wrap;
-   gap: 8px 14px;
- }
--
- .gp-metric {
-   display: flex;
-   align-items: baseline;
-   gap: 6px;
-   font-size: 13px;
- }
--
- .gp-metric span {
-   color: var(--gp-dim);
-   font-size: 11px;
-   letter-spacing: 0.08em;
-   text-transform: uppercase;
- }
--
- .gp-metric strong {
-   font-size: 15px;
-   font-variant-numeric: tabular-nums;
- }
--
- .gp-fuel {
-   height: 8px;
-   border-radius: 999px;
-   background: #101a2c;
-   overflow: hidden;
- }
--
- .gp-fuel i {
-   display: block;
-   height: 100%;
-   background: linear-gradient(90deg, #fb923c, #facc15);
-   transition: width 120ms ease;
- }
--
- .gp-status {
-   margin: 4px 0 0;
-   min-height: 32px;
-@@ -157,13 +134,11 @@ body {
-   line-height: 1.4;
-   color: #cbd5f5;
- }
--
- .gp-actions {
-   display: grid;
-   grid-template-columns: repeat(3, 1fr);
-   gap: 6px;
- }
--
- .gp-actions button {
-   appearance: none;
-   border: 1px solid var(--gp-edge);
-@@ -177,31 +152,25 @@ body {
-   user-select: none;
-   touch-action: none;
- }
--
- .gp-actions button:hover:not(:disabled) {
-   border-color: var(--gp-accent);
-   color: #fff;
- }
--
- .gp-actions button:disabled {
-   opacity: 0.38;
-   cursor: not-allowed;
- }
--
- .gp-scorecard {
-   border-color: rgba(250, 204, 21, 0.4);
- }
--
- .gp-flyby {
-   border-color: rgba(192, 132, 252, 0.45);
- }
--
- .gp-flyby p {
-   margin: 6px 0 0;
-   color: #ddd6fe;
-   font-size: 13px;
- }
--
- @media (max-width: 900px) {
-   .gp-shell {
-     position: static;
-@@ -215,102 +184,6 @@ body {
-     height: auto;
-   }
- }
--
--@media (min-width: 901px) {
--  /* The board is the visual hero. Keep the full courier HUD available in a
--     translucent overlay so the orbital lanes, typed pod, stations, and
--     renderer-owned path beads are not permanently shrunk into a side column. */
--  .gp-hud {
--    position: absolute;
--    z-index: 4;
--    top: 14px;
--    right: 14px;
--    width: min(268px, calc(100vw - 28px));
--    max-height: calc(100vh - 28px);
--    pointer-events: auto;
--  }
--
--  /* The review artifact retains only compact, gameplay-owned courier context:
--     route, speed, fuel, hulls, and live coast status. Authoring controls and
--     long briefing copy stay available in the public route but out of frame. */
--  .gp-hud[data-capture="review"] {
--    opacity: 1;
--    pointer-events: none;
--    left: 22px;
--    right: auto;
--    top: 22px;
--    width: min(660px, calc(100vw - 44px));
--    max-height: none;
--    overflow: visible;
--    display: grid;
--    grid-template-columns: minmax(250px, 0.92fr) minmax(330px, 1.08fr);
--    gap: 1px;
--  }
--
--  .gp-hud[data-capture="review"] .gp-panel {
--    border-radius: 0;
--    padding: 7px 11px;
--    background: linear-gradient(135deg, rgba(5, 20, 35, 0.9), rgba(8, 36, 52, 0.7));
--    box-shadow: 0 0 20px rgba(56, 214, 255, 0.1);
--  }
--
--  .gp-hud[data-capture="review"] .gp-briefing {
--    border-radius: 6px 0 0 6px;
--  }
--
--  .gp-hud[data-capture="review"] .gp-readouts {
--    border-radius: 0 6px 6px 0;
--  }
--
--  .gp-hud[data-capture="review"] .gp-brief,
--  .gp-hud[data-capture="review"] .gp-meta,
--  .gp-hud[data-capture="review"] .gp-actions,
--  .gp-hud[data-capture="review"] .gp-scorecard,
--  .gp-hud[data-capture="review"] .gp-flyby,
--  .gp-hud[data-capture="review"] .gp-readouts > .gp-row:nth-of-type(2),
--  .gp-hud[data-capture="review"] .gp-status {
--    display: none;
--  }
--
--  .gp-hud[data-capture="review"] .gp-briefing h1 {
--    margin: 2px 0 4px;
--    font-size: 14px;
--  }
--
--  .gp-hud[data-capture="review"] .gp-route {
--    justify-content: space-between;
--  }
--
--  .gp-hud[data-capture="review"] .gp-readouts {
--    display: grid;
--    grid-template-columns: minmax(130px, 1fr) auto;
--    align-items: center;
--    gap: 5px 12px;
--  }
--
--  .gp-hud[data-capture="review"] .gp-readouts > .gp-row:first-of-type {
--    flex-wrap: nowrap;
--  }
--
--  .gp-hud[data-capture="review"] .gp-status {
--    min-height: 0;
--    margin: 2px 0 0;
--    font-size: 11px;
--  }
--
--  .gp-hud[data-capture="review"] .gp-metric strong {
--    font-size: 13px;
--  }
--
--  /* World labels are useful on the interactive planning board, but their
--     screen-space chips compete with the courier silhouette in the blind visual
--     frame. Keep the label layer mounted for normal accessibility/evidence and
--     suppress it only for the explicit review query. */
--  body[data-capture="review"] [data-aura-world-labels] {
--    display: none !important;
--  }
--}
--
- @media (max-width: 600px) {
-   .gp-shell {
-     gap: 8px;
-@@ -356,11 +229,6 @@ body {
-     font-size: 11px;
-   }
- }
--
--/* Warp, retry, next, pause and both correction verbs are live decisions, and
--   none of them ever declared a tap floor - they measured 28 px tall on a
--   phone. Keyed on pointer capability rather than width so tablets inherit the
--   floor and a desktop mouse keeps the compact density. */
- @media (pointer: coarse) {
-   .gp-actions button { min-height: 44px; }
- }
+ void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
 diff --git a/apps/showcase-gravity-post/src/v2/evidence/index.ts b/apps/showcase-gravity-post/src/v2/evidence/index.ts
 deleted file mode 100644
 index b882c476d..000000000

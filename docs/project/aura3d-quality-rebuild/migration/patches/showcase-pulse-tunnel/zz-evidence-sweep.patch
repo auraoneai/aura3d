@@ -1,30 +1,2663 @@
-From 4a86f183c8d5e6e4163b40a9ac5af3c9b48fa31e Mon Sep 17 00:00:00 2001
+From 034cb04c6cf1f83c5ffd729b5c46d60e9306d348 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
-Date: Fri, 9 Oct 2026 13:40:39 +0000
+Date: Fri, 9 Oct 2026 13:45:52 +0000
 Subject: [PATCH] [qr-prd09] showcase-pulse-tunnel: delete evidence
  files+blocks (T5.8)
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- .../scripts/build-music.mjs                   | 250 -------------
- .../scripts/build-sfx.mjs                     | 139 --------
- .../scripts/register-audio.mjs                |  44 ---
- .../scripts/register-models.mjs               |  36 --
- .../scripts/write-performance-report.ts       |  82 -----
- .../scripts/write-route-health.mjs            | 157 ---------
- apps/showcase-pulse-tunnel/src/legacy/hud.ts  |  13 -
- apps/showcase-pulse-tunnel/src/legacy/main.ts | 330 ------------------
- .../src/legacy/styles.css                     | 132 -------
- .../src/v2/evidence/index.ts                  | 139 --------
- 10 files changed, 1322 deletions(-)
+ .../art-review/combat-finish-v4-PROVENANCE.md |  13 -
+ .../art-review/combat-finish-v7-PROVENANCE.md |  55 --
+ .../encounter-finish-v11-PROVENANCE.md        |  38 --
+ .../essentials/License_Standard.txt           |  22 -
+ .../quaternius/megakit/License_Standard.txt   |  22 -
+ .../art-review/high-fidelity-v5-PROVENANCE.md |  15 -
+ .../quaternius-presentation-v10-PROVENANCE.md |  55 --
+ .../quaternius-source-v9-PROVENANCE.md        |  86 ---
+ .../texture-identity-v6-PROVENANCE.md         |  63 --
+ .../performance-report.json                   |  20 -
+ .../scripts/build-combat-finish-v4.py         | 296 --------
+ .../scripts/build-combat-finish-v7.py         | 210 ------
+ .../scripts/build-combat-kit-v2.py            | 368 ----------
+ .../scripts/build-encounter-finish-v11.py     | 375 ----------
+ .../scripts/build-high-fidelity-v5.py         | 622 -----------------
+ .../scripts/build-models.py                   | 238 -------
+ .../scripts/build-music.mjs                   | 250 -------
+ .../build-quaternius-presentation-v10.py      |  42 --
+ .../scripts/build-quaternius-source-v9.py     |  94 ---
+ .../scripts/build-sfx.mjs                     | 139 ----
+ .../scripts/build-structural-world-v3.py      | 127 ----
+ .../scripts/build-texture-identity-v6.py      | 519 --------------
+ .../scripts/register-audio.mjs                |  44 --
+ .../scripts/register-models.mjs               |  36 -
+ .../scripts/write-performance-report.ts       |  82 ---
+ .../scripts/write-route-health.mjs            | 157 -----
+ apps/showcase-pulse-tunnel/src/legacy/main.ts | 640 ------------------
+ apps/showcase-pulse-tunnel/src/main.ts        |  10 -
+ .../src/v2/evidence/index.ts                  | 139 ----
+ 29 files changed, 4777 deletions(-)
+ delete mode 100644 apps/showcase-pulse-tunnel/art-review/combat-finish-v4-PROVENANCE.md
+ delete mode 100644 apps/showcase-pulse-tunnel/art-review/combat-finish-v7-PROVENANCE.md
+ delete mode 100644 apps/showcase-pulse-tunnel/art-review/encounter-finish-v11-PROVENANCE.md
+ delete mode 100644 apps/showcase-pulse-tunnel/art-review/external-source/quaternius/essentials/License_Standard.txt
+ delete mode 100644 apps/showcase-pulse-tunnel/art-review/external-source/quaternius/megakit/License_Standard.txt
+ delete mode 100644 apps/showcase-pulse-tunnel/art-review/high-fidelity-v5-PROVENANCE.md
+ delete mode 100644 apps/showcase-pulse-tunnel/art-review/quaternius-presentation-v10-PROVENANCE.md
+ delete mode 100644 apps/showcase-pulse-tunnel/art-review/quaternius-source-v9-PROVENANCE.md
+ delete mode 100644 apps/showcase-pulse-tunnel/art-review/texture-identity-v6-PROVENANCE.md
+ delete mode 100644 apps/showcase-pulse-tunnel/performance-report.json
+ delete mode 100644 apps/showcase-pulse-tunnel/scripts/build-combat-finish-v4.py
+ delete mode 100644 apps/showcase-pulse-tunnel/scripts/build-combat-finish-v7.py
+ delete mode 100644 apps/showcase-pulse-tunnel/scripts/build-combat-kit-v2.py
+ delete mode 100644 apps/showcase-pulse-tunnel/scripts/build-encounter-finish-v11.py
+ delete mode 100644 apps/showcase-pulse-tunnel/scripts/build-high-fidelity-v5.py
+ delete mode 100644 apps/showcase-pulse-tunnel/scripts/build-models.py
  delete mode 100644 apps/showcase-pulse-tunnel/scripts/build-music.mjs
+ delete mode 100644 apps/showcase-pulse-tunnel/scripts/build-quaternius-presentation-v10.py
+ delete mode 100644 apps/showcase-pulse-tunnel/scripts/build-quaternius-source-v9.py
  delete mode 100644 apps/showcase-pulse-tunnel/scripts/build-sfx.mjs
+ delete mode 100644 apps/showcase-pulse-tunnel/scripts/build-structural-world-v3.py
+ delete mode 100644 apps/showcase-pulse-tunnel/scripts/build-texture-identity-v6.py
  delete mode 100644 apps/showcase-pulse-tunnel/scripts/register-audio.mjs
  delete mode 100644 apps/showcase-pulse-tunnel/scripts/register-models.mjs
  delete mode 100644 apps/showcase-pulse-tunnel/scripts/write-performance-report.ts
  delete mode 100644 apps/showcase-pulse-tunnel/scripts/write-route-health.mjs
  delete mode 100644 apps/showcase-pulse-tunnel/src/v2/evidence/index.ts
 
+diff --git a/apps/showcase-pulse-tunnel/art-review/combat-finish-v4-PROVENANCE.md b/apps/showcase-pulse-tunnel/art-review/combat-finish-v4-PROVENANCE.md
+deleted file mode 100644
+index 0b083862c..000000000
+--- a/apps/showcase-pulse-tunnel/art-review/combat-finish-v4-PROVENANCE.md
++++ /dev/null
+@@ -1,13 +0,0 @@
+-# Pulse Tunnel combat-finish V4 candidate provenance
+-
+-- Author: Aura3D route-local synthesis
+-- License: CC0-1.0
+-- Source: `apps/showcase-pulse-tunnel/scripts/build-combat-finish-v4.py`
+-- Scope: isolated, unregistered art candidates only
+-- Intended replacements after root audit: `pulseRunnerCraft`, `pulseTerminalSentry`, and `pulseReactorEncounterWorld`
+-- Excluded authority: animation, collision, input, chart timing, scoring, shields, fail/reset, and audio-clock behavior
+-
+-The source script is the complete reproducible authoring record. The generated
+-GLBs must not be promoted by copying them over public blobs. Promotion requires
+-root-owned manifest registration, strict deploy validation, release probes, and
+-new exact gameplay evidence bound to the resulting typed hashes.
+diff --git a/apps/showcase-pulse-tunnel/art-review/combat-finish-v7-PROVENANCE.md b/apps/showcase-pulse-tunnel/art-review/combat-finish-v7-PROVENANCE.md
+deleted file mode 100644
+index f9b64b95f..000000000
+--- a/apps/showcase-pulse-tunnel/art-review/combat-finish-v7-PROVENANCE.md
++++ /dev/null
+@@ -1,55 +0,0 @@
+-# Pulse Tunnel combat-finish V7 provenance
+-
+-Status: **materially improved isolated candidate; not registered or integrated;
+-visual comparator status remains `reference` pending independent review**.
+-
+-## Original source and deterministic outputs
+-
+-- Builder: `apps/showcase-pulse-tunnel/scripts/build-combat-finish-v7.py`
+-- Builder SHA-256: `4f64e2580d5fa176fa6275336fee3a75baacff562959db03d634a83d90faaea3`
+-- Author/license: Aura3D route-local synthesis, CC0-1.0
+-- Inputs: fixed numeric meshes/materials and fixed stdlib-generated textures;
+-  no downloaded or cross-game model inputs.
+-
+-| Artifact | SHA-256 | Bytes | Bounds | Structure |
+-| --- | --- | ---: | --- | --- |
+-| `pulsePhaseMantaV7.candidate.glb` | `d33f6418e9cb44f560f09750cf1acf8f51985556f9ab616e6e1d0c5e65dd5ce5` | 963,232 | 4.288×1.040×3.730 | 16 meshes, five materials |
+-| `pulseCathedralSentinelV7.candidate.glb` | `d4920ac4db53594560efb42dd98df7adbb0fe5193c712df52f4324bb77d6b4af` | 1,601,400 | 5.502×3.418×1.645 | 32 meshes, five materials |
+-| `pulseBraidedReactorWorldV7.candidate.glb` | `0714c8f14011b29d92f2035ae8aaee5e3579be5b74d43697b4384a5bbed5219e` | 1,852,564 | 9.398×4.742×14.800 | 52 meshes, six materials |
+-
+-Texture hashes are runner
+-`16f3960ddfcf0d5e471c60465e5e8a09974f8842b26a2247b0b8d054658cefb2`,
+-sentinel
+-`a5c3ad1a467066c06cbbaaf128542577f055dc54fe93d51623fdd8e0646e0f02`,
+-and deck
+-`29ad0afe1c38aa0d4c98efe4c0cc375682ee66c9b2defabd1a341a8facf24f39`.
+-Two independent Blender 5.2.1 processes produced byte-identical outputs for all
+-six artifacts through the canonical V6 writer.
+-
+-## Audition and gates
+-
+-- Review page: `art-review/pulse-combat-finish-v7.html`
+-- Review scene SHA-256: `5631b80cb4cde185d7511a059b7518840e4899db020ac367661af470e582ca85`
+-- Candidate exact: `art-review/output/pulse-combat-finish-v7.png`
+-- Exact SHA-256: `c34bd01d0b691aa80514729e355ccc2761c11906ca718bbe8531a0b9faee9ec6`
+-- App TypeScript: pass.
+-- Focused Pulse clock units: 22/22 pass.
+-- App production build: pass.
+-- Diff whitespace check: pass.
+-
+-## Honest result
+-
+-V7 is materially stronger than V6: the player reads as one low manta craft
+-instead of four side-on pod cylinders, its drives are face-on and bounded, the
+-boss has a large vertical crown/eye anatomy with a clear red threat hierarchy,
+-the exchange uses five readable cyan orbs against four red cutting waves, and
+-the route camera has a genuine dark contact plane under the player. The new
+-textures have substantially higher cyan/white/red contrast.
+-
+-It is still not self-accepted. Large safe-basic world surfaces and arches remain
+-visually simple, the purple distance field still dominates the background, and
+-the modeled lighting/material response remains behind the Furi reference's
+-production finish and combat-impact density. V7 is suitable for independent
+-anonymous comparison and possible root-owned registration only if that review
+-selects it. Until then, do not mutate the shared manifest or current route and
+-keep Pulse Tunnel labeled **`reference`**.
+diff --git a/apps/showcase-pulse-tunnel/art-review/encounter-finish-v11-PROVENANCE.md b/apps/showcase-pulse-tunnel/art-review/encounter-finish-v11-PROVENANCE.md
+deleted file mode 100644
+index 3a6010512..000000000
+--- a/apps/showcase-pulse-tunnel/art-review/encounter-finish-v11-PROVENANCE.md
++++ /dev/null
+@@ -1,38 +0,0 @@
+-# Pulse Tunnel encounter finish V11
+-
+-This note records the provenance for the one bounded V11 asset pass. V11 is a
+-route-local, project-original CC0-1.0 family generated by
+-[`scripts/build-encounter-finish-v11.py`](../scripts/build-encounter-finish-v11.py)
+-with Blender. It is not a download or a relabel of the rejected V3–V10
+-auditions, and it is not shared with another showcase route.
+-
+-## Family
+-
+-| Typed id | Route role | SHA-256 | Bytes | Authored read |
+-| --- | --- | --- | ---: | --- |
+-| `pulseRunnerCraft` | vehicle | `0146f91bb386b7e30494563b5b96f7204a1685f1c8dfbd343a698be02866dc3d` | 538,584 | Delta-wing pulse runner with continuous nose loft, raised canopy, ventral keel, copper edge rails, turbine nacelles/rings, stabilizers, shield collar, rivets, and packed shell/underframe panel textures. |
+-| `pulseTerminalSentry` | character | `0d38226c385a82c58b83554bcb240bf376ee4bf4f2430b90372eacc521b7ad61` | 965,460 | Distinct terminal interceptor with layered thorax/reliquary, furnace and optic rings, copper spars, ceramic threat wings, rotary cannons and muzzle rings, reverse-jointed talons, crown mast/beacon, rivets, vents, and packed shell/underframe panel textures. |
+-| `pulseReactorEncounterWorld` | world | `9723eba7376782bce15d97d39a813e38ed7d09500e65e3d3cba38c59116f8703` | 2,838,088 | Continuous chamfered reactor deck with recessed lane panels, cyan/copper conduits, hazard rails, service uprights, repeated forged arches/roof spines, terminal dock/backwall/iris/core, blades, overhead cabinets, and packed deck/lane/wall panel textures. |
+-
+-The three GLBs declare +Y up and +Z forward. They are rigid presentation assets:
+-the route still owns movement, lanes, jumps, slides, shields, collision, chart
+-timing, projectiles, impacts, scoring, and all outcome state. No animation,
+-skinning, physics, or combat behavior is implied by this family.
+-
+-## Reproducibility and evidence
+-
+-- Builder SHA-256: `a301af7bf9e821c5480e8d77375971d715c4cd71d626272779001817f32cfb90`
+-- Blender command: `/Applications/Blender.app/Contents/MacOS/Blender --background --python scripts/build-encounter-finish-v11.py`
+-- Registration: `pnpm --dir apps/showcase-pulse-tunnel run register:models`
+-- Registration metadata: CC0-1.0, author `Aura3D synthesis`, retrieval timestamp
+-  `2026-09-02T01:47:00Z`, and the builder source page recorded in
+-  `aura.assets.json`.
+-- Root release probes: `AURA3D_PROBE_ASSETS=pulseRunnerCraft,pulseTerminalSentry,pulseReactorEncounterWorld pnpm exec playwright test tests/browser/showcase-release-asset-probes.spec.ts --reporter=line`
+-  (1 passed; each probe carries a hash-bound PNG and orientation receipt).
+-- Probe screenshots: `tests/reports/showcase-release-asset-probes/pulseRunnerCraft.png`,
+-  `pulseTerminalSentry.png`, and `pulseReactorEncounterWorld.png`.
+-
+-The probes establish readable typed root-rendered geometry and material
+-separation. They do not replace the independent human review of the exact Pulse
+-Tunnel playable capture; this note therefore records the pass without claiming
+-that the route has been promoted beyond its existing prototype boundary.
+diff --git a/apps/showcase-pulse-tunnel/art-review/external-source/quaternius/essentials/License_Standard.txt b/apps/showcase-pulse-tunnel/art-review/external-source/quaternius/essentials/License_Standard.txt
+deleted file mode 100644
+index d4fd5741d..000000000
+--- a/apps/showcase-pulse-tunnel/art-review/external-source/quaternius/essentials/License_Standard.txt
++++ /dev/null
+@@ -1,22 +0,0 @@
+-This is the standard FREE version of the Sci-Fi Essentials Kit!, which only contains
+-a portion of the models . You can buy the PRO version which has all the models,
+-or the SOURCE version which has all the models and also includes Unity(URP), Unreal Engine and Godot projects
+-with custom shaders already set up.
+-
+-You can get the other versions from the website https://quaternius.com
+-
+--------------------------------------------------------
+-License:
+-CC0 1.0 Universal (CC0 1.0)
+-Public Domain Dedication
+-https://creativecommons.org/publicdomain/zero/1.0/
+-
+-------------------------------------------------------
+-Models by @Quaternius
+-Consider supporting me on Patreon!
+-
+-https://www.patreon.com/quaternius
+-
+--------------------------------------------------------
+-Join the Discord Server:
+-https://discord.gg/vJqnRUYRfT
+diff --git a/apps/showcase-pulse-tunnel/art-review/external-source/quaternius/megakit/License_Standard.txt b/apps/showcase-pulse-tunnel/art-review/external-source/quaternius/megakit/License_Standard.txt
+deleted file mode 100644
+index f6708fbd0..000000000
+--- a/apps/showcase-pulse-tunnel/art-review/external-source/quaternius/megakit/License_Standard.txt
++++ /dev/null
+@@ -1,22 +0,0 @@
+-This is the standard FREE version of the Modular SciFi MegaKit, which only contains
+-a portion of the models . You can buy the PRO version which has all the models,
+-or the SOURCE version which has all the models and also includes Unity(URP), Unreal Engine and Godot projects
+-with custom shaders already set up.
+-
+-You can get the other versions from the website https://quaternius.com
+-
+--------------------------------------------------------
+-License:
+-CC0 1.0 Universal (CC0 1.0)
+-Public Domain Dedication
+-https://creativecommons.org/publicdomain/zero/1.0/
+-
+-------------------------------------------------------
+-Models by @Quaternius
+-Consider supporting me on Patreon!
+-
+-https://www.patreon.com/quaternius
+-
+--------------------------------------------------------
+-Join the Discord Server:
+-https://discord.gg/vJqnRUYRfT
+diff --git a/apps/showcase-pulse-tunnel/art-review/high-fidelity-v5-PROVENANCE.md b/apps/showcase-pulse-tunnel/art-review/high-fidelity-v5-PROVENANCE.md
+deleted file mode 100644
+index 815495a79..000000000
+--- a/apps/showcase-pulse-tunnel/art-review/high-fidelity-v5-PROVENANCE.md
++++ /dev/null
+@@ -1,15 +0,0 @@
+-# Pulse Tunnel high-fidelity V5 candidate provenance
+-
+-- Author: Aura3D route-local synthesis
+-- License: CC0-1.0
+-- Reproducible source: `apps/showcase-pulse-tunnel/scripts/build-high-fidelity-v5.py`
+-- Isolated review route: `apps/showcase-pulse-tunnel/art-review/pulse-high-fidelity-v5.html`
+-- Outputs: `art-review/assets/high-fidelity-v5/*.candidate.glb`
+-- Intended typed-key replacements after root audit: `pulseRunnerCraft`, `pulseTerminalSentry`, and `pulseReactorEncounterWorld`
+-- Default composition audition: the original V5 world plus the already release-typed `gravityPostMailPod` and `showcaseOrangeIndustrialRobot`. This is an asset-inventory audit, not a live-route integration or a claim that those cross-route identities are final Pulse art.
+-- Original-only composition: append `?hybrid=original` to the isolated review URL.
+-- Excluded authority: animation, collision, input, chart timing, scoring, shields, fail/reset, and audio-clock behavior
+-
+-The candidates remain unregistered and must not be copied over public blobs.
+-Promotion requires root-owned manifest registration, direct asset probes, strict
+-release deploy validation, and exact gameplay evidence bound to the new hashes.
+diff --git a/apps/showcase-pulse-tunnel/art-review/quaternius-presentation-v10-PROVENANCE.md b/apps/showcase-pulse-tunnel/art-review/quaternius-presentation-v10-PROVENANCE.md
+deleted file mode 100644
+index ee831b2bf..000000000
+--- a/apps/showcase-pulse-tunnel/art-review/quaternius-presentation-v10-PROVENANCE.md
++++ /dev/null
+@@ -1,55 +0,0 @@
+-# Pulse Tunnel V10 final Quaternius presentation provenance
+-
+-Status: **rejected by the final fresh independent label-hidden critic; not
+-registered; no V11; Pulse remains `reference`**.
+-
+-V10 was the single bounded presentation response to V9’s rejection. It used
+-the same Quaternius CC0 source family only. It did not start another asset
+-search, generate another procedural world, reuse a cross-game identity, or
+-mutate the current route/shared asset manifest.
+-
+-## Same-family modeled projectile additions
+-
+-Both source models came from the selected Sci-Fi Essentials Kit standard
+-archive whose embedded `License_Standard.txt` states CC0 1.0 Universal/Public
+-Domain Dedication and Models by Quaternius.
+-
+-| Role | Source | Source SHA-256 | Candidate SHA-256 | Bytes | Structure |
+-| --- | --- | --- | --- | ---: | --- |
+-| player lance | `Prop_Grenade.gltf` | `74a178a27e49614adff79c8166707c2300506bd5335a99844a7e80e5a6e097ae` | `7d1c55e0bddd05924f0be3b504c5974ea4eed92bbed30fd145a7867521301384` | 2,220,844 | one modeled mesh/material, three embedded PBR images |
+-| warden cutter | `Prop_Mine.gltf` | `f8471313c56b609a16cffd1bdd61c0a73eb0f58dd6943c5acd19a1ee25ec01b3` | `bc947c7e820bd4fbaba71900ead09d127871fce83bbaf4faf332cb267caa20ec` | 2,270,604 | one modeled mesh/material, three embedded PBR images |
+-
+-Builder: `scripts/build-quaternius-presentation-v10.py`, SHA-256
+-`90b314541a54bc1a4007aa5a89ef27bff6198699bd909c938b9d87acf690a331`.
+-Two independent Blender 5.2.1 processes produced byte-identical candidate
+-GLBs. The retained source texture hashes are documented by the route-local
+-files and V9 provenance; no remote dependency remains at audition time.
+-
+-## Final exact and gates
+-
+-- Page: `art-review/pulse-quaternius-presentation-v10.html`, SHA-256
+-  `213955b76af7a9cba5e0a5abba68dfd29fb3cfa0ec67c3fe5e7370d57024da31`
+-- Scene: `art-review/pulse-quaternius-presentation-v10.ts`, SHA-256
+-  `acfde6a1320854abe443851a6cb7133d8ef5177777c2cf696ab0762dd8e279aa`
+-- Exact: `art-review/output/pulse-quaternius-presentation-v10.png`, SHA-256
+-  `245cae084b3fc26a421fc774bfe215aaf4f16d8dc3d95d39aa95e468395bfc1a`
+-- Runtime: WebGL2 safe API, 1440×900, 122 draw calls, zero diagnostics errors.
+-- Presentation: runner left-front against vertical warden right-rear, nine
+-  modeled player lances, 14 modeled warden cutters, renderer-owned 3D emissive
+-  trails, stronger cyan/red/white light stack, compact state HUD and boss bar.
+-- Focused app TypeScript: pass.
+-
+-## Final independent verdict and stop condition
+-
+-The final fresh anonymous label-hidden critic selected Furi. It found the
+-reference stronger in readable actor staging, richer arena modeling and
+-lighting, depth/composition, and energetic spatially legible projectiles. V10
+-still read as flat, gray, cramped, and muddled. V10 is rejected and must not be
+-registered.
+-
+-This exhausts both the bounded external-source acquisition lane and its one
+-permitted presentation response. Even a coherent, legally distributable,
+-textured Quaternius family is insufficient in this safe-basic presentation
+-without deeper authored scene composition, material/light response, and
+-integrated combat-effect work. That is the concrete blocker. Do not loop to
+-V11, do not promote V9 or V10, and keep Pulse honestly **`reference`**.
+diff --git a/apps/showcase-pulse-tunnel/art-review/quaternius-source-v9-PROVENANCE.md b/apps/showcase-pulse-tunnel/art-review/quaternius-source-v9-PROVENANCE.md
+deleted file mode 100644
+index 74e77752b..000000000
+--- a/apps/showcase-pulse-tunnel/art-review/quaternius-source-v9-PROVENANCE.md
++++ /dev/null
+@@ -1,86 +0,0 @@
+-# Pulse Tunnel V9 Quaternius source-family provenance
+-
+-Status: **licensed external-source audition rejected by a fresh independent
+-label-hidden critic; not registered; Pulse remains `reference`**.
+-
+-## Bounded source search and license
+-
+-The bounded external search screened Kenney Space, KayKit Space Base, and the
+-Quaternius science-fiction packs. Kenney and KayKit were rejected before
+-download because the available sets did not provide one coherent player,
+-vertical boss, and environment family. The selected lane uses only models by
+-one author, Quaternius, under one embedded license, CC0 1.0 Universal:
+-
+-- Sci-Fi Essentials Kit (official pack page):
+-  <https://quaternius.com/packs/scifiessentialskit.html>
+-- Modular Sci-Fi MegaKit (official pack page):
+-  <https://quaternius.com/packs/modularscifimegakit.html>
+-- Modular Sci-Fi MegaKit standard archive (authoritative OpenGameArt uploader
+-  page): <https://opengameart.org/content/modular-sci-fi-megakit>
+-- Downloaded MegaKit archive SHA-256:
+-  `4ca9acbc7a13e7baa48e24c4853b779889b7ab21587004c36668826e705c8a10`
+-- Essentials standard mirror commit:
+-  `db3df04d1e4714298a09510b26fb6de6645138a2`
+-- The route-local `License_Standard.txt` files both state “CC0 1.0 Universal
+-  (CC0 1.0), Public Domain Dedication” and “Models by @Quaternius.” Their
+-  hashes are Essentials
+-  `2687fba65dca7bbd2f9ab2fb7a8c1a16bce89b2836a0ecf34ece7e2fab96769`
+-  and MegaKit
+-  `885b700f02932c08a41163b35cc97d1abe0895a05de29d9a9062fde5132969a8`.
+-
+-The exact selected source files and required texture dependencies are retained
+-under `art-review/external-source/quaternius/`. No known franchise or existing
+-Aura game identity is reused.
+-
+-## Selected family and inspection
+-
+-| Role | Source | Source SHA-256 | Source inspection |
+-| --- | --- | --- | --- |
+-| player | `Enemy_EyeDrone.gltf` | `ae39f7a2cc7698aaa774c9c84df3263d833023d69e7638e417d88e79cb3c7005` | 10 nodes, one mesh/material, three real PBR images, source bounds 0.996×0.995×0.892 |
+-| warden | `Alien_Scolitex.gltf` | `7ea407580bad6ca7b918eca815f6b55e70667143a97d7e8c7ca0e51de2c6f049` | 35 articulated nodes, one mesh, three authored color materials, source bounds 3.432×3.362×3.227 |
+-| environment | `WallAstra_Straight.gltf` | `76ca46a4cac44e9c7a0971bdb2d1912f9d5d7e00fe2e8f7ffa488e98856a1368` | five materials and 11 texture-image references |
+-| environment | `Platform_DarkPlates.gltf` | `1fb445848b118fcda47b9c8c4ecd5c25d0120c4633877a0204564b285d3b262b` | one material and three texture-image references |
+-| environment | `Column_Pipes.gltf` | `7b5a852e82ae98fdb717a878372b1fa70a4efedc354ad9ac8cc106171d7e97b5` | three materials and nine texture-image references |
+-| environment | `Door_Frame_A.gltf` | `b37935929f3d58fceea361568982cabec51c7dc7443a96bc775a9ee1b5532430` | three materials and seven texture-image references |
+-
+-## Reproducible audition outputs
+-
+-Builder: `scripts/build-quaternius-source-v9.py`, SHA-256
+-`135adeed83e75a0846f3e1bfc5e4df17051a37ff61d7ae14595a786d2dc998fa`.
+-Two independent Blender 5.2.1 invocations produced byte-identical GLBs:
+-
+-| Candidate | SHA-256 | Bytes | Export structure |
+-| --- | --- | ---: | --- |
+-| `pulseQuaterniusEyeRunnerV9.candidate.glb` | `c39a2f5153382b1f4450a546df5112aba6a7ab50b47188bcb394742a654815b6` | 4,628,876 | 10 nodes, one mesh/material, three embedded images |
+-| `pulseQuaterniusScolitexWardenV9.candidate.glb` | `097c16edbc1e76a95aab8318ef2821b46888816733803904a894af351cdbbcf1` | 446,128 | 35 nodes, one mesh, three materials, no bitmap images |
+-| `pulseQuaterniusReactorArenaV9.candidate.glb` | `64731eade5c980f7461599b033551f9f59ef2c7ab3dd8579bfedbc9f59f2e9e3` | 26,654,304 | 23 nodes/meshes, 69 material instances, 14 embedded images |
+-
+-The Blender exporter warned that several imported MegaKit materials reference
+-more than one image node and therefore use the first node as the glTF sampler.
+-This is an honest fidelity limitation of the conversion, not a silent pass.
+-
+-## Exact route audition and verdict
+-
+-- Review scene: `art-review/pulse-quaternius-source-v9.html` and `.ts`
+-- HTML SHA-256:
+-  `308d0d9718f244a66a7a3e3a9cfb08e62acfc67f8bb018e4f9bfece0b97e3bac`
+-- TypeScript SHA-256:
+-  `857806e31f6d4aeb7033273cc33a25d03f408f9c2c12d3e6a0a7741d60b14b54`
+-- Exact: `art-review/output/pulse-quaternius-source-v9.png`
+-- Exact SHA-256:
+-  `5d2792a16c5077328affa6a6485c5a58ed2aa80fea3a8eb36eef1f97bfc94364`
+-- Runtime: WebGL2 safe API, 1440×900, 101 draw calls, zero diagnostics errors.
+-- Combat staging: ten cyan player projectiles, 15 red warden projectiles, two
+-  3D lock/impact rings, two legible primary actors, and a compact state HUD.
+-
+-The external family materially fixes V7’s generic procedural-arch lane: it has
+-a distinct textured oculus player, a large articulated vertical alien warden,
+-and a continuous authored modular causeway. The exact still has visible
+-limitations: the safe-basic material response is flat and desaturated, the
+-central floor consumes too much of the frame, the warden uses color materials
+-rather than image textures, and the projectile exchange is still sphere-led.
+-The fresh independent label-hidden critic selected Furi for clearer
+-player/enemy staging, denser readable combat, richer modeled arena/material
+-finish, stronger lighting/depth/effects/composition, and a more integrated
+-HUD. V9 is therefore rejected and unregistered. It was allowed only one
+-bounded same-family presentation pass, V10; V9 itself must never be promoted.
+diff --git a/apps/showcase-pulse-tunnel/art-review/texture-identity-v6-PROVENANCE.md b/apps/showcase-pulse-tunnel/art-review/texture-identity-v6-PROVENANCE.md
+deleted file mode 100644
+index 9a36c49c0..000000000
+--- a/apps/showcase-pulse-tunnel/art-review/texture-identity-v6-PROVENANCE.md
++++ /dev/null
+@@ -1,63 +0,0 @@
+-# Pulse Tunnel texture/identity V6 candidate provenance
+-
+-Status: **isolated and rejected before shared registration/live-route integration**.
+-
+-## Authorship and license
+-
+-- Builder: `apps/showcase-pulse-tunnel/scripts/build-texture-identity-v6.py`
+-- Builder SHA-256: `e9bcee25f2c079f27dc809f44df351431f2986f81774649e18304909f1906c0d`
+-- Author: Aura3D route-local synthesis
+-- License: CC0-1.0
+-- Source inputs: fixed numeric geometry, fixed material parameters, and three
+-  stdlib-generated procedural RGBA PNGs. There are no downloaded, cross-game,
+-  or third-party model inputs.
+-- Shared catalog/public blobs: untouched. These bytes remain under
+-  `apps/showcase-pulse-tunnel/art-review/assets/texture-identity-v6/`.
+-
+-## Exact candidate artifacts
+-
+-| Artifact | SHA-256 | Bytes | Bounds | Contents |
+-| --- | --- | ---: | --- | --- |
+-| `pulsePhaseMantaV6.candidate.glb` | `df01caa46aec41c038ab5371e4a15139a82c3b6c478329ff0afe180a9544de25` | 1,239,812 | 3.890×0.950×3.700 | 26 meshes, five materials, embedded deterministic runner panel texture |
+-| `pulseCathedralSentinelV6.candidate.glb` | `4fbbaa37232414a29475b22fe5e3cd222ae398bd4990575e56e96fca5628b4ba` | 1,806,088 | 5.142×2.561×2.785 | 41 meshes, five materials, embedded deterministic threat-chevron texture |
+-| `pulseBraidedReactorWorldV6.candidate.glb` | `eaab715521053a6977a0285d307e63a0205f47d29aa3408bec08c4bb4148a140` | 2,283,816 | 9.398×4.730×15.580 | 62 meshes, six materials, embedded deterministic reactor-deck texture |
+-
+-Procedural texture SHA-256 values:
+-
+-- `runner-panel.png`: `be6260540bf4e6d5ac73f1434302ec0c4f7e1e83e8a7d90b3d5a6a6e0a0c193d`
+-- `sentinel-chevron.png`: `7174de3e326bd2c9b44685b0df337b8b8ce744f520dd02bfdaa8ee9d0b86240e`
+-- `reactor-deck.png`: `01517aec9b188a0c36c5f750450024654737335a0b76039b20ffbd278ee777db`
+-
+-## Reproducibility and focused gates
+-
+-Blender's stock exporter was explicitly rejected after it changed accessor
+-counts and GLB bytes between identical V6 runs. The retained builder instead
+-uses a canonical route-local GLB writer: object/material sorting, fixed
+-triangulation traversal, 1e-3 display-subpixel attribute quantization,
+-canonical JSON serialization, fixed embedded PNG streams, and deterministic
+-primitive joints. Two clean independent Blender 5.2.1 processes produced
+-byte-identical hashes for all three GLBs and all three PNGs.
+-
+-- App TypeScript: pass (`pnpm exec tsc -p apps/showcase-pulse-tunnel/tsconfig.json --noEmit`).
+-- Focused unit suite: pass, 22/22 (`tests/unit/apps/pulse-tunnel-clock.test.ts`).
+-- App build: pass (`pnpm --dir apps/showcase-pulse-tunnel build`).
+-- Isolated review page: `art-review/pulse-texture-identity-v6.html`.
+-- Final audition PNG: `art-review/output/pulse-texture-identity-v6-staging.png`,
+-  SHA-256 `2753119d07661a316c64416d5879ad5b86e44f1a785137135b3f617c0b3696e2`.
+-
+-## Honest visual verdict
+-
+-V6 fixes the provenance/rebuild problem, removes cross-game identities, gives
+-the runner a distinct black-ceramic/cyan phase-manta silhouette, makes the
+-sentinel an original many-limbed threat family, and enlarges the causal cyan
+-bolt/red cutting-pulse exchange. It still does **not** clear the visual gate.
+-In the safe-basic exact, the procedural textures are too subtle, the broad
+-world surfaces still read as flat purple/blue fields, the runner is dark and
+-weakly grounded, and the sentinel's authored geometry collapses into an
+-abstract horizontal silhouette at encounter distance. The scene remains well
+-behind the Furi comparator's immediately legible hero/boss opposition,
+-lighting, impact hierarchy, and production material finish.
+-
+-Therefore V6 must not be registered, promoted, or used to replace the current
+-typed route. Pulse Tunnel remains **`reference`**. The canonical route and all
+-gameplay/sync evidence remain untouched.
+diff --git a/apps/showcase-pulse-tunnel/performance-report.json b/apps/showcase-pulse-tunnel/performance-report.json
+deleted file mode 100644
+index da821bee3..000000000
+--- a/apps/showcase-pulse-tunnel/performance-report.json
++++ /dev/null
+@@ -1,20 +0,0 @@
+-{
+-  "schema": "aura3d-pulse-tunnel-performance/1.0",
+-  "generatedAt": "2026-09-03T10:13:57.482Z",
+-  "producer": "apps/showcase-pulse-tunnel/scripts/write-performance-report.ts",
+-  "producerSourceSha256": "b0bf7ffa5aaa9b2860eb31fc44b322f61f876c285b2aaf3331f1fc6dc93e89e2",
+-  "routeSourceSha256": "4688a6cecde6b2d06f56935b40b6c18676ceb9215f279ea402c624d148ac7a59",
+-  "scope": "Headless fixed-step timing of chart-owned gate, player, and style simulation. GPU/frame-time or audio-device timing parity is not claimed.",
+-  "samples": 12000,
+-  "fixedStepSeconds": 0.008333333333333333,
+-  "budgets": {
+-    "simulationP95Ms": 1,
+-    "fullRunDrawCalls": 600
+-  },
+-  "observed": {
+-    "simulationP95Ms": 0.001,
+-    "chartEntries": 51,
+-    "fullRunDrawCalls": 453
+-  },
+-  "pass": true
+-}
+diff --git a/apps/showcase-pulse-tunnel/scripts/build-combat-finish-v4.py b/apps/showcase-pulse-tunnel/scripts/build-combat-finish-v4.py
+deleted file mode 100644
+index 0e7e9c4d0..000000000
+--- a/apps/showcase-pulse-tunnel/scripts/build-combat-finish-v4.py
++++ /dev/null
+@@ -1,296 +0,0 @@
+-"""Build Pulse Tunnel combat-finish V4 candidates with Blender.
+-
+-Original route-local work authored for Aura3D. License: CC0-1.0.
+-
+-The outputs are isolated art candidates under art-review/assets and are not
+-release assets until the root manifest owner audits and registers their exact
+-hashes. They contain no animation or collision data. Pulse Tunnel's existing
+-chart, lane, shield, scoring, fail, reset, and clock systems remain authoritative.
+-"""
+-
+-from pathlib import Path
+-import math
+-import bpy
+-from mathutils import Matrix
+-
+-ROOT = Path(__file__).resolve().parent.parent
+-OUT = ROOT / "art-review" / "assets" / "combat-finish-v4"
+-OUT.mkdir(parents=True, exist_ok=True)
+-
+-
+-def reset():
+-    bpy.ops.wm.read_factory_settings(use_empty=True)
+-
+-
+-def mat(name, color, metallic=0.0, roughness=0.5, emission=None, strength=0.0):
+-    value = bpy.data.materials.new(name)
+-    value.diffuse_color = (*color, 1)
+-    value.use_nodes = True
+-    bsdf = value.node_tree.nodes.get("Principled BSDF")
+-    bsdf.inputs["Base Color"].default_value = (*color, 1)
+-    bsdf.inputs["Metallic"].default_value = metallic
+-    bsdf.inputs["Roughness"].default_value = roughness
+-    if emission:
+-        emission_input = "Emission Color" if "Emission Color" in bsdf.inputs else "Emission"
+-        bsdf.inputs[emission_input].default_value = (*emission, 1)
+-        bsdf.inputs["Emission Strength"].default_value = strength
+-    return value
+-
+-
+-def finish(obj, material, bevel=0.04, smooth=False):
+-    obj.data.materials.append(material)
+-    if bevel > 0:
+-        modifier = obj.modifiers.new("precision edge bevel", "BEVEL")
+-        modifier.width = bevel
+-        modifier.segments = 2
+-        bpy.context.view_layer.objects.active = obj
+-        bpy.ops.object.modifier_apply(modifier=modifier.name)
+-    for polygon in obj.data.polygons:
+-        polygon.use_smooth = smooth
+-    return obj
+-
+-
+-def box(name, location, scale, material, bevel=0.04, rotation=(0, 0, 0)):
+-    bpy.ops.mesh.primitive_cube_add(size=1, location=location, rotation=rotation)
+-    obj = bpy.context.object
+-    obj.name = name
+-    obj.scale = scale
+-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+-    return finish(obj, material, bevel)
+-
+-
+-def cylinder(name, location, radius, depth, material, vertices=20, rotation=(0, 0, 0), bevel=0.025):
+-    bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=location, rotation=rotation)
+-    obj = bpy.context.object
+-    obj.name = name
+-    return finish(obj, material, bevel)
+-
+-
+-def torus(name, location, major, minor, material, rotation=(math.pi / 2, 0, 0)):
+-    bpy.ops.mesh.primitive_torus_add(
+-        major_radius=major,
+-        minor_radius=minor,
+-        major_segments=32,
+-        minor_segments=8,
+-        location=location,
+-        rotation=rotation,
+-    )
+-    obj = bpy.context.object
+-    obj.name = name
+-    obj.data.materials.append(material)
+-    return obj
+-
+-
+-def wedge(name, location, width_back, width_front, length, height, material, bevel=0.03):
+-    """Create a centered, tapered +Y-height / -Z-forward hull prism."""
+-    back_z = length * 0.5
+-    front_z = -length * 0.5
+-    bottom = 0
+-    top = height
+-    vertices = [
+-        (-width_back, bottom, back_z), (width_back, bottom, back_z),
+-        (width_front, bottom, front_z), (-width_front, bottom, front_z),
+-        (-width_back, top, back_z), (width_back, top, back_z),
+-        (width_front, top, front_z), (-width_front, top, front_z),
+-    ]
+-    faces = [
+-        (0, 1, 2, 3), (4, 7, 6, 5),
+-        (0, 4, 5, 1), (1, 5, 6, 2),
+-        (2, 6, 7, 3), (3, 7, 4, 0),
+-    ]
+-    mesh = bpy.data.meshes.new(name + " mesh")
+-    mesh.from_pydata(vertices, [], faces)
+-    mesh.update()
+-    obj = bpy.data.objects.new(name, mesh)
+-    bpy.context.collection.objects.link(obj)
+-    obj.location = location
+-    return finish(obj, material, bevel)
+-
+-
+-def export(filename):
+-    bpy.ops.object.select_all(action="SELECT")
+-    basis = Matrix.Rotation(math.pi / 2, 4, "X")
+-    for obj in bpy.context.scene.objects:
+-        obj.matrix_world = basis @ obj.matrix_world
+-    bpy.ops.export_scene.gltf(
+-        filepath=str(OUT / filename),
+-        export_format="GLB",
+-        use_selection=True,
+-        export_apply=True,
+-        export_yup=True,
+-        export_animations=False,
+-    )
+-
+-
+-def build_runner():
+-    reset()
+-    graphite = mat("runner graphite alloy", (0.035, 0.085, 0.12), 0.78, 0.29)
+-    teal = mat("runner deep teal armour", (0.045, 0.27, 0.34), 0.62, 0.32)
+-    pale = mat("runner cool ceramic panels", (0.34, 0.52, 0.59), 0.38, 0.41)
+-    bronze = mat("runner heat bronze trim", (0.48, 0.20, 0.07), 0.74, 0.28)
+-    canopy = mat("runner smoked canopy", (0.015, 0.13, 0.19), 0.48, 0.18, (0.0, 0.32, 0.48), 0.34)
+-    drive = mat("runner bounded cyan drive", (0.01, 0.22, 0.28), 0.28, 0.2, (0.0, 0.62, 0.78), 1.15)
+-
+-    wedge("runner continuous tapered fuselage", (0, 0.18, -0.08), 0.46, 0.18, 2.42, 0.42, graphite, 0.055)
+-    wedge("runner dorsal armour shell", (0, 0.46, -0.23), 0.34, 0.12, 1.62, 0.24, pale, 0.065)
+-    wedge("runner ventral keel", (0, 0.05, 0.12), 0.26, 0.08, 2.05, 0.18, teal, 0.045)
+-    wedge("runner pointed bronze prow", (0, 0.28, -1.3), 0.2, 0.025, 0.72, 0.19, bronze, 0.035)
+-    box("runner canopy spine", (0, 0.69, -0.23), (0.25, 0.13, 0.46), canopy, 0.08, (0.03, 0, 0))
+-    box("runner rear dorsal brake", (0, 0.54, 0.79), (0.34, 0.075, 0.29), bronze, 0.035)
+-
+-    for side in (-1, 1):
+-        box(
+-            f"runner swept continuous wing {side}",
+-            (side * 0.77, 0.27, 0.05),
+-            (0.76, 0.085, 0.63),
+-            teal,
+-            0.055,
+-            (0, side * -0.2, side * 0.065),
+-        )
+-        wedge(
+-            f"runner wing tip armour {side}",
+-            (side * 1.25, 0.29, 0.04),
+-            0.2,
+-            0.08,
+-            1.05,
+-            0.17,
+-            pale,
+-            0.04,
+-        ).rotation_euler[2] = side * 0.08
+-        box(
+-            f"runner bronze leading edge {side}",
+-            (side * 0.81, 0.35, -0.32),
+-            (0.63, 0.035, 0.08),
+-            bronze,
+-            0.022,
+-            (0, side * -0.2, side * 0.065),
+-        )
+-        cylinder(
+-            f"runner recessed drive housing {side}",
+-            (side * 0.64, 0.25, 0.88),
+-            0.19,
+-            0.64,
+-            graphite,
+-            24,
+-            (math.pi / 2, 0, 0),
+-            0.035,
+-        )
+-        cylinder(
+-            f"runner bounded exhaust aperture {side}",
+-            (side * 0.64, 0.25, 1.22),
+-            0.125,
+-            0.055,
+-            drive,
+-            24,
+-            (math.pi / 2, 0, 0),
+-            0.012,
+-        )
+-        box(f"runner stabilizer fin {side}", (side * 0.38, 0.67, 0.72), (0.06, 0.28, 0.38), graphite, 0.03, (side * -0.16, 0, side * -0.05))
+-    export("pulseRunnerCraftV4.candidate.glb")
+-
+-
+-def build_sentry():
+-    reset()
+-    graphite = mat("sentinel graphite armour", (0.045, 0.07, 0.105), 0.8, 0.28)
+-    maroon = mat("sentinel oxblood armour", (0.25, 0.035, 0.07), 0.62, 0.31)
+-    slate = mat("sentinel blue slate plates", (0.11, 0.2, 0.29), 0.58, 0.36)
+-    bronze = mat("sentinel furnace bronze", (0.46, 0.17, 0.045), 0.8, 0.25)
+-    rose = mat("sentinel bounded reactor rose", (0.24, 0.015, 0.055), 0.32, 0.22, (0.72, 0.015, 0.12), 1.2)
+-    amber = mat("sentinel bounded amber optics", (0.28, 0.12, 0.015), 0.32, 0.2, (0.8, 0.32, 0.025), 1.0)
+-
+-    box("sentinel continuous armoured core", (0, 1.22, 0), (0.78, 0.72, 0.44), graphite, 0.14)
+-    wedge("sentinel forward breastplate", (0, 1.12, -0.47), 0.6, 0.4, 0.3, 0.72, maroon, 0.08)
+-    box("sentinel crown armour", (0, 1.9, -0.03), (0.58, 0.18, 0.42), slate, 0.08)
+-    box("sentinel lower reactor keel", (0, 0.5, 0.05), (0.4, 0.42, 0.35), graphite, 0.09)
+-    torus("sentinel reactor containment ring", (0, 1.2, -0.62), 0.38, 0.075, bronze)
+-    cylinder("sentinel reactor iris", (0, 1.2, -0.67), 0.24, 0.08, rose, 28, (math.pi / 2, 0, 0), 0.025)
+-    cylinder("sentinel central optic", (0, 1.73, -0.48), 0.11, 0.08, amber, 20, (math.pi / 2, 0, 0), 0.02)
+-
+-    for side in (-1, 1):
+-        box(
+-            f"sentinel swept shoulder armour {side}",
+-            (side * 1.05, 1.45, 0.03),
+-            (0.84, 0.18, 0.42),
+-            slate,
+-            0.075,
+-            (0, side * 0.18, side * 0.18),
+-        )
+-        wedge(
+-            f"sentinel blade wing {side}",
+-            (side * 1.7, 1.42, 0.02),
+-            0.32,
+-            0.1,
+-            1.35,
+-            0.19,
+-            maroon,
+-            0.045,
+-        ).rotation_euler[2] = side * 0.16
+-        cylinder(
+-            f"sentinel rotary cannon {side}",
+-            (side * 1.36, 1.22, -0.38),
+-            0.14,
+-            0.74,
+-            bronze,
+-            20,
+-            (0, math.pi / 2, side * 0.06),
+-            0.025,
+-        )
+-        cylinder(
+-            f"sentinel cannon aperture {side}",
+-            (side * 1.76, 1.22, -0.38),
+-            0.09,
+-            0.06,
+-            amber,
+-            20,
+-            (0, math.pi / 2, side * 0.06),
+-            0.01,
+-        )
+-        box(f"sentinel lower stabilizer {side}", (side * 0.52, 0.45, 0.05), (0.13, 0.5, 0.28), maroon, 0.055, (side * -0.12, 0, side * -0.16))
+-        box(f"sentinel ventral blade {side}", (side * 0.68, 0.17, 0.03), (0.28, 0.08, 0.48), graphite, 0.04, (0, side * 0.16, side * 0.08))
+-    export("pulseTerminalSentryV4.candidate.glb")
+-
+-
+-def build_world():
+-    reset()
+-    deck = mat("V4 reactor deck graphite", (0.09, 0.14, 0.21), 0.66, 0.38)
+-    inset = mat("V4 exchange lane inset", (0.035, 0.075, 0.12), 0.72, 0.34)
+-    wall = mat("V4 containment blue steel", (0.085, 0.18, 0.27), 0.62, 0.4)
+-    rib = mat("V4 oxidized bronze ribs", (0.33, 0.14, 0.055), 0.74, 0.34)
+-    cyan = mat("V4 bounded cyan cadence", (0.015, 0.23, 0.3), 0.34, 0.25, (0.0, 0.55, 0.72), 0.9)
+-    amber = mat("V4 bounded amber terminal", (0.31, 0.13, 0.02), 0.38, 0.26, (0.76, 0.28, 0.025), 0.95)
+-
+-    box("V4 continuous reactor deck", (0, -0.25, -3.0), (4.65, 0.22, 7.4), deck, 0.12)
+-    box("V4 recessed exchange lane", (0, -0.01, -2.85), (2.65, 0.07, 6.8), inset, 0.03)
+-    box("V4 runner launch apron", (-1.45, 0.08, 0.15), (1.85, 0.13, 1.75), wall, 0.075, (0, -0.05, 0))
+-    box("V4 raised sentinel dock", (1.95, 0.1, -5.65), (2.25, 0.28, 1.45), wall, 0.12)
+-    box("V4 terminal backstop", (2.0, 1.52, -6.85), (2.45, 1.55, 0.22), inset, 0.1)
+-    box("V4 terminal crown", (2.0, 3.0, -6.75), (2.15, 0.18, 0.42), rib, 0.08)
+-
+-    for side in (-1, 1):
+-        box(f"V4 connected sidewall {side}", (side * 4.25, 0.75, -3.0), (0.3, 0.9, 7.2), wall, 0.1)
+-        box(f"V4 upper containment shoulder {side}", (side * 3.92, 2.25, -3.1), (0.27, 0.44, 6.9), wall, 0.085, (0, 0, side * 0.22))
+-        box(f"V4 continuous lane conduit {side}", (side * 3.55, 0.34, -3.0), (0.045, 0.045, 6.85), cyan, 0.018)
+-
+-    for index, z in enumerate((1.45, -0.85, -3.15, -5.45)):
+-        for side in (-1, 1):
+-            box(f"V4 load rib {index} {side}", (side * 3.75, 1.6, z), (0.17, 1.42, 0.24), rib, 0.065, (0, 0, side * -0.18))
+-            box(f"V4 crown brace {index} {side}", (side * 1.9, 3.03, z), (1.72, 0.13, 0.24), rib, 0.055, (0, side * 0.02, side * -0.14))
+-        box(f"V4 roof cadence practical {index}", (0, 3.32, z), (0.34, 0.07, 0.18), cyan if index < 3 else amber, 0.03)
+-
+-    for index in range(6):
+-        box(
+-            f"V4 deck cadence inset {index}",
+-            (0, 0.075, 0.4 - index * 1.05),
+-            (0.48, 0.025, 0.035),
+-            cyan if index < 4 else amber,
+-            0.01,
+-        )
+-
+-    box("V4 sentinel amber identity bar", (1.95, 2.38, -6.58), (0.62, 0.045, 0.035), amber, 0.015)
+-    export("pulseReactorEncounterWorldV4.candidate.glb")
+-
+-
+-build_runner()
+-build_sentry()
+-build_world()
+-print("Built Pulse Tunnel combat-finish V4 candidates in", OUT)
+diff --git a/apps/showcase-pulse-tunnel/scripts/build-combat-finish-v7.py b/apps/showcase-pulse-tunnel/scripts/build-combat-finish-v7.py
+deleted file mode 100644
+index bfee78e80..000000000
+--- a/apps/showcase-pulse-tunnel/scripts/build-combat-finish-v7.py
++++ /dev/null
+@@ -1,210 +0,0 @@
+-"""Build Pulse Tunnel V7: a high-contrast, camera-authored combat family."""
+-
+-from pathlib import Path
+-import hashlib
+-import importlib.util
+-import math
+-
+-
+-ROOT = Path(__file__).resolve().parent.parent
+-OUT = ROOT / "art-review" / "assets" / "combat-finish-v7"
+-TEXTURES = OUT / "textures"
+-OUT.mkdir(parents=True, exist_ok=True)
+-TEXTURES.mkdir(parents=True, exist_ok=True)
+-
+-source = Path(__file__).with_name("build-texture-identity-v6.py")
+-spec = importlib.util.spec_from_file_location("pulse_v6_canonical", source)
+-v6 = importlib.util.module_from_spec(spec)
+-assert spec.loader is not None
+-spec.loader.exec_module(v6)
+-v6.OUT = OUT
+-v6.TEXTURES = TEXTURES
+-
+-reset = v6.reset
+-box = v6.box
+-cylinder = v6.cylinder
+-sphere = v6.sphere
+-torus = v6.torus
+-curve_tube = v6.curve_tube
+-prism = v6.prism
+-loft = v6.loft
+-material = v6.material
+-stable_export = v6.stable_export
+-png = v6.png
+-
+-
+-def make_textures():
+-    def runner(x, y):
+-        cell_x, cell_y = x % 32, y % 24
+-        border = cell_x in (0, 1, 30, 31) or cell_y in (0, 1, 22, 23)
+-        cyan_cut = (x + y) % 47 in (0, 1, 2)
+-        white_mark = 7 <= cell_x <= 10 and 6 <= cell_y <= 17
+-        if border:
+-            return (3, 12, 18, 255)
+-        if cyan_cut:
+-            return (0, 187, 211, 255)
+-        if white_mark:
+-            return (176, 213, 218, 255)
+-        grain = ((x * 19 + y * 31) % 15) - 7
+-        return (34 + grain, 54 + grain, 64 + grain, 255)
+-
+-    def sentinel(x, y):
+-        cell_x, cell_y = x % 40, y % 32
+-        border = cell_x in (0, 1, 38, 39) or cell_y in (0, 1, 30, 31)
+-        chevron = abs(cell_x - 20) in (cell_y // 2, cell_y // 2 + 1)
+-        ivory = 8 <= cell_y <= 12 and 7 <= cell_x <= 33
+-        if border:
+-            return (16, 3, 5, 255)
+-        if chevron:
+-            return (246, 54, 35, 255)
+-        if ivory:
+-            return (190, 181, 147, 255)
+-        grain = ((x * 11 + y * 23) % 13) - 6
+-        return (61 + grain, 13 + grain // 3, 17 + grain // 3, 255)
+-
+-    def deck(x, y):
+-        lane = x % 32 in (0, 1, 2, 29, 30, 31)
+-        cross = y % 48 in (0, 1, 2)
+-        hazard = (x + y * 2) % 67 in (0, 1)
+-        if lane:
+-            return (0, 135, 153, 255)
+-        if cross:
+-            return (7, 17, 24, 255)
+-        if hazard:
+-            return (146, 56, 34, 255)
+-        grain = ((x * 7 + y * 17) % 17) - 8
+-        return (45 + grain, 54 + grain, 60 + grain, 255)
+-
+-    png(TEXTURES / "runner-panel.png", 128, 96, runner)
+-    png(TEXTURES / "sentinel-chevron.png", 120, 96, sentinel)
+-    png(TEXTURES / "reactor-deck.png", 128, 128, deck)
+-
+-
+-def build_runner():
+-    reset()
+-    shell = material("runner micro-panel black ceramic", (0.10, 0.17, 0.20), 0.58, 0.25, texture="runner-panel.png")
+-    dark = material("V7 runner obsidian keel", (0.008, 0.015, 0.024), 0.87, 0.23)
+-    silver = material("V7 runner silver bevel", (0.48, 0.56, 0.58), 0.90, 0.22)
+-    cyan = material("V7 runner phase emitter", (0.0, 0.18, 0.22), 0.28, 0.11, (0.0, 0.84, 1.0), 4.2)
+-    glass = material("V7 runner cyan canopy", (0.02, 0.22, 0.27), 0.22, 0.10, (0.0, 0.48, 0.62), 2.0)
+-
+-    loft("V7 runner arrowhead hull",
+-         [(-2.05, 0.04, 0.04, 0.30), (-1.72, 0.24, 0.14, 0.31),
+-          (-1.10, 0.48, 0.28, 0.32), (-0.30, 0.58, 0.34, 0.33),
+-          (0.50, 0.50, 0.29, 0.30), (1.26, 0.30, 0.17, 0.25),
+-          (1.68, 0.09, 0.06, 0.20)], 28, shell, subdivision=0)
+-    loft("V7 runner luminous ventral blade",
+-         [(-1.55, 0.07, 0.05, 0.07), (-0.85, 0.22, 0.10, 0.06),
+-          (0.25, 0.21, 0.10, 0.06), (1.32, 0.05, 0.03, 0.07)], 20, cyan, subdivision=0)
+-    sphere("V7 runner raised phase canopy", (0, 0.67, -0.45), (0.42, 0.23, 0.64), glass, 36, 18)
+-    for side in (-1, 1):
+-        prism(f"V7 runner broad manta wing {side}",
+-              [(side * 0.20, -1.20), (side * 1.78, -0.48), (side * 2.12, 0.64),
+-               (side * 1.44, 1.30), (side * 0.47, 0.52)], 0.18, 0.40, shell, 0.065)
+-        prism(f"V7 runner bright leading edge {side}",
+-              [(side * 1.64, -0.54), (side * 2.15, 0.64), (side * 1.98, 0.73),
+-               (side * 1.50, -0.45)], 0.40, 0.46, silver, 0.02)
+-        # Face-on rings are legible from the route camera; V6's side-on pods are removed.
+-        cylinder(f"V7 runner recessed drive {side}", (side * 0.90, 0.25, 1.08), 0.30, 0.45, dark,
+-                 (0, 0, 0), 40, 0.035)
+-        torus(f"V7 runner face-on cyan drive ring {side}", (side * 0.90, 0.25, 1.33), 0.23, 0.05, cyan,
+-              rotation=(0, 0, 0), major_segments=48)
+-        cylinder(f"V7 runner cyan drive pupil {side}", (side * 0.90, 0.25, 1.37), 0.14, 0.05, cyan,
+-                 (0, 0, 0), 36, 0.01)
+-        box(f"V7 runner dorsal cadence fin {side}", (side * 0.48, 0.55, 0.23), (0.07, 0.26, 0.62), silver,
+-            rotation=(0, side * -0.10, side * -0.05), edge=0.035)
+-    torus("V7 runner shield coupler", (0, 0.66, -1.00), 0.28, 0.05, cyan,
+-          rotation=(0, 0, 0), major_segments=44)
+-    stable_export("pulsePhaseMantaV7.candidate.glb")
+-
+-
+-def build_sentinel():
+-    reset()
+-    shell = material("sentinel deterministic threat chevrons", (0.22, 0.04, 0.05), 0.63, 0.24, texture="sentinel-chevron.png")
+-    dark = material("V7 sentinel obsidian skeleton", (0.006, 0.009, 0.014), 0.91, 0.18)
+-    ivory = material("V7 sentinel ivory anatomy", (0.62, 0.58, 0.46), 0.30, 0.38)
+-    ember = material("V7 sentinel furnace eye", (0.28, 0.006, 0.008), 0.24, 0.10, (1.0, 0.025, 0.012), 5.0)
+-    cyan = material("V7 sentinel stolen phase cells", (0.0, 0.16, 0.19), 0.28, 0.12, (0.0, 0.70, 0.84), 3.1)
+-
+-    # All primary anatomy is authored upright in +Y and face-on along -Z.
+-    sphere("V7 sentinel tall armored thorax", (0, 1.48, 0.02), (0.72, 1.10, 0.48), shell, 40, 20)
+-    prism("V7 sentinel pointed lower reliquary",
+-          [(-0.56, -0.15), (0.56, -0.15), (0.34, -0.68), (0, -1.18), (-0.34, -0.68)],
+-          0.26, 1.24, dark, 0.07)
+-    torus("V7 sentinel face-on ivory crown", (0, 2.12, -0.03), 1.13, 0.12, ivory,
+-          rotation=(0, 0, 0), major_segments=56)
+-    torus("V7 sentinel face-on broken halo", (0, 2.12, -0.08), 0.84, 0.05, ember,
+-          rotation=(0, 0, 0), major_segments=48)
+-    cylinder("V7 sentinel singular furnace eye", (0, 1.63, -0.55), 0.42, 0.12, ember,
+-             (0, 0, 0), 48, 0.02)
+-    torus("V7 sentinel eye aperture", (0, 1.63, -0.62), 0.52, 0.075, ivory,
+-          rotation=(0, 0, 0), major_segments=48)
+-    for side in (-1, 1):
+-        curve_tube(f"V7 sentinel raised execution arm {side}",
+-                   [(side * 0.44, 1.92, 0.08), (side * 1.18, 2.40, -0.02),
+-                    (side * 1.95, 2.54, -0.28), (side * 2.44, 2.16, -0.67)], 0.12, dark)
+-        prism(f"V7 sentinel broad ivory scythe {side}",
+-              [(side * 1.88, -0.50), (side * 2.76, -0.98), (side * 2.54, -0.14),
+-               (side * 2.08, 0.18)], 1.92, 2.28, ivory, 0.055)
+-        cylinder(f"V7 sentinel face-on lance eye {side}", (side * 2.30, 2.08, -0.72), 0.14, 0.13, ember,
+-                 (0, 0, 0), 32, 0.015)
+-        curve_tube(f"V7 sentinel hooked lower leg {side}",
+-                   [(side * 0.45, 1.18, 0.10), (side * 1.08, 0.76, 0.32),
+-                    (side * 1.48, 0.20, 0.05), (side * 1.72, 0.05, -0.58)], 0.10, dark)
+-        torus(f"V7 sentinel stolen cyan cell {side}", (side * 0.72, 1.08, -0.40), 0.21, 0.045, cyan,
+-              rotation=(0, 0, 0), major_segments=36)
+-    stable_export("pulseCathedralSentinelV7.candidate.glb")
+-
+-
+-def build_world():
+-    reset()
+-    deck = material("reactor deterministic deck plating", (0.12, 0.15, 0.17), 0.70, 0.30, texture="reactor-deck.png")
+-    black = material("V7 reactor black containment", (0.004, 0.008, 0.014), 0.90, 0.26)
+-    wall = material("V7 reactor blue-black armor", (0.02, 0.075, 0.10), 0.72, 0.31)
+-    silver = material("V7 reactor bright structural edge", (0.38, 0.45, 0.46), 0.86, 0.23)
+-    cyan = material("V7 reactor cyan bus", (0.0, 0.16, 0.19), 0.28, 0.11, (0.0, 0.70, 0.86), 3.3)
+-    red = material("V7 reactor red terminal", (0.24, 0.005, 0.008), 0.26, 0.10, (1.0, 0.018, 0.010), 4.4)
+-
+-    prism("V7 continuous high-contrast runway",
+-          [(-4.7, 2.7), (4.7, 2.7), (4.55, -11.5), (3.7, -12.1), (-3.7, -12.1), (-4.55, -11.5)],
+-          -0.38, 0.0, deck, 0.11)
+-    prism("V7 recessed black combat lane",
+-          [(-1.90, 2.4), (1.90, 2.4), (2.12, -10.9), (1.62, -11.48), (-1.62, -11.48), (-2.12, -10.9)],
+-          0.01, 0.055, black, 0.02)
+-    for side in (-1, 1):
+-        box(f"V7 full height side shell {side}", (side * 4.55, 1.55, -4.55), (0.26, 1.95, 7.25), wall, edge=0.10)
+-        box(f"V7 overhead darkness panel {side}", (side * 2.35, 4.15, -4.7), (2.28, 0.15, 7.0), black,
+-            rotation=(0, 0, side * 0.13), edge=0.08)
+-        curve_tube(f"V7 long cyan service artery {side}",
+-                   [(side * 3.82, 0.42, 2.1), (side * 3.66, 0.50, -1.2),
+-                    (side * 3.34, 0.66, -5.4), (side * 2.92, 0.86, -9.8)], 0.075, cyan)
+-    for index, (z, cant) in enumerate(((-0.8, 0.0), (-4.6, 0.32), (-8.4, -0.25))):
+-        curve_tube(f"V7 asymmetric reactor arch {index}",
+-                   [(-4.15, 0.42, z), (-3.18, 2.05 + cant, z - 0.10),
+-                    (-1.35, 3.52 - cant, z + 0.08), (0.78, 3.82 + cant, z - 0.06),
+-                    (2.75, 2.70 - cant, z + 0.11), (4.15, 0.46, z)], 0.13, silver)
+-    for index, z in enumerate((1.0, -1.1, -3.45, -5.95, -8.55)):
+-        box(f"V7 wide cadence bridge {index}", (0, 0.085, z), (1.42 - index * 0.07, 0.028, 0.16),
+-            cyan if index < 3 else red, edge=0.025)
+-    box("V7 terminal full black backwall", (0, 1.82, -11.60), (4.28, 1.90, 0.30), black, edge=0.14)
+-    torus("V7 terminal face-on silver iris", (0.95, 1.78, -11.20), 1.50, 0.18, silver,
+-          rotation=(0, 0, 0), major_segments=64)
+-    torus("V7 terminal face-on red breach", (0.95, 1.78, -11.12), 1.12, 0.075, red,
+-          rotation=(0, 0, 0), major_segments=56)
+-    cylinder("V7 terminal face-on lightless well", (0.95, 1.78, -11.25), 0.92, 0.13, black,
+-             (0, 0, 0), 64, 0.025)
+-    stable_export("pulseBraidedReactorWorldV7.candidate.glb")
+-
+-
+-def audit():
+-    for path in sorted(OUT.rglob("*")):
+-        if path.is_file():
+-            print(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.stat().st_size:8d}  {path.relative_to(OUT)}")
+-
+-
+-if __name__ == "__main__":
+-    make_textures()
+-    build_runner()
+-    build_sentinel()
+-    build_world()
+-    audit()
+diff --git a/apps/showcase-pulse-tunnel/scripts/build-combat-kit-v2.py b/apps/showcase-pulse-tunnel/scripts/build-combat-kit-v2.py
+deleted file mode 100644
+index 5fe82c0db..000000000
+--- a/apps/showcase-pulse-tunnel/scripts/build-combat-kit-v2.py
++++ /dev/null
+@@ -1,368 +0,0 @@
+-"""Author Pulse Tunnel's original CC0 combat-kit V2 with Blender 5.2.
+-
+-Everything produced by this generator is original work dedicated to CC0-1.0.
+-The two rigid GLBs are art candidates only: this script does not register them,
+-edit the Pulse runtime, or claim gameplay/collision authority.
+-"""
+-
+-from pathlib import Path
+-import math
+-import json
+-import struct
+-
+-import bpy
+-from mathutils import Matrix
+-
+-
+-ROOT = Path(__file__).resolve().parent.parent
+-OUT = ROOT / "assets" / "models"
+-OUT.mkdir(parents=True, exist_ok=True)
+-
+-
+-def reset():
+-    bpy.ops.wm.read_factory_settings(use_empty=True)
+-    bpy.context.scene["license"] = "CC0-1.0"
+-    bpy.context.scene["authoring"] = "Original Aura3D Pulse Tunnel combat-kit V2"
+-
+-
+-def material(name, color, metallic=0.0, roughness=0.45, emission=None, strength=0.0):
+-    value = bpy.data.materials.new(name)
+-    value.diffuse_color = (*color, 1.0)
+-    value.use_nodes = True
+-    bsdf = value.node_tree.nodes.get("Principled BSDF")
+-    bsdf.inputs["Base Color"].default_value = (*color, 1.0)
+-    bsdf.inputs["Metallic"].default_value = metallic
+-    bsdf.inputs["Roughness"].default_value = roughness
+-    if emission is not None:
+-        bsdf.inputs["Emission Color"].default_value = (*emission, 1.0)
+-        bsdf.inputs["Emission Strength"].default_value = strength
+-    return value
+-
+-
+-def finish(obj, value, bevel=0.0, smooth=False):
+-    obj.data.materials.append(value)
+-    obj["license"] = "CC0-1.0"
+-    if bevel > 0:
+-        modifier = obj.modifiers.new("controlled silhouette bevel", "BEVEL")
+-        modifier.width = bevel
+-        modifier.segments = 2
+-        bpy.context.view_layer.objects.active = obj
+-        bpy.ops.object.modifier_apply(modifier=modifier.name)
+-    for polygon in obj.data.polygons:
+-        polygon.use_smooth = smooth
+-    return obj
+-
+-
+-def prism(name, footprint, bottom, top, value, bevel=0.0):
+-    """Create a low horizontal prism from an authored X/Z silhouette."""
+-    vertices = [(x, bottom, z) for x, z in footprint] + [(x, top, z) for x, z in footprint]
+-    count = len(footprint)
+-    faces = [tuple(range(count - 1, -1, -1)), tuple(range(count, count * 2))]
+-    for index in range(count):
+-        nxt = (index + 1) % count
+-        faces.append((index, nxt, count + nxt, count + index))
+-    mesh = bpy.data.meshes.new(name + " mesh")
+-    mesh.from_pydata(vertices, [], faces)
+-    mesh.update()
+-    obj = bpy.data.objects.new(name, mesh)
+-    bpy.context.collection.objects.link(obj)
+-    return finish(obj, value, bevel)
+-
+-
+-def box(name, location, scale, value, bevel=0.05, rotation=(0.0, 0.0, 0.0)):
+-    bpy.ops.mesh.primitive_cube_add(size=1.0, location=location, rotation=rotation)
+-    obj = bpy.context.object
+-    obj.name = name
+-    obj.scale = scale
+-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+-    return finish(obj, value, bevel)
+-
+-
+-def cylinder(name, location, radius, depth, value, vertices=16, rotation=(0.0, 0.0, 0.0), bevel=0.025):
+-    bpy.ops.mesh.primitive_cylinder_add(
+-        vertices=vertices,
+-        radius=radius,
+-        depth=depth,
+-        location=location,
+-        rotation=rotation,
+-    )
+-    obj = bpy.context.object
+-    obj.name = name
+-    return finish(obj, value, bevel)
+-
+-
+-def cone(name, location, radius1, radius2, depth, value, vertices=12, rotation=(0.0, 0.0, 0.0)):
+-    bpy.ops.mesh.primitive_cone_add(
+-        vertices=vertices,
+-        radius1=radius1,
+-        radius2=radius2,
+-        depth=depth,
+-        location=location,
+-        rotation=rotation,
+-    )
+-    obj = bpy.context.object
+-    obj.name = name
+-    return finish(obj, value, 0.025)
+-
+-
+-def torus(name, location, major, minor, value, rotation=(0.0, 0.0, 0.0)):
+-    bpy.ops.mesh.primitive_torus_add(
+-        major_radius=major,
+-        minor_radius=minor,
+-        major_segments=24,
+-        minor_segments=6,
+-        location=location,
+-        rotation=rotation,
+-    )
+-    obj = bpy.context.object
+-    obj.name = name
+-    return finish(obj, value)
+-
+-
+-def ellipsoid(name, location, scale, value, segments=20, rings=10):
+-    bpy.ops.mesh.primitive_uv_sphere_add(segments=segments, ring_count=rings, location=location)
+-    obj = bpy.context.object
+-    obj.name = name
+-    obj.scale = scale
+-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+-    return finish(obj, value, smooth=True)
+-
+-
+-def fin(name, side, value):
+-    """A swept vertical tail plate, mirrored around the craft centerline."""
+-    x0 = side * 0.43
+-    x1 = side * 0.56
+-    vertices = [
+-        (x0, 0.47, 0.48), (x0, 0.49, 1.18), (x0, 1.02, 1.02),
+-        (x1, 0.47, 0.48), (x1, 0.49, 1.18), (x1, 1.02, 1.02),
+-    ]
+-    faces = [(0, 2, 1), (3, 4, 5), (0, 1, 4, 3), (1, 2, 5, 4), (2, 0, 3, 5)]
+-    mesh = bpy.data.meshes.new(name + " mesh")
+-    mesh.from_pydata(vertices, [], faces)
+-    mesh.update()
+-    obj = bpy.data.objects.new(name, mesh)
+-    bpy.context.collection.objects.link(obj)
+-    return finish(obj, value, 0.025)
+-
+-
+-def join_material_groups(prefix, exempt=()):
+-    exempt = set(exempt)
+-    groups = {}
+-    for obj in tuple(bpy.context.scene.objects):
+-        if obj.type != "MESH" or obj.name in exempt:
+-            continue
+-        key = obj.data.materials[0].name if obj.data.materials else "unassigned"
+-        groups.setdefault(key, []).append(obj)
+-    for value, objects in groups.items():
+-        if len(objects) < 2:
+-            continue
+-        bpy.ops.object.select_all(action="DESELECT")
+-        for obj in objects:
+-            obj.select_set(True)
+-        bpy.context.view_layer.objects.active = objects[0]
+-        bpy.ops.object.join()
+-        objects[0].name = f"{prefix} {value} assembly"
+-        objects[0]["license"] = "CC0-1.0"
+-
+-
+-def export(filename, forward_axis):
+-    bpy.ops.object.select_all(action="SELECT")
+-    # The helpers author in Aura's X-horizontal/Y-up/Z-depth convention.
+-    basis = Matrix.Rotation(math.pi / 2.0, 4, "X")
+-    for obj in bpy.context.scene.objects:
+-        obj.matrix_world = basis @ obj.matrix_world
+-    bpy.ops.export_scene.gltf(
+-        filepath=str(OUT / filename),
+-        export_format="GLB",
+-        use_selection=True,
+-        export_apply=True,
+-        export_yup=True,
+-        export_animations=False,
+-        export_extras=True,
+-    )
+-    # Blender exports scene/object extras but not glTF asset extras. Add the
+-    # CLI-readable orientation and CC0 declaration without touching mesh data.
+-    path = OUT / filename
+-    data = path.read_bytes()
+-    magic, version, _ = struct.unpack_from("<4sII", data, 0)
+-    if magic != b"glTF" or version != 2:
+-        raise RuntimeError(f"Unexpected GLB header for {filename}")
+-    offset = 12
+-    chunks = []
+-    document = None
+-    while offset < len(data):
+-        length, chunk_type = struct.unpack_from("<II", data, offset)
+-        payload = data[offset + 8: offset + 8 + length]
+-        if chunk_type == 0x4E4F534A:
+-            document = json.loads(payload.decode("utf-8").rstrip(" \t\r\n\0"))
+-            document.setdefault("asset", {})["extras"] = {
+-                "license": "CC0-1.0",
+-                "aura3d": {
+-                    "orientation": {"forwardAxis": forward_axis, "upAxis": "+Y"},
+-                    "role": "unregistered Pulse Tunnel V2 art candidate",
+-                },
+-            }
+-            payload = json.dumps(document, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+-            payload += b" " * ((4 - len(payload) % 4) % 4)
+-        chunks.append((chunk_type, payload))
+-        offset += 8 + length
+-    if document is None:
+-        raise RuntimeError(f"No JSON chunk found in {filename}")
+-    body = b"".join(struct.pack("<II", len(payload), chunk_type) + payload for chunk_type, payload in chunks)
+-    path.write_bytes(struct.pack("<4sII", b"glTF", 2, 12 + len(body)) + body)
+-
+-
+-def build_interceptor():
+-    reset()
+-    pearl = material("v2 interceptor pearl ceramic", (0.48, 0.64, 0.74), 0.58, 0.24)
+-    graphite = material("v2 interceptor graphite frame", (0.018, 0.045, 0.075), 0.84, 0.22)
+-    copper = material("v2 interceptor copper edge", (0.55, 0.19, 0.035), 0.82, 0.21)
+-    canopy = material("v2 interceptor cyan canopy", (0.015, 0.19, 0.26), 0.35, 0.14, (0.0, 0.85, 1.0), 5.4)
+-    drive = material("v2 interceptor drive core", (0.015, 0.28, 0.33), 0.28, 0.16, (0.05, 0.95, 1.0), 7.0)
+-    muzzle = material("v2 interceptor weapon anchor", (0.34, 0.10, 0.025), 0.55, 0.18, (1.0, 0.24, 0.035), 5.8)
+-
+-    prism(
+-        "interceptor arrowhead fuselage",
+-        [(-0.54, -0.86), (0.0, -1.72), (0.54, -0.86), (0.58, 0.72), (0.0, 1.18), (-0.58, 0.72)],
+-        0.16, 0.60, pearl, 0.08,
+-    )
+-    prism(
+-        "interceptor ventral keel",
+-        [(-0.24, -1.04), (0.0, -1.55), (0.24, -1.04), (0.34, 1.20), (-0.34, 1.20)],
+-        0.02, 0.23, graphite, 0.055,
+-    )
+-    for side in (-1, 1):
+-        wing = [(0.34, -0.52), (1.62, -0.02), (1.42, 1.05), (0.46, 0.70)]
+-        prism(
+-            f"interceptor swept delta wing {side}",
+-            [(side * x, z) for x, z in wing],
+-            0.18, 0.36, pearl, 0.055,
+-        )
+-        edge = [(0.78, -0.25), (1.66, 0.02), (1.43, 0.28), (0.70, 0.08)]
+-        prism(
+-            f"interceptor copper leading edge {side}",
+-            [(side * x, z) for x, z in edge],
+-            0.34, 0.42, copper, 0.022,
+-        )
+-        cylinder(
+-            f"interceptor lance barrel {side}",
+-            (side * 1.04, 0.37, -0.62), 0.085, 1.24, graphite, 14,
+-        )
+-        torus(
+-            f"interceptor visible muzzle collar {side}",
+-            (side * 1.04, 0.37, -1.245), 0.105, 0.033, muzzle,
+-        )
+-        cylinder(
+-            f"interceptor drive nacelle {side}",
+-            (side * 0.56, 0.30, 0.83), 0.22, 0.74, graphite, 16,
+-        )
+-        torus(
+-            f"interceptor drive aperture {side}",
+-            (side * 0.56, 0.30, 1.215), 0.17, 0.055, drive,
+-        )
+-        ellipsoid(
+-            f"interceptor drive glow {side}",
+-            (side * 0.56, 0.30, 1.24), (0.115, 0.115, 0.055), drive, 16, 8,
+-        )
+-        fin(f"interceptor dorsal fin {side}", side, copper)
+-
+-    ellipsoid("interceptor raised canopy", (0.0, 0.64, -0.18), (0.31, 0.22, 0.58), canopy)
+-    box("interceptor canopy spine", (0.0, 0.66, 0.42), (0.09, 0.08, 0.62), graphite, 0.035)
+-    join_material_groups(
+-        "interceptor",
+-        exempt=(
+-            "interceptor raised canopy",
+-            "interceptor visible muzzle collar -1",
+-            "interceptor visible muzzle collar 1",
+-            "interceptor drive aperture -1",
+-            "interceptor drive aperture 1",
+-            "interceptor drive glow -1",
+-            "interceptor drive glow 1",
+-        ),
+-    )
+-    export("pulseV2InterceptorCraft.glb", "-Z")
+-
+-
+-def build_dreadnought():
+-    reset()
+-    armor = material("v2 dreadnought cobalt armour", (0.035, 0.12, 0.22), 0.76, 0.24)
+-    black = material("v2 dreadnought black mechanics", (0.012, 0.025, 0.045), 0.88, 0.19)
+-    copper = material("v2 dreadnought copper structure", (0.48, 0.16, 0.03), 0.84, 0.22)
+-    ivory = material("v2 dreadnought threat ceramic", (0.69, 0.58, 0.38), 0.38, 0.27)
+-    rose = material("v2 dreadnought impact iris", (0.34, 0.01, 0.075), 0.28, 0.15, (1.0, 0.02, 0.16), 6.8)
+-    cyan = material("v2 dreadnought optic array", (0.0, 0.19, 0.26), 0.26, 0.15, (0.0, 0.78, 1.0), 5.5)
+-    amber = material("v2 dreadnought cannon anchor", (0.38, 0.08, 0.01), 0.48, 0.16, (1.0, 0.21, 0.025), 7.0)
+-
+-    # Eight-sided vertical cores avoid a box-built character read while keeping
+-    # the terminal opponent at six primary material draws after grouping.
+-    cylinder(
+-        "dreadnought armoured reactor thorax", (0.0, 1.58, 0.0), 1.12, 2.36,
+-        armor, 8, (math.pi / 2.0, 0.0, 0.0), 0.075,
+-    )
+-    box("dreadnought forward breastplate", (0.0, 1.58, 0.72), (0.78, 0.72, 0.12), ivory, 0.11)
+-    prism(
+-        "dreadnought crown mantle",
+-        [(-0.92, -0.22), (-0.54, -0.74), (0.54, -0.74), (0.92, -0.22), (0.64, 0.52), (-0.64, 0.52)],
+-        2.35, 2.78, copper, 0.075,
+-    )
+-    for side in (-1, 1):
+-        mantle = [(0.55, -0.28), (2.46, -0.14), (2.78, 0.48), (1.84, 0.82), (0.72, 0.52)]
+-        prism(
+-            f"dreadnought swept command mantle {side}",
+-            [(side * x, z) for x, z in mantle],
+-            1.82, 2.30, armor, 0.075,
+-        )
+-        strake = [(1.22, 0.32), (2.66, 0.51), (2.32, 0.82), (1.28, 0.66)]
+-        prism(
+-            f"dreadnought ivory threat strake {side}",
+-            [(side * x, z) for x, z in strake],
+-            2.14, 2.38, ivory, 0.04,
+-        )
+-        cylinder(
+-            f"dreadnought cannon barrel {side}",
+-            (side * 1.58, 1.67, 0.60), 0.22, 1.54, black, 18,
+-        )
+-        torus(
+-            f"dreadnought cannon mouth {side}",
+-            (side * 1.58, 1.67, 1.39), 0.29, 0.09, amber,
+-        )
+-        cylinder(
+-            f"dreadnought cannon bore {side}",
+-            (side * 1.58, 1.67, 1.405), 0.135, 0.055, amber, 16,
+-        )
+-        ellipsoid(
+-            f"dreadnought shoulder optic {side}",
+-            (side * 1.98, 2.12, 0.68), (0.15, 0.15, 0.09), cyan, 16, 8,
+-        )
+-        cone(
+-            f"dreadnought hover talon {side}",
+-            (side * 0.64, 0.42, -0.05), 0.30, 0.16, 0.82, copper, 10,
+-            (math.pi / 2.0, 0.0, 0.0),
+-        )
+-
+-    torus("dreadnought central impact iris", (0.0, 1.60, 0.89), 0.48, 0.12, rose)
+-    cylinder("dreadnought exposed reactor core", (0.0, 1.60, 0.91), 0.29, 0.075, rose, 20)
+-    prism(
+-        "dreadnought lower shield prow",
+-        [(-0.78, -0.18), (0.0, 0.76), (0.78, -0.18), (0.48, -0.62), (-0.48, -0.62)],
+-        0.43, 0.88, black, 0.065,
+-    )
+-    ellipsoid("dreadnought command optic", (0.0, 2.48, 0.43), (0.36, 0.14, 0.12), cyan, 18, 8)
+-    join_material_groups(
+-        "dreadnought",
+-        exempt=(
+-            "dreadnought central impact iris",
+-            "dreadnought exposed reactor core",
+-            "dreadnought command optic",
+-            "dreadnought cannon mouth -1",
+-            "dreadnought cannon mouth 1",
+-            "dreadnought cannon bore -1",
+-            "dreadnought cannon bore 1",
+-        ),
+-    )
+-    export("pulseV2TerminalDreadnought.glb", "+Z")
+-
+-
+-build_interceptor()
+-build_dreadnought()
+-print("Built original CC0 Pulse Tunnel combat-kit V2 in", OUT)
+diff --git a/apps/showcase-pulse-tunnel/scripts/build-encounter-finish-v11.py b/apps/showcase-pulse-tunnel/scripts/build-encounter-finish-v11.py
+deleted file mode 100644
+index 383d55ea6..000000000
+--- a/apps/showcase-pulse-tunnel/scripts/build-encounter-finish-v11.py
++++ /dev/null
+@@ -1,375 +0,0 @@
+-"""Build the Pulse Tunnel V11 encounter family.
+-
+-This is one bounded, route-local art pass over the original CC0 Pulse family.
+-The three models are rigid presentation assets only: the route's chart, lane
+-movement, shields, collisions, score, reset, and audio-clock contract remain
+-authoritative.  The builder deliberately stays dependency-free and uses only
+-fixed Blender geometry plus tiny embedded panel textures generated here.  No
+-third-party or cross-showcase meshes are used.
+-
+-V11 is intentionally a replacement family rather than another camera pass:
+-each role gets a connected authored silhouette, secondary mechanical layers,
+-and a coherent teal / pearl / heat-copper material language.  The files are
+-written into the normal source-model directory and must still pass the CLI
+-inspection, root-rendered probe, and route evidence gates before registration.
+-"""
+-
+-from pathlib import Path
+-import hashlib
+-import math
+-import struct
+-import zlib
+-import importlib.util
+-
+-import bpy
+-from mathutils import Vector
+-
+-
+-ROOT = Path(__file__).resolve().parent.parent
+-OUT = ROOT / "assets" / "models"
+-TEXTURES = OUT / "textures"
+-OUT.mkdir(parents=True, exist_ok=True)
+-TEXTURES.mkdir(parents=True, exist_ok=True)
+-
+-# Reuse the established deterministic, scene-space bounds/export helpers.  The
+-# imported module does not execute its build functions (they are guarded by
+-# __main__) and its OUT is replaced before any export call.
+-HELPER_PATH = Path(__file__).with_name("build-high-fidelity-v5.py")
+-SPEC = importlib.util.spec_from_file_location("pulse_v11_helpers", HELPER_PATH)
+-HELPER = importlib.util.module_from_spec(SPEC)
+-assert SPEC.loader is not None
+-SPEC.loader.exec_module(HELPER)
+-HELPER.OUT = OUT
+-
+-reset = HELPER.reset
+-material = HELPER.material
+-box = HELPER.box
+-cylinder = HELPER.cylinder
+-sphere = HELPER.sphere
+-torus = HELPER.torus
+-curve_tube = HELPER.curve_tube
+-prism = HELPER.prism
+-loft = HELPER.loft
+-export = HELPER.export
+-
+-
+-def write_png(path: Path, width: int, height: int, pixel):
+-    """Write a deterministic RGBA PNG using only the Python standard library."""
+-    rows = bytearray()
+-    for y in range(height):
+-        rows.append(0)  # filter byte
+-        for x in range(width):
+-            rows.extend(bytes(pixel(x, y)))
+-
+-    def chunk(kind: bytes, payload: bytes) -> bytes:
+-        return struct.pack(">I", len(payload)) + kind + payload + struct.pack(">I", zlib.crc32(kind + payload) & 0xFFFFFFFF)
+-
+-    payload = bytearray(b"\x89PNG\r\n\x1a\n")
+-    payload.extend(chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0)))
+-    payload.extend(chunk(b"IDAT", zlib.compress(bytes(rows), level=9)))
+-    payload.extend(chunk(b"IEND", b""))
+-    path.write_bytes(payload)
+-
+-
+-def panel_texture(path: Path, palette: tuple[tuple[int, int, int], ...], cell: int = 16):
+-    """Generate a small fixed panel texture with seams, wear, and accents."""
+-    def pixel(x: int, y: int):
+-        cx, cy = x % cell, y % cell
+-        index = (x // cell + (y // cell) * 3) % len(palette)
+-        base = palette[index]
+-        seam = cx in (0, 1) or cy in (0, 1)
+-        accent = (x * 11 + y * 7) % 61 == 0
+-        if seam:
+-            return (min(255, base[0] + 24), min(255, base[1] + 24), min(255, base[2] + 24), 255)
+-        if accent:
+-            return (min(255, base[0] + 45), min(255, base[1] + 45), min(255, base[2] + 45), 255)
+-        grain = ((x * 17 + y * 23) % 9) - 4
+-        return tuple(max(0, min(255, channel + grain)) for channel in base) + (255,)
+-
+-    write_png(path, 128, 128, pixel)
+-
+-
+-def textured_material(name, color, metallic, roughness, filename, palette, emission=None, strength=0.0):
+-    """Create a PBR material with a packed, deterministic panel image."""
+-    path = TEXTURES / filename
+-    panel_texture(path, palette)
+-    value = material(name, color, metallic, roughness, emission, strength)
+-    image = bpy.data.images.load(str(path), check_existing=False)
+-    image.pack()
+-    nodes = value.node_tree.nodes
+-    links = value.node_tree.links
+-    bsdf = nodes.get("Principled BSDF")
+-    image_node = nodes.new("ShaderNodeTexImage")
+-    image_node.name = f"{name} panel texture"
+-    image_node.image = image
+-    image_node.interpolation = "Closest"
+-    links.new(image_node.outputs["Color"], bsdf.inputs["Base Color"])
+-    return value
+-
+-
+-def apply_planar_uv(obj, scale=0.34):
+-    """Give custom loft/prism meshes stable planar UVs for packed textures."""
+-    mesh = obj.data
+-    if not mesh.uv_layers:
+-        mesh.uv_layers.new(name="UVMap")
+-    layer = mesh.uv_layers.active.data
+-    for loop in mesh.loops:
+-        vertex = mesh.vertices[loop.vertex_index].co
+-        layer[loop.index].uv = ((vertex.x * scale) % 1.0, (vertex.z * scale + vertex.y * 0.08) % 1.0)
+-    return obj
+-
+-
+-def textured_loft(*args, **kwargs):
+-    obj = loft(*args, **kwargs)
+-    return apply_planar_uv(obj)
+-
+-
+-def textured_prism(*args, **kwargs):
+-    obj = prism(*args, **kwargs)
+-    return apply_planar_uv(obj)
+-
+-
+-def add_panel_rivets(prefix, points, mat, radius=0.035):
+-    for index, point in enumerate(points):
+-        sphere(f"{prefix} rivet {index + 1}", point, (radius, radius, radius), mat, 16, 8)
+-
+-
+-def build_runner():
+-    reset()
+-    shell = textured_material(
+-        "V11 runner pearl panel shell", (0.32, 0.58, 0.64), 0.72, 0.22,
+-        "runner-shell.png", ((41, 102, 115), (52, 128, 137), (73, 151, 157)),
+-    )
+-    under = textured_material(
+-        "V11 runner graphite underframe", (0.018, 0.035, 0.055), 0.88, 0.2,
+-        "runner-underframe.png", ((8, 24, 34), (13, 36, 47), (17, 45, 53)),
+-    )
+-    pearl = material("V11 runner ceramic edge", (0.72, 0.86, 0.87), 0.62, 0.24)
+-    copper = material("V11 runner heat copper trim", (0.70, 0.24, 0.045), 0.86, 0.21)
+-    cyan = material("V11 runner phase emissive", (0.0, 0.31, 0.38), 0.26, 0.13, (0.0, 0.78, 0.98), 3.6)
+-    glass = material("V11 runner smoked canopy", (0.02, 0.15, 0.19), 0.56, 0.09, (0.0, 0.28, 0.36), 1.8)
+-
+-    textured_loft(
+-        "V11 runner continuous arrowhead fuselage",
+-        [
+-            (-1.96, 0.035, 0.035, 0.30), (-1.82, 0.15, 0.10, 0.32),
+-            (-1.56, 0.31, 0.19, 0.34), (-1.12, 0.48, 0.27, 0.35),
+-            (-0.58, 0.60, 0.34, 0.37), (0.08, 0.64, 0.37, 0.38),
+-            (0.65, 0.57, 0.33, 0.36), (1.08, 0.46, 0.27, 0.34),
+-            (1.40, 0.33, 0.20, 0.32), (1.58, 0.16, 0.11, 0.30),
+-        ],
+-        32, shell, subdivision=0,
+-    )
+-    textured_loft(
+-        "V11 runner ventral armored keel",
+-        [(-1.56, 0.15, 0.08, 0.09), (-1.08, 0.28, 0.13, 0.065),
+-         (-0.38, 0.34, 0.16, 0.055), (0.40, 0.33, 0.16, 0.055),
+-         (0.98, 0.25, 0.12, 0.075), (1.34, 0.13, 0.07, 0.10)],
+-        24, under, subdivision=0,
+-    )
+-
+-    # The canopy and its frame are raised enough to read as a vehicle cockpit,
+-    # not a flat disc, while the lower black keel keeps the silhouette grounded.
+-    sphere("V11 runner integrated cockpit canopy", (0, 0.73, -0.38), (0.40, 0.25, 0.72), glass, 48, 24)
+-    box("V11 runner canopy forward frame", (0, 0.82, -0.77), (0.25, 0.045, 0.24), pearl, edge=0.018)
+-    box("V11 runner canopy dorsal spine", (0, 0.88, 0.14), (0.075, 0.07, 0.62), copper, edge=0.025)
+-    box("V11 runner nose light bar", (0, 0.44, -1.72), (0.20, 0.045, 0.06), cyan, edge=0.012)
+-
+-    for side in (-1, 1):
+-        textured_prism(
+-            f"V11 runner swept delta wing {side}",
+-            [(side * 0.18, -0.92), (side * 1.58, -0.28), (side * 2.08, 0.56),
+-             (side * 1.62, 0.88), (side * 0.44, 0.58)],
+-            0.20, 0.39, shell, 0.065,
+-        )
+-        textured_prism(
+-            f"V11 runner ceramic leading edge {side}",
+-            [(side * 0.33, -0.85), (side * 1.72, -0.26), (side * 2.13, 0.52),
+-             (side * 1.96, 0.62), (side * 1.44, -0.12)],
+-            0.40, 0.47, pearl, 0.025,
+-        )
+-        textured_prism(
+-            f"V11 runner copper wing cap {side}",
+-            [(side * 1.55, 0.16), (side * 2.08, 0.56), (side * 1.94, 0.66),
+-             (side * 1.46, 0.37)],
+-            0.47, 0.52, copper, 0.018,
+-        )
+-        cylinder(f"V11 runner recessed turbine nacelle {side}", (side * 0.90, 0.31, 0.94), 0.31, 0.86, under, (math.pi / 2, 0, 0), 48, 0.035)
+-        torus(f"V11 runner turbine copper race {side}", (side * 0.90, 0.31, 1.39), 0.23, 0.045, copper, rotation=(0, 0, 0), major_segments=56)
+-        torus(f"V11 runner turbine cyan aperture {side}", (side * 0.90, 0.31, 1.43), 0.16, 0.035, cyan, rotation=(0, 0, 0), major_segments=48)
+-        cylinder(f"V11 runner turbine phase pupil {side}", (side * 0.90, 0.31, 1.45), 0.105, 0.045, cyan, (math.pi / 2, 0, 0), 40, 0.01)
+-        textured_prism(
+-            f"V11 runner dorsal stabilizer {side}",
+-            [(side * 0.36, 0.44), (side * 0.54, 1.34), (side * 0.75, 1.26),
+-             (side * 0.58, 0.38)],
+-            0.37, 0.84, under, 0.035,
+-        )
+-        for panel_index, z in enumerate((-0.64, -0.18, 0.30)):
+-            box(f"V11 runner wing service panel {side} {panel_index}", (side * (0.76 + panel_index * 0.28), 0.44, z), (0.22, 0.025, 0.055), copper if panel_index == 1 else pearl, edge=0.012)
+-
+-    torus("V11 runner forward shield collar", (0, 0.70, -1.14), 0.31, 0.055, cyan, rotation=(0, 0, 0), major_segments=56)
+-    add_panel_rivets("V11 runner", [(-0.34, 0.54, -0.82), (0.34, 0.54, -0.82), (-0.42, 0.34, 0.02), (0.42, 0.34, 0.02)], pearl, 0.028)
+-    export("pulseRunnerCraft.glb")
+-
+-
+-def build_sentry():
+-    reset()
+-    shell = textured_material(
+-        "V11 sentry gunmetal panel shell", (0.075, 0.19, 0.26), 0.82, 0.22,
+-        "sentry-shell.png", ((12, 40, 56), (17, 56, 72), (22, 68, 82)),
+-    )
+-    dark = textured_material(
+-        "V11 sentry obsidian skeleton", (0.012, 0.024, 0.037), 0.92, 0.17,
+-        "sentry-underframe.png", ((6, 13, 22), (9, 21, 31), (12, 27, 37)),
+-    )
+-    ceramic = material("V11 sentry ivory armor plates", (0.72, 0.67, 0.51), 0.34, 0.30)
+-    copper = material("V11 sentry exposed heat mechanics", (0.62, 0.19, 0.035), 0.88, 0.19)
+-    ember = material("V11 sentry furnace threat", (0.26, 0.008, 0.018), 0.25, 0.10, (1.0, 0.028, 0.008), 4.8)
+-    cyan = material("V11 sentry cyan optics", (0.0, 0.19, 0.26), 0.24, 0.12, (0.0, 0.76, 0.96), 3.5)
+-
+-    # Layered torso: a broad shell over a dark spine, with a separate ceramic
+-    # brow and recessed reactor aperture for an immediate face/read direction.
+-    sphere("V11 sentry armored reactor thorax", (0, 1.62, 0.02), (0.88, 1.16, 0.59), shell, 48, 24)
+-    textured_prism("V11 sentry lower reliquary", [(-0.62, -0.24), (0.62, -0.24), (0.50, -0.86), (0, -1.18), (-0.50, -0.86)], 0.20, 1.35, dark, 0.08)
+-    textured_prism("V11 sentry forward ceramic brow", [(-0.96, -0.53), (0.96, -0.53), (0.70, -0.91), (-0.70, -0.91)], 1.70, 2.18, ceramic, 0.07)
+-    box("V11 sentry brow inset", (0, 1.91, -0.98), (0.54, 0.11, 0.07), dark, edge=0.018)
+-    box("V11 sentry throat guard", (0, 1.14, -0.66), (0.40, 0.23, 0.07), ceramic, edge=0.025)
+-    torus("V11 sentry reactor copper race", (0, 1.40, -0.67), 0.53, 0.095, copper, rotation=(0, 0, 0), major_segments=64)
+-    torus("V11 sentry reactor outer threat ring", (0, 1.40, -0.70), 0.44, 0.055, ember, rotation=(0, 0, 0), major_segments=56)
+-    cylinder("V11 sentry recessed furnace iris", (0, 1.40, -0.73), 0.32, 0.13, ember, (math.pi / 2, 0, 0), 56, 0.02)
+-    cylinder("V11 sentry central cyan optic", (0, 1.88, -1.00), 0.11, 0.11, cyan, (math.pi / 2, 0, 0), 40, 0.014)
+-    torus("V11 sentry eye gimbal", (0, 1.88, -0.94), 0.20, 0.038, ceramic, rotation=(0, 0, 0), major_segments=48)
+-
+-    for side in (-1, 1):
+-        # Articulated shoulder spar and layered shoulder armor create a clear
+-        # silhouette even when the smaller secondary details are rasterized.
+-        curve_tube(
+-            f"V11 sentry articulated shoulder spar {side}",
+-            [(side * 0.52, 1.82, 0.06), (side * 1.06, 2.06, -0.02),
+-             (side * 1.68, 1.88, -0.18), (side * 2.10, 1.58, -0.34)],
+-            0.13, copper,
+-        )
+-        sphere(f"V11 sentry shoulder armor pod {side}", (side * 1.18, 1.87, -0.03), (0.64, 0.40, 0.52), shell, 40, 20)
+-        textured_prism(f"V11 sentry ivory threat wing {side}", [(side * 0.82, -0.16), (side * 2.42, -0.47), (side * 2.02, 0.38), (side * 0.95, 0.56)], 1.74, 2.08, ceramic, 0.065)
+-        box(f"V11 sentry shoulder service plate {side}", (side * 1.28, 2.08, -0.27), (0.26, 0.06, 0.29), ceramic, rotation=(0, side * 0.15, side * 0.12), edge=0.025)
+-        cylinder(f"V11 sentry rotary cannon housing {side}", (side * 1.76, 1.54, -0.58), 0.22, 1.06, dark, (0, math.pi / 2, 0), 48, 0.035)
+-        cylinder(f"V11 sentry cannon ceramic shroud {side}", (side * 2.24, 1.54, -0.58), 0.16, 0.28, ceramic, (0, math.pi / 2, 0), 40, 0.025)
+-        torus(f"V11 sentry cannon ember muzzle ring {side}", (side * 2.42, 1.54, -0.58), 0.13, 0.035, ember, rotation=(0, math.pi / 2, 0), major_segments=48)
+-        cylinder(f"V11 sentry cannon optic muzzle {side}", (side * 2.47, 1.54, -0.58), 0.065, 0.08, ember, (0, math.pi / 2, 0), 32, 0.01)
+-        curve_tube(
+-            f"V11 sentry reverse joint leg {side}",
+-            [(side * 0.50, 1.12, 0.06), (side * 0.72, 0.69, 0.18),
+-             (side * 1.04, 0.36, -0.03), (side * 0.90, 0.11, -0.48)],
+-            0.105, copper,
+-        )
+-        textured_prism(f"V11 sentry grounded talon {side}", [(side * 0.60, -0.69), (side * 1.30, -0.88), (side * 1.18, 0.18), (side * 0.66, 0.19)], 0.03, 0.25, dark, 0.05)
+-        box(f"V11 sentry foot ceramic toe {side}", (side * 0.98, 0.17, -0.92), (0.25, 0.10, 0.22), ceramic, edge=0.04)
+-        torus(f"V11 sentry shoulder optic ring {side}", (side * 1.26, 1.91, -0.57), 0.15, 0.035, cyan, rotation=(0, 0, 0), major_segments=40)
+-        for index in range(3):
+-            box(f"V11 sentry forearm heat vent {side} {index}", (side * (1.25 + index * 0.17), 1.42, -0.66), (0.07, 0.025, 0.15), copper if index == 1 else ceramic, edge=0.012)
+-
+-    torus("V11 sentry crown load ring", (0, 2.46, -0.02), 1.18, 0.12, ceramic, rotation=(0, 0, 0), major_segments=64)
+-    torus("V11 sentry crown threat ring", (0, 2.46, -0.08), 0.92, 0.065, ember, rotation=(0, 0, 0), major_segments=56)
+-    box("V11 sentry crown antenna mast", (0, 2.84, 0.02), (0.13, 0.34, 0.13), shell, edge=0.035)
+-    sphere("V11 sentry crown warning beacon", (0, 3.21, -0.01), (0.17, 0.17, 0.17), ember, 28, 14)
+-    for side in (-1, 1):
+-        box(f"V11 sentry crown fin {side}", (side * 0.62, 2.88, 0.02), (0.10, 0.32, 0.28), copper, rotation=(0, side * 0.20, side * 0.08), edge=0.025)
+-    add_panel_rivets("V11 sentry", [(-0.54, 2.18, -0.73), (0.54, 2.18, -0.73), (-0.62, 1.10, -0.62), (0.62, 1.10, -0.62)], ceramic, 0.035)
+-    export("pulseTerminalSentry.glb")
+-
+-
+-def build_world():
+-    reset()
+-    deck = textured_material(
+-        "V11 reactor machined deck", (0.11, 0.18, 0.24), 0.74, 0.31,
+-        "reactor-deck.png", ((28, 54, 69), (35, 67, 82), (45, 78, 91)),
+-    )
+-    lane = textured_material(
+-        "V11 reactor recessed exchange lane", (0.018, 0.034, 0.052), 0.88, 0.28,
+-        "reactor-lane.png", ((8, 18, 28), (10, 25, 37), (14, 32, 45)),
+-    )
+-    wall = textured_material(
+-        "V11 reactor containment wall", (0.07, 0.19, 0.26), 0.72, 0.34,
+-        "reactor-wall.png", ((16, 46, 60), (20, 58, 72), (25, 68, 82)),
+-    )
+-    rib = material("V11 reactor heat-copper ribs", (0.44, 0.14, 0.035), 0.88, 0.24)
+-    pale = material("V11 reactor service ceramic", (0.58, 0.63, 0.60), 0.34, 0.38)
+-    cyan = material("V11 reactor cyan power bus", (0.0, 0.18, 0.24), 0.30, 0.13, (0.0, 0.76, 0.98), 3.0)
+-    amber = material("V11 reactor amber hazard bus", (0.38, 0.12, 0.018), 0.42, 0.18, (0.98, 0.24, 0.015), 2.7)
+-    rose = material("V11 reactor breach warning", (0.30, 0.015, 0.045), 0.26, 0.13, (0.94, 0.02, 0.15), 3.2)
+-
+-    # Long chamfered deck and inset lane establish continuous scale.  The
+-    # repeated plates/rails then provide readable near-to-far rhythm instead of
+-    # one unbroken primitive slab.
+-    textured_prism("V11 continuous chamfered reactor deck", [(-4.85, 2.65), (4.85, 2.65), (4.82, -10.8), (4.10, -12.15), (-4.10, -12.15), (-4.82, -10.8)], -0.42, -0.06, deck, 0.14)
+-    textured_prism("V11 recessed exchange runway", [(-2.18, 2.38), (2.18, 2.38), (2.30, -10.4), (1.72, -11.50), (-1.72, -11.50), (-2.30, -10.4)], -0.05, 0.035, lane, 0.035)
+-    for index, z in enumerate((1.72, 0.36, -1.0, -2.36, -3.72, -5.08, -6.44, -7.80, -9.16, -10.52)):
+-        width = 1.48 - index * 0.035
+-        textured_prism(f"V11 runway inset plate {index}", [(-width, z - 0.37), (width, z - 0.37), (width * 1.04, z + 0.37), (-width * 1.04, z + 0.37)], 0.035, 0.082, deck, 0.024)
+-        for side in (-1, 1):
+-            box(f"V11 runway panel edge {index} {side}", (side * (width - 0.08), 0.105, z), (0.028, 0.026, 0.31), amber if index > 6 else cyan, edge=0.01)
+-        box(f"V11 runway center seam {index}", (0, 0.11, z), (0.026, 0.02, 0.30), cyan, edge=0.009)
+-
+-    for side in (-1, 1):
+-        box(f"V11 lower containment wall {side}", (side * 4.48, 0.83, -4.55), (0.30, 1.20, 7.50), wall, edge=0.11)
+-        box(f"V11 upper containment shoulder {side}", (side * 4.13, 2.57, -4.75), (0.24, 0.48, 7.30), wall, rotation=(0, 0, side * 0.22), edge=0.08)
+-        curve_tube(f"V11 longitudinal cyan service artery {side}", [(side * 3.88, 0.42, 2.10), (side * 3.78, 0.54, -1.5), (side * 3.55, 0.72, -5.4), (side * 3.22, 0.93, -10.65)], 0.075, cyan)
+-        curve_tube(f"V11 longitudinal copper hazard rail {side}", [(side * 3.43, 0.25, 1.86), (side * 3.39, 0.36, -2.4), (side * 3.18, 0.55, -6.8), (side * 2.95, 0.74, -10.65)], 0.045, amber)
+-        for index, z in enumerate((1.30, -0.38, -2.06, -3.74, -5.42, -7.10, -8.78, -10.46)):
+-            for x_offset, y, height, mat_value in ((3.80, 1.68, 1.50, rib), (3.56, 2.62, 0.42, pale)):
+-                box(f"V11 side service upright {side} {index} {x_offset}", (side * x_offset, y, z), (0.12, height, 0.16), mat_value, rotation=(0, 0, side * 0.20), edge=0.045)
+-
+-    # Forged arches and roof spines create visible occlusion/depth in the whole
+-    # tunnel, while their repeated spacing retains the rhythm-runner language.
+-    for index, z in enumerate((1.15, -0.65, -2.45, -4.25, -6.05, -7.85, -9.65, -11.05)):
+-        points = []
+-        for step in range(9):
+-            t = step / 8
+-            x = -4.10 + 8.20 * t
+-            y = 0.48 + math.sin(t * math.pi) * 3.05
+-            points.append((x, y, z))
+-        curve_tube(f"V11 forged reactor arch {index}", points, 0.13, rib)
+-        box(f"V11 arch crown service block {index}", (0, 3.58, z), (0.36, 0.13, 0.22), pale, edge=0.04)
+-        box(f"V11 arch crown cyan signal {index}", (0, 3.78, z), (0.72, 0.035, 0.035), cyan if index < 5 else amber, edge=0.012)
+-
+-    # Back chamber / terminal bay: an inset, layered iris gives the sentry a
+-    # genuine architectural destination rather than a flat background card.
+-    textured_prism("V11 terminal raised command dock", [(-0.65, -8.92), (4.10, -8.92), (4.25, -11.30), (3.48, -12.0), (0.0, -12.0), (-0.76, -10.95)], 0.0, 0.34, wall, 0.14)
+-    box("V11 terminal full shadow bulkhead", (0.92, 1.74, -11.82), (3.94, 1.96, 0.30), lane, edge=0.15)
+-    box("V11 terminal layered armored backwall", (1.80, 1.68, -11.34), (2.38, 1.70, 0.25), wall, edge=0.14)
+-    torus("V11 terminal outer mechanical iris", (1.80, 1.74, -11.02), 1.54, 0.18, pale, rotation=(0, 0, 0), major_segments=72)
+-    torus("V11 terminal amber lock iris", (1.80, 1.74, -10.94), 1.17, 0.085, amber, rotation=(0, 0, 0), major_segments=64)
+-    torus("V11 terminal rose breach iris", (1.80, 1.74, -10.88), 0.84, 0.065, rose, rotation=(0, 0, 0), major_segments=56)
+-    cylinder("V11 terminal recessed reactor well", (1.80, 1.74, -11.14), 0.68, 0.15, lane, (math.pi / 2, 0, 0), 64, 0.025)
+-    cylinder("V11 terminal reactor core", (1.80, 1.74, -11.23), 0.27, 0.08, rose, (math.pi / 2, 0, 0), 48, 0.012)
+-    for index in range(12):
+-        angle = index * math.tau / 12
+-        x = 1.80 + math.cos(angle) * 1.24
+-        y = 1.74 + math.sin(angle) * 1.24
+-        box(f"V11 terminal iris blade {index}", (x, y, -10.80), (0.28, 0.08, 0.10), pale if index % 3 else rib, rotation=(0, angle * 0.04, angle), edge=0.03)
+-    for side in (-1, 1):
+-        curve_tube(f"V11 terminal overhead articulated arm {side}", [(1.80 + side * 2.35, 3.04, -10.72), (1.80 + side * 1.94, 3.48, -10.47), (1.80 + side * 0.86, 3.68, -10.28), (1.80, 3.73, -10.18)], 0.13, rib)
+-        box(f"V11 terminal amber docking marker {side}", (1.80 + side * 2.20, 0.42, -10.54), (0.08, 0.06, 0.46), amber, edge=0.018)
+-    # Small overhead service cabinets and alternating lights close the upper
+-    # frame without obscuring the runway or the actor silhouettes.
+-    for index, z in enumerate((0.60, -2.10, -4.80, -7.50, -10.20)):
+-        box(f"V11 overhead service cabinet {index}", (0, 3.12, z), (0.68, 0.18, 0.28), deck, edge=0.05)
+-        box(f"V11 overhead service lamp {index}", (0, 2.88, z), (0.38, 0.035, 0.035), cyan if index % 2 == 0 else amber, edge=0.012)
+-
+-    export("pulseReactorEncounterWorld.glb")
+-
+-
+-def audit():
+-    for filename in ("pulseRunnerCraft.glb", "pulseTerminalSentry.glb", "pulseReactorEncounterWorld.glb"):
+-        path = OUT / filename
+-        print(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.stat().st_size:10d}  {path.relative_to(ROOT)}")
+-    for texture in sorted(TEXTURES.glob("V11-*.png")):
+-        print(f"texture {hashlib.sha256(texture.read_bytes()).hexdigest()}  {texture.stat().st_size:10d}  {texture.relative_to(ROOT)}")
+-
+-
+-if __name__ == "__main__":
+-    build_runner()
+-    build_sentry()
+-    build_world()
+-    audit()
+-    print("Built Pulse Tunnel V11 encounter family in", OUT)
+diff --git a/apps/showcase-pulse-tunnel/scripts/build-high-fidelity-v5.py b/apps/showcase-pulse-tunnel/scripts/build-high-fidelity-v5.py
+deleted file mode 100644
+index 0e4cd4e6e..000000000
+--- a/apps/showcase-pulse-tunnel/scripts/build-high-fidelity-v5.py
++++ /dev/null
+@@ -1,622 +0,0 @@
+-"""Build Pulse Tunnel high-fidelity V5 art candidates with Blender.
+-
+-The three outputs are original CC0 route-local candidates.  They are isolated
+-under art-review until the root coordinator audits provenance, rendered probes,
+-and serialized manifest registration.  The models are rigid presentation only:
+-the route-local beat chart, collision, movement, score, shields, and reset stay
+-authoritative.
+-
+-Unlike the rejected blockout passes, this kit is built around continuous lofted
+-surfaces, curved structural members, recessed mechanical detail, and a restrained
+-steel / ceramic / heat-copper material hierarchy.  No animation is authored or
+-claimed.
+-"""
+-
+-from pathlib import Path
+-import math
+-import json
+-import struct
+-import bpy
+-from mathutils import Matrix, Vector
+-
+-
+-ROOT = Path(__file__).resolve().parent.parent
+-OUT = ROOT / "art-review" / "assets" / "high-fidelity-v5"
+-OUT.mkdir(parents=True, exist_ok=True)
+-
+-
+-def reset():
+-    bpy.ops.wm.read_factory_settings(use_empty=True)
+-
+-
+-def material(name, color, metallic, roughness, emission=None, strength=0.0):
+-    value = bpy.data.materials.new(name)
+-    value.diffuse_color = (*color, 1.0)
+-    value.use_nodes = True
+-    bsdf = value.node_tree.nodes.get("Principled BSDF")
+-    bsdf.inputs["Base Color"].default_value = (*color, 1.0)
+-    bsdf.inputs["Metallic"].default_value = metallic
+-    bsdf.inputs["Roughness"].default_value = roughness
+-    if emission:
+-        key = "Emission Color" if "Emission Color" in bsdf.inputs else "Emission"
+-        bsdf.inputs[key].default_value = (*emission, 1.0)
+-        bsdf.inputs["Emission Strength"].default_value = strength
+-    return value
+-
+-
+-def assign(obj, mat, smooth=False):
+-    obj.data.materials.append(mat)
+-    if smooth and hasattr(obj.data, "polygons"):
+-        for polygon in obj.data.polygons:
+-            polygon.use_smooth = True
+-    return obj
+-
+-
+-def bevel(obj, width=0.04, segments=3):
+-    modifier = obj.modifiers.new("precision rolled edge", "BEVEL")
+-    modifier.width = width
+-    modifier.segments = segments
+-    modifier.limit_method = "ANGLE"
+-    bpy.context.view_layer.objects.active = obj
+-    bpy.ops.object.modifier_apply(modifier=modifier.name)
+-    return obj
+-
+-
+-def box(name, location, scale, mat, rotation=(0, 0, 0), edge=0.04):
+-    bpy.ops.mesh.primitive_cube_add(size=1, location=location, rotation=rotation)
+-    obj = bpy.context.object
+-    obj.name = name
+-    obj.scale = scale
+-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+-    assign(obj, mat)
+-    if edge:
+-        bevel(obj, edge)
+-    return obj
+-
+-
+-def cylinder(name, location, radius, depth, mat, rotation=(0, 0, 0), vertices=32, edge=0.025):
+-    bpy.ops.mesh.primitive_cylinder_add(
+-        vertices=vertices, radius=radius, depth=depth, location=location, rotation=rotation
+-    )
+-    obj = bpy.context.object
+-    obj.name = name
+-    assign(obj, mat, True)
+-    if edge:
+-        bevel(obj, edge)
+-    return obj
+-
+-
+-def sphere(name, location, scale, mat, segments=48, rings=24):
+-    bpy.ops.mesh.primitive_uv_sphere_add(
+-        segments=segments, ring_count=rings, location=location
+-    )
+-    obj = bpy.context.object
+-    obj.name = name
+-    obj.scale = scale
+-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+-    return assign(obj, mat, True)
+-
+-
+-def torus(name, location, major, minor, mat, rotation=(math.pi / 2, 0, 0), major_segments=48):
+-    bpy.ops.mesh.primitive_torus_add(
+-        major_radius=major,
+-        minor_radius=minor,
+-        major_segments=major_segments,
+-        minor_segments=12,
+-        location=location,
+-        rotation=rotation,
+-    )
+-    obj = bpy.context.object
+-    obj.name = name
+-    return assign(obj, mat, True)
+-
+-
+-def curve_tube(name, points, radius, mat, cyclic=False):
+-    """Build a deterministic articulated tube from fixed cylinder segments."""
+-    path = list(points)
+-    if cyclic:
+-        path.append(path[0])
+-    built = []
+-    for index, (start, end) in enumerate(zip(path, path[1:])):
+-        start_vector = Vector(start)
+-        end_vector = Vector(end)
+-        delta = end_vector - start_vector
+-        midpoint = (start_vector + end_vector) * 0.5
+-        rotation = delta.to_track_quat("Z", "Y").to_euler()
+-        built.append(cylinder(
+-            f"{name} segment {index}",
+-            midpoint,
+-            radius,
+-            delta.length,
+-            mat,
+-            rotation,
+-            24,
+-            0.0,
+-        ))
+-    for index, point in enumerate(path[1:-1]):
+-        built.append(sphere(f"{name} joint {index}", point, (radius, radius, radius), mat, 24, 12))
+-    return built
+-
+-
+-def prism(name, footprint, bottom_y, top_y, mat, edge=0.03):
+-    count = len(footprint)
+-    vertices = [(x, bottom_y, z) for x, z in footprint] + [(x, top_y, z) for x, z in footprint]
+-    faces = []
+-    faces.append(tuple(range(count - 1, -1, -1)))
+-    faces.append(tuple(range(count, count * 2)))
+-    for index in range(count):
+-        nxt = (index + 1) % count
+-        faces.append((index, nxt, count + nxt, count + index))
+-    mesh = bpy.data.meshes.new(name + " mesh")
+-    mesh.from_pydata(vertices, [], faces)
+-    mesh.update()
+-    obj = bpy.data.objects.new(name, mesh)
+-    bpy.context.collection.objects.link(obj)
+-    assign(obj, mat)
+-    if edge:
+-        bevel(obj, edge)
+-    return obj
+-
+-
+-def loft(name, sections, radial_segments, mat, cap=True, subdivision=1):
+-    """Build a +Z-axis elliptical loft; section=(z, x_radius, y_radius, y_offset)."""
+-    vertices = []
+-    for z, x_radius, y_radius, y_offset in sections:
+-        for index in range(radial_segments):
+-            angle = (index / radial_segments) * math.tau
+-            vertices.append((math.cos(angle) * x_radius, y_offset + math.sin(angle) * y_radius, z))
+-    faces = []
+-    rings = len(sections)
+-    for ring in range(rings - 1):
+-        for index in range(radial_segments):
+-            nxt = (index + 1) % radial_segments
+-            a = ring * radial_segments + index
+-            b = ring * radial_segments + nxt
+-            c = (ring + 1) * radial_segments + nxt
+-            d = (ring + 1) * radial_segments + index
+-            faces.append((a, b, c, d))
+-    if cap:
+-        faces.append(tuple(range(radial_segments - 1, -1, -1)))
+-        last = (rings - 1) * radial_segments
+-        faces.append(tuple(last + index for index in range(radial_segments)))
+-    mesh = bpy.data.meshes.new(name + " mesh")
+-    mesh.from_pydata(vertices, [], faces)
+-    mesh.update()
+-    obj = bpy.data.objects.new(name, mesh)
+-    bpy.context.collection.objects.link(obj)
+-    assign(obj, mat, True)
+-    if subdivision:
+-        modifier = obj.modifiers.new("continuous compound curvature", "SUBSURF")
+-        modifier.subdivision_type = "CATMULL_CLARK"
+-        modifier.levels = subdivision
+-        modifier.render_levels = subdivision
+-        bpy.context.view_layer.objects.active = obj
+-        bpy.ops.object.modifier_apply(modifier=modifier.name)
+-    return obj
+-
+-
+-def export(filename):
+-    bpy.ops.object.select_all(action="SELECT")
+-    # Quantize authored mesh positions before export.  Blender's modifier and
+-    # primitive evaluators can otherwise differ by a few floating-point ulps
+-    # between headless runs even when topology and JSON are identical.
+-    for obj in bpy.context.scene.objects:
+-        if obj.type != "MESH":
+-            continue
+-        for vertex in obj.data.vertices:
+-            vertex.co.x = round(vertex.co.x, 6)
+-            vertex.co.y = round(vertex.co.y, 6)
+-            vertex.co.z = round(vertex.co.z, 6)
+-        obj.data.update(calc_edges=True)
+-    # Author helpers use X horizontal / Y up / Z depth.  Rotate once so the
+-    # glTF exporter's Z-up -> Y-up conversion preserves that route contract.
+-    basis = Matrix.Rotation(math.pi / 2, 4, "X")
+-    for obj in bpy.context.scene.objects:
+-        obj.matrix_world = basis @ obj.matrix_world
+-    bpy.ops.export_scene.gltf(
+-        filepath=str(OUT / filename),
+-        export_format="GLB",
+-        use_selection=True,
+-        export_apply=True,
+-        export_yup=True,
+-        export_animations=False,
+-    )
+-    canonicalize_glb(OUT / filename)
+-
+-
+-def canonicalize_glb(path):
+-    """Round float accessors and serialize GLB JSON in a stable order.
+-
+-    Blender 5.2's headless evaluator can vary the final ulp of generated
+-    normals and bevel coordinates between otherwise identical runs.  Those
+-    changes are visually meaningless but break hash-bound provenance.  The
+-    candidate builder therefore quantizes all float accessors to 1e-5 and
+-    writes a canonical JSON chunk after export.
+-    """
+-    source = path.read_bytes()
+-    if source[:4] != b"glTF":
+-        raise ValueError(f"Expected GLB output at {path}")
+-    json_length, json_type = struct.unpack_from("<II", source, 12)
+-    if json_type != 0x4E4F534A:
+-        raise ValueError("First GLB chunk is not JSON")
+-    json_start = 20
+-    document = json.loads(source[json_start:json_start + json_length].decode("utf8").rstrip(" \0"))
+-    bin_header = json_start + json_length
+-    bin_length, bin_type = struct.unpack_from("<II", source, bin_header)
+-    if bin_type != 0x004E4942:
+-        raise ValueError("Second GLB chunk is not BIN")
+-    binary = bytearray(source[bin_header + 8:bin_header + 8 + bin_length])
+-    component_counts = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4, "MAT2": 4, "MAT3": 9, "MAT4": 16}
+-    for accessor in document.get("accessors", []):
+-        if accessor.get("componentType") != 5126 or "bufferView" not in accessor:
+-            continue
+-        view = document["bufferViews"][accessor["bufferView"]]
+-        components = component_counts[accessor["type"]]
+-        element_size = components * 4
+-        stride = view.get("byteStride", element_size)
+-        base = view.get("byteOffset", 0) + accessor.get("byteOffset", 0)
+-        for element in range(accessor["count"]):
+-            offset = base + element * stride
+-            for component in range(components):
+-                value_offset = offset + component * 4
+-                value = struct.unpack_from("<f", binary, value_offset)[0]
+-                canonical = round(value, 5)
+-                if canonical == 0:
+-                    canonical = 0.0
+-                struct.pack_into("<f", binary, value_offset, canonical)
+-
+-    def normalized(value):
+-        if isinstance(value, float):
+-            rounded = round(value, 6)
+-            return 0.0 if rounded == 0 else rounded
+-        if isinstance(value, list):
+-            return [normalized(entry) for entry in value]
+-        if isinstance(value, dict):
+-            return {key: normalized(entry) for key, entry in value.items()}
+-        return value
+-
+-    json_bytes = json.dumps(normalized(document), sort_keys=True, separators=(",", ":")).encode("utf8")
+-    json_bytes += b" " * ((4 - len(json_bytes) % 4) % 4)
+-    binary += b"\0" * ((4 - len(binary) % 4) % 4)
+-    total_length = 12 + 8 + len(json_bytes) + 8 + len(binary)
+-    output = bytearray()
+-    output.extend(struct.pack("<4sII", b"glTF", 2, total_length))
+-    output.extend(struct.pack("<II", len(json_bytes), 0x4E4F534A))
+-    output.extend(json_bytes)
+-    output.extend(struct.pack("<II", len(binary), 0x004E4942))
+-    output.extend(binary)
+-    path.write_bytes(output)
+-
+-
+-def build_runner():
+-    reset()
+-    pearl = material("runner warm ceramic shell", (0.24, 0.34, 0.37), 0.68, 0.22)
+-    graphite = material("runner graphite underframe", (0.022, 0.038, 0.055), 0.82, 0.24)
+-    teal = material("runner oxidized teal armour", (0.025, 0.17, 0.19), 0.72, 0.25)
+-    copper = material("runner heat copper edges", (0.54, 0.17, 0.035), 0.84, 0.22)
+-    canopy = material("runner smoke cyan canopy", (0.02, 0.13, 0.17), 0.48, 0.13, (0.0, 0.23, 0.30), 1.4)
+-    drive = material("runner restrained cyan drive", (0.0, 0.12, 0.17), 0.32, 0.16, (0.0, 0.72, 0.92), 3.1)
+-
+-    loft(
+-        "runner continuous lifting fuselage",
+-        [
+-            (-1.78, 0.035, 0.035, 0.27),
+-            (-1.64, 0.14, 0.10, 0.28),
+-            (-1.42, 0.30, 0.20, 0.29),
+-            (-1.02, 0.44, 0.28, 0.30),
+-            (-0.52, 0.53, 0.34, 0.31),
+-            (0.05, 0.56, 0.35, 0.31),
+-            (0.52, 0.51, 0.32, 0.30),
+-            (0.88, 0.43, 0.27, 0.29),
+-            (1.18, 0.34, 0.22, 0.28),
+-            (1.38, 0.23, 0.16, 0.27),
+-            (1.48, 0.12, 0.11, 0.27),
+-        ],
+-        24,
+-        pearl,
+-        subdivision=0,
+-    )
+-    loft(
+-        "runner continuous ventral keel",
+-        [
+-            (-1.38, 0.16, 0.08, 0.05),
+-            (-0.96, 0.25, 0.12, 0.03),
+-            (-0.56, 0.30, 0.14, 0.02),
+-            (0.12, 0.30, 0.15, 0.02),
+-            (0.58, 0.27, 0.14, 0.02),
+-            (1.04, 0.19, 0.10, 0.03),
+-            (1.32, 0.11, 0.07, 0.05),
+-        ],
+-        20,
+-        graphite,
+-        subdivision=0,
+-    )
+-    sphere("runner integrated canopy", (0, 0.62, -0.34), (0.34, 0.22, 0.66), canopy)
+-    box("runner canopy dorsal spine", (0, 0.63, 0.32), (0.07, 0.07, 0.58), copper, edge=0.035)
+-
+-    for side in (-1, 1):
+-        wing = prism(
+-            f"runner continuous swept foil {side}",
+-            [
+-                (side * 0.20, -0.75),
+-                (side * 1.58, -0.10),
+-                (side * 1.48, 0.48),
+-                (side * 0.42, 0.76),
+-            ],
+-            0.18,
+-            0.34,
+-            teal,
+-            0.055,
+-        )
+-        wing.rotation_euler[2] = side * -0.025
+-        prism(
+-            f"runner copper foil edge {side}",
+-            [
+-                (side * 0.31, -0.71),
+-                (side * 1.61, -0.10),
+-                (side * 1.55, 0.01),
+-                (side * 0.34, -0.56),
+-            ],
+-            0.335,
+-            0.39,
+-            copper,
+-            0.025,
+-        )
+-        cylinder(
+-            f"runner recessed turbine nacelle {side}",
+-            (side * 0.76, 0.22, 0.84),
+-            0.23,
+-            0.82,
+-            graphite,
+-            (math.pi / 2, 0, 0),
+-            40,
+-            0.035,
+-        )
+-        torus(
+-            f"runner turbine heat ring {side}",
+-            (side * 0.76, 0.22, 1.26),
+-            0.17,
+-            0.035,
+-            copper,
+-        )
+-        cylinder(
+-            f"runner bounded drive aperture {side}",
+-            (side * 0.76, 0.22, 1.305),
+-            0.115,
+-            0.05,
+-            drive,
+-            (math.pi / 2, 0, 0),
+-            40,
+-            0.01,
+-        )
+-        prism(
+-            f"runner vertical stabilizer {side}",
+-            [
+-                (side * 0.35, 0.40),
+-                (side * 0.49, 1.28),
+-                (side * 0.65, 1.23),
+-                (side * 0.55, 0.32),
+-            ],
+-            0.34,
+-            0.82,
+-            graphite,
+-            0.035,
+-        )
+-    export("pulseRunnerCraftV5.candidate.glb")
+-
+-
+-def build_sentry():
+-    reset()
+-    graphite = material("sentry black nickel core", (0.025, 0.035, 0.052), 0.88, 0.21)
+-    slate = material("sentry blue steel armour", (0.075, 0.14, 0.20), 0.72, 0.27)
+-    ceramic = material("sentry bone ceramic threat plates", (0.50, 0.45, 0.34), 0.34, 0.33)
+-    copper = material("sentry furnace copper mechanics", (0.50, 0.13, 0.025), 0.88, 0.2)
+-    ember = material("sentry restrained ember core", (0.20, 0.015, 0.025), 0.3, 0.14, (0.88, 0.045, 0.02), 3.2)
+-    optic = material("sentry amber optics", (0.24, 0.08, 0.006), 0.3, 0.13, (1.0, 0.30, 0.015), 3.6)
+-
+-    sphere("sentry continuous armored reactor body", (0, 1.38, 0), (0.82, 0.92, 0.60), graphite)
+-    sphere("sentry upper blue steel mantle", (0, 1.68, 0.02), (1.02, 0.47, 0.66), slate)
+-    prism(
+-        "sentry forward ceramic brow",
+-        [(-0.92, -0.52), (0.92, -0.52), (0.68, -0.83), (-0.68, -0.83)],
+-        1.60,
+-        2.03,
+-        ceramic,
+-        0.07,
+-    )
+-    torus("sentry reactor containment assembly", (0, 1.30, -0.63), 0.46, 0.085, copper)
+-    cylinder("sentry open reactor iris", (0, 1.30, -0.695), 0.34, 0.10, ember, (math.pi / 2, 0, 0), 48, 0.02)
+-    cylinder("sentry central amber eye", (0, 1.82, -0.69), 0.105, 0.10, optic, (math.pi / 2, 0, 0), 36, 0.015)
+-    torus("sentry eye gimbal", (0, 1.82, -0.64), 0.18, 0.035, copper)
+-
+-    for side in (-1, 1):
+-        curve_tube(
+-            f"sentry articulated shoulder spar {side}",
+-            [
+-                (side * 0.48, 1.67, 0.08),
+-                (side * 1.08, 1.86, -0.02),
+-                (side * 1.65, 1.66, -0.16),
+-                (side * 2.02, 1.46, -0.28),
+-            ],
+-            0.105,
+-            copper,
+-        )
+-        sphere(f"sentry shoulder armour pod {side}", (side * 1.18, 1.73, -0.04), (0.58, 0.32, 0.48), slate)
+-        prism(
+-            f"sentry scimitar threat wing {side}",
+-            [
+-                (side * 0.84, -0.12),
+-                (side * 2.35, -0.40),
+-                (side * 1.91, 0.30),
+-                (side * 0.94, 0.48),
+-            ],
+-            1.51,
+-            1.82,
+-            ceramic,
+-            0.055,
+-        )
+-        cylinder(
+-            f"sentry rotary lance housing {side}",
+-            (side * 1.72, 1.34, -0.48),
+-            0.18,
+-            0.98,
+-            graphite,
+-            (0, math.pi / 2, 0),
+-            36,
+-            0.03,
+-        )
+-        cylinder(
+-            f"sentry amber lance muzzle {side}",
+-            (side * 2.23, 1.34, -0.48),
+-            0.11,
+-            0.07,
+-            optic,
+-            (0, math.pi / 2, 0),
+-            36,
+-            0.012,
+-        )
+-        curve_tube(
+-            f"sentry reverse-jointed lower strut {side}",
+-            [
+-                (side * 0.48, 1.05, 0.05),
+-                (side * 0.68, 0.65, 0.18),
+-                (side * 0.94, 0.36, -0.02),
+-                (side * 0.88, 0.12, -0.38),
+-            ],
+-            0.09,
+-            copper,
+-        )
+-        prism(
+-            f"sentry grounded stabilizer talon {side}",
+-            [
+-                (side * 0.66, -0.62),
+-                (side * 1.22, -0.82),
+-                (side * 1.08, 0.18),
+-                (side * 0.72, 0.14),
+-            ],
+-            0.04,
+-            0.22,
+-            graphite,
+-            0.045,
+-        )
+-    export("pulseTerminalSentryV5.candidate.glb")
+-
+-
+-def build_world():
+-    reset()
+-    deck = material("reactor bay titanium deck", (0.10, 0.14, 0.18), 0.7, 0.34)
+-    inset = material("reactor bay recessed black lane", (0.018, 0.032, 0.045), 0.84, 0.31)
+-    wall = material("reactor bay blue steel shell", (0.075, 0.14, 0.20), 0.72, 0.37)
+-    rib = material("reactor bay heat-copper structure", (0.24, 0.065, 0.018), 0.86, 0.29)
+-    pale = material("reactor bay ceramic service plates", (0.38, 0.42, 0.40), 0.34, 0.42)
+-    cyan = material("reactor bay bounded cyan cadence", (0.0, 0.14, 0.18), 0.3, 0.18, (0.0, 0.62, 0.78), 2.4)
+-    amber = material("reactor bay bounded amber terminal", (0.24, 0.07, 0.01), 0.34, 0.18, (0.95, 0.23, 0.01), 2.8)
+-
+-    prism(
+-        "continuous chamfered reactor deck",
+-        [(-4.5, 2.2), (4.5, 2.2), (4.5, -9.5), (3.85, -10.25), (-3.85, -10.25), (-4.5, -9.5)],
+-        -0.34,
+-        -0.02,
+-        deck,
+-        0.12,
+-    )
+-    prism(
+-        "recessed exchange runway",
+-        [(-2.15, 1.9), (2.15, 1.9), (2.42, -8.8), (1.88, -9.45), (-1.88, -9.45), (-2.42, -8.8)],
+-        -0.03,
+-        0.035,
+-        inset,
+-        0.025,
+-    )
+-    for side in (-1, 1):
+-        box(f"continuous lower containment wall {side}", (side * 4.33, 0.78, -4.0), (0.24, 1.05, 6.1), wall, edge=0.09)
+-        curve_tube(
+-            f"longitudinal cyan service conduit {side}",
+-            [
+-                (side * 3.86, 0.30, 1.7),
+-                (side * 3.78, 0.40, -2.2),
+-                (side * 3.62, 0.52, -6.2),
+-                (side * 3.42, 0.68, -9.25),
+-            ],
+-            0.055,
+-            cyan,
+-        )
+-        for index, z in enumerate((-1.1, -2.8, -4.5, -6.2, -7.9, -9.45)):
+-            arch_points = []
+-            # One continuous quarter arch per side, meeting at the crown.
+-            for step in range(7):
+-                t = step / 6
+-                x = side * (4.0 * (1 - t))
+-                y = 0.35 + math.sin(t * math.pi / 2) * 3.25
+-                arch_points.append((x, y, z))
+-            curve_tube(f"forged arched load rib {index} {side}", arch_points, 0.078, rib)
+-            box(
+-                f"rib ceramic lockplate {index} {side}",
+-                (side * 3.74, 1.58, z),
+-                (0.17, 0.34, 0.20),
+-                pale,
+-                rotation=(0, 0, side * 0.16),
+-                edge=0.045,
+-            )
+-        box(f"raised service shoulder {side}", (side * 3.10, 0.11, -4.15), (0.62, 0.14, 5.7), wall, edge=0.08)
+-
+-    # Repeating deck insets establish pace without becoming baked emitter bars.
+-    for index, z in enumerate((0.65, -0.55, -1.75, -2.95, -4.15, -5.35, -6.55, -7.75)):
+-        box(f"machined runway cadence plate {index}", (0, 0.058, z), (1.35, 0.022, 0.22), wall, edge=0.025)
+-        cylinder(
+-            f"runway cadence lens {index}",
+-            (0, 0.087, z),
+-            0.07,
+-            0.035,
+-            cyan if index < 5 else amber,
+-            (math.pi / 2, 0, 0),
+-            28,
+-            0.008,
+-        )
+-
+-    # Terminal chamber: modeled bay, stepped dock, and mechanical iris.
+-    prism(
+-        "terminal raised command dock",
+-        [(-0.4, -7.35), (3.8, -7.35), (4.05, -10.0), (3.45, -10.55), (0.2, -10.55), (-0.55, -9.72)],
+-        0.02,
+-        0.32,
+-        wall,
+-        0.12,
+-    )
+-    box("terminal full-width shadow bulkhead", (0, 1.62, -10.52), (4.18, 1.82, 0.24), inset, edge=0.14)
+-    box("terminal continuous armored backwall", (1.72, 1.55, -10.15), (2.28, 1.55, 0.25), wall, edge=0.13)
+-    torus("terminal mechanical iris outer race", (1.72, 1.48, -9.86), 1.18, 0.15, rib)
+-    torus("terminal mechanical iris inner race", (1.72, 1.48, -9.82), 0.78, 0.065, amber)
+-    cylinder("terminal recessed threat well", (1.72, 1.48, -9.88), 0.64, 0.11, graphite := inset, (math.pi / 2, 0, 0), 48, 0.025)
+-    for index in range(8):
+-        angle = index * math.tau / 8
+-        x = 1.72 + math.cos(angle) * 0.93
+-        y = 1.48 + math.sin(angle) * 0.93
+-        box(
+-            f"terminal iris blade {index}",
+-            (x, y, -9.72),
+-            (0.26, 0.10, 0.08),
+-            pale,
+-            rotation=(0, angle * 0.08, angle),
+-            edge=0.035,
+-        )
+-    for side in (-1, 1):
+-        curve_tube(
+-            f"terminal overhead service arm {side}",
+-            [
+-                (1.72 + side * 2.05, 2.96, -9.58),
+-                (1.72 + side * 1.62, 3.32, -9.38),
+-                (1.72 + side * 0.72, 3.54, -9.25),
+-                (1.72, 3.58, -9.18),
+-            ],
+-            0.12,
+-            rib,
+-        )
+-    export("pulseReactorEncounterWorldV5.candidate.glb")
+-
+-
+-if __name__ == "__main__":
+-    build_runner()
+-    build_sentry()
+-    build_world()
+-    print("Built Pulse Tunnel high-fidelity V5 candidates in", OUT)
+diff --git a/apps/showcase-pulse-tunnel/scripts/build-models.py b/apps/showcase-pulse-tunnel/scripts/build-models.py
+deleted file mode 100644
+index fd9fdddf7..000000000
+--- a/apps/showcase-pulse-tunnel/scripts/build-models.py
++++ /dev/null
+@@ -1,238 +0,0 @@
+-"""Build Pulse Tunnel's original CC0 encounter kit with Blender.
+-
+-The kit is static presentation only. Route-local chart, lane, collision, score,
+-failure, and reset systems remain authoritative. No animation or skin metadata
+-is authored because these rigid models do not contain either feature.
+-"""
+-
+-from pathlib import Path
+-import math
+-import bpy
+-from mathutils import Matrix
+-
+-ROOT = Path(__file__).resolve().parent.parent
+-OUT = ROOT / "assets" / "models"
+-OUT.mkdir(parents=True, exist_ok=True)
+-
+-
+-def reset():
+-    bpy.ops.wm.read_factory_settings(use_empty=True)
+-
+-
+-def mat(name, color, metallic=0.0, roughness=0.5, emission=None, strength=0.0):
+-    value = bpy.data.materials.new(name)
+-    value.diffuse_color = (*color, 1)
+-    value.use_nodes = True
+-    bsdf = value.node_tree.nodes.get("Principled BSDF")
+-    bsdf.inputs["Base Color"].default_value = (*color, 1)
+-    bsdf.inputs["Metallic"].default_value = metallic
+-    bsdf.inputs["Roughness"].default_value = roughness
+-    if emission:
+-        if "Emission Color" in bsdf.inputs:
+-            bsdf.inputs["Emission Color"].default_value = (*emission, 1)
+-            bsdf.inputs["Emission Strength"].default_value = strength
+-        else:
+-            bsdf.inputs["Emission"].default_value = (*emission, 1)
+-            bsdf.inputs["Emission Strength"].default_value = strength
+-    return value
+-
+-
+-def finish(obj, material, bevel=0.06):
+-    obj.data.materials.append(material)
+-    if bevel > 0:
+-        mod = obj.modifiers.new("machined edge bevel", "BEVEL")
+-        mod.width = bevel
+-        mod.segments = 2
+-        bpy.context.view_layer.objects.active = obj
+-        bpy.ops.object.modifier_apply(modifier=mod.name)
+-    for poly in obj.data.polygons:
+-        poly.use_smooth = False
+-    return obj
+-
+-
+-def box(name, location, scale, material, bevel=0.06, rotation=(0, 0, 0)):
+-    bpy.ops.mesh.primitive_cube_add(size=1, location=location, rotation=rotation)
+-    obj = bpy.context.object
+-    obj.name = name
+-    obj.scale = scale
+-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+-    return finish(obj, material, bevel)
+-
+-
+-def cylinder(name, location, radius, depth, material, vertices=16, rotation=(0, 0, 0), bevel=0.04):
+-    bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=location, rotation=rotation)
+-    obj = bpy.context.object
+-    obj.name = name
+-    return finish(obj, material, bevel)
+-
+-
+-def sphere(name, location, scale, material, segments=24, rings=12):
+-    bpy.ops.mesh.primitive_uv_sphere_add(segments=segments, ring_count=rings, location=location)
+-    obj = bpy.context.object
+-    obj.name = name
+-    obj.scale = scale
+-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+-    return finish(obj, material, 0.025)
+-
+-
+-def torus(name, location, major, minor, material, rotation=(math.pi / 2, 0, 0)):
+-    bpy.ops.mesh.primitive_torus_add(major_radius=major, minor_radius=minor, major_segments=24, minor_segments=6, location=location, rotation=rotation)
+-    obj = bpy.context.object
+-    obj.name = name
+-    obj.data.materials.append(material)
+-    return obj
+-
+-
+-def join_material_groups(exempt=()):
+-    exempt = set(exempt)
+-    groups = {}
+-    for obj in list(bpy.context.scene.objects):
+-        if obj.type != "MESH" or obj.name in exempt:
+-            continue
+-        material = obj.data.materials[0].name if obj.data.materials else "none"
+-        groups.setdefault(material, []).append(obj)
+-    for material, objects in groups.items():
+-        if len(objects) < 2:
+-            continue
+-        bpy.ops.object.select_all(action="DESELECT")
+-        for obj in objects:
+-            obj.select_set(True)
+-        bpy.context.view_layer.objects.active = objects[0]
+-        bpy.ops.object.join()
+-        objects[0].name = "pulse " + material
+-
+-
+-def export(name):
+-    bpy.ops.object.select_all(action="SELECT")
+-    # Authoring helpers use the route's +Y-up coordinates. Blender is +Z-up,
+-    # while its glTF exporter converts +Z-up back to glTF +Y-up. Rotate the
+-    # complete scene once here so exported bounds and node placement exactly
+-    # match the route coordinate contract (X horizontal, Y height, Z depth).
+-    basis = Matrix.Rotation(math.pi / 2, 4, "X")
+-    for obj in bpy.context.scene.objects:
+-        obj.matrix_world = basis @ obj.matrix_world
+-    bpy.ops.export_scene.gltf(
+-        filepath=str(OUT / name),
+-        export_format="GLB",
+-        use_selection=True,
+-        export_apply=True,
+-        export_yup=True,
+-        export_animations=False,
+-    )
+-
+-
+-def build_world():
+-    reset()
+-    deck = mat("reactor deck gunmetal", (0.11, 0.19, 0.27), 0.72, 0.33)
+-    wall = mat("containment wall blue steel", (0.08, 0.23, 0.34), 0.68, 0.36)
+-    rib = mat("aged copper rib", (0.48, 0.22, 0.08), 0.82, 0.3)
+-    cyan = mat("cyan conduit", (0.015, 0.28, 0.40), 0.38, 0.24, (0.01, 0.60, 0.86), 2.3)
+-    rose = mat("rose containment field", (0.34, 0.025, 0.12), 0.34, 0.27, (0.82, 0.02, 0.16), 2.5)
+-    amber = mat("amber reactor warning", (0.38, 0.18, 0.02), 0.45, 0.25, (0.90, 0.24, 0.015), 2.4)
+-    panel = mat("reactor deck inset panels", (0.16, 0.25, 0.33), 0.48, 0.42)
+-    trim = mat("reactor hazard trim", (0.60, 0.31, 0.09), 0.63, 0.29, (0.65, 0.18, 0.025), 1.1)
+-
+-    box("continuous reactor deck", (0, -0.24, -3.5), (4.7, 0.22, 7.3), deck, 0.12)
+-    box("recessed exchange lane", (0, 0.0, -3.25), (2.25, 0.06, 6.75), wall, 0.025)
+-    # Repeating inset panels and a broken center seam establish scale and
+-    # direction for the runner without turning the lane into a flat color bar.
+-    for i, z in enumerate((1.2, -0.55, -2.3, -4.05, -5.8, -7.55)):
+-        box(f"deck inset panel {i}", (0, 0.075, z), (1.92, 0.018, 0.68), panel, 0.025)
+-        for side in (-1, 1):
+-            box(f"deck panel edge {i} {side}", (side * 1.82, 0.10, z), (0.045, 0.028, 0.68), trim, 0.015)
+-        box(f"deck center seam {i}", (0, 0.105, z), (0.028, 0.018, 0.66), cyan, 0.012)
+-    for side in (-1, 1):
+-        box(f"{side} connected lower sidewall", (side * 4.35, 0.82, -3.5), (0.28, 1.02, 7.2), wall, 0.1)
+-        box(f"{side} upper containment shoulder", (side * 4.06, 2.35, -3.7), (0.24, 0.42, 7.0), wall, 0.08, (0, 0, side * 0.28))
+-        box(f"{side} longitudinal cyan conduit", (side * 3.72, 0.43, -3.5), (0.055, 0.055, 6.9), cyan, 0.02)
+-        box(f"{side} lower hazard rail", (side * 3.38, 0.25, -3.5), (0.055, 0.055, 6.7), trim, 0.02)
+-    for i, z in enumerate((1.7, -0.2, -2.1, -4.0, -5.9, -7.8)):
+-        for side in (-1, 1):
+-            box(f"rib {i} {side}", (side * 3.72, 1.72, z), (0.16, 1.55, 0.20), rib, 0.07, (0, 0, side * -0.25))
+-            box(f"roof brace {i} {side}", (side * 2.0, 3.2, z), (1.85, 0.14, 0.20), rib, 0.06, (0, side * 0.03, side * -0.18))
+-        box(f"roof spine {i}", (0, 3.54, z), (0.32, 0.12, 0.20), cyan, 0.04)
+-        box(f"roof spine collar {i}", (0, 3.36, z), (0.62, 0.045, 0.10), trim, 0.02)
+-
+-    # Raised terminal bay and recognizable gameplay-space anchors.
+-    box("terminal bay plinth", (1.82, 0.13, -7.28), (2.1, 0.32, 1.72), deck, 0.14)
+-    box("terminal bay backstop", (1.82, 1.72, -8.72), (2.25, 1.72, 0.24), wall, 0.12)
+-    box("terminal bay inset", (1.82, 0.52, -7.23), (1.62, 0.06, 1.1), panel, 0.04)
+-    for side in (-1, 1):
+-        box(f"terminal bay cyan brace {side}", (1.82 + side * 1.34, 1.25, -7.45), (0.08, 0.78, 0.08), cyan, 0.025)
+-        box(f"terminal bay amber bracket {side}", (1.82 + side * 1.55, 0.65, -7.85), (0.12, 0.10, 0.45), amber, 0.025)
+-    torus("boss fire anchor", (1.82, 1.32, -8.42), 1.18, 0.13, amber)
+-    cylinder("boss fire anchor core", (1.82, 1.32, -8.38), 0.34, 0.16, rose, 20, (math.pi / 2, 0, 0), 0.03)
+-    box("player impact anchor", (-1.38, 0.72, -0.72), (0.74, 0.56, 0.055), cyan, 0.04, (0, -0.18, 0.05))
+-    torus("player impact anchor ring", (-1.38, 0.72, -0.66), 0.48, 0.055, cyan)
+-    for side in (-1, 1):
+-        box(f"terminal pincer {side}", (1.82 + side * 1.62, 2.45, -7.72), (1.05, 0.16, 0.34), rib, 0.06, (0, side * 0.18, side * -0.38))
+-    join_material_groups(exempt=("boss fire anchor", "boss fire anchor core", "player impact anchor"))
+-    export("pulseReactorEncounterWorld.glb")
+-
+-
+-def build_sentry():
+-    reset()
+-    armor = mat("sentry navy armour", (0.045, 0.13, 0.23), 0.78, 0.29)
+-    armor_edge = mat("sentry blue edge plates", (0.09, 0.26, 0.39), 0.7, 0.34)
+-    copper = mat("sentry copper mechanics", (0.56, 0.22, 0.055), 0.82, 0.27)
+-    ivory = mat("sentry ceramic threat plates", (0.64, 0.58, 0.44), 0.36, 0.3)
+-    rose = mat("sentry rose reactor", (0.28, 0.01, 0.08), 0.3, 0.2, (0.88, 0.015, 0.15), 2.8)
+-    cyan = mat("sentry cyan optics", (0.01, 0.20, 0.28), 0.24, 0.18, (0.0, 0.55, 0.86), 2.7)
+-    amber = mat("sentry amber warning", (0.35, 0.15, 0.02), 0.38, 0.24, (0.88, 0.25, 0.02), 2.1)
+-    box("armoured reactor torso", (0, 1.16, 0), (0.67, 0.82, 0.48), armor, 0.15)
+-    box("torso lower edge", (0, 0.52, -0.02), (0.53, 0.16, 0.38), armor_edge, 0.05)
+-    box("faceted threat brow", (0, 1.82, -0.34), (0.82, 0.22, 0.23), ivory, 0.09)
+-    box("upper threat visor", (0, 1.58, -0.48), (0.56, 0.18, 0.08), armor_edge, 0.035)
+-    cylinder("reactor iris", (0, 1.18, -0.51), 0.42, 0.15, rose, 24, (math.pi / 2, 0, 0), 0.04)
+-    torus("reactor iris guard", (0, 1.18, -0.60), 0.5, 0.07, amber)
+-    cylinder("optic core", (0, 1.18, -0.63), 0.15, 0.11, cyan, 20, (math.pi / 2, 0, 0), 0.025)
+-    for side in (-1, 1):
+-        box(f"swept shoulder armour {side}", (side * 0.92, 1.5, 0.03), (0.73, 0.18, 0.38), armor, 0.09, (0, side * 0.16, side * 0.25))
+-        box(f"shoulder edge plate {side}", (side * 1.14, 1.48, -0.18), (0.2, 0.09, 0.24), armor_edge, 0.035, (0, side * 0.18, side * 0.28))
+-        box(f"copper wing actuator {side}", (side * 0.72, 1.3, -0.12), (0.28, 0.13, 0.17), copper, 0.05, (0, 0, side * 0.25))
+-        cylinder(f"shoulder cannon housing {side}", (side * 1.28, 1.62, -0.36), 0.15, 0.54, armor_edge, 16, (0, side * math.pi / 2, 0), 0.035)
+-        cylinder(f"shoulder cannon muzzle {side}", (side * 1.56, 1.62, -0.36), 0.09, 0.13, amber, 16, (0, side * math.pi / 2, 0), 0.02)
+-        box(f"reverse knee strut {side}", (side * 0.42, 0.48, 0.05), (0.15, 0.55, 0.17), copper, 0.055, (side * -0.12, 0, side * -0.18))
+-        box(f"knee armour plate {side}", (side * 0.42, 0.77, -0.14), (0.22, 0.13, 0.2), armor_edge, 0.04, (side * -0.14, 0, side * -0.18))
+-        box(f"ground claw {side}", (side * 0.52, 0.09, -0.24), (0.34, 0.10, 0.48), ivory, 0.06)
+-        box(f"claw toe {side}", (side * 0.52, 0.08, -0.68), (0.22, 0.08, 0.20), ivory, 0.04)
+-        box(f"shoulder optic {side}", (side * 1.18, 1.46, -0.5), (0.17, 0.17, 0.13), cyan, 0.04)
+-    box("sentry crown antenna", (0, 2.17, -0.02), (0.12, 0.25, 0.12), armor_edge, 0.035)
+-    sphere("sentry crown beacon", (0, 2.45, -0.02), (0.12, 0.12, 0.12), rose, 16, 8)
+-    join_material_groups(exempt=("reactor iris", "reactor iris guard", "optic core", "sentry crown beacon"))
+-    export("pulseTerminalSentry.glb")
+-
+-
+-def build_runner():
+-    reset()
+-    hull = mat("runner pearl hull", (0.36, 0.57, 0.68), 0.66, 0.28)
+-    dark = mat("runner graphite chassis", (0.018, 0.045, 0.075), 0.84, 0.28)
+-    copper = mat("runner copper trim", (0.62, 0.24, 0.045), 0.82, 0.26)
+-    cyan = mat("runner cyan drive", (0.0, 0.22, 0.32), 0.32, 0.2, (0.0, 0.58, 0.86), 2.9)
+-    pearl_edge = mat("runner pearl edge", (0.22, 0.38, 0.48), 0.52, 0.34)
+-    glass = mat("runner canopy glass", (0.025, 0.12, 0.18), 0.7, 0.18, (0.0, 0.25, 0.34), 0.75)
+-    box("runner central fuselage", (0, 0.36, 0), (0.48, 0.26, 1.0), hull, 0.13)
+-    box("runner upper spine", (0, 0.63, -0.03), (0.24, 0.10, 0.48), pearl_edge, 0.045)
+-    box("runner graphite keel", (0, 0.19, 0.08), (0.30, 0.15, 1.18), dark, 0.09)
+-    box("runner keel vent", (0, 0.18, 0.88), (0.16, 0.055, 0.24), cyan, 0.02)
+-    box("runner nose wedge", (0, 0.34, -0.91), (0.31, 0.18, 0.44), copper, 0.09, (0.13, 0, 0))
+-    box("runner nose lower lip", (0, 0.22, -1.18), (0.2, 0.08, 0.20), dark, 0.035)
+-    for side in (-1, 1):
+-        box(f"runner swept foil {side}", (side * 0.72, 0.28, 0.16), (0.72, 0.09, 0.66), hull, 0.07, (0, side * -0.16, side * 0.08))
+-        box(f"runner foil shoulder {side}", (side * 0.5, 0.37, -0.1), (0.33, 0.10, 0.3), pearl_edge, 0.045, (0, side * -0.1, side * 0.08))
+-        box(f"runner foil edge {side}", (side * 0.92, 0.27, 0.07), (0.48, 0.055, 0.60), copper, 0.035, (0, side * -0.18, side * 0.08))
+-        box(f"runner foil tip {side}", (side * 1.38, 0.28, -0.22), (0.12, 0.05, 0.18), copper, 0.025, (0, side * -0.24, side * 0.08))
+-        cylinder(f"runner drive pod {side}", (side * 0.58, 0.26, 0.78), 0.20, 0.60, dark, 16, (math.pi / 2, 0, 0), 0.045)
+-        torus(f"runner drive ring {side}", (side * 0.58, 0.26, 1.08), 0.15, 0.04, cyan)
+-        cylinder(f"runner drive glow {side}", (side * 0.58, 0.26, 1.10), 0.10, 0.07, cyan, 16, (math.pi / 2, 0, 0), 0.02)
+-        box(f"runner side stabilizer {side}", (side * 0.34, 0.23, -0.55), (0.18, 0.07, 0.30), dark, 0.03, (0, side * 0.08, 0))
+-    box("runner canopy", (0, 0.58, -0.05), (0.29, 0.16, 0.43), glass, 0.08)
+-    box("runner canopy brow", (0, 0.69, -0.20), (0.24, 0.045, 0.22), cyan, 0.02)
+-    join_material_groups(exempt=("runner canopy", "runner canopy brow"))
+-    export("pulseRunnerCraft.glb")
+-
+-
+-build_world()
+-build_sentry()
+-build_runner()
+-print("Built Pulse Tunnel encounter kit in", OUT)
 diff --git a/apps/showcase-pulse-tunnel/scripts/build-music.mjs b/apps/showcase-pulse-tunnel/scripts/build-music.mjs
 deleted file mode 100644
 index f05f4188a..000000000
@@ -281,6 +2914,154 @@ index f05f4188a..000000000
 -writeWav("lead.wav", buildLead());
 -writeWav("air.wav", buildAir());
 -console.log(JSON.stringify(PULSE_MUSIC_PLAN));
+diff --git a/apps/showcase-pulse-tunnel/scripts/build-quaternius-presentation-v10.py b/apps/showcase-pulse-tunnel/scripts/build-quaternius-presentation-v10.py
+deleted file mode 100644
+index 527260e83..000000000
+--- a/apps/showcase-pulse-tunnel/scripts/build-quaternius-presentation-v10.py
++++ /dev/null
+@@ -1,42 +0,0 @@
+-"""Build V10 modeled combat projectiles from the selected Quaternius CC0 family."""
+-
+-from pathlib import Path
+-import hashlib
+-import importlib.util
+-import bpy
+-
+-
+-ROOT = Path(__file__).resolve().parent.parent
+-SOURCE = ROOT / "art-review" / "external-source" / "quaternius" / "essentials"
+-OUT = ROOT / "art-review" / "assets" / "quaternius-v10"
+-OUT.mkdir(parents=True, exist_ok=True)
+-
+-helper_path = Path(__file__).with_name("build-high-fidelity-v5.py")
+-spec = importlib.util.spec_from_file_location("pulse_v5_helpers", helper_path)
+-helper = importlib.util.module_from_spec(spec)
+-assert spec.loader is not None
+-spec.loader.exec_module(helper)
+-
+-
+-def build(source_name: str, output_name: str) -> None:
+-    bpy.ops.wm.read_factory_settings(use_empty=True)
+-    bpy.ops.import_scene.gltf(filepath=str(SOURCE / source_name), import_pack_images=True)
+-    bpy.ops.object.select_all(action="SELECT")
+-    bpy.ops.export_scene.gltf(
+-        filepath=str(OUT / output_name),
+-        export_format="GLB",
+-        use_selection=True,
+-        export_apply=True,
+-        export_yup=True,
+-        export_animations=False,
+-        export_image_format="AUTO",
+-        export_materials="EXPORT",
+-    )
+-    helper.canonicalize_glb(OUT / output_name)
+-
+-
+-if __name__ == "__main__":
+-    build("Prop_Grenade.gltf", "pulseQuaterniusLanceV10.candidate.glb")
+-    build("Prop_Mine.gltf", "pulseQuaterniusCutterV10.candidate.glb")
+-    for path in sorted(OUT.glob("*.glb")):
+-        print(hashlib.sha256(path.read_bytes()).hexdigest(), path.stat().st_size, path.name)
+diff --git a/apps/showcase-pulse-tunnel/scripts/build-quaternius-source-v9.py b/apps/showcase-pulse-tunnel/scripts/build-quaternius-source-v9.py
+deleted file mode 100644
+index f5b878046..000000000
+--- a/apps/showcase-pulse-tunnel/scripts/build-quaternius-source-v9.py
++++ /dev/null
+@@ -1,94 +0,0 @@
+-"""Build an isolated Pulse audition from one coherent Quaternius CC0 family."""
+-
+-from pathlib import Path
+-import importlib.util
+-import math
+-import bpy
+-
+-
+-ROOT = Path(__file__).resolve().parent.parent
+-SOURCE = ROOT / "art-review" / "external-source" / "quaternius"
+-OUT = ROOT / "art-review" / "assets" / "quaternius-v9"
+-OUT.mkdir(parents=True, exist_ok=True)
+-
+-helper_path = Path(__file__).with_name("build-high-fidelity-v5.py")
+-spec = importlib.util.spec_from_file_location("pulse_v5_helpers", helper_path)
+-helper = importlib.util.module_from_spec(spec)
+-assert spec.loader is not None
+-spec.loader.exec_module(helper)
+-
+-
+-def reset():
+-    bpy.ops.wm.read_factory_settings(use_empty=True)
+-
+-
+-def import_gltf(path, location=(0, 0, 0), rotation=(0, 0, 0), scale=(1, 1, 1)):
+-    before = set(bpy.context.scene.objects)
+-    bpy.ops.import_scene.gltf(filepath=str(path), import_pack_images=True)
+-    imported = set(bpy.context.scene.objects) - before
+-    roots = [obj for obj in imported if obj.parent not in imported]
+-    for root in roots:
+-        root.location.x += location[0]
+-        root.location.y += location[1]
+-        root.location.z += location[2]
+-        root.rotation_euler.rotate_axis("X", rotation[0])
+-        root.rotation_euler.rotate_axis("Y", rotation[1])
+-        root.rotation_euler.rotate_axis("Z", rotation[2])
+-        root.scale.x *= scale[0]
+-        root.scale.y *= scale[1]
+-        root.scale.z *= scale[2]
+-    return imported
+-
+-
+-def export(filename):
+-    bpy.ops.object.select_all(action="SELECT")
+-    bpy.ops.export_scene.gltf(
+-        filepath=str(OUT / filename),
+-        export_format="GLB",
+-        use_selection=True,
+-        export_apply=True,
+-        export_yup=True,
+-        export_animations=False,
+-        export_image_format="AUTO",
+-        export_materials="EXPORT",
+-    )
+-    helper.canonicalize_glb(OUT / filename)
+-
+-
+-def build_runner():
+-    reset()
+-    import_gltf(SOURCE / "essentials" / "Enemy_EyeDrone.gltf")
+-    export("pulseQuaterniusEyeRunnerV9.candidate.glb")
+-
+-
+-def build_warden():
+-    reset()
+-    import_gltf(SOURCE / "megakit" / "Alien_Scolitex.gltf")
+-    export("pulseQuaterniusScolitexWardenV9.candidate.glb")
+-
+-
+-def build_world():
+-    reset()
+-    kit = SOURCE / "megakit"
+-    # Six textured floor modules establish a continuous exchange runway.
+-    for row, z in enumerate((2.0, -2.0, -6.0, -10.0)):
+-        for side, x in enumerate((-2.0, 2.0)):
+-            import_gltf(kit / "Platform_DarkPlates.gltf", (x, 0, z))
+-    # Real textured wall modules frame the whole lane, not repeated bare ribs.
+-    for z in (1.8, -2.0, -5.8, -9.6):
+-        import_gltf(kit / "WallAstra_Straight.gltf", (-4.0, 0, z), (0, math.pi / 2, 0))
+-        import_gltf(kit / "WallAstra_Straight.gltf", (4.0, 0, z), (0, -math.pi / 2, 0))
+-    for z in (-1.1, -5.0, -8.9):
+-        import_gltf(kit / "Column_Pipes.gltf", (-3.45, 0, z))
+-        import_gltf(kit / "Column_Pipes.gltf", (3.45, 0, z), (0, math.pi, 0))
+-    import_gltf(kit / "Door_Frame_A.gltf", (0, 0, -11.4), (0, math.pi, 0), (1.65, 1.65, 1.65))
+-    export("pulseQuaterniusReactorArenaV9.candidate.glb")
+-
+-
+-if __name__ == "__main__":
+-    build_runner()
+-    build_warden()
+-    build_world()
+-    for path in sorted(OUT.glob("*.glb")):
+-        import hashlib
+-        print(hashlib.sha256(path.read_bytes()).hexdigest(), path.stat().st_size, path.name)
 diff --git a/apps/showcase-pulse-tunnel/scripts/build-sfx.mjs b/apps/showcase-pulse-tunnel/scripts/build-sfx.mjs
 deleted file mode 100644
 index 073041123..000000000
@@ -426,6 +3207,664 @@ index 073041123..000000000
 -mkdirSync(OUT_DIR, { recursive: true });
 -for (const [fileName, rendered] of Object.entries(CUES)) writeWav(fileName, rendered);
 -console.log(`generated ${Object.keys(CUES).length} cues`);
+diff --git a/apps/showcase-pulse-tunnel/scripts/build-structural-world-v3.py b/apps/showcase-pulse-tunnel/scripts/build-structural-world-v3.py
+deleted file mode 100644
+index eb462b58f..000000000
+--- a/apps/showcase-pulse-tunnel/scripts/build-structural-world-v3.py
++++ /dev/null
+@@ -1,127 +0,0 @@
+-"""Build the route-local Pulse structural-world V3 art candidate.
+-
+-This is an isolated CC0 candidate, not a registered release asset. The design
+-uses broad connected surfaces and a terminal proscenium instead of floating
+-roof bars. It intentionally contains no combatants and no collision metadata.
+-"""
+-
+-from pathlib import Path
+-import math
+-import bpy
+-from mathutils import Matrix
+-
+-ROOT = Path(__file__).resolve().parent.parent
+-OUT = ROOT / "art-review" / "assets"
+-OUT.mkdir(parents=True, exist_ok=True)
+-
+-
+-def mat(name, color, metallic=0.0, roughness=0.5, emission=None, strength=0.0):
+-    value = bpy.data.materials.new(name)
+-    value.diffuse_color = (*color, 1)
+-    value.use_nodes = True
+-    bsdf = value.node_tree.nodes.get("Principled BSDF")
+-    bsdf.inputs["Base Color"].default_value = (*color, 1)
+-    bsdf.inputs["Metallic"].default_value = metallic
+-    bsdf.inputs["Roughness"].default_value = roughness
+-    if emission:
+-        key = "Emission Color" if "Emission Color" in bsdf.inputs else "Emission"
+-        bsdf.inputs[key].default_value = (*emission, 1)
+-        bsdf.inputs["Emission Strength"].default_value = strength
+-    return value
+-
+-
+-def finish(obj, material, bevel=0.06):
+-    obj.data.materials.append(material)
+-    if bevel:
+-        mod = obj.modifiers.new("structural edge bevel", "BEVEL")
+-        mod.width = bevel
+-        mod.segments = 2
+-        bpy.context.view_layer.objects.active = obj
+-        bpy.ops.object.modifier_apply(modifier=mod.name)
+-    return obj
+-
+-
+-def box(name, location, scale, material, rotation=(0, 0, 0), bevel=0.06):
+-    bpy.ops.mesh.primitive_cube_add(size=1, location=location, rotation=rotation)
+-    obj = bpy.context.object
+-    obj.name = name
+-    obj.scale = scale
+-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+-    return finish(obj, material, bevel)
+-
+-
+-def join_by_material(exempt=()):
+-    exempt = set(exempt)
+-    groups = {}
+-    for obj in list(bpy.context.scene.objects):
+-        if obj.type != "MESH" or obj.name in exempt:
+-            continue
+-        key = obj.data.materials[0].name if obj.data.materials else "none"
+-        groups.setdefault(key, []).append(obj)
+-    for key, objects in groups.items():
+-        if len(objects) < 2:
+-            continue
+-        bpy.ops.object.select_all(action="DESELECT")
+-        for obj in objects:
+-            obj.select_set(True)
+-        bpy.context.view_layer.objects.active = objects[0]
+-        bpy.ops.object.join()
+-        objects[0].name = f"V3 joined {key}"
+-
+-
+-bpy.ops.wm.read_factory_settings(use_empty=True)
+-deck = mat("V3 slate deck", (0.13, 0.20, 0.29), 0.58, 0.48)
+-steel = mat("V3 navy structural steel", (0.055, 0.105, 0.17), 0.64, 0.42)
+-panel = mat("V3 blue wall panels", (0.10, 0.22, 0.31), 0.46, 0.52)
+-copper = mat("V3 restrained copper", (0.31, 0.16, 0.065), 0.72, 0.35)
+-cyan = mat("V3 cyan guide", (0.02, 0.20, 0.26), 0.28, 0.34, (0.02, 0.48, 0.64), 1.7)
+-amber = mat("V3 amber guide", (0.28, 0.14, 0.025), 0.35, 0.34, (0.68, 0.28, 0.035), 1.55)
+-
+-# Broad, connected ground planes.
+-box("V3 full foundation", (0, -0.34, -3.2), (5.2, 0.26, 7.6), steel, bevel=0.14)
+-box("V3 runner apron", (-1.15, -0.04, 0.95), (3.45, 0.16, 2.6), deck, bevel=0.13)
+-box("V3 exchange trench", (0.05, -0.18, -2.55), (2.65, 0.08, 2.0), panel, bevel=0.06)
+-box("V3 terminal dock", (1.15, 0.09, -5.75), (3.55, 0.28, 1.5), deck, bevel=0.15)
+-
+-# Continuous side architecture: large panels with inset pilasters.
+-for side in (-1, 1):
+-    box(f"V3 lower sidewall {side}", (side * 4.55, 0.62, -3.0), (0.42, 0.9, 7.1), steel,
+-        rotation=(0, 0, side * 0.06), bevel=0.12)
+-    box(f"V3 upper shoulder {side}", (side * 4.25, 2.05, -3.35), (0.34, 0.62, 6.65), panel,
+-        rotation=(0, 0, side * 0.19), bevel=0.1)
+-    box(f"V3 deck edge guide {side}", (side * 3.28, 0.07, -2.8), (0.055, 0.045, 6.45), cyan if side < 0 else amber, bevel=0.018)
+-    for index, z in enumerate((1.6, -1.25, -4.1, -6.7)):
+-        box(f"V3 wall pilaster {side} {index}", (side * 4.0, 1.4, z), (0.23, 1.35, 0.34), copper,
+-            rotation=(0, side * 0.05, side * -0.12), bevel=0.07)
+-        box(f"V3 inset wall panel {side} {index}", (side * 4.38, 1.25, z - 0.55), (0.16, 0.62, 0.82), panel,
+-            rotation=(0, side * 0.03, side * 0.11), bevel=0.07)
+-
+-# One far proscenium frames the terminal as a location, not a floating target.
+-box("V3 terminal backstop", (1.15, 2.0, -7.12), (3.5, 2.15, 0.32), steel, bevel=0.16)
+-for side in (-1, 1):
+-    box(f"V3 terminal portal upright {side}", (1.15 + side * 2.65, 2.0, -6.72), (0.34, 1.92, 0.38), copper,
+-        rotation=(0, 0, side * 0.08), bevel=0.1)
+-    box(f"V3 terminal cheek light {side}", (1.15 + side * 2.2, 1.25, -6.36), (0.06, 0.62, 0.08), amber,
+-        bevel=0.02)
+-box("V3 terminal portal crown", (1.15, 3.78, -6.72), (2.75, 0.28, 0.4), copper, bevel=0.1)
+-box("V3 terminal horizon light", (1.15, 3.31, -6.34), (1.55, 0.07, 0.08), amber, bevel=0.02)
+-
+-# Low cadence inserts are embedded in the trench rather than floating overhead.
+-for index in range(7):
+-    box(f"V3 trench cadence {index}", (0.05, -0.075, -0.85 - index * 0.65),
+-        (0.58, 0.025, 0.045), cyan if index % 2 == 0 else amber, bevel=0.012)
+-
+-join_by_material()
+-basis = Matrix.Rotation(math.pi / 2, 4, "X")
+-for obj in bpy.context.scene.objects:
+-    obj.matrix_world = basis @ obj.matrix_world
+-bpy.ops.object.select_all(action="SELECT")
+-bpy.ops.export_scene.gltf(
+-    filepath=str(OUT / "pulseStructuralWorldV3.candidate.glb"),
+-    export_format="GLB",
+-    use_selection=True,
+-    export_apply=True,
+-    export_yup=True,
+-    export_animations=False,
+-)
+-print("Built", OUT / "pulseStructuralWorldV3.candidate.glb")
+diff --git a/apps/showcase-pulse-tunnel/scripts/build-texture-identity-v6.py b/apps/showcase-pulse-tunnel/scripts/build-texture-identity-v6.py
+deleted file mode 100644
+index b32150dbb..000000000
+--- a/apps/showcase-pulse-tunnel/scripts/build-texture-identity-v6.py
++++ /dev/null
+@@ -1,519 +0,0 @@
+-"""Build deterministic, route-local Pulse Tunnel V6 art candidates.
+-
+-This pass establishes one Pulse-specific visual language across the runner,
+-terminal sentinel, and reactor tunnel: black ceramic shells, cool silver wear,
+-cyan player cadence, and ember-red terminal threat.  The procedural PNGs are
+-fixed byte streams generated by this script and embedded in the exported GLBs.
+-The public asset manifest is deliberately not touched here.
+-"""
+-
+-from pathlib import Path
+-import hashlib
+-import importlib.util
+-import json
+-import math
+-import struct
+-import zlib
+-
+-import bpy
+-from mathutils import Vector
+-
+-
+-ROOT = Path(__file__).resolve().parent.parent
+-OUT = ROOT / "art-review" / "assets" / "texture-identity-v6"
+-TEXTURES = OUT / "textures"
+-OUT.mkdir(parents=True, exist_ok=True)
+-TEXTURES.mkdir(parents=True, exist_ok=True)
+-
+-helper_path = Path(__file__).with_name("build-high-fidelity-v5.py")
+-spec = importlib.util.spec_from_file_location("pulse_v5_helpers", helper_path)
+-helpers = importlib.util.module_from_spec(spec)
+-assert spec.loader is not None
+-spec.loader.exec_module(helpers)
+-helpers.OUT = OUT
+-
+-reset = helpers.reset
+-assign = helpers.assign
+-box = helpers.box
+-cylinder = helpers.cylinder
+-torus = helpers.torus
+-prism = helpers.prism
+-loft = helpers.loft
+-
+-
+-def stable_export(filename):
+-    """Write a canonical GLB without Blender export-order nondeterminism."""
+-    objects = sorted((obj for obj in bpy.context.scene.objects if obj.type == "MESH"), key=lambda obj: obj.name)
+-    material_names = sorted({obj.data.materials[0].name for obj in objects if obj.data.materials})
+-    material_index = {name: index for index, name in enumerate(material_names)}
+-    binary = bytearray()
+-    buffer_views = []
+-    accessors = []
+-
+-    def align():
+-        binary.extend(b"\0" * ((4 - len(binary) % 4) % 4))
+-
+-    def add_view(payload, target=None):
+-        align()
+-        offset = len(binary)
+-        binary.extend(payload)
+-        view = {"buffer": 0, "byteOffset": offset, "byteLength": len(payload)}
+-        if target is not None:
+-            view["target"] = target
+-        buffer_views.append(view)
+-        return len(buffer_views) - 1
+-
+-    def add_accessor(values, kind, component_type, target, minimum=None, maximum=None):
+-        if component_type == 5126:
+-            payload = struct.pack("<" + "f" * len(values), *values)
+-            width = {"VEC2": 2, "VEC3": 3}[kind]
+-        elif component_type == 5125:
+-            payload = struct.pack("<" + "I" * len(values), *values)
+-            width = 1
+-        else:
+-            raise ValueError(component_type)
+-        accessor = {
+-            "bufferView": add_view(payload, target),
+-            "componentType": component_type,
+-            "count": len(values) // width,
+-            "type": kind,
+-        }
+-        if minimum is not None:
+-            accessor["min"] = minimum
+-        if maximum is not None:
+-            accessor["max"] = maximum
+-        accessors.append(accessor)
+-        return len(accessors) - 1
+-
+-    meshes = []
+-    nodes = []
+-    for obj in objects:
+-        mesh = obj.data
+-        mesh.calc_loop_triangles()
+-        normal_matrix = obj.matrix_world.to_3x3().inverted().transposed()
+-        uv_layer = mesh.uv_layers.active.data if mesh.uv_layers.active else None
+-        positions = []
+-        normals = []
+-        texcoords = []
+-        indices = []
+-        for triangle in mesh.loop_triangles:
+-            for loop_index in triangle.loops:
+-                loop = mesh.loops[loop_index]
+-                world_position = obj.matrix_world @ mesh.vertices[loop.vertex_index].co
+-                world_normal = (normal_matrix @ loop.normal).normalized()
+-                # 1e-3 is far below a display pixel at the review camera and
+-                # absorbs Blender bevel/normal evaluator ulp drift completely.
+-                position = [round(float(value), 3) for value in world_position]
+-                normal = [round(float(value), 3) for value in world_normal]
+-                positions.extend(0.0 if value == 0 else value for value in position)
+-                normals.extend(0.0 if value == 0 else value for value in normal)
+-                if uv_layer is not None:
+-                    uv = uv_layer[loop_index].uv
+-                    u, v = round(float(uv.x), 3), round(float(uv.y), 3)
+-                else:
+-                    # Stable world-planar UVs ensure authored panel textures also
+-                    # cover lofted and prism surfaces with no exporter synthesis.
+-                    u = round((position[0] * 0.36) % 1.0, 3)
+-                    v = round((position[2] * 0.36 + position[1] * 0.12) % 1.0, 3)
+-                texcoords.extend((u, v))
+-                indices.append(len(indices))
+-        if not indices:
+-            continue
+-        triples = list(zip(positions[0::3], positions[1::3], positions[2::3]))
+-        minimum = [min(entry[axis] for entry in triples) for axis in range(3)]
+-        maximum = [max(entry[axis] for entry in triples) for axis in range(3)]
+-        attributes = {
+-            "POSITION": add_accessor(positions, "VEC3", 5126, 34962, minimum, maximum),
+-            "NORMAL": add_accessor(normals, "VEC3", 5126, 34962),
+-            "TEXCOORD_0": add_accessor(texcoords, "VEC2", 5126, 34962),
+-        }
+-        primitive = {
+-            "attributes": attributes,
+-            "indices": add_accessor(indices, "SCALAR", 5125, 34963, [0], [len(indices) - 1]),
+-            "mode": 4,
+-        }
+-        if obj.data.materials:
+-            primitive["material"] = material_index[obj.data.materials[0].name]
+-        meshes.append({"name": obj.name, "primitives": [primitive]})
+-        nodes.append({"name": obj.name, "mesh": len(meshes) - 1})
+-
+-    texture_for_material = {
+-        "runner micro-panel black ceramic": TEXTURES / "runner-panel.png",
+-        "sentinel deterministic threat chevrons": TEXTURES / "sentinel-chevron.png",
+-        "reactor deterministic deck plating": TEXTURES / "reactor-deck.png",
+-    }
+-    images = []
+-    textures = []
+-    image_index_by_path = {}
+-    gltf_materials = []
+-    uses_emissive_strength = False
+-    for name in material_names:
+-        value = bpy.data.materials[name]
+-        bsdf = value.node_tree.nodes.get("Principled BSDF")
+-        base = list(bsdf.inputs["Base Color"].default_value)
+-        pbr = {
+-            "baseColorFactor": [round(float(channel), 6) for channel in base],
+-            "metallicFactor": round(float(bsdf.inputs["Metallic"].default_value), 6),
+-            "roughnessFactor": round(float(bsdf.inputs["Roughness"].default_value), 6),
+-        }
+-        if name in texture_for_material:
+-            image_path = texture_for_material[name]
+-            key = image_path.as_posix()
+-            if key not in image_index_by_path:
+-                image_view = add_view(image_path.read_bytes())
+-                image_index_by_path[key] = len(images)
+-                images.append({"name": image_path.stem, "bufferView": image_view, "mimeType": "image/png"})
+-                textures.append({"source": len(images) - 1, "sampler": 0})
+-            pbr["baseColorTexture"] = {"index": image_index_by_path[key]}
+-        gltf_material = {"name": name, "doubleSided": True, "pbrMetallicRoughness": pbr}
+-        emission_key = "Emission Color" if "Emission Color" in bsdf.inputs else "Emission"
+-        emission = list(bsdf.inputs[emission_key].default_value)[:3]
+-        strength = float(bsdf.inputs["Emission Strength"].default_value)
+-        if strength > 0 and max(emission) > 0:
+-            gltf_material["emissiveFactor"] = [round(float(channel), 6) for channel in emission]
+-            if strength != 1.0:
+-                gltf_material["extensions"] = {"KHR_materials_emissive_strength": {"emissiveStrength": round(strength, 6)}}
+-                uses_emissive_strength = True
+-        gltf_materials.append(gltf_material)
+-
+-    align()
+-    document = {
+-        "asset": {"generator": "Aura3D Pulse canonical GLB writer 1", "version": "2.0"},
+-        "accessors": accessors,
+-        "bufferViews": buffer_views,
+-        "buffers": [{"byteLength": len(binary)}],
+-        "materials": gltf_materials,
+-        "meshes": meshes,
+-        "nodes": nodes,
+-        "samplers": [{"magFilter": 9728, "minFilter": 9984, "wrapS": 10497, "wrapT": 10497}],
+-        "scene": 0,
+-        "scenes": [{"name": "Pulse Tunnel V6 candidate", "nodes": list(range(len(nodes)))}],
+-    }
+-    if images:
+-        document["images"] = images
+-        document["textures"] = textures
+-    if uses_emissive_strength:
+-        document["extensionsUsed"] = ["KHR_materials_emissive_strength"]
+-    json_bytes = json.dumps(document, sort_keys=True, separators=(",", ":")).encode("utf8")
+-    json_bytes += b" " * ((4 - len(json_bytes) % 4) % 4)
+-    binary += b"\0" * ((4 - len(binary) % 4) % 4)
+-    total = 12 + 8 + len(json_bytes) + 8 + len(binary)
+-    payload = struct.pack("<4sII", b"glTF", 2, total)
+-    payload += struct.pack("<II", len(json_bytes), 0x4E4F534A) + json_bytes
+-    payload += struct.pack("<II", len(binary), 0x004E4942) + bytes(binary)
+-    (OUT / filename).write_bytes(payload)
+-
+-
+-def sphere(name, location, scale, mat, segments=48, rings=24):
+-    """Deterministic UV sphere; Blender's operator rotates ring phases across runs."""
+-    vertices = [(location[0], location[1] + scale[1], location[2])]
+-    for ring in range(1, rings):
+-        phi = math.pi * ring / rings
+-        for segment in range(segments):
+-            theta = math.tau * segment / segments
+-            vertices.append((
+-                location[0] + math.sin(phi) * math.cos(theta) * scale[0],
+-                location[1] + math.cos(phi) * scale[1],
+-                location[2] + math.sin(phi) * math.sin(theta) * scale[2],
+-            ))
+-    bottom = len(vertices)
+-    vertices.append((location[0], location[1] - scale[1], location[2]))
+-    faces = []
+-    for segment in range(segments):
+-        nxt = (segment + 1) % segments
+-        faces.append((0, 1 + nxt, 1 + segment))
+-    for ring in range(rings - 2):
+-        start = 1 + ring * segments
+-        following = start + segments
+-        for segment in range(segments):
+-            nxt = (segment + 1) % segments
+-            faces.append((start + segment, start + nxt, following + nxt, following + segment))
+-    last = 1 + (rings - 2) * segments
+-    for segment in range(segments):
+-        nxt = (segment + 1) % segments
+-        faces.append((last + segment, last + nxt, bottom))
+-    mesh = bpy.data.meshes.new(name + " deterministic mesh")
+-    mesh.from_pydata(vertices, [], faces)
+-    mesh.update()
+-    obj = bpy.data.objects.new(name, mesh)
+-    bpy.context.collection.objects.link(obj)
+-    assign(obj, mat, True)
+-    return obj
+-
+-
+-def curve_tube(name, points, radius, mat, cyclic=False):
+-    """Fixed segmented tube using the deterministic sphere joints above."""
+-    path = list(points)
+-    if cyclic:
+-        path.append(path[0])
+-    built = []
+-    for index, (start, end) in enumerate(zip(path, path[1:])):
+-        start_vector = Vector(start)
+-        end_vector = Vector(end)
+-        delta = end_vector - start_vector
+-        midpoint = (start_vector + end_vector) * 0.5
+-        rotation = delta.to_track_quat("Z", "Y").to_euler()
+-        built.append(cylinder(f"{name} segment {index}", midpoint, radius, delta.length, mat,
+-                              rotation, 24, 0.0))
+-    for index, point in enumerate(path[1:-1]):
+-        built.append(sphere(f"{name} joint {index}", point, (radius, radius, radius), mat, 24, 12))
+-    return built
+-
+-
+-def png(path, width, height, pixel):
+-    """Write a deterministic RGBA PNG using only fixed stdlib transforms."""
+-    signature = b"\x89PNG\r\n\x1a\n"
+-
+-    def chunk(kind, data):
+-        return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xFFFFFFFF)
+-
+-    rows = bytearray()
+-    for y in range(height):
+-        rows.append(0)
+-        for x in range(width):
+-            rows.extend(pixel(x, y))
+-    encoded = signature
+-    encoded += chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0))
+-    encoded += chunk(b"IDAT", zlib.compress(bytes(rows), 9))
+-    encoded += chunk(b"IEND", b"")
+-    path.write_bytes(encoded)
+-
+-
+-def make_textures():
+-    def runner_pixel(x, y):
+-        seam = x % 24 in (0, 1) or y % 24 in (0, 1)
+-        slash = (x + y * 2) % 31 in (0, 1)
+-        rivet = (x % 24, y % 24) in ((4, 4), (19, 4), (4, 19), (19, 19))
+-        if rivet:
+-            return (102, 236, 248, 255)
+-        if seam:
+-            return (8, 27, 35, 255)
+-        if slash:
+-            return (42, 72, 78, 255)
+-        grain = ((x * 17 + y * 29) % 9) - 4
+-        return (31 + grain, 51 + grain, 57 + grain, 255)
+-
+-    def threat_pixel(x, y):
+-        chevron = abs((x % 32) - 16) == (y % 16) or abs((x % 32) - 16) == 15 - (y % 16)
+-        seam = x % 32 in (0, 1) or y % 32 in (0, 1)
+-        if chevron:
+-            return (210, 46, 34, 255)
+-        if seam:
+-            return (31, 6, 9, 255)
+-        grain = ((x * 13 + y * 7) % 11) - 5
+-        return (65 + grain, 20 + grain // 2, 23 + grain // 2, 255)
+-
+-    def deck_pixel(x, y):
+-        lane = x % 32 in (0, 1, 30, 31)
+-        joint = y % 48 in (0, 1)
+-        stipple = (x * 11 + y * 19) % 53 == 0
+-        if lane:
+-            return (20, 101, 112, 255)
+-        if joint:
+-            return (8, 19, 27, 255)
+-        if stipple:
+-            return (75, 91, 96, 255)
+-        grain = ((x * 5 + y * 3) % 13) - 6
+-        return (32 + grain, 43 + grain, 50 + grain, 255)
+-
+-    png(TEXTURES / "runner-panel.png", 96, 96, runner_pixel)
+-    png(TEXTURES / "sentinel-chevron.png", 96, 96, threat_pixel)
+-    png(TEXTURES / "reactor-deck.png", 128, 128, deck_pixel)
+-
+-
+-def material(name, color, metallic, roughness, emission=None, strength=0.0, texture=None):
+-    value = bpy.data.materials.new(name)
+-    value.diffuse_color = (*color, 1.0)
+-    value.use_nodes = True
+-    tree = value.node_tree
+-    bsdf = tree.nodes.get("Principled BSDF")
+-    bsdf.inputs["Base Color"].default_value = (*color, 1.0)
+-    bsdf.inputs["Metallic"].default_value = metallic
+-    bsdf.inputs["Roughness"].default_value = roughness
+-    if emission:
+-        key = "Emission Color" if "Emission Color" in bsdf.inputs else "Emission"
+-        bsdf.inputs[key].default_value = (*emission, 1.0)
+-        bsdf.inputs["Emission Strength"].default_value = strength
+-    if texture:
+-        image = bpy.data.images.load(str(TEXTURES / texture), check_existing=False)
+-        image.name = name + " deterministic texture"
+-        image.colorspace_settings.name = "sRGB"
+-        node = tree.nodes.new("ShaderNodeTexImage")
+-        node.name = name + " fixed image"
+-        node.image = image
+-        node.interpolation = "Closest"
+-        tree.links.new(node.outputs["Color"], bsdf.inputs["Base Color"])
+-    return value
+-
+-
+-def build_runner():
+-    reset()
+-    shell = material("runner micro-panel black ceramic", (0.06, 0.10, 0.12), 0.62, 0.27, texture="runner-panel.png")
+-    graphite = material("runner graphite flight frame", (0.012, 0.021, 0.03), 0.86, 0.23)
+-    silver = material("runner cool worn edge", (0.34, 0.40, 0.41), 0.88, 0.24)
+-    cyan = material("runner cyan phase glass", (0.01, 0.17, 0.20), 0.28, 0.13, (0.0, 0.82, 1.0), 3.7)
+-    white = material("runner white cadence stencil", (0.68, 0.78, 0.78), 0.34, 0.38)
+-
+-    # A compact forked arrowhead rather than a generic car or pod.
+-    loft(
+-        "runner central phase lance",
+-        [
+-            (-1.95, 0.04, 0.04, 0.30), (-1.72, 0.20, 0.12, 0.30),
+-            (-1.18, 0.43, 0.25, 0.31), (-0.42, 0.52, 0.31, 0.31),
+-            (0.32, 0.47, 0.27, 0.28), (1.06, 0.30, 0.18, 0.23),
+-            (1.52, 0.14, 0.10, 0.20), (1.75, 0.04, 0.04, 0.18),
+-        ], 28, shell, subdivision=0,
+-    )
+-    loft(
+-        "runner luminous keel",
+-        [(-1.56, 0.08, 0.05, 0.09), (-0.82, 0.19, 0.10, 0.08),
+-         (0.18, 0.19, 0.10, 0.08), (1.28, 0.06, 0.04, 0.08)],
+-        20, cyan, subdivision=0,
+-    )
+-    sphere("runner faceted phase canopy", (0, 0.62, -0.42), (0.38, 0.22, 0.58), cyan, 32, 16)
+-    for side in (-1, 1):
+-        prism(
+-            f"runner forked manta foil {side}",
+-            [(side * 0.18, -1.20), (side * 1.64, -0.56), (side * 1.92, 0.58),
+-             (side * 1.34, 1.18), (side * 0.47, 0.48)],
+-            0.20, 0.38, shell, 0.055,
+-        )
+-        prism(
+-            f"runner exposed silver blade edge {side}",
+-            [(side * 1.50, -0.58), (side * 1.95, 0.57), (side * 1.80, 0.68),
+-             (side * 1.38, -0.48)],
+-            0.37, 0.43, silver, 0.018,
+-        )
+-        cylinder(f"runner annular phase drive {side}", (side * 0.88, 0.25, 0.93), 0.29, 0.72, graphite,
+-                 (math.pi / 2, 0, 0), 40, 0.035)
+-        torus(f"runner cyan drive corona {side}", (side * 0.88, 0.25, 1.30), 0.21, 0.047, cyan)
+-        cylinder(f"runner drive lens {side}", (side * 0.88, 0.25, 1.34), 0.145, 0.05, cyan,
+-                 (math.pi / 2, 0, 0), 40, 0.01)
+-        box(f"runner pulse hash plate {side}", (side * 0.62, 0.47, -0.12), (0.21, 0.025, 0.42), white,
+-            rotation=(0, side * -0.22, 0), edge=0.025)
+-        curve_tube(f"runner exposed phase bus {side}",
+-                   [(side * 0.36, 0.43, -0.74), (side * 0.76, 0.48, -0.18),
+-                    (side * 1.28, 0.44, 0.48), (side * 1.55, 0.39, 0.70)],
+-                   0.035, cyan)
+-    torus("runner unmistakable pulse crest", (0, 0.63, -0.92), 0.24, 0.045, white,
+-          rotation=(math.pi / 2, 0, 0), major_segments=40)
+-    stable_export("pulsePhaseMantaV6.candidate.glb")
+-
+-
+-def build_sentry():
+-    reset()
+-    shell = material("sentinel deterministic threat chevrons", (0.17, 0.03, 0.04), 0.68, 0.26, texture="sentinel-chevron.png")
+-    black = material("sentinel lightless nickel skeleton", (0.009, 0.012, 0.018), 0.91, 0.20)
+-    bone = material("sentinel scorched ivory blade", (0.50, 0.48, 0.39), 0.28, 0.42)
+-    ember = material("sentinel red pulse furnace", (0.24, 0.006, 0.009), 0.27, 0.12, (1.0, 0.025, 0.015), 4.5)
+-    cyan = material("sentinel stolen cyan charge", (0.0, 0.14, 0.18), 0.32, 0.14, (0.0, 0.72, 0.86), 2.8)
+-
+-    # Tall, suspended cathedral-spider silhouette with a single readable eye.
+-    loft("sentinel vertical armored reliquary",
+-         [(-0.95, 0.20, 0.13, 1.08), (-0.62, 0.55, 0.31, 1.16),
+-          (0.15, 0.72, 0.45, 1.34), (0.88, 0.60, 0.38, 1.48),
+-          (1.42, 0.34, 0.22, 1.62), (1.68, 0.10, 0.08, 1.72)],
+-         24, shell, subdivision=0)
+-    torus("sentinel enormous crown halo", (0, 1.73, 0.10), 1.10, 0.105, bone,
+-          rotation=(math.pi / 2, 0, 0), major_segments=56)
+-    torus("sentinel broken ember halo core", (0, 1.73, 0.04), 0.82, 0.045, ember,
+-          rotation=(math.pi / 2, 0, 0), major_segments=48)
+-    cylinder("sentinel singular furnace eye", (0, 1.47, -0.50), 0.40, 0.15, ember,
+-             (math.pi / 2, 0, 0), 48, 0.025)
+-    torus("sentinel eye aperture", (0, 1.47, -0.43), 0.49, 0.07, bone,
+-          rotation=(math.pi / 2, 0, 0), major_segments=48)
+-    for side in (-1, 1):
+-        # High scythes form a broad threat silhouette.
+-        curve_tube(f"sentinel upper scythe arm {side}",
+-                   [(side * 0.48, 1.82, 0.12), (side * 1.15, 2.26, -0.02),
+-                    (side * 1.88, 2.48, -0.35), (side * 2.34, 2.18, -0.76)],
+-                   0.12, black)
+-        prism(f"sentinel ivory execution blade {side}",
+-              [(side * 1.72, -0.46), (side * 2.58, -0.92), (side * 2.42, -0.23),
+-               (side * 1.95, 0.12)], 1.93, 2.22, bone, 0.055)
+-        cylinder(f"sentinel red lance mouth {side}", (side * 2.12, 2.08, -0.74), 0.13, 0.35, ember,
+-                 (math.pi / 2, 0, 0), 32, 0.015)
+-        # Four hooked grounding limbs make it read as a hunter, not a vehicle.
+-        for band, y_bias in ((0, 0.0), (1, 0.42)):
+-            curve_tube(f"sentinel hooked limb {side} {band}",
+-                       [(side * (0.38 + band * 0.10), 1.18 + y_bias, 0.12),
+-                        (side * (1.12 + band * 0.22), 0.88 + y_bias, 0.40),
+-                        (side * (1.58 + band * 0.18), 0.31 + y_bias, 0.05),
+-                        (side * (1.82 + band * 0.15), 0.12 + y_bias, -0.56)],
+-                       0.085, black)
+-        torus(f"sentinel stolen cadence shackle {side}", (side * 0.74, 1.08, -0.22), 0.18, 0.035, cyan)
+-    stable_export("pulseCathedralSentinelV6.candidate.glb")
+-
+-
+-def build_world():
+-    reset()
+-    deck = material("reactor deterministic deck plating", (0.08, 0.11, 0.13), 0.76, 0.32, texture="reactor-deck.png")
+-    black = material("reactor black containment void", (0.008, 0.013, 0.020), 0.87, 0.28)
+-    wall = material("reactor deep teal armor", (0.025, 0.10, 0.13), 0.72, 0.34)
+-    silver = material("reactor worn silver structure", (0.28, 0.33, 0.34), 0.88, 0.26)
+-    cyan = material("reactor cyan pulse bus", (0.0, 0.15, 0.18), 0.31, 0.14, (0.0, 0.68, 0.86), 3.2)
+-    ember = material("reactor terminal red breach", (0.20, 0.005, 0.009), 0.29, 0.12, (0.95, 0.018, 0.012), 4.0)
+-
+-    prism("reactor continuous textured exchange deck",
+-          [(-4.7, 2.7), (4.7, 2.7), (4.55, -11.3), (3.7, -12.0), (-3.7, -12.0), (-4.55, -11.3)],
+-          -0.38, 0.0, deck, 0.11)
+-    prism("reactor recessed central cadence trench",
+-          [(-1.72, 2.4), (1.72, 2.4), (2.05, -10.8), (1.56, -11.46), (-1.56, -11.46), (-2.05, -10.8)],
+-          0.01, 0.055, black, 0.018)
+-    for side in (-1, 1):
+-        box(f"reactor full height armor shell {side}", (side * 4.52, 1.48, -4.45), (0.25, 1.82, 7.1), wall, edge=0.10)
+-        prism(f"reactor rising blade shoulder {side}",
+-              [(side * 2.35, 1.9), (side * 4.40, 2.45), (side * 4.37, -10.8), (side * 3.25, -11.55)],
+-              0.02, 0.50, wall, 0.09)
+-        curve_tube(f"reactor continuous cyan artery {side}",
+-                   [(side * 3.78, 0.42, 2.0), (side * 3.62, 0.50, -1.0),
+-                    (side * 3.34, 0.65, -5.1), (side * 2.90, 0.87, -9.6)],
+-                   0.07, cyan)
+-
+-    # Three differently canted structural knots, not a repeated rib tunnel.
+-    knots = ((-0.6, 0.00), (-4.25, 0.34), (-7.90, -0.28))
+-    for index, (z, cant) in enumerate(knots):
+-        points = [(-4.15, 0.40, z), (-3.25, 2.05 + cant, z - 0.12),
+-                  (-1.45, 3.55 - cant, z + 0.08), (0.72, 3.88 + cant, z - 0.08),
+-                  (2.72, 2.78 - cant, z + 0.12), (4.15, 0.46, z)]
+-        curve_tube(f"reactor asymmetric torsion knot {index}", points, 0.13, silver)
+-        torus(f"reactor cadence knot seal {index}", (0.65, 3.52 + cant, z), 0.30, 0.055,
+-              cyan if index < 2 else ember, rotation=(0, math.pi / 2, 0), major_segments=36)
+-
+-    # Broad exchange glyphs make the projectile lane readable at screenshot scale.
+-    for index, z in enumerate((1.0, -1.15, -3.5, -6.05, -8.75)):
+-        box(f"reactor broad cadence bridge {index}", (0, 0.085, z), (1.25 - index * 0.06, 0.025, 0.14),
+-            cyan if index < 3 else ember, edge=0.025)
+-
+-    # Terminal breach: a giant iris and offset command buttress.
+-    box("reactor terminal armored backstop", (0, 1.72, -11.54), (4.22, 1.78, 0.28), black, edge=0.14)
+-    torus("reactor terminal breach outer crown", (0.95, 1.76, -11.20), 1.50, 0.18, silver,
+-          rotation=(math.pi / 2, 0, 0), major_segments=64)
+-    torus("reactor terminal breach red aperture", (0.95, 1.76, -11.14), 1.12, 0.075, ember,
+-          rotation=(math.pi / 2, 0, 0), major_segments=56)
+-    cylinder("reactor terminal lightless well", (0.95, 1.76, -11.22), 0.92, 0.12, black,
+-             (math.pi / 2, 0, 0), 64, 0.025)
+-    for index in range(7):
+-        angle = index * math.tau / 7 + 0.14
+-        x = 0.95 + math.cos(angle) * 1.30
+-        y = 1.76 + math.sin(angle) * 1.30
+-        box(f"reactor terminal iris tooth {index}", (x, y, -11.02), (0.34, 0.11, 0.08), silver,
+-            rotation=(0, angle * 0.07, angle), edge=0.035)
+-    stable_export("pulseBraidedReactorWorldV6.candidate.glb")
+-
+-
+-def audit():
+-    rows = []
+-    for path in sorted(OUT.rglob("*")):
+-        if path.is_file():
+-            rows.append((path.relative_to(OUT).as_posix(), path.stat().st_size, hashlib.sha256(path.read_bytes()).hexdigest()))
+-    for name, size, digest in rows:
+-        print(f"{digest}  {size:8d}  {name}")
+-
+-
+-if __name__ == "__main__":
+-    make_textures()
+-    build_runner()
+-    build_sentry()
+-    build_world()
+-    audit()
 diff --git a/apps/showcase-pulse-tunnel/scripts/register-audio.mjs b/apps/showcase-pulse-tunnel/scripts/register-audio.mjs
 deleted file mode 100644
 index 168da5473..000000000
@@ -769,55 +4208,8 @@ index 26165b125..000000000
 -
 -writeFileSync(join(appDir, "route-health.json"), JSON.stringify(routeHealth, null, 2) + "\n");
 -console.log(JSON.stringify({ machinePass: true, primitiveOccurrences, audioAssets: audioAssetIds.length, syncDecision: sync.decision, performancePass: performance.pass }));
-diff --git a/apps/showcase-pulse-tunnel/src/legacy/hud.ts b/apps/showcase-pulse-tunnel/src/legacy/hud.ts
-index 2c1927ad0..d5a5b96ef 100644
---- a/apps/showcase-pulse-tunnel/src/legacy/hud.ts
-+++ b/apps/showcase-pulse-tunnel/src/legacy/hud.ts
-@@ -1,13 +1,4 @@
--/**
-- * Pulse Tunnel HUD — shields, style meter, distance, section name, sync badge.
-- *
-- * DOM is UI only: every gameplay number here mirrors the same values published to
-- * window.__PULSE_TUNNEL_EVIDENCE__ each frame, and the sync badge (debug) reads the
-- * beat clock sample directly. Touch controls are real buttons that dispatch synthetic
-- * keyboard codes through bindGameTouchControls so input has exactly one path.
-- */
- import { bindGameTouchControls } from "@aura3d/engine";
--
- export interface PulseHudElements {
-   readonly shields: HTMLElement;
-   readonly combatState: HTMLElement;
-@@ -19,7 +10,6 @@ export interface PulseHudElements {
-   readonly score: HTMLElement;
-   readonly syncBadge: HTMLElement;
- }
--
- export interface PulseHudSnapshot {
-   readonly shields: number;
-   readonly multiplier: number;
-@@ -34,12 +24,10 @@ export interface PulseHudSnapshot {
-   readonly syncMode: string;
-   readonly driftMs: number;
- }
--
- export function isPulseDebugMode(): boolean {
-   if (typeof window === "undefined") return false;
-   return /(?:^|[/\?])debug=1(?:&|$)/.test(window.location.search) || window.location.search.includes("debug=1");
- }
--
- export function setupPulseHud(panel: HTMLElement | null): PulseHudElements | null {
-   if (!panel) return null;
-   panel.innerHTML = `
-@@ -111,7 +99,6 @@ export function setupPulseHud(panel: HTMLElement | null): PulseHudElements | nul
-     syncBadge: require("pulse-sync-badge")
-   };
- }
--
- export function updatePulseHud(elements: PulseHudElements | null, snapshot: PulseHudSnapshot): void {
-   if (!elements) return;
-   // T1.12: rebuild shield pips only when the count changes; guard every
 diff --git a/apps/showcase-pulse-tunnel/src/legacy/main.ts b/apps/showcase-pulse-tunnel/src/legacy/main.ts
-index daed99cfa..704dfa1d1 100644
+index daed99cfa..8be0afa79 100644
 --- a/apps/showcase-pulse-tunnel/src/legacy/main.ts
 +++ b/apps/showcase-pulse-tunnel/src/legacy/main.ts
 @@ -1,13 +1,3 @@
@@ -1414,7 +4806,7 @@ index daed99cfa..704dfa1d1 100644
  function applyCollision(_event: PulsePassEvent): void {
    evidence.stats.collisions += 1;
    evidence.shields = Math.max(0, evidence.shields - 1);
-@@ -1223,17 +914,11 @@ function applyCollision(_event: PulsePassEvent): void {
+@@ -1223,333 +914,13 @@ function applyCollision(_event: PulsePassEvent): void {
      pulseJuice.fire(shieldCue === "shieldHit" ? "shield-hit" : "shield-break", { position: [playerState.x, playerState.y + 0.42, PULSE_PLAYER_Z - 0.2] });
    }
  }
@@ -1429,30 +4821,326 @@ index daed99cfa..704dfa1d1 100644
 -
 -// ---- frame loop --------------------------------------------------------------
 -
- app.onFrame(() => {
-   evidence.frameCount += 1;
-   const nowMs = performance.now();
-@@ -1308,11 +993,8 @@ app.onFrame(() => {
-   renderWorld(dt);
-   publish(styleSnapshot);
- });
+-app.onFrame(() => {
+-  evidence.frameCount += 1;
+-  const nowMs = performance.now();
+-  const dtRaw = (nowMs - lastFrameTimeMs) / 1000;
+-  lastFrameTimeMs = nowMs;
+-  const dt = Math.min(0.05, Math.max(1 / 240, dtRaw || 1 / 60));
+-  input.update(dt);
+-  pulseTween.tick(dt);
+-  const startupInput = {
+-    left: input.pressed("left"),
+-    right: input.pressed("right"),
+-    jump: input.pressed("jump"),
+-    slide: input.pressed("slide")
+-  };
+-  if (runStartPending) {
+-    startupInputLatch.left ||= startupInput.left;
+-    startupInputLatch.right ||= startupInput.right;
+-    startupInputLatch.jump ||= startupInput.jump;
+-    startupInputLatch.slide ||= startupInput.slide;
+-  }
+-
+-  if (input.pressed("restart")) {
+-    restart();
+-    publish();
+-    return;
+-  }
+-  if (input.pressed("pause") && (runState === "running" || runState === "paused")) {
+-    if (pulseGame.session.paused) {
+-      pulseGame.session.resume();
+-      runState = "running";
+-      void tunnelAudio.resume();
+-    } else {
+-      pulseGame.session.pause("user");
+-      runState = "paused";
+-      void tunnelAudio.suspend();
+-    }
+-  }
+-  if (runState !== "running" || pulseGame.session.paused) {
+-    publish();
+-    return;
+-  }
+-
+-  beatClock.update();
+-  playerState = player.step(dt, nowMs, {
+-    left: startupInput.left || startupInputLatch.left,
+-    right: startupInput.right || startupInputLatch.right,
+-    jump: startupInput.jump || startupInputLatch.jump,
+-    slide: startupInput.slide || startupInputLatch.slide
+-  });
+-  startupInputLatch.left = false;
+-  startupInputLatch.right = false;
+-  startupInputLatch.jump = false;
+-  startupInputLatch.slide = false;
+-  for (const eventName of playerState.events) {
+-    if (eventName === "lane-left" || eventName === "lane-right") {
+-      void tunnelAudio.sfx("laneSwitch");
+-      pulseJuice.fire("lane-switch", { position: [playerState.x, playerState.y + 0.42, PULSE_PLAYER_Z - 0.2] });
+-    } else if (eventName === "jump") {
+-      void tunnelAudio.sfx("jump");
+-      pulseJuice.fire("jump", { position: [playerState.x, playerState.y + 0.42, PULSE_PLAYER_Z - 0.2] });
+-    } else if (eventName === "slide") {
+-      void tunnelAudio.sfx("slide");
+-      pulseJuice.fire("slide", { position: [playerState.x, playerState.y + 0.42, PULSE_PLAYER_Z - 0.2] });
+-    }
+-  }
+-  gateSystem.update(dt);
+-  const styleSnapshot = styleSystem.step(dt);
+-
+-  evidence.runSeconds = beatClock.time();
+-  if (evidence.runSeconds >= PULSE_RUN_SECONDS) endRun("finished");
+-
+-  renderWorld(dt);
+-  publish(styleSnapshot);
+-});
 -
  let lastFrameTimeMs = performance.now();
 -
  const slotFlashStates = new Map<number, boolean>();
 -
- function renderWorld(dt: number): void {
-   if (reviewCombatPulse) {
-     reviewCombatPulse.ageSeconds += dt;
-@@ -1549,7 +1231,6 @@ function renderWorld(dt: number): void {
-     if (hitFlashRemaining <= 0) hitFlash.setVisible(false);
-   }
- }
+-function renderWorld(dt: number): void {
+-  if (reviewCombatPulse) {
+-    reviewCombatPulse.ageSeconds += dt;
+-    if (evidence.latestCombatEvent) evidence.latestCombatEvent.ageSeconds = reviewCombatPulse.ageSeconds;
+-  }
+-  const laneBank = (playerState.targetLane - playerState.lane) * -0.18;
+-  // The evidence lens keeps the complete typed pod inside frame. Its full
+-  // silhouette is the player-side anchor for the terminal exchange; only its
+-  // route-local transform changes, never the player collider or controls.
+-  // Stand scale 0.72 (from 0.8): with the raised ride height the old size
+-  // filled the frame and the pods still grazed the paint. Slide narrows and
+-  // drops its center so the canopy (top ~0.36) ducks the 0.38 high-gate bar
+-  // instead of clipping 0.14 into it as before.
+-  const craftScale =  playerState.sliding ? [0.68, 0.36, 0.72] as const : [0.72, 0.72, 0.72] as const;
+-  const shipPlayerX = playerState.x;
+-  const shipPlayerZ = PULSE_PLAYER_Z;
+-  // The craft floats: its visual center sits +0.50 above the gameplay feet so
+-  // the turbine pods clear the deck with a visible hover gap (the old +0.34
+-  // put the pod undersides exactly on the track paint). Gameplay feet, jump
+-  // apex, and gate overlap math are untouched; only the presentation rides
+-  // higher, and the raised top (0.74) now matches the 0.72 stand collider.
+-  // Sliding drops the center to +0.24 so the squashed canopy ducks under the
+-  // high-gate bar instead of riding through it.
+-  const craftCenterY = playerState.sliding && ! 0.50;
+-  shipBody.setPosition(shipPlayerX, playerState.y + craftCenterY, shipPlayerZ)
+-    .setScale(craftScale)
+-    .setRotation(0,  0, laneBank);
+-  shipGlow.setPosition(shipPlayerX, playerState.y + craftCenterY + 0.10, shipPlayerZ + 0.34)
+-    .setScale( [0.34, 0.34, 0.34]);
+-  // The hover pool stays on the deck under the craft: it tracks lane x (and
+-  // the review island offset) but never lifts with jumps.
+-  shipHoverLight.setPosition(shipPlayerX,  -0.03, shipPlayerZ - 0.1);
+-  const blinking = playerState.invulnRemaining > 0 && Math.floor(performance.now() / 100) % 2 === 0;
+-  shipBody.setVisible(!blinking);
+-  shipGlow.setVisible(!blinking);
+-
+-  // Finale target + incoming rhythm pulses are real scene nodes, not DOM
+-  // decoration. They enter only after the chart reaches the finale section.
+-  // The typed terminal sentry owns the opposite end of the pod↔sentry exchange,
+-  // while the chart retains every collision/timing decision underneath.
+-  // Keep the finale presentation visible during a paused evidence capture as
+-  // well as during live play.  Pausing freezes the clock/input, not the
+-  // renderer-owned boss silhouette or its last projectile pose.
+-  const finaleActive = lastSection === "finale" && (runState === "running" || runState === "paused");
+-  finaleBeacon.setVisible(finaleActive);
+-  // The old primitive interceptor/core are deliberately suppressed for this
+-  // typed-sentry finale state. They have no collision or chart role.
+-  for (const vane of finaleShieldVanes) vane.setVisible(finaleActive);
+-  // The release-probed typed reactor world is the encounter enclosure in both
+-  // lenses.  V11 is authored as a continuous deck/arch/bay composition (no
+-  // billboard card), so keeping it visible in the exact review frame restores
+-  // material depth behind the player↔sentry exchange without changing any
+-  // chart, lane, collision, or projectile authority.
+-  // The typed reactor world is now safe to show in the review lens: the
+-  // occluding roof-rib/cabinet nodes are filtered at import above, while the
+-  // authored deck, rails, rear bay, and copper service structure provide the
+-  // material depth the prior custom-only frame lacked.  It remains
+-  // renderer-owned/non-colliding; gameplay timing and lanes are unchanged.
+-  finaleArenaShell.setVisible(finaleActive);
+-  finaleTerminalSentry.setVisible(finaleActive);
+-  for (const dressing of finaleArenaDressing) dressing.setVisible(finaleActive);
+-  // Continuous line bars from the previous composition are intentionally
+-  // retired. Discrete projectile packets now connect the typed craft and
+-  // sentry to the separate shield impact plane without becoming an opaque
+-  // central pile.
+-  // The review packets are the visible exchange. Hide the older gameplay pool
+-  // in this lens because its small cylinders can alias into flat cards at the
+-  // final screenshot resolution.
+-  for (const projectile of finaleProjectiles) projectile.setVisible(finaleActive);
+-  for (const rain of rainHandles) rain.setVisible(finaleActive);
+-  // In the review lens, the warm return packets originate at the typed
+-  // sentinel itself. The old torus halo flattened into a bright bar across its
+-  // torso, so it is intentionally retired instead of obscuring the target.
+-                      if (finaleActive) {
+-    // Review captures pause on a deterministic scheduler time. Using the
+-    // scheduler here keeps the final actor/impact pose stable across clean
+-    // contexts while live mode retains its continuous motion clock.
+-    const pulse =  performance.now() / 1000;
+-    // Keep the exchange close to the authored centerline, but bias it toward
+-    // the lane/height of the latest resolved chart gate.  This is the visual
+-    // counterpart of the event object published in evidence.latestCombatEvent;
+-    // it prevents a decorative, always-center impact from claiming causality.
+-    const eventLaneBias = 0;
+-    const eventResponse = reviewCombatPulse
+-      ? Math.max(0.16, Math.exp(-reviewCombatPulse.ageSeconds * 1.9))
+-      : 0.16;
+-    const eventKindOffset = 0;
+-    const impactX = 0.04 + eventLaneBias;
+-    const impactY = 0.96;
+-    const impactZ = -2.18 + eventKindOffset;
+-    const impactPulse = 1 + eventResponse * 0.28 + (Math.sin(pulse * 4.2) * 0.5 + 0.5) * 0.14;
+-                // Concentric wave rings and a bright cross expand from the exact same
+-    // impact coordinates.  The first wave is the warm return, the second is
+-    // the runner's cyan lance, and the outer amber wave marks the resolved
+-    // gate beat.  Their scale is keyed to the event response age, not a free
+-    // running cosmetic timer.
+-    finaleBeacon.setRotation(0, 0, pulse * 0.75);
+-    finaleTerminalSentry
+-      .setPosition( 0, ( 0.08) + Math.sin(pulse * 1.7) * 0.024,  -5.16)
+-      .setRotation(0, Math.PI + 0.18 + Math.sin(pulse * 1.1) * 0.025, 0)
+-      .setScale( [0.86, 0.86, 0.86]);
+-
+-    const arenaPulse = 1 + (Math.sin(pulse * 3.2) * 0.5 + 0.5) * 0.08;
+-            // Keep the live pulse cadence in the typed sentry and shield architecture;
+-    // no abstract boss ring competes with the sentry silhouette.
+-    finaleProjectiles.forEach((projectile, index) => {
+-
+-        // The default playable finale uses the same authored cause/effect
+-        // relationship as the review lens: cyan lances leave the runner,
+-        // converge on the active gate impact plane, and rose cutters return
+-        // from the typed sentry.  The old free-running lane sweep looked like
+-        // unrelated decoration and made it impossible to tell who fired.
+-        const outgoing = index < 10;
+-        const localIndex = outgoing ? index : index - 10;
+-        const column = localIndex % 5 - 2;
+-        const row = Math.floor(localIndex / 5);
+-        const latestEvent = reviewCombatPulse?.event ?? gateEventLog[gateEventLog.length - 1];
+-        const latestEntry = latestEvent ? chart.find((entry) => entry.id === latestEvent.gateId) : undefined;
+-        const latestGeometry = latestEntry ? pulseGateGeometry(latestEntry, beatClock.time()) : undefined;
+-        const impactX = latestGeometry?.centerX ?? 0;
+-        const impactY = latestGeometry
+-          ? Math.max(0.48, Math.min(1.18, (latestGeometry.bottomY + latestGeometry.topY) * 0.5 + 0.12))
+-          : 0.78;
+-        const impactZ = -2.18;
+-        const sourceX = outgoing ? playerState.x : 0;
+-        const sourceY = outgoing ? playerState.y + 0.44 : 1.12;
+-        const sourceZ = outgoing ? PULSE_PLAYER_Z - 0.18 : -4.78;
+-        const targetX = outgoing ? impactX : playerState.x;
+-        const targetY = outgoing ? impactY : playerState.y + 0.44;
+-        const targetZ = outgoing ? impactZ : PULSE_PLAYER_Z - 0.18;
+-        // Stagger the streams by beat phase so each packet remains spatially
+-        // separated while preserving one shared, deterministic rhythm source.
+-        const phase = (pulse * 0.52 + localIndex * 0.11 + (outgoing ? 0.04 : 0.26)) % 1;
+-        const progress = 0.16 + phase * 0.66 + row * 0.035;
+-        const arc = Math.sin(progress * Math.PI) * (outgoing ? 0.14 : -0.11) + column * 0.028;
+-        const x = sourceX + (targetX - sourceX) * progress + arc;
+-        const y = sourceY + (targetY - sourceY) * progress + Math.sin(progress * Math.PI) * (0.08 + row * 0.035);
+-        const z = sourceZ + (targetZ - sourceZ) * progress;
+-        projectile.setVisible(true).setPosition(x, y, z)
+-          .setScale([0.082 + (localIndex % 2) * 0.012, 0.42, 0.082 + (localIndex % 2) * 0.012])
+-          .setRotation(Math.PI / 2, (targetX - sourceX) * 0.16, outgoing ? 0.05 : -0.05);
+-
+-    });
+-
+-
+-    rainHandles.forEach((rain, index) => {
+-      const column = index % 10;
+-      const depth = Math.floor(index / 10);
+-      const x = -3.05 + column * 0.68 + (depth % 2) * 0.12;
+-      const baseY = 0.72 + (index % 5) * 0.42;
+-      const fall = reducedMotion ? 0 : (evidence.beatCount * 0.13 + pulse * 1.8 + index * 0.17) % 1.25;
+-      // The review lens freezes motion for deterministic capture, but the
+-      // atmospheric strokes still need to be visible.  Previously we updated
+-      // their positions without re-enabling visibility, leaving the Furi-style
+-      // rain layer absent from the exact comparison frame.
+-      rain.setPosition(x, baseY - fall, -4.2 - depth * 8.1 - (index % 3) * 0.55)
+-        .setVisible(true);
+-    });
+-  } else {
+-    for (const projectile of finaleProjectiles) projectile.setVisible(false);
+-    for (const rain of rainHandles) rain.setVisible(false);
+-                                                                      }
+-
+-  // A collision can enter summary during gateSystem.update(). Do not let the
+-  // later render pass re-show the just-resolved gate or freeze transient flash
+-  // geometry into the result frame.
+-  if (runState === "summary") {
+-    hitFlash.setVisible(false);
+-    fogPulse.setVisible(false);
+-    for (const parts of gateSlots) {
+-      parts.top.setVisible(false);
+-      parts.bottom.setVisible(false);
+-      parts.core.setVisible(false);
+-    }
+-    for (const spark of sparks) spark.handle.setVisible(false);
+-    return;
+-  }
+-
+-  const gates = gateSystem.activeGates();
+-  const schedulerTime = beatClock.time();
+-  for (let slot = 0; slot < GATE_SLOTS; slot += 1) {
+-    const parts = gateSlots[slot];
+-    // The review lens is a frozen finale encounter composition. Newly spawned
+-    // chart gates after a deterministic seek are still gameplay-truthful, but
+-    // their broad telegraph slabs obscure the actor exchange in the exact art
+-    // frame. Keep those obstacles visible in the live route and HUD evidence;
+-    // suppress only their renderer geometry for this presentation lens.
+-
+-    const gate = gates[slot];
+-    if (!gate) {
+-      parts.top.setVisible(false);
+-      parts.bottom.setVisible(false);
+-      parts.core.setVisible(false);
+-      continue;
+-    }
+-    const geometry = pulseGateGeometry(gate.entry, schedulerTime);
+-    const secondsToArrival = (PULSE_PLAYER_Z - gate.z) / PULSE_GATE_SPEED;
+-    const flashing = !gate.resolved && secondsToArrival >= 0 && secondsToArrival <= PULSE_PREFLASH_SECONDS;
+-    if ((slotFlashStates.get(slot) ?? false) !== flashing) {
+-      const spec = gateMaterialSpec(gate.entry.kind, flashing);
+-      parts.top.setMaterial(spec);
+-      parts.bottom.setMaterial(spec);
+-      parts.core.setMaterial(spec);
+-      slotFlashStates.set(slot, flashing);
+-    }
+-    placePart(parts.bottom, gate.entry.kind === "low", 2.3, 0.34, 0, 0.17, gate.z);
+-    placePart(parts.top, gate.entry.kind === "high", 2.3, 0.67, 0, 0.715, gate.z);
+-    placePart(
+-      parts.core,
+-      gate.entry.kind === "wall" || gate.entry.kind === "pylon",
+-      gate.entry.kind === "pylon" ? 0.36 : 0.72,
+-      1.05,
+-      geometry.centerX,
+-      0.525,
+-      gate.z
+-    );
+-  }
+-
+-  for (const spark of sparks) {
+-    if (spark.life <= 0) continue;
+-    spark.life -= dt;
+-    spark.y += dt * 0.6;
+-    const scale = Math.max(0.01, spark.life * 0.09);
+-    spark.handle.setPosition(spark.x, spark.y, PULSE_PLAYER_Z + 0.25).setScale([scale, scale, scale]);
+-    if (spark.life <= 0) spark.handle.setVisible(false);
+-  }
+-
+-  if (fogPulseRemaining > 0) {
+-    fogPulseRemaining -= dt;
+-    if (fogPulseRemaining <= 0) fogPulse.setVisible(false);
+-  }
+-  if (hitFlashRemaining > 0) {
+-    hitFlashRemaining -= dt;
+-    if (hitFlashRemaining <= 0) hitFlash.setVisible(false);
+-  }
+-}
 -
  function placePart(
    handle: RuntimeNodeHandleLike,
    visible: boolean,
-@@ -1563,7 +1244,6 @@ function placePart(
+@@ -1563,7 +934,6 @@ function placePart(
    if (!visible) return;
    handle.setPosition(x, y, z).setScale([scaleX, scaleY, 0.18]);
  }
@@ -1460,7 +5148,7 @@ index daed99cfa..704dfa1d1 100644
  function publish(styleSnapshot?: ReturnType<typeof styleSystem.step>): void {
    const snapshot = styleSnapshot ?? styleSystem.snapshot();
    const sample = beatClock.sample();
-@@ -1648,14 +1328,11 @@ function publish(styleSnapshot?: ReturnType<typeof styleSystem.step>): void {
+@@ -1648,14 +1018,11 @@ function publish(styleSnapshot?: ReturnType<typeof styleSystem.step>): void {
      driftMs: sample.driftMs
    });
  }
@@ -1475,7 +5163,7 @@ index daed99cfa..704dfa1d1 100644
  function hudMessage(): string {
    switch (runState) {
      case "ready":
-@@ -1670,12 +1347,6 @@ function hudMessage(): string {
+@@ -1670,12 +1037,6 @@ function hudMessage(): string {
        return "";
    }
  }
@@ -1488,317 +5176,44 @@ index daed99cfa..704dfa1d1 100644
  function combatHudState(): string {
    if (runState === "summary") {
      return evidence.finishedReason === "shields-exhausted"
-@@ -1686,6 +1357,5 @@ function combatHudState(): string {
+@@ -1686,6 +1047,5 @@ function combatHudState(): string {
    if (lastSection === "finale") return "EXCHANGE // LIVE FIRE";
    return "APPROACH // NEXT GATE";
  }
 -
  applySection("intro", false);
  publish();
-diff --git a/apps/showcase-pulse-tunnel/src/legacy/styles.css b/apps/showcase-pulse-tunnel/src/legacy/styles.css
-index e44675dda..b618d3b12 100644
---- a/apps/showcase-pulse-tunnel/src/legacy/styles.css
-+++ b/apps/showcase-pulse-tunnel/src/legacy/styles.css
-@@ -1,5 +1,3 @@
--/* Pulse Tunnel HUD chrome — UI only; all gameplay visuals render in-scene. */
+diff --git a/apps/showcase-pulse-tunnel/src/main.ts b/apps/showcase-pulse-tunnel/src/main.ts
+index 37b75ebeb..edf667cef 100644
+--- a/apps/showcase-pulse-tunnel/src/main.ts
++++ b/apps/showcase-pulse-tunnel/src/main.ts
+@@ -1,14 +1,6 @@
+-// apps/showcase-pulse-tunnel/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
+-// Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-pulse-tunnel`
+-// (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
+-// acceptance (§10 step 5).
+ import { resolveQrFlags } from "@aura3d/engine/contracts";
 -
- html,
- body {
-   margin: 0;
-@@ -7,12 +5,10 @@ body {
-   background: #05010f;
-   color: #d7f5ff;
+ const ROUTE_FLAG = "A3D_QR_ROUTE_PULSE_TUNNEL" as const;
+ const DEFAULT_ON = false;
+-
+-/** Accepts `?a3d-qr=…,route-pulse-tunnel` and `?a3d-qr=…,A3D_QR_ROUTE_PULSE_TUNNEL`.
+- *  Returns undefined when the flag is absent (CCR-14-2 replaces this helper). */
+ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const raw = new URL(loc.href).searchParams.get("a3d-qr");
+   if (raw === null) return undefined;
+@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+     ? true
+     : undefined;
  }
 -
- body {
-   min-height: 100vh;
-   overflow-x: hidden;
- }
+ const flags = resolveQrFlags({
+   url: location.href,
+   env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR },
+   options: { [ROUTE_FLAG]: routeFlagFromUrl(location, ROUTE_FLAG) ?? DEFAULT_ON }
+ });
 -
- .pulse-shell {
-   display: flex;
-   flex-direction: column;
-@@ -25,7 +21,6 @@ body {
-   color: #d7f5ff;
-   position: relative;
- }
--
- .pulse-viewport {
-   border-radius: 14px;
-   overflow: hidden;
-@@ -33,19 +28,16 @@ body {
-   box-shadow: 0 0 32px rgba(56, 189, 248, 0.18);
-   background: #05010f;
- }
--
- .pulse-stage {
-   width: 100%;
-   aspect-ratio: 16 / 9;
-   min-height: min(68vh, 720px);
- }
--
- .pulse-stage canvas {
-   display: block;
-   width: 100%;
-   height: 100%;
- }
--
- .pulse-panel {
-   display: flex;
-   flex-direction: column;
-@@ -60,12 +52,10 @@ body {
-   z-index: 5;
-   pointer-events: none;
- }
--
- .pulse-panel .pulse-touch-pad,
- .pulse-panel .pulse-touch-wide {
-   pointer-events: auto;
- }
--
- .pulse-hud {
-   display: grid;
-   grid-template-columns: repeat(3, minmax(140px, 1fr));
-@@ -75,11 +65,9 @@ body {
-   background: linear-gradient(120deg, rgba(9, 20, 40, 0.92), rgba(28, 8, 46, 0.88));
-   border: 1px solid rgba(148, 163, 255, 0.3);
- }
--
- .pulse-mission {
-   display: none;
- }
--
- .pulse-combat-state {
-   display: block;
-   margin-top: 2px;
-@@ -89,30 +77,25 @@ body {
-   font-weight: 700;
-   letter-spacing: 0.16em;
- }
--
- .pulse-row {
-   display: flex;
-   align-items: center;
-   gap: 8px;
-   font-size: 15px;
- }
--
- .pulse-label {
-   text-transform: uppercase;
-   letter-spacing: 0.14em;
-   font-size: 11px;
-   color: #7dd3fc;
- }
--
- .pulse-value {
-   font-variant-numeric: tabular-nums;
-   font-weight: 600;
- }
--
- .pulse-section-name {
-   color: #f0abfc;
- }
--
- .pulse-meter {
-   flex: 1;
-   height: 8px;
-@@ -120,7 +103,6 @@ body {
-   background: rgba(125, 211, 252, 0.16);
-   overflow: hidden;
- }
--
- .pulse-meter-fill {
-   display: block;
-   height: 100%;
-@@ -129,29 +111,24 @@ body {
-   background: linear-gradient(90deg, #22d3ee, #e879f9, #fbbf24);
-   transition: width 120ms linear;
- }
--
- .pulse-shields {
-   display: flex;
-   gap: 6px;
- }
--
- .pulse-pip {
-   width: 18px;
-   height: 18px;
-   border-radius: 50%;
-   border: 1px solid rgba(125, 211, 252, 0.6);
- }
--
- .pulse-pip-live {
-   background: radial-gradient(circle at 30% 30%, #a5f3fc, #0891b2);
-   box-shadow: 0 0 10px rgba(34, 211, 238, 0.8);
- }
--
- .pulse-pip-lost {
-   background: rgba(30, 41, 59, 0.9);
-   box-shadow: none;
- }
--
- .pulse-state {
-   grid-column: 1 / -1;
-   font-size: 20px;
-@@ -163,17 +140,14 @@ body {
-   color: #fef3c7;
-   background: rgba(120, 53, 15, 0.4);
- }
--
- .pulse-state[data-state="ready"] {
-   color: #a5f3fc;
-   background: rgba(8, 51, 68, 0.55);
- }
--
- .pulse-state[data-state="summary"] {
-   color: #fecdd3;
-   background: rgba(136, 19, 55, 0.45);
- }
--
- .pulse-sync-badge {
-   grid-column: 1 / -1;
-   justify-self: end;
-@@ -184,23 +158,19 @@ body {
-   border: 1px dashed rgba(125, 211, 252, 0.6);
-   color: #67e8f9;
- }
--
- .pulse-sync-badge[data-mode="pattern"] {
-   color: #fbbf24;
-   border-color: rgba(251, 191, 36, 0.7);
- }
--
- .pulse-touch-pad {
-   display: flex;
-   justify-content: space-between;
-   gap: 12px;
- }
--
- .pulse-touch-column {
-   display: flex;
-   gap: 10px;
- }
--
- .pulse-touch {
-   min-width: 76px;
-   min-height: 52px;
-@@ -212,116 +182,14 @@ body {
-   font-weight: 600;
-   cursor: pointer;
- }
--
- .pulse-touch:active {
-   background: rgba(14, 116, 144, 0.85);
- }
--
- .pulse-touch-wide {
-   justify-self: start;
-   min-height: 34px;
-   min-width: 132px;
- }
--
--/* The capture route is used only by the visual evidence producer. Keep the
-- * HUD mounted (so keyboard/evidence contracts still work), but let the scene
-- * occupy the complete review frame without chrome or a paused-state banner. */
--body[data-capture="review"] .pulse-shell {
--  width: 100vw;
--  height: 100vh;
--  box-sizing: border-box;
--  padding: 0;
--  gap: 0;
--}
--
--body[data-capture="review"] .pulse-viewport {
--  width: 100%;
--  height: 100%;
--  border: 0;
--  border-radius: 0;
--  box-shadow: none;
--}
--
--body[data-capture="review"] .pulse-stage {
--  width: 100%;
--  height: 100%;
--  min-height: 0;
--  aspect-ratio: auto;
--}
--
--body[data-capture="review"] .pulse-panel {
--  position: fixed;
--  inset: 18px 18px auto 18px;
--  z-index: 5;
--  display: block;
--  pointer-events: none;
--}
--
--body[data-capture="review"] .pulse-hud {
--  display: grid;
--  grid-template-columns: 1.7fr repeat(5, auto);
--  align-items: center;
--  gap: 18px;
--  width: min(1050px, calc(100vw - 36px));
--  box-sizing: border-box;
--  margin: 0 auto;
--  padding: 10px 16px;
--  border-radius: 8px;
--  border: 1px solid rgba(125, 211, 252, 0.34);
--  background: linear-gradient(90deg, rgba(4, 11, 24, 0.92), rgba(12, 22, 42, 0.82));
--  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.38);
--}
--
--body[data-capture="review"] .pulse-mission {
--  display: flex;
--  flex-direction: column;
--  gap: 2px;
--  min-width: 210px;
--  color: #f8fafc;
--  font-size: 13px;
--  letter-spacing: 0.12em;
--}
--
--body[data-capture="review"] .pulse-mission-kicker {
--  color: #fb7185;
--  font-size: 9px;
--  font-weight: 800;
--  letter-spacing: 0.24em;
--}
--
--body[data-capture="review"] .pulse-combat-state {
--  color: #fbbf24;
--  font-size: 8px;
--  letter-spacing: 0.14em;
--}
--
--body[data-capture="review"] .pulse-row {
--  flex-direction: column;
--  align-items: flex-start;
--  gap: 1px;
--  min-width: 76px;
--  font-size: 13px;
--}
--
--body[data-capture="review"] .pulse-shields {
--  flex-direction: row;
--  align-items: center;
--  min-width: 74px;
--}
--
--body[data-capture="review"] .pulse-pip {
--  width: 13px;
--  height: 13px;
--}
--
--body[data-capture="review"] .pulse-meter,
--body[data-capture="review"] .pulse-state,
--body[data-capture="review"] .pulse-touch-wide,
--body[data-capture="review"] .pulse-sync-badge,
--body[data-capture="review"] .pulse-touch-pad {
--  display: none;
--}
--
- @media (max-width: 640px) {
-   html,
-   body {
+ void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
 diff --git a/apps/showcase-pulse-tunnel/src/v2/evidence/index.ts b/apps/showcase-pulse-tunnel/src/v2/evidence/index.ts
 deleted file mode 100644
 index b1bb603d2..000000000

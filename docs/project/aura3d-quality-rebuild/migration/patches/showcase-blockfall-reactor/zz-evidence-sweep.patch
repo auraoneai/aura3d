@@ -1,6 +1,6 @@
-From b48718e1a0e5e7ac60a202797e5bb65006012bd8 Mon Sep 17 00:00:00 2001
+From f59cf71cb499ae090e06ece80ca9eb98db5d0fdc Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
-Date: Fri, 9 Oct 2026 13:40:33 +0000
+Date: Fri, 9 Oct 2026 13:45:47 +0000
 Subject: [PATCH] [qr-prd09] showcase-blockfall-reactor: delete evidence
  files+blocks (T5.8)
 
@@ -10,10 +10,10 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../scripts/build-sfx.mjs                     | 558 ------------------
  .../scripts/write-expert-fixture.ts           |  80 ---
  .../scripts/write-route-health.mjs            | 193 ------
- .../src/legacy/main.ts                        | 189 ------
- .../src/legacy/styles.css                     | 244 --------
+ .../src/legacy/main.ts                        | 550 -----------------
+ apps/showcase-blockfall-reactor/src/main.ts   |  10 -
  .../src/v2/evidence/index.ts                  |  73 ---
- 7 files changed, 1517 deletions(-)
+ 7 files changed, 1644 deletions(-)
  delete mode 100644 apps/showcase-blockfall-reactor/scripts/build-review-art.mjs
  delete mode 100644 apps/showcase-blockfall-reactor/scripts/build-sfx.mjs
  delete mode 100644 apps/showcase-blockfall-reactor/scripts/write-expert-fixture.ts
@@ -1057,7 +1057,7 @@ index c16b095f1..000000000
 -  });
 -}
 diff --git a/apps/showcase-blockfall-reactor/src/legacy/main.ts b/apps/showcase-blockfall-reactor/src/legacy/main.ts
-index 676dfe9f1..4023273c9 100644
+index 676dfe9f1..2ae2a5b2a 100644
 --- a/apps/showcase-blockfall-reactor/src/legacy/main.ts
 +++ b/apps/showcase-blockfall-reactor/src/legacy/main.ts
 @@ -23,8 +23,6 @@ import {
@@ -1130,22 +1130,22 @@ index 676dfe9f1..4023273c9 100644
  const inputOptions = {
    actions: {
      left: ["ArrowLeft", "KeyA"],
-@@ -288,14 +264,12 @@ const keyboardActionByCode = new Map<string, BlockfallInputName>(
+@@ -288,14 +264,6 @@ const keyboardActionByCode = new Map<string, BlockfallInputName>(
    (Object.entries(inputOptions.actions) as Array<[BlockfallInputName, readonly string[]]>)
      .flatMap(([action, codes]) => codes.map((code) => [code, action] as const))
  );
 -
- const hudBindings = game.hud.bindings([
-   game.hud.meter({ id: "reactor-meter-binding", actorId: "reactor", label: "Reactor charge", valuePath: "reactor.charge", maxPath: "reactor.max", a11yLabel: "reactor charge" }),
-   game.hud.combo({ id: "combo-binding", actorId: "player", label: "Combo", valuePath: "combo", a11yLabel: "combo count" }),
-   game.hud.round({ id: "level-binding", label: "Level", valuePath: "level", a11yLabel: "level" }),
-   game.hud.debugToggle({ id: "evidence-toggle-binding", label: "Evidence", action: "debug", statePath: "evidence.visible", a11yLabel: "evidence status" })
- ]);
+-const hudBindings = game.hud.bindings([
+-  game.hud.meter({ id: "reactor-meter-binding", actorId: "reactor", label: "Reactor charge", valuePath: "reactor.charge", maxPath: "reactor.max", a11yLabel: "reactor charge" }),
+-  game.hud.combo({ id: "combo-binding", actorId: "player", label: "Combo", valuePath: "combo", a11yLabel: "combo count" }),
+-  game.hud.round({ id: "level-binding", label: "Level", valuePath: "level", a11yLabel: "level" }),
+-  game.hud.debugToggle({ id: "evidence-toggle-binding", label: "Evidence", action: "debug", statePath: "evidence.visible", a11yLabel: "evidence status" })
+-]);
 -
  const accessibilitySources = [
    game.accessibility.label({
      targetId: "hud",
-@@ -327,7 +301,6 @@ const accessibilitySources = [
+@@ -327,7 +295,6 @@ const accessibilitySources = [
      menuId: "hud-actions"
    })
  ];
@@ -1153,7 +1153,7 @@ index 676dfe9f1..4023273c9 100644
  const touchLayout = game.touchControls({
    width: window.innerWidth,
    height: window.innerHeight,
-@@ -341,19 +314,10 @@ const touchLayout = game.touchControls({
+@@ -341,96 +308,13 @@ const touchLayout = game.touchControls({
      { id: "touch-hard", action: "hardDrop", label: "Drop", binding: "TouchHardDrop", side: "right" }
    ]
  });
@@ -1173,10 +1173,66 @@ index 676dfe9f1..4023273c9 100644
  const reactorAudio = createBlockfallReactorAudio(reducedMotion);
  void reactorAudio.unlock().catch(() => undefined);
  window.addEventListener("pointerdown", () => { void reactorAudio.unlock().catch(() => undefined); }, { passive: true });
-@@ -417,20 +381,6 @@ const sourceEvidence = {
-   },
-   lineClearProof
- };
+-const sourceEvidence = {
+-  kind: "aura3d-showcase-blockfall-reactor-source" as const,
+-  route: window.location.pathname,
+-  appId: "showcase-blockfall-reactor",
+-  physics: "game.collisionWorld:Rapier(shared showcase fidelity proof: angular contact response and CCD non-tunneling); board rules are deterministic game.fallingBlocks state, not a rigid-body simulation",
+-  claimBoundary: "Aura3D falling-block development showcase with a catalog-sourced typed arcade cabinet, public game.fallingBlocks gameplay state, route-selected Rapier fidelity proof, and retained gameplay proof.",
+-  publicEngineApi: ["createGameApp", "scene", "model", "primitives", "material", "lights", "effects", "camera", "game.input", "game.collisionWorld", "game.runtimeNode", "game.hud", "game.accessibility", "ui"],
+-  prohibitedApiAvoided: {
+-    importsThree: false,
+-    rawGlbUrls: false,
+-    stringAssetIds: false
+-  },
+-  assets: {
+-    proceduralOnly: false,
+-    typedAssetCount: 4,
+-    typedRefs: [
+-      "assets.blockfallReactorArenaBackdrop",
+-      "assets.blockfallReactorMechanicHero",
+-      "assets.blockfallReactorPlasmaRival",
+-      "assets.showcaseBlockfallCabinet"
+-    ],
+-    primary: "blockfallReactorArenaBackdrop",
+-    attribution: "Project-original CC0 Blockfall Reactor championship arena, mechanic, and plasma rival, plus the catalog-provenanced Arcade Machine, Expressive Robot, and Oobi supporting assets; all are typed assets and the release composition keeps gameplay state renderer-owned."
+-  },
+-  rules: {
+-    deterministicModule: "game.fallingBlocks",
+-    board: `${BOARD_WIDTH}x${BOARD_HEIGHT}`,
+-    visibleRows: VISIBLE_HEIGHT,
+-    hiddenRows: HIDDEN_ROWS,
+-    pieces: PIECE_KINDS,
+-    features: ["seven-bag queue", "rotation with wall kicks", "soft drop", "hard drop", "hold", "line clears", "combo", "back-to-back", "reactor meter derived from public kit events", "speed escalation"]
+-  },
+-  controls: {
+-    keyboard: {
+-      move: ["ArrowLeft", "ArrowRight", "A", "D"],
+-      rotateClockwise: ["ArrowUp", "W", "X", "E"],
+-      rotateCounterClockwise: ["Z", "Q"],
+-      softDrop: ["ArrowDown", "S"],
+-      hardDrop: ["Space"],
+-      hold: ["C", "Shift"],
+-      pause: ["Escape", "P"],
+-      reset: ["R"]
+-    },
+-    touch: touchLayout
+-  },
+-  replay: replayEvidence,
+-  /**
+-   * Deterministic 60-second replay proof. Every mechanic flag is derived from a
+-   * simulated run of the generated sequence, so the route cannot claim a
+-   * mechanic the replay did not actually produce.
+-   */
+-  sixtySecondReplayProof: sixtySecondReplayProof,
+-  kitContractProof: fallingBlocksKitContractProof,
+-  startState: {
+-    source: "clean playable board",
+-    lockedCells: 0,
+-    replayStartsOnlyFromButton: true
+-  },
+-  lineClearProof
+-};
 -
 -// Board-dominant framing: the live playfield is the visual subject and the typed
 -// cabinet frames it. The camera sits close enough that the cabinet screen fills
@@ -1194,7 +1250,7 @@ index 676dfe9f1..4023273c9 100644
  const lockedStackPools: readonly InstancedBoardPool[] = createLockedStackPools(LOCKED_POOL_CAPACITY_PER_KIND);
  const activePiecePool: InstancedBoardPool = createActivePiecePool();
  const clearFxNodeGroup = createClearFxNodes();
-@@ -458,40 +408,19 @@ const quadCelebrationNodeGroup = [
+@@ -458,40 +342,19 @@ const quadCelebrationNodeGroup = [
        .runtime(game.runtimeNode(`blockfall-quad-crown-${index}`, { tags: ["blockfall", "quad", "renderer-owned", "mascot-reaction"] }))
    )
  ];
@@ -1235,7 +1291,7 @@ index 676dfe9f1..4023273c9 100644
  const bloomEffect = effects.neonBloom({
    name: "blockfall reactor emissive bloom",
    intensity: reducedFlash ? 0.12 : 0.26,
-@@ -502,8 +431,6 @@ const bloomEffect = effects.neonBloom({
+@@ -502,8 +365,6 @@ const bloomEffect = effects.neonBloom({
    softKnee: 0.5,
    shoulder: 0.6
  });
@@ -1244,7 +1300,7 @@ index 676dfe9f1..4023273c9 100644
  const bloomEffectNode = bloomEffect.toJSON();
  const reactorScene = scene()
    .background( "#24103a")
-@@ -644,7 +571,6 @@ const reactorScene = scene()
+@@ -644,7 +505,6 @@ const reactorScene = scene()
      lights.point({ name: "rival corner practical", color: "#ff72c9", intensity:  0.68 }).position(3.35, 1.35, 1.15)
    ])
    .camera(reactorCamera);
@@ -1252,7 +1308,7 @@ index 676dfe9f1..4023273c9 100644
  const blockfallGame = createGame({
    id: "showcase-blockfall-reactor",
    target: "#app",
-@@ -665,10 +591,7 @@ const blockfallGame = createGame({
+@@ -665,10 +525,7 @@ const blockfallGame = createGame({
    qualityRebuild: { flags: ["game"] }
  });
  const gameApp = blockfallGame.runtime;
@@ -1263,7 +1319,7 @@ index 676dfe9f1..4023273c9 100644
  const blockfallTween = createTweenEngine();
  const blockfallFx = createFxParticlePass(app.effects);
  const blockfallJuice = createJuice<"lock" | "line-clear" | "quad" | "level-up" | "game-over" | "rotate-denied">({
-@@ -687,16 +610,11 @@ const blockfallJuice = createJuice<"lock" | "line-clear" | "quad" | "level-up" |
+@@ -687,16 +544,11 @@ const blockfallJuice = createJuice<"lock" | "line-clear" | "quad" | "level-up" |
    tweens: blockfallTween,
    rumble: createRumbleDriver()
  });
@@ -1280,7 +1336,7 @@ index 676dfe9f1..4023273c9 100644
  const ghostHandles = Array.from({ length: 4 }, (_, index) => app.nodes.require(ghostNodeId(index)) as AuraRuntimeNodeHandle);
  const clearFlashHandles = Array.from({ length: VISIBLE_HEIGHT }, (_, row) => app.nodes.require(clearFlashNodeId(row)) as AuraRuntimeNodeHandle);
  const dropGuideHandle = app.nodes.require(DROP_GUIDE_NODE_ID) as AuraRuntimeNodeHandle;
-@@ -723,13 +641,6 @@ const clearFxHandles = clearFxNodeGroup.map((_, index) =>
+@@ -723,13 +575,6 @@ const clearFxHandles = clearFxNodeGroup.map((_, index) =>
  const activePoolHandle = app.nodes.require(activePiecePool.id) as AuraRuntimeNodeHandle;
  const lockedPoolHandles = lockedStackPools.map((pool) => app.nodes.require(pool.id) as AuraRuntimeNodeHandle);
  let lastActivePoolKind: PieceKind | null = null;
@@ -1294,7 +1350,7 @@ index 676dfe9f1..4023273c9 100644
  const scoreboardDigitHandles = {
    score: Array.from({ length: 6 }, (_, slot) =>
      Array.from({ length: 10 }, (_, digit) =>
-@@ -742,7 +653,6 @@ const scoreboardDigitHandles = {
+@@ -742,7 +587,6 @@ const scoreboardDigitHandles = {
      )
    )
  };
@@ -1302,7 +1358,7 @@ index 676dfe9f1..4023273c9 100644
  const fallingBlocks = game.fallingBlocks({
    seed: DEFAULT_SEED,
    width: BOARD_WIDTH,
-@@ -757,30 +667,13 @@ let lastFallingEvents: readonly GameFallingBlocksEvent[] = fallingBlocks.snapsho
+@@ -757,30 +601,13 @@ let lastFallingEvents: readonly GameFallingBlocksEvent[] = fallingBlocks.snapsho
  let state = createBlockfallView(fallingBlocks.snapshot(), "spawn", lastFallingEvents);
  let lastVisualChecksum = "";
  let acceptanceScenario: BlockfallAcceptanceScenario | null = null;
@@ -1333,7 +1389,7 @@ index 676dfe9f1..4023273c9 100644
  const observedBeatProof = { lineClear: false, levelUp: false, gameOver: false, reset: false };
  let queuedActions: BlockfallAction[] = [];
  let replayPlayback: { active: boolean; frame: number } = { active: false, frame: 0 };
-@@ -806,14 +699,6 @@ const repeat = {
+@@ -806,14 +633,6 @@ const repeat = {
    right: createRepeatGate(0.15, 0.055),
    soft: createRepeatGate(0.025, 0.025)
  };
@@ -1348,7 +1404,22 @@ index 676dfe9f1..4023273c9 100644
  const ATTRACT_IDLE_SECONDS = 45;
  const attractState = {
    active: false,
-@@ -868,12 +753,7 @@ function exitAttract(reason: string): void {
+@@ -823,14 +642,6 @@ const attractState = {
+   framesReplayed: 0,
+   exitReason: null as string | null
+ };
+-const attractProofSource = {
+-  label: expertRun.label,
+-  events: expertRun.events.length,
+-  frames: expertRun.frames,
+-  pinnedFinalScore: expertRun.expected.finalScore,
+-  pinnedScoreHash: expertRun.expected.scoreHash,
+-  regressionHarness: "tests/unit/apps/blockfall-attract.test.ts"
+-};
+ let attractCard: HTMLElement | null = null;
+ function ensureAttractCard(): HTMLElement {
+   if (attractCard && document.body.contains(attractCard)) return attractCard;
+@@ -868,12 +679,7 @@ function exitAttract(reason: string): void {
    card?.remove();
    attractCard = null;
  }
@@ -1361,7 +1432,7 @@ index 676dfe9f1..4023273c9 100644
  let lastBoardView: ReturnType<typeof createBoardViewModel> | null = null;
  const boardViewProof = {
    parityChecks: 0,
-@@ -881,12 +761,6 @@ const boardViewProof = {
+@@ -881,12 +687,6 @@ const boardViewProof = {
    capacityRespected: true,
    instancingActive: true
  };
@@ -1374,7 +1445,7 @@ index 676dfe9f1..4023273c9 100644
  function captureFullVisibleRows(): number[] {
    const board = fallingBlocks.snapshot().board;
    const rows: number[] = [];
-@@ -905,14 +779,8 @@ const manualInputState = {
+@@ -905,57 +705,9 @@ const manualInputState = {
    pressed: new Set<BlockfallInputName>(),
    held: new Set<BlockfallInputName>()
  };
@@ -1386,13 +1457,37 @@ index 676dfe9f1..4023273c9 100644
 -// The deleted window probes (ACCEPTANCE/ATTRACT/BLOOM/COMPOSITION) funnelled
 -// through the same functions; staging itself is unchanged.
 -bindBlockfallEvidence(collectRouteEvidence);
- bindBlockfallDrive({
-   applyAcceptance: (scenario) => applyAcceptanceScenario(scenario),
-   resumeFromAcceptance: () => {
-@@ -944,18 +812,7 @@ bindBlockfallDrive({
-   exitAttract: (reason = "scenario") => exitAttract(reason),
-   attractActive: () => attractState.active
- });
+-bindBlockfallDrive({
+-  applyAcceptance: (scenario) => applyAcceptanceScenario(scenario),
+-  resumeFromAcceptance: () => {
+-    const result = applyAcceptanceScenario("play");
+-    acceptanceScenario = null;
+-    app.resume();
+-    return result;
+-  },
+-  unfreezeAcceptance: () => {
+-    acceptanceScenario = null;
+-    app.resume();
+-  },
+-  stageRotationTrap: () => {
+-    const snapshot = fallingBlocks.snapshot();
+-    const active = snapshot.active;
+-    if (!active || snapshot.gameOver || blockfallGame.session.paused) return false;
+-    const occupied = new Set(
+-      pieceCells({ kind: active.kind, x: active.x, y: active.y, rotation: active.rotation }).map(
+-        (cell) => `${cell.x},${cell.y}`
+-      )
+-    );
+-    const trapped = snapshot.board.map((row, y) =>
+-      row.map((cell, x) => (occupied.has(`${x},${y}`) ? cell : "I"))
+-    );
+-    fallingBlocks.setBoard(trapped);
+-    return true;
+-  },
+-  enterAttract: (reason = "scenario") => enterAttract(reason),
+-  exitAttract: (reason = "scenario") => exitAttract(reason),
+-  attractActive: () => attractState.active
+-});
 -
 -/**
 - * Exact-artifact acceptance probe. Each scenario mutates the same mounted public
@@ -1408,7 +1503,7 @@ index 676dfe9f1..4023273c9 100644
  gameApp.onFrame(({ dt }) => {
    input.update(dt);
    blockfallTween.tick(dt);
-@@ -1048,7 +905,6 @@ gameApp.onFrame(({ dt }) => {
+@@ -1048,7 +800,6 @@ gameApp.onFrame(({ dt }) => {
  
    syncAll(false, dt);
  });
@@ -1416,7 +1511,7 @@ index 676dfe9f1..4023273c9 100644
  function collectInputActions(dt: number): BlockfallAction[] {
    const pressed = (action: BlockfallInputName) => input.pressed(action) || manualInputState.pressed.has(action);
    const held = (action: BlockfallInputName) => input.held(action) || manualInputState.held.has(action);
-@@ -1070,7 +926,6 @@ function collectInputActions(dt: number): BlockfallAction[] {
+@@ -1070,7 +821,6 @@ function collectInputActions(dt: number): BlockfallAction[] {
    manualInputState.pressed.clear();
    return actions;
  }
@@ -1424,7 +1519,7 @@ index 676dfe9f1..4023273c9 100644
  function advanceFallingBlocks(actions: readonly BlockfallAction[] = []): BlockfallState {
    let lastMove = "frame";
    let resetApplied = false;
-@@ -1144,12 +999,10 @@ function advanceFallingBlocks(actions: readonly BlockfallAction[] = []): Blockfa
+@@ -1144,12 +894,10 @@ function advanceFallingBlocks(actions: readonly BlockfallAction[] = []): Blockfa
  
    return createBlockfallView(fallingBlocks.snapshot(), lastMove, lastFallingEvents);
  }
@@ -1437,7 +1532,7 @@ index 676dfe9f1..4023273c9 100644
  function countFallingBlockEvents(
    events: readonly GameFallingBlocksEvent[],
    clearedVisibleRows: readonly number[] = []
-@@ -1205,13 +1058,11 @@ function countFallingBlockEvents(
+@@ -1205,13 +953,11 @@ function countFallingBlockEvents(
      cameraFeel.punch(1.1, "level-up");
    }
  }
@@ -1451,53 +1546,115 @@ index 676dfe9f1..4023273c9 100644
  function clearSetupBoard(
    lines: number,
    gapXs: readonly number[] = [4],
-@@ -1244,21 +1095,18 @@ function clearSetupBoard(
+@@ -1244,107 +990,6 @@ function clearSetupBoard(
    }
    return board;
  }
 -
- function runVerticalClear(lines: number, populateMidGameStack = false): void {
-   fallingBlocks.setBoard(clearSetupBoard(lines, [4], populateMidGameStack));
-   // Rotation 1 occupies x + 2 for four vertical cells; x=2 fills column 4.
-   fallingBlocks.setActive({ kind: "I", x: 2, y: BOARD_HEIGHT - 4, rotation: 1 });
-   performAcceptanceHardDrop(Array.from({ length: lines }, (_, index) => VISIBLE_HEIGHT - lines + index));
- }
+-function runVerticalClear(lines: number, populateMidGameStack = false): void {
+-  fallingBlocks.setBoard(clearSetupBoard(lines, [4], populateMidGameStack));
+-  // Rotation 1 occupies x + 2 for four vertical cells; x=2 fills column 4.
+-  fallingBlocks.setActive({ kind: "I", x: 2, y: BOARD_HEIGHT - 4, rotation: 1 });
+-  performAcceptanceHardDrop(Array.from({ length: lines }, (_, index) => VISIBLE_HEIGHT - lines + index));
+-}
 -
- function performAcceptanceHardDrop(completedVisibleRows: readonly number[] = captureFullVisibleRows()): void {
-   const snapshot = fallingBlocks.hardDrop();
-   lastFallingEvents = snapshot.events;
-   countFallingBlockEvents(lastFallingEvents, completedVisibleRows);
-   state = createBlockfallView(snapshot, "acceptance:hard-drop", lastFallingEvents);
- }
+-function performAcceptanceHardDrop(completedVisibleRows: readonly number[] = captureFullVisibleRows()): void {
+-  const snapshot = fallingBlocks.hardDrop();
+-  lastFallingEvents = snapshot.events;
+-  countFallingBlockEvents(lastFallingEvents, completedVisibleRows);
+-  state = createBlockfallView(snapshot, "acceptance:hard-drop", lastFallingEvents);
+-}
 -
- function dangerSetupBoard(): (PieceKind | null)[][] {
-   const board = emptyAcceptanceBoard();
-   // A 16-row stepped stack leaves legal wells but reaches the fourth visible
-@@ -1269,7 +1117,6 @@ function dangerSetupBoard(): (PieceKind | null)[][] {
-   }
-   return board;
- }
+-function dangerSetupBoard(): (PieceKind | null)[][] {
+-  const board = emptyAcceptanceBoard();
+-  // A 16-row stepped stack leaves legal wells but reaches the fourth visible
+-  // row from the top, which is the route's actual near-top danger threshold.
+-  for (let y = HIDDEN_ROWS + 3; y < BOARD_HEIGHT; y += 1) {
+-    const gap = 2 + ((y - HIDDEN_ROWS) % 5);
+-    board[y] = board[y].map((_, x) => (x === gap || x === gap + 1 ? null : PIECE_KINDS[(x + y) % PIECE_KINDS.length]));
+-  }
+-  return board;
+-}
 -
- function gameOverSetupBoard(): (PieceKind | null)[][] {
-   const board = emptyAcceptanceBoard();
-   // Occupy the public kit's spawn band. The manually placed O can still lock at
-@@ -1279,7 +1126,6 @@ function gameOverSetupBoard(): (PieceKind | null)[][] {
-   }
-   return board;
- }
+-function gameOverSetupBoard(): (PieceKind | null)[][] {
+-  const board = emptyAcceptanceBoard();
+-  // Occupy the public kit's spawn band. The manually placed O can still lock at
+-  // the floor; the next real spawn then collides and emits `game-over`.
+-  for (let y = 0; y <= 2; y += 1) {
+-    board[y] = board[y].map((_, x) => (x >= 3 && x <= 6 ? "Z" : null));
+-  }
+-  return board;
+-}
 -
- function applyAcceptanceScenario(scenario: BlockfallAcceptanceScenario): unknown {
-   app.pause();
-   exitAttract("acceptance-probe");
-@@ -1344,7 +1190,6 @@ function applyAcceptanceScenario(scenario: BlockfallAcceptanceScenario): unknown
-     danger: isDangerState(state)
-   };
- }
+-function applyAcceptanceScenario(scenario: BlockfallAcceptanceScenario): unknown {
+-  app.pause();
+-  exitAttract("acceptance-probe");
+-  acceptanceScenario = scenario;
+-  blockfallGame.session.resume();
+-  replayPlayback = { active: false, frame: 0 };
+-  placedPieces = 0;
+-  lockCount = 0;
+-  queuedActions = [];
+-  manualInputState.pressed.clear();
+-  manualInputState.held.clear();
+-  for (const key of ["levelUp", "gameOver", "reset", "burst"] as const) beatTimers[key] = 0;
+-  const resetSnapshot = fallingBlocks.reset(DEFAULT_SEED);
+-  lastFallingEvents = resetSnapshot.events;
+-  lastObservedLevel = 1;
+-
+-  if (scenario === "play") {
+-    fallingBlocks.setBoard(createOpeningBoard());
+-    fallingBlocks.setActive({ kind: "T", x: Math.floor(BOARD_WIDTH / 2) - 2, y: PRESENTATION_ACTIVE_Y, rotation: 0 });
+-    state = createBlockfallView(fallingBlocks.snapshot(), "acceptance:play", fallingBlocks.snapshot().events);
+-  } else if (scenario === "single-clear") {
+-    fallingBlocks.setBoard(clearSetupBoard(1, [4, 5]));
+-    fallingBlocks.setActive({ kind: "O", x: 3, y: BOARD_HEIGHT - 4, rotation: 0 });
+-    performAcceptanceHardDrop([VISIBLE_HEIGHT - 1]);
+-  } else if (scenario === "quad") {
+-    runVerticalClear(4, true);
+-    const quadEvents = lastFallingEvents;
+-    // Advance the newly spawned controllable piece through the real kit while
+-    // the quad beat is alive. This is the same post-clear transition a player
+-    // sees, and prevents the exact frame from reading as a static stack with no
+-    // current decision. Keep the clear events attached to the view/evidence.
+-    for (let step = 0; step < 5; step += 1) fallingBlocks.softDrop();
+-    lastFallingEvents = quadEvents;
+-    state = createBlockfallView(fallingBlocks.snapshot(), "acceptance:quad-follow-through", quadEvents);
+-    // Freeze at the readable apex of the renderer-owned shard burst and camera
+-    // punch, rather than at t=0 before those mounted nodes have left the origin.
+-    clearFx.update(0.14);
+-    cameraFeel.update(0.06);
+-    cameraFeel.apply(reactorCamera);
+-  } else if (scenario === "level-up") {
+-    runVerticalClear(4);
+-    runVerticalClear(4);
+-    runVerticalClear(2);
+-  } else if (scenario === "danger") {
+-    fallingBlocks.setBoard(dangerSetupBoard());
+-    fallingBlocks.setActive({ kind: "T", x: 3, y: 0, rotation: 0 });
+-    state = createBlockfallView(fallingBlocks.snapshot(), "acceptance:danger", fallingBlocks.snapshot().events);
+-  } else {
+-    fallingBlocks.setBoard(gameOverSetupBoard());
+-    fallingBlocks.setActive({ kind: "O", x: 3, y: BOARD_HEIGHT - 4, rotation: 0 });
+-    performAcceptanceHardDrop();
+-  }
+-
+-  lastVisualChecksum = "";
+-  syncAll(true, 0);
+-  app.step(0);
+-  return {
+-    scenario,
+-    checksum: fallingBlocks.snapshot().checksum,
+-    summary: summarizeBlockfallState(state),
+-    events: lastFallingEvents.map((event) => ({ ...event })),
+-    danger: isDangerState(state)
+-  };
+-}
 -
  function createBlockfallView(snapshot: GameFallingBlocksSnapshot, lastMove: string, events: readonly GameFallingBlocksEvent[]): BlockfallState {
    const lineClear = events.find((event) => event.type === "line-clear");
    const combo = snapshot.combo < 0 ? -1 : snapshot.combo;
-@@ -1374,7 +1219,6 @@ function createBlockfallView(snapshot: GameFallingBlocksSnapshot, lastMove: stri
+@@ -1374,7 +1019,6 @@ function createBlockfallView(snapshot: GameFallingBlocksSnapshot, lastMove: stri
      lastClearedRows: []
    };
  }
@@ -1505,7 +1662,7 @@ index 676dfe9f1..4023273c9 100644
  function summarizeBlockfallState(nextState: BlockfallState) {
    return {
      checksum: blockfallChecksum(nextState),
-@@ -1393,7 +1237,6 @@ function summarizeBlockfallState(nextState: BlockfallState) {
+@@ -1393,7 +1037,6 @@ function summarizeBlockfallState(nextState: BlockfallState) {
      paused: nextState.paused
    };
  }
@@ -1513,7 +1670,7 @@ index 676dfe9f1..4023273c9 100644
  function blockfallChecksum(nextState: BlockfallState): string {
    return hashString(JSON.stringify({
      seed: nextState.seed,
-@@ -1410,7 +1253,6 @@ function blockfallChecksum(nextState: BlockfallState): string {
+@@ -1410,7 +1053,6 @@ function blockfallChecksum(nextState: BlockfallState): string {
      gameOver: nextState.gameOver
    }));
  }
@@ -1521,7 +1678,7 @@ index 676dfe9f1..4023273c9 100644
  function hashString(input: string): string {
    let hash = 0x811c9dc5;
    for (let index = 0; index < input.length; index += 1) {
-@@ -1419,7 +1261,6 @@ function hashString(input: string): string {
+@@ -1419,7 +1061,6 @@ function hashString(input: string): string {
    }
    return (hash >>> 0).toString(16).padStart(8, "0");
  }
@@ -1529,7 +1686,7 @@ index 676dfe9f1..4023273c9 100644
  function formatBlockfallAction(action: BlockfallAction): string {
    if (action.type === "move") return `move:${action.dx}`;
    if (action.type === "rotate") return `rotate:${action.direction}`;
-@@ -1430,7 +1271,6 @@ function formatBlockfallAction(action: BlockfallAction): string {
+@@ -1430,7 +1071,6 @@ function formatBlockfallAction(action: BlockfallAction): string {
    if (action.type === "pause") return "pause";
    return "reset";
  }
@@ -1537,7 +1694,7 @@ index 676dfe9f1..4023273c9 100644
  function syncAll(force: boolean, dt = 0): void {
    const checksum = blockfallChecksum(state);
    if (force || checksum !== lastVisualChecksum) {
-@@ -1449,11 +1289,6 @@ function syncAll(force: boolean, dt = 0): void {
+@@ -1449,11 +1089,6 @@ function syncAll(force: boolean, dt = 0): void {
    rotateLeftButton.classList.toggle("rotate-denied", deniedPulseOn);
    rotateRightButton.classList.toggle("rotate-denied", deniedPulseOn);
  }
@@ -1549,7 +1706,7 @@ index 676dfe9f1..4023273c9 100644
  function syncInstancedPools(): void {
    const view = lastBoardView;
    if (!view) return;
-@@ -1494,8 +1329,6 @@ function syncInstancedPools(): void {
+@@ -1494,8 +1129,6 @@ function syncInstancedPools(): void {
      spec.scale = [ACTIVE_BLOCK_SCALE[0], ACTIVE_BLOCK_SCALE[1], ACTIVE_BLOCK_SCALE[2]];
    }
  }
@@ -1558,7 +1715,7 @@ index 676dfe9f1..4023273c9 100644
  function syncScoreboardDigits(summary: { score: number; level: number }): void {
    const scoreText = formatScoreDigits(summary.score);
    for (let slot = 0; slot < scoreboardDigitHandles.score.length; slot += 1) {
-@@ -1520,7 +1353,6 @@ function syncScoreboardDigits(summary: { score: number; level: number }): void {
+@@ -1520,7 +1153,6 @@ function syncScoreboardDigits(summary: { score: number; level: number }): void {
      }
    }
  }
@@ -1566,7 +1723,7 @@ index 676dfe9f1..4023273c9 100644
  function syncBoardVisuals(): void {
    lastBoardView = createBoardViewModel(state);
    boardViewProof.parityChecks += 1;
-@@ -1535,7 +1367,6 @@ function syncBoardVisuals(): void {
+@@ -1535,7 +1167,6 @@ function syncBoardVisuals(): void {
    syncClearFlash();
    syncReactor();
  }
@@ -1574,7 +1731,7 @@ index 676dfe9f1..4023273c9 100644
  function syncActivePiece(piece: ActivePiece | null): void {
    activeFocusHandle.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
    if (!piece) return;
-@@ -1559,7 +1390,6 @@ function syncActivePiece(piece: ActivePiece | null): void {
+@@ -1559,7 +1190,6 @@ function syncActivePiece(piece: ActivePiece | null): void {
        .setVisible(true);
    }
  }
@@ -1582,7 +1739,7 @@ index 676dfe9f1..4023273c9 100644
  function syncGhostPiece(piece: ActivePiece | null): void {
    ghostHandles.forEach((handle) => handle.setScale(HIDDEN_BLOCK_SCALE).setVisible(false));
    dropGuideHandle.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
-@@ -1605,7 +1435,6 @@ function syncGhostPiece(piece: ActivePiece | null): void {
+@@ -1605,7 +1235,6 @@ function syncGhostPiece(piece: ActivePiece | null): void {
      .setScale([0.014, span * 0.5, 0.018])
      .setVisible(true);
  }
@@ -1590,7 +1747,7 @@ index 676dfe9f1..4023273c9 100644
  function syncClearFlash(): void {
    const clearRows = new Set(state.lastClearedRows.map((row) => row - HIDDEN_ROWS).filter((row) => row >= 0 && row < VISIBLE_HEIGHT));
    // One timed renderer beat owns the clear sweep. The old implementation also lit a
-@@ -1617,11 +1446,6 @@ function syncClearFlash(): void {
+@@ -1617,11 +1246,6 @@ function syncClearFlash(): void {
    const firstClearedRow = [...clearRows][0];
    if (firstClearedRow !== undefined) burstRowY = cellPosition(0, firstClearedRow, 0)[1];
  }
@@ -1602,7 +1759,7 @@ index 676dfe9f1..4023273c9 100644
  function syncBeats(dt: number): void {
    for (const key of ["levelUp", "gameOver", "reset", "burst"] as const) {
      beatTimers[key] = Math.max(0, beatTimers[key] - Math.max(0, dt));
-@@ -1741,7 +1565,6 @@ function syncBeats(dt: number): void {
+@@ -1741,7 +1365,6 @@ function syncBeats(dt: number): void {
      for (const handle of quadCrownHandles) handle.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
    }
  }
@@ -1610,7 +1767,7 @@ index 676dfe9f1..4023273c9 100644
  function syncReactor(): void {
    const charge = Math.max(0.04, state.reactor / 100);
    const height = 0.18 + charge * 1.25;
-@@ -1751,11 +1574,9 @@ function syncReactor(): void {
+@@ -1751,11 +1374,9 @@ function syncReactor(): void {
      .setScale(critical ? [0.12, 0.06, 0.055] : HIDDEN_BLOCK_SCALE)
      .setVisible(critical);
  }
@@ -1622,23 +1779,177 @@ index 676dfe9f1..4023273c9 100644
  function syncHud(): void {
    const summary = summarizeBlockfallState(state);
    ui.setText(hudScore, summary.score.toLocaleString("en-US"));
-@@ -1781,7 +1602,6 @@ function syncHud(): void {
+@@ -1781,169 +1402,6 @@ function syncHud(): void {
    document.body.dataset.blockfallState = state.gameOver ? "game-over" : state.paused ? "paused" : "running";
    document.body.dataset.blockfallAttract = attractState.active ? "true" : "false";
  }
 -
- function collectRouteEvidence(): Record<string, unknown> {
-   const summary = summarizeBlockfallState(state);
-   const hudSnapshot = game.hud.snapshot({
-@@ -1943,7 +1763,6 @@ function collectRouteEvidence(): Record<string, unknown> {
-     }
-   };
- }
+-function collectRouteEvidence(): Record<string, unknown> {
+-  const summary = summarizeBlockfallState(state);
+-  const hudSnapshot = game.hud.snapshot({
+-    bindings: hudBindings,
+-    round: { index: state.level },
+-    runtime: { frame: state.frame, paused: state.paused },
+-    appState: {
+-      score: state.score,
+-      lines: state.lines,
+-      level: state.level,
+-      combo: state.combo,
+-      reactor: { charge: state.reactor, max: 100 },
+-      evidence: { visible: true }
+-    }
+-  });
+-
+-  return {
+-    ...sourceEvidence,
+-    status: state.gameOver || state.paused ? "ready" : "running",
+-    appId: "showcase-blockfall-reactor",
+-    frameCount: state.frame,
+-    systems: [
+-      "createGameApp fixed-step runtime",
+-      "game.input keyboard and touch mapping",
+-      "runtime node pools for locked, active, ghost, clear flash, and reactor meter blocks",
+-      "public game.fallingBlocks state machine",
+-      "hold piece and next queue",
+-      "line clear, combo, back-to-back, and speed escalation proof",
+-      "replay checksum evidence",
+-      "HUD and accessibility evidence"
+-    ],
+-    controls: [
+-      "ArrowLeft/ArrowRight or A/D move",
+-      "ArrowUp/W/X/E rotate clockwise",
+-      "Z/Q rotate counter-clockwise",
+-      "ArrowDown/S soft drop",
+-      "Space hard drop",
+-      "C or Shift hold",
+-      "Escape/P pause",
+-      "R reset",
+-      "Touch buttons for move, rotate left/right, hold, and drop"
+-    ],
+-    claimBoundary: sourceEvidence.claimBoundary,
+-    diagnostics: app.diagnostics(),
+-    current: summary,
+-    acceptance: {
+-      scenario: acceptanceScenario,
+-      frozenForExactCapture: acceptanceScenario !== null,
+-      danger: isDangerState(state),
+-      snapshotChecksum: fallingBlocks.snapshot().checksum
+-    },
+-    live: {
+-      frame: state.frame,
+-      checksum: summary.checksum,
+-      lastMove: state.lastMove,
+-      activeCells: state.active ? pieceCells(state.active) : [],
+-      visibleLockedCells: visibleLockedCells(state).length,
+-      replayPlayback
+-    },
+-    observedGameplayProof: {
+-      ...observedGameplayProof,
+-      eventCounts: { ...observedGameplayProof.eventCounts }
+-    },
+-    /**
+-     * Rendered in-scene beats. Each flag only becomes true after the matching
+-     * game event fired and drove a visible scene node, so this is mounted beat
+-     * evidence rather than a source-authored declaration.
+-     */
+-    renderedBeatProof: {
+-      ...observedBeatProof,
+-      activeBeats: {
+-        levelUp: beatTimers.levelUp > 0,
+-        gameOver: beatTimers.gameOver > 0 || state.gameOver,
+-        reset: beatTimers.reset > 0,
+-        lineClearBurst: beatTimers.burst > 0
+-      },
+-      beatNodeIds: { ...BEAT_NODE_IDS }
+-    },
+-    runtimeEvidence: app.evidence({
+-      input,
+-      hud: hudBindings,
+-      accessibility: accessibilitySources,
+-      stage: {
+-        id: "blockfall-reactor-well",
+-        safeZones: true,
+-        bounds: { width: BOARD_WIDTH, height: BOARD_HEIGHT, visibleHeight: VISIBLE_HEIGHT },
+-        warnings: []
+-      },
+-      assets: { typedAssets: 2, missingAssets: [] },
+-      source: {
+-        mode: "mounted-runtime",
+-        expectsGame: true,
+-        label: "Blockfall Reactor mounted Aura3D game route"
+-      },
+-      ownership: [
+-        { subsystem: "runtime-nodes", owner: "aura3d", configured: true, evidence: "Every visible block pool is registered with game.runtimeNode." },
+-        { subsystem: "frame-loop", owner: "aura3d", configured: true, evidence: "createGameApp owns the fixed-step frame loop." },
+-        { subsystem: "input", owner: "aura3d", configured: true, evidence: "Aura3D input edges feed the public game.fallingBlocks kit." },
+-        { subsystem: "hud", owner: "app", configured: true, evidence: "DOM HUD is bound through Aura3D ui and game.hud evidence." },
+-        { subsystem: "accessibility", owner: "app", configured: true, evidence: "Pause, focus, and motion preferences are declared through game.accessibility." }
+-      ]
+-    }),
+-    hudSnapshot,
+-    /**
+-     * BF-A1..BF-A6 additive evidence. Every field below is observed mounted
+-     * runtime state, not an authored declaration.
+-     */
+-    audio: reactorAudio.proof(),
+-    audioTriggerMap: {
+-      move: "move action accepted",
+-      rotate: "rotate action accepted",
+-      lock: "lock event from kit",
+-      "line-clear": "line-clear event with 1-3 rows",
+-      quad: "line-clear event with 4 rows",
+-      "level-up": "level increases past last observed level",
+-      "hold-swap": "hold action accepted",
+-      "hard-drop": "hard-drop action accepted",
+-      "game-over": "game-over event from kit",
+-      ambient: "looping reactor hum on its own bus",
+-      music: "additive intensity stem per five levels (volume-automated loops)"
+-    },
+-    boardView: {
+-      renderMode: "instanced",
+-      pools: {
+-        lockedGroups: lockedStackPools.length,
+-        lockedSubPools: lockedStackPools.length,
+-        activePool: 1,
+-        capacityPerKind: LOCKED_POOL_CAPACITY_PER_KIND,
+-        activeCapacity: ACTIVE_POOL_CAPACITY
+-      },
+-      parity: { ...boardViewProof }
+-    },
+-    clearFx: clearFx.proof(),
+-    cameraFeel: cameraFeel.proof(),
+-    scoreboard: {
+-      layout: "reactor wall band behind the cabinet",
+-      scoreDigits: formatScoreDigits(state.score),
+-      levelDigits: formatLevelDigits(state.level),
+-      glyphCompliant: true,
+-      domHudRemainsSourceOfTruth: true,
+-      /** Live scene-graph visibility of every digit node, read at publish time. */
+-      renderedScoreSlots: scoreboardDigitHandles.score.map((slotHandles, slot) => ({
+-        slot,
+-        visibleDigit: slotHandles.findIndex((handle) => handle.visible)
+-      })),
+-      renderedLevelSlots: scoreboardDigitHandles.level.map((slotHandles, slot) => ({
+-        slot,
+-        visibleDigit: slotHandles.findIndex((handle) => handle.visible)
+-      }))
+-    },
+-    attract: {
+-      ...attractProofSource,
+-      idleEntryAfterSeconds: ATTRACT_IDLE_SECONDS,
+-      entryReason: attractState.entryReason,
+-      active: attractState.active,
+-      loopsCompleted: attractState.playback.loopsCompleted,
+-      framesReplayed: attractState.framesReplayed,
+-      exitReason: attractState.exitReason
+-    }
+-  };
+-}
 -
  function createPublicReplayEvidence() {
    const runReplay = () => {
      const kit = game.fallingBlocks({ seed: DEFAULT_SEED, width: BOARD_WIDTH, height: BOARD_HEIGHT, hiddenRows: HIDDEN_ROWS });
-@@ -1993,7 +1812,6 @@ function createPublicReplayEvidence() {
+@@ -1993,7 +1451,6 @@ function createPublicReplayEvidence() {
      secondFinalChecksum: second.finalChecksum
    };
  }
@@ -1646,7 +1957,7 @@ index 676dfe9f1..4023273c9 100644
  function createPublicLineClearProof() {
    const falling = game.fallingBlocks({ seed: 0xC1EA12, width: BOARD_WIDTH, height: BOARD_HEIGHT, hiddenRows: HIDDEN_ROWS });
    const board = Array.from({ length: BOARD_HEIGHT }, () => Array.from({ length: BOARD_WIDTH }, () => null as PieceKind | null));
-@@ -2021,7 +1839,6 @@ function createPublicLineClearProof() {
+@@ -2021,7 +1478,6 @@ function createPublicLineClearProof() {
      }
    };
  }
@@ -1654,7 +1965,7 @@ index 676dfe9f1..4023273c9 100644
  function createFallingBlocksKitContractProof() {
    const falling = game.fallingBlocks({ seed: 7 });
    const start = falling.snapshot();
-@@ -2077,7 +1894,6 @@ function createFallingBlocksKitContractProof() {
+@@ -2077,7 +1533,6 @@ function createFallingBlocksKitContractProof() {
      scoreAfterClear: cleared.score
    };
  }
@@ -1662,7 +1973,7 @@ index 676dfe9f1..4023273c9 100644
  function installDomControls(): void {
    const focusGame = () => {
      try {
-@@ -2165,7 +1981,6 @@ function installDomControls(): void {
+@@ -2165,7 +1620,6 @@ function installDomControls(): void {
      manualInputState.held.delete(action);
    }, { passive: false });
  }
@@ -1670,7 +1981,7 @@ index 676dfe9f1..4023273c9 100644
  function startReplayPlayback(): void {
    exitAttract("replay-button");
    blockfallGame.session.resume();
-@@ -2179,7 +1994,6 @@ function startReplayPlayback(): void {
+@@ -2179,7 +1633,6 @@ function startReplayPlayback(): void {
    queuedActions = [];
    syncAll(true);
  }
@@ -1678,7 +1989,7 @@ index 676dfe9f1..4023273c9 100644
  function renderMiniPiece(kind: PieceKind | null): string {
    const occupied = new Set<CellPoint>();
    if (kind) {
-@@ -2196,13 +2010,11 @@ function renderMiniPiece(kind: PieceKind | null): string {
+@@ -2196,13 +1649,11 @@ function renderMiniPiece(kind: PieceKind | null): string {
    }
    return markup;
  }
@@ -1692,7 +2003,7 @@ index 676dfe9f1..4023273c9 100644
  function createRepeatGate(initialDelay: number, interval: number) {
    let timer = 0;
    return {
-@@ -2224,7 +2036,6 @@ function createRepeatGate(initialDelay: number, interval: number) {
+@@ -2224,7 +1675,6 @@ function createRepeatGate(initialDelay: number, interval: number) {
      }
    };
  }
@@ -1700,404 +2011,37 @@ index 676dfe9f1..4023273c9 100644
  function mediaMatches(query: string): boolean {
    return typeof window.matchMedia === "function" && window.matchMedia(query).matches;
  }
-diff --git a/apps/showcase-blockfall-reactor/src/legacy/styles.css b/apps/showcase-blockfall-reactor/src/legacy/styles.css
-index f4348c6f2..9bfa7e0ec 100644
---- a/apps/showcase-blockfall-reactor/src/legacy/styles.css
-+++ b/apps/showcase-blockfall-reactor/src/legacy/styles.css
-@@ -4,9 +4,7 @@
-   background: #06020a;
-   color: #f8fff3;
+diff --git a/apps/showcase-blockfall-reactor/src/main.ts b/apps/showcase-blockfall-reactor/src/main.ts
+index 4355c7aa3..836744234 100644
+--- a/apps/showcase-blockfall-reactor/src/main.ts
++++ b/apps/showcase-blockfall-reactor/src/main.ts
+@@ -1,14 +1,6 @@
+-// apps/showcase-blockfall-reactor/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
+-// Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-blockfall-reactor`
+-// (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
+-// acceptance (§10 step 5).
+ import { resolveQrFlags } from "@aura3d/engine/contracts";
+-
+ const ROUTE_FLAG = "A3D_QR_ROUTE_BLOCKFALL_REACTOR" as const;
+ const DEFAULT_ON = false;
+-
+-/** Accepts `?a3d-qr=…,route-blockfall-reactor` and `?a3d-qr=…,A3D_QR_ROUTE_BLOCKFALL_REACTOR`.
+- *  Returns undefined when the flag is absent (CCR-14-2 replaces this helper). */
+ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const raw = new URL(loc.href).searchParams.get("a3d-qr");
+   if (raw === null) return undefined;
+@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+     ? true
+     : undefined;
  }
 -
- * { box-sizing: border-box; }
+ const flags = resolveQrFlags({
+   url: location.href,
+   env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR },
+   options: { [ROUTE_FLAG]: routeFlagFromUrl(location, ROUTE_FLAG) ?? DEFAULT_ON }
+ });
 -
- html,
- body {
-   width: 100%;
-@@ -16,20 +14,16 @@ body {
-   overflow: hidden;
-   background: #06020a;
- }
--
- button { font: inherit; }
--
- .stage { position: fixed; inset: 0; }
- .stage canvas { display: block; width: 100%; height: 100%; }
- .hud-root { display: contents; pointer-events: none; }
--
- .overlay-shell {
-   position: fixed;
-   inset: 0;
-   z-index: 2;
-   pointer-events: none;
- }
--
- .hud-panel {
-   border: 1px solid rgba(197, 255, 214, 0.18);
-   border-radius: 13px;
-@@ -38,7 +32,6 @@ button { font: inherit; }
-   backdrop-filter: blur(16px) saturate(1.2);
-   pointer-events: auto;
- }
--
- .hud-panel--status {
-   position: absolute;
-   top: 24px;
-@@ -46,7 +39,6 @@ button { font: inherit; }
-   width: 245px;
-   padding: 14px;
- }
--
- .brand-lockup { display: flex; gap: 10px; align-items: center; }
- .brand-mark {
-   width: 34px;
-@@ -59,7 +51,6 @@ button { font: inherit; }
-     linear-gradient(135deg, #39f6ff, #74ff91 50%, #ffe866);
-   box-shadow: 0 0 24px rgba(116, 255, 145, 0.22);
- }
--
- .eyebrow {
-   margin: 0 0 4px;
-   color: #9ee4b2;
-@@ -68,21 +59,9 @@ button { font: inherit; }
-   letter-spacing: 0.13em;
-   text-transform: uppercase;
- }
--
- h1 { margin: 0; color: #fff; font-size: 22px; line-height: 1; letter-spacing: -0.035em; }
--
- .status-strip { display: flex; gap: 6px; margin-top: 11px; }
--.status-strip span,
--.hud-panel--evidence span {
--  padding: 5px 7px;
--  border-radius: 999px;
--  background: rgba(222, 255, 230, 0.07);
--  color: #dff7e4;
--  font-size: 10px;
--}
--
- .controls-strip { display: none; }
--
- .hud-panel--score {
-   position: absolute;
-   top: 24px;
-@@ -90,7 +69,6 @@ h1 { margin: 0; color: #fff; font-size: 22px; line-height: 1; letter-spacing: -0
-   width: 285px;
-   padding: 7px;
- }
--
- .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
- .stat-grid article {
-   min-width: 0;
-@@ -108,19 +86,9 @@ h1 { margin: 0; color: #fff; font-size: 22px; line-height: 1; letter-spacing: -0
-   text-transform: uppercase;
- }
- .stat-grid strong { display: block; margin-top: 3px; overflow: hidden; color: #fff; font-size: 17px; text-overflow: ellipsis; }
--
- .reactor-meter { height: 6px; margin-top: 7px; overflow: hidden; border-radius: 999px; background: rgba(255, 255, 255, 0.1); }
- .reactor-meter span { display: block; width: 0%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #39f6ff, #74ff91 48%, #ffe866 76%, #ff6c78); box-shadow: 0 0 12px #74ff91; }
- .reactor-meta { display: flex; justify-content: space-between; margin-top: 5px; color: #b7d9c0; font-size: 9px; }
--
--.hud-panel--preview {
--  position: absolute;
--  top: 142px;
--  right: 26px;
--  width: 126px;
--  padding: 10px;
--}
--
- .piece-bay { display: grid; gap: 6px; }
- .piece-bay + .piece-bay { margin-top: 12px; }
- .mini-piece { display: grid; grid-template-columns: repeat(4, 12px); grid-auto-rows: 12px; gap: 2px; min-height: 54px; }
-@@ -136,7 +104,6 @@ h1 { margin: 0; color: #fff; font-size: 22px; line-height: 1; letter-spacing: -0
- .piece-S { background: #65ff88 !important; }
- .piece-T { background: #e279ff !important; }
- .piece-Z { background: #ff6c78 !important; }
--
- .hud-panel--actions {
-   position: absolute;
-   bottom: 24px;
-@@ -147,7 +114,6 @@ h1 { margin: 0; color: #fff; font-size: 22px; line-height: 1; letter-spacing: -0
-   width: auto;
-   padding: 7px;
- }
--
- .hud-panel--actions button,
- .touch-root button {
-   min-width: 0;
-@@ -162,7 +128,6 @@ h1 { margin: 0; color: #fff; font-size: 22px; line-height: 1; letter-spacing: -0
-   cursor: pointer;
-   touch-action: none;
- }
--
- .hud-panel--actions button:hover,
- .hud-panel--actions button:focus-visible,
- .touch-root button:hover,
-@@ -172,32 +137,13 @@ h1 { margin: 0; color: #fff; font-size: 22px; line-height: 1; letter-spacing: -0
-   outline: none;
-   box-shadow: 0 0 16px rgba(116, 255, 145, 0.18);
- }
--
--/* Rotation-denied feedback (round 7): a rotate press the kit refuses flashes
--   the rotate buttons amber-red so "blocked" reads differently from "accepted".
--   Toggled from the frame loop; the 0.28 s pulse matches the flash timer. */
- .hud-panel--actions button.rotate-denied,
- .touch-root button.rotate-denied {
-   border-color: #ff6b4a;
-   background: linear-gradient(180deg, rgba(127, 52, 40, 0.92), rgba(58, 19, 14, 0.96));
-   box-shadow: 0 0 18px rgba(255, 107, 74, 0.45);
- }
--
--.hud-panel--evidence {
--  position: absolute;
--  right: 26px;
--  bottom: 24px;
--  /* Hidden in normal play; the checksums it shows are evidence, not HUD.
--     Revealed by ?debug=1 via html[data-evidence-mode]. */
--  display: none;
--  gap: 6px;
--  padding: 7px;
--}
--html[data-evidence-mode] .hud-panel--evidence { display: flex; }
--.hud-panel--evidence code { color: #9eeeb3; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
--
- .touch-root { display: none; }
--
- .quad-callout {
-   position: absolute;
-   top: 45%;
-@@ -210,12 +156,10 @@ html[data-evidence-mode] .hud-panel--evidence { display: flex; }
-   filter: drop-shadow(0 16px 0 rgba(7, 2, 18, 0.58)) drop-shadow(0 0 28px rgba(255, 232, 102, 0.45));
-   transition: opacity 90ms linear, transform 120ms cubic-bezier(.2,.9,.2,1.1);
- }
--
- .quad-callout[data-active="true"] {
-   transform: translateY(-50%) rotate(-5deg) scale(1);
-   opacity: 1;
- }
--
- .quad-callout span,
- .quad-callout em {
-   justify-self: center;
-@@ -230,7 +174,6 @@ html[data-evidence-mode] .hud-panel--evidence { display: flex; }
-   letter-spacing: .12em;
-   text-transform: uppercase;
- }
--
- .quad-callout strong {
-   margin: -4px 0 -1px;
-   color: #fff07a;
-@@ -241,196 +184,12 @@ html[data-evidence-mode] .hud-panel--evidence { display: flex; }
-   -webkit-text-stroke: clamp(3px, .45vw, 7px) #151030;
-   text-shadow: 7px 7px 0 #ff5f86, 13px 13px 0 #39ddea;
- }
--
- .quad-callout em {
-   background: #ff5f86;
-   color: #fff;
- }
--
- .event-ribbon { display: none; }
- .arena-match-header { display: none; }
--
--/*
-- * The named visual-gauntlet producer requests this layout explicitly. All
-- * controls and source/checksum evidence remain mounted and unchanged for the
-- * normal route; only the pixel-review frame removes diagnostic chrome so the
-- * real renderer-owned board and clear beat own the composition.
-- */
--html[data-review-capture="blockfall"] .hud-panel--actions,
--html[data-review-capture="blockfall"] .hud-panel--evidence {
--  display: none;
--}
--
--/* The live 3D board renders the state-bound discharge band and fragments. This
-- * event label is supplemental HUD, shown only while the same real quad-clear
-- * timer drives the renderer-owned effects and typed character reveal. */
--html[data-review-capture="blockfall"] .quad-callout {
--  top: 39%;
--  left: 24%;
--  display: grid;
--  width: 270px;
--  z-index: 4;
--  transform: translate(-50%, -50%) rotate(-3deg) scale(0.76);
--  filter: drop-shadow(0 13px 0 rgba(7, 12, 24, 0.72)) drop-shadow(0 0 32px rgba(255, 224, 92, 0.56));
--}
--
--html[data-review-capture="blockfall"] .quad-callout[data-active="true"] {
--  transform: translate(-50%, -50%) rotate(-3deg) scale(1);
--}
--
--html[data-review-capture="blockfall"] .quad-callout strong {
--  font-size: 64px;
--  text-shadow: 5px 5px 0 #ff5f86, 9px 9px 0 #39ddea;
--}
--
--html[data-review-capture="blockfall"] .event-ribbon[data-active="true"] {
--  position: absolute;
--  bottom: 16px;
--  display: grid;
--  width: 276px;
--  padding: 8px 14px 9px;
--  border: 2px solid #07141a;
--  color: #fff;
--  filter: drop-shadow(0 9px 0 rgba(4, 11, 19, 0.68));
--  clip-path: polygon(0 0, 94% 0, 100% 28%, 100% 100%, 6% 100%, 0 72%);
--}
--
--html[data-review-capture="blockfall"] .event-ribbon--mechanic {
--  left: 20px;
--  background: linear-gradient(100deg, rgba(7, 76, 104, 0.96), rgba(17, 165, 191, 0.94));
--  border-color: #58edff;
--}
--
--html[data-review-capture="blockfall"] .event-ribbon--rival {
--  right: 20px;
--  justify-items: end;
--  background: linear-gradient(260deg, rgba(104, 18, 82, 0.96), rgba(226, 61, 94, 0.94));
--  border-color: #ff8db1;
--  clip-path: polygon(6% 0, 100% 0, 100% 72%, 94% 100%, 0 100%, 0 28%);
--}
--
--html[data-review-capture="blockfall"] .event-ribbon span,
--html[data-review-capture="blockfall"] .event-ribbon small {
--  font-size: 9px;
--  font-weight: 850;
--  letter-spacing: .13em;
--  text-transform: uppercase;
--}
--
--html[data-review-capture="blockfall"] .event-ribbon strong {
--  margin: 2px 0;
--  color: #fff5c9;
--  font-size: 21px;
--  font-weight: 1000;
--  letter-spacing: -.03em;
--}
--
--html[data-review-capture="blockfall"] .arena-match-header {
--  position: absolute;
--  top: 0;
--  left: 50%;
--  z-index: 5;
--  display: grid;
--  grid-template-columns: 1fr auto 1fr;
--  align-items: center;
--  width: 486px;
--  height: 34px;
--  padding: 0 18px;
--  transform: translateX(-50%);
--  border-bottom: 3px solid #39f6ff;
--  background: linear-gradient(90deg, #07354a, #171328 45% 55%, #611c43);
--  color: #dffcff;
--  clip-path: polygon(4% 0, 96% 0, 100% 100%, 0 100%);
--  font-size: 8px;
--  font-weight: 900;
--  letter-spacing: .12em;
--  text-transform: uppercase;
--}
--
--html[data-review-capture="blockfall"] .arena-match-header strong {
--  padding: 4px 12px;
--  color: #fff4a8;
--  font-size: 12px;
--}
--
--html[data-review-capture="blockfall"] .arena-match-header span:last-child {
--  justify-self: end;
--}
--
--html[data-review-capture="blockfall"] .hud-panel--status {
--  top: 14px;
--  left: 14px;
--  width: 202px;
--  padding: 9px 10px;
--  border: 2px solid #58edff;
--  border-radius: 0;
--  background: linear-gradient(110deg, rgba(7, 76, 104, 0.96), rgba(8, 25, 34, 0.94));
--  backdrop-filter: none;
--  clip-path: polygon(0 0, 94% 0, 100% 30%, 100% 100%, 0 100%);
--}
--
--html[data-review-capture="blockfall"] .hud-panel--status .brand-mark {
--  width: 27px;
--  height: 27px;
--  border-radius: 7px;
--}
--
--html[data-review-capture="blockfall"] .hud-panel--status .eyebrow {
--  margin-bottom: 2px;
--  color: #ffe06b;
--  font-size: 7px;
--}
--
--html[data-review-capture="blockfall"] .hud-panel--status h1 {
--  font-size: 18px;
--}
--
--html[data-review-capture="blockfall"] .hud-panel--status .status-strip {
--  display: none;
--}
--
--html[data-review-capture="blockfall"] .hud-panel--score {
--  top: 14px;
--  right: 14px;
--  width: 274px;
--  border: 2px solid #ff8db1;
--  border-radius: 0;
--  background: linear-gradient(250deg, rgba(104, 18, 82, 0.96), rgba(22, 19, 30, 0.95));
--  backdrop-filter: none;
--  clip-path: polygon(6% 0, 100% 0, 100% 100%, 0 100%, 0 30%);
--}
--
--html[data-review-capture="blockfall"] .hud-panel--preview {
--  top: 152px;
--  right: auto;
--  left: calc(50% + 242px);
--  width: 78px;
--  padding: 7px;
--  border: 2px solid #ffcf5b;
--  border-radius: 0;
--  background: linear-gradient(180deg, rgba(11, 33, 42, 0.96), rgba(42, 18, 37, 0.94));
--  backdrop-filter: none;
--  clip-path: polygon(0 0, 82% 0, 100% 8%, 100% 92%, 82% 100%, 0 100%);
--}
--
--html[data-review-capture="blockfall"] .hud-panel--preview .mini-piece {
--  grid-template-columns: repeat(4, 7px);
--  grid-auto-rows: 7px;
--  gap: 1px;
--  min-height: 31px;
--}
--
--html[data-review-capture="blockfall"] .hud-panel--preview .mini-piece span {
--  width: 7px;
--  height: 7px;
--  border-radius: 2px;
--}
--
--@media (max-width: 900px) {
--  .hud-panel--actions { grid-template-columns: repeat(5, 52px); }
--  .hud-panel--evidence { display: none; }
--}
--
- @media (max-width: 620px) {
-   /* The control dock owns real layout space; it never covers the cabinet.
-      Its height is declared once and consumed by the dock, the stage and the
-@@ -509,13 +268,10 @@ html[data-review-capture="blockfall"] .hud-panel--preview .mini-piece span {
-      and font but restore a real thumb floor. */
-   .touch-root button { min-height: 44px; padding: 3px; border-radius: 8px; font-size: 9px; }
- }
--
- @media (max-width: 370px) {
-   .hud-panel--status { width: 154px; }
-   .hud-panel--score { width: 166px; }
- }
--
--/* ---- BF-A6 attract-mode title card ------------------------------------------ */
- .attract-card {
-   position: fixed;
-   left: 50%;
+ void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
 diff --git a/apps/showcase-blockfall-reactor/src/v2/evidence/index.ts b/apps/showcase-blockfall-reactor/src/v2/evidence/index.ts
 deleted file mode 100644
 index eec32805c..000000000

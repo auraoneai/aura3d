@@ -1,28 +1,29 @@
-From 0851d022e4c21d22554300a94cc259a1c3e3e24b Mon Sep 17 00:00:00 2001
+From 0120d1c7bf70c91f609cc24589a52c9a51b0b18c Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
-Date: Fri, 9 Oct 2026 13:40:42 +0000
+Date: Fri, 9 Oct 2026 13:45:54 +0000
 Subject: [PATCH] [qr-prd09] showcase-skyline-runner: delete evidence
  files+blocks (T5.8)
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- .../scripts/build-level-one-world.ts          | 263 ---------
- .../scripts/build-review-backdrop.mjs         | 126 -----
- .../scripts/build-review-hero.mjs             |  98 ----
- .../scripts/build-review-ledges.mjs           | 105 ----
- .../scripts/build-sfx.mjs                     | 289 ----------
- .../src/gameplay/level-proof.ts               | 236 --------
- .../src/legacy/main.ts                        | 504 +-----------------
- .../src/legacy/skyline-audio.ts               |  11 +-
- .../src/legacy/styles.css                     | 311 -----------
- .../src/level-proof.ts                        |   3 -
- .../src/v2/evidence/index.ts                  |  65 ---
- 11 files changed, 2 insertions(+), 2009 deletions(-)
+ .../scripts/build-level-one-world.ts          |  263 ---
+ .../scripts/build-review-backdrop.mjs         |  126 --
+ .../scripts/build-review-hero.mjs             |   98 -
+ .../scripts/build-review-ledges.mjs           |  105 -
+ .../scripts/build-sfx.mjs                     |  289 ---
+ .../showcase-evidence-checklist.json          |  374 ----
+ .../src/gameplay/level-proof.ts               |  236 ---
+ .../src/legacy/main.ts                        | 1808 -----------------
+ .../src/level-proof.ts                        |    3 -
+ apps/showcase-skyline-runner/src/main.ts      |   10 -
+ .../src/v2/evidence/index.ts                  |   65 -
+ 11 files changed, 3377 deletions(-)
  delete mode 100644 apps/showcase-skyline-runner/scripts/build-level-one-world.ts
  delete mode 100644 apps/showcase-skyline-runner/scripts/build-review-backdrop.mjs
  delete mode 100644 apps/showcase-skyline-runner/scripts/build-review-hero.mjs
  delete mode 100644 apps/showcase-skyline-runner/scripts/build-review-ledges.mjs
  delete mode 100644 apps/showcase-skyline-runner/scripts/build-sfx.mjs
+ delete mode 100644 apps/showcase-skyline-runner/showcase-evidence-checklist.json
  delete mode 100644 apps/showcase-skyline-runner/src/gameplay/level-proof.ts
  delete mode 100644 apps/showcase-skyline-runner/src/level-proof.ts
  delete mode 100644 apps/showcase-skyline-runner/src/v2/evidence/index.ts
@@ -938,6 +939,386 @@ index 0c61c7500..000000000
 -  console.log(`wrote ${report[name]}`);
 -}
 -console.log("\nGenerated", Object.keys(report).length, "cues into", OUT_DIR);
+diff --git a/apps/showcase-skyline-runner/showcase-evidence-checklist.json b/apps/showcase-skyline-runner/showcase-evidence-checklist.json
+deleted file mode 100644
+index 0ae566580..000000000
+--- a/apps/showcase-skyline-runner/showcase-evidence-checklist.json
++++ /dev/null
+@@ -1,374 +0,0 @@
+-{
+-  "schema": "aura3d-showcase-evidence-checklist/1.0",
+-  "routeId": "showcase-skyline-runner",
+-  "finalStatus": "prototype-blocked",
+-  "requiredCommands": [
+-    "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-skyline-runner/dist --release --source apps/showcase-skyline-runner/src --asset skylineArcticRunnerHero --asset showcaseKenneyVerdantPlatformerWorld",
+-    "pnpm exec playwright test tests/browser/showcase-route-primary-probes.spec.ts --reporter=line"
+-  ],
+-  "evidence": {
+-    "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
+-    "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+-    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-skyline-runner/dist --release --source apps/showcase-skyline-runner/src --asset skylineArcticRunnerHero --asset showcaseKenneyVerdantPlatformerWorld",
+-    "deployEvidence": "docs/project/showcase-launch-evidence.json",
+-    "deployPassed": true,
+-    "routePrimaryPassed": true,
+-    "gameplayProof": "tests/reports/showcase-gameplay/showcase-skyline-runner.json",
+-    "gameplayPassed": true,
+-    "visualReviewPassed": true,
+-    "assetPairCompositionReport": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-asset-pair-composition.json",
+-    "releaseAssetProbes": {
+-      "skylineArcticRunnerHero": "tests/reports/showcase-release-asset-probes/skylineArcticRunnerHero.json",
+-      "showcaseKenneyVerdantPlatformerWorld": "tests/reports/showcase-release-asset-probes/showcaseKenneyVerdantPlatformerWorld.json",
+-      "showcaseSideScrollerWorld": "tests/reports/showcase-release-asset-probes/showcaseSideScrollerWorld.json"
+-    }
+-  },
+-  "capabilities": [
+-    {
+-      "name": "typed-platformer-character",
+-      "status": "root-proven",
+-      "evidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json"
+-    },
+-    {
+-      "name": "route-local-platformer-gameplay",
+-      "status": "root-proven",
+-      "evidence": "tests/reports/showcase-gameplay/showcase-skyline-runner.json"
+-    }
+-  ],
+-  "platformer": {
+-    "characterAsset": "skylineArcticRunnerHero",
+-    "worldAssets": [
+-      "showcaseKenneyVerdantPlatformerWorld"
+-    ],
+-    "cameraIntent": "side-scroller",
+-    "layoutConstraints": {
+-      "keepCharacterReadable": true,
+-      "uiAvoidsEvidenceArea": true
+-    },
+-    "gameplayRequirements": [
+-      "movement",
+-      "jump",
+-      "checkpoint",
+-      "progression"
+-    ],
+-    "levelDesign": {
+-      "minPlayableSeconds": 30,
+-      "minCheckpoints": 6,
+-      "requiresHazardRespawn": true,
+-      "requiresFinish": true,
+-      "authoredLevelFlow": true,
+-      "playableSurfaceSource": "asset-derived-playable-surfaces",
+-      "playableSurfaceLayoutValidated": true,
+-      "playableSurfaceMap": {
+-        "assetId": "showcaseKenneyVerdantPlatformerWorld",
+-        "assetHash": "sha256-ac8f17eb8a42240a32ac642075de59345ead45e950d7f607aeba0afac4e958cd",
+-        "source": "asset-mesh-extracted",
+-        "surfaces": [
+-          {
+-            "id": "asset-main-ground",
+-            "x": 0.81,
+-            "y": 0,
+-            "width": 1.62,
+-            "height": 0.22,
+-            "kind": "ground"
+-          },
+-          {
+-            "id": "asset-platform-01",
+-            "x": 2.25,
+-            "y": 0.216,
+-            "width": 1.2,
+-            "height": 0.22,
+-            "kind": "platform"
+-          },
+-          {
+-            "id": "asset-platform-02",
+-            "x": 3.33,
+-            "y": 0.432,
+-            "width": 1.2,
+-            "height": 0.22,
+-            "kind": "platform"
+-          },
+-          {
+-            "id": "asset-platform-03",
+-            "x": 4.41,
+-            "y": 0.234,
+-            "width": 1.2,
+-            "height": 0.22,
+-            "kind": "platform"
+-          },
+-          {
+-            "id": "asset-platform-04",
+-            "x": 5.67,
+-            "y": 0.54,
+-            "width": 1.2,
+-            "height": 0.22,
+-            "kind": "platform"
+-          },
+-          {
+-            "id": "asset-platform-05",
+-            "x": 7.11,
+-            "y": 0.324,
+-            "width": 1.26,
+-            "height": 0.22,
+-            "kind": "platform"
+-          },
+-          {
+-            "id": "asset-platform-06",
+-            "x": 8.55,
+-            "y": 0.684,
+-            "width": 1.2,
+-            "height": 0.22,
+-            "kind": "platform"
+-          },
+-          {
+-            "id": "asset-platform-07",
+-            "x": 9.99,
+-            "y": 0.468,
+-            "width": 1.2,
+-            "height": 0.22,
+-            "kind": "platform"
+-          },
+-          {
+-            "id": "asset-platform-08",
+-            "x": 11.43,
+-            "y": 0.756,
+-            "width": 1.2,
+-            "height": 0.22,
+-            "kind": "platform"
+-          },
+-          {
+-            "id": "asset-platform-09",
+-            "x": 12.87,
+-            "y": 0.504,
+-            "width": 1.2,
+-            "height": 0.22,
+-            "kind": "platform"
+-          },
+-          {
+-            "id": "asset-platform-10",
+-            "x": 14.31,
+-            "y": 0.81,
+-            "width": 1.26,
+-            "height": 0.22,
+-            "kind": "platform"
+-          },
+-          {
+-            "id": "asset-finish-run",
+-            "x": 15.94,
+-            "y": 0.81,
+-            "width": 1.4,
+-            "height": 0.3,
+-            "kind": "finish"
+-          },
+-          {
+-            "id": "asset-hazard-gap",
+-            "x": 8.665,
+-            "y": 0.772,
+-            "width": 0.48,
+-            "height": 0.24,
+-            "kind": "hazard"
+-          },
+-          {
+-            "id": "asset-checkpoint-01",
+-            "x": 2.988,
+-            "y": 0.9,
+-            "width": 1.1,
+-            "height": 1.1,
+-            "kind": "checkpoint"
+-          },
+-          {
+-            "id": "asset-checkpoint-02",
+-            "x": 5.378,
+-            "y": 1.116,
+-            "width": 1.1,
+-            "height": 1.1,
+-            "kind": "checkpoint"
+-          },
+-          {
+-            "id": "asset-checkpoint-03",
+-            "x": 7.769,
+-            "y": 1.332,
+-            "width": 1.1,
+-            "height": 1.1,
+-            "kind": "checkpoint"
+-          },
+-          {
+-            "id": "asset-checkpoint-04",
+-            "x": 10.159,
+-            "y": 1.134,
+-            "width": 1.1,
+-            "height": 1.1,
+-            "kind": "checkpoint"
+-          },
+-          {
+-            "id": "asset-checkpoint-05",
+-            "x": 12.55,
+-            "y": 1.44,
+-            "width": 1.1,
+-            "height": 1.1,
+-            "kind": "checkpoint"
+-          },
+-          {
+-            "id": "asset-checkpoint-06",
+-            "x": 14.342,
+-            "y": 1.224,
+-            "width": 1.1,
+-            "height": 1.1,
+-            "kind": "checkpoint"
+-          }
+-        ],
+-        "levelLength": 14.94,
+-        "estimatedCompletionSeconds": 30,
+-        "characterScaleRatio": 0.42,
+-        "confidence": 0.74,
+-        "modelAlignment": {
+-          "source": "asset-mesh-extracted",
+-          "modelBounds": {
+-            "min": [
+-              -15.804,
+-              -2,
+-              -9
+-            ],
+-            "max": [
+-              75.706,
+-              12.4,
+-              1.854
+-            ]
+-          },
+-          "modelPoint": [
+-            30.81,
+-            -1.1,
+-            -0.075
+-          ],
+-          "gamePoint": {
+-            "x": 7.47,
+-            "y": 0
+-          },
+-          "anchorPairs": [
+-            {
+-              "id": "mesh-surface-anchor-1",
+-              "modelPoint": [
+-                -6.999999999999999,
+-                0.18,
+-                0
+-              ],
+-              "gamePoint": {
+-                "x": 0.81,
+-                "y": 0
+-              }
+-            },
+-            {
+-              "id": "mesh-surface-anchor-2",
+-              "modelPoint": [
+-                28,
+-                1.98,
+-                0
+-              ],
+-              "gamePoint": {
+-                "x": 7.11,
+-                "y": 0.324
+-              }
+-            },
+-            {
+-              "id": "mesh-surface-anchor-3",
+-              "modelPoint": [
+-                68,
+-                4.68,
+-                0
+-              ],
+-              "gamePoint": {
+-                "x": 14.31,
+-                "y": 0.81
+-              }
+-            }
+-          ],
+-          "evidence": {
+-            "notes": "Mesh-derived playable-surface anchors are computed from flat platform/world primitives and bind the generated level to the visible world asset with the same model-to-game scale used by the generated level."
+-          }
+-        },
+-        "evidence": {
+-          "sourceAsset": "assets.showcaseKenneyVerdantPlatformerWorld",
+-          "notes": "Playable surfaces extracted from 56 flat geometric GLB primitive(s) and bound to the current asset hash."
+-        }
+-      },
+-      "characterWorldScaleCompatible": true,
+-      "styleCompatible": true,
+-      "primitivePrimaryWorldRejected": true,
+-      "playableSurfaceEvidence": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+-      "assetPairEvidence": {
+-        "category": "platformer",
+-        "assets": [
+-          "skylineArcticRunnerHero",
+-          "showcaseKenneyVerdantPlatformerWorld"
+-        ],
+-        "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+-        "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
+-        "screenshotSha256": "sha256-70aba76ec69e1452a586a1f4e89974da7e91a387bd74a3af0420cefec00a63ff",
+-        "geometryEvidence": {
+-          "category": "platformer",
+-          "kind": "platformer-playable-surface-map",
+-          "source": "asset-mesh-extracted",
+-          "report": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+-          "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+-          "routePrimaryScreenshotSha256": "sha256-70aba76ec69e1452a586a1f4e89974da7e91a387bd74a3af0420cefec00a63ff",
+-          "assets": [
+-            {
+-              "id": "skylineArcticRunnerHero",
+-              "hash": "sha256-84024fc905fd9596b7a15ef31eb6a5b6099142e175b376b7f3def735e815bff7"
+-            },
+-            {
+-              "id": "showcaseKenneyVerdantPlatformerWorld",
+-              "hash": "sha256-ac8f17eb8a42240a32ac642075de59345ead45e950d7f607aeba0afac4e958cd"
+-            }
+-          ]
+-        },
+-        "compositionReport": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-asset-pair-composition.json",
+-        "checks": [
+-          {
+-            "id": "binding-overlap",
+-            "verdict": "pass"
+-          },
+-          {
+-            "id": "contact",
+-            "verdict": "pass"
+-          },
+-          {
+-            "id": "camera-readability",
+-            "verdict": "pass"
+-          },
+-          {
+-            "id": "scale-contract",
+-            "verdict": "pass"
+-          },
+-          {
+-            "id": "debug-guide-absence",
+-            "verdict": "pass"
+-          }
+-        ],
+-        "verdict": "pass",
+-        "notes": "Derived by the asset-pair composition validator from retained screenshot, gameplay, geometry, camera, and manifest evidence.",
+-        "blockers": []
+-      }
+-    },
+-    "releaseAssetRequirements": {
+-      "characterRole": "character",
+-      "worldRoles": [
+-        "level",
+-        "world",
+-        "stage"
+-      ],
+-      "requiresOrientationEvidence": true,
+-      "requiresScaleNormalizationEvidence": true,
+-      "requiresRenderedProbe": true,
+-      "requiresDurableProvenance": true,
+-      "requiresSuitabilityReason": true
+-    }
+-  },
+-  "blockers": [
+-    "evidence:gameplay-proof:platformer:visual-review-verdict-not-pass:needs-work",
+-    "evidence:gameplay-proof:platformer:visual-review-screenshot-mismatch",
+-    "evidence:deploy-artifact:not-passing",
+-    "evidence:deploy-artifact:has-warnings",
+-    "evidence:deploy-artifact:has-failures"
+-  ]
+-}
 diff --git a/apps/showcase-skyline-runner/src/gameplay/level-proof.ts b/apps/showcase-skyline-runner/src/gameplay/level-proof.ts
 deleted file mode 100644
 index a7d1f6794..000000000
@@ -1181,7 +1562,7 @@ index a7d1f6794..000000000
 -  };
 -}
 diff --git a/apps/showcase-skyline-runner/src/legacy/main.ts b/apps/showcase-skyline-runner/src/legacy/main.ts
-index 47e053f95..40aa62982 100644
+index 47e053f95..26e581df6 100644
 --- a/apps/showcase-skyline-runner/src/legacy/main.ts
 +++ b/apps/showcase-skyline-runner/src/legacy/main.ts
 @@ -26,7 +26,6 @@ import {
@@ -1192,7 +1573,7 @@ index 47e053f95..40aa62982 100644
  import { bindSkylineDrive } from "../scenario-drive";
  import { assets } from "../../../../src/aura-assets";
  import {
-@@ -117,18 +116,8 @@ import {
+@@ -117,22 +116,8 @@ import {
    resolveSkylineDistrict,
    resolveSkylineDistrictIndex
  } from "../gameplay/districts";
@@ -1208,10 +1589,14 @@ index 47e053f95..40aa62982 100644
 -// PART F2/F3 adoption probe: `?juiceProbe=1` fires the root-kit juice chain once
 -// (trauma + punch-in + node-backed feel effects) for the adoption spec. Review
 -// captures never set the flag, so certified framing stays exact.
- const skylineJuiceProbeEnabled = typeof window !== "undefined"
-   && new URLSearchParams(window.location.search).get("juiceProbe") === "1"
- ;
-@@ -151,26 +140,10 @@ const authoredPlayableSeconds = SKYLINE_AUTHORED_PLAYABLE_SECONDS;
+-const skylineJuiceProbeEnabled = typeof window !== "undefined"
+-  && new URLSearchParams(window.location.search).get("juiceProbe") === "1"
+-;
+-let skylineJuiceProbeFired = false;
+ const input = game.input({
+   actions: {
+     left: ["KeyA", "ArrowLeft"],
+@@ -151,26 +136,10 @@ const authoredPlayableSeconds = SKYLINE_AUTHORED_PLAYABLE_SECONDS;
  const playableSurfaceMap = skylinePlayableSurfaceMap;
  const solvedMotion = skylineMotion;
  const level = createSkylineLevel();
@@ -1238,7 +1623,7 @@ index 47e053f95..40aa62982 100644
  const platformerScene = game.platformerSceneBinding({
    surfaceMap: playableSurfaceMap,
    level,
-@@ -185,15 +158,7 @@ const platformerScene = game.platformerSceneBinding({
+@@ -185,15 +154,7 @@ const platformerScene = game.platformerSceneBinding({
    playerTargetHeight: SKYLINE_CHARACTER_HEIGHT,
    playerYOffset: 0
  });
@@ -1254,7 +1639,7 @@ index 47e053f95..40aa62982 100644
  const SKYLINE_COMPOSITION_SUBJECT_HEIGHT = SKYLINE_RENDERED_CHARACTER_HEIGHT * 1.28;
  const skylineWorldNodes = [
    model(assets.showcaseKenneyVerdantPlatformerWorld, {
-@@ -275,7 +240,6 @@ const skylineSummitBeaconNodes = [
+@@ -275,7 +236,6 @@ const skylineSummitBeaconNodes = [
      .scale([0.16, 0.21, 0.14])
      .runtime(game.runtimeNode("summit-beacon-core", { tags: ["district-landmark", "crown-heights", "set-dressing", "finish-language", "shape-plus-color"] }))
  ];
@@ -1262,7 +1647,7 @@ index 47e053f95..40aa62982 100644
  const steelLandmarkMaterial = material.emissive({
    name: "steel dawn relay crane",
    color: "#17364d",
-@@ -290,8 +254,6 @@ const groveLandmarkMaterial = material.emissive({
+@@ -290,8 +250,6 @@ const groveLandmarkMaterial = material.emissive({
    emissiveIntensity: 0.38,
    roughness: 0.82
  });
@@ -1271,7 +1656,7 @@ index 47e053f95..40aa62982 100644
  const steelLandmarkAnchor = SKYLINE_DISTRICT_ANCHORS.find((anchor) => anchor.section === 2)!;
  const groveLandmarkAnchor = SKYLINE_DISTRICT_ANCHORS.find((anchor) => anchor.section === 6)!;
  const [steelLandmarkX, steelLandmarkY] = platformerScene.toScenePoint({
-@@ -302,7 +264,6 @@ const [groveLandmarkX, groveLandmarkY] = platformerScene.toScenePoint({
+@@ -302,7 +260,6 @@ const [groveLandmarkX, groveLandmarkY] = platformerScene.toScenePoint({
    x: groveLandmarkAnchor.centerX,
    y: groveLandmarkAnchor.elevation
  });
@@ -1279,7 +1664,7 @@ index 47e053f95..40aa62982 100644
  const skylineDistrictLandmarkNodes = [
    // The crane's three steel members share one instanced pool. It remains a
    // recognizable landmark while avoiding three independent primitive draw calls.
-@@ -330,15 +291,6 @@ const skylineDistrictLandmarkNodes = [
+@@ -330,15 +287,6 @@ const skylineDistrictLandmarkNodes = [
      .scale([1.34, 0.12, 0.18])
      .runtime(game.runtimeNode("hanging-grove-canopy", { tags: ["district-landmark", "hanging-grove", "set-dressing", "non-colliding"] }))
  ];
@@ -1295,7 +1680,7 @@ index 47e053f95..40aa62982 100644
  const firstMidCheckpoint = level.checkpoints?.[0];
  const firstRelayStationNodes = firstMidCheckpoint
    ? (() => {
-@@ -409,19 +361,6 @@ const firstRelayStationNodes = firstMidCheckpoint
+@@ -409,19 +357,6 @@ const firstRelayStationNodes = firstMidCheckpoint
        ];
      })()
    : [];
@@ -1315,7 +1700,7 @@ index 47e053f95..40aa62982 100644
  interface InstancedPoolPlacement {
    readonly act: number;
    readonly x: number;
-@@ -429,9 +368,7 @@ interface InstancedPoolPlacement {
+@@ -429,9 +364,7 @@ interface InstancedPoolPlacement {
    readonly depthBias: number;
    readonly scale: number;
  }
@@ -1325,7 +1710,7 @@ index 47e053f95..40aa62982 100644
  function buildInstancedActPools(
    placements: readonly InstancedPoolPlacement[],
    options: {
-@@ -482,7 +419,6 @@ function buildInstancedActPools(
+@@ -482,7 +415,6 @@ function buildInstancedActPools(
      }));
    });
  }
@@ -1333,7 +1718,7 @@ index 47e053f95..40aa62982 100644
  const platforms = level.platforms ?? [];
  const checkpoints = level.checkpoints ?? [];
  const hazards = level.hazards ?? [];
-@@ -494,26 +430,6 @@ const runnerChallenge = createRunnerChallenge(level.assetBinding.authoredPlayabl
+@@ -494,26 +426,6 @@ const runnerChallenge = createRunnerChallenge(level.assetBinding.authoredPlayabl
  let challengeEvidence = runnerChallenge.evidence();
  const initialPlayerPose = platformerScene.toScenePlayer(state.player);
  let playerFacing = 1;
@@ -1360,7 +1745,7 @@ index 47e053f95..40aa62982 100644
  const skylineCharacterWorld: SkylineCharacterWorld = createSkylineCharacterWorld({
    scene: platformerScene,
    platforms: platforms.map((surface): SkylinePhysicalPlatform => ({
-@@ -539,15 +455,6 @@ const skylineCharacterWorld: SkylineCharacterWorld = createSkylineCharacterWorld
+@@ -539,15 +451,6 @@ const skylineCharacterWorld: SkylineCharacterWorld = createSkylineCharacterWorld
    authoredGravity: solvedMotion.gravity,
    spawn: { x: state.player.x, y: state.player.y }
  });
@@ -1376,7 +1761,7 @@ index 47e053f95..40aa62982 100644
  const SKYLINE_AUTHORITY_DESYNC_GAME_UNITS = SKYLINE_CHARACTER_HEIGHT * 2.5;
  const skylinePhysicsProof = {
    /** Peak disagreement between the authored analytic answer and the solver's answer. */
-@@ -574,22 +481,10 @@ const skylinePhysicsProof = {
+@@ -574,22 +477,10 @@ const skylinePhysicsProof = {
    /** Fastest downward clearance the solver absorbed, i.e. the hardest landing. */
    maxDescentSpeedGameUnitsPerSecond: 0
  };
@@ -1399,7 +1784,7 @@ index 47e053f95..40aa62982 100644
  function advancePhysicalCharacter(frameSeconds: number, authored: typeof state): typeof state {
    const teleported = authored.events.some(
      (event) => event.type === "respawn" || event.type === "reset"
-@@ -675,14 +570,6 @@ function advancePhysicalCharacter(frameSeconds: number, authored: typeof state):
+@@ -675,14 +566,6 @@ function advancePhysicalCharacter(frameSeconds: number, authored: typeof state):
      }
    };
  }
@@ -1414,7 +1799,7 @@ index 47e053f95..40aa62982 100644
  function resetSkylinePhysicalCharacter(): void {
    skylineCharacterWorld.place({ x: state.player.x, y: state.player.y }, state.time);
    skylineSolverVelocity = { x: 0, y: 0 };
-@@ -693,13 +580,6 @@ function resetSkylinePhysicalCharacter(): void {
+@@ -693,13 +576,6 @@ function resetSkylinePhysicalCharacter(): void {
    skylinePhysicsProof.lastJumpApexGameUnits = 0;
    renderSkylineLiftCards();
  }
@@ -1428,7 +1813,7 @@ index 47e053f95..40aa62982 100644
  function skylineLedgeAsset(collisionWidth: number) {
    return collisionWidth >= 1.25
      ? assets.skylineIceLedgeLong
-@@ -707,7 +587,6 @@ function skylineLedgeAsset(collisionWidth: number) {
+@@ -707,7 +583,6 @@ function skylineLedgeAsset(collisionWidth: number) {
        ? assets.skylineIceLedgeMedium
        : assets.skylineIceLedgeCompact;
  }
@@ -1436,7 +1821,7 @@ index 47e053f95..40aa62982 100644
  function skylineLedgeAspect(collisionWidth: number) {
    return collisionWidth >= 1.25
      ? 1461 / 251
-@@ -715,16 +594,6 @@ function skylineLedgeAspect(collisionWidth: number) {
+@@ -715,16 +590,6 @@ function skylineLedgeAspect(collisionWidth: number) {
        ? 1014 / 261
        : 630 / 270;
  }
@@ -1453,7 +1838,7 @@ index 47e053f95..40aa62982 100644
  function skylineLiftCardMetrics(pose: SkylineLiftPose) {
    const rect = platformerScene.surfaceToSceneRect(pose);
    // Same overhang the certified ice ledges use, so a lift reads as the same tile family.
-@@ -752,15 +621,6 @@ const skylineLiftCardNodes = skylineCharacterWorld.liftPoses().map((pose, index)
+@@ -752,15 +617,6 @@ const skylineLiftCardNodes = skylineCharacterWorld.liftPoses().map((pose, index)
        tags: ["typed-environment", "platform-presentation", "solver-collider-aligned", "moving-surface", "kinematic-collider-backed"]
      }));
  });
@@ -1469,7 +1854,7 @@ index 47e053f95..40aa62982 100644
  const skylineReviewLedgeNodes = platforms
        .map((surface, index) => ({ surface, index, rect: platformerScene.surfaceToSceneRect(surface) }))
        .filter(({ rect }) =>
-@@ -797,14 +657,6 @@ const skylineReviewLedgeNodes = platforms
+@@ -797,14 +653,6 @@ const skylineReviewLedgeNodes = platforms
              tags: ["typed-environment", "platform-presentation", "certified-surface-aligned", "non-colliding"]
            }));
        });
@@ -1484,7 +1869,7 @@ index 47e053f95..40aa62982 100644
  const skylineLedgeUnderlayTransforms = platforms
    .map((surface) => platformerScene.surfaceToSceneRect(surface))
    .filter((rect) =>
-@@ -830,12 +682,8 @@ const skylineLedgeUnderlayNodes = skylineLedgeUnderlayTransforms.length > 0
+@@ -830,12 +678,8 @@ const skylineLedgeUnderlayNodes = skylineLedgeUnderlayTransforms.length > 0
      }))]
    : [];
  const playerYawForFacing = (facing: number) => facing >= 0 ? Math.PI / 2 : -Math.PI / 2;
@@ -1497,7 +1882,7 @@ index 47e053f95..40aa62982 100644
  const completionProof = {
    completed: false,
    stable: false,
-@@ -846,12 +694,6 @@ const completionProof = {
+@@ -846,12 +690,6 @@ const completionProof = {
      finish: 0
    }
  };
@@ -1510,7 +1895,7 @@ index 47e053f95..40aa62982 100644
  const kitContractProof = {
    kind: "aura-game-platformer-kit-browser-contract" as const,
    source: "game.platformer" as const,
-@@ -873,8 +715,6 @@ const kitContractProof = {
+@@ -873,8 +711,6 @@ const kitContractProof = {
    resetRestoresStart: false,
    eventTypes: [] as string[]
  };
@@ -1519,7 +1904,7 @@ index 47e053f95..40aa62982 100644
  function recordKitEvents(events: readonly { readonly type: string }[]): void {
    for (const event of events) {
      if (!kitContractProof.eventTypes.includes(event.type)) kitContractProof.eventTypes.push(event.type);
-@@ -903,16 +743,6 @@ function recordKitEvents(events: readonly { readonly type: string }[]): void {
+@@ -903,16 +739,6 @@ function recordKitEvents(events: readonly { readonly type: string }[]): void {
      }
    }
  }
@@ -1536,7 +1921,7 @@ index 47e053f95..40aa62982 100644
  const HERO_LOCOMOTION_CLIP_MAP = {
    idle: "idle",
    run: "sprint",
-@@ -921,15 +751,12 @@ const HERO_LOCOMOTION_CLIP_MAP = {
+@@ -921,15 +747,12 @@ const HERO_LOCOMOTION_CLIP_MAP = {
    land: "crouch",
    hit: "die"
  } as const;
@@ -1552,7 +1937,7 @@ index 47e053f95..40aa62982 100644
  interface SkylineEventFeedbackVisualSpec {
    readonly nodeId: string;
    readonly shape: "torus" | "capsule" | "diamond";
-@@ -939,12 +766,6 @@ interface SkylineEventFeedbackVisualSpec {
+@@ -939,12 +762,6 @@ interface SkylineEventFeedbackVisualSpec {
    readonly duration: number;
    readonly rotationZ?: number;
  }
@@ -1565,7 +1950,7 @@ index 47e053f95..40aa62982 100644
  const SKYLINE_EVENT_FEEDBACK_VISUALS: Readonly<Record<SkylineRequiredFeedbackEvent, SkylineEventFeedbackVisualSpec>> = Object.freeze({
    jump: { nodeId: "skyline-event-feedback-jump", shape: "torus", color: "#46d9ff", emissive: "#7cecff", scale: [0.13, 0.13, 0.025], duration: 0.38 },
    land: { nodeId: "skyline-event-feedback-land", shape: "torus", color: "#7ef0c8", emissive: "#c8ffe9", scale: [0.24, 0.075, 0.03], duration: 0.46 },
-@@ -959,7 +780,6 @@ const SKYLINE_EVENT_FEEDBACK_VISUALS: Readonly<Record<SkylineRequiredFeedbackEve
+@@ -959,7 +776,6 @@ const SKYLINE_EVENT_FEEDBACK_VISUALS: Readonly<Record<SkylineRequiredFeedbackEve
    respawn: { nodeId: "skyline-event-feedback-respawn", shape: "capsule", color: "#67e8f9", emissive: "#d8fbff", scale: [0.065, 0.34, 0.065], duration: 0.82 },
    finish: { nodeId: "skyline-event-feedback-finish", shape: "torus", color: "#64e8c4", emissive: "#fff1a8", scale: [0.48, 0.48, 0.055], duration: 1.05 }
  });
@@ -1573,7 +1958,7 @@ index 47e053f95..40aa62982 100644
  const skylineEventFeedbackVisualNodes = Object.entries(SKYLINE_EVENT_FEEDBACK_VISUALS).map(([event, spec]) => {
    const visualMaterial = material.emissive({
      name: `skyline ${event} event feedback`,
-@@ -982,16 +802,8 @@ const skylineEventFeedbackVisualNodes = Object.entries(SKYLINE_EVENT_FEEDBACK_VI
+@@ -982,16 +798,8 @@ const skylineEventFeedbackVisualNodes = Object.entries(SKYLINE_EVENT_FEEDBACK_VI
        tags: ["event-feedback", event, "actual-event-driven", "non-colliding", "renderer-owned"]
      }));
  });
@@ -1590,7 +1975,7 @@ index 47e053f95..40aa62982 100644
  const cameraTuning = baseCameraTuning;
  const animationStateHistory: { state: string; clip: string }[] = [
    { state: "idle", clip: HERO_LOCOMOTION_CLIP_MAP.idle }
-@@ -999,34 +811,6 @@ const animationStateHistory: { state: string; clip: string }[] = [
+@@ -999,34 +807,6 @@ const animationStateHistory: { state: string; clip: string }[] = [
  function round(value: number): number {
    return Math.round(value * 1000) / 1000;
  }
@@ -1625,7 +2010,7 @@ index 47e053f95..40aa62982 100644
  const levelSpan = platforms.reduce<readonly [number, number]>(
    (span, platform) => [
      Math.min(span[0], platform.x - (platform.width ?? 0) / 2),
-@@ -1079,52 +863,8 @@ const compositionPlan = planLayeredSceneComposition(platformerCompositionSpec({
+@@ -1079,52 +859,8 @@ const compositionPlan = planLayeredSceneComposition(platformerCompositionSpec({
    // restating any per-layer number.
    densityScale: compactViewport ? 0.6 : 1
  }));
@@ -1678,7 +2063,7 @@ index 47e053f95..40aa62982 100644
  const skylineCompositionNodes = compositionPlan.placements
    .filter((placement) => {
      const localX = placement.x - sceneSpan[0];
-@@ -1173,18 +913,6 @@ const skylineCompositionNodes = compositionPlan.placements
+@@ -1173,18 +909,6 @@ const skylineCompositionNodes = compositionPlan.placements
          tags: ["set-dressing", "typed-asset", "composition-layer", placement.layer, "non-colliding"]
        }));
    });
@@ -1697,7 +2082,7 @@ index 47e053f95..40aa62982 100644
  const skylineWinterBackdropNodes = [model(assets.skylineWinterParallaxBackdrop, {
    name: "Steel Dawn painted winter parallax",
    role: "setDressing",
-@@ -1221,10 +949,6 @@ const skylineWinterBackdropNodes = [model(assets.skylineWinterParallaxBackdrop,
+@@ -1221,10 +945,6 @@ const skylineWinterBackdropNodes = [model(assets.skylineWinterParallaxBackdrop,
    .runtime(game.runtimeNode("steel-dawn-winter-parallax", {
      tags: ["typed-supporting-environment", "textured", "parallax", "review-backdrop", "non-colliding"]
    }))];
@@ -1708,7 +2093,7 @@ index 47e053f95..40aa62982 100644
  const skylineStarMaterial = material.emissive({
    name: "steel dawn starfield",
    color: "#8fb8ff",
-@@ -1272,20 +996,6 @@ const skylineMoonNode = primitives.sphere({
+@@ -1272,20 +992,6 @@ const skylineMoonNode = primitives.sphere({
    .runtime(game.runtimeNode("steel-dawn-moon", {
      tags: ["backdrop", "moon", "set-dressing", "non-colliding", "renderer-owned"]
    }));
@@ -1729,7 +2114,7 @@ index 47e053f95..40aa62982 100644
  function createActSkyBackdropNodes(actIndex: number) {
    const backdrop = planSkylineActBackdrop({
      actIndex,
-@@ -1342,7 +1052,6 @@ function createActSkyBackdropNodes(actIndex: number) {
+@@ -1342,7 +1048,6 @@ function createActSkyBackdropNodes(actIndex: number) {
      );
    });
  }
@@ -1737,7 +2122,7 @@ index 47e053f95..40aa62982 100644
  function createActFogNode(actIndex: number) {
    const palette = getSkylineActPalette(actIndex);
    const reviewNocturne = false;
-@@ -1360,7 +1069,6 @@ function createActFogNode(actIndex: number) {
+@@ -1360,7 +1065,6 @@ function createActFogNode(actIndex: number) {
      tags: ["backdrop", "fog", `act-${actIndex}`]
    }));
  }
@@ -1745,7 +2130,7 @@ index 47e053f95..40aa62982 100644
  const actSkyBackdropNodeBuilders = [0, 1, 2, 3, 4].flatMap((actIndex) => createActSkyBackdropNodes(actIndex));
  const actFogNodeBuilders = [0, 1, 2, 3, 4].map((actIndex) => createActFogNode(actIndex));
  const actPaletteLights = [0, 1, 2, 3, 4].map((actIndex) => {
-@@ -1376,8 +1084,6 @@ const actPaletteLights = [0, 1, 2, 3, 4].map((actIndex) => {
+@@ -1376,8 +1080,6 @@ const actPaletteLights = [0, 1, 2, 3, 4].map((actIndex) => {
      }).position(1.7, 1.8, 2.4)
    };
  });
@@ -1754,7 +2139,7 @@ index 47e053f95..40aa62982 100644
  const skylineBackdropChunks = planSkylineBackdropChunks(SKYLINE_DISTRICT_ANCHORS);
  const skylineBackdropNodes = skylineBackdropChunks.map((chunk) => {
    const lod = skylineBackdropLodSpec(chunk);
-@@ -1396,11 +1102,6 @@ const skylineBackdropNodes = skylineBackdropChunks.map((chunk) => {
+@@ -1396,11 +1098,6 @@ const skylineBackdropNodes = skylineBackdropChunks.map((chunk) => {
        tags: ["backdrop", "distance-lod", "skyline-silhouette", "act-" + chunk.act, chunk.districtId]
      }));
  });
@@ -1766,7 +2151,7 @@ index 47e053f95..40aa62982 100644
  const skylineActGateNodes = SKYLINE_ACT_GATES.map((gate) => {
    const palette = getSkylineActPalette(gate.act);
    const [sceneX, surfaceSceneY] = platformerScene.toScenePoint({ x: gate.x, y: gate.surfaceY });
-@@ -1426,8 +1127,6 @@ const skylineActGateNodes = SKYLINE_ACT_GATES.map((gate) => {
+@@ -1426,8 +1123,6 @@ const skylineActGateNodes = SKYLINE_ACT_GATES.map((gate) => {
        tags: ["act-gate", "text3d", "ceremony", "act-" + gate.act]
      }));
  });
@@ -1775,7 +2160,7 @@ index 47e053f95..40aa62982 100644
  const skylineFoliagePlacements = planSkylineFoliage({ platforms });
  const skylineFoliagePoolNodes = buildInstancedActPools(skylineFoliagePlacements, {
    nodeId: skylineFoliageNodeId,
-@@ -1440,8 +1139,6 @@ const skylineFoliagePoolNodes = buildInstancedActPools(skylineFoliagePlacements,
+@@ -1440,8 +1135,6 @@ const skylineFoliagePoolNodes = buildInstancedActPools(skylineFoliagePlacements,
    yLift: 0.06,
    tags: ["foliage", "act-tinted", "renderer-owned"]
  });
@@ -1784,7 +2169,7 @@ index 47e053f95..40aa62982 100644
  const skylineSparklePlacements = planSkylineShardSparkles(
    collectibles.filter((collectible) => !String(collectible.id).includes("ember-charge"))
  );
-@@ -1455,7 +1152,6 @@ const skylineSparklePoolNodes = buildInstancedActPools(skylineSparklePlacements,
+@@ -1455,7 +1148,6 @@ const skylineSparklePoolNodes = buildInstancedActPools(skylineSparklePlacements,
    yLift: 0.04,
    tags: ["sparkle", "coin-halo", "act-tinted", "renderer-owned"]
  });
@@ -1792,7 +2177,7 @@ index 47e053f95..40aa62982 100644
  const hazardLanguage = SKYLINE_VISUAL_LANGUAGE.hazard;
  const hazardWarningMaterial = material.emissive({
    name: "skyline crossed hazard warning",
-@@ -1464,11 +1160,6 @@ const hazardWarningMaterial = material.emissive({
+@@ -1464,11 +1156,6 @@ const hazardWarningMaterial = material.emissive({
    emissiveIntensity: 0.72,
    roughness: 0.38
  });
@@ -1804,7 +2189,7 @@ index 47e053f95..40aa62982 100644
  const skylineHazardLanguageNodes = hazards.map((hazard) => {
    const rect = platformerScene.surfaceToSceneRect(hazard);
    const armLength = Math.max(0.1, Math.min(0.22, rect.size[0] * 0.62));
-@@ -1488,7 +1179,6 @@ const skylineHazardLanguageNodes = hazards.map((hazard) => {
+@@ -1488,7 +1175,6 @@ const skylineHazardLanguageNodes = hazards.map((hazard) => {
    ])
      .position(rect.center[0], rect.center[1], GAMEPLAY_ACTOR_DEPTH - 0.025);
  });
@@ -1812,7 +2197,7 @@ index 47e053f95..40aa62982 100644
  const relayLanguage = SKYLINE_VISUAL_LANGUAGE.relay;
  const relayRingMaterial = material.emissive({
    name: "skyline relay cyan ring",
-@@ -1503,7 +1193,6 @@ const relayPostMaterial = material.pbr({
+@@ -1503,7 +1189,6 @@ const relayPostMaterial = material.pbr({
    metallic: 0.24,
    roughness: 0.58
  });
@@ -1820,7 +2205,7 @@ index 47e053f95..40aa62982 100644
  const skylineRelayLanguageNodes = checkpoints.map((checkpoint) => {
    const [x, y] = platformerScene.toScenePoint(checkpoint, 0.02);
    return group(`relay ring on post ${checkpoint.id}`, [
-@@ -1519,14 +1208,6 @@ const skylineRelayLanguageNodes = checkpoints.map((checkpoint) => {
+@@ -1519,14 +1204,6 @@ const skylineRelayLanguageNodes = checkpoints.map((checkpoint) => {
    ])
      .position(x, y, GAMEPLAY_ACTOR_DEPTH - 0.08);
  });
@@ -1835,7 +2220,7 @@ index 47e053f95..40aa62982 100644
  const ghostEchoNode = model(assets.skylineHeroRunner, {
    name: "skyline-ghost-echo",
    role: "primaryCharacter",
-@@ -1552,13 +1233,6 @@ const ghostEchoNode = model(assets.skylineHeroRunner, {
+@@ -1552,13 +1229,6 @@ const ghostEchoNode = model(assets.skylineHeroRunner, {
    .runtime(game.runtimeNode("skyline-ghost-echo", {
      tags: ["ghost", "visual-only", "input-replay", "ghost-language", "shape-plus-color", "renderer-owned"]
    }));
@@ -1849,7 +2234,7 @@ index 47e053f95..40aa62982 100644
  const ghostEchoAccentNodes = [
    { id: "skyline-ghost-echo-ring-core", opacity: 0.3, scale: [0.29, 0.38, 0.022] as const },
    { id: "skyline-ghost-echo-ring-trail-a", opacity: 0.2, scale: [0.22, 0.3, 0.018] as const },
-@@ -1578,7 +1252,6 @@ const ghostEchoAccentNodes = [
+@@ -1578,7 +1248,6 @@ const ghostEchoAccentNodes = [
    .runtime(game.runtimeNode(spec.id, {
      tags: ["ghost", "ghost-accent", "visual-only", "non-colliding", "alpha-blended", "renderer-owned"]
    })));
@@ -1857,7 +2242,7 @@ index 47e053f95..40aa62982 100644
  const platformerCamera = game.platformerCameraRig({
    sceneBinding: platformerScene,
    player: state.player,
-@@ -1652,7 +1325,6 @@ const skylineFeel = createSkylineFeel({
+@@ -1652,7 +1321,6 @@ const skylineFeel = createSkylineFeel({
  let activeCameraFrame = skylineCameraFrame(cameraTuning, 1);
  const observedCameraFacing = new Set<"left" | "right">(["right"]);
  let airborneFramingObserved = false;
@@ -1865,32 +2250,86 @@ index 47e053f95..40aa62982 100644
  const minimumFoliageEdgeClearance = skylineFoliagePlacements.reduce((minimum, placement) => {
    const supportingSurface = platforms.find((surface) =>
      placement.x >= surface.x && placement.x <= surface.x + surface.width
-@@ -1666,7 +1338,6 @@ const minimumFoliageEdgeClearance = skylineFoliagePlacements.reduce((minimum, pl
+@@ -1666,78 +1334,6 @@ const minimumFoliageEdgeClearance = skylineFoliagePlacements.reduce((minimum, pl
    const foliageHalfWidth = 0.055 * placement.scale;
    return Math.min(minimum, sceneSpaceClearance - foliageHalfWidth);
  }, Number.POSITIVE_INFINITY);
 -
- function skylineCameraReadabilityEvidence() {
-   return {
-     source: "game.platformerCameraRig + route-local facing director",
-@@ -1697,7 +1368,6 @@ function skylineCameraReadabilityEvidence() {
-     }
-   };
- }
+-function skylineCameraReadabilityEvidence() {
+-  return {
+-    source: "game.platformerCameraRig + route-local facing director",
+-    viewport: cameraTuning.viewport,
+-    viewportWidth: window.innerWidth,
+-    viewportHeight: window.innerHeight,
+-    mode: platformerCamera.mode,
+-    targetNode: platformerCamera.targetNode,
+-    verticalFollowTarget: platformerCamera.mode === "follow" && platformerCamera.targetNode === "platformer-player",
+-    tuning: { ...cameraTuning },
+-    activeFrame: { ...activeCameraFrame, offset: [...activeCameraFrame.offset], targetOffset: [...activeCameraFrame.targetOffset] },
+-    observedFacingDirections: [...observedCameraFacing].sort(),
+-    bothFacingDirectionsObserved: observedCameraFacing.size === 2,
+-    airborneFramingObserved,
+-    jumpApex: solvedMotion.apex,
+-    decorativeDepthContract: {
+-      actorDepth: GAMEPLAY_ACTOR_DEPTH,
+-      worldDepth: platformerScene.worldZ,
+-      nearestBackgroundDressingDepth: -0.04,
+-      allBackgroundDressingBehindActor: -0.04 < GAMEPLAY_ACTOR_DEPTH,
+-      renderedForegroundPropCount: 0
+-    },
+-    playableEdgeContract: {
+-      certifiedSurfaceCount: platforms.length,
+-      foliagePlacementCount: skylineFoliagePlacements.length,
+-      minimumFoliageEdgeClearance: round(Number.isFinite(minimumFoliageEdgeClearance) ? minimumFoliageEdgeClearance : 0),
+-      foliageClearsEveryLandingEdge: minimumFoliageEdgeClearance > 0
+-    }
+-  };
+-}
 -
- function skylineMotionPreferenceEvidence() {
-   const feel = skylineFeel.snapshot();
-   return {
-@@ -1736,8 +1406,6 @@ function skylineMotionPreferenceEvidence() {
-     }
-   };
- }
+-function skylineMotionPreferenceEvidence() {
+-  const feel = skylineFeel.snapshot();
+-  return {
+-    source: "prefers-reduced-motion + game.cameraDirector + game.effects + engine.camera.shake/punchIn + engine.gameFeel + route-local secondary-motion policy",
+-    reducedMotion,
+-    gameplayTruthPreserved: true,
+-    essentialMotionRetained: ["player locomotion", "moving platforms", "sentry hazards", "ghost race reference"],
+-    camera: {
+-      impactRequests: feel.cameraImpactRequests,
+-      impactsSuppressed: feel.cameraImpactsSuppressed,
+-      currentShakeOffset: [...feel.cameraShakeOffset],
+-      maximumShakeMagnitude: Number(feel.maximumCameraShakeMagnitude.toFixed(6)),
+-      impulsesRemoved: reducedMotion
+-        && feel.cameraImpactsSuppressed === feel.cameraImpactRequests
+-        && feel.maximumCameraShakeMagnitude === 0,
+-      // PART F2/F3 adoption: root-kit juice folded into the platformer follow.
+-      rootKit: "engine.camera.shake + engine.camera.punchIn + engine.gameFeel over game.platformerCameraRig follow",
+-      rootTrauma: feel.rootTrauma,
+-      rootShakeEnergy: feel.rootShakeEnergy,
+-      rootPunchActive: feel.rootPunchActive,
+-      rootPunchFovOffset: feel.rootPunchFovOffset,
+-      rootMaxTrauma: feel.rootMaxTrauma,
+-      rootMaxShakeMagnitude: feel.rootMaxShakeMagnitude,
+-      rootShakeSeen: feel.rootShakeSeen,
+-      rootPunchSeen: feel.rootPunchSeen,
+-      feelEffectsSpawned: feel.feelEffectsSpawned,
+-      feelEffectsActive: feel.feelEffectsActive,
+-      feelOverBudget: feel.feelOverBudget,
+-      probeFired: feel.probeFired
+-    },
+-    secondaryMotion: {
+-      collectiblePulseAmplitude: reducedMotion ? 0 : 0.18,
+-      eventScalePulseAmplitude: reducedMotion ? 0 : 0.24,
+-      runtimeEffectsReduced: reducedMotion,
+-      excessiveMotionRemoved: reducedMotion
+-    }
+-  };
+-}
 -// Unlock the web-audio context on the first real interaction so autoplay policy
 -// lets synth SFX play (mirrors the Clash gesture-unlock discipline).
  const skylineAudioUnlock = (): void => {
    window.removeEventListener("pointerdown", skylineAudioUnlock);
    window.removeEventListener("keydown", skylineAudioUnlock);
-@@ -1746,16 +1414,8 @@ const skylineAudioUnlock = (): void => {
+@@ -1746,16 +1342,8 @@ const skylineAudioUnlock = (): void => {
  window.addEventListener("pointerdown", skylineAudioUnlock);
  window.addEventListener("keydown", skylineAudioUnlock);
  let hudElements: ReturnType<typeof setupSkylineHud> | undefined;
@@ -1907,7 +2346,7 @@ index 47e053f95..40aa62982 100644
  const skylinePlayerVisualNode = model(
    assets.skylineArcticRunnerHero,
    {
-@@ -1767,20 +1427,6 @@ const skylinePlayerVisualNode = model(
+@@ -1767,20 +1355,6 @@ const skylinePlayerVisualNode = model(
      receiveShadow: true
    }
  );
@@ -1928,7 +2367,7 @@ index 47e053f95..40aa62982 100644
  const skylineRunnerKitSashMaterial = material.pbr({
    name: "skyline runner glacier sash",
    color: "#57d8e9",
-@@ -1800,10 +1446,6 @@ const skylineRunnerKitVisorMaterial = material.emissive({
+@@ -1800,10 +1374,6 @@ const skylineRunnerKitVisorMaterial = material.emissive({
    emissiveIntensity: 0.65,
    roughness: 0.24
  });
@@ -1939,7 +2378,7 @@ index 47e053f95..40aa62982 100644
  const skylineAccessoryNodes = [
    primitives.box({ name: "skyline runner glacier sash", material: skylineRunnerKitSashMaterial })
      .position(initialPlayerPose.position[0] - 0.08, initialPlayerPose.position[1] + 0.08, GAMEPLAY_ACTOR_DEPTH + 0.045)
-@@ -1827,7 +1469,6 @@ const skylineAccessoryNodes = [
+@@ -1827,7 +1397,6 @@ const skylineAccessoryNodes = [
        tags: ["character-kit", "typed-hero-accent", "shape-plus-color", "non-colliding", "renderer-owned"]
      }))
  ];
@@ -1947,7 +2386,7 @@ index 47e053f95..40aa62982 100644
  const skylineGame = createGame({
    id: "showcase-skyline-runner",
    target: "#app",
-@@ -2110,21 +1751,11 @@ const skylineJuice = createJuice<"jump" | "collect" | "checkpoint" | "hazard" |
+@@ -2110,21 +1679,11 @@ const skylineJuice = createJuice<"jump" | "collect" | "checkpoint" | "hazard" |
    tweens: skylineTween,
    rumble: createRumbleDriver()
  });
@@ -1969,7 +2408,7 @@ index 47e053f95..40aa62982 100644
  function renderSkylineLiftCards(): void {
    const poses = skylineCharacterWorld.liftPoses();
    for (let index = 0; index < skylineLiftCardHandles.length; index += 1) {
-@@ -2137,11 +1768,6 @@ function renderSkylineLiftCards(): void {
+@@ -2137,11 +1696,6 @@ function renderSkylineLiftCards(): void {
  }
  const skylineAccessoryHandles: RuntimeNodeHandleLike[] = [];
  const skylineLegacyWorldHandle = app.nodes.require("platformer-bound-level-one-world");
@@ -1981,7 +2420,7 @@ index 47e053f95..40aa62982 100644
  skylineLegacyWorldHandle.setVisible(false);
  const skylineStarfieldHandle = app.nodes.require("steel-dawn-starfield");
  const skylineMoonHandle = app.nodes.require("steel-dawn-moon");
-@@ -2165,7 +1791,6 @@ const eventFeedbackVisualTimers = Object.fromEntries(
+@@ -2165,7 +1719,6 @@ const eventFeedbackVisualTimers = Object.fromEntries(
    Object.keys(SKYLINE_EVENT_FEEDBACK_VISUALS).map((event) => [event, 0])
  ) as Record<SkylineRequiredFeedbackEvent, number>;
  const observedEventFeedbackVisuals = new Set<SkylineRequiredFeedbackEvent>();
@@ -1989,7 +2428,7 @@ index 47e053f95..40aa62982 100644
  function triggerEventFeedbackVisual(
    event: SkylineRequiredFeedbackEvent,
    scenePoint: readonly [number, number, number]
-@@ -2178,7 +1803,6 @@ function triggerEventFeedbackVisual(
+@@ -2178,7 +1731,6 @@ function triggerEventFeedbackVisual(
      .setScale(spec.scale)
      .setVisible(true);
  }
@@ -1997,7 +2436,7 @@ index 47e053f95..40aa62982 100644
  function updateEventFeedbackVisuals(step: number): void {
    for (const event of Object.keys(SKYLINE_EVENT_FEEDBACK_VISUALS) as SkylineRequiredFeedbackEvent[]) {
      const spec = SKYLINE_EVENT_FEEDBACK_VISUALS[event];
-@@ -2196,14 +1820,12 @@ function updateEventFeedbackVisuals(step: number): void {
+@@ -2196,35 +1748,12 @@ function updateEventFeedbackVisuals(step: number): void {
      node.setScale(spec.scale.map((value) => value * pulse) as [number, number, number]);
    }
  }
@@ -2009,10 +2448,31 @@ index 47e053f95..40aa62982 100644
    }
  }
 -
- function buildSkylineEventFeedbackEvidence() {
-   const feedback = skylineFeel.eventFeedbackProof();
-   const visualNodes = Object.fromEntries(
-@@ -2251,11 +1873,6 @@ for (const [key, node] of Object.entries(actLightSets)) {
+-function buildSkylineEventFeedbackEvidence() {
+-  const feedback = skylineFeel.eventFeedbackProof();
+-  const visualNodes = Object.fromEntries(
+-    Object.entries(SKYLINE_EVENT_FEEDBACK_VISUALS).map(([event, spec]) => [event, {
+-      nodeId: spec.nodeId,
+-      shape: spec.shape,
+-      color: spec.color,
+-      duration: spec.duration,
+-      mounted: app.nodes.has(spec.nodeId),
+-      observed: observedEventFeedbackVisuals.has(event as SkylineRequiredFeedbackEvent)
+-    }])
+-  );
+-  return {
+-    ...feedback,
+-    visualNodes,
+-    mountedVisualCount: Object.values(visualNodes).filter((entry) => entry.mounted).length,
+-    observedVisualCount: Object.values(visualNodes).filter((entry) => entry.observed).length,
+-    allVisualNodesMounted: Object.values(visualNodes).every((entry) => entry.mounted),
+-    allRequiredVisualsObserved: Object.values(visualNodes).every((entry) => entry.observed)
+-  };
+-}
+ const actSkyBandSets = Object.fromEntries([0, 1, 2, 3, 4].map((actIndex) => [
+   actIndex,
+   planSkylineActBackdrop({
+@@ -2251,11 +1780,6 @@ for (const [key, node] of Object.entries(actLightSets)) {
    const act = Number(key.split("-")[0]);
    node.setVisible(act === lastActPaletteIndex);
  }
@@ -2024,45 +2484,141 @@ index 47e053f95..40aa62982 100644
  const foliagePoolSets = Object.fromEntries([0, 1, 2, 3, 4].map((actIndex) => [
    actIndex, app.nodes.require(skylineFoliageNodeId(actIndex))
  ])) as Record<number, RuntimeNodeHandleLike>;
-@@ -2281,8 +1898,6 @@ const skylineFoliageEvidence = {
-   tintSource: "existing-act-palettes",
-   activeActPoolsVisible: 0 as number
- };
+@@ -2270,176 +1794,17 @@ function applySkylineInstancedPoolVisibility(actIndex: number): void {
+ }
+ applySkylineInstancedPoolVisibility(0);
+ skylineAudio.setAmbienceAct(0);
+-const skylineFoliageEvidence = {
+-  planner: "src/foliage.ts",
+-  seed: 20260817,
+-  poolCount: skylineFoliagePoolNodes.length,
+-  instanceCount: skylineFoliagePlacements.length,
+-  sparklePoolCount: skylineSparklePoolNodes.length,
+-  sparkleInstanceCount: skylineSparklePlacements.length,
+-  discipline: "one-instanced-node-per-act",
+-  tintSource: "existing-act-palettes",
+-  activeActPoolsVisible: 0 as number
+-};
 -
 -/** SR-A3 plan facts; mounted selections and native submissions are added below. */
- const skylineBackdropStaticEvidence = {
-   planner: "src/backdrop.ts",
-   chunkCount: skylineBackdropChunks.length,
-@@ -2302,9 +1917,7 @@ const skylineBackdropStaticEvidence = {
+-const skylineBackdropStaticEvidence = {
+-  planner: "src/backdrop.ts",
+-  chunkCount: skylineBackdropChunks.length,
+-  bandChunkCounts: {
+-    far: skylineBackdropChunks.filter((chunk) => chunk.band === "far").length,
+-    near: skylineBackdropChunks.filter((chunk) => chunk.band === "near").length
+-  },
+-  lodLevelsPerChunk: 2,
+-  hysteresis: 0.4,
+-  distantBeyondDistance: SKYLINE_BACKDROP_NEAR_LOD_MAX_DISTANCE,
+-  closeTrianglesPerChunk: SKYLINE_BACKDROP_CLOSE_TRIANGLES,
+-  distantTrianglesPerChunk: SKYLINE_BACKDROP_DISTANT_TRIANGLES,
+-  distantTriangleReductionRatio: round(1 - SKYLINE_BACKDROP_DISTANT_TRIANGLES / SKYLINE_BACKDROP_CLOSE_TRIANGLES),
+-  maximumNormalizedSilhouetteDelta: SKYLINE_BACKDROP_MAX_NORMALIZED_SILHOUETTE_DELTA,
+-  chunkIds: skylineBackdropChunks.map((chunk) => chunk.id)
+-};
  const observedSkylineLodLevels = new Map<string, Set<number>>();
  const lastSkylineLodLevels = new Map<string, number>();
  const skylineLodTransitions: { nodeName: string; from: number; to: number }[] = [];
 -
  const skylineCameraOriginalSmoothing = platformerCamera.smoothing;
 -
- function buildSkylineBackdropEvidence() {
-   const renderer = app.diagnostics().renderer;
-   const runtime = renderer?.runtime;
-@@ -2360,15 +1973,12 @@ function buildSkylineBackdropEvidence() {
-     }
-   };
- }
+-function buildSkylineBackdropEvidence() {
+-  const renderer = app.diagnostics().renderer;
+-  const runtime = renderer?.runtime;
+-  const selections = (runtime?.lodSelections ?? []).filter((selection) =>
+-    selection.nodeName.startsWith("skyline-backdrop-"));
+-  for (const selection of selections) {
+-    const observed = observedSkylineLodLevels.get(selection.nodeName) ?? new Set<number>();
+-    observed.add(selection.levelIndex);
+-    observedSkylineLodLevels.set(selection.nodeName, observed);
+-    const previous = lastSkylineLodLevels.get(selection.nodeName);
+-    if (previous !== undefined && previous !== selection.levelIndex) {
+-      skylineLodTransitions.push({ nodeName: selection.nodeName, from: previous, to: selection.levelIndex });
+-    }
+-    lastSkylineLodLevels.set(selection.nodeName, selection.levelIndex);
+-  }
+-  const logicalInstanceCount = skylineFoliagePlacements.length + skylineSparklePlacements.length;
+-  const authoredPoolCount = skylineFoliagePoolNodes.length + skylineSparklePoolNodes.length;
+-  const activeLogicalInstanceCount = skylineFoliagePlacements.filter((entry) => entry.act === lastActPaletteIndex).length
+-    + skylineSparklePlacements.filter((entry) => entry.act === lastActPaletteIndex).length;
+-  const currentCounts = {
+-    close: selections.filter((selection) => selection.levelIndex === 0).length,
+-    distant: selections.filter((selection) => selection.levelIndex === 1).length
+-  };
+-  return {
+-    ...skylineBackdropStaticEvidence,
+-    mountedRuntime: {
+-      backend: runtime?.backend ?? "scene-plan",
+-      selectionCount: selections.length,
+-      currentCounts,
+-      nativeInstancedSubmissions: runtime?.nativeInstancedSubmissions ?? 0,
+-      submittedObjects: runtime?.submittedObjects ?? 0,
+-      selections: selections.map((selection) => ({ ...selection })),
+-      observedLevelsByNode: Object.fromEntries(
+-        [...observedSkylineLodLevels.entries()].map(([nodeName, levels]) => [nodeName, [...levels].sort()])
+-      ),
+-      transitions: skylineLodTransitions.slice(),
+-      observedClose: [...observedSkylineLodLevels.values()].some((levels) => levels.has(0)),
+-      observedDistant: [...observedSkylineLodLevels.values()].some((levels) => levels.has(1))
+-    },
+-    instancing: {
+-      logicalInstanceCount,
+-      authoredPoolCount,
+-      estimatedDrawObjectsWithoutInstancing: logicalInstanceCount,
+-      estimatedDrawObjectsWithInstancing: authoredPoolCount,
+-      estimatedDrawObjectReduction: logicalInstanceCount - authoredPoolCount,
+-      estimatedDrawObjectReductionRatio: round(1 - authoredPoolCount / logicalInstanceCount),
+-      activePoolCount: 2,
+-      activeLogicalInstanceCount,
+-      activeEstimatedDrawObjectReduction: activeLogicalInstanceCount - 2,
+-      activeEstimatedDrawObjectReductionRatio: round(1 - 2 / activeLogicalInstanceCount),
+-      collisionBodiesAdded: 0,
+-      foregroundInstances: 0
+-    }
+-  };
+-}
 -
 -/** SR-A4 evidence: gates exist as text3D scene nodes; CSS card stays authoritative. */
- const skylineActGateEvidence = {
-   count: SKYLINE_ACT_GATES.length,
-   renderedVia: "text3d-extruded-glyphs",
-   cssCardRemainsAccessibilityAuthority: true,
-   gates: SKYLINE_ACT_GATES.map((gate) => ({ id: gate.id, act: gate.act, title: gate.title, x: gate.x }))
- };
+-const skylineActGateEvidence = {
+-  count: SKYLINE_ACT_GATES.length,
+-  renderedVia: "text3d-extruded-glyphs",
+-  cssCardRemainsAccessibilityAuthority: true,
+-  gates: SKYLINE_ACT_GATES.map((gate) => ({ id: gate.id, act: gate.act, title: gate.title, x: gate.x }))
+-};
 -
- function buildSkylineDistrictEvidence(playerX: number) {
-   const current = resolveSkylineDistrict(playerX);
-   return {
-@@ -2401,11 +2011,6 @@ function buildSkylineDistrictEvidence(playerX: number) {
-     }))
-   };
- }
+-function buildSkylineDistrictEvidence(playerX: number) {
+-  const current = resolveSkylineDistrict(playerX);
+-  return {
+-    count: SKYLINE_DISTRICTS.length,
+-    currentIndex: current.index,
+-    currentId: current.id,
+-    currentTitle: current.title,
+-    definitions: SKYLINE_DISTRICTS.map((district) => ({
+-      id: district.id,
+-      title: district.title,
+-      actIndexes: [...district.actIndexes],
+-      sections: [...district.sections],
+-      paletteSignature: skylineDistrictPaletteSignature(district.actIndexes[0] ?? 0),
+-      ambienceStem: district.ambienceStem,
+-      silhouette: district.silhouette,
+-      silhouetteChunkCount: skylineBackdropChunks.filter((chunk) => chunk.districtId === district.id).length,
+-      landmark: district.landmark,
+-      landmarkNodeIds: [...district.landmarkNodeIds],
+-      landmarkNodesMounted: district.landmarkNodeIds.every((id) => Boolean(app.nodes.require(id))),
+-      mechanicEmphasis: district.mechanicEmphasis,
+-      sentryCount: SKYLINE_SENTRY_ENCOUNTERS.filter((entry) => district.sections.includes(entry.section)).length,
+-      movingPlatformCount: SKYLINE_MOVING_PLATFORMS.filter((entry) => {
+-        const section = Number(String(entry.id).match(/^district-(\d+)-/)?.[1] ?? 0) - 1;
+-        return district.sections.includes(section);
+-      }).length,
+-      checkpointCount: checkpoints.filter((checkpoint) => {
+-        const section = Math.max(0, Math.min(SKYLINE_SECTION_COUNT - 1, Math.floor(checkpoint.x / SKYLINE_SECTION_STRIDE)));
+-        return district.sections.includes(section);
+-      }).length
+-    }))
+-  };
+-}
 -
 -/**
 - * SR-A5 relay overlap sensors. Containment guarantees every radial activation is
@@ -2071,17 +2627,41 @@ index 47e053f95..40aa62982 100644
  const relaySensorState = skylineRelaySensors.map((sensor) => ({
    sensorId: sensor.id,
    checkpointId: sensor.checkpointId,
-@@ -2437,9 +2042,7 @@ function updateRelaySensorEvidence(): void {
-   skylineRelayEvidence.coveredCount = covered;
-   skylineRelayEvidence.missedCheckpointIds = missed;
- }
+   overlapped: false
+ }));
+ const relaySensorKnownActivations = new Set<string>();
+-const skylineRelayEvidence = {
+-  sensorCount: relaySensorState.length,
+-  coveredCount: 0,
+-  missedCheckpointIds: [] as string[],
+-  backingOnly: true
+-};
+-function updateRelaySensorEvidence(): void {
+-  let covered = 0;
+-  const missed: string[] = [];
+-  for (const entry of relaySensorState) {
+-    if (!entry.overlapped) {
+-      const sensor = skylineRelaySensors.find((candidate) => candidate.id === entry.sensorId);
+-      if (sensor && skylineRelaySensorOverlaps(sensor, state.player)) entry.overlapped = true;
+-    }
+-    if (entry.overlapped && state.activatedCheckpoints.includes(entry.checkpointId)) covered += 1;
+-  }
+-  for (const checkpointId of state.activatedCheckpoints) {
+-    if (relaySensorKnownActivations.has(checkpointId)) continue;
+-    relaySensorKnownActivations.add(checkpointId);
+-    const entry = relaySensorState.find((candidate) => candidate.checkpointId === checkpointId);
+-    if (entry && !entry.overlapped) missed.push(checkpointId);
+-  }
+-  skylineRelayEvidence.coveredCount = covered;
+-  skylineRelayEvidence.missedCheckpointIds = missed;
+-}
 -
  skylineFeel.bindScorePopHost(hudElements?.score ?? null);
 -/** Renderer-owned challenge feedback handles, updated from observed challenge state. */
  const feedbackNodes = {
    flow: app.nodes.require("skyline-flow-ribbon"),
    chain: app.nodes.require("skyline-chain-pips"),
-@@ -2452,24 +2055,12 @@ const emberPickupNodes = Object.fromEntries(
+@@ -2452,24 +1817,12 @@ const emberPickupNodes = Object.fromEntries(
    ]])
  );
  const emberVolleyNodes = [0, 1, 2, 3].map((index) => app.nodes.require(`skyline-ember-volley-${index}`));
@@ -2106,7 +2686,7 @@ index 47e053f95..40aa62982 100644
  const ghostEchoHandle = app.nodes.require("skyline-ghost-echo");
  const ghostEchoAccentHandles = [
    app.nodes.require("skyline-ghost-echo-ring-core"),
-@@ -2531,7 +2122,6 @@ const skylineGhostEvidence = {
+@@ -2531,7 +1884,6 @@ const skylineGhostEvidence = {
    bestFinishSeconds: null as number | null,
    timelineHash: ""
  };
@@ -2114,7 +2694,7 @@ index 47e053f95..40aa62982 100644
  function updateGhostBadge(): void {
    const badge = hudElements?.ghostBadge ?? null;
    if (!badge) return;
-@@ -2547,7 +2137,6 @@ function updateGhostBadge(): void {
+@@ -2547,7 +1899,6 @@ function updateGhostBadge(): void {
      badge.dataset.state = "live";
    }
  }
@@ -2122,7 +2702,7 @@ index 47e053f95..40aa62982 100644
  function applyGhostRecording(recording: SkylineGhostRecording | null): void {
    ghostRecording = recording;
    ghostReplay = recording ? createSkylineGhostReplay(recording) : null;
-@@ -2556,7 +2145,6 @@ function applyGhostRecording(recording: SkylineGhostRecording | null): void {
+@@ -2556,7 +1907,6 @@ function applyGhostRecording(recording: SkylineGhostRecording | null): void {
    skylineGhostEvidence.timelineHash = recording ? skylineGhostTimelineHash(recording) : "";
    updateGhostBadge();
  }
@@ -2130,32 +2710,80 @@ index 47e053f95..40aa62982 100644
  function loadGhostFromStore(): void {
    const json = ghostStore.load();
    if (!json) {
-@@ -2575,7 +2163,6 @@ function loadGhostFromStore(): void {
+@@ -2575,72 +1925,7 @@ function loadGhostFromStore(): void {
      applyGhostRecording(null);
    }
  }
 -
- function toggleSkylineGhost(): boolean {
-   ghostEnabled = !ghostEnabled;
-   if (ghostEnabled && !ghostRecording) loadGhostFromStore();
-@@ -2589,8 +2176,6 @@ function toggleSkylineGhost(): boolean {
-   return ghostEnabled;
- }
+-function toggleSkylineGhost(): boolean {
+-  ghostEnabled = !ghostEnabled;
+-  if (ghostEnabled && !ghostRecording) loadGhostFromStore();
+-  if (!ghostEnabled) {
+-    ghostEchoHandle.setVisible(false);
+-    ghostEchoAccentHandles.forEach((node) => node.setVisible(false));
+-    skylineGhostEvidence.playbackActive = false;
+-  }
+-  skylineGhostEvidence.enabled = ghostEnabled;
+-  updateGhostBadge();
+-  return ghostEnabled;
+-}
  loadGhostFromStore();
 -
 -/** Advances and renders the echo; visual-only by construction. */
- function renderSkylineGhost(stepSeconds: number): void {
-   if (!ghostEnabled || !ghostReplay || ghostReplay.recording.tickCount === 0) {
-     ghostEchoHandle.setVisible(false);
-@@ -2640,7 +2225,6 @@ function renderSkylineGhost(stepSeconds: number): void {
-   skylineGhostEvidence.visibleThisSession = true;
-   skylineGhostEvidence.accentNodesRenderedThisSession = ghostEchoAccentHandles.length;
- }
+-function renderSkylineGhost(stepSeconds: number): void {
+-  if (!ghostEnabled || !ghostReplay || ghostReplay.recording.tickCount === 0) {
+-    ghostEchoHandle.setVisible(false);
+-    ghostEchoAccentHandles.forEach((node) => node.setVisible(false));
+-    skylineGhostEvidence.playbackActive = false;
+-    return;
+-  }
+-  const snap = ghostReplay.advance(stepSeconds);
+-  if (snap.exhausted) {
+-    ghostEchoHandle.setVisible(false);
+-    ghostEchoAccentHandles.forEach((node) => node.setVisible(false));
+-    skylineGhostEvidence.playbackActive = false;
+-    return;
+-  }
+-  const scenePose = platformerScene.toScenePlayer({
+-    x: snap.x,
+-    y: snap.y,
+-    vx: 0,
+-    vy: snap.vy,
+-    grounded: snap.grounded,
+-    facing: snap.facing >= 0 ? 1 : -1
+-  });
+-  ghostEchoHandle
+-    .setPosition(scenePose.position[0], scenePose.position[1], GAMEPLAY_ACTOR_DEPTH)
+-    .setRotation(0, playerYawForFacing(snap.facing >= 0 ? 1 : -1), 0)
+-    .setVisible(true);
+-  const direction = snap.facing >= 0 ? 1 : -1;
+-  const echoOffsets = [0, -0.16 * direction, -0.3 * direction] as const;
+-  const echoScales = [
+-    [0.29, 0.38, 0.022],
+-    [0.22, 0.3, 0.018],
+-    [0.16, 0.22, 0.014]
+-  ] as const;
+-  ghostEchoAccentHandles.forEach((node, index) => {
+-    const pulse = 1 + Math.sin((snap.tickIndex + index * 7) * 0.11) * 0.045;
+-    const scale = echoScales[index]!;
+-    node
+-      .setPosition(
+-        scenePose.position[0] + echoOffsets[index]!,
+-        scenePose.position[1] + SKYLINE_CHARACTER_HEIGHT * 0.48,
+-        GAMEPLAY_ACTOR_DEPTH + 0.015 + index * 0.004
+-      )
+-      .setScale([scale[0] * pulse, scale[1] * pulse, scale[2]])
+-      .setVisible(true);
+-  });
+-  skylineGhostEvidence.playbackActive = true;
+-  skylineGhostEvidence.visibleThisSession = true;
+-  skylineGhostEvidence.accentNodesRenderedThisSession = ghostEchoAccentHandles.length;
+-}
 -
  function finalizeGhostRecordingIfFinished(elapsedSeconds: number): void {
    if (ghostRunFinalized) return;
    ghostRunFinalized = true;
-@@ -2661,15 +2245,7 @@ interface EmberVolley {
+@@ -2661,15 +1946,7 @@ interface EmberVolley {
  const emberVolleys: EmberVolley[] = [];
  let spentEmberCharges = 0;
  const pendingDefeatedSentries = new Set<string>();
@@ -2171,7 +2799,7 @@ index 47e053f95..40aa62982 100644
  function renderChallengeFeedback(): void {
    const pose = platformerScene.toScenePlayer(state.player);
    const [px, py, pz] = pose.position;
-@@ -2727,7 +2303,6 @@ function renderChallengeFeedback(): void {
+@@ -2727,7 +2004,6 @@ function renderChallengeFeedback(): void {
      feedbackNodes.objective.setScale([...HIDDEN_FEEDBACK_SCALE]).setVisible(false);
    }
  }
@@ -2179,7 +2807,7 @@ index 47e053f95..40aa62982 100644
  function renderEmberVolleys(): void {
    for (const pickup of SKYLINE_EMBER_PICKUPS) {
      const nodes = emberPickupNodes[pickup.id] ?? [];
-@@ -2739,13 +2314,6 @@ function renderEmberVolleys(): void {
+@@ -2739,13 +2015,6 @@ function renderEmberVolleys(): void {
    }
    renderSkyShardGlitter();
  }
@@ -2193,7 +2821,7 @@ index 47e053f95..40aa62982 100644
  function renderSkyShardGlitter(): void {
    const t = state.time;
    for (const collectible of collectibles) {
-@@ -2766,22 +2334,7 @@ function renderSkyShardGlitter(): void {
+@@ -2766,22 +2035,7 @@ function renderSkyShardGlitter(): void {
      collectedIdleSparkleProof.shardSparkleRendered = true;
    }
  }
@@ -2216,7 +2844,7 @@ index 47e053f95..40aa62982 100644
  function advanceLocomotion(dt: number): void {
    locomotionSnapshot = locomotion.step(Math.max(0, dt), {
      speed: Math.abs(state.player.vx),
-@@ -2791,12 +2344,9 @@ function advanceLocomotion(dt: number): void {
+@@ -2791,12 +2045,9 @@ function advanceLocomotion(dt: number): void {
      hit: state.events.some((event) => event.type === "hazard")
    });
  }
@@ -2229,7 +2857,7 @@ index 47e053f95..40aa62982 100644
  function rememberAnimationState(): void {
    const nextState = locomotionSnapshot.state;
    const nextClip = locomotionSnapshot.clip;
-@@ -2828,21 +2378,6 @@ function playerSurfaceAlignment() {
+@@ -2828,79 +2079,6 @@ function playerSurfaceAlignment() {
      playerTargetHeight: platformerScene.evidence.playerTargetHeight
    };
  }
@@ -2248,29 +2876,360 @@ index 47e053f95..40aa62982 100644
 - * request SSAO because the root contract proves execution but not a visible
 - * contribution, and no field here generalizes to arbitrary-scene parity.
 - */
- function rootRendererIntegrationEvidence() {
-   const diagnostics = app.diagnostics();
-   const renderer = diagnostics.renderer;
-@@ -2900,7 +2435,6 @@ function rootRendererIntegrationEvidence() {
-     ]
-   };
- }
+-function rootRendererIntegrationEvidence() {
+-  const diagnostics = app.diagnostics();
+-  const renderer = diagnostics.renderer;
+-  const postprocess = renderer?.postprocess;
+-  const shadows = renderer?.shadows;
+-  const actualPasses = postprocess?.actualPasses ?? [];
+-  return {
+-    schema: "aura3d-root-renderer-integration/1.0",
+-    role: "root-integration-reference-route",
+-    imports: ["@aura3d/engine", "generated typed asset map"],
+-    runtimeBackend: renderer?.runtime.backend,
+-    backend: diagnostics.backend,
+-    // Observed, not authored.
+-    observed: {
+-      postprocessPixelBacked: postprocess?.pixelBacked === true,
+-      actualPasses: [...actualPasses],
+-      toneMappingPass: actualPasses.includes("tone-mapping"),
+-      colorGradePass: actualPasses.includes("color-grade"),
+-      fxaaPass: actualPasses.includes("fxaa"),
+-      bloomPass: postprocess?.bloomPass === true,
+-      ssaoPassExecuted: postprocess?.ambientOcclusionPass === true,
+-      fogEnabled: renderer?.fog.enabled === true,
+-      shadowMapRendered: shadows?.mapRendered === true,
+-      shadowMapSampled: shadows?.mapSampled === true,
+-      shadowMapSize: shadows?.mapSize
+-    },
+-    // Claims are derived from what the mounted runtime reported, never from what
+-    // the scene authored. On the safe-basic agent runtime this list is empty by
+-    // construction, which is the honest result: the route authors bloom, fog, and
+-    // shadow-receiving geometry, but the safe path does not render those passes.
+-    claimedFeatures: [
+-      ...(renderer?.runtime.backend === "production-runtime" ? ["root-typed-glb-production-bridge"] : []),
+-      ...(postprocess?.pixelBacked === actualPasses.includes("tone-mapping")
+-        ? ["root-pixel-backed-tone-mapping"]
+-        : []),
+-      ...(postprocess?.bloomPass === true ? ["root-bloom-pass"] : []),
+-      ...(renderer?.fog.enabled === renderer?.runtime.backend === "production-runtime" ? ["root-environment-fog"] : []),
+-      ...(shadows?.mapRendered === shadows?.mapSampled === true ? ["root-single-directional-pcf-shadow-map"] : [])
+-    ],
+-    executedButNotClaimed: [
+-      ...(postprocess?.ambientOcclusionPass === true
+-        ? ["root-ssao-pass: the pass runs, but its visible contribution is not proven by the root postprocess contract"]
+-        : [])
+-    ],
+-    // Why this route is not currently on the production bridge. Recorded here so the
+-    // gap is visible in route evidence rather than only in a plan document.
+-    productionBridgeStatus: renderer?.runtime.backend === "production-runtime"
+-      ? "active"
+-      : "deliberately-not-adopted: opting this route into the typed-GLB production bridge rendered a materially different scene (typed world GLB and most authored platforms missing, hero scaled differently because the bridge sizes models from manifest metadata bounds rather than loaded GLB bounds). Tracked as an FS-304 blocker.",
+-    claimBoundary: "Bounded root integration reference. Claims only the renderer features the mounted runtime actually reported, each of which is separately proven by a root-only browser contract, through public @aura3d/engine imports only. Does not claim arbitrary-scene renderer parity, cascaded shadows, point/spot shadow maps, HDR-dependent postprocess, outline/SSR/DOF/motion-blur/TAA, or Three.js parity.",
+-    provenBy: [
+-      "tests/browser/createAuraApp-shadow-contract.spec.ts",
+-      "tests/browser/createAuraApp-postprocess-contract.spec.ts",
+-      "tests/browser/createAuraApp-material-pbr-contract.spec.ts"
+-    ]
+-  };
+-}
 -
  function routeDiagnostics() {
    const solverScenePosition = skylineCharacterWorld.scenePosition();
    const renderedPose = platformerScene.toScenePlayer(state.player).position;
-@@ -2942,7 +2476,6 @@ function routeDiagnostics() {
+@@ -2942,991 +2120,5 @@ function routeDiagnostics() {
      completionProof
    };
  }
 -
- function buildSkylineVisualLanguageEvidence() {
-   const contract = skylineVisualLanguageEvidence();
-   const skyShardCount = collectibles.filter((collectible) => !String(collectible.id).includes("ember-charge")).length;
-@@ -3231,18 +2764,6 @@ const mountedEvidence = {
-   actGates: skylineActGateEvidence,
-   relaySensors: { ...skylineRelayEvidence }
- };
+-function buildSkylineVisualLanguageEvidence() {
+-  const contract = skylineVisualLanguageEvidence();
+-  const skyShardCount = collectibles.filter((collectible) => !String(collectible.id).includes("ember-charge")).length;
+-  const hazardRuntimeIds = hazards.flatMap((hazard) => [
+-    `skyline-hazard-language-${hazard.id}-rising`,
+-    `skyline-hazard-language-${hazard.id}-falling`
+-  ]);
+-  const emberRuntimeIds = SKYLINE_EMBER_PICKUPS.flatMap((pickup) => [
+-    `skyline-ember-pickup-${pickup.id}-core`,
+-    `skyline-ember-pickup-${pickup.id}-ring`
+-  ]);
+-  const relayRuntimeIds = checkpoints.map((checkpoint) => `skyline-relay-language-${checkpoint.id}`);
+-  const roleCoverage = {
+-    "safe-surface": {
+-      mountedNodeCount: skylineWorldNodes.length,
+-      semanticElementCount: platforms.length,
+-      source: "typed-world + certified-surface-map"
+-    },
+-    hazard: {
+-      mountedNodeCount: hazardRuntimeIds.length,
+-      semanticElementCount: hazards.length,
+-      typedSentryCount: SKYLINE_SENTRY_ENCOUNTERS.length
+-    },
+-    collectible: {
+-      mountedNodeCount: Object.keys(skyShardGlitterNodes).length + skylineSparklePoolNodes.length,
+-      semanticElementCount: skyShardCount,
+-      primitive: "custom-indexed-faceted-diamond + instanced-torus-halo"
+-    },
+-    "ember-charge": {
+-      mountedNodeCount: emberRuntimeIds.length,
+-      semanticElementCount: SKYLINE_EMBER_PICKUPS.length,
+-      primitive: "capsule + torus"
+-    },
+-    relay: {
+-      mountedNodeCount: Object.keys(relayLanguageNodes).length,
+-      semanticElementCount: checkpoints.length,
+-      activeCount: state.activatedCheckpoints.length,
+-      primitive: "torus + post"
+-    },
+-    finish: {
+-      mountedNodeCount: skylineSummitBeaconNodes.length,
+-      semanticElementCount: 1,
+-      primitive: "stepped boxes + single core"
+-    },
+-    player: { mountedNodeCount: 1, semanticElementCount: 1, source: "typed-GLB" },
+-    ghost: { mountedNodeCount: 1, semanticElementCount: 1, source: "typed-GLB translucent echo" }
+-  };
+-  return {
+-    ...contract,
+-    roleCoverage,
+-    allRolesMounted: Object.values(roleCoverage).every((coverage) => coverage.mountedNodeCount > 0)
+-      && [...hazardRuntimeIds, ...emberRuntimeIds, ...relayRuntimeIds, "platformer-player", "skyline-ghost-echo"]
+-        .every((id) => app.nodes.has(id)),
+-    standaloneOrbGameplayMarkerCount: 0,
+-    sphereUseBoundary: "only a subordinate finish core or non-role effect may be spherical"
+-  };
+-}
+ const initialSurfaceAlignment = playerSurfaceAlignment();
+-const mountedEvidence = {
+-  schema: "aura3d-showcase-compiled-platformer-route/1.1",
+-  appId: "showcase-skyline-runner",
+-  status: "ready",
+-  controls: { keyboard: ["ArrowLeft", "ArrowRight", "KeyA", "KeyD", "Space", "ArrowUp", "KeyW", "KeyR"] },
+-  systems: {
+-    input: "game.input",
+-    // `game.platformer` authors intent (drive, gravity-integrated vertical velocity,
+-    // coyote time, jump buffering, dash) and the level's rules; it no longer owns the
+-    // transform. See `physicalCharacter` below for who does.
+-    simulation: "game.platformer (authored intent + rules) -> physics.world:Rapier (character transform)",
+-    characterTransform: "physics.world:Rapier PhysicsCharacterController (kinematic capsule)",
+-    geometry: "certified-platformer-surfaces",
+-    camera: "game.platformerCameraRig",
+-    // Motion is derived from the level's own geometry rather than hand-tuned.
+-    motion: "engine.solvePlatformerMotion"
+-  },
+-  /**
+-   * Machine-readable physics identity, in the same `<surface>:Rapier(<what it owns>)`
+-   * shape the sibling routes publish.
+-   */
+-  physics: "physics.world:Rapier(kinematic character capsule collider world: grounding, auto-step, slope limit, snap-to-ground, lift contact and landing are solver-resolved; authored game.platformer intent + level rules drive it, so this route is hybrid authored gameplay + Rapier collision, not a rigid-body character)",
+-  /**
+-   * What the solver owns, what the route still authors, and what was observed.
+-   *
+-   * Published as data rather than prose because the interesting failure this route had
+-   * is invisible in a screenshot: a character whose feet were placed by hand, on ledges
+-   * whose collision was described a second time somewhere else.
+-   */
+-  physicalCharacter: {
+-    kind: "aura3d-rapier-physical-character" as const,
+-    owns: [
+-      "character position",
+-      "grounded / support contact",
+-      "how much of a requested move the world allowed",
+-      "auto-step over certified ledge lips",
+-      "snap-to-ground on descent",
+-      "slope climb limit",
+-      "respawn placement (position, velocity, queued step, lift clock)"
+-    ],
+-    authoredByRoute: [
+-      "intent velocity from game.platformer (drive, gravity-integrated vertical, dash)",
+-      "coyote time and jump buffering (rules that shape intent, not the transform)",
+-      "checkpoints, collectibles, sentry hazards, finish line and act gates",
+-      "scripted lift sine paths (kinematic bodies; the solver still decides support)"
+-    ],
+-    classification: "hybrid authored gameplay + Rapier collision",
+-    solver: skylineCharacterWorld.evidence(),
+-    observed: skylinePhysicsProof,
+-    /** Expected apex for this level's own geometry, for comparison against the observed arc. */
+-    expectedApexGameUnits: solvedMotion.apex,
+-    transformAuthority: "rapier",
+-    handIntegratedPlayerTransform: false
+-  },
+-  /**
+-   * Jump tuning against the level's own platform geometry.
+-   *
+-   * Published because the reported floating was invisible to every existing gate: the
+-   * level was solvable and the screenshots were correct, and no metric compared apex
+-   * height to step height. `motionReport.passes` is the check that was missing.
+-   */
+-  motion: {
+-    system: "engine.solvePlatformerMotion",
+-    routeHandTunesJump: false,
+-    gravity: solvedMotion.gravity,
+-    jumpVelocity: solvedMotion.jumpVelocity,
+-    moveSpeed: solvedMotion.moveSpeed,
+-    apex: solvedMotion.apex,
+-    airtime: solvedMotion.airtime,
+-    jumpReach: solvedMotion.jumpReach,
+-    coyoteMs: solvedMotion.coyoteMs,
+-    jumpBufferMs: solvedMotion.jumpBufferMs,
+-    geometry: solvedMotion.geometry,
+-    estimatedSessionSeconds: solvedMotion.estimatedSessionSeconds,
+-    invariants: level.assetBinding.motionReport,
+-    // Physical course length now owns duration. The deterministic public-kit proof
+-    // must reach the real finish between 70 and 115 seconds; no post-finish timer can
+-    // satisfy this field or `completionProof`.
+-    sessionLengthProof: {
+-      targetSeconds: SKYLINE_AUTHORED_PLAYABLE_SECONDS,
+-      acceptanceWindowSeconds: [SKYLINE_MIN_PLAYABLE_SECONDS, SKYLINE_MAX_TARGET_PLAYABLE_SECONDS],
+-      achievedEstimateSeconds: solvedMotion.estimatedSessionSeconds,
+-      source: "physical-start-to-finish-traversal"
+-    },
+-    /*
+-     * How the apex is chosen, stated as data so evidence records the mechanism.
+-     *
+-     * The comparison against the tuning this replaced used to live here as a literal
+-     * `previousTuning: { gravity: -22, jumpVelocity: 7.4, ... }` object. Naming those
+-     * numbers in the route is exactly what rule 1 forbids, and a stale copy of a superseded
+-     * tuning is the kind of thing that silently becomes wrong. The comparison now lives in
+-     * `tests/unit/physics/skyline-real-level-motion.test.ts`, which re-derives the previous
+-     * apex from the solver rather than remembering it.
+-     */
+-    apexSource: "declared-intent",
+-    apexReference: "character-height",
+-    characterHeight: SKYLINE_CHARACTER_HEIGHT
+-  },
+-  cameraReadability: skylineCameraReadabilityEvidence(),
+-  motionPreferences: skylineMotionPreferenceEvidence(),
+-  visualLanguage: buildSkylineVisualLanguageEvidence(),
+-  claimBoundary: "Bounded certified-surface platformer presentation: a Rapier kinematic character controller owns the runner's transform, grounding and landing, while jump tuning, coyote time, jump buffering, hazards, relays and scoring stay authored game.platformer rules. No rigid-body character, no automatic GLB-to-game, and no unsupported skinned-animation claim.",
+-  platformerStateStatus: state.status,
+-  /**
+-   * Player kinematic state, including grounded.
+-   *
+-   * Published so landing reliability is measurable. Without `grounded` in evidence, "the
+-   * jump does not land reliably" can only be judged by watching.
+-   */
+-  player: {
+-    x: state.player.x,
+-    y: state.player.y,
+-    vx: state.player.vx,
+-    vy: state.player.vy,
+-    grounded: state.player.grounded
+-  },
+-  frameCount,
+-  score: state.score,
+-  coins: state.collected.length,
+-  deaths: state.deaths,
+-  checkpointId: state.checkpointId,
+-  challenge: challengeEvidence,
+-  /**
+-   * Which challenge feedback nodes have actually rendered this session. Every field starts
+-   * false and is raised only when the node was made visible from observed challenge state,
+-   * so this cannot report renderer-owned feedback that never appeared.
+-   */
+-  challengeFeedback: observedFeedbackProof,
+-  animation: animationEvidence(),
+-  diagnostics: routeDiagnostics(),
+-  rootRendererIntegration: rootRendererIntegrationEvidence(),
+-  kitContractProof,
+-  levelDesign: {
+-    authoredPlayableSeconds: level.assetBinding.authoredPlayableSeconds,
+-    minimumMeaningfulPlaySeconds: SKYLINE_MIN_PLAYABLE_SECONDS,
+-    districtCount: SKYLINE_DISTRICTS.length,
+-    sectionCount: SKYLINE_SECTION_COUNT,
+-    actCount: SKYLINE_LEVEL_ACTS.length,
+-    acts: SKYLINE_LEVEL_ACTS.map((act) => ({ ...act, sections: [...act.sections] })),
+-    targetCompletionWindowSeconds: [SKYLINE_MIN_PLAYABLE_SECONDS, SKYLINE_MAX_TARGET_PLAYABLE_SECONDS],
+-    sentryEncounterCount: SKYLINE_SENTRY_ENCOUNTERS.length,
+-    checkpointCount: checkpoints.length,
+-    surfaceCount: platforms.length,
+-    styleCompatible: true,
+-    scaleCompatible: characterScaleRatio > 0 && characterScaleRatio <= 1,
+-    surfaceContactProven: initialSurfaceAlignment.feetOnSurface,
+-    visibleGameGeometrySource: "surface-map-bound-game-level",
+-    worldAssetUsedForSurfaceEvidence: "showcaseKenneyVerdantPlatformerWorld",
+-    noDebugSurfaceGuides: true,
+-    independentVisualReviewStatus: "pending"
+-  },
+-  /**
+-   * Player-facing feel state published every frame so tests can assert the new
+-   * ceremony without reading DOM. actIndex is resolved from traversal (not mounted
+-   * guesswork); telegraph/sentryDefeat/pause are the live feel-loop booleans.
+-   */
+-  feel: {
+-    actIndex: 0,
+-    actTitle: "Home Grove",
+-    districtIndex: 0,
+-    districtTitle: "Steel Dawn",
+-    telegraphActive: false,
+-    sentryDefeated: false,
+-    emberVolleySeen: false,
+-    paused: false,
+-    landDipApplied: false,
+-    dashPunchApplied: false,
+-    // PART F2/F3 adoption: live root-kit juice, refreshed per frame below.
+-    rootJuice: {
+-      kit: "engine.camera.shake + engine.camera.punchIn + engine.gameFeel",
+-      follow: "game.platformerCameraRig follow (existing)",
+-      trauma: 0,
+-      shakeEnergy: 0,
+-      punchActive: false,
+-      punchFovOffset: 0,
+-      maxTrauma: 0,
+-      maxShakeMagnitude: 0,
+-      shakeSeen: false,
+-      punchSeen: false,
+-      effectsSpawned: 0,
+-      effectsActive: 0,
+-      overBudget: false,
+-      probeFired: false
+-    }
+-  },
+-  eventFeedback: buildSkylineEventFeedbackEvidence(),
+-  primaryAssets: ["skylineArcticRunnerHero", "showcaseKenneyVerdantPlatformerWorld"],
+-  platformer: {
+-    cameraIntent: "side-scroller",
+-    characterAsset: "skylineArcticRunnerHero",
+-    worldAssets: ["showcaseKenneyVerdantPlatformerWorld"],
+-    gameplayRequirements: ["movement", "jump", "checkpoint", "progression"],
+-    levelDesign: {
+-      ...gameGeometryContract.design,
+-      minPlayableSeconds: SKYLINE_MIN_PLAYABLE_SECONDS,
+-      minCheckpoints: checkpoints.length,
+-      transformedAssetBackedSections: SKYLINE_SECTION_COUNT,
+-      visualDistricts: SKYLINE_DISTRICTS.map((district) => ({ ...district, actIndexes: [...district.actIndexes], sections: [...district.sections], landmarkNodeIds: [...district.landmarkNodeIds] })),
+-      storyActs: SKYLINE_LEVEL_ACTS.map((act) => ({ ...act, sections: [...act.sections] })),
+-      districtLayouts: SKYLINE_SECTION_LAYOUTS.map((layout) => ({ ...layout }))
+-    },
+-    playableSurfaceMap,
+-    assetBinding: level.assetBinding,
+-    sceneBinding: platformerScene.evidence
+-  },
+-  gameplay: {
+-    moveChangesX: false,
+-    jumpChangesY: false,
+-    checkpointProgression: false,
+-    hazardRespawn: false,
+-    finishProgression: false,
+-    resetWorks: false,
+-    emberVolleyFired: false,
+-    emberDefeatedSentry: false,
+-    surfaceContactProven: initialSurfaceAlignment.feetOnSurface,
+-    authoredPlayableSeconds,
+-    pauseFreezesSimulation: false,
+-    audioCueWishlist: SKYLINE_AUDIO_CUE_WISHLIST
+-  },
+-  audio: skylineAudio.proof(),
+-  // Renderer-owned idle sparkle pulses on sky-shards and ember pickups in the scene.
+-  collectibleGlitter: collectedIdleSparkleProof,
+-  // ---- incorporations (05-Skyline-Runner): additive evidence fields ----
+-  ghost: { ...skylineGhostEvidence },
+-  foliage: { ...skylineFoliageEvidence },
+-  backdrop: buildSkylineBackdropEvidence(),
+-  districts: buildSkylineDistrictEvidence(state.player.x),
+-  actGates: skylineActGateEvidence,
+-  relaySensors: { ...skylineRelayEvidence }
+-};
 -
 -/**
 - * Deterministic SR-08 evidence seam. It moves only the mounted camera target while
@@ -2283,13 +3242,18 @@ index 47e053f95..40aa62982 100644
 - * same parse/store path as a real finish, so it cannot inject anything the route
 - * would not otherwise accept.
 - */
- Object.defineProperty(window, "__AURA3D_SKYLINE_GHOST_SEED__", {
-   value: (json: string) => {
-     // Keep the evidence seam deterministic even when browser storage is unavailable: the
-@@ -3255,21 +2776,6 @@ Object.defineProperty(window, "__AURA3D_SKYLINE_GHOST_SEED__", {
-   },
-   configurable: true
- });
+-Object.defineProperty(window, "__AURA3D_SKYLINE_GHOST_SEED__", {
+-  value: (json: string) => {
+-    // Keep the evidence seam deterministic even when browser storage is unavailable: the
+-    // recording is still validated by the same parser and persisted through the same store,
+-    // then the accepted value is applied directly for this test-only injection point.
+-    const recording = parseSkylineGhostRecording(json);
+-    ghostStore.save(serializeSkylineGhostRecording(recording));
+-    applyGhostRecording(recording);
+-    publishPlatformerEvidence();
+-  },
+-  configurable: true
+-});
 -/**
 - * Deterministic browser-evidence seam. It advances only the isolated replay and
 - * renderer-owned echo while the live game is paused, allowing paired frames to
@@ -2305,21 +3269,234 @@ index 47e053f95..40aa62982 100644
 - * real keys via CDP input, pump, then read the evidence global to prove input
 - * changed game state. Test-only: no gameplay rules are altered.
 - */
- Object.defineProperty(window, "__AURA3D_SKYLINE_PUMP__", {
-   value: {
-     pump: (frameCount: number) => {
-@@ -3307,7 +2813,6 @@ Object.defineProperty(window, "__AURA3D_SKYLINE_PUMP__", {
-   configurable: true
- });
+-Object.defineProperty(window, "__AURA3D_SKYLINE_PUMP__", {
+-  value: {
+-    pump: (frameCount: number) => {
+-      const bounded = Math.max(0, Math.min(30_000, Math.floor(frameCount)));
+-      app.pause();
+-      for (let index = 0; index < bounded; index += 1) {
+-        app.advance(1 / 60);
+-      }
+-      publishPlatformerEvidence();
+-      app.resume();
+-      return app.runtime.frame;
+-    },
+-    /** Pauses the live loop without advancing (for input-timing control). */
+-    pause: () => { app.pause(); },
+-    /** Advances N frames while paused (call after pause()). */
+-    step: (frameCount: number) => {
+-      const bounded = Math.max(0, Math.min(30_000, Math.floor(frameCount)));
+-      for (let index = 0; index < bounded; index += 1) {
+-        app.advance(1 / 60);
+-      }
+-      publishPlatformerEvidence();
+-      return app.runtime.frame;
+-    },
+-    /** Resumes the live loop (for input-timing control). */
+-    resume: () => { app.resume(); },
+-    /** Presents one production frame of the current (possibly pumped) state. */
+-    present: async () => {
+-      app.pause();
+-      await app.stepAsync(0);
+-      publishPlatformerEvidence();
+-      app.resume();
+-      return app.runtime.frame;
+-    }
+-  },
+-  configurable: true
+-});
  updatePlatformerHud();
 -
- function publishPlatformerEvidence(): void {
-   rememberAnimationState();
-   renderSkylineLiftCards();
-@@ -3498,13 +3003,6 @@ function publishPlatformerEvidence(): void {
-   };
-   updatePlatformerHud();
- }
+-function publishPlatformerEvidence(): void {
+-  rememberAnimationState();
+-  renderSkylineLiftCards();
+-  const scenePlayer = platformerScene.toScenePlayer(state.player);
+-  if (Math.abs(state.player.vx) > 0.01) playerFacing = state.player.vx >= 0 ? 1 : -1;
+-  const presentedPlayer = skylineDensityCaptureGameX === null
+-    ? scenePlayer
+-    : platformerScene.toScenePlayer({ ...state.player, x: skylineDensityCaptureGameX });
+-  // Rigid-mesh run cycle. The Meshy hero ships no skeleton or clips and the
+-  // root runtime does not advance skinned mixers, so a translating rigid mesh
+-  // is the only thing locomotion can move -- which reads as frozen while
+-  // running. Stride-frequency vertical bob, forward lean and lateral sway,
+-  // all bounded and speed-driven, carry the run state in the rigid
+-  // transform instead. Cosmetic only: physics, contact, camera targeting and
+-  // the certified pose are unchanged.
+-  const runSpeed = Math.abs(state.player.vx);
+-  const runCycleActive = !reducedMotion
+-    && readAnimationState() === "run" && runSpeed > 0.01;
+-  const runPhase = state.time * (7 + runSpeed * 1.4);
+-  const runBob = runCycleActive ? Math.abs(Math.sin(runPhase)) * SKYLINE_CHARACTER_HEIGHT * 0.05 : 0;
+-  const runLean = runCycleActive ? Math.min(0.22, 0.1 + runSpeed * 0.016) : 0;
+-  const runSway = runCycleActive ? Math.sin(runPhase) * 0.1 : 0;
+-  player.setPosition(presentedPlayer.position[0], presentedPlayer.position[1] + runBob, presentedPlayer.position[2]);
+-  if (skylineAccessoryHandles.length > 0) {
+-    const facingSign = playerFacing >= 0 ? 1 : -1;
+-    const [sash, pack, visor] = skylineAccessoryHandles;
+-    sash?.setPosition(presentedPlayer.position[0] - 0.08 * facingSign, presentedPlayer.position[1] + 0.08 + runBob, GAMEPLAY_ACTOR_DEPTH + 0.045);
+-    sash?.setRotation(0, playerVisualYawForFacing(playerFacing), -0.16 * facingSign);
+-    pack?.setPosition(presentedPlayer.position[0] + 0.19 * facingSign, presentedPlayer.position[1] - 0.01 + runBob, GAMEPLAY_ACTOR_DEPTH + 0.06);
+-    pack?.setRotation(0, playerVisualYawForFacing(playerFacing), Math.PI * 0.5);
+-    visor?.setPosition(presentedPlayer.position[0], presentedPlayer.position[1] + 0.19 + runBob, GAMEPLAY_ACTOR_DEPTH + 0.09);
+-    visor?.setRotation(Math.PI * 0.5, playerVisualYawForFacing(playerFacing), 0);
+-    skylineAccessoryHandles.forEach((node) => node.setVisible(true));
+-  }
+-  // The stars and moon are effectively infinite-distance dressing. Track the
+-  // winter panorama with the follow camera in both ordinary play and review so
+-  // the opening district never regresses to a flat procedural sky once the
+-  // player moves past the first twelve scene units.
+-  skylineWinterBackdropHandle.setPosition(
+-    presentedPlayer.position[0] - 1.5,
+-    // The default lens needs the plane much lower than the review framing:
+-    // at far-background depth small offsets move only a few screen pixels,
+-    // and the plane's lower edge must sit below the frame to avoid a shelf
+-    // line against the near-black nadir. Review keeps its measured value.
+-    horizonY - 27,
+-    farBackgroundDepth + 0.42
+-  );
+-  {
+-    skylineStarfieldHandle?.setPosition(presentedPlayer.position[0], 0, 0);
+-    skylineMoonHandle?.setPosition(
+-      presentedPlayer.position[0] + 1.75,
+-      horizonY + 2.12,
+-      WORLD_PLANE_DEPTH - 0.2
+-    );
+-  }
+-  const visualState = readAnimationState();
+-  // The current root-safe runtime records the embedded clip request but does
+-  // not yet advance a skinned GLB mixer. Keep the real clip request above and
+-  // add a deliberately restrained renderer-owned idle sway so the visible
+-  // character is alive during an idle capture. It is cosmetic only: physics,
+-  // contact, camera targeting, and the certified player pose remain unchanged.
+-  const idlePhase = state.time * 6.4;
+-  const idleSway = !reducedMotion && visualState === "idle"
+-    ? Math.sin(idlePhase) * 0.12
+-    : 0;
+-  // Keep the travel-facing yaw as an explicit source contract. The small
+-  // renderer-owned sway is applied as a second bounded presentation pass so
+-  // it cannot obscure the gameplay-facing orientation.
+-  // Run lean tips the rigid body into the travel direction with a touch of
+-  // stride sway on the yaw; idle keeps its own sway pass below. The default
+-  // lens is a three-quarter view, so the Z lean projects onto the screen as
+-  // forward pitch; the front-on review lens would read it as a sideways trip,
+-  // so lean stays off there (bob still carries the stride).
+-  const runYaw = playerVisualYawForFacing(playerFacing) + runSway;
+-  const runLeanZ = runCycleActive ? -runLean * playerFacing : 0;
+-  {
+-    // Keep the public evidence-facing yaw at ±90° (see `facingYaw` below),
+-    // while the visible default Oobi uses the shallow three-quarter profile
+-    // authored above. The old update path silently overwrote the profile with
+-    // the exact side-on yaw every frame, so the screenshot still showed only a
+-    // white helmet ellipse despite the source-level profile change.
+-    player.setRotation(0, runYaw, runLeanZ);
+-    if (idleSway !== 0) player.setRotation(0, playerVisualYawForFacing(playerFacing) + idleSway, 0);
+-  }
+-  // Request the hero's embedded clip for the current locomotion state. Root
+-  // `createAuraApp` binds the clip request but does not yet drive skinned GLB
+-  // playback, so the route also applies a bounded procedural pose so the state
+-  // change is actually visible. The distinction is published in the evidence.
+-  if (typeof player.play === "function") {
+-    if (false) {
+-      // The composition hook calls app.step(0), which runs this update callback
+-      // before presenting. Keep the settled clip authoritative here; otherwise
+-      // the live `fall`/`run` state immediately overwrites the fixed idle frame.
+-      player.play(HERO_LOCOMOTION_CLIP_MAP.idle, { loop: false, captureTime: 0.4 });
+-    } else {
+-      player.play(locomotionSnapshot.clip, {
+-        loop: locomotionSnapshot.loop,
+-        ...(locomotionSnapshot.restart ? { restart: true } : {})
+-      });
+-    }
+-  }
+-  // The imported clip owns locomotion. The former 14% scale pulse made the character breathe and
+-  // squash on every frame independently of foot contact, which read as slow, rubbery motion. Keep
+-  // scale neutral during idle/run and use only restrained one-shot silhouettes for air/impact states.
+-  const idleScale = !reducedMotion && visualState === "idle"
+-    ? 1 + Math.sin(idlePhase + Math.PI * 0.5) * 0.028
+-    : 1;
+-  player.setScale(false
+-    ? 0.0001
+-    : false ? 1
+-    : visualState === "jump" ? [0.98, 1.035, 0.98]
+-      : visualState === "fall" ? [1.015, 0.985, 1.015]
+-        : visualState === "hit" ? [1.045, 0.955, 1.045]
+-          : visualState === "land" ? [1.025, 0.975, 1.025]
+-            : idleScale);
+-  mountedEvidence.status = "running";
+-  mountedEvidence.platformerStateStatus = state.status;
+-  // Refreshed rather than snapshotted at mount: `steps`, `droppedSteps` and the lift clock
+-  // inside the solver evidence only mean anything as observations of a running world.
+-  mountedEvidence.physicalCharacter.solver = skylineCharacterWorld.evidence();
+-  mountedEvidence.player = {
+-    x: state.player.x,
+-    y: state.player.y,
+-    vx: state.player.vx,
+-    vy: state.player.vy,
+-    grounded: state.player.grounded
+-  };
+-  mountedEvidence.frameCount = frameCount;
+-  mountedEvidence.score = state.score;
+-  mountedEvidence.coins = state.collected.length;
+-  mountedEvidence.deaths = state.deaths;
+-  mountedEvidence.checkpointId = state.checkpointId;
+-  mountedEvidence.challenge = challengeEvidence;
+-  mountedEvidence.challengeFeedback = observedFeedbackProof;
+-  mountedEvidence.animation = animationEvidence();
+-  mountedEvidence.diagnostics = routeDiagnostics();
+-  // Recomputed per frame rather than only at mount. The mount-time snapshot is taken
+-  // before the renderer's first draw, so pass and shadow state are not yet observable
+-  // and every claim would read as absent.
+-  mountedEvidence.rootRendererIntegration = rootRendererIntegrationEvidence();
+-  mountedEvidence.audio = skylineAudio.proof();
+-  mountedEvidence.eventFeedback = buildSkylineEventFeedbackEvidence();
+-  mountedEvidence.collectibleGlitter = collectedIdleSparkleProof;
+-  mountedEvidence.ghost = { ...skylineGhostEvidence };
+-  mountedEvidence.foliage = { ...skylineFoliageEvidence, activeActPoolsVisible: lastActPaletteIndex };
+-  mountedEvidence.backdrop = buildSkylineBackdropEvidence();
+-  mountedEvidence.relaySensors = { ...skylineRelayEvidence };
+-  for (const checkpoint of checkpoints) {
+-    const active = state.activatedCheckpoints.includes(checkpoint.id);
+-    const pulse = active ? 1.14 : 1;
+-    // Runtime scale replaces the authored torus scale, so retain the relay's
+-    // compact ring proportions while giving an activated relay a subtle pulse.
+-    relayLanguageNodes[checkpoint.id]?.setScale([0.13 * pulse, 0.13 * pulse, 0.035 * pulse]);
+-  }
+-  mountedEvidence.districts = buildSkylineDistrictEvidence(state.player.x);
+-  mountedEvidence.cameraReadability = skylineCameraReadabilityEvidence();
+-  mountedEvidence.motionPreferences = skylineMotionPreferenceEvidence();
+-  mountedEvidence.visualLanguage = buildSkylineVisualLanguageEvidence();
+-  const currentDistrict = resolveSkylineDistrict(state.player.x);
+-  mountedEvidence.feel = {
+-    actIndex: resolveSkylineActIndex(state.player.x),
+-    actTitle: resolveSkylineAct(state.player.x).title,
+-    districtIndex: currentDistrict.index,
+-    districtTitle: currentDistrict.title,
+-    telegraphActive: skylineFeel.snapshot().actIndex >= 0 && skylineFeel.telegraphActive(),
+-    sentryDefeated: skylineFeel.sentryDefeatSeen(),
+-    emberVolleySeen: mountedEvidence.gameplay.emberVolleyFired,
+-    paused: skylineGame.session.paused,
+-    landDipApplied: skylineFeel.landDipSeen(),
+-    dashPunchApplied: skylineFeel.dashPunchSeen(),
+-    // PART F2/F3 adoption: live root-kit juice on the platformer follow rig.
+-    rootJuice: {
+-      kit: "engine.camera.shake + engine.camera.punchIn + engine.gameFeel",
+-      follow: "game.platformerCameraRig follow (existing)",
+-      trauma: skylineFeel.snapshot().rootTrauma,
+-      shakeEnergy: skylineFeel.snapshot().rootShakeEnergy,
+-      punchActive: skylineFeel.snapshot().rootPunchActive,
+-      punchFovOffset: skylineFeel.snapshot().rootPunchFovOffset,
+-      maxTrauma: skylineFeel.snapshot().rootMaxTrauma,
+-      maxShakeMagnitude: skylineFeel.snapshot().rootMaxShakeMagnitude,
+-      shakeSeen: skylineFeel.snapshot().rootShakeSeen,
+-      punchSeen: skylineFeel.snapshot().rootPunchSeen,
+-      effectsSpawned: skylineFeel.snapshot().feelEffectsSpawned,
+-      effectsActive: skylineFeel.snapshot().feelEffectsActive,
+-      overBudget: skylineFeel.snapshot().feelOverBudget,
+-      probeFired: skylineFeel.snapshot().probeFired
+-    }
+-  };
+-  updatePlatformerHud();
+-}
 -
 -/**
 - * Mounted animation evidence. `activeClip`/`runtimeClip` come from the kit's
@@ -2327,750 +3504,431 @@ index 47e053f95..40aa62982 100644
 - * asset's real embedded clip list, so the route cannot claim a clip the asset
 - * does not ship.
 - */
- function animationEvidence() {
-   return {
-     state: locomotionSnapshot.state,
-@@ -3536,7 +3034,6 @@ function animationEvidence() {
-     source: "game.locomotion"
-   };
- }
+-function animationEvidence() {
+-  return {
+-    state: locomotionSnapshot.state,
+-    previousState: locomotionSnapshot.previousState,
+-    activeClip: locomotionSnapshot.clip,
+-    runtimeClip: locomotionSnapshot.clip,
+-    /**
+-     * Honest boundary: the locomotion state machine and clip selection are real
+-     * and asset-validated, but root `createAuraApp` does not yet drive skinned
+-     * GLB clip playback. Visible state change comes from a bounded procedural
+-     * pose. Skinned playback is a root-integration gap, not a route claim.
+-     */
+-    skinnedClipPlaybackProvenAtRoot: false,
+-    visibleMotionSource: "procedural-bounded-pose-with-idle-sway-and-restrained-air-impact-pose",
+-    loop: locomotionSnapshot.loop,
+-    oneShot: locomotionSnapshot.oneShot,
+-    clipMap: { ...HERO_LOCOMOTION_CLIP_MAP },
+-    // The Meshy hero card ships no embedded clips (verified: 0 animations in
+-    // the GLB); the prior 25-name list described a legacy binding the shipped
+-    // card never contained. Empty is the honest embedded list; locomotion
+-    // states and procedural poses are unchanged.
+-    availableClips: [],
+-    importedClipCount: 0,
+-    missingClips: [...locomotionSnapshot.missingClips],
+-    stateHistory: animationStateHistory.slice(),
+-    sampleFrame: frameCount,
+-    sampleTick: locomotionSnapshot.frame,
+-    stateTime: locomotionSnapshot.stateTime,
+-    source: "game.locomotion"
+-  };
+-}
 -
- app.onFrame(({ dt }) => {
-   const step = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
-   input.update(step);
-@@ -3930,3 +3427,4 @@ function updatePlatformerHud(): void {
-     flowLabel: `${Math.round(challengeEvidence.flow)} · x${Math.max(1, challengeEvidence.collectionChain)}`
-   } : undefined);
- }
-+
-diff --git a/apps/showcase-skyline-runner/src/legacy/skyline-audio.ts b/apps/showcase-skyline-runner/src/legacy/skyline-audio.ts
-index 42cec7d4e..0fd6c569a 100644
---- a/apps/showcase-skyline-runner/src/legacy/skyline-audio.ts
-+++ b/apps/showcase-skyline-runner/src/legacy/skyline-audio.ts
-@@ -1,10 +1,3 @@
+-app.onFrame(({ dt }) => {
+-  const step = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
+-  input.update(step);
+-  if (false) {
+-    // Route-primary evidence owns a fixed imported clip, scale, renderer time,
+-    // camera, and LOD state. `app.step(0)` may publish handle changes, but it may
+-    // not advance pickup pulses or any other route simulation between the paired
+-    // visible/suppressed frames.
+-    publishPlatformerEvidence();
+-    return;
+-  }
+-  // SR-A1 HUD toggle: works while running or paused; never touches the sim.
+-  if (input.pressed("ghostToggle")) {
+-    toggleSkylineGhost();
+-  }
+-  if (input.pressed("pause")) {
+-    if (skylineFeel.togglePause()) skylineGame.session.pause("user"); else skylineGame.session.resume();
+-    mountedEvidence.gameplay.pauseFreezesSimulation = skylineGame.session.paused;
+-    publishPlatformerEvidence();
+-    return;
+-  }
+-  runResultsEl.removeAttribute("hidden");
+-}
+-
+-function hideRunResults(): void {
+-  runResultsEl?.setAttribute("hidden", "");
+-}
+-
 -/**
-- * Skyline Runner audio runtime — a thin public-API wrapper around `createGameAudio`.
-- *
-- * Cues are defined in `skyline-audio-manifest.ts` and played here through the typed
-- * asset URLs, exactly like the Clash manifest discipline: no raw URLs, no invented
-- * asset ids, gesture-unlocked AudioContext, and honest evidence.
+- * Full run reset shared by the R key and the results overlay's Restart button
+- * (T1.12 §6.9.15). Everything physical, challenge-side and evidence-side goes
+- * back to start-of-run — extracted so both entry points cannot drift apart.
 - */
- import { createGameAudio, type GameAudio } from "@aura3d/engine";
- import {
-   SKYLINE_AMBIENCE_BUS_LEVEL,
-@@ -16,7 +9,6 @@ import {
-   type SkylineAmbienceBusId,
-   type SkylineAudioCue
- } from "./skyline-audio-manifest";
+-function restartSkylineRun(): void {
+-    runEnded = false;
+-    hideRunResults();
+-    state = platformerState.reset();
+-    // A reset that only moved the mesh would leave the solver's queued kinematic step,
+-    // the scripted lift clock and the measured intent velocity in flight, and the runner
+-    // would be dragged back toward wherever the pre-reset movement was headed.
+-    resetSkylinePhysicalCharacter();
+-    challengeEvidence = runnerChallenge.reset();
+-    emberVolleys.length = 0;
+-    spentEmberCharges = 0;
+-    pendingDefeatedSentries.clear();
+-    playerFacing = 1;
+-    skylineGame.session.resume();
+-    skylineFeel.resetRuntime();
+-    clearActiveEventFeedbackVisuals();
+-    // Incorporation resets: the ghost recording survives resets (it is the saved
+-    // best), but an in-progress capture and the echo playback start over.
+-    ghostRecorder.reset();
+-    ghostRunFinalized = false;
+-    if (ghostReplay) ghostReplay.reset();
+-    relaySensorState.forEach((entry) => {
+-      entry.overlapped = false;
+-    });
+-    relaySensorKnownActivations.clear();
+-    skylineRelayEvidence.coveredCount = 0;
+-    skylineRelayEvidence.missedCheckpointIds = [];
+-    lastActPaletteIndex = applySkylineActPaletteVisibility(0, actSkyBandSets, actFogSets);
+-    applySkylineInstancedPoolVisibility(0);
+-    skylineAudio.setAmbienceAct(0);
+-    for (const [key, node] of Object.entries(actLightSets)) {
+-      node.setVisible(Number(key.split("-")[0]) === lastActPaletteIndex);
+-    }
+-    frameCount += 1;
+-    mountedEvidence.gameplay.resetWorks = true;
+-    kitContractProof.resetRestoresStart = state.checkpointId === "start"
+-      && state.collected.length === 0
+-      && state.deaths === 0
+-      && state.score === 0
+-      && state.defeatedHazards.length === 0;
+-    recordKitEvents(state.events);
+-    completionProof.completed = false;
+-    completionProof.stable = false;
+-    completionProof.finalTime = 0;
+-    completionProof.checkpoints = [];
+-    completionProof.eventCounts.respawn = 0;
+-    completionProof.eventCounts.finish = 0;
+-    locomotionSnapshot = locomotion.reset("idle");
+-    renderEmberVolleys();
+-    publishPlatformerEvidence();
+-  }
 -
- export interface SkylineAudioProof {
-   readonly cueCount: number;
-   readonly enabled: boolean;
-@@ -42,7 +34,6 @@ export interface SkylineAudioProof {
-     readonly ducked: boolean;
-   };
- }
+-app.onFrame(({ dt }) => {
+-  const step = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
+-  input.update(step);
+-  if (compositionPoseSettled) {
+-    // Route-primary evidence owns a fixed imported clip, scale, renderer time,
+-    // camera, and LOD state. `app.step(0)` may publish handle changes, but it may
+-    // not advance pickup pulses or any other route simulation between the paired
+-    // visible/suppressed frames.
+-    publishPlatformerEvidence();
+-    return;
+-  }
+-  if (skylineDensityCaptureGameX !== null) {
+-    // Evidence-only camera traversal: publish the mounted target/diagnostics but
+-    // do not advance the certified platformer, challenge, events, or recorder.
+-    publishPlatformerEvidence();
+-    return;
+-  }
+-  // SR-A1 HUD toggle: works while running or paused; never touches the sim.
+-  if (input.pressed("ghostToggle")) {
+-    toggleSkylineGhost();
+-  }
+-  if (input.pressed("pause") && !runEnded) {
+-    paused = skylineFeel.togglePause();
+-    mountedEvidence.gameplay.pauseFreezesSimulation = paused;
+-    publishPlatformerEvidence();
+-    return;
+-  }
+-  if (input.pressed("reset")) {
+-    restartSkylineRun();
+-    return;
+-  }
+-  if (paused) {
+-    publishPlatformerEvidence();
+-    return;
+-  }
+-  if (skylineGame.session.paused) {
+-    publishPlatformerEvidence();
+-    return;
+-  }
+-  const previous = state;
+-  const collectedEmbers = state.collected.filter((id) => id.includes("ember-charge")).length;
+-  const emberCharges = Math.max(0, collectedEmbers - spentEmberCharges);
+-  const dashPressed = input.pressed("dash");
+-  if (input.pressed("fire") && emberCharges > 0 && emberVolleys.length < emberVolleyNodes.length) {
+-    const slot = emberVolleyNodes.findIndex((_, index) => !emberVolleys.some((volley) => volley.slot === index));
+-    if (slot >= 0) {
+-      spentEmberCharges += 1;
+-      const spawnX = state.player.x + playerFacing * 0.22;
+-      const spawnY = state.player.y + SKYLINE_CHARACTER_HEIGHT * 0.55;
+-      emberVolleys.push({
+-        x: spawnX,
+-        y: spawnY,
+-        vx: playerFacing * 6.4,
+-        life: 1.15,
+-        slot
+-      });
+-      const [sx, sy] = platformerScene.toScenePoint({ x: spawnX, y: spawnY });
+-      skylineFeel.onEmberFire([sx, sy, GAMEPLAY_ACTOR_DEPTH]);
+-      mountedEvidence.gameplay.emberVolleyFired = true;
+-    }
+-  } else if (input.pressed("fire") && emberCharges <= 0) {
+-    const [sx, sy] = platformerScene.toScenePoint({ x: state.player.x, y: state.player.y });
+-    skylineFeel.onEmberDeny([sx, sy, GAMEPLAY_ACTOR_DEPTH]);
+-  }
+-  const clearedThisFrame: string[] = [...pendingDefeatedSentries];
+-  for (const volley of emberVolleys) {
+-    volley.x += volley.vx * step;
+-    volley.life -= step;
+-    for (const sentry of SKYLINE_SENTRY_ENCOUNTERS) {
+-      if (pendingDefeatedSentries.has(sentry.id) || state.defeatedHazards.includes(sentry.id)) continue;
+-      const phase = ((state.time / Math.max(0.001, sentry.period)) + sentry.phase) * Math.PI * 2;
+-      const sentryX = sentry.x + Math.sin(phase) * sentry.amplitude;
+-      if (
+-        volley.x >= sentryX - 0.08
+-        && volley.x <= sentryX + sentry.width + 0.08
+-        && volley.y >= sentry.y - 0.08
+-        && volley.y <= sentry.y + sentry.height + 0.18
+-      ) {
+-        pendingDefeatedSentries.add(sentry.id);
+-        clearedThisFrame.push(sentry.id);
+-        volley.life = 0;
+-        const [sx, sy] = platformerScene.toScenePoint({ x: volley.x, y: volley.y });
+-        skylineFeel.onEmberImpact([sx, sy, GAMEPLAY_ACTOR_DEPTH]);
+-        mountedEvidence.gameplay.emberDefeatedSentry = true;
+-      }
+-    }
+-  }
+-  for (let index = emberVolleys.length - 1; index >= 0; index -= 1) {
+-    if ((emberVolleys[index]?.life ?? 0) <= 0) emberVolleys.splice(index, 1);
+-  }
+-  const authoredState = platformerState.step(step, {
+-    moveX: input.axis("moveX"),
+-    jumpPressed: input.pressed("jump"),
+-    jumpHeld: input.held("jump"),
+-    dashPressed,
+-    clearHazardIds: clearedThisFrame
+-  });
+-  // The authored kit produced this step's *intent* and fired its rules; the solver decides
+-  // where that intent was allowed to go. Everything below reads the returned state, so the
+-  // hero transform, the camera, the contact diagnostics and the evidence all follow Rapier.
+-  state = advancePhysicalCharacter(step, authoredState);
+-  if (!runEnded && state.lives <= 0) {
+-    // T1.12 (§6.9.15 P0): lives exhausted — the session ends on a results
+-    // overlay instead of continuing under a "Lives 0" HUD.
+-    runEnded = true;
+-    paused = true;
+-    showRunResults();
+-    publishPlatformerEvidence();
+-    return;
+-  }
+-  for (const event of state.events) {
+-    const [eventSceneX, eventSceneY] = platformerScene.toScenePoint({ x: event.x, y: event.y });
+-    const eventScenePoint = [eventSceneX, eventSceneY, GAMEPLAY_ACTOR_DEPTH] as const;
+-    if (event.type === "jump") {
+-      skylineFeel.onJump(eventScenePoint);
+-      triggerEventFeedbackVisual("jump", eventScenePoint);
+-      skylineJuice.fire("jump", { position: [...eventScenePoint] });
+-    }
+-    if (event.type === "land") {
+-      skylineFeel.onLand(eventScenePoint);
+-      triggerEventFeedbackVisual("land", eventScenePoint);
+-    }
+-    if (event.type === "dash") {
+-      skylineFeel.onDash(eventScenePoint);
+-      triggerEventFeedbackVisual("dash", eventScenePoint);
+-    }
+-    if (event.type === "collect") {
+-      const collectible = level.collectibles?.find((item) => item.id === event.id);
+-      if (collectible) {
+-        const [sx, sy] = platformerScene.toScenePoint({ x: collectible.x, y: collectible.y });
+-        // Ember charges carry their own pickup feel + cue; sky-shards get the coin chime.
+-        if (String(event.id).includes("ember-charge")) {
+-          skylineFeel.onEmberPickup([sx, sy, GAMEPLAY_ACTOR_DEPTH]);
+-        } else {
+-          skylineFeel.onCollect([sx, sy, GAMEPLAY_ACTOR_DEPTH]);
+-          triggerEventFeedbackVisual("collect", [sx, sy, GAMEPLAY_ACTOR_DEPTH]);
+-          skylineJuice.fire("collect", { position: [sx, sy, GAMEPLAY_ACTOR_DEPTH] });
+-        }
+-      }
+-    }
+-    if (event.type === "checkpoint") {
+-      const act = resolveSkylineAct(state.player.x);
+-      const district = resolveSkylineDistrict(state.player.x);
+-      skylineFeel.onCheckpoint(`${district.title} · ${act.title}`, eventScenePoint);
+-      triggerEventFeedbackVisual("relay", eventScenePoint);
+-      skylineJuice.fire("checkpoint", { position: [...eventScenePoint] });
+-    }
+-    if (event.type === "hazard" || event.type === "fall") {
+-      // The kit emits hazard/fall and respawn in the same step. Anchor the damage
+-      // echo to the newly visible player position so the response is retained in
+-      // the rendered recovery frame rather than disappearing off-camera.
+-      const hazardVisiblePoint = platformerScene.toScenePlayer(state.player).position;
+-      skylineFeel.onHazard(hazardVisiblePoint);
+-      triggerEventFeedbackVisual("hazard", hazardVisiblePoint);
+-      skylineJuice.fire("hazard", { position: [...hazardVisiblePoint] });
+-    }
+-    if (event.type === "respawn") {
+-      skylineFeel.onRespawn(eventScenePoint);
+-      triggerEventFeedbackVisual("respawn", eventScenePoint);
+-    }
+-    if (event.type === "defeat" || event.type === "stomp") {
+-      const encounter = SKYLINE_SENTRY_ENCOUNTERS.find((entry) => entry.id === event.id);
+-      if (encounter) {
+-        const [sx, sy] = platformerScene.toScenePoint({ x: encounter.x, y: encounter.y });
+-        skylineFeel.onSentryDefeat([sx, sy, GAMEPLAY_ACTOR_DEPTH], event.type === "stomp" ? 100 : 150);
+-        triggerEventFeedbackVisual("defeat", [sx, sy, GAMEPLAY_ACTOR_DEPTH]);
+-        skylineJuice.fire("defeat", { position: [sx, sy, GAMEPLAY_ACTOR_DEPTH] });
+-      }
+-    }
+-    if (event.type === "complete") {
+-      skylineFeel.onSummit(eventScenePoint);
+-      triggerEventFeedbackVisual("finish", eventScenePoint);
+-      skylineJuice.fire("finish", { position: [...eventScenePoint] });
+-    }
+-  }
+-  updateEventFeedbackVisuals(step);
+-  skylineTween.tick(step);
+-  challengeEvidence = runnerChallenge.step(step, previous, state);
+-  // SR-A1: capture the live input at fixed ticks while the run is live, and
+-  // finalize exactly once when the physical finish fires. A faster finish replaces
+-  // the stored best; slower ones are discarded.
+-  if (state.status === "playing") {
+-    ghostRecorder.tick(step, {
+-      moveX: input.axis("moveX"),
+-      jumpPressed: input.pressed("jump"),
+-      jumpHeld: input.held("jump")
+-    });
+-  } else if (state.status === "completed") {
+-    finalizeGhostRecordingIfFinished(challengeEvidence.elapsedSeconds);
+-  }
+-  // Flow, chain and objective state must be visible in the rendered scene, not only in
+-  // HUD text, so the feedback nodes are driven from the evidence that was just observed.
+-  renderChallengeFeedback();
+-  renderEmberVolleys();
+-  renderSkylineGhost(step);
+-  updateRelaySensorEvidence();
+-  const nextActIndex = resolveSkylineActIndex(state.player.x);
+-  if (nextActIndex !== lastActPaletteIndex) {
+-    lastActPaletteIndex = applySkylineActPaletteVisibility(nextActIndex, actSkyBandSets, actFogSets);
+-    for (const [key, node] of Object.entries(actLightSets)) {
+-      node.setVisible(Number(key.split("-")[0]) === lastActPaletteIndex);
+-    }
+-    // SR-A2 pools + SR-A6 ambience stem follow the same traversal-derived act.
+-    applySkylineInstancedPoolVisibility(lastActPaletteIndex);
+-    skylineAudio.setAmbienceAct(lastActPaletteIndex);
+-  }
+-  if (skylineJuiceProbeEnabled && !skylineJuiceProbeFired) {
+-    skylineJuiceProbeFired = true;
+-    skylineFeel.probeJuice(platformerScene.toScenePlayer(state.player).position);
+-  }
+-  activeCameraFrame = skylineFeel.applyCameraShake(platformerCamera, playerFacing);
+-  observedCameraFacing.add(activeCameraFrame.leadDirection);
+-  airborneFramingObserved ||= !state.player.grounded && Math.abs(state.player.vy) > 0.05;
+-  skylineFeel.updatePresentation(step, {
+-    simTime: state.time,
+-    playerX: state.player.x,
+-    playerY: state.player.y,
+-    playerFacing,
+-    sceneBinding: platformerScene,
+-    defeatedHazardIds: state.defeatedHazards,
+-    sentryNodes,
+-    sentryAccentNodes,
+-    emberVolleys,
+-    emberVolleyNodes,
+-    firePressed: input.pressed("fire"),
+-    emberStock: emberCharges,
+-    scoreElement: hudElements?.score ?? null
+-  });
+-  frameCount += 1;
+-  mountedEvidence.gameplay.moveChangesX ||= Math.abs(state.player.x - previous.player.x) > 0.001;
+-  mountedEvidence.gameplay.jumpChangesY ||= Math.abs(state.player.y - previous.player.y) > 0.001;
+-  mountedEvidence.gameplay.checkpointProgression ||= state.activatedCheckpoints.length > previous.activatedCheckpoints.length;
+-  mountedEvidence.gameplay.hazardRespawn ||= state.deaths > previous.deaths;
+-  mountedEvidence.gameplay.finishProgression ||= state.status === "completed";
+-  if (state.deaths > previous.deaths) completionProof.eventCounts.respawn += state.deaths - previous.deaths;
+-  // Completion is published at the exact physical finish event. The previous route
+-  // reached the goal early and held this flag until a timer reached 120 seconds; that
+-  // proved a clock, not a level. Course distance and encounter pacing now own duration.
+-  if (state.status === "completed" && !completionProof.completed) {
+-    completionProof.completed = true;
+-    completionProof.stable = true;
+-    completionProof.finalTime = challengeEvidence.elapsedSeconds;
+-    completionProof.checkpoints = [...state.activatedCheckpoints];
+-    completionProof.eventCounts.finish += 1;
+-  }
+-  mountedEvidence.gameplay.surfaceContactProven ||= routeDiagnostics().surfaceContactAlignment.feetOnSurface;
+-  recordKitEvents(state.events);
+-  kitContractProof.moveChangesX ||= mountedEvidence.gameplay.moveChangesX;
+-  kitContractProof.movementChangesPosition ||= mountedEvidence.gameplay.moveChangesX;
+-  kitContractProof.jumpChangesVerticalState ||= mountedEvidence.gameplay.jumpChangesY || Math.abs(state.player.vy) > 0.05;
+-  kitContractProof.completedStatus ||= state.status === "completed";
+-  advanceLocomotion(step);
+-  publishPlatformerEvidence();
+-});
 -
- export interface SkylineAudioController {
-   readonly cue: (name: SkylineAudioCue) => Promise<void>;
-   readonly unlock: () => Promise<void>;
-@@ -51,7 +42,6 @@ export interface SkylineAudioController {
-   readonly proof: () => SkylineAudioProof;
-   readonly dispose: () => Promise<void>;
- }
--
- export function createSkylineAudio(reducedMotion = false): SkylineAudioController {
-   const recentCues: SkylineAudioCue[] = [];
-   const cueAttempts: Partial<Record<SkylineAudioCue, number>> = {};
-@@ -187,3 +177,4 @@ export function createSkylineAudio(reducedMotion = false): SkylineAudioControlle
-     }
-   };
- }
-+
-diff --git a/apps/showcase-skyline-runner/src/legacy/styles.css b/apps/showcase-skyline-runner/src/legacy/styles.css
-index b46bf4923..6885e2ab0 100644
---- a/apps/showcase-skyline-runner/src/legacy/styles.css
-+++ b/apps/showcase-skyline-runner/src/legacy/styles.css
-@@ -6,9 +6,7 @@
-   background: #0b2340;
-   color: #f4fbff;
- }
--
- * { box-sizing: border-box; }
--
- html,
- body {
-   width: 100%;
-@@ -17,9 +15,7 @@ body {
-   margin: 0;
-   overflow: hidden;
- }
--
- button { font: inherit; }
--
- .runner-shell,
- .runner-viewport,
- .runner-stage {
-@@ -29,22 +25,17 @@ button { font: inherit; }
-   height: 100%;
-   overflow: hidden;
- }
--
- .runner-shell {
-   isolation: isolate;
-   background: #0b2340;
- }
--
- .runner-viewport { z-index: 0; }
--
- .runner-stage canvas {
-   display: block;
-   width: 100%;
-   height: 100%;
-   background: #0b2340;
- }
--
--/* Cinematic edge treatment lives in UI, not in the renderer evidence. */
- .runner-shell::before,
- .runner-shell::after {
-   position: fixed;
-@@ -52,7 +43,6 @@ button { font: inherit; }
-   pointer-events: none;
-   content: "";
- }
--
- .runner-shell::before {
-   inset: 0;
-   /* Side-only grade: the old bottom-up wash stacked over the dark foreground
-@@ -61,40 +51,13 @@ button { font: inherit; }
-     linear-gradient(90deg, rgba(3, 5, 18, 0.30), transparent 22%, transparent 74%, rgba(3, 5, 18, 0.14)),
-     linear-gradient(180deg, rgba(6, 7, 24, 0.10), transparent 18%);
- }
--
--.runner-shell::after {
--  /* Removed: the inset rounded frame made the finished game read as a small
--   * preview card nested on a page. The scene must reach the viewport edge. */
--  display: none;
+-function setupSkylineGameHud(): void {
+-  const panel = document.getElementById("panel");
+-  if (!panel) return;
+-  hudElements = setupSkylineHud(panel, checkpoints.length);
+-  // The named visual-review producer keeps the live score/status metrics as
+-  // context while allowing the typed level, hero, and traversal space to own
+-  // the raster hierarchy. The full HUD remains mounted and keyboard-accessible;
+-  // capture-only CSS de-emphasizes the title/control cards for this one frame.
+-  panel.dataset.capture = "default";
+-  document.body.dataset.capture = "default";
+-  panel.closest<HTMLElement>(".runner-shell")?.setAttribute(
+-    "data-capture",
+-    "default");
+-  bindGameTouchControls({
+-    hold: [
+-      { elementId: "left-control", code: "KeyA" },
+-      { elementId: "right-control", code: "KeyD" },
+-      { elementId: "jump-control", code: "Space" }
+-    ],
+-    pulse: [
+-      { elementId: "dash-control", code: "ShiftLeft" },
+-      { elementId: "fire-control", code: "KeyJ" },
+-      { elementId: "ghost-control", code: "KeyG" },
+-      { elementId: "reset-control", code: "KeyR" }
+-    ]
+-  });
+-  // Initial badge text ships in the template as GHOST OFF; the ghost runtime
+-  // (declared later, after the app mounts) owns every later refresh.
 -}
--
--/* The review frame is a presentation of the game world, not a dark vignette
-- * test. Keep the edge treatment legible while allowing the authored twilight
-- * ramp and the typed world to carry the colour hierarchy. */
--.runner-shell[data-capture="review"]::before {
--  /* The exact review is a game frame, not an app preview nested inside another
--   * card. The typed winter backdrop already supplies foreground occlusion at
--   * both sides, so a second CSS vignette only muddies the snow and turns the
--   * lower traversal lane into an unexplained black shelf. */
--  background: none;
+-function updatePlatformerHud(): void {
+-  if (!hudElements) return;
+-  const coinCount = state.collected.filter((id) => id.includes("sky-shard")).length;
+-  const emberStock = Math.max(0, state.collected.filter((id) => id.includes("ember-charge")).length - spentEmberCharges);
+-  const snapshot = buildSkylineHudSnapshot({
+-    score: challengeEvidence.challengeScore,
+-    coinCount,
+-    emberStock,
+-    deaths: state.deaths,
+-    livesRemaining: state.lives,
+-    checkpointCount: checkpoints.length,
+-    activatedCheckpointCount: state.activatedCheckpoints.length,
+-    playerX: state.player.x,
+-    objectiveMet: challengeEvidence.objectiveMet,
+-    paused: skylineGame.session.paused
+-  });
+-  const alignment = playerSurfaceAlignment();
+-  const act = resolveSkylineAct(state.player.x);
+-  const district = resolveSkylineDistrict(state.player.x);
+-  updateSkylineHud(hudElements, snapshot, isSkylineDebugMode() ? {
+-    surfaceLabel: `${district.title} · ${act.title} · ${snapshot.objective} · ${alignment.feetOnSurface ? "Grounded" : "Airborne"}`,
+-    flowLabel: `${Math.round(challengeEvidence.flow)} · x${Math.max(1, challengeEvidence.collectionChain)}`
+-  } : undefined);
 -}
--
--.runner-shell[data-capture="review"]::after {
--  /* Remove the generic rounded full-viewport container from blind-review
--   * pixels. The angled expedition HUD below remains the interface boundary;
--   * the scene itself should reach the edge like a finished platformer. */
--  display: none;
--}
--
- .runner-panel {
-   position: fixed;
-   inset: 0;
-   z-index: 2;
-   pointer-events: none;
- }
--
- .runner-panel > * { pointer-events: auto; }
--
- .runner-brand {
-   position: absolute;
-   top: 20px;
-@@ -108,7 +71,6 @@ button { font: inherit; }
-     linear-gradient(90deg, rgba(255, 127, 111, 0.18), transparent 34%);
-   box-shadow: 0 16px 38px rgba(1, 14, 29, 0.34), inset 0 1px rgba(229, 251, 255, 0.12);
- }
--
- .runner-panel .label {
-   display: flex;
-   gap: 8px;
-@@ -119,7 +81,6 @@ button { font: inherit; }
-   letter-spacing: 0.14em;
-   text-transform: uppercase;
- }
--
- .runner-panel .label i,
- .contract-status i {
-   width: 7px;
-@@ -128,7 +89,6 @@ button { font: inherit; }
-   background: #ff718f;
-   box-shadow: 0 0 14px #ff718f;
- }
--
- .runner-brand h1 {
-   margin: 5px 0 0;
-   font-size: clamp(23px, 2.1vw, 31px);
-@@ -136,7 +96,6 @@ button { font: inherit; }
-   line-height: 1;
-   letter-spacing: -0.045em;
- }
--
- .runner-brand .claim {
-   display: none;
-   max-width: 30ch;
-@@ -145,7 +104,6 @@ button { font: inherit; }
-   font-size: 11px;
-   line-height: 1.38;
- }
--
- .panel-metrics {
-   position: absolute;
-   top: 22px;
-@@ -154,7 +112,6 @@ button { font: inherit; }
-   display: grid;
-   gap: 8px;
- }
--
- .metrics-row {
-   display: grid;
-   grid-template-columns: repeat(4, minmax(72px, 1fr)) minmax(140px, 1.5fr);
-@@ -165,14 +122,12 @@ button { font: inherit; }
-   background: rgba(5, 28, 48, 0.84);
-   box-shadow: 0 16px 38px rgba(1, 14, 29, 0.28), inset 0 1px rgba(229, 251, 255, 0.08);
- }
--
- .metrics-row article {
-   min-width: 0;
-   padding: 8px 10px;
-   border-radius: 9px;
-   background: linear-gradient(180deg, rgba(93, 212, 239, 0.18), rgba(22, 67, 93, 0.18));
- }
--
- .metrics-row span {
-   display: block;
-   color: #a6d4df;
-@@ -181,7 +136,6 @@ button { font: inherit; }
-   letter-spacing: 0.09em;
-   text-transform: uppercase;
- }
--
- .metrics-row strong {
-   display: block;
-   margin-top: 4px;
-@@ -192,13 +146,11 @@ button { font: inherit; }
-   text-overflow: ellipsis;
-   white-space: nowrap;
- }
--
- .metric--flow strong { color: #ffd278; }
- .metric--checkpoint strong { color: #72f4e5; }
- .metric--lives strong { color: #ff849d; }
- .metric--act strong { color: #c4adff; font-size: 14px; letter-spacing: 0.01em; }
- .metrics-row .metric--act { padding-left: 6px; padding-right: 6px; }
--
- .checkpoint-row {
-   display: flex;
-   gap: 8px;
-@@ -209,7 +161,6 @@ button { font: inherit; }
-   border-radius: 999px;
-   background: rgba(5, 28, 48, 0.76);
- }
--
- .checkpoint-label {
-   color: #8fa6ca;
-   font-size: 9px;
-@@ -217,12 +168,10 @@ button { font: inherit; }
-   letter-spacing: 0.08em;
-   text-transform: uppercase;
- }
--
- .checkpoint-pips {
-   display: flex;
-   gap: 5px;
- }
--
- .checkpoint-pip {
-   width: 10px;
-   height: 10px;
-@@ -231,16 +180,13 @@ button { font: inherit; }
-   background: rgba(143, 227, 255, 0.12);
-   box-shadow: 0 0 calc(12px * var(--skyline-checkpoint-pulse, 0)) rgba(143, 227, 255, 0.45);
- }
--
- .checkpoint-pip.is-active {
-   background: rgba(114, 244, 229, 0.82);
-   border-color: rgba(114, 244, 229, 0.95);
- }
--
- .checkpoint-pip.is-current {
-   box-shadow: 0 0 10px rgba(114, 244, 229, 0.65);
- }
--
- .debug-panel {
-   display: none !important;
-   position: absolute;
-@@ -256,30 +202,24 @@ button { font: inherit; }
-   color: #aac8bd;
-   font-size: 10px;
- }
--
- .debug-row {
-   display: flex;
-   justify-content: space-between;
-   gap: 8px;
- }
--
- .debug-row strong { color: #f4fbf7; }
--
- .runner-panel[data-paused="true"] .objective {
-   border-color: rgba(255, 210, 120, 0.48);
-   color: #ffd278;
- }
--
- #score-value.ember-deny {
-   color: #ff8866;
-   animation: ember-deny 0.22s ease;
- }
--
- @keyframes ember-deny {
-   0%, 100% { transform: scale(1); }
-   50% { transform: scale(1.08); }
- }
--
- .act-title-card {
-   position: fixed;
-   top: 42%;
-@@ -298,23 +238,19 @@ button { font: inherit; }
-   pointer-events: none;
-   transition: opacity 0.18s ease;
- }
--
- .act-title-card > * {
-   display: block;
- }
--
- .act-title-eyebrow {
-   color: #72f4e5;
-   font-size: 9px;
-   font-weight: 850;
-   letter-spacing: 0.18em;
- }
--
- .act-title-heading {
-   margin-top: 7px;
-   font: inherit;
- }
--
- .act-title-message {
-   margin-top: 8px;
-   color: #c8d1e4;
-@@ -323,11 +259,9 @@ button { font: inherit; }
-   letter-spacing: 0;
-   line-height: 1.35;
- }
--
- .act-title-card[data-visible="true"] {
-   opacity: 1;
- }
--
- .score-pop {
-   position: absolute;
-   top: -4px;
-@@ -337,25 +271,20 @@ button { font: inherit; }
-   font-weight: 800;
-   animation: score-pop-rise 0.9s ease forwards;
- }
--
- @keyframes score-pop-rise {
-   from { opacity: 1; transform: translateY(0); }
-   to { opacity: 0; transform: translateY(-16px); }
- }
--
- .game-metrics {
-   grid-template-columns: repeat(5, minmax(72px, 1fr));
- }
--
- .game-hud .objective {
-   justify-self: stretch;
-   border-radius: 12px;
-   max-width: none;
-   text-align: center;
- }
--
- .route-contract { display: none; }
--
- .objective {
-   justify-self: end;
-   max-width: 100%;
-@@ -367,7 +296,6 @@ button { font: inherit; }
-   font-size: 11px;
-   box-shadow: 0 12px 32px rgba(1, 9, 12, 0.22);
- }
--
- .runner-controls {
-   position: absolute;
-   bottom: 16px;
-@@ -376,9 +304,7 @@ button { font: inherit; }
-   width: 286px;
-   gap: 8px;
- }
--
- .runner-controls h2 { display: none; }
--
- .button-grid {
-   display: grid;
-   grid-template-columns: repeat(4, 1fr);
-@@ -390,7 +316,6 @@ button { font: inherit; }
-   box-shadow: 0 16px 38px rgba(1, 14, 29, 0.34);
-   backdrop-filter: blur(16px);
- }
--
- .button-grid button {
-   display: grid;
-   min-width: 0;
-@@ -404,7 +329,6 @@ button { font: inherit; }
-   cursor: pointer;
-   touch-action: none;
- }
--
- .button-grid button b { font-size: 17px; }
- .button-grid button span { color: #c0e7ef; font-size: 9px; font-weight: 760; text-transform: uppercase; }
- .button-grid button:hover,
-@@ -415,7 +339,6 @@ button { font: inherit; }
-   outline: none;
-   box-shadow: 0 0 18px rgba(114, 244, 229, 0.24);
- }
--
- .controls-list {
-   display: flex;
-   gap: 8px;
-@@ -425,227 +348,11 @@ button { font: inherit; }
-   font-size: 10px;
-   list-style: none;
- }
--
- .controls-list kbd {
-   color: #f3f4ff;
-   font: inherit;
-   font-weight: 800;
- }
--
--/* Capture-only visual review layout: preserve the mounted HUD/evidence nodes,
-- * but replace the live page's chrome with a compact, deliberate score strip.
-- * The title remains visible so the frame has an information anchor; controls,
-- * repeated objectives, and checkpoint/debug copy remain available to the DOM
-- * and keyboard contract while staying out of the pixel comparison. */
--.runner-panel[data-capture="review"] .runner-controls,
--.runner-panel[data-capture="review"] .checkpoint-row,
--.runner-panel[data-capture="review"] .ghost-row {
--  opacity: 0;
--}
--
--/* Capture-only expedition visor. The asymmetrical crest and faceted telemetry
-- * ribbon belong to the runner's arctic kit; they avoid the full-width admin
-- * dashboard silhouette while preserving every live gameplay value. */
--.runner-panel[data-capture="review"]::before {
--  position: fixed;
--  z-index: 0;
--  top: 15px;
--  left: 20px;
--  width: 270px;
--  height: 64px;
--  border: 1px solid rgba(129, 239, 255, 0.48);
--  background:
--    linear-gradient(90deg, #ff776f 0 7px, transparent 7px),
--    linear-gradient(112deg, rgba(7, 31, 53, 0.96), rgba(13, 50, 72, 0.88));
--  box-shadow: 0 14px 30px rgba(1, 12, 26, 0.35), inset 0 1px rgba(229, 251, 255, 0.18);
--  clip-path: polygon(0 0, 92% 0, 100% 35%, 100% 100%, 8% 100%, 0 72%);
--  content: "";
--  pointer-events: none;
--}
--
--.runner-panel[data-capture="review"] .runner-brand,
--.runner-panel[data-capture="review"] .panel-metrics,
--.runner-panel[data-capture="review"] .objective {
--  z-index: 1;
--}
--
--.runner-panel[data-capture="review"] .runner-brand {
--  top: 18px;
--  left: 35px;
--  width: 238px;
--  padding: 4px 8px;
--  border: 0;
--  border-radius: 0;
--  background: transparent;
--  box-shadow: none;
--  opacity: 0.98;
--}
--
--.runner-panel[data-capture="review"] .runner-brand::after {
--  display: block;
--  width: 116px;
--  height: 3px;
--  margin-top: 4px;
--  background: linear-gradient(90deg, #ff8176 0 24%, #84efff 24% 76%, transparent 76%);
--  clip-path: polygon(0 0, 100% 0, 94% 100%, 6% 100%);
--  box-shadow: 0 0 12px rgba(132, 239, 255, 0.3);
--  content: "";
--}
--
--.runner-panel[data-capture="review"] .runner-brand .claim {
--  display: none;
--}
--
--.runner-panel[data-capture="review"] .runner-brand .label {
--  color: #9cefff;
--  font-size: 8px;
--  letter-spacing: 0.22em;
--}
--
--.runner-panel[data-capture="review"] .runner-brand .label i {
--  width: 7px;
--  height: 7px;
--  border-radius: 1px;
--  background: #ff8176;
--  box-shadow: 0 0 10px rgba(255, 129, 118, 0.8);
--  transform: rotate(45deg);
--}
--
--.runner-panel[data-capture="review"] .runner-brand h1 {
--  margin-top: 2px;
--  color: #f4fbff;
--  font-size: clamp(19px, 1.55vw, 24px);
--  font-style: italic;
--  letter-spacing: -0.035em;
--  text-transform: uppercase;
--  text-shadow: 0 2px 18px rgba(3, 14, 27, 0.42);
--}
--
--.runner-panel[data-capture="review"] .panel-metrics {
--  top: 17px;
--  right: 20px;
--  width: 454px;
--  opacity: 0.96;
--  transform: none;
--  transform-origin: top right;
--}
--
--.runner-panel[data-capture="review"] .metrics-row {
--  gap: 3px;
--  padding: 0;
--  border: 0;
--  border-radius: 0;
--  background: transparent;
--  box-shadow: none;
--}
--
--/* The first real relay is the review frame's ceremony. Give that legitimate
-- * state the same integrated visual weight as the persistent status rail so the
-- * district transition reads as authored game presentation, not debug text. */
--body[data-capture="review"] .act-title-card {
--  /* The exact review frame already carries district truth in the integrated
--   * top rail. Keeping this transient ceremony card visible duplicated that
--   * information and covered the opening traversal lane. It remains mounted
--   * and announced in ordinary gameplay; only the blind pixel lens hides it. */
--  opacity: 0;
--}
--
--body[data-capture="review"] .act-title-card .act-title-eyebrow {
--  color: #ffb58d;
--  letter-spacing: 0.2em;
--}
--
--body[data-capture="review"] .act-title-card .act-title-heading {
--  display: block;
--  color: #f7f8ff;
--}
--
--body[data-capture="review"] .act-title-card .act-title-message {
--  max-width: 44ch;
--  color: #c7d1e6;
--  margin-top: 4px;
--  font-size: 11px;
--}
--
--.runner-panel[data-capture="review"] .game-metrics {
--  grid-template-columns: repeat(4, minmax(68px, 1fr)) minmax(108px, 1.3fr);
--}
--
--.runner-panel[data-capture="review"] .metrics-row article {
--  position: relative;
--  min-height: 43px;
--  overflow: hidden;
--  padding: 6px 11px 8px;
--  border: 1px solid rgba(126, 232, 248, 0.28);
--  border-radius: 0;
--  background: linear-gradient(145deg, rgba(10, 43, 66, 0.94), rgba(6, 23, 43, 0.9));
--  box-shadow: inset 0 2px rgba(169, 246, 255, 0.1), 0 10px 22px rgba(1, 12, 27, 0.24);
--  clip-path: polygon(7px 0, 100% 0, calc(100% - 7px) 100%, 0 100%);
--}
--
--/* Each live value owns a tiny instrument rail. It gives zero-state telemetry
-- * a deliberate resting state without inventing score, coins, ember, or lives;
-- * the text above remains the exact gameplay truth updated by hud.ts. */
--.runner-panel[data-capture="review"] .metrics-row article::after {
--  position: absolute;
--  right: 11px;
--  bottom: 4px;
--  left: 11px;
--  height: 2px;
--  background: linear-gradient(90deg, rgba(126, 232, 248, 0.82) 0 18%, rgba(126, 232, 248, 0.16) 18% 100%);
--  box-shadow: 0 0 8px rgba(126, 232, 248, 0.24);
--  content: "";
--}
--
--.runner-panel[data-capture="review"] .metric--lives::after {
--  background: linear-gradient(90deg, #ff849d 0 76%, rgba(255, 132, 157, 0.16) 76% 100%);
--  box-shadow: 0 0 8px rgba(255, 132, 157, 0.3);
--}
--
--.runner-panel[data-capture="review"] .metric--act::after {
--  background: linear-gradient(90deg, #9feeff 0 42%, rgba(159, 238, 255, 0.15) 42% 100%);
--}
--
--.runner-panel[data-capture="review"] .metrics-row span {
--  color: #91cad5;
--  font-size: 7px;
--  letter-spacing: 0.18em;
--}
--
--.runner-panel[data-capture="review"] .metrics-row strong {
--  color: #f4fbff;
--  font-size: 16px;
--  font-style: italic;
--}
--
--.runner-panel[data-capture="review"] .metric--flow strong { color: #ffd278; }
--.runner-panel[data-capture="review"] .metric--checkpoint strong { color: #72f4e5; }
--.runner-panel[data-capture="review"] .metric--lives strong { color: #ff849d; }
--.runner-panel[data-capture="review"] .metric--act strong {
--  color: #9feeff;
--  font-size: 13px;
--}
--
--.runner-panel[data-capture="review"] .objective {
--  position: fixed;
--  top: 86px;
--  left: 34px;
--  justify-self: start;
--  width: auto;
--  max-width: 480px;
--  padding: 6px 14px 6px 19px;
--  border-left: 3px solid #ff8176;
--  background: linear-gradient(90deg, rgba(6, 28, 49, 0.84), rgba(6, 28, 49, 0));
--  color: #c8edf4;
--  font-size: 8px;
--  font-weight: 700;
--  letter-spacing: 0.12em;
--  line-height: 1.2;
--  text-transform: uppercase;
--  box-shadow: none;
--  opacity: 0.9;
--}
--
- .route-contract {
-   position: absolute;
-   right: 30px;
-@@ -657,7 +364,6 @@ body[data-capture="review"] .act-title-card .act-title-message {
-   background: rgba(5, 22, 27, 0.62);
-   color: #aac8bd;
- }
--
- .contract-status {
-   display: flex;
-   gap: 8px;
-@@ -668,9 +374,7 @@ body[data-capture="review"] .act-title-card .act-title-message {
-   letter-spacing: 0.08em;
-   text-transform: uppercase;
- }
--
- .route-contract p { margin: 7px 0 0; font-size: 10px; line-height: 1.4; }
--
- @media (max-width: 980px) {
-   .runner-brand { width: 290px; }
-   .runner-brand .claim { display: none; }
-@@ -678,7 +382,6 @@ body[data-capture="review"] .act-title-card .act-title-message {
-   .metrics-row { grid-template-columns: repeat(5, minmax(60px, 1fr)); }
-   .route-contract { display: none; }
- }
--
- @media (max-width: 620px) {
-   .runner-shell::after { inset: 5px; border-radius: 14px; }
-   .runner-brand {
-@@ -727,14 +430,11 @@ body[data-capture="review"] .act-title-card .act-title-message {
-   .button-grid button b { font-size: 19px; }
-   .controls-list { display: none; }
- }
--
--/* ---- SR-A1 ghost badge --------------------------------------------------- */
- .ghost-row {
-   margin-top: 6px;
-   display: flex;
-   justify-content: flex-start;
- }
--
- #ghost-badge {
-   display: inline-block;
-   padding: 3px 8px;
-@@ -745,20 +445,15 @@ body[data-capture="review"] .act-title-card .act-title-message {
-   color: #bfe9f2;
-   background: rgba(12, 32, 40, 0.55);
- }
--
- #ghost-badge[data-state='live'] {
-   color: #eafcff;
-   border-color: rgba(94, 224, 255, 0.75);
-   box-shadow: 0 0 10px rgba(94, 224, 255, 0.28);
- }
--
- #ghost-badge[data-state='empty'] {
-   color: #cfd8de;
-   border-color: rgba(207, 216, 222, 0.4);
- }
--
--/* T1.12 (§6.9.15 P0): run-over results overlay — shown once the kit's authored
-- * lives are exhausted; Restart restores the run through the shared reset path. */
- .skyline-results {
-   position: fixed;
-   inset: 0;
-@@ -768,11 +463,9 @@ body[data-capture="review"] .act-title-card .act-title-message {
-   background: rgba(4, 10, 16, 0.72);
-   z-index: 40;
- }
--
- .skyline-results[hidden] {
-   display: none;
- }
--
- .skyline-results__card {
-   min-width: 260px;
-   padding: 22px 28px;
-@@ -783,19 +476,16 @@ body[data-capture="review"] .act-title-card .act-title-message {
-   color: #eafcff;
-   box-shadow: 0 0 24px rgba(94, 224, 255, 0.18);
- }
--
- .skyline-results__card h2 {
-   margin: 0 0 10px;
-   font-size: 18px;
-   letter-spacing: 0.14em;
- }
--
- .skyline-results__stats {
-   margin: 0 0 16px;
-   font-size: 12px;
-   color: #bfe9f2;
- }
--
- .skyline-results__restart {
-   padding: 8px 18px;
-   border: 1px solid rgba(142, 240, 255, 0.55);
-@@ -806,7 +496,6 @@ body[data-capture="review"] .act-title-card .act-title-message {
-   background: rgba(20, 44, 56, 0.9);
-   cursor: pointer;
- }
--
- .skyline-results__restart:hover {
-   background: rgba(30, 62, 78, 0.95);
- }
 diff --git a/apps/showcase-skyline-runner/src/level-proof.ts b/apps/showcase-skyline-runner/src/level-proof.ts
 deleted file mode 100644
 index f06dcc964..000000000
@@ -3080,6 +3938,37 @@ index f06dcc964..000000000
 -// T1.10 path shim — module moved in PRD-14 §10; re-exported at the old path until
 -// tests/unit/apps (lane 15) re-points its imports (qr-request tracked).
 -export * from "./gameplay/level-proof";
+diff --git a/apps/showcase-skyline-runner/src/main.ts b/apps/showcase-skyline-runner/src/main.ts
+index 2fab0d09b..1929eb1e0 100644
+--- a/apps/showcase-skyline-runner/src/main.ts
++++ b/apps/showcase-skyline-runner/src/main.ts
+@@ -1,14 +1,6 @@
+-// apps/showcase-skyline-runner/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
+-// Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-skyline-runner`
+-// (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
+-// acceptance (§10 step 5).
+ import { resolveQrFlags } from "@aura3d/engine/contracts";
+-
+ const ROUTE_FLAG = "A3D_QR_ROUTE_SKYLINE_RUNNER" as const;
+ const DEFAULT_ON = false;
+-
+-/** Accepts `?a3d-qr=…,route-skyline-runner` and `?a3d-qr=…,A3D_QR_ROUTE_SKYLINE_RUNNER`.
+- *  Returns undefined when the flag is absent (CCR-14-2 replaces this helper). */
+ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const raw = new URL(loc.href).searchParams.get("a3d-qr");
+   if (raw === null) return undefined;
+@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+     ? true
+     : undefined;
+ }
+-
+ const flags = resolveQrFlags({
+   url: location.href,
+   env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR },
+   options: { [ROUTE_FLAG]: routeFlagFromUrl(location, ROUTE_FLAG) ?? DEFAULT_ON }
+ });
+-
+ void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
 diff --git a/apps/showcase-skyline-runner/src/v2/evidence/index.ts b/apps/showcase-skyline-runner/src/v2/evidence/index.ts
 deleted file mode 100644
 index 1809a8e1a..000000000

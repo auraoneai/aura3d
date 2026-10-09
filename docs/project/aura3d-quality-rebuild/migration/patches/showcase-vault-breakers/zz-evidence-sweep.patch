@@ -1,21 +1,23 @@
-From 0688547c988656d58d03210c7e5a8604c5f43de8 Mon Sep 17 00:00:00 2001
+From 008f4eb03afe41f4ef4086f9ba71dde304052e21 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
-Date: Fri, 9 Oct 2026 13:40:44 +0000
+Date: Fri, 9 Oct 2026 13:45:56 +0000
 Subject: [PATCH] [qr-prd09] showcase-vault-breakers: delete evidence
  files+blocks (T5.8)
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
+ .../performance-report.json                   |  39 --
  .../scripts/build-models.mjs                  | 654 ------------------
  .../scripts/build-sfx.mjs                     | 338 ---------
  .../scripts/register-assets.mjs               |  77 ---
  .../scripts/write-deploy-report.mjs           |  50 --
  .../scripts/write-performance-report.ts       |  65 --
  .../scripts/write-route-health.mjs            |  99 ---
- .../src/legacy/main.ts                        | 143 ----
- .../src/legacy/styles.css                     |  46 --
+ .../src/legacy/main.ts                        | 149 ----
+ apps/showcase-vault-breakers/src/main.ts      |  10 -
  .../src/v2/evidence/index.ts                  |  98 ---
- 9 files changed, 1570 deletions(-)
+ 10 files changed, 1579 deletions(-)
+ delete mode 100644 apps/showcase-vault-breakers/performance-report.json
  delete mode 100644 apps/showcase-vault-breakers/scripts/build-models.mjs
  delete mode 100644 apps/showcase-vault-breakers/scripts/build-sfx.mjs
  delete mode 100644 apps/showcase-vault-breakers/scripts/register-assets.mjs
@@ -24,6 +26,51 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  delete mode 100644 apps/showcase-vault-breakers/scripts/write-route-health.mjs
  delete mode 100644 apps/showcase-vault-breakers/src/v2/evidence/index.ts
 
+diff --git a/apps/showcase-vault-breakers/performance-report.json b/apps/showcase-vault-breakers/performance-report.json
+deleted file mode 100644
+index 3d80ce998..000000000
+--- a/apps/showcase-vault-breakers/performance-report.json
++++ /dev/null
+@@ -1,39 +0,0 @@
+-{
+-  "schema": "aura3d.vault-breakers.performance/1.0",
+-  "generatedAt": "2026-09-20T21:33:23.996Z",
+-  "producer": "apps/showcase-vault-breakers/scripts/write-performance-report.ts",
+-  "producerSourceSha256": "2ebff2cbf8eb0e388ce61a59795c8c3ca979f8e8bbf50264c1c36991f7dd6b5d",
+-  "routeSourceFiles": [
+-    "apps/showcase-vault-breakers/src/ball-flow.ts",
+-    "apps/showcase-vault-breakers/src/environment.ts",
+-    "apps/showcase-vault-breakers/src/flippers.ts",
+-    "apps/showcase-vault-breakers/src/main.ts",
+-    "apps/showcase-vault-breakers/src/missions.ts",
+-    "apps/showcase-vault-breakers/src/pinball-audio.ts",
+-    "apps/showcase-vault-breakers/src/plunger.ts",
+-    "apps/showcase-vault-breakers/src/scoreboard.ts",
+-    "apps/showcase-vault-breakers/src/scoring.ts",
+-    "apps/showcase-vault-breakers/src/styles.css",
+-    "apps/showcase-vault-breakers/src/table.ts"
+-  ],
+-  "routeSourceSha256": "206a11a61f4e64cca05eae5e171b8043e3455ee8f577e0794e1f97cdaf0f5822",
+-  "scope": "Route-local Rapier fixed-step CPU timing plus browser-observed root createGameApp draw calls; no GPU frame-time, reusable pinball-kit, or renderer-parity claim.",
+-  "samples": 12000,
+-  "fixedStepSeconds": 0.016666666666666666,
+-  "budgets": {
+-    "fixedStepCpuP95Ms": 1,
+-    "drawCalls": 150
+-  },
+-  "observed": {
+-    "fixedStepCpuP95Ms": 0.722,
+-    "deterministicPoseSamples": 100,
+-    "drawCalls": 158,
+-    "renderSize": [
+-      1920,
+-      1200
+-    ],
+-    "physicsBodies": 33,
+-    "motorisedJoints": 2
+-  },
+-  "pass": false
+-}
 diff --git a/apps/showcase-vault-breakers/scripts/build-models.mjs b/apps/showcase-vault-breakers/scripts/build-models.mjs
 deleted file mode 100644
 index f44cee48b..000000000
@@ -1344,7 +1391,7 @@ index 7bf1abdda..000000000
 -writeFileSync(join(appDir, "route-health.json"), `${JSON.stringify(routeHealth, null, 2)}\n`);
 -console.log(JSON.stringify({ machinePass: true, models: modelIds.length, audio: audioIds.length, exactArtifacts: exactArtifacts.length, primitiveOccurrences, performancePass: performance.pass }));
 diff --git a/apps/showcase-vault-breakers/src/legacy/main.ts b/apps/showcase-vault-breakers/src/legacy/main.ts
-index 7983f36df..f53a5c1c6 100644
+index 7983f36df..c48f37974 100644
 --- a/apps/showcase-vault-breakers/src/legacy/main.ts
 +++ b/apps/showcase-vault-breakers/src/legacy/main.ts
 @@ -1,12 +1,3 @@
@@ -1656,7 +1703,7 @@ index 7983f36df..f53a5c1c6 100644
  function collectVaultEvidence(): Record<string, unknown> {
    const snap = flow.snapshot();
    const flipperSnap = flippers.snapshot();
-@@ -847,29 +735,15 @@ function collectVaultEvidence(): Record<string, unknown> {
+@@ -847,29 +735,9 @@ function collectVaultEvidence(): Record<string, unknown> {
    vaultWindow.__VAULT_BREAKERS_EVIDENCE__ = evidence;
    return evidence;
  }
@@ -1674,19 +1721,19 @@ index 7983f36df..f53a5c1c6 100644
 - * app.step() path (docs/api/game-runtime.md "Deterministic stepping") to run
 - * `frames` fixed steps, then resumes the browser loop.
 - */
- vaultWindow.__VB_PUMP__ = (frames: number): number => {
-   app.pause();
-   for (let index = 0; index < frames; index += 1) app.step(1 / 60);
-   app.resume();
-   return app.runtime.frame;
- };
+-vaultWindow.__VB_PUMP__ = (frames: number): number => {
+-  app.pause();
+-  for (let index = 0; index < frames; index += 1) app.step(1 / 60);
+-  app.resume();
+-  return app.runtime.frame;
+-};
 -
 -vaultWindow.__VB_SCENARIO__ = (scenario: string): string => vaultDrive().stage(scenario);
 -
  function stageScenario(scenario: string): string {
    resetGame();
    let events: readonly VaultGameEvent[] = [];
-@@ -893,17 +767,9 @@ function stageScenario(scenario: string): string {
+@@ -893,17 +761,9 @@ function stageScenario(scenario: string): string {
    publishEvidence();
    return `${scenario}:${flow.snapshot().phase}:${flow.snapshot().banksDown}:${flow.snapshot().activeBalls}`;
  }
@@ -1704,7 +1751,7 @@ index 7983f36df..f53a5c1c6 100644
  function manualEdge(code: string): "pressed" | "released" | "held" | "idle" {
    const now = manualHeld.has(code);
    const before = manualPrev.get(code) ?? false;
-@@ -911,13 +777,11 @@ function manualEdge(code: string): "pressed" | "released" | "held" | "idle" {
+@@ -911,13 +771,11 @@ function manualEdge(code: string): "pressed" | "released" | "held" | "idle" {
    if (!now && before) return "released";
    return now ? "held" : "idle";
  }
@@ -1718,7 +1765,7 @@ index 7983f36df..f53a5c1c6 100644
  window.addEventListener("keydown", (event) => {
    if (!event.repeat) manualHeld.add(event.code);
    if (event.code === "Space" && !plunger.charging && (flow.phase === "attract" || flow.phase === "await-serve")) {
-@@ -945,7 +809,6 @@ window.addEventListener("keydown", (event) => {
+@@ -945,7 +803,6 @@ window.addEventListener("keydown", (event) => {
      event.preventDefault();
    }
  }, { passive: false });
@@ -1726,7 +1773,7 @@ index 7983f36df..f53a5c1c6 100644
  function bindHoldButton(selector: string, onDown: () => void, onUp: () => void): void {
    let held = false;
    const begin = (event: Event): void => {
-@@ -990,8 +853,6 @@ bindHoldButton("#vb-plunge-button", () => {
+@@ -990,8 +847,6 @@ bindHoldButton("#vb-plunge-button", () => {
  ui.onClick("#vb-reset-button", () => resetGame());
  ui.onClick("#vb-pause-button", () => togglePause());
  againButton.addEventListener("click", () => resetGame());
@@ -1735,7 +1782,7 @@ index 7983f36df..f53a5c1c6 100644
  gameApp.onFrame(({ dt }) => {
    vaultTween.tick(dt);
    input.update(dt);
-@@ -1032,8 +893,4 @@ gameApp.onFrame(({ dt }) => {
+@@ -1032,8 +887,4 @@ gameApp.onFrame(({ dt }) => {
    if (frameCount % 6 === 0 || events.length > 0) syncHud();
    publishEvidence();
  });
@@ -1744,108 +1791,37 @@ index 7983f36df..f53a5c1c6 100644
 -
  syncHud();
 -publishEvidence();
-diff --git a/apps/showcase-vault-breakers/src/legacy/styles.css b/apps/showcase-vault-breakers/src/legacy/styles.css
-index fa784d989..d6a772bbb 100644
---- a/apps/showcase-vault-breakers/src/legacy/styles.css
-+++ b/apps/showcase-vault-breakers/src/legacy/styles.css
-@@ -1,13 +1,10 @@
--/* Vault Breakers HUD chrome - DOM is UI only; every gameplay truth is 3D. */
- * { box-sizing: border-box; }
- html, body { margin: 0; height: 100%; background: #05070c; color: #e8eef8; font-family: "Inter", system-ui, sans-serif; }
- body { overflow: hidden; }
+diff --git a/apps/showcase-vault-breakers/src/main.ts b/apps/showcase-vault-breakers/src/main.ts
+index 4a42289ad..aa4732f57 100644
+--- a/apps/showcase-vault-breakers/src/main.ts
++++ b/apps/showcase-vault-breakers/src/main.ts
+@@ -1,14 +1,6 @@
+-// apps/showcase-vault-breakers/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
+-// Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-vault-breakers`
+-// (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
+-// acceptance (§10 step 5).
+ import { resolveQrFlags } from "@aura3d/engine/contracts";
 -
- .shell { display: flex; gap: 14px; height: 100vh; padding: 14px; }
- .viewport { position: relative; flex: 1 1 auto; min-width: 0; }
- .stage { position: absolute; inset: 0; border-radius: 12px; overflow: hidden; background: #05070c; }
- #app canvas { display: block; width: 100%; height: 100%; }
+ const ROUTE_FLAG = "A3D_QR_ROUTE_VAULT_BREAKERS" as const;
+ const DEFAULT_ON = false;
 -
- #hud { position: absolute; inset: 0; pointer-events: none; }
- .hole-banner {
-   position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-@@ -23,7 +20,6 @@ body { overflow: hidden; }
- .result-card h2 { margin: 0 0 6px; font-size: 22px; color: #ffd9a0; letter-spacing: 0.08em; }
- .result-card p { margin: 0 0 14px; color: #b8c4d8; font-size: 14px; }
- .is-hidden { display: none !important; }
--
- .panel {
-   flex: 0 0 300px; display: flex; flex-direction: column; gap: 14px; padding: 16px;
-   border-radius: 12px; background: rgba(10, 15, 28, 0.85); border: 1px solid rgba(126, 248, 255, 0.14);
-@@ -32,7 +28,6 @@ body { overflow: hidden; }
- .vb-brand .eyebrow { margin: 0; font-size: 11px; letter-spacing: 0.22em; color: #7ef8ff; text-transform: uppercase; }
- .vb-brand h1 { margin: 4px 0 6px; font-size: 24px; letter-spacing: 0.04em; color: #ffd9a0; }
- .vb-brand .blurb { margin: 0; font-size: 12.5px; line-height: 1.5; color: #a9b6cc; }
--
- .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
- .stat-grid article {
-   padding: 8px 10px; border-radius: 8px; background: rgba(13, 19, 34, 0.9);
-@@ -40,23 +35,19 @@ body { overflow: hidden; }
- }
- .stat-grid span { display: block; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #7d8ba3; }
- .stat-grid strong { display: block; margin-top: 2px; font-size: 16px; color: #e8eef8; font-variant-numeric: tabular-nums; }
--
- .power-meter {
-   height: 12px; border-radius: 999px; background: rgba(20, 28, 46, 0.9);
-   border: 1px solid rgba(255, 217, 160, 0.25); overflow: hidden;
- }
- .power-meter span { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, #ffb14d, #ff6a3d); transition: width 0.08s linear; }
- .power-meta { display: flex; justify-content: space-between; font-size: 11px; color: #7d8ba3; letter-spacing: 0.08em; }
--
- .mission-line {
-   margin: 0; padding: 8px 10px; border-radius: 8px; font-size: 12px; letter-spacing: 0.1em;
-   color: #9feefc; background: rgba(10, 26, 32, 0.7); border: 1px solid rgba(126, 248, 255, 0.18);
-   font-variant-numeric: tabular-nums;
+-/** Accepts `?a3d-qr=…,route-vault-breakers` and `?a3d-qr=…,A3D_QR_ROUTE_VAULT_BREAKERS`.
+- *  Returns undefined when the flag is absent (CCR-14-2 replaces this helper). */
+ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const raw = new URL(loc.href).searchParams.get("a3d-qr");
+   if (raw === null) return undefined;
+@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+     ? true
+     : undefined;
  }
 -
- .controls-list { margin: 0; padding: 0 0 0 16px; font-size: 12px; line-height: 1.8; color: #a9b6cc; }
- .controls-list b { color: #ffd9a0; }
+ const flags = resolveQrFlags({
+   url: location.href,
+   env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR },
+   options: { [ROUTE_FLAG]: routeFlagFromUrl(location, ROUTE_FLAG) ?? DEFAULT_ON }
+ });
 -
- .action-row { display: flex; flex-wrap: wrap; gap: 8px; }
- .action-row button {
-   flex: 1 1 auto; min-height: 44px; padding: 9px 12px; border-radius: 8px; cursor: pointer;
-@@ -66,43 +57,6 @@ body { overflow: hidden; }
- .action-row button:hover { background: rgba(32, 46, 76, 0.95); border-color: rgba(126, 248, 255, 0.4); }
- .action-row button:active { transform: translateY(1px); }
- .action-row button:focus-visible { outline: 3px solid #7ef8ff; outline-offset: 2px; }
--
--/* Raw physics identity (backend, flipper mode, sensor/joint counts) is route
--   evidence, not player HUD. It previously sat in the panel during normal play,
--   which is exactly the telemetry leak the HUD standard forbids, and was only
--   hidden in `?capture=review`. It is now hidden by default and opt-in through
--   `?evidence=1`, so the numbers stay machine-readable without being shown to a
--   player who did not ask for them. */
--.evidence-strip { display: none; flex-direction: column; gap: 4px; font-size: 11px; color: #66748c; }
--body[data-evidence="on"] .evidence-strip { display: flex; }
--.evidence-strip code { color: #9feefc; font-size: 11px; }
--
--/* Exact blind-review framing: gameplay remains renderer-owned and the same
--   evidence/controls remain in the DOM, but the table gets the visual hierarchy
--   instead of surrendering a permanent 300px column to route diagnostics. */
--body[data-capture="review"] .shell { display: block; padding: 0; }
--body[data-capture="review"] .viewport { width: 100%; height: 100%; }
--body[data-capture="review"] .stage { border-radius: 0; }
--body[data-capture="review"] .panel {
--  position: absolute; z-index: 3; top: 18px; right: 18px;
--  width: 252px; padding: 12px; gap: 9px; overflow: visible;
--  background: rgba(5, 9, 18, 0.88); border-color: rgba(126, 248, 255, 0.26);
--  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.36);
--}
--body[data-capture="review"] .vb-brand .eyebrow,
--body[data-capture="review"] .vb-brand .blurb,
--body[data-capture="review"] .power-meter,
--body[data-capture="review"] .power-meta,
--body[data-capture="review"] .controls-list,
--body[data-capture="review"] .action-row,
--body[data-capture="review"] .evidence-strip { display: none; }
--body[data-capture="review"] .vb-brand h1 { margin: 0; font-size: 18px; }
--body[data-capture="review"] .stat-grid { gap: 5px; }
--body[data-capture="review"] .stat-grid article { padding: 6px 7px; }
--body[data-capture="review"] .stat-grid strong { font-size: 14px; }
--body[data-capture="review"] .mission-line { font-size: 10px; padding: 7px 8px; }
--body[data-capture="review"] .hole-banner { top: 18px; }
--
- @media (max-width: 860px) {
-   .shell { flex-direction: column; padding: 8px; }
-   /* Two stages, one real defect. Without min-height: 0 a column flex item
+ void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
 diff --git a/apps/showcase-vault-breakers/src/v2/evidence/index.ts b/apps/showcase-vault-breakers/src/v2/evidence/index.ts
 deleted file mode 100644
 index 8b89409af..000000000

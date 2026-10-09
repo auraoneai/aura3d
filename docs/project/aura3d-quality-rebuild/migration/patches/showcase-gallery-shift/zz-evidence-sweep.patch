@@ -1,6 +1,6 @@
-From 63d432d0da6c972c616b9665f6954e00e611d8ef Mon Sep 17 00:00:00 2001
+From 3ac0841c32e5f73bbd57ab1c7679461e28d38de0 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
-Date: Fri, 9 Oct 2026 13:40:35 +0000
+Date: Fri, 9 Oct 2026 13:45:49 +0000
 Subject: [PATCH] [qr-prd09] showcase-gallery-shift: delete evidence
  files+blocks (T5.8)
 
@@ -9,19 +9,21 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../capture_hierarchy_candidate.mjs           | 139 -----
  .../capture_integrated_route.mjs              | 130 -----
  .../museum-world-aug31/capture_preview.mjs    |  37 --
+ .../performance-report.json                   |  35 --
  .../scripts/build-models.mjs                  | 490 ------------------
  .../scripts/build-sfx.mjs                     | 376 --------------
  .../scripts/register-assets.mjs               | 104 ----
  .../scripts/write-deploy-report.mjs           |  52 --
  .../scripts/write-performance-report.ts       |  69 ---
  .../scripts/write-route-health.mjs            | 104 ----
- .../showcase-gallery-shift/src/legacy/main.ts | 187 +------
- .../src/legacy/styles.css                     |  90 ----
+ .../showcase-gallery-shift/src/legacy/main.ts | 196 +------
+ apps/showcase-gallery-shift/src/main.ts       |  10 -
  .../src/v2/evidence/index.ts                  |  99 ----
- 12 files changed, 1 insertion(+), 1876 deletions(-)
+ 13 files changed, 1 insertion(+), 1840 deletions(-)
  delete mode 100644 apps/showcase-gallery-shift/art-candidates/hierarchy-aug31/capture_hierarchy_candidate.mjs
  delete mode 100644 apps/showcase-gallery-shift/art-candidates/museum-world-aug31/capture_integrated_route.mjs
  delete mode 100644 apps/showcase-gallery-shift/art-candidates/museum-world-aug31/capture_preview.mjs
+ delete mode 100644 apps/showcase-gallery-shift/performance-report.json
  delete mode 100644 apps/showcase-gallery-shift/scripts/build-models.mjs
  delete mode 100644 apps/showcase-gallery-shift/scripts/build-sfx.mjs
  delete mode 100644 apps/showcase-gallery-shift/scripts/register-assets.mjs
@@ -353,6 +355,47 @@ index 733cf30c2..000000000
 -  process.stdout.write(`${JSON.stringify(receipt, null, 2)}\n`);
 -} finally {
 -  await browser.close();
+-}
+diff --git a/apps/showcase-gallery-shift/performance-report.json b/apps/showcase-gallery-shift/performance-report.json
+deleted file mode 100644
+index 6273bf680..000000000
+--- a/apps/showcase-gallery-shift/performance-report.json
++++ /dev/null
+@@ -1,35 +0,0 @@
+-{
+-  "schema": "aura3d.gallery-shift.performance/1.0",
+-  "generatedAt": "2026-09-03T08:42:06.779Z",
+-  "producer": "apps/showcase-gallery-shift/scripts/write-performance-report.ts",
+-  "producerSourceSha256": "da2066f24cb0dba4e2636863090e9c84c0d00132fc7fbbdd5b5a2e71b1d30047",
+-  "routeSourceFiles": [
+-    "apps/showcase-gallery-shift/src/environment.ts",
+-    "apps/showcase-gallery-shift/src/floor.ts",
+-    "apps/showcase-gallery-shift/src/gallery-world-candidate.ts",
+-    "apps/showcase-gallery-shift/src/guard.ts",
+-    "apps/showcase-gallery-shift/src/heist-audio.ts",
+-    "apps/showcase-gallery-shift/src/main.ts",
+-    "apps/showcase-gallery-shift/src/styles.css",
+-    "apps/showcase-gallery-shift/src/thief.ts",
+-    "apps/showcase-gallery-shift/src/vision.ts"
+-  ],
+-  "routeSourceSha256": "d5de888768e23e3e9a4bccc137dd6dbe2729400fd7ebe2d5a7a35b2a62e8dc28",
+-  "scope": "Route-local authored patrol/detection CPU sampling plus browser-observed root createGameApp draw calls; no GPU frame-time, reusable stealth-kit, navigation-kit, or renderer-parity claim.",
+-  "samples": 20000,
+-  "fixedStepSeconds": 0.016666666666666666,
+-  "budgets": {
+-    "routeLogicCpuP95Ms": 0.2,
+-    "drawCalls": 190
+-  },
+-  "observed": {
+-    "routeLogicCpuP95Ms": 0.002,
+-    "deterministicStateHash": "4bf7d646",
+-    "drawCalls": 162,
+-    "renderSize": [
+-      1280,
+-      800
+-    ]
+-  },
+-  "pass": true
 -}
 diff --git a/apps/showcase-gallery-shift/scripts/build-models.mjs b/apps/showcase-gallery-shift/scripts/build-models.mjs
 deleted file mode 100644
@@ -1586,7 +1629,7 @@ index 306e97f27..000000000
 -writeFileSync(join(appDir, "route-health.json"), `${JSON.stringify(routeHealth, null, 2)}\n`);
 -console.log(JSON.stringify({ machinePass: true, models: modelIds.length, supportingModels: supportingModelIds.length, audio: audioIds.length, exactArtifacts: exactArtifacts.length, primitiveOccurrences, performancePass: performance.pass }));
 diff --git a/apps/showcase-gallery-shift/src/legacy/main.ts b/apps/showcase-gallery-shift/src/legacy/main.ts
-index de16cd62a..2c24ea7e1 100644
+index de16cd62a..6b33ea720 100644
 --- a/apps/showcase-gallery-shift/src/legacy/main.ts
 +++ b/apps/showcase-gallery-shift/src/legacy/main.ts
 @@ -1,21 +1,3 @@
@@ -1997,9 +2040,19 @@ index de16cd62a..2c24ea7e1 100644
  const galleryTween = createTweenEngine();
  const galleryFx = createFxParticlePass(app.effects);
  const galleryJuice = createJuice<"guard-alert" | "alert-rise" | "lift" | "drop" | "win" | "caught" | "camera-whir" | "artifact">({
-@@ -1185,19 +1014,12 @@ bindGalleryDrive({
-   teleport: (x, z) => galleryWindow.__GS_TELEPORT__?.(x, z)
+@@ -1175,29 +1004,13 @@ const galleryJuice = createJuice<"guard-alert" | "alert-rise" | "lift" | "drop"
+   tweens: galleryTween,
+   rumble: createRumbleDriver()
  });
+-bindGalleryDrive({
+-  pumpFrames: (n) => {
+-    const bounded = Math.max(0, Math.min(30000, Math.floor(n)));
+-    app.pause();
+-    for (let i = 0; i < bounded; i += 1) app.advance(1 / 60);
+-    app.resume();
+-  },
+-  teleport: (x, z) => galleryWindow.__GS_TELEPORT__?.(x, z)
+-});
  if (!input) throw new Error("Gallery Shift failed to create Aura3D input.");
 -
 -// ------------------------------------------------------ animation controllers -
@@ -2017,7 +2070,7 @@ index de16cd62a..2c24ea7e1 100644
  const guardAnimations: Array<AnimationController<string> | null> = [
    null,
    new AnimationController<string>({
-@@ -1207,7 +1029,6 @@ const guardAnimations: Array<AnimationController<string> | null> = [
+@@ -1207,7 +1020,6 @@ const guardAnimations: Array<AnimationController<string> | null> = [
      suppressRootMotion: true
    })
  ];
@@ -2025,7 +2078,7 @@ index de16cd62a..2c24ea7e1 100644
  const thiefNodeHandle = app.nodes.get("thief") as AuraRuntimeNodeHandle | undefined;
  if (thiefNodeHandle) thiefAnimation.bindRuntimeNode(thiefNodeHandle, { id: "thief-runtime-animation", defaultClipId: THIEF_CLIPS.idle });
  const guardNodeHandles = new Map<string, AuraRuntimeNodeHandle>();
-@@ -1221,7 +1042,6 @@ guardAnimations.forEach((controller, index) => {
+@@ -1221,7 +1033,6 @@ guardAnimations.forEach((controller, index) => {
    const handle = guardNodeHandles.get(id);
    if (handle) controller.bindRuntimeNode(handle, { id: `${id}-runtime-animation`, defaultClipId: GUARD_CLIPS.idle });
  });
@@ -2033,7 +2086,7 @@ index de16cd62a..2c24ea7e1 100644
  let thiefClipActive: string | null = null;
  function playThiefClip(clip: string): void {
    if (thiefClipActive === clip) return;
-@@ -1232,7 +1052,6 @@ function playThiefClip(clip: string): void {
+@@ -1232,7 +1043,6 @@ function playThiefClip(clip: string): void {
      // Diagnostics surface registration issues; never break the frame loop.
    }
  }
@@ -2041,7 +2094,7 @@ index de16cd62a..2c24ea7e1 100644
  const guardClipActive = new Map<string, string>();
  function playGuardClip(guardId: string, controllerIndex: number, clip: string): void {
    const controller = guardAnimations[controllerIndex];
-@@ -1245,8 +1064,6 @@ function playGuardClip(guardId: string, controllerIndex: number, clip: string):
+@@ -1245,8 +1055,6 @@ function playGuardClip(guardId: string, controllerIndex: number, clip: string):
      // See above.
    }
  }
@@ -2050,7 +2103,7 @@ index de16cd62a..2c24ea7e1 100644
  const banner = document.getElementById("gs-banner")!;
  const reviewBrief = document.getElementById("gs-brief")!;
  const routeState = document.getElementById("gs-route-state")!;
-@@ -1263,7 +1080,6 @@ const liftLabel = document.getElementById("gs-lift-label")!;
+@@ -1263,7 +1071,6 @@ const liftLabel = document.getElementById("gs-lift-label")!;
  const resultCard = document.getElementById("gs-result")!;
  const resultTitle = document.getElementById("gs-result-title")!;
  const resultDetail = document.getElementById("gs-result-detail")!;
@@ -2058,7 +2111,7 @@ index de16cd62a..2c24ea7e1 100644
  function hideResultCard(): void {
    resultCard.classList.add("is-hidden");
  }
-@@ -1272,7 +1088,6 @@ function showResult(title: string, detail: string): void {
+@@ -1272,7 +1079,6 @@ function showResult(title: string, detail: string): void {
    resultDetail.textContent = detail;
    resultCard.classList.remove("is-hidden");
  }
@@ -2066,7 +2119,7 @@ index de16cd62a..2c24ea7e1 100644
  function guardRowsMarkup(): string {
    return runtime.guards
      .map((guard) => {
-@@ -1284,7 +1099,6 @@ function guardRowsMarkup(): string {
+@@ -1284,7 +1090,6 @@ function guardRowsMarkup(): string {
      })
      .join("");
  }
@@ -2074,193 +2127,42 @@ index de16cd62a..2c24ea7e1 100644
  function syncHud(): void {
    const snap = runtime.thief.snapshot();
    ui.setText("#stat-floor", `${runtime.layout.id} - ${runtime.layout.name}`);
-@@ -2085,3 +1899,4 @@ syncAlarmVisuals();
+@@ -2085,3 +1890,4 @@ syncAlarmVisuals();
  syncLiveHierarchy();
  syncHud();
  publishEvidence();
 +
-diff --git a/apps/showcase-gallery-shift/src/legacy/styles.css b/apps/showcase-gallery-shift/src/legacy/styles.css
-index f92d99ea1..9546c9759 100644
---- a/apps/showcase-gallery-shift/src/legacy/styles.css
-+++ b/apps/showcase-gallery-shift/src/legacy/styles.css
-@@ -1,10 +1,8 @@
--/* Gallery Shift HUD chrome - DOM is UI only; every gameplay truth is 3D. */
- * { box-sizing: border-box; }
- html, body { margin: 0; height: 100%; background: #04060b; color: #e8eef8; font-family: "Inter", system-ui, sans-serif; }
- body.is-alarm #gs-banner { border-color: rgba(255, 51, 77, 0.8); color: #ff9aaa; box-shadow: 0 0 24px rgba(255, 51, 77, 0.2); }
- body.is-alarm #panel { border-color: rgba(255, 51, 77, 0.42); }
- body { overflow: hidden; }
+diff --git a/apps/showcase-gallery-shift/src/main.ts b/apps/showcase-gallery-shift/src/main.ts
+index c11d2d007..879955c11 100644
+--- a/apps/showcase-gallery-shift/src/main.ts
++++ b/apps/showcase-gallery-shift/src/main.ts
+@@ -1,14 +1,6 @@
+-// apps/showcase-gallery-shift/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
+-// Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-gallery-shift`
+-// (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
+-// acceptance (§10 step 5).
+ import { resolveQrFlags } from "@aura3d/engine/contracts";
 -
- .shell {
-   display: grid;
-   grid-template-columns: minmax(0, 1fr) minmax(188px, 214px);
-@@ -13,52 +11,9 @@ body { overflow: hidden; }
-   height: 100vh;
-   padding: 8px;
+ const ROUTE_FLAG = "A3D_QR_ROUTE_GALLERY_SHIFT" as const;
+ const DEFAULT_ON = false;
+-
+-/** Accepts `?a3d-qr=…,route-gallery-shift` and `?a3d-qr=…,A3D_QR_ROUTE_GALLERY_SHIFT`.
+- *  Returns undefined when the flag is absent (CCR-14-2 replaces this helper). */
+ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const raw = new URL(loc.href).searchParams.get("a3d-qr");
+   if (raw === null) return undefined;
+@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+     ? true
+     : undefined;
  }
 -
--/* Renderer-first review frame: retain the HUD nodes for state/evidence and
-- * accessibility, but let the authored museum plan and typed actors fill the
-- * screenshot without a side-column or diagnostic chrome. */
--body[data-capture="review"] .shell {
--  grid-template-columns: minmax(0, 1fr);
--  gap: 0;
--  padding: 0;
--}
--body[data-capture="review"] .stage { border-radius: 0; }
--body[data-capture="review"] #panel,
--body[data-capture="review"] #panel { opacity: 0; pointer-events: none; }
--/* Keep a restrained, integrated mission read in the exact frame. The panel
-- * remains hidden so the museum still owns the canvas, while the banner and
-- * detection meter communicate the live heist state alongside the world labels. */
--body[data-capture="review"] #hud { opacity: 1; pointer-events: none; }
--body[data-capture="review"] .hall-banner {
--  top: 18px; left: 24px; transform: none; padding: 8px 13px;
--  background: linear-gradient(105deg, rgba(5, 20, 31, 0.9), rgba(9, 13, 24, 0.82));
--  border-color: rgba(126, 248, 255, 0.52);
--  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24), 0 0 18px rgba(75, 224, 223, 0.08); font-size: 11px;
--}
--body[data-capture="review"] .detection-wrap {
--  top: 18px; right: 24px; width: 224px; padding: 9px 11px;
--  background: linear-gradient(105deg, rgba(9, 13, 24, 0.84), rgba(31, 18, 16, 0.86));
--  border-color: rgba(255, 177, 77, 0.48);
--  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24), 0 0 18px rgba(255, 177, 77, 0.08);
--}
--body[data-capture="review"] .review-brief {
--  top: 60px; left: 24px;
--  padding: 8px 12px;
--  background: linear-gradient(105deg, rgba(5, 20, 31, 0.86), rgba(19, 14, 25, 0.84));
--  border-color: rgba(255, 217, 160, 0.42);
--  color: #ffe2b4;
--  box-shadow: 0 7px 18px rgba(0, 0, 0, 0.2), 0 0 16px rgba(255, 177, 77, 0.07);
--}
--body[data-capture="review"] .mission-rail {
--  display: block;
--  left: 24px;
--  bottom: 18px;
--}
--body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
- .viewport { position: relative; min-width: 0; min-height: 0; }
- .stage { position: absolute; inset: 0; border-radius: 12px; overflow: hidden; background: #04060b; }
- #app canvas { display: block; width: 100%; height: 100%; }
+ const flags = resolveQrFlags({
+   url: location.href,
+   env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR },
+   options: { [ROUTE_FLAG]: routeFlagFromUrl(location, ROUTE_FLAG) ?? DEFAULT_ON }
+ });
 -
- #hud { position: absolute; inset: 0; pointer-events: none; }
- .hall-banner {
-   position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-@@ -66,24 +21,6 @@ body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
-   background: rgba(7, 12, 24, 0.78); border: 1px solid rgba(126, 248, 255, 0.25); color: #9feefc;
-   white-space: nowrap;
- }
--
--/* Compact mission context, sourced from the live route state. This is HUD
-- * only: LOS, objective, and detection truth remain in the Aura3D runtime. */
--.review-brief {
--  position: absolute; top: 58px; left: 24px; z-index: 2;
--  max-width: min(360px, calc(100vw - 48px));
--  padding: 7px 11px; border-radius: 6px;
--  background: rgba(5, 11, 21, 0.78);
--  border: 1px solid rgba(255, 177, 77, 0.3);
--  color: #ffd9a0; font-size: 10px; letter-spacing: 0.14em;
--  line-height: 1.35; white-space: nowrap;
--  box-shadow: 0 7px 18px rgba(0, 0, 0, 0.2);
--}
--
--/* A compact in-world mission read. It is intentionally UI-only and
-- * pointer-transparent: the path, objective rings, and LOS wedges remain
-- * renderer-owned geometry in the canvas. Keeping this rail in the lower
-- * black/south apron lets the museum plan and actors stay visually dominant. */
- .mission-rail {
-   display: none;
-   position: absolute;
-@@ -158,7 +95,6 @@ body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
- .legend-player { color: #56f4d3; background: #56f4d3; }
- .legend-patrol { color: #ff6b9b; background: #ff6b9b; }
- .legend-los { color: #ffd05a; background: #ffd05a; }
--
- .detection-wrap {
-   position: absolute; top: 10px; right: 14px; width: 190px;
-   padding: 8px 10px; border-radius: 10px;
-@@ -179,7 +115,6 @@ body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
- .meter-ticks i { position: absolute; top: -9px; width: 1px; height: 6px; background: rgba(232, 238, 248, 0.55); }
- .meter-ticks #gs-tick-suspicious { left: 35%; }
- .meter-ticks #gs-tick-alert { left: 70%; }
--
- .lift-progress {
-   position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
-   width: 260px; padding: 8px 12px; border-radius: 10px;
-@@ -188,7 +123,6 @@ body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
- .lift-progress span { font-size: 11px; letter-spacing: 0.16em; color: #9feefc; }
- .lift-bar { margin-top: 5px; height: 10px; border-radius: 999px; overflow: hidden; background: rgba(20, 28, 46, 0.9); }
- .lift-bar span { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, #7ef8ff, #3dfc9a); transition: width 0.06s linear; }
--
- .result-card {
-   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-   min-width: 300px; padding: 22px 26px; border-radius: 14px; text-align: center;
-@@ -197,7 +131,6 @@ body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
- .result-card h2 { margin: 0 0 6px; font-size: 22px; color: #ffd9a0; letter-spacing: 0.08em; }
- .result-card p { margin: 0 0 14px; color: #b8c4d8; font-size: 14px; }
- .is-hidden { display: none !important; }
--
- .panel {
-   position: relative; z-index: 3; min-width: 0; width: auto; max-height: calc(100vh - 20px);
-   display: flex; flex-direction: column; gap: 8px; padding: 10px;
-@@ -207,7 +140,6 @@ body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
- .gs-brand .eyebrow { margin: 0; font-size: 11px; letter-spacing: 0.22em; color: #7ef8ff; text-transform: uppercase; }
- .gs-brand h1 { margin: 4px 0 5px; font-size: 22px; letter-spacing: 0.04em; color: #ffd9a0; }
- .gs-brand .blurb { margin: 0; font-size: 11.5px; line-height: 1.45; color: #a9b6cc; }
--
- .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
- .stat-grid article {
-   padding: 7px 8px; border-radius: 8px; background: rgba(13, 19, 34, 0.82);
-@@ -215,7 +147,6 @@ body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
- }
- .stat-grid span { display: block; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #7d8ba3; }
- .stat-grid strong { display: block; margin-top: 2px; font-size: 14px; color: #e8eef8; font-variant-numeric: tabular-nums; }
--
- .section-label { margin: 0 0 6px; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #7d8ba3; }
- .guard-row {
-   display: flex; flex-wrap: wrap; align-items: center; gap: 5px; padding: 5px 7px; margin-bottom: 5px;
-@@ -228,10 +159,8 @@ body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
- .state-investigate { background: rgba(255, 177, 77, 0.18); color: #ffb14d; }
- .state-alert { background: rgba(255, 59, 78, 0.2); color: #ff6a7d; }
- .guard-row .route, .guard-row .speed { font-variant-numeric: tabular-nums; color: #7d8ba3; }
--
- .controls-list { margin: 0; padding: 0 0 0 15px; font-size: 11px; line-height: 1.65; color: #a9b6cc; }
- .controls-list b { color: #ffd9a0; }
--
- .action-row { display: flex; flex-wrap: wrap; gap: 8px; }
- .action-row button {
-   min-width: 44px; min-height: 44px; padding: 8px 12px; border-radius: 8px; font-size: 12px; letter-spacing: 0.06em;
-@@ -239,18 +168,6 @@ body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
-   cursor: pointer;
- }
- .action-row button:active { background: rgba(35, 50, 82, 0.95); }
--
--.evidence-strip {
--  display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 8px 10px; border-radius: 8px;
--  background: rgba(13, 19, 34, 0.76); border: 1px solid rgba(126, 248, 255, 0.1);
--  font-size: 10px; letter-spacing: 0.06em; color: #7d8ba3;
--}
--.evidence-strip code { color: #9feefc; font-variant-numeric: tabular-nums; }
--
--/* Phone play: the heist needs movement, sneak and lift reachable without
-- * scrolling a side panel mid-stealth, so the control row leaves the document
-- * flow and is pinned above the home indicator. The shell reserves the bar's
-- * height instead of letting it cover the playfield or the objective rail. */
- @media (max-width: 860px) {
-   :root { --gs-touch-bar: 122px; }
-   .shell {
-@@ -272,10 +189,3 @@ body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
-     min-width: 0; min-height: 44px; padding: 6px 4px; font-size: 11px; letter-spacing: 0.04em;
-   }
- }
--/* Review capture owns the whole frame: the bar returns to flow inside the
-- * hidden panel and the reserved apron disappears, so the museum fills the
-- * canvas edge to edge. */
--body[data-capture="review"] .shell { padding-bottom: 8px; }
--body[data-capture="review"] .action-row { position: static; background: none; border: 0; padding: 0; }
--
--
+ void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
 diff --git a/apps/showcase-gallery-shift/src/v2/evidence/index.ts b/apps/showcase-gallery-shift/src/v2/evidence/index.ts
 deleted file mode 100644
 index a11da7af4..000000000

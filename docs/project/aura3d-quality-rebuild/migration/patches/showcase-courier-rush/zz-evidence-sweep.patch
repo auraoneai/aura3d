@@ -1,23 +1,51 @@
-From f81f1a8756ada873a30883aebe6a13960d405d02 Mon Sep 17 00:00:00 2001
+From 959b3ad934075e92703e15462eade5bdc7647b72 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
-Date: Fri, 9 Oct 2026 13:40:34 +0000
+Date: Fri, 9 Oct 2026 13:45:48 +0000
 Subject: [PATCH] [qr-prd09] showcase-courier-rush: delete evidence
  files+blocks (T5.8)
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- .../scripts/register-models.mjs               |  34 ----
- .../scripts/write-performance-report.ts       |  55 ------
- .../scripts/write-route-health.mjs            | 135 -------------
- apps/showcase-courier-rush/src/legacy/main.ts | 181 +-----------------
- .../src/legacy/styles.css                     |  64 -------
- .../src/v2/evidence/index.ts                  |  99 ----------
- 6 files changed, 1 insertion(+), 567 deletions(-)
+ .../performance-report.json                   |  20 --
+ .../scripts/register-models.mjs               |  34 ---
+ .../scripts/write-performance-report.ts       |  55 -----
+ .../scripts/write-route-health.mjs            | 135 -----------
+ apps/showcase-courier-rush/src/legacy/main.ts | 228 ------------------
+ apps/showcase-courier-rush/src/main.ts        |  10 -
+ .../src/v2/evidence/index.ts                  |  99 --------
+ 7 files changed, 581 deletions(-)
+ delete mode 100644 apps/showcase-courier-rush/performance-report.json
  delete mode 100644 apps/showcase-courier-rush/scripts/register-models.mjs
  delete mode 100644 apps/showcase-courier-rush/scripts/write-performance-report.ts
  delete mode 100644 apps/showcase-courier-rush/scripts/write-route-health.mjs
  delete mode 100644 apps/showcase-courier-rush/src/v2/evidence/index.ts
 
+diff --git a/apps/showcase-courier-rush/performance-report.json b/apps/showcase-courier-rush/performance-report.json
+deleted file mode 100644
+index 7c8e2eff7..000000000
+--- a/apps/showcase-courier-rush/performance-report.json
++++ /dev/null
+@@ -1,20 +0,0 @@
+-{
+-  "schema": "aura3d-courier-rush-performance/1.0",
+-  "generatedAt": "2026-09-03T10:00:41.926Z",
+-  "scope": "Headless timing of route-local dispatch and seeded eight-car authored lane-loop simulation. GPU/frame-time parity is not claimed.",
+-  "samples": 12000,
+-  "fixedStepSeconds": 0.008333333333333333,
+-  "budgets": {
+-    "dispatchP95Ms": 0.25,
+-    "trafficP95Ms": 1,
+-    "trafficCars": 8,
+-    "fullShiftDrawCalls": 600
+-  },
+-  "observed": {
+-    "dispatchP95Ms": 0.0011,
+-    "trafficP95Ms": 0.0117,
+-    "trafficCars": 8,
+-    "fullShiftDrawCalls": 34
+-  },
+-  "pass": true
+-}
 diff --git a/apps/showcase-courier-rush/scripts/register-models.mjs b/apps/showcase-courier-rush/scripts/register-models.mjs
 deleted file mode 100644
 index 55b54b5ef..000000000
@@ -261,7 +289,7 @@ index 005731d93..000000000
 -writeFileSync(join(appDir, "route-health.json"), JSON.stringify(routeHealth, null, 2) + "\n");
 -console.log(JSON.stringify({ machinePass: true, primitiveOccurrences, performancePass: performance.pass }));
 diff --git a/apps/showcase-courier-rush/src/legacy/main.ts b/apps/showcase-courier-rush/src/legacy/main.ts
-index 1d8cf8353..8f846efb4 100644
+index 1d8cf8353..14afc4108 100644
 --- a/apps/showcase-courier-rush/src/legacy/main.ts
 +++ b/apps/showcase-courier-rush/src/legacy/main.ts
 @@ -1,14 +1,3 @@
@@ -605,18 +633,50 @@ index 1d8cf8353..8f846efb4 100644
  bindCourierDrive({
    async pumpFrames(frames: number): Promise<void> {
      for (let i = 0; i < frames; i += 1) await app.stepAsync(1 / 60);
-@@ -743,7 +601,6 @@ bindCourierDrive({
+@@ -743,51 +601,6 @@ bindCourierDrive({
      vanVehicle.reset({ x, z, heading, speed: 0, drift: 0 });
    }
  });
 -
- Object.defineProperty(window, "__COURIER_RUSH_DEBUG__", {
-   value: {
-     placeVan(x: number, z: number, heading = START_HEADING): void {
-@@ -783,11 +640,6 @@ Object.defineProperty(window, "__COURIER_RUSH_DEBUG__", {
-   } satisfies NonNullable<Window["__COURIER_RUSH_DEBUG__"]>,
-   configurable: true
- });
+-Object.defineProperty(window, "__COURIER_RUSH_DEBUG__", {
+-  value: {
+-    placeVan(x: number, z: number, heading = START_HEADING): void {
+-      vanVehicle.reset({ x, z, heading, speed: 0, drift: 0 });
+-    },
+-    vanSnapshot(): { x: number; z: number; heading: number; speed: number } {
+-      const snap = vanVehicle.snapshot();
+-      return { x: snap.x, z: snap.z, heading: snap.heading, speed: snap.speed };
+-    },
+-    /**
+-     * Real-input deterministic pump for browser play verification. Headless
+-     * software rendering can take 15s+ per presented frame, so wall-clock play
+-     * is infeasible there; this runs `frameCount` fixed steps through the
+-     * production onFrame path with the REAL held keyboard state, skipping only
+-     * the redundant GPU presentations (mirrors the patrol `__PW_PUMP__` seam).
+-     * Callers hold real keys via CDP input, pump, then read the evidence
+-     * global to prove input changed game state. Test-only: no rules altered.
+-     */
+-    pump(frameCount: number): number {
+-      const bounded = Math.max(0, Math.min(30_000, Math.floor(frameCount)));
+-      app.pause();
+-      for (let index = 0; index < bounded; index += 1) {
+-        app.advance(1 / 60);
+-      }
+-      updateMountedEvidence();
+-      app.resume();
+-      return app.runtime.frame;
+-    },
+-    /** Presents one production frame of the current (possibly pumped) state. */
+-    async present(): Promise<number> {
+-      app.pause();
+-      await app.stepAsync(0);
+-      updateMountedEvidence();
+-      app.resume();
+-      return app.runtime.frame;
+-    }
+-  } satisfies NonNullable<Window["__COURIER_RUSH_DEBUG__"]>,
+-  configurable: true
+-});
 -
 -// ---- HUD ------------------------------------------------------------------------
 -// Shared HUD kit (PRD-09 Phase 4): motorsport theme, widgets per §7.7; the
@@ -625,7 +685,7 @@ index 1d8cf8353..8f846efb4 100644
  const hudHost = document.createElement("div");
  hudHost.className = "a3g-game-hud";
  document.getElementById("app")!.appendChild(hudHost);
-@@ -837,11 +689,9 @@ const touchControls = mountTouchControls(
+@@ -837,11 +650,9 @@ const touchControls = mountTouchControls(
    }
  );
  void touchControls; // visibility is rule-driven; update() runs in the frame loop
@@ -637,7 +697,7 @@ index 1d8cf8353..8f846efb4 100644
  function showShiftSummary(input: {
    cleared: boolean;
    failReason: "timer" | "strikes" | null;
-@@ -869,11 +719,9 @@ function showShiftSummary(input: {
+@@ -869,11 +680,9 @@ function showShiftSummary(input: {
      { ms: 6000 }
    );
  }
@@ -649,7 +709,7 @@ index 1d8cf8353..8f846efb4 100644
  function syncHud(): void {
    const frame = currentHudFrame();
    navBearingRef.current = frame.arrowBearing;
-@@ -886,20 +734,17 @@ function syncHud(): void {
+@@ -886,20 +695,17 @@ function syncHud(): void {
    const bearing = frame.arrowBearing;
    hud.set("nav", bearing === null ? [0.5, 0.5] : [0.5 + 0.42 * Math.sin(bearing), 0.5 - 0.42 * Math.cos(bearing)]);
  }
@@ -670,7 +730,7 @@ index 1d8cf8353..8f846efb4 100644
  function summaryInput(cleared: boolean) {
    return {
      cleared,
-@@ -910,7 +755,6 @@ function summaryInput(cleared: boolean) {
+@@ -910,7 +716,6 @@ function summaryInput(cleared: boolean) {
      earlyDrops: dispatch.earlyDrops
    };
  }
@@ -678,7 +738,7 @@ index 1d8cf8353..8f846efb4 100644
  function handleCourierEvents(
    events: readonly CourierEvent[],
    vanX: number,
-@@ -997,23 +841,12 @@ function handleCourierEvents(
+@@ -997,23 +802,12 @@ function handleCourierEvents(
      }
    }
  }
@@ -702,7 +762,7 @@ index 1d8cf8353..8f846efb4 100644
  function projectOntoLeg(vanX: number, vanZ: number): void {
    // Advance the progress segment while the van has passed the current one.
    let guard = 0;
-@@ -1038,7 +871,6 @@ function projectOntoLeg(vanX: number, vanZ: number): void {
+@@ -1038,7 +832,6 @@ function projectOntoLeg(vanX: number, vanZ: number): void {
      break;
    }
  }
@@ -710,7 +770,7 @@ index 1d8cf8353..8f846efb4 100644
  function autopilotDrive(vanX: number, vanZ: number, heading: number, speed: number): VanDriveInput {
    const target = activeTargetSite(dispatch);
    if (!target) return { throttle: 0, brake: 1, steer: 0, handbrake: false };
-@@ -1158,10 +990,7 @@ function autopilotDrive(vanX: number, vanZ: number, heading: number, speed: numb
+@@ -1158,10 +951,7 @@ function autopilotDrive(vanX: number, vanZ: number, heading: number, speed: numb
        : finalDistance < 2.8 ? 0.14 : vertexTurnSharpness > 0.35 && speed > 7.6 ? 0 : 0.52;
    return { throttle, brake: approachBrake, steer, handbrake: false };
  }
@@ -721,7 +781,7 @@ index 1d8cf8353..8f846efb4 100644
  function collisionHits(vanX: number, vanZ: number, vanSpeed: number): PropCollider[] {
    const hits: PropCollider[] = [];
    const colliders: readonly PropCollider[] = [...propColliders, ...trafficSim.staticColliders()];
-@@ -1177,7 +1006,6 @@ function collisionHits(vanX: number, vanZ: number, vanSpeed: number): PropCollid
+@@ -1177,7 +967,6 @@ function collisionHits(vanX: number, vanZ: number, vanSpeed: number): PropCollid
    }
    return hits;
  }
@@ -729,7 +789,7 @@ index 1d8cf8353..8f846efb4 100644
  function pushOut(vanX: number, vanZ: number, collider: PropCollider): { x: number; z: number } {
    const dx = vanX - collider.x;
    const dz = vanZ - collider.z;
-@@ -1185,8 +1013,6 @@ function pushOut(vanX: number, vanZ: number, collider: PropCollider): { x: numbe
+@@ -1185,8 +974,6 @@ function pushOut(vanX: number, vanZ: number, collider: PropCollider): { x: numbe
    const reach = collider.radius + VAN_COLLIDER_RADIUS;
    return { x: collider.x + (dx / distance) * reach, z: collider.z + (dz / distance) * reach };
  }
@@ -738,7 +798,7 @@ index 1d8cf8353..8f846efb4 100644
  app.onFrame(({ dt }) => {
    const stepSeconds = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
    frameCount += 1;
-@@ -1511,7 +1337,6 @@ app.onFrame(({ dt }) => {
+@@ -1511,7 +1298,6 @@ app.onFrame(({ dt }) => {
    syncHud();
    refreshAudioEvidence();
  });
@@ -746,7 +806,7 @@ index 1d8cf8353..8f846efb4 100644
  function currentHudFrame() {
    const plan = currentDelivery(dispatch);
    const vanSnap = vanVehicle.snapshot();
-@@ -1539,7 +1364,6 @@ function currentHudFrame() {
+@@ -1539,7 +1325,6 @@ function currentHudFrame() {
      carrying: dispatch.phase === "carrying"
    };
  }
@@ -754,7 +814,7 @@ index 1d8cf8353..8f846efb4 100644
  function updateMountedEvidence(): void {
    const vanSnap = vanVehicle.snapshot();
    const activeSite = activeTargetSite(dispatch);
-@@ -1577,14 +1401,11 @@ function updateMountedEvidence(): void {
+@@ -1577,21 +1362,8 @@ function updateMountedEvidence(): void {
    mountedEvidence.gameplay = { ...observed };
    (mountedEvidence as unknown as { strikeLog: unknown }).strikeLog = strikeLog.slice(-12);
  }
@@ -766,315 +826,48 @@ index 1d8cf8353..8f846efb4 100644
  syncHud();
  radioToast("<strong>Dispatch:</strong> five jobs tonight. Shift starts when you hit the gas.", 4);
 -
- void app.ready().then(() => {
-   const diagnostics = app.diagnostics();
-   document.body.dataset.aura3dReady = "true";
-@@ -1594,4 +1415,4 @@ void app.ready().then(() => {
-   window.__AURA3D_ROUTE_READY__ = { ready: true, diagnostics };
- }).catch((error: unknown) => {
-   document.body.dataset.aura3dError = error instanceof Error ? error.message : String(error);
+-void app.ready().then(() => {
+-  const diagnostics = app.diagnostics();
+-  document.body.dataset.aura3dReady = "true";
+-  document.body.dataset.aura3dRuntimeBackend = String(
+-    (diagnostics as { runtimeBackend?: string }).runtimeBackend ?? (diagnostics as { backend?: string }).backend ?? ""
+-  );
+-  window.__AURA3D_ROUTE_READY__ = { ready: true, diagnostics };
+-}).catch((error: unknown) => {
+-  document.body.dataset.aura3dError = error instanceof Error ? error.message : String(error);
 -});
 \ No newline at end of file
-+});
-diff --git a/apps/showcase-courier-rush/src/legacy/styles.css b/apps/showcase-courier-rush/src/legacy/styles.css
-index d12b565c6..14a67abf4 100644
---- a/apps/showcase-courier-rush/src/legacy/styles.css
-+++ b/apps/showcase-courier-rush/src/legacy/styles.css
-@@ -4,9 +4,7 @@
-   background: #04070f;
-   color: #eef6ff;
+diff --git a/apps/showcase-courier-rush/src/main.ts b/apps/showcase-courier-rush/src/main.ts
+index 6f721d540..99f40e045 100644
+--- a/apps/showcase-courier-rush/src/main.ts
++++ b/apps/showcase-courier-rush/src/main.ts
+@@ -1,14 +1,6 @@
+-// apps/showcase-courier-rush/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
+-// Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-courier-rush`
+-// (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
+-// acceptance (§10 step 5).
+ import { resolveQrFlags } from "@aura3d/engine/contracts";
+-
+ const ROUTE_FLAG = "A3D_QR_ROUTE_COURIER_RUSH" as const;
+ const DEFAULT_ON = false;
+-
+-/** Accepts `?a3d-qr=…,route-courier-rush` and `?a3d-qr=…,A3D_QR_ROUTE_COURIER_RUSH`.
+- *  Returns undefined when the flag is absent (CCR-14-2 replaces this helper). */
+ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const raw = new URL(loc.href).searchParams.get("a3d-qr");
+   if (raw === null) return undefined;
+@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+     ? true
+     : undefined;
  }
 -
- * { box-sizing: border-box; }
+ const flags = resolveQrFlags({
+   url: location.href,
+   env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR },
+   options: { [ROUTE_FLAG]: routeFlagFromUrl(location, ROUTE_FLAG) ?? DEFAULT_ON }
+ });
 -
- html,
- body {
-   width: 100%;
-@@ -15,9 +13,7 @@ body {
-   margin: 0;
-   overflow: hidden;
- }
--
- button { font: inherit; }
--
- .shell,
- .viewport,
- .stage {
-@@ -27,11 +23,9 @@ button { font: inherit; }
-   height: 100%;
-   overflow: hidden;
- }
--
- .shell { isolation: isolate; background: #060a14; }
- .viewport { z-index: 0; }
- .stage canvas { display: block; width: 100%; height: 100%; }
--
- .shell::before {
-   position: fixed;
-   z-index: 1;
-@@ -42,26 +36,13 @@ button { font: inherit; }
-     linear-gradient(90deg, rgba(2, 5, 12, 0.48), transparent 26%, transparent 74%, rgba(2, 5, 12, 0.16)),
-     linear-gradient(0deg, rgba(2, 4, 10, 0.48), transparent 30%, transparent 78%, rgba(2, 4, 10, 0.2));
- }
--
- .panel {
-   position: fixed;
-   inset: 0;
-   z-index: 2;
-   pointer-events: none;
- }
--
- .panel > * { pointer-events: auto; }
--
--/* The desktop scene producer requests a clean pressure frame. The complete
-- * HUD remains mounted and fully interactive on the public/default route; only
-- * this evidence variant lets the authored van, traffic, roadway, and live
-- * renderer effects own the comparison pixels. */
--body[data-capture="review"] .panel > * {
--  opacity: 0;
--  pointer-events: none;
--}
--
--/* ---- dispatch card ------------------------------------------------------- */
- .dispatch-card {
-   position: absolute;
-   top: 22px;
-@@ -74,7 +55,6 @@ body[data-capture="review"] .panel > * {
-   box-shadow: 0 18px 50px rgba(1, 4, 10, 0.4);
-   backdrop-filter: blur(16px) saturate(1.15);
- }
--
- .dispatch-card__label {
-   display: flex;
-   align-items: center;
-@@ -85,7 +65,6 @@ body[data-capture="review"] .panel > * {
-   text-transform: uppercase;
-   color: #8fd8ff;
- }
--
- .dispatch-card__dot {
-   width: 8px;
-   height: 8px;
-@@ -93,14 +72,12 @@ body[data-capture="review"] .panel > * {
-   background: #37e0a0;
-   box-shadow: 0 0 10px #37e0a0;
- }
--
- .dispatch-card__objective {
-   margin-top: 9px;
-   font-size: 15px;
-   font-weight: 650;
-   line-height: 1.35;
- }
--
- .dispatch-card__meta {
-   margin-top: 7px;
-   display: flex;
-@@ -108,8 +85,6 @@ body[data-capture="review"] .panel > * {
-   font-size: 12px;
-   color: #a9c4da;
- }
--
--/* ---- status strip --------------------------------------------------------- */
- .status-strip {
-   position: absolute;
-   top: 22px;
-@@ -121,11 +96,9 @@ body[data-capture="review"] .panel > * {
-   background: linear-gradient(160deg, rgba(4, 10, 20, 0.82), rgba(10, 20, 34, 0.56));
-   backdrop-filter: blur(16px);
- }
--
- .timer-row { display: flex; align-items: baseline; justify-content: space-between; }
- .timer-row__value { font-size: 26px; font-weight: 750; font-variant-numeric: tabular-nums; }
- .timer-row__value[data-low="true"] { color: #ff8d7a; }
--
- .timer-bar {
-   margin-top: 8px;
-   height: 7px;
-@@ -133,16 +106,13 @@ body[data-capture="review"] .panel > * {
-   background: rgba(130, 180, 220, 0.16);
-   overflow: hidden;
- }
--
- .timer-bar__fill {
-   height: 100%;
-   border-radius: 99px;
-   background: linear-gradient(90deg, #46e6b0, #7ce8ff);
-   transition: width 120ms linear;
- }
--
- .timer-bar__fill[data-low="true"] { background: linear-gradient(90deg, #ff7a5c, #ffb36b); }
--
- .strikes-row {
-   margin-top: 10px;
-   display: flex;
-@@ -151,9 +121,7 @@ body[data-capture="review"] .panel > * {
-   font-size: 12px;
-   color: #b8cfe2;
- }
--
- .strikes-row__pips { display: flex; gap: 6px; }
--
- .strike-pip {
-   width: 16px;
-   height: 16px;
-@@ -161,13 +129,11 @@ body[data-capture="review"] .panel > * {
-   border: 1px solid rgba(255, 150, 130, 0.45);
-   background: transparent;
- }
--
- .strike-pip[data-used="true"] {
-   background: #ff5f49;
-   border-color: #ff8d7a;
-   box-shadow: 0 0 10px rgba(255, 95, 73, 0.65);
- }
--
- .combo-chip {
-   margin-top: 10px;
-   display: inline-flex;
-@@ -181,14 +147,12 @@ body[data-capture="review"] .panel > * {
-   font-weight: 700;
-   background: rgba(20, 60, 48, 0.42);
- }
--
- .combo-chip[data-hot="true"] {
-   border-color: #ffd166;
-   color: #ffd166;
-   background: rgba(70, 54, 12, 0.5);
-   box-shadow: 0 0 14px rgba(255, 209, 102, 0.25);
- }
--
- .score-line {
-   margin-top: 9px;
-   display: flex;
-@@ -196,10 +160,7 @@ body[data-capture="review"] .panel > * {
-   font-size: 12.5px;
-   color: #cfe3f4;
- }
--
- .score-line strong { font-size: 15px; font-variant-numeric: tabular-nums; }
--
--/* ---- objective arrow ------------------------------------------------------ */
- .nav-arrow {
-   position: absolute;
-   left: 50%;
-@@ -211,10 +172,7 @@ body[data-capture="review"] .panel > * {
-   filter: drop-shadow(0 0 8px rgba(80, 230, 255, 0.55));
-   transition: transform 90ms linear;
- }
--
- .nav-arrow svg { width: 100%; height: 100%; }
--
--/* ---- radio toast ----------------------------------------------------------- */
- .radio-toast {
-   position: absolute;
-   left: 50%;
-@@ -232,12 +190,8 @@ body[data-capture="review"] .panel > * {
-   transition: opacity 160ms ease;
-   backdrop-filter: blur(10px);
- }
--
- .radio-toast[data-visible="true"] { opacity: 1; }
--
- .radio-toast strong { color: #8fd8ff; }
--
--/* ---- controls help ---------------------------------------------------------- */
- .controls-help {
-   position: absolute;
-   left: 24px;
-@@ -250,7 +204,6 @@ body[data-capture="review"] .panel > * {
-   color: #9fb8cc;
-   line-height: 1.55;
- }
--
- .controls-help kbd {
-   display: inline-block;
-   min-width: 17px;
-@@ -263,8 +216,6 @@ body[data-capture="review"] .panel > * {
-   font-size: 10.5px;
-   text-align: center;
- }
--
--/* ---- touch controls ---------------------------------------------------------- */
- .touch-controls {
-   position: absolute;
-   right: 18px;
-@@ -275,7 +226,6 @@ body[data-capture="review"] .panel > * {
-   gap: 10px;
-   touch-action: none;
- }
--
- .touch-btn {
-   border: 1px solid rgba(140, 215, 255, 0.32);
-   border-radius: 16px;
-@@ -287,7 +237,6 @@ body[data-capture="review"] .panel > * {
-   user-select: none;
-   -webkit-user-select: none;
- }
--
- .touch-btn:active { background: rgba(30, 70, 110, 0.9); }
- .touch-btn--steer-left { grid-column: 1; grid-row: 2; }
- .touch-btn--forward { grid-column: 2; grid-row: 1; }
-@@ -295,12 +244,10 @@ body[data-capture="review"] .panel > * {
- .touch-btn--steer-right { grid-column: 3; grid-row: 2; }
- .touch-btn--brake { grid-column: 3; grid-row: 1; }
- .touch-btn--interact { grid-column: 1; grid-row: 1; }
--
- @media (pointer: coarse) {
-   .touch-controls { display: grid; }
-   .controls-help { display: none; }
- }
--
- @media (max-width: 640px) {
-   .dispatch-card {
-     top: 10px;
-@@ -331,8 +278,6 @@ body[data-capture="review"] .panel > * {
-   }
-   .touch-btn { border-radius: 13px; font-size: 10px; }
- }
--
--/* ---- overlays ------------------------------------------------------------------ */
- .overlay {
-   position: absolute;
-   inset: 0;
-@@ -342,9 +287,7 @@ body[data-capture="review"] .panel > * {
-   background: rgba(2, 5, 11, 0.62);
-   backdrop-filter: blur(6px);
- }
--
- .overlay[data-visible="true"] { display: flex; }
--
- .overlay__card {
-   width: min(420px, calc(100vw - 44px));
-   padding: 26px 28px;
-@@ -354,17 +297,13 @@ body[data-capture="review"] .panel > * {
-   text-align: center;
-   box-shadow: 0 30px 80px rgba(0, 2, 8, 0.55);
- }
--
- .overlay__title { margin: 0; font-size: 24px; font-weight: 780; letter-spacing: 0.01em; }
- .overlay__title[data-tone="fail"] { color: #ff8d7a; }
- .overlay__title[data-tone="clear"] { color: #64f2b4; }
--
- .overlay__body { margin-top: 12px; font-size: 14px; color: #bcd4e8; line-height: 1.6; }
- .overlay__stats { margin-top: 14px; font-size: 13px; color: #9fc0d8; line-height: 1.7; }
- .overlay__hint { margin-top: 16px; font-size: 12.5px; color: #7fa2bd; }
- .overlay__hint kbd { padding: 1px 6px; border-radius: 5px; border: 1px solid rgba(160, 210, 250, 0.3); background: rgba(20, 34, 52, 0.85); }
--
--/* ---- strike flash ------------------------------------------------------------------ */
- .strike-flash {
-   position: absolute;
-   inset: 0;
-@@ -373,9 +312,6 @@ body[data-capture="review"] .panel > * {
-   opacity: 0;
-   transition: opacity 90ms linear;
- }
--
- .strike-flash[data-visible="true"] { opacity: 1; }
--
--/* PRD-09 Phase 4: shared HUD kit host over the stage (replaces #panel). */
- .a3g-game-hud { position: absolute; inset: 0; pointer-events: none; z-index: 40; }
- .a3g-game-hud .a3g-tc { pointer-events: auto; }
+ void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
 diff --git a/apps/showcase-courier-rush/src/v2/evidence/index.ts b/apps/showcase-courier-rush/src/v2/evidence/index.ts
 deleted file mode 100644
 index 67bf01dc1..000000000

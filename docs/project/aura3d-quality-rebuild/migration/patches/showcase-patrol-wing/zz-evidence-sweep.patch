@@ -1,21 +1,23 @@
-From 4e82550eea6f5b0c7cf873fd9a69d8d873618b2d Mon Sep 17 00:00:00 2001
+From 3ff3394408821d31d6adb5f78e09978603a5df7b Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
-Date: Fri, 9 Oct 2026 13:40:39 +0000
+Date: Fri, 9 Oct 2026 13:45:52 +0000
 Subject: [PATCH] [qr-prd09] showcase-patrol-wing: delete evidence files+blocks
  (T5.8)
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
+ .../performance-report.json                   |  37 --
  .../scripts/build-models.mjs                  | 448 ------------------
  .../scripts/build-sfx.mjs                     | 336 -------------
  .../scripts/register-assets.mjs               |  76 ---
  .../scripts/write-deploy-report.mjs           |  37 --
  .../scripts/write-performance-report.ts       |  37 --
  .../scripts/write-route-health.mjs            |  53 ---
- apps/showcase-patrol-wing/src/legacy/main.ts  | 202 --------
- .../src/legacy/styles.css                     | 101 ----
+ apps/showcase-patrol-wing/src/legacy/main.ts  | 407 ----------------
+ apps/showcase-patrol-wing/src/main.ts         |  10 -
  .../src/v2/evidence/index.ts                  | 203 --------
- 9 files changed, 1493 deletions(-)
+ 10 files changed, 1644 deletions(-)
+ delete mode 100644 apps/showcase-patrol-wing/performance-report.json
  delete mode 100644 apps/showcase-patrol-wing/scripts/build-models.mjs
  delete mode 100644 apps/showcase-patrol-wing/scripts/build-sfx.mjs
  delete mode 100644 apps/showcase-patrol-wing/scripts/register-assets.mjs
@@ -24,6 +26,49 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  delete mode 100644 apps/showcase-patrol-wing/scripts/write-route-health.mjs
  delete mode 100644 apps/showcase-patrol-wing/src/v2/evidence/index.ts
 
+diff --git a/apps/showcase-patrol-wing/performance-report.json b/apps/showcase-patrol-wing/performance-report.json
+deleted file mode 100644
+index b0b842784..000000000
+--- a/apps/showcase-patrol-wing/performance-report.json
++++ /dev/null
+@@ -1,37 +0,0 @@
+-{
+-  "schema": "aura3d.patrol-wing.performance/1.0",
+-  "generatedAt": "2026-09-02T08:57:14.325Z",
+-  "producer": "apps/showcase-patrol-wing/scripts/write-performance-report.ts",
+-  "producerSourceSha256": "a2f7608ca273e6120ee35c902f8df89d78f294fa515ec254b1ea9a49afe72a18",
+-  "routeSourceFiles": [
+-    "apps/showcase-patrol-wing/src/drones.ts",
+-    "apps/showcase-patrol-wing/src/flight.ts",
+-    "apps/showcase-patrol-wing/src/ghost.ts",
+-    "apps/showcase-patrol-wing/src/main.ts",
+-    "apps/showcase-patrol-wing/src/patrol.ts",
+-    "apps/showcase-patrol-wing/src/sky.ts",
+-    "apps/showcase-patrol-wing/src/styles.css",
+-    "apps/showcase-patrol-wing/src/weapons.ts",
+-    "apps/showcase-patrol-wing/src/wing-audio.ts"
+-  ],
+-  "routeSourceSha256": "fe2839eb4854bb8e91676170d12b349a899c3a4fa434df89a009d9bda0810749",
+-  "scope": "Route-local authored arcade-flight/ring CPU sampling plus route-primary root-renderer draw calls when available; no GPU frame-time, aerodynamic, reusable flight-kit, or renderer-parity claim.",
+-  "samples": 20000,
+-  "fixedStepSeconds": 0.016666666666666666,
+-  "budgets": {
+-    "routeLogicCpuP95Ms": 0.2,
+-    "drawCalls": 240
+-  },
+-  "observed": {
+-    "routeLogicCpuP95Ms": 0.004,
+-    "deterministicStateHash": "54dcd06e",
+-    "drawCalls": 88,
+-    "renderSize": [
+-      1412,
+-      900
+-    ],
+-    "browserFrameCount": 34
+-  },
+-  "drawEvidencePending": false,
+-  "pass": true
+-}
 diff --git a/apps/showcase-patrol-wing/scripts/build-models.mjs b/apps/showcase-patrol-wing/scripts/build-models.mjs
 deleted file mode 100644
 index 0ec7d6be6..000000000
@@ -1048,7 +1093,7 @@ index c65443454..000000000
 -writeFileSync(join(appDir, "route-health.json"), `${JSON.stringify(routeHealth, null, 2)}\n`);
 -console.log(JSON.stringify({ machinePass: true, bootstrap, models: modelIds.length, audio: audioIds.length, exactArtifacts: receipt.artifacts.length, primitiveOccurrences, performancePass: performance.pass, routePrimaryPass: routePrimary?.pass ?? false }));
 diff --git a/apps/showcase-patrol-wing/src/legacy/main.ts b/apps/showcase-patrol-wing/src/legacy/main.ts
-index 8481f0392..7d3ed7632 100644
+index 8481f0392..0324fa925 100644
 --- a/apps/showcase-patrol-wing/src/legacy/main.ts
 +++ b/apps/showcase-patrol-wing/src/legacy/main.ts
 @@ -1,17 +1,3 @@
@@ -1396,7 +1441,7 @@ index 8481f0392..7d3ed7632 100644
  function collectPatrolEvidence(): Record<string, unknown> {
    const evidence = {
      // Contract keys from the PRD evidence section.
-@@ -1036,20 +883,9 @@ function collectPatrolEvidence(): Record<string, unknown> {
+@@ -1036,249 +883,9 @@ function collectPatrolEvidence(): Record<string, unknown> {
    patrolWindow.__PATROL_WING_EVIDENCE__ = evidence;
    return evidence;
  }
@@ -1414,13 +1459,13 @@ index 8481f0392..7d3ed7632 100644
 - * app.step() path (docs/api/game-runtime.md "Deterministic stepping") to run
 - * `frames` fixed steps, then resumes the browser loop.
 - */
- patrolWindow.__PW_PUMP__ = (frames: number): number => {
-   evidenceStaged = false;
-   app.pause();
-@@ -1057,13 +893,6 @@ patrolWindow.__PW_PUMP__ = (frames: number): number => {
-   app.resume();
-   return app.runtime.frame;
- };
+-patrolWindow.__PW_PUMP__ = (frames: number): number => {
+-  evidenceStaged = false;
+-  app.pause();
+-  for (let index = 0; index < frames; index += 1) app.step(FLIGHT_DT);
+-  app.resume();
+-  return app.runtime.frame;
+-};
 -
 -/**
 - * Deterministic acceptance staging. It moves the real route state and typed
@@ -1428,13 +1473,204 @@ index 8481f0392..7d3ed7632 100644
 - * The browser suite uses it to retain exact readable frames without relying on
 - * nondeterministic keyboard timing in a throttled headless tab.
 - */
- patrolWindow.__PW_SCENARIO__ = (scenario: string): string => {
-   resetToPad();
-   evidenceScenario = scenario;
-@@ -1262,23 +1091,6 @@ patrolWindow.__PW_SCENARIO__ = (scenario: string): string => {
-   evidenceStaged = true;
-   return `${scenario}:${stateValue}:${rings.passedCount}:${Math.round(hullValue)}`;
- };
+-patrolWindow.__PW_SCENARIO__ = (scenario: string): string => {
+-  resetToPad();
+-  evidenceScenario = scenario;
+-  if (scenario === "takeoff") {
+-    // resetToPad already establishes the truthful preflight state.
+-  } else if (scenario === "ring-run") {
+-    stateValue = "patrol";
+-    flight = new FlightModel({ position: [-16, 10, 7], headingYaw: -2.35, grounded: "airborne", throttle: 0.78, speed: 13 });
+-    patrolJuice.fire("ring", { position: [...flight.position] });
+-    rings.registerEntry(0);
+-    applyRingMaterials();
+-  } else if (scenario === "drone-pass" || scenario === "drone-hit") {
+-    stateValue = "patrol";
+-    // Both the pass and hit captures are matched at the same close chase
+-    // distance. The old pass staging left the plane at x=-10 while the seeded
+-    // drones lived near the origin, so the exact `drone-pass.png` review frame
+-    // contained only sky and a tiny cross-shaped aircraft. Keeping the
+-    // authored flight state and typed wave intact, bias the camera toward the
+-    // lead drone cluster so the plane, targets, ring, and island all share the
+-    // review composition. The hit scenario adds the real cannon exchange below.
+-    planeHandle.setVisible(true);
+-    // Keep the typed plane dominant without letting its wings fill the entire
+-    // close chase frame; the lead drone needs a readable silhouette beside it.
+-    const stagedPlaneScale = scenario === "drone-hit" ? 0.98 : 0.94;
+-    planeHandle.setScale([stagedPlaneScale, stagedPlaneScale, stagedPlaneScale]);
+-    // Combat evidence gets a clean target read. Ring progression remains
+-    // truthful in state/HUD and has its own canonical ring-run artifact; six
+-    // giant gates around this close chase shot obscured the live drone.
+-    for (const handle of ringHandles.values()) handle.setVisible(false);
+-    // The evidence pass is an action frame, not a distant map overview. Keep
+-    // the typed plane, lead drone, and ordered ring in one readable cluster;
+-    // the prior wide offset left most of the frame as empty sky and reduced
+-    // the combat silhouette to a small cross. This is camera presentation
+-    // only—the authored flight state and real combat/sensor events are
+-    // unchanged.
+-    Object.assign(chaseCameraSpec as unknown as MutableCameraSpec, {
+-      // Chase from behind the aircraft and look through the live target
+-      // corridor. The camera's target-yaw offset uses the plane's -Z view
+-      // convention, so positive local Z is the authored rear chase position;
+-      // the former negative offset put the lens in front of the nose and made
+-      // the player read as a thin, detached silhouette behind oversized drones.
+-      offset: [0.32, 3.6, 15.6],
+-      targetOffset: [0.35, -0.18, -2.4],
+-      fov: 54
+-    });
+-    evidenceCombatFocus = true;
+-    flight = new FlightModel({ position: [scenario === "drone-hit" ? -1.4 : -9.2, 10.4, -5.2], headingYaw: -1.05, grounded: "airborne", throttle: 0.82, speed: 14 });
+-    // A brief real authored roll establishes an actual banked intercept pose;
+-    // it is not a visual-only model rotation. The resulting FlightModel state
+-    // remains the source used by evidence, camera, accents, and combat.
+-    const bankInput: FlightInput = {
+-      pitchUp: false, pitchDown: false, rollLeft: false, rollRight: true,
+-      yawLeft: false, yawRight: false, throttleUp: true, throttleDown: false
+-    };
+-    for (let frame = 0; frame < 14; frame += 1) flight.step(bankInput, FLIGHT_DT, terrainSurface);
+-    rings.registerEntry(0);
+-    currentWave = 0;
+-    spawnedWaves.add(0);
+-    // The evidence target must inhabit the aircraft's actual nose line. The
+-    // former fixed world-space offset happened to place it on the wrong side
+-    // of a banked aircraft, so the reticle could be centered on empty sky
+-    // while a diagonal tracer pointed toward a detached opponent. Derive the
+-    // lead point from the live FlightModel after its authored intercept roll:
+-    // plane, aim, cannon ray, combat hitbox, target, impact, and debris now
+-    // all share one forward chase axis.
+-    // Use the same compact, aircraft-relative wedge as live wave encounters.
+-    // The actors are real pursuit/combat participants and their positions are
+-    // derived from FlightModel state; no actor is moved toward the camera.
+-    const evidenceDrones = interceptSpawns(1, 0, flight.position, flight.forward);
+-    const leadPosition = evidenceDrones[0]!.position;
+-    combatFocusPoint = [...leadPosition] as Vec3;
+-    for (const spawn of evidenceDrones) {
+-      const slot = freeDroneSlots.pop();
+-      if (slot !== undefined) {
+-        droneSlotById.set(spawn.id, slot);
+-        // Keep the lead typed interceptor at an unmistakable dogfight scale.
+-        // The previous 1.16 target still collapsed against the island ridge in
+-        // the exact 1280x800 capture, making the tracer read as a detached HUD
+-        // mark. This is a presentation scale on the resolved GLB, not a proxy
+-        // replacement; all hitboxes and positions remain combat-world truth.
+-        const stagedDroneScale = spawn.id.endsWith("-0")
+-          ? (scenario === "drone-hit" ? 1.46 : 1.34)
+-          : 0.98;
+-        droneHandles.get(slot)?.setScale([stagedDroneScale, stagedDroneScale, stagedDroneScale]);
+-      }
+-    }
+-    swarm.spawnWave(evidenceDrones);
+-    if (scenario === "drone-pass") {
+-      // Put the real pooled Rapier return-fire sensors into the retained action
+-      // frame. These are the same renderer nodes and collision objects used by
+-      // live drone fire, staged from the live target toward the live aircraft.
+-      arena.setPlayerPosition(flight.position);
+-      const lead = evidenceDrones[0]!.position;
+-      arena.spawnOrb([lead[0] - 0.35, lead[1] + 0.9, lead[2]], [flight.position[0], flight.position[1] + 0.25, flight.position[2]]);
+-      arena.step(0.12);
+-      arena.spawnOrb([lead[0] + 0.22, lead[1] + 1.12, lead[2] + 0.18], [flight.position[0], flight.position[1] + 0.25, flight.position[2]]);
+-      arena.step(0.07);
+-      arena.spawnOrb([lead[0] + 0.54, lead[1] + 0.72, lead[2] + 0.38], [flight.position[0], flight.position[1] + 0.25, flight.position[2]]);
+-      // The retained visual is an actual exchange rather than a passive
+-      // fly-by. Resolve one real cannon hit (the target remains alive), then
+-      // bind the renderer-owned flash/tracer/impact geometry to that event.
+-      if (cannon.tryFire(true, 1)) {
+-        swarm.beginCannonAttack([lead[0] - flight.position[0], lead[1] - flight.position[1], lead[2] - flight.position[2]]);
+-        pushCue("cannon-fire");
+-        patrolJuice.fire("cannon", { position: [...flight.position] });
+-        for (let combatFrame = 0; combatFrame < 4; combatFrame += 1) {
+-          for (const event of swarm.update(FLIGHT_DT, flight.position, 0)) {
+-            if (event.type !== "cannon-hit") continue;
+-            cannon.registerHit();
+-            pushCue("drone-hit");
+-            patrolJuice.fire("drone-hit", { position: [...flight.position] });
+-            stageCombatExchange(flight.position, lead);
+-          }
+-        }
+-      }
+-    }
+-    if (scenario === "drone-hit") {
+-      // Stage a real deterministic combat exchange, not cue-only evidence: the
+-      // cannon and combat world resolve three hits against the seeded lead drone.
+-      const targetOffset = [0, 1.2, -2.6] as const;
+-      arena.setPlayerPosition(flight.position);
+-      // Keep a pair of real return-fire projectiles in the hit composition so
+-      // the exchange reads as a dogfight, not a target-only damage flash.
+-      arena.spawnOrb([leadPosition[0] - 0.3, leadPosition[1] + 0.9, leadPosition[2] + 0.12], [flight.position[0], flight.position[1] + 0.25, flight.position[2]]);
+-      arena.step(0.06);
+-      arena.spawnOrb([leadPosition[0] + 0.36, leadPosition[1] + 0.72, leadPosition[2] - 0.2], [flight.position[0], flight.position[1] + 0.25, flight.position[2]]);
+-      for (let shot = 0; shot < 1; shot += 1) {
+-        if (!cannon.tryFire(true, 1)) continue;
+-        swarm.beginCannonAttack(targetOffset);
+-        pushCue("cannon-fire");
+-        patrolJuice.fire("cannon", { position: [...flight.position] });
+-        for (let combatFrame = 0; combatFrame < 4; combatFrame += 1) {
+-          for (const event of swarm.update(FLIGHT_DT, flight.position, 0)) {
+-          if (event.type === "cannon-hit") {
+-            cannon.registerHit();
+-            pushCue("drone-hit");
+-            patrolJuice.fire("drone-hit", { position: [...flight.position] });
+-            // Keep impact feedback in the authored chase-camera volume while
+-            // retaining the real combat event as its source of truth.
+-            stageCombatExchange(flight.position, leadPosition);
+-          } else if (event.type === "drone-down") {
+-            const slot = droneSlotById.get(event.id);
+-            if (slot !== undefined) {
+-              if (evidenceCombatFocus && event.id.endsWith("-0")) {
+-                droneHandles.get(slot)?.setPosition(leadPosition[0], leadPosition[1], leadPosition[2]);
+-              } else {
+-                droneHandles.get(slot)?.setPosition(0, -60 - slot, 0);
+-              }
+-              droneSlotById.delete(event.id);
+-              freeDroneSlots.push(slot);
+-            }
+-            pushCue("drone-down");
+-            patrolJuice.fire("drone-down", { position: [...flight.position] });
+-            stageCombatExchange(flight.position, leadPosition);
+-          }
+-          }
+-        }
+-      }
+-    }
+-  } else if (scenario === "canyon") {
+-    stateValue = "patrol";
+-    flight = new FlightModel({ position: [-4, 11.5, -12], headingYaw: -0.25, grounded: "airborne", throttle: 0.72, speed: 12 });
+-    for (let index = 0; index < 3; index += 1) rings.registerEntry(index);
+-    applyRingMaterials();
+-  } else if (scenario === "low-hull") {
+-    stateValue = "patrol";
+-    hullValue = 18;
+-    flight = new FlightModel({ position: [9, 9, -5], headingYaw: 0.85, grounded: "airborne", throttle: 0.66, speed: 11 });
+-    for (let index = 0; index < 5; index += 1) rings.registerEntry(index);
+-    pushCue("hull-alarm");
+-    applyRingMaterials();
+-  } else if (scenario === "approach") {
+-    stateValue = "patrol";
+-    for (let index = 0; index < RING_GATES.length; index += 1) rings.registerEntry(index);
+-    applyRingMaterials();
+-    flight = new FlightModel({ position: [0, PAD_Y + 1.4, PAD_CENTER[2] + 7], headingYaw: Math.PI / 2, grounded: "airborne", throttle: 0.24, speed: 4 });
+-  } else if (scenario === "touchdown") {
+-    stateValue = "graded";
+-    gradeTimer = 999;
+-    lastGrade = "A";
+-    flight = new FlightModel({ position: [PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2]], headingYaw: PAD_HEADING_YAW, grounded: "preflight", throttle: 0, speed: 0 });
+-    showResult("Patrol complete", "Ordered rings, drone intercept, and a safe pad touchdown recorded.");
+-    pushCue("touchdown");
+-    pushCue("patrol-clear");
+-  } else if (scenario === "shot-down") {
+-    stateValue = "shot-down";
+-    hullValue = 0;
+-    pushCue("shot-down");
+-  } else {
+-    throw new Error(`Unknown Patrol Wing evidence scenario: ${scenario}`);
+-  }
+-  syncPlaneVisual();
+-  syncDroneVisuals();
+-  syncHud();
+-  publishEvidence();
+-  evidenceStaged = true;
+-  return `${scenario}:${stateValue}:${rings.passedCount}:${Math.round(hullValue)}`;
+-};
 -
 -patrolWindow.__PW_DAMAGE__ = (amount: number): number => {
 -  hullValue = Math.max(0, hullValue - Math.max(0, amount));
@@ -1455,7 +1691,7 @@ index 8481f0392..7d3ed7632 100644
  const manualHeld = new Set<string>();
  const manualPrev = new Set<string>();
  const MIRROR_KEYS = [
-@@ -1286,7 +1098,6 @@ const MIRROR_KEYS = [
+@@ -1286,7 +893,6 @@ const MIRROR_KEYS = [
    "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight",
    "ShiftLeft", "ShiftRight", "ControlLeft", "ControlRight", "Space"
  ];
@@ -1463,7 +1699,7 @@ index 8481f0392..7d3ed7632 100644
  window.addEventListener("keydown", (event) => {
    if (!event.repeat) manualHeld.add(event.code);
    if (event.repeat) return;
-@@ -1302,7 +1113,6 @@ window.addEventListener("keydown", (event) => {
+@@ -1302,7 +908,6 @@ window.addEventListener("keydown", (event) => {
      event.preventDefault();
    }
  }, { passive: false });
@@ -1471,7 +1707,7 @@ index 8481f0392..7d3ed7632 100644
  function readFlightInput(): FlightInput {
    const left = manualHeld.has("KeyA") || manualHeld.has("ArrowLeft");
    const right = manualHeld.has("KeyD") || manualHeld.has("ArrowRight");
-@@ -1319,12 +1129,10 @@ function readFlightInput(): FlightInput {
+@@ -1319,12 +924,10 @@ function readFlightInput(): FlightInput {
      throttleDown: manualHeld.has("ControlLeft") || manualHeld.has("ControlRight")
    };
  }
@@ -1484,7 +1720,7 @@ index 8481f0392..7d3ed7632 100644
  function bindHoldButton(selector: string, down: () => void, up: () => void): void {
    const button = document.querySelector(selector) as HTMLButtonElement | null;
    if (!button) return;
-@@ -1344,8 +1152,6 @@ ui.onClick("#pw-camera-button", () => toggleCamera());
+@@ -1344,8 +947,6 @@ ui.onClick("#pw-camera-button", () => toggleCamera());
  ui.onClick("#pw-reset-button", () => resetToPad());
  ui.onClick("#pw-pause-button", () => togglePause());
  againButton.addEventListener("click", () => resetToPad());
@@ -1493,7 +1729,7 @@ index 8481f0392..7d3ed7632 100644
  function syncPlaneVisual(): void {
    const euler = flight.euler;
    const flightPosition = flight.position;
-@@ -1404,7 +1210,6 @@ function syncPlaneVisual(): void {
+@@ -1404,7 +1005,6 @@ function syncPlaneVisual(): void {
      cameraTargetHandle.setRotation(0, euler.y - Math.PI / 2, 0);
    }
  }
@@ -1501,7 +1737,7 @@ index 8481f0392..7d3ed7632 100644
  function syncGhostVisual(): void {
    if (!ghostHandle) return;
    if (ghostPlayer?.playing) {
-@@ -1417,7 +1222,6 @@ function syncGhostVisual(): void {
+@@ -1417,7 +1017,6 @@ function syncGhostVisual(): void {
      ghostHandle.setPosition(0, -60, 0);
    }
  }
@@ -1509,7 +1745,7 @@ index 8481f0392..7d3ed7632 100644
  function syncDroneVisuals(): void {
    const liveDrones = swarm.liveDrones();
    for (const handle of droneLampHandles) handle?.setPosition(0, -70, 0).setVisible(false);
-@@ -1485,7 +1289,6 @@ function syncDroneVisuals(): void {
+@@ -1485,7 +1084,6 @@ function syncDroneVisuals(): void {
      for (const handle of droneWakeHandles) handle?.setPosition(0, -70, 0).setVisible(false);
    }
  }
@@ -1517,7 +1753,7 @@ index 8481f0392..7d3ed7632 100644
  function syncOrbVisuals(): void {
    for (const [index, state] of arena.orbStates().entries()) {
      const handle = orbHandles.get(state.id);
-@@ -1511,8 +1314,6 @@ function syncOrbVisuals(): void {
+@@ -1511,8 +1109,6 @@ function syncOrbVisuals(): void {
      }
    }
  }
@@ -1526,7 +1762,7 @@ index 8481f0392..7d3ed7632 100644
  patrolGame.runtime.onFrame(({ dt }) => {
    patrolTween.tick(dt);
    input.update(dt);
-@@ -1675,9 +1476,6 @@ patrolGame.runtime.onFrame(({ dt }) => {
+@@ -1675,9 +1271,6 @@ patrolGame.runtime.onFrame(({ dt }) => {
    publishEvidence();
    manualAdvanceFrame();
  });
@@ -1536,176 +1772,37 @@ index 8481f0392..7d3ed7632 100644
  syncHud();
 -publishEvidence();
 -
-diff --git a/apps/showcase-patrol-wing/src/legacy/styles.css b/apps/showcase-patrol-wing/src/legacy/styles.css
-index 1b45f1942..aa41f1a64 100644
---- a/apps/showcase-patrol-wing/src/legacy/styles.css
-+++ b/apps/showcase-patrol-wing/src/legacy/styles.css
-@@ -1,65 +1,11 @@
--/* Patrol Wing HUD chrome — DOM is UI only; every gameplay truth is 3D. */
- * { box-sizing: border-box; }
- html, body { margin: 0; height: 100%; background: #030c1c; color: #e8eef8; font-family: "Inter", system-ui, sans-serif; }
- body { overflow: hidden; }
+diff --git a/apps/showcase-patrol-wing/src/main.ts b/apps/showcase-patrol-wing/src/main.ts
+index 05feb7070..c8a5e2b2c 100644
+--- a/apps/showcase-patrol-wing/src/main.ts
++++ b/apps/showcase-patrol-wing/src/main.ts
+@@ -1,14 +1,6 @@
+-// apps/showcase-patrol-wing/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
+-// Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-patrol-wing`
+-// (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
+-// acceptance (§10 step 5).
+ import { resolveQrFlags } from "@aura3d/engine/contracts";
 -
- .shell { position: relative; height: 100vh; padding: 14px; }
- .viewport { position: absolute; inset: 14px; min-width: 0; }
- .stage { position: absolute; inset: 0; border-radius: 12px; overflow: hidden; background: #06172e; box-shadow: inset 0 0 90px rgba(7, 218, 242, 0.08); }
- #app canvas { display: block; width: 100%; height: 100%; }
+ const ROUTE_FLAG = "A3D_QR_ROUTE_PATROL_WING" as const;
+ const DEFAULT_ON = false;
 -
- #hud { position: absolute; inset: 0; pointer-events: none; }
--
--/* Review captures retain the HUD DOM/evidence contract but give the staged
-- * typed aircraft, ring, island, and combat target a clean full-frame read. */
--body[data-capture="review"] .shell { padding: 0; }
--body[data-capture="review"] .viewport { inset: 0; }
--body[data-capture="review"] .stage { border-radius: 0; }
--body[data-capture="review"] .panel,
--body[data-capture="review"] .flight-banner,
--body[data-capture="review"] .result-card { opacity: 0; pointer-events: none; }
--
--/* The visual-review lens is intentionally closer to an in-game flight HUD
-- * than to the authoring panel. It is still DOM UI: every number is populated
-- * from the same route state in syncHud(), while the aircraft, rings, drones,
-- * and impact feedback remain renderer-owned scene content. */
--.review-flight-hud { display: none; position: absolute; inset: 0; overflow: hidden; color: #ecfbff; font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace; letter-spacing: 0.08em; text-transform: uppercase; }
--body[data-capture="review"] .review-flight-hud { display: block; }
--.review-flight-brand,
--.review-flight-readout,
--.review-flight-status { position: absolute; z-index: 4; background: linear-gradient(135deg, rgba(3, 18, 43, 0.82), rgba(4, 36, 58, 0.46)); border: 1px solid rgba(123, 239, 255, 0.44); box-shadow: 0 0 24px rgba(25, 196, 240, 0.12); backdrop-filter: blur(5px); }
--.review-flight-brand { top: 20px; left: 22px; min-width: 222px; padding: 10px 14px 9px 12px; border-left: 3px solid #54f1ff; display: grid; grid-template-columns: auto 1fr; column-gap: 10px; align-items: center; }
--.review-flight-brand > span:not(.review-flight-brand-mark) { font-size: 16px; font-weight: 700; letter-spacing: 0.14em; color: #f3feff; }
--.review-flight-brand small { grid-column: 2; margin-top: 4px; font-size: 8px; color: #6ce7f4; letter-spacing: 0.2em; }
--.review-flight-brand-mark { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid #ff3c72; color: #ff7197; font-size: 10px; font-weight: 800; letter-spacing: 0.04em; }
--.review-flight-readout { top: 20px; right: 22px; display: flex; padding: 0; }
--.review-flight-readout > span { min-width: 92px; padding: 9px 12px 8px; border-left: 1px solid rgba(123, 239, 255, 0.2); }
--.review-flight-readout > span:first-child { border-left: 0; }
--.review-flight-readout small,
--.review-flight-status small { display: block; color: #71d9e8; font-size: 8px; letter-spacing: 0.18em; }
--.review-flight-readout strong { display: inline-block; margin-top: 3px; color: #f3feff; font-size: 18px; letter-spacing: 0.02em; }
--.review-flight-readout em { margin-left: 3px; color: #ff7b9f; font-size: 8px; font-style: normal; }
--.review-flight-status { bottom: 22px; width: 254px; padding: 11px 13px 10px; }
--.review-flight-status-left { left: 22px; border-left: 3px solid #ff3d70; }
--.review-flight-status-right { right: 22px; border-right: 3px solid #55efff; text-align: right; }
--.review-flight-status strong { display: block; margin-top: 3px; color: #ffffff; font-size: 20px; letter-spacing: 0.06em; }
--.review-flight-status em { display: block; margin-top: 8px; color: #b6eaf0; font-size: 9px; font-style: normal; letter-spacing: 0.12em; }
--.review-flight-bar { display: block; height: 5px; margin-top: 7px; background: rgba(255, 255, 255, 0.15); overflow: hidden; }
--.review-flight-bar i { display: block; width: 100%; height: 100%; background: linear-gradient(90deg, #ff3d70, #ffb347); box-shadow: 0 0 12px rgba(255, 61, 112, 0.7); transition: width 0.12s linear; }
--.review-flight-chip { display: inline-block; margin-top: 7px; padding: 3px 7px; border: 1px solid rgba(85, 239, 255, 0.55); color: #74f3ff; font-size: 8px; letter-spacing: 0.12em; }
--.review-flight-reticle { position: absolute; z-index: 3; top: 50%; left: 50%; width: 104px; height: 104px; transform: translate(-50%, -50%); opacity: 0.76; }
--.review-flight-reticle::before,
--.review-flight-reticle::after { content: ""; position: absolute; background: rgba(228, 253, 255, 0.82); }
--.review-flight-reticle::before { top: 51px; left: 0; width: 104px; height: 1px; }
--.review-flight-reticle::after { top: 0; left: 51px; width: 1px; height: 104px; }
--.review-flight-reticle i,
--.review-flight-reticle b,
--.review-flight-reticle u { position: absolute; display: block; text-decoration: none; }
--.review-flight-reticle i { inset: 18px; border: 1px solid rgba(91, 238, 255, 0.9); border-radius: 50%; }
--.review-flight-reticle b { top: 50px; left: 47px; width: 9px; height: 9px; border: 1px solid #ff4c7c; border-radius: 50%; box-shadow: 0 0 12px rgba(255, 76, 124, 0.85); }
--.review-flight-reticle u { top: 3px; left: 3px; width: 98px; height: 98px; border: 1px solid rgba(132, 245, 255, 0.24); border-radius: 50%; }
--.review-flight-scanline { position: absolute; inset: 0; z-index: 2; background: linear-gradient(180deg, transparent 0%, transparent 49.8%, rgba(132, 245, 255, 0.08) 50%, transparent 50.2%, transparent 100%); mix-blend-mode: screen; }
--
- .flight-banner {
-   position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-   padding: 6px 16px; border-radius: 999px; font-size: 13px; letter-spacing: 0.14em;
-@@ -74,7 +20,6 @@ body[data-capture="review"] .review-flight-hud { display: block; }
- .result-card h2 { margin: 0 0 6px; font-size: 22px; color: #7ef8ff; letter-spacing: 0.08em; }
- .result-card p { margin: 0 0 14px; color: #b8c4d8; font-size: 14px; }
- .is-hidden { display: none !important; }
--
- .panel {
-   position: absolute; z-index: 3; top: 24px; right: 24px; bottom: 24px; width: 276px;
-   display: flex; flex-direction: column; gap: 12px; padding: 14px;
-@@ -85,7 +30,6 @@ body[data-capture="review"] .review-flight-hud { display: block; }
- .pw-brand .eyebrow { margin: 0; font-size: 11px; letter-spacing: 0.22em; color: #6ce7f4; text-transform: uppercase; }
- .pw-brand h1 { margin: 4px 0 6px; font-size: 24px; letter-spacing: 0.04em; color: #f3feff; text-shadow: 0 0 18px rgba(76, 230, 255, 0.25); }
- .pw-brand .blurb { margin: 0; font-size: 12.5px; line-height: 1.5; color: #a9b6cc; }
--
- .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
- .stat-grid article {
-   padding: 8px 10px; border-radius: 8px; background: rgba(13, 19, 34, 0.9);
-@@ -93,29 +37,24 @@ body[data-capture="review"] .review-flight-hud { display: block; }
- }
- .stat-grid span { display: block; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #7d8ba3; }
- .stat-grid strong { display: block; margin-top: 2px; font-size: 16px; color: #e8eef8; font-variant-numeric: tabular-nums; }
--
- .throttle-meter {
-   height: 12px; border-radius: 999px; background: rgba(20, 28, 46, 0.9);
-   border: 1px solid rgba(255, 217, 160, 0.25); overflow: hidden;
- }
- .throttle-meter span { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, #7ef8ff, #ffb14d); transition: width 0.08s linear; }
- .throttle-meta { display: flex; justify-content: space-between; font-size: 11px; color: #7d8ba3; letter-spacing: 0.08em; }
--
- .hull-meter {
-   height: 12px; border-radius: 999px; background: rgba(20, 28, 46, 0.9);
-   border: 1px solid rgba(255, 106, 61, 0.25); overflow: hidden;
- }
- .hull-meter span { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #ff6a3d, #ffd166); transition: width 0.12s linear; }
--
- .mission-line {
-   margin: 0; padding: 8px 10px; border-radius: 8px; font-size: 12px; letter-spacing: 0.1em;
-   color: #9feefc; background: rgba(10, 26, 32, 0.7); border: 1px solid rgba(126, 248, 255, 0.18);
-   font-variant-numeric: tabular-nums;
+-/** Accepts `?a3d-qr=…,route-patrol-wing` and `?a3d-qr=…,A3D_QR_ROUTE_PATROL_WING`.
+- *  Returns undefined when the flag is absent (CCR-14-2 replaces this helper). */
+ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const raw = new URL(loc.href).searchParams.get("a3d-qr");
+   if (raw === null) return undefined;
+@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+     ? true
+     : undefined;
  }
 -
- .controls-list { margin: 0; padding: 0 0 0 16px; font-size: 12px; line-height: 1.8; color: #a9b6cc; }
- .controls-list b { color: #ffd9a0; }
+ const flags = resolveQrFlags({
+   url: location.href,
+   env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR },
+   options: { [ROUTE_FLAG]: routeFlagFromUrl(location, ROUTE_FLAG) ?? DEFAULT_ON }
+ });
 -
- .action-row { display: flex; flex-wrap: wrap; gap: 8px; }
- .action-row button {
-   flex: 1 1 auto; min-height: 44px; padding: 9px 12px; border-radius: 8px; cursor: pointer;
-@@ -124,7 +63,6 @@ body[data-capture="review"] .review-flight-hud { display: block; }
- }
- .action-row button:hover { background: linear-gradient(180deg, rgba(32, 82, 105, 0.98), rgba(15, 44, 69, 0.98)); border-color: rgba(255, 86, 130, 0.72); }
- .action-row button:active { transform: translateY(1px); }
--
- .flight-pad { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
- .flight-pad button {
-   min-height: 44px; padding: 8px 6px; border-radius: 8px; cursor: pointer;
-@@ -132,45 +70,6 @@ body[data-capture="review"] .review-flight-hud { display: block; }
-   touch-action: none;
- }
- .flight-pad button:active { background: rgba(36, 74, 91, 0.98); transform: translateY(1px); }
--
--.evidence-strip { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: #66748c; }
--.evidence-strip code { color: #9feefc; font-size: 11px; }
--
--@media (max-width: 860px) {
--  /* Phone play. The panel was a bottom sheet capped at 38vh, so all eleven
--     flight verbs - pitch, roll, yaw, throttle, fire - spilled to y=879..1037
--     and you could not fly the aircraft at all without scrolling a document
--     column. The deck is now the sheet's only job, and the canvas is shortened
--     to make room instead of being covered by it. Altitude, speed and rings
--     stay readable because the in-canvas `review-flight-readout` carries the
--     same live values, so dropping the duplicated brand and stats loses no
--     information. */
--  :root { --pw-deck: 178px; }
--  .shell { padding: 8px; }
--  .viewport { inset: 8px 8px calc(8px + var(--pw-deck)); }
--  .panel {
--    position: fixed; top: auto; right: 0; bottom: 0; left: 0; width: auto;
--    max-height: none; overflow: visible; gap: 8px;
--    padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px));
--    border: 0; border-top: 1px solid rgba(126, 248, 255, 0.34); border-radius: 0;
--    box-shadow: none; backdrop-filter: none;
--    background: linear-gradient(180deg, rgba(5, 25, 51, 0.97), rgba(2, 15, 30, 0.99));
--  }
--  .panel > :not(.action-row):not(.flight-pad) { display: none; }
--  /* Five actions across, so the row does not orphan `pause` onto a second line
--     and push the deck past the height the canvas reserves for it. */
--  .action-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
--  .action-row button { min-width: 0; padding: 8px 2px; font-size: 10.5px; }
--  .flight-banner { font-size: 11px; }
--  .controls-list { display: none; }
--  .review-flight-brand { top: 14px; left: 14px; min-width: 190px; }
--  .review-flight-readout { top: 14px; right: 14px; }
--  .review-flight-readout > span { min-width: 70px; padding-inline: 8px; }
--  .review-flight-status { bottom: 14px; width: 210px; }
--  .review-flight-status-left { left: 14px; }
--  .review-flight-status-right { right: 14px; }
--}
--
- @media (prefers-reduced-motion: reduce) {
-   *, *::before, *::after { transition-duration: 0.001ms !important; animation-duration: 0.001ms !important; }
- }
+ void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
 diff --git a/apps/showcase-patrol-wing/src/v2/evidence/index.ts b/apps/showcase-patrol-wing/src/v2/evidence/index.ts
 deleted file mode 100644
 index 34e943248..000000000

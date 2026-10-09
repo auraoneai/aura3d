@@ -1,25 +1,71 @@
-From 796c0cf26e5bc83eaa8d3a72cd180b16999f90d1 Mon Sep 17 00:00:00 2001
+From 2e7add607c1eb857b10c4cccce48726d4b397a52 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
-Date: Fri, 9 Oct 2026 13:40:32 +0000
+Date: Fri, 9 Oct 2026 13:45:47 +0000
 Subject: [PATCH] [qr-prd09] showcase-bank-shot: delete evidence files+blocks
  (T5.8)
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
+ .../performance-report.json                   |  38 -
  .../scripts/build-models.mjs                  | 796 ------------------
  .../scripts/register-assets.mjs               |  66 --
  .../scripts/write-deploy-report.mjs           |  70 --
  .../scripts/write-route-health.mjs            | 143 ----
- apps/showcase-bank-shot/src/legacy/main.ts    | 159 ----
- apps/showcase-bank-shot/src/legacy/styles.css |  48 --
+ apps/showcase-bank-shot/src/legacy/main.ts    | 229 -----
+ apps/showcase-bank-shot/src/main.ts           |  10 -
  .../src/v2/evidence/index.ts                  | 104 ---
- 7 files changed, 1386 deletions(-)
+ 8 files changed, 1456 deletions(-)
+ delete mode 100644 apps/showcase-bank-shot/performance-report.json
  delete mode 100644 apps/showcase-bank-shot/scripts/build-models.mjs
  delete mode 100644 apps/showcase-bank-shot/scripts/register-assets.mjs
  delete mode 100644 apps/showcase-bank-shot/scripts/write-deploy-report.mjs
  delete mode 100644 apps/showcase-bank-shot/scripts/write-route-health.mjs
  delete mode 100644 apps/showcase-bank-shot/src/v2/evidence/index.ts
 
+diff --git a/apps/showcase-bank-shot/performance-report.json b/apps/showcase-bank-shot/performance-report.json
+deleted file mode 100644
+index 7c283d826..000000000
+--- a/apps/showcase-bank-shot/performance-report.json
++++ /dev/null
+@@ -1,38 +0,0 @@
+-{
+-  "schema": "aura3d.bank-shot.performance/1.0",
+-  "generatedAt": "2026-09-03T02:16:33.718Z",
+-  "producer": "apps/showcase-bank-shot/scripts/write-performance-report.ts",
+-  "producerSourceSha256": "5d560bf31a624d32d27998c91b71061c567ead40c896365d1fa5e29fb5327349",
+-  "routeSourceFiles": [
+-    "apps/showcase-bank-shot/src/billiards-audio.ts",
+-    "apps/showcase-bank-shot/src/cue.ts",
+-    "apps/showcase-bank-shot/src/environment.ts",
+-    "apps/showcase-bank-shot/src/main.ts",
+-    "apps/showcase-bank-shot/src/racks.ts",
+-    "apps/showcase-bank-shot/src/rules.ts",
+-    "apps/showcase-bank-shot/src/styles.css",
+-    "apps/showcase-bank-shot/src/table.ts"
+-  ],
+-  "routeSourceSha256": "efcf3e635900785e4d0459410779efafb22140fa020a242172d76ebe8cceace1",
+-  "scope": "Route-local fixed-step public Rapier billiards CPU timing plus browser-observed root createGameApp draw calls. Host scheduling wait and GPU frame-time parity are not claimed.",
+-  "samples": 12000,
+-  "fixedStepSeconds": 0.016666666666666666,
+-  "budgets": {
+-    "simulationCpuP95Ms": 5.5,
+-    "drawCalls": 220,
+-    "physicsBodies": 40
+-  },
+-  "observed": {
+-    "simulationCpuP95Ms": 2.931,
+-    "deterministicPoseSamples": 20,
+-    "drawCalls": 174,
+-    "renderSize": [
+-      1248,
+-      800
+-    ],
+-    "physicsBodies": 34,
+-    "liveBalls": 15,
+-    "pocketSensors": 6
+-  },
+-  "pass": true
+-}
 diff --git a/apps/showcase-bank-shot/scripts/build-models.mjs b/apps/showcase-bank-shot/scripts/build-models.mjs
 deleted file mode 100644
 index fa98d1c5c..000000000
@@ -1120,7 +1166,7 @@ index 9704ee9b4..000000000
 -writeFileSync(join(appDir, "route-health.json"), `${JSON.stringify(routeHealth, null, 2)}\n`);
 -console.log(JSON.stringify({ machinePass: true, models: modelIds.length, audio: audioIds.length, exactArtifacts: exactArtifacts.length, primitiveOccurrences, performancePass: performance.pass }));
 diff --git a/apps/showcase-bank-shot/src/legacy/main.ts b/apps/showcase-bank-shot/src/legacy/main.ts
-index 14f0423fa..0a1885de2 100644
+index 14f0423fa..180388c19 100644
 --- a/apps/showcase-bank-shot/src/legacy/main.ts
 +++ b/apps/showcase-bank-shot/src/legacy/main.ts
 @@ -1,15 +1,3 @@
@@ -1147,7 +1193,7 @@ index 14f0423fa..0a1885de2 100644
  import { assets } from "../../../../src/aura-assets";
  import { CueController, AIM_STEP, SPIN_STEP } from "../gameplay/cue";
  import { RulesEngine, type ShotRecord, type ShotOutcome } from "../gameplay/rules";
-@@ -47,25 +34,9 @@ import { createBankShotSound } from "../sound";
+@@ -47,43 +34,13 @@ import { createBankShotSound } from "../sound";
  >>>>>>> /tmp/mig-base/apps/showcase-bank-shot/src/main.ts
  import { createPoolHallSetDressing } from "./environment";
  import "./styles.css";
@@ -1173,10 +1219,14 @@ index 14f0423fa..0a1885de2 100644
  const BALL_VISUAL_SCALE = BALL_RADIUS * 2.9;
  const BALL_VISUAL_RADIUS = BALL_VISUAL_SCALE / 2;
  const BALL_VISUAL_LIFT = Math.max(0, BALL_VISUAL_RADIUS - BALL_RADIUS + 0.001);
-@@ -77,13 +48,6 @@ const ROUTE_SYSTEMS = {
-   presentation: "typed table/cue/ball family synchronized to live physics with renderer-owned aim geometry",
-   audio: "typed synthesized cues triggered from contact, pocket, foul, rack, and session outcomes"
- } as const;
+ const BALL_SURFACE_Y = BALL_RADIUS + BALL_VISUAL_LIFT;
+-const ROUTE_SYSTEMS = {
+-  physics: "public Rapier fixed-step spheres, cushions, pocket sensors, and settled-state lock",
+-  rules: "route-local deterministic open/combo/eight-ball rack and three-rack session state",
+-  aiming: "bounded public sphere cast for first contact plus authored single-cushion preview",
+-  presentation: "typed table/cue/ball family synchronized to live physics with renderer-owned aim geometry",
+-  audio: "typed synthesized cues triggered from contact, pocket, foul, rack, and session outcomes"
+-} as const;
 -
 -// ---------------------------------------------------------------- HUD markup --
 -
@@ -1187,7 +1237,7 @@ index 14f0423fa..0a1885de2 100644
  const audio = createBankShotSound();
  let ambientStarted = false;
  window.addEventListener("pointerdown", () => {
-@@ -102,12 +66,9 @@ window.addEventListener("keydown", () => {
+@@ -102,12 +59,9 @@ window.addEventListener("keydown", () => {
      }
    }).catch(() => undefined);
  }, { passive: true });
@@ -1200,7 +1250,7 @@ index 14f0423fa..0a1885de2 100644
  let shotInFlight = false;
  let frameCount = 0;
  let sensorEventCount = 0;
-@@ -124,7 +85,6 @@ let pottedThisShot: number[] = [];
+@@ -124,7 +78,6 @@ let pottedThisShot: number[] = [];
  let ghost = { x: CUE_SPOT[0], z: CUE_SPOT[1] };
  let sessionScoreAtRackStart = 0;
  let evidenceScenarioActive = false;
@@ -1208,7 +1258,7 @@ index 14f0423fa..0a1885de2 100644
  function pushCue(cue: Parameters<typeof audio.cue>[0]): void {
    void audio.cue(cue).catch(() => undefined);
    audioCueLog.push(cue);
-@@ -136,8 +96,6 @@ function cueReady(name: string, gapFrames: number): boolean {
+@@ -136,8 +89,6 @@ function cueReady(name: string, gapFrames: number): boolean {
    lastCueFrame.set(name, frameCount);
    return true;
  }
@@ -1217,7 +1267,7 @@ index 14f0423fa..0a1885de2 100644
  const AIM_LINE_MATERIAL = material.emissive({ name: "aim line", color: "#38bdf8", emissive: "#0ea5e9", opacity: 0.9 });
  const AIM_BANK_MATERIAL = material.emissive({ name: "aim bank", color: "#f59e0b", emissive: "#d97706", opacity: 0.85 });
  const AIM_MARKER_MATERIAL = material.emissive({ name: "aim marker", color: "#38bdf8", emissive: "#7dd3fc" });
-@@ -170,7 +128,6 @@ function ballModelNode(name: string, typedAsset: string): AuraSceneNode {
+@@ -170,7 +121,6 @@ function ballModelNode(name: string, typedAsset: string): AuraSceneNode {
      .runtime(game.runtimeNode(name, { tags: ["typed-asset", "physics-synced"] }))
      .toJSON();
  }
@@ -1225,7 +1275,7 @@ index 14f0423fa..0a1885de2 100644
  function visualNodes(): AuraSceneNode[] {
    const nodes: AuraSceneNode[] = [];
    // Typed primary subjects: the table, all 16 balls, the cue stick.
-@@ -260,7 +217,6 @@ function visualNodes(): AuraSceneNode[] {
+@@ -260,7 +210,6 @@ function visualNodes(): AuraSceneNode[] {
  
    return nodes;
  }
@@ -1233,7 +1283,7 @@ index 14f0423fa..0a1885de2 100644
  function buildScene(): ReturnType<typeof scene> {
    const reducedMotion = typeof window.matchMedia === "function"
      && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-@@ -329,8 +285,6 @@ function buildScene(): ReturnType<typeof scene> {
+@@ -329,8 +278,6 @@ function buildScene(): ReturnType<typeof scene> {
      ])
      .camera(sceneCamera);
  }
@@ -1242,7 +1292,7 @@ index 14f0423fa..0a1885de2 100644
  const bankGame = createGame({
    id: "showcase-bank-shot",
    target: "#app",
-@@ -366,10 +320,6 @@ const app = bankGame.app;
+@@ -366,10 +313,6 @@ const app = bankGame.app;
  const input = bankGame.input!;
  if (!input) throw new Error("Bank Shot failed to create Aura3D input.");
  bankGame.start();
@@ -1253,7 +1303,7 @@ index 14f0423fa..0a1885de2 100644
  const bankTween = createTweenEngine();
  const bankFx = createFxParticlePass(app.effects);
  const bankJuice = createJuice<"pot" | "foul" | "cushion" | "combo">({
-@@ -386,7 +336,6 @@ const bankJuice = createJuice<"pot" | "foul" | "cushion" | "combo">({
+@@ -386,7 +329,6 @@ const bankJuice = createJuice<"pot" | "foul" | "cushion" | "combo">({
    tweens: bankTween,
    rumble: createRumbleDriver()
  });
@@ -1261,7 +1311,7 @@ index 14f0423fa..0a1885de2 100644
  const ballHandles = new Map<string, AuraRuntimeNodeHandle>();
  const ballShadowHandles = new Map<string, AuraRuntimeNodeHandle>();
  const previousBallPositions = new Map<string, readonly [number, number]>();
-@@ -397,7 +346,6 @@ let aimLineHandle: AuraRuntimeNodeHandle | undefined;
+@@ -397,7 +339,6 @@ let aimLineHandle: AuraRuntimeNodeHandle | undefined;
  let aimBankHandle: AuraRuntimeNodeHandle | undefined;
  let aimMarkerHandle: AuraRuntimeNodeHandle | undefined;
  const pocketAccentHandles: AuraRuntimeNodeHandle[] = [];
@@ -1269,7 +1319,7 @@ index 14f0423fa..0a1885de2 100644
  function resolveHandles(): void {
    tableHandle = app.nodes.get("table") as AuraRuntimeNodeHandle | undefined;
    ballHandles.clear();
-@@ -423,52 +371,6 @@ function resolveHandles(): void {
+@@ -423,52 +364,6 @@ function resolveHandles(): void {
  }
  resolveHandles();
  cueGhostHandle?.setMaterial(GHOST_MATERIAL);
@@ -1322,7 +1372,7 @@ index 14f0423fa..0a1885de2 100644
  const hudHost = document.createElement("div");
  hudHost.className = "a3g-game-hud";
  document.getElementById("app")!.appendChild(hudHost);
-@@ -487,15 +389,12 @@ const hud = mountHud(
+@@ -487,15 +382,12 @@ const hud = mountHud(
      ]
    }
  );
@@ -1338,7 +1388,7 @@ index 14f0423fa..0a1885de2 100644
  function syncHud(): void {
    const snap = rules.snapshot();
    const cueState = cueController.state();
-@@ -520,8 +419,6 @@ function syncHud(): void {
+@@ -520,8 +412,6 @@ function syncHud(): void {
              : snap.banner
    );
  }
@@ -1347,7 +1397,7 @@ index 14f0423fa..0a1885de2 100644
  function doStrike(): void {
    const command = cueController.strike();
    if (!command) return;
-@@ -541,7 +438,6 @@ function doStrike(): void {
+@@ -541,7 +431,6 @@ function doStrike(): void {
    pushCue("cue-strike");
    syncHud();
  }
@@ -1355,7 +1405,7 @@ index 14f0423fa..0a1885de2 100644
  function consumeShotEvents(): void {
    for (const sensor of sim.consumeSensorEvents()) {
      sensorEventCount += 1;
-@@ -569,7 +465,6 @@ function consumeShotEvents(): void {
+@@ -569,7 +458,6 @@ function consumeShotEvents(): void {
      showToast(pot.ball === 0 ? "SCRATCH" : `BALL ${pot.ball} DOWN`);
    }
  }
@@ -1363,7 +1413,7 @@ index 14f0423fa..0a1885de2 100644
  function applyOutcome(outcome: ShotOutcome): void {
    if (outcome.rackWon) {
      pushCue("eight-win");
-@@ -609,7 +504,6 @@ function applyOutcome(outcome: ShotOutcome): void {
+@@ -609,7 +497,6 @@ function applyOutcome(outcome: ShotOutcome): void {
      bankJuice.fire("combo", { position: cueBody?.position });
    }
  }
@@ -1371,7 +1421,7 @@ index 14f0423fa..0a1885de2 100644
  function resolveShotNow(): void {
    if (!shotInFlight) return;
    const facts = sim.shotFacts();
-@@ -644,7 +538,6 @@ function resolveShotNow(): void {
+@@ -644,7 +531,6 @@ function resolveShotNow(): void {
    applyOutcome(outcome);
    syncHud();
  }
@@ -1379,7 +1429,7 @@ index 14f0423fa..0a1885de2 100644
  function advanceRack(): void {
    if (rules.phase !== "rack-won") return;
    const next = rules.advanceRack();
-@@ -661,7 +554,6 @@ function advanceRack(): void {
+@@ -661,7 +547,6 @@ function advanceRack(): void {
    pushCue("rack-clear");
    syncHud();
  }
@@ -1387,7 +1437,7 @@ index 14f0423fa..0a1885de2 100644
  function resetSession(): void {
    evidenceScenarioActive = false;
    rules.rerack();
-@@ -678,7 +570,6 @@ function resetSession(): void {
+@@ -678,7 +563,6 @@ function resetSession(): void {
    pushCue("rack-clear");
    syncHud();
  }
@@ -1395,7 +1445,7 @@ index 14f0423fa..0a1885de2 100644
  function togglePause(): void {
    // Session owns pause state (user + visibility + menu stack).
    if (bankGame.session.paused) {
-@@ -690,13 +581,10 @@ function togglePause(): void {
+@@ -690,13 +574,10 @@ function togglePause(): void {
    }
    syncHud();
  }
@@ -1409,7 +1459,7 @@ index 14f0423fa..0a1885de2 100644
  function poseLine(
    handle: AuraRuntimeNodeHandle | undefined,
    fromX: number,
-@@ -718,7 +606,6 @@ function poseLine(
+@@ -718,7 +599,6 @@ function poseLine(
    handle.setRotation(0, Math.atan2(-dz, dx), 0);
    handle.setScale([length, thickness, thickness]);
  }
@@ -1417,19 +1467,75 @@ index 14f0423fa..0a1885de2 100644
  function syncVisuals(): void {
    if (ballHandles.size < 16 || !cueStickHandle || !aimLineHandle || !aimBankHandle || !aimMarkerHandle || !cueGhostHandle) {
      resolveHandles();
-@@ -834,8 +721,6 @@ function syncVisuals(): void {
+@@ -834,95 +714,6 @@ function syncVisuals(): void {
      parkNode(aimBankHandle);
    }
  }
 -
 -// ------------------------------------------------------------- evidence ------
- function collectRouteEvidence(): Record<string, unknown> {
-   const snap = rules.snapshot();
-   const cueState = cueController.state();
-@@ -899,30 +784,6 @@ function collectRouteEvidence(): Record<string, unknown> {
-   void sessionScoreAtRackStart;
-   return evidence;
- }
+-function collectRouteEvidence(): Record<string, unknown> {
+-  const snap = rules.snapshot();
+-  const cueState = cueController.state();
+-  const diagnostics: AuraDiagnostics = app.diagnostics();
+-  const evidence: Record<string, unknown> = {
+-    // Contract keys from the PRD evidence section.
+-    status: "ready",
+-    mounted: true,
+-    primaryAssets: ["assets.bankShotTable", "assets.bankShotCue", "assets.bankShotBall00"],
+-    rack: snap.rack,
+-    state: bankGame.session.paused ? "paused" : snap.phase,
+-    score: snap.score,
+-    combo: snap.combo,
+-    suit: snap.suit,
+-    fouls: snap.fouls,
+-    ballsRemaining: snap.ballsRemaining,
+-    potted: [...snap.potted],
+-    lastShot: lastShotSummary,
+-    shotHash: shotHashValue,
+-    resetHashMatch: resetHashMatchValue,
+-    clockMs: snap.clockMs,
+-    sensorEventCount,
+-    physicsBodyCount: sim.world.snapshot().bodies,
+-    renderer: {
+-      // AuraDiagnostics.backend is the engine-owned render backend
+-      // ("webgl2" | "webgpu" | "canvas2d" | "headless"); the previous
+-      // `runtimeBackend` field did not exist, so evidence always read
+-      // "unknown". The quality profile names the active renderer tier.
+-      backend: diagnostics.backend,
+-      qualityProfile: diagnostics.renderer?.qualityProfile.id ?? "unknown",
+-      rendererMode: diagnostics.renderer?.rendererMode ?? "unknown",
+-      drawCalls: diagnostics.drawCalls,
+-      renderSize: [...diagnostics.renderSize]
+-    },
+-    audioCues: audioCueLog.slice(),
+-    // Route-local extras consumed by specs and route-health.
+-    appId: APP_ID,
+-    backend: sim.backend,
+-    phase: snap.phase,
+-    frameCount,
+-    aimAngle: cueState.aimAngle,
+-    charge: cueState.charge,
+-    spin: cueState.spin,
+-    charging: cueState.charging,
+-    liveBallCount: evidenceScenarioActive ? snap.ballsRemaining + 1 : sim.liveBallCount(),
+-    physicsLiveBallCount: sim.liveBallCount(),
+-    evidenceScenario: evidenceScenarioActive,
+-    resolvedNodeHandles: ballHandles.size + (cueStickHandle ? 1 : 0) + (aimLineHandle ? 1 : 0),
+-    comboStreak: snap.comboStreak,
+-    suitCleared: snap.suitCleared,
+-    ballsRemainingInSuit: snap.ballsRemainingInSuit,
+-    sessionComplete: snap.sessionComplete,
+-    shotCount: snap.shotCount,
+-    lastShotObject,
+-    rackClockLimitMs: rackConfigFor(snap.rack).clockMs,
+-    controls: ["A/Left aim left", "D/Right aim right", "W top spin", "S draw", "hold Space charge", "R re-rack", "P pause", "touch buttons"],
+-    systems: ROUTE_SYSTEMS,
+-    claimBoundary: "Aura3D prototype: route-local arcade 8-ball on the public physics surface (16 dynamic spheres, cushion restitution, pocket sensors); authored spin is a velocity nudge, no angular simulation; no reusable cue-sports kit claimed.",
+-    collectedAtEpochMs: Date.now()
+-  };
+-  void sessionScoreAtRackStart;
+-  return evidence;
+-}
 -
 -// Renderer-owned capture used by specs and probes (no compositor dependency).
 -bankWindow.__BS_SHOT__ = () => app.screenshot().dataUrl;
@@ -1457,7 +1563,7 @@ index 14f0423fa..0a1885de2 100644
  bindBankShotDrive({
    resetForFixture: () => {
      resetSession();
-@@ -956,17 +817,9 @@ bindBankShotDrive({
+@@ -956,17 +747,9 @@ bindBankShotDrive({
      syncHud();
    }
  });
@@ -1475,7 +1581,7 @@ index 14f0423fa..0a1885de2 100644
  function manualEdge(code: string): "pressed" | "released" | "held" | "idle" {
    const now = manualHeld.has(code);
    const before = manualPrev.get(code) ?? false;
-@@ -974,13 +827,11 @@ function manualEdge(code: string): "pressed" | "released" | "held" | "idle" {
+@@ -974,13 +757,11 @@ function manualEdge(code: string): "pressed" | "released" | "held" | "idle" {
    if (!now && before) return "released";
    return now ? "held" : "idle";
  }
@@ -1489,7 +1595,7 @@ index 14f0423fa..0a1885de2 100644
  function confirmBallInHand(): void {
    let targetX = ghost.x;
    let targetZ = ghost.z;
-@@ -1006,7 +857,6 @@ function confirmBallInHand(): void {
+@@ -1006,7 +787,6 @@ function confirmBallInHand(): void {
    if (rules.confirmBallInHand()) pushCue("ball-hit");
    syncHud();
  }
@@ -1497,7 +1603,7 @@ index 14f0423fa..0a1885de2 100644
  window.addEventListener("keydown", (event) => {
    if (!event.repeat) manualHeld.add(event.code);
    if (event.code === "Space" && !event.repeat) {
-@@ -1034,11 +884,6 @@ window.addEventListener("keydown", (event) => {
+@@ -1034,11 +814,6 @@ window.addEventListener("keydown", (event) => {
      event.preventDefault();
    }
  }, { passive: false });
@@ -1509,7 +1615,7 @@ index 14f0423fa..0a1885de2 100644
  const touchControls = mountTouchControls(
    {
      press: (code) => manualHeld.add(code),
-@@ -1065,10 +910,7 @@ const touchControls = mountTouchControls(
+@@ -1065,10 +840,7 @@ const touchControls = mountTouchControls(
      coarsePointer: () => matchMedia("(pointer: coarse)").matches
    }
  );
@@ -1520,131 +1626,44 @@ index 14f0423fa..0a1885de2 100644
  bankGame.app.onFrame(({ dt }) => {
    input.update(dt);
    bankTween.tick(dt);
-@@ -1121,6 +963,5 @@ bankGame.app.onFrame(({ dt }) => {
+@@ -1121,6 +893,5 @@ bankGame.app.onFrame(({ dt }) => {
    syncVisuals();
    if (frameCount % 6 === 0) syncHud();
  });
 -
  void rackSpotFor;
  syncHud();
-diff --git a/apps/showcase-bank-shot/src/legacy/styles.css b/apps/showcase-bank-shot/src/legacy/styles.css
-index 2848840e1..6833ac707 100644
---- a/apps/showcase-bank-shot/src/legacy/styles.css
-+++ b/apps/showcase-bank-shot/src/legacy/styles.css
-@@ -1,4 +1,3 @@
--/* Bank Shot HUD chrome - DOM is UI only; every gameplay truth is 3D. */
- * { box-sizing: border-box; }
- html, body {
-   margin: 0;
-@@ -8,7 +7,6 @@ html, body {
-   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
- }
- body { overflow: hidden; }
+diff --git a/apps/showcase-bank-shot/src/main.ts b/apps/showcase-bank-shot/src/main.ts
+index 16f360240..58e86d787 100644
+--- a/apps/showcase-bank-shot/src/main.ts
++++ b/apps/showcase-bank-shot/src/main.ts
+@@ -1,14 +1,6 @@
+-// apps/showcase-bank-shot/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
+-// Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-bank-shot`
+-// (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
+-// acceptance (§10 step 5).
+ import { resolveQrFlags } from "@aura3d/engine/contracts";
 -
- .shell { position: relative; display: block; height: 100vh; padding: 16px; background: #0c1522; }
- .viewport { position: relative; width: 100%; height: 100%; min-width: 0; }
- .stage {
-@@ -21,7 +19,6 @@ body { overflow: hidden; }
-   box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6);
- }
- #app canvas { display: block; width: 100%; height: 100%; }
+ const ROUTE_FLAG = "A3D_QR_ROUTE_BANK_SHOT" as const;
+ const DEFAULT_ON = false;
 -
- #hud { position: absolute; inset: 0; pointer-events: none; }
- .hole-banner {
-   position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
-@@ -52,7 +49,6 @@ body { overflow: hidden; }
- .result-card h2 { margin: 0 0 8px; font-size: 24px; color: #38bdf8; letter-spacing: 0.08em; text-transform: uppercase; }
- .result-card p { margin: 0 0 16px; color: #94a3b8; font-size: 14px; line-height: 1.5; }
- .is-hidden { display: none !important; }
--
- .panel {
-   display: flex; flex-direction: column; gap: 10px; padding: 12px;
-   border-radius: 14px; background: rgba(15, 23, 42, 0.58); border: 1px solid rgba(56, 189, 248, 0.18);
-@@ -63,7 +59,6 @@ body { overflow: hidden; }
- .bs-brand .eyebrow { margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 0.22em; color: #38bdf8; text-transform: uppercase; }
- .bs-brand h1 { margin: 4px 0 6px; font-size: 24px; font-weight: 700; letter-spacing: 0.04em; color: #f8fafc; }
- .bs-brand .blurb { margin: 0; font-size: 12.5px; line-height: 1.5; color: #94a3b8; }
--
- .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
- .stat-grid article {
-   padding: 9px 10px; border-radius: 10px; background: rgba(30, 41, 59, 0.7);
-@@ -71,7 +66,6 @@ body { overflow: hidden; }
- }
- .stat-grid span { display: block; font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #64748b; }
- .stat-grid strong { display: block; margin-top: 2px; font-size: 16px; font-weight: 700; color: #f8fafc; font-variant-numeric: tabular-nums; }
--
- .power-meter {
-   position: relative; height: 14px; border-radius: 999px; background: rgba(30, 41, 59, 0.8);
-   border: 1px solid rgba(56, 189, 248, 0.3); overflow: hidden;
-@@ -82,16 +76,13 @@ body { overflow: hidden; }
- }
- .power-meter span.fill { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, #38bdf8, #f59e0b); transition: width 0.08s linear; }
- .power-meta { display: flex; justify-content: space-between; font-size: 11px; color: #64748b; letter-spacing: 0.08em; font-weight: 500; }
--
- .mission-line {
-   margin: 0; padding: 10px 12px; border-radius: 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.1em;
-   color: #38bdf8; background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(56, 189, 248, 0.25);
-   font-variant-numeric: tabular-nums;
+-/** Accepts `?a3d-qr=…,route-bank-shot` and `?a3d-qr=…,A3D_QR_ROUTE_BANK_SHOT`.
+- *  Returns undefined when the flag is absent (CCR-14-2 replaces this helper). */
+ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const raw = new URL(loc.href).searchParams.get("a3d-qr");
+   if (raw === null) return undefined;
+@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+     ? true
+     : undefined;
  }
 -
- .controls-list { margin: 0; padding: 0 0 0 16px; font-size: 12px; line-height: 1.8; color: #94a3b8; }
- .controls-list b { color: #38bdf8; }
+ const flags = resolveQrFlags({
+   url: location.href,
+   env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR },
+   options: { [ROUTE_FLAG]: routeFlagFromUrl(location, ROUTE_FLAG) ?? DEFAULT_ON }
+ });
 -
- .action-row { display: flex; flex-wrap: wrap; gap: 8px; }
- .action-row button {
-   flex: 1 1 auto; padding: 9px 12px; border-radius: 9px; cursor: pointer;
-@@ -101,43 +92,6 @@ body { overflow: hidden; }
- }
- .action-row button:hover { background: rgba(51, 65, 85, 0.95); border-color: rgba(56, 189, 248, 0.6); color: #38bdf8; }
- .action-row button:active { transform: translateY(1px); }
--
--.evidence-strip { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: #64748b; }
--.evidence-strip code { color: #38bdf8; font-size: 11px; font-family: ui-monospace, monospace; }
--
--@media (min-width: 861px) {
--  /* Give the typed table the whole review canvas. Controls remain accessible
--     in a compact, translucent overlay instead of permanently consuming a
--     third of the renderer's width and shrinking the active surface. */
--  .panel {
--    position: absolute;
--    z-index: 4;
--    top: 16px;
--    right: 16px;
--    width: min(232px, calc(100vw - 32px));
--    max-height: calc(100vh - 32px);
--  }
--
--  /* The named review artifact is judged on the renderer's table and live
--     balls. Keep the complete controls/evidence tree mounted for keyboard and
--     accessibility checks, but remove its visual occlusion only for the
--     evidence-only capture route. */
--  body[data-capture="review"] .panel {
--    opacity: 0;
--    pointer-events: none;
--  }
--
--  /* The named review frame is judged on the live table and ball materials;
--     keep the instruction available on the normal route but remove this one
--     capture-only banner so it cannot compete with the primary surface. */
--  body[data-capture="review"] .hole-banner,
--  body[data-capture="review"] .pocket-toast,
--  body[data-capture="review"] .result-card {
--    opacity: 0;
--    pointer-events: none;
--  }
--}
--
- @media (max-width: 860px) {
-   body { overflow: hidden; }
-   .shell {
-@@ -191,7 +145,5 @@ body { overflow: hidden; }
-   .pocket-toast { top: 42px; max-width: calc(100% - 20px); overflow: hidden; text-overflow: ellipsis; }
-   .result-card { min-width: 0; width: calc(100% - 24px); padding: 18px; }
- }
--
--/* PRD-09 Phase 4: shared HUD kit host over the stage (replaces #hud/#panel). */
- .a3g-game-hud { position: absolute; inset: 0; pointer-events: none; z-index: 40; }
- .a3g-game-hud .a3g-tc { pointer-events: auto; }
+ void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
 diff --git a/apps/showcase-bank-shot/src/v2/evidence/index.ts b/apps/showcase-bank-shot/src/v2/evidence/index.ts
 deleted file mode 100644
 index b452f489b..000000000

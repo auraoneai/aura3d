@@ -1,21 +1,23 @@
-From 6317b1b52514279d2dc885b14b44f0e7746d14a5 Mon Sep 17 00:00:00 2001
+From d5cf8855ecbab2d88ba81b6ed12fead431631cc6 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
-Date: Fri, 9 Oct 2026 13:40:41 +0000
+Date: Fri, 9 Oct 2026 13:45:54 +0000
 Subject: [PATCH] [qr-prd09] showcase-siege-golf: delete evidence files+blocks
  (T5.8)
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
+ .../performance-report.json                   | 181 -----------
  .../scripts/build-course-world.mjs            | 209 ------------
  .../showcase-siege-golf/scripts/build-sfx.mjs | 306 ------------------
  .../scripts/write-performance-report.ts       |  78 -----
  .../scripts/write-route-health.mjs            | 216 -------------
  .../src/gameplay/replay-proof.ts              | 215 ------------
  apps/showcase-siege-golf/src/legacy/main.ts   | 178 ----------
- .../showcase-siege-golf/src/legacy/styles.css |  88 -----
+ apps/showcase-siege-golf/src/main.ts          |  10 -
  apps/showcase-siege-golf/src/replay-proof.ts  |   3 -
  .../src/v2/evidence/index.ts                  | 111 -------
- 9 files changed, 1404 deletions(-)
+ 10 files changed, 1507 deletions(-)
+ delete mode 100644 apps/showcase-siege-golf/performance-report.json
  delete mode 100644 apps/showcase-siege-golf/scripts/build-course-world.mjs
  delete mode 100644 apps/showcase-siege-golf/scripts/build-sfx.mjs
  delete mode 100644 apps/showcase-siege-golf/scripts/write-performance-report.ts
@@ -24,6 +26,193 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  delete mode 100644 apps/showcase-siege-golf/src/replay-proof.ts
  delete mode 100644 apps/showcase-siege-golf/src/v2/evidence/index.ts
 
+diff --git a/apps/showcase-siege-golf/performance-report.json b/apps/showcase-siege-golf/performance-report.json
+deleted file mode 100644
+index 5b8c657ee..000000000
+--- a/apps/showcase-siege-golf/performance-report.json
++++ /dev/null
+@@ -1,181 +0,0 @@
+-{
+-  "schema": "aura3d-siege-golf-performance/1.0",
+-  "generatedAt": "2026-09-02T06:27:43.672Z",
+-  "scope": "headless route-local Rapier fixed-step simulation; rendering performance is not claimed",
+-  "budgets": {
+-    "maxWorldBodies": 32,
+-    "maxConstraints": 8,
+-    "physicsStepP95Ms": 16.7
+-  },
+-  "observed": {
+-    "maxWorldBodies": 26,
+-    "maxConstraints": 3,
+-    "maxPhysicsP95Ms": 1.3231
+-  },
+-  "holes": [
+-    {
+-      "holeId": "hole-01-open-fairway",
+-      "trackedGameplayBodies": 4,
+-      "worldBodies": 16,
+-      "colliders": 16,
+-      "constraints": 0,
+-      "canonicalStrokes": 1,
+-      "resolutionFrames": [
+-        341
+-      ],
+-      "completed": true,
+-      "physicsStepMs": {
+-        "samples": 341,
+-        "mean": 0.3023,
+-        "p95": 0.7647,
+-        "max": 2.0953
+-      }
+-    },
+-    {
+-      "holeId": "hole-02-gate-crash",
+-      "trackedGameplayBodies": 5,
+-      "worldBodies": 17,
+-      "colliders": 17,
+-      "constraints": 2,
+-      "canonicalStrokes": 1,
+-      "resolutionFrames": [
+-        360
+-      ],
+-      "completed": true,
+-      "physicsStepMs": {
+-        "samples": 360,
+-        "mean": 0.3519,
+-        "p95": 0.7951,
+-        "max": 4.0342
+-      }
+-    },
+-    {
+-      "holeId": "hole-03-flip-panel",
+-      "trackedGameplayBodies": 4,
+-      "worldBodies": 17,
+-      "colliders": 17,
+-      "constraints": 1,
+-      "canonicalStrokes": 1,
+-      "resolutionFrames": [
+-        360
+-      ],
+-      "completed": true,
+-      "physicsStepMs": {
+-        "samples": 360,
+-        "mean": 0.4817,
+-        "p95": 1.0548,
+-        "max": 2.233
+-      }
+-    },
+-    {
+-      "holeId": "hole-04-barrel-alley",
+-      "trackedGameplayBodies": 5,
+-      "worldBodies": 18,
+-      "colliders": 18,
+-      "constraints": 0,
+-      "canonicalStrokes": 1,
+-      "resolutionFrames": [
+-        360
+-      ],
+-      "completed": true,
+-      "physicsStepMs": {
+-        "samples": 360,
+-        "mean": 0.2523,
+-        "p95": 0.6178,
+-        "max": 1.347
+-      }
+-    },
+-    {
+-      "holeId": "hole-05-springboard",
+-      "trackedGameplayBodies": 7,
+-      "worldBodies": 20,
+-      "colliders": 20,
+-      "constraints": 3,
+-      "canonicalStrokes": 1,
+-      "resolutionFrames": [
+-        360
+-      ],
+-      "completed": true,
+-      "physicsStepMs": {
+-        "samples": 360,
+-        "mean": 0.3291,
+-        "p95": 0.5979,
+-        "max": 2.0144
+-      }
+-    },
+-    {
+-      "holeId": "hole-06-pendulum-pass",
+-      "trackedGameplayBodies": 4,
+-      "worldBodies": 19,
+-      "colliders": 19,
+-      "constraints": 1,
+-      "canonicalStrokes": 1,
+-      "resolutionFrames": [
+-        360
+-      ],
+-      "completed": true,
+-      "physicsStepMs": {
+-        "samples": 360,
+-        "mean": 0.4109,
+-        "p95": 0.8346,
+-        "max": 3.5324
+-      }
+-    },
+-    {
+-      "holeId": "hole-07-tower-topple",
+-      "trackedGameplayBodies": 6,
+-      "worldBodies": 18,
+-      "colliders": 18,
+-      "constraints": 1,
+-      "canonicalStrokes": 1,
+-      "resolutionFrames": [
+-        360
+-      ],
+-      "completed": true,
+-      "physicsStepMs": {
+-        "samples": 360,
+-        "mean": 0.6395,
+-        "p95": 1.3231,
+-        "max": 8.0098
+-      }
+-    },
+-    {
+-      "holeId": "hole-08-double-flip",
+-      "trackedGameplayBodies": 7,
+-      "worldBodies": 22,
+-      "colliders": 22,
+-      "constraints": 3,
+-      "canonicalStrokes": 1,
+-      "resolutionFrames": [
+-        360
+-      ],
+-      "completed": true,
+-      "physicsStepMs": {
+-        "samples": 360,
+-        "mean": 0.5036,
+-        "p95": 1.2293,
+-        "max": 2.0586
+-      }
+-    },
+-    {
+-      "holeId": "hole-09-wrecking-green",
+-      "trackedGameplayBodies": 9,
+-      "worldBodies": 26,
+-      "colliders": 26,
+-      "constraints": 2,
+-      "canonicalStrokes": 2,
+-      "resolutionFrames": [
+-        360,
+-        360
+-      ],
+-      "completed": true,
+-      "physicsStepMs": {
+-        "samples": 720,
+-        "mean": 0.6639,
+-        "p95": 1.2991,
+-        "max": 3.3231
+-      }
+-    }
+-  ],
+-  "pass": true
+-}
 diff --git a/apps/showcase-siege-golf/scripts/build-course-world.mjs b/apps/showcase-siege-golf/scripts/build-course-world.mjs
 deleted file mode 100644
 index 23ab3e7e0..000000000
@@ -1661,317 +1850,37 @@ index e3c0c6585..e9f7696e1 100644
  syncVisuals();
  syncHud();
 -publishEvidence();
-diff --git a/apps/showcase-siege-golf/src/legacy/styles.css b/apps/showcase-siege-golf/src/legacy/styles.css
-index 5b90d44bf..f51f30dcd 100644
---- a/apps/showcase-siege-golf/src/legacy/styles.css
-+++ b/apps/showcase-siege-golf/src/legacy/styles.css
-@@ -1,8 +1,3 @@
--/*
-- * Siege Golf HUD chrome. DOM UI only: every gameplay truth (toppled stacks,
-- * sunk targets, ball position) is rendered in the Aura3D scene; this sheet
-- * styles panels, meters, and result banners that sit above the canvas.
-- */
- :root {
-   --felt-deep: #0b3d23;
-   --felt-mid: #14532d;
-@@ -16,9 +11,7 @@
-   --danger: #ff6b5e;
-   --ok: #74ff91;
+diff --git a/apps/showcase-siege-golf/src/main.ts b/apps/showcase-siege-golf/src/main.ts
+index 73f5ce215..2c79fae68 100644
+--- a/apps/showcase-siege-golf/src/main.ts
++++ b/apps/showcase-siege-golf/src/main.ts
+@@ -1,14 +1,6 @@
+-// apps/showcase-siege-golf/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
+-// Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-siege-golf`
+-// (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
+-// acceptance (§10 step 5).
+ import { resolveQrFlags } from "@aura3d/engine/contracts";
+-
+ const ROUTE_FLAG = "A3D_QR_ROUTE_SIEGE_GOLF" as const;
+ const DEFAULT_ON = false;
+-
+-/** Accepts `?a3d-qr=…,route-siege-golf` and `?a3d-qr=…,A3D_QR_ROUTE_SIEGE_GOLF`.
+- *  Returns undefined when the flag is absent (CCR-14-2 replaces this helper). */
+ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const raw = new URL(loc.href).searchParams.get("a3d-qr");
+   if (raw === null) return undefined;
+@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+     ? true
+     : undefined;
  }
 -
- * { box-sizing: border-box; }
+ const flags = resolveQrFlags({
+   url: location.href,
+   env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR },
+   options: { [ROUTE_FLAG]: routeFlagFromUrl(location, ROUTE_FLAG) ?? DEFAULT_ON }
+ });
 -
- html, body {
-   margin: 0;
-   padding: 0;
-@@ -27,7 +20,6 @@ html, body {
-   color: var(--ink);
-   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
- }
--
- .shell {
-   position: relative;
-   width: 100%;
-@@ -39,21 +31,18 @@ html, body {
-   display: flex;
-   flex-direction: column;
- }
--
- .viewport {
-   position: relative;
-   flex: 1 1 auto;
-   min-width: 0;
-   min-height: 0;
- }
--
- .stage,
- .stage canvas {
-   width: 100%;
-   height: 100%;
-   display: block;
- }
--
- #hud {
-   position: absolute;
-   inset: 0;
-@@ -62,7 +51,6 @@ html, body {
-   flex-direction: column;
-   justify-content: space-between;
- }
--
- .panel {
-   position: absolute;
-   z-index: 3;
-@@ -84,42 +72,11 @@ html, body {
-   overflow-y: auto;
-   backdrop-filter: blur(4px);
- }
--
--.panel .sg-brand,
--.panel .controls-list,
--.panel .evidence-strip { display: none; }
--
--/* The active-impact producer retains the top-center state banner and all
-- * evidence JSON, but removes the side control panel from the comparison frame
-- * so the typed ball, collision response, and course set dressing read first.
-- * The panel remains mounted and fully available on the public route. */
--/* The named active-impact frame keeps a compact score bug (brand + stat grid
-- * + hole banner) so the capture still reads as a game with a hole, par, and
-- * strokes. Only the control/evidence sections hide: buttons, dials, key
-- * legends, and backend strips contributed nothing to the comparison while
-- * covering the course. The panel remains fully mounted on the public route. */
--.panel[data-capture="review"] .precision-shot,
--.panel[data-capture="review"] .controls-list,
--.panel[data-capture="review"] .action-row,
--.panel[data-capture="review"] .evidence-strip,
--.panel[data-capture="review"] .power-meter,
--.panel[data-capture="review"] .power-meta {
--  display: none;
--}
--
--/* Keep the result card out of the comparison frame (it covers the course on
-- * hole complete) while the hole banner stays visible as the state read. */
--body[data-capture="review"] .result-card {
--  opacity: 0;
--  pointer-events: none;
--}
--
- .sg-brand h1 {
-   margin: 0;
-   font-size: 1.25rem;
-   letter-spacing: 0.04em;
- }
--
- .sg-brand .eyebrow {
-   margin: 0 0 2px;
-   font-size: 0.68rem;
-@@ -127,7 +84,6 @@ body[data-capture="review"] .result-card {
-   letter-spacing: 0.32em;
-   color: var(--ink-dim);
- }
--
- .sg-strip {
-   display: flex;
-   gap: 10px;
-@@ -136,14 +92,12 @@ body[data-capture="review"] .result-card {
-   padding-top: 10px;
-   border-top: 1px solid rgba(255, 255, 255, 0.08);
- }
--
- .stat-grid {
-   display: grid;
-   grid-template-columns: repeat(2, minmax(0, 1fr));
-   gap: 5px;
-   margin-top: 8px;
- }
--
- .stat-grid article,
- .sg-stat {
-   background: rgba(255, 255, 255, 0.05);
-@@ -151,7 +105,6 @@ body[data-capture="review"] .result-card {
-   border-radius: 8px;
-   padding: 5px 6px;
- }
--
- .stat-grid span,
- .sg-stat span {
-   display: block;
-@@ -160,7 +113,6 @@ body[data-capture="review"] .result-card {
-   letter-spacing: 0.18em;
-   color: var(--ink-dim);
- }
--
- .stat-grid strong,
- .sg-stat strong {
-   display: block;
-@@ -168,8 +120,6 @@ body[data-capture="review"] .result-card {
-   line-height: 1.2;
-   color: var(--ink);
- }
--
--/* Power meter: fill width is driven by real charge each frame. */
- .power-meter {
-   margin-top: 14px;
-   height: 18px;
-@@ -182,7 +132,6 @@ body[data-capture="review"] .result-card {
-   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.62);
-   overflow: hidden;
- }
--
- .power-meter > span {
-   display: block;
-   height: 100%;
-@@ -192,7 +141,6 @@ body[data-capture="review"] .result-card {
-   box-shadow: 0 0 12px rgba(255, 193, 91, 0.5);
-   transition: width 40ms linear;
- }
--
- .power-meta {
-   display: flex;
-   justify-content: space-between;
-@@ -200,7 +148,6 @@ body[data-capture="review"] .result-card {
-   color: var(--ink-dim);
-   margin-top: 4px;
- }
--
- .precision-shot {
-   display: grid;
-   gap: 5px;
-@@ -211,13 +158,10 @@ body[data-capture="review"] .result-card {
-   background: rgba(0, 0, 0, 0.16);
-   pointer-events: auto;
- }
--
--/* Result cards own the next action; the side panel must not sit above them. */
- .panel.result-open {
-   visibility: hidden;
-   pointer-events: none;
- }
--
- .precision-shot label {
-   display: flex;
-   justify-content: space-between;
-@@ -225,14 +169,11 @@ body[data-capture="review"] .result-card {
-   font-size: 0.68rem;
-   letter-spacing: 0.04em;
- }
--
- .precision-shot output {
-   color: var(--ink);
-   font-variant-numeric: tabular-nums;
- }
--
- .precision-shot input { width: 100%; }
--
- .precision-shot button {
-   margin-top: 3px;
-   padding: 7px 8px;
-@@ -241,7 +182,6 @@ body[data-capture="review"] .result-card {
-   color: var(--ink);
-   background: rgba(255, 217, 160, 0.1);
- }
--
- .controls-list {
-   margin: 14px 0 0;
-   padding: 10px 12px;
-@@ -253,12 +193,10 @@ body[data-capture="review"] .result-card {
-   display: grid;
-   gap: 4px;
- }
--
- .controls-list b {
-   color: var(--ink);
-   font-weight: 600;
- }
--
- .action-row {
-   display: flex;
-   flex-wrap: wrap;
-@@ -266,7 +204,6 @@ body[data-capture="review"] .result-card {
-   margin-top: 14px;
-   pointer-events: auto;
- }
--
- .action-row button {
-   flex: 1 1 44%;
-   padding: 9px 10px;
-@@ -278,24 +215,8 @@ body[data-capture="review"] .result-card {
-   font-size: 0.85rem;
-   cursor: pointer;
- }
--
- .action-row button:hover { background: rgba(255, 217, 160, 0.18); }
- .action-row button:active { transform: translateY(1px); }
--
--.evidence-strip {
--  margin-top: 14px;
--  font-size: 0.7rem;
--  color: var(--ink-dim);
--  display: grid;
--  gap: 4px;
--}
--
--.evidence-strip code {
--  color: var(--rim-cool);
--  word-break: break-all;
--}
--
--/* Top-center hole banner and result cards live over the canvas. */
- .hole-banner {
-   align-self: center;
-   margin-top: 14px;
-@@ -307,7 +228,6 @@ body[data-capture="review"] .result-card {
-   letter-spacing: 0.06em;
-   color: var(--ink);
- }
--
- .result-card {
-   align-self: flex-start;
-   margin: 0 0 11vh 24px;
-@@ -320,35 +240,28 @@ body[data-capture="review"] .result-card {
-   pointer-events: auto;
-   box-shadow: 0 14px 32px rgba(26, 18, 12, 0.24);
- }
--
- .result-card h2 {
-   margin: 0 0 6px;
-   font-size: 1.25rem;
- }
--
- .result-card p {
-   margin: 0;
-   color: var(--ink-dim);
- }
--
- .result-card .stars {
-   font-size: 1.55rem;
-   letter-spacing: 0.2em;
-   color: var(--accent);
-   margin-top: 8px;
- }
--
- .result-card.is-failed h2 { color: var(--danger); }
- .result-card.is-hidden { display: none; }
--
- .mobile-shot-controls { display: none; }
--
- .star-row {
-   font-size: 1.4rem;
-   letter-spacing: 0.24em;
-   color: var(--accent);
- }
--
- @media (max-width: 720px) {
-   .shell { flex-direction: column; }
-   .panel {
-@@ -449,7 +362,6 @@ body[data-capture="review"] .result-card {
-   .mobile-shot-buttons button:last-child { font-size: 1.35rem; }
-   .mobile-shot-buttons button:active { background: rgba(220, 125, 55, 0.62); }
- }
--
- @media (prefers-reduced-motion: reduce) {
-   .power-meter > span { transition: none; }
- }
+ void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
 diff --git a/apps/showcase-siege-golf/src/replay-proof.ts b/apps/showcase-siege-golf/src/replay-proof.ts
 deleted file mode 100644
 index fa67e5d91..000000000

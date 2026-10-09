@@ -1,25 +1,29 @@
-From 534b167dc40d77a09745ac239def1260be3791fd Mon Sep 17 00:00:00 2001
+From b010d4c52f50a21c2527c09f810c7659740f3d16 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
-Date: Fri, 9 Oct 2026 13:40:40 +0000
+Date: Fri, 9 Oct 2026 13:45:53 +0000
 Subject: [PATCH] [qr-prd09] showcase-rooftop-buckets: delete evidence
  files+blocks (T5.8)
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- .../exact-route/capture.mjs                   |  60 --
+ .../performance-report.json                   |  38 --
  .../scripts/build-models.mjs                  | 533 ------------------
+ .../scripts/build-production-art.py           | 432 --------------
+ .../scripts/build-v2-art.py                   | 265 ---------
  .../scripts/register-acquired-athletes.mjs    |  65 ---
  .../scripts/register-assets.mjs               | 116 ----
  .../scripts/register-production-art.mjs       |  99 ----
  .../scripts/register-v2-art.mjs               |  50 --
  .../scripts/write-deploy-report.mjs           |  67 ---
  .../scripts/write-route-health.mjs            | 165 ------
- .../src/legacy/main.ts                        | 181 ------
- .../src/legacy/styles.css                     | 162 ------
+ .../src/legacy/main.ts                        | 287 ----------
+ apps/showcase-rooftop-buckets/src/main.ts     |  10 -
  .../src/v2/evidence/index.ts                  | 109 ----
- 11 files changed, 1607 deletions(-)
- delete mode 100644 apps/showcase-rooftop-buckets/.candidate-assets/acquisition-2026-08-31/exact-route/capture.mjs
+ 13 files changed, 2236 deletions(-)
+ delete mode 100644 apps/showcase-rooftop-buckets/performance-report.json
  delete mode 100644 apps/showcase-rooftop-buckets/scripts/build-models.mjs
+ delete mode 100644 apps/showcase-rooftop-buckets/scripts/build-production-art.py
+ delete mode 100644 apps/showcase-rooftop-buckets/scripts/build-v2-art.py
  delete mode 100644 apps/showcase-rooftop-buckets/scripts/register-acquired-athletes.mjs
  delete mode 100644 apps/showcase-rooftop-buckets/scripts/register-assets.mjs
  delete mode 100644 apps/showcase-rooftop-buckets/scripts/register-production-art.mjs
@@ -28,72 +32,50 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  delete mode 100644 apps/showcase-rooftop-buckets/scripts/write-route-health.mjs
  delete mode 100644 apps/showcase-rooftop-buckets/src/v2/evidence/index.ts
 
-diff --git a/apps/showcase-rooftop-buckets/.candidate-assets/acquisition-2026-08-31/exact-route/capture.mjs b/apps/showcase-rooftop-buckets/.candidate-assets/acquisition-2026-08-31/exact-route/capture.mjs
+diff --git a/apps/showcase-rooftop-buckets/performance-report.json b/apps/showcase-rooftop-buckets/performance-report.json
 deleted file mode 100644
-index 76aa80193..000000000
---- a/apps/showcase-rooftop-buckets/.candidate-assets/acquisition-2026-08-31/exact-route/capture.mjs
+index adf32d232..000000000
+--- a/apps/showcase-rooftop-buckets/performance-report.json
 +++ /dev/null
-@@ -1,60 +0,0 @@
--import { writeFile } from "node:fs/promises";
--import { dirname, resolve } from "node:path";
--import { fileURLToPath } from "node:url";
--
--import { chromium } from "@playwright/test";
--
--const here = dirname(fileURLToPath(import.meta.url));
--const baseUrl = process.env.ROOFTOP_CANDIDATE_URL ?? "http://127.0.0.1:5199";
--const screenshotPath = resolve(here, "rooftop-athletes-exact-route.png");
--const evidencePath = resolve(here, "rooftop-athletes-exact-route.json");
--
--const browser = await chromium.launch({ headless: true });
--const page = await browser.newPage({
--  viewport: { width: 1440, height: 1000 },
--  deviceScaleFactor: 1
--});
--page.setDefaultTimeout(120_000);
--
--const pageErrors = [];
--const consoleErrors = [];
--page.on("pageerror", (error) => pageErrors.push(String(error)));
--page.on("console", (message) => {
--  if (message.type() === "error") consoleErrors.push(message.text());
--});
--
--await page.goto(`${baseUrl}/?capture=review`, { waitUntil: "domcontentloaded" });
--await page.waitForFunction(() => {
--  const evidence = window.__AURA3D_SHOWCASE_ROOFTOP_BUCKETS__;
--  return evidence?.mounted === true && typeof window.__RB_ACTIVE_SHOT__ === "function";
--});
--await page.waitForTimeout(20_000);
--await page.evaluate(() => {
--  window.__RB_ACTIVE_SHOT__?.();
--  window.__RB_PUMP__?.(9);
--});
--await page.waitForTimeout(1_200);
--
--const snapshot = await page.evaluate(() => ({
--  route: window.__AURA3D_SHOWCASE_ROOFTOP_BUCKETS__,
--  renderer: window.__AURA3D_SHOWCASE_ROOFTOP_BUCKETS__?.renderer,
--  canvases: [...document.querySelectorAll("canvas")].map((canvas) => ({
--    width: canvas.width,
--    height: canvas.height,
--    rect: canvas.getBoundingClientRect().toJSON()
--  }))
--}));
--await page.screenshot({ path: screenshotPath, fullPage: true, timeout: 120_000 });
--
--const output = {
--  producer: "rooftop-athlete-candidate-exact-route",
--  url: `${baseUrl}/?capture=review`,
--  viewport: [1440, 1000],
--  screenshotPath,
--  pageErrors,
--  consoleErrors,
--  snapshot
--};
--await writeFile(evidencePath, `${JSON.stringify(output, null, 2)}\n`, "utf8");
--console.log(JSON.stringify(output));
--await browser.close();
+@@ -1,38 +0,0 @@
+-{
+-  "schema": "aura3d.rooftop-buckets.performance/1.0",
+-  "generatedAt": "2026-09-03T10:10:26.167Z",
+-  "producer": "apps/showcase-rooftop-buckets/scripts/write-performance-report.ts",
+-  "producerSourceSha256": "58c29536b6ae2dfd37df5ab4a28b12b2a799174c4dc3096a7c51ac35acdbcaeb",
+-  "routeSourceFiles": [
+-    "apps/showcase-rooftop-buckets/src/buckets-audio.ts",
+-    "apps/showcase-rooftop-buckets/src/court.ts",
+-    "apps/showcase-rooftop-buckets/src/environment.ts",
+-    "apps/showcase-rooftop-buckets/src/main.ts",
+-    "apps/showcase-rooftop-buckets/src/rim.ts",
+-    "apps/showcase-rooftop-buckets/src/scoring.ts",
+-    "apps/showcase-rooftop-buckets/src/shot.ts",
+-    "apps/showcase-rooftop-buckets/src/styles.css"
+-  ],
+-  "routeSourceSha256": "c436b8e1f4f185d082239a18f9c2a1309afbed2e4dc4500baa3aa141f71f67b8",
+-  "scope": "Route-local deterministic authored basketball step CPU timing plus browser-observed root createGameApp draw calls. This does not claim Rapier, rigid bodies, GPU frame-time parity, or a reusable sports simulation.",
+-  "samples": 12000,
+-  "fixedStepSeconds": 0.016666666666666666,
+-  "budgets": {
+-    "ballisticCpuP95Ms": 0.25,
+-    "drawCalls": 150,
+-    "authoredPhysicsBodies": 0
+-  },
+-  "observed": {
+-    "ballisticCpuP95Ms": 0.002,
+-    "deterministicPoseSamples": 100,
+-    "drawCalls": 147,
+-    "renderSize": [
+-      1920,
+-      1200
+-    ],
+-    "authoredPhysicsBodies": 0,
+-    "predictionPoints": 25,
+-    "heatModes": 5
+-  },
+-  "pass": true
+-}
 diff --git a/apps/showcase-rooftop-buckets/scripts/build-models.mjs b/apps/showcase-rooftop-buckets/scripts/build-models.mjs
 deleted file mode 100644
 index 01f6b667d..000000000
@@ -633,6 +615,715 @@ index 01f6b667d..000000000
 -console.log("Wrote rooftopShooter.glb");
 -
 -console.log("Rooftop Buckets models synthesized successfully.");
+diff --git a/apps/showcase-rooftop-buckets/scripts/build-production-art.py b/apps/showcase-rooftop-buckets/scripts/build-production-art.py
+deleted file mode 100644
+index 4e04d8503..000000000
+--- a/apps/showcase-rooftop-buckets/scripts/build-production-art.py
++++ /dev/null
+@@ -1,432 +0,0 @@
+-#!/usr/bin/env python3
+-"""Build Rooftop Buckets' release-candidate athlete and venue assets.
+-
+-The previous Rooftop Buckets pass used route-authored box/cylinder mannequins.
+-This producer starts from a license-clean, textured, skinned ``Man Player``
+-GLB and authors basketball-specific clips on its real 102-joint skeleton.  It
+-also emits the court/venue asset with a physical court slab, outside-bounds
+-bleachers, railings, banners, flood bars, and spectator seating.  The hoop,
+-backboard, ball, and all gameplay regions remain route-owned and are not baked
+-into the venue asset.
+-
+-This is route-local art production; registration and rendered probes are kept
+-in the normal Aura3D CLI/evidence pipeline.  No route gameplay or ballistics
+-are authored here.
+-"""
+-
+-from __future__ import annotations
+-
+-import json
+-import math
+-import struct
+-from pathlib import Path
+-
+-import bpy
+-from mathutils import Matrix
+-
+-
+-APP_DIR = Path(__file__).resolve().parent.parent
+-OUT_DIR = APP_DIR / "assets" / "models"
+-SOURCE = APP_DIR / ".candidate-assets" / "acquisition-2026-08-31" / "objaverse-4c7133dbb06e4136891d59231372d818" / "man-player.glb"
+-
+-
+-def clear() -> None:
+-    bpy.ops.object.select_all(action="SELECT")
+-    bpy.ops.object.delete(use_global=False)
+-    for collection in (
+-        bpy.data.materials,
+-        bpy.data.meshes,
+-        bpy.data.armatures,
+-        bpy.data.actions,
+-        bpy.data.cameras,
+-        bpy.data.lights,
+-    ):
+-        for item in list(collection):
+-            collection.remove(item)
+-
+-
+-def imported_source() -> bpy.types.Object:
+-    if not SOURCE.exists():
+-        raise FileNotFoundError(SOURCE)
+-    bpy.ops.import_scene.gltf(filepath=str(SOURCE))
+-    armatures = [obj for obj in bpy.context.scene.objects if obj.type == "ARMATURE"]
+-    if len(armatures) != 1:
+-        raise RuntimeError(f"expected one source armature, found {len(armatures)}")
+-    armature = armatures[0]
+-    # The downloaded scene contains an authoring cube, an icosphere proxy,
+-    # camera, and light.  They are not part of the player and must not leak
+-    # into the release asset.
+-    for obj in list(bpy.context.scene.objects):
+-        if obj.type in {"CAMERA", "LIGHT"} or obj.name in {"Cube", "Icosphere"}:
+-            bpy.data.objects.remove(obj, do_unlink=True)
+-    # The Sketchfab FBX wrapper carries a 0.01 import scale. Blender bakes
+-    # that scale into mesh data on export while retaining the wrapper, which
+-    # would make the release GLB another 100x too small. Bake the factor into
+-    # the source geometry and skeleton, then clear the wrapper scale so the
+-    # exported skin and its clips retain the source's metre-scale 1.8 m bounds
+-    # and do not need a route-side scale hack.
+-    wrapper = bpy.data.objects.get("player.fbx")
+-    if wrapper is not None:
+-        wrapper.scale = (1.0, 1.0, 1.0)
+-    bake_scale = Matrix.Scale(0.01, 4)
+-    armature.data.transform(bake_scale)
+-    for mesh in [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]:
+-        mesh.data.transform(bake_scale)
+-    armature.scale = (1.0, 1.0, 1.0)
+-    return armature
+-
+-
+-def multiply_tint(source: bpy.types.Material, name: str, tint: tuple[float, float, float, float]) -> bpy.types.Material:
+-    """Duplicate a textured material while retaining its texture/normal chain.
+-
+-    The source shirt and shorts use image textures on the Principled Base Color
+-    input.  Inserting a multiply node keeps folds, seams, and texture detail,
+-    while making the two route athletes unmistakably different teams.
+-    """
+-
+-    mat = source.copy()
+-    mat.name = name
+-    mat.use_nodes = True
+-    tree = mat.node_tree
+-    bsdf = tree.nodes.get("Principled BSDF")
+-    if bsdf is None:
+-        return mat
+-    base = bsdf.inputs.get("Base Color")
+-    if base is None:
+-        return mat
+-    links = list(base.links)
+-    if links:
+-        source_socket = links[0].from_socket
+-        for link in links:
+-            tree.links.remove(link)
+-        mix = tree.nodes.new("ShaderNodeMixRGB")
+-        mix.name = "Rooftop team tint"
+-        mix.blend_type = "MULTIPLY"
+-        mix.inputs[0].default_value = 1.0
+-        mix.inputs[1].default_value = (1.0, 1.0, 1.0, 1.0)
+-        mix.inputs[2].default_value = tint
+-        tree.links.new(source_socket, mix.inputs[1])
+-        tree.links.new(mix.outputs[0], base)
+-    else:
+-        base.default_value = tint
+-    return mat
+-
+-
+-def replace_materials(armature: bpy.types.Object, role: str) -> None:
+-    shooter = role == "shooter"
+-    shirt_tint = (0.08, 0.62, 0.74, 1.0) if shooter else (0.72, 0.075, 0.10, 1.0)
+-    shorts_tint = (0.08, 0.12, 0.18, 1.0) if shooter else (0.18, 0.025, 0.035, 1.0)
+-    boot_tint = (0.76, 0.89, 0.92, 1.0) if shooter else (0.12, 0.14, 0.18, 1.0)
+-    team_prefix = "Rooftop teal" if shooter else "Rooftop crimson"
+-    for mesh in [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]:
+-        slots = list(mesh.material_slots)
+-        for slot in slots:
+-            material = slot.material
+-            if material is None:
+-                continue
+-            if material.name == "T_shirt":
+-                slot.material = multiply_tint(material, f"{team_prefix} jersey", shirt_tint)
+-            elif material.name == "Classic_Shorts":
+-                slot.material = multiply_tint(material, f"{team_prefix} shorts", shorts_tint)
+-            elif material.name == "Boots":
+-                slot.material = multiply_tint(material, f"{team_prefix} court shoes", boot_tint)
+-
+-
+-def bone(armature: bpy.types.Object, name: str) -> bpy.types.PoseBone | None:
+-    return armature.pose.bones.get(name)
+-
+-
+-def set_bone_rotation(armature: bpy.types.Object, name: str, value: tuple[float, float, float]) -> None:
+-    target = bone(armature, name)
+-    if target is None:
+-        return
+-    target.rotation_mode = "XYZ"
+-    target.rotation_euler = value
+-
+-
+-def clear_pose(armature: bpy.types.Object) -> None:
+-    for target in armature.pose.bones:
+-        target.rotation_mode = "XYZ"
+-        target.rotation_euler = (0.0, 0.0, 0.0)
+-        target.scale = (1.0, 1.0, 1.0)
+-
+-
+-def authored_clip(armature: bpy.types.Object, name: str, poses: list[tuple[int, dict[str, tuple[float, float, float]]]]) -> bpy.types.Action:
+-    action = bpy.data.actions.new(name)
+-    action.frame_start = 1
+-    action.frame_end = 24
+-    armature.animation_data_create()
+-    armature.animation_data.action = action
+-    # Key every bone at the first frame so no source action or imported pose
+-    # can leak into the release clip.  Subsequent frames key the named
+-    # basketball pose, yielding a genuine skinned deformation rather than a
+-    # route-level scale/rotation imitation.
+-    clear_pose(armature)
+-    bpy.context.scene.frame_set(1)
+-    for target in armature.pose.bones:
+-        target.keyframe_insert(data_path="rotation_euler", frame=1, group=target.name)
+-    for frame, pose in poses:
+-        clear_pose(armature)
+-        for bone_name, rotation in pose.items():
+-            set_bone_rotation(armature, bone_name, rotation)
+-        bpy.context.scene.frame_set(frame)
+-        for target in armature.pose.bones:
+-            target.keyframe_insert(data_path="rotation_euler", frame=frame, group=target.name)
+-    return action
+-
+-
+-def clips_for(role: str) -> list[tuple[str, list[tuple[int, dict[str, tuple[float, float, float]]]]]]:
+-    # Bone names come from the downloaded CC-BY source's inspected 102-joint
+-    # skeleton.  Rotations are deliberately moderate; the route's ballistic
+-    # solver remains the sole owner of translation and contact truth.
+-    pelvis = "CC_Base_Pelvis_03"
+-    waist = "CC_Base_Waist_033"
+-    spine = "CC_Base_Spine01_034"
+-    l_thigh, r_thigh = "CC_Base_L_Thigh_04", "CC_Base_R_Thigh_018"
+-    l_calf, r_calf = "CC_Base_L_Calf_05", "CC_Base_R_Calf_021"
+-    l_upper, r_upper = "CC_Base_L_Upperarm_050", "CC_Base_R_Upperarm_074"
+-    l_fore, r_fore = "CC_Base_L_Forearm_051", "CC_Base_R_Forearm_077"
+-    l_hand, r_hand = "CC_Base_L_Hand_055", "CC_Base_R_Hand_081"
+-    if role == "shooter":
+-        return [
+-            ("Ready", [(1, {})]),
+-            (
+-                "Load",
+-                [
+-                    (8, {pelvis: (0.15, 0.0, 0.0), waist: (0.10, 0.0, 0.0), spine: (0.18, 0.0, 0.0), l_thigh: (-0.22, 0.0, -0.05), r_thigh: (-0.28, 0.0, 0.05), l_calf: (0.34, 0.0, 0.0), r_calf: (0.42, 0.0, 0.0), l_upper: (0.18, 0.0, -0.68), r_upper: (0.20, 0.0, 0.78), l_fore: (-0.30, 0.0, -0.24), r_fore: (-0.35, 0.0, 0.25)}),
+-                    (16, {pelvis: (0.10, 0.0, 0.0), waist: (0.06, 0.0, 0.0), spine: (0.12, 0.0, 0.0), l_thigh: (-0.16, 0.0, -0.03), r_thigh: (-0.20, 0.0, 0.03), l_calf: (0.26, 0.0, 0.0), r_calf: (0.32, 0.0, 0.0), l_upper: (0.05, 0.0, -0.52), r_upper: (0.05, 0.0, 0.58), l_fore: (-0.24, 0.0, -0.18), r_fore: (-0.28, 0.0, 0.20)}),
+-                ],
+-            ),
+-            (
+-                "Release",
+-                [
+-                    (8, {pelvis: (-0.08, 0.0, 0.0), waist: (-0.06, 0.0, 0.0), spine: (-0.16, 0.0, 0.0), l_thigh: (0.08, 0.0, -0.04), r_thigh: (0.12, 0.0, 0.04), l_calf: (-0.14, 0.0, 0.0), r_calf: (-0.16, 0.0, 0.0), l_upper: (-1.05, 0.0, -0.55), r_upper: (-1.38, 0.0, 1.05), l_fore: (-0.35, 0.0, -0.20), r_fore: (-0.62, 0.0, 0.22), l_hand: (-0.12, 0.0, -0.06), r_hand: (-0.20, 0.0, 0.08)}),
+-                    (16, {pelvis: (-0.04, 0.0, 0.0), waist: (-0.04, 0.0, 0.0), spine: (-0.11, 0.0, 0.0), l_thigh: (0.06, 0.0, -0.03), r_thigh: (0.10, 0.0, 0.03), l_calf: (-0.10, 0.0, 0.0), r_calf: (-0.12, 0.0, 0.0), l_upper: (-1.28, 0.0, -0.48), r_upper: (-1.62, 0.0, 1.12), l_fore: (-0.40, 0.0, -0.18), r_fore: (-0.70, 0.0, 0.18), l_hand: (-0.18, 0.0, -0.04), r_hand: (-0.24, 0.0, 0.06)}),
+-                ],
+-            ),
+-            (
+-                "FollowThrough",
+-                [
+-                    (8, {pelvis: (-0.04, 0.0, 0.0), waist: (-0.05, 0.0, 0.0), spine: (-0.12, 0.0, 0.0), l_upper: (-1.18, 0.0, -0.56), r_upper: (-1.58, 0.0, 1.18), l_fore: (-0.62, 0.0, -0.14), r_fore: (-0.82, 0.0, 0.12), l_hand: (-0.20, 0.0, -0.04), r_hand: (-0.30, 0.0, 0.06), l_thigh: (0.04, 0.0, -0.03), r_thigh: (0.12, 0.0, 0.04)}),
+-                    (16, {pelvis: (0.02, 0.0, 0.0), waist: (-0.02, 0.0, 0.0), spine: (-0.08, 0.0, 0.0), l_upper: (-0.92, 0.0, -0.70), r_upper: (-1.72, 0.0, 1.24), l_fore: (-0.40, 0.0, -0.18), r_fore: (-0.90, 0.0, 0.10), l_hand: (-0.16, 0.0, -0.04), r_hand: (-0.34, 0.0, 0.04), l_thigh: (0.02, 0.0, -0.02), r_thigh: (0.08, 0.0, 0.02)}),
+-                ],
+-            ),
+-        ]
+-    return [
+-        ("Plant", [(1, {}), (16, {pelvis: (0.08, 0.0, 0.0), waist: (0.04, 0.0, 0.0), spine: (0.06, 0.0, 0.0), l_thigh: (-0.12, 0.0, -0.30), r_thigh: (-0.12, 0.0, 0.30), l_calf: (0.18, 0.0, 0.0), r_calf: (0.18, 0.0, 0.0), l_upper: (-0.08, 0.0, -0.45), r_upper: (-0.08, 0.0, 0.45)})]),
+-        (
+-            "Telegraph",
+-            [
+-                (8, {pelvis: (0.20, 0.0, 0.0), waist: (0.12, 0.0, 0.0), spine: (0.18, 0.0, 0.0), l_thigh: (-0.34, 0.0, -0.34), r_thigh: (-0.34, 0.0, 0.34), l_calf: (0.48, 0.0, 0.0), r_calf: (0.48, 0.0, 0.0), l_upper: (-0.12, 0.0, -0.92), r_upper: (-0.12, 0.0, 0.92), l_fore: (-0.18, 0.0, -0.22), r_fore: (-0.18, 0.0, 0.22)}),
+-                (16, {pelvis: (0.12, 0.0, 0.0), waist: (0.08, 0.0, 0.0), spine: (0.12, 0.0, 0.0), l_thigh: (-0.24, 0.0, -0.30), r_thigh: (-0.24, 0.0, 0.30), l_calf: (0.34, 0.0, 0.0), r_calf: (0.34, 0.0, 0.0), l_upper: (-0.10, 0.0, -0.74), r_upper: (-0.10, 0.0, 0.74), l_fore: (-0.12, 0.0, -0.18), r_fore: (-0.12, 0.0, 0.18)}),
+-            ],
+-        ),
+-        (
+-            "Jump",
+-            [
+-                (8, {pelvis: (-0.04, 0.0, 0.0), waist: (-0.04, 0.0, 0.0), spine: (-0.08, 0.0, 0.0), l_thigh: (0.22, 0.0, -0.22), r_thigh: (0.22, 0.0, 0.22), l_calf: (-0.38, 0.0, 0.0), r_calf: (-0.38, 0.0, 0.0), l_upper: (-1.18, 0.0, -0.72), r_upper: (-1.18, 0.0, 0.72), l_fore: (-0.42, 0.0, -0.18), r_fore: (-0.42, 0.0, 0.18), l_hand: (-0.16, 0.0, -0.04), r_hand: (-0.16, 0.0, 0.04)}),
+-                (16, {pelvis: (-0.08, 0.0, 0.0), waist: (-0.06, 0.0, 0.0), spine: (-0.10, 0.0, 0.0), l_thigh: (0.30, 0.0, -0.28), r_thigh: (0.30, 0.0, 0.28), l_calf: (-0.46, 0.0, 0.0), r_calf: (-0.46, 0.0, 0.0), l_upper: (-1.34, 0.0, -0.86), r_upper: (-1.34, 0.0, 0.86), l_fore: (-0.52, 0.0, -0.16), r_fore: (-0.52, 0.0, 0.16), l_hand: (-0.20, 0.0, -0.04), r_hand: (-0.20, 0.0, 0.04)}),
+-            ],
+-        ),
+-        (
+-            "Contest",
+-            [
+-                (8, {pelvis: (-0.06, 0.0, 0.0), waist: (-0.04, 0.0, 0.0), spine: (-0.08, 0.0, 0.0), l_thigh: (0.20, 0.0, -0.24), r_thigh: (0.24, 0.0, 0.24), l_calf: (-0.34, 0.0, 0.0), r_calf: (-0.40, 0.0, 0.0), l_upper: (-1.48, 0.0, -0.90), r_upper: (-1.42, 0.0, 0.90), l_fore: (-0.60, 0.0, -0.10), r_fore: (-0.56, 0.0, 0.10), l_hand: (-0.22, 0.0, -0.04), r_hand: (-0.22, 0.0, 0.04)}),
+-                (16, {pelvis: (-0.02, 0.0, 0.0), waist: (-0.02, 0.0, 0.0), spine: (-0.06, 0.0, 0.0), l_thigh: (0.14, 0.0, -0.18), r_thigh: (0.18, 0.0, 0.18), l_calf: (-0.26, 0.0, 0.0), r_calf: (-0.32, 0.0, 0.0), l_upper: (-1.34, 0.0, -0.74), r_upper: (-1.30, 0.0, 0.74), l_fore: (-0.46, 0.0, -0.08), r_fore: (-0.44, 0.0, 0.08), l_hand: (-0.18, 0.0, -0.02), r_hand: (-0.18, 0.0, 0.02)}),
+-            ],
+-        ),
+-    ]
+-
+-
+-def attach_nla_clips(armature: bpy.types.Object, role: str) -> list[str]:
+-    armature.animation_data_clear()
+-    for action in list(bpy.data.actions):
+-        bpy.data.actions.remove(action)
+-    names: list[str] = []
+-    for name, poses in clips_for(role):
+-        action = authored_clip(armature, name, poses)
+-        track = armature.animation_data.nla_tracks.new()
+-        track.name = name
+-        strip = track.strips.new(name, 1, action)
+-        strip.frame_end = 24
+-        names.append(name)
+-    armature.animation_data.action = None
+-    return names
+-
+-
+-def add_orientation_metadata(path: Path, *, clips: list[str], role: str, source: str) -> None:
+-    raw = path.read_bytes()
+-    magic, version, _length = struct.unpack_from("<4sII", raw, 0)
+-    json_length, json_kind = struct.unpack_from("<I4s", raw, 12)
+-    if magic != b"glTF" or version != 2 or json_kind != b"JSON":
+-        raise RuntimeError(f"unexpected GLB header for {path}")
+-    gltf = json.loads(raw[20 : 20 + json_length].decode("utf8"))
+-    gltf.setdefault("asset", {}).setdefault("extras", {})["aura3d"] = {
+-        "orientation": {"forwardAxis": "+Z", "upAxis": "+Y"},
+-        "sourceModel": source,
+-        "role": role,
+-        "authoredClips": clips,
+-        "artFamily": "rooftop-buckets-production-v3",
+-    }
+-    encoded = json.dumps(gltf, separators=(",", ":")).encode("utf8")
+-    encoded += b" " * ((4 - len(encoded) % 4) % 4)
+-    tail = raw[20 + json_length :]
+-    output = struct.pack("<4sII", b"glTF", 2, 12 + 8 + len(encoded) + len(tail))
+-    output += struct.pack("<I4s", len(encoded), b"JSON") + encoded + tail
+-    path.write_bytes(output)
+-
+-
+-def export_glb(path: Path, *, animations: bool, export_yup: bool = True) -> None:
+-    bpy.ops.object.select_all(action="SELECT")
+-    bpy.ops.export_scene.gltf(
+-        filepath=str(path),
+-        export_format="GLB",
+-        # Keep the source's Y-up athlete/venue convention.  The route's
+-        # orientation contract is +Y up / +Z forward; using Blender's Y-up
+-        # conversion here avoids exporting the player on its side.
+-        export_yup=export_yup,
+-        export_materials="EXPORT",
+-        export_cameras=False,
+-        export_lights=False,
+-        export_animations=animations,
+-        export_animation_mode="NLA_TRACKS",
+-        export_nla_strips=True,
+-        export_force_sampling=True,
+-    )
+-
+-
+-def build_athlete(role: str, filename: str) -> None:
+-    clear()
+-    armature = imported_source()
+-    replace_materials(armature, role)
+-    clips = attach_nla_clips(armature, role)
+-    output = OUT_DIR / filename
+-    export_glb(output, animations=True)
+-    add_orientation_metadata(output, clips=clips, role=role, source="Sketchfab 4c7133dbb06e4136891d59231372d818 / Man Player (CC-BY-4.0)")
+-    print(f"wrote {output} ({role}, clips={','.join(clips)})")
+-
+-
+-def mat(name: str, color: tuple[float, float, float, float], metallic: float = 0.0, roughness: float = 0.5, emission: tuple[float, float, float, float] | None = None) -> bpy.types.Material:
+-    material = bpy.data.materials.new(name)
+-    material.use_nodes = True
+-    bsdf = material.node_tree.nodes.get("Principled BSDF")
+-    assert bsdf is not None
+-    bsdf.inputs["Base Color"].default_value = color
+-    bsdf.inputs["Metallic"].default_value = metallic
+-    bsdf.inputs["Roughness"].default_value = roughness
+-    if emission:
+-        bsdf.inputs["Emission Color"].default_value = emission
+-        bsdf.inputs["Emission Strength"].default_value = 0.65
+-    return material
+-
+-
+-def finish(obj: bpy.types.Object, material: bpy.types.Material, bevel: float = 0.0) -> bpy.types.Object:
+-    obj.data.materials.append(material)
+-    if bevel:
+-        modifier = obj.modifiers.new("soft venue edges", "BEVEL")
+-        modifier.width = bevel
+-        modifier.segments = 2
+-    return obj
+-
+-
+-def cube(name: str, location: tuple[float, float, float], scale: tuple[float, float, float], material: bpy.types.Material, bevel: float = 0.0) -> bpy.types.Object:
+-    bpy.ops.mesh.primitive_cube_add(location=location)
+-    obj = bpy.context.object
+-    obj.name = name
+-    obj.scale = scale
+-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+-    return finish(obj, material, bevel)
+-
+-
+-def cylinder(name: str, location: tuple[float, float, float], radius: float, depth: float, material: bpy.types.Material, vertices: int = 20) -> bpy.types.Object:
+-    bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=location)
+-    obj = bpy.context.object
+-    obj.name = name
+-    return finish(obj, material, radius * 0.12)
+-
+-
+-def venue() -> None:
+-    clear()
+-    court = mat("rooftop court sealed concrete", (0.075, 0.105, 0.15, 1), 0.08, 0.58)
+-    court_edge = mat("rooftop court edge", (0.025, 0.04, 0.06, 1), 0.16, 0.48)
+-    bleacher = mat("bleacher painted steel", (0.20, 0.09, 0.27, 1), 0.34, 0.38)
+-    seat = mat("bleacher seat violet", (0.33, 0.12, 0.40, 1), 0.12, 0.44)
+-    rail = mat("venue rail", (0.04, 0.22, 0.28, 1), 0.66, 0.26)
+-    amber = mat("venue amber practical", (0.96, 0.22, 0.04, 1), 0.28, 0.28, (0.93, 0.09, 0.01, 1))
+-    cyan = mat("venue cyan practical", (0.04, 0.48, 0.58, 1), 0.28, 0.3, (0.02, 0.30, 0.70, 1))
+-    crowd_a = mat("crowd warm jacket", (0.74, 0.19, 0.10, 1), 0.02, 0.62)
+-    crowd_b = mat("crowd teal jacket", (0.04, 0.42, 0.50, 1), 0.04, 0.56)
+-    crowd_skin = mat("crowd skin", (0.42, 0.19, 0.10, 1), 0.0, 0.68)
+-
+-    # Preserve the exact 16 x 14 court footprint consumed by COURT_SPOTS.  All
+-    # venue additions begin outside z=-2 so hoop/backboard/ball regions remain
+-    # untouched and collision ownership stays in the route integrator.
+-    cube("court slab", (0, -0.34, 4), (8.0, 0.34, 7.0), court, 0.10)
+-    cube("court perimeter fascia", (0, -0.05, 4), (8.16, 0.10, 7.16), court_edge, 0.06)
+-
+-    # Rear grandstand with stepped tiers, under-seat fascia, handrails, and
+-    # alternating seat colors.  This reads as an authored streetball venue in
+-    # the same frame as the live hoop, unlike the old empty rooftop slab.
+-    for row in range(4):
+-        y = 0.24 + row * 0.34
+-        z = -2.45 - row * 0.22
+-        depth = 0.88 - row * 0.10
+-        cube(f"rear bleacher tier {row + 1}", (0, y, z), (6.9 - row * 0.25, 0.15, depth), bleacher, 0.05)
+-        for x_index in range(-6, 7):
+-            x = x_index * 0.95
+-            cube(f"rear seat {row + 1}-{x_index}", (x, y + 0.18, z - 0.06), (0.33, 0.07, 0.27), seat if (x_index + row) % 2 else bleacher, 0.025)
+-            # A compact spectator silhouette is set dressing, not a gameplay
+-            # character.  The repeated head/torso pair gives the stands human
+-            # scale while remaining far outside all collision regions.
+-            crowd_material = crowd_a if (x_index + row) % 3 else crowd_b
+-            cube(f"crowd torso {row + 1}-{x_index}", (x, y + 0.39, z - 0.04), (0.18, 0.22, 0.10), crowd_material, 0.04)
+-            bpy.ops.mesh.primitive_uv_sphere_add(segments=12, ring_count=8, location=(x, y + 0.75, z - 0.04))
+-            finish(bpy.context.object, crowd_skin)
+-            bpy.context.object.scale = (0.15, 0.15, 0.15)
+-            bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+-        if row < 3:
+-            cylinder(f"rear guard post {row + 1}", (-6.9 + row * 0.25, y + 0.48, z + 0.72), 0.035, 0.95, rail, 12)
+-            cylinder(f"rear guard post {row + 1} right", (6.9 - row * 0.25, y + 0.48, z + 0.72), 0.035, 0.95, rail, 12)
+-            cube(f"rear guard rail {row + 1}", (0, y + 0.90, z + 0.72), (6.9 - row * 0.25, 0.035, 0.035), rail, 0.012)
+-
+-    # Side stands provide depth under the sideline camera and frame the action
+-    # without occluding the player, hoop, or live trajectory.
+-    for side in (-1, 1):
+-        x = side * 8.85
+-        for row in range(3):
+-            y = 0.24 + row * 0.36
+-            z = 3.0 + row * 0.15
+-            cube(f"side bleacher {side} {row + 1}", (x, y, z), (0.78, 0.15, 3.65 - row * 0.22), bleacher, 0.05)
+-            cube(f"side seat trim {side} {row + 1}", (x - side * 0.35, y + 0.18, z), (0.16, 0.07, 3.35 - row * 0.18), seat, 0.02)
+-        cylinder(f"side rail post {side}", (x - side * 0.72, 1.60, 3.0), 0.035, 2.9, rail, 12)
+-        cube(f"side handrail {side}", (x - side * 0.72, 3.02, 3.0), (0.035, 0.035, 3.75), rail, 0.012)
+-
+-    # Lighting and visual identity elements: all are venue geometry and remain
+-    # outside the active court's gameplay bounds.
+-    for side in (-1, 1):
+-        x = side * 7.6
+-        cylinder(f"venue light mast {side}", (x, 3.8, -2.35), 0.08, 7.4, rail, 16)
+-        cube(f"venue flood bar {side}", (x, 7.35, -2.35), (0.70, 0.12, 0.22), amber, 0.04)
+-        cube(f"venue cyan kicker {side}", (x - side * 0.12, 1.2, -2.18), (0.08, 0.72, 0.025), cyan, 0.015)
+-    for x in (-5.6, -2.8, 0, 2.8, 5.6):
+-        cube(f"rear sponsor banner {x}", (x, 2.80, -3.32), (0.82, 0.46, 0.035), amber if x == 0 else cyan, 0.025)
+-        cube(f"rear sponsor bar {x}", (x, 2.18, -3.30), (0.82, 0.035, 0.035), rail, 0.01)
+-
+-    output = OUT_DIR / "rooftopCourt.glb"
+-    # Venue coordinates are authored directly in the route's +Y-up scene
+-    # convention (Y height, Z depth).  Blender's ``export_yup`` conversion is
+-    # for Z-up authoring and would swap these axes, turning the court slab into
+-    # a vertical wall that occludes the entire game camera.  Keep the authored
+-    # route axes intact for this world GLB; athlete exports retain the source
+-    # conversion above because their imported Sketchfab hierarchy carries its
+-    # own Blender wrapper.
+-    export_glb(output, animations=False, export_yup=False)
+-    add_orientation_metadata(output, clips=[], role="world", source="Aura3D Rooftop Buckets venue authoring")
+-    print(f"wrote {output} (venue bleachers + crowd dressing)")
+-
+-
+-if __name__ == "__main__":
+-    OUT_DIR.mkdir(parents=True, exist_ok=True)
+-    build_athlete("shooter", "rooftopLayupScorer.glb")
+-    build_athlete("defender", "rooftopDefender.glb")
+-    venue()
+diff --git a/apps/showcase-rooftop-buckets/scripts/build-v2-art.py b/apps/showcase-rooftop-buckets/scripts/build-v2-art.py
+deleted file mode 100644
+index 035622c2d..000000000
+--- a/apps/showcase-rooftop-buckets/scripts/build-v2-art.py
++++ /dev/null
+@@ -1,265 +0,0 @@
+-#!/usr/bin/env python3
+-"""Author Rooftop Buckets' original V2 art in Blender.
+-
+-This is deliberately route-local art only.  The venue follows the existing
+-16 x 14 m rooftop court footprint but deliberately contains no backboard, rim,
+-net, or collision proxy.  Shooter and defender are real skinned meshes with
+-real armature actions; the route may later bind their named clips without
+-claiming reusable sports animation or physics.
+-"""
+-import bpy
+-import math
+-import json
+-import struct
+-from pathlib import Path
+-
+-OUT = Path(__file__).resolve().parent.parent / "assets" / "models"
+-OUT.mkdir(parents=True, exist_ok=True)
+-
+-def clear():
+-    bpy.ops.object.select_all(action="SELECT")
+-    bpy.ops.object.delete(use_global=False)
+-    for collection in (bpy.data.materials, bpy.data.meshes, bpy.data.armatures, bpy.data.actions):
+-        for item in list(collection):
+-            collection.remove(item)
+-
+-def material(name, color, metallic=0.0, rough=0.5, emission=None):
+-    m = bpy.data.materials.new(name)
+-    m.use_nodes = True
+-    bsdf = m.node_tree.nodes.get("Principled BSDF")
+-    bsdf.inputs["Base Color"].default_value = color
+-    bsdf.inputs["Metallic"].default_value = metallic
+-    bsdf.inputs["Roughness"].default_value = rough
+-    if color[3] < 1:
+-        bsdf.inputs["Alpha"].default_value = color[3]
+-        m.surface_render_method = "DITHERED"
+-    if emission:
+-        bsdf.inputs["Emission Color"].default_value = emission
+-        bsdf.inputs["Emission Strength"].default_value = 0.55
+-    return m
+-
+-def finish(obj, mat, bevel=0.0):
+-    obj.data.materials.append(mat)
+-    if bevel:
+-        mod = obj.modifiers.new("soft production edges", "BEVEL")
+-        mod.width, mod.segments = bevel, 2
+-    return obj
+-
+-def cube(name, loc, scale, mat, bevel=0.0):
+-    bpy.ops.mesh.primitive_cube_add(location=loc)
+-    obj = bpy.context.object
+-    obj.name = name
+-    obj.scale = scale
+-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+-    return finish(obj, mat, bevel)
+-
+-def sphere(name, loc, scale, mat):
+-    bpy.ops.mesh.primitive_uv_sphere_add(segments=24, ring_count=16, location=loc)
+-    obj = bpy.context.object
+-    obj.name = name
+-    obj.scale = scale
+-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+-    return finish(obj, mat)
+-
+-def cyl(name, loc, radius, depth, mat, vertices=20, bevel=0.0):
+-    bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=loc)
+-    return finish(bpy.context.object, mat, bevel)
+-
+-def tapered_limb(name, loc, radius_a, radius_b, depth, mat):
+-    bpy.ops.mesh.primitive_cone_add(vertices=20, radius1=radius_a, radius2=radius_b, depth=depth, location=loc)
+-    return finish(bpy.context.object, mat, min(radius_a, radius_b) * .18)
+-
+-def parent_skin(mesh, armature, bone_name):
+-    mesh.parent = armature
+-    modifier = mesh.modifiers.new("real rigid skin", "ARMATURE")
+-    modifier.object = armature
+-    group = mesh.vertex_groups.new(name=bone_name)
+-    group.add([vertex.index for vertex in mesh.data.vertices], 1.0, "REPLACE")
+-
+-def make_armature(name):
+-    bpy.ops.object.armature_add(enter_editmode=True, location=(0, 0, 0))
+-    arm = bpy.context.object
+-    arm.name = name
+-    arm.data.name = name + "Rig"
+-    root = arm.data.edit_bones[0]
+-    root.name = "Root"
+-    root.head, root.tail = (0, 0, 0), (0, .35, 0)
+-    spec = [
+-        ("Pelvis", "Root", (0,.78,0), (0,1.04,0)),
+-        ("Spine", "Pelvis", (0,1.02,0), (0,1.53,0)),
+-        ("Head", "Spine", (0,1.52,0), (0,2.05,0)),
+-        ("LeftUpperArm", "Spine", (-.29,1.48,0), (-.64,1.37,-.03)),
+-        ("LeftForearm", "LeftUpperArm", (-.64,1.37,-.03), (-.87,1.15,-.06)),
+-        ("RightUpperArm", "Spine", (.29,1.48,0), (.64,1.37,-.03)),
+-        ("RightForearm", "RightUpperArm", (.64,1.37,-.03), (.87,1.15,-.06)),
+-        ("LeftUpperLeg", "Pelvis", (-.17,.82,0), (-.24,.42,.03)),
+-        ("LeftLowerLeg", "LeftUpperLeg", (-.24,.42,.03), (-.21,.08,.11)),
+-        ("RightUpperLeg", "Pelvis", (.17,.82,0), (.24,.42,.03)),
+-        ("RightLowerLeg", "RightUpperLeg", (.24,.42,.03), (.21,.08,.11))
+-    ]
+-    created = {"Root": root}
+-    for bone_name, parent_name, head, tail in spec:
+-        bone = arm.data.edit_bones.new(bone_name)
+-        bone.head, bone.tail = head, tail
+-        bone.parent = created[parent_name]
+-        created[bone_name] = bone
+-    bpy.ops.object.mode_set(mode="POSE")
+-    for bone in arm.pose.bones:
+-        bone.rotation_mode = "XYZ"
+-    bpy.ops.object.mode_set(mode="OBJECT")
+-    return arm
+-
+-def add_text(label, text, loc, scale, mat, parent=None):
+-    bpy.ops.object.text_add(location=loc, rotation=(math.pi/2, 0, 0))
+-    obj = bpy.context.object
+-    obj.name = label
+-    obj.data.body = text
+-    obj.data.align_x = "CENTER"
+-    obj.data.align_y = "CENTER"
+-    obj.data.extrude = .009
+-    obj.data.bevel_depth = .006
+-    obj.scale = scale
+-    bpy.ops.object.convert(target="MESH")
+-    finish(obj, mat, .006)
+-    if parent: parent_skin(obj, parent[0], parent[1])
+-    return obj
+-
+-def athlete(kind):
+-    clear()
+-    shooter = kind == "shooter"
+-    palette = {
+-        "jersey": material("midnight teal jersey" if shooter else "crimson defender jersey", (0.025,.20,.27,1) if shooter else (.36,.025,.07,1), .12,.33),
+-        "trim": material("ice jersey piping" if shooter else "amber defender piping", (.22,.93,.91,1) if shooter else (1,.47,.08,1), .42,.25, (.12,.7,.7,1) if shooter else (.8,.16,.02,1)),
+-        "short": material("tailored shorts", (.018,.06,.1,1) if shooter else (.12,.01,.03,1), .08,.48),
+-        "skin": material("warm skin", (.42,.19,.105,1), 0,.62),
+-        "shoe": material("high top white" if shooter else "high top graphite", (.74,.82,.84,1) if shooter else (.035,.045,.065,1), .3,.27),
+-        "hair": material("braided hair" if shooter else "close-cropped hair", (.025,.012,.008,1), 0,.78),
+-        "accent": material("shooting sleeve" if shooter else "compression sleeve", (.04,.68,.73,1) if shooter else (.95,.19,.05,1), .35,.26)
+-    }
+-    arm = make_armature("RooftopShooterV2" if shooter else "RooftopDefenderV2")
+-    # Custom tapered silhouette: separate real skinned pieces give clothing,
+-    # shoe, head, and limb material definition without masquerading as a skinless
+-    # primitive mannequin.
+-    parts = []
+-    parts += [(tapered_limb("tapered torso", (0,1.30,0), .34,.25,.62,palette["jersey"]), "Spine")]
+-    parts += [(cube("jersey chest panel", (0,1.39,-.255), (.22,.18,.022),palette["trim"],.018), "Spine")]
+-    parts += [(cube("tailored shorts", (0,.91,0), (.33,.17,.25),palette["short"],.055), "Pelvis")]
+-    parts += [(sphere("sculpted head", (0,1.86,-.01), (.245,.29,.23),palette["skin"]), "Head")]
+-    parts += [(sphere("hair cap", (0,2.055,.015), (.255,.10,.238),palette["hair"]), "Head")]
+-    for i in range(5 if shooter else 3):
+-        braid = sphere("hair braid %02d" % i, ((-.12 + i*.06) if shooter else 0, 2.03 - i*.075, .19), (.035,.09,.04), palette["hair"])
+-        parts.append((braid,"Head"))
+-    for side, sign in (("Left",-1),("Right",1)):
+-        parts += [(tapered_limb(side+" upper arm", (sign*.47,1.41,-.02), .115,.14,.42,palette["jersey"]), side+"UpperArm")]
+-        parts += [(tapered_limb(side+" forearm", (sign*.76,1.18,-.05), .09,.11,.38,palette["skin"] if (shooter and side=="Right") else palette["accent"]), side+"Forearm")]
+-        parts += [(sphere(side+" palm", (sign*.9,1.03,-.07), (.10,.105,.09),palette["skin"]), side+"Forearm")]
+-        parts += [(tapered_limb(side+" upper leg", (sign*.18,.59,0), .16,.19,.44,palette["short"]), side+"UpperLeg")]
+-        parts += [(tapered_limb(side+" lower leg", (sign*.22,.23,.06), .105,.13,.42,palette["skin"]), side+"LowerLeg")]
+-        parts += [(cube(side+" high top", (sign*.22,.075,.16), (.16,.09,.29),palette["shoe"],.045), side+"LowerLeg")]
+-        if not shooter:
+-            parts += [(cube(side+" knee pad", (sign*.22,.42,.08), (.125,.105,.075),palette["accent"],.035), side+"LowerLeg")]
+-    for obj,bone in parts: parent_skin(obj,arm,bone)
+-    add_text("jersey number", "11" if shooter else "04", (0,1.37,-.286), (.17,.17,.17), palette["trim"], (arm,"Spine"))
+-    # Real NLA actions on the rig. Each clip has authored bone rotations and,
+-    # for the contest jump, a Root translation. Exported data is inspected below.
+-    clips = ([
+-        ("Load", {"Spine":(-.20,0,0),"LeftUpperArm":(-.40,0,-1.05),"LeftForearm":(-.2,0,-.45),"RightUpperArm":(-.5,0,1.18),"RightForearm":(-.35,0,.44),"LeftUpperLeg":(.18,0,-.12),"RightUpperLeg":(.18,0,.12)}, None),
+-        ("Release", {"Spine":(.10,0,-.08),"LeftUpperArm":(-.55,0,-2.22),"LeftForearm":(-.25,0,-.18),"RightUpperArm":(-.40,0,2.24),"RightForearm":(-.16,0,.16)}, None),
+-        ("FollowThrough", {"Spine":(.08,0,-.04),"LeftUpperArm":(-.45,0,-2.45),"LeftForearm":(-.15,0,-.08),"RightUpperArm":(-.24,0,2.42),"RightForearm":(-.08,0,.08)}, None)
+-    ] if shooter else [
+-        ("Plant", {"Spine":(-.12,0,0),"LeftUpperLeg":(.28,0,-.22),"RightUpperLeg":(.28,0,.22),"LeftUpperArm":(0,0,-.48),"RightUpperArm":(0,0,.48)}, None),
+-        ("Telegraph", {"Spine":(-.24,0,0),"LeftUpperLeg":(.42,0,-.30),"RightUpperLeg":(.42,0,.30),"LeftUpperArm":(-.24,0,-1.34),"RightUpperArm":(-.24,0,1.34)}, None),
+-        ("Jump", {"Spine":(.05,0,0),"LeftUpperArm":(-.30,0,-2.52),"RightUpperArm":(-.30,0,2.52),"LeftForearm":(-.12,0,-.16),"RightForearm":(-.12,0,.16)}, (0,.44,0)),
+-        ("Contest", {"Spine":(.10,0,0),"LeftUpperArm":(-.18,0,-2.74),"RightUpperArm":(-.18,0,2.74),"LeftForearm":(-.06,0,-.08),"RightForearm":(-.06,0,.08)}, (0,.30,0))
+-    ])
+-    arm.animation_data_create()
+-    for clip_name, poses, root_move in clips:
+-        action = bpy.data.actions.new(clip_name)
+-        # Blender 5 owns F-curves through an action slot. Assigning the action
+-        # to the armature before using PoseBone.keyframe_insert creates that
+-        # slot and writes genuine bone transform channels.
+-        arm.animation_data.action = action
+-        for bone_name, rot in poses.items():
+-            bone = arm.pose.bones[bone_name]
+-            bone.rotation_euler = (0, 0, 0)
+-            bone.keyframe_insert(data_path="rotation_euler", frame=1, group=bone_name)
+-            bone.rotation_euler = rot
+-            bone.keyframe_insert(data_path="rotation_euler", frame=16, group=bone_name)
+-        if root_move:
+-            arm.location = (0, 0, 0)
+-            arm.keyframe_insert(data_path="location", frame=1, group="Root")
+-            arm.location = root_move
+-            arm.keyframe_insert(data_path="location", frame=16, group="Root")
+-        track = arm.animation_data.nla_tracks.new()
+-        track.name = clip_name
+-        track.strips.new(clip_name, 1, action)
+-    arm.animation_data.action = None
+-    return arm
+-
+-def venue():
+-    clear()
+-    roof = material("weathered concrete", (.075,.09,.115,1), .08,.64)
+-    steel = material("painted steel", (.04,.09,.12,1), .72,.27)
+-    amber = material("amber street practical", (.9,.23,.035,1), .35,.26, (.95,.12,.01,1))
+-    cyan = material("cool city practical", (.03,.38,.48,1), .42,.24, (.02,.45,.7,1))
+-    crowd = material("bleacher seating", (.16,.055,.19,1), .14,.42)
+-    brick = material("brick service core", (.16,.045,.03,1), .04,.75)
+-    # The active 16 x 14 court remains route-owned. These visual structures
+-    # stay outside its bounds or below y=0 and contain no goal geometry.
+-    cube("under-court roof deck", (0,-.38,4), (8.55,.34,7.35), roof,.08)
+-    for sign in (-1,1):
+-        x=sign*9.15
+-        for row in range(4):
+-            cube("bleacher tier %s %d"%(sign,row),(x, .42+row*.34, 2.9-row*.23),(1.12-row*.12,.16,4.2-row*.34),crowd,.035)
+-        cube("bleacher handrail base %s"%sign,(x-sign*.94,1.52,3.0),(.035,.035,4.15),steel,.012)
+-        for z in (-.8,2.0,4.8,7.5):
+-            cyl("rail post",(x-sign*.94,1.18,z),.035,1.25,steel,12,.01)
+-    for x,z,sx,sz,h in [(-10,-4,1.1,1.3,5.5),(10,-4,1.2,1.4,6.2),(-10,10,1.2,1.0,4.4),(10,10,1.1,1.0,5.1),(0,-6.0,3.0,.65,3.7)]:
+-        cube("service tower",(x,h/2,z),(sx,h/2,sz),brick,.07)
+-        cube("tower illuminated band",(x,h*.62,z-sz-.02),(sx*.76,.10,.025),cyan,.01)
+-    # Four sculpted light pylons plus a water tower add rooftop depth, but no hoop.
+-    for x,z in [(-7.8,-1.8),(7.8,-1.8),(-7.8,9.8),(7.8,9.8)]:
+-        cyl("venue light mast",(x,3.2,z),.09,6.3,steel,16,.02)
+-        cube("venue flood bar",(x,6.22,z),(.55,.10,.18),amber,.03)
+-    for a in range(4):
+-        angle=a*math.tau/4
+-        cyl("water tower leg",(3.8+math.cos(angle)*.65,1.2,-4.65+math.sin(angle)*.65),.07,2.4,steel,12,.012)
+-    cyl("water tower tank",(3.8,2.75,-4.65),.83,1.1,steel,20,.045)
+-    cyl("water tower cap",(3.8,3.35,-4.65),.5,.12,cyan,20,.02)
+-    for x in (-5.4,-2.7,0,2.7,5.4):
+-        cube("streetlight banner",(x,2.65,10.85),(.38,.78,.04),amber if x==0 else cyan,.02)
+-
+-def export(filename, animation=False):
+-    bpy.ops.object.select_all(action="SELECT")
+-    # Authoring coordinates are deliberately Aura's +Y-up route coordinates;
+-    # keep those axes literal in the emitted GLB rather than asking Blender to
+-    # remap its conventional +Z-up scene during export.
+-    bpy.ops.export_scene.gltf(filepath=str(OUT/filename), export_format="GLB", export_yup=False,
+-        export_materials="EXPORT", export_cameras=False, export_lights=False,
+-        export_animations=animation, export_animation_mode="NLA_TRACKS", export_nla_strips=True,
+-        export_force_sampling=True)
+-    # The Aura asset inspector reads orientation from *asset* extras. Blender's
+-    # exporter only serializes custom properties onto nodes/scenes, so add the
+-    # factual route coordinate declaration directly to the emitted GLB header.
+-    path = OUT / filename
+-    raw = path.read_bytes()
+-    magic, version, _length = struct.unpack_from("<4sII", raw, 0)
+-    json_length, json_kind = struct.unpack_from("<I4s", raw, 12)
+-    if magic != b"glTF" or version != 2 or json_kind != b"JSON":
+-        raise RuntimeError("Unexpected GLB structure while adding orientation metadata")
+-    gltf = json.loads(raw[20:20 + json_length].decode("utf8"))
+-    gltf.setdefault("asset", {}).setdefault("extras", {})["aura3d"] = {
+-        "orientation": {"forwardAxis": "+Z", "upAxis": "+Y"}
+-    }
+-    encoded = json.dumps(gltf, separators=(",", ":")).encode("utf8")
+-    encoded += b" " * ((4 - len(encoded) % 4) % 4)
+-    tail = raw[20 + json_length:]
+-    output = struct.pack("<4sII", b"glTF", 2, 12 + 8 + len(encoded) + len(tail))
+-    output += struct.pack("<I4s", len(encoded), b"JSON") + encoded + tail
+-    path.write_bytes(output)
+-
+-if __name__ == "__main__":
+-    athlete("shooter"); export("rooftopShooterV2.glb", True)
+-    athlete("defender"); export("rooftopDefenderV2.glb", True)
+-    venue(); export("rooftopVenueV2.glb")
+-    print("Wrote Rooftop Buckets V2 local art to", OUT)
 diff --git a/apps/showcase-rooftop-buckets/scripts/register-acquired-athletes.mjs b/apps/showcase-rooftop-buckets/scripts/register-acquired-athletes.mjs
 deleted file mode 100644
 index 644b79932..000000000
@@ -1232,7 +1923,7 @@ index 62f9c116f..000000000
 -writeFileSync(join(appDir, "route-health.json"), `${JSON.stringify(routeHealth, null, 2)}\n`);
 -console.log(JSON.stringify({ machinePass: true, models: modelIds.length, audio: audioIds.length, exactArtifacts: exactArtifacts.length, primitiveOccurrences, performancePass: performance.pass }));
 diff --git a/apps/showcase-rooftop-buckets/src/legacy/main.ts b/apps/showcase-rooftop-buckets/src/legacy/main.ts
-index caca8287c..b4a4ade78 100644
+index caca8287c..566f8d2d9 100644
 --- a/apps/showcase-rooftop-buckets/src/legacy/main.ts
 +++ b/apps/showcase-rooftop-buckets/src/legacy/main.ts
 @@ -1,6 +1,3 @@
@@ -1242,7 +1933,7 @@ index caca8287c..b4a4ade78 100644
  import {
    scene,
    camera,
-@@ -52,67 +49,7 @@ import {
+@@ -52,114 +49,23 @@ import {
  } from "@aura3d/game";
  import { rooftopScenarios } from "../scenarios";
  import { bindRooftopDrive } from "../scenario-drive";
@@ -1308,11 +1999,13 @@ index caca8287c..b4a4ade78 100644
 -}
 -
  const APP_ID = "showcase-rooftop-buckets";
- const ROUTE_SYSTEMS = {
-   flight: "Rapier-owned hoop simulation (fixed 1/60, adaptive-substep CCD) shared by preview and live ball flight",
-@@ -122,44 +59,20 @@ const ROUTE_SYSTEMS = {
-   audio: "typed synthesized cues driven by charge, contact, score, heat, fire, gold, and buzzer events"
- } as const;
+-const ROUTE_SYSTEMS = {
+-  flight: "Rapier-owned hoop simulation (fixed 1/60, adaptive-substep CCD) shared by preview and live ball flight",
+-  scoring: "route-local five-heat objective, sensor-sequence, streak, gold, clock, and shot-lock rules",
+-  contest: "visible deterministic defender telegraph creates a documented pre-launch aim offset",
+-  presentation: "typed court, backboard, rim, ball, and pose-authored athletes with renderer-owned trajectory markers",
+-  audio: "typed synthesized cues driven by charge, contact, score, heat, fire, gold, and buzzer events"
+-} as const;
  const ROUTE_CONTROLS = ["A/D change spot", "W/S aim arc", "hold/release Space shoot", "P pause", "R reset", "touch aim/spot/shoot/pause/reset"] as const;
 -// The release athletes are real 191-joint skinned GLBs.  Their embedded clips
 -// are named in the manifest and are sampled at deterministic route-owned
@@ -1355,7 +2048,7 @@ index caca8287c..b4a4ade78 100644
  const VENUE_REVIEW_HIDDEN_NODES = [
    "under-court roof deck",
    "tower illuminated band", "tower illuminated band.001", "tower illuminated band.002",
-@@ -178,34 +91,22 @@ const VENUE_REVIEW_HIDDEN_NODES = [
+@@ -178,34 +84,22 @@ const VENUE_REVIEW_HIDDEN_NODES = [
    // surrounding authored towers preserve the venue depth.
    "service tower.004"
  ] as const;
@@ -1390,7 +2083,7 @@ index caca8287c..b4a4ade78 100644
  let aimPitch = 0.0; // [-1.0, 1.0]
  let chargePower = 0.0;
  let isCharging = false;
-@@ -215,9 +116,6 @@ let elapsedPlayTime = 0;
+@@ -215,9 +109,6 @@ let elapsedPlayTime = 0;
  let chargeTickAccumulator = 0;
  let touchAimDirection = 0;
  let touchShootHeld = false;
@@ -1400,7 +2093,7 @@ index caca8287c..b4a4ade78 100644
  let shooterAnimationState = "Ready";
  let defenderAnimationState = "hidden";
  let shooterMotionPhase = "ready";
-@@ -228,8 +126,6 @@ let contactFxTimer = 0;
+@@ -228,8 +119,6 @@ let contactFxTimer = 0;
  let contactFxKind: "none" | "rim" | "board" | "swish" | "block" = "none";
  let contactFxPosition = { x: 0, y: -20, z: 0 };
  let contestReactionActive = false;
@@ -1409,7 +2102,7 @@ index caca8287c..b4a4ade78 100644
  const elHeatBadge = document.getElementById("rb-heat-badge")!;
  const elFireBadge = document.getElementById("rb-fire-badge")!;
  const elScoreVal = document.getElementById("rb-score-val")!;
-@@ -246,7 +142,6 @@ const elModal = document.getElementById("rb-modal")!;
+@@ -246,7 +135,6 @@ const elModal = document.getElementById("rb-modal")!;
  const elModalTitle = document.getElementById("rb-modal-title")!;
  const elModalDesc = document.getElementById("rb-modal-desc")!;
  const elModalBtn = document.getElementById("rb-modal-btn")!;
@@ -1417,7 +2110,7 @@ index caca8287c..b4a4ade78 100644
  elModalBtn.addEventListener("click", () => {
    if (scoreState.state === "heat-cleared") {
      scoreState = advanceHeat(scoreState);
-@@ -261,15 +156,8 @@ elModalBtn.addEventListener("click", () => {
+@@ -261,15 +149,8 @@ elModalBtn.addEventListener("click", () => {
    }
    elModal.classList.add("hidden");
  });
@@ -1433,7 +2126,7 @@ index caca8287c..b4a4ade78 100644
  const rimReadabilityHandle = game.runtimeNode("rim-readability", {
    tags: ["hoop-rim", "renderer-owned", "readability"]
  });
-@@ -277,11 +165,6 @@ const backboardHandle = game.runtimeNode("backboard-assembly", { tags: ["backboa
+@@ -277,11 +158,6 @@ const backboardHandle = game.runtimeNode("backboard-assembly", { tags: ["backboa
  const netPulseHandle = game.runtimeNode("rim-net-pulse", { tags: ["net-feedback", "renderer-owned", "event-driven"] });
  const defenderHandle = game.runtimeNode("defender-cutout", { tags: ["defender"] });
  const shooterHandle = game.runtimeNode("shooter-player", { tags: ["shooter", "primary-character"] });
@@ -1445,7 +2138,7 @@ index caca8287c..b4a4ade78 100644
  const shooterPresentationHandle = game.runtimeNode("shooter-presentation", { tags: ["shooter", "presentation-character"] });
  const defenderPresentationHandle = game.runtimeNode("defender-presentation", { tags: ["defender", "presentation-character"] });
  const fireHaloHandle = game.runtimeNode("fire-halo", { tags: ["outcome-feedback", "fire"] });
-@@ -293,14 +176,6 @@ const CONTACT_RAY_COUNT = 8;
+@@ -293,14 +169,6 @@ const CONTACT_RAY_COUNT = 8;
  const contactRayHandles = Array.from({ length: CONTACT_RAY_COUNT }, (_, index) =>
    game.runtimeNode(`contact-ray-${index}`, { tags: ["contact-feedback", "renderer-owned", "event-driven"] })
  );
@@ -1460,7 +2153,7 @@ index caca8287c..b4a4ade78 100644
  const CONTEST_SPARK_COUNT = 1;
  const contestSparkHandles = Array.from({ length: CONTEST_SPARK_COUNT }, (_, index) =>
    game.runtimeNode(`contest-spark-${index}`, { tags: ["contest-feedback", "renderer-owned", "ball-driven", "event-driven"] })
-@@ -678,8 +553,6 @@ function buildScene() {
+@@ -678,8 +546,6 @@ function buildScene() {
        })
      );
  }
@@ -1469,7 +2162,7 @@ index caca8287c..b4a4ade78 100644
  const bucketsGame = createGame({
    id: "showcase-rooftop-buckets",
    target: "#canvas-host",
-@@ -722,14 +595,9 @@ const bucketsGame = createGame({
+@@ -722,14 +588,9 @@ const bucketsGame = createGame({
    qualityRebuild: { flags: ["game"] }
  });
  bucketsGame.start();
@@ -1484,7 +2177,7 @@ index caca8287c..b4a4ade78 100644
  const rooftopTween = createTweenEngine();
  const rooftopFx = createFxParticlePass(app.effects);
  const rooftopJuice = createJuice<"swish" | "rim" | "board" | "block" | "fire" | "gold" | "buzzer" | "victory" | "heat">({
-@@ -752,7 +620,6 @@ const rooftopJuice = createJuice<"swish" | "rim" | "board" | "block" | "fire" |
+@@ -752,7 +613,6 @@ const rooftopJuice = createJuice<"swish" | "rim" | "board" | "block" | "fire" |
    rumble: createRumbleDriver()
  });
  audio.startAmbience();
@@ -1492,7 +2185,7 @@ index caca8287c..b4a4ade78 100644
  function togglePause(): void {
    // Session owns pause state (user + visibility + menu stack).
    if (bucketsGame.session.paused) {
-@@ -764,7 +631,6 @@ function togglePause(): void {
+@@ -764,7 +624,6 @@ function togglePause(): void {
    }
    updateHUD();
  }
@@ -1500,7 +2193,7 @@ index caca8287c..b4a4ade78 100644
  window.addEventListener("keydown", (event) => {
    if (!event.repeat && (event.code === "KeyA" || event.code === "ArrowLeft")) {
      event.preventDefault();
-@@ -777,7 +643,6 @@ window.addEventListener("keydown", (event) => {
+@@ -777,7 +636,6 @@ window.addEventListener("keydown", (event) => {
      fullReset();
    }
  });
@@ -1508,7 +2201,7 @@ index caca8287c..b4a4ade78 100644
  function changeSpot(delta: number): void {
    if (ballState.inFlight || scoreState.state !== "playing") return;
    currentSpotIndex = (currentSpotIndex + delta + COURT_SPOTS.length) % COURT_SPOTS.length;
-@@ -785,7 +650,6 @@ function changeSpot(delta: number): void {
+@@ -785,7 +643,6 @@ function changeSpot(delta: number): void {
    updateHUD();
    syncTransforms();
  }
@@ -1516,7 +2209,7 @@ index caca8287c..b4a4ade78 100644
  document.getElementById("rb-touch-spot-left")?.addEventListener("click", () => changeSpot(-1));
  document.getElementById("rb-touch-spot-right")?.addEventListener("click", () => changeSpot(1));
  for (const [id, direction] of [["rb-touch-aim-down", -1], ["rb-touch-aim-up", 1]] as const) {
-@@ -800,7 +664,6 @@ touchShoot?.addEventListener("pointerup", () => { touchShootHeld = false; });
+@@ -800,7 +657,6 @@ touchShoot?.addEventListener("pointerup", () => { touchShootHeld = false; });
  touchShoot?.addEventListener("pointercancel", () => { touchShootHeld = false; });
  document.getElementById("rb-touch-pause")?.addEventListener("click", togglePause);
  document.getElementById("rb-touch-reset")?.addEventListener("click", fullReset);
@@ -1524,7 +2217,7 @@ index caca8287c..b4a4ade78 100644
  function resetBallToSpot(): void {
    const spot = COURT_SPOTS[currentSpotIndex]!;
    const isGold = isCurrentPossessionGold(scoreState.possession);
-@@ -809,7 +672,6 @@ function resetBallToSpot(): void {
+@@ -809,7 +665,6 @@ function resetBallToSpot(): void {
    isCharging = false;
    chargeDirection = 1;
  }
@@ -1532,7 +2225,7 @@ index caca8287c..b4a4ade78 100644
  function fullReset(): void {
    scoreState = initialScoreState(1);
    currentSpotIndex = 0;
-@@ -817,7 +679,6 @@ function fullReset(): void {
+@@ -817,7 +672,6 @@ function fullReset(): void {
    resetBallToSpot();
    updateHUD();
  }
@@ -1540,7 +2233,7 @@ index caca8287c..b4a4ade78 100644
  function releaseShot(powerOverride?: number, pitchOverride?: number): void {
    if (ballState.inFlight || scoreState.state !== "playing") return;
  
-@@ -840,12 +701,9 @@ function releaseShot(powerOverride?: number, pitchOverride?: number): void {
+@@ -840,12 +694,9 @@ function releaseShot(powerOverride?: number, pitchOverride?: number): void {
      audio.playCue("goldBall", 0.9);
    }
  }
@@ -1553,7 +2246,7 @@ index caca8287c..b4a4ade78 100644
  function updateHUD(): void {
    const currentSpot = COURT_SPOTS[currentSpotIndex]!;
    const config = heatConfig(scoreState.heat);
-@@ -898,8 +756,6 @@ function updateHUD(): void {
+@@ -898,8 +749,6 @@ function updateHUD(): void {
      elModal.classList.remove("hidden");
    }
  }
@@ -1562,7 +2255,7 @@ index caca8287c..b4a4ade78 100644
  function triggerContactFx(
    kind: Exclude<typeof contactFxKind, "none">,
    position: { x: number; y: number; z: number }
-@@ -914,7 +770,6 @@ function triggerContactFx(
+@@ -914,7 +763,6 @@ function triggerContactFx(
      rooftopJuice.fire(kind, { position: [position.x, position.y, position.z] });
    }
  }
@@ -1570,7 +2263,7 @@ index caca8287c..b4a4ade78 100644
  function stepGame(dt: number): void {
    input.update(dt);
    rooftopTween.tick(dt);
-@@ -1039,7 +894,6 @@ function stepGame(dt: number): void {
+@@ -1039,7 +887,6 @@ function stepGame(dt: number): void {
    syncTransforms();
    updateHUD();
  }
@@ -1578,7 +2271,7 @@ index caca8287c..b4a4ade78 100644
  function syncTransforms(): void {
    const currentSpot = COURT_SPOTS[currentSpotIndex]!;
    const shooterNode = app.nodes.get("shooter-player") as AuraRuntimeNodeHandle | undefined;
-@@ -1430,14 +1284,10 @@ function syncTransforms(): void {
+@@ -1430,102 +1277,10 @@ function syncTransforms(): void {
        ]);
    }
  }
@@ -1590,13 +2283,66 @@ index caca8287c..b4a4ade78 100644
  });
 -
 -// ---------------- Evidence & Deterministic Hooks ----------------
- function collectRouteEvidence(): RooftopBucketsEvidence {
-   const isGold = isCurrentPossessionGold(scoreState.possession);
-   const diagnostics = app.diagnostics();
-@@ -1498,34 +1348,6 @@ function collectRouteEvidence(): RooftopBucketsEvidence {
-   };
-   return ev;
- }
+-function collectRouteEvidence(): RooftopBucketsEvidence {
+-  const isGold = isCurrentPossessionGold(scoreState.possession);
+-  const diagnostics = app.diagnostics();
+-  const ev: RooftopBucketsEvidence = {
+-    status: "ready",
+-    mounted: true,
+-    heat: scoreState.heat,
+-    state: bucketsGame.session.paused && scoreState.state === "playing" ? "paused" : scoreState.state,
+-    currentSpotId: COURT_SPOTS[currentSpotIndex]!.id,
+-    score: scoreState.score,
+-    target: scoreState.target,
+-    streak: scoreState.streak,
+-    onFire: scoreState.onFire,
+-    possession: scoreState.possession,
+-    makes: scoreState.makes,
+-    misses: scoreState.misses,
+-    shotClockMs: Math.round(scoreState.shotClock * 1000),
+-    heatTimerMs: Math.round(scoreState.heatTimer * 1000),
+-    lastShotResult: scoreState.lastShotResult,
+-    goldBall: isGold,
+-    goldAttempted: scoreState.goldAttempted,
+-    goldMade: scoreState.goldMade,
+-    madeSpotIds: [...scoreState.madeSpotIds],
+-    fireAchieved: scoreState.fireAchieved,
+-    aimPitch,
+-    chargePower,
+-    charging: isCharging,
+-    ballInFlight: ballState.inFlight,
+-    reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+-    hoopMode: hoopState.mode,
+-    defenderTelegraph: hoopState.defenderTelegraph,
+-    shooterAnimation: shooterAnimationState,
+-    defenderAnimation: defenderAnimationState,
+-    shooterMotionPhase,
+-    defenderMotionPhase,
+-    shooterBodyCompression,
+-    defenderReach,
+-    contactFxKind,
+-    contactFxActive: contactFxTimer > 0 && contactFxKind !== "none",
+-    contestReactionActive,
+-    shooterClips: SHOOTER_CLIPS,
+-    defenderClips: DEFENDER_CLIPS,
+-    contestAimOffset: hoopState.contestAimOffset,
+-    sensorEventCount,
+-    physicsBodyCount: readHoopBodyCount(),
+-    simulationOwner: "canonical Rapier-backed world in hoop-sim.ts: dynamic ball body, static rim/backboard/bracket/floor colliders, downward-pass score sensor, kinematic defender",
+-    physicsSolver: "rapier",
+-    predictionPointCount: AIM_POINT_COUNT,
+-    primaryAssets: ["assets.rooftopCourt", "assets.rooftopVenueV2", "assets.rooftopBackboard", "assets.rooftopRim", "assets.rooftopBall", "assets.rooftopLayupScorer", "assets.rooftopDefender"],
+-    presentationAssets: ["assets.rooftopAthleteShooter", "assets.rooftopAthleteDefender", "assets.rooftopShooterMeshyV1"],
+-    systems: ROUTE_SYSTEMS,
+-    controls: ROUTE_CONTROLS,
+-    claimBoundary: "Root-safe prototype on the canonical Rapier-backed public physics surface: dynamic basketball body, compound static rim/backboard/bracket/floor colliders, downward-pass scoring sensor, and adaptive-substep CCD, with five-heat authored scoring. Authored: the solved launch vector and the kinematic defender pose. No reusable sports, physics, rim, or defender kit claimed.",
+-    renderer: { drawCalls: diagnostics.drawCalls, renderSize: diagnostics.renderSize, backend: diagnostics.renderer?.runtime.backend ?? "unknown" },
+-    audioCues: [...audio.audioCuesHeard],
+-    ballPos: { x: ballState.x, y: ballState.y, z: ballState.z },
+-    hoopPos: { x: hoopState.x, y: hoopState.y, z: hoopState.z }
+-  };
+-  return ev;
+-}
 -
 -bindRooftopEvidence(collectRouteEvidence);
 -
@@ -1628,413 +2374,83 @@ index caca8287c..b4a4ade78 100644
  bindRooftopDrive({
    resetToHeat: (heat) => {
      scoreState = initialScoreState(heat);
-@@ -1577,9 +1399,6 @@ bindRooftopDrive({
+@@ -1577,45 +1332,3 @@ bindRooftopDrive({
      updateHUD();
    }
  });
 -
 -
 -
- Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
-   configurable: true,
-   value: {
-diff --git a/apps/showcase-rooftop-buckets/src/legacy/styles.css b/apps/showcase-rooftop-buckets/src/legacy/styles.css
-index 57fb1675f..148b925c2 100644
---- a/apps/showcase-rooftop-buckets/src/legacy/styles.css
-+++ b/apps/showcase-rooftop-buckets/src/legacy/styles.css
-@@ -12,14 +12,12 @@
-   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+-Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+-  configurable: true,
+-  value: {
+-    category: "application",
+-    subject: {
+-      position: [BACKBOARD_POSITION.x, BACKBOARD_POSITION.y, BACKBOARD_POSITION.z],
+-      rotation: [0, 0, 0],
+-      targetSize: BACKBOARD_POSITION.width
+-    },
+-    async settleSubjectPose() {
+-      // The route-primary subject is the static typed backboard. Pause the game
+-      // state, then complete one bounded production frame before the producer
+-      // captures its visible baseline. Without this first presentation the
+-      // visible canvas is still black and the later hidden frame is compared
+-      // against the wrong state.
+-      gameApp.pause();
+-      app.pause();
+-      await app.stepAsync(0);
+-    },
+-    async setSubjectSuppressed(suppressed: boolean) {
+-      gameApp.pause();
+-      app.pause();
+-      const node = app.nodes.get("backboard-assembly") as AuraRuntimeNodeHandle | undefined;
+-      node?.setVisible(!suppressed);
+-      // Suppression isolates the declared backboard subject only. Keep the
+-      // typed rim and its route-local readability ring in frame so the goal is
+-      // still an explicit scene landmark in the paired evidence capture.
+-      const rim = app.nodes.get("rim-assembly") as AuraRuntimeNodeHandle | undefined;
+-      rim?.setVisible(true);
+-      const rimReadability = app.nodes.get("rim-readability") as AuraRuntimeNodeHandle | undefined;
+-      rimReadability?.setVisible(true);
+-      // Present the changed production frame without blocking the browser main
+-      // thread. The probe already awaits this promise before taking the hidden
+-      // screenshot. Restoration happens after that screenshot and needs no
+-      // third submission.
+-      if (suppressed) await app.stepAsync(0);
+-    }
+-  }
+-});
+diff --git a/apps/showcase-rooftop-buckets/src/main.ts b/apps/showcase-rooftop-buckets/src/main.ts
+index 389a891ab..61fcfe05d 100644
+--- a/apps/showcase-rooftop-buckets/src/main.ts
++++ b/apps/showcase-rooftop-buckets/src/main.ts
+@@ -1,14 +1,6 @@
+-// apps/showcase-rooftop-buckets/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
+-// Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-rooftop-buckets`
+-// (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
+-// acceptance (§10 step 5).
+ import { resolveQrFlags } from "@aura3d/engine/contracts";
+-
+ const ROUTE_FLAG = "A3D_QR_ROUTE_ROOFTOP_BUCKETS" as const;
+ const DEFAULT_ON = false;
+-
+-/** Accepts `?a3d-qr=…,route-rooftop-buckets` and `?a3d-qr=…,A3D_QR_ROUTE_ROOFTOP_BUCKETS`.
+- *  Returns undefined when the flag is absent (CCR-14-2 replaces this helper). */
+ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const raw = new URL(loc.href).searchParams.get("a3d-qr");
+   if (raw === null) return undefined;
+@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+     ? true
+     : undefined;
  }
 -
- * {
-   box-sizing: border-box;
-   margin: 0;
-   padding: 0;
-   user-select: none;
- }
+ const flags = resolveQrFlags({
+   url: location.href,
+   env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR },
+   options: { [ROUTE_FLAG]: routeFlagFromUrl(location, ROUTE_FLAG) ?? DEFAULT_ON }
+ });
 -
- html, body {
-   width: 100%;
-   height: 100%;
-@@ -28,7 +26,6 @@ html, body {
-   color: var(--text-primary);
-   font-family: var(--font-sans);
- }
--
- #canvas-host {
-   position: absolute;
-   inset: 0;
-@@ -36,7 +33,6 @@ html, body {
-   height: 100%;
-   z-index: 1;
- }
--
- #hud-root {
-   position: absolute;
-   inset: 0;
-@@ -47,126 +43,6 @@ html, body {
-   justify-content: space-between;
-   padding: 12px 16px 10px;
- }
--
--/* The visual-review route keeps the complete gameplay HUD, but composes it as
-- * a compact broadcast package around the renderer-owned action rather than a
-- * stack of large translucent cards over the players. */
--body[data-capture="review"] #rb-modal {
--  opacity: 0;
--  pointer-events: none;
--}
--
--body[data-capture="review"] #hud-root {
--  justify-content: space-between;
--  align-items: stretch;
--  padding: 12px 16px 14px;
--}
--
--body[data-capture="review"] .hud-top-bar {
--  width: 100%;
--  padding: 8px 14px 9px;
--  align-items: center;
--  background: linear-gradient(100deg, rgba(7, 24, 47, 0.96), rgba(25, 39, 75, 0.95) 50%, rgba(64, 28, 62, 0.94));
--  border: 1px solid rgba(251, 146, 60, 0.82);
--  border-left: 4px solid #38bdf8;
--  border-radius: 6px 6px 12px 12px;
--  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.48), inset 0 -1px 0 rgba(255, 255, 255, 0.08);
--}
--
--body[data-capture="review"] .game-title-group h1 {
--  font-size: 1.08rem;
--  letter-spacing: 0.075em;
--  text-transform: uppercase;
--}
--
--body[data-capture="review"] .game-title-group p {
--  color: rgba(226, 232, 240, 0.72);
--  font-size: 0.68rem;
--  margin-top: 2px;
--}
--
--body[data-capture="review"] .heat-badge,
--body[data-capture="review"] .on-fire-badge {
--  font-size: 0.62rem;
--  padding: 2px 6px;
--}
--
--body[data-capture="review"] .shot-meter-container {
--  position: absolute;
--  left: 16px;
--  bottom: 14px;
--  width: 310px;
--  margin: 0;
--  padding: 8px 11px;
--  gap: 5px;
--  background: linear-gradient(120deg, rgba(7, 29, 52, 0.91), rgba(45, 22, 54, 0.9));
--  border-color: rgba(56, 189, 248, 0.65);
--  border-radius: 8px;
--}
--
--body[data-capture="review"] .shot-meter-container .meter-label {
--  color: rgba(241, 245, 249, 0.82);
--  font-size: 0.64rem;
--}
--
--body[data-capture="review"] .hud-bottom-bar {
--  position: absolute;
--  right: 16px;
--  bottom: 14px;
--  width: auto;
--  max-width: 700px;
--  padding: 7px 11px;
--  align-items: center;
--  background: linear-gradient(110deg, rgba(24, 20, 48, 0.9), rgba(7, 45, 62, 0.91));
--  border-color: rgba(251, 146, 60, 0.55);
--  border-radius: 8px;
--}
--
--body[data-capture="review"] .controls-hint {
--  font-size: 0.62rem;
--  line-height: 1.35;
--  color: rgba(226, 232, 240, 0.74);
--}
--
--body[data-capture="review"] .clock-timer {
--  font-size: 1.28rem;
--  min-width: 46px;
--}
--
--body[data-capture="review"] .score-stats {
--  gap: 18px;
--}
--
--body[data-capture="review"] .stat-value {
--  font-size: 1.02rem;
--  line-height: 1;
--  text-shadow: 0 2px 7px rgba(0, 0, 0, 0.75);
--}
--
--body[data-capture="review"] .stat-item {
--  align-items: flex-end;
--  min-width: 48px;
--}
--
--body[data-capture="review"] .stat-item:nth-child(-n + 2) .stat-value {
--  font-size: 1.34rem;
--  color: #f8fafc;
--}
--
--body[data-capture="review"] .stat-item:first-child .stat-value {
--  color: #67e8f9;
--}
--
--body[data-capture="review"] .stat-item:nth-child(2) .stat-value {
--  color: #f9a8d4;
--}
--
--body[data-capture="review"] .stat-label {
--  color: rgba(241, 245, 249, 0.78);
--  font-weight: 700;
--  font-size: 0.58rem;
--}
--
- .hud-panel {
-   background: linear-gradient(112deg, rgba(8, 22, 43, 0.88), rgba(29, 24, 56, 0.82));
-   backdrop-filter: blur(8px);
-@@ -176,8 +52,6 @@ body[data-capture="review"] .stat-label {
-   box-shadow: 0 7px 24px rgba(0, 0, 0, 0.44), inset 0 0 12px rgba(56, 189, 248, 0.08);
-   pointer-events: auto;
- }
--
--/* Top Bar */
- .hud-top-bar {
-   display: flex;
-   justify-content: space-between;
-@@ -185,7 +59,6 @@ body[data-capture="review"] .stat-label {
-   gap: 12px;
-   border-color: rgba(103, 232, 249, 0.42);
- }
--
- .game-title-group h1 {
-   font-size: 1.12rem;
-   font-weight: 700;
-@@ -195,7 +68,6 @@ body[data-capture="review"] .stat-label {
-   align-items: center;
-   gap: 8px;
- }
--
- .heat-badge {
-   display: inline-block;
-   background: rgba(56, 189, 248, 0.15);
-@@ -207,7 +79,6 @@ body[data-capture="review"] .stat-label {
-   border-radius: 4px;
-   text-transform: uppercase;
- }
--
- .on-fire-badge {
-   display: inline-block;
-   background: rgba(245, 158, 11, 0.2);
-@@ -220,29 +91,24 @@ body[data-capture="review"] .stat-label {
-   text-transform: uppercase;
-   animation: pulse-fire 1.5s infinite alternate;
- }
--
- @keyframes pulse-fire {
-   from { box-shadow: 0 0 4px rgba(245, 158, 11, 0.3); }
-   to { box-shadow: 0 0 14px rgba(245, 158, 11, 0.8); }
- }
--
- .game-title-group p {
-   font-size: 0.72rem;
-   color: var(--text-muted);
-   margin-top: 4px;
- }
--
- .score-stats {
-   display: flex;
-   gap: 18px;
- }
--
- .stat-item {
-   display: flex;
-   flex-direction: column;
-   align-items: flex-end;
- }
--
- .stat-label {
-   font-size: 0.7rem;
-   text-transform: uppercase;
-@@ -250,23 +116,18 @@ body[data-capture="review"] .stat-label {
-   font-family: var(--font-mono);
-   letter-spacing: 0.05em;
- }
--
- .stat-value {
-   font-size: 1.32rem;
-   font-weight: 700;
-   font-family: var(--font-mono);
-   color: var(--accent-cyan);
- }
--
- .stat-value.gold {
-   color: var(--accent-gold);
- }
--
- .stat-value.warning {
-   color: var(--accent-rose);
- }
--
--/* Center HUD / Shot Meter */
- .shot-meter-container {
-   align-self: center;
-   width: 214px;
-@@ -279,12 +140,10 @@ body[data-capture="review"] .stat-label {
-   opacity: 0.79;
-   transition: opacity 0.2s ease;
- }
--
- .shot-meter-container.charging {
-   opacity: 1;
-   transform: scale(1.03);
- }
--
- .meter-track {
-   position: relative;
-   width: 100%;
-@@ -294,7 +153,6 @@ body[data-capture="review"] .stat-label {
-   border-radius: 8px;
-   overflow: hidden;
- }
--
- .meter-sweet-zone {
-   position: absolute;
-   top: 0;
-@@ -303,14 +161,12 @@ body[data-capture="review"] .stat-label {
-   border-left: 2px solid var(--accent-emerald);
-   border-right: 2px solid var(--accent-emerald);
- }
--
- .meter-fill {
-   height: 100%;
-   width: 0%;
-   background: linear-gradient(90deg, var(--accent-cyan), var(--accent-gold));
-   transition: width 0.04s linear;
- }
--
- .meter-label {
-   font-size: 0.75rem;
-   font-family: var(--font-mono);
-@@ -319,8 +175,6 @@ body[data-capture="review"] .stat-label {
-   justify-content: space-between;
-   width: 100%;
- }
--
--/* Bottom Bar */
- .hud-bottom-bar {
-   display: flex;
-   justify-content: space-between;
-@@ -329,13 +183,11 @@ body[data-capture="review"] .stat-label {
-   align-self: flex-start;
-   width: min(680px, calc(100vw - 32px));
- }
--
- .controls-hint {
-   font-size: 0.75rem;
-   color: var(--text-muted);
-   line-height: 1.5;
- }
--
- .controls-hint kbd {
-   background: rgba(255, 255, 255, 0.1);
-   border: 1px solid rgba(255, 255, 255, 0.2);
-@@ -344,7 +196,6 @@ body[data-capture="review"] .stat-label {
-   color: var(--text-primary);
-   font-family: var(--font-mono);
- }
--
- .touch-controls { display: none; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
- .touch-controls button {
-   min-width: 44px; min-height: 44px; padding: 8px 10px; border-radius: 7px;
-@@ -356,13 +207,11 @@ body[data-capture="review"] .stat-label {
-   outline-offset: 3px;
- }
- .touch-controls .shoot { border-color: var(--accent-gold); color: var(--accent-gold); }
--
- .shot-clock-card {
-   display: flex;
-   align-items: center;
-   gap: 12px;
- }
--
- .clock-timer {
-   font-size: 2rem;
-   font-weight: 800;
-@@ -371,13 +220,10 @@ body[data-capture="review"] .stat-label {
-   min-width: 60px;
-   text-align: right;
- }
--
- .clock-timer.critical {
-   color: var(--accent-rose);
-   animation: pulse-fire 0.6s infinite alternate;
- }
--
--/* Modal Overlay */
- .modal-backdrop {
-   position: absolute;
-   inset: 0;
-@@ -389,7 +235,6 @@ body[data-capture="review"] .stat-label {
-   z-index: 50;
-   pointer-events: auto;
- }
--
- .modal-content {
-   background: var(--panel-bg);
-   border: 1px solid var(--accent-cyan);
-@@ -400,19 +245,16 @@ body[data-capture="review"] .stat-label {
-   text-align: center;
-   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 24px rgba(56, 189, 248, 0.2);
- }
--
- .modal-content h2 {
-   font-size: 1.8rem;
-   margin-bottom: 12px;
-   color: var(--text-primary);
- }
--
- .modal-content p {
-   color: var(--text-muted);
-   margin-bottom: 24px;
-   line-height: 1.6;
- }
--
- .btn-primary {
-   background: linear-gradient(135deg, var(--accent-cyan), #0284c7);
-   color: #030712;
-@@ -425,16 +267,13 @@ body[data-capture="review"] .stat-label {
-   cursor: pointer;
-   transition: transform 0.1s ease, box-shadow 0.1s ease;
- }
--
- .btn-primary:hover {
-   transform: translateY(-2px);
-   box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
- }
--
- .hidden {
-   display: none !important;
- }
--
- @media (max-width: 760px) {
-   #hud-root { padding: 8px; }
-   .hud-panel { padding: 8px 10px; }
-@@ -452,7 +291,6 @@ body[data-capture="review"] .stat-label {
-   .shot-clock-card { align-self: flex-start; }
-   .clock-timer { font-size: 1.35rem; min-width: 44px; }
- }
--
- @media (prefers-reduced-motion: reduce) {
-   *, *::before, *::after { animation: none !important; transition: none !important; }
- }
+ void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
 diff --git a/apps/showcase-rooftop-buckets/src/v2/evidence/index.ts b/apps/showcase-rooftop-buckets/src/v2/evidence/index.ts
 deleted file mode 100644
 index 83b20a1af..000000000

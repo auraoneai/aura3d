@@ -1,22 +1,23 @@
-From 0f1c75c78c81db322e2d2c0f3554052f6e8884a1 Mon Sep 17 00:00:00 2001
+From 78b1493f2203ed8d27eef32f74e4e3011f52a94a Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
-Date: Fri, 9 Oct 2026 13:40:38 +0000
+Date: Fri, 9 Oct 2026 13:45:51 +0000
 Subject: [PATCH] [qr-prd09] showcase-neon-swarm: delete evidence files+blocks
  (T5.8)
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- .../scripts/build-review-art.mjs              | 111 -------
- .../showcase-neon-swarm/scripts/build-sfx.mjs | 272 -----------------
- .../scripts/register-models.mjs               |  66 ----
- .../scripts/register-sfx.mjs                  |  51 ----
- .../scripts/write-performance-report.ts       |  90 ------
- .../scripts/write-route-health.mjs            | 280 -----------------
- apps/showcase-neon-swarm/src/legacy/hud.ts    |  14 -
- apps/showcase-neon-swarm/src/legacy/main.ts   | 283 ------------------
- .../showcase-neon-swarm/src/legacy/styles.css |  71 -----
- .../src/v2/evidence/index.ts                  | 111 -------
- 10 files changed, 1349 deletions(-)
+ .../performance-report.json                   |  23 -
+ .../scripts/build-review-art.mjs              | 111 ----
+ .../showcase-neon-swarm/scripts/build-sfx.mjs | 272 ----------
+ .../scripts/register-models.mjs               |  66 ---
+ .../scripts/register-sfx.mjs                  |  51 --
+ .../scripts/write-performance-report.ts       |  90 ----
+ .../scripts/write-route-health.mjs            | 280 -----------
+ apps/showcase-neon-swarm/src/legacy/main.ts   | 472 ------------------
+ apps/showcase-neon-swarm/src/main.ts          |  10 -
+ .../src/v2/evidence/index.ts                  | 111 ----
+ 10 files changed, 1486 deletions(-)
+ delete mode 100644 apps/showcase-neon-swarm/performance-report.json
  delete mode 100644 apps/showcase-neon-swarm/scripts/build-review-art.mjs
  delete mode 100644 apps/showcase-neon-swarm/scripts/build-sfx.mjs
  delete mode 100644 apps/showcase-neon-swarm/scripts/register-models.mjs
@@ -25,6 +26,35 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  delete mode 100644 apps/showcase-neon-swarm/scripts/write-route-health.mjs
  delete mode 100644 apps/showcase-neon-swarm/src/v2/evidence/index.ts
 
+diff --git a/apps/showcase-neon-swarm/performance-report.json b/apps/showcase-neon-swarm/performance-report.json
+deleted file mode 100644
+index e3ad1f978..000000000
+--- a/apps/showcase-neon-swarm/performance-report.json
++++ /dev/null
+@@ -1,23 +0,0 @@
+-{
+-  "schema": "aura3d-neon-swarm-performance/1.0",
+-  "generatedAt": "2026-09-03T01:43:06.744Z",
+-  "scope": "Route-local 320-drone typed-array steering timing plus current browser native-instancing/draw/pixel telemetry; GPU frame-time parity is not claimed.",
+-  "budgets": {
+-    "simulationStepP95Ms": 8,
+-    "drawCalls": 64,
+-    "minimumLiveInstances": 300,
+-    "minimumNonBlackPixels": 1500
+-  },
+-  "observed": {
+-    "stagedInstances": 320,
+-    "simulationStepP95Ms": 0.8227,
+-    "simulationStepMaxMs": 3.0075,
+-    "browserInstances": 320,
+-    "browserDrawCalls": 50,
+-    "browserNativeInstancedSubmissions": 322,
+-    "browserNonBlackPixels": 989166
+-  },
+-  "samples": 300,
+-  "browserEvidence": "tests/reports/neon-swarm/instancing-telemetry.json",
+-  "pass": true
+-}
 diff --git a/apps/showcase-neon-swarm/scripts/build-review-art.mjs b/apps/showcase-neon-swarm/scripts/build-review-art.mjs
 deleted file mode 100644
 index ddca4b511..000000000
@@ -931,68 +961,8 @@ index dbe9a04de..000000000
 -    return statSync(child).isDirectory() ? walk(child) : [child];
 -  });
 -}
-diff --git a/apps/showcase-neon-swarm/src/legacy/hud.ts b/apps/showcase-neon-swarm/src/legacy/hud.ts
-index dd14c1277..f51d7104d 100644
---- a/apps/showcase-neon-swarm/src/legacy/hud.ts
-+++ b/apps/showcase-neon-swarm/src/legacy/hud.ts
-@@ -1,11 +1,3 @@
--/**
-- * Neon Swarm DOM HUD bindings.
-- *
-- * UI only - HP pips, wave/score/combo readouts, pickup door buttons, run
-- * summary, pause state, and touch stick chrome. None of this stands in for
-- * renderer features; every visual 3D claim lives in the scene itself.
-- */
--
- export interface HudSnapshot {
-   readonly state: "booting" | "intermission" | "wave-active" | "complete" | "dead";
-   readonly wave: number;
-@@ -23,13 +15,11 @@ export interface HudSnapshot {
-   readonly paused: boolean;
-   readonly intermissionRemaining: number;
- }
--
- export interface HudDoorView {
-   readonly kind: string;
-   readonly label: string;
-   readonly detail: string;
- }
--
- export interface TouchStickView {
-   readonly id: string;
-   readonly label: string;
-@@ -37,7 +27,6 @@ export interface TouchStickView {
-   readonly centerY: number;
-   readonly radius: number;
- }
--
- export interface HudController {
-   update(snapshot: HudSnapshot): void;
-   showBanner(title: string, subtitle: string, sticky?: boolean): void;
-@@ -51,7 +40,6 @@ export interface HudController {
-   renderTouchSticks(sticks: readonly TouchStickView[]): void;
-   flashVignette(): void;
- }
--
- function escapeHtml(value: string): string {
-   return value.replace(/[&<>"']/g, (char) => ({
-     "&": "&amp;",
-@@ -61,13 +49,11 @@ function escapeHtml(value: string): string {
-     "'": "&#39;"
-   })[char] ?? char);
- }
--
- function requireElement(root: HTMLElement, selector: string): HTMLElement {
-   const el = root.querySelector(selector);
-   if (!el) throw new Error("Neon Swarm HUD missing element: " + selector);
-   return el as HTMLElement;
- }
--
- export function setupHud(
-   container: HTMLElement,
-   doors: readonly HudDoorView[],
 diff --git a/apps/showcase-neon-swarm/src/legacy/main.ts b/apps/showcase-neon-swarm/src/legacy/main.ts
-index 15269925b..3126c07fb 100644
+index 15269925b..4d378831b 100644
 --- a/apps/showcase-neon-swarm/src/legacy/main.ts
 +++ b/apps/showcase-neon-swarm/src/legacy/main.ts
 @@ -1,18 +1,3 @@
@@ -1738,19 +1708,201 @@ index 15269925b..3126c07fb 100644
  function safeDiagnostics(): SafeDiagnostics {
    try {
      const report = app.diagnostics() as unknown as {
-@@ -1821,8 +1545,6 @@ function safeDiagnostics(): SafeDiagnostics {
+@@ -1821,210 +1545,14 @@ function safeDiagnostics(): SafeDiagnostics {
      return { drawCalls: 0, nativeInstancedSubmissions: 0 };
    }
  }
 -
 -// Deterministic hooks so browser evidence specs can stage states quickly.
- window.__NEON_SWARM_DEBUG__ = {
-   stepFixed(frames) {
-     for (let i = 0; i < frames; i += 1) update(1 / 60);
-@@ -2012,19 +1734,14 @@ window.__NEON_SWARM_DEBUG__ = {
-     }
-   }
- };
+-window.__NEON_SWARM_DEBUG__ = {
+-  stepFixed(frames) {
+-    for (let i = 0; i < frames; i += 1) update(1 / 60);
+-  },
+-  startWaveNow() {
+-    if (runState === "intermission") startWave(wave + 1);
+-  },
+-  drainPlayerHp() {
+-    player.hp = 0;
+-    killPlayer();
+-  },
+-  chooseDoor(kind) {
+-    chooseDoor(kind);
+-  },
+-  spawnTestSwarm(total) {
+-    // Evidence staging for the instancing spec: deterministic grid across the
+-    // arena so both pools hold live instances without waiting for waves.
+-    swarm.reset();
+-    // This hook stages an exact retained-density fixture; suppress the normal
+-    // schedule so the next frame cannot add a 321st drone behind the evidence.
+-    if (runState === "wave-active") spawnedCount = schedule.length;
+-    let spawned = 0;
+-    for (let i = 0; i < total; i += 1) {
+-      // A deterministic golden-angle spiral reads as an encircling horde, not
+-      // a debug grid. Keep a real safe pocket around the courier while placing
+-      // a short pulse lane just outside the carbine's silhouette; the lane is
+-      // what the finale fixture's real shot can hit without rebuilding a wall
+-      // directly over the player.
+-      const innerCount = Math.min(72, total);
+-      const inPressureRing = i < innerCount;
+-      const outerIndex = Math.max(0, i - innerCount);
+-      const outerTotal = Math.max(1, total - innerCount);
+-      const radial = Math.sqrt((outerIndex + 0.5) / outerTotal);
+-      const angle = i * 2.399963229728653;
+-      const centerX = player.x;
+-      const centerZ = player.z;
+-      const pulseLane = inPressureRing && i < 6;
+-      const pulseDistance = 2.9 + (i % 3) * 0.16;
+-      const pulseLaneOffset = (i - 2.5) * 0.22;
+-      const pulsePerpX = -0.75;
+-      const pulsePerpZ = -0.66;
+-      const pulseAimX = 0.66;
+-      const pulseAimZ = -0.75;
+-      const x = pulseLane
+-        ? player.x + pulseAimX * pulseDistance + pulsePerpX * pulseLaneOffset
+-        : inPressureRing
+-          ? player.x + Math.cos(angle) * (4.15 + (i / innerCount) * 2.05)
+-          : centerX + Math.cos(angle) * (7.1 + radial * 9.2);
+-      const z = pulseLane
+-        ? player.z + pulseAimZ * pulseDistance + pulsePerpZ * pulseLaneOffset
+-        : inPressureRing
+-          ? player.z + Math.sin(angle) * (4.1 + (i / innerCount) * 1.95)
+-          : centerZ + Math.sin(angle) * (6.8 + radial * 7.6);
+-      // The first pressure-rank slots are real six-HP elites inside the real
+-      // 3.6-unit pulse reach. The retained pulse damages and flashes them but
+-      // cannot kill them, so the exact frame shows a genuine hit/spark while
+-      // preserving all 320 live threats. Outer density keeps the seeded mix.
+-      const archetype = i < 18 || (inPressureRing ? i % 3 === 0 : i % 10 === 0) ? "elite" : "grunt";
+-      if (swarm.spawn({ x, z, archetype, speedMultiplier: waveSpec(Math.max(1, wave)).speedMultiplier })) {
+-        spawned += 1;
+-      }
+-    }
+-    void spawned;
+-  },
+-  stageKillCluster(count = 6) {
+-    // Ring just inside pulse reach (3.6) but outside contact range (~1.0).
+-    for (let i = 0; i < count; i += 1) {
+-      const angle = (i / count) * Math.PI * 2;
+-      const x = Math.min(rect.maxX - 0.5, Math.max(rect.minX + 0.5, player.x + Math.cos(angle) * 2.1));
+-      const z = Math.min(rect.maxZ - 0.5, Math.max(rect.minZ + 0.5, player.z + Math.sin(angle) * 2.1));
+-      // Keep the browser's pulse fixture spatially honest without allowing a
+-      // moving grunt to cross into contact damage while the input loop waits
+-      // for the real fire cooldown. Gameplay waves still use their authored
+-      // speeds; this only makes the deterministic staging hook repeatable.
+-      swarm.spawn({ x, z, archetype: "grunt", speedMultiplier: 0 });
+-    }
+-  },
+-  jumpToWave(target) {
+-    // Evidence staging for mid-wave captures: begin wave N with its seeded
+-    // schedule and elite mix immediately.
+-    if (target >= 1) startWave(Math.floor(target));
+-  },
+-  clearActiveWave() {
+-    if (runState !== "wave-active") return;
+-    swarm.reset();
+-    spawnedCount = schedule.length;
+-    update(1 / 60);
+-  },
+-  finishFinale() {
+-    if (runState !== "wave-active" || wave !== MAX_CAMPAIGN_WAVES) return;
+-    spawnedCount = schedule.length;
+-    waveElapsed = Math.max(waveElapsed, FINALE_SURVIVAL_SECONDS);
+-    // The fixture proves the same terminal campaign state twice; exclude
+-    // wall-clock combat drift from its evidence hash while production runs
+-    // continue to hash their actual gameplay state above.
+-    let fixtureUpgrades = createPlayerUpgrades();
+-    for (const kind of ["fire-rate", "dash-cooldown", "shield", "shield"] as const) {
+-      fixtureUpgrades = upgradedPlayer(fixtureUpgrades, kind);
+-    }
+-    const fixtureChecksums = Array.from({ length: MAX_CAMPAIGN_WAVES }, (_, index) =>
+-      scheduleChecksum(waveSpawnSchedule(waveSpec(index + 1), seed))
+-    );
+-    upgrades.fireRateMultiplier = fixtureUpgrades.fireRateMultiplier;
+-    upgrades.dashCooldownMultiplier = fixtureUpgrades.dashCooldownMultiplier;
+-    upgrades.shieldCharges = fixtureUpgrades.shieldCharges;
+-    debugFinaleHash = outcomeHash({
+-      seed, state: "complete", wave: MAX_CAMPAIGN_WAVES, score: 0, kills: 0,
+-      maxCombo: 0, hp: player.maxHp, upgrades: fixtureUpgrades, waveChecksums: fixtureChecksums
+-    });
+-    update(1 / 60);
+-  },
+-  stageFinalePulse() {
+-    if (runState !== "wave-active" || wave !== MAX_CAMPAIGN_WAVES) return;
+-    // The exact finale frame captures the decision point before the charged
+-    // radial clear: all 320 threats remain live while the real pulse path is
+-    // visible and the simulation-owned burst meter publishes READY.
+-    burstCharge = 100;
+-    mouseAim = { x: 0.66, z: -0.75 };
+-    player.fireCooldownRemaining = 0;
+-    firePulse();
+-    update(1 / 60);
+-  },
+-  resetWithSeed(value) {
+-    resetRun(value >>> 0);
+-  },
+-  stageGraze() {
+-    if (runState !== "wave-active") return;
+-    swarm.reset();
+-    spawnedCount = schedule.length;
+-    player.vx = 0;
+-    player.vz = 0;
+-    // Place the fixture one fixed frame before the half-second award. The
+-    // browser still proves the live annulus decides whether that award fires.
+-    grazeAccumulator = 0.49;
+-    // Hold the staged threat in the live annulus for the fixed-frame proof.
+-    // A moving elite can orbit across the 0.55u contact boundary during the
+-    // 35-frame browser fixture, which would make the graze award depend on
+-    // frame timing rather than the simulation-owned countWithin query.
+-    swarm.spawn({ x: player.x + 2.05, z: player.z, archetype: "elite", speedMultiplier: 0 });
+-    collectRouteEvidence();
+-  },
+-  stageBurstCluster(count = 10) {
+-    if (runState !== "wave-active") return;
+-    swarm.reset();
+-    spawnedCount = schedule.length;
+-    burstCharge = 100;
+-    for (let i = 0; i < count; i += 1) {
+-      const angle = (i / count) * Math.PI * 2;
+-      // Keep one target beyond the 4.25-unit radius so the real burst does not
+-      // immediately clear the staged wave before its retained effect frame.
+-      const radius = i === count - 1 ? 6 : 2.15;
+-      swarm.spawn({
+-        x: player.x + Math.cos(angle) * radius,
+-        z: player.z + Math.sin(angle) * radius,
+-        archetype: i % 5 === 0 ? "elite" : "grunt",
+-        // The one out-of-radius survivor proves the burst is spatial. Keep it
+-        // stationary during the following combo-decay fixture so that proof
+-        // cannot nondeterministically become an unrelated player-death test.
+-        speedMultiplier: i === count - 1 ? 0 : 1
+-      });
+-    }
+-    collectRouteEvidence();
+-  },
+-  stagePickupAtPlayer() {
+-    if (runState !== "wave-active") return;
+-    pickupPosition = { x: player.x, z: player.z };
+-    pickupActive = true;
+-    app.nodes.get("swarm-pickup")
+-      ?.setPosition(pickupPosition.x, 1.1, pickupPosition.z)
+-      .setVisible(true);
+-    collectRouteEvidence();
+-  },
+-  stageContact() {
+-    if (runState !== "wave-active") return;
+-    swarm.reset();
+-    spawnedCount = schedule.length;
+-    player.invulnerableRemaining = 0;
+-    player.contactDebt = 0;
+-    swarm.spawn({ x: player.x, z: player.z, archetype: "grunt", speedMultiplier: 0 });
+-    collectRouteEvidence();
+-  },
+-  dumpDiagnostics() {
+-    try {
+-      return app.diagnostics() as unknown as Record<string, unknown>;
+-    } catch (error) {
+-      return { error: String(error) };
+-    }
+-  }
+-};
 -
 -
  function requireHudElement(): HTMLElement {
@@ -1767,297 +1919,37 @@ index 15269925b..3126c07fb 100644
 -
  resetRun(SEED_DEFAULT);
 -collectRouteEvidence();
-diff --git a/apps/showcase-neon-swarm/src/legacy/styles.css b/apps/showcase-neon-swarm/src/legacy/styles.css
-index 8eccc3415..31c43216d 100644
---- a/apps/showcase-neon-swarm/src/legacy/styles.css
-+++ b/apps/showcase-neon-swarm/src/legacy/styles.css
-@@ -1,6 +1,3 @@
--/* Neon Swarm HUD chrome. All overlay styling here is UI only: it never stands
--   in for renderer features. In-scene sparks, flashes, and telegraphs are real
--   instanced scene geometry updated through the root safe API. */
- :root {
-   color-scheme: dark;
-   --neon-magenta: #ff4fd8;
-@@ -9,7 +6,6 @@
-   --hud-panel: rgba(7, 10, 22, 0.68);
-   --hud-edge: rgba(53, 230, 255, 0.42);
+diff --git a/apps/showcase-neon-swarm/src/main.ts b/apps/showcase-neon-swarm/src/main.ts
+index 1bd5aefe8..47ede36b6 100644
+--- a/apps/showcase-neon-swarm/src/main.ts
++++ b/apps/showcase-neon-swarm/src/main.ts
+@@ -1,14 +1,6 @@
+-// apps/showcase-neon-swarm/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
+-// Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-neon-swarm`
+-// (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
+-// acceptance (§10 step 5).
+ import { resolveQrFlags } from "@aura3d/engine/contracts";
+-
+ const ROUTE_FLAG = "A3D_QR_ROUTE_NEON_SWARM" as const;
+ const DEFAULT_ON = false;
+-
+-/** Accepts `?a3d-qr=…,route-neon-swarm` and `?a3d-qr=…,A3D_QR_ROUTE_NEON_SWARM`.
+- *  Returns undefined when the flag is absent (CCR-14-2 replaces this helper). */
+ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const raw = new URL(loc.href).searchParams.get("a3d-qr");
+   if (raw === null) return undefined;
+@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+     ? true
+     : undefined;
  }
 -
- html,
- body {
-   margin: 0;
-@@ -21,18 +17,15 @@ body {
-   font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-   color: #dbe7ff;
- }
+ const flags = resolveQrFlags({
+   url: location.href,
+   env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR },
+   options: { [ROUTE_FLAG]: routeFlagFromUrl(location, ROUTE_FLAG) ?? DEFAULT_ON }
+ });
 -
- #app {
-   position: fixed;
-   inset: 0;
- }
--
- #app canvas {
-   display: block;
-   width: 100%;
-   height: 100%;
- }
--
- #hud {
-   position: fixed;
-   inset: 0;
-@@ -40,42 +33,9 @@ body {
-   user-select: none;
-   z-index: 10;
- }
--
--/* Review captures keep a restrained HUD in the frame, matching the named
-- * action reference while leaving the typed courier and live swarm dominant.
-- * The large transition banner, touch chrome, and authoring controls stay out
-- * of the blind frame; all remaining values are route-state readouts. */
--body[data-capture="review"] #hud { display: block; }
--body[data-capture="review"] .ns-banner,
--body[data-capture="review"] .ns-doors,
--body[data-capture="review"] .ns-help,
--body[data-capture="review"] .ns-burst-button,
--body[data-capture="review"] .ns-touch,
--body[data-capture="review"] .ns-vignette { display: none !important; }
--body[data-capture="review"] .ns-panel {
--  background: linear-gradient(135deg, rgba(3, 17, 28, 0.86), rgba(13, 33, 44, 0.58));
--  border-color: rgba(130, 245, 226, 0.48);
--  border-radius: 2px;
--  box-shadow: 0 0 28px rgba(26, 219, 199, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.08);
--}
--
--/* The retained desktop composition is an action still, not a title card. The
-- * banner remains available during normal play and in the intermission/death
-- * states, but never sits over the primary courier and live threat field in a
-- * wide first-load frame. */
- @media (min-width: 1400px) and (min-height: 880px) {
-   .ns-banner { display: none !important; }
- }
--body[data-capture="review"] .ns-panel--top-left { top: 18px; left: 20px; min-width: 178px; padding: 8px 10px; }
--body[data-capture="review"] .ns-panel--top-right { top: 18px; right: 20px; }
--body[data-capture="review"] .ns-eyebrow { color: #ff6d8f; }
--body[data-capture="review"] .ns-title { color: #f5fff8; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
--body[data-capture="review"] .ns-stats { font-size: 10px; gap: 1px 10px; }
--body[data-capture="review"] .ns-hp { margin-top: 7px; }
--body[data-capture="review"] .ns-stats strong { color: #d9fff2; }
--body[data-capture="review"] .ns-hp b { background: #ff6d8f; border-color: #ff6d8f; box-shadow: 0 0 8px rgba(255, 109, 143, 0.62); }
--body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
--
- .ns-panel {
-   position: absolute;
-   background: var(--hud-panel);
-@@ -85,20 +45,17 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
-   backdrop-filter: blur(6px);
-   box-shadow: 0 0 18px rgba(53, 230, 255, 0.12);
- }
--
- .ns-panel--top-left {
-   top: 14px;
-   left: 14px;
-   min-width: 184px;
-   padding: 9px 12px;
- }
--
- .ns-panel--top-right {
-   top: 14px;
-   right: 14px;
-   text-align: right;
- }
--
- .ns-eyebrow {
-   display: block;
-   font-size: 10px;
-@@ -107,31 +64,26 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
-   color: var(--neon-magenta);
-   margin-bottom: 2px;
- }
--
- .ns-title {
-   margin: 0 0 6px;
-   font-size: 13px;
-   letter-spacing: 0.04em;
-   color: #eef4ff;
- }
--
- .ns-stats {
-   display: grid;
-   grid-template-columns: auto auto;
-   gap: 2px 12px;
-   font-size: 11px;
- }
--
- .ns-stats span {
-   color: #8fa3c8;
- }
--
- .ns-stats strong {
-   color: #fff;
-   font-variant-numeric: tabular-nums;
-   text-align: right;
- }
--
- .ns-combo {
-   margin-top: 8px;
-   height: 6px;
-@@ -139,20 +91,17 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
-   background: rgba(255, 79, 216, 0.16);
-   overflow: hidden;
- }
--
- .ns-combo i {
-   display: block;
-   height: 100%;
-   background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta));
-   transition: width 90ms linear;
- }
--
- .ns-hp {
-   display: flex;
-   gap: 5px;
-   margin-top: 9px;
- }
--
- .ns-hp b {
-   width: 15px;
-   height: 11px;
-@@ -161,13 +110,11 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
-   background: var(--neon-cyan);
-   box-shadow: 0 0 7px rgba(53, 230, 255, 0.65);
- }
--
- .ns-hp b[data-empty="true"] {
-   background: transparent;
-   box-shadow: none;
-   border-color: rgba(143, 163, 200, 0.35);
- }
--
- .ns-help {
-   position: absolute;
-   bottom: 12px;
-@@ -180,7 +127,6 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
-   padding: 5px 14px;
-   white-space: nowrap;
- }
--
- .ns-banner {
-   position: absolute;
-   top: 26%;
-@@ -189,7 +135,6 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
-   text-align: center;
-   pointer-events: none;
- }
--
- .ns-banner h2 {
-   margin: 0;
-   font-size: 34px;
-@@ -198,23 +143,19 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
-   color: #fff;
-   text-shadow: 0 0 22px rgba(255, 79, 216, 0.75), 0 0 44px rgba(53, 230, 255, 0.45);
- }
--
- .ns-banner p {
-   margin: 6px 0 0;
-   font-size: 13px;
-   color: #b7c6e6;
- }
--
- .ns-summary {
-   font-size: 14px;
-   line-height: 1.7;
-   color: #d5e1fa;
- }
--
- .ns-summary strong {
-   color: #fff;
- }
--
- .ns-doors {
-   position: absolute;
-   bottom: 74px;
-@@ -224,7 +165,6 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
-   gap: 12px;
-   pointer-events: auto;
- }
--
- .ns-door {
-   appearance: none;
-   cursor: grab;
-@@ -239,26 +179,22 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
-   letter-spacing: 0.03em;
-   transition: transform 80ms ease, box-shadow 80ms ease;
- }
--
- .ns-door small {
-   display: block;
-   margin-top: 3px;
-   color: #93a5c9;
-   font-size: 11px;
- }
--
- .ns-door:hover,
- .ns-door:focus-visible {
-   transform: translateY(-2px);
-   box-shadow: 0 0 20px rgba(53, 230, 255, 0.35);
-   outline: none;
- }
--
- .ns-door[data-chosen="true"] {
-   border-color: var(--neon-amber);
-   box-shadow: 0 0 22px rgba(255, 200, 87, 0.4);
- }
--
- .ns-burst-button {
-   position: absolute;
-   right: 18px;
-@@ -273,18 +209,15 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
-   letter-spacing: 0.08em;
-   opacity: 0.58;
- }
--
- .ns-burst-button small {
-   display: block;
-   font-size: 9px;
-   letter-spacing: 0.03em;
- }
--
- .ns-burst-button[data-ready] {
-   opacity: 1;
-   box-shadow: 0 0 24px rgba(255, 200, 87, 0.45);
- }
--
- .ns-touch-stick {
-   position: absolute;
-   border-radius: 50%;
-@@ -293,7 +226,6 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
-   pointer-events: auto;
-   touch-action: none;
- }
--
- .ns-touch-knob {
-   position: absolute;
-   border-radius: 50%;
-@@ -301,7 +233,6 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
-   border: 1px solid rgba(255, 79, 216, 0.8);
-   pointer-events: none;
- }
--
- .ns-vignette {
-   position: absolute;
-   inset: 0;
-@@ -309,11 +240,9 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
-   opacity: 0;
-   background: radial-gradient(ellipse at center, transparent 52%, rgba(255, 79, 216, 0.32) 100%);
- }
--
- .ns-vignette[data-active="true"] {
-   opacity: 1;
- }
--
- @media (max-width: 600px) {
-   .ns-panel--top-left {
-     top: 8px;
+ void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
 diff --git a/apps/showcase-neon-swarm/src/v2/evidence/index.ts b/apps/showcase-neon-swarm/src/v2/evidence/index.ts
 deleted file mode 100644
 index 6b2a20f5b..000000000

@@ -1,11 +1,12 @@
-From b14d70ddb8913f45f1df4cb8f6ce96ff39f2587e Mon Sep 17 00:00:00 2001
+From 7870ac8755a4b67311eb5687d81c2a7136ffd529 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
-Date: Fri, 9 Oct 2026 13:40:31 +0000
+Date: Fri, 9 Oct 2026 13:45:46 +0000
 Subject: [PATCH] [qr-prd09] showcase-aurora-lander: delete evidence
  files+blocks (T5.8)
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
+ .../performance-report.json                   |  73 ----
  .../scripts/build-models.mjs                  | 346 ------------------
  .../scripts/build-review-extraction-bay.mjs   | 100 -----
  .../build-review-extraction-lander.mjs        | 101 -----
@@ -13,11 +14,11 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../scripts/register-sfx.mjs                  |  56 ---
  .../scripts/write-performance-report.ts       | 128 -------
  .../scripts/write-route-health.mjs            | 226 ------------
- apps/showcase-aurora-lander/src/legacy/hud.ts |  16 -
- .../showcase-aurora-lander/src/legacy/main.ts | 182 ---------
- .../src/legacy/styles.css                     |  94 -----
+ .../showcase-aurora-lander/src/legacy/main.ts | 234 ------------
+ apps/showcase-aurora-lander/src/main.ts       |  10 -
  .../src/v2/evidence/index.ts                  | 165 ---------
- 11 files changed, 1716 deletions(-)
+ 11 files changed, 1741 deletions(-)
+ delete mode 100644 apps/showcase-aurora-lander/performance-report.json
  delete mode 100644 apps/showcase-aurora-lander/scripts/build-models.mjs
  delete mode 100644 apps/showcase-aurora-lander/scripts/build-review-extraction-bay.mjs
  delete mode 100644 apps/showcase-aurora-lander/scripts/build-review-extraction-lander.mjs
@@ -27,6 +28,85 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  delete mode 100644 apps/showcase-aurora-lander/scripts/write-route-health.mjs
  delete mode 100644 apps/showcase-aurora-lander/src/v2/evidence/index.ts
 
+diff --git a/apps/showcase-aurora-lander/performance-report.json b/apps/showcase-aurora-lander/performance-report.json
+deleted file mode 100644
+index 0e8535365..000000000
+--- a/apps/showcase-aurora-lander/performance-report.json
++++ /dev/null
+@@ -1,73 +0,0 @@
+-{
+-  "schema": "aura3d-aurora-lander-performance/1.0",
+-  "generatedAt": "2026-09-03T02:09:51.800Z",
+-  "scope": "Headless route-local authored fixed-step/prediction/terrain timing plus current browser draw-call evidence; GPU frame-time parity is not claimed.",
+-  "budgets": {
+-    "fixedStepP95Ms": 1,
+-    "boundedPredictionP95Ms": 3,
+-    "terrainBuildP95Ms": 50,
+-    "strongestWhiteoutDrawCalls": 60
+-  },
+-  "observed": {
+-    "maxFixedStepP95Ms": 0.0007,
+-    "maxPredictionP95Ms": 0.1513,
+-    "terrainBuildP95Ms": 3.6643,
+-    "strongestWhiteoutDrawCalls": 40,
+-    "strongestWhiteoutVisibleNodes": 45
+-  },
+-  "sites": [
+-    {
+-      "siteId": 1,
+-      "grade": "soft",
+-      "completed": true,
+-      "frames": 851,
+-      "fuelFraction": 0.7952,
+-      "fixedStepMs": {
+-        "samples": 851,
+-        "p95": 0.0007,
+-        "max": 0.1499
+-      },
+-      "boundedPredictionMs": {
+-        "samples": 142,
+-        "p95": 0.1513,
+-        "max": 0.585
+-      }
+-    },
+-    {
+-      "siteId": 2,
+-      "grade": "soft",
+-      "completed": true,
+-      "frames": 851,
+-      "fuelFraction": 0.7685,
+-      "fixedStepMs": {
+-        "samples": 851,
+-        "p95": 0.0007,
+-        "max": 0.0286
+-      },
+-      "boundedPredictionMs": {
+-        "samples": 142,
+-        "p95": 0.1445,
+-        "max": 0.4627
+-      }
+-    },
+-    {
+-      "siteId": 3,
+-      "grade": "soft",
+-      "completed": true,
+-      "frames": 851,
+-      "fuelFraction": 0.7464,
+-      "fixedStepMs": {
+-        "samples": 851,
+-        "p95": 0.0002,
+-        "max": 0.0008
+-      },
+-      "boundedPredictionMs": {
+-        "samples": 142,
+-        "p95": 0.0277,
+-        "max": 0.4131
+-      }
+-    }
+-  ],
+-  "browserEvidence": "tests/reports/aurora-lander-campaign/03-strongest-whiteout.json",
+-  "pass": true
+-}
 diff --git a/apps/showcase-aurora-lander/scripts/build-models.mjs b/apps/showcase-aurora-lander/scripts/build-models.mjs
 deleted file mode 100644
 index 2b734fe4e..000000000
@@ -1328,71 +1408,8 @@ index d904fb630..000000000
 -    return statSync(child).isDirectory() ? walk(child) : [child];
 -  });
 -}
-diff --git a/apps/showcase-aurora-lander/src/legacy/hud.ts b/apps/showcase-aurora-lander/src/legacy/hud.ts
-index eb96bff3a..c5946a6b0 100644
---- a/apps/showcase-aurora-lander/src/legacy/hud.ts
-+++ b/apps/showcase-aurora-lander/src/legacy/hud.ts
-@@ -1,12 +1,4 @@
--/**
-- * DOM HUD for Aurora Lander — altitude, velocity, fuel, attitude, grade banners.
-- *
-- * The HUD is UI only. Every world claim (terrain contact, descent motion, dust)
-- * is proven by Aura3D-rendered pixels and runtime telemetry elsewhere; this module
-- * just keeps the player informed and exposes stable ids the browser specs read.
-- */
- import { HARD_TOUCHDOWN_MAX_VSPEED } from "../gameplay/touchdown";
--
- export interface HudBindings {
-   readonly siteName: HTMLElement;
-   readonly altitude: HTMLElement;
-@@ -21,7 +13,6 @@ export interface HudBindings {
-   readonly gustFlag: HTMLElement;
-   readonly ghostFlag: HTMLElement;
- }
--
- export function bindHud(root: HTMLElement | null): HudBindings {
-   if (!root) throw new Error("Aurora Lander HUD root #hud is missing.");
-   root.innerHTML = `
-@@ -64,13 +55,11 @@ export function bindHud(root: HTMLElement | null): HudBindings {
-     ghostFlag: requireElement(root, "hud-ghost-flag")
-   };
- }
--
- function requireElement(root: HTMLElement, id: string): HTMLElement {
-   const element = root.querySelector("#" + id);
-   if (!element) throw new Error("Aurora Lander HUD element missing: #" + id);
-   return element as HTMLElement;
- }
--
- export interface HudFrameState {
-   readonly siteLabel: string;
-   readonly altitudeMeters: number;
-@@ -83,12 +72,10 @@ export interface HudFrameState {
-   readonly gustTelegraph: boolean;
-   readonly ghostActive: boolean;
- }
--
- const round = (value: number, digits = 1): number => {
-   const f = 10 ** digits;
-   return Math.round(value * f) / f;
- };
--
- export function updateHud(bindings: HudBindings, state: HudFrameState): void {
-   bindings.siteName.textContent = state.siteLabel;
-   bindings.altitude.textContent = `${round(Math.max(0, state.altitudeMeters))} m`;
-@@ -107,10 +94,7 @@ export function updateHud(bindings: HudBindings, state: HudFrameState): void {
-   bindings.gustFlag.hidden = !state.gustTelegraph;
-   bindings.ghostFlag.hidden = !state.ghostActive;
- }
--
- export type BannerKind = "grade-soft" | "grade-hard" | "grade-crash" | "site-clear" | null;
--
--/** Show a grade/clear banner; pass null to hide. */
- export function showBanner(bindings: HudBindings, kind: BannerKind, text: string): void {
-   if (kind === null) {
-     bindings.banner.hidden = true;
 diff --git a/apps/showcase-aurora-lander/src/legacy/main.ts b/apps/showcase-aurora-lander/src/legacy/main.ts
-index c084d0a50..c17903d00 100644
+index c084d0a50..be3479ed4 100644
 --- a/apps/showcase-aurora-lander/src/legacy/main.ts
 +++ b/apps/showcase-aurora-lander/src/legacy/main.ts
 @@ -1,19 +1,3 @@
@@ -1423,7 +1440,7 @@ index c084d0a50..c17903d00 100644
  import { bindAuroraDrive } from "../scenario-drive";
  import { assets } from "../../../../src/aura-assets";
  import {
-@@ -81,55 +64,25 @@ import {
+@@ -81,55 +64,23 @@ import {
  } from "../gameplay/ghost";
  import { bindHud, showBanner, updateHud, type BannerKind, type HudBindings } from "./hud";
  import { createLanderAudio, type LanderAudioCue, type LanderAudioController } from "./lander-audio";
@@ -1443,8 +1460,8 @@ index c084d0a50..c17903d00 100644
 - * controls and must complete the three-site campaign on software-rendered workers.
 - */
  const PLAYER_MAX_CATCHUP_SECONDS = 0.5;
- const DROP_EVIDENCE_MAX_CATCHUP_SECONDS = 2;
- const MAX_SUBSTEPS = Math.round(DROP_EVIDENCE_MAX_CATCHUP_SECONDS / FIXED_DT);
+-const DROP_EVIDENCE_MAX_CATCHUP_SECONDS = 2;
+-const MAX_SUBSTEPS = Math.round(DROP_EVIDENCE_MAX_CATCHUP_SECONDS / FIXED_DT);
 -/**
 - * The opening approach is intentionally framed as a launch/deorbit hand-off:
 - * a renderer-owned gantry sits under the typed lander while it is high above
@@ -1479,7 +1496,7 @@ index c084d0a50..c17903d00 100644
  const accessibilitySettings = game.accessibility.settings([
    game.accessibility.reducedMotion({
      enabled: typeof window.matchMedia === "function"
-@@ -138,7 +91,6 @@ const accessibilitySettings = game.accessibility.settings([
+@@ -138,7 +89,6 @@ const accessibilitySettings = game.accessibility.settings([
  ]);
  const reducedMotion: boolean = accessibilitySettings.reducedMotion;
  const landerAudio: LanderAudioController = createLanderAudio(reducedMotion);
@@ -1487,7 +1504,7 @@ index c084d0a50..c17903d00 100644
  let audioUnlocked = false;
  const unlockAudio = (): void => {
    if (audioUnlocked) return;
-@@ -148,15 +100,12 @@ const unlockAudio = (): void => {
+@@ -148,15 +98,12 @@ const unlockAudio = (): void => {
  };
  window.addEventListener("keydown", unlockAudio, { once: true });
  window.addEventListener("pointerdown", unlockAudio, { once: true });
@@ -1503,7 +1520,7 @@ index c084d0a50..c17903d00 100644
  const input: GameInputController = game.input({
    actions: {
      thrust: ["KeyW", "ArrowUp"],
-@@ -172,11 +121,6 @@ const input: GameInputController = game.input({
+@@ -172,11 +119,6 @@ const input: GameInputController = game.input({
    },
    bufferMs: 80
  });
@@ -1515,7 +1532,7 @@ index c084d0a50..c17903d00 100644
  type TimedFlightControl = "thrust" | "left" | "right";
  const timedControlForCode: Readonly<Record<string, TimedFlightControl | undefined>> = {
    KeyW: "thrust", ArrowUp: "thrust",
-@@ -213,11 +157,8 @@ window.addEventListener("keyup", (event) => {
+@@ -213,11 +155,8 @@ window.addEventListener("keyup", (event) => {
    if (startedAt !== undefined) addTimedControlSeconds(control, (performance.now() - startedAt) / 1000);
    timedControlStartedAt.delete(control);
  });
@@ -1527,7 +1544,7 @@ index c084d0a50..c17903d00 100644
  let state: LanderState = createLanderState(SITES[0]!.spawn, SITES[0]!.fuelBudget);
  let previousControls: Controls = { thrust: 0, rotate: 0 };
  let siteScores: number[] = [];
-@@ -238,7 +179,6 @@ let contactQueryAgreement: boolean | null = null;
+@@ -238,7 +177,6 @@ let contactQueryAgreement: boolean | null = null;
  let padSensorArmed = false;
  let fuelLowCueFired = false;
  let gustWarnCueFiredForCycle = false;
@@ -1535,7 +1552,7 @@ index c084d0a50..c17903d00 100644
  let rcsPuffArmed = true;
  let bannerTimer = 0;
  let advanceTimer = -1;
-@@ -247,14 +187,12 @@ let crashDebris: { x: number; y: number; z: number; vx: number; vy: number; vz:
+@@ -247,14 +185,12 @@ let crashDebris: { x: number; y: number; z: number; vx: number; vy: number; vz:
  let shockwaveAge = -1;
  let latestPrediction: LandingPrediction | null = null;
  let touchThrust = 0;
@@ -1550,7 +1567,7 @@ index c084d0a50..c17903d00 100644
  const collisionWorld = game.collisionWorld({
    backend: "rapier",
    gravity: [0, 0, 0]
-@@ -262,10 +200,7 @@ const collisionWorld = game.collisionWorld({
+@@ -262,10 +198,7 @@ const collisionWorld = game.collisionWorld({
  let surfaceQuery: MeshSurfaceQuery | undefined;
  let field: TerrainField | undefined;
  let currentSite: LanderSite = SITES[0]!;
@@ -1561,7 +1578,7 @@ index c084d0a50..c17903d00 100644
  let landerNode!: AuraRuntimeNodeHandle;
  let extractionLanderNode!: AuraRuntimeNodeHandle;
  let ghostNode!: AuraRuntimeNodeHandle;
-@@ -281,7 +216,6 @@ let predictionNode!: AuraRuntimeNodeHandle;
+@@ -281,7 +214,6 @@ let predictionNode!: AuraRuntimeNodeHandle;
  let extractionNodes: AuraRuntimeNodeHandle[] = [];
  let extractionInfrastructureNodes: AuraRuntimeNodeHandle[] = [];
  let extractionBackdropNode!: AuraRuntimeNodeHandle;
@@ -1569,7 +1586,7 @@ index c084d0a50..c17903d00 100644
  interface ExtractionInfrastructurePart {
    readonly id: string;
    readonly offset: readonly [number, number, number];
-@@ -290,11 +224,6 @@ interface ExtractionInfrastructurePart {
+@@ -290,11 +222,6 @@ interface ExtractionInfrastructurePart {
    readonly emissive?: string;
    readonly metallic?: number;
  }
@@ -1581,7 +1598,7 @@ index c084d0a50..c17903d00 100644
  const EXTRACTION_INFRASTRUCTURE: readonly ExtractionInfrastructurePart[] = [
    { id: "bay-deck", offset: [0, 0.02, 0.25], scale: [12.6, 0.16, 10.8], color: "#34343a", metallic: 0.62 },
    { id: "bay-rear-wall", offset: [0, 2.8, -5.05], scale: [12.6, 5.6, 0.26], color: "#4b403c", emissive: "#241c1a" },
-@@ -334,8 +263,6 @@ const EXTRACTION_INFRASTRUCTURE: readonly ExtractionInfrastructurePart[] = [
+@@ -334,8 +261,6 @@ const EXTRACTION_INFRASTRUCTURE: readonly ExtractionInfrastructurePart[] = [
    { id: "threshold-left", offset: [-1.55, 0.17, 5.7], scale: [1.15, 0.1, 0.14], color: "#fef3c7", emissive: "#f59e0b" },
    { id: "threshold-right", offset: [1.55, 0.17, 5.7], scale: [1.15, 0.1, 0.14], color: "#fef3c7", emissive: "#f59e0b" }
  ];
@@ -1590,7 +1607,7 @@ index c084d0a50..c17903d00 100644
  const mountedEvidence = {
    schema: "aura3d-showcase-aurora-lander-evidence/1.0",
    appId: "showcase-aurora-lander",
-@@ -400,27 +327,6 @@ const mountedEvidence = {
+@@ -400,27 +325,6 @@ const mountedEvidence = {
      { id: "auroraPadBeacon", typedRef: "assets.auroraPadBeacon", role: "landingZoneProp" }
    ]
  };
@@ -1618,7 +1635,7 @@ index c084d0a50..c17903d00 100644
  interface AuroraSheet {
    readonly x: number;
    readonly y: number;
-@@ -434,20 +340,6 @@ interface AuroraSheet {
+@@ -434,20 +338,6 @@ interface AuroraSheet {
    readonly drive: number;
    readonly colorIndex: number;
  }
@@ -1639,7 +1656,7 @@ index c084d0a50..c17903d00 100644
  function auroraCurtains(entry: LanderSite): readonly AuroraSheet[] {
    // The band is authored to hug the terrain ridge, not to tile the whole sky. From
    // the chase camera the ridge sits near -39deg elevation, so a curtain spanning
-@@ -486,10 +378,8 @@ function auroraCurtains(entry: LanderSite): readonly AuroraSheet[] {
+@@ -486,10 +376,8 @@ function auroraCurtains(entry: LanderSite): readonly AuroraSheet[] {
    void entry;
    return sheets;
  }
@@ -1650,7 +1667,7 @@ index c084d0a50..c17903d00 100644
  function auroraBandNodes(entry: LanderSite) {
    const bands = [];
    const colors = [entry.auroraColor, "#818cf8", "#38bdf8", "#ec4899", "#34d399"];
-@@ -591,14 +481,12 @@ function auroraBandNodes(entry: LanderSite) {
+@@ -591,14 +479,12 @@ function auroraBandNodes(entry: LanderSite) {
    }
    return bands;
  }
@@ -1665,7 +1682,7 @@ index c084d0a50..c17903d00 100644
  function buildWorldScene() {
    // §6.9.12 T1.12: the luma nudge is reverted — the sky reads as the night
    // void it is; the v2 shell replaces this with the K1 starfield + aurora
-@@ -955,8 +843,6 @@ function buildWorldScene() {
+@@ -955,8 +841,6 @@ function buildWorldScene() {
  
    return builder;
  }
@@ -1674,7 +1691,7 @@ index c084d0a50..c17903d00 100644
  const auroraGame = createGame({
    id: "showcase-aurora-lander",
    target: "#app",
-@@ -976,7 +862,6 @@ const auroraGame = createGame({
+@@ -976,7 +860,6 @@ const auroraGame = createGame({
  });
  const app = auroraGame.app;
  auroraGame.start();
@@ -1682,7 +1699,7 @@ index c084d0a50..c17903d00 100644
  const auroraTween = createTweenEngine();
  const auroraFx = createFxParticlePass(app.effects);
  const auroraJuice = createJuice<"touch-soft" | "touch-hard" | "crash" | "pad-lock" | "site-clear" | "launch">({
-@@ -999,17 +884,14 @@ bindAuroraDrive({
+@@ -999,53 +882,14 @@ bindAuroraDrive({
    stepSim: (dt) => { app.pause(); app.advance(dt); app.resume(); },
    stepRender: (dt) => { app.pause(); app.advance(dt); app.resume(); },
  });
@@ -1697,19 +1714,46 @@ index c084d0a50..c17903d00 100644
  }
  const siteGroups: SiteGroupHandles[] = [];
 -
- function captureNodeHandles(): void {
-   landerNode = requireNode("lander");
-   extractionLanderNode = requireNode("extraction-lander");
-@@ -1044,8 +926,6 @@ function captureNodeHandles(): void {
-  });
-   padLights = siteGroups[siteIndex]!.padLights;
- }
+-function captureNodeHandles(): void {
+-  landerNode = requireNode("lander");
+-  extractionLanderNode = requireNode("extraction-lander");
+-  ghostNode = requireNode("lander-ghost");
+-  plumeNode = requireNode("thrust-plume");
+-  shockwaveNode = requireNode("impact-shockwave");
+-  predictionNode = requireNode("landing-prediction");
+-  auroraBands = AURORA_SHEET_NAMES.map((name) => requireNode(name));
+-  dustNodes = Array.from({ length: 12 }, (_, i) => requireNode(`dust-${i + 1}`));
+-  debrisNodes = Array.from({ length: 10 }, (_, i) => requireNode(`debris-${i + 1}`));
+-  whiteoutNodes = Array.from({ length: 72 }, (_, i) => requireNode(`whiteout-${i + 1}`));
+-  extractionNodes = [requireNode("extraction-title"), requireNode("extraction-halo")];
+-  extractionBackdropNode = requireNode("extraction-bay-backdrop");
+-  extractionInfrastructureNodes = EXTRACTION_INFRASTRUCTURE.map((part) => requireNode(`extraction-${part.id}`));
+-  extractionInfrastructureNodes.forEach((node) => node.setVisible(false));
+-  ghostPlaybackNode = ghostNode;
+-
+-  SITES.forEach((site, index) => {
+-    const prefix = `s${site.id}`;
+-    const nodes = [
+-      requireNode(`${prefix}-terrain`),
+-      requireNode(`${prefix}-pad-ring`),
+-      requireNode(`${prefix}-beacon-left`),
+-      requireNode(`${prefix}-beacon-right`),
+-      requireNode(`${prefix}-marker`)
+- ];
+-    const lights = [1, 2, 3, 4].map((i) => requireNode(`${prefix}-pad-light-${i}`));
+-    siteGroups[index] = { nodes: [...nodes, ...lights], padLights: lights };
+-    // Only the active site renders; every other group parks hidden.
+-    const isActive = index === siteIndex;
+-    [...nodes, ...lights].forEach((handle) => handle.setVisible(isActive));
+- });
+-  padLights = siteGroups[siteIndex]!.padLights;
+-}
 -
 -// ---- collision world per site -------------------------------------------------
  function rebuildCollisions(): void {
    if (!field) throw new Error("Terrain field missing before collision rebuild.");
    collisionWorld.clear();
-@@ -1080,8 +960,6 @@ function rebuildCollisions(): void {
+@@ -1080,8 +924,6 @@ function rebuildCollisions(): void {
    contactQueryAgreement = null;
    padSensorArmed = false;
  }
@@ -1718,7 +1762,7 @@ index c084d0a50..c17903d00 100644
  function resetAttempt(recordGhostStart = true): void {
    phase = "flying";
    auroraGame.session.resume();
-@@ -1121,7 +999,6 @@ function resetAttempt(recordGhostStart = true): void {
+@@ -1121,7 +963,6 @@ function resetAttempt(recordGhostStart = true): void {
    extractionLanderNode.setPosition(0, -50, 0);
    extractionLanderNode.setVisible(false);
  }
@@ -1726,7 +1770,7 @@ index c084d0a50..c17903d00 100644
  function loadSite(index: number): void {
    // Visibility swap only — the world scene is built once, so the renderer never
    // rebuilds mid-session.
-@@ -1139,8 +1016,6 @@ function loadSite(index: number): void {
+@@ -1139,8 +980,6 @@ function loadSite(index: number): void {
    updatePanelBrief();
    resetAttempt();
  }
@@ -1735,7 +1779,7 @@ index c084d0a50..c17903d00 100644
  function spawnStateFor(site: LanderSite): LanderState {
    if (!dropEvidenceMode && !approachEvidenceMode) return createLanderState(site.spawn, site.fuelBudget);
    const pad = site.pads[0]!;
-@@ -1150,8 +1025,6 @@ function spawnStateFor(site: LanderSite): LanderState {
+@@ -1150,8 +989,6 @@ function spawnStateFor(site: LanderSite): LanderState {
    // and site transitions complete within the browser gate even on a software-rendered worker.
    return createLanderState({ x: pad.x, y: padHeight + (dropEvidenceMode ? 14 : 26), z: pad.z }, site.fuelBudget);
  }
@@ -1744,7 +1788,7 @@ index c084d0a50..c17903d00 100644
  function beginGhostFromBest(): void {
    ghostActive = false;
    const raw = loadBestRunRaw(currentSite.id);
-@@ -1170,8 +1043,6 @@ function beginGhostFromBest(): void {
+@@ -1170,8 +1007,6 @@ function beginGhostFromBest(): void {
      ghostActive = false;
    }
  }
@@ -1753,7 +1797,7 @@ index c084d0a50..c17903d00 100644
  function maybeRecordBestRun(samples: GhostSample[], grade: LandingGrade, score: number): void {
    if (grade === "crash" || score <= bestScoreThisSite) return;
    bestScoreThisSite = score;
-@@ -1183,16 +1054,12 @@ function maybeRecordBestRun(samples: GhostSample[], grade: LandingGrade, score:
+@@ -1183,16 +1018,12 @@ function maybeRecordBestRun(samples: GhostSample[], grade: LandingGrade, score:
    const attempt = { siteId: currentSite.id, events, samples };
    saveBestRun(currentSite.id, exportBestRun(attempt, replay, grade, score));
  }
@@ -1770,7 +1814,7 @@ index c084d0a50..c17903d00 100644
  function setupPanel(): void {
    const panel = document.getElementById("panel");
    if (!panel) throw new Error("Aurora Lander panel #panel is missing.");
-@@ -1275,8 +1142,6 @@ function setupPanel(): void {
+@@ -1275,8 +1106,6 @@ function setupPanel(): void {
    const pauseButton = document.getElementById("touch-pause");
    pauseButton?.addEventListener("click", () => togglePause());
  }
@@ -1779,7 +1823,7 @@ index c084d0a50..c17903d00 100644
  interface GradingContext {
    readonly vspeed: number;
    readonly hspeed: number;
-@@ -1285,12 +1150,6 @@ interface GradingContext {
+@@ -1285,12 +1114,6 @@ interface GradingContext {
    readonly insidePadZone: boolean;
    readonly sample: SurfaceSample;
  }
@@ -1792,7 +1836,7 @@ index c084d0a50..c17903d00 100644
  function gradeFromContact(context: GradingContext): void {
    const graded = gradeTouchdown({
      vspeed: context.vspeed,
-@@ -1345,7 +1204,6 @@ function gradeFromContact(context: GradingContext): void {
+@@ -1345,7 +1168,6 @@ function gradeFromContact(context: GradingContext): void {
    );
    bannerTimer = isLastSite ? 8 : 3;
  }
@@ -1800,7 +1844,7 @@ index c084d0a50..c17903d00 100644
  function spawnCrashDebris(): void {
    if (!field) return;
    const ground = sampleGridHeight(field, state.x, state.z);
-@@ -1361,16 +1219,12 @@ function spawnCrashDebris(): void {
+@@ -1361,16 +1183,12 @@ function spawnCrashDebris(): void {
    shockwaveAge = reducedMotion ? -1 : 0;
    if (!reducedMotion) shockwaveNode.setPosition(state.x, ground + 0.25, state.z);
  }
@@ -1817,7 +1861,7 @@ index c084d0a50..c17903d00 100644
  function tick(dtFixed: number): void {
    frameCount += 1;
    if (auroraGame.session.paused || phase !== "flying") return;
-@@ -1525,20 +1379,16 @@ function tick(dtFixed: number): void {
+@@ -1525,20 +1343,16 @@ function tick(dtFixed: number): void {
      }
    }
  }
@@ -1838,7 +1882,7 @@ index c084d0a50..c17903d00 100644
  function handleControlEdges(): void {
    const restartRequested = input.pressed("restart") || input.pressed("quickRestart");
    if (restartRequested) {
-@@ -1555,8 +1405,6 @@ function handleControlEdges(): void {
+@@ -1555,8 +1369,6 @@ function handleControlEdges(): void {
    if (input.pressed("ghostToggle")) toggleGhost();
    if (input.pressed("pause")) togglePause();
  }
@@ -1847,7 +1891,7 @@ index c084d0a50..c17903d00 100644
  function renderUpdate(dtFrame: number): void {
    if (!field) return;
  
-@@ -1789,7 +1637,6 @@ function renderUpdate(dtFrame: number): void {
+@@ -1789,7 +1601,6 @@ function renderUpdate(dtFrame: number): void {
  
    publishEvidence();
  }
@@ -1855,19 +1899,28 @@ index c084d0a50..c17903d00 100644
  function publishEvidence(): void {
    const diagnostics = app.diagnostics();
    const groundHeight = field ? sampleGridHeight(field, state.x, state.z) : 0;
-@@ -1830,8 +1677,6 @@ function publishEvidence(): void {
+@@ -1830,50 +1641,7 @@ function publishEvidence(): void {
      }
    }
  }
 -
 -// ---- main loop -----------------------------------------------------------------
- app.onFrame((frame) => {
-   syncTimedFlightControls(performance.now());
-   const maxCatchupSeconds = dropEvidenceMode
-@@ -1848,32 +1693,7 @@ app.onFrame((frame) => {
-   }
-   renderUpdate(frame.dt);
- });
+-app.onFrame((frame) => {
+-  syncTimedFlightControls(performance.now());
+-  const maxCatchupSeconds = dropEvidenceMode
+-    ? DROP_EVIDENCE_MAX_CATCHUP_SECONDS
+-    : PLAYER_MAX_CATCHUP_SECONDS;
+-  accumulator = Math.min(accumulator + frame.dt, maxCatchupSeconds);
+-  let substeps = 0;
+-  while (accumulator >= FIXED_DT && substeps < MAX_SUBSTEPS) {
+-    input.update(FIXED_DT);
+-    handleControlEdges();
+-    tick(FIXED_DT);
+-    accumulator -= FIXED_DT;
+-    substeps += 1;
+-  }
+-  renderUpdate(frame.dt);
+-});
 -
 -// ---- boot ----------------------------------------------------------------------
  setupPanel();
@@ -1897,269 +1950,43 @@ index c084d0a50..c17903d00 100644
  if (initialSiteIndex > 0) {
    loadSite(initialSiteIndex);
  } else {
-@@ -1883,5 +1703,3 @@ if (initialSiteIndex > 0) {
+@@ -1883,5 +1651,3 @@ if (initialSiteIndex > 0) {
    surfaceQuery = entry.query;
    resetAttempt();
  }
 -mountedEvidence.mounted = true;
 -mountedEvidence.status = "ready";
-diff --git a/apps/showcase-aurora-lander/src/legacy/styles.css b/apps/showcase-aurora-lander/src/legacy/styles.css
-index de7976cb3..106d06402 100644
---- a/apps/showcase-aurora-lander/src/legacy/styles.css
-+++ b/apps/showcase-aurora-lander/src/legacy/styles.css
-@@ -1,4 +1,3 @@
--/* Aurora Lander HUD chrome — DOM is UI only; all world rendering is Aura3D pixels. */
- :root {
-   --aurora-teal: #6ee7d7;
-   --aurora-dim: #274156;
-@@ -7,9 +6,7 @@
-   --bad: #f87171;
-   --good: #4ade80;
+diff --git a/apps/showcase-aurora-lander/src/main.ts b/apps/showcase-aurora-lander/src/main.ts
+index 6bb6d93ce..f25df6617 100644
+--- a/apps/showcase-aurora-lander/src/main.ts
++++ b/apps/showcase-aurora-lander/src/main.ts
+@@ -1,14 +1,6 @@
+-// apps/showcase-aurora-lander/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
+-// Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-aurora-lander`
+-// (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
+-// acceptance (§10 step 5).
+ import { resolveQrFlags } from "@aura3d/engine/contracts";
+-
+ const ROUTE_FLAG = "A3D_QR_ROUTE_AURORA_LANDER" as const;
+ const DEFAULT_ON = false;
+-
+-/** Accepts `?a3d-qr=…,route-aurora-lander` and `?a3d-qr=…,A3D_QR_ROUTE_AURORA_LANDER`.
+- *  Returns undefined when the flag is absent (CCR-14-2 replaces this helper). */
+ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const raw = new URL(loc.href).searchParams.get("a3d-qr");
+   if (raw === null) return undefined;
+@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+     ? true
+     : undefined;
  }
 -
- * { box-sizing: border-box; }
+ const flags = resolveQrFlags({
+   url: location.href,
+   env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR },
+   options: { [ROUTE_FLAG]: routeFlagFromUrl(location, ROUTE_FLAG) ?? DEFAULT_ON }
+ });
 -
- html, body {
-   margin: 0;
-   padding: 0;
-@@ -17,29 +14,24 @@ html, body {
-   color: #dbe7f3;
-   font-family: "SF Mono", "Cascadia Mono", Consolas, monospace;
- }
--
- .shell {
-   display: flex;
-   width: 100vw;
-   height: 100vh;
-   overflow: hidden;
- }
--
- .viewport {
-   position: relative;
-   flex: 1;
-   min-width: 0;
-   overflow: hidden;
- }
--
- .stage,
- #app {
-   position: absolute;
-   inset: 0;
- }
--
- .stage canvas { display: block; }
--
- .hud {
-   position: absolute;
-   /* Spanning the play area (not just hugging the top-left) lets the grade banner
-@@ -52,13 +44,11 @@ html, body {
-   pointer-events: none;
-   z-index: 5;
- }
--
- .hud-row {
-   display: flex;
-   gap: 10px;
-   flex-wrap: wrap;
- }
--
- .hud-chip {
-   background: var(--panel-bg);
-   border: 1px solid var(--aurora-dim);
-@@ -68,12 +58,10 @@ html, body {
-   letter-spacing: 0.04em;
-   white-space: nowrap;
- }
--
- .hud-chip .label { color: #7f96ad; margin-right: 6px; }
- .hud-chip.warn { border-color: var(--warn); color: var(--warn); }
- .hud-chip.bad { border-color: var(--bad); color: var(--bad); }
- .hud-chip.good { border-color: var(--good); color: var(--good); }
--
- .fuel-track {
-   width: 180px;
-   height: 10px;
-@@ -82,20 +70,11 @@ html, body {
-   overflow: hidden;
-   background: rgba(10, 18, 30, 0.9);
- }
--
- .fuel-fill {
-   height: 100%;
-   background: linear-gradient(90deg, var(--aurora-dim), var(--aurora-teal));
-   transition: width 120ms linear;
- }
--
--/*
-- * The grade banner previously inherited the full HUD column width and a 40px
-- * monospace face, so a crash rendered as a ~130px slab across the whole play
-- * area and hid the terrain the player needed to read. It is now a compact
-- * bottom-centre pill: still the primary fail signal, but it no longer covers
-- * the world.
-- */
- .banner {
-   position: absolute;
-   left: 50%;
-@@ -114,23 +93,19 @@ html, body {
-   border: 1px solid var(--aurora-dim);
-   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
- }
--
- .banner.grade-soft { color: var(--good); }
- .banner.grade-hard { color: var(--warn); }
- .banner.grade-crash { color: var(--bad); }
- .banner.site-clear { color: var(--aurora-teal); }
--
- .gust-flag {
-   color: var(--warn);
-   border-color: var(--warn);
-   animation: gust-pulse 600ms ease-in-out infinite alternate;
- }
--
- @keyframes gust-pulse {
-   from { opacity: 0.55; }
-   to { opacity: 1; }
- }
--
- .panel {
-   width: 252px;
-   padding: 14px;
-@@ -141,14 +116,12 @@ html, body {
-   gap: 12px;
-   overflow-y: auto;
- }
--
- .panel h1 {
-   font-size: 16px;
-   margin: 0 0 2px;
-   color: var(--aurora-teal);
-   letter-spacing: 0.06em;
- }
--
- .panel h2 {
-   font-size: 11px;
-   text-transform: uppercase;
-@@ -156,7 +129,6 @@ html, body {
-   color: #7f96ad;
-   margin: 8px 0 4px;
- }
--
- .panel p, .panel li { font-size: 12px; line-height: 1.55; margin: 2px 0; }
- .panel ul { padding-left: 16px; margin: 2px 0; }
- .panel kbd {
-@@ -166,63 +138,6 @@ html, body {
-   padding: 1px 6px;
-   font-size: 11px;
- }
--
--/* The exact premium-indie matrix is a full-bleed gameplay artifact. Keep real
--   telemetry, but remove the briefing/control column and DOM result banner so
--   the renderer-owned lander, extraction title, pad, halo, and terrain own the
--   pixels. Normal desktop and touch layouts are unchanged. */
--body[data-capture="review"] .panel,
--body[data-capture="review"] .banner,
--body[data-capture="review"] .gust-flag,
--body[data-capture="review"] .ghost-flag {
--  display: none !important;
--}
--
--body[data-capture="review"] .viewport {
--  flex: 1 1 100vw;
--  width: 100vw;
--}
--
--body[data-capture="review"] .hud {
--  top: 14px;
--  left: 14px;
--  max-width: 560px;
--  gap: 4px;
--  filter: drop-shadow(0 10px 18px rgba(0, 10, 22, 0.32));
--}
--
--body[data-capture="review"] .hud-row {
--  gap: 3px;
--}
--
--body[data-capture="review"] .hud-chip {
--  min-height: 24px;
--  padding: 5px 12px 4px;
--  border: 1px solid rgba(103, 232, 249, 0.42);
--  border-radius: 0;
--  background: linear-gradient(135deg, rgba(5, 24, 39, 0.92), rgba(9, 47, 62, 0.78));
--  color: #e8fbff;
--  font-size: 10px;
--  font-weight: 800;
--  letter-spacing: 0.1em;
--  clip-path: polygon(7px 0, 100% 0, calc(100% - 7px) 100%, 0 100%);
--  box-shadow: inset 0 2px rgba(164, 244, 255, 0.1);
--  text-transform: uppercase;
--}
--
--body[data-capture="review"] .hud-chip:first-child {
--  border-left: 4px solid #f6b75e;
--  color: #baf6ff;
--}
--
--body[data-capture="review"] .hud-chip .label {
--  color: #76b7c4;
--}
--
--body[data-capture="review"] .fuel-track {
--  width: 116px;
--}
--
- .touch-controls {
-   /* A fixed five-column grid overflowed the narrower panel and clipped the RCS
-      buttons. Flex-wrap keeps every control reachable at panel width. */
-@@ -232,11 +147,8 @@ body[data-capture="review"] .fuel-track {
-   align-items: center;
-   margin-top: 4px;
- }
--
- .touch-controls > span:not(.fuel-track) { display: none; }
--
- .touch-button { flex: 1 1 68px; min-width: 0; }
--
- .touch-slider {
-   writing-mode: vertical-lr;
-   direction: rtl;
-@@ -244,7 +156,6 @@ body[data-capture="review"] .fuel-track {
-   height: 130px;
-   accent-color: var(--aurora-teal);
- }
--
- .touch-button {
-   background: #101c2c;
-   border: 1px solid var(--aurora-dim);
-@@ -262,20 +173,16 @@ body[data-capture="review"] .fuel-track {
-   align-items: center;
-   justify-content: center;
- }
--
- .touch-button:active { border-color: var(--aurora-teal); color: var(--aurora-teal); }
--
- .score-table { width: 100%; font-size: 11.5px; border-collapse: collapse; }
- .score-table td { padding: 2px 4px; border-bottom: 1px solid rgba(39, 65, 86, 0.55); }
- .score-table td:last-child { text-align: right; color: var(--aurora-teal); }
--
- .prototype-tag {
-   font-size: 10px;
-   text-transform: uppercase;
-   letter-spacing: 0.18em;
-   color: #7f96ad;
- }
--
- @media (max-width: 760px) {
-   .shell { flex-direction: column; }
-   .viewport {
-@@ -319,7 +226,6 @@ body[data-capture="review"] .fuel-track {
-   }
-   .banner { font-size: 20px; }
- }
--
- .panel-hint { font-size: 11px; opacity: 0.78; margin: 4px 0 8px; }
- .panel-toggle {
-   appearance: none;
+ void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
 diff --git a/apps/showcase-aurora-lander/src/v2/evidence/index.ts b/apps/showcase-aurora-lander/src/v2/evidence/index.ts
 deleted file mode 100644
 index e9c48049d..000000000
