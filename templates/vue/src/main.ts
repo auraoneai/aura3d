@@ -14,8 +14,7 @@ const App = {
         width: canvas.value.width,
         height: canvas.value.height,
         clearColor: [0.02, 0.025, 0.03, 1],
-        preserveDrawingBuffer: true
-      });
+              });
 
       renderer.render([
         {

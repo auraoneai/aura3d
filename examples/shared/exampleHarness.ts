@@ -80,8 +80,7 @@ export async function createExample(metadata: ExampleMetadata, setup: ExampleSet
         height: canvas.height,
         clearColor: [0.02, 0.025, 0.03, 1],
         antialias: false,
-        preserveDrawingBuffer: true,
-      });
+              });
       diagnostics = renderer.render(state.renderSource ?? state.renderItems!);
     } else if (state.renderItems && state.renderItems.length > 0) {
       const mockRenderer = await Renderer.create({

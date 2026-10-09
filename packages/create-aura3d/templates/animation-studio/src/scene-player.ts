@@ -13,7 +13,7 @@
  * production-runtime typed GLB actors + rendering primitives), exactly as the old route.
  */
 
-import { A3DRenderer, TextureBinding as EngineTextureBinding } from "@aura3d/engine/advanced-runtime";
+import { TextureBinding as EngineTextureBinding } from "@aura3d/engine/renderer";
 import { createPerformanceGovernor, createSideViewGameRenderPreset, createStudioLighting, createTypedGLBActor, type TypedGLBActor } from "@aura3d/engine/production-runtime";
 import { createCameraPathFromPreset, sampleCameraPath, type CameraPath } from "@aura3d/engine";
 // I1 clean-room correctness: import the rendering/scene PRIMITIVES from the engine's own subpaths
@@ -66,6 +66,7 @@ import {
   type FootIkRig,
   type GroundRaycaster
 } from "@aura3d/animation";
+import { Renderer } from "@aura3d/engine/renderer";
 
 // ---------------------------------------------------------------------------
 // Proof shapes (unchanged from the old route so the capture script keeps working).
@@ -537,7 +538,7 @@ export async function mountScenePlayer(doc: EpisodeDocument): Promise<void> {
   );
 
   // 7. Renderer + render source.
-  const renderer = await A3DRenderer.create({
+  const renderer = await Renderer.create({
     canvas,
     width,
     height,

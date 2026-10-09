@@ -137,8 +137,7 @@ async function boot(): Promise<void> {
       width: CANVAS_WIDTH,
       height: CANVAS_HEIGHT,
       clearColor: [0.035, 0.055, 0.09, 1],
-      preserveDrawingBuffer: true
-    });
+          });
     window.addEventListener("beforeunload", () => renderer.dispose());
 
     let rayHit = world.raycast([0, 0.5, 0], [0, 0, -1], { maxDistance: 20 });

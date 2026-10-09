@@ -148,8 +148,7 @@ async function boot(): Promise<void> {
     width: canvas.width,
     height: canvas.height,
     clearColor: [0.014, 0.02, 0.028, 1],
-    preserveDrawingBuffer: true,
-  });
+      });
   canvas.focus();
   requestAnimationFrame(frame);
 }

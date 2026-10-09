@@ -104,8 +104,7 @@ export async function runLargeSceneHarness(options: LargeSceneHarnessOptions = {
       height: canvas.height,
       clearColor: [0.012, 0.015, 0.02, 1],
       antialias: false,
-      preserveDrawingBuffer: true
-    });
+          });
 
     const scene = new Scene();
     const keyLight = scene.createLight("directional", "large-scene-key");

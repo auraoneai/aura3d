@@ -102,8 +102,7 @@ async function run(): Promise<void> {
     canvas,
     width: canvas.width,
     height: canvas.height,
-    preserveDrawingBuffer: true,
-    antialias: false,
+        antialias: false,
   });
   const featureReport = renderer.getFeatureReport();
   const deviceCapabilities = new Set(renderer.device.info.capabilities ?? []);

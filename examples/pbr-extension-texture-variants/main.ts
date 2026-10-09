@@ -113,8 +113,7 @@ async function run(): Promise<void> {
     width: canvas.width,
     height: canvas.height,
     clearColor: [0.014, 0.016, 0.02, 1],
-    preserveDrawingBuffer: true,
-    antialias: false
+        antialias: false
   });
 
   const scene = new Scene();
