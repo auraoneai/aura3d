@@ -40,6 +40,11 @@ export interface OptimizeGlbOptions {
   readonly remote?: boolean;
   /** Explicit blender binary override (else A3D_BLENDER_BINARY / PATH). */
   readonly blenderBinary?: string;
+  /** Absolute path the `source` bytes came from. When set and the payload
+   * references external (non-data:) resources or is a `.gltf` document, the
+   * doc is read through `io.read(sourcePath)` so relative URIs resolve
+   * against the file's directory — `io.readBinary` on raw bytes cannot. */
+  readonly sourcePath?: string;
   readonly log?: (line: string) => void;
 }
 
@@ -70,6 +75,31 @@ export async function makeOptimizeIo(): Promise<NodeIO> {
 
 const STEP_ORDER = [stepWeld, stepDedup, stepJoin, stepPalette, stepResize, stepTangents, stepLod, stepColliders, stepQuantize, stepCompress, stepKtx2] as const;
 
+const GLB_MAGIC = 0x46546c67;
+const JSON_CHUNK = 0x4e4f534a;
+
+/** Peek at the payload: does it carry external (non-`data:`) resource URIs or
+ * is it a non-binary `.gltf` document? Both need `io.read(path)` —
+ * `io.readBinary` on raw bytes throws "Cannot resolve external images" /
+ * "Invalid glTF 2.0 binary". */
+function needsPathRead(source: Uint8Array): boolean {
+  if (source.length < 12) return true; // can't be a GLB — let io.read parse it
+  if (new DataView(source.buffer, source.byteOffset, 4).getUint32(0, true) !== GLB_MAGIC) return true;
+  try {
+    const dv = new DataView(source.buffer, source.byteOffset, source.length);
+    const chunkLen = dv.getUint32(12, true);
+    if (dv.getUint32(16, true) !== JSON_CHUNK) return false;
+    const json = JSON.parse(new TextDecoder().decode(source.subarray(20, 20 + chunkLen))) as {
+      images?: { uri?: string }[]; buffers?: { uri?: string }[];
+    };
+    return [...(json.images ?? []), ...(json.buffers ?? [])].some(
+      (r) => typeof r.uri === "string" && !r.uri.startsWith("data:")
+    );
+  } catch {
+    return true; // unreadable chunk — io.read surfaces the real parse error
+  }
+}
+
 async function runSteps(
   source: Uint8Array,
   profile: AssetOptimizeProfile,
@@ -77,7 +107,9 @@ async function runSteps(
   io: NodeIO,
   workDir: string
 ): Promise<{ glb: Uint8Array; collisionGlb?: Uint8Array; ctx: OptimizeStepContext; budget: AssetBudgetMeasurement; budgetBefore: AssetBudgetMeasurement }> {
-  const doc = await io.readBinary(source);
+  const doc = opts.sourcePath && needsPathRead(source)
+    ? await io.read(opts.sourcePath)
+    : await io.readBinary(source);
   const budgetBefore = measureBudget(doc);
   const steps = opts.fromGenerated
     ? [stepSliverCheck, stepSingleSided, ...STEP_ORDER]

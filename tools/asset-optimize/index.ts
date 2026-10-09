@@ -131,6 +131,7 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
         fromGenerated: options.fromGenerated,
         remote: options.remote,
         blenderBinary: options.blenderBinary,
+        sourcePath,
         log
       });
       const hash = createHash("sha256").update(result.glb).digest("hex");
@@ -189,6 +190,7 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
         fromGenerated: options.fromGenerated,
         remote: options.remote ?? inCi,
         blenderBinary: options.blenderBinary,
+        sourcePath,
         log
       });
     } catch (err) {
