@@ -41,6 +41,8 @@ export function domTransitionDriver(
   };
 }
 
+const FIRST_PRESENTED_TIMEOUT_MS = 2000;
+
 export async function runTransition<T>(
   driver: TransitionDriver,
   run: () => T | Promise<T>,
@@ -53,7 +55,19 @@ export async function runTransition<T>(
   driver.setOverlay(1, outMs, spec?.color);
   await driver.sleep(outMs);
   const result = await run();
-  await driver.firstPresentedFrame();
+  // firstPresentedFrame only resolves for `frame.source === "raf"` frames —
+  // under a stepper/offscreen present it would hang forever with the overlay
+  // opaque. Bound the wait, then fail visibly with the overlay released.
+  const presented = await Promise.race([
+    driver.firstPresentedFrame().then(() => "presented" as const),
+    driver.sleep(FIRST_PRESENTED_TIMEOUT_MS).then(() => "timeout" as const)
+  ]);
+  if (presented === "timeout") {
+    driver.setOverlay(0, inMs);
+    throw new Error(
+      `A3D_TRANSITION_NO_PRESENTED_FRAME: firstPresentedFrame() did not resolve within ${FIRST_PRESENTED_TIMEOUT_MS}ms; overlay released.`
+    );
+  }
   driver.setOverlay(0, inMs);
   await driver.sleep(inMs);
   return result;

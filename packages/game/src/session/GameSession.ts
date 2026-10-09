@@ -67,8 +67,10 @@ export class GameSessionImpl implements GameSession {
       if (next <= 0) this.actorFreezes.delete(actor);
       else this.actorFreezes.set(actor, next);
     }
-    const driver = this.controller as AuraTimeController & { advance?(dt: number): number };
-    this.lastScaledDt = typeof driver.advance === "function" ? driver.advance(realDt) : realDt * this.controller.scale;
+    // C-23: the FixedStepDriver's presentTick already advances the controller
+    // once per presented tick; advancing it again here would double sim time
+    // per frame. Read the scaled dt instead.
+    this.lastScaledDt = realDt * this.controller.scale;
     return this.lastScaledDt;
   }
 

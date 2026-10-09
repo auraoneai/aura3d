@@ -135,14 +135,28 @@ export function installEvidenceChannel(options: EvidenceChannelInstall): { dispo
   Object.defineProperty(registry, options.id, {
     configurable: true,
     enumerable: true,
-    get: build
+    get: build,
+    // Strict-mode `window.x = ...` writes must not throw; the assigned value
+    // becomes the channel's snapshot until the next real collect.
+    set: (v: unknown) => {
+      memo = { at: Date.now(), value: v as Record<string, unknown> };
+    }
   });
 
   for (const alias of options.legacyGlobals ?? []) {
     Object.defineProperty(win, alias, {
       configurable: true,
       enumerable: false,
-      get: build
+      get: build,
+      // Legacy code assigns `window.x = ...` before the channel is read; a
+      // getter-only property throws in strict mode. Forward the assignment to
+      // the underlying registry slot and flag the write path.
+      set: (value: unknown) => {
+        if (typeof console !== "undefined") {
+          console.warn(`[aura3d] legacy global "${alias}" assigned — route it through the evidence channel instead.`);
+        }
+        (registry as Record<string, unknown>)[options.id] = value;
+      }
     });
   }
 

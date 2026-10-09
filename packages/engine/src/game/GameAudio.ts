@@ -241,9 +241,14 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
   for (const id of cueIds) {
     const def = cueDefinitions[id];
     if (def.asset === undefined && def.play === undefined) {
-      if (qrGameOn) throw new Error(missingCueMessage(String(id)));
-      if (typeof console !== "undefined") console.warn(missingCueMessage(String(id)));
-      continue; // flag off: cue exists in evidence but plays as suppressed
+      // Synth/`play`-less cues must not crash boot under the flag (createGame
+      // forwards flags:['game']): degrade to a suppressed cue and record the
+      // miss on the evidence surface instead of throwing.
+      if (qrGameOn) {
+        errors.push(missingCueMessage(String(id)));
+        if (typeof console !== "undefined") console.warn(missingCueMessage(String(id)));
+      } else if (typeof console !== "undefined") console.warn(missingCueMessage(String(id)));
+      continue; // cue exists in evidence but plays as suppressed
     }
     engineCues[id] = {
       bus: engineBusOf(def.bus ?? "master"),
