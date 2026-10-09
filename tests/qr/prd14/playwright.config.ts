@@ -9,6 +9,8 @@ export default defineConfig({
   testMatch: ["**/*.spec.ts"],
   timeout: 120_000,
   workers: 1,
+  // P-22: fail CI on stray test.only/describe.only committed to the lane.
+  forbidOnly: !!process.env.CI,
   use: {
     browserName: "chromium",
     headless: true,

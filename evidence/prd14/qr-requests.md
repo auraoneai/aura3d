@@ -1,0 +1,18 @@
+# Lane 14 qr-request ledger (P-64)
+
+Issues filed by the lane-14 finish agent. Each entry records what lane 14
+needs, the owning lane, and current status.
+
+| Issue | To | Need | Status |
+|-------|----|------|--------|
+| #621 | prd01 | `tests/unit/contracts/impl/prd01-render-targets.test.ts` red on main: `Missing cube texture face: px` (2 tests). Lane-14 unit job scoped away; fix belongs to lane 01. | open |
+| #622 | prd03 | `tests/unit/contracts/impl/prd03-post-cube-lut.test.ts` red on main: `ENOENT tests/qr/prd03/fixtures/luts/teal-orange-33.cube` — fixture missing from repo. | open |
+| #623 | prd12 | `tests/unit/contracts/impl/prd12-registry.test.ts` red on main: `prd05-optimized-damaged-helmet` C-30 owner recorded as `prd05`, test expects `prd12`. | open |
+| #624 | prd13 | `tests/unit/contracts/impl/prd13-looks.test.ts` red on main: `look/evidence-only-feel` leaks into lazy defaults; `LOOK_RULE_DUPLICATE:look/ambient-flattens` on re-register. | open |
+| #625 | prd15 | `flags.ts:55-60` `applyList` drops `all` inside comma lists — `route_<id>,all` resolves to only the route flag. Blocks per-game all-flags URL capture (T0-29). | open |
+| #626 | prd12 | `capture-games.mjs:97` unions per-game `qrFlags` into every URL including `--flags none` — flag-off baseline captures are never truly flag-off (S1/IC-0). | open |
+
+## In-group dependencies (tracked on #370, not new issues)
+
+- lane 09: T0-30 beacon + real C-24 (#54) — FLAG-1/2 proof of real impl 18/18 waits on it; `game-sfx-core` cues (#70) before S11; 09-MIG patch sets (#278/#281-#302) gate `legacy/main.ts` edits.
+- lane 08: #76 `subjectHeightFraction` on 8 rigs before T2.3 S7 framing specs; #219-#221 land in routes.

@@ -1,6 +1,5 @@
 import { expect, test } from "@playwright/test";
 import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
-import { existsSync } from "node:fs";
 import { join } from "node:path";
 
 /**
@@ -18,7 +17,6 @@ const EVIDENCE = `window.__AURA3D_GAME_EVIDENCE__?.["${APP_DIR}"]`;
 const FRACTION: readonly [number, number] = [0.45, 0.6];
 
 test.describe("aura-clash-showcase framing (T2.3)", () => {
-  test.skip(!existsSync(join(APPS, APP_DIR, "src", "v2", "boot.ts")), "no v2 tree yet");
 
   for (const viewport of [{ width: 1920, height: 1080 }, { width: 390, height: 844 }]) {
     test(`subjectHeightFraction within band at ${viewport.width}x${viewport.height}`, async ({ page }) => {

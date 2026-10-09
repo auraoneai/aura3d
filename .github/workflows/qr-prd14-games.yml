@@ -19,7 +19,9 @@ on:
       - "scripts/check-art-direction.mjs"
       - ".github/workflows/qr-prd14-games.yml"
   push:
-    branches: ["qr/prd14-*"]
+    branches: ["qr/prd14-*", "main"]
+  schedule:
+    - cron: "17 4 * * *"
   workflow_dispatch:
     inputs:
       games:
@@ -52,7 +54,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Lane 14 vitest suite
-        run: pnpm exec vitest run --config tests/qr/prd14/vitest.config.ts tests/qr/prd14 tests/unit/contracts/impl
+        # CI-1: scoped to lane-14 suites. Other lanes' impl tests run in the
+        # repo-wide qr-contracts gate; their reds must not mask lane 14's.
+        run: pnpm exec vitest run --config tests/qr/prd14/vitest.config.ts tests/qr/prd14 tests/unit/contracts/impl/prd14-* tests/unit/contracts/C-35-art.test.ts
 
   routes:
     name: Detect changed routes
@@ -75,10 +79,17 @@ jobs:
           else
             BASE="$(git rev-parse HEAD^)"
           fi
-          git fetch origin "${{ github.base_ref || 'main' }}" --depth=1 || true
-          DIRS="$(git diff --name-only "$BASE"...HEAD -- 'apps/*/' | cut -d/ -f2 | sort -u | paste -sd, -)"
+          # CI-1: no shallow re-fetch — it broke "$BASE...HEAD" merge-base
+          # resolution and silently emptied DIRS, skipping static+capture.
+          set -o pipefail
+          DIRS="$(git diff --name-only "$BASE"...HEAD -- 'apps/' | cut -d/ -f2 | sort -u | paste -sd, -)"
+          APPS_TOUCHED="$(git diff --name-only "$BASE"...HEAD -- 'apps/' | wc -l)"
           if [ -n "${GAMES_INPUT:-}" ]; then DIRS="${GAMES_INPUT}"; fi
           echo "changed dirs: ${DIRS:-<none>}"
+          if [ "${APPS_TOUCHED:-0}" -gt 0 ] && [ -z "${DIRS:-}" ]; then
+            echo "::error:: PR touches apps/** but resolved 0 route dirs — detection broken"
+            exit 1
+          fi
           RESOLVED="$(DIRS="$DIRS" python3 - << 'PY'
           import json, os
           want = set([d for d in os.environ["DIRS"].split(",") if d])
@@ -88,9 +99,9 @@ jobs:
               if e.get("appDir", e["id"]) in want:
                   ids.append(e["id"])
                   dirs.append(e.get("appDir", e["id"]))
-                  for f in e.get("qrFlags", []):
-                      if f.startswith("A3D_QR_ROUTE_"):
-                          flags.append("route-" + f[len("A3D_QR_ROUTE_"):].lower().replace("_", "-"))
+                  # qrFlags entries are URL-form flags (route_<id> + engine
+                  # short names) — pass them all through to QRC_FLAGS.
+                  flags.extend(e.get("qrFlags", []))
           print(",".join(ids) + "|" + ",".join(dirs) + "|" + ",".join(sorted(set(flags))))
           PY
           )"
@@ -99,11 +110,18 @@ jobs:
           echo "dirs=${APPDIRS:-$DIRS}" >> "$GITHUB_OUTPUT"
           echo "flags=$FLAGS" >> "$GITHUB_OUTPUT"
           echo "count=$(tr ',' '\n' <<< "$DIRS" | grep -c . || true)" >> "$GITHUB_OUTPUT"
+          # CI-1: downstream jobs may only skip when nothing under apps/**
+          # changed and no explicit games input was given. An empty route set
+          # on a code-touching PR fails the routes job above instead of
+          # silently skipping static+capture.
+          SKIP_OK="false"
+          if [ "${APPS_TOUCHED:-0}" -eq 0 ] && [ -z "${GAMES_INPUT:-}" ]; then SKIP_OK="true"; fi
+          echo "skip_ok=${SKIP_OK}" >> "$GITHUB_OUTPUT"
   static:
     name: Static gates (route-health + art-direction)
     runs-on: ubuntu-latest
     needs: routes
-    if: needs.routes.outputs.dirs != ''
+    if: needs.routes.outputs.dirs != '' || needs.routes.outputs.skip_ok == 'false'
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -114,6 +132,11 @@ jobs:
           node-version: "22"
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Fail when route detection produced no dirs on a code PR
+        if: needs.routes.outputs.dirs == ''
+        run: |
+          echo "::error:: static gates have no route set — detection regressed"
+          exit 1
       - run: node scripts/check-route-health.mjs --routes "${{ needs.routes.outputs.dirs }}"
       - run: node scripts/check-art-direction.mjs --routes "${{ needs.routes.outputs.dirs }}"
 
@@ -121,8 +144,8 @@ jobs:
     name: Capture changed games + runtime audit (macos-14)
     runs-on: macos-14
     timeout-minutes: 90
-    needs: routes
-    if: needs.routes.outputs.dirs != ''
+    needs: [unit, routes]
+    if: needs.routes.outputs.dirs != '' || needs.routes.outputs.skip_ok == 'false'
     env:
       QRC_GAMES: ${{ needs.routes.outputs.ids }}
       QRC_LOCAL_BUILD: "true"
@@ -141,13 +164,20 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install chromium
+      - name: Fail when route detection produced no dirs on a code PR
+        if: needs.routes.outputs.dirs == ''
+        run: |
+          echo "::error:: capture has no route set — detection regressed"
+          exit 1
       - name: Build + capture changed games
         id: capture
-        continue-on-error: true
-        run: node tools/quality-rebuild-capture/capture-games.mjs
+        # P-05: capture failures fail the job — no masking.
+        run: node tools/quality-rebuild-capture/capture-games.mjs --strict
       - name: Runtime art-direction audit
         id: audit
-        continue-on-error: true
+        # P-05: audit failures fail the job — no masking. Runs even when
+        # capture fails so the audit evidence still lands in the artifact.
+        if: always() && needs.routes.outputs.dirs != ''
         run: pnpm exec playwright test -c tests/qr/prd14/playwright.config.ts tests/qr/prd14/browser/art-direction-audit.spec.ts
       - name: Upload evidence
         if: always()
@@ -164,3 +194,4 @@ jobs:
         run: |
           echo "capture=${{ steps.capture.outcome }} audit=${{ steps.audit.outcome }}"
           test "${{ steps.capture.outcome }}" = "success"
+          test "${{ steps.audit.outcome }}" = "success"

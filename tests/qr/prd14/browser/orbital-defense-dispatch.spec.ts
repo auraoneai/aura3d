@@ -1,6 +1,5 @@
 import { expect, test } from "@playwright/test";
 import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
-import { existsSync } from "node:fs";
 import { join } from "node:path";
 
 /**
@@ -21,7 +20,6 @@ const LEGACY_EVIDENCE_KEYS = [
 ] as const;
 
 test.describe("orbital-defense dispatch (T1.10)", () => {
-  test.skip(!existsSync(join(APPS, APP_DIR, "src", "v2", "boot.ts")), "no v2 tree yet");
 
   test("flag off boots legacy with the same evidence keys and no console errors", async ({ page }) => {
     const root = builtDist(APP_DIR);
