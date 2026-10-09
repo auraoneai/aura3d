@@ -42,7 +42,10 @@ describe("PRD-05 §6.8 per-route typegen", () => {
 
     // Licence data lands in dist/credits.json, not in the bundle module.
     const credits = JSON.parse(readFileSync(result.creditsPath, "utf8")) as {
-      readonly assets: Record<string, { readonly license?: string }>;
+      readonly assets: Record<
+        string,
+        { readonly license?: string; readonly licenseName?: string }
+      >;
     };
     expect(credits.assets.courierParcel?.license).toBe("cc0");
     expect(credits.assets.courierVan?.licenseName).toBe("CC0-1.0");
