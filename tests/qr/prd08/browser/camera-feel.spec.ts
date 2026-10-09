@@ -27,6 +27,7 @@ interface HarnessProbe {
   status: "booting" | "ready" | "error";
   error?: string;
   tick?: (dtMs: number) => void;
+  records: readonly { simTime: number }[];
   app?: {
     camera: {
       presented(): PoseSnapshot;
@@ -34,11 +35,16 @@ interface HarnessProbe {
       setFov(fov: number, o?: { halflife?: number }): void;
       setRoll(roll: number, o?: { halflife?: number }): void;
       addLayer(l: { apply(p: PoseSnapshot, dt: number): void } | ((p: PoseSnapshot, dt: number) => void), order?: number): () => void;
+      rigs: { orbit(o: unknown): unknown };
+      use(rig: unknown): void;
     };
     feel: {
       emit(id: string, intensity?: number): void;
+      preset(name: string): void;
       screenUniforms(): Record<string, number>;
     };
+    time: { hitStop(seconds: number, o?: { scope?: "global" | readonly string[] }): void };
+    input(options: unknown): { activeDevice(): string | undefined; prompt(a: string): string | undefined; dispose(): void };
     diagnostics?(): { camera?: { viewProjection?: readonly number[] } };
   };
 }
@@ -160,5 +166,116 @@ test.describe("prd08 camera feel — presented-pose plumbing", () => {
       return h.app!.feel.screenUniforms();
     });
     expect(Object.values(uniforms).every((v) => v >= 0 && v <= 1)).toBe(true);
+  });
+
+  test("S8: scripted 30 s orbit sweeps continuously with no positional snap", async ({ page }) => {
+    await openHarness(page);
+    const positions = await page.evaluate(() => {
+      const h = (window as never as { __AURA3D_PRD08_HARNESS__: HarnessProbe }).__AURA3D_PRD08_HARNESS__!;
+      const cam = h.app!.camera;
+      const rig = cam.rigs.orbit({ target: [0, 0.5, 0], distance: 8, yaw: 0, pitch: 8 }) as {
+        setAngles(yaw: number, pitch: number): void;
+      };
+      cam.use(rig);
+      const pts: number[][] = [];
+      // Scripted 30 s at 60 Hz: yaw sweeps two full turns, sampled each 0.5 s.
+      for (let i = 0; i < 1800; i += 1) {
+        rig.setAngles((i / 1800) * 720, 8);
+        h.tick?.(1000 / 60);
+        if (i % 30 === 0) {
+          const p = cam.presented().position;
+          pts.push([p[0], p[1], p[2]]);
+        }
+      }
+      return pts;
+    });
+    expect(positions.length).toBe(60);
+    // Continuous: consecutive sampled positions never jump by more than a
+    // fraction of the orbit radius (two turns over 30 s at r=8 → ~0.84 u/step
+    // at 0.5 s cadence; allow 3× headroom, catch any knot/pop).
+    for (let i = 1; i < positions.length; i += 1) {
+      const d = Math.hypot(
+        positions[i][0] - positions[i - 1][0],
+        positions[i][1] - positions[i - 1][1],
+        positions[i][2] - positions[i - 1][2]
+      );
+      expect(d).toBeLessThan(3);
+      expect(d).toBeGreaterThan(1e-3); // actually orbiting, not parked
+    }
+    // Full sweep: first and last samples sit at nearly the same angle.
+    const wrap = Math.hypot(
+      positions[0][0] - positions[positions.length - 1][0],
+      positions[0][2] - positions[positions.length - 1][2]
+    );
+    expect(wrap).toBeLessThan(2);
+  });
+
+  test("S5-browser: global hit-stop stalls sim time while presented frames continue", async ({ page }) => {
+    await openHarness(page);
+    const probe = await page.evaluate(() => {
+      const h = (window as never as { __AURA3D_PRD08_HARNESS__: HarnessProbe }).__AURA3D_PRD08_HARNESS__!;
+      h.app!.time.hitStop(0.12); // ~7 frames at 60 Hz
+      const before = h.records.at(-1)?.simTime ?? 0;
+      const beforeCount = h.records.length;
+      for (let i = 0; i < 6; i += 1) h.tick?.(1000 / 60);
+      const frozen = h.records.at(-1)?.simTime ?? 0;
+      for (let i = 0; i < 6; i += 1) h.tick?.(1000 / 60);
+      const resumed = h.records.at(-1)?.simTime ?? 0;
+      return { before, beforeCount, frozen, resumed, count: h.records.length };
+    });
+    expect(probe.count - probe.beforeCount).toBeGreaterThanOrEqual(6); // presentation never stopped
+    expect(Math.abs(probe.frozen - probe.before)).toBeLessThan(0.05); // sim frozen ±1 step
+    expect(probe.resumed - probe.frozen).toBeGreaterThan(0.05); // resumed after expiry
+  });
+
+  test.describe("S14 touch-only end-to-end (390×844 DPR 3)", () => {
+    test.use({
+      viewport: { width: 390, height: 844 },
+      deviceScaleFactor: 3,
+      hasTouch: true,
+      isMobile: true
+    });
+
+    test("a real touch on the canvas marks activeDevice 'touch' and prompt resolves", async ({ page }) => {
+      await openHarness(page);
+      await page.evaluate(() => {
+        const h = (window as never as { __AURA3D_PRD08_HARNESS__: HarnessProbe }).__AURA3D_PRD08_HARNESS__!;
+        (window as never as { __PRD08_INPUT__?: unknown }).__PRD08_INPUT__ = h.app!.input({
+          actions: { jump: ["touch:jump"], move: ["touch:move"] },
+          touch: true,
+          target: document.querySelector("canvas")!
+        });
+      });
+      await page.touchscreen.tap(120, 300);
+      const state = await page.evaluate(() => {
+        const h = (window as never as { __AURA3D_PRD08_HARNESS__: HarnessProbe }).__AURA3D_PRD08_HARNESS__!;
+        const input = (window as never as { __PRD08_INPUT__: { activeDevice(): string | undefined; prompt(a: string): string | undefined; dispose(): void } }).__PRD08_INPUT__;
+        const out = { device: input.activeDevice(), jumpPrompt: input.prompt("jump") };
+        input.dispose();
+        return out;
+      });
+      expect(state.device).toBe("touch");
+      expect(state.jumpPrompt).toBe("Jump");
+    });
+  });
+
+  test.describe("reduced motion", () => {
+    test.use({ reducedMotion: "reduce" });
+
+    test("emitted feel events suppress flash/chroma/radialBlur and halve vignette", async ({ page }) => {
+      await openHarness(page);
+      const uniforms = await page.evaluate(() => {
+        const h = (window as never as { __AURA3D_PRD08_HARNESS__: HarnessProbe }).__AURA3D_PRD08_HARNESS__!;
+        h.app!.feel.preset("fighting");
+        h.app!.feel.emit("hit-heavy"); // flash 0.25 chroma 0.6 radialBlur 0.2
+        h.tick?.(1000 / 60);
+        return h.app!.feel.screenUniforms() as Record<string, number>;
+      });
+      expect(uniforms.flash ?? 0).toBe(0);
+      expect(uniforms.chroma ?? 0).toBe(0);
+      expect(uniforms.radialBlur ?? 0).toBe(0);
+      // vignette is not suppressed but scaled by rm (0.5× strength rule).
+      expect(uniforms.vignette ?? 0).toBeLessThanOrEqual(0.35);
+    });
   });
 });
