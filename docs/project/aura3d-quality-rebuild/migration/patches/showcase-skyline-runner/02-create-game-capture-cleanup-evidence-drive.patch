@@ -7,7 +7,7 @@ Subject: [PATCH] [QR-09] skyline-runner: createGame + capture
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
  apps/showcase-skyline-runner/src/evidence.ts  |   8 +
- apps/showcase-skyline-runner/src/main.ts      | 342 ++++++------------
+ apps/showcase-skyline-runner/src/legacy/main.ts      | 342 ++++++------------
  .../src/scenario-drive.ts                     |  12 +
  .../src/scenarios/index.ts                    |  12 +
  4 files changed, 137 insertions(+), 237 deletions(-)
@@ -29,10 +29,10 @@ index 00000000..6f78ea00
 +  skyline: (): Record<string, unknown> =>
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
-diff --git a/apps/showcase-skyline-runner/src/main.ts b/apps/showcase-skyline-runner/src/main.ts
+diff --git a/apps/showcase-skyline-runner/src/legacy/main.ts b/apps/showcase-skyline-runner/src/legacy/main.ts
 index 8de12889..6ce0ceea 100644
---- a/apps/showcase-skyline-runner/src/main.ts
-+++ b/apps/showcase-skyline-runner/src/main.ts
+--- a/apps/showcase-skyline-runner/src/legacy/main.ts
++++ b/apps/showcase-skyline-runner/src/legacy/main.ts
 @@ -1,5 +1,4 @@
  import {
 -  createAuraApp,

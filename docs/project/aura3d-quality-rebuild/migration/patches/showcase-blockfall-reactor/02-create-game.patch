@@ -6,13 +6,13 @@ Subject: [PATCH] [QR-09] blockfall: mount via createGame; drop
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- apps/showcase-blockfall-reactor/src/main.ts | 15 ++++++++-------
+ apps/showcase-blockfall-reactor/src/legacy/main.ts | 15 ++++++++-------
  1 file changed, 8 insertions(+), 7 deletions(-)
 
-diff --git a/apps/showcase-blockfall-reactor/src/main.ts b/apps/showcase-blockfall-reactor/src/main.ts
+diff --git a/apps/showcase-blockfall-reactor/src/legacy/main.ts b/apps/showcase-blockfall-reactor/src/legacy/main.ts
 index 9acd721a..767b10bd 100644
---- a/apps/showcase-blockfall-reactor/src/main.ts
-+++ b/apps/showcase-blockfall-reactor/src/main.ts
+--- a/apps/showcase-blockfall-reactor/src/legacy/main.ts
++++ b/apps/showcase-blockfall-reactor/src/legacy/main.ts
 @@ -1,6 +1,6 @@
  import {
    camera,

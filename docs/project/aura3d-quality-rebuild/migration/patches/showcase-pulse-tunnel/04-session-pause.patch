@@ -5,13 +5,13 @@ Subject: [PATCH] [QR-09] pulse-tunnel: paused flag -> game.session
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- apps/showcase-pulse-tunnel/src/main.ts | 20 ++++++++++++--------
+ apps/showcase-pulse-tunnel/src/legacy/main.ts | 20 ++++++++++++--------
  1 file changed, 12 insertions(+), 8 deletions(-)
 
-diff --git a/apps/showcase-pulse-tunnel/src/main.ts b/apps/showcase-pulse-tunnel/src/main.ts
+diff --git a/apps/showcase-pulse-tunnel/src/legacy/main.ts b/apps/showcase-pulse-tunnel/src/legacy/main.ts
 index f1bf3e2d..ed4a1a41 100644
---- a/apps/showcase-pulse-tunnel/src/main.ts
-+++ b/apps/showcase-pulse-tunnel/src/main.ts
+--- a/apps/showcase-pulse-tunnel/src/legacy/main.ts
++++ b/apps/showcase-pulse-tunnel/src/legacy/main.ts
 @@ -1039,7 +1039,6 @@ Object.defineProperty(window, "__PULSE_TUNNEL_TEST__", {
  const hudElements = setupPulseHud(document.getElementById("panel"));
  const debugHud = isPulseDebugMode();

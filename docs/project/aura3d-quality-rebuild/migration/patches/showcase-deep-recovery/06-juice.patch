@@ -6,7 +6,7 @@ Subject: [PATCH] [QR-09] deep-recovery: juice events
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
  apps/showcase-deep-recovery/package.json |  3 ++-
- apps/showcase-deep-recovery/src/main.ts  | 32 +++++++++++++++++++++++-
+ apps/showcase-deep-recovery/src/legacy/main.ts  | 32 +++++++++++++++++++++++-
  2 files changed, 33 insertions(+), 2 deletions(-)
 
 diff --git a/apps/showcase-deep-recovery/package.json b/apps/showcase-deep-recovery/package.json
@@ -23,10 +23,10 @@ index 0d8a3296..81e6f736 100644
    },
    "devDependencies": {
      "typescript": "^5.8.3",
-diff --git a/apps/showcase-deep-recovery/src/main.ts b/apps/showcase-deep-recovery/src/main.ts
+diff --git a/apps/showcase-deep-recovery/src/legacy/main.ts b/apps/showcase-deep-recovery/src/legacy/main.ts
 index f6162875..eff94a65 100644
---- a/apps/showcase-deep-recovery/src/main.ts
-+++ b/apps/showcase-deep-recovery/src/main.ts
+--- a/apps/showcase-deep-recovery/src/legacy/main.ts
++++ b/apps/showcase-deep-recovery/src/legacy/main.ts
 @@ -166,6 +166,26 @@ const PRIMARY_ASSET_REFS = [
  ] as const;
  

@@ -8,7 +8,7 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
 ---
  apps/showcase-aurora-lander/package.json      |  4 +-
  .../src/lander-audio.ts                       | 53 +++++++++++++++++++
- apps/showcase-aurora-lander/src/main.ts       | 13 ++---
+ apps/showcase-aurora-lander/src/legacy/main.ts       | 13 ++---
  3 files changed, 63 insertions(+), 7 deletions(-)
 
 diff --git a/apps/showcase-aurora-lander/package.json b/apps/showcase-aurora-lander/package.json
@@ -114,10 +114,10 @@ index c0278314..e3312a4d 100644
      async cue(name) {
        await cue(name);
      },
-diff --git a/apps/showcase-aurora-lander/src/main.ts b/apps/showcase-aurora-lander/src/main.ts
+diff --git a/apps/showcase-aurora-lander/src/legacy/main.ts b/apps/showcase-aurora-lander/src/legacy/main.ts
 index ba278668..7f5c7fb4 100644
---- a/apps/showcase-aurora-lander/src/main.ts
-+++ b/apps/showcase-aurora-lander/src/main.ts
+--- a/apps/showcase-aurora-lander/src/legacy/main.ts
++++ b/apps/showcase-aurora-lander/src/legacy/main.ts
 @@ -238,7 +238,7 @@ let contactQueryAgreement: boolean | null = null;
  let padSensorArmed = false;
  let fuelLowCueFired = false;

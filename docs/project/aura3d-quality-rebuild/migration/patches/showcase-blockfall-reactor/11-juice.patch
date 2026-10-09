@@ -7,7 +7,7 @@ Subject: [PATCH] [QR-09] blockfall: juice facade
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
  apps/showcase-blockfall-reactor/package.json |  3 +-
- apps/showcase-blockfall-reactor/src/main.ts  | 40 +++++++++++++++++++-
+ apps/showcase-blockfall-reactor/src/legacy/main.ts  | 40 +++++++++++++++++++-
  2 files changed, 40 insertions(+), 3 deletions(-)
 
 diff --git a/apps/showcase-blockfall-reactor/package.json b/apps/showcase-blockfall-reactor/package.json
@@ -24,10 +24,10 @@ index 0d6e1fc2..117d321a 100644
    },
    "devDependencies": {
      "typescript": "^5.8.3",
-diff --git a/apps/showcase-blockfall-reactor/src/main.ts b/apps/showcase-blockfall-reactor/src/main.ts
+diff --git a/apps/showcase-blockfall-reactor/src/legacy/main.ts b/apps/showcase-blockfall-reactor/src/legacy/main.ts
 index 7eae08f2..7d044b9f 100644
---- a/apps/showcase-blockfall-reactor/src/main.ts
-+++ b/apps/showcase-blockfall-reactor/src/main.ts
+--- a/apps/showcase-blockfall-reactor/src/legacy/main.ts
++++ b/apps/showcase-blockfall-reactor/src/legacy/main.ts
 @@ -14,7 +14,14 @@ import {
    type GameFallingBlocksEvent,
    type GameFallingBlocksSnapshot

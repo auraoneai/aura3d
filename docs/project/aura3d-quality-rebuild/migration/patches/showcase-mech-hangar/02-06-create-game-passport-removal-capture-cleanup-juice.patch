@@ -8,8 +8,8 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
 ---
  apps/showcase-mech-hangar/package.json        |   5 +-
  apps/showcase-mech-hangar/src/evidence.ts     |   8 +
- apps/showcase-mech-hangar/src/hud.ts          |  70 +-------
- apps/showcase-mech-hangar/src/main.ts         | 169 +++++++++---------
+ apps/showcase-mech-hangar/src/gameplay/hud.ts          |  70 +-------
+ apps/showcase-mech-hangar/src/legacy/main.ts         | 169 +++++++++---------
  .../src/scenario-drive.ts                     |  11 ++
  .../src/scenarios/index.ts                    |  14 ++
  apps/showcase-mech-hangar/src/styles.css      |  26 ---
@@ -55,10 +55,10 @@ index 00000000..888253e3
 +  mech: (): Record<string, unknown> =>
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
-diff --git a/apps/showcase-mech-hangar/src/hud.ts b/apps/showcase-mech-hangar/src/hud.ts
+diff --git a/apps/showcase-mech-hangar/src/gameplay/hud.ts b/apps/showcase-mech-hangar/src/gameplay/hud.ts
 index 154f17be..212c9949 100644
---- a/apps/showcase-mech-hangar/src/hud.ts
-+++ b/apps/showcase-mech-hangar/src/hud.ts
+--- a/apps/showcase-mech-hangar/src/gameplay/hud.ts
++++ b/apps/showcase-mech-hangar/src/gameplay/hud.ts
 @@ -1,13 +1,12 @@
  /**
   * Mech Hangar HUD — DOM chrome for both modes.
@@ -170,10 +170,10 @@ index 154f17be..212c9949 100644
  export interface ArenaHudHandles {
    readonly root: HTMLElement;
    readonly hpPlayer: ReturnType<typeof createBar>;
-diff --git a/apps/showcase-mech-hangar/src/main.ts b/apps/showcase-mech-hangar/src/main.ts
+diff --git a/apps/showcase-mech-hangar/src/legacy/main.ts b/apps/showcase-mech-hangar/src/legacy/main.ts
 index 3866f49b..9eddf7b8 100644
---- a/apps/showcase-mech-hangar/src/main.ts
-+++ b/apps/showcase-mech-hangar/src/main.ts
+--- a/apps/showcase-mech-hangar/src/legacy/main.ts
++++ b/apps/showcase-mech-hangar/src/legacy/main.ts
 @@ -12,7 +12,6 @@
  import {
    characterAssembly,

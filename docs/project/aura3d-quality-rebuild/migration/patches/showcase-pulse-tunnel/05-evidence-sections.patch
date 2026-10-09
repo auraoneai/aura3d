@@ -6,7 +6,7 @@ Subject: [PATCH] [QR-09] pulse-tunnel: evidence globals -> lazy sections
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
  apps/showcase-pulse-tunnel/src/evidence.ts | 17 +++++++++++++++++
- apps/showcase-pulse-tunnel/src/main.ts     | 17 +++++++----------
+ apps/showcase-pulse-tunnel/src/legacy/main.ts     | 17 +++++++----------
  2 files changed, 24 insertions(+), 10 deletions(-)
  create mode 100644 apps/showcase-pulse-tunnel/src/evidence.ts
 
@@ -33,10 +33,10 @@ index 00000000..797725f5
 +  pulse: (): Record<string, unknown> =>
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
-diff --git a/apps/showcase-pulse-tunnel/src/main.ts b/apps/showcase-pulse-tunnel/src/main.ts
+diff --git a/apps/showcase-pulse-tunnel/src/legacy/main.ts b/apps/showcase-pulse-tunnel/src/legacy/main.ts
 index ed4a1a41..398d8a61 100644
---- a/apps/showcase-pulse-tunnel/src/main.ts
-+++ b/apps/showcase-pulse-tunnel/src/main.ts
+--- a/apps/showcase-pulse-tunnel/src/legacy/main.ts
++++ b/apps/showcase-pulse-tunnel/src/legacy/main.ts
 @@ -22,6 +22,7 @@ import {
    type RuntimeNodeHandleLike
  } from "@aura3d/engine";

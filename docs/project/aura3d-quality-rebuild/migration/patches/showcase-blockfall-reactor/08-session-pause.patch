@@ -5,13 +5,13 @@ Subject: [PATCH] [QR-09] blockfall: paused flag -> game.session
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- apps/showcase-blockfall-reactor/src/main.ts | 32 +++++++++++++--------
+ apps/showcase-blockfall-reactor/src/legacy/main.ts | 32 +++++++++++++--------
  1 file changed, 20 insertions(+), 12 deletions(-)
 
-diff --git a/apps/showcase-blockfall-reactor/src/main.ts b/apps/showcase-blockfall-reactor/src/main.ts
+diff --git a/apps/showcase-blockfall-reactor/src/legacy/main.ts b/apps/showcase-blockfall-reactor/src/legacy/main.ts
 index 57363133..00aba46f 100644
---- a/apps/showcase-blockfall-reactor/src/main.ts
-+++ b/apps/showcase-blockfall-reactor/src/main.ts
+--- a/apps/showcase-blockfall-reactor/src/legacy/main.ts
++++ b/apps/showcase-blockfall-reactor/src/legacy/main.ts
 @@ -794,7 +794,6 @@ const fallingBlocks = game.fallingBlocks({
    board: createOpeningBoard()
  });

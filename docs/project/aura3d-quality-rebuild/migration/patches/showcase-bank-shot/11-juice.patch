@@ -13,13 +13,13 @@ ball + camera punch. Adds @aura3d/game dep (createGame already imported).
 Co-Authored-By: Devin AI <devin@cognition.ai>
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- apps/showcase-bank-shot/src/main.ts | 39 ++++++++++++++++++++++++++++-
+ apps/showcase-bank-shot/src/legacy/main.ts | 39 ++++++++++++++++++++++++++++-
  1 file changed, 38 insertions(+), 1 deletion(-)
 
-diff --git a/apps/showcase-bank-shot/src/main.ts b/apps/showcase-bank-shot/src/main.ts
+diff --git a/apps/showcase-bank-shot/src/legacy/main.ts b/apps/showcase-bank-shot/src/legacy/main.ts
 index ee330d5e..cd2e1776 100644
---- a/apps/showcase-bank-shot/src/main.ts
-+++ b/apps/showcase-bank-shot/src/main.ts
+--- a/apps/showcase-bank-shot/src/legacy/main.ts
++++ b/apps/showcase-bank-shot/src/legacy/main.ts
 @@ -24,7 +24,14 @@ import {
    type AuraSceneNode,
    type AuraDiagnostics

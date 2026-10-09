@@ -7,7 +7,7 @@ Subject: [PATCH] [QR-09] courier-rush: juice.define replaces DOM flash +
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
  apps/showcase-courier-rush/package.json |  4 ++-
- apps/showcase-courier-rush/src/main.ts  | 36 +++++++++++++++++--------
+ apps/showcase-courier-rush/src/legacy/main.ts  | 36 +++++++++++++++++--------
  2 files changed, 28 insertions(+), 12 deletions(-)
 
 diff --git a/apps/showcase-courier-rush/package.json b/apps/showcase-courier-rush/package.json
@@ -25,10 +25,10 @@ index 18071c15..8119aad3 100644
    },
    "devDependencies": {
      "typescript": "^5.8.3",
-diff --git a/apps/showcase-courier-rush/src/main.ts b/apps/showcase-courier-rush/src/main.ts
+diff --git a/apps/showcase-courier-rush/src/legacy/main.ts b/apps/showcase-courier-rush/src/legacy/main.ts
 index 5d9be146..dfa35e37 100644
---- a/apps/showcase-courier-rush/src/main.ts
-+++ b/apps/showcase-courier-rush/src/main.ts
+--- a/apps/showcase-courier-rush/src/legacy/main.ts
++++ b/apps/showcase-courier-rush/src/legacy/main.ts
 @@ -68,7 +68,6 @@ import {
    decayHudEffects,
    hideShiftSummary,

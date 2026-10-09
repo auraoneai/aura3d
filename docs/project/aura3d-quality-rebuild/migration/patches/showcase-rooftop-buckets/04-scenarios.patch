@@ -8,13 +8,13 @@ __RB_SCENARIO__ + __RB_SET_SPOT__ become nine GameScenario modules bound through
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- apps/showcase-rooftop-buckets/src/main.ts | 108 ++++++++--------------
+ apps/showcase-rooftop-buckets/src/legacy/main.ts | 108 ++++++++--------------
  1 file changed, 41 insertions(+), 67 deletions(-)
 
-diff --git a/apps/showcase-rooftop-buckets/src/main.ts b/apps/showcase-rooftop-buckets/src/main.ts
+diff --git a/apps/showcase-rooftop-buckets/src/legacy/main.ts b/apps/showcase-rooftop-buckets/src/legacy/main.ts
 index 7e4072b5..2d06e68e 100644
---- a/apps/showcase-rooftop-buckets/src/main.ts
-+++ b/apps/showcase-rooftop-buckets/src/main.ts
+--- a/apps/showcase-rooftop-buckets/src/legacy/main.ts
++++ b/apps/showcase-rooftop-buckets/src/legacy/main.ts
 @@ -43,6 +43,8 @@ import {
  } from "./scoring";
  import { createRooftopDressing } from "./environment";

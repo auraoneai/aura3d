@@ -5,15 +5,15 @@ Subject: [PATCH] [QR-09] blockfall: delete visualReviewCapture branches
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- .../src/board-view.ts                         | 10 +--
- apps/showcase-blockfall-reactor/src/main.ts   | 80 ++++++++-----------
- .../src/reactor-scene.ts                      |  6 +-
+ .../src/gameplay/board-view.ts                         | 10 +--
+ apps/showcase-blockfall-reactor/src/legacy/main.ts   | 80 ++++++++-----------
+ .../src/gameplay/reactor-scene.ts                      |  6 +-
  3 files changed, 41 insertions(+), 55 deletions(-)
 
-diff --git a/apps/showcase-blockfall-reactor/src/board-view.ts b/apps/showcase-blockfall-reactor/src/board-view.ts
+diff --git a/apps/showcase-blockfall-reactor/src/gameplay/board-view.ts b/apps/showcase-blockfall-reactor/src/gameplay/board-view.ts
 index 03b4acd5..a7e2d205 100644
---- a/apps/showcase-blockfall-reactor/src/board-view.ts
-+++ b/apps/showcase-blockfall-reactor/src/board-view.ts
+--- a/apps/showcase-blockfall-reactor/src/gameplay/board-view.ts
++++ b/apps/showcase-blockfall-reactor/src/gameplay/board-view.ts
 @@ -347,7 +347,7 @@ function digitSlotNodes(
  }
  
@@ -56,10 +56,10 @@ index 03b4acd5..a7e2d205 100644
    );
    return nodes;
  }
-diff --git a/apps/showcase-blockfall-reactor/src/main.ts b/apps/showcase-blockfall-reactor/src/main.ts
+diff --git a/apps/showcase-blockfall-reactor/src/legacy/main.ts b/apps/showcase-blockfall-reactor/src/legacy/main.ts
 index 767b10bd..a91e4265 100644
---- a/apps/showcase-blockfall-reactor/src/main.ts
-+++ b/apps/showcase-blockfall-reactor/src/main.ts
+--- a/apps/showcase-blockfall-reactor/src/legacy/main.ts
++++ b/apps/showcase-blockfall-reactor/src/legacy/main.ts
 @@ -105,7 +105,6 @@ const reducedMotion = mediaMatches("(prefers-reduced-motion: reduce)");
  const highContrast = mediaMatches("(prefers-contrast: more)");
  const reducedFlash = reducedMotion;
@@ -291,10 +291,10 @@ index 767b10bd..a91e4265 100644
        .setScale(1)
        .setVisible(true)
        .setRotation(0, 0, 0);
-diff --git a/apps/showcase-blockfall-reactor/src/reactor-scene.ts b/apps/showcase-blockfall-reactor/src/reactor-scene.ts
+diff --git a/apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts b/apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts
 index 2d190380..6633f517 100644
---- a/apps/showcase-blockfall-reactor/src/reactor-scene.ts
-+++ b/apps/showcase-blockfall-reactor/src/reactor-scene.ts
+--- a/apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts
++++ b/apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts
 @@ -368,7 +368,7 @@ export function createArcadeRoomNodes(): AuraNodeInput[] {
    ];
  }

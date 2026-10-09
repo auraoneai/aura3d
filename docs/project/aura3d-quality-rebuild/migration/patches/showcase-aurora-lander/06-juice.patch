@@ -5,13 +5,13 @@ Subject: [PATCH] [QR-09] aurora-lander: juice events + deps
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- apps/showcase-aurora-lander/src/main.ts | 23 +++++++++++++++++++++++
+ apps/showcase-aurora-lander/src/legacy/main.ts | 23 +++++++++++++++++++++++
  1 file changed, 23 insertions(+)
 
-diff --git a/apps/showcase-aurora-lander/src/main.ts b/apps/showcase-aurora-lander/src/main.ts
+diff --git a/apps/showcase-aurora-lander/src/legacy/main.ts b/apps/showcase-aurora-lander/src/legacy/main.ts
 index 7f5c7fb4..10fd00be 100644
---- a/apps/showcase-aurora-lander/src/main.ts
-+++ b/apps/showcase-aurora-lander/src/main.ts
+--- a/apps/showcase-aurora-lander/src/legacy/main.ts
++++ b/apps/showcase-aurora-lander/src/legacy/main.ts
 @@ -978,6 +978,24 @@ const auroraGame = createGame({
  const app = auroraGame.app;
  auroraGame.start();

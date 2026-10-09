@@ -6,7 +6,7 @@ Subject: [PATCH] [QR-09] skyline-runner: juice events + @aura3d/game dep
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
  apps/showcase-skyline-runner/package.json |  3 +-
- apps/showcase-skyline-runner/src/main.ts  | 34 ++++++++++++++++++++++-
+ apps/showcase-skyline-runner/src/legacy/main.ts  | 34 ++++++++++++++++++++++-
  2 files changed, 35 insertions(+), 2 deletions(-)
 
 diff --git a/apps/showcase-skyline-runner/package.json b/apps/showcase-skyline-runner/package.json
@@ -23,10 +23,10 @@ index bcf18a10..60e054b5 100644
    },
    "devDependencies": {
      "typescript": "^5.8.3",
-diff --git a/apps/showcase-skyline-runner/src/main.ts b/apps/showcase-skyline-runner/src/main.ts
+diff --git a/apps/showcase-skyline-runner/src/legacy/main.ts b/apps/showcase-skyline-runner/src/legacy/main.ts
 index 6ce0ceea..745d20d3 100644
---- a/apps/showcase-skyline-runner/src/main.ts
-+++ b/apps/showcase-skyline-runner/src/main.ts
+--- a/apps/showcase-skyline-runner/src/legacy/main.ts
++++ b/apps/showcase-skyline-runner/src/legacy/main.ts
 @@ -18,7 +18,14 @@ import {
    type AuraSceneNode,
    type RuntimeNodeHandleLike

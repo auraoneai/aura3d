@@ -9,7 +9,7 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
 ---
  .../showcase-turbo-drift-circuit/package.json |    4 +-
  .../src/evidence.ts                           |    8 +
- apps/showcase-turbo-drift-circuit/src/main.ts | 1062 +++--------------
+ apps/showcase-turbo-drift-circuit/src/legacy/main.ts | 1062 +++--------------
  .../src/scenario-drive.ts                     |   11 +
  .../src/scenarios/index.ts                    |   18 +
  .../src/turbo-audio.ts                        |   49 +
@@ -47,10 +47,10 @@ index 00000000..750e191b
 +  turbo: (): Record<string, unknown> =>
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
-diff --git a/apps/showcase-turbo-drift-circuit/src/main.ts b/apps/showcase-turbo-drift-circuit/src/main.ts
+diff --git a/apps/showcase-turbo-drift-circuit/src/legacy/main.ts b/apps/showcase-turbo-drift-circuit/src/legacy/main.ts
 index 656a028c..02ef5792 100644
---- a/apps/showcase-turbo-drift-circuit/src/main.ts
-+++ b/apps/showcase-turbo-drift-circuit/src/main.ts
+--- a/apps/showcase-turbo-drift-circuit/src/legacy/main.ts
++++ b/apps/showcase-turbo-drift-circuit/src/legacy/main.ts
 @@ -1,7 +1,6 @@
  import {
    bindGameTouchControls,

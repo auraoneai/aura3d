@@ -7,13 +7,13 @@ togglePause/KeyP/Escape/manual pause flag -> game.session pause stack; pause but
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- apps/showcase-bank-shot/src/main.ts | 31 ++++++++++++++++-------------
+ apps/showcase-bank-shot/src/legacy/main.ts | 31 ++++++++++++++++-------------
  1 file changed, 17 insertions(+), 14 deletions(-)
 
-diff --git a/apps/showcase-bank-shot/src/main.ts b/apps/showcase-bank-shot/src/main.ts
+diff --git a/apps/showcase-bank-shot/src/legacy/main.ts b/apps/showcase-bank-shot/src/legacy/main.ts
 index 2a9973f2..270c3a57 100644
---- a/apps/showcase-bank-shot/src/main.ts
-+++ b/apps/showcase-bank-shot/src/main.ts
+--- a/apps/showcase-bank-shot/src/legacy/main.ts
++++ b/apps/showcase-bank-shot/src/legacy/main.ts
 @@ -44,8 +44,6 @@ type BankShotWindow = Window & {
    __BS_PUMP__?: (frames: number) => number;
  };

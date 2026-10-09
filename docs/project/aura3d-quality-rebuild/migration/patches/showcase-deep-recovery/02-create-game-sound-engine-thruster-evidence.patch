@@ -10,7 +10,7 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  apps/showcase-deep-recovery/src/deep-audio.ts | 115 ++++---
  .../showcase-deep-recovery/src/environment.ts | 306 +++++-------------
  apps/showcase-deep-recovery/src/evidence.ts   |   8 +
- apps/showcase-deep-recovery/src/main.ts       | 149 ++++-----
+ apps/showcase-deep-recovery/src/legacy/main.ts       | 149 ++++-----
  .../src/scenario-drive.ts                     |  11 +
  .../src/scenarios/index.ts                    |  13 +
  7 files changed, 258 insertions(+), 347 deletions(-)
@@ -809,10 +809,10 @@ index 00000000..7da372d1
 +  deep: (): Record<string, unknown> =>
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
-diff --git a/apps/showcase-deep-recovery/src/main.ts b/apps/showcase-deep-recovery/src/main.ts
+diff --git a/apps/showcase-deep-recovery/src/legacy/main.ts b/apps/showcase-deep-recovery/src/legacy/main.ts
 index 6f0bbeca..f6162875 100644
---- a/apps/showcase-deep-recovery/src/main.ts
-+++ b/apps/showcase-deep-recovery/src/main.ts
+--- a/apps/showcase-deep-recovery/src/legacy/main.ts
++++ b/apps/showcase-deep-recovery/src/legacy/main.ts
 @@ -12,6 +12,16 @@ import {
    effects,
    type AuraDiagnostics

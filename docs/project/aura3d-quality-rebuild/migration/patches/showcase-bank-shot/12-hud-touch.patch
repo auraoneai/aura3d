@@ -9,7 +9,7 @@ Deletes the #hud/#panel markup (stat grid, power meter, controls list, evidence 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
  apps/showcase-bank-shot/index.html     |   2 -
- apps/showcase-bank-shot/src/main.ts    | 235 ++++++++++---------------
+ apps/showcase-bank-shot/src/legacy/main.ts    | 235 ++++++++++---------------
  apps/showcase-bank-shot/src/styles.css |   4 +
  3 files changed, 96 insertions(+), 145 deletions(-)
 
@@ -25,12 +25,12 @@ index 4279de08..388aa59b 100644
        </section>
 -      <aside id="panel" class="panel" aria-label="Bank Shot controls and score"></aside>
      </main>
-     <script type="module" src="./src/main.ts"></script>
+     <script type="module" src="./src/legacy/main.ts"></script>
    </body>
-diff --git a/apps/showcase-bank-shot/src/main.ts b/apps/showcase-bank-shot/src/main.ts
+diff --git a/apps/showcase-bank-shot/src/legacy/main.ts b/apps/showcase-bank-shot/src/legacy/main.ts
 index cd2e1776..750b605a 100644
---- a/apps/showcase-bank-shot/src/main.ts
-+++ b/apps/showcase-bank-shot/src/main.ts
+--- a/apps/showcase-bank-shot/src/legacy/main.ts
++++ b/apps/showcase-bank-shot/src/legacy/main.ts
 @@ -19,7 +19,6 @@ import {
    model,
    primitives,

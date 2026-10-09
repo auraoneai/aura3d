@@ -6,7 +6,7 @@ Subject: [PATCH] [QR-09] neon-swarm: juice events + @aura3d/game dep
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
  apps/showcase-neon-swarm/package.json |  3 +-
- apps/showcase-neon-swarm/src/main.ts  | 47 ++++++++++++++++++++++++++-
+ apps/showcase-neon-swarm/src/legacy/main.ts  | 47 ++++++++++++++++++++++++++-
  2 files changed, 48 insertions(+), 2 deletions(-)
 
 diff --git a/apps/showcase-neon-swarm/package.json b/apps/showcase-neon-swarm/package.json
@@ -23,10 +23,10 @@ index edde022a..6febe296 100644
    },
    "devDependencies": {
      "typescript": "^5.8.3",
-diff --git a/apps/showcase-neon-swarm/src/main.ts b/apps/showcase-neon-swarm/src/main.ts
+diff --git a/apps/showcase-neon-swarm/src/legacy/main.ts b/apps/showcase-neon-swarm/src/legacy/main.ts
 index 38e55d09..b85a6149 100644
---- a/apps/showcase-neon-swarm/src/main.ts
-+++ b/apps/showcase-neon-swarm/src/main.ts
+--- a/apps/showcase-neon-swarm/src/legacy/main.ts
++++ b/apps/showcase-neon-swarm/src/legacy/main.ts
 @@ -13,7 +13,14 @@
   *
   * Evidence: window.__NEON_SWARM_EVIDENCE__ (schema in README).

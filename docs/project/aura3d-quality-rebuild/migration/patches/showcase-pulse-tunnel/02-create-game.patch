@@ -5,13 +5,13 @@ Subject: [PATCH] [QR-09] pulse-tunnel: createAuraApp -> createGame
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- apps/showcase-pulse-tunnel/src/main.ts | 27 +++++++++++++++-----------
+ apps/showcase-pulse-tunnel/src/legacy/main.ts | 27 +++++++++++++++-----------
  1 file changed, 16 insertions(+), 11 deletions(-)
 
-diff --git a/apps/showcase-pulse-tunnel/src/main.ts b/apps/showcase-pulse-tunnel/src/main.ts
+diff --git a/apps/showcase-pulse-tunnel/src/legacy/main.ts b/apps/showcase-pulse-tunnel/src/legacy/main.ts
 index 0245e881..9fe389e3 100644
---- a/apps/showcase-pulse-tunnel/src/main.ts
-+++ b/apps/showcase-pulse-tunnel/src/main.ts
+--- a/apps/showcase-pulse-tunnel/src/legacy/main.ts
++++ b/apps/showcase-pulse-tunnel/src/legacy/main.ts
 @@ -10,7 +10,6 @@
   */
  import {

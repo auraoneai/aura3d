@@ -6,13 +6,13 @@ Subject: [PATCH] [QR-09] pulse-tunnel: juice events on
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- apps/showcase-pulse-tunnel/src/main.ts | 57 +++++++++++++++++++++++---
+ apps/showcase-pulse-tunnel/src/legacy/main.ts | 57 +++++++++++++++++++++++---
  1 file changed, 51 insertions(+), 6 deletions(-)
 
-diff --git a/apps/showcase-pulse-tunnel/src/main.ts b/apps/showcase-pulse-tunnel/src/main.ts
+diff --git a/apps/showcase-pulse-tunnel/src/legacy/main.ts b/apps/showcase-pulse-tunnel/src/legacy/main.ts
 index 398d8a61..a42df1f2 100644
---- a/apps/showcase-pulse-tunnel/src/main.ts
-+++ b/apps/showcase-pulse-tunnel/src/main.ts
+--- a/apps/showcase-pulse-tunnel/src/legacy/main.ts
++++ b/apps/showcase-pulse-tunnel/src/legacy/main.ts
 @@ -21,7 +21,14 @@ import {
    type AuraMaterialSpec,
    type RuntimeNodeHandleLike

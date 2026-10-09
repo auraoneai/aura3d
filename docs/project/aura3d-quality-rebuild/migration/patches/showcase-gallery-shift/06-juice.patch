@@ -6,7 +6,7 @@ Subject: [PATCH] [QR-09] gallery-shift: juice events + @aura3d/game dep
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
  apps/showcase-gallery-shift/package.json |  3 ++-
- apps/showcase-gallery-shift/src/main.ts  | 32 +++++++++++++++++++++---
+ apps/showcase-gallery-shift/src/legacy/main.ts  | 32 +++++++++++++++++++++---
  2 files changed, 31 insertions(+), 4 deletions(-)
 
 diff --git a/apps/showcase-gallery-shift/package.json b/apps/showcase-gallery-shift/package.json
@@ -23,10 +23,10 @@ index 6887c72b..d085f926 100644
    },
    "devDependencies": {
      "typescript": "^5.8.3",
-diff --git a/apps/showcase-gallery-shift/src/main.ts b/apps/showcase-gallery-shift/src/main.ts
+diff --git a/apps/showcase-gallery-shift/src/legacy/main.ts b/apps/showcase-gallery-shift/src/legacy/main.ts
 index c6dc1c1e..503aa64d 100644
---- a/apps/showcase-gallery-shift/src/main.ts
-+++ b/apps/showcase-gallery-shift/src/main.ts
+--- a/apps/showcase-gallery-shift/src/legacy/main.ts
++++ b/apps/showcase-gallery-shift/src/legacy/main.ts
 @@ -1,3 +1,4 @@
 +
  /**

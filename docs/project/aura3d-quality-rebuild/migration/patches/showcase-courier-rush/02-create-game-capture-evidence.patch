@@ -7,7 +7,7 @@ Subject: [PATCH] [QR-09] courier-rush: createGame + capture-flag removal +
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
  apps/showcase-courier-rush/src/evidence.ts    |   8 ++
- apps/showcase-courier-rush/src/main.ts        | 117 +++++++++---------
+ apps/showcase-courier-rush/src/legacy/main.ts        | 117 +++++++++---------
  .../src/scenario-drive.ts                     |  11 ++
  .../src/scenarios/index.ts                    |  13 ++
  4 files changed, 88 insertions(+), 61 deletions(-)
@@ -29,10 +29,10 @@ index 00000000..e53e7357
 +  courier: (): Record<string, unknown> =>
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
-diff --git a/apps/showcase-courier-rush/src/main.ts b/apps/showcase-courier-rush/src/main.ts
+diff --git a/apps/showcase-courier-rush/src/legacy/main.ts b/apps/showcase-courier-rush/src/legacy/main.ts
 index c0942f41..5d9be146 100644
---- a/apps/showcase-courier-rush/src/main.ts
-+++ b/apps/showcase-courier-rush/src/main.ts
+--- a/apps/showcase-courier-rush/src/legacy/main.ts
++++ b/apps/showcase-courier-rush/src/legacy/main.ts
 @@ -10,7 +10,6 @@
   * evidence publishes to window.__COURIER_RUSH_EVIDENCE__ per the PRD contract.
   */

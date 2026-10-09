@@ -7,7 +7,7 @@ Subject: [PATCH] [QR-09] patrol-wing: createGame + capture cleanup + prop
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
  apps/showcase-patrol-wing/src/evidence.ts     |   8 ++
- apps/showcase-patrol-wing/src/main.ts         | 127 +++++++++---------
+ apps/showcase-patrol-wing/src/legacy/main.ts         | 127 +++++++++---------
  .../src/scenario-drive.ts                     |  11 ++
  .../src/scenarios/index.ts                    |  11 ++
  apps/showcase-patrol-wing/src/sky.ts          |  35 +----
@@ -31,10 +31,10 @@ index 00000000..049095dc
 +  patrol: (): Record<string, unknown> =>
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
-diff --git a/apps/showcase-patrol-wing/src/main.ts b/apps/showcase-patrol-wing/src/main.ts
+diff --git a/apps/showcase-patrol-wing/src/legacy/main.ts b/apps/showcase-patrol-wing/src/legacy/main.ts
 index 086be8a4..1c2e9285 100644
---- a/apps/showcase-patrol-wing/src/main.ts
-+++ b/apps/showcase-patrol-wing/src/main.ts
+--- a/apps/showcase-patrol-wing/src/legacy/main.ts
++++ b/apps/showcase-patrol-wing/src/legacy/main.ts
 @@ -14,7 +14,6 @@
   */
  import {

@@ -8,7 +8,7 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
 ---
  apps/showcase-siege-golf/package.json         |   3 +-
  apps/showcase-siege-golf/src/evidence.ts      |   8 +
- apps/showcase-siege-golf/src/main.ts          | 218 +++++++-----------
+ apps/showcase-siege-golf/src/legacy/main.ts          | 218 +++++++-----------
  .../showcase-siege-golf/src/scenario-drive.ts |  10 +
  .../src/scenarios/index.ts                    |  12 +
  5 files changed, 121 insertions(+), 130 deletions(-)
@@ -44,10 +44,10 @@ index 00000000..040815b3
 +  siege: (): Record<string, unknown> =>
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
-diff --git a/apps/showcase-siege-golf/src/main.ts b/apps/showcase-siege-golf/src/main.ts
+diff --git a/apps/showcase-siege-golf/src/legacy/main.ts b/apps/showcase-siege-golf/src/legacy/main.ts
 index 0349003f..9f29ce35 100644
---- a/apps/showcase-siege-golf/src/main.ts
-+++ b/apps/showcase-siege-golf/src/main.ts
+--- a/apps/showcase-siege-golf/src/legacy/main.ts
++++ b/apps/showcase-siege-golf/src/legacy/main.ts
 @@ -8,7 +8,6 @@
   */
  import {

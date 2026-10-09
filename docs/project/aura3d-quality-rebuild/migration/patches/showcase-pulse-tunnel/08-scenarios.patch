@@ -6,17 +6,17 @@ Subject: [PATCH] [QR-09] pulse-tunnel: scenario drive + play/finale
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- apps/showcase-pulse-tunnel/src/main.ts        | 16 ++++++++++++++
+ apps/showcase-pulse-tunnel/src/legacy/main.ts        | 16 ++++++++++++++
  .../src/scenario-drive.ts                     | 22 +++++++++++++++++++
  .../src/scenarios/index.ts                    | 17 ++++++++++++++
  3 files changed, 55 insertions(+)
  create mode 100644 apps/showcase-pulse-tunnel/src/scenario-drive.ts
  create mode 100644 apps/showcase-pulse-tunnel/src/scenarios/index.ts
 
-diff --git a/apps/showcase-pulse-tunnel/src/main.ts b/apps/showcase-pulse-tunnel/src/main.ts
+diff --git a/apps/showcase-pulse-tunnel/src/legacy/main.ts b/apps/showcase-pulse-tunnel/src/legacy/main.ts
 index a42df1f2..47322526 100644
---- a/apps/showcase-pulse-tunnel/src/main.ts
-+++ b/apps/showcase-pulse-tunnel/src/main.ts
+--- a/apps/showcase-pulse-tunnel/src/legacy/main.ts
++++ b/apps/showcase-pulse-tunnel/src/legacy/main.ts
 @@ -30,6 +30,8 @@ import {
    createTweenEngine
  } from "@aura3d/game";

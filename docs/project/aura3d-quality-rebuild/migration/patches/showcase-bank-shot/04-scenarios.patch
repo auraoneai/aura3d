@@ -8,7 +8,7 @@ Pocket, foul, eight-finish and rack-fail scenarios run on the GameScenario regis
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- apps/showcase-bank-shot/src/main.ts           | 53 ++++++++-----------
+ apps/showcase-bank-shot/src/legacy/main.ts           | 53 ++++++++-----------
  apps/showcase-bank-shot/src/scenario-drive.ts | 35 ++++++++++++
  .../src/scenarios/eight-finish.ts             | 16 ++++++
  apps/showcase-bank-shot/src/scenarios/foul.ts | 12 +++++
@@ -23,10 +23,10 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  create mode 100644 apps/showcase-bank-shot/src/scenarios/pocket.ts
  create mode 100644 apps/showcase-bank-shot/src/scenarios/rack-fail.ts
 
-diff --git a/apps/showcase-bank-shot/src/main.ts b/apps/showcase-bank-shot/src/main.ts
+diff --git a/apps/showcase-bank-shot/src/legacy/main.ts b/apps/showcase-bank-shot/src/legacy/main.ts
 index 4db91aea..2a9973f2 100644
---- a/apps/showcase-bank-shot/src/main.ts
-+++ b/apps/showcase-bank-shot/src/main.ts
+--- a/apps/showcase-bank-shot/src/legacy/main.ts
++++ b/apps/showcase-bank-shot/src/legacy/main.ts
 @@ -25,6 +25,8 @@ import {
    type AuraDiagnostics
  } from "@aura3d/engine";

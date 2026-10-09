@@ -6,7 +6,7 @@ Subject: [PATCH] [QR-09] patrol-wing: juice events + deps
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
  apps/showcase-patrol-wing/package.json |  4 ++-
- apps/showcase-patrol-wing/src/main.ts  | 36 ++++++++++++++++++++++++--
+ apps/showcase-patrol-wing/src/legacy/main.ts  | 36 ++++++++++++++++++++++++--
  2 files changed, 37 insertions(+), 3 deletions(-)
 
 diff --git a/apps/showcase-patrol-wing/package.json b/apps/showcase-patrol-wing/package.json
@@ -24,10 +24,10 @@ index d559e080..b0483287 100644
    },
    "devDependencies": {
      "typescript": "^5.8.3",
-diff --git a/apps/showcase-patrol-wing/src/main.ts b/apps/showcase-patrol-wing/src/main.ts
+diff --git a/apps/showcase-patrol-wing/src/legacy/main.ts b/apps/showcase-patrol-wing/src/legacy/main.ts
 index 1c2e9285..0794f005 100644
---- a/apps/showcase-patrol-wing/src/main.ts
-+++ b/apps/showcase-patrol-wing/src/main.ts
+--- a/apps/showcase-patrol-wing/src/legacy/main.ts
++++ b/apps/showcase-patrol-wing/src/legacy/main.ts
 @@ -583,6 +583,27 @@ const app = patrolGame.runtime;
  patrolGame.start();
  const input = patrolGame.input!;

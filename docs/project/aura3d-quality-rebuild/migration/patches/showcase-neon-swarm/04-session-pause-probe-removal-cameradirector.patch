@@ -6,13 +6,13 @@ Subject: [PATCH] [QR-09] neon-swarm: session pause, composition probe
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- apps/showcase-neon-swarm/src/main.ts | 71 +++++-----------------------
+ apps/showcase-neon-swarm/src/legacy/main.ts | 71 +++++-----------------------
  1 file changed, 12 insertions(+), 59 deletions(-)
 
-diff --git a/apps/showcase-neon-swarm/src/main.ts b/apps/showcase-neon-swarm/src/main.ts
+diff --git a/apps/showcase-neon-swarm/src/legacy/main.ts b/apps/showcase-neon-swarm/src/legacy/main.ts
 index e36ccc2e..c5a3895a 100644
---- a/apps/showcase-neon-swarm/src/main.ts
-+++ b/apps/showcase-neon-swarm/src/main.ts
+--- a/apps/showcase-neon-swarm/src/legacy/main.ts
++++ b/apps/showcase-neon-swarm/src/legacy/main.ts
 @@ -122,16 +122,6 @@ declare global {
      __NEON_SWARM_EVIDENCE__?: NeonSwarmEvidence;
      __AURA3D_SHOWCASE_NEON_SWARM__?: NeonSwarmEvidence;

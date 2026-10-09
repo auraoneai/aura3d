@@ -25,7 +25,7 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  apps/showcase-bank-shot/scripts/build-sfx.mjs | 355 -------
  .../scripts/register-assets.mjs               |  38 +-
  .../showcase-bank-shot/src/billiards-audio.ts | 170 ----
- apps/showcase-bank-shot/src/main.ts           |   4 +-
+ apps/showcase-bank-shot/src/legacy/main.ts           |   4 +-
  apps/showcase-bank-shot/src/sound.ts          |  69 ++
  .../bankShotAmbientHallSfx.2cc34b40.wav       |   3 -
  .../bankShotAmbientHallSfx.dd9f1de8.wav       |   3 -
@@ -778,10 +778,10 @@ index edf0b6b9..00000000
 -    }
 -  };
 -}
-diff --git a/apps/showcase-bank-shot/src/main.ts b/apps/showcase-bank-shot/src/main.ts
+diff --git a/apps/showcase-bank-shot/src/legacy/main.ts b/apps/showcase-bank-shot/src/legacy/main.ts
 index 2a9973f2..6a892099 100644
---- a/apps/showcase-bank-shot/src/main.ts
-+++ b/apps/showcase-bank-shot/src/main.ts
+--- a/apps/showcase-bank-shot/src/legacy/main.ts
++++ b/apps/showcase-bank-shot/src/legacy/main.ts
 @@ -32,7 +32,7 @@ import { CueController, AIM_STEP, SPIN_STEP } from "./cue";
  import { RulesEngine, type ShotRecord, type ShotOutcome } from "./rules";
  import { rackConfigFor, RACK_COUNT } from "./racks";

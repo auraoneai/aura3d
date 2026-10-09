@@ -7,7 +7,7 @@ Subject: [PATCH] [QR-09] gravity-post: evidence sections + scenario drive
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
  apps/showcase-gravity-post/src/evidence.ts    |  16 +++
- apps/showcase-gravity-post/src/main.ts        | 100 +++++-------------
+ apps/showcase-gravity-post/src/legacy/main.ts        | 100 +++++-------------
  .../src/scenario-drive.ts                     |  22 ++++
  .../src/scenarios/index.ts                    |  16 +++
  4 files changed, 83 insertions(+), 71 deletions(-)
@@ -37,10 +37,10 @@ index 00000000..ee1d1fd8
 +  gravity: (): Record<string, unknown> =>
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
-diff --git a/apps/showcase-gravity-post/src/main.ts b/apps/showcase-gravity-post/src/main.ts
+diff --git a/apps/showcase-gravity-post/src/legacy/main.ts b/apps/showcase-gravity-post/src/legacy/main.ts
 index 620c1040..c4173a79 100644
---- a/apps/showcase-gravity-post/src/main.ts
-+++ b/apps/showcase-gravity-post/src/main.ts
+--- a/apps/showcase-gravity-post/src/legacy/main.ts
++++ b/apps/showcase-gravity-post/src/legacy/main.ts
 @@ -246,16 +246,6 @@ declare global {
    interface Window {
      __GRAVITY_POST_EVIDENCE__?: GravityPostEvidence;

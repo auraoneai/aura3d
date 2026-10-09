@@ -5,13 +5,13 @@ Subject: [PATCH] [QR-09] gravity-post: paused flag -> game.session
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- apps/showcase-gravity-post/src/main.ts | 25 ++++++++++++++-----------
+ apps/showcase-gravity-post/src/legacy/main.ts | 25 ++++++++++++++-----------
  1 file changed, 14 insertions(+), 11 deletions(-)
 
-diff --git a/apps/showcase-gravity-post/src/main.ts b/apps/showcase-gravity-post/src/main.ts
+diff --git a/apps/showcase-gravity-post/src/legacy/main.ts b/apps/showcase-gravity-post/src/legacy/main.ts
 index 639ff3fd..620c1040 100644
---- a/apps/showcase-gravity-post/src/main.ts
-+++ b/apps/showcase-gravity-post/src/main.ts
+--- a/apps/showcase-gravity-post/src/legacy/main.ts
++++ b/apps/showcase-gravity-post/src/legacy/main.ts
 @@ -1206,7 +1206,6 @@ let failedContracts = 0;
  let completedContracts = 0;
  let shiftOver = false;

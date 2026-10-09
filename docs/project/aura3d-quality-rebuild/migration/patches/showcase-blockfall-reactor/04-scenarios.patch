@@ -5,7 +5,7 @@ Subject: [PATCH] [QR-09] blockfall: probe globals -> scenario registry
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- apps/showcase-blockfall-reactor/src/main.ts   | 112 ++++--------------
+ apps/showcase-blockfall-reactor/src/legacy/main.ts   | 112 ++++--------------
  .../src/scenario-drive.ts                     |  35 ++++++
  .../src/scenarios/acceptance.ts               |  17 +++
  .../src/scenarios/attract.ts                  |  13 ++
@@ -18,10 +18,10 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  create mode 100644 apps/showcase-blockfall-reactor/src/scenarios/index.ts
  create mode 100644 apps/showcase-blockfall-reactor/src/scenarios/rotation-trap.ts
 
-diff --git a/apps/showcase-blockfall-reactor/src/main.ts b/apps/showcase-blockfall-reactor/src/main.ts
+diff --git a/apps/showcase-blockfall-reactor/src/legacy/main.ts b/apps/showcase-blockfall-reactor/src/legacy/main.ts
 index a91e4265..57363133 100644
---- a/apps/showcase-blockfall-reactor/src/main.ts
-+++ b/apps/showcase-blockfall-reactor/src/main.ts
+--- a/apps/showcase-blockfall-reactor/src/legacy/main.ts
++++ b/apps/showcase-blockfall-reactor/src/legacy/main.ts
 @@ -1,6 +1,5 @@
  import {
    camera,

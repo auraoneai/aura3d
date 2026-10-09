@@ -8,13 +8,13 @@ Keeps the play arm of every capture ternary; deletes the main.ts:49 declaration.
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- apps/showcase-bank-shot/src/main.ts | 43 ++++++++++++++---------------
+ apps/showcase-bank-shot/src/legacy/main.ts | 43 ++++++++++++++---------------
  1 file changed, 21 insertions(+), 22 deletions(-)
 
-diff --git a/apps/showcase-bank-shot/src/main.ts b/apps/showcase-bank-shot/src/main.ts
+diff --git a/apps/showcase-bank-shot/src/legacy/main.ts b/apps/showcase-bank-shot/src/legacy/main.ts
 index 49e310f3..4db91aea 100644
---- a/apps/showcase-bank-shot/src/main.ts
-+++ b/apps/showcase-bank-shot/src/main.ts
+--- a/apps/showcase-bank-shot/src/legacy/main.ts
++++ b/apps/showcase-bank-shot/src/legacy/main.ts
 @@ -46,8 +46,7 @@ const bankWindow = window as BankShotWindow;
  const reducedMotion = typeof window.matchMedia === "function"
    && window.matchMedia("(prefers-reduced-motion: reduce)").matches;

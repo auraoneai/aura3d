@@ -7,8 +7,8 @@ Subject: [PATCH] [QR-09] neon-swarm: createGame mount + delete
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
  apps/showcase-neon-swarm/src/environment.ts |  60 +----
- apps/showcase-neon-swarm/src/main.ts        | 241 ++++++++------------
- apps/showcase-neon-swarm/src/swarm.ts       |   3 +-
+ apps/showcase-neon-swarm/src/legacy/main.ts        | 241 ++++++++------------
+ apps/showcase-neon-swarm/src/gameplay/swarm.ts       |   3 +-
  3 files changed, 98 insertions(+), 206 deletions(-)
 
 diff --git a/apps/showcase-neon-swarm/src/environment.ts b/apps/showcase-neon-swarm/src/environment.ts
@@ -103,10 +103,10 @@ index df7c0dcf..fcb2c692 100644
    // Normal play uses a compact authored street language around the typed
    // props and instanced swarm. Keeping these rails in one small branch leaves
    // negative space for individual threat silhouettes and keeps the route's
-diff --git a/apps/showcase-neon-swarm/src/main.ts b/apps/showcase-neon-swarm/src/main.ts
+diff --git a/apps/showcase-neon-swarm/src/legacy/main.ts b/apps/showcase-neon-swarm/src/legacy/main.ts
 index f30aa600..e36ccc2e 100644
---- a/apps/showcase-neon-swarm/src/main.ts
-+++ b/apps/showcase-neon-swarm/src/main.ts
+--- a/apps/showcase-neon-swarm/src/legacy/main.ts
++++ b/apps/showcase-neon-swarm/src/legacy/main.ts
 @@ -13,9 +13,9 @@
   *
   * Evidence: window.__NEON_SWARM_EVIDENCE__ (schema in README).
@@ -595,10 +595,10 @@ index f30aa600..e36ccc2e 100644
        node?.setPosition(player.x, 0.06, player.z).setRotation(0, 0, 0).setScale(neutralScale);
        node?.setVisible(!compositionSubjectSuppressed);
        await app.stepAsync(0);
-diff --git a/apps/showcase-neon-swarm/src/swarm.ts b/apps/showcase-neon-swarm/src/swarm.ts
+diff --git a/apps/showcase-neon-swarm/src/gameplay/swarm.ts b/apps/showcase-neon-swarm/src/gameplay/swarm.ts
 index abe156c4..c2ceeb08 100644
---- a/apps/showcase-neon-swarm/src/swarm.ts
-+++ b/apps/showcase-neon-swarm/src/swarm.ts
+--- a/apps/showcase-neon-swarm/src/gameplay/swarm.ts
++++ b/apps/showcase-neon-swarm/src/gameplay/swarm.ts
 @@ -130,7 +130,6 @@ export interface SwarmSimulation {
   * between the larger typed elite presentations.
   */

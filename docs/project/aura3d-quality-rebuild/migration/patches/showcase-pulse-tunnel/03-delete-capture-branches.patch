@@ -6,13 +6,13 @@ Subject: [PATCH] [QR-09] pulse-tunnel: delete visualReviewCapture + review
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- apps/showcase-pulse-tunnel/src/main.ts | 1132 ++----------------------
+ apps/showcase-pulse-tunnel/src/legacy/main.ts | 1132 ++----------------------
  1 file changed, 64 insertions(+), 1068 deletions(-)
 
-diff --git a/apps/showcase-pulse-tunnel/src/main.ts b/apps/showcase-pulse-tunnel/src/main.ts
+diff --git a/apps/showcase-pulse-tunnel/src/legacy/main.ts b/apps/showcase-pulse-tunnel/src/legacy/main.ts
 index 9fe389e3..f1bf3e2d 100644
---- a/apps/showcase-pulse-tunnel/src/main.ts
-+++ b/apps/showcase-pulse-tunnel/src/main.ts
+--- a/apps/showcase-pulse-tunnel/src/legacy/main.ts
++++ b/apps/showcase-pulse-tunnel/src/legacy/main.ts
 @@ -54,15 +54,12 @@ const reducedMotion =
  // Screenshot-only presentation mode keeps the gameplay/HUD contract intact while
  // giving visual review a clean renderer-first frame. The normal route remains

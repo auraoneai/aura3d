@@ -11,7 +11,7 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  apps/showcase-bank-shot/package.json          |   1 -
  .../scripts/write-performance-report.ts       | 108 ------------------
  apps/showcase-bank-shot/src/evidence.ts       |  17 +++
- apps/showcase-bank-shot/src/main.ts           |  20 ++--
+ apps/showcase-bank-shot/src/legacy/main.ts           |  20 ++--
  4 files changed, 28 insertions(+), 118 deletions(-)
  delete mode 100644 apps/showcase-bank-shot/scripts/write-performance-report.ts
  create mode 100644 apps/showcase-bank-shot/src/evidence.ts
@@ -165,10 +165,10 @@ index 00000000..e3ae3386
 +  bankShot: (): Record<string, unknown> =>
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
-diff --git a/apps/showcase-bank-shot/src/main.ts b/apps/showcase-bank-shot/src/main.ts
+diff --git a/apps/showcase-bank-shot/src/legacy/main.ts b/apps/showcase-bank-shot/src/legacy/main.ts
 index c8ab4699..ee330d5e 100644
---- a/apps/showcase-bank-shot/src/main.ts
-+++ b/apps/showcase-bank-shot/src/main.ts
+--- a/apps/showcase-bank-shot/src/legacy/main.ts
++++ b/apps/showcase-bank-shot/src/legacy/main.ts
 @@ -27,6 +27,7 @@ import {
  import { createGame } from "@aura3d/game";
  import { bankShotScenarios } from "./scenarios";

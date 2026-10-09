@@ -7,7 +7,7 @@ Subject: [PATCH] [QR-09] aurora-lander: createGame + capture cleanup +
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
  apps/showcase-aurora-lander/src/evidence.ts   |   8 ++
- apps/showcase-aurora-lander/src/main.ts       | 121 ++++++++++--------
+ apps/showcase-aurora-lander/src/legacy/main.ts       | 121 ++++++++++--------
  .../src/scenario-drive.ts                     |  11 ++
  .../src/scenarios/index.ts                    |  13 ++
  4 files changed, 97 insertions(+), 56 deletions(-)
@@ -29,10 +29,10 @@ index 00000000..af123212
 +  aurora: (): Record<string, unknown> =>
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
-diff --git a/apps/showcase-aurora-lander/src/main.ts b/apps/showcase-aurora-lander/src/main.ts
+diff --git a/apps/showcase-aurora-lander/src/legacy/main.ts b/apps/showcase-aurora-lander/src/legacy/main.ts
 index 081fc6ec..ba278668 100644
---- a/apps/showcase-aurora-lander/src/main.ts
-+++ b/apps/showcase-aurora-lander/src/main.ts
+--- a/apps/showcase-aurora-lander/src/legacy/main.ts
++++ b/apps/showcase-aurora-lander/src/legacy/main.ts
 @@ -33,6 +33,16 @@ import {
    type MeshSurfaceQuery,
    type SurfaceSample

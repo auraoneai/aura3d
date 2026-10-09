@@ -9,7 +9,7 @@ Drops visualReviewCapture/animationDebugCapture: play arm kept for every ternary
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
  .../src/environment.ts                        | 346 +++---------------
- apps/showcase-rooftop-buckets/src/main.ts     | 283 +++-----------
+ apps/showcase-rooftop-buckets/src/legacy/main.ts     | 283 +++-----------
  2 files changed, 103 insertions(+), 526 deletions(-)
 
 diff --git a/apps/showcase-rooftop-buckets/src/environment.ts b/apps/showcase-rooftop-buckets/src/environment.ts
@@ -561,10 +561,10 @@ index 6633bbfd..89f86f34 100644
    nodes.push(
      instances.box({
        name: "night league glass bay",
-diff --git a/apps/showcase-rooftop-buckets/src/main.ts b/apps/showcase-rooftop-buckets/src/main.ts
+diff --git a/apps/showcase-rooftop-buckets/src/legacy/main.ts b/apps/showcase-rooftop-buckets/src/legacy/main.ts
 index 76ca97d6..7e4072b5 100644
---- a/apps/showcase-rooftop-buckets/src/main.ts
-+++ b/apps/showcase-rooftop-buckets/src/main.ts
+--- a/apps/showcase-rooftop-buckets/src/legacy/main.ts
++++ b/apps/showcase-rooftop-buckets/src/legacy/main.ts
 @@ -45,15 +45,6 @@ import { createRooftopDressing } from "./environment";
  import { createGame } from "@aura3d/game";
  import { BucketsAudioController } from "./buckets-audio";

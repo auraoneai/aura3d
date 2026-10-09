@@ -5,13 +5,13 @@ Subject: [PATCH] [QR-09] neon-swarm: wave-clear juice on campaign end
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- apps/showcase-neon-swarm/src/main.ts | 1 +
+ apps/showcase-neon-swarm/src/legacy/main.ts | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/apps/showcase-neon-swarm/src/main.ts b/apps/showcase-neon-swarm/src/main.ts
+diff --git a/apps/showcase-neon-swarm/src/legacy/main.ts b/apps/showcase-neon-swarm/src/legacy/main.ts
 index b85a6149..6e8346fb 100644
---- a/apps/showcase-neon-swarm/src/main.ts
-+++ b/apps/showcase-neon-swarm/src/main.ts
+--- a/apps/showcase-neon-swarm/src/legacy/main.ts
++++ b/apps/showcase-neon-swarm/src/legacy/main.ts
 @@ -1070,6 +1070,7 @@ function beginIntermission(seconds: number): void {
      hud.showDoors();
      audio.cue("wave-clear").catch(() => undefined);

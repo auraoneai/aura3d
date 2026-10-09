@@ -7,7 +7,7 @@ Subject: [PATCH] [QR-09] gallery-shift: createGame + capture cleanup +
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
  apps/showcase-gallery-shift/src/evidence.ts   |   8 +
- apps/showcase-gallery-shift/src/main.ts       | 141 +++++++++---------
+ apps/showcase-gallery-shift/src/legacy/main.ts       | 141 +++++++++---------
  .../src/scenario-drive.ts                     |  11 ++
  .../src/scenarios/index.ts                    |  14 ++
  4 files changed, 100 insertions(+), 74 deletions(-)
@@ -29,10 +29,10 @@ index 00000000..c6db6b06
 +  gallery: (): Record<string, unknown> =>
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
-diff --git a/apps/showcase-gallery-shift/src/main.ts b/apps/showcase-gallery-shift/src/main.ts
+diff --git a/apps/showcase-gallery-shift/src/legacy/main.ts b/apps/showcase-gallery-shift/src/legacy/main.ts
 index 444a9fce..c6dc1c1e 100644
---- a/apps/showcase-gallery-shift/src/main.ts
-+++ b/apps/showcase-gallery-shift/src/main.ts
+--- a/apps/showcase-gallery-shift/src/legacy/main.ts
++++ b/apps/showcase-gallery-shift/src/legacy/main.ts
 @@ -18,7 +18,6 @@
  import {
    AnimationController,

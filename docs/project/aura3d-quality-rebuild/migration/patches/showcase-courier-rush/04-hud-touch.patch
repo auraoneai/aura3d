@@ -8,12 +8,12 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
 ---
  apps/showcase-courier-rush/index.html      |   1 -
  apps/showcase-courier-rush/src/hud.ts      | 208 ---------------------
- apps/showcase-courier-rush/src/main.ts     | 150 ++++++++++++---
- apps/showcase-courier-rush/src/main.ts.rej |  53 ++++++
+ apps/showcase-courier-rush/src/legacy/main.ts     | 150 ++++++++++++---
+ apps/showcase-courier-rush/src/legacy/main.ts.rej |  53 ++++++
  apps/showcase-courier-rush/src/styles.css  |   4 +
  5 files changed, 179 insertions(+), 237 deletions(-)
  delete mode 100644 apps/showcase-courier-rush/src/hud.ts
- create mode 100644 apps/showcase-courier-rush/src/main.ts.rej
+ create mode 100644 apps/showcase-courier-rush/src/legacy/main.ts.rej
 
 diff --git a/apps/showcase-courier-rush/index.html b/apps/showcase-courier-rush/index.html
 index feddffe5..70883efc 100644
@@ -25,7 +25,7 @@ index feddffe5..70883efc 100644
        </section>
 -      <aside id="panel" class="panel" aria-label="Courier dispatch controls and HUD"></aside>
      </main>
-     <script type="module" src="./src/main.ts"></script>
+     <script type="module" src="./src/legacy/main.ts"></script>
    </body>
 diff --git a/apps/showcase-courier-rush/src/hud.ts b/apps/showcase-courier-rush/src/hud.ts
 deleted file mode 100644
@@ -241,10 +241,10 @@ index ee50089c..00000000
 -export function hideShiftSummary(hud: CourierHudRefs): void {
 -  hud.summaryOverlay.dataset.visible = "false";
 -}
-diff --git a/apps/showcase-courier-rush/src/main.ts b/apps/showcase-courier-rush/src/main.ts
+diff --git a/apps/showcase-courier-rush/src/legacy/main.ts b/apps/showcase-courier-rush/src/legacy/main.ts
 index dfa35e37..7ef25d0f 100644
---- a/apps/showcase-courier-rush/src/main.ts
-+++ b/apps/showcase-courier-rush/src/main.ts
+--- a/apps/showcase-courier-rush/src/legacy/main.ts
++++ b/apps/showcase-courier-rush/src/legacy/main.ts
 @@ -29,7 +29,10 @@ import {
    createJuice,
    createOverlayDriver,
@@ -499,13 +499,13 @@ index dfa35e37..7ef25d0f 100644
  
  void app.ready().then(() => {
    const diagnostics = app.diagnostics();
-diff --git a/apps/showcase-courier-rush/src/main.ts.rej b/apps/showcase-courier-rush/src/main.ts.rej
+diff --git a/apps/showcase-courier-rush/src/legacy/main.ts.rej b/apps/showcase-courier-rush/src/legacy/main.ts.rej
 new file mode 100644
 index 00000000..2cb0244f
 --- /dev/null
-+++ b/apps/showcase-courier-rush/src/main.ts.rej
++++ b/apps/showcase-courier-rush/src/legacy/main.ts.rej
 @@ -0,0 +1,53 @@
-+diff a/apps/showcase-courier-rush/src/main.ts b/apps/showcase-courier-rush/src/main.ts	(rejected hunks)
++diff a/apps/showcase-courier-rush/src/legacy/main.ts b/apps/showcase-courier-rush/src/legacy/main.ts	(rejected hunks)
 +@@ -60,16 +60,11 @@ import {
 +   createJuice,
 +   createOverlayDriver,

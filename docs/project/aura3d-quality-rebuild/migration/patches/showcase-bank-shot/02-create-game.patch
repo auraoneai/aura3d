@@ -9,7 +9,7 @@ createGameApp -> createGame; pause key removed from input actions (session lifec
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
  apps/showcase-bank-shot/package.json |  3 ++-
- apps/showcase-bank-shot/src/main.ts  | 15 +++++++++------
+ apps/showcase-bank-shot/src/legacy/main.ts  | 15 +++++++++------
  2 files changed, 11 insertions(+), 7 deletions(-)
 
 diff --git a/apps/showcase-bank-shot/package.json b/apps/showcase-bank-shot/package.json
@@ -26,10 +26,10 @@ index 733b39e8..ac43b1bb 100644
    },
    "devDependencies": {
      "typescript": "^5.8.3",
-diff --git a/apps/showcase-bank-shot/src/main.ts b/apps/showcase-bank-shot/src/main.ts
+diff --git a/apps/showcase-bank-shot/src/legacy/main.ts b/apps/showcase-bank-shot/src/legacy/main.ts
 index ea85a817..49e310f3 100644
---- a/apps/showcase-bank-shot/src/main.ts
-+++ b/apps/showcase-bank-shot/src/main.ts
+--- a/apps/showcase-bank-shot/src/legacy/main.ts
++++ b/apps/showcase-bank-shot/src/legacy/main.ts
 @@ -12,7 +12,6 @@
   */
  import {
