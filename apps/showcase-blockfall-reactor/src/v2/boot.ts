@@ -58,8 +58,8 @@ import { blockfallLighting } from "./scene/lighting";
 import { createBlockfallRig, blockfallCameraSpec, BASE_POSE } from "./scene/camera";
 import { wireBlockfallFx } from "./scene/fx";
 import { ROOM_BG } from "./scene/materials";
-import { publishBlockfallEvidence } from "./evidence";
-import { applyBlockfallScenario, parseBlockfallScenario } from "./scenarios";
+import { publishBlockfallEvidence } from "../evidence";
+import { applyBlockfallScenario, parseBlockfallScenario } from "../scenarios";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_BLOCKFALL_REACTOR" as const;
 const SIM_STEP = 1 / 60;

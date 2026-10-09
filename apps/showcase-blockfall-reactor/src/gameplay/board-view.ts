@@ -347,7 +347,7 @@ function digitSlotNodes(
 }
 
 /** Builds every wall board node: SCORE + six digits, LEVEL + two digits, NEXT. */
-export function createScoreboardNodes(reviewCapture = false): AuraNodeInput[] {
+export function createScoreboardNodes(): AuraNodeInput[] {
   const materials = scoreboardMaterials();
   const layout = SCOREBOARD_LAYOUT;
   const nodes: AuraNodeInput[] = [];
@@ -357,7 +357,7 @@ export function createScoreboardNodes(reviewCapture = false): AuraNodeInput[] {
     geometry.custom(
       { kind: "aura-custom-geometry", positions: scoreWord.positions, indices: scoreWord.indices },
       { name: "blockfall-scoreboard-score-word", material: materials.label }
-    ).position(layout.score.centerX - scoreWord.width / 2, reviewCapture ? -50 : layout.score.wordY - layout.score.wordSize / 2, layout.z)
+    ).position(layout.score.centerX - scoreWord.width / 2,  layout.score.wordY - layout.score.wordSize / 2, layout.z)
   );
   for (let slot = 0; slot < 6; slot += 1) {
     nodes.push(...digitSlotNodes(slot, 6, layout.score.centerX, layout.score.digitsY, layout.score.digitSize, layout.z, materials.score, scoreDigitNodeId));
@@ -368,7 +368,7 @@ export function createScoreboardNodes(reviewCapture = false): AuraNodeInput[] {
     geometry.custom(
       { kind: "aura-custom-geometry", positions: levelWord.positions, indices: levelWord.indices },
       { name: "blockfall-scoreboard-level-word", material: materials.label }
-    ).position(layout.level.centerX - levelWord.width / 2, reviewCapture ? -50 : layout.level.wordY - layout.level.wordSize / 2, layout.z)
+    ).position(layout.level.centerX - levelWord.width / 2,  layout.level.wordY - layout.level.wordSize / 2, layout.z)
   );
   for (let slot = 0; slot < 2; slot += 1) {
     nodes.push(...digitSlotNodes(slot, 2, layout.level.centerX, layout.level.digitsY, layout.level.digitSize, layout.z, materials.level, levelDigitNodeId));
@@ -379,12 +379,12 @@ export function createScoreboardNodes(reviewCapture = false): AuraNodeInput[] {
     geometry.custom(
       { kind: "aura-custom-geometry", positions: nextWord.positions, indices: nextWord.indices },
       { name: "blockfall-scoreboard-next-word", material: materials.label }
-    ).position(layout.next.centerX - nextWord.width / 2, reviewCapture ? -50 : layout.next.wordY - layout.next.wordSize / 2, layout.z)
+    ).position(layout.next.centerX - nextWord.width / 2,  layout.next.wordY - layout.next.wordSize / 2, layout.z)
   );
 
   // A dim mounting rail ties the three boards into one wall instrument.
   nodes.push(
-    primitives.box({ name: "wall scoreboard mount rail", material: materials.label }).position(0, reviewCapture ? -50 : 4.28, layout.z + 0.02).scale([6.4, 0.03, 0.03])
+    primitives.box({ name: "wall scoreboard mount rail", material: materials.label }).position(0,  4.28, layout.z + 0.02).scale([6.4, 0.03, 0.03])
   );
   return nodes;
 }

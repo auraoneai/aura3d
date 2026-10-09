@@ -368,7 +368,7 @@ export function createArcadeRoomNodes(): AuraNodeInput[] {
   ];
 }
 
-export function createBoardShell(reviewCapture = false): AuraNodeInput[] {
+export function createBoardShell(): AuraNodeInput[] {
   const nodes: AuraNodeInput[] = [
     // A layered metal bezel and lower service deck make the well read as the
     // face of a working cabinet instead of a flat rectangle over the backdrop.
@@ -475,8 +475,8 @@ export function createBoardShell(reviewCapture = false): AuraNodeInput[] {
       ]
     }),
     primitives.box({ name: "reactor cabinet floor", material: material.metal({ color: "#111a18", roughness: 0.58, metallic: 0.28 }), receiveShadow: true }).position(0, -0.12, -0.48).scale([4.08, 0.055, 1.25]),
-    primitives.box({ name: "left cyan arcade light column", material: material.neon({ color: "#39f6ff", emissive: "#39f6ff", emissiveIntensity: 0.6 }) }).position(-1.46, BOARD_CENTER_Y, 0.04).scale(reviewCapture ? HIDDEN_BLOCK_SCALE : [0.018, 2.06, 0.022]),
-    primitives.box({ name: "right magenta arcade light column", material: material.neon({ color: "#e279ff", emissive: "#e279ff", emissiveIntensity: 0.56 }) }).position(1.46, BOARD_CENTER_Y, 0.04).scale(reviewCapture ? HIDDEN_BLOCK_SCALE : [0.018, 2.06, 0.022]),
+    primitives.box({ name: "left cyan arcade light column", material: material.neon({ color: "#39f6ff", emissive: "#39f6ff", emissiveIntensity: 0.6 }) }).position(-1.46, BOARD_CENTER_Y, 0.04).scale( [0.018, 2.06, 0.022]),
+    primitives.box({ name: "right magenta arcade light column", material: material.neon({ color: "#e279ff", emissive: "#e279ff", emissiveIntensity: 0.56 }) }).position(1.46, BOARD_CENTER_Y, 0.04).scale( [0.018, 2.06, 0.022]),
     // State-bound effects are mounted up front and parked offstage. Their
     // transforms are updated by main.ts from the live falling-block snapshot;
     // no review-only geometry is used to stand in for the game.
