@@ -1,5 +1,8 @@
 # PRD-13 PR D evidence — T1.9–T1.13
 
+> **Run-id status (P-57):** no passing remote run id is cited in this file yet; every claim below is recorded NOT RUN until the proving lane-workflow/GitLab run is linked here. File moved from `evidence/prd13/` → `docs/project/aura3d-quality-rebuild/evidence/prd-13/` (13-EVID).
+
+
 Branch: `qr/prd13-prompt-plan-v2` (stacked on `qr/prd13-looks-lint-maps` / PR #173).
 Flag: `A3D_QR_LOOKS` (behaviour changes only when on; flag-off paths byte-identical).
 
