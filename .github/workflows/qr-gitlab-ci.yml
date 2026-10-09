@@ -170,7 +170,10 @@ jobs:
                 viewports=*) viewports="${kv#viewports=}" ;;
                 local=*) local_build="${kv#local=}" ;;
                 mobile=*) mobile="${kv#mobile=}" ;;
-                *) echo "::error::unknown qr-gitlab tag option '$kv' (allowed: games= viewports= local= mobile= flags=)"; exit 1 ;;
+                bench_scenes=*) bscenes="${kv#bench_scenes=}" ;;
+                bench_engines=*) bengines="${kv#bench_engines=}" ;;
+                bench_flag_sets=*) bsets="${kv#bench_flag_sets=}" ;;
+                *) echo "::error::unknown qr-gitlab tag option '$kv' (allowed: games= viewports= local= mobile= flags= bench_scenes= bench_engines= bench_flag_sets=)"; exit 1 ;;
               esac
             done
             requester="$(printf '%s' "$REF" | grep -o 'prd[0-9][0-9]' | head -1 || true)"; requester="${requester:-push}"
