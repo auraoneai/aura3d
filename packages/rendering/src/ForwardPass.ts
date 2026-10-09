@@ -293,7 +293,7 @@ export class ForwardPass extends BaseRenderPass {
     this.skinningPaletteUploads.beginFrame();
     this.beginFramePools(context.device);
     this.clusteredLighting = resolveForwardClusteredLighting(this.options.lights, context.width, context.height, this.options.cameraViewProjectionMatrix);
-    const flags = rendererQrFlags();
+    const flags = rendererQrFlags(context.device);
     if (qrCoreGeneratorOn(flags)) {
       const auraFrame = rendererAuraFrame(context.device, flags);
       if ("viewport" in auraFrame) {
@@ -337,7 +337,7 @@ export class ForwardPass extends BaseRenderPass {
     this.applyLightUniforms(material);
     const shader = this.getShader(baseMaterial, device, item);
     if (shader === undefined) return; // A3D_QR_CORE_GENERATOR async-skip (C-02 §A.2)
-    const generated = qrCoreGeneratorOn(rendererQrFlags()) && materialUsesGeneratedProgram(baseMaterial);
+    const generated = qrCoreGeneratorOn(rendererQrFlags(device)) && materialUsesGeneratedProgram(baseMaterial);
     if (item.instanceTransforms && baseMaterial.renderState.cullMode !== "none" && instancedItemNeedsPerInstanceCullState(item)) {
       for (const expanded of expandInstancedRenderItem(item)) {
         this.drawItem(device, expanded);
@@ -466,12 +466,12 @@ export class ForwardPass extends BaseRenderPass {
   }
 
   private getShader(material: Material, device: RenderDevice, item?: RenderItem): RenderShaderProgram | undefined {
-    const flags = rendererQrFlags();
+    const flags = rendererQrFlags(device);
     this.lastProgramFeatures = undefined;
     if (qrCoreGeneratorOn(flags) && materialUsesGeneratedProgram(material)) {
       const warning = materialFeatureWarning(material);
       if (warning) console.warn(`[prd01] ${warning}`);
-      this.lastProgramFeatures = this.programFeaturesFor(material, item);
+      this.lastProgramFeatures = this.programFeaturesFor(material, device, item);
       const handle = this.programCache(device).acquire(this.lastProgramFeatures);
       // async-skip: a not-yet-ready or failed program skips the draw this frame
       // (C-02 §A.2 semantics; warm-then-block warmup renders them ready up front).
@@ -493,12 +493,12 @@ export class ForwardPass extends BaseRenderPass {
   private lastProgramFeatures: ProgramFeatures | undefined;
 
   private programCache(device: RenderDevice): ProgramCacheLike {
-    this.generatorProgramCache ??= rendererProgramCache(device, rendererQrFlags());
+    this.generatorProgramCache ??= rendererProgramCache(device, rendererQrFlags(device));
     return this.generatorProgramCache;
   }
 
-  private programFeaturesFor(material: Material, item?: RenderItem): ProgramFeatures {
-    const flags = rendererQrFlags();
+  private programFeaturesFor(material: Material, device: RenderDevice, item?: RenderItem): ProgramFeatures {
+    const flags = rendererQrFlags(device);
     const tier = this.options.qualityTier ?? QUALITY_TIERS.high;
     const mf = material.programFeatures({ flags, tier });
     const axes = forwardPassFeatureAxes(this.options, this.clusteredLighting !== null);
@@ -611,7 +611,7 @@ export class ForwardPass extends BaseRenderPass {
       return existing;
     }
     existing?.buffer.dispose();
-    const buffer = instanceBufferSlot.get(rendererQrFlags())(device, capacity, { colors });
+    const buffer = instanceBufferSlot.get(rendererQrFlags(device))(device, capacity, { colors });
     const slot = { buffer, colors, capacity };
     slots[index] = slot;
     if (slots.length > index + 64) slots.length = index + 64;

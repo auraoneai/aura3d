@@ -662,7 +662,7 @@ export class Renderer {
     // The legacy post chain's own encode/present is lane 03's to migrate into
     // post-hdr contributors (Q-03-2/Q-03-3); until then a configured chain is
     // reported once and skipped rather than double-encoded.
-    const qrOutput = qrCoreOutputOn(rendererQrFlags());
+    const qrOutput = qrCoreOutputOn(rendererQrFlags(this.device));
     if (qrOutput && postprocess !== undefined) {
       if (!this.warnedV2Postprocess) {
         this.warnedV2Postprocess = true;
@@ -768,7 +768,7 @@ export class Renderer {
       // is a cut — reprojection would smear everything, so seed fresh history.
       let temporalPrevVp: Float32Array | undefined;
       let temporalAutoReset = false;
-      if (postprocess?.temporal && (postprocess.motionBlur || postprocess.taa) && cameraPosition && rendererQrFlags().on("A3D_QR_POST")) {
+      if (postprocess?.temporal && (postprocess.motionBlur || postprocess.taa) && cameraPosition && rendererQrFlags(this.device).on("A3D_QR_POST")) {
         const prev = this.lastTemporalCameraPosition;
         if (prev) {
           const dx = (cameraPosition as readonly number[])[0]! - prev[0];
@@ -965,7 +965,7 @@ export class Renderer {
     // The legacy post chain's own encode/present is lane 03's to migrate into
     // post-hdr contributors (Q-03-2/Q-03-3); until then a configured chain is
     // reported once and skipped rather than double-encoded.
-    const qrOutput = qrCoreOutputOn(rendererQrFlags());
+    const qrOutput = qrCoreOutputOn(rendererQrFlags(this.device));
     if (qrOutput && postprocess !== undefined) {
       if (!this.warnedV2Postprocess) {
         this.warnedV2Postprocess = true;
@@ -1071,7 +1071,7 @@ export class Renderer {
       // is a cut — reprojection would smear everything, so seed fresh history.
       let temporalPrevVp: Float32Array | undefined;
       let temporalAutoReset = false;
-      if (postprocess?.temporal && (postprocess.motionBlur || postprocess.taa) && cameraPosition && rendererQrFlags().on("A3D_QR_POST")) {
+      if (postprocess?.temporal && (postprocess.motionBlur || postprocess.taa) && cameraPosition && rendererQrFlags(this.device).on("A3D_QR_POST")) {
         const prev = this.lastTemporalCameraPosition;
         if (prev) {
           const dx = (cameraPosition as readonly number[])[0]! - prev[0];
@@ -1226,7 +1226,7 @@ export class Renderer {
     shadowMap: ForwardShadowMapOptions | undefined,
     cameraViewProjection: Float32Array | readonly number[] | undefined
   ): Promise<void> {
-    const flags = rendererQrFlags();
+    const flags = rendererQrFlags(this.device);
     if (!qrCoreGeneratorOn(flags)) return;
     const tier: AuraQualityTier = this.qualityTierName ?? "high";
     const materials = new Map<string, import("./Material").Material>();

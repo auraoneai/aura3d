@@ -316,13 +316,24 @@ export async function mountAuraLaneScene(sceneId: string, spec: Prd01LaneSceneSp
   const animated = spec.animated === true;
   const app = createAuraApp(host, {
     scene: snapshot,
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+    // T0-13 lane-01 copy: no mode override, no safe-basic fallback — a failed
+    // production mount must surface as a mount error, not a silent degraded
+    // renderer drawing 0 calls (the exact failure shape T0-01 exposed).
+    renderer: { qualityProfile: "production" },
     pixelRatio: 1,
     resize: false,
     autoStart: animated,
     qualityRebuild: { flags: [qrList] }
   });
   await app.ready();
+  const mountDiag = app.diagnostics();
+  if (mountDiag.errors.length > 0) {
+    throw new Error(`prd01 lane mount failed: ${mountDiag.errors.join("; ")}`);
+  }
+  const fallbackWarning = mountDiag.warnings.find((w) => /safe-basic|fallback/i.test(w));
+  if (fallbackWarning) {
+    throw new Error(`prd01 lane mount fell back to safe-basic: ${fallbackWarning}`);
+  }
 
   // Phase 5 (§14): tonemap A/B + exposure ramp. `tm`/`exp` go through the C-05
   // surface (in-shader path under A3D_QR_CORE_OUTPUT; recorded intent otherwise).

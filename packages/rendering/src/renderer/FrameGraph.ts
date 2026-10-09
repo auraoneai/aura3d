@@ -27,15 +27,23 @@ import {
 
 const EMPTY_QR_FLAGS: QrFlags = { values: {}, on: () => false };
 
-let currentQrFlags: QrFlags = EMPTY_QR_FLAGS;
+let defaultQrFlags: QrFlags = EMPTY_QR_FLAGS;
+
+// T0-28: per-renderer flag seam. Flags resolve per device so two mounted
+// renderers with different `a3d-qr` values cannot stampede each other —
+// rasterization decision points (Renderer/ForwardPass) always read through
+// the device. The module-level default remains for ambient readers
+// (back-compat; engine sets it at mount alongside the scoped entry).
+const qrFlagsByDevice = new WeakMap<RenderDevice, QrFlags>();
 
 /** Engine-side wiring: set once flags resolve (createAuraApp / createGameApp). */
-export function setRendererQrFlags(flags: QrFlags): void {
-  currentQrFlags = flags;
+export function setRendererQrFlags(flags: QrFlags, device?: RenderDevice): void {
+  if (device) qrFlagsByDevice.set(device, flags);
+  else defaultQrFlags = flags;
 }
 
-export function rendererQrFlags(): QrFlags {
-  return currentQrFlags;
+export function rendererQrFlags(device?: RenderDevice): QrFlags {
+  return (device ? qrFlagsByDevice.get(device) : undefined) ?? defaultQrFlags;
 }
 
 /** Minimal resolved-camera shape produced by Renderer.resolveCamera. */
@@ -116,7 +124,7 @@ export class RendererFrameHooks {
   private readonly renderSource: RenderSource;
 
   constructor(private readonly input: RendererFrameHooksInput) {
-    this.flags = rendererQrFlags();
+    this.flags = rendererQrFlags(input.device);
     this.frameIndex = input.frameIndex ?? 0;
     this.timeSeconds = typeof performance !== "undefined" ? performance.now() / 1000 : Date.now() / 1000;
     const source = input.source;
