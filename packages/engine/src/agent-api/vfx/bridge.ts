@@ -43,7 +43,10 @@ export function attachVfxBridge(canvas: HTMLCanvasElement, system: ProductionEff
         fogVolumes: () => system.atmosphere.fogVolumes(),
         noteCamera: (position: readonly [number, number, number], forward: readonly [number, number, number]) =>
           system.atmosphere.noteCamera(position, forward),
-        clockNow: () => system.atmosphere.clockNow()
+        clockNow: () => system.atmosphere.clockNow(),
+        // P3-T6 — live state + sky-change listener for the SkyCaptureAdapter.
+        state: () => system.atmosphere.state(),
+        onSkyChanged: (listener: () => void) => system.atmosphere.onSkyChanged(listener)
       };
     }
   };
