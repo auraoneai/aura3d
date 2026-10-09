@@ -25,6 +25,7 @@ import {
   type GamePerformanceGovernorSettings,
   type SideViewGamePerformanceBudget
 } from "../production-runtime/GameRenderPreset.js";
+import type { AuraQualityController } from "@aura3d/rendering/contracts";
 
 export type GameAppRuntimeStatus = "idle" | "running" | "paused" | "disposed";
 
@@ -141,8 +142,16 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
   let disposeCount = 0;
   let lastResize: GameAppRuntimeResize | undefined;
   const perfGovernorOptions = options.performanceBudget;
+  // C-27 (Q-09-1 / #111): forward the app's quality controller whenever the
+  // governor is active (mode !== "off") so a single authority owns non-
+  // resolution quality knobs. `quality` exists on the mounted AuraApp — the
+  // generic handle does not declare it, so access is feature-detected.
+  const governorQuality =
+    perfGovernorOptions && perfGovernorOptions.mode !== "off"
+      ? (app as { quality?: AuraQualityController }).quality
+      : undefined;
   let governor = perfGovernorOptions
-    ? createPerformanceGovernor(perfGovernorOptions.mode, perfGovernorOptions.initial)
+    ? createPerformanceGovernor(perfGovernorOptions.mode, perfGovernorOptions.initial, governorQuality)
     : undefined;
   let lastPerf: GameAppRuntimePerformanceSnapshot | undefined;
   let perfPolls = 0;
