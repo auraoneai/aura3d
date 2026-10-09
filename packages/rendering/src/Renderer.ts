@@ -723,15 +723,25 @@ export class Renderer {
     try {
       this.lastShadowEvidence = null;
       items = frameHooks.collect(items);
-      const rendererShadowMap = explicitShadowMap ?? this.executeRendererShadowMap({
-        shadowOptions,
-        source,
-        items: items.filter((item) => item.castShadow !== false),
-        lights,
-        ownedTargets,
-        ownedShadowPasses,
-        camera: resolvedCamera?.camera
-      });
+      // C-28 (#90): scope the shadow-phase CPU submission for frameStats.
+      const rendererShadowMap = this.frameStatsMonitor?.scope("shadow", () =>
+        explicitShadowMap ?? this.executeRendererShadowMap({
+          shadowOptions,
+          source,
+          items: items.filter((item) => item.castShadow !== false),
+          lights,
+          ownedTargets,
+          ownedShadowPasses,
+          camera: resolvedCamera?.camera
+        })) ?? explicitShadowMap ?? this.executeRendererShadowMap({
+          shadowOptions,
+          source,
+          items: items.filter((item) => item.castShadow !== false),
+          lights,
+          ownedTargets,
+          ownedShadowPasses,
+          camera: resolvedCamera?.camera
+        });
       frameHooks.addPasses(this.graph, "shadows", items);
       this.lastShadowEvidence = rendererShadowMap ? {
         lightMatrix: Array.from(rendererShadowMap.lightMatrix),
@@ -851,7 +861,13 @@ export class Renderer {
         frameHooks.addPasses(this.graph, "transparent", items);
         frameHooks.addPasses(this.graph, "after-transparent", items);
       }
-      this.graph.execute({ device: this.device, width: this.width, height: this.height });
+      // C-28 (#90): scope the forward-phase CPU submission for frameStats.
+      if (this.frameStatsMonitor) {
+        this.frameStatsMonitor.scope("forward", () =>
+          this.graph.execute({ device: this.device, width: this.width, height: this.height }));
+      } else {
+        this.graph.execute({ device: this.device, width: this.width, height: this.height });
+      }
       if (postprocess) {
         postprocess = bindRendererSsrProjection(postprocess, cameraViewProjection ?? identityMat4());
         const frameCamera = toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition);
@@ -1026,15 +1042,25 @@ export class Renderer {
     try {
       this.lastShadowEvidence = null;
       items = frameHooks.collect(items);
-      const rendererShadowMap = explicitShadowMap ?? this.executeRendererShadowMap({
-        shadowOptions,
-        source,
-        items: items.filter((item) => item.castShadow !== false),
-        lights,
-        ownedTargets,
-        ownedShadowPasses,
-        camera: resolvedCamera?.camera
-      });
+      // C-28 (#90): scope the shadow-phase CPU submission for frameStats.
+      const rendererShadowMap = this.frameStatsMonitor?.scope("shadow", () =>
+        explicitShadowMap ?? this.executeRendererShadowMap({
+          shadowOptions,
+          source,
+          items: items.filter((item) => item.castShadow !== false),
+          lights,
+          ownedTargets,
+          ownedShadowPasses,
+          camera: resolvedCamera?.camera
+        })) ?? explicitShadowMap ?? this.executeRendererShadowMap({
+          shadowOptions,
+          source,
+          items: items.filter((item) => item.castShadow !== false),
+          lights,
+          ownedTargets,
+          ownedShadowPasses,
+          camera: resolvedCamera?.camera
+        });
       frameHooks.addPasses(this.graph, "shadows", items);
       this.lastShadowEvidence = rendererShadowMap ? {
         lightMatrix: Array.from(rendererShadowMap.lightMatrix),
@@ -1154,7 +1180,13 @@ export class Renderer {
         frameHooks.addPasses(this.graph, "transparent", items);
         frameHooks.addPasses(this.graph, "after-transparent", items);
       }
-      this.graph.execute({ device: this.device, width: this.width, height: this.height });
+      // C-28 (#90): scope the forward-phase CPU submission for frameStats.
+      if (this.frameStatsMonitor) {
+        this.frameStatsMonitor.scope("forward", () =>
+          this.graph.execute({ device: this.device, width: this.width, height: this.height }));
+      } else {
+        this.graph.execute({ device: this.device, width: this.width, height: this.height });
+      }
       if (postprocess) {
         postprocess = bindRendererSsrProjection(postprocess, cameraViewProjection ?? identityMat4());
         const frameCamera = toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition);
