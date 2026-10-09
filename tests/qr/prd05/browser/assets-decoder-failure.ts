@@ -7,8 +7,12 @@
 import { createAppAssetDecoders, prepareModelDecoders, AssetDecoderUnavailable } from "/packages/engine/src/agent-api/AssetDecoders.js";
 
 declare global {
-  interface Window { __QR_READY__?: unknown; __QR_ERROR__?: unknown }
+  interface Window { __QR_READY__?: unknown; __QR_ERROR__?: unknown; __QR_BOOT__?: string }
 }
+
+// Eval marker: if the watchdog fires without this, the module never evaluated
+// (a transitive import deadlocked); if set, run() hung inside.
+window.__QR_BOOT__ = "module-evaluated";
 
 interface DisabledError {
   readonly name: string;
