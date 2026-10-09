@@ -1,7 +1,7 @@
 /**
  * T3.8 (PRD-06 §7.2) — worker-side retarget baking plumbing. `createRetargetWorker`
- * returns a module `Worker` bound to `retarget.worker.ts` when the platform has
- * workers (bundlers resolve the `new URL(..., import.meta.url)` form); Node/test
+ * returns a module `Worker` bound to `retarget.worker.js` (the emitted JS;
+ * bundlers resolve the `new URL(..., import.meta.url)` form); Node/test
  * environments get `undefined` and callers fall back to an in-process bake.
  */
 
@@ -13,7 +13,7 @@ import type { RetargetWorkerRequest, RetargetWorkerResponse } from "./retarget.w
 export function createRetargetWorker(): Worker | undefined {
   if (typeof Worker === "undefined") return undefined;
   try {
-    return new Worker(new URL("./retarget.worker.ts", import.meta.url), { type: "module" });
+    return new Worker(new URL("./retarget.worker.js", import.meta.url), { type: "module" });
   } catch {
     return undefined;
   }
