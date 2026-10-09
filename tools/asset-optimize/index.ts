@@ -172,9 +172,12 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
 
     const heavy = profile.textures.baseColor !== "none" || profile.collider !== "none";
     if (heavy && !inCi && !options.dryRun && !(options.allowLocalSmall && sourceBytes.byteLength < LOCAL_KTX2_MAX_SOURCE_BYTES)) {
-      throw new Error(
-        `${entry.id}: KTX2/bake steps run in CI (asset-optimize.yml); pass --allow-local-small for sources < 5 MB`
-      );
+      // Skip rather than abort: a local pass should still derive everything it
+      // can locally and report the heavy entries it could not, so the ≤80MB
+      // aggregate + report stay useful without waiting on the CI run.
+      log(`skip ${entry.id}: KTX2/bake steps run in CI (asset-optimize.yml); source ${(sourceBytes.byteLength / 1048576).toFixed(1)} MB ≥ ${(LOCAL_KTX2_MAX_SOURCE_BYTES / 1048576).toFixed(0)} MB local cap`);
+      rows.push({ id: entry.id, checks: [], error: `skipped-locally: heavy source ≥ ${(LOCAL_KTX2_MAX_SOURCE_BYTES / 1048576).toFixed(0)} MB needs CI run` });
+      continue;
     }
 
     const mobileCap = profile.id === "hero-character" || profile.id === "hero-vehicle" ? 1024 : 512;
