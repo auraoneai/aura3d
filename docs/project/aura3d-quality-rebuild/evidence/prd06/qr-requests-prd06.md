@@ -238,3 +238,4 @@ Ledger rows filed as `qr-request` + `to:prdNN` issues; earlier block filed by #4
 | Q-12-1 checkpoint captures + LFS | #453 |
 | Q-13-2 skill rewrite | #455 |
 | Q-15-1..3 renderInput/lean/manifest | #461-463 |
+| 06-S4 C-18/C-19 browser contract specs (tests/browser/contracts/ is lane-15-owned) | #688 |
