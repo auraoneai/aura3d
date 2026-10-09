@@ -33,6 +33,10 @@ test.describe("PRD-05 decoder failure is fail-closed (P1/S4)", () => {
   });
 
   test("unavailable decoder produces AssetDecoderUnavailable, not a silent render", async ({ page }) => {
+    const failedRequests: string[] = [];
+    const pageErrors: string[] = [];
+    page.on("response", (r) => { if (!r.ok()) failedRequests.push(`${r.status()} ${r.url()}`); });
+    page.on("pageerror", (e) => pageErrors.push(String(e)));
     await page.goto(`${server.origin}/tests/qr/prd05/browser/assets-decoder-failure.html`, {
       waitUntil: "domcontentloaded"
     });
@@ -46,7 +50,7 @@ test.describe("PRD-05 decoder failure is fail-closed (P1/S4)", () => {
     mkdirSync(resolve("tests/reports"), { recursive: true });
     writeFileSync(
       resolve(`tests/reports/prd05-assets-decoder-failure${test.info().project.name === "chromium" ? "" : `.${test.info().project.name}`}.json`),
-      `${JSON.stringify({ phase: 1, surface: "assets-decoder-failure", error, ...payload }, null, 2)}\n`
+      `${JSON.stringify({ phase: 1, surface: "assets-decoder-failure", error, failedRequests, pageErrors, ...payload }, null, 2)}\n`
     );
     expect(error, "harness error").toBeNull();
     expect(payload).toBeTruthy();
