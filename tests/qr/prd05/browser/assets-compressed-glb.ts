@@ -77,6 +77,10 @@ async function run(): Promise<void> {
   const caps = probeCompressedTextureCapabilities(gl);
   const params = new URLSearchParams(location.search);
   const MAX_TEXTURE_SIZE = Number(params.get("maxTextureSize") ?? "4096");
+  // `?skipRender=1` (decoder-failure spec, windows job): prove decoder-load
+  // semantics — sniff + prepareModelDecoders + registry require — without
+  // paying the 5-variant GPU render cost under software rasterizers.
+  const SKIP_RENDER = params.get("skipRender") === "1";
   const dbg = gl.getExtension("WEBGL_debug_renderer_info");
   const rendererString = dbg ? String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL)) : String(gl.getParameter(gl.RENDERER));
 
@@ -92,13 +96,13 @@ async function run(): Promise<void> {
   // Rendering stage: one shared studio HDR + one ProductionWebGL2Renderer so
   // the per-variant captures are masked-ΔE2000 comparable (same recipe as the
   // prd04 decoders/variants gate).
-  const hdrBytes = new Uint8Array(await (await fetch("/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr")).arrayBuffer());
-  const hdr = createProductionPbrHdrPipelineFromRadiance(hdrBytes, {
+  const hdrBytes = SKIP_RENDER ? null : new Uint8Array(await (await fetch("/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr")).arrayBuffer());
+  const hdr = hdrBytes === null ? null : createProductionPbrHdrPipelineFromRadiance(hdrBytes, {
     id: "s", label: "s", intensity: 1.15, backgroundIntensity: 0.85, rotation: 0.15,
     toneMapping: { operator: "filmic", exposure: 1, whitePoint: 11.2 }
   });
-  const lighting = createProductionEnvironmentLightingResources(hdr);
-  const renderer = await WebGL2RendererBackend.create({
+  const lighting = hdr === null ? null : createProductionEnvironmentLightingResources(hdr);
+  const renderer = SKIP_RENDER ? null : await WebGL2RendererBackend.create({
     canvas, width: canvas.width, height: canvas.height,
     preserveDrawingBuffer: true, clearColor: [CLEAR[0]!, CLEAR[1]!, CLEAR[2]!, 1]
   });
@@ -111,17 +115,26 @@ async function run(): Promise<void> {
   for (const { variant, url } of VARIANTS) {
     const sniffed = await sniffGLBRequiredDecoders(url, "glb");
     const set = await prepareModelDecoders({ url, format: "glb" }, registry);
+    if (SKIP_RENDER) {
+      variants.push({
+        variant,
+        sniffedDecoders: sniffed,
+        setKeys: Object.keys(set).filter((key) => (set as Record<string, unknown>)[key] !== undefined),
+        meshCount: 0, textureCount: 0, textureFormats: [], textureMipLevels: [], textureMaxWidths: [], maskedDeltaE: 0
+      });
+      continue;
+    }
     const pipeline = await loadProductionGLTFRenderPipeline({
       url,
       assetId: `prd05-${variant}`,
       width: canvas.width,
       height: canvas.height,
-      rendererInput: { environmentLighting: lighting.lighting, qualityPreset: "hdr-studio-preview", cameraPolicy: "require" },
+      rendererInput: { environmentLighting: lighting!.lighting, qualityPreset: "hdr-studio-preview", cameraPolicy: "require" },
       decoders: { basePath: "/aura-decoders/", workerCount: 2 }
     });
     const staged: ProductionStagedScene = createProductionProductionStageScene(
       pipeline.source, pipeline.resources.bounds, { width: canvas.width, height: canvas.height }, stageOptions);
-    renderer.renderImportedAsset({ source: staged.source, camera: staged.camera, metadata: {} as never, viewport: { width: canvas.width, height: canvas.height } });
+    renderer!.renderImportedAsset({ source: staged.source, camera: staged.camera, metadata: {} as never, viewport: { width: canvas.width, height: canvas.height } });
     const px = await canvasPixels(canvas);
     if (variant === "plain") {
       baselinePx = px;
