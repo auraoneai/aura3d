@@ -233,7 +233,7 @@ export default async function run(host: HTMLElement, opts?: { variant?: string; 
 
   const app = createAuraApp(host, {
     scene: built,
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+    renderer: { qualityProfile: "production" },
     pixelRatio: opts?.dpr ?? spec.resolution.devicePixelRatio,
     resize: false,
     // Live rAF loop — the §17.2 sequence runs in real time so the T4.8 burst
