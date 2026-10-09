@@ -6,7 +6,7 @@
 import { scene } from "@aura3d/engine";
 import { createGame, type Game, lookManifest } from "@aura3d/game";
 import { createTableSimulation, quatToEuler } from "../gameplay/table";
-import { VaultFlow, type VaultGameEvent } from "../gameplay/ball-flow";
+import { VaultFlow } from "../gameplay/ball-flow";
 import { FlipperController } from "../gameplay/flippers";
 import { PlungerController } from "../gameplay/plunger";
 import direction from "../../art/direction";
@@ -15,7 +15,8 @@ import { scoreboardVisibility } from "../legacy/scoreboard";
 import { arcadeRoom, insertBezels, playfieldNodes } from "./scene/world";
 import { lightingNodes } from "./scene/lighting";
 import { createVaultRig, fallbackCameraNode, type VaultRigState } from "./scene/camera";
-import { wireVaultFx, BUMPER_IMPACT_POSITIONS, SLING_IMPACT_POSITIONS } from "./scene/fx";
+import { wireVaultFx } from "./scene/fx";
+import { createEventConsumer } from "./flow-events";
 import { publishVaultEvidence } from "./evidence";
 import { applyVaultScenario } from "./scenarios";
 
@@ -113,8 +114,6 @@ const game = createGame({
 const fx = wireVaultFx(game);
 let frame = 0;
 let bumperHitsThisBall = 0;
-let bumperIndex = 0;
-let slingIndex = 0;
 let nudgeFlip = false;
 const bootedAtMs = performance.now();
 
@@ -144,62 +143,12 @@ function resolveHandles(): void {
 
 // ------------------------------------------------------------ flow events ----
 
-function consumeEvents(events: readonly VaultGameEvent[]): void {
-  for (const event of events) {
-    switch (event.type) {
-      case "serve":
-        pushCue("plunger-release");
-        bumperHitsThisBall = 0;
-        break;
-      case "bumper": {
-        bumperHitsThisBall += 1;
-        pushCue("bumper-hit");
-        const pos = BUMPER_IMPACT_POSITIONS[bumperIndex % BUMPER_IMPACT_POSITIONS.length];
-        bumperIndex += 1;
-        fx.onBumper(pos);
-        break;
-      }
-      case "sling":
-        pushCue("sling-pop");
-        fx.onSling(SLING_IMPACT_POSITIONS[slingIndex % SLING_IMPACT_POSITIONS.length]);
-        slingIndex += 1;
-        break;
-      case "target-down":
-        pushCue("target-down");
-        fx.onTarget(event.id);
-        break;
-      case "bank-clear":
-      case "all-banks-clear":
-        pushCue("bank-clear");
-        break;
-      case "vault-open":
-        pushCue("vault-open");
-        fx.onVaultOpen();
-        break;
-      case "multiball-start":
-        pushCue("multiball");
-        fx.onMultiball();
-        break;
-      case "orbit-loop":
-        pushCue("ramp-roll");
-        break;
-      case "ball-drain":
-        pushCue("ball-drain");
-        fx.onDrain();
-        break;
-      case "tilt-strike":
-      case "tilt-lock":
-        pushCue("tilt-warn");
-        break;
-      case "game-over":
-        pushCue("ball-drain");
-        void game.hud.banner("GAME OVER", { holdMs: 2600 });
-        break;
-      default:
-        break;
-    }
-  }
-}
+const consumeEvents = createEventConsumer({
+  pushCue,
+  fx,
+  hudBanner: (text, options) => game.hud.banner(text, options),
+  onServe: () => { bumperHitsThisBall = 0; },
+});
 
 // ------------------------------------------------------------- input ---------
 
