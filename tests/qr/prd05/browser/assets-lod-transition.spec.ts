@@ -61,7 +61,7 @@ test.describe("PRD-05 asset LOD transition (P3)", () => {
     const payload = await page.evaluate(() => (window as any).__QR_READY__ as ReadyPayload | undefined);
     mkdirSync(resolve("tests/reports"), { recursive: true });
     writeFileSync(
-      resolve("tests/reports/prd05-assets-lod-transition.json"),
+      resolve(`tests/reports/prd05-assets-lod-transition${test.info().project.name === "chromium" ? "" : `.${test.info().project.name}`}.json`),
       `${JSON.stringify({ phase: 3, surface: "assets-lod-transition", error, ...payload }, null, 2)}\n`
     );
     expect(error, "harness error").toBeNull();

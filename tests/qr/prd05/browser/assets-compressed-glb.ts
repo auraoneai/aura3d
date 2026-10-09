@@ -42,6 +42,7 @@ interface VariantResult {
   readonly textureCount: number;
   readonly textureFormats: readonly string[];
   readonly textureMipLevels: readonly number[];
+  readonly textureMaxWidths: readonly number[];
   readonly textureBytes: readonly number[];
   readonly maskedDeltaE: number;
 }
@@ -74,12 +75,16 @@ async function run(): Promise<void> {
   const gl = canvas.getContext("webgl2");
   if (!gl) throw new Error("WebGL2 context unavailable");
   const caps = probeCompressedTextureCapabilities(gl);
+  const params = new URLSearchParams(location.search);
+  const MAX_TEXTURE_SIZE = Number(params.get("maxTextureSize") ?? "4096");
+  const dbg = gl.getExtension("WEBGL_debug_renderer_info");
+  const rendererString = dbg ? String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL)) : String(gl.getParameter(gl.RENDERER));
 
   // §7.3: one registry per app, built from C-38 options + probed caps + tier cap.
   const registry = createAppAssetDecoders(
     { decoders: { basePath: "/aura-decoders/", workerCount: 2 } },
     caps,
-    { maxTextureSize: 4096 }
+    { maxTextureSize: MAX_TEXTURE_SIZE }
   );
   attachAppAssetDecoders(canvas, registry);
   const weakMapRoundTrip = getAppAssetDecoders(canvas) === registry;
@@ -132,6 +137,7 @@ async function run(): Promise<void> {
       textureCount: textures.length,
       textureFormats: textures.map((t) => t.format),
       textureMipLevels: textures.map((t) => t.textureLevels.length),
+      textureMaxWidths: textures.map((t) => Math.max(...t.textureLevels.map((l) => l.width))),
       textureBytes: textures.map((t) => t.byteLength),
       maskedDeltaE: baselinePx && subjectMaskPx ? maskedDeltaE(baselinePx, px, subjectMaskPx) : 0
     });
@@ -139,7 +145,7 @@ async function run(): Promise<void> {
 
   // Fail-closed: disabling draco must reject a draco-bearing asset with
   // AssetDecoderUnavailable rather than silently loading.
-  const disabledRegistry = createAppAssetDecoders({ decoders: { draco: false } }, caps, { maxTextureSize: 4096 });
+  const disabledRegistry = createAppAssetDecoders({ decoders: { draco: false } }, caps, { maxTextureSize: MAX_TEXTURE_SIZE });
   let disabledDracoError: ReadyPayload["disabledDracoError"] = null;
   try {
     await prepareModelDecoders({ url: "/fixtures/asset-corpus/damaged-helmet-draco.glb", format: "glb" }, disabledRegistry);
@@ -161,6 +167,8 @@ async function run(): Promise<void> {
   const diagnostics = registry.diagnostics();
   window.__QR_READY__ = {
     caps,
+    rendererString,
+    maxTextureSize: MAX_TEXTURE_SIZE,
     maskedPixels: subjectMaskPx ? subjectMaskPx.reduce((n, m) => n + (m > 0 ? 1 : 0), 0) : 0,
     internalFormatsUploaded,
     webgpuKtx2Target: selectKTX2TargetFormat(WEBGPU_COMPRESSED_CAPS, "uastc", true, "srgb"),

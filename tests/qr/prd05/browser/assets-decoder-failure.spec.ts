@@ -45,7 +45,7 @@ test.describe("PRD-05 decoder failure is fail-closed (P1/S4)", () => {
     const payload = await page.evaluate(() => (window as any).__QR_READY__ as ReadyPayload | undefined);
     mkdirSync(resolve("tests/reports"), { recursive: true });
     writeFileSync(
-      resolve("tests/reports/prd05-assets-decoder-failure.json"),
+      resolve(`tests/reports/prd05-assets-decoder-failure${test.info().project.name === "chromium" ? "" : `.${test.info().project.name}`}.json`),
       `${JSON.stringify({ phase: 1, surface: "assets-decoder-failure", error, ...payload }, null, 2)}\n`
     );
     expect(error, "harness error").toBeNull();

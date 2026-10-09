@@ -1,10 +1,16 @@
 name: QR PRD-05 assets browser
 
-# Lane 05 workflow (PRD-05 §13 P1): compressed-GLB browser gate — the shared
-# corpus loads through the vendored C-16 decoder registry (meshopt + draco +
-# KTX2) on macos-14 Chromium/ANGLE Metal, same-origin only. Integrated
-# typed-GLB spec stays skipped until Q-04-1/Q-15-1 land.
-# Artifacts: tests/reports/prd05-assets-compressed-glb.json.
+# Lane 05 workflow (PRD-05 §13 P1 + 05-BROWSERS): compressed-GLB browser
+# gate — the shared corpus loads through the vendored C-16 decoder registry
+# (meshopt + draco + KTX2), same-origin only.
+#   - macos-14: chromium (ANGLE Metal reference), webkit, firefox —
+#     decode correctness re-verified on all three engines. The macos job
+#     fails if the probe renderer string is SwiftShader.
+#   - windows-latest: non-visual BC-selection job — decoder-failure path,
+#     shader chunks, and KTX2 format selection under capability mocks.
+# Integrated typed-GLB spec stays skipped until Q-04-1/Q-15-1 land.
+# Artifacts: tests/reports/prd05-assets-*.json (+ per-project .webkit/
+# .firefox variants).
 
 on:
   pull_request:
@@ -58,15 +64,56 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install chromium
-      - name: Compressed GLB decoder gate (ANGLE Metal)
+      - run: pnpm exec playwright install chromium webkit firefox
+      - name: Compressed GLB decoder gate (chromium/webkit/firefox)
         run: pnpm exec playwright test --config tests/qr/prd05/playwright.config.ts --grep "PRD-05"
+      - name: SwiftShader guard
+        if: always()
+        run: |
+          if grep -rl '"rendererString": *"[^"]*SwiftShader' tests/reports/ 2>/dev/null; then
+            echo "::error::probe renderer is SwiftShader — visual evidence must come from a real GPU" >&2
+            exit 1
+          fi
       - name: Upload reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: prd05-assets-browser
           path: |
-            tests/reports/prd05-assets-compressed-glb.json
-            tests/reports/prd05-assets-compressed-typed-glb.json
+            tests/reports/prd05-assets-compressed-glb*.json
+            tests/reports/prd05-assets-decoder-failure*.json
+            tests/reports/prd05-assets-lod-transition*.json
+            tests/reports/prd05-assets-tier-texture-cap*.json
+            tests/reports/prd05-assets-bc-selection*.json
+          if-no-files-found: warn
+
+  browser-windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      # Non-visual (05-BROWSERS): decoder-failure path, shader-chunk compiles,
+      # and KTX2 format selection under capability mocks (BC formats).
+      - name: Windows BC-selection + non-visual gates
+        env:
+          PRD05_CHROMIUM_ARGS: ""
+        run: pnpm exec playwright test --config tests/qr/prd05/playwright.config.ts --project=chromium assets-bc-selection assets-decoder-failure debug-view-chunks lod-dither-chunks
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd05-assets-browser-windows
+          path: |
+            tests/reports/prd05-assets-*.json
           if-no-files-found: warn
