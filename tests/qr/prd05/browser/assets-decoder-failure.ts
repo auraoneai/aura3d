@@ -1,17 +1,22 @@
 /**
  * PRD-05 05-S3S4 fail-closed page — dedicated minimal harness for the
- * decoder-failure spec. Windows CI: the compressed-glb page's full import
- * graph never evaluated (module fetch deadlock), so this page imports only
- * the decoder APIs the spec asserts on.
+ * decoder-failure spec. Imports assets-package source only: the engine
+ * barrel deadlocks the dev-server esbuild bundle on Windows runners.
+ *
+ * Contract exercised: `createAssetDecoderRegistry().require(["draco"])`
+ * against a blocked basePath (the same mechanism a missing
+ * `/aura-decoders/draco/` produces in production) must reject with a named
+ * `AssetDecoderUnavailable`, never a silent load. Browser context cannot
+ * fall back to the vendored node-FS path, so the 404 is terminal.
  */
-import { createAppAssetDecoders, prepareModelDecoders, AssetDecoderUnavailable } from "/packages/engine/src/agent-api/AssetDecoders.js";
+import { createAssetDecoderRegistry } from "/packages/assets/src/AssetDecoderRegistry.js";
+import { AssetDecoderUnavailable } from "/packages/assets/src/decoderLoad.js";
 
 declare global {
   interface Window { __QR_READY__?: unknown; __QR_ERROR__?: unknown; __QR_BOOT__?: string }
 }
 
-// Eval marker: if the watchdog fires without this, the module never evaluated
-// (a transitive import deadlocked); if set, run() hung inside.
+// Eval marker: if the watchdog fires without this, the module never evaluated.
 window.__QR_BOOT__ = "module-evaluated";
 
 interface DisabledError {
@@ -20,23 +25,16 @@ interface DisabledError {
   readonly url: string;
 }
 
-const NO_CAPS = { astc: false, bptc: false, etc2: false, s3tc: false, s3tcSrgb: false } as const;
-
-setTimeout(() => {
-  if (window.__QR_READY__ === undefined && window.__QR_ERROR__ === undefined) {
-    window.__QR_ERROR__ = "page-watchdog: run() still pending after 60s";
-  }
-}, 60_000);
-
 async function run(): Promise<void> {
-  const registry = createAppAssetDecoders(
-    { decoders: { draco: false, basePath: "/aura-decoders/" } },
-    NO_CAPS,
-    { maxTextureSize: 4096 }
-  );
+  const registry = createAssetDecoderRegistry({
+    basePath: "/aura-decoders-blocked/",
+    capabilities: { astc: false, bptc: false, etc2: false, s3tc: false, s3tcSrgb: false },
+    maxTextureSize: 4096,
+    workerCount: 1
+  });
   let disabledDracoError: DisabledError | null = null;
   try {
-    await prepareModelDecoders({ url: "/fixtures/asset-corpus/damaged-helmet-draco.glb", format: "glb" }, registry);
+    await registry.require(["draco"]);
   } catch (error) {
     disabledDracoError = error instanceof AssetDecoderUnavailable
       ? { name: "AssetDecoderUnavailable", decoderId: error.decoderId, url: error.url }
