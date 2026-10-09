@@ -6,13 +6,13 @@
 // else reachable from the barrel is external:
 //   - the host engine barrel (`agent-api/index.ts`), node builders, contracts
 //     and rendering packages;
-//   - PR 0b-1 carve-outs (`promptPlan.ts`, `promptRecipes.ts`,
-//     `structuralQA.ts`) — pre-existing mass moved out of index.ts, not lane
-//     delta (the PRD's 9 KB budget predates their flag-on additions).
+//   - PR 0b-1 carve-outs (`promptPlan.ts`, `promptRecipes.ts`) — pre-existing
+//     mass moved out of index.ts, never reachable through a lane prefix.
 //
-// Budget: 12 KB gz — the PRD's 9 KB (looks 4 + lint 3 + mappings 2) plus the
-// T1.10 v2 pipeline and T1.13 providers, which the original estimate did not
-// cover.
+// Budget: 9 KB gz (PRD §16.3; looks 4 + lint 3 + mappings 2). P-24: every lane
+// module counts toward it — `structuralQA.ts` is inside a lane prefix and is
+// no longer carved out. If the delta exceeds the budget, the delta shrinks;
+// the budget does not rise.
 
 import { describe, expect, it } from "vitest";
 import { build, type Plugin } from "esbuild";
@@ -33,12 +33,8 @@ const LANE_MODULE_PREFIXES = [
   path.join(engineSrc, "agent-api/nodes/prompt/promptPlanV2.ts"),
   path.join(engineSrc, "lanes/prd13.ts")
 ];
-// PR 0b-1 carve-outs inside lane prefixes are pre-existing engine code, not delta.
-const CARVEOUTS = new Set([path.join(engineSrc, "agent-api/looks/structuralQA.ts")]);
-
 function isLaneModule(candidate: string): boolean {
   const resolved = candidate.replace(/\.js$/, ".ts");
-  if (CARVEOUTS.has(resolved)) return false;
   return LANE_MODULE_PREFIXES.some(
     (prefix) => resolved === prefix || resolved.startsWith(prefix.endsWith("/") ? prefix : `${prefix}/`)
   );
@@ -63,7 +59,7 @@ const laneDeltaPlugin: Plugin = {
 };
 
 describe("PRD-13 lane bundle delta", () => {
-  it("lanes/prd13.ts gzips within the 12 KB delta budget", async () => {
+  it("lanes/prd13.ts gzips within the 9 KB delta budget", async () => {
     const result = await build({
       entryPoints: [entry],
       bundle: true,
@@ -80,6 +76,6 @@ describe("PRD-13 lane bundle delta", () => {
     const gzipped = files.reduce((total, file) => total + gzipSync(file.contents).byteLength, 0);
     // Kept for CI diagnosis; not part of the assertion.
     console.info(`prd13 delta: ${bytes} B minified, ${gzipped} B gzipped`);
-    expect(gzipped).toBeLessThanOrEqual(12 * 1024);
+    expect(gzipped).toBeLessThanOrEqual(9 * 1024);
   });
 });

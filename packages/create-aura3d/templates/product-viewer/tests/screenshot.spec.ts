@@ -13,7 +13,7 @@ test("Aura3D product viewer screenshot clears the look floor", async ({ page }) 
   await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 150_000 }).toBe("true");
   const proof = await page.evaluate(() => (window as unknown as { __AURA3D_PRODUCT_VIEWER__?: { look: { id: string } } }).__AURA3D_PRODUCT_VIEWER__);
   expect(proof?.look.id).toBe("product-studio");
-  const floor = await assertTemplateLookFloor(page, { subject: { x: 0.1, y: 0.1, width: 0.8, height: 0.73 } });
+  const floor = await assertTemplateLookFloor(page, { subject: { x: 0.3, y: 0.3, width: 0.4, height: 0.5 } });
   const screenshot = await page.screenshot({ fullPage: false });
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/screenshot.png"), screenshot);
