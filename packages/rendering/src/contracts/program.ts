@@ -121,7 +121,11 @@ export interface ProgramHandle { readonly key: string; readonly status: "pending
 export interface ProgramCacheLike {
   acquire(features: ProgramFeatures): ProgramHandle;
   precompile(list: readonly ProgramFeatures[]): Promise<void>;
-  stats(): { readonly compiled: number; readonly pending: number; readonly failed: number; readonly compileMsTotal: number };
+  stats(): { readonly compiled: number; readonly pending: number; readonly failed: number; readonly compileMsTotal: number; readonly compiledSinceReady?: number };
+  /** T0-06: resets the per-frame sync-compile bound; called once per render. */
+  beginFrame?(): void;
+  /** T0-06: marks the ready barrier; compiles after it count `compiledSinceReady`. */
+  markReady?(): void;
   dispose(): void;
 }
 import { defineContractSlot } from "./core";

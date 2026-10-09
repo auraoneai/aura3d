@@ -38,7 +38,7 @@ import type { AuraQualityTier, AuraQualityTierSettings } from "./contracts/quali
 import { QUALITY_TIERS } from "./contracts/quality";
 import { MaterialInstance } from "./MaterialInstance";
 import { materialUsesGeneratedProgram } from "./program/MaterialFeatures";
-import { ProgramWarmup } from "./program/ProgramWarmup";
+import { collectWarmupFeatures, ProgramWarmup, type WarmupInput } from "./program/ProgramWarmup";
 import { PRD03_EXPOSURE, rendererQrFlags } from "./renderer/FrameGraph";
 import { qrCoreGeneratorOn, qrCoreOutputOn, rendererOutputPass, rendererProgramCache } from "./renderer/qrSubFlags";
 import { forwardPassFeatureAxes, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
@@ -613,6 +613,11 @@ export class Renderer {
     this.assertAlive();
     // §6.9: FrameStats samples every render while a governor exists (resolution opt-in).
     this.frameStatsMonitor?.begin(typeof performance !== "undefined" ? performance.now() : Date.now());
+    // T0-06: reset the per-frame sync-compile bound for this render.
+    {
+      const flags = rendererQrFlags();
+      if (qrCoreGeneratorOn(flags)) rendererProgramCache(this.device, flags).beginFrame?.();
+    }
     const { source, camera: inputCamera } = normalizeRendererInput(sourceOrInput, camera);
     sceneFromSource(source)?.updateWorldTransforms();
     const cameraPolicy = collectCameraPolicy(source);
@@ -634,6 +639,9 @@ export class Renderer {
     const environmentFog = collectEnvironmentFog(source);
     const explicitShadowMap = collectForwardShadowMap(source);
     const shadowOptions = collectRendererShadowOptions(source);
+    // C-02/T0-06: sync-path warm — kick generated-program compiles for the
+    // exact draw feature records before the pass runs (bounded per frame).
+    this.warmGeneratedProgramsSync(items, lights, environmentLighting, environmentFog, explicitShadowMap, cameraViewProjection);
     const sourceCameraPosition = collectSourceCameraPosition(source);
     const explicitRenderTarget = collectRenderTarget(source);
     validateExplicitRenderTarget(explicitRenderTarget, this.width, this.height);
@@ -913,6 +921,11 @@ export class Renderer {
   async renderAsync(sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): Promise<RenderDeviceDiagnostics> {
     this.assertAlive();
     this.frameStatsMonitor?.begin(typeof performance !== "undefined" ? performance.now() : Date.now());
+    // T0-06: reset the per-frame sync-compile bound for this render.
+    {
+      const flags = rendererQrFlags();
+      if (qrCoreGeneratorOn(flags)) rendererProgramCache(this.device, flags).beginFrame?.();
+    }
     const { source, camera: inputCamera } = normalizeRendererInput(sourceOrInput, camera);
     sceneFromSource(source)?.updateWorldTransforms();
     const cameraPolicy = collectCameraPolicy(source);
@@ -1218,6 +1231,39 @@ export class Renderer {
    * next-lower one — before the first draw, so the pass never async-skips in
    * steady state. Flag-off and non-generated materials are no-ops.
    */
+  /**
+   * Shared T0-06 warm input: the exact draw feature records the frame's
+   * generated-program materials need (lights/shadow/environment axes at the
+   * current tier). Returns `materials: []` early when nothing generated.
+   */
+  private collectWarmupInput(
+    items: readonly RenderItem[],
+    lights: readonly CollectedLight[],
+    environmentLighting: EnvironmentLightingOptions | undefined,
+    environmentFog: ForwardEnvironmentFogOptions | false | undefined,
+    shadowMap: ForwardShadowMapOptions | undefined,
+    cameraViewProjection: Float32Array | readonly number[] | undefined,
+    flags: ReturnType<typeof rendererQrFlags>,
+    tier: AuraQualityTier
+  ): WarmupInput {
+    const materials = new Map<string, import("./Material").Material>();
+    for (const item of items) {
+      const m = item.material instanceof MaterialInstance ? item.material.baseMaterial : item.material;
+      if (m && materialUsesGeneratedProgram(m)) materials.set(`${m.shaderKey}:${m.getRevision()}`, m);
+    }
+    if (materials.size === 0) return { materials: [] };
+    const clustered = resolveForwardClusteredLighting(lights, this.width, this.height, cameraViewProjection);
+    const axes = forwardPassFeatureAxes({ lights, shadowMap, environmentLighting, environmentFog }, clustered !== null);
+    clustered?.dispose();
+    const ctx = { flags, tier: QUALITY_TIERS[tier] };
+    return {
+      materials: [...materials.values()].map((m) => m.programFeatures(ctx)),
+      lights: [axes.lights],
+      shadows: axes.shadows ? [axes.shadows] : [],
+      environments: [axes.environment]
+    };
+  }
+
   private async warmGeneratedPrograms(
     items: readonly RenderItem[],
     lights: readonly CollectedLight[],
@@ -1229,26 +1275,38 @@ export class Renderer {
     const flags = rendererQrFlags();
     if (!qrCoreGeneratorOn(flags)) return;
     const tier: AuraQualityTier = this.qualityTierName ?? "high";
-    const materials = new Map<string, import("./Material").Material>();
-    for (const item of items) {
-      const m = item.material instanceof MaterialInstance ? item.material.baseMaterial : item.material;
-      if (m && materialUsesGeneratedProgram(m)) materials.set(`${m.shaderKey}:${m.getRevision()}`, m);
+    const cache = rendererProgramCache(this.device, flags);
+    const input = this.collectWarmupInput(items, lights, environmentLighting, environmentFog, shadowMap, cameraViewProjection, flags, tier);
+    if (input.materials.length > 0) {
+      const warmup = (this.programWarmup ??= new ProgramWarmup(cache));
+      await warmup.warm(input, tier);
     }
-    if (materials.size === 0) return;
-    const clustered = resolveForwardClusteredLighting(lights, this.width, this.height, cameraViewProjection);
-    const axes = forwardPassFeatureAxes({ lights, shadowMap, environmentLighting, environmentFog }, clustered !== null);
-    clustered?.dispose();
-    const ctx = { flags, tier: QUALITY_TIERS[tier] };
-    const warmup = (this.programWarmup ??= new ProgramWarmup(rendererProgramCache(this.device, flags)));
-    await warmup.warm(
-      {
-        materials: [...materials.values()].map((m) => m.programFeatures(ctx)),
-        lights: [axes.lights],
-        shadows: axes.shadows ? [axes.shadows] : [],
-        environments: [axes.environment]
-      },
-      tier
-    );
+    // T0-06: the ready barrier for `programsCompiledSinceReady` — compiles
+    // completing after the first warm count as steady-state leaks.
+    cache.markReady?.();
+  }
+
+  /**
+   * T0-06: the sync `render` half of warm-then-block. Kicks `acquire` for the
+   * exact draw feature records — async-compile devices start pending entries
+   * (`precompile`/`app.ready` settle them); sync-compile devices compile under
+   * the per-frame bound and converge over the next frames.
+   */
+  private warmGeneratedProgramsSync(
+    items: readonly RenderItem[],
+    lights: readonly CollectedLight[],
+    environmentLighting: EnvironmentLightingOptions | undefined,
+    environmentFog: ForwardEnvironmentFogOptions | false | undefined,
+    shadowMap: ForwardShadowMapOptions | undefined,
+    cameraViewProjection: Float32Array | readonly number[] | undefined
+  ): void {
+    const flags = rendererQrFlags();
+    if (!qrCoreGeneratorOn(flags)) return;
+    const tier: AuraQualityTier = this.qualityTierName ?? "high";
+    const cache = rendererProgramCache(this.device, flags);
+    const input = this.collectWarmupInput(items, lights, environmentLighting, environmentFog, shadowMap, cameraViewProjection, flags, tier);
+    for (const features of collectWarmupFeatures(input, tier)) cache.acquire(features);
+    cache.markReady?.();
   }
 
   renderScene(scene: RenderSource | Scene, camera?: CameraLike): RenderDeviceDiagnostics {
