@@ -57,6 +57,16 @@ const recordClipApplyFailure = (nodeId: string | undefined, message: string, cau
   pendingClipApplyDegradations.push({ code: "clip-apply-failed", nodeId, message, cause });
 };
 
+/** 06-HANG — queue a clip-resolve failure/timeout for the C-36 drain. */
+export function recordClipResolveDegradation(
+  code: "clip-resolve-timeout" | "clip-resolve-failed",
+  nodeId: string | undefined,
+  message: string,
+  cause?: unknown
+): void {
+  pendingClipApplyDegradations.push({ code, nodeId, message, cause });
+}
+
 /**
  * T1.9 (PRD-06 §10) — the per-actor stateful animation state under 3.1
  * (`mixer` + `baseAction` on the entry's animation state). Keyed on the actor
