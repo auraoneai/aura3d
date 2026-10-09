@@ -30,7 +30,7 @@ export async function mountExternalProductConfigurator(id: string): Promise<void
   const status = root.querySelector<HTMLElement>("[data-testid='hr4-product-status']")!;
   const material = root.querySelector<HTMLSelectElement>("[data-testid='hr4-product-material']")!;
   const lighting = root.querySelector<HTMLSelectElement>("[data-testid='hr4-product-lighting']")!;
-  const renderer = await Renderer.create({ backend: "webgl2", canvas, width: 1280, height: 900, clearColor: [0.02, 0.022, 0.026, 1], preserveDrawingBuffer: true });
+  const renderer = await Renderer.create({ backend: "webgl2", canvas, width: 1280, height: 900, clearColor: [0.02, 0.022, 0.026, 1], });
   let disposePrevious: (() => void) | undefined;
 
   async function render(): Promise<void> {

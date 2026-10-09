@@ -46,7 +46,7 @@ export async function mountExternalMaterialStudio(id: string): Promise<void> {
   const canvas = root.querySelector<HTMLCanvasElement>("[data-testid='hr4-material-canvas']")!;
   const status = root.querySelector<HTMLElement>("[data-testid='hr4-material-status']")!;
   const environmentSelect = root.querySelector<HTMLSelectElement>("[data-testid='hr4-material-environment']")!;
-  const renderer = await Renderer.create({ backend: "webgl2", canvas, width: 1280, height: 820, clearColor: [0.018, 0.02, 0.024, 1], antialias: true, preserveDrawingBuffer: true });
+  const renderer = await Renderer.create({ backend: "webgl2", canvas, width: 1280, height: 820, clearColor: [0.018, 0.02, 0.024, 1], antialias: true, });
   const textures = createStudioTextures();
 
   function render(): void {

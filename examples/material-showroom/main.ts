@@ -139,8 +139,7 @@ async function run(): Promise<void> {
     height: canvas.height,
     clearColor: [0.055, 0.065, 0.078, 1],
     antialias: true,
-    preserveDrawingBuffer: true
-  });
+      });
   const renderPreset = (preset: MaterialShowroomEnvironmentPreset) => {
     const sceneResources = createShowroomScene(canvas.width / canvas.height, preset);
     const environmentLighting = createEnvironmentLighting(preset);

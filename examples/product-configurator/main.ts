@@ -95,8 +95,7 @@ async function run(): Promise<void> {
     height: shell.canvas.height,
     clearColor: [0.018, 0.022, 0.028, 1],
     antialias: true,
-    preserveDrawingBuffer: true
-  });
+      });
   let finish: Finish = "graphite";
   let lighting: Lighting = "studio";
   let cameraPreset: CameraPreset = "hero";

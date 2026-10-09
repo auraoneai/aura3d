@@ -89,8 +89,7 @@ async function run(): Promise<void> {
     width: canvas.width,
     height: canvas.height,
     clearColor: [0.02, 0.04, 0.06, 1],
-    preserveDrawingBuffer: true
-  });
+      });
   const cube = Geometry.litCube(1);
   const shadowTarget = renderer.device.createRenderTarget({ width: 64, height: 64, label: "forward-shadow-generated-depth-target" });
   let generatedDepthProbe: readonly number[] = [255, 255, 255, 255];
