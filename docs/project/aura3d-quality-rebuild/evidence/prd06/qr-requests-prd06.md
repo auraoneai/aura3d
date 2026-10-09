@@ -203,3 +203,38 @@ extensions whose `create(handle, app)` needs it. Flag-off keeps the member
 absent — the `?a3d-qr=none` handle shape is unchanged. Regression test:
 `tests/unit/contracts/C-37-runtime-nodes.test.ts` ("registered node-handle
 extensions flatten onto matching handles").
+
+## Filed issues (P-64 write-back, 2026-10-09)
+
+Ledger rows filed as `qr-request` + `to:prdNN` issues; earlier block filed by #498:
+
+| Ledger row | Issue |
+|---|---|
+| Q-01-1 skinned/morph fork deletion | #653 |
+| Q-01-2 generator honours prd06.deform select | #654 |
+| Q-01-3 sampler2DArray reflection | #655 |
+| Q-03-1 TemporalHistory previous-frame fields | #656 |
+| Q-04-2 TypedGLBActor onLoad-before-collect | #657 |
+| Q-05-2 hero rig + fighter pair admission | #658 |
+| Q-09-1 game.characterAnimation alias | #659 |
+| Q-13-4 codemod run on templates | #660 |
+| Q-01-CCR-06-6 deform.ts contract surface | #483 |
+| Q-15-2 / Q-11-3 sub-image upload parity | #484 |
+| Q-15-4 setRendererQrFlags install | #485 |
+| contracts/harness conformance() provided slots | #486 |
+| Q-05-1 inspectAnimationClips wiring | #487 |
+| Q-13-1 fighterClipMap wiring | #488 |
+| Q-13-3 character-hero module → template | #493 |
+| Q-XX non-affine matrices row-3 payload | #494 |
+| Q-14-1..4 game route changes | #457-460 |
+| Q-14-5 mech-hangar route | #432 |
+| Q-14-6 gallery-shift route | #433 |
+| Q-14-7 world-war-x codemod | #434 |
+| Q-14-8 games.json burst steps | #435 |
+| Q-02-1 DepthPass C-11 composition | #446 |
+| Q-04-* material/actor rows | #448-450 |
+| Q-11-1 WebGPU storage-buffer palette | #451 |
+| Q-11-2 tier table C-27 fields | #452 |
+| Q-12-1 checkpoint captures + LFS | #453 |
+| Q-13-2 skill rewrite | #455 |
+| Q-15-1..3 renderInput/lean/manifest | #461-463 |
