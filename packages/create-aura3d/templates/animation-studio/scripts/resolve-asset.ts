@@ -11,6 +11,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { parseGlbDocument } from "@aura3d/assets";
 import { ProbeSession } from "./asset-render-probe.js";
 import { probeEmbeddedMotion, type ClipMotionScore, type MotionProbeReport } from "./asset-motion-probe.js";
 
@@ -185,9 +186,16 @@ export function combineFidelity(rig: RigGrade, mesh: MeshGrade): RigGrade {
 const HUMANOID_BONE_HINTS = ["hips", "spine", "neck", "head", "shoulder", "arm", "forearm", "hand", "upleg", "leg", "foot", "thigh", "calf", "pelvis", "clavicle"];
 
 function inspectGlb(buf: Buffer): GlbInfo | null {
-  if (buf.readUInt32LE(0) !== 0x46546c67) return null;
-  const jlen = buf.readUInt32LE(12);
-  const json = JSON.parse(buf.slice(20, 20 + jlen).toString("utf8")) as Record<string, any>;
+  if (buf.length < 20) return null;
+  let json: Record<string, any>;
+  let jsonChunkBytes: number;
+  try {
+    const doc = parseGlbDocument(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer, "resolve-asset://inspect");
+    json = doc.json as Record<string, any>;
+    jsonChunkBytes = doc.jsonChunkBytes;
+  } catch {
+    return null;
+  }
   const prims = (json.meshes ?? []).flatMap((m: any) => m.primitives ?? []);
   const imgs = json.images ?? [];
   const min = [1e9, 1e9, 1e9];
@@ -203,7 +211,7 @@ function inspectGlb(buf: Buffer): GlbInfo | null {
   }
   // ── Texture resolution: parse PNG/JPEG headers embedded in the BIN to read pixel dimensions.
   // glTF images don't carry width/height, so we sniff the actual encoded bytes. Largest wins.
-  const binStart = 20 + jlen + 8; // glb header(12) + json chunk header(8) + json + bin chunk header(8)
+  const binStart = 20 + jsonChunkBytes + 8; // glb header(12) + json chunk header(8) + json + bin chunk header(8)
   const views = (json.bufferViews ?? []) as any[];
   let textureMaxDim = 0;
   for (const img of imgs) {

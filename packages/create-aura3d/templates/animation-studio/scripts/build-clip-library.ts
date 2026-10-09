@@ -31,6 +31,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { parseGlbDocument } from "@aura3d/assets";
 import {
   AnimationClipRegistry,
   AnimationTrack,
@@ -137,13 +138,17 @@ interface GltfAnimation {
 }
 
 function parseGlb(buf: Buffer): ParsedGlb | null {
-  if (buf.length < 20 || buf.readUInt32LE(0) !== 0x46546c67) return null; // "glTF"
-  const jsonLen = buf.readUInt32LE(12);
-  const jsonStart = 20;
-  const json = JSON.parse(buf.slice(jsonStart, jsonStart + jsonLen).toString("utf8")) as GltfJson;
+  if (buf.length < 20) return null;
+  let doc: ReturnType<typeof parseGlbDocument>;
+  try {
+    doc = parseGlbDocument(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer, "clip-library://parse");
+  } catch {
+    return null;
+  }
+  const json = doc.json as GltfJson;
   // BIN chunk follows the JSON chunk (8-byte chunk header: length + type 0x004E4942).
   let bin = Buffer.alloc(0);
-  const binHeader = jsonStart + jsonLen;
+  const binHeader = 20 + doc.jsonChunkBytes;
   if (binHeader + 8 <= buf.length && buf.readUInt32LE(binHeader + 4) === 0x004e4942) {
     const binLen = buf.readUInt32LE(binHeader);
     bin = buf.slice(binHeader + 8, binHeader + 8 + binLen);
