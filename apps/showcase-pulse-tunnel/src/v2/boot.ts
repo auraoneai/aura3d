@@ -7,9 +7,9 @@
 // stem-bus tunnel audio until C-25 lands (standIn R-14-10).
 import { game as engineGame, scene } from "@aura3d/engine";
 import { createGame, type Game, lookManifest } from "@aura3d/game";
-import { createBeatClock, pulseSectionAtTime, pulseTimeForBeat } from "../gameplay/beat-clock";
-import { createGateSystem, PULSE_PLAYER_Z, pulseGateGeometry } from "../gameplay/gates";
-import { buildPulseChart, type PulseGateKind } from "../gameplay/patterns";
+import { pulseSectionAtTime, pulseTimeForBeat } from "../gameplay/beat-clock";
+import { createGateSystem, PULSE_PLAYER_Z } from "../gameplay/gates";
+import { buildPulseChart } from "../gameplay/patterns";
 import { createPulsePlayer, PULSE_INVULN_SECONDS } from "../gameplay/player";
 import { createPulseStyleSystem } from "../gameplay/style";
 import { createTunnelAudio, type PulseSfxCue } from "../legacy/tunnel-audio";
@@ -18,34 +18,25 @@ import { pulseWorldNodes } from "./scene/world";
 import { lightingNodes } from "./scene/lighting";
 import { createPulseRig, fallbackCameraNode } from "./scene/camera";
 import { wirePulseFx } from "./scene/fx";
-import { GATE_MATERIALS, TUNNEL_BG } from "./scene/materials";
+import { TUNNEL_BG } from "./scene/materials";
 import { publishPulseEvidence } from "./evidence";
 import { applyPulseScenario } from "./scenarios";
+import { createPulseRunCtx, createPulseSystems, wirePulseRunState, MAX_SHIELDS } from "./run-state";
+import { createGateVisuals } from "./gate-visuals";
+import { wirePulseTouch, consumePulseTouch } from "./touch";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_PULSE_TUNNEL" as const;
 const RUN_SECONDS = 90;
-const MAX_SHIELDS = 3;
 
 const target = document.getElementById("app") ?? document.body;
 
 // ---------------------------------------------------------------- sim state --
 
-type RunState = "ready" | "running" | "summary";
 
 const player = createPulsePlayer();
 const style = createPulseStyleSystem();
 const chart = buildPulseChart();
-let runState: RunState = "ready";
-let shields = MAX_SHIELDS;
-let passed = 0;
-let passedOnBeat = 0;
-let grazes = 0;
-let collisions = 0;
-let finishedReason: string | null = null;
-let lastSection = "intro";
-let lastBeat = -1;
-let runAnchorSeconds = 0;
-let pendingStart = false;
+const rs = createPulseRunCtx();
 let frame = 0;
 const bootedAtMs = performance.now();
 
@@ -87,7 +78,7 @@ const game = createGame({
       { id: "score", kind: "score", anchor: "top-left", label: "SCORE" },
       { id: "multiplier", kind: "label", anchor: "top-right", label: "MULT" },
       { id: "section", kind: "label", anchor: "top", label: "SECTION" },
-      { id: "shields", kind: "label", anchor: "bottom-left", label: "SHIELDS" },
+      { id: "rs.shields", kind: "label", anchor: "bottom-left", label: "SHIELDS" },
       { id: "message", kind: "label", anchor: "bottom", label: "RUN" }
     ]
   },
@@ -143,82 +134,15 @@ function handle(name: string): NodeHandle {
 
 // ------------------------------------------------------------------ clock ----
 
-const clock = createBeatClock({
-  getAudioTime: () => tunnelAudio.nowSeconds(),
-  getFrameTime: () => performance.now() / 1000,
-  onBeat: (beat) => fx.beat(beat),
-  onDriftCheck: () => undefined
-});
-
-const gateSystem = createGateSystem({
-  chart,
-  getSchedulerTime: () => clock.time(),
-  getAudioElapsed: () => Math.max(0, tunnelAudio.nowSeconds() - runAnchorSeconds),
-  getPlayer: () => player.snapshot(),
-  onPass: (event) => {
-    if (event.type === "collision") {
-      collisions += 1;
-      applyShieldHit();
-    } else {
-      passed += 1;
-      passedOnBeat += 1;
-      if (event.type === "graze") {
-        grazes += 1;
-        style.graze();
-        fx.graze(player.snapshot().x, player.snapshot().y, PULSE_PLAYER_Z);
-        pushCue("graze");
-      } else {
-        fx.gatePassed(player.snapshot().x, PULSE_PLAYER_Z);
-      }
-    }
-  }
+const { clock, gateSystem } = createPulseSystems(rs, {
+  chart, tunnelAudio, player, style, fx, pushCue, onShieldHit: () => applyShieldHit(),
 });
 
 // -------------------------------------------------------------- run state ----
 
-function startRun(): void {
-  if (runState === "running") return;
-  player.reset();
-  style.reset();
-  gateSystem.reset();
-  clock.reset();
-  shields = MAX_SHIELDS;
-  passed = 0;
-  passedOnBeat = 0;
-  grazes = 0;
-  collisions = 0;
-  finishedReason = null;
-  lastSection = "intro";
-  lastBeat = -1;
-  runState = "running";
-  pendingStart = false;
-  pushCue("uiConfirm");
-  void tunnelAudio.unlock()
-    .then(() => tunnelAudio.startRun())
-    .then((anchor) => {
-      runAnchorSeconds = anchor ?? 0;
-      clock.start(anchor);
-    })
-    .catch(() => clock.start(null));
-}
-
-function endRun(reason: string): void {
-  runState = "summary";
-  finishedReason = reason;
-  tunnelAudio.stopStems();
-  tunnelAudio.duckForSummary();
-  pushCue("runOver");
-  fx.runOver(reason === "completed");
-}
-
-function applyShieldHit(): void {
-  shields = Math.max(0, shields - 1);
-  player.applyInvuln(PULSE_INVULN_SECONDS);
-  const p = player.snapshot();
-  fx.shieldHit(p.x, p.y, PULSE_PLAYER_Z, shields <= 0);
-  pushCue(shields <= 0 ? "shieldBreak" : "shieldHit");
-  if (shields <= 0) endRun("shields-exhausted");
-}
+const { startRun, endRun, applyShieldHit } = wirePulseRunState(rs, {
+  player, style, gateSystem, clock, tunnelAudio, fx, pushCue,
+});
 
 // ------------------------------------------------------------- input ---------
 
@@ -239,40 +163,7 @@ window.addEventListener("keydown", (e) => {
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
 }, { passive: false });
 
-// Touch lane-swipe: horizontal swipe = lane move, up = jump, down = slide,
-// tap = start/confirm. The preset drives the shell chrome; the gestures map
-// onto the same buffered intents as keys.
-let swipeStartX = 0;
-let swipeStartY = 0;
-let swipeAt = 0;
-const touchActions = { left: false, right: false, jump: false, slide: false, confirm: false };
-target.addEventListener("pointerdown", (e) => {
-  unlockAudio();
-  swipeStartX = e.clientX;
-  swipeStartY = e.clientY;
-  swipeAt = performance.now();
-  (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
-});
-const endTouch = (e: PointerEvent) => {
-  if (swipeAt <= 0) return;
-  const dx = e.clientX - swipeStartX;
-  const dy = e.clientY - swipeStartY;
-  const dist = Math.hypot(dx, dy);
-  if (performance.now() - swipeAt < 240 && dist < 16) {
-    touchActions.confirm = true;
-  } else if (dist >= 24) {
-    if (Math.abs(dx) >= Math.abs(dy)) {
-      if (dx < 0) touchActions.left = true; else touchActions.right = true;
-    } else if (dy < 0) {
-      touchActions.jump = true;
-    } else {
-      touchActions.slide = true;
-    }
-  }
-  swipeAt = 0;
-};
-target.addEventListener("pointerup", endTouch);
-target.addEventListener("pointercancel", () => { swipeAt = 0; });
+const swipe = wirePulseTouch(target, unlockAudio);
 
 // T2.6: hidden tab auto-pauses the session.
 document.addEventListener("visibilitychange", () => {
@@ -287,66 +178,31 @@ document.addEventListener("visibilitychange", () => {
 
 // ------------------------------------------------------------- frame loop ----
 
-function consumeTouchActions(): { left: boolean; right: boolean; jump: boolean; slide: boolean; confirm: boolean } {
-  const out = { ...touchActions };
-  touchActions.left = false;
-  touchActions.right = false;
-  touchActions.jump = false;
-  touchActions.slide = false;
-  touchActions.confirm = false;
-  return out;
-}
-
-const gateSlots = new Map<string, number>();
 let lastHudSignature = "";
 let lastHudWrite = 0;
 
 function syncHud(): void {
   const snapshot = style.snapshot();
   const signature = [
-    runState, lastSection, Math.round(snapshot.score), snapshot.multiplier.toFixed(1),
-    shields, Math.ceil(Math.max(0, RUN_SECONDS - clock.elapsed()))
+    rs.runState, rs.lastSection, Math.round(snapshot.score), snapshot.multiplier.toFixed(1),
+    rs.shields, Math.ceil(Math.max(0, RUN_SECONDS - clock.elapsed()))
   ].join("|");
   if (signature === lastHudSignature && frame - lastHudWrite < 300) return;
   lastHudSignature = signature;
   lastHudWrite = frame;
   game.hud.set("score", `${Math.round(snapshot.score)}`);
   game.hud.set("multiplier", `x${snapshot.multiplier.toFixed(1)}`);
-  game.hud.set("section", lastSection.toUpperCase());
-  game.hud.set("shields", `SHIELDS ${"▮".repeat(shields)}${"▯".repeat(MAX_SHIELDS - shields)}`);
+  game.hud.set("section", rs.lastSection.toUpperCase());
+  game.hud.set("shields", `SHIELDS ${"▮".repeat(rs.shields)}${"▯".repeat(MAX_SHIELDS - rs.shields)}`);
   const remaining = Math.max(0, RUN_SECONDS - clock.elapsed());
-  game.hud.set("message", runState === "ready"
+  game.hud.set("message", rs.runState === "ready"
     ? "PRESS ANY KEY / SWIPE TO START"
-    : runState === "summary"
-      ? `${finishedReason === "completed" ? "RUN COMPLETE" : "SHIELDS EXHAUSTED"} — R TO RUN AGAIN`
+    : rs.runState === "summary"
+      ? `${rs.finishedReason === "completed" ? "RUN COMPLETE" : "SHIELDS EXHAUSTED"} — R TO RUN AGAIN`
       : `${Math.ceil(remaining)}s`);
 }
 
-function syncGates(): void {
-  const active = gateSystem.activeGates();
-  const liveIds = new Set(active.map((g) => g.id));
-  for (const [id, slot] of gateSlots) {
-    if (!liveIds.has(id)) {
-      gateSlots.delete(id);
-      handle(world.gateNodeNames[slot]!)?.setPosition(0, -30, -30).setVisible(false);
-    }
-  }
-  for (const gate of active) {
-    let slot = gateSlots.get(gate.id);
-    if (slot === undefined) {
-      const used = new Set(gateSlots.values());
-      slot = [0, 1, 2, 3].find((i) => !used.has(i));
-      if (slot === undefined) continue;
-      gateSlots.set(gate.id, slot);
-      const mat = GATE_MATERIALS[gate.entry.kind as PulseGateKind] ?? GATE_MATERIALS.wall;
-      handle(world.gateNodeNames[slot]!)?.setMaterial(mat).setVisible(true);
-    }
-    const geometry = pulseGateGeometry(gate.entry, clock.time());
-    const centerY = (geometry.bottomY + geometry.topY) / 2;
-    handle(world.gateNodeNames[slot]!)?.setPosition(geometry.centerX, centerY, gate.z)
-      .setScale([geometry.halfWidth * 2, Math.max(0.08, geometry.topY - geometry.bottomY), 0.12]);
-  }
-}
+const { syncGates } = createGateVisuals({ world, handle, gateSystem, clock });
 
 game.app.onFrame?.(({ dt: rawDt }) => {
   const stepSeconds = Math.min(0.05, Math.max(1 / 240, game.session.scaledDt(rawDt) || 1 / 60));
@@ -354,14 +210,14 @@ game.app.onFrame?.(({ dt: rawDt }) => {
   input.update(stepSeconds);
   if (game.session.paused || stepSeconds <= 0) return;
 
-  const pressedNow = consumeTouchActions();
+  const pressedNow = consumePulseTouch(swipe);
   const wantsStart =
     input.pressed("left") || input.pressed("right") || input.pressed("jump") ||
     input.pressed("slide") || input.pressed("confirm") ||
     pressedNow.left || pressedNow.right || pressedNow.jump || pressedNow.slide || pressedNow.confirm;
 
-  if (runState === "ready" || runState === "summary") {
-    if (input.pressed("reset") || wantsStart || pendingStart) startRun();
+  if (rs.runState === "ready" || rs.runState === "summary") {
+    if (input.pressed("reset") || wantsStart || rs.pendingStart) startRun();
     rigState.x = 0;
     rigState.y = 0;
     if (frame % 6 === 0) syncHud();
@@ -373,7 +229,7 @@ game.app.onFrame?.(({ dt: rawDt }) => {
   }
   if (input.pressed("reset")) {
     tunnelAudio.stopStems();
-    runState = "ready";
+    rs.runState = "ready";
     return;
   }
 
@@ -402,17 +258,17 @@ game.app.onFrame?.(({ dt: rawDt }) => {
   gateSystem.update(stepSeconds);
   style.step(stepSeconds);
 
-  lastBeat = Math.floor(clock.elapsed() / 0.5);
+  rs.lastBeat = Math.floor(clock.elapsed() / 0.5);
 
   const section = pulseSectionAtTime(clock.elapsed());
-  if (section.id !== lastSection) {
-    lastSection = section.id;
+  if (section.id !== rs.lastSection) {
+    rs.lastSection = section.id;
     tunnelAudio.applySection(section.id);
     pushCue("sectionRise");
     fx.sectionRise();
   }
 
-  if (clock.elapsed() >= RUN_SECONDS && runState === "running") {
+  if (clock.elapsed() >= RUN_SECONDS && rs.runState === "running") {
     endRun("completed");
   }
 
@@ -445,16 +301,16 @@ const appliedLook: Record<string, unknown> = Object.freeze({
 publishPulseEvidence({
   game,
   run: () => ({
-    state: runState,
-    sectionId: lastSection,
-    beat: lastBeat,
+    state: rs.runState,
+    sectionId: rs.lastSection,
+    beat: rs.lastBeat,
     elapsed: clock.elapsed(),
-    shields,
-    passed,
-    passedOnBeat,
-    grazes,
-    collisions,
-    finishedReason
+    shields: rs.shields,
+    passed: rs.passed,
+    passedOnBeat: rs.passedOnBeat,
+    grazes: rs.grazes,
+    collisions: rs.collisions,
+    finishedReason: rs.finishedReason
   }),
   player: () => player.snapshot(),
   style: () => style.snapshot(),
@@ -471,7 +327,7 @@ publishPulseEvidence({
 
 const params = new URL(location.href).searchParams;
 const scenario = params.get("scenario");
-if (params.get("autorun") === "1") pendingStart = true;
+if (params.get("autorun") === "1") rs.pendingStart = true;
 if (scenario) {
   applyPulseScenario(scenario, {
     seekToBeat: (beat) => {
@@ -480,9 +336,9 @@ if (scenario) {
     },
     startRun: () => {
       // Scenarios run headless (no gesture): honest pattern-mode clock.
-      if (runState !== "running") {
-        runState = "running";
-        pendingStart = false;
+      if (rs.runState !== "running") {
+        rs.runState = "running";
+        rs.pendingStart = false;
         player.reset();
         style.reset();
         gateSystem.reset();
@@ -492,8 +348,8 @@ if (scenario) {
     },
     applyShieldDamage: (count) => {
       for (let i = 0; i < count; i += 1) {
-        if (shields > 0) {
-          shields = Math.max(0, shields - 1);
+        if (rs.shields > 0) {
+          rs.shields = Math.max(0, rs.shields - 1);
           player.applyInvuln(PULSE_INVULN_SECONDS);
         }
       }
