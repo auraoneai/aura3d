@@ -16,16 +16,43 @@ export const CREATE_AURA3D_TEMPLATES = [
   "animation-studio",
   "episode-builder",
   "character-controller",
-  "three-compat-premium-product-viewer",
-  "three-compat-architecture-interior",
-  "three-compat-material-authoring",
-  "three-compat-asset-inspector",
-  "three-compat-character-viewer",
-  "three-compat-postprocess-scene",
-  "three-compat-custom-threejs-migration",
-  "three-compat-large-scene"
+  "premium-product-viewer",
+  "architecture-interior",
+  "material-authoring",
+  "asset-inspector",
+  "character-viewer",
+  "postprocess-scene",
+  "custom-scene",
+  "large-scene"
 ] as const;
 export type CreateA3DTemplate = (typeof CREATE_AURA3D_TEMPLATES)[number];
+
+/** Old `three-compat-*` template names → §6.8 names. Kept for one minor as a
+ * deprecation alias; callers surface the warning, then drop the map. */
+export const TEMPLATE_ALIASES = {
+  "three-compat-premium-product-viewer": "premium-product-viewer",
+  "three-compat-architecture-interior": "architecture-interior",
+  "three-compat-material-authoring": "material-authoring",
+  "three-compat-asset-inspector": "asset-inspector",
+  "three-compat-character-viewer": "character-viewer",
+  "three-compat-postprocess-scene": "postprocess-scene",
+  "three-compat-custom-threejs-migration": "custom-scene",
+  "three-compat-large-scene": "large-scene"
+} as const satisfies Record<string, CreateA3DTemplate>;
+export type CreateA3DTemplateAlias = keyof typeof TEMPLATE_ALIASES;
+
+/** Resolve a template name or alias. Returns the canonical name plus the
+ * deprecated name the caller used, so the CLI can warn. */
+export function resolveTemplateAlias(
+  name: string
+): { template: CreateA3DTemplate; deprecated: CreateA3DTemplateAlias | null } | null {
+  if ((CREATE_AURA3D_TEMPLATES as readonly string[]).includes(name)) {
+    return { template: name as CreateA3DTemplate, deprecated: null };
+  }
+  const alias = (TEMPLATE_ALIASES as Record<string, string>)[name];
+  if (alias) return { template: alias as CreateA3DTemplate, deprecated: name as CreateA3DTemplateAlias };
+  return null;
+}
 
 export interface CreateA3DProjectOptions {
   readonly targetDir: string;

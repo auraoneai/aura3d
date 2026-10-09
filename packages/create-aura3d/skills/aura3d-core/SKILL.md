@@ -81,7 +81,7 @@ without a look ships flat shading, void background and floating props.
 | `mini-game`, `racing-starter`, `falling-blocks-starter`, `fighting-game`, `character-controller` | `aura3d-browser-game` |
 | Rigged humanoids, clips, locomotion, morphs, visemes | `aura3d-character-animation` |
 | `animation-studio` template, `aura3d animation scene`, episodes | `aura3d-animation-studio` |
-| Porting three.js code, `three-compat-*` templates | `aura3d-threejs-migration` |
+| Porting three.js code, migration templates | `aura3d-threejs-migration` |
 | Materials, textures, HDRI, skies, water, weather | `aura3d-materials-environments` |
 | Flipbook VFX sheets, HUD icons, UI sprites | `aura3d-game-art` |
 | Restyling a finished mesh without touching geometry | `aura3d-retexture` |
