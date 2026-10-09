@@ -20,12 +20,38 @@ function laneFromPath(path) {
   return (m[1] ?? m[2] ?? "").replace("prd", "").replace(/^0/, "0");
 }
 
+// Lane-slot matchers come from QR_OWNERSHIP.json `lanePatterns` (§7 fix:
+// previously an inline regex that omitted tests/qr/prdNN/ and
+// tests/unit/contracts/impl/prdNN-, so those files resolved to the default
+// owner). `{a,b,c}` is a brace alternation; `prdNN`/`NN` capture the lane.
+function lanePatternRegexes() {
+  const rules = ownership.lanePatterns ?? [];
+  const out = [];
+  for (const rule of rules) {
+    for (const pattern of rule.paths ?? []) {
+      let re = "^";
+      for (const part of pattern.split(/(prdNN|NN|\{[^}]+\})/g)) {
+        if (part === "prdNN") re += "prd(\\d{2})";
+        else if (part === "NN") re += "(\\d{2})";
+        else if (part.startsWith("{") && part.endsWith("}"))
+          re += "(?:" + part.slice(1, -1).split(",").map((s) => s.replace(/[.*+?^${}()[\]\\]/g, "\\$&")).join("|") + ")";
+        else re += part.replace(/[.*+?^${}()[\]\\]/g, "\\$&");
+      }
+      out.push(new RegExp(re));
+    }
+  }
+  return out;
+}
+const LANE_PATTERNS = lanePatternRegexes();
+
 function ownerFor(path) {
   // Per-lane patterns first: `prdNN` in a lane slot maps to lane NN.
-  const laneM = /lanes\/(prd\d{2})|commands\/(prd\d{2})|scenes\/(prd\d{2})|diagnosticOnly\.(prd\d{2})\.|qr-(prd\d{2})-|impl\/(prd\d{2})-|evidence\/prd-?(\d{2})|PRD-(\d{2})-/.exec(path);
-  if (laneM) {
-    const nn = laneM.slice(1).find(Boolean)?.replace(/\D/g, "");
-    if (nn) return nn.padStart(2, "0");
+  for (const re of LANE_PATTERNS) {
+    const m = re.exec(path);
+    if (m) {
+      const nn = m.slice(1).find(Boolean);
+      if (nn) return nn.padStart(2, "0");
+    }
   }
   let best = null;
   for (const rule of ownership.rules) {
