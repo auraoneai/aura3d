@@ -33,8 +33,9 @@ test.describe("PRD-06 T5.1 aura-clash §17.4 gates", () => {
   });
 
   test("flag-on: fighters apply tracks every frame, keep uniform scale through an attack, and idle carries a breathing layer", async ({ page }) => {
-    // Expected to FAIL until Q-14-1 lands the route changes — S11 failing control.
-    test.fail();
+    // S11 named gate (P-21): expected-red until Q-14-1 lands the route
+    // changes — the spec fails ONLY on the named gate below; a timeout or
+    // crash fails honestly.
     test.setTimeout(180_000);
     await page.goto(`${server.origin}/playable/?a3d-qr=animation`, { waitUntil: "domcontentloaded" });
     await waitForApps(page);
@@ -43,7 +44,7 @@ test.describe("PRD-06 T5.1 aura-clash §17.4 gates", () => {
     const skinnedIds = await listSocketCapableNodeIds(page);
     const fighters = FIGHTER_IDS.filter((id) => skinnedIds.includes(id));
     writeFileSync(join(ARTIFACT_DIR, "skinned-nodes.json"), JSON.stringify({ skinnedIds, fighters }, null, 2));
-    expect(fighters.length, `skinned fighter nodes found: ${skinnedIds.join(", ")}`).toBeGreaterThanOrEqual(2);
+    expect(fighters.length, `S11 gate (expected-red until Q-14-1): skinned fighter nodes found: ${skinnedIds.join(", ")}`).toBeGreaterThanOrEqual(2);
 
     // tracksApplied > 0 over several rendered frames per fighter.
     const tracks: Record<string, number[]> = {};
