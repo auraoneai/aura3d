@@ -85,6 +85,10 @@ jobs:
           [ "$missing" -eq 0 ]
 
       - name: run optimize
+        env:
+          # Schema-1.1 writer gate: a real --ids pass writes derived entries
+          # into aura.assets.json as aura3d.assets/1.1 (C-17 stub rule).
+          A3D_QR: assets
         run: |
           set -euo pipefail
           ktx="$(pwd)/${{ steps.ktx.outputs.ktx_bin }}"
@@ -92,10 +96,43 @@ jobs:
           args=(--ktx "$ktx" --report evidence/prd05/assets/optimize-ci.json --out-dir optimize-out)
           if [ -n "$ids" ]; then
             args+=(--ids "$ids" --allow-local-small --no-manifest)
+          elif [ -f tools/asset-optimize/derived-ids.txt ]; then
+            # 05-S10: game-referenced id set lands the real pass on push —
+            # derived entries + manifest update + ≤80MB aggregate artifact.
+            ids="$(grep -v '^#' tools/asset-optimize/derived-ids.txt | tr '\n' ',' | sed 's/,$//')"
+            args+=(--ids "$ids" --allow-local-small)
           else
             args+=(--dry-run)
           fi
           node_modules/.bin/tsx --tsconfig tsconfig.base.json tools/asset-optimize/index.ts "${args[@]}"
+
+      - name: derived aggregate bytes (05-S10 ≤80MB over the id set)
+        if: hashFiles('tools/asset-optimize/derived-ids.txt') != ''
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          ids = [l.strip() for l in open('tools/asset-optimize/derived-ids.txt')
+                 if l.strip() and not l.startswith('#')]
+          total = 0
+          rows = []
+          for i in ids:
+              hits = [f for f in os.listdir('optimize-out') if f.startswith(i + '.') and f.endswith('.glb')]
+              if not hits:
+                  rows.append({'id': i, 'bytes': None, 'status': 'MISSING'})
+                  continue
+              b = os.path.getsize(os.path.join('optimize-out', sorted(hits)[-1]))
+              total += b
+              rows.append({'id': i, 'bytes': b})
+          limit = 80 * 1024 * 1024
+          doc = {'schema': 'aura3d.derived-aggregate/1.0', 'ids': len(ids),
+                 'derivedBytes': total, 'budgetBytes': limit,
+                 'withinBudget': total <= limit, 'rows': rows}
+          os.makedirs('evidence/prd05/assets', exist_ok=True)
+          json.dump(doc, open('evidence/prd05/assets/derived-aggregate.json', 'w'), indent=2)
+          print(f"derived total: {total/1024/1024:.1f} MB over {len(ids)} ids (budget 80.0 MB)")
+          print(f"missing: {sum(1 for r in rows if r['bytes'] is None)}")
+          PY
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -103,5 +140,8 @@ jobs:
           name: asset-optimize-${{ github.sha }}
           path: |
             evidence/prd05/assets/optimize-ci.json
+            evidence/prd05/assets/derived-aggregate.json
             optimize-out/
+            aura.assets.json
+            src/aura-assets.ts
           retention-days: 14
