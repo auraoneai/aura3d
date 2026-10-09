@@ -4,14 +4,15 @@
 // typed pulseRunnerCraft hero with engine glow + shield plane, a four-slot
 // gate-frame pool driven by live gate geometry, and the graze/beat fx nodes.
 import {
-  game, material, model, prefabs, primitives, type AuraNodeInput
+  game, instances, material, model, prefabs, primitives, type AuraNodeInput
 } from "@aura3d/engine";
 import { assets } from "../../../../../src/aura-assets";
 import { PULSE_PLAYER_Z } from "../../gameplay/gates";
 import { PULSE_LANE_X } from "../../gameplay/player";
+import type { PulseConveyor } from "../../gameplay/conveyor";
 import {
-  BEAT_RING, CRAFT_ACCENT, GATE_MATERIALS, GRAZE_FLASH, HULL_DARK,
-  LANE_GUIDE, SHIELD_PLANE
+  BEAT_RING, CONVEYOR_CYAN, CONVEYOR_MAGENTA, CRAFT_ACCENT, GATE_MATERIALS,
+  GRAZE_FLASH, HULL_DARK, LANE_GUIDE, SHIELD_PLANE
 } from "./materials";
 import type { PulseGateKind } from "../../gameplay/patterns";
 
@@ -75,9 +76,23 @@ function gatePoolNodes(): AuraNodeInput[] {
   return nodes;
 }
 
-export function pulseWorldNodes(): PulseWorldNodes {
+export function pulseWorldNodes(conveyor?: PulseConveyor): PulseWorldNodes {
   const nodes: AuraNodeInput[] = [
     ...tunnelBackdropNodes(),
+    // §14.4 segment conveyor: the live hoops (cyan/magenta alternating like
+    // the prefab's rings) recycle through the tunnel — one draw per tone.
+    ...(conveyor ? [
+      instances.torus({
+        name: "tunnel conveyor hoops cyan",
+        material: CONVEYOR_CYAN,
+        transforms: conveyor.segments.filter((_, index) => index % 2 === 0)
+      }),
+      instances.torus({
+        name: "tunnel conveyor hoops magenta",
+        material: CONVEYOR_MAGENTA,
+        transforms: conveyor.segments.filter((_, index) => index % 2 === 1)
+      })
+    ] : []),
     ...laneRailNodes(),
     // -- hero: typed runner craft + engine glow + shield impact plane. -------
     model(assets.pulseRunnerCraft, {

@@ -8,7 +8,8 @@
 import { game as engineGame, scene } from "@aura3d/engine";
 import { createGame, type Game, lookManifest } from "@aura3d/game";
 import { createBeatClock, pulseSectionAtTime, pulseTimeForBeat } from "../gameplay/beat-clock";
-import { createGateSystem, PULSE_PLAYER_Z, pulseGateGeometry } from "../gameplay/gates";
+import { createGateSystem, PULSE_GATE_SPEED, PULSE_PLAYER_Z, PULSE_SPAWN_Z, pulseGateGeometry } from "../gameplay/gates";
+import { createPulseConveyor, PULSE_CONVEYOR_BUDGET } from "../gameplay/conveyor";
 import { buildPulseChart, type PulseGateKind } from "../gameplay/patterns";
 import { createPulsePlayer, PULSE_INVULN_SECONDS } from "../gameplay/player";
 import { createPulseStyleSystem } from "../gameplay/style";
@@ -50,7 +51,17 @@ let frame = 0;
 const bootedAtMs = performance.now();
 
 const rigState = { x: 0, y: 0 };
-const world = pulseWorldNodes();
+// §14.4 segment conveyor — the hoops stream with the gate field and recycle
+// in place; the pool stays at the tier's segment budget N.
+const conveyor = createPulseConveyor({
+  segmentLength: 1.35,
+  liveCount: PULSE_CONVEYOR_BUDGET.high,
+  headZ: PULSE_SPAWN_Z - 1.1,
+  recycleZ: PULSE_PLAYER_Z + 0.2,
+  y: 0.32,
+  scale: [1.94, 1.48, 1]
+});
+const world = pulseWorldNodes(conveyor);
 
 function buildScene() {
   return scene()
@@ -400,6 +411,7 @@ game.app.onFrame?.(({ dt: rawDt }) => {
     }
   }
   gateSystem.update(stepSeconds);
+  conveyor.advance(PULSE_GATE_SPEED * stepSeconds);
   style.step(stepSeconds);
 
   lastBeat = Math.floor(clock.elapsed() / 0.5);
