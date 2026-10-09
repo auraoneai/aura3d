@@ -101,17 +101,17 @@ test.describe("PRD-06 Aura Clash tracksApplied A/B (S13)", () => {
 
   for (const qr of ["none", "animation"] as const) {
     test(`required clip keys report identical tracksApplied under ?a3d-qr=${qr}`, async ({ page }) => {
-      test.setTimeout(660_000);
+      test.setTimeout(120_000);
       await page.goto(`${server.origin}/playable/?auraTestDriver=1&a3d-qr=${qr}`, { waitUntil: "domcontentloaded" });
       // Shared-Metal CI runners starve rAF badly — `status === "running"` is
-      // gated behind a 15-frame rAF-paced performance warmup that can take
-      // minutes. This spec only needs the test driver + resolved clips, both
-      // available as soon as the app boots (the driver now installs ahead of
-      // the warmup loop), so gate on those instead of the perf readiness.
+      // gated behind the steady-state performance window that can take
+      // minutes. This spec only needs the test driver + resolved clips; the
+      // driver installs after the cold warmup window (pre-#346 ordering), so
+      // gate on driver presence + clipReadiness instead of the perf status.
       await page.waitForFunction(
         () => !!window.__AURA_CLASH_ARENA_TEST_DRIVER__ && window.__AURA_CLASH_ARENA_PROOF__?.animation?.clipReadiness?.ok === true,
         undefined,
-        { timeout: 240_000, polling: 2_000 }
+        { timeout: 90_000, polling: 2_000 }
       );
 
       const observed: Record<string, number> = {};
@@ -165,7 +165,9 @@ test.describe("PRD-06 Aura Clash tracksApplied A/B (S13)", () => {
   test("flag A vs flag B tracksApplied are equal per clip key", () => {
     const none = laneTracks.none;
     const animation = laneTracks.animation;
-    test.skip(!none || !animation, "requires both lane runs (playwright serial workers share state)");
+    // P-22 — no skip masking: a missing leg is a lane failure, not a pass.
+    expect(none, "a3d-qr=none lane run missing").toBeDefined();
+    expect(animation, "a3d-qr=animation lane run missing").toBeDefined();
     for (const key of AURA_CLASH_REQUIRED_CLIP_KEYS) {
       expect(animation![key], `clip key "${key}" tracksApplied diverged: none=${none![key]} animation=${animation![key]}`).toBe(none![key]);
     }
