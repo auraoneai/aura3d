@@ -1,7 +1,7 @@
 {
   "note": "C-14 golden: resolveCameraFrame (legacy, flag-off path) eye+target per (case, time). Regenerate only with a written reason; record the diff in evidence/prd08/goldens.md.",
   "recorded_from": "tests/qr/prd08/unit/camera-controller.test.ts (QR_RECORD_LEGACY=1)",
-  "base_commit": "7da675d5fb0f2f6d65f1f5d6dfbd54d2c0912808",
+  "base_commit": "d044162dd96f65612a84a918e484e752bc6efcd3",
   "tuple_count": 90,
   "tuples": [
     {
