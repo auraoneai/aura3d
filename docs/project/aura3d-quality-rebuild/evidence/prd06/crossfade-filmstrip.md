@@ -1,5 +1,8 @@
 # T1.14 — `prd06-crossfade-filmstrip` (PRD-06:1212)
 
+> **06-REC note (finish phase, G3):** this file cites no passing remote run id; every completion claim below is recorded as **unbacked** until a green lane-workflow/GitLab run id is added next to it.
+
+
 Scene `prd06-crossfade-filmstrip` in `benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd06/`.
 Both engines run Soldier `Idle → Walk` at t = 0.5 s and `Walk → Run` at t = 1.5 s with 0.25 s
 fades; eight strip frames are captured at fixed wall-clock intervals (`strip: { frames: 8,

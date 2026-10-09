@@ -1,5 +1,8 @@
 # T4.4 — `prd06-character-hero` lane scene + §17.2 browser spec (evidence)
 
+> **06-REC note (finish phase, G3):** this file cites no passing remote run id; every completion claim below is recorded as **unbacked** until a green lane-workflow/GitLab run id is added next to it.
+
+
 PRD-06 §1297–1301: the §17.2 hero bar scene — lane hero (`auraClashPlayerRig`,
 65 joints / 12 clips / **0 morph targets**) driven through the scripted 8 s
 sequence (idle → walk → run → stop → jump → land → idle) by the T4.2

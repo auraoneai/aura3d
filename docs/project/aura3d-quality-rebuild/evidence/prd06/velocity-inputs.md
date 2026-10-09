@@ -1,5 +1,8 @@
 # T2.5 — velocity inputs (PRD-06 §8.5)
 
+> **06-REC note (finish phase, G3):** this file cites no passing remote run id; every completion claim below is recorded as **unbacked** until a green lane-workflow/GitLab run id is added next to it.
+
+
 ## What landed
 
 - **`prd06.velocity-inputs` TypedGLBActor extension** (`packages/engine/src/lanes/prd06.ts`,

@@ -1,5 +1,8 @@
 # T4.1 — `bindSpringChainToSkeleton` + `springBones.add/clear` (PRD-06 §7.1)
 
+> **06-REC note (finish phase, G3):** this file cites no passing remote run id; every completion claim below is recorded as **unbacked** until a green lane-workflow/GitLab run id is added next to it.
+
+
 Spring-bone chains now bind to a `SkeletonBinding` and evaluate as a pose
 constraint — registered after IK constraints, writing local rotations into the
 shared `PoseBuffer` before the palette build (no `TypedGLBActor.ts` edit).
