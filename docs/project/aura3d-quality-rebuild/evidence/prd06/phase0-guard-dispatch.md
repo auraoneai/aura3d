@@ -1,5 +1,8 @@
 # PRD-06 evidence — Phase 0 guard, dispatch, clip samples (PR A)
 
+> **06-REC note (finish phase, G3):** this file cites no passing remote run id; every completion claim below is recorded as **unbacked** until a green lane-workflow/GitLab run id is added next to it.
+
+
 Branch: `qr/prd06-empty-pose-guard`. Flag: `A3D_QR_ANIMATION` (plus `A3D_QR_STRICT` for the strict path).
 
 ## What landed

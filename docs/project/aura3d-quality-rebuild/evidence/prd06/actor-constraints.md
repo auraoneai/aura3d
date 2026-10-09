@@ -1,5 +1,8 @@
 # PRD-06 T3.5 — Constraint list on the actor (`node.animation.ik`)
 
+> **06-REC note (finish phase, G3):** this file cites no passing remote run id; every completion claim below is recorded as **unbacked** until a green lane-workflow/GitLab run id is added next to it.
+
+
 ## Runtime seam (`packages/assets/src/GLTFAnimationRuntime.ts`)
 - `GLTFPoseConstraint { bones: readonly number[]; evaluate(pose, binding, modelMatrix, {dt}) }`.
 - `addPoseConstraint(c)` → disposer (identity removal — a duplicate spec stays); `clearPoseConstraints()`; `poseConstraintCount()`.

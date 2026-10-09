@@ -1,5 +1,8 @@
 # PRD-06 T2.6 — `skinnedItemLocalBounds` per-joint AABBs
 
+> **06-REC note (finish phase, G3):** this file cites no passing remote run id; every completion claim below is recorded as **unbacked** until a green lane-workflow/GitLab run id is added next to it.
+
+
 ## What changed
 
 Under `A3D_QR_ANIMATION`, `skinnedItemLocalBounds` (`packages/rendering/src/renderer/SkinnedBounds.ts`)
