@@ -162,6 +162,8 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
   });
 
   let firstFrameAt: number | null = null;
+  // Scene revision counter for the §15 test hook's presentLog.sceneId.
+  let sceneRevision = 0;
   const armFirstPresented = () => {
     void runtime.firstPresentedFrame().then(() => {
       if (firstFrameAt === null) {
@@ -251,6 +253,7 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
         lookSource = normalizeSceneSnapshot(
           scene as AuraSceneBuilder | AuraSceneSnapshot
         ) as unknown as LookSource;
+        sceneRevision += 1;
         armFirstPresented();
       };
       if (o?.transition) {
@@ -282,6 +285,16 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
     getFirstFrameAt: () => firstFrameAt
   });
   session.on("state", () => beacon.refresh());
+
+  // §15 deterministic-clock hook: compiled-in only for MODE === "test"
+  // builds (esbuild `define` in the browser dev server / vite test mode).
+  // Dynamic import keeps the module lazy for production bundles, where the
+  // gate is false and `window.__AURA3D_GAME_TEST__` stays undefined.
+  if ((import.meta as { env?: { MODE?: string } }).env?.MODE === "test") {
+    void import("./testHook").then(({ installGameTestHook }) =>
+      installGameTestHook({ stepper: runtime, getSceneId: () => sceneRevision })
+    );
+  }
 
   const channel = installEvidenceChannel({
     id: options.id,

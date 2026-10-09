@@ -13,3 +13,4 @@ Each row: issue, target lane, request, status. Numbers written back as filed.
 ||||||| parent of a463ed337 (test(prd-09): restore layout.spec caps + add coverage/banned-token gates)
 ||||||| parent of 4ba73fc96 (test(prd-09): restore layout.spec caps + add coverage/banned-token gates)
 - **#609** (to:prd15): `tests/browser/layout.spec.ts` + `hud-layout-harness.ts` hud-cap restore — 0.15 desktop / 0.22 mobile caps, added 1920x1080 + 390x844 viewports, `canvasCoverage` + `domText` report fields for the coverage/banned-token/test-hook assertions. Co-PR in the lane-09 layout branch.
+- **#613** (to:prd15): `tests/browser/game-shell/**` (nine §15 specs + harnesses + support) and the `example-dev-server.ts` esbuild `import.meta.env.MODE="test"` define. Co-PR in the lane-09 specs branch.
