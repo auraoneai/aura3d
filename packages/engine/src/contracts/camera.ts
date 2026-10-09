@@ -99,3 +99,7 @@ function staticRig(pose: Partial<AuraCameraPose>, id: string): AuraCameraRig {
     reset: () => { /* static rig keeps its authored pose */ }
   };
 }
+
+// T0-32: bf1789b0 dropped `resolveCameraFrame` from "." — re-export under C-22
+// (camera contract surface) so scaffold's inContracts rule keeps it live.
+export { resolveCameraFrame } from "../agent-api/compiler/camera.js";
