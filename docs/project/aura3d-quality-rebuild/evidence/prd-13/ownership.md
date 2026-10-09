@@ -23,6 +23,7 @@ lands.
 | Edited surface | Editing lane / PR | Lane-13 disposition | Status |
 |---|---|---|---|
 | 151 lane-13 skill / AGENTS files | #357 (lane 15 sweep) | review + accept or re-author each — tracked under #509 | pending |
+| `tools/agent-templates/index.ts` + `tools/agent-docs/simulation.ts` `writeWorkspaceViteConfig` (manualChunks vendor split), `templates/*/tests/look-floor.ts` + `screenshot.spec.ts` timeouts | commit `2e0f0701d` (lane 15, PR #357) | ACCEPTED — the entry↔dynamic-chunk TLA deadlock analysis is correct (alias bundles pin shared engine modules into the still-evaluating entry; the vendor chunk evaluates before entry code runs, so TypedGLBActor's lazy import resolves); the 420 s/600 s/1200 s budgets bound waits without skipping asserts. Recorded on #507. | accepted |
 | `templates/character-controller/src/main.ts` | #350 (lane 09) | review + accept or re-author — #510 | pending |
 
 ## Rule
