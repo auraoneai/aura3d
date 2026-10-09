@@ -37,12 +37,14 @@ const LANE_FLAGS = Object.values(SHORT_NAMES) as QrFlagName[];
 function flagNameFor(short: string): QrFlagName | null {
   const lower = short.toLowerCase();
   if (lower in SHORT_NAMES) return SHORT_NAMES[lower];
-  const sub = lower.split(/[._]/);
-  if (sub.length === 2 && sub[0] in SHORT_NAMES) {
-    return `A3D_QR_${sub[0].toUpperCase()}_${sub[1].toUpperCase()}` as QrFlagName;
+  const sub = lower.split(/[._]/).filter((s) => s.length > 0);
+  // #72: multi-segment names — `core.shadows.cascade` →
+  // `A3D_QR_CORE_SHADOWS_CASCADE`; `route.demo.alpha` → `A3D_QR_ROUTE_DEMO_ALPHA`.
+  if (sub.length >= 2 && sub[0] in SHORT_NAMES) {
+    return `A3D_QR_${sub[0].toUpperCase()}_${sub.slice(1).join("_").toUpperCase()}` as QrFlagName;
   }
-  if (sub.length === 2 && sub[0] === "route") {
-    return `A3D_QR_ROUTE_${sub[1].toUpperCase()}` as QrFlagName;
+  if (sub.length >= 2 && sub[0] === "route") {
+    return `A3D_QR_ROUTE_${sub.slice(1).join("_").toUpperCase()}` as QrFlagName;
   }
   return null;
 }
