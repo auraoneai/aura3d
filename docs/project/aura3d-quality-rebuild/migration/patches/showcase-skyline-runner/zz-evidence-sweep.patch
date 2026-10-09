@@ -1,29 +1,33 @@
-From 0120d1c7bf70c91f609cc24589a52c9a51b0b18c Mon Sep 17 00:00:00 2001
-From: gchahal+1 <gchahal@veerone.com>
-Date: Fri, 9 Oct 2026 13:45:54 +0000
-Subject: [PATCH] [qr-prd09] showcase-skyline-runner: delete evidence
- files+blocks (T5.8)
+From 53aa068f5093b1c70fc389cefba5b44c1152b067 Mon Sep 17 00:00:00 2001
+From: Devin <devin@cognition.ai>
+Date: Fri, 9 Oct 2026 15:26:49 +0000
+Subject: [PATCH] showcase-skyline-runner: delete evidence files+blocks (T5.8)
+
+Regenerated against the git-am-fuzzed post-migration tree (was 47e053f95-era).
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- .../scripts/build-level-one-world.ts          |  263 ---
+ .../scripts/build-level-one-world.ts          |  263 ----
  .../scripts/build-review-backdrop.mjs         |  126 --
- .../scripts/build-review-hero.mjs             |   98 -
- .../scripts/build-review-ledges.mjs           |  105 -
- .../scripts/build-sfx.mjs                     |  289 ---
- .../showcase-evidence-checklist.json          |  374 ----
+ .../scripts/build-review-hero.mjs             |   98 --
+ .../scripts/build-review-ledges.mjs           |  105 --
+ .../scripts/build-sfx.mjs                     |  289 ----
+ .../showcase-evidence-checklist.json          |  374 -----
+ apps/showcase-skyline-runner/src/evidence.ts  |    8 -
+ .../src/gameplay/act-palette.ts               |    8 +-
  .../src/gameplay/level-proof.ts               |  236 ---
- .../src/legacy/main.ts                        | 1808 -----------------
+ .../src/legacy/main.ts                        | 1372 -----------------
  .../src/level-proof.ts                        |    3 -
- apps/showcase-skyline-runner/src/main.ts      |   10 -
+ apps/showcase-skyline-runner/src/main.ts      |    1 -
  .../src/v2/evidence/index.ts                  |   65 -
- 11 files changed, 3377 deletions(-)
+ 13 files changed, 3 insertions(+), 2945 deletions(-)
  delete mode 100644 apps/showcase-skyline-runner/scripts/build-level-one-world.ts
  delete mode 100644 apps/showcase-skyline-runner/scripts/build-review-backdrop.mjs
  delete mode 100644 apps/showcase-skyline-runner/scripts/build-review-hero.mjs
  delete mode 100644 apps/showcase-skyline-runner/scripts/build-review-ledges.mjs
  delete mode 100644 apps/showcase-skyline-runner/scripts/build-sfx.mjs
  delete mode 100644 apps/showcase-skyline-runner/showcase-evidence-checklist.json
+ delete mode 100644 apps/showcase-skyline-runner/src/evidence.ts
  delete mode 100644 apps/showcase-skyline-runner/src/gameplay/level-proof.ts
  delete mode 100644 apps/showcase-skyline-runner/src/level-proof.ts
  delete mode 100644 apps/showcase-skyline-runner/src/v2/evidence/index.ts
@@ -1319,6 +1323,46 @@ index 0ae566580..000000000
 -    "evidence:deploy-artifact:has-failures"
 -  ]
 -}
+diff --git a/apps/showcase-skyline-runner/src/evidence.ts b/apps/showcase-skyline-runner/src/evidence.ts
+deleted file mode 100644
+index 6f78ea002..000000000
+--- a/apps/showcase-skyline-runner/src/evidence.ts
++++ /dev/null
+@@ -1,8 +0,0 @@
+-/** Lazy route evidence sections (PRD-09 §6.5). */
+-export type EvidenceCollect = () => Record<string, unknown>;
+-let collect: EvidenceCollect | undefined;
+-export function bindSkylineEvidence(fn: EvidenceCollect): void { collect = fn; }
+-export const sections = {
+-  skyline: (): Record<string, unknown> =>
+-    (collect ?? (() => ({ status: "unbound" })))()
+-};
+diff --git a/apps/showcase-skyline-runner/src/gameplay/act-palette.ts b/apps/showcase-skyline-runner/src/gameplay/act-palette.ts
+index 4324f563a..72d062290 100644
+--- a/apps/showcase-skyline-runner/src/gameplay/act-palette.ts
++++ b/apps/showcase-skyline-runner/src/gameplay/act-palette.ts
+@@ -197,8 +197,6 @@ export function planSkylineActBackdrop(options: {
+   readonly sceneSpan: readonly [number, number];
+   readonly horizonY: number;
+   readonly farBackgroundDepth: number;
+-  /** Exact showcase-review framing needs a taller, finer backdrop than gameplay. */
+-  readonly reviewCapture?: boolean;
+ }): SkylineSkyBackdropPlan {
+   const palette = getSkylineActPalette(options.actIndex);
+   const plan = planSkyBackdrop({
+@@ -210,9 +208,9 @@ export function planSkylineActBackdrop(options: {
+     // the mounted gameplay route on the reusable default density: multiplying
+     // every band across all five authored acts increased the production scene
+     // by hundreds of permanently-mounted quads even though four acts are hidden.
+-    bands: skyBandCountForRamp(...palette.skyRamp, options.reviewCapture ? 2 : 8),
+-    belowHorizonHeight: options.reviewCapture ? 28 : 14,
+-    belowHorizonBands: skyBandCountForRamp(...palette.groundRamp, options.reviewCapture ? 2 : 8)
++    bands: skyBandCountForRamp(...palette.skyRamp, 8),
++    belowHorizonHeight: 14,
++    belowHorizonBands: skyBandCountForRamp(...palette.groundRamp, 8)
+   });
+   const bandColors = plan.bands.map((band) => {
+     const colorRamp = band.side === "sky" ? palette.skyRamp : palette.groundRamp;
 diff --git a/apps/showcase-skyline-runner/src/gameplay/level-proof.ts b/apps/showcase-skyline-runner/src/gameplay/level-proof.ts
 deleted file mode 100644
 index a7d1f6794..000000000
@@ -1562,7 +1606,7 @@ index a7d1f6794..000000000
 -  };
 -}
 diff --git a/apps/showcase-skyline-runner/src/legacy/main.ts b/apps/showcase-skyline-runner/src/legacy/main.ts
-index 47e053f95..26e581df6 100644
+index b2ecd4bf0..b71e1950b 100644
 --- a/apps/showcase-skyline-runner/src/legacy/main.ts
 +++ b/apps/showcase-skyline-runner/src/legacy/main.ts
 @@ -26,7 +26,6 @@ import {
@@ -1573,7 +1617,7 @@ index 47e053f95..26e581df6 100644
  import { bindSkylineDrive } from "../scenario-drive";
  import { assets } from "../../../../src/aura-assets";
  import {
-@@ -117,22 +116,8 @@ import {
+@@ -117,22 +116,10 @@ import {
    resolveSkylineDistrict,
    resolveSkylineDistrictIndex
  } from "../gameplay/districts";
@@ -1582,10 +1626,10 @@ index 47e053f95..26e581df6 100644
 -  SKYLINE_VISUAL_LANGUAGE,
 -  skylineVisualLanguageEvidence
 -} from "./visual-language";
--
+ 
  const reducedMotion = typeof window !== "undefined"
    && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
--
+ 
 -// PART F2/F3 adoption probe: `?juiceProbe=1` fires the root-kit juice chain once
 -// (trauma + punch-in + node-backed feel effects) for the adoption spec. Review
 -// captures never set the flag, so certified framing stays exact.
@@ -1596,665 +1640,132 @@ index 47e053f95..26e581df6 100644
  const input = game.input({
    actions: {
      left: ["KeyA", "ArrowLeft"],
-@@ -151,26 +136,10 @@ const authoredPlayableSeconds = SKYLINE_AUTHORED_PLAYABLE_SECONDS;
- const playableSurfaceMap = skylinePlayableSurfaceMap;
- const solvedMotion = skylineMotion;
- const level = createSkylineLevel();
--
--/**
-- * Scene depth of the typed world plane, as a design choice.
-- *
-- * This is the *input* to the scene binding. Downstream consumers read the resolved value back from
-- * `platformerScene.worldZ` rather than reusing this constant, so a world-model scene offset cannot make the two
-- * disagree.
-- */
- const WORLD_PLANE_DEPTH = -0.46;
- const GAMEPLAY_ACTOR_DEPTH = 0.42;
--// The certified ledge cards are front-facing XY planes whose safe-rendered
--// origin is their lowest model bound. Their authored snow lip sits above the
--// origin, so this fitted-height offset puts that lip on the extracted surface
--// instead of lifting the card through the runner's feet. Keep this presentation
--// alignment separate from the platformer collision transform.
+@@ -168,7 +155,6 @@ const GAMEPLAY_ACTOR_DEPTH = 0.42;
+ // alignment separate from the platformer collision transform.
  const SKYLINE_LEDGE_SURFACE_ALIGNMENT = 0.78;
--// Keep ledge cards behind the live typed runner without changing the gameplay
+ // Keep ledge cards behind the live typed runner without changing the gameplay
 -// actor depth used by the scene binding or contact evidence.
  const SKYLINE_LEDGE_PRESENTATION_DEPTH = GAMEPLAY_ACTOR_DEPTH - 0.26;
--
+ 
  const platformerScene = game.platformerSceneBinding({
-   surfaceMap: playableSurfaceMap,
-   level,
-@@ -185,15 +154,7 @@ const platformerScene = game.platformerSceneBinding({
-   playerTargetHeight: SKYLINE_CHARACTER_HEIGHT,
-   playerYOffset: 0
- });
--// The visual hero is deliberately larger than the gameplay collider. The
--// collider remains the source of movement/contact truth, while the typed GLB
--// is given enough screen area to read as a character instead of a distant
--// generic mascot. Keep this rendered height shared by the model and the
+@@ -189,7 +175,6 @@ const platformerScene = game.platformerSceneBinding({
+ // collider remains the source of movement/contact truth, while the typed GLB
+ // is given enough screen area to read as a character instead of a distant
+ // generic mascot. Keep this rendered height shared by the model and the
 -// composition probe so the scale contract describes the visible envelope.
  const SKYLINE_RENDERED_CHARACTER_HEIGHT = SKYLINE_CHARACTER_HEIGHT * 1.22;
--// The certified Arctic card's visible silhouette includes authored extremities
--// outside its fit-height reference. Composition compares the full pixel bounds,
--// so declare that measured envelope separately from the model scale itself.
- const SKYLINE_COMPOSITION_SUBJECT_HEIGHT = SKYLINE_RENDERED_CHARACTER_HEIGHT * 1.28;
- const skylineWorldNodes = [
-   model(assets.showcaseKenneyVerdantPlatformerWorld, {
-@@ -275,7 +236,6 @@ const skylineSummitBeaconNodes = [
-     .scale([0.16, 0.21, 0.14])
-     .runtime(game.runtimeNode("summit-beacon-core", { tags: ["district-landmark", "crown-heights", "set-dressing", "finish-language", "shape-plus-color"] }))
- ];
--
- const steelLandmarkMaterial = material.emissive({
-   name: "steel dawn relay crane",
-   color: "#17364d",
-@@ -290,8 +250,6 @@ const groveLandmarkMaterial = material.emissive({
-   emissiveIntensity: 0.38,
-   roughness: 0.82
- });
--// Section 2 keeps the crane inside the second Steel Dawn act's accepted camera
--// window instead of clipping it at the far-left edge of the first-relay frame.
- const steelLandmarkAnchor = SKYLINE_DISTRICT_ANCHORS.find((anchor) => anchor.section === 2)!;
- const groveLandmarkAnchor = SKYLINE_DISTRICT_ANCHORS.find((anchor) => anchor.section === 6)!;
- const [steelLandmarkX, steelLandmarkY] = platformerScene.toScenePoint({
-@@ -302,7 +260,6 @@ const [groveLandmarkX, groveLandmarkY] = platformerScene.toScenePoint({
-   x: groveLandmarkAnchor.centerX,
-   y: groveLandmarkAnchor.elevation
- });
--/** Non-colliding silhouette landmarks; typed world remains the primary environment. */
- const skylineDistrictLandmarkNodes = [
-   // The crane's three steel members share one instanced pool. It remains a
-   // recognizable landmark while avoiding three independent primitive draw calls.
-@@ -330,15 +287,6 @@ const skylineDistrictLandmarkNodes = [
-     .scale([1.34, 0.12, 0.18])
-     .runtime(game.runtimeNode("hanging-grove-canopy", { tags: ["district-landmark", "hanging-grove", "set-dressing", "non-colliding"] }))
- ];
--
--/*
-- * The first real relay is the retained review ceremony, so it needs to read as
-- * a place rather than another anonymous strip of platforms. Use a catalogued
-- * Kenney station at the certified checkpoint instead of manufacturing a fake
-- * hero environment from primitives. The station is supporting, non-colliding
-- * scenery: the typed Verdant world still owns the playable surfaces and
-- * `game.platformer` still owns every checkpoint interaction.
-- */
- const firstMidCheckpoint = level.checkpoints?.[0];
- const firstRelayStationNodes = firstMidCheckpoint
-   ? (() => {
-@@ -409,19 +357,6 @@ const firstRelayStationNodes = firstMidCheckpoint
-       ];
-     })()
-   : [];
--/*
-- * ---------------------------------------------------------------------------
-- * Incorporation nodes (SR-A2 foliage + sparkle, SR-A3 LOD backdrop, SR-A4 gates,
-- * SR-A1 ghost echo). All planned from the certified geometry; all strictly set
-- * dressing or visual-only echoes behind/around the traversal volume.
-- * ---------------------------------------------------------------------------
-- */
--
--/**
-- * SR-A2: per-act instanced pools. One instanced node per act keeps the whole
-- * layer a fixed handful of draw calls; pool materials carry the existing act
-- * palette tints so foliage and shard halos inherit the sky they stand under.
-- */
- interface InstancedPoolPlacement {
-   readonly act: number;
-   readonly x: number;
-@@ -429,9 +364,7 @@ interface InstancedPoolPlacement {
-   readonly depthBias: number;
-   readonly scale: number;
- }
--
- type SkylineInstancedPoolBuilder = ReturnType<typeof instances.capsule>;
--
- function buildInstancedActPools(
-   placements: readonly InstancedPoolPlacement[],
-   options: {
-@@ -482,7 +415,6 @@ function buildInstancedActPools(
-     }));
-   });
- }
--
- const platforms = level.platforms ?? [];
- const checkpoints = level.checkpoints ?? [];
- const hazards = level.hazards ?? [];
-@@ -494,26 +426,6 @@ const runnerChallenge = createRunnerChallenge(level.assetBinding.authoredPlayabl
- let challengeEvidence = runnerChallenge.evidence();
- const initialPlayerPose = platformerScene.toScenePlayer(state.player);
- let playerFacing = 1;
--
--/**
-- * Rapier owns the runner's transform.
-- *
-- * The collider world is built from `platforms` and `SKYLINE_MOVING_PLATFORMS` through
-- * `platformerScene.surfaceToSceneRect(...)` — the same transform the renderer uses to place
-- * the ledge art — so a collider cannot sit beside its own art. The character is a kinematic
-- * capsule moved by `PhysicsCharacterController.move()`, which means grounding, auto-step,
-- * slope limits, snap-to-ground and every contact come back from the solver.
-- *
-- * What the route keeps authoring is *intent*: the horizontal drive, the gravity-integrated
-- * vertical velocity, coyote time and jump buffering all still come out of `game.platformer`,
-- * handed over as this step's desired displacement (the capsule is kinematic, which is what
-- * Rapier's character controller requires, so a solver-side gravity would integrate the same
-- * acceleration twice). Checkpoints, collectibles, sentries, the finish line and the act gates
-- * stay authored rectangle/circle tests. They read the solver's position; none of them writes
-- * one. `advancePhysicalCharacter` is the only place a player position is published.
-- *
-- * Classification: **hybrid authored gameplay + Rapier collision**.
-- */
- const skylineCharacterWorld: SkylineCharacterWorld = createSkylineCharacterWorld({
-   scene: platformerScene,
-   platforms: platforms.map((surface): SkylinePhysicalPlatform => ({
-@@ -539,15 +451,6 @@ const skylineCharacterWorld: SkylineCharacterWorld = createSkylineCharacterWorld
-   authoredGravity: solvedMotion.gravity,
-   spawn: { x: state.player.x, y: state.player.y }
- });
--/**
-- * How far the authored analytic answer and the solver's answer are allowed to sit apart
-- * before the route treats it as a lost contact rather than ordinary quantization.
-- *
-- * The authored kit integrates on the frame's variable dt while the solver advances in fixed
-- * 1/60 ticks, so up to one tick of travel of disagreement is expected and honest; a whole
-- * body-height of disagreement means the two are resolving different worlds, and the solver
-- * has to be re-anchored to the rule that just teleported it.
-- */
- const SKYLINE_AUTHORITY_DESYNC_GAME_UNITS = SKYLINE_CHARACTER_HEIGHT * 2.5;
- const skylinePhysicsProof = {
-   /** Peak disagreement between the authored analytic answer and the solver's answer. */
-@@ -574,22 +477,10 @@ const skylinePhysicsProof = {
-   /** Fastest downward clearance the solver absorbed, i.e. the hardest landing. */
-   maxDescentSpeedGameUnitsPerSecond: 0
- };
--/** The last velocity the solver actually measured. Never the request. */
- let skylineSolverVelocity = { x: 0, y: 0 };
--/** Height of the surface the runner was last standing on, game units. */
- let skylineLastSupportedY = state.player.y;
- let skylineWasAirborne = false;
--/** Clearance above `skylineLastSupportedY` reached during the airborne phase in progress. */
- let skylineCurrentArcApexGameUnits = 0;
--
--/**
-- * Publishes the solver's answer as the route's player state.
-- *
-- * Every read of `state.player` after this point — hero transform, camera follow, contact
-- * alignment, HUD, challenge scoring, evidence — is reading Rapier's position, which is what
-- * makes it the single transform authority. The authored kit's own position is left behind
-- * here on purpose: it stays the author of *intent* and of the rules that fire off it.
-- */
- function advancePhysicalCharacter(frameSeconds: number, authored: typeof state): typeof state {
-   const teleported = authored.events.some(
-     (event) => event.type === "respawn" || event.type === "reset"
-@@ -675,14 +566,6 @@ function advancePhysicalCharacter(frameSeconds: number, authored: typeof state):
-     }
-   };
- }
--
--/**
-- * Resets every piece of physical and run state a restart has to restore.
-- *
-- * Split out of the frame handler so `R` and any future restart button cannot leave one
-- * authority behind: the solver's capsule, the scripted lift clock, the intent velocity, the
-- * contact/apex counters and the rule-side timers all return to their start-of-run values.
-- */
- function resetSkylinePhysicalCharacter(): void {
-   skylineCharacterWorld.place({ x: state.player.x, y: state.player.y }, state.time);
-   skylineSolverVelocity = { x: 0, y: 0 };
-@@ -693,13 +576,6 @@ function resetSkylinePhysicalCharacter(): void {
-   skylinePhysicsProof.lastJumpApexGameUnits = 0;
-   renderSkylineLiftCards();
- }
--
--/**
-- * The typed ice-ledge tile family, selected from the *collision* surface width.
-- *
-- * Extracted so a scripted lift and a certified ledge cannot pick different art for the
-- * same width: the sprite and its collider come from one function now.
-- */
- function skylineLedgeAsset(collisionWidth: number) {
-   return collisionWidth >= 1.25
-     ? assets.skylineIceLedgeLong
-@@ -707,7 +583,6 @@ function skylineLedgeAsset(collisionWidth: number) {
-       ? assets.skylineIceLedgeMedium
-       : assets.skylineIceLedgeCompact;
- }
--/** Authored pixel aspect of each tile in the family, so the fitted height matches the art. */
- function skylineLedgeAspect(collisionWidth: number) {
-   return collisionWidth >= 1.25
-     ? 1461 / 251
-@@ -715,16 +590,6 @@ function skylineLedgeAspect(collisionWidth: number) {
-       ? 1014 / 261
-       : 630 / 270;
- }
--
--/**
-- * The three scripted lift cards the runner can stand on.
-- *
-- * These surfaces existed only as an analytic support test before the solver world: the
-- * player could be held up by a card that was never drawn, which is precisely the
-- * visible-world / collision-world disagreement the collider set is meant to remove. Each
-- * card is placed from `skylineCharacterWorld.liftPoses()` — the same authored rect its
-- * collider is at — with the same fitted-surface alignment the certified ledges use.
-- */
- function skylineLiftCardMetrics(pose: SkylineLiftPose) {
-   const rect = platformerScene.surfaceToSceneRect(pose);
-   // Same overhang the certified ice ledges use, so a lift reads as the same tile family.
-@@ -752,15 +617,6 @@ const skylineLiftCardNodes = skylineCharacterWorld.liftPoses().map((pose, index)
-       tags: ["typed-environment", "platform-presentation", "solver-collider-aligned", "moving-surface", "kinematic-collider-backed"]
-     }));
- });
--
--/**
-- * Exact-review terrain presentation. These typed alpha-GLB islands are derived
-- * from the certified platform rectangles: each sprite's width and snow-line Y
-- * are computed from the real collision surface, while the legacy typed world
-- * remains mounted behind it as the geometry/evidence owner. The islands never
-- * invent contact or move a landing; they replace only the old white-cap/rock
-- * pixels that the blind critic correctly identified as placeholder geometry.
-- */
- const skylineReviewLedgeNodes = platforms
-       .map((surface, index) => ({ surface, index, rect: platformerScene.surfaceToSceneRect(surface) }))
-       .filter(({ rect }) =>
-@@ -797,14 +653,6 @@ const skylineReviewLedgeNodes = platforms
-             tags: ["typed-environment", "platform-presentation", "certified-surface-aligned", "non-colliding"]
-           }));
-       });
--
--/*
-- * A single pooled underside line gives the typed ice ledges a clear contact
-- * edge against the bright snowfield. It is presentation-only geometry derived
-- * from the certified rectangles (collision and landing remain owned by
-- * `game.platformer`) and is intentionally thinner than the ledge assets so it
-- * reads as a shadowed support, not a second row of blockout platforms.
-- */
- const skylineLedgeUnderlayTransforms = platforms
-   .map((surface) => platformerScene.surfaceToSceneRect(surface))
-   .filter((rect) =>
-@@ -830,12 +678,8 @@ const skylineLedgeUnderlayNodes = skylineLedgeUnderlayTransforms.length > 0
+ // The certified Arctic card's visible silhouette includes authored extremities
+ // outside its fit-height reference. Composition compares the full pixel bounds,
+@@ -201,7 +186,6 @@ const skylineWorldNodes = [
+     role: "primaryWorld",
+     // Preserve the catalog's authored material variation. A single route-wide
+     // tint collapsed the trees, mountains, and platforms into the same blue
+-    // bucket, which is exactly why the prior review frame looked like repeated
+     // geometry instead of a readable district.
+     // The certified Aura surfaces and live hero own gameplay contact shadows.
+     // This large supporting world is environmental depth and does not need to be
+@@ -830,7 +814,6 @@ const skylineLedgeUnderlayNodes = skylineLedgeUnderlayTransforms.length > 0
      }))]
    : [];
  const playerYawForFacing = (facing: number) => facing >= 0 ? Math.PI / 2 : -Math.PI / 2;
 -// The gameplay camera keeps its exact side-on contract. The review camera uses
--// a shallow three-quarter yaw so the typed face and feet remain visible without
--// turning the mascot into either a flat front disc or a featureless rear shell.
+ // a shallow three-quarter yaw so the typed face and feet remain visible without
+ // turning the mascot into either a flat front disc or a featureless rear shell.
  const playerVisualYawForFacing = (facing: number) => facing >= 0 ? Math.PI * 0.34 : -Math.PI * 0.34;
- let frameCount = 0;
--
- const completionProof = {
-   completed: false,
-   stable: false,
-@@ -846,12 +690,6 @@ const completionProof = {
-     finish: 0
-   }
- };
--/**
-- * Public `game.platformer` browser contract proof. Every flag starts false and
-- * is only raised by an observed mounted kit event or an observed state delta.
-- * Level configuration alone can no longer satisfy any field: a route that never
-- * runs reports an all-false contract.
-- */
- const kitContractProof = {
-   kind: "aura-game-platformer-kit-browser-contract" as const,
-   source: "game.platformer" as const,
-@@ -873,8 +711,6 @@ const kitContractProof = {
-   resetRestoresStart: false,
-   eventTypes: [] as string[]
- };
--
--/** Records observed kit event types into the contract proof. */
- function recordKitEvents(events: readonly { readonly type: string }[]): void {
-   for (const event of events) {
-     if (!kitContractProof.eventTypes.includes(event.type)) kitContractProof.eventTypes.push(event.type);
-@@ -903,16 +739,6 @@ function recordKitEvents(events: readonly { readonly type: string }[]): void {
-     }
-   }
- }
--/**
-- * The relay runner is the release Arctic hero (`assets.skylineArcticRunnerHero`): a
-- * static textured mesh with no embedded clips, posed procedurally by the
-- * renderer (bounded idle/run/jump/fall/land silhouettes) exactly like the
-- * project-original card it replaces. The prior 25-name clip list described a
-- * legacy binding the shipped card never contained (0 skins, 0 animations in
-- * the GLB), so it is retired rather than carried over: `availableClips` is
-- * the asset's real embedded clip list, which is empty, and the kit reports
-- * zero missing. Locomotion state names are unchanged.
-- */
- const HERO_LOCOMOTION_CLIP_MAP = {
-   idle: "idle",
-   run: "sprint",
-@@ -921,15 +747,12 @@ const HERO_LOCOMOTION_CLIP_MAP = {
-   land: "crouch",
-   hit: "die"
- } as const;
--
- const locomotion = game.locomotion({
-   clipMap: HERO_LOCOMOTION_CLIP_MAP,
-   availableClips: [],
-   initialState: "idle"
- });
--/** Effectively-zero scale used to hide a feedback node without removing it. */
- const HIDDEN_FEEDBACK_SCALE = [0.0001, 0.0001, 0.0001] as const;
--
- interface SkylineEventFeedbackVisualSpec {
-   readonly nodeId: string;
-   readonly shape: "torus" | "capsule" | "diamond";
-@@ -939,12 +762,6 @@ interface SkylineEventFeedbackVisualSpec {
-   readonly duration: number;
-   readonly rotationZ?: number;
- }
--
--/**
-- * Small, bounded scene markers make the actual event response retainable in a
-- * screenshot. They supplement game.effects and never stand in for a subject,
-- * collision body, collectible, relay, or finish target.
-- */
- const SKYLINE_EVENT_FEEDBACK_VISUALS: Readonly<Record<SkylineRequiredFeedbackEvent, SkylineEventFeedbackVisualSpec>> = Object.freeze({
-   jump: { nodeId: "skyline-event-feedback-jump", shape: "torus", color: "#46d9ff", emissive: "#7cecff", scale: [0.13, 0.13, 0.025], duration: 0.38 },
-   land: { nodeId: "skyline-event-feedback-land", shape: "torus", color: "#7ef0c8", emissive: "#c8ffe9", scale: [0.24, 0.075, 0.03], duration: 0.46 },
-@@ -959,7 +776,6 @@ const SKYLINE_EVENT_FEEDBACK_VISUALS: Readonly<Record<SkylineRequiredFeedbackEve
-   respawn: { nodeId: "skyline-event-feedback-respawn", shape: "capsule", color: "#67e8f9", emissive: "#d8fbff", scale: [0.065, 0.34, 0.065], duration: 0.82 },
-   finish: { nodeId: "skyline-event-feedback-finish", shape: "torus", color: "#64e8c4", emissive: "#fff1a8", scale: [0.48, 0.48, 0.055], duration: 1.05 }
- });
--
- const skylineEventFeedbackVisualNodes = Object.entries(SKYLINE_EVENT_FEEDBACK_VISUALS).map(([event, spec]) => {
-   const visualMaterial = material.emissive({
-     name: `skyline ${event} event feedback`,
-@@ -982,16 +798,8 @@ const skylineEventFeedbackVisualNodes = Object.entries(SKYLINE_EVENT_FEEDBACK_VI
-       tags: ["event-feedback", event, "actual-event-driven", "non-colliding", "renderer-owned"]
-     }));
- });
--/** Matches the stylesheet's compact breakpoint so camera and CSS agree on "mobile". */
- const compactViewport = window.innerWidth <= 620;
- const baseCameraTuning = skylineCameraTuning(compactViewport);
--/*
-- * The named visual-review producer captures an airborne opening-jump frame. A
-- * widened, lowered desktop review rig keeps the typed character readable while
-- * putting the opening platforms and night-sky field in the same cinematic band.
-- * The public gameplay rig remains the source of truth on ordinary routes and on
-- * compact viewports, so keyboard, checkpoint, and mobile contracts do not move.
-- */
- const cameraTuning = baseCameraTuning;
- const animationStateHistory: { state: string; clip: string }[] = [
-   { state: "idle", clip: HERO_LOCOMOTION_CLIP_MAP.idle }
-@@ -999,34 +807,6 @@ const animationStateHistory: { state: string; clip: string }[] = [
- function round(value: number): number {
-   return Math.round(value * 1000) / 1000;
- }
--
--/**
-- * Depth composition for the traversal frame, planned by the reusable layer.
-- *
-- * ## The measured defect
-- *
-- * In the previous retained frame a single flat sky bucket covered **44.3%** of the scene viewport, and
-- * the level sat in one horizontal band with no middle distance, so every element read at the same
-- * apparent depth.
-- *
-- * ## Why this uses typed assets and not primitives
-- *
-- * Two earlier attempts wired this layer with primitive silhouettes -- cylinders, then flattened spheres
-- * -- and both measured *worse* than the baseline: they read as industrial silos and floating lozenges.
-- * I then recorded that the catalog had no suitable props and left this unwired. **That claim was wrong.**
-- * Searching the unrestricted catalog returned 10 pullable CC-BY-4.0 candidates for "low poly pine tree"
-- * and 10 for rock queries; screening them through the isolated release probe produced
-- * `assets.propPineTree` (a textured pine cluster) and `assets.propRockB` (a textured rock formation).
-- * A third candidate resolved to a palm-tree grid and was rejected by that same rendered screening, which
-- * is the pipeline working rather than failing.
-- *
-- * So the route now declares *intent* only -- span, gameplay depth, prop vocabulary, protected zones and a
-- * mobile density reduction -- and `planLayeredSceneComposition` returns deterministic placements. No
-- * coordinate below is authored by hand, and the fixed seed makes the retained screenshots reproducible.
-- *
-- * These are strictly background set dressing: placed behind the traversal volume, scaled well under the
-- * play space, and never standing in for a platform, hazard, checkpoint or collectible.
-- */
- const levelSpan = platforms.reduce<readonly [number, number]>(
-   (span, platform) => [
-     Math.min(span[0], platform.x - (platform.width ?? 0) / 2),
-@@ -1079,52 +859,8 @@ const compositionPlan = planLayeredSceneComposition(platformerCompositionSpec({
-   // restating any per-layer number.
-   densityScale: compactViewport ? 0.6 : 1
- }));
--
--/**
-- * Scene nodes for the planned composition, using typed assets.
-- *
-- * Scale is expressed via `targetHeight` so each conifer is normalized from its
-- * typed manifest bounds rather than from a raw model multiplier.
-- */
--/*
-- * The composition planner remains the source of the backdrop depth, but its former
-- * `propConifer` placements are intentionally not rendered. Each prop asset is itself a row
-- * of trees; instancing rows across three depth layers created the floating forest bands found
-- * during original-resolution review. The certified world already supplies grounded trees,
-- * mountains and clouds, so another repeated tree vocabulary only made the scene less credible.
-- */
--
--/**
-- * Banded sky backdrop, planned rather than authored.
-- *
-- * ## The defect this replaces
-- *
-- * This route previously authored its backdrop as one emissive box at
-- * `.position(0, 3.4, -9).scale([46, 20, 0.2])` with a single flat colour. Measured on the retained
-- * route-primary frame (`showcase-skyline-runner.png`, 1108x900 analysis crop) that produced a dominant
-- * colour bucket covering **43.65%** of the scene viewport and flat sky-plus-ground covering **59.77%** --
-- * the "excessive empty sky" the brief names as Skyline's core weakness, and six route-local magic
-- * numbers besides.
-- *
-- * A flat plane was the only thing the route *could* author, because the reusable layer supplied no sky
-- * capability at all. `planSkyBackdrop` supplies it: horizon placement, band count and horizon-weighted
-- * band distribution are genre knowledge now, and this route declares only its own extent.
-- *
-- * The bands sit behind the far-background composition layer, so they never occlude a prop, a platform or
-- * the hero, and every value below is read back from the plan.
-- */
- const farBackgroundDepth = Math.min(...compositionPlan.layers.map((layer) => layer.depth)) - 2.4;
- const horizonY = platformerScene.toScenePoint({ x: 0, y: 0 })[1];
--
--/**
-- * Render a small, deterministic window of the planned typed dressing around the
-- * opening composition. The planner covers the whole ten-district course; loading
-- * every one of its 100+ candidate models would turn a side-scroller backdrop into
-- * a draw-call farm, while rendering none leaves the exact review frame as a flat
-- * strip. The retained window keeps the first relay readable and adds one authored
-- * vocabulary (pine/rock) without entering the gameplay plane or changing the
-- * certified surface map. Later districts still inherit the typed world itself.
-- */
- const skylineCompositionNodes = compositionPlan.placements
-   .filter((placement) => {
+@@ -1040,7 +1023,6 @@ const sceneSpan = [
+   levelSpan[1] * platformerScene.transform.scale + platformerScene.transform.offsetX
+ ] as const;
+ const compositionPlan = planLayeredSceneComposition(platformerCompositionSpec({
+-  // Fixed seed: retained evidence must be reproducible frame-for-frame.
+   seed: 20260802,
+   span: sceneSpan,
+   // Read back from the binding, so a world-model offset is included rather than assumed away.
+@@ -1130,7 +1112,6 @@ const skylineCompositionNodes = compositionPlan.placements
      const localX = placement.x - sceneSpan[0];
-@@ -1173,18 +909,6 @@ const skylineCompositionNodes = compositionPlan.placements
-         tags: ["set-dressing", "typed-asset", "composition-layer", placement.layer, "non-colliding"]
-       }));
-   });
--
--/**
-- * The winter backdrop is a typed, provenance-bound textured GLB, not a DOM
-- * image. It supplies the authored mountain/forest depth that the certified
-- * world GLB does not provide at the default camera distance, while the world
-- * continues to own every playable surface in front of it. Keep this same
-- * backdrop mounted for ordinary play and the exact review lens: otherwise the
-- * route-primary frame falls back to a muddy stack of procedural sky bands and
-- * low-contrast tree silhouettes, which is precisely the visual defect this
-- * route is intended to avoid. The image is still parallax-only dressing and
-- * never participates in collision or gameplay truth.
-- */
- const skylineWinterBackdropNodes = [model(assets.skylineWinterParallaxBackdrop, {
-   name: "Steel Dawn painted winter parallax",
-   role: "setDressing",
-@@ -1221,10 +945,6 @@ const skylineWinterBackdropNodes = [model(assets.skylineWinterParallaxBackdrop,
+     return placement.layer !== "foreground" && localX >= -1.6 && localX <= 9.2;
+   })
+-  // Prefer the placements nearest the review window. The planner emits the
+   // full ten-district course in layer order; taking its first eight entries
+   // left the opening frame nearly empty and pushed every tree to the far right.
+   .sort((left, right) => Math.abs(left.x - initialPlayerPose.position[0]) - Math.abs(right.x - initialPlayerPose.position[0]))
+@@ -1191,9 +1172,7 @@ const skylineWinterBackdropNodes = [model(assets.skylineWinterParallaxBackdrop,
+   scaleMode: "fit",
+       // The plane sits well behind the gameplay world, so its projected size is
+       // substantially smaller than its model-space extent. The default gameplay
+-      // lens is farther back than the exact review lens; give that lens a little
+       // more vertical coverage so the authored snowfield reaches the lower frame
+-      // instead of ending in a dead procedural strip. The review lens keeps its
+       // measured 34-unit framing and crops the panoramic edges intentionally.
+       // 62 (from 52): the stretched plane's lower edge still sat ~65px above
+       // the frame bottom, leaving a hard shelf against the near-black nadir.
+@@ -1209,13 +1188,11 @@ const skylineWinterBackdropNodes = [model(assets.skylineWinterParallaxBackdrop,
+   // The source panorama is 16:9 while the route-primary lens is a taller
+   // 1440×900 viewport. A restrained vertical stretch keeps the authored
+   // snowfield behind the entire play area instead of exposing a hard lower
+-  // edge and procedural dark band. The exact review lens retains its measured
+   // aspect ratio and crop.
+   // The panorama's authored snowfield must carry through the complete
+   // viewport. At 1.45 the lower 180px of the default 1440x900 lens fell back
+   // to the shell's dark fill, reading as an unfinished loading shelf. The
+   // restrained 1.9 stretch keeps the same mountain composition while letting
+-  // the snowfield reach behind the traversal lane; review retains the native
+   // aspect/crop used by its deliberate ceremony.
+   .scale([1, 1.9, 1])
    .runtime(game.runtimeNode("steel-dawn-winter-parallax", {
-     tags: ["typed-supporting-environment", "textured", "parallax", "review-backdrop", "non-colliding"]
-   }))];
--
--/* A sparse, renderer-owned star layer gives the nocturne a deliberate focal field instead of
-- * leaving the upper half as repeated blue quads. Positions are derived from the planned scene span
-- * and a fixed stride so the capture stays deterministic without introducing gameplay geometry. */
- const skylineStarMaterial = material.emissive({
-   name: "steel dawn starfield",
-   color: "#8fb8ff",
-@@ -1272,20 +992,6 @@ const skylineMoonNode = primitives.sphere({
-   .runtime(game.runtimeNode("steel-dawn-moon", {
-     tags: ["backdrop", "moon", "set-dressing", "non-colliding", "renderer-owned"]
-   }));
--
--/*
-- * Review captures deliberately do not add a second foreground city. The typed
-- * world already contains the platforms, trees, clouds, and ridges that make the
-- * route legible; the former deck/facade stack sat in front of that world and
-- * became the screenshot's primary subject. Keep this seam as an empty list so
-- * the capture and the playable route share one honest scene graph.
-- */
--// The typed world already contains the certified platforms and their authored
+@@ -1264,7 +1241,6 @@ const skylineMoonNode = primitives.sphere({
+     roughness: 0.48
+   })
+ })
+-  // Keep the moon fully inside the review lens and away from the score strip.
+   // The previous position entered as a clipped white disc behind Lives/District
+   // after the camera pitch was corrected.
+   .position(initialPlayerPose.position[0] + 1.75, horizonY + 2.12, WORLD_PLANE_DEPTH - 0.2)
+@@ -1281,9 +1257,7 @@ const skylineMoonNode = primitives.sphere({
+  * the capture and the playable route share one honest scene graph.
+  */
+ // The typed world already contains the certified platforms and their authored
 -// supports. A previous review-only layer rebuilt every surface as an extra
--// primitive shelf and snow cap, doubling the course silhouette into repeated
+ // primitive shelf and snow cap, doubling the course silhouette into repeated
 -// floating blocks. Keep the evidence scene honest: render the source world once.
--
--
+ 
+ 
  function createActSkyBackdropNodes(actIndex: number) {
-   const backdrop = planSkylineActBackdrop({
-     actIndex,
-@@ -1342,7 +1048,6 @@ function createActSkyBackdropNodes(actIndex: number) {
-     );
+@@ -1292,7 +1266,6 @@ function createActSkyBackdropNodes(actIndex: number) {
+     sceneSpan,
+     horizonY,
+     farBackgroundDepth,
+-    reviewCapture: false
    });
- }
--
- function createActFogNode(actIndex: number) {
-   const palette = getSkylineActPalette(actIndex);
    const reviewNocturne = false;
-@@ -1360,7 +1065,6 @@ function createActFogNode(actIndex: number) {
-     tags: ["backdrop", "fog", `act-${actIndex}`]
-   }));
- }
--
- const actSkyBackdropNodeBuilders = [0, 1, 2, 3, 4].flatMap((actIndex) => createActSkyBackdropNodes(actIndex));
- const actFogNodeBuilders = [0, 1, 2, 3, 4].map((actIndex) => createActFogNode(actIndex));
- const actPaletteLights = [0, 1, 2, 3, 4].map((actIndex) => {
-@@ -1376,8 +1080,6 @@ const actPaletteLights = [0, 1, 2, 3, 4].map((actIndex) => {
-     }).position(1.7, 1.8, 2.4)
-   };
- });
--
--/** SR-A3: two silhouette bands, one distanceLod chunk per certified district. */
- const skylineBackdropChunks = planSkylineBackdropChunks(SKYLINE_DISTRICT_ANCHORS);
- const skylineBackdropNodes = skylineBackdropChunks.map((chunk) => {
-   const lod = skylineBackdropLodSpec(chunk);
-@@ -1396,11 +1098,6 @@ const skylineBackdropNodes = skylineBackdropChunks.map((chunk) => {
-       tags: ["backdrop", "distance-lod", "skyline-silhouette", "act-" + chunk.act, chunk.districtId]
-     }));
- });
--
--/**
-- * SR-A4: extruded act-gate glyphs straddling the path at every act transition.
-- * They complement the CSS act title card, which stays the accessible authority.
-- */
- const skylineActGateNodes = SKYLINE_ACT_GATES.map((gate) => {
-   const palette = getSkylineActPalette(gate.act);
-   const [sceneX, surfaceSceneY] = platformerScene.toScenePoint({ x: gate.x, y: gate.surfaceY });
-@@ -1426,8 +1123,6 @@ const skylineActGateNodes = SKYLINE_ACT_GATES.map((gate) => {
-       tags: ["act-gate", "text3d", "ceremony", "act-" + gate.act]
-     }));
- });
--
--/** SR-A2 foliage: ferns/scrub/grass per district, instanced per act. */
- const skylineFoliagePlacements = planSkylineFoliage({ platforms });
- const skylineFoliagePoolNodes = buildInstancedActPools(skylineFoliagePlacements, {
-   nodeId: skylineFoliageNodeId,
-@@ -1440,8 +1135,6 @@ const skylineFoliagePoolNodes = buildInstancedActPools(skylineFoliagePlacements,
-   yLift: 0.06,
-   tags: ["foliage", "act-tinted", "renderer-owned"]
- });
--
--/** SR-A2 sparkle halos: every sky-shard halo consolidated into one pool per act. */
- const skylineSparklePlacements = planSkylineShardSparkles(
-   collectibles.filter((collectible) => !String(collectible.id).includes("ember-charge"))
- );
-@@ -1455,7 +1148,6 @@ const skylineSparklePoolNodes = buildInstancedActPools(skylineSparklePlacements,
-   yLift: 0.04,
-   tags: ["sparkle", "coin-halo", "act-tinted", "renderer-owned"]
- });
--
- const hazardLanguage = SKYLINE_VISUAL_LANGUAGE.hazard;
- const hazardWarningMaterial = material.emissive({
-   name: "skyline crossed hazard warning",
-@@ -1464,11 +1156,6 @@ const hazardWarningMaterial = material.emissive({
-   emissiveIntensity: 0.72,
-   roughness: 0.38
- });
--/**
-- * Every collision hazard gets the same coral crossed mark. The typed sentry or
-- * typed world still owns the subject; this small non-colliding mark supplies an
-- * invariant silhouette/color cue even when the underlying asset is neutral.
-- */
- const skylineHazardLanguageNodes = hazards.map((hazard) => {
-   const rect = platformerScene.surfaceToSceneRect(hazard);
-   const armLength = Math.max(0.1, Math.min(0.22, rect.size[0] * 0.62));
-@@ -1488,7 +1175,6 @@ const skylineHazardLanguageNodes = hazards.map((hazard) => {
-   ])
-     .position(rect.center[0], rect.center[1], GAMEPLAY_ACTOR_DEPTH - 0.025);
- });
--
- const relayLanguage = SKYLINE_VISUAL_LANGUAGE.relay;
- const relayRingMaterial = material.emissive({
-   name: "skyline relay cyan ring",
-@@ -1503,7 +1189,6 @@ const relayPostMaterial = material.pbr({
-   metallic: 0.24,
-   roughness: 0.58
- });
--/** Explicit ring-on-post relays; collision remains exclusively in game.platformer. */
- const skylineRelayLanguageNodes = checkpoints.map((checkpoint) => {
-   const [x, y] = platformerScene.toScenePoint(checkpoint, 0.02);
-   return group(`relay ring on post ${checkpoint.id}`, [
-@@ -1519,14 +1204,6 @@ const skylineRelayLanguageNodes = checkpoints.map((checkpoint) => {
-   ])
-     .position(x, y, GAMEPLAY_ACTOR_DEPTH - 0.08);
- });
--
--/**
-- * SR-A1 ghost echo: a second, visual-only hero shell driven by input replay of the
-- * best finish. It shares no state with the live kit instance (see src/ghost.ts).
-- * The shell binds the decimated Meshy arctic-runner candidate
-- * (`assets.skylineHeroRunner`, 47999 tris, candidate quality) while the live
-- * hero stays the release project-original card (`assets.skylineArcticRunnerHero`).
-- */
- const ghostEchoNode = model(assets.skylineHeroRunner, {
-   name: "skyline-ghost-echo",
-   role: "primaryCharacter",
-@@ -1552,13 +1229,6 @@ const ghostEchoNode = model(assets.skylineHeroRunner, {
-   .runtime(game.runtimeNode("skyline-ghost-echo", {
-     tags: ["ghost", "visual-only", "input-replay", "ghost-language", "shape-plus-color", "renderer-owned"]
-   }));
--
--/**
-- * Three alpha-blended echo rings keep the best-run silhouette unmistakable when
-- * it crosses the live hero or a pale part of the skyline. They are subordinate
-- * feedback around the same typed character, never a replacement primary subject,
-- * and own no physics/runtime gameplay component.
-- */
- const ghostEchoAccentNodes = [
-   { id: "skyline-ghost-echo-ring-core", opacity: 0.3, scale: [0.29, 0.38, 0.022] as const },
-   { id: "skyline-ghost-echo-ring-trail-a", opacity: 0.2, scale: [0.22, 0.3, 0.018] as const },
-@@ -1578,7 +1248,6 @@ const ghostEchoAccentNodes = [
-   .runtime(game.runtimeNode(spec.id, {
-     tags: ["ghost", "ghost-accent", "visual-only", "non-colliding", "alpha-blended", "renderer-owned"]
-   })));
--
- const platformerCamera = game.platformerCameraRig({
-   sceneBinding: platformerScene,
-   player: state.player,
-@@ -1652,7 +1321,6 @@ const skylineFeel = createSkylineFeel({
- let activeCameraFrame = skylineCameraFrame(cameraTuning, 1);
- const observedCameraFacing = new Set<"left" | "right">(["right"]);
- let airborneFramingObserved = false;
--
- const minimumFoliageEdgeClearance = skylineFoliagePlacements.reduce((minimum, placement) => {
-   const supportingSurface = platforms.find((surface) =>
-     placement.x >= surface.x && placement.x <= surface.x + surface.width
-@@ -1666,78 +1334,6 @@ const minimumFoliageEdgeClearance = skylineFoliagePlacements.reduce((minimum, pl
-   const foliageHalfWidth = 0.055 * placement.scale;
+   const skyRamp = reviewNocturne
+@@ -1329,7 +1302,6 @@ function createActSkyBackdropNodes(actIndex: number) {
+         emissive: atmosphericEmissive,
+         // Backdrop bands should establish atmosphere, not compete with the
+         // typed world. The old full-strength emissive quads were the source of
+-        // the bright cyan stripes that dominated the review artifact. Keep the
+         // intensity constant too: a per-band falloff would reintroduce visible
+         // scanlines even when the color is held steady.
+         emissiveIntensity: band.side === "sky" ? 0.04 : 0.025,
+@@ -1349,7 +1321,6 @@ function createActFogNode(actIndex: number) {
+   return effects.fog({
+     name: `skyline act-${actIndex} distance haze`,
+     color: reviewNocturne ? "#11152d" : palette.fogColor,
+-    // In the review lens the textured mountains span several kilometres of
+     // implied depth. A slightly denser blue-hour haze pushes that detail behind
+     // the live runner and collision-bound ledges instead of letting every pine
+     // compete at the same contrast. Foreground gameplay nodes remain in front
+@@ -1407,7 +1378,6 @@ const skylineActGateNodes = SKYLINE_ACT_GATES.map((gate) => {
+   return text3D("ACT " + (gate.act + 1), {
+     name: gate.id,
+     backend: "sdf",
+-    // The review ceremony already names the district in accessible UI. Keep
+     // the renderer-owned gate as a restrained in-world marker there instead of
+     // letting a second giant title compete with station, runner, and relay.
+     size: 0.34,
+@@ -1667,75 +1637,7 @@ const minimumFoliageEdgeClearance = skylineFoliagePlacements.reduce((minimum, pl
    return Math.min(minimum, sceneSpaceClearance - foliageHalfWidth);
  }, Number.POSITIVE_INFINITY);
--
+ 
 -function skylineCameraReadabilityEvidence() {
 -  return {
 -    source: "game.platformerCameraRig + route-local facing director",
@@ -2285,7 +1796,7 @@ index 47e053f95..26e581df6 100644
 -    }
 -  };
 -}
--
+ 
 -function skylineMotionPreferenceEvidence() {
 -  const feel = skylineFeel.snapshot();
 -  return {
@@ -2324,130 +1835,64 @@ index 47e053f95..26e581df6 100644
 -    }
 -  };
 -}
--// Unlock the web-audio context on the first real interaction so autoplay policy
--// lets synth SFX play (mirrors the Clash gesture-unlock discipline).
+ // Unlock the web-audio context on the first real interaction so autoplay policy
+ // lets synth SFX play (mirrors the Clash gesture-unlock discipline).
  const skylineAudioUnlock = (): void => {
-   window.removeEventListener("pointerdown", skylineAudioUnlock);
-   window.removeEventListener("keydown", skylineAudioUnlock);
-@@ -1746,16 +1342,8 @@ const skylineAudioUnlock = (): void => {
- window.addEventListener("pointerdown", skylineAudioUnlock);
- window.addEventListener("keydown", skylineAudioUnlock);
- let hudElements: ReturnType<typeof setupSkylineHud> | undefined;
--
- let lastActPaletteIndex = 0;
+@@ -1751,10 +1653,8 @@ let lastActPaletteIndex = 0;
  setupSkylineGameHud();
--
--// The expressive, project-original runner card is the visible hero in every
+ 
+ // The expressive, project-original runner card is the visible hero in every
 -// lens. The prior default path mounted Oobi while review mounted the arctic
--// card, so the retained route-primary screenshot showed a white orb even though
--// the intended art was already registered and independently screened. One
+ // card, so the retained route-primary screenshot showed a white orb even though
+ // the intended art was already registered and independently screened. One
 -// typed hero across gameplay/review keeps the visual contract honest and gives
--// the actual route a readable runner silhouette.
+ // the actual route a readable runner silhouette.
  const skylinePlayerVisualNode = model(
    assets.skylineArcticRunnerHero,
-   {
-@@ -1767,20 +1355,6 @@ const skylinePlayerVisualNode = model(
-     receiveShadow: true
-   }
- );
--// The runner card is a typed alpha-textured authored pose with no embedded
--// animation clips. Locomotion state remains published by `game.locomotion` and
--// the update loop supplies bounded position/rotation/impact changes; do not ask
--// the safe renderer to play a clip that the visible asset does not ship.
--
--/*
-- * Small route-specific kit details give the neutral Oobi body a readable
-- * Steel-Dawn relay identity in the ordinary playable view. These are not a
-- * replacement character or a fake effect: a compact scarf, relay pack, and
-- * visor marker are grounded to the live typed hero transform and hidden during
-- * subject-suppressed evidence. The arctic runner card already carries its own
-- * scarf, pack and visor, so it does not receive a duplicate accessory stack in
-- * either review or gameplay.
-- */
- const skylineRunnerKitSashMaterial = material.pbr({
-   name: "skyline runner glacier sash",
-   color: "#57d8e9",
-@@ -1800,10 +1374,6 @@ const skylineRunnerKitVisorMaterial = material.emissive({
-   emissiveIntensity: 0.65,
-   roughness: 0.24
- });
--// These three small primitives are authored accessories around the typed Oobi
--// hero, not a runner/character substitute. Keep the collection name explicit
--// about that supporting role so the route-primary source audit cannot mistake
--// an accessory pool for a primitive primary subject.
- const skylineAccessoryNodes = [
-   primitives.box({ name: "skyline runner glacier sash", material: skylineRunnerKitSashMaterial })
-     .position(initialPlayerPose.position[0] - 0.08, initialPlayerPose.position[1] + 0.08, GAMEPLAY_ACTOR_DEPTH + 0.045)
-@@ -1827,7 +1397,6 @@ const skylineAccessoryNodes = [
-       tags: ["character-kit", "typed-hero-accent", "shape-plus-color", "non-colliding", "renderer-owned"]
-     }))
- ];
--
- const skylineGame = createGame({
-   id: "showcase-skyline-runner",
-   target: "#app",
-@@ -2110,21 +1679,11 @@ const skylineJuice = createJuice<"jump" | "collect" | "checkpoint" | "hazard" |
+@@ -1886,7 +1786,6 @@ const skylineGame = createGame({
+       palette.checkpoint.runtime(game.runtimeNode(`skyline-act-${actIndex}-checkpoint-light`, { tags: ["light", `act-${actIndex}`] }))
+     ]))
+     // The ordinary route keeps a dark readability halo for visually noisy
+-    // districts. The review ceremony has a deliberately cleared tree gap, so
+     // drawing the same torus there only produced a giant ring around the hero.
+     .addMany([primitives.torus({
+       name: "hero contact shadow",
+@@ -1914,7 +1813,6 @@ const skylineGame = createGame({
+     .addMany(skylineDistrictLandmarkNodes)
+     .addMany(firstRelayStationNodes)
+     .addMany(skylineBackdropNodes)
+-    // Exact review pixels already carry the district name in the accessible
+     // HUD and the relay station as the visual landmark. Suppress the duplicate
+     // ACT glyph and dense foreground plant pool there so the hero/landing path
+     // owns a single focal hierarchy; ordinary gameplay retains both systems.
+@@ -2073,7 +1971,6 @@ const skylineGame = createGame({
+     .add(lights.studio({ intensity: 0.86}))
+     .camera(platformerCamera),
+   qualityRebuild: { flags: ["game"] },
+-  evidence: {
+     schema: 1,
+     sections: async () => (await import("../evidence")).sections,
+     legacyGlobals: ["__AURA3D_SHOWCASE_SKYLINE_RUNNER__"]
+@@ -2110,7 +2007,6 @@ const skylineJuice = createJuice<"jump" | "collect" | "checkpoint" | "hazard" |
    tweens: skylineTween,
    rumble: createRumbleDriver()
  });
 -bindSkylineEvidence(() => mountedEvidence);
--
+ 
  const player = app.nodes.require("platformer-player");
  const skylineLiftCardHandles = skylineCharacterWorld.liftPoses().map((pose) => ({
-   id: pose.id,
-   node: app.nodes.require(`skyline-lift-card-${pose.id}`)
- }));
--/**
-- * Draws every scripted lift card on the authored rect its own collider occupies this tick.
-- *
-- * Called from the evidence publish point, so the card the player sees and the surface
-- * `PhysicsCharacterController` resolves against are read from one clock and one formula.
-- * A lift card that drifted from its collider is the exact defect this route is meant to
-- * remove, and it would be invisible in a screenshot until someone stood on it.
-- */
- function renderSkylineLiftCards(): void {
-   const poses = skylineCharacterWorld.liftPoses();
-   for (let index = 0; index < skylineLiftCardHandles.length; index += 1) {
-@@ -2137,11 +1696,6 @@ function renderSkylineLiftCards(): void {
+@@ -2137,7 +2033,6 @@ function renderSkylineLiftCards(): void {
  }
  const skylineAccessoryHandles: RuntimeNodeHandleLike[] = [];
  const skylineLegacyWorldHandle = app.nodes.require("platformer-bound-level-one-world");
 -// The certified world remains mounted as the collision/evidence owner, but its
--// original dark ground sheet is not a finished presentation surface. It
--// occluded the typed winter panorama in the default camera and recreated the
--// rejected muddy lower band. The typed panorama + ice-ledge family now owns the
--// visible frame in both modes; no gameplay or asset binding is removed.
- skylineLegacyWorldHandle.setVisible(false);
- const skylineStarfieldHandle = app.nodes.require("steel-dawn-starfield");
- const skylineMoonHandle = app.nodes.require("steel-dawn-moon");
-@@ -2165,7 +1719,6 @@ const eventFeedbackVisualTimers = Object.fromEntries(
-   Object.keys(SKYLINE_EVENT_FEEDBACK_VISUALS).map((event) => [event, 0])
- ) as Record<SkylineRequiredFeedbackEvent, number>;
- const observedEventFeedbackVisuals = new Set<SkylineRequiredFeedbackEvent>();
--
- function triggerEventFeedbackVisual(
-   event: SkylineRequiredFeedbackEvent,
-   scenePoint: readonly [number, number, number]
-@@ -2178,7 +1731,6 @@ function triggerEventFeedbackVisual(
-     .setScale(spec.scale)
-     .setVisible(true);
- }
--
- function updateEventFeedbackVisuals(step: number): void {
-   for (const event of Object.keys(SKYLINE_EVENT_FEEDBACK_VISUALS) as SkylineRequiredFeedbackEvent[]) {
-     const spec = SKYLINE_EVENT_FEEDBACK_VISUALS[event];
-@@ -2196,35 +1748,12 @@ function updateEventFeedbackVisuals(step: number): void {
-     node.setScale(spec.scale.map((value) => value * pulse) as [number, number, number]);
+ // original dark ground sheet is not a finished presentation surface. It
+ // occluded the typed winter panorama in the default camera and recreated the
+ // rejected muddy lower band. The typed panorama + ice-ledge family now owns the
+@@ -2204,27 +2099,6 @@ function clearActiveEventFeedbackVisuals(): void {
    }
  }
--
- function clearActiveEventFeedbackVisuals(): void {
-   for (const event of Object.keys(SKYLINE_EVENT_FEEDBACK_VISUALS) as SkylineRequiredFeedbackEvent[]) {
-     eventFeedbackVisualTimers[event] = 0;
-     eventFeedbackVisualHandles[event].setScale([...HIDDEN_FEEDBACK_SCALE]).setVisible(false);
-   }
- }
--
+ 
 -function buildSkylineEventFeedbackEvidence() {
 -  const feedback = skylineFeel.eventFeedbackProof();
 -  const visualNodes = Object.fromEntries(
@@ -2472,19 +1917,15 @@ index 47e053f95..26e581df6 100644
  const actSkyBandSets = Object.fromEntries([0, 1, 2, 3, 4].map((actIndex) => [
    actIndex,
    planSkylineActBackdrop({
-@@ -2251,11 +1780,6 @@ for (const [key, node] of Object.entries(actLightSets)) {
-   const act = Number(key.split("-")[0]);
-   node.setVisible(act === lastActPaletteIndex);
- }
--/*
-- * Incorporation runtime state (SR-A1..SR-A6). Handles + honest evidence only;
-- * none of this can alter the certified simulation contract.
-- */
--/** SR-A2/SR-A3: instanced pools follow the act palette; backdrop chunks are static. */
- const foliagePoolSets = Object.fromEntries([0, 1, 2, 3, 4].map((actIndex) => [
-   actIndex, app.nodes.require(skylineFoliageNodeId(actIndex))
- ])) as Record<number, RuntimeNodeHandleLike>;
-@@ -2270,176 +1794,17 @@ function applySkylineInstancedPoolVisibility(actIndex: number): void {
+@@ -2232,7 +2106,6 @@ const actSkyBandSets = Object.fromEntries([0, 1, 2, 3, 4].map((actIndex) => [
+     sceneSpan,
+     horizonY,
+     farBackgroundDepth,
+-    reviewCapture: false
+   }).plan.bands.map((band) =>
+     app.nodes.require(`skyline-act-${actIndex}-${band.side}-${band.index}`)
+   )
+@@ -2270,137 +2143,17 @@ function applySkylineInstancedPoolVisibility(actIndex: number): void {
  }
  applySkylineInstancedPoolVisibility(0);
  skylineAudio.setAmbienceAct(0);
@@ -2499,8 +1940,8 @@ index 47e053f95..26e581df6 100644
 -  tintSource: "existing-act-palettes",
 -  activeActPoolsVisible: 0 as number
 -};
--
--/** SR-A3 plan facts; mounted selections and native submissions are added below. */
+ 
+ /** SR-A3 plan facts; mounted selections and native submissions are added below. */
 -const skylineBackdropStaticEvidence = {
 -  planner: "src/backdrop.ts",
 -  chunkCount: skylineBackdropChunks.length,
@@ -2520,9 +1961,9 @@ index 47e053f95..26e581df6 100644
  const observedSkylineLodLevels = new Map<string, Set<number>>();
  const lastSkylineLodLevels = new Map<string, number>();
  const skylineLodTransitions: { nodeName: string; from: number; to: number }[] = [];
--
+ 
  const skylineCameraOriginalSmoothing = platformerCamera.smoothing;
--
+ 
 -function buildSkylineBackdropEvidence() {
 -  const renderer = app.diagnostics().renderer;
 -  const runtime = renderer?.runtime;
@@ -2578,15 +2019,15 @@ index 47e053f95..26e581df6 100644
 -    }
 -  };
 -}
--
--/** SR-A4 evidence: gates exist as text3D scene nodes; CSS card stays authoritative. */
+ 
+ /** SR-A4 evidence: gates exist as text3D scene nodes; CSS card stays authoritative. */
 -const skylineActGateEvidence = {
 -  count: SKYLINE_ACT_GATES.length,
 -  renderedVia: "text3d-extruded-glyphs",
 -  cssCardRemainsAccessibilityAuthority: true,
 -  gates: SKYLINE_ACT_GATES.map((gate) => ({ id: gate.id, act: gate.act, title: gate.title, x: gate.x }))
 -};
--
+ 
 -function buildSkylineDistrictEvidence(playerX: number) {
 -  const current = resolveSkylineDistrict(playerX);
 -  return {
@@ -2619,14 +2060,10 @@ index 47e053f95..26e581df6 100644
 -    }))
 -  };
 -}
--
--/**
-- * SR-A5 relay overlap sensors. Containment guarantees every radial activation is
-- * sensor-covered; the missed list exists to catch any future drift, not to act.
-- */
- const relaySensorState = skylineRelaySensors.map((sensor) => ({
-   sensorId: sensor.id,
-   checkpointId: sensor.checkpointId,
+ 
+ /**
+  * SR-A5 relay overlap sensors. Containment guarantees every radial activation is
+@@ -2412,31 +2165,6 @@ const relaySensorState = skylineRelaySensors.map((sensor) => ({
    overlapped: false
  }));
  const relaySensorKnownActivations = new Set<string>();
@@ -2655,66 +2092,52 @@ index 47e053f95..26e581df6 100644
 -  skylineRelayEvidence.coveredCount = covered;
 -  skylineRelayEvidence.missedCheckpointIds = missed;
 -}
--
+ 
  skylineFeel.bindScorePopHost(hudElements?.score ?? null);
--/** Renderer-owned challenge feedback handles, updated from observed challenge state. */
- const feedbackNodes = {
-   flow: app.nodes.require("skyline-flow-ribbon"),
-   chain: app.nodes.require("skyline-chain-pips"),
-@@ -2452,24 +1817,12 @@ const emberPickupNodes = Object.fromEntries(
-   ]])
- );
- const emberVolleyNodes = [0, 1, 2, 3].map((index) => app.nodes.require(`skyline-ember-volley-${index}`));
--// Renderer-owned sky-shard glitter nodes, keyed by collectible id so the frame loop can
--// pulse them (idle sparkle) and hide them the moment the shard is collected.
- const skyShardGlitterNodes: Record<string, RuntimeNodeHandleLike> = Object.fromEntries(
-   collectibles.filter((collectible) => !String(collectible.id).includes("ember-charge")).map(
-     (collectible) => [collectible.id, app.nodes.require(`skyline-pickup-glitter-${collectible.id}`)]
-   )
- );
--// Raised only when an idle glitter pulse was actually applied to at least one rendered shard node.
- const collectedIdleSparkleProof = { shardSparkleRendered: false, glitterNodeCount: Object.keys(skyShardGlitterNodes).length };
--
--/*
-- * SR-A1 speedrun ghost runtime.
-- *
-- * The recorder slices live input into fixed ticks; the replay drives a separate
-- * kit instance from those ticks (src/ghost.ts). The echo node is positioned from
-- * the replay snapshot and NOTHING else: no collision, no pickups, no sentries,
-- * and no path back into the live simulation or the completion window.
-- */
- const ghostEchoHandle = app.nodes.require("skyline-ghost-echo");
- const ghostEchoAccentHandles = [
-   app.nodes.require("skyline-ghost-echo-ring-core"),
-@@ -2531,7 +1884,6 @@ const skylineGhostEvidence = {
-   bestFinishSeconds: null as number | null,
-   timelineHash: ""
- };
--
+ /** Renderer-owned challenge feedback handles, updated from observed challenge state. */
+@@ -2499,38 +2227,6 @@ let ghostReplay: SkylineGhostReplay | null = null;
+ let ghostRecording: SkylineGhostRecording | null = null;
+ let ghostEnabled = false;
+ let ghostRunFinalized = false;
+-const skylineGhostEvidence = {
+-  visualOnly: true,
+-  driver: "input-replay",
+-  deterministicTickSeconds: SKYLINE_GHOST_TICK_SECONDS,
+-  storageKey: SKYLINE_GHOST_STORAGE_KEY,
+-  appearance: {
+-    typedCharacterAsset: "skylineArcticRunnerHero",
+-    modelOpacity: 0.62,
+-    accentOpacities: [0.3, 0.2, 0.12] as readonly number[],
+-    palette: ["#8ef0ff", "#5ee0ff"] as readonly string[],
+-    alphaBlended: true,
+-    distinctFromLiveHero: "cyan emissive shell plus three receding translucent echo rings"
+-  },
+-  truthIsolation: {
+-    simulationOwner: "separate-game.platformer-kit",
+-    collision: false,
+-    collectibles: false,
+-    hazards: false,
+-    checkpoints: false,
+-    score: false,
+-    completion: false,
+-    liveStateReads: false,
+-    liveStateWrites: false
+-  },
+-  available: false,
+-  enabled: false,
+-  playbackActive: false,
+-  visibleThisSession: false,
+-  accentNodesRenderedThisSession: 0,
+-  bestFinishSeconds: null as number | null,
+-  timelineHash: ""
+-};
+ 
  function updateGhostBadge(): void {
    const badge = hudElements?.ghostBadge ?? null;
-   if (!badge) return;
-@@ -2547,7 +1899,6 @@ function updateGhostBadge(): void {
-     badge.dataset.state = "live";
+@@ -2576,70 +2272,9 @@ function loadGhostFromStore(): void {
    }
  }
--
- function applyGhostRecording(recording: SkylineGhostRecording | null): void {
-   ghostRecording = recording;
-   ghostReplay = recording ? createSkylineGhostReplay(recording) : null;
-@@ -2556,7 +1907,6 @@ function applyGhostRecording(recording: SkylineGhostRecording | null): void {
-   skylineGhostEvidence.timelineHash = recording ? skylineGhostTimelineHash(recording) : "";
-   updateGhostBadge();
- }
--
- function loadGhostFromStore(): void {
-   const json = ghostStore.load();
-   if (!json) {
-@@ -2575,72 +1925,7 @@ function loadGhostFromStore(): void {
-     applyGhostRecording(null);
-   }
- }
--
+ 
 -function toggleSkylineGhost(): boolean {
 -  ghostEnabled = !ghostEnabled;
 -  if (ghostEnabled && !ghostRecording) loadGhostFromStore();
@@ -2728,8 +2151,8 @@ index 47e053f95..26e581df6 100644
 -  return ghostEnabled;
 -}
  loadGhostFromStore();
--
--/** Advances and renders the echo; visual-only by construction. */
+ 
+ /** Advances and renders the echo; visual-only by construction. */
 -function renderSkylineGhost(stepSeconds: number): void {
 -  if (!ghostEnabled || !ghostReplay || ghostReplay.recording.tickCount === 0) {
 -    ghostEchoHandle.setVisible(false);
@@ -2779,103 +2202,13 @@ index 47e053f95..26e581df6 100644
 -  skylineGhostEvidence.visibleThisSession = true;
 -  skylineGhostEvidence.accentNodesRenderedThisSession = ghostEchoAccentHandles.length;
 -}
--
+ 
  function finalizeGhostRecordingIfFinished(elapsedSeconds: number): void {
    if (ghostRunFinalized) return;
-   ghostRunFinalized = true;
-@@ -2661,15 +1946,7 @@ interface EmberVolley {
- const emberVolleys: EmberVolley[] = [];
- let spentEmberCharges = 0;
- const pendingDefeatedSentries = new Set<string>();
--/** Raised only by an observed render of each feedback node, never by configuration. */
- const observedFeedbackProof = { flowRibbon: false, chainPips: false, objectivePulse: false };
--
--/**
-- * Drives the challenge feedback nodes from the current challenge evidence.
-- *
-- * Called every frame after `runnerChallenge.step`, so what the player sees in the scene is
-- * the same observed state the evidence records. Nothing here writes DOM text.
-- */
- function renderChallengeFeedback(): void {
-   const pose = platformerScene.toScenePlayer(state.player);
-   const [px, py, pz] = pose.position;
-@@ -2727,7 +2004,6 @@ function renderChallengeFeedback(): void {
-     feedbackNodes.objective.setScale([...HIDDEN_FEEDBACK_SCALE]).setVisible(false);
-   }
- }
--
- function renderEmberVolleys(): void {
-   for (const pickup of SKYLINE_EMBER_PICKUPS) {
-     const nodes = emberPickupNodes[pickup.id] ?? [];
-@@ -2739,13 +2015,6 @@ function renderEmberVolleys(): void {
-   }
-   renderSkyShardGlitter();
- }
--
--/**
-- * Idle collectible glitter: each uncollected sky-shard pulses its emissive scale so
-- * shards read as live pickups in the scene, not just counters. The pulse is driven by
-- * sim time so it is deterministic; taken shards collapse to the hidden scale. This is
-- * renderer feedback via the public runtime node API, not a CSS overlay.
-- */
- function renderSkyShardGlitter(): void {
-   const t = state.time;
-   for (const collectible of collectibles) {
-@@ -2766,22 +2035,7 @@ function renderSkyShardGlitter(): void {
-     collectedIdleSparkleProof.shardSparkleRendered = true;
-   }
- }
--
--/*
-- * When true, both route-local scale and the imported locomotion clip are pinned
-- * to the neutral pose declared by the composition contract.
-- *
-- * Set by `settleSubjectPose`. Resetting scale from outside the update loop was not enough: the loop rewrites scale
-- * every frame from `visualState`, and the hero is often `fall` at capture time (it spawns above the platform), which
-- * applies `[0.96, 1.05, 0.96]` -- a *different aspect ratio* from idle. That is why the measured silhouette flipped
-- * between 109x118 and 86x152 across runs and straddled the gate's 96px width floor. The flag has to be read inside
-- * the loop, where the scale is actually decided.
-- */
--
--
--/** Current locomotion snapshot, advanced from mounted player state each frame. */
- let locomotionSnapshot = locomotion.snapshot();
--
- function advanceLocomotion(dt: number): void {
-   locomotionSnapshot = locomotion.step(Math.max(0, dt), {
-     speed: Math.abs(state.player.vx),
-@@ -2791,12 +2045,9 @@ function advanceLocomotion(dt: number): void {
-     hit: state.events.some((event) => event.type === "hazard")
-   });
- }
--
- function readAnimationState(): string {
-   return locomotionSnapshot.state;
- }
--
--
- function rememberAnimationState(): void {
-   const nextState = locomotionSnapshot.state;
-   const nextClip = locomotionSnapshot.clip;
-@@ -2828,79 +2079,6 @@ function playerSurfaceAlignment() {
-     playerTargetHeight: platformerScene.evidence.playerTargetHeight
-   };
- }
--/**
-- * FS-304 root renderer integration evidence.
-- *
-- * This route is the designated root integration reference: it imports only
-- * `@aura3d/engine` plus its generated typed asset map, and it authors a bounded
-- * set of renderer features whose root behaviour is separately proven by
-- * `tests/browser/createAuraApp-shadow-contract.spec.ts` and
-- * `tests/browser/createAuraApp-postprocess-contract.spec.ts`.
-- *
-- * Every field is read back from mounted diagnostics rather than declared, so the
-- * route cannot report a feature the runtime did not actually run. `claimedFeatures`
-- * deliberately lists only the features those contracts prove. The route does not
-- * request SSAO because the root contract proves execution but not a visible
-- * contribution, and no field here generalizes to arbitrary-scene parity.
-- */
+@@ -2843,63 +2478,6 @@ function playerSurfaceAlignment() {
+  * request SSAO because the root contract proves execution but not a visible
+  * contribution, and no field here generalizes to arbitrary-scene parity.
+  */
 -function rootRendererIntegrationEvidence() {
 -  const diagnostics = app.diagnostics();
 -  const renderer = diagnostics.renderer;
@@ -2933,15 +2266,13 @@ index 47e053f95..26e581df6 100644
 -    ]
 -  };
 -}
--
+ 
  function routeDiagnostics() {
    const solverScenePosition = skylineCharacterWorld.scenePosition();
-   const renderedPose = platformerScene.toScenePlayer(state.player).position;
-@@ -2942,991 +2120,5 @@ function routeDiagnostics() {
-     completionProof
+@@ -2943,294 +2521,7 @@ function routeDiagnostics() {
    };
  }
--
+ 
 -function buildSkylineVisualLanguageEvidence() {
 -  const contract = skylineVisualLanguageEvidence();
 -  const skyShardCount = collectibles.filter((collectible) => !String(collectible.id).includes("ember-charge")).length;
@@ -3230,18 +2561,13 @@ index 47e053f95..26e581df6 100644
 -  actGates: skylineActGateEvidence,
 -  relaySensors: { ...skylineRelayEvidence }
 -};
--
--/**
-- * Deterministic SR-08 evidence seam. It moves only the mounted camera target while
-- * the route simulation is frozen; certified player/game truth is never teleported.
-- */
--
--/**
-- * Test seam (mirrors the composition probe pattern): lets browser specs seed a
-- * valid ghost recording without a full 95-second playthrough. It goes through the
-- * same parse/store path as a real finish, so it cannot inject anything the route
-- * would not otherwise accept.
-- */
+ 
+ /**
+  * Deterministic SR-08 evidence seam. It moves only the mounted camera target while
+@@ -3243,18 +2534,6 @@ const mountedEvidence = {
+  * same parse/store path as a real finish, so it cannot inject anything the route
+  * would not otherwise accept.
+  */
 -Object.defineProperty(window, "__AURA3D_SKYLINE_GHOST_SEED__", {
 -  value: (json: string) => {
 -    // Keep the evidence seam deterministic even when browser storage is unavailable: the
@@ -3254,21 +2580,13 @@ index 47e053f95..26e581df6 100644
 -  },
 -  configurable: true
 -});
--/**
-- * Deterministic browser-evidence seam. It advances only the isolated replay and
-- * renderer-owned echo while the live game is paused, allowing paired frames to
-- * prove ghost visibility without changing any live game truth.
-- */
--
--/**
-- * Real-input deterministic pump for browser play verification. Headless
-- * software rendering can take 15s+ per presented frame, so wall-clock play is
-- * infeasible there; this runs `frames` fixed steps through the production
-- * onFrame path with the REAL held keyboard state, skipping only the redundant
-- * GPU presentations (mirrors the turbo `pumpRealInput` seam). Callers hold
-- * real keys via CDP input, pump, then read the evidence global to prove input
-- * changed game state. Test-only: no gameplay rules are altered.
-- */
+ /**
+  * Deterministic browser-evidence seam. It advances only the isolated replay and
+  * renderer-owned echo while the live game is paused, allowing paired frames to
+@@ -3270,234 +2549,8 @@ Object.defineProperty(window, "__AURA3D_SKYLINE_GHOST_SEED__", {
+  * real keys via CDP input, pump, then read the evidence global to prove input
+  * changed game state. Test-only: no gameplay rules are altered.
+  */
 -Object.defineProperty(window, "__AURA3D_SKYLINE_PUMP__", {
 -  value: {
 -    pump: (frameCount: number) => {
@@ -3306,7 +2624,7 @@ index 47e053f95..26e581df6 100644
 -  configurable: true
 -});
  updatePlatformerHud();
--
+ 
 -function publishPlatformerEvidence(): void {
 -  rememberAnimationState();
 -  renderSkylineLiftCards();
@@ -3323,7 +2641,7 @@ index 47e053f95..26e581df6 100644
 -  // transform instead. Cosmetic only: physics, contact, camera targeting and
 -  // the certified pose are unchanged.
 -  const runSpeed = Math.abs(state.player.vx);
--  const runCycleActive = !reducedMotion
+-  const runCycleActive = !reducedMotion 
 -    && readAnimationState() === "run" && runSpeed > 0.01;
 -  const runPhase = state.time * (7 + runSpeed * 1.4);
 -  const runBob = runCycleActive ? Math.abs(Math.sin(runPhase)) * SKYLINE_CHARACTER_HEIGHT * 0.05 : 0;
@@ -3497,13 +2815,13 @@ index 47e053f95..26e581df6 100644
 -  };
 -  updatePlatformerHud();
 -}
--
--/**
-- * Mounted animation evidence. `activeClip`/`runtimeClip` come from the kit's
-- * resolved clip for the observed locomotion state, and `availableClips` is the
-- * asset's real embedded clip list, so the route cannot claim a clip the asset
-- * does not ship.
-- */
+ 
+ /**
+  * Mounted animation evidence. `activeClip`/`runtimeClip` come from the kit's
+@@ -3505,428 +2558,3 @@ function publishPlatformerEvidence(): void {
+  * asset's real embedded clip list, so the route cannot claim a clip the asset
+  * does not ship.
+  */
 -function animationEvidence() {
 -  return {
 -    state: locomotionSnapshot.state,
@@ -3939,36 +3257,17 @@ index f06dcc964..000000000
 -// tests/unit/apps (lane 15) re-points its imports (qr-request tracked).
 -export * from "./gameplay/level-proof";
 diff --git a/apps/showcase-skyline-runner/src/main.ts b/apps/showcase-skyline-runner/src/main.ts
-index 2fab0d09b..1929eb1e0 100644
+index 2fab0d09b..0d7c758dc 100644
 --- a/apps/showcase-skyline-runner/src/main.ts
 +++ b/apps/showcase-skyline-runner/src/main.ts
-@@ -1,14 +1,6 @@
--// apps/showcase-skyline-runner/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
--// Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-skyline-runner`
--// (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
+@@ -1,7 +1,6 @@
+ // apps/showcase-skyline-runner/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
+ // Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-skyline-runner`
+ // (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
 -// acceptance (§10 step 5).
  import { resolveQrFlags } from "@aura3d/engine/contracts";
--
+ 
  const ROUTE_FLAG = "A3D_QR_ROUTE_SKYLINE_RUNNER" as const;
- const DEFAULT_ON = false;
--
--/** Accepts `?a3d-qr=…,route-skyline-runner` and `?a3d-qr=…,A3D_QR_ROUTE_SKYLINE_RUNNER`.
-- *  Returns undefined when the flag is absent (CCR-14-2 replaces this helper). */
- function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
-   const raw = new URL(loc.href).searchParams.get("a3d-qr");
-   if (raw === null) return undefined;
-@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
-     ? true
-     : undefined;
- }
--
- const flags = resolveQrFlags({
-   url: location.href,
-   env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR },
-   options: { [ROUTE_FLAG]: routeFlagFromUrl(location, ROUTE_FLAG) ?? DEFAULT_ON }
- });
--
- void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
 diff --git a/apps/showcase-skyline-runner/src/v2/evidence/index.ts b/apps/showcase-skyline-runner/src/v2/evidence/index.ts
 deleted file mode 100644
 index 1809a8e1a..000000000

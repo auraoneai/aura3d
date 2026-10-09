@@ -1,8 +1,9 @@
-From 034cb04c6cf1f83c5ffd729b5c46d60e9306d348 Mon Sep 17 00:00:00 2001
+From fd8833e177648881e6af9bdd0a2db57a3ec1df82 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
-Date: Fri, 9 Oct 2026 13:45:52 +0000
-Subject: [PATCH] [qr-prd09] showcase-pulse-tunnel: delete evidence
- files+blocks (T5.8)
+Date: Fri, 9 Oct 2026 15:34:49 +0000
+Subject: [PATCH] showcase-pulse-tunnel: delete evidence files+blocks (T5.8)
+
+Regenerated against the git-am-fuzzed post-migration tree.
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
@@ -16,26 +17,27 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../quaternius-source-v9-PROVENANCE.md        |  86 ---
  .../texture-identity-v6-PROVENANCE.md         |  63 --
  .../performance-report.json                   |  20 -
- .../scripts/build-combat-finish-v4.py         | 296 --------
+ .../scripts/build-combat-finish-v4.py         | 296 ---------
  .../scripts/build-combat-finish-v7.py         | 210 ------
- .../scripts/build-combat-kit-v2.py            | 368 ----------
- .../scripts/build-encounter-finish-v11.py     | 375 ----------
- .../scripts/build-high-fidelity-v5.py         | 622 -----------------
+ .../scripts/build-combat-kit-v2.py            | 368 -----------
+ .../scripts/build-encounter-finish-v11.py     | 375 -----------
+ .../scripts/build-high-fidelity-v5.py         | 622 ------------------
  .../scripts/build-models.py                   | 238 -------
  .../scripts/build-music.mjs                   | 250 -------
  .../build-quaternius-presentation-v10.py      |  42 --
  .../scripts/build-quaternius-source-v9.py     |  94 ---
  .../scripts/build-sfx.mjs                     | 139 ----
  .../scripts/build-structural-world-v3.py      | 127 ----
- .../scripts/build-texture-identity-v6.py      | 519 --------------
+ .../scripts/build-texture-identity-v6.py      | 519 ---------------
  .../scripts/register-audio.mjs                |  44 --
  .../scripts/register-models.mjs               |  36 -
  .../scripts/write-performance-report.ts       |  82 ---
  .../scripts/write-route-health.mjs            | 157 -----
- apps/showcase-pulse-tunnel/src/legacy/main.ts | 640 ------------------
- apps/showcase-pulse-tunnel/src/main.ts        |  10 -
+ apps/showcase-pulse-tunnel/src/evidence.ts    |  17 -
+ apps/showcase-pulse-tunnel/src/legacy/main.ts | 435 ------------
+ apps/showcase-pulse-tunnel/src/main.ts        |   1 -
  .../src/v2/evidence/index.ts                  | 139 ----
- 29 files changed, 4777 deletions(-)
+ 30 files changed, 4580 deletions(-)
  delete mode 100644 apps/showcase-pulse-tunnel/art-review/combat-finish-v4-PROVENANCE.md
  delete mode 100644 apps/showcase-pulse-tunnel/art-review/combat-finish-v7-PROVENANCE.md
  delete mode 100644 apps/showcase-pulse-tunnel/art-review/encounter-finish-v11-PROVENANCE.md
@@ -62,6 +64,7 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  delete mode 100644 apps/showcase-pulse-tunnel/scripts/register-models.mjs
  delete mode 100644 apps/showcase-pulse-tunnel/scripts/write-performance-report.ts
  delete mode 100644 apps/showcase-pulse-tunnel/scripts/write-route-health.mjs
+ delete mode 100644 apps/showcase-pulse-tunnel/src/evidence.ts
  delete mode 100644 apps/showcase-pulse-tunnel/src/v2/evidence/index.ts
 
 diff --git a/apps/showcase-pulse-tunnel/art-review/combat-finish-v4-PROVENANCE.md b/apps/showcase-pulse-tunnel/art-review/combat-finish-v4-PROVENANCE.md
@@ -4208,25 +4211,34 @@ index 26165b125..000000000
 -
 -writeFileSync(join(appDir, "route-health.json"), JSON.stringify(routeHealth, null, 2) + "\n");
 -console.log(JSON.stringify({ machinePass: true, primitiveOccurrences, audioAssets: audioAssetIds.length, syncDecision: sync.decision, performancePass: performance.pass }));
+diff --git a/apps/showcase-pulse-tunnel/src/evidence.ts b/apps/showcase-pulse-tunnel/src/evidence.ts
+deleted file mode 100644
+index 797725f5d..000000000
+--- a/apps/showcase-pulse-tunnel/src/evidence.ts
++++ /dev/null
+@@ -1,17 +0,0 @@
+-/**
+- * evidence.ts — lazy route evidence sections (PRD-09 §6.5). Loaded through the
+- * evidence channel's `sections()` loader only when evidence is requested;
+- * production play never imports this.
+- */
+-export type EvidenceCollect = () => Record<string, unknown>;
+-
+-let collect: EvidenceCollect | undefined;
+-
+-export function bindPulseEvidence(fn: EvidenceCollect): void {
+-  collect = fn;
+-}
+-
+-export const sections = {
+-  pulse: (): Record<string, unknown> =>
+-    (collect ?? (() => ({ status: "unbound" })))()
+-};
 diff --git a/apps/showcase-pulse-tunnel/src/legacy/main.ts b/apps/showcase-pulse-tunnel/src/legacy/main.ts
-index daed99cfa..8be0afa79 100644
+index aa6e8c7ec..bdac2fdc0 100644
 --- a/apps/showcase-pulse-tunnel/src/legacy/main.ts
 +++ b/apps/showcase-pulse-tunnel/src/legacy/main.ts
-@@ -1,13 +1,3 @@
--/**
-- * Pulse Tunnel - mount, systems, evidence.
-- *
-- * Prototype route (PRD the Pulse Tunnel implementation contract). On-rails rhythm runner:
-- * obstacles schedule against the AudioContext clock through src/beat-clock.ts, the
-- * four synthesized stems mix through src/tunnel-audio.ts buses, and the whole look
-- * builds on the proven prefabs.neonTunnel() kit with authored emissive geometry.
-- * Prototype route: a release-validated typed spacecraft is the player silhouette;
-- * the gates and arena remain deliberate renderer-owned abstract visualization.
-- */
- import {
-   camera,
-   effects,
-@@ -29,7 +19,6 @@ import {
+@@ -29,7 +29,6 @@ import {
    createRumbleDriver,
    createTweenEngine
  } from "@aura3d/game";
@@ -4234,62 +4246,32 @@ index daed99cfa..8be0afa79 100644
  import { bindPulseDrive } from "../scenario-drive";
  import { pulseScenarios } from "../scenarios";
  import { assets } from "../../../../src/aura-assets";
-@@ -58,21 +47,10 @@ import { createPulsePlayer } from "../gameplay/player";
- import { createPulseStyleSystem } from "../gameplay/style";
- import { createTunnelAudio } from "./tunnel-audio";
- import { isPulseDebugMode, setupPulseHud, updatePulseHud } from "./hud";
--
+@@ -62,11 +61,8 @@ import { isPulseDebugMode, setupPulseHud, updatePulseHud } from "./hud";
  const reducedMotion =
    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
--// Screenshot-only presentation mode keeps the gameplay/HUD contract intact while
+ // Screenshot-only presentation mode keeps the gameplay/HUD contract intact while
 -// giving visual review a clean renderer-first frame. The normal route remains
 -// unchanged for players and for the interaction/evidence specs.
--// Candidate Meshy reactor-deck arena shell. Opt-in only via ?arena=candidate so
--// the release-validated V11 shell stays the default for players, specs, and
+ // Candidate Meshy reactor-deck arena shell. Opt-in only via ?arena=candidate so
+ // the release-validated V11 shell stays the default for players, specs, and
 -// the review capture. Non-colliding presentation; lanes, chart, collisions,
--// and scoring remain route-authoritative.
+ // and scoring remain route-authoritative.
  const pulseArenaCandidateEnabled =
    typeof window !== "undefined" && new URLSearchParams(window.location.search).get("arena") === "candidate";
--
--// ---- authored presentation constants ---------------------------------------
--
- const HUE_BY_SECTION: Record<PulseSectionId, string> = {
-   intro: "#22d3ee",
-   build: "#e879f9",
-@@ -86,20 +64,12 @@ const GATE_COLOR_BY_KIND = {
-   pylon: "#fbbf24"
- } as const;
- type GateKindId = keyof typeof GATE_COLOR_BY_KIND;
--
- const GATE_SLOTS = 8;
- const SPARK_POOL = 10;
- const FOG_PULSE_SECONDS = 0.18;
+@@ -93,10 +89,8 @@ const FOG_PULSE_SECONDS = 0.18;
  const HIT_FLASH_SECONDS = 0.14;
  const INVULN_SECONDS = 1.2;
  const HUE_RINGS_PER_SECTION = 4;
 -// Test-only seek captures pause the renderer immediately after jumping to the
--// finale. Reserve enough of the 90-second run for the keyboard event and
--// screenshot encoder to execute even under software-GL/reduced-motion runs.
+ // finale. Reserve enough of the 90-second run for the keyboard event and
+ // screenshot encoder to execute even under software-GL/reduced-motion runs.
 -const PULSE_CAPTURE_HEADROOM_SECONDS = 1.75;
--
--// ---- systems ----------------------------------------------------------------
--
- const pulseTween = createTweenEngine();
- const pulseFx = createFxParticlePass(app.effects);
- const pulseJuice = createJuice<
-@@ -122,7 +92,6 @@ const pulseJuice = createJuice<
-   tweens: pulseTween,
-   rumble: createRumbleDriver()
+ 
+ // ---- systems ----------------------------------------------------------------
+ 
+@@ -136,20 +130,6 @@ const input = game.input({
  });
--
- const input = game.input({
-   actions: {
-     left: ["KeyA", "ArrowLeft"],
-@@ -134,30 +103,13 @@ const input = game.input({
-   },
-   bufferMs: 120
- });
--
+ 
  const tunnelAudio = createTunnelAudio();
 -bindPulseEvidence(() => evidence);
 -bindPulseDrive({
@@ -4308,418 +4290,218 @@ index daed99cfa..8be0afa79 100644
  const player = createPulsePlayer();
  const styleSystem = createPulseStyleSystem();
  const chart = buildPulseChart();
--
- let injectedDriftMs = 0;
- let runAnchorSeconds = 0;
- const driftSamples: { readonly t: number; readonly driftMs: number }[] = [];
--
- const beatClock = createBeatClock({
-   getAudioTime: () => tunnelAudio.nowSeconds(),
-   getFrameTime: () => performance.now() / 1000,
-@@ -168,24 +120,9 @@ const beatClock = createBeatClock({
-     if (driftSamples.length > 180) driftSamples.shift();
-   }
- });
--
- const gateEvents: PulsePassEvent[] = [];
--/** Cumulative across restarts so browser specs can sample many arrivals. */
- const gateEventLog: PulsePassEvent[] = [];
--
--/**
-- * Renderer-owned encounter feedback follows the same pass events that drive
-- * the HUD/evidence stream.  Keeping the source event (rather than a free
-- * running pulse timer) lets the review composition show where the latest gate
-- * was actually resolved and whether that resolution was a clean pass, graze,
-- * or shield hit.  It never feeds back into chart, collision, or score state.
-- */
+@@ -180,11 +160,6 @@ const gateEventLog: PulsePassEvent[] = [];
+  * was actually resolved and whether that resolution was a clean pass, graze,
+  * or shield hit.  It never feeds back into chart, collision, or score state.
+  */
 -interface PulseReviewCombatPulse {
 -  readonly event: PulsePassEvent;
 -  ageSeconds: number;
 -}
- let reviewCombatPulse: PulseReviewCombatPulse | null = null;
--
+-let reviewCombatPulse: PulseReviewCombatPulse | null = null;
+ 
  const gateSystem = createGateSystem({
    chart,
-   getSchedulerTime: () => beatClock.time(),
-@@ -215,13 +152,8 @@ const gateSystem = createGateSystem({
-     if (event.type === "collision") applyCollision(event);
-   }
- });
--
- let playerState = player.snapshot();
--/** Gate ids that already resolved; drives the published upcoming list. */
- const resolvedGateIds = new Set<string>();
--
--// ---- scene ------------------------------------------------------------------
--
- const hueIds: Record<PulseSectionId, string[]> = { intro: [], build: [], drop: [], finale: [] };
- const hueBuilders = (Object.keys(HUE_BY_SECTION) as PulseSectionId[]).flatMap((sectionId) =>
-   Array.from({ length: HUE_RINGS_PER_SECTION }, (_, ring) => {
-@@ -250,7 +182,6 @@ const hueBuilders = (Object.keys(HUE_BY_SECTION) as PulseSectionId[]).flatMap((s
-     });
-   }).flat()
- );
--
- const gateMaterialSpec = (kind: GateKindId, flashing: boolean): AuraMaterialSpec =>
-   material.emissive({
-     name: `pulse gate ${flashing ? "pre-flash" : "body"} ${kind}`,
-@@ -258,14 +189,7 @@ const gateMaterialSpec = (kind: GateKindId, flashing: boolean): AuraMaterialSpec
-     emissive: GATE_COLOR_BY_KIND[kind],
-     emissiveIntensity: flashing ? 2.8 : 1.2
-   });
--
+@@ -261,7 +236,6 @@ const gateMaterialSpec = (kind: GateKindId, flashing: boolean): AuraMaterialSpec
+ 
  const glowMaterial = material.emissive({ name: "pulse glider engine glow", color: "#a5f3fc", emissive: "#22d3ee", emissiveIntensity: 3.35 });
--
+ 
 -// Review-only encounter materials. The live tunnel keeps its established
--// renderer-owned neon language; the exact visual frame gets a restrained
--// reactor-steel stage with explicit value separation so the typed actors and
--// exchange read as one place rather than a pile of emissive primitives.
--
- const gateSlotBuilders = (() => {
-   const builders = [];
-   for (let slot = 0; slot < GATE_SLOTS; slot += 1) {
-@@ -285,7 +209,6 @@ const gateSlotBuilders = (() => {
-   }
-   return builders;
- })();
--
- const sparkBuilders = Array.from({ length: SPARK_POOL }, (_, index) =>
-   primitives.sphere({
-     name: `pulse graze spark ${index + 1}`,
-@@ -300,9 +223,6 @@ const sparkBuilders = Array.from({ length: SPARK_POOL }, (_, index) =>
-     .scale([0.04, 0.04, 0.04])
+ // renderer-owned neon language; the exact visual frame gets a restrained
+ // reactor-steel stage with explicit value separation so the typed actors and
+ // exchange read as one place rather than a pile of emissive primitives.
+@@ -301,7 +275,6 @@ const sparkBuilders = Array.from({ length: SPARK_POOL }, (_, index) =>
      .runtime(game.runtimeNode(`pulse-spark-${index}`, { tags: ["graze-trail"] }))
  );
--
+ 
 -// Receding 3D depth markers make the glider lane legible at finale capture scale.
--// These are set dressing only; beat timing and collision truth remain unchanged.
+ // These are set dressing only; beat timing and collision truth remain unchanged.
  const depthTrackBuilders = Array.from({ length: 7 }, (_, index) => {
    const z = -5 - index * 5.2;
-   const scale = Math.max(0.42, 1 - index * 0.07);
-@@ -334,10 +254,6 @@ const finaleTerminalSentryBuilder = model(assets.pulseTerminalSentry, {
+@@ -316,7 +289,6 @@ const depthTrackBuilders = Array.from({ length: 7 }, (_, index) => {
+   ];
+ }).flat();
+ const finaleBeaconBuilder = primitives.torus({ name: 'pulse finale beacon', material: material.emissive({ color: '#fb7185', emissive: '#fecdd3', emissiveIntensity: 2.2 }) })
+-  // The final review frame is captured near the end of the 90-second lane. Keep
+   // the target inside the readable depth band instead of hiding it behind the
+   // far end of the fog volume.
+   .position(0, 1.0, -4.65).scale( [2.8, 2.8, 0.22])
+@@ -325,7 +297,6 @@ const finaleTerminalSentryBuilder = model(assets.pulseTerminalSentry, {
+   name: "pulse original terminal sentry",
+   targetMaxDimension: 2.74
+ })
+-  // The review lens gives the terminal its own, farther right-hand depth plane.
+   // It is still purely non-colliding presentation: runner movement, lanes, and
+   // the beat chart retain their existing coordinates and authority.
+   .position( 0,  0.08,  -5.16)
+@@ -334,7 +305,6 @@ const finaleTerminalSentryBuilder = model(assets.pulseTerminalSentry, {
    .runtime(game.runtimeNode("pulse-finale-terminal-sentry", {
      tags: ["finale-target", "typed-terminal-sentry", "renderer-owned", "non-colliding"]
    }));
 -// A release-probed authored arena shell gives the real finale exchange a
--// coherent architectural enclosure. It is a typed, non-colliding world asset:
--// the live chart, lanes, shields, and projectile pools retain all gameplay
--// authority, and the shell appears only while the actual finale state is live.
- const finaleArenaShellBuilder = model(assets.pulseReactorEncounterWorld, {
-   name: "pulse original reactor encounter world",
+ // coherent architectural enclosure. It is a typed, non-colliding world asset:
+ // the live chart, lanes, shields, and projectile pools retain all gameplay
+ // authority, and the shell appears only while the actual finale state is live.
+@@ -343,9 +313,7 @@ const finaleArenaShellBuilder = model(assets.pulseReactorEncounterWorld, {
    role: "primaryWorld",
-@@ -354,9 +270,6 @@ const finaleArenaShellBuilder = model(assets.pulseReactorEncounterWorld, {
-   .runtime(game.runtimeNode("pulse-finale-arena-shell", {
-     tags: ["finale-arena", "typed-world", "release-probed", "renderer-owned", "non-colliding"]
-   }));
--// Meshy candidate reactor-deck arena (quality: candidate). Same enclosure
--// footprint class as the V11 shell it swaps with; shown only when
--// ?arena=candidate is set.
- const finaleArenaCandidateBuilder = model(assets.pulseArena, {
-   name: "pulse candidate reactor deck arena",
-   role: "primaryWorld",
-@@ -380,10 +293,6 @@ const finaleProjectileBuilders = Array.from({ length: 18 }, (_, index) =>
-     .scale([0.055, 0.42, 0.055])
-     .runtime(game.runtimeNode("pulse-finale-projectile-" + index, { tags: ["finale-projectile", "rhythm-lance", "renderer-owned"] }))
- );
--
--// Four shield vanes frame the terminal sentry into one readable encounter
--// silhouette. They flank its dock and visually explain the opposing pressure
--// streams; no vane participates in runner collision or chart timing.
- const finaleShieldVaneBuilders = Array.from({ length: 4 }, (_, index) => {
-   const side = index % 2 === 0 ? -1 : 1;
-   const upper = index < 2;
-@@ -404,12 +313,6 @@ const finaleShieldVaneBuilders = Array.from({ length: 4 }, (_, index) => {
-       tags: ["finale-target", "shield-architecture", "renderer-owned"]
-     }));
- });
--
--// Renderer-owned cavern dressing gives the lane a readable material horizon
--// instead of leaving the neon kit floating in an empty gradient. The slabs sit
--// outside the three gameplay lanes, so they cannot change gate geometry or
--// collision truth; they are only the near/far rock silhouettes and reflective
--// ledges that make the active runner frame feel grounded.
- const cavernRockBuilders = Array.from({ length: 22 }, (_, index) => {
-   const side = index % 2 === 0 ? -1 : 1;
-   const depth = Math.floor(index / 2);
-@@ -434,10 +337,6 @@ const cavernRockBuilders = Array.from({ length: 22 }, (_, index) => {
-     .scale(rockScale)
-     .runtime(game.runtimeNode("pulse-cavern-rock-" + index, { tags: ["cavern-dressing", "set-dressing"] }));
- });
--
--// Larger faceted spires sit just beyond the three playable lanes. Together
--// with the slabs they supply the broken basalt horizon visible in the active
--// finale, while remaining renderer-owned set dressing with no collision role.
- const cavernSpireBuilders = Array.from({ length: 14 }, (_, index) => {
-   const side = index % 2 === 0 ? -1 : 1;
-   const depth = Math.floor(index / 2);
-@@ -460,9 +359,6 @@ const cavernSpireBuilders = Array.from({ length: 14 }, (_, index) => {
-     .scale([radius, height, radius * 0.82])
-     .runtime(game.runtimeNode("pulse-cavern-spire-" + index, { tags: ["cavern-dressing", "renderer-owned", "non-colliding"] }));
- });
--
--// Broken warm seams on the outer floor echo the comparator's red terrain and
--// give the reflective lane a second color family without touching the track.
- const lavaChannelBuilders = Array.from({ length: 12 }, (_, index) => {
-   const side = index % 2 === 0 ? -1 : 1;
-   const depth = Math.floor(index / 2);
-@@ -481,11 +377,6 @@ const lavaChannelBuilders = Array.from({ length: 12 }, (_, index) => {
-     .scale([0.2 + (index % 2) * 0.12, 0.028, 0.8 + (index % 3) * 0.28])
-     .runtime(game.runtimeNode("pulse-lava-seam-" + index, { tags: ["terrain-dressing", "renderer-owned", "non-colliding"] }));
- });
--
--// Thin, staggered in-scene rain strokes echo the comparator's weathered action
--// atmosphere. They are ordinary renderer geometry (not CSS or fake HUD FX),
--// positioned above and outside the playable lane so mobile/reduced-motion
--// behavior remains governed by the existing route systems.
- const rainBuilders = Array.from({ length: 30 }, (_, index) => {
-   const column = index % 10;
-   const depth = Math.floor(index / 10);
-@@ -507,7 +398,6 @@ const rainBuilders = Array.from({ length: 30 }, (_, index) => {
-     .scale([0.014, 0.38 + (index % 4) * 0.11, 0.014])
-     .runtime(game.runtimeNode("pulse-rain-" + index, { tags: ["weather-dressing", "renderer-owned"] }));
- });
--
- const ledgeBuilders = Array.from({ length: 8 }, (_, index) => {
-   const z = -5.4 - index * 4.2;
-   return primitives.box({
-@@ -525,12 +415,6 @@ const ledgeBuilders = Array.from({ length: 8 }, (_, index) => {
-     .scale([3.22, 0.06, 1.62])
-     .runtime(game.runtimeNode("pulse-floor-ledge-" + index, { tags: ["depth-landmark", "set-dressing"] }));
- });
--
--// A renderer-owned basalt arena under the finale boss turns the far end of the
--// lane into a staged encounter rather than a ring floating in black space.
--// The track plane remains on top through the center, and every arena node is
--// deliberately non-colliding so gate timing and the three gameplay lanes stay
--// authoritative.
- const finaleArenaMaterial = material.pbr({
-   name: "pulse finale basalt arena",
-   color: "#51415f",
-@@ -603,134 +487,10 @@ const finaleArenaBuilders = [
-       .runtime(game.runtimeNode("pulse-finale-perimeter-" + index, { tags: ["finale-arena", "renderer-owned", "non-colliding"] }));
+   targetMaxDimension: 11.556,
+   // Keep the roof-rib tubes out of the exact comparison lens. Even the far
+-  // ribs project as a single black canopy from this over-the-shoulder review
+   // distance and obscure the typed actors and packet streams. V11's continuous
+-  // deck, side rails, service uprights, rear bay, and authored review braces
+   // still establish a real enclosure; this is a composition correction to the
+   // imported asset, not a camera-only pass.
+   hiddenNodeNames:  undefined
+@@ -604,32 +572,26 @@ const finaleArenaBuilders = [
    })
  ];
--
+ 
 -// The release-review lens is a complete, continuous tunnel volume. It does
--// not import an arena/backdrop from another route: floor, ribs, roof, walls,
--// conduits, and the terminal iris all use the same restrained reactor-steel
--// material family and one vanishing point. Every piece is renderer-owned and
--// non-colliding, so the chart and gate system remain the gameplay authority.
+ // not import an arena/backdrop from another route: floor, ribs, roof, walls,
+ // conduits, and the terminal iris all use the same restrained reactor-steel
+ // material family and one vanishing point. Every piece is renderer-owned and
+ // non-colliding, so the chart and gate system remain the gameplay authority.
 -// Review-only practicals keep the reactor bay legible as a place.  They sit
--// one value step below the typed runner/sentry, adding cool/warm depth without
--// flattening the encounter into another neon diagram.
--// Packet cores are deliberately spherical and high-value.  The previous
--// capsule-only packets rasterized as a row of vertical spikes in the frozen
+ // one value step below the typed runner/sentry, adding cool/warm depth without
+ // flattening the encounter into another neon diagram.
+ // Packet cores are deliberately spherical and high-value.  The previous
+ // capsule-only packets rasterized as a row of vertical spikes in the frozen
 -// review frame, which made the exchange read as decoration rather than fire.
--// A bright core plus a separate directional wake keeps the projectile as a
--// legible volume while the wake communicates travel direction.
--
--// The encounter stage is intentionally built from a small authored material
--// family rather than a single dark floor.  These inset panels and hazard
+ // A bright core plus a separate directional wake keeps the projectile as a
+ // legible volume while the wake communicates travel direction.
+ 
+ // The encounter stage is intentionally built from a small authored material
+ // family rather than a single dark floor.  These inset panels and hazard
 -// strips give the lane a readable construction rhythm at the review camera:
--// cool graphite slabs carry the runners, while the warm seams establish the
--// sentinel's pressure side.  They are renderer-owned set dressing only; the
--// chart, collider, and typed actors remain the gameplay authority.
--
+ // cool graphite slabs carry the runners, while the warm seams establish the
+ // sentinel's pressure side.  They are renderer-owned set dressing only; the
+ // chart, collider, and typed actors remain the gameplay authority.
+ 
 -// A sparse set of asymmetrical bulkheads and signal braces gives the review
--// lens an authored room profile instead of a blank gradient. These stay outside
--// all three gameplay lanes and are not collision or timing surfaces.
--
+ // lens an authored room profile instead of a blank gradient. These stay outside
+ // all three gameplay lanes and are not collision or timing surfaces.
+ 
 -// The review composition previously stopped at two dark buttresses and a
--// single backplate. These restrained reactor panels add a visible rear plane,
--// repeatable floor scale, and a warm/cool material cadence without becoming
--// a second hero asset. They are renderer-owned set dressing only; the chart,
--// lanes, and collision systems remain unchanged.
--
--// The current typed encounter already establishes the deck and impact shelf,
--// but its upper half still reads as empty negative space in a frozen frame.
--// These low-intensity windows, side columns, floor chevrons, and horizon beams
--// build a continuous reactor-bay silhouette. They are renderer-owned dressing
--// outside all three gameplay lanes; the chart, collider, and typed assets stay
--// the only gameplay authorities.
--
--// Broken basalt plates and hot/cool seams give the encounter a terrain story
--// closer to the comparator's playable arena.  They sit outside the authored
--// three-lane collider envelope and are renderer-owned set dressing only.
--
+ // single backplate. These restrained reactor panels add a visible rear plane,
+ // repeatable floor scale, and a warm/cool material cadence without becoming
+ // a second hero asset. They are renderer-owned set dressing only; the chart,
+@@ -646,7 +608,6 @@ const finaleArenaBuilders = [
+ // closer to the comparator's playable arena.  They sit outside the authored
+ // three-lane collider envelope and are renderer-owned set dressing only.
+ 
 -// The previous review frame had a deck, side rails, and a handful of flat
--// plates, but the player and sentry still appeared to hover in the same plane
--// as the exchange. These three stepped encounter islands establish a real
--// launch pad, impact shelf, and sentinel dock. They are renderer-owned
--// set-dressing only: no island is part of the chart, lane, or collider model.
--// The low circular profiles deliberately echo the broken basalt forms in Furi
--// while preserving the route's Pulse steel/cyan/rose identity.
--
--// Irregular side shelves close the horizon and supply the tiered depth that
--// the comparator's arena gets from broad rock platforms. They stay outside
--// the three playable lanes and never become a second character or collision
--// surface. Staggering their height and yaw prevents a repeated fence pattern.
--
--// Explicit in-scene origin markers and tapered connector beams make the
--// projectile ownership inspectable: cyan fire leaves the runner's launch
--// muzzle, rose fire leaves the sentry's weapon plane, and both streams meet at
--// the same impact shelf. These are renderer-owned support nodes; gate events,
--// shields, score, and the authored chart remain the gameplay authority.
--
--// Readability accents are attached to the typed silhouettes, not substitutes
--// for them: a cool edge traces the runner's wing line, a warm return marker
--// identifies the sentry's fire lane, and a small impact cluster marks the
--// actual exchange midpoint. Each node is renderer-owned support geometry with
--// no gameplay or collision role.
--
--// The typed terminal sentry's authored gunmetal/obsidian shell is intentionally
+ // plates, but the player and sentry still appeared to hover in the same plane
+ // as the exchange. These three stepped encounter islands establish a real
+ // launch pad, impact shelf, and sentinel dock. They are renderer-owned
+@@ -672,14 +633,11 @@ const finaleArenaBuilders = [
+ // no gameplay or collision role.
+ 
+ // The typed terminal sentry's authored gunmetal/obsidian shell is intentionally
 -// dark, but at the exact review distance its shoulder mass can merge into the
--// reactor backplate. These small, non-colliding armour and reactor markers are
+ // reactor backplate. These small, non-colliding armour and reactor markers are
 -// attached to the sentry's review pose so its silhouette reads as a deliberate
--// combatant rather than a blocky black cut-out. The GLB remains the only primary
--// character; this is renderer-owned contour support, not a replacement body.
--
--// A few compact contour pieces reinforce the two typed silhouettes at the
+ // combatant rather than a blocky black cut-out. The GLB remains the only primary
+ // character; this is renderer-owned contour support, not a replacement body.
+ 
+ // A few compact contour pieces reinforce the two typed silhouettes at the
 -// frozen review distance.  The runner receives cyan engine collars and a
--// canopy spine; the sentry receives a rose sensor visor and paired weapon
--// rails.  These are explicitly support geometry, never a replacement body or
--// a second gameplay collider, so the typed GLBs remain the only named actors.
--
--// The final visual pass uses a purpose-built, three-plane encounter stage. The
--// old custom footprint prism was broad enough to become a single blank floor
--// under safe-basic; these smaller authored modules create a clear launch apron,
--// recessed exchange lane, and raised sentinel dock while leaving all timing and
--// collision authority in the existing chart/gate systems.
--
+ // canopy spine; the sentry receives a rose sensor visor and paired weapon
+ // rails.  These are explicitly support geometry, never a replacement body or
+ // a second gameplay collider, so the typed GLBs remain the only named actors.
+@@ -690,7 +648,6 @@ const finaleArenaBuilders = [
+ // recessed exchange lane, and raised sentinel dock while leaving all timing and
+ // collision authority in the existing chart/gate systems.
+ 
 -// Compact modeled packet cores replace the old review cylinders, whose
--// safe-basic orientation could rasterize as opaque cards or vertical spikes.
--// They are still renderer-owned three-dimensional scene nodes: the route
--// animates them between typed actors, while the gate chart remains the only
--// gameplay authority.
--
--// Each authored packet now leaves a short, dimmer 3D wake. The wakes are
--// intentionally separate nodes so their direction and depth can be inspected
--// in the exact frame; they are not CSS trails or gameplay/collision geometry.
--// A box is used here instead of a Y-axis capsule so the runtime can aim the
--// wake in the actual X/Z travel direction with one deterministic yaw. The
--// sphere packet remains the bright projectile core; this directional support
--// piece is what makes the two streams read as fire instead of a pile of dots.
--
--// A small radial burst at the exchange midpoint supplies an authored impact
--// hierarchy between the two typed actors. It remains a presentation cue only;
--// shield loss, graze, and chart timing continue to come from gateSystem.
--
--// Impact sparks are separate emissive scene nodes rather than a single bright
+ // safe-basic orientation could rasterize as opaque cards or vertical spikes.
+ // They are still renderer-owned three-dimensional scene nodes: the route
+ // animates them between typed actors, while the gate chart remains the only
+@@ -709,7 +666,6 @@ const finaleArenaBuilders = [
+ // shield loss, graze, and chart timing continue to come from gateSystem.
+ 
+ // Impact sparks are separate emissive scene nodes rather than a single bright
 -// card.  Their radial placement and pulse give the frozen capture a readable
--// contact moment between the opposing streams; they remain presentation-only
--// and never feed shield, gate, or score state.
--
--// Directional impact rays read more like a parry/explosion than a static ball
--// cluster.  They are short capsules with alternating cool/warm materials and
--// remain locked to the event impact plane; no ray participates in collision or
--// score resolution.
--
--// Event rings and a cross-shaped contact flash turn the latest gate result into
+ // contact moment between the opposing streams; they remain presentation-only
+ // and never feed shield, gate, or score state.
+ 
+@@ -719,8 +675,6 @@ const finaleArenaBuilders = [
+ // score resolution.
+ 
+ // Event rings and a cross-shaped contact flash turn the latest gate result into
 -// a legible in-scene beat. They are driven from `reviewCombatPulse` below (the
 -// same PulsePassEvent published to evidence), so a pass/graze/collision can be
--// inspected at the impact plane without inventing a second combat simulation.
--// Keep the public neonTunnel rails, wall washes, streaks, braces, sparks, and
--// fog, but omit its decorative circular torus bands. The route's thin
--// section-colored frames above own anticipation; thick concentric rings hid
--// the player lane and incoming obstacle at phone width.
- const tunnelBackdrop = prefabs.neonTunnel({ rings: 8 }).filter((node) => {
-   const name = "name" in node ? String(node.name ?? "") : "";
-   return !name.includes("true circular neon tunnel tube ring");
- });
--
- const pulseGame = createGame({
-   id: "showcase-pulse-tunnel",
-   target: "#app",
-@@ -884,23 +644,13 @@ const pulseScene = scene()
-       ...sparkBuilders
-     ])
-     .camera(camera.perspective( { position: [0, 0.72, 3.8], target: [0, 0.32, -8], fov: 50 }));
--
- const app = pulseGame.app;
- pulseGame.start();
--
--// ---- runtime handles ---------------------------------------------------------
--
--/**
-- * The concrete runtime handle behind app.nodes also exposes setMaterial for primitive
-- * nodes; RuntimeNodeHandleLike types it as optional-absent, so this structural
-- * extension names what the gate pre-flash actually calls.
-- */
- interface PulseNodeHandle extends RuntimeNodeHandleLike {
-   setMaterial(spec: AuraMaterialSpec): this;
- }
- const requireHandle = (id: string): RuntimeNodeHandleLike => app.nodes.require(id);
- const requireGateHandle = (id: string): PulseNodeHandle => app.nodes.require(id) as unknown as PulseNodeHandle;
--
- const fogPulse = requireHandle("pulse-fog-pulse");
- const hitFlash = requireHandle("pulse-hit-flash");
- const shipBody = requireHandle("pulse-ship-body");
-@@ -911,19 +661,8 @@ const finaleShieldVanes = finaleShieldVaneBuilders.map((_, index) => requireHand
- const finaleArenaShell = requireHandle(pulseArenaCandidateEnabled ? "pulse-finale-arena-candidate" : "pulse-finale-arena-shell");
- const finaleTerminalSentry = requireHandle("pulse-finale-terminal-sentry");
+ // inspected at the impact plane without inventing a second combat simulation.
+ // Keep the public neonTunnel rails, wall washes, streaks, braces, sparks, and
+ // fog, but omit its decorative circular torus bands. The route's thin
+@@ -740,7 +694,6 @@ const pulseGame = createGame({
+     continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
+   },
+   scenarios: pulseScenarios,
+-  evidence: {
+     schema: 1,
+     sections: async () => (await import("../evidence")).sections,
+     legacyGlobals: ["__PULSE_TUNNEL_EVIDENCE__", "__AURA3D_SHOWCASE_PULSE_TUNNEL__"]
+@@ -765,7 +718,6 @@ const pulseScene = scene()
+       finaleTerminalSentryBuilder,
+       ...finaleProjectileBuilders,
+       // A real Aura3D particle effect supplies the encounter's volumetric
+-      // discharge layer.  It is review-only set dressing around the typed
+       // runner/sentry exchange; route-owned pass events still determine the
+       // packet positions and impact state below.
+       ...( []),
+@@ -774,7 +726,6 @@ const pulseScene = scene()
+       effects.antiAlias({ mode: "fxaa" }),
+       effects.fog({ name: "pulse downbeat fog pulse", density:  0.065, color:  "#241044" })
+         .runtime(game.runtimeNode("pulse-fog-pulse", { tags: ["downbeat-fog"] })),
+-      // Review capture uses a deliberate three-plane lighting setup: neutral
+       // front key on the player, warm terminal key, and a cooler crown/rim on
+       // the deck and ribs. This is all renderer lighting—not an overlay—and
+       // preserves the same world/material language in the playable route.
+@@ -784,7 +735,6 @@ const pulseScene = scene()
+       // The V11 hulls use real dark panel materials; broad practicals keep
+       // those authored values visible instead of reducing both actors to
+       // black silhouettes under the reactor roof. These are local scene lights
+-      // (not material replacement or CSS) and are bounded to the review lens.
+       lights.point({ name: "review runner cyan fill", color: "#48e5ff", intensity:  1.15 }).position(-1.72, 1.72, 2.65),
+       lights.point({ name: "runner silhouette front key", color: "#d6edff", intensity:  0.7 }).position(-0.7, 1.72, 3.2),
+       lights.point({ name: "runner cyan underside bounce", color: "#48dfff", intensity:  0.7 }).position(-1.5, 0.42, 1.25),
+@@ -844,7 +794,6 @@ const pulseScene = scene()
+         targetMaxDimension: 2.408,
+         // V11's runner family now has a coherent textured hull, canopy, foils,
+         // turbine pods, pearl edge, and copper trim. Keep the complete typed
+-        // model in the review lens: suppressing the drive/chassis groups was
+         // appropriate to the earlier candidate, but with V11 it amputated the
+         // silhouette and made the player read as a dark fragment. The route's
+         // renderer-owned wake remains a support cue, never a substitute.
+@@ -913,16 +862,13 @@ const finaleTerminalSentry = requireHandle("pulse-finale-terminal-sentry");
  const finaleProjectiles = finaleProjectileBuilders.map((_, index) => requireHandle("pulse-finale-projectile-" + index));
--// The authored basalt arena is finale dressing, not a permanent spawn-room
--// floor.  Before this state gate the large concentric rings/perimeter were
+ // The authored basalt arena is finale dressing, not a permanent spawn-room
+ // floor.  Before this state gate the large concentric rings/perimeter were
 -// visible from the ready/intro frame, filling the route-primary probe and
--// obscuring the playable lane before any finale encounter existed.  Keep the
--// same renderer-owned modules and IDs, but make their visibility follow the
--// actual finale state just like the typed sentry and shield architecture.
+ // obscuring the playable lane before any finale encounter existed.  Keep the
+ // same renderer-owned modules and IDs, but make their visibility follow the
+ // actual finale state just like the typed sentry and shield architecture.
  const finaleArenaDressing: RuntimeNodeHandleLike[] = ! [];
  const rainHandles = rainBuilders.map((_, index) => requireHandle("pulse-rain-" + index));
 -// Preserve each typed asset's authored material separation in review capture.
--// Replacing all sub-materials with one finish collapsed the runner/sentry into
--// high-contrast slabs, hiding the primary silhouettes that the exact frame must
+ // Replacing all sub-materials with one finish collapsed the runner/sentry into
+ // high-contrast slabs, hiding the primary silhouettes that the exact frame must
 -// make legible. Review lighting now supplies the encounter palette while the
--// typed GLBs retain their own hull/optic/armor values.
+ // typed GLBs retain their own hull/optic/armor values.
  fogPulse.setVisible(false);
  hitFlash.setVisible(false);
- finaleBeacon.setVisible(false);
-@@ -933,14 +672,12 @@ finaleTerminalSentry.setVisible(false);
- for (const dressing of finaleArenaDressing) dressing.setVisible(false);
- for (const projectile of finaleProjectiles) projectile.setVisible(false);
- for (const rain of rainHandles) rain.setVisible(false);
--
- const hueHandles: Record<PulseSectionId, RuntimeNodeHandleLike[]> = {
-   intro: hueIds.intro.map(requireHandle),
-   build: hueIds.build.map(requireHandle),
-   drop: hueIds.drop.map(requireHandle),
-   finale: hueIds.finale.map(requireHandle)
- };
--
- interface GateSlotParts {
-   readonly top: PulseNodeHandle;
-   readonly bottom: PulseNodeHandle;
-@@ -956,7 +693,6 @@ for (const parts of gateSlots) {
-   parts.bottom.setVisible(false);
-   parts.core.setVisible(false);
- }
--
- const sparks: { handle: RuntimeNodeHandleLike; life: number; x: number; y: number }[] =
-   Array.from({ length: SPARK_POOL }, (_, index) => ({
-     handle: app.nodes.require(`pulse-spark-${index}`),
-@@ -965,11 +701,7 @@ const sparks: { handle: RuntimeNodeHandleLike; life: number; x: number; y: numbe
-     y: 0
+@@ -966,7 +912,6 @@ const sparks: { handle: RuntimeNodeHandleLike; life: number; x: number; y: numbe
    }));
  for (const spark of sparks) spark.handle.setVisible(false);
--
+ 
 -// ---- evidence ---------------------------------------------------------------
--
+ 
  type RunState = "ready" | "running" | "paused" | "summary";
--
- const evidence = {
-   schema: "pulse-tunnel-evidence/1.0",
-   appId: "showcase-pulse-tunnel",
-@@ -1046,40 +778,6 @@ const evidence = {
-   frameCount: 0,
-   diagnostics: undefined as unknown
- };
--
--
--/**
-- * Test-only fault injection for the sync spec: shifts the drift monitor's readings
-- * by ms milliseconds so the flip path is exercised end-to-end in a real browser
-- * without waiting for real hardware drift. Documented in the README.
-- */
+ 
+@@ -1053,30 +998,6 @@ const evidence = {
+  * by ms milliseconds so the flip path is exercised end-to-end in a real browser
+  * without waiting for real hardware drift. Documented in the README.
+  */
 -Object.defineProperty(window, "__PULSE_TUNNEL_TEST__", {
 -  value: {
 -    injectDrift(ms: number): void {
@@ -4744,83 +4526,61 @@ index daed99cfa..8be0afa79 100644
 -  configurable: true,
 -  writable: true
 -});
--
--// ---- run control ------------------------------------------------------------
--
- const hudElements = setupPulseHud(document.getElementById("panel"));
- const debugHud = isPulseDebugMode();
- let runState: RunState = "ready";
-@@ -1088,7 +786,6 @@ let hitFlashRemaining = 0;
- let runStartPending = false;
- const startupInputLatch = { left: false, right: false, jump: false, slide: false };
- let lastSection: PulseSectionId = "intro";
--
- function applySection(sectionId: PulseSectionId, announce: boolean): void {
-   lastSection = sectionId;
-   evidence.section = sectionId;
-@@ -1103,7 +800,6 @@ function applySection(sectionId: PulseSectionId, announce: boolean): void {
-     pulseJuice.fire("section-rise");
+ 
+ // ---- run control ------------------------------------------------------------
+ 
+@@ -1127,20 +1048,6 @@ async function beginRun(): Promise<void> {
    }
  }
--
- async function beginRun(): Promise<void> {
-   if (runState === "running" || runStartPending) return;
-   runStartPending = true;
-@@ -1126,7 +822,6 @@ async function beginRun(): Promise<void> {
-     runStartPending = false;
-   }
- }
--
- function endRun(reason: string): void {
-   runState = "summary";
-   evidence.finishedReason = reason;
-@@ -1141,7 +836,6 @@ function endRun(reason: string): void {
-   void tunnelAudio.sfx("runOver");
-   pulseJuice.fire("run-over");
- }
--
+ 
+-function endRun(reason: string): void {
+-  runState = "summary";
+-  evidence.finishedReason = reason;
+-  hitFlashRemaining = 0;
+-  hitFlash.setVisible(false);
+-  for (const parts of gateSlots) {
+-    parts.top.setVisible(false);
+-    parts.bottom.setVisible(false);
+-    parts.core.setVisible(false);
+-  }
+-  tunnelAudio.duckForSummary();
+-  void tunnelAudio.sfx("runOver");
+-  pulseJuice.fire("run-over");
+-}
+ 
  function restart(): void {
    player.reset();
-   styleSystem.reset();
-@@ -1182,7 +876,6 @@ function restart(): void {
-   fogPulse.setVisible(false);
-   void beginRun();
- }
--
- function onBeatReached(beat: number): void {
-   evidence.beatCount = Math.max(evidence.beatCount, beat);
-   const clampedBeat = Math.min(Math.max(beat, 0), PULSE_TOTAL_BEATS - 1);
-@@ -1193,7 +886,6 @@ function onBeatReached(beat: number): void {
-     fogPulse.setVisible(true);
-   }
- }
--
- function spawnSpark(sourceGateId: string): void {
-   const spark = sparks.find((entry) => entry.life <= 0) ?? sparks[0];
-   const gate = gateSystem.activeGates().find((candidate) => candidate.id === sourceGateId);
-@@ -1202,7 +894,6 @@ function spawnSpark(sourceGateId: string): void {
-   spark.life = 0.42;
+@@ -1203,26 +1110,6 @@ function spawnSpark(sourceGateId: string): void {
    spark.handle.setPosition(spark.x, spark.y, PULSE_PLAYER_Z + 0.25).setVisible(true);
  }
--
- function applyCollision(_event: PulsePassEvent): void {
-   evidence.stats.collisions += 1;
-   evidence.shields = Math.max(0, evidence.shields - 1);
-@@ -1223,333 +914,13 @@ function applyCollision(_event: PulsePassEvent): void {
-     pulseJuice.fire(shieldCue === "shieldHit" ? "shield-hit" : "shield-break", { position: [playerState.x, playerState.y + 0.42, PULSE_PLAYER_Z - 0.2] });
-   }
- }
--
--// ---- start gesture -----------------------------------------------------------
--
- const startGesture = (): void => {
-   if (runState === "ready") void beginRun();
- };
- window.addEventListener("keydown", startGesture);
- window.addEventListener("pointerdown", startGesture);
--
--// ---- frame loop --------------------------------------------------------------
--
+ 
+-function applyCollision(_event: PulsePassEvent): void {
+-  evidence.stats.collisions += 1;
+-  evidence.shields = Math.max(0, evidence.shields - 1);
+-  player.applyInvuln(INVULN_SECONDS);
+-  playerState = player.snapshot();
+-  if (!reducedMotion) {
+-    hitFlashRemaining = HIT_FLASH_SECONDS;
+-    hitFlash
+-      .setPosition(playerState.x, playerState.y + 0.42, PULSE_PLAYER_Z - 0.18)
+-      .setScale([0.42, 0.42, 0.18])
+-      .setVisible(true);
+-  }
+-  if (evidence.shields <= 0) {
+-    endRun("shields-exhausted");
+-  } else {
+-    const shieldCue = evidence.shields === 2 ? "shieldHit" : "shieldBreak";
+-    void tunnelAudio.sfx(shieldCue);
+-    pulseJuice.fire(shieldCue === "shieldHit" ? "shield-hit" : "shield-break", { position: [playerState.x, playerState.y + 0.42, PULSE_PLAYER_Z - 0.2] });
+-  }
+-}
+ 
+ // ---- start gesture -----------------------------------------------------------
+ 
+@@ -1234,321 +1121,11 @@ window.addEventListener("pointerdown", startGesture);
+ 
+ // ---- frame loop --------------------------------------------------------------
+ 
 -app.onFrame(() => {
 -  evidence.frameCount += 1;
 -  const nowMs = performance.now();
@@ -4895,11 +4655,11 @@ index daed99cfa..8be0afa79 100644
 -  renderWorld(dt);
 -  publish(styleSnapshot);
 -});
--
+ 
  let lastFrameTimeMs = performance.now();
--
+ 
  const slotFlashStates = new Map<number, boolean>();
--
+ 
 -function renderWorld(dt: number): void {
 -  if (reviewCombatPulse) {
 -    reviewCombatPulse.ageSeconds += dt;
@@ -5001,12 +4761,12 @@ index daed99cfa..8be0afa79 100644
 -      .setPosition( 0, ( 0.08) + Math.sin(pulse * 1.7) * 0.024,  -5.16)
 -      .setRotation(0, Math.PI + 0.18 + Math.sin(pulse * 1.1) * 0.025, 0)
 -      .setScale( [0.86, 0.86, 0.86]);
--
+-    
 -    const arenaPulse = 1 + (Math.sin(pulse * 3.2) * 0.5 + 0.5) * 0.08;
 -            // Keep the live pulse cadence in the typed sentry and shield architecture;
 -    // no abstract boss ring competes with the sentry silhouette.
 -    finaleProjectiles.forEach((projectile, index) => {
--
+-      
 -        // The default playable finale uses the same authored cause/effect
 -        // relationship as the review lens: cyan lances leave the runner,
 -        // converge on the active gate impact plane, and rose cutters return
@@ -5041,10 +4801,10 @@ index daed99cfa..8be0afa79 100644
 -        projectile.setVisible(true).setPosition(x, y, z)
 -          .setScale([0.082 + (localIndex % 2) * 0.012, 0.42, 0.082 + (localIndex % 2) * 0.012])
 -          .setRotation(Math.PI / 2, (targetX - sourceX) * 0.16, outgoing ? 0.05 : -0.05);
--
+-      
 -    });
--
--
+-    
+-                            
 -    rainHandles.forEach((rain, index) => {
 -      const column = index % 10;
 -      const depth = Math.floor(index / 10);
@@ -5087,7 +4847,7 @@ index daed99cfa..8be0afa79 100644
 -    // their broad telegraph slabs obscure the actor exchange in the exact art
 -    // frame. Keep those obstacles visible in the live route and HUD evidence;
 -    // suppress only their renderer geometry for this presentation lens.
--
+-    
 -    const gate = gates[slot];
 -    if (!gate) {
 -      parts.top.setVisible(false);
@@ -5136,84 +4896,48 @@ index daed99cfa..8be0afa79 100644
 -    if (hitFlashRemaining <= 0) hitFlash.setVisible(false);
 -  }
 -}
--
+ 
  function placePart(
    handle: RuntimeNodeHandleLike,
-   visible: boolean,
-@@ -1563,7 +934,6 @@ function placePart(
-   if (!visible) return;
-   handle.setPosition(x, y, z).setScale([scaleX, scaleY, 0.18]);
- }
--
- function publish(styleSnapshot?: ReturnType<typeof styleSystem.step>): void {
-   const snapshot = styleSnapshot ?? styleSystem.snapshot();
-   const sample = beatClock.sample();
-@@ -1648,14 +1018,11 @@ function publish(styleSnapshot?: ReturnType<typeof styleSystem.step>): void {
-     driftMs: sample.driftMs
-   });
- }
--
--/** Accepted-status alias: paused still renders every frame, so it reads "running". */
- function acceptedStatus(): string {
-   if (runState === "summary") return "completed";
-   if (runState === "running") return "running";
-   return "ready";
- }
--
- function hudMessage(): string {
-   switch (runState) {
-     case "ready":
-@@ -1670,12 +1037,6 @@ function hudMessage(): string {
-       return "";
-   }
- }
--
--/**
-- * The review HUD's second mission line is a compact, truthful state cue. It is
-- * derived only from the same section/run state that drives the chart and outcome
-- * evidence; it does not invent projectile hits or expose a cosmetic timer.
-- */
- function combatHudState(): string {
-   if (runState === "summary") {
-     return evidence.finishedReason === "shields-exhausted"
-@@ -1686,6 +1047,5 @@ function combatHudState(): string {
-   if (lastSection === "finale") return "EXCHANGE // LIVE FIRE";
-   return "APPROACH // NEXT GATE";
- }
--
+@@ -1577,9 +1154,7 @@ function publish(styleSnapshot?: ReturnType<typeof styleSystem.step>): void {
+   evidence.paused = pulseGame.session.paused;
+   const schedulerNow = sample.time;
+   // Keep the authored section and stem buses aligned even when a deterministic
+-  // evidence seek crosses several beat callbacks between rendered frames.
+   const schedulerSection = pulseSectionAtTime(schedulerNow);
+-  // Re-apply every frame so accelerated evidence seeks cannot leave the mixer
+   // ducked or stale when the section label has already advanced.
+   applySection(schedulerSection.id, false);
+   const activeIds = new Set(gateSystem.activeGates().map((gate) => gate.id));
+@@ -1676,16 +1251,6 @@ function hudMessage(): string {
+  * derived only from the same section/run state that drives the chart and outcome
+  * evidence; it does not invent projectile hits or expose a cosmetic timer.
+  */
+-function combatHudState(): string {
+-  if (runState === "summary") {
+-    return evidence.finishedReason === "shields-exhausted"
+-      ? "SENTINEL // SHIELDS LOST"
+-      : "SENTINEL // BREACHED";
+-  }
+-  if (runState === "paused") return "EXCHANGE // PAUSED";
+-  if (lastSection === "finale") return "EXCHANGE // LIVE FIRE";
+-  return "APPROACH // NEXT GATE";
+-}
+ 
  applySection("intro", false);
  publish();
 diff --git a/apps/showcase-pulse-tunnel/src/main.ts b/apps/showcase-pulse-tunnel/src/main.ts
-index 37b75ebeb..edf667cef 100644
+index 37b75ebeb..934a2b693 100644
 --- a/apps/showcase-pulse-tunnel/src/main.ts
 +++ b/apps/showcase-pulse-tunnel/src/main.ts
-@@ -1,14 +1,6 @@
--// apps/showcase-pulse-tunnel/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
--// Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-pulse-tunnel`
--// (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
+@@ -1,7 +1,6 @@
+ // apps/showcase-pulse-tunnel/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
+ // Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-pulse-tunnel`
+ // (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
 -// acceptance (§10 step 5).
  import { resolveQrFlags } from "@aura3d/engine/contracts";
--
+ 
  const ROUTE_FLAG = "A3D_QR_ROUTE_PULSE_TUNNEL" as const;
- const DEFAULT_ON = false;
--
--/** Accepts `?a3d-qr=…,route-pulse-tunnel` and `?a3d-qr=…,A3D_QR_ROUTE_PULSE_TUNNEL`.
-- *  Returns undefined when the flag is absent (CCR-14-2 replaces this helper). */
- function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
-   const raw = new URL(loc.href).searchParams.get("a3d-qr");
-   if (raw === null) return undefined;
-@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
-     ? true
-     : undefined;
- }
--
- const flags = resolveQrFlags({
-   url: location.href,
-   env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR },
-   options: { [ROUTE_FLAG]: routeFlagFromUrl(location, ROUTE_FLAG) ?? DEFAULT_ON }
- });
--
- void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
 diff --git a/apps/showcase-pulse-tunnel/src/v2/evidence/index.ts b/apps/showcase-pulse-tunnel/src/v2/evidence/index.ts
 deleted file mode 100644
 index b1bb603d2..000000000
