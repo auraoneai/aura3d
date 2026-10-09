@@ -128,29 +128,22 @@ test("agent docs hello-world scene renders the typed robot asset", async ({ page
         requestAnimationFrame(() => requestAnimationFrame(() => resolvePromise()));
       });
     }
-    const element = [...document.querySelectorAll("canvas")]
-      .find((candidate) => (candidate.getContext("webgl2") ?? candidate.getContext("webgl")) !== null);
-    const gl = element ? (element.getContext("webgl2") ?? element.getContext("webgl")) : null;
-    if (!gl) return { error: "no-webgl-context", pngBase64: "", centerObjectPixels: 0, assetReady: false, uniqueBuckets: 0 };
-    // readPixels reads the currently bound framebuffer: rebind the default so
-    // a renderer that ended its frame on an offscreen target still yields the
-    // canvas backbuffer.
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    const width = gl.drawingBufferWidth;
-    const height = gl.drawingBufferHeight;
-    const pixels = new Uint8Array(width * height * 4);
-    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    // class-(b) readback -> app.output.capture() (C-05). The returned bitmap
+    // is already top-down, so no readPixels row flip is needed.
+    const liveApp = apps[0] as
+      | (LiveApp & { output?: { capture(o: { type: "image-bitmap" }): Promise<ImageBitmap> } })
+      | undefined;
+    const bitmap = await liveApp?.output?.capture({ type: "image-bitmap" });
+    if (!bitmap) return { error: "no-app-capture", pngBase64: "", centerObjectPixels: 0, assetReady: false, uniqueBuckets: 0 };
+    const width = bitmap.width;
+    const height = bitmap.height;
     const target = document.createElement("canvas");
     target.width = width;
     target.height = height;
     const ctx = target.getContext("2d");
     if (!ctx) return { error: "missing-2d", pngBase64: "", centerObjectPixels: 0, assetReady: false, uniqueBuckets: 0 };
-    const image = ctx.createImageData(width, height);
-    // readPixels rows run bottom-up; flip into top-down image space.
-    for (let y = 0; y < height; y += 1) {
-      image.data.set(pixels.subarray((height - 1 - y) * width * 4, (height - y) * width * 4), y * width * 4);
-    }
-    ctx.putImageData(image, 0, 0);
+    ctx.drawImage(bitmap, 0, 0);
+    const image = ctx.getImageData(0, 0, width, height);
     const buckets = new Set<string>();
     let centerObjectPixels = 0;
     for (let y = 0; y < target.height; y += 4) {
