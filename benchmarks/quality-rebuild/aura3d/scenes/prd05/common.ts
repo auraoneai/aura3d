@@ -17,7 +17,7 @@ import {
   material,
   resolveQrFlags,
   type AuraApp,
-  type AuraSceneNode
+  type AuraSceneSnapshot
 } from "@aura3d/engine";
 import { setTypedGLBActorQrFlags } from "@aura3d/engine/lanes";
 import { setRendererQrFlags } from "@aura3d/rendering";
@@ -37,45 +37,42 @@ class CapabilityLog {
   }
 }
 
+function prd05ModelDefinition(entry: Prd05AssetEntry) {
+  return {
+    type: "model" as const,
+    format: "glb",
+    url: assetUrl(entry),
+    hash: entry.sha256,
+    metadata: { license: entry.provenance, sourcePath: entry.source, provenance: { profile: entry.profile } }
+  };
+}
+
 const auraModelAssets = defineAuraAssets(
-  Object.fromEntries(
-    Object.values(prd05Assets).map((entry) => [
-      entry.id,
-      {
-        type: "model" as const,
-        format: "glb",
-        url: assetUrl(entry),
-        hash: entry.sha256,
-        metadata: { license: entry.provenance, sourcePath: entry.source, profile: entry.profile }
-      }
-    ])
-  ) as never
+  Object.fromEntries(Object.values(prd05Assets).map((entry) => [entry.id, prd05ModelDefinition(entry)]))
 );
 
-const auraHdriAssets = defineAuraAssets(
-  Object.fromEntries(
-    Object.values(hdriAssets).map((entry) => [
-      entry.id,
-      {
-        type: "texture" as const,
-        format: "hdr",
-        url: `/${entry.repoPath}`,
-        hash: entry.sha256,
-        metadata: { license: entry.provenance, sourcePath: entry.repoPath }
-      }
-    ])
-  ) as never
-);
+function hdriDefinition(id: keyof typeof hdriAssets) {
+  const entry = hdriAssets[id];
+  return { type: "texture" as const, format: "hdr", url: `/${entry.repoPath}`, hash: entry.sha256, metadata: { license: entry.provenance, sourcePath: entry.repoPath } };
+}
 
-function buildScene(spec: Prd05SceneSpec, log: CapabilityLog): AuraSceneNode {
-  const built = scene(spec.id).background(
-    spec.background.kind === "hdri"
-      ? environments.hdri({ hdri: (auraHdriAssets as Record<string, never>)[spec.background.hdri], intensity: spec.background.intensity, fallback: spec.background.fallbackColor })
-      : environments.color({ color: spec.background.color })
-  );
-  built.add(
+const auraHdriAssets = defineAuraAssets({
+  studioSmall08: hdriDefinition("studioSmall08"),
+  autumnFieldPuresky: hdriDefinition("autumnFieldPuresky"),
+  kloppenheim06Puresky: hdriDefinition("kloppenheim06Puresky")
+});
+
+function buildScene(spec: Prd05SceneSpec, log: CapabilityLog): AuraSceneSnapshot {
+  const built = scene();
+  if (spec.background.kind === "hdri") {
+    built.background(spec.background.fallbackColor);
+    log.add("hdri-background", "partial", `scene().background() accepts only a color; rendered solid ${spec.background.fallbackColor} under the ${spec.background.hdri} IBL environment.`);
+    built.add(environments.hdri({ texture: auraHdriAssets[spec.background.hdri], intensity: spec.background.intensity }));
+  } else {
+    built.background(spec.background.color);
+  }
+  built.camera(
     camera.perspective({
-      name: "main",
       position: spec.camera.position,
       target: spec.camera.target,
       fov: spec.camera.fov,
@@ -93,7 +90,7 @@ function buildScene(spec: Prd05SceneSpec, log: CapabilityLog): AuraSceneNode {
           intensity: light.intensity,
           position: light.position,
           target: light.target,
-          castShadow: light.castShadow
+          shadow: light.castShadow
         })
       );
     } else {
@@ -113,7 +110,7 @@ function buildScene(spec: Prd05SceneSpec, log: CapabilityLog): AuraSceneNode {
       );
       continue;
     }
-    const asset = (auraModelAssets as Record<string, never>)[object.asset];
+    const asset = auraModelAssets[object.asset];
     let node = model(asset, {
       name: object.name,
       scaleMode: "world",
@@ -145,7 +142,7 @@ export async function runPrd05AuraScene(spec: Prd05SceneSpec, host: HTMLElement,
 
   const app: AuraApp = createAuraApp(host, {
     scene: buildScene(spec, log),
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+    renderer: { qualityProfile: "production" },
     pixelRatio: spec.resolution.devicePixelRatio,
     ...(qrFlags.length > 0 ? { qualityRebuild: { flags: [...qrFlags] } } : {}),
     resize: false,
