@@ -241,3 +241,4 @@ Ledger rows filed as `qr-request` + `to:prdNN` issues; earlier block filed by #4
 | 06-S4 C-18/C-19 browser contract specs (tests/browser/contracts/ is lane-15-owned) | #688 |
 | Baseline tools/* tsc red blocking every PR's unit check (quarantined-module imports) | #744 |
 | Baseline lit-scene pack fail — retarget.worker.ts missing from engine dist tarball (bundle-size red on every PR) | #746 |
+| Baseline Skills-gate scaffold-smoke red (animation-studio uniqueBuckets / episode-builder route 30s timeout / character-controller subjectBounds.y 0.36) | #747 |
