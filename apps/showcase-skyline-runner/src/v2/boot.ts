@@ -36,8 +36,8 @@ import { skylineLighting } from "./scene/lighting";
 import { SKYLINE_BG } from "./scene/materials";
 import { wireSkylineFx } from "./scene/fx";
 import { HERO_NODE_ID, LIFT_CARD_NODE_IDS, skylineWorldNodes } from "./scene/world";
-import { publishSkylineEvidence } from "./evidence";
-import { applySkylineScenario, parseSkylineScenario, skylineScenarioLook } from "./scenarios";
+import { publishSkylineEvidence } from "../evidence";
+import { applySkylineScenario, parseSkylineScenario, skylineScenarioLook } from "../scenarios";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_SKYLINE_RUNNER" as const;
 

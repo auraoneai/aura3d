@@ -11,7 +11,8 @@
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
-    "@aura3d/engine": "workspace:*"
+    "@aura3d/engine": "workspace:*",
+    "@aura3d/game": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.8.3",

@@ -1,6 +1,6 @@
-import { SKYLINE_LEVEL_ACTS } from "../gameplay/level-layout";
-import { resolveSkylineAct } from "../gameplay/act-palette";
-import { SKYLINE_DISTRICTS, resolveSkylineDistrict } from "../gameplay/districts";
+import { SKYLINE_LEVEL_ACTS } from "./level-layout";
+import { resolveSkylineAct } from "./act-palette";
+import { SKYLINE_DISTRICTS, resolveSkylineDistrict } from "./districts";
 
 export interface SkylineHudSnapshot {
   readonly score: number;

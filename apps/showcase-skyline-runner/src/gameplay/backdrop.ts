@@ -17,7 +17,7 @@ import {
   type AuraMaterialSpec,
   type AuraRootLodLevelSpec
 } from "@aura3d/engine";
-import type { SkylineDistrictAnchor } from "../gameplay/level";
+import type { SkylineDistrictAnchor } from "./level";
 
 export type SkylineBackdropBand = "far" | "near";
 

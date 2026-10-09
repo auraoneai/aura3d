@@ -17,7 +17,7 @@
  * identical x-timeline without any DOM or renderer.
  */
 import { game } from "@aura3d/engine";
-import { createSkylineLevel } from "../gameplay/level";
+import { createSkylineLevel } from "./level";
 
 /** Fixed simulation tick for recording and playback (60 Hz, matching the proof). */
 export const SKYLINE_GHOST_TICK_SECONDS = 1 / 60;

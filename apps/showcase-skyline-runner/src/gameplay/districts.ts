@@ -3,7 +3,7 @@ import {
   SKYLINE_SECTION_COUNT,
   SKYLINE_SECTION_LAYOUTS,
   SKYLINE_SECTION_STRIDE
-} from "../gameplay/level-layout";
+} from "./level-layout";
 
 export type SkylineDistrictId = "steel-dawn" | "hanging-grove" | "crown-heights";
 

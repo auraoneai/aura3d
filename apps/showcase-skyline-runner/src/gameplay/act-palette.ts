@@ -4,8 +4,8 @@ import {
   SKYLINE_SECTION_COUNT,
   SKYLINE_SECTION_LAYOUTS,
   SKYLINE_SECTION_STRIDE
-} from "../gameplay/level-layout";
-import { skylineDistrictForAct, type SkylineDistrictId } from "../gameplay/districts";
+} from "./level-layout";
+import { skylineDistrictForAct, type SkylineDistrictId } from "./districts";
 
 export interface SkylineActPalette {
   readonly actIndex: number;

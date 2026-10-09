@@ -4,7 +4,7 @@ import {
   SKYLINE_MAX_TARGET_PLAYABLE_SECONDS,
   SKYLINE_MIN_PLAYABLE_SECONDS,
   createSkylineLevel
-} from "../gameplay/level";
+} from "./level";
 
 /**
  * Deterministic responsive-course acceptance proof for the five-act Level 1.

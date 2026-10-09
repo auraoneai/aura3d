@@ -28,8 +28,8 @@ import {
   SKYLINE_SECTION_COUNT,
   SKYLINE_SECTION_LAYOUTS,
   SKYLINE_SECTION_STRIDE
-} from "../gameplay/level-layout";
-import { resolveSkylineDistrictIndex, skylineDistrictForAct, type SkylineDistrictId } from "../gameplay/districts";
+} from "./level-layout";
+import { resolveSkylineDistrictIndex, skylineDistrictForAct, type SkylineDistrictId } from "./districts";
 export {
   SKYLINE_LEVEL_ACTS,
   SKYLINE_SECTION_COUNT,
@@ -37,7 +37,7 @@ export {
   SKYLINE_SECTION_STRIDE,
   SKYLINE_TERRAIN_PROFILES,
   skylineTerrainWarp
-} from "../gameplay/level-layout";
+} from "./level-layout";
 
 export const SKYLINE_AUTHORED_PLAYABLE_SECONDS = 95;
 export const SKYLINE_MIN_PLAYABLE_SECONDS = 70;
@@ -227,7 +227,7 @@ export const skylineMotion = solvePlatformerMotion(extendedPlatforms, {
  * untouched by construction.
  * ---------------------------------------------------------------------------
  */
-import { SKYLINE_TERRAIN_PROFILES } from "../gameplay/level-layout";
+import { SKYLINE_TERRAIN_PROFILES } from "./level-layout";
 
 /** Sections where the act changes while running right (the act-gate sites). */
 export interface SkylineActGate {
