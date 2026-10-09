@@ -293,6 +293,14 @@ export interface AuraCliLookDevRecordDetail extends Omit<AuraCliLookDevRecord, "
 export interface AuraCliAudioMetadata {
   readonly loudnessLufs?: number;
   readonly truePeakDb?: number;
+  /**
+   * `assets add` decoded the file and ran BS.1770 — `loudnessLufs` stays
+   * undefined for sub-block audio (<400 ms), where integrated loudness is
+   * legitimately unmeasurable (same `lufs: null` convention as `sfx admit`
+   * pack manifests). Release validation requires this flag OR a value, so a
+   * measured short blip is not rejected as unmeasured.
+   */
+  readonly loudnessMeasured?: boolean;
   readonly author?: string;
   readonly sourceUrl?: string;
 }

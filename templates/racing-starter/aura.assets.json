@@ -59,6 +59,607 @@
       "license": "CC-BY-4.0",
       "author": "Puendiz",
       "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-034/2fc89fcd8c034bc9ba05eac24c9bf537.glb"
+    },
+    {
+      "id": "uiClickKenney",
+      "type": "audio",
+      "format": "ogg",
+      "source": "public/aura-assets/uiClickKenney.ccfb7fa0.ogg",
+      "outputPath": "public/aura-assets/uiClickKenney.ccfb7fa0.ogg",
+      "url": "/aura-assets/uiClickKenney.ccfb7fa0.ogg",
+      "hash": "sha256-ccfb7fa0cccdd9faec0eb16033c732b1e308d139d80f799161495d58f7adcdb9",
+      "sizeBytes": 4876,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/uiClickKenney.ccfb7fa0.ogg",
+        "sourcePage": "https://kenney.nl/assets/interface-sounds",
+        "downloadUrl": "https://kenney.nl/media/pages/assets/interface-sounds/fa43c1dd4d-1677589452/kenney_interface-sounds.zip",
+        "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+        "license": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Kenney",
+        "retrievedAt": "2026-10-09",
+        "checkedAt": "2026-10-09"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/aura-assets/uiClickKenney.thumb.svg",
+      "quality": "release",
+      "role": "prop",
+      "audio": {
+        "loudnessMeasured": true,
+        "truePeakDb": -1.3181407999592696,
+        "author": "Kenney",
+        "sourceUrl": "https://kenney.nl/assets/interface-sounds"
+      },
+      "warnings": []
+    },
+    {
+      "id": "uiConfirmKenney",
+      "type": "audio",
+      "format": "ogg",
+      "source": "public/aura-assets/uiConfirmKenney.06356470.ogg",
+      "outputPath": "public/aura-assets/uiConfirmKenney.06356470.ogg",
+      "url": "/aura-assets/uiConfirmKenney.06356470.ogg",
+      "hash": "sha256-063564703b6094d70718a3e787a55cc9141611e4ecd6b6637f8828f79b4a8c3a",
+      "sizeBytes": 8968,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/uiConfirmKenney.06356470.ogg",
+        "sourcePage": "https://kenney.nl/assets/interface-sounds",
+        "downloadUrl": "https://kenney.nl/media/pages/assets/interface-sounds/fa43c1dd4d-1677589452/kenney_interface-sounds.zip",
+        "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+        "license": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Kenney",
+        "retrievedAt": "2026-10-09",
+        "checkedAt": "2026-10-09"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/aura-assets/uiConfirmKenney.thumb.svg",
+      "quality": "release",
+      "role": "prop",
+      "audio": {
+        "loudnessMeasured": true,
+        "truePeakDb": -0.9223087399395492,
+        "author": "Kenney",
+        "sourceUrl": "https://kenney.nl/assets/interface-sounds"
+      },
+      "warnings": []
+    },
+    {
+      "id": "uiErrorKenney",
+      "type": "audio",
+      "format": "ogg",
+      "source": "public/aura-assets/uiErrorKenney.46e67425.ogg",
+      "outputPath": "public/aura-assets/uiErrorKenney.46e67425.ogg",
+      "url": "/aura-assets/uiErrorKenney.46e67425.ogg",
+      "hash": "sha256-46e67425d16339772e8d328fb36a49426c9467418686e11beeb71ff84b0f6433",
+      "sizeBytes": 7373,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/uiErrorKenney.46e67425.ogg",
+        "sourcePage": "https://kenney.nl/assets/interface-sounds",
+        "downloadUrl": "https://kenney.nl/media/pages/assets/interface-sounds/fa43c1dd4d-1677589452/kenney_interface-sounds.zip",
+        "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+        "license": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Kenney",
+        "retrievedAt": "2026-10-09",
+        "checkedAt": "2026-10-09"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/aura-assets/uiErrorKenney.thumb.svg",
+      "quality": "release",
+      "role": "prop",
+      "audio": {
+        "loudnessMeasured": true,
+        "truePeakDb": 0.6937933459286107,
+        "author": "Kenney",
+        "sourceUrl": "https://kenney.nl/assets/interface-sounds"
+      },
+      "warnings": []
+    },
+    {
+      "id": "uiSelectKenney",
+      "type": "audio",
+      "format": "ogg",
+      "source": "public/aura-assets/uiSelectKenney.aec0c31e.ogg",
+      "outputPath": "public/aura-assets/uiSelectKenney.aec0c31e.ogg",
+      "url": "/aura-assets/uiSelectKenney.aec0c31e.ogg",
+      "hash": "sha256-aec0c31ea934a35936ae0d2ab8fac8123c93aa5647f935853a58dbaf90278b7a",
+      "sizeBytes": 5468,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/uiSelectKenney.aec0c31e.ogg",
+        "sourcePage": "https://kenney.nl/assets/interface-sounds",
+        "downloadUrl": "https://kenney.nl/media/pages/assets/interface-sounds/fa43c1dd4d-1677589452/kenney_interface-sounds.zip",
+        "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+        "license": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Kenney",
+        "retrievedAt": "2026-10-09",
+        "checkedAt": "2026-10-09"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/aura-assets/uiSelectKenney.thumb.svg",
+      "quality": "release",
+      "role": "prop",
+      "audio": {
+        "loudnessMeasured": true,
+        "truePeakDb": -1.1004067868687353,
+        "author": "Kenney",
+        "sourceUrl": "https://kenney.nl/assets/interface-sounds"
+      },
+      "warnings": []
+    },
+    {
+      "id": "uiSwitchKenney",
+      "type": "audio",
+      "format": "ogg",
+      "source": "public/aura-assets/uiSwitchKenney.3b74efad.ogg",
+      "outputPath": "public/aura-assets/uiSwitchKenney.3b74efad.ogg",
+      "url": "/aura-assets/uiSwitchKenney.3b74efad.ogg",
+      "hash": "sha256-3b74efad87f1e69dbd1d05c5ad952ab90859b5a3d11da6ec5bd79b4f03b42afa",
+      "sizeBytes": 6753,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/uiSwitchKenney.3b74efad.ogg",
+        "sourcePage": "https://kenney.nl/assets/interface-sounds",
+        "downloadUrl": "https://kenney.nl/media/pages/assets/interface-sounds/fa43c1dd4d-1677589452/kenney_interface-sounds.zip",
+        "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+        "license": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Kenney",
+        "retrievedAt": "2026-10-09",
+        "checkedAt": "2026-10-09"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/aura-assets/uiSwitchKenney.thumb.svg",
+      "quality": "release",
+      "role": "prop",
+      "audio": {
+        "loudnessMeasured": true,
+        "loudnessLufs": -19.70788243363685,
+        "truePeakDb": -0.9439144088325485,
+        "author": "Kenney",
+        "sourceUrl": "https://kenney.nl/assets/interface-sounds"
+      },
+      "warnings": []
+    },
+    {
+      "id": "uiToggleKenney",
+      "type": "audio",
+      "format": "ogg",
+      "source": "public/aura-assets/uiToggleKenney.ca1d2dde.ogg",
+      "outputPath": "public/aura-assets/uiToggleKenney.ca1d2dde.ogg",
+      "url": "/aura-assets/uiToggleKenney.ca1d2dde.ogg",
+      "hash": "sha256-ca1d2dde5f0b286abac4f070e23edab8f30927c8a533665cdf2ac6492a415e49",
+      "sizeBytes": 7369,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/uiToggleKenney.ca1d2dde.ogg",
+        "sourcePage": "https://kenney.nl/assets/interface-sounds",
+        "downloadUrl": "https://kenney.nl/media/pages/assets/interface-sounds/fa43c1dd4d-1677589452/kenney_interface-sounds.zip",
+        "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+        "license": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Kenney",
+        "retrievedAt": "2026-10-09",
+        "checkedAt": "2026-10-09"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/aura-assets/uiToggleKenney.thumb.svg",
+      "quality": "release",
+      "role": "prop",
+      "audio": {
+        "loudnessMeasured": true,
+        "truePeakDb": -0.9184622017423211,
+        "author": "Kenney",
+        "sourceUrl": "https://kenney.nl/assets/interface-sounds"
+      },
+      "warnings": []
     }
   ]
 }
