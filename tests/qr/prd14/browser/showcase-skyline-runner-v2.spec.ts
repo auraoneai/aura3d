@@ -17,6 +17,9 @@ import { decodePngAsRgba } from "../unit/helpers/png";
 
 const APP_DIR = "showcase-skyline-runner";
 const ROUTE_FLAG = "route-skyline-runner";
+// T1.10: v2 specs carry the same engine list the URL contract uses
+// (boot.ts qualityRebuild.flags + games.json qrFlags).
+const ENGINE_FLAGS = "game,camera,lighting,post,materials,vfx,world,tiers,looks";
 const EVIDENCE = `window.__AURA3D_GAME_EVIDENCE__?.["${APP_DIR}"]`;
 
 const gamesJson = JSON.parse(
@@ -59,7 +62,7 @@ test.describe("showcase-skyline-runner v2 (T2.6)", () => {
     const errors = watchConsole(page);
     const { server, url } = await serve(root!);
     try {
-      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG}&autorun=1`);
+      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&autorun=1`);
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       const state = await page.evaluate(() =>
@@ -118,7 +121,7 @@ test.describe("showcase-skyline-runner v2 (T2.6)", () => {
     const errors = watchConsole(page);
     const { server, url } = await serve(root!);
     try {
-      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG}`);
+      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       const startX = await page.evaluate(() => eval(EVIDENCE + ".player.x") as number);
@@ -141,7 +144,7 @@ test.describe("showcase-skyline-runner v2 (T2.6)", () => {
     const errors = watchConsole(page);
     const { server, url } = await serve(root!);
     try {
-      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG}`);
+      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       const r = await page.evaluate(() => {
@@ -181,7 +184,7 @@ test.describe("showcase-skyline-runner v2 (T2.6)", () => {
     try {
       const looks: Record<string, unknown>[] = [];
       for (const scenario of ["mid-run", "summit"]) {
-        await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG}&scenario=${scenario}`);
+        await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&scenario=${scenario}`);
         await expect.poll(() => page.evaluate(() =>
           (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
         looks.push(await page.evaluate(() => eval(EVIDENCE + ".appliedLook")));

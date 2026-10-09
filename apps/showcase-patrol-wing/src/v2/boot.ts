@@ -9,8 +9,7 @@
 // modified; audio plays through the legacy cue controller on admitted sfx
 // ids until C-25 lands (stand-in R-14-15).
 import { game as engineGame, scene, type AuraCameraPose, type GameInputController } from "@aura3d/engine";
-import { postPresets } from "@aura3d/engine/contracts";
-import { createGame, type Game } from "@aura3d/game";
+import { createGame, type Game, lookManifest } from "@aura3d/game";
 import {
   FlightModel,
   type FlightInput,
@@ -194,7 +193,13 @@ const game = createGame({
     crash: { hitStopMs: 80, trauma: 0.45 },
     touchdown: { hitStopMs: 40, trauma: 0.1 }
   },
-  qualityRebuild: { flags: [ROUTE_FLAG] }
+  qualityRebuild: {
+    // FLAG-1: arm the engine features this route uses — `game` selects the
+    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
+    // art/direction.ts sections. `route_patrol_wing` uses the engine-parseable
+    // underscore form (URL/dispatch form is `route-patrol-wing`).
+    flags: ["route_patrol_wing", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+  }
 });
 
 const fx = wirePatrolFx(game);
@@ -1015,8 +1020,7 @@ void game.ready().then(() => {
   game.app.camera?.use?.(rig, { blend: 0.4 });
   // C-05 output: dusk coastal grade; post presets stub {} until the registry
   // ships real output profiles.
-  void postPresets["cinematic-film"];
-  game.app.setOutput?.({ exposure: Math.pow(2, direction.lighting.exposureEV) });
+    game.app.setOutput?.({ preset: "cinematic-film",  exposure: Math.pow(2, direction.lighting.exposureEV) });
   const firstFrameAt = performance.now();
   (window as unknown as Record<string, unknown>).__AURA3D_GAME__ = {
     route: game.id,
@@ -1035,15 +1039,8 @@ publishPatrolEvidence({
   run: runSnapshot,
   lastRigPose: () => lastPose,
   sceneSwaps: () => sceneSwaps,
-  appliedLook: {
-    key: direction.lighting.key,
-    fill: direction.lighting.fill,
-    practicals: direction.lighting.practicals,
-    environment: direction.lighting.environment,
-    exposureEV: direction.lighting.exposureEV,
-    preset: "cinematic-film",
-    rigId: "patrol-wing.flight"
-  },
+  // T2.2-post: appliedLook derives from the C-31 runtime manifest.
+  appliedLook: { ...lookManifest(game.lookSource()), preset: "cinematic-film" },
   frameCount: () => frame,
   bootedAtMs,
   audioCueLog: () => audioCueLog,

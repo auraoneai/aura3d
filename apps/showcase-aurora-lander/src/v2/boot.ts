@@ -8,8 +8,7 @@
 // prediction/ghost) are unchanged; audio plays through the legacy cue
 // controller until C-25 lands (standIn R-14-15).
 import { game as engineGame, createMeshSurfaceQuery, scene, type AuraCameraPose, type GameInputController, type MeshSurfaceQuery, type SurfaceSample } from "@aura3d/engine";
-import { postPresets } from "@aura3d/engine/contracts";
-import { createGame, type Game } from "@aura3d/game";
+import { createGame, type Game, lookManifest } from "@aura3d/game";
 import { SITES, campaignScore, type LanderSite } from "../gameplay/sites";
 import { sampleGridHeight, type TerrainField } from "../gameplay/terrain";
 import {
@@ -178,7 +177,13 @@ const game = createGame({
     "crash": { hitStopMs: 60, trauma: 0.34 },
     "site-clear": { trauma: 0.18 }
   },
-  qualityRebuild: { flags: [ROUTE_FLAG] }
+  qualityRebuild: {
+    // FLAG-1: arm the engine features this route uses — `game` selects the
+    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
+    // art/direction.ts sections. `route_aurora_lander` uses the engine-parseable
+    // underscore form (URL/dispatch form is `route-aurora-lander`).
+    flags: ["route_aurora_lander", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+  }
 });
 
 const fx = wireAuroraFx(game);
@@ -907,7 +912,9 @@ function b_pose(): AuraCameraPose | null {
   return game.app.camera?.evidence?.().pose ?? null;
 }
 
+// T2.2-post: appliedLook derives from the C-31 runtime manifest.
 const appliedLook: Record<string, unknown> = {
+  ...lookManifest(game.lookSource()),
   direction: direction.id,
   rig: "aurora-lander.altitude",
   key: "moonlight 6500K directional (shadowed)",
@@ -977,8 +984,7 @@ void game.ready().then(() => {
   game.app.camera?.use?.(createAuroraRig(rigState), { blend: 0.4 });
   // C-05 output: night-ops grade; post presets stub {} until the registry
   // ships real output profiles.
-  void postPresets["space"];
-  game.app.setOutput?.({ exposure: Math.pow(2, direction.lighting.exposureEV) });
+    game.app.setOutput?.({ preset: "space",  exposure: Math.pow(2, direction.lighting.exposureEV) });
   const firstFrameAt = performance.now();
   (window as unknown as Record<string, unknown>).__AURA3D_GAME__ = {
     route: game.id,

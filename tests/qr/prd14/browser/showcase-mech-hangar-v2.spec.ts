@@ -18,6 +18,9 @@ import { decodePngAsRgba } from "../unit/helpers/png";
 
 const APP_DIR = "showcase-mech-hangar";
 const ROUTE_FLAG = "route-mech-hangar";
+// T1.10: v2 specs carry the same engine list the URL contract uses
+// (boot.ts qualityRebuild.flags + games.json qrFlags).
+const ENGINE_FLAGS = "game,camera,lighting,post,materials,vfx,world,tiers,looks";
 const EVIDENCE = `window.__AURA3D_GAME_EVIDENCE__?.["${APP_DIR}"]`;
 
 const gamesJson = JSON.parse(
@@ -60,7 +63,7 @@ test.describe("showcase-mech-hangar v2 (T2.6)", () => {
     const errors = watchConsole(page);
     const { server, url } = await serve(root!);
     try {
-      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG}&autorun=1`);
+      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&autorun=1`);
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       const state = await page.evaluate(() =>
@@ -120,7 +123,7 @@ test.describe("showcase-mech-hangar v2 (T2.6)", () => {
     const errors = watchConsole(page);
     const { server, url } = await serve(root!);
     try {
-      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG}`);
+      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
 
@@ -158,7 +161,7 @@ test.describe("showcase-mech-hangar v2 (T2.6)", () => {
     const errors = watchConsole(page);
     const { server, url } = await serve(root!);
     try {
-      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG}`);
+      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       const r = await page.evaluate(() => {
@@ -217,7 +220,7 @@ test.describe("showcase-mech-hangar v2 (T2.6)", () => {
     const { server, url } = await serve(root!);
     try {
       for (const scenario of ["arena", "autorun"]) {
-        await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG}&scenario=${scenario}`);
+        await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&scenario=${scenario}`);
         await expect.poll(() => page.evaluate(() =>
           (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
         const look = await page.evaluate(() => {

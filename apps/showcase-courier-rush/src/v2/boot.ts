@@ -7,8 +7,7 @@
 import {
   createGameArcadeVehicle, game as engineGame, scene
 } from "@aura3d/engine";
-import { postPresets } from "@aura3d/engine/contracts";
-import { createGame, type Game } from "@aura3d/game";
+import { createGame, type Game, lookManifest } from "@aura3d/game";
 import { assets } from "../../../../src/aura-assets";
 import { buildPropColliders, type PropCollider, type ZoneSite } from "../legacy/city";
 import {
@@ -131,7 +130,13 @@ const game = createGame({
     "shift-clear": { trauma: 0.25 },
     "shift-fail": { trauma: 0.2, hitStopMs: 50 }
   },
-  qualityRebuild: { flags: [ROUTE_FLAG] }
+  qualityRebuild: {
+    // FLAG-1: arm the engine features this route uses — `game` selects the
+    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
+    // art/direction.ts sections. `route_courier_rush` uses the engine-parseable
+    // underscore form (URL/dispatch form is `route-courier-rush`).
+    flags: ["route_courier_rush", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+  }
 });
 
 // ------------------------------------------------------------- sim state -----
@@ -406,7 +411,9 @@ game.app.onFrame?.(({ dt: rawDt }) => {
 
 // ------------------------------------------------------------- evidence ------
 
+// T2.2-post: appliedLook derives from the C-31 runtime manifest.
 const appliedLook: Record<string, unknown> = Object.freeze({
+  ...lookManifest(game.lookSource()),
   postPreset: "daylight-outdoor",
   exposureEV: direction.lighting.exposureEV,
   hdri: direction.lighting.environment.hdri,
@@ -448,8 +455,7 @@ void game.ready().then(() => {
   game.app.camera?.use?.(createCourierRig(rigState), { blend: 0.4 });
   // C-05 output: daylight-outdoor preset; post presets stub {} until the
   // registry ships real output profiles.
-  void postPresets["daylight-outdoor"];
-  game.app.setOutput?.({ exposure: Math.pow(2, direction.lighting.exposureEV) });
+    game.app.setOutput?.({ preset: "daylight-outdoor",  exposure: Math.pow(2, direction.lighting.exposureEV) });
   const firstFrameAt = performance.now();
   const w = window as unknown as Record<string, unknown>;
   w.__AURA3D_GAME__ = {

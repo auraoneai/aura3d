@@ -5,8 +5,7 @@
 // contact chassis + driver AI + race-session feel helpers are unchanged
 // gameplay modules (S-world keeps world layout + hero GLBs).
 import { game, scene, type VehicleVec3 } from "@aura3d/engine";
-import { postPresets } from "@aura3d/engine/contracts";
-import { createGame } from "@aura3d/game";
+import { createGame, lookManifest } from "@aura3d/game";
 import {
   advanceStartLights, canSimulateRace, createRaceSessionState,
   formatGapToRival, resolveRacePosition, resolveRaceHudStatus,
@@ -108,7 +107,13 @@ const gameShell = createGame({
     "finish": { slowMo: { scale: 0.5, ms: 900 }, trauma: 0.5 },
     "speed-streaks": { speedThresholdRatio: 0.85 }
   },
-  qualityRebuild: { flags: [ROUTE_FLAG] }
+  qualityRebuild: {
+    // FLAG-1: arm the engine features this route uses — `game` selects the
+    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
+    // art/direction.ts sections. `route_turbo_drift_circuit` uses the engine-parseable
+    // underscore form (URL/dispatch form is `route-turbo-drift-circuit`).
+    flags: ["route_turbo_drift_circuit", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+  }
 });
 
 // ------------------------------------------------------------------ input ----
@@ -286,18 +291,14 @@ void gameShell.ready().then(() => {
   gameShell.app.camera?.use?.(rig, { blend: 0.4 });
   // C-05 output: exposureEV 0 → linear 1; postPresets output stubs are {} —
   // post settles when the preset registry ships real output profiles.
-  void postPresets["daylight-outdoor"];
-  gameShell.app.setOutput?.({ exposure: 1 });
+  gameShell.app.setOutput?.({ preset: "daylight-outdoor", exposure: 1 });
 
   publishTurboDriftEvidence({
     game: { session: gameShell.session, fx: gameShell.fx },
     app: () => gameShell.app,
     snapshot: () => raceSnapshot,
-    appliedLook: {
-      preset: "daylight-outdoor",
-      toneMapping: "aces",
-      exposureEV: direction.lighting.exposureEV
-    },
+    // T2.2-post: appliedLook derives from the C-31 runtime manifest.
+    appliedLook: { ...lookManifest(gameShell.lookSource()), preset: "daylight-outdoor" },
     raceStatus: () => resolveRaceHudStatus(raceSession, raceSnapshot.status === "finished"),
     opponentGap: () => opponentAi.evidence(raceSnapshot.progress).signedPlayerGap,
     audioCueLog: () => audioCueLog,

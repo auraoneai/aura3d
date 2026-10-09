@@ -4,11 +4,11 @@
 // practicals at sign positions + K1 night-city HDRI (stand-in R-14-13) as
 // enclosed fill. Deletes the per-fighter camera-side point keys and rim
 // points (:920-952). exposureEV -0.3 lands through setOutput in boot.ts.
-import { environments, lights } from "@aura3d/engine";
+import { environments, lights, type AuraNodeInput } from "@aura3d/engine";
 import { envAssets } from "../env-assets";
 
 /** Warm 4000K overhead spot key, sole shadow caster, frustum on the fighters. */
-export function auraClashLights(): unknown[] {
+export function auraClashLights(): AuraNodeInput[] {
   return [
     lights.spot({
       name: "clash overhead key",
@@ -45,7 +45,7 @@ export function auraClashLights(): unknown[] {
 }
 
 /** K1 night-city HDRI stand-in (R-14-13): dusk HDR at enclosed fill level. */
-export function auraClashEnvironment(): unknown {
+export function auraClashEnvironment(): AuraNodeInput {
   return environments.hdri({
     name: "clash night city hdri",
     texture: envAssets.nightCityHdr,

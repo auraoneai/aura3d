@@ -14,6 +14,9 @@ import { join } from "node:path";
 
 const APP_DIR = "showcase-orbital-defense";
 const ROUTE_FLAG = "route-orbital-defense";
+// T1.10: v2 specs carry the same engine list the URL contract uses
+// (boot.ts qualityRebuild.flags + games.json qrFlags).
+const ENGINE_FLAGS = "game,camera,lighting,post,materials,vfx,world,tiers,looks";
 const EVIDENCE = `window.__AURA3D_GAME_EVIDENCE__?.["${APP_DIR}"]`;
 const FRACTION: readonly [number, number] = [0.65, 0.75];
 
@@ -28,7 +31,7 @@ test.describe("showcase-orbital-defense framing (T2.3)", () => {
       const { server, url } = await serve(root!);
       try {
         await page.setViewportSize(viewport);
-        await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG}`);
+        await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
         await expect.poll(() => page.evaluate(() =>
           (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
         // Let drones drift in a little, then read framing + HUD overlap.

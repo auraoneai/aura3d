@@ -5,7 +5,7 @@
 // Gameplay modules (arena/swarm/waves/player/pickups/run) are unchanged;
 // audio plays through the legacy cue controller until C-25 lands (R-14-10).
 import { game as engineGame, scene } from "@aura3d/engine";
-import { createGame, type Game } from "@aura3d/game";
+import { createGame, type Game, lookManifest } from "@aura3d/game";
 import { createArenaLayout, playRect, spawnPointOnEdge } from "../gameplay/arena";
 import { createSwarmSimulation } from "../gameplay/swarm";
 import {
@@ -148,7 +148,13 @@ const game = createGame({
     "player-death": { hitStopMs: 90, trauma: 0.28 },
     "wave-clear": { hitStopMs: 40, trauma: 0.12 }
   },
-  qualityRebuild: { flags: [ROUTE_FLAG] }
+  qualityRebuild: {
+    // FLAG-1: arm the engine features this route uses — `game` selects the
+    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
+    // art/direction.ts sections. `route_neon_swarm` uses the engine-parseable
+    // underscore form (URL/dispatch form is `route-neon-swarm`).
+    flags: ["route_neon_swarm", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+  }
 });
 
 const fx = wireSwarmFx(game);
@@ -677,7 +683,9 @@ game.app.onFrame?.(({ dt: rawDt }) => {
 
 // ------------------------------------------------------------- evidence ------
 
+// T2.2-post: appliedLook derives from the C-31 runtime manifest.
 const appliedLook: Record<string, unknown> = Object.freeze({
+  ...lookManifest(game.lookSource()),
   postPreset: "neon-night",
   exposureEV: direction.lighting.exposureEV,
   hdri: direction.lighting.environment.hdri,
@@ -725,7 +733,7 @@ if (scenario) {
 game.start();
 void game.ready().then(() => {
   game.app.camera?.use?.(createSwarmRig(rigState), { blend: 0.4 });
-  game.app.setOutput?.({ exposure: Math.pow(2, direction.lighting.exposureEV) });
+  game.app.setOutput?.({ preset: "neon-night", exposure: Math.pow(2, direction.lighting.exposureEV) });
   const firstFrameAt = performance.now();
   const w = window as unknown as Record<string, unknown>;
   w.__AURA3D_GAME__ = {

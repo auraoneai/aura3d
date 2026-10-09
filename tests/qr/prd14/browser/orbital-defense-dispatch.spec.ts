@@ -12,6 +12,9 @@ import { join } from "node:path";
 
 const APP_DIR = "showcase-orbital-defense";
 const ROUTE_FLAG = "route-orbital-defense";
+// T1.10: v2 specs carry the same engine list the URL contract uses
+// (boot.ts qualityRebuild.flags + games.json qrFlags).
+const ENGINE_FLAGS = "game,camera,lighting,post,materials,vfx,world,tiers,looks";
 const EVIDENCE_GLOBAL = "__AURA3D_SHOWCASE_ORBITAL_DEFENSE__";
 // Top-level keys the legacy route published before the T1.10 tree move.
 const LEGACY_EVIDENCE_KEYS = [
@@ -52,7 +55,7 @@ test.describe("orbital-defense dispatch (T1.10)", () => {
     const errors = watchConsole(page);
     const { server, url } = await serve(root!);
     try {
-      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG}`);
+      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() =>
         page.evaluate(() => (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined),
         { timeout: 30_000 }).toBe(true);

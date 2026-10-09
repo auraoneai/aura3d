@@ -2,8 +2,7 @@
 // Drives the real platformer kit through the shared scene binding, with the
 // Rapier character solver deciding contact truth exactly like the legacy loop.
 import { game as engineGame, scene } from "@aura3d/engine";
-import { postPresets } from "@aura3d/engine/contracts";
-import { createGame, type Game } from "@aura3d/game";
+import { createGame, lookManifest, type Prd09Game } from "@aura3d/game";
 import type { AuraRuntimeNodeHandle, GamePlatformerSnapshot } from "@aura3d/engine";
 import direction from "../../art/direction";
 import {
@@ -72,7 +71,7 @@ const feel = createSkylineFeel({
 
 const target = document.getElementById("app") ?? document.body;
 
-const game: Game = createGame({
+const game: Prd09Game<string, string> = createGame({
   id: "showcase-skyline-runner",
   target,
   layout: "full-bleed",
@@ -93,9 +92,14 @@ const game: Game = createGame({
     preset: "lane-swipe",
     bindings: { stick: "moveX", tap: "jump", swipeDown: "fastfall", swipeRight: "dash", pause: "menu" }
   },
-  qualityRebuild: { flags: [ROUTE_FLAG] }
+  qualityRebuild: {
+    // FLAG-1: arm the engine features this route uses — `game` selects the
+    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
+    // art/direction.ts sections. `route_skyline_runner` uses the engine-parseable
+    // underscore form (URL/dispatch form is `route-skyline-runner`).
+    flags: ["route_skyline_runner", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+  }
 });
-void postPresets["cinematic-film"];
 
 const fx = wireSkylineFx(game);
 
@@ -548,7 +552,7 @@ wireTouch();
 void game.ready().then(() => {
   const rig = createSkylineRig(rigState);
   game.app.camera?.use?.(rig, { blend: 0.12 });
-  game.app.setOutput?.({ exposure: Math.pow(2, direction.lighting.exposureEV ?? 0) });
+  game.app.setOutput?.({ preset: "cinematic-film", exposure: Math.pow(2, direction.lighting.exposureEV ?? 0) });
   (window as unknown as Record<string, unknown>).__AURA3D_GAME__ = {
     route: game.id,
     get app() { return game.app; },
@@ -604,7 +608,9 @@ publishSkylineEvidence({
   feel: () => ({ ...feel.snapshot(), physics: { ...physicsProof }, challenge: { ...challengeEvidence } }),
   render: () => ({ frame, firstFrameAt }),
   loading: () => ({ sceneSwaps: 0, lazyLoadedCount: 0 }),
+  // T2.2-post: appliedLook derives from the C-31 runtime manifest.
   appliedLook: () => ({
+    ...lookManifest(game.lookSource()),
     ...skylineScenarioLook(scenario),
     background: SKYLINE_BG,
     exposureEV: direction.lighting.exposureEV,

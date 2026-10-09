@@ -17,11 +17,8 @@ export interface TurboDriftEvidenceBindings {
   };
   readonly app: () => AuraApp | undefined;
   readonly snapshot: () => GameRacingSnapshot;
-  readonly appliedLook: {
-    readonly preset: string;
-    readonly toneMapping: string;
-    readonly exposureEV: number;
-  };
+  // T2.2-post: appliedLook is the C-31 runtime look manifest — a varying shape.
+  readonly appliedLook: Record<string, unknown>;
   readonly raceStatus: () => string;
   readonly opponentGap: () => number;
   readonly audioCueLog: () => readonly string[];

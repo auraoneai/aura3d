@@ -6,8 +6,7 @@
 // player/style) are unchanged; music + sfx play through the legacy
 // stem-bus tunnel audio until C-25 lands (standIn R-14-10).
 import { game as engineGame, scene } from "@aura3d/engine";
-import { postPresets } from "@aura3d/engine/contracts";
-import { createGame, type Game } from "@aura3d/game";
+import { createGame, type Game, lookManifest } from "@aura3d/game";
 import { createBeatClock, pulseSectionAtTime, pulseTimeForBeat } from "../gameplay/beat-clock";
 import { createGateSystem, PULSE_PLAYER_Z, pulseGateGeometry } from "../gameplay/gates";
 import { buildPulseChart, type PulseGateKind } from "../gameplay/patterns";
@@ -124,7 +123,13 @@ const game = createGame({
     "run-clear": { trauma: 0.25 },
     "run-fail": { hitStopMs: 90, trauma: 0.55 }
   },
-  qualityRebuild: { flags: [ROUTE_FLAG] }
+  qualityRebuild: {
+    // FLAG-1: arm the engine features this route uses — `game` selects the
+    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
+    // art/direction.ts sections. `route_pulse_tunnel` uses the engine-parseable
+    // underscore form (URL/dispatch form is `route-pulse-tunnel`).
+    flags: ["route_pulse_tunnel", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+  }
 });
 
 const fx = wirePulseFx(game);
@@ -428,7 +433,9 @@ game.app.onFrame?.(({ dt: rawDt }) => {
 
 // ------------------------------------------------------------- evidence ------
 
+// T2.2-post: appliedLook derives from the C-31 runtime manifest.
 const appliedLook: Record<string, unknown> = Object.freeze({
+  ...lookManifest(game.lookSource()),
   postPreset: "neon-night",
   exposureEV: direction.lighting.exposureEV,
   hdri: direction.lighting.environment.hdri,
@@ -501,8 +508,7 @@ void game.ready().then(() => {
   game.app.camera?.use?.(createPulseRig(rigState), { blend: 0.4 });
   // C-05 output: neon-night preset; post presets stub {} until the registry
   // ships real output profiles.
-  void postPresets["neon-night"];
-  game.app.setOutput?.({ exposure: Math.pow(2, direction.lighting.exposureEV) });
+    game.app.setOutput?.({ preset: "neon-night",  exposure: Math.pow(2, direction.lighting.exposureEV) });
   const firstFrameAt = performance.now();
   const w = window as unknown as Record<string, unknown>;
   w.__AURA3D_GAME__ = {

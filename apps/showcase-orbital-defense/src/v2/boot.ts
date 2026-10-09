@@ -3,8 +3,8 @@
 // PRD-13 arena-shooter template — R-14-08). The pure wave/heat/shield rules
 // in src/gameplay/waves.ts are kept verbatim; the shell owns scene, camera,
 // VFX glue, HUD and evidence.
-import { createGame } from "@aura3d/game";
-import { scene, camera as cameraNodes, postPresets } from "@aura3d/engine";
+import { createGame, lookManifest } from "@aura3d/game";
+import { scene, camera as cameraNodes } from "@aura3d/engine";
 import {
   createWaveState, updateWaves, resetGame, polar, playerRadius,
   shieldIds, type WaveState
@@ -102,7 +102,13 @@ const game = createGame({
     "shield-hit-trauma": { trauma: 0.14 },
     "planet-hit-trauma": { trauma: 0.28 }
   },
-  qualityRebuild: { flags: [ROUTE_FLAG] }
+  qualityRebuild: {
+    // FLAG-1: arm the engine features this route uses — `game` selects the
+    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
+    // art/direction.ts sections. `route_orbital_defense` uses the engine-parseable
+    // underscore form (URL/dispatch form is `route-orbital-defense`).
+    flags: ["route_orbital_defense", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+  }
 });
 
 const rig = createOrbitalRig();
@@ -210,8 +216,7 @@ game.app.onRender?.(() => { frame += 1; });
 game.start();
 void game.ready().then(() => {
   game.app.camera?.use?.(rig, { blend: 0.4 });
-  void postPresets["space"];
-  game.app.setOutput?.({ toneMapping: "aces", exposure: 2 ** EXPOSURE_EV });
+    game.app.setOutput?.({ preset: "space",  toneMapping: "aces", exposure: 2 ** EXPOSURE_EV });
 
   const scenario = new URL(location.href).searchParams.get("scenario");
   if (scenario) applyOrbitalScenario(scenario, wave);
@@ -220,7 +225,8 @@ void game.ready().then(() => {
     game,
     app: () => game.app,
     wave: () => wave,
-    appliedLook: { preset: "space", toneMapping: "aces", exposureEV: EXPOSURE_EV },
+    // T2.2-post: appliedLook derives from the C-31 runtime manifest, not literals.
+    appliedLook: { preset: "space", ...lookManifest(game.lookSource()) },
     explosionsLive: () => explosionsLive(game.fx.liveCount),
     audioCueLog: () => audioCueLog,
     bootedAtMs: performance.now(),

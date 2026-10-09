@@ -7,8 +7,7 @@
 // idle drift and the authored camera-feel punch on quads/level-ups; audio rides
 // the legacy cue controller on admitted sfx ids until C-25 (stand-in R-14-15).
 import { game as engineGame, scene, type AuraCameraPose, type GameInputController } from "@aura3d/engine";
-import { postPresets } from "@aura3d/engine/contracts";
-import { createGame, type Game } from "@aura3d/game";
+import { createGame, type Game, lookManifest } from "@aura3d/game";
 import {
   DEFAULT_SEED,
   HIDDEN_ROWS,
@@ -158,7 +157,13 @@ const game = createGame({
     "level-up": { hitStopMs: 55, trauma: 0.24 },
     "game-over": { hitStopMs: 90, trauma: 0.35 }
   },
-  qualityRebuild: { flags: [ROUTE_FLAG] }
+  qualityRebuild: {
+    // FLAG-1: arm the engine features this route uses — `game` selects the
+    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
+    // art/direction.ts sections. `route_blockfall_reactor` uses the engine-parseable
+    // underscore form (URL/dispatch form is `route-blockfall-reactor`).
+    flags: ["route_blockfall_reactor", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+  }
 });
 
 const fx = wireBlockfallFx(game);
@@ -695,8 +700,7 @@ void game.ready().then(() => {
     return poseOut;
   };
   game.app.camera?.use?.(rig as never, { blend: 0.12 });
-  void postPresets["neon-night"];
-  game.app.setOutput?.({ exposure: Math.pow(2, direction.lighting.exposureEV) });
+    game.app.setOutput?.({ preset: "neon-night",  exposure: Math.pow(2, direction.lighting.exposureEV) });
   firstFrameAt = performance.now();
   (window as unknown as Record<string, unknown>).__AURA3D_GAME__ = {
     route: game.id,
@@ -748,15 +752,8 @@ publishBlockfallEvidence({
   render: () => ({ frame, bootedAtMs, firstFrameAt }),
   loading: () => ({ sceneSwaps, lazyLoadedCount: 0 }),
   physics: () => ({ backend: "rapier", bodyCount: 0, sensorCount: 0 }),
-  appliedLook: {
-    key: direction.lighting.key,
-    fill: direction.lighting.fill,
-    practicals: direction.lighting.practicals,
-    environment: direction.lighting.environment,
-    exposureEV: direction.lighting.exposureEV,
-    preset: "neon-night",
-    rigId: "blockfall-reactor.static"
-  },
+  // T2.2-post: appliedLook derives from the C-31 runtime manifest.
+  appliedLook: { ...lookManifest(game.lookSource()), preset: "neon-night" },
   rig: () => ({ id: "blockfall-reactor.static", driftDeg: 1.5, punch: rigForEvidence?.rigState.punch ?? 0 }),
   scenario: () => scenario
 });

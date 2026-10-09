@@ -4,8 +4,7 @@
 // (table/ball-flow/flippers/plunger/missions/scoring) are unchanged; audio
 // plays through the legacy cue map until C-25 game-sfx is real (standIn R-14-10).
 import { scene } from "@aura3d/engine";
-import { postPresets } from "@aura3d/engine/contracts";
-import { createGame, type Game } from "@aura3d/game";
+import { createGame, type Game, lookManifest } from "@aura3d/game";
 import { createTableSimulation, quatToEuler } from "../gameplay/table";
 import { VaultFlow, type VaultGameEvent } from "../gameplay/ball-flow";
 import { FlipperController } from "../gameplay/flippers";
@@ -100,7 +99,13 @@ const game = createGame({
     "multiball": { slowMo: { scale: 0.6, ms: 500 } },
     "ball-drain": { hitStopMs: 40 }
   },
-  qualityRebuild: { flags: [ROUTE_FLAG] }
+  qualityRebuild: {
+    // FLAG-1: arm the engine features this route uses — `game` selects the
+    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
+    // art/direction.ts sections. `route_vault_breakers` uses the engine-parseable
+    // underscore form (URL/dispatch form is `route-vault-breakers`).
+    flags: ["route_vault_breakers", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+  }
 });
 
 // ------------------------------------------------------------- shot state ----
@@ -346,7 +351,9 @@ game.app.onFrame?.(({ dt: rawDt }) => {
 
 // ------------------------------------------------------------- evidence ------
 
+// T2.2-post: appliedLook derives from the C-31 runtime manifest.
 const appliedLook: Record<string, unknown> = Object.freeze({
+  ...lookManifest(game.lookSource()),
   postPreset: "neon-night",
   exposureEV: direction.lighting.exposureEV,
   hdri: direction.lighting.environment.hdri,
@@ -378,8 +385,7 @@ void game.ready().then(() => {
   game.app.camera?.use?.(createVaultRig(rigState), { blend: 0.4 });
   // C-05 output: exposureEV −0.2 → linear ≈ 0.87; post presets stub {} until
   // the registry ships real output profiles.
-  void postPresets["neon-night"];
-  game.app.setOutput?.({ exposure: Math.pow(2, direction.lighting.exposureEV) });
+    game.app.setOutput?.({ preset: "neon-night",  exposure: Math.pow(2, direction.lighting.exposureEV) });
   const firstFrameAt = performance.now();
   const w = window as unknown as Record<string, unknown>;
   w.__AURA3D_GAME__ = {

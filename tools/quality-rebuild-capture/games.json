@@ -25,8 +25,8 @@
       "altRoutes": [
         "/showcase/aura-clash/playable/"
       ],
-      "evidenceGlobal": "__AURA_CLASH_ARENA_PROOF__",
-      "readyExpr": "window.__AURA_CLASH_ARENA_PROOF__?.status === 'running'",
+      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
+      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
       "focus": {
         "selector": ".aca",
         "method": "focus"
@@ -75,7 +75,16 @@
         "gameLogicCpuMs": 4
       },
       "qrFlags": [
-        "A3D_QR_ROUTE_AURA_CLASH"
+        "route-aura-clash",
+        "game",
+        "camera",
+        "lighting",
+        "post",
+        "materials",
+        "vfx",
+        "world",
+        "tiers",
+        "looks"
       ],
       "timeline": [
         {
@@ -178,6 +187,68 @@
         "C-24",
         "C-25",
         "C-27"
+      ],
+      "legacy": {
+        "evidenceGlobal": "__AURA_CLASH_ARENA_PROOF__",
+        "readyExpr": "window.__AURA_CLASH_ARENA_PROOF__?.status === 'running'"
+      },
+      "captureContractMigrated": true,
+      "titleDeterministic": null,
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "05-special",
+          "query": {
+            "scenario": "05-special",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#clip-status",
+        "#combo-count",
+        "#combo-flash",
+        "#player-health",
+        "#player-meter",
+        "#render-status",
+        "#rival-health",
+        "#rival-meter",
+        "#round-timer",
+        ".aca-combo"
+      ],
+      "keyboardHintSelectors": [
+        ".aca-controls",
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
       ]
     },
     {
@@ -187,7 +258,7 @@
       "appDir": "showcase-blockfall-reactor",
       "deployed": true,
       "route": "/apps/showcase-blockfall-reactor/",
-      "evidenceGlobal": "__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__",
+      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
       "notes": "Boots straight into play (attract mode only after 45s idle). A/D move, W/X/E rotate CW, Z/Q rotate CCW, S soft drop, Space hard drop, C/Shift hold, P pause. Action shot is taken 60ms after a hard drop (lock/impact FX); a line clear is not reliably reachable blind in 15s.",
       "wave": 4,
       "rebuildTier": "S-presentation",
@@ -231,7 +302,16 @@
         "gameLogicCpuMs": 4
       },
       "qrFlags": [
-        "A3D_QR_ROUTE_BLOCKFALL_REACTOR"
+        "route-blockfall-reactor",
+        "game",
+        "camera",
+        "lighting",
+        "post",
+        "materials",
+        "vfx",
+        "world",
+        "tiers",
+        "looks"
       ],
       "timeline": [
         {
@@ -337,6 +417,63 @@
         "C-24",
         "C-25",
         "C-27"
+      ],
+      "legacy": {
+        "evidenceGlobal": "__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__"
+      },
+      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "captureContractMigrated": true,
+      "titleDeterministic": null,
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#hud-actions",
+        "#reactor-meter",
+        "#stat-combo",
+        "#stat-score",
+        "#status-mode",
+        "#status-speed",
+        ".hud-panel",
+        ".hud-panel--actions",
+        ".hud-panel--evidence",
+        ".hud-panel--preview"
+      ],
+      "keyboardHintSelectors": [
+        ".controls-strip",
+        ".touch-cluster",
+        ".touch-cluster--left",
+        ".touch-cluster--right",
+        ".touch-cluster--session",
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
       ]
     },
     {
@@ -346,7 +483,7 @@
       "appDir": "showcase-skyline-runner",
       "deployed": true,
       "route": "/apps/showcase-skyline-runner/",
-      "evidenceGlobal": "__AURA3D_SHOWCASE_SKYLINE_RUNNER__",
+      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
       "notes": "A/D run, W/Up/Space jump, Shift/K dash, J/L fire, G ghost, P pause, R reset. Hold run right with periodic jumps; mid shot is taken mid-jump with run held.",
       "wave": 4,
       "rebuildTier": "S-presentation",
@@ -388,7 +525,16 @@
         "gameLogicCpuMs": 4
       },
       "qrFlags": [
-        "A3D_QR_ROUTE_SKYLINE_RUNNER"
+        "route-skyline-runner",
+        "game",
+        "camera",
+        "lighting",
+        "post",
+        "materials",
+        "vfx",
+        "world",
+        "tiers",
+        "looks"
       ],
       "timeline": [
         {
@@ -465,6 +611,63 @@
         "C-24",
         "C-25",
         "C-27"
+      ],
+      "legacy": {
+        "evidenceGlobal": "__AURA3D_SHOWCASE_SKYLINE_RUNNER__"
+      },
+      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "captureContractMigrated": true,
+      "titleDeterministic": null,
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#checkpoint-pips",
+        "#lives-value",
+        "#objective-value",
+        "#score-value",
+        ".checkpoint-label",
+        ".checkpoint-pip",
+        ".checkpoint-pips",
+        ".checkpoint-row",
+        ".game-hud",
+        ".metric--lives"
+      ],
+      "keyboardHintSelectors": [
+        "#dash-control",
+        "#fire-control",
+        "#ghost-control",
+        "#jump-control",
+        "#left-control",
+        "#reset-control",
+        "#right-control",
+        ".controls-list"
       ]
     },
     {
@@ -474,7 +677,7 @@
       "appDir": "showcase-turbo-drift-circuit",
       "deployed": true,
       "route": "/apps/showcase-turbo-drift-circuit/",
-      "evidenceGlobal": "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__",
+      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
       "notes": "Start lights only advance while throttle/drift is held (startLights in src/main.ts), so throttle is held from t=0. W/Up throttle, S brake, A/D steer, Space/Shift drift, P pause, R reset. 02-opening may still show the light ceremony if it runs longer than 2s; 03-mid is inside a held right drift.",
       "wave": 1,
       "rebuildTier": "S-world",
@@ -519,7 +722,16 @@
         "gameLogicCpuMs": 4
       },
       "qrFlags": [
-        "A3D_QR_ROUTE_TURBO_DRIFT_CIRCUIT"
+        "route-turbo-drift-circuit",
+        "game",
+        "camera",
+        "lighting",
+        "post",
+        "materials",
+        "vfx",
+        "world",
+        "tiers",
+        "looks"
       ],
       "timeline": [
         {
@@ -597,6 +809,63 @@
         "C-25",
         "C-26",
         "C-27"
+      ],
+      "legacy": {
+        "evidenceGlobal": "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__"
+      },
+      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "captureContractMigrated": true,
+      "titleDeterministic": null,
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#alignment-status",
+        "#checkpoint-value",
+        "#speed-value",
+        "#status-value",
+        ".contract-status",
+        ".metric--speed",
+        ".metric--status",
+        "[data-hud]",
+        ".hud",
+        "#hud"
+      ],
+      "keyboardHintSelectors": [
+        "#brake-control",
+        "#drift-control",
+        "#ghost-toggle-control",
+        "#left-control",
+        "#reset-control",
+        "#right-control",
+        "#throttle-control",
+        ".control-cluster"
       ]
     },
     {
@@ -606,7 +875,7 @@
       "appDir": "showcase-siege-golf",
       "deployed": true,
       "route": "/apps/showcase-siege-golf/",
-      "evidenceGlobal": "__SIEGE_GOLF_EVIDENCE__",
+      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
       "notes": "Left/Right aim, hold Space to charge and release to strike, J precision strike, R hole reset, T round reset, P pause. Opening shot is the first ball in flight; 05-charge shows the charge meter.",
       "wave": 2,
       "rebuildTier": "S-world",
@@ -655,7 +924,16 @@
         "gameLogicCpuMs": 4
       },
       "qrFlags": [
-        "A3D_QR_ROUTE_SIEGE_GOLF"
+        "route-siege-golf",
+        "game",
+        "camera",
+        "lighting",
+        "post",
+        "materials",
+        "vfx",
+        "world",
+        "tiers",
+        "looks"
       ],
       "timeline": [
         {
@@ -720,6 +998,67 @@
         "C-25",
         "C-26",
         "C-27"
+      ],
+      "legacy": {
+        "evidenceGlobal": "__SIEGE_GOLF_EVIDENCE__"
+      },
+      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "captureContractMigrated": true,
+      "titleDeterministic": null,
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "05-charge",
+          "query": {
+            "scenario": "05-charge",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#sg-hole-banner",
+        ".hole-banner",
+        ".mobile-power-meter",
+        ".power-meter",
+        "[data-hud]",
+        ".hud",
+        "#hud"
+      ],
+      "keyboardHintSelectors": [
+        "#siege-golf-mobile-controls",
+        ".controls-list",
+        ".mobile-shot-controls",
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
       ]
     },
     {
@@ -729,7 +1068,7 @@
       "appDir": "showcase-aurora-lander",
       "deployed": true,
       "route": "/apps/showcase-aurora-lander/",
-      "evidenceGlobal": "__AURORA_LANDER_EVIDENCE__",
+      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
       "notes": "The boot drop falls untouched, so thrust starts at t=0. W/Up thrust, A/D lateral, Space quick restart, R restart, G ghost, P pause. Action shot waits for a touchdown/crash state (regex on evidence state/phase) to capture landing dust or the crash.",
       "wave": 3,
       "rebuildTier": "S-world",
@@ -778,7 +1117,16 @@
         "gameLogicCpuMs": 4
       },
       "qrFlags": [
-        "A3D_QR_ROUTE_AURORA_LANDER"
+        "route-aurora-lander",
+        "game",
+        "camera",
+        "lighting",
+        "post",
+        "materials",
+        "vfx",
+        "world",
+        "tiers",
+        "looks"
       ],
       "timeline": [
         {
@@ -860,6 +1208,63 @@
         "C-25",
         "C-26",
         "C-27"
+      ],
+      "legacy": {
+        "evidenceGlobal": "__AURORA_LANDER_EVIDENCE__"
+      },
+      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "captureContractMigrated": true,
+      "titleDeterministic": null,
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#hud-altitude",
+        "#hud-attitude",
+        "#hud-banner",
+        "#hud-fuel",
+        "#hud-fuel-fill",
+        "#hud-fuel-label",
+        "#hud-ghost",
+        "#hud-ghost-flag",
+        "#hud-gust",
+        "#hud-gust-flag"
+      ],
+      "keyboardHintSelectors": [
+        "#touch-ghost",
+        "#touch-left",
+        "#touch-pause",
+        "#touch-restart",
+        "#touch-right",
+        "#touch-thrust",
+        ".panel-hint",
+        ".touch-button"
       ]
     },
     {
@@ -869,7 +1274,7 @@
       "appDir": "showcase-neon-swarm",
       "deployed": true,
       "route": "/apps/showcase-neon-swarm/",
-      "evidenceGlobal": "__NEON_SWARM_EVIDENCE__",
+      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
       "notes": "Wave 1 begins after a 3.2s intermission (INTERMISSION_FIRST_SECONDS). WASD move, J fire (held), Space/K burst, Shift dash, P pause, R reset. Action shot waits for a kill; 05-burst fires burst (only visible if charged).",
       "wave": 2,
       "rebuildTier": "S-world",
@@ -913,7 +1318,16 @@
         "gameLogicCpuMs": 4
       },
       "qrFlags": [
-        "A3D_QR_ROUTE_NEON_SWARM"
+        "route-neon-swarm",
+        "game",
+        "camera",
+        "lighting",
+        "post",
+        "materials",
+        "vfx",
+        "world",
+        "tiers",
+        "looks"
       ],
       "timeline": [
         {
@@ -1003,6 +1417,71 @@
         "C-24",
         "C-25",
         "C-27"
+      ],
+      "legacy": {
+        "evidenceGlobal": "__NEON_SWARM_EVIDENCE__"
+      },
+      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "captureContractMigrated": true,
+      "titleDeterministic": null,
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "05-burst",
+          "query": {
+            "scenario": "05-burst",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#ns-banner",
+        "#ns-combo-bar",
+        "#ns-score",
+        "#ns-shield",
+        "#ns-timer",
+        "#ns-timer-label",
+        "#ns-wave",
+        ".ns-banner",
+        ".ns-combo",
+        "[data-hud]"
+      ],
+      "keyboardHintSelectors": [
+        "#ns-touch",
+        ".ns-help",
+        ".ns-touch-knob",
+        ".ns-touch-stick",
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
       ]
     },
     {
@@ -1012,7 +1491,7 @@
       "appDir": "showcase-gravity-post",
       "deployed": true,
       "route": "/apps/showcase-gravity-post/",
-      "evidenceGlobal": "__GRAVITY_POST_EVIDENCE__",
+      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
       "notes": "Launch is pointer-drag only: launchActiveAim() in src/main.ts is defined but never called, so no key launches the pod (A/D/Z/X only steer the keyboard aim preview). Drag vector (-4,-79)px from the stage centre is the verified contract-one delivery (tests/browser/gravity-post-scene.spec.ts). While coasting: hold Space time-warp, W/S burns, X skips flyby, N next, R retry, P pause.",
       "wave": 3,
       "rebuildTier": "S-world",
@@ -1055,7 +1534,16 @@
         "gameLogicCpuMs": 4
       },
       "qrFlags": [
-        "A3D_QR_ROUTE_GRAVITY_POST"
+        "route-gravity-post",
+        "game",
+        "camera",
+        "lighting",
+        "post",
+        "materials",
+        "vfx",
+        "world",
+        "tiers",
+        "looks"
       ],
       "timeline": [
         {
@@ -1130,6 +1618,64 @@
         "C-24",
         "C-25",
         "C-27"
+      ],
+      "legacy": {
+        "evidenceGlobal": "__GRAVITY_POST_EVIDENCE__"
+      },
+      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "captureContractMigrated": true,
+      "titleDeterministic": null,
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "05-late-coast",
+          "query": {
+            "scenario": "05-late-coast",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#gp-score-card",
+        ".gp-fuel",
+        ".gp-scorecard",
+        ".gp-status",
+        "[data-hud]",
+        ".hud",
+        "#hud"
+      ],
+      "keyboardHintSelectors": [
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
       ]
     },
     {
@@ -1139,8 +1685,8 @@
       "appDir": "showcase-courier-rush",
       "deployed": true,
       "route": "/apps/showcase-courier-rush/",
-      "evidenceGlobal": "__COURIER_RUSH_EVIDENCE__",
-      "readyExpr": "document.body?.dataset?.aura3dReady === 'true'",
+      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
+      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
       "focus": {
         "selector": "canvas",
         "method": "click"
@@ -1184,7 +1730,16 @@
         "gameLogicCpuMs": 4
       },
       "qrFlags": [
-        "A3D_QR_ROUTE_COURIER_RUSH"
+        "route-courier-rush",
+        "game",
+        "camera",
+        "lighting",
+        "post",
+        "materials",
+        "vfx",
+        "world",
+        "tiers",
+        "looks"
       ],
       "timeline": [
         {
@@ -1258,6 +1813,63 @@
         "C-25",
         "C-27",
         "C-29"
+      ],
+      "legacy": {
+        "evidenceGlobal": "__COURIER_RUSH_EVIDENCE__",
+        "readyExpr": "document.body?.dataset?.aura3dReady === 'true'"
+      },
+      "captureContractMigrated": true,
+      "titleDeterministic": null,
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#courier-combo",
+        "#courier-objective",
+        "#courier-score",
+        "#courier-timer",
+        "#courier-timer-fill",
+        ".combo-chip",
+        ".dispatch-card__objective",
+        ".score-line",
+        ".status-strip",
+        ".timer-bar"
+      ],
+      "keyboardHintSelectors": [
+        "#brake-control",
+        "#interact-control",
+        "#left-control",
+        "#reverse-control",
+        "#right-control",
+        "#throttle-control",
+        ".controls-help",
+        ".overlay__hint"
       ]
     },
     {
@@ -1267,7 +1879,7 @@
       "appDir": "showcase-pulse-tunnel",
       "deployed": true,
       "route": "/apps/showcase-pulse-tunnel/",
-      "evidenceGlobal": "__PULSE_TUNNEL_EVIDENCE__",
+      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
       "notes": "Mounts in state 'ready'; the first key gesture (Space) starts the run. A/D lane, W jump, S slide, P pause, R restart. Lane/jump inputs are blind (not beat-synced), so a miss/fail frame is possible and is itself useful evidence.",
       "wave": 2,
       "rebuildTier": "S-presentation",
@@ -1311,7 +1923,16 @@
         "gameLogicCpuMs": 4
       },
       "qrFlags": [
-        "A3D_QR_ROUTE_PULSE_TUNNEL"
+        "route-pulse-tunnel",
+        "game",
+        "camera",
+        "lighting",
+        "post",
+        "materials",
+        "vfx",
+        "world",
+        "tiers",
+        "looks"
       ],
       "timeline": [
         {
@@ -1391,6 +2012,63 @@
         "C-24",
         "C-25",
         "C-27"
+      ],
+      "legacy": {
+        "evidenceGlobal": "__PULSE_TUNNEL_EVIDENCE__"
+      },
+      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "captureContractMigrated": true,
+      "titleDeterministic": null,
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#pulse-hud",
+        "#pulse-score",
+        "#pulse-shields",
+        "#pulse-state-banner",
+        ".pulse-hud",
+        ".pulse-meter",
+        ".pulse-meter-fill",
+        ".pulse-shields",
+        "[data-hud]",
+        ".hud"
+      ],
+      "keyboardHintSelectors": [
+        "#pulse-jump-control",
+        "#pulse-left-control",
+        "#pulse-reset-control",
+        "#pulse-right-control",
+        "#pulse-slide-control",
+        ".pulse-touch",
+        ".pulse-touch-column",
+        ".pulse-touch-pad"
       ]
     },
     {
@@ -1400,7 +2078,7 @@
       "appDir": "showcase-mech-hangar",
       "deployed": true,
       "route": "/apps/showcase-mech-hangar/",
-      "evidenceGlobal": "__MECH_HANGAR_EVIDENCE__",
+      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
       "notes": "Starts in the hangar builder: Digit1-4 select slot, Left/Right cycle part, Enter locks the build and enters the arena (72-frame countdown). Arena: A/D move, Space jump, J light, K heavy, L special, Shift guard, P pause. 02-opening is the customised hangar; 02b is the arena after the countdown.",
       "wave": 4,
       "rebuildTier": "S-world",
@@ -1468,7 +2146,16 @@
         "gameLogicCpuMs": 4
       },
       "qrFlags": [
-        "A3D_QR_ROUTE_MECH_HANGAR"
+        "route-mech-hangar",
+        "game",
+        "camera",
+        "lighting",
+        "post",
+        "materials",
+        "vfx",
+        "world",
+        "tiers",
+        "looks"
       ],
       "timeline": [
         {
@@ -1580,6 +2267,69 @@
         "C-24",
         "C-25",
         "C-27"
+      ],
+      "legacy": {
+        "evidenceGlobal": "__MECH_HANGAR_EVIDENCE__"
+      },
+      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "captureContractMigrated": true,
+      "titleDeterministic": null,
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "02b-arena-opening",
+          "query": {
+            "scenario": "02b-arena-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "05-special",
+          "query": {
+            "scenario": "05-special",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "[data-hud]",
+        ".hud",
+        "#hud"
+      ],
+      "keyboardHintSelectors": [
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
       ]
     },
     {
@@ -1589,7 +2339,7 @@
       "appDir": "showcase-vault-breakers",
       "deployed": true,
       "route": "/apps/showcase-vault-breakers/",
-      "evidenceGlobal": "__VAULT_BREAKERS_EVIDENCE__",
+      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
       "notes": "Hold Space to pull the plunger, release to serve (1.8s hold matches the thumbnail producer). A/Left left flipper, D/Right right flipper, S nudge, P pause, R reset. Action waits for a score change.",
       "wave": 2,
       "rebuildTier": "S-world",
@@ -1633,7 +2383,16 @@
         "gameLogicCpuMs": 4
       },
       "qrFlags": [
-        "A3D_QR_ROUTE_VAULT_BREAKERS"
+        "route-vault-breakers",
+        "game",
+        "camera",
+        "lighting",
+        "post",
+        "materials",
+        "vfx",
+        "world",
+        "tiers",
+        "looks"
       ],
       "timeline": [
         {
@@ -1719,6 +2478,56 @@
         "C-24",
         "C-25",
         "C-27"
+      ],
+      "legacy": {
+        "evidenceGlobal": "__VAULT_BREAKERS_EVIDENCE__"
+      },
+      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "captureContractMigrated": true,
+      "titleDeterministic": null,
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#stat-score",
+        "#vb-banner",
+        ".hole-banner",
+        ".power-meter",
+        "[data-hud]",
+        ".hud",
+        "#hud"
+      ],
+      "keyboardHintSelectors": [
+        ".controls-list",
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
       ]
     },
     {
@@ -1728,7 +2537,7 @@
       "appDir": "showcase-rooftop-buckets",
       "deployed": true,
       "route": "/apps/showcase-rooftop-buckets/",
-      "evidenceGlobal": "__ROOFTOP_BUCKETS_EVIDENCE__",
+      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
       "notes": "Hold Space to charge, release to shoot (26 frames ~ 0.55-0.7 power per playable spec). A/D change spot, W/S aim, P pause, R reset. A 'Heat Cleared' modal (#rb-modal-btn) may appear after enough makes; it is captured as-is. Action waits for evidence makes to increase.",
       "wave": 2,
       "rebuildTier": "S-world",
@@ -1772,7 +2581,16 @@
         "gameLogicCpuMs": 4
       },
       "qrFlags": [
-        "A3D_QR_ROUTE_ROOFTOP_BUCKETS"
+        "route-rooftop-buckets",
+        "game",
+        "camera",
+        "lighting",
+        "post",
+        "materials",
+        "vfx",
+        "world",
+        "tiers",
+        "looks"
       ],
       "timeline": [
         {
@@ -1852,6 +2670,60 @@
         "C-24",
         "C-25",
         "C-27"
+      ],
+      "legacy": {
+        "evidenceGlobal": "__ROOFTOP_BUCKETS_EVIDENCE__"
+      },
+      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "captureContractMigrated": true,
+      "titleDeterministic": null,
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "05-charge",
+          "query": {
+            "scenario": "05-charge",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "[data-hud]",
+        ".hud",
+        "#hud"
+      ],
+      "keyboardHintSelectors": [
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
       ]
     },
     {
@@ -1861,8 +2733,8 @@
       "appDir": "showcase-gallery-shift",
       "deployed": true,
       "route": "/apps/showcase-gallery-shift/",
-      "evidenceGlobal": "__GALLERY_SHIFT_EVIDENCE__",
-      "readyExpr": "window.__GALLERY_SHIFT_EVIDENCE__?.status === 'ready'",
+      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
+      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
       "notes": "WASD move, Shift sneak, X sprint, E lift exhibit (hold), P pause, R restart. Blind movement; action is a lift attempt and may show a guard detection instead.",
       "wave": 4,
       "rebuildTier": "S-world",
@@ -1911,7 +2783,16 @@
         "gameLogicCpuMs": 4
       },
       "qrFlags": [
-        "A3D_QR_ROUTE_GALLERY_SHIFT"
+        "route-gallery-shift",
+        "game",
+        "camera",
+        "lighting",
+        "post",
+        "materials",
+        "vfx",
+        "world",
+        "tiers",
+        "looks"
       ],
       "timeline": [
         {
@@ -1992,6 +2873,59 @@
         "C-24",
         "C-25",
         "C-27"
+      ],
+      "legacy": {
+        "evidenceGlobal": "__GALLERY_SHIFT_EVIDENCE__",
+        "readyExpr": "window.__GALLERY_SHIFT_EVIDENCE__?.status === 'ready'"
+      },
+      "captureContractMigrated": true,
+      "titleDeterministic": null,
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#gs-banner",
+        "#stat-score",
+        ".detection-meter",
+        ".hall-banner",
+        ".lift-progress",
+        ".meter-label",
+        ".meter-ticks",
+        ".speed",
+        "[data-hud]",
+        ".hud"
+      ],
+      "keyboardHintSelectors": [
+        ".controls-list",
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
       ]
     },
     {
@@ -2001,7 +2935,7 @@
       "appDir": "showcase-deep-recovery",
       "deployed": true,
       "route": "/apps/showcase-deep-recovery/",
-      "evidenceGlobal": "__DEEP_RECOVERY_EVIDENCE__",
+      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
       "notes": "Raw window keydown handler: W/S throttle, A/D turn, Q dive, E surface, Shift sprint, Space sonar ping, F grapple, C repair, P pause, R reset. Action is a sonar ping (ring VFX) 250ms after the key.",
       "wave": 3,
       "rebuildTier": "S-world",
@@ -2065,7 +2999,16 @@
         "gameLogicCpuMs": 4
       },
       "qrFlags": [
-        "A3D_QR_ROUTE_DEEP_RECOVERY"
+        "route-deep-recovery",
+        "game",
+        "camera",
+        "lighting",
+        "post",
+        "materials",
+        "vfx",
+        "world",
+        "tiers",
+        "looks"
       ],
       "timeline": [
         {
@@ -2147,6 +3090,60 @@
         "C-24",
         "C-25",
         "C-27"
+      ],
+      "legacy": {
+        "evidenceGlobal": "__DEEP_RECOVERY_EVIDENCE__"
+      },
+      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "captureContractMigrated": true,
+      "titleDeterministic": null,
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "05-grapple",
+          "query": {
+            "scenario": "05-grapple",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "[data-hud]",
+        ".hud",
+        "#hud"
+      ],
+      "keyboardHintSelectors": [
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
       ]
     },
     {
@@ -2156,8 +3153,8 @@
       "appDir": "showcase-patrol-wing",
       "deployed": true,
       "route": "/apps/showcase-patrol-wing/",
-      "evidenceGlobal": "__PATROL_WING_EVIDENCE__",
-      "readyExpr": "window.__PATROL_WING_EVIDENCE__?.mounted === true",
+      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
+      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
       "notes": "Starts in 'preflight' on the pad; Shift throttles up for a rolling takeoff (takeoffSpeed 10.5). W pitch down, S pitch up, A/D roll, Q/E yaw, Space fire, C camera, P pause, R reset. W is never used (nose-down crash).",
       "wave": 3,
       "rebuildTier": "S-world",
@@ -2202,7 +3199,16 @@
         "gameLogicCpuMs": 4
       },
       "qrFlags": [
-        "A3D_QR_ROUTE_PATROL_WING"
+        "route-patrol-wing",
+        "game",
+        "camera",
+        "lighting",
+        "post",
+        "materials",
+        "vfx",
+        "world",
+        "tiers",
+        "looks"
       ],
       "timeline": [
         {
@@ -2287,6 +3293,68 @@
         "C-25",
         "C-26",
         "C-27"
+      ],
+      "legacy": {
+        "evidenceGlobal": "__PATROL_WING_EVIDENCE__",
+        "readyExpr": "window.__PATROL_WING_EVIDENCE__?.mounted === true"
+      },
+      "captureContractMigrated": true,
+      "titleDeterministic": null,
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "05-banked-fire",
+          "query": {
+            "scenario": "05-banked-fire",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#pw-banner",
+        "#pw-hull-fill",
+        "#pw-hull-label",
+        "#review-hull",
+        "#review-hull-fill",
+        "#review-speed",
+        "#review-wave",
+        "#stat-wave",
+        ".flight-banner",
+        ".hull-meter"
+      ],
+      "keyboardHintSelectors": [
+        ".controls-list",
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
       ]
     },
     {
@@ -2296,7 +3364,7 @@
       "appDir": "showcase-bank-shot",
       "deployed": true,
       "route": "/apps/showcase-bank-shot/",
-      "evidenceGlobal": "__BANK_SHOT_EVIDENCE__",
+      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
       "notes": "A/D aim, W/S top/draw spin, hold Space to charge, release to strike, P pause, R reset. 02-opening is the break ~500ms after release; action waits for a pot (evidence potted/score).",
       "wave": 1,
       "rebuildTier": "S-presentation",
@@ -2341,10 +3409,19 @@
         "gameLogicCpuMs": 4
       },
       "qrFlags": [
-        "A3D_QR_ROUTE_BANK_SHOT"
+        "route-bank-shot",
+        "game",
+        "camera",
+        "lighting",
+        "post",
+        "materials",
+        "vfx",
+        "world",
+        "tiers",
+        "looks"
       ],
       "timeline": [
-{
+        {
           "fps": 5000
         },
         {
@@ -2409,6 +3486,67 @@
         "C-24",
         "C-25",
         "C-27"
+      ],
+      "legacy": {
+        "evidenceGlobal": "__BANK_SHOT_EVIDENCE__"
+      },
+      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+      "captureContractMigrated": true,
+      "titleDeterministic": null,
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "05-charge",
+          "query": {
+            "scenario": "05-charge",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        "#bs-banner",
+        "#stat-combo",
+        "#stat-score",
+        ".hole-banner",
+        ".power-meter",
+        ".sweet-zone",
+        "[data-hud]",
+        ".hud",
+        "#hud"
+      ],
+      "keyboardHintSelectors": [
+        ".controls-list",
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
       ]
     },
     {
@@ -2418,8 +3556,8 @@
       "appDir": "showcase-orbital-defense",
       "deployed": false,
       "route": "/apps/showcase-orbital-defense/",
-      "evidenceGlobal": "__AURA3D_SHOWCASE_ORBITAL_DEFENSE__",
-      "readyExpr": "document.body?.dataset?.aura3dShowcaseReady === 'true'",
+      "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
+      "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
       "notes": "Not deployed (production 404); always built from source and served locally. No per-app vite.config.ts: the wrapper config reuses the root vite.config.ts aliases. A/D rotate, Space fire, Q shield pulse, R reset, P pause. Action waits for score to increase.",
       "wave": 1,
       "rebuildTier": "F",
@@ -2468,7 +3606,16 @@
         "gameLogicCpuMs": 4
       },
       "qrFlags": [
-        "A3D_QR_ROUTE_ORBITAL_DEFENSE"
+        "route-orbital-defense",
+        "game",
+        "camera",
+        "lighting",
+        "post",
+        "materials",
+        "vfx",
+        "world",
+        "tiers",
+        "looks"
       ],
       "timeline": [
         {
@@ -2564,6 +3711,61 @@
         "C-24",
         "C-25",
         "C-27"
+      ],
+      "legacy": {
+        "evidenceGlobal": "__AURA3D_SHOWCASE_ORBITAL_DEFENSE__",
+        "readyExpr": "document.body?.dataset?.aura3dShowcaseReady === 'true'"
+      },
+      "captureContractMigrated": true,
+      "titleDeterministic": null,
+      "scenarios": [
+        {
+          "id": "02-opening",
+          "query": {
+            "scenario": "02-opening",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "03-mid",
+          "query": {
+            "scenario": "03-mid",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "04-action",
+          "query": {
+            "scenario": "04-action",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        },
+        {
+          "id": "05-shield",
+          "query": {
+            "scenario": "05-shield",
+            "seed": 1,
+            "freezeAt": "end",
+            "cameraPose": "gameplay"
+          }
+        }
+      ],
+      "hudSelectors": [
+        ".heat",
+        "[data-hud]",
+        ".hud",
+        "#hud"
+      ],
+      "keyboardHintSelectors": [
+        ".controls-list",
+        ".controls-strip",
+        "[data-hud='keyboard-hints']"
       ]
     }
   ]

@@ -70,6 +70,15 @@ function routeFlagFor(id: string): string {
   return `A3D_QR_ROUTE_${id.replace(/^showcase-/, "").replace(/-showcase$/, "").replace(/-/g, "_").toUpperCase()}`;
 }
 
+// FLAG-1: qrFlags is the URL-form flag list — `route-<id>` dispatch token plus
+// the engine short flags each v2 route needs (same list as the route's
+// src/v2/boot.ts qualityRebuild.flags, in engine-parse order).
+const ENGINE_QR_FLAGS = ["game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"] as const;
+
+function routeUrlFlagFor(id: string): string {
+  return `route-${routeFlagFor(id).slice("A3D_QR_ROUTE_".length).toLowerCase().replace(/_/g, "-")}`;
+}
+
 describe("T1.13 games.json V2", () => {
   it("covers exactly the 18 shipped games", () => {
     expect(gamesJson.games.map((g) => g.id).sort()).toEqual([...EXPECTED_IDS].sort());
@@ -111,7 +120,29 @@ describe("T1.13 games.json V2", () => {
       expect(v2.budgets.drawCalls.ultra).toBeLessThanOrEqual(1000);
       expect(v2.budgets.transferToPlayableMB).toBeGreaterThan(0);
       expect(v2.budgets.transferToPlayableMB).toBeLessThanOrEqual(15);
-      expect(v2.qrFlags).toEqual([routeFlagFor(String(entry.id))]);
+      expect(v2.qrFlags, `${label} qrFlags`).toEqual([routeUrlFlagFor(String(entry.id)), ...ENGINE_QR_FLAGS]);
+    }
+  });
+
+  it("carries the FLAG-2 capture-contract fields on every entry", () => {
+    for (const entry of gamesJson.games) {
+      const label = String(entry.id);
+      expect(entry.evidenceGlobal, label).toBe("__AURA3D_GAME_EVIDENCE__");
+      expect(entry.readyExpr, label).toBe("window.__AURA3D_GAME__?.state === 'playing'");
+      expect(entry.captureContractMigrated, label).toBe(true);
+      const legacy = entry.legacy as { evidenceGlobal?: string } | undefined;
+      expect(legacy?.evidenceGlobal, `${label} legacy.evidenceGlobal`).toBeTruthy();
+      expect(legacy?.evidenceGlobal, `${label} legacy global must differ`).not.toBe("__AURA3D_GAME_EVIDENCE__");
+    }
+  });
+
+  it("carries the T1.13 overlay fields on every entry", () => {
+    for (const entry of gamesJson.games) {
+      const label = String(entry.id);
+      expect(Array.isArray(entry.scenarios), `${label} scenarios[]`).toBe(true);
+      expect(Array.isArray(entry.hudSelectors), `${label} hudSelectors[]`).toBe(true);
+      expect(Array.isArray(entry.keyboardHintSelectors), `${label} keyboardHintSelectors[]`).toBe(true);
+      expect("titleDeterministic" in entry, `${label} titleDeterministic`).toBe(true);
     }
   });
 

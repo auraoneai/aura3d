@@ -16,6 +16,9 @@ import { decodePngAsRgba } from "../unit/helpers/png";
 
 const APP_DIR = "showcase-gravity-post";
 const ROUTE_FLAG = "route-gravity-post";
+// T1.10: v2 specs carry the same engine list the URL contract uses
+// (boot.ts qualityRebuild.flags + games.json qrFlags).
+const ENGINE_FLAGS = "game,camera,lighting,post,materials,vfx,world,tiers,looks";
 const EVIDENCE = `window.__AURA3D_GAME_EVIDENCE__?.["${APP_DIR}"]`;
 
 const gamesJson = JSON.parse(
@@ -58,7 +61,7 @@ test.describe("showcase-gravity-post v2 (T2.6)", () => {
     const errors = watchConsole(page);
     const { server, url } = await serve(root!);
     try {
-      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG}`);
+      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       const state = await page.evaluate(() =>
@@ -113,7 +116,7 @@ test.describe("showcase-gravity-post v2 (T2.6)", () => {
     const errors = watchConsole(page);
     const { server, url } = await serve(root!);
     try {
-      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG}`);
+      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       await page.keyboard.down("KeyA");
@@ -139,7 +142,7 @@ test.describe("showcase-gravity-post v2 (T2.6)", () => {
     const errors = watchConsole(page);
     const { server, url } = await serve(root!);
     try {
-      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG}`);
+      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       const r = await page.evaluate(() => {
@@ -179,7 +182,7 @@ test.describe("showcase-gravity-post v2 (T2.6)", () => {
     try {
       const looks: unknown[] = [];
       for (const scenario of ["delivery-1", "hazard-mail", "dock-approach"]) {
-        await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG}&scenario=${scenario}`);
+        await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&scenario=${scenario}`);
         await expect.poll(() => page.evaluate(() =>
           (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
         await page.waitForTimeout(300);

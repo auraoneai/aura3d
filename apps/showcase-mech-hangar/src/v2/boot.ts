@@ -5,8 +5,7 @@
 // family and flips loading.sceneId — loading.sceneSwaps stays 0.
 import { game as engineGame, scene } from "@aura3d/engine";
 import type { AuraRuntimeNodeHandle } from "@aura3d/engine";
-import { postPresets } from "@aura3d/engine/contracts";
-import { createGame, type Game } from "@aura3d/game";
+import { createGame, lookManifest, type Prd09Game } from "@aura3d/game";
 import direction from "../../art/direction";
 import { createMechBout, type BoutEvent, type BoutInputs, type BoutSnapshot } from "../gameplay/arena/mech-fight";
 import { RIVAL_LOADOUTS } from "../gameplay/stats";
@@ -47,7 +46,7 @@ const buildScene = () =>
 
 const target = document.getElementById("app") ?? document.body;
 
-const game: Game = createGame({
+const game: Prd09Game<string, string> = createGame({
   id: "showcase-mech-hangar",
   target,
   layout: "full-bleed",
@@ -67,9 +66,14 @@ const game: Game = createGame({
     preset: "lane-swipe",
     bindings: { stick: "moveX", tap: "light", swipeUp: "jump", swipeDown: "guard", swipeRight: "heavy", pause: "menu" }
   },
-  qualityRebuild: { flags: [ROUTE_FLAG] }
+  qualityRebuild: {
+    // FLAG-1: arm the engine features this route uses — `game` selects the
+    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
+    // art/direction.ts sections. `route_mech_hangar` uses the engine-parseable
+    // underscore form (URL/dispatch form is `route-mech-hangar`).
+    flags: ["route_mech_hangar", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+  }
 });
-void postPresets["cinematic-film"];
 
 const fx = wireMechFx(game.fx);
 
@@ -436,13 +440,16 @@ function syncHud(snap: BoutSnapshot | null) {
 }
 
 // ---- evidence ---------------------------------------------------------------
-const appliedLook = {
+// T2.2-post: appliedLook derives from the C-31 runtime manifest (scenario
+// fields kept — mech-hangar varies the scene per scenario).
+const appliedLook = () => ({
+  ...lookManifest(game.lookSource()),
   ...mechScenarioLook(scenario),
   paletteSignature: direction.palette.primary.join("/") + "|" + direction.palette.accent + "|" + direction.palette.reservedObjective,
   rigId: "mech-hangar.fighting",
   fov: MECH_CAMERA_FOV,
   distance: MECH_CAMERA_DISTANCE
-};
+});
 
 let lastSnap: BoutSnapshot | null = null;
 const evidence = publishMechEvidence({
@@ -473,7 +480,7 @@ const evidence = publishMechEvidence({
     return { lastCue: proof.lastCue ?? null, cueLog: proof.recentCues.slice(-8) };
   },
   run: () => ({ paused, touchEngaged, replayActive: autorunActive }),
-  appliedLook: () => appliedLook,
+  appliedLook,
   rig: () => ({ id: "mech-hangar.fighting", fov: MECH_CAMERA_FOV, distance: MECH_CAMERA_DISTANCE }),
   scenario: () => scenario,
   render: () => ({ frame: renderFrame, firstFrameAt: firstFrameAt })
@@ -599,7 +606,7 @@ void game.ready().then(() => {
     mode: () => mode
   });
   game.app.camera?.use?.(rig as never, { blend: 0.12 });
-  game.app.setOutput?.({ exposure: Math.pow(2, direction.lighting.exposureEV) });
+  game.app.setOutput?.({ preset: "cinematic-film", exposure: Math.pow(2, direction.lighting.exposureEV) });
   (window as unknown as Record<string, unknown>).__AURA3D_GAME__ = {
     route: game.id,
     get app() { return game.app; },
