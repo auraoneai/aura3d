@@ -14,6 +14,7 @@ import { registerSkyChunks } from "../atmosphere/sky.glsl";
 import { registerPrd07Chunks, FOG_CHUNK_NAME, WETNESS_CHUNK_NAME } from "../atmosphere/fogChunks";
 import { registerPrd07VolumeChunk } from "../vfx/shaders/volume.glsl";
 import { prd07WetnessState } from "../atmosphere/shaders/wetness.glsl";
+import { prd07FogSelect, prd07WetnessSelect } from "../vfx/prd07FeaturePars";
 import { TextureBinding } from "../TextureBinding";
 
 // C-20 / C-21 provides — real implementations keyed by device.
@@ -37,9 +38,7 @@ try {
     id: "prd07.fog",
     owner: "prd07",
     flag: "A3D_QR_VFX_FOG",
-    select: (input) => input.flags.on("A3D_QR_VFX_FOG")
-      ? (input.tier.volumetricFog === "analytic" ? "height" : "volumetric")
-      : undefined,
+    select: (input) => prd07FogSelect(input),
     defines: (value) => ({ A3D_FOG: 1, FOG_VOLUMETRIC: value === "volumetric" ? 1 : 0 }),
     chunks: [FOG_CHUNK_NAME],
     hooks: ["fragment:fog"]
@@ -48,13 +47,8 @@ try {
     id: "prd07.wetness",
     owner: "prd07",
     flag: "A3D_QR_VFX",
-    select: () => {
-      // §7.1 landmine guard: only contribute while weather actually drives a
-      // wetness response — an unconditional true would splice A3D_WETNESS
-      // into every forward program once T0-05 evaluates select() per item.
-      const w = prd07WetnessState();
-      return w.wetness > 0 || w.snowCover > 0 || w.rainRipples > 0 ? true : undefined;
-    },
+    // gated on live wetness state so dry scenes keep the chunk out (IC-0)
+    select: () => prd07WetnessSelect(),
     defines: () => ({ A3D_WETNESS: 1 }),
     chunks: [WETNESS_CHUNK_NAME],
     hooks: ["fragment:material"],
