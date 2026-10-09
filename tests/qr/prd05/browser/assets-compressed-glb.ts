@@ -72,17 +72,27 @@ const VARIANTS = [
 
 async function run(): Promise<void> {
   const canvas = document.getElementById("stage") as HTMLCanvasElement;
-  const gl = canvas.getContext("webgl2");
-  if (!gl) throw new Error("WebGL2 context unavailable");
-  const caps = probeCompressedTextureCapabilities(gl);
   const params = new URLSearchParams(location.search);
+  // `?noGl=1` (windows decoder-failure job): canvas.getContext("webgl2") can
+  // hang for minutes under headless Windows when the GPU process never
+  // initializes — prove decoder-load semantics with canned all-false caps
+  // and no GL context at all.
+  const NO_GL = params.get("noGl") === "1";
+  const gl = NO_GL ? null : canvas.getContext("webgl2");
+  if (!NO_GL && !gl) throw new Error("WebGL2 context unavailable");
+  const caps = gl
+    ? probeCompressedTextureCapabilities(gl)
+    : { astc: false, bptc: false, etc2: false, s3tc: false, s3tcSrgb: false } as const;
   const MAX_TEXTURE_SIZE = Number(params.get("maxTextureSize") ?? "4096");
   // `?skipRender=1` (decoder-failure spec, windows job): prove decoder-load
   // semantics — sniff + prepareModelDecoders + registry require — without
   // paying the 5-variant GPU render cost under software rasterizers.
   const SKIP_RENDER = params.get("skipRender") === "1";
-  const dbg = gl.getExtension("WEBGL_debug_renderer_info");
-  const rendererString = dbg ? String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL)) : String(gl.getParameter(gl.RENDERER));
+  // `?onlyFailure=1`: skip the 5-variant sniff/prepare loop entirely — the
+  // decoder-failure spec only asserts the disabled-draco path.
+  const ONLY_FAILURE = params.get("onlyFailure") === "1";
+  const dbg = gl?.getExtension("WEBGL_debug_renderer_info");
+  const rendererString = !gl ? "no-gl" : dbg ? String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL)) : String(gl.getParameter(gl.RENDERER));
 
   // §7.3: one registry per app, built from C-38 options + probed caps + tier cap.
   const registry = createAppAssetDecoders(
@@ -112,7 +122,7 @@ async function run(): Promise<void> {
   const internalFormatsUploaded: { readonly variant: string; readonly format: string }[] = [];
   let baselinePx: Uint8ClampedArray | null = null;
   let subjectMaskPx: Uint8Array | null = null;
-  for (const { variant, url } of VARIANTS) {
+  for (const { variant, url } of ONLY_FAILURE ? [] : VARIANTS) {
     const sniffed = await sniffGLBRequiredDecoders(url, "glb");
     const set = await prepareModelDecoders({ url, format: "glb" }, registry);
     if (SKIP_RENDER) {
@@ -196,6 +206,15 @@ async function run(): Promise<void> {
   } satisfies ReadyPayload;
   document.getElementById("status")!.textContent = "ready";
 }
+
+// Watchdog: a hung fetch/worker leaves both flags unset forever and the spec
+// burns its full timeout with no diagnosis. Publish __QR_ERROR__ at 150s.
+setTimeout(() => {
+  if (window.__QR_READY__ === undefined && window.__QR_ERROR__ === undefined) {
+    window.__QR_ERROR__ = "page-watchdog: run() still pending after 150s";
+    document.getElementById("status")!.textContent = "error";
+  }
+}, 150_000);
 
 run().catch((error) => {
   window.__QR_ERROR__ = (error instanceof Error ? error.stack ?? error.message : String(error)) as unknown;
