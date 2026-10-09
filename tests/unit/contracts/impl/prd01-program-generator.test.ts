@@ -55,7 +55,8 @@ describe("generateProgram (C-02 real)", () => {
     expect(out.fragment).toContain("#version 300 es");
     expect(out.vertex).toContain(GENERATED_PROGRAM_MARKER);
     expect(out.fragment).toContain(GENERATED_PROGRAM_MARKER);
-    expect(out.vertex).toContain("layout(std140, binding = 0) uniform AuraFrame");
+    expect(out.vertex).toContain("layout(std140) uniform AuraFrame");
+    expect(out.vertex).not.toContain("binding = ");
     assertBalanced(out.vertex);
     assertBalanced(out.fragment);
     for (const banned of BANNED) {

@@ -76,11 +76,14 @@ export function layoutStd140(fields: readonly Std140Field[]): Std140Layout {
   return { byteSize: alignUp(offset, 16), fields: laidOut, offsets };
 }
 
-/** Emit `layout(std140) uniform <name> { <type> <field>; ... };` for a block. */
-export function uniformBlockGlsl(name: string, fields: readonly Std140Field[], binding?: number): string {
-  const layout = binding === undefined ? "layout(std140)" : `layout(std140, binding = ${binding})`;
+/**
+ * Emit `layout(std140) uniform <name> { <type> <field>; ... };` for a block.
+ * T0-02: declarations carry no baked `binding=` — the device assigns the named
+ * block → binding-point mapping with `gl.uniformBlockBinding` post-link.
+ */
+export function uniformBlockGlsl(name: string, fields: readonly Std140Field[]): string {
   const body = fields.map(([field, type]) => `  ${type} ${field};`).join("\n");
-  return `${layout} uniform ${name} {\n${body}\n};`;
+  return `layout(std140) uniform ${name} {\n${body}\n};`;
 }
 
 /**
@@ -181,9 +184,9 @@ export class FrameUniforms implements FrameUniformsLike {
     return this.block.layout.byteSize;
   }
 
-  /** GLSL declaration for generated programs (`layout(std140, binding = 0)`). */
+  /** GLSL declaration for generated programs (`layout(std140)`; bound at link). */
   glsl(): string {
-    return uniformBlockGlsl("AuraFrame", AURA_FRAME_BLOCK, this.block.binding);
+    return uniformBlockGlsl("AuraFrame", AURA_FRAME_BLOCK);
   }
 
   update(camera: FrameCamera, timeSeconds: number, exposure: number, flags: number): void {

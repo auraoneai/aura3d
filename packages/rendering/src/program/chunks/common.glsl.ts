@@ -5,7 +5,7 @@
  */
 
 import { AURA_FRAME_BLOCK } from "../../contracts/frameUniforms";
-import { uniformBlockGlsl, AURA_FRAME_BINDING } from "../../resources/UniformBlock";
+import { uniformBlockGlsl } from "../../resources/UniformBlock";
 
 export const COMMON_CHUNK_GLSL = /* glsl */ `
 #define PI 3.141592653589793
@@ -15,5 +15,5 @@ float pow2(float x) { return x * x; }
 vec3 BRDF_Lambert(vec3 diffuseColor) { return RECIPROCAL_PI * diffuseColor; }
 float saturate(float x) { return clamp(x, 0.0, 1.0); }
 vec3 saturate(vec3 v) { return clamp(v, vec3(0.0), vec3(1.0)); }
-${uniformBlockGlsl("AuraFrame", AURA_FRAME_BLOCK, AURA_FRAME_BINDING)}
+${uniformBlockGlsl("AuraFrame", AURA_FRAME_BLOCK)}
 `;

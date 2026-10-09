@@ -102,8 +102,9 @@ describe("prd01 frame uniforms (C-08)", () => {
   });
 
   it("emits the GLSL declaration from the same field list", () => {
-    const glsl = uniformBlockGlsl("AuraFrame", AURA_FRAME_BLOCK, 0);
-    expect(glsl).toContain("layout(std140, binding = 0) uniform AuraFrame {");
+    const glsl = uniformBlockGlsl("AuraFrame", AURA_FRAME_BLOCK);
+    expect(glsl).toContain("layout(std140) uniform AuraFrame {");
+    expect(glsl).not.toContain("binding");
     expect(glsl).toContain("  mat4 u_view;");
     expect(glsl).toContain("  vec4 u_exposureFlags;");
     for (const [name, type] of AURA_FRAME_BLOCK) {
