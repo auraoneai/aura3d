@@ -1,17 +1,20 @@
 import { defineAuraAssets } from "@aura3d/engine";
 
 export const assets = defineAuraAssets({
-  product: {
+  quaterniusSportsCar: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/product-fixture.glb",
-    bounds: [1.9, 2.9, 1.1],
-    hash: "sha256-5613d5ad4ddc538b02c147faf2f87777bfd5a79580297cc6a103fdb7556580d3",
+    url: "/aura-assets/quaternius-sports-car.glb",
+    bounds: [1.872, 1.203, 3.927],
+    hash: "sha256-bbb1c718d2aaf5f4344e9fb2cd66d8332a998a515b09ddd4dfa14698d787124e",
     metadata: {
-      materials: ["satin cabinet", "patterned grille", "rubber cone", "metallic knobs"],
+      materials: [],
       animations: [],
-      textures: ["embedded product material swatches"],
-      thumbnailUrl: "/aura-assets/product.thumb.svg"
+      textures: [],
+      libraryId: "quaternius-sports-car",
+      libraryKit: "vehicles/road",
+      license: "CC0",
+      attribution: "Quaternius"
     }
   }
 } as const);

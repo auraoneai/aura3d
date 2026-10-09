@@ -5,30 +5,27 @@
   "typegen": "src/aura-assets.ts",
   "assets": [
     {
-      "id": "product",
+      "id": "quaterniusSportsCar",
       "type": "model",
       "format": "glb",
-      "source": "public/aura-assets/product-fixture.glb",
-      "outputPath": "public/aura-assets/product-fixture.glb",
-      "url": "/aura-assets/product-fixture.glb",
-      "hash": "sha256-5613d5ad4ddc538b02c147faf2f87777bfd5a79580297cc6a103fdb7556580d3",
-      "sizeBytes": 48612,
-      "bounds": [
-        1.9,
-        2.9,
-        1.1
-      ],
-      "materials": [
-        "satin cabinet",
-        "patterned grille",
-        "rubber cone",
-        "metallic knobs"
-      ],
+      "source": "public/aura-assets/quaternius-sports-car.glb",
+      "outputPath": "public/aura-assets/quaternius-sports-car.glb",
+      "url": "/aura-assets/quaternius-sports-car.glb",
+      "hash": "sha256-bbb1c718d2aaf5f4344e9fb2cd66d8332a998a515b09ddd4dfa14698d787124e",
+      "sizeBytes": 175100,
+      "materials": [],
       "animations": [],
-      "textures": [
-        "embedded product material swatches"
-      ],
-      "thumbnailUrl": "/aura-assets/product.thumb.svg"
+      "textures": [],
+      "libraryId": "quaternius-sports-car",
+      "libraryKit": "vehicles/road",
+      "license": "CC0",
+      "attribution": "Quaternius",
+      "sourcePage": "https://poly.pizza/m/1mkmFkAz5v",
+      "bounds": [
+        1.872,
+        1.203,
+        3.927
+      ]
     }
   ]
 }
