@@ -145,7 +145,9 @@ async function captureOne(browser, baseUrl, scene, engine, outDir, timeoutMs, fl
   const result = { engine, scene, status: "error", screenshot: null };
   try {
     const fileBase = `${engine}${run.suffix ?? ""}`;
-    await page.goto(`${baseUrl}/index.html?engine=${engine}&scene=${scene}${flagsQuery}${dprQuery}${variantQuery}${passQuery}`, { waitUntil: "load", timeout: 60_000 });
+    // T0-10: forward the page-timeout so the adapter caps its waits at 0.8 × this
+    // value and publishes __QR_ERROR__ before this waitForFunction fires.
+    await page.goto(`${baseUrl}/index.html?engine=${engine}&scene=${scene}${flagsQuery}${dprQuery}${variantQuery}${passQuery}&timeout=${timeoutMs}`, { waitUntil: "load", timeout: 60_000 });
     await page.waitForFunction(() => Boolean(window.__QR_READY__ || window.__QR_ERROR__), undefined, { timeout: timeoutMs, polling: 250 });
     const state = await page.evaluate(() => ({ ready: window.__QR_READY__ ?? null, error: window.__QR_ERROR__ ?? null }));
     result.gpu = await gpuInfo(page);
