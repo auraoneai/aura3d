@@ -54,7 +54,7 @@ async function main(): Promise<void> {
 
   const app = createAuraApp(host, {
     scene: built,
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+    renderer: { qualityProfile: "production" },
     pixelRatio: 1,
     resize: false,
     autoStart: false,
