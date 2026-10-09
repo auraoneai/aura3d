@@ -6623,6 +6623,241 @@
       "source": "file",
       "outputPath": "",
       "url": "",
+      "hash": "sha256-312f2320db1f8c7057a5f3e90ee10fa7ff2f16acd8e14460fdb6041a8e985af1",
+      "sizeBytes": 8877352,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "Ultimate Downtown \u2014 street kit (ref-04)",
+      "role": "world",
+      "artDirection": "environments-modular",
+      "license": "CC0-1.0",
+      "sourcePage": "https://quaternius.com/packs/ultimatedowntownpack.html",
+      "author": "Quaternius",
+      "attribution": "Quaternius",
+      "retrievedAt": "2026-10-09T00:00:00Z",
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "quaternius-downtown-street-kit",
+      "kit": "environments/modular",
+      "libraryPath": "assets/library/environments/modular/quaternius-downtown-street-kit.glb",
+      "sha256": "312f2320db1f8c7057a5f3e90ee10fa7ff2f16acd8e14460fdb6041a8e985af1",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 98592,
+              "ceiling": 250000,
+              "profile": "world-chunk"
+            },
+            "message": "G1: 98592 tris inside world-chunk band."
+          },
+          {
+            "gate": "G2",
+            "verdict": "fail",
+            "measured": {
+              "p10": 3.6706858104975955,
+              "p50": 7.403620053866958,
+              "p90": 7.403621157094195,
+              "band": [
+                0.5,
+                4
+              ],
+              "texelsPerMeterP50": 511.99998474109424,
+              "floor": 64,
+              "camera": {
+                "distance": 15,
+                "fovDegrees": 55,
+                "viewportWidth": 1920,
+                "viewportHeight": 1080
+              },
+              "textureSize": [
+                1024,
+                1024
+              ],
+              "mobile": {
+                "p50": 9.473826609213642,
+                "viewport": "390\u00d7844"
+              }
+            },
+            "message": "G2: median 7.40 texels/px outside [0.5, 4]."
+          },
+          {
+            "gate": "G3",
+            "verdict": "pass",
+            "measured": {
+              "coverage": 0.9246287731256085,
+              "covered": 91161,
+              "total": 98592,
+              "missingTexcoord": 0,
+              "missingSlots": 7431,
+              "requiredOcclusion": true,
+              "profile": "world-chunk"
+            },
+            "message": "G3: PBR slots on 92.5% of rendered area."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 98592,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "pass",
+            "measured": {
+              "noUvRatio": 0,
+              "generator": "aura-clash build-textured-arena-glb"
+            },
+            "message": "G5: UVs present and no builder provenance."
+          },
+          {
+            "gate": "G6",
+            "verdict": "fail",
+            "measured": {
+              "failures": [
+                "normal#0(MI_InteriorFloor): normal length outside [0.9,1.1] on 5.8% of texels (> 5%)",
+                "normal#3(MI_Trim_MetalConcrete): normal length outside [0.9,1.1] on 5.4% of texels (> 5%)",
+                "baseColor#4(MI_StreetDecals): sRGB luminance outside [30,240] on 52.3% of texels",
+                "baseColor#5(MI_StreetDecals.002): sRGB luminance outside [30,240] on 52.3% of texels",
+                "normal#6(MI_Trim_Dark): normal length outside [0.9,1.1] on 9.0% of texels (> 5%)",
+                "normal#7(MI_InteriorWall): normal length outside [0.9,1.1] on 7.2% of texels (> 5%)",
+                "baseColor#11(MI_FakeInterior_4): sRGB luminance outside [30,240] on 20.9% of texels",
+                "normal#13(MI_Ornaments): normal length outside [0.9,1.1] on 10.4% of texels (> 5%)"
+              ],
+              "flags": [
+                "metallicRoughness#0(MI_InteriorFloor): channel R constant (\u03c3<0.004) \u2014 replace texture with factor",
+                "metallicRoughness#0(MI_InteriorFloor): channel B constant (\u03c3<0.004) \u2014 replace texture with factor",
+                "occlusion#0(MI_InteriorFloor): channel R constant (\u03c3<0.004) \u2014 replace texture with factor",
+                "occlusion#0(MI_InteriorFloor): channel B constant (\u03c3<0.004) \u2014 replace texture with factor",
+                "metallicRoughness#1(MI_InteriorRoof): channel R constant (\u03c3<0.004) \u2014 replace texture with factor",
+                "metallicRoughness#1(MI_InteriorRoof): channel B constant (\u03c3<0.004) \u2014 replace texture with factor",
+                "occlusion#1(MI_InteriorRoof): channel R constant (\u03c3<0.004) \u2014 replace texture with factor",
+                "occlusion#1(MI_InteriorRoof): channel B constant (\u03c3<0.004) \u2014 replace texture with factor",
+                "metallicRoughness#2(MI_Asphalt): channel R constant (\u03c3<0.004) \u2014 replace texture with factor",
+                "metallicRoughness#2(MI_Asphalt): channel B constant (\u03c3<0.004) \u2014 replace texture with factor",
+                "occlusion#2(MI_Asphalt): channel R constant (\u03c3<0.004) \u2014 replace texture with factor",
+                "occlusion#2(MI_Asphalt): channel B constant (\u03c3<0.004) \u2014 replace texture with factor",
+                "metallicRoughness#6(MI_Trim_Dark): channel B constant (\u03c3<0.004) \u2014 replace texture with factor",
+                "occlusion#6(MI_Trim_Dark): channel B constant (\u03c3<0.004) \u2014 replace texture with factor",
+                "metallicRoughness#14(MI_Dirt): channel R constant (\u03c3<0.004) \u2014 replace texture with factor",
+                "metallicRoughness#14(MI_Dirt): channel B constant (\u03c3<0.004) \u2014 replace texture with factor",
+                "occlusion#14(MI_Dirt): channel R constant (\u03c3<0.004) \u2014 replace texture with factor",
+                "occlusion#14(MI_Dirt): channel B constant (\u03c3<0.004) \u2014 replace texture with factor"
+              ],
+              "textures": 40
+            },
+            "message": "G6: normal#0(MI_InteriorFloor): normal length outside [0.9,1.1] on 5.8% of texels (> 5%); normal#3(MI_Trim_MetalConcrete): normal length outside [0.9,1.1] on 5.4% of texels (> 5%); baseColor#4(MI_StreetDecals): sRGB luminance outside [30,240] on 52.3% of texels; baseColor#5(MI_StreetDecals.002): sRGB luminance outside [30,240] on 52.3% of texels; normal#6(MI_Trim_Dark): normal length outside [0.9,1.1] on 9.0% of texels (> 5%); normal#7(MI_InteriorWall): normal length outside [0.9,1.1] on 7.2% of texels (> 5%); baseColor#11(MI_FakeInterior_4): sRGB luminance outside [30,240] on 20.9% of texels; normal#13(MI_Ornaments): normal length outside [0.9,1.1] on 10.4% of texels (> 5%)"
+          },
+          {
+            "gate": "G7",
+            "verdict": "fail",
+            "measured": {},
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
+          },
+          {
+            "gate": "G8",
+            "verdict": "fail",
+            "measured": {
+              "missingPrimitives": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                8,
+                9,
+                11,
+                14,
+                15,
+                16,
+                17,
+                21,
+                24,
+                25,
+                26,
+                27,
+                32,
+                33,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                44,
+                46,
+                49,
+                50,
+                51,
+                54,
+                55,
+                58,
+                59,
+                60,
+                61,
+                64,
+                65,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            },
+            "message": "G8: 49 normal-mapped primitive(s) missing TANGENT."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "pass",
+            "measured": {
+              "artDirection": "environments-modular",
+              "shading": "pbr",
+              "palette": 0,
+              "texelDensity": 256
+            },
+            "message": "G10: art direction \"environments-modular\" (pbr) on file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T14:56:28.922Z",
+        "derivedHash": "sha256-312f2320db1f8c7057a5f3e90ee10fa7ff2f16acd8e14460fdb6041a8e985af1",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
       "hash": "sha256-13e7bfa8343faf9b445abc73d9f954f4b1ced8c73c346cb5a00a84328159d57e",
       "sizeBytes": 1031856,
       "materials": [],
