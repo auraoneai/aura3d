@@ -1,0 +1,1358 @@
+{
+  "note": "C-14 golden: resolveCameraFrame (legacy, flag-off path) eye+target per (case, time). Regenerate only with a written reason; record the diff in evidence/prd08/goldens.md.",
+  "recorded_from": "tests/qr/prd08/unit/camera-controller.test.ts (QR_RECORD_LEGACY=1)",
+  "base_commit": "7da675d5fb0f2f6d65f1f5d6dfbd54d2c0912808",
+  "tuple_count": 90,
+  "tuples": [
+    {
+      "index": 0,
+      "name": "perspective explicit",
+      "time": 0,
+      "eye": [
+        1,
+        2,
+        3
+      ],
+      "target": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "index": 0,
+      "name": "perspective explicit",
+      "time": 16.7,
+      "eye": [
+        1,
+        2,
+        3
+      ],
+      "target": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "index": 0,
+      "name": "perspective explicit",
+      "time": 33.4,
+      "eye": [
+        1,
+        2,
+        3
+      ],
+      "target": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "index": 1,
+      "name": "perspective defaults",
+      "time": 0,
+      "eye": [
+        0,
+        1.4,
+        4
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 1,
+      "name": "perspective defaults",
+      "time": 16.7,
+      "eye": [
+        0,
+        1.4,
+        4
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 2,
+      "name": "orbit dist 4",
+      "time": 0,
+      "eye": [
+        2.48,
+        2.6799999999999997,
+        3.12
+      ],
+      "target": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "index": 2,
+      "name": "orbit dist 4",
+      "time": 16.7,
+      "eye": [
+        2.48,
+        2.6799999999999997,
+        3.12
+      ],
+      "target": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "index": 3,
+      "name": "orbit explicit pos",
+      "time": 0,
+      "eye": [
+        5,
+        5,
+        5
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 4,
+      "name": "orbit fov/near/far",
+      "time": 16.7,
+      "eye": [
+        1.24,
+        1.54,
+        1.56
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 5,
+      "name": "follow runtime id no smoothing",
+      "time": 0,
+      "eye": [
+        -0.52,
+        2.58,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 5,
+      "name": "follow runtime id no smoothing",
+      "time": 16.7,
+      "eye": [
+        -0.52,
+        2.58,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 6,
+      "name": "follow runtime name",
+      "time": 0,
+      "eye": [
+        -0.52,
+        2.58,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 6,
+      "name": "follow runtime name",
+      "time": 50,
+      "eye": [
+        -0.52,
+        2.58,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 7,
+      "name": "follow runtime tag",
+      "time": 0,
+      "eye": [
+        -5.28,
+        4.12,
+        8.92
+      ],
+      "target": [
+        -3,
+        1,
+        4
+      ]
+    },
+    {
+      "index": 8,
+      "name": "follow hidden direct-id stays",
+      "time": 0,
+      "eye": [
+        7.48,
+        11.08,
+        12.28
+      ],
+      "target": [
+        9,
+        9,
+        9
+      ]
+    },
+    {
+      "index": 9,
+      "name": "follow miss → spec.target",
+      "time": 0,
+      "eye": [
+        1.48,
+        5.08,
+        6.279999999999999
+      ],
+      "target": [
+        3,
+        3,
+        3
+      ]
+    },
+    {
+      "index": 9,
+      "name": "follow miss → spec.target",
+      "time": 16.7,
+      "eye": [
+        1.48,
+        5.08,
+        6.279999999999999
+      ],
+      "target": [
+        3,
+        3,
+        3
+      ]
+    },
+    {
+      "index": 10,
+      "name": "follow scene-node name",
+      "time": 0,
+      "eye": [
+        0.48,
+        3.08,
+        5.279999999999999
+      ],
+      "target": [
+        2,
+        1,
+        2
+      ]
+    },
+    {
+      "index": 10,
+      "name": "follow scene-node name",
+      "time": 33,
+      "eye": [
+        0.48,
+        3.08,
+        5.279999999999999
+      ],
+      "target": [
+        2,
+        1,
+        2
+      ]
+    },
+    {
+      "index": 11,
+      "name": "follow scene-node asset id",
+      "time": 0,
+      "eye": [
+        -2.52,
+        2.58,
+        6.279999999999999
+      ],
+      "target": [
+        -1,
+        0.5,
+        3
+      ]
+    },
+    {
+      "index": 12,
+      "name": "follow offset plain",
+      "time": 0,
+      "eye": [
+        1,
+        2.5,
+        -6
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 12,
+      "name": "follow offset plain",
+      "time": 16.7,
+      "eye": [
+        1,
+        2.5,
+        -6
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 13,
+      "name": "follow offset target-yaw",
+      "time": 0,
+      "eye": [
+        -1.576870748950764,
+        2.5,
+        -5.059368749137954
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 13,
+      "name": "follow offset target-yaw",
+      "time": 16.7,
+      "eye": [
+        -1.576870748950764,
+        2.5,
+        -5.059368749137954
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 13,
+      "name": "follow offset target-yaw",
+      "time": 300,
+      "eye": [
+        -1.576870748950764,
+        2.5,
+        -5.059368749137954
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 14,
+      "name": "follow targetOffset target-yaw",
+      "time": 0,
+      "eye": [
+        -0.13757890635775571,
+        3.58,
+        0.9578911563811543
+      ],
+      "target": [
+        1.3824210936422443,
+        1.5,
+        -2.3221088436188455
+      ]
+    },
+    {
+      "index": 14,
+      "name": "follow targetOffset target-yaw",
+      "time": 16.7,
+      "eye": [
+        -0.13757890635775571,
+        3.58,
+        0.9578911563811543
+      ],
+      "target": [
+        1.3824210936422443,
+        1.5,
+        -2.3221088436188455
+      ]
+    },
+    {
+      "index": 15,
+      "name": "follow smoothing 0.045",
+      "time": 0,
+      "eye": [
+        -0.52,
+        2.58,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 15,
+      "name": "follow smoothing 0.045",
+      "time": 16.7,
+      "eye": [
+        -0.52,
+        2.58,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 15,
+      "name": "follow smoothing 0.045",
+      "time": 33.4,
+      "eye": [
+        -0.52,
+        2.58,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 15,
+      "name": "follow smoothing 0.045",
+      "time": 50.1,
+      "eye": [
+        -0.52,
+        2.58,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 16,
+      "name": "follow smoothing 0.18 gap snap",
+      "time": 0,
+      "eye": [
+        -0.52,
+        2.58,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 16,
+      "name": "follow smoothing 0.18 gap snap",
+      "time": 16.7,
+      "eye": [
+        -0.52,
+        2.58,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 16,
+      "name": "follow smoothing 0.18 gap snap",
+      "time": 500,
+      "eye": [
+        -0.52,
+        2.58,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 16,
+      "name": "follow smoothing 0.18 gap snap",
+      "time": 516.7,
+      "eye": [
+        -0.52,
+        2.58,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 17,
+      "name": "follow smoothing same-time reuse",
+      "time": 100,
+      "eye": [
+        -0.52,
+        2.58,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 17,
+      "name": "follow smoothing same-time reuse",
+      "time": 100,
+      "eye": [
+        -0.52,
+        2.58,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 17,
+      "name": "follow smoothing same-time reuse",
+      "time": 116.7,
+      "eye": [
+        -0.52,
+        2.58,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 18,
+      "name": "follow smoothing no registry",
+      "time": 0,
+      "eye": [
+        -1.52,
+        2.7800000000000002,
+        3.28
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 18,
+      "name": "follow smoothing no registry",
+      "time": 16.7,
+      "eye": [
+        -1.52,
+        2.7800000000000002,
+        3.28
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 19,
+      "name": "follow smoothing scene-target",
+      "time": 0,
+      "eye": [
+        0.48,
+        3.08,
+        5.279999999999999
+      ],
+      "target": [
+        2,
+        1,
+        2
+      ]
+    },
+    {
+      "index": 19,
+      "name": "follow smoothing scene-target",
+      "time": 16.7,
+      "eye": [
+        0.48,
+        3.08,
+        5.279999999999999
+      ],
+      "target": [
+        2,
+        1,
+        2
+      ]
+    },
+    {
+      "index": 19,
+      "name": "follow smoothing scene-target",
+      "time": 33,
+      "eye": [
+        0.48,
+        3.08,
+        5.279999999999999
+      ],
+      "target": [
+        2,
+        1,
+        2
+      ]
+    },
+    {
+      "index": 20,
+      "name": "dolly default",
+      "time": 0,
+      "eye": [
+        0,
+        1.4,
+        5
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 20,
+      "name": "dolly default",
+      "time": 1000,
+      "eye": [
+        0,
+        1.3499999999999999,
+        4.6
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 20,
+      "name": "dolly default",
+      "time": 3000,
+      "eye": [
+        0,
+        1.2,
+        3.4
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 21,
+      "name": "dolly custom",
+      "time": 0,
+      "eye": [
+        0,
+        0,
+        0
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 21,
+      "name": "dolly custom",
+      "time": 1000,
+      "eye": [
+        4.999999999999999,
+        0,
+        0
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 21,
+      "name": "dolly custom",
+      "time": 2000,
+      "eye": [
+        10,
+        0,
+        0
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 21,
+      "name": "dolly custom",
+      "time": 4000,
+      "eye": [
+        0,
+        0,
+        0
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 22,
+      "name": "path easeInOut",
+      "time": 0,
+      "eye": [
+        0,
+        0,
+        0
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 22,
+      "name": "path easeInOut",
+      "time": 1250,
+      "eye": [
+        0,
+        1.4644660940672622,
+        0
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 22,
+      "name": "path easeInOut",
+      "time": 2500,
+      "eye": [
+        0,
+        4.999999999999999,
+        0
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 22,
+      "name": "path easeInOut",
+      "time": 5000,
+      "eye": [
+        0,
+        0,
+        0
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 23,
+      "name": "path linear",
+      "time": 0,
+      "eye": [
+        0,
+        0,
+        0
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 23,
+      "name": "path linear",
+      "time": 1250,
+      "eye": [
+        0,
+        2.5,
+        0
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 23,
+      "name": "path linear",
+      "time": 2500,
+      "eye": [
+        0,
+        5,
+        0
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 23,
+      "name": "path linear",
+      "time": 5000,
+      "eye": [
+        0,
+        0,
+        0
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 24,
+      "name": "path captureTime",
+      "time": 0,
+      "eye": [
+        1.9999999999999998,
+        0,
+        0
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 24,
+      "name": "path captureTime",
+      "time": 9999,
+      "eye": [
+        1.9999999999999998,
+        0,
+        0
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 25,
+      "name": "flythrough",
+      "time": 0,
+      "eye": [
+        1,
+        1,
+        1
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 25,
+      "name": "flythrough",
+      "time": 1500,
+      "eye": [
+        1.1102230246251565e-16,
+        1.1102230246251565e-16,
+        1.1102230246251565e-16
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 26,
+      "name": "orthographicSize passthrough",
+      "time": 0,
+      "eye": [
+        0,
+        5,
+        5
+      ],
+      "target": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "index": 27,
+      "name": "isometric",
+      "time": 0,
+      "eye": [
+        4,
+        4,
+        4
+      ],
+      "target": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "index": 28,
+      "name": "follow smoothing 0 (clamp)",
+      "time": 0,
+      "eye": [
+        -0.52,
+        2.58,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 28,
+      "name": "follow smoothing 0 (clamp)",
+      "time": 16.7,
+      "eye": [
+        -0.52,
+        2.58,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 29,
+      "name": "follow smoothing 0.98 (clamp)",
+      "time": 0,
+      "eye": [
+        -0.52,
+        2.58,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 29,
+      "name": "follow smoothing 0.98 (clamp)",
+      "time": 16.7,
+      "eye": [
+        -0.52,
+        2.58,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 29,
+      "name": "follow smoothing 0.98 (clamp)",
+      "time": 33,
+      "eye": [
+        -0.52,
+        2.58,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 30,
+      "name": "follow smoothing negative",
+      "time": 0,
+      "eye": [
+        -0.52,
+        2.58,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 30,
+      "name": "follow smoothing negative",
+      "time": 16.7,
+      "eye": [
+        -0.52,
+        2.58,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 31,
+      "name": "follow distance default",
+      "time": 16.7,
+      "eye": [
+        -0.52,
+        2.58,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 32,
+      "name": "dolly eased loop wrap",
+      "time": 0,
+      "eye": [
+        0,
+        0,
+        0
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 32,
+      "name": "dolly eased loop wrap",
+      "time": 500,
+      "eye": [
+        3.9999999999999996,
+        0,
+        0
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 32,
+      "name": "dolly eased loop wrap",
+      "time": 1500,
+      "eye": [
+        4.000000000000001,
+        0,
+        0
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 32,
+      "name": "dolly eased loop wrap",
+      "time": 2500,
+      "eye": [
+        3.9999999999999996,
+        0,
+        0
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 32,
+      "name": "dolly eased loop wrap",
+      "time": 4500,
+      "eye": [
+        3.9999999999999996,
+        0,
+        0
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 33,
+      "name": "orbit target node-follow n/a",
+      "time": 0,
+      "eye": [
+        1.8599999999999999,
+        1.96,
+        2.34
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 33,
+      "name": "orbit target node-follow n/a",
+      "time": 16.7,
+      "eye": [
+        1.8599999999999999,
+        1.96,
+        2.34
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 34,
+      "name": "follow targetOffset no mode",
+      "time": 0,
+      "eye": [
+        -0.52,
+        3.08,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        1,
+        -2
+      ]
+    },
+    {
+      "index": 34,
+      "name": "follow targetOffset no mode",
+      "time": 16.7,
+      "eye": [
+        -0.52,
+        3.08,
+        1.2799999999999998
+      ],
+      "target": [
+        1,
+        1,
+        -2
+      ]
+    },
+    {
+      "index": 35,
+      "name": "perspective near/far passthrough",
+      "time": 0,
+      "eye": [
+        0,
+        0,
+        5
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 36,
+      "name": "follow offset scene-mode",
+      "time": 0,
+      "eye": [
+        2,
+        1.5,
+        -1
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 36,
+      "name": "follow offset scene-mode",
+      "time": 16.7,
+      "eye": [
+        2,
+        1.5,
+        -1
+      ],
+      "target": [
+        1,
+        0.5,
+        -2
+      ]
+    },
+    {
+      "index": 37,
+      "name": "follow tag hidden skip → scene",
+      "time": 0,
+      "eye": [
+        -1.52,
+        2.7800000000000002,
+        3.28
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 38,
+      "name": "path seconds tiny clamp",
+      "time": 0,
+      "eye": [
+        0,
+        0,
+        0
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 38,
+      "name": "path seconds tiny clamp",
+      "time": 50,
+      "eye": [
+        0,
+        0,
+        0
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 39,
+      "name": "orbit default distance/target",
+      "time": 0,
+      "eye": [
+        2.48,
+        2.38,
+        3.12
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 39,
+      "name": "orbit default distance/target",
+      "time": 16.7,
+      "eye": [
+        2.48,
+        2.38,
+        3.12
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    },
+    {
+      "index": 39,
+      "name": "orbit default distance/target",
+      "time": 100,
+      "eye": [
+        2.48,
+        2.38,
+        3.12
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ]
+    }
+  ]
+}
