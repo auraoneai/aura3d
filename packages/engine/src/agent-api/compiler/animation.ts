@@ -27,9 +27,52 @@ export { rejectEmptyAnimationPose } from "../app/actorAnimationHandle.js";
  * render path has no `SceneCompileContext`; PRD-15 drains this list through
  * `ctx.degrade` (same seam as `takeWorldEnvDegradations`).
  */
+/**
+ * 06-Q061 — the clip-apply/resolve degradation queue is bounded: identical
+ * reports (same code + nodeId + message, i.e. per clip) dedupe into one entry
+ * with an occurrence count, and the queue caps at
+ * MAX_PENDING_CLIP_APPLY_DEGRADATIONS with a dropped-count sentinel on drain.
+ * Per-frame miss/fail pushes can no longer grow the heap over long captures
+ * until lane 15 drains into ctx.degrade (inbound Q-06-1).
+ */
+const MAX_PENDING_CLIP_APPLY_DEGRADATIONS = 64;
 const pendingClipApplyDegradations: Omit<AuraDegradation, "frame">[] = [];
+const pendingDegradationCounts = new Map<string, number>();
+let droppedDegradationCount = 0;
+
+const degradationKey = (entry: Omit<AuraDegradation, "frame">): string =>
+  `${entry.code}|${entry.nodeId ?? ""}|${entry.message}`;
+
+function pushClipApplyDegradation(entry: Omit<AuraDegradation, "frame">): void {
+  const key = degradationKey(entry);
+  const seen = pendingDegradationCounts.get(key) ?? 0;
+  if (seen > 0) {
+    pendingDegradationCounts.set(key, seen + 1);
+    return;
+  }
+  if (pendingClipApplyDegradations.length >= MAX_PENDING_CLIP_APPLY_DEGRADATIONS) {
+    droppedDegradationCount += 1;
+    return;
+  }
+  pendingDegradationCounts.set(key, 1);
+  pendingClipApplyDegradations.push(entry);
+}
+
 export function takeClipApplyDegradations(): Omit<AuraDegradation, "frame">[] {
-  return pendingClipApplyDegradations.splice(0, pendingClipApplyDegradations.length);
+  const drained = pendingClipApplyDegradations.splice(0, pendingClipApplyDegradations.length);
+  const out = drained.map((entry) => {
+    const count = pendingDegradationCounts.get(degradationKey(entry)) ?? 1;
+    pendingDegradationCounts.delete(degradationKey(entry));
+    return count > 1 ? { ...entry, message: `${entry.message} (x${count} occurrences)` } : entry;
+  });
+  if (droppedDegradationCount > 0) {
+    out.push({
+      code: "capability-degraded",
+      message: `${droppedDegradationCount} clip degradation report(s) dropped after the ${MAX_PENDING_CLIP_APPLY_DEGRADATIONS}-entry queue cap.`
+    });
+    droppedDegradationCount = 0;
+  }
+  return out;
 }
 
 /** Under 3.1 defaults (flag on) a fuzzy-resolution miss is an error; under 3.0 it keeps the legacy first-clip fallback. */
@@ -54,7 +97,7 @@ const animationMaskForRuntime = (runtime: AnimationRuntimeWithMask, spec: AuraAn
 };
 
 const recordClipApplyFailure = (nodeId: string | undefined, message: string, cause?: unknown): void => {
-  pendingClipApplyDegradations.push({ code: "clip-apply-failed", nodeId, message, cause });
+  pushClipApplyDegradation({ code: "clip-apply-failed", nodeId, message, cause });
 };
 
 /**
