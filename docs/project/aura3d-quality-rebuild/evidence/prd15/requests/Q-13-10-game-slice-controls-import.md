@@ -1,5 +1,7 @@
 # Q-13-10 → to:prd13 (qr-request, CONTRACTS §6.5)
 
+**GitHub issue:** #689
+
 **Files:** `examples/game-slice/main.ts` (13-owned)
 **Contract served:** PRD-15 T8.1 — `packages/input/src/controls` is removed in 4.0.0
 once no in-repo consumer outside 15-owned files remains. It is currently blocked

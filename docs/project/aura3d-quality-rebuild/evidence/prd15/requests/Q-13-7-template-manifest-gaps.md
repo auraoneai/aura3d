@@ -1,5 +1,7 @@
 # Q-13-7 — create-aura3d / shipped template manifest gaps (owner 13)
 
+**GitHub issue:** #699
+
 Surfaced by the PRD-15 pack-check lane (`qr-prd15-pack-check.yml`). The
 consumer harness patches around both so the gate stays green; the template
 manifests themselves still need owner attention.

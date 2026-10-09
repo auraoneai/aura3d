@@ -1,5 +1,7 @@
 # Q-13-15 — look-floor subject-bounds + color-bucket checks fail on software GL (measured)
 
+**GitHub issue:** #694
+
 **Requester:** Lane 15 (PRD-15, Phase 8 `check:templates` bring-up)
 **Owner:** Lane 13 (template specs + look presets) / Lane 02 (env-IBL renderer path)
 **Status:** open — measured evidence attached; needs an owner decision, not blindly recalibrated constants

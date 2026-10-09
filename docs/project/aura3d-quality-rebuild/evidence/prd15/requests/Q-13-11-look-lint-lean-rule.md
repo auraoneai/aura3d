@@ -1,5 +1,7 @@
 # Q-13-11 → to:prd13 (qr-request, CONTRACTS §6.5)
 
+**GitHub issue:** #703
+
 **Files:** `packages/aura3d-cli/src/look/lint-static.ts` (13-owned),
 `tests/unit/cli/look-lint.test.ts` (15-owned — its fixture input feeds the rule)
 **Contract served:** PRD-15 T8.1 — `@aura3d/lean` is removed in 4.0.0. The

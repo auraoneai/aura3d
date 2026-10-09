@@ -1,5 +1,7 @@
 # Q-13-4 — three-compat template cleanup (lane 13)
 
+**GitHub issue:** #700
+
 **Filed by:** Lane 15 (PRD-15 T6.3)
 **Status:** request — lane 15 does not edit `templates/**` or `packages/create-aura3d/**`
 **PRD refs:** §6.8 "three-compat honesty", T6.3 (line 1722), request-table row Q-13-4 (line 1453), R20.

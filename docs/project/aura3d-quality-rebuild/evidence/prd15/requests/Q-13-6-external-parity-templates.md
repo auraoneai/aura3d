@@ -1,5 +1,7 @@
 # Q-13-6 → to:prd13 (qr-request, CONTRACTS §6.5)
 
+**GitHub issue:** #704
+
 **Files:** `templates/external-parity-asset-gallery`, `templates/external-parity-interactive-scene`,
 `templates/external-parity-material-studio`, `templates/external-parity-product-viewer` (root `templates/` is 13's)
 **Contract served:** PRD-15 T1.5 / §6.6 — the 4 parity templates are superseded by `templates/production-*`,
@@ -44,5 +46,4 @@ templates, and were left alone.
 
 ## Status
 
-OPEN — this session cannot create GitHub issues; recorded here and in the lane-15
-checkpoint report until it can be filed as `qr-request` + `to:prd13`.
+FILED as #704 (`qr-request` + `to:prd13`), 2026-10-09 — lane-13 write-back pass.

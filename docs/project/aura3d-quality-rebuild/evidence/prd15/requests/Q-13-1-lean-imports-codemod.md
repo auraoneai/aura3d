@@ -1,5 +1,7 @@
 # Q-13-1 — run `lean-imports` on the lean templates + add mini-game lighting (PRD-15 §6.7, R20)
 
+**GitHub issue:** #690
+
 **Owner:** 13 (templates + create-aura3d scaffolds) · **Requester:** 15 · **SLA:** 2 working days
 **Blocking:** §16.3 template captures on the real templates (this lane's standalone proof on
 `tests/qr/prd15/fixtures/lean-templates/` already lands with T4.7 — you do NOT need to wait for us).
