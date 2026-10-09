@@ -22,8 +22,8 @@ import { lightingNodes } from "./scene/lighting";
 import { createSiegeRig, fallbackCameraNode } from "./scene/camera";
 import { wireSiegeFx } from "./scene/fx";
 import { RANGE_BG } from "./scene/materials";
-import { publishSiegeEvidence } from "./evidence";
-import { applySiegeScenario } from "./scenarios";
+import { publishSiegeEvidence } from "../evidence";
+import { applySiegeScenario } from "../scenarios";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_SIEGE_GOLF" as const;
 const AIM_RATE = 0.9; // radians/s while an aim key is held
