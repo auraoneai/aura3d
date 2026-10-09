@@ -4,9 +4,11 @@
 // Flags come from ?a3d-qr=<list> so the same page validates flag-on draw and
 // the flag-off zero-pixel sentinel.
 import { camera, createAuraApp, effects, lights, primitives, scene } from "@aura3d/engine";
+import { mountReady } from "./mount-timing.js";
 
 interface FountainResult {
   readonly status: "ready" | "error";
+  readonly mountMs?: number | null;
   readonly flags?: readonly string[];
   readonly drawCalls?: number;
   readonly liveParticles?: number;
@@ -63,7 +65,7 @@ async function main(): Promise<void> {
     autoStart: false,
     ...(flags.length > 0 ? { qualityRebuild: { flags } } : {})
   });
-  await app.ready();
+  const __mount = await mountReady(app);
 
   // Run past the 30-frame zero-pixel window so the sentinel fires flag-off.
   app.step(1.25);
@@ -104,6 +106,7 @@ async function main(): Promise<void> {
 
   window.__QR_PRD07_FOUNTAIN__ = {
     status: "ready",
+    mountMs: __mount.mountMs,
     flags,
     drawCalls: diagnostics.drawCalls,
     liveParticles: fx?.liveParticles,
