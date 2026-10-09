@@ -25,12 +25,23 @@ import type { RenderItem } from "@aura3d/rendering";
 // so `SkinningPaletteTextureCache`/`MorphTargetTexture` (and their Texture
 // chains) never enter the static "." critical path nor load under flag-off.
 type RenderingLaneModule = typeof import("@aura3d/rendering");
-let renderingLane: RenderingLaneModule | undefined;
+// Named-symbol slot, not the module namespace — destructuring in .then keeps
+// the lazy import statically analyzable so the chunk still tree-shakes.
+type RenderingLaneApi = Pick<
+  RenderingLaneModule,
+  | "releaseMorphScratchGeometry"
+  | "releaseMorphTargetTexture"
+  | "skinningPaletteCache"
+  | "paletteKeyOf"
+>;
+let renderingLane: RenderingLaneApi | undefined;
 let renderingLaneLoading: Promise<unknown> | undefined;
 const ensureRenderingLane = (): void => {
-  renderingLaneLoading ??= import("@aura3d/rendering").then((m) => {
-    renderingLane = m;
-  });
+  renderingLaneLoading ??= import("@aura3d/rendering").then(
+    ({ releaseMorphScratchGeometry, releaseMorphTargetTexture, skinningPaletteCache, paletteKeyOf }) => {
+      renderingLane = { releaseMorphScratchGeometry, releaseMorphTargetTexture, skinningPaletteCache, paletteKeyOf };
+    }
+  );
 };
 import { setPoseMixerBlendFlagProvider } from "@aura3d/animation/lanes";
 import { registerDiagnosticsSection } from "../contracts/diagnostics.js";
@@ -138,7 +149,7 @@ registerTypedGLBActorExtension({
     // teardown before the first resolve.
     ensureRenderingLane();
     const lane = renderingLane;
-    const releaseAll = (m: RenderingLaneModule) => {
+    const releaseAll = (m: RenderingLaneApi) => {
       for (const item of collectTypedGLBActorRenderItems(actor)) {
         m.releaseMorphTargetTexture(item.geometry);
         m.releaseMorphScratchGeometry(item.geometry);
@@ -231,8 +242,8 @@ export function installPrd06ShaderWarmup(options: Prd06ShaderWarmupOptions): voi
   let loading: Promise<unknown> | undefined;
   setPrd06ShaderWarmupCompiler((items) => {
     if (!warmup) {
-      loading ??= import("@aura3d/rendering").then((m) => {
-        warmup = m.createPrd06ProgramCacheWarmup(options);
+      loading ??= import("@aura3d/rendering").then(({ createPrd06ProgramCacheWarmup }) => {
+        warmup = createPrd06ProgramCacheWarmup(options);
       });
       return loading.then(() => warmup!(items));
     }

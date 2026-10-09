@@ -325,12 +325,42 @@ import type { SkeletonBinding } from "@aura3d/animation/lanes";
 // behind the flag the actor's frame path degrades one evaluate until the chunk
 // resolves instead.
 type AnimationLaneModule = typeof import("@aura3d/animation/lanes");
-let animationLane: AnimationLaneModule | undefined;
+// Named-symbol slot, not the module namespace — destructuring in .then keeps
+// the lazy import statically analyzable so the chunk still tree-shakes.
+type AnimationLaneSolvers = Pick<
+  AnimationLaneModule,
+  | "solveTwoBoneIkRotations"
+  | "solveFootIkConstraint"
+  | "createLookAtConstraint"
+  | "solveCcdIk"
+  | "createSpringChain"
+  | "createSpringChainFromPreset"
+  | "bindSpringChainToSkeleton"
+>;
+let animationLane: AnimationLaneSolvers | undefined;
 let animationLaneLoading: Promise<unknown> | undefined;
 const ensureAnimationLane = (): void => {
-  animationLaneLoading ??= import("@aura3d/animation/lanes").then((m) => {
-    animationLane = m;
-  });
+  animationLaneLoading ??= import("@aura3d/animation/lanes").then(
+    ({
+      solveTwoBoneIkRotations,
+      solveFootIkConstraint,
+      createLookAtConstraint,
+      solveCcdIk,
+      createSpringChain,
+      createSpringChainFromPreset,
+      bindSpringChainToSkeleton
+    }) => {
+      animationLane = {
+        solveTwoBoneIkRotations,
+        solveFootIkConstraint,
+        createLookAtConstraint,
+        solveCcdIk,
+        createSpringChain,
+        createSpringChainFromPreset,
+        bindSpringChainToSkeleton
+      };
+    }
+  );
 };
 
 /**
