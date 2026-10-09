@@ -28,6 +28,7 @@ on:
       - "public/aura-decoders/**"
       - "apps/loader-ktx2/**"
       - "tests/qr/prd05/**"
+      - "tests/browser/**"
       - ".github/workflows/qr-prd05-assets-browser.yml"
   push:
     branches: ['qr/**']
@@ -38,6 +39,7 @@ on:
       - "packages/engine/src/agent-api/AssetDecoders.ts"
       - "public/aura-decoders/**"
       - "tests/qr/prd05/**"
+      - "tests/browser/**"
       - ".github/workflows/qr-prd05-assets-browser.yml"
   workflow_dispatch:
 
