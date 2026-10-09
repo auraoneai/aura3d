@@ -860,10 +860,11 @@ export interface AuraParticleBudgetDiagnostics {
   readonly effectCount: number;
   readonly totalParticles: number;
   readonly estimatedDrawCalls: number;
-  readonly estimatedUpdateCostMs: number;
+  readonly heuristicUpdateCostMs: number;
+  /** Last measured `particles` scope ms; null until a live frame reports. */
+  readonly measuredUpdateMs: number | null;
   readonly modes: readonly AuraParticleMaterialMode[];
   readonly texturedBillboards: number;
-  readonly gpuReady: boolean;
 }
 
 export interface AuraLabelNode extends AuraTransformSpec {

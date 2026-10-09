@@ -4,6 +4,7 @@ import type { AuraColor, AuraEffectNode, AuraParticleBudgetDiagnostics, AuraPart
 import { groups } from "./groups.js";
 import { prefabs } from "./prefabs/index.js";
 import { particleFountain } from "../particle-fountain-runtime.js";
+import { lastParticleUpdateMs } from "@aura3d/rendering";
 
 export const particles = {
   materialModes: (): readonly AuraParticleMaterialMode[] => ["additive-glow", "soft-alpha", "spark", "smoke", "splash", "dust", "star"],
@@ -15,7 +16,8 @@ export const particles = {
  * PRD-07 P1-T3 — existing fields plus `declared`/`observedLive`/`observedDraws`.
  * The function is static: observed values are always null here and are filled
  * by the `effects` diagnostics section when a live effect system reports.
- * `gpuReady` stays as the deprecated alias computed exactly as before.
+ * `measuredUpdateMs` is filled from the `particles` FrameStats scope when a
+ * live prd07 contributor has wrapped a frame (null for static scenes).
  */
 export function collectParticleBudgetDiagnostics(nodes: readonly AuraSceneNode[]): AuraParticleBudgetDiagnostics & { readonly declared: number; readonly observedLive: null; readonly observedDraws: null } {
   const flattened = groups.flatten(nodes);
@@ -27,10 +29,12 @@ export function collectParticleBudgetDiagnostics(nodes: readonly AuraSceneNode[]
     effectCount: particleEffects.length,
     totalParticles,
     estimatedDrawCalls: particleEffects.length,
-    estimatedUpdateCostMs: Number((totalParticles * 0.00018 + particleEffects.length * 0.04).toFixed(3)),
+    heuristicUpdateCostMs: Number((totalParticles * 0.00018 + particleEffects.length * 0.04).toFixed(3)),
+    // C-20/C-28: last measured "particles" scope ms; null until a live
+    // prd07 frame wraps update+draw (static scenes stay null, not zero).
+    measuredUpdateMs: lastParticleUpdateMs(),
     modes,
     texturedBillboards: particleEffects.filter((node) => node.texturedBillboard !== false).length,
-    gpuReady: totalParticles >= 1000 && particleEffects.every((node) => node.texturedBillboard !== false),
     declared: totalParticles,
     observedLive: null,
     observedDraws: null

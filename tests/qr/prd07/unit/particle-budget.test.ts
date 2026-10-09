@@ -13,7 +13,7 @@ const particleScene = () =>
   );
 
 describe("P1-T3 particle budget diagnostics", () => {
-  it("static function returns declared/observed fields; gpuReady unchanged", () => {
+  it("static function returns declared/observed + heuristic/measured fields", () => {
     const nodes = [
       { kind: "effect", effect: "particles", particleCount: 64 },
       { kind: "effect", effect: "particles", particleCount: 2000, texturedBillboard: true }
@@ -24,8 +24,11 @@ describe("P1-T3 particle budget diagnostics", () => {
     expect(d.declared).toBe(d.totalParticles);
     expect(d.observedLive).toBeNull();
     expect(d.observedDraws).toBeNull();
-    // gpuReady is the deprecated alias: ≥1000 particles AND all textured.
-    expect(d.gpuReady).toBe(true);
+    // #101: heuristic estimate renamed; measured field is null without a live frame.
+    expect(d.heuristicUpdateCostMs).toBeGreaterThan(0);
+    expect(d.measuredUpdateMs).toBeNull();
+    expect("gpuReady" in d).toBe(false);
+    expect("estimatedUpdateCostMs" in d).toBe(false);
   });
 
   it("effects section fills observedLive/observedDraws from the live system", () => {

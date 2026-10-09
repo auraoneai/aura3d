@@ -14,6 +14,7 @@ import type { RenderSource } from "../contracts/renderSource";
 import type { RenderItem } from "../contracts/renderItem";
 import type { ParticleRenderHook } from "../contracts/particles";
 import type { AuraSkySpecLike } from "../contracts/atmosphere";
+import { frameStatsSlot, type FrameStatsLike } from "../contracts/device";
 import { ParticleBatchPass, type ParticlePassDiagnostics } from "./ParticleBatchPass";
 import { BeamPass, type BeamDrawSpec } from "./BeamPass";
 import { MeshParticlePass, type MeshParticleFeed } from "./MeshParticlePass";
@@ -110,21 +111,65 @@ export function meshPassFor(device: RenderDevice): MeshParticlePass {
   return pass;
 }
 
+/** C-20: particle update+draw measured under the "particles" FrameStats
+ *  scope (Q-07-2). One monitor per process; a frame is opened lazily by the
+ *  first wrapped call and closed when the next collect begins. */
+let particleStats: FrameStatsLike | null | undefined;
+let particleStatsOpen = false;
+let lastParticleScopeMs: number | null = null;
+
+function particleStatsMonitor(): FrameStatsLike | null {
+  if (particleStats === undefined) {
+    try {
+      particleStats = frameStatsSlot.get({ values: {}, on: () => false })(240);
+    } catch {
+      particleStats = null;
+    }
+  }
+  return particleStats;
+}
+
+function particleScope<T>(fn: () => T): T {
+  const mon = particleStatsMonitor();
+  if (!mon) return fn();
+  if (!particleStatsOpen) {
+    mon.begin(typeof performance !== "undefined" ? performance.now() : Date.now());
+    particleStatsOpen = true;
+  }
+  return mon.scope("particles", fn);
+}
+
+/** Close the open monitor frame and capture the last "particles" scope ms. */
+function closeParticleScopeFrame(): void {
+  const mon = particleStatsMonitor();
+  if (mon && particleStatsOpen) {
+    const sample = mon.end();
+    lastParticleScopeMs = sample.scopes["particles"] ?? null;
+  }
+  particleStatsOpen = false;
+}
+
+/** Last measured "particles" scope ms (feed + draws); null until a frame ran. */
+export function lastParticleUpdateMs(): number | null {
+  return lastParticleScopeMs;
+}
+
 const particlesContributor: FrameContributor = {
   id: "prd07.particles",
   owner: "prd07",
   flag: "A3D_QR_VFX",
   phases: ["collect", "transparent"],
   collect(items: RenderItem[], ctx: FrameContributorContext): RenderItem[] {
+    closeParticleScopeFrame();
     const vfx = (ctx.source as Prd07FrameSource).vfx;
-    if (vfx) vfx.feed(particlePassFor(ctx.device));
+    if (vfx) particleScope(() => vfx.feed(particlePassFor(ctx.device)));
     return items;
   },
   transparentItems(ctx: FrameContributorContext): TransparentQueueItem[] {
     const vfx = (ctx.source as Prd07FrameSource).vfx;
     if (!vfx) return [];
     const pass = particlePassFor(ctx.device);
-    const items = pass.transparentItems(ctx);
+    const items = pass.transparentItems(ctx).map((it) => ({ ...it, draw: (c: FrameContributorContext) => particleScope(() => it.draw(c)) }));
     vfx.afterDraw?.(pass.diagnostics);
     return items;
   }

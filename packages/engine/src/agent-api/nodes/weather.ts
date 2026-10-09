@@ -49,7 +49,7 @@ export const weather = {
     });
     return { nodes, dropCount: drops.length, wetness: state.wetness };
   },
-  /** Ground slab with wetness darkening + puddle discs mapped from WeatherPuddlePatch. */
+  /** @deprecated PRD-10 §7.3/§12.4: use C-21 wetness on any material, or `world.street({ wet: true })` for street surfaces. */
   wetGround: (options: {
     readonly type?: WeatherType;
     readonly dryColor?: string;

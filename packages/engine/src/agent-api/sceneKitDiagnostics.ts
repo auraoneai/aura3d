@@ -197,7 +197,8 @@ export function buildSceneKit(id: AuraSceneKitId, options: AuraSceneKitCustomize
       labels.hud(`emission rate ${options.emissionRate ?? 120} | collision splash`, { name: "particle scene kit hud" }).toJSON()
     ];
     const diagnostics = particles.diagnostics(nodes);
-    return { background: "#071018", nodes, camera: options.camera ?? camera.perspective({ position: [4.6, 3.2, 6.0], target: [0, 1.35, 0], fov: 40 }), structuralScore: diagnostics.gpuReady ? 5 : 3, problems: diagnostics.gpuReady ? [] : ["particle diagnostics not GPU-ready"], evidence: [`${diagnostics.totalParticles} particles`, `${diagnostics.texturedBillboards} textured billboard layers`, "emission-rate, collision, and baked first-frame droplet visibility"] };
+    const gpuReady = diagnostics.totalParticles >= 1000 && diagnostics.texturedBillboards === diagnostics.effectCount;
+    return { background: "#071018", nodes, camera: options.camera ?? camera.perspective({ position: [4.6, 3.2, 6.0], target: [0, 1.35, 0], fov: 40 }), structuralScore: gpuReady ? 5 : 3, problems: gpuReady ? [] : ["particle diagnostics not GPU-ready"], evidence: [`${diagnostics.totalParticles} particles`, `${diagnostics.texturedBillboards} textured billboard layers`, "emission-rate, collision, and baked first-frame droplet visibility"] };
   }
   if (id === "solarSystem") {
     const nodes = [
