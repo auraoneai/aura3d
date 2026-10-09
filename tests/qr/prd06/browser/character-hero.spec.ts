@@ -159,13 +159,6 @@ function springTipExcursionDeg(frames: readonly FrameSample[], from: number, to:
   return max;
 }
 
-/** Excursion across the last `count` samples at/after `from` — pacing-proof settled check. */
-function springTipExcursionDegLast(frames: readonly FrameSample[], from: number, count: number): number {
-  const tail = frames.filter((f) => f.t >= from).slice(-count);
-  if (tail.length < 2) return 0;
-  return springTipExcursionDeg(tail, tail[0]!.t, tail[tail.length - 1]!.t);
-}
-
 /* ------------------------------------------------ spec ----------------- */
 
 const PHASES = { idleEnd: 1.2, walkEnd: 3.2, runEnd: 5.0, stopEnd: 5.9, airEnd: 6.6, done: 8.0 };
@@ -271,14 +264,19 @@ test.describe("PRD-06 character-hero (T4.4, §17.2)", () => {
     const landingDip = Math.max(...frames.filter((f) => f.t >= PHASES.airEnd && f.t <= PHASES.airEnd + 0.15).map((f) => standingY - (f.motion.bones.pelvis?.position[1] ?? standingY)));
     expect(landingDip, `landing dip ${landingDip}m`).toBeGreaterThanOrEqual(0.03);
 
-    // Gate 5 — spring toe-leaf settles < 1° once the rig is still. The
-    // stop/air/land phases keep kicking the chain (leg motion is the spring
-    // input, not residual ring — stiffness 60 + relativeDamping 12 settles a
-    // still chain in ~0.2 s), so any earlier slice reads honest mid-swing.
-    // Measure over the final 3 sampled frames — after landing the rig idles
-    // and the leaf has to be still; a fixed sim-time slice can hold zero
-    // samples under ~1 fps pacing.
-    const springSettle = springTipExcursionDegLast(frames, PHASES.airEnd, 3);
+    // Gate 5 — PRD §17.2 Phase 4: spring toe-leaf excursion < 1° from 0.6 s
+    // after deceleration onwards (stopEnd → end of the sampled sequence).
+    // The stop/air/land phases keep kicking the chain (leg motion is the
+    // spring input, not residual ring — stiffness 60 + relativeDamping 12
+    // settles a still chain in ~0.2 s), so the gate covers the settled tail.
+    // The window must hold samples: an empty/starved-pacing slice would let
+    // the gate pass vacuously.
+    const springTail = frames.filter((f) => f.t >= PHASES.stopEnd + 0.6);
+    expect(
+      springTail.length,
+      `spring settle window [${PHASES.stopEnd + 0.6}s, ∞) held ${springTail.length} samples`,
+    ).toBeGreaterThanOrEqual(2);
+    const springSettle = springTipExcursionDeg(frames, PHASES.stopEnd + 0.6, Number.POSITIVE_INFINITY);
     expect(springSettle, `spring tip excursion ${springSettle}°`).toBeLessThan(1.0);
 
     // Gate 6 — look-at error ≤ 5° for every frame after blend-in. The look-at
