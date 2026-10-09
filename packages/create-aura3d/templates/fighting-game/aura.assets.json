@@ -5,64 +5,74 @@
   "typegen": "src/aura-assets.ts",
   "assets": [
     {
-      "id": "showcaseWalkAnimatedGirl",
+      "id": "auraclashPlayerRig",
       "type": "model",
       "format": "glb",
-      "source": "public/aura-assets/showcaseWalkAnimatedGirl.93872fc2.glb",
-      "outputPath": "public/aura-assets/showcaseWalkAnimatedGirl.93872fc2.glb",
-      "url": "/aura-assets/showcaseWalkAnimatedGirl.93872fc2.glb",
-      "hash": "sha256-93872fc24240a071b6195d6f1339f40b09b3308dc998311252d21ebd9042d8c6",
-      "sizeBytes": 3791152,
-      "bounds": [
-        86.929,
-        161.836,
-        37.758
-      ],
-      "materials": [
-        "material_0",
-        "material_1",
-        "material_0_0",
-        "material_0_1",
-        "material_0_2",
-        "material_0_3",
-        "material_0_4"
-      ],
+      "source": "public/aura-assets/auraclash-player-rig.glb",
+      "outputPath": "public/aura-assets/auraclash-player-rig.glb",
+      "url": "/aura-assets/auraclash-player-rig.glb",
+      "hash": "sha256-3318d671632878ed27b8af6de88c6e5ca647e0d4a04cf03780d555fa07cec087",
+      "sizeBytes": 7822664,
+      "materials": [],
       "animations": [
-        "Take 001"
+        "Crouch_Idle_Loop",
+        "Death01",
+        "Hit_Chest",
+        "Hit_Head",
+        "Idle_Loop",
+        "Jump_Loop",
+        "Punch_Cross",
+        "Punch_Jab",
+        "Sprint_Loop",
+        "Sword_Attack",
+        "Walk_Loop",
+        "Sword_Block"
       ],
       "textures": [],
-      "thumbnailUrl": "/aura-assets/showcaseWalkAnimatedGirl.thumb.svg"
+      "libraryId": "auraclash-player-rig",
+      "libraryKit": "characters/humanoid-pbr",
+      "license": "CC0",
+      "attribution": "Quaternius",
+      "sourcePage": "https://quaternius.itch.io/modular-character-outfits-fantasy",
+      "bounds": [
+        1.669,
+        1.788,
+        0.349
+      ]
     },
     {
-      "id": "showcaseRunnerRobot",
+      "id": "auraclashRivalRig",
       "type": "model",
       "format": "glb",
-      "source": "public/aura-assets/showcaseRunnerRobot.252b3a16.glb",
-      "outputPath": "public/aura-assets/showcaseRunnerRobot.252b3a16.glb",
-      "url": "/aura-assets/showcaseRunnerRobot.252b3a16.glb",
-      "hash": "sha256-252b3a16d5a8d7fd67a4304ec8135d4fa492802a31bc2fc2d4614e130a1f4e73",
-      "sizeBytes": 5500216,
-      "bounds": [
-        17.509,
-        9.101,
-        27.461
-      ],
-      "materials": [
-        "HEAD",
-        "EYES",
-        "BODY",
-        "HINGE",
-        "material",
-        "material_5"
-      ],
+      "source": "public/aura-assets/auraclash-rival-rig.glb",
+      "outputPath": "public/aura-assets/auraclash-rival-rig.glb",
+      "url": "/aura-assets/auraclash-rival-rig.glb",
+      "hash": "sha256-c8d844dc4a70bc5d548c1bdd5c20c7a2f336529088fd350098431adf87cdf13b",
+      "sizeBytes": 4732472,
+      "materials": [],
       "animations": [
-        "IDLE",
-        "WALK",
-        "RUN",
-        "ALL"
+        "Hit_Knockback",
+        "Idle_FoldArms_Loop",
+        "LayToIdle",
+        "Melee_Hook",
+        "NinjaJump_Idle_Loop",
+        "Shield_Dash_RM",
+        "Sword_Block",
+        "Sword_Regular_A",
+        "Sword_Regular_Combo",
+        "Zombie_Walk_Fwd_Loop"
       ],
       "textures": [],
-      "thumbnailUrl": "/aura-assets/showcaseRunnerRobot.thumb.svg"
+      "libraryId": "auraclash-rival-rig",
+      "libraryKit": "characters/humanoid-pbr",
+      "license": "CC0",
+      "attribution": "Quaternius",
+      "sourcePage": "https://quaternius.itch.io/modular-character-outfits-fantasy",
+      "bounds": [
+        1.799,
+        1.869,
+        0.373
+      ]
     }
   ]
 }

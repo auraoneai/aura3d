@@ -157,10 +157,10 @@ const arena = scene()
   // haze and post grade; only the accent rim spot rides on top of it.
   .add(looks.preset(LOOK_ID))
   .addMany(fightingStage.nodes)
-  // The creature rival renders roughly twice the player height at scale 1, so
-  // it mounts slightly under scale to share the frame with the humanoid player.
+  // Both library rigs are metre-scale humanoids (~1.8 m) matched to the 1.7 m
+  // fighter colliders — full scale for both, no per-model correction needed.
   .add(createFighterNode("player", PLAYER_FIGHTER_ASSET, "Player fighter", playerStart, 1, "#45f5bb", typedFighterAssets, 1))
-  .add(createFighterNode("rival", RIVAL_FIGHTER_ASSET, "Rival fighter", rivalStart, -1, "#ffca5f", typedFighterAssets, 0.75))
+  .add(createFighterNode("rival", RIVAL_FIGHTER_ASSET, "Rival fighter", rivalStart, -1, "#ffca5f", typedFighterAssets, 1))
   .addMany([
     effects.bloom({ intensity: 0.32 }),
     lights.directional({ name: "rim light", color: "#80ffd4", intensity: 0.7 }).position(0, 4, 3)
