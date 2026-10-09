@@ -198,6 +198,13 @@ Source of truth: `public/aura-decoders/` (lane 05, sha256-verified).
 Meanwhile: repo apps serve them from the root `public/` dir; scaffolds
 fall back to `AssetDecoderUnavailable` until the templates vendor them.
 
+Update (PR #615): `@aura3d/assets/vite` now exports `auraDecodersPlugin()`,
+which copies `packages/assets/vendor/{basis,draco,meshopt}` to
+`<outDir>/aura-decoders/` in app builds and serves the tree under
+`/aura-decoders/` in dev. Lane 13 may either vendor the files into each
+template's `public/` or add the plugin to the scaffold's vite config —
+the plugin is the single-code-path option.
+
 ## Q-15-5 → lane 15 (root manifest, pruned scripts still referenced by workflows)
 
 QR-15's T7 prune deleted `check:skills`, `check:agent-docs` and `skills:sync`
@@ -399,3 +406,13 @@ Q-14-3: route owners adopt the listed replacements and flip the listed flag
 bundles. Q-14-4: `qr-ic-regression` misses are attributed per game by
 leave-one-out against the lane-14 `tools/quality-rebuild-capture` default-URL
 captures (no `?capture=review`).
+
+## Q-CI-1 → infrastructure (workflow_dispatch 403 through git-manager proxy)
+
+`gh workflow run` and the REST `dispatches` endpoint return
+`HTTP 403 Resource not accessible by integration` on this repo, so
+dispatch-only workflows (`asset-lookdev.yml`) cannot be triggered from
+sessions at all. Lane-side alternatives: add a `push:` trigger scoped to a
+lane path filter, or run the same capture via the GitLab bridge. This blocks
+05-S8 (the workflow has 0 runs) — the capture itself is implemented
+(`apps/asset-lookdev/capture.mjs`), only the trigger is missing.
