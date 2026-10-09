@@ -77,6 +77,7 @@ export function createFlightRig(o: FlightRigOptions): AuraCameraRig {
 
   return {
     id: "flight",
+    continuous: true,
     reset(pose) {
       eye = look = undefined;
       bankRad = 0;

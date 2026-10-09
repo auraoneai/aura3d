@@ -66,6 +66,7 @@ export function createChaseRig(o: ChaseRigOptions): AuraCameraRig {
 
   return {
     id: "chase",
+    continuous: true,
     reset(pose) {
       yaw = dist = prevYaw = Number.NaN;
       fovVal = Number.NaN;

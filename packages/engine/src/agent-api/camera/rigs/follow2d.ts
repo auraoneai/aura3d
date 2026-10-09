@@ -40,6 +40,7 @@ export function createFollow2dRig(o: Follow2dRigOptions): AuraCameraRig {
 
   return {
     id: "follow2d",
+    continuous: true,
     reset(pose) {
       centreX = centreY = Number.NaN;
       leadX = 0;

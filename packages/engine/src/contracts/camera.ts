@@ -21,7 +21,18 @@ export interface AuraCameraSubject {
 }
 export interface AuraCameraProbe { sphereCast(from: AuraVec3, to: AuraVec3, radius: number): { readonly hit: boolean; readonly distance: number; readonly node?: string }; occluders(from: AuraVec3, to: AuraVec3): readonly string[]; }
 export interface AuraCameraRigContext { readonly dt: number; readonly time: number; readonly aspect: number; readonly previous: AuraCameraPose; subject(ref: string | AuraRuntimeNodeHandle): AuraCameraSubject | undefined; readonly probe: AuraCameraProbe; }
-export interface AuraCameraRig { readonly id: string; update(ctx: AuraCameraRigContext): AuraCameraPose; reset?(pose?: AuraCameraPose): void; }
+export interface AuraCameraRig {
+  readonly id: string;
+  /**
+   * `true` when the rig resamples external state (a tracked subject, pointer,
+   * vehicle telemetry) every frame — its output can change without any API
+   * call, so the frame driver must keep ticking it. Fixed-pose rigs (static,
+   * spec shots without a target) omit this and may idle out once settled.
+   */
+  readonly continuous?: boolean;
+  update(ctx: AuraCameraRigContext): AuraCameraPose;
+  reset?(pose?: AuraCameraPose): void;
+}
 export interface AuraCameraLayer { readonly id: string; readonly timeDomain?: "real" | "sim"; apply(pose: AuraCameraPose, ctx: { readonly dt: number; readonly reducedMotion: boolean }): AuraCameraPose; readonly energy?: () => number; }
 export interface AuraTraumaLayer extends AuraCameraLayer { add(amount: number): void; configure(o: { maxAngleDeg?: number; maxOffset?: number; frequency?: number; decayPerSecond?: number }): void; }
 export interface AuraPunchLayer extends AuraCameraLayer { trigger(o: { fov?: number; dolly?: number; attack?: number; hold?: number; release?: number }): void; }

@@ -40,6 +40,7 @@ export function createTopDownRig(o: TopDownRigOptions = {}): AuraCameraRig {
 
   return {
     id: "topDown",
+    continuous: true,
     reset(pose) {
       centre = pose ? [...pose.target] : undefined;
     },

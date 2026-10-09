@@ -37,6 +37,7 @@ export function createAltitudeRig(o: AltitudeRigOptions): AuraCameraRig {
 
   return {
     id: "altitude",
+    continuous: true,
     reset(pose) {
       dist = Number.NaN;
       look = pose ? [...pose.target] : undefined;

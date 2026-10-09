@@ -170,6 +170,15 @@ export class LegacySpecRig implements AuraCameraRig {
     this.id = "fromSpec";
   }
 
+  /**
+   * 08-LOOP: a spec that tracks a subject (`targetNode` or `mode: "follow"`)
+   * resamples it every frame — the driver must keep ticking. A pure
+   * position/target spec is a fixed pose and may idle out once settled.
+   */
+  get continuous(): boolean {
+    return Boolean(this.spec.targetNode) || this.spec.mode === "follow";
+  }
+
   private depsFor(ctx: AuraCameraRigContext): LegacySpecRigDeps {
     return {
       runtimeTarget:

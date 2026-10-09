@@ -76,6 +76,12 @@ export interface AuraFeelBusImpl extends AuraFeelBus {
   screenUniforms(): AuraScreenFeelUniforms;
   /** Low-tier publish: flash + vignette only (C-27). */
   screenUniformsForTier(tier: "low" | "medium" | "high" | "ultra"): AuraScreenFeelUniforms;
+  /**
+   * 08-LOOP: `true` when nothing is decaying — all screen parts at rest and
+   * no armed parts awaiting a pixel verdict. Drivers may unregister their
+   * frame callback once this returns true; `emit()` re-arms it.
+   */
+  isIdle(): boolean;
 }
 
 const SCREEN_HALFLIFE = 0.2;
@@ -191,6 +197,16 @@ export function createFeelBus(deps: AuraFeelBusDeps = {}): AuraFeelBusImpl {
         }
         if (any) bump("screen");
       }
+    },
+
+    isIdle() {
+      return (
+        pendingParts.size === 0 &&
+        screen.flash === 0 &&
+        screen.chroma === 0 &&
+        screen.radialBlur === 0 &&
+        screen.vignette === 0
+      );
     },
 
     screenUniforms() {
