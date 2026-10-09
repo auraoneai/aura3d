@@ -1,5 +1,7 @@
 # Q-13-5 — `aura3d-threejs-migration` skill update (lane 13)
 
+**GitHub issue:** #695
+
 **Filed by:** Lane 15 (PRD-15 T6.2)
 **Status:** request
 **PRD refs:** §6.8 (line 914: "Request Q-13-5: 13 updates the `aura3d-threejs-migration`

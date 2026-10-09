@@ -1,5 +1,7 @@
 # Q-13-12 → to:prd13 (qr-request, CONTRACTS §6.5)
 
+**GitHub issue:** #705
+
 **Files:** `tools/agent-docs/simulation.ts`, `tools/agent-templates/index.ts`,
 `packages/create-aura3d/templates/*/tests/look-floor.ts` (all 13-owned)
 **Contract served:** PRD-15 T8.2 — the restored `check:agent-docs` /

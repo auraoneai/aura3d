@@ -1,5 +1,7 @@
 # Q-13-3 — animation-studio template scripts should import `@aura3d/engine/assets` (lane 13)
 
+**GitHub issue:** #698
+
 **Filed by:** Lane 15 (PRD-15 T6.10)
 **Status:** request — lane 15 does not edit `packages/create-aura3d/**`
 **PRD refs:** §984 (GLB parsing row: "Template scripts importing `@aura3d/engine/assets` → request Q-13-3"), T6.10 (line 1729), request-table row Q-13-3 (line 1452).
