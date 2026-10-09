@@ -139,10 +139,13 @@ registerTypedGLBActorExtension({
 /**
  * C-14 velocity inputs (PRD-06 §8.5). `collectRenderItems` runs at the head of
  * each actor's render-item collection — after the previously presented
- * frame's passes — so the actor extension is where the palette cache's
- * once-per-presented-frame rotation belongs (`beginFrame`: every key touched
- * since the last call moves `current`→`previous`, exactly the §8.5 `swap()`
- * cadence; it is a no-op when nothing bound since the last collect).
+ * frame's passes. The palette cache's once-per-presented-frame rotation
+ * (`beginFrame`: every key touched since the last call moves
+ * `current`→`previous`) is owned by the present boundary —
+ * `SkinningPaletteUploadManager.beginFrame()` in `ForwardPass.execute`.
+ * Calling it per-actor here rotated N times per presented frame (once per
+ * collect), overwriting `previous` with the just-uploaded `current` and
+ * defeating the once-per-frame upload guard — so the extension only stamps.
  *
  * Items then carry the optional C-14 fields — inert until the post lane's
  * velocity pass is real:
@@ -159,7 +162,6 @@ registerTypedGLBActorExtension({
   owner: "prd06",
   flag: "A3D_QR_ANIMATION",
   collectRenderItems: (_actor, items) => {
-    skinningPaletteCache.beginFrame();
     let stampedAll = items as RenderItem[];
     for (let i = 0; i < items.length; i += 1) {
       const item = items[i]!;
