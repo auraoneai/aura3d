@@ -17,7 +17,8 @@
     "write:route-health": "node scripts/write-route-health.mjs"
   },
   "dependencies": {
-    "@aura3d/engine": "workspace:*"
+    "@aura3d/engine": "workspace:*",
+    "@aura3d/game": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.8.3",

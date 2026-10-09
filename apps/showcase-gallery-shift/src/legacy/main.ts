@@ -1,3 +1,4 @@
+
 /**
  * Gallery Shift - route mount (PRD GS-04..GS-12).
  *
@@ -18,7 +19,6 @@
 import {
   AnimationController,
   camera,
-  createGameApp,
   effects,
   game,
   geometry,
@@ -35,6 +35,16 @@ import {
   type AuraRuntimeNodeHandle,
   type AuraSceneNode
 } from "@aura3d/engine";
+import {
+  createFxParticlePass,
+  createGame,
+  createJuice,
+  createOverlayDriver,
+  createRumbleDriver,
+  createTweenEngine
+} from "@aura3d/game";
+import { bindGalleryEvidence } from "../evidence";
+import { bindGalleryDrive } from "../scenario-drive";
 import { assets } from "../../../../src/aura-assets";
 import {
   FLOOR_LAYOUTS,
@@ -81,8 +91,7 @@ Object.defineProperty(window, "__AURA3D_SHOWCASE_GALLERY_SHIFT__", {
 });
 const reducedMotion = typeof window.matchMedia === "function"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
-document.body.dataset.capture = visualReviewCapture ? "review" : "default";
+document.body.dataset.capture = "default";
 const THIEF_FOCUS_MATERIAL = material.emissive({
   name: "thief tactical focus ring",
   color: "#123b3a",
@@ -344,11 +353,6 @@ ui.html("#panel", `
     <button id="gs-restart-button" type="button">Restart</button>
     <button id="gs-pause-button" type="button">Pause</button>
   </section>
-  <section class="evidence-strip" aria-label="Route evidence">
-    <span>Backend <code id="gs-ev-backend">booting</code></span>
-    <span>LOS rays <code id="gs-ev-rays">0</code> - Occluded <code id="gs-ev-occluded">0</code></span>
-    <span>Sensors <code id="gs-ev-sensors">0</code> - Steps <code id="gs-ev-steps">0</code></span>
-  </section>
 `);
 
 // ---------------------------------------------------------------- audio ------
@@ -406,7 +410,7 @@ interface FloorRuntime {
 let floorIndex = 0;
 let runtime: FloorRuntime;
 let phase: Phase = "playing";
-let paused = false;
+
 let frameCount = 0;
 let totalScore = 0;
 let completedBeforeFloor = 0;
@@ -473,7 +477,7 @@ function resetMission(): void {
   runtime = buildFloorRuntime(0);
   lastCameraSamples = [];
   phase = "playing";
-  paused = false;
+  galleryGame.session.resume();
   hideResultCard();
   syncFloorVisuals();
   syncAlarmVisuals();
@@ -490,6 +494,7 @@ function floorClearAdvance(): void {
   if (floorIndex >= FLOOR_LAYOUTS.length - 1) {
     phase = "won";
     pushCue("exit-win");
+  galleryJuice.fire("win");
     showResult("Heist complete", `Both floors clean. Score ${totalScore} (floor: exhibit ${cleared.floorScore} + time ${timeBonus} + ghost ${ghostBonus}).`);
   } else {
     // Advance immediately: the banner carries the clear message and the new
@@ -937,7 +942,7 @@ function meshyThiefCandidateNodes(): AuraSceneNode[] {
   // and the default composition are untouched. The candidate exceeds the
   // humanoid triangle budget (1.93M vs 150k) and carries no skeleton, so it
   // stays out of the default route and never replaces the animated infiltrator.
-  if (!visualReviewCapture) return [];
+  return [];
   const spawn = FLOOR_LAYOUTS[0]!.thiefSpawn;
   return [
     model(assets.galleryThief, {
@@ -971,8 +976,7 @@ function buildScene(): ReturnType<typeof scene> {
         // actor collapses to a few pixels beside the guards; the review-only
         // 3.3m fit restores actor parity without touching movement, collision,
         // clips, or the default gameplay camera.
-        targetMaxDimension: visualReviewCapture ? 3.3 : 2.7
-      })
+        targetMaxDimension: 2.7})
         .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 0, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
         .runtime(game.runtimeNode("thief", { tags: ["typed-asset", "thief", "authored-movement"] }))
         .toJSON()
@@ -1023,8 +1027,7 @@ function buildScene(): ReturnType<typeof scene> {
       lights.point({
         name: "thief tactical practical",
         color: "#69f7df",
-        intensity: visualReviewCapture ? 3.6 : 1.5
-      })
+        intensity: 1.5})
         .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 1.25, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
         .runtime(game.runtimeNode("thief-practical", { tags: ["stealth-feedback", "player-focus", "renderer-owned"] }))
         .toJSON()
@@ -1033,8 +1036,7 @@ function buildScene(): ReturnType<typeof scene> {
       lights.point({
         name: "thief cyan rim fill",
         color: "#8fffee",
-        intensity: visualReviewCapture ? 3.2 : 1.3
-      })
+        intensity: 1.3})
         .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x - 0.55, 2.15, FLOOR_LAYOUTS[0]!.thiefSpawn.z + 0.45)
         .runtime(game.runtimeNode("thief-rim-fill", { tags: ["stealth-feedback", "player-focus", "renderer-owned"] }))
         .toJSON()
@@ -1068,12 +1070,12 @@ function buildScene(): ReturnType<typeof scene> {
       effects.fog({ name: "gallery haze", density: 0.009, color: "#243b59", intensity: 0.18 }),
       effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.08 }),
       effects.antiAlias({ mode: "fxaa" }),
-      lights.ambient({ name: "museum ambient fill", color: "#c4e7ee", intensity: visualReviewCapture ? 0.06 : 0.38 }),
-      lights.directional({ name: "museum moon key", position: [4.8, 8.6, 5.2], color: "#fff2dc", intensity: visualReviewCapture ? 0.4 : 1.05 }),
-      lights.directional({ name: "museum cyan rim", position: [-5.5, 5.2, -4.6], color: "#76dff1", intensity: visualReviewCapture ? 1.04 : 0.58 }),
+      lights.ambient({ name: "museum ambient fill", color: "#c4e7ee", intensity: 0.38}),
+      lights.directional({ name: "museum moon key", position: [4.8, 8.6, 5.2], color: "#fff2dc", intensity: 1.05}),
+      lights.directional({ name: "museum cyan rim", position: [-5.5, 5.2, -4.6], color: "#76dff1", intensity: 0.58}),
       lights.spot({ name: "rotunda guard spotlight", position: [-8.5, 2.6, 4.5], target: [-4, 0, 1], angle: 0.5, penumbra: 0.6, distance: 18, decay: 2, intensity: 2.2, color: "#ffd58a", shadow: true }),
-      lights.point({ name: "guard-1 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 2.35 : 1.55 }).position(-8.5, 1.8, 4.5),
-      lights.point({ name: "guard-2 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 2.35 : 1.55 }).position(8.5, 1.8, -5.5),
+      lights.point({ name: "guard-1 flashlight", color: "#ffd58a", intensity: 1.55}).position(-8.5, 1.8, 4.5),
+      lights.point({ name: "guard-2 flashlight", color: "#ffd58a", intensity: 1.55}).position(8.5, 1.8, -5.5),
       lights.point({ name: "exit sign glow", color: "#7ef8ff", intensity: 0.8 }).position(0, 2.2, -6.5)
     ])
     // The floor topology is genuine; the review camera has to make it read as
@@ -1102,7 +1104,7 @@ function buildScene(): ReturnType<typeof scene> {
       // two live patrol silhouettes into the same diagonal lane.  This is a
       // camera-only presentation change: FloorLayout, LOS, patrol positions,
       // and the staged encounter remain unchanged.
-      position: visualReviewCapture ? [0, 26.0, 2.5] : [0, 16.8, 17.2],
+      position: [0, 16.8, 17.2],
       // Centre the open foyer encounter rather than the south boundary. This
       // keeps a complete infiltrator body inside the canvas while retaining
       // both objective wings and the north service exit as route context.
@@ -1110,13 +1112,14 @@ function buildScene(): ReturnType<typeof scene> {
       // occlude sightlines and patrol paths in oblique review framings, so
       // the blueprint read (flat light-vs-dark threat legibility) needs
       // height over angle. Gameplay camera below is unchanged.
-      target: visualReviewCapture ? [0, 0.92, 0.35] : [0, 0.6, -0.6],
-      fov: visualReviewCapture ? 38 : 43
-    }));
+      target: [0, 0.6, -0.6],
+      fov: 43}));
 }
 
 // ---------------------------------------------------------------- mount ------
-const gameApp = createGameApp("#app", {
+const galleryGame = createGame({
+  id: "showcase-gallery-shift",
+  target: "#app",
   diagnostics: { overlay: false, performancePanel: false },
   physics: {
     seed: 20260916,
@@ -1139,10 +1142,48 @@ const gameApp = createGameApp("#app", {
     touch: true
   },
   loop: { fixedDt: 1 / 60, maxSubSteps: 2 },
-  scene: buildScene()
+  scene: buildScene(),
+  qualityRebuild: { flags: ["game"] },
+  evidence: {
+    schema: 1,
+    sections: async () => (await import("../evidence")).sections,
+    legacyGlobals: ["__AURA3D_SHOWCASE_GALLERY_SHIFT__"]
+  },
+  scenarios: async () => (await import("../scenarios")).galleryScenarios
 });
-const app = gameApp.app;
-const input = gameApp.input!;
+const app = galleryGame.runtime;
+galleryGame.start();
+const input = galleryGame.input!;
+bindGalleryEvidence(() => collectGalleryEvidence());
+const galleryTween = createTweenEngine();
+const galleryFx = createFxParticlePass(app.effects);
+const galleryJuice = createJuice<"guard-alert" | "alert-rise" | "lift" | "drop" | "win" | "caught" | "camera-whir" | "artifact">({
+  events: {
+    "guard-alert": { vignette: { amount: 0.22, ms: 380, color: "#1c0508" }, flash: { color: "#ff4d4d", peak: 0.1, ms: 200 } },
+    "alert-rise": { flash: { color: "#ff4d4d", peak: 0.18, ms: 260 }, shake: 0.1 },
+    lift: { fx: { kind: "pickup", count: 8, color: "#ffe866" }, punch: { fovDeg: 1.2, ms: 130 } },
+    drop: { fx: { kind: "debris", count: 6, color: "#c9d4dc" } },
+    win: { fx: { kind: "ring", count: 18, color: "#ffe866" }, flash: { color: "#ffe866", peak: 0.18, ms: 320 } },
+    caught: { flash: { color: "#ff4d4d", peak: 0.28, ms: 340 }, vignette: { amount: 0.4, ms: 640, color: "#160408" }, hitStop: 0.06, shake: 0.24 },
+    "camera-whir": { fx: { kind: "spark", count: 4, color: "#76dff1" } },
+    artifact: { fx: { kind: "spark", count: 6, color: "#ffd58a" } }
+  },
+  camera: app.camera,
+  session: galleryGame.session,
+  fx: galleryFx,
+  overlay: createOverlayDriver({ app }),
+  tweens: galleryTween,
+  rumble: createRumbleDriver()
+});
+bindGalleryDrive({
+  pumpFrames: (n) => {
+    const bounded = Math.max(0, Math.min(30000, Math.floor(n)));
+    app.pause();
+    for (let i = 0; i < bounded; i += 1) app.advance(1 / 60);
+    app.resume();
+  },
+  teleport: (x, z) => galleryWindow.__GS_TELEPORT__?.(x, z)
+});
 if (!input) throw new Error("Gallery Shift failed to create Aura3D input.");
 
 // ------------------------------------------------------ animation controllers -
@@ -1262,11 +1303,6 @@ function syncHud(): void {
   }
   const guardRows = document.getElementById("gs-guard-rows");
   if (guardRows) guardRows.innerHTML = guardRowsMarkup();
-  ui.setText("#gs-ev-backend", runtime.world.backend());
-  ui.setText("#gs-ev-rays", String(losRayCountTotal));
-  ui.setText("#gs-ev-occluded", String(occlusionCountTotal));
-  ui.setText("#gs-ev-sensors", String(sensorEventCount));
-  ui.setText("#gs-ev-steps", String(footstepEvents));
   const seeingGuard = lastThreatSamples.find((sample) => sample.seesThief);
   const objective = runtime.layout.pedestals.find((pedestal) => !runtime.liftedIds.includes(pedestal.id));
   const objectiveLabel = objective ? `OBJECTIVE ${runtime.liftedIds.length + completedBeforeFloor + 1}/3` : "SERVICE EXIT";
@@ -1286,7 +1322,7 @@ function syncHud(): void {
   reviewBrief.textContent = seeingGuard
     ? `LIVE CONTACT // ${seeingGuard.id.toUpperCase()} HAS LOS // ${objectiveLabel}`
     : `STEALTH LINK // ${objectiveLabel} // ${runtime.ghostRun ? "CLEAN" : "SUSPICIOUS"}`;
-  banner.textContent = paused
+  banner.textContent = galleryGame.session.paused
     ? "PAUSED - P TO RESUME"
     : phase === "caught"
       ? "CAUGHT - R TO RESTART THE FLOOR"
@@ -1343,7 +1379,7 @@ function syncFloorVisuals(): void {
   layout.lightPools.forEach((_, poolIndex) => {
     const mine = app.nodes.get(`pool-${layout.id}-${poolIndex}`);
     const other = app.nodes.get(`pool-${layout.id === 1 ? 2 : 1}-${poolIndex}`);
-    mine?.setVisible(!visualReviewCapture);
+    mine?.setVisible(true);
     other?.setVisible(false);
   });
   const thiefNode = app.nodes.get("thief");
@@ -1399,7 +1435,7 @@ function syncCharacterVisuals(): void {
     // Passive cones are useful during play, but they have no target in the
     // retained review shot and otherwise float free of the museum geometry.
     // A true sighting still enables the alert wedge in syncThreatFeedback.
-    sightline?.setVisible(!visualReviewCapture && runtime.layout.id === 1);
+    sightline?.setVisible(runtime.layout.id === 1);
   }
 }
 
@@ -1449,7 +1485,7 @@ function syncThreatFeedback(): void {
     // A real sighting swaps the cool patrol preview for one alert wedge driven
     // by the same observer sample that raised the detection meter.
     app.nodes.get(`${sample.id} sightline preview`)
-      ?.setVisible(!visualReviewCapture && !sample.seesThief && runtime.layout.id === 1);
+      ?.setVisible(!sample.seesThief && runtime.layout.id === 1);
     if (primarySighting) {
       highlight?.setPosition(thief.x, 0.07, thief.z);
       // Keep the target marker one clear body-width beyond the infiltrator so
@@ -1593,7 +1629,7 @@ function syncDebugOverlay(): void {
 }
 
 // ------------------------------------------------------------- evidence ------
-function publishEvidence(): void {
+function collectGalleryEvidence(): Record<string, unknown> {
   const snap = runtime.thief.snapshot();
   // AuraDiagnostics.backend is the engine-owned render backend
   // ("webgl2" | "webgpu" | "canvas2d" | "headless"); the previous
@@ -1608,8 +1644,8 @@ function publishEvidence(): void {
   // prevent both the evidence getter and CDP capture from responding. A drawn
   // renderer is therefore the complete review-mode mount condition; normal
   // visitors retain the canonical 90-frame lobby baseline.
-  const routeReady = rendererDrawn && (visualReviewCapture || frameCount >= 90);
-  if (!visualReviewCapture && rendererDrawn && frameCount < 90 && !bootWarmupScheduled) {
+  const routeReady = rendererDrawn && (frameCount >= 90);
+  if (rendererDrawn && frameCount < 90 && !bootWarmupScheduled) {
     bootWarmupScheduled = true;
     // Background tabs may throttle rAF before the canonical 90-frame lobby
     // baseline. Complete that same deterministic idle warmup through the
@@ -1625,7 +1661,7 @@ function publishEvidence(): void {
     mounted: true,
     status: routeReady ? "ready" : "loading",
     floor: runtime.layout.id,
-    state: paused ? "paused" : phase,
+    state: galleryGame.session.paused ? "galleryGame.session.paused" : phase,
     exhibitsLifted: runtime.liftedIds.length,
     totalExhibitsLifted: completedBeforeFloor + runtime.liftedIds.length,
     exhibitsTotal: 3,
@@ -1710,6 +1746,11 @@ function publishEvidence(): void {
     mountedAtEpochMs: Date.now()
   };
   galleryWindow.__GALLERY_SHIFT_EVIDENCE__ = evidence;
+  return evidence;
+}
+
+function publishEvidence(): void {
+  collectGalleryEvidence();
 }
 
 // Renderer-owned capture used by specs and probes (no compositor dependency).
@@ -1806,8 +1847,8 @@ ui.onClick("#gs-pause-button", () => togglePause());
 (document.getElementById("gs-retry-button") as HTMLButtonElement | null)?.addEventListener("click", () => restartFloor());
 
 function togglePause(): void {
-  paused = !paused;
-  if (paused) {
+  if (galleryGame.session.galleryGame.session.paused) galleryGame.session.resume(); else galleryGame.session.pause("user");
+  if (galleryGame.session.paused) {
     app.pause();
     thiefAnimation.pause();
     for (const controller of guardAnimations) controller?.pause();
@@ -1831,8 +1872,9 @@ function consumeFootsteps(footsteps: readonly GuardFootstep[]): void {
   }
 }
 
-gameApp.onFrame(({ dt }) => {
-  if (paused) {
+galleryGame.runtime.onFrame(({ dt }) => {
+  galleryTween.tick(dt);
+  if (galleryGame.session.paused) {
     manualAdvanceFrame();
     publishEvidence();
     return;
@@ -1877,6 +1919,7 @@ gameApp.onFrame(({ dt }) => {
       const laser = runtime.layout.lasers.find((entry) => entry.id === sensor.id);
       runtime.laserAlertPoint = laser ? { x: laser.x, z: laser.z } : runtime.laserAlertPoint;
       pushCue("laser-trip");
+      galleryJuice.fire("artifact", { position: [runtime.thief.x, 0.5, runtime.thief.z] });
     } else if (sensor.kind === "exit" && runtime.liftedIds.length >= runtime.layout.pedestals.length) {
       floorClearAdvance();
       manualAdvanceFrame();
@@ -1942,12 +1985,12 @@ gameApp.onFrame(({ dt }) => {
     const seen = { x: thiefSnap.x, z: thiefSnap.z };
     const seeingGuard = runtime.guards.find((guard) => guard.id === seenGuard.id);
     if (runtime.detection.value >= ALERT_THRESHOLD || runtime.laserAlertRemaining > 0) {
-      if (seeingGuard && seeingGuard.state !== "alert" && cueReady("guard-alert", 30)) pushCue("guard-alert");
+      if (seeingGuard && seeingGuard.state !== "alert" && cueReady("guard-alert", 30)) { pushCue("guard-alert"); galleryJuice.fire("guard-alert"); }
       for (const guard of runtime.guards) {
         if (guard.id === seenGuard.id) guard.reportAlert(seen);
       }
     } else if (runtime.detection.value >= SUSPICIOUS_THRESHOLD || previousValue < SUSPICIOUS_THRESHOLD) {
-      if (cueReady("alert-rise", 45)) pushCue("alert-rise");
+      if (cueReady("alert-rise", 45)) { pushCue("alert-rise"); galleryJuice.fire("alert-rise"); }
       for (const guard of runtime.guards) {
         if (guard.id === seenGuard.id) guard.reportSuspicious(seen);
       }
@@ -1956,6 +1999,7 @@ gameApp.onFrame(({ dt }) => {
   if (runtime.detection.value >= CAUGHT_THRESHOLD) {
     phase = "caught";
     pushCue("caught-sting");
+    galleryJuice.fire("caught");
     showResult("Caught", `The meter filled on floor ${runtime.layout.id}. Detection is the only fail - press R to restart the floor.`);
     syncHud();
     publishEvidence();
@@ -1982,6 +2026,7 @@ gameApp.onFrame(({ dt }) => {
     runtime.liftedIds.push(lifted.id);
     runtime.floorScore += lifted.value;
     pushCue("exhibit-lift");
+    galleryJuice.fire("lift", { position: [runtime.thief.x, 0.5, runtime.thief.z] });
     for (const guard of runtime.guards) guard.registerLift(runtime.liftedIds);
     if (completedBeforeFloor + runtime.liftedIds.length >= 3) {
       alarmActive = true;
@@ -2009,7 +2054,7 @@ gameApp.onFrame(({ dt }) => {
     const nearCam = runtime.layout.cameras.some(
       (cam) => Math.hypot(cam.x - thiefSnap.x, cam.z - thiefSnap.z) < 6
     );
-    if (nearCam) pushCue("camera-whir");
+    if (nearCam) { pushCue("camera-whir"); galleryJuice.fire("camera-whir"); }
   }
 
   // Animation controllers: real embedded clips switched by gameplay state.
@@ -2033,33 +2078,7 @@ gameApp.onFrame(({ dt }) => {
 
 });
 
-Object.defineProperty(galleryWindow, "__AURA3D_COMPOSITION_PROBE__", {
-  configurable: true,
-  value: {
-    category: "application",
-    subject: { node: COMPOSITION_SUBJECT_NODE, position: [0, 0, 0], rotation: [0, 0, 0], targetSize: 20.8 },
-    async settleSubjectPose() {
-      app.pause();
-      await app.ready();
-      // Freeze the already-staged real LOS encounter for both halves of the
-      // subject-isolation diff. Without this, the patrol and its renderer
-      // feedback advance between the museum-present and museum-suppressed
-      // screenshots, so moving gameplay pixels are falsely attributed to the
-      // museum and can touch the crop edge. This changes no gameplay state;
-      // setSubjectSuppressed(false) resumes the route after measurement.
-      paused = true;
-      syncFloorVisuals();
-      publishEvidence();
-      await app.stepAsync(0);
-    },
-    async setSubjectSuppressed(suppressed: boolean) {
-      app.pause();
-      app.nodes.get(COMPOSITION_SUBJECT_NODE)?.setVisible(!suppressed && runtime.layout.id === 1);
-      await app.stepAsync(0);
-      if (!suppressed) { paused = false; app.resume(); }
-    }
-  }
-});
+
 
 syncFloorVisuals();
 syncAlarmVisuals();

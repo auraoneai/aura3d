@@ -41,8 +41,8 @@ import {
   type WatcherPose
 } from "../gameplay/vision";
 import { createHeistAudio, type HeistAudioCue } from "../legacy/heist-audio";
-import { publishGalleryEvidence } from "./evidence";
-import { applyGalleryScenario, galleryScenarioLook, parseGalleryScenario, type GalleryScenario } from "./scenarios";
+import { publishGalleryEvidence } from "../evidence";
+import { applyGalleryScenario, galleryScenarioLook, parseGalleryScenario, type GalleryScenario } from "../scenarios";
 import { createGalleryRig, galleryCameraSpec } from "./scene/camera";
 import { wireGalleryFx } from "./scene/fx";
 import { galleryLighting } from "./scene/lighting";
