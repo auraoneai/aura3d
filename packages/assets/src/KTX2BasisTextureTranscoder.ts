@@ -1,5 +1,6 @@
 import { selectKTX2TargetFormat, type KTX2BasisTargetFormat } from "./KTX2TargetSelection.js";
 import type { TextureFormat } from "@aura3d/rendering";
+import { withDecoderTimeout } from "./decoderLoad.js";
 import { basisTranscoderFormat, transcodeKTX2Levels, type BasisModuleLike, type KTX2TranscodedLevel } from "./KTX2TranscodeDriver.js";
 import { createKTX2TranscodeWorkerPool, type KTX2TranscodeWorkerPool } from "./KTX2TranscodeWorker.js";
 import type { CompressedTextureCapabilities } from "@aura3d/rendering/contracts";
@@ -85,30 +86,39 @@ async function loadBasisModuleBrowser(base: string): Promise<BasisModuleLike> {
   const globalName = "BASIS";
   const globals = globalThis as typeof globalThis & { BASIS?: (config: Record<string, unknown>) => BasisModuleLike | Promise<BasisModuleLike> };
   if (typeof globals.BASIS !== "function") {
-    await new Promise<void>((resolve, reject) => {
-      const script = document.createElement("script");
-      script.src = `${base}basis_transcoder.js`;
-      script.async = true;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error(`Failed to load ${script.src}`));
-      document.head.appendChild(script);
-    });
+    await withDecoderTimeout(
+      new Promise<void>((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = `${base}basis_transcoder.js`;
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error(`Failed to load ${script.src}`));
+        document.head.appendChild(script);
+      }),
+      `script load ${base}basis_transcoder.js`
+    );
   }
   const BASIS = globals.BASIS;
   if (typeof BASIS !== "function") {
     throw new Error("basis_transcoder.js loaded but the BASIS global is missing");
   }
   // Emscripten MODULARIZE: the object passed to BASIS() becomes the Module;
-  // onRuntimeInitialized fires asynchronously once the wasm is compiled.
+  // onRuntimeInitialized fires asynchronously once the wasm is compiled. A
+  // missing/SPA-fallback wasm aborts through onAbort — without it (and the
+  // timeout) this promise never settled and require() hung.
   const moduleConfig: Record<string, unknown> = { locateFile: (file: string) => `${base}${file}` };
-  const module = await new Promise<BasisModuleLike>((resolve, reject) => {
-    try {
-      moduleConfig.onRuntimeInitialized = () => resolve(moduleConfig as unknown as BasisModuleLike);
-      (BASIS as (config: Record<string, unknown>) => unknown)(moduleConfig);
-    } catch (error) {
-      reject(error instanceof Error ? error : new Error(String(error)));
-    }
-  });
+  const module = await withDecoderTimeout(
+    new Promise<BasisModuleLike>((resolve, reject) => {
+      try {
+        moduleConfig.onRuntimeInitialized = () => resolve(moduleConfig as unknown as BasisModuleLike);
+        moduleConfig.onAbort = (reason: unknown) => reject(new Error(`basis_transcoder aborted: ${String(reason)}`));
+        (BASIS as (config: Record<string, unknown>) => unknown)(moduleConfig);
+      } catch (error) {
+        reject(error instanceof Error ? error : new Error(String(error)));
+      }
+    }),
+    "basis_transcoder init"
+  );
   module.initializeBasis();
   return module;
 }
@@ -154,14 +164,18 @@ async function loadBasisModuleNode(): Promise<BasisModuleLike> {
   new Function("module", "exports", "require", "__dirname", "__filename", code)(box, box.exports, require2, dirname(jsPath), jsPath);
   const BASIS = box.exports.BASIS ?? box.exports.default ?? box.exports;
   if (typeof BASIS !== "function") throw new Error("vendored basis_transcoder.js did not export BASIS");
-  const module = await new Promise<BasisModuleLike>((resolve) => {
-    let mod!: BasisModuleLike;
-    const produced = (BASIS as (config: Record<string, unknown>) => unknown)({
-      wasmBinary: readFileSync(wasmUrl),
-      onRuntimeInitialized: () => resolve(mod)
-    });
-    mod = (produced && typeof produced === "object" ? produced : box.exports) as unknown as BasisModuleLike;
-  });
+  const module = await withDecoderTimeout(
+    new Promise<BasisModuleLike>((resolve, reject) => {
+      let mod!: BasisModuleLike;
+      const produced = (BASIS as (config: Record<string, unknown>) => unknown)({
+        wasmBinary: existsSync(wasmUrl) ? readFileSync(wasmUrl) : undefined,
+        onRuntimeInitialized: () => resolve(mod),
+        onAbort: (reason: unknown) => reject(new Error(`basis_transcoder aborted: ${String(reason)}`))
+      });
+      mod = (produced && typeof produced === "object" ? produced : box.exports) as unknown as BasisModuleLike;
+    }),
+    "basis_transcoder init"
+  );
   module.initializeBasis();
   return module;
 }
