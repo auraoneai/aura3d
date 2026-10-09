@@ -68,7 +68,6 @@ const retainedEvidence = [
   "three-compat-scene-studio-pro",
   "three-compat-shader-lab-pro",
   "three-compat-threejs-migration-lab",
-  "threejs-parity-lab",
   "webgpu-lab",
   // Diagnostic evidence routes classified in docs/project/showcase/apps-classification.md.
   "controls-transform",
