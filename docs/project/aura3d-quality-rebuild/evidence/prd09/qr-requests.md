@@ -10,3 +10,6 @@ Each row: issue, target lane, request, status. Numbers written back as filed.
 | Issue | To | Request | Status |
 |---|---|---|---|
 | #588 | prd12 | C-33: beacon readiness (`__AURA3D_GAME__.state === 'playing'`) in `capture-games.mjs` — co-PR'd in the T0-30 branch, needs lane-12 acceptance in the PR thread | open |
+||||||| parent of a463ed337 (test(prd-09): restore layout.spec caps + add coverage/banned-token gates)
+||||||| parent of 4ba73fc96 (test(prd-09): restore layout.spec caps + add coverage/banned-token gates)
+- **#609** (to:prd15): `tests/browser/layout.spec.ts` + `hud-layout-harness.ts` hud-cap restore — 0.15 desktop / 0.22 mobile caps, added 1920x1080 + 390x844 viewports, `canvasCoverage` + `domText` report fields for the coverage/banned-token/test-hook assertions. Co-PR in the lane-09 layout branch.
