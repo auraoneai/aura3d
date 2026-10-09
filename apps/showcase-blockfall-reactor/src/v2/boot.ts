@@ -715,6 +715,7 @@ void game.ready().then(() => {
 });
 
 publishBlockfallEvidence({
+  game,
   gameplay: () => ({
     paused: state.paused,
     gameOver: state.gameOver,

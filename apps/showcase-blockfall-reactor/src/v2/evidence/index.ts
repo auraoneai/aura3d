@@ -5,6 +5,7 @@
 // Plus the lane-standard sections: loading.sceneSwaps, appliedLook parity,
 // audio cue log, touchEngaged, boardView parity, beat/clearFx proofs.
 import type { BlockfallAudioProof } from "../../gameplay/reactor-audio";
+import type { Game } from "@aura3d/game";
 import type { ClearFxProof } from "../../legacy/clear-fx";
 import type { CameraFeelProof } from "../../legacy/camera-feel";
 
@@ -48,6 +49,7 @@ export interface BlockfallEvidenceBindings {
   loading: () => { sceneSwaps: number; lazyLoadedCount: number };
   physics: () => { backend: string; bodyCount: number; sensorCount: number };
   appliedLook: Record<string, unknown>;
+  readonly game: Game;
   rig: () => { id: string; driftDeg: number; punch: number };
   scenario: () => string | null;
 }
@@ -63,6 +65,15 @@ export function publishBlockfallEvidence(b: BlockfallEvidenceBindings): void {
     get clearFx() { return b.clearFx(); },
     get cameraFeel() { return b.cameraFeel(); },
     get audio() { return b.audio(); },
+
+    get framing() {
+      const ev = b.game.app.camera?.evidence?.();
+      return {
+        rig: ev?.rig ?? "blockfall-reactor.static",
+        subjectScreenHeightFraction: ev?.subjectScreenHeightFraction ?? null,
+        pose: ev?.pose ?? null
+      };
+    },
     get render() { return b.render(); },
     get loading() { return b.loading(); },
     get physics() { return b.physics(); },

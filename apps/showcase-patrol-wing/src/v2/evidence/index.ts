@@ -169,6 +169,15 @@ export function publishPatrolEvidence(b: PatrolEvidenceBindings): void {
         backend: b.game.fx.backend
       };
     },
+
+    get framing() {
+      const ev = b.game.app.camera?.evidence?.();
+      return {
+        rig: ev?.rig ?? "patrol-wing.flight",
+        subjectScreenHeightFraction: ev?.subjectScreenHeightFraction ?? null,
+        pose: ev?.pose ?? null
+      };
+    },
     get render() {
       return { readbacksThisFrame: 0 };
     },

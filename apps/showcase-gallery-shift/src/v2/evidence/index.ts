@@ -3,6 +3,8 @@
 // ("floor-1"/"floor-2") while loading.sceneSwaps stays 0 — both floor sets
 // live in one union scene.
 
+import type { Game } from "@aura3d/game";
+
 export interface GalleryEvidenceBindings {
   sceneId(): "floor-1" | "floor-2";
   mission(): {
@@ -39,6 +41,7 @@ export interface GalleryEvidenceBindings {
   audio(): { lastCue: string | null; cueLog: readonly string[] };
   run(): { paused: boolean; touchEngaged: boolean; replayActive: boolean };
   appliedLook(): Record<string, unknown>;
+  readonly game: Game;
   rig(): Record<string, unknown>;
   scenario(): string | null;
   render(): { frame: number; firstFrameAt: number | null };
@@ -77,6 +80,15 @@ export function publishGalleryEvidence(bindings: GalleryEvidenceBindings) {
     },
     get run() {
       return bindings.run();
+    },
+
+    get framing() {
+      const ev = bindings.game.app.camera?.evidence?.();
+      return {
+        rig: ev?.rig ?? "gallery-shift.chase",
+        subjectScreenHeightFraction: ev?.subjectScreenHeightFraction ?? null,
+        pose: ev?.pose ?? null
+      };
     },
     get render() {
       return bindings.render();

@@ -591,6 +591,7 @@ let frameCount = 0;
 let firstFrameAt: number | null = null;
 
 const evidence = publishGalleryEvidence({
+  game,
   sceneId: () => (runtime.layout.id === 1 ? "floor-1" : "floor-2"),
   mission: () => ({
     floor: runtime.layout.id,

@@ -2,6 +2,8 @@
 // capture + browser specs read. loading.sceneId reports the logical room
 // ("hangar" before lock-in, "pit" after) while loading.sceneSwaps stays 0 —
 // both sets live in one union scene.
+import type { Game } from "@aura3d/game";
+
 export interface MechEvidenceBindings {
   sceneId(): "hangar" | "pit";
   combat(): {
@@ -26,6 +28,7 @@ export interface MechEvidenceBindings {
   audio(): { lastCue: string | null; cueLog: readonly string[] };
   run(): { paused: boolean; touchEngaged: boolean; replayActive: boolean };
   appliedLook(): Record<string, unknown>;
+  readonly game: Game;
   rig(): Record<string, unknown>;
   scenario(): string | null;
   render(): { frame: number; firstFrameAt: number | null };
@@ -59,6 +62,15 @@ export function publishMechEvidence(bindings: MechEvidenceBindings) {
     },
     get run() {
       return bindings.run();
+    },
+
+    get framing() {
+      const ev = bindings.game.app.camera?.evidence?.();
+      return {
+        rig: ev?.rig ?? "mech-hangar.fighting",
+        subjectScreenHeightFraction: ev?.subjectScreenHeightFraction ?? null,
+        pose: ev?.pose ?? null
+      };
     },
     get render() {
       return bindings.render();
