@@ -1056,7 +1056,9 @@ async function main() {
   local?.server.close();
   const failures = report.games.filter((g) => g.error || g.runs.some((r) => r.error || r.missingShots?.length));
   log(`done: ${report.games.length} games, ${failures.length} with errors/missing shots -> ${path.relative(repoRoot, outDir)}/report.json`);
-  if (strict && failures.length) process.exit(1);
+  // T0-11/P-01: game errors and missing shots fail the run unconditionally —
+  // a crashed game is the red truth, not an optional strict-only finding.
+  if (failures.length) process.exit(1);
 }
 
 function gitSha() {

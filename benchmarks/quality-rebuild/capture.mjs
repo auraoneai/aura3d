@@ -460,8 +460,19 @@ async function main() {
     process.exitCode = 1;
     return;
   }
-  // Capture failures are audit data, not a script failure; exit non-zero only when nothing rendered at all.
-  if (report.scenes.length > 0 && report.scenes.every((entry) => !entry.metrics)) process.exitCode = 1;
+  // T0-11/P-01: a failed capture is a failed run. notExpressible results are
+  // an intentional audit outcome (§8.4 broken-control variants) and are
+  // excused; every other non-ready engine or variant result fails the
+  // command. report.json is written above either way — the failure report is
+  // the evidence.
+  const captureFailures = report.scenes.flatMap((entry) =>
+    Object.values(entry.engines).concat(Object.values(entry.variants ?? {}))
+      .filter((result) => result.status !== "ready" && !result.notExpressible)
+      .map((result) => `${entry.scene}/${result.engine}`));
+  if (report.scenes.length === 0 || captureFailures.length > 0) {
+    console.error(`[quality-rebuild] capture failures: ${captureFailures.length ? captureFailures.join(", ") : "no scenes captured"}`);
+    process.exitCode = 1;
+  }
 }
 
 main().catch((error) => {

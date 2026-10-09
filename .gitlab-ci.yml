@@ -111,7 +111,7 @@ qr:games-capture:
       if [ "$QRC_LOCAL_BUILD" = "true" ]; then git lfs pull; fi
       [ "$QR_MOBILE" = "true" ] || export QRC_NO_MOBILE=1
     - node tools/quality-rebuild-capture/capture-games.mjs --validate
-    - node tools/quality-rebuild-capture/capture-games.mjs --build-only || echo "build step failed; captures continue for production routes"
+    - node tools/quality-rebuild-capture/capture-games.mjs --build-only
     # QRC_GPU_ARGS was unset in before_script, so capture-games.mjs uses its built-in Metal flags.
     - node tools/quality-rebuild-capture/capture-games.mjs --skip-build --channel headless-shell
   artifacts:
