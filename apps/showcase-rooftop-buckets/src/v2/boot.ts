@@ -19,8 +19,8 @@ import { skylineNodes, courtNodes } from "./scene/world";
 import { lightingNodes } from "./scene/lighting";
 import { createRooftopRig, fallbackCameraNode, type RooftopRigState } from "./scene/camera";
 import { wireRooftopFx } from "./scene/fx";
-import { publishRooftopEvidence } from "./evidence";
-import { applyRooftopScenario } from "./scenarios";
+import { publishRooftopEvidence } from "../evidence";
+import { applyRooftopScenario } from "../scenarios";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_ROOFTOP_BUCKETS" as const;
 
