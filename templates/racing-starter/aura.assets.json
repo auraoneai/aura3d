@@ -29,7 +29,119 @@
       "thumbnailUrl": "/aura-assets/showcaseCleanSportsCar.thumb.svg",
       "license": "CC-BY-4.0",
       "author": "JUFF",
-      "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-008/23dfdeb55dc24970b36065afaab7a8a5.glb"
+      "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-008/23dfdeb55dc24970b36065afaab7a8a5.glb",
+      "artDirection": "templates-stylized-flat",
+      "derived": {
+        "url": "/aura-assets/carModel.d2616216.glb",
+        "hash": "sha256:d2616216d12fa686992833bed3de1ef40e52de9161d4e68e51cd34ac84dfb305",
+        "mobileUrl": "/aura-assets/carModel.d2616216.mobile.glb",
+        "collisionUrl": "/aura-assets/carModel.d2616216.collision.glb",
+        "profile": "prop-large",
+        "steps": [
+          {
+            "step": "weld",
+            "ms": 6,
+            "bytesBefore": 349512,
+            "bytesAfter": 298484
+          },
+          {
+            "step": "dedup",
+            "ms": 3,
+            "bytesBefore": 298484,
+            "bytesAfter": 236604
+          },
+          {
+            "step": "join",
+            "ms": 4,
+            "bytesBefore": 236604,
+            "bytesAfter": 236604
+          },
+          {
+            "step": "palette",
+            "ms": 0,
+            "bytesBefore": 236604,
+            "bytesAfter": 236604
+          },
+          {
+            "step": "resize",
+            "ms": 0,
+            "bytesBefore": 236604,
+            "bytesAfter": 236604
+          },
+          {
+            "step": "tangents",
+            "ms": 4,
+            "bytesBefore": 236604,
+            "bytesAfter": 236604
+          },
+          {
+            "step": "lod",
+            "ms": 15,
+            "bytesBefore": 236604,
+            "bytesAfter": 301740
+          },
+          {
+            "step": "colliders",
+            "ms": 2,
+            "bytesBefore": 301740,
+            "bytesAfter": 301740
+          },
+          {
+            "step": "quantize",
+            "ms": 20,
+            "bytesBefore": 301740,
+            "bytesAfter": 176592
+          },
+          {
+            "step": "compress",
+            "ms": 17,
+            "bytesBefore": 176592,
+            "bytesAfter": 253044
+          },
+          {
+            "step": "ktx2",
+            "ms": 1,
+            "bytesBefore": 253044,
+            "bytesAfter": 253044
+          }
+        ],
+        "sourceHash": "sha256:1c69283fa2b3fb96b3dc3418f2d0dede842e6984f1776a8ca00b099836fc9c14",
+        "outputPath": "public/aura-assets/carModel.d2616216.glb",
+        "extensionsUsed": [
+          "EXT_meshopt_compression",
+          "KHR_materials_clearcoat",
+          "KHR_mesh_quantization",
+          "MSFT_lod"
+        ],
+        "requiredDecoders": [
+          "meshopt"
+        ],
+        "lods": [],
+        "measurements": {
+          "before": {
+            "triangles": 8494,
+            "drawCalls": 7,
+            "gpuBytesByTier": {
+              "low": 349512,
+              "medium": 349512,
+              "high": 349512,
+              "ultra": 349512
+            },
+            "downloadBytes": 349512
+          },
+          "after": {
+            "triangles": 13922,
+            "drawCalls": 21,
+            "gpuBytesByTier": {
+              "low": 253044,
+              "medium": 253044,
+              "high": 253044,
+              "ultra": 253044
+            },
+            "downloadBytes": 253044
+          }
+        }
+      }
     },
     {
       "id": "trackModel",
@@ -58,7 +170,118 @@
       "thumbnailUrl": "/aura-assets/showcaseReadableKartCircuit.thumb.svg",
       "license": "CC-BY-4.0",
       "author": "Puendiz",
-      "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-034/2fc89fcd8c034bc9ba05eac24c9bf537.glb"
+      "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-034/2fc89fcd8c034bc9ba05eac24c9bf537.glb",
+      "artDirection": "templates-stylized-flat",
+      "derived": {
+        "url": "/aura-assets/trackModel.2ff17e0f.glb",
+        "hash": "sha256:2ff17e0f5433ddb408fc5c9977b6ea2ff3e9333fa81ca9ac4bdbb98fac495118",
+        "mobileUrl": "/aura-assets/trackModel.2ff17e0f.mobile.glb",
+        "collisionUrl": "/aura-assets/trackModel.2ff17e0f.collision.glb",
+        "profile": "prop-large",
+        "steps": [
+          {
+            "step": "weld",
+            "ms": 15,
+            "bytesBefore": 1545148,
+            "bytesAfter": 1398190
+          },
+          {
+            "step": "dedup",
+            "ms": 13,
+            "bytesBefore": 1398190,
+            "bytesAfter": 1085382
+          },
+          {
+            "step": "join",
+            "ms": 12,
+            "bytesBefore": 1085382,
+            "bytesAfter": 1085382
+          },
+          {
+            "step": "palette",
+            "ms": 0,
+            "bytesBefore": 1085382,
+            "bytesAfter": 1085382
+          },
+          {
+            "step": "resize",
+            "ms": 0,
+            "bytesBefore": 1085382,
+            "bytesAfter": 1085382
+          },
+          {
+            "step": "tangents",
+            "ms": 1,
+            "bytesBefore": 1085382,
+            "bytesAfter": 1085382
+          },
+          {
+            "step": "lod",
+            "ms": 24,
+            "bytesBefore": 1085382,
+            "bytesAfter": 1558374
+          },
+          {
+            "step": "colliders",
+            "ms": 8,
+            "bytesBefore": 1558374,
+            "bytesAfter": 1558374
+          },
+          {
+            "step": "quantize",
+            "ms": 59,
+            "bytesBefore": 1558374,
+            "bytesAfter": 760314
+          },
+          {
+            "step": "compress",
+            "ms": 73,
+            "bytesBefore": 760314,
+            "bytesAfter": 1245846
+          },
+          {
+            "step": "ktx2",
+            "ms": 0,
+            "bytesBefore": 1245846,
+            "bytesAfter": 1245846
+          }
+        ],
+        "sourceHash": "sha256:5cbb912e511e5e82363c347210096d59dd3007db12c363fd0c9f07919f5ebbd0",
+        "outputPath": "public/aura-assets/trackModel.2ff17e0f.glb",
+        "extensionsUsed": [
+          "EXT_meshopt_compression",
+          "KHR_mesh_quantization",
+          "MSFT_lod"
+        ],
+        "requiredDecoders": [
+          "meshopt"
+        ],
+        "lods": [],
+        "measurements": {
+          "before": {
+            "triangles": 24493,
+            "drawCalls": 100,
+            "gpuBytesByTier": {
+              "low": 1545148,
+              "medium": 1545148,
+              "high": 1545148,
+              "ultra": 1545148
+            },
+            "downloadBytes": 1545148
+          },
+          "after": {
+            "triangles": 63909,
+            "drawCalls": 300,
+            "gpuBytesByTier": {
+              "low": 1245846,
+              "medium": 1245846,
+              "high": 1245846,
+              "ultra": 1245846
+            },
+            "downloadBytes": 1245846
+          }
+        }
+      }
     }
   ]
 }
