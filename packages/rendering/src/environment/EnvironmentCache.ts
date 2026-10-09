@@ -15,10 +15,10 @@
 import type { RenderDevice } from "../RenderDevice.js";
 import { Texture } from "../Texture.js";
 import type { EnvironmentProbe, EnvironmentProbeFactory } from "../contracts/environment.js";
-import type { AuraQualityTier } from "../contracts/quality.js";
+import { QUALITY_TIERS, type AuraQualityTier } from "../contracts/quality.js";
 import { decodeHdrEquirect } from "./HdrEquirect.js";
 import { readRgb9e5Cube } from "./Rgb9e5Cube.js";
-import { buildProbeFromLevels } from "./probeBuild.js";
+import { buildNeutralFloorProbe, buildProbeFromLevels } from "./probeBuild.js";
 
 export interface EnvironmentCacheKey {
   readonly url?: string;
@@ -91,14 +91,18 @@ export class EnvironmentCache {
     return promise;
   }
 
-  /** Synchronous neutral-room probe (factory.neutral once per tier). */
+  /**
+   * Synchronous neutral floor (T0-25): an analytic constant probe matching the
+   * baked `neutral` preset's diffuse DC — never runs the CPU GGX prefilter on
+   * the main thread. Specular detail arrives via `acquire({preset:"neutral"})`.
+   */
   neutral(tier: AuraQualityTier): EnvironmentProbe {
     const existing = this.neutralEntries.get(tier);
     if (existing) {
       existing.refs += 1;
       return existing.probe;
     }
-    const probe = this.factory.neutral(tier);
+    const probe = buildNeutralFloorProbe(QUALITY_TIERS[tier].environmentSize);
     this.neutralEntries.set(tier, { key: NEUTRAL_TAG, probe, refs: 1, touched: ++this.clock });
     return probe;
   }

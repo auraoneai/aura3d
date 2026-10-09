@@ -177,4 +177,23 @@ describe("EnvironmentCache", () => {
     expect(n1).toBe(n2);
     expect(cache.refCount(n1)).toBe(2);
   });
+
+  it("neutral() returns the analytic floor: no factory.neutral / GGX pass, SH9 DC matches the baked room (T0-25)", () => {
+    // A factory whose neutral() throws proves the CPU GGX prefilter never runs.
+    const throwingFactory: EnvironmentProbeFactory = {
+      ...fakeFactory,
+      neutral: () => { throw new Error("cpu prefilter must not run on the floor"); }
+    };
+    const cache = new EnvironmentCache(new MockRenderDevice(), throwingFactory);
+    const probe = cache.neutral("medium"); // medium environmentSize = 256
+    expect(probe.source).toBe("neutral");
+    expect(probe.faceSize).toBe(256);
+    expect(probe.mipCount).toBe(1); // single constant level — the GGX chain yields 5
+    // Floor carries the baked room-neutral SH9 verbatim → diffuse parity before/after upgrade.
+    expect(probe.sh9).toHaveLength(27);
+    expect(probe.sh9[0]).toBeCloseTo(1.8945446, 6);
+    expect(probe.sh9[1]).toBeCloseTo(1.8945446, 6);
+    expect(probe.sh9[2]).toBeCloseTo(1.8945446, 6);
+    expect(probe.sh9[3]).toBeCloseTo(-1.4085772, 6);
+  });
 });

@@ -185,12 +185,20 @@ describe("bindPrd02EnvironmentProbe (neutral floor + async upgrade)", () => {
     intensity: 1, diffuseIntensity: 1, specularIntensity: 1, rotation: 0,
     background: false as const, ambient: null
   };
-  it("neutral resolves synchronously through the cache", () => {
-    const cache = new EnvironmentCache(device, factory);
-    const binding = bindPrd02EnvironmentProbe(neutralResolution, { device, tier: "medium", flags: LIGHTING_ON, cache });
-    expect(binding.pending).toBeNull();
+  it("neutral resolves synchronously through the cache and upgrades via the baked preset", async () => {
+    const fake: EnvironmentProbe = { ...factory.neutral("low"), source: "preset" };
+    const cache = new EnvironmentCache(device, factory, async () => fake); // deterministic loader
+    const upgraded: EnvironmentProbe[] = [];
+    const binding = bindPrd02EnvironmentProbe(neutralResolution, {
+      device, tier: "medium", flags: LIGHTING_ON, cache,
+      onUpgrade: (p) => upgraded.push(p)
+    });
     expect(binding.probe.source).toBe("neutral");
     expect(binding.probe.faceSize).toBe(256);
+    expect(binding.probe.mipCount).toBe(1); // analytic floor (T0-25)
+    expect(binding.pending).not.toBeNull(); // baked `neutral` preset upgrade
+    expect(await binding.pending!).toBe(fake);
+    expect(upgraded).toEqual([fake]);
   });
   it("hdri binds the neutral floor and upgrades via acquire", async () => {
     const fake: EnvironmentProbe = { ...factory.neutral("low"), source: "hdri" };
