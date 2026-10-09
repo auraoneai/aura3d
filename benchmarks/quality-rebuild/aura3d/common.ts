@@ -393,7 +393,10 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
   const builtScene = buildAuraScene(spec, log);
   const app = createAuraApp(host, {
     scene: builtScene,
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+    // T0-13: only qualityProfile — renderer.mode/renderer.fallback are not
+    // public keys and A3D_QR_STRICT throws AuraMigrationError on them.
+    // resolveRendererQualityProfile("production").rendererMode === "production".
+    renderer: { qualityProfile: "production" },
     pixelRatio: (variant === "dpr-half" ? 0.5 : 1) * (opts.dpr ?? spec.resolution.devicePixelRatio),
     resize: false,
     autoStart: false,
