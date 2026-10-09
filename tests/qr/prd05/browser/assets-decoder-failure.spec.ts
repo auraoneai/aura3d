@@ -22,7 +22,7 @@ import { expect, test } from "@playwright/test";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { startPrd05DevServer, type ExampleDevServer } from "../dev-server";
-import { createAppAssetDecoders, prepareModelDecoders, AssetDecoderUnavailable } from "../../../packages/engine/src/agent-api/AssetDecoders";
+import { createAppAssetDecoders, prepareModelDecoders, AssetDecoderUnavailable } from "../../../../packages/engine/src/agent-api/AssetDecoders";
 
 interface DisabledError {
   readonly name: string;
