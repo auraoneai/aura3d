@@ -1,0 +1,373 @@
+{
+  "schema": "aura3d.template-starter-proof/1.0",
+  "template": "racing-starter",
+  "generatedAt": "2026-10-09T10:05:38.128Z",
+  "summary": "3 starter entries (2 models gated G1–G11); 1 fully clear today.",
+  "rows": [
+    {
+      "templateId": "carModel",
+      "libraryId": "quaternius-sports-car",
+      "kit": "vehicles/road",
+      "quality": "candidate",
+      "optional": false,
+      "notes": "≤5k-tri road vehicle, fits hero-vehicle band after optimize.",
+      "gateRun": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "message": "G1: LOD0 3148 tris below hero-vehicle floor 8000."
+        },
+        {
+          "gate": "G2",
+          "verdict": "fail",
+          "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+        },
+        {
+          "gate": "G3",
+          "verdict": "fail",
+          "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
+        },
+        {
+          "gate": "G4",
+          "verdict": "pass",
+          "message": "G4: no card geometry detected."
+        },
+        {
+          "gate": "G5",
+          "verdict": "fail",
+          "message": "G5: no TEXCOORD_0 on 100.0% of area (> 10%)."
+        },
+        {
+          "gate": "G6",
+          "verdict": "fail",
+          "message": "G6: texture sanity not measured — run via `assets admit` (needs tools/asset-optimize deps)."
+        },
+        {
+          "gate": "G7",
+          "verdict": "fail",
+          "message": "G7: no derived measurement — run `assets optimize` first."
+        },
+        {
+          "gate": "G8",
+          "verdict": "pass",
+          "message": "G8: tangents present on every normal-mapped primitive."
+        },
+        {
+          "gate": "G9",
+          "verdict": "fail",
+          "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+        },
+        {
+          "gate": "G10",
+          "verdict": "fail",
+          "message": "G10: no assets/art-direction/vehicles-road.json file."
+        },
+        {
+          "gate": "G11",
+          "verdict": "fail",
+          "message": "G11: no derived record — run `assets optimize` before release."
+        }
+      ],
+      "admissionChecks": [
+        {
+          "gate": "G1",
+          "verdict": "fail",
+          "measured": {
+            "triangles": 3148,
+            "floor": 8000,
+            "ceiling": 80000,
+            "profile": "hero-vehicle"
+          },
+          "message": "G1: LOD0 3148 tris below hero-vehicle floor 8000."
+        },
+        {
+          "gate": "G2",
+          "verdict": "fail",
+          "measured": {
+            "measured": 0
+          },
+          "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+        },
+        {
+          "gate": "G3",
+          "verdict": "fail",
+          "measured": {
+            "coverage": 0,
+            "covered": 0,
+            "total": 3148,
+            "missingTexcoord": 3148,
+            "missingSlots": 3148,
+            "requiredOcclusion": true,
+            "profile": "hero-vehicle"
+          },
+          "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
+        },
+        {
+          "gate": "G4",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 3148,
+            "unlitRatio": 0
+          },
+          "message": "G4: no card geometry detected."
+        },
+        {
+          "gate": "G5",
+          "verdict": "fail",
+          "measured": {
+            "noUvRatio": 1,
+            "noUvTriangles": 3148,
+            "total": 3148
+          },
+          "message": "G5: no TEXCOORD_0 on 100.0% of area (> 10%)."
+        },
+        {
+          "gate": "G6",
+          "verdict": "pass",
+          "measured": {
+            "textures": 0
+          },
+          "message": "G6: no textures to sanity-check."
+        },
+        {
+          "gate": "G7",
+          "verdict": "fail",
+          "measured": {},
+          "message": "G7: no derived measurement — run `assets optimize` first."
+        },
+        {
+          "gate": "G8",
+          "verdict": "pass",
+          "measured": {
+            "normalMapped": 0
+          },
+          "message": "G8: tangents present on every normal-mapped primitive."
+        },
+        {
+          "gate": "G9",
+          "verdict": "fail",
+          "measured": {
+            "reviews": 0
+          },
+          "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+        },
+        {
+          "gate": "G10",
+          "verdict": "pass",
+          "measured": {
+            "artDirection": "vehicles-road",
+            "shading": "pbr",
+            "palette": 0,
+            "texelDensity": 384
+          },
+          "message": "G10: art direction \"vehicles-road\" (pbr) on file."
+        },
+        {
+          "gate": "G11",
+          "verdict": "fail",
+          "measured": {
+            "derived": false
+          },
+          "message": "G11: no derived record — run `assets optimize` before release."
+        }
+      ],
+      "openGates": [
+        "G1",
+        "G2",
+        "G3",
+        "G5",
+        "G6",
+        "G7",
+        "G9",
+        "G10",
+        "G11"
+      ]
+    },
+    {
+      "templateId": "trackModel",
+      "libraryId": "kenney-modular-road-kit",
+      "kit": "environments/modular",
+      "quality": "candidate",
+      "optional": false,
+      "notes": "Modular road kit stands in for a full track shell until a circuit module is admitted.",
+      "gateRun": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "message": "G1: 11831 tris inside world-chunk band."
+        },
+        {
+          "gate": "G2",
+          "verdict": "fail",
+          "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+        },
+        {
+          "gate": "G3",
+          "verdict": "fail",
+          "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
+        },
+        {
+          "gate": "G4",
+          "verdict": "pass",
+          "message": "G4: no card geometry detected."
+        },
+        {
+          "gate": "G5",
+          "verdict": "fail",
+          "message": "G5: every material is factor-only with no approved stylized-flat art direction."
+        },
+        {
+          "gate": "G6",
+          "verdict": "fail",
+          "message": "G6: texture sanity not measured — run via `assets admit` (needs tools/asset-optimize deps)."
+        },
+        {
+          "gate": "G7",
+          "verdict": "fail",
+          "message": "G7: no derived measurement — run `assets optimize` first."
+        },
+        {
+          "gate": "G8",
+          "verdict": "pass",
+          "message": "G8: tangents present on every normal-mapped primitive."
+        },
+        {
+          "gate": "G9",
+          "verdict": "fail",
+          "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+        },
+        {
+          "gate": "G10",
+          "verdict": "fail",
+          "message": "G10: no assets/art-direction/environments-modular.json file."
+        },
+        {
+          "gate": "G11",
+          "verdict": "fail",
+          "message": "G11: no derived record — run `assets optimize` before release."
+        }
+      ],
+      "admissionChecks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 11831,
+            "ceiling": 250000,
+            "profile": "world-chunk"
+          },
+          "message": "G1: 11831 tris inside world-chunk band."
+        },
+        {
+          "gate": "G2",
+          "verdict": "fail",
+          "measured": {
+            "measured": 0
+          },
+          "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+        },
+        {
+          "gate": "G3",
+          "verdict": "fail",
+          "measured": {
+            "coverage": 0,
+            "covered": 0,
+            "total": 11831,
+            "missingTexcoord": 0,
+            "missingSlots": 11831,
+            "requiredOcclusion": true,
+            "profile": "world-chunk"
+          },
+          "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
+        },
+        {
+          "gate": "G4",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 11831,
+            "unlitRatio": 0
+          },
+          "message": "G4: no card geometry detected."
+        },
+        {
+          "gate": "G5",
+          "verdict": "fail",
+          "measured": {
+            "factorOnlyMaterials": 168,
+            "stylizedFlatApproved": false
+          },
+          "message": "G5: every material is factor-only with no approved stylized-flat art direction."
+        },
+        {
+          "gate": "G6",
+          "verdict": "pass",
+          "measured": {
+            "textures": 0
+          },
+          "message": "G6: no textures to sanity-check."
+        },
+        {
+          "gate": "G7",
+          "verdict": "fail",
+          "measured": {},
+          "message": "G7: no derived measurement — run `assets optimize` first."
+        },
+        {
+          "gate": "G8",
+          "verdict": "pass",
+          "measured": {
+            "normalMapped": 0
+          },
+          "message": "G8: tangents present on every normal-mapped primitive."
+        },
+        {
+          "gate": "G9",
+          "verdict": "fail",
+          "measured": {
+            "reviews": 0
+          },
+          "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+        },
+        {
+          "gate": "G10",
+          "verdict": "pass",
+          "measured": {
+            "artDirection": "environments-modular",
+            "shading": "pbr",
+            "palette": 0,
+            "texelDensity": 256
+          },
+          "message": "G10: art direction \"environments-modular\" (pbr) on file."
+        },
+        {
+          "gate": "G11",
+          "verdict": "fail",
+          "measured": {
+            "derived": false
+          },
+          "message": "G11: no derived record — run `assets optimize` before release."
+        }
+      ],
+      "openGates": [
+        "G2",
+        "G3",
+        "G5",
+        "G6",
+        "G7",
+        "G9",
+        "G10",
+        "G11"
+      ]
+    },
+    {
+      "templateId": "asphaltTexture",
+      "libraryId": "acg-asphalt033",
+      "kit": "textures/tiling",
+      "quality": "candidate",
+      "optional": true,
+      "notes": "Optional tiling PBR set for the road surface (1024+2048 variants).",
+      "admissionChecks": [],
+      "openGates": []
+    }
+  ]
+}

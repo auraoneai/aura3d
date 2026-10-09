@@ -1,0 +1,357 @@
+{
+  "schema": "aura3d.template-starter-proof/1.0",
+  "template": "falling-blocks-starter",
+  "generatedAt": "2026-10-09T10:05:38.161Z",
+  "summary": "2 starter entries (2 models gated G1–G11); 0 fully clear today.",
+  "rows": [
+    {
+      "templateId": "blockCell",
+      "libraryId": "quaternius-cube-crate",
+      "kit": "props/industrial-urban",
+      "quality": "candidate",
+      "optional": false,
+      "notes": "Uniform cube reads cleanly as a falling-block cell at any tint.",
+      "gateRun": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "message": "G1: 264 tris inside prop-small band."
+        },
+        {
+          "gate": "G2",
+          "verdict": "fail",
+          "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+        },
+        {
+          "gate": "G3",
+          "verdict": "waived-by-role",
+          "message": "G3: role does not require PBR texture coverage."
+        },
+        {
+          "gate": "G4",
+          "verdict": "pass",
+          "message": "G4: no card geometry detected."
+        },
+        {
+          "gate": "G5",
+          "verdict": "fail",
+          "message": "G5: no TEXCOORD_0 on 100.0% of area (> 10%)."
+        },
+        {
+          "gate": "G6",
+          "verdict": "fail",
+          "message": "G6: texture sanity not measured — run via `assets admit` (needs tools/asset-optimize deps)."
+        },
+        {
+          "gate": "G7",
+          "verdict": "fail",
+          "message": "G7: no derived measurement — run `assets optimize` first."
+        },
+        {
+          "gate": "G8",
+          "verdict": "pass",
+          "message": "G8: tangents present on every normal-mapped primitive."
+        },
+        {
+          "gate": "G9",
+          "verdict": "fail",
+          "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+        },
+        {
+          "gate": "G10",
+          "verdict": "fail",
+          "message": "G10: no assets/art-direction/props-industrial-urban.json file."
+        },
+        {
+          "gate": "G11",
+          "verdict": "fail",
+          "message": "G11: no derived record — run `assets optimize` before release."
+        }
+      ],
+      "admissionChecks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 264,
+            "floor": 100,
+            "ceiling": 5000,
+            "profile": "prop-small"
+          },
+          "message": "G1: 264 tris inside prop-small band."
+        },
+        {
+          "gate": "G2",
+          "verdict": "fail",
+          "measured": {
+            "measured": 0
+          },
+          "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+        },
+        {
+          "gate": "G3",
+          "verdict": "waived-by-role",
+          "measured": {
+            "role": "prop",
+            "profile": "prop-small"
+          },
+          "message": "G3: role does not require PBR texture coverage."
+        },
+        {
+          "gate": "G4",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 264,
+            "unlitRatio": 0
+          },
+          "message": "G4: no card geometry detected."
+        },
+        {
+          "gate": "G5",
+          "verdict": "fail",
+          "measured": {
+            "noUvRatio": 1,
+            "noUvTriangles": 264,
+            "total": 264
+          },
+          "message": "G5: no TEXCOORD_0 on 100.0% of area (> 10%)."
+        },
+        {
+          "gate": "G6",
+          "verdict": "pass",
+          "measured": {
+            "textures": 0
+          },
+          "message": "G6: no textures to sanity-check."
+        },
+        {
+          "gate": "G7",
+          "verdict": "fail",
+          "measured": {},
+          "message": "G7: no derived measurement — run `assets optimize` first."
+        },
+        {
+          "gate": "G8",
+          "verdict": "pass",
+          "measured": {
+            "normalMapped": 0
+          },
+          "message": "G8: tangents present on every normal-mapped primitive."
+        },
+        {
+          "gate": "G9",
+          "verdict": "fail",
+          "measured": {
+            "reviews": 0
+          },
+          "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+        },
+        {
+          "gate": "G10",
+          "verdict": "pass",
+          "measured": {
+            "artDirection": "props-industrial-urban",
+            "shading": "pbr",
+            "palette": 0,
+            "texelDensity": 256
+          },
+          "message": "G10: art direction \"props-industrial-urban\" (pbr) on file."
+        },
+        {
+          "gate": "G11",
+          "verdict": "fail",
+          "measured": {
+            "derived": false
+          },
+          "message": "G11: no derived record — run `assets optimize` before release."
+        }
+      ],
+      "openGates": [
+        "G2",
+        "G5",
+        "G6",
+        "G7",
+        "G9",
+        "G10",
+        "G11"
+      ]
+    },
+    {
+      "templateId": "cabinetModel",
+      "libraryId": "quaternius-wall-modular",
+      "kit": "environments/modular",
+      "quality": "candidate",
+      "optional": false,
+      "notes": "Approximation: modular wall piece stands in for the arcade cabinet silhouette until a cabinet prop is admitted.",
+      "gateRun": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "message": "G1: 1670 tris inside world-chunk band."
+        },
+        {
+          "gate": "G2",
+          "verdict": "fail",
+          "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+        },
+        {
+          "gate": "G3",
+          "verdict": "fail",
+          "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
+        },
+        {
+          "gate": "G4",
+          "verdict": "pass",
+          "message": "G4: no card geometry detected."
+        },
+        {
+          "gate": "G5",
+          "verdict": "fail",
+          "message": "G5: no TEXCOORD_0 on 100.0% of area (> 10%)."
+        },
+        {
+          "gate": "G6",
+          "verdict": "fail",
+          "message": "G6: texture sanity not measured — run via `assets admit` (needs tools/asset-optimize deps)."
+        },
+        {
+          "gate": "G7",
+          "verdict": "fail",
+          "message": "G7: no derived measurement — run `assets optimize` first."
+        },
+        {
+          "gate": "G8",
+          "verdict": "pass",
+          "message": "G8: tangents present on every normal-mapped primitive."
+        },
+        {
+          "gate": "G9",
+          "verdict": "fail",
+          "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+        },
+        {
+          "gate": "G10",
+          "verdict": "fail",
+          "message": "G10: no assets/art-direction/environments-modular.json file."
+        },
+        {
+          "gate": "G11",
+          "verdict": "fail",
+          "message": "G11: no derived record — run `assets optimize` before release."
+        }
+      ],
+      "admissionChecks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 1670,
+            "ceiling": 250000,
+            "profile": "world-chunk"
+          },
+          "message": "G1: 1670 tris inside world-chunk band."
+        },
+        {
+          "gate": "G2",
+          "verdict": "fail",
+          "measured": {
+            "measured": 0
+          },
+          "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+        },
+        {
+          "gate": "G3",
+          "verdict": "fail",
+          "measured": {
+            "coverage": 0,
+            "covered": 0,
+            "total": 1670,
+            "missingTexcoord": 1670,
+            "missingSlots": 1670,
+            "requiredOcclusion": true,
+            "profile": "world-chunk"
+          },
+          "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
+        },
+        {
+          "gate": "G4",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 1670,
+            "unlitRatio": 0
+          },
+          "message": "G4: no card geometry detected."
+        },
+        {
+          "gate": "G5",
+          "verdict": "fail",
+          "measured": {
+            "noUvRatio": 1,
+            "noUvTriangles": 1670,
+            "total": 1670
+          },
+          "message": "G5: no TEXCOORD_0 on 100.0% of area (> 10%)."
+        },
+        {
+          "gate": "G6",
+          "verdict": "pass",
+          "measured": {
+            "textures": 0
+          },
+          "message": "G6: no textures to sanity-check."
+        },
+        {
+          "gate": "G7",
+          "verdict": "fail",
+          "measured": {},
+          "message": "G7: no derived measurement — run `assets optimize` first."
+        },
+        {
+          "gate": "G8",
+          "verdict": "pass",
+          "measured": {
+            "normalMapped": 0
+          },
+          "message": "G8: tangents present on every normal-mapped primitive."
+        },
+        {
+          "gate": "G9",
+          "verdict": "fail",
+          "measured": {
+            "reviews": 0
+          },
+          "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+        },
+        {
+          "gate": "G10",
+          "verdict": "pass",
+          "measured": {
+            "artDirection": "environments-modular",
+            "shading": "pbr",
+            "palette": 0,
+            "texelDensity": 256
+          },
+          "message": "G10: art direction \"environments-modular\" (pbr) on file."
+        },
+        {
+          "gate": "G11",
+          "verdict": "fail",
+          "measured": {
+            "derived": false
+          },
+          "message": "G11: no derived record — run `assets optimize` before release."
+        }
+      ],
+      "openGates": [
+        "G2",
+        "G3",
+        "G5",
+        "G6",
+        "G7",
+        "G9",
+        "G10",
+        "G11"
+      ]
+    }
+  ]
+}
