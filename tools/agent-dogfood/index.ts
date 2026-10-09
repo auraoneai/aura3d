@@ -689,20 +689,36 @@ test("generated Aura3D app screenshot is non-empty", async ({ page }) => {
   await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 15_000 }).toBe("true");
   const canvas = page.locator("canvas");
   await expect(canvas).toBeVisible();
-  const profile = await canvas.evaluate((element) => {
-    const target = element as HTMLCanvasElement;
-    const gl = target.getContext("webgl2", { preserveDrawingBuffer: true });
-    if (!gl) return { error: "missing-webgl2", yellowPixels: 0, rainPixels: 0, centerObjectPixels: 0, uniqueBuckets: 0 };
-    const pixels = new Uint8Array(target.width * target.height * 4);
-    gl.readPixels(0, 0, target.width, target.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  const profile = await canvas.evaluate(async () => {
+    // class-(b) readback -> app.output.capture() (C-05). Rows are flipped
+    // back to readPixels (bottom-up) order so every y-fraction predicate
+    // below measures the same region as before this migration.
+    const apps = (window as unknown as {
+      __AURA3D_LIVE_APPS__?: readonly { output: { capture(o: { type: "image-bitmap" }): Promise<ImageBitmap> } }[];
+    }).__AURA3D_LIVE_APPS__ ?? [];
+    const bitmap = await apps[0]?.output.capture({ type: "image-bitmap" });
+    if (!bitmap) return { error: "missing-webgl2", yellowPixels: 0, rainPixels: 0, centerObjectPixels: 0, uniqueBuckets: 0 };
+    const readback = document.createElement("canvas");
+    readback.width = bitmap.width;
+    readback.height = bitmap.height;
+    const ctx2d = readback.getContext("2d");
+    if (!ctx2d) return { error: "missing-webgl2", yellowPixels: 0, rainPixels: 0, centerObjectPixels: 0, uniqueBuckets: 0 };
+    ctx2d.drawImage(bitmap, 0, 0);
+    const topDown = ctx2d.getImageData(0, 0, readback.width, readback.height).data;
+    const width = readback.width;
+    const height = readback.height;
+    const pixels = new Uint8Array(width * height * 4);
+    for (let row = 0; row < height; row += 1) {
+      pixels.set(topDown.subarray((height - 1 - row) * width * 4, (height - row) * width * 4), row * width * 4);
+    }
     const buckets = new Set<string>();
     let yellowPixels = 0;
     let rainPixels = 0;
     let centerObjectPixels = 0;
-    for (let y = 0; y < target.height; y += 4) {
-      for (let x = 0; x < target.width; x += 4) {
-        if (x > target.width * 0.76 && y > target.height * 0.74) continue;
-        const offset = (y * target.width + x) * 4;
+    for (let y = 0; y < height; y += 4) {
+      for (let x = 0; x < width; x += 4) {
+        if (x > width * 0.76 && y > height * 0.74) continue;
+        const offset = (y * width + x) * 4;
         const r = pixels[offset] ?? 0;
         const g = pixels[offset + 1] ?? 0;
         const b = pixels[offset + 2] ?? 0;
@@ -710,7 +726,7 @@ test("generated Aura3D app screenshot is non-empty", async ({ page }) => {
         if (luminance > 32) buckets.add(\`\${r >> 5}-\${g >> 5}-\${b >> 5}\`);
         if (r > 135 && g > 125 && b < 170 && r > b * 1.08 && g > b * 1.04) yellowPixels += 1;
         if (r > 165 && g > 185 && b > 205) rainPixels += 1;
-        if (x > target.width * 0.28 && x < target.width * 0.68 && y > target.height * 0.28 && y < target.height * 0.84 && luminance > 70) centerObjectPixels += 1;
+        if (x > width * 0.28 && x < width * 0.68 && y > height * 0.28 && y < height * 0.84 && luminance > 70) centerObjectPixels += 1;
       }
     }
     return { yellowPixels, rainPixels, centerObjectPixels, uniqueBuckets: buckets.size };
@@ -923,30 +939,46 @@ test("five-task generated app screenshot shows product, rain, and reflective stu
   await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 15_000 }).toBe("true");
   const canvas = page.locator("canvas");
   await expect(canvas).toBeVisible();
-  const profile = await canvas.evaluate((element) => {
-    const target = element as HTMLCanvasElement;
-    const gl = target.getContext("webgl2", { preserveDrawingBuffer: true });
-    if (!gl) return { error: "missing-webgl2", subjectPixels: 0, softboxPixels: 0, rainPixels: 0, reflectionPixels: 0, uniqueBuckets: 0 };
-    const pixels = new Uint8Array(target.width * target.height * 4);
-    gl.readPixels(0, 0, target.width, target.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  const profile = await canvas.evaluate(async () => {
+    // class-(b) readback -> app.output.capture() (C-05). Rows are flipped
+    // back to readPixels (bottom-up) order so every y-fraction predicate
+    // below measures the same region as before this migration.
+    const apps = (window as unknown as {
+      __AURA3D_LIVE_APPS__?: readonly { output: { capture(o: { type: "image-bitmap" }): Promise<ImageBitmap> } }[];
+    }).__AURA3D_LIVE_APPS__ ?? [];
+    const bitmap = await apps[0]?.output.capture({ type: "image-bitmap" });
+    if (!bitmap) return { error: "missing-webgl2", subjectPixels: 0, softboxPixels: 0, rainPixels: 0, reflectionPixels: 0, uniqueBuckets: 0 };
+    const readback = document.createElement("canvas");
+    readback.width = bitmap.width;
+    readback.height = bitmap.height;
+    const ctx2d = readback.getContext("2d");
+    if (!ctx2d) return { error: "missing-webgl2", subjectPixels: 0, softboxPixels: 0, rainPixels: 0, reflectionPixels: 0, uniqueBuckets: 0 };
+    ctx2d.drawImage(bitmap, 0, 0);
+    const topDown = ctx2d.getImageData(0, 0, readback.width, readback.height).data;
+    const width = readback.width;
+    const height = readback.height;
+    const pixels = new Uint8Array(width * height * 4);
+    for (let row = 0; row < height; row += 1) {
+      pixels.set(topDown.subarray((height - 1 - row) * width * 4, (height - row) * width * 4), row * width * 4);
+    }
     const buckets = new Set<string>();
     let subjectPixels = 0;
     let softboxPixels = 0;
     let rainPixels = 0;
     let reflectionPixels = 0;
-    for (let y = 0; y < target.height; y += 4) {
-      for (let x = 0; x < target.width; x += 4) {
-        if (x > target.width * 0.76 && y > target.height * 0.74) continue;
-        const offset = (y * target.width + x) * 4;
+    for (let y = 0; y < height; y += 4) {
+      for (let x = 0; x < width; x += 4) {
+        if (x > width * 0.76 && y > height * 0.74) continue;
+        const offset = (y * width + x) * 4;
         const r = pixels[offset] ?? 0;
         const g = pixels[offset + 1] ?? 0;
         const b = pixels[offset + 2] ?? 0;
         const luminance = r * 0.2126 + g * 0.7152 + b * 0.0722;
         if (luminance > 32) buckets.add(\`\${r >> 5}-\${g >> 5}-\${b >> 5}\`);
-        if (x > target.width * 0.3 && x < target.width * 0.7 && y > target.height * 0.24 && y < target.height * 0.78 && luminance > 54) subjectPixels += 1;
+        if (x > width * 0.3 && x < width * 0.7 && y > height * 0.24 && y < height * 0.78 && luminance > 54) subjectPixels += 1;
         if (r > 180 && g > 190 && b > 198 && Math.abs(r - g) < 45 && Math.abs(g - b) < 50) softboxPixels += 1;
         if (r > 160 && g > 180 && b > 205) rainPixels += 1;
-        if (y < target.height * 0.48 && r > 35 && g > 72 && b > 82 && b >= r * 1.05) reflectionPixels += 1;
+        if (y < height * 0.48 && r > 35 && g > 72 && b > 82 && b >= r * 1.05) reflectionPixels += 1;
       }
     }
     return { subjectPixels, softboxPixels, rainPixels, reflectionPixels, uniqueBuckets: buckets.size };
@@ -1064,30 +1096,46 @@ test("initial generated scene is classified as failed prompt fidelity", async ({
   const scene = await page.evaluate(() => window.__AURA3D_ROUTE_READY__?.scene);
   const evidence = await page.evaluate(() => window.auraRepairEvidence);
   const canvas = page.locator("canvas");
-  const profile = await canvas.evaluate((element) => {
-    const target = element as HTMLCanvasElement;
-    const gl = target.getContext("webgl2", { preserveDrawingBuffer: true });
-    if (!gl) return { error: "missing-webgl2", subjectPixels: 0, rainPixels: 0, reflectionPixels: 0, environmentPixels: 0, uniqueBuckets: 0 };
-    const pixels = new Uint8Array(target.width * target.height * 4);
-    gl.readPixels(0, 0, target.width, target.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  const profile = await canvas.evaluate(async () => {
+    // class-(b) readback -> app.output.capture() (C-05). Rows are flipped
+    // back to readPixels (bottom-up) order so every y-fraction predicate
+    // below measures the same region as before this migration.
+    const apps = (window as unknown as {
+      __AURA3D_LIVE_APPS__?: readonly { output: { capture(o: { type: "image-bitmap" }): Promise<ImageBitmap> } }[];
+    }).__AURA3D_LIVE_APPS__ ?? [];
+    const bitmap = await apps[0]?.output.capture({ type: "image-bitmap" });
+    if (!bitmap) return { error: "missing-webgl2", subjectPixels: 0, rainPixels: 0, reflectionPixels: 0, environmentPixels: 0, uniqueBuckets: 0 };
+    const readback = document.createElement("canvas");
+    readback.width = bitmap.width;
+    readback.height = bitmap.height;
+    const ctx2d = readback.getContext("2d");
+    if (!ctx2d) return { error: "missing-webgl2", subjectPixels: 0, rainPixels: 0, reflectionPixels: 0, environmentPixels: 0, uniqueBuckets: 0 };
+    ctx2d.drawImage(bitmap, 0, 0);
+    const topDown = ctx2d.getImageData(0, 0, readback.width, readback.height).data;
+    const width = readback.width;
+    const height = readback.height;
+    const pixels = new Uint8Array(width * height * 4);
+    for (let row = 0; row < height; row += 1) {
+      pixels.set(topDown.subarray((height - 1 - row) * width * 4, (height - row) * width * 4), row * width * 4);
+    }
     const buckets = new Set<string>();
     let subjectPixels = 0;
     let rainPixels = 0;
     let reflectionPixels = 0;
     let environmentPixels = 0;
-    for (let y = 0; y < target.height; y += 4) {
-      for (let x = 0; x < target.width; x += 4) {
-        if (x > target.width * 0.76 && y > target.height * 0.74) continue;
-        const offset = (y * target.width + x) * 4;
+    for (let y = 0; y < height; y += 4) {
+      for (let x = 0; x < width; x += 4) {
+        if (x > width * 0.76 && y > height * 0.74) continue;
+        const offset = (y * width + x) * 4;
         const r = pixels[offset] ?? 0;
         const g = pixels[offset + 1] ?? 0;
         const b = pixels[offset + 2] ?? 0;
         const luminance = r * 0.2126 + g * 0.7152 + b * 0.0722;
         if (luminance > 32) buckets.add(\`\${r >> 5}-\${g >> 5}-\${b >> 5}\`);
-        if (x > target.width * 0.28 && x < target.width * 0.72 && y > target.height * 0.22 && y < target.height * 0.82 && luminance > 52) subjectPixels += 1;
+        if (x > width * 0.28 && x < width * 0.72 && y > height * 0.22 && y < height * 0.82 && luminance > 52) subjectPixels += 1;
         if (r > 160 && g > 180 && b > 205) rainPixels += 1;
-        if (y < target.height * 0.48 && r > 35 && g > 72 && b > 82 && b >= r * 1.05) reflectionPixels += 1;
-        if ((x < target.width * 0.24 || x > target.width * 0.76 || y > target.height * 0.72) && luminance > 42) environmentPixels += 1;
+        if (y < height * 0.48 && r > 35 && g > 72 && b > 82 && b >= r * 1.05) reflectionPixels += 1;
+        if ((x < width * 0.24 || x > width * 0.76 || y > height * 0.72) && luminance > 42) environmentPixels += 1;
       }
     }
     return { subjectPixels, rainPixels, reflectionPixels, environmentPixels, uniqueBuckets: buckets.size };
@@ -1136,30 +1184,46 @@ test("repaired generated scene reaches product-quality prompt fidelity", async (
   const evidence = await page.evaluate(() => window.auraRepairEvidence);
   const promptPlanReport = await page.evaluate(() => window.auraPromptPlanReport);
   const canvas = page.locator("canvas");
-  const profile = await canvas.evaluate((element) => {
-    const target = element as HTMLCanvasElement;
-    const gl = target.getContext("webgl2", { preserveDrawingBuffer: true });
-    if (!gl) return { error: "missing-webgl2", subjectPixels: 0, rainPixels: 0, reflectionPixels: 0, environmentPixels: 0, uniqueBuckets: 0 };
-    const pixels = new Uint8Array(target.width * target.height * 4);
-    gl.readPixels(0, 0, target.width, target.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  const profile = await canvas.evaluate(async () => {
+    // class-(b) readback -> app.output.capture() (C-05). Rows are flipped
+    // back to readPixels (bottom-up) order so every y-fraction predicate
+    // below measures the same region as before this migration.
+    const apps = (window as unknown as {
+      __AURA3D_LIVE_APPS__?: readonly { output: { capture(o: { type: "image-bitmap" }): Promise<ImageBitmap> } }[];
+    }).__AURA3D_LIVE_APPS__ ?? [];
+    const bitmap = await apps[0]?.output.capture({ type: "image-bitmap" });
+    if (!bitmap) return { error: "missing-webgl2", subjectPixels: 0, rainPixels: 0, reflectionPixels: 0, environmentPixels: 0, uniqueBuckets: 0 };
+    const readback = document.createElement("canvas");
+    readback.width = bitmap.width;
+    readback.height = bitmap.height;
+    const ctx2d = readback.getContext("2d");
+    if (!ctx2d) return { error: "missing-webgl2", subjectPixels: 0, rainPixels: 0, reflectionPixels: 0, environmentPixels: 0, uniqueBuckets: 0 };
+    ctx2d.drawImage(bitmap, 0, 0);
+    const topDown = ctx2d.getImageData(0, 0, readback.width, readback.height).data;
+    const width = readback.width;
+    const height = readback.height;
+    const pixels = new Uint8Array(width * height * 4);
+    for (let row = 0; row < height; row += 1) {
+      pixels.set(topDown.subarray((height - 1 - row) * width * 4, (height - row) * width * 4), row * width * 4);
+    }
     const buckets = new Set<string>();
     let subjectPixels = 0;
     let rainPixels = 0;
     let reflectionPixels = 0;
     let environmentPixels = 0;
-    for (let y = 0; y < target.height; y += 4) {
-      for (let x = 0; x < target.width; x += 4) {
-        if (x > target.width * 0.76 && y > target.height * 0.74) continue;
-        const offset = (y * target.width + x) * 4;
+    for (let y = 0; y < height; y += 4) {
+      for (let x = 0; x < width; x += 4) {
+        if (x > width * 0.76 && y > height * 0.74) continue;
+        const offset = (y * width + x) * 4;
         const r = pixels[offset] ?? 0;
         const g = pixels[offset + 1] ?? 0;
         const b = pixels[offset + 2] ?? 0;
         const luminance = r * 0.2126 + g * 0.7152 + b * 0.0722;
         if (luminance > 32) buckets.add(\`\${r >> 5}-\${g >> 5}-\${b >> 5}\`);
-        if (x > target.width * 0.28 && x < target.width * 0.72 && y > target.height * 0.22 && y < target.height * 0.82 && luminance > 52) subjectPixels += 1;
+        if (x > width * 0.28 && x < width * 0.72 && y > height * 0.22 && y < height * 0.82 && luminance > 52) subjectPixels += 1;
         if (r > 160 && g > 180 && b > 205) rainPixels += 1;
-        if (y < target.height * 0.48 && r > 35 && g > 72 && b > 82 && b >= r * 1.05) reflectionPixels += 1;
-        if ((x < target.width * 0.24 || x > target.width * 0.76 || y > target.height * 0.72) && luminance > 42) environmentPixels += 1;
+        if (y < height * 0.48 && r > 35 && g > 72 && b > 82 && b >= r * 1.05) reflectionPixels += 1;
+        if ((x < width * 0.24 || x > width * 0.76 || y > height * 0.72) && luminance > 42) environmentPixels += 1;
       }
     }
     return { subjectPixels, rainPixels, reflectionPixels, environmentPixels, uniqueBuckets: buckets.size };
