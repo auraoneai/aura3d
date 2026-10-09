@@ -27,6 +27,79 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const DERIVED_DIR = join(repoRoot, "public", "aura-assets");
 const LOCAL_KTX2_MAX_SOURCE_BYTES = 5 * 1024 * 1024;
 
+const GLB_MAGIC = 0x46546c67;
+const GLB_CHUNK_JSON = 0x4e4f534a;
+const GLB_CHUNK_BIN = 0x004e4942;
+const MIME_BY_EXT: Readonly<Record<string, string>> = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp" };
+
+/**
+ * Re-embeds GLB image references that use external `uri` (non-spec-compliant
+ * but shipped by some exports, e.g. showcaseRunnerGirl's `Textures/*.png`).
+ * gltf-transform's `binaryToJSON` cannot resolve them, so the optimize pass
+ * would die on the entry — here we read each file relative to the GLB's own
+ * directory, append it to the BIN chunk, and rewrite the JSON chunk. Returns
+ * the original bytes when the GLB needs no repair.
+ */
+function embedExternalGlbImages(bytes: Buffer, glbDir: string, log: (l: string) => void): Buffer {
+  if (bytes.length < 20 || bytes.readUInt32LE(0) !== GLB_MAGIC) return bytes;
+  const jsonLen = bytes.readUInt32LE(12);
+  if (bytes.readUInt32LE(16) !== GLB_CHUNK_JSON) return bytes;
+  const json = JSON.parse(bytes.subarray(20, 20 + jsonLen).toString("utf8")) as {
+    images?: { uri?: string; bufferView?: number; mimeType?: string }[];
+    bufferViews?: { buffer: number; byteOffset: number; byteLength: number }[];
+    buffers?: { byteLength: number }[];
+  };
+  const external = (json.images ?? []).filter((i) => i.uri !== undefined && !i.uri.startsWith("data:"));
+  if (external.length === 0) return bytes;
+
+  let binOffset = 20 + jsonLen;
+  let bin = Buffer.alloc(0);
+  while (binOffset + 8 <= bytes.length) {
+    const len = bytes.readUInt32LE(binOffset);
+    if (bytes.readUInt32LE(binOffset + 4) === GLB_CHUNK_BIN) {
+      bin = Buffer.from(bytes.subarray(binOffset + 8, binOffset + 8 + len));
+      break;
+    }
+    binOffset += 8 + len;
+  }
+  if (bin.length === 0) throw new Error("GLB has external images but no BIN chunk");
+
+  const bufferViews = (json.bufferViews ??= []);
+  for (const image of external) {
+    const rel = decodeURIComponent(image.uri!).replace(/\\/g, "/");
+    const file = resolve(glbDir, rel);
+    if (!file.startsWith(resolve(glbDir))) throw new Error(`image uri escapes source dir: ${image.uri}`);
+    if (!existsSync(file)) throw new Error(`external image not found beside GLB: ${rel}`);
+    const imgBytes = readFileSync(file);
+    const pad = (4 - (bin.length % 4)) % 4;
+    if (pad) bin = Buffer.concat([bin, Buffer.alloc(pad)]);
+    bufferViews.push({ buffer: 0, byteOffset: bin.length, byteLength: imgBytes.length });
+    image.bufferView = bufferViews.length - 1;
+    image.mimeType = MIME_BY_EXT[rel.split(".").pop()!.toLowerCase()] ?? "application/octet-stream";
+    delete image.uri;
+    bin = Buffer.concat([bin, imgBytes]);
+    log(`  embedded external image ${rel} (${(imgBytes.length / 1024).toFixed(0)} KB)`);
+  }
+  if (json.buffers?.[0]) json.buffers[0].byteLength = bin.length;
+
+  const jsonBytes = Buffer.from(JSON.stringify(json), "utf8");
+  const jsonPad = (4 - (jsonBytes.length % 4)) % 4;
+  const jsonChunk = Buffer.concat([jsonBytes, Buffer.alloc(jsonPad, 0x20)]);
+  const binPad = (4 - (bin.length % 4)) % 4;
+  const binChunk = Buffer.concat([bin, Buffer.alloc(binPad)]);
+  const out = Buffer.alloc(12 + 8 + jsonChunk.length + 8 + binChunk.length);
+  out.writeUInt32LE(GLB_MAGIC, 0);
+  out.writeUInt32LE(2, 4);
+  out.writeUInt32LE(out.length, 8);
+  out.writeUInt32LE(jsonChunk.length, 12);
+  out.writeUInt32LE(GLB_CHUNK_JSON, 16);
+  jsonChunk.copy(out, 20);
+  out.writeUInt32LE(binChunk.length, 20 + jsonChunk.length);
+  out.writeUInt32LE(GLB_CHUNK_BIN, 20 + jsonChunk.length + 4);
+  binChunk.copy(out, 20 + jsonChunk.length + 8);
+  return out;
+}
+
 interface OptimizeRow {
   readonly id: string;
   readonly budget?: AssetBudgetMeasurement;
@@ -121,7 +194,7 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
         log(`skip ${file.path}: unknown profile "${file.profile}"`);
         continue;
       }
-      const sourceBytes = readFileSync(sourcePath);
+      const sourceBytes = embedExternalGlbImages(readFileSync(sourcePath), dirname(sourcePath), log);
       const result = await optimizeGLB(new Uint8Array(sourceBytes), {
         profile,
         geometry: options.geometry,
@@ -181,9 +254,10 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
     }
 
     const mobileCap = profile.id === "hero-character" || profile.id === "hero-vehicle" ? 1024 : 512;
+    const glbBytes = embedExternalGlbImages(sourceBytes, dirname(sourcePath), log);
     let result;
     try {
-      result = await optimizeGLB(new Uint8Array(sourceBytes), {
+      result = await optimizeGLB(new Uint8Array(glbBytes), {
         profile,
         geometry: options.geometry,
         ktxBinary,
