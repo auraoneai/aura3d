@@ -927,6 +927,20 @@ export function validateAssets(options: AssetValidationOptions = {}): AssetValid
     if (release && asset.type === "audio" && isSynthesizedAudioProvenance(provenance) && !AUDIO_SYNTH_RELEASE_ALLOWLIST.includes(asset.id)) {
       warnings.push(`${asset.id}: release audio asset has synthesized provenance without an admission allowlist entry.`);
     }
+    // #165 (C-25 sfx provenance, adopted from lane 09's `sfx admit`): a
+    // release audio entry requires license + sourceUrl + author + loudness
+    // measurements on its `audio` block.
+    if (release && asset.type === "audio") {
+      const meta = asset.audio;
+      const missingAudio = [
+        !hasUsableLicenseEvidence(provenance) ? "license" : undefined,
+        !(provenance?.sourceUrl || provenance?.sourcePage || meta?.sourceUrl) ? "sourceUrl" : undefined,
+        !(provenance?.author || meta?.author) ? "author" : undefined,
+        meta?.loudnessLufs === undefined ? "loudnessLufs" : undefined,
+        meta?.truePeakDb === undefined ? "truePeakDb" : undefined,
+      ].filter(Boolean);
+      if (missingAudio.length) failures.push(`${asset.id}: release audio missing C-25 provenance fields: ${missingAudio.join(", ")}.`);
+    }
     warnings.push(...createDerivedMetadataDriftWarnings(outputPath, asset));
     if (release) warnings.push(...createReleaseStructuredQualityWarnings(projectDir, asset));
     if (release) warnings.push(...createReleaseAssetQualityWarnings(projectDir, asset));
