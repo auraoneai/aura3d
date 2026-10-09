@@ -19,6 +19,7 @@ import {
   type AuraTimeController
 } from "@aura3d/engine";
 type RuntimeInput = ReturnType<typeof createGameApp>["input"];
+type MountedRuntime = ReturnType<typeof createGameApp>;
 import type {
   CaptureContext,
   CreateGameOptions,
@@ -28,6 +29,7 @@ import type {
 } from "@aura3d/engine/contracts";
 import { StubTimeController } from "@aura3d/engine/contracts";
 import { GameSessionImpl } from "./session/GameSession";
+import { awaitFirstPresentedDraw, drawCallsOf } from "./session/presented";
 import { attachSessionLifecycle, type LifecycleSound } from "./session/lifecycle";
 import { createAccessibility } from "./session/accessibility";
 import { captureFromUrl } from "./capture/captureFromUrl";
@@ -59,6 +61,8 @@ export interface Prd09Game<TCue extends string, TEvent extends string> extends G
   lookSource(): LookSource;
   /** The mounted session implementation (also `game.session`). */
   readonly sessionImpl: GameSessionImpl;
+  /** The mounted app runtime (the driver `game.ready()` waits on). */
+  readonly runtime: MountedRuntime;
   /** The mounted input controller when `options.input` was provided. */
   readonly input: RuntimeInput;
   /** The juice driver built from `options.juice` (juice.define event map). */
@@ -207,6 +211,7 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
   const game: Prd09Game<TCue, TEvent> = {
     id: options.id,
     app,
+    runtime,
     input: runtime.input,
     session,
     sessionImpl: session,
@@ -221,11 +226,16 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
     lookSource: () => lookSource,
     ready(): Promise<void> {
       if (!readyPromise) {
-        readyPromise = app.ready().then(() => {
-          if (session.state === "booting" || session.state === "loading" || session.state === "title") {
+        readyPromise = (async () => {
+          await app.ready();
+          // T0-30 (#54): `playing` is a *presented* state — wait until a frame
+          // that actually drew was presented, never just `app.ready()`.
+          await awaitFirstPresentedDraw(runtime, () => drawCallsOf(app));
+          if (session.state === "booting") session.transition("loading");
+          if (session.state === "loading" || session.state === "title") {
             session.transition("playing");
           }
-        });
+        })();
       }
       return readyPromise;
     },
