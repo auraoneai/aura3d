@@ -6,7 +6,7 @@
    2048,
    1024
   ],
-  "minimumTotalBytes": 37678269,
+  "minimumTotalBytes": 74111146,
   "requiredProbeTypes": [
    "diffuseIrradiance",
    "specularPrefilter",
@@ -259,6 +259,210 @@
     "faceSize": 256,
     "mipCount": 9,
     "cacheKey": "kloppenheim-night:pmrem-256"
+   },
+   "probes": [
+    "diffuseIrradiance",
+    "specularPrefilter",
+    "brdfLut",
+    "background"
+   ]
+  },
+  {
+   "id": "cobblestone-street-night",
+   "label": "Cobblestone Street (Night)",
+   "class": "night",
+   "license": "CC0",
+   "author": "Poly Haven",
+   "sourceName": "cobblestone_street_night_2k",
+   "sourceUri": "https://polyhaven.com/a/cobblestone_street_night",
+   "downloadUri": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/cobblestone_street_night_2k.hdr",
+   "localPath": "fixtures/environment-corpus/hdri/cobblestone_street_night_2k.hdr",
+   "sha256": "e3c95d049ea26dc5d54b24a2904bfdd1929fac65d655e83328dfb958715e779a",
+   "bytes": 7064424,
+   "resolution": [
+    2048,
+    1024
+   ],
+   "format": "rgbe-hdr",
+   "intensity": 1.0,
+   "backgroundIntensity": 0.9,
+   "exposure": 1.0,
+   "whitePoint": 1.25,
+   "rotation": 0.0,
+   "pmrem": {
+    "faceSize": 256,
+    "mipCount": 9,
+    "cacheKey": "cobblestone-street-night:pmrem-256"
+   },
+   "probes": [
+    "diffuseIrradiance",
+    "specularPrefilter",
+    "brdfLut",
+    "background"
+   ]
+  },
+  {
+   "id": "warm-bar-interior",
+   "label": "Warm Bar Interior",
+   "class": "interior",
+   "license": "CC0",
+   "author": "Poly Haven",
+   "sourceName": "warm_bar_2k",
+   "sourceUri": "https://polyhaven.com/a/warm_bar",
+   "downloadUri": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/warm_bar_2k.hdr",
+   "localPath": "fixtures/environment-corpus/hdri/warm_bar_2k.hdr",
+   "sha256": "e7e804805fe654176857c00601fe387562673b12c0facd2a18daa94c7581c0ee",
+   "bytes": 5816931,
+   "resolution": [
+    2048,
+    1024
+   ],
+   "format": "rgbe-hdr",
+   "intensity": 1.0,
+   "backgroundIntensity": 0.9,
+   "exposure": 1.0,
+   "whitePoint": 1.25,
+   "rotation": 0.0,
+   "pmrem": {
+    "faceSize": 256,
+    "mipCount": 9,
+    "cacheKey": "warm-bar-interior:pmrem-256"
+   },
+   "probes": [
+    "diffuseIrradiance",
+    "specularPrefilter",
+    "brdfLut",
+    "background"
+   ]
+  },
+  {
+   "id": "hangar-interior",
+   "label": "Hangar Interior",
+   "class": "industrial",
+   "license": "CC0",
+   "author": "Poly Haven",
+   "sourceName": "hangar_interior_2k",
+   "sourceUri": "https://polyhaven.com/a/hangar_interior",
+   "downloadUri": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/hangar_interior_2k.hdr",
+   "localPath": "fixtures/environment-corpus/hdri/hangar_interior_2k.hdr",
+   "sha256": "55e18cdbaca6e03ad99573829a8828744edf80d762ebfbc3714e674cd1604a4c",
+   "bytes": 6939075,
+   "resolution": [
+    2048,
+    1024
+   ],
+   "format": "rgbe-hdr",
+   "intensity": 1.0,
+   "backgroundIntensity": 0.9,
+   "exposure": 1.0,
+   "whitePoint": 1.25,
+   "rotation": 0.0,
+   "pmrem": {
+    "faceSize": 256,
+    "mipCount": 9,
+    "cacheKey": "hangar-interior:pmrem-256"
+   },
+   "probes": [
+    "diffuseIrradiance",
+    "specularPrefilter",
+    "brdfLut",
+    "background"
+   ]
+  },
+  {
+   "id": "rooftop-night",
+   "label": "Rooftop (Night City)",
+   "class": "night",
+   "license": "CC0",
+   "author": "Poly Haven",
+   "sourceName": "rooftop_night_2k",
+   "sourceUri": "https://polyhaven.com/a/rooftop_night",
+   "downloadUri": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/rooftop_night_2k.hdr",
+   "localPath": "fixtures/environment-corpus/hdri/rooftop_night_2k.hdr",
+   "sha256": "8ace3b81da7659381998ea4423fb4c7ffc1310ac27c4baa7a32088bd093de82e",
+   "bytes": 6509158,
+   "resolution": [
+    2048,
+    1024
+   ],
+   "format": "rgbe-hdr",
+   "intensity": 1.0,
+   "backgroundIntensity": 0.9,
+   "exposure": 1.0,
+   "whitePoint": 1.25,
+   "rotation": 0.0,
+   "pmrem": {
+    "faceSize": 256,
+    "mipCount": 9,
+    "cacheKey": "rooftop-night:pmrem-256"
+   },
+   "probes": [
+    "diffuseIrradiance",
+    "specularPrefilter",
+    "brdfLut",
+    "background"
+   ]
+  },
+  {
+   "id": "belfast-sunset",
+   "label": "Belfast Sunset (Waterfront)",
+   "class": "sunset",
+   "license": "CC0",
+   "author": "Poly Haven",
+   "sourceName": "belfast_sunset_puresky_2k",
+   "sourceUri": "https://polyhaven.com/a/belfast_sunset_puresky",
+   "downloadUri": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/belfast_sunset_puresky_2k.hdr",
+   "localPath": "fixtures/environment-corpus/hdri/belfast_sunset_puresky_2k.hdr",
+   "sha256": "273003109ca1cfb798ce6b96e09ac8440f763d0ef0c376bbe77492613540b4a3",
+   "bytes": 4563204,
+   "resolution": [
+    2048,
+    1024
+   ],
+   "format": "rgbe-hdr",
+   "intensity": 1.0,
+   "backgroundIntensity": 0.9,
+   "exposure": 1.0,
+   "whitePoint": 1.25,
+   "rotation": 0.0,
+   "pmrem": {
+    "faceSize": 256,
+    "mipCount": 9,
+    "cacheKey": "belfast-sunset:pmrem-256"
+   },
+   "probes": [
+    "diffuseIrradiance",
+    "specularPrefilter",
+    "brdfLut",
+    "background"
+   ]
+  },
+  {
+   "id": "museum-of-history",
+   "label": "Museum of History",
+   "class": "interior",
+   "license": "CC0",
+   "author": "Poly Haven",
+   "sourceName": "museum_of_history_2k",
+   "sourceUri": "https://polyhaven.com/a/museum_of_history",
+   "downloadUri": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/museum_of_history_2k.hdr",
+   "localPath": "fixtures/environment-corpus/hdri/museum_of_history_2k.hdr",
+   "sha256": "7f9b315ee6cafa068ae04a49366116618f1b912802fc9946a3dcff4770435670",
+   "bytes": 5540085,
+   "resolution": [
+    2048,
+    1024
+   ],
+   "format": "rgbe-hdr",
+   "intensity": 1.0,
+   "backgroundIntensity": 0.9,
+   "exposure": 1.0,
+   "whitePoint": 1.25,
+   "rotation": 0.0,
+   "pmrem": {
+    "faceSize": 256,
+    "mipCount": 9,
+    "cacheKey": "museum-of-history:pmrem-256"
    },
    "probes": [
     "diffuseIrradiance",
