@@ -11,6 +11,7 @@ needs, the owning lane, and current status.
 | #624 | prd13 | `tests/unit/contracts/impl/prd13-looks.test.ts` red on main: `look/evidence-only-feel` leaks into lazy defaults; `LOOK_RULE_DUPLICATE:look/ambient-flattens` on re-register. | open |
 | #625 | prd15 | `flags.ts:55-60` `applyList` drops `all` inside comma lists — `route_<id>,all` resolves to only the route flag. Blocks per-game all-flags URL capture (T0-29). | open |
 | #626 | prd12 | `capture-games.mjs:97` unions per-game `qrFlags` into every URL including `--flags none` — flag-off baseline captures are never truly flag-off (S1/IC-0). | open |
+| #638 | prd15 | `tests/unit/engine/route-cue-maps.test.ts` (lane-15 file) reads audio modules at pre-T1.x `src/` paths. Shims restored (#637); the pulse-tunnel `cueEntries` textual scan still needs the repoint to `src/legacy/tunnel-audio.ts`. | open |
 
 ## In-group dependencies (tracked on #370, not new issues)
 
