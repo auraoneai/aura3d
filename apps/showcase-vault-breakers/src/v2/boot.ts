@@ -16,8 +16,8 @@ import { arcadeRoom, insertBezels, playfieldNodes } from "./scene/world";
 import { lightingNodes } from "./scene/lighting";
 import { createVaultRig, fallbackCameraNode, type VaultRigState } from "./scene/camera";
 import { wireVaultFx, BUMPER_IMPACT_POSITIONS, SLING_IMPACT_POSITIONS } from "./scene/fx";
-import { publishVaultEvidence } from "./evidence";
-import { applyVaultScenario } from "./scenarios";
+import { publishVaultEvidence } from "../evidence";
+import { applyVaultScenario } from "../scenarios";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_VAULT_BREAKERS" as const;
 

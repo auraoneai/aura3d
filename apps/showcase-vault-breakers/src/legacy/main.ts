@@ -9,7 +9,6 @@
  */
 import {
   camera,
-  createGameApp,
   effects,
   game,
   lights,
@@ -22,6 +21,16 @@ import {
   type AuraSceneNode,
   type AuraDiagnostics
 } from "@aura3d/engine";
+import {
+  createFxParticlePass,
+  createGame,
+  createJuice,
+  createOverlayDriver,
+  createRumbleDriver,
+  createTweenEngine
+} from "@aura3d/game";
+import { bindVaultEvidence } from "../evidence";
+import { bindVaultDrive, vaultDrive } from "../scenario-drive";
 import { assets } from "../../../../src/aura-assets";
 import { VaultFlow, type VaultGameEvent } from "../gameplay/ball-flow";
 import { FlipperController } from "../gameplay/flippers";
@@ -38,7 +47,6 @@ type VaultWindow = Window & {
   __VB_SHOT__?: () => string;
   __VB_PUMP__?: (frames: number) => number;
   __VB_SCENARIO__?: (scenario: string) => string;
-  __AURA3D_COMPOSITION_PROBE__?: unknown;
 };
 const vaultWindow = window as VaultWindow;
 Object.defineProperty(window, "__AURA3D_SHOWCASE_VAULT_BREAKERS__", {
@@ -47,8 +55,7 @@ Object.defineProperty(window, "__AURA3D_SHOWCASE_VAULT_BREAKERS__", {
 });
 const reducedMotion = typeof window.matchMedia === "function"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
-document.body.dataset.capture = visualReviewCapture ? "review" : "default";
+document.body.dataset.capture = "default";
 // Physics identity (backend / flipper mode / sensor + joint counts) is evidence a
 // reviewer asks for, not HUD a player receives. Opt in with `?evidence=1`.
 document.body.dataset.evidence =
@@ -115,7 +122,6 @@ const tableSim = createTableSimulation();
 const flippers = new FlipperController(tableSim.flippers);
 const flow = new VaultFlow(flippers, tableSim);
 const plunger = new PlungerController();
-let paused = false;
 let frameCount = 0;
 let nudgeFlip = false;
 const downTargets = new Set<string>();
@@ -380,14 +386,16 @@ function buildScene(): ReturnType<typeof scene> {
       // so the ball left frame exactly where a player most needs to track it. The
       // framing below is the tightest lens that still keeps the whole playable surface
       // - backbox to drain gap - inside the canvas.
-      position: visualReviewCapture ? [0, 5.9, 5.15] : [0, 5.15, 7.35],
-      target: visualReviewCapture ? [0, 0.08, -0.45] : [0, -0.05, -0.38],
-      fov: visualReviewCapture ? 46 : 50
+      position: [0, 5.15, 7.35],
+      target: [0, -0.05, -0.38],
+      fov: 50
     }));
 }
 
 // ---------------------------------------------------------------- mount ------
-const gameApp = createGameApp("#app", {
+const vaultGame = createGame({
+  id: "showcase-vault-breakers",
+  target: "#app",
   diagnostics: { overlay: false, performancePanel: false },
   renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
   physics: {
@@ -408,11 +416,50 @@ const gameApp = createGameApp("#app", {
     touch: true
   },
   loop: { fixedDt: 1 / 60, maxSubSteps: 2 },
-  scene: buildScene()
+  scene: buildScene(),
+  qualityRebuild: { flags: ["game"] },
+  evidence: {
+    schema: 1,
+    sections: async () => (await import("../evidence")).sections,
+    legacyGlobals: ["__AURA3D_SHOWCASE_VAULT_BREAKERS__"]
+  },
+  scenarios: async () => (await import("../scenarios")).vaultScenarios
 });
-const app = gameApp.app;
-const input = gameApp.input!;
+const app = vaultGame.runtime;
+vaultGame.start();
+const input = vaultGame.input!;
 if (!input) throw new Error("Vault Breakers failed to create Aura3D input.");
+bindVaultEvidence(() => collectVaultEvidence());
+const vaultTween = createTweenEngine();
+const vaultFx = createFxParticlePass(app.effects);
+const vaultJuice = createJuice<"serve" | "bumper" | "sling" | "target-down" | "bank-clear" | "vault-open" | "multiball" | "drain" | "tilt">({
+  events: {
+    serve: { punch: { fovDeg: 1.4, ms: 160 } },
+    bumper: { fx: { kind: "burst", count: 6, color: "#ffd58a" }, shake: 0.04 },
+    sling: { fx: { kind: "spark", count: 5, color: "#ffd58a" } },
+    "target-down": { fx: { kind: "spark", count: 6, color: "#76dff1" } },
+    "bank-clear": { fx: { kind: "ring", count: 10, color: "#76dff1" }, flash: { color: "#76dff1", peak: 0.08, ms: 180 } },
+    "vault-open": { fx: { kind: "ring", count: 20, color: "#ffe866" }, flash: { color: "#ffe866", peak: 0.2, ms: 360 }, hitStop: 0.04, rumble: { strong: 0.6, ms: 200 } },
+    multiball: { fx: { kind: "burst", count: 24, color: "#9df2b6" }, flash: { color: "#9df2b6", peak: 0.16, ms: 320 }, rumble: { strong: 0.5, ms: 240 } },
+    drain: { vignette: { amount: 0.3, ms: 520, color: "#160408" }, flash: { color: "#ff4d4d", peak: 0.14, ms: 240 } },
+    tilt: { shake: 0.22, vignette: { amount: 0.34, ms: 640, color: "#160408" }, rumble: { strong: 0.7, ms: 300 } }
+  },
+  camera: app.camera,
+  session: vaultGame.session,
+  fx: vaultFx,
+  overlay: createOverlayDriver({ app }),
+  tweens: vaultTween,
+  rumble: createRumbleDriver()
+});
+bindVaultDrive({
+  pumpFrames: (n) => {
+    const bounded = Math.max(0, Math.min(30000, Math.floor(n)));
+    app.pause();
+    for (let i = 0; i < bounded; i += 1) app.step(1 / 60);
+    app.resume();
+  },
+  stage: (id) => stageScenario(id)
+});
 
 let dynamicHandles = new Map<string, AuraRuntimeNodeHandle>();
 const scoreboardHandles = new Map<string, AuraRuntimeNodeHandle>();
@@ -517,15 +564,13 @@ function syncHud(): void {
   hudText("#stat-tilt", snap.tiltLocked ? "TILT" : `${snap.tiltStrikes} OF 3`);
   hudText("#vb-mission", snap.missionLine);
   const charge = plunger.state();
-  const width = Math.round(charge.charge * 100) + "%";
-  if (powerFill.style.width !== width) powerFill.style.width = width;
-  const plungerText = plunger.charging ? `Plunge ${Math.round(charge.charge * 100)}%` : "Plunger";
-  if (powerLabel.textContent !== plungerText) powerLabel.textContent = plungerText;
-  hudText("#vb-ev-backend", snap.backend);
-  hudText("#vb-ev-flipper", "joint");
-  hudText("#vb-ev-sensors", String(snap.sensorEventCount));
-  hudText("#vb-ev-joints", String(snap.jointCount));
-  const bannerText = paused
+  powerFill.style.width = Math.round(charge.charge * 100) + "%";
+  powerLabel.textContent = plunger.charging ? `Plunge ${Math.round(charge.charge * 100)}%` : "Plunger";
+  ui.setText("#vb-ev-backend", snap.backend);
+  ui.setText("#vb-ev-flipper", "joint");
+  ui.setText("#vb-ev-sensors", String(snap.sensorEventCount));
+  ui.setText("#vb-ev-joints", String(snap.jointCount));
+  banner.textContent = vaultGame.session.paused
     ? "PAUSED - P TO RESUME"
     : snap.phase === "attract"
       ? "VAULT BREAKERS - HOLD SPACE, RELEASE TO SERVE"
@@ -546,11 +591,11 @@ function doServe(charge: number): void {
 }
 
 function togglePause(): void {
-  paused = !paused;
+  if (vaultGame.session.paused) vaultGame.session.resume(); else vaultGame.session.pause("user");
   pushCue("bank-clear");
   syncHud();
   publishEvidence();
-  if (paused) app.pause();
+  if (vaultGame.session.paused) app.pause();
   else app.resume();
 }
 
@@ -581,9 +626,10 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
     switch (event.type) {
       case "serve":
         pushCue("plunger-release");
+        vaultJuice.fire("serve");
         break;
       case "bumper":
-        if (cueReady("bumper-hit", 8)) pushCue("bumper-hit");
+        if (cueReady("bumper-hit", 8)) { pushCue("bumper-hit"); vaultJuice.fire("bumper"); }
         {
           const [x, z] = BUMPER_IMPACT_POSITIONS[bumperImpactIndex % 3]!;
           bumperImpactIndex += 1;
@@ -591,7 +637,7 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
         }
         break;
       case "sling":
-        if (cueReady("sling-pop", 10)) pushCue("sling-pop");
+        if (cueReady("sling-pop", 10)) { pushCue("sling-pop"); vaultJuice.fire("sling"); }
         {
           const [x, z] = slingImpactIndex++ % 2 === 0 ? [-1.2, 2.1] : [1.2, 2.1];
           triggerImpact([x, 0.55, z], "amber", 0.24);
@@ -601,6 +647,7 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
         if (!downTargets.has(event.id)) {
           downTargets.add(event.id);
           pushCue("target-down");
+          vaultJuice.fire("target-down");
         }
         const handle = targetHandles.get(`target:${event.id}`);
         if (handle) {
@@ -612,16 +659,19 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
       }
       case "bank-clear":
         pushCue("bank-clear");
+        vaultJuice.fire("bank-clear");
         triggerImpact([0, 0.58, -2.55], "vault", 0.42);
         break;
       case "all-banks-clear":
       case "vault-open":
         pushCue("vault-open");
+        vaultJuice.fire("vault-open");
         doorSwing = 0;
         triggerImpact([0, 0.65, -3.3], "vault", 0.58);
         break;
       case "multiball-start":
         pushCue("multiball");
+        vaultJuice.fire("multiball");
         break;
       case "jackpot":
         if (cueReady("vault-open", 30)) pushCue("vault-open");
@@ -632,6 +682,7 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
         break;
       case "ball-drain":
         pushCue("ball-drain");
+        vaultJuice.fire("drain");
         break;
       case "ball-end":
         resolveHandles();
@@ -639,6 +690,7 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
       case "tilt-strike":
       case "tilt-lock":
         pushCue("tilt-warn");
+        vaultJuice.fire("tilt");
         break;
       case "game-over":
         pushCue("ball-drain");
@@ -721,7 +773,7 @@ function syncDoor(dt: number): void {
 }
 
 // ------------------------------------------------------------- evidence ------
-function publishEvidence(): void {
+function collectVaultEvidence(): Record<string, unknown> {
   const snap = flow.snapshot();
   const flipperSnap = flippers.snapshot();
   const diagnostics: AuraDiagnostics = app.diagnostics();
@@ -737,7 +789,7 @@ function publishEvidence(): void {
     vaultOpen: snap.vaultOpen,
     multiball: snap.multiball,
     tiltStrikes: snap.tiltStrikes,
-    state: paused ? "paused" : snap.phase,
+    state: vaultGame.session.paused ? "paused" : snap.phase,
     flipperMode: flipperSnap.mode,
     flipperEvents: flipperSnap.activationCount,
     sensorEventCount: snap.sensorEventCount,
@@ -793,6 +845,11 @@ function publishEvidence(): void {
     mountedAtEpochMs: Date.now()
   };
   vaultWindow.__VAULT_BREAKERS_EVIDENCE__ = evidence;
+  return evidence;
+}
+
+function publishEvidence(): void {
+  collectVaultEvidence();
 }
 
 // Renderer-owned capture used by specs and probes (no compositor dependency).
@@ -811,7 +868,9 @@ vaultWindow.__VB_PUMP__ = (frames: number): number => {
   return app.runtime.frame;
 };
 
-vaultWindow.__VB_SCENARIO__ = (scenario: string): string => {
+vaultWindow.__VB_SCENARIO__ = (scenario: string): string => vaultDrive().stage(scenario);
+
+function stageScenario(scenario: string): string {
   resetGame();
   let events: readonly VaultGameEvent[] = [];
   if (scenario === "bank-near-complete") events = flow.evidenceClearBanks(4);
@@ -833,7 +892,7 @@ vaultWindow.__VB_SCENARIO__ = (scenario: string): string => {
   syncHud();
   publishEvidence();
   return `${scenario}:${flow.snapshot().phase}:${flow.snapshot().banksDown}:${flow.snapshot().activeBalls}`;
-};
+}
 
 // ---------------------------------------------------------------- input -------
 /*
@@ -934,6 +993,7 @@ againButton.addEventListener("click", () => resetGame());
 
 // ------------------------------------------------------------- frame loop ----
 gameApp.onFrame(({ dt }) => {
+  vaultTween.tick(dt);
   input.update(dt);
   frameCount += 1;
 
@@ -941,7 +1001,7 @@ gameApp.onFrame(({ dt }) => {
     resolveHandles();
   }
 
-  if (paused) {
+  if (vaultGame.session.paused) {
     manualAdvanceFrame();
     return;
   }
@@ -973,32 +1033,7 @@ gameApp.onFrame(({ dt }) => {
   publishEvidence();
 });
 
-Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
-  configurable: true,
-  value: {
-    category: "application",
-    subject: { position: [0, 0.34, -1.55], rotation: [0, 0, 0], targetSize: 5.05 },
-    settleSubjectPose() {
-      resolveHandles();
-      syncVisuals();
-      publishEvidence();
-    },
-    setSubjectSuppressed(suppressed: boolean) {
-      const node = app.nodes.get("typed-vault-breakers-mechanisms") as AuraRuntimeNodeHandle | undefined;
-      // Route-primary compares a visible and hidden render of this typed
-      // mechanism assembly. Pause and present one synchronous frame so the
-      // renderer cannot race the visibility mutation and leave the hidden
-      // capture identical to the visible one.
-      app.pause();
-      // Scaling to the route's established hidden-node sentinel is more
-      // reliable than a visibility flag for the production fallback renderer:
-      // it invalidates the submitted bounds immediately while preserving the
-      // same node and material for the restored frame.
-      node?.setScale(suppressed ? 0.0001 : 1).setVisible(true);
-      app.step(0);
-    }
-  }
-});
+
 
 syncHud();
 publishEvidence();
