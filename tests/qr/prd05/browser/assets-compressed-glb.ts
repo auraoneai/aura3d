@@ -49,6 +49,8 @@ interface VariantResult {
 
 interface ReadyPayload {
   readonly caps: CompressedTextureCapabilities;
+  readonly rendererString: string;
+  readonly maxTextureSize: number;
   readonly maskedPixels: number;
   readonly internalFormatsUploaded: readonly { readonly variant: string; readonly format: string }[];
   readonly webgpuKtx2Target: string;
@@ -130,7 +132,7 @@ async function run(): Promise<void> {
         variant,
         sniffedDecoders: sniffed,
         setKeys: Object.keys(set).filter((key) => (set as Record<string, unknown>)[key] !== undefined),
-        meshCount: 0, textureCount: 0, textureFormats: [], textureMipLevels: [], textureMaxWidths: [], maskedDeltaE: 0
+        meshCount: 0, textureCount: 0, textureFormats: [], textureMipLevels: [], textureMaxWidths: [], textureBytes: [], maskedDeltaE: 0
       });
       continue;
     }
