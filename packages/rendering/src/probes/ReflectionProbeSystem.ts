@@ -118,6 +118,7 @@ export class ReflectionProbeSystem {
   private captureFace(entry: ProbeEntry, face: 0 | 1 | 2 | 3 | 4 | 5): void {
     const size = entry.spec.resolution ?? this.options.defaultFaceSize ?? 128;
     const target = this.device.createRenderTarget({ width: size, height: size, format: "rgba16f", label: `probe-${entry.spec.name}-f${face}` });
+    const prevTarget = this.device.getRenderTarget?.() ?? null;
     try {
       this.device.setRenderTarget(target);
       this.renderFace(face, target, cubeFaceViewProjection(face, entry.spec.position, entry.spec.near, entry.spec.far));
@@ -125,7 +126,7 @@ export class ReflectionProbeSystem {
       entry.slice ??= { faces: [], next: 0 };
       entry.slice.faces[face] = pixels;
     } finally {
-      this.device.setRenderTarget(null);
+      this.device.setRenderTarget(prevTarget);
       target.dispose();
     }
   }

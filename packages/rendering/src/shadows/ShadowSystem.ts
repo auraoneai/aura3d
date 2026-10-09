@@ -244,26 +244,34 @@ export class Prd02ShadowSystem {
 
   private renderCascades(casters: readonly RenderItem[], resolve: (item: RenderItem) => ShadowCasterVariantKey): void {
     if (casters.length === 0) return;
-    for (const fit of this.lastFits) {
-      const target = this.ensureCascadeTarget(fit.index);
-      this.device.setRenderTarget(target);
-      this.device.clearRenderTarget?.([1, 1, 1, 1]);
-      new DepthPass(this.depthPassOptions(casters, resolve, fit.drawViewProjection))
-        .execute({ device: this.device, width: this.config.mapSize, height: this.config.mapSize });
+    const prevTarget = this.device.getRenderTarget?.() ?? null;
+    try {
+      for (const fit of this.lastFits) {
+        const target = this.ensureCascadeTarget(fit.index);
+        this.device.setRenderTarget(target);
+        this.device.clearRenderTarget?.([1, 1, 1, 1]);
+        new DepthPass(this.depthPassOptions(casters, resolve, fit.drawViewProjection))
+          .execute({ device: this.device, width: this.config.mapSize, height: this.config.mapSize });
+      }
+    } finally {
+      this.device.setRenderTarget(prevTarget);
     }
-    this.device.setRenderTarget(null);
   }
 
   private renderAtlas(casters: readonly RenderItem[], resolve: (item: RenderItem) => ShadowCasterVariantKey): void {
     if (this.lastTiles.length === 0 || casters.length === 0) return;
     const target = this.ensureAtlasTarget();
-    this.device.setRenderTarget(target);
-    this.device.clearRenderTarget?.([1, 1, 1, 1]);
-    for (const tile of this.lastTiles) {
-      new DepthPass(this.depthPassOptions(casters, resolve, tile.drawViewProjection, tile.scissor))
-        .execute({ device: this.device, width: ATLAS_SIZE, height: ATLAS_SIZE });
+    const prevTarget = this.device.getRenderTarget?.() ?? null;
+    try {
+      this.device.setRenderTarget(target);
+      this.device.clearRenderTarget?.([1, 1, 1, 1]);
+      for (const tile of this.lastTiles) {
+        new DepthPass(this.depthPassOptions(casters, resolve, tile.drawViewProjection, tile.scissor))
+          .execute({ device: this.device, width: ATLAS_SIZE, height: ATLAS_SIZE });
+      }
+    } finally {
+      this.device.setRenderTarget(prevTarget);
     }
-    this.device.setRenderTarget(null);
   }
 
   private frameUniforms(): Prd02ShadowFrameUniforms {

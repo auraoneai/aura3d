@@ -107,12 +107,13 @@ export class GPUPMREMGenerator {
     const faces: Float32Array[] = [];
     for (let f = 0; f < 6; f += 1) {
       const target = this.device.createRenderTarget({ width: size, height: size, format: "rgba16f", label: `env-capture-f${f}` });
+      const prevTarget = this.device.getRenderTarget?.() ?? null;
       try {
         this.device.setRenderTarget(target);
         renderFace(f as FaceIndex, target, cubeFaceViewProjection(f as FaceIndex, options?.position));
         faces.push(this.device.readFloatPixels(0, 0, size, size));
       } finally {
-        this.device.setRenderTarget(null);
+        this.device.setRenderTarget(prevTarget);
         target.dispose();
       }
     }

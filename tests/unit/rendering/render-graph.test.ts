@@ -59,6 +59,45 @@ describe("RenderGraph", () => {
     ]);
   });
 
+  it("throws in dev when a pass leaves a different render target bound (C-01/T0-08)", () => {
+    const device = new MockRenderDevice();
+    const graph = new RenderGraph();
+    graph.addPass({
+      name: "leaky",
+      reads: [],
+      writes: ["out"],
+      execute({ device: d }: RenderPassContext): void {
+        d.setRenderTarget(d.createRenderTarget({ width: 1, height: 1, label: "leak" }));
+      }
+    });
+
+    expect(() => graph.execute({ device, width: 1, height: 1 })).toThrow(/left a different render target bound/);
+  });
+
+  it("keeps the caller's render target bound after a pass that restores it (T0-08)", () => {
+    const device = new MockRenderDevice();
+    const sceneTarget = device.createRenderTarget({ width: 2, height: 2, label: "hdr-scene" });
+    device.setRenderTarget(sceneTarget);
+    const graph = new RenderGraph();
+    graph.addPass({
+      name: "clean",
+      reads: [],
+      writes: ["out"],
+      execute({ device: d }: RenderPassContext): void {
+        const prev = d.getRenderTarget?.() ?? null;
+        try {
+          d.setRenderTarget(d.createRenderTarget({ width: 1, height: 1, label: "offscreen" }));
+        } finally {
+          d.setRenderTarget(prev);
+        }
+      }
+    });
+
+    graph.execute({ device, width: 1, height: 1 });
+
+    expect(device.getRenderTarget()).toBe(sceneTarget);
+  });
+
   it("rejects missing producers", () => {
     const graph = new RenderGraph();
     graph.addPass(pass("lighting", ["gbuffer"], ["color"], []));
