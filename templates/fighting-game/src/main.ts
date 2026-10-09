@@ -1,4 +1,4 @@
-import { camera, effects, game, lights, looks, scene, ui } from "@aura3d/engine";
+import { camera, effects, game, gameFeel, lights, looks, scene, ui } from "@aura3d/engine";
 // PRD-09: mounted via the shared runtime — createGame owns mount/lifecycle,
 // the §7.7 fighting HUD theme, the §6.11 dpad-4btn touch preset,
 // game-sfx-core cues, and the juice event map.
@@ -66,7 +66,6 @@ ui.html(
     <section class="hud__panel hud__panel--meta" aria-label="Runtime evidence">
       <span id="hud-round">Round 1 - 99</span>
       <span id="hud-frame">Frame 0</span>
-      <span id="hud-camera">Camera zoom 1.00</span>
       <span id="hud-assets">Typed assets ${typedFighterAssetCount}/2</span>
       <span id="hud-stage">Stage ${fightingStage.id}</span>
       <span id="hud-replay">Replay ready</span>
@@ -84,7 +83,6 @@ const hudRivalHealth = ui.text("#hud-rival-health");
 const hudPlayerMeter = ui.text("#hud-player-meter");
 const hudRound = ui.text("#hud-round");
 const hudFrame = ui.text("#hud-frame");
-const hudCamera = ui.text("#hud-camera");
 const hudAssets = ui.text("#hud-assets");
 const hudStage = ui.text("#hud-stage");
 const hudReplay = ui.text("#hud-replay");
@@ -254,10 +252,13 @@ const director = game.cameraDirector({
 });
 const playerNode = app.nodes.require("player");
 const rivalNode = app.nodes.require("rival");
-// C-22: the camera controller presents the fighting rig once, then the
-// camera director drives its pose every frame below (position/target/fov from
-// the director snapshot, applied through setPose — not into evidence).
+// F-08-1: the fighting rig owns the presented camera — it frames both
+// fighters from the runtime actor positions (flag-off mounts the no-op stub
+// controller; the scene camera spec is the fallback).
+// F-08-2/F-08-5: fighting feel preset + GameFeel attach through app.time.
 app.camera?.use(camera.rigs.fighting({ fighters: ["player", "rival"] }));
+const feel = gameFeel.create({ app, time: app.time });
+app.feel?.preset("fighting");
 const playerAnimation = createFighterAnimationController("player", typedFighterAssets[PLAYER_FIGHTER_ASSET]);
 const rivalAnimation = createFighterAnimationController("rival", typedFighterAssets[RIVAL_FIGHTER_ASSET]);
 
@@ -393,20 +394,22 @@ app.onFrame(({ dt }) => {
       }
       fightingGame.juice.fire(event.type);
       void fightingGame.sound?.cue(event.type);
+      // F-08-6: combat outcomes emit on the feel bus — the preset's hitStop
+      // spec freezes gameplay through app.time (auto hit-stop).
+      app.feel?.emit(event.type === "hit" ? "hit-light" : "block", { strength: event.type === "hit" ? 0.6 : 0.3 });
       if (event.targetId === "player") playerBody.applyKnockback([event.attackerId === "rival" ? -2.2 : 2.2, 1.5, 0]);
       if (event.targetId === "rival") rivalBody.applyKnockback([event.attackerId === "player" ? 2.2 : -2.2, 1.5, 0]);
     }
   }
 
   runtimeEffects.update(dt);
-  const cameraFrame = director.update(dt, [
+  feel.update(dt * 1000);
+  // The fighting rig presents the frame; the director still decays impact
+  // impulses queued above so its shake bookkeeping stays bounded.
+  director.update(dt, [
     { id: "player", position: playerBody.position },
     { id: "rival", position: rivalBody.position }
   ]);
-  app.camera?.setPose(
-    { position: cameraFrame.position, target: cameraFrame.target, fov: cameraFrame.fov },
-    { cut: true }
-  );
 
   playerClip = activeInput.held("guard")
     ? "guard"
@@ -442,7 +445,6 @@ app.onFrame(({ dt }) => {
     ui.setText(hudPlayerMeter, `${Math.round(player.meter)}%`);
     ui.setText(hudRound, `Round 1 - ${Math.ceil(roundTime)}`);
     ui.setText(hudFrame, `Frame ${app.runtime.frame}`);
-    ui.setText(hudCamera, `Camera zoom ${cameraFrame.zoom.toFixed(2)}`);
     ui.setText(
       hudAssets,
       missingFighterAssets.length === 0

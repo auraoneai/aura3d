@@ -7,6 +7,7 @@
 import {
   camera,
   game,
+  gameFeel,
   looks,
   material,
   model,
@@ -108,6 +109,8 @@ const controllerGame = createGame({
     .add(primitives.box({ name: "distance marker north", size: [0.4, 1.4, 0.4], position: [0, 0.7, -6], material: material.pbr({ color: "#d97a3a", roughness: 0.6 }), castShadow: true }))
     .add(primitives.box({ name: "distance marker east", size: [0.4, 1.4, 0.4], position: [5, 0.7, 0], material: material.pbr({ color: "#7fa3c2", roughness: 0.6 }), castShadow: true }))
     .add(primitives.box({ name: "distance marker south-east", size: [0.4, 1.4, 0.4], position: [3.5, 0.7, 4.5], material: material.pbr({ color: "#b987d0", roughness: 0.6 }), castShadow: true }))
+    // C-10: a world wall for the shoulder rig's collision damper to pull in on.
+    .add(primitives.box({ name: "collision wall", size: [0.4, 2.4, 4], position: [2.4, 1.2, 4.2], material: material.pbr({ color: "#8a94a6", roughness: 0.85 }), castShadow: true }))
     .add(
       model(assets.showcaseWalkAnimatedGirl, { name: "certified hero humanoid-a", castShadow: true })
         .position(0, 0, 0)
@@ -120,9 +123,20 @@ const controllerGame = createGame({
 const app = controllerGame.app;
 
 const heroNode: AuraRuntimeNodeHandle = app.nodes.require("hero");
-// C-22: present the shoulder rig once; the per-frame setPose below keeps it
-// tracking the hero (camera state is applied to the camera, not evidence).
-app.camera?.use(camera.rigs.shoulder({ target: "hero" }));
+// F-08-1/C-10: the shoulder rig owns the presented camera and damps through
+// world collision (flag-off mounts the no-op stub controller; the authored
+// perspective spec stays the fallback). Right-half drag binds an orbit rig's
+// pointer handler for look input (no-op while rigs resolve to stubs).
+app.camera?.use(camera.rigs.shoulder({ target: "hero", collision: true }));
+const orbit = camera.rigs.orbit({ target: "hero" });
+const lookPad = document.createElement("div");
+lookPad.id = "look-pad";
+lookPad.setAttribute("style", "position:fixed;right:0;top:0;width:50%;height:100%;touch-action:none;");
+document.body.appendChild(lookPad);
+const orbitPointer = (orbit as { bindPointer?: (el: HTMLElement) => void }).bindPointer;
+if (orbitPointer) orbitPointer.call(orbit, lookPad);
+const feel = gameFeel.create({ app, time: app.time });
+app.feel?.preset("platformer");
 
 const hudRoot = createHud();
 let state: CharacterControllerState = { speed: 0 };
@@ -167,21 +181,8 @@ app.onFrame(({ dt }: { readonly dt: number }) => {
     heroNode.setAnimation({ clip: CERTIFIED_CLIP, loop: true, speed: CLIP_SPEED[locomotionState] });
   }
 
-  // Shoulder camera: behind-right-up of the hero, aimed past the shoulder.
-  const forwardX = Math.sin(yaw);
-  const forwardZ = Math.cos(yaw);
-  app.camera?.setPose(
-    {
-      position: [
-        position.x - forwardX * 2.6 - forwardZ * -0.55,
-        position.y + 1.75,
-        position.z - forwardZ * 2.6 - forwardX * 0.55
-      ],
-      target: [position.x + forwardX * 1.1, position.y + 1.35, position.z + forwardZ * 1.1],
-      fov: 55
-    },
-    { cut: true }
-  );
+  // The shoulder rig presents the camera; dt arrives scaled by app.time.
+  feel.update(dt * 1000);
 
   governor = governor.step(
     { fps: 1 / Math.max(1 / 240, seconds), frameTimeMs: seconds * 1000, draws: 0, tris: 0, particles: 0, shadowBytes: 0 },

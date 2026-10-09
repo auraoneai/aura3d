@@ -1,6 +1,7 @@
 import {
   camera,
   game,
+  gameFeel,
   looks,
   material,
   model,
@@ -73,7 +74,7 @@ const level = {
 
 // Side-follow framing: the camera sits 10.4 m off the play plane and tracks
 // the hero on x only (side-scroller). The C-22 rig is the live camera
-// surface; `setPose` every frame applies state to the camera itself.
+// surface; the mounted rig owns the presented pose.
 const CAMERA_OFFSET = { y: 3.45, z: 10.4, targetY: 0.47 } as const;
 
 const inputOptions = {
@@ -140,16 +141,15 @@ let objective = "Collect stars, avoid the hazard, reach the gate";
 let activeClip = "idle";
 player.play("idle");
 
-// Mount the C-22 camera surface when the extension is present (stub today,
-// real controller under PRD 08): the rig pins the follow framing and each
-// frame writes the actual pose. No camera state is parked in evidence.
+// Mount the C-22 camera surface (stub controller flag-off, real under PRD 08).
+// F-08-1: the follow2d rig owns the presented camera (flag-off mounts the
+// no-op stub controller, so the scene's camera.follow spec stays the
+// fallback). F-08-5: feel bus + GameFeel attach through app.time.
 app.camera?.use(
-  camera.rigs.fromSpec({
-    position: [level.start.x, level.start.y + CAMERA_OFFSET.y, CAMERA_OFFSET.z],
-    target: [level.start.x, level.start.y + CAMERA_OFFSET.targetY, 0],
-    fov: 50
-  })
+  camera.rigs.follow2d({ target: "mini-player", framing: { subjectHeightFraction: 0.28 } })
 );
+const feel = gameFeel.create({ app, time: app.time });
+app.feel?.preset("platformer");
 
 app.onFrame(({ dt }) => {
   if (input.pressed("reset")) {
@@ -193,10 +193,7 @@ app.onFrame(({ dt }) => {
   for (const [id, node] of coins) node.setVisible(!state.collected.includes(id));
   checkpoint.setVisible(!state.activatedCheckpoints.includes("mid"));
   goal.setScale(state.status === "completed" ? [1.35, 1.35, 1.35] : 1);
-  app.camera?.setPose({
-    position: [state.player.x, state.player.y + CAMERA_OFFSET.y, CAMERA_OFFSET.z],
-    target: [state.player.x, state.player.y + CAMERA_OFFSET.targetY, 0]
-  });
+  feel.update(dt * 1000);
   renderHud(state);
   publishEvidence(state);
 });
