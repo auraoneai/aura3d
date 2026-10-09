@@ -1,8 +1,8 @@
 # Finish phase: how to run it
 
 Plan of record: `../../PRD-16-FINAL-REMAINING-WORK.md` (PRD-16). Base: `main` @ `afb475c2` (2026-10-08). Inputs:
-`../../_sections/{integration-findings,issues-triage,process-remediation}.md`, `CONTRACTS.md`, `CI-ROUTING.md`, the
-per-lane audits (`/tmp/qrfinal/audit-NN.json`).
+`../../_sections/{integration-findings,issues-triage,process-remediation}.md`, `CONTRACTS.md`, `CI-ROUTING.md`. The
+per-lane audit is summarized in PRD-16 §1.2 (the raw audit JSON files are no longer available).
 
 ## State this phase starts from
 
@@ -23,97 +23,84 @@ Only a passing remote run whose id is cited next to a task counts as proof. Thes
 - local runs;
 - jobs that are green only because they are masked.
 
-## Prompts
+## Run exactly 5 agents, all at hour 0
 
-| Prompt | Lane / scope | Flag(s) | Owns | Audit % |
-|---|---|---|---|---|
-| `FINISH-00-integration-recovery.prompt.md` | Track 0. Single agent acting for lanes 01 + 12 + 15 | (blocks all promotions) | PRD-16 §2. Writes T0-01 if it claims it first, T0-02..07 (lane-01 halves), T0-10..14, T0-19, T0-23, T0-28, T0-31 (15 files), §2.3, §2.5 `qr-required.yml`, P-01, `process/ruleset-main.proposal.json`. Files and verifies issues for the other-lane T0 rows | — |
-| `FINISH-PROCESS-remediation.prompt.md` | Track P. Lane 15 custodian with lane 12 tooling | — | PRD-16 §3: P-02, P-10, P-23, P-29 (#357 timeout), P-32, P-37, P-50..52, P-56/57 (12/15 parts), P-60, the `requireOrSkip()` helper, ownership checker, checklist-lint, `process/OWNER-ACTIONS.md`. Files a `qr-request` for every other-lane P row | — |
-| `FINISH-LANE-01.prompt.md` | Lane 01, rendering core/colour/HDR/PBR | `A3D_QR_CORE` (+`_OUTPUT`, `_GENERATOR`) | §4.1 (01-GENTEST … 01-I); T0-01 if it claims it first; reviews FINISH-00's T0-02..T0-07 PRs (writes them only if FINISH-00 is not running); P-07, P-51 (F-01-02), P-55, P-56 (IC-0 TBD), P-61, P-64 | 38 |
-| `FINISH-LANE-02.prompt.md` | Lane 02, lighting/IBL/shadows | `A3D_QR_LIGHTING` | §4.2; T0-08, T0-09, T0-24..27; P-06, P-51, P-54, P-64 | 40 |
-| `FINISH-LANE-03.prompt.md` | Lane 03, post/AA/tonemap | `A3D_QR_POST` | §4.3; T0-15..17, T0-07 (PostGraph half); P-08, P-22, P-26, P-54, P-58, P-64 | 50 |
-| `FINISH-LANE-04.prompt.md` | Lane 04, materials/glTF | `A3D_QR_MATERIALS`, `_TRANSMISSION`, `_KTX2` | §4.4; T0-05 (co-PR with 01), T0-18; P-20, P-29, P-35, P-56, P-64 | 50 |
-| `FINISH-LANE-05.prompt.md` | Lane 05, asset pipeline | `A3D_QR_ASSETS`, `_DECODERS`, `_LOD`, `_LOOKDEV` | §4.5; T0-21 (decoder `.wasm` dropped by `.gitignore:273`), T0-22, T0-13 (prd05 adapter) | 50 |
-| `FINISH-LANE-06.prompt.md` | Lane 06, animation | `A3D_QR_ANIMATION` | §4.6; T0-20; P-21, P-22, P-27..29, P-51, P-54, P-61, P-64 | 55 |
-| `FINISH-LANE-07.prompt.md` | Lane 07, VFX | `A3D_QR_VFX` + `_SKY/_FOG/_VOLUMETRIC/_DECALS` | §4.7; T0-34 (FIX-softdepth-feedback/-volumetric-target/-transient-lights); P-03, P-33, P-34 | 45 |
-| `FINISH-LANE-08.prompt.md` | Lane 08, camera/game feel | `A3D_QR_CAMERA` | §4.8; T0-32 (with 15); P-38, P-52, P-54 | 40 |
-| `FINISH-LANE-09.prompt.md` | Lane 09, shared game runtime | `A3D_QR_GAME` | §4.9; T0-30; P-22, P-25, P-53, P-54, P-61 | 40-55 |
-| `FINISH-LANE-10.prompt.md` | Lane 10, world/environment | `A3D_QR_WORLD` + `_TERRAIN/_WATER/_BIOME` | §4.10; T0-33 (FIX-P0-graph/-tier/-compile-cache), T0-23 lane side; P-04 | 35 |
-| `FINISH-LANE-11.prompt.md` | Lane 11, WebGPU/tiers | `A3D_QR_TIERS`, `A3D_QR_WEBGPU` | §4.11; T0-35 (T11-POOL/-TIMING/-COUNTERS/-RESET); P-09, P-30, P-31 | 40-45 |
-| `FINISH-LANE-12.prompt.md` | Lane 12, benchmark/regression infra | (none) | §4.12 lane work: V1-V20, panel rounds, IC-0 re-record, issues | 40-45 |
-| `FINISH-LANE-13.prompt.md` | Lane 13, authoring/skills/templates | `A3D_QR_LOOKS` | §4.13; P-24, P-36, P-57 | 45 |
-| `FINISH-LANE-14.prompt.md` | Lane 14, 18-game rebuild | 18 × `A3D_QR_ROUTE_<ID>` | §4.14; T0-29 (game code); P-05 + the 22 `existsSync(v2/boot.ts)` guards | 25-30 |
-| `FINISH-LANE-15.prompt.md` | Lane 15, API/packages (custodian) | `A3D_QR_COMPILER`, `A3D_QR_STRICT` | §4.15 lane work, CCRs, `flags.state.ts` custody, root-manifest batch | 60-65 |
+Paste one group prompt into one lead agent. That is 5 agents in total, all started at the same moment. There is no
+sequencing between groups.
 
-Lane 01 has its own prompt, `FINISH-LANE-01.prompt.md`. FINISH-00 stays the writer of the lane-01 halves of T0-02..T0-07;
-the lane 01 agent reviews those PRs, writes P-07 (FINISH-PROCESS files it as a `qr-request` to:prd01) and every non-Track-0
-§4.1 row (01-GENTEST … 01-I, PRD-16 §4.1), and does not edit the T0-touched lines until each T0 PR merges.
+Each lead is an orchestrator. It creates one worktree per lane in its group, runs one subagent per lane in parallel, and
+fans out further inside a lane when tasks are independent. It serializes PR merges inside its group and owns cross-lane
+coordination inside the group.
 
-T0-01 (the MSAA mount fix) is claimed, not assigned. Both FINISH-00 and FINISH-LANE-01 do the same thing first: look for an
-open PR or a `qr/prd01-t0-01*` branch. If one exists, they review it and do not write T0-01. If neither exists, they open a
-draft PR on `qr/prd01-t0-01-msaa-mount` within 15 minutes. That draft PR is the claim, and the other agent only reviews it.
+`briefs/` holds the detailed per-lane task lists (the former FINISH-00, FINISH-PROCESS and FINISH-LANE-01..15 prompts,
+kept verbatim). **They are not prompts to run separately.** A lead hands each lane subagent its lane brief. Each group
+prompt has a "Brief override" table that maps the old agent names in the briefs to groups; see also the ownership table
+below.
 
-## Overlaps between prompts
+| Prompt | Lanes (audit %) | Flags | Headline T0 / P rows |
+|---|---|---|---|
+| `GROUP-1-RENDER-PIPELINE.prompt.md` | 01 core/colour/HDR/PBR (38), 02 lighting/IBL/shadows (40), 03 post/AA/tonemap (50), 04 materials/glTF (50) | `A3D_QR_CORE` (+`_OUTPUT`, `_GENERATOR`), `A3D_QR_LIGHTING`, `A3D_QR_POST`, `A3D_QR_MATERIALS`, `_TRANSMISSION`, `_KTX2` | T0-01..T0-07 (renderer mount; T0-01 MSAA mount fix first), T0-08, T0-09, T0-15..18, T0-24..27; §4.1-§4.4; P-06, P-07, P-08, P-20, P-22, P-26, P-29 (lane 04 part), P-35, P-51, P-54, P-55, P-56, P-58, P-61, P-64 |
+| `GROUP-2-GPU-WORLD-FX.prompt.md` | 07 VFX/sky/fog/volumetric/decals (45), 10 world/terrain/water/biome (35), 11 WebGPU/tiers/perf (40-45) | `A3D_QR_VFX` + `_SKY/_FOG/_VOLUMETRIC/_DECALS`, `A3D_QR_WORLD` + `_TERRAIN/_WATER/_BIOME`, `A3D_QR_TIERS`, `A3D_QR_WEBGPU` | T0-33 (FIX-P0-graph/-tier/-compile-cache), T0-34 (FIX-softdepth-feedback/-volumetric-target/-transient-lights), T0-35 (T11-POOL/-TIMING/-COUNTERS/-RESET), T0-23 lane-10 side; §4.7, §4.10, §4.11; P-03, P-04, P-09, P-22 (07/10/11 sites), P-23 (`tools/bundle-size` hunk), P-30, P-31, P-33, P-34, P-50 (run ids), P-54, P-55, P-58 (#313), P-61, P-64 |
+| `GROUP-3-CONTENT-AUTHORING.prompt.md` | 05 asset pipeline/decoders/LOD/lookdev (50), 06 animation/skinning/IK (55), 13 authoring/skills/templates/looks (45) | `A3D_QR_ASSETS`, `_DECODERS`, `_LOD`, `_LOOKDEV`, `A3D_QR_ANIMATION`, `A3D_QR_LOOKS` | T0-20, T0-21 (decoder `.wasm` dropped by `.gitignore:273`), T0-22, T0-13 prd05/prd06 adapter copies; §4.5, §4.6, §4.13; P-10 (`template-lookdev.yml:83` hunk), P-21, P-22, P-24, P-27..29, P-36, P-37 (lane-13 hunks), P-38 (files), P-51, P-54, P-55, P-56, P-57, P-61, P-64 |
+| `GROUP-4-GAMES.prompt.md` | 08 camera/game feel (40), 09 shared game runtime (40-55), 14 18-game rebuild (25-30) | `A3D_QR_CAMERA`, `A3D_QR_GAME`, 18 × `A3D_QR_ROUTE_<ID>` | T0-29 (game code), T0-30, T0-32 lane-08 half; P-05 + the 22 `existsSync(v2/boot.ts)` guards; §4.8, §4.9, §4.14; P-22, P-25, P-38, P-52, P-53, P-54, P-61, P-64 |
+| `GROUP-5-GATEKEEPER.prompt.md` | 12 benchmark/regression harness (40-45), 15 API/packages + custodian (60-65) | `A3D_QR_COMPILER`, `A3D_QR_STRICT`; sole writer of `flags.state.ts` | All of Track 0 not owned by a lane above: T0-10..T0-14 harness honesty, T0-19, T0-23, T0-28, T0-31, T0-32 lane-15 half, §2.3 harness inputs, §2.4 bisection rounds, §2.5 `qr-required.yml` all-flags gate, P-01, ruleset proposal, Track 0 tracking issue. All of Track P custody: P-02, P-10, P-23 (`BUNDLE_SIZES.md`; G2 writes the `tools/bundle-size` hunk), P-29 (#357 timeout), P-32, P-37 (custody; G3 writes the lane-13 hunks), P-50..52, P-56 (12/15 parts), P-57/P-58 (verify only), P-60, `requireOrSkip()` helper, ownership checker, checklist-lint, `process/OWNER-ACTIONS.md`, `qr-request`s for other-group P rows. §4.12 (V1-V20, panel, IC-0 re-record), §4.15 (CCRs, root-manifest batch). Checkpoints, leave-one-out, flag-state changes |
 
-The lane 12 and lane 15 prompts also list rows that FINISH-00 or FINISH-PROCESS own. The prompts do not mention each other,
-so these rules decide who writes each row:
+## Quick start
 
-| Row(s) | Writer | Others |
-|---|---|---|
-| T0-01 | First claimant (FINISH-00 or FINISH-LANE-01), see claim rule above | The other agent reviews |
-| T0-02..T0-07 (lane-01 halves) | FINISH-00 | FINISH-LANE-01 reviews and records lane-01 acceptance in each PR; writes them only if FINISH-00 is not running |
-| T0-10..T0-14, §2.3, §2.5, P-01 | FINISH-00 | FINISH-LANE-12 skips these. It works on V-rows, the panel and IC-0, and reviews FINISH-00's harness PRs |
-| T0-19, T0-23, T0-28, T0-31 (15 files), T0-32 (15 half), ruleset JSON | FINISH-00 | FINISH-LANE-15 reviews; it does not write these |
-| P-02, P-10, P-23, P-29 (#357 timeout), P-32, P-37, P-50..52, P-60, ownership checker, checklist-lint, OWNER-ACTIONS.md | FINISH-PROCESS | FINISH-LANE-15 and FINISH-LANE-12 do not write these. They pick up their remaining rows from §4.12 / §4.15 |
-| T0-05 | One co-PR: lane 01 (FINISH-00) + lane 04 | Branch `qr/prd01-t0-05-chunk-splice`. Lane 04 accepts in the PR body |
-| Every other-lane T0 / P row | The owning lane agent | FINISH-00 or FINISH-PROCESS files the `qr-request` + `to:prdNN` issue and verifies it with a bisect run |
-
-When a row's owner is unclear, the first agent to need it comments on the Track 0 or Track P tracking issue. The other agent
-confirms there before anyone writes code. Nobody edits another lane's files without the owner's recorded acceptance
-(PRD-16 §3.3.3, `.github/QR_OWNERSHIP.json`).
-
-## Run order
-
-### 1. Hour 0: start FINISH-00 and FINISH-PROCESS
-
-1. Start both agents at once, each in its own worktree (step 2).
-2. FINISH-00 opens the tracking issue `Track 0 — integration recovery` (label `qr-ic-regression`). It follows the order in
-   PRD-16 §2.1:
-   - harness honesty first (T0-10..14), so a failure costs about 2 s and is reported as a failure;
-   - then renderer mount (T0-01..07);
-   - then RT/state hygiene, then build breakers, then second-layer interactions.
-   - It ships one PR per step, and each PR cites the §2.4 bisect round it unblocks.
-3. FINISH-PROCESS opens the Track P tracking issue and files one `qr-request` for every other-lane P row. Removing masks
-   will turn today's green jobs **red**. That is the intended result.
-
-### 2. Same moment: start all 15 lane prompts (01-15), one worktree each, from `main`
-
-Run this from the repo root, once per lane. Use the branch prefix the prompt asks for (`qr/prdNN-*`).
+From the repo root, create one lead worktree per group and start one agent session in each, all at once:
 
 ```bash
 git fetch origin
-git worktree add ../aura3d-finish-prd02 -b qr/prd02-finish origin/main   # repeat per lane: 01..15, plus 00 and process
+git worktree add ../aura3d-finish-g1 -b qr/finish-g1 origin/main   # paste GROUP-1-RENDER-PIPELINE
+git worktree add ../aura3d-finish-g2 -b qr/finish-g2 origin/main   # paste GROUP-2-GPU-WORLD-FX
+git worktree add ../aura3d-finish-g3 -b qr/finish-g3 origin/main   # paste GROUP-3-CONTENT-AUTHORING
+git worktree add ../aura3d-finish-g4 -b qr/finish-g4 origin/main   # paste GROUP-4-GAMES
+git worktree add ../aura3d-finish-g5 -b qr/finish-g5 origin/main   # paste GROUP-5-GATEKEEPER
 ```
 
-- **One agent per worktree, and one worktree per lane.** Never share a worktree between agents, and never run two agents
-  on the same lane (see the lane 13 note above).
-- **Rebase onto `origin/main` before every PR.** Base every PR on `main`.
-- **Days 1-2 (to 2026-10-10):** lanes write freely in their own files, but they may **merge only Track 0/P rows** until
-  `qr-required.yml` exists on `main` (PRD-16 §6.1 `:825-827`). Lanes 02, 03, 04, 05, 06, 07, 08, 09, 10, 11 and 14 do their T0 rows (07: T0-34, 10: T0-33, 11: T0-35)
-  first.
-- **Days 3-7 (to IC-1):**
-  - every lane removes its own masks (§3.1-3.2);
-  - every lane fixes its workflow triggers (§4.0 `:361-363`: `push: main`, `schedule`, widened `paths`, macos-14, artifacts on
-    `always()`);
-  - every lane files its outbound requests (P-64) and confirms or closes its "Y?" issues (step 5).
+You do not create lane worktrees. Each lead creates its own, one per lane, for example
+`git worktree add ../aura3d-finish-prd02 -b qr/prd02-finish origin/main`, and gives each lane subagent its own worktree.
+
+- **One agent per worktree.** Never share a worktree between agents, and never run two subagents on the same lane files.
+- **Rebase onto `origin/main` before every PR.** Base every PR on `main`. Lane PRs use the `qr/prdNN-*` branch prefix.
+- **Hour 0:** G5 opens the `Track 0 — integration recovery` tracking issue (label `qr-ic-regression`) and the Track P
+  tracking issue, and files a `qr-request` for every other-group P row. G1 writes T0-01 first, then T0-02..T0-07. G5 does
+  harness honesty (T0-10..14) first, so a failure costs about 2 s and is reported as a failure. Every T0 PR cites the §2.4
+  bisect round it unblocks. Removing masks will turn today's green jobs **red**. That is the intended result.
+- **Days 1-2 (to 2026-10-10):** lanes write freely in their own files, but may **merge only Track 0/P rows** until
+  `qr-required.yml` exists on `main` (PRD-16 §6.1 `:825-827`). Every group does its T0 rows first.
+- **Days 3-7 (to IC-1):** every lane removes its own masks (§3.1-3.2), fixes its workflow triggers (§4.0 `:361-363`:
+  `push: main`, `schedule`, widened `paths`, macos-14, artifacts on `always()`), files its outbound requests (P-64) and
+  confirms or closes its "Y?" issues (Issues below).
 - **All browser, GPU, capture and heavy-build work runs remotely:** GitHub macos-14, or the GitLab macOS pipeline
-  (`CI-ROUTING.md`). Nothing runs on the Mac except editing, git and orchestration. This means no local Docker, browsers or
-  full suites.
+  (`CI-ROUTING.md`). Nothing runs on the Mac except editing, git and orchestration: no local Docker, browsers or full suites.
 
-### 3. Gate: no promotion until Track 0's all-flags gate is green
+## Group ownership
 
-A lane may not open a promotion PR, and lane 15 may not change any state in `flags.state.ts`, until **every** condition
-below holds. Each condition needs a cited run id.
+File ownership stays single-writer per `.github/QR_OWNERSHIP.json` `lanePatterns`; the groups own disjoint lane sets.
+
+| Row(s) | Writer |
+|---|---|
+| T0-01..T0-07 (incl. T0-05 chunk splice, now internal to G1), T0-08, T0-09, T0-15..T0-18, T0-24..T0-27; T0-28 renderer seam (`renderer/FrameGraph.ts:30-35`) and lane-02 `prd02LightingOn()` reader (`compiler/lights.ts:414`); T0-10/T0-13 adapter copies in `aura3d/scenes/prd{01,04}/common.ts`; T0-31 `prd02-lighting-legacy-golden.test.ts:10`; P-58 QR-03-22 | G1 |
+| T0-23 lane-10 side, T0-33, T0-34, T0-35; T0-28 07/11 global-writer removals; T0-13 adapter copies in `prd07/common.ts:331` and 3 `prd11/` scenes; P-23 `tools/bundle-size/index.ts` cap hunk (owner 11); P-58 #313 | G2 |
+| T0-13 adapter copies in `prd05/common.ts` and 3 `prd06/` scenes, T0-20 source fix (`RetargetWorker.ts:16`), T0-21 (commits the `.wasm`), T0-22; P-37 and P-10 `template-lookdev.yml:83` hunks (lane-13 files; G5 keeps custody) | G3 |
+| T0-29 game code, T0-30 beacon, T0-32 lane-08 half, T0-31 restored `apps/showcase-*` audio modules only; P-05 + 22 `existsSync` guards | G4 |
+| T0-10..T0-14 (shared harness), T0-19, T0-20 lane-15 half (`finalize-dist`, pack-check, packed-consumer fixture), T0-23, T0-28 engine side, T0-29/T0-30 `capture-games.mjs` halves + games loop, T0-31 coordination + owner-15/12 files (incl. `route-cue-maps.test.ts`), T0-32 lane-15 half, `.gitignore` negations (T0-21/P-38), §2.3, §2.4, §2.5, P-01, P-22 `tests/browser/**` sites, ruleset JSON, Track 0 + Track P tracking issues, all Track P custody rows (see table above) | G5 |
+| Every other T0 / P row | The group that owns the row's lane. G5 files the `qr-request` + `to:prdNN` issue and verifies it with a bisect run |
+
+When a brief says another agent writes a row, the group that owns that row writes it. A row that crosses groups (T0-13,
+T0-20, T0-23, T0-28, T0-29, T0-30, T0-32, P-23, P-38) has one PR per half; the other group reviews and records acceptance in the PR body. T0-31 (repo Type Check)
+is coordinated by G5, but each failing file is fixed by the group that owns it per `check.mjs` (G5 `route-cue-maps.test.ts`,
+which resolves to owner 15, with G4 restoring any `apps/showcase-*` audio module it needs; G3
+lane-13 files and `route-bundle-no-asset-metadata.test.ts`; G1 `prd02-lighting-legacy-golden.test.ts`, with G5's acceptance). When ownership is
+unclear, the first lead to need the row comments on the Track 0 or Track P tracking issue, and the other lead confirms
+there before anyone writes code. Nobody edits another group's files without the owner's recorded acceptance (PRD-16
+§3.3.3).
+
+## Gate: no promotion until Track 0's all-flags gate is green
+
+No group may open a promotion PR, and G5 may not change any state in `flags.state.ts`, until **every** condition below
+holds. Each condition needs a cited run id.
 
 - The **Track 0 exit** (PRD-16 §2.5 `:252-253`) is met:
   - Round 5 renders 18/18 base scenes in both `none` and `$ALL`, with `drawCalls > 0`, no blank frame and ready ≤ 30 s;
@@ -134,13 +121,13 @@ below holds. Each condition needs a cited run id.
 Before the gate opens, lanes keep working: fixes, S-row implementation, evidence runs with flags on, and issue work. While
 Track 0 is open, the `$ALL` arms report **expected-red with an issue link**. A PR that turns a previously green arm red fails.
 
-### 4. Weekly checkpoints (Thursdays, PRD-16 §6.2 `:834-849`)
+## Weekly checkpoints (Thursdays, PRD-16 §6.2 `:834-849`)
 
 | Checkpoint | Date | Gate |
 |---|---|---|
-| IC-0 re-record | 2026-10-10 | `history/rounds/IC-0.json` + noise floor (lane 12) |
+| IC-0 re-record | 2026-10-10 | `history/rounds/IC-0.json` + noise floor (G5, lane 12) |
 | **IC-1** | 2026-10-15 | Track 0 exit; Track P §3.1-3.4 merged; ruleset live; `qr-no-cross-lane-import` = error; requests filed |
-| IC-2 | 2026-10-22 | first `standalone-accepted`. Likely: 15 compiler/strict, 02, 03, 05 |
+| IC-2 | 2026-10-22 | first `standalone-accepted`. Likely: 15 compiler/strict (G5), 02, 03 (G1), 05 (G3) |
 | IC-3 | 2026-10-29 | generator keys on base scenes (01 S7); material lobes visible (04); remaining standalone promotions |
 | **IC-4 G-PANEL 1** | 2026-11-05 | first `integrated-accepted`; wave-1 games; panel round 1 |
 | IC-5..7 | 11-12, 11-19, 11-26 | `default-on` after two clean checkpoints |
@@ -150,34 +137,37 @@ Track 0 is open, the `$ALL` arms report **expected-red with an issue link**. A P
 | **IC-16 G-PANEL final** | 2027-01-28 | final acceptance (PRD-16 §6.3) |
 
 Each checkpoint follows the same procedure:
-1. Lane 12 runs the nightly-on-main capture (18 base + lane scenes, both engines, `none` and `$ALL`; games 9/9 with `all`).
+1. G5 runs the nightly-on-main capture (18 base + lane scenes, both engines, `none` and `$ALL`; games 9/9 with `all`).
    From IC-1 on it also runs leave-one-out (`all,-<lane>`, §2.4 Round 3).
-2. Every agent posts its "Report back" block, as defined at the end of each prompt, to its tracking issue. The block must
-   carry run ids, and any claim that was not reproduced is marked *(code-read)*.
-3. For each regression, lane 15 files a `qr-ic-regression` + `to:prdNN` issue against the lane that leave-one-out names.
-4. Lane 15 is the **only** writer of flag state changes. It applies them in `flags.state.ts` from the checkpoint record
+2. Every lead posts one "Report back" block per lane in its group (as defined at the end of each brief) to its tracking
+   issue. The block must carry run ids, and any claim that was not reproduced is marked *(code-read)*.
+3. For each regression, G5 files a `qr-ic-regression` + `to:prdNN` issue against the lane that leave-one-out names.
+4. G5 is the **only** writer of flag state changes. It applies them in `flags.state.ts` from the checkpoint record
    (`evidence/prdNN/checkpoints/IC-<k>.md`), and each change cites the run that met the criteria.
 5. A promoted lane that gets an attributed regression goes back one state. The default-on clock restarts.
 
-### 5. Issues (https://github.com/auraoneai/aura3d/issues)
+## Issues (https://github.com/auraoneai/aura3d/issues)
 
 There are 195 open issues: 115 `qr-request`, 35 `handoff-14`, 17 removal, 15 CCR, 8 fact-13 and 5 other. The full triage is
-in `_sections/issues-triage.md`, with a summary in PRD-16 §5 (`:758-810`). Each lane prompt has an "Issues to action / close"
-section for its own issues.
+in `_sections/issues-triage.md`, with a summary in PRD-16 §5 (`:758-810`). Each lane brief has an "Issues to action / close"
+section for its own issues; the group lead actions them.
 
 - **Close in week 1:**
   - done or obsolete: #74, #155, #164, #225, #232 (check against §8 first), #236, #247, #251, #261, #339;
   - verify, then close: #161, #211;
-  - close with the T0-28 PR (not before; it is also a Track 0 blocker): #145;
+  - close with the T0-28 PR (G5; not before, it is also a Track 0 blocker): #145;
   - duplicates: #172 → #72, #314 → #254, #77/#78/#79.
-- **Track 0 blockers:** #156 (12), #54 (09), #145 (15), and #313. Withdraw the #313 flag promotion until the S-rows pass.
-- **Spot-check the 107 "Y?" rows.** Nobody has checked them yet. Each owner confirms or closes its rows in its first PR
+  - who closes (one closer each; G5 verifies the list): #232, #314, #78, #245 (G2 consumes and comments) → G1; #261, #77, #79 → G2; #211 → G4 (lane 09);
+    #74 (G4 lane 14 confirms the inputs), #155, #164, #225, #236, #247, #251, #339, #161, #172, #145 → G5.
+- **Track 0 blockers:** #156 (lane 12, G5), #54 (lane 09, G4), #145 (lane 15, G5), and #313. Withdraw the #313 flag
+  promotion until the S-rows pass.
+- **Spot-check the 107 "Y?" rows.** Nobody has checked them yet. Each lane confirms or closes its rows in its first PR
   of the Track 0 week.
-- **#137** (Kiro Prism Actions secret) blocks lane 13. It is an owner action.
+- **#137** (Kiro Prism Actions secret) blocks lane 13 (G3). It is an owner action.
 
 ## Owner actions (Gurbaksh; agents prepare these, never apply them)
 
-These come from `process/OWNER-ACTIONS.md` and `process/ruleset-main.proposal.json`:
+G5 prepares these in `process/OWNER-ACTIONS.md` and `process/ruleset-main.proposal.json`:
 - the `main` ruleset and required contexts (PRD-16 §2.5 `:246-250`, §3.3);
 - the #137 secret;
 - the P-62 release order, or a signed waiver;
