@@ -1,6 +1,7 @@
 import {
   camera,
   game,
+  gameFeel,
   instances,
   looks,
   material,
@@ -211,7 +212,21 @@ let flashRows: { readonly rows: readonly number[]; readonly until: number } = { 
 let activeKind: Piece | null = null;
 let holdKind: Piece | null = null;
 
+// F-08-1: a static rig presents the board framing, pitched ~10° about X off
+// the authored spec (flag-off mounts the no-op stub controller; that spec
+// stays the fallback). F-08-5: feel bus + GameFeel attach through app.time.
+app.camera?.use(
+  camera.rigs.static({
+    position: [0.35, boardCenterY + 0.81, 4.6],
+    target: [0, boardCenterY, 0],
+    orthographicSize: 2.9
+  })
+);
+const feel = gameFeel.create({ app, time: app.time });
+app.feel?.preset("puzzle");
+
 app.onFrame(({ dt }) => {
+  feel.update(dt * 1000);
   if (input.pressed("reset")) {
     setupPracticeBoard();
     flashRows = { rows: [], until: 0 };
