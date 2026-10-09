@@ -1,0 +1,5 @@
+{
+  "_comment": "§2.5 regression baseline for the allflags-smoke gate. Maps '<set>' -> '<scene>' -> 'ready' for rows previously verified green on main. Empty during Track 0 (known state: all arms red); the nightly job appends verified-green rows. Never delete a row to hide a regression.",
+  "core,lighting,post,materials,assets,animation,vfx,camera,game,world,tiers,looks,compiler": {},
+  "core,lighting,post,materials,assets,animation,vfx,camera,game,world,tiers,looks,compiler,strict": {}
+}
