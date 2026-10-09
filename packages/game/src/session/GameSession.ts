@@ -76,6 +76,7 @@ export class GameSessionImpl implements GameSession {
 
   public setAccessibility(values: { reducedMotion: boolean; reducedFlash: boolean; highContrast: boolean }): void {
     this.accessibility = { values };
+    this.emit("settings");
   }
 
   public get paused(): boolean {

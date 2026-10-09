@@ -155,6 +155,12 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
         qualityRebuild: { flags: options.qualityRebuild?.flags }
       })
       : undefined;
+  // Q-09-6 (#213): lane-08 listener glue — the audio listener tracks the
+  // PRESENTED camera pose once per frame via bindFeelSound.
+  const feelSoundDetach =
+    audio !== undefined
+      ? bindFeelSound(app as never, audio as never)
+      : undefined;
   const lifecycleSound: LifecycleSound | undefined = options.soundAdapter ?? (audio && {
     suspend: () => { void audio.setMuted(true); },
     dispose: () => { void audio.dispose(); },
