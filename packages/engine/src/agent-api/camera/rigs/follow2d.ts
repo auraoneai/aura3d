@@ -8,6 +8,8 @@
 import type { AuraVec3 } from "../../index.js";
 import type { AuraCameraRig } from "../../../contracts/camera.js";
 import { springDamp } from "../Spring.js";
+import { distanceForFractionInContext } from "../framing.js";
+import { subjectHeight } from "./rigUtils.js";
 
 export interface Follow2dRigOptions {
   readonly target: string;
@@ -55,6 +57,11 @@ export function createFollow2dRig(o: Follow2dRigOptions): AuraCameraRig {
       const p = subject.position;
       const facing = subject.forward[0] < -1e-4 ? -1 : 1;
       const prev = ctx.previous;
+      // Framing solver wins over the fixed distance when set (#76).
+      const dist =
+        o.framing === undefined
+          ? distance
+          : distanceForFractionInContext(subjectHeight(subject), fov, o.framing.subjectHeightFraction, { aspect: ctx.aspect });
 
       if (Number.isNaN(centreX)) {
         centreX = p[0] + facing * lead;
@@ -63,7 +70,7 @@ export function createFollow2dRig(o: Follow2dRigOptions): AuraCameraRig {
       }
 
       // World-size dead zone at the subject depth: half-extents = tan(fov/2)·d.
-      const halfH = Math.tan(((fov / 2) * Math.PI) / 180) * distance;
+      const halfH = Math.tan(((fov / 2) * Math.PI) / 180) * dist;
       const halfW = halfH * ctx.aspect;
       const dzX = deadZone.x * halfW;
       const dzY = deadZone.y * halfH;
@@ -86,12 +93,12 @@ export function createFollow2dRig(o: Follow2dRigOptions): AuraCameraRig {
 
       return {
         ...prev,
-        position: [centreX, centreY, p[2] + distance],
+        position: [centreX, centreY, p[2] + dist],
         target: [centreX, centreY, p[2]],
         up: [0, 1, 0],
         roll: 0,
         fov,
-        near: Math.max(0.05, distance - 2 * halfW),
+        near: Math.max(0.05, dist - 2 * halfW),
         far: ctx.previous.far
       };
     }

@@ -9,6 +9,7 @@ import type { AuraCameraRig, AuraCameraSubject } from "../../../contracts/camera
 import { springDamp, springDampVec3 } from "../Spring.js";
 import { quatRotateVec3, type AuraQuat } from "../quat.js";
 import { createCollisionDamper, type CollisionDamper } from "../collision.js";
+import { distanceForFractionInContext } from "../framing.js";
 import {
   add,
   headingYaw,
@@ -18,6 +19,7 @@ import {
   nearForDistance,
   normalize,
   resolvePerSpeed,
+  subjectHeight,
   yawDir
 } from "./rigUtils.js";
 
@@ -37,6 +39,8 @@ export interface FlightRigOptions {
   readonly followPitch?: number;
   readonly fov?: number | { readonly base: number; readonly perSpeed?: number; readonly max?: number; readonly halflife?: number };
   readonly collision?: boolean | { readonly radius?: number; readonly pullInHalflife?: number; readonly pushOutHalflife?: number };
+  /** When set, the arm distance is solved so the subject fills this fraction of frame height (#76). */
+  readonly framing?: { readonly subjectHeightFraction: number };
 }
 
 /** CCR-08-2: `rotation` is additive until the CCR merges into C-22. */
@@ -97,7 +101,11 @@ export function createFlightRig(o: FlightRigOptions): AuraCameraRig {
 
       const fovTarget = resolvePerSpeed(o.fov, 60, speed);
       fovVal = Number.isNaN(fovVal) ? fovTarget : springDamp(fovVal, fovTarget, fovHalflife, ctx.dt);
-      const distTarget = resolvePerSpeed(o.distance, 6, speed);
+      // Distance: framing solver wins when provided, else the speed curve.
+      const distTarget =
+        o.framing === undefined
+          ? resolvePerSpeed(o.distance, 6, speed)
+          : distanceForFractionInContext(subjectHeight(subject), fovVal, o.framing.subjectHeightFraction, { aspect: ctx.aspect });
       dist = Number.isNaN(dist) ? distTarget : springDamp(dist, distTarget, armHalflife, ctx.dt);
 
       // Arm: yaw-only vector blended toward the full pitched arm by followPitch.

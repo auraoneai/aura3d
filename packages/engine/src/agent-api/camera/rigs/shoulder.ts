@@ -7,18 +7,25 @@ import type { AuraVec3 } from "../../index.js";
 import type { AuraCameraRig } from "../../../contracts/camera.js";
 import { createShoulderCamera } from "../../GameCameraRigs.js";
 import { createCollisionDamper, type CollisionDamper } from "../collision.js";
+import { distanceForFractionInContext } from "../framing.js";
+import { subjectHeight } from "./rigUtils.js";
 
 export interface ShoulderRigOptions {
   readonly target: string;
   readonly side?: "left" | "right";
   readonly distance?: number;
   readonly collision?: boolean | { readonly radius?: number };
+  readonly fov?: number;
+  /** When set, the back-off is solved so the subject fills this fraction of frame height (#76). */
+  readonly framing?: { readonly subjectHeightFraction: number };
 }
 
 export function createShoulderRig(o: ShoulderRigOptions): AuraCameraRig {
+  const fov = o.fov ?? 55;
   const inner = createShoulderCamera({
     side: o.side ?? "right",
-    distance: o.distance
+    distance: o.distance,
+    fov: o.fov
   });
   let damper: CollisionDamper | undefined;
 
@@ -33,7 +40,16 @@ export function createShoulderRig(o: ShoulderRigOptions): AuraCameraRig {
       if (!subject) return ctx.previous;
       // createShoulderCamera's facing convention: forward = [sin(yaw),0,-cos(yaw)].
       const facing = Math.atan2(subject.forward[0], -subject.forward[2]);
-      const snap = inner.update(ctx.dt, { position: [...subject.position] as [number, number, number], facing });
+      const snap = inner.update(
+        ctx.dt,
+        { position: [...subject.position] as [number, number, number], facing },
+        // Framing solver wins over the fixed back-off when set (#76).
+        o.framing === undefined
+          ? undefined
+          : {
+              distance: distanceForFractionInContext(subjectHeight(subject), fov, o.framing.subjectHeightFraction, { aspect: ctx.aspect })
+            }
+      );
 
       let eye = snap.position as AuraVec3;
       const look = snap.target as AuraVec3;
