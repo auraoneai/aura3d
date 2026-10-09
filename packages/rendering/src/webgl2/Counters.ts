@@ -5,6 +5,7 @@
 export class WebGL2Counters {
   bufferUpdateCount = 0;
   drawCalls = 0;
+  inactiveUniformBindCount = 0;
   nativeEnvironmentBindings = 0;
   nativeInstancedSubmissions = 0;
   nativeShadowMapBindings = 0;

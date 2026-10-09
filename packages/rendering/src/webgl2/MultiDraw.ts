@@ -125,7 +125,12 @@ export class WebGL2DrawCallBinder {
       }
       const location = this.getUniformLocation(shader, name);
       if (location === null) {
-        throw new RenderDeviceError("Material tried to bind a missing shader uniform", "MISSING_UNIFORM", { name });
+        // The name is declared in source (reflection) but the linked program
+        // has no location for it — the driver optimised it out as inactive.
+        // A location-less uniform has no storage, so binding is a no-op; treat
+        // the reflected name as inactive rather than throwing (06-PARITY).
+        this.host.counters.inactiveUniformBindCount += 1;
+        continue;
       }
       if (isTextureBinding(value)) {
         textureUnit += 1;
