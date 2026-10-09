@@ -1,0 +1,2180 @@
+From 0f1c75c78c81db322e2d2c0f3554052f6e8884a1 Mon Sep 17 00:00:00 2001
+From: gchahal+1 <gchahal@veerone.com>
+Date: Fri, 9 Oct 2026 13:40:38 +0000
+Subject: [PATCH] [qr-prd09] showcase-neon-swarm: delete evidence files+blocks
+ (T5.8)
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ .../scripts/build-review-art.mjs              | 111 -------
+ .../showcase-neon-swarm/scripts/build-sfx.mjs | 272 -----------------
+ .../scripts/register-models.mjs               |  66 ----
+ .../scripts/register-sfx.mjs                  |  51 ----
+ .../scripts/write-performance-report.ts       |  90 ------
+ .../scripts/write-route-health.mjs            | 280 -----------------
+ apps/showcase-neon-swarm/src/legacy/hud.ts    |  14 -
+ apps/showcase-neon-swarm/src/legacy/main.ts   | 283 ------------------
+ .../showcase-neon-swarm/src/legacy/styles.css |  71 -----
+ .../src/v2/evidence/index.ts                  | 111 -------
+ 10 files changed, 1349 deletions(-)
+ delete mode 100644 apps/showcase-neon-swarm/scripts/build-review-art.mjs
+ delete mode 100644 apps/showcase-neon-swarm/scripts/build-sfx.mjs
+ delete mode 100644 apps/showcase-neon-swarm/scripts/register-models.mjs
+ delete mode 100644 apps/showcase-neon-swarm/scripts/register-sfx.mjs
+ delete mode 100644 apps/showcase-neon-swarm/scripts/write-performance-report.ts
+ delete mode 100644 apps/showcase-neon-swarm/scripts/write-route-health.mjs
+ delete mode 100644 apps/showcase-neon-swarm/src/v2/evidence/index.ts
+
+diff --git a/apps/showcase-neon-swarm/scripts/build-review-art.mjs b/apps/showcase-neon-swarm/scripts/build-review-art.mjs
+deleted file mode 100644
+index ddca4b511..000000000
+--- a/apps/showcase-neon-swarm/scripts/build-review-art.mjs
++++ /dev/null
+@@ -1,111 +0,0 @@
+-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+-import { dirname, resolve } from "node:path";
+-
+-const align4 = (value) => (value + 3) & ~3;
+-const padded = (bytes, fill = 0) => {
+-  const output = Buffer.alloc(align4(bytes.length), fill);
+-  bytes.copy(output);
+-  return output;
+-};
+-const floats = (values) => {
+-  const output = Buffer.alloc(values.length * 4);
+-  values.forEach((value, index) => output.writeFloatLE(value, index * 4));
+-  return output;
+-};
+-const ushorts = (values) => {
+-  const output = Buffer.alloc(values.length * 2);
+-  values.forEach((value, index) => output.writeUInt16LE(value, index * 2));
+-  return output;
+-};
+-
+-function buildCard({ source, output, name, prompt, role, halfWidth, halfHeight, horizontal = false, alpha = false }) {
+-  // Opaque horizontal panoramas retain a shallow but release-readable volume;
+-  // alpha actor cards stay thinner so they remain presentation planes.
+-  const halfDepth = horizontal && !alpha ? 0.08 : 0.02;
+-  const positions = horizontal
+-    ? padded(floats([
+-      -halfWidth, halfDepth, -halfHeight, halfWidth, halfDepth, -halfHeight,
+-      halfWidth, halfDepth, halfHeight, -halfWidth, halfDepth, halfHeight,
+-      -halfWidth, -halfDepth, -halfHeight, halfWidth, -halfDepth, -halfHeight,
+-      halfWidth, -halfDepth, halfHeight, -halfWidth, -halfDepth, halfHeight
+-    ]))
+-    : padded(floats([
+-      -halfWidth, -halfHeight, halfDepth, halfWidth, -halfHeight, halfDepth,
+-      halfWidth, halfHeight, halfDepth, -halfWidth, halfHeight, halfDepth,
+-      -halfWidth, -halfHeight, -halfDepth, halfWidth, -halfHeight, -halfDepth,
+-      halfWidth, halfHeight, -halfDepth, -halfWidth, halfHeight, -halfDepth
+-    ]));
+-  const uvs = padded(floats([0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0]));
+-  const indices = padded(ushorts([0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6]));
+-  const image = padded(readFileSync(resolve(source)));
+-  const offsets = [0, positions.length, positions.length + uvs.length, positions.length + uvs.length + indices.length];
+-  const binary = Buffer.concat([positions, uvs, indices, image]);
+-  const min = horizontal ? [-halfWidth, -halfDepth, -halfHeight] : [-halfWidth, -halfHeight, -halfDepth];
+-  const max = horizontal ? [halfWidth, halfDepth, halfHeight] : [halfWidth, halfHeight, halfDepth];
+-  const material = {
+-    name: `${name}-unlit`,
+-    doubleSided: true,
+-    ...(alpha ? { alphaMode: "BLEND", alphaCutoff: 0.03 } : {}),
+-    pbrMetallicRoughness: {
+-      baseColorFactor: [1, 1, 1, 1], baseColorTexture: { index: 0 }, metallicFactor: 0, roughnessFactor: 1
+-    },
+-    extensions: { KHR_materials_unlit: {} }
+-  };
+-  const gltf = {
+-    asset: { version: "2.0", generator: "Aura3D Neon Swarm deterministic review-art builder", extras: { source, prompt, license: "CC0-1.0", role } },
+-    extensionsUsed: ["KHR_materials_unlit"],
+-    scene: 0,
+-    scenes: [{ name, nodes: [0] }],
+-    nodes: [{ name: `${name}-card`, mesh: 0 }],
+-    meshes: [{ name: `${name}-mesh`, primitives: [{ attributes: { POSITION: 0, TEXCOORD_0: 1 }, indices: 2, material: 0 }] }],
+-    materials: [material],
+-    textures: [{ name: `${name}-texture`, sampler: 0, source: 0 }],
+-    samplers: [{ magFilter: 9729, minFilter: 9987, wrapS: 33071, wrapT: 33071 }],
+-    images: [{ name: `${name}-image`, bufferView: 3, mimeType: "image/png" }],
+-    accessors: [
+-      { bufferView: 0, componentType: 5126, count: 8, type: "VEC3", min, max },
+-      { bufferView: 1, componentType: 5126, count: 8, type: "VEC2", min: [0, 0], max: [1, 1] },
+-      { bufferView: 2, componentType: 5123, count: 12, type: "SCALAR", min: [0], max: [7] }
+-    ],
+-    bufferViews: [
+-      { buffer: 0, byteOffset: offsets[0], byteLength: positions.length, target: 34962 },
+-      { buffer: 0, byteOffset: offsets[1], byteLength: uvs.length, target: 34962 },
+-      { buffer: 0, byteOffset: offsets[2], byteLength: 24, target: 34963 },
+-      { buffer: 0, byteOffset: offsets[3], byteLength: image.length }
+-    ],
+-    buffers: [{ byteLength: binary.length }]
+-  };
+-  const json = padded(Buffer.from(JSON.stringify(gltf), "utf8"), 0x20);
+-  const body = Buffer.alloc(12 + 8 + json.length + 8 + binary.length);
+-  body.write("glTF", 0, "ascii"); body.writeUInt32LE(2, 4); body.writeUInt32LE(body.length, 8);
+-  body.writeUInt32LE(json.length, 12); body.writeUInt32LE(0x4e4f534a, 16); json.copy(body, 20);
+-  const binaryHeader = 20 + json.length;
+-  body.writeUInt32LE(binary.length, binaryHeader); body.writeUInt32LE(0x004e4942, binaryHeader + 4); binary.copy(body, binaryHeader + 8);
+-  const target = resolve(output);
+-  mkdirSync(dirname(target), { recursive: true });
+-  writeFileSync(target, body);
+-  return { output: target, source: resolve(source), bytes: body.length };
+-}
+-
+-const results = [
+-  buildCard({
+-    source: "apps/showcase-neon-swarm/assets/neon-rain-garden-arena.png",
+-    output: "apps/showcase-neon-swarm/generated/neonRainGardenArena.glb",
+-    name: "Neon Rain Garden Arena", prompt: "apps/showcase-neon-swarm/assets/neon-rain-garden-arena.prompt.md",
+-    role: "renderer-owned-non-primary-background", halfWidth: 16, halfHeight: 16 * 992 / 1586, horizontal: true
+-  }),
+-  buildCard({
+-    source: "apps/showcase-neon-swarm/assets/neon-rain-courier.png",
+-    output: "apps/showcase-neon-swarm/generated/neonRainCourier.glb",
+-    name: "Neon Rain Courier", prompt: "apps/showcase-neon-swarm/assets/neon-rain-courier.prompt.md",
+-    role: "renderer-owned-primary-character-presentation", halfWidth: (1303 / 1207) / 2, halfHeight: 0.5, horizontal: true, alpha: true
+-  }),
+-  buildCard({
+-    source: "apps/showcase-neon-swarm/assets/neon-crown-moth.png",
+-    output: "apps/showcase-neon-swarm/generated/neonCrownMoth.glb",
+-    name: "Neon Crown Moth", prompt: "apps/showcase-neon-swarm/assets/neon-crown-moth.prompt.md",
+-    role: "renderer-owned-live-elite-presentation", halfWidth: (1133 / 974) / 2, halfHeight: 0.5, horizontal: true, alpha: true
+-  })
+-];
+-
+-console.log(JSON.stringify(results, null, 2));
+diff --git a/apps/showcase-neon-swarm/scripts/build-sfx.mjs b/apps/showcase-neon-swarm/scripts/build-sfx.mjs
+deleted file mode 100644
+index 488ff8220..000000000
+--- a/apps/showcase-neon-swarm/scripts/build-sfx.mjs
++++ /dev/null
+@@ -1,272 +0,0 @@
+-/**
+- * Neon Swarm SFX synth — generates original CC0 WAV cues entirely in-repo.
+- *
+- * No network downloads, no sampled material: every cue is synthesized from
+- * oscillators / noise with this committed generator so provenance is auditable
+- * (author "Aura3D synthesis", license CC0-1.0).
+- *
+- * Run from this app directory:  node scripts/build-sfx.mjs
+- * Output: assets/sfx/*.wav  (16-bit PCM mono 44100 Hz)
+- *
+- * After generation, register each with the CLI, e.g.:
+- *   pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts assets add \
+- *     ./apps/showcase-neon-swarm/assets/sfx/neonPulseFireSfx.wav --name neonPulseFireSfx \
+- *     --type audio --license CC0-1.0 --author "Aura3D synthesis" \
+- *     --source-page "apps/showcase-neon-swarm/scripts/build-sfx.mjs"
+- */
+-import { mkdirSync, writeFileSync } from "node:fs";
+-import { resolve, dirname } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../assets/sfx");
+-const SAMPLE_RATE = 44100;
+-
+-// ---- waveform helpers -------------------------------------------------------
+-let noiseState = 0x4e534658;
+-function nextNoise() {
+-  noiseState = (Math.imul(noiseState, 1664525) + 1013904223) >>> 0;
+-  return noiseState / 4294967296;
+-}
+-function noiseBuffer(length) {
+-  const out = new Float32Array(length);
+-  for (let i = 0; i < length; i += 1) out[i] = nextNoise() * 2 - 1;
+-  return out;
+-}
+-function envelope(length, attack, decay, total) {
+-  const out = new Float32Array(length);
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const start = Math.min(1, t / attack);
+-    const end = Math.pow(Math.max(0, 1 - t / total), decay);
+-    out[i] = start * end;
+-  }
+-  return out;
+-}
+-
+-/** Render a cue into a normalized Float32 mono buffer from tone/noise parts. */
+-function renderCue({ tone, noise }) {
+-  const partTotals = Array.isArray(tone) ? tone.map((part) => part.total) : [tone?.total ?? 0];
+-  const totalSec = Math.max(...partTotals, noise?.total ?? 0, 0.1) + 0.05;
+-  const length = Math.floor(totalSec * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-
+-  if (tone) {
+-    const tones = Array.isArray(tone) ? tone : [tone];
+-    for (const part of tones) {
+-      const { wave = "sine", freqStart, freqEnd = freqStart, amp = 0.5, attack = 0.005, decay = 3, total = 0.2 } = part;
+-      const env = envelope(length, attack, decay, total);
+-      for (let i = 0; i < length; i += 1) {
+-        const t = i / SAMPLE_RATE;
+-        const progress = Math.min(1, t / total);
+-        const f = freqStart + (freqEnd - freqStart) * progress;
+-        const phase = 2 * Math.PI * f * t;
+-        let v = 0;
+-        if (wave === "sine") v = Math.sin(phase);
+-        else if (wave === "triangle") v = 2 / Math.PI * Math.asin(Math.sin(phase));
+-        else if (wave === "sawtooth") v = 2 * (phase / (2 * Math.PI) - Math.floor(0.5 + phase / (2 * Math.PI)));
+-        else if (wave === "square") v = Math.sign(Math.sin(phase));
+-        else v = Math.sin(phase);
+-        out[i] += v * env[i] * amp;
+-      }
+-    }
+-  }
+-
+-  if (noise) {
+-    const { amp = 0.4, attack = 0.003, decay = 4, total = 0.15, hp = 0 } = noise;
+-    const raw = noiseBuffer(length);
+-    let lp = 0;
+-    for (let i = 0; i < length; i += 1) {
+-      let v = raw[i];
+-      if (hp > 0) {
+-        lp += 0.9 * (v - lp);
+-        v = v - lp;
+-      }
+-      out[i] += v * envelope(length, attack, decay, total)[i] * amp;
+-    }
+-  }
+-
+-  // normalize to 0.92 peak
+-  let peak = 0;
+-  for (let i = 0; i < length; i += 1) peak = Math.max(peak, Math.abs(out[i]));
+-  if (peak > 0) {
+-    const gain = 0.92 / peak;
+-    for (let i = 0; i < length; i += 1) out[i] *= gain;
+-  }
+-  return out;
+-}
+-
+-// ---- cue recipes ------------------------------------------------------------
+-/** Pulse fire — neon zap: fast saw drop plus a bright crack. */
+-function pulseFire() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sawtooth", freqStart: 1400, freqEnd: 320, amp: 0.42, attack: 0.002, decay: 7, total: 0.14 },
+-      { wave: "sine", freqStart: 700, freqEnd: 220, amp: 0.3, attack: 0.002, decay: 6, total: 0.16 }
+-    ],
+-    noise: { amp: 0.18, attack: 0.001, decay: 8, total: 0.07, hp: 1600 }
+-  });
+-}
+-/** Drone hit — short metallic tick. */
+-function droneHit() {
+-  return renderCue({
+-    tone: [
+-      { wave: "square", freqStart: 520, freqEnd: 300, amp: 0.3, attack: 0.001, decay: 9, total: 0.08 },
+-      { wave: "sine", freqStart: 1900, freqEnd: 1400, amp: 0.12, attack: 0.001, decay: 8, total: 0.06 }
+-    ],
+-    noise: { amp: 0.12, attack: 0.001, decay: 10, total: 0.05, hp: 900 }
+-  });
+-}
+-/** Drone die — spark burst: noise crunch plus descending core. */
+-function droneDie() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sawtooth", freqStart: 420, freqEnd: 80, amp: 0.34, attack: 0.002, decay: 6, total: 0.3 },
+-      { wave: "sine", freqStart: 210, freqEnd: 55, amp: 0.26, attack: 0.002, decay: 5, total: 0.32 }
+-    ],
+-    noise: { amp: 0.3, attack: 0.002, decay: 6, total: 0.24, hp: 500 }
+-  });
+-}
+-/** Player hurt — harsh low buzz. */
+-function playerHurt() {
+-  return renderCue({
+-    tone: [
+-      { wave: "square", freqStart: 190, freqEnd: 95, amp: 0.4, attack: 0.003, decay: 4, total: 0.26 },
+-      { wave: "sawtooth", freqStart: 96, freqEnd: 60, amp: 0.3, attack: 0.003, decay: 4, total: 0.28 }
+-    ],
+-    noise: { amp: 0.14, attack: 0.002, decay: 6, total: 0.16 }
+-  });
+-}
+-/** Dash — air whoosh: band-passed noise swell with a rising tail. */
+-function dash() {
+-  return renderCue({
+-    tone: { wave: "sine", freqStart: 240, freqEnd: 620, amp: 0.16, attack: 0.05, decay: 3, total: 0.28 },
+-    noise: { amp: 0.34, attack: 0.04, decay: 3.4, total: 0.3, hp: 320 }
+-  });
+-}
+-/** Pickup — bright ascending two-note chime. */
+-function pickup() {
+-  return renderCue({ tone: [
+-    { wave: "triangle", freqStart: 660, amp: 0.36, attack: 0.003, decay: 5, total: 0.18 },
+-    { wave: "sine", freqStart: 990, amp: 0.3, attack: 0.09, decay: 4, total: 0.3 },
+-    { wave: "sine", freqStart: 1320, amp: 0.16, attack: 0.11, decay: 5, total: 0.32 }
+-  ] });
+-}
+-/** Wave start — alarm two-tone. */
+-function waveStart() {
+-  return renderCue({ tone: [
+-    { wave: "square", freqStart: 440, amp: 0.22, attack: 0.01, decay: 3, total: 0.18 },
+-    { wave: "square", freqStart: 554, amp: 0.22, attack: 0.17, decay: 3, total: 0.36 }
+-  ] });
+-}
+-/** Wave clear — resolving neon triad. */
+-function waveClear() {
+-  return renderCue({ tone: [
+-    { wave: "triangle", freqStart: 523, amp: 0.3, attack: 0.01, decay: 3.4, total: 0.5 },
+-    { wave: "triangle", freqStart: 659, amp: 0.26, attack: 0.09, decay: 3.4, total: 0.52 },
+-    { wave: "sine", freqStart: 784, amp: 0.24, attack: 0.17, decay: 3, total: 0.62 }
+-  ] });
+-}
+-/** Charged radial burst — broad rising core with a decisive gold impact. */
+-function radialBurst() {
+-  return renderCue({ tone: [
+-    { wave: "sine", freqStart: 90, freqEnd: 180, amp: 0.46, attack: 0.008, decay: 2.8, total: 0.56 },
+-    { wave: "triangle", freqStart: 360, freqEnd: 980, amp: 0.32, attack: 0.05, decay: 3.2, total: 0.5 },
+-    { wave: "sine", freqStart: 1320, freqEnd: 660, amp: 0.22, attack: 0.18, decay: 4, total: 0.62 }
+-  ] });
+-}
+-/** Graze — a very short high chime that cannot be confused with collection. */
+-function graze() {
+-  return renderCue({ tone: [
+-    { wave: "sine", freqStart: 1760, freqEnd: 2217, amp: 0.32, attack: 0.001, decay: 10, total: 0.11 },
+-    { wave: "triangle", freqStart: 880, freqEnd: 1320, amp: 0.16, attack: 0.018, decay: 8, total: 0.14 }
+-  ] });
+-}
+-/** Combo break — a clipped descending dyad. */
+-function comboBreak() {
+-  return renderCue({ tone: [
+-    { wave: "square", freqStart: 440, freqEnd: 220, amp: 0.25, attack: 0.002, decay: 6, total: 0.19 },
+-    { wave: "sine", freqStart: 330, freqEnd: 110, amp: 0.3, attack: 0.06, decay: 5, total: 0.3 }
+-  ] });
+-}
+-/** Death sting — heavy downward fall. */
+-function deathSting() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sawtooth", freqStart: 392, freqEnd: 70, amp: 0.4, attack: 0.004, decay: 4.6, total: 0.85 },
+-      { wave: "sine", freqStart: 196, freqEnd: 48, amp: 0.34, attack: 0.004, decay: 4, total: 0.9 }
+-    ],
+-    noise: { amp: 0.16, attack: 0.002, decay: 5, total: 0.4 }
+-  });
+-}
+-/** Ambient hum — slow breathing city-drone bed, loopable. */
+-function ambientHum() {
+-  const total = 3.6;
+-  const length = Math.floor(total * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const lfo = 0.5 + 0.5 * Math.sin(2 * Math.PI * t / total * 2);
+-    const body = Math.sin(2 * Math.PI * 55 * t) * 0.5 + Math.sin(2 * Math.PI * 82.5 * t) * 0.3 + Math.sin(2 * Math.PI * 110.2 * t) * 0.2;
+-    const shimmer = Math.sin(2 * Math.PI * 660 * t) * 0.05 * lfo;
+-    out[i] = (body * (0.35 + 0.2 * lfo) + shimmer) * 0.55;
+-  }
+-  // crossfade ends so the file loops cleanly
+-  const fade = Math.floor(0.25 * SAMPLE_RATE);
+-  for (let i = 0; i < fade; i += 1) {
+-    const k = i / fade;
+-    out[i] *= k;
+-    out[length - 1 - i] *= k;
+-  }
+-  return out;
+-}
+-
+-// ---- WAV writer -------------------------------------------------------------
+-function writeWav(path, samples) {
+-  const length = samples.length;
+-  const buffer = Buffer.alloc(44 + length * 2);
+-  const numChannels = 1;
+-  const bitsPerSample = 16;
+-  const byteRate = SAMPLE_RATE * numChannels * bitsPerSample / 8;
+-  buffer.write("RIFF", 0);
+-  buffer.writeUInt32LE(36 + length * 2, 4);
+-  buffer.write("WAVE", 8);
+-  buffer.write("fmt ", 12);
+-  buffer.writeUInt32LE(16, 16);
+-  buffer.writeUInt16LE(1, 20); // PCM
+-  buffer.writeUInt16LE(numChannels, 22);
+-  buffer.writeUInt32LE(SAMPLE_RATE, 24);
+-  buffer.writeUInt32LE(byteRate, 28);
+-  buffer.writeUInt16LE(numChannels * bitsPerSample / 8, 32);
+-  buffer.writeUInt16LE(bitsPerSample, 34);
+-  buffer.write("data", 36);
+-  buffer.writeUInt32LE(length * 2, 40);
+-  for (let i = 0; i < length; i += 1) {
+-    const v = Math.max(-1, Math.min(1, samples[i]));
+-    buffer.writeInt16LE(Math.round(v * 32767), 44 + i * 2);
+-  }
+-  writeFileSync(path, buffer);
+-}
+-
+-// ---- main -------------------------------------------------------------------
+-const cues = {
+-  neonPulseFireSfx: pulseFire(),
+-  neonDroneHitSfx: droneHit(),
+-  neonDroneDieSfx: droneDie(),
+-  neonPlayerHurtSfx: playerHurt(),
+-  neonDashSfx: dash(),
+-  neonPickupSfx: pickup(),
+-  neonWaveStartSfx: waveStart(),
+-  neonWaveClearSfx: waveClear(),
+-  neonBurstSfx: radialBurst(),
+-  neonGrazeSfx: graze(),
+-  neonComboBreakSfx: comboBreak(),
+-  neonDeathStingSfx: deathSting(),
+-  neonAmbientHumSfx: ambientHum()
+-};
+-
+-mkdirSync(OUT_DIR, { recursive: true });
+-for (const [name, samples] of Object.entries(cues)) {
+-  const path = resolve(OUT_DIR, name + ".wav");
+-  writeWav(path, samples);
+-  console.log("wrote", path, samples.length, "samples");
+-}
+diff --git a/apps/showcase-neon-swarm/scripts/register-models.mjs b/apps/showcase-neon-swarm/scripts/register-models.mjs
+deleted file mode 100644
+index 3c1f91092..000000000
+--- a/apps/showcase-neon-swarm/scripts/register-models.mjs
++++ /dev/null
+@@ -1,66 +0,0 @@
+-import { spawnSync } from "node:child_process";
+-import { resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(fileURLToPath(new URL("..", import.meta.url)));
+-const repoRoot = resolve(appDir, "../..");
+-const cli = "packages/aura3d-cli/src/cli.ts";
+-const licenseUrl = "https://creativecommons.org/licenses/by/4.0/";
+-const definitions = [
+-  {
+-    id: "neonCourierAvatar",
+-    file: "neonCourierAvatar.glb",
+-    role: "character",
+-    author: "Daniel Darko",
+-    retrievedAt: "2026-08-21T23:01:29.333Z",
+-    sourcePage: "https://sketchfab.com/3d-models/low-poly-robot-19ccf1fa9c5f47ba8e7a1703a7c0d7ae",
+-    downloadUrl: "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-026/19ccf1fa9c5f47ba8e7a1703a7c0d7ae.glb",
+-    suitability: "Static untextured stylized flat-color primary courier character with upright readable player-avatar height, current hash-bound material pixels, and a manifest-override +Z neutral orientation before route-authored yaw."
+-  },
+-  {
+-    id: "neonBarricadeProp",
+-    file: "neonBarricadeProp.glb",
+-    role: "prop",
+-    author: "Kyle Burton",
+-    retrievedAt: "2026-08-21T23:01:50.009Z",
+-    sourcePage: "https://sketchfab.com/3d-models/barricade-03ebcc6f5320400394f781a47388751b",
+-    downloadUrl: "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-127/03ebcc6f5320400394f781a47388751b.glb",
+-    suitability: "Typed textured street barricade prop with route-normalized placement through targetMaxDimension 2.7; its current hash-bound rendered foreground proves a readable orange-white obstacle around the abstract swarm."
+-  },
+-  {
+-    id: "neonStreetLampProp",
+-    file: "neonStreetLampProp.glb",
+-    role: "prop",
+-    author: "Humphrorange",
+-    retrievedAt: "2026-08-21T23:01:58.590Z",
+-    sourcePage: "https://sketchfab.com/3d-models/lamppost-street-light-cf3993d33aa64114a98bbe99ff3d2a83",
+-    downloadUrl: "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-131/cf3993d33aa64114a98bbe99ff3d2a83.glb",
+-    suitability: "Typed textured street-lamp prop with route-normalized camera-fit placement through targetMaxDimension 4.2; its current hash-bound rendered foreground proves a readable post and luminaire arena landmark."
+-  }
+-];
+-
+-for (const definition of definitions) {
+-  const source = `apps/showcase-neon-swarm/assets/models/${definition.file}`;
+-  const result = spawnSync("pnpm", [
+-    "exec", "tsx", "--tsconfig", "tsconfig.base.json", cli,
+-    "assets", "add", source,
+-    "--name", definition.id,
+-    "--type", "model",
+-    "--license", "CC-BY-4.0",
+-    "--license-url", licenseUrl,
+-    "--source-page", definition.sourcePage,
+-    "--download-url", definition.downloadUrl,
+-    "--author", definition.author,
+-    "--retrieved-at", definition.retrievedAt,
+-    "--quality", "release",
+-    "--role", definition.role,
+-    "--suitability", definition.suitability
+-  ], { cwd: repoRoot, encoding: "utf8", maxBuffer: 128 * 1024 * 1024 });
+-  let payload;
+-  try { payload = JSON.parse(result.stdout); } catch { payload = null; }
+-  if (payload?.ok !== true) {
+-    process.stderr.write(result.stderr || result.stdout);
+-    process.exit(result.status ?? 1);
+-  }
+-  console.log(`Registered ${definition.id}`);
+-}
+diff --git a/apps/showcase-neon-swarm/scripts/register-sfx.mjs b/apps/showcase-neon-swarm/scripts/register-sfx.mjs
+deleted file mode 100644
+index 9931f5a48..000000000
+--- a/apps/showcase-neon-swarm/scripts/register-sfx.mjs
++++ /dev/null
+@@ -1,51 +0,0 @@
+-import { spawnSync } from "node:child_process";
+-import { resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(fileURLToPath(new URL("..", import.meta.url)));
+-const repoRoot = resolve(appDir, "../..");
+-const cli = "packages/aura3d-cli/src/cli.ts";
+-const retrievedAt = "2026-08-23T18:40:00Z";
+-const sourcePage = "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-neon-swarm/scripts/build-sfx.mjs";
+-const licenseUrl = "https://creativecommons.org/publicdomain/zero/1.0/";
+-const definitions = [
+-  ["neonPulseFireSfx", "Directional pulse cue driven by a real accepted fire input."],
+-  ["neonDroneHitSfx", "Drone-hit tick driven by live pulse overlap damage."],
+-  ["neonDroneDieSfx", "Drone-destruction cue driven by simulation-owned HP reaching zero."],
+-  ["neonPlayerHurtSfx", "Courier damage cue driven by contact damage after shields and invulnerability."],
+-  ["neonDashSfx", "Dash cue driven by a live accepted dash transition."],
+-  ["neonPickupSfx", "Upgrade collection cue driven by exactly one selected intermission door."],
+-  ["neonWaveStartSfx", "Wave-start warning driven by the five-stage campaign transition."],
+-  ["neonWaveClearSfx", "Wave-clear and finale-resolution cue driven by campaign state."],
+-  ["neonDeathStingSfx", "Failure cue driven by courier HP reaching zero."],
+-  ["neonAmbientHumSfx", "Looped abstract city ambience started after a user gesture."],
+-  ["neonBurstSfx", "Charged radial-burst cue driven by a full live burst meter."],
+-  ["neonGrazeSfx", "Near-miss cue driven by the simulation graze annulus without contact."],
+-  ["neonComboBreakSfx", "Combo-break cue driven by the deterministic combo timer expiring."]
+-];
+-
+-for (const [id, suitability] of definitions) {
+-  const source = `apps/showcase-neon-swarm/assets/sfx/${id}.wav`;
+-  const result = spawnSync("pnpm", [
+-    "exec", "tsx", "--tsconfig", "tsconfig.base.json", cli,
+-    "assets", "add", source,
+-    "--name", id,
+-    "--type", "audio",
+-    "--license", "CC0-1.0",
+-    "--license-url", licenseUrl,
+-    "--source-page", sourcePage,
+-    "--download-url", `https://raw.githubusercontent.com/auraoneai/aura3d/main/${source}`,
+-    "--author", "Aura3D synthesis",
+-    "--retrieved-at", retrievedAt,
+-    "--quality", "candidate",
+-    "--role", "unknown",
+-    "--suitability", suitability
+-  ], { cwd: repoRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+-  let payload;
+-  try { payload = JSON.parse(result.stdout); } catch { payload = null; }
+-  if (payload?.ok !== true) {
+-    process.stderr.write(result.stderr || result.stdout);
+-    process.exit(result.status ?? 1);
+-  }
+-  console.log(`Registered ${id}`);
+-}
+diff --git a/apps/showcase-neon-swarm/scripts/write-performance-report.ts b/apps/showcase-neon-swarm/scripts/write-performance-report.ts
+deleted file mode 100644
+index 965ddb997..000000000
+--- a/apps/showcase-neon-swarm/scripts/write-performance-report.ts
++++ /dev/null
+@@ -1,90 +0,0 @@
+-import { readFileSync, writeFileSync } from "node:fs";
+-import { resolve } from "node:path";
+-import { createArenaLayout, playRect } from "../src/arena";
+-import { createSwarmSimulation } from "../src/swarm";
+-import { arenaInsetForWave } from "../src/run";
+-
+-const appDir = resolve(import.meta.dirname, "..");
+-const repoRoot = resolve(appDir, "../..");
+-const telemetryPath = resolve(repoRoot, "tests/reports/neon-swarm/instancing-telemetry.json");
+-const telemetry = JSON.parse(readFileSync(telemetryPath, "utf8")) as {
+-  instanceCount?: number;
+-  drawCalls?: number;
+-  nativeInstancedSubmissions?: number;
+-  nonBlackPixels?: number;
+-  consoleErrors?: string[];
+-};
+-
+-const arena = createArenaLayout();
+-const rect = playRect(arena.bounds);
+-const sim = createSwarmSimulation();
+-const total = 320;
+-const columns = 20;
+-const rows = Math.ceil(total / columns);
+-for (let i = 0; i < total; i += 1) {
+-  const column = i % columns;
+-  const row = Math.floor(i / columns);
+-  const x = rect.minX + 2 + column * ((rect.maxX - rect.minX - 4) / (columns - 1));
+-  const z = rect.minZ + 2 + row * ((rect.maxZ - rect.minZ - 4) / (rows - 1));
+-  const spawned = sim.spawn({
+-    x,
+-    z,
+-    archetype: i % 8 === 0 ? "elite" : "grunt",
+-    speedMultiplier: 1.22
+-  });
+-  if (!spawned) throw new Error(`Failed to stage performance drone ${i}`);
+-}
+-
+-const samples: number[] = [];
+-for (let frame = 0; frame < 360; frame += 1) {
+-  const player = {
+-    x: Math.sin(frame / 75) * 4,
+-    z: Math.cos(frame / 63) * 3
+-  };
+-  const start = performance.now();
+-  sim.step(1 / 60, player, arena.obstacles, undefined, arenaInsetForWave(5));
+-  const elapsed = performance.now() - start;
+-  if (frame >= 60) samples.push(elapsed);
+-}
+-
+-function percentile(values: readonly number[], fraction: number): number {
+-  const sorted = [...values].sort((a, b) => a - b);
+-  return sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * fraction))] ?? Number.POSITIVE_INFINITY;
+-}
+-
+-const budgets = {
+-  simulationStepP95Ms: 8,
+-  drawCalls: 64,
+-  minimumLiveInstances: 300,
+-  minimumNonBlackPixels: 1500
+-};
+-const observed = {
+-  stagedInstances: sim.aliveCount(),
+-  simulationStepP95Ms: Number(percentile(samples, 0.95).toFixed(4)),
+-  simulationStepMaxMs: Number(Math.max(...samples).toFixed(4)),
+-  browserInstances: Number(telemetry.instanceCount ?? 0),
+-  browserDrawCalls: Number(telemetry.drawCalls ?? Number.POSITIVE_INFINITY),
+-  browserNativeInstancedSubmissions: Number(telemetry.nativeInstancedSubmissions ?? 0),
+-  browserNonBlackPixels: Number(telemetry.nonBlackPixels ?? 0)
+-};
+-const pass = observed.stagedInstances >= budgets.minimumLiveInstances
+-  && observed.simulationStepP95Ms <= budgets.simulationStepP95Ms
+-  && observed.browserInstances >= budgets.minimumLiveInstances
+-  && observed.browserDrawCalls <= budgets.drawCalls
+-  && observed.browserNativeInstancedSubmissions > 0
+-  && observed.browserNonBlackPixels >= budgets.minimumNonBlackPixels
+-  && (telemetry.consoleErrors?.length ?? 0) === 0;
+-
+-const report = {
+-  schema: "aura3d-neon-swarm-performance/1.0",
+-  generatedAt: new Date().toISOString(),
+-  scope: "Route-local 320-drone typed-array steering timing plus current browser native-instancing/draw/pixel telemetry; GPU frame-time parity is not claimed.",
+-  budgets,
+-  observed,
+-  samples: samples.length,
+-  browserEvidence: "tests/reports/neon-swarm/instancing-telemetry.json",
+-  pass
+-};
+-writeFileSync(resolve(appDir, "performance-report.json"), JSON.stringify(report, null, 2) + "\n");
+-console.log(JSON.stringify({ pass, observed }));
+-if (!pass) process.exitCode = 1;
+diff --git a/apps/showcase-neon-swarm/scripts/write-route-health.mjs b/apps/showcase-neon-swarm/scripts/write-route-health.mjs
+deleted file mode 100644
+index dbe9a04de..000000000
+--- a/apps/showcase-neon-swarm/scripts/write-route-health.mjs
++++ /dev/null
+@@ -1,280 +0,0 @@
+-import { createHash } from "node:crypto";
+-import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+-import { dirname, join, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const modelAssetIds = ["neonCourierAvatar", "neonBarricadeProp", "neonStreetLampProp"];
+-const audioAssetIds = [
+-  "neonPulseFireSfx", "neonDroneHitSfx", "neonDroneDieSfx", "neonPlayerHurtSfx",
+-  "neonDashSfx", "neonPickupSfx", "neonWaveStartSfx", "neonWaveClearSfx",
+-  "neonDeathStingSfx", "neonAmbientHumSfx", "neonBurstSfx", "neonGrazeSfx",
+-  "neonComboBreakSfx"
+-];
+-const reportPaths = [
+-  "tests/reports/neon-swarm/playable.json",
+-  "tests/reports/neon-swarm/playable-mid-wave.json",
+-  "tests/reports/neon-swarm/campaign-completion.json",
+-  "tests/reports/neon-swarm/mobile-playable.json",
+-  "tests/reports/neon-swarm/reduced-motion.json",
+-  "tests/reports/neon-swarm/instancing-telemetry.json"
+-];
+-
+-const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
+-const sha256 = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
+-const normalizeHash = (value) => String(value ?? "").replace(/^sha256-/, "");
+-const routeSourceFiles = readdirSync(join(appDir, "src"))
+-  .filter((entry) => /\.(?:ts|css)$/.test(entry))
+-  .sort();
+-const routeSourceHash = (() => {
+-  const hash = createHash("sha256");
+-  for (const name of routeSourceFiles) {
+-    hash.update(name).update("\0").update(readFileSync(join(appDir, "src", name))).update("\0");
+-  }
+-  return hash.digest("hex");
+-})();
+-
+-const manifest = readJson(join(repoRoot, "aura.assets.json"));
+-const assetById = new Map((manifest.assets ?? []).map((entry) => [entry.id, entry]));
+-const routeGates = readJson(join(repoRoot, "tools/showcase-library/route-gates.json"));
+-const routeGate = routeGates.routes?.find((entry) => entry.id === "showcase-neon-swarm");
+-if (!routeGate || routeGate.releaseClass !== "prototype-blocked" || routeGate.published !== true) {
+-  throw new Error("Neon Swarm is not registered as a published prototype-blocked route gate.");
+-}
+-
+-for (const id of modelAssetIds) {
+-  const asset = assetById.get(id);
+-  if (!asset?.hash || !asset?.url || asset.quality !== "release") {
+-    throw new Error(`Typed model ${id} is missing release hash/url metadata.`);
+-  }
+-  const license = asset.provenance?.licenseRaw ?? asset.provenance?.licenseName ?? asset.provenance?.license;
+-  const author = asset.provenance?.attribution ?? asset.provenance?.author;
+-  if (license !== "CC-BY-4.0" || !author
+-      || !asset.provenance?.sourcePage || !asset.provenance?.downloadUrl) {
+-    throw new Error(`Typed model ${id} is missing durable CC-BY provenance.`);
+-  }
+-  const probe = readJson(join(repoRoot, `tests/reports/showcase-release-asset-probes/${id}.json`));
+-  if (probe.evidence?.pass !== true || probe.evidence?.asset?.hash !== asset.hash
+-      || normalizeHash(probe.renderedProbe?.sha256) !== sha256(join(repoRoot, probe.screenshotPath))) {
+-    throw new Error(`Typed model ${id} does not have a current passing rendered probe.`);
+-  }
+-}
+-
+-for (const id of audioAssetIds) {
+-  const asset = assetById.get(id);
+-  if (!asset?.hash || !asset?.url || asset.provenance?.license !== "CC0-1.0"
+-      || asset.provenance?.author !== "Aura3D synthesis") {
+-    throw new Error(`Typed audio ${id} is missing deterministic-synthesis provenance.`);
+-  }
+-}
+-
+-const reports = Object.fromEntries(reportPaths.map((relativePath) => {
+-  const report = readJson(join(repoRoot, relativePath));
+-  const producer = report.producer;
+-  if (!producer || !report.producerSourceSha256
+-      || normalizeHash(report.producerSourceSha256) !== sha256(join(repoRoot, producer))) {
+-    throw new Error(`${relativePath} is not bound to its current producer source.`);
+-  }
+-  if (normalizeHash(report.routeSourceSha256) !== routeSourceHash) {
+-    throw new Error(`${relativePath} is not bound to the current Neon Swarm route source tree.`);
+-  }
+-  const artifacts = [report.artifact, ...(report.artifacts ?? [])].filter(Boolean);
+-  for (const artifact of artifacts) {
+-    if (!artifact.path || normalizeHash(artifact.sha256) !== sha256(join(repoRoot, artifact.path))) {
+-      throw new Error(`${relativePath} has a missing or stale artifact hash for ${artifact.path ?? "unknown"}.`);
+-    }
+-  }
+-  return [relativePath.split("/").at(-1).replace(/\.json$/, ""), report];
+-}));
+-
+-const performanceReport = readJson(join(appDir, "performance-report.json"));
+-if (performanceReport.schema !== "aura3d-neon-swarm-performance/1.0" || performanceReport.pass !== true) {
+-  throw new Error("Neon Swarm performance evidence is missing or failing.");
+-}
+-
+-const sourceFiles = walk(join(appDir, "src")).filter((path) => path.endsWith(".ts"));
+-const source = sourceFiles.map((path) => readFileSync(path, "utf8")).join("\n");
+-for (const id of modelAssetIds) {
+-  if (!source.includes(`assets.${id}`)) throw new Error(`Live route does not use assets.${id}.`);
+-}
+-for (const id of audioAssetIds) {
+-  if (!source.includes(`"${id}"`) || !source.includes("assets[key]")) {
+-    throw new Error(`Live route does not register typed audio ${id}.`);
+-  }
+-}
+-for (const token of ["from \"three\"", "from 'three'", "GLTFLoader", "OrbitControls", "unsafeModelUrl("]) {
+-  if (source.includes(token)) throw new Error(`Forbidden public-route token found: ${token}`);
+-}
+-for (const globalName of ["__NEON_SWARM_EVIDENCE__", "__AURA3D_SHOWCASE_NEON_SWARM__", "__AURA3D_COMPOSITION_PROBE__"]) {
+-  if (!source.includes(globalName)) throw new Error(`Live route does not publish ${globalName}.`);
+-}
+-const primitiveOccurrences = Array.from(source.matchAll(/\bprimitives\.[A-Za-z_$][\w$]*/g)).length;
+-if (primitiveOccurrences > routeGate.primitiveBudget) {
+-  throw new Error(`Primitive occurrences ${primitiveOccurrences} exceed budget ${routeGate.primitiveBudget}.`);
+-}
+-
+-const playable = reports.playable;
+-const midWave = reports["playable-mid-wave"];
+-const campaign = reports["campaign-completion"];
+-const mobile = reports["mobile-playable"];
+-const reduced = reports["reduced-motion"];
+-const telemetry = reports["instancing-telemetry"];
+-const machinePass = playable.afterPickup?.pickupsCollected > playable.beforePickup?.pickupsCollected
+-  && playable.afterKills?.kills > 0
+-  && playable.afterDamage?.damageEvents > playable.beforeDamage?.damageEvents
+-  && playable.afterDamage?.hp < playable.beforeDamage?.hp
+-  && playable.afterPickup?.audioCues?.includes("pickup")
+-  && playable.afterDamage?.audioCues?.includes("player-hurt")
+-  && playable.afterGraze?.audioCues?.includes("graze")
+-  && playable.afterBurst?.audioCues?.includes("burst")
+-  && playable.afterComboBreak?.audioCues?.includes("combo-break")
+-  && playable.afterWaveClear?.audioCues?.includes("wave-clear")
+-  && playable.afterKills?.audio?.typedAssetCount === 13
+-  && playable.afterKills?.audio?.audioErrors?.length === 0
+-  && playable.dead?.state === "dead"
+-  && playable.reset?.state === "wave-active"
+-  && midWave.alive > 300
+-  && midWave.pickupActive === true
+-  && campaign.finale?.wave === 5
+-  && campaign.finale?.instanceCount === 320
+-  && campaign.finale?.pickupActive === true
+-  && campaign.completeA?.state === "complete"
+-  && campaign.completeA?.outcomeHash === campaign.completeB?.outcomeHash
+-  && /^fnv1a32-[0-9a-f]{8}$/.test(campaign.deterministicOutcomeHash)
+-  && mobile.final?.bursts >= 1
+-  && mobile.final?.state !== "booting"
+-  && reduced.reduced?.reducedMotion === true
+-  && reduced.reduced?.instanceCount === 320
+-  && telemetry.instanceCount === 320
+-  && telemetry.nativeInstancedSubmissions > 0
+-  && telemetry.drawCalls < performanceReport.budgets.drawCalls
+-  && telemetry.consoleErrors?.length === 0;
+-if (!machinePass) throw new Error("Neon Swarm retained gameplay evidence does not satisfy machine gates.");
+-
+-const allArtifacts = reportPaths.flatMap((relativePath) => {
+-  const report = reports[relativePath.split("/").at(-1).replace(/\.json$/, "")];
+-  return [report.artifact, ...(report.artifacts ?? [])].filter(Boolean);
+-});
+-
+-const routeHealth = {
+-  schema: "aura3d-route-health/1.0",
+-  generatedAt: new Date().toISOString(),
+-  appId: "showcase-neon-swarm",
+-  route: "/apps/showcase-neon-swarm/",
+-  classification: "prototype-blocked",
+-  publicShowcase: false,
+-  promotionStatus: "hold-public-showcase-until-independent-human-visual-review",
+-  machinePass: true,
+-  renderer: {
+-    path: "createAuraApp root safe API", mode: "safe-basic",
+-    nativeWebGPU: false, productionRuntime: false
+-  },
+-  primaryAssets: modelAssetIds.map((id) => {
+-    const asset = assetById.get(id);
+-    return {
+-      typedRef: `assets.${id}`,
+-      role: id === "neonCourierAvatar" ? "primaryCharacter" : "primaryWorld",
+-      quality: asset.quality, hash: asset.hash,
+-      license: asset.provenance.licenseRaw ?? asset.provenance.licenseName,
+-      author: asset.provenance.attribution ?? asset.provenance.author,
+-      sourcePage: asset.provenance.sourcePage
+-    };
+-  }),
+-  audioAssets: audioAssetIds.map((id) => {
+-    const asset = assetById.get(id);
+-    return {
+-      typedRef: `assets.${id}`, hash: asset.hash,
+-      license: asset.provenance.license, author: asset.provenance.author
+-    };
+-  }),
+-  primitiveStatus: {
+-    sourceOccurrences: primitiveOccurrences,
+-    primitiveBudget: routeGate.primitiveBudget,
+-    role: "arena, player guides, collectible, boundaries, and effects around typed primary assets and abstract instanced enemies",
+-    pass: true
+-  },
+-  instancingStatus: {
+-    enemyPools: [
+-      { name: "drone swarm grunt pool", api: "instances.capsule", capacity: 360 },
+-      { name: "drone swarm elite pool", api: "instances.box", capacity: 96 }
+-    ],
+-    droneLabel: "abstract-instanced-geometry",
+-    observedLiveInstances: telemetry.instanceCount,
+-    observedDrawCalls: telemetry.drawCalls,
+-    observedNativeInstancedSubmissions: telemetry.nativeInstancedSubmissions,
+-    pass: true
+-  },
+-  campaign: {
+-    stages: ["opening", "upgrade", "compression", "elite", "finale"],
+-    finaleLiveInstances: campaign.finale.instanceCount,
+-    deterministicOutcomeHash: campaign.deterministicOutcomeHash,
+-    pickupCollectionsProven: playable.afterPickup.pickupsCollected,
+-    pass: true
+-  },
+-  performance: {
+-    report: "apps/showcase-neon-swarm/performance-report.json",
+-    budgets: performanceReport.budgets,
+-    observed: performanceReport.observed,
+-    pass: performanceReport.pass
+-  },
+-  routeGate: {
+-    config: "tools/showcase-library/route-gates.json",
+-    releaseClass: routeGate.releaseClass, published: routeGate.published,
+-    requiresKeyboardDelta: routeGate.requiresKeyboardDelta === true, pass: true
+-  },
+-  claimStatus: {
+-    status: "prototype-blocked",
+-    label: "prototype",
+-    allowed: [
+-      "finite five-wave top-down horde-survival prototype",
+-      "root-safe native instancing with two bounded enemy pools",
+-      "route-local deterministic seek, separation, orbit, flee, and elite steering",
+-      "real 320-live-enemy finale with current draw and simulation timing evidence",
+-      "typed courier, street props, and thirteen registered audio assets",
+-      "abstract-instanced-drone labeling"
+-    ],
+-    notAllowed: [
+-      "Recast navigation or crowd-simulation claims", "reusable horde-survival game kit",
+-      "production rendering, PBR parity, HDR/IBL, WebGPU, or compute claims",
+-      "character-model drones", "public promotion before independent exact-artifact review"
+-    ]
+-  },
+-  blockers: ["visual-review:neon-swarm-independent-review-pending"],
+-  evidence: {
+-    global: "window.__AURA3D_SHOWCASE_NEON_SWARM__",
+-    detailedGameplayGlobal: "window.__NEON_SWARM_EVIDENCE__",
+-    sourceReview: "apps/showcase-neon-swarm/src/main.ts",
+-    gameplayReports: reportPaths,
+-    artifacts: allArtifacts,
+-    renderedAssetProbes: modelAssetIds.map((id) => `tests/reports/showcase-release-asset-probes/${id}.json`),
+-    performanceEvidence: "apps/showcase-neon-swarm/performance-report.json",
+-    unitSuite: "tests/unit/apps/neon-swarm-steering.test.ts",
+-    browserSpecs: ["tests/browser/neon-swarm-playable.spec.ts", "tests/browser/neon-swarm-instancing.spec.ts"],
+-    observed: {
+-      campaignStages: campaign.finale.waveChecksums.length,
+-      finaleLiveInstances: campaign.finale.instanceCount,
+-      drawCalls: telemetry.drawCalls,
+-      nativeInstancedSubmissions: telemetry.nativeInstancedSubmissions,
+-      outcomeHash: campaign.deterministicOutcomeHash,
+-      pickupsCollected: playable.afterPickup.pickupsCollected,
+-      mobileBursts: mobile.final.bursts,
+-      reducedMotion: reduced.reduced.reducedMotion
+-    },
+-    notes: "Machine evidence is current and passing. Automated and agent visual inspection are not independent approval; publicShowcase remains false.",
+-    deployCommand: "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-neon-swarm/dist --release --source apps/showcase-neon-swarm/src --asset neonCourierAvatar --asset neonBarricadeProp --asset neonStreetLampProp"
+-  },
+-  steeringDisclaimer: "Steering is route-local deterministic math; no Recast navigation or crowd-simulation capability is used or claimed."
+-};
+-
+-writeFileSync(join(appDir, "route-health.json"), `${JSON.stringify(routeHealth, null, 2)}\n`);
+-console.log("Wrote apps/showcase-neon-swarm/route-health.json");
+-console.log(JSON.stringify({ machinePass: true, artifacts: allArtifacts.length, primitiveOccurrences }));
+-
+-function walk(path) {
+-  if (!existsSync(path)) return [];
+-  return readdirSync(path).sort().flatMap((entry) => {
+-    const child = join(path, entry);
+-    return statSync(child).isDirectory() ? walk(child) : [child];
+-  });
+-}
+diff --git a/apps/showcase-neon-swarm/src/legacy/hud.ts b/apps/showcase-neon-swarm/src/legacy/hud.ts
+index dd14c1277..f51d7104d 100644
+--- a/apps/showcase-neon-swarm/src/legacy/hud.ts
++++ b/apps/showcase-neon-swarm/src/legacy/hud.ts
+@@ -1,11 +1,3 @@
+-/**
+- * Neon Swarm DOM HUD bindings.
+- *
+- * UI only - HP pips, wave/score/combo readouts, pickup door buttons, run
+- * summary, pause state, and touch stick chrome. None of this stands in for
+- * renderer features; every visual 3D claim lives in the scene itself.
+- */
+-
+ export interface HudSnapshot {
+   readonly state: "booting" | "intermission" | "wave-active" | "complete" | "dead";
+   readonly wave: number;
+@@ -23,13 +15,11 @@ export interface HudSnapshot {
+   readonly paused: boolean;
+   readonly intermissionRemaining: number;
+ }
+-
+ export interface HudDoorView {
+   readonly kind: string;
+   readonly label: string;
+   readonly detail: string;
+ }
+-
+ export interface TouchStickView {
+   readonly id: string;
+   readonly label: string;
+@@ -37,7 +27,6 @@ export interface TouchStickView {
+   readonly centerY: number;
+   readonly radius: number;
+ }
+-
+ export interface HudController {
+   update(snapshot: HudSnapshot): void;
+   showBanner(title: string, subtitle: string, sticky?: boolean): void;
+@@ -51,7 +40,6 @@ export interface HudController {
+   renderTouchSticks(sticks: readonly TouchStickView[]): void;
+   flashVignette(): void;
+ }
+-
+ function escapeHtml(value: string): string {
+   return value.replace(/[&<>"']/g, (char) => ({
+     "&": "&amp;",
+@@ -61,13 +49,11 @@ function escapeHtml(value: string): string {
+     "'": "&#39;"
+   })[char] ?? char);
+ }
+-
+ function requireElement(root: HTMLElement, selector: string): HTMLElement {
+   const el = root.querySelector(selector);
+   if (!el) throw new Error("Neon Swarm HUD missing element: " + selector);
+   return el as HTMLElement;
+ }
+-
+ export function setupHud(
+   container: HTMLElement,
+   doors: readonly HudDoorView[],
+diff --git a/apps/showcase-neon-swarm/src/legacy/main.ts b/apps/showcase-neon-swarm/src/legacy/main.ts
+index 15269925b..3126c07fb 100644
+--- a/apps/showcase-neon-swarm/src/legacy/main.ts
++++ b/apps/showcase-neon-swarm/src/legacy/main.ts
+@@ -1,18 +1,3 @@
+-/**
+- * Neon Swarm route entry.
+- *
+- * One mounted Aura app through the createAuraApp root safe API. Systems:
+- * - two native instances.custom drone pools (thorn moths and crown hunters)
+- *   plus one spark pool - hundreds of simultaneous enemies in two enemy draw
+- *   submissions
+- *   submissions, updated per frame by mutating live transform objects;
+- * - authored kinematic courier movement with dash i-frames and overlap-query
+- *   pulse fire (no projectiles);
+- * - seeded wave escalation with intermission pickup doors and combo scoring;
+- * - DOM HUD (UI only) and a typed-audio cue set on sfx/ambient buses.
+- *
+- * Evidence: window.__NEON_SWARM_EVIDENCE__ (schema in README).
+- */
+ import {
+   createFxParticlePass,
+   createGame,
+@@ -21,7 +6,6 @@ import {
+   createRumbleDriver,
+   createTweenEngine
+ } from "@aura3d/game";
+-import { bindNeonEvidence } from "../evidence";
+ import { bindNeonDrive } from "../scenario-drive";
+ import { neonScenarios } from "../scenarios";
+ import {
+@@ -73,120 +57,14 @@ import {
+   type CampaignStage
+ } from "../gameplay/run";
+ type RunState = "booting" | "intermission" | "wave-active" | "complete" | "dead";
+-
+-interface NeonSwarmEvidence {
+-  readonly schema: "aura3d-showcase-neon-swarm/1.0";
+-  readonly mounted: boolean;
+-  readonly appId: "showcase-neon-swarm";
+-  readonly status: "ready";
+-  readonly state: RunState;
+-  readonly wave: number;
+-  readonly alive: number;
+-  readonly aliveGrunt: number;
+-  readonly aliveElite: number;
+-  readonly instanceCount: number;
+-  readonly drawCalls: number;
+-  readonly nativeInstancedSubmissions: number;
+-  readonly score: number;
+-  readonly combo: number;
+-  readonly maxCombo: number;
+-  readonly hp: number;
+-  readonly maxHp: number;
+-  readonly kills: number;
+-  readonly seed: number;
+-  readonly paused: boolean;
+-  readonly reducedMotion: boolean;
+-  readonly audioCues: readonly string[];
+-  readonly audioCueCount: number;
+-  readonly waveChecksum: number;
+-  readonly waveChecksums: readonly number[];
+-  readonly stage: CampaignStage;
+-  readonly arenaInset: number;
+-  readonly finaleSurvivalRemaining: number;
+-  readonly outcomeHash: string | null;
+-  readonly upgrades: Readonly<PlayerUpgrades>;
+-  readonly playerPosition: { readonly x: number; readonly z: number };
+-  readonly burstCharge: number;
+-  readonly bursts: number;
+-  readonly grazes: number;
+-  readonly comboBreaks: number;
+-  readonly damageEvents: number;
+-  readonly pickupActive: boolean;
+-  readonly pickupPosition: { readonly x: number; readonly z: number };
+-  readonly pickupsCollected: number;
+-  readonly audio: SwarmAudioProof;
+-  readonly primaryAssets: readonly string[];
+-  readonly typedAssets: readonly {
+-    readonly id: string;
+-    readonly typedRef: string;
+-    readonly role: string;
+-  }[];
+-  readonly systems: Readonly<Record<string, string>>;
+-  readonly controls: readonly string[];
+-  readonly physics: string;
+-  readonly claimBoundary: string;
+-}
+-
+-declare global {
+-  interface Window {
+-    __NEON_SWARM_EVIDENCE__?: NeonSwarmEvidence;
+-    __AURA3D_SHOWCASE_NEON_SWARM__?: NeonSwarmEvidence;
+-    __NEON_SWARM_DEBUG__?: NeonSwarmDebugHooks;
+-  }
+-}
+-
+-/** Test hooks: deterministic stepping + staged states so browser specs run fast. */
+-interface NeonSwarmDebugHooks {
+-  stepFixed(frames: number): void;
+-  startWaveNow(): void;
+-  drainPlayerHp(): void;
+-  chooseDoor(kind: string): void;
+-  /** Evidence staging: fill both pools with live drones immediately. */
+-  spawnTestSwarm(total: number): void;
+-  /** Evidence staging: ring of drones within pulse reach of the courier. */
+-  stageKillCluster(count?: number): void;
+-  /** Evidence staging: begin a specific wave immediately. */
+-  jumpToWave(target: number): void;
+-  /** Evidence staging: clear the active wave through the normal transition. */
+-  clearActiveWave(): void;
+-  /** Evidence staging: satisfy the authored finale survival clock. */
+-  finishFinale(): void;
+-  /** Evidence staging: fire one real pulse into the retained finale field. */
+-  stageFinalePulse(): void;
+-  /** Replay fixture reset without changing the requested seed. */
+-  resetWithSeed(value: number): void;
+-  /** Evidence staging: one orbiting elite inside the graze annulus. */
+-  stageGraze(): void;
+-  /** Evidence staging: a charged burst with nearby simulation-owned targets. */
+-  stageBurstCluster(count?: number): void;
+-  /** Evidence staging: move the real collectible onto the courier sensor. */
+-  stagePickupAtPlayer(): void;
+-  /** Evidence staging: stationary simulation-owned contact target. */
+-  stageContact(): void;
+-  /** Full renderer diagnostics dump for telemetry debugging/evidence. */
+-  dumpDiagnostics(): unknown;
+-}
+-
+ const SEED_DEFAULT = 20260821;
+ const COMBO_WINDOW_SECONDS = 2;
+ const INTERMISSION_FIRST_SECONDS = 3.2;
+-
+ const reducedMotion = typeof window !== "undefined"
+   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+-
+-// The retained desktop probe is a 1440x900 frame. Keep its camera language
+-// closer to the actual horde-survival reference (player hierarchy first,
+-// threats readable around a broad play pocket) without changing the gameplay
+-// capture mode or any deterministic state. Narrower playtest viewports retain
+-// the chase-biased camera used by the normal route.
+ const desktopComposition = typeof window !== "undefined"
+   && window.innerWidth >= 1400
+   && window.innerHeight >= 880;
+-// Normal play uses a compact authored lane so the instanced swarm remains the
+-// visual subject and the route can prove its bounded draw contract. The full
+-// dressing remains available to the dedicated art/provenance mode below.
+-
+-
+ const controls = [
+   "WASD / arrows move",
+   "mouse aims the courier",
+@@ -195,7 +73,6 @@ const controls = [
+   "Space / K radial burst when charged",
+   "P pause, R reset five-wave run"
+ ] as const;
+-
+ const claimBoundary =
+   "Prototype label. Root-safe createAuraApp route: two native instances.* enemy pools " +
+   "(two custom-geometry enemy draw submissions) with route-local seek/separation/orbit/flee/elite steering, a finite " +
+@@ -203,17 +80,10 @@ const claimBoundary =
+   "courier/prop assets. Drones are explicitly abstract instanced geometry, not character models. " +
+   "Steering is route-local; no Recast/crowd-sim, physics-kit, WebGPU, postprocess-parity, or " +
+   "production-rendering claims.";
+-
+-// ---------------------------------------------------------------------------
+-// Scene construction
+-// ---------------------------------------------------------------------------
+-
+ const arenaLayout = createArenaLayout();
+ const rect = playRect(arenaLayout.bounds);
+-
+ const swarm = createSwarmSimulation();
+ const combatFeel = createCombatFeel({ reducedMotion, reducedFlash: reducedMotion });
+-
+ function buildLaneStrips(): Array<{ position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }> {
+   const strips: Array<{ position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }> = [];
+   for (let i = 0; i < 9; i += 1) {
+@@ -226,13 +96,7 @@ function buildLaneStrips(): Array<{ position: [number, number, number]; rotation
+   }
+   return strips;
+ }
+-
+ const laneStripTransforms = buildLaneStrips();
+-
+-// Renderer-owned perimeter foliage gives the finale a textured, living frame
+-// instead of leaving the camera surrounded by a flat black void. These are
+-// low, non-colliding set-dressing instances outside the authored play lane;
+-// they never stand in for the typed courier/barricades or any simulation state.
+ const canopyTransforms = Array.from({ length: 48 }, (_, index) => {
+   const angle = (index / 48) * Math.PI * 2;
+   const radiusX = 18.2 + (index % 4) * 1.15;
+@@ -246,7 +110,6 @@ const canopyTransforms = Array.from({ length: 48 }, (_, index) => {
+ const canopyColors = canopyTransforms.map((_, index) =>
+   index % 5 === 0 ? "#4f806f" : index % 3 === 0 ? "#315e59" : "#244448"
+ );
+-
+ const appScene = scene()
+   .background( "#081316")
+   .addMany( createNeonSwarmDistrictDressing())
+@@ -290,11 +153,6 @@ const appScene = scene()
+   }).runtime(game.runtimeNode("rain-garden-canopy-frame", {
+     tags: ["set-dressing", "renderer-owned", "non-colliding", "instanced", "organic-silhouette"]
+   })));
+-
+-// A recessed radial rain-garden gives the central combat pocket authored
+-// shape, material rhythm, and near/mid depth. It is permanent arena geometry,
+-// never a stand-in for an attack or simulation effect. The dark blades sit
+-// below actors and deliberately leave the typed courier's footprint clear.
+ const rainGardenBlades = Array.from({ length:   6 }, (_, index) => {
+   const bladeCount =   6 ;
+   const angle = (index / bladeCount) * Math.PI * 2 + index * ( 0.035);
+@@ -325,15 +183,6 @@ const rainGardenBlades = Array.from({ length:   6 }, (_, index) => {
+     }));
+ });
+ appScene.addMany(rainGardenBlades);
+-
+-// The finale review frame needs a readable district boundary instead of a
+-// black horizon. These low-poly tower ribs and window bands are renderer-owned
+-// set dressing: they sit outside the authored play rectangle, never collide,
+-// and only provide the layered near/mid/far value structure that the swarm
+-// composition otherwise lacks at 320 live instances.
+-// The compact default frame had the same black-horizon problem this block exists to
+-// solve, but was switched off entirely. It now renders a reduced ring so the arena sits
+-// in a place rather than floating in a void.
+ const districtFrameNodes = Array.from({ length:   8 }, (_, index) => {
+   const side = index % 2 === 0 ? -1 : 1;
+   const lane = Math.floor(index / 2);
+@@ -368,11 +217,6 @@ const districtFrameNodes = Array.from({ length:   8 }, (_, index) => {
+   ];
+ }).flat();
+ appScene.addMany(districtFrameNodes);
+-
+-// A dense but low-cost window lattice gives the outer district a textured
+-// silhouette instead of four giant color planes. These practicals sit outside
+-// the authored play rectangle and never participate in swarm steering, scoring,
+-// or evidence state.
+ const skylineWindowTransforms = Array.from({ length: 64 }, (_, index) => {
+   const side = index % 2 === 0 ? -1 : 1;
+   const lane = Math.floor(index / 2);
+@@ -397,7 +241,6 @@ appScene.add(
+     tags: ["set-dressing", "renderer-owned", "non-colliding", "instanced", "district-frame"]
+   }))
+ );
+-
+ const districtCanopyTransforms = Array.from({ length: 56 }, (_, index) => {
+   const edge = index % 4;
+   const slot = Math.floor(index / 4);
+@@ -424,9 +267,6 @@ appScene.add(
+     tags: ["set-dressing", "renderer-owned", "non-colliding", "instanced", "organic-silhouette"]
+   }))
+ );
+-
+-// Small renderer-owned garden lights pull the eye toward the center lane and
+-// add depth cues between the typed street props and the far skyline.
+ const gardenLightNodes = Array.from({ length:  0 }, (_, index) => {
+   const side = index % 2 === 0 ? -1 : 1;
+   const lane = Math.floor(index / 2);
+@@ -444,7 +284,6 @@ const gardenLightNodes = Array.from({ length:  0 }, (_, index) => {
+   }));
+ });
+ appScene.addMany(gardenLightNodes);
+-
+ const courierAccentMaterial = material.emissive({
+   name: "courier cyan core accent",
+   color: "#2bd7e7",
+@@ -474,10 +313,6 @@ const courierCoreNode = primitives.sphere({
+ }).runtime(game.runtimeNode("neon-courier-chest-core", {
+   tags: ["primary-actor-accent", "renderer-owned", "non-colliding"]
+ }));
+-// A compact shoulder frame and pulse emitter give the typed courier a readable
+-// colored silhouette when the finale's 320 instanced drones surround it. These
+-// are attached presentation accents only; the typed avatar remains the primary
+-// actor and all combat state still comes from the route simulation.
+ const courierShoulderFrameNode = primitives.torus({
+   name: "courier shoulder frame",
+   material: material.emissive({
+@@ -507,11 +342,6 @@ const courierPulseEmitterNode = primitives.box({
+ }).runtime(game.runtimeNode("neon-courier-pulse-emitter", {
+   tags: ["primary-actor-accent", "renderer-owned", "non-colliding"]
+ }));
+-
+-// The courier carries the existing hash-bound CC0 Bolt Repeater asset from
+-// the shared catalog. Its +Z authored barrel follows the same aim transform;
+-// pulse damage remains simulation-owned. The small core and muzzle markers
+-// below are event/readability accents on this typed weapon, not its body.
+ const courierPulseRifleNode = model(assets.mechWeaponA, {
+   name: "courier pulse carbine — typed Bolt Repeater",
+   role: "setDressing",
+@@ -568,7 +398,6 @@ appScene.addMany([
+   courierPulseMuzzleRingNode,
+   courierPulseMuzzleFlashNode
+ ]);
+-
+ const courierCoreRingNode = primitives.torus({
+   name: "courier core ring",
+   material: material.emissive({
+@@ -597,8 +426,6 @@ for (const obstacle of arenaLayout.obstacles) {
+       .rotate(0, obstacle.rotationY, 0)
+   );
+ }
+-
+-
+ let lampIndex = 0;
+ for (const lamp of arenaLayout.lamps) {
+   appScene.add(
+@@ -618,20 +445,11 @@ for (const lamp of arenaLayout.lamps) {
+   );
+   lampIndex += 1;
+ }
+-
+-// Mid-street glow pools so the courier corridor stays readable mid-swarm.
+ appScene.add(lights.point({ position: [-12, 3, 0], color: "#ff4fd8", intensity: 9 }));
+ appScene.add(lights.point({ position: [12, 3, 0], color: "#35e6ff", intensity: 9 }));
+ appScene.add(lights.point({ position: [0, 3.2, 3], color: "#9ffcff", intensity: 11 }));
+ appScene.add(lights.point({ position: [10, 3.4, 8], color: "#ff4fd8", intensity: 13 }));
+ appScene.add(lights.point({ position: [-1.5, 4.5, 0], color: "#35e6ff", intensity: 15 }));
+-
+-// The finale camera looks down the central street. These shallow median
+-// islands add a near/mid/far rhythm to the frame without occupying the
+-// courier's playable lane or changing any simulation bounds.
+-
+-// distanceLod relay beacon: near reads as a glowing sphere, far collapses to a
+-// compact box - the documented root-safe LOD helper used as set dressing.
+ appScene.add(
+   distanceLod({
+     name: "risky charge pickup",
+@@ -644,7 +462,6 @@ appScene.add(
+     scale: 0.62
+   }).runtime(game.runtimeNode("swarm-pickup", { tags: ["pickup", "collectible", "gameplay-state"] }))
+ );
+-
+ for (const door of PICKUP_DOORS) {
+   appScene.add(
+     primitives.torus({
+@@ -656,7 +473,6 @@ for (const door of PICKUP_DOORS) {
+     }).runtime(game.runtimeNode("pickup-gate-" + door.kind, { tags: ["pickup-sensor"] }))
+   );
+ }
+-
+ appScene.add(
+   model( assets.neonCourierAvatar, {
+     name: "courier avatar",
+@@ -681,10 +497,6 @@ appScene.add(
+     .position(0,  0, 3)
+     .runtime(game.runtimeNode("neon-player", { tags: ["primary-actor", "typed-primary-asset"] }))
+ );
+-
+-// Renderer-owned player grammar. The typed courier remains the primary actor;
+-// these abstract guides make its location, aim, and pulse reach readable when
+-// 320 instanced enemies fill the arena. They are world geometry, not DOM FX.
+ appScene.add(
+   primitives.torus({
+     name: "courier burst radius",
+@@ -694,7 +506,6 @@ appScene.add(
+     scale: [1.22, 1.22, 1.22]
+   }).runtime(game.runtimeNode("neon-player-burst-radius", { tags: ["player-readability", "burst-radius"] }))
+ );
+-
+ appScene.add(
+   primitives.torus({
+     name: "charged burst event ring",
+@@ -704,7 +515,6 @@ appScene.add(
+     scale: [0.42, 0.42, 0.42]
+   }).runtime(game.runtimeNode("neon-burst-event-ring", { tags: ["actual-event-feedback", "burst"] }))
+ );
+-
+ appScene.add(
+   primitives.box({
+     name: "courier aim vector",
+@@ -713,9 +523,6 @@ appScene.add(
+     position: [0, 0.22, 1.6]
+   }).runtime(game.runtimeNode("neon-player-aim-vector", { tags: ["player-readability", "aim-vector"] }))
+ );
+-
+-// Pulse feedback is renderer-owned but event-driven: both nodes remain hidden
+-// until firePulse() executes the real simulation attack.
+ appScene.addMany([
+   primitives.box({
+     name: "courier pulse shot ray",
+@@ -729,7 +536,6 @@ appScene.addMany([
+     scale: [0.58, 0.58, 0.12]
+   }).position(0, -8, 0).runtime(game.runtimeNode("neon-pulse-impact-ring", { tags: ["actual-event-feedback", "pulse-hit"] }))
+ ]);
+-
+ appScene.addMany(Array.from({ length: 6 }, (_, index) =>
+   primitives.box({
+     name: `pulse impact shard ${index}`,
+@@ -743,11 +549,6 @@ appScene.addMany(Array.from({ length: 6 }, (_, index) =>
+     tags: ["actual-event-feedback", "pulse-hit", "impact-shard"]
+   }))
+ ));
+-
+-// A restrained lane ring gives the final arena a readable center and makes
+-// the courier's movement/aim relationship legible even when the 320-drone
+-// pool is active. It is scene geometry, not a DOM overlay or a simulation
+-// shortcut; the ring never owns damage, collision, or scoring.
+ appScene.add(
+   primitives.torus({
+     name: "arena center route ring",
+@@ -757,11 +558,6 @@ appScene.add(
+     scale: [4.65, 4.65, 0.035]
+   }).runtime(game.runtimeNode("arena-center-route-ring", { tags: ["arena-language", "non-colliding"] }))
+ );
+-
+-
+-// Real burst readability: radial spokes are scene geometry, hidden until
+-// fireBurst() runs the public burst transition. Damage and scoring still belong
+-// to swarm.radialBurst; these nodes only make that event visible in pixels.
+ appScene.addMany(Array.from({ length: 8 }, (_, index) =>
+   primitives.box({
+     name: "burst cascade spoke " + index,
+@@ -772,7 +568,6 @@ appScene.addMany(Array.from({ length: 8 }, (_, index) =>
+     .rotate(0, index * Math.PI / 4, 0)
+     .runtime(game.runtimeNode("neon-burst-spoke-" + index, { tags: ["actual-event-feedback", "burst-cascade"] }))
+ ));
+-
+ for (const edge of ["north", "south", "east", "west"] as const) {
+   appScene.add(
+     primitives.box({
+@@ -783,11 +578,6 @@ for (const edge of ["north", "south", "east", "west"] as const) {
+     }).runtime(game.runtimeNode("arena-pressure-" + edge, { tags: ["arena-boundary", "danger"] }))
+   );
+ }
+-
+-// Authored volumetric low-poly creatures keep every enemy tied to its live
+-// simulation transform. Each disconnected facet is part of the same indexed
+-// mesh, so a full archetype remains one native instanced draw submission.
+-// +Z is the facing direction used by swarm.yaw.
+ function createFacetedThreatGeometry(elite: boolean) {
+   // Elites read top-down, so they need a threat silhouette with a nose, swept
+   // wings, and a notched tail — the earlier 16-point flower ring rendered as
+@@ -820,11 +610,8 @@ function createFacetedThreatGeometry(elite: boolean) {
+   }
+   return geometry.define({ positions, indices });
+ }
+-
+ const THORN_MOTH_GEOMETRY = createFacetedThreatGeometry(false);
+ const CROWN_HUNTER_GEOMETRY = createFacetedThreatGeometry(true);
+-const REVIEW_ELITE_CARD_COUNT = 48;
+-
+ appScene.add(
+   instances.custom(THORN_MOTH_GEOMETRY, {
+     name: "thorn moth swarm grunt pool",
+@@ -833,7 +620,6 @@ appScene.add(
+     material: material.pbr({ color: "#315f57", emissive: "#73b99d", emissiveIntensity: 0.5, roughness: 0.48, metallic: 0.12 })
+   })
+ );
+-
+ appScene.add(
+   instances.custom(CROWN_HUNTER_GEOMETRY, {
+     name: "crown hunter elite pool",
+@@ -842,12 +628,6 @@ appScene.add(
+     material: material.pbr({ color: "#7a1f3d", emissive: "#ff4d7e", emissiveIntensity: 0.55, roughness: 0.42, metallic: 0.12 })
+   })
+ );
+-
+-// The detailed elite cards are only needed for the exact review finale. Do not
+-// instantiate 48 hidden GLB actors in normal play: hidden assets still consume
+-// renderer/shadow bookkeeping and were pushing the default instancing producer
+-// past its honest draw/memory budget before the first input was processed.
+-
+ appScene.add(
+   instances.sphere({
+     name: "impact spark pool",
+@@ -857,7 +637,6 @@ appScene.add(
+     size: 0.16
+   })
+ );
+-
+ appScene.add(effects.fog({ density: 0.02, color: "#070a14" }));
+ appScene.add(effects.ambientOcclusion({
+   name: "district contact occlusion",
+@@ -870,7 +649,6 @@ if (!reducedMotion) {
+ }
+ appScene.add(effects.colorGrade({ exposure: 1.05, contrast: 1.08, saturation: 1.12 }));
+ appScene.add(effects.antiAlias({ mode: "fxaa" }));
+-
+ appScene.camera(
+   camera.follow({
+     targetNode: "neon-player",
+@@ -884,11 +662,6 @@ appScene.camera(
+     smoothing: false || desktopComposition ? 0 : 0.14
+   })
+ );
+-
+-// ---------------------------------------------------------------------------
+-// App + systems
+-// ---------------------------------------------------------------------------
+-
+ const neonGame = createGame({
+   id: "showcase-neon-swarm",
+   target: "#app",
+@@ -908,8 +681,6 @@ const neonGame = createGame({
+ });
+ const app = neonGame.app;
+ neonGame.start();
+-
+-bindNeonEvidence(() => collectRouteEvidence());
+ bindNeonDrive({
+   jumpToWave(target: number): void {
+     if (target >= 1) startWave(Math.floor(target));
+@@ -932,7 +703,6 @@ bindNeonDrive({
+     for (let i = 0; i < frames; i += 1) update(1 / 60);
+   }
+ });
+-
+ const input = game.input({
+   actions: {
+     up: ["KeyW", "ArrowUp"],
+@@ -951,21 +721,18 @@ const input = game.input({
+   },
+   bufferMs: 120
+ });
+-
+ const touchLayout = game.touchControls({
+   width: typeof window !== "undefined" ? window.innerWidth : 1280,
+   height: typeof window !== "undefined" ? window.innerHeight : 720,
+   stick: { id: "move-stick", kind: "stick", action: "move", label: "Move", side: "left", radius: 64 },
+   buttons: [{ id: "fire-stick", kind: "stick", action: "fire", label: "Aim/Fire", side: "right", radius: 72 }]
+ });
+-
+ const hud: HudController = setupHud(
+   requireHudElement(),
+   PICKUP_DOORS.map((door) => ({ kind: door.kind, label: door.label, detail: door.detail })),
+   (kind) => chooseDoor(kind),
+   () => { burstRequested = true; unlockAudioOnce(); }
+ );
+-
+ const audio: SwarmAudioController = createSwarmAudio();
+ const neonTween = createTweenEngine();
+ const neonFx = createFxParticlePass(app.effects);
+@@ -994,14 +761,8 @@ const neonJuice = createJuice<
+ });
+ const cameraDirector = game.cameraDirector({ baseFov: 41, distance: 19, reducedMotion });
+ const gameEffects = game.effects({ poolSize: 48, reducedMotion, reducedFlash: reducedMotion });
+-
+-// ---------------------------------------------------------------------------
+-// Run state
+-// ---------------------------------------------------------------------------
+-
+ const player: PlayerState = createPlayerState(6);
+ const upgrades: PlayerUpgrades = createPlayerUpgrades();
+-
+ let runState: RunState = "booting";
+ let wave = 0;
+ let score = 0;
+@@ -1010,7 +771,6 @@ let combo = 0;
+ let maxCombo = 0;
+ let comboDecayRemaining = 0;
+ let seed = SEED_DEFAULT;
+-// Evidence-only finale hash excludes wall-clock combat drift.
+ let debugFinaleHash: string | null = null;
+ let intermissionRemaining = 0;
+ let waveElapsed = 0;
+@@ -1039,9 +799,7 @@ let pickupsCollected = 0;
+ let burstFxRemaining = 0;
+ let pulseFxRemaining = 0;
+ let burstFxOrigin = { x: 0, z: 3 };
+-
+ const BEST_KEY = "neon-swarm-best-score";
+-
+ function readBestScore(): number {
+   try {
+     return Number(window.localStorage.getItem(BEST_KEY) ?? "0") || 0;
+@@ -1049,7 +807,6 @@ function readBestScore(): number {
+     return 0;
+   }
+ }
+-
+ function writeBestScore(value: number): void {
+   try {
+     window.localStorage.setItem(BEST_KEY, String(value));
+@@ -1057,9 +814,7 @@ function writeBestScore(value: number): void {
+     /* in-page persistence is best-effort */
+   }
+ }
+-
+ let bestScore = readBestScore();
+-
+ function beginIntermission(seconds: number): void {
+   runState = "intermission";
+   pickupActive = false;
+@@ -1076,7 +831,6 @@ function beginIntermission(seconds: number): void {
+     hud.hideDoors();
+   }
+ }
+-
+ function startWave(next: number): void {
+   wave = next;
+   const spec = waveSpec(wave);
+@@ -1105,7 +859,6 @@ function startWave(next: number): void {
+     spec.droneCount + " drones over " + spec.spawnWindowSeconds + "s · " + campaignStage(wave)
+   );
+ }
+-
+ function resetRun(newSeed?: number): void {
+   if (typeof newSeed === "number") seed = newSeed >>> 0;
+   player.hp = player.maxHp;
+@@ -1152,7 +905,6 @@ function resetRun(newSeed?: number): void {
+   beginIntermission(INTERMISSION_FIRST_SECONDS);
+   hud.showBanner("Neon Swarm", "Five escalating waves. Read the opening, choose upgrades, survive the 320-drone finale.");
+ }
+-
+ function chooseDoor(kind: string): void {
+   if (runState !== "intermission" || wave <= 0 || chosenDoor) return;
+   const door = PICKUP_DOORS.find((entry) => entry.kind === kind);
+@@ -1174,7 +926,6 @@ function chooseDoor(kind: string): void {
+   // state, exactly as the staged evidence paths below already do.
+   collectRouteEvidence();
+ }
+-
+ function collectRiskPickup(): void {
+   if (!pickupActive || runState !== "wave-active") return;
+   pickupActive = false;
+@@ -1189,7 +940,6 @@ function collectRiskPickup(): void {
+   audio.cue("pickup").catch(() => undefined);
+     neonJuice.fire("pickup");
+ }
+-
+ function firePulse(): void {
+   const aim = resolveAim();
+   const result = swarm.firePulse(player, aim.x, aim.z, DEFAULT_PLAYER_TUNING.pulseDamage, {
+@@ -1244,7 +994,6 @@ function firePulse(): void {
+   audio.cue("pulse-fire").catch(() => undefined);
+   neonJuice.fire("pulse-fire", { position: [player.x, 0.9, player.z] });
+ }
+-
+ function handleDroneKilled(drone: { readonly x: number; readonly z: number }): void {
+   kills += 1;
+   combo += 1;
+@@ -1256,7 +1005,6 @@ function handleDroneKilled(drone: { readonly x: number; readonly z: number }): v
+   audio.cue("drone-die").catch(() => undefined);
+     neonJuice.fire("drone-die");
+ }
+-
+ function fireBurst(): void {
+   if (runState !== "wave-active" || neonGame.session.paused || burstCharge < 100) return;
+   burstCharge = 0;
+@@ -1284,12 +1032,10 @@ function fireBurst(): void {
+   audio.cue("burst").catch(() => undefined);
+   neonJuice.fire("burst", { position: [player.x, 0.9, player.z] });
+ }
+-
+ function resolveAim(): { x: number; z: number } {
+   if (mouseAim.x !== 0 || mouseAim.z !== 0) return mouseAim;
+   return lastMoveDir;
+ }
+-
+ function killPlayer(): void {
+   runState = "dead";
+   combo = 0;
+@@ -1301,7 +1047,6 @@ function killPlayer(): void {
+   }
+   hud.showSummary(score, wave, kills, bestScore);
+ }
+-
+ function completeRun(): void {
+   runState = "complete";
+   neonGame.session.resume();
+@@ -1314,11 +1059,6 @@ function completeRun(): void {
+   hud.hideDoors();
+   hud.showVictory(score, kills, maxCombo, seed, bestScore);
+ }
+-
+-// ---------------------------------------------------------------------------
+-// Input plumbing
+-// ---------------------------------------------------------------------------
+-
+ window.addEventListener("pointermove", (event) => {
+   const canvasRect = app.canvas?.getBoundingClientRect();
+   if (!canvasRect) return;
+@@ -1332,23 +1072,19 @@ window.addEventListener("pointermove", (event) => {
+   const len = Math.hypot(wx, wz);
+   if (len > 0.08) mouseAim = { x: wx / len, z: wz / len };
+ });
+-
+ function unlockAudioOnce(): void {
+   if (unlockedAudio) return;
+   unlockedAudio = true;
+   audio.unlock().catch(() => undefined);
+ }
+-
+ window.addEventListener("pointerdown", unlockAudioOnce);
+ window.addEventListener("keydown", unlockAudioOnce);
+-
+ window.addEventListener("mousedown", (event) => {
+   if (event.button === 0 && !neonGame.session.paused && runState === "wave-active" && player.fireCooldownRemaining <= 0) {
+     firePulse();
+     player.fireCooldownRemaining = DEFAULT_PLAYER_TUNING.fireCooldownSeconds * upgrades.fireRateMultiplier;
+   }
+ });
+-
+ function bindTouchStick(elementId: string, onDrag: (dx: number, dz: number, active: boolean) => void): void {
+   let pointerId: number | null = null;
+   let centerX = 0;
+@@ -1381,7 +1117,6 @@ function bindTouchStick(elementId: string, onDrag: (dx: number, dz: number, acti
+     onDrag(0, 0, false);
+   });
+ }
+-
+ function renderTouchSticks(): void {
+   const coarse = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+   if (!coarse) {
+@@ -1397,9 +1132,6 @@ function renderTouchSticks(): void {
+   })));
+ }
+ renderTouchSticks();
+-
+-// Render first, then bind: coarse-pointer controls do not exist in the DOM
+-// until `renderTouchSticks` materializes them.
+ bindTouchStick(touchLayout.controls[0]?.id ?? "move-stick", (dx, dz, active) => {
+   touchMove = active ? { x: dx, z: dz } : { x: 0, z: 0 };
+ });
+@@ -1411,11 +1143,6 @@ bindTouchStick(touchLayout.controls[1]?.id ?? "fire-stick", (dx, dz, active) =>
+     touchAimFire = false;
+   }
+ });
+-
+-// ---------------------------------------------------------------------------
+-// Frame loop
+-// ---------------------------------------------------------------------------
+-
+ function update(dt: number): void {
+   input.update(dt);
+   neonTween.tick(dt);
+@@ -1708,7 +1435,6 @@ function update(dt: number): void {
+ 
+   collectRouteEvidence();
+ }
+-
+ function collectRouteEvidence(): NeonSwarmEvidence {
+   const diagnostics = safeDiagnostics();
+   const audioProof = audio.proof();
+@@ -1801,12 +1527,10 @@ function collectRouteEvidence(): NeonSwarmEvidence {
+   document.body.dataset.aura3dShowcaseReady = "true";
+   return evidence;
+ }
+-
+ interface SafeDiagnostics {
+   drawCalls: number;
+   nativeInstancedSubmissions: number;
+ }
+-
+ function safeDiagnostics(): SafeDiagnostics {
+   try {
+     const report = app.diagnostics() as unknown as {
+@@ -1821,8 +1545,6 @@ function safeDiagnostics(): SafeDiagnostics {
+     return { drawCalls: 0, nativeInstancedSubmissions: 0 };
+   }
+ }
+-
+-// Deterministic hooks so browser evidence specs can stage states quickly.
+ window.__NEON_SWARM_DEBUG__ = {
+   stepFixed(frames) {
+     for (let i = 0; i < frames; i += 1) update(1 / 60);
+@@ -2012,19 +1734,14 @@ window.__NEON_SWARM_DEBUG__ = {
+     }
+   }
+ };
+-
+-
+ function requireHudElement(): HTMLElement {
+   const el = document.querySelector("#hud");
+   if (!(el instanceof HTMLElement)) throw new Error("Neon Swarm requires #hud.");
+   return el;
+ }
+-
+ app.onFrame(({ time }) => {
+   const dt = lastTime === 0 ? 1 / 60 : Math.min(0.05, Math.max(0.001, time - lastTime));
+   lastTime = time;
+   update(dt);
+ });
+-
+ resetRun(SEED_DEFAULT);
+-collectRouteEvidence();
+diff --git a/apps/showcase-neon-swarm/src/legacy/styles.css b/apps/showcase-neon-swarm/src/legacy/styles.css
+index 8eccc3415..31c43216d 100644
+--- a/apps/showcase-neon-swarm/src/legacy/styles.css
++++ b/apps/showcase-neon-swarm/src/legacy/styles.css
+@@ -1,6 +1,3 @@
+-/* Neon Swarm HUD chrome. All overlay styling here is UI only: it never stands
+-   in for renderer features. In-scene sparks, flashes, and telegraphs are real
+-   instanced scene geometry updated through the root safe API. */
+ :root {
+   color-scheme: dark;
+   --neon-magenta: #ff4fd8;
+@@ -9,7 +6,6 @@
+   --hud-panel: rgba(7, 10, 22, 0.68);
+   --hud-edge: rgba(53, 230, 255, 0.42);
+ }
+-
+ html,
+ body {
+   margin: 0;
+@@ -21,18 +17,15 @@ body {
+   font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+   color: #dbe7ff;
+ }
+-
+ #app {
+   position: fixed;
+   inset: 0;
+ }
+-
+ #app canvas {
+   display: block;
+   width: 100%;
+   height: 100%;
+ }
+-
+ #hud {
+   position: fixed;
+   inset: 0;
+@@ -40,42 +33,9 @@ body {
+   user-select: none;
+   z-index: 10;
+ }
+-
+-/* Review captures keep a restrained HUD in the frame, matching the named
+- * action reference while leaving the typed courier and live swarm dominant.
+- * The large transition banner, touch chrome, and authoring controls stay out
+- * of the blind frame; all remaining values are route-state readouts. */
+-body[data-capture="review"] #hud { display: block; }
+-body[data-capture="review"] .ns-banner,
+-body[data-capture="review"] .ns-doors,
+-body[data-capture="review"] .ns-help,
+-body[data-capture="review"] .ns-burst-button,
+-body[data-capture="review"] .ns-touch,
+-body[data-capture="review"] .ns-vignette { display: none !important; }
+-body[data-capture="review"] .ns-panel {
+-  background: linear-gradient(135deg, rgba(3, 17, 28, 0.86), rgba(13, 33, 44, 0.58));
+-  border-color: rgba(130, 245, 226, 0.48);
+-  border-radius: 2px;
+-  box-shadow: 0 0 28px rgba(26, 219, 199, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+-}
+-
+-/* The retained desktop composition is an action still, not a title card. The
+- * banner remains available during normal play and in the intermission/death
+- * states, but never sits over the primary courier and live threat field in a
+- * wide first-load frame. */
+ @media (min-width: 1400px) and (min-height: 880px) {
+   .ns-banner { display: none !important; }
+ }
+-body[data-capture="review"] .ns-panel--top-left { top: 18px; left: 20px; min-width: 178px; padding: 8px 10px; }
+-body[data-capture="review"] .ns-panel--top-right { top: 18px; right: 20px; }
+-body[data-capture="review"] .ns-eyebrow { color: #ff6d8f; }
+-body[data-capture="review"] .ns-title { color: #f5fff8; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+-body[data-capture="review"] .ns-stats { font-size: 10px; gap: 1px 10px; }
+-body[data-capture="review"] .ns-hp { margin-top: 7px; }
+-body[data-capture="review"] .ns-stats strong { color: #d9fff2; }
+-body[data-capture="review"] .ns-hp b { background: #ff6d8f; border-color: #ff6d8f; box-shadow: 0 0 8px rgba(255, 109, 143, 0.62); }
+-body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
+-
+ .ns-panel {
+   position: absolute;
+   background: var(--hud-panel);
+@@ -85,20 +45,17 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
+   backdrop-filter: blur(6px);
+   box-shadow: 0 0 18px rgba(53, 230, 255, 0.12);
+ }
+-
+ .ns-panel--top-left {
+   top: 14px;
+   left: 14px;
+   min-width: 184px;
+   padding: 9px 12px;
+ }
+-
+ .ns-panel--top-right {
+   top: 14px;
+   right: 14px;
+   text-align: right;
+ }
+-
+ .ns-eyebrow {
+   display: block;
+   font-size: 10px;
+@@ -107,31 +64,26 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
+   color: var(--neon-magenta);
+   margin-bottom: 2px;
+ }
+-
+ .ns-title {
+   margin: 0 0 6px;
+   font-size: 13px;
+   letter-spacing: 0.04em;
+   color: #eef4ff;
+ }
+-
+ .ns-stats {
+   display: grid;
+   grid-template-columns: auto auto;
+   gap: 2px 12px;
+   font-size: 11px;
+ }
+-
+ .ns-stats span {
+   color: #8fa3c8;
+ }
+-
+ .ns-stats strong {
+   color: #fff;
+   font-variant-numeric: tabular-nums;
+   text-align: right;
+ }
+-
+ .ns-combo {
+   margin-top: 8px;
+   height: 6px;
+@@ -139,20 +91,17 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
+   background: rgba(255, 79, 216, 0.16);
+   overflow: hidden;
+ }
+-
+ .ns-combo i {
+   display: block;
+   height: 100%;
+   background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta));
+   transition: width 90ms linear;
+ }
+-
+ .ns-hp {
+   display: flex;
+   gap: 5px;
+   margin-top: 9px;
+ }
+-
+ .ns-hp b {
+   width: 15px;
+   height: 11px;
+@@ -161,13 +110,11 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
+   background: var(--neon-cyan);
+   box-shadow: 0 0 7px rgba(53, 230, 255, 0.65);
+ }
+-
+ .ns-hp b[data-empty="true"] {
+   background: transparent;
+   box-shadow: none;
+   border-color: rgba(143, 163, 200, 0.35);
+ }
+-
+ .ns-help {
+   position: absolute;
+   bottom: 12px;
+@@ -180,7 +127,6 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
+   padding: 5px 14px;
+   white-space: nowrap;
+ }
+-
+ .ns-banner {
+   position: absolute;
+   top: 26%;
+@@ -189,7 +135,6 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
+   text-align: center;
+   pointer-events: none;
+ }
+-
+ .ns-banner h2 {
+   margin: 0;
+   font-size: 34px;
+@@ -198,23 +143,19 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
+   color: #fff;
+   text-shadow: 0 0 22px rgba(255, 79, 216, 0.75), 0 0 44px rgba(53, 230, 255, 0.45);
+ }
+-
+ .ns-banner p {
+   margin: 6px 0 0;
+   font-size: 13px;
+   color: #b7c6e6;
+ }
+-
+ .ns-summary {
+   font-size: 14px;
+   line-height: 1.7;
+   color: #d5e1fa;
+ }
+-
+ .ns-summary strong {
+   color: #fff;
+ }
+-
+ .ns-doors {
+   position: absolute;
+   bottom: 74px;
+@@ -224,7 +165,6 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
+   gap: 12px;
+   pointer-events: auto;
+ }
+-
+ .ns-door {
+   appearance: none;
+   cursor: grab;
+@@ -239,26 +179,22 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
+   letter-spacing: 0.03em;
+   transition: transform 80ms ease, box-shadow 80ms ease;
+ }
+-
+ .ns-door small {
+   display: block;
+   margin-top: 3px;
+   color: #93a5c9;
+   font-size: 11px;
+ }
+-
+ .ns-door:hover,
+ .ns-door:focus-visible {
+   transform: translateY(-2px);
+   box-shadow: 0 0 20px rgba(53, 230, 255, 0.35);
+   outline: none;
+ }
+-
+ .ns-door[data-chosen="true"] {
+   border-color: var(--neon-amber);
+   box-shadow: 0 0 22px rgba(255, 200, 87, 0.4);
+ }
+-
+ .ns-burst-button {
+   position: absolute;
+   right: 18px;
+@@ -273,18 +209,15 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
+   letter-spacing: 0.08em;
+   opacity: 0.58;
+ }
+-
+ .ns-burst-button small {
+   display: block;
+   font-size: 9px;
+   letter-spacing: 0.03em;
+ }
+-
+ .ns-burst-button[data-ready] {
+   opacity: 1;
+   box-shadow: 0 0 24px rgba(255, 200, 87, 0.45);
+ }
+-
+ .ns-touch-stick {
+   position: absolute;
+   border-radius: 50%;
+@@ -293,7 +226,6 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
+   pointer-events: auto;
+   touch-action: none;
+ }
+-
+ .ns-touch-knob {
+   position: absolute;
+   border-radius: 50%;
+@@ -301,7 +233,6 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
+   border: 1px solid rgba(255, 79, 216, 0.8);
+   pointer-events: none;
+ }
+-
+ .ns-vignette {
+   position: absolute;
+   inset: 0;
+@@ -309,11 +240,9 @@ body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
+   opacity: 0;
+   background: radial-gradient(ellipse at center, transparent 52%, rgba(255, 79, 216, 0.32) 100%);
+ }
+-
+ .ns-vignette[data-active="true"] {
+   opacity: 1;
+ }
+-
+ @media (max-width: 600px) {
+   .ns-panel--top-left {
+     top: 8px;
+diff --git a/apps/showcase-neon-swarm/src/v2/evidence/index.ts b/apps/showcase-neon-swarm/src/v2/evidence/index.ts
+deleted file mode 100644
+index 6b2a20f5b..000000000
+--- a/apps/showcase-neon-swarm/src/v2/evidence/index.ts
++++ /dev/null
+@@ -1,111 +0,0 @@
+-// apps/showcase-neon-swarm/src/v2/evidence/index.ts — §7.2.1 evidence.
+-// Publishes `window.__AURA3D_GAME_EVIDENCE__["showcase-neon-swarm"]` with
+-// lazy section getters. The required conditions read `swarm.killsThisWave`
+-// and `fx.liveCount` here.
+-import type { Game } from "@aura3d/engine";
+-import type { PlayerState, PlayerUpgrades } from "../../gameplay/player";
+-
+-export const SWARM_EVIDENCE_ID = "showcase-neon-swarm";
+-
+-export interface SwarmEvidenceBindings {
+-  readonly game: Game;
+-  readonly run: () => {
+-    state: string;
+-    wave: number;
+-    stage: string;
+-    intermissionRemaining: number;
+-    score: number;
+-    combo: number;
+-    maxCombo: number;
+-    burstCharge: number;
+-    kills: number;
+-    killsThisWave: number;
+-    spawned: number;
+-    scheduled: number;
+-  };
+-  readonly swarm: () => { aliveGrunt: number; aliveElite: number };
+-  readonly player: () => PlayerState;
+-  readonly upgrades: () => PlayerUpgrades;
+-  readonly appliedLook: Record<string, unknown>;
+-  readonly frameCount: () => number;
+-  readonly bootedAtMs: number;
+-  readonly audioCueLog: () => readonly string[];
+-}
+-
+-export function publishSwarmEvidence(b: SwarmEvidenceBindings): void {
+-  const w = window as unknown as Record<string, Record<string, unknown>>;
+-  w.__AURA3D_GAME_EVIDENCE__ ??= {};
+-  w.__AURA3D_GAME_EVIDENCE__[SWARM_EVIDENCE_ID] = {
+-    get playback() {
+-      return {
+-        state: b.game.session.state,
+-        paused: b.game.session.paused,
+-        simTime: b.game.session.simTime,
+-        timeScale: b.game.session.timeScale,
+-        frame: b.frameCount()
+-      };
+-    },
+-    get run() {
+-      return { ...b.run() };
+-    },
+-    get swarm() {
+-      const s = b.swarm();
+-      const r = b.run();
+-      return {
+-        aliveGrunt: s.aliveGrunt,
+-        aliveElite: s.aliveElite,
+-        alive: s.aliveGrunt + s.aliveElite,
+-        killsThisWave: r.killsThisWave,
+-        spawned: r.spawned,
+-        scheduled: r.scheduled
+-      };
+-    },
+-    get player() {
+-      const p = b.player();
+-      const u = b.upgrades();
+-      return {
+-        x: p.x,
+-        z: p.z,
+-        hp: p.hp,
+-        maxHp: p.maxHp,
+-        aimX: p.aimX,
+-        aimZ: p.aimZ,
+-        invulnerable: p.invulnerableRemaining > 0,
+-        dashReadyFraction: 1 - p.dashCooldownRemaining / 1.2,
+-        shieldCharges: u.shieldCharges
+-      };
+-    },
+-    get fx() {
+-      return { liveCount: b.game.fx.liveCount, backend: b.game.fx.backend };
+-    },
+-    get framing() {
+-      const ev = b.game.app.camera?.evidence?.();
+-      return {
+-        rig: ev?.rig ?? "neon-swarm.topdown",
+-        subjectScreenHeightFraction: ev?.subjectScreenHeightFraction ?? null,
+-        pose: ev?.pose ?? null
+-      };
+-    },
+-    get render() {
+-      const d = b.game.app.diagnostics();
+-      return {
+-        backend: d.backend,
+-        drawCalls: d.drawCalls,
+-        renderSize: d.renderSize,
+-        fps: d.fps,
+-        errors: d.errors,
+-        warnings: d.warnings
+-      };
+-    },
+-    // T2.6 parity: identical between the play URL and every ?scenario= URL.
+-    get appliedLook() {
+-      return b.appliedLook;
+-    },
+-    get audio() {
+-      return { cues: b.audioCueLog() };
+-    },
+-    get boot() {
+-      return { bootedAtMs: b.bootedAtMs, frame: b.frameCount() };
+-    }
+-  };
+-}
+-- 
+2.34.1
+

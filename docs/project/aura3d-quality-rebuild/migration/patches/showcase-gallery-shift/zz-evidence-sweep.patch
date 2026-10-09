@@ -1,0 +1,2371 @@
+From 63d432d0da6c972c616b9665f6954e00e611d8ef Mon Sep 17 00:00:00 2001
+From: gchahal+1 <gchahal@veerone.com>
+Date: Fri, 9 Oct 2026 13:40:35 +0000
+Subject: [PATCH] [qr-prd09] showcase-gallery-shift: delete evidence
+ files+blocks (T5.8)
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ .../capture_hierarchy_candidate.mjs           | 139 -----
+ .../capture_integrated_route.mjs              | 130 -----
+ .../museum-world-aug31/capture_preview.mjs    |  37 --
+ .../scripts/build-models.mjs                  | 490 ------------------
+ .../scripts/build-sfx.mjs                     | 376 --------------
+ .../scripts/register-assets.mjs               | 104 ----
+ .../scripts/write-deploy-report.mjs           |  52 --
+ .../scripts/write-performance-report.ts       |  69 ---
+ .../scripts/write-route-health.mjs            | 104 ----
+ .../showcase-gallery-shift/src/legacy/main.ts | 187 +------
+ .../src/legacy/styles.css                     |  90 ----
+ .../src/v2/evidence/index.ts                  |  99 ----
+ 12 files changed, 1 insertion(+), 1876 deletions(-)
+ delete mode 100644 apps/showcase-gallery-shift/art-candidates/hierarchy-aug31/capture_hierarchy_candidate.mjs
+ delete mode 100644 apps/showcase-gallery-shift/art-candidates/museum-world-aug31/capture_integrated_route.mjs
+ delete mode 100644 apps/showcase-gallery-shift/art-candidates/museum-world-aug31/capture_preview.mjs
+ delete mode 100644 apps/showcase-gallery-shift/scripts/build-models.mjs
+ delete mode 100644 apps/showcase-gallery-shift/scripts/build-sfx.mjs
+ delete mode 100644 apps/showcase-gallery-shift/scripts/register-assets.mjs
+ delete mode 100644 apps/showcase-gallery-shift/scripts/write-deploy-report.mjs
+ delete mode 100644 apps/showcase-gallery-shift/scripts/write-performance-report.ts
+ delete mode 100644 apps/showcase-gallery-shift/scripts/write-route-health.mjs
+ delete mode 100644 apps/showcase-gallery-shift/src/v2/evidence/index.ts
+
+diff --git a/apps/showcase-gallery-shift/art-candidates/hierarchy-aug31/capture_hierarchy_candidate.mjs b/apps/showcase-gallery-shift/art-candidates/hierarchy-aug31/capture_hierarchy_candidate.mjs
+deleted file mode 100644
+index 0f2894951..000000000
+--- a/apps/showcase-gallery-shift/art-candidates/hierarchy-aug31/capture_hierarchy_candidate.mjs
++++ /dev/null
+@@ -1,139 +0,0 @@
+-#!/usr/bin/env node
+-/**
+- * Candidate-local Gallery Shift hierarchy capture.
+- *
+- * This stages the same real guard-1 LOS intercept used by the canonical
+- * browser spec, then captures only the Aura canvas. It writes no canonical
+- * report and does not change camera, floor, collision, navigation, patrol, or
+- * detection truth.
+- */
+-import { createHash } from "node:crypto";
+-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+-import { dirname, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-import { chromium } from "@playwright/test";
+-
+-const here = dirname(fileURLToPath(import.meta.url));
+-const repoRoot = resolve(here, "../../../..");
+-const appDir = resolve(repoRoot, "apps/showcase-gallery-shift");
+-const origin = process.env.GALLERY_ROUTE_ORIGIN ?? "http://127.0.0.1:4198";
+-const routeUrl = `${origin}/apps/showcase-gallery-shift/?debug=1&capture=review`;
+-const canvasPath = resolve(here, "hierarchy-candidate-canvas.png");
+-const receiptPath = resolve(here, "hierarchy-candidate.json");
+-const sha256Bytes = (value) => createHash("sha256").update(value).digest("hex");
+-const sha256File = (path) => sha256Bytes(readFileSync(path));
+-
+-const systemChrome = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+-const browser = await chromium.launch({
+-  headless: true,
+-  ...(existsSync(systemChrome) ? {
+-    executablePath: systemChrome,
+-    args: ["--enable-unsafe-webgpu", "--ignore-gpu-blocklist"]
+-  } : {})
+-});
+-try {
+-  const page = await browser.newPage({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
+-  await page.goto(routeUrl, { waitUntil: "commit", timeout: 120_000 });
+-  await page.waitForFunction(
+-    () => Boolean(window.__GALLERY_SHIFT_EVIDENCE__?.mounted)
+-      && Boolean(window.__GS_PUMP__)
+-      && Boolean(window.__GS_RESET_CAPTURE__)
+-      && Boolean(window.__GS_TELEPORT__),
+-    undefined,
+-    { timeout: 180_000 }
+-  );
+-  // Reach one absolute simulation frame rather than advancing an arbitrary
+-  // amount from whichever boot frame happened to satisfy the browser wait.
+-  // The review pump leaves the app paused, so all subsequent 5-frame LOS
+-  // batches and the final renderer read are wall-clock independent.
+-  await page.evaluate(() => {
+-    window.__GS_RESET_CAPTURE__?.();
+-    window.__GS_PUMP__?.(300);
+-  });
+-
+-  let guardOneSeesThief = false;
+-  for (let batch = 0; batch < 60 && !guardOneSeesThief; batch += 1) {
+-    const intercept = await page.evaluate(() => {
+-      const guard = window.__GALLERY_SHIFT_EVIDENCE__?.guardStates?.[0];
+-      if (!guard) return { x: -8.5, z: 1.5 };
+-      return {
+-        x: guard.x + Math.sin(guard.yaw) * 3,
+-        z: guard.z + Math.cos(guard.yaw) * 3
+-      };
+-    });
+-    await page.evaluate(({ x, z }) => window.__GS_TELEPORT__?.(x, z, true), intercept);
+-    await page.evaluate(() => window.__GS_PUMP__?.(5));
+-    guardOneSeesThief = await page.evaluate(() =>
+-      window.__GALLERY_SHIFT_EVIDENCE__?.guardVisionSamples
+-        ?.some((sample) => sample.id === "guard-1" && sample.seesThief) ?? false
+-    );
+-  }
+-
+-  await page.waitForFunction(
+-    () => (window.__GALLERY_SHIFT_EVIDENCE__?.renderer?.drawCalls ?? 0) > 0,
+-    undefined,
+-    { timeout: 60_000 }
+-  );
+-
+-  const evidence = await page.evaluate(() => window.__GALLERY_SHIFT_EVIDENCE__);
+-  const dataUrl = await page.evaluate(() => window.__GS_SHOT__?.() ?? "");
+-  if (!dataUrl.startsWith("data:image/png;base64,")) {
+-    throw new Error("Gallery Shift did not return a canvas PNG.");
+-  }
+-  const canvasPng = Buffer.from(dataUrl.slice(dataUrl.indexOf(",") + 1), "base64");
+-  writeFileSync(canvasPath, canvasPng);
+-
+-  const failures = [
+-    ...(evidence?.floor === 1 ? [] : [`floor:${String(evidence?.floor)}`]),
+-    ...(evidence?.state === "playing" ? [] : [`state:${String(evidence?.state)}`]),
+-    ...(evidence?.backend === "rapier" ? [] : [`physics:${String(evidence?.backend)}`]),
+-    ...(evidence?.detection >= 0.3 ? [] : [`detection:${String(evidence?.detection)}`]),
+-    ...(evidence?.guardVisionSamples?.some((sample) => sample.id === "guard-1" && sample.seesThief)
+-      ? [] : ["guard-1-real-los-missing"]),
+-    ...(evidence?.renderer?.drawCalls > 0 && evidence.renderer.drawCalls <= 190
+-      ? [] : [`draw-budget:${String(evidence?.renderer?.drawCalls)}/190`]),
+-    ...(evidence?.primaryAssets?.[0] === "assets.galleryShiftCutawayMuseumWorld"
+-      ? [] : [`primary-world:${String(evidence?.primaryAssets?.[0])}`])
+-  ];
+-
+-  const receipt = {
+-    schema: "aura3d.gallery-shift.hierarchy-candidate/1.0",
+-    candidateOnly: true,
+-    canonicalEvidence: false,
+-    pass: failures.length === 0,
+-    failures,
+-    route: "/apps/showcase-gallery-shift/?debug=1&capture=review",
+-    cameraContract: { position: [5.6, 22.5, 14.5], target: [0, 0.62, 0.8], fov: 46, changed: true },
+-    staging: "same moving guard-1 three-metre real-LOS intercept as tests/browser/gallery-shift-scene.spec.ts",
+-    truth: {
+-      floor: evidence?.floor,
+-      state: evidence?.state,
+-      physicsBackend: evidence?.backend,
+-      detection: evidence?.detection,
+-      thiefPosition: evidence?.thiefPos,
+-      guardVisionSamples: evidence?.guardVisionSamples,
+-      guardRouteLengths: evidence?.guardRouteLengths,
+-      navigationOwnership: evidence?.navigationOwnership,
+-      renderer: evidence?.renderer,
+-      primaryAssets: evidence?.primaryAssets,
+-      primaryAssetHashes: evidence?.primaryAssetHashes
+-    },
+-    sourceBindings: {
+-      main: { path: "apps/showcase-gallery-shift/src/main.ts", sha256: sha256File(resolve(appDir, "src/main.ts")) },
+-      environment: { path: "apps/showcase-gallery-shift/src/environment.ts", sha256: sha256File(resolve(appDir, "src/environment.ts")) },
+-      floorTruth: { path: "apps/showcase-gallery-shift/src/floor.ts", sha256: sha256File(resolve(appDir, "src/floor.ts")) },
+-      worldBinding: { path: "apps/showcase-gallery-shift/src/gallery-world-candidate.ts", sha256: sha256File(resolve(appDir, "src/gallery-world-candidate.ts")) }
+-    },
+-    artifact: {
+-      path: "hierarchy-candidate-canvas.png",
+-      sha256: sha256Bytes(canvasPng),
+-      bytes: canvasPng.byteLength,
+-      viewport: [1280, 800]
+-    }
+-  };
+-  writeFileSync(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`);
+-  process.stdout.write(`${JSON.stringify(receipt, null, 2)}\n`);
+-  if (!receipt.pass) process.exitCode = 1;
+-} finally {
+-  await browser.close();
+-}
+diff --git a/apps/showcase-gallery-shift/art-candidates/museum-world-aug31/capture_integrated_route.mjs b/apps/showcase-gallery-shift/art-candidates/museum-world-aug31/capture_integrated_route.mjs
+deleted file mode 100644
+index d7ce72ad6..000000000
+--- a/apps/showcase-gallery-shift/art-candidates/museum-world-aug31/capture_integrated_route.mjs
++++ /dev/null
+@@ -1,130 +0,0 @@
+-#!/usr/bin/env node
+-/**
+- * Candidate-local exact-route capture. This never writes canonical reports.
+- * Start the Gallery Shift dev server, then run this script with the origin in
+- * GALLERY_ROUTE_ORIGIN when it differs from the default below.
+- */
+-import { createHash } from "node:crypto";
+-import { readFileSync, writeFileSync } from "node:fs";
+-import { dirname, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-import { chromium } from "@playwright/test";
+-
+-const here = dirname(fileURLToPath(import.meta.url));
+-const repoRoot = resolve(here, "../../../..");
+-const appDir = resolve(repoRoot, "apps/showcase-gallery-shift");
+-const origin = process.env.GALLERY_ROUTE_ORIGIN ?? "http://127.0.0.1:4198";
+-const routeUrl = `${origin}/apps/showcase-gallery-shift/?capture=review`;
+-const canvasPath = resolve(here, "integrated-route-review-canvas.png");
+-const receiptPath = resolve(here, "integrated-route-review.json");
+-
+-const sha256Bytes = (value) => createHash("sha256").update(value).digest("hex");
+-const sha256File = (path) => sha256Bytes(readFileSync(path));
+-
+-const environmentPath = resolve(appDir, "src/environment.ts");
+-const mainPath = resolve(appDir, "src/main.ts");
+-const floorPath = resolve(appDir, "src/floor.ts");
+-const bindingPath = resolve(appDir, "src/gallery-world-candidate.ts");
+-const assetPath = resolve(here, "galleryShiftMuseumWorldCandidate.glb");
+-const environmentSource = readFileSync(environmentPath, "utf8");
+-
+-const staticFailures = [
+-  ...(environmentSource.match(/model\(galleryShiftCutawayMuseumWorld/g)?.length === 1 ? [] : ["candidate-world-node-count"]),
+-  ...(environmentSource.match(/name:\s*"museum-interior"/g)?.length === 1 ? [] : ["museum-runtime-node-count"]),
+-  ...(!environmentSource.includes("assets.galleryShiftMuseumInterior") ? [] : ["legacy-world-still-bound"]),
+-  ...(environmentSource.includes('scaleMode: "world"') ? [] : ["world-scale-mode"])
+-];
+-
+-const browser = await chromium.launch({ headless: true });
+-try {
+-  const page = await browser.newPage({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
+-  await page.goto(routeUrl, { waitUntil: "commit", timeout: 120_000 });
+-  await page.waitForFunction(
+-    () => Boolean(window.__GALLERY_SHIFT_EVIDENCE__?.mounted) && Boolean(window.__GS_PUMP__),
+-    undefined,
+-    { timeout: 180_000 }
+-  );
+-  // Headless rAF may throttle. The route's own deterministic public-app pump
+-  // advances the same fixed-step state used by its canonical browser specs.
+-  await page.evaluate(() => window.__GS_PUMP__?.(100));
+-  await page.waitForFunction(
+-    () => window.__GALLERY_SHIFT_EVIDENCE__?.status === "ready",
+-    undefined,
+-    { timeout: 30_000 }
+-  );
+-  await page.evaluate(() => window.__GS_PUMP__?.(2));
+-  const evidence = await page.evaluate(() => window.__GALLERY_SHIFT_EVIDENCE__);
+-  const dataUrl = await page.evaluate(() => window.__GS_SHOT__?.() ?? "");
+-  if (!dataUrl.startsWith("data:image/png;base64,")) throw new Error("Gallery route did not return a PNG canvas capture.");
+-  const canvasPng = Buffer.from(dataUrl.slice(dataUrl.indexOf(",") + 1), "base64");
+-  writeFileSync(canvasPath, canvasPng);
+-
+-  const runtimeFailures = [
+-    ...(evidence?.floor === 1 ? [] : [`floor:${String(evidence?.floor)}`]),
+-    ...(evidence?.state === "playing" ? [] : [`state:${String(evidence?.state)}`]),
+-    ...(evidence?.backend === "rapier" ? [] : [`physics:${String(evidence?.backend)}`]),
+-    ...(evidence?.renderer?.drawCalls > 0 ? [] : [`draw-calls:${String(evidence?.renderer?.drawCalls)}`]),
+-    ...(evidence?.renderer?.drawCalls <= 190 ? [] : [`draw-budget:${String(evidence?.renderer?.drawCalls)}/190`]),
+-    ...(evidence?.renderer?.renderSize?.[0] === 1280 && evidence?.renderer?.renderSize?.[1] === 800
+-      ? [] : [`render-size:${JSON.stringify(evidence?.renderer?.renderSize)}`]),
+-    ...(evidence?.primaryAssets?.[0] === "galleryWorldAssets.galleryShiftCutawayMuseumWorld"
+-      ? [] : [`primary-world:${String(evidence?.primaryAssets?.[0])}`]),
+-    ...(evidence?.guardRouteLengths?.length === 2 ? [] : ["guard-route-count"]),
+-    ...(evidence?.systems?.includes("public-physics-filtered-LOS") ? [] : ["los-system"]),
+-    ...(evidence?.systems?.includes("authored-waypoint-patrols") ? [] : ["patrol-system"]),
+-    ...(evidence?.navigationOwnership?.includes("no Recast/navmesh claim") ? [] : ["navigation-ownership"])
+-  ];
+-
+-  const receipt = {
+-    schema: "aura3d.gallery-shift.integrated-world-candidate/1.0",
+-    route: "/apps/showcase-gallery-shift/?capture=review",
+-    candidateOnly: true,
+-    canonicalEvidence: false,
+-    pass: staticFailures.length === 0 && runtimeFailures.length === 0,
+-    failures: [...staticFailures, ...runtimeFailures],
+-    cameraContract: { position: [0, 31, 7.5], target: [0, 0.15, 0.1], fov: 39, changed: false },
+-    world: {
+-      typedReference: "galleryWorldAssets.galleryShiftCutawayMuseumWorld",
+-      runtimeNodeId: "museum-interior",
+-      auraNodeCount: 1,
+-      scaleMode: "world",
+-      position: [0, 0, 0],
+-      assetPath: "apps/showcase-gallery-shift/art-candidates/museum-world-aug31/galleryShiftMuseumWorldCandidate.glb",
+-      assetSha256: sha256File(assetPath)
+-    },
+-    sourceBindings: {
+-      environment: { path: "apps/showcase-gallery-shift/src/environment.ts", sha256: sha256File(environmentPath) },
+-      main: { path: "apps/showcase-gallery-shift/src/main.ts", sha256: sha256File(mainPath) },
+-      floorTruth: { path: "apps/showcase-gallery-shift/src/floor.ts", sha256: sha256File(floorPath) },
+-      candidateBinding: { path: "apps/showcase-gallery-shift/src/gallery-world-candidate.ts", sha256: sha256File(bindingPath) }
+-    },
+-    runtime: {
+-      floor: evidence.floor,
+-      state: evidence.state,
+-      physicsBackend: evidence.backend,
+-      renderer: evidence.renderer,
+-      guardRouteLengths: evidence.guardRouteLengths,
+-      navigationOwnership: evidence.navigationOwnership,
+-      systems: evidence.systems,
+-      thiefPosition: evidence.thiefPos,
+-      primaryAssets: evidence.primaryAssets,
+-      primaryAssetHashes: evidence.primaryAssetHashes
+-    },
+-    budgets: {
+-      drawCalls: evidence.renderer.drawCalls,
+-      drawCallCeiling: 190,
+-      pass: evidence.renderer.drawCalls <= 190,
+-      duplicateRoomNodesRemoved: 7,
+-      duplicateLintelNodesRemoved: 4,
+-      duplicateThresholdNodesRemoved: 4
+-    },
+-    artifacts: [
+-      { path: "integrated-route-review-canvas.png", sha256: sha256Bytes(canvasPng), bytes: canvasPng.byteLength, viewport: [1280, 800] }
+-    ]
+-  };
+-  writeFileSync(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`);
+-  process.stdout.write(`${JSON.stringify(receipt, null, 2)}\n`);
+-  if (!receipt.pass) process.exitCode = 1;
+-} finally {
+-  await browser.close();
+-}
+diff --git a/apps/showcase-gallery-shift/art-candidates/museum-world-aug31/capture_preview.mjs b/apps/showcase-gallery-shift/art-candidates/museum-world-aug31/capture_preview.mjs
+deleted file mode 100644
+index 733cf30c2..000000000
+--- a/apps/showcase-gallery-shift/art-candidates/museum-world-aug31/capture_preview.mjs
++++ /dev/null
+@@ -1,37 +0,0 @@
+-#!/usr/bin/env node
+-import { createHash } from "node:crypto";
+-import { readFileSync, writeFileSync } from "node:fs";
+-import { chromium } from "@playwright/test";
+-
+-const origin = process.env.GALLERY_CANDIDATE_ORIGIN ?? "http://127.0.0.1:4197";
+-const output = new URL("./museum-world-aura-preview.png", import.meta.url);
+-const evidenceOutput = new URL("./museum-world-aura-preview.json", import.meta.url);
+-
+-const browser = await chromium.launch({ headless: true });
+-try {
+-  const page = await browser.newPage({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
+-  await page.goto(origin, { waitUntil: "networkidle", timeout: 60_000 });
+-  await page.waitForFunction(
+-    () => Boolean(window.__GALLERY_MUSEUM_CANDIDATE_PREVIEW__) || Boolean(window.__GALLERY_MUSEUM_CANDIDATE_ERROR__),
+-    undefined,
+-    { timeout: 60_000 }
+-  );
+-  const error = await page.evaluate(() => window.__GALLERY_MUSEUM_CANDIDATE_ERROR__);
+-  if (error) throw new Error(error);
+-  const evidence = await page.evaluate(() => window.__GALLERY_MUSEUM_CANDIDATE_PREVIEW__);
+-  await page.screenshot({ path: output.pathname, fullPage: false });
+-  const png = readFileSync(output);
+-  const receipt = {
+-    ...evidence,
+-    screenshot: {
+-      path: "museum-world-aura-preview.png",
+-      sha256: createHash("sha256").update(png).digest("hex"),
+-      bytes: png.byteLength,
+-      viewport: [1280, 800]
+-    }
+-  };
+-  writeFileSync(evidenceOutput, `${JSON.stringify(receipt, null, 2)}\n`);
+-  process.stdout.write(`${JSON.stringify(receipt, null, 2)}\n`);
+-} finally {
+-  await browser.close();
+-}
+diff --git a/apps/showcase-gallery-shift/scripts/build-models.mjs b/apps/showcase-gallery-shift/scripts/build-models.mjs
+deleted file mode 100644
+index f9d75b7de..000000000
+--- a/apps/showcase-gallery-shift/scripts/build-models.mjs
++++ /dev/null
+@@ -1,490 +0,0 @@
+-/**
+- * Gallery Shift model synth — generates original CC0 GLB props entirely in-repo.
+- *
+- * Authored low-poly museum props, flat-shaded and indexed, written as minimal
+- * glTF 2.0 GLB containers with no dependencies:
+- *   - galleryShiftMuseumInterior.glb : one hall in absolute meters — floor slab,
+- *     perimeter walls, north service-alcove throat walls, the two floor-1 wing
+- *     partitions, and raised skylight frames (floor-2-specific walls are route
+- *     primitives and stay out of this shared GLB)
+- *   - galleryShiftPedestal.glb       : exhibit pedestal, origin at base, 1.0 m tall
+- *   - galleryShiftExhibitA.glb       : orb artifact (lunar sphere)
+- *   - galleryShiftExhibitB.glb       : statue-ish stacked block artifact
+- *   - galleryShiftExhibitC.glb       : capsule artifact
+- *   - galleryShiftDisplayCase.glb    : glassy display case for the floor-2 row
+- *
+- * Units are meters. The interior is authored at world coordinates matching the
+- * floor-1 layout in src/floor.ts and placed with scaleMode "world".
+- *
+- * Run from the repo root:  node apps/showcase-gallery-shift/scripts/build-models.mjs
+- * Output: apps/showcase-gallery-shift/assets/models/*.glb
+- *
+- * After generation register each model with the CLI so it lands in the typed root
+- * asset map the route imports (`../../../src/aura-assets`). This script documents
+- * the commands but does NOT run them:
+- *   pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts assets add apps/showcase-gallery-shift/assets/models/galleryShiftMuseumInterior.glb --name galleryShiftMuseumInterior --type model --license CC0-1.0 --author "Aura3D synthesis" --source-page "apps/showcase-gallery-shift/scripts/build-models.mjs"
+- *   ... same for galleryShiftPedestal, galleryShiftExhibitA, galleryShiftExhibitB, galleryShiftExhibitC, galleryShiftDisplayCase
+- */
+-import { mkdirSync, writeFileSync } from "node:fs";
+-import { resolve, dirname } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../assets/models");
+-
+-// ---- geometry helpers -------------------------------------------------------
+-/**
+- * A part accumulates flat-shaded triangles: every triangle carries its own three
+- * vertices and face normal, which reads cleanly at low polygon counts.
+- */
+-function part() {
+-  return { positions: [], normals: [], indices: [], nextVertex: 0 };
+-}
+-
+-function addTriangle(p, a, b, c) {
+-  const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
+-  const vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
+-  let nx = uy * vz - uz * vy;
+-  let ny = uz * vx - ux * vz;
+-  let nz = ux * vy - uy * vx;
+-  const len = Math.hypot(nx, ny, nz) || 1;
+-  nx /= len; ny /= len; nz /= len;
+-  for (const v of [a, b, c]) {
+-    p.positions.push(v[0], v[1], v[2]);
+-    p.normals.push(nx, ny, nz);
+-  }
+-  p.indices.push(p.nextVertex, p.nextVertex + 1, p.nextVertex + 2);
+-  p.nextVertex += 3;
+-}
+-
+-/** Quad split into two triangles, wound outward in the provided corner order. */
+-function addQuad(p, a, b, c, d) {
+-  addTriangle(p, a, b, c);
+-  addTriangle(p, a, c, d);
+-}
+-
+-/** Ring of points around the Y axis at height y with radius r. */
+-function ring(n, r, y) {
+-  const pts = [];
+-  for (let i = 0; i < n; i += 1) {
+-    const angle = (i / n) * Math.PI * 2;
+-    pts.push([Math.cos(angle) * r, y, Math.sin(angle) * r]);
+-  }
+-  return pts;
+-}
+-
+-/** Tapered tube between two rings. */
+-function addBand(p, lower, upper) {
+-  const n = Math.min(lower.length, upper.length);
+-  for (let i = 0; i < n; i += 1) {
+-    const j = (i + 1) % n;
+-    addQuad(p, lower[i], lower[j], upper[j], upper[i]);
+-  }
+-}
+-
+-/** Cap a ring around the Y axis with an n-gon fan. */
+-function addCap(p, pts, y, up, cx = 0, cz = 0) {
+-  const center = [cx, y, cz];
+-  for (let i = 0; i < pts.length; i += 1) {
+-    const j = (i + 1) % pts.length;
+-    if (up) addTriangle(p, center, pts[i], pts[j]);
+-    else addTriangle(p, center, pts[j], pts[i]);
+-  }
+-}
+-
+-/** Axis-aligned box from center + half extents. */
+-function addBox(p, cx, cy, cz, hx, hy, hz) {
+-  const v = [
+-    [cx - hx, cy - hy, cz - hz], [cx + hx, cy - hy, cz - hz],
+-    [cx + hx, cy - hy, cz + hz], [cx - hx, cy - hy, cz + hz],
+-    [cx - hx, cy + hy, cz - hz], [cx + hx, cy + hy, cz - hz],
+-    [cx + hx, cy + hy, cz + hz], [cx - hx, cy + hy, cz + hz]
+-  ];
+-  addQuad(p, v[0], v[3], v[2], v[1]); // bottom
+-  addQuad(p, v[4], v[5], v[6], v[7]); // top
+-  addQuad(p, v[1], v[2], v[6], v[5]); // +Z
+-  addQuad(p, v[3], v[0], v[4], v[7]); // -Z
+-  addQuad(p, v[0], v[1], v[5], v[4]); // -X
+-  addQuad(p, v[2], v[3], v[7], v[6]); // +X
+-}
+-
+-// ---- museum interior (floor-1 look, absolute meters) ------------------------
+-/**
+- * Matches src/floor.ts FLOOR_1: perimeter x +/-10 (inner faces), z +/-7; wing
+- * partitions at x = +/-5 spanning z in [-4, 1.5]; alcove throat walls at
+- * x = +/-1.8 (each 2 m long) at z = -5.2 leaving a 1.6 m door to the exit.
+- */
+-function buildMuseumInterior() {
+-  const floorSlab = part();
+-  addBox(floorSlab, 0, -0.25, 0, 10.2, 0.25, 7.2);
+-
+-  const walls = part();
+-  // Perimeter.
+-  addBox(walls, 0, 1.8, -7.2, 10.4, 1.8, 0.2); // north
+-  addBox(walls, 0, 1.8, 7.2, 10.4, 1.8, 0.2);  // south
+-  addBox(walls, -10.2, 1.8, 0, 0.2, 1.8, 7.4); // west
+-  addBox(walls, 10.2, 1.8, 0, 0.2, 1.8, 7.4);  // east
+-  // Service alcove throat (north-center, exit door gap between x -0.8..0.8).
+-  addBox(walls, -1.8, 1.8, -5.2, 1.0, 1.8, 0.2);
+-  addBox(walls, 1.8, 1.8, -5.2, 1.0, 1.8, 0.2);
+-  // Floor-1 partitions mirror the real FloorLayout colliders.  The gaps are
+-  // deliberately left open: every visible gallery/rotunda threshold is a
+-  // route-authored passable opening, not a painted suggestion of a door.
+-  addBox(walls, -5, 1.8, -3.45, 0.2, 1.8, 1.55);
+-  addBox(walls, -5, 1.8, 1.25, 0.2, 1.8, 1.95);
+-  addBox(walls, 5, 1.8, -2.45, 0.2, 1.8, 2.55);
+-  addBox(walls, 5, 1.8, 2.35, 0.2, 1.8, 0.85);
+-  addBox(walls, -9.05, 1.8, 1.4, 0.95, 1.8, 0.2);
+-  addBox(walls, -5.95, 1.8, 1.4, 0.95, 1.8, 0.2);
+-  addBox(walls, 5.95, 1.8, -1.3, 0.95, 1.8, 0.2);
+-  addBox(walls, 9.05, 1.8, -1.3, 0.95, 1.8, 0.2);
+-
+-  // Architecture is grouped by material so that the asset reads as a museum
+-  // rather than a grey collision blockout in the standalone asset probe.
+-  // The rooms are not a single dark slab.  Separate floor materials establish
+-  // a readable hierarchy even from the game camera: slate entry/rotunda,
+-  // petrol archive, warm treasury, and a deliberately pale service vault.
+-  // These are all shallow inlays on the same FloorLayout regions, never a
+-  // second movement surface or a substitute collision map.
+-  const foyerFloor = part();
+-  const rotundaFloor = part();
+-  const archiveFloor = part();
+-  const treasuryFloor = part();
+-  const vaultFloor = part();
+-  addBox(foyerFloor, 0, 0.012, 4.65, 4.75, 0.022, 1.65);
+-  addBox(rotundaFloor, 0, 0.018, 0.1, 4.7, 0.026, 2.95);
+-  addBox(vaultFloor, 0, 0.014, -5.45, 3.0, 0.022, 1.15);
+-  addBox(archiveFloor, -7.5, 0.014, -2.85, 2.3, 0.022, 1.95);
+-  addBox(archiveFloor, -7.5, 0.014, 4.05, 2.3, 0.022, 2.45);
+-  addBox(treasuryFloor, 7.5, 0.014, -4.15, 2.3, 0.022, 1.55);
+-  addBox(treasuryFloor, 7.5, 0.014, 2.75, 2.3, 0.022, 3.85);
+-
+-  // Fine mosaic runners make the inter-room routes visible as circulation,
+-  // rather than reading as black gaps between detached prop islands.  The
+-  // runners sit exactly within the walkable rooms and frame, never cover, the
+-  // actual FloorLayout thresholds.
+-  const floorMosaics = part();
+-  for (const [x, z, hx, hz] of [
+-    [0, 3.18, 3.75, 0.045], [0, 1.95, 3.75, 0.045],
+-    [0, -1.55, 3.75, 0.045], [0, -3.15, 3.75, 0.045],
+-    [-7.5, -1.3, 1.65, 0.045], [-7.5, 1.4, 1.65, 0.045],
+-    [7.5, -1.3, 1.65, 0.045], [7.5, 0.8, 1.65, 0.045]
+-  ]) addBox(floorMosaics, x, 0.052, z, hx, 0.012, hz);
+-  for (const [x, z, hx, hz] of [
+-    [-5, -1.3, 0.045, 0.62], [-5, 1.4, 0.045, 0.55],
+-    [5, 0.8, 0.045, 0.62], [7.5, -1.3, 0.55, 0.045]
+-  ]) addBox(floorMosaics, x, 0.052, z, hx, 0.012, hz);
+-
+-  const brassTrim = part();
+-  // Four real route thresholds get a full, recessed architectural portal.
+-  for (const [x, z, horizontal] of [
+-    [-5, -1.3, false], [-7.5, 1.4, true], [5, 0.8, false], [7.5, -1.3, true]
+-  ]) {
+-    if (horizontal) {
+-      addBox(brassTrim, x - 0.72, 1.5, z, 0.08, 1.5, 0.14);
+-      addBox(brassTrim, x + 0.72, 1.5, z, 0.08, 1.5, 0.14);
+-      addBox(brassTrim, x, 2.92, z, 0.84, 0.08, 0.14);
+-    } else {
+-      addBox(brassTrim, x, 1.5, z - 0.72, 0.14, 1.5, 0.08);
+-      addBox(brassTrim, x, 1.5, z + 0.72, 0.14, 1.5, 0.08);
+-      addBox(brassTrim, x, 2.92, z, 0.14, 0.08, 0.84);
+-    }
+-  }
+-  // Door to the north service vault—its opening remains exactly x -0.8..0.8.
+-  addBox(brassTrim, -0.92, 1.48, -5.2, 0.1, 1.48, 0.13);
+-  addBox(brassTrim, 0.92, 1.48, -5.2, 0.1, 1.48, 0.13);
+-  addBox(brassTrim, 0, 2.88, -5.2, 1.02, 0.1, 0.13);
+-
+-  const galleryFurniture = part();
+-  // Built-in benches, plinth bays, and wall-mounted picture frames supply a
+-  // coherent exhibit language while remaining outside route collision/LOS.
+-  for (const [x, z, hx, hz] of [
+-    [-8.15, -5.65, 0.78, 0.28], [-8.15, 5.7, 0.78, 0.28],
+-    [8.15, -5.65, 0.78, 0.28], [8.15, 5.7, 0.78, 0.28],
+-    [-2.85, 4.55, 0.65, 0.25], [2.85, 4.55, 0.65, 0.25]
+-  ]) {
+-    addBox(galleryFurniture, x, 0.34, z, hx, 0.34, hz);
+-    addBox(galleryFurniture, x - hx * 0.72, 0.12, z, 0.08, 0.12, hz * 0.8);
+-    addBox(galleryFurniture, x + hx * 0.72, 0.12, z, 0.08, 0.12, hz * 0.8);
+-  }
+-  for (const [x, z, sx, sz] of [
+-    [-9.94, -3.8, 0.04, 1.05], [-9.94, 3.8, 0.04, 1.05],
+-    [9.94, -3.8, 0.04, 1.05], [9.94, 3.8, 0.04, 1.05],
+-    [-2.9, -6.95, 1.0, 0.04], [2.9, -6.95, 1.0, 0.04]
+-  ]) {
+-    addBox(galleryFurniture, x, 1.72, z, sx, 0.74, sz);
+-  }
+-
+-  // Built-in artifact coves and archive stacks give each room a clear purpose
+-  // in the unoccluded view.  They intentionally hug the perimeter walls or
+-  // room corners, leaving the floor.ts patrol routes, objective approaches,
+-  // and every portal completely unobstructed.
+-  const exhibitCoves = part();
+-  for (const [x, z, hx, hz, tall] of [
+-    [-8.55, -4.65, 0.55, 0.22, 1], [-6.35, -5.6, 0.72, 0.2, 0],
+-    [-8.55, 5.65, 0.55, 0.22, 1], [-6.25, 5.8, 0.72, 0.2, 0],
+-    [8.55, -5.65, 0.55, 0.22, 1], [6.35, -5.6, 0.72, 0.2, 0],
+-    [8.55, 5.55, 0.55, 0.22, 1], [6.35, 5.8, 0.72, 0.2, 0],
+-    [-3.55, 5.85, 0.4, 0.16, 0], [3.55, 5.85, 0.4, 0.16, 0]
+-  ]) {
+-    addBox(exhibitCoves, x, tall ? 0.85 : 0.46, z, hx, tall ? 0.85 : 0.46, hz);
+-    addBox(exhibitCoves, x, tall ? 1.78 : 0.95, z, hx * 0.76, 0.06, hz * 1.18);
+-  }
+-
+-  const archiveShelves = part();
+-  for (const [x, z, vertical] of [
+-    [-9.62, -1.9, true], [-9.62, 3.15, true], [9.62, -3.1, true],
+-    [9.62, 1.8, true], [-1.75, -6.72, false], [1.75, -6.72, false]
+-  ]) {
+-    for (let row = 0; row < 4; row += 1) {
+-      const y = 0.34 + row * 0.34;
+-      addBox(archiveShelves, x, y, z, vertical ? 0.09 : 0.72, 0.035, vertical ? 0.75 : 0.09);
+-    }
+-  }
+-
+-  const accentFrames = part();
+-  for (const [x, z, sx, sz] of [
+-    [-9.88, -3.8, 0.055, 0.72], [-9.88, 3.8, 0.055, 0.72],
+-    [9.88, -3.8, 0.055, 0.72], [9.88, 3.8, 0.055, 0.72],
+-    [-2.9, -6.9, 0.72, 0.055], [2.9, -6.9, 0.72, 0.055]
+-  ]) addBox(accentFrames, x, 1.72, z, sx, 0.52, sz);
+-
+-  const columns = part();
+-  for (const [x, z] of [[-4.25, -4.9], [4.25, -4.9], [-4.25, 3.2], [4.25, 3.2]]) {
+-    addBox(columns, x, 1.45, z, 0.18, 1.45, 0.18);
+-    addBox(columns, x, 2.95, z, 0.34, 0.08, 0.34);
+-  }
+-
+-  const skylights = part();
+-  // Two raised skylight frames over the rotunda and the south approach.
+-  for (const center of [[0, 0], [0, 4.5]]) {
+-    const [sx, sz] = center;
+-    const half = 1.7;
+-    const railHalf = 0.12;
+-    addBox(skylights, sx, 3.42, sz - half, half + railHalf, 0.07, railHalf);
+-    addBox(skylights, sx, 3.42, sz + half, half + railHalf, 0.07, railHalf);
+-    addBox(skylights, sx - half, 3.42, sz, railHalf, 0.07, half);
+-    addBox(skylights, sx + half, 3.42, sz, railHalf, 0.07, half);
+-  }
+-
+-  return [
+-    // The live route intentionally has a nocturnal security grade.  These
+-    // mid-tone floor values preserve room identity under that grade instead of
+-    // collapsing every wing into the same near-black rectangle.
+-    { name: "floorSlab", part: floorSlab, color: [0.12, 0.18, 0.25, 1], roughness: 0.3, metallic: 0.18 },
+-    { name: "foyerFloor", part: foyerFloor, color: [0.30, 0.43, 0.51, 1], roughness: 0.34, metallic: 0.2 },
+-    { name: "rotundaFloor", part: rotundaFloor, color: [0.20, 0.39, 0.48, 1], roughness: 0.31, metallic: 0.32 },
+-    { name: "archiveFloor", part: archiveFloor, color: [0.12, 0.48, 0.47, 1], roughness: 0.38, metallic: 0.22 },
+-    { name: "treasuryFloor", part: treasuryFloor, color: [0.50, 0.27, 0.20, 1], roughness: 0.37, metallic: 0.24 },
+-    { name: "vaultFloor", part: vaultFloor, color: [0.42, 0.52, 0.52, 1], roughness: 0.34, metallic: 0.18 },
+-    { name: "floorMosaics", part: floorMosaics, color: [0.67, 0.62, 0.35, 1], roughness: 0.22, metallic: 0.76 },
+-    { name: "walls", part: walls, color: [0.39, 0.45, 0.50, 1], roughness: 0.48, metallic: 0.12 },
+-    { name: "brassTrim", part: brassTrim, color: [0.82, 0.57, 0.20, 1], roughness: 0.25, metallic: 0.78 },
+-    { name: "galleryFurniture", part: galleryFurniture, color: [0.18, 0.24, 0.30, 1], roughness: 0.42, metallic: 0.2 },
+-    { name: "exhibitCoves", part: exhibitCoves, color: [0.50, 0.55, 0.57, 1], roughness: 0.36, metallic: 0.34 },
+-    { name: "archiveShelves", part: archiveShelves, color: [0.13, 0.17, 0.20, 1], roughness: 0.44, metallic: 0.2 },
+-    { name: "accentFrames", part: accentFrames, color: [0.66, 0.21, 0.24, 1], roughness: 0.34, metallic: 0.36 },
+-    { name: "columns", part: columns, color: [0.55, 0.61, 0.66, 1], roughness: 0.36, metallic: 0.45 },
+-    { name: "skylights", part: skylights, color: [0.23, 0.47, 0.55, 1], roughness: 0.26, metallic: 0.55 }
+-  ];
+-}
+-
+-// ---- pedestal ----------------------------------------------------------------
+-/** Exhibit pedestal: base plate, tapered column, top plate; 1.0 m tall, origin at base. */
+-function buildPedestal() {
+-  const pedestal = part();
+-  addBox(pedestal, 0, 0.05, 0, 0.3, 0.05, 0.3);
+-  const rings = [
+-    ring(8, 0.24, 0.1),
+-    ring(8, 0.19, 0.9)
+-  ];
+-  addBand(pedestal, rings[0], rings[1]);
+-  addBox(pedestal, 0, 0.95, 0, 0.26, 0.05, 0.26);
+-  return [
+-    { name: "pedestal", part: pedestal, color: [0.2, 0.23, 0.3, 1], roughness: 0.45, metallic: 0.1 }
+-  ];
+-}
+-
+-// ---- exhibit A: orb ------------------------------------------------------------
+-/** Lunar orb artifact: sphere with an equatorial ring, origin at base. */
+-function buildExhibitA() {
+-  const orb = part();
+-  const radius = 0.16;
+-  const longitudeSegments = 14;
+-  const latitudeSegments = 10;
+-  const rings = [];
+-  for (let i = 1; i < latitudeSegments; i += 1) {
+-    const phi = (-0.5 + i / latitudeSegments) * Math.PI;
+-    rings.push(ring(longitudeSegments, Math.cos(phi) * radius, Math.sin(phi) * radius + radius + 0.02));
+-  }
+-  for (let i = 0; i < rings.length - 1; i += 1) {
+-    addBand(orb, rings[i], rings[i + 1]);
+-  }
+-  addCap(orb, rings[0], 0.02, false);
+-  addCap(orb, rings[rings.length - 1], radius * 2 + 0.02, true);
+-  // Equatorial ring.
+-  addBand(orb, ring(16, 0.22, radius + 0.02), ring(16, 0.22, radius + 0.07));
+-  return [
+-    { name: "orb", part: orb, color: [0.85, 0.78, 0.55, 1], roughness: 0.25, metallic: 0.6 }
+-  ];
+-}
+-
+-// ---- exhibit B: statue-ish block ------------------------------------------------
+-/** Statue-ish artifact: stacked tapered blocks, origin at base. */
+-function buildExhibitB() {
+-  const statue = part();
+-  addBox(statue, 0, 0.05, 0, 0.17, 0.05, 0.17);
+-  addBox(statue, 0, 0.16, 0, 0.12, 0.07, 0.12);
+-  addBox(statue, 0, 0.28, 0, 0.08, 0.06, 0.08);
+-  addBox(statue, 0, 0.38, 0, 0.05, 0.05, 0.05);
+-  addBox(statue, 0, 0.45, 0, 0.02, 0.03, 0.02);
+-  return [
+-    { name: "statue", part: statue, color: [0.55, 0.5, 0.58, 1], roughness: 0.6, metallic: 0.05 }
+-  ];
+-}
+-
+-// ---- exhibit C: capsule ----------------------------------------------------------
+-/** Capsule artifact: cylinder with sphere caps, lying upright, origin at base. */
+-function buildExhibitC() {
+-  const capsule = part();
+-  const r = 0.11;
+-  const cylHeight = 0.2;
+-  addBand(capsule, ring(12, r, r + 0.02), ring(12, r, r + cylHeight + 0.02));
+-  // Top dome.
+-  const domeRings = [];
+-  for (let i = 1; i <= 4; i += 1) {
+-    const phi = (i / 5) * (Math.PI / 2);
+-    domeRings.push(ring(12, Math.cos(phi) * r, r + cylHeight + 0.02 + Math.sin(phi) * r));
+-  }
+-  for (let i = 0; i < domeRings.length - 1; i += 1) {
+-    addBand(capsule, domeRings[i], domeRings[i + 1]);
+-  }
+-  addCap(capsule, domeRings[domeRings.length - 1], r + cylHeight + 0.02 + r, true);
+-  addCap(capsule, ring(12, r, r + 0.02), r + 0.02, true);
+-  return [
+-    { name: "capsule", part: capsule, color: [0.4, 0.62, 0.66, 1], roughness: 0.3, metallic: 0.45 }
+-  ];
+-}
+-
+-// ---- display case -----------------------------------------------------------------
+-/** Glassy display case: transparent-ish body with steel base, origin at base. */
+-function buildDisplayCase() {
+-  const base = part();
+-  addBox(base, 0, 0.04, 0, 0.5, 0.04, 0.5);
+-  const glass = part();
+-  addBox(glass, 0, 0.5, 0, 0.42, 0.42, 0.42);
+-  return [
+-    { name: "caseBase", part: base, color: [0.18, 0.2, 0.26, 1], roughness: 0.5, metallic: 0.35 },
+-    { name: "caseGlass", part: glass, color: [0.55, 0.68, 0.75, 0.4], roughness: 0.1, metallic: 0.2 }
+-  ];
+-}
+-
+-// ---- GLB writer -------------------------------------------------------------
+-function writeGlb(path, parts) {
+-  const chunks = [];
+-  const bufferViews = [];
+-  const accessors = [];
+-  const meshes = [];
+-  const nodes = [];
+-  const materials = parts.map((entry) => ({
+-    name: entry.name + "-material",
+-    pbrMetallicRoughness: {
+-      baseColorFactor: entry.color,
+-      metallicFactor: entry.metallic ?? 0.05,
+-      roughnessFactor: entry.roughness
+-    },
+-    ...(entry.color[3] !== undefined && entry.color[3] < 1 ? { alphaMode: "BLEND" } : {})
+-  }));
+-
+-  let offset = 0;
+-  const pushView = (typedArray, target) => {
+-    const bytes = Buffer.from(typedArray.buffer, typedArray.byteOffset, typedArray.byteLength);
+-    const pad = (4 - (bytes.length % 4)) % 4;
+-    chunks.push(bytes);
+-    if (pad > 0) chunks.push(Buffer.alloc(pad));
+-    bufferViews.push({ buffer: 0, byteOffset: offset, byteLength: bytes.length, target });
+-    offset += bytes.length + pad;
+-    return bufferViews.length - 1;
+-  };
+-
+-  parts.forEach((entry, partIndex) => {
+-    const positionCount = entry.part.positions.length / 3;
+-    if (positionCount === 0 || entry.part.indices.length === 0) {
+-      throw new Error("part " + entry.name + " has no triangles.");
+-    }
+-    const min = [Infinity, Infinity, Infinity];
+-    const max = [-Infinity, -Infinity, -Infinity];
+-    for (let i = 0; i < entry.part.positions.length; i += 3) {
+-      for (let axis = 0; axis < 3; axis += 1) {
+-        min[axis] = Math.min(min[axis], entry.part.positions[i + axis]);
+-        max[axis] = Math.max(max[axis], entry.part.positions[i + axis]);
+-      }
+-    }
+-    const positions = new Float32Array(entry.part.positions);
+-    const normals = new Float32Array(entry.part.normals);
+-    const indices = new Uint32Array(entry.part.indices);
+-    const posView = pushView(positions, 34962);
+-    const normView = pushView(normals, 34962);
+-    const idxView = pushView(indices, 34963);
+-    accessors.push({ bufferView: posView, componentType: 5126, count: positionCount, type: "VEC3", min, max });
+-    accessors.push({ bufferView: normView, componentType: 5126, count: positionCount, type: "VEC3" });
+-    accessors.push({ bufferView: idxView, componentType: 5125, count: indices.length, type: "SCALAR" });
+-    meshes.push({
+-      name: entry.name,
+-      primitives: [{
+-        attributes: { POSITION: accessors.length - 3, NORMAL: accessors.length - 2 },
+-        indices: accessors.length - 1,
+-        material: partIndex
+-      }]
+-    });
+-    nodes.push({ name: entry.name, mesh: partIndex });
+-  });
+-
+-  const body = Buffer.concat(chunks);
+-  const document = {
+-    asset: { version: "2.0", generator: "aura3d showcase-gallery-shift build-models (original CC0)" },
+-    scene: 0,
+-    scenes: [{ name: "root", nodes: nodes.map((_, index) => index) }],
+-    nodes,
+-    meshes,
+-    materials,
+-    accessors,
+-    bufferViews,
+-    buffers: [{ byteLength: body.length }]
+-  };
+-
+-  const jsonSource = Buffer.from(JSON.stringify(document), "utf8");
+-  const jsonPadding = (4 - (jsonSource.length % 4)) % 4;
+-  const jsonData = Buffer.concat([jsonSource, Buffer.alloc(jsonPadding, 0x20)]);
+-  const binPadding = (4 - (body.length % 4)) % 4;
+-  const binData = Buffer.concat([body, Buffer.alloc(binPadding)]);
+-  const total = 12 + 8 + jsonData.length + 8 + binData.length;
+-  const output = Buffer.alloc(total);
+-  output.write("glTF", 0, "ascii");
+-  output.writeUInt32LE(2, 4);
+-  output.writeUInt32LE(total, 8);
+-  output.writeUInt32LE(jsonData.length, 12);
+-  output.writeUInt32LE(0x4e4f534a, 16); // "JSON"
+-  jsonData.copy(output, 20);
+-  const binHead = 20 + jsonData.length;
+-  output.writeUInt32LE(binData.length, binHead);
+-  output.writeUInt32LE(0x004e4942, binHead + 4); // "BIN\0"
+-  binData.copy(output, binHead + 8);
+-  mkdirSync(dirname(path), { recursive: true });
+-  writeFileSync(path, output);
+-  return total;
+-}
+-
+-mkdirSync(OUT_DIR, { recursive: true });
+-
+-const builds = [
+-  ["galleryShiftMuseumInterior.glb", buildMuseumInterior],
+-  ["galleryShiftPedestal.glb", buildPedestal],
+-  ["galleryShiftExhibitA.glb", buildExhibitA],
+-  ["galleryShiftExhibitB.glb", buildExhibitB],
+-  ["galleryShiftExhibitC.glb", buildExhibitC],
+-  ["galleryShiftDisplayCase.glb", buildDisplayCase]
+-];
+-for (const [name, build] of builds) {
+-  const bytes = writeGlb(resolve(OUT_DIR, name), build());
+-  console.log("wrote", resolve(OUT_DIR, name), "(" + bytes + " bytes)");
+-}
+diff --git a/apps/showcase-gallery-shift/scripts/build-sfx.mjs b/apps/showcase-gallery-shift/scripts/build-sfx.mjs
+deleted file mode 100644
+index 76300d910..000000000
+--- a/apps/showcase-gallery-shift/scripts/build-sfx.mjs
++++ /dev/null
+@@ -1,376 +0,0 @@
+-/**
+- * Gallery Shift SFX synth — generates original CC0 WAV cues entirely in-repo.
+- *
+- * No network downloads, no sampled material: every cue is synthesized from
+- * oscillators / filtered noise with a small committed generator so provenance is
+- * auditable (author "Aura3D synthesis", license CC0-1.0). Deterministic LCG noise
+- * means regenerating any cue is byte-identical.
+- *
+- * Run from the repo root:  node apps/showcase-gallery-shift/scripts/build-sfx.mjs
+- * Output: apps/showcase-gallery-shift/assets/sfx/*.wav (16-bit PCM mono 44100 Hz)
+- *
+- * After generation, register each audio file with the CLI so it lands in the typed
+- * root asset map the route imports (`../../../src/aura-assets`). Registration
+- * order matters for sibling-agent coordination: ambientHall registers BEFORE
+- * exitWin, and exitWin registers LAST (it is the sentinel for the next agent).
+- *   pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts assets add \
+- *     apps/showcase-gallery-shift/assets/sfx/sneakStep.wav --name galleryShiftSneakStepSfx --type audio \
+- *     --license CC0-1.0 --author "Aura3D synthesis" \
+- *     --source-page "apps/showcase-gallery-shift/scripts/build-sfx.mjs"
+- *
+- * Remaining cues use the same command template with these names (register order):
+- *   walkStep.wav     -> galleryShiftWalkStepSfx
+- *   guardAlert.wav   -> galleryShiftGuardAlertSfx
+- *   alertRise.wav    -> galleryShiftAlertRiseSfx
+- *   exhibitLift.wav  -> galleryShiftExhibitLiftSfx
+- *   laserTrip.wav    -> galleryShiftLaserTripSfx
+- *   cameraWhir.wav   -> galleryShiftCameraWhirSfx
+- *   caughtSting.wav  -> galleryShiftCaughtStingSfx
+- *   floorClear.wav   -> galleryShiftFloorClearSfx
+- *   ambientHall.wav  -> galleryShiftAmbientHallSfx   (before exitWin)
+- *   exitWin.wav      -> galleryShiftExitWinSfx       (LAST - sibling sentinel)
+- */
+-import { mkdirSync, writeFileSync } from "node:fs";
+-import { resolve, dirname } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../assets/sfx");
+-const SAMPLE_RATE = 44100;
+-
+-// ---- waveform / DSP helpers -------------------------------------------------
+-function noiseBuffer(length) {
+-  const out = new Float32Array(length);
+-  let seed = 0x9e3779b9;
+-  for (let i = 0; i < length; i += 1) {
+-    // Deterministic LCG noise so regenerating the cue is byte-identical.
+-    seed = (seed * 1664525 + 1013904223) >>> 0;
+-    out[i] = ((seed / 0xffffffff) * 2 - 1);
+-  }
+-  return out;
+-}
+-
+-function envelope(length, attack, decay, total) {
+-  const out = new Float32Array(length);
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const start = Math.min(1, t / Math.max(0.0005, attack));
+-    const end = Math.pow(Math.max(0, 1 - t / total), decay);
+-    out[i] = start * end;
+-  }
+-  return out;
+-}
+-
+-/** One-pole low-pass. */
+-function lowpass(samples, cutoff) {
+-  const rc = 1 / (2 * Math.PI * cutoff);
+-  const dt = 1 / SAMPLE_RATE;
+-  const alpha = dt / (rc + dt);
+-  let prev = 0;
+-  const out = new Float32Array(samples.length);
+-  for (let i = 0; i < samples.length; i += 1) {
+-    prev = prev + alpha * (samples[i] - prev);
+-    out[i] = prev;
+-  }
+-  return out;
+-}
+-
+-/** One-pole high-pass. */
+-function highpass(samples, cutoff) {
+-  const rc = 1 / (2 * Math.PI * cutoff);
+-  const dt = 1 / SAMPLE_RATE;
+-  const alpha = dt / (rc + dt);
+-  let lp = 0;
+-  const out = new Float32Array(samples.length);
+-  for (let i = 0; i < samples.length; i += 1) {
+-    lp += alpha * (samples[i] - lp);
+-    out[i] = samples[i] - lp;
+-  }
+-  return out;
+-}
+-
+-/**
+- * Render a one-shot cue into a normalized mono buffer.
+- * tone: {wave, freqStart, freqEnd, amp, attack, decay, total} or array of stacked partials
+- * noise: {amp, attack, decay, total, hp?, lp?}
+- */
+-function renderCue({ tone, noise }) {
+-  const parts = (Array.isArray(tone) ? tone : tone ? [tone] : []);
+-  const totalSec = Math.max(
+-    ...parts.map((p) => p.total ?? 0),
+-    noise?.total ?? 0,
+-    0.1
+-  ) + 0.08;
+-  const length = Math.floor(totalSec * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  for (const part of parts) {
+-    const { wave = "sine", freqStart, freqEnd = freqStart, amp = 0.5, attack = 0.005, decay = 3, total = 0.2 } = part;
+-    const env = envelope(length, attack, decay, total);
+-    for (let i = 0; i < length; i += 1) {
+-      const t = i / SAMPLE_RATE;
+-      const progress = Math.min(1, t / total);
+-      const f = freqStart + (freqEnd - freqStart) * progress;
+-      const phase = 2 * Math.PI * f * t;
+-      let v = 0;
+-      if (wave === "sine") v = Math.sin(phase);
+-      else if (wave === "triangle") v = (2 / Math.PI) * Math.asin(Math.sin(phase));
+-      else if (wave === "sawtooth") v = 2 * (phase / (2 * Math.PI) - Math.floor(0.5 + phase / (2 * Math.PI)));
+-      else if (wave === "square") v = Math.sign(Math.sin(phase));
+-      else v = Math.sin(phase);
+-      out[i] += v * env[i] * amp;
+-    }
+-  }
+-  if (noise) {
+-    const { amp = 0.4, attack = 0.004, decay = 4, total = 0.16, hp = 0, lp = 0 } = noise;
+-    let raw = noiseBuffer(length);
+-    if (hp > 0) raw = highpass(raw, hp);
+-    if (lp > 0) raw = lowpass(raw, lp);
+-    const env = envelope(length, attack, decay, total);
+-    for (let i = 0; i < length; i += 1) out[i] += raw[i] * env[i] * amp;
+-  }
+-  let peak = 0;
+-  for (let i = 0; i < length; i += 1) peak = Math.max(peak, Math.abs(out[i]));
+-  if (peak > 0) {
+-    const gain = Math.min(1, 0.9 / peak);
+-    for (let i = 0; i < length; i += 1) out[i] *= gain;
+-  }
+-  return out;
+-}
+-
+-/** A looping pad — a full short loop (normalized, click-free edges). */
+-function loopCue(durationSec, wave, freqStart, freqEnd) {
+-  const length = Math.floor(durationSec * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  const amp = 0.16;
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const progress = Math.min(1, t / durationSec);
+-    const f = freqStart + (freqEnd - freqStart) * progress + Math.sin(t * 18) * 4;
+-    const phase = 2 * Math.PI * f * t;
+-    let v = 0;
+-    if (wave === "sawtooth") v = 2 * (phase / (2 * Math.PI) - Math.floor(0.5 + phase / (2 * Math.PI)));
+-    else if (wave === "square") v = Math.sign(Math.sin(phase));
+-    else v = Math.sin(phase);
+-    out[i] = v * amp * (0.7 + 0.3 * Math.sin(t * 2));
+-  }
+-  const fade = Math.floor(0.02 * SAMPLE_RATE);
+-  for (let i = 0; i < fade; i += 1) {
+-    out[i] *= i / fade;
+-    out[length - 1 - i] *= i / fade;
+-  }
+-  return out;
+-}
+-
+-// ---- cue recipes ------------------------------------------------------------
+-
+-/** sneakStep: hushed cloth footfall — tiny lowpassed noise tap, almost a whisper. */
+-function sneakStep() {
+-  return renderCue({
+-    noise: { amp: 0.5, attack: 0.004, decay: 10, total: 0.07, hp: 220, lp: 1600 }
+-  });
+-}
+-
+-/** walkStep: firm shoe on marble — low knock plus a short bright scuff. */
+-function walkStep() {
+-  return renderCue({
+-    tone: { wave: "sine", freqStart: 170, freqEnd: 95, amp: 0.5, attack: 0.002, decay: 8, total: 0.1 },
+-    noise: { amp: 0.3, attack: 0.001, decay: 10, total: 0.045, hp: 700, lp: 5200 }
+-  });
+-}
+-
+-/** guardAlert: sharp radio double-beep plus a rising brass-ish tone. */
+-function guardAlert() {
+-  const length = Math.floor(0.5 * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  const beeps = [
+-    { start: 0, total: 0.09, freq: 1180 },
+-    { start: 0.13, total: 0.09, freq: 1180 },
+-    { start: 0.26, total: 0.2, freq: 620 }
+-  ];
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    let v = 0;
+-    for (const b of beeps) {
+-      if (t >= b.start && t < b.start + b.total) {
+-        const u = (t - b.start) / b.total;
+-        v += Math.sin(2 * Math.PI * b.freq * t) * Math.min(1, (t - b.start) / 0.004) * Math.pow(1 - u, 2) * 0.5;
+-      }
+-    }
+-    out[i] = v;
+-  }
+-  let peak = 0;
+-  for (let i = 0; i < length; i += 1) peak = Math.max(peak, Math.abs(out[i]));
+-  if (peak > 0) {
+-    const gain = Math.min(1, 0.9 / peak);
+-    for (let i = 0; i < length; i += 1) out[i] *= gain;
+-  }
+-  return out;
+-}
+-
+-/** alertRise: rising unease — sine sweep 240->660 Hz with a tremolo tail. */
+-function alertRise() {
+-  return renderCue({
+-    tone: { wave: "triangle", freqStart: 240, freqEnd: 660, amp: 0.45, attack: 0.01, decay: 2, total: 0.42 }
+-  });
+-}
+-
+-/** exhibitLift: heavy pickup — marble grind (band noise) plus a wooden knock. */
+-function exhibitLift() {
+-  return renderCue({
+-    tone: [
+-      { wave: "triangle", freqStart: 140, freqEnd: 210, amp: 0.4, attack: 0.006, decay: 3, total: 0.3 },
+-      { wave: "sine", freqStart: 520, freqEnd: 700, amp: 0.2, attack: 0.16, decay: 3, total: 0.3 }
+-    ],
+-    noise: { amp: 0.4, attack: 0.02, decay: 3, total: 0.34, hp: 160, lp: 900 }
+-  });
+-}
+-
+-/** laserTrip: alarm burst — urgent 950/1250 Hz alternating square pulses. */
+-function laserTrip() {
+-  const length = Math.floor(0.62 * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const cycle = t / 0.11;
+-    const within = t - Math.floor(cycle) * 0.11;
+-    const gate = within < 0.07 ? Math.min(1, within / 0.004) * Math.pow(1 - within / 0.07, 2) : 0;
+-    const freq = Math.floor(cycle) % 2 === 0 ? 950 : 1250;
+-    out[i] = Math.sign(Math.sin(2 * Math.PI * freq * t)) * 0.42 * gate;
+-  }
+-  let peak = 0;
+-  for (let i = 0; i < length; i += 1) peak = Math.max(peak, Math.abs(out[i]));
+-  if (peak > 0) {
+-    const gain = Math.min(1, 0.9 / peak);
+-    for (let i = 0; i < length; i += 1) out[i] *= gain;
+-  }
+-  return out;
+-}
+-
+-/** cameraWhir: servo sweep — soft sawtooth gliss with airy noise. */
+-function cameraWhir() {
+-  return renderCue({
+-    tone: { wave: "sawtooth", freqStart: 320, freqEnd: 480, amp: 0.2, attack: 0.05, decay: 2, total: 0.4 },
+-    noise: { amp: 0.22, attack: 0.04, decay: 3, total: 0.42, hp: 1800, lp: 7000 }
+-  });
+-}
+-
+-/** caughtSting: harsh minor-second stab — two detuned squares dropping. */
+-function caughtSting() {
+-  return renderCue({
+-    tone: [
+-      { wave: "square", freqStart: 340, freqEnd: 240, amp: 0.34, attack: 0.004, decay: 3, total: 0.55 },
+-      { wave: "square", freqStart: 362, freqEnd: 252, amp: 0.3, attack: 0.004, decay: 3, total: 0.55 },
+-      { wave: "sine", freqStart: 90, freqEnd: 55, amp: 0.5, attack: 0.004, decay: 2.5, total: 0.6 }
+-    ],
+-    noise: { amp: 0.18, attack: 0.002, decay: 8, total: 0.2, hp: 900, lp: 4000 }
+-  });
+-}
+-
+-/** floorClear: relieved 3-note descending-then-rising chime. */
+-function floorClear() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sine", freqStart: 783.99, amp: 0.34, attack: 0.005, decay: 3.5, total: 0.2 },
+-      { wave: "sine", freqStart: 659.25, amp: 0.32, attack: 0.12, decay: 3.5, total: 0.3 },
+-      { wave: "sine", freqStart: 880, amp: 0.4, attack: 0.24, decay: 3, total: 0.44 }
+-    ]
+-  });
+-}
+-
+-/** ambientHall: low gallery room tone — warm celestial A-minor suspense pad with soft filtered air. */
+-function ambientHall() {
+-  const duration = 3.2;
+-  const N = Math.floor(duration * SAMPLE_RATE);
+-  const tones = [220.0, 261.63, 329.63, 440.0]; // A3, C4, E4, A4
+-  const air = noiseBuffer(N);
+-  const lp = lowpass(air, 380);
+-  const out = new Float32Array(N);
+-  for (let i = 0; i < N; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    let sum = 0;
+-    for (let k = 0; k < tones.length; k += 1) {
+-      const freq = tones[k];
+-      const lfo = 0.8 + 0.2 * Math.sin(2 * Math.PI * (t / duration) * (k + 1));
+-      sum += Math.sin(2 * Math.PI * freq * t) * lfo * 0.12;
+-    }
+-    out[i] = sum + lp[i] * 0.08 * (0.8 + 0.2 * Math.sin(t * 0.8));
+-  }
+-  const fade = Math.floor(0.08 * SAMPLE_RATE);
+-  for (let i = 0; i < fade; i += 1) {
+-    const f = i / fade;
+-    out[i] *= f;
+-    out[N - 1 - i] *= f;
+-  }
+-  let peak = 0;
+-  for (let i = 0; i < N; i += 1) peak = Math.max(peak, Math.abs(out[i]));
+-  if (peak > 0) {
+-    const gain = Math.min(1, 0.45 / peak);
+-    for (let i = 0; i < N; i += 1) out[i] *= gain;
+-  }
+-  return out;
+-}
+-
+-/** exitWin: heist-complete fanfare — warm 4-note ascending arpeggio with sparkle. */
+-function exitWin() {
+-  return renderCue({
+-    tone: [
+-      { wave: "triangle", freqStart: 523.25, amp: 0.32, attack: 0.005, decay: 3.5, total: 0.18 },
+-      { wave: "triangle", freqStart: 659.25, amp: 0.38, attack: 0.12, decay: 3.5, total: 0.3 },
+-      { wave: "triangle", freqStart: 783.99, amp: 0.46, attack: 0.24, decay: 3, total: 0.42 },
+-      { wave: "triangle", freqStart: 1046.5, amp: 0.6, attack: 0.36, decay: 2.6, total: 0.62 }
+-    ],
+-    noise: { amp: 0.16, attack: 0.36, decay: 5, total: 0.3, hp: 3600 }
+-  });
+-}
+-
+-// ---- WAV writer -------------------------------------------------------------
+-function writeWav(path, samples) {
+-  const length = samples.length;
+-  const buffer = Buffer.alloc(44 + length * 2);
+-  const numChannels = 1;
+-  const bitsPerSample = 16;
+-  const byteRate = SAMPLE_RATE * numChannels * bitsPerSample / 8;
+-  buffer.write("RIFF", 0);
+-  buffer.writeUInt32LE(36 + length * 2, 4);
+-  buffer.write("WAVE", 8);
+-  buffer.write("fmt ", 12);
+-  buffer.writeUInt32LE(16, 16);
+-  buffer.writeUInt16LE(1, 20);
+-  buffer.writeUInt16LE(numChannels, 22);
+-  buffer.writeUInt32LE(SAMPLE_RATE, 24);
+-  buffer.writeUInt32LE(byteRate, 28);
+-  buffer.writeUInt16LE(numChannels * bitsPerSample / 8, 32);
+-  buffer.writeUInt16LE(bitsPerSample, 34);
+-  buffer.write("data", 36);
+-  buffer.writeUInt32LE(length * 2, 40);
+-  for (let i = 0; i < length; i += 1) {
+-    const v = Math.max(-1, Math.min(1, samples[i]));
+-    buffer.writeInt16LE(Math.round(v * 32767), 44 + i * 2);
+-  }
+-  writeFileSync(path, buffer);
+-  return length / SAMPLE_RATE;
+-}
+-
+-const cues = {
+-  sneakStep,
+-  walkStep,
+-  guardAlert,
+-  alertRise,
+-  exhibitLift,
+-  laserTrip,
+-  cameraWhir,
+-  caughtSting,
+-  floorClear,
+-  ambientHall,
+-  exitWin
+-};
+-
+-mkdirSync(OUT_DIR, { recursive: true });
+-const report = {};
+-for (const [name, fn] of Object.entries(cues)) {
+-  const samples = fn();
+-  const path = resolve(OUT_DIR, `${name}.wav`);
+-  const duration = writeWav(path, samples);
+-  report[name] = path + " (" + duration.toFixed(3) + "s)";
+-  console.log("wrote", report[name]);
+-}
+-console.log("\nGenerated", Object.keys(cues).length, "cues into", OUT_DIR);
+diff --git a/apps/showcase-gallery-shift/scripts/register-assets.mjs b/apps/showcase-gallery-shift/scripts/register-assets.mjs
+deleted file mode 100644
+index 4c79647f9..000000000
+--- a/apps/showcase-gallery-shift/scripts/register-assets.mjs
++++ /dev/null
+@@ -1,104 +0,0 @@
+-/** Build and register Gallery Shift's deterministic original CC0 assets. */
+-import { execFileSync } from "node:child_process";
+-import { createHash } from "node:crypto";
+-import { existsSync, readFileSync } from "node:fs";
+-import { dirname, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const cli = resolve(repoRoot, "packages/aura3d-cli/dist/cli.js");
+-const probeDir = resolve(repoRoot, "tests/reports/showcase-release-asset-probes");
+-if (!existsSync(cli)) throw new Error("Build packages/aura3d-cli before registering Gallery Shift assets.");
+-
+-execFileSync("node", [resolve(appDir, "scripts/build-models.mjs")], { cwd: repoRoot, stdio: "inherit" });
+-execFileSync("node", [resolve(appDir, "scripts/build-sfx.mjs")], { cwd: repoRoot, stdio: "inherit" });
+-
+-const models = [
+-  ["galleryShiftMuseumInterior", "environment", "Original CC0 metre-scale stylized flat-color museum environment establishing differentiated foyer, rotunda, archive, treasury, and service-vault rooms with readable portal circulation, exhibit coves, and illumination anchors. Its intentional untextured procedural materials are a stylized-material rationale; FloorLayout remains collision and LOS authority."],
+-  ["galleryShiftPedestal", "prop", "Original CC0 metre-scale readable prop used as a visible exhibit objective fixture and LOS occluder."],
+-  ["galleryShiftExhibitA", "prop", "Original CC0 readable gold-ring lunar-orb prop used as the first theft objective at a verified 0.44 metre extent."],
+-  ["galleryShiftExhibitB", "prop", "Original CC0 readable stacked-statue prop used as the second theft objective at a verified 0.48 metre height."],
+-  ["galleryShiftExhibitC", "prop", "Original CC0 readable capsule prop used as the third theft objective and alarm trigger at a verified 0.31 metre height."],
+-  ["galleryShiftDisplayCase", "prop", "Original CC0 readable glass-and-steel prop used as visible Skyline Wing cover and paired with a matching LOS occluder."]
+-];
+-
+-for (const [id, role, suitability] of models) {
+-  const source = resolve(appDir, `assets/models/${id}.glb`);
+-  const probe = resolve(probeDir, `${id}.json`);
+-  const sourceHash = `sha256-${createHash("sha256").update(readFileSync(source)).digest("hex")}`;
+-  const hasProbe = existsSync(probe) && JSON.parse(readFileSync(probe, "utf8")).renderedProbe?.assetHash === sourceHash;
+-  const args = [
+-    "assets", "add", source, "--name", id, "--type", "model",
+-    "--license", "CC0-1.0", "--license-name", "CC0 1.0 Universal",
+-    "--license-url", "https://creativecommons.org/publicdomain/zero/1.0/",
+-    "--author", "Aura3D synthesis", "--source-family", "aura3d-original",
+-    "--source-page", "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-gallery-shift/scripts/build-models.mjs",
+-    "--download-url", `https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-gallery-shift/assets/models/${id}.glb`,
+-    "--attribution", "Aura3D synthesis — original CC0 Gallery Shift model family",
+-    "--provenance-evidence", "Deterministically generated from committed Gallery Shift model source; geometry, metre scale, materials, and orientation are reproducible.",
+-    "--retrieved-at", "2026-08-24T02:00:00.000Z", "--quality", hasProbe ? "release" : "candidate",
+-    "--role", role, "--suitability", suitability
+-  ];
+-  if (hasProbe) args.push("--rendered-probe-json", probe);
+-  const orientation = resolve(probeDir, `${id}.orientation.json`);
+-  // Orientation receipts are hash-bound.  A rebuilt source must first enter
+-  // the typed map as a candidate so the probe producer can capture the new
+-  // bytes; carrying an old receipt forward would be false provenance.
+-  if (hasProbe && existsSync(orientation)) args.push("--orientation-json", orientation);
+-  execFileSync("node", [cli, ...args], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
+-  console.log(`registered ${id} (${hasProbe ? "release + retained probe" : "candidate; probe pending"})`);
+-}
+-
+-{
+-  const id = "showcaseExpressiveRobot";
+-  const source = resolve(repoRoot, "fixtures/threejs-parity/assets/character/robot-expressive.glb");
+-  const probe = resolve(probeDir, `${id}.json`);
+-  const sourceHash = `sha256-${createHash("sha256").update(readFileSync(source)).digest("hex")}`;
+-  const hasProbe = existsSync(probe) && JSON.parse(readFileSync(probe, "utf8")).renderedProbe?.assetHash === sourceHash;
+-  const args = ["assets", "add", source, "--name", id, "--type", "model",
+-    "--license", "CC0-1.0", "--license-name", "CC0 1.0 Universal", "--license-url", "https://creativecommons.org/publicdomain/zero/1.0/",
+-    "--author", "Aura3D fixture", "--source-family", "aura3d-original",
+-    "--source-page", "https://github.com/auraoneai/aura3d/blob/main/fixtures/threejs-parity/assets/character/robot-expressive.glb",
+-    "--download-url", "https://raw.githubusercontent.com/auraoneai/aura3d/main/fixtures/threejs-parity/assets/character/robot-expressive.glb",
+-    "--attribution", "Aura3D fixture — CC0 expressive robot",
+-    "--provenance-evidence", "Repository-locked CC0 animated robot fixture with embedded Idle, Walking, and Running clips; Gallery Shift uses it as a typed guard presentation asset only.",
+-    "--retrieved-at", "2026-08-24T02:00:00.000Z", "--quality", hasProbe ? "release" : "candidate", "--role", "character",
+-    "--suitability", "Typed animated guard presentation asset; route-local authored movement and perception remain gameplay authority."];
+-  if (hasProbe) args.push("--rendered-probe-json", probe);
+-  const orientation = resolve(probeDir, `${id}.orientation.json`);
+-  if (existsSync(orientation)) args.push("--orientation-json", orientation);
+-  execFileSync("node", [cli, ...args], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
+-  console.log(`registered ${id} (${hasProbe ? "release + retained probe" : "candidate; probe pending"})`);
+-}
+-
+-const audio = [
+-  ["sneakStep", "galleryShiftSneakStepSfx", "Quiet authored-gait footstep cue."],
+-  ["walkStep", "galleryShiftWalkStepSfx", "Walk/guard authored-gait footstep cue."],
+-  ["guardAlert", "galleryShiftGuardAlertSfx", "Guard alert-state transition cue."],
+-  ["alertRise", "galleryShiftAlertRiseSfx", "Suspicion or third-exhibit alarm escalation cue."],
+-  ["exhibitLift", "galleryShiftExhibitLiftSfx", "Exact-once completed exhibit-lift cue."],
+-  ["laserTrip", "galleryShiftLaserTripSfx", "Exact-once laser-entry cue."],
+-  ["cameraWhir", "galleryShiftCameraWhirSfx", "Nearby authored camera-sweep cue."],
+-  ["caughtSting", "galleryShiftCaughtStingSfx", "Caught-state transition cue."],
+-  ["floorClear", "galleryShiftFloorClearSfx", "Floor transition cue."],
+-  ["ambientHall", "galleryShiftAmbientHallSfx", "Looping museum ambience after user unlock."],
+-  ["exitWin", "galleryShiftExitWinSfx", "Mission-win transition cue."]
+-];
+-
+-for (const [fileName, id, suitability] of audio) {
+-  const source = resolve(appDir, `assets/sfx/${fileName}.wav`);
+-  execFileSync("node", [cli, "assets", "add", source, "--name", id, "--type", "audio",
+-    "--license", "CC0-1.0", "--license-name", "CC0 1.0 Universal",
+-    "--license-url", "https://creativecommons.org/publicdomain/zero/1.0/",
+-    "--author", "Aura3D synthesis", "--source-family", "aura3d-original",
+-    "--source-page", "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-gallery-shift/scripts/build-sfx.mjs",
+-    "--download-url", `https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-gallery-shift/assets/sfx/${fileName}.wav`,
+-    "--attribution", "Aura3D synthesis — original CC0 Gallery Shift audio",
+-    "--provenance-evidence", "Deterministically synthesized from committed oscillator and seeded-noise source; contains no sampled material.",
+-    "--retrieved-at", "2026-08-24T02:00:00.000Z", "--quality", "candidate", "--role", "unknown", "--suitability", suitability
+-  ], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
+-}
+-
+-execFileSync("node", [cli, "assets", "typegen"], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
+-console.log(`Gallery Shift registration complete: ${models.length} original route models, one supporting guard model, ${audio.length} audio cues.`);
+diff --git a/apps/showcase-gallery-shift/scripts/write-deploy-report.mjs b/apps/showcase-gallery-shift/scripts/write-deploy-report.mjs
+deleted file mode 100644
+index 9cceb7c17..000000000
+--- a/apps/showcase-gallery-shift/scripts/write-deploy-report.mjs
++++ /dev/null
+@@ -1,52 +0,0 @@
+-import { createHash } from "node:crypto";
+-import { execFileSync } from "node:child_process";
+-import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+-import { dirname, join, relative, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const cli = resolve(repoRoot, "packages/aura3d-cli/dist/cli.js");
+-const modelIds = ["galleryShiftCutawayMuseumWorld", "galleryShiftPedestal", "galleryShiftExhibitA", "galleryShiftExhibitB", "galleryShiftExhibitC", "galleryShiftDisplayCase"];
+-
+-function run(args) {
+-  try { return JSON.parse(execFileSync("node", [cli, ...args], { cwd: repoRoot, encoding: "utf8", maxBuffer: 128 * 1024 * 1024 })); }
+-  catch (error) {
+-    const stdout = error && typeof error === "object" && "stdout" in error ? String(error.stdout ?? "") : "";
+-    if (stdout) return JSON.parse(stdout);
+-    throw error;
+-  }
+-}
+-function files(directory) {
+-  return readdirSync(directory).sort().flatMap((name) => {
+-    const path = join(directory, name);
+-    return statSync(path).isDirectory() ? files(path) : [path];
+-  });
+-}
+-function treeHash(directory) {
+-  const hash = createHash("sha256");
+-  for (const path of files(directory)) hash.update(relative(directory, path)).update("\0").update(readFileSync(path)).update("\0");
+-  return hash.digest("hex");
+-}
+-
+-const dist = resolve(appDir, "dist");
+-const source = resolve(appDir, "src");
+-const common = ["check-deploy", "--dist", dist, "--release", "--source", source];
+-const modelResult = run([...common, ...modelIds.flatMap((id) => ["--asset", id])]);
+-const distResult = run([...common, "--no-assets"]);
+-const producer = "apps/showcase-gallery-shift/scripts/write-deploy-report.mjs";
+-const report = {
+-  schema: "aura3d.gallery-shift.deploy/1.0", generatedAt: new Date().toISOString(), producer,
+-  producerSourceSha256: createHash("sha256").update(readFileSync(resolve(repoRoot, producer))).digest("hex"),
+-  cli: "packages/aura3d-cli/dist/cli.js", cliSourceSha256: createHash("sha256").update(readFileSync(cli)).digest("hex"),
+-  distTreeSha256: treeHash(dist), sourceTreeSha256: treeHash(source),
+-  checks: {
+-    strictModels: { command: "check-deploy --release --source apps/showcase-gallery-shift/src --asset <6 typed models>", ok: modelResult.ok === true, assetCount: modelResult.manifest?.assets?.length ?? 0, assets: (modelResult.manifest?.assets ?? []).map((asset) => ({ id: asset.id, hash: asset.hash, quality: asset.quality, role: asset.role })), warnings: modelResult.warnings ?? [], failures: modelResult.failures ?? [] },
+-    strictDistAndSource: { command: "check-deploy --release --source apps/showcase-gallery-shift/src --no-assets", ok: distResult.ok === true, warnings: distResult.warnings ?? [], failures: distResult.failures ?? [] }
+-  },
+-  audioBoundary: "Eleven deterministic synthesized WAV cues are typed candidate-quality CC0 assets; model-oriented release bounds validation is intentionally not applied to audio.",
+-  pass: modelResult.ok === true && distResult.ok === true && (modelResult.manifest?.assets?.length ?? 0) === modelIds.length
+-};
+-writeFileSync(resolve(appDir, "deploy-report.json"), `${JSON.stringify(report, null, 2)}\n`);
+-console.log(JSON.stringify({ pass: report.pass, models: report.checks.strictModels.assetCount, modelWarnings: report.checks.strictModels.warnings.length, distWarnings: report.checks.strictDistAndSource.warnings.length }));
+-if (!report.pass) process.exitCode = 1;
+diff --git a/apps/showcase-gallery-shift/scripts/write-performance-report.ts b/apps/showcase-gallery-shift/scripts/write-performance-report.ts
+deleted file mode 100644
+index 10ac52a00..000000000
+--- a/apps/showcase-gallery-shift/scripts/write-performance-report.ts
++++ /dev/null
+@@ -1,69 +0,0 @@
+-import { createHash } from "node:crypto";
+-import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+-import { join, relative, resolve } from "node:path";
+-import { FLOOR_LAYOUTS } from "../src/floor";
+-import { GuardAgent } from "../src/guard";
+-import { advanceDetection, insideCone } from "../src/vision";
+-
+-const repoRoot = resolve(import.meta.dirname, "../../..");
+-const appDir = resolve(import.meta.dirname, "..");
+-const SAMPLES = 20_000;
+-const CPU_P95_BUDGET_MS = 0.2;
+-const DRAW_CALL_BUDGET = 190;
+-
+-function files(directory: string): string[] {
+-  return readdirSync(directory).sort().flatMap((name) => {
+-    const path = join(directory, name);
+-    return statSync(path).isDirectory() ? files(path) : /\.(?:ts|css)$/.test(path) ? [path] : [];
+-  });
+-}
+-const sourceFiles = files(join(appDir, "src"));
+-const routeSourceSha256 = (() => {
+-  const hash = createHash("sha256");
+-  for (const path of sourceFiles) hash.update(relative(appDir, path)).update("\0").update(readFileSync(path)).update("\0");
+-  return hash.digest("hex");
+-})();
+-const guard = new GuardAgent(FLOOR_LAYOUTS[0]!.guards[0]!);
+-let detection = { value: 0, secondsSinceSeen: 0 };
+-const timings: number[] = [];
+-let deterministicStateHash = 2166136261 >>> 0;
+-for (let index = 0; index < SAMPLES; index += 1) {
+-  const started = process.cpuUsage();
+-  const targetX = Math.sin(index / 180) * 8;
+-  const targetZ = Math.cos(index / 220) * 5;
+-  const seen = insideCone(guard.x, guard.z, guard.yaw, targetX, targetZ, Math.PI / 4, 12);
+-  detection = advanceDetection(detection, seen ? 0.25 : 0, 1 / 60);
+-  guard.update({ dt: 1 / 60, detection: detection.value, suspiciousThreshold: 0.35, alertThreshold: 0.7, lastSeen: seen ? { x: targetX, z: targetZ } : null, laserAlertPoint: null });
+-  const used = process.cpuUsage(started);
+-  timings.push((used.user + used.system) / 1_000);
+-  const sample = `${guard.x.toFixed(3)}:${guard.z.toFixed(3)}:${guard.state}:${detection.value.toFixed(4)}`;
+-  for (let char = 0; char < sample.length; char += 1) deterministicStateHash = Math.imul(deterministicStateHash ^ sample.charCodeAt(char), 16777619) >>> 0;
+-}
+-const sorted = [...timings].sort((a, b) => a - b);
+-const routeLogicCpuP95Ms = Number((sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))] ?? 0).toFixed(4));
+-const visual = JSON.parse(readFileSync(resolve(repoRoot, "tests/reports/gallery-shift/visual.json"), "utf8"));
+-const receipt = JSON.parse(readFileSync(resolve(repoRoot, "tests/reports/gallery-shift/browser-evidence.json"), "utf8"));
+-const diagnostics = visual.evidence?.renderer ?? visual.evidence?.diagnostics ?? {};
+-const observed = {
+-  routeLogicCpuP95Ms,
+-  deterministicStateHash: deterministicStateHash.toString(16).padStart(8, "0"),
+-  drawCalls: Number(diagnostics.drawCalls ?? 0),
+-  renderSize: diagnostics.renderSize ?? [0, 0]
+-};
+-const pass = observed.routeLogicCpuP95Ms <= CPU_P95_BUDGET_MS
+-  && observed.deterministicStateHash !== "00000000"
+-  && observed.drawCalls > 0 && observed.drawCalls <= DRAW_CALL_BUDGET
+-  && Number(observed.renderSize[0] ?? 0) > 0 && Number(observed.renderSize[1] ?? 0) > 0
+-  && receipt.pass === true && receipt.routeSourceSha256 === routeSourceSha256;
+-const producer = "apps/showcase-gallery-shift/scripts/write-performance-report.ts";
+-const report = {
+-  schema: "aura3d.gallery-shift.performance/1.0", generatedAt: new Date().toISOString(), producer,
+-  producerSourceSha256: createHash("sha256").update(readFileSync(resolve(repoRoot, producer))).digest("hex"),
+-  routeSourceFiles: sourceFiles.map((path) => relative(repoRoot, path)), routeSourceSha256,
+-  scope: "Route-local authored patrol/detection CPU sampling plus browser-observed root createGameApp draw calls; no GPU frame-time, reusable stealth-kit, navigation-kit, or renderer-parity claim.",
+-  samples: SAMPLES, fixedStepSeconds: 1 / 60,
+-  budgets: { routeLogicCpuP95Ms: CPU_P95_BUDGET_MS, drawCalls: DRAW_CALL_BUDGET }, observed, pass
+-};
+-writeFileSync(resolve(appDir, "performance-report.json"), `${JSON.stringify(report, null, 2)}\n`);
+-console.log(JSON.stringify({ pass, observed }));
+-if (!pass) process.exitCode = 1;
+diff --git a/apps/showcase-gallery-shift/scripts/write-route-health.mjs b/apps/showcase-gallery-shift/scripts/write-route-health.mjs
+deleted file mode 100644
+index 306e97f27..000000000
+--- a/apps/showcase-gallery-shift/scripts/write-route-health.mjs
++++ /dev/null
+@@ -1,104 +0,0 @@
+-import { createHash } from "node:crypto";
+-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+-import { dirname, join, relative, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const reportDir = resolve(repoRoot, "tests/reports/gallery-shift");
+-const modelIds = ["galleryShiftCutawayMuseumWorld", "galleryShiftPedestal", "galleryShiftExhibitA", "galleryShiftExhibitB", "galleryShiftExhibitC", "galleryShiftDisplayCase"];
+-// The player uses the registered grounded adult Kenney Runner Girl clips;
+-// guard-2 remains the animated expressive robot and guard-1 uses the textured
+-// Robotcand shell. Patrol transforms/LOS truth stay authored by GuardAgent;
+-// these assets have no gameplay authority.
+-const supportingModelIds = ["showcaseRunnerGirl", "showcaseExpressiveRobot", "robotcand"];
+-const audioIds = ["galleryShiftSneakStepSfx", "galleryShiftWalkStepSfx", "galleryShiftGuardAlertSfx", "galleryShiftAlertRiseSfx", "galleryShiftExhibitLiftSfx", "galleryShiftLaserTripSfx", "galleryShiftCameraWhirSfx", "galleryShiftCaughtStingSfx", "galleryShiftFloorClearSfx", "galleryShiftAmbientHallSfx", "galleryShiftExitWinSfx"];
+-const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
+-const sha256 = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
+-
+-function files(directory) {
+-  return readdirSync(directory).sort().flatMap((name) => {
+-    const path = join(directory, name);
+-    return statSync(path).isDirectory() ? files(path) : [path];
+-  });
+-}
+-const routeSourceFiles = files(join(appDir, "src")).filter((path) => /\.(?:ts|css)$/.test(path));
+-const routeSourceSha256 = (() => {
+-  const hash = createHash("sha256");
+-  for (const path of routeSourceFiles) hash.update(relative(appDir, path)).update("\0").update(readFileSync(path)).update("\0");
+-  return hash.digest("hex");
+-})();
+-const sourceText = routeSourceFiles.map((path) => readFileSync(path, "utf8")).join("\n");
+-for (const forbidden of [/\bfrom\s+["']three(?:\/|["'])/, /unsafeModelUrl\s*\(/, /model\s*\(\s*["'][^"']+\.gl(?:b|tf)/]) {
+-  if (forbidden.test(sourceText)) throw new Error(`Gallery Shift source violates the root-safe asset boundary: ${forbidden}`);
+-}
+-if (!existsSync(join(appDir, "README.md"))) throw new Error("Gallery Shift README is missing");
+-
+-const manifest = readJson(join(repoRoot, "aura.assets.json"));
+-const assetById = new Map(manifest.assets.map((asset) => [asset.id, asset]));
+-for (const id of [...modelIds, ...supportingModelIds]) {
+-  const asset = assetById.get(id);
+-  if (!asset || asset.type !== "model" || asset.quality !== "release") throw new Error(`${id} is not a release-grade model`);
+-  if (!asset.provenance?.license || !asset.provenance?.author || !asset.provenance?.sourcePage || !asset.provenance?.downloadUrl) throw new Error(`${id} durable provenance is incomplete`);
+-  if (!asset.renderedProbe?.url || asset.renderedProbe.assetHash !== asset.hash || !existsSync(join(repoRoot, asset.renderedProbe.url))) throw new Error(`${id} rendered probe is missing or stale`);
+-  if (!sourceText.includes(`assets.${id}`)) throw new Error(`${id} is not referenced by the live route`);
+-}
+-for (const id of audioIds) {
+-  const asset = assetById.get(id);
+-  if (!asset || asset.type !== "audio" || asset.quality !== "candidate" || asset.provenance?.license !== "CC0-1.0" || asset.provenance?.author !== "Aura3D synthesis" || !asset.provenance?.sourcePage || !asset.provenance?.downloadUrl) throw new Error(`${id} typed audio provenance/quality is incomplete`);
+-  if (!sourceText.includes(`"${id}"`)) throw new Error(`${id} is not referenced by the live audio controller`);
+-}
+-
+-function validateReceipt(path, schema) {
+-  const receipt = readJson(path);
+-  if (receipt.schema !== schema || receipt.pass !== true) throw new Error(`${relative(repoRoot, path)} is missing or failing`);
+-  if (receipt.producerSourceSha256 !== sha256(join(repoRoot, receipt.producer))) throw new Error(`${relative(repoRoot, path)} producer binding is stale`);
+-  if (receipt.routeSourceSha256 !== routeSourceSha256) throw new Error(`${relative(repoRoot, path)} route-source binding is stale`);
+-  for (const artifact of receipt.artifacts ?? []) if (!existsSync(join(repoRoot, artifact.path)) || artifact.sha256 !== sha256(join(repoRoot, artifact.path))) throw new Error(`${relative(repoRoot, path)} artifact binding is stale: ${artifact.path}`);
+-  return receipt;
+-}
+-const visualReceipt = validateReceipt(join(reportDir, "browser-evidence.json"), "aura3d.gallery-shift.browser-evidence/1.0");
+-const playableReceipt = validateReceipt(join(reportDir, "playable/browser-evidence.json"), "aura3d.gallery-shift.playable-evidence/1.0");
+-for (const scenario of ["lobby", "cover-sneak", "near-detection", "caught", "exhibit-lift", "stair-transition", "camera-sweep", "alarm-return", "exit-win", "mobile", "reduced-motion"]) if (!visualReceipt.scenarios?.includes(scenario)) throw new Error(`visual receipt is missing ${scenario}`);
+-for (const scenario of ["walk", "sneak", "LOS-detection", "real-occluder", "caught", "floor-reset", "three-exhibit-mission", "floor-transition", "camera-and-laser", "alarm-return", "win", "touch-move", "touch-lift", "pause-freeze-resume"]) if (!playableReceipt.scenarios?.includes(scenario)) throw new Error(`playable receipt is missing ${scenario}`);
+-
+-const mission = readJson(join(reportDir, "playable/mission-touch.json"));
+-if (mission.alarm?.totalExhibitsLifted !== 3 || mission.alarm?.alarmActive !== true || mission.won?.state !== "won" || mission.touchMoved?.thiefGait !== "sneak" || mission.touchLift?.exhibitsLifted !== 1) throw new Error("mission, alarm, win, or touch proof is incomplete");
+-const pause = readJson(join(reportDir, "playable/pause.json"));
+-if (pause.pausedFrame?.state !== "paused" || pause.pausedFrame?.frameCount !== pause.stillPaused?.frameCount || pause.resumed?.state !== "playing") throw new Error("pause freeze/resume proof is incomplete");
+-
+-const performance = readJson(join(appDir, "performance-report.json"));
+-if (performance.schema !== "aura3d.gallery-shift.performance/1.0" || performance.pass !== true || performance.routeSourceSha256 !== routeSourceSha256 || performance.producerSourceSha256 !== sha256(join(repoRoot, performance.producer))) throw new Error("performance report is missing, failing, or stale");
+-const deploy = readJson(join(appDir, "deploy-report.json"));
+-if (deploy.schema !== "aura3d.gallery-shift.deploy/1.0" || deploy.pass !== true || deploy.checks?.strictModels?.ok !== true || deploy.checks?.strictModels?.assetCount !== modelIds.length || deploy.checks?.strictDistAndSource?.ok !== true || deploy.producerSourceSha256 !== sha256(join(repoRoot, deploy.producer))) throw new Error("strict deploy report is missing, failing, or stale");
+-if ([...(deploy.checks.strictModels.warnings ?? []), ...(deploy.checks.strictModels.failures ?? []), ...(deploy.checks.strictDistAndSource.warnings ?? []), ...(deploy.checks.strictDistAndSource.failures ?? [])].length > 0) throw new Error("strict deploy report contains warnings or failures");
+-
+-const gates = readJson(join(repoRoot, "tools/showcase-library/route-gates.json"));
+-const gate = gates.routes.find((route) => route.id === "showcase-gallery-shift");
+-if (!gate || gate.releaseClass !== "prototype-blocked" || gate.published !== true || gate.requiresTypedPrimaryAssets !== true || gate.gameTemplateStatus?.publicTemplateReady !== false) throw new Error("Gallery Shift route gate is missing or over-promoted");
+-if (JSON.stringify(gate.primaryAssets) !== JSON.stringify(modelIds) || gate.routePrimaryHeroAsset !== "galleryShiftCutawayMuseumWorld") throw new Error("Gallery Shift route-primary asset gate is stale");
+-const primitiveOccurrences = Array.from(sourceText.matchAll(/\bprimitives\.[A-Za-z_$][\w$]*/g)).length;
+-if (primitiveOccurrences > gate.primitiveBudget) throw new Error("Gallery Shift primitive source budget exceeded");
+-const routePrimary = readJson(join(repoRoot, "tests/reports/showcase-route-primary-probes/showcase-gallery-shift.json"));
+-if (routePrimary.routeId !== "showcase-gallery-shift" || routePrimary.pass !== true || (routePrimary.failures?.length ?? 0) > 0 || routePrimary.routePrimaryHeroAsset !== "galleryShiftCutawayMuseumWorld") throw new Error("Gallery Shift route-primary probe is missing or failing");
+-
+-const exactArtifacts = visualReceipt.artifacts.map((artifact) => ({ path: artifact.path, sha256: artifact.sha256 }));
+-const routeHealth = {
+-  schema: "aura3d-route-health/1.0", generatedAt: new Date().toISOString(), appId: "showcase-gallery-shift", route: "/apps/showcase-gallery-shift/",
+-  classification: "prototype-blocked", publicShowcase: false, promotionStatus: "hold-public-showcase-until-independent-human-visual-review", machinePass: true, routeSourceSha256,
+-  renderer: { path: "createGameApp root safe API", mode: "production with safe-basic fallback", nativeWebGPU: false, productionRuntimeClaimed: false },
+-  primaryAssets: modelIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, role: assetById.get(id).role })),
+-  supportingCharacterAssets: supportingModelIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, role: assetById.get(id).role })),
+-  audioAssets: audioIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
+-  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "subordinate floor-two shell, light pools, laser beams, exit/alarm markers, frames, inlays, fixtures, debug-only diagnostics, and UI around typed primary assets", status: "no-primitive-primary-subjects" },
+-  gameplay: { exhibits: 3, floors: 2, controls: ["walk", "sneak", "sprint", "hold lift", "pause", "floor/full reset"], keyboardAndTouch: true, rapierBackend: true, publicPhysicsLos: true, authoredHearingRadii: { walk: 3, sneak: 0, sprint: 6 }, authoredWaypointNavigation: true, recastClaimed: false, exactOnceSensors: true, alarmEscapeGraceSeconds: 2, reducedMotionPreservesStateTruth: true },
+-  accessibility: { semanticHeading: true, namedStatusRegions: true, namedTouchControls: 8, minimumTouchTargetPx: 44, keyboardAndTouchParity: true, colorIndependentStatusText: true, pass: true },
+-  performance, deploy,
+-  routeGate: { config: "tools/showcase-library/route-gates.json", releaseClass: gate.releaseClass, published: gate.published, publicTemplateReady: false, pass: true },
+-  claimStatus: { status: "blocked-pending-human-review", label: "root-safe prototype", allowed: ["typed museum, pedestal, exhibit, display-case, thief, and guard assets", "route-local public-physics LOS and exact-entry sensors", "route-local authored hearing radii, collision pushout, gait, guard patrols, and two-floor navigation", "three-exhibit mission, third-lift alarm, caught/reset, and win"], notAllowed: ["reusable stealth, guard-AI, hearing, or navigation kit", "Recast/navmesh ownership", "clip-event footsteps", "production-runtime-only rendering claims", "public promotion before independent exact-artifact review"] },
+-  blockers: ["independent human visual review pending for exact final artifacts"],
+-  evidence: { global: "window.__AURA3D_SHOWCASE_GALLERY_SHIFT__", detailedGlobal: "window.__GALLERY_SHIFT_EVIDENCE__", sourceReview: "apps/showcase-gallery-shift/src/main.ts", exactArtifacts, browserReceipts: ["tests/reports/gallery-shift/browser-evidence.json", "tests/reports/gallery-shift/playable/browser-evidence.json"], assetProbes: [...modelIds, ...supportingModelIds].map((id) => ({ asset: id, metadata: `tests/reports/showcase-release-asset-probes/${id}.json`, screenshot: assetById.get(id).renderedProbe.url, assetHash: assetById.get(id).hash })), performance: "apps/showcase-gallery-shift/performance-report.json", deploy: "apps/showcase-gallery-shift/deploy-report.json", routePrimary: "tests/reports/showcase-route-primary-probes/showcase-gallery-shift.json", unitSpecs: ["tests/unit/apps/gallery-shift-vision.test.ts", "tests/unit/apps/gallery-shift-patrols.test.ts"], browserSpecs: ["tests/browser/gallery-shift-playable.spec.ts", "tests/browser/gallery-shift-scene.spec.ts"] },
+-  determinismContract: { fixedStep: "1/60", guardPatrols: "authored waypoint order without randomness", cameraSweep: "authored sine of floor time", perception: "range + field angle + public-physics filtered LOS", hearing: "explicit authored radius events", animationBoundary: "embedded clips for presentation; authored gait because clip event metadata is absent" }
+-};
+-writeFileSync(join(appDir, "route-health.json"), `${JSON.stringify(routeHealth, null, 2)}\n`);
+-console.log(JSON.stringify({ machinePass: true, models: modelIds.length, supportingModels: supportingModelIds.length, audio: audioIds.length, exactArtifacts: exactArtifacts.length, primitiveOccurrences, performancePass: performance.pass }));
+diff --git a/apps/showcase-gallery-shift/src/legacy/main.ts b/apps/showcase-gallery-shift/src/legacy/main.ts
+index de16cd62a..2c24ea7e1 100644
+--- a/apps/showcase-gallery-shift/src/legacy/main.ts
++++ b/apps/showcase-gallery-shift/src/legacy/main.ts
+@@ -1,21 +1,3 @@
+-
+-/**
+- * Gallery Shift - route mount (PRD GS-04..GS-12).
+- *
+- * One Aura3D app per route. Floor layouts live in floor.ts, the LOS/vision
+- * math in vision.ts, guard patrols in guard.ts, and the thief body in
+- * thief.ts; this file owns the scene graph, per-frame wiring between those
+- * systems, HUD, audio cue mapping, animation controllers, and the evidence
+- * global. DOM is UI only: every gameplay truth is rendered by the Aura3D
+- * scene.
+- *
+- * Claim boundary: prototype stealth route. Vision uses the public physics
+- * raycast for occlusion; guard patrol AI is route-local deterministic authored
+- * movement (Turbo opponent-AI precedent) - no reusable guard/stealth kit.
+- * Guard/thief locomotion clips are real embedded clips from existing typed
+- * root assets; footstep audio is driven by an AUTHORED gait phase (these
+- * assets carry no clip-local footstep events).
+- */
+ import {
+   AnimationController,
+   camera,
+@@ -43,7 +25,6 @@ import {
+   createRumbleDriver,
+   createTweenEngine
+ } from "@aura3d/game";
+-import { bindGalleryEvidence } from "../evidence";
+ import { bindGalleryDrive } from "../scenario-drive";
+ import { assets } from "../../../../src/aura-assets";
+ import {
+@@ -74,24 +55,9 @@ import { createHeistAudio, type HeistAudioCue } from "./heist-audio";
+ import { createGalleryEnvironment } from "./environment";
+ import { galleryShiftCutawayMuseumWorld } from "../gameplay/gallery-world-candidate";
+ import "./styles.css";
+-
+-type GalleryWindow = Window & {
+-  __GALLERY_SHIFT_EVIDENCE__?: unknown;
+-  __AURA3D_SHOWCASE_GALLERY_SHIFT__?: unknown;
+-  __GS_SHOT__?: () => string;
+-  __GS_PUMP__?: (frames: number) => number;
+-  __GS_RESET_CAPTURE__?: () => number;
+-  __GS_TELEPORT__?: (x: number, z: number, preserveDetection?: boolean) => { readonly x: number; readonly z: number };
+-  __AURA3D_COMPOSITION_PROBE__?: unknown;
+-};
+ const galleryWindow = window as GalleryWindow;
+-Object.defineProperty(window, "__AURA3D_SHOWCASE_GALLERY_SHIFT__", {
+-  configurable: true,
+-  get: () => galleryWindow.__GALLERY_SHIFT_EVIDENCE__
+-});
+ const reducedMotion = typeof window.matchMedia === "function"
+   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+-document.body.dataset.capture = "default";
+ const THIEF_FOCUS_MATERIAL = material.emissive({
+   name: "thief tactical focus ring",
+   color: "#123b3a",
+@@ -193,25 +159,14 @@ const ALERT_LINE_GEOMETRY = geometry.define({
+   indices: [0, 1, 2, 0, 2, 3],
+   bounds: { min: [-0.11, 0.065, 0], max: [0.11, 0.065, 4.6] }
+ });
+-
+-/**
+- * Small renderer-owned identity harnesses for the two typed actor families.
+- * The human and robot GLBs remain the primary subjects; these authored meshes
+- * provide a consistent waist/shoulder/visor silhouette and state colour at the
+- * review distance where the source assets' neutral materials otherwise merge
+- * into the dark floor. They follow actor transforms only and never stand in
+- * for the typed character geometry.
+- */
+ type ActorDetailMesh = {
+   readonly positions: Array<readonly [number, number, number]>;
+   readonly normals: Array<readonly [number, number, number]>;
+   readonly indices: number[];
+ };
+-
+ function actorDetailMesh(): ActorDetailMesh {
+   return { positions: [], normals: [], indices: [] };
+ }
+-
+ function addActorBox(mesh: ActorDetailMesh, center: readonly [number, number, number], size: readonly [number, number, number]): void {
+   const [cx, cy, cz] = center;
+   const [sx, sy, sz] = size;
+@@ -235,23 +190,16 @@ function addActorBox(mesh: ActorDetailMesh, center: readonly [number, number, nu
+     mesh.indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
+   }
+ }
+-
+ function defineActorDetail(mesh: ActorDetailMesh): ReturnType<typeof geometry.define> {
+   return geometry.define({ positions: mesh.positions, normals: mesh.normals, indices: mesh.indices });
+ }
+-
+ const thiefDetailMesh = actorDetailMesh();
+-// Shoulder mantle, slim pack, belt and visor keep the typed infiltrator's
+-// readable human outline while leaving the face/body materials visible.
+ addActorBox(thiefDetailMesh, [0, 1.48, 0], [0.96, 0.1, 0.22]);
+ addActorBox(thiefDetailMesh, [0, 1.18, -0.29], [0.36, 0.58, 0.1]);
+ addActorBox(thiefDetailMesh, [0, 0.86, 0], [0.7, 0.08, 0.24]);
+ addActorBox(thiefDetailMesh, [0, 2.03, 0.14], [0.46, 0.09, 0.06]);
+ const THIEF_DETAIL_GEOMETRY = defineActorDetail(thiefDetailMesh);
+-
+ const guardDetailMesh = actorDetailMesh();
+-// Robot sentries get a broad chest plate and front visor that read red at a
+-// glance without pretending to replace their typed animated bodies.
+ addActorBox(guardDetailMesh, [0, 1.38, 0], [0.98, 0.48, 0.16]);
+ addActorBox(guardDetailMesh, [0, 1.78, 0.17], [0.78, 0.08, 0.06]);
+ addActorBox(guardDetailMesh, [0, 2.34, 0.24], [0.86, 0.1, 0.08]);
+@@ -261,11 +209,7 @@ const GUARD_DETAIL_GEOMETRY = defineActorDetail(guardDetailMesh);
+ const debugValue = new URLSearchParams(window.location.search).get("debug");
+ const debugMode = debugValue !== null;
+ const showDebugOverlay = debugValue === "visual";
+-
+ const APP_ID = "showcase-gallery-shift";
+-// The route-primary composition probe isolates the typed museum world only.
+-// Actor models, identity details, live LOS feedback, and HUD remain visible in
+-// the suppressed half so the probe cannot pass by hiding the action staging.
+ const COMPOSITION_SUBJECT_NODE = "museum-interior";
+ const PRIMARY_ASSET_REFS = [
+   galleryShiftCutawayMuseumWorld,
+@@ -283,79 +227,8 @@ const GUARD_EYE_HEIGHT = 1.55;
+ const THIEF_EYE_HEIGHT = 1.1;
+ const MAX_NOISE_LOG = 48;
+ const MAX_CUE_LOG = 48;
+-
+-// ---------------------------------------------------------------- HUD markup --
+-ui.html("#hud", `
+-  <div class="hall-banner" id="gs-banner" aria-live="polite">GALLERY SHIFT - SNEAK IN, LIFT THREE, WALK OUT</div>
+-  <div class="review-brief" id="gs-brief" aria-live="polite">STEALTH LINK // SCANNING</div>
+-  <div class="mission-rail" id="gs-mission-rail" aria-label="Live heist route">
+-    <div class="mission-rail-head"><span>HEIST ROUTE</span><b id="gs-route-state">MARBLE HALL / LIVE</b></div>
+-    <div class="mission-steps" aria-label="Exhibit sequence">
+-      <span id="gs-step-1" class="mission-step">01 ARCHIVE</span>
+-      <span id="gs-step-2" class="mission-step">02 TREASURY</span>
+-      <span id="gs-step-3" class="mission-step">03 SKYLINE</span>
+-      <span id="gs-step-exit" class="mission-step">EXIT</span>
+-    </div>
+-    <div class="mission-legend">
+-      <span><i class="legend-dot legend-player"></i>PLAYER</span>
+-      <span><i class="legend-dot legend-patrol"></i>PATROL TRACK</span>
+-      <span><i class="legend-dot legend-los"></i>LIVE LOS</span>
+-    </div>
+-  </div>
+-  <div class="detection-wrap" aria-label="Detection meter">
+-    <span class="meter-label">DETECTION</span>
+-    <div class="detection-meter"><span id="gs-detection-fill"></span></div>
+-    <span class="meter-ticks"><i id="gs-tick-suspicious"></i><i id="gs-tick-alert"></i></span>
+-  </div>
+-  <div class="lift-progress is-hidden" id="gs-lift">
+-    <span id="gs-lift-label">LIFTING</span>
+-    <div class="lift-bar"><span id="gs-lift-fill"></span></div>
+-  </div>
+-  <div class="result-card is-hidden" id="gs-result" data-testid="gallery-shift-result">
+-    <h2 id="gs-result-title">Caught</h2>
+-    <p id="gs-result-detail"></p>
+-    <div class="action-row"><button id="gs-retry-button" type="button">Retry floor</button></div>
+-  </div>
+ `);
+-
+-ui.html("#panel", `
+-  <section class="gs-brand">
+-    <p class="eyebrow">Aura3D Prototype</p>
+-    <h1>Gallery Shift</h1>
+-    <p class="blurb">Night shift at a private gallery. Lift three exhibits across two floors, dodge the patrols, then escape through the alarm return route.</p>
+-  </section>
+-  <section class="stat-grid" aria-label="Heist status">
+-    <article><span>Floor</span><strong id="stat-floor">1 - Marble Hall</strong></article>
+-    <article><span>Exhibits</span><strong id="stat-exhibits">0 OF 3</strong></article>
+-    <article><span>Score</span><strong id="stat-score">0</strong></article>
+-    <article><span>Ghost</span><strong id="stat-ghost">CLEAN</strong></article>
+-    <article><span>Gait</span><strong id="stat-gait">WALK</strong></article>
+-    <article><span>Exit</span><strong id="stat-exit">SEALED</strong></article>
+-  </section>
+-  <section class="guard-list" aria-label="Guard status">
+-    <p class="section-label">Patrols</p>
+-    <div id="gs-guard-rows"></div>
+-  </section>
+-  <ul class="controls-list" aria-label="Keyboard controls">
+-    <li>Move <b>WASD</b> / arrows</li>
+-    <li>Sneak <b>Shift</b> (toggle) - silent</li>
+-    <li>Sprint <b>hold X</b> - loud</li>
+-    <li>Lift exhibit <b>hold E</b> at a pedestal</li>
+-    <li>Restart floor <b>R</b> - Pause <b>P</b></li>
+-  </ul>
+-  <section class="action-row" aria-label="Touch controls">
+-    <button id="gs-up-button" type="button">Up</button>
+-    <button id="gs-down-button" type="button">Down</button>
+-    <button id="gs-left-button" type="button">Left</button>
+-    <button id="gs-right-button" type="button">Right</button>
+-    <button id="gs-sneak-button" type="button">Sneak</button>
+-    <button id="gs-lift-button" type="button">Hold to lift</button>
+-    <button id="gs-restart-button" type="button">Restart</button>
+-    <button id="gs-pause-button" type="button">Pause</button>
+-  </section>
+ `);
+-
+-// ---------------------------------------------------------------- audio ------
+ const audio = createHeistAudio();
+ let ambientStarted = false;
+ window.addEventListener("pointerdown", () => {
+@@ -374,7 +247,6 @@ window.addEventListener("keydown", () => {
+     }
+   }).catch(() => undefined);
+ }, { passive: true });
+-
+ const audioCueLog: string[] = [];
+ const lastCueFrame = new Map<string, number>();
+ function pushCue(cue: HeistAudioCue): void {
+@@ -388,10 +260,7 @@ function cueReady(name: string, gapFrames: number): boolean {
+   lastCueFrame.set(name, frameCount);
+   return true;
+ }
+-
+-// ------------------------------------------------------------- heist state ---
+ type Phase = "playing" | "caught" | "floor-clear" | "won";
+-
+ interface FloorRuntime {
+   readonly layout: FloorLayout;
+   readonly world: FloorWorld;
+@@ -406,11 +275,9 @@ interface FloorRuntime {
+   floorScore: number;
+   lastSeen: Vec2 | null;
+ }
+-
+ let floorIndex = 0;
+ let runtime: FloorRuntime;
+ let phase: Phase = "playing";
+-
+ let frameCount = 0;
+ let totalScore = 0;
+ let completedBeforeFloor = 0;
+@@ -418,19 +285,14 @@ let alarmActive = false;
+ let alarmGraceRemaining = 0;
+ let bootWarmupScheduled = false;
+ let sensorEventCount = 0;
+-// T1.12 (§6.9.18 P0): the thief's facing yaw, blended toward the move direction
+-// (halflife 0.08 s on the fixed 1/60 sim step) — before this the rig never
+-// turned and the thief slid sideways through every corridor.
+ let thiefFacingYaw = 0;
+ let footstepEvents = 0;
+ let losRayCountTotal = 0;
+ let occlusionCountTotal = 0;
+ const noiseEvents: NoiseEvent[] = [];
+-
+ const visionCounters = { losRayCount: 0, occlusionCount: 0 };
+ let lastCameraSamples: readonly { readonly id: string; readonly yaw: number; readonly seesThief: boolean; readonly occluded: boolean }[] = [];
+ let lastThreatSamples: readonly { readonly id: string; readonly x: number; readonly z: number; readonly yaw: number; readonly seesThief: boolean }[] = [];
+-
+ function buildFloorRuntime(index: number): FloorRuntime {
+   const layout = FLOOR_LAYOUTS[index] ?? FLOOR_LAYOUTS[0]!;
+   const world = createFloorWorld(layout);
+@@ -451,9 +313,7 @@ function buildFloorRuntime(index: number): FloorRuntime {
+     lastSeen: null
+   };
+ }
+-
+ runtime = buildFloorRuntime(0);
+-
+ function restartFloor(): void {
+   runtime = buildFloorRuntime(floorIndex);
+   alarmActive = false;
+@@ -467,7 +327,6 @@ function restartFloor(): void {
+   syncHud();
+   publishEvidence();
+ }
+-
+ function resetMission(): void {
+   floorIndex = 0;
+   completedBeforeFloor = 0;
+@@ -484,7 +343,6 @@ function resetMission(): void {
+   syncHud();
+   publishEvidence();
+ }
+-
+ function floorClearAdvance(): void {
+   const cleared = runtime;
+   const timeBonus = Math.max(0, Math.round(1500 - 6 * cleared.timeInFloor));
+@@ -510,8 +368,6 @@ function floorClearAdvance(): void {
+   syncHud();
+   publishEvidence();
+ }
+-
+-// ---------------------------------------------------------------- scene ------
+ function guardCharacterNodes(): AuraSceneNode[] {
+   return runtime.layout.guards.flatMap((spawn) => {
+     const archivePatrol = spawn.id === "guard-1";
+@@ -578,7 +434,6 @@ function guardCharacterNodes(): AuraSceneNode[] {
+     return nodes;
+   });
+ }
+-
+ function pedestalAndExhibitNodes(): AuraSceneNode[] {
+   const nodes: AuraSceneNode[] = [];
+   // FloorLayout owns exactly three mission pedestals (p1/p2 on floor 1 and
+@@ -613,7 +468,6 @@ function pedestalAndExhibitNodes(): AuraSceneNode[] {
+   }
+   return nodes;
+ }
+-
+ function floor1CoverNodes(): AuraSceneNode[] {
+   return FLOOR_LAYOUTS[0]!.cases.map((displayCase) =>
+     model(assets.galleryShiftDisplayCase, {
+@@ -629,14 +483,6 @@ function floor1CoverNodes(): AuraSceneNode[] {
+       .toJSON()
+   );
+ }
+-
+-/**
+- * Typed archival displays that flesh out the four side-room suites. These
+- * nodes are visual set dressing only: FloorLayout's four real display cases
+- * above remain the sole collision/LOS cover and mission fixtures. Keeping the
+- * extra cases wall-hugging and floor-scoped gives the museum a denser prop
+- * rhythm without creating duplicate objectives or changing gameplay truth.
+- */
+ const GALLERY_SUITE_DISPLAY_SPECS: readonly {
+   readonly id: string;
+   readonly x: number;
+@@ -657,7 +503,6 @@ const GALLERY_SUITE_DISPLAY_NODE_NAMES = GALLERY_SUITE_DISPLAY_SPECS.flatMap(({
+   `suite-case-${id}`,
+   `suite-exhibit-${id}`
+ ]);
+-
+ function museumDisplaySuiteNodes(): AuraSceneNode[] {
+   return GALLERY_SUITE_DISPLAY_SPECS.flatMap((display) => [
+     model(assets.galleryShiftDisplayCase, {
+@@ -684,7 +529,6 @@ function museumDisplaySuiteNodes(): AuraSceneNode[] {
+       .toJSON()
+   ]);
+ }
+-
+ function floor2WallNodes(): AuraSceneNode[] {
+   const marble = material.pbr({ name: "floor-2 marble", color: "#232a38", roughness: 0.55, metallic: 0.08 });
+   const nodes: AuraSceneNode[] = [
+@@ -748,7 +592,6 @@ function floor2WallNodes(): AuraSceneNode[] {
+   }
+   return nodes;
+ }
+-
+ function lightPoolNodes(): AuraSceneNode[] {
+   // These are authored gameplay-zone markers, not a physical lighting claim.
+   // Keep the same nodes in normal play and review captures so transparency
+@@ -778,7 +621,6 @@ function lightPoolNodes(): AuraSceneNode[] {
+   }
+   return nodes;
+ }
+-
+ function exitNodes(): AuraSceneNode[] {
+   return [
+     primitives.box({
+@@ -798,7 +640,6 @@ function exitNodes(): AuraSceneNode[] {
+       .toJSON()
+   ];
+ }
+-
+ function threatFeedbackNodes(): AuraSceneNode[] {
+   const wedgeMaterial = material.emissive({ name: "release real LOS alert wedge", color: "#7d173c", emissive: "#ff477b", emissiveIntensity: 1.9, opacity: 0.8 });
+   const beamMaterial = material.emissive({ name: "release real LOS center beam", color: "#c43765", emissive: "#ffd0dc", emissiveIntensity: 2.35, opacity: 0.99 });
+@@ -841,12 +682,6 @@ function threatFeedbackNodes(): AuraSceneNode[] {
+       .toJSON()
+   ]);
+ }
+-
+-/**
+- * High-contrast renderer feedback whose transforms and visibility are owned by
+- * live stealth state. These nodes never decide movement, LOS, collision,
+- * detection, or objectives; they expose those existing truths in world space.
+- */
+ function liveHierarchyNodes(): AuraSceneNode[] {
+   const nodes: AuraSceneNode[] = [
+     text3D("PLAYER", { name: "live-player-label", size: 0.42, depth: 0.05, letterSpacing: 0.03, material: LIVE_PLAYER_MATERIAL, backend: "sdf" })
+@@ -893,7 +728,6 @@ function liveHierarchyNodes(): AuraSceneNode[] {
+   }
+   return nodes;
+ }
+-
+ function debugOverlayNodes(): AuraSceneNode[] {
+   if (!showDebugOverlay) return [];
+   const nodes: AuraSceneNode[] = [];
+@@ -933,7 +767,6 @@ function debugOverlayNodes(): AuraSceneNode[] {
+   }
+   return nodes;
+ }
+-
+ function meshyThiefCandidateNodes(): AuraSceneNode[] {
+   // Meshy candidate museum thief (galleryThief, quality: candidate).
+   // Review-composition only: one grounded identity study beside the thief
+@@ -959,7 +792,6 @@ function meshyThiefCandidateNodes(): AuraSceneNode[] {
+       .toJSON()
+   ];
+ }
+-
+ function buildScene(): ReturnType<typeof scene> {
+   return scene()
+     .background("#05070d")
+@@ -1115,8 +947,6 @@ function buildScene(): ReturnType<typeof scene> {
+       target: [0, 0.6, -0.6],
+       fov: 43}));
+ }
+-
+-// ---------------------------------------------------------------- mount ------
+ const galleryGame = createGame({
+   id: "showcase-gallery-shift",
+   target: "#app",
+@@ -1154,7 +984,6 @@ const galleryGame = createGame({
+ const app = galleryGame.runtime;
+ galleryGame.start();
+ const input = galleryGame.input!;
+-bindGalleryEvidence(() => collectGalleryEvidence());
+ const galleryTween = createTweenEngine();
+ const galleryFx = createFxParticlePass(app.effects);
+ const galleryJuice = createJuice<"guard-alert" | "alert-rise" | "lift" | "drop" | "win" | "caught" | "camera-whir" | "artifact">({
+@@ -1185,19 +1014,12 @@ bindGalleryDrive({
+   teleport: (x, z) => galleryWindow.__GS_TELEPORT__?.(x, z)
+ });
+ if (!input) throw new Error("Gallery Shift failed to create Aura3D input.");
+-
+-// ------------------------------------------------------ animation controllers -
+ const thiefAnimation = new AnimationController<string>({
+   id: "thief-animation",
+   clipRegistry: assets.showcaseRunnerGirl as unknown as AuraAnimationAssetLike,
+   requiredClips: [THIEF_CLIPS.idle, THIEF_CLIPS.walk, THIEF_CLIPS.sneak, THIEF_CLIPS.sprint, THIEF_CLIPS.lift, THIEF_CLIPS.carry],
+   suppressRootMotion: true
+ });
+-// Guard-1 is the typed Robotcand security shell and carries no embedded
+-// locomotion clips; its patrol is the route-local authored transform. Guard-2
+-// is the expressive humanoid sentry and owns the real Idle/Walking/Running
+-// clips. Keep the controller slot so guard IDs stay stable in evidence without
+-// claiming animation metadata that Robotcand does not contain.
+ const guardAnimations: Array<AnimationController<string> | null> = [
+   null,
+   new AnimationController<string>({
+@@ -1207,7 +1029,6 @@ const guardAnimations: Array<AnimationController<string> | null> = [
+     suppressRootMotion: true
+   })
+ ];
+-
+ const thiefNodeHandle = app.nodes.get("thief") as AuraRuntimeNodeHandle | undefined;
+ if (thiefNodeHandle) thiefAnimation.bindRuntimeNode(thiefNodeHandle, { id: "thief-runtime-animation", defaultClipId: THIEF_CLIPS.idle });
+ const guardNodeHandles = new Map<string, AuraRuntimeNodeHandle>();
+@@ -1221,7 +1042,6 @@ guardAnimations.forEach((controller, index) => {
+   const handle = guardNodeHandles.get(id);
+   if (handle) controller.bindRuntimeNode(handle, { id: `${id}-runtime-animation`, defaultClipId: GUARD_CLIPS.idle });
+ });
+-
+ let thiefClipActive: string | null = null;
+ function playThiefClip(clip: string): void {
+   if (thiefClipActive === clip) return;
+@@ -1232,7 +1052,6 @@ function playThiefClip(clip: string): void {
+     // Diagnostics surface registration issues; never break the frame loop.
+   }
+ }
+-
+ const guardClipActive = new Map<string, string>();
+ function playGuardClip(guardId: string, controllerIndex: number, clip: string): void {
+   const controller = guardAnimations[controllerIndex];
+@@ -1245,8 +1064,6 @@ function playGuardClip(guardId: string, controllerIndex: number, clip: string):
+     // See above.
+   }
+ }
+-
+-// ---------------------------------------------------------------- HUD --------
+ const banner = document.getElementById("gs-banner")!;
+ const reviewBrief = document.getElementById("gs-brief")!;
+ const routeState = document.getElementById("gs-route-state")!;
+@@ -1263,7 +1080,6 @@ const liftLabel = document.getElementById("gs-lift-label")!;
+ const resultCard = document.getElementById("gs-result")!;
+ const resultTitle = document.getElementById("gs-result-title")!;
+ const resultDetail = document.getElementById("gs-result-detail")!;
+-
+ function hideResultCard(): void {
+   resultCard.classList.add("is-hidden");
+ }
+@@ -1272,7 +1088,6 @@ function showResult(title: string, detail: string): void {
+   resultDetail.textContent = detail;
+   resultCard.classList.remove("is-hidden");
+ }
+-
+ function guardRowsMarkup(): string {
+   return runtime.guards
+     .map((guard) => {
+@@ -1284,7 +1099,6 @@ function guardRowsMarkup(): string {
+     })
+     .join("");
+ }
+-
+ function syncHud(): void {
+   const snap = runtime.thief.snapshot();
+   ui.setText("#stat-floor", `${runtime.layout.id} - ${runtime.layout.name}`);
+@@ -2085,3 +1899,4 @@ syncAlarmVisuals();
+ syncLiveHierarchy();
+ syncHud();
+ publishEvidence();
++
+diff --git a/apps/showcase-gallery-shift/src/legacy/styles.css b/apps/showcase-gallery-shift/src/legacy/styles.css
+index f92d99ea1..9546c9759 100644
+--- a/apps/showcase-gallery-shift/src/legacy/styles.css
++++ b/apps/showcase-gallery-shift/src/legacy/styles.css
+@@ -1,10 +1,8 @@
+-/* Gallery Shift HUD chrome - DOM is UI only; every gameplay truth is 3D. */
+ * { box-sizing: border-box; }
+ html, body { margin: 0; height: 100%; background: #04060b; color: #e8eef8; font-family: "Inter", system-ui, sans-serif; }
+ body.is-alarm #gs-banner { border-color: rgba(255, 51, 77, 0.8); color: #ff9aaa; box-shadow: 0 0 24px rgba(255, 51, 77, 0.2); }
+ body.is-alarm #panel { border-color: rgba(255, 51, 77, 0.42); }
+ body { overflow: hidden; }
+-
+ .shell {
+   display: grid;
+   grid-template-columns: minmax(0, 1fr) minmax(188px, 214px);
+@@ -13,52 +11,9 @@ body { overflow: hidden; }
+   height: 100vh;
+   padding: 8px;
+ }
+-
+-/* Renderer-first review frame: retain the HUD nodes for state/evidence and
+- * accessibility, but let the authored museum plan and typed actors fill the
+- * screenshot without a side-column or diagnostic chrome. */
+-body[data-capture="review"] .shell {
+-  grid-template-columns: minmax(0, 1fr);
+-  gap: 0;
+-  padding: 0;
+-}
+-body[data-capture="review"] .stage { border-radius: 0; }
+-body[data-capture="review"] #panel,
+-body[data-capture="review"] #panel { opacity: 0; pointer-events: none; }
+-/* Keep a restrained, integrated mission read in the exact frame. The panel
+- * remains hidden so the museum still owns the canvas, while the banner and
+- * detection meter communicate the live heist state alongside the world labels. */
+-body[data-capture="review"] #hud { opacity: 1; pointer-events: none; }
+-body[data-capture="review"] .hall-banner {
+-  top: 18px; left: 24px; transform: none; padding: 8px 13px;
+-  background: linear-gradient(105deg, rgba(5, 20, 31, 0.9), rgba(9, 13, 24, 0.82));
+-  border-color: rgba(126, 248, 255, 0.52);
+-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24), 0 0 18px rgba(75, 224, 223, 0.08); font-size: 11px;
+-}
+-body[data-capture="review"] .detection-wrap {
+-  top: 18px; right: 24px; width: 224px; padding: 9px 11px;
+-  background: linear-gradient(105deg, rgba(9, 13, 24, 0.84), rgba(31, 18, 16, 0.86));
+-  border-color: rgba(255, 177, 77, 0.48);
+-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24), 0 0 18px rgba(255, 177, 77, 0.08);
+-}
+-body[data-capture="review"] .review-brief {
+-  top: 60px; left: 24px;
+-  padding: 8px 12px;
+-  background: linear-gradient(105deg, rgba(5, 20, 31, 0.86), rgba(19, 14, 25, 0.84));
+-  border-color: rgba(255, 217, 160, 0.42);
+-  color: #ffe2b4;
+-  box-shadow: 0 7px 18px rgba(0, 0, 0, 0.2), 0 0 16px rgba(255, 177, 77, 0.07);
+-}
+-body[data-capture="review"] .mission-rail {
+-  display: block;
+-  left: 24px;
+-  bottom: 18px;
+-}
+-body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
+ .viewport { position: relative; min-width: 0; min-height: 0; }
+ .stage { position: absolute; inset: 0; border-radius: 12px; overflow: hidden; background: #04060b; }
+ #app canvas { display: block; width: 100%; height: 100%; }
+-
+ #hud { position: absolute; inset: 0; pointer-events: none; }
+ .hall-banner {
+   position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+@@ -66,24 +21,6 @@ body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
+   background: rgba(7, 12, 24, 0.78); border: 1px solid rgba(126, 248, 255, 0.25); color: #9feefc;
+   white-space: nowrap;
+ }
+-
+-/* Compact mission context, sourced from the live route state. This is HUD
+- * only: LOS, objective, and detection truth remain in the Aura3D runtime. */
+-.review-brief {
+-  position: absolute; top: 58px; left: 24px; z-index: 2;
+-  max-width: min(360px, calc(100vw - 48px));
+-  padding: 7px 11px; border-radius: 6px;
+-  background: rgba(5, 11, 21, 0.78);
+-  border: 1px solid rgba(255, 177, 77, 0.3);
+-  color: #ffd9a0; font-size: 10px; letter-spacing: 0.14em;
+-  line-height: 1.35; white-space: nowrap;
+-  box-shadow: 0 7px 18px rgba(0, 0, 0, 0.2);
+-}
+-
+-/* A compact in-world mission read. It is intentionally UI-only and
+- * pointer-transparent: the path, objective rings, and LOS wedges remain
+- * renderer-owned geometry in the canvas. Keeping this rail in the lower
+- * black/south apron lets the museum plan and actors stay visually dominant. */
+ .mission-rail {
+   display: none;
+   position: absolute;
+@@ -158,7 +95,6 @@ body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
+ .legend-player { color: #56f4d3; background: #56f4d3; }
+ .legend-patrol { color: #ff6b9b; background: #ff6b9b; }
+ .legend-los { color: #ffd05a; background: #ffd05a; }
+-
+ .detection-wrap {
+   position: absolute; top: 10px; right: 14px; width: 190px;
+   padding: 8px 10px; border-radius: 10px;
+@@ -179,7 +115,6 @@ body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
+ .meter-ticks i { position: absolute; top: -9px; width: 1px; height: 6px; background: rgba(232, 238, 248, 0.55); }
+ .meter-ticks #gs-tick-suspicious { left: 35%; }
+ .meter-ticks #gs-tick-alert { left: 70%; }
+-
+ .lift-progress {
+   position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+   width: 260px; padding: 8px 12px; border-radius: 10px;
+@@ -188,7 +123,6 @@ body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
+ .lift-progress span { font-size: 11px; letter-spacing: 0.16em; color: #9feefc; }
+ .lift-bar { margin-top: 5px; height: 10px; border-radius: 999px; overflow: hidden; background: rgba(20, 28, 46, 0.9); }
+ .lift-bar span { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, #7ef8ff, #3dfc9a); transition: width 0.06s linear; }
+-
+ .result-card {
+   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+   min-width: 300px; padding: 22px 26px; border-radius: 14px; text-align: center;
+@@ -197,7 +131,6 @@ body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
+ .result-card h2 { margin: 0 0 6px; font-size: 22px; color: #ffd9a0; letter-spacing: 0.08em; }
+ .result-card p { margin: 0 0 14px; color: #b8c4d8; font-size: 14px; }
+ .is-hidden { display: none !important; }
+-
+ .panel {
+   position: relative; z-index: 3; min-width: 0; width: auto; max-height: calc(100vh - 20px);
+   display: flex; flex-direction: column; gap: 8px; padding: 10px;
+@@ -207,7 +140,6 @@ body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
+ .gs-brand .eyebrow { margin: 0; font-size: 11px; letter-spacing: 0.22em; color: #7ef8ff; text-transform: uppercase; }
+ .gs-brand h1 { margin: 4px 0 5px; font-size: 22px; letter-spacing: 0.04em; color: #ffd9a0; }
+ .gs-brand .blurb { margin: 0; font-size: 11.5px; line-height: 1.45; color: #a9b6cc; }
+-
+ .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+ .stat-grid article {
+   padding: 7px 8px; border-radius: 8px; background: rgba(13, 19, 34, 0.82);
+@@ -215,7 +147,6 @@ body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
+ }
+ .stat-grid span { display: block; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #7d8ba3; }
+ .stat-grid strong { display: block; margin-top: 2px; font-size: 14px; color: #e8eef8; font-variant-numeric: tabular-nums; }
+-
+ .section-label { margin: 0 0 6px; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #7d8ba3; }
+ .guard-row {
+   display: flex; flex-wrap: wrap; align-items: center; gap: 5px; padding: 5px 7px; margin-bottom: 5px;
+@@ -228,10 +159,8 @@ body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
+ .state-investigate { background: rgba(255, 177, 77, 0.18); color: #ffb14d; }
+ .state-alert { background: rgba(255, 59, 78, 0.2); color: #ff6a7d; }
+ .guard-row .route, .guard-row .speed { font-variant-numeric: tabular-nums; color: #7d8ba3; }
+-
+ .controls-list { margin: 0; padding: 0 0 0 15px; font-size: 11px; line-height: 1.65; color: #a9b6cc; }
+ .controls-list b { color: #ffd9a0; }
+-
+ .action-row { display: flex; flex-wrap: wrap; gap: 8px; }
+ .action-row button {
+   min-width: 44px; min-height: 44px; padding: 8px 12px; border-radius: 8px; font-size: 12px; letter-spacing: 0.06em;
+@@ -239,18 +168,6 @@ body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
+   cursor: pointer;
+ }
+ .action-row button:active { background: rgba(35, 50, 82, 0.95); }
+-
+-.evidence-strip {
+-  display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 8px 10px; border-radius: 8px;
+-  background: rgba(13, 19, 34, 0.76); border: 1px solid rgba(126, 248, 255, 0.1);
+-  font-size: 10px; letter-spacing: 0.06em; color: #7d8ba3;
+-}
+-.evidence-strip code { color: #9feefc; font-variant-numeric: tabular-nums; }
+-
+-/* Phone play: the heist needs movement, sneak and lift reachable without
+- * scrolling a side panel mid-stealth, so the control row leaves the document
+- * flow and is pinned above the home indicator. The shell reserves the bar's
+- * height instead of letting it cover the playfield or the objective rail. */
+ @media (max-width: 860px) {
+   :root { --gs-touch-bar: 122px; }
+   .shell {
+@@ -272,10 +189,3 @@ body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
+     min-width: 0; min-height: 44px; padding: 6px 4px; font-size: 11px; letter-spacing: 0.04em;
+   }
+ }
+-/* Review capture owns the whole frame: the bar returns to flow inside the
+- * hidden panel and the reserved apron disappears, so the museum fills the
+- * canvas edge to edge. */
+-body[data-capture="review"] .shell { padding-bottom: 8px; }
+-body[data-capture="review"] .action-row { position: static; background: none; border: 0; padding: 0; }
+-
+-
+diff --git a/apps/showcase-gallery-shift/src/v2/evidence/index.ts b/apps/showcase-gallery-shift/src/v2/evidence/index.ts
+deleted file mode 100644
+index a11da7af4..000000000
+--- a/apps/showcase-gallery-shift/src/v2/evidence/index.ts
++++ /dev/null
+@@ -1,99 +0,0 @@
+-// apps/showcase-gallery-shift/src/v2/evidence/index.ts — lazy evidence sections
+-// the capture + browser specs read. loading.sceneId reports the logical floor
+-// ("floor-1"/"floor-2") while loading.sceneSwaps stays 0 — both floor sets
+-// live in one union scene.
+-
+-export interface GalleryEvidenceBindings {
+-  sceneId(): "floor-1" | "floor-2";
+-  mission(): {
+-    floor: number;
+-    phase: string;
+-    lifted: number;
+-    totalLifted: number;
+-    score: number;
+-    ghost: boolean;
+-    alarmActive: boolean;
+-  };
+-  thief(): {
+-    x: number;
+-    z: number;
+-    gait: string;
+-    clip: string;
+-    carrying: boolean;
+-    facingYaw: number;
+-    yawErrorDeg: number;
+-  };
+-  guard(): {
+-    /** Highest-severity state across the patrol: alert > investigate > idle. */
+-    state: string;
+-    states: readonly { id: string; state: string; x: number; z: number }[];
+-  };
+-  characters(): {
+-    thiefTracksApplied: number;
+-    thiefYawErrorDeg: number;
+-    thiefClip: string | null;
+-    guardClips: readonly (string | null)[];
+-  };
+-  fx(): { conesVisible: number; liveCount: number; backend: string };
+-  detection(): { value: number; seen: boolean; lastSeen: { x: number; z: number } | null };
+-  audio(): { lastCue: string | null; cueLog: readonly string[] };
+-  run(): { paused: boolean; touchEngaged: boolean; replayActive: boolean };
+-  appliedLook(): Record<string, unknown>;
+-  rig(): Record<string, unknown>;
+-  scenario(): string | null;
+-  render(): { frame: number; firstFrameAt: number | null };
+-}
+-
+-export function publishGalleryEvidence(bindings: GalleryEvidenceBindings) {
+-  const evidence = {
+-    get loading() {
+-      return {
+-        sceneId: bindings.sceneId(),
+-        sceneSwaps: 0,
+-        lazyLoadedCount: 0,
+-        fetchCount: { galleryShiftCutawayMuseumWorld: 1 }
+-      };
+-    },
+-    get mission() {
+-      return bindings.mission();
+-    },
+-    get thief() {
+-      return bindings.thief();
+-    },
+-    get guard() {
+-      return bindings.guard();
+-    },
+-    get characters() {
+-      return bindings.characters();
+-    },
+-    get fx() {
+-      return bindings.fx();
+-    },
+-    get detection() {
+-      return bindings.detection();
+-    },
+-    get audio() {
+-      return bindings.audio();
+-    },
+-    get run() {
+-      return bindings.run();
+-    },
+-    get render() {
+-      return bindings.render();
+-    },
+-    get appliedLook() {
+-      return bindings.appliedLook();
+-    },
+-    get rig() {
+-      return bindings.rig();
+-    },
+-    get scenario() {
+-      return bindings.scenario();
+-    }
+-  };
+-  (window as unknown as { __AURA3D_GAME_EVIDENCE__?: Record<string, unknown> }).__AURA3D_GAME_EVIDENCE__ = {
+-    ...((window as unknown as { __AURA3D_GAME_EVIDENCE__?: Record<string, unknown> }).__AURA3D_GAME_EVIDENCE__ ?? {}),
+-    "showcase-gallery-shift": evidence
+-  };
+-  return evidence;
+-}
+-- 
+2.34.1
+

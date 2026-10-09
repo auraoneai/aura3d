@@ -1,0 +1,1949 @@
+From 4a86f183c8d5e6e4163b40a9ac5af3c9b48fa31e Mon Sep 17 00:00:00 2001
+From: gchahal+1 <gchahal@veerone.com>
+Date: Fri, 9 Oct 2026 13:40:39 +0000
+Subject: [PATCH] [qr-prd09] showcase-pulse-tunnel: delete evidence
+ files+blocks (T5.8)
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ .../scripts/build-music.mjs                   | 250 -------------
+ .../scripts/build-sfx.mjs                     | 139 --------
+ .../scripts/register-audio.mjs                |  44 ---
+ .../scripts/register-models.mjs               |  36 --
+ .../scripts/write-performance-report.ts       |  82 -----
+ .../scripts/write-route-health.mjs            | 157 ---------
+ apps/showcase-pulse-tunnel/src/legacy/hud.ts  |  13 -
+ apps/showcase-pulse-tunnel/src/legacy/main.ts | 330 ------------------
+ .../src/legacy/styles.css                     | 132 -------
+ .../src/v2/evidence/index.ts                  | 139 --------
+ 10 files changed, 1322 deletions(-)
+ delete mode 100644 apps/showcase-pulse-tunnel/scripts/build-music.mjs
+ delete mode 100644 apps/showcase-pulse-tunnel/scripts/build-sfx.mjs
+ delete mode 100644 apps/showcase-pulse-tunnel/scripts/register-audio.mjs
+ delete mode 100644 apps/showcase-pulse-tunnel/scripts/register-models.mjs
+ delete mode 100644 apps/showcase-pulse-tunnel/scripts/write-performance-report.ts
+ delete mode 100644 apps/showcase-pulse-tunnel/scripts/write-route-health.mjs
+ delete mode 100644 apps/showcase-pulse-tunnel/src/v2/evidence/index.ts
+
+diff --git a/apps/showcase-pulse-tunnel/scripts/build-music.mjs b/apps/showcase-pulse-tunnel/scripts/build-music.mjs
+deleted file mode 100644
+index f05f4188a..000000000
+--- a/apps/showcase-pulse-tunnel/scripts/build-music.mjs
++++ /dev/null
+@@ -1,250 +0,0 @@
+-/**
+- * Pulse Tunnel music synth — generates the four original CC0 stems entirely in-repo.
+- *
+- * No network downloads, no sampled material: every stem is synthesized from
+- * oscillators / shaped noise with this committed generator so provenance is
+- * auditable (author "Aura3D synthesis", license CC0-1.0).
+- *
+- * Run from this app directory:  node scripts/build-music.mjs
+- * Output: assets/music/*.wav    (16-bit PCM mono 22050 Hz, exactly 90 s each)
+- *
+- * The arrangement is the game's difficulty contract, so it is fully deterministic:
+- *   BPM 120 -> one beat every 0.5 s, four beats per bar, 45 bars = 90 s exactly.
+- *   Sections (beats):  intro [0,32)   build [32,80)   drop [80,128)   finale [128,180)
+- * The beat clock in src/beat-clock.ts schedules obstacles against these same numbers,
+- * and tests/unit/apps/pulse-tunnel-clock.test.ts re-derives them independently.
+- *
+- * After generation, register each stem with the CLI from the repository root, e.g.:
+- *   node packages/aura3d-cli/dist/cli.js assets add apps/showcase-pulse-tunnel/assets/music/drums.wav --name pulseDrumsStem --type audio --license CC0-1.0 --author "Aura3D synthesis" --source-page "apps/showcase-pulse-tunnel/scripts/build-music.mjs"
+- */
+-import { mkdirSync, writeFileSync } from "node:fs";
+-import { resolve, dirname } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../assets/music");
+-const SAMPLE_RATE = 22050;
+-const DURATION_SECONDS = 90;
+-const TOTAL_FRAMES = DURATION_SECONDS * SAMPLE_RATE;
+-const BPM = 120;
+-const BEAT_SECONDS = 60 / BPM;
+-const BEATS_PER_BAR = 4;
+-const BAR_SECONDS = BEAT_SECONDS * BEATS_PER_BAR;
+-const TOTAL_BEATS = Math.round(DURATION_SECONDS / BEAT_SECONDS);
+-const TOTAL_BARS = TOTAL_BEATS / BEATS_PER_BAR;
+-
+-export const PULSE_MUSIC_PLAN = {
+-  sampleRate: SAMPLE_RATE,
+-  durationSeconds: DURATION_SECONDS,
+-  bpm: BPM,
+-  beatSeconds: BEAT_SECONDS,
+-  beatsPerBar: BEATS_PER_BAR,
+-  totalBeats: TOTAL_BEATS,
+-  totalBars: TOTAL_BARS,
+-  sections: [
+-    { id: "intro", startBeat: 0, endBeat: 32 },
+-    { id: "build", startBeat: 32, endBeat: 80 },
+-    { id: "drop", startBeat: 80, endBeat: 128 },
+-    { id: "finale", startBeat: 128, endBeat: 180 }
+-  ]
+-};
+-
+-// ---- shared helpers ---------------------------------------------------------
+-
+-function emptyBuffer() {
+-  return new Float32Array(TOTAL_FRAMES);
+-}
+-
+-function addSine(buf, startSec, durSec, freq, amp, { attack = 0.004, release = 0.05, detuneRatio = 1 } = {}) {
+-  const start = Math.max(0, Math.floor(startSec * SAMPLE_RATE));
+-  const length = Math.min(TOTAL_FRAMES - start, Math.floor(durSec * SAMPLE_RATE));
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const env = Math.min(1, t / attack) * Math.pow(Math.max(0, 1 - t / durSec), release > 0 ? (durSec / (durSec + release)) : 1);
+-    buf[start + i] += Math.sin(2 * Math.PI * freq * detuneRatio * t) * amp * env;
+-  }
+-}
+-
+-function addNoiseBurst(buf, startSec, durSec, amp, { shape = 1.6, brightness = 0 } = {}) {
+-  let state = 0;
+-  const start = Math.max(0, Math.floor(startSec * SAMPLE_RATE));
+-  const length = Math.min(TOTAL_FRAMES - start, Math.floor(durSec * SAMPLE_RATE));
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const white = Math.sin(i * 12.9898 + startSec * 78.233) * 43758.5453;
+-    const noise = ((white - Math.floor(white)) * 2 - 1);
+-    // One-pole high-pass approximation: subtract the running mean to brighten hiss/crash layers.
+-    state = state * 0.72 + noise * 0.28;
+-    const value = brightness > 0 ? (noise - state) * brightness + noise * (1 - brightness) : noise;
+-    buf[start + i] += value * amp * Math.pow(Math.max(0, 1 - t / durSec), shape);
+-  }
+-}
+-
+-function normalize(buf, peak = 0.88) {
+-  let max = 0;
+-  for (let i = 0; i < buf.length; i += 1) max = Math.max(max, Math.abs(buf[i]));
+-  if (max === 0) return;
+-  const gain = peak / max;
+-  for (let i = 0; i < buf.length; i += 1) buf[i] *= gain;
+-}
+-
+-function writeWav(fileName, buf) {
+-  const bytesPerSample = 2;
+-  const dataSize = buf.length * bytesPerSample;
+-  const header = Buffer.alloc(44);
+-  header.write("RIFF", 0);
+-  header.writeUInt32LE(36 + dataSize, 4);
+-  header.write("WAVE", 8);
+-  header.write("fmt ", 12);
+-  header.writeUInt32LE(16, 16);
+-  header.writeUInt16LE(1, 20);       // PCM
+-  header.writeUInt16LE(1, 22);       // mono
+-  header.writeUInt32LE(SAMPLE_RATE, 24);
+-  header.writeUInt32LE(SAMPLE_RATE * bytesPerSample, 28);
+-  header.writeUInt16LE(bytesPerSample, 32);
+-  header.writeUInt16LE(16, 34);
+-  header.write("data", 36);
+-  header.writeUInt32LE(dataSize, 40);
+-  const data = Buffer.alloc(dataSize);
+-  for (let i = 0; i < buf.length; i += 1) {
+-    const clamped = Math.max(-1, Math.min(1, buf[i]));
+-    data.writeInt16LE(Math.round(clamped * 32767), i * bytesPerSample);
+-  }
+-  const outPath = resolve(OUT_DIR, fileName);
+-  writeFileSync(outPath, Buffer.concat([header, data]));
+-  console.log(`wrote ${fileName} (${(dataSize / 1024 / 1024).toFixed(2)} MiB)`);
+-}
+-
+-// ---- musical material -------------------------------------------------------
+-
+-// Chord roots per bar, cycling Am F C G across the whole run.
+-const CHORD_CYCLE = [
+-  { name: "Am", root: 110.0, tones: [220.0, 261.63, 329.63] },
+-  { name: "F", root: 87.31, tones: [174.61, 220.0, 261.63] },
+-  { name: "C", root: 130.81, tones: [261.63, 329.63, 392.0] },
+-  { name: "G", root: 98.0, tones: [196.0, 246.94, 293.66] }
+-];
+-const sectionOfBeat = (beat) => {
+-  if (beat < 32) return "intro";
+-  if (beat < 80) return "build";
+-  if (beat < 128) return "drop";
+-  return "finale";
+-};
+-
+-function buildDrums() {
+-  const buf = emptyBuffer();
+-  for (let beat = 0; beat < TOTAL_BEATS; beat += 1) {
+-    const section = sectionOfBeat(beat);
+-    const t = beat * BEAT_SECONDS;
+-    const inBar = beat % BEATS_PER_BAR;
+-    // Kick anchors every beat in every section: it is the click players feel.
+-    addSine(buf, t, 0.16, 46, 0.95, { attack: 0.001, release: 0.02 });
+-    // Pitch-drop transient gives the kick its punch without any sample material.
+-    addSine(buf, t, 0.05, 150, 0.4, { attack: 0.001, release: 0.03 });
+-    if (section !== "intro" && (inBar === 1 || inBar === 3)) {
+-      addNoiseBurst(buf, t, 0.14, 0.5, { shape: 2.2, brightness: 0.55 });
+-      addSine(buf, t, 0.09, 192, 0.28, { attack: 0.001 });
+-    }
+-    if (section === "drop" || section === "finale") {
+-      // Sixteenth hats: closed on offbeats, accented every second eighth.
+-      for (let half = 0; half < 2; half += 1) {
+-        const hatT = t + half * BEAT_SECONDS / 2;
+-        if (half === 1 || section === "drop" || section === "finale") {
+-          addNoiseBurst(buf, hatT, 0.045, half === 1 ? 0.22 : 0.12, { shape: 3.2, brightness: 0.9 });
+-        }
+-      }
+-      if (section === "finale" && inBar === 3) {
+-        addNoiseBurst(buf, t + BEAT_SECONDS * 0.75, 0.09, 0.3, { shape: 2.4, brightness: 0.7 });
+-      }
+-    } else if (section === "build") {
+-      addNoiseBurst(buf, t + BEAT_SECONDS / 2, 0.04, 0.16, { shape: 3.4, brightness: 0.9 });
+-    }
+-  }
+-  // Riser into each section boundary plus a crash on the boundary itself.
+-  for (const boundary of [8, 20, 32]) {
+-    const riserStart = (boundary * BEATS_PER_BAR - 1) * BAR_SECONDS;
+-    addNoiseBurst(buf, riserStart, BAR_SECONDS * 0.92, 0.3, { shape: 0.35, brightness: 0.75 });
+-    addNoiseBurst(buf, boundary * BAR_SECONDS, 0.85, 0.42, { shape: 2.6, brightness: 0.65 });
+-    addSine(buf, boundary * BAR_SECONDS, 0.7, 220, 0.2, { attack: 0.002, release: 0.4 });
+-  }
+-  normalize(buf);
+-  return buf;
+-}
+-
+-const SEMITONE = (root, semis) => root * Math.pow(2, semis / 12);
+-
+-function buildBass() {
+-  const buf = emptyBuffer();
+-  const eighthPattern = [0, 0, 12, 0, 7, 0, 12, 7]; // semitone offsets over the bar's eighths
+-  for (let bar = 0; bar < TOTAL_BARS; bar += 1) {
+-    const chord = CHORD_CYCLE[bar % CHORD_CYCLE.length];
+-    const section = sectionOfBeat(bar * BEATS_PER_BAR);
+-    const barStart = bar * BAR_SECONDS;
+-    if (section === "intro") {
+-      addSine(buf, barStart, BAR_SECONDS * 0.96, chord.root, 0.3, { attack: 0.05, release: 0.9 });
+-      continue;
+-    }
+-    for (let step = 0; step < 8; step += 1) {
+-      const t = barStart + step * BAR_SECONDS / 8;
+-      const freq = SEMITONE(chord.root, eighthPattern[step]);
+-      // Stacked harmonics stand in for a saw; the falling mix keeps it rounded, not buzzy.
+-      addSine(buf, t, 0.2, freq, 0.5, { attack: 0.003, release: 0.14 });
+-      addSine(buf, t, 0.18, freq * 2, 0.16, { attack: 0.003, release: 0.2 });
+-      addSine(buf, t, 0.14, freq * 3, 0.07, { attack: 0.003, release: 0.24 });
+-    }
+-  }
+-  normalize(buf);
+-  return buf;
+-}
+-
+-function buildLead() {
+-  const buf = emptyBuffer();
+-  const arpShape = [0, 1, 2, 1];
+-  for (let bar = 0; bar < TOTAL_BARS; bar += 1) {
+-    const chord = CHORD_CYCLE[bar % CHORD_CYCLE.length];
+-    const section = sectionOfBeat(bar * BEATS_PER_BAR);
+-    if (section !== "drop" && section !== "finale") continue;
+-    const octaveUp = section === "finale";
+-    for (let step = 0; step < 16; step += 1) {
+-      const t = bar * BAR_SECONDS + step * BAR_SECONDS / 16;
+-      const tone = chord.tones[arpShape[step % arpShape.length]];
+-      const freq = octaveUp ? tone * 2 : tone;
+-      addSine(buf, t, 0.13, freq, 0.26, { attack: 0.004, release: 0.3 });
+-      addSine(buf, t, 0.12, freq * 1.002, 0.12, { attack: 0.004, release: 0.3 }); // detune double
+-      if (step % 4 === 0) addSine(buf, t, 0.2, freq * 0.5, 0.08, { attack: 0.004, release: 0.5 });
+-    }
+-  }
+-  normalize(buf);
+-  return buf;
+-}
+-
+-function buildAir() {
+-  const buf = emptyBuffer();
+-  for (let bar = 0; bar < TOTAL_BARS; bar += 1) {
+-    const chord = CHORD_CYCLE[bar % CHORD_CYCLE.length];
+-    const barStart = bar * BAR_SECONDS;
+-    for (const tone of chord.tones) {
+-      addSine(buf, barStart, BAR_SECONDS * 1.04, tone * 0.5, 0.16, { attack: 0.5, release: 1.4, detuneRatio: 0.9985 });
+-      addSine(buf, barStart, BAR_SECONDS * 1.04, tone * 0.5, 0.16, { attack: 0.5, release: 1.4, detuneRatio: 1.0015 });
+-    }
+-    if (sectionOfBeat(bar * BEATS_PER_BAR) === "intro") {
+-      // Keep the intro pad even sparser so the first unmute lands as an event.
+-      for (let i = Math.floor(barStart * SAMPLE_RATE); i < Math.floor((barStart + BAR_SECONDS) * SAMPLE_RATE); i += 1) buf[i] *= 0.6;
+-    }
+-  }
+-  // Slow breathing air bed across the whole run.
+-  for (let i = 0; i < TOTAL_FRAMES; i += 1) {
+-    const lfo = 0.5 + 0.5 * Math.sin((2 * Math.PI * 0.1 * i) / SAMPLE_RATE);
+-    const white = Math.sin(i * 0.618) * 43758.5453;
+-    const noise = ((white - Math.floor(white)) * 2 - 1);
+-    buf[i] += noise * 0.035 * lfo;
+-  }
+-  normalize(buf);
+-  return buf;
+-}
+-
+-mkdirSync(OUT_DIR, { recursive: true });
+-writeWav("drums.wav", buildDrums());
+-writeWav("bass.wav", buildBass());
+-writeWav("lead.wav", buildLead());
+-writeWav("air.wav", buildAir());
+-console.log(JSON.stringify(PULSE_MUSIC_PLAN));
+diff --git a/apps/showcase-pulse-tunnel/scripts/build-sfx.mjs b/apps/showcase-pulse-tunnel/scripts/build-sfx.mjs
+deleted file mode 100644
+index 073041123..000000000
+--- a/apps/showcase-pulse-tunnel/scripts/build-sfx.mjs
++++ /dev/null
+@@ -1,139 +0,0 @@
+-/**
+- * Pulse Tunnel SFX synth — generates the original CC0 cue WAVs entirely in-repo.
+- *
+- * No network downloads, no sampled material: every cue is synthesized from
+- * oscillators / shaped noise with this committed generator so provenance is
+- * auditable (author "Aura3D synthesis", license CC0-1.0).
+- *
+- * Run from this app directory:  node scripts/build-sfx.mjs
+- * Output: assets/sfx/*.wav      (16-bit PCM mono 44100 Hz)
+- *
+- * After generation, register each cue with the CLI from the repository root, e.g.:
+- *   node packages/aura3d-cli/dist/cli.js assets add apps/showcase-pulse-tunnel/assets/sfx/laneSwitch.wav --name pulseLaneSwitchSfx --type audio --license CC0-1.0 --author "Aura3D synthesis" --source-page "apps/showcase-pulse-tunnel/scripts/build-sfx.mjs"
+- */
+-import { mkdirSync, writeFileSync } from "node:fs";
+-import { resolve, dirname } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../assets/sfx");
+-const SAMPLE_RATE = 44100;
+-
+-function renderCue(totalSeconds, fill) {
+-  const length = Math.max(1, Math.floor(totalSeconds * SAMPLE_RATE));
+-  const out = new Float32Array(length);
+-  const ctx = {
+-    addTone(startSec, durSec, freqStart, freqEnd, amp, { attack = 0.004, curve = 0.7 } = {}) {
+-      const start = Math.floor(startSec * SAMPLE_RATE);
+-      const count = Math.min(length - start, Math.floor(durSec * SAMPLE_RATE));
+-      let phase = 0;
+-      for (let i = 0; i < count; i += 1) {
+-        const t = i / SAMPLE_RATE;
+-        const progress = t / durSec;
+-        const freq = freqStart + (freqEnd - freqStart) * Math.pow(progress, curve);
+-        phase += (2 * Math.PI * freq) / SAMPLE_RATE;
+-        const env = Math.min(1, t / attack) * Math.pow(Math.max(0, 1 - progress), 1.4);
+-        if (start + i < length) out[start + i] += Math.sin(phase) * amp * env;
+-      }
+-    },
+-    addNoise(startSec, durSec, amp, { shape = 2, brightness = 0.5 } = {}) {
+-      const start = Math.floor(startSec * SAMPLE_RATE);
+-      const count = Math.min(length - start, Math.floor(durSec * SAMPLE_RATE));
+-      let state = 0;
+-      for (let i = 0; i < count; i += 1) {
+-        const t = i / SAMPLE_RATE;
+-        const white = Math.sin((start + i) * 12.9898 + startSec * 78.233) * 43758.5453;
+-        const noise = ((white - Math.floor(white)) * 2 - 1);
+-        state = state * (1 - brightness) + noise * brightness;
+-        const value = noise - state; // one-pole high-pass
+-        out[start + i] += value * amp * Math.pow(Math.max(0, 1 - t / durSec), shape);
+-      }
+-    }
+-  };
+-  fill(ctx);
+-  let max = 0;
+-  for (let i = 0; i < out.length; i += 1) max = Math.max(max, Math.abs(out[i]));
+-  const gain = max > 0 ? 0.86 / max : 1;
+-  return { sampleRate: SAMPLE_RATE, samples: Float32Array.from(out, (v) => Math.max(-1, Math.min(1, v * gain))) };
+-}
+-
+-function writeWav(fileName, rendered) {
+-  const bytesPerSample = 2;
+-  const dataSize = rendered.samples.length * bytesPerSample;
+-  const header = Buffer.alloc(44);
+-  header.write("RIFF", 0);
+-  header.writeUInt32LE(36 + dataSize, 4);
+-  header.write("WAVE", 8);
+-  header.write("fmt ", 12);
+-  header.writeUInt32LE(16, 16);
+-  header.writeUInt16LE(1, 20);
+-  header.writeUInt16LE(1, 22);
+-  header.writeUInt32LE(SAMPLE_RATE, 24);
+-  header.writeUInt32LE(SAMPLE_RATE * bytesPerSample, 28);
+-  header.writeUInt16LE(bytesPerSample, 32);
+-  header.writeUInt16LE(16, 34);
+-  header.write("data", 36);
+-  header.writeUInt32LE(dataSize, 40);
+-  const data = Buffer.alloc(dataSize);
+-  for (let i = 0; i < rendered.samples.length; i += 1) {
+-    data.writeInt16LE(Math.round(rendered.samples[i] * 32767), i * bytesPerSample);
+-  }
+-  writeFileSync(resolve(OUT_DIR, fileName), Buffer.concat([header, data]));
+-  console.log(`wrote ${fileName} (${dataSize} bytes)`);
+-}
+-
+-const CUES = {
+-  // Quick lane-change blip: short rising square-ish fifth.
+-  "laneSwitch.wav": renderCue(0.14, (a) => {
+-    a.addTone(0, 0.09, 520, 660, 0.7, { attack: 0.002 });
+-    a.addTone(0.02, 0.08, 780, 990, 0.25, { attack: 0.002 });
+-  }),
+-  // Jump: bright rising chirp with a soft noise tick.
+-  "jump.wav": renderCue(0.24, (a) => {
+-    a.addTone(0, 0.2, 330, 720, 0.8, { attack: 0.003, curve: 0.55 });
+-    a.addNoise(0, 0.05, 0.12, { shape: 3 });
+-  }),
+-  // Slide: filtered noise sweeping down.
+-  "slide.wav": renderCue(0.3, (a) => {
+-    a.addNoise(0, 0.28, 0.65, { shape: 1.4, brightness: 0.35 });
+-    a.addTone(0, 0.26, 420, 140, 0.3, { attack: 0.01, curve: 0.8 });
+-  }),
+-  // Graze: sparkle double ping.
+-  "graze.wav": renderCue(0.18, (a) => {
+-    a.addTone(0, 0.09, 1320, 1320, 0.6, { attack: 0.001 });
+-    a.addTone(0.06, 0.1, 1760, 1760, 0.5, { attack: 0.001 });
+-  }),
+-  // Shield hit: heavy impact thud plus burst.
+-  "shieldHit.wav": renderCue(0.34, (a) => {
+-    a.addTone(0, 0.26, 180, 46, 0.95, { attack: 0.001, curve: 0.85 });
+-    a.addNoise(0, 0.16, 0.55, { shape: 2.4, brightness: 0.6 });
+-  }),
+-  // Shield break: glassy descending partials over a noise burst.
+-  "shieldBreak.wav": renderCue(0.5, (a) => {
+-    a.addNoise(0, 0.22, 0.6, { shape: 1.8, brightness: 0.8 });
+-    a.addTone(0, 0.42, 1046, 392, 0.5, { attack: 0.002, curve: 0.6 });
+-    a.addTone(0.04, 0.38, 1568, 523, 0.32, { attack: 0.002, curve: 0.6 });
+-    a.addTone(0.08, 0.34, 2093, 659, 0.2, { attack: 0.002, curve: 0.6 });
+-  }),
+-  // Section rise: swelling chord announcing a new section.
+-  "sectionRise.wav": renderCue(0.7, (a) => {
+-    a.addTone(0, 0.66, 220, 220, 0.5, { attack: 0.35 });
+-    a.addTone(0.05, 0.62, 277.18, 277.18, 0.42, { attack: 0.35 });
+-    a.addTone(0.1, 0.58, 329.63, 329.63, 0.36, { attack: 0.35 });
+-    a.addTone(0.15, 0.52, 440, 440, 0.22, { attack: 0.35 });
+-  }),
+-  // Run over: three-note descending motif.
+-  "runOver.wav": renderCue(1.2, (a) => {
+-    a.addTone(0, 0.3, 392, 392, 0.6, { attack: 0.01 });
+-    a.addTone(0.32, 0.3, 311.13, 311.13, 0.6, { attack: 0.01 });
+-    a.addTone(0.64, 0.5, 233.08, 220, 0.65, { attack: 0.01, curve: 0.4 });
+-  }),
+-  // UI confirm: two-tone latch.
+-  "uiConfirm.wav": renderCue(0.2, (a) => {
+-    a.addTone(0, 0.08, 660, 660, 0.6, { attack: 0.002 });
+-    a.addTone(0.09, 0.1, 880, 880, 0.55, { attack: 0.002 });
+-  })
+-};
+-
+-mkdirSync(OUT_DIR, { recursive: true });
+-for (const [fileName, rendered] of Object.entries(CUES)) writeWav(fileName, rendered);
+-console.log(`generated ${Object.keys(CUES).length} cues`);
+diff --git a/apps/showcase-pulse-tunnel/scripts/register-audio.mjs b/apps/showcase-pulse-tunnel/scripts/register-audio.mjs
+deleted file mode 100644
+index 168da5473..000000000
+--- a/apps/showcase-pulse-tunnel/scripts/register-audio.mjs
++++ /dev/null
+@@ -1,44 +0,0 @@
+-import { spawnSync } from "node:child_process";
+-import { resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(fileURLToPath(new URL("..", import.meta.url)));
+-const repoRoot = resolve(appDir, "../..");
+-const cli = "packages/aura3d-cli/src/cli.ts";
+-const retrievedAt = "2026-08-23T20:00:00Z";
+-const definitions = [
+-  ["pulseDrumsStem", "assets/music/drums.wav", "Four-section 120 BPM drums stem sharing one AudioContext anchor with the other authored stems."],
+-  ["pulseBassStem", "assets/music/bass.wav", "Four-section 120 BPM bass stem sharing one AudioContext anchor with the other authored stems."],
+-  ["pulseLeadStem", "assets/music/lead.wav", "Four-section 120 BPM lead stem sharing one AudioContext anchor with the other authored stems."],
+-  ["pulseAirStem", "assets/music/air.wav", "Four-section 120 BPM air stem sharing one AudioContext anchor with the other authored stems."],
+-  ["pulseLaneSwitchSfx", "assets/sfx/laneSwitch.wav", "Lane-switch cue driven by accepted buffered player input."],
+-  ["pulseJumpSfx", "assets/sfx/jump.wav", "Jump cue driven by accepted grounded jump input."],
+-  ["pulseSlideSfx", "assets/sfx/slide.wav", "Slide cue driven by accepted grounded slide input."],
+-  ["pulseGrazeSfx", "assets/sfx/graze.wav", "Graze cue driven by the route-local measured near-miss window."],
+-  ["pulseShieldHitSfx", "assets/sfx/shieldHit.wav", "Shield-hit cue driven by a real gate collision outside invulnerability."],
+-  ["pulseShieldBreakSfx", "assets/sfx/shieldBreak.wav", "Shield-break cue driven by collision-owned shield exhaustion."],
+-  ["pulseSectionRiseSfx", "assets/sfx/sectionRise.wav", "Section-rise cue driven by authored chart section transition."],
+-  ["pulseRunOverSfx", "assets/sfx/runOver.wav", "Run-over cue driven by natural completion or shield failure summary."],
+-  ["pulseUiConfirmSfx", "assets/sfx/uiConfirm.wav", "UI confirmation cue driven by start, pause, resume, and restart state."]
+-];
+-
+-for (const [id, relativeFile, suitability] of definitions) {
+-  const source = `apps/showcase-pulse-tunnel/${relativeFile}`;
+-  const producer = relativeFile.includes("music/") ? "build-music.mjs" : "build-sfx.mjs";
+-  const result = spawnSync("pnpm", [
+-    "exec", "tsx", "--tsconfig", "tsconfig.base.json", cli,
+-    "assets", "add", source, "--name", id, "--type", "audio",
+-    "--license", "CC0-1.0", "--license-url", "https://creativecommons.org/publicdomain/zero/1.0/",
+-    "--source-page", `https://github.com/auraoneai/aura3d/blob/main/apps/showcase-pulse-tunnel/scripts/${producer}`,
+-    "--download-url", `https://raw.githubusercontent.com/auraoneai/aura3d/main/${source}`,
+-    "--author", "Aura3D synthesis", "--retrieved-at", retrievedAt,
+-    "--quality", "candidate", "--role", "unknown", "--suitability", suitability
+-  ], { cwd: repoRoot, encoding: "utf8", maxBuffer: 128 * 1024 * 1024 });
+-  let payload;
+-  try { payload = JSON.parse(result.stdout); } catch { payload = null; }
+-  if (payload?.ok !== true) {
+-    process.stderr.write(result.stderr || result.stdout);
+-    process.exit(result.status ?? 1);
+-  }
+-  console.log(`Registered ${id}`);
+-}
+diff --git a/apps/showcase-pulse-tunnel/scripts/register-models.mjs b/apps/showcase-pulse-tunnel/scripts/register-models.mjs
+deleted file mode 100644
+index ddec1c43d..000000000
+--- a/apps/showcase-pulse-tunnel/scripts/register-models.mjs
++++ /dev/null
+@@ -1,36 +0,0 @@
+-import { spawnSync } from "node:child_process";
+-import { resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(fileURLToPath(new URL("..", import.meta.url)));
+-const repoRoot = resolve(appDir, "../..");
+-const cli = "packages/aura3d-cli/src/cli.ts";
+-const retrievedAt = "2026-09-02T01:47:00Z";
+-const sourcePage = "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-pulse-tunnel/scripts/build-encounter-finish-v11.py";
+-const definitions = [
+-  ["pulseReactorEncounterWorld", "assets/models/pulseReactorEncounterWorld.glb", "world", "Original CC0 V11 Pulse reactor encounter world with a continuous chamfered deck, recessed exchange runway, textured panel tiling, service conduits, forged arched ribs, overhead cabinets, and a layered terminal iris chamber. This is a rigid decorative world asset; route-local lanes, gates, projectiles, collisions, scoring, and audio timing remain authoritative."],
+-  ["pulseTerminalSentry", "assets/models/pulseTerminalSentry.glb", "character", "Original CC0 V11 rigid Pulse terminal warden character with a readable +Z orientation, connected layered thorax, textured gunmetal shell, ceramic brow and wings, recessed furnace/optic rings, articulated copper spars, rotary cannons, reverse-jointed legs, crown hardware, and grounded talons. It is static presentation geometry; route-local targeting, projectile timing, damage, and outcomes remain authoritative."],
+-  ["pulseRunnerCraft", "assets/models/pulseRunnerCraft.glb", "vehicle", "Original CC0 V11 compact Pulse runner craft with a continuous arrowhead fuselage, packed panel shell, raised smoked cockpit, broad delta foils, ceramic/copper leading edges, ventral keel, turbine nacelles, emissive apertures, stabilizers, rivets, and forward shield collar. Route-local lane, jump, slide, shield, collision, and scoring systems remain authoritative."]
+-];
+-
+-for (const [id, relativeFile, role, suitability] of definitions) {
+-  const source = `apps/showcase-pulse-tunnel/${relativeFile}`;
+-  const result = spawnSync("pnpm", [
+-    "exec", "tsx", "--tsconfig", "tsconfig.base.json", cli,
+-    "assets", "add", source, "--name", id, "--type", "model",
+-    "--license", "CC0-1.0", "--license-url", "https://creativecommons.org/publicdomain/zero/1.0/",
+-    "--source-page", sourcePage,
+-    "--download-url", `https://raw.githubusercontent.com/auraoneai/aura3d/main/${source}`,
+-    "--author", "Aura3D synthesis", "--retrieved-at", retrievedAt,
+-    "--quality", "release", "--role", role, "--suitability", suitability,
+-    "--rendered-probe-json", `tests/reports/showcase-release-asset-probes/${id}.json`,
+-    "--orientation-json", `tests/reports/showcase-release-asset-probes/${id}.orientation.json`
+-  ], { cwd: repoRoot, encoding: "utf8", maxBuffer: 128 * 1024 * 1024 });
+-  let payload;
+-  try { payload = JSON.parse(result.stdout); } catch { payload = null; }
+-  if (payload?.ok !== true) {
+-    process.stderr.write(result.stderr || result.stdout);
+-    process.exit(result.status ?? 1);
+-  }
+-  console.log(`Registered ${id}`);
+-}
+diff --git a/apps/showcase-pulse-tunnel/scripts/write-performance-report.ts b/apps/showcase-pulse-tunnel/scripts/write-performance-report.ts
+deleted file mode 100644
+index f4cb94afd..000000000
+--- a/apps/showcase-pulse-tunnel/scripts/write-performance-report.ts
++++ /dev/null
+@@ -1,82 +0,0 @@
+-import { performance } from "node:perf_hooks";
+-import { createHash } from "node:crypto";
+-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+-import { dirname, join, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-import { createGateSystem } from "../src/gates";
+-import { buildPulseChart } from "../src/patterns";
+-import { createPulsePlayer } from "../src/player";
+-import { createPulseStyleSystem } from "../src/style";
+-
+-const SAMPLES = 12_000;
+-const DT = 1 / 120;
+-const SIMULATION_P95_BUDGET_MS = 1;
+-const DRAW_CALL_BUDGET = 600;
+-const producer = "apps/showcase-pulse-tunnel/scripts/write-performance-report.ts";
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const producerPath = join(repoRoot, producer);
+-const sourceFiles = readdirSync(join(appDir, "src"))
+-  .filter((file) => /\.(?:ts|css)$/.test(file))
+-  .sort();
+-const routeSourceSha256 = (() => {
+-  const hash = createHash("sha256");
+-  for (const file of sourceFiles) {
+-    hash.update(file).update("\0").update(readFileSync(join(appDir, "src", file))).update("\0");
+-  }
+-  return hash.digest("hex");
+-})();
+-const producerSourceSha256 = createHash("sha256").update(readFileSync(producerPath)).digest("hex");
+-const chart = buildPulseChart();
+-const player = createPulsePlayer();
+-const style = createPulseStyleSystem();
+-let schedulerTime = 0;
+-const gates = createGateSystem({
+-  chart,
+-  getSchedulerTime: () => schedulerTime,
+-  getAudioElapsed: () => schedulerTime,
+-  getPlayer: () => player.snapshot()
+-});
+-
+-const samples: number[] = [];
+-for (let index = 0; index < SAMPLES; index += 1) {
+-  const started = performance.now();
+-  schedulerTime += DT;
+-  player.step(DT, schedulerTime * 1000, { left: false, right: false, jump: false, slide: false });
+-  gates.update(DT);
+-  style.step(DT);
+-  if (schedulerTime >= 90) {
+-    schedulerTime = 0;
+-    player.reset();
+-    gates.reset();
+-    style.reset();
+-  }
+-  samples.push(performance.now() - started);
+-}
+-const sorted = [...samples].sort((a, b) => a - b);
+-const p95 = sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))] ?? 0;
+-const completion = JSON.parse(readFileSync(join(repoRoot, "tests/reports/pulse-tunnel/completion-evidence.json"), "utf8"));
+-const observed = {
+-  simulationP95Ms: Number(p95.toFixed(4)),
+-  chartEntries: chart.length,
+-  fullRunDrawCalls: Number(completion.summary?.diagnostics?.drawCalls ?? 0)
+-};
+-const report = {
+-  schema: "aura3d-pulse-tunnel-performance/1.0",
+-  generatedAt: new Date().toISOString(),
+-  producer,
+-  producerSourceSha256,
+-  routeSourceSha256,
+-  scope: "Headless fixed-step timing of chart-owned gate, player, and style simulation. GPU/frame-time or audio-device timing parity is not claimed.",
+-  samples: SAMPLES,
+-  fixedStepSeconds: DT,
+-  budgets: { simulationP95Ms: SIMULATION_P95_BUDGET_MS, fullRunDrawCalls: DRAW_CALL_BUDGET },
+-  observed,
+-  pass: observed.simulationP95Ms <= SIMULATION_P95_BUDGET_MS
+-    && observed.chartEntries > 0
+-    && observed.fullRunDrawCalls > 0
+-    && observed.fullRunDrawCalls <= DRAW_CALL_BUDGET
+-};
+-writeFileSync(join(appDir, "performance-report.json"), JSON.stringify(report, null, 2) + "\n");
+-console.log(JSON.stringify({ pass: report.pass, observed }));
+-if (!report.pass) process.exitCode = 1;
+diff --git a/apps/showcase-pulse-tunnel/scripts/write-route-health.mjs b/apps/showcase-pulse-tunnel/scripts/write-route-health.mjs
+deleted file mode 100644
+index 26165b125..000000000
+--- a/apps/showcase-pulse-tunnel/scripts/write-route-health.mjs
++++ /dev/null
+@@ -1,157 +0,0 @@
+-import { createHash } from "node:crypto";
+-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+-import { dirname, join, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const reportDir = join(repoRoot, "tests/reports/pulse-tunnel");
+-const audioAssetIds = [
+-  "pulseDrumsStem", "pulseBassStem", "pulseLeadStem", "pulseAirStem",
+-  "pulseLaneSwitchSfx", "pulseJumpSfx", "pulseSlideSfx", "pulseGrazeSfx",
+-  "pulseShieldHitSfx", "pulseShieldBreakSfx", "pulseSectionRiseSfx",
+-  "pulseRunOverSfx", "pulseUiConfirmSfx"
+-];
+-const visualAssetId = "pulseRunnerCraft";
+-const terminalAssetId = "pulseTerminalSentry";
+-const worldAssetId = "pulseReactorEncounterWorld";
+-const acceptanceFiles = [
+-  "playable-load.png", "playable-lane-switch.png", "playable-jump.png",
+-  "playable-graze.png", "playable-drop-section.png", "playable-shield-break.png",
+-  "playable-finale.png", "playable-summary.png", "playable-finished.png", "mobile.png"
+-];
+-
+-const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
+-const sha256 = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
+-const sourceFiles = readdirSync(join(appDir, "src")).filter((file) => /\.(?:ts|css)$/.test(file)).sort();
+-const routeSourceSha256 = (() => {
+-  const hash = createHash("sha256");
+-  for (const file of sourceFiles) hash.update(file).update("\0").update(readFileSync(join(appDir, "src", file))).update("\0");
+-  return hash.digest("hex");
+-})();
+-const source = sourceFiles.map((file) => readFileSync(join(appDir, "src", file), "utf8")).join("\n");
+-
+-const manifest = readJson(join(repoRoot, "aura.assets.json"));
+-const assetById = new Map((manifest.assets ?? []).map((entry) => [entry.id, entry]));
+-for (const id of audioAssetIds) {
+-  const asset = assetById.get(id);
+-  if (asset?.type !== "audio" || !asset.hash || !asset.url || asset.quality !== "candidate") throw new Error(`${id} is not a current candidate-quality typed audio asset`);
+-  if (asset.provenance?.license !== "CC0-1.0" || asset.provenance?.author !== "Aura3D synthesis" || !asset.provenance?.sourcePage) throw new Error(`${id} lacks complete CC0 synthesis provenance`);
+-  if (!source.includes(`assets.${id}`) && !source.includes(`"assets.${id}"`)) throw new Error(`Live route does not reference assets.${id}`);
+-}
+-const visualAsset = assetById.get(visualAssetId);
+-if (visualAsset?.type !== "model" || visualAsset.quality !== "release" || visualAsset.role !== "vehicle") throw new Error(`${visualAssetId} is not a release-quality typed vehicle`);
+-if (!visualAsset.hash || !visualAsset.url || !visualAsset.provenance?.sourcePage || !visualAsset.provenance?.license || !visualAsset.renderedProbe?.sha256) throw new Error(`${visualAssetId} lacks release provenance or rendered-probe evidence`);
+-if (!source.includes(`assets.${visualAssetId}`)) throw new Error(`Live route does not reference assets.${visualAssetId}`);
+-const terminalAsset = assetById.get(terminalAssetId);
+-if (terminalAsset?.type !== "model" || terminalAsset.quality !== "release" || terminalAsset.role !== "character") throw new Error(`${terminalAssetId} is not a release-quality typed terminal character`);
+-if (!terminalAsset.hash || !terminalAsset.url || !terminalAsset.provenance?.sourcePage || !terminalAsset.provenance?.license || !terminalAsset.renderedProbe?.sha256) throw new Error(`${terminalAssetId} lacks release provenance or rendered-probe evidence`);
+-if (!source.includes(`assets.${terminalAssetId}`)) throw new Error(`Live route does not reference assets.${terminalAssetId}`);
+-const worldAsset = assetById.get(worldAssetId);
+-if (worldAsset?.type !== "model" || worldAsset.quality !== "release" || worldAsset.role !== "world") throw new Error(`${worldAssetId} is not a release-quality typed arena world`);
+-if (!worldAsset.hash || !worldAsset.url || !worldAsset.provenance?.sourcePage || !worldAsset.provenance?.license || !worldAsset.renderedProbe?.sha256) throw new Error(`${worldAssetId} lacks release provenance or rendered-probe evidence`);
+-if (!source.includes(`assets.${worldAssetId}`)) throw new Error(`Live route does not reference assets.${worldAssetId}`);
+-
+-function validateBrowserEvidence(file, schema) {
+-  const report = readJson(join(reportDir, file));
+-  if (report.schema !== schema) throw new Error(`${file} schema is stale`);
+-  if (report.producerSourceSha256 !== sha256(join(repoRoot, report.producer))) throw new Error(`${file} producer hash is stale`);
+-  if (report.routeSourceSha256 !== routeSourceSha256) throw new Error(`${file} route source hash is stale`);
+-  for (const artifact of report.artifacts ?? []) {
+-    if (!artifact.path || artifact.sha256 !== sha256(join(repoRoot, artifact.path))) throw new Error(`${file} artifact hash is stale`);
+-  }
+-  return report;
+-}
+-
+-const playable = validateBrowserEvidence("playable-evidence.json", "aura3d-pulse-tunnel-playable/1.0");
+-const mobile = validateBrowserEvidence("mobile-evidence.json", "aura3d-pulse-tunnel-mobile/1.0");
+-const completion = validateBrowserEvidence("completion-evidence.json", "aura3d-pulse-tunnel-completion/1.0");
+-const sync = validateBrowserEvidence("sync-report.json", "pulse-tunnel-sync-report/1.0");
+-if (playable.failure?.reason !== "shields-exhausted" || playable.failure?.collisions !== 3 || playable.restart?.state !== "running" || playable.restart?.shields !== 3) throw new Error("Playable failure/restart evidence is incomplete");
+-if (playable.captures?.graze !== true || playable.captures?.drop !== true || playable.captures?.shieldBreak !== true || playable.pause?.frozenDistance !== playable.pause?.stillFrozenDistance) throw new Error("Playable mechanic/paused-clock evidence is incomplete");
+-if (mobile.touchPointerDriven !== true || mobile.viewport?.width !== 390 || mobile.lane?.targetLane !== 2 || mobile.jump?.airborne !== true) throw new Error("Mobile touch evidence is incomplete");
+-if (completion.summary?.state !== "summary" || completion.summary?.status !== "completed" || completion.summary?.runSeconds < 90 || completion.summary?.reducedMotion !== true || !completion.summary?.sectionsVisited?.includes("finale")) throw new Error("Full-run/reduced-motion evidence is incomplete");
+-const syncDecisions = new Set(["GO", "GO-WITH-FRAME-SLACK", "NO-GO-BROWSER-PROFILE", "NO-GO-ENVIRONMENT"]);
+-if (!syncDecisions.has(sync.decision) || sync.toleranceMs !== 80) throw new Error("Sync decision/tolerance is missing or invalid");
+-if (sync.decision === "NO-GO-BROWSER-PROFILE" && (sync.naturalFlip !== true || sync.fallbackFlip?.proven !== true || sync.fallbackFlip?.reason !== "drift-tolerance-exceeded" || sync.fallbackFlip?.gameplayContinued !== true)) throw new Error("Measured browser-profile fallback is not proven");
+-
+-const performance = readJson(join(appDir, "performance-report.json"));
+-if (performance.schema !== "aura3d-pulse-tunnel-performance/1.0" || performance.pass !== true) throw new Error("Pulse Tunnel performance report is missing or failing");
+-if (performance.producerSourceSha256 !== sha256(join(repoRoot, performance.producer)) || performance.routeSourceSha256 !== routeSourceSha256) throw new Error("Pulse Tunnel performance report is stale");
+-const gates = readJson(join(repoRoot, "tools/showcase-library/route-gates.json"));
+-const gate = gates.routes?.find((entry) => entry.id === "showcase-pulse-tunnel");
+-if (!gate || gate.releaseClass !== "prototype-blocked" || gate.published !== true || gate.requiresTypedPrimaryAssets !== false || gate.requiresRoutePrimaryProbe !== false || gate.gameTemplateStatus?.publicTemplateReady !== false) throw new Error("Pulse Tunnel route gate is missing or over-promoted");
+-const primitiveOccurrences = Array.from(source.matchAll(/\bprimitives\.[A-Za-z_$][\w$]*/g)).length;
+-if (primitiveOccurrences > gate.primitiveBudget) throw new Error("Pulse Tunnel primitive source budget exceeded");
+-
+-const routeHealth = {
+-  schema: "aura3d-route-health/1.0",
+-  generatedAt: new Date().toISOString(),
+-  appId: "showcase-pulse-tunnel",
+-  route: "/apps/showcase-pulse-tunnel/",
+-  classification: "prototype-blocked",
+-  publicShowcase: false,
+-  promotionStatus: "hold-public-showcase-until-independent-human-visual-review",
+-  machinePass: true,
+-  renderer: { path: "createAuraApp root safe API", mode: "safe-basic", nativeWebGPU: false, productionRuntimeClaimed: false },
+-  visualSubject: {
+-    kind: "typed spacecraft in an abstract rhythm arena",
+-    typedVisualPrimaryClaimed: true,
+-    statement: "The original release-probed Pulse runner craft, rigid terminal sentry, and continuous reactor encounter world form one non-colliding finale kit; route-local lanes, gates, projectiles, scoring, failure, and reset remain authoritative.",
+-    primaryAsset: {
+-      typedRef: `assets.${visualAssetId}`,
+-      hash: visualAsset.hash,
+-      quality: visualAsset.quality,
+-      role: visualAsset.role,
+-      license: visualAsset.provenance.license,
+-      sourcePage: visualAsset.provenance.sourcePage,
+-      renderedProbe: visualAsset.renderedProbe
+-    },
+-    terminalSentry: {
+-      typedRef: `assets.${terminalAssetId}`,
+-      hash: terminalAsset.hash,
+-      quality: terminalAsset.quality,
+-      role: terminalAsset.role,
+-      license: terminalAsset.provenance.license,
+-      sourcePage: terminalAsset.provenance.sourcePage,
+-      renderedProbe: terminalAsset.renderedProbe,
+-      gameplayAuthority: "none; non-colliding renderer-owned finale endpoint"
+-    },
+-    encounterWorld: {
+-      typedRef: `assets.${worldAssetId}`,
+-      hash: worldAsset.hash,
+-      quality: worldAsset.quality,
+-      role: worldAsset.role,
+-      license: worldAsset.provenance.license,
+-      sourcePage: worldAsset.provenance.sourcePage,
+-      renderedProbe: worldAsset.renderedProbe,
+-      gameplayAuthority: "none; finale-state-bound non-colliding architectural enclosure"
+-    }
+-  },
+-  audioAssets: audioAssetIds.map((id) => ({ typedRef: `assets.${id}`, quality: assetById.get(id).quality, hash: assetById.get(id).hash, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
+-  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "abstract tunnel structure, obstacles, arena dressing, telegraph, and state-driven feedback around the typed player craft", status: "within-set-dressing-and-abstract-role-budget" },
+-  clockContract: { decision: sync.decision, toleranceMs: sync.toleranceMs, naturalFlip: sync.naturalFlip, fallbackFlip: sync.fallbackFlip, measuredDriftSamples: sync.driftSamples, browser: sync.userAgent, claim: "Beat mode is conditional on measured tolerance; this measured profile runs the authored chart in deterministic pattern mode after the proven fallback." },
+-  gameplay: { runLengthSeconds: 90, sections: ["intro", "build", "drop", "finale"], actions: ["lane-left", "lane-right", "jump", "slide"], mechanics: ["telegraph", "avoid", "collision", "graze", "style", "three-shield-failure", "pause", "restart", "completion"], keyboardAndTouch: true, reducedMotionPreservesTimingAndCollision: true },
+-  performance,
+-  routeGate: { config: "tools/showcase-library/route-gates.json", releaseClass: gate.releaseClass, published: gate.published, publicTemplateReady: false, pass: true },
+-  claimStatus: { status: "blocked-pending-human-review", label: "root-safe prototype", allowed: ["release-validated typed spacecraft player", "90-second authored obstacle chart", "four typed stems and nine typed state-driven cues", "measured clock tolerance with deterministic pattern fallback", "root-safe abstract tunnel gameplay"], notAllowed: ["perfect or universal beat accuracy", "physical spacecraft simulation", "production renderer, HDR/IBL, native WebGPU, or postprocess parity", "public promotion before independent exact-artifact review"] },
+-  blockers: ["independent human visual review pending for exact final artifacts"],
+-  evidence: {
+-    global: "window.__AURA3D_SHOWCASE_PULSE_TUNNEL__",
+-    sourceReview: "apps/showcase-pulse-tunnel/src/main.ts",
+-    detailedGameplayGlobal: "window.__PULSE_TUNNEL_EVIDENCE__",
+-    playable: "tests/reports/pulse-tunnel/playable-evidence.json",
+-    mobile: "tests/reports/pulse-tunnel/mobile-evidence.json",
+-    completion: "tests/reports/pulse-tunnel/completion-evidence.json",
+-    sync: "tests/reports/pulse-tunnel/sync-report.json",
+-    acceptanceArtifacts: acceptanceFiles.map((file) => ({ path: `tests/reports/pulse-tunnel/${file}`, sha256: sha256(join(reportDir, file)) })),
+-    performance: "apps/showcase-pulse-tunnel/performance-report.json",
+-    browserSpecs: ["tests/browser/pulse-tunnel-playable.spec.ts", "tests/browser/pulse-tunnel-sync.spec.ts"],
+-    unitSpecs: ["tests/unit/apps/pulse-tunnel-clock.test.ts"],
+-    deployCommand: "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-pulse-tunnel/dist --release --source apps/showcase-pulse-tunnel/src --asset pulseRunnerCraft --asset pulseTerminalSentry --asset pulseReactorEncounterWorld",
+-    deployAssetBoundary: "The strict deploy check validates the three original release-quality Pulse model assets. All 13 live typed audio references remain independently hash/provenance/quality-validated by this generator because the model-oriented deploy validator is scoped to the visual encounter kit."
+-  }
+-};
+-
+-writeFileSync(join(appDir, "route-health.json"), JSON.stringify(routeHealth, null, 2) + "\n");
+-console.log(JSON.stringify({ machinePass: true, primitiveOccurrences, audioAssets: audioAssetIds.length, syncDecision: sync.decision, performancePass: performance.pass }));
+diff --git a/apps/showcase-pulse-tunnel/src/legacy/hud.ts b/apps/showcase-pulse-tunnel/src/legacy/hud.ts
+index 2c1927ad0..d5a5b96ef 100644
+--- a/apps/showcase-pulse-tunnel/src/legacy/hud.ts
++++ b/apps/showcase-pulse-tunnel/src/legacy/hud.ts
+@@ -1,13 +1,4 @@
+-/**
+- * Pulse Tunnel HUD — shields, style meter, distance, section name, sync badge.
+- *
+- * DOM is UI only: every gameplay number here mirrors the same values published to
+- * window.__PULSE_TUNNEL_EVIDENCE__ each frame, and the sync badge (debug) reads the
+- * beat clock sample directly. Touch controls are real buttons that dispatch synthetic
+- * keyboard codes through bindGameTouchControls so input has exactly one path.
+- */
+ import { bindGameTouchControls } from "@aura3d/engine";
+-
+ export interface PulseHudElements {
+   readonly shields: HTMLElement;
+   readonly combatState: HTMLElement;
+@@ -19,7 +10,6 @@ export interface PulseHudElements {
+   readonly score: HTMLElement;
+   readonly syncBadge: HTMLElement;
+ }
+-
+ export interface PulseHudSnapshot {
+   readonly shields: number;
+   readonly multiplier: number;
+@@ -34,12 +24,10 @@ export interface PulseHudSnapshot {
+   readonly syncMode: string;
+   readonly driftMs: number;
+ }
+-
+ export function isPulseDebugMode(): boolean {
+   if (typeof window === "undefined") return false;
+   return /(?:^|[/\?])debug=1(?:&|$)/.test(window.location.search) || window.location.search.includes("debug=1");
+ }
+-
+ export function setupPulseHud(panel: HTMLElement | null): PulseHudElements | null {
+   if (!panel) return null;
+   panel.innerHTML = `
+@@ -111,7 +99,6 @@ export function setupPulseHud(panel: HTMLElement | null): PulseHudElements | nul
+     syncBadge: require("pulse-sync-badge")
+   };
+ }
+-
+ export function updatePulseHud(elements: PulseHudElements | null, snapshot: PulseHudSnapshot): void {
+   if (!elements) return;
+   // T1.12: rebuild shield pips only when the count changes; guard every
+diff --git a/apps/showcase-pulse-tunnel/src/legacy/main.ts b/apps/showcase-pulse-tunnel/src/legacy/main.ts
+index daed99cfa..704dfa1d1 100644
+--- a/apps/showcase-pulse-tunnel/src/legacy/main.ts
++++ b/apps/showcase-pulse-tunnel/src/legacy/main.ts
+@@ -1,13 +1,3 @@
+-/**
+- * Pulse Tunnel - mount, systems, evidence.
+- *
+- * Prototype route (PRD the Pulse Tunnel implementation contract). On-rails rhythm runner:
+- * obstacles schedule against the AudioContext clock through src/beat-clock.ts, the
+- * four synthesized stems mix through src/tunnel-audio.ts buses, and the whole look
+- * builds on the proven prefabs.neonTunnel() kit with authored emissive geometry.
+- * Prototype route: a release-validated typed spacecraft is the player silhouette;
+- * the gates and arena remain deliberate renderer-owned abstract visualization.
+- */
+ import {
+   camera,
+   effects,
+@@ -29,7 +19,6 @@ import {
+   createRumbleDriver,
+   createTweenEngine
+ } from "@aura3d/game";
+-import { bindPulseEvidence } from "../evidence";
+ import { bindPulseDrive } from "../scenario-drive";
+ import { pulseScenarios } from "../scenarios";
+ import { assets } from "../../../../src/aura-assets";
+@@ -58,21 +47,10 @@ import { createPulsePlayer } from "../gameplay/player";
+ import { createPulseStyleSystem } from "../gameplay/style";
+ import { createTunnelAudio } from "./tunnel-audio";
+ import { isPulseDebugMode, setupPulseHud, updatePulseHud } from "./hud";
+-
+ const reducedMotion =
+   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+-// Screenshot-only presentation mode keeps the gameplay/HUD contract intact while
+-// giving visual review a clean renderer-first frame. The normal route remains
+-// unchanged for players and for the interaction/evidence specs.
+-// Candidate Meshy reactor-deck arena shell. Opt-in only via ?arena=candidate so
+-// the release-validated V11 shell stays the default for players, specs, and
+-// the review capture. Non-colliding presentation; lanes, chart, collisions,
+-// and scoring remain route-authoritative.
+ const pulseArenaCandidateEnabled =
+   typeof window !== "undefined" && new URLSearchParams(window.location.search).get("arena") === "candidate";
+-
+-// ---- authored presentation constants ---------------------------------------
+-
+ const HUE_BY_SECTION: Record<PulseSectionId, string> = {
+   intro: "#22d3ee",
+   build: "#e879f9",
+@@ -86,20 +64,12 @@ const GATE_COLOR_BY_KIND = {
+   pylon: "#fbbf24"
+ } as const;
+ type GateKindId = keyof typeof GATE_COLOR_BY_KIND;
+-
+ const GATE_SLOTS = 8;
+ const SPARK_POOL = 10;
+ const FOG_PULSE_SECONDS = 0.18;
+ const HIT_FLASH_SECONDS = 0.14;
+ const INVULN_SECONDS = 1.2;
+ const HUE_RINGS_PER_SECTION = 4;
+-// Test-only seek captures pause the renderer immediately after jumping to the
+-// finale. Reserve enough of the 90-second run for the keyboard event and
+-// screenshot encoder to execute even under software-GL/reduced-motion runs.
+-const PULSE_CAPTURE_HEADROOM_SECONDS = 1.75;
+-
+-// ---- systems ----------------------------------------------------------------
+-
+ const pulseTween = createTweenEngine();
+ const pulseFx = createFxParticlePass(app.effects);
+ const pulseJuice = createJuice<
+@@ -122,7 +92,6 @@ const pulseJuice = createJuice<
+   tweens: pulseTween,
+   rumble: createRumbleDriver()
+ });
+-
+ const input = game.input({
+   actions: {
+     left: ["KeyA", "ArrowLeft"],
+@@ -134,30 +103,13 @@ const input = game.input({
+   },
+   bufferMs: 120
+ });
+-
+ const tunnelAudio = createTunnelAudio();
+-bindPulseEvidence(() => evidence);
+-bindPulseDrive({
+-  beginRun,
+-  applySection: (id: string, announce: boolean) => applySection(id as PulseSectionId, announce),
+-  seekAhead(seconds: number): void {
+-    const remainingCaptureWindow = Math.max(
+-      0,
+-      PULSE_RUN_SECONDS - PULSE_CAPTURE_HEADROOM_SECONDS - beatClock.time()
+-    );
+-    beatClock.advanceScheduler(Math.min(Math.max(0, seconds), remainingCaptureWindow));
+-    gateSystem.respace();
+-  },
+-  endRun
+-});
+ const player = createPulsePlayer();
+ const styleSystem = createPulseStyleSystem();
+ const chart = buildPulseChart();
+-
+ let injectedDriftMs = 0;
+ let runAnchorSeconds = 0;
+ const driftSamples: { readonly t: number; readonly driftMs: number }[] = [];
+-
+ const beatClock = createBeatClock({
+   getAudioTime: () => tunnelAudio.nowSeconds(),
+   getFrameTime: () => performance.now() / 1000,
+@@ -168,24 +120,9 @@ const beatClock = createBeatClock({
+     if (driftSamples.length > 180) driftSamples.shift();
+   }
+ });
+-
+ const gateEvents: PulsePassEvent[] = [];
+-/** Cumulative across restarts so browser specs can sample many arrivals. */
+ const gateEventLog: PulsePassEvent[] = [];
+-
+-/**
+- * Renderer-owned encounter feedback follows the same pass events that drive
+- * the HUD/evidence stream.  Keeping the source event (rather than a free
+- * running pulse timer) lets the review composition show where the latest gate
+- * was actually resolved and whether that resolution was a clean pass, graze,
+- * or shield hit.  It never feeds back into chart, collision, or score state.
+- */
+-interface PulseReviewCombatPulse {
+-  readonly event: PulsePassEvent;
+-  ageSeconds: number;
+-}
+ let reviewCombatPulse: PulseReviewCombatPulse | null = null;
+-
+ const gateSystem = createGateSystem({
+   chart,
+   getSchedulerTime: () => beatClock.time(),
+@@ -215,13 +152,8 @@ const gateSystem = createGateSystem({
+     if (event.type === "collision") applyCollision(event);
+   }
+ });
+-
+ let playerState = player.snapshot();
+-/** Gate ids that already resolved; drives the published upcoming list. */
+ const resolvedGateIds = new Set<string>();
+-
+-// ---- scene ------------------------------------------------------------------
+-
+ const hueIds: Record<PulseSectionId, string[]> = { intro: [], build: [], drop: [], finale: [] };
+ const hueBuilders = (Object.keys(HUE_BY_SECTION) as PulseSectionId[]).flatMap((sectionId) =>
+   Array.from({ length: HUE_RINGS_PER_SECTION }, (_, ring) => {
+@@ -250,7 +182,6 @@ const hueBuilders = (Object.keys(HUE_BY_SECTION) as PulseSectionId[]).flatMap((s
+     });
+   }).flat()
+ );
+-
+ const gateMaterialSpec = (kind: GateKindId, flashing: boolean): AuraMaterialSpec =>
+   material.emissive({
+     name: `pulse gate ${flashing ? "pre-flash" : "body"} ${kind}`,
+@@ -258,14 +189,7 @@ const gateMaterialSpec = (kind: GateKindId, flashing: boolean): AuraMaterialSpec
+     emissive: GATE_COLOR_BY_KIND[kind],
+     emissiveIntensity: flashing ? 2.8 : 1.2
+   });
+-
+ const glowMaterial = material.emissive({ name: "pulse glider engine glow", color: "#a5f3fc", emissive: "#22d3ee", emissiveIntensity: 3.35 });
+-
+-// Review-only encounter materials. The live tunnel keeps its established
+-// renderer-owned neon language; the exact visual frame gets a restrained
+-// reactor-steel stage with explicit value separation so the typed actors and
+-// exchange read as one place rather than a pile of emissive primitives.
+-
+ const gateSlotBuilders = (() => {
+   const builders = [];
+   for (let slot = 0; slot < GATE_SLOTS; slot += 1) {
+@@ -285,7 +209,6 @@ const gateSlotBuilders = (() => {
+   }
+   return builders;
+ })();
+-
+ const sparkBuilders = Array.from({ length: SPARK_POOL }, (_, index) =>
+   primitives.sphere({
+     name: `pulse graze spark ${index + 1}`,
+@@ -300,9 +223,6 @@ const sparkBuilders = Array.from({ length: SPARK_POOL }, (_, index) =>
+     .scale([0.04, 0.04, 0.04])
+     .runtime(game.runtimeNode(`pulse-spark-${index}`, { tags: ["graze-trail"] }))
+ );
+-
+-// Receding 3D depth markers make the glider lane legible at finale capture scale.
+-// These are set dressing only; beat timing and collision truth remain unchanged.
+ const depthTrackBuilders = Array.from({ length: 7 }, (_, index) => {
+   const z = -5 - index * 5.2;
+   const scale = Math.max(0.42, 1 - index * 0.07);
+@@ -334,10 +254,6 @@ const finaleTerminalSentryBuilder = model(assets.pulseTerminalSentry, {
+   .runtime(game.runtimeNode("pulse-finale-terminal-sentry", {
+     tags: ["finale-target", "typed-terminal-sentry", "renderer-owned", "non-colliding"]
+   }));
+-// A release-probed authored arena shell gives the real finale exchange a
+-// coherent architectural enclosure. It is a typed, non-colliding world asset:
+-// the live chart, lanes, shields, and projectile pools retain all gameplay
+-// authority, and the shell appears only while the actual finale state is live.
+ const finaleArenaShellBuilder = model(assets.pulseReactorEncounterWorld, {
+   name: "pulse original reactor encounter world",
+   role: "primaryWorld",
+@@ -354,9 +270,6 @@ const finaleArenaShellBuilder = model(assets.pulseReactorEncounterWorld, {
+   .runtime(game.runtimeNode("pulse-finale-arena-shell", {
+     tags: ["finale-arena", "typed-world", "release-probed", "renderer-owned", "non-colliding"]
+   }));
+-// Meshy candidate reactor-deck arena (quality: candidate). Same enclosure
+-// footprint class as the V11 shell it swaps with; shown only when
+-// ?arena=candidate is set.
+ const finaleArenaCandidateBuilder = model(assets.pulseArena, {
+   name: "pulse candidate reactor deck arena",
+   role: "primaryWorld",
+@@ -380,10 +293,6 @@ const finaleProjectileBuilders = Array.from({ length: 18 }, (_, index) =>
+     .scale([0.055, 0.42, 0.055])
+     .runtime(game.runtimeNode("pulse-finale-projectile-" + index, { tags: ["finale-projectile", "rhythm-lance", "renderer-owned"] }))
+ );
+-
+-// Four shield vanes frame the terminal sentry into one readable encounter
+-// silhouette. They flank its dock and visually explain the opposing pressure
+-// streams; no vane participates in runner collision or chart timing.
+ const finaleShieldVaneBuilders = Array.from({ length: 4 }, (_, index) => {
+   const side = index % 2 === 0 ? -1 : 1;
+   const upper = index < 2;
+@@ -404,12 +313,6 @@ const finaleShieldVaneBuilders = Array.from({ length: 4 }, (_, index) => {
+       tags: ["finale-target", "shield-architecture", "renderer-owned"]
+     }));
+ });
+-
+-// Renderer-owned cavern dressing gives the lane a readable material horizon
+-// instead of leaving the neon kit floating in an empty gradient. The slabs sit
+-// outside the three gameplay lanes, so they cannot change gate geometry or
+-// collision truth; they are only the near/far rock silhouettes and reflective
+-// ledges that make the active runner frame feel grounded.
+ const cavernRockBuilders = Array.from({ length: 22 }, (_, index) => {
+   const side = index % 2 === 0 ? -1 : 1;
+   const depth = Math.floor(index / 2);
+@@ -434,10 +337,6 @@ const cavernRockBuilders = Array.from({ length: 22 }, (_, index) => {
+     .scale(rockScale)
+     .runtime(game.runtimeNode("pulse-cavern-rock-" + index, { tags: ["cavern-dressing", "set-dressing"] }));
+ });
+-
+-// Larger faceted spires sit just beyond the three playable lanes. Together
+-// with the slabs they supply the broken basalt horizon visible in the active
+-// finale, while remaining renderer-owned set dressing with no collision role.
+ const cavernSpireBuilders = Array.from({ length: 14 }, (_, index) => {
+   const side = index % 2 === 0 ? -1 : 1;
+   const depth = Math.floor(index / 2);
+@@ -460,9 +359,6 @@ const cavernSpireBuilders = Array.from({ length: 14 }, (_, index) => {
+     .scale([radius, height, radius * 0.82])
+     .runtime(game.runtimeNode("pulse-cavern-spire-" + index, { tags: ["cavern-dressing", "renderer-owned", "non-colliding"] }));
+ });
+-
+-// Broken warm seams on the outer floor echo the comparator's red terrain and
+-// give the reflective lane a second color family without touching the track.
+ const lavaChannelBuilders = Array.from({ length: 12 }, (_, index) => {
+   const side = index % 2 === 0 ? -1 : 1;
+   const depth = Math.floor(index / 2);
+@@ -481,11 +377,6 @@ const lavaChannelBuilders = Array.from({ length: 12 }, (_, index) => {
+     .scale([0.2 + (index % 2) * 0.12, 0.028, 0.8 + (index % 3) * 0.28])
+     .runtime(game.runtimeNode("pulse-lava-seam-" + index, { tags: ["terrain-dressing", "renderer-owned", "non-colliding"] }));
+ });
+-
+-// Thin, staggered in-scene rain strokes echo the comparator's weathered action
+-// atmosphere. They are ordinary renderer geometry (not CSS or fake HUD FX),
+-// positioned above and outside the playable lane so mobile/reduced-motion
+-// behavior remains governed by the existing route systems.
+ const rainBuilders = Array.from({ length: 30 }, (_, index) => {
+   const column = index % 10;
+   const depth = Math.floor(index / 10);
+@@ -507,7 +398,6 @@ const rainBuilders = Array.from({ length: 30 }, (_, index) => {
+     .scale([0.014, 0.38 + (index % 4) * 0.11, 0.014])
+     .runtime(game.runtimeNode("pulse-rain-" + index, { tags: ["weather-dressing", "renderer-owned"] }));
+ });
+-
+ const ledgeBuilders = Array.from({ length: 8 }, (_, index) => {
+   const z = -5.4 - index * 4.2;
+   return primitives.box({
+@@ -525,12 +415,6 @@ const ledgeBuilders = Array.from({ length: 8 }, (_, index) => {
+     .scale([3.22, 0.06, 1.62])
+     .runtime(game.runtimeNode("pulse-floor-ledge-" + index, { tags: ["depth-landmark", "set-dressing"] }));
+ });
+-
+-// A renderer-owned basalt arena under the finale boss turns the far end of the
+-// lane into a staged encounter rather than a ring floating in black space.
+-// The track plane remains on top through the center, and every arena node is
+-// deliberately non-colliding so gate timing and the three gameplay lanes stay
+-// authoritative.
+ const finaleArenaMaterial = material.pbr({
+   name: "pulse finale basalt arena",
+   color: "#51415f",
+@@ -603,134 +487,10 @@ const finaleArenaBuilders = [
+       .runtime(game.runtimeNode("pulse-finale-perimeter-" + index, { tags: ["finale-arena", "renderer-owned", "non-colliding"] }));
+   })
+ ];
+-
+-// The release-review lens is a complete, continuous tunnel volume. It does
+-// not import an arena/backdrop from another route: floor, ribs, roof, walls,
+-// conduits, and the terminal iris all use the same restrained reactor-steel
+-// material family and one vanishing point. Every piece is renderer-owned and
+-// non-colliding, so the chart and gate system remain the gameplay authority.
+-// Review-only practicals keep the reactor bay legible as a place.  They sit
+-// one value step below the typed runner/sentry, adding cool/warm depth without
+-// flattening the encounter into another neon diagram.
+-// Packet cores are deliberately spherical and high-value.  The previous
+-// capsule-only packets rasterized as a row of vertical spikes in the frozen
+-// review frame, which made the exchange read as decoration rather than fire.
+-// A bright core plus a separate directional wake keeps the projectile as a
+-// legible volume while the wake communicates travel direction.
+-
+-// The encounter stage is intentionally built from a small authored material
+-// family rather than a single dark floor.  These inset panels and hazard
+-// strips give the lane a readable construction rhythm at the review camera:
+-// cool graphite slabs carry the runners, while the warm seams establish the
+-// sentinel's pressure side.  They are renderer-owned set dressing only; the
+-// chart, collider, and typed actors remain the gameplay authority.
+-
+-// A sparse set of asymmetrical bulkheads and signal braces gives the review
+-// lens an authored room profile instead of a blank gradient. These stay outside
+-// all three gameplay lanes and are not collision or timing surfaces.
+-
+-// The review composition previously stopped at two dark buttresses and a
+-// single backplate. These restrained reactor panels add a visible rear plane,
+-// repeatable floor scale, and a warm/cool material cadence without becoming
+-// a second hero asset. They are renderer-owned set dressing only; the chart,
+-// lanes, and collision systems remain unchanged.
+-
+-// The current typed encounter already establishes the deck and impact shelf,
+-// but its upper half still reads as empty negative space in a frozen frame.
+-// These low-intensity windows, side columns, floor chevrons, and horizon beams
+-// build a continuous reactor-bay silhouette. They are renderer-owned dressing
+-// outside all three gameplay lanes; the chart, collider, and typed assets stay
+-// the only gameplay authorities.
+-
+-// Broken basalt plates and hot/cool seams give the encounter a terrain story
+-// closer to the comparator's playable arena.  They sit outside the authored
+-// three-lane collider envelope and are renderer-owned set dressing only.
+-
+-// The previous review frame had a deck, side rails, and a handful of flat
+-// plates, but the player and sentry still appeared to hover in the same plane
+-// as the exchange. These three stepped encounter islands establish a real
+-// launch pad, impact shelf, and sentinel dock. They are renderer-owned
+-// set-dressing only: no island is part of the chart, lane, or collider model.
+-// The low circular profiles deliberately echo the broken basalt forms in Furi
+-// while preserving the route's Pulse steel/cyan/rose identity.
+-
+-// Irregular side shelves close the horizon and supply the tiered depth that
+-// the comparator's arena gets from broad rock platforms. They stay outside
+-// the three playable lanes and never become a second character or collision
+-// surface. Staggering their height and yaw prevents a repeated fence pattern.
+-
+-// Explicit in-scene origin markers and tapered connector beams make the
+-// projectile ownership inspectable: cyan fire leaves the runner's launch
+-// muzzle, rose fire leaves the sentry's weapon plane, and both streams meet at
+-// the same impact shelf. These are renderer-owned support nodes; gate events,
+-// shields, score, and the authored chart remain the gameplay authority.
+-
+-// Readability accents are attached to the typed silhouettes, not substitutes
+-// for them: a cool edge traces the runner's wing line, a warm return marker
+-// identifies the sentry's fire lane, and a small impact cluster marks the
+-// actual exchange midpoint. Each node is renderer-owned support geometry with
+-// no gameplay or collision role.
+-
+-// The typed terminal sentry's authored gunmetal/obsidian shell is intentionally
+-// dark, but at the exact review distance its shoulder mass can merge into the
+-// reactor backplate. These small, non-colliding armour and reactor markers are
+-// attached to the sentry's review pose so its silhouette reads as a deliberate
+-// combatant rather than a blocky black cut-out. The GLB remains the only primary
+-// character; this is renderer-owned contour support, not a replacement body.
+-
+-// A few compact contour pieces reinforce the two typed silhouettes at the
+-// frozen review distance.  The runner receives cyan engine collars and a
+-// canopy spine; the sentry receives a rose sensor visor and paired weapon
+-// rails.  These are explicitly support geometry, never a replacement body or
+-// a second gameplay collider, so the typed GLBs remain the only named actors.
+-
+-// The final visual pass uses a purpose-built, three-plane encounter stage. The
+-// old custom footprint prism was broad enough to become a single blank floor
+-// under safe-basic; these smaller authored modules create a clear launch apron,
+-// recessed exchange lane, and raised sentinel dock while leaving all timing and
+-// collision authority in the existing chart/gate systems.
+-
+-// Compact modeled packet cores replace the old review cylinders, whose
+-// safe-basic orientation could rasterize as opaque cards or vertical spikes.
+-// They are still renderer-owned three-dimensional scene nodes: the route
+-// animates them between typed actors, while the gate chart remains the only
+-// gameplay authority.
+-
+-// Each authored packet now leaves a short, dimmer 3D wake. The wakes are
+-// intentionally separate nodes so their direction and depth can be inspected
+-// in the exact frame; they are not CSS trails or gameplay/collision geometry.
+-// A box is used here instead of a Y-axis capsule so the runtime can aim the
+-// wake in the actual X/Z travel direction with one deterministic yaw. The
+-// sphere packet remains the bright projectile core; this directional support
+-// piece is what makes the two streams read as fire instead of a pile of dots.
+-
+-// A small radial burst at the exchange midpoint supplies an authored impact
+-// hierarchy between the two typed actors. It remains a presentation cue only;
+-// shield loss, graze, and chart timing continue to come from gateSystem.
+-
+-// Impact sparks are separate emissive scene nodes rather than a single bright
+-// card.  Their radial placement and pulse give the frozen capture a readable
+-// contact moment between the opposing streams; they remain presentation-only
+-// and never feed shield, gate, or score state.
+-
+-// Directional impact rays read more like a parry/explosion than a static ball
+-// cluster.  They are short capsules with alternating cool/warm materials and
+-// remain locked to the event impact plane; no ray participates in collision or
+-// score resolution.
+-
+-// Event rings and a cross-shaped contact flash turn the latest gate result into
+-// a legible in-scene beat. They are driven from `reviewCombatPulse` below (the
+-// same PulsePassEvent published to evidence), so a pass/graze/collision can be
+-// inspected at the impact plane without inventing a second combat simulation.
+-// Keep the public neonTunnel rails, wall washes, streaks, braces, sparks, and
+-// fog, but omit its decorative circular torus bands. The route's thin
+-// section-colored frames above own anticipation; thick concentric rings hid
+-// the player lane and incoming obstacle at phone width.
+ const tunnelBackdrop = prefabs.neonTunnel({ rings: 8 }).filter((node) => {
+   const name = "name" in node ? String(node.name ?? "") : "";
+   return !name.includes("true circular neon tunnel tube ring");
+ });
+-
+ const pulseGame = createGame({
+   id: "showcase-pulse-tunnel",
+   target: "#app",
+@@ -884,23 +644,13 @@ const pulseScene = scene()
+       ...sparkBuilders
+     ])
+     .camera(camera.perspective( { position: [0, 0.72, 3.8], target: [0, 0.32, -8], fov: 50 }));
+-
+ const app = pulseGame.app;
+ pulseGame.start();
+-
+-// ---- runtime handles ---------------------------------------------------------
+-
+-/**
+- * The concrete runtime handle behind app.nodes also exposes setMaterial for primitive
+- * nodes; RuntimeNodeHandleLike types it as optional-absent, so this structural
+- * extension names what the gate pre-flash actually calls.
+- */
+ interface PulseNodeHandle extends RuntimeNodeHandleLike {
+   setMaterial(spec: AuraMaterialSpec): this;
+ }
+ const requireHandle = (id: string): RuntimeNodeHandleLike => app.nodes.require(id);
+ const requireGateHandle = (id: string): PulseNodeHandle => app.nodes.require(id) as unknown as PulseNodeHandle;
+-
+ const fogPulse = requireHandle("pulse-fog-pulse");
+ const hitFlash = requireHandle("pulse-hit-flash");
+ const shipBody = requireHandle("pulse-ship-body");
+@@ -911,19 +661,8 @@ const finaleShieldVanes = finaleShieldVaneBuilders.map((_, index) => requireHand
+ const finaleArenaShell = requireHandle(pulseArenaCandidateEnabled ? "pulse-finale-arena-candidate" : "pulse-finale-arena-shell");
+ const finaleTerminalSentry = requireHandle("pulse-finale-terminal-sentry");
+ const finaleProjectiles = finaleProjectileBuilders.map((_, index) => requireHandle("pulse-finale-projectile-" + index));
+-// The authored basalt arena is finale dressing, not a permanent spawn-room
+-// floor.  Before this state gate the large concentric rings/perimeter were
+-// visible from the ready/intro frame, filling the route-primary probe and
+-// obscuring the playable lane before any finale encounter existed.  Keep the
+-// same renderer-owned modules and IDs, but make their visibility follow the
+-// actual finale state just like the typed sentry and shield architecture.
+ const finaleArenaDressing: RuntimeNodeHandleLike[] = ! [];
+ const rainHandles = rainBuilders.map((_, index) => requireHandle("pulse-rain-" + index));
+-// Preserve each typed asset's authored material separation in review capture.
+-// Replacing all sub-materials with one finish collapsed the runner/sentry into
+-// high-contrast slabs, hiding the primary silhouettes that the exact frame must
+-// make legible. Review lighting now supplies the encounter palette while the
+-// typed GLBs retain their own hull/optic/armor values.
+ fogPulse.setVisible(false);
+ hitFlash.setVisible(false);
+ finaleBeacon.setVisible(false);
+@@ -933,14 +672,12 @@ finaleTerminalSentry.setVisible(false);
+ for (const dressing of finaleArenaDressing) dressing.setVisible(false);
+ for (const projectile of finaleProjectiles) projectile.setVisible(false);
+ for (const rain of rainHandles) rain.setVisible(false);
+-
+ const hueHandles: Record<PulseSectionId, RuntimeNodeHandleLike[]> = {
+   intro: hueIds.intro.map(requireHandle),
+   build: hueIds.build.map(requireHandle),
+   drop: hueIds.drop.map(requireHandle),
+   finale: hueIds.finale.map(requireHandle)
+ };
+-
+ interface GateSlotParts {
+   readonly top: PulseNodeHandle;
+   readonly bottom: PulseNodeHandle;
+@@ -956,7 +693,6 @@ for (const parts of gateSlots) {
+   parts.bottom.setVisible(false);
+   parts.core.setVisible(false);
+ }
+-
+ const sparks: { handle: RuntimeNodeHandleLike; life: number; x: number; y: number }[] =
+   Array.from({ length: SPARK_POOL }, (_, index) => ({
+     handle: app.nodes.require(`pulse-spark-${index}`),
+@@ -965,11 +701,7 @@ const sparks: { handle: RuntimeNodeHandleLike; life: number; x: number; y: numbe
+     y: 0
+   }));
+ for (const spark of sparks) spark.handle.setVisible(false);
+-
+-// ---- evidence ---------------------------------------------------------------
+-
+ type RunState = "ready" | "running" | "paused" | "summary";
+-
+ const evidence = {
+   schema: "pulse-tunnel-evidence/1.0",
+   appId: "showcase-pulse-tunnel",
+@@ -1046,40 +778,6 @@ const evidence = {
+   frameCount: 0,
+   diagnostics: undefined as unknown
+ };
+-
+-
+-/**
+- * Test-only fault injection for the sync spec: shifts the drift monitor's readings
+- * by ms milliseconds so the flip path is exercised end-to-end in a real browser
+- * without waiting for real hardware drift. Documented in the README.
+- */
+-Object.defineProperty(window, "__PULSE_TUNNEL_TEST__", {
+-  value: {
+-    injectDrift(ms: number): void {
+-      injectedDriftMs = ms;
+-    },
+-    /**
+-     * Test-only: jump the scheduler forward so specs can reach later sections
+-     * (e.g. the drop-section hue capture) without surviving the whole run.
+-     */
+-    seekAhead(seconds: number): void {
+-      // Keep this seam deterministic without allowing a large requested seek
+-      // to cross the natural `finished` boundary before the caller can freeze
+-      // the finale frame. Normal gameplay and the live clock are unchanged.
+-      const remainingCaptureWindow = Math.max(
+-        0,
+-        PULSE_RUN_SECONDS - PULSE_CAPTURE_HEADROOM_SECONDS - beatClock.time()
+-      );
+-      beatClock.advanceScheduler(Math.min(Math.max(0, seconds), remainingCaptureWindow));
+-      gateSystem.respace();
+-    }
+-  },
+-  configurable: true,
+-  writable: true
+-});
+-
+-// ---- run control ------------------------------------------------------------
+-
+ const hudElements = setupPulseHud(document.getElementById("panel"));
+ const debugHud = isPulseDebugMode();
+ let runState: RunState = "ready";
+@@ -1088,7 +786,6 @@ let hitFlashRemaining = 0;
+ let runStartPending = false;
+ const startupInputLatch = { left: false, right: false, jump: false, slide: false };
+ let lastSection: PulseSectionId = "intro";
+-
+ function applySection(sectionId: PulseSectionId, announce: boolean): void {
+   lastSection = sectionId;
+   evidence.section = sectionId;
+@@ -1103,7 +800,6 @@ function applySection(sectionId: PulseSectionId, announce: boolean): void {
+     pulseJuice.fire("section-rise");
+   }
+ }
+-
+ async function beginRun(): Promise<void> {
+   if (runState === "running" || runStartPending) return;
+   runStartPending = true;
+@@ -1126,7 +822,6 @@ async function beginRun(): Promise<void> {
+     runStartPending = false;
+   }
+ }
+-
+ function endRun(reason: string): void {
+   runState = "summary";
+   evidence.finishedReason = reason;
+@@ -1141,7 +836,6 @@ function endRun(reason: string): void {
+   void tunnelAudio.sfx("runOver");
+   pulseJuice.fire("run-over");
+ }
+-
+ function restart(): void {
+   player.reset();
+   styleSystem.reset();
+@@ -1182,7 +876,6 @@ function restart(): void {
+   fogPulse.setVisible(false);
+   void beginRun();
+ }
+-
+ function onBeatReached(beat: number): void {
+   evidence.beatCount = Math.max(evidence.beatCount, beat);
+   const clampedBeat = Math.min(Math.max(beat, 0), PULSE_TOTAL_BEATS - 1);
+@@ -1193,7 +886,6 @@ function onBeatReached(beat: number): void {
+     fogPulse.setVisible(true);
+   }
+ }
+-
+ function spawnSpark(sourceGateId: string): void {
+   const spark = sparks.find((entry) => entry.life <= 0) ?? sparks[0];
+   const gate = gateSystem.activeGates().find((candidate) => candidate.id === sourceGateId);
+@@ -1202,7 +894,6 @@ function spawnSpark(sourceGateId: string): void {
+   spark.life = 0.42;
+   spark.handle.setPosition(spark.x, spark.y, PULSE_PLAYER_Z + 0.25).setVisible(true);
+ }
+-
+ function applyCollision(_event: PulsePassEvent): void {
+   evidence.stats.collisions += 1;
+   evidence.shields = Math.max(0, evidence.shields - 1);
+@@ -1223,17 +914,11 @@ function applyCollision(_event: PulsePassEvent): void {
+     pulseJuice.fire(shieldCue === "shieldHit" ? "shield-hit" : "shield-break", { position: [playerState.x, playerState.y + 0.42, PULSE_PLAYER_Z - 0.2] });
+   }
+ }
+-
+-// ---- start gesture -----------------------------------------------------------
+-
+ const startGesture = (): void => {
+   if (runState === "ready") void beginRun();
+ };
+ window.addEventListener("keydown", startGesture);
+ window.addEventListener("pointerdown", startGesture);
+-
+-// ---- frame loop --------------------------------------------------------------
+-
+ app.onFrame(() => {
+   evidence.frameCount += 1;
+   const nowMs = performance.now();
+@@ -1308,11 +993,8 @@ app.onFrame(() => {
+   renderWorld(dt);
+   publish(styleSnapshot);
+ });
+-
+ let lastFrameTimeMs = performance.now();
+-
+ const slotFlashStates = new Map<number, boolean>();
+-
+ function renderWorld(dt: number): void {
+   if (reviewCombatPulse) {
+     reviewCombatPulse.ageSeconds += dt;
+@@ -1549,7 +1231,6 @@ function renderWorld(dt: number): void {
+     if (hitFlashRemaining <= 0) hitFlash.setVisible(false);
+   }
+ }
+-
+ function placePart(
+   handle: RuntimeNodeHandleLike,
+   visible: boolean,
+@@ -1563,7 +1244,6 @@ function placePart(
+   if (!visible) return;
+   handle.setPosition(x, y, z).setScale([scaleX, scaleY, 0.18]);
+ }
+-
+ function publish(styleSnapshot?: ReturnType<typeof styleSystem.step>): void {
+   const snapshot = styleSnapshot ?? styleSystem.snapshot();
+   const sample = beatClock.sample();
+@@ -1648,14 +1328,11 @@ function publish(styleSnapshot?: ReturnType<typeof styleSystem.step>): void {
+     driftMs: sample.driftMs
+   });
+ }
+-
+-/** Accepted-status alias: paused still renders every frame, so it reads "running". */
+ function acceptedStatus(): string {
+   if (runState === "summary") return "completed";
+   if (runState === "running") return "running";
+   return "ready";
+ }
+-
+ function hudMessage(): string {
+   switch (runState) {
+     case "ready":
+@@ -1670,12 +1347,6 @@ function hudMessage(): string {
+       return "";
+   }
+ }
+-
+-/**
+- * The review HUD's second mission line is a compact, truthful state cue. It is
+- * derived only from the same section/run state that drives the chart and outcome
+- * evidence; it does not invent projectile hits or expose a cosmetic timer.
+- */
+ function combatHudState(): string {
+   if (runState === "summary") {
+     return evidence.finishedReason === "shields-exhausted"
+@@ -1686,6 +1357,5 @@ function combatHudState(): string {
+   if (lastSection === "finale") return "EXCHANGE // LIVE FIRE";
+   return "APPROACH // NEXT GATE";
+ }
+-
+ applySection("intro", false);
+ publish();
+diff --git a/apps/showcase-pulse-tunnel/src/legacy/styles.css b/apps/showcase-pulse-tunnel/src/legacy/styles.css
+index e44675dda..b618d3b12 100644
+--- a/apps/showcase-pulse-tunnel/src/legacy/styles.css
++++ b/apps/showcase-pulse-tunnel/src/legacy/styles.css
+@@ -1,5 +1,3 @@
+-/* Pulse Tunnel HUD chrome — UI only; all gameplay visuals render in-scene. */
+-
+ html,
+ body {
+   margin: 0;
+@@ -7,12 +5,10 @@ body {
+   background: #05010f;
+   color: #d7f5ff;
+ }
+-
+ body {
+   min-height: 100vh;
+   overflow-x: hidden;
+ }
+-
+ .pulse-shell {
+   display: flex;
+   flex-direction: column;
+@@ -25,7 +21,6 @@ body {
+   color: #d7f5ff;
+   position: relative;
+ }
+-
+ .pulse-viewport {
+   border-radius: 14px;
+   overflow: hidden;
+@@ -33,19 +28,16 @@ body {
+   box-shadow: 0 0 32px rgba(56, 189, 248, 0.18);
+   background: #05010f;
+ }
+-
+ .pulse-stage {
+   width: 100%;
+   aspect-ratio: 16 / 9;
+   min-height: min(68vh, 720px);
+ }
+-
+ .pulse-stage canvas {
+   display: block;
+   width: 100%;
+   height: 100%;
+ }
+-
+ .pulse-panel {
+   display: flex;
+   flex-direction: column;
+@@ -60,12 +52,10 @@ body {
+   z-index: 5;
+   pointer-events: none;
+ }
+-
+ .pulse-panel .pulse-touch-pad,
+ .pulse-panel .pulse-touch-wide {
+   pointer-events: auto;
+ }
+-
+ .pulse-hud {
+   display: grid;
+   grid-template-columns: repeat(3, minmax(140px, 1fr));
+@@ -75,11 +65,9 @@ body {
+   background: linear-gradient(120deg, rgba(9, 20, 40, 0.92), rgba(28, 8, 46, 0.88));
+   border: 1px solid rgba(148, 163, 255, 0.3);
+ }
+-
+ .pulse-mission {
+   display: none;
+ }
+-
+ .pulse-combat-state {
+   display: block;
+   margin-top: 2px;
+@@ -89,30 +77,25 @@ body {
+   font-weight: 700;
+   letter-spacing: 0.16em;
+ }
+-
+ .pulse-row {
+   display: flex;
+   align-items: center;
+   gap: 8px;
+   font-size: 15px;
+ }
+-
+ .pulse-label {
+   text-transform: uppercase;
+   letter-spacing: 0.14em;
+   font-size: 11px;
+   color: #7dd3fc;
+ }
+-
+ .pulse-value {
+   font-variant-numeric: tabular-nums;
+   font-weight: 600;
+ }
+-
+ .pulse-section-name {
+   color: #f0abfc;
+ }
+-
+ .pulse-meter {
+   flex: 1;
+   height: 8px;
+@@ -120,7 +103,6 @@ body {
+   background: rgba(125, 211, 252, 0.16);
+   overflow: hidden;
+ }
+-
+ .pulse-meter-fill {
+   display: block;
+   height: 100%;
+@@ -129,29 +111,24 @@ body {
+   background: linear-gradient(90deg, #22d3ee, #e879f9, #fbbf24);
+   transition: width 120ms linear;
+ }
+-
+ .pulse-shields {
+   display: flex;
+   gap: 6px;
+ }
+-
+ .pulse-pip {
+   width: 18px;
+   height: 18px;
+   border-radius: 50%;
+   border: 1px solid rgba(125, 211, 252, 0.6);
+ }
+-
+ .pulse-pip-live {
+   background: radial-gradient(circle at 30% 30%, #a5f3fc, #0891b2);
+   box-shadow: 0 0 10px rgba(34, 211, 238, 0.8);
+ }
+-
+ .pulse-pip-lost {
+   background: rgba(30, 41, 59, 0.9);
+   box-shadow: none;
+ }
+-
+ .pulse-state {
+   grid-column: 1 / -1;
+   font-size: 20px;
+@@ -163,17 +140,14 @@ body {
+   color: #fef3c7;
+   background: rgba(120, 53, 15, 0.4);
+ }
+-
+ .pulse-state[data-state="ready"] {
+   color: #a5f3fc;
+   background: rgba(8, 51, 68, 0.55);
+ }
+-
+ .pulse-state[data-state="summary"] {
+   color: #fecdd3;
+   background: rgba(136, 19, 55, 0.45);
+ }
+-
+ .pulse-sync-badge {
+   grid-column: 1 / -1;
+   justify-self: end;
+@@ -184,23 +158,19 @@ body {
+   border: 1px dashed rgba(125, 211, 252, 0.6);
+   color: #67e8f9;
+ }
+-
+ .pulse-sync-badge[data-mode="pattern"] {
+   color: #fbbf24;
+   border-color: rgba(251, 191, 36, 0.7);
+ }
+-
+ .pulse-touch-pad {
+   display: flex;
+   justify-content: space-between;
+   gap: 12px;
+ }
+-
+ .pulse-touch-column {
+   display: flex;
+   gap: 10px;
+ }
+-
+ .pulse-touch {
+   min-width: 76px;
+   min-height: 52px;
+@@ -212,116 +182,14 @@ body {
+   font-weight: 600;
+   cursor: pointer;
+ }
+-
+ .pulse-touch:active {
+   background: rgba(14, 116, 144, 0.85);
+ }
+-
+ .pulse-touch-wide {
+   justify-self: start;
+   min-height: 34px;
+   min-width: 132px;
+ }
+-
+-/* The capture route is used only by the visual evidence producer. Keep the
+- * HUD mounted (so keyboard/evidence contracts still work), but let the scene
+- * occupy the complete review frame without chrome or a paused-state banner. */
+-body[data-capture="review"] .pulse-shell {
+-  width: 100vw;
+-  height: 100vh;
+-  box-sizing: border-box;
+-  padding: 0;
+-  gap: 0;
+-}
+-
+-body[data-capture="review"] .pulse-viewport {
+-  width: 100%;
+-  height: 100%;
+-  border: 0;
+-  border-radius: 0;
+-  box-shadow: none;
+-}
+-
+-body[data-capture="review"] .pulse-stage {
+-  width: 100%;
+-  height: 100%;
+-  min-height: 0;
+-  aspect-ratio: auto;
+-}
+-
+-body[data-capture="review"] .pulse-panel {
+-  position: fixed;
+-  inset: 18px 18px auto 18px;
+-  z-index: 5;
+-  display: block;
+-  pointer-events: none;
+-}
+-
+-body[data-capture="review"] .pulse-hud {
+-  display: grid;
+-  grid-template-columns: 1.7fr repeat(5, auto);
+-  align-items: center;
+-  gap: 18px;
+-  width: min(1050px, calc(100vw - 36px));
+-  box-sizing: border-box;
+-  margin: 0 auto;
+-  padding: 10px 16px;
+-  border-radius: 8px;
+-  border: 1px solid rgba(125, 211, 252, 0.34);
+-  background: linear-gradient(90deg, rgba(4, 11, 24, 0.92), rgba(12, 22, 42, 0.82));
+-  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.38);
+-}
+-
+-body[data-capture="review"] .pulse-mission {
+-  display: flex;
+-  flex-direction: column;
+-  gap: 2px;
+-  min-width: 210px;
+-  color: #f8fafc;
+-  font-size: 13px;
+-  letter-spacing: 0.12em;
+-}
+-
+-body[data-capture="review"] .pulse-mission-kicker {
+-  color: #fb7185;
+-  font-size: 9px;
+-  font-weight: 800;
+-  letter-spacing: 0.24em;
+-}
+-
+-body[data-capture="review"] .pulse-combat-state {
+-  color: #fbbf24;
+-  font-size: 8px;
+-  letter-spacing: 0.14em;
+-}
+-
+-body[data-capture="review"] .pulse-row {
+-  flex-direction: column;
+-  align-items: flex-start;
+-  gap: 1px;
+-  min-width: 76px;
+-  font-size: 13px;
+-}
+-
+-body[data-capture="review"] .pulse-shields {
+-  flex-direction: row;
+-  align-items: center;
+-  min-width: 74px;
+-}
+-
+-body[data-capture="review"] .pulse-pip {
+-  width: 13px;
+-  height: 13px;
+-}
+-
+-body[data-capture="review"] .pulse-meter,
+-body[data-capture="review"] .pulse-state,
+-body[data-capture="review"] .pulse-touch-wide,
+-body[data-capture="review"] .pulse-sync-badge,
+-body[data-capture="review"] .pulse-touch-pad {
+-  display: none;
+-}
+-
+ @media (max-width: 640px) {
+   html,
+   body {
+diff --git a/apps/showcase-pulse-tunnel/src/v2/evidence/index.ts b/apps/showcase-pulse-tunnel/src/v2/evidence/index.ts
+deleted file mode 100644
+index b1bb603d2..000000000
+--- a/apps/showcase-pulse-tunnel/src/v2/evidence/index.ts
++++ /dev/null
+@@ -1,139 +0,0 @@
+-// apps/showcase-pulse-tunnel/src/v2/evidence/index.ts — §7.2.1 evidence.
+-// Publishes `window.__AURA3D_GAME_EVIDENCE__["showcase-pulse-tunnel"]` with
+-// lazy section getters. The required conditions read `gates.passedOnBeat`,
+-// `fx.liveCount` and `framing.canvasMatchesViewport` here.
+-import type { Game } from "@aura3d/engine";
+-import type { PulsePlayerState } from "../../gameplay/player";
+-import type { BeatClockSample } from "../../gameplay/beat-clock";
+-import type { StyleSnapshot } from "../../gameplay/style";
+-
+-export const PULSE_EVIDENCE_ID = "showcase-pulse-tunnel";
+-
+-export interface PulseRunSnapshot {
+-  readonly state: string;
+-  readonly sectionId: string;
+-  readonly beat: number;
+-  readonly elapsed: number;
+-  readonly shields: number;
+-  readonly passed: number;
+-  readonly passedOnBeat: number;
+-  readonly grazes: number;
+-  readonly collisions: number;
+-  readonly finishedReason: string | null;
+-}
+-
+-export interface PulseEvidenceBindings {
+-  readonly game: Game;
+-  readonly run: () => PulseRunSnapshot;
+-  readonly player: () => PulsePlayerState;
+-  readonly style: () => StyleSnapshot;
+-  readonly gates: () => { active: number; pending: number };
+-  readonly clockSample: () => BeatClockSample;
+-  readonly appliedLook: Record<string, unknown>;
+-  readonly frameCount: () => number;
+-  readonly bootedAtMs: number;
+-  readonly audioCueLog: () => readonly string[];
+-}
+-
+-export function publishPulseEvidence(b: PulseEvidenceBindings): void {
+-  const w = window as unknown as Record<string, Record<string, unknown>>;
+-  w.__AURA3D_GAME_EVIDENCE__ ??= {};
+-  w.__AURA3D_GAME_EVIDENCE__[PULSE_EVIDENCE_ID] = {
+-    get playback() {
+-      return {
+-        state: b.game.session.state,
+-        paused: b.game.session.paused,
+-        simTime: b.game.session.simTime,
+-        timeScale: b.game.session.timeScale,
+-        frame: b.frameCount()
+-      };
+-    },
+-    get run() {
+-      return { ...b.run() };
+-    },
+-    get gates() {
+-      const r = b.run();
+-      const g = b.gates();
+-      return {
+-        active: g.active,
+-        pending: g.pending,
+-        passed: r.passed,
+-        passedOnBeat: r.passedOnBeat,
+-        grazes: r.grazes,
+-        collisions: r.collisions
+-      };
+-    },
+-    get player() {
+-      const p = b.player();
+-      return {
+-        lane: p.lane,
+-        x: p.x,
+-        y: p.y,
+-        airborne: p.airborne,
+-        sliding: p.sliding,
+-        colliderTop: p.colliderTop,
+-        invulnerable: p.invulnRemaining > 0
+-      };
+-    },
+-    get style() {
+-      const s = b.style();
+-      return {
+-        heat: s.heat,
+-        multiplier: s.multiplier,
+-        score: s.score,
+-        distance: s.distance,
+-        grazes: s.grazes
+-      };
+-    },
+-    get sync() {
+-      const c = b.clockSample();
+-      return {
+-        mode: c.mode,
+-        time: c.time,
+-        driftMs: c.driftMs,
+-        driftChecksFailed: c.driftChecksFailed,
+-        flipped: c.flippedAtTime !== null
+-      };
+-    },
+-    get fx() {
+-      return { liveCount: b.game.fx.liveCount, backend: b.game.fx.backend };
+-    },
+-    get framing() {
+-      const ev = b.game.app.camera?.evidence?.();
+-      const canvas = b.game.app.canvas;
+-      const renderSize = b.game.app.diagnostics().renderSize;
+-      const dpr = window.devicePixelRatio || 1;
+-      return {
+-        rig: ev?.rig ?? "pulse-tunnel.chase",
+-        subjectScreenHeightFraction: ev?.subjectScreenHeightFraction ?? null,
+-        pose: ev?.pose ?? null,
+-        canvasMatchesViewport:
+-          canvas !== undefined &&
+-          renderSize !== undefined &&
+-          Math.abs(renderSize[0] - window.innerWidth * dpr) <= 2 &&
+-          Math.abs(renderSize[1] - window.innerHeight * dpr) <= 2
+-      };
+-    },
+-    get render() {
+-      const d = b.game.app.diagnostics();
+-      return {
+-        backend: d.backend,
+-        drawCalls: d.drawCalls,
+-        renderSize: d.renderSize,
+-        fps: d.fps,
+-        errors: d.errors,
+-        warnings: d.warnings
+-      };
+-    },
+-    // T2.6 parity: identical between the play URL and every ?scenario= URL.
+-    get appliedLook() {
+-      return b.appliedLook;
+-    },
+-    get audio() {
+-      return { cues: b.audioCueLog() };
+-    },
+-    get boot() {
+-      return { bootedAtMs: b.bootedAtMs, frame: b.frameCount() };
+-    }
+-  };
+-}
+-- 
+2.34.1
+

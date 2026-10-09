@@ -1,0 +1,2024 @@
+From 9170c2f7cbeae9c6128dff2ce1c8af35c4297b1d Mon Sep 17 00:00:00 2001
+From: gchahal+1 <gchahal@veerone.com>
+Date: Fri, 9 Oct 2026 13:40:34 +0000
+Subject: [PATCH] [qr-prd09] showcase-deep-recovery: delete evidence
+ files+blocks (T5.8)
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ .../scripts/build-models.mjs                  | 458 ------------------
+ .../scripts/build-sfx.mjs                     | 225 ---------
+ .../scripts/register-assets.mjs               |  80 ---
+ .../scripts/write-deploy-report.mjs           |  52 --
+ .../scripts/write-performance-report.ts       |  72 ---
+ .../scripts/write-route-health.mjs            | 128 -----
+ .../showcase-deep-recovery/src/legacy/main.ts | 194 --------
+ .../src/legacy/styles.css                     | 138 ------
+ .../src/v2/evidence/index.ts                  | 137 ------
+ 9 files changed, 1484 deletions(-)
+ delete mode 100644 apps/showcase-deep-recovery/scripts/build-models.mjs
+ delete mode 100644 apps/showcase-deep-recovery/scripts/build-sfx.mjs
+ delete mode 100644 apps/showcase-deep-recovery/scripts/register-assets.mjs
+ delete mode 100644 apps/showcase-deep-recovery/scripts/write-deploy-report.mjs
+ delete mode 100644 apps/showcase-deep-recovery/scripts/write-performance-report.ts
+ delete mode 100644 apps/showcase-deep-recovery/scripts/write-route-health.mjs
+ delete mode 100644 apps/showcase-deep-recovery/src/v2/evidence/index.ts
+
+diff --git a/apps/showcase-deep-recovery/scripts/build-models.mjs b/apps/showcase-deep-recovery/scripts/build-models.mjs
+deleted file mode 100644
+index 52f0f6f40..000000000
+--- a/apps/showcase-deep-recovery/scripts/build-models.mjs
++++ /dev/null
+@@ -1,458 +0,0 @@
+-/**
+- * Deep Recovery model synth — generates high-fidelity CC0 GLB props entirely in-repo.
+- * Multi-material glTF 2.0 binary GLB container writer with PBR metallic/roughness.
+- *
+- * Models:
+- *   - deepRecoverySub.glb          : 6-DOF high-tech research submarine with viewport dome, twin vector thrusters, grapple arm, dive planes, and spotlight arrays
+- *   - deepRecoveryCrateStandard.glb: steel salvage cargo container with magnetic latch ring and hazard trims
+- *   - deepRecoveryCrateHeavy.glb   : heavy reinforced titanium salvage container with corner bumpers
+- *   - deepRecoveryWreckHull.glb    : sunken ironclad hull wreckage with curved structural ribs and deck machinery
+- *   - deepRecoveryBuoyBeacon.glb   : surface salvage buoy station with circular pontoons, truss mast, and beacon strobe
+- */
+-import { mkdirSync, writeFileSync } from "node:fs";
+-import { resolve, dirname } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../assets/models");
+-
+-function part() {
+-  return { positions: [], normals: [], indices: [], nextVertex: 0 };
+-}
+-
+-function addTriangle(p, a, b, c) {
+-  const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
+-  const vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
+-  let nx = uy * vz - uz * vy;
+-  let ny = uz * vx - ux * vz;
+-  let nz = ux * vy - uy * vx;
+-  const len = Math.hypot(nx, ny, nz) || 1;
+-  nx /= len; ny /= len; nz /= len;
+-  for (const v of [a, b, c]) {
+-    p.positions.push(v[0], v[1], v[2]);
+-    p.normals.push(nx, ny, nz);
+-  }
+-  p.indices.push(p.nextVertex, p.nextVertex + 1, p.nextVertex + 2);
+-  p.nextVertex += 3;
+-}
+-
+-function addQuad(p, a, b, c, d) {
+-  addTriangle(p, a, b, c);
+-  addTriangle(p, a, c, d);
+-}
+-
+-function addBox(p, cx, cy, cz, hx, hy, hz) {
+-  const v = [
+-    [cx - hx, cy - hy, cz - hz], [cx + hx, cy - hy, cz - hz],
+-    [cx + hx, cy - hy, cz + hz], [cx - hx, cy - hy, cz + hz],
+-    [cx - hx, cy + hy, cz - hz], [cx + hx, cy + hy, cz - hz],
+-    [cx + hx, cy + hy, cz + hz], [cx - hx, cy + hy, cz + hz]
+-  ];
+-  addQuad(p, v[0], v[3], v[2], v[1]); // -Y
+-  addQuad(p, v[4], v[5], v[6], v[7]); // +Y
+-  addQuad(p, v[1], v[2], v[6], v[5]); // +X
+-  addQuad(p, v[3], v[0], v[4], v[7]); // -X
+-  addQuad(p, v[2], v[3], v[7], v[6]); // +Z
+-  addQuad(p, v[0], v[1], v[5], v[4]); // -Z
+-}
+-
+-function addCylinderZ(p, r0, r1, z0, z1, cx = 0, cy = 0, segments = 16) {
+-  for (let i = 0; i < segments; i += 1) {
+-    const a0 = (i / segments) * Math.PI * 2;
+-    const a1 = ((i + 1) / segments) * Math.PI * 2;
+-    const x0a = cx + Math.cos(a0) * r0, y0a = cy + Math.sin(a0) * r0;
+-    const x1a = cx + Math.cos(a1) * r0, y1a = cy + Math.sin(a1) * r0;
+-    const x0b = cx + Math.cos(a0) * r1, y0b = cy + Math.sin(a0) * r1;
+-    const x1b = cx + Math.cos(a1) * r1, y1b = cy + Math.sin(a1) * r1;
+-
+-    addQuad(p, [x0a, y0a, z0], [x1a, y1a, z0], [x1b, y1b, z1], [x0b, y0b, z1]);
+-  }
+-}
+-
+-function addCylinderY(p, r0, r1, y0, y1, cx = 0, cz = 0, segments = 16) {
+-  for (let i = 0; i < segments; i += 1) {
+-    const a0 = (i / segments) * Math.PI * 2;
+-    const a1 = ((i + 1) / segments) * Math.PI * 2;
+-    const x0a = cx + Math.cos(a0) * r0, z0a = cz + Math.sin(a0) * r0;
+-    const x1a = cx + Math.cos(a1) * r0, z1a = cz + Math.sin(a1) * r0;
+-    const x0b = cx + Math.cos(a0) * r1, z0b = cz + Math.sin(a0) * r1;
+-    const x1b = cx + Math.cos(a1) * r1, z1b = cz + Math.sin(a1) * r1;
+-
+-    addQuad(p, [x0a, y0, z0a], [x1a, y0, z1a], [x1b, y1, z1b], [x0b, y1, z0b]);
+-    addTriangle(p, [cx, y1, cz], [x0b, y1, z0b], [x1b, y1, z1b]);
+-    addTriangle(p, [cx, y0, cz], [x1a, y0, z1a], [x0a, y0, z0a]);
+-  }
+-}
+-
+-function addDomeZ(p, r, zCenter, front = true, segments = 14) {
+-  for (let lat = 0; lat < segments; lat += 1) {
+-    const lat0 = (lat / segments) * (Math.PI / 2);
+-    const lat1 = ((lat + 1) / segments) * (Math.PI / 2);
+-    const r0 = Math.cos(lat0) * r;
+-    const r1 = Math.cos(lat1) * r;
+-    const z0 = zCenter + (front ? 1 : -1) * Math.sin(lat0) * r;
+-    const z1 = zCenter + (front ? 1 : -1) * Math.sin(lat1) * r;
+-
+-    for (let lon = 0; lon < segments * 2; lon += 1) {
+-      const a0 = (lon / (segments * 2)) * Math.PI * 2;
+-      const a1 = ((lon + 1) / (segments * 2)) * Math.PI * 2;
+-      const x0a = Math.cos(a0) * r0, y0a = Math.sin(a0) * r0;
+-      const x1a = Math.cos(a1) * r0, y1a = Math.sin(a1) * r0;
+-      const x0b = Math.cos(a0) * r1, y0b = Math.sin(a0) * r1;
+-      const x1b = Math.cos(a1) * r1, y1b = Math.sin(a1) * r1;
+-
+-      if (front) {
+-        addQuad(p, [x0a, y0a, z0], [x1a, y1a, z0], [x1b, y1b, z1], [x0b, y0b, z1]);
+-      } else {
+-        addQuad(p, [x1a, y1a, z0], [x0a, y0a, z0], [x0b, y0b, z1], [x1b, y1b, z1]);
+-      }
+-    }
+-  }
+-}
+-
+-function addSphere(p, cx, cy, cz, radius, rings = 10, sectors = 14) {
+-  for (let r = 0; r < rings; r += 1) {
+-    const phi0 = (r / rings) * Math.PI - Math.PI / 2;
+-    const phi1 = ((r + 1) / rings) * Math.PI - Math.PI / 2;
+-    const y0 = cy + Math.sin(phi0) * radius;
+-    const y1 = cy + Math.sin(phi1) * radius;
+-    const rad0 = Math.cos(phi0) * radius;
+-    const rad1 = Math.cos(phi1) * radius;
+-
+-    for (let s = 0; s < sectors; s += 1) {
+-      const theta0 = (s / sectors) * Math.PI * 2;
+-      const theta1 = ((s + 1) / sectors) * Math.PI * 2;
+-      const x0a = cx + Math.cos(theta0) * rad0, z0a = cz + Math.sin(theta0) * rad0;
+-      const x1a = cx + Math.cos(theta1) * rad0, z1a = cz + Math.sin(theta1) * rad0;
+-      const x0b = cx + Math.cos(theta0) * rad1, z0b = cz + Math.sin(theta0) * rad1;
+-      const x1b = cx + Math.cos(theta1) * rad1, z1b = cz + Math.sin(theta1) * rad1;
+-
+-      addQuad(p, [x0a, y0, z0a], [x1a, y0, z1a], [x1b, y1, z1b], [x0b, y1, z0b]);
+-    }
+-  }
+-}
+-
+-function writeMultiPartGlb(path, parts) {
+-  const chunks = [];
+-  const bufferViews = [];
+-  const accessors = [];
+-  const meshes = [];
+-  const nodes = [];
+-
+-  const materials = parts.map((entry) => ({
+-    name: entry.name + "-mat",
+-    pbrMetallicRoughness: {
+-      baseColorFactor: entry.color,
+-      metallicFactor: entry.metallic ?? 0.1,
+-      roughnessFactor: entry.roughness ?? 0.5
+-    },
+-    ...(entry.emissive ? { emissiveFactor: entry.emissive } : {})
+-  }));
+-
+-  let offset = 0;
+-  const pushView = (typedArray, target) => {
+-    const bytes = Buffer.from(typedArray.buffer, typedArray.byteOffset, typedArray.byteLength);
+-    const pad = (4 - (bytes.length % 4)) % 4;
+-    chunks.push(bytes);
+-    if (pad > 0) chunks.push(Buffer.alloc(pad));
+-    bufferViews.push({ buffer: 0, byteOffset: offset, byteLength: bytes.length, target });
+-    offset += bytes.length + pad;
+-    return bufferViews.length - 1;
+-  };
+-
+-  parts.forEach((entry, partIndex) => {
+-    const positionCount = entry.part.positions.length / 3;
+-    if (positionCount === 0 || entry.part.indices.length === 0) return;
+-
+-    const min = [Infinity, Infinity, Infinity];
+-    const max = [-Infinity, -Infinity, -Infinity];
+-    for (let i = 0; i < entry.part.positions.length; i += 3) {
+-      for (let axis = 0; axis < 3; axis += 1) {
+-        min[axis] = Math.min(min[axis], entry.part.positions[i + axis]);
+-        max[axis] = Math.max(max[axis], entry.part.positions[i + axis]);
+-      }
+-    }
+-    const positions = new Float32Array(entry.part.positions);
+-    const normals = new Float32Array(entry.part.normals);
+-    const indices = new Uint32Array(entry.part.indices);
+-    const posView = pushView(positions, 34962);
+-    const normView = pushView(normals, 34962);
+-    const idxView = pushView(indices, 34963);
+-
+-    accessors.push({ bufferView: posView, componentType: 5126, count: positionCount, type: "VEC3", min, max });
+-    accessors.push({ bufferView: normView, componentType: 5126, count: positionCount, type: "VEC3" });
+-    accessors.push({ bufferView: idxView, componentType: 5125, count: indices.length, type: "SCALAR" });
+-
+-    meshes.push({
+-      name: entry.name,
+-      primitives: [{
+-        attributes: { POSITION: accessors.length - 3, NORMAL: accessors.length - 2 },
+-        indices: accessors.length - 1,
+-        material: partIndex
+-      }]
+-    });
+-    nodes.push({ name: entry.name, mesh: meshes.length - 1 });
+-  });
+-
+-  const body = Buffer.concat(chunks);
+-  const document = {
+-    asset: { version: "2.0", generator: "Aura3D Deep Recovery procedural GLB synth" },
+-    scene: 0,
+-    scenes: [{ name: "root", nodes: nodes.map((_, index) => index) }],
+-    nodes,
+-    meshes,
+-    materials,
+-    accessors,
+-    bufferViews,
+-    buffers: [{ byteLength: body.length }]
+-  };
+-
+-  const jsonSource = Buffer.from(JSON.stringify(document), "utf8");
+-  const jsonPadding = (4 - (jsonSource.length % 4)) % 4;
+-  const jsonData = Buffer.concat([jsonSource, Buffer.alloc(jsonPadding, 0x20)]);
+-  const binPadding = (4 - (body.length % 4)) % 4;
+-  const binData = Buffer.concat([body, Buffer.alloc(binPadding)]);
+-  const total = 12 + 8 + jsonData.length + 8 + binData.length;
+-  const output = Buffer.alloc(total);
+-  output.write("glTF", 0, "ascii");
+-  output.writeUInt32LE(2, 4);
+-  output.writeUInt32LE(total, 8);
+-  output.writeUInt32LE(jsonData.length, 12);
+-  output.writeUInt32LE(0x4e4f534a, 16);
+-  jsonData.copy(output, 20);
+-  const binHead = 20 + jsonData.length;
+-  output.writeUInt32LE(binData.length, binHead);
+-  output.writeUInt32LE(0x004e4942, binHead + 4);
+-  binData.copy(output, binHead + 8);
+-  mkdirSync(dirname(path), { recursive: true });
+-  writeFileSync(path, output);
+-  return total;
+-}
+-
+-mkdirSync(OUT_DIR, { recursive: true });
+-
+-// ============================================================================
+-// 1. deepRecoverySub.glb — Sleek 6-DOF Research Submarine (3.2m long)
+-// Forward direction is +Z.
+-// ============================================================================
+-{
+-  const hullPart = part();       // Hazard Yellow Titanium Hull
+-  const darkPart = part();       // Carbon Armor / Trim / Propeller
+-  const glassPart = part();      // Glowing Viewport Dome
+-  const lightPart = part();      // Intense Bow Spotlights
+-  const thrusterGlow = part();   // Cyan Ion Exhaust
+-
+-  // --- Main Streamlined Torpedo Hull (Z: -1.4 to +1.1, radius 0.52) ---
+-  addCylinderZ(hullPart, 0.52, 0.52, -1.1, 0.8, 0, 0, 16);
+-  // Tapered Tail (Z: -1.1 down to -1.5)
+-  addCylinderZ(hullPart, 0.22, 0.52, -1.5, -1.1, 0, 0, 16);
+-  // Forward Taper to Nose (Z: 0.8 to 1.15)
+-  addCylinderZ(hullPart, 0.52, 0.44, 0.8, 1.15, 0, 0, 16);
+-
+-  // --- Cockpit Bubble at Forward Nose (Z: 1.15 to 1.45) ---
+-  addDomeZ(glassPart, 0.42, 1.12, true, 12);
+-  // Cockpit Titanium Frame Ring
+-  addCylinderZ(darkPart, 0.46, 0.46, 1.1, 1.18, 0, 0, 16);
+-
+-  // --- Dorsal Conning Tower / Sensor Mast ---
+-  addBox(darkPart, 0, 0.58, -0.1, 0.22, 0.22, 0.55);
+-  // Upper Periscope Pylon & Optical Housing
+-  addBox(darkPart, 0, 0.88, 0.1, 0.06, 0.14, 0.08);
+-  addSphere(lightPart, 0, 0.98, 0.14, 0.08, 8, 10); // Mast Beacon
+-
+-  // --- Stabilizer Tail Fins (X & Y 十字尾翼) ---
+-  // Top Vertical Rudder
+-  addBox(hullPart, 0, 0.45, -1.35, 0.04, 0.28, 0.25);
+-  // Bottom Keel Fin
+-  addBox(darkPart, 0, -0.42, -1.35, 0.04, 0.22, 0.25);
+-  // Horizontal Port/Starboard Dive Planes
+-  addBox(hullPart, -0.52, 0, -1.35, 0.32, 0.04, 0.22);
+-  addBox(hullPart, 0.52, 0, -1.35, 0.32, 0.04, 0.22);
+-
+-  // --- Outrigger Vector Thruster Pods (Left & Right) ---
+-  for (const side of [-1, 1]) {
+-    const tx = side * 0.82;
+-    // Heavy Strut Pylon connecting pod to hull
+-    addBox(darkPart, side * 0.58, -0.05, -0.2, 0.24, 0.06, 0.16);
+-    // Cylindrical Nacelle Housing
+-    addCylinderZ(hullPart, 0.22, 0.22, -0.65, 0.35, tx, -0.05, 14);
+-    // Intake Cowling Front
+-    addCylinderZ(darkPart, 0.24, 0.22, 0.35, 0.42, tx, -0.05, 14);
+-    // Exhaust Nozzle Rear
+-    addCylinderZ(darkPart, 0.22, 0.24, -0.72, -0.65, tx, -0.05, 14);
+-    // Glowing Ion Exhaust Disc at Rear
+-    addDomeZ(thrusterGlow, 0.18, -0.7, false, 8);
+-    // Side Trim Stripe
+-    addBox(darkPart, tx + side * 0.2, -0.05, -0.15, 0.03, 0.08, 0.4);
+-  }
+-
+-  // --- Forward High-Intensity Searchlight Array ---
+-  addBox(darkPart, -0.38, -0.22, 1.12, 0.12, 0.1, 0.14);
+-  addSphere(lightPart, -0.38, -0.22, 1.24, 0.11, 8, 10);
+-
+-  addBox(darkPart, 0.38, -0.22, 1.12, 0.12, 0.1, 0.14);
+-  addSphere(lightPart, 0.38, -0.22, 1.24, 0.11, 8, 10);
+-
+-  // --- Hydraulic Grapple Arm Rig on Forward Underside ---
+-  // Base Mount
+-  addBox(darkPart, 0, -0.52, 0.4, 0.18, 0.08, 0.28);
+-  // Articulated Arm Segments
+-  addBox(darkPart, 0, -0.68, 0.65, 0.07, 0.07, 0.26);
+-  // Magnetic Latch Claw Collar
+-  addBox(darkPart, 0, -0.72, 0.95, 0.16, 0.06, 0.12);
+-  // Magnetic Claw Tips
+-  addBox(lightPart, -0.14, -0.76, 1.05, 0.03, 0.06, 0.08);
+-  addBox(lightPart, 0.14, -0.76, 1.05, 0.03, 0.06, 0.08);
+-
+-  const subParts = [
+-    { name: "hull", part: hullPart, color: [0.95, 0.72, 0.08, 1.0], roughness: 0.32, metallic: 0.45 },
+-    { name: "dark", part: darkPart, color: [0.12, 0.15, 0.22, 1.0], roughness: 0.45, metallic: 0.65 },
+-    { name: "glass", part: glassPart, color: [0.15, 0.85, 0.95, 0.9], roughness: 0.08, metallic: 0.1, emissive: [0.1, 0.6, 0.8] },
+-    { name: "lights", part: lightPart, color: [0.95, 0.98, 1.0, 1.0], roughness: 0.1, metallic: 0.1, emissive: [0.75, 0.88, 1.0] },
+-    { name: "exhaust", part: thrusterGlow, color: [0.2, 0.75, 1.0, 1.0], roughness: 0.2, metallic: 0.0, emissive: [0.25, 0.75, 1.0] }
+-  ];
+-  writeMultiPartGlb(resolve(OUT_DIR, "deepRecoverySub.glb"), subParts);
+-}
+-
+-// ============================================================================
+-// 2. deepRecoveryCrateStandard.glb — Steel Salvage Cargo Pod (~1.0m)
+-// ============================================================================
+-{
+-  const crateHull = part();
+-  const crateTrim = part();
+-  const crateGlow = part();
+-
+-  // Main container body
+-  addBox(crateHull, 0, 0.45, 0, 0.42, 0.42, 0.42);
+-  // Outer Steel Reinforcement Cage / Edges
+-  addBox(crateTrim, 0, 0.45, 0, 0.45, 0.44, 0.45);
+-  // Magnetic Docking Ring Top
+-  addCylinderY(crateTrim, 0.24, 0.24, 0.86, 0.98, 0, 0, 12);
+-  addSphere(crateGlow, 0, 0.94, 0, 0.12, 8, 10);
+-
+-  const crateParts = [
+-    { name: "crateHull", part: crateHull, color: [0.18, 0.48, 0.78, 1.0], roughness: 0.4, metallic: 0.6 },
+-    { name: "crateTrim", part: crateTrim, color: [0.22, 0.26, 0.32, 1.0], roughness: 0.5, metallic: 0.8 },
+-    { name: "crateGlow", part: crateGlow, color: [0.2, 0.9, 0.95, 1.0], roughness: 0.2, metallic: 0.1, emissive: [0.2, 0.8, 1.0] }
+-  ];
+-  writeMultiPartGlb(resolve(OUT_DIR, "deepRecoveryCrateStandard.glb"), crateParts);
+-}
+-
+-// ============================================================================
+-// 3. deepRecoveryCrateHeavy.glb — Reinforced Hazard Titanium Container (~1.4m)
+-// ============================================================================
+-{
+-  const crateHull = part();
+-  const crateTrim = part();
+-  const crateGlow = part();
+-
+-  // Heavy hexagonal / octagonal container body
+-  addBox(crateHull, 0, 0.55, 0, 0.58, 0.52, 0.58);
+-  // Heavy Corner Shock Bumpers
+-  addBox(crateTrim, 0, 0.55, 0, 0.64, 0.54, 0.64);
+-  // Heavy Dual Ring Collar
+-  addCylinderY(crateTrim, 0.32, 0.32, 1.04, 1.22, 0, 0, 14);
+-  addSphere(crateGlow, 0, 1.15, 0, 0.18, 8, 10);
+-
+-  const heavyParts = [
+-    { name: "crateHull", part: crateHull, color: [0.92, 0.48, 0.12, 1.0], roughness: 0.35, metallic: 0.5 },
+-    { name: "crateTrim", part: crateTrim, color: [0.15, 0.18, 0.22, 1.0], roughness: 0.45, metallic: 0.85 },
+-    { name: "crateGlow", part: crateGlow, color: [1.0, 0.7, 0.1, 1.0], roughness: 0.2, metallic: 0.1, emissive: [1.0, 0.65, 0.12] }
+-  ];
+-  writeMultiPartGlb(resolve(OUT_DIR, "deepRecoveryCrateHeavy.glb"), heavyParts);
+-}
+-
+-// ============================================================================
+-// 4. deepRecoveryWreckHull.glb — Sunken Ironclad Wreckage (~6.5m)
+-// ============================================================================
+-{
+-  const rustPart = part();
+-  const metalPart = part();
+-  const deckPart = part();
+-  const glowPart = part();
+-
+-  // A broad, readable ironclad silhouette for the overhead salvage-map state.
+-  // The previous asset was almost entirely tall black ribs; from above it read
+-  // as unrelated bars and hid its own hull. Layered deck plates now establish
+-  // a continuous ship form while leaving broken edges and machinery visible.
+-  const deckSections = [
+-    { z: -2.55, width: 0.9, length: 0.62 },
+-    { z: -1.75, width: 1.38, length: 0.58 },
+-    { z: -0.9, width: 1.62, length: 0.62 },
+-    { z: 0.0, width: 1.75, length: 0.68 },
+-    { z: 0.92, width: 1.55, length: 0.62 },
+-    { z: 1.82, width: 1.28, length: 0.6 },
+-    { z: 2.62, width: 0.78, length: 0.48 }
+-  ];
+-  for (const section of deckSections) {
+-    addBox(rustPart, 0, 0.28, section.z, section.width, 0.28, section.length);
+-    addBox(deckPart, 0, 0.59, section.z, section.width * 0.9, 0.055, section.length * 0.9);
+-  }
+-
+-  // Keel, gunwales, and three low surviving ribs retain the wreck identity
+-  // without creating a forest of near-black columns.
+-  addBox(metalPart, 0, 0.15, 0, 0.22, 0.18, 3.18);
+-  addBox(rustPart, -1.5, 0.72, 0, 0.12, 0.42, 2.35);
+-  addBox(rustPart, 1.5, 0.72, -0.35, 0.12, 0.42, 1.95);
+-  for (const z of [-1.55, 0.05, 1.55]) {
+-    addBox(rustPart, -1.18, 1.02, z, 0.11, 0.46, 0.11);
+-    addBox(rustPart, 1.18, 0.94, z, 0.11, 0.38, 0.11);
+-    addBox(rustPart, 0, 1.42, z, 1.25, 0.09, 0.11);
+-  }
+-
+-  // Boilers, bridge plinth, hatch covers, and broken cargo machinery create a
+-  // readable top surface with several material responses.
+-  addCylinderZ(metalPart, 0.48, 0.48, -1.15, 0.9, -0.42, 1.0, 20);
+-  addCylinderZ(metalPart, 0.34, 0.34, -0.82, 0.72, 0.6, 0.92, 18);
+-  addBox(metalPart, 0.18, 0.82, 1.55, 0.62, 0.22, 0.48);
+-  addBox(deckPart, -0.65, 0.72, -1.55, 0.42, 0.08, 0.34);
+-  addBox(deckPart, 0.72, 0.72, 1.72, 0.36, 0.08, 0.3);
+-
+-  // Warm surviving lamps give the wreck a focal rhythm and remain real GLB
+-  // emissive geometry, not a DOM or capture-only overlay.
+-  for (const [x, z] of [[-1.34, -1.5], [1.34, -0.65], [-1.34, 0.55], [1.34, 1.35]]) {
+-    addSphere(glowPart, x, 0.78, z, 0.12, 8, 12);
+-  }
+-
+-  const wreckParts = [
+-    { name: "rustHull", part: rustPart, color: [0.34, 0.28, 0.2, 1.0], roughness: 0.82, metallic: 0.24 },
+-    { name: "darkMetal", part: metalPart, color: [0.18, 0.33, 0.35, 1.0], roughness: 0.58, metallic: 0.5 },
+-    { name: "wornDeck", part: deckPart, color: [0.46, 0.43, 0.32, 1.0], roughness: 0.76, metallic: 0.12 },
+-    { name: "survivingLamps", part: glowPart, color: [1.0, 0.66, 0.2, 1.0], roughness: 0.18, metallic: 0.08, emissive: [1.0, 0.42, 0.06] }
+-  ];
+-  writeMultiPartGlb(resolve(OUT_DIR, "deepRecoveryWreckHull.glb"), wreckParts);
+-}
+-
+-// ============================================================================
+-// 5. deepRecoveryBuoyBeacon.glb — Surface Recovery Rig Platform (~5.5m)
+-// ============================================================================
+-{
+-  const hullPart = part();
+-  const mastPart = part();
+-  const lightPart = part();
+-
+-  // Toroidal circular flotation pontoon ring
+-  addCylinderY(hullPart, 2.4, 2.4, -0.5, 0.5, 0, 0, 18);
+-  // Yellow safety fender collar
+-  addCylinderY(hullPart, 2.6, 2.6, -0.15, 0.25, 0, 0, 18);
+-
+-  // Cross deck platform
+-  addBox(mastPart, 0, 0.52, 0, 1.6, 0.08, 1.6);
+-
+-  // Central lattice truss mast
+-  for (const corner of [[-0.6, -0.6], [0.6, -0.6], [0.6, 0.6], [-0.6, 0.6]]) {
+-    addBox(mastPart, corner[0], 1.8, corner[1], 0.06, 1.3, 0.06);
+-  }
+-  // Upper beacon housing
+-  addBox(mastPart, 0, 3.1, 0, 0.45, 0.2, 0.45);
+-  // High-intensity green salvage strobe
+-  addSphere(lightPart, 0, 3.45, 0, 0.35, 10, 12);
+-
+-  const buoyParts = [
+-    { name: "buoyHull", part: hullPart, color: [0.95, 0.75, 0.1, 1.0], roughness: 0.4, metallic: 0.3 },
+-    { name: "buoyMast", part: mastPart, color: [0.18, 0.22, 0.28, 1.0], roughness: 0.5, metallic: 0.8 },
+-    { name: "buoyLight", part: lightPart, color: [0.2, 0.95, 0.5, 1.0], roughness: 0.1, metallic: 0.1, emissive: [0.25, 1.0, 0.55] }
+-  ];
+-  writeMultiPartGlb(resolve(OUT_DIR, "deepRecoveryBuoyBeacon.glb"), buoyParts);
+-}
+-
+-console.log("Deep Recovery high-fidelity GLB models synthesized successfully into", OUT_DIR);
+diff --git a/apps/showcase-deep-recovery/scripts/build-sfx.mjs b/apps/showcase-deep-recovery/scripts/build-sfx.mjs
+deleted file mode 100644
+index 1d7422ffa..000000000
+--- a/apps/showcase-deep-recovery/scripts/build-sfx.mjs
++++ /dev/null
+@@ -1,225 +0,0 @@
+-/**
+- * Deep Recovery SFX synth — generates original CC0 WAV cues entirely in-repo.
+- *
+- * Synthesizes:
+- *   - sonarPing.wav     : resonant high-pitch underwater sonar ping (1100Hz -> 880Hz decay)
+- *   - sonarReturn.wav   : muffled echo return blip (550Hz filtered)
+- *   - hullCreak.wav     : low-frequency structural stress groan (80Hz FM)
+- *   - breachAlarm.wav   : pulsing emergency klaxon (720Hz/580Hz square)
+- *   - patchSeal.wav     : pneumatic hiss + metal lock latch
+- *   - grappleLatch.wav  : magnetic mechanical clamp click
+- *   - crateBank.wav     : buoyant surface lock + confirmation chime
+- *   - oxygenWarn.wav    : rhythmic low-O2 warning chirp
+- *   - blackout.wav      : descending low-pass sub drone / power loss
+- *   - surfaceBreak.wav  : splash / hull surfacing whoosh
+- *   - ambientDeep.wav   : looped deep ocean low-frequency rumble
+- */
+-import { mkdirSync, writeFileSync } from "node:fs";
+-import { resolve, dirname } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../assets/sfx");
+-const SAMPLE_RATE = 44100;
+-
+-function noiseBuffer(length) {
+-  const out = new Float32Array(length);
+-  let seed = 0x9e3779b9;
+-  for (let i = 0; i < length; i += 1) {
+-    seed = (seed * 1664525 + 1013904223) >>> 0;
+-    out[i] = ((seed / 0xffffffff) * 2 - 1);
+-  }
+-  return out;
+-}
+-
+-function writeWav(filePath, samples) {
+-  const numChannels = 1;
+-  const bytesPerSample = 2;
+-  const blockAlign = numChannels * bytesPerSample;
+-  const byteRate = SAMPLE_RATE * blockAlign;
+-  const dataSize = samples.length * bytesPerSample;
+-  const buffer = new ArrayBuffer(44 + dataSize);
+-  const view = new DataView(buffer);
+-
+-  function writeString(offset, string) {
+-    for (let i = 0; i < string.length; i += 1) {
+-      view.setUint8(offset + i, string.charCodeAt(i));
+-    }
+-  }
+-
+-  writeString(0, "RIFF");
+-  view.setUint32(4, 36 + dataSize, true);
+-  writeString(8, "WAVE");
+-  writeString(12, "fmt ");
+-  view.setUint32(16, 16, true);
+-  view.setUint16(20, 1, true); // PCM
+-  view.setUint16(22, numChannels, true);
+-  view.setUint32(24, SAMPLE_RATE, true);
+-  view.setUint32(28, byteRate, true);
+-  view.setUint16(32, blockAlign, true);
+-  view.setUint16(34, bytesPerSample * 8, true);
+-  writeString(36, "data");
+-  view.setUint32(40, dataSize, true);
+-
+-  let offset = 44;
+-  for (let i = 0; i < samples.length; i += 1) {
+-    const s = Math.max(-1, Math.min(1, samples[i]));
+-    const intSample = s < 0 ? s * 0x8000 : s * 0x7fff;
+-    view.setInt16(offset, intSample, true);
+-    offset += 2;
+-  }
+-
+-  writeFileSync(filePath, Buffer.from(buffer));
+-}
+-
+-mkdirSync(OUT_DIR, { recursive: true });
+-
+-// 1. sonarPing.wav (0.9s)
+-{
+-  const len = Math.floor(SAMPLE_RATE * 0.9);
+-  const s = new Float32Array(len);
+-  for (let i = 0; i < len; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const freq = 1200 * Math.exp(-t * 0.8);
+-    const env = Math.exp(-t * 4.5);
+-    s[i] = Math.sin(2 * Math.PI * freq * t) * env * 0.75 + Math.sin(2 * Math.PI * (freq * 2) * t) * env * 0.15;
+-  }
+-  writeWav(resolve(OUT_DIR, "sonarPing.wav"), s);
+-}
+-
+-// 2. sonarReturn.wav (0.45s)
+-{
+-  const len = Math.floor(SAMPLE_RATE * 0.45);
+-  const s = new Float32Array(len);
+-  for (let i = 0; i < len; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const freq = 650;
+-    const env = Math.sin(Math.min(Math.PI, (t / 0.45) * Math.PI)) * Math.exp(-t * 6);
+-    s[i] = Math.sin(2 * Math.PI * freq * t) * env * 0.55;
+-  }
+-  writeWav(resolve(OUT_DIR, "sonarReturn.wav"), s);
+-}
+-
+-// 3. hullCreak.wav (1.2s)
+-{
+-  const len = Math.floor(SAMPLE_RATE * 1.2);
+-  const s = new Float32Array(len);
+-  const noise = noiseBuffer(len);
+-  for (let i = 0; i < len; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const mod = Math.sin(2 * Math.PI * 8 * t);
+-    const carrier = Math.sin(2 * Math.PI * (75 + mod * 25) * t);
+-    const env = Math.sin((t / 1.2) * Math.PI) * 0.6;
+-    s[i] = (carrier * 0.7 + noise[i] * 0.1) * env;
+-  }
+-  writeWav(resolve(OUT_DIR, "hullCreak.wav"), s);
+-}
+-
+-// 4. breachAlarm.wav (0.8s)
+-{
+-  const len = Math.floor(SAMPLE_RATE * 0.8);
+-  const s = new Float32Array(len);
+-  for (let i = 0; i < len; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const freq = (t % 0.4) < 0.2 ? 780 : 580;
+-    const env = Math.min(1, (t % 0.2) / 0.02) * (1 - (t % 0.2) / 0.25);
+-    s[i] = (Math.sin(2 * Math.PI * freq * t) > 0 ? 0.6 : -0.6) * env * 0.5;
+-  }
+-  writeWav(resolve(OUT_DIR, "breachAlarm.wav"), s);
+-}
+-
+-// 5. patchSeal.wav (0.6s)
+-{
+-  const len = Math.floor(SAMPLE_RATE * 0.6);
+-  const s = new Float32Array(len);
+-  const noise = noiseBuffer(len);
+-  for (let i = 0; i < len; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const hiss = noise[i] * Math.exp(-t * 8) * 0.4;
+-    const latch = t > 0.2 ? Math.sin(2 * Math.PI * 440 * (t - 0.2)) * Math.exp(-(t - 0.2) * 20) * 0.6 : 0;
+-    s[i] = hiss + latch;
+-  }
+-  writeWav(resolve(OUT_DIR, "patchSeal.wav"), s);
+-}
+-
+-// 6. grappleLatch.wav (0.35s)
+-{
+-  const len = Math.floor(SAMPLE_RATE * 0.35);
+-  const s = new Float32Array(len);
+-  for (let i = 0; i < len; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const freq = 480 * Math.exp(-t * 12);
+-    const env = Math.exp(-t * 15);
+-    s[i] = (Math.sin(2 * Math.PI * freq * t) + Math.sin(2 * Math.PI * (freq * 2.3) * t) * 0.4) * env * 0.7;
+-  }
+-  writeWav(resolve(OUT_DIR, "grappleLatch.wav"), s);
+-}
+-
+-// 7. crateBank.wav (0.7s)
+-{
+-  const len = Math.floor(SAMPLE_RATE * 0.7);
+-  const s = new Float32Array(len);
+-  for (let i = 0; i < len; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const c1 = Math.sin(2 * Math.PI * 523.25 * t) * Math.exp(-t * 6);
+-    const c2 = t > 0.12 ? Math.sin(2 * Math.PI * 659.25 * (t - 0.12)) * Math.exp(-(t - 0.12) * 5) : 0;
+-    const c3 = t > 0.24 ? Math.sin(2 * Math.PI * 783.99 * (t - 0.24)) * Math.exp(-(t - 0.24) * 4) : 0;
+-    s[i] = (c1 * 0.4 + c2 * 0.4 + c3 * 0.5) * 0.7;
+-  }
+-  writeWav(resolve(OUT_DIR, "crateBank.wav"), s);
+-}
+-
+-// 8. oxygenWarn.wav (0.5s)
+-{
+-  const len = Math.floor(SAMPLE_RATE * 0.5);
+-  const s = new Float32Array(len);
+-  for (let i = 0; i < len; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const chirp = Math.sin(2 * Math.PI * (880 + Math.sin(2 * Math.PI * 20 * t) * 100) * t);
+-    const env = Math.sin((t / 0.5) * Math.PI) * 0.5;
+-    s[i] = chirp * env;
+-  }
+-  writeWav(resolve(OUT_DIR, "oxygenWarn.wav"), s);
+-}
+-
+-// 9. blackout.wav (1.8s)
+-{
+-  const len = Math.floor(SAMPLE_RATE * 1.8);
+-  const s = new Float32Array(len);
+-  for (let i = 0; i < len; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const freq = 120 * Math.exp(-t * 1.5);
+-    const env = (1 - t / 1.8);
+-    s[i] = Math.sin(2 * Math.PI * freq * t) * env * 0.7;
+-  }
+-  writeWav(resolve(OUT_DIR, "blackout.wav"), s);
+-}
+-
+-// 10. surfaceBreak.wav (1.0s)
+-{
+-  const len = Math.floor(SAMPLE_RATE * 1.0);
+-  const s = new Float32Array(len);
+-  const noise = noiseBuffer(len);
+-  for (let i = 0; i < len; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const splash = noise[i] * Math.sin((t / 1.0) * Math.PI) * Math.exp(-t * 2.5);
+-    s[i] = splash * 0.6;
+-  }
+-  writeWav(resolve(OUT_DIR, "surfaceBreak.wav"), s);
+-}
+-
+-// 11. ambientDeep.wav (2.5s loop)
+-{
+-  const len = Math.floor(SAMPLE_RATE * 2.5);
+-  const s = new Float32Array(len);
+-  const noise = noiseBuffer(len);
+-  for (let i = 0; i < len; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const r1 = Math.sin(2 * Math.PI * 42 * t) * 0.3;
+-    const r2 = Math.sin(2 * Math.PI * 65 * t) * 0.2;
+-    const n = noise[i] * 0.08;
+-    s[i] = (r1 + r2 + n) * 0.5;
+-  }
+-  writeWav(resolve(OUT_DIR, "ambientDeep.wav"), s);
+-}
+-
+-console.log("Deep Recovery SFX generated in", OUT_DIR);
+diff --git a/apps/showcase-deep-recovery/scripts/register-assets.mjs b/apps/showcase-deep-recovery/scripts/register-assets.mjs
+deleted file mode 100644
+index 27bd1dc18..000000000
+--- a/apps/showcase-deep-recovery/scripts/register-assets.mjs
++++ /dev/null
+@@ -1,80 +0,0 @@
+-/** Build and register Deep Recovery's deterministic original CC0 assets. */
+-import { createHash } from "node:crypto";
+-import { execFileSync } from "node:child_process";
+-import { existsSync, readFileSync } from "node:fs";
+-import { dirname, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const cli = resolve(repoRoot, "packages/aura3d-cli/dist/cli.js");
+-const probeDir = resolve(repoRoot, "tests/reports/showcase-release-asset-probes");
+-if (!existsSync(cli)) throw new Error("Build packages/aura3d-cli before registering Deep Recovery assets.");
+-
+-execFileSync("node", [resolve(appDir, "scripts/build-models.mjs")], { cwd: repoRoot, stdio: "inherit" });
+-execFileSync("node", [resolve(appDir, "scripts/build-sfx.mjs")], { cwd: repoRoot, stdio: "inherit" });
+-
+-const models = [
+-  ["deepRecoverySub", "vehicle", "Original CC0 stylized flat-color primary vehicle at an inspected 3.14 metre length, +Y up and +Z forward, with a readable hull, cockpit, lamps, thrusters, fins, and grapple hardware; route-local authored motion owns gameplay."],
+-  ["deepRecoveryWreckHull", "prop", "Original CC0 stylized flat-color readable metre-scale wreck prop with a 6.4 metre extent, hull ribs, and machinery used as the mission structure; matching authored collision and sonar-occlusion volumes are route-local."],
+-  ["deepRecoveryCrateStandard", "prop", "Original CC0 blue standard salvage pod with readable latch and trim; route-local mass is 120 kg."],
+-  ["deepRecoveryCrateHeavy", "prop", "Original CC0 stylized flat-color readable amber reinforced salvage prop, visually distinct from the standard family; route-local heavy mass begins at 280 kg."],
+-  ["deepRecoveryBuoyBeacon", "prop", "Original CC0 stylized flat-color readable surface recovery buoy prop with pontoons, mast, docking structure, and beacon; route-local bank, repair, oxygen, and surface zones are separately tested."]
+-];
+-
+-for (const [id, role, suitability] of models) {
+-  const source = resolve(appDir, `assets/models/${id}.glb`);
+-  const probe = resolve(probeDir, `${id}.json`);
+-  const sourceHash = `sha256-${createHash("sha256").update(readFileSync(source)).digest("hex")}`;
+-  const hasProbe = existsSync(probe) && JSON.parse(readFileSync(probe, "utf8")).renderedProbe?.assetHash === sourceHash;
+-  const args = [
+-    "assets", "add", source, "--name", id, "--type", "model",
+-    "--license", "CC0-1.0", "--license-name", "CC0 1.0 Universal",
+-    "--license-url", "https://creativecommons.org/publicdomain/zero/1.0/",
+-    "--author", "Aura3D synthesis", "--source-family", "aura3d-original",
+-    "--source-page", "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-deep-recovery/scripts/build-models.mjs",
+-    "--download-url", `https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-deep-recovery/assets/models/${id}.glb`,
+-    "--attribution", "Aura3D synthesis — original CC0 Deep Recovery model family",
+-    "--provenance-evidence", "Deterministically generated from committed Deep Recovery model source; geometry, materials, metre scale, and orientation are reproducible.",
+-    "--retrieved-at", "2026-08-24T04:00:00.000Z", "--quality", hasProbe ? "release" : "candidate",
+-    "--role", role, "--suitability", suitability
+-  ];
+-  if (hasProbe) args.push("--rendered-probe-json", probe);
+-  const orientation = resolve(probeDir, `${id}.orientation.json`);
+-  const hasOrientation = existsSync(orientation)
+-    && JSON.parse(readFileSync(orientation, "utf8")).orientation?.assetHash === sourceHash;
+-  if (hasOrientation) args.push("--orientation-json", orientation);
+-  execFileSync("node", [cli, ...args], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
+-  console.log(`registered ${id} (${hasProbe ? "release + retained probe" : "candidate; probe pending"})`);
+-}
+-
+-const audio = [
+-  ["sonarPing", "deepRecoverySonarPingSfx", "Sonar pulse emission cue."],
+-  ["sonarReturn", "deepRecoverySonarReturnSfx", "Spatial-contact return cue."],
+-  ["hullCreak", "deepRecoveryHullCreakSfx", "High-pressure hull stress cue."],
+-  ["breachAlarm", "deepRecoveryBreachAlarmSfx", "Breach-state transition alarm."],
+-  ["patchSeal", "deepRecoveryPatchSealSfx", "Explicit buoy-repair completion cue."],
+-  ["grappleLatch", "deepRecoveryGrappleLatchSfx", "Grapple attachment cue."],
+-  ["crateBank", "deepRecoveryCrateBankSfx", "Buoy bank completion cue."],
+-  ["oxygenWarn", "deepRecoveryOxygenWarnSfx", "Low-oxygen state warning."],
+-  ["blackout", "deepRecoveryBlackoutSfx", "Life-support failure cue."],
+-  ["surfaceBreak", "deepRecoverySurfaceBreakSfx", "Surface and mission-win cue."],
+-  ["ambientDeep", "deepRecoveryAmbientDeepSfx", "Looping black-water ambience after user unlock."]
+-];
+-
+-for (const [fileName, id, suitability] of audio) {
+-  const source = resolve(appDir, `assets/sfx/${fileName}.wav`);
+-  execFileSync("node", [cli, "assets", "add", source, "--name", id, "--type", "audio",
+-    "--license", "CC0-1.0", "--license-name", "CC0 1.0 Universal",
+-    "--license-url", "https://creativecommons.org/publicdomain/zero/1.0/",
+-    "--author", "Aura3D synthesis", "--source-family", "aura3d-original",
+-    "--source-page", "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-deep-recovery/scripts/build-sfx.mjs",
+-    "--download-url", `https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-deep-recovery/assets/sfx/${fileName}.wav`,
+-    "--attribution", "Aura3D synthesis — original CC0 Deep Recovery audio",
+-    "--provenance-evidence", "Deterministically synthesized from committed oscillator and seeded-noise source; contains no sampled material.",
+-    "--retrieved-at", "2026-08-24T04:00:00.000Z", "--quality", "candidate", "--role", "unknown", "--suitability", suitability
+-  ], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
+-}
+-
+-execFileSync("node", [cli, "assets", "typegen"], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
+-console.log(`Deep Recovery registration complete: ${models.length} original route models and ${audio.length} audio cues.`);
+diff --git a/apps/showcase-deep-recovery/scripts/write-deploy-report.mjs b/apps/showcase-deep-recovery/scripts/write-deploy-report.mjs
+deleted file mode 100644
+index ee5b667c3..000000000
+--- a/apps/showcase-deep-recovery/scripts/write-deploy-report.mjs
++++ /dev/null
+@@ -1,52 +0,0 @@
+-import { createHash } from "node:crypto";
+-import { execFileSync } from "node:child_process";
+-import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+-import { dirname, join, relative, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const cli = resolve(repoRoot, "packages/aura3d-cli/dist/cli.js");
+-const modelIds = ["deepRecoverySub", "deepRecoveryWreckHull", "deepRecoveryCrateStandard", "deepRecoveryCrateHeavy", "deepRecoveryBuoyBeacon"];
+-
+-function run(args) {
+-  try { return JSON.parse(execFileSync("node", [cli, ...args], { cwd: repoRoot, encoding: "utf8", maxBuffer: 128 * 1024 * 1024 })); }
+-  catch (error) {
+-    const stdout = error && typeof error === "object" && "stdout" in error ? String(error.stdout ?? "") : "";
+-    if (stdout) return JSON.parse(stdout);
+-    throw error;
+-  }
+-}
+-function files(directory) {
+-  return readdirSync(directory).sort().flatMap((name) => {
+-    const path = join(directory, name);
+-    return statSync(path).isDirectory() ? files(path) : [path];
+-  });
+-}
+-function treeHash(directory) {
+-  const hash = createHash("sha256");
+-  for (const path of files(directory)) hash.update(relative(directory, path)).update("\0").update(readFileSync(path)).update("\0");
+-  return hash.digest("hex");
+-}
+-
+-const dist = resolve(appDir, "dist");
+-const source = resolve(appDir, "src");
+-const common = ["check-deploy", "--dist", dist, "--release", "--source", source];
+-const modelResult = run([...common, ...modelIds.flatMap((id) => ["--asset", id])]);
+-const distResult = run([...common, "--no-assets"]);
+-const producer = "apps/showcase-deep-recovery/scripts/write-deploy-report.mjs";
+-const report = {
+-  schema: "aura3d.deep-recovery.deploy/1.0", generatedAt: new Date().toISOString(), producer,
+-  producerSourceSha256: createHash("sha256").update(readFileSync(resolve(repoRoot, producer))).digest("hex"),
+-  cli: "packages/aura3d-cli/dist/cli.js", cliSourceSha256: createHash("sha256").update(readFileSync(cli)).digest("hex"),
+-  distTreeSha256: treeHash(dist), sourceTreeSha256: treeHash(source),
+-  checks: {
+-    strictModels: { command: "check-deploy --release --source apps/showcase-deep-recovery/src --asset <5 typed models>", ok: modelResult.ok === true, assetCount: modelResult.manifest?.assets?.length ?? 0, assets: (modelResult.manifest?.assets ?? []).map((asset) => ({ id: asset.id, hash: asset.hash, quality: asset.quality, role: asset.role })), warnings: modelResult.warnings ?? [], failures: modelResult.failures ?? [] },
+-    strictDistAndSource: { command: "check-deploy --release --source apps/showcase-deep-recovery/src --no-assets", ok: distResult.ok === true, warnings: distResult.warnings ?? [], failures: distResult.failures ?? [] }
+-  },
+-  audioBoundary: "Eleven deterministic synthesized WAV cues are typed candidate-quality CC0 assets; model-oriented release bounds validation is intentionally not applied to audio.",
+-  pass: modelResult.ok === true && distResult.ok === true && (modelResult.manifest?.assets?.length ?? 0) === modelIds.length
+-};
+-writeFileSync(resolve(appDir, "deploy-report.json"), `${JSON.stringify(report, null, 2)}\n`);
+-console.log(JSON.stringify({ pass: report.pass, models: report.checks.strictModels.assetCount, modelWarnings: report.checks.strictModels.warnings.length, distWarnings: report.checks.strictDistAndSource.warnings.length }));
+-if (!report.pass) process.exitCode = 1;
+diff --git a/apps/showcase-deep-recovery/scripts/write-performance-report.ts b/apps/showcase-deep-recovery/scripts/write-performance-report.ts
+deleted file mode 100644
+index f1d14aa3b..000000000
+--- a/apps/showcase-deep-recovery/scripts/write-performance-report.ts
++++ /dev/null
+@@ -1,72 +0,0 @@
+-import { createHash } from "node:crypto";
+-import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+-import { join, relative, resolve } from "node:path";
+-import { initialCrateSpawns, updateTetherPhysics } from "../src/salvage";
+-import { initialSonarState, triggerPing, updateSonar, type SonarTarget } from "../src/sonar";
+-import { initialSubmarineState, updateSubmarine } from "../src/sub";
+-
+-const repoRoot = resolve(import.meta.dirname, "../../..");
+-const appDir = resolve(import.meta.dirname, "..");
+-const SAMPLES = 20_000;
+-const CPU_P95_BUDGET_MS = 0.2;
+-const DRAW_CALL_BUDGET = 240;
+-
+-function files(directory: string): string[] {
+-  return readdirSync(directory).sort().flatMap((name) => {
+-    const path = join(directory, name);
+-    return statSync(path).isDirectory() ? files(path) : /\.(?:ts|css)$/.test(path) ? [path] : [];
+-  });
+-}
+-const sourceFiles = files(join(appDir, "src"));
+-const routeSourceSha256 = (() => {
+-  const hash = createHash("sha256");
+-  for (const path of sourceFiles) hash.update(relative(appDir, path)).update("\0").update(readFileSync(path)).update("\0");
+-  return hash.digest("hex");
+-})();
+-
+-let sub = initialSubmarineState();
+-let crates = initialCrateSpawns();
+-crates[0]!.tethered = true;
+-let sonar = initialSonarState();
+-const targets: SonarTarget[] = crates.map((crate) => ({ id: crate.id, kind: crate.kind, position: crate, value: crate.baseValue }));
+-const timings: number[] = [];
+-let deterministicStateHash = 2166136261 >>> 0;
+-for (let index = 0; index < SAMPLES; index += 1) {
+-  const started = process.cpuUsage();
+-  const tether = updateTetherPhysics(sub, crates, 1 / 60);
+-  sub = updateSubmarine(sub, { throttle: Math.sin(index / 90), heave: Math.cos(index / 130) * 0.35, turn: Math.sin(index / 170) * 0.45, pitch: 0, sprint: index % 300 < 40 }, tether.towDragForce, 1 / 60);
+-  if (index % 180 === 0) sonar = triggerPing(sonar, sub, targets, index / 60).nextState;
+-  sonar = updateSonar(sonar, 1 / 60);
+-  const used = process.cpuUsage(started);
+-  timings.push((used.user + used.system) / 1_000);
+-  const sample = `${sub.x.toFixed(3)}:${sub.y.toFixed(3)}:${sub.z.toFixed(3)}:${crates[0]!.x.toFixed(3)}:${sonar.pingCount}`;
+-  for (let char = 0; char < sample.length; char += 1) deterministicStateHash = Math.imul(deterministicStateHash ^ sample.charCodeAt(char), 16777619) >>> 0;
+-}
+-const sorted = [...timings].sort((a, b) => a - b);
+-const routeLogicCpuP95Ms = Number((sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))] ?? 0).toFixed(4));
+-const mission = JSON.parse(readFileSync(resolve(repoRoot, "tests/reports/deep-recovery/playable/mission-touch.json"), "utf8"));
+-const receipt = JSON.parse(readFileSync(resolve(repoRoot, "tests/reports/deep-recovery/playable/browser-evidence.json"), "utf8"));
+-const diagnostics = mission.boot?.renderer ?? {};
+-const observed = {
+-  routeLogicCpuP95Ms,
+-  deterministicStateHash: deterministicStateHash.toString(16).padStart(8, "0"),
+-  drawCalls: Number(diagnostics.drawCalls ?? 0),
+-  renderSize: diagnostics.renderSize ?? [0, 0]
+-};
+-const pass = observed.routeLogicCpuP95Ms <= CPU_P95_BUDGET_MS
+-  && observed.deterministicStateHash !== "00000000"
+-  && observed.drawCalls > 0 && observed.drawCalls <= DRAW_CALL_BUDGET
+-  && Number(observed.renderSize[0] ?? 0) > 0 && Number(observed.renderSize[1] ?? 0) > 0
+-  && receipt.pass === true && receipt.routeSourceSha256 === routeSourceSha256;
+-const producer = "apps/showcase-deep-recovery/scripts/write-performance-report.ts";
+-const report = {
+-  schema: "aura3d.deep-recovery.performance/1.0", generatedAt: new Date().toISOString(), producer,
+-  producerSourceSha256: createHash("sha256").update(readFileSync(resolve(repoRoot, producer))).digest("hex"),
+-  routeSourceFiles: sourceFiles.map((path) => relative(repoRoot, path)), routeSourceSha256,
+-  scope: "Route-local authored submarine/tether/sonar CPU sampling plus browser-observed root createAuraApp draw calls; no GPU frame-time, fluid-simulation, reusable submarine-kit, physics-engine, or renderer-parity claim.",
+-  samples: SAMPLES, fixedStepSeconds: 1 / 60,
+-  budgets: { routeLogicCpuP95Ms: CPU_P95_BUDGET_MS, drawCalls: DRAW_CALL_BUDGET }, observed, pass
+-};
+-writeFileSync(resolve(appDir, "performance-report.json"), `${JSON.stringify(report, null, 2)}\n`);
+-console.log(JSON.stringify({ pass, observed }));
+-if (!pass) process.exitCode = 1;
+diff --git a/apps/showcase-deep-recovery/scripts/write-route-health.mjs b/apps/showcase-deep-recovery/scripts/write-route-health.mjs
+deleted file mode 100644
+index 781b964a7..000000000
+--- a/apps/showcase-deep-recovery/scripts/write-route-health.mjs
++++ /dev/null
+@@ -1,128 +0,0 @@
+-import { createHash } from "node:crypto";
+-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+-import { dirname, join, relative, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const reportDir = resolve(repoRoot, "tests/reports/deep-recovery");
+-const modelIds = ["deepRecoverySub", "deepRecoveryWreckHull", "deepRecoveryCrateStandard", "deepRecoveryCrateHeavy", "deepRecoveryBuoyBeacon"];
+-const audioIds = [
+-  "deepRecoverySonarPingSfx", "deepRecoverySonarReturnSfx", "deepRecoveryHullCreakSfx",
+-  "deepRecoveryBreachAlarmSfx", "deepRecoveryPatchSealSfx", "deepRecoveryGrappleLatchSfx",
+-  "deepRecoveryCrateBankSfx", "deepRecoveryOxygenWarnSfx", "deepRecoveryBlackoutSfx",
+-  "deepRecoverySurfaceBreakSfx", "deepRecoveryAmbientDeepSfx"
+-];
+-
+-function readJson(path) { return JSON.parse(readFileSync(path, "utf8")); }
+-function sha256(path) { return createHash("sha256").update(readFileSync(path)).digest("hex"); }
+-function files(directory) {
+-  return readdirSync(directory).sort().flatMap((name) => {
+-    const path = join(directory, name);
+-    return statSync(path).isDirectory() ? files(path) : /\.(?:ts|css)$/.test(path) ? [path] : [];
+-  });
+-}
+-const routeSourceFiles = files(join(appDir, "src"));
+-const routeSourceSha256 = (() => {
+-  const hash = createHash("sha256");
+-  for (const path of routeSourceFiles) hash.update(relative(appDir, path)).update("\0").update(readFileSync(path)).update("\0");
+-  return hash.digest("hex");
+-})();
+-const sourceText = routeSourceFiles.map((path) => readFileSync(path, "utf8")).join("\n");
+-for (const forbidden of [/\bfrom\s+["']three(?:\/|["'])/, /unsafeModelUrl\s*\(/, /model\s*\(\s*["'][^"']+\.gl(?:b|tf)/]) {
+-  if (forbidden.test(sourceText)) throw new Error(`Deep Recovery source violates the root-safe asset boundary: ${forbidden}`);
+-}
+-if (!existsSync(join(appDir, "README.md"))) throw new Error("Deep Recovery README is missing");
+-if (!sourceText.includes('Object.defineProperty(window, "__AURA3D_SHOWCASE_DEEP_RECOVERY__"')) throw new Error("Deep Recovery literal global evidence contract is missing");
+-
+-const manifest = readJson(join(repoRoot, "aura.assets.json"));
+-const assetById = new Map(manifest.assets.map((asset) => [asset.id, asset]));
+-for (const id of modelIds) {
+-  const asset = assetById.get(id);
+-  if (!asset || asset.type !== "model" || asset.quality !== "release") throw new Error(`${id} is not a release-grade model`);
+-  if (!asset.provenance?.license || !asset.provenance?.author || !asset.provenance?.sourcePage || !asset.provenance?.downloadUrl) throw new Error(`${id} durable provenance is incomplete`);
+-  if (!asset.renderedProbe?.url || asset.renderedProbe.assetHash !== asset.hash || !existsSync(join(repoRoot, asset.renderedProbe.url))) throw new Error(`${id} rendered probe is missing or stale`);
+-  if (!sourceText.includes(`assets.${id}`)) throw new Error(`${id} is not referenced by the live route`);
+-}
+-for (const id of audioIds) {
+-  const asset = assetById.get(id);
+-  if (!asset || asset.type !== "audio" || asset.quality !== "candidate" || asset.provenance?.license !== "CC0-1.0" || asset.provenance?.author !== "Aura3D synthesis" || !asset.provenance?.sourcePage || !asset.provenance?.downloadUrl) throw new Error(`${id} typed audio provenance/quality is incomplete`);
+-  if (!sourceText.includes(`assets.${id}`)) throw new Error(`${id} is not referenced by the live audio controller`);
+-}
+-
+-const receiptPath = join(reportDir, "playable/browser-evidence.json");
+-const receipt = readJson(receiptPath);
+-if (receipt.schema !== "aura3d.deep-recovery.playable-evidence/1.0" || receipt.pass !== true) throw new Error("playable browser receipt is missing or failing");
+-if (receipt.producerSourceSha256 !== sha256(join(repoRoot, receipt.producer))) throw new Error("playable receipt producer binding is stale");
+-if (receipt.routeSourceSha256 !== routeSourceSha256) throw new Error("playable receipt route-source binding is stale");
+-for (const artifact of receipt.artifacts ?? []) {
+-  if (!existsSync(join(repoRoot, artifact.path)) || artifact.sha256 !== sha256(join(repoRoot, artifact.path))) throw new Error(`playable artifact binding is stale: ${artifact.path}`);
+-}
+-for (const scenario of [
+-  "descent", "keyboard-movement", "world-space-sonar", "wreck-approach", "grapple", "standard-tow",
+-  "drop-and-relatch", "standard-bank", "collision-breach", "pause-freeze-resume", "explicit-buoy-repair",
+-  "heavy-tow", "low-oxygen", "heavy-bank", "surface-win", "full-reset", "blackout-fail",
+-  "touch-movement", "mobile", "reduced-motion-state-truth"
+-]) if (!receipt.scenarios?.includes(scenario)) throw new Error(`playable receipt is missing ${scenario}`);
+-
+-const mission = readJson(join(reportDir, "playable/mission-touch.json"));
+-if (mission.standardTow?.towMassKg !== 120 || mission.heavyTow?.towMassKg !== 280 || !(mission.heavyTow?.towDrag > mission.standardTow?.towDrag * 2)) throw new Error("standard/heavy mass or tow differentiation proof is incomplete");
+-if (mission.breached?.breachCount < 1 || mission.repaired?.repairCount < 1 || mission.blackout?.state !== "blackout" || mission.won?.state !== "won" || mission.won?.missionStage !== "surface-complete") throw new Error("breach, repair, blackout, or surface-win proof is incomplete");
+-if (mission.touchAfter?.subPosition?.join(",") === mission.reset?.subPosition?.join(",") || mission.reduced?.reducedMotion !== true || mission.reduced?.sonarPings < 1) throw new Error("touch or reduced-motion proof is incomplete");
+-const pause = readJson(join(reportDir, "playable/pause.json"));
+-if (pause.paused?.state !== "paused" || pause.paused?.frameCount !== pause.before?.frameCount || pause.resumed?.state !== "playing") throw new Error("pause freeze/resume proof is incomplete");
+-
+-const performance = readJson(join(appDir, "performance-report.json"));
+-if (performance.schema !== "aura3d.deep-recovery.performance/1.0" || performance.pass !== true || performance.routeSourceSha256 !== routeSourceSha256 || performance.producerSourceSha256 !== sha256(join(repoRoot, performance.producer))) throw new Error("performance report is missing, failing, or stale");
+-const deploy = readJson(join(appDir, "deploy-report.json"));
+-if (deploy.schema !== "aura3d.deep-recovery.deploy/1.0" || deploy.pass !== true || deploy.checks?.strictModels?.ok !== true || deploy.checks?.strictModels?.assetCount !== modelIds.length || deploy.checks?.strictDistAndSource?.ok !== true || deploy.producerSourceSha256 !== sha256(join(repoRoot, deploy.producer))) throw new Error("strict deploy report is missing, failing, or stale");
+-if ([...(deploy.checks.strictModels.warnings ?? []), ...(deploy.checks.strictModels.failures ?? []), ...(deploy.checks.strictDistAndSource.warnings ?? []), ...(deploy.checks.strictDistAndSource.failures ?? [])].length > 0) throw new Error("strict deploy report contains warnings or failures");
+-
+-const gates = readJson(join(repoRoot, "tools/showcase-library/route-gates.json"));
+-const gate = gates.routes.find((route) => route.id === "showcase-deep-recovery");
+-if (!gate || gate.releaseClass !== "prototype-blocked" || gate.published !== true || gate.requiresTypedPrimaryAssets !== true || gate.gameTemplateStatus?.publicTemplateReady !== false) throw new Error("Deep Recovery route gate is missing or over-promoted");
+-if (JSON.stringify(gate.primaryAssets) !== JSON.stringify(modelIds) || gate.routePrimaryHeroAsset !== "deepRecoverySub") throw new Error("Deep Recovery route-primary asset gate is stale");
+-const primitiveOccurrences = Array.from(sourceText.matchAll(/\bprimitives\s*\.\s*[A-Za-z_$][\w$]*/g)).length;
+-if (primitiveOccurrences > gate.primitiveBudget) throw new Error("Deep Recovery primitive source budget exceeded");
+-const routePrimary = readJson(join(repoRoot, "tests/reports/showcase-route-primary-probes/showcase-deep-recovery.json"));
+-if (routePrimary.routeId !== "showcase-deep-recovery" || routePrimary.pass !== true || (routePrimary.failures?.length ?? 0) > 0 || routePrimary.routePrimaryHeroAsset !== "deepRecoverySub") throw new Error("Deep Recovery route-primary probe is missing or failing");
+-
+-const exactArtifacts = receipt.artifacts.map((artifact) => ({ path: artifact.path, sha256: artifact.sha256 }));
+-const routeHealth = {
+-  schema: "aura3d-route-health/1.0", generatedAt: new Date().toISOString(), appId: "showcase-deep-recovery", route: "/apps/showcase-deep-recovery/",
+-  classification: "prototype-blocked", publicShowcase: false, promotionStatus: "hold-public-showcase-until-independent-human-visual-review", machinePass: true, routeSourceSha256,
+-  renderer: { path: "createAuraApp root safe API", mode: "production with safe-basic fallback", nativeWebGPU: false, productionRuntimeClaimed: false },
+-  primaryAssets: modelIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, role: assetById.get(id).role })),
+-  audioAssets: audioIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
+-  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "subordinate seabed/reef/wreck dressing, lamp volumes, sonar rings, grapple cable, warning beacon, bioluminescent silt, and UI around five typed primary assets", status: "no-primitive-primary-subjects" },
+-  gameplay: {
+-    mission: ["descent", "wreck approach", "standard salvage", "collision breach", "explicit buoy repair", "heavy salvage", "ascent/surface win"],
+-    authoredMotion: { thrust: true, linearDrag: true, angularDrag: true, neutralBuoyancy: true, worldAndWreckCollision: true },
+-    physicsOwner: "route-local deterministic TypeScript", rapierClaimed: false, recastClaimed: false,
+-    sonarOwner: "route-local spherical live-target query plus authored wreck-sphere line-segment occlusion", worldSpaceReturns: true,
+-    standardMassKg: 120, firstHeavyMassKg: 280, massDependentTow: true, bankRequiresSubAndCrateInsideBuoy: true,
+-    keyboardAndTouch: true, pauseFreezeResume: true, fullReset: true, blackoutFail: true, surfaceWin: true, reducedMotionPreservesStateTruth: true
+-  },
+-  accessibility: { semanticHeading: true, namedStatusRegions: true, namedTouchControls: 14, minimumTouchTargetPx: 44, keyboardAndTouchParity: true, colorIndependentStatusText: true, pass: true },
+-  performance, deploy,
+-  routeGate: { config: "tools/showcase-library/route-gates.json", releaseClass: gate.releaseClass, published: gate.published, publicTemplateReady: false, pass: true },
+-  claimStatus: {
+-    status: "blocked-pending-human-review", label: "root-safe prototype",
+-    allowed: ["five original typed CC0 primary assets", "route-local authored submarine motion/collision and oxygen/hull rules", "route-local sonar range/occlusion with renderer-owned world-space returns", "mass-dependent grapple/tow and two-class banking", "full breach/repair/blackout/surface mission with keyboard and touch"],
+-    notAllowed: ["Rapier or Recast ownership", "fluid or acoustic simulation", "reusable submarine, sonar, collision, oxygen, or salvage kit", "production-runtime-only rendering claims", "public promotion before independent exact-artifact review"]
+-  },
+-  blockers: ["independent human visual review pending for exact final artifacts"],
+-  evidence: {
+-    global: "window.__AURA3D_SHOWCASE_DEEP_RECOVERY__", detailedGlobal: "window.__DEEP_RECOVERY_EVIDENCE__",
+-    sourceReview: "apps/showcase-deep-recovery/src/main.ts", exactArtifacts,
+-    browserReceipt: "tests/reports/deep-recovery/playable/browser-evidence.json",
+-    assetProbes: modelIds.map((id) => ({ asset: id, metadata: `tests/reports/showcase-release-asset-probes/${id}.json`, screenshot: assetById.get(id).renderedProbe.url, assetHash: assetById.get(id).hash })),
+-    performance: "apps/showcase-deep-recovery/performance-report.json", deploy: "apps/showcase-deep-recovery/deploy-report.json",
+-    routePrimary: "tests/reports/showcase-route-primary-probes/showcase-deep-recovery.json",
+-    unitSpecs: ["tests/unit/apps/deep-recovery-sonar.test.ts", "tests/unit/apps/deep-recovery-oxygen.test.ts", "tests/unit/apps/deep-recovery-salvage.test.ts", "tests/unit/apps/deep-recovery-sub.test.ts"],
+-    browserSpecs: ["tests/browser/deep-recovery-playable.spec.ts", "tests/browser/deep-recovery-scene.spec.ts"]
+-  },
+-  determinismContract: { fixedStep: "1/60", motion: "authored thrust/drag/buoyancy with no randomness", sonar: "live target coordinates, spherical range, authored wreck-sphere occlusion", tether: "mass-derived drag and deterministic spring", mission: "explicit ordered standard/breach/repair/heavy/surface state" }
+-};
+-writeFileSync(join(appDir, "route-health.json"), `${JSON.stringify(routeHealth, null, 2)}\n`);
+-console.log(JSON.stringify({ machinePass: true, models: modelIds.length, audio: audioIds.length, exactArtifacts: exactArtifacts.length, primitiveOccurrences, performancePass: performance.pass }));
+diff --git a/apps/showcase-deep-recovery/src/legacy/main.ts b/apps/showcase-deep-recovery/src/legacy/main.ts
+index d9a696f8a..090dacfe7 100644
+--- a/apps/showcase-deep-recovery/src/legacy/main.ts
++++ b/apps/showcase-deep-recovery/src/legacy/main.ts
+@@ -1,6 +1,3 @@
+-/**
+- * Deep Recovery showcase main entry point.
+- */
+ import {
+   createAuraApp,
+   scene,
+@@ -20,7 +17,6 @@ import {
+   createRumbleDriver,
+   createTweenEngine
+ } from "@aura3d/game";
+-import { bindDeepEvidence } from "../evidence";
+ import { bindDeepDrive } from "../scenario-drive";
+ import { assets } from "../../../../src/aura-assets";
+ import {
+@@ -58,81 +54,7 @@ import {
+   type SalvageCrate
+ } from "../gameplay/salvage";
+ import { DeepAudioController } from "./deep-audio";
+-
+-export interface DeepRecoveryEvidence {
+-  readonly mounted: boolean;
+-  readonly status: "loading" | "ready";
+-  readonly state: "playing" | "paused" | "blackout" | "won";
+-  readonly missionStage: MissionStage;
+-  readonly depth: number;
+-  readonly oxygen: number;
+-  readonly hull: number;
+-  readonly salvageValue: number;
+-  readonly bankedValue: number;
+-  readonly cratesSecured: number;
+-  readonly cratesTotal: number;
+-  readonly sonarPings: number;
+-  readonly sonarReturns: number;
+-  readonly markerAgeOuts: number;
+-  readonly sensorEventCount: number;
+-  readonly motionMode: "authored";
+-  readonly frameCount: number;
+-  readonly audioCues: readonly string[];
+-  readonly subPosition: readonly [number, number, number];
+-  readonly standardBanked: boolean;
+-  readonly heavyBanked: boolean;
+-  readonly breachCount: number;
+-  readonly repairCount: number;
+-  readonly towMassKg: number;
+-  readonly towDrag: number;
+-  readonly reducedMotion: boolean;
+-  readonly sonarContacts: readonly { readonly id: string; readonly kind: string; readonly position: readonly [number, number, number]; readonly distance: number }[];
+-  readonly systems: readonly string[];
+-  readonly controls: readonly string[];
+-  readonly physics: string;
+-  readonly claimBoundary: string;
+-  readonly primaryAssets: readonly string[];
+-  readonly primaryAssetHashes: readonly string[];
+-  readonly recoveryInventory: {
+-    readonly backend: string;
+-    readonly drawCalls: number;
+-    readonly readyAssets: number;
+-    readonly renderSize: readonly number[] | undefined;
+-    readonly recoveryContract: "app-owned-pause_explicit-remount";
+-    /** U2: per-class re-creation state (post targets, B1 shadows, A1 bloom bytes, atlases, G1 text, A5 fog, animation). */
+-    readonly runtimeBackend: string;
+-    readonly postPasses: readonly string[];
+-    readonly postTargetFormat: string | undefined;
+-    readonly shadowTargetsAllocated: number;
+-    readonly shadowMapRendered: boolean;
+-    readonly bloomTargetBytes: number;
+-    readonly textureResidentEntries: number;
+-    readonly sdfTexts: number;
+-    readonly textQuadCount: number;
+-    readonly fogPreset: string;
+-    readonly animatedNodes: number;
+-  };
+-  readonly renderer: unknown;
+-}
+-
+ type MissionStage = "descent" | "wreck-approach" | "standard-salvage" | "breach-repair" | "heavy-salvage" | "ascent" | "surface-complete" | "blackout";
+-
+-declare global {
+-  interface Window {
+-    __DEEP_RECOVERY_EVIDENCE__?: DeepRecoveryEvidence;
+-    __AURA3D_SHOWCASE_DEEP_RECOVERY__?: DeepRecoveryEvidence;
+-    __DR_PUMP__?: (frames: number) => number;
+-    __DR_TELEPORT__?: (x: number, y: number, z: number) => void;
+-    __DR_TELEPORT_CRATE__?: (id: string, x: number, y: number, z: number) => void;
+-    __DR_IMPACT__?: (speed: number) => void;
+-    __DR_SET_OXYGEN__?: (oxygen: number) => void;
+-    __DR_REPAIR__?: () => boolean;
+-    __DR_CAPTURE_PAUSE__?: () => Promise<void>;
+-    __DR_CAPTURE_RESUME__?: () => void;
+-  }
+-}
+-
+-// ---------------- State Initialization ----------------
+ let gameState: "playing" | "paused" | "blackout" | "won" = "playing";
+ let subState: SubmarineState = initialSubmarineState();
+ let oxygenState: OxygenState = initialOxygenState();
+@@ -151,12 +73,6 @@ let surfaceCuePlayed = false;
+ let oxygenWarningCuePlayed = false;
+ let compositionProbeActive = false;
+ const reducedMotion = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+-document.body.dataset.capture = "default";
+-// The review lens is a deliberately staged mission moment, not the launch
+-// pose.  Keeping the submarine on the west approach and the Drowned Chapel in
+-// the same camera-facing basin makes the typed vehicle/world relationship
+-// legible in one frame while leaving the normal gameplay spawn untouched.
+-const REVIEW_POSE = { x: -11.5, y: -12, z: -7, yaw: 0.18 } as const;
+ const PRIMARY_ASSET_REFS = [
+   assets.deepRecoverySub,
+   assets.deepRecoveryWreckHull,
+@@ -164,8 +80,6 @@ const PRIMARY_ASSET_REFS = [
+   assets.deepRecoveryCrateHeavy,
+   assets.deepRecoveryBuoyBeacon
+ ] as const;
+-
+-bindDeepEvidence(() => collectDeepEvidence());
+ const deepTween = createTweenEngine();
+ const deepFx = createFxParticlePass(app.effects);
+ const deepJuice = createJuice<"ping" | "breach" | "seal" | "latch" | "bank" | "blackout" | "won" | "impact">({
+@@ -190,11 +104,8 @@ bindDeepDrive({
+   stepSim: (dt) => { app.pause(); app.advance(dt); app.resume(); },
+   stepRender: (dt) => { app.pause(); app.advance(dt); app.resume(); }
+ });
+-
+ const audio = new DeepAudioController();
+ void audio.init();
+-
+-// Keys Held Set
+ const keys = new Set<string>();
+ window.addEventListener("keydown", (e) => {
+   keys.add(e.code);
+@@ -218,8 +129,6 @@ window.addEventListener("keydown", (e) => {
+ window.addEventListener("keyup", (e) => {
+   keys.delete(e.code);
+ });
+-
+-// ---------------- DOM UI Elements ----------------
+ const elZoneBadge = document.getElementById("dr-zone-badge")!;
+ const elBreachBadge = document.getElementById("dr-breach-badge")!;
+ const elOxygenFill = document.getElementById("dr-oxygen-fill")!;
+@@ -240,7 +149,6 @@ const elModalTitle = document.getElementById("dr-modal-title")!;
+ const elModalDesc = document.getElementById("dr-modal-desc")!;
+ const elModalActionBtn = document.getElementById("dr-modal-action-btn")!;
+ const elModalRetryBtn = document.getElementById("dr-modal-retry-btn")!;
+-
+ document.getElementById("dr-ping-btn")?.addEventListener("click", () => handlePing());
+ document.getElementById("dr-grapple-btn")?.addEventListener("click", () => handleGrappleToggle());
+ document.getElementById("dr-repair-btn")?.addEventListener("click", () => handleRepair());
+@@ -248,7 +156,6 @@ document.getElementById("dr-pause-btn")?.addEventListener("click", () => toggleP
+ document.getElementById("dr-restart-btn")?.addEventListener("click", () => resetGame());
+ elModalActionBtn.addEventListener("click", () => resetGame());
+ elModalRetryBtn.addEventListener("click", () => resetGame());
+-
+ function bindHeldButton(id: string, code: string): void {
+   const button = document.getElementById(id);
+   if (!button) return;
+@@ -264,10 +171,7 @@ bindHeldButton("dr-forward-btn", "KeyW");
+ bindHeldButton("dr-right-btn", "KeyD");
+ bindHeldButton("dr-dive-btn", "KeyQ");
+ bindHeldButton("dr-surface-btn", "KeyE");
+-
+ import { createDeepOceanEnvironment } from "./environment";
+-
+-// ---------------- Scene Construction ----------------
+ const initialSonarTargets = [
+   { id: "buoy", position: BUOY_STATION },
+   ...WRECK_OBSTACLES.map((target) => ({ id: target.id, position: target })),
+@@ -277,7 +181,6 @@ const SILT_OFFSETS = [
+   [-4, 1.8, 3], [-2.8, -1.2, 5], [-1.2, 2.4, 7], [1.1, -2, 4], [2.7, 1.1, 6], [4.2, -0.5, 8],
+   [-5.2, -2.1, 10], [-3.5, 3, 12], [-0.4, -2.8, 11], [2, 2.8, 10], [4.8, 1.7, 13], [5.5, -2.4, 15]
+ ] as const;
+-
+ const sceneDef = scene()
+   // Grade the water as a deep, almost-black salvage map so the warm wreck
+   // windows and cyan sonar returns establish the focal hierarchy. The typed
+@@ -468,7 +371,6 @@ const sceneDef = scene()
+       }).scale([1.05, 1.05, 0.1]).position(target.position.x, target.position.y, target.position.z).runtime({ id: `sonar-marker-${target.id}`, tags: ["sonar-return", "world-space-truth"] })
+     )
+   ]);
+-
+ const deepGame = createGame({
+   id: "showcase-deep-recovery",
+   target: "#canvas-host",
+@@ -487,15 +389,11 @@ const deepGame = createGame({
+ });
+ const app = deepGame.app;
+ deepGame.start();
+-
+ app.onFrame((frame) => {
+   const dt = typeof frame === "number" ? frame : (frame?.dt ?? 1 / 60);
+   runSimulationStep(Math.min(dt, 0.05));
+ });
+-
+ audio.startAmbience();
+-
+-// ---------------- Gameplay Actions ----------------
+ function handlePing(): void {
+   if (gameState !== "playing") return;
+   const subPos = { x: subState.x, y: subState.y, z: subState.z };
+@@ -521,12 +419,10 @@ function handlePing(): void {
+     }
+   }
+ }
+-
+ function atBuoyServiceZone(): boolean {
+   return Math.hypot(subState.x - BUOY_STATION.x, subState.z - BUOY_STATION.z) <= BUOY_STATION.dockRadius
+     && subState.y >= -4;
+ }
+-
+ function handleRepair(): boolean {
+   if (gameState !== "playing" || !oxygenState.breached || !atBuoyServiceZone()) return false;
+   oxygenState = patchBreach(oxygenState);
+@@ -538,7 +434,6 @@ function handleRepair(): boolean {
+   window.__DEEP_RECOVERY_EVIDENCE__ = collectDeepEvidence();
+   return true;
+ }
+-
+ function handleGrappleToggle(): void {
+   if (gameState !== "playing") return;
+   const subPos = { x: subState.x, y: subState.y, z: subState.z };
+@@ -555,7 +450,6 @@ function handleGrappleToggle(): void {
+     }
+   }
+ }
+-
+ function togglePause(): void {
+   if (gameState === "blackout" || gameState === "won") return;
+   if (gameState === "playing") {
+@@ -569,7 +463,6 @@ function togglePause(): void {
+   }
+   window.__DEEP_RECOVERY_EVIDENCE__ = collectDeepEvidence();
+ }
+-
+ function resetGame(): void {
+   subState = initialSubmarineState();
+   oxygenState = initialOxygenState();
+@@ -594,8 +487,6 @@ function resetGame(): void {
+   syncHud();
+   window.__DEEP_RECOVERY_EVIDENCE__ = collectDeepEvidence();
+ }
+-
+-// ---------------- Frame Update Loop ----------------
+ function runSimulationStep(dt: number): void {
+   deepTween.tick(dt);
+   if (compositionProbeActive) {
+@@ -733,7 +624,6 @@ function runSimulationStep(dt: number): void {
+   // 8. Publish Evidence
+   window.__DEEP_RECOVERY_EVIDENCE__ = collectDeepEvidence();
+ }
+-
+ function syncVisualNodes(): void {
+   // Update camera target rig
+   const camNode = app.nodes.get("camera-target");
+@@ -831,7 +721,6 @@ function syncVisualNodes(): void {
+     }
+   }
+ }
+-
+ function missionStage(): MissionStage {
+   if (gameState === "blackout") return "blackout";
+   if (gameState === "won") return "surface-complete";
+@@ -843,7 +732,6 @@ function missionStage(): MissionStage {
+   if (sonarState.pingCount > 0 || Math.abs(subState.y) >= 12) return "wreck-approach";
+   return "descent";
+ }
+-
+ const OBJECTIVES: Record<MissionStage, string> = {
+   descent: "DESCEND TO 15 M · PULSE SONAR",
+   "wreck-approach": "FOLLOW CYAN RETURNS TO THE WRECK",
+@@ -854,7 +742,6 @@ const OBJECTIVES: Record<MissionStage, string> = {
+   "surface-complete": "RECOVERY COMPLETE",
+   blackout: "BLACKOUT · RESET TO RETRY"
+ };
+-
+ function syncHud(): void {
+   const zone = getDepthZone(subState.y);
+   const stage = missionStage();
+@@ -901,7 +788,6 @@ function syncHud(): void {
+     ? "No returns — pulse sonar"
+     : sonarState.contacts.slice(0, 6).map((contact) => `${contact.kind.replace("crate-", "").toUpperCase()} ${contact.distance.toFixed(0)}m`).join(" · ");
+ }
+-
+ function showModal(title: string, desc: string, isFail: boolean): void {
+   elModalTitle.textContent = title;
+   elModalDesc.textContent = desc;
+@@ -915,7 +801,6 @@ function showModal(title: string, desc: string, isFail: boolean): void {
+   }
+   elModal.classList.add("active");
+ }
+-
+ function collectDeepEvidence(): DeepRecoveryEvidence {
+   const tetheredCrates = crates.filter((c) => c.tethered);
+   const currentZone = getDepthZone(subState.y);
+@@ -1002,27 +887,6 @@ function collectDeepEvidence(): DeepRecoveryEvidence {
+     renderer: diagnostics
+   };
+ }
+-
+-// Window Hooks for Deterministic Playwright Tests
+-window.__DR_PUMP__ = (frames: number): number => {
+-  for (let i = 0; i < frames; i += 1) {
+-    runSimulationStep(1 / 60);
+-  }
+-  return frameCount;
+-};
+-
+-window.__DR_TELEPORT__ = (x: number, y: number, z: number): void => {
+-  subState.x = x;
+-  subState.y = y;
+-  subState.z = z;
+-  subState.vx = 0;
+-  subState.vy = 0;
+-  subState.vz = 0;
+-  syncVisualNodes();
+-  syncHud();
+-  window.__DEEP_RECOVERY_EVIDENCE__ = collectDeepEvidence();
+-};
+-
+ window.__DR_TELEPORT_CRATE__ = (id: string, x: number, y: number, z: number): void => {
+   const crate = crates.find((entry) => entry.id === id);
+   if (!crate) return;
+@@ -1035,7 +899,6 @@ window.__DR_TELEPORT_CRATE__ = (id: string, x: number, y: number, z: number): vo
+   syncVisualNodes();
+   window.__DEEP_RECOVERY_EVIDENCE__ = collectDeepEvidence();
+ };
+-
+ window.__DR_IMPACT__ = (speed: number): void => {
+   const impact = applyCollisionImpact(oxygenState, speed);
+   oxygenState = impact.nextState;
+@@ -1050,62 +913,5 @@ window.__DR_IMPACT__ = (speed: number): void => {
+   syncHud();
+   window.__DEEP_RECOVERY_EVIDENCE__ = collectDeepEvidence();
+ };
+-
+-window.__DR_SET_OXYGEN__ = (oxygen: number): void => {
+-  const clamped = Math.max(0, Math.min(100, oxygen));
+-  oxygenState = { ...oxygenState, oxygen: clamped, warningActive: clamped > 0 && clamped <= 25, blackout: false };
+-  oxygenWarningCuePlayed = false;
+-  syncHud();
+-  window.__DEEP_RECOVERY_EVIDENCE__ = collectDeepEvidence();
+-};
+-
+-window.__DR_REPAIR__ = (): boolean => handleRepair();
+-
+-// Browser evidence captures the already-rendered compositor surface. Pausing
+-// only the app render scheduler prevents a continuously submitted frame from
+-// starving Chromium's screenshot command on software-backed remote runners;
+-// mission state remains owned by the deterministic test pump above.
+-window.__DR_CAPTURE_PAUSE__ = async (): Promise<void> => {
+-  app.pause();
+-  await app.ready();
+-  await app.stepAsync(0);
+-};
+-window.__DR_CAPTURE_RESUME__ = (): void => {
+-  // Evidence mode intentionally leaves the continuous scheduler paused. The
+-  // route's deterministic __DR_PUMP__ owns mission advancement, and the next
+-  // capture submits exactly one current-state render through stepAsync(0).
+-};
+-
+-Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+-  configurable: true,
+-  value: {
+-    category: "application",
+-    subject: { position: [-1.7, -6, -2], rotation: [0, 0, 0], targetSize: 4.2 },
+-    async settleSubjectPose() {
+-      app.pause();
+-      await app.ready();
+-      compositionProbeActive = true;
+-      subState = { ...initialSubmarineState(), x: -1.7, y: -6, z: -2, yaw: 0 };
+-      // Seed the same sonar contact that the playable producer uses for its
+-      // named wreck-approach artifact.  This keeps both the normal route
+-      // primary probe and the dedicated review lens grounded in an actual
+-      // mission state instead of showing a beauty frame with no returns.
+-      sonarState = initialSonarState();
+-      handlePing();
+-      syncVisualNodes();
+-      syncHud();
+-      window.__DEEP_RECOVERY_EVIDENCE__ = collectDeepEvidence();
+-      await app.stepAsync(0);
+-    },
+-    async setSubjectSuppressed(suppressed: boolean) {
+-      app.pause();
+-      await app.ready();
+-      app.nodes.get("sub-root")?.setVisible(!suppressed);
+-      await app.stepAsync(0);
+-    }
+-  }
+-});
+-
+ syncVisualNodes();
+ syncHud();
+-window.__DEEP_RECOVERY_EVIDENCE__ = collectDeepEvidence();
+diff --git a/apps/showcase-deep-recovery/src/legacy/styles.css b/apps/showcase-deep-recovery/src/legacy/styles.css
+index 2ac045402..f2c0d3347 100644
+--- a/apps/showcase-deep-recovery/src/legacy/styles.css
++++ b/apps/showcase-deep-recovery/src/legacy/styles.css
+@@ -14,14 +14,12 @@
+   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+ }
+-
+ * {
+   box-sizing: border-box;
+   margin: 0;
+   padding: 0;
+   user-select: none;
+ }
+-
+ html, body {
+   width: 100%;
+   height: 100%;
+@@ -30,21 +28,17 @@ html, body {
+   color: var(--text-primary);
+   font-family: var(--font-sans);
+ }
+-
+ #app-container {
+   position: relative;
+   width: 100vw;
+   height: 100vh;
+ }
+-
+ #canvas-host {
+   position: absolute;
+   inset: 0;
+   width: 100%;
+   height: 100%;
+ }
+-
+-/* ---------------- HUD Layout ---------------- */
+ .hud-overlay {
+   position: absolute;
+   inset: 0;
+@@ -54,14 +48,12 @@ html, body {
+   padding: 16px;
+   z-index: 10;
+ }
+-
+ .hud-top {
+   display: flex;
+   justify-content: space-between;
+   align-items: flex-start;
+   gap: 16px;
+ }
+-
+ .hud-card {
+   pointer-events: auto;
+   background: rgba(8, 17, 25, 0.68);
+@@ -72,13 +64,11 @@ html, body {
+   padding: 12px 16px;
+   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 16px rgba(56, 189, 248, 0.1);
+ }
+-
+ .hud-brand {
+   display: flex;
+   align-items: center;
+   gap: 12px;
+ }
+-
+ .hud-brand h1 {
+   font-size: 1.1rem;
+   font-weight: 700;
+@@ -86,7 +76,6 @@ html, body {
+   color: var(--accent-cyan);
+   text-transform: uppercase;
+ }
+-
+ .badge {
+   font-size: 0.65rem;
+   font-weight: 700;
+@@ -98,58 +87,21 @@ html, body {
+   letter-spacing: 0.08em;
+   text-transform: uppercase;
+ }
+-
+ .badge.amber {
+   background: rgba(245, 158, 11, 0.15);
+   color: var(--accent-amber);
+   border-color: rgba(245, 158, 11, 0.3);
+ }
+-
+ .badge.emerald {
+   background: rgba(52, 211, 153, 0.15);
+   color: var(--accent-emerald);
+   border-color: rgba(52, 211, 153, 0.3);
+ }
+-
+ .badge.rose {
+   background: rgba(251, 113, 133, 0.15);
+   color: var(--accent-rose);
+   border-color: rgba(251, 113, 133, 0.3);
+ }
+-
+-.telemetry-row {
+-  display: flex;
+-  gap: 24px;
+-  margin-top: 8px;
+-}
+-
+-.telemetry-item {
+-  display: flex;
+-  flex-direction: column;
+-  gap: 2px;
+-}
+-
+-.telemetry-label {
+-  font-size: 0.7rem;
+-  color: var(--text-muted);
+-  text-transform: uppercase;
+-  font-family: var(--font-mono);
+-  letter-spacing: 0.05em;
+-}
+-
+-.telemetry-value {
+-  font-size: 1.1rem;
+-  font-weight: 700;
+-  font-family: var(--font-mono);
+-  color: var(--text-primary);
+-}
+-
+-.telemetry-value.cyan { color: var(--accent-cyan); }
+-.telemetry-value.amber { color: var(--accent-amber); }
+-.telemetry-value.emerald { color: var(--accent-emerald); }
+-.telemetry-value.rose { color: var(--accent-rose); }
+-
+-/* Meter Bars */
+ .meter-container {
+   width: 140px;
+   height: 8px;
+@@ -158,39 +110,31 @@ html, body {
+   overflow: hidden;
+   margin-top: 4px;
+ }
+-
+ .meter-fill {
+   height: 100%;
+   width: 100%;
+   transition: width 0.15s ease, background-color 0.3s ease;
+ }
+-
+ .meter-fill.oxygen {
+   background: linear-gradient(90deg, #38bdf8, #0ea5e9);
+ }
+-
+ .meter-fill.warning {
+   background: linear-gradient(90deg, #f59e0b, #ef4444);
+   animation: pulseWarning 0.8s infinite alternate;
+ }
+-
+ .meter-fill.hull {
+   background: linear-gradient(90deg, #34d399, #10b981);
+ }
+-
+ @keyframes pulseWarning {
+   from { opacity: 0.6; }
+   to { opacity: 1.0; }
+ }
+-
+-/* Middle / Sonar overlay */
+ .hud-center {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   position: relative;
+ }
+-
+ .reticle-container {
+   width: 180px;
+   height: 180px;
+@@ -201,14 +145,12 @@ html, body {
+   align-items: center;
+   position: relative;
+ }
+-
+ .reticle-crosshair {
+   width: 12px;
+   height: 12px;
+   border: 1px solid var(--accent-cyan);
+   border-radius: 50%;
+ }
+-
+ .contact-panel,
+ .objective-callout {
+   position: absolute;
+@@ -219,31 +161,6 @@ html, body {
+   letter-spacing: 0.04em;
+   text-shadow: 0 0 10px rgba(56, 189, 248, 0.45);
+ }
+-
+-/* The desktop salvage-map producer has a renderer-only review variant. Keep
+- * telemetry and sonar contacts mounted as real mission evidence, while moving
+- * interaction chrome and the decorative reticle out of the comparison pixels. */
+-body[data-capture="review"] .hud-bottom,
+-body[data-capture="review"] .reticle-container,
+-body[data-capture="review"] .objective-callout,
+-body[data-capture="review"] #dr-modal {
+-  opacity: 0;
+-  pointer-events: none;
+-}
+-
+-body[data-capture="review"] .hud-top {
+-  inset: 12px 16px auto;
+-  gap: 12px;
+-}
+-
+-body[data-capture="review"] .hud-panel {
+-  transform: scale(0.72);
+-  opacity: 0.88;
+-}
+-
+-body[data-capture="review"] .hud-panel:first-child { transform-origin: top left; }
+-body[data-capture="review"] .hud-panel:last-child { transform-origin: top right; }
+-
+ .location-reveal {
+   display: none;
+   position: absolute;
+@@ -256,12 +173,6 @@ body[data-capture="review"] .hud-panel:last-child { transform-origin: top right;
+   text-shadow: 0 2px 16px rgba(0, 0, 0, 0.95);
+   pointer-events: none;
+ }
+-
+-body[data-capture="review"] .location-reveal {
+-  display: grid;
+-  gap: 3px;
+-}
+-
+ .location-reveal::before {
+   content: "";
+   position: absolute;
+@@ -269,7 +180,6 @@ body[data-capture="review"] .location-reveal {
+   z-index: -1;
+   background: radial-gradient(ellipse at center, rgba(4, 15, 19, 0.86) 0%, rgba(4, 15, 19, 0.34) 52%, transparent 76%);
+ }
+-
+ .location-reveal span,
+ .location-reveal small {
+   color: #8be8eb;
+@@ -277,18 +187,15 @@ body[data-capture="review"] .location-reveal {
+   letter-spacing: 0.2em;
+   text-transform: uppercase;
+ }
+-
+ .location-reveal strong {
+   font: 500 clamp(1.4rem, 2.5vw, 2.05rem)/1.05 Georgia, "Times New Roman", serif;
+   letter-spacing: 0.08em;
+   text-transform: uppercase;
+ }
+-
+ .location-reveal small {
+   color: #d9b86f;
+   letter-spacing: 0.13em;
+ }
+-
+ .contact-panel {
+   left: 0;
+   top: 50%;
+@@ -298,17 +205,8 @@ body[data-capture="review"] .location-reveal {
+   display: grid;
+   gap: 4px;
+ }
+-
+-body[data-capture="review"] .contact-panel {
+-  width: min(220px, 23vw);
+-  padding: 8px 10px;
+-  font-size: 0.62rem;
+-  opacity: 0.82;
+-}
+-
+ .contact-panel strong { color: var(--accent-cyan); }
+ .contact-panel span { color: var(--text-secondary); font-weight: 500; }
+-
+ .objective-callout {
+   bottom: 22px;
+   padding: 8px 14px;
+@@ -316,7 +214,6 @@ body[data-capture="review"] .contact-panel {
+   color: #fbbf24;
+   border-color: rgba(245, 158, 11, 0.48);
+ }
+-
+ body.is-breached #app-container::after,
+ body.is-low-oxygen #app-container::after {
+   content: "";
+@@ -326,22 +223,18 @@ body.is-low-oxygen #app-container::after {
+   z-index: 8;
+   box-shadow: inset 0 0 90px rgba(239, 68, 68, 0.42);
+ }
+-
+-/* Bottom Controls & Prompts */
+ .hud-bottom {
+   display: flex;
+   justify-content: space-between;
+   align-items: flex-end;
+   gap: 16px;
+ }
+-
+ .controls-hint {
+   font-family: var(--font-mono);
+   font-size: 0.75rem;
+   color: var(--text-secondary);
+   line-height: 1.6;
+ }
+-
+ .controls-hint kbd {
+   background: rgba(255, 255, 255, 0.1);
+   padding: 2px 6px;
+@@ -349,13 +242,11 @@ body.is-low-oxygen #app-container::after {
+   border: 1px solid rgba(255, 255, 255, 0.2);
+   color: var(--accent-cyan);
+ }
+-
+ .action-buttons {
+   pointer-events: auto;
+   display: flex;
+   gap: 10px;
+ }
+-
+ .btn {
+   background: var(--bg-surface-elevated);
+   border: 1px solid var(--border-color);
+@@ -371,24 +262,19 @@ body.is-low-oxygen #app-container::after {
+   min-height: 44px;
+   touch-action: none;
+ }
+-
+ .btn:hover {
+   background: rgba(56, 189, 248, 0.2);
+   border-color: var(--accent-cyan);
+   box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+ }
+-
+ .btn.primary {
+   background: rgba(56, 189, 248, 0.25);
+   border-color: var(--accent-cyan);
+   color: #fff;
+ }
+-
+ .btn.primary:hover {
+   background: rgba(56, 189, 248, 0.4);
+ }
+-
+-/* Modal / End State Overlays */
+ .modal-backdrop {
+   position: absolute;
+   inset: 0;
+@@ -400,11 +286,9 @@ body.is-low-oxygen #app-container::after {
+   z-index: 50;
+   pointer-events: auto;
+ }
+-
+ .modal-backdrop.active {
+   display: flex;
+ }
+-
+ .modal-dialog {
+   background: var(--bg-surface);
+   border: 1px solid var(--accent-cyan);
+@@ -417,40 +301,18 @@ body.is-low-oxygen #app-container::after {
+   flex-direction: column;
+   gap: 16px;
+ }
+-
+ .modal-dialog h2 {
+   font-size: 1.4rem;
+   color: var(--accent-cyan);
+   text-transform: uppercase;
+   letter-spacing: 0.05em;
+ }
+-
+ .modal-dialog.failure h2 {
+   color: var(--accent-rose);
+ }
+-
+ @media (min-width: 901px) {
+   .touch-move { display: none; }
+ }
+-
+-@media (max-width: 900px) {
+-  .hud-overlay { padding: 8px; }
+-  .hud-top { display: grid; grid-template-columns: 1fr; gap: 6px; }
+-  .hud-card { padding: 8px 10px; }
+-  .hud-brand h1 { font-size: 0.88rem; }
+-  .telemetry-row { gap: 12px; justify-content: space-between; }
+-  .telemetry-label { font-size: 0.56rem; }
+-  .telemetry-value { font-size: 0.82rem; }
+-  .meter-container { width: 76px; }
+-  .controls-hint { display: none; }
+-  .hud-bottom { justify-content: center; }
+-  .action-buttons { width: 100%; flex-wrap: wrap; justify-content: center; gap: 5px; }
+-  .btn { padding: 7px 9px; font-size: 0.65rem; }
+-  .contact-panel { top: 38%; width: 170px; font-size: 0.58rem; }
+-  .objective-callout { bottom: 82px; max-width: 88vw; text-align: center; font-size: 0.6rem; }
+-  .reticle-container { width: 116px; height: 116px; }
+-}
+-
+ @media (prefers-reduced-motion: reduce) {
+   *, *::before, *::after {
+     animation-duration: 0.001ms !important;
+diff --git a/apps/showcase-deep-recovery/src/v2/evidence/index.ts b/apps/showcase-deep-recovery/src/v2/evidence/index.ts
+deleted file mode 100644
+index 29cd56479..000000000
+--- a/apps/showcase-deep-recovery/src/v2/evidence/index.ts
++++ /dev/null
+@@ -1,137 +0,0 @@
+-// apps/showcase-deep-recovery/src/v2/evidence/index.ts — §7.2.1 evidence.
+-// Publishes window.__AURA3D_GAME_EVIDENCE__["showcase-deep-recovery"] as lazy
+-// getters. render.readbacksThisFrame is a constant 0: the v2 shell issues no
+-// GPU readbacks — the §6.9.14 volumetric-fog readback was removed at day-0
+-// (the four render.readbacksThisFrame===0 conditions measure exactly that).
+-import type { Game } from "@aura3d/engine";
+-
+-export const DEEP_EVIDENCE_ID = "showcase-deep-recovery";
+-
+-export type DeepPhase = "playing" | "paused" | "blackout" | "won";
+-
+-export interface DeepRunSnapshot {
+-  readonly phase: DeepPhase;
+-  readonly missionStage: string;
+-  readonly sub: {
+-    readonly x: number;
+-    readonly y: number;
+-    readonly z: number;
+-    readonly yaw: number;
+-    readonly speed: number;
+-    readonly throttle: number;
+-    readonly depth: number;
+-    readonly sprint: boolean;
+-  };
+-  readonly oxygen: {
+-    readonly oxygen: number;
+-    readonly hull: number;
+-    readonly breached: boolean;
+-    readonly warningActive: boolean;
+-    readonly blackout: boolean;
+-    readonly breachCount: number;
+-    readonly repairCount: number;
+-  };
+-  readonly salvage: {
+-    readonly grappled: number;
+-    readonly tethered: number;
+-    readonly banked: number;
+-    readonly bankedValue: number;
+-    readonly cratesTotal: number;
+-    readonly towMassKg: number;
+-    readonly standardBanked: boolean;
+-    readonly heavyBanked: boolean;
+-  };
+-  readonly sonar: {
+-    readonly pings: number;
+-    readonly returns: number;
+-    readonly liveContacts: number;
+-    readonly cooldown: number;
+-  };
+-  readonly contracts: {
+-    readonly active: number;
+-    readonly title: string;
+-    readonly quotaValue: number;
+-    readonly complete: boolean;
+-  };
+-  readonly sensorEventCount: number;
+-  readonly grappleLineLive: boolean;
+-}
+-
+-export interface DeepEvidenceBindings {
+-  readonly game: Game;
+-  snapshot(): DeepRunSnapshot;
+-  appliedLook(): unknown;
+-  audioCueLog(): readonly string[];
+-  bootedAtMs(): number;
+-  frameCount(): number;
+-}
+-
+-export function publishDeepEvidence(b: DeepEvidenceBindings): void {
+-  const ev = {
+-    get playback() {
+-      const s = b.snapshot();
+-      return { phase: s.phase, state: s.phase === "paused" ? "paused" : "playing" };
+-    },
+-    get session() {
+-      const g = b.game;
+-      return {
+-        state: g.session.state,
+-        paused: g.session.paused,
+-        simTime: g.session.simTime,
+-        timeScale: g.session.timeScale
+-      };
+-    },
+-    get sub() {
+-      return b.snapshot().sub;
+-    },
+-    get oxygen() {
+-      return b.snapshot().oxygen;
+-    },
+-    get salvage() {
+-      return b.snapshot().salvage;
+-    },
+-    get sonar() {
+-      return b.snapshot().sonar;
+-    },
+-    get contracts() {
+-      return b.snapshot().contracts;
+-    },
+-    get fx() {
+-      const g = b.game;
+-      return { backend: g.fx.backend, liveCount: g.fx.liveCount };
+-    },
+-    get render() {
+-      const d = b.game.app.diagnostics();
+-      return {
+-        backend: d.backend,
+-        drawCalls: d.drawCalls,
+-        renderSize: d.renderSize,
+-        fps: d.fps,
+-        errors: d.errors,
+-        warnings: d.warnings,
+-        // v2 issues no per-frame GPU readbacks (the day-0 P0 removed the
+-        // legacy volumetric-fog CPU readback); this is the four-shot
+-        // §7.2.1 measurement.
+-        readbacksThisFrame: 0
+-      };
+-    },
+-    get loading() {
+-      return { sceneSwaps: 0 };
+-    },
+-    get sensors() {
+-      const s = b.snapshot();
+-      return { eventCount: s.sensorEventCount, grappleLineLive: s.grappleLineLive };
+-    },
+-    get appliedLook() {
+-      return b.appliedLook();
+-    },
+-    get audio() {
+-      return { cues: b.audioCueLog() };
+-    },
+-    get boot() {
+-      return { bootedAtMs: b.bootedAtMs(), frame: b.frameCount() };
+-    }
+-  };
+-  const root = ((window as unknown as Record<string, unknown>).__AURA3D_GAME_EVIDENCE__ ??= {});
+-  (root as Record<string, unknown>)[DEEP_EVIDENCE_ID] = ev;
+-}
+-- 
+2.34.1
+

@@ -1,0 +1,2336 @@
+From b14d70ddb8913f45f1df4cb8f6ce96ff39f2587e Mon Sep 17 00:00:00 2001
+From: gchahal+1 <gchahal@veerone.com>
+Date: Fri, 9 Oct 2026 13:40:31 +0000
+Subject: [PATCH] [qr-prd09] showcase-aurora-lander: delete evidence
+ files+blocks (T5.8)
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ .../scripts/build-models.mjs                  | 346 ------------------
+ .../scripts/build-review-extraction-bay.mjs   | 100 -----
+ .../build-review-extraction-lander.mjs        | 101 -----
+ .../scripts/build-sfx.mjs                     | 302 ---------------
+ .../scripts/register-sfx.mjs                  |  56 ---
+ .../scripts/write-performance-report.ts       | 128 -------
+ .../scripts/write-route-health.mjs            | 226 ------------
+ apps/showcase-aurora-lander/src/legacy/hud.ts |  16 -
+ .../showcase-aurora-lander/src/legacy/main.ts | 182 ---------
+ .../src/legacy/styles.css                     |  94 -----
+ .../src/v2/evidence/index.ts                  | 165 ---------
+ 11 files changed, 1716 deletions(-)
+ delete mode 100644 apps/showcase-aurora-lander/scripts/build-models.mjs
+ delete mode 100644 apps/showcase-aurora-lander/scripts/build-review-extraction-bay.mjs
+ delete mode 100644 apps/showcase-aurora-lander/scripts/build-review-extraction-lander.mjs
+ delete mode 100644 apps/showcase-aurora-lander/scripts/build-sfx.mjs
+ delete mode 100644 apps/showcase-aurora-lander/scripts/register-sfx.mjs
+ delete mode 100644 apps/showcase-aurora-lander/scripts/write-performance-report.ts
+ delete mode 100644 apps/showcase-aurora-lander/scripts/write-route-health.mjs
+ delete mode 100644 apps/showcase-aurora-lander/src/v2/evidence/index.ts
+
+diff --git a/apps/showcase-aurora-lander/scripts/build-models.mjs b/apps/showcase-aurora-lander/scripts/build-models.mjs
+deleted file mode 100644
+index 2b734fe4e..000000000
+--- a/apps/showcase-aurora-lander/scripts/build-models.mjs
++++ /dev/null
+@@ -1,346 +0,0 @@
+-/**
+- * Aurora Lander model synth — generates original CC0 GLB props entirely in-repo.
+- *
+- * Two authored low-poly props, flat-shaded and indexed, written as minimal glTF 2.0
+- * GLB containers with no dependencies:
+- *   - auroraLanderProbe.glb : the expedition lander (primary typed hero asset)
+- *   - auroraPadBeacon.glb   : landing-pad approach beacon prop
+- *
+- * Run from the repo root:  node apps/showcase-aurora-lander/scripts/build-models.mjs
+- * Output: apps/showcase-aurora-lander/assets/models/*.glb
+- *
+- * After generation register each model with the CLI so it lands in the typed root
+- * asset map the route imports (`../../../src/aura-assets`), e.g.:
+- * Re-register both generated models through `aura3d assets add` with the durable
+- * GitHub source/download URLs, CC0 URL, role/suitability, and the current
+- * hash-bound files in tests/reports/showcase-release-asset-probes/. See the
+- * exact current metadata in aura.assets.json; never hand-edit that manifest.
+- */
+-import { mkdirSync, writeFileSync } from "node:fs";
+-import { resolve, dirname } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../assets/models");
+-
+-// ---- geometry helpers -------------------------------------------------------
+-/**
+- * A part accumulates flat-shaded triangles: every triangle carries its own three
+- * vertices and face normal, which reads cleanly at low polygon counts.
+- */
+-function part() {
+-  return { positions: [], normals: [], indices: [], nextVertex: 0 };
+-}
+-
+-function addTriangle(p, a, b, c) {
+-  const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
+-  const vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
+-  let nx = uy * vz - uz * vy;
+-  let ny = uz * vx - ux * vz;
+-  let nz = ux * vy - uy * vx;
+-  const len = Math.hypot(nx, ny, nz) || 1;
+-  nx /= len; ny /= len; nz /= len;
+-  for (const v of [a, b, c]) {
+-    p.positions.push(v[0], v[1], v[2]);
+-    p.normals.push(nx, ny, nz);
+-  }
+-  p.indices.push(p.nextVertex, p.nextVertex + 1, p.nextVertex + 2);
+-  p.nextVertex += 3;
+-}
+-
+-/** Quad split into two triangles, wound outward in the provided corner order. */
+-function addQuad(p, a, b, c, d) {
+-  addTriangle(p, a, b, c);
+-  addTriangle(p, a, c, d);
+-}
+-
+-/** Ring of points around the Y axis at height y with radius r. */
+-function ring(n, r, y) {
+-  const pts = [];
+-  for (let i = 0; i < n; i += 1) {
+-    const angle = (i / n) * Math.PI * 2;
+-    pts.push([Math.cos(angle) * r, y, Math.sin(angle) * r]);
+-  }
+-  return pts;
+-}
+-
+-/** Tapered tube between two rings. */
+-function addBand(p, lower, upper) {
+-  const n = Math.min(lower.length, upper.length);
+-  for (let i = 0; i < n; i += 1) {
+-    const j = (i + 1) % n;
+-    addQuad(p, lower[i], lower[j], upper[j], upper[i]);
+-  }
+-}
+-
+-/** Inverted tube between two rings (nozzle skirt). */
+-function addBandInverted(p, lower, upper) {
+-  const n = Math.min(lower.length, upper.length);
+-  for (let i = 0; i < n; i += 1) {
+-    const j = (i + 1) % n;
+-    addQuad(p, upper[j], upper[i], lower[i], lower[j]);
+-  }
+-}
+-
+-/** Cap a ring with an n-gon fan around an offset center. */
+-function addCap(p, pts, y, up, cx = 0, cz = 0) {
+-  const center = [cx, y, cz];
+-  for (let i = 0; i < pts.length; i += 1) {
+-    const j = (i + 1) % pts.length;
+-    if (up) addTriangle(p, center, pts[i], pts[j]);
+-    else addTriangle(p, center, pts[j], pts[i]);
+-  }
+-}
+-
+-/** Axis-aligned box from center + half extents. */
+-function addBox(p, cx, cy, cz, hx, hy, hz) {
+-  const v = [
+-    [cx - hx, cy - hy, cz - hz], [cx + hx, cy - hy, cz - hz],
+-    [cx + hx, cy - hy, cz + hz], [cx - hx, cy - hy, cz + hz],
+-    [cx - hx, cy + hy, cz - hz], [cx + hx, cy + hy, cz - hz],
+-    [cx + hx, cy + hy, cz + hz], [cx - hx, cy + hy, cz + hz]
+-  ];
+-  addQuad(p, v[0], v[3], v[2], v[1]); // bottom
+-  addQuad(p, v[4], v[5], v[6], v[7]); // top
+-  addQuad(p, v[1], v[2], v[6], v[5]); // +Z
+-  addQuad(p, v[3], v[0], v[4], v[7]); // -Z
+-  addQuad(p, v[0], v[1], v[5], v[4]); // -X
+-  addQuad(p, v[2], v[3], v[7], v[6]); // +X
+-}
+-
+-/** Box rotated yaw around Y (angled struts). */
+-function addOrientedBox(p, cx, cy, cz, hx, hy, hz, yaw) {
+-  const cos = Math.cos(yaw), sin = Math.sin(yaw);
+-  const rot = ([x, y, z]) => [cx + x * cos - z * sin, cy + y, cz + x * sin + z * cos];
+-  const local = [
+-    [-hx, -hy, -hz], [hx, -hy, -hz], [hx, -hy, hz], [-hx, -hy, hz],
+-    [-hx, hy, -hz], [hx, hy, -hz], [hx, hy, hz], [-hx, hy, hz]
+-  ].map(rot);
+-  addQuad(p, local[0], local[3], local[2], local[1]);
+-  addQuad(p, local[4], local[5], local[6], local[7]);
+-  addQuad(p, local[1], local[2], local[6], local[5]);
+-  addQuad(p, local[3], local[0], local[4], local[7]);
+-  addQuad(p, local[0], local[1], local[5], local[4]);
+-  addQuad(p, local[2], local[3], local[7], local[6]);
+-}
+-
+-// ---- lander probe -----------------------------------------------------------
+-const SEGMENTS = 8;
+-
+-function buildLander() {
+-  const hull = part();
+-  // Descent hull: wide skirt tapering to a cabin drum, then a sensor dome.
+-  const skirtBottom = ring(SEGMENTS, 0.46, 0.16);
+-  const skirtTop = ring(SEGMENTS, 0.34, 0.44);
+-  addCap(hull, skirtBottom, 0.16, false);
+-  addBand(hull, skirtBottom, skirtTop);
+-  const cabinTop = ring(SEGMENTS, 0.30, 0.66);
+-  addBand(hull, skirtTop, cabinTop);
+-  addCap(hull, cabinTop, 0.66, true);
+-  const domeA = ring(SEGMENTS, 0.26, 0.72);
+-  const domeB = ring(SEGMENTS, 0.17, 0.80);
+-  const domeC = ring(SEGMENTS, 0.07, 0.85);
+-  addBand(hull, cabinTop.map(([x, , z]) => [x * 0.87, 0.70, z * 0.87]), domeA);
+-  addBand(hull, domeA, domeB);
+-  addBand(hull, domeB, domeC);
+-
+-  const nozzle = part();
+-  const throat = ring(SEGMENTS, 0.13, 0.14);
+-  const exit = ring(SEGMENTS, 0.24, 0.02);
+-  addCap(nozzle, throat, 0.14, true);
+-  addBandInverted(nozzle, exit, throat);
+-  addCap(nozzle, exit, 0.02, false);
+-
+-  const legs = part();
+-  for (let i = 0; i < 3; i += 1) {
+-    const angle = (i / 3) * Math.PI * 2 + Math.PI / 6;
+-    const dirX = Math.cos(angle);
+-    const dirZ = Math.sin(angle);
+-    const topX = dirX * 0.30, topZ = dirZ * 0.30;
+-    const footX = dirX * 0.62, footZ = dirZ * 0.62;
+-    // Strut approximated by four short yaw-oriented boxes stepping outward.
+-    const half = 0.035;
+-    for (let step = 0; step < 4; step += 1) {
+-      const t0 = step / 4, t1 = (step + 1) / 4;
+-      const ax = topX + (footX - topX) * t0;
+-      const az = topZ + (footZ - topZ) * t0;
+-      const bx = topX + (footX - topX) * t1;
+-      const bz = topZ + (footZ - topZ) * t1;
+-      const ay0 = 0.40 - t0 * 0.36;
+-      const ay1 = 0.40 - t1 * 0.36;
+-      const mx = (ax + bx) / 2, mz = (az + bz) / 2, my = (ay0 + ay1) / 2;
+-      const segLen = Math.hypot(bx - ax, ay1 - ay0, bz - az) / 2 + half;
+-      const yaw = Math.atan2(bz - az, bx - ax);
+-      addOrientedBox(legs, mx, my, mz, segLen, half, half, yaw);
+-    }
+-    // Foot pad: short prism with caps.
+-    const footBottom = [];
+-    const footTop = [];
+-    for (let k = 0; k < 8; k += 1) {
+-      const footAngle = (k / 8) * Math.PI * 2;
+-      footBottom.push([footX + Math.cos(footAngle) * 0.12, 0.02, footZ + Math.sin(footAngle) * 0.12]);
+-      footTop.push([footX + Math.cos(footAngle) * 0.12, 0.08, footZ + Math.sin(footAngle) * 0.12]);
+-    }
+-    addBand(legs, footBottom, footTop);
+-    addCap(legs, footTop, 0.08, true, footX, footZ);
+-    addCap(legs, footBottom, 0.02, false, footX, footZ);
+-  }
+-
+-  const gear = part();
+-  // Antenna mast + dish on the dome; RCS pods on the cabin shoulders.
+-  addBox(gear, 0, 0.94, 0, 0.02, 0.08, 0.02);
+-  const dishRim = [];
+-  const dishBase = [];
+-  for (let k = 0; k < 8; k += 1) {
+-    const dishAngle = (k / 8) * Math.PI * 2;
+-    dishBase.push([Math.cos(dishAngle) * 0.062, 1.03, Math.sin(dishAngle) * 0.062]);
+-    dishRim.push([Math.cos(dishAngle) * 0.115, 1.06, Math.sin(dishAngle) * 0.115]);
+-  }
+-  addBand(gear, dishBase, dishRim);
+-  addCap(gear, dishRim, 1.06, false);
+-  addCap(gear, dishBase, 1.03, true);
+-  for (let i = 0; i < 4; i += 1) {
+-    const podAngle = (i / 4) * Math.PI * 2;
+-    addBox(gear, Math.cos(podAngle) * 0.31, 0.55, Math.sin(podAngle) * 0.31, 0.045, 0.045, 0.045);
+-  }
+-
+-  return [
+-    { name: "hull", part: hull, color: [0.62, 0.72, 0.66, 1], roughness: 0.55 },
+-    { name: "nozzle", part: nozzle, color: [0.22, 0.25, 0.28, 1], roughness: 0.7 },
+-    { name: "legs", part: legs, color: [0.24, 0.27, 0.30, 1], roughness: 0.65 },
+-    { name: "gear", part: gear, color: [0.36, 0.92, 0.82, 1], roughness: 0.4 }
+-  ];
+-}
+-
+-// ---- pad beacon -------------------------------------------------------------
+-function buildBeacon() {
+-  const base = part();
+-  const baseBottom = ring(6, 0.30, 0.0);
+-  const baseTop = ring(6, 0.24, 0.10);
+-  addCap(base, baseBottom, 0.0, false);
+-  addBand(base, baseBottom, baseTop);
+-  addCap(base, baseTop, 0.10, true);
+-
+-  const pylon = part();
+-  const pyBottom = ring(6, 0.075, 0.10);
+-  const pyTop = ring(6, 0.06, 0.86);
+-  addBand(pylon, pyBottom, pyTop);
+-  addCap(pylon, pyTop, 0.86, true);
+-
+-  const lamp = part();
+-  const lampBase = ring(6, 0.062, 0.88);
+-  const lampRing = ring(6, 0.115, 0.98);
+-  addBand(lamp, lampBase, lampRing);
+-  addCap(lamp, lampRing, 0.98, true);
+-  addCap(lamp, lampBase, 0.88, false);
+-
+-  return [
+-    { name: "base", part: base, color: [0.20, 0.23, 0.26, 1], roughness: 0.8 },
+-    { name: "pylon", part: pylon, color: [0.58, 0.63, 0.68, 1], roughness: 0.45 },
+-    { name: "lamp", part: lamp, color: [0.35, 0.95, 0.85, 1], roughness: 0.3 }
+-  ];
+-}
+-
+-// ---- GLB writer -------------------------------------------------------------
+-function writeGlb(path, parts) {
+-  const chunks = [];
+-  const bufferViews = [];
+-  const accessors = [];
+-  const meshes = [];
+-  const nodes = [];
+-  const materials = parts.map((entry) => ({
+-    name: entry.name + "-material",
+-    pbrMetallicRoughness: {
+-      baseColorFactor: entry.color,
+-      metallicFactor: 0.05,
+-      roughnessFactor: entry.roughness
+-    }
+-  }));
+-
+-  let offset = 0;
+-  const pushView = (typedArray, target) => {
+-    const bytes = Buffer.from(typedArray.buffer, typedArray.byteOffset, typedArray.byteLength);
+-    const pad = (4 - (bytes.length % 4)) % 4;
+-    chunks.push(bytes);
+-    if (pad > 0) chunks.push(Buffer.alloc(pad));
+-    bufferViews.push({ buffer: 0, byteOffset: offset, byteLength: bytes.length, target });
+-    offset += bytes.length + pad;
+-    return bufferViews.length - 1;
+-  };
+-
+-  parts.forEach((entry, partIndex) => {
+-    const positionCount = entry.part.positions.length / 3;
+-    if (positionCount === 0 || entry.part.indices.length === 0) {
+-      throw new Error("part " + entry.name + " has no triangles.");
+-    }
+-    const min = [Infinity, Infinity, Infinity];
+-    const max = [-Infinity, -Infinity, -Infinity];
+-    for (let i = 0; i < entry.part.positions.length; i += 3) {
+-      for (let axis = 0; axis < 3; axis += 1) {
+-        min[axis] = Math.min(min[axis], entry.part.positions[i + axis]);
+-        max[axis] = Math.max(max[axis], entry.part.positions[i + axis]);
+-      }
+-    }
+-    const positions = new Float32Array(entry.part.positions);
+-    const normals = new Float32Array(entry.part.normals);
+-    const indices = new Uint32Array(entry.part.indices);
+-    const posView = pushView(positions, 34962);
+-    const normView = pushView(normals, 34962);
+-    const idxView = pushView(indices, 34963);
+-    accessors.push({ bufferView: posView, componentType: 5126, count: positionCount, type: "VEC3", min, max });
+-    accessors.push({ bufferView: normView, componentType: 5126, count: positionCount, type: "VEC3" });
+-    accessors.push({ bufferView: idxView, componentType: 5125, count: indices.length, type: "SCALAR" });
+-    meshes.push({
+-      name: entry.name,
+-      primitives: [{
+-        attributes: { POSITION: accessors.length - 3, NORMAL: accessors.length - 2 },
+-        indices: accessors.length - 1,
+-        material: partIndex
+-      }]
+-    });
+-    nodes.push({ name: entry.name, mesh: partIndex });
+-  });
+-
+-  const body = Buffer.concat(chunks);
+-  const document = {
+-    asset: { version: "2.0", generator: "aura3d showcase-aurora-lander build-models (original CC0)" },
+-    scene: 0,
+-    scenes: [{ name: "root", nodes: nodes.map((_, index) => index) }],
+-    nodes,
+-    meshes,
+-    materials,
+-    accessors,
+-    bufferViews,
+-    buffers: [{ byteLength: body.length }]
+-  };
+-
+-  const jsonSource = Buffer.from(JSON.stringify(document), "utf8");
+-  const jsonPadding = (4 - (jsonSource.length % 4)) % 4;
+-  const jsonData = Buffer.concat([jsonSource, Buffer.alloc(jsonPadding, 0x20)]);
+-  const binPadding = (4 - (body.length % 4)) % 4;
+-  const binData = Buffer.concat([body, Buffer.alloc(binPadding)]);
+-  const total = 12 + 8 + jsonData.length + 8 + binData.length;
+-  const output = Buffer.alloc(total);
+-  output.write("glTF", 0, "ascii");
+-  output.writeUInt32LE(2, 4);
+-  output.writeUInt32LE(total, 8);
+-  output.writeUInt32LE(jsonData.length, 12);
+-  output.writeUInt32LE(0x4e4f534a, 16); // "JSON"
+-  jsonData.copy(output, 20);
+-  const binHead = 20 + jsonData.length;
+-  output.writeUInt32LE(binData.length, binHead);
+-  output.writeUInt32LE(0x004e4942, binHead + 4); // "BIN\0"
+-  binData.copy(output, binHead + 8);
+-  mkdirSync(dirname(path), { recursive: true });
+-  writeFileSync(path, output);
+-  return total;
+-}
+-
+-mkdirSync(OUT_DIR, { recursive: true });
+-
+-const landerParts = buildLander();
+-const landerBytes = writeGlb(resolve(OUT_DIR, "auroraLanderProbe.glb"), landerParts);
+-console.log("wrote", resolve(OUT_DIR, "auroraLanderProbe.glb"), "(" + landerBytes + " bytes)");
+-
+-const beaconParts = buildBeacon();
+-const beaconBytes = writeGlb(resolve(OUT_DIR, "auroraPadBeacon.glb"), beaconParts);
+-console.log("wrote", resolve(OUT_DIR, "auroraPadBeacon.glb"), "(" + beaconBytes + " bytes)");
+diff --git a/apps/showcase-aurora-lander/scripts/build-review-extraction-bay.mjs b/apps/showcase-aurora-lander/scripts/build-review-extraction-bay.mjs
+deleted file mode 100644
+index 14052c6ff..000000000
+--- a/apps/showcase-aurora-lander/scripts/build-review-extraction-bay.mjs
++++ /dev/null
+@@ -1,100 +0,0 @@
+-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+-import { dirname, resolve } from "node:path";
+-
+-const SOURCE = resolve("apps/showcase-aurora-lander/assets/aurora-extraction-bay.png");
+-const OUTPUT = resolve("apps/showcase-aurora-lander/generated/auroraExtractionBay.glb");
+-const align4 = (value) => (value + 3) & ~3;
+-const padded = (bytes, fill = 0) => {
+-  const output = Buffer.alloc(align4(bytes.length), fill);
+-  bytes.copy(output);
+-  return output;
+-};
+-const floats = (values) => {
+-  const output = Buffer.alloc(values.length * 4);
+-  values.forEach((value, index) => output.writeFloatLE(value, index * 4));
+-  return output;
+-};
+-const ushorts = (values) => {
+-  const output = Buffer.alloc(values.length * 2);
+-  values.forEach((value, index) => output.writeUInt16LE(value, index * 2));
+-  return output;
+-};
+-
+-const halfWidth = 8;
+-const halfHeight = halfWidth * (992 / 1586);
+-const halfDepth = 0.1;
+-const positions = padded(floats([
+-  -halfWidth, -halfHeight, halfDepth, halfWidth, -halfHeight, halfDepth,
+-  halfWidth, halfHeight, halfDepth, -halfWidth, halfHeight, halfDepth,
+-  -halfWidth, -halfHeight, -halfDepth, halfWidth, -halfHeight, -halfDepth,
+-  halfWidth, halfHeight, -halfDepth, -halfWidth, halfHeight, -halfDepth
+-]));
+-const uvs = padded(floats([
+-  0, 1, 1, 1, 1, 0, 0, 0,
+-  0, 1, 1, 1, 1, 0, 0, 0
+-]));
+-const indices = padded(ushorts([0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6]));
+-const image = padded(readFileSync(SOURCE));
+-const offsets = [0, positions.length, positions.length + uvs.length, positions.length + uvs.length + indices.length];
+-const binary = Buffer.concat([positions, uvs, indices, image]);
+-const gltf = {
+-  asset: {
+-    version: "2.0",
+-    generator: "Aura3D Aurora deterministic extraction-bay builder",
+-    extras: {
+-      source: "apps/showcase-aurora-lander/assets/aurora-extraction-bay.png",
+-      prompt: "apps/showcase-aurora-lander/assets/aurora-extraction-bay.prompt.md",
+-      license: "CC0-1.0",
+-      role: "renderer-owned-non-primary-background"
+-    }
+-  },
+-  extensionsUsed: ["KHR_materials_unlit"],
+-  scene: 0,
+-  scenes: [{ name: "Aurora Extraction Bay", nodes: [0] }],
+-  nodes: [{ name: "aurora-extraction-bay-card", mesh: 0 }],
+-  meshes: [{
+-    name: "aurora-extraction-bay-mesh",
+-    primitives: [{ attributes: { POSITION: 0, TEXCOORD_0: 1 }, indices: 2, material: 0 }]
+-  }],
+-  materials: [{
+-    name: "aurora-extraction-bay-unlit",
+-    doubleSided: true,
+-    pbrMetallicRoughness: {
+-      baseColorFactor: [1, 1, 1, 1],
+-      baseColorTexture: { index: 0 },
+-      metallicFactor: 0,
+-      roughnessFactor: 1
+-    },
+-    extensions: { KHR_materials_unlit: {} }
+-  }],
+-  textures: [{ name: "aurora-extraction-bay-texture", sampler: 0, source: 0 }],
+-  samplers: [{ magFilter: 9729, minFilter: 9987, wrapS: 33071, wrapT: 33071 }],
+-  images: [{ name: "aurora-extraction-bay-image", bufferView: 3, mimeType: "image/png" }],
+-  accessors: [
+-    { bufferView: 0, componentType: 5126, count: 8, type: "VEC3", min: [-halfWidth, -halfHeight, -halfDepth], max: [halfWidth, halfHeight, halfDepth] },
+-    { bufferView: 1, componentType: 5126, count: 8, type: "VEC2", min: [0, 0], max: [1, 1] },
+-    { bufferView: 2, componentType: 5123, count: 12, type: "SCALAR", min: [0], max: [7] }
+-  ],
+-  bufferViews: [
+-    { buffer: 0, byteOffset: offsets[0], byteLength: positions.length, target: 34962 },
+-    { buffer: 0, byteOffset: offsets[1], byteLength: uvs.length, target: 34962 },
+-    { buffer: 0, byteOffset: offsets[2], byteLength: 24, target: 34963 },
+-    { buffer: 0, byteOffset: offsets[3], byteLength: image.length }
+-  ],
+-  buffers: [{ byteLength: binary.length }]
+-};
+-const json = padded(Buffer.from(JSON.stringify(gltf), "utf8"), 0x20);
+-const output = Buffer.alloc(12 + 8 + json.length + 8 + binary.length);
+-output.write("glTF", 0, "ascii");
+-output.writeUInt32LE(2, 4);
+-output.writeUInt32LE(output.length, 8);
+-output.writeUInt32LE(json.length, 12);
+-output.writeUInt32LE(0x4e4f534a, 16);
+-json.copy(output, 20);
+-const binaryHeader = 20 + json.length;
+-output.writeUInt32LE(binary.length, binaryHeader);
+-output.writeUInt32LE(0x004e4942, binaryHeader + 4);
+-binary.copy(output, binaryHeader + 8);
+-mkdirSync(dirname(OUTPUT), { recursive: true });
+-writeFileSync(OUTPUT, output);
+-console.log(JSON.stringify({ output: OUTPUT, source: SOURCE, bytes: output.length }, null, 2));
+diff --git a/apps/showcase-aurora-lander/scripts/build-review-extraction-lander.mjs b/apps/showcase-aurora-lander/scripts/build-review-extraction-lander.mjs
+deleted file mode 100644
+index 2eb3fa123..000000000
+--- a/apps/showcase-aurora-lander/scripts/build-review-extraction-lander.mjs
++++ /dev/null
+@@ -1,101 +0,0 @@
+-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+-import { dirname, resolve } from "node:path";
+-
+-const SOURCE = resolve("apps/showcase-aurora-lander/assets/aurora-extraction-lander.png");
+-const OUTPUT = resolve("apps/showcase-aurora-lander/generated/auroraExtractionLander.glb");
+-const align4 = (value) => (value + 3) & ~3;
+-const padded = (bytes, fill = 0) => {
+-  const output = Buffer.alloc(align4(bytes.length), fill);
+-  bytes.copy(output);
+-  return output;
+-};
+-const floats = (values) => {
+-  const output = Buffer.alloc(values.length * 4);
+-  values.forEach((value, index) => output.writeFloatLE(value, index * 4));
+-  return output;
+-};
+-const ushorts = (values) => {
+-  const output = Buffer.alloc(values.length * 2);
+-  values.forEach((value, index) => output.writeUInt16LE(value, index * 2));
+-  return output;
+-};
+-
+-const halfWidth = (984 / 918) / 2;
+-const halfDepth = 0.025;
+-const positions = padded(floats([
+-  -halfWidth, -0.5, halfDepth, halfWidth, -0.5, halfDepth,
+-  halfWidth, 0.5, halfDepth, -halfWidth, 0.5, halfDepth,
+-  -halfWidth, -0.5, -halfDepth, halfWidth, -0.5, -halfDepth,
+-  halfWidth, 0.5, -halfDepth, -halfWidth, 0.5, -halfDepth
+-]));
+-const uvs = padded(floats([
+-  0, 1, 1, 1, 1, 0, 0, 0,
+-  0, 1, 1, 1, 1, 0, 0, 0
+-]));
+-const indices = padded(ushorts([0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6]));
+-const image = padded(readFileSync(SOURCE));
+-const offsets = [0, positions.length, positions.length + uvs.length, positions.length + uvs.length + indices.length];
+-const binary = Buffer.concat([positions, uvs, indices, image]);
+-const gltf = {
+-  asset: {
+-    version: "2.0",
+-    generator: "Aura3D Aurora deterministic extraction-lander builder",
+-    extras: {
+-      source: "apps/showcase-aurora-lander/assets/aurora-extraction-lander.png",
+-      prompt: "apps/showcase-aurora-lander/assets/aurora-extraction-lander.prompt.md",
+-      license: "CC0-1.0",
+-      role: "review-primary-vehicle-presentation"
+-    }
+-  },
+-  extensionsUsed: ["KHR_materials_unlit"],
+-  scene: 0,
+-  scenes: [{ name: "Aurora Extraction Lander", nodes: [0] }],
+-  nodes: [{ name: "aurora-extraction-lander-card", mesh: 0 }],
+-  meshes: [{
+-    name: "aurora-extraction-lander-mesh",
+-    primitives: [{ attributes: { POSITION: 0, TEXCOORD_0: 1 }, indices: 2, material: 0 }]
+-  }],
+-  materials: [{
+-    name: "aurora-extraction-lander-unlit-alpha",
+-    doubleSided: true,
+-    alphaMode: "BLEND",
+-    alphaCutoff: 0.03,
+-    pbrMetallicRoughness: {
+-      baseColorFactor: [1, 1, 1, 1],
+-      baseColorTexture: { index: 0 },
+-      metallicFactor: 0,
+-      roughnessFactor: 1
+-    },
+-    extensions: { KHR_materials_unlit: {} }
+-  }],
+-  textures: [{ name: "aurora-extraction-lander-texture", sampler: 0, source: 0 }],
+-  samplers: [{ magFilter: 9729, minFilter: 9987, wrapS: 33071, wrapT: 33071 }],
+-  images: [{ name: "aurora-extraction-lander-image", bufferView: 3, mimeType: "image/png" }],
+-  accessors: [
+-    { bufferView: 0, componentType: 5126, count: 8, type: "VEC3", min: [-halfWidth, -0.5, -halfDepth], max: [halfWidth, 0.5, halfDepth] },
+-    { bufferView: 1, componentType: 5126, count: 8, type: "VEC2", min: [0, 0], max: [1, 1] },
+-    { bufferView: 2, componentType: 5123, count: 12, type: "SCALAR", min: [0], max: [7] }
+-  ],
+-  bufferViews: [
+-    { buffer: 0, byteOffset: offsets[0], byteLength: positions.length, target: 34962 },
+-    { buffer: 0, byteOffset: offsets[1], byteLength: uvs.length, target: 34962 },
+-    { buffer: 0, byteOffset: offsets[2], byteLength: 24, target: 34963 },
+-    { buffer: 0, byteOffset: offsets[3], byteLength: image.length }
+-  ],
+-  buffers: [{ byteLength: binary.length }]
+-};
+-const json = padded(Buffer.from(JSON.stringify(gltf), "utf8"), 0x20);
+-const output = Buffer.alloc(12 + 8 + json.length + 8 + binary.length);
+-output.write("glTF", 0, "ascii");
+-output.writeUInt32LE(2, 4);
+-output.writeUInt32LE(output.length, 8);
+-output.writeUInt32LE(json.length, 12);
+-output.writeUInt32LE(0x4e4f534a, 16);
+-json.copy(output, 20);
+-const binaryHeader = 20 + json.length;
+-output.writeUInt32LE(binary.length, binaryHeader);
+-output.writeUInt32LE(0x004e4942, binaryHeader + 4);
+-binary.copy(output, binaryHeader + 8);
+-mkdirSync(dirname(OUTPUT), { recursive: true });
+-writeFileSync(OUTPUT, output);
+-console.log(JSON.stringify({ output: OUTPUT, source: SOURCE, bytes: output.length }, null, 2));
+diff --git a/apps/showcase-aurora-lander/scripts/build-sfx.mjs b/apps/showcase-aurora-lander/scripts/build-sfx.mjs
+deleted file mode 100644
+index b64738db1..000000000
+--- a/apps/showcase-aurora-lander/scripts/build-sfx.mjs
++++ /dev/null
+@@ -1,302 +0,0 @@
+-/**
+- * Aurora Lander SFX synth — generates original CC0 WAV cues entirely in-repo.
+- *
+- * No network downloads, no sampled material: every cue is synthesized from
+- * oscillators / filtered noise with a small committed generator so provenance is
+- * auditable (author "Aura3D synthesis", license CC0-1.0).
+- *
+- * Run from the repo root:  node apps/showcase-aurora-lander/scripts/build-sfx.mjs
+- * Output: apps/showcase-aurora-lander/assets/sfx/*.wav (16-bit PCM mono 44100 Hz)
+- *
+- * After generation, run `pnpm --dir apps/showcase-aurora-lander register-sfx`
+- * so every cue is registered with durable CC0 provenance and generated types.
+- * typed root asset map the route imports (`../../../src/aura-assets`), e.g.:
+- *   node packages/aura3d-cli/dist/cli.js assets add apps/showcase-aurora-lander/assets/sfx/thrustLoop.wav --name auroraThrustLoopSfx --type audio --license CC0-1.0 --author "Aura3D synthesis" --source-page "apps/showcase-aurora-lander/scripts/build-sfx.mjs"
+- */
+-import { mkdirSync, writeFileSync } from "node:fs";
+-import { resolve, dirname } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../assets/sfx");
+-const SAMPLE_RATE = 44100;
+-
+-// ---- waveform / DSP helpers -------------------------------------------------
+-function noiseBuffer(length) {
+-  const out = new Float32Array(length);
+-  let seed = 0x5a17_00d3;
+-  for (let i = 0; i < length; i += 1) {
+-    // Deterministic LCG noise so regenerating the cue is byte-identical.
+-    seed = (seed * 1664525 + 1013904223) >>> 0;
+-    out[i] = ((seed / 0xffffffff) * 2 - 1);
+-  }
+-  return out;
+-}
+-
+-function envelope(length, attack, decay, total) {
+-  const out = new Float32Array(length);
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const start = Math.min(1, t / Math.max(0.0005, attack));
+-    const end = Math.pow(Math.max(0, 1 - t / total), decay);
+-    out[i] = start * end;
+-  }
+-  return out;
+-}
+-
+-/** One-pole low-pass. */
+-function lowpass(samples, cutoff) {
+-  const rc = 1 / (2 * Math.PI * cutoff);
+-  const dt = 1 / SAMPLE_RATE;
+-  const alpha = dt / (rc + dt);
+-  let prev = 0;
+-  const out = new Float32Array(samples.length);
+-  for (let i = 0; i < samples.length; i += 1) {
+-    prev = prev + alpha * (samples[i] - prev);
+-    out[i] = prev;
+-  }
+-  return out;
+-}
+-
+-/** One-pole high-pass. */
+-function highpass(samples, cutoff) {
+-  const rc = 1 / (2 * Math.PI * cutoff);
+-  const dt = 1 / SAMPLE_RATE;
+-  const alpha = dt / (rc + dt);
+-  let lp = 0;
+-  const out = new Float32Array(samples.length);
+-  for (let i = 0; i < samples.length; i += 1) {
+-    lp += alpha * (samples[i] - lp);
+-    out[i] = samples[i] - lp;
+-  }
+-  return out;
+-}
+-
+-/**
+- * Render a one-shot cue into a normalized mono buffer.
+- * tone: {wave, freqStart, freqEnd, amp, attack, decay, total} or array of stacked partials
+- * noise: {amp, attack, decay, total, hp?, lp?}
+- */
+-function renderCue({ tone, noise }) {
+-  const parts = (Array.isArray(tone) ? tone : tone ? [tone] : []);
+-  const totalSec = Math.max(
+-    ...parts.map((p) => p.total ?? 0),
+-    noise?.total ?? 0,
+-    0.1
+-  ) + 0.08;
+-  const length = Math.floor(totalSec * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  for (const part of parts) {
+-    const { wave = "sine", freqStart, freqEnd = freqStart, amp = 0.5, attack = 0.005, decay = 3, total = 0.2 } = part;
+-    const env = envelope(length, attack, decay, total);
+-    for (let i = 0; i < length; i += 1) {
+-      const t = i / SAMPLE_RATE;
+-      const progress = Math.min(1, t / total);
+-      const f = freqStart + (freqEnd - freqStart) * progress;
+-      const phase = 2 * Math.PI * f * t;
+-      let v = 0;
+-      if (wave === "sine") v = Math.sin(phase);
+-      else if (wave === "triangle") v = (2 / Math.PI) * Math.asin(Math.sin(phase));
+-      else if (wave === "sawtooth") v = 2 * (phase / (2 * Math.PI) - Math.floor(0.5 + phase / (2 * Math.PI)));
+-      else if (wave === "square") v = Math.sign(Math.sin(phase));
+-      else v = Math.sin(phase);
+-      out[i] += v * env[i] * amp;
+-    }
+-  }
+-  if (noise) {
+-    const { amp = 0.4, attack = 0.004, decay = 4, total = 0.16, hp = 0, lp = 0 } = noise;
+-    let raw = noiseBuffer(length);
+-    if (hp > 0) raw = highpass(raw, hp);
+-    if (lp > 0) raw = lowpass(raw, lp);
+-    const env = envelope(length, attack, decay, total);
+-    for (let i = 0; i < length; i += 1) out[i] += raw[i] * env[i] * amp;
+-  }
+-  // Normalize to a safe peak.
+-  let peak = 0;
+-  for (let i = 0; i < length; i += 1) peak = Math.max(peak, Math.abs(out[i]));
+-  if (peak > 0) {
+-    const gain = Math.min(1, 0.9 / peak);
+-    for (let i = 0; i < length; i += 1) out[i] *= gain;
+-  }
+-  return out;
+-}
+-
+-/** A looping pad — output is a full short loop (normalized, click-free edges). */
+-function loopCue(durationSec, wave, freqStart, freqEnd, amp = 0.16) {
+-  const length = Math.floor(durationSec * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const f = freqStart + (freqEnd - freqStart) * (t / durationSec);
+-    const phase = 2 * Math.PI * f * t;
+-    let v = 0;
+-    if (wave === "sawtooth") v = 2 * (phase / (2 * Math.PI) - Math.floor(0.5 + phase / (2 * Math.PI)));
+-    else if (wave === "square") v = Math.sign(Math.sin(phase));
+-    else v = Math.sin(phase);
+-    out[i] = v * amp * (0.7 + 0.3 * Math.sin(t * 2));
+-  }
+-  const fade = Math.floor(0.02 * SAMPLE_RATE);
+-  for (let i = 0; i < fade; i += 1) {
+-    out[i] *= i / fade;
+-    out[length - 1 - i] *= i / fade;
+-  }
+-  return out;
+-}
+-
+-// ---- cue recipes ------------------------------------------------------------
+-/** Main engine thrust loop: smooth rumbling filtered-noise rocket burn. */
+-function thrustLoop() {
+-  const duration = 1.4;
+-  const N = Math.floor(duration * SAMPLE_RATE);
+-  const raw = noiseBuffer(N);
+-  const hiss = highpass(raw, 180);
+-  const body = lowpass(hiss, 1200);
+-  const sub = loopCue(duration, "sine", 75, 95, 0.28);
+-  const out = new Float32Array(N);
+-  for (let i = 0; i < N; i += 1) out[i] = sub[i] * 0.5 + body[i] * 0.5;
+-  const fade = Math.floor(0.04 * SAMPLE_RATE);
+-  for (let i = 0; i < fade; i += 1) {
+-    out[i] *= i / fade;
+-    out[out.length - 1 - i] *= i / fade;
+-  }
+-  return lowpass(out, 1800);
+-}
+-/** RCS rotation puff: short pressurized gas burst. */
+-function rcsPuff() {
+-  return renderCue({
+-    noise: { amp: 0.62, attack: 0.006, decay: 6, total: 0.24, hp: 900, lp: 5200 },
+-    tone: { wave: "sine", freqStart: 340, freqEnd: 210, amp: 0.14, attack: 0.008, decay: 5, total: 0.2 }
+-  });
+-}
+-/** Soft touchdown: dampened thump plus settling creak. */
+-function touchSoft() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sine", freqStart: 130, freqEnd: 70, amp: 0.5, attack: 0.004, decay: 4, total: 0.28 },
+-      { wave: "triangle", freqStart: 520, freqEnd: 300, amp: 0.12, attack: 0.02, decay: 5, total: 0.3 }
+-    ],
+-    noise: { amp: 0.18, attack: 0.01, decay: 6, total: 0.2, hp: 120, lp: 700 }
+-  });
+-}
+-/** Hard touchdown: harsher metallic impact. */
+-function touchHard() {
+-  return renderCue({
+-    tone: [
+-      { wave: "square", freqStart: 180, freqEnd: 90, amp: 0.42, attack: 0.002, decay: 5, total: 0.26 },
+-      { wave: "sawtooth", freqStart: 720, freqEnd: 260, amp: 0.16, attack: 0.002, decay: 6, total: 0.22 }
+-    ],
+-    noise: { amp: 0.36, attack: 0.002, decay: 6, total: 0.24, hp: 200, lp: 3200 }
+-  });
+-}
+-/** Crash: debris burst — big impact then scattered clatter. */
+-function crash() {
+-  const impact = renderCue({
+-    tone: { wave: "square", freqStart: 110, freqEnd: 42, amp: 0.55, attack: 0.002, decay: 3.4, total: 0.5 },
+-    noise: { amp: 0.7, attack: 0.002, decay: 3.2, total: 0.55, hp: 80, lp: 4200 }
+-  });
+-  const clatter = renderCue({
+-    tone: [
+-      { wave: "triangle", freqStart: 900, freqEnd: 500, amp: 0.2, attack: 0.12, decay: 5, total: 0.5 },
+-      { wave: "triangle", freqStart: 1400, freqEnd: 700, amp: 0.14, attack: 0.22, decay: 5, total: 0.55 }
+-    ],
+-    noise: { amp: 0.24, attack: 0.1, decay: 4, total: 0.6, hp: 800 }
+-  });
+-  const out = new Float32Array(Math.max(impact.length, clatter.length));
+-  for (let i = 0; i < out.length; i += 1) {
+-    out[i] = (impact[i] ?? 0) * 0.85 + (clatter[i] ?? 0) * 0.6;
+-  }
+-  let peak = 0;
+-  for (const v of out) peak = Math.max(peak, Math.abs(v));
+-  if (peak > 0) for (let i = 0; i < out.length; i += 1) out[i] *= Math.min(1, 0.92 / peak);
+-  return out;
+-}
+-/** Pad lock: two-note confirmation chime when the sensor zone reads a valid pad. */
+-function padLock() {
+-  return renderCue({ tone: [
+-    { wave: "sine", freqStart: 784, amp: 0.34, attack: 0.002, decay: 5, total: 0.18 },
+-    { wave: "sine", freqStart: 1174.7, amp: 0.3, attack: 0.002, decay: 5, total: 0.24 }
+-  ] });
+-}
+-/** Fuel low: attention-getting soft alarm blip pair. */
+-function fuelLow() {
+-  return renderCue({ tone: [
+-    { wave: "square", freqStart: 620, freqEnd: 590, amp: 0.2, attack: 0.004, decay: 4, total: 0.12 },
+-    { wave: "square", freqStart: 470, freqEnd: 450, amp: 0.2, attack: 0.15, decay: 4, total: 0.27 }
+-  ] });
+-}
+-/** Site clear: ascending four-note fanfare for a graded landing. */
+-function siteClear() {
+-  return renderCue({ tone: [
+-    { wave: "triangle", freqStart: 523.25, amp: 0.34, attack: 0.006, decay: 4, total: 0.22 },
+-    { wave: "triangle", freqStart: 659.25, amp: 0.34, attack: 0.16, decay: 4, total: 0.34 },
+-    { wave: "triangle", freqStart: 783.99, amp: 0.36, attack: 0.32, decay: 4, total: 0.46 },
+-    { wave: "triangle", freqStart: 1046.5, amp: 0.38, attack: 0.48, decay: 3.4, total: 0.72 }
+-  ] });
+-}
+-/** Gust warn: rising airy whoosh telegraphing a storm gust. */
+-function gustWarn() {
+-  return renderCue({
+-    noise: { amp: 0.5, attack: 0.16, decay: 2.4, total: 0.66, hp: 400, lp: 2600 },
+-    tone: { wave: "sine", freqStart: 220, freqEnd: 480, amp: 0.16, attack: 0.14, decay: 2.6, total: 0.62 }
+-  });
+-}
+-/** Ambient wind: slow airy loop under everything. */
+-function ambientWind() {
+-  const length = Math.floor(1.6 * SAMPLE_RATE);
+-  let raw = noiseBuffer(length);
+-  raw = lowpass(raw, 420);
+-  const out = new Float32Array(length);
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    out[i] = raw[i] * (0.55 + 0.45 * Math.sin(t * 2 * Math.PI * 0.75)) * 0.5;
+-  }
+-  const fade = Math.floor(0.05 * SAMPLE_RATE);
+-  for (let i = 0; i < fade; i += 1) {
+-    out[i] *= i / fade;
+-    out[length - 1 - i] *= i / fade;
+-  }
+-  return out;
+-}
+-
+-// ---- WAV writer -------------------------------------------------------------
+-function writeWav(path, samples) {
+-  const length = samples.length;
+-  const buffer = Buffer.alloc(44 + length * 2);
+-  const numChannels = 1;
+-  const bitsPerSample = 16;
+-  const byteRate = SAMPLE_RATE * numChannels * bitsPerSample / 8;
+-  buffer.write("RIFF", 0);
+-  buffer.writeUInt32LE(36 + length * 2, 4);
+-  buffer.write("WAVE", 8);
+-  buffer.write("fmt ", 12);
+-  buffer.writeUInt32LE(16, 16);
+-  buffer.writeUInt16LE(1, 20);
+-  buffer.writeUInt16LE(numChannels, 22);
+-  buffer.writeUInt32LE(SAMPLE_RATE, 24);
+-  buffer.writeUInt32LE(byteRate, 28);
+-  buffer.writeUInt16LE(numChannels * bitsPerSample / 8, 32);
+-  buffer.writeUInt16LE(bitsPerSample, 34);
+-  buffer.write("data", 36);
+-  buffer.writeUInt32LE(length * 2, 40);
+-  for (let i = 0; i < length; i += 1) {
+-    const v = Math.max(-1, Math.min(1, samples[i]));
+-    buffer.writeInt16LE(Math.round(v * 32767), 44 + i * 2);
+-  }
+-  writeFileSync(path, buffer);
+-  return length / SAMPLE_RATE;
+-}
+-
+-const cues = {
+-  thrustLoop, rcsPuff, touchSoft, touchHard, crash,
+-  padLock, fuelLow, siteClear, gustWarn, ambientWind
+-};
+-
+-mkdirSync(OUT_DIR, { recursive: true });
+-const report = {};
+-for (const [name, fn] of Object.entries(cues)) {
+-  const samples = fn();
+-  const path = resolve(OUT_DIR, `${name}.wav`);
+-  const duration = writeWav(path, samples);
+-  report[name] = path + " (" + duration.toFixed(3) + "s)";
+-  console.log("wrote", report[name]);
+-}
+-console.log("\nGenerated", Object.keys(cues).length, "cues into", OUT_DIR);
+diff --git a/apps/showcase-aurora-lander/scripts/register-sfx.mjs b/apps/showcase-aurora-lander/scripts/register-sfx.mjs
+deleted file mode 100644
+index beed03804..000000000
+--- a/apps/showcase-aurora-lander/scripts/register-sfx.mjs
++++ /dev/null
+@@ -1,56 +0,0 @@
+-import { spawnSync } from "node:child_process";
+-import { resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(fileURLToPath(new URL("..", import.meta.url)));
+-const repoRoot = resolve(appDir, "../..");
+-const cli = "packages/aura3d-cli/src/cli.ts";
+-const retrievedAt = "2026-08-23T18:00:57Z";
+-const sourcePage = "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-aurora-lander/scripts/build-sfx.mjs";
+-const licenseUrl = "https://creativecommons.org/publicdomain/zero/1.0/";
+-const cues = [
+-  ["ambientWind.wav", "auroraAmbientWindSfx", "Looped polar ambience driven by the route audio bus."],
+-  ["crash.wav", "auroraCrashSfx", "Fatal-contact crash cue driven by the graded contact event."],
+-  ["fuelLow.wav", "auroraFuelLowSfx", "One-shot low-fuel warning driven by the live tank fraction."],
+-  ["gustWarn.wav", "auroraGustWarnSfx", "Storm-front warning driven before the authored gust window."],
+-  ["padLock.wav", "auroraPadLockSfx", "Pad sensor lock cue driven by a real zone entry."],
+-  ["rcsPuff.wav", "auroraRcsPuffSfx", "Attitude-control puff driven by live lateral input."],
+-  ["siteClear.wav", "auroraSiteClearSfx", "Site-clear fanfare driven by a valid graded landing."],
+-  ["thrustLoop.wav", "auroraThrustLoopSfx", "Main-engine loop gated by live throttle and remaining fuel."],
+-  ["touchHard.wav", "auroraTouchHardSfx", "Hard-contact cue driven by the touchdown grading matrix."],
+-  ["touchSoft.wav", "auroraTouchSoftSfx", "Soft-contact cue driven by the touchdown grading matrix."]
+-];
+-
+-for (const [file, id, suitability] of cues) {
+-  const source = `apps/showcase-aurora-lander/assets/sfx/${file}`;
+-  const downloadUrl = `https://raw.githubusercontent.com/auraoneai/aura3d/main/${source}`;
+-  const result = spawnSync("pnpm", [
+-    "exec", "tsx", "--tsconfig", "tsconfig.base.json", cli,
+-    "assets", "add", source,
+-    "--name", id,
+-    "--type", "audio",
+-    "--license", "CC0-1.0",
+-    "--license-url", licenseUrl,
+-    "--source-page", sourcePage,
+-    "--download-url", downloadUrl,
+-    "--author", "Aura3D synthesis",
+-    "--retrieved-at", retrievedAt,
+-    "--quality", "candidate",
+-    "--role", "unknown",
+-    "--suitability", suitability
+-  ], { cwd: repoRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+-  let payload;
+-  try {
+-    payload = JSON.parse(result.stdout);
+-  } catch {
+-    payload = null;
+-  }
+-  // The CLI currently exits nonzero for an audio asset's expected missing-model-
+-  // bounds warning even when `assets add` itself reports ok and regenerates both
+-  // manifest/typegen. Accept only that explicit successful payload.
+-  if (payload?.ok !== true) {
+-    process.stderr.write(result.stderr || result.stdout);
+-    process.exit(result.status ?? 1);
+-  }
+-  console.log(`Registered ${id}`);
+-}
+diff --git a/apps/showcase-aurora-lander/scripts/write-performance-report.ts b/apps/showcase-aurora-lander/scripts/write-performance-report.ts
+deleted file mode 100644
+index 5ad8a66fe..000000000
+--- a/apps/showcase-aurora-lander/scripts/write-performance-report.ts
++++ /dev/null
+@@ -1,128 +0,0 @@
+-import { readFileSync, writeFileSync } from "node:fs";
+-import { performance } from "node:perf_hooks";
+-import { resolve } from "node:path";
+-import { createLanderState, hspeedOf, stepLander } from "../src/lander";
+-import { predictLanding } from "../src/prediction";
+-import { SITES } from "../src/sites";
+-import { createTerrainField, sampleGridHeight } from "../src/terrain";
+-import { gradeTouchdown } from "../src/touchdown";
+-
+-const FIXED_STEP_P95_MS_BUDGET = 1;
+-const PREDICTION_P95_MS_BUDGET = 3;
+-const TERRAIN_BUILD_P95_MS_BUDGET = 50;
+-const DRAW_CALL_BUDGET = 60;
+-const FOOT_DROP = 0.72;
+-const repoRoot = resolve(import.meta.dirname, "../../..");
+-
+-const percentile95 = (samples: readonly number[]): number => {
+-  const sorted = [...samples].sort((a, b) => a - b);
+-  return sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))] ?? 0;
+-};
+-
+-const terrainBuildMs: number[] = [];
+-for (let iteration = 0; iteration < 30; iteration += 1) {
+-  const started = performance.now();
+-  createTerrainField({ site: SITES[iteration % SITES.length]! });
+-  terrainBuildMs.push(performance.now() - started);
+-}
+-
+-const sites = SITES.map((site) => {
+-  const field = createTerrainField({ site });
+-  const pad = site.pads[0]!;
+-  const padHeight = field.padHeights[0] ?? 0;
+-  let state = createLanderState({ x: pad.x, y: padHeight + 30, z: pad.z }, site.fuelBudget);
+-  const fixedStepMs: number[] = [];
+-  const predictionMs: number[] = [];
+-  let frames = 0;
+-
+-  while (frames < 60 * 120) {
+-    const agl = state.y - FOOT_DROP - sampleGridHeight(field, state.x, state.z);
+-    let thrust = 0;
+-    if (agl < 18) {
+-      const desiredVy = -Math.max(1.1, Math.min(4, agl * 0.28));
+-      thrust = Math.min(1, Math.max(0, 0.52 + (desiredVy - state.vy) * 0.32));
+-    }
+-    const controls = { thrust, rotate: 0 };
+-    const stepStarted = performance.now();
+-    state = stepLander(state, controls, 1 / 60, site.gust);
+-    fixedStepMs.push(performance.now() - stepStarted);
+-    if (frames % 6 === 0) {
+-      const predictionStarted = performance.now();
+-      predictLanding(
+-        state,
+-        controls,
+-        (x, z) => sampleGridHeight(field, x, z),
+-        FOOT_DROP,
+-        site.gust
+-      );
+-      predictionMs.push(performance.now() - predictionStarted);
+-    }
+-    frames += 1;
+-
+-    const localGround = sampleGridHeight(field, state.x, state.z);
+-    if (state.y - FOOT_DROP - localGround > 0.05) continue;
+-    const grade = gradeTouchdown({
+-      vspeed: Math.abs(state.vy),
+-      hspeed: hspeedOf(state),
+-      attitudeDeg: Math.abs(state.tiltDeg),
+-      insidePadZone: Math.hypot(state.x - pad.x, state.z - pad.z) <= pad.radius,
+-      slopeDeg: 0
+-    }).grade;
+-    return {
+-      siteId: site.id,
+-      grade,
+-      completed: grade === "soft" || grade === "hard",
+-      frames,
+-      fuelFraction: Number((state.fuel / site.fuelBudget).toFixed(4)),
+-      fixedStepMs: {
+-        samples: fixedStepMs.length,
+-        p95: Number(percentile95(fixedStepMs).toFixed(4)),
+-        max: Number(Math.max(...fixedStepMs).toFixed(4))
+-      },
+-      boundedPredictionMs: {
+-        samples: predictionMs.length,
+-        p95: Number(percentile95(predictionMs).toFixed(4)),
+-        max: Number(Math.max(...predictionMs).toFixed(4))
+-      }
+-    };
+-  }
+-  throw new Error(`Aurora Lander site ${site.id} did not resolve inside 120 seconds.`);
+-});
+-
+-const campaignArtifactPath = resolve(repoRoot, "tests/reports/aurora-lander-campaign/03-strongest-whiteout.json");
+-const campaignArtifact = JSON.parse(readFileSync(campaignArtifactPath, "utf8"));
+-const maxObservedDrawCalls = Number(campaignArtifact?.evidence?.renderer?.drawCalls ?? 0);
+-const observed = {
+-  maxFixedStepP95Ms: Math.max(...sites.map((site) => site.fixedStepMs.p95)),
+-  maxPredictionP95Ms: Math.max(...sites.map((site) => site.boundedPredictionMs.p95)),
+-  terrainBuildP95Ms: Number(percentile95(terrainBuildMs).toFixed(4)),
+-  strongestWhiteoutDrawCalls: maxObservedDrawCalls,
+-  strongestWhiteoutVisibleNodes: Number(campaignArtifact?.evidence?.whiteoutVisibleNodes ?? 0)
+-};
+-const report = {
+-  schema: "aura3d-aurora-lander-performance/1.0",
+-  generatedAt: new Date().toISOString(),
+-  scope: "Headless route-local authored fixed-step/prediction/terrain timing plus current browser draw-call evidence; GPU frame-time parity is not claimed.",
+-  budgets: {
+-    fixedStepP95Ms: FIXED_STEP_P95_MS_BUDGET,
+-    boundedPredictionP95Ms: PREDICTION_P95_MS_BUDGET,
+-    terrainBuildP95Ms: TERRAIN_BUILD_P95_MS_BUDGET,
+-    strongestWhiteoutDrawCalls: DRAW_CALL_BUDGET
+-  },
+-  observed,
+-  sites,
+-  browserEvidence: "tests/reports/aurora-lander-campaign/03-strongest-whiteout.json",
+-  pass: sites.every((site) => site.completed)
+-    && observed.maxFixedStepP95Ms <= FIXED_STEP_P95_MS_BUDGET
+-    && observed.maxPredictionP95Ms <= PREDICTION_P95_MS_BUDGET
+-    && observed.terrainBuildP95Ms <= TERRAIN_BUILD_P95_MS_BUDGET
+-    && observed.strongestWhiteoutDrawCalls > 0
+-    && observed.strongestWhiteoutDrawCalls <= DRAW_CALL_BUDGET
+-    && observed.strongestWhiteoutVisibleNodes >= 40
+-};
+-
+-const output = resolve(import.meta.dirname, "..", "performance-report.json");
+-writeFileSync(output, `${JSON.stringify(report, null, 2)}\n`);
+-console.log(`Wrote ${output}`);
+-console.log(JSON.stringify({ pass: report.pass, observed: report.observed }));
+-if (!report.pass) process.exitCode = 1;
+diff --git a/apps/showcase-aurora-lander/scripts/write-route-health.mjs b/apps/showcase-aurora-lander/scripts/write-route-health.mjs
+deleted file mode 100644
+index d904fb630..000000000
+--- a/apps/showcase-aurora-lander/scripts/write-route-health.mjs
++++ /dev/null
+@@ -1,226 +0,0 @@
+-import { createHash } from "node:crypto";
+-import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+-import { dirname, join, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const modelAssetIds = ["auroraLanderProbe", "auroraPadBeacon"];
+-const audioAssetIds = [
+-  "auroraThrustLoopSfx",
+-  "auroraRcsPuffSfx",
+-  "auroraTouchSoftSfx",
+-  "auroraTouchHardSfx",
+-  "auroraCrashSfx",
+-  "auroraPadLockSfx",
+-  "auroraFuelLowSfx",
+-  "auroraSiteClearSfx",
+-  "auroraGustWarnSfx",
+-  "auroraAmbientWindSfx"
+-];
+-const campaignNames = [
+-  "01-approach",
+-  "02-gust-correction",
+-  "03-strongest-whiteout",
+-  "04-final-extraction",
+-  "05-hard-contact",
+-  "06-mobile-active-play",
+-  "07-reduced-motion-whiteout"
+-];
+-
+-const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
+-const manifest = readJson(join(repoRoot, "aura.assets.json"));
+-const assetById = new Map((manifest.assets ?? []).map((entry) => [entry.id, entry]));
+-const performanceReport = readJson(join(appDir, "performance-report.json"));
+-if (performanceReport.schema !== "aura3d-aurora-lander-performance/1.0" || performanceReport.pass !== true) {
+-  throw new Error("Aurora Lander performance-report.json is missing, stale, or failing.");
+-}
+-
+-const routeGates = readJson(join(repoRoot, "tools/showcase-library/route-gates.json"));
+-const routeGate = routeGates.routes?.find((entry) => entry.id === "showcase-aurora-lander");
+-if (!routeGate || routeGate.releaseClass !== "prototype-blocked" || routeGate.published !== true) {
+-  throw new Error("Aurora Lander is not registered as a published prototype-blocked route gate.");
+-}
+-
+-for (const id of [...modelAssetIds, ...audioAssetIds]) {
+-  const asset = assetById.get(id);
+-  if (!asset?.hash || !asset?.url) throw new Error(`Typed asset ${id} is missing hash/url provenance.`);
+-  if (asset.provenance?.license !== "CC0-1.0" || asset.provenance?.author !== "Aura3D synthesis") {
+-    throw new Error(`Typed asset ${id} does not retain the expected original CC0 provenance.`);
+-  }
+-}
+-
+-const campaignArtifacts = campaignNames.map((name) => {
+-  const reportPath = join(repoRoot, "tests/reports/aurora-lander-campaign", `${name}.json`);
+-  const artifact = readJson(reportPath);
+-  const screenshotPath = join(repoRoot, artifact.screenshotPath);
+-  const actualHash = `sha256-${createHash("sha256").update(readFileSync(screenshotPath)).digest("hex")}`;
+-  if (artifact.screenshotSha256 !== actualHash) throw new Error(`${name} screenshot hash does not match its artifact JSON.`);
+-  return artifact;
+-});
+-const byName = Object.fromEntries(campaignNames.map((name, index) => [name, campaignArtifacts[index]]));
+-const contactEvidence = readJson(join(repoRoot, "tests/reports/aurora-lander-terrain/contact-evidence.json"));
+-if (contactEvidence.schema !== "aura3d-aurora-lander-contact-evidence/1.0") {
+-  throw new Error("Aurora Lander contact evidence is missing or stale.");
+-}
+-const contactPng = readFileSync(join(repoRoot, contactEvidence.screenshotPath));
+-const contactHash = `sha256-${createHash("sha256").update(contactPng).digest("hex")}`;
+-if (contactEvidence.screenshotSha256 !== contactHash) throw new Error("Contact evidence screenshot hash mismatch.");
+-
+-const sourceFiles = walk(join(appDir, "src")).filter((path) => path.endsWith(".ts"));
+-const source = sourceFiles.map((path) => readFileSync(path, "utf8")).join("\n");
+-for (const id of modelAssetIds) {
+-  if (!source.includes(`assets.${id}`)) throw new Error(`Live route does not use typed model assets.${id}.`);
+-}
+-for (const id of audioAssetIds) {
+-  if (!source.includes(`"${id}"`)) throw new Error(`Live route does not register typed audio asset ${id}.`);
+-}
+-for (const forbidden of ["from \"three\"", "from 'three'", "GLTFLoader", "OrbitControls", "unsafeModelUrl("]) {
+-  if (source.includes(forbidden)) throw new Error(`Forbidden public-route source token found: ${forbidden}`);
+-}
+-const primitiveOccurrences = Array.from(source.matchAll(/\bprimitives\.[A-Za-z_$][\w$]*/g)).length;
+-if (primitiveOccurrences > routeGate.primitiveBudget) {
+-  throw new Error(`Aurora Lander primitive source occurrences ${primitiveOccurrences} exceed budget ${routeGate.primitiveBudget}.`);
+-}
+-
+-const campaignComplete = byName["04-final-extraction"].evidence;
+-const strongestWhiteout = byName["03-strongest-whiteout"].evidence;
+-const hardContact = byName["05-hard-contact"].evidence;
+-const mobile = byName["06-mobile-active-play"].evidence;
+-const reduced = byName["07-reduced-motion-whiteout"].evidence;
+-const observedContact = contactEvidence.observed;
+-const machinePass = campaignComplete.state === "campaign-clear"
+-  && campaignComplete.completedSites === 3
+-  && campaignComplete.extractionTableau === true
+-  && strongestWhiteout.whiteoutVisibleNodes >= 40
+-  && strongestWhiteout.renderer?.drawCalls > 0
+-  && hardContact.lastGrade === "hard"
+-  && hardContact.hull === 0.7
+-  && mobile.prediction?.bounded === true
+-  && reduced.reducedMotion === true
+-  && reduced.whiteoutVisibleNodes >= 40
+-  && observedContact.touchdown?.contactEventSeen === true
+-  && observedContact.touchdown?.contactQueryAgreement === true
+-  && observedContact.terrainQueryFps >= 30;
+-if (!machinePass) throw new Error("Aurora Lander campaign/contact artifacts do not satisfy route-health machine gates.");
+-
+-const routeHealth = {
+-  schema: "aura3d-route-health/1.0",
+-  generatedAt: new Date().toISOString(),
+-  appId: "showcase-aurora-lander",
+-  route: "/apps/showcase-aurora-lander/",
+-  classification: "prototype-blocked",
+-  publicShowcase: false,
+-  promotionStatus: "hold-public-showcase-until-independent-human-visual-review",
+-  machinePass: true,
+-  renderer: {
+-    path: "createAuraApp root safe API",
+-    mode: "safe-basic",
+-    observedBackend: strongestWhiteout.renderer.backend,
+-    nativeWebGPU: false,
+-    productionRuntime: false
+-  },
+-  primaryAssets: modelAssetIds.map((id) => ({
+-    typedRef: `assets.${id}`,
+-    role: id === "auroraLanderProbe" ? "primaryVehicle" : "landingZoneProp",
+-    status: "typed-primary-asset",
+-    quality: assetById.get(id).quality ?? "ungraded",
+-    hash: assetById.get(id).hash,
+-    license: assetById.get(id).provenance.license,
+-    author: assetById.get(id).provenance.author
+-  })),
+-  audioAssets: audioAssetIds.map((id) => ({
+-    typedRef: `assets.${id}`,
+-    hash: assetById.get(id).hash,
+-    license: assetById.get(id).provenance.license,
+-    author: assetById.get(id).provenance.author
+-  })),
+-  primitiveStatus: {
+-    sourceOccurrences: primitiveOccurrences,
+-    primitiveBudget: routeGate.primitiveBudget,
+-    role: "terrain/weather/pad/effect support around typed vehicle and beacon assets",
+-    pass: true
+-  },
+-  claimStatus: {
+-    status: "prototype-blocked",
+-    label: "prototype",
+-    allowed: [
+-      "authored deterministic arcade landing dynamics",
+-      "Rapier static-heightfield contact detection witnessed by a route-owned proxy",
+-      "createMeshSurfaceQuery BVH terrain reads",
+-      "bounded eight-second current-control landing estimate",
+-      "player-facing input replay ghost",
+-      "three-site campaign with gust, whiteout, hull, scoring, and extraction"
+-    ],
+-    notAllowed: [
+-      "physical-simulation parity or orbital mechanics",
+-      "deformable or dynamic terrain",
+-      "production rendering, PBR parity, HDR/IBL, or WebGPU claims",
+-      "reusable lander or precision-flight game kit",
+-      "public showcase promotion before independent exact-artifact review"
+-    ]
+-  },
+-  performance: {
+-    report: "apps/showcase-aurora-lander/performance-report.json",
+-    budgets: performanceReport.budgets,
+-    observed: performanceReport.observed,
+-    sitesCompleted: performanceReport.sites.filter((site) => site.completed).length,
+-    pass: performanceReport.pass
+-  },
+-  routeGate: {
+-    config: "tools/showcase-library/route-gates.json",
+-    releaseClass: routeGate.releaseClass,
+-    published: routeGate.published,
+-    requiresKeyboardDelta: routeGate.requiresKeyboardDelta === true,
+-    pass: true
+-  },
+-  blockers: ["visual-review:aurora-lander-independent-review-pending"],
+-  evidence: {
+-    global: "window.__AURA3D_SHOWCASE_AURORA_LANDER__",
+-    detailedGameplayGlobal: "window.__AURORA_LANDER_EVIDENCE__",
+-    sourceReview: "apps/showcase-aurora-lander/src/main.ts",
+-    campaignArtifacts: campaignNames.map((name) => ({
+-      report: `tests/reports/aurora-lander-campaign/${name}.json`,
+-      screenshot: byName[name].screenshotPath,
+-      sha256: byName[name].screenshotSha256
+-    })),
+-    contactEvidence: "tests/reports/aurora-lander-terrain/contact-evidence.json",
+-    performanceEvidence: "apps/showcase-aurora-lander/performance-report.json",
+-    unitSuites: [
+-      "tests/unit/apps/aurora-lander-touchdown.test.ts",
+-      "tests/unit/apps/aurora-lander-ghost.test.ts"
+-    ],
+-    browserSpecs: [
+-      "tests/browser/aurora-lander-campaign.spec.ts",
+-      "tests/browser/aurora-lander-playable.spec.ts",
+-      "tests/browser/aurora-lander-terrain.spec.ts"
+-    ],
+-    observed: {
+-      completedSites: campaignComplete.completedSites,
+-      campaignScore: campaignComplete.campaignScore,
+-      extractionTableau: campaignComplete.extractionTableau,
+-      strongestWhiteoutDensity: strongestWhiteout.whiteoutDensity,
+-      strongestWhiteoutVisibleNodes: strongestWhiteout.whiteoutVisibleNodes,
+-      hardLandingHull: hardContact.hull,
+-      contactEventSeen: observedContact.touchdown.contactEventSeen,
+-      contactQueryAgreement: observedContact.touchdown.contactQueryAgreement,
+-      terrainQueryFps: observedContact.terrainQueryFps,
+-      reducedMotion: reduced.reducedMotion,
+-      mobileBoundedPrediction: mobile.prediction.bounded
+-    },
+-    notes: "Machine evidence is current and passing. Automated visual checks are not independent human approval; the route remains prototype-blocked and absent from the public card slate.",
+-    deployCommand: "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-aurora-lander/dist --release --source apps/showcase-aurora-lander/src --asset auroraLanderProbe --asset auroraPadBeacon"
+-  }
+-};
+-
+-writeFileSync(join(appDir, "route-health.json"), `${JSON.stringify(routeHealth, null, 2)}\n`);
+-console.log("Wrote apps/showcase-aurora-lander/route-health.json");
+-console.log(JSON.stringify({ machinePass: routeHealth.machinePass, primitiveOccurrences }));
+-
+-function walk(path) {
+-  if (!existsSync(path)) return [];
+-  return readdirSync(path).sort().flatMap((entry) => {
+-    const child = join(path, entry);
+-    return statSync(child).isDirectory() ? walk(child) : [child];
+-  });
+-}
+diff --git a/apps/showcase-aurora-lander/src/legacy/hud.ts b/apps/showcase-aurora-lander/src/legacy/hud.ts
+index eb96bff3a..c5946a6b0 100644
+--- a/apps/showcase-aurora-lander/src/legacy/hud.ts
++++ b/apps/showcase-aurora-lander/src/legacy/hud.ts
+@@ -1,12 +1,4 @@
+-/**
+- * DOM HUD for Aurora Lander — altitude, velocity, fuel, attitude, grade banners.
+- *
+- * The HUD is UI only. Every world claim (terrain contact, descent motion, dust)
+- * is proven by Aura3D-rendered pixels and runtime telemetry elsewhere; this module
+- * just keeps the player informed and exposes stable ids the browser specs read.
+- */
+ import { HARD_TOUCHDOWN_MAX_VSPEED } from "../gameplay/touchdown";
+-
+ export interface HudBindings {
+   readonly siteName: HTMLElement;
+   readonly altitude: HTMLElement;
+@@ -21,7 +13,6 @@ export interface HudBindings {
+   readonly gustFlag: HTMLElement;
+   readonly ghostFlag: HTMLElement;
+ }
+-
+ export function bindHud(root: HTMLElement | null): HudBindings {
+   if (!root) throw new Error("Aurora Lander HUD root #hud is missing.");
+   root.innerHTML = `
+@@ -64,13 +55,11 @@ export function bindHud(root: HTMLElement | null): HudBindings {
+     ghostFlag: requireElement(root, "hud-ghost-flag")
+   };
+ }
+-
+ function requireElement(root: HTMLElement, id: string): HTMLElement {
+   const element = root.querySelector("#" + id);
+   if (!element) throw new Error("Aurora Lander HUD element missing: #" + id);
+   return element as HTMLElement;
+ }
+-
+ export interface HudFrameState {
+   readonly siteLabel: string;
+   readonly altitudeMeters: number;
+@@ -83,12 +72,10 @@ export interface HudFrameState {
+   readonly gustTelegraph: boolean;
+   readonly ghostActive: boolean;
+ }
+-
+ const round = (value: number, digits = 1): number => {
+   const f = 10 ** digits;
+   return Math.round(value * f) / f;
+ };
+-
+ export function updateHud(bindings: HudBindings, state: HudFrameState): void {
+   bindings.siteName.textContent = state.siteLabel;
+   bindings.altitude.textContent = `${round(Math.max(0, state.altitudeMeters))} m`;
+@@ -107,10 +94,7 @@ export function updateHud(bindings: HudBindings, state: HudFrameState): void {
+   bindings.gustFlag.hidden = !state.gustTelegraph;
+   bindings.ghostFlag.hidden = !state.ghostActive;
+ }
+-
+ export type BannerKind = "grade-soft" | "grade-hard" | "grade-crash" | "site-clear" | null;
+-
+-/** Show a grade/clear banner; pass null to hide. */
+ export function showBanner(bindings: HudBindings, kind: BannerKind, text: string): void {
+   if (kind === null) {
+     bindings.banner.hidden = true;
+diff --git a/apps/showcase-aurora-lander/src/legacy/main.ts b/apps/showcase-aurora-lander/src/legacy/main.ts
+index c084d0a50..c17903d00 100644
+--- a/apps/showcase-aurora-lander/src/legacy/main.ts
++++ b/apps/showcase-aurora-lander/src/legacy/main.ts
+@@ -1,19 +1,3 @@
+-/**
+- * Aurora Lander — thrust-managed landing over a real static heightfield.
+- *
+- * First-use claims this route carries (all proven here, in-browser):
+- *   - STATIC HEIGHTFIELD COLLIDER gameplay contact via `game.collisionWorld`
+- *     (Rapier owns the solver; the heightfield is static-only by design).
+- *   - BVH `createMeshSurfaceQuery` terrain reads every frame: altitude-above-ground,
+- *     slope warnings and the touchdown attitude cross-check ask the triangles.
+- *   - `game.inputReplay` export/import as a PLAYER-FACING ghost of your best run.
+- *
+- * Claim boundary: gravity/thrust/RCS are AUTHORED ARCADE VALUES integrated with a
+- * deterministic fixed-step authored integrator. This route does NOT claim physical
+- * simulation parity; Rapier witnesses contacts against the static terrain, it does
+- * not own the lander's motion. Terrain is static-only procedural heightfield data,
+- * not a named real-world location and not deformable.
+- */
+ import {
+   bindGameTouchControls,
+   camera,
+@@ -41,7 +25,6 @@ import {
+   createRumbleDriver,
+   createTweenEngine
+ } from "@aura3d/game";
+-import { bindAuroraEvidence } from "../evidence";
+ import { bindAuroraDrive } from "../scenario-drive";
+ import { assets } from "../../../../src/aura-assets";
+ import {
+@@ -81,55 +64,25 @@ import {
+ } from "../gameplay/ghost";
+ import { bindHud, showBanner, updateHud, type BannerKind, type HudBindings } from "./hud";
+ import { createLanderAudio, type LanderAudioCue, type LanderAudioController } from "./lander-audio";
+-
+-// ---- authored presentation constants ----------------------------------------
+-/** Lander hero fits to this longest-axis size in scene units (meters). */
+ const LANDER_TARGET_SIZE = 2.2;
+-/** Contact-proxy sphere radius mirroring the lander's foot envelope. */
+ const CONTACT_PROXY_RADIUS = 0.42;
+-/** Vertical offset from lander origin down to its feet/contact plane. */
+ const FOOT_DROP = 0.72;
+-/** Fixed simulation step — the determinism contract for replay hashes. */
+ const FIXED_DT = 1 / 60;
+-/**
+- * Human-controlled routes keep a narrow catch-up window so inputs and approach states remain
+- * observable. The deterministic drop producer can consume more elapsed time because it owns its
+- * controls and must complete the three-site campaign on software-rendered workers.
+- */
+ const PLAYER_MAX_CATCHUP_SECONDS = 0.5;
+ const DROP_EVIDENCE_MAX_CATCHUP_SECONDS = 2;
+ const MAX_SUBSTEPS = Math.round(DROP_EVIDENCE_MAX_CATCHUP_SECONDS / FIXED_DT);
+-/**
+- * The opening approach is intentionally framed as a launch/deorbit hand-off:
+- * a renderer-owned gantry sits under the typed lander while it is high above
+- * the terrain.  It is visual set dressing only; the static heightfield and
+- * pad sensors remain the gameplay authorities below.
+- */
+ const APPROACH_SCAFFOLD_MIN_AGL = 28;
+-/** Replay bindings that constitute the recorded control stream. */
+ const RECORDED_BINDINGS = new Set(["KeyW", "ArrowUp", "KeyA", "ArrowLeft", "KeyD", "ArrowRight", "thrust"]);
+-
+ type Phase = "flying" | "landed" | "crashed" | "campaign-clear";
+-
+-/**
+- * ?drop=1 spawns the lander 26 m directly above the primary pad with zero velocity:
+- * a deterministic evidence approach that reaches the pad sensor zone and grades a
+- * touchdown without human input. Gameplay is unchanged without the flag.
+- */
+ const routeParams = new URLSearchParams(window.location.search);
+ const dropMode = routeParams.get("drop");
+-document.body.dataset.capture = "default";
+ const dropEvidenceMode = dropMode === "1" || dropMode === "hard";
+ const hardDropEvidenceMode = dropMode === "hard";
+-// A human-playable close approach for mobile/touch evidence. Unlike `drop=1`,
+-// this changes only the spawn and never supplies controls to the integrator.
+ const approachEvidenceMode = routeParams.get("approach") === "1";
+ const requestedSite = Number(routeParams.get("site") ?? "1");
+ const initialSiteIndex = Number.isInteger(requestedSite)
+   ? Math.max(0, Math.min(SITES.length - 1, requestedSite - 1))
+   : 0;
+-
+-// ---- accessibility + audio --------------------------------------------------
+ const accessibilitySettings = game.accessibility.settings([
+   game.accessibility.reducedMotion({
+     enabled: typeof window.matchMedia === "function"
+@@ -138,7 +91,6 @@ const accessibilitySettings = game.accessibility.settings([
+ ]);
+ const reducedMotion: boolean = accessibilitySettings.reducedMotion;
+ const landerAudio: LanderAudioController = createLanderAudio(reducedMotion);
+-
+ let audioUnlocked = false;
+ const unlockAudio = (): void => {
+   if (audioUnlocked) return;
+@@ -148,15 +100,12 @@ const unlockAudio = (): void => {
+ };
+ window.addEventListener("keydown", unlockAudio, { once: true });
+ window.addEventListener("pointerdown", unlockAudio, { once: true });
+-
+ let recentAudioCues: readonly string[] = [];
+ const playCue = (cue: LanderAudioCue): void => {
+   if (!audioUnlocked) return;
+   void landerAudio.cue(cue);
+   recentAudioCues = [cue, ...recentAudioCues].slice(0, 12);
+ };
+-
+-// ---- input -------------------------------------------------------------------
+ const input: GameInputController = game.input({
+   actions: {
+     thrust: ["KeyW", "ArrowUp"],
+@@ -172,11 +121,6 @@ const input: GameInputController = game.input({
+   },
+   bufferMs: 80
+ });
+-
+-// Preserve the real elapsed duration of held flight controls until the fixed-step simulation
+-// consumes it. On a software renderer a complete key hold can begin and end between presented
+-// frames; the input controller correctly records both edges, but a held-state-only integrator
+-// would otherwise lose the control entirely.
+ type TimedFlightControl = "thrust" | "left" | "right";
+ const timedControlForCode: Readonly<Record<string, TimedFlightControl | undefined>> = {
+   KeyW: "thrust", ArrowUp: "thrust",
+@@ -213,11 +157,8 @@ window.addEventListener("keyup", (event) => {
+   if (startedAt !== undefined) addTimedControlSeconds(control, (performance.now() - startedAt) / 1000);
+   timedControlStartedAt.delete(control);
+ });
+-
+-// ---- mutable route state -----------------------------------------------------
+ let siteIndex = 0;
+ let phase: Phase = "flying";
+-
+ let state: LanderState = createLanderState(SITES[0]!.spawn, SITES[0]!.fuelBudget);
+ let previousControls: Controls = { thrust: 0, rotate: 0 };
+ let siteScores: number[] = [];
+@@ -238,7 +179,6 @@ let contactQueryAgreement: boolean | null = null;
+ let padSensorArmed = false;
+ let fuelLowCueFired = false;
+ let gustWarnCueFiredForCycle = false;
+-
+ let rcsPuffArmed = true;
+ let bannerTimer = 0;
+ let advanceTimer = -1;
+@@ -247,14 +187,12 @@ let crashDebris: { x: number; y: number; z: number; vx: number; vy: number; vz:
+ let shockwaveAge = -1;
+ let latestPrediction: LandingPrediction | null = null;
+ let touchThrust = 0;
+-
+ interface CollisionHandles {
+   terrainId: string;
+   sensorIds: string[];
+   proxyId: string;
+ }
+ let collisions: CollisionHandles | undefined;
+-
+ const collisionWorld = game.collisionWorld({
+   backend: "rapier",
+   gravity: [0, 0, 0]
+@@ -262,10 +200,7 @@ const collisionWorld = game.collisionWorld({
+ let surfaceQuery: MeshSurfaceQuery | undefined;
+ let field: TerrainField | undefined;
+ let currentSite: LanderSite = SITES[0]!;
+-
+ const ghostPlayback = createGhostPlayback();
+-
+-// ---- node handles (re-required after every setScene) -------------------------
+ let landerNode!: AuraRuntimeNodeHandle;
+ let extractionLanderNode!: AuraRuntimeNodeHandle;
+ let ghostNode!: AuraRuntimeNodeHandle;
+@@ -281,7 +216,6 @@ let predictionNode!: AuraRuntimeNodeHandle;
+ let extractionNodes: AuraRuntimeNodeHandle[] = [];
+ let extractionInfrastructureNodes: AuraRuntimeNodeHandle[] = [];
+ let extractionBackdropNode!: AuraRuntimeNodeHandle;
+-
+ interface ExtractionInfrastructurePart {
+   readonly id: string;
+   readonly offset: readonly [number, number, number];
+@@ -290,11 +224,6 @@ interface ExtractionInfrastructurePart {
+   readonly emissive?: string;
+   readonly metallic?: number;
+ }
+-
+-/**
+- * Renderer-owned extraction architecture around the typed final-site pad.
+- * These are set dressing and navigation silhouettes, never the named hero.
+- */
+ const EXTRACTION_INFRASTRUCTURE: readonly ExtractionInfrastructurePart[] = [
+   { id: "bay-deck", offset: [0, 0.02, 0.25], scale: [12.6, 0.16, 10.8], color: "#34343a", metallic: 0.62 },
+   { id: "bay-rear-wall", offset: [0, 2.8, -5.05], scale: [12.6, 5.6, 0.26], color: "#4b403c", emissive: "#241c1a" },
+@@ -334,8 +263,6 @@ const EXTRACTION_INFRASTRUCTURE: readonly ExtractionInfrastructurePart[] = [
+   { id: "threshold-left", offset: [-1.55, 0.17, 5.7], scale: [1.15, 0.1, 0.14], color: "#fef3c7", emissive: "#f59e0b" },
+   { id: "threshold-right", offset: [1.55, 0.17, 5.7], scale: [1.15, 0.1, 0.14], color: "#fef3c7", emissive: "#f59e0b" }
+ ];
+-
+-// ---- evidence ---------------------------------------------------------------
+ const mountedEvidence = {
+   schema: "aura3d-showcase-aurora-lander-evidence/1.0",
+   appId: "showcase-aurora-lander",
+@@ -400,27 +327,6 @@ const mountedEvidence = {
+     { id: "auroraPadBeacon", typedRef: "assets.auroraPadBeacon", role: "landingZoneProp" }
+   ]
+ };
+-
+-// Canonical gate global (route-gates convention) plus the PRD §8 alias —
+-// both names expose the SAME live object.
+-Object.defineProperty(window, "__AURA3D_SHOWCASE_AURORA_LANDER__", {
+-  get: () => mountedEvidence,
+-  configurable: true
+-});
+-Object.defineProperty(window, "__AURORA_LANDER_EVIDENCE__", {
+-  get: () => mountedEvidence,
+-  configurable: true
+-});
+-
+-// ---- scene construction ------------------------------------------------------
+-/**
+- * Authored aurora sheets. Each entry keeps the exact rotation the sheet is built
+- * with, because the per-frame sway used to write a fresh `setRotation(index * 0.4)`
+- * for the Y axis. A sheet is a wide, tall, 1.5-thick box whose face normal is +Z
+- * (toward the chase camera), so any real Y rotation turns it edge-on: bands 4 and
+- * 5 were being rotated 69deg and 92deg and rendered as invisible knife edges. That
+- * is why the route's signature aurora never appeared in play.
+- */
+ interface AuroraSheet {
+   readonly x: number;
+   readonly y: number;
+@@ -434,20 +340,6 @@ interface AuroraSheet {
+   readonly drive: number;
+   readonly colorIndex: number;
+ }
+-
+-/**
+- * Three stacked sheets per curtain (core + two softer shoulders) so an emissive
+- * box reads as a diffuse light gradient instead of a neon plank, and the whole
+- * family hangs low enough to sit inside the chase frustum above the terrain
+- * silhouette while still clearing the 96m terrain field.
+- *
+- * IMPORTANT renderer constraint measured on these frames: `material.emissive`
+- * with a low `opacity` composites to near-black, not to a soft glow. The old
+- * 0.10-0.16 sheets therefore read as a black slab across the top of the sky
+- * (the same artifact Patrol Wing's 0.26-0.46 "sky ribbons" produce). Softness
+- * is built from geometry instead: many narrow opaque rays with sky visible in
+- * the gaps between them, which is also how a real aurora curtain is structured.
+- */
+ function auroraCurtains(entry: LanderSite): readonly AuroraSheet[] {
+   // The band is authored to hug the terrain ridge, not to tile the whole sky. From
+   // the chase camera the ridge sits near -39deg elevation, so a curtain spanning
+@@ -486,10 +378,8 @@ function auroraCurtains(entry: LanderSite): readonly AuroraSheet[] {
+   void entry;
+   return sheets;
+ }
+-
+ const AURORA_SHEETS: readonly AuroraSheet[] = auroraCurtains(SITES[0]!);
+ const AURORA_SHEET_NAMES: readonly string[] = AURORA_SHEETS.map((_, i) => `aurora-band-${i + 1}`);
+-
+ function auroraBandNodes(entry: LanderSite) {
+   const bands = [];
+   const colors = [entry.auroraColor, "#818cf8", "#38bdf8", "#ec4899", "#34d399"];
+@@ -591,14 +481,12 @@ function auroraBandNodes(entry: LanderSite) {
+   }
+   return bands;
+ }
+-
+ interface SiteFieldEntry {
+   readonly site: LanderSite;
+   readonly field: TerrainField;
+   readonly query: MeshSurfaceQuery;
+ }
+ const siteFields: SiteFieldEntry[] = [];
+-
+ function buildWorldScene() {
+   // §6.9.12 T1.12: the luma nudge is reverted — the sky reads as the night
+   // void it is; the v2 shell replaces this with the K1 starfield + aurora
+@@ -955,8 +843,6 @@ function buildWorldScene() {
+ 
+   return builder;
+ }
+-
+-// ---- app mount ---------------------------------------------------------------
+ const auroraGame = createGame({
+   id: "showcase-aurora-lander",
+   target: "#app",
+@@ -976,7 +862,6 @@ const auroraGame = createGame({
+ });
+ const app = auroraGame.app;
+ auroraGame.start();
+-bindAuroraEvidence(() => mountedEvidence);
+ const auroraTween = createTweenEngine();
+ const auroraFx = createFxParticlePass(app.effects);
+ const auroraJuice = createJuice<"touch-soft" | "touch-hard" | "crash" | "pad-lock" | "site-clear" | "launch">({
+@@ -999,17 +884,14 @@ bindAuroraDrive({
+   stepSim: (dt) => { app.pause(); app.advance(dt); app.resume(); },
+   stepRender: (dt) => { app.pause(); app.advance(dt); app.resume(); },
+ });
+-
+ function requireNode(name: string): AuraRuntimeNodeHandle {
+   return app.nodes.require(name) as AuraRuntimeNodeHandle;
+ }
+-
+ interface SiteGroupHandles {
+   nodes: AuraRuntimeNodeHandle[];
+   padLights: AuraRuntimeNodeHandle[];
+ }
+ const siteGroups: SiteGroupHandles[] = [];
+-
+ function captureNodeHandles(): void {
+   landerNode = requireNode("lander");
+   extractionLanderNode = requireNode("extraction-lander");
+@@ -1044,8 +926,6 @@ function captureNodeHandles(): void {
+  });
+   padLights = siteGroups[siteIndex]!.padLights;
+ }
+-
+-// ---- collision world per site -------------------------------------------------
+ function rebuildCollisions(): void {
+   if (!field) throw new Error("Terrain field missing before collision rebuild.");
+   collisionWorld.clear();
+@@ -1080,8 +960,6 @@ function rebuildCollisions(): void {
+   contactQueryAgreement = null;
+   padSensorArmed = false;
+ }
+-
+-// ---- attempt lifecycle ---------------------------------------------------------
+ function resetAttempt(recordGhostStart = true): void {
+   phase = "flying";
+   auroraGame.session.resume();
+@@ -1121,7 +999,6 @@ function resetAttempt(recordGhostStart = true): void {
+   extractionLanderNode.setPosition(0, -50, 0);
+   extractionLanderNode.setVisible(false);
+ }
+-
+ function loadSite(index: number): void {
+   // Visibility swap only — the world scene is built once, so the renderer never
+   // rebuilds mid-session.
+@@ -1139,8 +1016,6 @@ function loadSite(index: number): void {
+   updatePanelBrief();
+   resetAttempt();
+ }
+-
+-/** Spawn state for this site, honoring the ?drop=1 evidence approach. */
+ function spawnStateFor(site: LanderSite): LanderState {
+   if (!dropEvidenceMode && !approachEvidenceMode) return createLanderState(site.spawn, site.fuelBudget);
+   const pad = site.pads[0]!;
+@@ -1150,8 +1025,6 @@ function spawnStateFor(site: LanderSite): LanderState {
+   // and site transitions complete within the browser gate even on a software-rendered worker.
+   return createLanderState({ x: pad.x, y: padHeight + (dropEvidenceMode ? 14 : 26), z: pad.z }, site.fuelBudget);
+ }
+-
+-/** Begin ghost playback from the stored best run for this site, if one exists. */
+ function beginGhostFromBest(): void {
+   ghostActive = false;
+   const raw = loadBestRunRaw(currentSite.id);
+@@ -1170,8 +1043,6 @@ function beginGhostFromBest(): void {
+     ghostActive = false;
+   }
+ }
+-
+-/** Persist a graded landing as the site's best run when it beats the previous score. */
+ function maybeRecordBestRun(samples: GhostSample[], grade: LandingGrade, score: number): void {
+   if (grade === "crash" || score <= bestScoreThisSite) return;
+   bestScoreThisSite = score;
+@@ -1183,16 +1054,12 @@ function maybeRecordBestRun(samples: GhostSample[], grade: LandingGrade, score:
+   const attempt = { siteId: currentSite.id, events, samples };
+   saveBestRun(currentSite.id, exportBestRun(attempt, replay, grade, score));
+ }
+-
+-// ---- HUD + panel ---------------------------------------------------------------
+ const hud: HudBindings = bindHud(document.getElementById("hud"));
+-
+ function updatePanelBrief(): void {
+   const brief = document.getElementById("panel-site-brief");
+   if (!brief) return;
+   brief.textContent = `Site ${currentSite.id} — ${currentSite.name}: land inside the ringed pad zone. Fuel budget ${currentSite.fuelBudget}s at full burn.${currentSite.gust ? " STORM FRONTS: telegraphed lateral gusts." : ""}`;
+ }
+-
+ function setupPanel(): void {
+   const panel = document.getElementById("panel");
+   if (!panel) throw new Error("Aurora Lander panel #panel is missing.");
+@@ -1275,8 +1142,6 @@ function setupPanel(): void {
+   const pauseButton = document.getElementById("touch-pause");
+   pauseButton?.addEventListener("click", () => togglePause());
+ }
+-
+-// ---- grading --------------------------------------------------------------------
+ interface GradingContext {
+   readonly vspeed: number;
+   readonly hspeed: number;
+@@ -1285,12 +1150,6 @@ interface GradingContext {
+   readonly insidePadZone: boolean;
+   readonly sample: SurfaceSample;
+ }
+-
+-/**
+- * Grade a touchdown from the contact event plus surface-query cross-check:
+- * the solver says WHERE the feet met terrain; the BVH query confirms the pad
+- * normal and zone independently.
+- */
+ function gradeFromContact(context: GradingContext): void {
+   const graded = gradeTouchdown({
+     vspeed: context.vspeed,
+@@ -1345,7 +1204,6 @@ function gradeFromContact(context: GradingContext): void {
+   );
+   bannerTimer = isLastSite ? 8 : 3;
+ }
+-
+ function spawnCrashDebris(): void {
+   if (!field) return;
+   const ground = sampleGridHeight(field, state.x, state.z);
+@@ -1361,16 +1219,12 @@ function spawnCrashDebris(): void {
+   shockwaveAge = reducedMotion ? -1 : 0;
+   if (!reducedMotion) shockwaveNode.setPosition(state.x, ground + 0.25, state.z);
+ }
+-
+-// ---- fixed-step simulation tick --------------------------------------------------
+ function readControls(): Controls {
+   const thrust = Math.max(consumeTimedFlightControl("thrust"), touchThrust);
+   const rotate = consumeTimedFlightControl("right") - consumeTimedFlightControl("left");
+   return { thrust, rotate };
+ }
+-
+ let dustCursor = 0;
+-
+ function tick(dtFixed: number): void {
+   frameCount += 1;
+   if (auroraGame.session.paused || phase !== "flying") return;
+@@ -1525,20 +1379,16 @@ function tick(dtFixed: number): void {
+     }
+   }
+ }
+-
+-// ---- control keys ---------------------------------------------------------------
+ function toggleGhost(): void {
+   ghostVisible = !ghostVisible;
+   if (ghostPlaybackNode) {
+     ghostPlaybackNode.setVisible(ghostVisible && ghostActive);
+   }
+ }
+-
+ function togglePause(): void {
+   auroraGame.session.paused ? auroraGame.session.resume() : auroraGame.session.pause("user");
+   mountedEvidence.state = auroraGame.session.paused ? "paused" : phase;
+ }
+-
+ function handleControlEdges(): void {
+   const restartRequested = input.pressed("restart") || input.pressed("quickRestart");
+   if (restartRequested) {
+@@ -1555,8 +1405,6 @@ function handleControlEdges(): void {
+   if (input.pressed("ghostToggle")) toggleGhost();
+   if (input.pressed("pause")) togglePause();
+ }
+-
+-// ---- per-frame render update ------------------------------------------------------
+ function renderUpdate(dtFrame: number): void {
+   if (!field) return;
+ 
+@@ -1789,7 +1637,6 @@ function renderUpdate(dtFrame: number): void {
+ 
+   publishEvidence();
+ }
+-
+ function publishEvidence(): void {
+   const diagnostics = app.diagnostics();
+   const groundHeight = field ? sampleGridHeight(field, state.x, state.z) : 0;
+@@ -1830,8 +1677,6 @@ function publishEvidence(): void {
+     }
+   }
+ }
+-
+-// ---- main loop -----------------------------------------------------------------
+ app.onFrame((frame) => {
+   syncTimedFlightControls(performance.now());
+   const maxCatchupSeconds = dropEvidenceMode
+@@ -1848,32 +1693,7 @@ app.onFrame((frame) => {
+   }
+   renderUpdate(frame.dt);
+ });
+-
+-// ---- boot ----------------------------------------------------------------------
+ setupPanel();
+-captureNodeHandles();
+-Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+-  value: {
+-    category: "application",
+-    isolationMode: "dominant-component",
+-    get subject() {
+-      return {
+-        position: [state.x, state.y, state.z] as const,
+-        rotation: [0, state.yaw, (state.tiltDeg * Math.PI) / 180] as const,
+-        targetSize: LANDER_TARGET_SIZE
+-      };
+-    },
+-    setSubjectSuppressed(suppressed: boolean) {
+-      landerNode.setVisible(!suppressed);
+-    },
+-    settleSubjectPose() {
+-      auroraGame.session.pause("user");
+-      landerNode.setRotation(0, state.yaw, (state.tiltDeg * Math.PI) / 180);
+-    }
+-  },
+-  configurable: true
+-});
+-// Point the active field/query/site at the requested site (site 1 by default).
+ if (initialSiteIndex > 0) {
+   loadSite(initialSiteIndex);
+ } else {
+@@ -1883,5 +1703,3 @@ if (initialSiteIndex > 0) {
+   surfaceQuery = entry.query;
+   resetAttempt();
+ }
+-mountedEvidence.mounted = true;
+-mountedEvidence.status = "ready";
+diff --git a/apps/showcase-aurora-lander/src/legacy/styles.css b/apps/showcase-aurora-lander/src/legacy/styles.css
+index de7976cb3..106d06402 100644
+--- a/apps/showcase-aurora-lander/src/legacy/styles.css
++++ b/apps/showcase-aurora-lander/src/legacy/styles.css
+@@ -1,4 +1,3 @@
+-/* Aurora Lander HUD chrome — DOM is UI only; all world rendering is Aura3D pixels. */
+ :root {
+   --aurora-teal: #6ee7d7;
+   --aurora-dim: #274156;
+@@ -7,9 +6,7 @@
+   --bad: #f87171;
+   --good: #4ade80;
+ }
+-
+ * { box-sizing: border-box; }
+-
+ html, body {
+   margin: 0;
+   padding: 0;
+@@ -17,29 +14,24 @@ html, body {
+   color: #dbe7f3;
+   font-family: "SF Mono", "Cascadia Mono", Consolas, monospace;
+ }
+-
+ .shell {
+   display: flex;
+   width: 100vw;
+   height: 100vh;
+   overflow: hidden;
+ }
+-
+ .viewport {
+   position: relative;
+   flex: 1;
+   min-width: 0;
+   overflow: hidden;
+ }
+-
+ .stage,
+ #app {
+   position: absolute;
+   inset: 0;
+ }
+-
+ .stage canvas { display: block; }
+-
+ .hud {
+   position: absolute;
+   /* Spanning the play area (not just hugging the top-left) lets the grade banner
+@@ -52,13 +44,11 @@ html, body {
+   pointer-events: none;
+   z-index: 5;
+ }
+-
+ .hud-row {
+   display: flex;
+   gap: 10px;
+   flex-wrap: wrap;
+ }
+-
+ .hud-chip {
+   background: var(--panel-bg);
+   border: 1px solid var(--aurora-dim);
+@@ -68,12 +58,10 @@ html, body {
+   letter-spacing: 0.04em;
+   white-space: nowrap;
+ }
+-
+ .hud-chip .label { color: #7f96ad; margin-right: 6px; }
+ .hud-chip.warn { border-color: var(--warn); color: var(--warn); }
+ .hud-chip.bad { border-color: var(--bad); color: var(--bad); }
+ .hud-chip.good { border-color: var(--good); color: var(--good); }
+-
+ .fuel-track {
+   width: 180px;
+   height: 10px;
+@@ -82,20 +70,11 @@ html, body {
+   overflow: hidden;
+   background: rgba(10, 18, 30, 0.9);
+ }
+-
+ .fuel-fill {
+   height: 100%;
+   background: linear-gradient(90deg, var(--aurora-dim), var(--aurora-teal));
+   transition: width 120ms linear;
+ }
+-
+-/*
+- * The grade banner previously inherited the full HUD column width and a 40px
+- * monospace face, so a crash rendered as a ~130px slab across the whole play
+- * area and hid the terrain the player needed to read. It is now a compact
+- * bottom-centre pill: still the primary fail signal, but it no longer covers
+- * the world.
+- */
+ .banner {
+   position: absolute;
+   left: 50%;
+@@ -114,23 +93,19 @@ html, body {
+   border: 1px solid var(--aurora-dim);
+   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+ }
+-
+ .banner.grade-soft { color: var(--good); }
+ .banner.grade-hard { color: var(--warn); }
+ .banner.grade-crash { color: var(--bad); }
+ .banner.site-clear { color: var(--aurora-teal); }
+-
+ .gust-flag {
+   color: var(--warn);
+   border-color: var(--warn);
+   animation: gust-pulse 600ms ease-in-out infinite alternate;
+ }
+-
+ @keyframes gust-pulse {
+   from { opacity: 0.55; }
+   to { opacity: 1; }
+ }
+-
+ .panel {
+   width: 252px;
+   padding: 14px;
+@@ -141,14 +116,12 @@ html, body {
+   gap: 12px;
+   overflow-y: auto;
+ }
+-
+ .panel h1 {
+   font-size: 16px;
+   margin: 0 0 2px;
+   color: var(--aurora-teal);
+   letter-spacing: 0.06em;
+ }
+-
+ .panel h2 {
+   font-size: 11px;
+   text-transform: uppercase;
+@@ -156,7 +129,6 @@ html, body {
+   color: #7f96ad;
+   margin: 8px 0 4px;
+ }
+-
+ .panel p, .panel li { font-size: 12px; line-height: 1.55; margin: 2px 0; }
+ .panel ul { padding-left: 16px; margin: 2px 0; }
+ .panel kbd {
+@@ -166,63 +138,6 @@ html, body {
+   padding: 1px 6px;
+   font-size: 11px;
+ }
+-
+-/* The exact premium-indie matrix is a full-bleed gameplay artifact. Keep real
+-   telemetry, but remove the briefing/control column and DOM result banner so
+-   the renderer-owned lander, extraction title, pad, halo, and terrain own the
+-   pixels. Normal desktop and touch layouts are unchanged. */
+-body[data-capture="review"] .panel,
+-body[data-capture="review"] .banner,
+-body[data-capture="review"] .gust-flag,
+-body[data-capture="review"] .ghost-flag {
+-  display: none !important;
+-}
+-
+-body[data-capture="review"] .viewport {
+-  flex: 1 1 100vw;
+-  width: 100vw;
+-}
+-
+-body[data-capture="review"] .hud {
+-  top: 14px;
+-  left: 14px;
+-  max-width: 560px;
+-  gap: 4px;
+-  filter: drop-shadow(0 10px 18px rgba(0, 10, 22, 0.32));
+-}
+-
+-body[data-capture="review"] .hud-row {
+-  gap: 3px;
+-}
+-
+-body[data-capture="review"] .hud-chip {
+-  min-height: 24px;
+-  padding: 5px 12px 4px;
+-  border: 1px solid rgba(103, 232, 249, 0.42);
+-  border-radius: 0;
+-  background: linear-gradient(135deg, rgba(5, 24, 39, 0.92), rgba(9, 47, 62, 0.78));
+-  color: #e8fbff;
+-  font-size: 10px;
+-  font-weight: 800;
+-  letter-spacing: 0.1em;
+-  clip-path: polygon(7px 0, 100% 0, calc(100% - 7px) 100%, 0 100%);
+-  box-shadow: inset 0 2px rgba(164, 244, 255, 0.1);
+-  text-transform: uppercase;
+-}
+-
+-body[data-capture="review"] .hud-chip:first-child {
+-  border-left: 4px solid #f6b75e;
+-  color: #baf6ff;
+-}
+-
+-body[data-capture="review"] .hud-chip .label {
+-  color: #76b7c4;
+-}
+-
+-body[data-capture="review"] .fuel-track {
+-  width: 116px;
+-}
+-
+ .touch-controls {
+   /* A fixed five-column grid overflowed the narrower panel and clipped the RCS
+      buttons. Flex-wrap keeps every control reachable at panel width. */
+@@ -232,11 +147,8 @@ body[data-capture="review"] .fuel-track {
+   align-items: center;
+   margin-top: 4px;
+ }
+-
+ .touch-controls > span:not(.fuel-track) { display: none; }
+-
+ .touch-button { flex: 1 1 68px; min-width: 0; }
+-
+ .touch-slider {
+   writing-mode: vertical-lr;
+   direction: rtl;
+@@ -244,7 +156,6 @@ body[data-capture="review"] .fuel-track {
+   height: 130px;
+   accent-color: var(--aurora-teal);
+ }
+-
+ .touch-button {
+   background: #101c2c;
+   border: 1px solid var(--aurora-dim);
+@@ -262,20 +173,16 @@ body[data-capture="review"] .fuel-track {
+   align-items: center;
+   justify-content: center;
+ }
+-
+ .touch-button:active { border-color: var(--aurora-teal); color: var(--aurora-teal); }
+-
+ .score-table { width: 100%; font-size: 11.5px; border-collapse: collapse; }
+ .score-table td { padding: 2px 4px; border-bottom: 1px solid rgba(39, 65, 86, 0.55); }
+ .score-table td:last-child { text-align: right; color: var(--aurora-teal); }
+-
+ .prototype-tag {
+   font-size: 10px;
+   text-transform: uppercase;
+   letter-spacing: 0.18em;
+   color: #7f96ad;
+ }
+-
+ @media (max-width: 760px) {
+   .shell { flex-direction: column; }
+   .viewport {
+@@ -319,7 +226,6 @@ body[data-capture="review"] .fuel-track {
+   }
+   .banner { font-size: 20px; }
+ }
+-
+ .panel-hint { font-size: 11px; opacity: 0.78; margin: 4px 0 8px; }
+ .panel-toggle {
+   appearance: none;
+diff --git a/apps/showcase-aurora-lander/src/v2/evidence/index.ts b/apps/showcase-aurora-lander/src/v2/evidence/index.ts
+deleted file mode 100644
+index e9c48049d..000000000
+--- a/apps/showcase-aurora-lander/src/v2/evidence/index.ts
++++ /dev/null
+@@ -1,165 +0,0 @@
+-// apps/showcase-aurora-lander/src/v2/evidence/index.ts — §7.2.1 evidence.
+-// Publishes `window.__AURA3D_GAME_EVIDENCE__["showcase-aurora-lander"]` with
+-// lazy section getters. The required conditions read `lander.touchdown`
+-// ("landed" once a graded touchdown holds), `lander.altitude` (feet-plane AGL)
+-// and `framing.padInFrame` (active pad inside the rig's cone) here.
+-import type { AuraCameraPose, Game } from "@aura3d/engine";
+-import { pointInRigFrame } from "../scene/camera";
+-import type { LanderSite } from "../../gameplay/sites";
+-import type { LandingPrediction } from "../../gameplay/prediction";
+-import type { LandingGrade } from "../../gameplay/touchdown";
+-import type { TerrainField } from "../../gameplay/terrain";
+-
+-export const AURORA_EVIDENCE_ID = "showcase-aurora-lander";
+-
+-export interface AuroraRunSnapshot {
+-  readonly siteIndex: number;
+-  readonly phase: "flying" | "landed" | "crashed" | "campaign-clear";
+-  readonly paused: boolean;
+-  readonly lastGrade: LandingGrade | null;
+-  readonly crashReason: string;
+-  readonly state: { x: number; y: number; z: number; vy: number; hspeed: number; tiltDeg: number; fuel: number };
+-  readonly altitude: number;
+-  readonly prediction: LandingPrediction | null;
+-  readonly hull: number;
+-  readonly campaignScore: number;
+-  readonly completedSites: number;
+-  readonly siteScores: readonly number[];
+-}
+-
+-export interface AuroraEvidenceBindings {
+-  readonly game: Game;
+-  readonly run: () => AuroraRunSnapshot;
+-  readonly site: () => LanderSite;
+-  readonly field: () => TerrainField | undefined;
+-  readonly padWorldY: () => number;
+-  readonly lastRigPose: () => AuraCameraPose | null;
+-  readonly contact: () => { seen: number; queryAgreement: boolean | null; padSensorArmed: boolean };
+-  readonly ghost: () => { active: boolean; replayHash: string | null };
+-  readonly sceneSwaps: () => number;
+-  readonly appliedLook: Record<string, unknown>;
+-  readonly frameCount: () => number;
+-  readonly bootedAtMs: number;
+-  readonly audioCueLog: () => readonly string[];
+-}
+-
+-export function publishAuroraEvidence(b: AuroraEvidenceBindings): void {
+-  const w = window as unknown as Record<string, Record<string, unknown>>;
+-  w.__AURA3D_GAME_EVIDENCE__ ??= {};
+-  w.__AURA3D_GAME_EVIDENCE__[AURORA_EVIDENCE_ID] = {
+-    get playback() {
+-      return {
+-        state: b.game.session.state,
+-        paused: b.game.session.paused,
+-        simTime: b.game.session.simTime,
+-        timeScale: b.game.session.timeScale,
+-        frame: b.frameCount()
+-      };
+-    },
+-    get run() {
+-      return { ...b.run() };
+-    },
+-    get lander() {
+-      const r = b.run();
+-      return {
+-        x: r.state.x,
+-        y: r.state.y,
+-        z: r.state.z,
+-        vy: r.state.vy,
+-        hspeed: r.state.hspeed,
+-        tiltDeg: r.state.tiltDeg,
+-        fuelFraction: r.state.fuel,
+-        altitude: r.altitude,
+-        touchdown: r.paused
+-          ? "paused"
+-          : r.phase === "crashed"
+-            ? "crashed"
+-            : r.phase === "landed" || r.phase === "campaign-clear"
+-              ? "landed"
+-              : "in-flight",
+-        lastGrade: r.lastGrade,
+-        crashReason: r.crashReason
+-      };
+-    },
+-    get framing() {
+-      const r = b.run();
+-      const site = b.site();
+-      const pose = b.lastRigPose();
+-      const pad = site.pads[0]!;
+-      const ev = b.game.app.camera?.evidence?.();
+-      return {
+-        rig: ev?.rig ?? "aurora-lander.altitude",
+-        subjectScreenHeightFraction: ev?.subjectScreenHeightFraction ?? null,
+-        pose: pose ?? ev?.pose ?? null,
+-        padInFrame: pose ? pointInRigFrame(pose, [pad.x, b.padWorldY(), pad.z]) : false,
+-        pad: { x: pad.x, y: b.padWorldY(), z: pad.z, radius: pad.radius },
+-        altitude: r.altitude
+-      };
+-    },
+-    get touchdown() {
+-      const c = b.contact();
+-      return {
+-        contactEventSeen: c.seen > 0,
+-        contactEvents: c.seen,
+-        contactQueryAgreement: c.queryAgreement,
+-        padSensorArmed: c.padSensorArmed
+-      };
+-    },
+-    get sites() {
+-      const r = b.run();
+-      const site = b.site();
+-      return {
+-        siteId: site.id,
+-        name: site.name,
+-        multiplier: site.multiplier,
+-        completedSites: r.completedSites,
+-        campaignScore: r.campaignScore,
+-        hull: r.hull,
+-        siteScores: [...r.siteScores]
+-      };
+-    },
+-    get terrain() {
+-      const f = b.field();
+-      return f
+-        ? {
+-            colliderKind: "heightfield-static",
+-            rows: f.rows,
+-            columns: f.columns,
+-            cellSize: f.cellSize,
+-            minHeight: f.minHeight,
+-            maxHeight: f.maxHeight
+-          }
+-        : null;
+-    },
+-    get ghost() {
+-      return { ...b.ghost() };
+-    },
+-    get loading() {
+-      return { sceneSwaps: b.sceneSwaps() };
+-    },
+-    get fx() {
+-      return { liveCount: b.game.fx.liveCount, backend: b.game.fx.backend };
+-    },
+-    get render() {
+-      const d = b.game.app.diagnostics();
+-      return {
+-        backend: d.backend,
+-        drawCalls: d.drawCalls,
+-        renderSize: d.renderSize,
+-        fps: d.fps,
+-        errors: d.errors,
+-        warnings: d.warnings
+-      };
+-    },
+-    // T2.6 parity: identical between the play URL and every ?scenario= URL.
+-    get appliedLook() {
+-      return b.appliedLook;
+-    },
+-    get audio() {
+-      return { cues: b.audioCueLog() };
+-    },
+-    get boot() {
+-      return { bootedAtMs: b.bootedAtMs, frame: b.frameCount() };
+-    }
+-  };
+-}
+-- 
+2.34.1
+

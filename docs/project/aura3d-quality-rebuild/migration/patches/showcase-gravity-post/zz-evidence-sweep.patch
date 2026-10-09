@@ -1,0 +1,2922 @@
+From 33cf4e0a2bea55b397359d419e18ac3ea3621b06 Mon Sep 17 00:00:00 2001
+From: gchahal+1 <gchahal@veerone.com>
+Date: Fri, 9 Oct 2026 13:40:36 +0000
+Subject: [PATCH] [qr-prd09] showcase-gravity-post: delete evidence
+ files+blocks (T5.8)
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ .../scripts/build-sfx.mjs                     | 200 ------
+ .../scripts/capture-courier-skiff-preview.mjs |  58 --
+ .../capture-freight-district-preview.mjs      |  61 --
+ .../scripts/courier-skiff-preview/index.html  |  16 -
+ .../scripts/courier-skiff-preview/main.ts     | 119 ----
+ .../freight-district-preview/index.html       |  16 -
+ .../scripts/freight-district-preview/main.ts  |  73 ---
+ .../scripts/register-models.mjs               | 112 ----
+ .../scripts/register-sfx.mjs                  |  46 --
+ .../scripts/verify-contracts.ts               | 150 -----
+ .../scripts/write-performance-report.ts       | 117 ----
+ .../scripts/write-route-health.mjs            | 225 -------
+ apps/showcase-gravity-post/src/legacy/main.ts | 570 ------------------
+ .../src/legacy/styles.css                     | 132 ----
+ .../src/v2/evidence/index.ts                  | 190 ------
+ 15 files changed, 2085 deletions(-)
+ delete mode 100644 apps/showcase-gravity-post/scripts/build-sfx.mjs
+ delete mode 100644 apps/showcase-gravity-post/scripts/capture-courier-skiff-preview.mjs
+ delete mode 100644 apps/showcase-gravity-post/scripts/capture-freight-district-preview.mjs
+ delete mode 100644 apps/showcase-gravity-post/scripts/courier-skiff-preview/index.html
+ delete mode 100644 apps/showcase-gravity-post/scripts/courier-skiff-preview/main.ts
+ delete mode 100644 apps/showcase-gravity-post/scripts/freight-district-preview/index.html
+ delete mode 100644 apps/showcase-gravity-post/scripts/freight-district-preview/main.ts
+ delete mode 100644 apps/showcase-gravity-post/scripts/register-models.mjs
+ delete mode 100644 apps/showcase-gravity-post/scripts/register-sfx.mjs
+ delete mode 100644 apps/showcase-gravity-post/scripts/verify-contracts.ts
+ delete mode 100644 apps/showcase-gravity-post/scripts/write-performance-report.ts
+ delete mode 100644 apps/showcase-gravity-post/scripts/write-route-health.mjs
+ delete mode 100644 apps/showcase-gravity-post/src/v2/evidence/index.ts
+
+diff --git a/apps/showcase-gravity-post/scripts/build-sfx.mjs b/apps/showcase-gravity-post/scripts/build-sfx.mjs
+deleted file mode 100644
+index 4f5e30fed..000000000
+--- a/apps/showcase-gravity-post/scripts/build-sfx.mjs
++++ /dev/null
+@@ -1,200 +0,0 @@
+-/**
+- * Gravity Post SFX synth — generates original CC0 WAV cues entirely in-repo.
+- *
+- * No network downloads, no sampled material: every cue is synthesized from
+- * oscillators / noise with this committed generator so provenance stays
+- * auditable (author "Aura3D synthesis", license CC0-1.0).
+- *
+- * Run from this app directory:  node scripts/build-sfx.mjs
+- * Output: assets/sfx/*.wav  (16-bit PCM mono 44100 Hz)
+- *
+- * After generation, register each cue with the CLI at the repo root, e.g.:
+- *   node ../../packages/aura3d-cli/dist/cli.js assets add ./assets/sfx/launchWhoosh.wav \
+- *     --name gravityPostLaunchWhooshSfx --type audio --license CC0-1.0 \
+- *     --author "Aura3D synthesis" --source-page "apps/showcase-gravity-post/scripts/build-sfx.mjs"
+- */
+-import { mkdirSync, writeFileSync } from "node:fs";
+-import { resolve, dirname } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../assets/sfx");
+-const SAMPLE_RATE = 44100;
+-let noiseState = 0x47504f53;
+-
+-function deterministicNoise() {
+-  noiseState ^= noiseState << 13;
+-  noiseState ^= noiseState >>> 17;
+-  noiseState ^= noiseState << 5;
+-  return ((noiseState >>> 0) / 0xffffffff) * 2 - 1;
+-}
+-
+-// ---- waveform helpers -------------------------------------------------------
+-function envelope(length, attack, decay, total) {
+-  const out = new Float32Array(length);
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const start = Math.min(1, t / attack);
+-    const end = Math.pow(Math.max(0, 1 - t / total), decay);
+-    out[i] = start * end;
+-  }
+-  return out;
+-}
+-
+-function renderCue({ tone, noise }) {
+-  const partTotals = Array.isArray(tone) ? tone.map((part) => part.total) : [tone?.total ?? 0];
+-  const totalSec = Math.max(...partTotals, noise?.total ?? 0, 0.1) + 0.05;
+-  const length = Math.floor(totalSec * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-
+-  if (tone) {
+-    const tones = Array.isArray(tone) ? tone : [tone];
+-    for (const part of tones) {
+-      const { wave = "sine", freqStart, freqEnd = freqStart, amp = 0.5, attack = 0.005, decay = 3, total = 0.2 } = part;
+-      const env = envelope(length, attack, decay, total);
+-      for (let i = 0; i < length; i += 1) {
+-        const t = i / SAMPLE_RATE;
+-        const progress = Math.min(1, t / total);
+-        const f = freqStart + (freqEnd - freqStart) * progress;
+-        const phase = 2 * Math.PI * f * t;
+-        let v = 0;
+-        if (wave === "sine") v = Math.sin(phase);
+-        else if (wave === "triangle") v = 2 / Math.PI * Math.asin(Math.sin(phase));
+-        else if (wave === "sawtooth") v = 2 * (phase / (2 * Math.PI) - Math.floor(0.5 + phase / (2 * Math.PI)));
+-        else if (wave === "square") v = Math.sign(Math.sin(phase));
+-        else v = Math.sin(phase);
+-        out[i] += v * env[i] * amp;
+-      }
+-    }
+-  }
+-
+-  if (noise) {
+-    const { amp = 0.4, attack = 0.003, decay = 4, total = 0.15, hp = 0 } = noise;
+-    let lp = 0;
+-    const env = envelope(length, attack, decay, total);
+-    for (let i = 0; i < length; i += 1) {
+-      const raw = deterministicNoise();
+-      let v = raw;
+-      if (hp > 0) {
+-        lp += 0.9 * (raw - lp);
+-        v = raw - lp;
+-      }
+-      out[i] += v * env[i] * amp;
+-    }
+-  }
+-
+-  return out;
+-}
+-
+-// ---- cue recipes ------------------------------------------------------------
+-/** launchWhoosh — rising airy launch burst. */
+-function launchWhoosh() {
+-  return renderCue({
+-    tone: { wave: "triangle", freqStart: 220, freqEnd: 760, amp: 0.4, attack: 0.01, decay: 4, total: 0.42 },
+-    noise: { amp: 0.26, attack: 0.02, decay: 4, total: 0.4, hp: 500 }
+-  });
+-}
+-/** burnLoop — short thruster chuff, retrigged while burning. */
+-function burnLoop() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sawtooth", freqStart: 140, freqEnd: 96, amp: 0.2, attack: 0.01, decay: 3, total: 0.28 },
+-      { wave: "sine", freqStart: 70, freqEnd: 58, amp: 0.22, attack: 0.012, decay: 3, total: 0.28 }
+-    ],
+-    noise: { amp: 0.16, attack: 0.01, decay: 3, total: 0.24, hp: 300 }
+-  });
+-}
+-/** dockLock — confident two-tone capture clunk. */
+-function dockLock() {
+-  return renderCue({ tone: [
+-    { wave: "square", freqStart: 392, freqEnd: 392, amp: 0.32, attack: 0.004, decay: 5, total: 0.14 },
+-    { wave: "triangle", freqStart: 784, freqEnd: 784, amp: 0.26, attack: 0.09, decay: 5, total: 0.3 }
+-  ] });
+-}
+-/** bounceOff — rubbery rejection blat. */
+-function bounceOff() {
+-  return renderCue({ tone: [
+-    { wave: "sine", freqStart: 320, freqEnd: 110, amp: 0.42, attack: 0.004, decay: 6, total: 0.22 },
+-    { wave: "square", freqStart: 160, freqEnd: 90, amp: 0.14, attack: 0.004, decay: 6, total: 0.18 }
+-  ], noise: { amp: 0.08, attack: 0.002, decay: 5, total: 0.12 } });
+-}
+-/** podLost — descending loss sting. */
+-function podLost() {
+-  return renderCue({ tone: [
+-    { wave: "sawtooth", freqStart: 460, freqEnd: 70, amp: 0.34, attack: 0.006, decay: 6, total: 0.55 },
+-    { wave: "sine", freqStart: 230, freqEnd: 48, amp: 0.28, attack: 0.006, decay: 6, total: 0.55 }
+-  ], noise: { amp: 0.08, attack: 0.01, decay: 5, total: 0.3 } });
+-}
+-/** contractClear — delivery fanfare. */
+-function contractClear() {
+-  return renderCue({ tone: [
+-    { wave: "triangle", freqStart: 523, freqEnd: 523, amp: 0.34, attack: 0.008, decay: 4, total: 0.24 },
+-    { wave: "triangle", freqStart: 659, freqEnd: 659, amp: 0.3, attack: 0.12, decay: 4, total: 0.36 },
+-    { wave: "sine", freqStart: 1046, freqEnd: 1046, amp: 0.18, attack: 0.2, decay: 5, total: 0.44 }
+-  ] });
+-}
+-/** assistChime — sparkle for a gravity assist logged. */
+-function assistChime() {
+-  return renderCue({ tone: [
+-    { wave: "sine", freqStart: 1318, amp: 0.2, attack: 0.002, decay: 6, total: 0.18 },
+-    { wave: "sine", freqStart: 1976, amp: 0.14, attack: 0.05, decay: 6, total: 0.22 }
+-  ] });
+-}
+-/** warpHum — time-warp swell, retrigged only while warping. */
+-function warpHum() {
+-  return renderCue({ tone: [
+-    { wave: "sine", freqStart: 196, freqEnd: 208, amp: 0.2, attack: 0.09, decay: 1.4, total: 0.5 },
+-    { wave: "triangle", freqStart: 98, freqEnd: 104, amp: 0.16, attack: 0.11, decay: 1.4, total: 0.5 }
+-  ] });
+-}
+-/** uiConfirm — HUD click. */
+-function uiConfirm() {
+-  return renderCue({ tone: { wave: "square", freqStart: 660, freqEnd: 660, amp: 0.14, attack: 0.002, decay: 6, total: 0.09 } });
+-}
+-/** ambientSpace — slow deep-space pad, retrigged as a continuous bed. */
+-function ambientSpace() {
+-  return renderCue({ tone: [
+-    { wave: "sine", freqStart: 55, freqEnd: 55, amp: 0.16, attack: 0.9, decay: 0.8, total: 6.2 },
+-    { wave: "sine", freqStart: 82.4, freqEnd: 82.4, amp: 0.1, attack: 1.2, decay: 0.8, total: 6.2 },
+-    { wave: "triangle", freqStart: 164.8, freqEnd: 166, amp: 0.05, attack: 1.6, decay: 0.9, total: 6.2 }
+-  ] });
+-}
+-
+-// ---- WAV writer -------------------------------------------------------------
+-function writeWav(path, samples) {
+-  const length = samples.length;
+-  const buffer = Buffer.alloc(44 + length * 2);
+-  const numChannels = 1;
+-  const bitsPerSample = 16;
+-  const byteRate = SAMPLE_RATE * numChannels * bitsPerSample / 8;
+-  buffer.write("RIFF", 0);
+-  buffer.writeUInt32LE(36 + length * 2, 4);
+-  buffer.write("WAVE", 8);
+-  buffer.write("fmt ", 12);
+-  buffer.writeUInt32LE(16, 16);
+-  buffer.writeUInt16LE(1, 20); // PCM
+-  buffer.writeUInt16LE(numChannels, 22);
+-  buffer.writeUInt32LE(SAMPLE_RATE, 24);
+-  buffer.writeUInt32LE(byteRate, 28);
+-  buffer.writeUInt16LE(numChannels * bitsPerSample / 8, 32);
+-  buffer.writeUInt16LE(bitsPerSample, 34);
+-  buffer.write("data", 36);
+-  buffer.writeUInt32LE(length * 2, 40);
+-  for (let i = 0; i < length; i += 1) {
+-    const v = Math.max(-1, Math.min(1, samples[i]));
+-    buffer.writeInt16LE(Math.round(v * 32767), 44 + i * 2);
+-  }
+-  writeFileSync(path, buffer);
+-  return length / SAMPLE_RATE;
+-}
+-
+-const cues = {
+-  launchWhoosh, burnLoop, dockLock, bounceOff, podLost,
+-  contractClear, assistChime, warpHum, uiConfirm, ambientSpace
+-};
+-
+-mkdirSync(OUT_DIR, { recursive: true });
+-for (const [name, fn] of Object.entries(cues)) {
+-  const duration = writeWav(resolve(OUT_DIR, name + ".wav"), fn());
+-  console.log("wrote assets/sfx/" + name + ".wav (" + duration.toFixed(3) + "s)");
+-}
+-console.log("\nGenerated " + Object.keys(cues).length + " cues into " + OUT_DIR);
+diff --git a/apps/showcase-gravity-post/scripts/capture-courier-skiff-preview.mjs b/apps/showcase-gravity-post/scripts/capture-courier-skiff-preview.mjs
+deleted file mode 100644
+index dd6fbfbc1..000000000
+--- a/apps/showcase-gravity-post/scripts/capture-courier-skiff-preview.mjs
++++ /dev/null
+@@ -1,58 +0,0 @@
+-#!/usr/bin/env node
+-import { createHash } from "node:crypto";
+-import { spawn } from "node:child_process";
+-import { readFileSync, writeFileSync } from "node:fs";
+-import { resolve } from "node:path";
+-import { chromium } from "@playwright/test";
+-
+-const repoRoot = resolve(import.meta.dirname, "../../..");
+-const port = 5209;
+-const origin = `http://127.0.0.1:${port}`;
+-const previewRoute = "/apps/showcase-gravity-post/scripts/courier-skiff-preview/index.html";
+-const output = resolve(repoRoot, "apps/showcase-gravity-post/assets/candidates/gravityPostCourierSkiff.audition.png");
+-const sidecar = resolve(repoRoot, "apps/showcase-gravity-post/assets/candidates/gravityPostCourierSkiff.audition.json");
+-const server = spawn("pnpm", ["exec", "vite", "--host", "127.0.0.1", "--port", String(port), "--strictPort"], {
+-  cwd: repoRoot,
+-  stdio: ["ignore", "pipe", "pipe"],
+-  detached: true
+-});
+-let serverLog = "";
+-server.stdout.on("data", (chunk) => { serverLog += String(chunk); });
+-server.stderr.on("data", (chunk) => { serverLog += String(chunk); });
+-
+-async function waitForServer() {
+-  const deadline = Date.now() + 45_000;
+-  while (Date.now() < deadline) {
+-    try { if ((await fetch(origin + previewRoute)).ok) return; } catch {}
+-    await new Promise((resolveDelay) => setTimeout(resolveDelay, 250));
+-  }
+-  throw new Error(`Courier preview Vite server did not become ready.\n${serverLog}`);
+-}
+-
+-let browser;
+-try {
+-  await waitForServer();
+-  browser = await chromium.launch({
+-    headless: true,
+-    args: ["--use-gl=swiftshader", "--enable-unsafe-swiftshader"]
+-  });
+-  const page = await browser.newPage({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
+-  await page.goto(origin + previewRoute, { waitUntil: "domcontentloaded" });
+-  await page.waitForFunction(() => globalThis.__GRAVITY_COURIER_SKIFF_PREVIEW__?.ready === true, undefined, { timeout: 60_000 });
+-  const evidence = await page.evaluate(() => globalThis.__GRAVITY_COURIER_SKIFF_PREVIEW__);
+-  await page.screenshot({ path: output, type: "png", animations: "disabled", timeout: 120_000 });
+-  const screenshotSha256 = `sha256-${createHash("sha256").update(readFileSync(output)).digest("hex")}`;
+-  writeFileSync(sidecar, `${JSON.stringify({
+-    schema: "aura3d-gravity-post-courier-skiff-audition/1.0",
+-    generatedBy: "apps/showcase-gravity-post/scripts/capture-courier-skiff-preview.mjs",
+-    route: previewRoute,
+-    screenshot: "apps/showcase-gravity-post/assets/candidates/gravityPostCourierSkiff.audition.png",
+-    screenshotSha256,
+-    viewport: [1280, 800],
+-    evidence
+-  }, null, 2)}\n`);
+-  console.log(JSON.stringify({ output, sidecar, screenshotSha256, evidence }, null, 2));
+-} finally {
+-  if (browser) await browser.close();
+-  try { process.kill(-server.pid, "SIGTERM"); } catch { server.kill("SIGTERM"); }
+-}
+diff --git a/apps/showcase-gravity-post/scripts/capture-freight-district-preview.mjs b/apps/showcase-gravity-post/scripts/capture-freight-district-preview.mjs
+deleted file mode 100644
+index 0b33e5b7f..000000000
+--- a/apps/showcase-gravity-post/scripts/capture-freight-district-preview.mjs
++++ /dev/null
+@@ -1,61 +0,0 @@
+-#!/usr/bin/env node
+-import { createHash } from "node:crypto";
+-import { spawn } from "node:child_process";
+-import { readFileSync, writeFileSync } from "node:fs";
+-import { resolve } from "node:path";
+-import { chromium } from "@playwright/test";
+-
+-const repoRoot = resolve(import.meta.dirname, "../../..");
+-const port = 5199;
+-const origin = `http://127.0.0.1:${port}`;
+-const previewRoute = "/apps/showcase-gravity-post/scripts/freight-district-preview/index.html";
+-const output = resolve(repoRoot, "apps/showcase-gravity-post/assets/candidates/gravityPostFreightDistrict.preview.png");
+-const sidecar = resolve(repoRoot, "apps/showcase-gravity-post/assets/candidates/gravityPostFreightDistrict.preview.json");
+-
+-const server = spawn("pnpm", ["exec", "vite", "--host", "127.0.0.1", "--port", String(port), "--strictPort"], {
+-  cwd: repoRoot,
+-  stdio: ["ignore", "pipe", "pipe"],
+-  detached: true
+-});
+-
+-let serverLog = "";
+-server.stdout.on("data", (chunk) => { serverLog += String(chunk); });
+-server.stderr.on("data", (chunk) => { serverLog += String(chunk); });
+-
+-async function waitForServer() {
+-  const deadline = Date.now() + 45_000;
+-  while (Date.now() < deadline) {
+-    try {
+-      const response = await fetch(origin + previewRoute);
+-      if (response.ok) return;
+-    } catch {}
+-    await new Promise((resolveDelay) => setTimeout(resolveDelay, 250));
+-  }
+-  throw new Error(`Preview Vite server did not become ready.\n${serverLog}`);
+-}
+-
+-let browser;
+-try {
+-  await waitForServer();
+-  browser = await chromium.launch({ headless: true });
+-  const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
+-  await page.goto(origin + previewRoute, { waitUntil: "domcontentloaded" });
+-  await page.waitForFunction(() => globalThis.__GRAVITY_FREIGHT_DISTRICT_PREVIEW__?.ready === true, undefined, { timeout: 60_000 });
+-  await page.waitForTimeout(700);
+-  const evidence = await page.evaluate(() => globalThis.__GRAVITY_FREIGHT_DISTRICT_PREVIEW__);
+-  await page.screenshot({ path: output, type: "png" });
+-  const screenshotSha256 = `sha256-${createHash("sha256").update(readFileSync(output)).digest("hex")}`;
+-  writeFileSync(sidecar, `${JSON.stringify({
+-    schema: "aura3d-gravity-post-freight-district-preview/1.0",
+-    generatedBy: "apps/showcase-gravity-post/scripts/capture-freight-district-preview.mjs",
+-    route: previewRoute,
+-    screenshot: "apps/showcase-gravity-post/assets/candidates/gravityPostFreightDistrict.preview.png",
+-    screenshotSha256,
+-    viewport: [1440, 900],
+-    evidence
+-  }, null, 2)}\n`);
+-  console.log(JSON.stringify({ output, sidecar, screenshotSha256, evidence }, null, 2));
+-} finally {
+-  if (browser) await browser.close();
+-  try { process.kill(-server.pid, "SIGTERM"); } catch { server.kill("SIGTERM"); }
+-}
+diff --git a/apps/showcase-gravity-post/scripts/courier-skiff-preview/index.html b/apps/showcase-gravity-post/scripts/courier-skiff-preview/index.html
+deleted file mode 100644
+index 27e296e34..000000000
+--- a/apps/showcase-gravity-post/scripts/courier-skiff-preview/index.html
++++ /dev/null
+@@ -1,16 +0,0 @@
+-<!doctype html>
+-<html lang="en">
+-  <head>
+-    <meta charset="UTF-8" />
+-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+-    <title>Gravity Post courier skiff isolated audition</title>
+-    <style>
+-      html, body, #preview { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #06101a; }
+-      canvas { display: block; width: 100%; height: 100%; }
+-    </style>
+-  </head>
+-  <body>
+-    <div id="preview"></div>
+-    <script type="module" src="./main.ts"></script>
+-  </body>
+-</html>
+diff --git a/apps/showcase-gravity-post/scripts/courier-skiff-preview/main.ts b/apps/showcase-gravity-post/scripts/courier-skiff-preview/main.ts
+deleted file mode 100644
+index 11a28a442..000000000
+--- a/apps/showcase-gravity-post/scripts/courier-skiff-preview/main.ts
++++ /dev/null
+@@ -1,119 +0,0 @@
+-import {
+-  camera,
+-  createAuraApp,
+-  defineAuraAssets,
+-  effects,
+-  game,
+-  lights,
+-  material,
+-  model,
+-  primitives,
+-  scene
+-} from "@aura3d/engine";
+-
+-const candidateAssets = defineAuraAssets({
+-  gravityPostCourierSkiffCandidate: {
+-    type: "model",
+-    format: "glb",
+-    url: "/apps/showcase-gravity-post/assets/candidates/gravityPostCourierSkiff.candidate.glb",
+-    bounds: [1.67, 0.978, 2.37],
+-    hash: "sha256-a32c76ede1b0aa0276a0f10794b3663413db6b689cd50381868dc40c8ecdb1fc",
+-    metadata: {
+-      materials: [
+-        "GPCS amber drive light",
+-        "GPCS brushed alloy",
+-        "GPCS cyan canopy",
+-        "GPCS cyan running light",
+-        "GPCS graphite armored hull",
+-        "GPCS landing skid",
+-        "GPCS parcel amber",
+-        "GPCS parcel cream",
+-        "GPCS postal identity",
+-        "GPCS postal navy"
+-      ],
+-      animations: [],
+-      textures: []
+-    }
+-  },
+-  gravityPostFreightDistrictCandidate: {
+-    type: "model",
+-    format: "glb",
+-    url: "/apps/showcase-gravity-post/assets/candidates/gravityPostFreightDistrict.candidate.glb",
+-    bounds: [15.985, 9.898, 16.056],
+-    hash: "sha256-cb33a415e9193fd00f3b3f5efa6c69515f7bbc429c74272f20cf094c5d4547db",
+-    metadata: { materials: [], animations: [], textures: [] }
+-  }
+-} as const);
+-
+-const cyan = material.emissive({ color: "#063244", emissive: "#67e8f9", emissiveIntensity: 1.55 });
+-const amber = material.emissive({ color: "#411908", emissive: "#fb923c", emissiveIntensity: 1.48 });
+-const cream = material.emissive({ color: "#5b4923", emissive: "#fff0b5", emissiveIntensity: 1.2 });
+-let auditionScene = scene()
+-  .background("#06101a")
+-  .add(model(candidateAssets.gravityPostFreightDistrictCandidate, {
+-    name: "isolated typed-candidate freight district",
+-    role: "setDressing"
+-  }).position(-1.9, 0.06, 0).scale(0.34))
+-  .add(model(candidateAssets.gravityPostCourierSkiffCandidate, {
+-    name: "gravity-post-courier-skiff-audition"
+-  }).position(0.08, 0.145, 0).rotate(0, Math.PI / 2, 0).scale(0.62)
+-    .runtime(game.runtimeNode("audition-skiff", { tags: ["candidate", "courier", "grounded-contact"] })))
+-  .add(primitives.box({ name: "live courier contact wake", size: [1.44, 0.014, 0.07], material: cream })
+-    .position(-0.9, 0.13, 0).runtime(game.runtimeNode("contact-wake")))
+-  .add(lights.ambient({ color: "#b8d8e8", intensity: 0.5 }))
+-  .add(lights.directional({ position: [-2.8, 5.4, 4.8], color: "#e7f7ff", intensity: 2.15 }))
+-  .add(lights.directional({ position: [4.6, 2.7, -4], color: "#ffb46a", intensity: 1.1 }))
+-  .add(lights.point({ position: [0.3, 1.1, 0.2], color: "#4be7ff", intensity: 2.2, range: 5.2 }))
+-  .add(lights.point({ position: [-0.9, 0.5, -0.1], color: "#ff8a2b", intensity: 1.8, range: 3.5 }))
+-  .add(effects.bloom({ intensity: 0.13 }));
+-
+-for (let index = 0; index < 6; index += 1) {
+-  auditionScene = auditionScene.add(
+-    primitives.box({
+-      name: `velocity-aligned scene trail ${index}`,
+-      size: [0.34 - index * 0.035, 0.025, 0.04],
+-      material: index < 2 ? amber : cyan
+-    }).position(-0.62 - index * 0.25, 0.22 + index * 0.003, 0)
+-  );
+-}
+-
+-const app = createAuraApp("#preview", {
+-  diagnostics: { overlay: false, assetPanel: false },
+-  scene: auditionScene.camera(camera.perspective({
+-    position: [-2.5, 2.2, 3.25],
+-    target: [0.1, 0.2, 0],
+-    fov: 39,
+-    near: 0.05,
+-    far: 40
+-  }))
+-});
+-
+-void app.ready().then(() => {
+-  // Deterministic route-motion audition. The runtime node advances along the
+-  // district's real +X direction and then settles on its four contact pods;
+-  // this does not claim imported animation or physical vehicle dynamics.
+-  const skiff = app.nodes.require("audition-skiff");
+-  const wake = app.nodes.require("contact-wake");
+-  for (let index = 0; index < 28; index += 1) {
+-    const x = -0.42 + index * 0.018;
+-    skiff.setPosition(x, 0.145, 0);
+-    wake.setPosition(x - 0.9, 0.13, 0).setScale([0.78 + index * 0.012, 1, 1]);
+-    app.step(1 / 60);
+-  }
+-  app.pause();
+-  const diagnostics = app.diagnostics();
+-  (window as Window & { __GRAVITY_COURIER_SKIFF_PREVIEW__?: unknown }).__GRAVITY_COURIER_SKIFF_PREVIEW__ = {
+-    ready: true,
+-    renderer: "createAuraApp root safe API isolated candidate audition",
+-    typedCandidate: "candidateAssets.gravityPostCourierSkiffCandidate",
+-    sharedRegistrationUsed: false,
+-    movement: { axis: "+X", authoredDistance: 0.486, fixedSteps: 28, dt: 1 / 60 },
+-    grounded: { playPlaneY: 0.14, assetMinY: 0, fourContactDrivePods: true },
+-    cargoIdentity: { detachableParcel: true, raisedEnvelopeBadge: true },
+-    diagnostics: {
+-      drawCalls: diagnostics.drawCalls,
+-      renderSize: diagnostics.renderSize,
+-      backend: diagnostics.renderer?.runtime.backend
+-    }
+-  };
+-});
+diff --git a/apps/showcase-gravity-post/scripts/freight-district-preview/index.html b/apps/showcase-gravity-post/scripts/freight-district-preview/index.html
+deleted file mode 100644
+index 149fbef0d..000000000
+--- a/apps/showcase-gravity-post/scripts/freight-district-preview/index.html
++++ /dev/null
+@@ -1,16 +0,0 @@
+-<!doctype html>
+-<html lang="en">
+-  <head>
+-    <meta charset="UTF-8" />
+-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+-    <title>Gravity Post Freight District — isolated candidate preview</title>
+-    <style>
+-      html, body, #preview { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #07131f; }
+-      canvas { display: block; width: 100%; height: 100%; }
+-    </style>
+-  </head>
+-  <body>
+-    <div id="preview"></div>
+-    <script type="module" src="./main.ts"></script>
+-  </body>
+-</html>
+diff --git a/apps/showcase-gravity-post/scripts/freight-district-preview/main.ts b/apps/showcase-gravity-post/scripts/freight-district-preview/main.ts
+deleted file mode 100644
+index ce35aa430..000000000
+--- a/apps/showcase-gravity-post/scripts/freight-district-preview/main.ts
++++ /dev/null
+@@ -1,73 +0,0 @@
+-import {
+-  camera,
+-  createAuraApp,
+-  defineAuraAssets,
+-  effects,
+-  lights,
+-  model,
+-  scene
+-} from "@aura3d/engine";
+-
+-const candidateAssets = defineAuraAssets({
+-  gravityPostFreightDistrictCandidate: {
+-    type: "model",
+-    format: "glb",
+-    url: "/apps/showcase-gravity-post/assets/candidates/gravityPostFreightDistrict.candidate.glb",
+-    bounds: [4.3, 3.036, 3.658655],
+-    hash: "sha256-fafd38b804ab82b997df79c01f393f7920438b123e9a9c038d597ad1372d2bdc",
+-    metadata: {
+-      materials: [
+-        "GPFD deck graphite",
+-        "GPFD structural alloy",
+-        "GPFD machinery navy",
+-        "GPFD oxidized cargo cladding",
+-        "GPFD cargo blue",
+-        "GPFD cargo cream",
+-        "GPFD operations glass",
+-        "GPFD cyan guidance",
+-        "GPFD amber hazard"
+-      ],
+-      animations: [],
+-      textures: []
+-    }
+-  }
+-} as const);
+-
+-const app = createAuraApp("#preview", {
+-  diagnostics: { overlay: false, assetPanel: false },
+-  scene: scene()
+-    .background("#07131f")
+-    .add(model(candidateAssets.gravityPostFreightDistrictCandidate, {
+-      name: "isolated Gravity Post freight district candidate",
+-      role: "setDressing"
+-    }))
+-    .add(lights.ambient({ color: "#b8d8e8", intensity: 0.52 }))
+-    .add(lights.directional({ position: [-2.8, 5.4, 4.8], color: "#e7f7ff", intensity: 2.1 }))
+-    .add(lights.directional({ position: [4.6, 2.7, -4.0], color: "#ffb46a", intensity: 1.08 }))
+-    .add(lights.point({ position: [2.7, 1.1, 0.0], color: "#4be7ff", intensity: 1.8, range: 5.2 }))
+-    .add(effects.bloom({ intensity: 0.16 }))
+-    .camera(camera.perspective({
+-      position: [-1.9, 2.35, 4.8],
+-      target: [1.62, 0.62, 0.0],
+-      fov: 42,
+-      near: 0.05,
+-      far: 30
+-    }))
+-});
+-
+-void app.ready().then(() => {
+-  app.step(1 / 60);
+-  app.step(1 / 60);
+-  const diagnostics = app.diagnostics();
+-  (window as Window & { __GRAVITY_FREIGHT_DISTRICT_PREVIEW__?: unknown }).__GRAVITY_FREIGHT_DISTRICT_PREVIEW__ = {
+-    ready: true,
+-    renderer: "createAuraApp root safe API",
+-    typedAsset: "candidateAssets.gravityPostFreightDistrictCandidate",
+-    sharedRegistrationUsed: false,
+-    diagnostics: {
+-      drawCalls: diagnostics.drawCalls,
+-      renderSize: diagnostics.renderSize,
+-      backend: diagnostics.renderer?.runtime.backend
+-    }
+-  };
+-});
+diff --git a/apps/showcase-gravity-post/scripts/register-models.mjs b/apps/showcase-gravity-post/scripts/register-models.mjs
+deleted file mode 100644
+index b0bc00b68..000000000
+--- a/apps/showcase-gravity-post/scripts/register-models.mjs
++++ /dev/null
+@@ -1,112 +0,0 @@
+-import { spawnSync } from "node:child_process";
+-import { resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(fileURLToPath(new URL("..", import.meta.url)));
+-const repoRoot = resolve(appDir, "../..");
+-const cli = "packages/aura3d-cli/src/cli.ts";
+-const definitions = [
+-  {
+-    id: "gravityPostMailPod",
+-    file: "public/aura-assets/gravityPostMailPod.bddb3981.glb",
+-    role: "vehicle",
+-    author: "박용진",
+-    retrievedAt: "2026-08-28T20:40:04.432Z",
+-    sourcePage: "https://sketchfab.com/3d-models/781e531c00d94c9e89dcc8ad9b967d87",
+-    downloadUrl: "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-087/781e531c00d94c9e89dcc8ad9b967d87.glb",
+-    suitability: "Typed textured primary courier vehicle with a readable ship nose-to-engine silhouette, eight retained textures, current manifest bounds, durable CC-BY provenance, and probe-bound +Z forward orientation used by route-authored velocity-aligned yaw; no physical spacecraft claim."
+-  },
+-  {
+-    id: "gravityPostDockBeacon",
+-    file: "public/aura-assets/gravityPostDockBeacon.171e21cb.glb",
+-    role: "prop",
+-    author: "DjalalxJay",
+-    retrievedAt: "2026-08-22T00:06:43.030Z",
+-    sourcePage: "https://sketchfab.com/3d-models/f23b484cda664f1cb91b4f62ea5ef8bf",
+-    downloadUrl: "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-054/f23b484cda664f1cb91b4f62ea5ef8bf",
+-    suitability: "Typed textured dock landmark with readable body and solar-panel silhouette, current manifest bounds, durable CC-BY provenance, and route-authored static presentation; no physical satellite behavior claim."
+-  },
+-  {
+-    id: "gravityPostFreightDistrict",
+-    file: "apps/showcase-gravity-post/assets/candidates/gravityPostFreightDistrict.candidate.glb",
+-    role: "world",
+-    author: "Aura3D synthesis",
+-    retrievedAt: "2026-08-31T23:40:00.000Z",
+-    sourcePage: "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-gravity-post/scripts/build-freight-district.py",
+-    downloadUrl: "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-gravity-post/assets/candidates/gravityPostFreightDistrict.candidate.glb",
+-    license: "CC0-1.0",
+-    licenseName: "CC0 1.0 Universal",
+-    licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+-    sourceFamily: "aura3d-original",
+-    attribution: "Aura3D synthesis — original CC0 Gravity Post freight district",
+-    provenanceEvidence: "Generated in Blender 5.2.1 from the committed route-local Python source. Nine merged material groups retain a connected chamfered deck, rails, loading hangar, gantry crane, stacked cargo, tank farm, terminal architecture, outer loading towers, and elevated dispatch bridges; nine packed deterministic panel textures are embedded in the GLB; the asset owns no collision or gameplay.",
+-    quality: "release",
+-    renderedProbeJson: "tests/reports/showcase-release-asset-probes/gravityPostFreightDistrict.json",
+-    orientationJson: "tests/reports/showcase-release-asset-probes/gravityPostFreightDistrict.orientation.json",
+-    suitability: "Original CC0 +Y-up, +X-forward non-colliding freight world authored at a gameplay-scale footprint and fitted to the real Rust Exchange to Gale Terminal vector. Its nine readable color-separated PBR groups combine embedded deterministic micro-panel paint textures with bevelled geometry: connected chamfered deck, service rails, dispatch building, gabled loading hangar, articulated crane, stacked cargo modules, tank farm, outer loading towers, elevated dispatch bridges, backline skyline, and asymmetric terminal/dock destination. Route-local pod motion, wells, dock sensors, collision, scoring, and camera remain authoritative."
+-  },
+-  {
+-    id: "gravityPostCourierSkiff",
+-    file: "apps/showcase-gravity-post/assets/candidates/gravityPostCourierSkiff.candidate.glb",
+-    role: "vehicle",
+-    author: "Aura3D synthesis",
+-    retrievedAt: "2026-09-01T10:09:00.000Z",
+-    sourcePage: "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-gravity-post/scripts/build-courier-skiff.py",
+-    downloadUrl: "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-gravity-post/assets/candidates/gravityPostCourierSkiff.candidate.glb",
+-    license: "CC0-1.0",
+-    licenseName: "CC0 1.0 Universal",
+-    licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+-    sourceFamily: "aura3d-original",
+-    attribution: "Aura3D synthesis — original CC0 Gravity Post courier skiff",
+-    provenanceEvidence: "Generated in Blender 5.2.1 from committed route-local Python source. Two independent builds produced byte-identical GLBs. The merged material groups retain the layered courier hull, cyan canopy and running rails, swept hover wings with root braces and route lights, twin amber aft drives, dorsal dispatch fin, and a detachable guarded parcel module with a raised envelope badge; packed deterministic paint textures are embedded in the GLB. Route-local authored motion remains the sole gameplay owner.",
+-    quality: "release",
+-    renderedProbeJson: "tests/reports/showcase-release-asset-probes/gravityPostCourierSkiff.json",
+-    orientationJson: "tests/reports/showcase-release-asset-probes/gravityPostCourierSkiff.orientation.json",
+-    suitability: "Original CC0 +Y-up, +Z-forward primary courier skiff with a compact working-vehicle silhouette, layered beveled armor, swept hover wings, grounded four-point contact language, readable cockpit-to-drive direction, and a large visually integrated detachable amber parcel carrying guards, an illuminated latch, a dorsal dispatch fin, and a raised envelope badge. Its readable color-separated PBR groups use embedded deterministic micro-panel paint textures plus emissive running lights, and are verified by the current hash-bound root probe and exact mounted route evidence. The GLB carries no collider, dynamics, or imported animation claim; immutable route-local pod state, Rust-to-Gale coordinates, Rapier sensors, scoring, and authored velocity-aligned yaw remain authoritative."
+-  }
+-];
+-const requestedIds = new Set((process.env.AURA3D_MODEL_IDS ?? "").split(",").map((value) => value.trim()).filter(Boolean));
+-const forceQuality = process.env.AURA3D_FORCE_QUALITY;
+-const skipProbeEvidence = process.env.AURA3D_SKIP_PROBE_EVIDENCE === "1";
+-const selectedDefinitions = requestedIds.size === 0
+-  ? definitions
+-  : definitions.filter((definition) => requestedIds.has(definition.id));
+-if (requestedIds.size > 0 && selectedDefinitions.length !== requestedIds.size) {
+-  throw new Error(`Unknown Gravity Post model id(s): ${[...requestedIds].filter((id) => !definitions.some((definition) => definition.id === id)).join(", ")}`);
+-}
+-
+-for (const definition of selectedDefinitions) {
+-  const result = spawnSync("pnpm", [
+-    "exec", "tsx", "--tsconfig", "tsconfig.base.json", cli,
+-    "assets", "add", definition.file,
+-    "--name", definition.id,
+-    "--type", "model",
+-    "--license", definition.license ?? "CC-BY-4.0",
+-    ...(definition.licenseName ? ["--license-name", definition.licenseName] : []),
+-    "--license-url", definition.licenseUrl ?? "https://creativecommons.org/licenses/by/4.0/",
+-    "--source-page", definition.sourcePage,
+-    "--download-url", definition.downloadUrl,
+-    "--author", definition.author,
+-    ...(definition.sourceFamily ? ["--source-family", definition.sourceFamily] : []),
+-    ...(definition.attribution ? ["--attribution", definition.attribution] : []),
+-    ...(definition.provenanceEvidence ? ["--provenance-evidence", definition.provenanceEvidence] : []),
+-    "--retrieved-at", definition.retrievedAt,
+-    "--quality", forceQuality ?? definition.quality ?? "release",
+-    "--role", definition.role,
+-    "--suitability", definition.suitability,
+-    ...(!skipProbeEvidence && definition.renderedProbeJson && definition.orientationJson ? [
+-      "--rendered-probe-json", definition.renderedProbeJson,
+-      "--orientation-json", definition.orientationJson
+-    ] : definition.id === "gravityPostMailPod" ? [
+-      "--rendered-probe-json", "tests/reports/showcase-release-asset-probes/gravityPostMailPod.json",
+-      "--orientation-json", "tests/reports/showcase-release-asset-probes/gravityPostMailPod.orientation.json"
+-    ] : [])
+-  ], { cwd: repoRoot, encoding: "utf8", maxBuffer: 128 * 1024 * 1024 });
+-  let payload;
+-  try { payload = JSON.parse(result.stdout); } catch { payload = null; }
+-  if (payload?.ok !== true) {
+-    process.stderr.write(result.stderr || result.stdout);
+-    process.exit(result.status ?? 1);
+-  }
+-  console.log(`Registered ${definition.id}`);
+-}
+diff --git a/apps/showcase-gravity-post/scripts/register-sfx.mjs b/apps/showcase-gravity-post/scripts/register-sfx.mjs
+deleted file mode 100644
+index f18910304..000000000
+--- a/apps/showcase-gravity-post/scripts/register-sfx.mjs
++++ /dev/null
+@@ -1,46 +0,0 @@
+-import { spawnSync } from "node:child_process";
+-import { resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(fileURLToPath(new URL("..", import.meta.url)));
+-const repoRoot = resolve(appDir, "../..");
+-const cli = "packages/aura3d-cli/src/cli.ts";
+-const retrievedAt = "2026-08-23T20:00:00Z";
+-const definitions = [
+-  ["gravityPostLaunchWhooshSfx", "launchWhoosh.wav", "Launch cue driven by an accepted drag release."],
+-  ["gravityPostBurnLoopSfx", "burnLoop.wav", "Bounded correction impulse cue driven by the one-use correction token."],
+-  ["gravityPostDockLockSfx", "dockLock.wav", "Dock-lock cue driven by a real destination sensor capture."],
+-  ["gravityPostBounceOffSfx", "bounceOff.wav", "Too-fast rejection cue driven by destination capture-speed evaluation."],
+-  ["gravityPostPodLostSfx", "podLost.wav", "Hull-loss cue driven by collision, escape, stranded, or timeout state."],
+-  ["gravityPostContractClearSfx", "contractClear.wav", "Delivery-clear fanfare driven by one accepted dock event."],
+-  ["gravityPostAssistChimeSfx", "assistChime.wav", "Distinct-well assist cue driven by entry into an authored assist zone."],
+-  ["gravityPostWarpHumSfx", "warpHum.wav", "Bounded time-warp hum retriggered only while warp is active."],
+-  ["gravityPostUiConfirmSfx", "uiConfirm.wav", "Route-local confirmation cue for retry, next, and flyby transitions."],
+-  ["gravityPostAmbientSpaceSfx", "ambientSpace.wav", "Looped space ambience started through the gesture-unlocked audio mixer."]
+-];
+-
+-for (const [id, file, suitability] of definitions) {
+-  const source = `apps/showcase-gravity-post/assets/sfx/${file}`;
+-  const result = spawnSync("pnpm", [
+-    "exec", "tsx", "--tsconfig", "tsconfig.base.json", cli,
+-    "assets", "add", source,
+-    "--name", id,
+-    "--type", "audio",
+-    "--license", "CC0-1.0",
+-    "--license-url", "https://creativecommons.org/publicdomain/zero/1.0/",
+-    "--source-page", "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-gravity-post/scripts/build-sfx.mjs",
+-    "--download-url", `https://raw.githubusercontent.com/auraoneai/aura3d/main/${source}`,
+-    "--author", "Aura3D synthesis",
+-    "--retrieved-at", retrievedAt,
+-    "--quality", "candidate",
+-    "--role", "unknown",
+-    "--suitability", suitability
+-  ], { cwd: repoRoot, encoding: "utf8", maxBuffer: 128 * 1024 * 1024 });
+-  let payload;
+-  try { payload = JSON.parse(result.stdout); } catch { payload = null; }
+-  if (payload?.ok !== true) {
+-    process.stderr.write(result.stderr || result.stdout);
+-    process.exit(result.status ?? 1);
+-  }
+-  console.log(`Registered ${id}`);
+-}
+diff --git a/apps/showcase-gravity-post/scripts/verify-contracts.ts b/apps/showcase-gravity-post/scripts/verify-contracts.ts
+deleted file mode 100644
+index f9af0032d..000000000
+--- a/apps/showcase-gravity-post/scripts/verify-contracts.ts
++++ /dev/null
+@@ -1,150 +0,0 @@
+-/**
+- * Gravity Post — contract completability harness.
+- *
+- * Grid-searches launch vectors per contract against the authored integrator and
+- * reports every contract's best no-correction delivery (angle, power, arrival speed,
+- * flight time). Run: pnpm exec tsx apps/showcase-gravity-post/scripts/verify-contracts.ts
+- *
+- * This is the playability-over-realism tuning evidence for the PRD's exact
+- * four-delivery arc and its documented fuel/robustness margins.
+- */
+-import { CONTRACTS, WELL_BODIES, stationPosition, stationById } from "../src/contracts";
+-import { DOCK_SENSOR_RADIUS, PROPELLANT_CAPACITY } from "../src/pod";
+-import { FIXED_DT, stepPod } from "../src/wells";
+-
+-interface Result {
+-  readonly contractId: string;
+-  readonly ok: boolean;
+-  readonly dirX: number;
+-  readonly dirZ: number;
+-  readonly speed: number;
+-  readonly arrivalSpeed: number;
+-  readonly flightSeconds: number;
+-  readonly distanceToCore: number;
+-  readonly fuelMarginPercent: number;
+-  readonly robust?: number;
+-}
+-
+-const MAX_FLIGHT_SECONDS = 60;
+-
+-function simulateContract(contractIndex: number, dirX: number, dirZ: number, speed: number): Omit<Result, "contractId" | "ok" | "fuelMarginPercent"> | null {
+-  const contract = CONTRACTS[contractIndex]!;
+-  const origin = stationPosition(stationById(contract.originStationId));
+-  const destination = stationPosition(stationById(contract.destinationStationId));
+-  let px = origin[0];
+-  let pz = origin[1];
+-  let vx = dirX * speed;
+-  let vz = dirZ * speed;
+-  const maxSteps = Math.round(MAX_FLIGHT_SECONDS / FIXED_DT);
+-  for (let step = 0; step < maxSteps; step += 1) {
+-    // Gravity
+-    let ax = 0;
+-    let az = 0;
+-    for (const body of WELL_BODIES) {
+-      const dx = body.position[0] - px;
+-      const dz = body.position[1] - pz;
+-      const distance = Math.max(0.05, Math.hypot(dx, dz));
+-      if (distance >= body.wellRadius) continue;
+-      const magnitude = (body.mu * contract.tuning.strengthScale) * (1 / distance - 1 / body.wellRadius);
+-      ax += (dx / distance) * magnitude;
+-      az += (dz / distance) * magnitude;
+-    }
+-    vx += ax * FIXED_DT;
+-    vz += az * FIXED_DT;
+-    px += vx * FIXED_DT;
+-    pz += vz * FIXED_DT;
+-
+-    // Planet strike / escape fail.
+-    let dead = false;
+-    for (const body of WELL_BODIES) {
+-      if (Math.hypot(body.position[0] - px, body.position[1] - pz) <= body.visualRadius) dead = true;
+-    }
+-    if (Math.hypot(px, pz) >= 8.4) dead = true;
+-    if (dead) return null;
+-
+-    // Dock check inside the sensor sphere.
+-    const dockDistance = Math.hypot(destination[0] - px, destination[1] - pz);
+-    if (dockDistance <= DOCK_SENSOR_RADIUS) {
+-      const arrivalSpeed = Math.hypot(vx, vz);
+-      if (arrivalSpeed < contract.captureLimit) {
+-        return {
+-          dirX,
+-          dirZ,
+-          speed,
+-          arrivalSpeed,
+-          flightSeconds: step * FIXED_DT,
+-          distanceToCore: dockDistance
+-        };
+-      }
+-      return null;
+-    }
+-  }
+-  return null;
+-}
+-
+-const results: Result[] = [];
+-for (let index = 0; index < CONTRACTS.length; index += 1) {
+-  const contract = CONTRACTS[index]!;
+-  const origin = stationPosition(stationById(contract.originStationId));
+-  const destination = stationPosition(stationById(contract.destinationStationId));
+-  const directAngle = Math.atan2(destination[1] - origin[1], destination[0] - origin[0]);
+-  let best: Result | null = null;
+-  const angles = 96;
+-  const powers = 14;
+-  for (let a = 0; a < angles; a += 1) {
+-    const angle = directAngle + (a / (angles - 1) - 0.5) * 2.4;
+-    const dirX = Math.cos(angle);
+-    const dirZ = Math.sin(angle);
+-    for (let p = 1; p <= powers; p += 1) {
+-      const speed = 0.5 + (p / powers) * 2.2;
+-      const hit = simulateContract(index, dirX, dirZ, speed);
+-      if (!hit) continue;
+-      // Robustness: count neighbour launches that also dock (pixel-quantized
+-      // drags and human hands cannot hit a knife-edge vector).
+-      let robust = 0;
+-      const angleStep = 0.012;
+-      const baseAngle = Math.atan2(dirZ, dirX);
+-      for (const dAngle of [-angleStep, 0, angleStep]) {
+-        for (const dSpeed of [-0.05, 0, 0.05]) {
+-          const neighbourAngle = baseAngle + dAngle;
+-          const neighbourSpeed = Math.max(0.3, speed + dSpeed);
+-          if (simulateContract(index, Math.cos(neighbourAngle), Math.sin(neighbourAngle), neighbourSpeed)) robust += 1;
+-        }
+-      }
+-      const result: Result & { readonly robust: number } = {
+-        contractId: contract.id,
+-        ok: true,
+-        dirX: hit.dirX,
+-        dirZ: hit.dirZ,
+-        speed: hit.speed,
+-        arrivalSpeed: hit.arrivalSpeed,
+-        flightSeconds: hit.flightSeconds,
+-        distanceToCore: hit.distanceToCore,
+-        fuelMarginPercent: PROPELLANT_CAPACITY - contract.parFuel,
+-        robust
+-      };
+-      if (!best || result.robust > best.robust || (result.robust === best.robust && result.arrivalSpeed < best.arrivalSpeed)) best = result;
+-    }
+-  }
+-  if (best) results.push(best);
+-}
+-
+-console.log("Gravity Post contract completability sweep");
+-for (const result of results) {
+-  console.log(
+-    result.contractId +
+-      " OK dir=(" + result.dirX.toFixed(3) + ", " + result.dirZ.toFixed(3) + ")" +
+-      " launchSpeed=" + result.speed.toFixed(2) +
+-      " arrival=" + result.arrivalSpeed.toFixed(2) + " u/s" +
+-      " flight=" + result.flightSeconds.toFixed(1) + "s" +
+-      " robustness=" + (result.robust ?? 0) + "/9" +
+-      " fuelMargin=" + result.fuelMarginPercent + "%"
+-  );
+-}
+-const missing = CONTRACTS.filter((contract) => !results.some((result) => result.contractId === contract.id));
+-if (missing.length > 0) {
+-  console.log("INCOMPLETE:", missing.map((contract) => contract.id).join(", "));
+-  process.exitCode = 1;
+-} else {
+-  console.log("All " + CONTRACTS.length + " contracts completable without corrections.");
+-}
+diff --git a/apps/showcase-gravity-post/scripts/write-performance-report.ts b/apps/showcase-gravity-post/scripts/write-performance-report.ts
+deleted file mode 100644
+index 2ec6c8b2d..000000000
+--- a/apps/showcase-gravity-post/scripts/write-performance-report.ts
++++ /dev/null
+@@ -1,117 +0,0 @@
+-import { performance } from "node:perf_hooks";
+-import { readFileSync, writeFileSync } from "node:fs";
+-import { resolve } from "node:path";
+-import { CONTRACTS, WELL_BODIES, stationById, stationPosition } from "../src/contracts";
+-import {
+-  DOCK_SENSOR_RADIUS,
+-  createPodRuntime,
+-  evaluateCapture,
+-  launch,
+-  resetPodForContract,
+-  updateCoast
+-} from "../src/pod";
+-import { PREDICTION_MAX_STEPS } from "../src/prediction";
+-import { FIXED_DT, integratePath } from "../src/wells";
+-
+-const FIXED_STEP_P95_MS_BUDGET = 1;
+-const PREDICTION_P95_MS_BUDGET = 3;
+-const MAX_ROUTE_SECONDS = 48;
+-const DRAW_CALL_BUDGET = 600;
+-const fixtures = [
+-  { dx: -4, dz: -79, requiredAssists: [] as string[] },
+-  { dx: -4, dz: 60, requiredAssists: ["verdance"] },
+-  { dx: -4, dz: -40, requiredAssists: ["sol", "gale"] },
+-  { dx: 38, dz: -24, requiredAssists: [] as string[] }
+-] as const;
+-
+-function percentile95(samples: readonly number[]): number {
+-  const sorted = [...samples].sort((a, b) => a - b);
+-  return sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))] ?? 0;
+-}
+-
+-const routes = CONTRACTS.map((contract, index) => {
+-  const fixture = fixtures[index]!;
+-  const length = Math.hypot(fixture.dx, fixture.dz);
+-  const power = Math.min(1, length / 190);
+-  const speed = 0.18 + power * (2.85 - 0.18);
+-  const direction = [fixture.dx / length, fixture.dz / length] as const;
+-  const pod = createPodRuntime(contract.originStationId, contract.tuning.strengthScale);
+-  resetPodForContract(pod, contract);
+-  launch(pod, direction, speed);
+-  const destination = stationPosition(stationById(contract.destinationStationId));
+-  const stepMs: number[] = [];
+-  let capture = false;
+-  let elapsed = 0;
+-  while (elapsed < MAX_ROUTE_SECONDS && pod.state === "coasting") {
+-    const started = performance.now();
+-    updateCoast({ pod, contract, bodies: WELL_BODIES, dt: FIXED_DT, warpActive: false });
+-    stepMs.push(performance.now() - started);
+-    elapsed += FIXED_DT;
+-    if (Math.hypot(destination[0] - pod.kinematic.position[0], destination[1] - pod.kinematic.position[1]) > DOCK_SENSOR_RADIUS) continue;
+-    capture = evaluateCapture(pod, contract, contract.destinationStationId).docked;
+-  }
+-  const predictionMs: number[] = [];
+-  for (let iteration = 0; iteration < 50; iteration += 1) {
+-    const started = performance.now();
+-    integratePath({
+-      bodies: WELL_BODIES,
+-      tuning: contract.tuning,
+-      start: stationPosition(stationById(contract.originStationId)),
+-      velocity: [direction[0] * speed, direction[1] * speed],
+-      steps: PREDICTION_MAX_STEPS
+-    });
+-    predictionMs.push(performance.now() - started);
+-  }
+-  const assists = [...pod.assists];
+-  return {
+-    contractId: contract.id,
+-    capture,
+-    elapsedSeconds: Number(elapsed.toFixed(3)),
+-    arrivalSpeed: Number(Math.hypot(pod.kinematic.velocity[0], pod.kinematic.velocity[1]).toFixed(4)),
+-    assists,
+-    requiredAssists: fixture.requiredAssists,
+-    assistPass: fixture.requiredAssists.every((id) => assists.includes(id)),
+-    fixedStepMs: {
+-      samples: stepMs.length,
+-      p95: Number(percentile95(stepMs).toFixed(4)),
+-      max: Number(Math.max(...stepMs).toFixed(4))
+-    },
+-    predictionMs: {
+-      samples: predictionMs.length,
+-      p95: Number(percentile95(predictionMs).toFixed(4)),
+-      max: Number(Math.max(...predictionMs).toFixed(4))
+-    }
+-  };
+-});
+-
+-const observed = {
+-  maxFixedStepP95Ms: Math.max(...routes.map((route) => route.fixedStepMs.p95)),
+-  maxPredictionP95Ms: Math.max(...routes.map((route) => route.predictionMs.p95)),
+-  campaignCompleteDrawCalls: Number(JSON.parse(readFileSync(
+-    resolve(import.meta.dirname, "../../..", "tests/reports/gravity-post/full-campaign-evidence.json"),
+-    "utf8"
+-  )).final?.drawCalls ?? 0)
+-};
+-const report = {
+-  schema: "aura3d-gravity-post-performance/1.0",
+-  generatedAt: new Date().toISOString(),
+-  scope: "Headless route-local fixed-step and bounded-prediction timing over exact integer-drag fixtures. GPU/frame-time parity is not claimed.",
+-  budgets: {
+-    fixedStepP95Ms: FIXED_STEP_P95_MS_BUDGET,
+-    boundedPredictionP95Ms: PREDICTION_P95_MS_BUDGET,
+-    maximumRouteSeconds: MAX_ROUTE_SECONDS,
+-    campaignCompleteDrawCalls: DRAW_CALL_BUDGET
+-  },
+-  observed,
+-  routes,
+-  pass: routes.every((route) => route.capture && route.assistPass && route.elapsedSeconds <= MAX_ROUTE_SECONDS)
+-    && observed.maxFixedStepP95Ms <= FIXED_STEP_P95_MS_BUDGET
+-    && observed.maxPredictionP95Ms <= PREDICTION_P95_MS_BUDGET
+-    && observed.campaignCompleteDrawCalls > 0
+-    && observed.campaignCompleteDrawCalls <= DRAW_CALL_BUDGET
+-};
+-const output = resolve(import.meta.dirname, "..", "performance-report.json");
+-writeFileSync(output, JSON.stringify(report, null, 2) + "\n");
+-console.log(`Wrote ${output}`);
+-console.log(JSON.stringify({ pass: report.pass, observed, routes: routes.map(({ contractId, capture, assists }) => ({ contractId, capture, assists })) }));
+-if (!report.pass) process.exitCode = 1;
+diff --git a/apps/showcase-gravity-post/scripts/write-route-health.mjs b/apps/showcase-gravity-post/scripts/write-route-health.mjs
+deleted file mode 100644
+index b79c8e0c5..000000000
+--- a/apps/showcase-gravity-post/scripts/write-route-health.mjs
++++ /dev/null
+@@ -1,225 +0,0 @@
+-import { createHash } from "node:crypto";
+-import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+-import { dirname, join, relative, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const modelAssetIds = ["gravityPostCourierSkiff", "gravityPostDockBeacon"];
+-// Supporting world/traffic assets are still source-bound and probe-validated,
+-// but they are not route-primary gameplay subjects. Keep their orientation
+-// requirements explicit because the freight district is +X-forward while the
+-// catalog MailPod is +Z-forward.
+-const supportingModelAssetIds = ["gravityPostFreightDistrict", "gravityPostMailPod"];
+-const supportingOrientationAxes = {
+-  gravityPostFreightDistrict: "+X",
+-  gravityPostMailPod: "+Z"
+-};
+-const audioAssetIds = [
+-  "gravityPostLaunchWhooshSfx", "gravityPostBurnLoopSfx", "gravityPostDockLockSfx",
+-  "gravityPostBounceOffSfx", "gravityPostPodLostSfx", "gravityPostContractClearSfx",
+-  "gravityPostAssistChimeSfx", "gravityPostWarpHumSfx", "gravityPostUiConfirmSfx",
+-  "gravityPostAmbientSpaceSfx"
+-];
+-
+-const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
+-const sha256 = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
+-const walk = (path) => readdirSync(path).sort().flatMap((entry) => {
+-  const child = join(path, entry);
+-  return statSync(child).isDirectory() ? walk(child) : [child];
+-});
+-const sourceFiles = walk(join(appDir, "src")).filter((path) => /\.(?:ts|css)$/.test(path));
+-const sourceHash = (() => {
+-  const hash = createHash("sha256");
+-  for (const path of sourceFiles) hash.update(relative(join(appDir, "src"), path)).update("\0").update(readFileSync(path)).update("\0");
+-  return hash.digest("hex");
+-})();
+-const source = sourceFiles.map((path) => readFileSync(path, "utf8")).join("\n");
+-
+-const manifest = readJson(join(repoRoot, "aura.assets.json"));
+-const assetById = new Map((manifest.assets ?? []).map((entry) => [entry.id, entry]));
+-for (const id of [...modelAssetIds, ...supportingModelAssetIds, ...audioAssetIds]) {
+-  const asset = assetById.get(id);
+-  if (!asset?.hash || !asset?.url || !asset?.provenance?.license) throw new Error(`Missing current typed/provenanced asset ${id}`);
+-}
+-for (const id of supportingModelAssetIds) {
+-  const asset = assetById.get(id);
+-  if (!['candidate', 'release'].includes(asset.quality)) throw new Error(`${id} is not a current typed candidate or release asset`);
+-  if (!source.includes(`assets.${id}`)) throw new Error(`Live route does not use assets.${id}`);
+-  const probe = readJson(join(repoRoot, `tests/reports/showcase-release-asset-probes/${id}.json`));
+-  const orientation = readJson(join(repoRoot, `tests/reports/showcase-release-asset-probes/${id}.orientation.json`));
+-  if (probe.evidence?.pass !== true || probe.renderedProbe?.assetHash !== asset.hash || probe.renderedProbe?.sha256 !== `sha256-${sha256(join(repoRoot, probe.screenshotPath))}`) {
+-    throw new Error(`${id} isolated root release probe is missing, failing, or stale`);
+-  }
+-  if (orientation.orientation?.assetHash !== asset.hash || orientation.orientation?.forwardAxis !== supportingOrientationAxes[id] || orientation.orientation?.upAxis !== "+Y") {
+-    throw new Error(`${id} orientation evidence is missing, stale, or inconsistent with the authored route axis`);
+-  }
+-}
+-for (const id of modelAssetIds) {
+-  const asset = assetById.get(id);
+-  if (asset.quality !== "release") throw new Error(`${id} is not release-quality in the generated manifest`);
+-  if (!source.includes(`assets.${id}`)) throw new Error(`Live route does not use assets.${id}`);
+-}
+-for (const id of audioAssetIds) if (!source.includes(`"${id}"`)) throw new Error(`Live route does not reference typed audio ${id}`);
+-
+-const performance = readJson(join(appDir, "performance-report.json"));
+-if (performance.schema !== "aura3d-gravity-post-performance/1.0" || performance.pass !== true || performance.routes?.length !== 4) {
+-  throw new Error("Gravity Post performance report is missing or failing");
+-}
+-
+-const routeGates = readJson(join(repoRoot, "tools/showcase-library/route-gates.json"));
+-const routeGate = routeGates.routes?.find((entry) => entry.id === "showcase-gravity-post");
+-if (!routeGate || routeGate.releaseClass !== "prototype-blocked" || routeGate.published !== true) {
+-  throw new Error("Gravity Post route gate is missing its published prototype-blocked registration");
+-}
+-
+-function validateBrowserEvidence(file, schema) {
+-  const path = join(repoRoot, "tests/reports/gravity-post", file);
+-  const report = readJson(path);
+-  if (report.schema !== schema) throw new Error(`${file} schema is stale`);
+-  const producer = join(repoRoot, report.producer);
+-  if (report.producerSourceSha256 !== sha256(producer)) throw new Error(`${file} producer hash is stale`);
+-  if (report.routeSourceSha256 !== sourceHash) throw new Error(`${file} route source hash is stale`);
+-  const artifacts = report.artifacts ?? [report.artifact];
+-  for (const artifact of artifacts) {
+-    if (!artifact?.path || artifact.sha256 !== sha256(join(repoRoot, artifact.path))) throw new Error(`${file} artifact hash is stale`);
+-  }
+-  return report;
+-}
+-
+-const campaign = validateBrowserEvidence("full-campaign-evidence.json", "aura3d-gravity-post-full-campaign/1.0");
+-const mobile = validateBrowserEvidence("mobile-evidence.json", "aura3d-gravity-post-mobile/1.0");
+-const reduced = validateBrowserEvidence("reduced-motion-evidence.json", "aura3d-gravity-post-reduced-motion/1.0");
+-const failure = validateBrowserEvidence("failure-evidence.json", "aura3d-gravity-post-failure/1.0");
+-if (campaign.final?.campaignComplete !== true || campaign.final?.completedContracts !== 4 || campaign.final?.failedContracts !== 0) {
+-  throw new Error("Full-campaign browser evidence does not prove four clean deliveries");
+-}
+-if (mobile.delivered?.completedContracts !== 1 || mobile.touchPointerDriven !== true) throw new Error("Mobile evidence is not a real touch delivery");
+-if (reduced.planning?.reducedMotion !== true || reduced.planning?.predictionSteps <= 0) throw new Error("Reduced-motion evidence lost planning truth");
+-if (failure.actualPlanetStrikeDriven !== true || failure.shifted?.failedContracts !== 3 || failure.shifted?.shiftOver !== true) {
+-  throw new Error("Failure evidence does not prove three actual collision-owned hull losses");
+-}
+-
+-const primitiveOccurrences = Array.from(source.matchAll(/\bprimitives\.[A-Za-z_$][\w$]*/g)).length;
+-if (primitiveOccurrences > routeGate.primitiveBudget) throw new Error("Gravity Post primitive source budget exceeded");
+-
+-const routeHealth = {
+-  schema: "aura3d-route-health/1.0",
+-  generatedAt: new Date().toISOString(),
+-  appId: "showcase-gravity-post",
+-  route: "/apps/showcase-gravity-post/",
+-  classification: "prototype-blocked",
+-  publicShowcase: false,
+-  promotionStatus: "hold-public-showcase-until-independent-human-visual-review",
+-  machinePass: true,
+-  renderer: {
+-    path: "createAuraApp root safe API",
+-    mode: "safe-basic",
+-    nativeWebGPU: false,
+-    productionRuntime: false
+-  },
+-  primaryAssets: modelAssetIds.map((id) => ({
+-    typedRef: `assets.${id}`,
+-    role: id === "gravityPostCourierSkiff" ? "primary-vehicle" : "dock-landmark-prop",
+-    status: "release-validated-typed-primary-asset",
+-    quality: assetById.get(id).quality,
+-    hash: assetById.get(id).hash,
+-    license: assetById.get(id).provenance.license,
+-    author: assetById.get(id).provenance.author
+-  })),
+-  supportingAssets: supportingModelAssetIds.map((id) => ({
+-    typedRef: `assets.${id}`,
+-    role: id === "gravityPostMailPod" ? "non-colliding-terminal-transit" : "non-colliding-freight-world",
+-    status: assetById.get(id).quality === "release"
+-      ? "release-validated-typed-supporting-world"
+-      : "candidate-with-current-isolated-root-probe-pending-one-id-promotion",
+-    quality: assetById.get(id).quality,
+-    hash: assetById.get(id).hash,
+-    license: assetById.get(id).provenance.license,
+-    author: assetById.get(id).provenance.author,
+-    renderedProbe: `tests/reports/showcase-release-asset-probes/${id}.json`,
+-    orientation: `tests/reports/showcase-release-asset-probes/${id}.orientation.json`
+-  })),
+-  audioAssets: audioAssetIds.map((id) => ({
+-    typedRef: `assets.${id}`,
+-    quality: assetById.get(id).quality,
+-    hash: assetById.get(id).hash,
+-    license: assetById.get(id).provenance.license,
+-    author: assetById.get(id).provenance.author
+-  })),
+-  primitiveStatus: {
+-    sourceOccurrences: primitiveOccurrences,
+-    primitiveBudget: routeGate.primitiveBudget,
+-    role: "authored planets, well/capture guides, prediction beads, dock sparks, and flyby presentation around typed pod/beacons plus typed non-colliding freight world/transit",
+-    status: "within-stated-role-and-budget"
+-  },
+-  physics: {
+-    sensors: "six static dock sensors; capture truth originates from app.physics.onTriggerEnter",
+-    pod: "kinematic physics mirror of the route-local fixed-step authored integrator",
+-    claim: "sensor ownership only; authored arcade gravity is explicitly non-physical"
+-  },
+-  gameplay: {
+-    deliveries: 4,
+-    arc: ["direct", "single-assist", "chained-assist", "hazard-avoidance"],
+-    correction: "zero tokens on the teaching route, exactly one bounded prograde/retrograde token on routes 2-4",
+-    timeout: "per-contract real-time limit consumes one of three hulls",
+-    predictionTolerance: 0.02,
+-    campaignEvidence: "tests/reports/gravity-post/full-campaign-evidence.json"
+-  },
+-  performance,
+-  routeGate: {
+-    config: "tools/showcase-library/route-gates.json",
+-    releaseClass: routeGate.releaseClass,
+-    published: routeGate.published,
+-    publicTemplateReady: routeGate.gameTemplateStatus.publicTemplateReady,
+-    pass: true
+-  },
+-  claimStatus: {
+-    status: "blocked-pending-human-review",
+-    label: "prototype",
+-    allowed: [
+-      "four-delivery authored arcade-gravity courier prototype",
+-      "fixed-step live/prediction integration with published 0.02 positional tolerance",
+-      "real root-safe dock sensor entry with route-local capture-speed evaluation",
+-      "typed registered pod, beacon, original CC0 freight district, release CC-BY transit MailPod, and ten deterministic synthesized audio cues"
+-    ],
+-    notAllowed: [
+-      "orbital mechanics, n-body, or physical simulation claims",
+-      "production renderer, HDR/IBL, WebGPU, or physics-parity claims",
+-      "public promotion before independent exact-artifact review"
+-    ]
+-  },
+-  blockers: [
+-    "independent human visual review pending for exact final artifacts",
+-    ...(assetById.get("gravityPostFreightDistrict").quality === "release" ? [] : ["one-ID freight-district manifest promotion pending after current isolated release probe"])
+-  ],
+-  evidence: {
+-    global: "window.__AURA3D_SHOWCASE_GRAVITY_POST__",
+-    sourceReview: "apps/showcase-gravity-post/src/main.ts",
+-    detailedGameplayGlobal: "window.__GRAVITY_POST_EVIDENCE__",
+-    campaign: "tests/reports/gravity-post/full-campaign-evidence.json",
+-    mobile: "tests/reports/gravity-post/mobile-evidence.json",
+-    reducedMotion: "tests/reports/gravity-post/reduced-motion-evidence.json",
+-    collisionFailure: "tests/reports/gravity-post/failure-evidence.json",
+-    performance: "apps/showcase-gravity-post/performance-report.json",
+-    freightDistrictProbe: "tests/reports/showcase-release-asset-probes/gravityPostFreightDistrict.json",
+-    freightDistrictOrientation: "tests/reports/showcase-release-asset-probes/gravityPostFreightDistrict.orientation.json",
+-    mailPodProbe: "tests/reports/showcase-release-asset-probes/gravityPostMailPod.json",
+-    mailPodOrientation: "tests/reports/showcase-release-asset-probes/gravityPostMailPod.orientation.json",
+-    unitSpecs: [
+-      "tests/unit/apps/gravity-post-wells.test.ts",
+-      "tests/unit/apps/gravity-post-scoring.test.ts",
+-      "tests/unit/apps/gravity-post-flyby.test.ts"
+-    ],
+-    browserSpecs: [
+-      "tests/browser/gravity-post-playable.spec.ts",
+-      "tests/browser/gravity-post-scene.spec.ts"
+-    ],
+-    deployCommand: "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-gravity-post/dist --source apps/showcase-gravity-post/src --asset gravityPostCourierSkiff --asset gravityPostDockBeacon --asset gravityPostFreightDistrict --asset gravityPostMailPod",
+-    releaseDeployCommandAfterPromotion: "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-gravity-post/dist --release --source apps/showcase-gravity-post/src --asset gravityPostCourierSkiff --asset gravityPostDockBeacon --asset gravityPostFreightDistrict --asset gravityPostMailPod"
+-  }
+-};
+-
+-writeFileSync(join(appDir, "route-health.json"), JSON.stringify(routeHealth, null, 2) + "\n");
+-console.log("Wrote apps/showcase-gravity-post/route-health.json");
+-console.log(JSON.stringify({ machinePass: true, primitiveOccurrences, performancePass: performance.pass }));
+diff --git a/apps/showcase-gravity-post/src/legacy/main.ts b/apps/showcase-gravity-post/src/legacy/main.ts
+index b5308393a..da666bcc9 100644
+--- a/apps/showcase-gravity-post/src/legacy/main.ts
++++ b/apps/showcase-gravity-post/src/legacy/main.ts
+@@ -1,15 +1,3 @@
+-/**
+- * Gravity Post — route assembly.
+- *
+- * One mounted Aura app. The solar system scene kit supplies the presentational
+- * backdrop (static sun family, starfield, dust); the playable system is authored
+- * route-local arcade gravity around six wells (sun + five planets), explicitly
+- * NON-PHYSICAL design values. Delivery triggers are real physics sensor bodies:
+- * the pod is a kinematic body driven by the authored integrator, and captures
+- * fire through app.physics.onTriggerEnter.
+- *
+- * Label: prototype. Authored arcade gravity, non-physical.
+- */
+ import {
+   createAuraApp,
+   createCollisionLayers,
+@@ -52,10 +40,6 @@ import { createGravityPostAudio, type GravityPostAudio } from "./post-audio";
+ import { createRustGaleFreightway } from "../gameplay/freightway";
+ import { FIXED_DT, dockPointHash, integratePath, type TrajectorySample } from "../gameplay/wells";
+ import "./styles.css";
+-
+-// ---------------------------------------------------------------------------
+-// Route-local design constants (documented, tuned for readability)
+-// ---------------------------------------------------------------------------
+ const MAX_LAUNCH_SPEED = 2.85;
+ const MIN_LAUNCH_POWER = 0.18;
+ const AIM_DRAG_PIXEL_RANGE = 190;
+@@ -68,66 +52,19 @@ const TRAIL_STREAK_COUNT = 7;
+ const CONTACT_WAKE_COUNT = 6;
+ const REVIEW_COURIER_PROGRESS = 0.54;
+ const REVIEW_COURIER_LATERAL = 0.35;
+-// The public route keeps the full orbital board readable for planning. The
+-// named visual-review capture is an evidence-only close courier composition:
+-// it keeps the live typed pod, destination hardware, and flown path large
+-// enough to judge at the same scale as an action reference without changing
+-// gameplay coordinates or the public camera.
+ const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
+-document.body.dataset.capture = visualReviewCapture ? "review" : "default";
+-// The board is a wide solar-system composition; the catalog pod needs enough
+-// screen coverage to remain legible while it is in flight, not only at a dock.
+-// The source skiff is authored at a broad truck-like span.  At the close
+-// review lens its former 0.78 scale put the Rust-endpoint delivery outside the
+-// near-plane and made the exact chained artifact a clipped lower-left sliver.
+-// Keep the typed vehicle substantial enough to read as the hero courier in an
+-// action frame, while leaving the roadway, route history, and Gale gate
+-// visible around it.  The review lens is intentionally larger than the public
+-// planning-board pod; this is a presentation scale only and never changes the
+-// authored sensor radius or flight integrator.
+-// The courier is the action subject in the named review lens. Keep it
+-// materially larger than the shoulder architecture so its canopy, four
+-// contact drives, and guarded parcel read before the destination scenery.
+-// The review scale is intentionally just under 1x: it gives the skiff a clear
+-// silhouette while leaving the typed terminal shuttle, route lane, and Gale
+-// gate in the same honest frame. This is presentation scale only; authored
+-// flight/sensor coordinates are unchanged.
+ const POD_VISUAL_SCALE = visualReviewCapture ? 0.94 : 1.7;
+-
+-// The parcel prop is a real typed GLB, but its release probe is nearly as tall
+-// as it is wide. Keep the review carton compact and seat it on the courier's
+-// rear cradle so the package reads as cargo instead of a floating foreground
+-// block. The public planning board keeps the larger teaching-scale carton.
+ const courierParcelLift = visualReviewCapture ? 0.24 : 0.61;
+ const courierParcelMaxDimensionBase = visualReviewCapture ? 0.25 : 0.42;
+-// A registered, static courier operator gives the skiff a human-scale job
+-// read at the same distance as the parcel and landing pods. This is a
+-// presentation attachment only: it has no body, controller, animation, or
+-// gameplay ownership. The asset is already release-probed and typed in the
+-// shared catalog; mounting it here does not alter the route manifest.
+ const courierOperatorTargetHeight = visualReviewCapture ? 0.68 : 0.54;
+-// The review camera approaches Rust from behind the route. A slight aft seat
+-// offset keeps the operator's feet visibly grounded in the canopy instead of
+-// projecting them into the Gale gate silhouette.
+ const courierOperatorSeatOffset = visualReviewCapture ? -0.08 : -0.06;
+-// Lower the feet into the canopy's actual seat line. The skiff hides the
+-// straight mannequin legs at the waist, leaving a connected upper-body read
+-// instead of a freestanding statue behind the destination gate.
+ const courierOperatorSeatHeight = visualReviewCapture ? 0.12 : 0.34;
+-// Parcel Corps communicates the job through the courier's body and the handoff
+-// payload, not only through a vehicle silhouette. Reuse the same hash-bound
+-// parcel GLB for one small renderer-owned handoff carton at the operator's
+-// lead hand. It follows the displayed route frame below; it has no collider,
+-// sensor, score, inventory, or integrator ownership.
+ const courierHandoffParcelTargetDimension = visualReviewCapture ? 0.17 : 0.12;
+ const courierHandoffParcelLateralOffset = visualReviewCapture ? -0.2 : -0.16;
+ const courierHandoffParcelForwardOffset = visualReviewCapture ? 0.035 : 0.025;
+ const courierHandoffParcelHeight = visualReviewCapture
+   ? courierOperatorSeatHeight + courierOperatorTargetHeight * 0.57
+   : courierOperatorSeatHeight + courierOperatorTargetHeight * 0.55;
+-
+-// NASA/VTAD textured planet assets furnish the fictional wells' visual bodies.
+-// These are visual analogues, not assertions of real solar-system dynamics.
+ const WELL_PLANET_ASSETS = {
+   cinder: assets.gravityPlanetMercury,
+   verdance: assets.gravityPlanetEarth,
+@@ -135,7 +72,6 @@ const WELL_PLANET_ASSETS = {
+   rust: assets.gravityPlanetMars,
+   gale: assets.gravityPlanetJupiter
+ } as const;
+-
+ const BODY_EMISSIVE: Readonly<Record<string, string>> = {
+   sol: "#fb923c",
+   cinder: "#f97316",
+@@ -144,7 +80,6 @@ const BODY_EMISSIVE: Readonly<Record<string, string>> = {
+   rust: "#e11d48",
+   gale: "#8b5cf6"
+ };
+-
+ const BODY_MOONS: Readonly<Record<string, readonly (readonly [number, number, number])[]>> = {
+   cinder: [[0.18, 0.08, 0.12]],
+   verdance: [[-0.22, 0.04, 0.1], [0.14, 0.03, -0.18]],
+@@ -152,11 +87,6 @@ const BODY_MOONS: Readonly<Record<string, readonly (readonly [number, number, nu
+   rust: [[-0.2, 0.04, -0.1]],
+   gale: [[0.34, 0.08, 0.16], [-0.3, 0.04, -0.2]]
+ };
+-
+-// A deterministic, renderer-owned dust field keeps the solar board from
+-// reading as an empty flat card at the close review lens. These are visual
+-// motes only: they never participate in the authored gravity integrator,
+-// sensor bodies, scoring, or route evidence state.
+ const ORBITAL_DUST: readonly (readonly [number, number, number, number])[] =
+   Array.from({ length: ORBITAL_DUST_COUNT }, (_, index) => {
+     const angle = index * 2.399963229728653;
+@@ -167,7 +97,6 @@ const ORBITAL_DUST: readonly (readonly [number, number, number, number])[] =
+     const scale = 0.018 + (index % 4) * 0.009;
+     return [x, y, z, scale] as const;
+   });
+-
+ const CONTROLS = [
+   "drag: aim + power (live prediction line)",
+   "W/S: spend one bounded prograde/retrograde correction token",
+@@ -176,101 +105,9 @@ const CONTROLS = [
+   "R: retry contract",
+   "P: pause"
+ ] as const;
+-
+ const CLAIM_BOUNDARY =
+   "Prototype. Authored arcade gravity, non-physical: inverse-distance route-local design values, " +
+   "no orbital mechanics, n-body, or physics-parity claims. Solar kit nodes are presentational dressing.";
+-
+-// ---------------------------------------------------------------------------
+-// Evidence contract
+-// ---------------------------------------------------------------------------
+-interface GravityPostEvidence {
+-  readonly schema: "aura3d-showcase-gravity-post/1.0";
+-  readonly mounted: boolean;
+-  /** True once the WebGL production renderer has settled its mount; step() renders nothing before this. */
+-  readonly rendererMounted: boolean;
+-  readonly appId: "showcase-gravity-post";
+-  readonly status: "ready";
+-  readonly claimLabel: "prototype";
+-  readonly frame: number;
+-  readonly drawCalls: number;
+-  readonly contractIndex: number;
+-  readonly contractId: string;
+-  readonly propellant: number;
+-  readonly podPosition: readonly [number, number];
+-  readonly podSpeed: number;
+-  readonly podState: string;
+-  readonly assists: readonly string[];
+-  readonly predictionSteps: number;
+-  readonly predictionComparedSamples: number;
+-  readonly predictionMaxDivergence: number;
+-  readonly predictionTolerance: number;
+-  readonly predictionWithinTolerance: boolean;
+-  readonly actualPathPoints: number;
+-  readonly correctionTokensRemaining: number;
+-  readonly correctionsUsed: number;
+-  readonly flightSeconds: number;
+-  readonly dockEventCount: number;
+-  readonly dockEvents: readonly string[];
+-  readonly failedContracts: number;
+-  readonly lastFailReason: string | null;
+-  readonly completedContracts: number;
+-  readonly score: number;
+-  readonly shiftOver: boolean;
+-  readonly campaignComplete: boolean;
+-  readonly paused: boolean;
+-  readonly warping: boolean;
+-  readonly aiming: boolean;
+-  readonly adriftSeconds: number;
+-  readonly flybyBeatsRun: number;
+-  readonly flybyActive: boolean;
+-  readonly visitedFlybys: readonly string[];
+-  readonly reducedMotion: boolean;
+-  readonly audioCues: readonly string[];
+-  readonly audioProof: {
+-    readonly cueCount: number;
+-    readonly busCount: number;
+-    readonly unlocked: boolean;
+-    readonly playedCueCount: number;
+-  };
+-  readonly primaryAssets: readonly string[];
+-  readonly typedAssets: readonly {
+-    readonly id: string;
+-    readonly typedRef: string;
+-    readonly role: string;
+-  }[];
+-  readonly systems: readonly string[];
+-  readonly controls: readonly string[];
+-  readonly physics: string;
+-  readonly claimBoundary: string;
+-  readonly lastDockHash: number | null;
+-}
+-
+-declare global {
+-  interface Window {
+-    __GRAVITY_POST_EVIDENCE__?: GravityPostEvidence;
+-    __AURA3D_SHOWCASE_GRAVITY_POST__?: GravityPostEvidence;
+-    __AURA3D_COMPOSITION_PROBE__?: {
+-      readonly category: "application";
+-      readonly subject: {
+-        readonly position: readonly [number, number, number];
+-        readonly rotation: readonly [number, number, number];
+-        readonly targetSize: number;
+-      };
+-      setSubjectSuppressed(suppressed: boolean): Promise<void>;
+-      settleSubjectPose(): Promise<void>;
+-    };
+-    /** Deterministic test hook: manually advance the mounted app by dt seconds. */
+-    __GRAVITY_POST_STEP__?: (dtSeconds: number) => void;
+-    /** Deterministic test hook: advance gameplay without rendering. */
+-    __GRAVITY_POST_SIM_STEP__?: (dtSeconds: number) => void;
+-    /** Deterministic test hook: render one frame and read back the canvas atomically. */
+-    __GRAVITY_POST_CAPTURE__?: () => string;
+-    /** Deterministic test hook: current evidence snapshot. */
+-    __GRAVITY_POST_EVIDENCE_SNAPSHOT__?: () => GravityPostEvidence | undefined;
+-  }
+-}
+-
+ function solarKitBackdrop(): readonly AuraSceneNode[] {
+   // The kit's animated planets jump at their 18-second loop wrap, so gameplay
+   // cannot anchor to them: keep the static sun family, starfield, dust, light,
+@@ -284,7 +121,6 @@ function solarKitBackdrop(): readonly AuraSceneNode[] {
+     return /(star|dust|sun|corona|glow)/i.test(name);
+   });
+ }
+-
+ const stations = buildStations();
+ const reviewRustStation = stations.find((station) => station.id === "rust-exchange")!;
+ const reviewGaleStation = stations.find((station) => station.id === "gale-terminal")!;
+@@ -293,7 +129,6 @@ const reviewRouteDz = reviewGaleStation.z - reviewRustStation.z;
+ const reviewRouteLength = Math.hypot(reviewRouteDx, reviewRouteDz);
+ const reviewRoutePerpX = -reviewRouteDz / reviewRouteLength;
+ const reviewRoutePerpZ = reviewRouteDx / reviewRouteLength;
+-
+ let sceneBuilder = scene()
+   // The review corridor uses a lifted blue-hour sky so the courier's navy
+   // hull, amber parcel, and cyan hardware separate from the freightway rather
+@@ -302,26 +137,11 @@ let sceneBuilder = scene()
+   // and the aim line read in a default screenshot instead of a dark void.
+   .background(visualReviewCapture ? "#28546a" : "#0e3346")
+   .addMany(solarKitBackdrop());
+-
+ const orbitalDustMaterials = [
+   material.emissive({ name: "orbital dust cyan", color: "#67e8f9", emissive: "#22d3ee", emissiveIntensity: 0.72, opacity: 0.78 }),
+   material.emissive({ name: "orbital dust violet", color: "#c4b5fd", emissive: "#8b5cf6", emissiveIntensity: 0.62, opacity: 0.72 }),
+   material.emissive({ name: "orbital dust amber", color: "#fde68a", emissive: "#f59e0b", emissiveIntensity: 0.64, opacity: 0.76 })
+ ] as const;
+-
+-sceneBuilder = sceneBuilder.addMany(ORBITAL_DUST.map(([x, y, z, scale], index) =>
+-  primitives.sphere({
+-    name: "gravity post orbital dust " + (index + 1),
+-    material: orbitalDustMaterials[index % orbitalDustMaterials.length]!
+-  })
+-    .position(x, y, z)
+-    .scale(visualReviewCapture ? 0.001 : scale)
+-    .runtime(game.runtimeNode("gravity-post-orbital-dust-" + index, {
+-      tags: ["renderer-owned", "set-dressing", "non-colliding"]
+-    }))
+-));
+-
+-// Orbital faint ellipse guide rings around Sol
+ for (const body of WELL_BODIES) {
+   if (body.id === "sol") continue;
+   if (visualReviewCapture) continue;
+@@ -333,8 +153,6 @@ for (const body of WELL_BODIES) {
+     }).position(0, PLAY_PLANE_Y - 0.01, 0).rotate(1.5708, 0, 0).scale([dist * 1.92, dist * 1.92, 0.002])
+   );
+ }
+-
+-// Authored well bodies at static positions — the game board.
+ for (const body of WELL_BODIES) {
+   if (body.id === "sol") continue; // sun family comes from the kit backdrop
+   // The review frame is the constructed Rust -> Gale delivery corridor. The
+@@ -427,7 +245,6 @@ for (const body of WELL_BODIES) {
+     );
+   }
+ }
+-
+ for (const body of WELL_BODIES) {
+   if (visualReviewCapture) continue;
+   sceneBuilder = sceneBuilder.add(
+@@ -443,8 +260,6 @@ for (const body of WELL_BODIES) {
+     }).position(body.position[0], PLAY_PLANE_Y + 0.012, body.position[1]).rotate(1.5708, 0, 0).scale([body.visualRadius * 3.2, body.visualRadius * 3.2, 0.005])
+   );
+ }
+-
+-// Stations: typed GLB beacon props + pulsing capture-window rings.
+ for (const station of stations) {
+   const reviewStationRelevant = station.id === "gale-terminal";
+   // A tiny scale still submits every GLB primitive. Omit off-camera station
+@@ -513,12 +328,6 @@ for (const station of stations) {
+         .runtime(game.runtimeNode(station.pulseNodeId))
+   );
+ }
+-
+-// The final contract terminates at Gale Terminal. Build one renderer-owned
+-// freight corridor on the real Rust -> Gale route so the review frame reads as
+-// a courier journey through constructed space, rather than a pod and a few
+-// disconnected orbital props. None of these nodes carry colliders or alter the
+-// dock sensor owned by stations.ts.
+ const galeTerminal = stations.find((station) => station.id === "gale-terminal")!;
+ const rustExchange = stations.find((station) => station.id === "rust-exchange")!;
+ const terminalDeck = material.pbr({
+@@ -556,11 +365,6 @@ const courierContactShadow = material.pbr({
+   metallic: 0.02,
+   opacity: 0.74
+ });
+-// Small renderer-owned courier fittings reinforce the typed skiff's postal
+-// identity at action distance. They are attached to the GLB in
+-// `syncPodVisual`; the GLB remains the primary vehicle and owns the actual
+-// chassis/cargo silhouette. These fittings only provide readable livery,
+-// running lights, and deck contact feedback in the review frame.
+ const courierIdentityCyan = material.emissive({
+   name: "Courier postal cyan livery",
+   color: "#0b4355",
+@@ -610,20 +414,9 @@ const routeUnitX = routeDx / routeLength;
+ const routeUnitZ = routeDz / routeLength;
+ const routePerpX = -routeUnitZ;
+ const routePerpZ = routeUnitX;
+-// The catalog's release-validated MailPod is a detailed CC-BY transit craft,
+-// distinct from the route-owned skiff.  In the review lens it serves as one
+-// stationary terminal shuttle on the same Rust -> Gale vector: a grounded
+-// scale reference and a second silhouette that makes Gale read as an active
+-// freight destination.  It is set dressing only; the live pod, sensors, and
+-// score remain bound to `gravityPostCourierSkiff` and route-local state.
+-// Keep the supporting transit shuttle at the Gale-side apron, behind and
+-// outside the live lane. It remains a typed destination cue, but no longer
+-// competes with the parcel-bearing courier for foreground silhouette.
+ const reviewMailPodProgress = 0.95;
+ const reviewMailPodLateral = 1.52;
+ const reviewMailPodYaw = Math.atan2(routeUnitX, routeUnitZ);
+-// Boxes use local X as their long axis, so this yaw aligns them to the live
+-// origin/destination vector instead of a screen-authored arbitrary angle.
+ const approachYaw = -Math.atan2(routeDz, routeDx);
+ const acrossRouteYaw = approachYaw + Math.PI / 2;
+ const corridorPoint = (progress: number, lateral = 0): readonly [number, number] => [
+@@ -696,80 +489,6 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
+     );
+   }
+ }
+-
+-// Meshy candidate freight canyon (gravityPostMeshyFreight, quality: candidate).
+-// Review-composition only: one small grounded sidecar on the opposite shoulder
+-// from the CC0 district so the capture shows the candidate's material break at
+-// action distance. Non-colliding set dressing; gameplay, sensors, scoring, and
+-// the default planning board are untouched. Candidate decimated to 250k tris
+-// (from 5.62M); it stays review-only under the candidate-quality gate, so it
+-// stays out of the default route.
+-if (visualReviewCapture) {
+-  const [meshyX, meshyZ] = corridorPoint(0.62, 1.9);
+-  sceneBuilder = sceneBuilder.add(
+-    model(assets.gravityPostMeshyFreight, {
+-      name: "Gravity Post Meshy freight canyon candidate",
+-      role: "setDressing",
+-      scaleMode: "fit",
+-      targetMaxDimension: 1.4
+-    })
+-      .position(meshyX, PLAY_PLANE_Y + 0.1, meshyZ)
+-      .rotate(0, approachYaw, 0)
+-      .runtime(game.runtimeNode("gravity-post-meshy-freight-canyon", {
+-        tags: ["typed-asset", "freight-world", "meshy-candidate", "review-set-dressing", "non-colliding"]
+-      }))
+-  );
+-}
+-
+-// An existing release-validated catalog craft supplies one non-primitive
+-// destination-scale cue that the synthesized skiff cannot provide alone. The
+-// MailPod is mounted only in the named review composition beside Gale's apron;
+-// its +Z-forward orientation is aligned to the real Rust -> Gale vector and
+-// its grounded placement is derived from the same corridor points. During the
+-// frozen review pose it stays on the outer Gale apron with one typed carton on
+-// its aft rack, providing logistics depth without competing with the live
+-// courier. No second physics body, route state, collision region, or camera
+-// adjustment is added.
+-if (visualReviewCapture) {
+-  const [mailPodX, mailPodZ] = corridorPoint(reviewMailPodProgress, reviewMailPodLateral);
+-  sceneBuilder = sceneBuilder.add(
+-    model(assets.gravityPostMailPod, {
+-      name: "Gale Terminal inbound typed MailPod shuttle",
+-      role: "setDressing",
+-      scaleMode: "fit",
+-      targetMaxDimension: 0.76
+-    })
+-      // The release probe records minY=-0.215 at the neutral origin. Seat that
+-      // bound on the shared play plane while keeping the hull above the
+-      // approach apron; this is a world-space placement, not a HUD prop.
+-      .position(mailPodX, PLAY_PLANE_Y + 0.095, mailPodZ)
+-      .rotate(0, reviewMailPodYaw, 0)
+-      .runtime(game.runtimeNode("gale-terminal-inbound-mailpod", {
+-        tags: ["typed-asset", "freight-transit", "renderer-owned", "non-colliding"]
+-      }))
+-  );
+-  // One small, hash-bound carton rides the support shuttle's aft rack. This
+-  // makes the relationship between the two typed transit assets legible at a
+-  // glance while keeping the primary courier's larger parcel unoccluded.
+-  sceneBuilder = sceneBuilder.add(
+-    model(assets.courierParcel, {
+-      name: "Gale Terminal shuttle parcel",
+-      role: "setDressing",
+-      scaleMode: "fit",
+-      targetMaxDimension: 0.18
+-    })
+-      .position(
+-        mailPodX - routeUnitX * 0.22,
+-        PLAY_PLANE_Y + 0.34,
+-        mailPodZ - routeUnitZ * 0.22
+-      )
+-      .rotate(0, reviewMailPodYaw, 0)
+-      .runtime(game.runtimeNode("gale-terminal-shuttle-parcel", {
+-        tags: ["typed-asset", "freight-cargo", "renderer-owned", "non-colliding"]
+-      }))
+-  );
+-}
+-
+ const terminalRunwayPanels = Array.from({ length: 7 }, (_, index) => {
+   const progress = index / 6;
+   const [x, z] = corridorPoint(0.69 + progress * 0.27);
+@@ -784,89 +503,7 @@ const terminalRunwayPanels = Array.from({ length: 7 }, (_, index) => {
+ const terminalDeckCenter = corridorPoint(0.835);
+ const terminalDockCenter = corridorPoint(0.975);
+ const terminalDeckLength = routeLength * 0.34;
+-if (visualReviewCapture) {
+-  sceneBuilder = sceneBuilder.addMany([
+-    ...createRustGaleFreightway({
+-      origin: [rustExchange.x, rustExchange.z],
+-      destination: [galeTerminal.x, galeTerminal.z],
+-      playPlaneY: PLAY_PLANE_Y
+-    }),
+-    ...terminalRunwayPanels
+-  ]);
+-}
+-if (!visualReviewCapture) sceneBuilder = sceneBuilder.addMany([
+-  // The former 110 MB orbital-dock audition is intentionally not mounted.
+-  // It was rejected as a heavy, high-submesh ring and made the normal planning
+-  // board spend tens of seconds decoding a redundant destination prop. The
+-  // release-validated typed beacon + gate above, together with this authored
+-  // terminal deck, keep Gale readable while preserving the same destination
+-  // identity and sensor coordinates without loading the rejected asset.
+-  primitives.box({
+-    name: "Gale Terminal armored approach deck",
+-    size: [terminalDeckLength, 0.1, 1.56],
+-    material: terminalDeck
+-  }).position(terminalDeckCenter[0], PLAY_PLANE_Y - 0.07, terminalDeckCenter[1]).rotate(0, approachYaw, 0),
+-  ...([-1, 1] as const).map((side) => {
+-    const [x, z] = corridorPoint(0.835, side * 0.77);
+-    return primitives.box({
+-      name: `Gale Terminal continuous deck curb ${side}`,
+-      size: [terminalDeckLength, 0.1, 0.075],
+-      material: side < 0 ? terminalSignal : terminalHazard
+-    }).position(x, PLAY_PLANE_Y - 0.005, z).rotate(0, approachYaw, 0);
+-  }),
+-  ...terminalRunwayPanels,
+-  primitives.cylinder({ name: "Gale Terminal orbital deck", material: terminalDeck })
+-    .position(terminalDockCenter[0], PLAY_PLANE_Y - 0.08, terminalDockCenter[1])
+-    .scale([0.84, 0.08, 0.84]),
+-  primitives.torus({ name: "Gale Terminal outer gantry", material: terminalFrame })
+-    .position(terminalDockCenter[0], PLAY_PLANE_Y + 0.12, terminalDockCenter[1])
+-    .rotate(1.5708, 0, 0)
+-    .scale([0.88, 0.88, 0.045]),
+-  ...[-1, 1].flatMap((side) => [
+-    primitives.box({ name: `Gale Terminal grounded portal pylon ${side}`, material: terminalFrame })
+-      .position(...(() => {
+-        const [x, z] = corridorPoint(0.955, side * 0.79);
+-        return [x, PLAY_PLANE_Y + 0.25, z] as const;
+-      })())
+-      .scale([0.09, 0.42, 0.09]),
+-    primitives.box({ name: `Gale Terminal signal bar ${side}`, material: side < 0 ? terminalSignal : terminalHazard })
+-      .position(...(() => {
+-        const [x, z] = corridorPoint(0.955, side * 0.79);
+-        return [x, PLAY_PLANE_Y + 0.51, z] as const;
+-      })())
+-      .rotate(0, approachYaw, 0)
+-      .scale([0.24, 0.045, 0.045])
+-  ]),
+-  primitives.box({ name: "Gale Terminal portal header", material: terminalSignal })
+-    .position(terminalDockCenter[0], PLAY_PLANE_Y + 0.63, terminalDockCenter[1])
+-    .rotate(0, acrossRouteYaw, 0)
+-    .scale([0.8, 0.055, 0.055]),
+-  ...([-1, 1] as const).flatMap((side) => {
+-    const [moduleX, moduleZ] = corridorPoint(0.87, side * 1.12);
+-    const [windowX, windowZ] = corridorPoint(0.87, side * 0.9);
+-    return [
+-      primitives.box({ name: `Gale Terminal grounded service wing ${side}`, material: terminalDeck })
+-        .position(moduleX, PLAY_PLANE_Y + 0.16, moduleZ)
+-        .rotate(0, approachYaw, 0)
+-        .scale([0.52, 0.26, 0.25]),
+-      primitives.box({ name: `Gale Terminal service wing viewport ${side}`, material: side < 0 ? terminalSignal : terminalHazard })
+-        .position(windowX, PLAY_PLANE_Y + 0.2, windowZ)
+-        .rotate(0, approachYaw, 0)
+-        .scale([0.32, 0.07, 0.018])
+-    ];
+-  })
+-]);
+-
+-// The courier's orange delivery module is authored into the vehicle shell,
+-// but a delivery scene also needs a package that reads as a package at a
+-// glance. Use the existing hash-bound textured parcel prop as a typed,
+-// renderer-owned attachment rather than drawing another primitive box. The
+-// node follows the same authored courier pose in syncPodVisual below; it never
+-// participates in physics, sensors, scoring, or the route integrator.
+ const courierParcelScaleRatio = POD_VISUAL_SCALE / 0.68;
+-// Keep the real parcel subordinate to the skiff's own guarded payload module:
+-// at the review scale this is a visible handoff carton, not a box that hides
+-// the canopy and drive silhouette.
+ const courierParcelMaxDimension = courierParcelMaxDimensionBase * courierParcelScaleRatio;
+ sceneBuilder = sceneBuilder.add(
+   model(assets.courierParcel, {
+@@ -880,37 +517,6 @@ sceneBuilder = sceneBuilder.add(
+       tags: ["typed-asset", "courier-cargo", "renderer-owned", "non-colliding", "live-velocity-feedback"]
+     }))
+ );
+-
+-// Two smaller typed cartons give the shoulder bays a scale cue and make the
+-// Rust -> Gale lane read as an active logistics district, not only a colored
+-// architectural backdrop. Their placement is derived from the same live route
+-// vector as the freightway, and they remain renderer-only set dressing.
+-if (visualReviewCapture) {
+-  for (const [progress, lateral, yawOffset] of [
+-    [0.34, -1.18, -0.12],
+-    [0.64, 1.2, 0.1]
+-  ] as const) {
+-    const [cargoX, cargoZ] = corridorPoint(progress, lateral);
+-    sceneBuilder = sceneBuilder.add(
+-      model(assets.courierParcel, {
+-        name: `Gravity Post shoulder cargo parcel ${progress}`,
+-        role: "setDressing",
+-        scaleMode: "fit",
+-        targetMaxDimension: 0.29
+-      })
+-        .position(cargoX, PLAY_PLANE_Y + 0.19, cargoZ)
+-        .rotate(0, approachYaw + yawOffset, 0)
+-        .runtime(game.runtimeNode(`gravity-post-shoulder-cargo-${progress}`, {
+-          tags: ["typed-asset", "freight-cargo", "renderer-owned", "non-colliding"]
+-        }))
+-    );
+-  }
+-}
+-
+-// Primary courier: original CC0 parcel skiff with a low working chassis, four
+-// contact-drive pods, directional cockpit/drive lights, and a guarded amber
+-// envelope-marked cargo module. Route-local authored state remains the sole
+-// owner of movement, sensors, collision and scoring.
+ sceneBuilder = sceneBuilder
+   .add(
+     model(assets.gravityPostCourierSkiff, {
+@@ -978,11 +584,6 @@ sceneBuilder = sceneBuilder
+         tags: ["pod-contact-shadow", "renderer-owned", "non-colliding"]
+       }))
+   );
+-
+-// A pair of slim route-side livery plates and a roof beacon turn the skiff
+-// into a recognizable courier service vehicle rather than an unmarked dark
+-// chassis in the freight district. These are deliberately subordinate
+-// fittings around the typed GLB, not a replacement for its modeled hull.
+ for (const side of [-1, 1] as const) {
+   sceneBuilder = sceneBuilder.add(
+     primitives.box({
+@@ -1056,11 +657,6 @@ sceneBuilder = sceneBuilder
+         tags: ["courier-cargo", "delivery-state", "renderer-owned", "non-colliding"]
+       }))
+   );
+-
+-// Four compact drive markers sit under the skiff's modeled contact pods. Their
+-// live transforms and visibility are driven by the same authored velocity as
+-// the trail/wake below, making acceleration and deck contact legible in one
+-// deterministic frame without asserting wheel physics or imported animation.
+ const courierDriveOffsets = [
+   [-1, -0.38],
+   [1, -0.38],
+@@ -1090,10 +686,6 @@ for (let index = 0; index < courierDriveOffsets.length; index += 1) {
+       }))
+   );
+ }
+-
+-// Velocity-aligned renderer-owned engine streaks form one tapered motion trail
+-// behind the typed pod. Their live positions and yaw come from the authored
+-// velocity below; this is scene geometry, never a CSS speed-line overlay.
+ for (let index = 0; index < TRAIL_STREAK_COUNT; index += 1) {
+   sceneBuilder = sceneBuilder.add(
+     primitives.box({
+@@ -1104,10 +696,6 @@ for (let index = 0; index < TRAIL_STREAK_COUNT; index += 1) {
+       .runtime(game.runtimeNode("mail-pod-trail-" + index, { tags: ["pod-trail", "renderer-owned", "non-colliding"] }))
+   );
+ }
+-
+-// Paired deck-hugging magnetic wake marks visibly connect the skiff's drive
+-// pods to the freight lane. They are renderer-owned velocity feedback, never
+-// CSS effects, colliders, or a physical-wheel claim.
+ for (let index = 0; index < CONTACT_WAKE_COUNT; index += 1) {
+   for (const side of [-1, 1] as const) {
+     sceneBuilder = sceneBuilder.add(
+@@ -1126,7 +714,6 @@ for (let index = 0; index < CONTACT_WAKE_COUNT; index += 1) {
+     );
+   }
+ }
+-
+ sceneBuilder = sceneBuilder.add(
+   primitives.box({
+     name: "mail-pod live thrust plume",
+@@ -1142,8 +729,6 @@ sceneBuilder = sceneBuilder.add(
+     tags: ["pod-trail", "renderer-owned", "live-velocity-feedback", "non-colliding"]
+   }))
+ );
+-
+-// Prediction line: primitive beads (scene geometry, never DOM/SVG).
+ for (let index = 0; index < PREDICTION_BEADS; index += 1) {
+   sceneBuilder = sceneBuilder.add(
+     primitives.sphere({
+@@ -1152,9 +737,6 @@ for (let index = 0; index < PREDICTION_BEADS; index += 1) {
+     }).position(0, PLAY_PLANE_Y + 0.03, 0).scale(0.065).runtime(game.runtimeNode("pred-bead-" + index))
+   );
+ }
+-
+-// Cream actual-path beads persist after launch so prediction and flown truth
+-// remain visually separable through assists, hazards, and docking.
+ for (let index = 0; index < ACTUAL_PATH_BEADS; index += 1) {
+   sceneBuilder = sceneBuilder.add(
+     primitives.sphere({
+@@ -1163,8 +745,6 @@ for (let index = 0; index < ACTUAL_PATH_BEADS; index += 1) {
+     }).position(0, -4, 0).scale(visualReviewCapture ? 0.026 : 0.085).runtime(game.runtimeNode("actual-path-bead-" + index))
+   );
+ }
+-
+-// Dock spark burst pool (in-scene FX).
+ for (let index = 0; index < SPARK_COUNT; index += 1) {
+   sceneBuilder = sceneBuilder.add(
+     primitives.sphere({
+@@ -1173,8 +753,6 @@ for (let index = 0; index < SPARK_COUNT; index += 1) {
+     }).position(0, -4, 0).scale(0.08).runtime(game.runtimeNode("dock-spark-" + index))
+   );
+ }
+-
+-// Flyby drone ring (cinematic beat presentation).
+ for (let index = 0; index < FLYBY_DRONES; index += 1) {
+   sceneBuilder = sceneBuilder.add(
+     primitives.box({
+@@ -1183,37 +761,6 @@ for (let index = 0; index < FLYBY_DRONES; index += 1) {
+     }).position(0, -4, 0).scale([0.05, 0.02, 0.12]).runtime(game.runtimeNode("flyby-drone-" + index))
+   );
+ }
+-
+-sceneBuilder = sceneBuilder
+-  .add(effects.neonBloom({ name: "gravity route glow", intensity: 0.18, threshold: 0.62, maxIntensity: 0.9, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
+-  .add(effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }))
+-  .add(effects.antiAlias({ mode: "fxaa" }))
+-  // Keep enough cool fill for the board while allowing the freight district's
+-  // graphite/alloy/rust material groups to retain real value separation in the
+-  // review lens. A warm opposing directional reveals bevels and parcel edges.
+-  .add(lights.ambient({ intensity: visualReviewCapture ? 0.85 : 0.64, color: "#e0f4ff" }))
+-  .add(lights.directional({ position: [2.4, 6.2, 3.2], intensity: visualReviewCapture ? 3.0 : 1.48, color: "#e9f7ff" }))
+-  .add(lights.directional({ name: "freight material warm rake", position: [-4.2, 3.6, -3.8], intensity: visualReviewCapture ? 2.0 : 0.42, color: "#ffc58d" }))
+-  .add(lights.point({ name: "solar rim", color: "#fb923c", intensity: 1.8 }).position(-2.5, 2.6, 1.5))
+-  .add(lights.point({ name: "route cyan practical", color: "#38d6ff", intensity: 1.4 }).position(-2.2, 1.15, -1.5))
+-  .add(lights.point({ name: "route amber practical", color: "#fbbf24", intensity: 1.3 }).position(2.2, 1.0, 1.5))
+-  .add(lights.point({ name: "hazard-mail courier key", color: "#e8f7ff", intensity: visualReviewCapture ? 5.4 : 4 }).position(3.0, 2.2, -2.1))
+-  .add(lights.point({ name: "hazard-mail engine rim", color: "#fb923c", intensity: visualReviewCapture ? 3.6 : 2.2 }).position(1.8, 1.1, -2.15))
+-  .add(effects.fog({ density: visualReviewCapture ? 0.0018 : 0.005, color: visualReviewCapture ? "#28546a" : "#0a2038" }));
+-
+-if (visualReviewCapture) {
+-  const [courierLightX, courierLightZ] = corridorPoint(0.45);
+-  sceneBuilder = sceneBuilder
+-    .add(lights.point({ name: "courier cyan locality", color: "#67e8f9", intensity: 3.2 })
+-      .position(courierLightX + routePerpX * 0.48, PLAY_PLANE_Y + 0.82, courierLightZ + routePerpZ * 0.48))
+-    .add(lights.point({ name: "parcel amber locality", color: "#fb923c", intensity: 2.45 })
+-      .position(courierLightX - routePerpX * 0.42, PLAY_PLANE_Y + 0.58, courierLightZ - routePerpZ * 0.42));
+-}
+-
+-// World labels remain available on the normal planning board, but the named
+-// review capture is a renderer-first action frame. Omitting these DOM-backed
+-// annotations only for that query keeps the live pod, route geometry, and dock
+-// hardware visually legible without changing gameplay or evidence state.
+ if (!visualReviewCapture) {
+   for (const body of WELL_BODIES) {
+     sceneBuilder = sceneBuilder.add(
+@@ -1238,8 +785,6 @@ if (!visualReviewCapture) {
+     );
+   }
+ }
+-
+-
+ const app = createAuraApp("#app", {
+   diagnostics: { overlay: false },
+   physics: {
+@@ -1278,25 +823,14 @@ const app = createAuraApp("#app", {
+     fov: 41
+   }))
+ });
+-
+-// ---------------------------------------------------------------------------
+-// Physics bodies + systems
+-// ---------------------------------------------------------------------------
+ const physics = app.physics;
+ const podBody = physics.createBody({ ...POD_BODY_SPEC, layer: "pod" });
+ for (const station of stations) {
+   physics.createBody({ ...dockSensorBodySpec(station), layer: "dock" });
+ }
+-
+-interface DockEventRecord {
+-  readonly stationId: string;
+-  readonly kind: "capture" | "bounce";
+-}
+-
+ const pendingDocks: string[] = [];
+ const dockEventLog: DockEventRecord[] = [];
+ let dockEventCount = 0;
+-
+ physics.onTriggerEnter((event) => {
+   const names = [event.nodeA, event.nodeB];
+   const sensorName = names.find((name) => typeof name === "string" && name.startsWith("dock-sensor-"));
+@@ -1304,7 +838,6 @@ physics.onTriggerEnter((event) => {
+   if (!names.includes(POD_BODY_SPEC.name)) return;
+   pendingDocks.push(sensorName.slice("dock-sensor-".length));
+ });
+-
+ const audio: GravityPostAudio = createGravityPostAudio();
+ const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
+ let rendererMounted = false;
+@@ -1336,20 +869,14 @@ const input = app.input({
+     launch: ["Enter"]
+   }
+ });
+-
+ const hud: HTMLElement = (() => {
+   const element = document.querySelector<HTMLElement>("#hud");
+   if (!element) throw new Error("Gravity Post requires #hud.");
+   element.dataset.capture = visualReviewCapture ? "review" : "default";
+   return element;
+ })();
+-
+-// ---------------------------------------------------------------------------
+-// Game state
+-// ---------------------------------------------------------------------------
+ const pod: PodRuntimeState = createPodRuntime(CONTRACTS[0]!.originStationId, CONTRACTS[0]!.tuning.strengthScale);
+ const flyby = createFlybyState();
+-
+ let contractIndex = 0;
+ let score = 0;
+ let failedContracts = 0;
+@@ -1365,16 +892,7 @@ let launchPrediction: readonly TrajectorySample[] = [];
+ let predictionComparedSamples = 0;
+ let predictionMaxDivergence = 0;
+ let compositionSubjectSuppressed = false;
+-// Route-primary probes begin on Delivery 1 (Sol Relay), which sits outside
+-// the Rust -> Gale review corridor. Keep the gameplay state and telemetry at
+-// their real contract coordinates, but allow the application composition
+-// probe to request one renderer-only courier pose on that corridor so the
+-// named typed vehicle is actually present in the review artifact.
+ let compositionPresentationOverride = false;
+-// Renderer-only velocity memory lets the skiff communicate acceleration and
+-// lateral correction through its suspension/bank pose.  The authored
+-// integrator and Rapier body remain the sole gameplay owners; this state is
+-// reset whenever a contract is reset and is never fed back into simulation.
+ let previousVisualVelocity: readonly [number, number] = [0, 0];
+ let visualVelocityInitialized = false;
+ const actualPath: Array<readonly [number, number]> = [];
+@@ -1389,20 +907,14 @@ const sparkDirections = Array.from({ length: SPARK_COUNT }, (_, index) => {
+ });
+ const aimStart = { x: 0, y: 0 };
+ const aimCurrent = { x: 0, y: 0 };
+-
+ const contract = () => CONTRACTS[contractIndex]!;
+ const originStation = () => stations.find((candidate) => candidate.id === contract().originStationId)!;
+ const destinationStation = () => stations.find((candidate) => candidate.id === contract().destinationStationId)!;
+-
+ function stationWorld(id: string): { readonly x: number; readonly z: number } {
+   const spec = stationById(id);
+   const position = stationPosition(spec);
+   return { x: position[0], z: position[1] };
+ }
+-
+-// ---------------------------------------------------------------------------
+-// Aim + launch input (drag anywhere; the line grows from the pod)
+-// ---------------------------------------------------------------------------
+ function currentAimVector(): { readonly dirX: number; readonly dirZ: number; readonly power: number } | null {
+   const dx = aimCurrent.x - aimStart.x;
+   const dy = aimCurrent.y - aimStart.y;
+@@ -1411,20 +923,10 @@ function currentAimVector(): { readonly dirX: number; readonly dirZ: number; rea
+   const power = Math.min(1, lengthPx / AIM_DRAG_PIXEL_RANGE);
+   return { dirX: dx / lengthPx, dirZ: dy / lengthPx, power };
+ }
+-
+-/**
+- * Keyboard launch aim. Bearing is measured in the play plane exactly like the
+- * drag vector and power is the same 0..1 fraction a drag distance produces, so
+- * one prediction integrator and one launch path serve both inputs. It is
+- * seeded to the contract's origin -> destination bearing, which means the very
+- * first Space press is a genuine dispatch attempt down the briefed route
+- * instead of a blind radial guess.
+- */
+ let keyboardAimBearing = 0;
+ let keyboardAimPower = 0.6;
+ const KEYBOARD_AIM_RATE = 1.05;
+ const KEYBOARD_POWER_RATE = 0.5;
+-
+ function resetKeyboardAim(): void {
+   const from = originStation();
+   const to = destinationStation();
+@@ -1434,7 +936,6 @@ function resetKeyboardAim(): void {
+   keyboardAimPower = 0.6;
+ }
+ resetKeyboardAim();
+-
+ function keyboardAimVector(): { readonly dirX: number; readonly dirZ: number; readonly power: number } {
+   return {
+     dirX: Math.sin(keyboardAimBearing),
+@@ -1442,20 +943,15 @@ function keyboardAimVector(): { readonly dirX: number; readonly dirZ: number; re
+     power: keyboardAimPower
+   };
+ }
+-
+-/** The one aim the player is currently looking at: live drag, else keyboard. */
+ function activeAimVector(): { readonly dirX: number; readonly dirZ: number; readonly power: number } | null {
+   return aiming ? currentAimVector() : keyboardAimVector();
+ }
+-
+ function steerKeyboardAim(dt: number): void {
+   if (input.held("aimCounterClockwise")) keyboardAimBearing -= KEYBOARD_AIM_RATE * dt;
+   if (input.held("aimClockwise")) keyboardAimBearing += KEYBOARD_AIM_RATE * dt;
+   if (input.held("powerUp")) keyboardAimPower = Math.min(1, keyboardAimPower + KEYBOARD_POWER_RATE * dt);
+   if (input.held("powerDown")) keyboardAimPower = Math.max(0.08, keyboardAimPower - KEYBOARD_POWER_RATE * dt);
+ }
+-
+-/** Launch along whatever the prediction line is currently showing. */
+ function launchActiveAim(): boolean {
+   const vector = activeAimVector();
+   if (!vector || vector.power < MIN_LAUNCH_POWER) return false;
+@@ -1463,7 +959,6 @@ function launchActiveAim(): boolean {
+   launchWithPrediction([vector.dirX, vector.dirZ], speed);
+   return true;
+ }
+-
+ const canvas = app.canvas;
+ if (canvas) {
+   canvas.style.touchAction = "none";
+@@ -1505,7 +1000,6 @@ if (canvas) {
+   canvas.addEventListener("pointerup", releaseAim);
+   canvas.addEventListener("pointercancel", releaseAim);
+ }
+-
+ window.addEventListener("keydown", () => {
+   audio.unlock();
+   if (flyby.active) {
+@@ -1516,10 +1010,6 @@ window.addEventListener("keydown", () => {
+     updateFlyby(flyby, 0);
+   }
+ });
+-
+-// ---------------------------------------------------------------------------
+-// Event + scoring plumbing
+-// ---------------------------------------------------------------------------
+ function emitPodEvents(events: readonly PodEvent[]): void {
+   for (const event of events) {
+     if (event.type === "launch") audio.play("launch-whoosh");
+@@ -1529,16 +1019,13 @@ function emitPodEvents(events: readonly PodEvent[]): void {
+     else if (event.type === "too-fast") audio.play("bounce-off");
+   }
+ }
+-
+ let lastFailReason: string | null = null;
+-
+ function registerFail(reason: string): void {
+   lastFailReason = reason;
+   failedContracts += 1;
+   lostCooldownSeconds = 1.4;
+   if (failedContracts >= SHIFT_FAIL_LIMIT) shiftOver = true;
+ }
+-
+ function handleDock(stationId: string): void {
+   if (pod.state !== "coasting") return;
+   if (stationId !== contract().destinationStationId) return;
+@@ -1566,7 +1053,6 @@ function handleDock(stationId: string): void {
+   }
+   if (dockEventLog.length > 12) dockEventLog.shift();
+ }
+-
+ function resetCampaign(): void {
+   lastFailReason = null;
+   contractIndex = 0;
+@@ -1585,7 +1071,6 @@ function resetCampaign(): void {
+   hidePrediction();
+   audio.play("ui-confirm");
+ }
+-
+ function nextContract(): void {
+   if (pod.state !== "docked") return;
+   audio.play("ui-confirm");
+@@ -1598,7 +1083,6 @@ function nextContract(): void {
+   resetPodForContract(pod, contract());
+   resetPredictionTelemetry();
+ }
+-
+ function retryContract(): void {
+   if (shiftOver || campaignComplete) {
+     resetCampaign();
+@@ -1618,7 +1102,6 @@ function retryContract(): void {
+   resetPodForContract(pod, contract());
+   resetPredictionTelemetry();
+ }
+-
+ function resetPredictionTelemetry(): void {
+   launchPrediction = [];
+   predictionComparedSamples = 0;
+@@ -1626,7 +1109,6 @@ function resetPredictionTelemetry(): void {
+   actualPath.length = 0;
+   syncActualPath();
+ }
+-
+ function launchWithPrediction(direction: readonly [number, number], speed: number): void {
+   const result = launch(pod, direction, speed);
+   if (result.length === 0) return;
+@@ -1645,7 +1127,6 @@ function launchWithPrediction(direction: readonly [number, number], speed: numbe
+   syncActualPath();
+   emitPodEvents(result);
+ }
+-
+ function recordActualPath(): void {
+   const last = actualPath[actualPath.length - 1];
+   if (last && Math.hypot(last[0] - pod.kinematic.position[0], last[1] - pod.kinematic.position[1]) < 0.12) return;
+@@ -1653,7 +1134,6 @@ function recordActualPath(): void {
+   if (actualPath.length > ACTUAL_PATH_BEADS) actualPath.shift();
+   syncActualPath();
+ }
+-
+ function syncActualPath(): void {
+   for (let index = 0; index < ACTUAL_PATH_BEADS; index += 1) {
+     const node = app.nodes.get("actual-path-bead-" + index);
+@@ -1665,7 +1145,6 @@ function syncActualPath(): void {
+     node.setPosition(point[0], PLAY_PLANE_Y + 0.025, point[1]).setVisible(true);
+   }
+ }
+-
+ function samplePredictionDivergence(): void {
+   if (pod.correctionsUsed > 0 || launchPrediction.length === 0) return;
+   const sampleIndex = Math.max(0, Math.round(pod.simulationSeconds / FIXED_DT) - 1);
+@@ -1678,10 +1157,6 @@ function samplePredictionDivergence(): void {
+   predictionComparedSamples = sampleIndex + 1;
+   predictionMaxDivergence = Math.max(predictionMaxDivergence, error);
+ }
+-
+-// ---------------------------------------------------------------------------
+-// Prediction line
+-// ---------------------------------------------------------------------------
+ function updatePrediction(): void {
+   const vector = aiming ? currentAimVector() : null;
+   if (!vector || pod.state !== "ready") {
+@@ -1713,7 +1188,6 @@ function updatePrediction(): void {
+     node.setPosition(bead.x, PLAY_PLANE_Y + 0.03, bead.z);
+   }
+ }
+-
+ function syncLaunchPredictionPath(): void {
+   const beads = buildPredictionBeads({ samples: launchPrediction, maxBeads: PREDICTION_BEADS });
+   for (let index = 0; index < PREDICTION_BEADS; index += 1) {
+@@ -1729,17 +1203,12 @@ function syncLaunchPredictionPath(): void {
+       .setVisible(!visualReviewCapture || index % 2 === 0);
+   }
+ }
+-
+ function hidePrediction(): void {
+   predictionSteps = 0;
+   for (let index = 0; index < PREDICTION_BEADS; index += 1) {
+     app.nodes.get("pred-bead-" + index)?.setVisible(false);
+   }
+ }
+-
+-// ---------------------------------------------------------------------------
+-// Visual sync
+-// ---------------------------------------------------------------------------
+ function syncPodVisual(): void {
+   // The physics body mirrors the authored integration so real sensor overlaps
+   // fire; zero-gravity world + matching velocity keep the mirror exact.
+@@ -2033,7 +1502,6 @@ function syncPodVisual(): void {
+       .setVisible(!compositionSubjectSuppressed);
+   }
+ }
+-
+ function syncStationPulses(): void {
+   const destination = destinationStation();
+   for (const station of stations) {
+@@ -2065,7 +1533,6 @@ function syncStationPulses(): void {
+     pulse.setScale([station.dockRadius * reviewScale * breathe, station.dockRadius * reviewScale * breathe, 0.02]);
+   }
+ }
+-
+ function syncSparks(dt: number): void {
+   if (sparkLife > 0) sparkLife = Math.max(0, sparkLife - dt);
+   const core = stationWorld(contract().destinationStationId);
+@@ -2083,7 +1550,6 @@ function syncSparks(dt: number): void {
+     node.setVisible(true);
+   }
+ }
+-
+ function syncFlybyDrones(progress: number | null): void {
+   const body = flybyBody(flyby.bodyId);
+   for (let index = 0; index < FLYBY_DRONES; index += 1) {
+@@ -2101,10 +1567,6 @@ function syncFlybyDrones(progress: number | null): void {
+     node.setPosition(body.position[0] + Math.cos(angle) * radius, PLAY_PLANE_Y + yLift, body.position[1] + Math.sin(angle) * radius);
+   }
+ }
+-
+-// ---------------------------------------------------------------------------
+-// HUD
+-// ---------------------------------------------------------------------------
+ function escapeHtml(value: string): string {
+   return value.replace(/[&<>"']/g, (char) => ({
+     "&": "&amp;",
+@@ -2114,7 +1576,6 @@ function escapeHtml(value: string): string {
+     "'": "&#39;"
+   })[char] ?? char);
+ }
+-
+ function renderHud(): void {
+   const active = contract();
+   const origin = originStation();
+@@ -2203,21 +1664,15 @@ function renderHud(): void {
+   hud.querySelector("#gp-correct-retro")?.addEventListener("click", () => { audio.unlock(); emitPodEvents(applyCorrection(pod, -1)); });
+   bindHold("#gp-warp", () => { touchWarp = true; }, () => { touchWarp = false; });
+ }
+-
+ function metric(label: string, value: string): string {
+   return '<div class="gp-metric"><span>' + escapeHtml(label) + "</span><strong>" + escapeHtml(value) + "</strong></div>";
+ }
+-
+ function bindHold(selector: string, down: () => void, up: () => void): void {
+   const element = hud.querySelector(selector);
+   element?.addEventListener("pointerdown", (event) => { event.preventDefault(); audio.unlock(); down(); });
+   element?.addEventListener("pointerup", up);
+   element?.addEventListener("pointerleave", up);
+ }
+-
+-// ---------------------------------------------------------------------------
+-// Evidence
+-// ---------------------------------------------------------------------------
+ function publishEvidence(): void {
+   const proof = audio.proof();
+   let drawCalls = 0;
+@@ -2298,12 +1753,7 @@ function publishEvidence(): void {
+   document.body.dataset.gravityPostReady = "true";
+   document.body.dataset.aura3dShowcaseReady = "true";
+ }
+-
+-// ---------------------------------------------------------------------------
+-// Frame loop
+-// ---------------------------------------------------------------------------
+ let lastTime = 0;
+-
+ function updateGameplay(dt: number): void {
+   frame += 1;
+   audio.tick(dt);
+@@ -2384,28 +1834,12 @@ function updateGameplay(dt: number): void {
+   renderHud();
+   publishEvidence();
+ }
+-
+ app.onFrame(({ time }) => {
+   const dt = lastTime === 0 ? 1 / 60 : Math.min(0.05, Math.max(0.001, time - lastTime));
+   lastTime = time;
+   updateGameplay(dt);
+ });
+-
+ renderHud();
+-publishEvidence();
+-
+-// Manual stepping keeps automated proof deterministic even where headless
+-// requestAnimationFrame throttles; live play still runs on the RAF loop.
+-// __GRAVITY_POST_STEP__ runs the full mounted pipeline (renders a frame);
+-// __GRAVITY_POST_SIM_STEP__ advances gameplay/evidence without rendering.
+-window.__GRAVITY_POST_STEP__ = (dtSeconds: number) => {
+-  app.step(Math.min(0.05, Math.max(0.001, dtSeconds)));
+-};
+-window.__GRAVITY_POST_SIM_STEP__ = (dtSeconds: number) => {
+-  updateGameplay(Math.min(0.05, Math.max(0.001, dtSeconds)));
+-};
+-// Render + readback inside ONE task: the compositor cannot clear the drawing
+-// buffer between the render and the read, so pixel evidence is race-free.
+ window.__GRAVITY_POST_CAPTURE__ = () => {
+   app.step(1 / 30);
+   const canvas = document.querySelector<HTMLCanvasElement>("#app canvas");
+@@ -2435,10 +1869,6 @@ if (new URLSearchParams(location.search).has("planetProbe")) {
+     }
+   };
+ }
+-/** Debug/test surface: the mounted physics runtime. */
+-(window as unknown as Record<string, unknown>).__GRAVITY_POST_PHYSICS__ = physics;
+-window.__GRAVITY_POST_EVIDENCE_SNAPSHOT__ = () => window.__GRAVITY_POST_EVIDENCE__;
+-
+ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+   value: {
+     category: "application" as const,
+diff --git a/apps/showcase-gravity-post/src/legacy/styles.css b/apps/showcase-gravity-post/src/legacy/styles.css
+index 87375e69e..30daa4190 100644
+--- a/apps/showcase-gravity-post/src/legacy/styles.css
++++ b/apps/showcase-gravity-post/src/legacy/styles.css
+@@ -1,4 +1,3 @@
+-/* Gravity Post — HUD chrome (DOM is UI only; all gameplay visuals are scene geometry). */
+ :root {
+   color-scheme: dark;
+   --gp-ink: #e2e8f0;
+@@ -8,11 +7,9 @@
+   --gp-accent: #67e8f9;
+   --gp-gold: #facc15;
+ }
+-
+ * {
+   box-sizing: border-box;
+ }
+-
+ html,
+ body {
+   margin: 0;
+@@ -21,7 +18,6 @@ body {
+   color: var(--gp-ink);
+   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+ }
+-
+ .gp-shell {
+   position: relative;
+   display: block;
+@@ -29,7 +25,6 @@ body {
+   height: 100vh;
+   padding: 14px;
+ }
+-
+ .gp-viewport {
+   position: relative;
+   width: 100%;
+@@ -39,18 +34,15 @@ body {
+   border: 1px solid var(--gp-edge);
+   background: radial-gradient(circle at 50% 42%, #0b2238 0%, #04060d 72%);
+ }
+-
+ .gp-stage {
+   position: absolute;
+   inset: 0;
+ }
+-
+ .gp-stage canvas {
+   display: block;
+   width: 100% !important;
+   height: 100% !important;
+ }
+-
+ .gp-hud {
+   display: flex;
+   flex-direction: column;
+@@ -58,34 +50,29 @@ body {
+   overflow-y: auto;
+   scrollbar-width: thin;
+ }
+-
+ .gp-panel {
+   border: 1px solid var(--gp-edge);
+   background: var(--gp-panel);
+   border-radius: 16px;
+   padding: 12px 14px;
+ }
+-
+ .gp-eyebrow {
+   font-size: 11px;
+   letter-spacing: 0.16em;
+   text-transform: uppercase;
+   color: var(--gp-accent);
+ }
+-
+ .gp-briefing h1 {
+   margin: 6px 0 8px;
+   font-size: 19px;
+   line-height: 1.25;
+ }
+-
+ .gp-brief {
+   margin: 0 0 10px;
+   color: var(--gp-dim);
+   font-size: 13px;
+   line-height: 1.45;
+ }
+-
+ .gp-route {
+   display: flex;
+   align-items: center;
+@@ -93,63 +80,53 @@ body {
+   font-weight: 600;
+   font-size: 13px;
+ }
+-
+ .gp-route i {
+   color: var(--gp-accent);
+   font-style: normal;
+ }
+-
+ .gp-meta {
+   margin: 8px 0 0;
+   color: var(--gp-dim);
+   font-size: 12px;
+ }
+-
+ .gp-readouts {
+   display: flex;
+   flex-direction: column;
+   gap: 8px;
+ }
+-
+ .gp-row {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 8px 14px;
+ }
+-
+ .gp-metric {
+   display: flex;
+   align-items: baseline;
+   gap: 6px;
+   font-size: 13px;
+ }
+-
+ .gp-metric span {
+   color: var(--gp-dim);
+   font-size: 11px;
+   letter-spacing: 0.08em;
+   text-transform: uppercase;
+ }
+-
+ .gp-metric strong {
+   font-size: 15px;
+   font-variant-numeric: tabular-nums;
+ }
+-
+ .gp-fuel {
+   height: 8px;
+   border-radius: 999px;
+   background: #101a2c;
+   overflow: hidden;
+ }
+-
+ .gp-fuel i {
+   display: block;
+   height: 100%;
+   background: linear-gradient(90deg, #fb923c, #facc15);
+   transition: width 120ms ease;
+ }
+-
+ .gp-status {
+   margin: 4px 0 0;
+   min-height: 32px;
+@@ -157,13 +134,11 @@ body {
+   line-height: 1.4;
+   color: #cbd5f5;
+ }
+-
+ .gp-actions {
+   display: grid;
+   grid-template-columns: repeat(3, 1fr);
+   gap: 6px;
+ }
+-
+ .gp-actions button {
+   appearance: none;
+   border: 1px solid var(--gp-edge);
+@@ -177,31 +152,25 @@ body {
+   user-select: none;
+   touch-action: none;
+ }
+-
+ .gp-actions button:hover:not(:disabled) {
+   border-color: var(--gp-accent);
+   color: #fff;
+ }
+-
+ .gp-actions button:disabled {
+   opacity: 0.38;
+   cursor: not-allowed;
+ }
+-
+ .gp-scorecard {
+   border-color: rgba(250, 204, 21, 0.4);
+ }
+-
+ .gp-flyby {
+   border-color: rgba(192, 132, 252, 0.45);
+ }
+-
+ .gp-flyby p {
+   margin: 6px 0 0;
+   color: #ddd6fe;
+   font-size: 13px;
+ }
+-
+ @media (max-width: 900px) {
+   .gp-shell {
+     position: static;
+@@ -215,102 +184,6 @@ body {
+     height: auto;
+   }
+ }
+-
+-@media (min-width: 901px) {
+-  /* The board is the visual hero. Keep the full courier HUD available in a
+-     translucent overlay so the orbital lanes, typed pod, stations, and
+-     renderer-owned path beads are not permanently shrunk into a side column. */
+-  .gp-hud {
+-    position: absolute;
+-    z-index: 4;
+-    top: 14px;
+-    right: 14px;
+-    width: min(268px, calc(100vw - 28px));
+-    max-height: calc(100vh - 28px);
+-    pointer-events: auto;
+-  }
+-
+-  /* The review artifact retains only compact, gameplay-owned courier context:
+-     route, speed, fuel, hulls, and live coast status. Authoring controls and
+-     long briefing copy stay available in the public route but out of frame. */
+-  .gp-hud[data-capture="review"] {
+-    opacity: 1;
+-    pointer-events: none;
+-    left: 22px;
+-    right: auto;
+-    top: 22px;
+-    width: min(660px, calc(100vw - 44px));
+-    max-height: none;
+-    overflow: visible;
+-    display: grid;
+-    grid-template-columns: minmax(250px, 0.92fr) minmax(330px, 1.08fr);
+-    gap: 1px;
+-  }
+-
+-  .gp-hud[data-capture="review"] .gp-panel {
+-    border-radius: 0;
+-    padding: 7px 11px;
+-    background: linear-gradient(135deg, rgba(5, 20, 35, 0.9), rgba(8, 36, 52, 0.7));
+-    box-shadow: 0 0 20px rgba(56, 214, 255, 0.1);
+-  }
+-
+-  .gp-hud[data-capture="review"] .gp-briefing {
+-    border-radius: 6px 0 0 6px;
+-  }
+-
+-  .gp-hud[data-capture="review"] .gp-readouts {
+-    border-radius: 0 6px 6px 0;
+-  }
+-
+-  .gp-hud[data-capture="review"] .gp-brief,
+-  .gp-hud[data-capture="review"] .gp-meta,
+-  .gp-hud[data-capture="review"] .gp-actions,
+-  .gp-hud[data-capture="review"] .gp-scorecard,
+-  .gp-hud[data-capture="review"] .gp-flyby,
+-  .gp-hud[data-capture="review"] .gp-readouts > .gp-row:nth-of-type(2),
+-  .gp-hud[data-capture="review"] .gp-status {
+-    display: none;
+-  }
+-
+-  .gp-hud[data-capture="review"] .gp-briefing h1 {
+-    margin: 2px 0 4px;
+-    font-size: 14px;
+-  }
+-
+-  .gp-hud[data-capture="review"] .gp-route {
+-    justify-content: space-between;
+-  }
+-
+-  .gp-hud[data-capture="review"] .gp-readouts {
+-    display: grid;
+-    grid-template-columns: minmax(130px, 1fr) auto;
+-    align-items: center;
+-    gap: 5px 12px;
+-  }
+-
+-  .gp-hud[data-capture="review"] .gp-readouts > .gp-row:first-of-type {
+-    flex-wrap: nowrap;
+-  }
+-
+-  .gp-hud[data-capture="review"] .gp-status {
+-    min-height: 0;
+-    margin: 2px 0 0;
+-    font-size: 11px;
+-  }
+-
+-  .gp-hud[data-capture="review"] .gp-metric strong {
+-    font-size: 13px;
+-  }
+-
+-  /* World labels are useful on the interactive planning board, but their
+-     screen-space chips compete with the courier silhouette in the blind visual
+-     frame. Keep the label layer mounted for normal accessibility/evidence and
+-     suppress it only for the explicit review query. */
+-  body[data-capture="review"] [data-aura-world-labels] {
+-    display: none !important;
+-  }
+-}
+-
+ @media (max-width: 600px) {
+   .gp-shell {
+     gap: 8px;
+@@ -356,11 +229,6 @@ body {
+     font-size: 11px;
+   }
+ }
+-
+-/* Warp, retry, next, pause and both correction verbs are live decisions, and
+-   none of them ever declared a tap floor - they measured 28 px tall on a
+-   phone. Keyed on pointer capability rather than width so tablets inherit the
+-   floor and a desktop mouse keeps the compact density. */
+ @media (pointer: coarse) {
+   .gp-actions button { min-height: 44px; }
+ }
+diff --git a/apps/showcase-gravity-post/src/v2/evidence/index.ts b/apps/showcase-gravity-post/src/v2/evidence/index.ts
+deleted file mode 100644
+index b882c476d..000000000
+--- a/apps/showcase-gravity-post/src/v2/evidence/index.ts
++++ /dev/null
+@@ -1,190 +0,0 @@
+-// apps/showcase-gravity-post/src/v2/evidence/index.ts — §7.2.1 evidence.
+-// Publishes `window.__AURA3D_GAME_EVIDENCE__["showcase-gravity-post"]` with
+-// lazy section getters. The required condition reads `pod.state` (normalized
+-// "in-flight" while the authored integrator is coasting) and `pod.launchedBy`
+-// ("keyboard" when the Enter-key launch path fired, "pointer" for the drag).
+-import type { AuraCameraPose, Game } from "@aura3d/engine";
+-import type { ContractSpec } from "../../gameplay/contracts";
+-import type { PodRuntimeState } from "../../gameplay/pod";
+-import type { ScoreBreakdown } from "../../gameplay/scoring";
+-import type { StationWorld } from "../../gameplay/stations";
+-
+-export const GRAVITY_EVIDENCE_ID = "showcase-gravity-post";
+-
+-export type PodEvidenceState = "aiming" | "in-flight" | "docked" | "lost" | "paused";
+-export type LaunchedBy = "pointer" | "keyboard" | "autopilot" | null;
+-
+-export interface GravityRunSnapshot {
+-  readonly contractIndex: number;
+-  readonly contract: ContractSpec;
+-  readonly pod: PodRuntimeState;
+-  readonly score: number;
+-  readonly failedContracts: number;
+-  readonly completedContracts: number;
+-  readonly shiftOver: boolean;
+-  readonly campaignComplete: boolean;
+-  readonly paused: boolean;
+-  readonly aiming: boolean;
+-  readonly warping: boolean;
+-  readonly launchedBy: LaunchedBy;
+-  readonly lastScoreCard: ScoreBreakdown | null;
+-  readonly lastFailReason: string | null;
+-  readonly dockEventCount: number;
+-  readonly dockEvents: readonly string[];
+-  readonly flybyBeatsRun: number;
+-  readonly flybyActive: boolean;
+-  readonly visitedFlybys: readonly string[];
+-  readonly predictionSteps: number;
+-  readonly predictionComparedSamples: number;
+-  readonly predictionMaxDivergence: number;
+-  readonly predictionTolerance: number;
+-  readonly actualPathPoints: number;
+-}
+-
+-export interface GravityEvidenceBindings {
+-  readonly game: Game;
+-  readonly run: () => GravityRunSnapshot;
+-  readonly stations: () => readonly StationWorld[];
+-  readonly lastRigPose: () => AuraCameraPose | null;
+-  readonly sceneSwaps: () => number;
+-  readonly appliedLook: Record<string, unknown>;
+-  readonly frameCount: () => number;
+-  readonly bootedAtMs: number;
+-  readonly audioCueLog: () => readonly string[];
+-}
+-
+-function podEvidenceState(run: GravityRunSnapshot): PodEvidenceState {
+-  if (run.paused) return "paused";
+-  switch (run.pod.state) {
+-    case "coasting": return "in-flight";
+-    case "docked": return "docked";
+-    case "lost": return "lost";
+-    default: return "aiming";
+-  }
+-}
+-
+-export function publishGravityEvidence(b: GravityEvidenceBindings): void {
+-  const w = window as unknown as Record<string, Record<string, unknown>>;
+-  w.__AURA3D_GAME_EVIDENCE__ ??= {};
+-  w.__AURA3D_GAME_EVIDENCE__[GRAVITY_EVIDENCE_ID] = {
+-    get playback() {
+-      return {
+-        state: b.game.session.state,
+-        paused: b.game.session.paused,
+-        simTime: b.game.session.simTime,
+-        timeScale: b.game.session.timeScale,
+-        frame: b.frameCount()
+-      };
+-    },
+-    get run() {
+-      const r = b.run();
+-      return {
+-        contractIndex: r.contractIndex,
+-        contractId: r.contract.id,
+-        contractTitle: r.contract.title,
+-        score: r.score,
+-        failedContracts: r.failedContracts,
+-        completedContracts: r.completedContracts,
+-        shiftOver: r.shiftOver,
+-        campaignComplete: r.campaignComplete,
+-        aiming: r.aiming,
+-        warping: r.warping,
+-        lastScore: r.lastScoreCard,
+-        lastFailReason: r.lastFailReason
+-      };
+-    },
+-    get pod() {
+-      const r = b.run();
+-      const speed = Math.hypot(r.pod.kinematic.velocity[0], r.pod.kinematic.velocity[1]);
+-      return {
+-        state: podEvidenceState(r),
+-        rawState: r.pod.state,
+-        x: r.pod.kinematic.position[0],
+-        z: r.pod.kinematic.position[1],
+-        speed,
+-        propellant: r.pod.propellant,
+-        launchedBy: r.launchedBy,
+-        assists: [...r.pod.assists],
+-        flybys: [...r.pod.flybys],
+-        correctionsUsed: r.pod.correctionsUsed,
+-        correctionTokensRemaining: r.pod.correctionTokensRemaining,
+-        adriftSeconds: r.pod.adriftSeconds,
+-        flightSeconds: r.pod.flightSeconds
+-      };
+-    },
+-    get contracts() {
+-      const r = b.run();
+-      return {
+-        active: r.contract.id,
+-        index: r.contractIndex,
+-        origin: r.contract.originStationId,
+-        destination: r.contract.destinationStationId,
+-        bonusBody: r.contract.bonusBodyId,
+-        captureLimit: r.contract.captureLimit,
+-        dockEvents: r.dockEvents,
+-        dockEventCount: r.dockEventCount
+-      };
+-    },
+-    get prediction() {
+-      const r = b.run();
+-      return {
+-        steps: r.predictionSteps,
+-        comparedSamples: r.predictionComparedSamples,
+-        maxDivergence: r.predictionMaxDivergence,
+-        tolerance: r.predictionTolerance,
+-        withinTolerance: r.predictionComparedSamples > 0 && r.predictionMaxDivergence <= r.predictionTolerance,
+-        actualPathPoints: r.actualPathPoints
+-      };
+-    },
+-    get framing() {
+-      const pose = b.lastRigPose();
+-      const ev = b.game.app.camera?.evidence?.();
+-      return {
+-        rig: ev?.rig ?? "gravity-post.orbit",
+-        subjectScreenHeightFraction: ev?.subjectScreenHeightFraction ?? null,
+-        pose: pose ?? ev?.pose ?? null
+-      };
+-    },
+-    get flyby() {
+-      const r = b.run();
+-      return { beatsRun: r.flybyBeatsRun, active: r.flybyActive, visited: r.visitedFlybys };
+-    },
+-    get stations() {
+-      return b.stations().map((station) => ({
+-        id: station.id,
+-        name: station.name,
+-        x: station.x,
+-        z: station.z,
+-        dockRadius: station.dockRadius
+-      }));
+-    },
+-    get loading() {
+-      return { sceneSwaps: b.sceneSwaps() };
+-    },
+-    get fx() {
+-      return { liveCount: b.game.fx.liveCount, backend: b.game.fx.backend };
+-    },
+-    get render() {
+-      let drawCalls = 0;
+-      try {
+-        drawCalls = Number((b.game.app.diagnostics() as { drawCalls?: number }).drawCalls ?? 0);
+-      } catch {
+-        drawCalls = 0;
+-      }
+-      return {
+-        drawCalls,
+-        backend: b.game.app.backend ?? "webgl2",
+-        readbacksThisFrame: 0
+-      };
+-    },
+-    get appliedLook() {
+-      return b.appliedLook;
+-    },
+-    get audio() {
+-      return { cues: [...b.audioCueLog()] };
+-    },
+-    get boot() {
+-      return { startedAtMs: b.bootedAtMs };
+-    }
+-  };
+-}
+-- 
+2.34.1
+
