@@ -10,7 +10,6 @@
  * evidence publishes to window.__COURIER_RUSH_EVIDENCE__ per the PRD contract.
  */
 import {
-  createAuraApp,
   createGameArcadeVehicle,
   camera,
   effects,
@@ -24,6 +23,19 @@ import {
   type AuraRuntimeNodeHandle,
   type GameArcadeVehicle
 } from "@aura3d/engine";
+import {
+  createFxParticlePass,
+  createGame,
+  createJuice,
+  createOverlayDriver,
+  createRumbleDriver,
+  createTweenEngine,
+  mountHud,
+  mountTouchControls,
+  type HudDocument
+} from "@aura3d/game";
+import { bindCourierEvidence } from "../evidence";
+import { bindCourierDrive, courierDrive } from "../scenario-drive";
 import { assets } from "../../../../src/aura-assets";
 import {
   buildCityDressing,
@@ -54,16 +66,7 @@ import {
   VAN_TUNE,
   type VanDriveInput
 } from "../gameplay/van";
-import { createCourierAudio, type CourierAudioController } from "./courier-audio";
-import {
-  decayHudEffects,
-  hideShiftSummary,
-  mountCourierHud,
-  pulseStrikeFlash,
-  showRadioToast,
-  showShiftSummary,
-  updateCourierHud
-} from "./hud";
+import { createCourierSound, type CourierCue, type CourierSoundController } from "../sound";
 
 interface CourierRouteReadyFlag {
   readonly ready: boolean;
@@ -97,8 +100,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const autopilotEnabled = urlParams.get("autopilot") === "1";
 const timerScale = Number(urlParams.get("timerScale") ?? "1") || 1;
 const debugMode = urlParams.get("debug") === "1";
-const visualReviewCapture = urlParams.get("capture") === "review";
-document.body.dataset.capture = visualReviewCapture ? "review" : "default";
+document.body.dataset.capture = "default";
 
 /** Deterministic shift seed (drives traffic line variation). */
 const SHIFT_SEED = 20260821;
@@ -110,17 +112,16 @@ const accessibilitySettings = game.accessibility.settings([
   game.accessibility.reducedMotion({ enabled: prefersReducedMotion })
 ]);
 const reducedMotion = accessibilitySettings.reducedMotion;
-const runtimeEffects = game.effects({ poolSize: 40, reducedMotion, reducedFlash: false });
 
 // ---- audio ------------------------------------------------------------------
-const courierAudio: CourierAudioController = createCourierAudio(reducedMotion);
+const courierAudio: CourierSoundController = createCourierSound();
 let audioUnlocked = false;
 const unlockAudio = (): void => {
   if (audioUnlocked) return;
   audioUnlocked = true;
-  void courierAudio.unlock();
+  void courierAudio.unlock().then(() => courierAudio.startBeds());
 };
-const playCue = (cue: Parameters<CourierAudioController["cue"]>[0]): void => {
+const playCue = (cue: CourierCue): void => {
   if (!audioUnlocked) return;
   void courierAudio.cue(cue);
 };
@@ -150,7 +151,7 @@ window.addEventListener("pointerdown", unlockAudio, { once: true });
 // east-avenue world road as the selected live traffic. It changes lens and
 // exposure only; dynamic cars, collision, cargo, and delivery state remain
 // the normal route simulation.
-const dressing = buildCityDressing(assets, visualReviewCapture);
+const dressing = buildCityDressing(assets);
 const propColliders: readonly PropCollider[] = buildPropColliders();
 const trafficSim = createTrafficSimulation({ seed: SHIFT_SEED });
 
@@ -182,7 +183,7 @@ const vanVehicle: GameArcadeVehicle = createGameArcadeVehicle({
 
 // ---- simulation state ---------------------------------------------------------
 let dispatch: DispatchState = createDispatchState();
-let paused = false;
+
 let frameCount = 0;
 let dropLookbackRemainingSeconds = 0;
 let lastVanSpeed = 0;
@@ -247,21 +248,21 @@ const chaseCamera = camera.follow({
   // desktop frame, which hid the cargo identity and made the scene read like
   // an empty road board. This is still the same follow rig and simulation
   // heading; only the visual composition is corrected.
-  targetOffset: visualReviewCapture ? [0, 1.16, -0.05] : [0, 1.22, -1.05],
+  targetOffset: [0, 1.22, -1.05],
   offsetMode: "target-yaw",
-  offset: visualReviewCapture
-    ? [0.55, 2.7, 8.6]
-    : [0.22, CHASE_CAMERA.height + 1.45, CHASE_CAMERA.distance + 4.2] as [number, number, number],
-  fov: visualReviewCapture ? 55 : 56,
+  offset: [0.22, CHASE_CAMERA.height + 1.45, CHASE_CAMERA.distance + 4.2] as [number, number, number],
+  fov: 56,
   // Review retains the normal follow rig but removes its long residual pan so
   // a real collision is framed where the simulation says it occurred.
-  smoothing: visualReviewCapture ? 0.1 : CHASE_CAMERA.smoothing
+  smoothing: CHASE_CAMERA.smoothing
 });
 
 type MutableChaseCamera = { offset?: readonly [number, number, number] };
 
 // ---- scene --------------------------------------------------------------------
-const app = createAuraApp("#app", {
+const courierGame = createGame({
+  id: "showcase-courier-rush",
+  target: "#app",
   diagnostics: { overlay: debugMode, performancePanel: false },
   physics: {
     seed: 20260911,
@@ -321,7 +322,7 @@ const app = createAuraApp("#app", {
         scaleMode: "fit",
         // Give the typed vehicle a modest presentation lift in the named
         // review frame without changing its arcade collider or route physics.
-        targetMaxDimension: visualReviewCapture ? 4.2 : VAN_TARGET_LENGTH,
+        targetMaxDimension: VAN_TARGET_LENGTH,
         // The V2 Meshy van carries its own livery (white body, orange side
         // stripe, dark glasshouse, black tires) in the authored base-color
         // texture. Mount it un-overridden: the former single-material
@@ -338,7 +339,7 @@ const app = createAuraApp("#app", {
     // like the kit towers: no collider, no delivery rule reads it. Kept out
     // of the review canyon slice, which stages only the avenue, hero, live
     // traffic, and pressure gate.
-    .addMany(visualReviewCapture ? [] : [
+    .addMany([
       model(assets.courierVan, {
         name: "courier-depot-fleet-van",
         role: "setDressing",
@@ -364,7 +365,7 @@ const app = createAuraApp("#app", {
         name: "courier-parcel",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: visualReviewCapture ? 0.58 : 0.76,
+        targetMaxDimension: 0.76,
         material: material.pbr({ name: "parcel safety-orange finish", color: "#f5ad4f", roughness: 0.38, metallic: 0.08, clearcoat: 0.2, emissive: "#6b2f10", emissiveIntensity: 0.13 }),
         castShadow: true
       }).position(-999, 0.86, -999).scale(0.001)
@@ -400,7 +401,36 @@ const app = createAuraApp("#app", {
         receiveShadow: true
       }).runtime({ id: car.id, tags: ["traffic", "typed-secondary-asset", "route-local-ai"] })
     ))
-    .camera(chaseCamera)
+    .camera(chaseCamera),
+  qualityRebuild: { flags: ["game"] },
+  evidence: {
+    schema: 1,
+    sections: async () => (await import("../evidence")).sections,
+    legacyGlobals: ["__COURIER_RUSH_EVIDENCE__", "__AURA3D_SHOWCASE_COURIER_RUSH__"]
+  },
+  scenarios: async () => (await import("../scenarios")).courierScenarios
+});
+const app = courierGame.runtime;
+courierGame.start();
+
+// ---- juice (PRD-09 §7.6) ----------------------------------------------------
+// `fire` composes fx/camera/overlay/rumble per event; the DOM strike flash and
+// the hand-rolled `game.effects` pool are gone (C-05 backend + C-20 bursts).
+const courierTween = createTweenEngine();
+const courierFx = createFxParticlePass(app.effects);
+const courierJuice = createJuice<"pickup" | "deliver" | "combo" | "strike", CourierCue>({
+  events: {
+    pickup: {},
+    deliver: { fx: { kind: "ring", count: 18, color: "#7ce8ff" }, shake: 0.18 },
+    combo: { fx: { kind: "ring", count: 24, color: "#ffd166" }, punch: { fovDeg: 4, ms: 160 } },
+    strike: { flash: { color: "#ff8d6a", peak: 0.3, ms: 160 }, shake: 0.4, rumble: { ms: 140, strong: 0.65 } }
+  },
+  camera: app.camera,
+  session: courierGame.session,
+  fx: courierFx,
+  overlay: createOverlayDriver({ app }),
+  tweens: courierTween,
+  rumble: createRumbleDriver()
 });
 
 /** Two warm emissive pools ahead of the van: readable headlight practicals. */
@@ -597,7 +627,6 @@ for (const car of trafficSim.cars()) {
   trafficNodes.set(car.id, app.nodes.require(car.id));
   trafficHeadlights.set(car.id, app.nodes.require(car.id + "-headlight"));
 }
-let compositionSubjectSuppressed = false;
 
 
 // ---- evidence ------------------------------------------------------------------
@@ -655,12 +684,12 @@ const mountedEvidence = {
   reducedMotion,
   autopilot: autopilotEnabled,
   timerScale,
-  paused,
+  paused: courierGame.session.paused,
   frameCount: 0,
   van: { x: 0, z: 0, heading: 0, speed: 0 },
   trafficSummaries: [] as { readonly id: string; readonly x: number; readonly z: number; readonly heading: number; readonly speed: number; readonly courtesyStopped: boolean }[],
   audio: {
-    system: "engine.createGameAudio",
+    system: "audio.createGameSoundEngine",
     cueCount: 10,
     gestureUnlocked: false,
     sfxReady: false,
@@ -674,7 +703,7 @@ const mountedEvidence = {
     vehicle: "engine.createGameArcadeVehicle",
     driverAi: "engine.createVehicleDriverAi",
     cityKit: "city.cityBlock night preset",
-    effects: "game.effects",
+    effects: "@aura3d/game juice (C-20 bursts)",
     input: "game.input"
   },
   diagnostics: undefined as unknown
@@ -682,12 +711,12 @@ const mountedEvidence = {
 
 function refreshAudioEvidence(): void {
   const proof = courierAudio.proof();
-  mountedEvidence.audio.gestureUnlocked = proof.gestureUnlocked;
-  mountedEvidence.audio.sfxReady = proof.sfxReady;
-  mountedEvidence.audio.recentCues = proof.recentCues.slice();
+  mountedEvidence.audio.gestureUnlocked = audioUnlocked;
+  mountedEvidence.audio.sfxReady = proof.contextState === "running" && proof.errors.length === 0;
+  mountedEvidence.audio.recentCues = courierAudio.recentCues().slice();
   mountedEvidence.audio.playedCueCount = proof.playedCueCount;
   mountedEvidence.audio.contextState = proof.contextState;
-  mountedEvidence.audio.assetUrls = proof.assetUrls.slice();
+  mountedEvidence.audio.assetUrls = courierAudio.assetUrls.slice();
 }
 
 Object.defineProperty(window, "__COURIER_RUSH_EVIDENCE__", {
@@ -700,42 +729,21 @@ Object.defineProperty(window, "__AURA3D_SHOWCASE_COURIER_RUSH__", {
   configurable: true,
   writable: true
 });
-Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
-  value: {
-    category: "application" as const,
-    get subject() {
-      return {
-        position: [SPAWN_POSE.x, 0, SPAWN_POSE.z] as const,
-        rotation: [0, -SPAWN_POSE.heading, 0] as const,
-        targetSize: VAN_TARGET_LENGTH
-      };
-    },
-    async setSubjectSuppressed(suppressed: boolean) {
-      app.pause();
-      compositionSubjectSuppressed = suppressed;
-      vanNode.setVisible(!suppressed);
-      await app.stepAsync(0);
-    },
-    async settleSubjectPose() {
-      app.pause();
-      await app.ready();
-      paused = true;
-      resetVan();
-      vanNode
-        .setPosition(SPAWN_POSE.x, 0, SPAWN_POSE.z)
-        .setRotation(0, -SPAWN_POSE.heading, 0)
-        .setVisible(!compositionSubjectSuppressed);
-      updateMountedEvidence();
-      await app.stepAsync(0);
-    }
-  },
-  configurable: true
-});
 
 /**
  * Diagnostic hook used by browser specs: places the van at an exact pose. The
  * placement itself changes no rules; everything after it is normal simulation.
  */
+bindCourierEvidence(() => mountedEvidence);
+bindCourierDrive({
+  async pumpFrames(frames: number): Promise<void> {
+    for (let i = 0; i < frames; i += 1) await app.stepAsync(1 / 60);
+  },
+  placeVan(x: number, z: number, heading: number): void {
+    vanVehicle.reset({ x, z, heading, speed: 0, drift: 0 });
+  }
+});
+
 Object.defineProperty(window, "__COURIER_RUSH_DEBUG__", {
   value: {
     placeVan(x: number, z: number, heading = START_HEADING): void {
@@ -777,7 +785,107 @@ Object.defineProperty(window, "__COURIER_RUSH_DEBUG__", {
 });
 
 // ---- HUD ------------------------------------------------------------------------
-const hud = mountCourierHud(document.getElementById("panel")!);
+// Shared HUD kit (PRD-09 Phase 4): motorsport theme, widgets per §7.7; the
+// #panel aside's dispatch card / status strip / touch row is deleted with
+// src/hud.ts. Prose moves to the shell `about` menu when the route adopts it.
+const hudHost = document.createElement("div");
+hudHost.className = "a3g-game-hud";
+document.getElementById("app")!.appendChild(hudHost);
+const navBearingRef: { current: number | null } = { current: null };
+const hud = mountHud(
+  { root: hudHost, doc: document as unknown as HudDocument },
+  {
+    theme: "motorsport",
+    maxScreenFraction: 0.22,
+    widgets: [
+      { id: "timer", kind: "timer", mode: "countdown", warnAt: 10, anchor: "top", label: "Shift" },
+      { id: "score", kind: "score", anchor: "top-right", label: "Earnings", rollMs: 250 },
+      { id: "strikes", kind: "lives", anchor: "top-left", label: "Strikes" },
+      { id: "combo", kind: "combo", anchor: "top-right", mobileAnchor: "bottom-right" },
+      { id: "objective", kind: "objective", anchor: "bottom-left" },
+      { id: "speed", kind: "speedometer", anchor: "bottom-right", mobileAnchor: "hidden" },
+      {
+        id: "nav",
+        kind: "indicator",
+        anchor: "center",
+        target: () =>
+          navBearingRef.current === null
+            ? null
+            : [0.5 + 0.42 * Math.sin(navBearingRef.current), 0.5 - 0.42 * Math.cos(navBearingRef.current)]
+      }
+    ]
+  }
+);
+const touchControls = mountTouchControls(
+  input,
+  {
+    preset: "steer-pedals",
+    bindings: {
+      throttle: "throttle",
+      brake: "brake",
+      "steer-left": "left",
+      "steer-right": "right",
+      boost: "handbrake",
+      reset: "reset"
+    },
+    haptics: true
+  },
+  {
+    doc: document as unknown as HudDocument,
+    root: hudHost,
+    coarsePointer: () => matchMedia("(pointer: coarse)").matches
+  }
+);
+void touchControls; // visibility is rule-driven; update() runs in the frame loop
+
+function radioToast(html: string, seconds: number): void {
+  hud.toast(html.replace(/<[^>]+>/g, ""), { ms: seconds * 1000 });
+}
+
+function showShiftSummary(input: {
+  cleared: boolean;
+  failReason: "timer" | "strikes" | null;
+  deliveriesCompleted: number;
+  score: number;
+  bestCombo: number;
+  earlyDrops: number;
+}): void {
+  void hud.banner(
+    input.cleared
+      ? "Shift complete!"
+      : input.failReason === "strikes"
+        ? "Shift over - van wrecked"
+        : "Shift over - out of time",
+    { holdMs: 4000, style: input.cleared ? "clear" : "fail" }
+  );
+  hud.toast(
+    "Deliveries " +
+      input.deliveriesCompleted +
+      "/5 - earnings " +
+      Math.round(input.score) +
+      " - best combo x" +
+      input.bestCombo.toFixed(1) +
+      " - press R for a new shift",
+    { ms: 6000 }
+  );
+}
+
+function hideShiftSummary(): void {
+  // Banners/toasts expire on their own; nothing to hide eagerly.
+}
+
+function syncHud(): void {
+  const frame = currentHudFrame();
+  navBearingRef.current = frame.arrowBearing;
+  hud.set("objective", frame.objective);
+  hud.set("timer", frame.timerSeconds);
+  hud.set("strikes", frame.strikes);
+  hud.set("combo", frame.combo);
+  hud.set("score", frame.score);
+  hud.set("speed", vanVehicle.snapshot().speed * 3.6);
+  const bearing = frame.arrowBearing;
+  hud.set("nav", bearing === null ? [0.5, 0.5] : [0.5 + 0.42 * Math.sin(bearing), 0.5 - 0.42 * Math.cos(bearing)]);
+}
 
 function objectiveText(state: DispatchState): string {
   const plan = currentDelivery(state);
@@ -814,8 +922,8 @@ function handleCourierEvents(
     switch (event.type) {
       case "dispatch":
         playCue("dispatch");
-        if (!paused && !dropPayoffOwnsToast) {
-          showRadioToast(hud, "<strong>Dispatch:</strong> new job on the radio - grab it from the lit zone.", 3);
+        if (!courierGame.session.paused && !dropPayoffOwnsToast) {
+          radioToast("<strong>Dispatch:</strong> new job on the radio - grab it from the lit zone.", 3);
         }
         break;
       case "pickup": {
@@ -828,7 +936,7 @@ function handleCourierEvents(
         });
         observed.pickupFired = true;
         playCue("pickup");
-        showRadioToast(hud, "<strong>Parcel aboard.</strong> Follow the arrow to the drop zone.", 2.6);
+        radioToast("<strong>Parcel aboard.</strong> Follow the arrow to the drop zone.", 2.6);
         break;
       }
       case "drop": {
@@ -843,23 +951,18 @@ function handleCourierEvents(
         playCue("drop");
         if (event.early) playCue("early-bonus");
         if (!reducedMotion) {
-          runtimeEffects.ringShockwave([vanX, 0.25, vanZ], {
-            color: event.early ? "#ffd166" : "#7ce8ff",
-            intensity: 0.8,
-            radius: 2.4
-          });
+          courierJuice.fire(event.early ? "combo" : "deliver", { position: [vanX, 0.25, vanZ] });
           dropLookbackRemainingSeconds = DROP_LOOKBACK_SECONDS;
         }
-        showRadioToast(
-          hud,
-          "<strong>Delivered.</strong> +" + event.pointsAwarded +
+        radioToast(
+                    "<strong>Delivered.</strong> +" + event.pointsAwarded +
             " at x" + event.multiplier.toFixed(1) + (event.early ? " - early bonus!" : ""),
           2.8
         );
         break;
       }
       case "comboReset":
-        showRadioToast(hud, "<strong>Late drop.</strong> Combo reset to x1.0.", 2.4);
+        radioToast("<strong>Late drop.</strong> Combo reset to x1.0.", 2.4);
         break;
       case "strike":
         observed.strikeObserved = true;
@@ -870,24 +973,24 @@ function handleCourierEvents(
           timerMs: Math.round(dispatch.timerMs)
         });
         playCue("strike");
-        pulseStrikeFlash(hud);
-        showRadioToast(hud, "<strong>Strike " + event.strikes + "/" + MAX_STRIKES + ".</strong> Watch the panel work!", 2.2);
+        courierJuice.fire("strike");
+        radioToast("<strong>Strike " + event.strikes + "/" + MAX_STRIKES + ".</strong> Watch the panel work!", 2.2);
         break;
       case "timerFail":
         observed.timerFailObserved = true;
         playCue("shift-fail");
-        showShiftSummary(hud, summaryInput(false));
+        showShiftSummary(summaryInput(false));
         break;
       case "strikesExhausted":
         observed.strikeFailObserved = true;
         playCue("shift-fail");
-        showShiftSummary(hud, summaryInput(false));
+        showShiftSummary(summaryInput(false));
         break;
       case "shiftClear":
         observed.allDeliveriesInsideTimers = true;
         playCue("shift-clear");
-        showRadioToast(hud, "<strong>That's the shift.</strong> Every delivery landed inside its window!", 4);
-        showShiftSummary(hud, summaryInput(true));
+        radioToast("<strong>That's the shift.</strong> Every delivery landed inside its window!", 4);
+        showShiftSummary(summaryInput(true));
         break;
       default:
         break;
@@ -1087,11 +1190,11 @@ function pushOut(vanX: number, vanZ: number, collider: PropCollider): { x: numbe
 app.onFrame(({ dt }) => {
   const stepSeconds = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
   frameCount += 1;
-  decayHudEffects(hud, stepSeconds);
+  touchControls.update();
   input.update(stepSeconds);
 
   if (input.pressed("pause")) {
-    paused = !paused;
+    if (courierGame.session.paused) courierGame.session.resume(); else courierGame.session.pause("user");
     playCue("dispatch");
   }
 
@@ -1107,18 +1210,18 @@ app.onFrame(({ dt }) => {
     impactPose = null;
     legWaypoints = [];
     legKey = "";
-    hideShiftSummary(hud);
+    hideShiftSummary();
     if (hadEnded) {
       observed.resetRestoresShift = true;
       playCue("dispatch");
-      showRadioToast(hud, "<strong>New shift.</strong> Dispatch has five jobs with your name on them.", 3);
+      radioToast("<strong>New shift.</strong> Dispatch has five jobs with your name on them.", 3);
     }
   }
 
-  if (paused) {
+  if (courierGame.session.paused) {
     observed.pauseFreezesSim = true;
     updateMountedEvidence();
-    updateCourierHud(hud, currentHudFrame());
+    syncHud();
     refreshAudioEvidence();
     return;
   }
@@ -1188,7 +1291,7 @@ app.onFrame(({ dt }) => {
       vanAfter = vanVehicle.constrain({ x: pushed.x, z: pushed.z, speedMultiplier: 0.35 });
       impactFeedbackRemainingSeconds = reducedMotion ? 0.12 : IMPACT_FEEDBACK_SECONDS;
       if (!reducedMotion) {
-        runtimeEffects.hitSpark([contactX, 0.52, contactZ], { color: "#ff8d6a", intensity: 0.82, radius: 1.08 });
+        courierFx.burst("spark", [contactX, 0.52, contactZ], { count: 16, color: "#ff8d6a" });
       }
       (mountedEvidence as unknown as { lastImpact: unknown }).lastImpact = {
         source: hit.id,
@@ -1201,6 +1304,8 @@ app.onFrame(({ dt }) => {
   }
 
   // Traffic steps with the van position so nearby courtesy horns can fire.
+  courierAudio.updateEngine(vanAfter.speed, driveInput.throttle);
+
   const trafficEvents = trafficSim.step(stepSeconds, vanAfter.x, vanAfter.z);
   if (trafficEvents.length > 0) playCue("horn");
 
@@ -1254,11 +1359,11 @@ app.onFrame(({ dt }) => {
     .setVisible(!reducedMotion);
   const parcelBeaconVisible = dispatch.phase === "carrying" && !reducedMotion;
   parcelBeaconNode
-    .setPosition(vanAfter.x + fx * 0.08, visualReviewCapture ? 1.7 : 1.56, vanAfter.z + fz * 0.08)
+    .setPosition(vanAfter.x + fx * 0.08, 1.56, vanAfter.z + fz * 0.08)
     .setScale(parcelBeaconVisible ? 1 : 0.001)
     .setVisible(parcelBeaconVisible);
   vanRoofBeacon
-    .setPosition(vanAfter.x + fx * 0.08, visualReviewCapture ? 1.92 : 1.82, vanAfter.z + fz * 0.08)
+    .setPosition(vanAfter.x + fx * 0.08, 1.82, vanAfter.z + fz * 0.08)
     .setRotation(0, vanRenderHeading, 0)
     .setVisible(!reducedMotion);
 
@@ -1298,7 +1403,7 @@ app.onFrame(({ dt }) => {
       .setScale(1)
       .setVisible(true);
   } else {
-    parcelNode.setPosition(vanAfter.x - fx * 0.08, visualReviewCapture ? 1.5 : 1.36, vanAfter.z - fz * 0.3)
+    parcelNode.setPosition(vanAfter.x - fx * 0.08, 1.36, vanAfter.z - fz * 0.3)
       .setRotation(0, -vanAfter.heading, 0)
       .setScale(parcelAttachedVisible ? 1 : 0.001)
       .setVisible(parcelAttachedVisible);
@@ -1362,7 +1467,7 @@ app.onFrame(({ dt }) => {
           .setPosition(car.x + carFx * 0.92, 0.2, car.z + carFz * 0.92)
           .setRotation(0, -car.heading, 0)
           .setScale([0.26, 0.08, 0.045])
-          .setVisible(!reducedMotion && (visualReviewCapture || car.speed > 0.15));
+          .setVisible(!reducedMotion && (car.speed > 0.15));
       }
     }
   }
@@ -1390,20 +1495,20 @@ app.onFrame(({ dt }) => {
   const chaseBlend = dropLookbackRemainingSeconds > 0
     ? Math.sin((1 - dropLookbackRemainingSeconds / DROP_LOOKBACK_SECONDS) * Math.PI)
     : 0;
-  const offset = chaseOffsetForBlend(chaseBlend, visualReviewCapture ? 11.4 : undefined);
+  const offset = chaseOffsetForBlend(chaseBlend, undefined);
   Object.assign(chaseCamera as unknown as MutableChaseCamera, {
     offset: [
-      visualReviewCapture ? 0.66 + offset.offsetX * 0.12 : offset.offsetX,
-      visualReviewCapture ? 3.28 : offset.offsetY,
+      offset.offsetX,
+      offset.offsetY,
       offset.offsetZ
     ] as const
   });
 
-  runtimeEffects.update(stepSeconds);
+  courierTween.tick(stepSeconds);
   impactFeedbackRemainingSeconds = Math.max(0, impactFeedbackRemainingSeconds - stepSeconds);
   if (frameCount % 30 === 0) mountedEvidence.diagnostics = app.diagnostics();
   updateMountedEvidence();
-  updateCourierHud(hud, currentHudFrame());
+  syncHud();
   refreshAudioEvidence();
 });
 
@@ -1451,7 +1556,7 @@ function updateMountedEvidence(): void {
   mountedEvidence.strikes = dispatch.strikes;
   mountedEvidence.combo = dispatch.combo;
   mountedEvidence.score = dispatch.score;
-  mountedEvidence.paused = paused;
+  mountedEvidence.paused = courierGame.session.paused;
   mountedEvidence.frameCount = frameCount;
   mountedEvidence.van = {
     x: round3(vanSnap.x),
@@ -1477,8 +1582,8 @@ function round3(value: number): number {
   return Math.round(value * 1000) / 1000;
 }
 
-updateCourierHud(hud, currentHudFrame());
-showRadioToast(hud, "<strong>Dispatch:</strong> five jobs tonight. Shift starts when you hit the gas.", 4);
+syncHud();
+radioToast("<strong>Dispatch:</strong> five jobs tonight. Shift starts when you hit the gas.", 4);
 
 void app.ready().then(() => {
   const diagnostics = app.diagnostics();

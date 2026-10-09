@@ -9,7 +9,7 @@ const reportDir = join(repoRoot, "tests/reports/showcase-courier-rush");
 const modelAssetIds = ["courierVan", "courierParcel", "courierTrafficSedan", "courierTrafficHatch", "courierZoneAwning", "courierZoneBollard"];
 const primaryAssetIds = ["courierVan", "courierParcel"];
 const supportingAssetIds = modelAssetIds.filter((id) => !primaryAssetIds.includes(id));
-const audioAssetIds = ["courierAmbientCitySfx", "courierDispatchBlipSfx", "courierEarlyBonusSfx", "courierEngineSfx", "courierHornNearSfx", "courierParcelDropSfx", "courierParcelPickupSfx", "courierShiftClearSfx", "courierShiftFailSfx", "courierStrikeHitSfx"];
+const audioAssetIds = []; // sound cues come from the shared game-sfx-core pack, not route-typed assets
 const acceptanceFiles = ["load.png", "pickup-zone.png", "parcel-in-bed.png", "busy-intersection.png", "drop-flash.png", "traffic-strike-fail.png", "timer-fail-summary.png", "shift-clear.png", "mobile.png", "reduced-motion.png"];
 
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));

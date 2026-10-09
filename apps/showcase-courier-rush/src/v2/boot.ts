@@ -25,8 +25,8 @@ import { lightingNodes } from "./scene/lighting";
 import { createCourierRig, fallbackCameraNode } from "./scene/camera";
 import { wireCourierFx } from "./scene/fx";
 import { createCourierAutopilot } from "./autopilot";
-import { publishCourierEvidence } from "./evidence";
-import { applyCourierScenario } from "./scenarios";
+import { publishCourierEvidence } from "../evidence";
+import { applyCourierScenario } from "../scenarios";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_COURIER_RUSH" as const;
 const SHIFT_SEED = 0x5eed_3417;
