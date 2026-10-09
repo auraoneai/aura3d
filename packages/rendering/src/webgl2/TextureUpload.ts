@@ -7,6 +7,8 @@ import { RenderDeviceError } from "../RenderDevice";
 import { Texture, bytesPerPixel, isCompressedTextureFormat, isFloatColorTextureFormat, type TexturePixelData, type TextureUpdateRegion } from "../Texture";
 import { WEBGL_CUBE_FACES } from "../WebGL2Device";
 import { applyTextureBudget, DEFAULT_TEXTURE_BUDGET_POLICY } from "../textures/TextureBudget";
+import { resolveCompressedTextureFormatSlot } from "../contracts/textureFormats";
+import { rendererQrFlags } from "../renderer/FrameGraph";
 import type { WebGL2DeviceHost } from "./DeviceHost";
 import { cubeFaceTarget, resolveCompressedTextureFormat, rgba8TextureInternalFormat, textureStorageInternalFormat, textureUploadFormat } from "./TextureFormats";
 
@@ -105,7 +107,17 @@ export class WebGL2TextureRegistry {
     // to — bind TEXTURE_2D_ARRAY before texStorage3D or the upload is 0x502.
     this.host.gl.bindTexture(texture.dimension === "2d-array" ? this.host.gl.TEXTURE_2D_ARRAY : this.host.gl.TEXTURE_2D, handle);
     if (isCompressedTextureFormat(texture.format)) {
-      const compressed = resolveCompressedTextureFormat(this.host.gl, texture.format);
+      // C-16: when A3D_QR_ASSETS is on, the prd05 slot resolves the full
+      // format set (bc7/etc2-rgb8unorm + sRGB internal formats) with real
+      // extension probing; flag-off keeps the legacy resolver untouched.
+      const flags = rendererQrFlags();
+      const slotFormat = resolveCompressedTextureFormatSlot().get(flags)(
+        texture.format, texture.colorSpace, this.host.gl);
+      const compressed = slotFormat !== null
+        ? { internalFormat: slotFormat as GLenum }
+        : flags.on("A3D_QR_ASSETS")
+          ? null
+          : resolveCompressedTextureFormat(this.host.gl, texture.format);
       if (compressed) {
         const uploadLevels = completeUploadLevels(texture.textureLevels);
         for (const [levelIndex, level] of uploadLevels.entries()) {
