@@ -9,22 +9,40 @@ on:
     branches: [main]
     paths:
       - "packages/game/**"
+      - "packages/audio/**"
+      - "packages/engine/src/game/**"
       - "packages/engine/src/nodes/game/**"
       - "packages/engine/src/lanes/prd09.ts"
       - "packages/engine/src/agent-api/GameAppRuntime.ts"
+      - "packages/engine/src/agent-api/app/createGameApp.ts"
+      - "packages/engine/src/agent-api/nodes/game/**"
+      - "packages/input/src/TouchLayouts.ts"
+      - "apps/common/**"
+      - "assets/packs/game-sfx-core/**"
       - "eslint/qr/**"
       - "tools/showcase-library/game-capture-parity.mjs"
+      - "tools/quality-rebuild-capture/route-composition.mjs"
       - "tests/unit/game/**"
       - "tests/unit/engine/game-app-runtime.test.ts"
       - "tests/unit/tools/game-capture-parity.test.ts"
       - "tests/unit/tools/no-route-capture-flags.test.ts"
       - "tests/unit/contracts/impl/prd09-game.test.ts"
+      - "tests/browser/game-shell/**"
+      - "tests/browser/layout.spec.ts"
+      - "tests/browser/touch.spec.ts"
+      - "tests/browser/audio-live.spec.ts"
+      - "tests/browser/example-dev-server.ts"
+      - "tests/browser/mobile-touch-contract.ts"
       - "migration/**"
       - "packages/create-aura3d/templates/**"
       - "tools/showcase-library/template-creategame-audit.mjs"
+      - "playwright.prd09.config.ts"
       - ".github/workflows/qr-prd09-game.yml"
   push:
-    branches: ["qr/prd09-*"]
+    branches: ["qr/prd09-*", "main"]
+  # Nightly sweep of the owned source — catches drift PR gates can't see.
+  schedule:
+    - cron: "0 5 * * *"
   workflow_dispatch:
 
 concurrency:
@@ -127,3 +145,50 @@ jobs:
           done
       - name: Assert createGame + 0 capture branches + 0 synth cues
         run: node tools/showcase-library/template-creategame-audit.mjs --root /tmp
+
+  browser-macos:
+    # PRD-09 §18: the lane's browser gate on real browsers — Chromium (ANGLE
+    # Metal) as primary, plus the WebKit and Firefox projects. Specs self-serve
+    # the repo root via tests/browser/example-dev-server.ts, which also exposes
+    # packages/game/fixtures/* to the specs that need fixture routes.
+    name: Browser specs (macos-14)
+    runs-on: macos-14
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install chromium webkit firefox
+
+      - name: Game-shell + layout + touch + audio-live specs (Chromium/WebKit/Firefox)
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: browser-prd09-macos.json
+        run: pnpm exec playwright test --config playwright.prd09.config.ts
+
+      - name: Beacon size-limit (< 0.5 kB gz)
+        working-directory: packages/game
+        run: pnpm exec size-limit --config size-limit.json
+
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd09-browser-macos
+          path: |
+            tests/reports/browser-prd09-macos.json
+            test-results/
+          retention-days: 30
+          if-no-files-found: warn
