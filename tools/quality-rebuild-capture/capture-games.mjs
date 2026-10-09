@@ -1054,7 +1054,9 @@ async function main() {
   writeIndex(report);
   writeStepSummary(report);
   local?.server.close();
-  const failures = report.games.filter((g) => g.error || g.runs.some((r) => r.error || r.missingShots?.length));
+  // T0-11: blank shots and no-draw-timeout readiness count as failures too —
+  // a game that renders nothing or times out before its first draw is red.
+  const failures = report.games.filter((g) => g.error || g.runs.some((r) => r.error || r.missingShots?.length || r.blankShots?.length || r.timing?.readiness === "no-draw-timeout"));
   log(`done: ${report.games.length} games, ${failures.length} with errors/missing shots -> ${path.relative(repoRoot, outDir)}/report.json`);
   // T0-11/P-01: game errors and missing shots fail the run unconditionally —
   // a crashed game is the red truth, not an optional strict-only finding.
