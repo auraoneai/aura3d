@@ -1,0 +1,3056 @@
+From 99f9b8354bdc2f7831c5a69bf518744ae1d8f802 Mon Sep 17 00:00:00 2001
+From: gchahal+1 <gchahal@veerone.com>
+Date: Fri, 9 Oct 2026 11:04:44 +0000
+Subject: [PATCH] migration(showcase-bank-shot): regenerated patch set
+ (post-PRD-14 layout)
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ .../assets/sfx/ambientHall.wav                |   3 -
+ .../showcase-bank-shot/assets/sfx/ballHit.wav |   3 -
+ .../assets/sfx/comboChime.wav                 |   3 -
+ .../assets/sfx/cueStrike.wav                  |   3 -
+ .../assets/sfx/cushionHit.wav                 |   3 -
+ .../assets/sfx/eightWin.wav                   |   3 -
+ .../assets/sfx/foulWhistle.wav                |   3 -
+ .../assets/sfx/pocketDrop.wav                 |   3 -
+ .../assets/sfx/rackClear.wav                  |   3 -
+ .../assets/sfx/rackFail.wav                   |   3 -
+ apps/showcase-bank-shot/index.html            |   2 -
+ apps/showcase-bank-shot/package.json          |   5 +-
+ apps/showcase-bank-shot/scripts/build-sfx.mjs | 355 -------
+ .../scripts/register-assets.mjs               |  38 +-
+ .../scripts/write-performance-report.ts       | 108 --
+ apps/showcase-bank-shot/src/evidence.ts       |  17 +
+ .../src/legacy/billiards-audio.ts             | 170 ----
+ apps/showcase-bank-shot/src/legacy/main.ts    | 435 ++++-----
+ apps/showcase-bank-shot/src/legacy/styles.css |   4 +
+ apps/showcase-bank-shot/src/scenario-drive.ts |  35 +
+ .../src/scenarios/eight-finish.ts             |  16 +
+ apps/showcase-bank-shot/src/scenarios/foul.ts |  12 +
+ .../showcase-bank-shot/src/scenarios/index.ts |  11 +
+ .../src/scenarios/pocket.ts                   |  12 +
+ .../src/scenarios/rack-fail.ts                |  11 +
+ apps/showcase-bank-shot/src/sound.ts          |  69 ++
+ .../bankShotAmbientHallSfx.2cc34b40.wav       |   3 -
+ .../bankShotAmbientHallSfx.dd9f1de8.wav       |   3 -
+ .../bankShotAmbientHallSfx.thumb.svg          |   1 -
+ .../bankShotBallHitSfx.97e8103a.wav           |   3 -
+ .../aura-assets/bankShotBallHitSfx.thumb.svg  |   1 -
+ .../bankShotComboChimeSfx.42171c98.wav        |   3 -
+ .../bankShotComboChimeSfx.thumb.svg           |   1 -
+ .../bankShotCueStrikeSfx.458c8089.wav         |   3 -
+ .../bankShotCueStrikeSfx.thumb.svg            |   1 -
+ .../bankShotCushionHitSfx.67b035c7.wav        |   3 -
+ .../bankShotCushionHitSfx.thumb.svg           |   1 -
+ .../bankShotEightWinSfx.dae450ea.wav          |   3 -
+ .../aura-assets/bankShotEightWinSfx.thumb.svg |   1 -
+ .../bankShotFoulWhistleSfx.631d142b.wav       |   3 -
+ .../bankShotFoulWhistleSfx.thumb.svg          |   1 -
+ .../bankShotPocketDropSfx.0ea6570c.wav        |   3 -
+ .../bankShotPocketDropSfx.thumb.svg           |   1 -
+ .../bankShotRackClearSfx.b2bc8c1c.wav         |   3 -
+ .../bankShotRackClearSfx.thumb.svg            |   1 -
+ .../bankShotRackFailSfx.e9275302.wav          |   3 -
+ .../aura-assets/bankShotRackFailSfx.thumb.svg |   1 -
+ src/aura-assets.ts                            | 920 ------------------
+ 48 files changed, 400 insertions(+), 1893 deletions(-)
+ delete mode 100644 apps/showcase-bank-shot/assets/sfx/ambientHall.wav
+ delete mode 100644 apps/showcase-bank-shot/assets/sfx/ballHit.wav
+ delete mode 100644 apps/showcase-bank-shot/assets/sfx/comboChime.wav
+ delete mode 100644 apps/showcase-bank-shot/assets/sfx/cueStrike.wav
+ delete mode 100644 apps/showcase-bank-shot/assets/sfx/cushionHit.wav
+ delete mode 100644 apps/showcase-bank-shot/assets/sfx/eightWin.wav
+ delete mode 100644 apps/showcase-bank-shot/assets/sfx/foulWhistle.wav
+ delete mode 100644 apps/showcase-bank-shot/assets/sfx/pocketDrop.wav
+ delete mode 100644 apps/showcase-bank-shot/assets/sfx/rackClear.wav
+ delete mode 100644 apps/showcase-bank-shot/assets/sfx/rackFail.wav
+ delete mode 100644 apps/showcase-bank-shot/scripts/build-sfx.mjs
+ delete mode 100644 apps/showcase-bank-shot/scripts/write-performance-report.ts
+ create mode 100644 apps/showcase-bank-shot/src/evidence.ts
+ delete mode 100644 apps/showcase-bank-shot/src/legacy/billiards-audio.ts
+ create mode 100644 apps/showcase-bank-shot/src/scenario-drive.ts
+ create mode 100644 apps/showcase-bank-shot/src/scenarios/eight-finish.ts
+ create mode 100644 apps/showcase-bank-shot/src/scenarios/foul.ts
+ create mode 100644 apps/showcase-bank-shot/src/scenarios/index.ts
+ create mode 100644 apps/showcase-bank-shot/src/scenarios/pocket.ts
+ create mode 100644 apps/showcase-bank-shot/src/scenarios/rack-fail.ts
+ create mode 100644 apps/showcase-bank-shot/src/sound.ts
+ delete mode 100644 public/aura-assets/bankShotAmbientHallSfx.2cc34b40.wav
+ delete mode 100644 public/aura-assets/bankShotAmbientHallSfx.dd9f1de8.wav
+ delete mode 100644 public/aura-assets/bankShotAmbientHallSfx.thumb.svg
+ delete mode 100644 public/aura-assets/bankShotBallHitSfx.97e8103a.wav
+ delete mode 100644 public/aura-assets/bankShotBallHitSfx.thumb.svg
+ delete mode 100644 public/aura-assets/bankShotComboChimeSfx.42171c98.wav
+ delete mode 100644 public/aura-assets/bankShotComboChimeSfx.thumb.svg
+ delete mode 100644 public/aura-assets/bankShotCueStrikeSfx.458c8089.wav
+ delete mode 100644 public/aura-assets/bankShotCueStrikeSfx.thumb.svg
+ delete mode 100644 public/aura-assets/bankShotCushionHitSfx.67b035c7.wav
+ delete mode 100644 public/aura-assets/bankShotCushionHitSfx.thumb.svg
+ delete mode 100644 public/aura-assets/bankShotEightWinSfx.dae450ea.wav
+ delete mode 100644 public/aura-assets/bankShotEightWinSfx.thumb.svg
+ delete mode 100644 public/aura-assets/bankShotFoulWhistleSfx.631d142b.wav
+ delete mode 100644 public/aura-assets/bankShotFoulWhistleSfx.thumb.svg
+ delete mode 100644 public/aura-assets/bankShotPocketDropSfx.0ea6570c.wav
+ delete mode 100644 public/aura-assets/bankShotPocketDropSfx.thumb.svg
+ delete mode 100644 public/aura-assets/bankShotRackClearSfx.b2bc8c1c.wav
+ delete mode 100644 public/aura-assets/bankShotRackClearSfx.thumb.svg
+ delete mode 100644 public/aura-assets/bankShotRackFailSfx.e9275302.wav
+ delete mode 100644 public/aura-assets/bankShotRackFailSfx.thumb.svg
+
+diff --git a/apps/showcase-bank-shot/assets/sfx/ambientHall.wav b/apps/showcase-bank-shot/assets/sfx/ambientHall.wav
+deleted file mode 100644
+index 7a1bbec61..000000000
+--- a/apps/showcase-bank-shot/assets/sfx/ambientHall.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:dd9f1de814c6d842d872bb610bd5e7655239b659e8df37c4ea2132e5d38a7b97
+-size 282284
+diff --git a/apps/showcase-bank-shot/assets/sfx/ballHit.wav b/apps/showcase-bank-shot/assets/sfx/ballHit.wav
+deleted file mode 100644
+index 4d394d526..000000000
+--- a/apps/showcase-bank-shot/assets/sfx/ballHit.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:97e8103a928276c3a0a8873edd49535dd783fdfcf3d94c0885d4dd4288374075
+-size 15920
+diff --git a/apps/showcase-bank-shot/assets/sfx/comboChime.wav b/apps/showcase-bank-shot/assets/sfx/comboChime.wav
+deleted file mode 100644
+index 72b0b7c9a..000000000
+--- a/apps/showcase-bank-shot/assets/sfx/comboChime.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:42171c98cdfeee61de84772d0df370c103dafe954f9c7e6a7a0c9e4c3cd8cddd
+-size 26504
+diff --git a/apps/showcase-bank-shot/assets/sfx/cueStrike.wav b/apps/showcase-bank-shot/assets/sfx/cueStrike.wav
+deleted file mode 100644
+index a2d171208..000000000
+--- a/apps/showcase-bank-shot/assets/sfx/cueStrike.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:458c80896e71175be8293b9a838fbc0929870f03b4d8ff5466935877f9fa94fe
+-size 15920
+diff --git a/apps/showcase-bank-shot/assets/sfx/cushionHit.wav b/apps/showcase-bank-shot/assets/sfx/cushionHit.wav
+deleted file mode 100644
+index bbf8397ac..000000000
+--- a/apps/showcase-bank-shot/assets/sfx/cushionHit.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:67b035c7c85436a6a150c18ea2bbcdfa13dab71f2d6f3fcb93ebd1fb6ca88d2a
+-size 18566
+diff --git a/apps/showcase-bank-shot/assets/sfx/eightWin.wav b/apps/showcase-bank-shot/assets/sfx/eightWin.wav
+deleted file mode 100644
+index 0940094a1..000000000
+--- a/apps/showcase-bank-shot/assets/sfx/eightWin.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:dae450ea83d7fd03c501e7f40c7f1ec46ca7989caf1f96aeea60036cd389b417
+-size 60018
+diff --git a/apps/showcase-bank-shot/assets/sfx/foulWhistle.wav b/apps/showcase-bank-shot/assets/sfx/foulWhistle.wav
+deleted file mode 100644
+index 8d994a360..000000000
+--- a/apps/showcase-bank-shot/assets/sfx/foulWhistle.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:631d142bd4c4fb0aca6377d96faaaba76c8299fe36a7445334a3db063cb1b869
+-size 40616
+diff --git a/apps/showcase-bank-shot/assets/sfx/pocketDrop.wav b/apps/showcase-bank-shot/assets/sfx/pocketDrop.wav
+deleted file mode 100644
+index ad6c69c2d..000000000
+--- a/apps/showcase-bank-shot/assets/sfx/pocketDrop.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:0ea6570ce36826ab8d0c24fd723869f818b2d0c5b61a2a3aa73fe41a14eca2f0
+-size 37088
+diff --git a/apps/showcase-bank-shot/assets/sfx/rackClear.wav b/apps/showcase-bank-shot/assets/sfx/rackClear.wav
+deleted file mode 100644
+index d4443f44b..000000000
+--- a/apps/showcase-bank-shot/assets/sfx/rackClear.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:b2bc8c1c33708ae7fc0fd73f1e7de08a2ebcb5dbcc0927d5f08f2738ceaffe6d
+-size 45908
+diff --git a/apps/showcase-bank-shot/assets/sfx/rackFail.wav b/apps/showcase-bank-shot/assets/sfx/rackFail.wav
+deleted file mode 100644
+index bc9c99505..000000000
+--- a/apps/showcase-bank-shot/assets/sfx/rackFail.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:e9275302dfc891fc3484b83e237f569421aea1eafce02ad1f84d0bb1a47ca47e
+-size 68838
+diff --git a/apps/showcase-bank-shot/index.html b/apps/showcase-bank-shot/index.html
+index 4279de084..388aa59b4 100644
+--- a/apps/showcase-bank-shot/index.html
++++ b/apps/showcase-bank-shot/index.html
+@@ -12,9 +12,7 @@
+     <main class="shell" aria-label="Bank Shot 8-ball">
+       <section class="viewport">
+         <div id="app" class="stage" data-testid="bank-shot-stage"></div>
+-        <div id="hud" aria-label="Bank Shot HUD"></div>
+       </section>
+-      <aside id="panel" class="panel" aria-label="Bank Shot controls and score"></aside>
+     </main>
+     <script type="module" src="./src/main.ts"></script>
+   </body>
+diff --git a/apps/showcase-bank-shot/package.json b/apps/showcase-bank-shot/package.json
+index 733b39e85..fba5895e7 100644
+--- a/apps/showcase-bank-shot/package.json
++++ b/apps/showcase-bank-shot/package.json
+@@ -9,15 +9,14 @@
+     "typecheck": "tsc -p tsconfig.json --noEmit",
+     "build": "vite build",
+     "preview": "vite preview --host 127.0.0.1",
+-    "build:sfx": "node scripts/build-sfx.mjs",
+     "build:models": "node scripts/build-models.mjs",
+     "register:assets": "node scripts/register-assets.mjs",
+-    "evidence:performance": "tsx --tsconfig ../../tsconfig.base.json scripts/write-performance-report.ts",
+     "evidence:deploy": "node scripts/write-deploy-report.mjs",
+     "write:route-health": "node scripts/write-route-health.mjs"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "workspace:*"
++    "@aura3d/engine": "workspace:*",
++    "@aura3d/game": "workspace:*"
+   },
+   "devDependencies": {
+     "typescript": "^5.8.3",
+diff --git a/apps/showcase-bank-shot/scripts/build-sfx.mjs b/apps/showcase-bank-shot/scripts/build-sfx.mjs
+deleted file mode 100644
+index c8e61b7a2..000000000
+--- a/apps/showcase-bank-shot/scripts/build-sfx.mjs
++++ /dev/null
+@@ -1,355 +0,0 @@
+-/**
+- * Bank Shot SFX synth — generates original CC0 WAV cues entirely in-repo.
+- *
+- * No network downloads, no sampled material: every cue is synthesized from
+- * oscillators / filtered noise with a small committed generator so provenance is
+- * auditable (author "Aura3D synthesis", license CC0-1.0). Deterministic LCG noise
+- * means regenerating any cue is byte-identical.
+- *
+- * Run from the repo root:  node apps/showcase-bank-shot/scripts/build-sfx.mjs
+- * Output: apps/showcase-bank-shot/assets/sfx/*.wav (16-bit PCM mono 44100 Hz)
+- *
+- * After generation, register each audio file with the CLI so it lands in the typed
+- * root asset map the route imports (`../../../src/aura-assets`):
+- *   pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts assets add \
+- *     apps/showcase-bank-shot/assets/sfx/cueStrike.wav --name bankShotCueStrikeSfx --type audio \
+- *     --license CC0-1.0 --author "Aura3D synthesis" \
+- *     --source-page "apps/showcase-bank-shot/scripts/build-sfx.mjs"
+- *
+- * Remaining cues use the same command template with these names:
+- *   cushionHit.wav  -> bankShotCushionHitSfx
+- *   ballHit.wav     -> bankShotBallHitSfx
+- *   pocketDrop.wav  -> bankShotPocketDropSfx
+- *   rackClear.wav   -> bankShotRackClearSfx
+- *   foulWhistle.wav -> bankShotFoulWhistleSfx
+- *   eightWin.wav    -> bankShotEightWinSfx
+- *   rackFail.wav    -> bankShotRackFailSfx
+- *   comboChime.wav  -> bankShotComboChimeSfx
+- *   ambientHall.wav -> bankShotAmbientHallSfx
+- */
+-import { mkdirSync, writeFileSync } from "node:fs";
+-import { resolve, dirname } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../assets/sfx");
+-const SAMPLE_RATE = 44100;
+-
+-// ---- waveform / DSP helpers -------------------------------------------------
+-function noiseBuffer(length) {
+-  const out = new Float32Array(length);
+-  let seed = 0x9e3779b9;
+-  for (let i = 0; i < length; i += 1) {
+-    // Deterministic LCG noise so regenerating the cue is byte-identical.
+-    seed = (seed * 1664525 + 1013904223) >>> 0;
+-    out[i] = ((seed / 0xffffffff) * 2 - 1);
+-  }
+-  return out;
+-}
+-
+-function envelope(length, attack, decay, total) {
+-  const out = new Float32Array(length);
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const start = Math.min(1, t / Math.max(0.0005, attack));
+-    const end = Math.pow(Math.max(0, 1 - t / total), decay);
+-    out[i] = start * end;
+-  }
+-  return out;
+-}
+-
+-/** One-pole low-pass. */
+-function lowpass(samples, cutoff) {
+-  const rc = 1 / (2 * Math.PI * cutoff);
+-  const dt = 1 / SAMPLE_RATE;
+-  const alpha = dt / (rc + dt);
+-  let prev = 0;
+-  const out = new Float32Array(samples.length);
+-  for (let i = 0; i < samples.length; i += 1) {
+-    prev = prev + alpha * (samples[i] - prev);
+-    out[i] = prev;
+-  }
+-  return out;
+-}
+-
+-/** One-pole high-pass. */
+-function highpass(samples, cutoff) {
+-  const rc = 1 / (2 * Math.PI * cutoff);
+-  const dt = 1 / SAMPLE_RATE;
+-  const alpha = dt / (rc + dt);
+-  let lp = 0;
+-  const out = new Float32Array(samples.length);
+-  for (let i = 0; i < samples.length; i += 1) {
+-    lp += alpha * (samples[i] - lp);
+-    out[i] = samples[i] - lp;
+-  }
+-  return out;
+-}
+-
+-/**
+- * Render a one-shot cue into a normalized mono buffer.
+- * tone: {wave, freqStart, freqEnd, amp, attack, decay, total} or array of stacked partials
+- * noise: {amp, attack, decay, total, hp?, lp?}
+- */
+-function renderCue({ tone, noise }) {
+-  const parts = (Array.isArray(tone) ? tone : tone ? [tone] : []);
+-  const totalSec = Math.max(
+-    ...parts.map((p) => p.total ?? 0),
+-    noise?.total ?? 0,
+-    0.1
+-  ) + 0.08;
+-  const length = Math.floor(totalSec * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  for (const part of parts) {
+-    const { wave = "sine", freqStart, freqEnd = freqStart, amp = 0.5, attack = 0.005, decay = 3, total = 0.2 } = part;
+-    const env = envelope(length, attack, decay, total);
+-    for (let i = 0; i < length; i += 1) {
+-      const t = i / SAMPLE_RATE;
+-      const progress = Math.min(1, t / total);
+-      const f = freqStart + (freqEnd - freqStart) * progress;
+-      const phase = 2 * Math.PI * f * t;
+-      let v = 0;
+-      if (wave === "sine") v = Math.sin(phase);
+-      else if (wave === "triangle") v = (2 / Math.PI) * Math.asin(Math.sin(phase));
+-      else if (wave === "sawtooth") v = 2 * (phase / (2 * Math.PI) - Math.floor(0.5 + phase / (2 * Math.PI)));
+-      else if (wave === "square") v = Math.sign(Math.sin(phase));
+-      else v = Math.sin(phase);
+-      out[i] += v * env[i] * amp;
+-    }
+-  }
+-  if (noise) {
+-    const { amp = 0.4, attack = 0.004, decay = 4, total = 0.16, hp = 0, lp = 0 } = noise;
+-    let raw = noiseBuffer(length);
+-    if (hp > 0) raw = highpass(raw, hp);
+-    if (lp > 0) raw = lowpass(raw, lp);
+-    const env = envelope(length, attack, decay, total);
+-    for (let i = 0; i < length; i += 1) out[i] += raw[i] * env[i] * amp;
+-  }
+-  let peak = 0;
+-  for (let i = 0; i < length; i += 1) peak = Math.max(peak, Math.abs(out[i]));
+-  if (peak > 0) {
+-    const gain = Math.min(1, 0.9 / peak);
+-    for (let i = 0; i < length; i += 1) out[i] *= gain;
+-  }
+-  return out;
+-}
+-
+-/** A looping pad — a full short loop (normalized, click-free edges). */
+-function loopCue(durationSec, wave, freqStart, freqEnd) {
+-  const length = Math.floor(durationSec * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  const amp = 0.16;
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const progress = Math.min(1, t / durationSec);
+-    const f = freqStart + (freqEnd - freqStart) * progress + Math.sin(t * 18) * 4;
+-    const phase = 2 * Math.PI * f * t;
+-    let v = 0;
+-    if (wave === "sawtooth") v = 2 * (phase / (2 * Math.PI) - Math.floor(0.5 + phase / (2 * Math.PI)));
+-    else if (wave === "square") v = Math.sign(Math.sin(phase));
+-    else v = Math.sin(phase);
+-    out[i] = v * amp * (0.7 + 0.3 * Math.sin(t * 2));
+-  }
+-  const fade = Math.floor(0.02 * SAMPLE_RATE);
+-  for (let i = 0; i < fade; i += 1) {
+-    out[i] *= i / fade;
+-    out[length - 1 - i] *= i / fade;
+-  }
+-  return out;
+-}
+-
+-// ---- cue recipes ------------------------------------------------------------
+-
+-/** cueStrike: leather-tip tap on resin — tight mid knock plus a dry high click. */
+-function cueStrike() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sine", freqStart: 420, freqEnd: 180, amp: 0.5, attack: 0.001, decay: 8, total: 0.09 },
+-      { wave: "triangle", freqStart: 1500, freqEnd: 1200, amp: 0.12, attack: 0.001, decay: 9, total: 0.04 }
+-    ],
+-    noise: { amp: 0.3, attack: 0.001, decay: 10, total: 0.035, hp: 1800, lp: 9000 }
+-  });
+-}
+-
+-/** cushionHit: rubber rail thud — soft triangle drop, band-limited noise body. */
+-function cushionHit() {
+-  return renderCue({
+-    tone: { wave: "triangle", freqStart: 190, freqEnd: 95, amp: 0.5, attack: 0.002, decay: 6, total: 0.13 },
+-    noise: { amp: 0.2, attack: 0.001, decay: 8, total: 0.06, hp: 120, lp: 1400 }
+-  });
+-}
+-
+-/** ballHit: hard resin click — bright short sine partials, the classic pool clack. */
+-function ballHit() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sine", freqStart: 2400, freqEnd: 2100, amp: 0.5, attack: 0.0008, decay: 9, total: 0.045 },
+-      { wave: "sine", freqStart: 3600, freqEnd: 3200, amp: 0.28, attack: 0.0008, decay: 10, total: 0.03 }
+-    ],
+-    noise: { amp: 0.24, attack: 0.0008, decay: 12, total: 0.02, hp: 3000 }
+-  });
+-}
+-
+-/** pocketDrop: ball rolls over the leather and drops — short rumble then a low thud. */
+-function pocketDrop() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sine", freqStart: 150, freqEnd: 70, amp: 0.6, attack: 0.02, decay: 3.5, total: 0.34 }
+-    ],
+-    noise: { amp: 0.4, attack: 0.004, decay: 4, total: 0.16, hp: 80, lp: 900 }
+-  });
+-}
+-
+-/** rackClear: ascending 3-note triangle arpeggio — a rack clocked clean. */
+-function rackClear() {
+-  return renderCue({
+-    tone: [
+-      { wave: "triangle", freqStart: 523.25, amp: 0.34, attack: 0.005, decay: 4, total: 0.18 },
+-      { wave: "triangle", freqStart: 659.25, amp: 0.34, attack: 0.1, decay: 4, total: 0.3 },
+-      { wave: "triangle", freqStart: 783.99, amp: 0.36, attack: 0.2, decay: 4, total: 0.44 }
+-    ]
+-  });
+-}
+-
+-/** foulWhistle: table referee — two gated square pulses a semitone apart. */
+-function foulWhistle() {
+-  const length = Math.floor(0.46 * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  const pulses = [
+-    { start: 0, total: 0.14, freq: 660 },
+-    { start: 0.2, total: 0.18, freq: 622.25 }
+-  ];
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    let gate = 0;
+-    let freq = 660;
+-    for (const p of pulses) {
+-      if (t >= p.start && t < p.start + p.total) {
+-        const u = (t - p.start) / p.total;
+-        gate = Math.min(1, (t - p.start) / 0.006) * Math.pow(1 - u, 2);
+-        freq = p.freq;
+-      }
+-    }
+-    const phase = 2 * Math.PI * freq * t;
+-    out[i] = (Math.sin(phase) * 0.6 + Math.sign(Math.sin(phase)) * 0.18) * 0.42 * gate;
+-  }
+-  let peak = 0;
+-  for (let i = 0; i < length; i += 1) peak = Math.max(peak, Math.abs(out[i]));
+-  if (peak > 0) {
+-    const gain = Math.min(1, 0.9 / peak);
+-    for (let i = 0; i < length; i += 1) out[i] *= gain;
+-  }
+-  return out;
+-}
+-
+-/** eightWin: the 8 drops clean — deep root, delayed bright triad fanfare. */
+-function eightWin() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sine", freqStart: 98, freqEnd: 65, amp: 0.55, attack: 0.004, decay: 2.5, total: 0.5 },
+-      { wave: "triangle", freqStart: 523.25, amp: 0.42, attack: 0.16, decay: 3, total: 0.5 },
+-      { wave: "triangle", freqStart: 659.25, amp: 0.44, attack: 0.26, decay: 3, total: 0.5 },
+-      { wave: "triangle", freqStart: 783.99, amp: 0.5, attack: 0.36, decay: 3, total: 0.56 },
+-      { wave: "sine", freqStart: 1046.5, amp: 0.5, attack: 0.46, decay: 3, total: 0.6 }
+-    ],
+-    noise: { amp: 0.18, attack: 0.46, decay: 4, total: 0.2, hp: 3200 }
+-  });
+-}
+-
+-/** rackFail: the lights come up — descending minor pair over a flat low bed. */
+-function rackFail() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sine", freqStart: 110, freqEnd: 82, amp: 0.45, attack: 0.01, decay: 2.5, total: 0.7 },
+-      { wave: "triangle", freqStart: 440, amp: 0.4, attack: 0.08, decay: 2.5, total: 0.5 },
+-      { wave: "triangle", freqStart: 349.23, amp: 0.42, attack: 0.3, decay: 2.5, total: 0.55 }
+-    ]
+-  });
+-}
+-
+-/** comboChime: streak sparkle — two quick high sine bells a fifth apart. */
+-function comboChime() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sine", freqStart: 1318.5, amp: 0.5, attack: 0.002, decay: 5, total: 0.14 },
+-      { wave: "sine", freqStart: 1975.5, amp: 0.45, attack: 0.07, decay: 5, total: 0.22 }
+-    ],
+-    noise: { amp: 0.12, attack: 0.002, decay: 10, total: 0.05, hp: 5000 }
+-  });
+-}
+-
+-/** ambientHall: intimate billiards hall room tone — warm low-passed harmonic pad. */
+-function ambientHall() {
+-  const duration = 3.2;
+-  const N = Math.floor(duration * SAMPLE_RATE);
+-  const out = new Float32Array(N);
+-  const tones = [146.83, 220.0, 293.66]; // D3, A3, D4
+-  for (let i = 0; i < N; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    let sum = 0;
+-    for (let k = 0; k < tones.length; k += 1) {
+-      const freq = tones[k];
+-      const lfo = 0.85 + 0.15 * Math.sin(2 * Math.PI * (t / duration) * 2 + k);
+-      sum += Math.sin(2 * Math.PI * freq * t) * lfo * 0.18;
+-    }
+-    out[i] = sum;
+-  }
+-  const fade = Math.floor(0.08 * SAMPLE_RATE);
+-  for (let i = 0; i < fade; i += 1) {
+-    const f = i / fade;
+-    out[i] *= f;
+-    out[N - 1 - i] *= f;
+-  }
+-  return out;
+-}
+-
+-// ---- WAV writer -------------------------------------------------------------
+-function writeWav(path, samples) {
+-  const length = samples.length;
+-  const buffer = Buffer.alloc(44 + length * 2);
+-  const numChannels = 1;
+-  const bitsPerSample = 16;
+-  const byteRate = SAMPLE_RATE * numChannels * bitsPerSample / 8;
+-  buffer.write("RIFF", 0);
+-  buffer.writeUInt32LE(36 + length * 2, 4);
+-  buffer.write("WAVE", 8);
+-  buffer.write("fmt ", 12);
+-  buffer.writeUInt32LE(16, 16);
+-  buffer.writeUInt16LE(1, 20);
+-  buffer.writeUInt16LE(numChannels, 22);
+-  buffer.writeUInt32LE(SAMPLE_RATE, 24);
+-  buffer.writeUInt32LE(byteRate, 28);
+-  buffer.writeUInt16LE(numChannels * bitsPerSample / 8, 32);
+-  buffer.writeUInt16LE(bitsPerSample, 34);
+-  buffer.write("data", 36);
+-  buffer.writeUInt32LE(length * 2, 40);
+-  for (let i = 0; i < length; i += 1) {
+-    const v = Math.max(-1, Math.min(1, samples[i]));
+-    buffer.writeInt16LE(Math.round(v * 32767), 44 + i * 2);
+-  }
+-  writeFileSync(path, buffer);
+-  return length / SAMPLE_RATE;
+-}
+-
+-const cues = {
+-  cueStrike,
+-  cushionHit,
+-  ballHit,
+-  pocketDrop,
+-  rackClear,
+-  foulWhistle,
+-  eightWin,
+-  rackFail,
+-  comboChime,
+-  ambientHall
+-};
+-
+-mkdirSync(OUT_DIR, { recursive: true });
+-const report = {};
+-for (const [name, fn] of Object.entries(cues)) {
+-  const samples = fn();
+-  const path = resolve(OUT_DIR, `${name}.wav`);
+-  const duration = writeWav(path, samples);
+-  report[name] = path + " (" + duration.toFixed(3) + "s)";
+-  console.log("wrote", report[name]);
+-}
+-console.log("\nGenerated", Object.keys(cues).length, "cues into", OUT_DIR);
+diff --git a/apps/showcase-bank-shot/scripts/register-assets.mjs b/apps/showcase-bank-shot/scripts/register-assets.mjs
+index 40cf446e0..25fda142e 100644
+--- a/apps/showcase-bank-shot/scripts/register-assets.mjs
++++ b/apps/showcase-bank-shot/scripts/register-assets.mjs
+@@ -12,7 +12,6 @@ const probeDir = resolve(repoRoot, "tests/reports/showcase-release-asset-probes"
+ if (!existsSync(cli)) throw new Error("Build packages/aura3d-cli before registering Bank Shot assets.");
+ 
+ execFileSync("node", [resolve(appDir, "scripts/build-models.mjs")], { cwd: repoRoot, stdio: "inherit" });
+-execFileSync("node", [resolve(appDir, "scripts/build-sfx.mjs")], { cwd: repoRoot, stdio: "inherit" });
+ 
+ const models = [
+   {
+@@ -63,40 +62,5 @@ for (const model of models) {
+   console.log(`registered ${model.id} (${hasProbe ? "release + retained probe" : "candidate; probe pending"})`);
+ }
+ 
+-const audio = [
+-  ["ambientHall", "bankShotAmbientHallSfx", "Looping after-hours hall ambience unlocked by a real user gesture."],
+-  ["ballHit", "bankShotBallHitSfx", "Rate-limited ball-on-ball impact cue driven by live contact events."],
+-  ["comboChime", "bankShotComboChimeSfx", "Combo extension cue driven by a legal consecutive pocket outcome."],
+-  ["cueStrike", "bankShotCueStrikeSfx", "Cue strike cue driven by a successful settled-state strike."],
+-  ["cushionHit", "bankShotCushionHitSfx", "Rate-limited cushion contact cue driven by live rail impact."],
+-  ["eightWin", "bankShotEightWinSfx", "Eight-ball win sting driven only by the ordered legal-eight outcome."],
+-  ["foulWhistle", "bankShotFoulWhistleSfx", "Foul cue driven by scratch, no-rail, or wrong-first-contact truth."],
+-  ["pocketDrop", "bankShotPocketDropSfx", "Pocket drop cue driven by a once-per-entry captured ball."],
+-  ["rackClear", "bankShotRackClearSfx", "Rack-clear cue driven by a completed non-final rack."],
+-  ["rackFail", "bankShotRackFailSfx", "Rack-fail cue driven by clock, foul-limit, or illegal-eight failure."]
+-];
+-for (const [fileName, id, suitability] of audio) {
+-  const source = resolve(appDir, `assets/sfx/${fileName}.wav`);
+-  execFileSync("node", [cli,
+-    "assets", "add", source,
+-    "--name", id,
+-    "--type", "audio",
+-    "--license", "CC0-1.0",
+-    "--license-name", "CC0 1.0 Universal",
+-    "--license-url", "https://creativecommons.org/publicdomain/zero/1.0/",
+-    "--author", "Aura3D synthesis",
+-    "--source-family", "aura3d-original",
+-    "--source-page", "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-bank-shot/scripts/build-sfx.mjs",
+-    "--download-url", `https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-bank-shot/assets/sfx/${fileName}.wav`,
+-    "--attribution", "Aura3D synthesis — original CC0 Bank Shot audio",
+-    "--provenance-evidence", "Deterministically synthesized from the committed in-repository oscillator/noise generator; contains no sampled material.",
+-    "--retrieved-at", "2026-08-23T23:00:00.000Z",
+-    "--quality", "candidate",
+-    "--role", "unknown",
+-    "--suitability", suitability
+-  ], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
+-  console.log(`registered ${id} (candidate)`);
+-}
+-
+ execFileSync("node", [cli, "assets", "typegen"], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
+-console.log(`Bank Shot registration complete: ${models.length} models, ${audio.length} audio cues.`);
++console.log(`Bank Shot registration complete: ${models.length} models (audio cues now come from the shared game-sfx-core pack).`);
+diff --git a/apps/showcase-bank-shot/scripts/write-performance-report.ts b/apps/showcase-bank-shot/scripts/write-performance-report.ts
+deleted file mode 100644
+index bcbd52958..000000000
+--- a/apps/showcase-bank-shot/scripts/write-performance-report.ts
++++ /dev/null
+@@ -1,108 +0,0 @@
+-import { createHash } from "node:crypto";
+-import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+-import { join, relative, resolve } from "node:path";
+-import { createTableSimulation } from "../src/table";
+-
+-const repoRoot = resolve(import.meta.dirname, "../../..");
+-const appDir = resolve(import.meta.dirname, "..");
+-const SAMPLES = 12_000;
+-// Reserve no more than one third of a 60 Hz frame for the route-local public
+-// Rapier step, leaving the majority of the frame for rendering, input, and UI.
+-const SIMULATION_P95_BUDGET_MS = 5.5;
+-const DRAW_CALL_BUDGET = 220;
+-const BODY_BUDGET = 40;
+-
+-function files(directory: string): string[] {
+-  return readdirSync(directory).sort().flatMap((name) => {
+-    const path = join(directory, name);
+-    return statSync(path).isDirectory() ? files(path) : /\.(?:ts|css)$/.test(path) ? [path] : [];
+-  });
+-}
+-
+-const sourceFiles = files(join(appDir, "src"));
+-const routeSourceSha256 = (() => {
+-  const hash = createHash("sha256");
+-  for (const path of sourceFiles) hash.update(relative(appDir, path)).update("\0").update(readFileSync(path)).update("\0");
+-  return hash.digest("hex");
+-})();
+-const producer = "apps/showcase-bank-shot/scripts/write-performance-report.ts";
+-const producerSourceSha256 = createHash("sha256").update(readFileSync(resolve(repoRoot, producer))).digest("hex");
+-
+-const sim = createTableSimulation();
+-// Prime the Rapier wasm/JIT path before measuring steady-state gameplay. The
+-// retained samples below still include repeated full-rack collision bursts.
+-sim.strike(0.82, 0.08, 0.2);
+-for (let index = 0; index < 600; index += 1) {
+-  sim.stepFixed(1);
+-  sim.consumeSensorEvents();
+-  sim.consumeShotFactEvents();
+-  sim.consumeImpacts();
+-  sim.consumePotEvents();
+-}
+-sim.resetRack();
+-const timings: number[] = [];
+-const deterministicPoseSamples = new Set<string>();
+-for (let index = 0; index < SAMPLES; index += 1) {
+-  if (index % 900 === 0) {
+-    sim.resetRack();
+-    sim.strike(0.68 + (index % 4) * 0.08, ((index / 900) % 5 - 2) * 0.12, ((index / 900) % 3 - 1) * 0.35);
+-  }
+-  // CPU time isolates the route's actual simulation cost from unrelated host
+-  // scheduling pressure. Wall-clock samples can otherwise turn a preemption
+-  // by another process into a false physics regression.
+-  const started = process.cpuUsage();
+-  sim.stepFixed(1);
+-  const used = process.cpuUsage(started);
+-  timings.push((used.user + used.system) / 1_000);
+-  sim.consumeSensorEvents();
+-  sim.consumeShotFactEvents();
+-  sim.consumeImpacts();
+-  sim.consumePotEvents();
+-  if (index % 600 === 599) deterministicPoseSamples.add(sim.poseHash());
+-}
+-const sorted = [...timings].sort((a, b) => a - b);
+-const simulationCpuP95Ms = Number((sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))] ?? 0).toFixed(4));
+-
+-const browser = JSON.parse(readFileSync(resolve(repoRoot, "tests/reports/bank-shot/visual.json"), "utf8")) as {
+-  evidence?: { renderer?: { drawCalls?: number; renderSize?: readonly number[] }; physicsBodyCount?: number };
+-};
+-const browserReceipt = JSON.parse(readFileSync(resolve(repoRoot, "tests/reports/bank-shot/browser-evidence.json"), "utf8")) as { routeSourceSha256?: string; pass?: boolean };
+-const observed = {
+-  simulationCpuP95Ms,
+-  deterministicPoseSamples: deterministicPoseSamples.size,
+-  drawCalls: Number(browser.evidence?.renderer?.drawCalls ?? 0),
+-  renderSize: browser.evidence?.renderer?.renderSize ?? [0, 0],
+-  physicsBodies: Number(browser.evidence?.physicsBodyCount ?? 0),
+-  liveBalls: sim.liveBallCount(),
+-  pocketSensors: sim.pocketIds.length
+-};
+-const pass = simulationCpuP95Ms <= SIMULATION_P95_BUDGET_MS
+-  && observed.deterministicPoseSamples >= 10
+-  && observed.drawCalls > 0
+-  && observed.drawCalls <= DRAW_CALL_BUDGET
+-  && Number(observed.renderSize[0] ?? 0) > 0
+-  && Number(observed.renderSize[1] ?? 0) > 0
+-  && observed.physicsBodies > 0
+-  && observed.physicsBodies <= BODY_BUDGET
+-  && observed.liveBalls >= 1
+-  && observed.pocketSensors === 6
+-  && browserReceipt.pass === true
+-  && browserReceipt.routeSourceSha256 === routeSourceSha256;
+-
+-const report = {
+-  schema: "aura3d.bank-shot.performance/1.0",
+-  generatedAt: new Date().toISOString(),
+-  producer,
+-  producerSourceSha256,
+-  routeSourceFiles: sourceFiles.map((path) => relative(repoRoot, path)),
+-  routeSourceSha256,
+-  scope: "Route-local fixed-step public Rapier billiards CPU timing plus browser-observed root createGameApp draw calls. Host scheduling wait and GPU frame-time parity are not claimed.",
+-  samples: SAMPLES,
+-  fixedStepSeconds: sim.fixedDelta,
+-  budgets: { simulationCpuP95Ms: SIMULATION_P95_BUDGET_MS, drawCalls: DRAW_CALL_BUDGET, physicsBodies: BODY_BUDGET },
+-  observed,
+-  pass
+-};
+-writeFileSync(resolve(appDir, "performance-report.json"), `${JSON.stringify(report, null, 2)}\n`);
+-console.log(JSON.stringify({ pass, observed }));
+-if (!pass) process.exitCode = 1;
+diff --git a/apps/showcase-bank-shot/src/evidence.ts b/apps/showcase-bank-shot/src/evidence.ts
+new file mode 100644
+index 000000000..e3ae33861
+--- /dev/null
++++ b/apps/showcase-bank-shot/src/evidence.ts
+@@ -0,0 +1,17 @@
++/**
++ * evidence.ts — lazy route evidence sections (PRD-09 §6.5). Loaded through the
++ * evidence channel's `sections()` loader only when `?evidence=1` or
++ * `__AURA3D_EVIDENCE_OPT_IN__` is set; production play never imports this.
++ */
++export type EvidenceCollect = () => Record<string, unknown>;
++
++let collect: EvidenceCollect | undefined;
++
++export function bindBankShotEvidence(fn: EvidenceCollect): void {
++  collect = fn;
++}
++
++export const sections = {
++  bankShot: (): Record<string, unknown> =>
++    (collect ?? (() => ({ status: "unbound" })))()
++};
+diff --git a/apps/showcase-bank-shot/src/legacy/billiards-audio.ts b/apps/showcase-bank-shot/src/legacy/billiards-audio.ts
+deleted file mode 100644
+index b00cbd82f..000000000
+--- a/apps/showcase-bank-shot/src/legacy/billiards-audio.ts
++++ /dev/null
+@@ -1,170 +0,0 @@
+-/**
+- * Bank Shot audio runtime - a thin public-API wrapper around createGameAudio,
+- * following the committed manifest discipline of the sibling showcase routes.
+- *
+- * Every cue maps to a CLI-registered typed audio asset synthesized in-repo by
+- * scripts/build-sfx.mjs (original CC0, author "Aura3D synthesis"). No raw URLs,
+- * no invented asset ids; playback happens only after a user gesture unlocks the
+- * AudioContext. Buses split gameplay sfx, event chimes, and the hall ambience.
+- */
+-import { createGameAudio, type GameAudio } from "@aura3d/engine";
+-import { assets } from "../../../../src/aura-assets";
+-
+-export type BilliardsAudioCue =
+-  | "cue-strike"
+-  | "cushion-hit"
+-  | "ball-hit"
+-  | "pocket-drop"
+-  | "rack-clear"
+-  | "foul-whistle"
+-  | "eight-win"
+-  | "rack-fail"
+-  | "combo-chime"
+-  | "ambient-hall";
+-
+-export type BilliardsAudioAssetKey =
+-  | "bankShotCueStrikeSfx"
+-  | "bankShotCushionHitSfx"
+-  | "bankShotBallHitSfx"
+-  | "bankShotPocketDropSfx"
+-  | "bankShotRackClearSfx"
+-  | "bankShotFoulWhistleSfx"
+-  | "bankShotEightWinSfx"
+-  | "bankShotRackFailSfx"
+-  | "bankShotComboChimeSfx"
+-  | "bankShotAmbientHallSfx";
+-
+-export const billiardsAudioCueAssetKeys: Record<BilliardsAudioCue, BilliardsAudioAssetKey> = {
+-  "cue-strike": "bankShotCueStrikeSfx",
+-  "cushion-hit": "bankShotCushionHitSfx",
+-  "ball-hit": "bankShotBallHitSfx",
+-  "pocket-drop": "bankShotPocketDropSfx",
+-  "rack-clear": "bankShotRackClearSfx",
+-  "foul-whistle": "bankShotFoulWhistleSfx",
+-  "eight-win": "bankShotEightWinSfx",
+-  "rack-fail": "bankShotRackFailSfx",
+-  "combo-chime": "bankShotComboChimeSfx",
+-  "ambient-hall": "bankShotAmbientHallSfx"
+-};
+-
+-export type BilliardsAudioBus = "sfx" | "ui" | "ambient";
+-
+-export interface BilliardsAudioCueDefinition {
+-  readonly cue: BilliardsAudioCue;
+-  readonly bus: BilliardsAudioBus;
+-  readonly intent: string;
+-  readonly loop: boolean;
+-  readonly assetKey: BilliardsAudioAssetKey;
+-  readonly asset: {
+-    readonly url: string;
+-    readonly hash: string;
+-    readonly format: "wav";
+-    readonly license: "CC0-1.0";
+-    readonly author: "Aura3D synthesis";
+-  };
+-  readonly volume: number;
+-}
+-
+-export function billiardsAudioAssetReference(key: BilliardsAudioAssetKey) {
+-  const asset = assets[key];
+-  if (!asset.hash || !asset.url) {
+-    throw new Error("Bank Shot audio asset " + key + " is missing its generated content hash/url.");
+-  }
+-  return {
+-    key,
+-    typedAssetMember: "assets." + key,
+-    url: asset.url,
+-    hash: asset.hash,
+-    format: "wav" as const,
+-    license: "CC0-1.0" as const,
+-    author: "Aura3D synthesis" as const
+-  };
+-}
+-
+-function define(cue: BilliardsAudioCue, bus: BilliardsAudioBus, intent: string, loop: boolean, volume: number): BilliardsAudioCueDefinition {
+-  const assetKey = billiardsAudioCueAssetKeys[cue];
+-  return { cue, bus, intent, loop, assetKey, asset: billiardsAudioAssetReference(assetKey), volume };
+-}
+-
+-export const billiardsAudioManifest: Record<BilliardsAudioCue, BilliardsAudioCueDefinition> = {
+-  "cue-strike": define("cue-strike", "sfx", "Cue tip strikes the cue ball.", false, 0.7),
+-  "cushion-hit": define("cushion-hit", "sfx", "A ball rebounds off a cushion.", false, 0.5),
+-  "ball-hit": define("ball-hit", "sfx", "Ball-on-ball contact clack.", false, 0.65),
+-  "pocket-drop": define("pocket-drop", "sfx", "A ball drops into a pocket.", false, 0.75),
+-  "rack-clear": define("rack-clear", "ui", "A rack is completed.", false, 0.8),
+-  "foul-whistle": define("foul-whistle", "ui", "Foul called; ball in hand.", false, 0.75),
+-  "eight-win": define("eight-win", "ui", "The 8-ball drops clean; rack won.", false, 0.85),
+-  "rack-fail": define("rack-fail", "ui", "Rack lost (fouls, early 8, or clock).", false, 0.8),
+-  "combo-chime": define("combo-chime", "ui", "Combo streak extended.", false, 0.6),
+-  "ambient-hall": define("ambient-hall", "ambient", "Closed billiards hall air (loop).", true, 0.3)
+-};
+-
+-export interface BilliardsAudioProof {
+-  readonly enabled: boolean;
+-  readonly muted: boolean;
+-  readonly unlocked: boolean;
+-  readonly contextState: string;
+-  readonly lastCue: BilliardsAudioCue | null;
+-  readonly playedCueCount: number;
+-  readonly cueCount: number;
+-  readonly typedAssetCount: number;
+-  readonly audioErrors: readonly string[];
+-}
+-
+-export interface BilliardsAudioController {
+-  readonly cue: (name: BilliardsAudioCue) => Promise<void>;
+-  readonly unlock: () => Promise<void>;
+-  readonly proof: () => BilliardsAudioProof;
+-}
+-
+-let cachedAudio: GameAudio<BilliardsAudioCue> | null = null;
+-
+-export function createBilliardsAudio(): BilliardsAudioController {
+-  const assetKeys = Object.values(billiardsAudioCueAssetKeys);
+-  if (!cachedAudio) {
+-    const cueEntries = Object.fromEntries(
+-      Object.values(billiardsAudioManifest).map((definition) => [
+-        definition.cue,
+-        {
+-          id: definition.cue,
+-          bus: definition.bus,
+-          volume: definition.volume,
+-          loop: definition.loop,
+-          asset: definition.asset
+-        }
+-      ])
+-    ) as unknown as Record<BilliardsAudioCue, Parameters<typeof createGameAudio<BilliardsAudioCue>>[0]["cues"][BilliardsAudioCue]>;
+-    cachedAudio = createGameAudio({
+-      browserContext: true,
+-      buses: [
+-        { id: "sfx", volume: 0.85 },
+-        { id: "ui", volume: 0.6 },
+-        { id: "ambient", volume: 0.5 }
+-      ],
+-      cues: cueEntries
+-    });
+-  }
+-  const audio = cachedAudio;
+-  return {
+-    async cue(name) {
+-      await audio.cue(name);
+-    },
+-    async unlock() {
+-      await audio.unlock();
+-    },
+-    proof() {
+-      const evidence = audio.evidence;
+-      return {
+-        enabled: evidence.enabled && !evidence.muted,
+-        muted: evidence.muted,
+-        unlocked: evidence.unlocked,
+-        contextState: evidence.contextState,
+-        lastCue: evidence.lastCue as BilliardsAudioCue | null,
+-        playedCueCount: evidence.playedCueCount,
+-        cueCount: Object.keys(billiardsAudioManifest).length,
+-        typedAssetCount: assetKeys.length,
+-        audioErrors: evidence.errors.slice()
+-      };
+-    }
+-  };
+-}
+diff --git a/apps/showcase-bank-shot/src/legacy/main.ts b/apps/showcase-bank-shot/src/legacy/main.ts
+index c0bea104f..14f0423fa 100644
+--- a/apps/showcase-bank-shot/src/legacy/main.ts
++++ b/apps/showcase-bank-shot/src/legacy/main.ts
+@@ -12,7 +12,6 @@
+  */
+ import {
+   camera,
+-  createGameApp,
+   effects,
+   game,
+   lights,
+@@ -20,18 +19,32 @@ import {
+   model,
+   primitives,
+   scene,
+-  ui,
+   type AuraRuntimeNodeHandle,
+   type AuraSceneNode,
+   type AuraDiagnostics
+ } from "@aura3d/engine";
++import {
++  createFxParticlePass,
++  createGame,
++  createJuice,
++  createOverlayDriver,
++  createRumbleDriver,
++  createTweenEngine,
++  mountHud,
++  mountTouchControls,
++  type HudDocument
++} from "@aura3d/game";
++import { bankShotScenarios } from "../scenarios";
++import { bindBankShotDrive } from "../scenario-drive";
++import { bindBankShotEvidence } from "../evidence";
+ import { assets } from "../../../../src/aura-assets";
+ import { CueController, AIM_STEP, SPIN_STEP } from "../gameplay/cue";
+ import { RulesEngine, type ShotRecord, type ShotOutcome } from "../gameplay/rules";
+ import { rackConfigFor, RACK_COUNT } from "../gameplay/racks";
+ import { createTableSimulation, CUE_SPOT, BALL_RADIUS, PLAY_HALF_X, PLAY_HALF_Z, POCKET_CENTERS, rackSpotFor } from "../gameplay/table";
+ import { ballEulerFromBody } from "../gameplay/ball-visuals";
+-import { createBilliardsAudio } from "./billiards-audio";
++import { createBankShotSound } from "../sound";
++>>>>>>> /tmp/mig-base/apps/showcase-bank-shot/src/main.ts
+ import { createPoolHallSetDressing } from "./environment";
+ import "./styles.css";
+ 
+@@ -41,14 +54,10 @@ type BankShotWindow = Window & {
+   __AURA3D_COMPOSITION_PROBE__?: unknown;
+   __BS_SHOT__?: () => string;
+   __BS_PUMP__?: (frames: number) => number;
+-  __BS_SCENARIO__?: (scenario: "pocket" | "foul" | "eight-finish" | "rack-fail") => string;
+ };
+ const bankWindow = window as BankShotWindow;
+-const reducedMotion = typeof window.matchMedia === "function"
+-  && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+ const portraitComposition = window.innerWidth <= 700 || window.innerHeight > window.innerWidth * 1.25;
+-const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
+-document.body.dataset.capture = visualReviewCapture ? "review" : "default";
++document.body.dataset.capture = "default";
+ 
+ const APP_ID = "showcase-bank-shot";
+ // Keep the Rapier bodies at regulation radius while giving the typed ball
+@@ -70,59 +79,12 @@ const ROUTE_SYSTEMS = {
+ } as const;
+ 
+ // ---------------------------------------------------------------- HUD markup --
+-ui.html("#hud", `
+-  <div class="hole-banner" id="bs-banner" aria-live="polite">BANK SHOT - AIM WITH A/D, HOLD SPACE TO CHARGE</div>
+-  <div class="pocket-toast is-hidden" id="bs-toast" aria-live="polite"></div>
+-  <div class="result-card is-hidden" id="bs-result" data-testid="bank-shot-result">
+-    <h2 id="bs-result-title">Rack over</h2>
+-    <p id="bs-result-detail"></p>
+-    <div class="action-row"><button id="bs-again-button" type="button">Re-rack</button></div>
+-  </div>
+-`);
+ 
+-ui.html("#panel", `
+-  <section class="bs-brand">
+-    <p class="eyebrow">Aura3D Prototype</p>
+-    <h1>Bank Shot</h1>
+-    <p class="blurb">Arcade 8-ball after close: 16 live balls, one lamp, three racks on shrinking clocks. Clear your suit, bank your leave, sink the 8.</p>
+-  </section>
+-  <section class="stat-grid" aria-label="Rack status">
+-    <article><span>Rack</span><strong id="stat-rack">1 OF 3</strong></article>
+-    <article><span>Clock</span><strong id="stat-clock">4:00</strong></article>
+-    <article><span>Score</span><strong id="stat-score">0</strong></article>
+-    <article><span>Combo</span><strong id="stat-combo">X1</strong></article>
+-    <article><span>Suit</span><strong id="stat-suit">OPEN</strong></article>
+-    <article><span>Fouls</span><strong id="stat-fouls">0 OF 3</strong></article>
+-    <article><span>Balls left</span><strong id="stat-balls">15</strong></article>
+-    <article><span>Suit left</span><strong id="stat-suit-balls">-</strong></article>
+-    <article><span>Live balls</span><strong id="stat-live">16</strong></article>
+-  </section>
+-  <div class="power-meter" aria-label="Strike power"><span class="sweet-zone"></span><span class="fill" id="bs-power-fill"></span></div>
+-  <div class="power-meta"><span id="bs-power-label">Strike</span><span>hold Space - sweet zone marked</span></div>
+-  <p class="mission-line" id="bs-mission" aria-live="polite">OPEN TABLE - AIM WITH A/D, HOLD SPACE TO CHARGE</p>
+-  <ul class="controls-list" aria-label="Keyboard controls">
+-    <li>Aim <b>A</b>/<b>D</b> or <b>&larr;/&rarr;</b> (spin contact point <b>W</b>/<b>S</b>)</li>
+-    <li>Strike <b>hold Space</b>, release</li>
+-    <li>Ball in hand: move <b>A/D/W/S</b>, <b>Space</b> to place</li>
+-    <li>Re-rack <b>R</b> - Pause <b>P</b></li>
+-  </ul>
+-  <section class="action-row" aria-label="Game actions">
+-    <button id="bs-aim-left-button" type="button">Aim &larr;</button>
+-    <button id="bs-aim-right-button" type="button">Aim &rarr;</button>
+-    <button id="bs-charge-button" type="button">Charge + strike</button>
+-    <button id="bs-spin-top-button" type="button">Top</button>
+-    <button id="bs-spin-draw-button" type="button">Draw</button>
+-    <button id="bs-reset-button" type="button">Re-rack</button>
+-    <button id="bs-pause-button" type="button">Pause</button>
+-  </section>
+-  <section class="evidence-strip" aria-label="Route evidence">
+-    <span>Backend <code id="bs-ev-backend">booting</code></span>
+-    <span>Sensors <code id="bs-ev-sensors">0</code> - Bodies <code id="bs-ev-bodies">0</code></span>
+-  </section>
+-`);
++
++
+ 
+ // ---------------------------------------------------------------- audio ------
+-const audio = createBilliardsAudio();
++const audio = createBankShotSound();
+ let ambientStarted = false;
+ window.addEventListener("pointerdown", () => {
+   void audio.unlock().then(() => {
+@@ -147,7 +109,6 @@ const rules = new RulesEngine(1);
+ const cueController = new CueController();
+ /** True while a struck shot is in flight (facts come from sim.shotFacts()). */
+ let shotInFlight = false;
+-let paused = false;
+ let frameCount = 0;
+ let sensorEventCount = 0;
+ const audioCueLog: string[] = [];
+@@ -161,7 +122,6 @@ let stalledFrames = 0;
+ let shootingFrames = 0;
+ let pottedThisShot: number[] = [];
+ let ghost = { x: CUE_SPOT[0], z: CUE_SPOT[1] };
+-let toastTimer = 0;
+ let sessionScoreAtRackStart = 0;
+ let evidenceScenarioActive = false;
+ 
+@@ -178,7 +138,7 @@ function cueReady(name: string, gapFrames: number): boolean {
+ }
+ 
+ // ---------------------------------------------------------------- scene ------
+-const AIM_LINE_MATERIAL = material.emissive({ name: "aim line", color: "#38bdf8", emissive: "#0ea5e9", opacity: visualReviewCapture ? 0.62 : 0.9 });
++const AIM_LINE_MATERIAL = material.emissive({ name: "aim line", color: "#38bdf8", emissive: "#0ea5e9", opacity: 0.9 });
+ const AIM_BANK_MATERIAL = material.emissive({ name: "aim bank", color: "#f59e0b", emissive: "#d97706", opacity: 0.85 });
+ const AIM_MARKER_MATERIAL = material.emissive({ name: "aim marker", color: "#38bdf8", emissive: "#7dd3fc" });
+ const GHOST_MATERIAL = material.emissive({ name: "cue ghost", color: "#38bdf8", emissive: "#0284c7", opacity: 0.55 });
+@@ -271,7 +231,7 @@ function visualNodes(): AuraSceneNode[] {
+   // Fine renderer-owned felt guides remain available in the playable route,
+   // but the review capture relies on the typed table's integrated cloth marks
+   // so no oversized route-side ring competes with the live break.
+-  for (const z of visualReviewCapture ? [] : [-0.52, -0.26, 0.26, 0.52]) {
++  for (const z of [-0.52, -0.26, 0.26, 0.52]) {
+     nodes.push(
+       primitives.box({ name: `felt-guide-${z}`, material: FELT_GUIDE_MATERIAL })
+         .position(0, 0.022, z)
+@@ -302,6 +262,8 @@ function visualNodes(): AuraSceneNode[] {
+ }
+ 
+ function buildScene(): ReturnType<typeof scene> {
++  const reducedMotion = typeof window.matchMedia === "function"
++    && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+   const sceneCamera = portraitComposition
+     // Put the table's long axis up the portrait viewport so all six pockets,
+     // every ball, the cue, and the first line of action remain visible.
+@@ -323,12 +285,12 @@ function buildScene(): ReturnType<typeof scene> {
+       // then tightened around the break zone so balls are not thumbnail-sized.
+       // The camera remains table-centric; the panel-free review frame has no
+       // need to reserve pixels for the DOM controls.
+-      position: visualReviewCapture ? [-0.34, 2.18, 2.18] : [-0.067, 2.514, 2.641],
++      position: [-0.067, 2.514, 2.641],
+       // The default route keeps the opaque HUD panel clear of the table's
+       // right rail.  Shifting the camera target a fraction toward the foot
+       // keeps every pocket in the canvas while the controls stay readable.
+-      target: visualReviewCapture ? [0.16, -0.02, 0.0] : [0.32, -0.02, 0.0],
+-      fov: visualReviewCapture ? 39 : 48
++      target: [0.32, -0.02, 0.0],
++      fov: 48
+     });
+   return scene()
+     .background("#10182a")
+@@ -338,38 +300,41 @@ function buildScene(): ReturnType<typeof scene> {
+       effects.neonBloom({ intensity: reducedMotion ? 0.07 : 0.2, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+       effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.1 }),
+       effects.antiAlias({ mode: "fxaa" }),
+-      effects.ambientOcclusion({ intensity: visualReviewCapture ? 0.74 : 0.26 }),
++      effects.ambientOcclusion({ intensity: 0.26 }),
+       effects.contactOcclusion({ name: "ball-to-felt contact", intensity: 0.36, radius: 0.52 }),
+       effects.fog({
+         name: "hall haze",
+-        density: visualReviewCapture ? 0.0035 : 0.011,
++        density: 0.011,
+         color: "#10182a",
+-        intensity: visualReviewCapture ? 0.07 : 0.16
++        intensity: 0.16
+       }),
+       // A restrained ambient floor preserves the lacquer highlights and the
+       // ball-to-felt contact gradient.  The previous broad blue fill flattened
+       // every PBR response into the same midtone.
+-      lights.ambient({ name: "slate ambient", color: "#35435a", intensity: visualReviewCapture ? 0.1 : 0.24 }),
++      lights.ambient({ name: "slate ambient", color: "#35435a", intensity: 0.24 }),
+       // An asymmetric three-lamp pool-room key. The offset sources create a
+       // visible luminance falloff across felt, walnut bevels, and ball lacquer
+       // instead of washing every surface with the same frontal value.
+-      lights.point({ name: "pendant-light-mid", color: "#fff5d8", intensity: visualReviewCapture ? 5.0 : 4.85 }).position(-1.2, 1.55, 0.92),
+-      lights.point({ name: "pendant-light-head", color: "#ffe9bd", intensity: visualReviewCapture ? 2.9 : 3.6 }).position(0.2, 1.8, -0.7),
+-      lights.point({ name: "pendant-light-foot", color: "#ffd99c", intensity: visualReviewCapture ? 1.9 : 3.6 }).position(1.25, 1.35, 0.35),
+-      lights.rect({ name: "table overhead softbox", color: "#fff4dc", intensity: visualReviewCapture ? 1.45 : 1.8, width: 2.8, height: 1.25 })
++      lights.point({ name: "pendant-light-mid", color: "#fff5d8", intensity: 4.85 }).position(-1.2, 1.55, 0.92),
++      lights.point({ name: "pendant-light-head", color: "#ffe9bd", intensity: 3.6 }).position(0.2, 1.8, -0.7),
++      lights.point({ name: "pendant-light-foot", color: "#ffd99c", intensity: 3.6 }).position(1.25, 1.35, 0.35),
++      lights.rect({ name: "table overhead softbox", color: "#fff4dc", intensity: 1.8, width: 2.8, height: 1.25 })
+         .position(0, 2.25, 0.15),
+       // Cool fill & rim lights
+-      lights.directional({ name: "cool rim key", color: "#83bdff", intensity: visualReviewCapture ? 1.35 : 1.35 }).position(3.2, 4.5, 2.2),
+-      lights.directional({ name: "warm room fill", color: "#f2a65e", intensity: visualReviewCapture ? 0.78 : 0.32 }).position(-3.0, 3.5, -2.0),
+-      lights.point({ name: "felt cyan bounce", color: "#55baff", intensity: visualReviewCapture ? 0.18 : 0.7 }).position(0, 0.75, 2.0),
+-      lights.point({ name: "rack magenta rim", color: "#ff78ad", intensity: visualReviewCapture ? 0.28 : 0.72 }).position(1.65, 0.72, -0.58),
+-      lights.point({ name: "cue teal rim", color: "#55e2d2", intensity: visualReviewCapture ? 0.24 : 0.62 }).position(-1.45, 0.62, 0.62)
++      lights.directional({ name: "cool rim key", color: "#83bdff", intensity: 1.35 }).position(3.2, 4.5, 2.2),
++      lights.directional({ name: "warm room fill", color: "#f2a65e", intensity: 0.32 }).position(-3.0, 3.5, -2.0),
++      lights.point({ name: "felt cyan bounce", color: "#55baff", intensity: 0.7 }).position(0, 0.75, 2.0),
++      lights.point({ name: "rack magenta rim", color: "#ff78ad", intensity: 0.72 }).position(1.65, 0.72, -0.58),
++      lights.point({ name: "cue teal rim", color: "#55e2d2", intensity: 0.62 }).position(-1.45, 0.62, 0.62)
+     ])
+     .camera(sceneCamera);
+ }
+ 
+ // ---------------------------------------------------------------- mount ------
+-const gameApp = createGameApp("#app", {
++const bankGame = createGame({
++  id: "showcase-bank-shot",
++  target: "#app",
++  scene: buildScene,
+   diagnostics: { overlay: false, performancePanel: false },
+   physics: {
+     seed: 20260905,
+@@ -382,7 +347,6 @@ const gameApp = createGameApp("#app", {
+       spinTop: ["KeyW", "ArrowUp"],
+       spinDraw: ["KeyS", "ArrowDown"],
+       charge: ["Space"],
+-      pause: ["KeyP", "Escape"],
+       reset: ["KeyR"]
+     },
+     bufferMs: 80,
+@@ -390,11 +354,38 @@ const gameApp = createGameApp("#app", {
+     touch: true
+   },
+   loop: { fixedDt: 1 / 60, maxSubSteps: 2 },
+-  scene: buildScene()
++  scenarios: bankShotScenarios,
++  evidence: {
++    schema: 1,
++    sections: async () => (await import("./evidence")).sections,
++    legacyGlobals: ["__BANK_SHOT_EVIDENCE__", "__AURA3D_SHOWCASE_BANK_SHOT__"]
++  },
++  qualityRebuild: { flags: ["game"] }
+ });
+-const app = gameApp.app;
+-const input = gameApp.input!;
++const app = bankGame.app;
++const input = bankGame.input!;
+ if (!input) throw new Error("Bank Shot failed to create Aura3D input.");
++bankGame.start();
++
++// ---- juice (PRD-09 §7.6) ----------------------------------------------------
++// pot/foul/cushion/combo composed through the shared facade: fx -> C-20 bursts,
++// flash/vignette -> C-05, hitStop -> the real GameSession time controller.
++const bankTween = createTweenEngine();
++const bankFx = createFxParticlePass(app.effects);
++const bankJuice = createJuice<"pot" | "foul" | "cushion" | "combo">({
++  events: {
++    pot: { fx: { kind: "ring", count: 16, color: "#ffd166" }, hitStop: 0.045 },
++    foul: { flash: { color: "#ff4d4d", peak: 0.22, ms: 200 }, shake: 0.2 },
++    cushion: { fx: { kind: "dust", count: 5, color: "#9fb4c8" } },
++    combo: { fx: { kind: "ring", count: 14, color: "#7ce8ff" }, punch: { fovDeg: 3, ms: 140 } }
++  },
++  camera: app.camera,
++  session: bankGame.session,
++  fx: bankFx,
++  overlay: createOverlayDriver({ app }),
++  tweens: bankTween,
++  rumble: createRumbleDriver()
++});
+ 
+ const ballHandles = new Map<string, AuraRuntimeNodeHandle>();
+ const ballShadowHandles = new Map<string, AuraRuntimeNodeHandle>();
+@@ -474,64 +465,60 @@ Object.defineProperty(bankWindow, "__AURA3D_COMPOSITION_PROBE__", {
+ });
+ 
+ // ---------------------------------------------------------------- HUD --------
+-const banner = document.getElementById("bs-banner")!;
+-const toast = document.getElementById("bs-toast")!;
+-const resultCard = document.getElementById("bs-result")!;
+-const resultTitle = document.getElementById("bs-result-title")!;
+-const resultDetail = document.getElementById("bs-result-detail")!;
+-const againButton = document.getElementById("bs-again-button") as HTMLButtonElement;
+-const powerFill = document.getElementById("bs-power-fill")!;
+-const powerLabel = document.getElementById("bs-power-label")!;
+-
+-function formatClock(ms: number): string {
+-  const total = Math.max(0, Math.ceil(ms / 1000));
+-  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
+-}
++// Shared HUD kit (PRD-09 Phase 4): tabletop theme. The #hud/#panel markup -
++// stat grid, power meter, controls list, evidence strip, action buttons and
++// the brand blurb - is deleted; brand/prose moves to the shell `about` menu
++// when the route adopts it.
++const hudHost = document.createElement("div");
++hudHost.className = "a3g-game-hud";
++document.getElementById("app")!.appendChild(hudHost);
++const hud = mountHud(
++  { root: hudHost, doc: document as unknown as HudDocument },
++  {
++    theme: "tabletop",
++    maxScreenFraction: 0.15,
++    widgets: [
++      { id: "clock", kind: "timer", mode: "countdown", warnAt: 45, anchor: "top", label: "Rack" },
++      { id: "score", kind: "score", anchor: "top-right", label: "Score", rollMs: 200 },
++      { id: "combo", kind: "combo", anchor: "top-right" },
++      { id: "objective", kind: "objective", anchor: "bottom-left" },
++      { id: "prompt", kind: "prompt", anchor: "bottom" },
++      { id: "strike", kind: "meter", max: 1, anchor: "bottom-right", label: "Strike", color: "#d4a94f" }
++    ]
++  }
++);
+ 
+ function showToast(text: string): void {
+-  toast.textContent = text;
+-  toast.classList.remove("is-hidden");
+-  toast.style.opacity = "1";
+-  toastTimer = 90;
++  hud.toast(text, { ms: 2600 });
+ }
+ 
+ function hideResultCard(): void {
+-  resultCard.classList.add("is-hidden");
++  // hud.banner expires on its own; nothing to clear eagerly.
+ }
+ 
+ function syncHud(): void {
+   const snap = rules.snapshot();
+   const cueState = cueController.state();
+-  ui.setText("#stat-rack", `${snap.rack} OF ${RACK_COUNT}`);
+-  ui.setText("#stat-clock", formatClock(snap.clockMs));
+-  ui.setText("#stat-score", String(snap.score));
+-  ui.setText("#stat-combo", `X${snap.combo.toFixed(2).replace(/0+$/, "").replace(/\.$/, "")}`);
+-  ui.setText("#stat-suit", snap.suit === null ? "OPEN" : snap.suit.toUpperCase());
+-  ui.setText("#stat-fouls", `${snap.fouls} OF 3`);
+-  ui.setText("#stat-balls", String(snap.ballsRemaining));
+-  ui.setText("#stat-suit-balls", snap.suit === null ? "-" : String(snap.ballsRemainingInSuit));
+-  ui.setText("#stat-live", String(evidenceScenarioActive ? snap.ballsRemaining + 1 : sim.liveBallCount()));
+-  ui.setText("#bs-mission", snap.banner);
+-  powerFill.style.width = Math.round(cueState.charge * 100) + "%";
+-  powerLabel.textContent = cueState.charging
+-    ? `Strike ${Math.round(cueState.charge * 100)}%${cueState.inSweetZone ? " SWEET" : ""}`
+-    : "Strike";
+-  const chargeBtn = document.getElementById("bs-charge-button") as HTMLButtonElement | null;
+-  if (chargeBtn) {
+-    if (snap.phase === "ball-in-hand") chargeBtn.textContent = "Place Cue Ball";
+-    else if (snap.phase === "rack-won" && snap.sessionComplete) chargeBtn.textContent = "Session complete";
+-    else if (snap.phase === "rack-won") chargeBtn.textContent = "Next Rack (Space)";
+-    else chargeBtn.textContent = "Charge + strike";
+-    chargeBtn.disabled = snap.phase === "rack-won" && snap.sessionComplete;
+-  }
+-  ui.setText("#bs-ev-backend", sim.backend);
+-  ui.setText("#bs-ev-sensors", String(sensorEventCount));
+-  ui.setText("#bs-ev-bodies", String(sim.world.snapshot().bodies));
+-  banner.textContent = paused
+-    ? "PAUSED - P TO RESUME"
+-    : snap.phase === "rack-won" && snap.sessionComplete
+-      ? "SESSION CLEAR - R TO RE-RACK"
+-      : snap.banner;
++  hud.set("clock", snap.clockMs / 1000);
++  hud.set("score", snap.score);
++  hud.set("combo", snap.combo);
++  hud.set(
++    "objective",
++    `${snap.suit === null ? "OPEN TABLE" : snap.suit.toUpperCase()} - ${snap.ballsRemaining} balls - fouls ${snap.fouls}/3`
++  );
++  hud.set("strike", cueState.charge);
++  hud.set(
++    "prompt",
++    bankGame.session.paused
++      ? "PAUSED - P TO RESUME"
++      : snap.phase === "rack-won" && snap.sessionComplete
++        ? "SESSION CLEAR - R TO RE-RACK"
++        : snap.phase === "ball-in-hand"
++          ? "BALL IN HAND - A/D/W/S to place, Space to set"
++          : cueState.charging
++            ? `Strike ${Math.round(cueState.charge * 100)}%${cueState.inSweetZone ? " - SWEET" : ""}`
++            : snap.banner
++  );
+ }
+ 
+ // ------------------------------------------------------------- shot glue -----
+@@ -564,6 +551,10 @@ function consumeShotEvents(): void {
+       if (cueReady("ball-hit", 5)) pushCue("ball-hit");
+     } else if (fact.type === "cushion-touch") {
+       if (cueReady("cushion-hit", 6)) pushCue("cushion-hit");
++      const body = sim.debugBallBody(fact.ball);
++      if (body && !bankGame.session.reducedMotion) {
++        bankJuice.fire("cushion", { position: body.position });
++      }
+     }
+   }
+   // Cluster clacks from the polled contact events (slower, persistent pairs).
+@@ -573,6 +564,8 @@ function consumeShotEvents(): void {
+   for (const pot of sim.consumePotEvents()) {
+     pottedThisShot.push(pot.ball);
+     pushCue("pocket-drop");
++    const center = POCKET_CENTERS.find((p) => p.id === pot.pocket);
++    bankJuice.fire("pot", { position: center ? [center.x, 0.06, center.z] : undefined });
+     showToast(pot.ball === 0 ? "SCRATCH" : `BALL ${pot.ball} DOWN`);
+   }
+ }
+@@ -580,18 +573,20 @@ function consumeShotEvents(): void {
+ function applyOutcome(outcome: ShotOutcome): void {
+   if (outcome.rackWon) {
+     pushCue("eight-win");
+-    resultTitle.textContent = rules.sessionComplete ? "Session clear" : "Rack clear";
+-    resultDetail.textContent = rules.sessionComplete
+-      ? `All ${RACK_COUNT} racks cleared with ${rules.score} points.`
+-      : `Rack ${rules.rack} cleared: ${outcome.winReason}. Score ${rules.score}.`;
+-    resultCard.classList.remove("is-hidden");
++    void hud.banner(rules.sessionComplete ? "SESSION CLEAR" : "RACK CLEAR", { holdMs: 3600, style: "clear" });
++    hud.toast(
++      rules.sessionComplete
++        ? `All ${RACK_COUNT} racks cleared with ${rules.score} points.`
++        : `Rack ${rules.rack} cleared: ${outcome.winReason}. Score ${rules.score}.`,
++      { ms: 5200 }
++    );
+   } else if (outcome.rackLost) {
+     pushCue("rack-fail");
+-    resultTitle.textContent = "Rack lost";
+-    resultDetail.textContent = `Rack ${rules.rack} lost: ${outcome.lossReason}. Score ${rules.score}.`;
+-    resultCard.classList.remove("is-hidden");
++    void hud.banner("RACK LOST", { holdMs: 3200, style: "fail" });
++    hud.toast(`Rack ${rules.rack} lost: ${outcome.lossReason}. Score ${rules.score}.`, { ms: 5200 });
+   } else if (outcome.foul) {
+     pushCue("foul-whistle");
++    bankJuice.fire("foul");
+     let freeX = CUE_SPOT[0];
+     let freeZ = CUE_SPOT[1];
+     if (!sim.canPlaceCue(freeX, freeZ)) {
+@@ -610,6 +605,8 @@ function applyOutcome(outcome: ShotOutcome): void {
+     ghost = { x: freeX, z: freeZ };
+   } else if (outcome.pottedLegal.length > 0) {
+     pushCue("combo-chime");
++    const cueBody = sim.debugBallBody(0);
++    bankJuice.fire("combo", { position: cueBody?.position });
+   }
+ }
+ 
+@@ -667,10 +664,6 @@ function advanceRack(): void {
+ 
+ function resetSession(): void {
+   evidenceScenarioActive = false;
+-  toastTimer = 0;
+-  toast.style.opacity = "0";
+-  toast.textContent = "";
+-  toast.classList.add("is-hidden");
+   rules.rerack();
+   sim.resetRack();
+   cueController.cancelCharge();
+@@ -687,11 +680,15 @@ function resetSession(): void {
+ }
+ 
+ function togglePause(): void {
+-  paused = !paused;
++  // Session owns pause state (user + visibility + menu stack).
++  if (bankGame.session.paused) {
++    bankGame.session.resume();
++    app.resume();
++  } else {
++    bankGame.session.pause("user");
++    app.pause();
++  }
+   syncHud();
+-  publishEvidence();
+-  if (paused) app.pause();
+-  else app.resume();
+ }
+ 
+ // --------------------------------------------------------- per-frame sync ----
+@@ -826,30 +823,30 @@ function syncVisuals(): void {
+   // The review capture keeps the line hairline-thin and subdued so it reads as
+   // a real tactical cue rather than a UI banner; the playable route retains a
+   // stronger training guide and bank preview.
+-  poseLine(aimLineHandle, cueInfo.x, cueInfo.z, sweep.ghostX, sweep.ghostZ, BALL_SURFACE_Y + 0.002, visualReviewCapture ? 0.0035 : 0.006);
++  poseLine(aimLineHandle, cueInfo.x, cueInfo.z, sweep.ghostX, sweep.ghostZ, BALL_SURFACE_Y + 0.002, 0.006);
+   aimMarkerHandle?.setPosition(sweep.ghostX, BALL_SURFACE_Y, sweep.ghostZ);
+   if (sweep.kind === "cushion") {
+     const dot = dirX * sweep.normalX + dirZ * sweep.normalZ;
+     const bankX = dirX - 2 * dot * sweep.normalX;
+     const bankZ = dirZ - 2 * dot * sweep.normalZ;
+-    poseLine(aimBankHandle, sweep.ghostX, sweep.ghostZ, sweep.ghostX + bankX * 0.45, sweep.ghostZ + bankZ * 0.45, BALL_SURFACE_Y + 0.002, visualReviewCapture ? 0.003 : 0.005);
++    poseLine(aimBankHandle, sweep.ghostX, sweep.ghostZ, sweep.ghostX + bankX * 0.45, sweep.ghostZ + bankZ * 0.45, BALL_SURFACE_Y + 0.002, 0.005);
+   } else {
+     parkNode(aimBankHandle);
+   }
+ }
+ 
+ // ------------------------------------------------------------- evidence ------
+-function publishEvidence(): void {
++function collectRouteEvidence(): Record<string, unknown> {
+   const snap = rules.snapshot();
+   const cueState = cueController.state();
+   const diagnostics: AuraDiagnostics = app.diagnostics();
+-  const evidence = {
++  const evidence: Record<string, unknown> = {
+     // Contract keys from the PRD evidence section.
+     status: "ready",
+     mounted: true,
+     primaryAssets: ["assets.bankShotTable", "assets.bankShotCue", "assets.bankShotBall00"],
+     rack: snap.rack,
+-    state: paused ? "paused" : snap.phase,
++    state: bankGame.session.paused ? "paused" : snap.phase,
+     score: snap.score,
+     combo: snap.combo,
+     suit: snap.suit,
+@@ -877,7 +874,7 @@ function publishEvidence(): void {
+     // Route-local extras consumed by specs and route-health.
+     appId: APP_ID,
+     backend: sim.backend,
+-    phase: paused ? snap.phase : snap.phase,
++    phase: snap.phase,
+     frameCount,
+     aimAngle: cueState.aimAngle,
+     charge: cueState.charge,
+@@ -897,11 +894,10 @@ function publishEvidence(): void {
+     controls: ["A/Left aim left", "D/Right aim right", "W top spin", "S draw", "hold Space charge", "R re-rack", "P pause", "touch buttons"],
+     systems: ROUTE_SYSTEMS,
+     claimBoundary: "Aura3D prototype: route-local arcade 8-ball on the public physics surface (16 dynamic spheres, cushion restitution, pocket sensors); authored spin is a velocity nudge, no angular simulation; no reusable cue-sports kit claimed.",
+-    mountedAtEpochMs: Date.now()
++    collectedAtEpochMs: Date.now()
+   };
+   void sessionScoreAtRackStart;
+-  bankWindow.__BANK_SHOT_EVIDENCE__ = evidence;
+-  Object.defineProperty(window, "__AURA3D_SHOWCASE_BANK_SHOT__", { value: evidence, configurable: true, writable: true });
++  return evidence;
+ }
+ 
+ // Renderer-owned capture used by specs and probes (no compositor dependency).
+@@ -926,11 +922,14 @@ bankWindow.__BS_PUMP__ = (frames: number): number => {
+  * play. Actual contacts/pockets/settling remain separately proven by public
+  * Rapier simulation tests and the naturally driven browser break.
+  */
+-bankWindow.__BS_SCENARIO__ = (scenario) => {
+-  resetSession();
+-  evidenceScenarioActive = true;
+-  const resolveFixture = (record: ShotRecord): ShotOutcome => {
+-    if (!rules.beginShot()) throw new Error(`Bank Shot evidence fixture could not begin ${scenario}.`);
++bindBankShotEvidence(collectRouteEvidence);
++bindBankShotDrive({
++  resetForFixture: () => {
++    resetSession();
++    evidenceScenarioActive = true;
++  },
++  resolve: (record) => {
++    if (!rules.beginShot()) throw new Error(`Bank Shot evidence fixture could not begin a shot.`);
+     const outcome = rules.resolveShot(record);
+     rules.finishResolution();
+     applyOutcome(outcome);
+@@ -943,33 +942,20 @@ bankWindow.__BS_SCENARIO__ = (scenario) => {
+           : outcome.pottedLegal.length > 0
+             ? `potted:${outcome.pottedLegal.join(",")}`
+             : "miss";
+-    lastShotObject = { fixture: scenario, ...record, outcome };
++    lastShotObject = { ...record, outcome };
+     return outcome;
+-  };
+-  if (scenario === "pocket") {
+-    resolveFixture({ firstContact: 1, cushionAfterContact: true, potted: [1] });
+-    showToast("BALL 1 DOWN");
+-  } else if (scenario === "foul") {
+-    resolveFixture({ firstContact: 1, cushionAfterContact: true, potted: [0] });
+-    showToast("SCRATCH — BALL IN HAND");
+-  } else if (scenario === "rack-fail") {
+-    resolveFixture({ firstContact: 8, cushionAfterContact: true, potted: [8] });
+-  } else {
+-    for (let rack = 1; rack <= RACK_COUNT; rack += 1) {
+-      resolveFixture({ firstContact: 1, cushionAfterContact: true, potted: [1, 2, 3, 4, 5, 6, 7] });
+-      resolveFixture({ firstContact: 8, cushionAfterContact: true, potted: [8] });
+-      if (rack < RACK_COUNT) {
+-        rules.advanceRack();
+-        sim.resetRack();
+-        hideResultCard();
+-      }
+-    }
++  },
++  advanceRack: () => {
++    rules.advanceRack();
++    sim.resetRack();
++    hideResultCard();
++  },
++  toast: showToast,
++  sync: () => {
++    syncVisuals();
++    syncHud();
+   }
+-  syncVisuals();
+-  syncHud();
+-  publishEvidence();
+-  return lastShotSummary;
+-};
++});
+ 
+ // ---------------------------------------------------------------- input -------
+ /*
+@@ -990,7 +976,7 @@ function manualEdge(code: string): "pressed" | "released" | "held" | "idle" {
+ }
+ 
+ function manualAdvanceFrame(): void {
+-  for (const code of ["Space", "KeyA", "KeyD", "KeyW", "KeyS", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "KeyP", "Escape", "KeyR"]) {
++  for (const code of ["Space", "KeyA", "KeyD", "KeyW", "KeyS", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "KeyR"]) {
+     manualPrev.set(code, manualHeld.has(code));
+   }
+ }
+@@ -1019,7 +1005,6 @@ function confirmBallInHand(): void {
+   if (!sim.restoreCueAt(targetX, targetZ)) return;
+   if (rules.confirmBallInHand()) pushCue("ball-hit");
+   syncHud();
+-  publishEvidence();
+ }
+ 
+ window.addEventListener("keydown", (event) => {
+@@ -1035,8 +1020,7 @@ window.addEventListener("keydown", (event) => {
+     }
+   }
+   if (event.repeat) return;
+-  if (event.code === "KeyP" || event.code === "Escape") togglePause();
+-  else if (event.code === "KeyR") resetSession();
++  if (event.code === "KeyR") resetSession();
+ }, { passive: true });
+ window.addEventListener("keyup", (event) => {
+   manualHeld.delete(event.code);
+@@ -1051,44 +1035,48 @@ window.addEventListener("keydown", (event) => {
+   }
+ }, { passive: false });
+ 
+-function bindHoldButton(selector: string, onDown: () => void, onUp: () => void): void {
+-  const button = document.querySelector(selector) as HTMLButtonElement | null;
+-  if (!button) return;
+-  button.addEventListener("pointerdown", (event) => { event.preventDefault(); onDown(); }, { passive: false });
+-  button.addEventListener("pointerup", () => onUp());
+-  button.addEventListener("pointerleave", () => onUp());
+-}
+-bindHoldButton("#bs-aim-left-button", () => manualHeld.add("KeyA"), () => manualHeld.delete("KeyA"));
+-bindHoldButton("#bs-aim-right-button", () => manualHeld.add("KeyD"), () => manualHeld.delete("KeyD"));
+-bindHoldButton("#bs-spin-top-button", () => manualHeld.add("KeyW"), () => manualHeld.delete("KeyW"));
+-bindHoldButton("#bs-spin-draw-button", () => manualHeld.add("KeyS"), () => manualHeld.delete("KeyS"));
+-bindHoldButton("#bs-charge-button", () => {
+-  if (rules.phase === "ball-in-hand") confirmBallInHand();
+-  else if (rules.phase === "rack-won") advanceRack();
+-  else if (rules.phase === "aiming" && !cueController.charging && sim.cueAtRest()) cueController.beginCharge();
+-}, () => {
+-  if (cueController.charging) doStrike();
+-});
+-ui.onClick("#bs-reset-button", () => resetSession());
+-ui.onClick("#bs-pause-button", () => togglePause());
+-againButton.addEventListener("click", () => resetSession());
++// aim-drag preset (PRD-09 1767): the left stick aims/spins, the right
++// (non-returning) stick fine-aims, charge holds Space. Writes land in the same
++// `manualHeld` code set the keyboard path feeds, so touch and keys share the
++// aim/charge logic below.
++const touchControls = mountTouchControls(
++  {
++    press: (code) => manualHeld.add(code),
++    release: (code) => manualHeld.delete(code),
++    setAction: (code, held) => (held ? manualHeld.add(code) : manualHeld.delete(code))
++  },
++  {
++    preset: "aim-drag",
++    bindings: {
++      "stick.left": "KeyA",
++      "stick.right": "KeyD",
++      "stick.up": "KeyW",
++      "stick.down": "KeyS",
++      "rstick.left": "KeyA",
++      "rstick.right": "KeyD",
++      charge: "Space",
++      confirm: "Space",
++      cancel: "KeyR"
++    }
++  },
++  {
++    doc: document as unknown as HudDocument,
++    root: hudHost,
++    coarsePointer: () => matchMedia("(pointer: coarse)").matches
++  }
++);
+ 
+ // ------------------------------------------------------------- frame loop ----
+ const BALL_IN_HAND_STEP = 0.03;
+ 
+-gameApp.onFrame(({ dt }) => {
++bankGame.app.onFrame(({ dt }) => {
+   input.update(dt);
++  bankTween.tick(dt);
+   frameCount += 1;
+ 
+-    if (toastTimer > 0) {
+-      toastTimer -= 1;
+-    if (toastTimer === 0) {
+-      toast.style.opacity = "0";
+-      toast.classList.add("is-hidden");
+-    }
+-  }
++  touchControls.update();
+ 
+-  if (paused) {
++  if (bankGame.session.paused) {
+     manualAdvanceFrame();
+     return;
+   }
+@@ -1125,17 +1113,14 @@ gameApp.onFrame(({ dt }) => {
+ 
+   if (rules.tickClock(dt * 1000)) {
+     pushCue("rack-fail");
+-    resultTitle.textContent = "Rack lost";
+-    resultDetail.textContent = `Rack ${rules.rack} lost: clock expired. Score ${rules.score}.`;
+-    resultCard.classList.remove("is-hidden");
++    void hud.banner("RACK LOST", { holdMs: 3200, style: "fail" });
++    hud.toast(`Rack ${rules.rack} lost: clock expired. Score ${rules.score}.`, { ms: 5200 });
+     syncHud();
+   }
+ 
+   syncVisuals();
+   if (frameCount % 6 === 0) syncHud();
+-  publishEvidence();
+ });
+ 
+ void rackSpotFor;
+ syncHud();
+-publishEvidence();
+diff --git a/apps/showcase-bank-shot/src/legacy/styles.css b/apps/showcase-bank-shot/src/legacy/styles.css
+index 689d8a3e3..2848840e1 100644
+--- a/apps/showcase-bank-shot/src/legacy/styles.css
++++ b/apps/showcase-bank-shot/src/legacy/styles.css
+@@ -191,3 +191,7 @@ body { overflow: hidden; }
+   .pocket-toast { top: 42px; max-width: calc(100% - 20px); overflow: hidden; text-overflow: ellipsis; }
+   .result-card { min-width: 0; width: calc(100% - 24px); padding: 18px; }
+ }
++
++/* PRD-09 Phase 4: shared HUD kit host over the stage (replaces #hud/#panel). */
++.a3g-game-hud { position: absolute; inset: 0; pointer-events: none; z-index: 40; }
++.a3g-game-hud .a3g-tc { pointer-events: auto; }
+diff --git a/apps/showcase-bank-shot/src/scenario-drive.ts b/apps/showcase-bank-shot/src/scenario-drive.ts
+new file mode 100644
+index 000000000..b2194101b
+--- /dev/null
++++ b/apps/showcase-bank-shot/src/scenario-drive.ts
+@@ -0,0 +1,35 @@
++/**
++ * scenario-drive.ts — gameplay-only surface the `src/scenarios/` modules use.
++ * Bound once from `main.ts` after `rules`/`sim` exist; scenario files never
++ * reach for route internals directly.
++ */
++import type { ShotOutcome, ShotRecord } from "./rules";
++
++export interface BankShotDrive {
++  resetForFixture(): void;
++  resolve(record: ShotRecord): ShotOutcome;
++  advanceRack(): void;
++  toast(text: string): void;
++  sync(): void;
++}
++
++let active: BankShotDrive | undefined;
++
++export function bindBankShotDrive(impl: BankShotDrive): void {
++  active = impl;
++}
++
++function bound(): BankShotDrive {
++  if (active === undefined) {
++    throw new Error("Bank Shot scenario drive is not bound yet — call createGame first.");
++  }
++  return active;
++}
++
++export const drive: BankShotDrive = {
++  resetForFixture: () => bound().resetForFixture(),
++  resolve: (record) => bound().resolve(record),
++  advanceRack: () => bound().advanceRack(),
++  toast: (text) => bound().toast(text),
++  sync: () => bound().sync()
++};
+diff --git a/apps/showcase-bank-shot/src/scenarios/eight-finish.ts b/apps/showcase-bank-shot/src/scenarios/eight-finish.ts
+new file mode 100644
+index 000000000..8d2528919
+--- /dev/null
++++ b/apps/showcase-bank-shot/src/scenarios/eight-finish.ts
+@@ -0,0 +1,16 @@
++import type { GameScenario } from "@aura3d/engine/contracts";
++import { drive } from "../scenario-drive";
++import { RACK_COUNT } from "../racks";
++
++export const eightFinish: GameScenario = {
++  description: "every rack cleared: solids then the eight",
++  setup() {
++    drive.resetForFixture();
++    for (let rack = 1; rack <= RACK_COUNT; rack += 1) {
++      drive.resolve({ firstContact: 1, cushionAfterContact: true, potted: [1, 2, 3, 4, 5, 6, 7] });
++      drive.resolve({ firstContact: 8, cushionAfterContact: true, potted: [8] });
++      if (rack < RACK_COUNT) drive.advanceRack();
++    }
++    drive.sync();
++  }
++};
+diff --git a/apps/showcase-bank-shot/src/scenarios/foul.ts b/apps/showcase-bank-shot/src/scenarios/foul.ts
+new file mode 100644
+index 000000000..0f14e2a75
+--- /dev/null
++++ b/apps/showcase-bank-shot/src/scenarios/foul.ts
+@@ -0,0 +1,12 @@
++import type { GameScenario } from "@aura3d/engine/contracts";
++import { drive } from "../scenario-drive";
++
++export const foul: GameScenario = {
++  description: "scratch — cue ball potted, ball in hand",
++  setup() {
++    drive.resetForFixture();
++    drive.resolve({ firstContact: 1, cushionAfterContact: true, potted: [0] });
++    drive.toast("SCRATCH — BALL IN HAND");
++    drive.sync();
++  }
++};
+diff --git a/apps/showcase-bank-shot/src/scenarios/index.ts b/apps/showcase-bank-shot/src/scenarios/index.ts
+new file mode 100644
+index 000000000..a5624c524
+--- /dev/null
++++ b/apps/showcase-bank-shot/src/scenarios/index.ts
+@@ -0,0 +1,11 @@
++import { pocket } from "./pocket";
++import { foul } from "./foul";
++import { eightFinish } from "./eight-finish";
++import { rackFail } from "./rack-fail";
++
++export const bankShotScenarios = {
++  pocket,
++  foul,
++  "eight-finish": eightFinish,
++  "rack-fail": rackFail
++} as const;
+diff --git a/apps/showcase-bank-shot/src/scenarios/pocket.ts b/apps/showcase-bank-shot/src/scenarios/pocket.ts
+new file mode 100644
+index 000000000..f46b0ae9a
+--- /dev/null
++++ b/apps/showcase-bank-shot/src/scenarios/pocket.ts
+@@ -0,0 +1,12 @@
++import type { GameScenario } from "@aura3d/engine/contracts";
++import { drive } from "../scenario-drive";
++
++export const pocket: GameScenario = {
++  description: "ball 1 potted on a legal hit",
++  setup() {
++    drive.resetForFixture();
++    drive.resolve({ firstContact: 1, cushionAfterContact: true, potted: [1] });
++    drive.toast("BALL 1 DOWN");
++    drive.sync();
++  }
++};
+diff --git a/apps/showcase-bank-shot/src/scenarios/rack-fail.ts b/apps/showcase-bank-shot/src/scenarios/rack-fail.ts
+new file mode 100644
+index 000000000..fbbf9b3b6
+--- /dev/null
++++ b/apps/showcase-bank-shot/src/scenarios/rack-fail.ts
+@@ -0,0 +1,11 @@
++import type { GameScenario } from "@aura3d/engine/contracts";
++import { drive } from "../scenario-drive";
++
++export const rackFail: GameScenario = {
++  description: "eight ball sunk early — rack lost",
++  setup() {
++    drive.resetForFixture();
++    drive.resolve({ firstContact: 8, cushionAfterContact: true, potted: [8] });
++    drive.sync();
++  }
++};
+diff --git a/apps/showcase-bank-shot/src/sound.ts b/apps/showcase-bank-shot/src/sound.ts
+new file mode 100644
+index 000000000..92aeb0cb5
+--- /dev/null
++++ b/apps/showcase-bank-shot/src/sound.ts
+@@ -0,0 +1,69 @@
++/**
++ * Bank Shot sound — PRD-09 §10 step 5: a cues object over the shared
++ * game-sfx-core pack, replacing billiards-audio.ts and the generated-WAV
++ * pipeline (scripts/build-sfx.mjs). Every asset is a licensed pack id under
++ * /packs/game-sfx-core/; {format} resolves to the probed encoding in the
++ * C-25 engine path. Playback still unlocks on the first user gesture.
++ */
++import { createGameAudio, type GameAudio } from "@aura3d/engine";
++
++export type BankShotCue =
++  | "cue-strike"
++  | "cushion-hit"
++  | "ball-hit"
++  | "pocket-drop"
++  | "rack-clear"
++  | "foul-whistle"
++  | "eight-win"
++  | "rack-fail"
++  | "combo-chime"
++  | "ambient-hall";
++
++const pk = (id: string) => ({
++  url: `/packs/game-sfx-core/${id}.{format}`,
++  license: "CC0",
++});
++
++const ids = (...stems: string[]) => stems.map(pk);
++
++/** Route cue map → game-sfx-core ids (sports/table + shared UI/stingers/ambience). */
++export const bankShotCues: Record<BankShotCue, { readonly bus: "sfx" | "ui" | "ambience"; readonly volume: number; readonly loop?: boolean; readonly asset: ReturnType<typeof ids> }> = {
++  "cue-strike": { bus: "sfx", volume: 0.7, asset: ids("sports.ball-bounce-court.00", "sports.ball-bounce-court.01", "sports.ball-bounce-court.02") },
++  "cushion-hit": { bus: "sfx", volume: 0.5, asset: ids("sports.cushion.00", "sports.cushion.01", "sports.cushion.02") },
++  "ball-hit": { bus: "sfx", volume: 0.65, asset: ids("sports.billiard-clack.00", "sports.billiard-clack.01", "sports.billiard-clack.02") },
++  "pocket-drop": { bus: "sfx", volume: 0.75, asset: ids("sports.pocket.00", "sports.pocket.01", "sports.pocket.02") },
++  "rack-clear": { bus: "ui", volume: 0.8, asset: ids("stinger.checkpoint.00", "stinger.checkpoint.01") },
++  "foul-whistle": { bus: "ui", volume: 0.75, asset: ids("ui.error.00", "ui.error.01") },
++  "eight-win": { bus: "ui", volume: 0.85, asset: ids("stinger.win.00", "stinger.win.01") },
++  "rack-fail": { bus: "ui", volume: 0.8, asset: ids("stinger.lose.00", "stinger.lose.01") },
++  "combo-chime": { bus: "ui", volume: 0.6, asset: ids("ui.reward.00", "ui.reward.01") },
++  "ambient-hall": { bus: "ambience", volume: 0.3, loop: true, asset: ids("ambience.interior-hum") }
++};
++
++export interface BankShotSoundController {
++  readonly cue: (name: BankShotCue) => Promise<void>;
++  readonly unlock: () => Promise<void>;
++}
++
++let cachedAudio: GameAudio<BankShotCue> | null = null;
++
++export function createBankShotSound(): BankShotSoundController {
++  if (!cachedAudio) {
++    cachedAudio = createGameAudio({
++      browserContext: true,
++      buses: [
++        { id: "sfx", volume: 0.85 },
++        { id: "ui", volume: 0.6 },
++        { id: "ambience", volume: 0.5 }
++      ],
++      cues: Object.fromEntries(
++        Object.entries(bankShotCues).map(([cue, def]) => [cue, { id: cue, ...def }])
++      ) as Parameters<typeof createGameAudio<BankShotCue>>[0]["cues"]
++    });
++  }
++  const audio = cachedAudio;
++  return {
++    cue: (name) => audio.cue(name),
++    unlock: () => audio.unlock()
++  };
++}
+diff --git a/public/aura-assets/bankShotAmbientHallSfx.2cc34b40.wav b/public/aura-assets/bankShotAmbientHallSfx.2cc34b40.wav
+deleted file mode 100644
+index fc9b480a3..000000000
+--- a/public/aura-assets/bankShotAmbientHallSfx.2cc34b40.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:2cc34b40992b23aa4d51a9ce5e54441d98b4d5d99c9f32043c86b791bcb06a9d
+-size 282284
+diff --git a/public/aura-assets/bankShotAmbientHallSfx.dd9f1de8.wav b/public/aura-assets/bankShotAmbientHallSfx.dd9f1de8.wav
+deleted file mode 100644
+index 7a1bbec61..000000000
+--- a/public/aura-assets/bankShotAmbientHallSfx.dd9f1de8.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:dd9f1de814c6d842d872bb610bd5e7655239b659e8df37c4ea2132e5d38a7b97
+-size 282284
+diff --git a/public/aura-assets/bankShotAmbientHallSfx.thumb.svg b/public/aura-assets/bankShotAmbientHallSfx.thumb.svg
+deleted file mode 100644
+index c74d019ef..000000000
+--- a/public/aura-assets/bankShotAmbientHallSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">bankShotAmbientHallSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/bankShotBallHitSfx.97e8103a.wav b/public/aura-assets/bankShotBallHitSfx.97e8103a.wav
+deleted file mode 100644
+index 4d394d526..000000000
+--- a/public/aura-assets/bankShotBallHitSfx.97e8103a.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:97e8103a928276c3a0a8873edd49535dd783fdfcf3d94c0885d4dd4288374075
+-size 15920
+diff --git a/public/aura-assets/bankShotBallHitSfx.thumb.svg b/public/aura-assets/bankShotBallHitSfx.thumb.svg
+deleted file mode 100644
+index 11855ef28..000000000
+--- a/public/aura-assets/bankShotBallHitSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">bankShotBallHitSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/bankShotComboChimeSfx.42171c98.wav b/public/aura-assets/bankShotComboChimeSfx.42171c98.wav
+deleted file mode 100644
+index 72b0b7c9a..000000000
+--- a/public/aura-assets/bankShotComboChimeSfx.42171c98.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:42171c98cdfeee61de84772d0df370c103dafe954f9c7e6a7a0c9e4c3cd8cddd
+-size 26504
+diff --git a/public/aura-assets/bankShotComboChimeSfx.thumb.svg b/public/aura-assets/bankShotComboChimeSfx.thumb.svg
+deleted file mode 100644
+index 60acd6b39..000000000
+--- a/public/aura-assets/bankShotComboChimeSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">bankShotComboChimeSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/bankShotCueStrikeSfx.458c8089.wav b/public/aura-assets/bankShotCueStrikeSfx.458c8089.wav
+deleted file mode 100644
+index a2d171208..000000000
+--- a/public/aura-assets/bankShotCueStrikeSfx.458c8089.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:458c80896e71175be8293b9a838fbc0929870f03b4d8ff5466935877f9fa94fe
+-size 15920
+diff --git a/public/aura-assets/bankShotCueStrikeSfx.thumb.svg b/public/aura-assets/bankShotCueStrikeSfx.thumb.svg
+deleted file mode 100644
+index b5e332e5f..000000000
+--- a/public/aura-assets/bankShotCueStrikeSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">bankShotCueStrikeSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/bankShotCushionHitSfx.67b035c7.wav b/public/aura-assets/bankShotCushionHitSfx.67b035c7.wav
+deleted file mode 100644
+index bbf8397ac..000000000
+--- a/public/aura-assets/bankShotCushionHitSfx.67b035c7.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:67b035c7c85436a6a150c18ea2bbcdfa13dab71f2d6f3fcb93ebd1fb6ca88d2a
+-size 18566
+diff --git a/public/aura-assets/bankShotCushionHitSfx.thumb.svg b/public/aura-assets/bankShotCushionHitSfx.thumb.svg
+deleted file mode 100644
+index 7a4ed0211..000000000
+--- a/public/aura-assets/bankShotCushionHitSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">bankShotCushionHitSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/bankShotEightWinSfx.dae450ea.wav b/public/aura-assets/bankShotEightWinSfx.dae450ea.wav
+deleted file mode 100644
+index 0940094a1..000000000
+--- a/public/aura-assets/bankShotEightWinSfx.dae450ea.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:dae450ea83d7fd03c501e7f40c7f1ec46ca7989caf1f96aeea60036cd389b417
+-size 60018
+diff --git a/public/aura-assets/bankShotEightWinSfx.thumb.svg b/public/aura-assets/bankShotEightWinSfx.thumb.svg
+deleted file mode 100644
+index 6c7f0030f..000000000
+--- a/public/aura-assets/bankShotEightWinSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">bankShotEightWinSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/bankShotFoulWhistleSfx.631d142b.wav b/public/aura-assets/bankShotFoulWhistleSfx.631d142b.wav
+deleted file mode 100644
+index 8d994a360..000000000
+--- a/public/aura-assets/bankShotFoulWhistleSfx.631d142b.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:631d142bd4c4fb0aca6377d96faaaba76c8299fe36a7445334a3db063cb1b869
+-size 40616
+diff --git a/public/aura-assets/bankShotFoulWhistleSfx.thumb.svg b/public/aura-assets/bankShotFoulWhistleSfx.thumb.svg
+deleted file mode 100644
+index d95bda653..000000000
+--- a/public/aura-assets/bankShotFoulWhistleSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">bankShotFoulWhistleSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/bankShotPocketDropSfx.0ea6570c.wav b/public/aura-assets/bankShotPocketDropSfx.0ea6570c.wav
+deleted file mode 100644
+index ad6c69c2d..000000000
+--- a/public/aura-assets/bankShotPocketDropSfx.0ea6570c.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:0ea6570ce36826ab8d0c24fd723869f818b2d0c5b61a2a3aa73fe41a14eca2f0
+-size 37088
+diff --git a/public/aura-assets/bankShotPocketDropSfx.thumb.svg b/public/aura-assets/bankShotPocketDropSfx.thumb.svg
+deleted file mode 100644
+index 4c077864b..000000000
+--- a/public/aura-assets/bankShotPocketDropSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">bankShotPocketDropSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/bankShotRackClearSfx.b2bc8c1c.wav b/public/aura-assets/bankShotRackClearSfx.b2bc8c1c.wav
+deleted file mode 100644
+index d4443f44b..000000000
+--- a/public/aura-assets/bankShotRackClearSfx.b2bc8c1c.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:b2bc8c1c33708ae7fc0fd73f1e7de08a2ebcb5dbcc0927d5f08f2738ceaffe6d
+-size 45908
+diff --git a/public/aura-assets/bankShotRackClearSfx.thumb.svg b/public/aura-assets/bankShotRackClearSfx.thumb.svg
+deleted file mode 100644
+index 6f27122e2..000000000
+--- a/public/aura-assets/bankShotRackClearSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">bankShotRackClearSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/bankShotRackFailSfx.e9275302.wav b/public/aura-assets/bankShotRackFailSfx.e9275302.wav
+deleted file mode 100644
+index bc9c99505..000000000
+--- a/public/aura-assets/bankShotRackFailSfx.e9275302.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:e9275302dfc891fc3484b83e237f569421aea1eafce02ad1f84d0bb1a47ca47e
+-size 68838
+diff --git a/public/aura-assets/bankShotRackFailSfx.thumb.svg b/public/aura-assets/bankShotRackFailSfx.thumb.svg
+deleted file mode 100644
+index 32b8d48d1..000000000
+--- a/public/aura-assets/bankShotRackFailSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">bankShotRackFailSfx</text></svg>
+\ No newline at end of file
+diff --git a/src/aura-assets.ts b/src/aura-assets.ts
+index 265e75b91..4faab9e76 100644
+--- a/src/aura-assets.ts
++++ b/src/aura-assets.ts
+@@ -17,7 +17,6 @@ type AuraGeneratedAssetDefinitions = {
+   readonly "auroraThrustLoopSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+   readonly "auroraTouchHardSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+   readonly "auroraTouchSoftSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "bankShotAmbientHallSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+   readonly "bankShotBall00": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+   readonly "bankShotBall01": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+   readonly "bankShotBall02": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+@@ -34,16 +33,7 @@ type AuraGeneratedAssetDefinitions = {
+   readonly "bankShotBall13": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+   readonly "bankShotBall14": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+   readonly "bankShotBall15": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+-  readonly "bankShotBallHitSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "bankShotComboChimeSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+   readonly "bankShotCue": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+-  readonly "bankShotCueStrikeSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "bankShotCushionHitSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "bankShotEightWinSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "bankShotFoulWhistleSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "bankShotPocketDropSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "bankShotRackClearSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "bankShotRackFailSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+   readonly "bankShotTable": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+   readonly "blockfallGameOverStingSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+   readonly "blockfallHardDropSlamSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+@@ -2073,97 +2063,6 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
+       "suitabilityReason": "Soft-contact cue driven by the touchdown grading matrix."
+     },
+   },
+-  "bankShotAmbientHallSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/bankShotAmbientHallSfx.dd9f1de8.wav",
+-    hash: "sha256-dd9f1de814c6d842d872bb610bd5e7655239b659e8df37c4ea2132e5d38a7b97",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 282284,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-bank-shot/assets/sfx/ambientHall.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-bank-shot/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-bank-shot/assets/sfx/ambientHall.wav",
+-        "license": "CC0-1.0",
+-        "licenseName": "CC0 1.0 Universal",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "sourceFamily": "aura3d-original",
+-        "attribution": "Aura3D synthesis — original CC0 Bank Shot audio",
+-        "retrievedAt": "2026-08-23T23:00:00.000Z",
+-        "evidence": [
+-          "Deterministically synthesized from the committed in-repository oscillator/noise generator; contains no sampled material."
+-        ],
+-        "checkedAt": "2026-08-23T23:00:00.000Z"
+-      },
+-      "sourcePath": "apps/showcase-bank-shot/assets/sfx/ambientHall.wav",
+-      "outputPath": "public/aura-assets/bankShotAmbientHallSfx.dd9f1de8.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/bankShotAmbientHallSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Looping after-hours hall ambience unlocked by a real user gesture."
+-    },
+-  },
+   "bankShotBall00": {
+     type: "model",
+     format: "glb",
+@@ -4934,188 +4833,6 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
+       }
+     },
+   },
+-  "bankShotBallHitSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/bankShotBallHitSfx.97e8103a.wav",
+-    hash: "sha256-97e8103a928276c3a0a8873edd49535dd783fdfcf3d94c0885d4dd4288374075",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 15920,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-bank-shot/assets/sfx/ballHit.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-bank-shot/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-bank-shot/assets/sfx/ballHit.wav",
+-        "license": "CC0-1.0",
+-        "licenseName": "CC0 1.0 Universal",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "sourceFamily": "aura3d-original",
+-        "attribution": "Aura3D synthesis — original CC0 Bank Shot audio",
+-        "retrievedAt": "2026-08-23T23:00:00.000Z",
+-        "evidence": [
+-          "Deterministically synthesized from the committed in-repository oscillator/noise generator; contains no sampled material."
+-        ],
+-        "checkedAt": "2026-08-23T23:00:00.000Z"
+-      },
+-      "sourcePath": "apps/showcase-bank-shot/assets/sfx/ballHit.wav",
+-      "outputPath": "public/aura-assets/bankShotBallHitSfx.97e8103a.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/bankShotBallHitSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Rate-limited ball-on-ball impact cue driven by live contact events."
+-    },
+-  },
+-  "bankShotComboChimeSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/bankShotComboChimeSfx.42171c98.wav",
+-    hash: "sha256-42171c98cdfeee61de84772d0df370c103dafe954f9c7e6a7a0c9e4c3cd8cddd",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 26504,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-bank-shot/assets/sfx/comboChime.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-bank-shot/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-bank-shot/assets/sfx/comboChime.wav",
+-        "license": "CC0-1.0",
+-        "licenseName": "CC0 1.0 Universal",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "sourceFamily": "aura3d-original",
+-        "attribution": "Aura3D synthesis — original CC0 Bank Shot audio",
+-        "retrievedAt": "2026-08-23T23:00:00.000Z",
+-        "evidence": [
+-          "Deterministically synthesized from the committed in-repository oscillator/noise generator; contains no sampled material."
+-        ],
+-        "checkedAt": "2026-08-23T23:00:00.000Z"
+-      },
+-      "sourcePath": "apps/showcase-bank-shot/assets/sfx/comboChime.wav",
+-      "outputPath": "public/aura-assets/bankShotComboChimeSfx.42171c98.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/bankShotComboChimeSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Combo extension cue driven by a legal consecutive pocket outcome."
+-    },
+-  },
+   "bankShotCue": {
+     type: "model",
+     format: "glb",
+@@ -5286,643 +5003,6 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
+       }
+     },
+   },
+-  "bankShotCueStrikeSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/bankShotCueStrikeSfx.458c8089.wav",
+-    hash: "sha256-458c80896e71175be8293b9a838fbc0929870f03b4d8ff5466935877f9fa94fe",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 15920,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-bank-shot/assets/sfx/cueStrike.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-bank-shot/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-bank-shot/assets/sfx/cueStrike.wav",
+-        "license": "CC0-1.0",
+-        "licenseName": "CC0 1.0 Universal",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "sourceFamily": "aura3d-original",
+-        "attribution": "Aura3D synthesis — original CC0 Bank Shot audio",
+-        "retrievedAt": "2026-08-23T23:00:00.000Z",
+-        "evidence": [
+-          "Deterministically synthesized from the committed in-repository oscillator/noise generator; contains no sampled material."
+-        ],
+-        "checkedAt": "2026-08-23T23:00:00.000Z"
+-      },
+-      "sourcePath": "apps/showcase-bank-shot/assets/sfx/cueStrike.wav",
+-      "outputPath": "public/aura-assets/bankShotCueStrikeSfx.458c8089.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/bankShotCueStrikeSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Cue strike cue driven by a successful settled-state strike."
+-    },
+-  },
+-  "bankShotCushionHitSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/bankShotCushionHitSfx.67b035c7.wav",
+-    hash: "sha256-67b035c7c85436a6a150c18ea2bbcdfa13dab71f2d6f3fcb93ebd1fb6ca88d2a",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 18566,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-bank-shot/assets/sfx/cushionHit.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-bank-shot/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-bank-shot/assets/sfx/cushionHit.wav",
+-        "license": "CC0-1.0",
+-        "licenseName": "CC0 1.0 Universal",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "sourceFamily": "aura3d-original",
+-        "attribution": "Aura3D synthesis — original CC0 Bank Shot audio",
+-        "retrievedAt": "2026-08-23T23:00:00.000Z",
+-        "evidence": [
+-          "Deterministically synthesized from the committed in-repository oscillator/noise generator; contains no sampled material."
+-        ],
+-        "checkedAt": "2026-08-23T23:00:00.000Z"
+-      },
+-      "sourcePath": "apps/showcase-bank-shot/assets/sfx/cushionHit.wav",
+-      "outputPath": "public/aura-assets/bankShotCushionHitSfx.67b035c7.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/bankShotCushionHitSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Rate-limited cushion contact cue driven by live rail impact."
+-    },
+-  },
+-  "bankShotEightWinSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/bankShotEightWinSfx.dae450ea.wav",
+-    hash: "sha256-dae450ea83d7fd03c501e7f40c7f1ec46ca7989caf1f96aeea60036cd389b417",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 60018,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-bank-shot/assets/sfx/eightWin.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-bank-shot/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-bank-shot/assets/sfx/eightWin.wav",
+-        "license": "CC0-1.0",
+-        "licenseName": "CC0 1.0 Universal",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "sourceFamily": "aura3d-original",
+-        "attribution": "Aura3D synthesis — original CC0 Bank Shot audio",
+-        "retrievedAt": "2026-08-23T23:00:00.000Z",
+-        "evidence": [
+-          "Deterministically synthesized from the committed in-repository oscillator/noise generator; contains no sampled material."
+-        ],
+-        "checkedAt": "2026-08-23T23:00:00.000Z"
+-      },
+-      "sourcePath": "apps/showcase-bank-shot/assets/sfx/eightWin.wav",
+-      "outputPath": "public/aura-assets/bankShotEightWinSfx.dae450ea.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/bankShotEightWinSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Eight-ball win sting driven only by the ordered legal-eight outcome."
+-    },
+-  },
+-  "bankShotFoulWhistleSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/bankShotFoulWhistleSfx.631d142b.wav",
+-    hash: "sha256-631d142bd4c4fb0aca6377d96faaaba76c8299fe36a7445334a3db063cb1b869",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 40616,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-bank-shot/assets/sfx/foulWhistle.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-bank-shot/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-bank-shot/assets/sfx/foulWhistle.wav",
+-        "license": "CC0-1.0",
+-        "licenseName": "CC0 1.0 Universal",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "sourceFamily": "aura3d-original",
+-        "attribution": "Aura3D synthesis — original CC0 Bank Shot audio",
+-        "retrievedAt": "2026-08-23T23:00:00.000Z",
+-        "evidence": [
+-          "Deterministically synthesized from the committed in-repository oscillator/noise generator; contains no sampled material."
+-        ],
+-        "checkedAt": "2026-08-23T23:00:00.000Z"
+-      },
+-      "sourcePath": "apps/showcase-bank-shot/assets/sfx/foulWhistle.wav",
+-      "outputPath": "public/aura-assets/bankShotFoulWhistleSfx.631d142b.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/bankShotFoulWhistleSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Foul cue driven by scratch, no-rail, or wrong-first-contact truth."
+-    },
+-  },
+-  "bankShotPocketDropSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/bankShotPocketDropSfx.0ea6570c.wav",
+-    hash: "sha256-0ea6570ce36826ab8d0c24fd723869f818b2d0c5b61a2a3aa73fe41a14eca2f0",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 37088,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-bank-shot/assets/sfx/pocketDrop.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-bank-shot/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-bank-shot/assets/sfx/pocketDrop.wav",
+-        "license": "CC0-1.0",
+-        "licenseName": "CC0 1.0 Universal",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "sourceFamily": "aura3d-original",
+-        "attribution": "Aura3D synthesis — original CC0 Bank Shot audio",
+-        "retrievedAt": "2026-08-23T23:00:00.000Z",
+-        "evidence": [
+-          "Deterministically synthesized from the committed in-repository oscillator/noise generator; contains no sampled material."
+-        ],
+-        "checkedAt": "2026-08-23T23:00:00.000Z"
+-      },
+-      "sourcePath": "apps/showcase-bank-shot/assets/sfx/pocketDrop.wav",
+-      "outputPath": "public/aura-assets/bankShotPocketDropSfx.0ea6570c.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/bankShotPocketDropSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Pocket drop cue driven by a once-per-entry captured ball."
+-    },
+-  },
+-  "bankShotRackClearSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/bankShotRackClearSfx.b2bc8c1c.wav",
+-    hash: "sha256-b2bc8c1c33708ae7fc0fd73f1e7de08a2ebcb5dbcc0927d5f08f2738ceaffe6d",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 45908,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-bank-shot/assets/sfx/rackClear.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-bank-shot/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-bank-shot/assets/sfx/rackClear.wav",
+-        "license": "CC0-1.0",
+-        "licenseName": "CC0 1.0 Universal",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "sourceFamily": "aura3d-original",
+-        "attribution": "Aura3D synthesis — original CC0 Bank Shot audio",
+-        "retrievedAt": "2026-08-23T23:00:00.000Z",
+-        "evidence": [
+-          "Deterministically synthesized from the committed in-repository oscillator/noise generator; contains no sampled material."
+-        ],
+-        "checkedAt": "2026-08-23T23:00:00.000Z"
+-      },
+-      "sourcePath": "apps/showcase-bank-shot/assets/sfx/rackClear.wav",
+-      "outputPath": "public/aura-assets/bankShotRackClearSfx.b2bc8c1c.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/bankShotRackClearSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Rack-clear cue driven by a completed non-final rack."
+-    },
+-  },
+-  "bankShotRackFailSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/bankShotRackFailSfx.e9275302.wav",
+-    hash: "sha256-e9275302dfc891fc3484b83e237f569421aea1eafce02ad1f84d0bb1a47ca47e",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 68838,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-bank-shot/assets/sfx/rackFail.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-bank-shot/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-bank-shot/assets/sfx/rackFail.wav",
+-        "license": "CC0-1.0",
+-        "licenseName": "CC0 1.0 Universal",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "sourceFamily": "aura3d-original",
+-        "attribution": "Aura3D synthesis — original CC0 Bank Shot audio",
+-        "retrievedAt": "2026-08-23T23:00:00.000Z",
+-        "evidence": [
+-          "Deterministically synthesized from the committed in-repository oscillator/noise generator; contains no sampled material."
+-        ],
+-        "checkedAt": "2026-08-23T23:00:00.000Z"
+-      },
+-      "sourcePath": "apps/showcase-bank-shot/assets/sfx/rackFail.wav",
+-      "outputPath": "public/aura-assets/bankShotRackFailSfx.e9275302.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/bankShotRackFailSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Rack-fail cue driven by clock, foul-limit, or illegal-eight failure."
+-    },
+-  },
+   "bankShotTable": {
+     type: "model",
+     format: "glb",
+-- 
+2.34.1
+
