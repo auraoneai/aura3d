@@ -1,6 +1,7 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
 import { dirname, extname, join, relative, resolve, sep } from "node:path";
 import { inflateSync } from "node:zlib";
 import { writeAgentSkills, type AuraSkillMode } from "create-aura3d";
@@ -3782,28 +3783,23 @@ function genericAgentText(agent = "AI coding agent", skillsPath?: string): strin
   const skillsLine = skillsPath
     ? `Load the Aura3D skills in ./${skillsPath}/ on demand. Start with aura3d-core; it routes to the task skill (scene authoring, assets, evidence review, games, animation, migration, materials, performance).\n`
     : "";
+  // Q-05-1 (#242): the body is the canonical agent file shipped in
+  // skills/agent-files/AGENTS.md (PRD-13 T2.15), not a copy — scaffolded
+  // files can never drift from it again. Its own `# ` title line is dropped;
+  // the per-agent prelude keeps the heading + skills path.
+  const here = fileURLToPath(import.meta.url);
+  const candidates = [
+    resolve(here, "..", "..", "skills", "agent-files", "AGENTS.md"), // dist/index.js → package root
+    resolve(here, "..", "skills", "agent-files", "AGENTS.md"), // src/index.ts via tsx
+  ];
+  const canonicalPath = candidates.find((candidate) => existsSync(candidate));
+  if (!canonicalPath) {
+    throw new Error(`canonical agent file not found (looked at ${candidates.join(", ")})`);
+  }
+  const canonical = readFileSync(canonicalPath, "utf8").replace(/^#[^\n]*\n+/, "").trimEnd();
   return `# Aura3D Instructions For ${agent}
 
-Read ./llms.txt first. ${skillsLine}Full agent manual: https://github.com/auraoneai/aura3d/blob/main/docs/agents/README.md
-
-Use @aura3d/engine public imports only:
-- createAuraApp
-- scene
-- model
-- camera
-- lights
-- material
-- effects
-- timeline
-- interactions
-- defineAuraAssets
-
-Do not invent asset paths or asset ids. Read ./src/aura-assets.ts after running:
-
-npx @aura3d/cli@latest assets add ./assets/model.glb --name model
-
-Use model(assets.model), not model("model").
-Run npm run build and the template route-health/screenshot tests before claiming the scene is done.
+${skillsLine}${canonical}
 `;
 }
 

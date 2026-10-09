@@ -285,6 +285,23 @@ async function main(): Promise<void> {
       throw new Error(`Unknown assets command: ${String(action)}`);
     }
   } else if (command === "doctor") {
+    if (args.includes("--look")) {
+      // Q-05-2 (#243): `doctor --look` forwards to the C-39 `look lint`
+      // command — registered doctor rules are hosted there; `doctor` stays
+      // the PRD-05 manifest verb.
+      const lint = cliCommandFor("look lint");
+      if (lint) {
+        process.exitCode = await lint.run(
+          args.slice(1).filter((arg) => arg !== "--look"),
+          {
+            cwd: process.cwd(),
+            stdout: (line) => console.log(line),
+            stderr: (line) => console.error(line)
+          }
+        );
+        return;
+      }
+    }
     print(doctor());
   } else if (command === "animation") {
     await runAnimationCommand(args[1]);
