@@ -129,9 +129,9 @@ describe("P6-T4 half-resolution particle target", () => {
   });
 
   it("particleGpuBudgetMs resolves tier settings objects (default = high)", () => {
-    expect(particleGpuBudgetMs(QUALITY_TIERS.low)).toBe(8);
-    expect(particleGpuBudgetMs(QUALITY_TIERS.ultra)).toBe(3);
-    expect(particleGpuBudgetMs({ ...QUALITY_TIERS.ultra })).toBe(3); // custom object, matched by budget
-    expect(particleGpuBudgetMs({ ...QUALITY_TIERS.high, particleBudget: 1 })).toBe(4);
+    expect(particleGpuBudgetMs(QUALITY_TIERS.low)).toBe(0.8);
+    expect(particleGpuBudgetMs(QUALITY_TIERS.ultra)).toBe(3.0);
+    expect(particleGpuBudgetMs({ ...QUALITY_TIERS.ultra })).toBe(3.0); // custom object, matched by budget
+    expect(particleGpuBudgetMs({ ...QUALITY_TIERS.high, particleBudget: 1 })).toBe(2.0);
   });
 });

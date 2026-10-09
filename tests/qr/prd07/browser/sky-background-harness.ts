@@ -1,8 +1,11 @@
 // PRD-07 P3-T3 — bare `sky` node harness (C-21 through the frame graph).
 // A `sky.preetham` node (noon sun) + a lit ground plane; reports sky-region
-// luma stats + atmosphere diagnostics + sun-disc luminance from a small
-// rgba16f debug readback when the renderer exposes one.
+// luma stats + atmosphere diagnostics + sun-disc luminance from an rgba16f
+// device readback (P-34: sun disc HDR luminance > 10).
 import { camera, createAuraApp, primitives, scene, sky } from "@aura3d/engine";
+import { WebGL2Device } from "/packages/rendering/src/WebGL2Device.js";
+import { skyPassFor } from "/packages/rendering/src/atmosphere/SkyBackgroundPass.js";
+import { sunDirection } from "/packages/rendering/src/atmosphere/PreethamSky.js";
 
 interface SkyBgResult {
   readonly status: "ready" | "error";
@@ -11,6 +14,7 @@ interface SkyBgResult {
   readonly horizonMeanLuma?: number;
   readonly zenithMeanLuma?: number;
   readonly background?: string | null;
+  readonly sunDiscLuminance?: number;
   readonly errors?: readonly string[];
   readonly error?: string;
 }
@@ -82,6 +86,17 @@ async function main(): Promise<void> {
     errors?: readonly string[];
   };
 
+  // P-34 — sun disc HDR luminance: render the same preetham spec straight into
+  // an rgba16f target with a view-projection centred on the sun, then take the
+  // max luminance via RenderDevice.readFloatPixels. The sky shader writes
+  // L0 += sunE·19000·Fex at the disc, so a real sky reads >> 10 there.
+  let sunDiscLuminance: number | undefined;
+  try {
+    sunDiscLuminance = renderSunDiscLuminance({ elevationDeg: 60, azimuthDeg: 200 }, 5);
+  } catch {
+    sunDiscLuminance = undefined;
+  }
+
   window.__QR_PRD07_SKYBG__ = {
     status: "ready",
     flags,
@@ -89,9 +104,81 @@ async function main(): Promise<void> {
     zenithMeanLuma: zenith.mean,
     horizonMeanLuma: horizon.mean,
     background: report.atmosphere?.background ?? null,
+    sunDiscLuminance,
     errors: [...(report.errors ?? [])]
   };
   app.dispose();
+}
+
+/** Inverse of a column-major 4×4 (Gauss-Jordan). The flat input read as
+ *  row-major is Mᵀ; inverting it row-major yields M⁻ᵀ row-major, which is
+ *  M⁻¹ column-major — the exact layout callers pass back in. */
+function invertMat4(m: Float32Array): Float32Array {
+  const a = Array.from(m);
+  const inv = new Array(16).fill(0);
+  for (let i = 0; i < 4; i += 1) inv[i * 4 + i] = 1;
+  for (let col = 0; col < 4; col += 1) {
+    let piv = col;
+    for (let r = col + 1; r < 4; r += 1) {
+      if (Math.abs(a[r * 4 + col]!) > Math.abs(a[piv * 4 + col]!)) piv = r;
+    }
+    for (let c = 0; c < 4; c += 1) {
+      const t = a[col * 4 + c]!; a[col * 4 + c] = a[piv * 4 + c]!; a[piv * 4 + c] = t;
+      const u = inv[col * 4 + c]!; inv[col * 4 + c] = inv[piv * 4 + c]!; inv[piv * 4 + c] = u;
+    }
+    const d = a[col * 4 + col]!;
+    for (let c = 0; c < 4; c += 1) { a[col * 4 + c]! /= d; inv[col * 4 + c]! /= d; }
+    for (let r = 0; r < 4; r += 1) {
+      if (r === col) continue;
+      const f = a[r * 4 + col]!;
+      for (let c = 0; c < 4; c += 1) {
+        a[r * 4 + c]! -= f * a[col * 4 + c]!;
+        inv[r * 4 + c]! -= f * inv[col * 4 + c]!;
+      }
+    }
+  }
+  return new Float32Array(inv);
+}
+
+/** Renders the preetham sky into rgba16f aimed at the sun; returns max luma. */
+function renderSunDiscLuminance(sun: { elevationDeg: number; azimuthDeg: number }, turbidity: number): number {
+  const canvas = document.createElement("canvas");
+  canvas.width = 64; canvas.height = 64;
+  const device = WebGL2Device.create({ canvas });
+  const target = device.createRenderTarget({ width: 64, height: 64, format: "rgba16f", depth: false, label: "prd07.sky-sun-disc" });
+  try {
+    const pass = skyPassFor(device);
+    pass.setSpec({ model: "preetham", sun, turbidity }, 0);
+    const s = sunDirection(sun);
+    const up: [number, number, number] = Math.abs(s[1]) > 0.9 ? [1, 0, 0] : [0, 1, 0];
+    // tx = normalize(cross(up, sun)), ty = cross(sun, tx)
+    let tx = [up[1] * s[2] - up[2] * s[1], up[2] * s[0] - up[0] * s[2], up[0] * s[1] - up[1] * s[0]];
+    const tl = Math.hypot(tx[0]!, tx[1]!, tx[2]!) || 1;
+    tx = [tx[0]! / tl, tx[1]! / tl, tx[2]! / tl];
+    const ty = [s[1] * tx[2]! - s[2] * tx[1]!, s[2] * tx[0]! - s[0] * tx[2]!, s[0] * tx[1]! - s[1] * tx[0]!];
+    const k = 0.1; // NDC→dir slope: keeps the 0.53° disc across several texels
+    // invViewProj maps vec4(v_clip,1,1) → x·tx·k + y·ty·k + sun·k (+w=1), so the
+    // centre texel's ray is exactly the sun direction.
+    const m = new Float32Array([
+      tx[0]! * k, tx[1]! * k, tx[2]! * k, 0,
+      ty[0]! * k, ty[1]! * k, ty[2]! * k, 0,
+      s[0] * k, s[1] * k, s[2] * k, 0,
+      0, 0, 0, 1
+    ]);
+    const vp = invertMat4(m);
+    device.setRenderTarget(target);
+    pass.drawSky(vp);
+    device.setRenderTarget(null);
+    const px = device.readFloatPixels(0, 0, 64, 64);
+    let max = 0;
+    for (let i = 0; i < px.length; i += 4) {
+      max = Math.max(max, luma(px[i]!, px[i + 1]!, px[i + 2]!));
+    }
+    return max;
+  } finally {
+    target.dispose();
+    device.dispose?.();
+  }
 }
 
 main().catch((error: unknown) => {
