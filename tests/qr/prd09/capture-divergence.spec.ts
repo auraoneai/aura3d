@@ -4,7 +4,7 @@
  * records postprocess.actualPasses per mode, and writes an updated baseline.json
  * plus per-route PNG pairs under A3D_DIVERGENCE_DIR for artifact upload.
  */
-import { test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -111,7 +111,12 @@ async function captureMode(page: Page, route: string, appDir: string, param: str
 }
 
 test.describe("capture_review_divergence", () => {
-  test.skip(affected.length === 0, "no capture-flag routes found in baseline.json");
+  // Red-flag guard: an empty affected set used to silently skip the whole
+  // suite, turning a broken baseline regeneration green. It must fail loudly
+  // instead (locally and on CI).
+  test("baseline lists at least one capture-flag route", () => {
+    expect(affected.length).toBeGreaterThan(0);
+  });
 
   for (const r of affected) {
     test(`${r.route}: default vs ?capture=${r.param}`, async ({ page }, testInfo) => {
