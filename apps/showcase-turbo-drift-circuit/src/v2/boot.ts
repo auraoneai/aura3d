@@ -16,8 +16,8 @@ import { turboDriftWorldNodes } from "./scene/world";
 import { turboDriftLights, turboDriftEnvironment } from "./scene/lighting";
 import { createTurboChaseRig, fallbackTurboCameraNode } from "./scene/camera";
 import { turboDriftFxFrame } from "./scene/fx";
-import { publishTurboDriftEvidence } from "./evidence";
-import { applyTurboDriftScenario } from "./scenarios";
+import { publishTurboDriftEvidence } from "../evidence";
+import { applyTurboDriftScenario } from "../scenarios";
 import direction from "../../art/direction";
 import {
   CAR_SCENE_HEIGHT, CIRCUIT_ENVIRONMENT_TARGET_MAX_DIMENSION,

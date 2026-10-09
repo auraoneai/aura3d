@@ -7,6 +7,7 @@
  * ever happens after a user gesture unlocks the AudioContext.
  */
 import { createGameAudio, type GameAudio } from "@aura3d/engine";
+import { createGameSoundEngine } from "@aura3d/audio";
 import { assets } from "../../../../src/aura-assets";
 
 /** Logical gameplay cue identifiers used by the route. */
@@ -159,6 +160,8 @@ export interface TurboAudioProof {
 }
 
 export interface TurboAudioController {
+  /** `sound.engine` rpm loop for the drivetrain (PRD-09). */
+  readonly engineLoop: TurboEngineLoop;
   readonly cue: (name: TurboAudioCue) => Promise<void>;
   readonly unlock: () => Promise<void>;
   /** Duck or restore the music bus (finish fanfare ducking). */
@@ -200,6 +203,50 @@ export function createTurboAudio(reducedMotion = false): TurboAudioController {
   const audio = cachedAudio;
   let musicDucked = false;
 
+  // PRD-09 wave-3: the engine loop is a real `sound.engine` loop — live rpm
+  // pitch tracking throttle/speed instead of a static looping cue.
+  const turboSound = createGameSoundEngine<"turbo-engine">({
+    buses: { sfx: TURBO_AUDIO_BUS_VOLUMES.engine },
+    cues: {
+      "turbo-engine": {
+        id: "turbo-engine",
+        bus: "sfx",
+        priority: "high",
+        asset: { url: turboAudioAssetReference("turboEngineSfx").url }
+      }
+    }
+  });
+  const engineLoopHandle = turboSound.engine({
+    cue: "turbo-engine",
+    rpmRange: [520, 6400],
+    pitchRange: [0.85, 1.5]
+  });
+  let engineLoopRunning = false;
+  const engineLoop: TurboEngineLoop = {
+    start() {
+      if (engineLoopRunning) return;
+      engineLoopRunning = true;
+      void audio.unlock().then(() => {
+        void turboSound.unlock();
+        engineLoopHandle.start();
+      });
+    },
+    stop() {
+      if (!engineLoopRunning) return;
+      engineLoopRunning = false;
+      engineLoopHandle.stop();
+    },
+    setRpm(rpm) {
+      engineLoopHandle.setRpm(rpm);
+    },
+    setLoad(load) {
+      engineLoopHandle.setLoad(load);
+    },
+    running() {
+      return engineLoopRunning;
+    }
+  };
+
   async function cue(name: TurboAudioCue): Promise<void> {
     recentCues.push(name);
     if (recentCues.length > 24) recentCues.shift();
@@ -207,11 +254,13 @@ export function createTurboAudio(reducedMotion = false): TurboAudioController {
   }
 
   return {
+    engineLoop,
     async cue(name) {
       await cue(name);
     },
     async unlock() {
       await audio.unlock();
+      void turboSound.unlock();
       gestureUnlocked = true;
     },
     setMusicDucked(ducked) {
