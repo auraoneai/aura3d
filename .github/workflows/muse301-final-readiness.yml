@@ -35,7 +35,7 @@ jobs:
       - name: Execute complete readiness infrastructure
         env:
           AURA_EVIDENCE_HARDWARE: GitHub Actions ubuntu-24.04 final-source aggregate
-        run: pnpm muse3jsparity:release
+        run: pnpm exec tsx --tsconfig tsconfig.base.json tools/muse3jsparity-readiness/index.ts
       - name: Retain all readiness receipts and reports
         if: always()
         uses: actions/upload-artifact@v4

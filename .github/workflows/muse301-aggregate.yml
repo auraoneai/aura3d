@@ -38,7 +38,7 @@ jobs:
       - name: Muse 3.0.1 readiness aggregate
         env:
           AURA3D_REMOTE_WORKER_ID: muse301-aggregate-${{ inputs.source_commit }}
-        run: pnpm muse3jsparity:release
+        run: pnpm exec tsx --tsconfig tsconfig.base.json tools/muse3jsparity-readiness/index.ts
       - if: always()
         uses: actions/upload-artifact@v4
         with:
