@@ -80,3 +80,7 @@ export function createFightingRig(o: FightingRigOptions): AuraCameraRig {
     }
   };
 }
+
+import { registerRigFactory } from "./registry.js";
+
+registerRigFactory("fighting", (o: unknown) => createFightingRig(o as Parameters<typeof createFightingRig>[0]));

@@ -152,3 +152,7 @@ function clamp(x: number, max: number): number {
 function shortestAngleDelta(from: number, to: number): number {
   return Math.atan2(Math.sin(to - from), Math.cos(to - from));
 }
+
+import { registerRigFactory } from "./registry.js";
+
+registerRigFactory("chase", (o: unknown) => createChaseRig(o as Parameters<typeof createChaseRig>[0]));

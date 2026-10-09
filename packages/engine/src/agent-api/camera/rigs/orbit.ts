@@ -149,3 +149,7 @@ export function bindOrbitPointer(
     element.removeEventListener("pointercancel", up);
   };
 }
+
+import { registerRigFactory } from "./registry.js";
+
+registerRigFactory("orbit", (o: unknown) => createOrbitRig(o as Parameters<typeof createOrbitRig>[0]));

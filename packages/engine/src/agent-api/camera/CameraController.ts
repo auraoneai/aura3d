@@ -22,15 +22,7 @@ import type {
   AuraCameraSubject,
   AuraEaseName
 } from "../../contracts/camera.js";
-import { createChaseRig, type ChaseRigOptions } from "./rigs/chase.js";
-import { createFlightRig, type FlightRigOptions } from "./rigs/flight.js";
-import { createFollow2dRig, type Follow2dRigOptions } from "./rigs/follow2d.js";
-import { createFightingRig, type FightingRigOptions } from "./rigs/fighting.js";
-import { createShoulderRig, type ShoulderRigOptions } from "./rigs/shoulder.js";
-import { createOrbitRig, type OrbitRigOptions } from "./rigs/orbit.js";
-import { createTopDownRig, type TopDownRigOptions } from "./rigs/topDown.js";
-import { createAltitudeRig, type AltitudeRigOptions } from "./rigs/altitude.js";
-import { createRailRig } from "./rigs/rail.js";
+import { rigFactory } from "./rigs/registry.js";
 import {
   lookAtMat4,
   multiplyMat4,
@@ -48,7 +40,8 @@ import {
   createTraumaLayer,
   type AuraLookAtLayer
 } from "./layers/index.js";
-import { createFromSpecRig, staticRig, DEFAULT_POSE, type LegacyCameraSpec, type LegacySpecRigDeps } from "./rigs/fromSpec.js";
+import { staticRig, DEFAULT_POSE } from "./rigs/static.js";
+import type { LegacyCameraSpec, LegacySpecRigDeps } from "./rigs/fromSpec.js";
 
 export interface AuraCameraControllerDeps {
   /** Full subject resolution (runtime handle + scene-node fallback). Default: none. */
@@ -169,7 +162,16 @@ export function createCameraController(deps: AuraCameraControllerDeps = {}): Aur
   };
 
   let activeRig: AuraCameraRig = deps.initial?.spec
-    ? createFromSpecRig(deps.initial.spec, deps.specDeps)
+    ? (() => {
+        const f = rigFactory("fromSpec");
+        if (!f) {
+          throw new Error(
+            "camera initial.spec requires rigs/fromSpec.js to be imported (S19 registry: " +
+              "leaf importers of CameraController pull only the rig modules they use)."
+          );
+        }
+        return f(deps.initial.spec, deps.specDeps) as AuraCameraRig;
+      })()
     : staticRig(initialPose);
   let presented: AuraCameraPose = initialPose;
   let previous: AuraCameraPose = initialPose;
@@ -318,19 +320,30 @@ export function createCameraController(deps: AuraCameraControllerDeps = {}): Aur
     }
   }
 
-  const rigs: AuraCameraRigFactories = {
-    chase: (o) => createChaseRig(o as ChaseRigOptions),
-    flight: (o) => createFlightRig(o as FlightRigOptions),
-    follow2d: (o) => createFollow2dRig(o as Follow2dRigOptions),
-    fighting: (o) => createFightingRig(o as FightingRigOptions),
-    shoulder: (o) => createShoulderRig(o as ShoulderRigOptions),
-    orbit: (o) => createOrbitRig(o as OrbitRigOptions),
-    topDown: (o) => createTopDownRig(o as TopDownRigOptions),
-    altitude: (o) => createAltitudeRig(o as unknown as AltitudeRigOptions),
-    rail: (o) => createRailRig(o),
-    static: (pose) => staticRig(pose, "static"),
-    fromSpec: (spec) => createFromSpecRig(spec as LegacyCameraSpec, deps.specDeps)
+  // Rig factories resolve through the module-level registry (S19): each
+  // rigs/<name>.ts registers itself on import, so bundles shake the rigs
+  // they never pull. `static` stays eager (the controller always imports it
+  // for the initial pose); `fromSpec` resolves through the registry too and
+  // is bound to this controller's specDeps.
+  const eager: Record<string, (o: unknown) => unknown> = {
+    static: (pose) => staticRig(pose as Parameters<typeof staticRig>[0], "static")
   };
+  const rigs = new Proxy(eager as unknown as AuraCameraRigFactories, {
+    get(target, prop, receiver) {
+      if (prop === "fromSpec") {
+        const f = rigFactory("fromSpec");
+        return f ? (spec: unknown) => f(spec, deps.specDeps) : undefined;
+      }
+      if (typeof prop === "string" && !(prop in target)) {
+        const f = rigFactory(prop);
+        return f ? (o: unknown) => f(o) : undefined;
+      }
+      return Reflect.get(target, prop, receiver);
+    },
+    has(target, prop) {
+      return prop in target || (typeof prop === "string" && rigFactory(prop) !== undefined);
+    }
+  });
 
   const controller: AuraCameraControllerImpl = {
     lookAt,

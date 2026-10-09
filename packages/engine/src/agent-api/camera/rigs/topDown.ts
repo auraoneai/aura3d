@@ -93,3 +93,7 @@ export function createTopDownRig(o: TopDownRigOptions = {}): AuraCameraRig {
     }
   };
 }
+
+import { registerRigFactory } from "./registry.js";
+
+registerRigFactory("topDown", (o: unknown) => createTopDownRig(o as Parameters<typeof createTopDownRig>[0]));

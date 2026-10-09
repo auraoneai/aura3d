@@ -5,7 +5,7 @@
  */
 import type { AuraVec3 } from "../../index.js";
 import type { AuraCameraRig } from "../../../contracts/camera.js";
-import { createShoulderCamera } from "../../GameCameraRigs.js";
+import { createShoulderCamera } from "./shoulderCamera.js";
 import { createCollisionDamper, type CollisionDamper } from "../collision.js";
 
 export interface ShoulderRigOptions {
@@ -56,3 +56,7 @@ export function createShoulderRig(o: ShoulderRigOptions): AuraCameraRig {
     }
   };
 }
+
+import { registerRigFactory } from "./registry.js";
+
+registerRigFactory("shoulder", (o: unknown) => createShoulderRig(o as Parameters<typeof createShoulderRig>[0]));
