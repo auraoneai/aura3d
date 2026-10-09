@@ -47,8 +47,8 @@ import { lightingNodes } from "./scene/lighting";
 import { createPatrolRig, fallbackCameraNode, pointInRigFrame, type PatrolRigState } from "./scene/camera";
 import { wirePatrolFx } from "./scene/fx";
 import { SKY_BG } from "./scene/materials";
-import { publishPatrolEvidence, type PatrolRouteState, type PatrolRunSnapshot } from "./evidence";
-import { applyPatrolScenario } from "./scenarios";
+import { publishPatrolEvidence, type PatrolRouteState, type PatrolRunSnapshot } from "../evidence";
+import { applyPatrolScenario } from "../scenarios";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_PATROL_WING" as const;
 const PLAYER_SENSOR_RADIUS = 0.6;

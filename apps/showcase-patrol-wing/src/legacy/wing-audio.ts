@@ -9,6 +9,7 @@
  * volume; the ambient wind bed loops quietly underneath everything.
  */
 import { createGameAudio, type GameAudio } from "@aura3d/engine";
+import { createGameSoundEngine } from "@aura3d/audio";
 import { assets } from "../../../../src/aura-assets";
 
 export type WingAudioCue =
@@ -117,7 +118,7 @@ export interface WingAudioProof {
 export interface WingAudioController {
   readonly cue: (name: WingAudioCue) => Promise<void>;
   readonly unlock: () => Promise<void>;
-  /** Map throttle (0..1) to the engine-bed bus volume. */
+  /** Map throttle (0..1) onto the `sound.engine` prop loop (live rpm pitch). */
   readonly setEngineIntensity: (throttle: number, airborne: boolean) => void;
   readonly proof: () => WingAudioProof;
 }
@@ -151,6 +152,24 @@ export function createWingAudio(): WingAudioController {
     });
   }
   const audio = cachedAudio;
+  // PRD-09 wave-3: prop drone is a real `sound.engine` loop — live rpm pitch
+  // tracked to the throttle axis (was a static loop cue + bus-volume ride).
+  const propSound = createGameSoundEngine<"prop">({
+    buses: { sfx: 0.85 },
+    cues: {
+      prop: {
+        id: "prop",
+        bus: "sfx",
+        asset: { url: wingAudioManifest["engine-loop"].asset.url }
+      }
+    }
+  });
+  const propLoop = propSound.engine({
+    cue: "prop",
+    rpmRange: [400, 2400],
+    pitchRange: [0.8, 1.4]
+  });
+  let propRunning = false;
   return {
     async cue(name) {
       await audio.cue(name);
@@ -159,8 +178,16 @@ export function createWingAudio(): WingAudioController {
       await audio.unlock();
     },
     setEngineIntensity(throttle, airborne) {
-      const level = airborne ? 0.15 + Math.min(1, Math.max(0, throttle)) * 0.85 : 0.0;
-      audio.setBusVolume("engine", level);
+      const t = Math.min(1, Math.max(0, throttle));
+      if (airborne && t > 0.02) {
+        propRunning = true;
+        void propSound.unlock().then(() => propLoop.start());
+        propLoop.setRpm(400 + (2400 - 400) * t);
+        propLoop.setLoad(t);
+      } else if (propRunning || !airborne) {
+        propRunning = false;
+        propLoop.stop();
+      }
     },
     proof() {
       const evidence = audio.evidence;

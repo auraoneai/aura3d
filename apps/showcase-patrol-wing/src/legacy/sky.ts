@@ -265,9 +265,9 @@ export function setArenaTimeOfDay(nodes: { get(id: string): { setVisible(visible
 }
 
 /** Static arena scene nodes: terrain, ocean, pad, gates, props. */
-export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}): readonly AuraSceneNode[] {
+export function arenaNodes(): readonly AuraSceneNode[] {
   const nodes: AuraSceneNode[] = [];
-  const reviewCapture = options.reviewCapture === true;
+
 
   const mesh = islandTerrainMesh();
   nodes.push(
@@ -305,11 +305,7 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}): 
   // The review lens keeps three far banks so the judged chase frame retains a
   // horizon and flight-scale cue; the full seven-bank set stays default-only
   // to bound review-capture overdraw.
-  for (const [index, cloud] of (reviewCapture ? [
-    [3, 12.5, -38, 6.0, 0.82, 2.9],
-    [22, 9.5, -27, 4.2, 0.64, 2.0],
-    [-34, 12, -52, 5.8, 0.74, 2.7]
-  ] : [
+  for (const [index, cloud] of ([
     [-18, 10.5, -30, 5.2, 0.72, 2.4],
     [3, 12.5, -38, 6.0, 0.82, 2.9],
     [22, 9.5, -27, 4.2, 0.64, 2.0],
@@ -461,7 +457,7 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}): 
   // Coastal Island Radar / Communications Tower on Peak (0, 9.6, 0). The
   // close combat review lens omits this distant silhouette: at that angle the
   // dish collapsed into a detached black disc behind the real drone target.
-  if (!reviewCapture) nodes.push(
+  if (true) nodes.push(
     // Tower lattice base
     primitives
       .cylinder({
@@ -571,7 +567,7 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}): 
   // The compact combat lens keeps enough typed rocks and trees to establish
   // scale and a flight canyon, but each placement remains snapped to the same
   // heightfield that defines the visible island and the crash surface.
-  const props = reviewCapture
+  const props = false
     // Preserve a layered typed island in the close combat lens. The previous
     // conifer-only/z<4 filter left the dogfight suspended over a single flat
     // green wedge; retaining rocks plus conifers at three depth bands gives
@@ -584,26 +580,7 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}): 
     nodes.push(modelNode(`prop-${prop.asset}-${prop.position[0].toFixed(1)}`, prop.asset, prop.position, prop.scale, prop.yaw, "setDressing", undefined));
   }
 
-  if (reviewCapture) {
-    // Four renderer-owned coast beacons frame the real typed island without
-    // pretending to be additional gameplay sensors. Their stepped silhouettes
-    // create near/mid/far depth behind the typed plane and interceptor, while
-    // the emissive caps make the attack corridor legible at review distance.
-    const beaconBody = material.pbr({ name: "coast beacon body", color: "#193447", roughness: 0.58, metallic: 0.68 });
-    const beaconCap = material.emissive({ name: "coast beacon cap", color: "#ff6b62", emissive: "#ff3d5e", emissiveIntensity: 2.1 });
-    const beaconPositions = [
-      [-19, 5.6, -2], [18, 6.3, -4], [-13, 7.1, 8], [12, 5.4, 10]
-    ] as const;
-    for (const [index, [x, y, z]] of beaconPositions.entries()) {
-      nodes.push(
-        primitives.cylinder({ name: `review coast beacon ${index}`, material: beaconBody })
-          .position(x, y, z).scale([0.18, 1.2 + index * 0.14, 0.18]).toJSON(),
-        primitives.sphere({ name: `review coast beacon cap ${index}`, material: beaconCap })
-          .position(x, y + 1.45 + index * 0.14, z).scale(0.22).toJSON()
-      );
-    }
-  }
-
+  
   return nodes;
 }
 
