@@ -46,6 +46,12 @@ import { wireDeepFx } from "./scene/fx";
 import { WATER_BG } from "./scene/materials";
 import { publishDeepEvidence, type DeepRunSnapshot } from "./evidence";
 import { applyDeepScenario } from "./scenarios";
+import { createDeepCtx } from "./state";
+import { createDeepAudioBlock } from "./audio";
+import { createDeepInput, wireDeepTouch, touchInputs } from "./input";
+import { wireDeepActions } from "./actions";
+import { wireDeepSync } from "./sync";
+import { wireDeepHud } from "./hud";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_DEEP_RECOVERY" as const;
 const GRAPPLE_LATCH_RANGE = GRAPPLE_RANGE * 0.94;
@@ -56,25 +62,8 @@ const autopilotRequested = routeParams.get("autorun") === "1";
 
 // ------------------------------------------------------------ sim state -----
 
-let phase: "playing" | "paused" | "blackout" | "won" = "playing";
-let subState: SubmarineState = initialSubmarineState();
-let oxygenState: OxygenState = initialOxygenState();
-let sonarState: SonarState = initialSonarState();
-let crates: SalvageCrate[] = initialCrateSpawns();
-let bankedTotal = 0;
-let bankedCountTotal = 0;
-let grappleLatchCount = 0;
-let sensorEventCount = 0;
-let standardBanked = false;
-let heavyBanked = false;
-let breachCount = 0;
-let repairCount = 0;
-let lastTowDrag = 0;
-let surfaceCuePlayed = false;
-let oxygenWarningCuePlayed = false;
-let frame = 0;
-let missionTime = 0;
-let thrustBubbleClock = 0;
+const ctx = createDeepCtx(autopilotRequested);
+
 const sceneSwaps = 0;
 const bootedAtMs = performance.now();
 
@@ -90,18 +79,8 @@ function buildScene() {
 
 // ------------------------------------------------------------------ audio ---
 
-const audio = new DeepAudioController();
-void audio.init();
-const audioCueLog: string[] = [];
-type DeepCue = Parameters<DeepAudioController["playCue"]>[0];
-function pushCue(cue: DeepCue, volume = 0.9): void {
-  audioCueLog.push(cue);
-  if (audioCueLog.length > 64) audioCueLog.shift();
-  audio.playCue(cue, volume);
-}
-const unlockAudio = () => void audio.startAmbience();
-window.addEventListener("pointerdown", unlockAudio, { passive: true });
-window.addEventListener("keydown", unlockAudio, { passive: true });
+const audioBlock = createDeepAudioBlock();
+const { audio, audioCueLog, pushCue, unlockAudio } = audioBlock;
 
 const accessibilitySettings = engineGame.accessibility.settings([
   engineGame.accessibility.reducedMotion({
@@ -184,207 +163,31 @@ function handle(name: string): NodeHandle {
 
 // ------------------------------------------------------------- input ---------
 
-const input: GameInputController = engineGame.input({
-  actions: {
-    thrust: ["KeyW", "ArrowUp"],
-    reverse: ["KeyS", "ArrowDown"],
-    turnLeft: ["KeyA", "ArrowLeft"],
-    turnRight: ["KeyD", "ArrowRight"],
-    surface: ["KeyE", "PageUp"],
-    dive: ["KeyQ", "PageDown"],
-    sprint: ["ShiftLeft", "ShiftRight"],
-    ping: ["Space"],
-    grapple: ["KeyF"],
-    repair: ["KeyC"],
-    pause: ["KeyP"],
-    reset: ["KeyR"]
-  },
-  bufferMs: 90
-});
-
-// Touch: left half = drive stick (x → turn, -y → throttle); right half taps
-// fire sonar (upper) / grapple (lower); right-edge hold surfaces the sub.
-const touchDrive = new Map<number, { startX: number; startY: number; x: number; y: number }>();
-const touchHeave = new Set<number>();
-function touchInputs(): { throttle: number; turn: number; heave: number } {
-  let throttle = 0;
-  let turn = 0;
-  for (const t of touchDrive.values()) {
-    throttle += Math.max(-1, Math.min(1, (t.startY - t.y) / 90));
-    turn += Math.max(-1, Math.min(1, (t.x - t.startX) / 90));
-  }
-  const heave = touchHeave.size > 0 ? 1 : 0;
-  return { throttle, turn, heave };
-}
-
-target.addEventListener("pointerdown", (e) => {
-  const rect = target.getBoundingClientRect();
-  const fx = (e.clientX - rect.left) / Math.max(1, rect.width);
-  const fy = (e.clientY - rect.top) / Math.max(1, rect.height);
-  if (fx < 0.5) {
-    touchDrive.set(e.pointerId, { startX: e.clientX, startY: e.clientY, x: e.clientX, y: e.clientY });
-  } else if (fy < 0.34) {
-    handlePing();
-  } else if (fy < 0.67) {
-    handleGrappleToggle();
-  } else {
-    touchHeave.add(e.pointerId);
-  }
-});
-target.addEventListener("pointermove", (e) => {
-  const held = touchDrive.get(e.pointerId);
-  if (held) { held.x = e.clientX; held.y = e.clientY; }
-});
-const touchEnd = (e: PointerEvent) => { touchDrive.delete(e.pointerId); touchHeave.delete(e.pointerId); };
-target.addEventListener("pointerup", touchEnd);
-target.addEventListener("pointercancel", touchEnd);
-
-// T2.6: hidden tab auto-pauses the session.
-document.addEventListener("visibilitychange", () => {
-  if (document.hidden) game.session.pause("visibility");
-  else game.session.resume();
-});
+const input = createDeepInput();
 
 // ------------------------------------------------------------- actions -------
 
-function sonarTargets(): SonarTarget[] {
-  return [
-    { id: "buoy", kind: "buoy", position: { x: BUOY_STATION.x, y: BUOY_STATION.y, z: BUOY_STATION.z }, value: 0 },
-    ...WRECK_OBSTACLES.map((w) => ({ id: w.id, kind: "wreck" as const, position: { x: w.x, y: w.y, z: w.z }, value: 0 })),
-    ...crates.filter((c) => !c.banked).map((c) => ({ id: c.id, kind: c.kind, position: { x: c.x, y: c.y, z: c.z }, value: c.baseValue }))
-  ];
-}
+const sync = wireDeepSync(ctx, { handle, world, fx, audio, reducedMotion });
+const { syncVisualNodes } = sync;
 
-function handlePing(): void {
-  if (phase !== "playing" || game.session.paused) return;
-  const result = triggerPing(
-    sonarState,
-    { x: subState.x, y: subState.y, z: subState.z },
-    sonarTargets(),
-    missionTime,
-    WRECK_OBSTACLES.map((w) => ({ id: w.id, position: w, radius: w.radius }))
-  );
-  if (result.nextState.pingCount > sonarState.pingCount) {
-    sonarState = result.nextState;
-    pushCue("sonar-ping", 0.9);
-    fx.sonarPing(subState.x, subState.y, subState.z);
-    if (result.newContacts.length > 0) {
-      setTimeout(() => pushCue("sonar-return", 0.75), 250);
-    }
-  }
-}
-
-function handleGrappleToggle(): void {
-  if (phase !== "playing" || game.session.paused) return;
-  const tetheredCount = crates.filter((c) => c.tethered).length;
-  if (tetheredCount > 0) {
-    releaseTethers(crates);
-    return;
-  }
-  const res = tryGrappleCrates({ x: subState.x, y: subState.y, z: subState.z }, crates);
-  if (res.latchedCrate) {
-    grappleLatchCount += 1;
-    sensorEventCount += 1;
-    pushCue("grapple-latch", 0.85);
-    fx.grappleLatch(res.latchedCrate.x, res.latchedCrate.y, res.latchedCrate.z);
-  }
-}
-
-function atBuoyServiceZone(): boolean {
-  return Math.hypot(subState.x - BUOY_STATION.x, subState.z - BUOY_STATION.z) <= BUOY_STATION.dockRadius
-    && subState.y >= -4;
-}
-
-function handleRepair(): boolean {
-  if (phase !== "playing" || game.session.paused || !oxygenState.breached || !atBuoyServiceZone()) return false;
-  oxygenState = patchBreach(oxygenState);
-  repairCount += 1;
-  sensorEventCount += 1;
-  pushCue("patch-seal", 0.85);
-  return true;
-}
-
-function togglePause(): void {
-  if (phase === "blackout" || phase === "won") return;
-  if (phase === "playing") {
-    phase = "paused";
-    audio.stopAmbience();
-    game.session.pause("user");
-  } else {
-    phase = "playing";
-    game.session.resume();
-    audio.startAmbience();
-  }
-}
-
-function resetGame(): void {
-  subState = initialSubmarineState();
-  oxygenState = initialOxygenState();
-  sonarState = initialSonarState();
-  crates = initialCrateSpawns();
-  bankedTotal = 0;
-  bankedCountTotal = 0;
-  grappleLatchCount = 0;
-  sensorEventCount = 0;
-  standardBanked = false;
-  heavyBanked = false;
-  breachCount = 0;
-  repairCount = 0;
-  lastTowDrag = 0;
-  surfaceCuePlayed = false;
-  oxygenWarningCuePlayed = false;
-  missionTime = 0;
-  phase = "playing";
-  game.session.resume();
-  syncVisualNodes(0);
-}
-
-// ------------------------------------------------------- autopilot -----------
-// ?autorun=1 runs a scripted salvage leg: steer to crate-s1, latch it, then
-// hold. Deterministic — the §7.2.1 salvage.grappled>=1 condition rides on it.
-const AUTO_TARGET_CRATE = "crate-s1";
-let autopilotEnabled = autopilotRequested;
-let autopilotGrappleTried = false;
-
-function autopilotControls(): { throttle: number; heave: number; turn: number; pitch: number; sprint: boolean } {
-  const crate = crates.find((c) => c.id === AUTO_TARGET_CRATE)!;
-  const dx = crate.x - subState.x;
-  const dy = crate.y - subState.y;
-  const dz = crate.z - subState.z;
-  const dist = Math.hypot(dx, dy, dz);
-  const bearing = Math.atan2(dx, dz);
-  let err = bearing - subState.yaw;
-  while (err > Math.PI) err -= Math.PI * 2;
-  while (err < -Math.PI) err += Math.PI * 2;
-  if (dist < GRAPPLE_LATCH_RANGE) {
-    if (!autopilotGrappleTried) {
-      autopilotGrappleTried = true;
-      handleGrappleToggle();
-    }
-    return { throttle: 0, heave: 0, turn: 0, pitch: 0, sprint: false };
-  }
-  return {
-    throttle: Math.abs(err) < 0.5 ? 0.9 : 0.25,
-    heave: Math.max(-1, Math.min(1, dy * 0.5)),
-    turn: Math.max(-1, Math.min(1, err * 2.2)),
-    pitch: Math.max(-0.4, Math.min(0.4, dy * 0.08)),
-    sprint: false
-  };
-}
+const actions = wireDeepActions(ctx, { game, audio, pushCue, syncHud: () => syncHud(), syncVisualNodes, fx, touchInputs });
+const { sonarTargets, handlePing, handleGrappleToggle, atBuoyServiceZone,
+  handleRepair, togglePause, resetGame, autopilotControls } = actions;
+wireDeepTouch({ target, game, handlePing, handleGrappleToggle });
 
 // ------------------------------------------------------------ sim tick -------
 
 function updateGameplay(dt: number): void {
-  frame += 1;
-  if (phase !== "playing" || game.session.paused) {
+  ctx.frame += 1;
+  if (ctx.phase !== "playing" || game.session.paused) {
     syncVisualNodes(dt);
     syncHud();
     return;
   }
-  missionTime += dt;
+  ctx.missionTime += dt;
 
   const touch = touchInputs();
-  const controls = autopilotEnabled
+  const controls = ctx.autopilotEnabled
     ? autopilotControls()
     : {
         throttle: (input.held("thrust") ? 1 : 0) - (input.held("reverse") ? 1 : 0) + touch.throttle,
@@ -396,14 +199,14 @@ function updateGameplay(dt: number): void {
   controls.pitch = controls.throttle * 0.2 + controls.heave * 0.3;
 
   const tetherResult = updateTetherPhysics(
-    { x: subState.x, y: subState.y, z: subState.z },
-    crates,
+    { x: ctx.subState.x, y: ctx.subState.y, z: ctx.subState.z },
+    ctx.crates,
     dt
   );
-  lastTowDrag = tetherResult.towDragForce;
+  ctx.lastTowDrag = tetherResult.towDragForce;
 
-  subState = updateSubmarine(
-    subState,
+  ctx.subState = updateSubmarine(
+    ctx.subState,
     {
       throttle: Math.max(-1, Math.min(1, controls.throttle)),
       heave: Math.max(-1, Math.min(1, controls.heave)),
@@ -411,80 +214,80 @@ function updateGameplay(dt: number): void {
       pitch: controls.pitch,
       sprint: controls.sprint
     },
-    lastTowDrag,
+    ctx.lastTowDrag,
     dt,
     DEFAULT_SUB_CONFIG
   );
 
   // Collision impact → hull damage + possible breach.
-  if (subState.impactSpeedLastFrame > 3.5) {
-    const impact = applyCollisionImpact(oxygenState, subState.impactSpeedLastFrame);
-    oxygenState = impact.nextState;
-    sensorEventCount += 1;
-    fx.siltKick(subState.x, subState.y, subState.z);
+  if (ctx.subState.impactSpeedLastFrame > 3.5) {
+    const impact = applyCollisionImpact(ctx.oxygenState, ctx.subState.impactSpeedLastFrame);
+    ctx.oxygenState = impact.nextState;
+    ctx.sensorEventCount += 1;
+    fx.siltKick(ctx.subState.x, ctx.subState.y, ctx.subState.z);
     if (impact.breachedJustNow) {
-      breachCount += 1;
+      ctx.breachCount += 1;
       pushCue("breach-alarm", 0.9);
       pushCue("hull-creak", 0.8);
-      fx.breachStrobe(subState.x, subState.y, subState.z);
+      fx.breachStrobe(ctx.subState.x, ctx.subState.y, ctx.subState.z);
     }
   }
 
   // Oxygen/hull.
-  const tetheredCount = crates.filter((c) => c.tethered).length;
-  oxygenState = updateOxygen(oxygenState, subState.y, controls.sprint, tetheredCount, dt);
-  if (oxygenState.warningActive && !oxygenWarningCuePlayed) {
-    oxygenWarningCuePlayed = true;
+  const tetheredCount = ctx.crates.filter((c) => c.tethered).length;
+  ctx.oxygenState = updateOxygen(ctx.oxygenState, ctx.subState.y, controls.sprint, tetheredCount, dt);
+  if (ctx.oxygenState.warningActive && !ctx.oxygenWarningCuePlayed) {
+    ctx.oxygenWarningCuePlayed = true;
     pushCue("oxygen-warn", 0.9);
   }
-  if (oxygenState.blackout && phase === "playing") {
-    phase = "blackout";
+  if (ctx.oxygenState.blackout && ctx.phase === "playing") {
+    ctx.phase = "blackout";
     pushCue("blackout", 1.0);
     audio.stopAmbience();
     void game.hud.banner("SUBMARINE BLACKOUT — LIFE SUPPORT DEPLETED — R TO RESET", { holdMs: 4000 });
   }
-  if (subState.y >= -1.0 && oxygenState.oxygen < 99) {
-    oxygenState = refuelAtSurface(oxygenState);
-    if (!surfaceCuePlayed) {
-      surfaceCuePlayed = true;
+  if (ctx.subState.y >= -1.0 && ctx.oxygenState.oxygen < 99) {
+    ctx.oxygenState = refuelAtSurface(ctx.oxygenState);
+    if (!ctx.surfaceCuePlayed) {
+      ctx.surfaceCuePlayed = true;
       pushCue("surface-break", 0.7);
-      fx.surfaceBreak(subState.x, subState.y, subState.z);
+      fx.surfaceBreak(ctx.subState.x, ctx.subState.y, ctx.subState.z);
     }
   }
 
   // Thrust bubbles while driving.
-  thrustBubbleClock += dt;
-  if (Math.abs(controls.throttle) > 0.3 && thrustBubbleClock > 0.24) {
-    thrustBubbleClock = 0;
-    fx.thrustBubbles(subState.x, subState.y, subState.z);
+  ctx.thrustBubbleClock += dt;
+  if (Math.abs(controls.throttle) > 0.3 && ctx.thrustBubbleClock > 0.24) {
+    ctx.thrustBubbleClock = 0;
+    fx.thrustBubbles(ctx.subState.x, ctx.subState.y, ctx.subState.z);
   }
 
-  sonarState = updateSonar(sonarState, dt);
+  ctx.sonarState = updateSonar(ctx.sonarState, dt);
 
   // Bank secured crates at the buoy.
   const bankRes = bankSecuredCrates(
-    { x: subState.x, y: subState.y, z: subState.z },
-    crates,
+    { x: ctx.subState.x, y: ctx.subState.y, z: ctx.subState.z },
+    ctx.crates,
     BUOY_STATION.dockRadius
   );
   if (bankRes.bankedCount > 0) {
-    bankedTotal += bankRes.bankedValue;
-    bankedCountTotal += bankRes.bankedCount;
-    sensorEventCount += 1;
-    standardBanked ||= bankRes.bankedKinds.includes("crate-standard");
-    heavyBanked ||= bankRes.bankedKinds.includes("crate-heavy");
+    ctx.bankedTotal += bankRes.bankedValue;
+    ctx.bankedCountTotal += bankRes.bankedCount;
+    ctx.sensorEventCount += 1;
+    ctx.standardBanked ||= bankRes.bankedKinds.includes("crate-standard");
+    ctx.heavyBanked ||= bankRes.bankedKinds.includes("crate-heavy");
     pushCue("crate-bank", 0.9);
-    fx.crateBank(subState.x, subState.y, subState.z);
+    fx.crateBank(ctx.subState.x, ctx.subState.y, ctx.subState.z);
   }
 
   if (
-    standardBanked && heavyBanked && breachCount > 0 && repairCount > 0
-      && !oxygenState.breached && subState.y >= -1 && phase === "playing"
+    ctx.standardBanked && ctx.heavyBanked && ctx.breachCount > 0 && ctx.repairCount > 0
+      && !ctx.oxygenState.breached && ctx.subState.y >= -1 && ctx.phase === "playing"
   ) {
-    phase = "won";
+    ctx.phase = "won";
     pushCue("surface-break", 1);
     audio.stopAmbience();
-    void game.hud.banner(`RECOVERY COMPLETE — ${bankedTotal} CR SECURED`, { holdMs: 5000 });
+    void game.hud.banner(`RECOVERY COMPLETE — ${ctx.bankedTotal} CR SECURED`, { holdMs: 5000 });
   }
 
   syncVisualNodes(dt);
@@ -493,170 +296,11 @@ function updateGameplay(dt: number): void {
 
 // ------------------------------------------------------------ visuals --------
 
-function syncVisualNodes(dt: number): void {
-  const subNode = handle("sub-root");
-  subNode?.setPosition(subState.x, subState.y, subState.z);
-  subNode?.setRotation(subState.pitch, subState.yaw, subState.roll);
-
-  const lightsOn = phase !== "blackout";
-  const lampNode = handle("sub-lamp-volume");
-  lampNode?.setPosition(
-    subState.x + Math.sin(subState.yaw) * 3.4,
-    subState.y - 0.1,
-    subState.z + Math.cos(subState.yaw) * 3.4
-  );
-  lampNode?.setRotation(subState.pitch, subState.yaw, 0);
-  lampNode?.setVisible(lightsOn);
-  for (const [index, side] of [-0.52, 0.52].entries()) {
-    const beam = handle(index === 0 ? "sub-lamp-port" : "sub-lamp-starboard");
-    const sideX = Math.cos(subState.yaw) * side;
-    const sideZ = -Math.sin(subState.yaw) * side;
-    beam?.setPosition(
-      subState.x + sideX + Math.sin(subState.yaw) * 3.1,
-      subState.y - 0.2,
-      subState.z + sideZ + Math.cos(subState.yaw) * 3.1
-    );
-    beam?.setRotation(Math.PI / 2 + subState.pitch, subState.yaw, 0);
-    beam?.setVisible(lightsOn);
-  }
-
-  const breachNode = handle("breach-beacon");
-  breachNode?.setPosition(subState.x, subState.y + 0.9, subState.z);
-  breachNode?.setVisible(oxygenState.breached);
-
-  // Bioluminescent silt + marine snow drift (killed under reduced motion).
-  for (let i = 0; i < SILT_MOTES; i += 1) {
-    const drift = reducedMotion ? 0 : Math.sin(missionTime * 0.7 + i * 1.3) * 0.22;
-    const a = i * 1.71;
-    const mote = handle(`silt-mote-${i}`);
-    mote?.setPosition(
-      subState.x + Math.cos(a) * (2.2 + (i % 4) * 0.8),
-      subState.y - 0.6 + (i % 5) * 0.45 + drift,
-      subState.z + Math.sin(a) * (2.4 + (i % 3) * 0.9)
-    );
-  }
-  for (let i = 0; i < SNOW_COUNT; i += 1) {
-    const snow = handle(`marine-snow-${i}`);
-    const a = i * 2.39996;
-    const r = 4.0 + (i % 7) * 1.6;
-    const fall = reducedMotion ? 0 : ((missionTime * (0.12 + (i % 5) * 0.03) + i * 1.7) % 14);
-    snow?.setPosition(
-      subState.x + Math.cos(a) * r,
-      subState.y + 6 - fall,
-      subState.z + Math.sin(a) * r
-    );
-  }
-
-  // Crates follow tether/settle physics.
-  for (const c of crates) {
-    const node = handle(`crate-node-${c.id}`);
-    node?.setPosition(c.x, c.y, c.z);
-    node?.setVisible(!c.banked);
-    handle(`sonar-marker-${c.id}`)?.setPosition(c.x, c.y + 0.6, c.z);
-  }
-
-  // Sonar markers: visible only while their contact is live.
-  const liveContacts = new Map<string, SonarContact>(sonarState.contacts.map((c) => [c.id, c]));
-  for (const markerId of world.sonarMarkerIds) {
-    const targetId = markerId.slice("sonar-marker-".length);
-    const contact = liveContacts.get(targetId);
-    const marker = handle(markerId);
-    marker?.setVisible(contact !== undefined);
-    if (contact && !reducedMotion) {
-      const pulse = 0.92 + Math.sin(missionTime * 7 + contact.distance) * 0.18;
-      marker?.setScale([pulse, pulse, 0.08]);
-    }
-  }
-
-  // Sonar pulse wave expanding from the hull.
-  const ring = handle("sonar-pulse-ring");
-  if (sonarState.pulseWaveRadius > 0 && sonarState.pulseWaveRadius < 40) {
-    ring?.setPosition(subState.x, subState.y, subState.z);
-    ring?.setScale([sonarState.pulseWaveRadius, 0.05, sonarState.pulseWaveRadius]);
-    ring?.setVisible(true);
-  } else {
-    ring?.setVisible(false);
-  }
-
-  // Grapple tether: the amber cable spans sub↔latched crate.
-  const tethered = crates.find((c) => c.tethered && !c.banked);
-  const tetherNode = handle("grapple-line");
-  if (tetherNode && tethered) {
-    const dx = tethered.x - subState.x;
-    const dy = tethered.y - subState.y;
-    const dz = tethered.z - subState.z;
-    const dist = Math.max(0.01, Math.hypot(dx, dy, dz));
-    tetherNode.setPosition(subState.x + dx / 2, subState.y + dy / 2, subState.z + dz / 2);
-    tetherNode.setRotation(-Math.asin(dy / dist), Math.atan2(dx, dz), 0);
-    tetherNode.setScale([0.045, 0.045, dist]);
-    tetherNode.setVisible(true);
-  } else {
-    tetherNode?.setVisible(false);
-  }
-
-  // Buoy beacon + vent glow breathe (state-light rhythms, reduced-motion safe).
-  const buoyPulse = reducedMotion ? 1 : 1 + Math.sin(missionTime * 2.2) * 0.16;
-  handle("buoy-beacon")?.setScale([0.45 * buoyPulse, 0.45 * buoyPulse, 0.45 * buoyPulse]);
-  for (let i = 0; i < VENT_COUNT; i += 1) {
-    const glow = reducedMotion ? 1 : 1 + Math.sin(missionTime * 1.4 + i * 2.1) * 0.22;
-    handle(`vent-glow-${i}`)?.setScale([0.7 * glow, 0.4 * glow, 0.7 * glow]);
-  }
-}
 
 // ---------------------------------------------------------------- HUD --------
 
-let lastHudKey = "";
-function missionStage(): string {
-  if (phase === "blackout") return "blackout";
-  if (phase === "won") return "surface-complete";
-  if (heavyBanked) return "ascent";
-  if (oxygenState.breached || (standardBanked && repairCount === 0)) return "breach-repair";
-  if (repairCount > 0) return "heavy-salvage";
-  if (standardBanked) return "breach-repair";
-  if (sonarState.pingCount > 0 && Math.abs(subState.y) >= 15) return "standard-salvage";
-  if (sonarState.pingCount > 0 || Math.abs(subState.y) >= 12) return "wreck-approach";
-  return "descent";
-}
-
-const OBJECTIVES: Record<string, string> = {
-  descent: "DESCEND TO 15 M · PULSE SONAR",
-  "wreck-approach": "FOLLOW CYAN RETURNS TO THE WRECK",
-  "standard-salvage": "GRAPPLE A BLUE STANDARD POD · BANK AT BUOY",
-  "breach-repair": "REPAIR HULL AT BUOY (C)",
-  "heavy-salvage": "RECOVER AN AMBER HEAVY POD · EXPECT DRAG",
-  ascent: "ASCEND TO THE BUOY · SURFACE",
-  "surface-complete": "RECOVERY COMPLETE",
-  blackout: "LIFE SUPPORT DEPLETED"
-};
-
-function syncHud(): void {
-  const depth = Math.max(0, Math.round(-subState.y));
-  const zone = getDepthZone(subState.y);
-  const key = [
-    phase, missionStage(), depth,
-    Math.round(oxygenState.oxygen), Math.round(oxygenState.hull),
-    bankedTotal, sonarState.contacts.length,
-    oxygenState.breached ? 1 : 0, crates.filter((c) => c.tethered).length
-  ].join("|");
-  if (key === lastHudKey) return;
-  lastHudKey = key;
-  game.hud.set("objective", OBJECTIVES[missionStage()]);
-  game.hud.set("depth", `${depth}m ${zone.name}`);
-  game.hud.set("oxygen", Math.round(oxygenState.oxygen));
-  game.hud.set("hull", Math.round(oxygenState.hull));
-  game.hud.set("salvage", bankedTotal);
-  game.hud.set("sonar", `${sonarState.contacts.length} RETURNS · ${Math.max(0, sonarState.pingCooldownRemaining).toFixed(1)}s`);
-  const tethered = crates.filter((c) => c.tethered).length;
-  game.hud.set(
-    "message",
-    phase === "blackout" ? "BLACKOUT — R TO RESET"
-      : phase === "won" ? `RECOVERY COMPLETE — ${bankedTotal} CR`
-      : phase === "paused" ? "PAUSED — P TO RESUME"
-      : tethered > 0 ? `TETHERED ×${tethered} — F TO RELEASE · BANK AT BUOY`
-      : oxygenState.breached ? "HULL BREACH — REPAIR AT BUOY (C)"
-      : "W/S THRUST · A/D TURN · Q/E DEPTH · SPACE SONAR · F GRAPPLE"
-  );
-}
+const hud = wireDeepHud(ctx, { audio, game });
+const { missionStage, syncHud } = hud;
 
 // ------------------------------------------------------------- evidence ------
 
@@ -672,55 +316,55 @@ const appliedLook: Record<string, unknown> = {
   signatureEffect: direction.signatureEffect
 };
 
-const rigState = { x: subState.x, y: subState.y, z: subState.z, yaw: subState.yaw };
+const rigState = { x: ctx.subState.x, y: ctx.subState.y, z: ctx.subState.z, yaw: ctx.subState.yaw };
 
 const runSnapshot = (): DeepRunSnapshot => {
-  const tethered = crates.filter((c) => c.tethered);
+  const tethered = ctx.crates.filter((c) => c.tethered);
   return {
-    phase,
+    phase: ctx.phase,
     missionStage: missionStage(),
     sub: {
-      x: subState.x,
-      y: subState.y,
-      z: subState.z,
-      yaw: subState.yaw,
-      speed: subState.speed,
-      throttle: subState.throttle,
-      depth: Math.max(0, -subState.y),
-      sprint: subState.sprint
+      x: ctx.subState.x,
+      y: ctx.subState.y,
+      z: ctx.subState.z,
+      yaw: ctx.subState.yaw,
+      speed: ctx.subState.speed,
+      throttle: ctx.subState.throttle,
+      depth: Math.max(0, -ctx.subState.y),
+      sprint: ctx.subState.sprint
     },
     oxygen: {
-      oxygen: oxygenState.oxygen,
-      hull: oxygenState.hull,
-      breached: oxygenState.breached,
-      warningActive: oxygenState.warningActive,
-      blackout: oxygenState.blackout,
-      breachCount,
-      repairCount
+      oxygen: ctx.oxygenState.oxygen,
+      hull: ctx.oxygenState.hull,
+      breached: ctx.oxygenState.breached,
+      warningActive: ctx.oxygenState.warningActive,
+      blackout: ctx.oxygenState.blackout,
+      breachCount: ctx.breachCount,
+      repairCount: ctx.repairCount
     },
     salvage: {
-      grappled: grappleLatchCount,
+      grappled: ctx.grappleLatchCount,
       tethered: tethered.length,
-      banked: bankedCountTotal,
-      bankedValue: bankedTotal,
-      cratesTotal: crates.length,
+      banked: ctx.bankedCountTotal,
+      bankedValue: ctx.bankedTotal,
+      cratesTotal: ctx.crates.length,
       towMassKg: Math.round(tethered.reduce((sum, c) => sum + c.mass, 0)),
-      standardBanked,
-      heavyBanked
+      standardBanked: ctx.standardBanked,
+      heavyBanked: ctx.heavyBanked
     },
     sonar: {
-      pings: sonarState.pingCount,
-      returns: sonarState.returnCount,
-      liveContacts: sonarState.contacts.length,
-      cooldown: sonarState.pingCooldownRemaining
+      pings: ctx.sonarState.pingCount,
+      returns: ctx.sonarState.returnCount,
+      liveContacts: ctx.sonarState.contacts.length,
+      cooldown: ctx.sonarState.pingCooldownRemaining
     },
     contracts: {
-      active: phase === "won" ? 3 : heavyBanked ? 2 : standardBanked || repairCount > 0 ? 1 : 0,
-      title: CONTRACTS[Math.min(2, standardBanked || repairCount > 0 ? (heavyBanked ? 2 : 1) : 0)]!.title,
-      quotaValue: CONTRACTS[Math.min(2, standardBanked || repairCount > 0 ? (heavyBanked ? 2 : 1) : 0)]!.quotaValue,
-      complete: phase === "won"
+      active: ctx.phase === "won" ? 3 : ctx.heavyBanked ? 2 : ctx.standardBanked || ctx.repairCount > 0 ? 1 : 0,
+      title: CONTRACTS[Math.min(2, ctx.standardBanked || ctx.repairCount > 0 ? (ctx.heavyBanked ? 2 : 1) : 0)]!.title,
+      quotaValue: CONTRACTS[Math.min(2, ctx.standardBanked || ctx.repairCount > 0 ? (ctx.heavyBanked ? 2 : 1) : 0)]!.quotaValue,
+      complete: ctx.phase === "won"
     },
-    sensorEventCount,
+    sensorEventCount: ctx.sensorEventCount,
     grappleLineLive: tethered.length > 0
   };
 };
@@ -731,22 +375,22 @@ publishDeepEvidence({
   appliedLook: () => appliedLook,
   audioCueLog: () => audioCueLog,
   bootedAtMs: () => bootedAtMs,
-  frameCount: () => frame
+  frameCount: () => ctx.frame
 });
 
 const scenarioParam = routeParams.get("scenario");
 if (scenarioParam) {
   applyDeepScenario(scenarioParam, {
     poseSub: (x, y, z, yaw) => {
-      subState = { ...subState, x, y, z, yaw, vx: 0, vy: 0, vz: 0 };
+      ctx.subState = { ...ctx.subState, x, y, z, yaw, vx: 0, vy: 0, vz: 0 };
       rigState.x = x;
       rigState.y = y;
       rigState.z = z;
       rigState.yaw = yaw;
       syncVisualNodes(0);
     },
-    setOxygen: (v) => { oxygenState = { ...oxygenState, oxygen: v }; },
-    setHull: (v) => { oxygenState = { ...oxygenState, hull: v }; },
+    setOxygen: (v) => { ctx.oxygenState = { ...ctx.oxygenState, oxygen: v }; },
+    setHull: (v) => { ctx.oxygenState = { ...ctx.oxygenState, hull: v }; },
     firePing: () => handlePing(),
     reset: () => resetGame()
   });
@@ -763,10 +407,10 @@ game.app.onFrame?.(({ dt: rawDt }) => {
   if (input.pressed("repair")) handleRepair();
   if (input.pressed("pause")) togglePause();
   if (input.pressed("reset")) resetGame();
-  rigState.x = subState.x;
-  rigState.y = subState.y;
-  rigState.z = subState.z;
-  rigState.yaw = subState.yaw;
+  rigState.x = ctx.subState.x;
+  rigState.y = ctx.subState.y;
+  rigState.z = ctx.subState.z;
+  rigState.yaw = ctx.subState.yaw;
   updateGameplay(dt);
 });
 
@@ -783,7 +427,7 @@ void game.ready().then(() => {
     get scene() { return game.app.scene; },
     get state() { return game.session.state; },
     get session() { return game.session; },
-    get frame() { return frame; },
+    get frame() { return ctx.frame; },
     firstFrameAt,
     sessionStartedAt: bootedAtMs
   };
