@@ -4,8 +4,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { resolveQrFlags } from "@aura3d/engine/contracts";
-import { createFrameLoop } from "@aura3d/engine";
-import type { FrameLoopTick } from "@aura3d/engine/lanes";
+import { createFrameLoop, type FrameLoopTick } from "@aura3d/engine/lanes";
 
 const loopFlags = resolveQrFlags({ options: ["camera.loop"] });
 const offFlags = resolveQrFlags({});
