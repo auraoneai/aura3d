@@ -1,5 +1,8 @@
 # PRD-13 PR E evidence — T2.1, T2.2(a,c,d,e) + staged (b), T2.3–T2.6
 
+> **Run-id status (P-57):** no passing remote run id is cited in this file yet; every claim below is recorded NOT RUN until the proving lane-workflow/GitLab run is linked here. File moved from `evidence/prd13/` → `docs/project/aura3d-quality-rebuild/evidence/prd-13/` (13-EVID).
+
+
 Branch: `qr/prd13-skills-art-direction` (stacked on `qr/prd13-prompt-plan-v2` / PR #191).
 
 ## T2.1 — AUTHORING.md

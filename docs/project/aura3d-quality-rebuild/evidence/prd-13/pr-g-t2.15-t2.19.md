@@ -1,5 +1,8 @@
 # PR G — T2.15–T2.19 agent files + look commands + lookdev workflow
 
+> **Run-id status (P-57):** no passing remote run id is cited in this file yet; every claim below is recorded NOT RUN until the proving lane-workflow/GitLab run is linked here. File moved from `evidence/prd13/` → `docs/project/aura3d-quality-rebuild/evidence/prd-13/` (13-EVID).
+
+
 ## Scope
 
 - **T2.15** `packages/aura3d-cli/skills/agent-files/AGENTS.md` canonical text

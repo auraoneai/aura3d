@@ -94,7 +94,7 @@ Weekly integration runs IC-1.. (Thursdays from 2026-10-15, on GitLab macOS) capt
 - [ ] Touches only lane-owned paths (`node tools/qr-ownership/check.mjs` passes once PR 0a exists).
 - [ ] `qr-contracts.yml`, `ci.yml` and `test.yml` are green; PRs touching `packages/rendering/**` or `packages/engine/**` also pass browser conformance and the flag-off sentinel identity check.
 - [ ] Flag-off output is unchanged, or the correctness fix is declared.
-- [ ] Standalone acceptance items covered by this PR are proven, with evidence committed under `evidence/prd13/`.
+- [ ] Standalone acceptance items covered by this PR are proven, with evidence committed under `docs/project/aura3d-quality-rebuild/evidence/prd-13/`.
 - [ ] Any facts for skills or templates are filed as C-40 rows (Appendix B of CONTRACTS.md) for lane 13.
 
 ## Report back (end of each work session)

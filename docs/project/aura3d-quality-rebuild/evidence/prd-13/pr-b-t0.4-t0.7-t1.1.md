@@ -1,5 +1,8 @@
 # PR B evidence — T0.4–T0.7 + T1.1 (PRD-13, lane 13)
 
+> **Run-id status (P-57):** no passing remote run id is cited in this file yet; every claim below is recorded NOT RUN until the proving lane-workflow/GitLab run is linked here. File moved from `evidence/prd13/` → `docs/project/aura3d-quality-rebuild/evidence/prd-13/` (13-EVID).
+
+
 Branch: `qr/prd13-agent-eval-looks` → main. Everything stays behind the
 existing conventions: no `A3D_QR_*` flag is enabled anywhere; lookPresets is
 pure data exported via `src/lanes/prd13.ts` (consumers are gated, not the
