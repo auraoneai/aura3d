@@ -27,7 +27,22 @@ test("Aura3D mini game screenshot clears the look floor", async ({ page }) => {
   expect(state?.player?.x ?? 0).toBeGreaterThan(0.8);
   expect(state?.look?.id).toBe("outdoor-day");
   const floor = await assertTemplateLookFloor(page, { subject: { x: 0.36, y: 0.22, width: 0.54, height: 0.34 } });
-  const screenshot = await page.screenshot({ fullPage: false });
+  // class-(b) readback: capture through the app (C-05) instead of the
+  // compositor screenshot path — the output surface owns the frame.
+  const pngBase64 = await page.evaluate(async () => {
+    const apps = (window as unknown as {
+      __AURA3D_LIVE_APPS__?: readonly { output: { capture(o: { type: "png-blob" }): Promise<Blob> } }[];
+    }).__AURA3D_LIVE_APPS__ ?? [];
+    const blob = await apps[0]?.output.capture({ type: "png-blob" });
+    if (!blob) return "";
+    const dataUrl = await new Promise<string>((resolvePromise) => {
+      const reader = new FileReader();
+      reader.onload = () => resolvePromise(String(reader.result));
+      reader.readAsDataURL(blob);
+    });
+    return dataUrl.split(",")[1] ?? "";
+  });
+  const screenshot = Buffer.from(pngBase64, "base64");
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/screenshot.png"), screenshot);
   writeFileSync(resolve("tests/reports/screenshot.json"), `${JSON.stringify({ bytes: screenshot.byteLength, floor }, null, 2)}\n`);
