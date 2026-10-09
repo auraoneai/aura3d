@@ -10,3 +10,8 @@ Each row: issue, target lane, request, status. Numbers written back as filed.
 | Issue | To | Request | Status |
 |---|---|---|---|
 | #588 | prd12 | C-33: beacon readiness (`__AURA3D_GAME__.state === 'playing'`) in `capture-games.mjs` — co-PR'd in the T0-30 branch, needs lane-12 acceptance in the PR thread | open |
+||||||| parent of 84ab74289 (fix(qr-09): revert masked routes gate — fail on build/divergence errors)
+||||||| parent of c0c6d8c6f (fix(qr-09): revert masked routes gate — fail on build/divergence errors)
+
+
+| #596 | prd15 | Red-flag revert: `capture-divergence.spec.ts` vacuous skip → guard test (co-PR'd in the red-flag-revert branch, needs lane-15 acceptance) | open |
