@@ -416,3 +416,11 @@ sessions at all. Lane-side alternatives: add a `push:` trigger scoped to a
 lane path filter, or run the same capture via the GitLab bridge. This blocks
 05-S8 (the workflow has 0 runs) — the capture itself is implemented
 (`apps/asset-lookdev/capture.mjs`), only the trigger is missing.
+
+Update 2026-10-09: workaround shipped on `qr/prd05-lookdev-push` (#635) —
+`asset-lookdev.yml` gained a `push` trigger on `qr/prd05-**` scoped to
+`apps/asset-lookdev/**`, prd05 CLI command sources, `lookdev.stage.json`
+and the workflow file, with `LOOKDEV_ASSETS` defaulting to the §6.7
+ten-id corpus when `github.event.inputs.assets` is empty. Push queued
+run 37914665208 (the workflow's first remote execution). The dispatch
+403 itself is still open — other dispatch-only workflows stay untriggerable.
