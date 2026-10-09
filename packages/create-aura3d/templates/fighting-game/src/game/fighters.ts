@@ -1,5 +1,6 @@
 import {
   AnimationController,
+  validateClipMap,
   type AuraAssetRef,
   type AuraNamedAnimationClipDefinition,
   game,
@@ -95,6 +96,17 @@ export function createFighterAnimationController(
   id: FighterId,
   asset?: AuraAssetRef<"model">
 ): AnimationController<FighterClip> {
+  if (asset) {
+    // Adopt the T0.9a clip-map contract (Q-06-8 / #488): every fighter state
+    // resolves through `validateClipMap` against the embedded GLB clips, so an
+    // absent clip throws FIGHTER_CLIP_MISSING and stand-ins warn uniformly.
+    const certified = FIGHTER_CERTIFIED_CLIP[id];
+    const availableClips = (asset.metadata?.animations as readonly string[] | undefined) ?? [certified];
+    const clipMap = Object.fromEntries(
+      REQUIRED_FIGHTER_CLIPS.map((state) => [state, { clip: certified, standIn: true }])
+    ) as Record<FighterClip, { clip: string; standIn: boolean }>;
+    validateClipMap(clipMap, { availableClips, requiredStates: REQUIRED_FIGHTER_CLIPS, label: id });
+  }
   return new AnimationController<FighterClip>({
     id: `${id}-animation-controller`,
     ...(asset ? { clipRegistry: animationClipRegistry(asset) } : {}),
