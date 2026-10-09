@@ -141,6 +141,24 @@ describe("OutputPass on MockRenderDevice", () => {
     scene.dispose();
     pass.dispose();
   });
+
+  it("restores the previously bound render target, not `input` (T0-04)", () => {
+    const d = device();
+    const scene = createHdrTarget(d, { width: 4, height: 4 });
+    const previous = createHdrTarget(d, { width: 4, height: 4 });
+    const pass = new OutputPass(d);
+    d.beginFrame(4, 4);
+    d.setRenderTarget(previous);
+    pass.execute(scene, null, { toneMapping: "aces", exposure: 1, dithering: false, backgroundCoverage: false }, "canvas");
+    expect(d.getRenderTarget()).toBe(previous);
+    d.setRenderTarget(null);
+    pass.execute(scene, null, { toneMapping: "aces", exposure: 1, dithering: false, backgroundCoverage: false }, previous);
+    expect(d.getRenderTarget()).toBeNull();
+    d.endFrame();
+    scene.dispose();
+    previous.dispose();
+    pass.dispose();
+  });
 });
 
 describe("HDR target", () => {
