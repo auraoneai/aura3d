@@ -112,7 +112,10 @@ registerNodeHandler({
     }
     const descriptor = physicalLightDescriptor(light, name);
     if (!descriptor) return;
-    out.addLights([descriptor]);
+    // T0-09: single light path — `createProductionRuntimeCollectedLights`
+    // already collects every authored light node; adding the descriptor here
+    // duplicated each entry (missing layerMask/castsShadow/sourceId -> NaN in
+    // LightUniforms.pack). The descriptor stays for feature/shadow flags only.
     if (light.light === "directional" || light.light === "studio") out.feature("lights.directional");
     else if (light.light === "spot") out.feature("lights.spot");
     else if (light.light === "point") out.feature("lights.point");
@@ -130,7 +133,6 @@ registerNodeHandler({
     const env = node as unknown as AuraEnvironmentNodeV2;
     const resolution = explicitEnvironmentResolution(env, null);
     if (!resolution) return;
-    out.set("environment", resolution);
     out.feature("environment.ibl");
     if (resolution.background !== false && resolution.background.visible) out.feature("environment.background");
   }
