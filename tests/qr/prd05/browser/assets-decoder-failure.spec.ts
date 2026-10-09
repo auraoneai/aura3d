@@ -33,7 +33,7 @@ test.describe("PRD-05 decoder failure is fail-closed (P1/S4)", () => {
   });
 
   test("unavailable decoder produces AssetDecoderUnavailable, not a silent render", async ({ page }) => {
-    await page.goto(`${server.origin}/tests/qr/prd05/browser/assets-compressed-glb.html?skipRender=1&noGl=1&onlyFailure=1`, {
+    await page.goto(`${server.origin}/tests/qr/prd05/browser/assets-decoder-failure.html`, {
       waitUntil: "domcontentloaded"
     });
     await page.waitForFunction(
