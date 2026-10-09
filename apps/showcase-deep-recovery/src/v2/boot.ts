@@ -44,8 +44,8 @@ import { lightingNodes } from "./scene/lighting";
 import { createDeepRig, fallbackCameraNode } from "./scene/camera";
 import { wireDeepFx } from "./scene/fx";
 import { WATER_BG } from "./scene/materials";
-import { publishDeepEvidence, type DeepRunSnapshot } from "./evidence";
-import { applyDeepScenario } from "./scenarios";
+import { publishDeepEvidence, type DeepRunSnapshot } from "../evidence";
+import { applyDeepScenario } from "../scenarios";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_DEEP_RECOVERY" as const;
 const GRAPPLE_LATCH_RANGE = GRAPPLE_RANGE * 0.94;
