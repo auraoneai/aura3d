@@ -85,6 +85,9 @@ export interface EffectNodeLike {
     /** Seconds before fade-out ends the decal (default: permanent). */
     readonly lifetime?: number;
   };
+  /** Group nodes nest authored children; false-visible groups hide the subtree. */
+  readonly children?: readonly EffectNodeLike[];
+  readonly visible?: boolean;
 }
 
 export interface LoweredParticleEffect {

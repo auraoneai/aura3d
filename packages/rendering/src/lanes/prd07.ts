@@ -48,7 +48,13 @@ try {
     id: "prd07.wetness",
     owner: "prd07",
     flag: "A3D_QR_VFX",
-    select: () => true,
+    select: () => {
+      // §7.1 landmine guard: only contribute while weather actually drives a
+      // wetness response — an unconditional true would splice A3D_WETNESS
+      // into every forward program once T0-05 evaluates select() per item.
+      const w = prd07WetnessState();
+      return w.wetness > 0 || w.snowCover > 0 || w.rainRipples > 0 ? true : undefined;
+    },
     defines: () => ({ A3D_WETNESS: 1 }),
     chunks: [WETNESS_CHUNK_NAME],
     hooks: ["fragment:material"],
