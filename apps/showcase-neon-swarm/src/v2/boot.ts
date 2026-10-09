@@ -30,8 +30,8 @@ import { swarmWorldNodes } from "./scene/world";
 import { lightingNodes } from "./scene/lighting";
 import { createSwarmRig, fallbackCameraNode } from "./scene/camera";
 import { wireSwarmFx } from "./scene/fx";
-import { publishSwarmEvidence } from "./evidence";
-import { applySwarmScenario } from "./scenarios";
+import { publishSwarmEvidence } from "../evidence";
+import { applySwarmScenario } from "../scenarios";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_NEON_SWARM" as const;
 const SEED_DEFAULT = 20260821;

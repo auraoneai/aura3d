@@ -130,7 +130,6 @@ export interface SwarmSimulation {
  * between the larger typed elite presentations.
  */
 export interface SwarmVisualOptions {
-  readonly reviewCapture?: boolean;
 }
 
 function makeTransforms(count: number): PoolTransform[] {
@@ -440,7 +439,7 @@ export function createSwarmSimulation(options: SwarmVisualOptions = {}): SwarmSi
       // gameplay transforms, pool capacities, and hashes remain unchanged.
       let scale = isElite
         ? 0.52
-        : (options.reviewCapture ? 0.42 + (i % 5) * 0.02 : 0.32 + (i % 5) * 0.016);
+        : ( 0.32 + (i % 5) * 0.016);
       if (drone.flashRemaining > 0) scale *= 1.18;
       if (isElite && drone.burstRemaining > 0) scale *= 1.12;
       const profile = i % 6;
