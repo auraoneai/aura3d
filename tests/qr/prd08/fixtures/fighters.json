@@ -1,0 +1,22 @@
+{
+  "note": "S5 two-fighter + bystander combat harness fixture. Minimal until lane-09's packages/game/fixtures/fighter lands (#370 G4-internal); replace entries then — motion scripts below stay valid either way. Poses are start offsets only.",
+  "fighters": [
+    {
+      "id": "fighter-a",
+      "spawn": [0, 0.5, 0],
+      "script": { "kind": "advance", "speed": 2.0, "axis": "x", "dir": 1 }
+    },
+    {
+      "id": "fighter-b",
+      "spawn": [3, 0.5, 0],
+      "script": { "kind": "advance", "speed": 2.0, "axis": "x", "dir": -1 }
+    },
+    {
+      "id": "bystander",
+      "spawn": [6, 0.5, 3],
+      "script": { "kind": "wander", "speed": 0.8, "axis": "z", "period": 3.0 }
+    }
+  ],
+  "hit": { "preset": "hit-heavy", "actors": ["fighter-a", "fighter-b"], "at": 0.3 },
+  "ko": { "preset": "ko", "at": 0.3 }
+}
