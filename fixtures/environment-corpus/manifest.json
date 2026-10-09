@@ -470,6 +470,39 @@
     "brdfLut",
     "background"
    ]
+  },
+  {
+   "id": "deep-space-starfield",
+   "label": "Deep-Space Starfield (procedural, 8k)",
+   "class": "space",
+   "license": "CC0",
+   "author": "Aura3D procedural (tools/asset-optimize/gen-starfield.py seed 0x8a411208)",
+   "sourceName": "deep_space_starfield_8k",
+   "sourceUri": "tools/asset-optimize/gen-starfield.py",
+   "localPath": "fixtures/environment-corpus/hdri/deep_space_starfield_8k.hdr",
+   "sha256": "99768ccad307fa4ff1ce6d1d745132fca5d29760beb49aa9c4495cda785eff40",
+   "bytes": 134217841,
+   "resolution": [
+    8192,
+    4096
+   ],
+   "format": "rgbe-hdr",
+   "intensity": 1.0,
+   "backgroundIntensity": 1.0,
+   "exposure": 1.0,
+   "whitePoint": 1.25,
+   "rotation": 0.0,
+   "pmrem": {
+    "faceSize": 256,
+    "mipCount": 9,
+    "cacheKey": "deep-space-starfield:pmrem-256"
+   },
+   "probes": [
+    "diffuseIrradiance",
+    "specularPrefilter",
+    "brdfLut",
+    "background"
+   ]
   }
  ]
 }
