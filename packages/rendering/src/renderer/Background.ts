@@ -30,6 +30,8 @@ type RenderSourceWithProbe = RenderSource & {
   /** Resolution intensities for the probe's IBL terms (defaults 1). */
   readonly environmentProbeDiffuseIntensity?: number;
   readonly environmentProbeSpecularIntensity?: number;
+  /** Additive constant ambient (linear rgb, authored `lights.ambient` sum) layered on the probe's IBL. */
+  readonly environmentProbeAmbient?: { readonly color: readonly [number, number, number]; readonly intensity: number } | null;
 };
 
 export function collectEnvironmentBackground(source: RenderSource | Iterable<RenderItem> | Scene): EnvironmentBackgroundOptions | undefined {
@@ -114,9 +116,10 @@ export function resolvePrd02EnvironmentLighting(source: RenderSource): Environme
   const meta = source as RenderSourceWithProbe;
   const diffuse = meta.environmentProbeDiffuseIntensity ?? 1;
   const specular = meta.environmentProbeSpecularIntensity ?? 1;
+  const ambient = meta.environmentProbeAmbient ?? null;
   return {
-    color: [1, 1, 1],
-    intensity: 0,
+    color: ambient?.color ?? [1, 1, 1],
+    intensity: ambient?.intensity ?? 0,
     environmentMapTexture: new TextureBinding({
       name: "u_environmentMapTexture",
       texture: equirect,
