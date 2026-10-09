@@ -1,19 +1,27 @@
 name: QR prd08 camera/loop/feel
 
 # Lane-08 gate (PRD-08 §4.1, CONTRACTS.md §1.1): typecheck, lint (repo-wide,
-# same as qr-contracts), the lane's unit suites (tests/qr/prd08 + the prd08
-# contract impls), the camera-cast codemod fixtures, and ownership coverage
-# for lane-08 paths. Browser conformance (C-22 presented/evidence) runs on
-# macos-14 under the qr-contracts browser job once the specs exist (phase 3).
+# same as qr-contracts), the lane's unit suites under both flag states
+# (A3D_QR=none and A3D_QR=camera), the camera-cast codemod fixtures, and
+# ownership coverage for lane-08 paths.
+#
+# Remote-only per PRD-08 §15: browser conformance + frame pacing run on
+# macos-14 (Chromium, ANGLE Metal); motion-scene captures run on macos-14 and
+# upload strips/webm as artifacts. The canonical judged frames route through
+# the GitLab mirror via `[qr-gitlab:benchmark flags=camera]` push tags
+# (CI-ROUTING.md); this workflow never compares frames across providers.
 
 on:
   pull_request:
     branches: [main]
     paths:
       - 'packages/engine/src/agent-api/{camera,feel,time,controls,vehicle}/**'
-      - 'packages/engine/src/{FrameLoop,GameRuntime,GameFeel,GameCameraRigs,CameraChoreographer,VehicleChassis}.ts'
+      - 'packages/engine/src/agent-api/app/{frameAlpha,frameLoopDefaults}.ts'
+      - 'packages/engine/src/{FrameLoop,GameRuntime,GameFeel,GameCameraRigs,CameraChoreographer,VehicleChassis,GameSceneGeometryBindings,GameGenreKits,PlatformerMotion}.ts'
       - 'packages/engine/src/agent-api/nodes/camera.ts'
       - 'packages/engine/src/lanes/prd08.ts'
+      - 'packages/rendering/src/lanes/prd08.ts'
+      - 'packages/rendering/src/shaders/camera-fade.glsl.ts'
       - 'packages/physics/src/{Raycast,ScenePhysicsBridge}.ts'
       - 'packages/scene/src/MathTypes.ts'
       - 'packages/input/**'
@@ -21,20 +29,58 @@ on:
       - 'benchmarks/quality-rebuild/motion/**'
       - 'benchmarks/quality-rebuild/scenes/prd08/**'
       - 'tests/qr/prd08/**'
+      - 'tests/unit/engine/{fixed-step-determinism,game-camera-rigs,game-feel,platformer-motion,vehicle-chassis}.test.ts'
       - 'tests/unit/contracts/impl/prd08-*.ts'
       - 'docs/project/aura3d-quality-rebuild/PRD-08-camera-controls-game-feel.md'
+      - 'docs/project/aura3d-quality-rebuild/evidence/prd08/**'
       - '.github/workflows/qr-prd08-camera.yml'
   push:
-    branches: ['qr/prd08-*']
+    branches: [main, 'qr/prd08-*']
+    paths:
+      - 'packages/engine/src/agent-api/{camera,feel,time,controls,vehicle}/**'
+      - 'packages/engine/src/agent-api/app/{frameAlpha,frameLoopDefaults}.ts'
+      - 'packages/engine/src/{FrameLoop,GameRuntime,GameFeel,GameCameraRigs,CameraChoreographer,VehicleChassis,GameSceneGeometryBindings,GameGenreKits,PlatformerMotion}.ts'
+      - 'packages/engine/src/agent-api/nodes/camera.ts'
+      - 'packages/engine/src/lanes/prd08.ts'
+      - 'packages/rendering/src/lanes/prd08.ts'
+      - 'packages/rendering/src/shaders/camera-fade.glsl.ts'
+      - 'packages/physics/src/{Raycast,ScenePhysicsBridge}.ts'
+      - 'packages/scene/src/MathTypes.ts'
+      - 'packages/input/**'
+      - 'tools/camera-cast-codemod/**'
+      - 'benchmarks/quality-rebuild/motion/**'
+      - 'benchmarks/quality-rebuild/scenes/prd08/**'
+      - 'tests/qr/prd08/**'
+      - 'tests/unit/engine/{fixed-step-determinism,game-camera-rigs,game-feel,platformer-motion,vehicle-chassis}.test.ts'
+      - 'tests/unit/contracts/impl/prd08-*.ts'
+      - 'docs/project/aura3d-quality-rebuild/PRD-08-camera-controls-game-feel.md'
+      - 'docs/project/aura3d-quality-rebuild/evidence/prd08/**'
+      - '.github/workflows/qr-prd08-camera.yml'
+  schedule:
+    - cron: '17 6 * * *'
   workflow_dispatch:
+  workflow_call:
 
 concurrency:
   group: qr-prd08-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
+env:
+  QRC_GPU_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+
 jobs:
   unit:
+    name: "unit (A3D_QR=${{ matrix.flags }})"
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        flags: [none, camera]
+    env:
+      A3D_QR: ${{ matrix.flags }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -43,10 +89,14 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # T0-31 (lane 15) tracks pre-existing typecheck errors on main; this step
+      # stays unmasked — no continue-on-error per the program rule.
       - run: pnpm typecheck:raw
       - run: pnpm lint
       - name: Lane-08 unit suites (frame loop, time, interpolation, spring, spline, framing, noise, bicycle, fromSpec parity, codemod)
         run: pnpm exec vitest run --config tests/qr/prd08/vitest.config.ts
+      - name: Lane-08 engine unit files
+        run: pnpm exec vitest run tests/unit/engine/fixed-step-determinism.test.ts tests/unit/engine/game-camera-rigs.test.ts tests/unit/engine/game-feel.test.ts tests/unit/engine/platformer-motion.test.ts tests/unit/engine/vehicle-chassis.test.ts
       - name: C-22/C-23 impl conformance
         run: pnpm exec vitest run tests/unit/contracts/impl/prd08-time.test.ts tests/unit/contracts/impl/prd08-camera.test.ts
       - name: camera-cast codemod report (must list every known cast site)
@@ -61,9 +111,9 @@ jobs:
           grep -q 'showcase-blockfall-reactor/src/camera-feel.ts' /tmp/camera-cast.md
       - run: node tools/qr-ownership/check.mjs
 
-  browser:
-    # Remote-only per PRD-08 §15 (no local browser runs).
-    runs-on: ubuntu-latest
+  browser-gpu:
+    name: browser-gpu (macos-14, ANGLE Metal)
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -72,14 +122,60 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm typecheck:raw
-      - run: pnpm exec playwright install --with-deps chromium
-      - name: L-9 frame pacing (S1/S2/S3, scripted rAF)
+      - run: pnpm exec playwright install chromium
+      - name: L-9 frame pacing + camera/feel specs (S1/S2/S3, scripted rAF)
+        env:
+          A3D_QR: camera
+          CHROME_ARGS: ${{ env.QRC_GPU_ARGS }}
         run: pnpm exec playwright test --config tests/qr/prd08/playwright.config.ts
       - name: Frame-pacing CSV evidence (§20 item 3)
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: prd08-frame-pacing
+          name: prd08-frame-pacing-${{ github.run_id }}
           path: tests/reports/prd08/
+          if-no-files-found: warn
+      - name: Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: prd08-playwright-${{ github.run_id }}
+          path: tests/qr/prd08/playwright-report/
+          if-no-files-found: warn
+
+  motion-capture:
+    name: motion scenes (macos-14, ANGLE Metal)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Discover registered prd08-motion scenes
+        id: scenes
+        run: |
+          IDS="$(rg -o 'prd08-motion-[a-z0-9-]+' benchmarks/quality-rebuild/motion/scenes.ts 2>/dev/null | sort -u | paste -sd, -)"
+          echo "ids=${IDS}" >> "$GITHUB_OUTPUT"
+          echo "motion scenes: ${IDS:-<none registered yet (08-S9)>}"
+      - name: Build benchmark bundle
+        if: steps.scenes.outputs.ids != ''
+        run: pnpm exec vite build --config benchmarks/quality-rebuild/vite.config.ts
+      - name: Capture prd08-motion-* (12-frame strip + WebM, flags=camera)
+        if: steps.scenes.outputs.ids != ''
+        env:
+          QR_BENCH_CHROME_ARGS: ${{ env.QRC_GPU_ARGS }}
+        run: |
+          node benchmarks/quality-rebuild/capture.mjs \
+            --scenes "${{ steps.scenes.outputs.ids }}" \
+            --engines aura3d,three --variants camera \
+            --out benchmarks/quality-rebuild/out/prd08-motion
+      - name: Upload motion strips + report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: prd08-motion-${{ github.run_id }}
+          path: benchmarks/quality-rebuild/out/prd08-motion/
           if-no-files-found: warn
