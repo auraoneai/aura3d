@@ -91,6 +91,12 @@
           "fps": 5000
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "down": "KeyD"
         },
         {
@@ -164,7 +170,18 @@
           ]
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "shot": "04-action"
+        },
+        {
+          "webm": {
+            "seconds": 5
+          }
         },
         {
           "press": "KeyL"
@@ -230,6 +247,13 @@
             "freezeAt": "end",
             "cameraPose": "gameplay"
           }
+        },
+        {
+          "id": "quality-medium",
+          "query": {
+            "aura3d-quality": "medium",
+            "aura3d-adaptive": "0"
+          }
         }
       ],
       "hudSelectors": [
@@ -249,6 +273,29 @@
         ".controls-list",
         ".controls-strip",
         "[data-hud='keyboard-hints']"
+      ],
+      "qrFlagVariants": [
+        {
+          "id": "all",
+          "qrFlags": [
+            "route-aura-clash",
+            "game",
+            "camera",
+            "lighting",
+            "post",
+            "materials",
+            "vfx",
+            "world",
+            "tiers",
+            "looks"
+          ]
+        },
+        {
+          "id": "tiers",
+          "qrFlags": [
+            "tiers"
+          ]
+        }
       ]
     },
     {
@@ -316,6 +363,12 @@
       "timeline": [
         {
           "fps": 5000
+        },
+        {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
         },
         {
           "press": "KeyA"
@@ -404,7 +457,18 @@
           "wait": 60
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "shot": "04-action"
+        },
+        {
+          "webm": {
+            "seconds": 5
+          }
         }
       ],
       "integratedCritical": [
@@ -451,6 +515,13 @@
             "freezeAt": "end",
             "cameraPose": "gameplay"
           }
+        },
+        {
+          "id": "quality-medium",
+          "query": {
+            "aura3d-quality": "medium",
+            "aura3d-adaptive": "0"
+          }
         }
       ],
       "hudSelectors": [
@@ -474,6 +545,29 @@
         ".controls-list",
         ".controls-strip",
         "[data-hud='keyboard-hints']"
+      ],
+      "qrFlagVariants": [
+        {
+          "id": "all",
+          "qrFlags": [
+            "route-blockfall-reactor",
+            "game",
+            "camera",
+            "lighting",
+            "post",
+            "materials",
+            "vfx",
+            "world",
+            "tiers",
+            "looks"
+          ]
+        },
+        {
+          "id": "tiers",
+          "qrFlags": [
+            "tiers"
+          ]
+        }
       ]
     },
     {
@@ -541,6 +635,12 @@
           "fps": 5000
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "down": "KeyD"
         },
         {
@@ -594,7 +694,18 @@
           "wait": 120
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "shot": "04-action"
+        },
+        {
+          "webm": {
+            "seconds": 5
+          }
         },
         {
           "up": "KeyD"
@@ -645,6 +756,13 @@
             "freezeAt": "end",
             "cameraPose": "gameplay"
           }
+        },
+        {
+          "id": "quality-medium",
+          "query": {
+            "aura3d-quality": "medium",
+            "aura3d-adaptive": "0"
+          }
         }
       ],
       "hudSelectors": [
@@ -668,6 +786,29 @@
         "#reset-control",
         "#right-control",
         ".controls-list"
+      ],
+      "qrFlagVariants": [
+        {
+          "id": "all",
+          "qrFlags": [
+            "route-skyline-runner",
+            "game",
+            "camera",
+            "lighting",
+            "post",
+            "materials",
+            "vfx",
+            "world",
+            "tiers",
+            "looks"
+          ]
+        },
+        {
+          "id": "tiers",
+          "qrFlags": [
+            "tiers"
+          ]
+        }
       ]
     },
     {
@@ -738,6 +879,12 @@
           "fps": 5000
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "down": "KeyW"
         },
         {
@@ -787,7 +934,18 @@
           "wait": 1000
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "shot": "04-action"
+        },
+        {
+          "webm": {
+            "seconds": 5
+          }
         },
         {
           "up": "Space"
@@ -843,6 +1001,13 @@
             "freezeAt": "end",
             "cameraPose": "gameplay"
           }
+        },
+        {
+          "id": "quality-medium",
+          "query": {
+            "aura3d-quality": "medium",
+            "aura3d-adaptive": "0"
+          }
         }
       ],
       "hudSelectors": [
@@ -866,6 +1031,29 @@
         "#right-control",
         "#throttle-control",
         ".control-cluster"
+      ],
+      "qrFlagVariants": [
+        {
+          "id": "all",
+          "qrFlags": [
+            "route-turbo-drift-circuit",
+            "game",
+            "camera",
+            "lighting",
+            "post",
+            "materials",
+            "vfx",
+            "world",
+            "tiers",
+            "looks"
+          ]
+        },
+        {
+          "id": "tiers",
+          "qrFlags": [
+            "tiers"
+          ]
+        }
       ]
     },
     {
@@ -940,6 +1128,12 @@
           "fps": 5000
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "hold": "Space",
           "ms": 800
         },
@@ -970,7 +1164,18 @@
           "wait": 1200
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "shot": "04-action"
+        },
+        {
+          "webm": {
+            "seconds": 5
+          }
         },
         {
           "wait": 2500
@@ -1041,6 +1246,13 @@
             "freezeAt": "end",
             "cameraPose": "gameplay"
           }
+        },
+        {
+          "id": "quality-medium",
+          "query": {
+            "aura3d-quality": "medium",
+            "aura3d-adaptive": "0"
+          }
         }
       ],
       "hudSelectors": [
@@ -1059,6 +1271,29 @@
         ".controls-list",
         ".controls-strip",
         "[data-hud='keyboard-hints']"
+      ],
+      "qrFlagVariants": [
+        {
+          "id": "all",
+          "qrFlags": [
+            "route-siege-golf",
+            "game",
+            "camera",
+            "lighting",
+            "post",
+            "materials",
+            "vfx",
+            "world",
+            "tiers",
+            "looks"
+          ]
+        },
+        {
+          "id": "tiers",
+          "qrFlags": [
+            "tiers"
+          ]
+        }
       ]
     },
     {
@@ -1133,6 +1368,12 @@
           "fps": 5000
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "down": "KeyW"
         },
         {
@@ -1195,7 +1436,18 @@
           "wait": 150
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "shot": "04-action"
+        },
+        {
+          "webm": {
+            "seconds": 5
+          }
         }
       ],
       "integratedCritical": [
@@ -1242,6 +1494,13 @@
             "freezeAt": "end",
             "cameraPose": "gameplay"
           }
+        },
+        {
+          "id": "quality-medium",
+          "query": {
+            "aura3d-quality": "medium",
+            "aura3d-adaptive": "0"
+          }
         }
       ],
       "hudSelectors": [
@@ -1265,6 +1524,29 @@
         "#touch-thrust",
         ".panel-hint",
         ".touch-button"
+      ],
+      "qrFlagVariants": [
+        {
+          "id": "all",
+          "qrFlags": [
+            "route-aurora-lander",
+            "game",
+            "camera",
+            "lighting",
+            "post",
+            "materials",
+            "vfx",
+            "world",
+            "tiers",
+            "looks"
+          ]
+        },
+        {
+          "id": "tiers",
+          "qrFlags": [
+            "tiers"
+          ]
+        }
       ]
     },
     {
@@ -1334,6 +1616,12 @@
           "fps": 5000
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "down": "KeyJ"
         },
         {
@@ -1392,7 +1680,18 @@
           ]
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "shot": "04-action"
+        },
+        {
+          "webm": {
+            "seconds": 5
+          }
         },
         {
           "press": "Space"
@@ -1460,6 +1759,13 @@
             "freezeAt": "end",
             "cameraPose": "gameplay"
           }
+        },
+        {
+          "id": "quality-medium",
+          "query": {
+            "aura3d-quality": "medium",
+            "aura3d-adaptive": "0"
+          }
         }
       ],
       "hudSelectors": [
@@ -1482,6 +1788,29 @@
         ".controls-list",
         ".controls-strip",
         "[data-hud='keyboard-hints']"
+      ],
+      "qrFlagVariants": [
+        {
+          "id": "all",
+          "qrFlags": [
+            "route-neon-swarm",
+            "game",
+            "camera",
+            "lighting",
+            "post",
+            "materials",
+            "vfx",
+            "world",
+            "tiers",
+            "looks"
+          ]
+        },
+        {
+          "id": "tiers",
+          "qrFlags": [
+            "tiers"
+          ]
+        }
       ]
     },
     {
@@ -1550,6 +1879,12 @@
           "fps": 5000
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "wait": 300
         },
         {
@@ -1593,7 +1928,18 @@
           "wait": 90
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "shot": "04-action"
+        },
+        {
+          "webm": {
+            "seconds": 5
+          }
         },
         {
           "down": "Space"
@@ -1661,6 +2007,13 @@
             "freezeAt": "end",
             "cameraPose": "gameplay"
           }
+        },
+        {
+          "id": "quality-medium",
+          "query": {
+            "aura3d-quality": "medium",
+            "aura3d-adaptive": "0"
+          }
         }
       ],
       "hudSelectors": [
@@ -1676,6 +2029,29 @@
         ".controls-list",
         ".controls-strip",
         "[data-hud='keyboard-hints']"
+      ],
+      "qrFlagVariants": [
+        {
+          "id": "all",
+          "qrFlags": [
+            "route-gravity-post",
+            "game",
+            "camera",
+            "lighting",
+            "post",
+            "materials",
+            "vfx",
+            "world",
+            "tiers",
+            "looks"
+          ]
+        },
+        {
+          "id": "tiers",
+          "qrFlags": [
+            "tiers"
+          ]
+        }
       ]
     },
     {
@@ -1746,6 +2122,12 @@
           "fps": 5000
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "down": "KeyW"
         },
         {
@@ -1797,7 +2179,18 @@
           ]
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "shot": "04-action"
+        },
+        {
+          "webm": {
+            "seconds": 5
+          }
         },
         {
           "up": "KeyW"
@@ -1847,6 +2240,13 @@
             "freezeAt": "end",
             "cameraPose": "gameplay"
           }
+        },
+        {
+          "id": "quality-medium",
+          "query": {
+            "aura3d-quality": "medium",
+            "aura3d-adaptive": "0"
+          }
         }
       ],
       "hudSelectors": [
@@ -1870,6 +2270,29 @@
         "#throttle-control",
         ".controls-help",
         ".overlay__hint"
+      ],
+      "qrFlagVariants": [
+        {
+          "id": "all",
+          "qrFlags": [
+            "route-courier-rush",
+            "game",
+            "camera",
+            "lighting",
+            "post",
+            "materials",
+            "vfx",
+            "world",
+            "tiers",
+            "looks"
+          ]
+        },
+        {
+          "id": "tiers",
+          "qrFlags": [
+            "tiers"
+          ]
+        }
       ]
     },
     {
@@ -1939,6 +2362,12 @@
           "fps": 5000
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "press": "Space"
         },
         {
@@ -1999,7 +2428,18 @@
           ]
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "shot": "04-action"
+        },
+        {
+          "webm": {
+            "seconds": 5
+          }
         }
       ],
       "integratedCritical": [
@@ -2046,6 +2486,13 @@
             "freezeAt": "end",
             "cameraPose": "gameplay"
           }
+        },
+        {
+          "id": "quality-medium",
+          "query": {
+            "aura3d-quality": "medium",
+            "aura3d-adaptive": "0"
+          }
         }
       ],
       "hudSelectors": [
@@ -2069,6 +2516,29 @@
         ".pulse-touch",
         ".pulse-touch-column",
         ".pulse-touch-pad"
+      ],
+      "qrFlagVariants": [
+        {
+          "id": "all",
+          "qrFlags": [
+            "route-pulse-tunnel",
+            "game",
+            "camera",
+            "lighting",
+            "post",
+            "materials",
+            "vfx",
+            "world",
+            "tiers",
+            "looks"
+          ]
+        },
+        {
+          "id": "tiers",
+          "qrFlags": [
+            "tiers"
+          ]
+        }
       ]
     },
     {
@@ -2162,6 +2632,12 @@
           "fps": 5000
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "press": "Digit1"
         },
         {
@@ -2246,7 +2722,18 @@
           "wait": 180
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "shot": "04-action"
+        },
+        {
+          "webm": {
+            "seconds": 5
+          }
         },
         {
           "press": "KeyL"
@@ -2319,6 +2806,13 @@
             "freezeAt": "end",
             "cameraPose": "gameplay"
           }
+        },
+        {
+          "id": "quality-medium",
+          "query": {
+            "aura3d-quality": "medium",
+            "aura3d-adaptive": "0"
+          }
         }
       ],
       "hudSelectors": [
@@ -2330,6 +2824,29 @@
         ".controls-list",
         ".controls-strip",
         "[data-hud='keyboard-hints']"
+      ],
+      "qrFlagVariants": [
+        {
+          "id": "all",
+          "qrFlags": [
+            "route-mech-hangar",
+            "game",
+            "camera",
+            "lighting",
+            "post",
+            "materials",
+            "vfx",
+            "world",
+            "tiers",
+            "looks"
+          ]
+        },
+        {
+          "id": "tiers",
+          "qrFlags": [
+            "tiers"
+          ]
+        }
       ]
     },
     {
@@ -2397,6 +2914,12 @@
       "timeline": [
         {
           "fps": 5000
+        },
+        {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
         },
         {
           "hold": "Space",
@@ -2467,7 +2990,18 @@
           ]
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "shot": "04-action"
+        },
+        {
+          "webm": {
+            "seconds": 5
+          }
         }
       ],
       "integratedCritical": [
@@ -2512,6 +3046,13 @@
             "freezeAt": "end",
             "cameraPose": "gameplay"
           }
+        },
+        {
+          "id": "quality-medium",
+          "query": {
+            "aura3d-quality": "medium",
+            "aura3d-adaptive": "0"
+          }
         }
       ],
       "hudSelectors": [
@@ -2528,6 +3069,29 @@
         ".controls-list",
         ".controls-strip",
         "[data-hud='keyboard-hints']"
+      ],
+      "qrFlagVariants": [
+        {
+          "id": "all",
+          "qrFlags": [
+            "route-vault-breakers",
+            "game",
+            "camera",
+            "lighting",
+            "post",
+            "materials",
+            "vfx",
+            "world",
+            "tiers",
+            "looks"
+          ]
+        },
+        {
+          "id": "tiers",
+          "qrFlags": [
+            "tiers"
+          ]
+        }
       ]
     },
     {
@@ -2597,6 +3161,12 @@
           "fps": 5000
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "hold": "Space",
           "ms": 480
         },
@@ -2657,7 +3227,18 @@
           ]
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "shot": "04-action"
+        },
+        {
+          "webm": {
+            "seconds": 5
+          }
         }
       ],
       "integratedCritical": [
@@ -2713,6 +3294,13 @@
             "freezeAt": "end",
             "cameraPose": "gameplay"
           }
+        },
+        {
+          "id": "quality-medium",
+          "query": {
+            "aura3d-quality": "medium",
+            "aura3d-adaptive": "0"
+          }
         }
       ],
       "hudSelectors": [
@@ -2724,6 +3312,29 @@
         ".controls-list",
         ".controls-strip",
         "[data-hud='keyboard-hints']"
+      ],
+      "qrFlagVariants": [
+        {
+          "id": "all",
+          "qrFlags": [
+            "route-rooftop-buckets",
+            "game",
+            "camera",
+            "lighting",
+            "post",
+            "materials",
+            "vfx",
+            "world",
+            "tiers",
+            "looks"
+          ]
+        },
+        {
+          "id": "tiers",
+          "qrFlags": [
+            "tiers"
+          ]
+        }
       ]
     },
     {
@@ -2799,6 +3410,12 @@
           "fps": 5000
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "down": "KeyW"
         },
         {
@@ -2857,7 +3474,18 @@
           "wait": 500
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "shot": "04-action"
+        },
+        {
+          "webm": {
+            "seconds": 5
+          }
         },
         {
           "up": "KeyE"
@@ -2907,6 +3535,13 @@
             "freezeAt": "end",
             "cameraPose": "gameplay"
           }
+        },
+        {
+          "id": "quality-medium",
+          "query": {
+            "aura3d-quality": "medium",
+            "aura3d-adaptive": "0"
+          }
         }
       ],
       "hudSelectors": [
@@ -2926,6 +3561,29 @@
         ".controls-list",
         ".controls-strip",
         "[data-hud='keyboard-hints']"
+      ],
+      "qrFlagVariants": [
+        {
+          "id": "all",
+          "qrFlags": [
+            "route-gallery-shift",
+            "game",
+            "camera",
+            "lighting",
+            "post",
+            "materials",
+            "vfx",
+            "world",
+            "tiers",
+            "looks"
+          ]
+        },
+        {
+          "id": "tiers",
+          "qrFlags": [
+            "tiers"
+          ]
+        }
       ]
     },
     {
@@ -3015,6 +3673,12 @@
           "fps": 5000
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "down": "KeyW"
         },
         {
@@ -3065,7 +3729,18 @@
           "wait": 250
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "shot": "04-action"
+        },
+        {
+          "webm": {
+            "seconds": 5
+          }
         },
         {
           "press": "KeyF"
@@ -3133,6 +3808,13 @@
             "freezeAt": "end",
             "cameraPose": "gameplay"
           }
+        },
+        {
+          "id": "quality-medium",
+          "query": {
+            "aura3d-quality": "medium",
+            "aura3d-adaptive": "0"
+          }
         }
       ],
       "hudSelectors": [
@@ -3144,6 +3826,29 @@
         ".controls-list",
         ".controls-strip",
         "[data-hud='keyboard-hints']"
+      ],
+      "qrFlagVariants": [
+        {
+          "id": "all",
+          "qrFlags": [
+            "route-deep-recovery",
+            "game",
+            "camera",
+            "lighting",
+            "post",
+            "materials",
+            "vfx",
+            "world",
+            "tiers",
+            "looks"
+          ]
+        },
+        {
+          "id": "tiers",
+          "qrFlags": [
+            "tiers"
+          ]
+        }
       ]
     },
     {
@@ -3215,6 +3920,12 @@
           "fps": 5000
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "down": "ShiftLeft"
         },
         {
@@ -3260,7 +3971,18 @@
           "wait": 500
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "shot": "04-action"
+        },
+        {
+          "webm": {
+            "seconds": 5
+          }
         },
         {
           "up": "Space"
@@ -3336,6 +4058,13 @@
             "freezeAt": "end",
             "cameraPose": "gameplay"
           }
+        },
+        {
+          "id": "quality-medium",
+          "query": {
+            "aura3d-quality": "medium",
+            "aura3d-adaptive": "0"
+          }
         }
       ],
       "hudSelectors": [
@@ -3355,6 +4084,29 @@
         ".controls-list",
         ".controls-strip",
         "[data-hud='keyboard-hints']"
+      ],
+      "qrFlagVariants": [
+        {
+          "id": "all",
+          "qrFlags": [
+            "route-patrol-wing",
+            "game",
+            "camera",
+            "lighting",
+            "post",
+            "materials",
+            "vfx",
+            "world",
+            "tiers",
+            "looks"
+          ]
+        },
+        {
+          "id": "tiers",
+          "qrFlags": [
+            "tiers"
+          ]
+        }
       ]
     },
     {
@@ -3425,6 +4177,12 @@
           "fps": 5000
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "wait": 300
         },
         {
@@ -3474,7 +4232,18 @@
           ]
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "shot": "04-action"
+        },
+        {
+          "webm": {
+            "seconds": 5
+          }
         }
       ],
       "integratedCritical": [
@@ -3529,6 +4298,13 @@
             "freezeAt": "end",
             "cameraPose": "gameplay"
           }
+        },
+        {
+          "id": "quality-medium",
+          "query": {
+            "aura3d-quality": "medium",
+            "aura3d-adaptive": "0"
+          }
         }
       ],
       "hudSelectors": [
@@ -3547,6 +4323,29 @@
         ".controls-list",
         ".controls-strip",
         "[data-hud='keyboard-hints']"
+      ],
+      "qrFlagVariants": [
+        {
+          "id": "all",
+          "qrFlags": [
+            "route-bank-shot",
+            "game",
+            "camera",
+            "lighting",
+            "post",
+            "materials",
+            "vfx",
+            "world",
+            "tiers",
+            "looks"
+          ]
+        },
+        {
+          "id": "tiers",
+          "qrFlags": [
+            "tiers"
+          ]
+        }
       ]
     },
     {
@@ -3622,6 +4421,12 @@
           "fps": 5000
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "down": "KeyD"
         },
         {
@@ -3688,7 +4493,18 @@
           ]
         },
         {
+          "strip": {
+            "frames": 12,
+            "intervalMs": 100
+          }
+        },
+        {
           "shot": "04-action"
+        },
+        {
+          "webm": {
+            "seconds": 5
+          }
         },
         {
           "press": "KeyQ"
@@ -3754,6 +4570,13 @@
             "freezeAt": "end",
             "cameraPose": "gameplay"
           }
+        },
+        {
+          "id": "quality-medium",
+          "query": {
+            "aura3d-quality": "medium",
+            "aura3d-adaptive": "0"
+          }
         }
       ],
       "hudSelectors": [
@@ -3766,6 +4589,29 @@
         ".controls-list",
         ".controls-strip",
         "[data-hud='keyboard-hints']"
+      ],
+      "qrFlagVariants": [
+        {
+          "id": "all",
+          "qrFlags": [
+            "route-orbital-defense",
+            "game",
+            "camera",
+            "lighting",
+            "post",
+            "materials",
+            "vfx",
+            "world",
+            "tiers",
+            "looks"
+          ]
+        },
+        {
+          "id": "tiers",
+          "qrFlags": [
+            "tiers"
+          ]
+        }
       ]
     }
   ]
