@@ -76,14 +76,13 @@ test.describe("PRD-06 deform light view (T0.14)", () => {
     // read the same however texels land) — the POSED deform must also match
     // the CPU skinned positions component-wise before silhouettes are judged.
     expect(result!.posedDelta!.maxDelta, diag()).toBeLessThanOrEqual(1e-3);
-    // The deformed path must land on the CPU-skinned silhouette. The
-    // boundary-tolerant (2px) IoU is the gate: ANGLE-Metal rasterizes the same
-    // vertex positions ~10% raw-IoU differently than SwiftShader, while the
-    // deform numerics above prove position equality.
-    expect(iou.deformVsCpuTolerant, diag()).toBeGreaterThanOrEqual(0.98);
+    // The deformed path must land on the CPU-skinned silhouette. The strict
+    // (unsmoothed) IoU is the §17.0/S3 gate; the 2px-tolerant variant stays in
+    // the diagnostic dump to separate rasterization noise from deform bugs.
+    expect(iou.deformVsCpu, diag()).toBeGreaterThanOrEqual(0.98);
     // Scene-08 bind pose resolves §2: the depth path must also reproduce it
     // exactly (GPU bind palette vs CPU-skinned bind pose).
-    expect(iou.bindPoseGpuVsCpuTolerant, diag()).toBeGreaterThanOrEqual(0.98);
+    expect(iou.bindPoseGpuVsCpu, diag()).toBeGreaterThanOrEqual(0.98);
     // Control: today's raw a_position capture is the failing baseline.
     expect(iou.controlRawVsCpu).toBeLessThan(0.8);
     // The pose at t=0.5s must actually move the silhouette vs bind pose.
@@ -114,8 +113,8 @@ test.describe("PRD-06 deform light view (T0.14)", () => {
       `iou=${JSON.stringify(iou)} posed=${JSON.stringify(result!.posedDelta)} ndc=${JSON.stringify(result!.ndcDelta)} row3=${JSON.stringify(result!.row3)} pal=${JSON.stringify(result!.paletteRow3)} selftest=${JSON.stringify(result!.selftestDelta)} prev=${JSON.stringify(result!.previousDelta)} masks=${JSON.stringify(result!.maskStats)}`;
     expect(result!.selftestDelta!.maxDelta, diag191()).toBeLessThanOrEqual(1e-3);
     expect(result!.posedDelta!.maxDelta, diag191()).toBeLessThanOrEqual(1e-3);
-    expect(iou.deformVsCpuTolerant, diag191()).toBeGreaterThanOrEqual(0.98);
-    expect(iou.bindPoseGpuVsCpuTolerant, diag191()).toBeGreaterThanOrEqual(0.98);
+    expect(iou.deformVsCpu, diag191()).toBeGreaterThanOrEqual(0.98);
+    expect(iou.bindPoseGpuVsCpu, diag191()).toBeGreaterThanOrEqual(0.98);
     expect(iou.controlRawVsCpu).toBeLessThan(0.8);
     expect(iou.animatedVsBindCpu).toBeLessThan(0.8);
     expect(result!.previousDelta!.maxDelta).toBeLessThanOrEqual(1e-3);
