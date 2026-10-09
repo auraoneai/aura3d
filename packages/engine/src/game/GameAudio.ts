@@ -2,7 +2,6 @@ import {
   AudioClip,
   AudioContextManager,
   FootstepPlayer,
-  createGameSoundEngine,
   computeDistanceAttenuation,
   computeDopplerShift,
   type AudioFileAssetLike,
@@ -12,6 +11,7 @@ import {
   type SoundGraphContext
 } from "@aura3d/audio";
 import { resolveQrFlags, type QrFlagInput } from "../contracts/flags";
+import { gameSoundSlot } from "../contracts/gameSound.js";
 
 export type GameAudioBusId = "master" | string;
 
@@ -233,10 +233,11 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
   const buses = new Map<GameAudioBusId, GameAudioBusState>();
 
   // ---- C-25 cue validation (PRD-09 1734) -----------------------------------
-  const qrGameOn = resolveQrFlags({
+  const qrFlags = resolveQrFlags({
     options: options.qualityRebuild?.flags,
     env: typeof process !== "undefined" ? process.env : undefined
-  }).on("A3D_QR_GAME");
+  });
+  const qrGameOn = qrFlags.on("A3D_QR_GAME");
   const engineCues: Record<string, SoundCueSpec> = {};
   for (const id of cueIds) {
     const def = cueDefinitions[id];
@@ -265,7 +266,7 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
   const busVolumes = new Map<GameAudioBusId, number>();
   const mutedBuses = new Set<GameAudioBusId>();
   const liveVoices = new Map<TCue, Set<LiveVoiceHandle>>();
-  let engine: ReturnType<typeof createGameSoundEngine> | undefined;
+  let engine: ReturnType<typeof gameSoundSlot.stub> | undefined;
 
   // I1 positional state: listener pose, recently played nodes, ducking, footsteps.
   let listenerPosition: GameAudioVec3 = { x: 0, y: 0, z: 0 };
@@ -307,7 +308,9 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
     if (!engine) {
       const initialVolumes: Partial<Record<GameBusId, number>> = {};
       for (const [busId, volume] of busVolumes) initialVolumes[engineBusOf(busId)] = volume;
-      engine = createGameSoundEngine({
+      // C-25 slot resolution: real engine iff provided && A3D_QR_GAME on,
+      // else the silent contract stub (09-CONF conformance: real-or-stub by flag).
+      engine = gameSoundSlot.get(qrFlags)({
         context: audioContext as unknown as SoundGraphContext,
         cues: engineCues,
         buses: initialVolumes

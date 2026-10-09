@@ -87,6 +87,9 @@ export type { SpatialAudioOptions } from "./SpatialAudio";
 export { FilterEffect } from "./effects/Filter";
 export { ReverbEffect } from "./effects/Reverb";
 export { createGameSoundEngine } from "./game-sound/GameSoundEngine";
+// C-25 contract stub (CONTRACTS.md): the engine's `gameSoundSlot` uses this as
+// its flag-off implementation; lane prd09 provides the real factory above.
+export { createGameSoundEngine as createStubGameSoundEngine } from "./contracts/gameSound";
 export type { GameSoundOptions, SoundCueSpec, AudioAssetRef, EngineLoopSpec, GameBusId } from "./game-sound/GameSoundEngine";
 export type { SoundGraphContext } from "./game-sound/types";
 export { createMasterChain, safetyClipCurve } from "./game-sound/MasterChain";
