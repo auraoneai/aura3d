@@ -19,8 +19,8 @@ import { lightingNodes } from "./scene/lighting";
 import { createPulseRig, fallbackCameraNode } from "./scene/camera";
 import { wirePulseFx } from "./scene/fx";
 import { GATE_MATERIALS, TUNNEL_BG } from "./scene/materials";
-import { publishPulseEvidence } from "./evidence";
-import { applyPulseScenario } from "./scenarios";
+import { publishPulseEvidence } from "../evidence";
+import { applyPulseScenario } from "../scenarios";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_PULSE_TUNNEL" as const;
 const RUN_SECONDS = 90;
