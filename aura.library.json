@@ -22,7 +22,7 @@
     {
       "id": "vehicles/road",
       "artDirection": "vehicles-road",
-      "contents": "Hero car, traffic cars, van — clean topology, separate wheels",
+      "contents": "Hero car, traffic cars, van \u2014 clean topology, separate wheels",
       "consumers": [
         "racing-starter",
         "traffic props"
@@ -48,7 +48,7 @@
     {
       "id": "props/industrial-urban",
       "artDirection": "props-industrial-urban",
-      "contents": "Industrial + urban props ≤ 5k tris each",
+      "contents": "Industrial + urban props \u2264 5k tris each",
       "consumers": [
         "urban environments",
         "set dressing"
@@ -65,7 +65,7 @@
     {
       "id": "textures/tiling",
       "artDirection": "textures-tiling",
-      "contents": "Tiling PBR texture sets ≥ 16 (basecolor/normal/orm), 1024 + 2048",
+      "contents": "Tiling PBR texture sets \u2265 16 (basecolor/normal/orm), 1024 + 2048",
       "consumers": [
         "materials",
         "set dressing",
@@ -167,7 +167,7 @@
               ],
               "mobile": {
                 "p50": 0.0005125982039058183,
-                "viewport": "390×844"
+                "viewport": "390\u00d7844"
               }
             },
             "message": "G2: median 0.00 texels/px outside [0.5, 4]."
@@ -220,7 +220,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -236,7 +236,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -255,7 +255,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:20:32.165Z",
@@ -337,7 +337,7 @@
               ],
               "mobile": {
                 "p50": 1.0090865208546598,
-                "viewport": "390×844"
+                "viewport": "390\u00d7844"
               }
             },
             "message": "G2: below 256 px/m floor."
@@ -384,8 +384,8 @@
                 "baseColor#1(MI_Regular_Female): metal base colour mean luminance 123 < 140"
               ],
               "flags": [
-                "metallicRoughness#1(MI_Regular_Female): channel R constant (σ<0.004) — replace texture with factor",
-                "metallicRoughness#1(MI_Regular_Female): channel B constant (σ<0.004) — replace texture with factor"
+                "metallicRoughness#1(MI_Regular_Female): channel R constant (\u03c3<0.004) \u2014 replace texture with factor",
+                "metallicRoughness#1(MI_Regular_Female): channel B constant (\u03c3<0.004) \u2014 replace texture with factor"
               ],
               "textures": 8
             },
@@ -395,7 +395,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -422,7 +422,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -441,7 +441,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:23.291Z",
@@ -597,7 +597,7 @@
               ],
               "mobile": {
                 "p50": 1.0032890157793255,
-                "viewport": "390×844"
+                "viewport": "390\u00d7844"
               }
             },
             "message": "G2: below 256 px/m floor."
@@ -644,8 +644,8 @@
                 "baseColor#1(MI_Regular_Male): metal base colour mean luminance 117 < 140"
               ],
               "flags": [
-                "metallicRoughness#1(MI_Regular_Male): channel R constant (σ<0.004) — replace texture with factor",
-                "metallicRoughness#1(MI_Regular_Male): channel B constant (σ<0.004) — replace texture with factor"
+                "metallicRoughness#1(MI_Regular_Male): channel R constant (\u03c3<0.004) \u2014 replace texture with factor",
+                "metallicRoughness#1(MI_Regular_Male): channel B constant (\u03c3<0.004) \u2014 replace texture with factor"
               ],
               "textures": 6
             },
@@ -655,7 +655,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -682,7 +682,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -701,7 +701,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:24.489Z",
@@ -782,7 +782,7 @@
               ],
               "mobile": {
                 "p50": 0.3367051716518848,
-                "viewport": "390×844"
+                "viewport": "390\u00d7844"
               }
             },
             "message": "G2: median 0.26 texels/px outside [0.5, 4]."
@@ -835,7 +835,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -851,7 +851,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -870,7 +870,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:25.569Z",
@@ -931,7 +931,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -977,7 +977,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -993,7 +993,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -1012,7 +1012,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:26.529Z",
@@ -1073,7 +1073,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -1119,7 +1119,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -1135,7 +1135,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -1154,7 +1154,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:27.595Z",
@@ -1215,7 +1215,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -1261,7 +1261,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -1277,7 +1277,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -1296,7 +1296,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:28.547Z",
@@ -1357,7 +1357,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -1404,7 +1404,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -1420,7 +1420,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -1439,7 +1439,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:29.506Z",
@@ -1500,7 +1500,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -1547,7 +1547,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -1563,7 +1563,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -1582,7 +1582,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:30.545Z",
@@ -1643,7 +1643,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -1690,7 +1690,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -1706,7 +1706,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -1725,7 +1725,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:31.566Z",
@@ -1786,7 +1786,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -1833,7 +1833,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -1849,7 +1849,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -1868,7 +1868,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:32.534Z",
@@ -1948,7 +1948,7 @@
               ],
               "mobile": {
                 "p50": 0.022040319369727487,
-                "viewport": "390×844"
+                "viewport": "390\u00d7844"
               }
             },
             "message": "G2: median 0.02 texels/px outside [0.5, 4]."
@@ -2001,7 +2001,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -2017,7 +2017,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -2036,7 +2036,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:33.562Z",
@@ -2097,7 +2097,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -2143,7 +2143,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -2159,7 +2159,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -2178,7 +2178,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:34.549Z",
@@ -2258,7 +2258,7 @@
               ],
               "mobile": {
                 "p50": 0.007785104863980671,
-                "viewport": "390×844"
+                "viewport": "390\u00d7844"
               }
             },
             "message": "G2: median 0.01 texels/px outside [0.5, 4]."
@@ -2311,7 +2311,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -2327,7 +2327,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -2346,7 +2346,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:35.583Z",
@@ -2426,7 +2426,7 @@
               ],
               "mobile": {
                 "p50": 78.95627304639777,
-                "viewport": "390×844"
+                "viewport": "390\u00d7844"
               }
             },
             "message": "G2: median 61.70 texels/px outside [0.5, 4]."
@@ -2477,7 +2477,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -2493,7 +2493,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -2512,7 +2512,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:36.595Z",
@@ -2573,7 +2573,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -2623,7 +2623,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -2639,7 +2639,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -2658,7 +2658,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:37.666Z",
@@ -2720,7 +2720,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -2766,7 +2766,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -2782,7 +2782,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -2801,7 +2801,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:38.633Z",
@@ -2878,7 +2878,7 @@
               ],
               "mobile": {
                 "p50": 2.712254319438507,
-                "viewport": "390×844"
+                "viewport": "390\u00d7844"
               }
             },
             "message": "G2: median 2.12 texels/px in band [0.5, 4]."
@@ -2927,7 +2927,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -2943,7 +2943,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -2962,7 +2962,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:39.675Z",
@@ -3020,7 +3020,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -3065,7 +3065,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -3081,7 +3081,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -3100,7 +3100,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:40.659Z",
@@ -3158,7 +3158,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -3199,7 +3199,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -3215,7 +3215,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -3234,7 +3234,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:41.692Z",
@@ -3292,7 +3292,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -3334,7 +3334,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -3350,7 +3350,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -3369,7 +3369,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:42.658Z",
@@ -3427,7 +3427,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -3469,7 +3469,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -3485,7 +3485,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -3504,7 +3504,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:43.619Z",
@@ -3562,7 +3562,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -3604,7 +3604,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -3620,7 +3620,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -3639,7 +3639,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:44.616Z",
@@ -3697,7 +3697,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -3739,7 +3739,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -3755,7 +3755,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -3774,7 +3774,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:45.611Z",
@@ -3832,7 +3832,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -3874,7 +3874,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -3890,7 +3890,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -3909,7 +3909,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:46.572Z",
@@ -3967,7 +3967,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -4008,7 +4008,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -4024,7 +4024,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -4043,7 +4043,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:47.566Z",
@@ -4100,7 +4100,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -4147,7 +4147,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -4163,7 +4163,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -4182,7 +4182,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:48.559Z",
@@ -4258,7 +4258,7 @@
               ],
               "mobile": {
                 "p50": 38.67943270510686,
-                "viewport": "390×844"
+                "viewport": "390\u00d7844"
               }
             },
             "message": "G2: median 30.23 texels/px outside [0.5, 4]."
@@ -4311,7 +4311,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -4327,7 +4327,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -4346,7 +4346,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:49.572Z",
@@ -4403,7 +4403,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -4450,7 +4450,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -4466,7 +4466,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -4485,7 +4485,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:50.526Z",
@@ -4542,7 +4542,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -4588,7 +4588,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -4604,7 +4604,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -4623,7 +4623,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:51.462Z",
@@ -4680,7 +4680,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -4726,7 +4726,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -4742,7 +4742,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -4761,7 +4761,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:52.558Z",
@@ -4837,7 +4837,7 @@
               ],
               "mobile": {
                 "p50": 0.004758514172552045,
-                "viewport": "390×844"
+                "viewport": "390\u00d7844"
               }
             },
             "message": "G2: median 0.00 texels/px outside [0.5, 4]."
@@ -4890,7 +4890,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -4906,7 +4906,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -4925,7 +4925,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:54.135Z",
@@ -5001,7 +5001,7 @@
               ],
               "mobile": {
                 "p50": 0.08979589720124703,
-                "viewport": "390×844"
+                "viewport": "390\u00d7844"
               }
             },
             "message": "G2: median 0.07 texels/px outside [0.5, 4]."
@@ -5054,7 +5054,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -5070,7 +5070,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -5089,7 +5089,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:55.186Z",
@@ -5165,7 +5165,7 @@
               ],
               "mobile": {
                 "p50": 0.04598906344162135,
-                "viewport": "390×844"
+                "viewport": "390\u00d7844"
               }
             },
             "message": "G2: median 0.04 texels/px outside [0.5, 4]."
@@ -5218,7 +5218,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -5234,7 +5234,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -5253,7 +5253,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-07T10:22:56.161Z",
@@ -6662,7 +6662,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -6708,7 +6708,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -6724,7 +6724,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -6743,7 +6743,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-09T17:04:16.774Z",
@@ -6796,7 +6796,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -6842,7 +6842,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -6858,7 +6858,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -6877,7 +6877,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-09T17:04:17.552Z",
@@ -6930,7 +6930,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -6976,7 +6976,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -6992,7 +6992,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -7011,7 +7011,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-09T17:04:18.307Z",
@@ -7064,7 +7064,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -7110,7 +7110,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -7126,7 +7126,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -7145,7 +7145,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-09T17:04:19.064Z",
@@ -7198,7 +7198,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -7244,7 +7244,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -7260,7 +7260,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -7279,7 +7279,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-09T17:04:19.814Z",
@@ -7332,7 +7332,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -7378,7 +7378,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -7394,7 +7394,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -7413,7 +7413,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-09T17:04:20.921Z",
@@ -7517,7 +7517,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -7536,7 +7536,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-09T17:04:31.003Z",
@@ -7640,7 +7640,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -7659,7 +7659,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-09T17:04:31.741Z",
@@ -7712,7 +7712,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -7753,7 +7753,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -7769,7 +7769,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -7788,7 +7788,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-09T17:04:32.480Z",
@@ -7841,7 +7841,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -7887,7 +7887,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -7903,7 +7903,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -7922,7 +7922,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-09T17:04:34.570Z",
@@ -7975,7 +7975,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -8021,7 +8021,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -8037,7 +8037,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -8053,7 +8053,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-09T17:04:50.473Z",
@@ -8106,7 +8106,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -8152,7 +8152,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -8168,7 +8168,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -8184,7 +8184,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-09T17:04:51.200Z",
@@ -8237,7 +8237,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -8283,7 +8283,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -8299,7 +8299,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -8318,7 +8318,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-09T17:04:51.914Z",
@@ -8371,7 +8371,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -8417,7 +8417,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -8433,7 +8433,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -8452,7 +8452,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-09T17:04:52.684Z",
@@ -8504,7 +8504,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -8550,7 +8550,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -8566,7 +8566,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -8582,7 +8582,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-09T17:05:15.429Z",
@@ -8635,7 +8635,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -8685,7 +8685,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -8701,7 +8701,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -8720,7 +8720,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-09T17:05:16.283Z",
@@ -8824,7 +8824,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -8843,7 +8843,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-09T17:05:18.300Z",
@@ -8947,7 +8947,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -8966,7 +8966,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-09T17:05:19.052Z",
@@ -9019,7 +9019,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -9066,7 +9066,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -9082,7 +9082,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -9101,7 +9101,7 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-09T17:06:07.290Z",
@@ -9154,7 +9154,7 @@
             "measured": {
               "measured": 0
             },
-            "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
           },
           {
             "gate": "G3",
@@ -9196,7 +9196,7 @@
             "gate": "G7",
             "verdict": "fail",
             "measured": {},
-            "message": "G7: no derived measurement — run `assets optimize` first."
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
           },
           {
             "gate": "G8",
@@ -9212,7 +9212,7 @@
             "measured": {
               "reviews": 0
             },
-            "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
           },
           {
             "gate": "G10",
@@ -9231,11 +9231,281 @@
             "measured": {
               "derived": false
             },
-            "message": "G11: no derived record — run `assets optimize` before release."
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
           }
         ],
         "at": "2026-10-09T17:06:08.033Z",
         "derivedHash": "sha256-d72a451b26843db7d86ffa1c8292fb0a97e2064a442c4cbbda7ef1d0ce8f7505",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
+      "hash": "sha256-5d081335991880d018943e683a82658fbbac16ea8d319061f1cebd6146d7a2cc",
+      "sizeBytes": 12608,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "K2 street bollard (procedural, 384 tris)",
+      "role": "prop",
+      "artDirection": "props-industrial-urban",
+      "license": "CC0-1.0",
+      "sourcePage": "https://github.com/auraoneai/aura3d/blob/qr-assets/tools/asset-optimize/gen-street-props.mts",
+      "author": "Aura3D procedural generator",
+      "attribution": "Aura3D procedural generator",
+      "retrievedAt": "2026-10-09T19:07:50.391Z",
+      "tags": [
+        "k2",
+        "street",
+        "bollard"
+      ],
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "streetBollardMetal",
+      "kit": "props/industrial-urban",
+      "libraryPath": "assets/library/props/industrial-urban/streetBollardMetal.glb",
+      "sha256": "5d081335991880d018943e683a82658fbbac16ea8d319061f1cebd6146d7a2cc",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 384,
+              "floor": 100,
+              "ceiling": 5000,
+              "profile": "prop-small"
+            },
+            "message": "G1: 384 tris inside prop-small band."
+          },
+          {
+            "gate": "G2",
+            "verdict": "fail",
+            "measured": {
+              "measured": 0
+            },
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
+          },
+          {
+            "gate": "G3",
+            "verdict": "waived-by-role",
+            "measured": {
+              "role": "prop",
+              "profile": "prop-small"
+            },
+            "message": "G3: role does not require PBR texture coverage."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 384,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "fail",
+            "measured": {
+              "noUvRatio": 1,
+              "noUvTriangles": 384,
+              "total": 384
+            },
+            "message": "G5: no TEXCOORD_0 on 100.0% of area (> 10%)."
+          },
+          {
+            "gate": "G6",
+            "verdict": "pass",
+            "measured": {
+              "textures": 0
+            },
+            "message": "G6: no textures to sanity-check."
+          },
+          {
+            "gate": "G7",
+            "verdict": "fail",
+            "measured": {},
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "pass",
+            "measured": {
+              "artDirection": "props-industrial-urban",
+              "shading": "pbr",
+              "palette": 0,
+              "texelDensity": 256
+            },
+            "message": "G10: art direction \"props-industrial-urban\" (pbr) on file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T19:07:50.431Z",
+        "derivedHash": "sha256-5d081335991880d018943e683a82658fbbac16ea8d319061f1cebd6146d7a2cc",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
+      "hash": "sha256-39ecdc27dde33ff942317369982609edbdf69a11795d1e28657ced682aad83d7",
+      "sizeBytes": 11884,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "K2 wall AC unit (procedural, 204 tris)",
+      "role": "prop",
+      "artDirection": "props-industrial-urban",
+      "license": "CC0-1.0",
+      "sourcePage": "https://github.com/auraoneai/aura3d/blob/qr-assets/tools/asset-optimize/gen-street-props.mts",
+      "author": "Aura3D procedural generator",
+      "attribution": "Aura3D procedural generator",
+      "retrievedAt": "2026-10-09T19:07:56.926Z",
+      "tags": [
+        "k2",
+        "street",
+        "ac-unit"
+      ],
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "streetACUnit",
+      "kit": "props/industrial-urban",
+      "libraryPath": "assets/library/props/industrial-urban/streetACUnit.glb",
+      "sha256": "39ecdc27dde33ff942317369982609edbdf69a11795d1e28657ced682aad83d7",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 204,
+              "floor": 100,
+              "ceiling": 5000,
+              "profile": "prop-small"
+            },
+            "message": "G1: 204 tris inside prop-small band."
+          },
+          {
+            "gate": "G2",
+            "verdict": "fail",
+            "measured": {
+              "measured": 0
+            },
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
+          },
+          {
+            "gate": "G3",
+            "verdict": "waived-by-role",
+            "measured": {
+              "role": "prop",
+              "profile": "prop-small"
+            },
+            "message": "G3: role does not require PBR texture coverage."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 204,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "fail",
+            "measured": {
+              "noUvRatio": 1,
+              "noUvTriangles": 204,
+              "total": 204
+            },
+            "message": "G5: no TEXCOORD_0 on 100.0% of area (> 10%)."
+          },
+          {
+            "gate": "G6",
+            "verdict": "pass",
+            "measured": {
+              "textures": 0
+            },
+            "message": "G6: no textures to sanity-check."
+          },
+          {
+            "gate": "G7",
+            "verdict": "fail",
+            "measured": {},
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "pass",
+            "measured": {
+              "artDirection": "props-industrial-urban",
+              "shading": "pbr",
+              "palette": 0,
+              "texelDensity": 256
+            },
+            "message": "G10: art direction \"props-industrial-urban\" (pbr) on file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T19:07:56.966Z",
+        "derivedHash": "sha256-39ecdc27dde33ff942317369982609edbdf69a11795d1e28657ced682aad83d7",
         "quality": "candidate"
       }
     }
