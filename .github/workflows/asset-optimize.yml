@@ -46,6 +46,10 @@ jobs:
         # package.json carries exact pins so `npm install` is deterministic.
         run: npm install --no-audit --no-fund --prefix tools/asset-optimize
 
+      - name: optimize determinism check (05-S5)
+        # Same source twice -> identical sha256; depends on tool node_modules.
+        run: pnpm exec vitest run tests/unit/asset-optimize/determinism.test.ts
+
       - name: install ktx from tool-versions.json
         id: ktx
         run: |
