@@ -7,7 +7,7 @@ import { createDiagnosticsOverlay, renderDiagnosticPreviewToCanvas, shouldRender
 import { createInitialDiagnostics, snapshotDiagnostics, validateSceneAssets } from "../diagnostics.js";
 import { createRuntimeScenePhysics, eulerToQuat, physics, resolveNodePhysicsShape } from "../nodes/physics.js";
 import { scene } from "../nodes/scene.js";
-import { devicePixelRatioSafe, performanceNow } from "../platform.js";
+import { devicePixelRatioSafe, markTiming, performanceNow } from "../platform.js";
 import { renderer } from "../rendererDiagnostics.js";
 import { collectAuraSceneEvidence } from "../sceneEvidence.js";
 import { flattenSceneSnapshot, normalizeSceneSnapshot } from "../sceneMath.js";
@@ -40,6 +40,9 @@ import { assets } from "../AssetDecoders.js";
 import { round } from "../GameRuntime.js";
 
 export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptions): AuraApp {
+  // T0-12: mount-phase timing marks consumed by the bench harness's
+  // payload.extra.mountTiming (see markTiming in ./platform).
+  markTiming("a3d:mount:create-app-start");
   let snapshot = normalizeSceneSnapshot(options.scene);
   let renderSnapshot = flattenSceneSnapshot(snapshot);
   const rendererSelection = normalizeCreateAppRendererOptions(options.renderer);
@@ -379,6 +382,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     void productionMountSettled.catch(() => undefined);
     settleMountForDispose = settleMount;
     if (shouldUseProductionRenderer && canvas) {
+      markTiming("a3d:mount:start");
       productionMountTask = startProductionRender(
         canvas,
         renderSnapshot,
@@ -401,6 +405,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
         () => runtimeTime * 1000
       )
         .then((controller) => {
+          markTiming("a3d:mount:renderer-resolved");
           if (disposed || revision !== mountRevision) {
             settleMount();
             controller.dispose();
@@ -419,6 +424,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
           markRouteReady(snapshot, diagnosticsState);
         })
         .catch((error: unknown) => {
+          markTiming("a3d:mount:catch");
           if (disposed || revision !== mountRevision) {
             settleMount();
             return;

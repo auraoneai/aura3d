@@ -634,6 +634,12 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
     qrFlags: opts.qrFlags ?? spec.qrFlags ?? [],
     extra: {
       ...(await opts.collectExtra?.(app) ?? {}),
+      // T0-12: the a3d:mount:* performance marks the engine recorded from
+      // createAuraApp through the first renderFrame — one remote run names
+      // which phase owns the ~90 s pre-first-frame cost.
+      mountTiming: performance.getEntriesByType("mark")
+        .filter((mark) => mark.name.startsWith("a3d:"))
+        .map((mark) => ({ name: mark.name, startTime: Math.round(mark.startTime * 100) / 100 })),
       backend: diagnostics.backend,
       renderSize: diagnostics.renderSize,
       reportedToneMapping: renderer?.toneMapping,
