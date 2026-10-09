@@ -26,12 +26,21 @@ interface FrameRecord {
   readonly distance: number;
   readonly coverage: number;
   readonly items: number;
+  readonly triangles: number;
   readonly chainLevels: readonly number[];
   readonly geometryKeys: readonly string[];
 }
 
+interface PopRecord {
+  readonly frame: number;
+  readonly distance: number;
+  readonly coverage: number;
+  readonly deltaE2000: number;
+}
+
 interface ReadyPayload {
   readonly frames: readonly FrameRecord[];
+  readonly pops: readonly PopRecord[];
   readonly chainCount: number;
   readonly lodFlagOn: boolean;
   readonly lodDither: string;
@@ -71,6 +80,26 @@ test.describe("PRD-05 asset LOD transition (P3)", () => {
     expect(payload!.chainCount, "MSFT_lod chains materialized").toBeGreaterThan(0);
     expect(payload!.frames.length).toBe(120);
     expect(payload!.lodDither).toBe("pending");
+
+    // S7 (e): ≥ 60 % triangle reduction at 80 m vs the finest (nearest)
+    // level. Nearest-distance frames carry LOD0.
+    const nearTris = payload!.frames
+      .filter((f) => f.distance <= 20)
+      .reduce((m, f) => Math.max(m, f.triangles), 0);
+    const at80 = payload!.frames.reduce((best, f) =>
+      Math.abs(f.distance - 80) < Math.abs(best.distance - 80) ? f : best);
+    expect(nearTris, "no triangles recorded near the camera").toBeGreaterThan(0);
+    expect(
+      at80.triangles,
+      `80 m (${at80.distance} m frame) should drop ≥ 60 % of the ${nearTris} LOD0 tris`
+    ).toBeLessThanOrEqual(Math.ceil(nearTris * 0.4));
+
+    // S7 (d): pops recorded at every level change for the vision judges —
+    // each entry is the masked ΔE2000 between the pre- and post-switch frame.
+    expect(payload!.pops.length, "no level-change pops measured").toBeGreaterThanOrEqual(1);
+    for (const pop of payload!.pops) {
+      expect(pop.deltaE2000, `pop at frame ${pop.frame} is NaN`).not.toBeNaN();
+    }
 
     // Never a zero-item frame for an LOD-ed actor.
     for (const frame of payload!.frames) {

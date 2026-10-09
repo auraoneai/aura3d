@@ -28,6 +28,8 @@ import { createTypedGLBActor } from "/packages/engine/src/production-runtime/Typ
 import { projectedSphereCoverage } from "/packages/engine/src/production-runtime/LodSelector.js";
 import { probeCompressedTextureCapabilities } from "/packages/rendering/src/lanes/prd05.js";
 import { createAppAssetDecoders, attachAppAssetDecoders, getAppAssetDecoders } from "/packages/engine/src/lanes/prd05.js";
+import { WebGL2RendererBackend } from "/packages/rendering/src/production-runtime/index.js";
+import { canvasPixels, CLEAR, maskedDeltaE, subjectMask } from "../../../../benchmarks/quality-rebuild/scenes/prd04/metrics.js";
 
 declare global {
   interface Window { __QR_READY__?: unknown; __QR_ERROR__?: unknown }
@@ -84,8 +86,16 @@ interface FrameRecord {
   readonly distance: number;
   readonly coverage: number;
   readonly items: number;
+  readonly triangles: number;
   readonly chainLevels: readonly number[];
   readonly geometryKeys: readonly string[];
+}
+
+interface PopRecord {
+  readonly frame: number;
+  readonly distance: number;
+  readonly coverage: number;
+  readonly deltaE2000: number;
 }
 
 async function run() {
@@ -100,7 +110,10 @@ async function run() {
   const lodFlagOn = flags.on("A3D_QR_ASSETS_LOD");
   // TypedGLBActorLod self-registers its extension at module import.
 
-  const gl = canvas.getContext("webgl2");
+  // Caps probe runs on a throwaway canvas — the render canvas needs
+  // preserveDrawingBuffer at first-context creation for canvasPixels().
+  const probeCanvas = document.createElement("canvas");
+  const gl = probeCanvas.getContext("webgl2");
   const caps = gl ? probeCompressedTextureCapabilities(gl) : { astc: false, bptc: false, etc2: false, s3tc: false, s3tcSrgb: false };
   const registry = createAppAssetDecoders({ decoders: { basePath: "/aura-decoders/", workerCount: 2 } }, caps, { maxTextureSize: 4096 });
   attachAppAssetDecoders(canvas, registry);
@@ -142,7 +155,25 @@ async function run() {
     return `g${id}`;
   };
 
+  // S7 (d)/(e): render each frame and measure pop at level changes plus
+  // per-frame triangle counts. The renderer draws the exact items
+  // collectRenderItems just emitted (a wrapping source), so the pixel delta
+  // at a level-change frame is the visible pop a vision judge would call.
+  const renderer = await WebGL2RendererBackend.create({
+    canvas, width: canvas.width, height: canvas.height,
+    preserveDrawingBuffer: true, clearColor: [CLEAR[0]!, CLEAR[1]!, CLEAR[2]!, 1]
+  });
+  const trianglesOf = (items: readonly { geometry?: { indexCount?: number; vertexCount?: number; instanceCount?: number } }[]): number =>
+    items.reduce((sum, item) => {
+      const g = item.geometry;
+      const per = ((g?.indexCount ?? g?.vertexCount ?? 0) / 3);
+      return sum + per * Math.max(1, g?.instanceCount ?? 1);
+    }, 0);
+
   const frames: FrameRecord[] = [];
+  const pops: PopRecord[] = [];
+  let prevPx: Uint8ClampedArray | null = null;
+  let prevMask: Uint8Array | null = null;
   for (let frame = 0; frame < FRAMES; frame += 1) {
     const t = frame / (FRAMES - 1);
     // Dolly: camera approaches from 320 m out to 4 m — coverage sweeps all
@@ -161,13 +192,39 @@ async function run() {
       radius,
       camera: mutableCamera
     });
+    const chainLevels = handle?.chainLevels() ?? [];
+    const itemsArr = [...items];
+    renderer.renderImportedAsset({
+      source: { collectRenderItems: () => itemsArr } as never,
+      camera: mutableCamera as never,
+      metadata: {} as never,
+      viewport: { width: canvas.width, height: canvas.height }
+    });
+    const px = await canvasPixels(canvas);
+    if (prevPx && frames.length > 0) {
+      const prev = frames[frames.length - 1]!;
+      const levelChanged = chainLevels.some((l, c) => l !== prev.chainLevels[c]);
+      if (levelChanged) {
+        const currMask = subjectMask(px);
+        const mask = currMask.map((v, i) => (v || prevMask?.[i] ? 1 : 0));
+        pops.push({
+          frame,
+          distance: Number(distance.toFixed(2)),
+          coverage: Number(coverage.toFixed(4)),
+          deltaE2000: Number(maskedDeltaE(px, prevPx, mask).toFixed(3))
+        });
+      }
+    }
+    prevPx = px;
+    prevMask = subjectMask(px);
     frames.push({
       frame,
       distance: Number(distance.toFixed(2)),
       coverage: Number(coverage.toFixed(4)),
-      items: items.length,
-      chainLevels: handle?.chainLevels() ?? [],
-      geometryKeys: items.map((item) => keyFor(item.geometry))
+      items: itemsArr.length,
+      triangles: Math.round(trianglesOf(itemsArr)),
+      chainLevels,
+      geometryKeys: itemsArr.map((item) => keyFor(item.geometry))
     });
     if (status) status.textContent = `frame ${frame + 1}/${FRAMES}`;
     await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
@@ -175,6 +232,7 @@ async function run() {
 
   window.__QR_READY__ = {
     frames,
+    pops,
     chainCount: handle?.chainLevels().length ?? 0,
     lodFlagOn,
     // Standalone asserts the hard switch; the dithered cross-fade is a
