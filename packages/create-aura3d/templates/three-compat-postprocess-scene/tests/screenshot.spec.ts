@@ -12,7 +12,7 @@ test("Aura3D three compat postprocess scene screenshot clears the look floor", a
   await page.goto("/");
   await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 150_000 }).toBe("true");
 
-  const floor = await assertTemplateLookFloor(page, { subject: { x: 0.1, y: 0.34, width: 0.8, height: 0.56 } });
+  const floor = await assertTemplateLookFloor(page, { subject: { x: 0.2, y: 0.3, width: 0.6, height: 0.55 } });
   const screenshot = await page.screenshot({ fullPage: false });
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/screenshot.png"), screenshot);

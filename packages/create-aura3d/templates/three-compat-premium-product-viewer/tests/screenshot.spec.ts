@@ -12,7 +12,7 @@ test("Aura3D three compat premium product viewer screenshot clears the look floo
   await page.goto("/");
   await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 150_000 }).toBe("true");
 
-  const floor = await assertTemplateLookFloor(page, { subject: { x: 0.32, y: 0.52, width: 0.36, height: 0.16 } });
+  const floor = await assertTemplateLookFloor(page, { subject: { x: 0.25, y: 0.3, width: 0.5, height: 0.5 } });
   const screenshot = await page.screenshot({ fullPage: false });
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/screenshot.png"), screenshot);
