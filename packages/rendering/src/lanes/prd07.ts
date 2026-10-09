@@ -78,7 +78,7 @@ export function bindPrd07RendererFlags(flags: QrFlags): void {
   setRendererQrFlags(flags);
 }
 
-export { particlePassFor } from "../vfx/contributors";
+export { particlePassFor, notePrd07VolumetricGpuMs, froxelBudgetMs, prd07VolumetricCostFallback } from "../vfx/contributors";
 export { skyPassFor, skyDrawPassFor, SkyBackgroundPass } from "../atmosphere/SkyBackgroundPass";
 export { ParticleBatchPass } from "../vfx/ParticleBatchPass";
 export type { ParticlePassDiagnostics } from "../vfx/ParticleBatchPass";
