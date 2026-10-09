@@ -220,6 +220,8 @@ export interface AppLike {
   readonly nodes?: {
     get(id: string): { setVisible?(visible: boolean): void; visible?: boolean } | undefined;
   };
+  /** C-27 quality controller (app.quality) — supplies the resolved tier. */
+  readonly quality?: { readonly tier: AuraQualityTier };
 }
 
 export class ProductionEffectSystem {
@@ -256,7 +258,9 @@ export class ProductionEffectSystem {
   private lastHook: ParticleRenderHook | null = null;
 
   constructor(private readonly app: AppLike, options: { readonly tier?: AuraQualityTier } = {}) {
-    this.tier = options.tier ?? "high";
+    // Resolved C-27 tier wins over the explicit option's fallback: callers pass
+    // app.quality.tier; "high" remains only as the unresolved default.
+    this.tier = options.tier ?? app.quality?.tier ?? "high";
     this.decals = new DecalBatch(DECAL_TIER_CAP[this.tier]);
     this.budgetCap = QUALITY_TIERS[this.tier].particleBudget;
     this.transientLights = new TransientLightPool(this.tier);

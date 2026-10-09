@@ -139,6 +139,10 @@ export class VolumetricFogPass {
 
   /** Per-frame froxel update: inject → integrate. Returns the apply draw. */
   update(input: VolumetricFogPassInput, ctx: FrameContributorContext): { readonly apply: (target: RenderTarget | null) => void; readonly notes: readonly string[] } {
+    // T0-34: remember the caller's bound target — this pass must leave it
+    // bound on exit, never null (canvas), or later draws hit the framebuffer
+    // and OutputPass overwrites them.
+    const callerRt = this.device.getRenderTarget?.() ?? null;
     this.ensureTargets();
     const notes: string[] = [];
     if (this.grid.note) notes.push(this.grid.note);
@@ -222,7 +226,7 @@ export class VolumetricFogPass {
       uniforms: iu,
       renderState: FULL_SCREEN
     });
-    this.device.setRenderTarget(null);
+    this.device.setRenderTarget(callerRt);
 
     // 3) apply draw closure (premultiplied-over into the caller's target).
     const integrateAtlas = this.integrateAtlas!;
@@ -239,6 +243,7 @@ export class VolumetricFogPass {
       au.set("u_near", this.grid.near);
       au.set("u_far", this.grid.far);
       au.set("u_slices", this.grid.slices);
+      const prev = this.device.getRenderTarget?.() ?? null;
       this.device.setRenderTarget(target);
       this.device.draw({
         label: "prd07.volumetric.apply",
@@ -250,7 +255,7 @@ export class VolumetricFogPass {
         uniforms: au,
         renderState: { ...FULL_SCREEN, blendMode: "premultiplied", blend: true }
       });
-      this.device.setRenderTarget(null);
+      this.device.setRenderTarget(prev);
     };
     return { apply, notes };
   }

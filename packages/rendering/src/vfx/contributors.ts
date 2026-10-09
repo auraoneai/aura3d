@@ -3,7 +3,7 @@
 // Renderer was handed, populated via attachRootRenderSource): the engine's
 // ProductionEffectSystem publishes a `vfx` feed + atmosphere state there.
 
-import type { RenderDevice } from "../RenderDevice";
+import type { RenderDevice, RenderTarget } from "../RenderDevice";
 import {
   registerFrameContributor,
   type FrameContributor,
@@ -425,7 +425,15 @@ const volumetricContributor: FrameContributor = {
       writes: ["aura.scene.color"],
       execute: () => {
         const { apply } = pass.update(input, ctx);
-        apply(null); // stub target: the canvas framebuffer (after-opaque).
+        // T0-34: apply into the live forward target (prd01.forwardTarget), not
+        // the canvas — and verify the pass leaves the bound target untouched.
+        const boundBefore = ctx.device.getRenderTarget?.() ?? null;
+        const forward = ctx.blackboard.get("prd01.forwardTarget") as RenderTarget | undefined;
+        apply(forward ?? boundBefore);
+        if ((ctx.device.getRenderTarget?.() ?? null) !== boundBefore) {
+          console.warn("prd07.volumetric: bound render target changed inside contributor");
+          ctx.device.setRenderTarget(boundBefore);
+        }
       }
     }];
   }
