@@ -29,3 +29,5 @@ One `qr-request` issue per row, labelled `to:prdNN` (CCR rows also `ccr`).
 | CCR-08-1 | 15 + consumer 09 | https://github.com/auraoneai/aura3d/issues/228 |
 | CCR-08-2 | 15 + consumer 14 | https://github.com/auraoneai/aura3d/issues/229 |
 | CCR-08-3 | 15 + consumer 14 | https://github.com/auraoneai/aura3d/issues/230 |
+| Q-15-7 | 15 | https://github.com/auraoneai/aura3d/issues/628 |
+| Q-15-8 | 15 | https://github.com/auraoneai/aura3d/issues/629 |
