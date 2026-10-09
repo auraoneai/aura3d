@@ -10,3 +10,6 @@ Each row: issue, target lane, request, status. Numbers written back as filed.
 | Issue | To | Request | Status |
 |---|---|---|---|
 | #588 | prd12 | C-33: beacon readiness (`__AURA3D_GAME__.state === 'playing'`) in `capture-games.mjs` — co-PR'd in the T0-30 branch, needs lane-12 acceptance in the PR thread | open |
+||||||| parent of 534ab5210 (docs(prd-09): record qr-request #619)
+||||||| parent of 84c7b873b (docs(prd-09): record qr-request #619)
+- #619 | to:prd15 | nodes/types.ts + compiler/diagnosticOnly.prd09.ts — camera up/roll fields + diag rows (#228) — co-PR
