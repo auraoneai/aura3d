@@ -473,3 +473,22 @@ Q-14-3: route owners adopt the listed replacements and flip the listed flag
 bundles. Q-14-4: `qr-ic-regression` misses are attributed per game by
 leave-one-out against the lane-14 `tools/quality-rebuild-capture` default-URL
 captures (no `?capture=review`).
+
+## 05-S2 / T0-31 → lane 11 (production-runtime typecheck error)
+
+**Filed:** #537 (labels `qr-request` + `to:prdNN`; filed by G3 lead for lane-05).
+
+`tests/browser/production-runtime-production-scene-tools.ts:151` fails the
+repo-wide `pnpm typecheck:raw` (T0-31). Lane-11 file imported by the prd05
+harness; lane 05 cannot fix it directly. Blocks the qr-contracts C-16/C-17
+re-run.
+
+## 05-C16 → lane 01 (C-16 slot consumer at the texture-upload site)
+
+**Filed:** #538 (labels `qr-request` + `to:prdNN`; filed by G3 lead for lane-05).
+
+`resolveCompressedTextureFormatSlot().provide(resolveCompressedTextureFormatReal)`
+at `packages/rendering/src/lanes/prd05.ts:25` installs the resolver, but no
+upload-site caller invokes `slot.get(flags)(format, colorSpace, gl)` under the
+flag. Needed for the §16.1(b) "device-reported sRGB internal format" claim
+(`COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR` on ANGLE Metal).
