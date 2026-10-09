@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
+import { builtDist, serve, watchConsole } from "./lib/serve";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 

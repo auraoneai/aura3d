@@ -1,33 +1,22 @@
 import { expect, test } from "@playwright/test";
 import { builtDist, serve, watchConsole } from "./lib/serve";
-import { existsSync } from "node:fs";
-import { join } from "node:path";
 
 /**
- * T1.10 (Aura Clash Arena): the route-flag dispatcher boots legacy by default
- * and v2 under `?a3d-qr=route-aura-clash`. Flag-off keeps the same evidence
- * global and zero console errors; flag-on reaches
- * `__AURA3D_GAME__.state === "playing"`.
+ * T1.10 (Gallery Shift): the route-flag dispatcher boots legacy by default and v2
+ * under `?a3d-qr=route-gallery-shift`. Flag-off keeps the same evidence global and
+ * zero console errors; flag-on reaches `__AURA3D_GAME__.state === "playing"`
+ * and publishes `__AURA3D_GAME_EVIDENCE__["showcase-gallery-shift"]`.
  */
 
-const APP_DIR = "aura-clash-showcase";
-const ROUTE_FLAG = "route-aura-clash";
+const APP_DIR = "showcase-gallery-shift";
+const ROUTE_FLAG = "route-gallery-shift";
 // T1.10: v2 specs carry the same engine list the URL contract uses
 // (boot.ts qualityRebuild.flags + games.json qrFlags).
 const ENGINE_FLAGS = "game,camera,lighting,post,materials,vfx,world,tiers,looks";
-const EVIDENCE_GLOBAL = "__AURA_CLASH_ARENA_PROOF__";
-// Top-level keys the legacy route published before the T1.10 tree move.
-const LEGACY_EVIDENCE_KEYS = [
-  "schemaVersion", "route", "app", "release", "version", "status", "error",
-  "frame", "roundTime", "totalHits", "lastHitFrame", "callout",
-  "visibleFighterAsset", "fighterAssets", "noPrimitiveFighters", "physics",
-  "renderer"
-] as const;
+const EVIDENCE_GLOBAL = "__GALLERY_SHIFT_EVIDENCE__";
 
-test.describe("aura-clash dispatch (T1.10)", () => {
-  test.skip(!existsSync(join(APPS, APP_DIR, "src", "v2", "boot.ts")), "no v2 tree yet");
-
-  test("flag off boots legacy with the same evidence keys and no console errors", async ({ page }) => {
+test.describe("gallery-shift dispatch (T1.10)", () => {
+  test("flag off boots legacy with its evidence global and no console errors", async ({ page }) => {
     const root = builtDist(APP_DIR);
     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
     const errors = watchConsole(page);
@@ -37,11 +26,7 @@ test.describe("aura-clash dispatch (T1.10)", () => {
       await expect.poll(() =>
         page.evaluate((g) => Boolean((window as Record<string, unknown>)[g]), EVIDENCE_GLOBAL),
         { timeout: 30_000 }).toBe(true);
-      const keys = await page.evaluate(
-        (g) => Object.keys((window as Record<string, unknown>)[g] as object), EVIDENCE_GLOBAL);
-      for (const key of LEGACY_EVIDENCE_KEYS) {
-        expect(keys, `legacy evidence key "${key}" missing after the move`).toContain(key);
-      }
+      // The v2 beacon must NOT publish under flag-off.
       const v2 = await page.evaluate(() => (window as Record<string, unknown>).__AURA3D_GAME__);
       expect(v2).toBeUndefined();
       expect(errors).toEqual([]);
@@ -50,7 +35,7 @@ test.describe("aura-clash dispatch (T1.10)", () => {
     }
   });
 
-  test("`?a3d-qr=route-aura-clash` boots v2 to state playing", async ({ page }) => {
+  test("`?a3d-qr=route-gallery-shift` boots v2 to state playing with the real impl", async ({ page }) => {
     const root = builtDist(APP_DIR);
     expect(root, `${APP_DIR} not built`).not.toBeUndefined();
     const errors = watchConsole(page);
@@ -63,6 +48,12 @@ test.describe("aura-clash dispatch (T1.10)", () => {
       const state = await page.evaluate(() =>
         ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
       expect(state).toBe("playing");
+      // Real C-24 impl publishes per-route evidence under the games.json
+      // evidenceGlobal (FLAG-2).
+      const evidence = await page.evaluate((app) =>
+        ((window as Record<string, unknown>).__AURA3D_GAME_EVIDENCE__ as Record<string, unknown> | undefined)?.[app],
+        APP_DIR);
+      expect(evidence, "v2 evidence section missing").toBeTruthy();
       expect(errors).toEqual([]);
     } finally {
       server.close();
