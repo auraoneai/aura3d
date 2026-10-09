@@ -17,7 +17,7 @@
 import type { QrFlags } from "../contracts/core";
 import type { ProgramFeatures, ProgramHandle, ProgramCacheLike } from "../contracts/program";
 import type { RenderDevice, RenderShaderProgram, ShaderSources } from "../RenderDevice";
-import { generateProgramImpl, GENERATED_PROGRAM_MARKER, type GenerateProgramOptions } from "./ProgramGenerator";
+import { generateProgramImpl, GENERATED_PROGRAM_MARKER, programDegradationLog, type GenerateProgramOptions, type ProgramDegradation } from "./ProgramGenerator";
 import { normalizeProgramFeatures } from "./ProgramFeatures";
 import { programKey } from "./ProgramKey";
 
@@ -79,6 +79,7 @@ export class ProgramCache implements ProgramCacheLike {
     } catch (error) {
       entry.status = "failed";
       entry.error = error instanceof Error ? error.message : String(error);
+      this.reportCompileFailure(entry);
       return this.toHandle(entry);
     }
 
@@ -92,6 +93,7 @@ export class ProgramCache implements ProgramCacheLike {
         .catch((error: unknown) => {
           entry.status = "failed";
           entry.error = error instanceof Error ? error.message : String(error);
+          this.reportCompileFailure(entry);
           this.compileMsTotal += Date.now() - started;
         });
     } else {
@@ -101,6 +103,7 @@ export class ProgramCache implements ProgramCacheLike {
       } catch (error) {
         entry.status = "failed";
         entry.error = error instanceof Error ? error.message : String(error);
+        this.reportCompileFailure(entry);
       }
       this.compileMsTotal += Date.now() - started;
     }
@@ -147,6 +150,19 @@ export class ProgramCache implements ProgramCacheLike {
       entry.program?.dispose();
     }
     this.entries.clear();
+  }
+
+  /**
+   * T0-03/C-36: one `program-compile-failed` degradation + one console.error
+   * per failed key, recorded when the entry first flips to `failed` (repeat
+   * acquires reuse the entry and never re-report).
+   */
+  private reportCompileFailure(entry: CacheEntry): void {
+    const message = `generated program failed to compile (key ${entry.key}): ${entry.error ?? "unknown error"}`;
+    const degradation: ProgramDegradation = { code: "program-compile-failed", message, ownerPrd: 1 };
+    programDegradationLog.push(degradation);
+    this.options.onDegradation?.(degradation);
+    console.error(`[prd01] ${message}`);
   }
 
   /** Return the live entry so a held "pending" handle observes the flip to ready/failed. */
