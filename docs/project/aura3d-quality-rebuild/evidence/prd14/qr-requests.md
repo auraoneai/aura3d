@@ -12,6 +12,7 @@ needs, the owning lane, and current status.
 | #625 | prd15 | `flags.ts:55-60` `applyList` drops `all` inside comma lists — `route_<id>,all` resolves to only the route flag. Blocks per-game all-flags URL capture (T0-29). | open |
 | #626 | prd12 | `capture-games.mjs:97` unions per-game `qrFlags` into every URL including `--flags none` — flag-off baseline captures are never truly flag-off (S1/IC-0). | open |
 | #638 | prd15 | `tests/unit/engine/route-cue-maps.test.ts` (lane-15 file) reads audio modules at pre-T1.x `src/` paths. Shims restored (#637); the pulse-tunnel `cueEntries` textual scan still needs the repoint to `src/legacy/tunnel-audio.ts`. | open |
+| #710 | prd15 | `tests/browser/*` specs still drive deleted review globals (`__AURA3D_BLOCKFALL_BLOOM_PROBE__`, `__AURA3D_COMPOSITION_PROBE__`, `__AURA3D_BLOCKFALL_{ACCEPTANCE,ATTRACT}_PROBE__`). Post-#648 they must use `?capture=scenario&scenario=<id>` + `__AURA3D_GAME_EVIDENCE__` (spec list in issue). | open |
 
 ## In-group dependencies (tracked on #370, not new issues)
 
