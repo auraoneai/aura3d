@@ -1107,7 +1107,8 @@ describe("agent API", () => {
       .toJSON();
     const materialKnobs = material.labParameters();
 
-    expect(snapshot.nodes.some((node) => node.kind === "environment" && node.environment === "studio" && node.intensity === 1.4)).toBe(true);
+    // C-09 env sources (lane 02, 8e6f298dd): studio is the "preset" source with preset "studio".
+    expect(snapshot.nodes.some((node) => node.kind === "environment" && node.environment === "preset" && (node as { preset?: string }).preset === "studio" && node.intensity === 1.4)).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "label" && node.name === "revenue label" && node.text === "Revenue")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "label" && node.label === "hud" && node.screenAnchor === "top-right")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "light" && node.light === "rect" && node.width === 2.8)).toBe(true);
