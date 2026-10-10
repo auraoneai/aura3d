@@ -104,8 +104,9 @@ jobs:
       - run: pnpm exec playwright install chromium
       - name: Browser conformance (ChunkHarness, ANGLE Metal)
         # All PRD-04 unit-gated browser specs: chunk conformance, lobe numeric parity,
-        # transmission capture, decoders/variants. Scene captures run in the `capture` job.
-        run: pnpm exec playwright test --config tests/qr/prd04/playwright.config.ts --grep "PRD-04 lobe chunks|PRD-04 physical lobes|PRD-04 transmission|PRD-04 glTF decoders|PRD-04 WGSL twins|PRD-04 S3|PRD-04 S6|PRD-04 S7|PRD-04 S9|PRD-04 S16|PRD-04 §16.2"
+        # transmission capture, decoders/variants. Scene captures run in the `capture` job;
+        # the integrated (`qr_flags=all`) probes and WGSL twins run in `browser-all`.
+        run: pnpm exec playwright test --config tests/qr/prd04/playwright.config.ts --grep "PRD-04 lobe chunks|PRD-04 physical lobes|PRD-04 transmission|PRD-04 glTF decoders|PRD-04 S3|PRD-04 S6|PRD-04 S7|PRD-04 S9|PRD-04 S16" --grep-invert "qr_flags=all"
       - name: Extension matrix --check (P6-2 truthful matrix)
         # material-conformance.json was just written by the chunk-conformance spec;
         # the tool fails when the report is missing or the matrices drift from it.
@@ -129,8 +130,10 @@ jobs:
     runs-on: macos-14
     env:
       # P-22: the integrated probes (integrated-acceptance §16.2/§16.3,
-      # scene-perf S16 all-vs-all,-materials) only run when PRD04_FLAGS
-      # contains 'all' — this job is the all-flags arm they were deferred to.
+      # scene-perf S16 all-vs-all,-materials) pin their flags per URL and are
+      # selected here by title (`qr_flags=all`), never skipped. WGSL twins need a
+      # WebGPU adapter and fail (not skip) without one; this macos-14 job is the
+      # WebGPU runner (`--enable-unsafe-webgpu`).
       PRD04_FLAGS: "all"
       PRD04_CHROMIUM_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist --enable-unsafe-webgpu"
     steps:
@@ -146,14 +149,16 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install chromium
-      - name: All-flags browser specs (integrated acceptance, S16, WGSL twins)
-        run: pnpm exec playwright test --config tests/qr/prd04/playwright.config.ts --grep "PRD-04 §16.2|PRD-04 S16|PRD-04 WGSL twins|PRD-04 transmission"
+      - name: All-flags browser specs (integrated acceptance, S16 integrated, WGSL twins)
+        run: pnpm exec playwright test --config tests/qr/prd04/playwright.config.ts --grep "qr_flags=all|PRD-04 WGSL twins"
       - name: Upload all-flags reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: prd04-allflags-reports
-          path: tests/reports/prd04/
+          path: |
+            tests/reports/prd04/
+            tests/reports/prd04-wgsl-twins.json
           if-no-files-found: warn
 
   capture:

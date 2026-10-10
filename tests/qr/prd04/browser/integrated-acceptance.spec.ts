@@ -1,8 +1,9 @@
 /**
  * PRD-04 §16.2 / §16.3 — integrated acceptance probes.
  *
- * Every test in this file is gated on `PRD04_FLAGS` containing `all` (the
- * `qr_flags=all` union run in CI). Lane-04's full capability surface is
+ * Every probe pins its own flag set (`ALL` below), so nothing is skipped on
+ * `PRD04_FLAGS` (P-22); CI schedules this file in the `browser-all` job by
+ * title (`qr_flags=all`). Lane-04's full capability surface is
  * `all,materials.ktx2,materials.transmission` — the area flag alone does not
  * enable the sub-flags (applyList only expands lane flags).
  *
@@ -27,7 +28,6 @@ import { RESOLUTION } from "../../../../benchmarks/quality-rebuild/shared/types"
 import { loadProbe, probeFrame, type Prd04ProbePayload } from "./probe";
 
 const FLAGS = (process.env.PRD04_FLAGS ?? "none").split(",").filter(Boolean);
-const INTEGRATED = FLAGS.includes("all");
 const ALL = "all,materials.ktx2,materials.transmission";
 
 const capture = (engine: string, sceneId: string, extra = "") =>
@@ -53,8 +53,6 @@ test.describe("PRD-04 §16.2/§16.3 integrated acceptance (qr_flags=all)", () =>
     );
     await server.close();
   });
-
-  test.skip(!INTEGRATED, "PRD04_FLAGS does not contain 'all' — integrated probes deferred to the all-flags CI lane");
 
   test("tinted-hero: masked Laplacian >= 90% of three.js, shadow luma <= 1.1x", async ({ page }) => {
     const aura = probeFrame(
