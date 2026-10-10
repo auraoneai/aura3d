@@ -65,9 +65,9 @@ export default defineArtDirection({
   signatureEffect: "Instanced jewel tiles bevel-catching a warm arcade key while line clears detonate through GPU bursts and the cabinet breathes inside a living room.",
   standIns: [
     { feature: "k2-arcade-interior HDRI + room ambience", file: "src/v2/scene/lighting.ts", request: "R-14-13", removeWhen: "arcade interior HDRI admitted" },
-    { feature: "K4 arcade room + K2 neighbouring cabinets", file: "src/v2/scene/world.ts", request: "R-14-15", removeWhen: "arcade kit GLBs admitted" },
-    { feature: "K9 clear/shockwave flipbooks", file: "src/v2/scene/fx.ts", request: "R-14-15", removeWhen: "K9 flipbooks admitted" },
-    { feature: "K8 sampled stem set", file: "src/v2/audio.ts", request: "R-14-15", removeWhen: "K8 stem library admitted" }
+    { feature: "K4 arcade room + K2 neighbouring cabinets", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "arcade kit GLBs admitted" },
+    { feature: "K9 clear/shockwave flipbooks", file: "src/v2/scene/fx.ts", request: "R-14-07", removeWhen: "K9 flipbooks admitted" },
+    { feature: "K8 sampled stem set", file: "src/v2/audio.ts", request: "R-14-09", removeWhen: "K8 stem library admitted" }
   ],
   criticalCategories: ["vfx", "camera", "polish_juice"],
   tiers: {

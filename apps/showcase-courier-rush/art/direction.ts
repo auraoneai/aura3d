@@ -64,9 +64,9 @@ export default defineArtDirection({
   ],
   signatureEffect: "Wet dawn asphalt, amber marker glow and headlight pools on a real K2 street grid in rain.",
   standIns: [
-    { feature: "K2 modular city geometry", file: "src/v2/scene/world.ts", request: "R-14-15", removeWhen: "K2 kit admitted + tile-assembling builder" },
-    { feature: "van GLB (separate wheels)", file: "src/v2/scene/vehicle.ts", request: "R-14-15", removeWhen: "admitted van asset (van + wheels separate)" },
-    { feature: "3-point-perspective skyscraper tilt", file: "src/v2/scene/camera.ts", request: "R-14-15", removeWhen: "K2 city geometry + camera rung real" },
+    { feature: "K2 modular city geometry", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "K2 kit admitted + tile-assembling builder" },
+    { feature: "van GLB (separate wheels)", file: "src/v2/scene/vehicle.ts", request: "R-14-07", removeWhen: "admitted van asset (van + wheels separate)" },
+    { feature: "3-point-perspective skyscraper tilt", file: "src/v2/scene/camera.ts", request: "R-14-07", removeWhen: "K2 city geometry + camera rung real" },
     { feature: "rain via engine effects", file: "src/v2/fx/rain.ts", request: "R-14-14", removeWhen: "PRD 09 particle/headlight projectors real" }
   ],
   criticalCategories: ["environment_world", "atmospheric_effects", "material_quality"],

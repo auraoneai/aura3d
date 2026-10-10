@@ -64,10 +64,10 @@ export default defineArtDirection({
   ],
   signatureEffect: "Golden-hour sun raking across a K3 terrain with castle silhouettes; wooden structures splinter under cannon fire.",
   standIns: [
-    { feature: "K3 valley terrain + castle kit", file: "src/v2/scene/world.ts", request: "R-14-15", removeWhen: "K3 terrain/castle admitted" },
-    { feature: "crate maps (siegeGolfAmmo textures)", file: "src/v2/scene/props.ts", request: "R-14-15", removeWhen: "crate maps restored" },
-    { feature: "K9 debris/dust clips", file: "src/v2/fx.ts", request: "R-14-15", removeWhen: "K9 flipbooks admitted" },
-    { feature: "sampled stone/wood audio", file: "src/v2/audio.ts", request: "R-14-15", removeWhen: "K9 sound clips admitted" }
+    { feature: "K3 valley terrain + castle kit", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "K3 terrain/castle admitted" },
+    { feature: "crate maps (siegeGolfAmmo textures)", file: "src/v2/scene/props.ts", request: "R-14-07", removeWhen: "crate maps restored" },
+    { feature: "K9 debris/dust clips", file: "src/v2/fx.ts", request: "R-14-07", removeWhen: "K9 flipbooks admitted" },
+    { feature: "sampled stone/wood audio", file: "src/v2/audio.ts", request: "R-14-09", removeWhen: "K9 sound clips admitted" }
   ],
   criticalCategories: ["environment_world", "lighting", "material_quality"],
   tiers: {
