@@ -950,14 +950,14 @@ export class AnimationController<
           .catch((error: unknown) => {
             if (timeoutId !== undefined) clearTimeout(timeoutId);
             recordClipResolveDegradation(
-              "clip-resolve-failed",
+              "ANIMATION_CLIP_RESOLVE_FAILED",
               node.id,
               `binding "${id}" could not resolve animation clips; publishing with registry durations.`,
               error
             );
             console.warn(
               `ANIMATION_CLIP_RESOLVE_FAILED: binding "${id}" could not resolve animation clips; ` +
-                `the binding stays pending.`,
+                `publishing with registry durations.`,
               error
             );
             binding.pendingClips = false;
@@ -971,7 +971,7 @@ export class AnimationController<
           if (!binding.pendingClips) return;
           dropPendingClipInfoWaiters(node.id);
           recordClipResolveDegradation(
-            "clip-resolve-timeout",
+            "ANIMATION_CLIP_RESOLVE_TIMEOUT",
             node.id,
             `binding "${id}" waited ${ANIMATION_CLIP_RESOLVE_TIMEOUT_MS} ms for the actor clip source; publishing with registry durations.`
           );

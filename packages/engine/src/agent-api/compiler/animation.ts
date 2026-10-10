@@ -57,14 +57,19 @@ const recordClipApplyFailure = (nodeId: string | undefined, message: string, cau
   pendingClipApplyDegradations.push({ code: "clip-apply-failed", nodeId, message, cause });
 };
 
-/** 06-HANG — queue a clip-resolve failure/timeout for the C-36 drain. */
+/**
+ * 06-HANG — queue a clip-resolve failure/timeout for the C-36 drain. It uses
+ * the existing `clip-apply-failed` code (the `AuraDegradationCode` union in
+ * `contracts/compiler.ts` is lane-15 owned); the reason is the message prefix
+ * `ANIMATION_CLIP_RESOLVE_TIMEOUT` / `ANIMATION_CLIP_RESOLVE_FAILED`.
+ */
 export function recordClipResolveDegradation(
-  code: "clip-resolve-timeout" | "clip-resolve-failed",
+  reason: "ANIMATION_CLIP_RESOLVE_TIMEOUT" | "ANIMATION_CLIP_RESOLVE_FAILED",
   nodeId: string | undefined,
   message: string,
   cause?: unknown
 ): void {
-  pendingClipApplyDegradations.push({ code, nodeId, message, cause });
+  pendingClipApplyDegradations.push({ code: "clip-apply-failed", nodeId, message: `${reason}: ${message}`, cause });
 }
 
 /**
