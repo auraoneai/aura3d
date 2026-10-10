@@ -43,7 +43,8 @@ let droppedDegradationCount = 0;
 const degradationKey = (entry: Omit<AuraDegradation, "frame">): string =>
   `${entry.code}|${entry.nodeId ?? ""}|${entry.message}`;
 
-function pushClipApplyDegradation(entry: Omit<AuraDegradation, "frame">): void {
+/** @internal — exported for the 06-Q061 bound unit test (tests/qr/prd06/unit/clip-degradation-queue.test.ts). */
+export function pushClipApplyDegradation(entry: Omit<AuraDegradation, "frame">): void {
   const key = degradationKey(entry);
   const seen = pendingDegradationCounts.get(key) ?? 0;
   if (seen > 0) {
