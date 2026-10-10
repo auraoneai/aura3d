@@ -18,7 +18,7 @@ import { rendererQrFlags, setRendererQrFlags } from "../renderer/FrameGraph";
 import { FrameStats, diffDeviceCounters } from "../quality/FrameStats";
 import { gpuTimingBackendForDevice } from "../quality/DeviceProbe";
 import { RenderTargetPool } from "../resources/RenderTargetPool";
-import { installPrd11DeviceCounters } from "../webgl2/Counters";
+import { beginPrd11CounterFrame, installPrd11DeviceCounters } from "../webgl2/Counters";
 import { batchPlanCacheFor, prd11LatestBatchPlanReport } from "../renderer/CullingBatching";
 import { registerPrd11DrawIdShader } from "../batching/shaders/drawId.glsl";
 import { registerPrd11InstanceEmissiveShader } from "../batching/shaders/instanceEmissive.glsl";
@@ -92,16 +92,42 @@ frameStatsSlot.provide((capacity = 240) => new FrameStats(capacity));
 
 // Phase 2 (§6.8): real C-28 render-target pool — post chains reuse targets
 // keyed by (w, h, format, samples, depth); wired into post execution by Q-03-1.
-renderTargetPoolSlot.provide((device) => {
+/**
+ * T11-POOL (PRD-16 T0-35): one pool per device. `PostResources` calls the slot
+ * factory on every acquire/resize/trim/dispose; a fresh pool per call made
+ * `release()` hit a foreign pool (ignored) and registered a new pool in the
+ * shared registry each time, leaking post targets and pools.
+ */
+const renderTargetPools = new WeakMap<RenderDevice, RenderTargetPool>();
+
+export function prd11RenderTargetPoolFor(device: RenderDevice): RenderTargetPool {
+  const existing = renderTargetPools.get(device);
+  if (existing) return existing;
   const pool = new RenderTargetPool(device);
+  renderTargetPools.set(device, pool);
   // Phase 5 (§6.9): pool targets die with the GL context — register the pool
-  // so `installDeviceRestoreRebuild` clears it and `acquire` re-creates.
-  sharedResourceRegistry().register(pool, {
+  // once so `installDeviceRestoreRebuild` clears it and `acquire` re-creates.
+  const registry = sharedResourceRegistry();
+  registry.register(pool, {
     kind: "a3d-prd11-rt-pool",
     rebuild: () => pool.rebuildForRestore()
   });
+  // The shared registry is module-level: unregister on device dispose so it
+  // does not keep the pool (and through it the device) alive.
+  const originalDispose = typeof device.dispose === "function" ? device.dispose.bind(device) : null;
+  if (originalDispose) {
+    device.dispose = (): void => {
+      registry.unregister(pool);
+      renderTargetPools.delete(device);
+      originalDispose();
+    };
+  }
   return pool;
-});
+}
+
+// Phase 2 (§6.8): real C-28 render-target pool — post chains reuse targets
+// keyed by (w, h, format, samples, depth); wired into post execution by Q-03-1.
+renderTargetPoolSlot.provide(prd11RenderTargetPoolFor);
 
 // Phase 5 (§6.9): real C-29 registry — records creation descriptors + CPU
 // sources for eager rebuild after context restore. Consumers observe the real
@@ -123,7 +149,10 @@ registerFrameContributor({
   collect(items, ctx: FrameContributorContext) {
     const telemetry = prd11TelemetryForDevice(ctx.device);
     installPrd11DeviceCounters(ctx.device);
-    ctx.device.resetFrameCounters?.();
+    // T11-RESET (PRD-16 T0-35): snapshot, never reset, the host counters here —
+    // `collect` runs after `Renderer.beginFrame`, so a device reset would zero
+    // lane-01 drawCalls/readbacks mid-frame.
+    beginPrd11CounterFrame(ctx.device);
     telemetry.width = ctx.width;
     telemetry.height = ctx.height;
     telemetry.frameIndex = ctx.frameIndex;
