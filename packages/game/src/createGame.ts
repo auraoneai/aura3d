@@ -283,6 +283,13 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
   });
   session.on("state", () => beacon.refresh());
 
+  // §20 `audio.webm` tap — one-function global the lane-12 `audio-webm`
+  // capture step calls to record the master bus. DOM-gated like the beacon.
+  if (audio && typeof window !== "undefined") {
+    (window as { __AURA3D_GAME_SOUND__?: { recordMaster(seconds?: number): Promise<Blob | null> } })
+      .__AURA3D_GAME_SOUND__ = { recordMaster: (seconds?: number) => audio.recordMaster(seconds) };
+  }
+
   const channel = installEvidenceChannel({
     id: options.id,
     builtins: {
