@@ -328,7 +328,7 @@ export async function runPrd07AuraScene(spec: Prd07SceneSpec, host: HTMLElement)
   const builtScene = buildPrd07AuraScene(spec, log);
   const app = createAuraApp(host, {
     scene: builtScene,
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+    renderer: { qualityProfile: "production" },
     pixelRatio: spec.resolution.devicePixelRatio,
     resize: false,
     autoStart: false,
