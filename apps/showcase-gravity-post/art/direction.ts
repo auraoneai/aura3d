@@ -65,9 +65,9 @@ export default defineArtDirection({
   signatureEffect: "A sun-lit system board — every planet shows a real terminator — crossed by hairline orbit guides and a ribboned courier path.",
   standIns: [
     { feature: "K1 deep-space skybox + parallax stars", file: "src/v2/scene/world.ts", request: "R-14-13", removeWhen: "deep-space HDRI admitted" },
-    { feature: "K5 atmosphere-shell planets", file: "src/v2/scene/world.ts", request: "R-14-15", removeWhen: "K5 planet kit admitted" },
-    { feature: "K7 courier skiff + restored dock-gate maps", file: "src/v2/scene/props.ts", request: "R-14-15", removeWhen: "K7 craft + gate maps admitted" },
-    { feature: "K8 thruster/dock loop set", file: "src/v2/audio.ts", request: "R-14-15", removeWhen: "K8 loop clips admitted" }
+    { feature: "K5 atmosphere-shell planets", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "K5 planet kit admitted" },
+    { feature: "K7 courier skiff + restored dock-gate maps", file: "src/v2/scene/props.ts", request: "R-14-07", removeWhen: "K7 craft + gate maps admitted" },
+    { feature: "K8 thruster/dock loop set", file: "src/v2/audio.ts", request: "R-14-09", removeWhen: "K8 loop clips admitted" }
   ],
   criticalCategories: ["lighting", "pbr_credibility", "environment_world"],
   tiers: {

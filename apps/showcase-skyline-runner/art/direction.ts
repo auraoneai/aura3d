@@ -65,9 +65,9 @@ export default defineArtDirection({
   signatureEffect: "Five acts of lit snow-kit rooftops sliding over a matched-fog parallax dusk painting, snowfall and landing puffs tying the two depth layers together.",
   standIns: [
     { feature: "k1-winter-dusk HDRI + per-act fog", file: "src/v2/scene/lighting.ts", request: "R-14-13", removeWhen: "winter-dusk HDRI admitted" },
-    { feature: "K3 snow platform kit + parallax backdrops", file: "src/v2/scene/world.ts", request: "R-14-15", removeWhen: "platform kit + backdrop layers admitted" },
-    { feature: "rigged skylineHeroRunner clips", file: "src/v2/scene/world.ts", request: "R-14-15", removeWhen: "rigged hero admitted" },
-    { feature: "K8 footstep/ambience sample set", file: "src/v2/audio.ts", request: "R-14-15", removeWhen: "K8 snow-metal steps admitted" }
+    { feature: "K3 snow platform kit + parallax backdrops", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "platform kit + backdrop layers admitted" },
+    { feature: "rigged skylineHeroRunner clips", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "rigged hero admitted" },
+    { feature: "K8 footstep/ambience sample set", file: "src/v2/audio.ts", request: "R-14-09", removeWhen: "K8 snow-metal steps admitted" }
   ],
   criticalCategories: ["animation_quality"],
   tiers: {

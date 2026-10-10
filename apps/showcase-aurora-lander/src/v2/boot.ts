@@ -6,7 +6,7 @@
 // re-shows node groups instead of swapping scenes (loading.sceneSwaps = 0, a
 // §7.2.1 contract). Gameplay modules (lander/terrain/sites/touchdown/
 // prediction/ghost) are unchanged; audio plays through the legacy cue
-// controller until C-25 lands (standIn R-14-15).
+// controller until C-25 lands (standIn R-14-09).
 import { game as engineGame, createMeshSurfaceQuery, scene, type AuraCameraPose, type GameInputController, type MeshSurfaceQuery, type SurfaceSample } from "@aura3d/engine";
 import { postPresets } from "@aura3d/engine/contracts";
 import { createGame, type Game } from "@aura3d/game";

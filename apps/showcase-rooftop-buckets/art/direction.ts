@@ -65,7 +65,7 @@ export default defineArtDirection({
   signatureEffect: "Skinned athletes under dusk sky against a live skyline; tapered arc ribbon and net ripple sell every release.",
   standIns: [
     { feature: "shoulder rig (PRD 08 rigs.shoulder)", file: "src/v2/scene/camera.ts", request: "R-14-10", removeWhen: "C-22 shoulder rig real" },
-    { feature: "open dusk skyline (K2 buildings)", file: "src/v2/scene/world.ts", request: "R-14-15", removeWhen: "K2 window-atlas buildings admitted" },
+    { feature: "open dusk skyline (K2 buildings)", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "K2 window-atlas buildings admitted" },
     { feature: "vertex-animated cloth net", file: "src/v2/scene/world.ts", request: "R-14-14", removeWhen: "PRD 04 vertex anim / K9 net real" },
     { feature: "crossFadeTo shot clips", file: "src/v2/animation.ts", request: "R-14-14", removeWhen: "C-19 clip controller real" }
   ],

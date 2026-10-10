@@ -65,10 +65,10 @@ export default defineArtDirection({
   ],
   signatureEffect: "Baked emissive grid under drifting night atmosphere; drone explosions light the swarm while the hero stays silhouette-crisp from overhead.",
   standIns: [
-    { feature: "K2 plaza architecture", file: "src/v2/scene/world.ts", request: "R-14-15", removeWhen: "K2 kit admitted" },
-    { feature: "drone material authenticity (multi-UV/ORM)", file: "src/v2/scene/drones.ts", request: "R-14-15", removeWhen: "admitted drone materials inspected" },
+    { feature: "K2 plaza architecture", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "K2 kit admitted" },
+    { feature: "drone material authenticity (multi-UV/ORM)", file: "src/v2/scene/drones.ts", request: "R-14-07", removeWhen: "admitted drone materials inspected" },
     { feature: "mech walk/strafe staff clips", file: "src/v2/animation.ts", request: "R-14-14", removeWhen: "C-19 clip controller real" },
-    { feature: "drone-death flipbook", file: "src/v2/fx.ts", request: "R-14-15", removeWhen: "K9 flipbook clips admitted" }
+    { feature: "drone-death flipbook", file: "src/v2/fx.ts", request: "R-14-07", removeWhen: "K9 flipbook clips admitted" }
   ],
   criticalCategories: ["environment_world", "lighting", "vfx"],
   tiers: {
