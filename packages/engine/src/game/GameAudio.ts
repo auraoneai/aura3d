@@ -4,6 +4,7 @@ import {
   FootstepPlayer,
   computeDistanceAttenuation,
   computeDopplerShift,
+  createGameSoundEngine,
   type AudioFileAssetLike,
   type AudioFileInput,
   type GameBusId,
