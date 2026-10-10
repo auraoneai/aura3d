@@ -9,8 +9,7 @@
  * `AssetDecoderUnavailable`, never a silent load. Browser context cannot
  * fall back to the vendored node-FS path, so the 404 is terminal.
  */
-import { createAssetDecoderRegistry } from "/packages/assets/src/AssetDecoderRegistry.js";
-import { AssetDecoderUnavailable } from "/packages/assets/src/decoderLoad.js";
+import { AssetDecoderUnavailable, createAssetDecoderRegistry } from "/packages/assets/src/AssetDecoderRegistry.js";
 
 declare global {
   interface Window { __QR_READY__?: unknown; __QR_ERROR__?: unknown; __QR_BOOT__?: string }
