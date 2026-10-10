@@ -81,7 +81,8 @@ async function boot(): Promise<void> {
       width: canvasWidth,
       height: canvasHeight,
       clearColor: [0.015, 0.02, 0.026, 1],
-          });
+      preserveDrawingBuffer: true
+    });
     const sandbox = createSandbox(renderer, status);
     root.querySelector<HTMLButtonElement>("[data-testid='spawn-box']")?.addEventListener("click", () => sandbox.spawnBox());
     root.querySelector<HTMLButtonElement>("[data-testid='step-sim']")?.addEventListener("click", () => sandbox.stepBurst());

@@ -268,7 +268,8 @@ async function run(): Promise<void> {
     height: canvas.height,
     clearColor: [0.12, 0.18, 0.22, 1],
     antialias: true,
-      });
+    preserveDrawingBuffer: true,
+  });
   const input = new InputSystem(canvas);
   input.pointer.setDevicePixelRatio(window.devicePixelRatio);
   configureBindings(input, "space");

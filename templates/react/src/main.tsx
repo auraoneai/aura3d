@@ -18,7 +18,8 @@ function App(): React.ReactElement {
         width: canvas.width,
         height: canvas.height,
         clearColor: [0.02, 0.025, 0.03, 1],
-              });
+        preserveDrawingBuffer: true
+      });
 
       if (disposed) {
         renderer.dispose();

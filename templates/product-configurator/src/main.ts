@@ -72,7 +72,8 @@ async function boot(): Promise<void> {
     width: canvas.width,
     height: canvas.height,
     clearColor: [0.018, 0.022, 0.03, 1],
-      });
+    preserveDrawingBuffer: true,
+  });
   render();
 }
 

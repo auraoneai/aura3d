@@ -77,7 +77,8 @@ async function run(): Promise<void> {
     height: shell.canvas.height,
     clearColor: [0.032, 0.038, 0.045, 1],
     antialias: false,
-      });
+    preserveDrawingBuffer: true
+  });
 
   const render = () => {
     const objectCount = Number(shell.objectInput.value);

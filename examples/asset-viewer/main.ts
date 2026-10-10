@@ -741,7 +741,8 @@ async function boot(): Promise<void> {
     height: canvas.height,
     clearColor: [0.016, 0.02, 0.026, 1],
     antialias: true,
-      });
+    preserveDrawingBuffer: true
+  });
 
   const load = async (
     kind: "inline" | "external" | "custom" | "local",
