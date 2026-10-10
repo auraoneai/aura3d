@@ -55,4 +55,7 @@ export {
 // P4-1: frame-graph flag seam — lane-15 wires `setRendererQrFlags` inside
 // createAuraApp eventually (qr-request #145, lane-04 dependency comment);
 // harnesses set it directly until then.
+// PRD-04 §12.3 requests (P-64): to:prd01 #769 #770, to:prd02 #885, to:prd05 #772 #773 #777,
+// to:prd06 #886, to:prd11 #771, to:prd12 #778 #887, to:prd13 #888, to:prd14 #889,
+// to:prd15 #145 #774 #775 #776 #779.
 export { setRendererQrFlags, rendererQrFlags } from "../renderer/FrameGraph.js";
