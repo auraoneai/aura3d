@@ -127,7 +127,11 @@ jobs:
         if: always()
         run: |
           if [ -f tests/reports/prd07-browser.json ]; then
-            grep -o 'capability-degraded[^"]*' tests/reports/prd07-browser.json | sort -u || echo "none"
+            if grep -q 'capability-degraded' tests/reports/prd07-browser.json; then
+              grep -o 'capability-degraded[^"]*' tests/reports/prd07-browser.json | sort -u
+            else
+              echo "none"
+            fi
           else
             echo "no report"
           fi
@@ -146,7 +150,7 @@ jobs:
           lfs: false
       - name: Fetch bench LFS blobs
         run: |
-          git lfs pull --include="fixtures/asset-corpus/damaged-helmet.glb,fixtures/asset-corpus/antique-camera.glb,fixtures/asset-corpus/clear-coat-test.glb,fixtures/asset-corpus/sheen-test-grid.glb,public/aura-assets/propRockA.52dd1f0f.glb,public/aura-assets/propRockB.c94b2733.glb,public/aura-assets/deepRecoveryCrateStandard.02520123.glb" || echo "::warning::git lfs pull failed"
+          git lfs pull --include="fixtures/asset-corpus/damaged-helmet.glb,fixtures/asset-corpus/antique-camera.glb,fixtures/asset-corpus/clear-coat-test.glb,fixtures/asset-corpus/sheen-test-grid.glb,public/aura-assets/propRockA.52dd1f0f.glb,public/aura-assets/propRockB.c94b2733.glb,public/aura-assets/deepRecoveryCrateStandard.02520123.glb"
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -174,33 +178,7 @@ jobs:
           --strict
       - name: Verify capture reports (no non-ready / zero-draw / missing frame)
         if: always()
-        run: node -e '
-          const fs = require("fs"), path = require("path");
-          const dir = process.env.EVIDENCE_DIR;
-          const reports = [];
-          (function walk(d) {
-            if (!fs.existsSync(d)) return;
-            for (const e of fs.readdirSync(d, { withFileTypes: true })) {
-              const p = path.join(d, e.name);
-              if (e.isDirectory()) walk(p); else if (e.name === "report.json") reports.push(p);
-            }
-          })(dir);
-          const bad = [];
-          for (const rp of reports) {
-            const r = JSON.parse(fs.readFileSync(rp, "utf8"));
-            for (const s of r.scenes ?? []) {
-              for (const [eng, res] of Object.entries(s.engines ?? {})) {
-                const p = res?.payload ?? {};
-                if (res?.status !== "ready") bad.push(`${rp}:${s.scene}/${eng} status=${res?.status}`);
-                else if (eng === "aura3d" && (p.drawCalls ?? 0) === 0) bad.push(`${rp}:${s.scene}/${eng} drawCalls=0`);
-                else if (eng === "aura3d" && (p.errors ?? []).length > 0) bad.push(`${rp}:${s.scene}/${eng} errors=${p.errors[0]}`);
-              }
-            }
-          }
-          if (reports.length === 0) bad.push(`${dir}: no report.json produced`);
-          for (const b of bad) console.error("::error::" + b);
-          process.exit(bad.length ? 1 : 0);
-        '
+        run: node tests/qr/prd07/ci/verify-reports.mjs capture
       - name: Upload capture evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -213,7 +191,13 @@ jobs:
         if: always()
         run: |
           for f in "$EVIDENCE_DIR"/capture-*/report.json; do
-            [ -f "$f" ] && echo "== $f" && grep -o '"capability-degraded[^"]*"' "$f" | sort -u || true
+            [ -f "$f" ] || continue
+            echo "== $f"
+            if grep -q '"capability-degraded' "$f"; then
+              grep -o '"capability-degraded[^"]*"' "$f" | sort -u
+            else
+              echo "none"
+            fi
           done
 
   games:
@@ -239,33 +223,7 @@ jobs:
         run: node tools/quality-rebuild-capture/capture-games.mjs --games "$GAME_LIST" --flags none --skip-build --strict --out "$EVIDENCE_DIR/games-none" --no-mobile
       - name: Verify games report (no non-ready / blank / zero-draw game)
         if: always()
-        run: node -e '
-          const fs = require("fs"), path = require("path");
-          const dir = process.env.EVIDENCE_DIR;
-          const reports = [];
-          (function walk(d) {
-            if (!fs.existsSync(d)) return;
-            for (const e of fs.readdirSync(d, { withFileTypes: true })) {
-              const p = path.join(d, e.name);
-              if (e.isDirectory()) walk(p); else if (/^report.*\.json$/.test(e.name)) reports.push(p);
-            }
-          })(dir);
-          const bad = [];
-          for (const rp of reports) {
-            const r = JSON.parse(fs.readFileSync(rp, "utf8"));
-            const rows = r.games ?? r.results ?? [];
-            for (const g of rows) {
-              const shots = g.shots ?? g.screenshots ?? g.captures ?? [];
-              if (g.status && g.status !== "ready" && g.status !== "ok" && g.status !== "captured") bad.push(`${rp}:${g.game ?? g.id} status=${g.status}`);
-              if (g.drawCalls === 0) bad.push(`${rp}:${g.game ?? g.id} drawCalls=0`);
-              if (g.blank === true || g.blankShots > 0) bad.push(`${rp}:${g.game ?? g.id} blank frame`);
-              if (Array.isArray(shots) && shots.length === 0) bad.push(`${rp}:${g.game ?? g.id} no screenshots`);
-            }
-          }
-          if (reports.length === 0) bad.push(`${dir}: no report.json produced`);
-          for (const b of bad) console.error("::error::" + b);
-          process.exit(bad.length ? 1 : 0);
-        '
+        run: node tests/qr/prd07/ci/verify-reports.mjs games
       - name: Upload game evidence
         if: always()
         uses: actions/upload-artifact@v4
