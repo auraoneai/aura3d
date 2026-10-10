@@ -8,8 +8,10 @@ name: QR contracts
 on:
   pull_request:
     branches: [main]
+  # main only: a qr/** push with an open PR ran every job twice (push +
+  # pull_request). Branches without a PR use workflow_dispatch.
   push:
-    branches: [main, 'qr/**', 'aura3d-quality-rebuild/**']
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -32,7 +34,30 @@ jobs:
       - run: pnpm exec vitest run tests/unit/contracts
       - run: node tools/qr-ownership/check.mjs
 
+  # Throughput: the macOS browser job runs on pull_request only when contract
+  # code or specs change (job-level, so the required `browser` check reports
+  # skipped rather than pending). main pushes and dispatch always run it.
+  changes:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      browser: ${{ steps.filter.outputs.browser }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dorny/paths-filter@0e4a8c6effa4802afeda77dc8d303f8176d7dfad # v3
+        id: filter
+        with:
+          filters: |
+            browser:
+              - 'tests/browser/contracts/**'
+              - 'packages/*/src/contracts/**'
+              - 'packages/*/src/lanes/**'
+              - 'playwright.config.ts'
+              - '.github/workflows/qr-contracts.yml'
+
   browser:
+    needs: changes
+    if: ${{ !cancelled() && (github.event_name != 'pull_request' || (needs.changes.result == 'success' && needs.changes.outputs.browser == 'true')) }}
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
