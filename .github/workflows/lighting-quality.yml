@@ -87,9 +87,12 @@ on:
         type: boolean
         default: false
 
+# 02-CI: never cancel main runs. Main gets a per-run group (a shared group
+# would still replace a pending main run with the next one); other refs keep
+# one group per ref and cancel superseded runs.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   unit:
