@@ -108,13 +108,13 @@ flag-off empty value; handler emits `look.product-studio` +
 
 ## qr-request issues filed
 
-- Q-04-1: `@deprecated` JSDoc on `material.visualQA` (nodes/material.ts).
+- Q-04-1: `@deprecated` JSDoc on `material.visualQA` (nodes/material.ts). → #192
 - Q-15-2: `@deprecated` JSDoc on the other six `visualQA` surfaces + widening
-  `material`/`charts` `visualQA` return-type annotations for the additive keys.
-- Q-11-1: `lanes/prd13.ts` entry for `tools/bundle-size`.
+  `material`/`charts` `visualQA` return-type annotations for the additive keys. → #193
+- Q-11-1: `lanes/prd13.ts` entry for `tools/bundle-size`. → #194
 - `lights.ambient()` hits outside PRD-13 paths (tests/browser harnesses,
   tests/clean-room mains, tools/agent-dogfood) — prd02's ambient-flattens rule
-  will flag them once lanes land.
+  will flag them once lanes land. → #195 (closed)
 
 ## NOT RUN
 
