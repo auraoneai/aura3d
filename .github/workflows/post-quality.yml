@@ -64,8 +64,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: post-quality-${{ github.ref }}
-  cancel-in-progress: true
+  group: post-quality-${{ github.ref }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   unit:

@@ -7,8 +7,8 @@ on:
     - cron: "30 9 * * *"
 
 concurrency:
-  group: qr-prd15-specs-${{ github.ref }}
-  cancel-in-progress: true
+  group: qr-prd15-specs-${{ github.ref }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
   A3D_WEBGPU_BROWSER_EXECUTABLE: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome

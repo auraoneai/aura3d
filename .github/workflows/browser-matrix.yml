@@ -9,8 +9,8 @@ on:
       - develop
 
 concurrency:
-  group: browser-matrix-${{ github.ref }}
-  cancel-in-progress: true
+  group: browser-matrix-${{ github.ref }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   chromium-browser-and-visual:
