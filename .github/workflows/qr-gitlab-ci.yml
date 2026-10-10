@@ -178,13 +178,14 @@ jobs:
             done
             requester="$(printf '%s' "$REF" | grep -o 'prd[0-9][0-9]' | head -1 || true)"; requester="${requester:-push}"
           fi
+          BSETS_RE='^[A-Za-z0-9_,.;=-]*$'
           if [ "$local_build" = "auto" ]; then
             case "$REF" in qr/*) local_build=true ;; *) local_build=false ;; esac
           fi
           [[ "$suite" =~ ^(all|games|benchmark|unit|probe|flags-bisect)$ ]] || { echo "::error::suite must be all|games|benchmark|unit|probe|flags-bisect"; exit 1; }
           [[ "$bscenes" =~ ^[a-z0-9,-]*$ ]] || { echo "::error::bench_scenes must match ^[a-z0-9,-]*$"; exit 1; }
           [[ "$bengines" =~ ^(aura3d|three)(,(aura3d|three))?$ ]] || { echo "::error::bench_engines must be aura3d|three|aura3d,three"; exit 1; }
-          [[ "$bsets" =~ ^[A-Za-z0-9_,.;=-]*$ ]] || { echo "::error::invalid bench_flag_sets"; exit 1; }
+          [[ "$bsets" =~ $BSETS_RE ]] || { echo "::error::invalid bench_flag_sets"; exit 1; }
           [[ "$games" =~ ^[a-z0-9,-]*$ ]] || { echo "::error::games must match ^[a-z0-9,-]*$"; exit 1; }
           [[ "$viewports" =~ ^[0-9x,]+$ ]] || { echo "::error::viewports must match ^[0-9x,]+$"; exit 1; }
           [[ "$flags" =~ ^[A-Za-z0-9_,.-]+$ ]] || { echo "::error::invalid flags"; exit 1; }
