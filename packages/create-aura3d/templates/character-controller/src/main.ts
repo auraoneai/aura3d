@@ -45,12 +45,12 @@ const LOOK_ID = "outdoor-day" as const;
 const tuning = defaultCharacterControllerTuning;
 const kit = createLocomotionKit({ idleClip: "Idle", walkClip: "Walk", runClip: "Run", walkSpeed: tuning.walkSpeed, runSpeed: tuning.runSpeed });
 
-// showcaseWalkAnimatedGirl is authored in centimetres (86.9 × 161.8 × 37.8);
-// scale 0.01 puts the E1 humanoid rig at its real 1.62 m height.
-const HERO_SCALE = 0.01;
-// The certified rig ships a single take; locomotion is played by pacing that
-// clip to the movement speed (0 = posed idle frame, >1 = run-paced walk).
-const CERTIFIED_CLIP = "Take 001";
+// auraclash-player-rig is authored in metres (1.79 m tall); the derived
+// scale keeps the hero at the 1.62 m height the level was tuned for.
+const HERO_SCALE = 1.62 / assets.auraclashPlayerRig.bounds[1];
+// Locomotion is played by pacing the rig's walk loop to the movement speed
+// (0 = posed idle frame, >1 = run-paced walk).
+const CERTIFIED_CLIP = "Walk_Loop";
 const CLIP_SPEED: Record<"idle" | "walk" | "run", number> = {
   idle: 0,
   walk: 1,
@@ -109,7 +109,7 @@ const controllerGame = createGame({
     .add(primitives.box({ name: "distance marker east", size: [0.4, 1.4, 0.4], position: [5, 0.7, 0], material: material.pbr({ color: "#7fa3c2", roughness: 0.6 }), castShadow: true }))
     .add(primitives.box({ name: "distance marker south-east", size: [0.4, 1.4, 0.4], position: [3.5, 0.7, 4.5], material: material.pbr({ color: "#b987d0", roughness: 0.6 }), castShadow: true }))
     .add(
-      model(assets.showcaseWalkAnimatedGirl, { name: "certified hero humanoid-a", castShadow: true })
+      model(assets.auraclashPlayerRig, { name: "certified hero humanoid-a", castShadow: true })
         .position(0, 0, 0)
         .scale(HERO_SCALE)
         .animate({ clip: CERTIFIED_CLIP, loop: true, speed: 0 })
@@ -196,10 +196,10 @@ app.onFrame(({ dt }: { readonly dt: number }) => {
     running: sample.running,
     clipWeights: sample.clipWeights.map((w) => ({ clip: w.clip, weight: Number(w.weight.toFixed(3)) })),
     hero: {
-      assetId: assets.showcaseWalkAnimatedGirl.id,
-      url: assets.showcaseWalkAnimatedGirl.url,
+      assetId: assets.auraclashPlayerRig.id,
+      url: assets.auraclashPlayerRig.url,
       clip: CERTIFIED_CLIP,
-      metres: assets.showcaseWalkAnimatedGirl.bounds
+      metres: assets.auraclashPlayerRig.bounds
     },
     position: [Number(position.x.toFixed(3)), position.y, Number(position.z.toFixed(3))],
     yawDegrees: Number((yaw * 180 / Math.PI).toFixed(1)),

@@ -61,11 +61,14 @@ const boardOrigin = { x: -1.2, y: -2.18 };
 const boardTop = boardOrigin.y + visibleRows * cellSize;
 const boardCenterY = (boardOrigin.y + boardTop) / 2;
 
-// kenneyPlatformerBlockGrass is a 1.962×2.0×1.962 m bevelled cube centred on
-// its origin. CELL_SCALE brings it to one 0.24 m board cell; the slight fill
-// reduction keeps a visible bevel gap between adjacent cells.
-const CELL_SCALE = cellSize / 2;
-const CELL_FILL_SCALE = 0.112;
+// quaternius-cube-crate is a 2.021 m cube vs the retired 1.082 m block; the
+// scale literals below were authored against the old cube, so RENORM keeps
+// every rendered size identical. CELL_SCALE brings the crate to one
+// 0.24 m board cell; the slight fill reduction keeps a visible bevel gap.
+const RENORM = 1.082 / assets.quaterniusCubeCrate.bounds[1];
+const bs = (n: number) => n * RENORM;
+const CELL_SCALE = (cellSize / 2) * RENORM;
+const CELL_FILL_SCALE = 0.112 * RENORM;
 const FLASH_MS = 280;
 
 // Per-piece colours stay inside the neon-arcade palette family: the cyan
@@ -303,20 +306,22 @@ function createPracticeBoard(): Cell[][] {
 
 function buildScene(board: Board) {
   const nodes: AuraNodeInput[] = [
-    model(assets.cabinetModel, { name: "typed arcade cabinet", castShadow: true })
+    // Modular wall panel stands in for the arcade cabinet silhouette
+    // (library approximation, #481 mapping); scale keeps the old height.
+    model(assets.quaterniusWallModular, { name: "typed arcade cabinet", castShadow: true })
       .position(1.9, 0.2, -0.7)
       .scale(0.2),
     // Dark glossy board backing sourced from the same typed block GLB.
-    model(assets.blockCell, { name: "board glossy backplate", material: material.pbr({ color: "#0b0e18", roughness: 0.18, metalness: 0.55 }) })
+    model(assets.quaterniusCubeCrate, { name: "board glossy backplate", material: material.pbr({ color: "#0b0e18", roughness: 0.18, metalness: 0.55 }) })
       .position(0, boardCenterY, -0.16)
-      .scale([1.42, 2.5, 0.03]),
+      .scale([bs(1.42), bs(2.5), bs(0.03)]),
     ...boardFrameNodes(),
     ...settledCellsNode(board),
     ...activeCellNodes(),
     ...flashRowNodes(),
-    model(assets.blockCell, { name: "hold preview", material: material.neon({ color: "#b987d0", emissive: "#b987d0", emissiveIntensity: 0.5 }) })
+    model(assets.quaterniusCubeCrate, { name: "hold preview", material: material.neon({ color: "#b987d0", emissive: "#b987d0", emissiveIntensity: 0.5 }) })
       .position(-2.05, 1.92, 0.1)
-      .scale(0.09)
+      .scale(bs(0.09))
       .runtime(game.runtimeNode("hold-preview", { tags: ["hold", "runtime"] }))
   ];
 
@@ -333,18 +338,18 @@ function boardFrameNodes(): AuraNodeInput[] {
   const railThickness = 0.045; // 0.09 m rails around the 2.4 × 4.8 m well
   const railHeight = (visibleRows * cellSize) / 2 + railThickness;
   return [
-    model(assets.blockCell, { name: "board frame left rail", material: rail })
+    model(assets.quaterniusCubeCrate, { name: "board frame left rail", material: rail })
       .position(boardOrigin.x - railThickness, boardCenterY, 0)
-      .scale([railThickness, railHeight, 0.09]),
-    model(assets.blockCell, { name: "board frame right rail", material: rail })
+      .scale([bs(railThickness), bs(railHeight), bs(0.09)]),
+    model(assets.quaterniusCubeCrate, { name: "board frame right rail", material: rail })
       .position(-boardOrigin.x + railThickness, boardCenterY, 0)
-      .scale([railThickness, railHeight, 0.09]),
-    model(assets.blockCell, { name: "board frame bottom rail", material: rail })
+      .scale([bs(railThickness), bs(railHeight), bs(0.09)]),
+    model(assets.quaterniusCubeCrate, { name: "board frame bottom rail", material: rail })
       .position(0, boardOrigin.y - railThickness, 0)
-      .scale([0.69, railThickness, 0.09]),
-    model(assets.blockCell, { name: "board frame top rail", material: rail })
+      .scale([bs(0.69), bs(railThickness), bs(0.09)]),
+    model(assets.quaterniusCubeCrate, { name: "board frame top rail", material: rail })
       .position(0, boardTop + railThickness, 0)
-      .scale([0.69, railThickness, 0.09])
+      .scale([bs(0.69), bs(railThickness), bs(0.09)])
   ];
 }
 
@@ -368,7 +373,7 @@ function settledCellsNode(board: Board): AuraNodeInput[] {
     colors.push("#141828");
   }
   return [
-    instances.model(assets.blockCell, {
+    instances.model(assets.quaterniusCubeCrate, {
       name: "settled board cells",
       transforms,
       colors,
@@ -380,7 +385,7 @@ function settledCellsNode(board: Board): AuraNodeInput[] {
 
 function activeCellNodes(): AuraNodeInput[] {
   return Array.from({ length: 4 }, (_, index) =>
-    model(assets.blockCell, { name: `active piece cell ${index}`, material: material.neon({ color: "#4de8ff", emissive: "#4de8ff", emissiveIntensity: 0.45 }) })
+    model(assets.quaterniusCubeCrate, { name: `active piece cell ${index}`, material: material.neon({ color: "#4de8ff", emissive: "#4de8ff", emissiveIntensity: 0.45 }) })
       .position(0, -50, 0.14)
       .scale(CELL_SCALE)
       .runtime(game.runtimeNode(`active-cell-${index}`, { tags: ["active-cell", "runtime"] }))
@@ -391,9 +396,9 @@ function activeCellNodes(): AuraNodeInput[] {
 // bars stretch across the board and pulse emissive while a clear animates.
 function flashRowNodes(): AuraNodeInput[] {
   return Array.from({ length: 4 }, (_, index) =>
-    model(assets.blockCell, { name: `line clear flash ${index}`, material: material.neon({ color: FRAME_ACCENT, emissive: FRAME_ACCENT, emissiveIntensity: 1.6 }) })
+    model(assets.quaterniusCubeCrate, { name: `line clear flash ${index}`, material: material.neon({ color: FRAME_ACCENT, emissive: FRAME_ACCENT, emissiveIntensity: 1.6 }) })
       .position(0, -50, 0.16)
-      .scale([0.66, CELL_FILL_SCALE, 0.05])
+      .scale([bs(0.66), CELL_FILL_SCALE, bs(0.05)])
       .runtime(game.runtimeNode(`flash-row-${index}`, { tags: ["flash", "runtime"] }))
   );
 }
@@ -567,7 +572,7 @@ function publishEvidence(state: KitState): void {
       visibleRows,
       filledCells: filledCellCount(state.board),
       rendering: "instanced-model",
-      cellAsset: { id: "blockCell", url: assets.blockCell.url, metres: assets.blockCell.bounds },
+      cellAsset: { id: "quaterniusCubeCrate", url: assets.quaterniusCubeCrate.url, metres: assets.quaterniusCubeCrate.bounds },
       drawCalls: diagnostics.drawCalls
     },
     flash: { modelBased: true, activeRows: performance.now() < flashRows.until ? flashRows.rows : [] },
