@@ -284,7 +284,9 @@ export function createAuraCameraController(app: AuraApp, options: AuraCameraExte
   /* Every mutating C-22 call re-arms the tick. `Object.create` keeps the
    * prototype getters (`rig`, `presented`, `evidence`…) live while method
    * overrides shadow the raw controller's. */
-  const armed: AuraCameraControllerImpl = Object.create(controller);
+  const armed = Object.create(controller) as {
+    -readonly [K in keyof AuraCameraControllerImpl]: AuraCameraControllerImpl[K];
+  };
   armed.use = (rig, o) => { arm(); controller.use(rig, o); };
   armed.setPose = (p, o) => { arm(); controller.setPose(p, o); };
   armed.setFov = (fov, o) => { arm(); controller.setFov(fov, o); };
