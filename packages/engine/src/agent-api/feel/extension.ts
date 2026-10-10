@@ -137,12 +137,29 @@ export function createAuraFeelBus(app: AuraApp, options: AuraFeelExtensionOption
 
   /** Latest published uniforms — read by the `prd08.screenFeel` contributor. */
   const latest = { uniforms: bus.screenUniforms() };
-  const unframe = (app as unknown as OnFrameApp).onFrame?.(({ dt }) => {
-    bus.advance(Math.max(0, dt));
-    const u = bus.screenUniforms();
-    latest.uniforms = u;
-    overlay?.apply(u);
-  });
+  /*
+   * 08-LOOP: subscribe `advance` only while the bus has pending energy — a
+   * permanently-registered onFrame callback keeps `requiresFrames()` true and
+   * re-arms rAF forever even in static scenes. `emit()` re-arms the tick;
+   * once `isIdle()` reports all screen parts at rest with no pending verdicts
+   * the callback unregisters.
+   */
+  const onFrame = (app as unknown as OnFrameApp).onFrame;
+  let unframe: (() => void) | undefined;
+  const arm = () => {
+    if (!unframe && typeof onFrame === "function") {
+      unframe = onFrame.call(app, ({ dt }) => {
+        bus.advance(Math.max(0, dt));
+        const u = bus.screenUniforms();
+        latest.uniforms = u;
+        overlay?.apply(u);
+        if (bus.isIdle()) {
+          unframe?.();
+          unframe = undefined;
+        }
+      });
+    }
+  };
 
   // S-3: publish `AuraScreenFeelUniforms` every collected frame on the C-01
   // blackboard under `prd08.screenFeel`; a C-13 consumer reports consumption
@@ -178,6 +195,8 @@ export function createAuraFeelBus(app: AuraApp, options: AuraFeelExtensionOption
     readonly markScreenConsumed: () => void;
     dispose(): void;
   };
+  const rawEmit = impl.emit.bind(impl);
+  impl.emit = (event, at) => { arm(); return rawEmit(event, at); };
   Object.defineProperty(impl, "latestScreenUniforms", { value: () => latest.uniforms });
   Object.defineProperty(impl, "markScreenConsumed", { value: () => { blackboardConsumed.current = true; } });
   Object.defineProperty(impl, "dispose", {

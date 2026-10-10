@@ -116,6 +116,14 @@ function mixV(a: AuraVec3, b: AuraVec3, t: number): AuraVec3 {
   ];
 }
 
+function poseDistance(a: AuraCameraPose, b: AuraCameraPose): number {
+  let d = 0;
+  for (let i = 0; i < 3; i += 1) {
+    d = Math.max(d, Math.abs(a.position[i] - b.position[i]), Math.abs(a.target[i] - b.target[i]));
+  }
+  return Math.max(d, Math.abs(a.roll - b.roll), Math.abs(a.fov - b.fov));
+}
+
 function mixPose(a: AuraCameraPose, b: AuraCameraPose, t: number): AuraCameraPose {
   return {
     position: mixV(a.position, b.position, t),
@@ -146,6 +154,13 @@ export interface AuraCameraControllerImpl extends AuraCameraController {
   readonly rigs: AuraCameraRigFactories;
   /** View-projection captured at the end of the last `update` (C-5 helper backing). */
   readonly presentedViewProjection: () => readonly number[] | undefined;
+  /**
+   * 08-LOOP: `true` while the controller still needs per-frame ticks — a
+   * sequence or blend running, a ramp pending, any layer with energy > 0, a
+   * `continuous` rig bound, or the presented pose still moving. Drivers may
+   * unregister their frame callback once this returns false.
+   */
+  isActive(): boolean;
 }
 
 /**
@@ -179,6 +194,8 @@ export function createCameraController(deps: AuraCameraControllerDeps = {}): Aur
   let blend: BlendState | undefined;
   let sequence: SequenceState | undefined;
   let barsEntry: BarsEntry | undefined;
+  /** Pose distance between the two most recent `update` outputs. */
+  let lastPoseDelta = Number.POSITIVE_INFINITY;
 
   /** Q-3 bars honoring: attach while a `bars: true` shot plays; release eases
    * out and the entry is disposed once the bars fully close (see update()). */
@@ -372,10 +389,20 @@ export function createCameraController(deps: AuraCameraControllerDeps = {}): Aur
       }
       if (Object.keys(overrides).length > 0) pose = { ...pose, ...overrides };
       for (const [key, ramp] of ramps) {
-        const current = key === "fov" ? pose.fov : pose.roll;
-        const next = springDamp(current, ramp.target, ramp.halflife, realDt);
+        // Integrate from the ramp's own carried value — reading `pose[key]`
+        // re-springs from the rig's raw value every frame and never converges.
+        const next = springDamp(ramp.value, ramp.target, ramp.halflife, realDt);
         pose = { ...pose, [key]: next };
         ramp.value = next;
+        // Convergence snap: springDamp asymptotes and never reaches target, so
+        // without a settle threshold a ramp keeps the controller "active"
+        // forever (08-LOOP: rAF would re-arm indefinitely). The settled target
+        // moves into `overrides` so it persists once the ramp is gone.
+        if (Math.abs(next - ramp.target) <= 1e-4) {
+          pose = { ...pose, [key]: ramp.target };
+          overrides = { ...overrides, [key]: ramp.target };
+          ramps.delete(key);
+        }
       }
       const reducedMotion = deps.reducedMotion?.() ?? false;
       for (const entry of [...stack].sort((a, b) => a.order - b.order)) {
@@ -387,9 +414,21 @@ export function createCameraController(deps: AuraCameraControllerDeps = {}): Aur
       }
       previous = presented;
       presented = pose;
+      lastPoseDelta = poseDistance(previous, pose);
       presentedVp = viewProjection(pose, deps.aspect?.() ?? 16 / 9);
       deps.applyPose?.(pose);
       return pose;
+    },
+
+    isActive() {
+      return (
+        sequence !== undefined ||
+        blend !== undefined ||
+        ramps.size > 0 ||
+        stack.some((e) => (e.layer.energy?.() ?? 0) > 0) ||
+        activeRig.continuous === true ||
+        lastPoseDelta > 1e-6
+      );
     },
 
     setPose(p, o) {

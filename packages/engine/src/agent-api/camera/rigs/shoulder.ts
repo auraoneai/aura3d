@@ -31,6 +31,7 @@ export function createShoulderRig(o: ShoulderRigOptions): AuraCameraRig {
 
   return {
     id: "shoulder",
+    continuous: true,
     reset(pose) {
       damper?.reset();
       if (pose) inner.reset([...pose.position] as [number, number, number]);

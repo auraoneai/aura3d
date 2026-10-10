@@ -49,6 +49,7 @@ export function createOrbitRig(o: OrbitRigOptions = {}): AuraOrbitRig {
 
   return {
     id: "orbit",
+    continuous: true,
     setAngles(y, p) {
       yawT = y;
       pitchT = Math.min(pitchMax, Math.max(pitchMin, p));

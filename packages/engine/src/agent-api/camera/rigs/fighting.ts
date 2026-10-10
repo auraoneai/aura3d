@@ -36,6 +36,7 @@ export function createFightingRig(o: FightingRigOptions): AuraCameraRig {
 
   return {
     id: "fighting",
+    continuous: true,
     reset(pose) {
       midpoint = undefined;
       dist = Number.NaN;

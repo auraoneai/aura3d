@@ -256,14 +256,52 @@ export function createAuraCameraController(app: AuraApp, options: AuraCameraExte
   };
   rebindIfNeeded();
 
-  // Drive the controller once per frame tick (real dt; frame.time is seconds).
+  /*
+   * 08-LOOP: drive the controller only while it has work — `app.onFrame`
+   * callbacks keep `requiresFrames()` true (createAuraApp.ts), which re-arms
+   * rAF forever and renders every static scene every frame. We subscribe on
+   * any mutating camera call (arm) and unsubscribe when `isActive()` reports
+   * idle (settled pose, no sequence/blend/ramp/layer energy, non-continuous
+   * rig). Rigs marked `continuous` (subject/pointer tracking) never idle —
+   * their output can change without an API call.
+   */
   const onFrame = (app as OnFrameApp).onFrame;
-  if (typeof onFrame === "function") {
-    onFrame.call(app, (f) => {
-      rebindIfNeeded();
-      controller.update(Math.max(f.dt, 1e-6), f.time * 1000);
-    });
-  }
+  let unframe: (() => void) | undefined;
+  const arm = () => {
+    if (!unframe && typeof onFrame === "function") {
+      unframe = onFrame.call(app, (f) => {
+        rebindIfNeeded();
+        controller.update(Math.max(f.dt, 1e-6), f.time * 1000);
+        if (!controller.isActive()) {
+          unframe?.();
+          unframe = undefined;
+        }
+      });
+    }
+  };
+  arm();
+
+  /* Every mutating C-22 call re-arms the tick. `Object.create` keeps the
+   * prototype getters (`rig`, `presented`, `evidence`…) live while method
+   * overrides shadow the raw controller's. */
+  const armed: AuraCameraControllerImpl = Object.create(controller);
+  armed.use = (rig, o) => { arm(); controller.use(rig, o); };
+  armed.setPose = (p, o) => { arm(); controller.setPose(p, o); };
+  armed.setFov = (fov, o) => { arm(); controller.setFov(fov, o); };
+  armed.setRoll = (roll, o) => { arm(); controller.setRoll(roll, o); };
+  armed.addLayer = (layer, order) => { arm(); return controller.addLayer(layer, order); };
+  armed.play = (seq) => { arm(); return controller.play(seq); };
+  armed.cut = () => { arm(); controller.cut(); };
+  armed.update = (realDt, timeMs) => { arm(); return controller.update(realDt, timeMs); };
+  armed.shake = Object.create(controller.shake);
+  armed.shake.add = (amount: number) => { arm(); controller.shake.add(amount); };
+  armed.shake.configure = (o) => { arm(); controller.shake.configure(o); };
+  armed.punch = Object.create(controller.punch);
+  armed.punch.trigger = (o) => { arm(); controller.punch.trigger(o); };
+  armed.fovKick = Object.create(controller.fovKick);
+  armed.fovKick.set = (channel, offsetDeg, halflife) => { arm(); controller.fovKick.set(channel, offsetDeg, halflife); };
+  armed.lookAt = controller.lookAt;
+  armed.presented = () => { rebindIfNeeded(); return controller.presented(); };
 
   // freezeSpecs (C-22 option): route-held spec objects throw on cast-mutation.
   if (options.freezeSpecs) {
@@ -274,5 +312,5 @@ export function createAuraCameraController(app: AuraApp, options: AuraCameraExte
     }
   }
 
-  return controller;
+  return armed;
 }

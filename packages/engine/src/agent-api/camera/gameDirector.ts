@@ -83,6 +83,9 @@ export function createQrGameCameraDirector(options: QrGameCameraDirectorOptions 
 
   let shakeEstimate = 0;
   let specialRemaining = 0;
+  // 08-LOOP: accumulated clock for the controller's noise/shake time base —
+  // passing `dt*1000` as timeMs kept it pinned near one frame duration.
+  let elapsedMs = 0;
 
   const initialRig = (): AuraCameraRig =>
     mode === "fixed"
@@ -150,7 +153,8 @@ export function createQrGameCameraDirector(options: QrGameCameraDirectorOptions 
         setRig(`fighting:${ids[0]}|${ids[1]}`, createFightingRig({ fighters: ids, fov: baseFov }));
       }
       if (specialRemaining <= 0) lookAt.clear();
-      controller.update(Math.max(0, dt), Math.max(0, dt) * 1000);
+      elapsedMs += Math.max(0, dt) * 1000;
+      controller.update(Math.max(0, dt), elapsedMs);
       return snapshot();
     },
     impact(intensity = 1, duration = 0.16) {
