@@ -33,6 +33,10 @@
  * exceeded budget, the "issue per exceeded budget" enumerable. `--devices`
  * profiles are Playwright device descriptors (iphone = 390×844 DPR 3 = §19
  * mobile viewport, android = Pixel 7); real-device lab rows still supersede.
+ * `--qr-flags` lists flag *sets* separated by `,`; join flags inside one set
+ * with `+` (e.g. `assets+lod,all`). `tiers` is always added so the real
+ * QualityController can be forced. Rows on a software renderer (SwiftShader)
+ * or with navigation errors are marked `error` and the script exits 1.
  */
 
 import { createRequire } from "node:module";
@@ -108,8 +112,10 @@ const TIER_BUDGETS = {
   ultra: { vramBytes: 768 << 20, triangles: 3_000_000, drawCalls: 800, longTaskMs: 50, resourceBytes: 40 << 20 },
 };
 
+// `tier` is the tier the app actually ran on; unforced (stub-controller) runs
+// pass null — their tier is unknown, so no budget can be attributed to them.
 function checkBudgets(tier, metrics) {
-  const limits = TIER_BUDGETS[tier];
+  const limits = tier ? TIER_BUDGETS[tier] : undefined;
   if (!limits || !metrics || metrics.error) return { budgets: [], exceedances: [] };
   const measured = {
     vramBytes: metrics.vramBytes,
@@ -122,11 +128,27 @@ function checkBudgets(tier, metrics) {
   const exceedances = [];
   for (const [name, limit] of Object.entries(limits)) {
     const m = measured[name];
-    const pass = typeof m === "number" && m <= limit;
+    // An unmeasured metric is `pass: null` (visible, not a pass), never an
+    // exceedance: one issue per *measured* exceeded budget.
+    const pass = typeof m === "number" ? m <= limit : null;
     budgets.push({ budget: name, limit, measured: m ?? null, pass });
-    if (!pass) exceedances.push({ budget: name, limit, measured: m ?? null });
+    if (pass === false) exceedances.push({ budget: name, limit, measured: m });
   }
   return { budgets, exceedances };
+}
+
+// Tier forcing needs the real QualityController, which only runs under
+// A3D_QR_TIERS; every measured flag set therefore also carries `tiers`.
+function urlQrFlagsFor(qrFlags) {
+  const parts = qrFlags.split("+").map((s) => s.trim()).filter(Boolean);
+  if (parts.includes("all") || parts.includes("tiers")) return parts.join(",");
+  return [...parts, "tiers"].join(",");
+}
+
+// §15: software rasterisation is not a tier measurement.
+function softwareRenderer(metrics) {
+  const renderer = String(metrics?.gpu?.renderer ?? "");
+  return /swiftshader|llvmpipe|software/i.test(renderer) ? renderer : null;
 }
 
 /** WebGL2 probe injected before app code: upload accounting + draw stats + long tasks. */
@@ -288,7 +310,7 @@ async function measureRun(browser, game, tier, qrFlags, deviceSpec) {
   const context = await browser.newContext({ ...deviceSpec });
   const page = await context.newPage();
   await page.addInitScript(PROBE_SOURCE);
-  const url = `${baseUrl}${game.route}${game.route.includes("?") ? "&" : "?"}a3d-qr=${encodeURIComponent(qrFlags)}`;
+  const url = `${baseUrl}${game.route}${game.route.includes("?") ? "&" : "?"}a3d-qr=${encodeURIComponent(urlQrFlagsFor(qrFlags))}`;
   const navAt = Date.now();
   try {
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 90_000 });
@@ -310,9 +332,9 @@ async function measureRun(browser, game, tier, qrFlags, deviceSpec) {
     const sampleEnd = Date.now() + sampleMs;
     await page.waitForTimeout(sampleMs);
     const metrics = await collect(page).catch((err) => ({ error: String(err) }));
-    const { budgets, exceedances } = checkBudgets(tier, metrics);
+    const { budgets, exceedances } = checkBudgets(null, metrics);
     await context.close();
-    return { game: game.id, tierRequested: tier, tierObserved: "auto", qrFlags, emulatedDevice: deviceSpec.name, url, forced: false, readyMs: Date.now() - navAt - sampleMs, note: "tier cache never written (stub controller — flag-off); run measured on app-decided tier", metrics, budgets, budgetExceedances: exceedances };
+    return { game: game.id, tierRequested: tier, tierObserved: "auto", qrFlags, emulatedDevice: deviceSpec.name, url, forced: false, readyMs: Date.now() - navAt - sampleMs, note: "tier cache never written (stub controller); run measured on app-decided tier, so no tier budget applies", metrics, budgets, budgetExceedances: exceedances };
   }
   await page.reload({ waitUntil: "domcontentloaded" });
   const reloadAt = Date.now();
@@ -332,7 +354,11 @@ async function measureRun(browser, game, tier, qrFlags, deviceSpec) {
 }
 
 async function main() {
-  const browser = await chromium.launch({ args: ["--enable-unsafe-swiftshader"] });
+  // No --enable-unsafe-swiftshader: a host without a GPU must not produce
+  // software-rendered tier rows. Hardware args come from the lane env
+  // (qr-prd05-assets-browser.yml uses the same PRD05_CHROMIUM_ARGS).
+  const launchArgs = (process.env.PRD05_CHROMIUM_ARGS ?? "").split(/\s+/).filter(Boolean);
+  const browser = await chromium.launch({ args: launchArgs });
   const rows = [];
   for (const game of games) {
     for (const qrFlags of qrFlagSets) {
@@ -343,6 +369,12 @@ async function main() {
           await new Promise((r) => setTimeout(r, 0));
           const row = await measureRun(browser, game, tier, qrFlags, deviceSpec);
           row.elapsedMs = Date.now() - t0;
+          const software = softwareRenderer(row.metrics);
+          if (software) {
+            row.error = `software renderer "${software}" — not a tier measurement (§15)`;
+            row.budgets = [];
+            row.budgetExceedances = [];
+          }
           if (row.forced === false && rows.some((r) => r.game === game.id && r.qrFlags === qrFlags && r.emulatedDevice === deviceSpec.name && r.forced === false)) {
             process.stderr.write("skipped duplicate unforced sample\n");
             continue;
@@ -369,13 +401,17 @@ async function main() {
     sampleMs,
     qrFlags: qrFlagSets,
     devices: deviceSpecs.map((d) => d.name),
-    runner: { browser: browser.version(), note: `forced via aura3d.quality.v1 seed + ?a3d-qr=${qrFlagSets.join("|")}` },
+    runner: { browser: browser.version(), launchArgs, note: `forced via aura3d.quality.v1 seed + ?a3d-qr=<set>,tiers for sets ${qrFlagSets.join(" | ")}` },
     rows,
     budgetExceedances,
   };
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, JSON.stringify(doc, null, 2) + "\n");
-  console.log(`wrote ${outPath} (${rows.length} runs, ${budgetExceedances.length} budget exceedances)`);
+  const errored = rows.filter((r) => r.error).length;
+  console.log(`wrote ${outPath} (${rows.length} runs, ${errored} errored, ${budgetExceedances.length} budget exceedances)`);
+  // Errored rows (navigation failures, software renderer) fail the run; the
+  // JSON is still written so the failure is inspectable.
+  if (errored > 0) process.exitCode = 1;
 }
 
 main().catch((err) => { console.error(err); process.exit(1); });
