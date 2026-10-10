@@ -49,3 +49,74 @@ previously green arm fails.
 
 The GitLab mirror's pipeline-variable override is already locked
 (`ci_pipeline_variables_minimum_override_role = no_one_allowed`). No action.
+
+## 5. OA-1 check-name verification (2026-10-10, against a real run)
+
+The names were checked against the check-runs on PR #863 head `c54ef09a`
+(`gh api repos/auraoneai/aura3d/commits/<sha>/check-runs --paginate --jq '.check_runs[].name'`).
+**Do not apply `ruleset-main.proposal.json` as written.** Fix these first:
+
+| Proposal context | Finding on the real run | Needed before applying |
+|---|---|---|
+| `bundle size` | No such check; the job is `bundle-size` | Rename the context (or the job) |
+| `unit` | 7 different jobs are named `unit` (QR contracts, prd04, prd10, prd13, QR-09, ...) | Give the QR contracts jobs unique names, e.g. `QR contracts / unit`, and require those |
+| `browser` | 4 jobs are named `browser` | Same as `unit` |
+| `arch-gates`, `pack-check`, `bundle-size` | Path-filtered `pull_request` triggers. A required check that never starts leaves unrelated PRs stuck at "Expected". `arch-gates` and `pack-check` have no `push: main` trigger | Drop the path filters for required workflows (or add an always-run summary job) and add `push: main` |
+| `Test (Node 22)` | Two jobs carry this name (CI and Test & Coverage) | Use one unique name |
+| `qr-required` | OK. It runs on every PR; allflags-smoke runs only on main/schedule/dispatch/`qr-allflags` PRs (#866) | — |
+
+Also before applying: in `qr-prd15-bundle-size.yml`, "Commit baseline on main pushes" pushes a bot commit straight
+to `main`. The ruleset's `pull_request` rule will reject that push, which turns the job red on every main run.
+That step must become an artifact or a PR before the ruleset goes live.
+
+G5 prepares these workflow changes as one Wave 1 PR. The owner then applies the corrected proposal.
+
+After applying, verify:
+
+```bash
+gh api repos/auraoneai/aura3d/rulesets --jq '.[] | {id, name, enforcement}'
+gh api repos/auraoneai/aura3d/rules/branches/main --jq '.[].type'
+```
+
+`bypass_actors` stays `[]`, with no entry for `devin-ai-integration` or anyone else (§2).
+
+## 6. OA-2: `KIRO_PRISM_API_KEY` Actions secret (#137, blocks lane 13 row 13-S7)
+
+The owner sets the secret from the Prism credential store. Never paste the value into an issue or a file.
+
+```bash
+gh secret set KIRO_PRISM_API_KEY --repo auraoneai/aura3d   # prompts for the value
+```
+
+Done when the owner closes #137.
+
+## 7. OA-4 / P-62: release order (PRD-15 §11; PRD-16 P-62). Decision needed
+
+State on main: #357 merged the 4.0 removals (`packages/lean`, 22 subpaths, 85 `.` names), but 3.1.0 was never
+published. The root `package.json` is still 3.0.1 and the last tags are `v3.0.0` and `v3.0.1`. The last commit
+before #357 is `374c7ac2a` (first parent of merge `afb475c2f`).
+
+Pick one option:
+
+- **A. Publish 3.1.0 first.** Cut 3.1.0 with deprecations (not removals) from a pre-#357 base (`374c7ac2a`), using
+  the release workflow and the production runbook `/Users/gurbakshchahal/AuraOne/AuraOne-Deploy-Final-PERMANENT.md`.
+  Publish 4.0.0 no sooner than 4 weeks later. Lane 15 (15-T8.2) prepares the RC branch and reruns the 36 strict
+  captures cancelled on #357. Agents never publish.
+- **B. Signed waiver.** Add a waiver section to `docs/project/aura3d-quality-rebuild/migration/` (MIGRATION-4.0)
+  that states consumers move from 3.0.1 to 4.0.0 directly, signed and dated by the owner.
+
+Decision (owner): `A | B`. Date: `____`. Signature: `____`.
+
+## 8. OA-3 / P-63: lean fixtures (#525, PRD-15 §16.3). Decision needed
+
+T8.1 closed §16.3 "by deletion": `tests/qr/prd15/fixtures/lean-templates` and `tools/lean-fixture-capture` were
+removed along with `packages/lean`.
+
+Pick one option:
+
+- **A. Removal-proof run.** Lane 15 restores the fixture capture as a one-off run against the pre-removal commit
+  `374c7ac2a`. It builds `prd15-lean-{product,minigame}` from the packed tarball at 1920×1080 and 390×844 and
+  judges the PRD-15 §16.3 criteria. The run id is recorded on #525 before the row closes.
+- **B. Signed scope cut.** §16.3 is cut from PRD-15. Record the cut here and on #525, signed and dated.
+
+Decision (owner): `A | B`. Date: `____`. Signature: `____`. Record the same decision as a comment on #525.
