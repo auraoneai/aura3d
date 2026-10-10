@@ -16,6 +16,8 @@ import {
 import { Material, type RenderState } from "../Material.js";
 import { MaterialInstance } from "../MaterialInstance.js";
 import type { UniformValue } from "../RenderDevice";
+import { TextureBinding } from "../TextureBinding.js";
+import { capturedTransmissionTarget } from "../forward/transmissionTargetStore.js";
 
 /**
  * KHR_texture_transform matrix per PRD-04 §8.9: `T · R · S` with
@@ -206,11 +208,22 @@ const transmissionTargetFeature: ShaderFeature = {
     return value === true ? { A3D_TRANSMISSION: 1 } : {};
   },
   bindUniforms(_value, item, set) {
+    // T0-05 review: bind the captured opaque-scene copy (the capture pass
+    // records it in transmissionTargetStore); a material-pinned target wins.
     const material = item.material as ParameterSource | undefined;
+    const captured = capturedTransmissionTarget();
     const target = material?.getParameter("u_prd04TransmissionTarget");
-    if (target !== undefined) set("a3d_prd04_transmissionSampler", target);
+    if (target !== undefined) {
+      set("a3d_prd04_transmissionSampler", target);
+    } else if (captured) {
+      set("a3d_prd04_transmissionSampler", new TextureBinding({ name: "a3d_prd04_transmissionSampler", texture: captured.texture, required: false }));
+    }
     const size = material?.getParameter("u_prd04TransmissionTargetSize");
-    if (size !== undefined) set("a3d_prd04_transmissionSamplerSize", size);
+    if (size !== undefined) {
+      set("a3d_prd04_transmissionSamplerSize", size);
+    } else if (captured) {
+      set("a3d_prd04_transmissionSamplerSize", new Float32Array([captured.width, captured.height]));
+    }
   }
 };
 

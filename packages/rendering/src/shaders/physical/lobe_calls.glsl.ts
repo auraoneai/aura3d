@@ -196,14 +196,16 @@ export const A3D_PRD04_VOLUME_CALL = chunk("a3d_prd04_volume_call", /* glsl */ `
 export const A3D_PRD04_TRANSMISSION_PARS = chunk("a3d_prd04_transmission_pars", /* glsl */ `
 uniform float u_transmissionFactor;
 uniform mat4 u_modelMatrix;
-`, ["a3d_prd04_transmission", "a3d_prd04_volume_pars"]);
+`, ["a3d_prd04_transmission", "a3d_prd04_lobes_state"]);
 
+// Thin-walled by default: thickness / attenuation stay at the
+// a3dPrd04LobesEnsure defaults (0, 1e30, white) unless the volume lobe's call
+// sets them. Copying the volume uniforms here read them as 0 on materials
+// without KHR_materials_volume, and a3dVolumeAttenuation(0, 0) is NaN
+// (lane-04 review on #877).
 export const A3D_PRD04_TRANSMISSION_CALL = chunk("a3d_prd04_transmission_call", /* glsl */ `{
 	${ENSURE}
 	a3dLobes.transmission = saturate( u_transmissionFactor );
-	a3dLobes.thickness = u_volumeThicknessFactor;
-	a3dLobes.attenuationDistance = u_volumeAttenuationDistance;
-	a3dLobes.attenuationColor = u_volumeAttenuationColor;
 }`, ["a3d_prd04_transmission_pars"]);
 
 // r185 transmission_fragment.glsl.js: totalDiffuse = mix( totalDiffuse,

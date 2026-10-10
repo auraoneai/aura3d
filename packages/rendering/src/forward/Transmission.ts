@@ -33,6 +33,7 @@ import { registerFrameContributor } from "../contracts/frameGraph.js";
 import { TextureBinding } from "../TextureBinding.js";
 import { MaterialInstance } from "../MaterialInstance.js";
 import { TransmissionRenderTarget } from "../TransmissionRenderTarget.js";
+import { setCapturedTransmissionTarget } from "./transmissionTargetStore.js";
 import { PRD01_FORWARD_TARGET } from "../renderer/FrameGraph.js";
 import { qrCoreOutputOn } from "../renderer/qrSubFlags.js";
 import {
@@ -189,6 +190,8 @@ class TransmissionCapturePass extends BaseRenderPass {
     }
     if (texture) {
       frame.blackboard.set(TRANSMISSION_BLACKBOARD_KEY, texture);
+      // T0-05: per-draw bindUniforms has no blackboard; see transmissionTargetStore.
+      setCapturedTransmissionTarget({ texture: texture.colorTexture, width, height });
     }
     // The producer publishes its RenderTarget under PRD01_FORWARD_TARGET once
     // the forward target exists (HDR path and postprocess path both do); on
