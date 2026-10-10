@@ -11,7 +11,7 @@ import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import { hdriAssets } from "../../../shared/assets";
 import type { CapabilityEntry, CapabilityStatus, ReadyPayload } from "../../../shared/types";
-import { prd05Assets, type Prd05AssetEntry } from "../../../scenes/prd05/assets";
+import { prd05Assets } from "../../../scenes/prd05/assets";
 import type { Prd05SceneSpec } from "../../../scenes/prd05/spec";
 
 const EULER_ORDER: THREE.EulerOrder = "ZYX";
@@ -23,7 +23,10 @@ class CapabilityLog {
   }
 }
 
-const assetUrl = (entry: Prd05AssetEntry | { repoPath: string }): string => `/${entry.repoPath}`;
+// Served URLs (dist `/qr-assets/`), never repo paths: capture.mjs serves only the built dist.
+const assetUrl = (entry: { url: string }): string => entry.url;
+/** three's Basis transcoder, copied into dist by the benchmark build (#857). */
+export const THREE_BASIS_TRANSCODER_PATH = "/qr-assets/basis/";
 
 export interface Prd05ThreeSceneOptions {
   readonly qrFlags?: readonly string[];
@@ -96,7 +99,7 @@ export async function runPrd05ThreeScene(spec: Prd05SceneSpec, host: HTMLElement
   const gltfLoader = new GLTFLoader();
   gltfLoader.setMeshoptDecoder(MeshoptDecoder);
   const ktx2 = new KTX2Loader()
-    .setTranscoderPath("/node_modules/three/examples/jsm/libs/basis/")
+    .setTranscoderPath(THREE_BASIS_TRANSCODER_PATH)
     .detectSupport(renderer);
   gltfLoader.setKTX2Loader(ktx2);
   log.add("optimized-decoders", "supported", "GLTFLoader + MeshoptDecoder + KTX2Loader(basis transcoder)");
@@ -131,7 +134,8 @@ export async function runPrd05ThreeScene(spec: Prd05SceneSpec, host: HTMLElement
         root.rotation.order = EULER_ORDER;
         root.rotation.set(...object.rotation);
       }
-      if (object.scale !== undefined) root.scale.setScalar(object.scale);
+      if (typeof object.scale === "number") root.scale.setScalar(object.scale);
+      else if (object.scale !== undefined) root.scale.set(...object.scale);
       root.traverse((child) => {
         const mesh = child as THREE.Mesh;
         if (!mesh.isMesh) return;
