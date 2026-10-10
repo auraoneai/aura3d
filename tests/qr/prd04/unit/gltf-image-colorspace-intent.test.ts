@@ -99,7 +99,7 @@ describe("tangent-derivative-fallback (P5-4)", () => {
         normalTexture: retarget(material.normalTexture),
         occlusionTexture: retarget(material.occlusionTexture),
         emissiveTexture: retarget(material.emissiveTexture)
-      }))
+      })) as unknown as GLTFAsset["materials"]
     };
     const decoder = () => ({ width: 1, height: 1, data: new Uint8Array(4).fill(255), colorSpace: "srgb" as const });
     const flagged = await createGLTFRenderResources(noSet0, { materialsR185: true, imageDecoder: decoder });

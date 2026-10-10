@@ -43,7 +43,7 @@ describe("gltf material mapping spec-exact (CompareTransmission)", () => {
 
     const gold = materials.get("gold")!;
     expect(gold.renderState.cullMode).toBe("none"); // doubleSided
-    expect(gold.getParameter("u_baseColor")?.[0]).toBeCloseTo(0.8824, 3);
+    expect((gold.getParameter("u_baseColor") as readonly number[] | undefined)?.[0]).toBeCloseTo(0.8824, 3);
     expect(gold.getParameter("u_roughness")).toBeCloseTo(0.2, 6);
     expect(gold.getParameter("u_metallic")).toBe(1);
   });

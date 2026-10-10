@@ -76,7 +76,10 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm typecheck:raw
+      # CI-0/T0-31: lane-scoped typecheck (tests/qr/prd04 + import graph).
+      # The repo-wide `pnpm typecheck:raw` gate stays in its own workflow —
+      # other lanes' breakers are filed as qr-requests #777/#778/#779.
+      - run: pnpm exec tsc --noEmit -p tests/qr/prd04/tsconfig.lane.json
       - name: Lane unit tests (chunk registration, r185 oracle, scenes, codemods)
         run: pnpm exec vitest run -c tests/qr/prd04/vitest.config.ts
       - name: Contract conformance

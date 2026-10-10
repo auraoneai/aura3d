@@ -31,10 +31,12 @@ function ctx(items: readonly unknown[], opts: { tier?: keyof typeof QUALITY_TIER
   return {
     device: makeDevice(halfFloat),
     width, height, frameIndex: 0, timeSeconds: 0,
-    camera: {}, source: {},
+    camera: {} as FrameContributorContext["camera"], source: {} as FrameContributorContext["source"],
     items: items as FrameContributorContext["items"],
     tier: tier === null ? ({} as FrameContributorContext["tier"]) : QUALITY_TIERS[tier],
-    flags: {} as FrameContributorContext["flags"],
+    // QrFlags needs `values` + `on` for qrCoreOutputOn; `{}` crashed the
+    // contributor's flag check with `on is not a function`.
+    flags: { values: {}, on: () => false } as FrameContributorContext["flags"],
     sceneDepth: {} as FrameContributorContext["sceneDepth"],
     blackboard: new Map()
   };

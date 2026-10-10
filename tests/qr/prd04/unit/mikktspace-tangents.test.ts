@@ -10,6 +10,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
 import { computeMikkTSpaceTangents } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+// @ts-expect-error vendored MikkTSpace module ships no types
 import * as mikktspace from "three/examples/jsm/libs/mikktspace.module.js";
 import {
   generateMikkTSpaceTangents,
@@ -19,7 +20,7 @@ import {
 
 const FIXTURE = resolve(__dirname, "../../../../fixtures/asset-corpus/normal-tangent-mirror-test.glb");
 
-const COMP_SIZE: Record<number, number> = { SCALAR: 1, VEC2: 2, VEC3: 3, VEC4: 4 };
+const COMP_SIZE: Record<string, number> = { SCALAR: 1, VEC2: 2, VEC3: 3, VEC4: 4 };
 const CTOR: Record<number, new (b: ArrayBuffer, o: number, l: number) => ArrayLike<number> & { length: number }> = {
   5120: Int8Array as never,
   5121: Uint8Array as never,
@@ -44,7 +45,7 @@ function readGlbAttributes(path: string) {
   const accessor = (i: number) => {
     const a = json.accessors[i];
     const arr = new (CTOR[a.componentType])(bin.buffer, bin.byteOffset + view(i).off, a.count * COMP_SIZE[a.type]);
-    return Array.from(arr as Iterable<number>);
+    return Array.from(arr);
   };
   const prim = json.meshes[0].primitives[0];
   return {
