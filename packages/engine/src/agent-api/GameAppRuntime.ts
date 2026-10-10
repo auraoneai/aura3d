@@ -18,6 +18,7 @@ import {
   type FrameLoopSnapshot
 } from "./FrameLoop";
 import { StubTimeController, type AuraTimeController } from "../contracts/time";
+import { resolveQrFlags } from "../contracts/flags.js";
 import {
   createPerformanceGovernor,
   type GamePerFramePerfTelemetry,
@@ -83,6 +84,7 @@ export interface GameAppRuntimeOptions {
   readonly input?: GameInputOptions | readonly GameInputOptions[];
   readonly evidence?: GameRuntimeEvidenceOptions;
   readonly performanceBudget?: GameAppRuntimePerformanceBudgetOptions;
+  readonly qualityRebuild?: { readonly flags?: readonly string[] | Parameters<typeof resolveQrFlags>[0]["options"] };
 }
 
 export interface GameAppRuntime<TApp extends AuraAppHandle = AuraAppHandle> {
@@ -189,14 +191,22 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
     for (const waiter of waiters) waiter(frameIndex);
   };
 
-  const loopFrameUnsubscribe = loop.onFrame((frame) => {
-    app.step(frame.dt);
-  });
+  // C-23 (R15, #212): under A3D_QR_CAMERA_LOOP the loop frame advances the
+  // app and exactly one render runs per tick; flag off keeps the legacy
+  // step-per-frame path.
+  const cameraLoopOn = resolveQrFlags({ options: options.qualityRebuild?.flags }).on("A3D_QR_CAMERA_LOOP");
+  const loopFrameUnsubscribe = loop.onFrame(
+    cameraLoopOn
+      ? (frame) => { app.advance(frame.dt); }
+      : (frame) => { app.step(frame.dt); }
+  );
+  const loopTickUnsubscribe = cameraLoopOn ? loop.onTick(() => { app.step(0); }) : undefined;
   const internalFrameUnsubscribe = app.onFrame((frame) => {
     const loopSnapshot = loop.snapshot();
     for (const input of ownedInputs) input.update(frame.dt);
     const normalizedFrame: AuraAppFrame = {
       ...frame,
+      alpha: frame.alpha ?? loopSnapshot.alpha,
       fixedDt: loopSnapshot.fixedDt,
       paused: status === "paused" || app.runtime.paused
     };
@@ -384,6 +394,7 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
       status = "disposed";
       disposed = true;
       loopFrameUnsubscribe();
+    loopTickUnsubscribe?.();
       internalFrameUnsubscribe();
       frameCallbacks.clear();
       presentedWaiters.clear();

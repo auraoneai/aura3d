@@ -64,7 +64,7 @@ export function createMasterChain(
   destination: AudioNode,
   options: MasterChainOptions = {}
 ): MasterChain {
-  const ceiling = options.limiterCeilingDb ?? -1;
+  const ceiling = options.limiterCeilingDb ?? -6;
   const glueOn = options.glue ?? true;
 
   const input = ctx.createGain();
@@ -87,9 +87,10 @@ export function createMasterChain(
 
   if (ctx.createDynamicsCompressor) {
     limiter = ctx.createDynamicsCompressor() as unknown as CompressorLike;
+    // C-25 (#210): soft-knee limiter −6 dBFS threshold, 12:1, 6 dB knee.
     limiter.threshold.value = ceiling;
-    limiter.knee.value = 0;
-    limiter.ratio.value = 20;
+    limiter.knee.value = 6;
+    limiter.ratio.value = 12;
     limiter.attack.value = 0.001;
     limiter.release.value = 0.1;
     chain.push(limiter);
