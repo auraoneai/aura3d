@@ -1,5 +1,5 @@
 import { fileURLToPath } from "node:url";
-import { baseReport, isRecord, readJson, writeJson } from "../external-parity-reporting/index.js";
+import { baseReport, isRecord, readJson, writeJson } from "../_quarantine/external-parity-reporting/index.js";
 
 export type ExternalParityBroadParityClaimId =
   | "threejs-broad-superiority"

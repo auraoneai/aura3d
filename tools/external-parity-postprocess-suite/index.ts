@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { baseReport, isRecord, readJson, writeJson } from "../external-parity-reporting/index.js";
+import { baseReport, isRecord, readJson, writeJson } from "../_quarantine/external-parity-reporting/index.js";
 
 export interface ExternalParityPostprocessSuiteReadinessReport {
   readonly ok: boolean;

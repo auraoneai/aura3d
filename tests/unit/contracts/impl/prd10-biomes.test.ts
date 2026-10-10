@@ -199,14 +199,22 @@ describe("prd10 env sources + probes (T6.1)", () => {
     expect(r.probe).toEqual({ capture: { include: "sky-only", resolution: 128, update: "once" } });
   });
 
-  it("no nodes → default rules: ocean water resolves outdoor-day, empty scene interior-neutral", () => {
+  it("no nodes → default rules: ocean water resolves outdoor-day; Q-15-6: a scene with no world signal resolves no prd10 source", () => {
     const waterS = snapshot([{ kind: "water", options: { kind: "ocean" } }]);
     const r = resolveEnvironment(waterS, "high", FLAGS_BIOME);
     expect(r.kind).toBe("biome");
     expect(r.intensity).toBe(describeBiome("outdoor-day").environmentSpec.intensity);
+    // Q-15-6: a base scene (no terrain/water/room/biome node) must NOT get
+    // interior-neutral at priority 300 — it falls through to lower-priority
+    // sources (here the legacy path) even under world,world_biome.
     const empty = resolveEnvironment(snapshot(), "high", FLAGS_BIOME);
-    expect(empty.kind).toBe("biome");
-    expect(empty.intensity).toBe(describeBiome("interior-neutral").environmentSpec.intensity);
+    expect(empty.kind).toBe("legacy");
+    const box = resolveEnvironment(snapshot([{ kind: "mesh" }]), "high", FLAGS_BIOME);
+    expect(box.kind).toBe("legacy");
+    // a river water node is still a world signal for the gate, even though it
+    // does not map to outdoor-day in the default rules
+    const river = resolveEnvironment(snapshot([{ kind: "water", options: { kind: "river" } }]), "high", FLAGS_BIOME);
+    expect(river.kind).toBe("biome");
   });
 
   it("time-of-day source (250) resolves its keyframe rig when no biome node exists", () => {
