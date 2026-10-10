@@ -1,4 +1,4 @@
-import { baseReport as baseFoundationReport, validateFoundationReportFreshness } from "../foundation-reporting/index.js";
+import { baseReport as baseFoundationReport, validateFoundationReportFreshness } from "../../foundation-reporting/index.js";
 
 export {
   currentCommit,
@@ -7,7 +7,7 @@ export {
   listFiles,
   readJson,
   writeJson,
-} from "../foundation-reporting/index.js";
+} from "../../foundation-reporting/index.js";
 
 export const blockedExternalParityClaims = [
   "broad better-than-Three.js language",

@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { validatePngVisual } from "../three-compat-visual-quality/visualStats";
+import { validatePngVisual } from "../../three-compat-visual-quality/visualStats";
 
 interface GenericReport {
   readonly pass?: boolean;

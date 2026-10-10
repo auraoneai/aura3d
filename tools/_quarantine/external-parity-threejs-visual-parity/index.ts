@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { EXTERNAL_PARITY_THREEJS_PARITY_SCENES } from "../../benchmarks/external-parity/shared/threejs-visual-parity-scenes";
+import { EXTERNAL_PARITY_THREEJS_PARITY_SCENES } from "../../../benchmarks/external-parity/shared/threejs-visual-parity-scenes";
 
 type Obj = Record<string, unknown>;
 interface Check { readonly id: string; readonly pass: boolean; readonly detail: string; }

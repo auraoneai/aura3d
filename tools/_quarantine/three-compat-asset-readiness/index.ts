@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { loadThreeCompatAssetManifest, loadThreeCompatAssetRegistry, summarizeThreeCompatAssetRegistry } from "../../packages/assets/src/threejs-compatibility/ThreeCompatAssetRegistry";
+import { loadThreeCompatAssetManifest, loadThreeCompatAssetRegistry, summarizeThreeCompatAssetRegistry } from "../../../packages/assets/src/threejs-compatibility/ThreeCompatAssetRegistry";
 
 interface ThreeCompatAssetReadinessCheck {
   readonly name: string;

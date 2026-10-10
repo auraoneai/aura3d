@@ -1,6 +1,6 @@
 import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
-import { createShadowAtlasLayout } from "../../packages/rendering/src/index.js";
+import { createShadowAtlasLayout } from "../../../packages/rendering/src/index.js";
 import { baseReport, isRecord, readJson, writeJson } from "../external-parity-reporting/index.js";
 
 export interface ExternalParityShadowMapReadinessReport {

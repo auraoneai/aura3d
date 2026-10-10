@@ -17,7 +17,7 @@ import { webgl2DeviceHost } from "../webgl2/Counters";
 import { executePostGraphWebGL2 } from "../webgl2/LegacyPost";
 import type { TemporalGpuBindings } from "../TemporalHistory";
 import { recordPostSkipped } from "../post/postSkipped";
-export { postProductionBuild, postSkippedReasons, recordPostSkipped } from "../post/postSkipped";
+export { postProductionBuild, postSkippedReasons, recordPostSkipped, resetPostSkipped } from "../post/postSkipped";
 
 /* v2 module warm cache — the sync `render()` route cannot `import()`; the
  * first flag-on frame fires it, later frames run the real S1–S12 stages. */
@@ -647,27 +647,4 @@ export class RendererPostprocessPipeline {
       data: this.host.device.readDepthPixels(0, 0, forwardTarget.width, forwardTarget.height)
     });
   }
-}
-
-
-
-export function recordPostSkipped(reason: string): void {
-  postSkippedReasonsSet.add(reason);
-}
-
-export function postSkippedReasons(): readonly string[] {
-  return [...postSkippedReasonsSet];
-}
-
-/** Test hook — clears the §6.9 skip registry. */
-export function resetPostSkipped(): void {
-  postSkippedReasonsSet.clear();
-}
-
-/** `import.meta.env.PROD` / `process.env.NODE_ENV === "production"`. */
-export function postProductionBuild(): boolean {
-  const meta = import.meta as unknown as { readonly env?: { readonly PROD?: boolean } };
-  if (meta.env?.PROD) return true;
-  return (globalThis as { readonly process?: { readonly env?: { readonly NODE_ENV?: string } } })
-    .process?.env?.NODE_ENV === "production";
 }

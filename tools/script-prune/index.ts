@@ -58,7 +58,13 @@ const REVIEW_KEEP: Readonly<Record<string, string>> = {
   "check:public-surface-diff": "PRD-15 T5.9 honest diff gate — wired in qr-prd15-arch-gates.yml",
   "check:bundle-migration": "PRD-15 T2/T6 migration surface check — wired in lane workflows",
   "verify:source-cleanliness": "PRD-15 T7.2 backstop (emitted artifacts in src)",
-  "verify:architecture": "T7.7 alias — kept as the stable entry name, retargeted to arch:check"
+  "verify:architecture": "T7.7 alias — kept as the stable entry name, retargeted to arch:check",
+  "verify:public-demo-deployment": "external-demo-export deploymentCommandPlan validationCommands contract + public-demo-deploy.yml step name",
+  "audit:external-parity-production-readiness": "deploymentCommandPlan validationCommands contract + public-demo-deploy.yml step name",
+  "audit:external-parity-external-evidence-readiness": "public-demo-deploy.yml post-deploy audit step",
+  "audit:external-parity-broad-parity": "deploymentCommandPlan validationCommands contract + public-demo-deploy.yml step name",
+  "audit:external-parity-completion": "deploymentCommandPlan validationCommands contract + public-demo-deploy.yml step name",
+  "verify:external-parity-report-freshness": "deploymentCommandPlan validationCommands contract + public-demo-deploy.yml step name"
 };
 
 type Verdict = "keep" | "delete" | "review";
@@ -164,6 +170,13 @@ function scriptTargetsExist(body: string): { missing: string[] } {
   const missing: string[] = [];
   for (const match of body.matchAll(TARGET_RE)) {
     const target = match[1]!;
+    // TARGET_RE's extension alternation is not token-anchored: it matches
+    // `.js` as a prefix of `.json` (e.g. `--tsconfig tsconfig.base.json`
+    // yields the bogus target `tsconfig.base.js`). A word char right after
+    // the match means the captured name is a prefix of a longer token —
+    // not a script target.
+    const tail = body[match.index + match[0].length];
+    if (tail !== undefined && /\w/.test(tail)) continue;
     if (target.startsWith("node_modules/") || target.includes("://")) continue;
     if (!existsSync(join(root, target))) missing.push(target);
   }

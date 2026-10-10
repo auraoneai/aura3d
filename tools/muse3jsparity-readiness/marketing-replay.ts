@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { sourceIdentity, validateReceipt, type Artifact, type ProducerReceipt } from './evidence-lineage';
 import { validateMarketingAcceptance, type MarketingBuildAcceptance } from './marketing-acceptance';
-import { validateDocumentInvariants } from '../muse3jsparity-docs-audit/document-invariants';
+import { validateDocumentInvariants } from '../_quarantine/muse3jsparity-docs-audit/document-invariants';
 export function marketingOutputPaths(root:string):string[]{
  const walk=(dir:string):string[]=>readdirSync(resolve(root,dir),{withFileTypes:true}).flatMap(e=>{const p=`${dir}/${e.name}`;if(e.isSymbolicLink())throw Error(`Symlink in marketing output:${p}`);return e.isDirectory()?walk(p):e.isFile()?[p]:[];});
  return walk('marketing/dist').sort();
