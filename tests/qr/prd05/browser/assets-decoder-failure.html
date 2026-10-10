@@ -1,0 +1,13 @@
+<!doctype html>
+<html><head>
+<script>
+// Non-module watchdog: if the module fetch/eval dies (Windows CI has shown a
+// silent module-load deadlock), this still publishes __QR_ERROR__ so the spec
+// reports instead of timing out blind.
+setTimeout(function () {
+  if (window.__QR_READY__ === undefined && window.__QR_ERROR__ === undefined) {
+    window.__QR_ERROR__ = "page-watchdog: still pending after 60s; boot=" + String(window.__QR_BOOT__);
+  }
+}, 60000);
+</script>
+</head><body><script type="module" src="./assets-decoder-failure.ts"></script></body></html>

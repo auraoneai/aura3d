@@ -26,6 +26,8 @@ const COMPRESSED_FORMATS = new Set([
 
 interface ReadyPayload {
   readonly caps: { readonly astc: boolean; readonly bptc: boolean; readonly etc2: boolean; readonly s3tc: boolean; readonly s3tcSrgb: boolean };
+  readonly rendererString: string;
+  readonly maxTextureSize: number;
   readonly maskedPixels: number;
   readonly internalFormatsUploaded: readonly { readonly variant: string; readonly format: string }[];
   readonly webgpuKtx2Target: string;
@@ -37,6 +39,7 @@ interface ReadyPayload {
     readonly textureCount: number;
     readonly textureFormats: readonly string[];
     readonly textureMipLevels: readonly number[];
+    readonly textureMaxWidths: readonly number[];
     readonly textureBytes: readonly number[];
     readonly maskedDeltaE: number;
   }[];
@@ -73,7 +76,7 @@ test.describe("PRD-05 compressed GLB through decoder registry (P1)", () => {
     const payload = await page.evaluate(() => (window as any).__QR_READY__ as ReadyPayload | undefined);
     mkdirSync(resolve("tests/reports"), { recursive: true });
     writeFileSync(
-      resolve("tests/reports/prd05-assets-compressed-glb.json"),
+      resolve(`tests/reports/prd05-assets-compressed-glb${test.info().project.name === "chromium" ? "" : `.${test.info().project.name}`}.json`),
       `${JSON.stringify({ phase: 1, surface: "assets-compressed-glb", error, ...payload }, null, 2)}\n`
     );
     expect(error, "harness error").toBeNull();
