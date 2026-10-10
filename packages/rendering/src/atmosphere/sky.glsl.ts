@@ -34,6 +34,9 @@ uniform vec3 u_ground;
 uniform float u_exponent;
 uniform float u_horizonGlow;
 uniform float u_intensity;
+uniform int u_bandCount;
+uniform vec4 u_bandParams[4];  // xyz: elevationDeg, widthDeg, intensity
+uniform vec3 u_bandColors[4];
 uniform float u_showSunDisc;
 uniform float u_time;
 uniform float u_starDensity;
@@ -118,6 +121,15 @@ vec3 gradient(vec3 direction) {
     float disc = smoothstep(0.9995, 0.9999, cdot);
     float halo = pow(max(0.0, cdot), 350.0) * 0.6;
     c += vec3(disc * 40.0 + halo, disc * 36.0 + halo * 0.9, disc * 30.0 + halo * 0.7);
+    if (u_bandCount > 0) {
+      float elev = degrees(asin(clamp(y, -1.0, 1.0)));
+      for (int i = 0; i < u_bandCount && i < 4; i++) {
+        vec4 b = u_bandParams[i];
+        float dy = elev - b.x;
+        float w = exp(-(dy * dy) / (b.y * b.y * 0.5)) * b.z;
+        c += u_bandColors[i] * w;
+      }
+    }
     return c * u_intensity;
   }
   float t = clamp(-y * 3.0, 0.0, 1.0);

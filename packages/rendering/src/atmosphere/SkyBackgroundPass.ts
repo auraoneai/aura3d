@@ -220,6 +220,10 @@ export function skyUniforms(
   uniforms.set("u_ground", grad?.ground ?? [0.12, 0.12, 0.13]);
   uniforms.set("u_exponent", grad?.exponent ?? 1.6);
   uniforms.set("u_horizonGlow", grad?.horizonGlow ?? 0.35);
+  const bands = grad?.bands ?? [];
+  uniforms.set("u_bandCount", bands.length);
+  uniforms.set("u_bandParams", bands.flatMap((b) => [b.elevationDeg, b.widthDeg, b.intensity, 0]));
+  uniforms.set("u_bandColors", bands.flatMap((b) => [b.color[0], b.color[1], b.color[2]]));
   uniforms.set("u_intensity", frame.intensity);
   uniforms.set("u_showSunDisc", pre?.showSunDisc ?? 1);
   uniforms.set("u_time", time);

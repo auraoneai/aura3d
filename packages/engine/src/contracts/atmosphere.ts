@@ -6,9 +6,12 @@
 import type { AuraColor, AuraVec3, AuraAssetRef } from "../agent-api/index";
 
 export interface AuraSkySunSpec { readonly elevationDeg: number; readonly azimuthDeg: number; readonly intensity?: number; readonly color?: AuraColor; readonly discSize?: number; }
+/** PRD-10 §6.3 Q-07-2 — ordered additive emission band on a gradient sky
+ *  (aurora band / horizon city-glow). Each band is additive. */
+export interface AuraSkyBand { readonly elevationDeg: number; readonly widthDeg: number; readonly color: AuraColor; readonly intensity: number; }
 export type AuraSkySpec =
   | { readonly model: "preetham"; readonly sun: AuraSkySunSpec; readonly turbidity?: number; readonly rayleigh?: number; readonly mieCoefficient?: number; readonly mieDirectionalG?: number; readonly exposure?: number; readonly clouds?: unknown; readonly stars?: unknown; readonly moon?: unknown; readonly groundColor?: AuraColor }
-  | { readonly model: "gradient"; readonly zenith: AuraColor; readonly horizon: AuraColor; readonly ground?: AuraColor; readonly exponent?: number; readonly horizonGlow?: number; readonly sun?: AuraSkySunSpec; readonly bands?: unknown; readonly stars?: unknown; readonly moon?: unknown; readonly intensity?: number }
+  | { readonly model: "gradient"; readonly zenith: AuraColor; readonly horizon: AuraColor; readonly ground?: AuraColor; readonly exponent?: number; readonly horizonGlow?: number; readonly sun?: AuraSkySunSpec; readonly bands?: readonly AuraSkyBand[]; readonly stars?: unknown; readonly moon?: unknown; readonly intensity?: number }
   | { readonly model: "hdri"; readonly texture: AuraAssetRef<"texture">; readonly intensity?: number; readonly rotation?: number; readonly blurriness?: number }
   | { readonly model: "cubemap"; readonly faces: readonly AuraAssetRef<"texture">[]; readonly intensity?: number };
 export interface AuraHeightFogSpec { readonly mode?: "height" | "exp" | "exp2" | "linear" | "absorption"; readonly color?: AuraColor | "sky"; readonly density?: number; readonly heightDensity?: number; readonly heightFalloff?: number; readonly heightReference?: number; readonly start?: number; readonly maxOpacity?: number; readonly near?: number; readonly far?: number; readonly absorption?: AuraVec3; readonly sunInscatter?: number; readonly anisotropy?: number; readonly affectsBackground?: boolean; readonly backgroundDistance?: number; readonly transitionSeconds?: number; }
