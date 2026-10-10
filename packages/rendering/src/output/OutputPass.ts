@@ -124,9 +124,12 @@ export class OutputPass implements OutputPassLike, DisposableResource {
       vertexCount: cached.geometry.vertexBuffer.vertexCount,
       uniforms
     });
+    // T0-04: restore the previously bound target — rebinding `input` leaves
+    // the HDR source bound and misroutes every subsequent draw/capture.
+    const previousTarget = this.device.getRenderTarget?.() ?? null;
     this.device.setRenderTarget(output === "canvas" ? null : output);
     this.device.draw(command);
-    this.device.setRenderTarget(input);
+    this.device.setRenderTarget(previousTarget);
   }
 
   private moduleFor(key: OutputVariantKey): ShaderModule {

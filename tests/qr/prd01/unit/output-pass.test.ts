@@ -141,6 +141,24 @@ describe("OutputPass on MockRenderDevice", () => {
     scene.dispose();
     pass.dispose();
   });
+
+  it("restores the previously bound render target, not `input` (T0-04)", () => {
+    const d = device();
+    const scene = createHdrTarget(d, { width: 4, height: 4 });
+    const previous = createHdrTarget(d, { width: 4, height: 4 });
+    const pass = new OutputPass(d);
+    d.beginFrame(4, 4);
+    d.setRenderTarget(previous);
+    pass.execute(scene, null, { toneMapping: "aces", exposure: 1, dithering: false, backgroundCoverage: false }, "canvas");
+    expect(d.getRenderTarget()).toBe(previous);
+    d.setRenderTarget(null);
+    pass.execute(scene, null, { toneMapping: "aces", exposure: 1, dithering: false, backgroundCoverage: false }, previous);
+    expect(d.getRenderTarget()).toBeNull();
+    d.endFrame();
+    scene.dispose();
+    previous.dispose();
+    pass.dispose();
+  });
 });
 
 describe("HDR target", () => {
@@ -252,5 +270,29 @@ describe("Renderer under A3D_QR_CORE_OUTPUT", () => {
       unregister();
       setRendererQrFlags(OFF);
     }
+  });
+});
+
+/**
+ * #245 (01-ISSUES / PRD-07 P3-T1): float readback exists on the
+ * RenderDevice surface — `readFloatPixels` returns unclamped Float32
+ * values so `rgba16f` GPU asserts (sun-disc luminance > 10) are
+ * expressible. MockRenderDevice implements the same contract the
+ * WebGL2 probe exposes.
+ */
+describe("#245 float readback on RenderDevice", () => {
+  it("exposes readFloatPixels returning Float32Array (unclamped)", () => {
+    const d = new MockRenderDevice();
+    expect(typeof d.readFloatPixels).toBe("function");
+    const out = d.readFloatPixels(0, 0, 1, 1);
+    expect(out).toBeInstanceOf(Float32Array);
+    expect(out.length).toBe(4);
+    // Mock backbuffer holds linear values; key property is no 1.0 clamp.
+    expect(d.getDiagnostics().errors ?? []).toHaveLength(0);
+  });
+
+  it("rejects a non-positive readback rectangle", () => {
+    const d = new MockRenderDevice();
+    expect(() => d.readFloatPixels(0, 0, 0, 1)).toThrowError(/positive|bounds/);
   });
 });
