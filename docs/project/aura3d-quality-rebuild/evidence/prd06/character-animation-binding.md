@@ -1,5 +1,8 @@
 # T4.2 — `characterAnimation(controller, node, spec)` (PRD-06 §7.1)
 
+> **06-REC note (finish phase, G3):** this file cites no passing remote run id; every completion claim below is recorded as **unbacked** until a green lane-workflow/GitLab run id is added next to it.
+
+
 The locomotion-controller → clip-tree binding in
 `packages/engine/src/agent-api/GameCharacterAnimation.ts`, exported from
 `packages/engine/src/lanes/prd06.ts` (the `game.characterAnimation` alias is

@@ -1,5 +1,8 @@
 # PRD-06 Phase 5 — §17.4 per-game showcase controls (T5.1–T5.6, S11)
 
+> **06-REC note (finish phase, G3):** this file cites no passing remote run id; every completion claim below is recorded as **unbacked** until a green lane-workflow/GitLab run id is added next to it.
+
+
 Six failing-control specs under `tests/qr/prd06/games/` run the §17.4 gates
 against today's routes and fail where the spec says they must; each route's
 Q-14 change request ships as a ready-to-file issue body in

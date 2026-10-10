@@ -1,5 +1,8 @@
 # PRD-06 T0.4–T0.9a evidence — controller clip-drive, clip resolve, inspect-clips, fighting clipmap
 
+> **06-REC note (finish phase, G3):** this file cites no passing remote run id; every completion claim below is recorded as **unbacked** until a green lane-workflow/GitLab run id is added next to it.
+
+
 PR: qr/prd06-controller-drive (stacked on #153 / qr/prd06-palette-resources).
 Flag: `A3D_QR_ANIMATION` — every behavior below is flag-gated; flag-off paths are
 byte-identical (asserted by dedicated flag-off tests).

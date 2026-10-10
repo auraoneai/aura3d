@@ -1,5 +1,8 @@
 # PRD-06 evidence — palette + morph resources (PR B)
 
+> **06-REC note (finish phase, G3):** this file cites no passing remote run id; every completion claim below is recorded as **unbacked** until a green lane-workflow/GitLab run id is added next to it.
+
+
 Scope: T0.10a `Texture.update`, T0.10 palette texture cache + cached uniform
 bind, T0.11 in-place runtime palettes + `paletteKey`, C-18 chunk registration +
 `buildMorphTargetTexture`, T0.14 deform light-view spec.
