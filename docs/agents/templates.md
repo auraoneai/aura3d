@@ -4,11 +4,13 @@ Current `create-aura3d` templates: `product-viewer`, `cinematic-scene`,
 `mini-game`, `racing-starter`, `falling-blocks-starter`, `fighting-game`,
 `arena-shooter`, `animation-channel`, `prompt-animation-channel`,
 `animation-studio`,
-`episode-builder`, `character-controller`, `three-compat-premium-product-viewer`,
-`three-compat-architecture-interior`, `three-compat-material-authoring`,
-`three-compat-asset-inspector`, `three-compat-character-viewer`,
-`three-compat-postprocess-scene`, `three-compat-custom-threejs-migration`, and
-`three-compat-large-scene`.
+`episode-builder`, `character-controller`, `premium-product-viewer`,
+`architecture-interior`, `material-authoring`, `asset-inspector`,
+`character-viewer`, `postprocess-scene`, `custom-scene`, and `large-scene`.
+
+The last eight were named `three-compat-*` before #700; each old name (for
+example `three-compat-custom-threejs-migration` for `custom-scene`) still
+scaffolds its template with a deprecation warning until the next minor.
 
 - `product-viewer`: product pages, asset viewers, configurators, hero objects.
 - `cinematic-scene`: dolly camera, stylized lighting, rain, fog, bloom, timeline.
