@@ -1,10 +1,9 @@
 name: QR PRD-10 World
 
 # Lane 10 (world building & environment systems) gate. Unit + ownership checks
-# run on ubuntu; browser specs run on macos-14 (Chromium, ANGLE Metal) — the
-# same runner class as quality-rebuild-capture.yml, which the `capture` job
-# dispatches with the C-33 `qr_flags` input for both `world` and `none` on the
-# `prd10-*` scenes.
+# run on ubuntu; browser specs run on macos-14 (Chromium, ANGLE Metal). The
+# `capture` job runs a GitLab flags-bisect pipeline (`none;world`) on the
+# `prd10-*` scenes, waits for it, and fails on its result.
 
 on:
   pull_request:
@@ -43,7 +42,6 @@ on:
 
 permissions:
   contents: read
-  actions: write # capture job dispatches quality-rebuild-capture.yml
 
 concurrency:
   group: qr-prd10-world-${{ github.ref }}
@@ -91,7 +89,7 @@ jobs:
       - name: Fail on 0 collected or any skipped
         if: always()
         run: |
-          node -e '
+          node - <<'JS'
             const fs = require("fs");
             const f = "tests/reports/browser.json";
             if (!fs.existsSync(f)) { console.error("no playwright json report at " + f); process.exit(1); }
@@ -101,7 +99,7 @@ jobs:
             const skipped = s.skipped ?? 0;
             console.log(`collected=${collected} skipped=${skipped}`);
             if (collected === 0 || skipped > 0) process.exit(1);
-          '
+          JS
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -110,41 +108,132 @@ jobs:
           if-no-files-found: ignore
 
   capture:
-    # GPU evidence routes to the GitLab mirror (qr-gitlab-ci bridge) for the
-    # prd10 scenes under both flag arms. Dispatch only — reports and diffs
-    # live in that pipeline's artifacts.
+    # T1.14 / 10-CI / P-04: GPU evidence for the prd10 scenes runs on the
+    # GitLab mirror (saas-macos-medium-m1) as ONE flags-bisect pipeline with
+    # both arms (`none;world`, one build, one runner boot). This job triggers
+    # it, WAITS for it, and fails on its result — no fire-and-forget:
+    #   - the mirror must hold this exact SHA before the trigger (main is
+    #     mirrored by mirror-to-gitlab.yml, qr/** by qr-gitlab-ci.yml sync);
+    #   - the pipeline must start on this SHA and end `success`;
+    #   - bisect-summary.json must list every prd10 scene in both arms as
+    #     `ready` with drawCalls > 0 and no error (bisect-summary.mjs alone
+    #     only fails on the `none` control, so the `world` arm is checked here).
     runs-on: ubuntu-latest
+    timeout-minutes: 240
+    env:
+      GITLAB_PROJECT_ID: "87152020"
+      GITLAB_API: "https://gitlab.com/api/v4"
+      QR_PRD10_SCENES: "prd10-terrain-flyover,prd10-terrain-layers,prd10-forest-wind,prd10-meadow-grass,prd10-coast-water,prd10-city-street,prd10-interior-room,prd10-biomes-sweep,prd10-space-orbit"
+      QR_PRD10_SETS: "none;world"
+      # PR runs test the PR head on its own (qr/**) branch; every other event
+      # (push, schedule, dispatch, workflow_call) tests the ref it ran on.
+      REF: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+      SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
     steps:
-      # T1.14/10-CI: GPU evidence routes to the GitLab mirror (qr-gitlab-ci
-      # bridge on saas-macos-medium-m1) — the honest failure modes apply:
-      # dispatch errors fail the job instead of `|| echo` masking them, and
-      # the run lookup is pinned to runs created after dispatch (the old
-      # `-L 1` grab raced other dispatches and could report a stale run).
-      - name: Dispatch GitLab benchmark (qr_flags=world)
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Wait for the GitLab mirror to hold this SHA
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          API_TOKEN: ${{ secrets.GITLAB_QR_API_TOKEN }}
         run: |
-          dispatched_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-          gh workflow run qr-gitlab-ci.yml \
-            -R "${GITHUB_REPOSITORY}" \
-            --ref "$GITHUB_REF_NAME" \
-            -f suite=benchmark \
-            -f flags=world \
-            -f requester=prd10
-          sleep 5
-          run_id=$(gh run list -R "${GITHUB_REPOSITORY}" --workflow=qr-gitlab-ci.yml --branch "$GITHUB_REF_NAME" -L 5 --json databaseId,createdAt -q "map(select(.createdAt > \"$dispatched_at\")) | .[0].databaseId")
-          echo "### capture (world) run: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${run_id}" >> "$GITHUB_STEP_SUMMARY"
-      - name: Dispatch GitLab benchmark (qr_flags=none)
+          set -euo pipefail
+          test -n "$API_TOKEN" || { echo "::error::GITLAB_QR_API_TOKEN secret missing"; exit 1; }
+          case "$REF" in
+            main|qr/*|aura3d-quality-rebuild/*) ;;
+            *) echo "::error::ref '$REF' is never mirrored to GitLab (only main, qr/**, aura3d-quality-rebuild/**)"; exit 1 ;;
+          esac
+          enc="$(jq -rn --arg r "$REF" '$r|@uri')"
+          head=""; deadline=$((SECONDS + 1800))
+          while [ "$SECONDS" -lt "$deadline" ]; do
+            head="$(curl -fsS --connect-timeout 10 --max-time 30 -H "PRIVATE-TOKEN: $API_TOKEN" \
+              "$GITLAB_API/projects/$GITLAB_PROJECT_ID/repository/branches/$enc" | jq -r '.commit.id // empty')" || head=""
+            [ "$head" = "$SHA" ] && break
+            echo "mirror $REF at '${head:-missing}', waiting for $SHA"
+            sleep 30
+          done
+          [ "$head" = "$SHA" ] || { echo "::error::GitLab mirror never reached $SHA on $REF (last '${head:-missing}')"; exit 1; }
+
+      - name: Trigger GitLab flags-bisect (none;world, prd10 scenes)
+        id: trigger
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TRIGGER_TOKEN: ${{ secrets.GITLAB_QR_TRIGGER_TOKEN }}
         run: |
-          dispatched_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-          gh workflow run qr-gitlab-ci.yml \
-            -R "${GITHUB_REPOSITORY}" \
-            --ref "$GITHUB_REF_NAME" \
-            -f suite=benchmark \
-            -f flags=none \
-            -f requester=prd10
-          sleep 5
-          run_id=$(gh run list -R "${GITHUB_REPOSITORY}" --workflow=qr-gitlab-ci.yml --branch "$GITHUB_REF_NAME" -L 5 --json databaseId,createdAt -q "map(select(.createdAt > \"$dispatched_at\")) | .[0].databaseId")
-          echo "### capture (none) run: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${run_id}" >> "$GITHUB_STEP_SUMMARY"
+          set -euo pipefail
+          test -n "$TRIGGER_TOKEN" || { echo "::error::GITLAB_QR_TRIGGER_TOKEN secret missing"; exit 1; }
+          body="$(jq -n --arg token "$TRIGGER_TOKEN" --arg ref "$REF" --arg run "$GITHUB_RUN_ID" \
+            --arg scenes "$QR_PRD10_SCENES" --arg sets "$QR_PRD10_SETS" \
+            '{token:$token, ref:$ref, inputs:{suite:"flags-bisect", games:"", viewports:"1280x720",
+              local_build:false, mobile:false, qr_flags:"none", requester:"prd10", github_run:$run,
+              bench_scenes:$scenes, bench_engines:"aura3d", bench_flag_sets:$sets}}')"
+          resp="$(curl -sS --max-time 60 -X POST -H "Content-Type: application/json" --data-binary @- \
+            "$GITLAB_API/projects/$GITLAB_PROJECT_ID/trigger/pipeline" <<< "$body")"
+          id="$(echo "$resp" | jq -r '.id // empty')"; url="$(echo "$resp" | jq -r '.web_url // empty')"
+          psha="$(echo "$resp" | jq -r '.sha // empty')"
+          test -n "$id" || { echo "::error::GitLab trigger failed: $(echo "$resp" | jq -c 'del(.user)' 2>/dev/null || echo "$resp")"; exit 1; }
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+          echo "### capture: GitLab pipeline $id ($url) on $REF @ $psha, sets $QR_PRD10_SETS" | tee -a "$GITHUB_STEP_SUMMARY"
+          [ "$psha" = "$SHA" ] || { echo "::error::GitLab started pipeline $id on $psha, expected $SHA"; exit 1; }
+
+      - name: Wait for the GitLab pipeline and fail on its result
+        env:
+          API_TOKEN: ${{ secrets.GITLAB_QR_API_TOKEN }}
+          PIPELINE_ID: ${{ steps.trigger.outputs.id }}
+        run: |
+          set -euo pipefail
+          status=unknown; deadline=$((SECONDS + 13200))
+          while [ "$SECONDS" -lt "$deadline" ]; do
+            status="$(curl -fsS --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 5 -H "PRIVATE-TOKEN: $API_TOKEN" \
+              "$GITLAB_API/projects/$GITLAB_PROJECT_ID/pipelines/$PIPELINE_ID" | jq -r .status)" || status=unknown
+            case "$status" in success|failed|canceled|skipped) break ;; esac
+            sleep 45
+          done
+          echo "GitLab pipeline $PIPELINE_ID finished: **$status**" >> "$GITHUB_STEP_SUMMARY"
+          [ "$status" = "success" ] || { echo "::error::GitLab pipeline $PIPELINE_ID ended '$status'"; exit 1; }
+
+      - name: Download the qr:benchmark artifacts
+        if: always() && steps.trigger.outputs.id != ''
+        env:
+          API_TOKEN: ${{ secrets.GITLAB_QR_API_TOKEN }}
+          PIPELINE_ID: ${{ steps.trigger.outputs.id }}
+        run: |
+          set -euo pipefail
+          jid="$(curl -fsS --max-time 60 -H "PRIVATE-TOKEN: $API_TOKEN" \
+            "$GITLAB_API/projects/$GITLAB_PROJECT_ID/pipelines/$PIPELINE_ID/jobs?per_page=50" \
+            | jq -r '.[] | select(.name == "qr:benchmark") | .id' | head -1)"
+          test -n "$jid" || { echo "::error::qr:benchmark job not found in pipeline $PIPELINE_ID"; exit 1; }
+          echo "GitLab job $jid" >> "$GITHUB_STEP_SUMMARY"
+          curl -fsSL --max-time 900 -H "PRIVATE-TOKEN: $API_TOKEN" -o bench.zip \
+            "$GITLAB_API/projects/$GITLAB_PROJECT_ID/jobs/$jid/artifacts"
+          mkdir -p bench-artifacts
+          unzip -q -o bench.zip -d bench-artifacts
+
+      - name: Every prd10 scene ready with draws in both arms
+        run: |
+          set -euo pipefail
+          node - <<'JS' | tee -a "$GITHUB_STEP_SUMMARY"
+            const fs = require("fs");
+            const f = "bench-artifacts/benchmarks/quality-rebuild/out/bisect-summary.json";
+            if (!fs.existsSync(f)) { console.error("missing " + f); process.exit(1); }
+            const s = JSON.parse(fs.readFileSync(f, "utf8"));
+            const sets = process.env.QR_PRD10_SETS.split(";");
+            const scenes = process.env.QR_PRD10_SCENES.split(",");
+            const bad = [];
+            if ((s.missing || []).length) bad.push("missing sets: " + s.missing.join(","));
+            for (const set of sets) for (const scene of scenes) {
+              const row = (s.rows || []).find((r) => r.set === set && r.scene === scene && r.engine === "aura3d");
+              if (!row) { bad.push(set + "/" + scene + ": no row"); continue; }
+              const ok = row.status === "ready" && (row.drawCalls ?? 0) > 0 && !row.error0;
+              console.log(`${ok ? "ok  " : "FAIL"} ${set}/${scene} status=${row.status} drawCalls=${row.drawCalls} readyMs=${row.readyMs} error0=${row.error0 ?? ""}`);
+              if (!ok) bad.push(set + "/" + scene);
+            }
+            if (bad.length) { console.error("prd10 capture failures: " + bad.join("; ")); process.exit(1); }
+          JS
+
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.trigger.outputs.id != ''
+        with:
+          name: qr-prd10-capture-${{ steps.trigger.outputs.id }}
+          path: bench-artifacts/
+          if-no-files-found: warn
+
