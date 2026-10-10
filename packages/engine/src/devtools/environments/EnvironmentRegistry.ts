@@ -76,7 +76,7 @@ export function createThreeCompatEnvironmentGalleryModel(manifest = loadThreeCom
 // change when Q-05-1 lands.
 
 export interface AuraEnvironmentPresetEntry {
-  readonly name: "studio" | "outdoor" | "sunset" | "night" | "indoor";
+  readonly name: "studio" | "outdoor" | "sunset" | "night" | "indoor" | "neutral";
   /** URL the runtime fetches (served from `public/`). */
   readonly specularUrl: string;
   readonly sh9Url: string;
