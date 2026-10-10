@@ -86,7 +86,10 @@ export async function createProductionRuntimeSceneRenderer(
     ...(getRootRenderSource(canvas) ? { errorCheckMode: "frame" as const } : {}),
     // Background colors are display intent. Pre-invert the renderer's coupled
     // matrix-fitted ACES transform so presentation preserves that authored color.
-    clearColor: colorToAcesInputClearColor(snapshot.background)
+    clearColor: colorToAcesInputClearColor(snapshot.background),
+    // T0-28: the app's resolved flags bind to this renderer's device, so two
+    // apps on one page never read each other's flags through FrameGraph.
+    qrFlags: flags
   });
   markTiming("a3d:mount:renderer-create:resolved");
   // T4.2: a throwing mount (compile handler, HDRI upgrade, C-36 strict)
@@ -295,7 +298,7 @@ export async function createProductionRuntimeSceneRenderer(
       latestCameraEye = resolveCameraFrame(snapshot, snapshot.camera, time, runtimeNodes).eye;
       if (compiled) {
         // C-36 real path: per-frame update on the mounted compiled scene.
-        updateCompiledScene(compiledScene, snapshot, runtimeNodes as AuraRuntimeNodeRegistry, time);
+        updateCompiledScene(compiledScene, snapshot, runtimeNodes as AuraRuntimeNodeRegistry, time, flags);
         return compiled.lastInput! as ProductionRendererInput;
       }
       runtimeWarnings.clear();
