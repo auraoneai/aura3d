@@ -28,6 +28,9 @@ on:
       - 'tools/camera-cast-codemod/**'
       - 'benchmarks/quality-rebuild/motion/**'
       - 'benchmarks/quality-rebuild/scenes/prd08/**'
+      - 'benchmarks/quality-rebuild/aura3d/scenes/prd08/**'
+      - 'benchmarks/quality-rebuild/three/scenes/prd08/**'
+      - 'packages/aura3d-cli/src/commands/prd08/**'
       - 'tests/qr/prd08/**'
       - 'tests/unit/engine/{fixed-step-determinism,game-camera-rigs,game-feel,platformer-motion,vehicle-chassis}.test.ts'
       - 'tests/unit/contracts/impl/prd08-*.ts'
@@ -50,6 +53,9 @@ on:
       - 'tools/camera-cast-codemod/**'
       - 'benchmarks/quality-rebuild/motion/**'
       - 'benchmarks/quality-rebuild/scenes/prd08/**'
+      - 'benchmarks/quality-rebuild/aura3d/scenes/prd08/**'
+      - 'benchmarks/quality-rebuild/three/scenes/prd08/**'
+      - 'packages/aura3d-cli/src/commands/prd08/**'
       - 'tests/qr/prd08/**'
       - 'tests/unit/engine/{fixed-step-determinism,game-camera-rigs,game-feel,platformer-motion,vehicle-chassis}.test.ts'
       - 'tests/unit/contracts/impl/prd08-*.ts'
@@ -181,6 +187,23 @@ jobs:
             --scenes "${{ steps.scenes.outputs.ids }}" \
             --engines aura3d,three --flags camera \
             --out benchmarks/quality-rebuild/out/prd08-motion
+      # S9: `aura3d prd08 motion-report` renders report.json (strips +
+      # trajectory metrics) to markdown; exits non-zero on incomplete evidence
+      # (missing scene/engine, non-ready capture, stub camera, short/blank strip).
+      - name: prd08 motion-report
+        run: |
+          pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts prd08 motion-report \
+            --report benchmarks/quality-rebuild/out/prd08-motion/report.json \
+            --out benchmarks/quality-rebuild/out/prd08-motion/motion-report \
+            --scenes "${{ steps.scenes.outputs.ids }}"
+          cat benchmarks/quality-rebuild/out/prd08-motion/motion-report/motion-report.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload motion report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: prd08-motion-report-${{ github.run_id }}
+          path: benchmarks/quality-rebuild/out/prd08-motion/motion-report/
+          if-no-files-found: error
       - name: Upload motion strips + report
         uses: actions/upload-artifact@v4
         if: always()
