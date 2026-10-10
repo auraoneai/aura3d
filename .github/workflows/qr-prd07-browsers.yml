@@ -5,12 +5,26 @@ name: qr-prd07-browsers
 # GPU-sim fallback path. Same specs as prd07-vfx.yml's browser job, selected
 # via PRD07_BROWSER in tests/qr/prd07/playwright.config.ts.
 
+# Path filters are expanded: GitHub filters do not support `{a,b}` braces.
 on:
   pull_request:
     paths:
-      - "packages/rendering/src/{vfx,atmosphere}/**"
+      - "packages/rendering/src/vfx/**"
+      - "packages/rendering/src/atmosphere/**"
       - "packages/rendering/src/lanes/prd07.ts"
-      - "packages/engine/src/{agent-api/vfx,production-runtime/effects}/**"
+      - "packages/engine/src/agent-api/vfx/**"
+      - "packages/engine/src/production-runtime/effects/**"
+      - "tests/qr/prd07/**"
+      - ".github/workflows/qr-prd07-*.yml"
+  # 07 Phase E / §4.0: run on main so a broken main cannot sit unseen.
+  push:
+    branches: [main]
+    paths:
+      - "packages/rendering/src/vfx/**"
+      - "packages/rendering/src/atmosphere/**"
+      - "packages/rendering/src/lanes/prd07.ts"
+      - "packages/engine/src/agent-api/vfx/**"
+      - "packages/engine/src/production-runtime/effects/**"
       - "tests/qr/prd07/**"
       - ".github/workflows/qr-prd07-*.yml"
   workflow_dispatch: {}
