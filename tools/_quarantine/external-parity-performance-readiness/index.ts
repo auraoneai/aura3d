@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { EXTERNAL_PARITY_PERFORMANCE_BASELINE } from "../../tests/performance/external-parity-performance-baselines";
+import { EXTERNAL_PARITY_PERFORMANCE_BASELINE } from "../../../tests/performance/external-parity-performance-baselines";
 
 type Obj = Record<string, unknown>;
 interface Check { readonly id: string; readonly pass: boolean; readonly detail: string; }

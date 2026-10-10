@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
-import { readInventory, reportIssue, writeJson } from "../threejs-parity-common";
+import { readInventory, reportIssue, writeJson } from "../_quarantine/threejs-parity-common";
 
 const outputPath = "tests/reports/threejs-parity/visual-review.json";
 const inventory = readInventory();

@@ -4,9 +4,9 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { resolve, dirname, relative } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { pathToFileURL } from 'node:url';
-import { sourceIdentity, sameSource, artifact, validateReceipt, SOURCE_AUDIT_BASELINE, type Artifact, type SourceIdentity } from '../muse3jsparity-readiness/evidence-lineage';
+import { sourceIdentity, sameSource, artifact, validateReceipt, SOURCE_AUDIT_BASELINE, type Artifact, type SourceIdentity } from '../../muse3jsparity-readiness/evidence-lineage';
 import { validateDocumentInvariants, structuralDocumentLineNumbers, isDescriptiveDocumentLine, CONTROLLED_CLAIM_DOCUMENTS } from './document-invariants';
-import { loadMuse301ExecutionRequirements } from '../muse3jsparity-readiness/requirements';
+import { loadMuse301ExecutionRequirements } from '../../muse3jsparity-readiness/requirements';
 export const CLAIM_SURFACES = ['createAuraApp root safe API','production-runtime','rendering package','CLI asset pipeline','template-only scaffold','prototype','roadmap','release tooling'] as const;
 /** Exact labels only: descriptive prose mentioning root must not promote an internal receipt. */
 export function claimSurfaceCompatible(claim:string, receipt:string):boolean {

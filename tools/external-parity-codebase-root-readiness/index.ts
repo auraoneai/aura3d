@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { baseReport, readJson, writeJson } from "../external-parity-reporting/index.js";
+import { baseReport, readJson, writeJson } from "../_quarantine/external-parity-reporting/index.js";
 
 type RootCheck = {
   readonly id: string;

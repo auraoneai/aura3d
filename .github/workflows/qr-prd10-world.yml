@@ -21,7 +21,7 @@ on:
       - "tests/browser/qr-prd10-*.ts"
       - ".github/workflows/qr-prd10-world.yml"
   push:
-    branches: ["qr/**"]
+    branches: [main, "qr/**"]
     paths:
       - "packages/engine/src/agent-api/world/**"
       - "packages/engine/src/lanes/prd10.ts"
@@ -85,6 +85,23 @@ jobs:
       # continue-on-error; a red spec must red the lane.
       - name: prd10 browser specs (all qr-prd10-*.spec.ts)
         run: pnpm exec playwright test --config playwright.config.ts tests/browser/qr-prd10-chunks.spec.ts tests/browser/qr-prd10-world-pass-depth.spec.ts tests/browser/qr-prd10-time-of-day.spec.ts tests/browser/qr-prd10-flag-off-identity.spec.ts tests/browser/qr-prd10-terrain-cracks.spec.ts tests/browser/qr-prd10-terrain-gpu-cpu.spec.ts tests/browser/qr-prd10-terrain-splat-bake.spec.ts
+      # 10-CI: an empty collection or a skipped test is a red job — never a
+      # green report on nothing. Collected/skipped counts come from the JSON
+      # report Playwright writes next to the HTML one.
+      - name: Fail on 0 collected or any skipped
+        if: always()
+        run: |
+          node -e '
+            const fs = require("fs");
+            const f = "tests/reports/browser.json";
+            if (!fs.existsSync(f)) { console.error("no playwright json report at " + f); process.exit(1); }
+            const r = JSON.parse(fs.readFileSync(f, "utf8"));
+            const s = r.stats || {};
+            const collected = (s.expected ?? 0) + (s.unexpected ?? 0) + (s.flaky ?? 0);
+            const skipped = s.skipped ?? 0;
+            console.log(`collected=${collected} skipped=${skipped}`);
+            if (collected === 0 || skipped > 0) process.exit(1);
+          '
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -93,7 +110,9 @@ jobs:
           if-no-files-found: ignore
 
   capture:
-         # flag arms. Dispatch only — image diffs live in that workflow's artifacts.
+    # GPU evidence routes to the GitLab mirror (qr-gitlab-ci bridge) for the
+    # prd10 scenes under both flag arms. Dispatch only — reports and diffs
+    # live in that pipeline's artifacts.
     runs-on: ubuntu-latest
     steps:
       # T1.14/10-CI: GPU evidence routes to the GitLab mirror (qr-gitlab-ci

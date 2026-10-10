@@ -13,6 +13,11 @@ export function postSkippedReasons(): readonly string[] {
   return [...postSkippedReasonsSet];
 }
 
+/** Test hook — clears the §6.9 skip registry. */
+export function resetPostSkipped(): void {
+  postSkippedReasonsSet.clear();
+}
+
 /** `import.meta.env.PROD` / `process.env.NODE_ENV === "production"`. */
 export function postProductionBuild(): boolean {
   const meta = import.meta as unknown as { readonly env?: { readonly PROD?: boolean } };
