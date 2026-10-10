@@ -1,0 +1,1931 @@
+From 008f4eb03afe41f4ef4086f9ba71dde304052e21 Mon Sep 17 00:00:00 2001
+From: gchahal+1 <gchahal@veerone.com>
+Date: Fri, 9 Oct 2026 13:45:56 +0000
+Subject: [PATCH] [qr-prd09] showcase-vault-breakers: delete evidence
+ files+blocks (T5.8)
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ .../performance-report.json                   |  39 --
+ .../scripts/build-models.mjs                  | 654 ------------------
+ .../scripts/build-sfx.mjs                     | 338 ---------
+ .../scripts/register-assets.mjs               |  77 ---
+ .../scripts/write-deploy-report.mjs           |  50 --
+ .../scripts/write-performance-report.ts       |  65 --
+ .../scripts/write-route-health.mjs            |  99 ---
+ .../src/legacy/main.ts                        | 149 ----
+ apps/showcase-vault-breakers/src/main.ts      |  10 -
+ .../src/v2/evidence/index.ts                  |  98 ---
+ 10 files changed, 1579 deletions(-)
+ delete mode 100644 apps/showcase-vault-breakers/performance-report.json
+ delete mode 100644 apps/showcase-vault-breakers/scripts/build-models.mjs
+ delete mode 100644 apps/showcase-vault-breakers/scripts/build-sfx.mjs
+ delete mode 100644 apps/showcase-vault-breakers/scripts/register-assets.mjs
+ delete mode 100644 apps/showcase-vault-breakers/scripts/write-deploy-report.mjs
+ delete mode 100644 apps/showcase-vault-breakers/scripts/write-performance-report.ts
+ delete mode 100644 apps/showcase-vault-breakers/scripts/write-route-health.mjs
+ delete mode 100644 apps/showcase-vault-breakers/src/v2/evidence/index.ts
+
+diff --git a/apps/showcase-vault-breakers/performance-report.json b/apps/showcase-vault-breakers/performance-report.json
+deleted file mode 100644
+index 3d80ce998..000000000
+--- a/apps/showcase-vault-breakers/performance-report.json
++++ /dev/null
+@@ -1,39 +0,0 @@
+-{
+-  "schema": "aura3d.vault-breakers.performance/1.0",
+-  "generatedAt": "2026-09-20T21:33:23.996Z",
+-  "producer": "apps/showcase-vault-breakers/scripts/write-performance-report.ts",
+-  "producerSourceSha256": "2ebff2cbf8eb0e388ce61a59795c8c3ca979f8e8bbf50264c1c36991f7dd6b5d",
+-  "routeSourceFiles": [
+-    "apps/showcase-vault-breakers/src/ball-flow.ts",
+-    "apps/showcase-vault-breakers/src/environment.ts",
+-    "apps/showcase-vault-breakers/src/flippers.ts",
+-    "apps/showcase-vault-breakers/src/main.ts",
+-    "apps/showcase-vault-breakers/src/missions.ts",
+-    "apps/showcase-vault-breakers/src/pinball-audio.ts",
+-    "apps/showcase-vault-breakers/src/plunger.ts",
+-    "apps/showcase-vault-breakers/src/scoreboard.ts",
+-    "apps/showcase-vault-breakers/src/scoring.ts",
+-    "apps/showcase-vault-breakers/src/styles.css",
+-    "apps/showcase-vault-breakers/src/table.ts"
+-  ],
+-  "routeSourceSha256": "206a11a61f4e64cca05eae5e171b8043e3455ee8f577e0794e1f97cdaf0f5822",
+-  "scope": "Route-local Rapier fixed-step CPU timing plus browser-observed root createGameApp draw calls; no GPU frame-time, reusable pinball-kit, or renderer-parity claim.",
+-  "samples": 12000,
+-  "fixedStepSeconds": 0.016666666666666666,
+-  "budgets": {
+-    "fixedStepCpuP95Ms": 1,
+-    "drawCalls": 150
+-  },
+-  "observed": {
+-    "fixedStepCpuP95Ms": 0.722,
+-    "deterministicPoseSamples": 100,
+-    "drawCalls": 158,
+-    "renderSize": [
+-      1920,
+-      1200
+-    ],
+-    "physicsBodies": 33,
+-    "motorisedJoints": 2
+-  },
+-  "pass": false
+-}
+diff --git a/apps/showcase-vault-breakers/scripts/build-models.mjs b/apps/showcase-vault-breakers/scripts/build-models.mjs
+deleted file mode 100644
+index f44cee48b..000000000
+--- a/apps/showcase-vault-breakers/scripts/build-models.mjs
++++ /dev/null
+@@ -1,654 +0,0 @@
+-/**
+- * Vault Breakers model synth — generates original CC0 GLB props entirely in-repo.
+- *
+- * REVAMPED: Higher-detail geometry, proper pinball shapes, neon emissive parts.
+- *
+- * Five authored low-poly props for the neon pinball table, flat-shaded and
+- * indexed, written as minimal glTF 2.0 GLB containers with no dependencies:
+- *   - vaultBreakersTable.glb     : pinball cabinet shell (playfield, walls, back panel, legs, neon trim)
+- *   - vaultBreakersMechanisms.glb: readable bumper, target-bank, slingshot, orbit, and vault landmarks
+- *   - vaultBreakersFlipper.glb   : flipper bat with tapered body, rubber band, pivot collar
+- *   - vaultBreakersBall.glb      : chrome playfield ball (higher resolution)
+- *   - vaultBreakersVaultDoor.glb : vault door disc with spoke handle and status LEDs
+- *
+- * Units are meters. Table origin sits at the playfield center on the playfield
+- * surface (y = 0 is playfield level).
+- *
+- * Run from the repo root:  node apps/showcase-vault-breakers/scripts/build-models.mjs
+- * Output: apps/showcase-vault-breakers/assets/models/*.glb
+- *
+- * After generation register each model with the CLI so it lands in the typed root
+- * asset map the route imports (`../../../src/aura-assets`). This script documents
+- * the commands but does NOT run them:
+- *   pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts assets add apps/showcase-vault-breakers/assets/models/vaultBreakersTable.glb --name vaultBreakersTable --type model --license CC0-1.0 --author "Aura3D synthesis" --source-page "apps/showcase-vault-breakers/scripts/build-models.mjs"
+- *   pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts assets add apps/showcase-vault-breakers/assets/models/vaultBreakersFlipper.glb --name vaultBreakersFlipper --type model --license CC0-1.0 --author "Aura3D synthesis" --source-page "apps/showcase-vault-breakers/scripts/build-models.mjs"
+- *   pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts assets add apps/showcase-vault-breakers/assets/models/vaultBreakersBall.glb --name vaultBreakersBall --type model --license CC0-1.0 --author "Aura3D synthesis" --source-page "apps/showcase-vault-breakers/scripts/build-models.mjs"
+- *   pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts assets add apps/showcase-vault-breakers/assets/models/vaultBreakersVaultDoor.glb --name vaultBreakersVaultDoor --type model --license CC0-1.0 --author "Aura3D synthesis" --source-page "apps/showcase-vault-breakers/scripts/build-models.mjs"
+- *   pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts assets add apps/showcase-vault-breakers/assets/models/vaultBreakersMechanisms.glb --name vaultBreakersMechanisms --type model --license CC0-1.0 --author "Aura3D synthesis" --source-page "apps/showcase-vault-breakers/scripts/build-models.mjs"
+- */
+-import { mkdirSync, writeFileSync } from "node:fs";
+-import { resolve, dirname } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../assets/models");
+-
+-// ---- geometry helpers -------------------------------------------------------
+-function part() {
+-  return { positions: [], normals: [], indices: [], nextVertex: 0 };
+-}
+-
+-function addTriangle(p, a, b, c) {
+-  const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
+-  const vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
+-  let nx = uy * vz - uz * vy;
+-  let ny = uz * vx - ux * vz;
+-  let nz = ux * vy - uy * vx;
+-  const len = Math.hypot(nx, ny, nz) || 1;
+-  nx /= len; ny /= len; nz /= len;
+-  for (const v of [a, b, c]) {
+-    p.positions.push(v[0], v[1], v[2]);
+-    p.normals.push(nx, ny, nz);
+-  }
+-  p.indices.push(p.nextVertex, p.nextVertex + 1, p.nextVertex + 2);
+-  p.nextVertex += 3;
+-}
+-
+-function addQuad(p, a, b, c, d) {
+-  addTriangle(p, a, b, c);
+-  addTriangle(p, a, c, d);
+-}
+-
+-function ring(n, r, y) {
+-  const pts = [];
+-  for (let i = 0; i < n; i += 1) {
+-    const angle = (i / n) * Math.PI * 2;
+-    pts.push([Math.cos(angle) * r, y, Math.sin(angle) * r]);
+-  }
+-  return pts;
+-}
+-
+-function ringZ(n, r, z) {
+-  const pts = [];
+-  for (let i = 0; i < n; i += 1) {
+-    const angle = (i / n) * Math.PI * 2;
+-    pts.push([Math.cos(angle) * r, Math.sin(angle) * r, z]);
+-  }
+-  return pts;
+-}
+-
+-function addBand(p, lower, upper) {
+-  const n = Math.min(lower.length, upper.length);
+-  for (let i = 0; i < n; i += 1) {
+-    const j = (i + 1) % n;
+-    addQuad(p, lower[i], lower[j], upper[j], upper[i]);
+-  }
+-}
+-
+-function addCap(p, pts, y, up, cx = 0, cz = 0) {
+-  const center = [cx, y, cz];
+-  for (let i = 0; i < pts.length; i += 1) {
+-    const j = (i + 1) % pts.length;
+-    if (up) addTriangle(p, center, pts[i], pts[j]);
+-    else addTriangle(p, center, pts[j], pts[i]);
+-  }
+-}
+-
+-function addZCap(p, pts, z, front, cx = 0, cy = 0) {
+-  const center = [cx, cy, z];
+-  for (let i = 0; i < pts.length; i += 1) {
+-    const j = (i + 1) % pts.length;
+-    if (front) addTriangle(p, center, pts[i], pts[j]);
+-    else addTriangle(p, center, pts[j], pts[i]);
+-  }
+-}
+-
+-function addBox(p, cx, cy, cz, hx, hy, hz) {
+-  const v = [
+-    [cx - hx, cy - hy, cz - hz], [cx + hx, cy - hy, cz - hz],
+-    [cx + hx, cy - hy, cz + hz], [cx - hx, cy - hy, cz + hz],
+-    [cx - hx, cy + hy, cz - hz], [cx + hx, cy + hy, cz - hz],
+-    [cx + hx, cy + hy, cz + hz], [cx - hx, cy + hy, cz + hz]
+-  ];
+-  addQuad(p, v[0], v[3], v[2], v[1]);
+-  addQuad(p, v[4], v[5], v[6], v[7]);
+-  addQuad(p, v[1], v[2], v[6], v[5]);
+-  addQuad(p, v[3], v[0], v[4], v[7]);
+-  addQuad(p, v[0], v[1], v[5], v[4]);
+-  addQuad(p, v[2], v[3], v[7], v[6]);
+-}
+-
+-function addBoxOutward(p, cx, cy, cz, hx, hy, hz) {
+-  const v = [
+-    [cx - hx, cy - hy, cz - hz], [cx + hx, cy - hy, cz - hz],
+-    [cx + hx, cy - hy, cz + hz], [cx - hx, cy - hy, cz + hz],
+-    [cx - hx, cy + hy, cz - hz], [cx + hx, cy + hy, cz - hz],
+-    [cx + hx, cy + hy, cz + hz], [cx - hx, cy + hy, cz + hz]
+-  ];
+-  addQuad(p, v[0], v[1], v[2], v[3]);
+-  addQuad(p, v[4], v[7], v[6], v[5]);
+-  addQuad(p, v[1], v[5], v[6], v[2]);
+-  addQuad(p, v[0], v[3], v[7], v[4]);
+-  addQuad(p, v[3], v[2], v[6], v[7]);
+-  addQuad(p, v[0], v[4], v[5], v[1]);
+-}
+-
+-function addRollBox(p, cx, cy, cz, hx, hy, hz, roll) {
+-  const cos = Math.cos(roll), sin = Math.sin(roll);
+-  const rot = ([x, y, z]) => [cx + x * cos - y * sin, cy + x * sin + y * cos, cz + z];
+-  const local = [
+-    [-hx, -hy, -hz], [hx, -hy, -hz], [hx, -hy, hz], [-hx, -hy, hz],
+-    [-hx, hy, -hz], [hx, hy, -hz], [hx, hy, hz], [-hx, hy, hz]
+-  ].map(rot);
+-  addQuad(p, local[0], local[3], local[2], local[1]);
+-  addQuad(p, local[4], local[5], local[6], local[7]);
+-  addQuad(p, local[1], local[2], local[6], local[5]);
+-  addQuad(p, local[3], local[0], local[4], local[7]);
+-  addQuad(p, local[0], local[1], local[5], local[4]);
+-  addQuad(p, local[2], local[3], local[7], local[6]);
+-}
+-
+-function addCylinderY(p, r0, r1, y0, y1, cx = 0, cz = 0, segments = 16) {
+-  for (let i = 0; i < segments; i += 1) {
+-    const a0 = (i / segments) * Math.PI * 2;
+-    const a1 = ((i + 1) / segments) * Math.PI * 2;
+-    const x0a = cx + Math.cos(a0) * r0, z0a = cz + Math.sin(a0) * r0;
+-    const x1a = cx + Math.cos(a1) * r0, z1a = cz + Math.sin(a1) * r0;
+-    const x0b = cx + Math.cos(a0) * r1, z0b = cz + Math.sin(a0) * r1;
+-    const x1b = cx + Math.cos(a1) * r1, z1b = cz + Math.sin(a1) * r1;
+-    addQuad(p, [x0a, y0, z0a], [x1a, y0, z1a], [x1b, y1, z1b], [x0b, y1, z0b]);
+-    addTriangle(p, [cx, y1, cz], [x0b, y1, z0b], [x1b, y1, z1b]);
+-    addTriangle(p, [cx, y0, cz], [x1a, y0, z1a], [x0a, y0, z0a]);
+-  }
+-}
+-
+-/** Cylinder around Z axis (for vault door, horizontal elements). */
+-function addCylinderZ(p, r0, r1, z0, z1, cx = 0, cy = 0, segments = 16) {
+-  for (let i = 0; i < segments; i += 1) {
+-    const a0 = (i / segments) * Math.PI * 2;
+-    const a1 = ((i + 1) / segments) * Math.PI * 2;
+-    const x0a = cx + Math.cos(a0) * r0, y0a = cy + Math.sin(a0) * r0;
+-    const x1a = cx + Math.cos(a1) * r0, y1a = cy + Math.sin(a1) * r0;
+-    const x0b = cx + Math.cos(a0) * r1, y0b = cy + Math.sin(a0) * r1;
+-    const x1b = cx + Math.cos(a1) * r1, y1b = cy + Math.sin(a1) * r1;
+-    addQuad(p, [x0a, y0a, z0], [x1a, y1a, z0], [x1b, y1b, z1], [x0b, y0b, z1]);
+-    addTriangle(p, [cx, cy, z1], [x0b, y0b, z1], [x1b, y1b, z1]);
+-    addTriangle(p, [cx, cy, z0], [x1a, y1a, z0], [x0a, y0a, z0]);
+-  }
+-}
+-
+-/** Torus ring around Y axis at height y, centered at (cx, cz). */
+-function addTorus(p, R, r, cx, y, cz, segsR = 16, segsr = 8) {
+-  for (let i = 0; i < segsR; i += 1) {
+-    const a0 = (i / segsR) * Math.PI * 2;
+-    const a1 = ((i + 1) / segsR) * Math.PI * 2;
+-    for (let j = 0; j < segsr; j += 1) {
+-      const b0 = (j / segsr) * Math.PI * 2;
+-      const b1 = ((j + 1) / segsr) * Math.PI * 2;
+-      const p00 = [cx + (R + r * Math.cos(b0)) * Math.cos(a0), y + r * Math.sin(b0), cz + (R + r * Math.cos(b0)) * Math.sin(a0)];
+-      const p10 = [cx + (R + r * Math.cos(b0)) * Math.cos(a1), y + r * Math.sin(b0), cz + (R + r * Math.cos(b0)) * Math.sin(a1)];
+-      const p11 = [cx + (R + r * Math.cos(b1)) * Math.cos(a1), y + r * Math.sin(b1), cz + (R + r * Math.cos(b1)) * Math.sin(a1)];
+-      const p01 = [cx + (R + r * Math.cos(b1)) * Math.cos(a0), y + r * Math.sin(b1), cz + (R + r * Math.cos(b1)) * Math.sin(a0)];
+-      addQuad(p, p00, p10, p11, p01);
+-    }
+-  }
+-}
+-
+-// ---- pinball table ----------------------------------------------------------
+-function buildTable() {
+-  const playfield = part();
+-  const cabinet = part();
+-  const chrome = part();
+-  const backbox = part();
+-  const backboxDisplay = part();
+-  const neon = part();
+-  const neonPink = part();
+-  const sideArt = part();
+-
+-  // 1. Playfield bed — slightly recessed surface
+-  addBox(playfield, 0, -0.06, 0, 2.85, 0.06, 4.15);
+-  // Playfield border lip
+-  addBox(playfield, 0, 0.02, -4.1, 2.9, 0.04, 0.08); // top wall lip
+-  addBox(playfield, -2.82, 0.02, 0, 0.08, 0.04, 4.15); // left wall lip
+-  addBox(playfield, 2.82, 0.02, 0, 0.08, 0.04, 4.15); // right wall lip
+-
+-  // 2. Cabinet body — main enclosure with beveled look
+-  addBox(cabinet, 0, -0.35, 0, 3.05, 0.28, 4.35);
+-  // Lower taper
+-  addBox(cabinet, 0, -0.68, 0.3, 2.95, 0.12, 4.0);
+-  // Side panels with slight inset for depth
+-  addBox(sideArt, -3.02, -0.35, 0, 0.04, 0.26, 4.2);
+-  addBox(sideArt, 3.02, -0.35, 0, 0.04, 0.26, 4.2);
+-
+-  // Neon trim strips along cabinet edges
+-  addBox(neon, -3.06, -0.08, 0, 0.02, 0.02, 4.3); // left top edge
+-  addBox(neon, 3.06, -0.08, 0, 0.02, 0.02, 4.3); // right top edge
+-  addBox(neon, 0, -0.08, 4.32, 3.06, 0.02, 0.02); // front top edge
+-  addBox(neon, 0, -0.08, -4.32, 3.06, 0.02, 0.02); // back top edge
+-  // Bottom neon strip
+-  addBox(neonPink, -3.06, -0.62, 0, 0.02, 0.02, 4.3);
+-  addBox(neonPink, 3.06, -0.62, 0, 0.02, 0.02, 4.3);
+-
+-  // 3. Four angled chrome legs — cylindrical with foot pads
+-  for (const [x, z, h] of [
+-    [-2.85, 4.0, 0.5], [2.85, 4.0, 0.5],
+-    [-2.85, -4.0, 0.7], [2.85, -4.0, 0.7]
+-  ]) {
+-    addCylinderY(chrome, 0.06, 0.05, -0.63 - h, -0.63, x, z, 10);
+-    // Foot pad
+-    addCylinderY(chrome, 0.1, 0.12, -0.63 - h - 0.04, -0.63 - h, x, z, 10);
+-    // Leg bracket
+-    addBox(chrome, x, -0.63, z, 0.1, 0.04, 0.1);
+-  }
+-
+-  // 4. Chrome side rails
+-  addBox(chrome, -2.88, 0.15, 0, 0.06, 0.15, 4.2);
+-  addBox(chrome, 2.88, 0.15, 0, 0.06, 0.15, 4.2);
+-  // Lockdown bar
+-  addBox(chrome, 0, 0.15, 4.18, 2.88, 0.08, 0.06);
+-  // Lockdown bar neon accent
+-  addBox(neon, 0, 0.22, 4.18, 2.6, 0.015, 0.015);
+-
+-  // 5. Front coin door & plunger housing
+-  addBox(chrome, 0, -0.48, 4.38, 0.9, 0.65, 0.04);
+-  // Coin slots — orange backlit
+-  addBox(neon, -0.3, -0.38, 4.42, 0.1, 0.15, 0.02);
+-  addBox(neon, 0.3, -0.38, 4.42, 0.1, 0.15, 0.02);
+-  // Plunger housing
+-  addCylinderZ(chrome, 0.08, 0.08, 4.2, 4.5, 2.42, 0.05, 10);
+-  // Plunger knob
+-  addCylinderZ(chrome, 0.1, 0.1, 4.48, 4.55, 2.42, 0.05, 10);
+-
+-  // 6. Backbox / head — taller, more prominent
+-  addBoxOutward(backbox, 0, 1.5, -4.55, 2.95, 1.2, 0.35);
+-  // Backbox top cap
+-  addBoxOutward(backbox, 0, 2.72, -4.55, 3.0, 0.04, 0.38);
+-  // Recessed display face
+-  addBoxOutward(backboxDisplay, 0, 1.55, -4.14, 2.65, 0.85, 0.04);
+-  // Display inner bezel
+-  addBoxOutward(backboxDisplay, 0, 1.55, -4.09, 2.45, 0.7, 0.01);
+-
+-  // Neon marquee frame — bright cyan perimeter
+-  addBoxOutward(neon, 0, 2.42, -4.08, 2.75, 0.04, 0.04); // top
+-  addBoxOutward(neon, -2.75, 1.55, -4.08, 0.04, 0.85, 0.04); // left
+-  addBoxOutward(neon, 2.75, 1.55, -4.08, 0.04, 0.85, 0.04); // right
+-  addBoxOutward(neon, 0, 0.68, -4.08, 2.75, 0.04, 0.04); // bottom
+-
+-  // Marquee title bars — geometric glyphs
+-  addBoxOutward(neon, 0, 1.85, -4.06, 1.8, 0.06, 0.03);
+-  addBoxOutward(neonPink, -0.9, 1.35, -4.06, 0.65, 0.05, 0.03);
+-  addBoxOutward(neonPink, 0.9, 1.35, -4.06, 0.65, 0.05, 0.03);
+-  // Decorative dots on backbox
+-  for (let i = 0; i < 7; i += 1) {
+-    addBoxOutward(neon, -1.5 + i * 0.5, 2.15, -4.06, 0.04, 0.04, 0.03);
+-  }
+-
+-  // Speaker grille
+-  addBoxOutward(cabinet, 0, 0.82, -4.38, 2.7, 0.35, 0.04);
+-  // Speaker grille lines
+-  for (let i = 0; i < 5; i += 1) {
+-    addBoxOutward(chrome, 0, 0.62 + i * 0.1, -4.34, 2.4, 0.015, 0.01);
+-  }
+-
+-  // Apron / lower front
+-  addBox(cabinet, 0, -0.55, 3.8, 2.8, 0.15, 0.5);
+-  // Apron neon strip
+-  addBox(neonPink, 0, -0.42, 4.28, 2.0, 0.02, 0.02);
+-
+-  return [
+-    { name: "playfield", part: playfield, color: [0.03, 0.02, 0.06, 1], roughness: 0.15, metallic: 0.25 },
+-    { name: "cabinet", part: cabinet, color: [0.06, 0.07, 0.12, 1], roughness: 0.45, metallic: 0.5 },
+-    { name: "chrome", part: chrome, color: [0.88, 0.92, 0.96, 1], roughness: 0.08, metallic: 0.95 },
+-    { name: "backbox", part: backbox, color: [0.04, 0.05, 0.1, 1], roughness: 0.35, metallic: 0.55 },
+-    { name: "backboxDisplay", part: backboxDisplay, color: [0.01, 0.02, 0.06, 1], roughness: 0.25, metallic: 0.3 },
+-    { name: "neon", part: neon, color: [0.0, 0.95, 1.0, 1], roughness: 0.05, metallic: 0.0, emissive: [0.0, 2.5, 3.0] },
+-    { name: "neonPink", part: neonPink, color: [1.0, 0.0, 0.65, 1], roughness: 0.05, metallic: 0.0, emissive: [2.5, 0.0, 1.5] },
+-    { name: "sideArt", part: sideArt, color: [0.08, 0.04, 0.15, 1], roughness: 0.3, metallic: 0.4 }
+-  ];
+-}
+-
+-// ---- mechanisms overlay -----------------------------------------------------
+-function buildMechanisms() {
+-  const brass = part();
+-  const cyan = part();
+-  const targets = part();
+-  const slingshots = part();
+-  const laneGuides = part();
+-
+-  // Pop bumpers — proper domed shape with glowing ring
+-  for (const [x, z] of [[-0.9, -1.7], [0.9, -1.7], [0, -0.7]]) {
+-    // Base cylinder
+-    addCylinderY(brass, 0.32, 0.28, 0.02, 0.18, x, z, 20);
+-    // Domed cap
+-    addCylinderY(brass, 0.28, 0.15, 0.18, 0.3, x, z, 20);
+-    addCylinderY(brass, 0.15, 0.02, 0.3, 0.34, x, z, 12);
+-    // Glowing ring around bumper
+-    addTorus(cyan, 0.3, 0.03, x, 0.2, z, 20, 8);
+-    // Skirt ring
+-    addTorus(brass, 0.34, 0.02, x, 0.04, z, 20, 6);
+-  }
+-
+-  // Standup targets — thin tall paddles with rounded tops on posts
+-  const targetBanks = [
+-    [[-2.32, -2.4], [-2.32, -2.8], [-2.32, -3.2]],
+-    [[-2.42, -0.6], [-2.42, -0.2], [-2.42, 0.2]],
+-    [[-0.5, -2.5], [0, -2.62], [0.5, -2.5]],
+-    [[1.95, -0.6], [1.95, -0.2], [1.95, 0.2]],
+-    [[1.95, -2.4], [1.95, -2.8], [1.95, -3.2]]
+-  ];
+-  for (const bank of targetBanks) {
+-    for (const [x, z] of bank) {
+-      // Post
+-      addCylinderY(brass, 0.03, 0.03, 0.0, 0.12, x, z, 8);
+-      // Paddle face
+-      addBox(targets, x, 0.22, z, 0.12, 0.12, 0.025);
+-      // Rounded top
+-      addCylinderY(targets, 0.12, 0.12, 0.32, 0.34, x, z, 10);
+-    }
+-  }
+-
+-  // Bank status lamps — larger, more prominent
+-  for (let index = 0; index < 5; index += 1) {
+-    const lx = -0.72 + index * 0.36;
+-    addCylinderY(cyan, 0.11, 0.11, 0.01, 0.1, lx, -2.02, 14);
+-    // Lamp housing ring
+-    addTorus(brass, 0.13, 0.015, lx, 0.06, -2.02, 14, 6);
+-  }
+-
+-  // Slingshots — triangular shapes
+-  // Left slingshot
+-  addTriangle(slingshots, [-1.5, 0.05, 2.5], [-0.9, 0.05, 1.7], [-1.5, 0.05, 1.7]);
+-  addTriangle(slingshots, [-1.5, 0.25, 2.5], [-1.5, 0.25, 1.7], [-0.9, 0.25, 1.7]);
+-  addQuad(slingshots, [-1.5, 0.05, 2.5], [-1.5, 0.25, 2.5], [-0.9, 0.25, 1.7], [-0.9, 0.05, 1.7]);
+-  addQuad(slingshots, [-1.5, 0.05, 1.7], [-0.9, 0.05, 1.7], [-0.9, 0.25, 1.7], [-1.5, 0.25, 1.7]);
+-  addQuad(slingshots, [-1.5, 0.05, 2.5], [-0.9, 0.05, 1.7], [-0.9, 0.25, 1.7], [-1.5, 0.25, 2.5]);
+-  addQuad(slingshots, [-1.5, 0.05, 1.7], [-1.5, 0.05, 2.5], [-1.5, 0.25, 2.5], [-1.5, 0.25, 1.7]);
+-  // Right slingshot
+-  addTriangle(slingshots, [1.5, 0.05, 2.5], [1.5, 0.05, 1.7], [0.9, 0.05, 1.7]);
+-  addTriangle(slingshots, [1.5, 0.25, 2.5], [0.9, 0.25, 1.7], [1.5, 0.25, 1.7]);
+-  addQuad(slingshots, [1.5, 0.05, 2.5], [0.9, 0.05, 1.7], [0.9, 0.25, 1.7], [1.5, 0.25, 2.5]);
+-  addQuad(slingshots, [1.5, 0.05, 1.7], [1.5, 0.25, 1.7], [0.9, 0.25, 1.7], [0.9, 0.05, 1.7]);
+-  addQuad(slingshots, [1.5, 0.05, 2.5], [1.5, 0.25, 2.5], [0.9, 0.25, 1.7], [0.9, 0.05, 1.7]);
+-  addQuad(slingshots, [1.5, 0.05, 1.7], [1.5, 0.05, 2.5], [1.5, 0.25, 2.5], [1.5, 0.25, 1.7]);
+-
+-  // Vault medallion — larger, more dramatic
+-  addCylinderY(brass, 0.45, 0.4, 0.02, 0.18, 0, -3.36, 24);
+-  addCylinderY(cyan, 0.25, 0.25, 0.18, 0.26, 0, -3.36, 18);
+-  // Vault ring
+-  addTorus(brass, 0.42, 0.025, 0, 0.12, -3.36, 24, 6);
+-
+-  // Orbit markers — larger cyan studs
+-  for (const [x, z] of [[-2.35, -3.4], [-2.48, -2.9], [-2.52, -2.35], [2.42, -2.9], [2.42, -2.3], [2.42, -1.7]]) {
+-    addCylinderY(cyan, 0.07, 0.07, 0.01, 0.08, x, z, 10);
+-  }
+-
+-  // Lane guide arrows
+-  addBox(laneGuides, 2.42, 0.04, 3.0, 0.12, 0.02, 0.25);
+-  addBox(laneGuides, 2.42, 0.04, 2.2, 0.12, 0.02, 0.25);
+-  addBox(laneGuides, 2.42, 0.04, 1.4, 0.12, 0.02, 0.25);
+-
+-  return [
+-    { name: "brassMechanisms", part: brass, color: [0.85, 0.55, 0.12, 1], roughness: 0.18, metallic: 0.75, emissive: [0.3, 0.08, 0.0] },
+-    { name: "cyanMechanisms", part: cyan, color: [0.0, 0.95, 1.0, 1], roughness: 0.08, metallic: 0.1, emissive: [0.0, 2.0, 2.5] },
+-    { name: "targetFaces", part: targets, color: [1.0, 0.75, 0.2, 1], roughness: 0.22, metallic: 0.3, emissive: [1.2, 0.4, 0.0] },
+-    { name: "slingshots", part: slingshots, color: [1.0, 0.35, 0.0, 1], roughness: 0.15, metallic: 0.2, emissive: [1.5, 0.3, 0.0] },
+-    { name: "laneGuides", part: laneGuides, color: [0.0, 0.8, 1.0, 1], roughness: 0.1, metallic: 0.0, emissive: [0.0, 1.5, 2.0] }
+-  ];
+-}
+-
+-// ---- flipper bat ------------------------------------------------------------
+-function buildFlipper() {
+-  const bat = part();
+-  const rubber = part();
+-  const chromeCap = part();
+-
+-  // Pivot collar — wider, more detailed
+-  addCylinderY(chromeCap, 0.12, 0.12, 0.02, 0.07, 0, 0, 16);
+-  addCylinderY(chromeCap, 0.09, 0.09, 0.07, 0.09, 0, 0, 16);
+-  // Pivot bushing ring
+-  addTorus(chromeCap, 0.1, 0.015, 0, 0.05, 0, 16, 6);
+-
+-  // Tapered flipper body — more segments for smoother taper
+-  const segments = 14;
+-  for (let i = 0; i < segments; i += 1) {
+-    const t0 = i / segments;
+-    const t1 = (i + 1) / segments;
+-    const x0 = t0 * 0.92, x1 = t1 * 0.92;
+-    const w0 = 0.072 * (1 - t0 * 0.6);
+-    const w1 = 0.072 * (1 - t1 * 0.6);
+-    const h = 0.042;
+-    addBox(bat, (x0 + x1) / 2, 0, 0, (x1 - x0) / 2, h, (w0 + w1) / 2);
+-  }
+-  // Rounded tip
+-  addCylinderY(bat, 0.028, 0.028, -0.042, 0.042, 0.92, 0, 12);
+-
+-  // Neon rubber band — thicker, more prominent
+-  for (let i = 0; i < segments; i += 1) {
+-    const t0 = i / segments;
+-    const t1 = (i + 1) / segments;
+-    const x0 = t0 * 0.92, x1 = t1 * 0.92;
+-    const w0 = 0.082 * (1 - t0 * 0.6);
+-    const w1 = 0.082 * (1 - t1 * 0.6);
+-    // Top rubber edge
+-    addBox(rubber, (x0 + x1) / 2, 0.035, (w0 + w1) / 2, (x1 - x0) / 2, 0.012, 0.018);
+-    // Bottom rubber edge
+-    addBox(rubber, (x0 + x1) / 2, -0.035, (w0 + w1) / 2, (x1 - x0) / 2, 0.012, 0.018);
+-    // Top rubber edge (other side)
+-    addBox(rubber, (x0 + x1) / 2, 0.035, -(w0 + w1) / 2, (x1 - x0) / 2, 0.012, 0.018);
+-    // Bottom rubber edge (other side)
+-    addBox(rubber, (x0 + x1) / 2, -0.035, -(w0 + w1) / 2, (x1 - x0) / 2, 0.012, 0.018);
+-  }
+-  // Tip rubber cap
+-  addCylinderY(rubber, 0.035, 0.035, -0.035, 0.035, 0.92, 0, 12);
+-
+-  return [
+-    { name: "bat", part: bat, color: [0.1, 0.12, 0.18, 1], roughness: 0.3, metallic: 0.55 },
+-    { name: "rubber", part: rubber, color: [0.0, 0.9, 1.0, 1], roughness: 0.15, metallic: 0.0, emissive: [0.0, 2.0, 2.5] },
+-    { name: "chromeCap", part: chromeCap, color: [0.9, 0.93, 0.97, 1], roughness: 0.06, metallic: 0.95 }
+-  ];
+-}
+-
+-// ---- ball -------------------------------------------------------------------
+-function buildBall() {
+-  const sphere = part();
+-  const rings = 20, sectors = 24, radius = 0.14;
+-
+-  for (let r = 0; r < rings; r += 1) {
+-    const phi0 = (r / rings) * Math.PI - Math.PI / 2;
+-    const phi1 = ((r + 1) / rings) * Math.PI - Math.PI / 2;
+-    const y0 = Math.sin(phi0) * radius, y1 = Math.sin(phi1) * radius;
+-    const rad0 = Math.cos(phi0) * radius, rad1 = Math.cos(phi1) * radius;
+-
+-    for (let s = 0; s < sectors; s += 1) {
+-      const theta0 = (s / sectors) * Math.PI * 2;
+-      const theta1 = ((s + 1) / sectors) * Math.PI * 2;
+-      const x0a = Math.cos(theta0) * rad0, z0a = Math.sin(theta0) * rad0;
+-      const x1a = Math.cos(theta1) * rad0, z1a = Math.sin(theta1) * rad0;
+-      const x0b = Math.cos(theta0) * rad1, z0b = Math.sin(theta0) * rad1;
+-      const x1b = Math.cos(theta1) * rad1, z1b = Math.sin(theta1) * rad1;
+-      addQuad(sphere, [x0a, y0, z0a], [x1a, y0, z1a], [x1b, y1, z1b], [x0b, y1, z0b]);
+-    }
+-  }
+-
+-  return [
+-    { name: "chrome", part: sphere, color: [0.92, 0.95, 1.0, 1], roughness: 0.03, metallic: 1.0 }
+-  ];
+-}
+-
+-// ---- vault door -------------------------------------------------------------
+-function buildVaultDoor() {
+-  const rim = part();
+-  const disc = part();
+-  const wheel = part();
+-  const statusLeds = part();
+-
+-  const radius = 0.26;
+-  const segments = 22;
+-
+-  // Outer locking collar
+-  const outerRing = ringZ(segments, radius, 0.04);
+-  const backRing = ringZ(segments, radius, 0);
+-  addBand(rim, backRing, outerRing);
+-  addZCap(rim, backRing, 0, false);
+-
+-  // Recessed door face
+-  const innerRing = ringZ(segments, radius * 0.88, 0.04);
+-  addBand(rim, outerRing, innerRing);
+-  addZCap(disc, innerRing, 0.04, true);
+-
+-  // Concentric ring detail on door face
+-  const midRing = ringZ(segments, radius * 0.65, 0.045);
+-  addBand(disc, innerRing, midRing);
+-
+-  // Central 8-spoke locking wheel (was 6)
+-  for (let i = 0; i < 8; i += 1) {
+-    const roll = (i / 8) * Math.PI;
+-    addRollBox(wheel, 0, 0, 0.07, radius * 0.55, 0.014, 0.014, roll);
+-  }
+-  // Wheel center hub
+-  const hubRing = ringZ(14, 0.065, 0.09);
+-  const hubBase = ringZ(14, 0.065, 0.04);
+-  addBand(wheel, hubBase, hubRing);
+-  addZCap(wheel, hubRing, 0.09, true);
+-
+-  // 6 radial neon status LEDs (was 4)
+-  for (let i = 0; i < 6; i += 1) {
+-    const angle = (i / 6) * Math.PI * 2;
+-    const lx = Math.cos(angle) * radius * 0.72;
+-    const ly = Math.sin(angle) * radius * 0.72;
+-    addBox(statusLeds, lx, ly, 0.055, 0.022, 0.022, 0.015);
+-  }
+-
+-  return [
+-    { name: "rim", part: rim, color: [0.18, 0.2, 0.28, 1], roughness: 0.35, metallic: 0.8 },
+-    { name: "disc", part: disc, color: [0.08, 0.1, 0.18, 1], roughness: 0.25, metallic: 0.85 },
+-    { name: "wheel", part: wheel, color: [0.88, 0.92, 0.96, 1], roughness: 0.1, metallic: 0.95 },
+-    { name: "statusLeds", part: statusLeds, color: [1.0, 0.85, 0.0, 1], roughness: 0.05, metallic: 0.0, emissive: [2.5, 1.8, 0.0] }
+-  ];
+-}
+-
+-// ---- GLB writer -------------------------------------------------------------
+-function writeGlb(path, parts) {
+-  const chunks = [];
+-  const bufferViews = [];
+-  const accessors = [];
+-  const meshes = [];
+-  const nodes = [];
+-  const materials = parts.map((entry) => {
+-    const mat = {
+-      name: entry.name + "-material",
+-      pbrMetallicRoughness: {
+-        baseColorFactor: entry.color,
+-        metallicFactor: entry.metallic ?? 0.05,
+-        roughnessFactor: entry.roughness
+-      }
+-    };
+-    if (entry.emissive) {
+-      mat.emissiveFactor = entry.emissive;
+-    }
+-    return mat;
+-  });
+-
+-  let offset = 0;
+-  const pushView = (typedArray, target) => {
+-    const bytes = Buffer.from(typedArray.buffer, typedArray.byteOffset, typedArray.byteLength);
+-    const pad = (4 - (bytes.length % 4)) % 4;
+-    chunks.push(bytes);
+-    if (pad > 0) chunks.push(Buffer.alloc(pad));
+-    bufferViews.push({ buffer: 0, byteOffset: offset, byteLength: bytes.length, target });
+-    offset += bytes.length + pad;
+-    return bufferViews.length - 1;
+-  };
+-
+-  parts.forEach((entry, partIndex) => {
+-    const positionCount = entry.part.positions.length / 3;
+-    if (positionCount === 0 || entry.part.indices.length === 0) {
+-      throw new Error("part " + entry.name + " has no triangles.");
+-    }
+-    const min = [Infinity, Infinity, Infinity];
+-    const max = [-Infinity, -Infinity, -Infinity];
+-    for (let i = 0; i < entry.part.positions.length; i += 3) {
+-      for (let axis = 0; axis < 3; axis += 1) {
+-        min[axis] = Math.min(min[axis], entry.part.positions[i + axis]);
+-        max[axis] = Math.max(max[axis], entry.part.positions[i + axis]);
+-      }
+-    }
+-    const positions = new Float32Array(entry.part.positions);
+-    const normals = new Float32Array(entry.part.normals);
+-    const indices = new Uint32Array(entry.part.indices);
+-    const posView = pushView(positions, 34962);
+-    const normView = pushView(normals, 34962);
+-    const idxView = pushView(indices, 34963);
+-    accessors.push({ bufferView: posView, componentType: 5126, count: positionCount, type: "VEC3", min, max });
+-    accessors.push({ bufferView: normView, componentType: 5126, count: positionCount, type: "VEC3" });
+-    accessors.push({ bufferView: idxView, componentType: 5125, count: indices.length, type: "SCALAR" });
+-    meshes.push({
+-      name: entry.name,
+-      primitives: [{
+-        attributes: { POSITION: accessors.length - 3, NORMAL: accessors.length - 2 },
+-        indices: accessors.length - 1,
+-        material: partIndex
+-      }]
+-    });
+-    nodes.push({ name: entry.name, mesh: partIndex });
+-  });
+-
+-  const body = Buffer.concat(chunks);
+-  const document = {
+-    asset: {
+-      version: "2.0",
+-      generator: "aura3d showcase-vault-breakers build-models REVAMPED (original CC0)",
+-      extras: { aura3d: { orientation: { forwardAxis: "+Z", upAxis: "+Y" } } }
+-    },
+-    scene: 0,
+-    scenes: [{ name: "root", nodes: nodes.map((_, index) => index) }],
+-    nodes,
+-    meshes,
+-    materials,
+-    accessors,
+-    bufferViews,
+-    buffers: [{ byteLength: body.length }]
+-  };
+-
+-  const jsonSource = Buffer.from(JSON.stringify(document), "utf8");
+-  const jsonPadding = (4 - (jsonSource.length % 4)) % 4;
+-  const jsonData = Buffer.concat([jsonSource, Buffer.alloc(jsonPadding, 0x20)]);
+-  const binPadding = (4 - (body.length % 4)) % 4;
+-  const binData = Buffer.concat([body, Buffer.alloc(binPadding)]);
+-  const total = 12 + 8 + jsonData.length + 8 + binData.length;
+-  const output = Buffer.alloc(total);
+-  output.write("glTF", 0, "ascii");
+-  output.writeUInt32LE(2, 4);
+-  output.writeUInt32LE(total, 8);
+-  output.writeUInt32LE(jsonData.length, 12);
+-  output.writeUInt32LE(0x4e4f534a, 16);
+-  jsonData.copy(output, 20);
+-  const binHead = 20 + jsonData.length;
+-  output.writeUInt32LE(binData.length, binHead);
+-  output.writeUInt32LE(0x004e4942, binHead + 4);
+-  binData.copy(output, binHead + 8);
+-  mkdirSync(dirname(path), { recursive: true });
+-  writeFileSync(path, output);
+-  return total;
+-}
+-
+-mkdirSync(OUT_DIR, { recursive: true });
+-
+-const tableParts = buildTable();
+-const tableBytes = writeGlb(resolve(OUT_DIR, "vaultBreakersTable.glb"), tableParts);
+-console.log("wrote", resolve(OUT_DIR, "vaultBreakersTable.glb"), "(" + tableBytes + " bytes)");
+-
+-const mechanismParts = buildMechanisms();
+-const mechanismBytes = writeGlb(resolve(OUT_DIR, "vaultBreakersMechanisms.glb"), mechanismParts);
+-console.log("wrote", resolve(OUT_DIR, "vaultBreakersMechanisms.glb"), "(" + mechanismBytes + " bytes)");
+-
+-const flipperParts = buildFlipper();
+-const flipperBytes = writeGlb(resolve(OUT_DIR, "vaultBreakersFlipper.glb"), flipperParts);
+-console.log("wrote", resolve(OUT_DIR, "vaultBreakersFlipper.glb"), "(" + flipperBytes + " bytes)");
+-
+-const ballParts = buildBall();
+-const ballBytes = writeGlb(resolve(OUT_DIR, "vaultBreakersBall.glb"), ballParts);
+-console.log("wrote", resolve(OUT_DIR, "vaultBreakersBall.glb"), "(" + ballBytes + " bytes)");
+-
+-const doorParts = buildVaultDoor();
+-const doorBytes = writeGlb(resolve(OUT_DIR, "vaultBreakersVaultDoor.glb"), doorParts);
+-console.log("wrote", resolve(OUT_DIR, "vaultBreakersVaultDoor.glb"), "(" + doorBytes + " bytes)");
+diff --git a/apps/showcase-vault-breakers/scripts/build-sfx.mjs b/apps/showcase-vault-breakers/scripts/build-sfx.mjs
+deleted file mode 100644
+index ad425bff4..000000000
+--- a/apps/showcase-vault-breakers/scripts/build-sfx.mjs
++++ /dev/null
+@@ -1,338 +0,0 @@
+-/**
+- * Vault Breakers SFX synth — generates original CC0 WAV cues entirely in-repo.
+- *
+- * No network downloads, no sampled material: every cue is synthesized from
+- * oscillators / filtered noise with a small committed generator so provenance is
+- * auditable (author "Aura3D synthesis", license CC0-1.0). Deterministic LCG noise
+- * means regenerating any cue is byte-identical.
+- *
+- * Run from the repo root:  node apps/showcase-vault-breakers/scripts/build-sfx.mjs
+- * Output: apps/showcase-vault-breakers/assets/sfx/*.wav (16-bit PCM mono 44100 Hz)
+- *
+- * After generation, register each audio file with the CLI so it lands in the typed
+- * root asset map the route imports (`../../../src/aura-assets`), e.g.:
+- *   pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts assets add \
+- *     apps/showcase-vault-breakers/assets/sfx/flipperSnap.wav --name vaultFlipperSnapSfx --type audio \
+- *     --license CC0-1.0 --author "Aura3D synthesis" \
+- *     --source-page "apps/showcase-vault-breakers/scripts/build-sfx.mjs"
+- *
+- * Remaining cues use the same command template with these names:
+- *   bumperHit.wav      -> vaultBumperHitSfx
+- *   slingPop.wav       -> vaultSlingPopSfx
+- *   rampRoll.wav       -> vaultRampRollSfx
+- *   targetDown.wav     -> vaultTargetDownSfx
+- *   bankClear.wav      -> vaultBankClearSfx
+- *   vaultOpen.wav      -> vaultVaultOpenSfx
+- *   multiball.wav      -> vaultMultiballSfx
+- *   ballDrain.wav      -> vaultBallDrainSfx
+- *   tiltWarn.wav       -> vaultTiltWarnSfx
+- *   plungerRelease.wav -> vaultPlungerReleaseSfx
+- */
+-import { mkdirSync, writeFileSync } from "node:fs";
+-import { resolve, dirname } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../assets/sfx");
+-const SAMPLE_RATE = 44100;
+-
+-// ---- waveform / DSP helpers -------------------------------------------------
+-function noiseBuffer(length) {
+-  const out = new Float32Array(length);
+-  let seed = 0x9e3779b9;
+-  for (let i = 0; i < length; i += 1) {
+-    // Deterministic LCG noise so regenerating the cue is byte-identical.
+-    seed = (seed * 1664525 + 1013904223) >>> 0;
+-    out[i] = ((seed / 0xffffffff) * 2 - 1);
+-  }
+-  return out;
+-}
+-
+-function envelope(length, attack, decay, total) {
+-  const out = new Float32Array(length);
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const start = Math.min(1, t / Math.max(0.0005, attack));
+-    const end = Math.pow(Math.max(0, 1 - t / total), decay);
+-    out[i] = start * end;
+-  }
+-  return out;
+-}
+-
+-/** One-pole low-pass. */
+-function lowpass(samples, cutoff) {
+-  const rc = 1 / (2 * Math.PI * cutoff);
+-  const dt = 1 / SAMPLE_RATE;
+-  const alpha = dt / (rc + dt);
+-  let prev = 0;
+-  const out = new Float32Array(samples.length);
+-  for (let i = 0; i < samples.length; i += 1) {
+-    prev = prev + alpha * (samples[i] - prev);
+-    out[i] = prev;
+-  }
+-  return out;
+-}
+-
+-/** One-pole high-pass. */
+-function highpass(samples, cutoff) {
+-  const rc = 1 / (2 * Math.PI * cutoff);
+-  const dt = 1 / SAMPLE_RATE;
+-  const alpha = dt / (rc + dt);
+-  let lp = 0;
+-  const out = new Float32Array(samples.length);
+-  for (let i = 0; i < samples.length; i += 1) {
+-    lp += alpha * (samples[i] - lp);
+-    out[i] = samples[i] - lp;
+-  }
+-  return out;
+-}
+-
+-/**
+- * Render a one-shot cue into a normalized mono buffer.
+- * tone: {wave, freqStart, freqEnd, amp, attack, decay, total} or array of stacked partials
+- * noise: {amp, attack, decay, total, hp?, lp?}
+- */
+-function renderCue({ tone, noise }) {
+-  const parts = (Array.isArray(tone) ? tone : tone ? [tone] : []);
+-  const totalSec = Math.max(
+-    ...parts.map((p) => p.total ?? 0),
+-    noise?.total ?? 0,
+-    0.1
+-  ) + 0.08;
+-  const length = Math.floor(totalSec * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  for (const part of parts) {
+-    const { wave = "sine", freqStart, freqEnd = freqStart, amp = 0.5, attack = 0.005, decay = 3, total = 0.2 } = part;
+-    const env = envelope(length, attack, decay, total);
+-    for (let i = 0; i < length; i += 1) {
+-      const t = i / SAMPLE_RATE;
+-      const progress = Math.min(1, t / total);
+-      const f = freqStart + (freqEnd - freqStart) * progress;
+-      const phase = 2 * Math.PI * f * t;
+-      let v = 0;
+-      if (wave === "sine") v = Math.sin(phase);
+-      else if (wave === "triangle") v = (2 / Math.PI) * Math.asin(Math.sin(phase));
+-      else if (wave === "sawtooth") v = 2 * (phase / (2 * Math.PI) - Math.floor(0.5 + phase / (2 * Math.PI)));
+-      else if (wave === "square") v = Math.sign(Math.sin(phase));
+-      else v = Math.sin(phase);
+-      out[i] += v * env[i] * amp;
+-    }
+-  }
+-  if (noise) {
+-    const { amp = 0.4, attack = 0.004, decay = 4, total = 0.16, hp = 0, lp = 0 } = noise;
+-    let raw = noiseBuffer(length);
+-    if (hp > 0) raw = highpass(raw, hp);
+-    if (lp > 0) raw = lowpass(raw, lp);
+-    const env = envelope(length, attack, decay, total);
+-    for (let i = 0; i < length; i += 1) out[i] += raw[i] * env[i] * amp;
+-  }
+-  let peak = 0;
+-  for (let i = 0; i < length; i += 1) peak = Math.max(peak, Math.abs(out[i]));
+-  if (peak > 0) {
+-    const gain = Math.min(1, 0.9 / peak);
+-    for (let i = 0; i < length; i += 1) out[i] *= gain;
+-  }
+-  return out;
+-}
+-
+-/** A looping pad — a full short loop (normalized, click-free edges). */
+-function loopCue(durationSec, wave, freqStart, freqEnd) {
+-  const length = Math.floor(durationSec * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  const amp = 0.16;
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const progress = Math.min(1, t / durationSec);
+-    const f = freqStart + (freqEnd - freqStart) * progress + Math.sin(t * 18) * 4;
+-    const phase = 2 * Math.PI * f * t;
+-    let v = 0;
+-    if (wave === "sawtooth") v = 2 * (phase / (2 * Math.PI) - Math.floor(0.5 + phase / (2 * Math.PI)));
+-    else if (wave === "square") v = Math.sign(Math.sin(phase));
+-    else v = Math.sin(phase);
+-    out[i] = v * amp * (0.7 + 0.3 * Math.sin(t * 2));
+-  }
+-  const fade = Math.floor(0.02 * SAMPLE_RATE);
+-  for (let i = 0; i < fade; i += 1) {
+-    out[i] *= i / fade;
+-    out[length - 1 - i] *= i / fade;
+-  }
+-  return out;
+-}
+-
+-// ---- cue recipes ------------------------------------------------------------
+-
+-/** flipperSnap: sharp mechanical thunk — fast sine drop plus a bright click. */
+-function flipperSnap() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sine", freqStart: 300, freqEnd: 90, amp: 0.55, attack: 0.001, decay: 7, total: 0.12 }
+-    ],
+-    noise: { amp: 0.22, attack: 0.001, decay: 10, total: 0.03, hp: 1500 }
+-  });
+-}
+-
+-/** bumperHit: bright round pop — sine partials around 800/1200 Hz, short. */
+-function bumperHit() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sine", freqStart: 800, freqEnd: 760, amp: 0.4, attack: 0.001, decay: 6, total: 0.12 },
+-      { wave: "sine", freqStart: 1200, freqEnd: 1140, amp: 0.26, attack: 0.001, decay: 7, total: 0.09 }
+-    ]
+-  });
+-}
+-
+-/** slingPop: snappier mid pop — square body plus band-limited noise, harsher than a bumper. */
+-function slingPop() {
+-  return renderCue({
+-    tone: { wave: "square", freqStart: 560, freqEnd: 380, amp: 0.3, attack: 0.001, decay: 7, total: 0.09 },
+-    noise: { amp: 0.26, attack: 0.001, decay: 9, total: 0.05, hp: 900, lp: 5200 }
+-  });
+-}
+-
+-/** rampRoll: short rolling rumble — lowpassed noise swelling up and away. */
+-function rampRoll() {
+-  return renderCue({
+-    noise: { amp: 0.6, attack: 0.13, decay: 2, total: 0.35, hp: 50, lp: 650 }
+-  });
+-}
+-
+-/** targetDown: dry knock — woodCrack-style but lighter, a drop target folds down. */
+-function targetDown() {
+-  return renderCue({
+-    tone: [
+-      { wave: "triangle", freqStart: 250, freqEnd: 165, amp: 0.32, attack: 0.002, decay: 7, total: 0.12 },
+-      { wave: "square", freqStart: 500, freqEnd: 340, amp: 0.07, attack: 0.002, decay: 8, total: 0.08 }
+-    ],
+-    noise: { amp: 0.22, attack: 0.001, decay: 9, total: 0.06, hp: 450, lp: 4200 }
+-  });
+-}
+-
+-/** bankClear: ascending 3-note triangle arpeggio — full target bank cleared. */
+-function bankClear() {
+-  return renderCue({
+-    tone: [
+-      { wave: "triangle", freqStart: 523.25, amp: 0.34, attack: 0.005, decay: 4, total: 0.18 },
+-      { wave: "triangle", freqStart: 659.25, amp: 0.34, attack: 0.1, decay: 4, total: 0.3 },
+-      { wave: "triangle", freqStart: 783.99, amp: 0.36, attack: 0.2, decay: 4, total: 0.44 }
+-    ]
+-  });
+-}
+-
+-/** vaultOpen: deep unlock rumble (70->45 Hz) with a delayed bright chime. */
+-function vaultOpen() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sine", freqStart: 70, freqEnd: 45, amp: 0.6, attack: 0.004, decay: 2.5, total: 0.5 },
+-      { wave: "sine", freqStart: 1318.5, amp: 0.9, attack: 0.28, decay: 3, total: 0.72 },
+-      { wave: "sine", freqStart: 1760, amp: 0.7, attack: 0.32, decay: 3, total: 0.7 }
+-    ]
+-  });
+-}
+-
+-/** multiball: energetic fast 4-note arpeggio with a high noise sparkle. */
+-function multiball() {
+-  return renderCue({
+-    tone: [
+-      { wave: "square", freqStart: 659.25, amp: 0.26, attack: 0.002, decay: 4, total: 0.1 },
+-      { wave: "square", freqStart: 783.99, amp: 0.45, attack: 0.07, decay: 3, total: 0.3 },
+-      { wave: "square", freqStart: 987.77, amp: 0.65, attack: 0.14, decay: 3, total: 0.36 },
+-      { wave: "square", freqStart: 1318.5, amp: 0.9, attack: 0.21, decay: 3, total: 0.44 }
+-    ],
+-    noise: { amp: 0.22, attack: 0.004, decay: 6, total: 0.28, hp: 3200 }
+-  });
+-}
+-
+-/** ballDrain: descending sad thud — sine 220->60 Hz over half a second. */
+-function ballDrain() {
+-  return renderCue({
+-    tone: { wave: "sine", freqStart: 220, freqEnd: 60, amp: 0.5, attack: 0.004, decay: 3, total: 0.5 }
+-  });
+-}
+-
+-/** tiltWarn: warning buzz — 140 Hz square gated into two pulses. */
+-function tiltWarn() {
+-  const length = Math.floor(0.42 * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  const pulses = [
+-    { start: 0, total: 0.13 },
+-    { start: 0.19, total: 0.16 }
+-  ];
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    let gate = 0;
+-    for (const p of pulses) {
+-      if (t >= p.start && t < p.start + p.total) {
+-        const u = (t - p.start) / p.total;
+-        gate = Math.min(1, (t - p.start) / 0.004) * Math.pow(1 - u, 3);
+-      }
+-    }
+-    const phase = 2 * Math.PI * 140 * t;
+-    out[i] = Math.sign(Math.sin(phase)) * 0.45 * gate;
+-  }
+-  let peak = 0;
+-  for (let i = 0; i < length; i += 1) peak = Math.max(peak, Math.abs(out[i]));
+-  if (peak > 0) {
+-    const gain = Math.min(1, 0.9 / peak);
+-    for (let i = 0; i < length; i += 1) out[i] *= gain;
+-  }
+-  return out;
+-}
+-
+-/** plungerRelease: spring boing — sine sweep 200->900 Hz over 0.3 s. */
+-function plungerRelease() {
+-  return renderCue({
+-    tone: { wave: "sine", freqStart: 200, freqEnd: 900, amp: 0.5, attack: 0.003, decay: 2.5, total: 0.3 }
+-  });
+-}
+-
+-// ---- WAV writer -------------------------------------------------------------
+-function writeWav(path, samples) {
+-  const length = samples.length;
+-  const buffer = Buffer.alloc(44 + length * 2);
+-  const numChannels = 1;
+-  const bitsPerSample = 16;
+-  const byteRate = SAMPLE_RATE * numChannels * bitsPerSample / 8;
+-  buffer.write("RIFF", 0);
+-  buffer.writeUInt32LE(36 + length * 2, 4);
+-  buffer.write("WAVE", 8);
+-  buffer.write("fmt ", 12);
+-  buffer.writeUInt32LE(16, 16);
+-  buffer.writeUInt16LE(1, 20);
+-  buffer.writeUInt16LE(numChannels, 22);
+-  buffer.writeUInt32LE(SAMPLE_RATE, 24);
+-  buffer.writeUInt32LE(byteRate, 28);
+-  buffer.writeUInt16LE(numChannels * bitsPerSample / 8, 32);
+-  buffer.writeUInt16LE(bitsPerSample, 34);
+-  buffer.write("data", 36);
+-  buffer.writeUInt32LE(length * 2, 40);
+-  for (let i = 0; i < length; i += 1) {
+-    const v = Math.max(-1, Math.min(1, samples[i]));
+-    buffer.writeInt16LE(Math.round(v * 32767), 44 + i * 2);
+-  }
+-  writeFileSync(path, buffer);
+-  return length / SAMPLE_RATE;
+-}
+-
+-const cues = {
+-  flipperSnap,
+-  bumperHit,
+-  slingPop,
+-  rampRoll,
+-  targetDown,
+-  bankClear,
+-  vaultOpen,
+-  multiball,
+-  ballDrain,
+-  tiltWarn,
+-  plungerRelease
+-};
+-
+-mkdirSync(OUT_DIR, { recursive: true });
+-const report = {};
+-for (const [name, fn] of Object.entries(cues)) {
+-  const samples = fn();
+-  const path = resolve(OUT_DIR, `${name}.wav`);
+-  const duration = writeWav(path, samples);
+-  report[name] = path + " (" + duration.toFixed(3) + "s)";
+-  console.log("wrote", report[name]);
+-}
+-console.log("\nGenerated", Object.keys(cues).length, "cues into", OUT_DIR);
+diff --git a/apps/showcase-vault-breakers/scripts/register-assets.mjs b/apps/showcase-vault-breakers/scripts/register-assets.mjs
+deleted file mode 100644
+index d34830124..000000000
+--- a/apps/showcase-vault-breakers/scripts/register-assets.mjs
++++ /dev/null
+@@ -1,77 +0,0 @@
+-/** Build and register Vault Breakers' deterministic original CC0 assets. */
+-import { execFileSync } from "node:child_process";
+-import { createHash } from "node:crypto";
+-import { existsSync, readFileSync } from "node:fs";
+-import { dirname, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const cli = resolve(repoRoot, "packages/aura3d-cli/dist/cli.js");
+-const probeDir = resolve(repoRoot, "tests/reports/showcase-release-asset-probes");
+-if (!existsSync(cli)) throw new Error("Build packages/aura3d-cli before registering Vault Breakers assets.");
+-
+-execFileSync("node", [resolve(appDir, "scripts/build-models.mjs")], { cwd: repoRoot, stdio: "inherit" });
+-execFileSync("node", [resolve(appDir, "scripts/build-sfx.mjs")], { cwd: repoRoot, stdio: "inherit" });
+-
+-const models = [
+-  ["vaultBreakersTable", "prop", "Original CC0 readable stylized flat-color pinball-table prop with a measured 6.2 by 9.57 metre route scale; route-local Rapier bodies and mechanisms remain simulation authority."],
+-  ["vaultBreakersMechanisms", "prop", "Original CC0 readable metre-scale prop overlay for Vault Breakers bumpers, target banks, orbit markers, and vault focus; route-local Rapier bodies and sensors remain gameplay authority."],
+-  ["vaultBreakersBall", "prop", "Original CC0 readable prop at a verified 0.28 metre scale, synchronized to the route's dynamic Rapier ball body without implying angular-spin simulation."],
+-  ["vaultBreakersFlipper", "prop", "Original CC0 readable metre-scale prop with an authored hinge-pivot origin, synchronized to the two pinned route-local motorised joints."],
+-  ["vaultBreakersVaultDoor", "prop", "Original CC0 metre-scale vault-door prop synchronized to the route's authored door-opening and multiball mission state."]
+-];
+-
+-for (const [id, role, suitability] of models) {
+-  const source = resolve(appDir, `assets/models/${id}.glb`);
+-  const probe = resolve(probeDir, `${id}.json`);
+-  const sourceHash = `sha256-${createHash("sha256").update(readFileSync(source)).digest("hex")}`;
+-  const hasProbe = existsSync(probe) && JSON.parse(readFileSync(probe, "utf8")).renderedProbe?.assetHash === sourceHash;
+-  const args = [
+-    "assets", "add", source, "--name", id, "--type", "model",
+-    "--license", "CC0-1.0", "--license-name", "CC0 1.0 Universal",
+-    "--license-url", "https://creativecommons.org/publicdomain/zero/1.0/",
+-    "--author", "Aura3D synthesis", "--source-family", "aura3d-original",
+-    "--source-page", "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-vault-breakers/scripts/build-models.mjs",
+-    "--download-url", `https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-vault-breakers/assets/models/${id}.glb`,
+-    "--attribution", "Aura3D synthesis — original CC0 Vault Breakers model family",
+-    "--provenance-evidence", "Deterministically generated from the committed Vault Breakers model source; geometry, metre scale, materials, and orientation metadata are reproducible.",
+-    "--retrieved-at", "2026-08-24T01:00:00.000Z", "--quality", hasProbe ? "release" : "candidate",
+-    "--role", role, "--suitability", suitability
+-  ];
+-  if (hasProbe) args.push("--rendered-probe-json", probe);
+-  execFileSync("node", [cli, ...args], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
+-  console.log(`registered ${id} (${hasProbe ? "release + retained probe" : "candidate; probe pending"})`);
+-}
+-
+-const audio = [
+-  ["flipperSnap", "vaultFlipperSnapSfx", "Motor snap driven only by a live left/right flipper actuation event."],
+-  ["bumperHit", "vaultBumperHitSfx", "Bumper impact cue driven only by a route-local Rapier contact."],
+-  ["slingPop", "vaultSlingPopSfx", "Slingshot cue driven only by a route-local sling contact and authored kick."],
+-  ["rampRoll", "vaultRampRollSfx", "Ramp roll cue driven by the route-local ramp sensor transition."],
+-  ["targetDown", "vaultTargetDownSfx", "Target-down cue driven by a newly completed target sensor."],
+-  ["bankClear", "vaultBankClearSfx", "Bank-clear cue driven by completing all five mission targets."],
+-  ["vaultOpen", "vaultVaultOpenSfx", "Vault-open cue driven by the authored door transition after bank completion."],
+-  ["multiball", "vaultMultiballSfx", "Multiball cue driven by the verified vault-open release transition."],
+-  ["ballDrain", "vaultBallDrainSfx", "Drain cue driven only by the drain catch ending an active ball."],
+-  ["tiltWarn", "vaultTiltWarnSfx", "Tilt warning cue driven by a route-local nudge strike."],
+-  ["plungerRelease", "vaultPlungerReleaseSfx", "Plunger release cue driven by keyboard or touch charge release."]
+-];
+-
+-for (const [fileName, id, suitability] of audio) {
+-  const source = resolve(appDir, `assets/sfx/${fileName}.wav`);
+-  execFileSync("node", [cli, "assets", "add", source, "--name", id, "--type", "audio",
+-    "--license", "CC0-1.0", "--license-name", "CC0 1.0 Universal",
+-    "--license-url", "https://creativecommons.org/publicdomain/zero/1.0/",
+-    "--author", "Aura3D synthesis", "--source-family", "aura3d-original",
+-    "--source-page", "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-vault-breakers/scripts/build-sfx.mjs",
+-    "--download-url", `https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-vault-breakers/assets/sfx/${fileName}.wav`,
+-    "--attribution", "Aura3D synthesis — original CC0 Vault Breakers audio",
+-    "--provenance-evidence", "Deterministically synthesized from the committed oscillator and seeded-noise generator; contains no sampled material.",
+-    "--retrieved-at", "2026-08-24T01:00:00.000Z", "--quality", "candidate", "--role", "unknown", "--suitability", suitability
+-  ], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
+-  console.log(`registered ${id} (candidate)`);
+-}
+-
+-execFileSync("node", [cli, "assets", "typegen"], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
+-console.log(`Vault Breakers registration complete: ${models.length} models, ${audio.length} audio cues.`);
+diff --git a/apps/showcase-vault-breakers/scripts/write-deploy-report.mjs b/apps/showcase-vault-breakers/scripts/write-deploy-report.mjs
+deleted file mode 100644
+index b9c6094bf..000000000
+--- a/apps/showcase-vault-breakers/scripts/write-deploy-report.mjs
++++ /dev/null
+@@ -1,50 +0,0 @@
+-import { createHash } from "node:crypto";
+-import { execFileSync } from "node:child_process";
+-import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+-import { dirname, join, relative, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const cli = resolve(repoRoot, "packages/aura3d-cli/dist/cli.js");
+-const dist = resolve(appDir, "dist");
+-const source = resolve(appDir, "src");
+-const modelIds = ["vaultBreakersTable", "vaultBreakersMechanisms", "vaultBreakersBall", "vaultBreakersFlipper", "vaultBreakersVaultDoor"];
+-function run(args) {
+-  try { return JSON.parse(execFileSync("node", [cli, ...args], { cwd: repoRoot, encoding: "utf8", maxBuffer: 128 * 1024 * 1024 })); }
+-  catch (error) {
+-    const stdout = error && typeof error === "object" && "stdout" in error ? String(error.stdout ?? "") : "";
+-    if (stdout) return JSON.parse(stdout);
+-    throw error;
+-  }
+-}
+-function files(directory) {
+-  return readdirSync(directory).sort().flatMap((name) => {
+-    const path = join(directory, name);
+-    return statSync(path).isDirectory() ? files(path) : [path];
+-  });
+-}
+-function treeHash(directory) {
+-  const hash = createHash("sha256");
+-  for (const path of files(directory)) hash.update(relative(directory, path)).update("\0").update(readFileSync(path)).update("\0");
+-  return hash.digest("hex");
+-}
+-const common = ["check-deploy", "--dist", dist, "--release", "--source", source];
+-const modelResult = run([...common, ...modelIds.flatMap((id) => ["--asset", id])]);
+-const distResult = run([...common, "--no-assets"]);
+-const producer = "apps/showcase-vault-breakers/scripts/write-deploy-report.mjs";
+-const report = {
+-  schema: "aura3d.vault-breakers.deploy/1.0", generatedAt: new Date().toISOString(), producer,
+-  producerSourceSha256: createHash("sha256").update(readFileSync(resolve(repoRoot, producer))).digest("hex"),
+-  cli: "packages/aura3d-cli/dist/cli.js", cliSourceSha256: createHash("sha256").update(readFileSync(cli)).digest("hex"),
+-  distTreeSha256: treeHash(dist), sourceTreeSha256: treeHash(source),
+-  checks: {
+-    strictModels: { command: "check-deploy --release --source apps/showcase-vault-breakers/src --asset <5 typed models>", ok: modelResult.ok === true, assetCount: modelResult.manifest?.assets?.length ?? 0, assets: (modelResult.manifest?.assets ?? []).map((asset) => ({ id: asset.id, hash: asset.hash, quality: asset.quality, role: asset.role })), warnings: modelResult.warnings ?? [], failures: modelResult.failures ?? [] },
+-    strictDistAndSource: { command: "check-deploy --release --source apps/showcase-vault-breakers/src --no-assets", ok: distResult.ok === true, warnings: distResult.warnings ?? [], failures: distResult.failures ?? [] }
+-  },
+-  audioBoundary: "Eleven deterministic synthesized WAV cues are typed candidate-quality CC0 assets; model-oriented release bounds validation is intentionally not applied to audio.",
+-  pass: modelResult.ok === true && distResult.ok === true && (modelResult.manifest?.assets?.length ?? 0) === modelIds.length
+-};
+-writeFileSync(resolve(appDir, "deploy-report.json"), `${JSON.stringify(report, null, 2)}\n`);
+-console.log(JSON.stringify({ pass: report.pass, models: report.checks.strictModels.assetCount, modelWarnings: report.checks.strictModels.warnings.length, distWarnings: report.checks.strictDistAndSource.warnings.length }));
+-if (!report.pass) process.exitCode = 1;
+diff --git a/apps/showcase-vault-breakers/scripts/write-performance-report.ts b/apps/showcase-vault-breakers/scripts/write-performance-report.ts
+deleted file mode 100644
+index da03b9046..000000000
+--- a/apps/showcase-vault-breakers/scripts/write-performance-report.ts
++++ /dev/null
+@@ -1,65 +0,0 @@
+-import { createHash } from "node:crypto";
+-import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+-import { join, relative, resolve } from "node:path";
+-import { createTableSimulation } from "../src/table";
+-
+-const repoRoot = resolve(import.meta.dirname, "../../..");
+-const appDir = resolve(import.meta.dirname, "..");
+-const SAMPLES = 12_000;
+-const STEP_P95_BUDGET_MS = 1;
+-const DRAW_CALL_BUDGET = 150;
+-
+-function files(directory: string): string[] {
+-  return readdirSync(directory).sort().flatMap((name) => {
+-    const path = join(directory, name);
+-    return statSync(path).isDirectory() ? files(path) : /\.(?:ts|css)$/.test(path) ? [path] : [];
+-  });
+-}
+-const sourceFiles = files(join(appDir, "src"));
+-const routeSourceSha256 = (() => {
+-  const hash = createHash("sha256");
+-  for (const path of sourceFiles) hash.update(relative(appDir, path)).update("\0").update(readFileSync(path)).update("\0");
+-  return hash.digest("hex");
+-})();
+-const producer = "apps/showcase-vault-breakers/scripts/write-performance-report.ts";
+-const sim = createTableSimulation();
+-sim.serveBall(0.82);
+-const timings: number[] = [];
+-const poseHashes = new Set<string>();
+-for (let index = 0; index < SAMPLES; index += 1) {
+-  const started = process.cpuUsage();
+-  sim.stepFixed(1);
+-  const used = process.cpuUsage(started);
+-  timings.push((used.user + used.system) / 1_000);
+-  if (index % 120 === 119) poseHashes.add(sim.poseHash());
+-  if (!sim.ballInPlay()) sim.serveBall((index % 100) / 100);
+-}
+-const sorted = [...timings].sort((a, b) => a - b);
+-const fixedStepCpuP95Ms = Number((sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))] ?? 0).toFixed(4));
+-const visual = JSON.parse(readFileSync(resolve(repoRoot, "tests/reports/vault-breakers/visual.json"), "utf8"));
+-const receipt = JSON.parse(readFileSync(resolve(repoRoot, "tests/reports/vault-breakers/browser-evidence.json"), "utf8"));
+-const observed = {
+-  fixedStepCpuP95Ms,
+-  deterministicPoseSamples: poseHashes.size,
+-  drawCalls: Number(visual.evidence?.renderer?.drawCalls ?? 0),
+-  renderSize: visual.evidence?.renderer?.renderSize ?? [0, 0],
+-  physicsBodies: sim.bodyCount,
+-  motorisedJoints: sim.jointCount
+-};
+-const pass = observed.fixedStepCpuP95Ms <= STEP_P95_BUDGET_MS
+-  && observed.deterministicPoseSamples >= 5
+-  && observed.drawCalls > 0 && observed.drawCalls <= DRAW_CALL_BUDGET
+-  && Number(observed.renderSize[0] ?? 0) > 0 && Number(observed.renderSize[1] ?? 0) > 0
+-  && receipt.pass === true && receipt.routeSourceSha256 === routeSourceSha256;
+-const report = {
+-  schema: "aura3d.vault-breakers.performance/1.0",
+-  generatedAt: new Date().toISOString(), producer,
+-  producerSourceSha256: createHash("sha256").update(readFileSync(resolve(repoRoot, producer))).digest("hex"),
+-  routeSourceFiles: sourceFiles.map((path) => relative(repoRoot, path)), routeSourceSha256,
+-  scope: "Route-local Rapier fixed-step CPU timing plus browser-observed root createGameApp draw calls; no GPU frame-time, reusable pinball-kit, or renderer-parity claim.",
+-  samples: SAMPLES, fixedStepSeconds: 1 / 60,
+-  budgets: { fixedStepCpuP95Ms: STEP_P95_BUDGET_MS, drawCalls: DRAW_CALL_BUDGET }, observed, pass
+-};
+-writeFileSync(resolve(appDir, "performance-report.json"), `${JSON.stringify(report, null, 2)}\n`);
+-console.log(JSON.stringify({ pass, observed }));
+-if (!pass) process.exitCode = 1;
+diff --git a/apps/showcase-vault-breakers/scripts/write-route-health.mjs b/apps/showcase-vault-breakers/scripts/write-route-health.mjs
+deleted file mode 100644
+index 7bf1abdda..000000000
+--- a/apps/showcase-vault-breakers/scripts/write-route-health.mjs
++++ /dev/null
+@@ -1,99 +0,0 @@
+-import { createHash } from "node:crypto";
+-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+-import { dirname, join, relative, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const reportDir = join(repoRoot, "tests/reports/vault-breakers");
+-const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
+-const sha256 = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
+-const modelIds = ["vaultBreakersTable", "vaultBreakersMechanisms", "vaultBreakersBall", "vaultBreakersFlipper", "vaultBreakersVaultDoor"];
+-const audioIds = ["vaultFlipperSnapSfx", "vaultBumperHitSfx", "vaultSlingPopSfx", "vaultRampRollSfx", "vaultTargetDownSfx", "vaultBankClearSfx", "vaultVaultOpenSfx", "vaultMultiballSfx", "vaultBallDrainSfx", "vaultTiltWarnSfx", "vaultPlungerReleaseSfx"];
+-
+-function files(directory) {
+-  return readdirSync(directory).sort().flatMap((name) => {
+-    const path = join(directory, name);
+-    return statSync(path).isDirectory() ? files(path) : [path];
+-  });
+-}
+-const routeSourceFiles = files(join(appDir, "src")).filter((path) => /\.(?:ts|css)$/.test(path));
+-const routeSourceSha256 = (() => {
+-  const hash = createHash("sha256");
+-  for (const path of routeSourceFiles) hash.update(relative(appDir, path)).update("\0").update(readFileSync(path)).update("\0");
+-  return hash.digest("hex");
+-})();
+-const sourceText = routeSourceFiles.map((path) => readFileSync(path, "utf8")).join("\n");
+-for (const forbidden of [/\bfrom\s+["']three(?:\/|["'])/, /unsafeModelUrl\s*\(/, /model\s*\(\s*["'][^"']+\.gl(?:b|tf)/]) {
+-  if (forbidden.test(sourceText)) throw new Error(`Vault Breakers source violates the root-safe asset boundary: ${forbidden}`);
+-}
+-if (!existsSync(join(appDir, "README.md"))) throw new Error("Vault Breakers README is missing");
+-
+-const manifest = readJson(join(repoRoot, "aura.assets.json"));
+-const assetById = new Map(manifest.assets.map((asset) => [asset.id, asset]));
+-for (const id of modelIds) {
+-  const asset = assetById.get(id);
+-  if (!asset || asset.type !== "model" || asset.quality !== "release") throw new Error(`${id} is not a release-grade model`);
+-  if (asset.provenance?.license !== "CC0-1.0" || asset.provenance?.author !== "Aura3D synthesis" || !asset.provenance?.sourcePage || !asset.provenance?.downloadUrl) throw new Error(`${id} durable CC0 provenance is incomplete`);
+-  if (!asset.renderedProbe?.url || asset.renderedProbe.assetHash !== asset.hash || !existsSync(join(repoRoot, asset.renderedProbe.url))) throw new Error(`${id} rendered probe is missing or stale`);
+-  if (!sourceText.includes(`assets.${id}`)) throw new Error(`${id} is not referenced by the live route`);
+-}
+-for (const id of audioIds) {
+-  const asset = assetById.get(id);
+-  if (!asset || asset.type !== "audio" || asset.quality !== "candidate" || asset.provenance?.license !== "CC0-1.0" || asset.provenance?.author !== "Aura3D synthesis" || !asset.provenance?.sourcePage || !asset.provenance?.downloadUrl) throw new Error(`${id} typed audio provenance/quality is incomplete`);
+-  if (!sourceText.includes(`"${id}"`)) throw new Error(`${id} is not referenced by the live audio controller`);
+-}
+-function validateReceipt(path, schema) {
+-  const receipt = readJson(path);
+-  if (receipt.schema !== schema || receipt.pass !== true) throw new Error(`${relative(repoRoot, path)} is missing or failing`);
+-  if (receipt.producerSourceSha256 !== sha256(join(repoRoot, receipt.producer))) throw new Error(`${relative(repoRoot, path)} producer binding is stale`);
+-  if (receipt.routeSourceSha256 !== routeSourceSha256) throw new Error(`${relative(repoRoot, path)} route-source binding is stale`);
+-  for (const artifact of receipt.artifacts ?? []) if (!existsSync(join(repoRoot, artifact.path)) || artifact.sha256 !== sha256(join(repoRoot, artifact.path))) throw new Error(`${relative(repoRoot, path)} artifact binding is stale: ${artifact.path}`);
+-  return receipt;
+-}
+-const visualReceipt = validateReceipt(join(reportDir, "browser-evidence.json"), "aura3d.vault-breakers.browser-evidence/1.0");
+-const playableReceipt = validateReceipt(join(reportDir, "playable/browser-evidence.json"), "aura3d.vault-breakers.playable-evidence/1.0");
+-for (const scenario of ["opening", "plunger-charge", "serve-flipper", "bank-near-complete", "vault-opening", "multiball", "tilt", "game-over", "reset-attract", "mobile-opening", "mobile-touch-charge", "reduced-motion-multiball"]) if (!visualReceipt.scenarios?.includes(scenario)) throw new Error(`visual receipt is missing ${scenario}`);
+-for (const scenario of ["keyboard-serve", "joint-flippers", "tilt-lock", "natural-drain", "full-reset", "bank-near-complete", "vault-opening", "multiball", "game-over", "touch-charge-release", "touch-flipper", "pause-freeze-resume"]) if (!playableReceipt.scenarios?.includes(scenario)) throw new Error(`playable receipt is missing ${scenario}`);
+-
+-const mission = readJson(join(reportDir, "playable/mission-touch.json"));
+-if (mission.nearComplete?.banksDown !== 4 || mission.vault?.vaultOpen !== true || mission.multiball?.activeBalls < 2 || mission.tilted?.tiltLocked !== true || mission.gameOver?.ballsRemaining !== 0 || mission.touchServe?.phase !== "play" || mission.touched?.flipperLeftRaised !== true) throw new Error("mission, outcome, or touch proof is incomplete");
+-const reset = readJson(join(reportDir, "playable/reset.json"));
+-if (reset.phase !== "attract" || reset.score !== 0 || reset.banksDown !== 0 || reset.ballsRemaining !== 3 || reset.resetHashMatch !== true) throw new Error("full reset proof is incomplete");
+-const pause = readJson(join(reportDir, "playable/pause.json"));
+-if (pause.pausedFrame?.state !== "paused" || pause.pausedFrame?.frameCount !== pause.stillPaused?.frameCount || pause.resumed?.state !== "play") throw new Error("pause freeze/resume proof is incomplete");
+-
+-const performance = readJson(join(appDir, "performance-report.json"));
+-if (performance.schema !== "aura3d.vault-breakers.performance/1.0" || performance.pass !== true || performance.routeSourceSha256 !== routeSourceSha256 || performance.producerSourceSha256 !== sha256(join(repoRoot, performance.producer))) throw new Error("performance report is missing, failing, or stale");
+-const deploy = readJson(join(appDir, "deploy-report.json"));
+-if (deploy.schema !== "aura3d.vault-breakers.deploy/1.0" || deploy.pass !== true || deploy.checks?.strictModels?.ok !== true || deploy.checks?.strictModels?.assetCount !== modelIds.length || deploy.checks?.strictDistAndSource?.ok !== true || deploy.producerSourceSha256 !== sha256(join(repoRoot, deploy.producer))) throw new Error("strict deploy report is missing, failing, or stale");
+-if ([...(deploy.checks.strictModels.warnings ?? []), ...(deploy.checks.strictModels.failures ?? []), ...(deploy.checks.strictDistAndSource.warnings ?? []), ...(deploy.checks.strictDistAndSource.failures ?? [])].length > 0) throw new Error("strict deploy report contains warnings or failures");
+-
+-const gates = readJson(join(repoRoot, "tools/showcase-library/route-gates.json"));
+-const gate = gates.routes.find((route) => route.id === "showcase-vault-breakers");
+-if (!gate || gate.releaseClass !== "prototype-blocked" || gate.published !== true || gate.requiresTypedPrimaryAssets !== true || gate.gameTemplateStatus?.publicTemplateReady !== false) throw new Error("Vault Breakers route gate is missing or over-promoted");
+-if (JSON.stringify(gate.primaryAssets) !== JSON.stringify(modelIds) || gate.routePrimaryHeroAsset !== "vaultBreakersMechanisms") throw new Error("Vault Breakers route-primary asset gate is stale");
+-const primitiveOccurrences = Array.from(sourceText.matchAll(/\bprimitives\.[A-Za-z_$][\w$]*/g)).length;
+-if (primitiveOccurrences > gate.primitiveBudget) throw new Error("Vault Breakers primitive source budget exceeded");
+-const routePrimary = readJson(join(repoRoot, "tests/reports/showcase-route-primary-probes/showcase-vault-breakers.json"));
+-if (routePrimary.routeId !== "showcase-vault-breakers" || routePrimary.pass !== true || (routePrimary.failures?.length ?? 0) > 0 || routePrimary.routePrimaryHeroAsset !== "vaultBreakersMechanisms") throw new Error("Vault Breakers route-primary probe is missing or failing");
+-
+-const exactArtifacts = visualReceipt.artifacts.map((artifact) => ({ path: artifact.path, sha256: artifact.sha256 }));
+-const routeHealth = {
+-  schema: "aura3d-route-health/1.0", generatedAt: new Date().toISOString(), appId: "showcase-vault-breakers", route: "/apps/showcase-vault-breakers/",
+-  classification: "prototype-blocked", publicShowcase: false, promotionStatus: "hold-public-showcase-until-independent-human-visual-review", machinePass: true, routeSourceSha256,
+-  renderer: { path: "createGameApp root safe API", mode: "production with safe-basic fallback", nativeWebGPU: false, productionRuntimeClaimed: false },
+-  primaryAssets: modelIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, role: assetById.get(id).role })),
+-  audioAssets: audioIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
+-  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "subordinate felt, rails, slings, target state, lane, drain, lights, scoreboard, and feedback around typed primary assets", status: "no-primitive-primary-subjects" },
+-  gameplay: { ballsPerGame: 3, controls: ["charge/release serve", "left/right joint flippers", "nudge/tilt", "pause", "full reset"], keyboardAndTouch: true, rapierBackend: true, motorisedJoints: 2, targetBanks: 5, vaultMultiball: true, deterministicFixedStep: true, deterministicPoseHash: true, reducedMotionPreservesStateTruth: true },
+-  accessibility: { semanticHeading: true, namedStatusRegions: true, namedTouchControls: 5, minimumTouchTargetPx: 44, keyboardAndTouchParity: true, pass: true },
+-  performance, deploy,
+-  routeGate: { config: "tools/showcase-library/route-gates.json", releaseClass: gate.releaseClass, published: gate.published, publicTemplateReady: false, pass: true },
+-  claimStatus: { status: "blocked-pending-human-review", label: "root-safe prototype", allowed: ["typed original pinball cabinet, mechanism, ball, flipper, and vault-door assets", "route-local Rapier ball, contacts, sensors, and two motorised flipper joints", "route-local authored slope, kick, nudge, lane-assist, door, and mission rules", "five target banks, vault multiball, tilt, three-ball game"], notAllowed: ["reusable pinball or physics kit", "ball angular-spin simulation", "production-runtime-only rendering claims", "public promotion before independent exact-artifact review"] },
+-  blockers: ["independent human visual review pending for exact final artifacts"],
+-  evidence: { global: "window.__AURA3D_SHOWCASE_VAULT_BREAKERS__", detailedGlobal: "window.__VAULT_BREAKERS_EVIDENCE__", sourceReview: "apps/showcase-vault-breakers/src/main.ts", exactArtifacts, browserReceipts: ["tests/reports/vault-breakers/browser-evidence.json", "tests/reports/vault-breakers/playable/browser-evidence.json"], assetProbes: modelIds.map((id) => ({ asset: id, metadata: `tests/reports/showcase-release-asset-probes/${id}.json`, screenshot: assetById.get(id).renderedProbe.url, assetHash: assetById.get(id).hash })), performance: "apps/showcase-vault-breakers/performance-report.json", deploy: "apps/showcase-vault-breakers/deploy-report.json", routePrimary: "tests/reports/showcase-route-primary-probes/showcase-vault-breakers.json", unitSpecs: ["tests/unit/apps/vault-breakers-flipper-spike.test.ts", "tests/unit/apps/vault-breakers-scoring.test.ts", "tests/unit/apps/vault-breakers-table.test.ts"], browserSpecs: ["tests/browser/vault-breakers-playable.spec.ts", "tests/browser/vault-breakers-table-visual.spec.ts"] },
+-  determinismContract: { fixedStep: "1/60 via physics.world fixedDelta", serveHash: "FNV-1a pose hash", resetProof: "fresh ball/body reuse plus resetHashMatch", authoredNonPhysical: ["playfield slope gravity component", "nudge", "bumper/slingshot kicks", "vault-door swing", "lane assist"] }
+-};
+-writeFileSync(join(appDir, "route-health.json"), `${JSON.stringify(routeHealth, null, 2)}\n`);
+-console.log(JSON.stringify({ machinePass: true, models: modelIds.length, audio: audioIds.length, exactArtifacts: exactArtifacts.length, primitiveOccurrences, performancePass: performance.pass }));
+diff --git a/apps/showcase-vault-breakers/src/legacy/main.ts b/apps/showcase-vault-breakers/src/legacy/main.ts
+index 7983f36df..c48f37974 100644
+--- a/apps/showcase-vault-breakers/src/legacy/main.ts
++++ b/apps/showcase-vault-breakers/src/legacy/main.ts
+@@ -1,12 +1,3 @@
+-/**
+- * Vault Breakers - route mount (PRD VB-08/10/11/12).
+- *
+- * One Aura3D app per route. The physics table lives in table.ts and the game
+- * state machine in ball-flow.ts; this file owns the scene graph, per-frame
+- * visual sync from body poses, the text3D scoreboard, HUD, audio cue mapping,
+- * and the evidence global. DOM is UI only: every gameplay truth is rendered by
+- * the Aura3D scene.
+- */
+ import {
+   camera,
+   effects,
+@@ -29,7 +20,6 @@ import {
+   createRumbleDriver,
+   createTweenEngine
+ } from "@aura3d/game";
+-import { bindVaultEvidence } from "../evidence";
+ import { bindVaultDrive, vaultDrive } from "../scenario-drive";
+ import { assets } from "../../../../src/aura-assets";
+ import { VaultFlow, type VaultGameEvent } from "../gameplay/ball-flow";
+@@ -40,84 +30,17 @@ import { createVaultAudio } from "./pinball-audio";
+ import { createScoreboardNodes, scoreboardVisibility, MISSION_LINES } from "./scoreboard";
+ import { createVaultBreakersEnvironment } from "./environment";
+ import "./styles.css";
+-
+-type VaultWindow = Window & {
+-  __VAULT_BREAKERS_EVIDENCE__?: unknown;
+-  __AURA3D_SHOWCASE_VAULT_BREAKERS__?: unknown;
+-  __VB_SHOT__?: () => string;
+-  __VB_PUMP__?: (frames: number) => number;
+-  __VB_SCENARIO__?: (scenario: string) => string;
+-};
+ const vaultWindow = window as VaultWindow;
+-Object.defineProperty(window, "__AURA3D_SHOWCASE_VAULT_BREAKERS__", {
+-  configurable: true,
+-  get: () => vaultWindow.__VAULT_BREAKERS_EVIDENCE__
+-});
+ const reducedMotion = typeof window.matchMedia === "function"
+   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+-document.body.dataset.capture = "default";
+-// Physics identity (backend / flipper mode / sensor + joint counts) is evidence a
+-// reviewer asks for, not HUD a player receives. Opt in with `?evidence=1`.
+-document.body.dataset.evidence =
+-  new URLSearchParams(window.location.search).get("evidence") === "1" ? "on" : "off";
+-
+ const APP_ID = "showcase-vault-breakers";
+-
+-// ---------------------------------------------------------------- HUD markup --
+-ui.html("#hud", `
+-  <div class="hole-banner" id="vb-banner" aria-live="polite">VAULT BREAKERS - PRESS AND RELEASE SPACE TO SERVE</div>
+-  <div class="result-card is-hidden" id="vb-result" data-testid="vault-breakers-result">
+-    <h2 id="vb-result-title">Game over</h2>
+-    <p id="vb-result-detail"></p>
+-    <div class="action-row"><button id="vb-again-button" type="button">Play again</button></div>
+-  </div>
+ `);
+-
+-ui.html("#panel", `
+-  <section class="vb-brand">
+-    <p class="eyebrow">Aura3D Prototype</p>
+-    <h1>Vault Breakers</h1>
+-    <p class="blurb">Neon pinball. Fire the flippers, bank five target stands, crack the vault, ride the multiball.</p>
+-  </section>
+-  <section class="stat-grid" aria-label="Table status">
+-    <article><span>Score</span><strong id="stat-score">0</strong></article>
+-    <article><span>Ball</span><strong id="stat-ball">1 OF 3</strong></article>
+-    <article><span>Multiplier</span><strong id="stat-mult">X1</strong></article>
+-    <article><span>Banks</span><strong id="stat-banks">0 OF 5</strong></article>
+-    <article><span>Balls live</span><strong id="stat-live">0</strong></article>
+-    <article><span>Tilt</span><strong id="stat-tilt">0 OF 3</strong></article>
+-  </section>
+-  <div class="power-meter" aria-label="Plunger power"><span id="vb-power-fill"></span></div>
+-  <div class="power-meta"><span id="vb-power-label">Plunger</span><span>hold Space</span></div>
+-  <p class="mission-line" id="vb-mission" aria-live="polite">HIT TARGET BANKS  0 DOWN 5 TO GO</p>
+-  <ul class="controls-list" aria-label="Keyboard controls">
+-    <li>Flippers <b>A</b>/<b>D</b> or <b>&larr;/&rarr;</b></li>
+-    <li>Plunger <b>hold Space</b>, release to serve</li>
+-    <li>Nudge <b>S</b> (3 strikes tilt)</li>
+-    <li>Reset <b>R</b> - Pause <b>P</b></li>
+-  </ul>
+-  <section class="action-row" aria-label="Game actions">
+-    <button id="vb-left-button" type="button">Left flipper</button>
+-    <button id="vb-right-button" type="button">Right flipper</button>
+-    <button id="vb-plunge-button" type="button">Plunge</button>
+-    <button id="vb-reset-button" type="button">Reset</button>
+-    <button id="vb-pause-button" type="button">Pause</button>
+-  </section>
+-  <section class="evidence-strip" aria-label="Route evidence">
+-    <span>Backend <code id="vb-ev-backend">booting</code></span>
+-    <span>Flipper mode <code id="vb-ev-flipper">joint</code></span>
+-    <span>Sensors <code id="vb-ev-sensors">0</code> - Joints <code id="vb-ev-joints">0</code></span>
+-  </section>
+ `);
+-
+-// ---------------------------------------------------------------- audio ------
+ const audio = createVaultAudio();
+ window.addEventListener("pointerdown", () => {
+   void audio.unlock().catch(() => undefined);
+ }, { passive: true });
+ window.addEventListener("keydown", () => { void audio.unlock(); }, { passive: true });
+-
+-// ---------------------------------------------------------------- state ------
+ const tableSim = createTableSimulation();
+ const flippers = new FlipperController(tableSim.flippers);
+ const flow = new VaultFlow(flippers, tableSim);
+@@ -132,8 +55,6 @@ let impactRemaining = 0;
+ let impactRadius = 0.28;
+ let impactOrigin: readonly [number, number, number] = [0, 0.5, 0];
+ const touchControlEvents: string[] = [];
+-// Neon palette — the typed GLBs keep their authored multi-material identity;
+-// these route-owned materials are limited to state accents and gameplay cues.
+ const liveBallMaterial = material.metal({
+   name: "neon chrome ball state accent",
+   color: "#dcecf5",
+@@ -173,7 +94,6 @@ const mechanismStateMaterials = {
+   tilt: material.emissive({ name: "neon tilt", color: "#ff0044", emissive: "#cc0033" }),
+   gameOver: material.emissive({ name: "neon game over", color: "#333333", emissive: "#1a1a1a" })
+ } as const;
+-
+ function pushCue(cue: Parameters<typeof audio.cue>[0]): void {
+   void audio.cue(cue).catch(() => undefined);
+   audioCueLog.push(cue);
+@@ -185,7 +105,6 @@ function cueReady(name: string, gapFrames: number): boolean {
+   lastCueFrame.set(name, frameCount);
+   return true;
+ }
+-
+ function triggerImpact(
+   origin: readonly [number, number, number],
+   kind: "amber" | "cyan" | "vault" = "amber",
+@@ -201,7 +120,6 @@ function triggerImpact(
+     .setScale([radius, radius, 0.05])
+     .setVisible(true);
+ }
+-
+ function syncImpact(dt: number): void {
+   if (!impactHandle || impactRemaining <= 0) return;
+   impactRemaining = Math.max(0, impactRemaining - dt);
+@@ -213,8 +131,6 @@ function syncImpact(dt: number): void {
+   const radius = impactRadius * (1.08 + (1 - life) * 1.9);
+   impactHandle.setPosition(impactOrigin[0], impactOrigin[1], impactOrigin[2]).setScale([radius, radius, 0.05 + life * 0.04]);
+ }
+-
+-// ---------------------------------------------------------------- scene ------
+ function primitiveNode(visual: PropVisual): AuraSceneNode {
+   const p = visual.primitive!;
+   const visualY = visual.name === "felt" ? visual.position[1] : visual.position[1] + 0.28;
+@@ -243,8 +159,6 @@ function primitiveNode(visual: PropVisual): AuraSceneNode {
+     .scale([p.size[0], p.size[1], p.size[2]])
+     .toJSON();
+ }
+-
+-/** Static physics landmarks used as origins for the renderer-owned impact cue. */
+ const BUMPER_IMPACT_POSITIONS = [[-0.9, -1.7], [0.9, -1.7], [0, -0.7]] as const;
+ const TARGET_BANK_POSITIONS: Record<string, readonly (readonly [number, number])[]> = {
+   "bank-left-top": [[-2.32, -2.4], [-2.32, -2.8], [-2.32, -3.2]],
+@@ -255,13 +169,11 @@ const TARGET_BANK_POSITIONS: Record<string, readonly (readonly [number, number])
+ };
+ let bumperImpactIndex = 0;
+ let slingImpactIndex = 0;
+-
+ function targetImpactPosition(id: string): readonly [number, number] {
+   const [bank] = id.split(":");
+   const slot = Number(id.match(/:t(\d+)$/)?.[1] ?? 1);
+   return TARGET_BANK_POSITIONS[bank ?? ""]?.[Math.max(0, Math.min(2, slot))] ?? [0, -2.5] as const;
+ }
+-
+ function visualNodes(): AuraSceneNode[] {
+   const nodes: AuraSceneNode[] = [];
+   for (const v of flow.sim.visuals) {
+@@ -350,7 +262,6 @@ function visualNodes(): AuraSceneNode[] {
+   }
+   return nodes;
+ }
+-
+ function buildScene(): ReturnType<typeof scene> {
+   return scene()
+     .background("#030308")
+@@ -391,8 +302,6 @@ function buildScene(): ReturnType<typeof scene> {
+       fov: 50
+     }));
+ }
+-
+-// ---------------------------------------------------------------- mount ------
+ const vaultGame = createGame({
+   id: "showcase-vault-breakers",
+   target: "#app",
+@@ -429,7 +338,6 @@ const app = vaultGame.runtime;
+ vaultGame.start();
+ const input = vaultGame.input!;
+ if (!input) throw new Error("Vault Breakers failed to create Aura3D input.");
+-bindVaultEvidence(() => collectVaultEvidence());
+ const vaultTween = createTweenEngine();
+ const vaultFx = createFxParticlePass(app.effects);
+ const vaultJuice = createJuice<"serve" | "bumper" | "sling" | "target-down" | "bank-clear" | "vault-open" | "multiball" | "drain" | "tilt">({
+@@ -460,7 +368,6 @@ bindVaultDrive({
+   },
+   stage: (id) => stageScenario(id)
+ });
+-
+ let dynamicHandles = new Map<string, AuraRuntimeNodeHandle>();
+ const scoreboardHandles = new Map<string, AuraRuntimeNodeHandle>();
+ const bankLampHandles = new Map<number, AuraRuntimeNodeHandle>();
+@@ -469,7 +376,6 @@ let doorHandle: AuraRuntimeNodeHandle | undefined;
+ let mechanismHandle: AuraRuntimeNodeHandle | undefined;
+ let impactHandle: AuraRuntimeNodeHandle | undefined;
+ const missionBeaconHandles = new Map<string, AuraRuntimeNodeHandle>();
+-
+ function resolveHandles(): void {
+   dynamicHandles = new Map();
+   for (const name of flow.sim.dynamicVisualNames) {
+@@ -525,8 +431,6 @@ function resolveHandles(): void {
+   }
+ }
+ resolveHandles();
+-
+-// ---------------------------------------------------------------- HUD --------
+ const banner = document.getElementById("vb-banner")!;
+ const resultCard = document.getElementById("vb-result")!;
+ const resultTitle = document.getElementById("vb-result-title")!;
+@@ -534,13 +438,9 @@ const resultDetail = document.getElementById("vb-result-detail")!;
+ const againButton = document.getElementById("vb-again-button") as HTMLButtonElement;
+ const powerFill = document.getElementById("vb-power-fill")!;
+ const powerLabel = document.getElementById("vb-power-label")!;
+-
+ function hideResultCard(): void {
+   resultCard.classList.add("is-hidden");
+ }
+-
+-// T1.12: cache element refs + last written string so a constant frame writes
+-// zero DOM mutations (ui.setText re-resolves the selector every call).
+ const hudCache = new Map<string, { el: HTMLElement; text: string }>();
+ function hudText(selector: string, value: string): void {
+   let entry = hudCache.get(selector);
+@@ -553,7 +453,6 @@ function hudText(selector: string, value: string): void {
+     entry.text = value;
+   }
+ }
+-
+ function syncHud(): void {
+   const snap = flow.snapshot();
+   hudText("#stat-score", String(snap.score));
+@@ -581,15 +480,12 @@ function syncHud(): void {
+           : snap.multiball ? "MULTIBALL" : snap.missionLine;
+   if (banner.textContent !== bannerText) banner.textContent = bannerText;
+ }
+-
+-// ------------------------------------------------------------- actions -------
+ function doServe(charge: number): void {
+   if (flow.serve(charge)) {
+     pushCue("plunger-release");
+     syncHud();
+   }
+ }
+-
+ function togglePause(): void {
+   if (vaultGame.session.paused) vaultGame.session.resume(); else vaultGame.session.pause("user");
+   pushCue("bank-clear");
+@@ -598,7 +494,6 @@ function togglePause(): void {
+   if (vaultGame.session.paused) app.pause();
+   else app.resume();
+ }
+-
+ function resetGame(): void {
+   flow.reset();
+   plunger.cancelCharge();
+@@ -620,7 +515,6 @@ function resetGame(): void {
+   syncHud();
+   publishEvidence();
+ }
+-
+ function consumeEvents(events: readonly VaultGameEvent[]): void {
+   for (const event of events) {
+     switch (event.type) {
+@@ -703,8 +597,6 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
+     }
+   }
+ }
+-
+-// --------------------------------------------------------- per-frame sync ----
+ function syncVisuals(): void {
+   // Visual Y offset: matches the offset applied when creating the dynamic visual
+   // nodes (physics Y=0 is playfield level; scene nodes sit 0.28 above to appear
+@@ -746,7 +638,6 @@ function syncVisuals(): void {
+   void mechanismMaterial;
+   for (const [state, handle] of missionBeaconHandles) handle.setVisible(state === mechanismState);
+ }
+-
+ function syncScoreboard(): void {
+   const snap = flow.snapshot();
+   const visibility = scoreboardVisibility({
+@@ -762,7 +653,6 @@ function syncScoreboard(): void {
+   }
+   void MISSION_LINES;
+ }
+-
+ function syncDoor(dt: number): void {
+   if (doorSwing < 0 || doorSwing >= 1 || !doorHandle) return;
+   doorSwing = Math.min(1, doorSwing + dt / 0.6);
+@@ -771,8 +661,6 @@ function syncDoor(dt: number): void {
+   doorHandle.setRotation(0, -1.35 * swing, 0);
+   doorHandle.setPosition(-0.55 * swing, 0.52 + 0.05 * swing, -3.32 - 0.28 * swing);
+ }
+-
+-// ------------------------------------------------------------- evidence ------
+ function collectVaultEvidence(): Record<string, unknown> {
+   const snap = flow.snapshot();
+   const flipperSnap = flippers.snapshot();
+@@ -847,29 +735,9 @@ function collectVaultEvidence(): Record<string, unknown> {
+   vaultWindow.__VAULT_BREAKERS_EVIDENCE__ = evidence;
+   return evidence;
+ }
+-
+ function publishEvidence(): void {
+   collectVaultEvidence();
+ }
+-
+-// Renderer-owned capture used by specs and probes (no compositor dependency).
+-vaultWindow.__VB_SHOT__ = () => app.screenshot().dataUrl;
+-
+-/**
+- * Deterministic time pump for specs: headless tabs can throttle rAF to ~1fps,
+- * so long passive waits never advance the sim. Uses the public app.pause() +
+- * app.step() path (docs/api/game-runtime.md "Deterministic stepping") to run
+- * `frames` fixed steps, then resumes the browser loop.
+- */
+-vaultWindow.__VB_PUMP__ = (frames: number): number => {
+-  app.pause();
+-  for (let index = 0; index < frames; index += 1) app.step(1 / 60);
+-  app.resume();
+-  return app.runtime.frame;
+-};
+-
+-vaultWindow.__VB_SCENARIO__ = (scenario: string): string => vaultDrive().stage(scenario);
+-
+ function stageScenario(scenario: string): string {
+   resetGame();
+   let events: readonly VaultGameEvent[] = [];
+@@ -893,17 +761,9 @@ function stageScenario(scenario: string): string {
+   publishEvidence();
+   return `${scenario}:${flow.snapshot().phase}:${flow.snapshot().banksDown}:${flow.snapshot().activeBalls}`;
+ }
+-
+-// ---------------------------------------------------------------- input -------
+-/*
+- * Keyboard is read through a route-owned window mirror with explicit edge
+- * detection (the sibling showcase routes' discipline): engine game-input stays
+- * configured for touch parity, but keyboard edges must not depend on focus.
+- */
+ const manualHeld = new Set<string>();
+ const manualPrev = new Map<string, boolean>();
+ let spaceTapArmed = false;
+-
+ function manualEdge(code: string): "pressed" | "released" | "held" | "idle" {
+   const now = manualHeld.has(code);
+   const before = manualPrev.get(code) ?? false;
+@@ -911,13 +771,11 @@ function manualEdge(code: string): "pressed" | "released" | "held" | "idle" {
+   if (!now && before) return "released";
+   return now ? "held" : "idle";
+ }
+-
+ function manualAdvanceFrame(): void {
+   for (const code of ["Space", "KeyA", "KeyD", "ArrowLeft", "ArrowRight", "KeyS", "KeyP", "Escape", "KeyR"]) {
+     manualPrev.set(code, manualHeld.has(code));
+   }
+ }
+-
+ window.addEventListener("keydown", (event) => {
+   if (!event.repeat) manualHeld.add(event.code);
+   if (event.code === "Space" && !plunger.charging && (flow.phase === "attract" || flow.phase === "await-serve")) {
+@@ -945,7 +803,6 @@ window.addEventListener("keydown", (event) => {
+     event.preventDefault();
+   }
+ }, { passive: false });
+-
+ function bindHoldButton(selector: string, onDown: () => void, onUp: () => void): void {
+   let held = false;
+   const begin = (event: Event): void => {
+@@ -990,8 +847,6 @@ bindHoldButton("#vb-plunge-button", () => {
+ ui.onClick("#vb-reset-button", () => resetGame());
+ ui.onClick("#vb-pause-button", () => togglePause());
+ againButton.addEventListener("click", () => resetGame());
+-
+-// ------------------------------------------------------------- frame loop ----
+ gameApp.onFrame(({ dt }) => {
+   vaultTween.tick(dt);
+   input.update(dt);
+@@ -1032,8 +887,4 @@ gameApp.onFrame(({ dt }) => {
+   if (frameCount % 6 === 0 || events.length > 0) syncHud();
+   publishEvidence();
+ });
+-
+-
+-
+ syncHud();
+-publishEvidence();
+diff --git a/apps/showcase-vault-breakers/src/main.ts b/apps/showcase-vault-breakers/src/main.ts
+index 4a42289ad..aa4732f57 100644
+--- a/apps/showcase-vault-breakers/src/main.ts
++++ b/apps/showcase-vault-breakers/src/main.ts
+@@ -1,14 +1,6 @@
+-// apps/showcase-vault-breakers/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
+-// Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-vault-breakers`
+-// (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
+-// acceptance (§10 step 5).
+ import { resolveQrFlags } from "@aura3d/engine/contracts";
+-
+ const ROUTE_FLAG = "A3D_QR_ROUTE_VAULT_BREAKERS" as const;
+ const DEFAULT_ON = false;
+-
+-/** Accepts `?a3d-qr=…,route-vault-breakers` and `?a3d-qr=…,A3D_QR_ROUTE_VAULT_BREAKERS`.
+- *  Returns undefined when the flag is absent (CCR-14-2 replaces this helper). */
+ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const raw = new URL(loc.href).searchParams.get("a3d-qr");
+   if (raw === null) return undefined;
+@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+     ? true
+     : undefined;
+ }
+-
+ const flags = resolveQrFlags({
+   url: location.href,
+   env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR },
+   options: { [ROUTE_FLAG]: routeFlagFromUrl(location, ROUTE_FLAG) ?? DEFAULT_ON }
+ });
+-
+ void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
+diff --git a/apps/showcase-vault-breakers/src/v2/evidence/index.ts b/apps/showcase-vault-breakers/src/v2/evidence/index.ts
+deleted file mode 100644
+index 8b89409af..000000000
+--- a/apps/showcase-vault-breakers/src/v2/evidence/index.ts
++++ /dev/null
+@@ -1,98 +0,0 @@
+-// apps/showcase-vault-breakers/src/v2/evidence/index.ts — §7.2.1 evidence.
+-// Publishes `window.__AURA3D_GAME_EVIDENCE__["showcase-vault-breakers"]` with
+-// lazy section getters (no per-frame allocation > 1 KB). The §7.2.1 required
+-// conditions read `ball.inPlay` and `table.bumperHitsThisBall` + `fx.liveCount`.
+-import type { Game } from "@aura3d/engine";
+-import type { VaultFlow } from "../../gameplay/ball-flow";
+-
+-export const VAULT_EVIDENCE_ID = "showcase-vault-breakers";
+-
+-export interface VaultEvidenceBindings {
+-  readonly game: Game;
+-  readonly flow: VaultFlow;
+-  readonly ballInPlay: () => boolean;
+-  readonly bumperHitsThisBall: () => number;
+-  readonly liveBallPositions: () => readonly (readonly [number, number, number])[];
+-  readonly appliedLook: Record<string, unknown>;
+-  readonly fxLiveCount: () => number;
+-  readonly frameCount: () => number;
+-  readonly bootedAtMs: number;
+-  readonly audioCueLog: () => readonly string[];
+-}
+-
+-export function publishVaultEvidence(b: VaultEvidenceBindings): void {
+-  const w = window as unknown as Record<string, Record<string, unknown>>;
+-  w.__AURA3D_GAME_EVIDENCE__ ??= {};
+-  w.__AURA3D_GAME_EVIDENCE__[VAULT_EVIDENCE_ID] = {
+-    get playback() {
+-      return {
+-        state: b.game.session.state,
+-        paused: b.game.session.paused,
+-        simTime: b.game.session.simTime,
+-        timeScale: b.game.session.timeScale,
+-        frame: b.frameCount()
+-      };
+-    },
+-    get ball() {
+-      const snap = b.flow.snapshot();
+-      return {
+-        inPlay: b.ballInPlay(),
+-        activeBalls: snap.activeBalls,
+-        ball: snap.ball,
+-        ballsRemaining: snap.ballsRemaining
+-      };
+-    },
+-    get table() {
+-      const snap = b.flow.snapshot();
+-      return {
+-        phase: snap.phase,
+-        score: snap.score,
+-        multiplier: snap.multiplier,
+-        banksDown: snap.banksDown,
+-        vaultOpen: snap.vaultOpen,
+-        multiball: snap.multiball,
+-        tiltLocked: snap.tiltLocked,
+-        tiltStrikes: snap.tiltStrikes,
+-        missionLine: snap.missionLine,
+-        orbitLoops: snap.orbitLoops,
+-        bumperHitsThisBall: b.bumperHitsThisBall(),
+-        sensorEventCount: snap.sensorEventCount,
+-        physicsBodyCount: snap.physicsBodyCount,
+-        backend: snap.backend
+-      };
+-    },
+-    get fx() {
+-      return { liveCount: b.fxLiveCount(), backend: b.game.fx.backend };
+-    },
+-    get framing() {
+-      const ev = b.game.app.camera?.evidence?.();
+-      return {
+-        rig: ev?.rig ?? "vault-breakers.static-table",
+-        subjectScreenHeightFraction: ev?.subjectScreenHeightFraction ?? null,
+-        pose: ev?.pose ?? null
+-      };
+-    },
+-    get render() {
+-      const d = b.game.app.diagnostics();
+-      return {
+-        backend: d.backend,
+-        drawCalls: d.drawCalls,
+-        renderSize: d.renderSize,
+-        fps: d.fps,
+-        errors: d.errors,
+-        warnings: d.warnings
+-      };
+-    },
+-    // T2.6 parity: identical between the play URL and every ?scenario= URL —
+-    // scenarios set state only, never touch the authored look.
+-    get appliedLook() {
+-      return b.appliedLook;
+-    },
+-    get audio() {
+-      return { cues: b.audioCueLog() };
+-    },
+-    get boot() {
+-      return { bootedAtMs: b.bootedAtMs, frame: b.frameCount() };
+-    }
+-  };
+-}
+-- 
+2.34.1
+

@@ -34,9 +34,10 @@ test.describe("prd07 soft depth", () => {
     await page.waitForFunction(() => window.__QR_PRD07_SOFT_DEPTH__ !== undefined, undefined, { timeout: 30_000 });
     const result = await page.evaluate(() => window.__QR_PRD07_SOFT_DEPTH__);
     expect(result?.status, result?.error).toBe("ready");
-    // Centre texel alpha = depth-gap term: 0.1 gap / 0.35 softDistance = 0.2857 (±1/255).
-    expect(result?.alphaAt1_9 ?? -1).toBeGreaterThan(0.27);
-    expect(result?.alphaAt1_9 ?? -1).toBeLessThan(0.3);
+    // Centre texel alpha = depth-gap term: 0.1 gap / 0.35 softDistance = 0.2857 (±1/255
+    // LSB on the rgba8 readback: 0.2857 ± 0.0039 → (0.2818, 0.2896)).
+    expect(result?.alphaAt1_9 ?? -1).toBeGreaterThan(0.2818);
+    expect(result?.alphaAt1_9 ?? -1).toBeLessThan(0.2896);
     expect(result?.alphaAt2_1 ?? 1).toBe(0);
   });
 });

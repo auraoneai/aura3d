@@ -1,0 +1,13 @@
+[
+  {
+    "id": 17050270621,
+    "name": "qr:benchmark",
+    "status": "success",
+    "stage": "capture",
+    "duration": 5639.949958,
+    "queued_duration": 0.418826,
+    "failure_reason": null,
+    "web_url": "https://gitlab.com/chahal-foundation-group/github-auraoneai/aura3d/-/jobs/17050270621",
+    "runner": "blue-2.saas-macos-medium-m1.runners-manager.gitlab.com/default"
+  }
+]

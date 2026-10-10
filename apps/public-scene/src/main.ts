@@ -1,5 +1,5 @@
 import { Renderer, A3DScene, Geometry, PBRMaterial, UnlitMaterial } from "@aura3d/engine/renderer";
-import { A3DAppLifecycle } from "@aura3d/engine/advanced-runtime";
+import { A3DAppLifecycle } from "@aura3d/engine";
 import type { Quat, Vec3 } from "@aura3d/scene";
 
 const canvas = document.querySelector<HTMLCanvasElement>("#viewport");

@@ -34,7 +34,11 @@ jobs:
 
       - name: Run ESLint
         run: pnpm lint
-        continue-on-error: true
+
+      # T7.4/CC8: root scripts stay ≤80 — fails if package.json drifts back
+      # to a script the pruner would delete (re-run `tsx tools/script-prune --apply`).
+      - name: Script prune check
+        run: pnpm exec tsx --tsconfig tsconfig.base.json tools/script-prune/index.ts --check
 
   typecheck:
     name: Type Check
@@ -86,7 +90,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run source package tests
-        run: pnpm test:packages
+        run: pnpm exec tsx --tsconfig tsconfig.base.json --test packages/assets/tests/assets.test.ts packages/audio/tests/audio.test.ts packages/ecs/tests/ecs.test.ts packages/editor-runtime/tests/editor-runtime.test.ts packages/input/tests/input.test.ts packages/scene/tests/scene.test.ts packages/scripting/tests/scripting.test.ts
 
   build:
     name: Build
@@ -142,7 +146,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Verify source package tests
-        run: pnpm test:packages
+        run: pnpm exec tsx --tsconfig tsconfig.base.json --test packages/assets/tests/assets.test.ts packages/audio/tests/audio.test.ts packages/ecs/tests/ecs.test.ts packages/editor-runtime/tests/editor-runtime.test.ts packages/input/tests/input.test.ts packages/scene/tests/scene.test.ts packages/scripting/tests/scripting.test.ts
 
   benchmarks:
     name: Run Benchmarks
@@ -167,9 +171,11 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run benchmarks
-        run: pnpm test:bench || true
+        run: pnpm test:bench
 
+      # Evidence uploads even when the bench fails — failed captures are audit data.
       - name: Archive benchmark results
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-results
@@ -180,6 +186,11 @@ jobs:
     name: All Checks Passed
     runs-on: ubuntu-latest
     needs: [lint, typecheck, test, build, verify-tests]
+    if: always()
     steps:
-      - name: Success
-        run: echo "All CI checks passed successfully!"
+      - name: Verify every required job succeeded
+        run: |
+          NEEDS='${{ toJson(needs) }}'
+          echo "$NEEDS" | jq -e 'all(.result == "success")' > /dev/null \
+            || { echo "::error::required jobs did not all succeed: $NEEDS"; exit 1; }
+          echo "All CI checks passed successfully!"

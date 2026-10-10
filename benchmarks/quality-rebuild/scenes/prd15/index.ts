@@ -5,5 +5,8 @@
  * `@aura3d/lean` itself (the deprecated §7.5 shim they existed to capture).
  */
 import type { BenchSceneRegistration } from "../../shared/registry";
+import { instancingSizeSpec } from "./instancing-size";
 
-export const scenes: readonly BenchSceneRegistration[] = [];
+export const scenes: readonly BenchSceneRegistration[] = [
+  { id: instancingSizeSpec.id, spec: instancingSizeSpec }
+];

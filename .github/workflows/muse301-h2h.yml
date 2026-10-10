@@ -31,7 +31,7 @@ jobs:
       - name: Head-to-head installed reproduction
         env:
           AURA3D_REMOTE_WORKER_ID: muse301-h2h-${{ inputs.source_commit }}
-        run: pnpm head-to-head:installed
+        run: pnpm exec tsx --tsconfig tsconfig.base.json tools/head-to-head-installed-reproduction/index.ts
       - if: always()
         uses: actions/upload-artifact@v4
         with:

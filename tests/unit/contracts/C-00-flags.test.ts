@@ -31,4 +31,12 @@ describe("C-00 flags", () => {
     );
     expect(explicitOff.on("A3D_QR_ANIMATION_POSE_MIXER")).toBe(false);
   });
+  it("#72: flagNameFor resolves multi-segment names (core.x.y, route.a.b)", () => {
+    const flags = resolveQrFlags({ options: ["core.shadows.cascade", "route.demo.alpha", "camera.dof"] });
+    expect(flags.on("A3D_QR_CORE_SHADOWS_CASCADE")).toBe(true);
+    expect(flags.on("A3D_QR_ROUTE_DEMO_ALPHA")).toBe(true);
+    expect(flags.on("A3D_QR_CAMERA_DOF")).toBe(true);
+    // dotted shorthand still resolves two-segment names
+    expect(resolveQrFlags({ options: ["looks.hair"] }).on("A3D_QR_LOOKS_HAIR")).toBe(true);
+  });
 });

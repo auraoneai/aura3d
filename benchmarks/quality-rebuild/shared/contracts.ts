@@ -4,7 +4,7 @@
  */
 
 export type ReferenceProfile = "contract" | "showcase";
-export type SceneOwner = "prd12" | "prd01" | "prd02" | "prd03" | "prd04" | "prd05" | "prd06" | "prd07" | "prd08" | "prd10" | "prd11";
+export type SceneOwner = "prd12" | "prd15" | "prd01" | "prd02" | "prd03" | "prd04" | "prd05" | "prd06" | "prd07" | "prd08" | "prd10" | "prd11";
 export type BrokenControlId = "no-shadows" | "no-ibl" | "dpr-half" | "no-aa" | "no-tonemap" | "flat-sky" | "albedo-only";
 export type MaskId = "object-id" | "shadow-receiver" | "sky" | "metal" | "silhouette-edge";
 export type RegionId = "frame" | "subject" | `object:${number}` | MaskId | "scene-minus-hud";

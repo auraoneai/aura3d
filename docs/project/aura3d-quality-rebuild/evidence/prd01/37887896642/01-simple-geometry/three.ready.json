@@ -1,0 +1,64 @@
+{
+  "engine": "three",
+  "scene": "01-simple-geometry",
+  "engineVersion": "0.185.1",
+  "capabilityLog": [
+    {
+      "feature": "tone-mapping:aces-filmic",
+      "status": "supported",
+      "detail": "renderer.toneMapping = ACESFilmicToneMapping"
+    },
+    {
+      "feature": "tone-mapping:agx",
+      "status": "supported",
+      "detail": "THREE.AgXToneMapping available (not used: spec requests ACES)"
+    },
+    {
+      "feature": "tone-mapping:neutral",
+      "status": "supported",
+      "detail": "THREE.NeutralToneMapping available (not used: spec requests ACES)"
+    },
+    {
+      "feature": "exposure",
+      "status": "supported",
+      "detail": "renderer.toneMappingExposure = 1"
+    },
+    {
+      "feature": "shadow-map",
+      "status": "supported",
+      "detail": "1 shadow-casting light(s), PCFSoftShadowMap"
+    },
+    {
+      "feature": "shadow-map-config",
+      "status": "supported",
+      "detail": "mapSize 2048, bias -0.0005, normalBias 0.02"
+    }
+  ],
+  "drawCalls": 7,
+  "triangles": 8346,
+  "warnings": [],
+  "errors": [],
+  "loadMs": 290,
+  "variant": "default",
+  "dpr": 1,
+  "appliedExposure": 1,
+  "appliedToneMapping": "ACESFilmicToneMapping",
+  "lightUnits": "three-physical",
+  "shadows": {
+    "mapRendered": true,
+    "mapSampled": true,
+    "mapSize": 2048,
+    "strength": null,
+    "casterName": "sun"
+  },
+  "fallbackLightsActive": false,
+  "assetHashes": {},
+  "qrFlags": [
+    "core"
+  ],
+  "extra": {
+    "revision": "185",
+    "programs": 2,
+    "maxAnisotropy": 16
+  }
+}

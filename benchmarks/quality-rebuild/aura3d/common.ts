@@ -56,6 +56,7 @@ export interface RunOptions {
 
 // Variant machinery lives in aura3d/lib/variants.ts (T2.4, §8.4).
 import { applyVariantSpec, NotExpressibleVariantError } from "./lib/variants";
+import { adapterBudgetMs, DEFAULT_CAPTURE_TIMEOUT_MS, waitForFirstDraw } from "./lib/failfast";
 export { NotExpressibleVariantError } from "./lib/variants";
 
 declare const __AURA3D_VERSION__: string;
@@ -393,7 +394,10 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
   const builtScene = buildAuraScene(spec, log);
   const app = createAuraApp(host, {
     scene: builtScene,
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+    // T0-13: only qualityProfile — renderer.mode/renderer.fallback are not
+    // public keys and A3D_QR_STRICT throws AuraMigrationError on them.
+    // resolveRendererQualityProfile("production").rendererMode === "production".
+    renderer: { qualityProfile: "production" },
     pixelRatio: (variant === "dpr-half" ? 0.5 : 1) * (opts.dpr ?? spec.resolution.devicePixelRatio),
     resize: false,
     autoStart: false,
@@ -420,14 +424,17 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
     });
   }
 
+  // T0-10: the adapter must conclude inside the page's waitForFunction window,
+  // so every wait below is capped at 0.8 × the capture timeout capture.mjs
+  // forwards as ?timeout=<ms> (default 240 s).
+  const adapterDeadline = performance.now() + adapterBudgetMs(Number(runQuery.get("timeout")) || DEFAULT_CAPTURE_TIMEOUT_MS);
+
   // Wait for the first real draw (all typed GLBs are loaded by the mount).
-  const drawDeadline = performance.now() + 90_000;
-  while (performance.now() < drawDeadline) {
-    app.step(0);
-    const diagnostics = app.diagnostics();
-    if (diagnostics.drawCalls > 0 || diagnostics.errors.length > 0) break;
-    await sleep(50);
-  }
+  // T0-10: fail fast — a mount/renderer failure (errors recorded, zero draws)
+  // throws immediately, and a dead pipeline with zero errors throws
+  // NoDrawError on deadline; either way the page publishes __QR_ERROR__ and
+  // capture.mjs records the real failure instead of a masked ready/timeout.
+  await waitForFirstDraw(app, Math.max(1, Math.min(90_000, adapterDeadline - performance.now())));
 
   // PRD-06 T3.9: spec-declared `animation.footIk` registers the foot-ik pose
   // constraint on the actor once it is loaded (draw-wait above guarantees the
@@ -495,12 +502,15 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
     }
   }
 
-  // Wait for the HDRI chain to swap in (or fail loudly).
+  // Wait for the HDRI chain to swap in (or fail loudly). T0-10: bounded by
+  // the adapter deadline and abandoned on recorded errors — after a failed
+  // mount the chain can never resolve.
   if (spec.environment) {
-    const hdriDeadline = performance.now() + 180_000;
+    const hdriDeadline = Math.min(performance.now() + 180_000, adapterDeadline);
     while (performance.now() < hdriDeadline) {
       const environment = rendererDiagnostics(app)?.environment;
       if (environment?.iblPixelBacked || environment?.hdriStatus === "ready" || environment?.hdriStatus === "fallback") break;
+      if (app.diagnostics().errors.length > 0) break;
       app.step(0);
       await sleep(100);
     }
@@ -634,6 +644,12 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
     qrFlags: opts.qrFlags ?? spec.qrFlags ?? [],
     extra: {
       ...(await opts.collectExtra?.(app) ?? {}),
+      // T0-12: the a3d:mount:* performance marks the engine recorded from
+      // createAuraApp through the first renderFrame — one remote run names
+      // which phase owns the ~90 s pre-first-frame cost.
+      mountTiming: performance.getEntriesByType("mark")
+        .filter((mark) => mark.name.startsWith("a3d:"))
+        .map((mark) => ({ name: mark.name, startTime: Math.round(mark.startTime * 100) / 100 })),
       backend: diagnostics.backend,
       renderSize: diagnostics.renderSize,
       reportedToneMapping: renderer?.toneMapping,
