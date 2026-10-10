@@ -44,8 +44,8 @@ import { lightingNodes } from "./scene/lighting";
 import { createAuroraRig, fallbackCameraNode } from "./scene/camera";
 import { wireAuroraFx } from "./scene/fx";
 import { NIGHT_BG } from "./scene/materials";
-import { publishAuroraEvidence, type AuroraRunSnapshot } from "./evidence";
-import { applyAuroraScenario } from "./scenarios";
+import { publishAuroraEvidence, type AuroraRunSnapshot } from "../evidence";
+import { applyAuroraScenario } from "../scenarios";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_AURORA_LANDER" as const;
 const FIXED_DT = 1 / 60;

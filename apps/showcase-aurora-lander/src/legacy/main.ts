@@ -33,6 +33,16 @@ import {
   type MeshSurfaceQuery,
   type SurfaceSample
 } from "@aura3d/engine";
+import {
+  createFxParticlePass,
+  createGame,
+  createJuice,
+  createOverlayDriver,
+  createRumbleDriver,
+  createTweenEngine
+} from "@aura3d/game";
+import { bindAuroraEvidence } from "../evidence";
+import { bindAuroraDrive } from "../scenario-drive";
 import { assets } from "../../../../src/aura-assets";
 import {
   SITES,
@@ -108,8 +118,7 @@ type Phase = "flying" | "landed" | "crashed" | "campaign-clear";
  */
 const routeParams = new URLSearchParams(window.location.search);
 const dropMode = routeParams.get("drop");
-const visualReviewCapture = routeParams.get("capture") === "review";
-document.body.dataset.capture = visualReviewCapture ? "review" : "default";
+document.body.dataset.capture = "default";
 const dropEvidenceMode = dropMode === "1" || dropMode === "hard";
 const hardDropEvidenceMode = dropMode === "hard";
 // A human-playable close approach for mobile/touch evidence. Unlike `drop=1`,
@@ -208,7 +217,7 @@ window.addEventListener("keyup", (event) => {
 // ---- mutable route state -----------------------------------------------------
 let siteIndex = 0;
 let phase: Phase = "flying";
-let paused = false;
+
 let state: LanderState = createLanderState(SITES[0]!.spawn, SITES[0]!.fuelBudget);
 let previousControls: Controls = { thrust: 0, rotate: 0 };
 let siteScores: number[] = [];
@@ -229,7 +238,7 @@ let contactQueryAgreement: boolean | null = null;
 let padSensorArmed = false;
 let fuelLowCueFired = false;
 let gustWarnCueFiredForCycle = false;
-let thrustLoopActive = false;
+
 let rcsPuffArmed = true;
 let bannerTimer = 0;
 let advanceTimer = -1;
@@ -643,10 +652,9 @@ function buildWorldScene() {
         .position(pad.x, padHeight + 0.09, pad.z)
         .rotate(Math.PI / 2, 0, 0)
         .scale([
-          pad.radius * (visualReviewCapture ? 1.28 : 2.05),
-          pad.radius * (visualReviewCapture ? 1.28 : 2.05),
-          visualReviewCapture ? 0.16 : 0.3
-        ])
+          pad.radius * (2.05),
+          pad.radius * (2.05),
+          0.3])
         .runtime(game.runtimeNode(`${prefix}-pad-ring`, { tags: ["pad", "zone-marker", "renderer-owned"] }))
     );
 
@@ -749,7 +757,7 @@ function buildWorldScene() {
       role: "primaryVehicle",
       scaleMode: "fit",
       targetMaxDimension: 2.8,
-      visible: visualReviewCapture,
+      visible: false,
       castShadow: false,
       receiveShadow: false
     })
@@ -839,9 +847,9 @@ function buildWorldScene() {
   }
 
   builder.add(
-    text3D(visualReviewCapture ? "EXTRACTION BAY" : "EXTRACTION READY", {
-      size: visualReviewCapture ? 0.58 : 2.1,
-      depth: visualReviewCapture ? 0.16 : 0.35,
+    text3D("EXTRACTION READY", {
+      size: 2.1,
+      depth: 0.35,
       backend: "sdf"
     })
       .position(0, -50, 0)
@@ -854,7 +862,7 @@ function buildWorldScene() {
     })
       .position(0, -50, 0)
       .rotate(Math.PI / 2, 0, 0)
-      .scale(visualReviewCapture ? [2.6, 2.6, 0.1] : [5.5, 5.5, 0.18])
+      .scale([5.5, 5.5, 0.18])
       .runtime(game.runtimeNode("extraction-halo", { tags: ["campaign-clear", "extraction-tableau", "renderer-owned"] }))
   );
 
@@ -921,16 +929,14 @@ function buildWorldScene() {
     .add(lights.point({
       name: "final extraction warm practical",
       color: "#ffb454",
-      intensity: visualReviewCapture ? 9.2 : 2.2
-    }).position(SITES[2]!.pads[0]!.x - 3.8, 5.6, SITES[2]!.pads[0]!.z + 2.2))
+      intensity: 2.2}).position(SITES[2]!.pads[0]!.x - 3.8, 5.6, SITES[2]!.pads[0]!.z + 2.2))
     .add(lights.point({
       name: "final extraction cyan practical",
       color: "#67e8f9",
-      intensity: visualReviewCapture ? 5.6 : 1.8
-    }).position(SITES[2]!.pads[0]!.x + 4.2, 3.4, SITES[2]!.pads[0]!.z - 1.8))
+      intensity: 1.8}).position(SITES[2]!.pads[0]!.x + 4.2, 3.4, SITES[2]!.pads[0]!.z - 1.8))
     .camera(camera.follow({
       targetNode: "lander",
-      distance: visualReviewCapture ? 10.6 : 15,
+      distance: 15,
       // The opening approach is still a wide three-quarter chase, but the
       // previous 17m default left the typed probe at roughly 100px in the
       // route-primary frame.  Bring the eye in one measured step so the
@@ -942,25 +948,57 @@ function buildWorldScene() {
       // the world horizon and clipped the sky band out of shot. A slightly shallower
       // 23deg pitch inside a 58deg cone admits the sky without the 64deg version's
       // side effect of shrinking the typed probe to a dot at spawn altitude.
-      offset: visualReviewCapture ? [6.8, 5.9, 8.25] : [0, 5.8, 13.2],
-      targetOffset: visualReviewCapture ? [0, -0.55, -0.65] : [0, 0, 0],
-      fov: visualReviewCapture ? 46 : 58,
-      smoothing: visualReviewCapture ? 0 : 0.05
-    }));
+      offset: [0, 5.8, 13.2],
+      targetOffset: [0, 0, 0],
+      fov: 58,
+      smoothing: 0.05}));
 
   return builder;
 }
 
 // ---- app mount ---------------------------------------------------------------
-const app = createAuraApp("#app", {
+const auroraGame = createGame({
+  id: "showcase-aurora-lander",
+  target: "#app",
   diagnostics: { overlay: false, performancePanel: false },
   physics: {
     seed: 20260915,
     continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
   },
-  scene: buildWorldScene()
+  scene: buildWorldScene(),
+  qualityRebuild: { flags: ["game"] },
+  evidence: {
+    schema: 1,
+    sections: async () => (await import("../evidence")).sections,
+    legacyGlobals: ["__AURA3D_SHOWCASE_AURORA_LANDER__"]
+  },
+  scenarios: async () => (await import("../scenarios")).auroraScenarios
 });
-void app;
+const app = auroraGame.app;
+auroraGame.start();
+bindAuroraEvidence(() => mountedEvidence);
+const auroraTween = createTweenEngine();
+const auroraFx = createFxParticlePass(app.effects);
+const auroraJuice = createJuice<"touch-soft" | "touch-hard" | "crash" | "pad-lock" | "site-clear" | "launch">({
+  events: {
+    "touch-soft": { fx: { kind: "ring", count: 8, color: "#9ef2c1" }, punch: { fovDeg: 1.6, ms: 160 } },
+    "touch-hard": { fx: { kind: "debris", count: 10, color: "#ffc46b" }, shake: 0.18, vignette: { amount: 0.2, ms: 300 } },
+    crash: { flash: { color: "#ff4d4d", peak: 0.26, ms: 320 }, vignette: { amount: 0.4, ms: 600, color: "#1c0508" }, hitStop: 0.07, shake: 0.3, fx: { kind: "debris", count: 18, color: "#ff9d66" } },
+    "pad-lock": { fx: { kind: "ring", count: 14, color: "#7ef4ff" }, flash: { color: "#7ef4ff", peak: 0.12, ms: 200 } },
+    "site-clear": { fx: { kind: "pickup", count: 16, color: "#ffe866" }, flash: { color: "#ffe866", peak: 0.16, ms: 260 } },
+    launch: { fx: { kind: "streak", count: 12, color: "#ffc46b" }, shake: 0.06, punch: { fovDeg: 2.0, ms: 180 } }
+  },
+  camera: app.camera,
+  session: auroraGame.session,
+  fx: auroraFx,
+  overlay: createOverlayDriver({ app }),
+  tweens: auroraTween,
+  rumble: createRumbleDriver()
+});
+bindAuroraDrive({
+  stepSim: (dt) => { app.pause(); app.advance(dt); app.resume(); },
+  stepRender: (dt) => { app.pause(); app.advance(dt); app.resume(); },
+});
 
 function requireNode(name: string): AuraRuntimeNodeHandle {
   return app.nodes.require(name) as AuraRuntimeNodeHandle;
@@ -1046,7 +1084,7 @@ function rebuildCollisions(): void {
 // ---- attempt lifecycle ---------------------------------------------------------
 function resetAttempt(recordGhostStart = true): void {
   phase = "flying";
-  paused = false;
+  auroraGame.session.resume();
   lastGrade = null;
   state = spawnStateFor(currentSite);
   previousControls = { thrust: 0, rotate: 0 };
@@ -1265,6 +1303,8 @@ function gradeFromContact(context: GradingContext): void {
 
   if (graded.grade === "crash") {
     phase = "crashed";
+    landerAudio.thruster.stop();
+    auroraJuice.fire("crash", { position: [state.x, state.y, 0] });
     playCue("crash");
     showBanner(hud, "grade-crash", `CRASH — ${graded.crashReason}. Press R to restart expedition.`);
     bannerTimer = 4;
@@ -1281,6 +1321,9 @@ function gradeFromContact(context: GradingContext): void {
   });
   siteScores[siteIndex] = Math.max(siteScores[siteIndex] ?? 0, breakdown.total);
   mountedEvidence.campaignScore = campaignScore(SITES.map((_, index) => siteScores[index] ?? 0));
+  landerAudio.thruster.stop();
+  auroraJuice.fire(graded.grade === "soft" ? "touch-soft" : "touch-hard", { position: [state.x, state.y, 0] });
+  auroraJuice.fire("site-clear");
   playCue(graded.grade === "soft" ? "touch-soft" : "touch-hard");
   void landerAudio.cue("site-clear");
   recentAudioCues = ["site-clear", ...recentAudioCues].slice(0, 12);
@@ -1328,7 +1371,7 @@ let dustCursor = 0;
 
 function tick(dtFixed: number): void {
   frameCount += 1;
-  if (paused || phase !== "flying") return;
+  if (auroraGame.session.paused || phase !== "flying") return;
   simSeconds += dtFixed;
 
   // Edge-driven audio before integration.
@@ -1361,11 +1404,12 @@ function tick(dtFixed: number): void {
   }
   previousControls = effectiveControls;
   state = stepLander(state, effectiveControls, dtFixed, currentSite.gust);
-  if (controls.thrust > 0 && !thrustLoopActive) {
-    thrustLoopActive = true;
-    playCue("thrust-loop");
-  } else if (controls.thrust === 0 && thrustLoopActive) {
-    thrustLoopActive = false;
+  auroraTween.tick(dtFixed);
+  if (controls.thrust > 0) {
+    landerAudio.thruster.start();
+    landerAudio.thruster.setThrottle(controls.thrust);
+  } else {
+    landerAudio.thruster.stop();
   }
   const rotating = Math.abs(controls.rotate) > 0.05;
   if (rotating && rcsPuffArmed) {
@@ -1489,8 +1533,8 @@ function toggleGhost(): void {
 }
 
 function togglePause(): void {
-  paused = !paused;
-  mountedEvidence.state = paused ? "paused" : phase;
+  auroraGame.session.paused ? auroraGame.session.resume() : auroraGame.session.pause("user");
+  mountedEvidence.state = auroraGame.session.paused ? "paused" : phase;
 }
 
 function handleControlEdges(): void {
@@ -1527,7 +1571,7 @@ function renderUpdate(dtFrame: number): void {
   // Plume: visible thrust flame scaled by throttle while the engine burns.
   const groundHere = sampleGridHeight(field, state.x, state.z);
   const altitudeAboveGround = state.y - FOOT_DROP - groundHere;
-  const burning = phase === "flying" && !paused && previousControls.thrust > 0 && state.fuel > 0;
+  const burning = phase === "flying" && !auroraGame.session.paused && previousControls.thrust > 0 && state.fuel > 0;
   const plumeScale = burning ? 0.5 + previousControls.thrust * 0.7 : 0.001;
   plumeNode.setPosition(state.x - Math.sin(state.yaw) * 0.1, state.y - FOOT_DROP * 1.35, state.z - Math.cos(state.yaw) * 0.1);
   plumeNode.setScale([plumeScale * 0.45, plumeScale * 2.4, plumeScale * 0.45]);
@@ -1572,7 +1616,7 @@ function renderUpdate(dtFrame: number): void {
   const extractionVisible = phase === "campaign-clear";
   const extractionPad = currentSite.pads[0]!;
   const extractionGround = field.padHeights[0] ?? groundHere;
-  const approachScaffoldVisible = !visualReviewCapture
+  const approachScaffoldVisible = true
     && phase === "flying"
     && altitudeAboveGround > APPROACH_SCAFFOLD_MIN_AGL;
   // The campaign-clear bay is a complete renderer-owned deck laid over the
@@ -1580,34 +1624,23 @@ function renderUpdate(dtFrame: number): void {
   // mesh so nearby ridges cannot protrude through the deck and occlude the
   // already-landed typed vehicle. The Rapier contact and mesh-query evidence
   // has already run and remains published; runtime flight keeps terrain shown.
-  if (visualReviewCapture) {
-    requireNode(`s${currentSite.id}-terrain`).setVisible(!extractionVisible);
-    landerNode.setScale(1);
-    landerNode.setVisible(!extractionVisible);
-    extractionLanderNode.setVisible(extractionVisible);
-    if (extractionVisible) {
-      extractionLanderNode
-        .setPosition(state.x, state.y + punchOffsetY, state.z)
-        .setRotation(0, 0.69, 0);
-    }
-  }
-  extractionNodes.forEach((node, index) => {
-    node.setVisible(extractionVisible && !visualReviewCapture);
+    extractionNodes.forEach((node, index) => {
+    node.setVisible(extractionVisible && true);
     if (!extractionVisible) return;
     if (index === 0) node.setPosition(
-      extractionPad.x + (visualReviewCapture ? -2.4 : -5.8),
-      extractionGround + (visualReviewCapture ? 5.0 : 5.2),
-      extractionPad.z + (visualReviewCapture ? -1.45 : -1.5)
+      extractionPad.x + (-5.8),
+      extractionGround + (5.2),
+      extractionPad.z + (-1.5)
     );
     else {
       node.setPosition(extractionPad.x, extractionGround + 0.18, extractionPad.z);
-      if (visualReviewCapture) node.setScale([0.45, 0.45, 0.04]);
+      if (false) node.setScale([0.45, 0.45, 0.04]);
     }
   });
   extractionInfrastructureNodes.forEach((node, index) => {
     const part = EXTRACTION_INFRASTRUCTURE[index]!;
-    node.setVisible((extractionVisible && !visualReviewCapture) || approachScaffoldVisible);
-    if (extractionVisible && !visualReviewCapture) {
+    node.setVisible((extractionVisible && true) || approachScaffoldVisible);
+    if (extractionVisible && true) {
       node.setPosition(
         extractionPad.x + part.offset[0],
         extractionGround + part.offset[1],
@@ -1625,8 +1658,8 @@ function renderUpdate(dtFrame: number): void {
       );
     }
   });
-  extractionBackdropNode.setVisible(extractionVisible && visualReviewCapture);
-  if (extractionVisible && visualReviewCapture) {
+  extractionBackdropNode.setVisible(extractionVisible && false);
+  if (extractionVisible && false) {
     extractionBackdropNode
       .setPosition(
         extractionPad.x - 3.5,
@@ -1661,7 +1694,7 @@ function renderUpdate(dtFrame: number): void {
     const emphasized = index === pulsePhase ? 1.9 : 1;
     node.setScale(0.22 * emphasized);
   });
-  if (extractionVisible && visualReviewCapture) {
+  if (extractionVisible && false) {
     siteGroups[siteIndex]?.nodes.forEach((node) => node.setVisible(false));
   }
 
@@ -1766,7 +1799,7 @@ function publishEvidence(): void {
   mountedEvidence.vspeed = Number(state.vy.toFixed(3));
   mountedEvidence.hspeed = Number(hspeedOf(state).toFixed(3));
   mountedEvidence.attitudeDeg = Number(Math.abs(state.tiltDeg).toFixed(2));
-  mountedEvidence.state = paused ? "paused" : phase;
+  mountedEvidence.state = auroraGame.session.paused ? "paused" : phase;
   mountedEvidence.lastGrade = lastGrade;
   mountedEvidence.ghostActive = ghostActive;
   mountedEvidence.terrainQueryFps = terrainQueryFps;
@@ -1832,7 +1865,7 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
       landerNode.setVisible(!suppressed);
     },
     settleSubjectPose() {
-      paused = true;
+      auroraGame.session.pause("user");
       landerNode.setRotation(0, state.yaw, (state.tiltDeg * Math.PI) / 180);
     }
   },

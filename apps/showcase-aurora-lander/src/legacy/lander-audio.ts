@@ -7,6 +7,7 @@
  * and playback only happens after a user gesture unlocks the AudioContext.
  */
 import { createGameAudio, type GameAudio } from "@aura3d/engine";
+import { createGameSoundEngine } from "@aura3d/audio";
 import { assets } from "../../../../src/aura-assets";
 
 /** Logical gameplay cue identifiers used by the route (PRD §7 manifest). */
@@ -137,9 +138,20 @@ export interface LanderAudioProof {
   readonly gestureUnlocked: boolean;
 }
 
+export interface LanderThrusterLoop {
+  /** Start the main-burn engine loop (idempotent). */
+  readonly start: () => void;
+  readonly stop: () => void;
+  /** Live pitch: throttle 0..1 mapped onto idle->max rpm. */
+  readonly setThrottle: (throttle01: number) => void;
+  readonly running: () => boolean;
+}
+
 export interface LanderAudioController {
   readonly cue: (name: LanderAudioCue) => Promise<void>;
   readonly unlock: () => Promise<void>;
+  /** `sound.engine` thruster loop — live rpm pitch while the burn is active. */
+  readonly thruster: LanderThrusterLoop;
   readonly proof: () => LanderAudioProof;
   readonly dispose: () => Promise<void>;
 }
@@ -177,6 +189,46 @@ export function createLanderAudio(reducedMotion = false): LanderAudioController 
   }
   const audio = cachedAudio;
 
+  // PRD-09 wave-3: the burn loop is a real `sound.engine` loop — a single
+  // layer whose playback rate tracks throttle (0.35..1.0 throttle -> rpm span).
+  const thrusterSound = createGameSoundEngine<"thruster">({
+    buses: { sfx: 0.8 },
+    cues: {
+      thruster: {
+        id: "thruster",
+        bus: "sfx",
+        priority: "high",
+        asset: { url: landerAudioManifest["thrust-loop"].asset.url }
+      }
+    }
+  });
+  const thrusterLoop = thrusterSound.engine({
+    cue: "thruster",
+    rpmRange: [320, 2100],
+    pitchRange: [0.85, 1.3]
+  });
+  let thrusterRunning = false;
+  const thruster: LanderThrusterLoop = {
+    start() {
+      if (thrusterRunning) return;
+      thrusterRunning = true;
+      void audio.unlock().then(() => thrusterLoop.start());
+    },
+    stop() {
+      if (!thrusterRunning) return;
+      thrusterRunning = false;
+      thrusterLoop.stop();
+    },
+    setThrottle(throttle01) {
+      const t = Math.max(0, Math.min(1, throttle01));
+      thrusterLoop.setRpm(320 + (2100 - 320) * t);
+      thrusterLoop.setLoad(t);
+    },
+    running() {
+      return thrusterRunning;
+    }
+  };
+
   async function cue(name: LanderAudioCue): Promise<void> {
     recentCues.push(name);
     if (recentCues.length > 24) recentCues.shift();
@@ -184,6 +236,7 @@ export function createLanderAudio(reducedMotion = false): LanderAudioController 
   }
 
   return {
+    thruster,
     async cue(name) {
       await cue(name);
     },
