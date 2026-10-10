@@ -1,6 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { parseCubeLut } from "../../../../packages/rendering/src/post/CubeLut";
 
 /**
@@ -9,10 +7,34 @@ import { parseCubeLut } from "../../../../packages/rendering/src/post/CubeLut";
  * on 1-D LUTs and sizes > 65.
  */
 
-const fixture = readFileSync(
-  resolve(__dirname, "../../../qr/prd03/fixtures/luts/teal-orange-33.cube"),
-  "utf8"
-);
+/**
+ * The teal-orange 33³ fixture is generated here rather than read from
+ * `tests/qr/prd03/fixtures/luts/` — `.gitignore` ignores every `fixtures/`
+ * directory, so that file never reached the repo and the suite failed with
+ * ENOENT in CI. Shadows pull toward teal (0.1, 0.25, 0.55), mids get a warm
+ * orange lift, and white maps to white. Same `.cube` text format, including a
+ * TITLE and comments, so the parser path is unchanged.
+ */
+function tealOrangeCube(size: number): string {
+  const teal = [0.1, 0.25, 0.55];
+  const orange = [0.08, 0.03, -0.06];
+  const lines = ['TITLE "teal-orange-33"', "# generated: shadows→teal, mids→orange, white→white", `LUT_3D_SIZE ${size}`];
+  for (let b = 0; b < size; b++) {
+    for (let g = 0; g < size; g++) {
+      for (let r = 0; r < size; r++) {
+        const rgb = [r, g, b].map((v) => v / (size - 1));
+        const luma = 0.2126 * rgb[0]! + 0.7152 * rgb[1]! + 0.0722 * rgb[2]!;
+        const shadow = (1 - luma) ** 2;
+        const mid = 4 * luma * (1 - luma);
+        const out = rgb.map((v, i) => Math.min(1, Math.max(0, v + (teal[i]! - v) * shadow + orange[i]! * mid)));
+        lines.push(out.map((v) => v.toFixed(6)).join(" "));
+      }
+    }
+  }
+  return lines.join("\n");
+}
+
+const fixture = tealOrangeCube(33);
 
 describe("post/CubeLut parseCubeLut", () => {
   it("parses a 33^3 .cube fixture into a size*size*size RGBA texture", () => {
