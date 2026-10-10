@@ -32,6 +32,118 @@
       "phase": "T2-v2-shell",
       "requestedAt": "2026-10-06",
       "note": "Wave-1 v2 shell; first counted G-PANEL round requested."
+    },
+    {
+      "gameId": "showcase-vault-breakers",
+      "commit": "56e9a9287512193b555ab681534b161fa5605fbe",
+      "pr": 304,
+      "phase": "T2-v2-shell",
+      "requestedAt": "2026-10-09",
+      "note": "Wave-2 v2 shell on main; first counted G-PANEL round requested."
+    },
+    {
+      "gameId": "showcase-rooftop-buckets",
+      "commit": "9a47a52fe9e17a5ad65f81390d0439a025f7b645",
+      "pr": 307,
+      "phase": "T2-v2-shell",
+      "requestedAt": "2026-10-09",
+      "note": "Wave-2 v2 shell on main; first counted G-PANEL round requested."
+    },
+    {
+      "gameId": "showcase-courier-rush",
+      "commit": "6e3c2b743c174ac7e77c1fb33b7ac150d93fb128",
+      "pr": 311,
+      "phase": "T2-v2-shell",
+      "requestedAt": "2026-10-09",
+      "note": "Wave-2 v2 shell on main; first counted G-PANEL round requested."
+    },
+    {
+      "gameId": "showcase-neon-swarm",
+      "commit": "4adbff98bee81a4ad98befe3e93a6ed839c223a0",
+      "pr": 318,
+      "phase": "T2-v2-shell",
+      "requestedAt": "2026-10-09",
+      "note": "Wave-2 v2 shell on main; first counted G-PANEL round requested."
+    },
+    {
+      "gameId": "showcase-pulse-tunnel",
+      "commit": "367c4687725d6006df586171e2433efd3f5e10b1",
+      "pr": 320,
+      "phase": "T2-v2-shell",
+      "requestedAt": "2026-10-09",
+      "note": "Wave-2 v2 shell on main; first counted G-PANEL round requested."
+    },
+    {
+      "gameId": "showcase-siege-golf",
+      "commit": "6c118ea73370e60385659e8644f93cf39c6991ef",
+      "pr": 322,
+      "phase": "T2-v2-shell",
+      "requestedAt": "2026-10-09",
+      "note": "Wave-2 v2 shell on main; first counted G-PANEL round requested."
+    },
+    {
+      "gameId": "showcase-patrol-wing",
+      "commit": "42194f45b0fe84550278a55fc88041359f31abee",
+      "pr": 327,
+      "phase": "T2-v2-shell",
+      "requestedAt": "2026-10-09",
+      "note": "Wave-3 v2 shell on main; first counted G-PANEL round requested."
+    },
+    {
+      "gameId": "showcase-aurora-lander",
+      "commit": "eb34e0541d159bab3de57a60743479e1839ed1ea",
+      "pr": 324,
+      "phase": "T2-v2-shell",
+      "requestedAt": "2026-10-09",
+      "note": "Wave-3 v2 shell on main; first counted G-PANEL round requested."
+    },
+    {
+      "gameId": "showcase-gravity-post",
+      "commit": "45696c1c4dedeba834d0dd677b1311097d03a4dc",
+      "pr": 325,
+      "phase": "T2-v2-shell",
+      "requestedAt": "2026-10-09",
+      "note": "Wave-3 v2 shell on main; first counted G-PANEL round requested."
+    },
+    {
+      "gameId": "showcase-deep-recovery",
+      "commit": "3cd14c78572e07d8efafc660fd0be24c9449f1f3",
+      "pr": 326,
+      "phase": "T2-v2-shell",
+      "requestedAt": "2026-10-09",
+      "note": "Wave-3 v2 shell on main; first counted G-PANEL round requested."
+    },
+    {
+      "gameId": "showcase-skyline-runner",
+      "commit": "5601645bca6dfdb29b35ffc3861d222f841ea772",
+      "pr": 332,
+      "phase": "T2-v2-shell",
+      "requestedAt": "2026-10-09",
+      "note": "Wave-4 v2 shell on main; first counted G-PANEL round requested."
+    },
+    {
+      "gameId": "showcase-blockfall-reactor",
+      "commit": "33b3d4a9280496f86b3c8b9bd78eaae2ae4e86bb",
+      "pr": 331,
+      "phase": "T2-v2-shell",
+      "requestedAt": "2026-10-09",
+      "note": "Wave-4 v2 shell on main; first counted G-PANEL round requested."
+    },
+    {
+      "gameId": "showcase-mech-hangar",
+      "commit": "63c95fb33a5f734e47475acf0f463fbaf92fb66e",
+      "pr": 333,
+      "phase": "T2-v2-shell",
+      "requestedAt": "2026-10-09",
+      "note": "Wave-4 v2 shell on main; first counted G-PANEL round requested."
+    },
+    {
+      "gameId": "showcase-gallery-shift",
+      "commit": "affbdfc5c52c88adf5178fa9d07065023ae36d71",
+      "pr": 334,
+      "phase": "T2-v2-shell",
+      "requestedAt": "2026-10-09",
+      "note": "Wave-4 v2 shell on main; first counted G-PANEL round requested."
     }
   ]
 }
