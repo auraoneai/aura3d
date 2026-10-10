@@ -66,8 +66,8 @@ export default defineArtDirection({
   standIns: [
     { feature: "K1 sunset-ocean HDRI + PRD 10 ocean", file: "src/v2/scene/world.ts", request: "R-14-13", removeWhen: "ocean preset + sunset HDRI admitted" },
     { feature: "K3 island splat + runway terrain", file: "src/v2/scene/world.ts", request: "R-14-13", removeWhen: "K3 terrain splat admitted" },
-    { feature: "K9 explosion clips", file: "src/v2/fx.ts", request: "R-14-15", removeWhen: "K9 flipbooks admitted" },
-    { feature: "K8 prop-plane RPM set", file: "src/v2/audio.ts", request: "R-14-15", removeWhen: "K8 engine loops admitted" }
+    { feature: "K9 explosion clips", file: "src/v2/fx.ts", request: "R-14-07", removeWhen: "K9 flipbooks admitted" },
+    { feature: "K8 prop-plane RPM set", file: "src/v2/audio.ts", request: "R-14-09", removeWhen: "K8 engine loops admitted" }
   ],
   criticalCategories: ["environment_world", "camera", "atmospheric_effects"],
   tiers: {

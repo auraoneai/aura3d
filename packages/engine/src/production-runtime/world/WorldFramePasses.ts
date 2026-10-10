@@ -15,14 +15,15 @@ import { registerFrameContributor } from "@aura3d/rendering/contracts";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import { programCacheSlot } from "@aura3d/rendering/contracts";
 import { terrainBackgroundPass } from "./TerrainRuntime.js";
-import { waterAfterOpaquePasses, waterBackgroundPasses, waterTransparentPass } from "./WaterRuntime.js";
+import { allWaterStates, waterAfterOpaquePasses, waterBackgroundPasses, waterTransparentPass } from "./WaterRuntime.js";
+import { terrainRecordIds } from "../../agent-api/world/terrain.js";
 import { timeOfDayRecords } from "../../agent-api/compiler/world.js";
 import { worldSubflagOn } from "../../agent-api/world/flags.js";
 import { advanceTimeOfDay } from "./TimeOfDayRuntime.js";
 import { QUALITY_TIERS, type AuraQualityTier, type AuraQualityTierSettings } from "@aura3d/rendering/contracts";
 
 /** Settings objects carry no tier name — recover it by identity/structural match. */
-const tierForSettings = (s: AuraQualityTierSettings): AuraQualityTier => {
+export const tierForSettings = (s: AuraQualityTierSettings): AuraQualityTier => {
   for (const [name, settings] of Object.entries(QUALITY_TIERS)) {
     if (settings === s || settings.drawBudget === s.drawBudget && settings.environmentSize === s.environmentSize) {
       return name as AuraQualityTier;
@@ -61,14 +62,19 @@ export function registerWorldFramePasses(): () => void {
       // §9.1 order: planar reflections (waterBackgroundPasses, step 2) run
       // before the world opaque draw; `after-opaque` carries the scene copy
       // (step 5) and `transparent` the water surface (step 6).
+      // T0-33: emit a world pass only when its content exists this frame —
+      // unconditional terrain+water passes made `compilePlan` throw
+      // (duplicate "color" writers / reads with no producer) on every Path S
+      // frame, even with zero world nodes, and killed the frame loop.
       if (phase === "background" && worldDrawPath(ctx.flags) === "S") {
-        return [...waterBackgroundPasses(ctx), terrainBackgroundPass(ctx)];
+        const passes = waterBackgroundPasses(ctx);
+        return terrainRecordIds().length > 0 ? [...passes, terrainBackgroundPass(ctx)] : passes;
       }
       if (phase === "after-opaque" && worldDrawPath(ctx.flags) === "S") {
         return waterAfterOpaquePasses(ctx);
       }
       if (phase === "transparent" && worldDrawPath(ctx.flags) === "S") {
-        return [waterTransparentPass(ctx)];
+        return allWaterStates().length > 0 ? [waterTransparentPass(ctx)] : [];
       }
       return [];
     },

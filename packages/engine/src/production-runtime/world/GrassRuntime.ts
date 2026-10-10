@@ -32,6 +32,7 @@ import {
 import { colorToRgba } from "../../agent-api/index.js";
 import { resolveTierValue, terrainRecordFor, type TerrainRecord } from "../../agent-api/world/terrain.js";
 import type { AuraGrassNode, AuraGrassOptions } from "../../agent-api/world/scatter.js";
+import { tierForSettings } from "./WorldFramePasses.js";
 import type { AuraWorldQualityTier } from "../../agent-api/world/types.js";
 
 const GRASS_VERT_GLSL = /* glsl */ `#version 300 es
@@ -259,7 +260,7 @@ export function grassOpaquePass(ctx: FrameContributorContext): RenderPass {
       const camera = ctx.camera;
       if (!camera || nodes.size === 0) return;
       const ds = stateFor(device);
-      const tier = ((ctx.tier as { tier?: AuraWorldQualityTier }).tier ?? "high") as AuraWorldQualityTier;
+      const tier = tierForSettings(ctx.tier);
       for (const st of nodes.values()) {
         const o = tierOpts(st.node, tier);
         if (o.density <= 0 && tier !== "low") continue;

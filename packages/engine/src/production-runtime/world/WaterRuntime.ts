@@ -29,8 +29,9 @@ import {
   type ReflectionRequest
 } from "@aura3d/rendering/world";
 import { colorToRgba } from "../../agent-api/index.js";
-import { resolveTierValue } from "../../agent-api/world/terrain.js";
+import { resolveTierValue, terrainRecordIds } from "../../agent-api/world/terrain.js";
 import { drawTerrainsForReflection } from "./TerrainRuntime.js";
+import { tierForSettings } from "./WorldFramePasses.js";
 import { waterRecordFor, waterRecordIds, type WaterRecord } from "../../agent-api/world/water.js";
 import type { AuraWorldQualityTier } from "../../agent-api/world/types.js";
 
@@ -91,7 +92,7 @@ function waterState(id: string): WaterGpuState | null {
   return st;
 }
 
-function allWaterStates(): WaterGpuState[] {
+export function allWaterStates(): WaterGpuState[] {
   const out: WaterGpuState[] = [];
   for (const id of waterRecordIds()) {
     const st = waterState(id);
@@ -249,7 +250,7 @@ function wantsRefraction(st: WaterGpuState, tier: AuraWorldQualityTier): boolean
 /** §9.1 step 2 — planar reflections, before world opaque on Path S. */
 export function waterBackgroundPasses(ctx: FrameContributorContext): readonly RenderPass[] {
   frameCtx = ctx;
-  const tier = ((ctx.tier as { tier?: AuraWorldQualityTier }).tier ?? "high") as AuraWorldQualityTier;
+  const tier = tierForSettings(ctx.tier);
   const out: RenderPass[] = [];
   for (const st of allWaterStates()) {
     const req = reflectionRequest(st, tier);
@@ -268,24 +269,35 @@ export function waterBackgroundPasses(ctx: FrameContributorContext): readonly Re
 
 /** §9.1 step 5 — scene color/depth copies for refraction + shore foam. */
 export function waterAfterOpaquePasses(ctx: FrameContributorContext): readonly RenderPass[] {
-  const tier = ((ctx.tier as { tier?: AuraWorldQualityTier }).tier ?? "high") as AuraWorldQualityTier;
+  const tier = tierForSettings(ctx.tier);
   const needs = allWaterStates().some((st) => wantsRefraction(st, tier));
   return needs ? [sceneCopyFallbackPass(ctx)] : [];
 }
 
 /** §9.1 step 6 + §8.7 — water surfaces and the underwater shell. */
 export function waterTransparentPass(ctx: FrameContributorContext): RenderPass {
+  const tier = tierForSettings(ctx.tier);
+  const states = allWaterStates();
+  // T0-33: declare a read only when its producer exists this frame — the
+  // planar reflection pass and the scene copies are emitted only when a
+  // state actually requests them, so reading them unconditionally threw
+  // "reads X, but no pass writes it" and killed the frame loop. The opaque
+  // read orders water after prd01.opaque on Path S (always emitted).
+  const reads: string[] = ["aura.scene.color.opaque"];
+  if (terrainRecordIds().length > 0) reads.push("prd10.terrain.color");
+  if (states.some((st) => reflectionRequest(st, tier))) reads.push(PLANAR_REFLECTION_KEY);
+  if (states.some((st) => wantsRefraction(st, tier))) reads.push(SCENE_COPY_COLOR_KEY, SCENE_COPY_DEPTH_KEY);
   return {
     name: "prd10.water",
-    reads: [PLANAR_REFLECTION_KEY, SCENE_COPY_COLOR_KEY, SCENE_COPY_DEPTH_KEY],
-    writes: ["color"],
+    reads,
+    writes: ["prd10.water.color"],
     execute(rp: RenderPassContext) {
       const device = rp.device;
       const camera = ctx.camera;
       const all = allWaterStates();
       if (!camera || all.length === 0) return;
       const ds = deviceState(device);
-      const tier = ((ctx.tier as { tier?: AuraWorldQualityTier }).tier ?? "high") as AuraWorldQualityTier;
+      const tier = tierForSettings(ctx.tier);
       const t = ctx.timeSeconds;
       const colorCopy = ctx.blackboard.get(SCENE_COPY_COLOR_KEY) as Texture | undefined;
       const depthCopy = ctx.blackboard.get(SCENE_COPY_DEPTH_KEY) as Texture | undefined;

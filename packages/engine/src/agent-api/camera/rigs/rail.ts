@@ -70,3 +70,7 @@ export function createRailRig(o: AuraCameraRailOptions): AuraCameraRig {
     }
   };
 }
+
+import { registerRigFactory } from "./registry.js";
+
+registerRigFactory("rail", (o: unknown) => createRailRig(o as Parameters<typeof createRailRig>[0]));

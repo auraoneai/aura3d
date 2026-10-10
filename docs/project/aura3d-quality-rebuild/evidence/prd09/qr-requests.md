@@ -10,3 +10,8 @@ Each row: issue, target lane, request, status. Numbers written back as filed.
 | Issue | To | Request | Status |
 |---|---|---|---|
 | #588 | prd12 | C-33: beacon readiness (`__AURA3D_GAME__.state === 'playing'`) in `capture-games.mjs` — co-PR'd in the T0-30 branch, needs lane-12 acceptance in the PR thread | open |
+||||||| parent of 0010a869c (test(qr-09): retarget stale source gates to post-migration layout)
+||||||| parent of 54b43ae98 (test(qr-09): retarget stale source gates to post-migration layout)
+
+
+| #603 | prd15 | 09-CI: retarget stale source gates to post-migration layout + restore dropped `game-runtime:*:raw` scripts (co-PR'd in the CI-unit branch) | open |

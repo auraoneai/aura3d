@@ -105,3 +105,7 @@ export function createFollow2dRig(o: Follow2dRigOptions): AuraCameraRig {
     }
   };
 }
+
+import { registerRigFactory } from "./registry.js";
+
+registerRigFactory("follow2d", (o: unknown) => createFollow2dRig(o as Parameters<typeof createFollow2dRig>[0]));
