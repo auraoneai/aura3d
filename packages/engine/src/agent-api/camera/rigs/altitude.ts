@@ -114,3 +114,7 @@ export function createAltitudeRig(o: AltitudeRigOptions): AuraCameraRig {
     }
   };
 }
+
+import { registerRigFactory } from "./registry.js";
+
+registerRigFactory("altitude", (o: unknown) => createAltitudeRig(o as Parameters<typeof createAltitudeRig>[0]));
