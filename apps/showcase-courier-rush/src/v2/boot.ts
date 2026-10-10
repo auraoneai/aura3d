@@ -27,6 +27,8 @@ import { wireCourierFx } from "./scene/fx";
 import { createCourierAutopilot } from "./autopilot";
 import { publishCourierEvidence } from "./evidence";
 import { applyCourierScenario } from "./scenarios";
+import { createStrikeZoneTools } from "./strike-zone";
+import { wireCourierTouch } from "./touch-input";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_COURIER_RUSH" as const;
 const SHIFT_SEED = 0x5eed_3417;
@@ -179,34 +181,9 @@ window.addEventListener("keydown", (e) => {
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
 }, { passive: false });
 
-// Touch: right-hold throttle, left-hold brake, drag steers, tap interacts.
-let interactTap = false;
-const touch = { throttle: false, brake: false, steerX: 0, downX: 0, downY: 0, tapAt: 0 };
-target.addEventListener("pointerdown", (e) => {
-  unlockAudio();
-  const x = e.clientX / Math.max(1, target.clientWidth);
-  touch.downX = e.clientX;
-  touch.downY = e.clientY;
-  touch.tapAt = performance.now();
-  if (x < 0.5) touch.brake = true; else touch.throttle = true;
-  (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
-});
-target.addEventListener("pointermove", (e) => {
-  const dx = (e.clientX - touch.downX) / Math.max(1, target.clientWidth);
-  touch.steerX = Math.max(-1, Math.min(1, dx * 3.2));
-});
-const endTouch = (e: PointerEvent) => {
-  if (touch.tapAt > 0 && performance.now() - touch.tapAt < 220 &&
-      Math.hypot(e.clientX - touch.downX, e.clientY - touch.downY) < 14) {
-    interactTap = true;
-  }
-  touch.throttle = false;
-  touch.brake = false;
-  touch.steerX = 0;
-  touch.tapAt = 0;
-};
-target.addEventListener("pointerup", endTouch);
-target.addEventListener("pointercancel", () => { touch.throttle = false; touch.brake = false; touch.steerX = 0; touch.tapAt = 0; });
+const touchInput = wireCourierTouch(target, unlockAudio);
+const touch = touchInput.touch;
+
 
 // T2.6: hidden tab auto-pauses the session.
 document.addEventListener("visibilitychange", () => {
@@ -216,75 +193,19 @@ document.addEventListener("visibilitychange", () => {
 
 // ----------------------------------------------------------- strike/zone -----
 
-function collisionHits(vanX: number, vanZ: number, vanSpeed: number): PropCollider[] {
-  const hits: PropCollider[] = [];
-  for (const collider of [...propColliders, ...trafficSim.staticColliders()]) {
-    const reach = collider.radius + VAN_COLLIDER_RADIUS;
-    const dx = vanX - collider.x;
-    const dz = vanZ - collider.z;
-    if (dx * dx + dz * dz >= reach * reach) continue;
-    // Adjacent-lane passes at matched pace are city driving, not crashes.
-    if (collider.speed !== undefined && Math.abs(vanSpeed - collider.speed) < 1.35) continue;
-    hits.push(collider);
-  }
-  return hits;
-}
-
-function pushOut(vanX: number, vanZ: number, collider: PropCollider): { x: number; z: number } {
-  const dx = vanX - collider.x;
-  const dz = vanZ - collider.z;
-  const distance = Math.max(0.001, Math.hypot(dx, dz));
-  const reach = collider.radius + VAN_COLLIDER_RADIUS;
-  return { x: collider.x + (dx / distance) * reach, z: collider.z + (dz / distance) * reach };
-}
-
-function activeTargetSite(state: DispatchState): ZoneSite | null {
-  const plan = currentDelivery(state);
-  if (!plan) return null;
-  return state.phase === "awaitingPickup" ? plan.pickup : plan.drop;
-}
-
-function consumeEvents(events: readonly CourierEvent[], vanX: number, vanZ: number): void {
-  for (const event of events) {
-    switch (event.type) {
-      case "dispatch":
-        pushCue("dispatch");
-        break;
-      case "pickup":
-        pushCue("pickup");
-        fx.onPickup([vanX, 0.5, vanZ]);
-        break;
-      case "drop":
-        pushCue("drop");
-        if (event.early) pushCue("early-bonus");
-        fx.onDrop([vanX, 0.5, vanZ]);
-        dropLookbackRemaining = 0.9;
-        break;
-      case "strike":
-        pushCue("strike");
-        fx.onStrike([vanX, 0, vanZ], lastVan.heading);
-        break;
-      case "timerFail":
-      case "strikesExhausted":
-        pushCue("shift-fail");
-        fx.onShiftFail();
-        break;
-      case "shiftClear":
-        pushCue("shift-clear");
-        fx.onShiftClear();
-        break;
-      default:
-        break;
-    }
-  }
-}
-
-function fullReset(): void {
-  dispatch = createDispatchState();
-  trafficSim.reset();
-  vanVehicle.reset({ x: SPAWN_POSE.x, z: SPAWN_POSE.z, heading: SPAWN_POSE.heading, speed: 0, drift: 0 });
-  dropLookbackRemaining = 0;
-}
+const { collisionHits, pushOut, activeTargetSite, consumeEvents, fullReset } =
+  createStrikeZoneTools({
+    propColliders,
+    trafficSim,
+    vanColliderRadius: VAN_COLLIDER_RADIUS,
+    vanVehicle,
+    spawnPose: SPAWN_POSE,
+    pushCue,
+    fx,
+    lastVanHeading: () => lastVan.heading,
+    setDropLookback: (v) => { dropLookbackRemaining = v; },
+    resetDispatch: () => { dispatch = createDispatchState(); },
+  });
 
 // ------------------------------------------------------------- frame loop ----
 
@@ -323,9 +244,9 @@ game.app.onFrame?.(({ dt: rawDt }) => {
   const dispatchResult = stepDispatch(dispatch, stepSeconds * 1000, {
     vanX: snapshotBefore.x,
     vanZ: snapshotBefore.z,
-    interactPressed: input.pressed("interact") || interactTap
+    interactPressed: input.pressed("interact") || touchInput.peekInteractTap()
   });
-  interactTap = false;
+  touchInput.resetInteractTap();
   dispatch = dispatchResult.state;
   consumeEvents(dispatchResult.events, snapshotBefore.x, snapshotBefore.z);
 
