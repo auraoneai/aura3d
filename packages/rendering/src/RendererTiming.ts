@@ -201,10 +201,13 @@ interface EXTDisjointTimerQueryWebGL2 {
 
 interface WebGL2GpuTimingToken extends RendererGpuTimingToken {
   readonly query: WebGLQuery | null;
+  /** `poll`/`collectAvailable` generation at which the query was issued. */
+  readonly issuedAt: number;
 }
 
 interface EXTDisjointTimerQueryWebGL2Full extends EXTDisjointTimerQueryWebGL2 {
   readonly TIMESTAMP_EXT?: number;
+  readonly QUERY_COUNTER_BITS_EXT?: number;
   /** Extension-object method: stamps `query` with the current GPU timestamp. */
   queryCounterEXT?(query: WebGLQuery, target: number): void;
 }
@@ -212,25 +215,56 @@ interface EXTDisjointTimerQueryWebGL2Full extends EXTDisjointTimerQueryWebGL2 {
 interface WebGL2GpuScopeToken extends RendererGpuTimingToken {
   readonly queryStart: WebGLQuery | null;
   readonly queryEnd: WebGLQuery | null;
+  /** TIME_ELAPSED fallback query (outermost scope only) when timestamps are unsupported. */
+  readonly elapsed: WebGLQuery | null;
+  readonly issuedAt: number;
 }
+
+/** `QUERY_COUNTER_BITS_EXT` per the EXT_disjoint_timer_query_webgl2 spec. */
+const QUERY_COUNTER_BITS_EXT_DEFAULT = 0x8864;
+
+/**
+ * T11-TIMING (PRD-16 T0-35): a query that has not settled after this many
+ * `poll()`/`collectAvailable()` generations (one per frame) is deleted and
+ * settled as discarded. Real GPUs answer in 2-3 frames; this bounds the
+ * pending lists when a driver never answers.
+ */
+export const WEBGL2_GPU_TIMING_MAX_PENDING_GENERATIONS = 8;
+
+/** Hard cap on in-flight tokens per list; the oldest is discarded beyond it. */
+export const WEBGL2_GPU_TIMING_MAX_PENDING = 64;
 
 class WebGL2GpuTimingBackend implements RendererGpuScopedTimingBackend {
   public readonly supported = true;
   public readonly unavailableReason = "GPU timer query result pending or disjoint; using CPU timing fallback for this sample.";
   private readonly pending: WebGL2GpuTimingToken[] = [];
   private readonly pendingScopes: WebGL2GpuScopeToken[] = [];
+  private timestampSupport: boolean | null = null;
+  /** True while a TIME_ELAPSED query is open (they cannot nest). */
+  private elapsedActive = false;
+  private generation = 0;
 
   constructor(
     private readonly gl: WebGL2RenderingContext,
     private readonly extension: EXTDisjointTimerQueryWebGL2Full
   ) {}
 
+  /** Test/diagnostic read: in-flight whole-frame and scope tokens. */
+  pendingCounts(): { readonly frames: number; readonly scopes: number } {
+    return { frames: this.pending.length, scopes: this.pendingScopes.length };
+  }
+
   begin(label: string): WebGL2GpuTimingToken {
+    const name = requireTimingLabel(label);
+    if (this.elapsedActive) {
+      return { label: name, query: null, issuedAt: this.generation };
+    }
     const query = this.gl.createQuery();
     if (query) {
       this.gl.beginQuery(this.extension.TIME_ELAPSED_EXT, query);
+      this.elapsedActive = true;
     }
-    return { label: requireTimingLabel(label), query };
+    return { label: name, query, issuedAt: this.generation };
   }
 
   end(token: RendererGpuTimingToken, _cpuDurationMs: number): number | undefined {
@@ -239,39 +273,44 @@ class WebGL2GpuTimingBackend implements RendererGpuScopedTimingBackend {
       return undefined;
     }
     this.gl.endQuery(this.extension.TIME_ELAPSED_EXT);
+    this.elapsedActive = false;
     this.pending.push(token as WebGL2GpuTimingToken);
+    this.enforceCap(this.pending, (entry) => this.deleteQueries([entry.query]));
     return undefined;
   }
 
   collectAvailable(): readonly RendererGpuTimingResult[] {
+    this.generation += 1;
+    const disjoint = this.readDisjoint();
     const results: RendererGpuTimingResult[] = [];
-    for (let index = this.pending.length - 1; index >= 0; index -= 1) {
-      const token = this.pending[index]!;
-      const result = this.readQueryIfAvailable(token);
+    let write = 0;
+    for (let read = 0; read < this.pending.length; read += 1) {
+      const token = this.pending[read]!;
+      const result = this.readQueryIfAvailable(token, disjoint);
       if (!result.done) {
+        this.pending[write++] = token;
         continue;
       }
-      this.pending.splice(index, 1);
       if (result.durationMs !== undefined) {
         results.push({ label: token.label, durationMs: result.durationMs });
       }
     }
-    return results.reverse();
+    this.pending.length = write;
+    return results;
   }
 
-  private readQueryIfAvailable(token: WebGL2GpuTimingToken): { readonly done: boolean; readonly durationMs?: number } {
+  private readQueryIfAvailable(token: WebGL2GpuTimingToken, disjoint: boolean): { readonly done: boolean; readonly durationMs?: number } {
     const query = token.query;
     if (!query) {
       return { done: true };
     }
-    const available = this.gl.getQueryParameter(query, this.gl.QUERY_RESULT_AVAILABLE) as boolean;
-    const disjoint = Boolean(this.gl.getParameter(this.extension.GPU_DISJOINT_EXT));
-    if (!available) {
-      return { done: false };
-    }
-    if (disjoint) {
+    if (disjoint || this.expired(token.issuedAt)) {
       this.gl.deleteQuery(query);
       return { done: true };
+    }
+    const available = this.gl.getQueryParameter(query, this.gl.QUERY_RESULT_AVAILABLE) as boolean;
+    if (!available) {
+      return { done: false };
     }
     const elapsedNanoseconds = this.gl.getQueryParameter(query, this.gl.QUERY_RESULT) as number;
     this.gl.deleteQuery(query);
@@ -279,20 +318,56 @@ class WebGL2GpuTimingBackend implements RendererGpuScopedTimingBackend {
   }
 
   /**
+   * T11-TIMING: timestamps are usable only when the extension exposes
+   * `queryCounterEXT` and `getQuery(TIMESTAMP_EXT, QUERY_COUNTER_BITS_EXT) > 0`.
+   * Browsers that disable timestamps report 0 bits; issuing `queryCounterEXT`
+   * then yields queries that never settle. Checked once per backend.
+   */
+  private timestampsSupported(): boolean {
+    if (this.timestampSupport !== null) return this.timestampSupport;
+    const timestampExt = this.extension.TIMESTAMP_EXT;
+    let supported = false;
+    if (typeof this.extension.queryCounterEXT === "function" && timestampExt !== undefined) {
+      try {
+        const getQuery = (this.gl as { getQuery?: (target: number, pname: number) => unknown }).getQuery;
+        const bits = typeof getQuery === "function"
+          ? getQuery.call(this.gl, timestampExt, this.extension.QUERY_COUNTER_BITS_EXT ?? QUERY_COUNTER_BITS_EXT_DEFAULT)
+          : 0;
+        supported = typeof bits === "number" && bits > 0;
+      } catch {
+        supported = false;
+      }
+    }
+    this.timestampSupport = supported;
+    return supported;
+  }
+
+  /**
    * C-28 scope timing: a TIMESTAMP_EXT query pair (`queryCounterEXT` is a
    * method on the extension object). `beginScope` stamps the start; `endScope`
-   * stamps the end and queues the token for `poll()`. When `queryCounterEXT`
-   * is unavailable the token carries no queries and `poll` settles it with
+   * stamps the end and queues the token for `poll()`. Without usable
+   * timestamps the outermost open scope (the whole-frame scope) falls back to
+   * one TIME_ELAPSED query; nested scopes carry no queries and settle with
    * `durationMs: null`.
    */
   beginScope(name: string): WebGL2GpuScopeToken {
-    const queryCounter = this.extension.queryCounterEXT?.bind(this.extension);
-    const timestampExt = this.extension.TIMESTAMP_EXT;
-    const queryStart = typeof queryCounter === "function" && timestampExt !== undefined ? this.gl.createQuery() : null;
-    if (queryStart && queryCounter && timestampExt !== undefined) {
-      queryCounter(queryStart, timestampExt);
+    const label = requireTimingLabel(name);
+    if (this.timestampsSupported()) {
+      const queryStart = this.gl.createQuery();
+      if (queryStart) {
+        this.extension.queryCounterEXT!(queryStart, this.extension.TIMESTAMP_EXT as number);
+      }
+      return { label, queryStart, queryEnd: null, elapsed: null, issuedAt: this.generation };
     }
-    return { label: requireTimingLabel(name), queryStart, queryEnd: null };
+    let elapsed: WebGLQuery | null = null;
+    if (!this.elapsedActive) {
+      elapsed = this.gl.createQuery();
+      if (elapsed) {
+        this.gl.beginQuery(this.extension.TIME_ELAPSED_EXT, elapsed);
+        this.elapsedActive = true;
+      }
+    }
+    return { label, queryStart: null, queryEnd: null, elapsed, issuedAt: this.generation };
   }
 
   endScope(token: RendererGpuTimingToken): void {
@@ -303,43 +378,80 @@ class WebGL2GpuTimingBackend implements RendererGpuScopedTimingBackend {
       if (queryEnd) {
         this.extension.queryCounterEXT?.(queryEnd, this.extension.TIMESTAMP_EXT as number);
       }
+    } else if (scope.elapsed) {
+      this.gl.endQuery(this.extension.TIME_ELAPSED_EXT);
+      this.elapsedActive = false;
     }
     this.pendingScopes.push(scope);
+    this.enforceCap(this.pendingScopes, (entry) => this.deleteQueries([entry.queryStart, entry.queryEnd, entry.elapsed]));
   }
 
   poll(): readonly RendererGpuScopedResult[] {
+    this.generation += 1;
+    const disjoint = this.readDisjoint();
     const results: RendererGpuScopedResult[] = [];
-    for (let index = this.pendingScopes.length - 1; index >= 0; index -= 1) {
-      const token = this.pendingScopes[index]!;
-      const settled = this.readScopeIfAvailable(token);
+    let write = 0;
+    for (let read = 0; read < this.pendingScopes.length; read += 1) {
+      const token = this.pendingScopes[read]!;
+      const settled = this.readScopeIfAvailable(token, disjoint);
       if (!settled.done) {
+        this.pendingScopes[write++] = token;
         continue;
       }
-      this.pendingScopes.splice(index, 1);
       results.push({ token, label: token.label, durationMs: settled.durationMs ?? null });
     }
-    return results.reverse();
+    this.pendingScopes.length = write;
+    return results;
   }
 
-  private readScopeIfAvailable(token: WebGL2GpuScopeToken): { readonly done: boolean; readonly durationMs?: number } {
-    const { queryStart, queryEnd } = token;
-    if (!queryStart || !queryEnd) {
+  private readScopeIfAvailable(token: WebGL2GpuScopeToken, disjoint: boolean): { readonly done: boolean; readonly durationMs?: number } {
+    const { queryStart, queryEnd, elapsed } = token;
+    if (!elapsed && (!queryStart || !queryEnd)) {
+      this.deleteQueries([queryStart, queryEnd]);
       return { done: true };
     }
-    const startAvailable = this.gl.getQueryParameter(queryStart, this.gl.QUERY_RESULT_AVAILABLE) as boolean;
-    const endAvailable = this.gl.getQueryParameter(queryEnd, this.gl.QUERY_RESULT_AVAILABLE) as boolean;
+    if (disjoint || this.expired(token.issuedAt)) {
+      this.deleteQueries([queryStart, queryEnd, elapsed]);
+      return { done: true };
+    }
+    if (elapsed) {
+      if (!(this.gl.getQueryParameter(elapsed, this.gl.QUERY_RESULT_AVAILABLE) as boolean)) {
+        return { done: false };
+      }
+      const elapsedNs = this.gl.getQueryParameter(elapsed, this.gl.QUERY_RESULT) as number;
+      this.gl.deleteQuery(elapsed);
+      return { done: true, durationMs: Math.max(0, elapsedNs / 1_000_000) };
+    }
+    const startAvailable = this.gl.getQueryParameter(queryStart!, this.gl.QUERY_RESULT_AVAILABLE) as boolean;
+    const endAvailable = this.gl.getQueryParameter(queryEnd!, this.gl.QUERY_RESULT_AVAILABLE) as boolean;
     if (!startAvailable || !endAvailable) {
       return { done: false };
     }
-    const startNs = this.gl.getQueryParameter(queryStart, this.gl.QUERY_RESULT) as number;
-    const endNs = this.gl.getQueryParameter(queryEnd, this.gl.QUERY_RESULT) as number;
-    const disjoint = Boolean(this.gl.getParameter(this.extension.GPU_DISJOINT_EXT));
-    this.gl.deleteQuery(queryStart);
-    this.gl.deleteQuery(queryEnd);
-    if (disjoint) {
-      return { done: true };
-    }
+    const startNs = this.gl.getQueryParameter(queryStart!, this.gl.QUERY_RESULT) as number;
+    const endNs = this.gl.getQueryParameter(queryEnd!, this.gl.QUERY_RESULT) as number;
+    this.deleteQueries([queryStart, queryEnd]);
     return { done: true, durationMs: Math.max(0, (endNs - startNs) / 1_000_000) };
+  }
+
+  /** `GPU_DISJOINT_EXT` is read (and thereby cleared) once per poll; a disjoint poll discards every in-flight query. */
+  private readDisjoint(): boolean {
+    return Boolean(this.gl.getParameter(this.extension.GPU_DISJOINT_EXT));
+  }
+
+  private expired(issuedAt: number): boolean {
+    return this.generation - issuedAt > WEBGL2_GPU_TIMING_MAX_PENDING_GENERATIONS;
+  }
+
+  private enforceCap<T>(list: T[], discard: (entry: T) => void): void {
+    while (list.length > WEBGL2_GPU_TIMING_MAX_PENDING) {
+      discard(list.shift()!);
+    }
+  }
+
+  private deleteQueries(queries: readonly (WebGLQuery | null)[]): void {
+    for (const query of queries) {
+      if (query) this.gl.deleteQuery(query);
+    }
   }
 }
 
