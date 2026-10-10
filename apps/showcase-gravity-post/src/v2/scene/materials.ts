@@ -92,6 +92,12 @@ export const DUST_AMBER = material.emissive({
   emissive: "#f59e0b",
   emissiveIntensity: 0.64
 });
+export const STAR_POINT = material.emissive({
+  name: "far star shell point",
+  color: "#cfe4ff",
+  emissive: "#dbeafe",
+  emissiveIntensity: 0.9
+});
 export const RUNWAY_PANEL = material.pbr({
   name: "freightway runway panel",
   color: "#16233f",

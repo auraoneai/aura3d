@@ -4,7 +4,7 @@
 // carry the gameplay truth, and every moving piece is a runtime node
 // re-posed each frame — mission progress never swaps scenes
 // (loading.sceneSwaps === 0, §7.2.1).
-import { primitives, model, game, type AuraNodeInput } from "@aura3d/engine";
+import { primitives, model, game, effects, type AuraNodeInput } from "@aura3d/engine";
 import { assets } from "../../../../../src/aura-assets";
 import { BUOY_STATION, WRECK_OBSTACLES, WORLD_BOUNDS } from "../../gameplay/reef";
 import { initialCrateSpawns } from "../../gameplay/salvage";
@@ -99,6 +99,19 @@ export function deepWorldNodes(): DeepWorld {
   const nodes: AuraNodeInput[] = [];
   const crates = initialCrateSpawns();
   const markerIds: string[] = [];
+
+  // §8.3 fallback (PRD 07 C-21 real impl pending): exp2 height fog colour-
+  // matched to the water column — the depth-band shells below tint it
+  // turquoise → trench → abyss; the production path lowers `density`/`color`
+  // to exponential-squared (`compiler/fog.ts`).
+  nodes.push(
+    effects.fog({
+      name: "deep water column exp2 haze",
+      density: 0.055,
+      color: "#0a4254",
+      intensity: 0.62
+    })
+  );
 
   // ------------------------------------------------------------ terrain ---
   // Three terraced shelves read the depth zones: a bright shallow shelf,

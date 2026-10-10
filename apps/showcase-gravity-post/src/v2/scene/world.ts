@@ -7,7 +7,7 @@
 // streaks, prediction/flown-path beads, dock sparks, flyby drones, orbital
 // dust, and the Rust→Gale freightway runway. Contracts only move the pod and
 // re-target the pulse rings → loading.sceneSwaps === 0 for the whole shift.
-import { game, material, model, primitives, type AuraNodeInput } from "@aura3d/engine";
+import { game, instances, material, model, primitives, type AuraNodeInput } from "@aura3d/engine";
 import { assets } from "../../../../../src/aura-assets";
 import { WELL_BODIES } from "../../gameplay/contracts";
 import { buildStations, PLAY_PLANE_Y } from "../../gameplay/stations";
@@ -25,6 +25,7 @@ import {
   RUNWAY_LAMP,
   RUNWAY_PANEL,
   STATION_PULSE,
+  STAR_POINT,
   SUN_CORONA,
   SUN_DISC,
   THRUST_CONE,
@@ -38,6 +39,35 @@ export const FLYBY_DRONES = 6;
 export const TRAIL_STREAKS = 7;
 export const ORBITAL_DUST_COUNT = 24;
 export const RUNWAY_PANEL_COUNT = 7;
+export const STAR_COUNT = 72;
+
+/**
+ * §14.4 instancing: the repeat populations (trail streaks, prediction/flown
+ * path beads, dock sparks, flyby drones) ride `instances.*` pools bound to
+ * live transform arrays — one draw per pool instead of one per node. boot.ts
+ * writes `position`/`rotation`/`scale` on the entry objects directly;
+ * `scale: [0,0,0]` is the parked/hidden state (they sit under the plane).
+ */
+export interface GravityPoolTransform {
+  position: [number, number, number];
+  rotation: [number, number, number];
+  scale: [number, number, number];
+}
+
+export interface GravityPools {
+  readonly trailStreaks: GravityPoolTransform[];
+  readonly predBeads: GravityPoolTransform[];
+  readonly actualBeads: GravityPoolTransform[];
+  readonly dockSparks: GravityPoolTransform[];
+  readonly flybyDrones: GravityPoolTransform[];
+}
+
+const parkedPool = (count: number): GravityPoolTransform[] =>
+  Array.from({ length: count }, () => ({
+    position: [0, -4, 0],
+    rotation: [0, 0, 0],
+    scale: [0, 0, 0]
+  }));
 
 const WELL_PLANET_ASSETS = {
   cinder: assets.gravityPlanetMercury,
@@ -60,6 +90,7 @@ const BODY_EMISSIVE: Readonly<Record<string, string>> = {
 export interface GravityWorldNodes {
   readonly nodes: AuraNodeInput[];
   readonly stationPulseIds: readonly string[];
+  readonly pools: GravityPools;
 }
 
 function orbitGuideRadius(bodyIndex: number): number {
@@ -70,6 +101,13 @@ function orbitGuideRadius(bodyIndex: number): number {
 export function gravityWorldNodes(): GravityWorldNodes {
   const nodes: AuraNodeInput[] = [];
   const stations = buildStations();
+  const pools: GravityPools = {
+    trailStreaks: parkedPool(TRAIL_STREAKS),
+    predBeads: parkedPool(PREDICTION_BEADS),
+    actualBeads: parkedPool(ACTUAL_PATH_BEADS),
+    dockSparks: parkedPool(SPARK_COUNT),
+    flybyDrones: parkedPool(FLYBY_DRONES)
+  };
 
   // ------------------------------------------------------------ wells ------
   const sol = WELL_BODIES[0]!;
@@ -158,50 +196,23 @@ export function gravityWorldNodes(): GravityWorldNodes {
       .scale([0.05, 0.22, 0.05])
       .runtime(game.runtimeNode("pod-thrust-cone"))
   );
-  for (let index = 0; index < TRAIL_STREAKS; index += 1) {
-    nodes.push(
-      primitives.box({ name: `mail-pod-trail-${index}`, material: TRAIL_STREAK })
-        .position(0, -4, 0)
-        .scale([0.05 - index * 0.004, 0.012, 0.12 - index * 0.012])
-        .runtime(game.runtimeNode(`mail-pod-trail-${index}`))
-    );
-  }
+  // §14.4 instanced pools — the transform arrays are live-bound; boot.ts
+  // writes entries each frame instead of posing named nodes.
+  nodes.push(
+    instances.box({ name: "mail pod trail streak pool", material: TRAIL_STREAK, transforms: pools.trailStreaks })
+  );
 
   // ------------------------------------------------------- path markers ----
-  for (let index = 0; index < PREDICTION_BEADS; index += 1) {
-    nodes.push(
-      primitives.sphere({ name: `pred-bead-${index}`, material: PREDICTION_BEAD })
-        .position(0, -4, 0)
-        .scale([0.028, 0.014, 0.028])
-        .runtime(game.runtimeNode(`pred-bead-${index}`))
-    );
-  }
-  for (let index = 0; index < ACTUAL_PATH_BEADS; index += 1) {
-    nodes.push(
-      primitives.sphere({ name: `actual-path-bead-${index}`, material: ACTUAL_PATH_BEAD })
-        .position(0, -4, 0)
-        .scale([0.052, 0.02, 0.052])
-        .runtime(game.runtimeNode(`actual-path-bead-${index}`))
-    );
-  }
+  nodes.push(
+    instances.sphere({ name: "prediction bead pool", material: PREDICTION_BEAD, transforms: pools.predBeads }),
+    instances.sphere({ name: "flown path bead pool", material: ACTUAL_PATH_BEAD, transforms: pools.actualBeads })
+  );
 
   // ------------------------------------------------------------ fx props ---
-  for (let index = 0; index < SPARK_COUNT; index += 1) {
-    nodes.push(
-      primitives.sphere({ name: `dock-spark-${index}`, material: DOCK_SPARK })
-        .position(0, -4, 0)
-        .scale([0.05, 0.05, 0.05])
-        .runtime(game.runtimeNode(`dock-spark-${index}`))
-    );
-  }
-  for (let index = 0; index < FLYBY_DRONES; index += 1) {
-    nodes.push(
-      primitives.sphere({ name: `flyby-drone-${index}`, material: FLYBY_DRONE })
-        .position(0, -4, 0)
-        .scale([0.06, 0.03, 0.06])
-        .runtime(game.runtimeNode(`flyby-drone-${index}`))
-    );
-  }
+  nodes.push(
+    instances.sphere({ name: "dock spark pool", material: DOCK_SPARK, transforms: pools.dockSparks }),
+    instances.sphere({ name: "flyby drone pool", material: FLYBY_DRONE, transforms: pools.flybyDrones })
+  );
 
   // ------------------------------------------------- freightway corridor ---
   // Rust Exchange -> Gale Terminal runway: grounded paving + lamp posts + the
@@ -215,58 +226,88 @@ export function gravityWorldNodes(): GravityWorldNodes {
   const dirZ = rdz / rlen;
   const perpX = -dirZ;
   const perpZ = dirX;
+  const runwayPanels: GravityPoolTransform[] = [];
+  const runwayLamps: GravityPoolTransform[] = [];
+  const hazardMarkers: GravityPoolTransform[] = [];
   for (let index = 0; index < RUNWAY_PANEL_COUNT; index += 1) {
     const t = (index + 0.5) / RUNWAY_PANEL_COUNT;
-    nodes.push(
-      primitives.box({ name: `runway-panel-${index}`, material: RUNWAY_PANEL })
-        .position(rust.x + dirX * rlen * t, PLAY_PLANE_Y - 0.035, rust.z + dirZ * rlen * t)
-        .rotate(0, Math.atan2(dirX, dirZ), 0)
-        .scale([0.34, 0.012, rlen / RUNWAY_PANEL_COUNT * 0.92])
-        .runtime(game.runtimeNode(`runway-panel-${index}`))
-    );
+    runwayPanels.push({
+      position: [rust.x + dirX * rlen * t, PLAY_PLANE_Y - 0.035, rust.z + dirZ * rlen * t],
+      rotation: [0, Math.atan2(dirX, dirZ), 0],
+      scale: [0.34, 0.012, rlen / RUNWAY_PANEL_COUNT * 0.92]
+    });
     for (const side of [-1, 1] as const) {
-      nodes.push(
-        primitives.box({ name: `runway-lamp-${side === -1 ? "l" : "r"}-${index}`, material: RUNWAY_LAMP })
-          .position(
-            rust.x + dirX * rlen * t + perpX * 0.22 * side,
-            PLAY_PLANE_Y + 0.04,
-            rust.z + dirZ * rlen * t + perpZ * 0.22 * side
-          )
-          .scale([0.02, 0.1, 0.02])
-          .runtime(game.runtimeNode(`runway-lamp-${side === -1 ? "l" : "r"}-${index}`))
-      );
+      runwayLamps.push({
+        position: [
+          rust.x + dirX * rlen * t + perpX * 0.22 * side,
+          PLAY_PLANE_Y + 0.04,
+          rust.z + dirZ * rlen * t + perpZ * 0.22 * side
+        ],
+        rotation: [0, 0, 0],
+        scale: [0.02, 0.1, 0.02]
+      });
     }
   }
   for (let index = 0; index < 3; index += 1) {
     const t = 0.28 + index * 0.22;
-    nodes.push(
-      primitives.box({ name: `hazard-marker-${index}`, material: HAZARD_STRIPE })
-        .position(rust.x + dirX * rlen * t, PLAY_PLANE_Y - 0.02, rust.z + dirZ * rlen * t)
-        .rotate(0, Math.atan2(dirX, dirZ), 0)
-        .scale([0.5, 0.006, 0.06])
-        .runtime(game.runtimeNode(`hazard-marker-${index}`))
-    );
+    hazardMarkers.push({
+      position: [rust.x + dirX * rlen * t, PLAY_PLANE_Y - 0.02, rust.z + dirZ * rlen * t],
+      rotation: [0, Math.atan2(dirX, dirZ), 0],
+      scale: [0.5, 0.006, 0.06]
+    });
   }
+  nodes.push(
+    instances.box({ name: "runway panel pool", material: RUNWAY_PANEL, transforms: runwayPanels }),
+    instances.box({ name: "runway lamp pool", material: RUNWAY_LAMP, transforms: runwayLamps }),
+    instances.box({ name: "hazard marker pool", material: HAZARD_STRIPE, transforms: hazardMarkers })
+  );
 
   // ------------------------------------------------------ orbital dust -----
+  // Three authored emissive tones stay as three small pools (per-instance
+  // colors would not tint the emissive channel the same way).
   const dustMats = [DUST_CYAN, DUST_VIOLET, DUST_AMBER];
+  const dustByTone: GravityPoolTransform[][] = [[], [], []];
   for (let index = 0; index < ORBITAL_DUST_COUNT; index += 1) {
     const angle = (index / ORBITAL_DUST_COUNT) * Math.PI * 2;
     const radius = 2.2 + (index % 5) * 0.7;
-    nodes.push(
-      primitives.sphere({ name: `orbital-dust-${index}`, material: dustMats[index % 3]! })
-        .position(
-          Math.cos(angle) * radius,
-          PLAY_PLANE_Y - 0.15 + (index % 4) * 0.08,
-          Math.sin(angle) * radius
-        )
-        .scale([0.02 + (index % 3) * 0.008, 0.02 + (index % 3) * 0.008, 0.02 + (index % 3) * 0.008])
-        .runtime(game.runtimeNode(`orbital-dust-${index}`))
-    );
+    const s = 0.02 + (index % 3) * 0.008;
+    dustByTone[index % 3]!.push({
+      position: [
+        Math.cos(angle) * radius,
+        PLAY_PLANE_Y - 0.15 + (index % 4) * 0.08,
+        Math.sin(angle) * radius
+      ],
+      rotation: [0, 0, 0],
+      scale: [s, s, s]
+    });
   }
+  nodes.push(
+    ...dustByTone.map((transforms, tone) =>
+      instances.sphere({ name: `orbital dust pool ${tone}`, material: dustMats[tone]!, transforms }))
+  );
+
+  // ------------------------------------------------------------- stars -----
+  // §14.4 instanced stars: a fixed far shell around the system, golden-angle
+  // spread with deterministic size variation — one draw for the whole field.
+  const stars: GravityPoolTransform[] = Array.from({ length: STAR_COUNT }, (_, index) => {
+    const angle = index * 2.399963;
+    const band = index % 9;
+    const y = PLAY_PLANE_Y + 6 + band * 4.5;
+    const radius = 46 + (index % 7) * 4.5;
+    const s = 0.014 + (index % 4) * 0.006;
+    return {
+      position: [Math.cos(angle) * radius, y, Math.sin(angle) * radius],
+      rotation: [0, 0, 0],
+      scale: [s, s, s]
+    };
+  });
+  nodes.push(
+    instances.sphere({ name: "orbital star shell", material: STAR_POINT, transforms: stars })
+  );
 
   return {
     nodes,
-    stationPulseIds: stations.map((station) => station.pulseNodeId)
+    stationPulseIds: stations.map((station) => station.pulseNodeId),
+    pools
   };
 }
