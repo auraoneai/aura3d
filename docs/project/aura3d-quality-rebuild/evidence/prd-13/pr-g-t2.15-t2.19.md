@@ -1,6 +1,6 @@
 # PR G — T2.15–T2.19 agent files + look commands + lookdev workflow
 
-> **Run-id status (P-57):** no passing remote run id is cited in this file yet; every claim below is recorded NOT RUN until the proving lane-workflow/GitLab run is linked here. File moved from `evidence/prd13/` → `docs/project/aura3d-quality-rebuild/evidence/prd-13/` (13-EVID).
+> **NOT RUN (remote) — P-57:** this file cites no remote CI run id (`run:<id>` / `capture:<id>`). Any "green"/"pass" result below is a local run by the authoring agent and is not acceptance evidence until a lane-workflow run on main is linked here. File moved from `evidence/prd13/` → `docs/project/aura3d-quality-rebuild/evidence/prd-13/` (13-EVID).
 
 
 ## Scope

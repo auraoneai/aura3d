@@ -1,6 +1,6 @@
 # PRD-13 evidence — PR A (T0.1–T0.3)
 
-> **Run-id status (P-57):** no passing remote run id is cited in this file yet; every claim below is recorded NOT RUN until the proving lane-workflow/GitLab run is linked here. File moved from `evidence/prd13/` → `docs/project/aura3d-quality-rebuild/evidence/prd-13/` (13-EVID).
+> **NOT RUN (remote) — P-57:** this file cites no remote CI run id (`run:<id>` / `capture:<id>`). Any "green"/"pass" result below is a local run by the authoring agent and is not acceptance evidence until a lane-workflow run on main is linked here. File moved from `evidence/prd13/` → `docs/project/aura3d-quality-rebuild/evidence/prd-13/` (13-EVID).
 
 
 Lane 13 Phase-1 day-0 deliverables. This is a **baseline record**, not an approved
