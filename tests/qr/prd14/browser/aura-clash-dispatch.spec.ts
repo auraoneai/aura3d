@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { builtDist, serve, watchConsole } from "./lib/serve";
+import { APPS, builtDist, serve, watchConsole, soakIfNeeded } from "./lib/serve";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
@@ -44,6 +44,7 @@ test.describe("aura-clash dispatch (T1.10)", () => {
       }
       const v2 = await page.evaluate(() => (window as Record<string, unknown>).__AURA3D_GAME__);
       expect(v2).toBeUndefined();
+      await soakIfNeeded(page);
       expect(errors).toEqual([]);
     } finally {
       server.close();
@@ -63,6 +64,7 @@ test.describe("aura-clash dispatch (T1.10)", () => {
       const state = await page.evaluate(() =>
         ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
       expect(state).toBe("playing");
+      await soakIfNeeded(page);
       expect(errors).toEqual([]);
     } finally {
       server.close();

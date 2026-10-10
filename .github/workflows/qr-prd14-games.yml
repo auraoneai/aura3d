@@ -195,3 +195,37 @@ jobs:
           echo "capture=${{ steps.capture.outcome }} audit=${{ steps.audit.outcome }}"
           test "${{ steps.capture.outcome }}" = "success"
           test "${{ steps.audit.outcome }}" = "success"
+
+  browser-matrix:
+    # WEBKIT-FF (PRD-14 §18): WebKit covers S1/S2/S11; Firefox covers the S1
+    # boot + 60 s timeline with 0 errors (A3D_DISPATCH_SOAK_MS).
+    name: WebKit + Firefox S-matrix (macos-14)
+    runs-on: macos-14
+    timeout-minutes: 120
+    needs: [unit, routes]
+    if: needs.routes.outputs.dirs != ''
+    env:
+      QRC_GAMES: ${{ needs.routes.outputs.ids }}
+      QRC_LOCAL_BUILD: "true"
+      QRC_FLAGS: ${{ needs.routes.outputs.flags }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install webkit firefox
+      - name: Build changed games
+        run: node tools/quality-rebuild-capture/capture-games.mjs --build-only --local-build
+      - name: WebKit — S1 dispatch + S2/S11 v2 specs
+        run: pnpm exec playwright test -c tests/qr/prd14/playwright.webkit.config.ts
+      - name: Firefox — S1 boot + 60 s timeline
+        env:
+          A3D_DISPATCH_SOAK_MS: "60000"
+        run: pnpm exec playwright test -c tests/qr/prd14/playwright.firefox.config.ts
