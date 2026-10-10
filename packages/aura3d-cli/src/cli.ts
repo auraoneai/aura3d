@@ -290,17 +290,18 @@ async function main(): Promise<void> {
       // command — registered doctor rules are hosted there; `doctor` stays
       // the PRD-05 manifest verb.
       const lint = cliCommandFor("look lint");
-      if (lint) {
-        process.exitCode = await lint.run(
-          args.slice(1).filter((arg) => arg !== "--look"),
-          {
-            cwd: process.cwd(),
-            stdout: (line) => console.log(line),
-            stderr: (line) => console.error(line)
-          }
-        );
-        return;
-      }
+      // No silent fallback to the manifest doctor: `--look` without the
+      // C-39 `look lint` registration is an error.
+      if (!lint) throw new Error("aura3d doctor --look: the `look lint` command is not registered (C-39, lane 13).");
+      process.exitCode = await lint.run(
+        args.slice(1).filter((arg) => arg !== "--look"),
+        {
+          cwd: process.cwd(),
+          stdout: (line) => console.log(line),
+          stderr: (line) => console.error(line)
+        }
+      );
+      return;
     }
     print(doctor());
   } else if (command === "animation") {

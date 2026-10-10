@@ -3787,14 +3787,11 @@ function genericAgentText(agent = "AI coding agent", skillsPath?: string): strin
   // skills/agent-files/AGENTS.md (PRD-13 T2.15), not a copy — scaffolded
   // files can never drift from it again. Its own `# ` title line is dropped;
   // the per-agent prelude keeps the heading + skills path.
-  const here = fileURLToPath(import.meta.url);
-  const candidates = [
-    resolve(here, "..", "..", "skills", "agent-files", "AGENTS.md"), // dist/index.js → package root
-    resolve(here, "..", "skills", "agent-files", "AGENTS.md"), // src/index.ts via tsx
-  ];
-  const canonicalPath = candidates.find((candidate) => existsSync(candidate));
-  if (!canonicalPath) {
-    throw new Error(`canonical agent file not found (looked at ${candidates.join(", ")})`);
+  // Both src/index.ts (tsx) and dist/index.js sit one level below the package
+  // root, whose published `files` include `skills/`.
+  const canonicalPath = resolve(fileURLToPath(import.meta.url), "..", "..", "skills", "agent-files", "AGENTS.md");
+  if (!existsSync(canonicalPath)) {
+    throw new Error(`canonical agent file not found at ${canonicalPath}`);
   }
   const canonical = readFileSync(canonicalPath, "utf8").replace(/^#[^\n]*\n+/, "").trimEnd();
   return `# Aura3D Instructions For ${agent}
