@@ -1,7 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
-import { existsSync } from "node:fs";
-import { join } from "node:path";
+import { builtDist, serve, watchConsole } from "./lib/serve";
 
 /**
  * T2.3 (Deeprecovery v2): the deep-recovery.chase rig must keep the subject inside the
@@ -16,13 +14,11 @@ const ROUTE_FLAG = "route-deep-recovery";
 // T1.10: v2 specs carry the same engine list the URL contract uses
 // (boot.ts qualityRebuild.flags + games.json qrFlags).
 const ENGINE_FLAGS = "game,camera,lighting,post,materials,vfx,world,tiers,looks";
-const EVIDENCE = `window.__AURA3D_GAME_EVIDENCE__?.["${APP_DIR}"]`;
 const FRACTION: readonly [number, number] = [0.15, 0.3];
-const DRIVE = "autorun";
+// Deterministic drive to the 03-mid state (route query param).
+const DRIVE_QUERY = "&autorun=1";
 
-test.describe(`${APP_DIR} framing (T2.3)`, () => {
-  test.skip(!existsSync(join(APPS, APP_DIR, "src", "v2", "boot.ts")), "no v2 tree yet");
-
+test.describe("showcase-deep-recovery framing (T2.3)", () => {
   for (const viewport of [{ width: 1920, height: 1080 }, { width: 390, height: 844 }]) {
     test(`subjectHeightFraction within band at ${viewport.width}x${viewport.height}`, async ({ page }) => {
       const root = builtDist(APP_DIR);
@@ -31,19 +27,24 @@ test.describe(`${APP_DIR} framing (T2.3)`, () => {
       const { server, url } = await serve(root!);
       try {
         await page.setViewportSize(viewport);
-        const drive = DRIVE === "autorun" ? "&autorun=1" : `&scenario=${DRIVE}`;
-        await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}${drive}`);
+        await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}${DRIVE_QUERY}`);
         await expect.poll(() => page.evaluate(() =>
           (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
         // Let the deterministic drive reach the 03-mid state before sampling.
         await page.waitForTimeout(2500);
-        const framing = await page.evaluate(() =>
-          JSON.parse(JSON.stringify(eval(EVIDENCE + ".framing"))) as
-            { rig?: string; subjectScreenHeightFraction?: number | null });
-        expect(framing.rig).toBe("deep-recovery.chase");
-        if (framing.subjectScreenHeightFraction !== null && framing.subjectScreenHeightFraction !== undefined) {
-          expect(framing.subjectScreenHeightFraction).toBeGreaterThanOrEqual(FRACTION[0]);
-          expect(framing.subjectScreenHeightFraction).toBeLessThanOrEqual(FRACTION[1]);
+        // The evidence id travels as an argument: page.evaluate runs in the
+        // browser, where Node-side constants are not in scope.
+        const framing = await page.evaluate((appDir) => {
+          const all = (window as unknown as { __AURA3D_GAME_EVIDENCE__?: Record<string, { framing?: unknown }> })
+            .__AURA3D_GAME_EVIDENCE__;
+          return JSON.parse(JSON.stringify(all?.[appDir]?.framing ?? null)) as
+            { rig?: string; subjectScreenHeightFraction?: number | null } | null;
+        }, APP_DIR);
+        expect(framing, `${APP_DIR} published no framing evidence`).not.toBeNull();
+        expect(framing!.rig).toBe("deep-recovery.chase");
+        if (framing!.subjectScreenHeightFraction !== null && framing!.subjectScreenHeightFraction !== undefined) {
+          expect(framing!.subjectScreenHeightFraction).toBeGreaterThanOrEqual(FRACTION[0]);
+          expect(framing!.subjectScreenHeightFraction).toBeLessThanOrEqual(FRACTION[1]);
         }
         expect(errors).toEqual([]);
       } finally {
