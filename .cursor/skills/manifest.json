@@ -124,7 +124,7 @@
       "aura3d-character-animation",
       "aura3d-animation-studio"
     ],
-    "three-compat-premium-product-viewer": [
+    "premium-product-viewer": [
       "aura3d-threejs-migration",
       "aura3d-materials-environments"
     ],

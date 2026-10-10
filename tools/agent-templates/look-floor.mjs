@@ -46,7 +46,7 @@ export const TEMPLATE_LOOK_FLOOR = Object.freeze({
   "prompt-animation-channel": Object.freeze({ look: "character-showcase", anchor: "preset" }),
   "episode-builder": Object.freeze({ look: "character-showcase", anchor: "preset" }),
   "animation-studio": Object.freeze({ look: "interior-warm", anchor: "set" }),
-  "three-compat-premium-product-viewer": Object.freeze({ look: "product-studio", anchor: "preset" }),
+  "premium-product-viewer": Object.freeze({ look: "product-studio", anchor: "preset" }),
   "three-compat-architecture-interior": Object.freeze({ look: "interior-warm", anchor: "preset" }),
   "three-compat-postprocess-scene": Object.freeze({ look: "neon-arcade", anchor: "preset" }),
   "three-compat-material-authoring": Object.freeze({ look: "product-studio", anchor: "preset" }),

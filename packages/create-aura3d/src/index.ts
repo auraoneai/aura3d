@@ -16,7 +16,7 @@ export const CREATE_AURA3D_TEMPLATES = [
   "animation-studio",
   "episode-builder",
   "character-controller",
-  "three-compat-premium-product-viewer",
+  "premium-product-viewer",
   "three-compat-architecture-interior",
   "three-compat-material-authoring",
   "three-compat-asset-inspector",
@@ -33,7 +33,9 @@ export type CreateA3DTemplate = (typeof CREATE_AURA3D_TEMPLATES)[number];
  * the CLI scaffolds the current template and prints `templateAliasWarning`.
  * Entries are added as each template is renamed and dropped in the next minor.
  */
-export const TEMPLATE_ALIASES: Readonly<Record<string, CreateA3DTemplate>> = Object.freeze({});
+export const TEMPLATE_ALIASES: Readonly<Record<string, CreateA3DTemplate>> = Object.freeze({
+  "three-compat-premium-product-viewer": "premium-product-viewer"
+});
 
 export interface ResolvedTemplateName {
   readonly template: CreateA3DTemplate;

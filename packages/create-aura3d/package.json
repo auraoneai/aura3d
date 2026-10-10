@@ -22,7 +22,7 @@
     "templates/animation-studio",
     "templates/episode-builder",
     "templates/character-controller",
-    "templates/three-compat-premium-product-viewer",
+    "templates/premium-product-viewer",
     "templates/three-compat-architecture-interior",
     "templates/three-compat-material-authoring",
     "templates/three-compat-asset-inspector",

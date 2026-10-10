@@ -12,7 +12,9 @@ import {
   templateAliasWarning
 } from "../../../packages/create-aura3d/src/index";
 
-const RENAMED: ReadonlyArray<readonly [retired: string, current: string]> = [];
+const RENAMED: ReadonlyArray<readonly [retired: string, current: string]> = [
+  ["three-compat-premium-product-viewer", "premium-product-viewer"]
+];
 
 describe("create-aura3d template aliases (Q-13-4)", () => {
   it("TEMPLATE_ALIASES holds exactly the renamed templates", () => {
