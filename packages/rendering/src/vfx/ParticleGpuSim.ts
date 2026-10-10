@@ -261,11 +261,12 @@ export class ParticleGpuSim {
     this.pos = [this.device.createRenderTarget(desc), this.device.createRenderTarget({ ...desc, label: "prd07.gpuSim.pos" })];
     this.vel = [this.device.createRenderTarget(desc), this.device.createRenderTarget({ ...desc, label: "prd07.gpuSim.vel" })];
     // Dead state: age = +∞ so every slot reads past u_lifetimeMax.
+    const prev = this.device.getRenderTarget?.() ?? null;
     for (const target of [...this.pos, ...this.vel]) {
       this.device.setRenderTarget(target);
       this.device.clearRenderTarget?.([0, 0, 0, 1e9]);
     }
-    this.device.setRenderTarget(null);
+    this.device.setRenderTarget(prev);
   }
 
   get state(): ParticleGpuSimState | null {
@@ -341,6 +342,8 @@ export class ParticleGpuSim {
     const geometry = fullscreenTriangle();
     const uniforms = this.uniforms(dt, emitCount, time);
     const write = 1 - this.read;
+    // T0-34: restore the caller's bound target, never clobber to null.
+    const prevSim = this.device.getRenderTarget?.() ?? null;
     for (const [kind, target] of [
       ["pos", this.pos[write]],
       ["vel", this.vel[write]]
@@ -357,7 +360,7 @@ export class ParticleGpuSim {
         renderState: { depthTest: false, depthWrite: false, cullMode: "none", blend: false, depthCompare: "always" }
       });
     }
-    this.device.setRenderTarget(null);
+    this.device.setRenderTarget(prevSim);
     this.read = write;
     this.head = (this.head + Math.max(0, emitCount)) % this.spec.capacity;
     this.frame += 1;

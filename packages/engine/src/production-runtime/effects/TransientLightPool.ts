@@ -85,8 +85,10 @@ export class TransientLightPool {
     }
   }
 
-  /** CollectedLights for the C-01 collect phase; idle slots have intensity 0. */
+  /** CollectedLights for the C-01 collect phase — only live slots (intensity
+   *  > 0); idle slots must not appear as lights in the frame or they push
+   *  scenes past the 8-light clustered-program threshold. */
   collect(): readonly CollectedLight[] {
-    return this.slots.map((s) => collectLight(s.light));
+    return this.slots.filter((s) => s.light.intensity > 0).map((s) => collectLight(s.light));
   }
 }

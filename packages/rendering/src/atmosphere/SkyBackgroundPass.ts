@@ -75,11 +75,13 @@ export class SkyBackgroundPass {
 
   /** Draw the sky into `target` using `viewProjection` (forward VP). */
   renderToCubeFace(_face: 0 | 1 | 2 | 3 | 4 | 5, target: RenderTarget, viewProjection: Float32Array): void {
+    // T0-34: restore the caller's target, never clobber to null.
+    const prev = this.device.getRenderTarget?.() ?? null;
     this.device.setRenderTarget(target);
     try {
       this.drawSky(viewProjection);
     } finally {
-      this.device.setRenderTarget(null);
+      this.device.setRenderTarget(prev);
     }
   }
 

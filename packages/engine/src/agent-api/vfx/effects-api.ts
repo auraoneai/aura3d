@@ -4,7 +4,7 @@
 
 import type { AuraApp, AuraVec3, AuraColor, AuraCreateAppOptions } from "../index";
 import type { AuraVfxKind, AuraVfxEffectSpec, AuraEffectInstanceHandle } from "../../contracts/effects";
-import type { QrFlags } from "@aura3d/rendering/contracts";
+import type { QrFlags, AuraQualityTier } from "@aura3d/rendering/contracts";
 import { StubAppEffects } from "../../contracts/effects";
 import { ProductionEffectSystem, type AppLike } from "../../production-runtime/effects/ProductionEffectSystem";
 import { attachVfxBridge } from "./bridge";
@@ -313,7 +313,11 @@ function releasePrd07App(value: object): void {
  * contributor is flag-gated. */
 export function createEffectsExtension(app: AuraApp, ctx: AuraEffectsExtensionContext): import("../../contracts/effects").AuraAppEffects {
   bindPrd07RendererFlags(ctx.flags);
-  const system = registerPrd07System(app, () => new ProductionEffectSystem(app as unknown as AppLike));
+  const system = registerPrd07System(app, () => new ProductionEffectSystem(app as unknown as AppLike, {
+    // T0-34 FIX-transient-lights: resolved C-27 tier from app.quality, not a
+    // hard-coded "high" (controls transient-light cap and particle budget).
+    tier: (app as { quality?: { tier?: AuraQualityTier } }).quality?.tier
+  }));
   if (app.canvas) attachVfxBridge(app.canvas, system);
   const flagOn = ctx.flags.on("A3D_QR_VFX");
   flagOnByApp.set(app, flagOn);

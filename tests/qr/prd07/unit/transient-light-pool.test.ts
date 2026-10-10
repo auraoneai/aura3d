@@ -13,13 +13,13 @@ describe("P2-T7 transient light pool", () => {
     expect(new TransientLightPool("ultra").cap).toBe(8);
   });
 
-  it("low tier rejects flashes; idle slots emit intensity 0", () => {
+  it("low tier rejects flashes; idle pool collects 0 lights (T0-34)", () => {
     const pool = new TransientLightPool("low");
     expect(pool.flash(FLASH)).toBe(false);
     const high = new TransientLightPool("high");
-    const lights = high.collect();
-    expect(lights).toHaveLength(4);
-    for (const l of lights) expect(l.intensity).toBe(0);
+    // Idle slots must not be collected — intensity-0 lights still occupy slots
+    // in the frame's light list and push scenes into LIGHTS_CLUSTERED.
+    expect(high.collect()).toHaveLength(0);
   });
 
   it("10 simultaneous explosions use ≤ the cap; the oldest is recycled", () => {
@@ -39,6 +39,6 @@ describe("P2-T7 transient light pool", () => {
     const before = pool.collect().find((l) => l.intensity > 0);
     expect(before?.intensity).toBe(10);
     for (let i = 0; i < 60; i++) pool.step(1 / 60);
-    expect(pool.collect().every((l) => l.intensity === 0)).toBe(true);
+    expect(pool.collect()).toHaveLength(0);
   });
 });
