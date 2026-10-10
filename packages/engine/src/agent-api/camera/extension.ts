@@ -32,8 +32,9 @@ import type {
   AuraTraumaLayer
 } from "../../contracts/camera.js";
 import { stubCameraRigFactories } from "../../contracts/camera.js";
-import type { AuraApp } from "../index.js";
+import type { AuraApp, AuraVec3 } from "../index.js";
 import { createCameraController, type AuraCameraControllerImpl } from "./CameraController.js";
+import { createCameraProbe } from "./Probe.js";
 import { createCinematicBarsLayer } from "./layers/cinematicBars.js";
 import { DEFAULT_POSE, createFromSpecRig, type LegacyCameraSpec } from "./rigs/fromSpec.js";
 import {
@@ -142,20 +143,76 @@ export interface AuraCameraExtensionOptions {
   readonly freezeSpecs?: boolean;
 }
 
+/** The present-driver seam a fixed-step loop calls once per presented tick. */
+export interface AuraCameraPresentDriverTarget {
+  present(
+    realDt: number,
+    timeMs: number,
+    subjectPosition?: (id: string) => readonly number[] | undefined
+  ): AuraCameraPose;
+}
+
 /**
  * Build the real controller against an app — exported for tests/harnesses that
  * want the controller without the full createAuraApp mount.
  */
-export function createAuraCameraController(app: AuraApp, options: AuraCameraExtensionOptions = {}): AuraCameraControllerImpl {
+export function createAuraCameraController(
+  app: AuraApp,
+  options: AuraCameraExtensionOptions = {}
+): AuraCameraControllerImpl & AuraCameraPresentDriverTarget {
   const registry = app.nodes as RuntimeRegistryLike | undefined;
 
+  /*
+   * S6: runtime handles carry no velocity, so a speed-aware rig (chase
+   * `distance.perSpeed`, `fov.perSpeed`, look-ahead) saw speed 0 for every
+   * game subject and never left its base distance. Estimate it from the
+   * handle's sim-time position delta between controller updates. Presented
+   * frames (`step(0)` → dt 0, same sim time) reuse the last estimate.
+   */
+  let subjectClock = 0;
+  /**
+   * Presented (interpolated) subject positions, supplied per presented frame
+   * by a present driver (`present()`, FixedStepDriver). PRD-08 §6.1: the
+   * camera reads interpolated subject transforms — raw sim transforms
+   * reintroduce 60/120/144 Hz judder.
+   */
+  let subjectSource: ((id: string) => readonly number[] | undefined) | undefined;
+  const velocityTracks = new WeakMap<object, { p: readonly number[]; t: number; v: AuraVec3 }>();
+  const velocityOf = (handle: RuntimeHandleLike, p: readonly number[]): AuraVec3 => {
+    const track = velocityTracks.get(handle);
+    if (!track) {
+      velocityTracks.set(handle, { p: [p[0], p[1], p[2]], t: subjectClock, v: [0, 0, 0] });
+      return [0, 0, 0];
+    }
+    const span = subjectClock - track.t;
+    if (span > 1e-9) {
+      track.v = [(p[0] - track.p[0]) / span, (p[1] - track.p[1]) / span, (p[2] - track.p[2]) / span];
+      track.p = [p[0], p[1], p[2]];
+      track.t = subjectClock;
+    }
+    return track.v;
+  };
+  const subjectOf = (handle: RuntimeHandleLike): AuraCameraSubject => {
+    const presentedAt = subjectSource?.(handle.id);
+    const p = presentedAt ?? handle.position;
+    const subject = subjectFromHandle(handle, velocityOf(handle, p));
+    if (!presentedAt) return subject;
+    const d: AuraVec3 = [p[0] - handle.position[0], p[1] - handle.position[1], p[2] - handle.position[2]];
+    const shift = (v: AuraVec3): AuraVec3 => [v[0] + d[0], v[1] + d[1], v[2] + d[2]];
+    return {
+      ...subject,
+      position: [p[0], p[1], p[2]],
+      bounds: { min: shift(subject.bounds.min), max: shift(subject.bounds.max) }
+    };
+  };
+
   const resolveSubject = (ref: string | object): AuraCameraSubject | undefined => {
-    if (isHandleLike(ref)) return subjectFromHandle(ref);
+    if (isHandleLike(ref)) return subjectOf(ref);
     if (typeof ref !== "string") return undefined;
     const runtime = findRuntimeTarget(registry, ref);
     if (runtime) {
       const handle = registry?.get(ref) ?? registry?.all().find((h) => h.visible !== false && (h.name === ref || h.tags.includes(ref)));
-      return handle ? subjectFromHandle(handle) : { position: runtime.position, velocity: [0, 0, 0], forward: [0, 0, 1], bounds: { min: runtime.position, max: runtime.position } };
+      return handle ? subjectOf(handle) : { position: runtime.position, velocity: [0, 0, 0], forward: [0, 0, 1], bounds: { min: runtime.position, max: runtime.position } };
     }
     const flat = flattenSceneNodes((app.scene?.nodes ?? []) as readonly SceneCameraNodeLike[]);
     const sceneNode = findSceneNodeTarget(flat, ref);
@@ -218,6 +275,19 @@ export function createAuraCameraController(app: AuraApp, options: AuraCameraExte
 
   const controller = createCameraController({
     resolveSubject,
+    // S8 / C-9: collision rigs (`collision: true` on chase/orbit/shoulder/
+    // flight) cast against the app's visible runtime-node bounds. Without a
+    // probe the controller's default never hits and a mounted orbit swings
+    // straight through walls.
+    probe: createCameraProbe({
+      bounds: () =>
+        (registry?.all() ?? [])
+          .filter((h) => h.visible !== false)
+          .map((h) => {
+            const b = h.bounds();
+            return { id: h.id, min: b.min, max: b.max };
+          })
+    }),
     specDeps: specDepsFor((app.scene?.camera as LegacyCameraSpec | undefined) ?? {}),
     aspect: () => {
       const canvas = (app as { canvas?: { width: number; height: number } }).canvas;
@@ -267,12 +337,19 @@ export function createAuraCameraController(app: AuraApp, options: AuraCameraExte
    */
   const onFrame = (app as OnFrameApp).onFrame;
   let unframe: (() => void) | undefined;
+  /** Set once a present driver calls `present()`; the onFrame tick then yields. */
+  let presentDriven = false;
   const arm = () => {
-    if (!unframe && typeof onFrame === "function") {
+    if (!presentDriven && !unframe && typeof onFrame === "function") {
       unframe = onFrame.call(app, (f) => {
         rebindIfNeeded();
+        subjectClock = f.time;
         controller.update(Math.max(f.dt, 1e-6), f.time * 1000);
-        if (!controller.isActive()) {
+        // A zero-dt frame (FixedStepDriver's present-only `step(0)`) cannot
+        // move a time-driven rig, so its zero pose delta says nothing about
+        // idleness — deciding there unsubscribed a non-continuous rig (rail,
+        // sequences) after its first present and froze it (S11).
+        if (f.dt > 0 && !controller.isActive()) {
           unframe?.();
           unframe = undefined;
         }
@@ -286,6 +363,30 @@ export function createAuraCameraController(app: AuraApp, options: AuraCameraExte
    * overrides shadow the raw controller's. */
   const armed = Object.create(controller) as {
     -readonly [K in keyof AuraCameraControllerImpl]: AuraCameraControllerImpl[K];
+  } & AuraCameraPresentDriverTarget;
+  /*
+   * §6.1 present path: a fixed-step loop (FixedStepDriver) calls this ONCE per
+   * presented tick, after interpolation resolve, with REAL dt and the
+   * interpolated subject positions. From the first call on, the app.onFrame
+   * tick stops updating the controller — otherwise it would also run on sim
+   * substeps (sim dt: shake stalls in hit-stop, a 0-substep tick leaves the
+   * rail parked and the next 2-substep tick doubles its step) and on the
+   * present `step(0)`.
+   */
+  armed.present = (realDt, timeMs, subjectPosition) => {
+    if (!presentDriven) {
+      presentDriven = true;
+      unframe?.();
+      unframe = undefined;
+    }
+    subjectSource = subjectPosition;
+    rebindIfNeeded();
+    subjectClock = timeMs / 1000;
+    try {
+      return controller.update(Math.max(realDt, 1e-6), timeMs);
+    } finally {
+      subjectSource = undefined;
+    }
   };
   armed.use = (rig, o) => { arm(); controller.use(rig, o); };
   armed.setPose = (p, o) => { arm(); controller.setPose(p, o); };

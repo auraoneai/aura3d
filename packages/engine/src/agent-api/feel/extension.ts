@@ -49,7 +49,11 @@ export interface AuraFeelExtensionOptions {
 }
 
 export function createAuraFeelBus(app: AuraApp, options: AuraFeelExtensionOptions = {}): AuraFeelBusImpl {
-  const camera = app.camera as unknown as CameraLike | undefined;
+  // `app.camera` is resolved at dispatch time, not here: the C-38 extension
+  // loop mounts `prd08.feel` BEFORE `prd08.camera` (registration order in
+  // lanes/prd08.ts), so a reference captured at creation is `undefined` and
+  // shake/punch silently never reached the camera (S5/S10).
+  const liveCamera = () => app.camera as unknown as CameraLike | undefined;
   const time = app.time as unknown as TimeLike | undefined;
   const effects = app.effects as unknown as EffectsLike | undefined;
   const overlay: AuraScreenOverlay | null = options.screenFallback === "dom" ? createScreenOverlay() : null;
@@ -69,12 +73,19 @@ export function createAuraFeelBus(app: AuraApp, options: AuraFeelExtensionOption
   })();
 
   const bus = createFeelBus({
-    camera: camera
-      ? {
-          shake: camera.shake ? (a) => camera.shake!.add(a) : undefined,
-          punch: camera.punch ? (o) => camera.punch!.trigger(o) : undefined
-        }
-      : undefined,
+    // Getters: FeelBus reads `deps.camera.shake/punch` on every emit, so the
+    // providers track the live controller (and stay absent while none is
+    // mounted — those channels then count 0, never a phantom execute).
+    camera: {
+      get shake() {
+        const camera = liveCamera();
+        return camera?.shake ? (a: number) => camera.shake!.add(a) : undefined;
+      },
+      get punch() {
+        const camera = liveCamera();
+        return camera?.punch ? (o: { fov?: number; dolly?: number }) => camera.punch!.trigger(o) : undefined;
+      }
+    },
     time: time?.hitStop ? { hitStop: (s, o) => time.hitStop!(s, o) } : undefined,
     haptics:
       options.haptics !== false && (hapticCapability.vibrate || hapticCapability.gamepadRumble)
@@ -132,7 +143,7 @@ export function createAuraFeelBus(app: AuraApp, options: AuraFeelExtensionOption
           return false;
         }
       }),
-    presentedViewProjection: () => camera?.evidence?.().viewProjection
+    presentedViewProjection: () => liveCamera()?.evidence?.().viewProjection
   });
 
   /** Latest published uniforms — read by the `prd08.screenFeel` contributor. */

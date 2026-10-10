@@ -36,6 +36,24 @@ export interface FixedStepDriverOptions extends AuraLoopOptions {
   readonly resolveHandle?: (id: string) => AuraRuntimeNodeHandle | undefined;
   /** Injection point for tests; defaults to a fresh InterpolationStore. */
   readonly interpolationStore?: InterpolationStore;
+  /**
+   * The app's C-23 controller (`app.time`). When given, the driver advances
+   * and reads THIS controller, so `app.time.hitStop()` / `app.feel` hit-stop
+   * events freeze the loop the app presents. Without it the driver owns a
+   * private controller that nothing else can reach (a global hit-stop issued
+   * on `app.time` would never stall the sim, and its scoped stops would never
+   * expire).
+   */
+  readonly time?: TimeController;
+  /**
+   * The app's C-22 controller (`app.camera`) when it exposes the present
+   * seam. §6.1: the camera updates ONCE per presented tick, after
+   * interpolation resolve, on real dt (layers keep running through hit-stop),
+   * reading interpolated subject positions.
+   */
+  readonly camera?: {
+    present(realDt: number, timeMs: number, subjectPosition?: (id: string) => readonly number[] | undefined): unknown;
+  };
 }
 
 export interface AuraRenderFrame {
@@ -52,6 +70,7 @@ export class FixedStepDriver {
   readonly interpolation: InterpolationStore | null;
 
   private readonly app: FixedStepDriverApp;
+  private readonly camera?: FixedStepDriverOptions["camera"];
   private readonly renderPerSubstep: boolean;
   private readonly fixedDtValue: number;
   private readonly renderCallbacks = new Set<AuraRenderCallback>();
@@ -60,8 +79,9 @@ export class FixedStepDriver {
 
   constructor(app: FixedStepDriverApp, options: FixedStepDriverOptions = {}) {
     this.app = app;
+    this.camera = options.camera;
     this.renderPerSubstep = options.renderPerSubstep === true;
-    this.time = new TimeController({ resolveHandle: options.resolveHandle });
+    this.time = options.time ?? new TimeController({ resolveHandle: options.resolveHandle });
     const interpolationEnabled =
       options.interpolation === true ||
       (options.interpolation !== false &&
@@ -150,7 +170,8 @@ export class FixedStepDriver {
   private presentTick(realDt: number): void {
     this.time.advance(realDt);
     const alpha = this.loop.snapshot().alpha;
-    this.interpolation?.resolve(alpha);
+    const resolved = this.interpolation?.resolve(alpha);
+    this.camera?.present(realDt, this.time.realTime * 1000, resolved ? (id) => resolved.get(id)?.position : undefined);
     if (!this.renderPerSubstep) this.app.step(0);
     this.rendersLastTick = this.renderPerSubstep ? this.rendersThisTick : 1;
     this.rendersThisTick = 0;

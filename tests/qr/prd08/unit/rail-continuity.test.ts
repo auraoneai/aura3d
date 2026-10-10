@@ -12,6 +12,8 @@
  */
 import { describe, expect, it } from "vitest";
 import { createSpline } from "../../../../packages/engine/src/agent-api/camera/Spline.js";
+import { createRailRig } from "../../../../packages/engine/src/agent-api/camera/rigs/rail.js";
+import { run } from "./rigTestKit";
 
 const RAIL: readonly [number, number, number][] = [
   [6, 0.5, 0],
@@ -92,5 +94,45 @@ describe("S11 rail continuity (closed 6-point rail)", () => {
     const mean = vs.reduce((a, b) => a + b, 0) / vs.length;
     const maxDip = Math.max(...vs.map((v) => Math.abs(v - mean) / mean));
     expect(maxDip).toBeGreaterThan(0.05);
+  });
+});
+
+describe("S11 rigs.rail (loop) — the rig a game actually mounts", () => {
+  // One 12 s lap at 60 Hz through the real rig: per-frame camera speed
+  // variation ≤ 5 % and no seam discontinuity > 1 % of rail length.
+  const LAP = 12;
+  const frames = LAP * 60;
+  const rig = createRailRig({ points: RAIL, duration: LAP, loop: "loop", lookAt: [0, 0.5, 0] });
+  const poses = run(rig, frames + 1, 1 / 60, () => ({}));
+  const L = createSpline(RAIL, { closed: true, samples: 1024 }).totalLength;
+
+  it("per-frame speed variation ≤ 5 % over a full lap (including across the seam)", () => {
+    const v: number[] = [];
+    for (let i = 1; i < poses.length; i += 1) {
+      const a = poses[i - 1]!.position;
+      const b = poses[i]!.position;
+      v.push(Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]) * 60);
+    }
+    const mean = v.reduce((x, y) => x + y, 0) / v.length;
+    expect(mean).toBeCloseTo(L / LAP, 1);
+    for (const s of v) expect(Math.abs(s - mean) / mean).toBeLessThanOrEqual(0.05);
+  });
+
+  it("lap end lands back on the lap start within 1 % of rail length", () => {
+    const first = poses[0]!.position;
+    const last = poses[frames]!.position;
+    expect(Math.hypot(last[0] - first[0], last[1] - first[1], last[2] - first[2])).toBeLessThanOrEqual(0.01 * L);
+  });
+
+  it("control: an eased loop (explicit inOutSine) stalls at the seam and fails the 5 % gate", () => {
+    const eased = run(createRailRig({ points: RAIL, duration: LAP, loop: "loop", lookAt: [0, 0.5, 0], ease: "inOutSine" }), frames + 1, 1 / 60, () => ({}));
+    const v: number[] = [];
+    for (let i = 1; i < eased.length; i += 1) {
+      const a = eased[i - 1]!.position;
+      const b = eased[i]!.position;
+      v.push(Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]) * 60);
+    }
+    const mean = v.reduce((x, y) => x + y, 0) / v.length;
+    expect(Math.max(...v.map((s) => Math.abs(s - mean) / mean))).toBeGreaterThan(0.05);
   });
 });
