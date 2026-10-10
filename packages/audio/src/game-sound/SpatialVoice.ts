@@ -36,11 +36,12 @@ export interface SpatialNode {
   dispose(): void;
 }
 
+// C-25 (#208): 20000·(1-occ)² + 400 Hz — fully occluded rolls off at 400 Hz.
 const OCCLUSION_OPEN_HZ = 20_000;
-const OCCLUSION_CLOSED_HZ = 900;
+const OCCLUSION_CLOSED_HZ = 400;
 
 export const occlusionHz = (amount01: number): number =>
-  OCCLUSION_OPEN_HZ * Math.pow(OCCLUSION_CLOSED_HZ / OCCLUSION_OPEN_HZ, clamp(amount01, 0, 1));
+  OCCLUSION_OPEN_HZ * Math.pow(1 - clamp(amount01, 0, 1), 2) + OCCLUSION_CLOSED_HZ;
 
 export function createSpatialNode(options: SpatialNodeOptions): SpatialNode {
   const { ctx } = options;

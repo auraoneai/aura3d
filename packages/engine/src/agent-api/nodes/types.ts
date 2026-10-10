@@ -1323,6 +1323,9 @@ export interface AuraCameraSpec {
   readonly mode: AuraCameraMode;
   readonly position?: AuraVec3;
   readonly target?: AuraVec3;
+  /** C-22/CCR-08-1 (#228): camera up vector + roll — diagnostic-only until Q-15-1. */
+  readonly up?: AuraVec3;
+  readonly roll?: number;
   readonly offset?: AuraVec3;
   readonly targetOffset?: AuraVec3;
   readonly offsetMode?: "scene" | "target-yaw";
