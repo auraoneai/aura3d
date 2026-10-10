@@ -22,14 +22,21 @@ describe("PRD-12 T1.2 registry (C-30)", () => {
   it("assigns every base scene the C-30 runtime fields", () => {
     for (const entry of REGISTRY.filter((e) => e.status === "active")) {
       const spec = entry.spec as Record<string, unknown>;
-      expect(spec.owner, entry.id).toBe("prd12");
+      // Base scenes (NN-*) and prd12-ref-* are lane 12's; lane scenes registered
+      // later (e.g. prd05-optimized-*) keep their own lane as owner.
+      const laneOwner = /^(prd\d\d)-/.exec(entry.id)?.[1] ?? "prd12";
+      expect(spec.owner, entry.id).toBe(laneOwner);
       // Base scenes run the contract profile; prd12-ref-* run showcase (§9.3).
       expect(spec.referenceProfile, entry.id).toBe(entry.id.startsWith("prd12-ref-") ? "showcase" : "contract");
       expect(Array.isArray(spec.masks), entry.id).toBe(true);
       expect(Array.isArray(spec.brokenControls), entry.id).toBe(true);
       expect(typeof spec.primaryCriterion, entry.id).toBe("string");
-      expect((spec.masks as string[]).includes("object-id"), entry.id).toBe(true);
-      expect((spec.masks as string[]).includes("silhouette-edge"), entry.id).toBe(true);
+      // Derived base masks apply to lane-12 scenes; other lanes' scenes only
+      // owe the C-30 field shapes above (registry.ts validateEntry).
+      if (laneOwner === "prd12") {
+        expect((spec.masks as string[]).includes("object-id"), entry.id).toBe(true);
+        expect((spec.masks as string[]).includes("silhouette-edge"), entry.id).toBe(true);
+      }
     }
   });
 

@@ -47,7 +47,9 @@ describe("PRD-09 C-24 slot + session impl", () => {
 
   it("per-actor hitStop freezes on real time while global hitStop scales dt to 0", () => {
     const time = new StubTimeController();
-    const s = new GameSessionImpl({ seed: 0, time });
+    // Production path (createGame): bind the app's controller; the session advances it.
+    const s = new GameSessionImpl({ seed: 0 });
+    s.bindTimeController(time);
     s.hitStop(0.05, { actors: ["ball"] });
     expect(s.isFrozen("ball")).toBe(true);
     expect(s.scaledDt(0.016, "ball")).toBe(0);
@@ -61,7 +63,9 @@ describe("PRD-09 C-24 slot + session impl", () => {
 
   it("timeScale delegates to the real C-23 controller incl. slowMo ramp-out", () => {
     const time = new StubTimeController();
-    const s = new GameSessionImpl({ seed: 0, time });
+    // Production path (createGame): bind the app's controller; the session advances it.
+    const s = new GameSessionImpl({ seed: 0 });
+    s.bindTimeController(time);
     s.setTimeScale(2.5);
     expect(time.scale).toBe(2.5);
     s.setTimeScale(9);
@@ -79,7 +83,9 @@ describe("PRD-09 C-24 slot + session impl", () => {
 
   it("setTimeScale rampMs ramps via scaleTo", () => {
     const time = new StubTimeController();
-    const s = new GameSessionImpl({ seed: 0, time });
+    // Production path (createGame): bind the app's controller; the session advances it.
+    const s = new GameSessionImpl({ seed: 0 });
+    s.bindTimeController(time);
     s.setTimeScale(0.5, { rampMs: 200 });
     s.tick(0.1);
     expect(time.scale).toBeLessThan(1);

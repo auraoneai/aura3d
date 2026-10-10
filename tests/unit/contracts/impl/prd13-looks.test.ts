@@ -7,6 +7,7 @@ import {
   environments,
   defineAuraAssets
 } from "../../../../packages/engine/src";
+import { registerLookLintDefaults } from "../../../../packages/engine/src/contracts/looks";
 import type {
   AuraLookLintContext,
   AuraLookLintFinding,
@@ -52,8 +53,10 @@ describe("C-34 lookLint registry (T1.5)", () => {
     for (const code of ["look/ambient-flattens", "look/fake-effect-names", "look/capture-branch"]) {
       expect(registered, code).toContain(code);
     }
-    // Reserved for prd08: no default ever registers it.
-    expect(registered).not.toContain("look/evidence-only-feel");
+    // Reserved for prd08: no default emits it. Lane 08's real rule
+    // (feel/lint/evidenceOnlyFeel.ts, #235) registers at import and only fires
+    // from feel-bus counters, so a scene without a feel bus never reports it.
+    expect(found.has("look/evidence-only-feel")).toBe(false);
   });
 
   it("a test-registered rule's findings appear in diagnostics lint output", () => {
@@ -81,21 +84,28 @@ describe("C-34 lookLint registry (T1.5)", () => {
   });
 
   it("a lane registration replaces a lane-code default without throwing", () => {
-    // prd02's job later; here a stand-in proves replacement semantics: no throw,
-    // and the lane's run() wins (its marker text surfaces, not the default's).
-    registerLookLintRule({
-      code: "look/ambient-flattens",
-      owner: "prd02",
-      run: () => [{ code: "look/ambient-flattens", severity: "warning", message: "lane-owned ambient rule" }]
-    });
+    // prd02 now registers the real `look/ambient-flattens` at import, so a
+    // second registration of that code is (correctly) LOOK_RULE_DUPLICATE.
+    // Prove replacement semantics on a fresh default: no throw, and the
+    // lane's run() wins (its marker text surfaces, not the default's).
+    registerLookLintDefaults([
+      { code: "look/test-default-replace", owner: "prd13", run: () => [{ code: "look/test-default-replace", severity: "warning", message: "default body" }] }
+    ]);
+    expect(() =>
+      registerLookLintRule({
+        code: "look/test-default-replace",
+        owner: "prd02",
+        run: () => [{ code: "look/test-default-replace", severity: "warning", message: "lane-owned rule" }]
+      })
+    ).not.toThrow();
     const textures = defineAuraAssets({ probe: { type: "texture", format: "hdr", url: "/hdri/x.hdr" } });
     const s = snap([
       environments.hdri({ intensity: 1, texture: textures.probe }).toJSON(),
       lights.ambient({ intensity: 2 }).toJSON()
     ]);
     const found = findings(s);
-    const hit = found.find((f) => f.code === "look/ambient-flattens");
-    expect(hit?.message).toBe("lane-owned ambient rule");
+    const hit = found.find((f) => (f.code as string) === "look/test-default-replace");
+    expect(hit?.message).toBe("lane-owned rule");
   });
 });
 

@@ -49,6 +49,12 @@ export interface TextureDescriptor {
    * keep the legacy `texImage2D` path.
    */
   readonly dynamic?: boolean;
+  /**
+   * Render-target attachment created by a device's `createRenderTarget`. The
+   * GPU storage is allocated by the device (texStorage2D for cube faces), so
+   * cube attachments carry no `cubeFaces` and may use `depth24`.
+   */
+  readonly renderAttachment?: boolean;
 }
 
 export class Texture {
@@ -112,6 +118,12 @@ export class Texture {
     if (this.dimension === "cube") {
       if (this.data || this.mipLevels.length > 0 || this.source || this.fallbackData || this.fallbackMipLevels.length > 0) {
         throw new Error("Cube textures must define cubeFaces instead of 2D data, mipLevels, source, or fallbacks");
+      }
+      if (descriptor.renderAttachment === true) {
+        if (this.cubeFaces.length > 0 || isCompressedTextureFormat(this.format)) {
+          throw new Error("Cube render attachments are device-allocated and cannot define cubeFaces or compressed formats");
+        }
+        return;
       }
       if (isCompressedTextureFormat(this.format) || this.format === "depth24") {
         throw new Error("Cube textures currently support rgba8, rgba16f, or rgba32f formats");
