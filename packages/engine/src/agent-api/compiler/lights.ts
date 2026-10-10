@@ -13,11 +13,13 @@ import type { AuraQualityTier } from "@aura3d/rendering/contracts";
 // Deep import (lane-15 package export map untouched; FlagshipFoundation pattern).
 import type { AuraLightData } from "../../../../rendering/src/LightUniforms.js";
 
-export function createProductionRuntimeFallbackLights(): readonly CollectedLight[] {
+export function createProductionRuntimeFallbackLights(flags?: { on(name: string): boolean }): readonly CollectedLight[] {
   // PRD-02: under A3D_QR_LIGHTING the authored-defaults fallback light rig is
   // replaced by the C-09 `prd02.neutral-room` environment source plus authored
   // light collection — no implicit directionals (F-02-01).
-  if (prd02LightingOn()) return [];
+  // T0-28: callers with an app-resolved QrFlags pass it; the ambient
+  // URL/env resolution below stays the fallback for flag-less callers.
+  if (prd02LightingOn(flags)) return [];
   if (cachedProductionRuntimeFallbackLights) return cachedProductionRuntimeFallbackLights;
   const descriptors: readonly ProductionRuntimeLightDescriptor[] = [
     {
