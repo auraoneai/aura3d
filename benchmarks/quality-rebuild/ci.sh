@@ -23,4 +23,29 @@ else
 fi
 
 pnpm exec vite build --config benchmarks/quality-rebuild/vite.config.ts
-node benchmarks/quality-rebuild/capture.mjs --dist benchmarks/quality-rebuild/dist --out "$QR_BENCH_OUT"
+
+# §2.3: the pipelines forward scene/engine/flag-set selection through these
+# env vars (GitLab spec.inputs -> QR_BENCH_*, GitHub workflow -> same names).
+BENCH_ARGS=(--dist benchmarks/quality-rebuild/dist --out "$QR_BENCH_OUT" --timeout 120000 --strict)
+[[ -n "${QR_BENCH_SCENES:-}" ]] && BENCH_ARGS+=(--scenes "$QR_BENCH_SCENES")
+[[ -n "${QR_BENCH_ENGINES:-}" ]] && BENCH_ARGS+=(--engines "$QR_BENCH_ENGINES")
+
+if [[ -n "${QR_BENCH_FLAG_SETS:-}" ]]; then
+  # flags-bisect: one build above, one runner boot, N flag sets. Each set gets
+  # its own out dir; failures inside a set are the bisection signal, not a
+  # script failure — the summary decides the exit code.
+  IFS=';' read -r -a flag_sets <<< "$QR_BENCH_FLAG_SETS"
+  for set in "${flag_sets[@]}"; do
+    set_dir="$QR_BENCH_OUT/${set//[^A-Za-z0-9_-]/_}"
+    mkdir -p "$set_dir"
+    echo "[ci.sh] flag set '${set}' -> ${set_dir}"
+    if ! node benchmarks/quality-rebuild/capture.mjs "${BENCH_ARGS[@]}" --out "$set_dir" --flags "$set"; then
+      echo "[ci.sh] flag set '${set}' reported failures (that IS the bisection signal; see bisect-summary.json)"
+    fi
+  done
+  # {set, scene, status, drawCalls, errors[0], mountTiming}; exits non-zero
+  # when the `none` control failed.
+  node benchmarks/quality-rebuild/bisect-summary.mjs "$QR_BENCH_OUT" "$(IFS=,; echo "${flag_sets[*]}")"
+else
+  node benchmarks/quality-rebuild/capture.mjs "${BENCH_ARGS[@]}"
+fi
