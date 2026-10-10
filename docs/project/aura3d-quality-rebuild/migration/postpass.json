@@ -1,0 +1,25 @@
+{
+  "generatedAt": "pending-first-green-run",
+  "postPass": {
+    "aura-clash-showcase": null,
+    "showcase-aurora-lander": null,
+    "showcase-bank-shot": null,
+    "showcase-blockfall-reactor": null,
+    "showcase-courier-rush": null,
+    "showcase-deep-recovery": null,
+    "showcase-gallery-shift": null,
+    "showcase-gravity-post": null,
+    "showcase-mech-hangar": null,
+    "showcase-neon-swarm": null,
+    "showcase-orbital-defense": null,
+    "showcase-patrol-wing": null,
+    "showcase-pulse-tunnel": null,
+    "showcase-rooftop-buckets": null,
+    "showcase-siege-golf": null,
+    "showcase-skyline-runner": null,
+    "showcase-turbo-drift-circuit": null,
+    "showcase-vault-breakers": null
+  },
+  "diagnostics": {},
+  "provenance": "Written by qr-prd09-routes.yml#capture_review_divergence to tests/qr/prd09/.out/postpass.json (artifact prd09-capture-divergence); values land on the first green macos-14 run after the include-hidden-files upload fix. postPass = app.diagnostics().postprocess.actualPasses>0 at the default URL per route."
+}

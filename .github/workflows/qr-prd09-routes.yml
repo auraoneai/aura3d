@@ -97,6 +97,10 @@ jobs:
             tests/qr/prd09/.out/
             docs/project/aura3d-quality-rebuild/migration/baseline.json
             docs/project/aura3d-quality-rebuild/migration/baseline.md
+          # The spec writes postpass.json + merged baseline.json + per-route PNGs
+          # under .out/ — a hidden dir, silently dropped without this flag
+          # (run 37774324469 uploaded baseline only despite 17 passing tests).
+          include-hidden-files: true
           retention-days: 30
           if-no-files-found: warn
 
