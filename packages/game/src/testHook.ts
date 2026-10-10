@@ -48,13 +48,16 @@ function overlayOpacityNow(): number {
 export function installGameTestHook(args: {
   stepper: GameTestStepper;
   getSceneId: () => number;
+  /** False once the owning game is disposed; the presentLog stops re-arming. */
+  isActive?: () => boolean;
 }): GameTestHook {
-  const { stepper, getSceneId } = args;
+  const { stepper, getSceneId, isActive = () => true } = args;
   const presentLog: PresentedLogEntry[] = [];
 
   // Re-arm a presented-frame waiter: one entry per actually presented frame,
   // with the overlay opacity sampled inside the same task as the resolve.
   const armPresentLog = () => {
+    if (!isActive()) return;
     void stepper.firstPresentedFrame().then((frame) => {
       presentLog.push({ frame, overlayOpacity: overlayOpacityNow(), sceneId: getSceneId() });
       armPresentLog();
