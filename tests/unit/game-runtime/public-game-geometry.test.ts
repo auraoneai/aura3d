@@ -365,18 +365,17 @@ describe("public game geometry certification", () => {
       offset: [0, 3.2, 4.2],
       selectionEvidence: { selectedMode: "top-down", verdict: "pass" }
     });
-    expect(() => game.racingCameraRig({
+    // C-13: `composition` is vestigial on `racingCameraRig` — accepted for
+    // back-compat, no longer read or gated on. A failing verdict is ignored and
+    // still yields the requested rig.
+    const ignoreVerdict = game.racingCameraRig({
       sceneBinding,
       focus,
       mode: "chase",
-      composition: { ...composition, cameraReadabilityVerdict: "fail" }
-    })).toThrow(/requires passing asset-pair composition/);
-    expect(() => game.racingCameraRig({
-      sceneBinding,
-      focus,
-      mode: "top-down",
-      composition
-    })).toThrow(/conflicts with composition-selected mode chase/);
+      composition: { ...composition, cameraReadabilityVerdict: "fail" },
+      targetNode: "car"
+    });
+    expect(ignoreVerdict).toMatchObject({ mode: "follow", selectionEvidence: { selectedMode: "chase", verdict: "pass" } });
   });
 });
 
