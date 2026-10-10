@@ -7,6 +7,7 @@ Each row: issue, target lane, request, status. Numbers written back as filed.
 | #588 | prd12 | C-33: beacon readiness (`__AURA3D_GAME__.state === 'playing'`) in `capture-games.mjs` — co-PR'd in the T0-30 branch, needs lane-12 acceptance in the PR thread | open |
 | #596 | prd15 | Red-flag revert: `capture-divergence.spec.ts` vacuous skip → guard test (co-PR'd in the red-flag-revert branch, needs lane-15 acceptance) | open |
 | #603 | prd15 | 09-CI: retarget stale source gates to post-migration layout + restore dropped `game-runtime:*:raw` scripts (co-PR'd in the CI-unit branch) | open |
+| #606 | prd15 | 09-CI browser: lane playwright config `playwright.prd09.config.ts` (co-PR'd in the CI-browser branch) | open |
 | #729 | to:prd15 | 09-OWN/P-61: owner acceptance of #350 lane-15 hunks (root package.json, tools/finalize-dist); lane-13 already accepted on #351 | open |
 | #729 | to:prd15 | 2026-10-09 | 09-OWN/P-61: owner acceptance of #350 lane-15 hunks (root package.json, tools/finalize-dist); lane-13 already accepted on #351 |
 | #824 | to:prd12 | 2026-10-10 | §20/16.1-5: audio-webm step plugin + 3 pilot timeline steps (C-33 hunk, PR qr/prd09-audio-webm; supersedes #817) |
