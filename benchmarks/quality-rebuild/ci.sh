@@ -13,13 +13,14 @@ export QR_BENCH_OUT="${QR_BENCH_OUT:-benchmarks/quality-rebuild/out}"
 mkdir -p "$QR_BENCH_OUT"
 
 # The workflow checks out with lfs: false. Fetch only the LFS blobs this benchmark serves
-# (Khronos corpus GLBs and three typed catalog props). Failure is not fatal: the build skips
-# pointer files and the affected scenes report load errors in report.json.
+# (Khronos corpus GLBs and three typed catalog props). RF4: failure is fatal — a pointer
+# file served as a GLB turns a scene into a load error that reads like an engine bug.
 lfs_paths="fixtures/asset-corpus/damaged-helmet.glb,fixtures/asset-corpus/antique-camera.glb,fixtures/asset-corpus/clear-coat-test.glb,fixtures/asset-corpus/sheen-test-grid.glb,public/aura-assets/propRockA.52dd1f0f.glb,public/aura-assets/propRockB.c94b2733.glb,public/aura-assets/deepRecoveryCrateStandard.02520123.glb"
 if command -v git-lfs >/dev/null 2>&1 || git lfs version >/dev/null 2>&1; then
-  git lfs pull --include="$lfs_paths" || echo "::warning::git lfs pull failed; LFS-backed scenes will report missing assets"
+  git lfs pull --include="$lfs_paths" || { echo "::error::git lfs pull failed for the benchmark corpus"; exit 1; }
 else
-  echo "::warning::git-lfs not installed; LFS-backed scenes will report missing assets"
+  echo "::error::git-lfs is not installed; the benchmark corpus cannot be fetched"
+  exit 1
 fi
 
 pnpm exec vite build --config benchmarks/quality-rebuild/vite.config.ts

@@ -16,7 +16,12 @@ const args = Object.fromEntries(process.argv.slice(2).flatMap((arg, i, all) =>
   arg.startsWith("--") ? [[arg.slice(2), all[i + 1] && !all[i + 1].startsWith("--") ? all[i + 1] : "true"]] : []
 ));
 const artifactsDir = resolve(args.artifacts ?? "artifacts");
-const k = Number(args.k ?? "0");
+const k = Number(args.k);
+// T1.17-fix / V20: an unset or non-numeric round index wrote IC-NaN.json.
+if (!Number.isInteger(k) || k < 0) {
+  console.error(`collect-checkpoint: --k must be a non-negative integer (got ${JSON.stringify(args.k)})`);
+  process.exit(2);
+}
 const outDir = join(artifactsDir, "checkpoint");
 mkdirSync(outDir, { recursive: true });
 const roundsDir = "benchmarks/quality-rebuild/history/rounds";
@@ -68,6 +73,12 @@ for (const [scene, entry] of frames) {
   });
 }
 writeFileSync(join(outDir, "items.json"), JSON.stringify(items, null, 2));
+// RF2: zero paired captures means the capture jobs produced nothing — a round
+// record built from it would be empty evidence. Fail instead of recording.
+if (items.length === 0) {
+  console.error(`collect-checkpoint: 0 paired aura3d/three frames under ${artifactsDir}; refusing to write IC-${k}.json`);
+  process.exit(1);
+}
 
 let metrics = { items: [] };
 if (items.length > 0) {
