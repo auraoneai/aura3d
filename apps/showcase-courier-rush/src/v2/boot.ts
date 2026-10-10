@@ -29,6 +29,7 @@ import { publishCourierEvidence } from "./evidence";
 import { applyCourierScenario } from "./scenarios";
 import { createStrikeZoneTools } from "./strike-zone";
 import { wireCourierTouch } from "./touch-input";
+import { installCourierContextLoss } from "./context-loss";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_COURIER_RUSH" as const;
 const SHIFT_SEED = 0x5eed_3417;
@@ -372,18 +373,7 @@ if (scenario) {
 // ------------------------------------------------------------------- boot ----
 
 game.start();
-// §6.2 context loss (14-P0FIX): pause on device loss; re-mount and resume on
-// restore so a lost WebGL context cannot leave the route drawing nothing.
-game.app.onDeviceLost?.(() => {
-  game.app.pause();
-});
-game.app.onDeviceRestored?.(() => {
-  game.app.setScene(buildScene());
-  void game.app.ready().then(() => {
-    game.app.resume();
-    game.app.step(1 / 60);
-  });
-});
+installCourierContextLoss(game.app, buildScene);
 void game.ready().then(() => {
   game.app.camera?.use?.(createCourierRig(rigState), { blend: 0.4 });
   // C-05 output: daylight-outdoor preset; post presets stub {} until the
