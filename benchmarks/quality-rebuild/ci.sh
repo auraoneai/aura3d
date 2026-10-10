@@ -45,7 +45,8 @@ if [[ -n "${QR_BENCH_FLAG_SETS:-}" ]]; then
   done
   # {set, scene, status, drawCalls, errors[0], mountTiming}; exits non-zero
   # when the `none` control failed.
-  node benchmarks/quality-rebuild/bisect-summary.mjs "$QR_BENCH_OUT" "$(IFS=,; echo "${flag_sets[*]}")"
+  # Sets contain commas (e.g. "$ALL,strict"), so they are passed ';'-separated.
+  node benchmarks/quality-rebuild/bisect-summary.mjs "$QR_BENCH_OUT" "$QR_BENCH_FLAG_SETS"
 else
   node benchmarks/quality-rebuild/capture.mjs "${BENCH_ARGS[@]}"
 fi
