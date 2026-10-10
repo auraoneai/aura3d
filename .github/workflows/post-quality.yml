@@ -1,34 +1,63 @@
 name: QR-03 post quality
 
-# Lane 03 (PRD-03) postprocessing quality gate. PR-triggered on lane paths and
-# anything under packages/rendering — unit checks on ubuntu, lane browser specs
-# on macos-14 with ANGLE Metal (PRD-03 §15.2). `@integrated` specs are skipped
-# in PR runs; they run at checkpoints with qr_flags=all.
-# No secrets.
+# Lane 03 (PRD-03) postprocessing quality gate. PR- and push-triggered on
+# lane-03-owned paths only (other lanes' edits under packages/rendering do not
+# run this workflow), plus a nightly checkpoint run. Unit checks on ubuntu,
+# lane browser specs on macos-14 with ANGLE Metal (PRD-03 §15.2).
+# `@integrated` specs are skipped in PR runs; they run at checkpoints with
+# qr_flags=all. No secrets.
 
 on:
   pull_request:
     paths:
-      - "packages/rendering/**"
+      - "packages/rendering/src/post/**"
+      - "packages/rendering/src/postprocess/**"
+      - "packages/rendering/src/reference/**"
+      - "packages/rendering/src/renderer/PostprocessExecution.ts"
+      - "packages/rendering/src/forward/Velocity.ts"
+      - "packages/rendering/src/webgl2/LegacyPost.ts"
+      - "packages/rendering/src/RendererPostprocessPlan.ts"
+      - "packages/rendering/src/PostProcessPass.ts"
+      - "packages/rendering/src/TemporalHistory.ts"
       - "packages/engine/src/agent-api/postBridge.ts"
       - "packages/engine/src/agent-api/postPresets.ts"
       - "packages/engine/src/agent-api/compiler/postprocess.ts"
-      - "packages/engine/src/agent-api/compiler/diagnosticOnly.prd03.ts"
       - "packages/engine/src/agent-api/nodes/effects.post.ts"
-      - "packages/engine/src/lanes/prd03.ts"
-      - "packages/rendering/src/lanes/prd03.ts"
-      - "benchmarks/quality-rebuild/scenes/prd03/**"
-      - "benchmarks/quality-rebuild/aura3d/scenes/prd03/**"
-      - "benchmarks/quality-rebuild/three/scenes/prd03/**"
-      - "tests/unit/contracts/impl/prd03-*"
-      - "tests/browser/post-*.spec.ts"
+      - "apps/postprocessing-*/**"
+      - "tools/quality-rebuild/codemods/**"
       - "tests/browser/qr-prd03-*.spec.ts"
       - "tests/browser/qr-prd03-*harness.*"
-      - "tools/quality-rebuild/codemods/**"
-      - "packages/aura3d-cli/src/commands/prd03/**"
+      - "tests/unit/contracts/impl/prd03-*"
       - "evidence/prd03/**"
       - ".github/workflows/post-quality.yml"
       - ".github/workflows/qr-prd03-captures.yml"
+  push:
+    branches: [main]
+    paths:
+      - "packages/rendering/src/post/**"
+      - "packages/rendering/src/postprocess/**"
+      - "packages/rendering/src/reference/**"
+      - "packages/rendering/src/renderer/PostprocessExecution.ts"
+      - "packages/rendering/src/forward/Velocity.ts"
+      - "packages/rendering/src/webgl2/LegacyPost.ts"
+      - "packages/rendering/src/RendererPostprocessPlan.ts"
+      - "packages/rendering/src/PostProcessPass.ts"
+      - "packages/rendering/src/TemporalHistory.ts"
+      - "packages/engine/src/agent-api/postBridge.ts"
+      - "packages/engine/src/agent-api/postPresets.ts"
+      - "packages/engine/src/agent-api/compiler/postprocess.ts"
+      - "packages/engine/src/agent-api/nodes/effects.post.ts"
+      - "apps/postprocessing-*/**"
+      - "tools/quality-rebuild/codemods/**"
+      - "tests/browser/qr-prd03-*.spec.ts"
+      - "tests/browser/qr-prd03-*harness.*"
+      - "tests/unit/contracts/impl/prd03-*"
+      - "evidence/prd03/**"
+      - ".github/workflows/post-quality.yml"
+      - ".github/workflows/qr-prd03-captures.yml"
+  schedule:
+    # Nightly checkpoint at 02:17 US/Pacific (09:17 UTC during PDT).
+    - cron: "17 9 * * *"
   workflow_dispatch:
 
 permissions:
@@ -50,6 +79,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Typecheck stays repo-wide per T0-31 (do not scope the gate away).
       - run: pnpm typecheck:raw
       - run: pnpm exec vitest run tests/unit/contracts/impl
       - name: Ownership audit (all changed files resolve to lane 03)
@@ -73,19 +103,27 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install chromium
       - name: Lane 03 post specs (@integrated skipped)
-        # post-*.spec.ts files land phase by phase; the glob is empty in Phase 0.
+        # P-08/03-CI1: the lane-03 spec list is explicit — a missing file is a
+        # failure, not a pass. No glob-based green.
         run: |
-          shopt -s nullglob
-          specs=(tests/browser/post-*.spec.ts)
-          if [ ${#specs[@]} -eq 0 ]; then
-            echo "no post-*.spec.ts specs yet (Phase 0)" | tee -a "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
+          specs=(
+            tests/browser/qr-prd03-fxaa.spec.ts
+            tests/browser/qr-prd03-post-banding.spec.ts
+            tests/browser/qr-prd03-post-lut.spec.ts
+            tests/browser/qr-prd03-v2-tone.spec.ts
+            tests/browser/qr-prd03-post-no-readback.spec.ts
+            tests/browser/qr-prd03-phase4.spec.ts
+            tests/browser/qr-prd03-capture-dsf2.spec.ts
+            tests/browser/qr-prd03-wgsl-compile.spec.ts
+            tests/browser/qr-prd03-phase6.spec.ts
+          )
+          for spec in "${specs[@]}"; do
+            if [ ! -f "$spec" ]; then
+              echo "missing lane-03 spec: $spec" >&2
+              exit 1
+            fi
+          done
           pnpm exec playwright test "${specs[@]}" --grep-invert @integrated
-      - name: Lane 03 WGSL compile gate (PRD-03 §8.18)
-        run: pnpm exec playwright test tests/browser/qr-prd03-wgsl-compile.spec.ts
-      - name: Lane 03 Phase-6 probes (PRD-03 §8.14/§8.9/§6.12)
-        run: pnpm exec playwright test tests/browser/qr-prd03-phase6.spec.ts
       - name: Upload spec artifacts
         if: always()
         uses: actions/upload-artifact@v4
