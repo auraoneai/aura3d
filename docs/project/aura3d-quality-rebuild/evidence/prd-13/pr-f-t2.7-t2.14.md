@@ -1,5 +1,8 @@
 # PR F — T2.7–T2.14 skill/doc rewrites + craft-target flip
 
+> **Run-id status (P-57):** no passing remote run id is cited in this file yet; every claim below is recorded NOT RUN until the proving lane-workflow/GitLab run is linked here. File moved from `evidence/prd13/` → `docs/project/aura3d-quality-rebuild/evidence/prd-13/` (13-EVID).
+
+
 ## Scope
 
 - T2.7 `aura3d-core/SKILL.md`: hello world is `scene().add(looks.preset("product-studio")).add(model(assets.robot))` + `...looks.appOptions("product-studio")`; routing table puts `aura3d-art-direction` first for any visual task; claim content reduced to one line linking boundaries.
