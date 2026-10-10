@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { mergedCustomPasses, runV2HdrStages, runV2LdrTail } from "../../../../packages/rendering/src/post/v2Stages";
-import { postSkippedReasons, resetPostSkipped } from "../../../../packages/rendering/src/post/postSkipped";
+import { postSkippedReasons, resetPostSkipped } from "../../../../packages/rendering/src/renderer/postSkipped";
 import { setRendererQrFlags } from "../../../../packages/rendering/src/renderer/FrameGraph";
 import { registerPostPass } from "../../../../packages/rendering/src/contracts/post";
 import { Prd03PostSurface } from "../../../../packages/engine/src/agent-api/postBridge";
