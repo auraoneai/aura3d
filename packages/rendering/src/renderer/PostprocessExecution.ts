@@ -9,6 +9,7 @@ import { type RendererPostProcessPassName, type RendererPostProcessPassPlan, typ
 import type { RenderSource } from "../contracts/renderSource";
 import { isIterable } from "./RenderShared";
 import { rendererQrFlags } from "./FrameGraph";
+import { qrCoreOutputOn } from "./qrSubFlags";
 import type { RendererHost } from "./RendererHost";
 import { Scene } from "@aura3d/scene";
 import type { PostPipelineOptions } from "../contracts/post";
@@ -49,6 +50,19 @@ function canFuseLdrPostprocess(source: RenderTarget, passes: readonly RendererPo
       const previousRank = index === 0 ? -1 : ldrFusionPassRank(passes[index - 1]!.name);
       return ldrFusionPassRank(pass.name) >= previousRank;
     });
+}
+
+const FUSABLE_LDR_PASS_NAMES: ReadonlySet<string> = new Set([
+  "bloom", "tone-mapping", "color-grade", "depth-of-field", "motion-blur",
+  "ssao", "ssr", "taa", "outline", "fxaa"
+]);
+
+/** Pass names `canFuseLdrPostprocess` cannot route — used only to label the
+ * recorded `POSTPROCESS_V2_UNMIGRATED` skip reason under core-output (T0-07).
+ * "order" = all names fusable but ordering/prefix rules unmet. */
+function unfusedPassNames(passes: readonly RendererPostProcessPassPlan[]): string {
+  const unfused = passes.map((pass) => pass.name).filter((name) => !FUSABLE_LDR_PASS_NAMES.has(name));
+  return unfused.length ? unfused.join(",") : "order";
 }
 
 function ldrFusionPassRank(name: RendererPostProcessPassName): number {
@@ -160,17 +174,34 @@ export class RendererPostprocessPipeline {
     outputTarget?: RenderTarget,
     v2Modules?: typeof import("../post/v2Entry")
   ): boolean {
-    if (postprocess.v2 !== true || this.host.device.kind !== "webgl2") return false;
+    // T0-07 (lane-03 half): under `A3D_QR_CORE_OUTPUT` lane 01's Renderer
+    // stops dropping the configured chain; the reasons the v2 seam still
+    // declines are recorded so `diagnostics().output.postSkipped` reports
+    // the residue instead of silently falling back to the legacy encode.
+    const coreOutput = qrCoreOutputOn(rendererQrFlags());
+    if (postprocess.v2 !== true || this.host.device.kind !== "webgl2") {
+      if (coreOutput) recordPostSkipped(postprocess.v2 !== true ? "POSTPROCESS_V2_UNMIGRATED:no-v2-plan" : "POSTPROCESS_V2_UNMIGRATED:backend");
+      return false;
+    }
     const pipeline = postprocess.pipeline;
-    if (!pipeline || typeof pipeline !== "object") return false;
+    if (!pipeline || typeof pipeline !== "object") {
+      if (coreOutput) recordPostSkipped("POSTPROCESS_V2_UNMIGRATED:no-pipeline");
+      return false;
+    }
     // Transitional seam: the v2 path delegates to the native fused present,
     // which only covers the fused pass names. Scenes authoring anything
     // outside that set (film-grain, chromatic-aberration, volumetric-light,
     // contact-shadow) — or requesting cpu-deterministic — keep the legacy
     // route so nothing authored is silently dropped. An empty pass list is
     // fine: pipeline-only effects (vignette/film-grain/CA) emit no plan pass.
-    if (postprocess.execution === "cpu-deterministic") return false;
-    if (passes.length > 0 && !canFuseLdrPostprocess(current, passes)) return false;
+    if (postprocess.execution === "cpu-deterministic") {
+      if (coreOutput) recordPostSkipped("POSTPROCESS_V2_UNMIGRATED:cpu-deterministic");
+      return false;
+    }
+    if (passes.length > 0 && !canFuseLdrPostprocess(current, passes)) {
+      if (coreOutput) recordPostSkipped(`POSTPROCESS_V2_UNMIGRATED:${unfusedPassNames(passes)}`);
+      return false;
+    }
     warmPostV2Modules();
     v2Modules = v2Modules ?? postV2Modules;
     const descriptors = passes.map((pass) => ({
@@ -619,3 +650,24 @@ export class RendererPostprocessPipeline {
 }
 
 
+
+export function recordPostSkipped(reason: string): void {
+  postSkippedReasonsSet.add(reason);
+}
+
+export function postSkippedReasons(): readonly string[] {
+  return [...postSkippedReasonsSet];
+}
+
+/** Test hook — clears the §6.9 skip registry. */
+export function resetPostSkipped(): void {
+  postSkippedReasonsSet.clear();
+}
+
+/** `import.meta.env.PROD` / `process.env.NODE_ENV === "production"`. */
+export function postProductionBuild(): boolean {
+  const meta = import.meta as unknown as { readonly env?: { readonly PROD?: boolean } };
+  if (meta.env?.PROD) return true;
+  return (globalThis as { readonly process?: { readonly env?: { readonly NODE_ENV?: string } } })
+    .process?.env?.NODE_ENV === "production";
+}
