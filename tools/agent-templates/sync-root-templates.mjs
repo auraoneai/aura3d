@@ -5,9 +5,9 @@
 // Consumers read root `templates/` (`verify:templates` builds each dir in a
 // fresh app; the root package `files` field ships the packaged starters), so
 // the drifted copies are resynced rather than deleted. Root-only directories
-// (framework starters, `production-*`, `external-parity-*`, `game-slice`,
-// `asset-viewer`, `product-configurator`) are separate templates, not drifted
-// mirrors, and are never touched.
+// (framework starters, `production-*`, `game-slice`, `asset-viewer`,
+// `product-configurator`) are separate templates, not drifted mirrors, and are
+// never touched.
 //
 // Usage:
 //   node tools/agent-templates/sync-root-templates.mjs          # write mirror
