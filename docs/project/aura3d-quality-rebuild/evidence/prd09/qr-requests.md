@@ -7,7 +7,6 @@ Each row: issue, target lane, request, status. Numbers written back as filed.
 | #588 | prd12 | C-33: beacon readiness (`__AURA3D_GAME__.state === 'playing'`) in `capture-games.mjs` — co-PR'd in the T0-30 branch, needs lane-12 acceptance in the PR thread | open |
 | #603 | prd15 | 09-CI: retarget stale source gates to post-migration layout + restore dropped `game-runtime:*:raw` scripts (co-PR'd in the CI-unit branch) | open |
 | #729 | to:prd15 | 2026-10-09 | 09-OWN/P-61: owner acceptance of #350 lane-15 hunks (root package.json, tools/finalize-dist); lane-13 already accepted on #351 |
-| #817 | to:prd12 | 2026-10-10 | §20/16.1-5: audio-webm step plugin + 3 pilot timeline steps (C-33 hunk, PR qr/prd09-audio-webm) |
 | #824 | to:prd12 | 2026-10-10 | §20/16.1-5: audio-webm step plugin + 3 pilot timeline steps (C-33 hunk, PR qr/prd09-audio-webm; supersedes #817) |
 
 - #721 (to:prd15, filed 2026-10-09): browser-matrix `pnpm typecheck` step red on clean main — 477 errors in `tools/*` (mostly `tools/_quarantine/*`). Blocks every lane's ubuntu CI heads; needs tools/CI owner.
