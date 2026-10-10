@@ -55,9 +55,10 @@ describe("prd04.transmission contributor (P4-1)", () => {
     const context = ctx([TRANSMITTING]);
     const passes = c.passes("transmission", context);
     expect(passes).toHaveLength(1);
-    // `reads: aura.scene.color` is deferred until the C-01 producer exists
-    // (see TransmissionCapturePass) — asserting the lane writes only its own
-    // namespaced resource.
+    // T0-18(c): the copy now declares the produced colour resource — the
+    // legacy `color` here since the stub flags report no CORE_OUTPUT — while
+    // writing only its own namespaced lane resource.
+    expect(passes[0]!.reads).toEqual(["color"]);
     expect(passes[0]!.writes).toEqual([TRANSMISSION_LANE_RESOURCE]);
 
     await passes[0]!.execute({ device: context.device, width: 640, height: 360 });
