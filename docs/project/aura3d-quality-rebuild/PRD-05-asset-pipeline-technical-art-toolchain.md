@@ -1512,6 +1512,12 @@ quality for Aura3D renders; only a G-PANEL integrated round can (CONTRACTS §7).
 | S10 | Route-module fixture bundle has 0 metadata strings; 120 ids ≤ 80 MB derived; template starter fixtures pass G1–G11 | `tests/qr/prd05/` | none |
 | S11 | Bundle budgets of §17.1 (decoder glue ≤ 3 KB gz, meshopt chunk ≤ 20 KB gz) on a lane fixture app | `qr-prd05-assets-browser.yml` | none |
 
+S1 record (red flag 8, 2026-10-10): "0 root-manifest `release` assets fail G1–G11" was reached by demoting every
+release asset, not by making any pass. The `migration-1.1.json` summary is `keep: 0`,
+`downgradedToCandidate: 96`, `demotedToProxyPrototype: 35`, `nonRelease: 287`. S1 is therefore vacuous: it shows
+the gates reject, not that any asset meets them. Release admissions come only through 05-S8/05-S9 look-dev with run ids.
+See `evidence/prd05/red-flags.md`.
+
 ### 16.1 Benchmark scenes (lane scenes via C-30; standalone except `prd05-lookdev-hero`)
 
 Rows 02–18 are lane scenes `prd05-optimized-*` that reuse the base scene content with optimized files; Aura
