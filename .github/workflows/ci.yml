@@ -61,11 +61,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # tools/asset-optimize keeps tool-local deps (Q-15-6, installed with npm
-      # like qr-prd05-gates / asset-optimize do); tsconfig.check covers tools/**.
-      - name: Install tool-local dependencies (asset-optimize)
-        run: npm install --prefix tools/asset-optimize --no-audit --no-fund
-
       - name: Run TypeScript type check
         run: pnpm typecheck
 

@@ -27,8 +27,6 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # tools/asset-optimize keeps tool-local deps (Q-15-6); tsconfig.check covers tools/**.
-      - run: npm install --prefix tools/asset-optimize --no-audit --no-fund
       - run: pnpm typecheck:raw
       - run: pnpm lint
       - run: pnpm exec vitest run tests/unit/contracts
