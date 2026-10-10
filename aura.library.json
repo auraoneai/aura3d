@@ -91,6 +91,10 @@
         "lane-02 lighting",
         "lane-12 fixtures"
       ]
+    },
+    {
+      "id": "environments/nature",
+      "artDirection": "environments-nature"
     }
   ],
   "entries": [
@@ -6611,6 +6615,2898 @@
       "optimizePlan": {
         "state": "not-needed",
         "notes": "non-model format; bytes consumed directly"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
+      "hash": "sha256-13e7bfa8343faf9b445abc73d9f954f4b1ced8c73c346cb5a00a84328159d57e",
+      "sizeBytes": 1031856,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "AuraClash NyxVale Fighter (Quaternius CC0)",
+      "role": "hero",
+      "artDirection": "characters-humanoid-pbr",
+      "license": "CC0-1.0",
+      "sourcePage": "https://quaternius.itch.io/modular-character-outfits-fantasy",
+      "author": "Quaternius",
+      "attribution": "Quaternius",
+      "retrievedAt": "2026-10-09T17:04:16.739Z",
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "fighter-nyx-vale",
+      "kit": "characters/humanoid-pbr",
+      "libraryPath": "assets/library/characters/humanoid-pbr/fighter-nyx-vale.glb",
+      "sha256": "13e7bfa8343faf9b445abc73d9f954f4b1ced8c73c346cb5a00a84328159d57e",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 17966,
+              "floor": 5000,
+              "ceiling": 60000,
+              "profile": "hero-character"
+            },
+            "message": "G1: 17966 tris inside hero-character band."
+          },
+          {
+            "gate": "G2",
+            "verdict": "fail",
+            "measured": {
+              "measured": 0
+            },
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
+          },
+          {
+            "gate": "G3",
+            "verdict": "fail",
+            "measured": {
+              "coverage": 0,
+              "covered": 0,
+              "total": 17966,
+              "missingTexcoord": 0,
+              "missingSlots": 17966,
+              "requiredOcclusion": true,
+              "profile": "hero-character"
+            },
+            "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 17966,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "fail",
+            "measured": {
+              "factorOnlyMaterials": 5,
+              "stylizedFlatApproved": false
+            },
+            "message": "G5: every material is factor-only with no approved stylized-flat art direction."
+          },
+          {
+            "gate": "G6",
+            "verdict": "pass",
+            "measured": {
+              "textures": 0
+            },
+            "message": "G6: no textures to sanity-check."
+          },
+          {
+            "gate": "G7",
+            "verdict": "fail",
+            "measured": {},
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "pass",
+            "measured": {
+              "artDirection": "characters-humanoid-pbr",
+              "shading": "pbr",
+              "palette": 0,
+              "texelDensity": 512
+            },
+            "message": "G10: art direction \"characters-humanoid-pbr\" (pbr) on file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T17:04:16.774Z",
+        "derivedHash": "sha256-13e7bfa8343faf9b445abc73d9f954f4b1ced8c73c346cb5a00a84328159d57e",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
+      "hash": "sha256-5e387f1cb248208121e2017a60d940297ad4ef01bbe6f5f2c4bd6298f999a6d8",
+      "sizeBytes": 677228,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "AuraClash KadeEmber Fighter (Quaternius CC0)",
+      "role": "hero",
+      "artDirection": "characters-humanoid-pbr",
+      "license": "CC0-1.0",
+      "sourcePage": "https://quaternius.itch.io/modular-character-outfits-fantasy",
+      "author": "Quaternius",
+      "attribution": "Quaternius",
+      "retrievedAt": "2026-10-09T17:04:17.517Z",
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "fighter-kade-ember",
+      "kit": "characters/humanoid-pbr",
+      "libraryPath": "assets/library/characters/humanoid-pbr/fighter-kade-ember.glb",
+      "sha256": "5e387f1cb248208121e2017a60d940297ad4ef01bbe6f5f2c4bd6298f999a6d8",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 15619,
+              "floor": 5000,
+              "ceiling": 60000,
+              "profile": "hero-character"
+            },
+            "message": "G1: 15619 tris inside hero-character band."
+          },
+          {
+            "gate": "G2",
+            "verdict": "fail",
+            "measured": {
+              "measured": 0
+            },
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
+          },
+          {
+            "gate": "G3",
+            "verdict": "fail",
+            "measured": {
+              "coverage": 0,
+              "covered": 0,
+              "total": 15619,
+              "missingTexcoord": 0,
+              "missingSlots": 15619,
+              "requiredOcclusion": true,
+              "profile": "hero-character"
+            },
+            "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 15619,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "fail",
+            "measured": {
+              "factorOnlyMaterials": 5,
+              "stylizedFlatApproved": false
+            },
+            "message": "G5: every material is factor-only with no approved stylized-flat art direction."
+          },
+          {
+            "gate": "G6",
+            "verdict": "pass",
+            "measured": {
+              "textures": 0
+            },
+            "message": "G6: no textures to sanity-check."
+          },
+          {
+            "gate": "G7",
+            "verdict": "fail",
+            "measured": {},
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "pass",
+            "measured": {
+              "artDirection": "characters-humanoid-pbr",
+              "shading": "pbr",
+              "palette": 0,
+              "texelDensity": 512
+            },
+            "message": "G10: art direction \"characters-humanoid-pbr\" (pbr) on file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T17:04:17.552Z",
+        "derivedHash": "sha256-5e387f1cb248208121e2017a60d940297ad4ef01bbe6f5f2c4bd6298f999a6d8",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
+      "hash": "sha256-3d88a3a73922fb5fa23cf8d2a1eda1da4f50f070c270aa910c9d7660e38f0829",
+      "sizeBytes": 935824,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "AuraClash SableIron Fighter (Quaternius CC0)",
+      "role": "hero",
+      "artDirection": "characters-humanoid-pbr",
+      "license": "CC0-1.0",
+      "sourcePage": "https://quaternius.itch.io/modular-character-outfits-fantasy",
+      "author": "Quaternius",
+      "attribution": "Quaternius",
+      "retrievedAt": "2026-10-09T17:04:18.273Z",
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "fighter-sable-iron",
+      "kit": "characters/humanoid-pbr",
+      "libraryPath": "assets/library/characters/humanoid-pbr/fighter-sable-iron.glb",
+      "sha256": "3d88a3a73922fb5fa23cf8d2a1eda1da4f50f070c270aa910c9d7660e38f0829",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 15890,
+              "floor": 5000,
+              "ceiling": 60000,
+              "profile": "hero-character"
+            },
+            "message": "G1: 15890 tris inside hero-character band."
+          },
+          {
+            "gate": "G2",
+            "verdict": "fail",
+            "measured": {
+              "measured": 0
+            },
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
+          },
+          {
+            "gate": "G3",
+            "verdict": "fail",
+            "measured": {
+              "coverage": 0,
+              "covered": 0,
+              "total": 15890,
+              "missingTexcoord": 0,
+              "missingSlots": 15890,
+              "requiredOcclusion": true,
+              "profile": "hero-character"
+            },
+            "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 15890,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "fail",
+            "measured": {
+              "factorOnlyMaterials": 5,
+              "stylizedFlatApproved": false
+            },
+            "message": "G5: every material is factor-only with no approved stylized-flat art direction."
+          },
+          {
+            "gate": "G6",
+            "verdict": "pass",
+            "measured": {
+              "textures": 0
+            },
+            "message": "G6: no textures to sanity-check."
+          },
+          {
+            "gate": "G7",
+            "verdict": "fail",
+            "measured": {},
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "pass",
+            "measured": {
+              "artDirection": "characters-humanoid-pbr",
+              "shading": "pbr",
+              "palette": 0,
+              "texelDensity": 512
+            },
+            "message": "G10: art direction \"characters-humanoid-pbr\" (pbr) on file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T17:04:18.307Z",
+        "derivedHash": "sha256-3d88a3a73922fb5fa23cf8d2a1eda1da4f50f070c270aa910c9d7660e38f0829",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
+      "hash": "sha256-09571256b92d921a2c96499403ff48c3a8e1a40996ebbd6cc98b35866942bba6",
+      "sizeBytes": 665164,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "AuraClash RookAtlas Fighter (Quaternius CC0)",
+      "role": "hero",
+      "artDirection": "characters-humanoid-pbr",
+      "license": "CC0-1.0",
+      "sourcePage": "https://quaternius.itch.io/modular-character-outfits-fantasy",
+      "author": "Quaternius",
+      "attribution": "Quaternius",
+      "retrievedAt": "2026-10-09T17:04:19.024Z",
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "fighter-rook-atlas",
+      "kit": "characters/humanoid-pbr",
+      "libraryPath": "assets/library/characters/humanoid-pbr/fighter-rook-atlas.glb",
+      "sha256": "09571256b92d921a2c96499403ff48c3a8e1a40996ebbd6cc98b35866942bba6",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 15148,
+              "floor": 5000,
+              "ceiling": 60000,
+              "profile": "hero-character"
+            },
+            "message": "G1: 15148 tris inside hero-character band."
+          },
+          {
+            "gate": "G2",
+            "verdict": "fail",
+            "measured": {
+              "measured": 0
+            },
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
+          },
+          {
+            "gate": "G3",
+            "verdict": "fail",
+            "measured": {
+              "coverage": 0,
+              "covered": 0,
+              "total": 15148,
+              "missingTexcoord": 0,
+              "missingSlots": 15148,
+              "requiredOcclusion": true,
+              "profile": "hero-character"
+            },
+            "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 15148,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "fail",
+            "measured": {
+              "factorOnlyMaterials": 5,
+              "stylizedFlatApproved": false
+            },
+            "message": "G5: every material is factor-only with no approved stylized-flat art direction."
+          },
+          {
+            "gate": "G6",
+            "verdict": "pass",
+            "measured": {
+              "textures": 0
+            },
+            "message": "G6: no textures to sanity-check."
+          },
+          {
+            "gate": "G7",
+            "verdict": "fail",
+            "measured": {},
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "pass",
+            "measured": {
+              "artDirection": "characters-humanoid-pbr",
+              "shading": "pbr",
+              "palette": 0,
+              "texelDensity": 512
+            },
+            "message": "G10: art direction \"characters-humanoid-pbr\" (pbr) on file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T17:04:19.064Z",
+        "derivedHash": "sha256-09571256b92d921a2c96499403ff48c3a8e1a40996ebbd6cc98b35866942bba6",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
+      "hash": "sha256-6404abf6c480d98918c64b686d625cc8904309589cfa261c154d78753ca30f86",
+      "sizeBytes": 677320,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "AuraClash JinFlux Fighter (Quaternius CC0)",
+      "role": "hero",
+      "artDirection": "characters-humanoid-pbr",
+      "license": "CC0-1.0",
+      "sourcePage": "https://quaternius.itch.io/modular-character-outfits-fantasy",
+      "author": "Quaternius",
+      "attribution": "Quaternius",
+      "retrievedAt": "2026-10-09T17:04:19.783Z",
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "fighter-jin-flux",
+      "kit": "characters/humanoid-pbr",
+      "libraryPath": "assets/library/characters/humanoid-pbr/fighter-jin-flux.glb",
+      "sha256": "6404abf6c480d98918c64b686d625cc8904309589cfa261c154d78753ca30f86",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 15619,
+              "floor": 5000,
+              "ceiling": 60000,
+              "profile": "hero-character"
+            },
+            "message": "G1: 15619 tris inside hero-character band."
+          },
+          {
+            "gate": "G2",
+            "verdict": "fail",
+            "measured": {
+              "measured": 0
+            },
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
+          },
+          {
+            "gate": "G3",
+            "verdict": "fail",
+            "measured": {
+              "coverage": 0,
+              "covered": 0,
+              "total": 15619,
+              "missingTexcoord": 0,
+              "missingSlots": 15619,
+              "requiredOcclusion": true,
+              "profile": "hero-character"
+            },
+            "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 15619,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "fail",
+            "measured": {
+              "factorOnlyMaterials": 5,
+              "stylizedFlatApproved": false
+            },
+            "message": "G5: every material is factor-only with no approved stylized-flat art direction."
+          },
+          {
+            "gate": "G6",
+            "verdict": "pass",
+            "measured": {
+              "textures": 0
+            },
+            "message": "G6: no textures to sanity-check."
+          },
+          {
+            "gate": "G7",
+            "verdict": "fail",
+            "measured": {},
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "pass",
+            "measured": {
+              "artDirection": "characters-humanoid-pbr",
+              "shading": "pbr",
+              "palette": 0,
+              "texelDensity": 512
+            },
+            "message": "G10: art direction \"characters-humanoid-pbr\" (pbr) on file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T17:04:19.814Z",
+        "derivedHash": "sha256-6404abf6c480d98918c64b686d625cc8904309589cfa261c154d78753ca30f86",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
+      "hash": "sha256-18af93d37c11336dcdab43ce5f16d37ce25a403bf583d51ec36caaf3f2df4fd2",
+      "sizeBytes": 1047560,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "AuraClash MaraVolt Fighter (Quaternius CC0)",
+      "role": "hero",
+      "artDirection": "characters-humanoid-pbr",
+      "license": "CC0-1.0",
+      "sourcePage": "https://quaternius.itch.io/modular-character-outfits-fantasy",
+      "author": "Quaternius",
+      "attribution": "Quaternius",
+      "retrievedAt": "2026-10-09T17:04:20.850Z",
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "fighter-mara-volt",
+      "kit": "characters/humanoid-pbr",
+      "libraryPath": "assets/library/characters/humanoid-pbr/fighter-mara-volt.glb",
+      "sha256": "18af93d37c11336dcdab43ce5f16d37ce25a403bf583d51ec36caaf3f2df4fd2",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 18344,
+              "floor": 5000,
+              "ceiling": 60000,
+              "profile": "hero-character"
+            },
+            "message": "G1: 18344 tris inside hero-character band."
+          },
+          {
+            "gate": "G2",
+            "verdict": "fail",
+            "measured": {
+              "measured": 0
+            },
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
+          },
+          {
+            "gate": "G3",
+            "verdict": "fail",
+            "measured": {
+              "coverage": 0,
+              "covered": 0,
+              "total": 18344,
+              "missingTexcoord": 0,
+              "missingSlots": 18344,
+              "requiredOcclusion": true,
+              "profile": "hero-character"
+            },
+            "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 18344,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "fail",
+            "measured": {
+              "factorOnlyMaterials": 5,
+              "stylizedFlatApproved": false
+            },
+            "message": "G5: every material is factor-only with no approved stylized-flat art direction."
+          },
+          {
+            "gate": "G6",
+            "verdict": "pass",
+            "measured": {
+              "textures": 0
+            },
+            "message": "G6: no textures to sanity-check."
+          },
+          {
+            "gate": "G7",
+            "verdict": "fail",
+            "measured": {},
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "pass",
+            "measured": {
+              "artDirection": "characters-humanoid-pbr",
+              "shading": "pbr",
+              "palette": 0,
+              "texelDensity": 512
+            },
+            "message": "G10: art direction \"characters-humanoid-pbr\" (pbr) on file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T17:04:20.921Z",
+        "derivedHash": "sha256-18af93d37c11336dcdab43ce5f16d37ce25a403bf583d51ec36caaf3f2df4fd2",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
+      "hash": "sha256-bce8cb3d037a67e151ea6b68bba5876f53f4c77dfd43892c1c72892d5ab1c5aa",
+      "sizeBytes": 19228,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "Kenney Craft Racer",
+      "role": "npc",
+      "artDirection": "vehicles-air-space-sea",
+      "license": "CC0-1.0",
+      "sourcePage": "https://kenney.nl/assets/space-kit",
+      "author": "Kenney",
+      "attribution": "Kenney",
+      "retrievedAt": "2026-10-09T17:04:30.970Z",
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "kenney-craft-racer",
+      "kit": "vehicles/air-space-sea",
+      "libraryPath": "assets/library/vehicles/air-space-sea/kenney-craft-racer.glb",
+      "sha256": "bce8cb3d037a67e151ea6b68bba5876f53f4c77dfd43892c1c72892d5ab1c5aa",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "waived-by-role",
+            "measured": {
+              "triangles": 280
+            },
+            "message": "G1: no triangle band for this role/profile."
+          },
+          {
+            "gate": "G2",
+            "verdict": "waived-by-role",
+            "measured": {},
+            "message": "G2: no gameplay camera for this role."
+          },
+          {
+            "gate": "G3",
+            "verdict": "waived-by-role",
+            "measured": {
+              "role": "npc"
+            },
+            "message": "G3: role does not require PBR texture coverage."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 280,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "fail",
+            "measured": {
+              "factorOnlyMaterials": 4,
+              "stylizedFlatApproved": false
+            },
+            "message": "G5: every material is factor-only with no approved stylized-flat art direction."
+          },
+          {
+            "gate": "G6",
+            "verdict": "pass",
+            "measured": {
+              "textures": 0
+            },
+            "message": "G6: no textures to sanity-check."
+          },
+          {
+            "gate": "G7",
+            "verdict": "waived-by-role",
+            "measured": {},
+            "message": "G7: no budget for this role."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "pass",
+            "measured": {
+              "artDirection": "vehicles-air-space-sea",
+              "shading": "pbr",
+              "palette": 0,
+              "texelDensity": 256
+            },
+            "message": "G10: art direction \"vehicles-air-space-sea\" (pbr) on file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T17:04:31.003Z",
+        "derivedHash": "sha256-bce8cb3d037a67e151ea6b68bba5876f53f4c77dfd43892c1c72892d5ab1c5aa",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
+      "hash": "sha256-de32320578886d2e73b1cd24b6161c9bd855e3a172bc2abcc8cb7bdd46352348",
+      "sizeBytes": 26672,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "Kenney Craft Miner",
+      "role": "npc",
+      "artDirection": "vehicles-air-space-sea",
+      "license": "CC0-1.0",
+      "sourcePage": "https://kenney.nl/assets/space-kit",
+      "author": "Kenney",
+      "attribution": "Kenney",
+      "retrievedAt": "2026-10-09T17:04:31.711Z",
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "kenney-craft-miner",
+      "kit": "vehicles/air-space-sea",
+      "libraryPath": "assets/library/vehicles/air-space-sea/kenney-craft-miner.glb",
+      "sha256": "de32320578886d2e73b1cd24b6161c9bd855e3a172bc2abcc8cb7bdd46352348",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "waived-by-role",
+            "measured": {
+              "triangles": 384
+            },
+            "message": "G1: no triangle band for this role/profile."
+          },
+          {
+            "gate": "G2",
+            "verdict": "waived-by-role",
+            "measured": {},
+            "message": "G2: no gameplay camera for this role."
+          },
+          {
+            "gate": "G3",
+            "verdict": "waived-by-role",
+            "measured": {
+              "role": "npc"
+            },
+            "message": "G3: role does not require PBR texture coverage."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 384,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "fail",
+            "measured": {
+              "factorOnlyMaterials": 4,
+              "stylizedFlatApproved": false
+            },
+            "message": "G5: every material is factor-only with no approved stylized-flat art direction."
+          },
+          {
+            "gate": "G6",
+            "verdict": "pass",
+            "measured": {
+              "textures": 0
+            },
+            "message": "G6: no textures to sanity-check."
+          },
+          {
+            "gate": "G7",
+            "verdict": "waived-by-role",
+            "measured": {},
+            "message": "G7: no budget for this role."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "pass",
+            "measured": {
+              "artDirection": "vehicles-air-space-sea",
+              "shading": "pbr",
+              "palette": 0,
+              "texelDensity": 256
+            },
+            "message": "G10: art direction \"vehicles-air-space-sea\" (pbr) on file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T17:04:31.741Z",
+        "derivedHash": "sha256-de32320578886d2e73b1cd24b6161c9bd855e3a172bc2abcc8cb7bdd46352348",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
+      "hash": "sha256-f30379abd7d772a2fdc52ebb72ad2b5fc94768343cb8f6788614820f632c5e63",
+      "sizeBytes": 14208,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "Kenney Meteor (asteroid)",
+      "role": "prop",
+      "artDirection": "planets-space",
+      "license": "CC0-1.0",
+      "sourcePage": "https://kenney.nl/assets/space-kit",
+      "author": "Kenney",
+      "attribution": "Kenney",
+      "retrievedAt": "2026-10-09T17:04:32.427Z",
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "kenney-meteor-detailed",
+      "kit": "planets-space",
+      "libraryPath": "assets/library/planets-space/kenney-meteor-detailed.glb",
+      "sha256": "f30379abd7d772a2fdc52ebb72ad2b5fc94768343cb8f6788614820f632c5e63",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 196,
+              "floor": 100,
+              "ceiling": 5000,
+              "profile": "prop-small"
+            },
+            "message": "G1: 196 tris inside prop-small band."
+          },
+          {
+            "gate": "G2",
+            "verdict": "fail",
+            "measured": {
+              "measured": 0
+            },
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
+          },
+          {
+            "gate": "G3",
+            "verdict": "waived-by-role",
+            "measured": {
+              "role": "prop",
+              "profile": "prop-small"
+            },
+            "message": "G3: role does not require PBR texture coverage."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 196,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "fail",
+            "measured": {
+              "factorOnlyMaterials": 1,
+              "stylizedFlatApproved": false
+            },
+            "message": "G5: every material is factor-only with no approved stylized-flat art direction."
+          },
+          {
+            "gate": "G6",
+            "verdict": "pass",
+            "measured": {
+              "textures": 0
+            },
+            "message": "G6: no textures to sanity-check."
+          },
+          {
+            "gate": "G7",
+            "verdict": "fail",
+            "measured": {},
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "pass",
+            "measured": {
+              "artDirection": "planets-space",
+              "shading": "pbr",
+              "palette": 0,
+              "texelDensity": 128
+            },
+            "message": "G10: art direction \"planets-space\" (pbr) on file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T17:04:32.480Z",
+        "derivedHash": "sha256-f30379abd7d772a2fdc52ebb72ad2b5fc94768343cb8f6788614820f632c5e63",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
+      "hash": "sha256-a7e74a5f2c91ce0503190bcda140259545478d7c80f60243d2c13a897e01af20",
+      "sizeBytes": 412996,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "Kenney Modular Dungeon Room",
+      "role": "prop",
+      "artDirection": "environments-modular",
+      "license": "CC0-1.0",
+      "sourcePage": "https://kenney.nl/assets/modular-dungeon",
+      "author": "Kenney",
+      "attribution": "Kenney",
+      "retrievedAt": "2026-10-09T17:04:34.534Z",
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "kenney-modular-dungeon-room",
+      "kit": "environments/modular",
+      "libraryPath": "assets/library/environments/modular/kenney-modular-dungeon-room.glb",
+      "sha256": "a7e74a5f2c91ce0503190bcda140259545478d7c80f60243d2c13a897e01af20",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 4388,
+              "floor": 500,
+              "ceiling": 15000,
+              "profile": "prop-large"
+            },
+            "message": "G1: 4388 tris inside prop-large band."
+          },
+          {
+            "gate": "G2",
+            "verdict": "fail",
+            "measured": {
+              "measured": 0
+            },
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
+          },
+          {
+            "gate": "G3",
+            "verdict": "fail",
+            "measured": {
+              "coverage": 0,
+              "covered": 0,
+              "total": 4388,
+              "missingTexcoord": 0,
+              "missingSlots": 4388,
+              "requiredOcclusion": true,
+              "profile": "prop-large"
+            },
+            "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 4388,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "pass",
+            "measured": {
+              "noUvRatio": 0,
+              "generator": "UnityGLTF"
+            },
+            "message": "G5: UVs present and no builder provenance."
+          },
+          {
+            "gate": "G6",
+            "verdict": "pass",
+            "measured": {
+              "textures": 0
+            },
+            "message": "G6: no textures to sanity-check."
+          },
+          {
+            "gate": "G7",
+            "verdict": "fail",
+            "measured": {},
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "pass",
+            "measured": {
+              "artDirection": "environments-modular",
+              "shading": "pbr",
+              "palette": 0,
+              "texelDensity": 256
+            },
+            "message": "G10: art direction \"environments-modular\" (pbr) on file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T17:04:34.570Z",
+        "derivedHash": "sha256-a7e74a5f2c91ce0503190bcda140259545478d7c80f60243d2c13a897e01af20",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
+      "hash": "sha256-0075d5059c1ea855fecc1dba3c6262c3a01924c50b971ddde2eb8b0b5a62851a",
+      "sizeBytes": 23476,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "Kenney Mini Forest Tree",
+      "role": "prop",
+      "artDirection": "environments-nature",
+      "license": "CC0-1.0",
+      "sourcePage": "https://kenney.nl/assets/mini-forest",
+      "author": "Kenney",
+      "attribution": "Kenney",
+      "retrievedAt": "2026-10-09T17:04:50.440Z",
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "kenney-mini-forest-tree",
+      "kit": "environments/nature",
+      "libraryPath": "assets/library/environments/nature/kenney-mini-forest-tree.glb",
+      "sha256": "0075d5059c1ea855fecc1dba3c6262c3a01924c50b971ddde2eb8b0b5a62851a",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "fail",
+            "measured": {
+              "triangles": 182,
+              "floor": 500,
+              "ceiling": 15000,
+              "profile": "prop-large"
+            },
+            "message": "G1: LOD0 182 tris below prop-large floor 500."
+          },
+          {
+            "gate": "G2",
+            "verdict": "fail",
+            "measured": {
+              "measured": 0
+            },
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
+          },
+          {
+            "gate": "G3",
+            "verdict": "fail",
+            "measured": {
+              "coverage": 0,
+              "covered": 0,
+              "total": 182,
+              "missingTexcoord": 0,
+              "missingSlots": 182,
+              "requiredOcclusion": true,
+              "profile": "prop-large"
+            },
+            "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 182,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "pass",
+            "measured": {
+              "noUvRatio": 0,
+              "generator": "UnityGLTF"
+            },
+            "message": "G5: UVs present and no builder provenance."
+          },
+          {
+            "gate": "G6",
+            "verdict": "pass",
+            "measured": {
+              "textures": 0
+            },
+            "message": "G6: no textures to sanity-check."
+          },
+          {
+            "gate": "G7",
+            "verdict": "fail",
+            "measured": {},
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "fail",
+            "measured": {
+              "artDirection": "environments-nature"
+            },
+            "message": "G10: no assets/art-direction/environments-nature.json file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T17:04:50.473Z",
+        "derivedHash": "sha256-0075d5059c1ea855fecc1dba3c6262c3a01924c50b971ddde2eb8b0b5a62851a",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
+      "hash": "sha256-226728a03989a1ce52ea64b55e3d9e2ff89004f7eaca9f74c2fafda7c84bbe49",
+      "sizeBytes": 31952,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "Kenney Mini Forest Rocks (high detail)",
+      "role": "prop",
+      "artDirection": "environments-nature",
+      "license": "CC0-1.0",
+      "sourcePage": "https://kenney.nl/assets/mini-forest",
+      "author": "Kenney",
+      "attribution": "Kenney",
+      "retrievedAt": "2026-10-09T17:04:51.164Z",
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "kenney-mini-forest-rocks-high",
+      "kit": "environments/nature",
+      "libraryPath": "assets/library/environments/nature/kenney-mini-forest-rocks-high.glb",
+      "sha256": "226728a03989a1ce52ea64b55e3d9e2ff89004f7eaca9f74c2fafda7c84bbe49",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "fail",
+            "measured": {
+              "triangles": 342,
+              "floor": 500,
+              "ceiling": 15000,
+              "profile": "prop-large"
+            },
+            "message": "G1: LOD0 342 tris below prop-large floor 500."
+          },
+          {
+            "gate": "G2",
+            "verdict": "fail",
+            "measured": {
+              "measured": 0
+            },
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
+          },
+          {
+            "gate": "G3",
+            "verdict": "fail",
+            "measured": {
+              "coverage": 0,
+              "covered": 0,
+              "total": 342,
+              "missingTexcoord": 0,
+              "missingSlots": 342,
+              "requiredOcclusion": true,
+              "profile": "prop-large"
+            },
+            "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 342,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "pass",
+            "measured": {
+              "noUvRatio": 0,
+              "generator": "UnityGLTF"
+            },
+            "message": "G5: UVs present and no builder provenance."
+          },
+          {
+            "gate": "G6",
+            "verdict": "pass",
+            "measured": {
+              "textures": 0
+            },
+            "message": "G6: no textures to sanity-check."
+          },
+          {
+            "gate": "G7",
+            "verdict": "fail",
+            "measured": {},
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "fail",
+            "measured": {
+              "artDirection": "environments-nature"
+            },
+            "message": "G10: no assets/art-direction/environments-nature.json file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T17:04:51.200Z",
+        "derivedHash": "sha256-226728a03989a1ce52ea64b55e3d9e2ff89004f7eaca9f74c2fafda7c84bbe49",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
+      "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
+      "sizeBytes": 100008,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "Kenney Race Car Red",
+      "role": "hero",
+      "artDirection": "vehicles-road",
+      "license": "CC0-1.0",
+      "sourcePage": "https://kenney.nl/assets/racing-kit",
+      "author": "Kenney",
+      "attribution": "Kenney",
+      "retrievedAt": "2026-10-09T17:04:51.880Z",
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "kenney-race-car-red",
+      "kit": "vehicles/road",
+      "libraryPath": "assets/library/vehicles/road/kenney-race-car-red.glb",
+      "sha256": "2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "fail",
+            "measured": {
+              "triangles": 1430,
+              "floor": 5000,
+              "ceiling": 60000,
+              "profile": "hero-character"
+            },
+            "message": "G1: LOD0 1430 tris below hero-character floor 5000."
+          },
+          {
+            "gate": "G2",
+            "verdict": "fail",
+            "measured": {
+              "measured": 0
+            },
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
+          },
+          {
+            "gate": "G3",
+            "verdict": "fail",
+            "measured": {
+              "coverage": 0,
+              "covered": 0,
+              "total": 1430,
+              "missingTexcoord": 0,
+              "missingSlots": 1430,
+              "requiredOcclusion": true,
+              "profile": "hero-character"
+            },
+            "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 1430,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "fail",
+            "measured": {
+              "factorOnlyMaterials": 4,
+              "stylizedFlatApproved": false
+            },
+            "message": "G5: every material is factor-only with no approved stylized-flat art direction."
+          },
+          {
+            "gate": "G6",
+            "verdict": "pass",
+            "measured": {
+              "textures": 0
+            },
+            "message": "G6: no textures to sanity-check."
+          },
+          {
+            "gate": "G7",
+            "verdict": "fail",
+            "measured": {},
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "pass",
+            "measured": {
+              "artDirection": "vehicles-road",
+              "shading": "pbr",
+              "palette": 0,
+              "texelDensity": 384
+            },
+            "message": "G10: art direction \"vehicles-road\" (pbr) on file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T17:04:51.914Z",
+        "derivedHash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
+      "hash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+      "sizeBytes": 1880904,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "Kenney Neon Race Circuit",
+      "role": "prop",
+      "artDirection": "environments-modular",
+      "license": "CC0-1.0",
+      "sourcePage": "https://kenney.nl/assets/racing-kit",
+      "author": "Kenney",
+      "attribution": "Kenney",
+      "retrievedAt": "2026-10-09T17:04:52.640Z",
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "kenney-neon-race-circuit",
+      "kit": "environments/modular",
+      "libraryPath": "assets/library/environments/modular/kenney-neon-race-circuit.glb",
+      "sha256": "272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "fail",
+            "measured": {
+              "triangles": 25440,
+              "floor": 500,
+              "ceiling": 15000,
+              "profile": "prop-large"
+            },
+            "message": "G1: LOD0 25440 tris above prop-large ceiling 15000."
+          },
+          {
+            "gate": "G2",
+            "verdict": "fail",
+            "measured": {
+              "measured": 0
+            },
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
+          },
+          {
+            "gate": "G3",
+            "verdict": "fail",
+            "measured": {
+              "coverage": 0,
+              "covered": 0,
+              "total": 25440,
+              "missingTexcoord": 384,
+              "missingSlots": 25440,
+              "requiredOcclusion": true,
+              "profile": "prop-large"
+            },
+            "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 25440,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "fail",
+            "measured": {
+              "factorOnlyMaterials": 13,
+              "stylizedFlatApproved": false
+            },
+            "message": "G5: every material is factor-only with no approved stylized-flat art direction."
+          },
+          {
+            "gate": "G6",
+            "verdict": "pass",
+            "measured": {
+              "textures": 0
+            },
+            "message": "G6: no textures to sanity-check."
+          },
+          {
+            "gate": "G7",
+            "verdict": "fail",
+            "measured": {},
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "pass",
+            "measured": {
+              "artDirection": "environments-modular",
+              "shading": "pbr",
+              "palette": 0,
+              "texelDensity": 256
+            },
+            "message": "G10: art direction \"environments-modular\" (pbr) on file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T17:04:52.684Z",
+        "derivedHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
+      "hash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+      "sizeBytes": 1246284,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "Kenney Verdant Platformer World",
+      "role": "world",
+      "artDirection": "environments-nature",
+      "license": "CC0-1.0",
+      "sourcePage": "https://kenney.nl/assets/platformer-kit",
+      "author": "Kenney",
+      "attribution": "Kenney",
+      "retrievedAt": "2026-10-09T17:05:15.386Z",
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "kenney-verdant-platformer-world",
+      "kit": "environments/nature",
+      "libraryPath": "assets/library/environments/nature/kenney-verdant-platformer-world.glb",
+      "sha256": "9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 16060,
+              "ceiling": 250000,
+              "profile": "world-chunk"
+            },
+            "message": "G1: 16060 tris inside world-chunk band."
+          },
+          {
+            "gate": "G2",
+            "verdict": "fail",
+            "measured": {
+              "measured": 0
+            },
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
+          },
+          {
+            "gate": "G3",
+            "verdict": "fail",
+            "measured": {
+              "coverage": 0,
+              "covered": 0,
+              "total": 16060,
+              "missingTexcoord": 0,
+              "missingSlots": 16060,
+              "requiredOcclusion": true,
+              "profile": "world-chunk"
+            },
+            "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 16060,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "fail",
+            "measured": {
+              "factorOnlyMaterials": 11,
+              "stylizedFlatApproved": false
+            },
+            "message": "G5: every material is factor-only with no approved stylized-flat art direction."
+          },
+          {
+            "gate": "G6",
+            "verdict": "pass",
+            "measured": {
+              "textures": 0
+            },
+            "message": "G6: no textures to sanity-check."
+          },
+          {
+            "gate": "G7",
+            "verdict": "fail",
+            "measured": {},
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "fail",
+            "measured": {
+              "artDirection": "environments-nature"
+            },
+            "message": "G10: no assets/art-direction/environments-nature.json file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T17:05:15.429Z",
+        "derivedHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
+      "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
+      "sizeBytes": 208028,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "Kenney Oobi Platformer Hero",
+      "role": "hero",
+      "artDirection": "characters-humanoid-pbr",
+      "license": "CC0-1.0",
+      "sourcePage": "https://kenney.nl/assets/characters",
+      "author": "Kenney",
+      "attribution": "Kenney",
+      "retrievedAt": "2026-10-09T17:05:16.221Z",
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "kenney-oobi-platformer-hero",
+      "kit": "characters/humanoid-pbr",
+      "libraryPath": "assets/library/characters/humanoid-pbr/kenney-oobi-platformer-hero.glb",
+      "sha256": "3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "fail",
+            "measured": {
+              "triangles": 1096,
+              "floor": 5000,
+              "ceiling": 60000,
+              "profile": "hero-character"
+            },
+            "message": "G1: LOD0 1096 tris below hero-character floor 5000."
+          },
+          {
+            "gate": "G2",
+            "verdict": "fail",
+            "measured": {
+              "measured": 0
+            },
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
+          },
+          {
+            "gate": "G3",
+            "verdict": "fail",
+            "measured": {
+              "coverage": 0,
+              "covered": 0,
+              "total": 1096,
+              "missingTexcoord": 0,
+              "missingSlots": 1096,
+              "requiredOcclusion": false,
+              "profile": "hero-character"
+            },
+            "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 1096,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "pass",
+            "measured": {
+              "noUvRatio": 0,
+              "generator": "Khronos glTF Blender I/O v5.1.19"
+            },
+            "message": "G5: UVs present and no builder provenance."
+          },
+          {
+            "gate": "G6",
+            "verdict": "fail",
+            "measured": {
+              "failures": [
+                "baseColor#0(colormap): sRGB luminance outside [30,240] on 30.0% of texels"
+              ],
+              "flags": [],
+              "textures": 1
+            },
+            "message": "G6: baseColor#0(colormap): sRGB luminance outside [30,240] on 30.0% of texels"
+          },
+          {
+            "gate": "G7",
+            "verdict": "fail",
+            "measured": {},
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "pass",
+            "measured": {
+              "artDirection": "characters-humanoid-pbr",
+              "shading": "pbr",
+              "palette": 0,
+              "texelDensity": 512
+            },
+            "message": "G10: art direction \"characters-humanoid-pbr\" (pbr) on file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T17:05:16.283Z",
+        "derivedHash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
+      "hash": "sha256-279ea019268f855240c3cebf7616644c8141c20bee617da72eae4733b8e310af",
+      "sizeBytes": 144944,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "Kenney Pirate Ship Medium",
+      "role": "npc",
+      "artDirection": "vehicles-air-space-sea",
+      "license": "CC0-1.0",
+      "sourcePage": "https://kenney.nl/assets/pirate-kit",
+      "author": "Kenney",
+      "attribution": "Kenney",
+      "retrievedAt": "2026-10-09T17:05:18.259Z",
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "kenney-pirate-ship-medium",
+      "kit": "vehicles/air-space-sea",
+      "libraryPath": "assets/library/vehicles/air-space-sea/kenney-pirate-ship-medium.glb",
+      "sha256": "279ea019268f855240c3cebf7616644c8141c20bee617da72eae4733b8e310af",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "waived-by-role",
+            "measured": {
+              "triangles": 1723
+            },
+            "message": "G1: no triangle band for this role/profile."
+          },
+          {
+            "gate": "G2",
+            "verdict": "waived-by-role",
+            "measured": {},
+            "message": "G2: no gameplay camera for this role."
+          },
+          {
+            "gate": "G3",
+            "verdict": "waived-by-role",
+            "measured": {
+              "role": "npc"
+            },
+            "message": "G3: role does not require PBR texture coverage."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 1723,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "pass",
+            "measured": {
+              "noUvRatio": 0,
+              "generator": "UnityGLTF"
+            },
+            "message": "G5: UVs present and no builder provenance."
+          },
+          {
+            "gate": "G6",
+            "verdict": "pass",
+            "measured": {
+              "textures": 0
+            },
+            "message": "G6: no textures to sanity-check."
+          },
+          {
+            "gate": "G7",
+            "verdict": "waived-by-role",
+            "measured": {},
+            "message": "G7: no budget for this role."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "pass",
+            "measured": {
+              "artDirection": "vehicles-air-space-sea",
+              "shading": "pbr",
+              "palette": 0,
+              "texelDensity": 256
+            },
+            "message": "G10: art direction \"vehicles-air-space-sea\" (pbr) on file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T17:05:18.300Z",
+        "derivedHash": "sha256-279ea019268f855240c3cebf7616644c8141c20bee617da72eae4733b8e310af",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
+      "hash": "sha256-0fd0f92e452ffab13529e51037cc804edf6ff3134f6bdd614b7aaea9ae6feb3b",
+      "sizeBytes": 239124,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "Kenney Mini Forest Archer",
+      "role": "npc",
+      "artDirection": "characters-humanoid-pbr",
+      "license": "CC0-1.0",
+      "sourcePage": "https://kenney.nl/assets/mini-forest",
+      "author": "Kenney",
+      "attribution": "Kenney",
+      "retrievedAt": "2026-10-09T17:05:19.017Z",
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "kenney-mini-forest-archer",
+      "kit": "characters/humanoid-pbr",
+      "libraryPath": "assets/library/characters/humanoid-pbr/kenney-mini-forest-archer.glb",
+      "sha256": "0fd0f92e452ffab13529e51037cc804edf6ff3134f6bdd614b7aaea9ae6feb3b",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "waived-by-role",
+            "measured": {
+              "triangles": 574
+            },
+            "message": "G1: no triangle band for this role/profile."
+          },
+          {
+            "gate": "G2",
+            "verdict": "waived-by-role",
+            "measured": {},
+            "message": "G2: no gameplay camera for this role."
+          },
+          {
+            "gate": "G3",
+            "verdict": "waived-by-role",
+            "measured": {
+              "role": "npc"
+            },
+            "message": "G3: role does not require PBR texture coverage."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 574,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "pass",
+            "measured": {
+              "noUvRatio": 0,
+              "generator": "UnityGLTF"
+            },
+            "message": "G5: UVs present and no builder provenance."
+          },
+          {
+            "gate": "G6",
+            "verdict": "pass",
+            "measured": {
+              "textures": 0
+            },
+            "message": "G6: no textures to sanity-check."
+          },
+          {
+            "gate": "G7",
+            "verdict": "waived-by-role",
+            "measured": {},
+            "message": "G7: no budget for this role."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "pass",
+            "measured": {
+              "artDirection": "characters-humanoid-pbr",
+              "shading": "pbr",
+              "palette": 0,
+              "texelDensity": 512
+            },
+            "message": "G10: art direction \"characters-humanoid-pbr\" (pbr) on file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T17:05:19.052Z",
+        "derivedHash": "sha256-0fd0f92e452ffab13529e51037cc804edf6ff3134f6bdd614b7aaea9ae6feb3b",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
+      "hash": "sha256-ed877341975be7537ded742e1f385e572d311a357f29b665169736b8943c286f",
+      "sizeBytes": 7436,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "Kenney Road Barrier (extracted from modular road kit)",
+      "role": "prop",
+      "artDirection": "props-industrial-urban",
+      "license": "CC0-1.0",
+      "sourcePage": "https://kenney.nl/assets/road-kit",
+      "author": "Kenney",
+      "attribution": "Kenney",
+      "retrievedAt": "2026-10-09T17:06:07.258Z",
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "kenney-road-barrier",
+      "kit": "props/industrial-urban",
+      "libraryPath": "assets/library/props/industrial-urban/kenney-road-barrier.glb",
+      "sha256": "ed877341975be7537ded742e1f385e572d311a357f29b665169736b8943c286f",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "fail",
+            "measured": {
+              "triangles": 68,
+              "floor": 500,
+              "ceiling": 15000,
+              "profile": "prop-large"
+            },
+            "message": "G1: LOD0 68 tris below prop-large floor 500."
+          },
+          {
+            "gate": "G2",
+            "verdict": "fail",
+            "measured": {
+              "measured": 0
+            },
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
+          },
+          {
+            "gate": "G3",
+            "verdict": "fail",
+            "measured": {
+              "coverage": 0,
+              "covered": 0,
+              "total": 68,
+              "missingTexcoord": 68,
+              "missingSlots": 68,
+              "requiredOcclusion": true,
+              "profile": "prop-large"
+            },
+            "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 68,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "fail",
+            "measured": {
+              "noUvRatio": 1,
+              "noUvTriangles": 68,
+              "total": 68
+            },
+            "message": "G5: no TEXCOORD_0 on 100.0% of area (> 10%)."
+          },
+          {
+            "gate": "G6",
+            "verdict": "pass",
+            "measured": {
+              "textures": 0
+            },
+            "message": "G6: no textures to sanity-check."
+          },
+          {
+            "gate": "G7",
+            "verdict": "fail",
+            "measured": {},
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "pass",
+            "measured": {
+              "artDirection": "props-industrial-urban",
+              "shading": "pbr",
+              "palette": 0,
+              "texelDensity": 256
+            },
+            "message": "G10: art direction \"props-industrial-urban\" (pbr) on file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T17:06:07.290Z",
+        "derivedHash": "sha256-ed877341975be7537ded742e1f385e572d311a357f29b665169736b8943c286f",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
+      "hash": "sha256-d72a451b26843db7d86ffa1c8292fb0a97e2064a442c4cbbda7ef1d0ce8f7505",
+      "sizeBytes": 4760,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "Kenney Square Street Light (extracted from modular road kit)",
+      "role": "prop",
+      "artDirection": "props-industrial-urban",
+      "license": "CC0-1.0",
+      "sourcePage": "https://kenney.nl/assets/road-kit",
+      "author": "Kenney",
+      "attribution": "Kenney",
+      "retrievedAt": "2026-10-09T17:06:08.000Z",
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "kenney-light-square",
+      "kit": "props/industrial-urban",
+      "libraryPath": "assets/library/props/industrial-urban/kenney-light-square.glb",
+      "sha256": "d72a451b26843db7d86ffa1c8292fb0a97e2064a442c4cbbda7ef1d0ce8f7505",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "fail",
+            "measured": {
+              "triangles": 60,
+              "floor": 100,
+              "ceiling": 5000,
+              "profile": "prop-small"
+            },
+            "message": "G1: LOD0 60 tris below prop-small floor 100."
+          },
+          {
+            "gate": "G2",
+            "verdict": "fail",
+            "measured": {
+              "measured": 0
+            },
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
+          },
+          {
+            "gate": "G3",
+            "verdict": "waived-by-role",
+            "measured": {
+              "role": "prop",
+              "profile": "prop-small"
+            },
+            "message": "G3: role does not require PBR texture coverage."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 60,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "fail",
+            "measured": {
+              "noUvRatio": 1,
+              "noUvTriangles": 60,
+              "total": 60
+            },
+            "message": "G5: no TEXCOORD_0 on 100.0% of area (> 10%)."
+          },
+          {
+            "gate": "G6",
+            "verdict": "pass",
+            "measured": {
+              "textures": 0
+            },
+            "message": "G6: no textures to sanity-check."
+          },
+          {
+            "gate": "G7",
+            "verdict": "fail",
+            "measured": {},
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "pass",
+            "measured": {
+              "artDirection": "props-industrial-urban",
+              "shading": "pbr",
+              "palette": 0,
+              "texelDensity": 256
+            },
+            "message": "G10: art direction \"props-industrial-urban\" (pbr) on file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T17:06:08.033Z",
+        "derivedHash": "sha256-d72a451b26843db7d86ffa1c8292fb0a97e2064a442c4cbbda7ef1d0ce8f7505",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
+      "hash": "sha256-5d081335991880d018943e683a82658fbbac16ea8d319061f1cebd6146d7a2cc",
+      "sizeBytes": 12608,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "K2 street bollard (procedural, 384 tris)",
+      "role": "prop",
+      "artDirection": "props-industrial-urban",
+      "license": "CC0-1.0",
+      "sourcePage": "https://github.com/auraoneai/aura3d/blob/qr-assets/tools/asset-optimize/gen-street-props.mts",
+      "author": "Aura3D procedural generator",
+      "attribution": "Aura3D procedural generator",
+      "retrievedAt": "2026-10-09T19:07:50.391Z",
+      "tags": [
+        "k2",
+        "street",
+        "bollard"
+      ],
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "streetBollardMetal",
+      "kit": "props/industrial-urban",
+      "libraryPath": "assets/library/props/industrial-urban/streetBollardMetal.glb",
+      "sha256": "5d081335991880d018943e683a82658fbbac16ea8d319061f1cebd6146d7a2cc",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 384,
+              "floor": 100,
+              "ceiling": 5000,
+              "profile": "prop-small"
+            },
+            "message": "G1: 384 tris inside prop-small band."
+          },
+          {
+            "gate": "G2",
+            "verdict": "fail",
+            "measured": {
+              "measured": 0
+            },
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
+          },
+          {
+            "gate": "G3",
+            "verdict": "waived-by-role",
+            "measured": {
+              "role": "prop",
+              "profile": "prop-small"
+            },
+            "message": "G3: role does not require PBR texture coverage."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 384,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "fail",
+            "measured": {
+              "noUvRatio": 1,
+              "noUvTriangles": 384,
+              "total": 384
+            },
+            "message": "G5: no TEXCOORD_0 on 100.0% of area (> 10%)."
+          },
+          {
+            "gate": "G6",
+            "verdict": "pass",
+            "measured": {
+              "textures": 0
+            },
+            "message": "G6: no textures to sanity-check."
+          },
+          {
+            "gate": "G7",
+            "verdict": "fail",
+            "measured": {},
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "pass",
+            "measured": {
+              "artDirection": "props-industrial-urban",
+              "shading": "pbr",
+              "palette": 0,
+              "texelDensity": 256
+            },
+            "message": "G10: art direction \"props-industrial-urban\" (pbr) on file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T19:07:50.431Z",
+        "derivedHash": "sha256-5d081335991880d018943e683a82658fbbac16ea8d319061f1cebd6146d7a2cc",
+        "quality": "candidate"
+      }
+    },
+    {
+      "type": "model",
+      "format": "glb",
+      "source": "file",
+      "outputPath": "",
+      "url": "",
+      "hash": "sha256-39ecdc27dde33ff942317369982609edbdf69a11795d1e28657ced682aad83d7",
+      "sizeBytes": 11884,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "title": "K2 wall AC unit (procedural, 204 tris)",
+      "role": "prop",
+      "artDirection": "props-industrial-urban",
+      "license": "CC0-1.0",
+      "sourcePage": "https://github.com/auraoneai/aura3d/blob/qr-assets/tools/asset-optimize/gen-street-props.mts",
+      "author": "Aura3D procedural generator",
+      "attribution": "Aura3D procedural generator",
+      "retrievedAt": "2026-10-09T19:07:56.926Z",
+      "tags": [
+        "k2",
+        "street",
+        "ac-unit"
+      ],
+      "lookDevApproved": false,
+      "quality": "candidate",
+      "id": "streetACUnit",
+      "kit": "props/industrial-urban",
+      "libraryPath": "assets/library/props/industrial-urban/streetACUnit.glb",
+      "sha256": "39ecdc27dde33ff942317369982609edbdf69a11795d1e28657ced682aad83d7",
+      "admission": {
+        "status": "admitted",
+        "checks": [
+          {
+            "gate": "G1",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 204,
+              "floor": 100,
+              "ceiling": 5000,
+              "profile": "prop-small"
+            },
+            "message": "G1: 204 tris inside prop-small band."
+          },
+          {
+            "gate": "G2",
+            "verdict": "fail",
+            "measured": {
+              "measured": 0
+            },
+            "message": "G2: texel density not measurable \u2014 no UV+texture triangle coverage."
+          },
+          {
+            "gate": "G3",
+            "verdict": "waived-by-role",
+            "measured": {
+              "role": "prop",
+              "profile": "prop-small"
+            },
+            "message": "G3: role does not require PBR texture coverage."
+          },
+          {
+            "gate": "G4",
+            "verdict": "pass",
+            "measured": {
+              "triangles": 204,
+              "unlitRatio": 0
+            },
+            "message": "G4: no card geometry detected."
+          },
+          {
+            "gate": "G5",
+            "verdict": "fail",
+            "measured": {
+              "noUvRatio": 1,
+              "noUvTriangles": 204,
+              "total": 204
+            },
+            "message": "G5: no TEXCOORD_0 on 100.0% of area (> 10%)."
+          },
+          {
+            "gate": "G6",
+            "verdict": "pass",
+            "measured": {
+              "textures": 0
+            },
+            "message": "G6: no textures to sanity-check."
+          },
+          {
+            "gate": "G7",
+            "verdict": "fail",
+            "measured": {},
+            "message": "G7: no derived measurement \u2014 run `assets optimize` first."
+          },
+          {
+            "gate": "G8",
+            "verdict": "pass",
+            "measured": {
+              "normalMapped": 0
+            },
+            "message": "G8: tangents present on every normal-mapped primitive."
+          },
+          {
+            "gate": "G9",
+            "verdict": "fail",
+            "measured": {
+              "reviews": 0
+            },
+            "message": "G9: no look-dev record \u2014 run `assets lookdev` + `assets review`."
+          },
+          {
+            "gate": "G10",
+            "verdict": "pass",
+            "measured": {
+              "artDirection": "props-industrial-urban",
+              "shading": "pbr",
+              "palette": 0,
+              "texelDensity": 256
+            },
+            "message": "G10: art direction \"props-industrial-urban\" (pbr) on file."
+          },
+          {
+            "gate": "G11",
+            "verdict": "fail",
+            "measured": {
+              "derived": false
+            },
+            "message": "G11: no derived record \u2014 run `assets optimize` before release."
+          }
+        ],
+        "at": "2026-10-09T19:07:56.966Z",
+        "derivedHash": "sha256-39ecdc27dde33ff942317369982609edbdf69a11795d1e28657ced682aad83d7",
+        "quality": "candidate"
       }
     }
   ]
