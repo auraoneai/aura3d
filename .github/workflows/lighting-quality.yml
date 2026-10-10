@@ -13,6 +13,8 @@ on:
       - "benchmarks/quality-rebuild/aura3d/scenes/prd02/**"
       - "benchmarks/quality-rebuild/three/scenes/prd02/**"
       - "tests/qr/prd02/**"
+      - "tests/unit/contracts/impl/prd02-*"
+      - "tests/unit/agent-api/prd02-*"
       - "packages/rendering/src/environment/**"
       - "packages/rendering/src/probes/**"
       - "packages/rendering/src/shadows/**"
@@ -26,6 +28,29 @@ on:
       - "packages/rendering/src/shaders/chunks/shadow_caster.glsl.ts"
       - "packages/rendering/src/shaders/chunks/sh9.glsl.ts"
       - "packages/rendering/src/shaders/chunks/contact_shadow.glsl.ts"
+      - "packages/rendering/src/passes/ContactShadowPass.ts"
+      - "packages/rendering/src/passes/Prd02*.ts"
+      - "packages/rendering/src/renderer/ShadowOrchestration.ts"
+      - "packages/rendering/src/renderer/Background.ts"
+      - "packages/rendering/src/forward/Lighting.ts"
+      - "packages/rendering/src/LightUniforms.ts"
+      - "packages/rendering/src/DepthPass.ts"
+      - "packages/rendering/src/ShadowPass.ts"
+      - "packages/rendering/src/ShadowMap.ts"
+      - "packages/rendering/src/CascadedShadowMaps.ts"
+      - "packages/rendering/src/ReflectionProbe.ts"
+      - "packages/rendering/src/ClusteredForwardLighting.ts"
+      - "packages/rendering/src/EnvironmentMapResources.ts"
+      - "packages/rendering/src/EnvironmentLighting.ts"
+      - "packages/rendering/src/EnvironmentBackgroundPass.ts"
+      - "packages/rendering/src/EnvironmentBackgroundResources.ts"
+      - "packages/rendering/src/EnvironmentPipeline.ts"
+      - "packages/rendering/src/EnvironmentPlatform.ts"
+      - "packages/rendering/src/ExternalParityRenderPreset.ts"
+      - "packages/rendering/src/webgl2/Samplers.ts"
+      - "packages/rendering/src/production-runtime/environment/**"
+      - "packages/rendering/src/production-runtime/PBRHDRPipeline.ts"
+      - "packages/rendering/src/lanes/prd02.ts"
       - "packages/rendering/src/workers/cpuPrefilter.ts"
       - "packages/rendering/src/build/prefilterBaker.ts"
       - "packages/aura3d-cli/src/commands/prd02/**"
@@ -33,14 +58,19 @@ on:
       - "packages/engine/src/agent-api/compiler/environment.ts"
       - "packages/engine/src/agent-api/compiler/lights.ts"
       - "packages/engine/src/agent-api/compiler/shadows.ts"
+      - "packages/engine/src/agent-api/compiler/compileScene.ts"
+      - "public/aura-environments/**"
       - "eslint/qr/prd02*.js"
       - "docs/project/aura3d-quality-rebuild/evidence/prd02/**"
       - "docs/project/aura3d-quality-rebuild/PRD-02-lighting-ibl-reflection-shadows.md"
       - ".github/workflows/lighting-quality.yml"
   push:
     branches:
+      - "main"
       - "qr/prd02-*"
       - "qr/prd02/**"
+  schedule:
+    - cron: "47 5 * * *"
   workflow_dispatch:
     inputs:
       flags:
@@ -80,7 +110,7 @@ jobs:
       - name: lane unit tests
         run: pnpm exec vitest run --config tests/qr/prd02/vitest.config.ts
       - name: scene lint (lane config)
-        run: pnpm exec eslint "benchmarks/quality-rebuild/scenes/prd02/**/*.ts" "benchmarks/quality-rebuild/{aura3d,three}/scenes/prd02/**/*.ts" "tests/qr/prd02/**/*.ts" || true
+        run: pnpm exec eslint "benchmarks/quality-rebuild/scenes/prd02/**/*.ts" "benchmarks/quality-rebuild/{aura3d,three}/scenes/prd02/**/*.ts" "tests/qr/prd02/**/*.ts"
 
   browser:
     name: browser conformance (prd02)
@@ -97,10 +127,21 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Specs import engine/rendering src, which resolves @aura3d/* bare
+      # specifiers to packages/*/dist — build it or contracts/flags.state
+      # is a missing module (the 2/5 lane.spec failure in run 37774324490).
+      - name: build package dist
+        run: pnpm build
       - run: pnpm exec playwright install chromium
       - name: prd02 browser specs
-        continue-on-error: ${{ github.event_name == 'pull_request' }}
         run: pnpm exec playwright test tests/qr/prd02/browser --config tests/qr/prd02/playwright.prd02.config.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: prd02-browser-report-${{ github.sha }}
+          path: tests/reports/qr-prd02-browser.json
+          if-no-files-found: warn
+          retention-days: 30
 
   lane-capture:
     name: lane capture + baselines
@@ -136,12 +177,13 @@ jobs:
         run: |
           git config user.name "qr-prd02-bot"
           git config user.email "qr-prd02-bot@users.noreply.github.com"
-          mkdir -p docs/project/aura3d-quality-rebuild/evidence/prd02/baseline
-          cp -r benchmarks/quality-rebuild/scenes/prd02/out docs/project/aura3d-quality-rebuild/evidence/prd02/baseline/prd02-"$(date +%Y%m%d)"
-          git add docs/project/aura3d-quality-rebuild/evidence/prd02/baseline
-          git commit -m "chore(qr-02): refresh prd02 flag-none baseline" || echo "no baseline changes"
+          mkdir -p docs/project/aura3d-quality-rebuild/evidence/prd02/lighting-baseline
+          cp -r benchmarks/quality-rebuild/scenes/prd02/out docs/project/aura3d-quality-rebuild/evidence/prd02/lighting-baseline/prd02-"$(date +%Y%m%d)"
+          git add docs/project/aura3d-quality-rebuild/evidence/prd02/lighting-baseline
+          git diff --cached --quiet && echo "no baseline changes — nothing to commit" || git commit -m "chore(qr-02): refresh prd02 flag-none baseline"
           git push
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: prd02-lane-capture-${{ github.sha }}
           path: benchmarks/quality-rebuild/scenes/prd02/out

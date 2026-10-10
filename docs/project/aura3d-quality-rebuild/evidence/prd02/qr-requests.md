@@ -3,7 +3,7 @@
 Non-blocking requests lane 02 has raised. Per CONTRACTS §6.5 the owner has
 2 working days; lane 02 does not wait on them.
 
-## qr-request to:prd01 — `projectCubeToSH9` texel weight (C-09)
+## qr-request to:prd01 — `projectCubeToSH9` texel weight (C-09) — filed: #749
 
 - **File**: `packages/rendering/src/contracts/environment.ts` (lane 01)
 - **Contract**: C-09 (environment probe projection)
@@ -22,7 +22,7 @@ Non-blocking requests lane 02 has raised. Per CONTRACTS §6.5 the owner has
 - **Raised**: 2026-10-06, PR-B (`qr/prd02-math-modules`). Until it lands the
   lane impl shadows the contract export via `@aura3d/rendering/lanes`.
 
-## qr-request to:prd15 — `AuraSceneNode` union + `AuraEnvironmentNode` V2 fields (CCR-02-2)
+## qr-request to:prd15 — `AuraSceneNode` union + `AuraEnvironmentNode` V2 fields (CCR-02-2) — filed: #753
 
 - **File**: `packages/engine/src/agent-api/index.ts` (lane 15)
 - **Contract**: C-10 / §7 node surface
@@ -30,7 +30,7 @@ Non-blocking requests lane 02 has raised. Per CONTRACTS §6.5 the owner has
 - **Workaround in place**: builders emit the additive fields via casts (`AuraEnvironmentNodeV2`, `envV2`, `probes.*` builders, `contactShadows` node); runtime nodes carry the fields verbatim for the C-36 handlers.
 - **Raised**: 2026-10-06, Phase 2 (`qr/prd02-engine-composition`).
 
-## qr-request to:prd15 — `DIAGNOSTIC_ONLY_FIELDS["light.power"]` removal + `probes` top-level export
+## qr-request to:prd15 — `DIAGNOSTIC_ONLY_FIELDS["light.power"]` removal + `probes` top-level export — filed: #754
 
 - **File**: `packages/engine/src/contracts/compiler.ts`, `packages/engine/src/agent-api/index.ts` (lane 15)
 - **Change**: (a) drop the seeded `"light.power"` diagnostic-only row — PRD 02 has wired it (`physicalLightDescriptor` consumes lumens → candela); audit trail in `compiler/diagnosticOnly.prd02.ts`. (b) re-export `probes` from `agent-api/nodes/probes.ts` in the public `effects`/`environments` style (top-level `probes` builder namespace).
@@ -38,34 +38,36 @@ Non-blocking requests lane 02 has raised. Per CONTRACTS §6.5 the owner has
 - **Raised**: 2026-10-06, Phase 2 (`qr/prd02-engine-composition`).
 
 ## to:prd15 (Phase 3a additions)
+
+- Filed: C-12 sampler spec + ContractSlot → #755; `./environment` subpath export → #756. `setRendererQrFlags` zero callers → tracked by existing issue #145 (closes with T0-28).
 - `tests/browser/contracts/C-12-sampler.spec.ts` does not exist — the C-12 conformance spec named in CONTRACTS §933 was never written in PR 0a/0b. Lane 02 covers the mapping with `tests/unit/contracts/impl/prd02-sampler-c12.test.ts` (device mock); please add the browser spec (1-mip downgrade; compare sampler compiles).
 - `setRendererQrFlags` (`renderer/FrameGraph.ts`) is never called from `createAuraApp` — engine-side flag plumbing for rendering-layer flag checks is missing. Lane 02's `webgl2/Samplers.ts` C-12 mapping and mip-mapped env bindings read `rendererQrFlags()`; without wiring they only see the flag in tests. Please add `setRendererQrFlags(qrFlags)` at `createAuraApp.ts:26` (lane-15 file) or point us at the intended call site.
 - C-12 has no `defineContractSlot` in `contracts/sampling.ts` — the "provide(real)" semantics for `resolveLightingSamplerBudget`/the WebGL2 mapping is implemented flag-gated inside `webgl2/Samplers.ts` + `environment/LightingSamplerBudget.ts`. If consumers (lanes 04/05/10) must call the real impl via a slot, a `ContractSlot` needs adding to the frozen file.
 - `@aura3d/rendering` has no `./environment` subpath export — lane 02's Phase-3 modules (`EnvironmentCache`, `EnvironmentProbeFactory`, `probeBuild`, `EnvUniforms`) are consumed by engine code through deep `packages/rendering/src/...` imports (precedent: `threejs-example-parity/FlagshipFoundation.ts`). Please add a public `environment` export entry (lane-15 file) so lanes don't import internals.
 
-## to:prd11 — `TextureUpload.ts` RGB9_E5 cube upload (Q-06-1)
+## to:prd11 — `TextureUpload.ts` RGB9_E5 cube upload (Q-06-1) — filed: #762
 
 - `Rgb9e5Cube` decodes baked presets to Float32 and uploads RGBA16F (2× memory). Native `RGB9_E5` upload needs `TextureFormat`/`TextureUpload` acceptance in the lane-11 file. Logged as pending in PRD-02 Phase 3 until the request lands.
 
 ## Phase 4 qr-requests
 
-- **to:prd01** — `contracts/shadows.ts` `resolveShadowCasterVariant` is a plain
+- **to:prd01** (filed: #750) — `contracts/shadows.ts` `resolveShadowCasterVariant` is a plain
   exported stub, not a `Slot<>`, so lanes cannot `provide(real)`. Lane-02 ships
   `resolvePrd02ShadowCasterVariant` (rendering/src/shadows/Prd02DepthShaderLibrary.ts)
   and injects it via `DepthPassOptions.variantResolver`. Request: expose a
   provider slot or registry hook so `resolveShadowCasterVariant` itself resolves
   real keys under the flag.
-- **to:prd01** — `createRegistry` (contracts/core.ts) has no enumeration
+- **to:prd01** (filed: #751) — `createRegistry` (contracts/core.ts) has no enumeration
   accessor, so `registerDepthVariantFeature` entries cannot be listed. Lane-02
   keeps its own `prd02Features` array; request a `features()`/`entries()`
   reader on Registry so lanes (e.g. prd06 `prd06.deform`) can share the pass.
-- **to:prd11** — `RenderDevice` has no `setViewport`; atlas tiles fold the
+- **to:prd11** (noted in #763) — `RenderDevice` has no `setViewport`; atlas tiles fold the
   tile rect into `drawViewProjection` + a per-draw `scissor` instead. No
   change needed, noted for awareness.
-- **to:prd11** (standing, Phase 3) — `u_prd02LocalShadowIndex` / `perLightShadowIndex`
+- **to:prd11** (filed: #763) — `u_prd02LocalShadowIndex` / `perLightShadowIndex`
   can't upload through `uploadUniforms` (no ivec branch); kept as CPU-side
   pairs + a vec4-packed `u_prd02LocalShadowIndex` uniform in the chunk.
-- **to:prd01** (Phase 5) — `Texture`'s `2d-array` dimension has no upload path
+- **to:prd01** (filed: #752) — `Texture`'s `2d-array` dimension has no upload path
   in `TextureUpload` (2D + cube only). `IrradianceVolume` ships its 3× RGBA16F
   SH textures with per-layer `mipLevels` payloads (mipLevels[z] = layer z).
   Request: a real `texImage3D` upload + mip-levels-are-mips convention for
@@ -76,14 +78,14 @@ Non-blocking requests lane 02 has raised. Per CONTRACTS §6.5 the owner has
   `prd02.probeRenderFace` or `installPrd02ProbeRenderer`; if a later phase
   wants a first-class frame-context field it lands as a C-09 additive
   member, not a cross-lane request.
-- **to:prd15** (Phase 6/7) — `registerCodemod` (C-39) fills a codemod map but
+- **to:prd15** (filed: #757) — `registerCodemod` (C-39) fills a codemod map but
   `packages/aura3d-cli/src/cli.ts` never dispatches `aura3d codemod <name> <glob>`,
   so codemods were unreachable through the binary. Lane-02 registered
   `migrate lighting` as a CliCommand (`commands/prd02/migrateLightingSweep.ts`,
   report mode default, `--out` for JSON reports). Request: dispatch
   `codemod` in cli.ts (or confirm the lane-command surface is the intended
   mechanism).
-- **to:prd15** (Phase 7) — PRD-02 Phase-7 item "delete the dead
+- **to:prd15** (filed: #758) — PRD-02 Phase-7 item "delete the dead
   `packages/rendering/src/shaders/pbr-direct.frag.glsl`" breaks
   `tests/unit/rendering/shader-library.test.ts` (default-owner 15): its
   sync test does `readFileSync` on both packaged `.glsl` files and asserts
@@ -95,14 +97,19 @@ Non-blocking requests lane 02 has raised. Per CONTRACTS §6.5 the owner has
   note `.github/QR_OWNERSHIP.json` lacks the CONTRACTS §4.1 row-02
   file-level carve-out for `shaders/pbr-direct.frag.glsl` (the `shaders/`
   dir is owner-01) — the JSON may flag the deletion to lane 01.
-- **to:prd15** (Phase 4, item 1923 = Q-15-5) — `compiler/primitives.ts` does not
+- **to:prd15** (filed: #759) — `compiler/primitives.ts` does not
   copy `node.receiveShadow` onto generated `RenderItem`s, so engine-authored
   geometry can never opt out of shadow receiving through the flag-path
   `u_shadowMapEnabled = 0` binding (already live in
   `forward/Lighting.ts` via `receiveShadowDisabled`). Request: map
   `node.receiveShadow` → `item.receiveShadow` in the primitives compiler.
-- **to:prd04** (Phase 4, item 1923 = Q-04-2) —
+- **to:prd04** (filed: #764) —
   `production-runtime/TypedGLBActor.ts` never sets `receiveShadow` on its
   generated items, so GLB actors can't opt out of shadow receiving. Request:
   carry a `receiveShadow` flag (or `false` where the actor opts out) onto the
   produced `RenderItem`s.
+
+## Phase 8 additions (P-64, 2026-10-10)
+
+- **to:prd15** (filed: #760) — owner acceptance for the `compileScene.ts` (`updateCompiledSceneReal`) edit in PR #586 (T0-24). T0-09 needed no compileScene.ts edit.
+- **to:prd15** (filed: #761) — `QR_OWNERSHIP.json`: register `passes/Prd02*.ts` to prd02; resolve `tests/qr/prd02/` + `tests/unit/agent-api/prd02-*` owner (checker ignores `lanePatterns`); `shaders/pbr-direct.frag.glsl` carve-out.

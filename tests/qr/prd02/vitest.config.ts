@@ -13,7 +13,11 @@ export default defineConfig({
   resolve: rootConfig.resolve,
   test: {
     environment: "node",
-    include: ["tests/qr/prd02/**/*.test.ts"],
+    include: [
+      "tests/qr/prd02/**/*.test.ts",
+      "tests/unit/contracts/impl/prd02-*.test.ts",
+      "tests/unit/agent-api/prd02-*.test.ts"
+    ],
     setupFiles: [],
     server: { deps: { inline: [/^@aura3d\//, /^@aura3d$/] } }
   }
