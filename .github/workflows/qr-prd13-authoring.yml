@@ -15,7 +15,9 @@ on:
 
 concurrency:
   group: qr-prd13-${{ github.ref }}
-  cancel-in-progress: true
+  # Never cancel main runs (FINAL-REMAINING-WORK 0.2): every main push and
+  # schedule run must complete so it can be cited; branches still dedupe.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   unit:
