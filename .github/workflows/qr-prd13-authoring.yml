@@ -31,5 +31,5 @@ jobs:
       # Lane-scoped: 3 unrelated agent-api files (paused-render-clock,
       # production-bridge-boundary, canvas2d) fail on the whole stack today.
       - run: pnpm exec vitest run tests/unit/agent-api/looks.test.ts tests/unit/agent-api/look-lint.test.ts tests/unit/agent-api/prompt-plan-v2.test.ts tests/unit/agent-api/structural-qa.test.ts tests/unit/agent-api/agent-api.test.ts tests/unit/contracts
-      - name: PRD-13 delta suite (bundle delta ≤ 12 KB gz)
+      - name: PRD-13 delta suite (bundle delta ≤ 9 KB gz)
         run: pnpm exec vitest run --config tests/qr/prd13/vitest.qr-prd13.config.ts
