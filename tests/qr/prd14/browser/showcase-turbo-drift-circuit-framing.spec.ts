@@ -41,10 +41,9 @@ test.describe("showcase-turbo-drift-circuit framing (T2.3)", () => {
             { rig?: string; subjectScreenHeightFraction?: number | null });
         await page.keyboard.up("KeyW");
         expect(framing.rig).toBe("turbo-drift.chase");
-        if (framing.subjectScreenHeightFraction !== null && framing.subjectScreenHeightFraction !== undefined) {
-          expect(framing.subjectScreenHeightFraction).toBeGreaterThanOrEqual(FRACTION[0]);
-          expect(framing.subjectScreenHeightFraction).toBeLessThanOrEqual(FRACTION[1]);
-        }
+        expect(framing.subjectScreenHeightFraction, "rig must report a measured fraction (lane-08 #643)").not.toBeNull();
+          expect(framing.subjectScreenHeightFraction!).toBeGreaterThanOrEqual(FRACTION[0]);
+          expect(framing.subjectScreenHeightFraction!).toBeLessThanOrEqual(FRACTION[1]);
         expect(errors).toEqual([]);
       } finally {
         server.close();

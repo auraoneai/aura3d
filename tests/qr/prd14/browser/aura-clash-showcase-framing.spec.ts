@@ -44,10 +44,9 @@ test.describe("aura-clash-showcase framing (T2.3)", () => {
           JSON.parse(JSON.stringify(eval(EVIDENCE + ".framing"))) as
             { rig?: string; subjectScreenHeightFraction?: number | null });
         expect(framing.rig).toBe("aura-clash.fighting");
-        if (framing.subjectScreenHeightFraction !== null && framing.subjectScreenHeightFraction !== undefined) {
-          expect(framing.subjectScreenHeightFraction).toBeGreaterThanOrEqual(FRACTION[0]);
-          expect(framing.subjectScreenHeightFraction).toBeLessThanOrEqual(FRACTION[1]);
-        }
+        expect(framing.subjectScreenHeightFraction, "rig must report a measured fraction (lane-08 #643)").not.toBeNull();
+          expect(framing.subjectScreenHeightFraction!).toBeGreaterThanOrEqual(FRACTION[0]);
+          expect(framing.subjectScreenHeightFraction!).toBeLessThanOrEqual(FRACTION[1]);
         expect(errors).toEqual([]);
       } finally {
         server.close();
