@@ -1,9 +1,9 @@
 /**
  * PRD-05 Aura3D translator: mounts `Prd05SceneSpec` objects whose models are
  * §6.3 optimized GLBs (EXT_meshopt_compression + KHR_mesh_quantization +
- * KHR_texture_basisu). `qrFlags: ["assets"]` routes loads through the C-16
- * decoder registry (vendored `/aura-decoders/`); anything the public API
- * cannot express lands in the capability log.
+ * KHR_texture_basisu). The C-16 decoder registry is not yet on the default
+ * `model()` path (05-WIRE), so the capability log does not claim it; anything
+ * the public API cannot express lands in the capability log.
  */
 import {
   camera,
@@ -21,6 +21,7 @@ import {
 } from "@aura3d/engine";
 import { setTypedGLBActorQrFlags } from "@aura3d/engine/lanes";
 import { setRendererQrFlags } from "@aura3d/rendering";
+import { adapterBudgetMs, DEFAULT_CAPTURE_TIMEOUT_MS, waitForFirstDraw } from "../../lib/failfast";
 import { hdriAssets } from "../../../shared/assets";
 import type { CapabilityEntry, CapabilityStatus, ReadyPayload } from "../../../shared/types";
 import { prd05Assets, type Prd05AssetEntry } from "../../../scenes/prd05/assets";
@@ -28,7 +29,8 @@ import type { Prd05SceneSpec } from "../../../scenes/prd05/spec";
 
 declare const __AURA3D_VERSION__: string;
 
-const assetUrl = (entry: Prd05AssetEntry): string => `/${entry.repoPath}`;
+// Served URLs (dist `/qr-assets/`), never repo paths: capture.mjs serves only the built dist.
+const assetUrl = (entry: Prd05AssetEntry): string => entry.url;
 
 class CapabilityLog {
   readonly entries: CapabilityEntry[] = [];
@@ -53,7 +55,7 @@ const auraModelAssets = defineAuraAssets(
 
 function hdriDefinition(id: keyof typeof hdriAssets) {
   const entry = hdriAssets[id];
-  return { type: "texture" as const, format: "hdr", url: `/${entry.repoPath}`, hash: entry.sha256, metadata: { license: entry.provenance, sourcePath: entry.repoPath } };
+  return { type: "texture" as const, format: "hdr", url: entry.url, hash: entry.sha256, metadata: { license: entry.provenance, sourcePath: entry.repoPath } };
 }
 
 const auraHdriAssets = defineAuraAssets({
@@ -150,13 +152,13 @@ export async function runPrd05AuraScene(spec: Prd05SceneSpec, host: HTMLElement,
   });
   await app.ready();
 
-  const drawDeadline = performance.now() + 90_000;
-  while (performance.now() < drawDeadline) {
-    app.step(0);
-    const diagnostics = app.diagnostics();
-    if (diagnostics.drawCalls > 0 || diagnostics.errors.length > 0) break;
-    await new Promise((resolve) => setTimeout(resolve, 50));
-  }
+  // T0-22: fail closed. A mount that records errors with zero draws, or never
+  // draws inside 0.8 × the capture timeout, throws NoDrawError so the page
+  // publishes __QR_ERROR__ instead of a masked READY (same helper as
+  // aura3d/common.ts).
+  const runQuery = typeof window === "undefined" ? new URLSearchParams() : new URLSearchParams(window.location.search);
+  const budgetMs = adapterBudgetMs(Number(runQuery.get("timeout")) || DEFAULT_CAPTURE_TIMEOUT_MS);
+  await waitForFirstDraw(app, Math.max(1, Math.min(90_000, budgetMs - (performance.now() - started))));
 
   app.step(spec.time);
   for (let frame = 0; frame < spec.settleFrames; frame += 1) {
@@ -167,11 +169,18 @@ export async function runPrd05AuraScene(spec: Prd05SceneSpec, host: HTMLElement,
 
   const diagnostics = app.diagnostics();
   const assets = diagnostics.assets.map((asset) => ({ id: asset.id, status: asset.status }));
-  const failed = assets.filter((asset) => asset.status === "failed" || asset.status === "error");
+  const failed = assets.filter((asset) => asset.status === "error");
   if (failed.length) {
     log.add("optimized-glb-load", "missing", `assets failed to load: ${failed.map((a) => a.id).join(", ")}`);
   } else {
-    log.add("optimized-glb-load", "supported", `${assets.length} optimized GLB(s) decoded via C-16 registry`);
+    // No C-16 claim: this adapter passes no decoders and the default model()
+    // path does not forward the registry yet (05-WIRE, Q-04-1 #448), so the
+    // decode path is not attributable from here.
+    log.add(
+      "optimized-glb-load",
+      "partial",
+      `${assets.length} optimized GLB(s) loaded; decoder path unattributed (C-16 registry not on the default model() path, 05-WIRE)`
+    );
   }
 
   return {
