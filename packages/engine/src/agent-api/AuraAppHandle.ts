@@ -52,6 +52,12 @@ export interface AuraAppHandle<TScene = unknown, TDiagnostics = unknown, TNode =
   pause(): void;
   resume(): void;
   step(dt?: number): void;
+  /**
+   * Advance app state without presenting (see `AuraApp.advance`). Optional on
+   * the structural handle; `createAuraApp` apps implement it. Required by the
+   * A3D_QR_CAMERA_LOOP path in `createGameAppRuntime`.
+   */
+  advance?(dt?: number): void;
   diagnostics(): TDiagnostics;
   evidence(options?: GameRuntimeEvidenceOptions): GameRuntimeEvidence;
   screenshot(): AuraAppScreenshot;

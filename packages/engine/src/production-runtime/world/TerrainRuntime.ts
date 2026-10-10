@@ -35,6 +35,7 @@ import {
   type TerrainRecord
 } from "../../agent-api/world/terrain.js";
 import type { AuraWorldQualityTier } from "../../agent-api/world/types.js";
+import { tierForSettings } from "./WorldFramePasses.js";
 
 const PATCH_FORMAT = new VertexFormat([
   { semantic: "uv", components: 2, offset: 0, shaderName: "a_grid" }
