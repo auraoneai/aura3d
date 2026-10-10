@@ -20,9 +20,18 @@ export default defineConfig({
   timeout: 60_000,
   workers: 1,
   use: {
-    browserName: "chromium",
+    // §19/§20 — browser engine + mobile emulation come from env so the same
+    // spec set can run under Chromium (prd07-vfx.yml), WebKit/Firefox
+    // (qr-prd07-browsers.yml) and a 390×844 DPR-3 touch profile.
+    browserName: (process.env.PRD07_BROWSER as "chromium" | "webkit" | "firefox" | undefined) ?? "chromium",
     headless: true,
-    viewport: { width: 800, height: 600 },
+    viewport:
+      process.env.PRD07_MOBILE === "1"
+        ? { width: 390, height: 844 }
+        : { width: 800, height: 600 },
+    ...(process.env.PRD07_MOBILE === "1"
+      ? { deviceScaleFactor: 3, isMobile: true, hasTouch: true }
+      : {}),
     launchOptions: chromiumLaunchOptions,
   },
   reporter: [["list"], ["json", { outputFile: process.env.PLAYWRIGHT_JSON_OUTPUT_NAME ?? "tests/reports/prd07-browser.json" }]]

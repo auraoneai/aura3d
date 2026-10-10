@@ -274,3 +274,39 @@ jobs:
           path: ${{ env.EVIDENCE_DIR }}/
           retention-days: 30
           if-no-files-found: warn
+
+  mobile:
+    # §20 — mobile emulation: 390×844, DPR 3, touch. Coverage: the impact
+    # library (juice-automount hitSpark), rain/weather production
+    # (particles-production) and the sky scenes (sky-background,
+    # sky-daynight-identity). PRD07_MOBILE=1 drives the viewport/profile in
+    # tests/qr/prd07/playwright.config.ts.
+    runs-on: macos-14
+    timeout-minutes: 45
+    env:
+      PRD07_MOBILE: "1"
+      PLAYWRIGHT_JSON_OUTPUT_NAME: tests/reports/prd07-mobile.json
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: Lane mobile-emulation specs
+        run: |
+          pnpm exec playwright test --config tests/qr/prd07/playwright.config.ts \
+            browser/juice-automount.spec.ts \
+            browser/particles-production.spec.ts \
+            browser/sky-background.spec.ts \
+            browser/sky-daynight-identity.spec.ts
+      - name: Upload mobile report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd07-mobile-${{ github.run_id }}
+          path: tests/reports/prd07-mobile.json
+          retention-days: 30
+          if-no-files-found: warn
