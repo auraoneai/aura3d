@@ -24,7 +24,7 @@ const flag = (name: string): string | undefined => {
 };
 
 const reviewsDir = flag("--reviews");
-const runUrl = flag("--run") ?? "lookdev-manual";
+const runFlag = flag("--run");
 const write = argv.includes("--write");
 const repoRoot = process.cwd();
 
@@ -43,9 +43,9 @@ interface VerdictInput {
   readonly axes?: Record<string, number>;
 }
 
-const loadVerdicts = (path: string): { runUrl: string; entries: Map<string, VerdictInput> } => {
+const loadVerdicts = (path: string): { runUrl: string | undefined; entries: Map<string, VerdictInput> } => {
   const entries = new Map<string, VerdictInput>();
-  let url = runUrl;
+  let url = runFlag;
   if (path.endsWith(".json")) {
     const doc = JSON.parse(readFileSync(path, "utf8"));
     if (doc.entries && typeof doc.entries === "object") {
@@ -65,7 +65,14 @@ const loadVerdicts = (path: string): { runUrl: string; entries: Map<string, Verd
   return { runUrl: url, entries };
 };
 
-const { entries: verdicts } = loadVerdicts(resolve(repoRoot, reviewsDir));
+const { runUrl: loadedRunUrl, entries: verdicts } = loadVerdicts(resolve(repoRoot, reviewsDir));
+// 05-S9 admissions must cite the look-dev run that produced the verdicts:
+// --run, else the index's runUrl. No placeholder default.
+if (!loadedRunUrl) {
+  console.error("library-promote: no look-dev run id — pass --run <run-url> or use an index with runUrl");
+  process.exit(2);
+}
+const runUrl: string = loadedRunUrl;
 const manifest = readAuraLibrary(repoRoot);
 if (!manifest) throw new Error("no aura.library.json found");
 
@@ -87,7 +94,8 @@ const promoted: typeof manifest.entries = manifest.entries.map((entry) => {
   };
   const previous = entry.lookDev ?? { runUrl, reviews: [] as never[] };
   const lookDev = { ...previous, runUrl, reviews: [...previous.reviews, review] };
-  const approved = verdict === "accept" || entry.lookDevApproved === true;
+  // The newest verdict decides: an earlier approval does not survive a reject.
+  const approved = verdict === "accept";
   const admissionOk = entry.admission?.status === "admitted";
 
   let action: string;
@@ -105,7 +113,11 @@ const promoted: typeof manifest.entries = manifest.entries.map((entry) => {
 for (const r of report) console.log(`${r.kit}/${r.id}: ${r.action} (${r.detail})`);
 
 const { issues } = syncAuraLibrary(repoRoot);
-if (issues.length) console.warn(`sync issues: ${issues.map((i) => `${i.kit}/${i.entryId}: ${i.issue}`).join("; ")}`);
+if (issues.length) {
+  console.error(`sync issues: ${issues.map((i) => `${i.kit}/${i.entryId}: ${i.issue}`).join("; ")}`);
+  // Never promote over a missing file or sha256 drift.
+  if (write) process.exit(1);
+}
 
 const kits = new Map<string, { candidate: number; release: number }>();
 for (const e of promoted) {
