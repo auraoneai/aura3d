@@ -1,6 +1,6 @@
 import type { QrFlagName, QrFlags } from "../contracts/core";
 import type { RenderDevice } from "../RenderDevice";
-import { programCacheSlot, type ProgramCacheLike } from "../contracts/program";
+import { programCacheSlot, type ProgramCacheLike, type ProgramDegradationLike } from "../contracts/program";
 import { frameUniformsSlot, type FrameUniformsLike } from "../contracts/frameUniforms";
 import { OutputPass } from "../output/OutputPass";
 
@@ -31,11 +31,30 @@ export function qrCoreOutputOn(flags: QrFlags): boolean {
 
 const caches = new WeakMap<RenderDevice, ProgramCacheLike>();
 const auraFrames = new WeakMap<RenderDevice, FrameUniformsLike>();
+const degradationSinks = new WeakMap<RenderDevice, (degradation: ProgramDegradationLike) => void>();
+
+/**
+ * T0-05 (a): C-36 sink for this device's generated-program degradations
+ * (`extension-lobe-pending`, `program-compile-failed`). Late-bound: the cache
+ * forwards to whatever sink is installed when the degradation happens, so the
+ * engine mount (C-38 `onDegradation`, lane 15) can install it after the
+ * renderer has already created the cache. Pass `undefined` to clear.
+ */
+export function setRendererProgramDegradationSink(device: RenderDevice, sink: ((degradation: ProgramDegradationLike) => void) | undefined): void {
+  if (sink) degradationSinks.set(device, sink);
+  else degradationSinks.delete(device);
+}
 
 export function rendererProgramCache(device: RenderDevice, flags: QrFlags): ProgramCacheLike {
   let cache = caches.get(device);
   if (!cache) {
-    cache = programCacheSlot.get(flags)(device);
+    // T0-05 (a): without `flags` the real generator resolves no ShaderFeature
+    // contributors and no C-03 lobes, so no registered chunk ever reaches a
+    // generated program.
+    cache = programCacheSlot.get(flags)(device, {
+      flags,
+      onDegradation: (degradation) => degradationSinks.get(device)?.(degradation)
+    });
     caches.set(device, cache);
   }
   return cache;

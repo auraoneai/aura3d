@@ -184,5 +184,17 @@ class StubProgramCache implements ProgramCacheLike {
   }
 }
 
-export const programCacheSlot: ContractSlot<(device: RenderDevice, o?: { parallelCompile?: boolean }) => ProgramCacheLike> =
+/** Optional C-36 sink for generator/cache degradations (`extension-lobe-pending`, `program-compile-failed`). */
+export interface ProgramDegradationLike { readonly code: string; readonly message: string; readonly ownerPrd?: number; }
+/**
+ * C-02 cache options. `flags` makes the real generator resolve registered
+ * ShaderFeatures and C-03 lobes (without it no feature chunk is ever spliced —
+ * T0-05); `onDegradation` receives C-36 entries.
+ */
+export interface ProgramCacheSlotOptions {
+  readonly parallelCompile?: boolean;
+  readonly flags?: QrFlags;
+  readonly onDegradation?: (degradation: ProgramDegradationLike) => void;
+}
+export const programCacheSlot: ContractSlot<(device: RenderDevice, o?: ProgramCacheSlotOptions) => ProgramCacheLike> =
   defineContractSlot("C-02", "prd01", "A3D_QR_CORE", (device) => new StubProgramCache(device));
