@@ -264,19 +264,20 @@ test.describe("PRD-06 character-hero (T4.4, §17.2)", () => {
     const landingDip = Math.max(...frames.filter((f) => f.t >= PHASES.airEnd && f.t <= PHASES.airEnd + 0.15).map((f) => standingY - (f.motion.bones.pelvis?.position[1] ?? standingY)));
     expect(landingDip, `landing dip ${landingDip}m`).toBeGreaterThanOrEqual(0.03);
 
-    // Gate 5 — PRD §17.2 Phase 4: spring toe-leaf excursion < 1° from 0.6 s
-    // after deceleration onwards (stopEnd → end of the sampled sequence).
-    // The stop/air/land phases keep kicking the chain (leg motion is the
-    // spring input, not residual ring — stiffness 60 + relativeDamping 12
-    // settles a still chain in ~0.2 s), so the gate covers the settled tail.
-    // The window must hold samples: an empty/starved-pacing slice would let
-    // the gate pass vacuously.
-    const springTail = frames.filter((f) => f.t >= PHASES.stopEnd + 0.6);
+    // Gate 5 — PRD §17.2 Phase 4 / §15: every spring bone deviates < 1° from
+    // its settled pose from 0.6 s after the root decelerates to 0 onwards.
+    // In this choreography the run→stop deceleration is followed by a jump,
+    // so the root's last deceleration is the landing at `airEnd`; the gate
+    // window is [airEnd + 0.6 s, end of the sampled sequence] (the rig idles
+    // there). The window must hold samples: an empty/starved-pacing slice
+    // would let the gate pass vacuously.
+    const springFrom = PHASES.airEnd + 0.6;
+    const springTail = frames.filter((f) => f.t >= springFrom);
     expect(
       springTail.length,
-      `spring settle window [${PHASES.stopEnd + 0.6}s, ∞) held ${springTail.length} samples`,
+      `spring settle window [${springFrom}s, ∞) held ${springTail.length} samples`,
     ).toBeGreaterThanOrEqual(2);
-    const springSettle = springTipExcursionDeg(frames, PHASES.stopEnd + 0.6, Number.POSITIVE_INFINITY);
+    const springSettle = springTipExcursionDeg(frames, springFrom, Number.POSITIVE_INFINITY);
     expect(springSettle, `spring tip excursion ${springSettle}°`).toBeLessThan(1.0);
 
     // Gate 6 — look-at error ≤ 5° for every frame after blend-in. The look-at
