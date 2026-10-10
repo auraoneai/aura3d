@@ -74,7 +74,14 @@ jobs:
       - name: SwiftShader guard
         if: always()
         run: |
-          if grep -rl '"rendererString": *"[^"]*SwiftShader' tests/reports/ 2>/dev/null; then
+          set -euo pipefail
+          # Fail closed: the guard needs at least one report that recorded a
+          # probe renderer; a run that wrote none proves nothing about the GPU.
+          if ! grep -rlq '"rendererString"' tests/reports/; then
+            echo "::error::no prd05 report recorded a rendererString — cannot prove a real GPU" >&2
+            exit 1
+          fi
+          if grep -rl '"rendererString": *"[^"]*SwiftShader' tests/reports/; then
             echo "::error::probe renderer is SwiftShader — visual evidence must come from a real GPU" >&2
             exit 1
           fi
