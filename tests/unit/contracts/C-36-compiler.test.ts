@@ -7,7 +7,6 @@ import { asRuntimeImpl } from "../../../packages/engine/src/agent-api/compiler/c
 import { createProductionRuntimeCollectedLights } from "../../../packages/engine/src/agent-api/compiler/observations";
 import { createProductionRuntimeRendererInput } from "../../../packages/engine/src/agent-api/compiler/renderInput";
 import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
-import type { CollectedLight } from "@aura3d/rendering";
 import { registerNodeHandler } from "../../../packages/engine/src/contracts/compiler";
 import { scene } from "../../../packages/engine/src/agent-api/nodes/scene";
 import { primitive } from "../../../packages/engine/src/agent-api/nodes/primitives";

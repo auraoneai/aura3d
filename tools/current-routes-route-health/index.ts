@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium, type Browser, type Page } from "@playwright/test";
-import { readProductionPngStats, type ProductionPngStats } from "../production-runtime-report-bridge/pngStats";
+import { readProductionPngStats, type ProductionPngStats } from "../_quarantine/production-runtime-report-bridge/pngStats";
 import { legacyPathForContextualPath } from "../naming-taxonomy/contextualAliases";
 
 export const CURRENT_ROUTE_HEALTH_ORIGIN = process.env.A3D_ROUTE_HEALTH_ORIGIN ?? "http://localhost:5180";

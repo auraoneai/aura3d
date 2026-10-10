@@ -76,14 +76,14 @@ jobs:
       - name: Regenerate route-composition baseline
         run: node tools/quality-rebuild-capture/route-composition.mjs --json docs/project/aura3d-quality-rebuild/migration/baseline.json
 
+      # Red-flag revert: continue-on-error removed — build/divergence failures
+      # must fail the job, not mask as green with an artifact upload.
       - name: Build affected routes from source
         id: build
-        continue-on-error: true
         run: node tools/quality-rebuild-capture/capture-games.mjs --build-only
 
       - name: Record default vs capture=review views
         id: divergence
-        continue-on-error: true
         env:
           A3D_DIVERGENCE_DIR: tests/qr/prd09/.out
         run: pnpm exec playwright test --config tests/qr/prd09/playwright.config.ts

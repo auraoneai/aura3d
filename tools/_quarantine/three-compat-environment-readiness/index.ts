@@ -5,7 +5,7 @@ import {
   createThreeCompatEnvironmentGalleryModel,
   loadThreeCompatEnvironmentManifest,
   summarizeThreeCompatEnvironmentLibrary
-} from "../../packages/engine/src/devtools/environments/node";
+} from "../../../packages/engine/src/devtools/environments/node";
 
 interface ThreeCompatEnvironmentReadinessCheck {
   readonly name: string;

@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { inflateSync } from "node:zlib";
 import { build } from "esbuild";
 import { chromium, type Browser, type Page } from "@playwright/test";
-import { baseReport, isRecord, readJson, writeJson } from "../external-parity-reporting/index.js";
+import { baseReport, isRecord, readJson, writeJson } from "../_quarantine/external-parity-reporting/index.js";
 import { productVisualParityScene } from "./productScene.js";
 
 type ProductVisualEngine = "aura3d" | "threejs" | "babylon";

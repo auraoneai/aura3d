@@ -1,6 +1,6 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { artifact, sourceIdentity } from '../muse3jsparity-readiness/evidence-lineage';
+import { artifact, sourceIdentity } from '../../muse3jsparity-readiness/evidence-lineage';
 import { finalClaimsDocuments, type FinalClaimsConfig, type FinalClaim } from './claims';
 // Authored exact source mapping. Missing validated receipts remain visible;
 // source-only implementation or raw historical results cannot close these rows.

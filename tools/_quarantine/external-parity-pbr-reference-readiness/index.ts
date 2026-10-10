@@ -13,7 +13,7 @@ import {
   pbrReferenceFinite,
   pbrReferenceLuminance,
   pbrTransmissionVolumeConformanceSuite
-} from "../../packages/rendering/src/index.js";
+} from "../../../packages/rendering/src/index.js";
 import { baseReport, isRecord, readJson, writeJson } from "../external-parity-reporting/index.js";
 
 export interface ExternalParityPbrReferenceReadinessReport {
