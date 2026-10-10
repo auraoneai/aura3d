@@ -45,9 +45,13 @@ describe("matrixPalette affine row 3 (06-QXX)", () => {
       expect(m[15]).toBe(1);
     }
     // arm.L world translation must be the parent's rotated composite, not
-    // the raw local offset — catches operand-order regressions.
+    // the raw local offset — catches operand-order regressions. spine is at
+    // (0, 1.25, 0) rotated 90° about +Y, so arm.L's local (0.1, 0.2, 0) lands
+    // at (0, 1.45, -0.1); local·parent (B·A) would keep x = 0.1.
     const armWorld = worlds[2]!;
-    expect(Math.abs(armWorld[12]!)).toBeGreaterThan(1e-6);
+    expect(armWorld[12]!).toBeCloseTo(0, 6);
+    expect(armWorld[13]!).toBeCloseTo(1.45, 6);
+    expect(armWorld[14]!).toBeCloseTo(-0.1, 6);
   });
 
   it("multiplyMat4 matches the canonical scene convention", () => {
