@@ -53,6 +53,7 @@ import { WebGL2ContextLifecycle } from "./webgl2/ContextLifecycle";
 import { WebGL2TextureRegistry } from "./webgl2/TextureUpload";
 import { WebGL2SamplerRegistry } from "./webgl2/Samplers";
 import { WebGL2DrawCallBinder } from "./webgl2/MultiDraw";
+import { AURA_FRAME_BINDING, AURA_LIGHTS_BINDING } from "./resources/UniformBlock";
 import { WebGL2ReadbackProbe } from "./webgl2/Probe";
 import { WebGL2LegacyPostPipeline } from "./webgl2/LegacyPost";
 import { cubeFaceTarget, rgba8TextureInternalFormat, textureUploadFormat, resolveRenderTargetFormat, resolveCompressedTextureFormat, magFilter, minFilter, addressMode } from "./webgl2/TextureFormats";
@@ -63,6 +64,12 @@ export interface TextureFilterAnisotropicExtension {
 }
 
 export const WEBGL_CUBE_FACES: readonly TextureCubeFace[] = ["px", "nx", "py", "ny", "pz", "nz"];
+
+/** C-08 named uniform-block → binding-point assignment applied post-link (T0-02). */
+const NAMED_UNIFORM_BLOCK_BINDINGS: ReadonlyArray<readonly [blockName: string, binding: number]> = [
+  ["AuraFrame", AURA_FRAME_BINDING],
+  ["AuraLights", AURA_LIGHTS_BINDING]
+];
 
 export interface WebGL2DeviceOptions {
   readonly canvas: HTMLCanvasElement | OffscreenCanvas;
@@ -657,6 +664,17 @@ export class WebGL2Device implements RenderDevice {
       const log = this.gl.getProgramInfoLog(program) ?? "Unknown shader link error";
       this.gl.deleteProgram(program);
       throw new RenderDeviceError("WebGL shader link failed", "SHADER_LINK_FAILED", { label: sources.label, log });
+    }
+
+    // T0-02/C-08: generated blocks declare `layout(std140)` with no baked
+    // `binding=`; the named-block → binding-point assignment is fixed here so
+    // every linked program gets AuraFrame→0 and AuraLights→1 regardless of
+    // declaration order. Programs that do not declare a block are skipped.
+    for (const [blockName, binding] of NAMED_UNIFORM_BLOCK_BINDINGS) {
+      const index = this.gl.getUniformBlockIndex(program, blockName);
+      if (index !== this.gl.INVALID_INDEX) {
+        this.gl.uniformBlockBinding(program, index, binding);
+      }
     }
 
     const shader = new WebGL2ShaderProgram(

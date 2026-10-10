@@ -317,8 +317,9 @@ export class ForwardPass extends BaseRenderPass {
         this.options.exposure ?? 1,
         0
       );
-      // `layout(binding = 0)` in the generated program fixes the program-side
-      // mapping, so one global bind covers every generated draw this frame.
+      // The device binds the AuraFrame block to point 0 at link time
+      // (`uniformBlockBinding`), so one global buffer bind covers every
+      // generated draw this frame.
       if (auraFrame.buffer) context.device.bindUniformBuffer?.(auraFrame.buffer, 0);
     }
     try {
