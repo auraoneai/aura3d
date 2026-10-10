@@ -138,13 +138,9 @@ interface GltfAnimation {
 }
 
 function parseGlb(buf: Buffer): ParsedGlb | null {
-  if (buf.length < 20) return null;
-  let doc: ReturnType<typeof parseGlbDocument>;
-  try {
-    doc = parseGlbDocument(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer, "clip-library://parse");
-  } catch {
-    return null;
-  }
+  if (buf.length < 20 || buf.readUInt32LE(0) !== 0x46546c67) return null; // not "glTF" — skip
+  // Malformed GLBs past the magic throw from the shared parser, as the local JSON.parse did.
+  const doc = parseGlbDocument(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer, "clip-library://parse");
   const json = doc.json as GltfJson;
   // BIN chunk follows the JSON chunk (8-byte chunk header: length + type 0x004E4942).
   let bin = Buffer.alloc(0);

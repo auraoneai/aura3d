@@ -186,16 +186,11 @@ export function combineFidelity(rig: RigGrade, mesh: MeshGrade): RigGrade {
 const HUMANOID_BONE_HINTS = ["hips", "spine", "neck", "head", "shoulder", "arm", "forearm", "hand", "upleg", "leg", "foot", "thigh", "calf", "pelvis", "clavicle"];
 
 function inspectGlb(buf: Buffer): GlbInfo | null {
-  if (buf.length < 20) return null;
-  let json: Record<string, any>;
-  let jsonChunkBytes: number;
-  try {
-    const doc = parseGlbDocument(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer, "resolve-asset://inspect");
-    json = doc.json as Record<string, any>;
-    jsonChunkBytes = doc.jsonChunkBytes;
-  } catch {
-    return null;
-  }
+  if (buf.length < 20 || buf.readUInt32LE(0) !== 0x46546c67) return null; // not "glTF"
+  // Malformed GLBs past the magic throw from the shared parser, as the local JSON.parse did.
+  const doc = parseGlbDocument(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer, "resolve-asset://inspect");
+  const json = doc.json as Record<string, any>;
+  const jsonChunkBytes = doc.jsonChunkBytes;
   const prims = (json.meshes ?? []).flatMap((m: any) => m.primitives ?? []);
   const imgs = json.images ?? [];
   const min = [1e9, 1e9, 1e9];
