@@ -10,11 +10,8 @@
 import { game as engineGame, scene } from "@aura3d/engine";
 import { createGame, type Game, lookManifest } from "@aura3d/game";
 import { SIEGE_GOLF_HOLES } from "../gameplay/course";
-import { HoleFlow, type SiegeGameEvent } from "../gameplay/hole-flow";
 import { ShotController } from "../gameplay/shot";
 import { quatToEuler } from "../gameplay/structures";
-import { SIEGE_GOLF_CANONICAL_SOLUTIONS } from "../gameplay/solutions";
-import { completeHole } from "../gameplay/score";
 import { createGolfAudio, type GolfAudioCue } from "../legacy/golf-audio";
 import direction from "../../art/direction";
 import { siegeWorldNodes } from "./scene/world";
@@ -24,29 +21,22 @@ import { wireSiegeFx } from "./scene/fx";
 import { RANGE_BG } from "./scene/materials";
 import { publishSiegeEvidence } from "./evidence";
 import { applySiegeScenario } from "./scenarios";
+import { createSiegeFlowState, wireSiegeHoleFlow } from "./hole-flow";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_SIEGE_GOLF" as const;
 const AIM_RATE = 0.9; // radians/s while an aim key is held
-const AUTOPLAY_DELAY_SECONDS = 0.9;
-
 const target = document.getElementById("app") ?? document.body;
 
 // ---------------------------------------------------------------- sim state --
 
-let holeIndex = 0;
-let flow = new HoleFlow(SIEGE_GOLF_HOLES[0]!);
+const flowState = createSiegeFlowState();
 const shot = new ShotController();
-shot.loadHole(flow.hole.aim);
-let lastStrikePower = 0;
-let toppledAtStrike = 0;
-let toppledThisShot = 0;
+shot.loadHole(flowState.flow.hole.aim);
 let autoplayEnabled = false;
-let autoplayWait = AUTOPLAY_DELAY_SECONDS;
-let pendingAdvance: "next-hole" | "retry-hole" | "new-round" | null = null;
 let frame = 0;
 const bootedAtMs = performance.now();
 
-const rigState = { ball: { x: flow.hole.tee[0], z: flow.hole.tee[1] }, ballInFlight: false };
+const rigState = { ball: { x: flowState.flow.hole.tee[0], z: flowState.flow.hole.tee[1] }, ballInFlight: false };
 const world = siegeWorldNodes();
 
 function buildScene() {
@@ -177,143 +167,30 @@ document.addEventListener("visibilitychange", () => {
 
 // ------------------------------------------------------------- hole flow -----
 
-let currentVisualNames = new Set(flow.sim.visuals.map((v) => v.name));
-
-/** Pose + show the active hole's visuals; hide union names it doesn't own. */
-function layoutHole(): void {
-  const specs = new Map(flow.sim.visuals.map((v) => [v.name, v]));
-  currentVisualNames = new Set(specs.keys());
-  for (const name of world.visualNames) {
-    const h = handle(name);
-    if (!h) continue;
-    const spec = specs.get(name);
-    if (!spec) {
-      h.setVisible(false);
-      continue;
-    }
-    h.setVisible(true)
-      .setPosition(spec.position[0], spec.position[1], spec.position[2])
-      .setRotation(spec.rotation.x, spec.rotation.y, spec.rotation.z);
-  }
-}
-
-function loadHole(index: number): void {
-  holeIndex = index;
-  flow = new HoleFlow(SIEGE_GOLF_HOLES[index]!);
-  shot.loadHole(flow.hole.aim);
-  lastStrikePower = 0;
-  toppledAtStrike = 0;
-  toppledThisShot = 0;
-  pendingAdvance = null;
-  autoplayWait = AUTOPLAY_DELAY_SECONDS;
-  layoutHole();
-}
-
-function applyStrikeResult(result: NonNullable<ReturnType<ShotController["strike"]>>): void {
-  const applied = flow.strike(result.input.vector, result.input.power);
-  if (!applied) {
-    shot.armNextShot();
-    return;
-  }
-  toppledAtStrike = flow.snapshot().targetsDown;
-  lastStrikePower = result.input.power;
-  const p = flow.sim.ball.position;
-  fx.strike(p[0], p[2], result.input.power);
-  pushCue("drive-hit");
-}
-
-function consumeEvents(events: readonly SiegeGameEvent[]): void {
-  for (const event of events) {
-    switch (event.type) {
-      case "strike":
-        break;
-      case "impact-wood": {
-        const p = flow.sim.ball.position;
-        pushCue("wood-crack");
-        fx.impactWood(p[0], p[1], p[2]);
-        break;
-      }
-      case "impact-metal": {
-        const p = flow.sim.ball.position;
-        pushCue("metal-clang");
-        fx.impactMetal(p[0], p[1], p[2]);
-        break;
-      }
-      case "cup-flash": {
-        const p = flow.sim.ball.position;
-        fx.cupFlash(p[0], p[2]);
-        break;
-      }
-      case "pin-down": {
-        const body = flow.sim.pinBodies.get(event.pinId);
-        const p = body?.position ?? [0, 0.4, 0];
-        pushCue("target-down");
-        fx.pinDown(p[0], p[1], p[2]);
-        break;
-      }
-      case "pin-sunk": {
-        const cup = flow.hole.cups[0];
-        pushCue("cup-sink");
-        if (cup) fx.pinSunk(cup.x, cup.z);
-        break;
-      }
-      case "out-of-bounds":
-        break;
-      case "settled":
-        toppledThisShot = flow.snapshot().targetsDown - toppledAtStrike;
-        break;
-      case "complete": {
-        const entry = completeHole(flow.scoreEntry());
-        const cup = flow.hole.cups[0];
-        pushCue(entry.stars >= 2 ? "par-chime" : "cup-sink");
-        if (cup) fx.complete(cup.x, cup.z);
-        pendingAdvance = holeIndex >= SIEGE_GOLF_HOLES.length - 1 ? "new-round" : "next-hole";
-        break;
-      }
-      case "failed":
-        pushCue("bogey-sting");
-        fx.failed();
-        pendingAdvance = "retry-hole";
-        break;
-      case "reset":
-        break;
-      default:
-        break;
-    }
-  }
-}
-
-function autoplayStroke(): void {
-  const solution = SIEGE_GOLF_CANONICAL_SOLUTIONS.find((s) => s.holeId === flow.hole.id);
-  if (!solution || flow.phase !== "aiming") return;
-  const stroke = solution.strokes[Math.min(flow.strokes, solution.strokes.length - 1)]!;
-  shot.aimTo(stroke.angle);
-  const result = shot.strikeAtPower(stroke.power);
-  if (result) applyStrikeResult(result);
-}
+const holeFlow = wireSiegeHoleFlow(flowState, { world, handle, shot, fx, pushCue });
 
 // ------------------------------------------------------------- frame loop ----
 
 let lastHudSignature = "";
 let lastHudWrite = 0;
 function syncHud(): void {
-  const snap = flow.snapshot();
+  const snap = flowState.flow.snapshot();
   const aim = shot.state;
   const signature = [
-    holeIndex, snap.phase, snap.strokes, snap.targetsSunk, aim.charge.toFixed(2),
-    pendingAdvance ?? ""
+    flowState.holeIndex, snap.phase, snap.strokes, snap.targetsSunk, aim.charge.toFixed(2),
+    flowState.pendingAdvance ?? ""
   ].join("|");
   if (signature === lastHudSignature && frame - lastHudWrite < 300) return;
   lastHudSignature = signature;
   lastHudWrite = frame;
-  game.hud.set("hole", `${flow.hole.name} · PAR ${snap.par}`);
+  game.hud.set("hole", `${flowState.flow.hole.name} · PAR ${snap.par}`);
   game.hud.set("score", `${snap.strokes}`);
   game.hud.set("power", aim.phase === "charging" ? `PWR ${Math.round(aim.charge * 100)}%` : "");
   game.hud.set("targets", `${snap.targetsSunk}/${snap.totalTargets} SUNK · ${snap.targetsDown} DOWN`);
   game.hud.set("message",
-    pendingAdvance === "new-round" ? "ROUND COMPLETE — ENTER TO RESTART"
-      : pendingAdvance === "next-hole" ? "HOLE COMPLETE — ENTER FOR NEXT"
-        : pendingAdvance === "retry-hole" ? "HOLE FAILED — ENTER TO RETRY"
+    flowState.pendingAdvance === "new-round" ? "ROUND COMPLETE — ENTER TO RESTART"
+      : flowState.pendingAdvance === "next-hole" ? "HOLE COMPLETE — ENTER FOR NEXT"
+        : flowState.pendingAdvance === "retry-hole" ? "HOLE FAILED — ENTER TO RETRY"
           : snap.phase === "simulating" ? ""
             : "A/D AIM · HOLD SPACE TO CHARGE · RELEASE TO DRIVE");
 }
@@ -325,7 +202,7 @@ game.app.onFrame?.(({ dt: rawDt }) => {
   if (game.session.paused || stepSeconds <= 0) return;
 
   const aim = shot.state;
-  if (flow.phase === "aiming") {
+  if (flowState.flow.phase === "aiming") {
     if (input.held("aimLeft")) shot.aimBy(-AIM_RATE * stepSeconds);
     if (input.held("aimRight")) shot.aimBy(AIM_RATE * stepSeconds);
     if (input.pressed("charge") && aim.phase === "idle") {
@@ -337,57 +214,57 @@ game.app.onFrame?.(({ dt: rawDt }) => {
     }
     if (!input.held("charge") && aim.phase === "charging") {
       const result = shot.strike();
-      if (result) applyStrikeResult(result);
+      if (result) holeFlow.applyStrikeResult(result);
     }
     if (pendingDrag) {
       const result = shot.strikeFromDrag(pendingDrag.start, pendingDrag.end);
       pendingDrag = null;
-      if (result) applyStrikeResult(result);
+      if (result) holeFlow.applyStrikeResult(result);
     }
     // Deterministic capture path: autorun/scenario plays the canonical
     // solution for the active hole.
     if (autoplayEnabled) {
-      autoplayWait -= stepSeconds;
-      if (autoplayWait <= 0) {
-        autoplayWait = 1.2;
-        autoplayStroke();
+      flowState.autoplayWait -= stepSeconds;
+      if (flowState.autoplayWait <= 0) {
+        flowState.autoplayWait = 1.2;
+        holeFlow.autoplayStroke();
       }
     }
-  } else if (flow.phase === "simulating") {
+  } else if (flowState.flow.phase === "simulating") {
     pendingDrag = null;
-    consumeEvents(flow.update(Math.max(1, Math.round(stepSeconds * 60))));
-    toppledThisShot = flow.snapshot().targetsDown - toppledAtStrike;
+    holeFlow.consumeEvents(flowState.flow.update(Math.max(1, Math.round(stepSeconds * 60))));
+    flowState.toppledThisShot = flowState.flow.snapshot().targetsDown - flowState.toppledAtStrike;
   }
 
   if (input.pressed("reset")) {
-    flow.resetHole();
-    layoutHole();
-    pendingAdvance = null;
+    flowState.flow.resetHole();
+    holeFlow.layoutHole();
+    flowState.pendingAdvance = null;
   }
-  if (pendingAdvance && (input.pressed("confirm") || confirmTap)) {
+  if (flowState.pendingAdvance && (input.pressed("confirm") || confirmTap)) {
     pushCue("ui-confirm");
-    if (pendingAdvance === "next-hole") loadHole(holeIndex + 1);
-    else if (pendingAdvance === "retry-hole") loadHole(holeIndex);
-    else loadHole(0);
+    if (flowState.pendingAdvance === "next-hole") holeFlow.loadHole(flowState.holeIndex + 1);
+    else if (flowState.pendingAdvance === "retry-hole") holeFlow.loadHole(flowState.holeIndex);
+    else holeFlow.loadHole(0);
   }
   confirmTap = false;
-  if (shot.state.phase === "struck" && flow.phase === "aiming") shot.armNextShot();
+  if (shot.state.phase === "struck" && flowState.flow.phase === "aiming") shot.armNextShot();
 
   // ---- presentation ----------------------------------------------------------
-  const ball = flow.sim.ball.position;
+  const ball = flowState.flow.sim.ball.position;
   rigState.ball = { x: ball[0], z: ball[2] };
-  rigState.ballInFlight = flow.phase === "simulating";
+  rigState.ballInFlight = flowState.flow.phase === "simulating";
 
-  for (const pose of flow.sim.poses()) {
-    if (!currentVisualNames.has(pose.name)) continue;
+  for (const pose of flowState.flow.sim.poses()) {
+    if (!flowState.currentVisualNames.has(pose.name)) continue;
     const e = quatToEuler(pose.rotation);
     handle(pose.name)?.setPosition(pose.position[0], pose.position[1], pose.position[2])
       .setRotation(e.x, e.y, e.z);
   }
 
   // Aim guide + charge ring track the ball while aiming.
-  const aiming = flow.phase === "aiming";
-  const aimAngle = flow.hole.aim;
+  const aiming = flowState.flow.phase === "aiming";
+  const aimAngle = flowState.flow.hole.aim;
   const baseDir = [
     aimAngle[0] / (Math.hypot(aimAngle[0], aimAngle[1]) || 1),
     aimAngle[1] / (Math.hypot(aimAngle[0], aimAngle[1]) || 1)
@@ -422,17 +299,17 @@ const appliedLook: Record<string, unknown> = Object.freeze({
 publishSiegeEvidence({
   game,
   run: () => ({
-    holeIndex,
-    holeName: flow.hole.name,
-    holeId: flow.hole.id,
-    phase: flow.phase,
-    strokes: flow.strokes,
-    par: flow.hole.par,
-    toppledThisShot,
-    lastStrikePower,
-    roundComplete: holeIndex >= SIEGE_GOLF_HOLES.length - 1 && flow.phase === "hole-complete"
+    holeIndex: flowState.holeIndex,
+    holeName: flowState.flow.hole.name,
+    holeId: flowState.flow.hole.id,
+    phase: flowState.flow.phase,
+    strokes: flowState.flow.strokes,
+    par: flowState.flow.hole.par,
+    toppledThisShot: flowState.toppledThisShot,
+    lastStrikePower: flowState.lastStrikePower,
+    roundComplete: flowState.holeIndex >= SIEGE_GOLF_HOLES.length - 1 && flowState.flow.phase === "hole-complete"
   }),
-  flow: () => flow.snapshot(),
+  flow: () => flowState.flow.snapshot(),
   aim: () => shot.state,
   sceneSwaps: () => 0,
   appliedLook,
@@ -444,7 +321,7 @@ publishSiegeEvidence({
 const params = new URL(location.href).searchParams;
 if (params.get("autorun") === "1") autoplayEnabled = true;
 applySiegeScenario(params.get("scenario"), {
-  loadHole: (index) => loadHole(index),
+  loadHole: (index) => holeFlow.loadHole(index),
   enableAutoplay: () => { autoplayEnabled = true; }
 });
 
