@@ -164,6 +164,7 @@ describe("game camera rig aggregator", () => {
 // energy instead (the same shape `diagnostics().camera` exposes). Recorded
 // pre-change failures: evidence/prd08/gates.md.
 import { createCameraController } from "../../../packages/engine/src/agent-api/camera/CameraController";
+import "../../../packages/engine/src/agent-api/camera/rigs/chase";
 import type { AuraCameraSubject } from "../../../packages/engine/src/contracts/camera";
 
 const subjectAt = (position: readonly [number, number, number], over: Partial<AuraCameraSubject> = {}): AuraCameraSubject => ({

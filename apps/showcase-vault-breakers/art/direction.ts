@@ -69,7 +69,7 @@ export default defineArtDirection({
   standIns: [
     { feature: "rect area key over playfield", file: "src/v2/scene/lighting.ts", request: "R-14-14", removeWhen: "PRD 02 area-light integrator real" },
     { feature: "plastics transmission", file: "src/v2/scene/materials.ts", request: "R-14-14", removeWhen: "PRD 04 transmission real" },
-    { feature: "4k playfield art", file: "src/v2/scene/world.ts", request: "R-14-15", removeWhen: "K4 playfield texture authored + admitted" },
+    { feature: "4k playfield art", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "K4 playfield texture authored + admitted" },
     { feature: "DMD backglass", file: "src/v2/hud.ts", request: "R-14-15", removeWhen: "text3D dot-matrix material (§6.9.5 HUD) real" }
   ],
   criticalCategories: ["material_quality", "lighting", "modeling_assets"],

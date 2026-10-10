@@ -121,9 +121,15 @@ test("GPU splat bake == CPU evalSplatRules within ±1/255 at 64 points", async (
       ruleNoise: Array.from(encoded.ruleNoise)
     }
   });
+  // P-22 requireOrSkip: on CI the runner must expose WebGL2 — a missing
+  // adapter is a red job, not a skipped spec; local non-CI may skip.
   if ("error" in gpu) {
-    test.skip(true, `webgl2 unavailable in this runner: ${gpu.error}`);
-    return;
+    if (process.env.CI) {
+      expect((gpu as { error?: string }).error ?? null, "CI runner must expose WebGL2").toBeNull();
+    } else {
+      test.skip(true, `webgl2 unavailable in this runner: ${gpu.error}`);
+      return;
+    }
   }
 
   // CPU reference at 64 samples spread across the map (GL rows are bottom-up).

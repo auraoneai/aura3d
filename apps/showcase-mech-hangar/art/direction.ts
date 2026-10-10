@@ -66,9 +66,9 @@ export default defineArtDirection({
   signatureEffect: "A hangar/pit scene split via game.setScene: an orbit-configurable workshop then a floodlit arena where two rigged mechs trade strikes under contact sparks and impact light.",
   standIns: [
     { feature: "k1-hangar HDRI", file: "src/v2/scene/lighting.ts", request: "R-14-13", removeWhen: "hangar HDRI admitted" },
-    { feature: "K4 hangar kit + K2 pit dressing", file: "src/v2/scene/world.ts", request: "R-14-15", removeWhen: "hangar kit admitted" },
-    { feature: "rigged mech + clip set", file: "src/v2/scene/world.ts", request: "R-14-15", removeWhen: "K6 mech rig admitted" },
-    { feature: "K8 impact/servo samples", file: "src/v2/audio.ts", request: "R-14-15", removeWhen: "K8 sample set admitted" }
+    { feature: "K4 hangar kit + K2 pit dressing", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "hangar kit admitted" },
+    { feature: "rigged mech + clip set", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "K6 mech rig admitted" },
+    { feature: "K8 impact/servo samples", file: "src/v2/audio.ts", request: "R-14-09", removeWhen: "K8 sample set admitted" }
   ],
   criticalCategories: ["animation_quality", "environment_world"],
   tiers: {

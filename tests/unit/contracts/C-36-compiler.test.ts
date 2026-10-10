@@ -7,6 +7,7 @@ import { asRuntimeImpl } from "../../../packages/engine/src/agent-api/compiler/c
 import { createProductionRuntimeCollectedLights } from "../../../packages/engine/src/agent-api/compiler/observations";
 import { createProductionRuntimeRendererInput } from "../../../packages/engine/src/agent-api/compiler/renderInput";
 import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
+import type { CollectedLight } from "@aura3d/rendering";
 import { registerNodeHandler } from "../../../packages/engine/src/contracts/compiler";
 import { scene } from "../../../packages/engine/src/agent-api/nodes/scene";
 import { primitive } from "../../../packages/engine/src/agent-api/nodes/primitives";
@@ -168,7 +169,7 @@ describe("C-36 compiler", () => {
     // must not add the same lights again.
     const flags = resolveQrFlags({ options: ["compiler", "lighting"] });
     const compiled = await compileScene(lit, mountCtx(flags, { collectedLights: createProductionRuntimeCollectedLights(lit) }));
-    const lights = [...(compiled.source?.collectedLights ?? [])];
+    const lights = [...((compiled.source as { collectedLights?: readonly CollectedLight[] } | undefined)?.collectedLights ?? [])];
     expect(lights).toHaveLength(2);
     for (const light of lights) {
       expect(Number.isFinite(light.layerMask)).toBe(true);

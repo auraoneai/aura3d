@@ -7,7 +7,7 @@
 // the best graded sortie, the §6.9.11 flight rig, and dirty-checked HUD.
 // Gameplay modules (flight/patrol/drones/weapons/ghost) are imported, not
 // modified; audio plays through the legacy cue controller on admitted sfx
-// ids until C-25 lands (stand-in R-14-15).
+// ids until C-25 lands (stand-in R-14-09).
 import { game as engineGame, scene, type AuraCameraPose, type GameInputController } from "@aura3d/engine";
 import { createGame, type Game, lookManifest } from "@aura3d/game";
 import {
