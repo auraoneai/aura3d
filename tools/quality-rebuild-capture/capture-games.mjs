@@ -386,11 +386,20 @@ function pageReadiness() {
     }
   } catch { /* ignore */ }
   const q = window.__QRC__ ?? {};
+  // C-33: the C-24 beacon (`window.__AURA3D_GAME__`) is installed by createGame
+  // routes; `state === "playing"` is only reported after the first presented
+  // frame with drawCalls > 0 (T0-30). `null` on legacy routes → draw probe below.
+  let beacon = null;
+  try {
+    const b = window.__AURA3D_GAME__;
+    if (b && typeof b === "object") beacon = { state: b.state ?? null, frame: b.frame ?? null, firstFrameAt: b.firstFrameAt ?? null };
+  } catch { /* ignore */ }
   return {
     now: performance.now(),
     canvasCount: canvases.length,
     liveApps,
     liveDrawCalls,
+    beacon,
     firstDrawAt: q.firstDrawAt ?? null,
     firstGpuSubmitAt: q.firstGpuSubmitAt ?? null,
     firstContextAt: q.firstContextAt ?? null
@@ -762,8 +771,11 @@ async function captureRun(browser, game, run, url, gameDir, options = {}) {
     record.httpStatus = response?.status() ?? null;
     record.gotoMs = Date.now() - navStarted;
 
-    // Readiness: canvas present AND (first instrumented draw / engine drawCalls > 0 / route readyExpr),
-    // falling back to a fixed delay after the canvas appears when no signal is available.
+    // Readiness (C-33): when the C-24 beacon is installed, `state === "playing"`
+    // is authoritative — it is only published after the first presented frame
+    // with drawCalls > 0 (T0-30). Routes without a beacon keep the legacy probe:
+    // canvas present AND (first instrumented draw / engine drawCalls > 0 /
+    // route readyExpr), falling back to a fixed delay when no signal is available.
     const readyTimeout = game.readyTimeoutMs ?? defaults.readyTimeoutMs ?? 30_000;
     const fallbackMs = defaults.readyFallbackMs ?? 6_000;
     let canvasAt = null; let reason = "timeout"; let last = null;
@@ -772,7 +784,18 @@ async function captureRun(browser, game, run, url, gameDir, options = {}) {
       last = await page.evaluate(pageReadiness).catch(() => null);
       if (last && game.readyExpr) last.custom = Boolean(await evaluateExpression(page, game.readyExpr));
       if (last && last.canvasCount > 0 && canvasAt === null) canvasAt = Date.now();
-      if (last && last.canvasCount > 0) {
+      if (last && last.beacon) {
+        if (last.beacon.state === "playing") {
+          reason = "beacon";
+          // Self-audit: `playing` must always mean drawCalls > 0. Flag rather
+          // than fail so the run record shows the contract was violated.
+          if ((last.liveDrawCalls ?? 0) === 0 && last.firstDrawAt === null && last.firstGpuSubmitAt === null) {
+            (record.flags ??= []).push("beacon-without-drawcalls");
+          }
+          break;
+        }
+        if (Date.now() - pollStart >= readyTimeout) { reason = "beacon-timeout"; break; }
+      } else if (last && last.canvasCount > 0) {
         const drew = (last.liveDrawCalls ?? 0) > 0 || last.firstDrawAt !== null || last.firstGpuSubmitAt !== null;
         const customOk = game.readyExpr ? last.custom === true : true;
         if (drew && customOk) { reason = game.readyExpr ? "draw+readyExpr" : "draw"; break; }
@@ -792,6 +815,7 @@ async function captureRun(browser, game, run, url, gameDir, options = {}) {
     }).catch(() => null);
     record.timing = {
       readiness: reason,
+      beacon: last?.beacon ?? null,
       canvasAfterGotoMs: canvasAt ? canvasAt - navStarted : null,
       firstWebglContextMs: last?.firstContextAt != null ? Math.round(last.firstContextAt) : null,
       firstDrawCallMs: last?.firstDrawAt != null ? Math.round(last.firstDrawAt) : null,
