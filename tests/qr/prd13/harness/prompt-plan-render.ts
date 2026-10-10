@@ -1,24 +1,36 @@
-// PRD-13 §17.2 — prompt-plan-render harness.
-// Compiles one plan (?recipe=<sceneType>&plan=<0|1|2>) through the v2 pipeline,
-// mounts the compiled scene, and exposes the v2 report (visualSystems census,
-// appliedEffects, rejected, look) plus app diagnostics on window.
-import { compilePromptPlanV2, createAuraApp, defineAuraAssets, definePromptPlan, type AuraPromptSceneType } from "@aura3d/engine";
+/**
+ * PRD-13 §17.2 prompt-plan-render harness (4 recipes × 3 plans, S3 grid).
+ * Query: recipe=<sceneType>&plan=<0|1|2>&a3d-qr=looks
+ *
+ * Compiles one plan through compilePromptPlanV2, mounts the compiled scene,
+ * settles the mount + HDRI chain, renders one frame, and publishes the v2
+ * report, an independent node census of the compiled snapshot (so the spec
+ * can check `visualSystems ⊆ census` without trusting the compiler's own
+ * census code), diagnostics and the frame PNG for the S3 judged half.
+ */
+import {
+  compilePromptPlanV2,
+  createAuraApp,
+  defineAuraAssets,
+  definePromptPlan,
+  groups,
+  type AuraSceneNode
+} from "@aura3d/engine";
+import { measureFrame, publish, publishError, settle } from "./frame";
+
+type AuraPromptSceneType = Parameters<typeof definePromptPlan>[0]["sceneType"];
 
 const params = new URLSearchParams(location.search);
 const recipe = params.get("recipe") as AuraPromptSceneType | null;
 const planIndex = Number(params.get("plan") ?? "0");
 
 const assets = defineAuraAssets({
-  helmet: {
-    type: "model",
-    url: "/fixtures/asset-corpus/damaged-helmet.glb",
-    hash: "4028ccbce11eb924"
-  }
+  helmet: { type: "model", format: "glb", url:"/fixtures/asset-corpus/damaged-helmet.glb", hash: "4028ccbce11eb924" }
 });
 
-// Three plan variants per recipe — the §17.2/S3 grid is 4 recipes × 3 plans.
-// Variants exercise look resolution via plan.look, environment, and lighting paths.
-const PLANS: Record<AuraPromptSceneType, readonly unknown[]> = {
+// Three variants per recipe exercise look resolution via plan.look,
+// environment keywords, and the lighting preset.
+const PLANS: Partial<Record<AuraPromptSceneType, readonly unknown[]>> = {
   "product-viewer": [
     definePromptPlan({
       sceneType: "product-viewer",
@@ -132,40 +144,53 @@ const PLANS: Record<AuraPromptSceneType, readonly unknown[]> = {
   ]
 };
 
-declare global {
-  interface Window {
-    __AURA3D_PROMPT_PLAN__?: {
-      recipe: string | null;
-      plan: number;
-      status: "built" | "error";
-      error?: string;
-      report?: unknown;
-      diagnostics?: unknown;
-    };
-  }
+interface CensusNode {
+  readonly kind: string;
+  readonly detail?: string;
+  readonly shadow: boolean;
 }
 
-try {
-  if (!recipe || !(recipe in PLANS)) throw new Error(`unknown recipe "${recipe}"`);
-  const plan = PLANS[recipe][planIndex] as Parameters<typeof compilePromptPlanV2>[0] | undefined;
+function groupNames(nodes: readonly AuraSceneNode[]): string[] {
+  const names: string[] = [];
+  for (const node of nodes) {
+    if (node.kind !== "group") continue;
+    if (typeof node.name === "string") names.push(node.name);
+    names.push(...groupNames(node.children));
+  }
+  return names;
+}
+
+async function run(): Promise<void> {
+  const variants = recipe ? PLANS[recipe] : undefined;
+  if (!recipe || !variants) throw new Error(`unknown recipe "${recipe}"`);
+  const plan = variants[planIndex] as Parameters<typeof compilePromptPlanV2>[0] | undefined;
   if (!plan) throw new Error(`no plan index ${planIndex} for recipe "${recipe}"`);
   const canvas = document.getElementById("plan-canvas") as HTMLCanvasElement;
   const compiled = compilePromptPlanV2(plan);
-  const app = createAuraApp(canvas, { scene: compiled.scene, pixelRatio: 1, resize: false });
-  for (let i = 0; i < 5; i++) app.step(1 / 60);
-  app.pause();
-  window.__AURA3D_PROMPT_PLAN__ = {
+  const snapshot = compiled.scene.toJSON();
+  const census: CensusNode[] = groups.flatten(snapshot.nodes).map((node) => {
+    const record = node as unknown as Record<string, unknown>;
+    const detail = (record.environment ?? record.light ?? record.effect) as string | undefined;
+    return {
+      kind: node.kind,
+      ...(detail !== undefined ? { detail } : {}),
+      shadow: record.shadow === true || (typeof record.shadow === "object" && record.shadow !== null)
+    };
+  });
+  const app = createAuraApp(canvas, { scene: compiled.scene, pixelRatio: 1, resize: false, autoStart: false });
+  const hdriStatus = await settle(app);
+  const frame = measureFrame(app, canvas);
+  const diagnostics = app.diagnostics() as unknown as Record<string, unknown>;
+  publish({
     recipe,
     plan: planIndex,
-    status: "built",
     report: compiled.report,
-    diagnostics: app.diagnostics()
-  };
-} catch (error) {
-  window.__AURA3D_PROMPT_PLAN__ = {
-    recipe,
-    plan: planIndex,
-    status: "error",
-    error: error instanceof Error ? error.message : String(error)
-  };
+    census,
+    groupNames: groupNames(snapshot.nodes),
+    hdriStatus,
+    frame,
+    diagnostics: { errors: diagnostics.errors ?? [], drawCalls: diagnostics.drawCalls ?? null, look: diagnostics.look ?? null }
+  });
 }
+
+run().catch(publishError);
