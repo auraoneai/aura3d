@@ -413,6 +413,28 @@ export class Renderer {
   private sceneDepthCopyTarget: RenderTarget | null = null;
   private lastAppliedOutput: RendererAppliedOutput | null = null;
   private warnedV2Postprocess = false;
+  /** T0-07: C-36-shaped record of the last legacy postprocess chain skipped
+   *  under A3D_QR_CORE_OUTPUT (`null` when nothing was skipped). Read by the
+   *  engine's C-31 `output.postSkipped` section; routing through PostGraph v2
+   *  is lane 03's Q-03-2/Q-03-3. */
+  private lastPostSkipped: { readonly code: string; readonly message: string; readonly effects: readonly string[] } | null = null;
+  get postSkipped(): { readonly code: string; readonly message: string; readonly effects: readonly string[] } | null {
+    return this.lastPostSkipped;
+  }
+  private recordPostSkipped(postprocess: NonNullable<ReturnType<typeof collectPostprocess>>): void {
+    const effects = Object.entries(postprocess as Record<string, unknown>)
+      .filter(([key, value]) => key !== "targetFormat" && key !== "temporal" && (value === true || (typeof value === "object" && value !== null)))
+      .map(([key]) => key);
+    this.lastPostSkipped = {
+      code: "post-v2-unmigrated",
+      message: "legacy postprocess chain skipped under A3D_QR_CORE_OUTPUT; encode handled by OutputPass",
+      effects
+    };
+    if (!this.warnedV2Postprocess) {
+      this.warnedV2Postprocess = true;
+      if (typeof console !== "undefined") console.warn(`POSTPROCESS_V2_UNMIGRATED: ${this.lastPostSkipped.message}`);
+    }
+  }
   private resolutionGovernor?: ResolutionGovernor;
   private renderScaleCeiling = 1;
   private readonly unsubscribeDprWatch?: () => void;
@@ -673,10 +695,7 @@ export class Renderer {
     // reported once and skipped rather than double-encoded.
     const qrOutput = qrCoreOutputOn(rendererQrFlags(this.device));
     if (qrOutput && postprocess !== undefined) {
-      if (!this.warnedV2Postprocess) {
-        this.warnedV2Postprocess = true;
-        if (typeof console !== "undefined") console.warn("POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain skipped under A3D_QR_CORE_OUTPUT; encode handled by OutputPass");
-      }
+      this.recordPostSkipped(postprocess);
       postprocess = undefined;
     }
     let postprocessTargetFormat: Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f"> | undefined;
@@ -981,10 +1000,7 @@ export class Renderer {
     // reported once and skipped rather than double-encoded.
     const qrOutput = qrCoreOutputOn(rendererQrFlags(this.device));
     if (qrOutput && postprocess !== undefined) {
-      if (!this.warnedV2Postprocess) {
-        this.warnedV2Postprocess = true;
-        if (typeof console !== "undefined") console.warn("POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain skipped under A3D_QR_CORE_OUTPUT; encode handled by OutputPass");
-      }
+      this.recordPostSkipped(postprocess);
       postprocess = undefined;
     }
     let postprocessTargetFormat: Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f"> | undefined;

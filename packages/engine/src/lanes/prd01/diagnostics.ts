@@ -26,6 +26,9 @@ export interface Prd01OutputState {
 export function collectOutput(app: AuraApp): unknown {
   const surface = (app as { output?: AuraOutputSurface & { [PRD01_OUTPUT_STATE]?: Prd01OutputState } }).output;
   const state = surface?.[PRD01_OUTPUT_STATE]?.snapshot();
+  // T0-07: the renderer's record of the legacy postprocess chain skipped
+  // under A3D_QR_CORE_OUTPUT (C-36-shaped; PostGraph v2 routing is lane 03's).
+  const postSkipped = (app as { [PRD01_RENDERER]?: Prd01RendererLike })[PRD01_RENDERER]?.postSkipped ?? null;
   if (!state) {
     return {
       implementation: null,
@@ -34,7 +37,8 @@ export function collectOutput(app: AuraApp): unknown {
       toneMapping: null,
       exposure: null,
       dithering: null,
-      overlay: null
+      overlay: null,
+      postSkipped
     };
   }
   const requested = state.requested;
@@ -52,7 +56,8 @@ export function collectOutput(app: AuraApp): unknown {
     targetFormat: null,
     degraded: null,
     overlay: state.overlay,
-    rendererErrors: state.rendererErrors
+    rendererErrors: state.rendererErrors,
+    postSkipped
   };
 }
 
@@ -79,6 +84,11 @@ interface Prd01RendererLike {
       readonly max: number;
     };
   };
+  readonly postSkipped?: {
+    readonly code: string;
+    readonly message: string;
+    readonly effects: readonly string[];
+  } | null;
 }
 
 export function collectResolution(app: AuraApp): unknown {
