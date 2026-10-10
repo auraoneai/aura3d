@@ -724,7 +724,9 @@ export {
   resolveTerrainSlopeBlend,
   scatterWindOffset,
 } from "./TerrainTiles";
-export type { FrameBudgetDecision, FrameBudgetInput, RenderOrderAuditEntry, ScatterPlan, ScatterPlanOptions, ScatterWindOffset, TerrainBlendLayer, TerrainTileGridOptions, TerrainTileKey, TerrainTilePlan } from "./TerrainTiles";
+export type { FrameBudgetDecision, FrameBudgetInput, RenderOrderAuditEntry, ScatterPlan, ScatterPlanOptions, ScatterWindOffset, TerrainBlendLayer } from "./TerrainTiles";
+export { toHeightTexture } from "./TerrainHeightfield";
+export type { TerrainHeightTexture } from "./TerrainHeightfield";
 export {
   createBeamDescriptor,
   resolveBillboardCorners,
