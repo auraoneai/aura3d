@@ -53,3 +53,8 @@ export function captureFromUrl(url?: URL): CaptureContext {
     cameraPose
   };
 }
+
+// T0-32: bf1789b0 dropped `createFrameLoop` from "." — re-export under C-24
+// (the game/frame-loop entry lane-08 owns) so scaffold keeps it live.
+export { createFrameLoop } from "../agent-api/FrameLoop.js";
+export type { FrameLoopCallback, FrameLoopFrame, FrameLoopOptions, FrameLoopSnapshot, FrameLoopSource } from "../agent-api/FrameLoop.js";
