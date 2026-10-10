@@ -1,8 +1,7 @@
-From 5f1f281eed13a0b94514c21b13484b3fc1a456c6 Mon Sep 17 00:00:00 2001
+From 1a4b8b58c059bd6ba9a1167861f68113f014a1bd Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:45 +0000
-Subject: [PATCH] [qr-prd09] aura-clash-showcase: delete evidence files+blocks
- (T5.8)
+Subject: [PATCH] aura-clash-showcase: delete evidence files+blocks (T5.8)
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
@@ -55,7 +54,7 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../src/playable/arena/CrowdDrawEvidence.ts   |    3 -
  .../playable/evidence/auraClashArenaProof.ts  |  332 --
  .../src/seo/routeMetadata.ts                  |    3 -
- .../src/v2/evidence/index.ts                  |   95 -
+ .../src/v2/evidence/index.ts                  |   92 -
  .../tests/accessibility.spec.ts               |   20 -
  .../tests/asset-quality.spec.ts               |   59 -
  apps/aura-clash-showcase/tests/audio.spec.ts  |  106 -
@@ -76,7 +75,7 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../tests/route-health.spec.ts                |   14 -
  .../tests/screenshot.spec.ts                  |  129 -
  .../tests/visual-regression.spec.ts           |  212 --
- 70 files changed, 16254 deletions(-)
+ 70 files changed, 16251 deletions(-)
  delete mode 100644 apps/aura-clash-showcase/evidence/index.html
  delete mode 100644 apps/aura-clash-showcase/launch-evidence.command-plan.json
  delete mode 100644 apps/aura-clash-showcase/launch-evidence.coverage.json
@@ -12901,7 +12900,7 @@ index 279cc879a..000000000
 -  scheduleProofConsole();
 -}
 diff --git a/apps/aura-clash-showcase/src/main.ts b/apps/aura-clash-showcase/src/main.ts
-index 1337b902c..ed5d680e5 100644
+index 7628422b1..a02b85d73 100644
 --- a/apps/aura-clash-showcase/src/main.ts
 +++ b/apps/aura-clash-showcase/src/main.ts
 @@ -1,11 +1,6 @@
@@ -12916,9 +12915,9 @@ index 1337b902c..ed5d680e5 100644
  function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
    const raw = new URL(loc.href).searchParams.get("a3d-qr");
    if (raw === null) return undefined;
-@@ -13,11 +8,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
-   const short = `route-${flag.replace(/^A3D_QR_ROUTE_/, "").toLowerCase().replace(/_/g, "-")}`;
-   return entries.includes(short) || entries.includes(flag) ? true : undefined;
+@@ -16,11 +11,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const wanted = [`route-${slug.replace(/_/g, "-")}`, `route_${slug}`, flag];
+   return tokens.some((t) => wanted.includes(t)) ? true : undefined;
  }
 -
  const flags = resolveQrFlags({
@@ -13286,10 +13285,10 @@ index 4cfecf40f..000000000
 -export * from "../legacy/seo/routeMetadata";
 diff --git a/apps/aura-clash-showcase/src/v2/evidence/index.ts b/apps/aura-clash-showcase/src/v2/evidence/index.ts
 deleted file mode 100644
-index 5275b4844..000000000
+index 609afe94b..000000000
 --- a/apps/aura-clash-showcase/src/v2/evidence/index.ts
 +++ /dev/null
-@@ -1,95 +0,0 @@
+@@ -1,92 +0,0 @@
 -// apps/aura-clash-showcase/src/v2/evidence/index.ts — T2.5 evidence.
 -// §7.2.1 sections for aura-clash-showcase under
 -// window.__AURA3D_GAME_EVIDENCE__["aura-clash-showcase"], lazily computed,
@@ -13308,11 +13307,8 @@ index 5275b4844..000000000
 -  };
 -  readonly app: () => AuraApp | undefined;
 -  readonly snapshot: () => FightingGameSnapshot;
--  readonly appliedLook: {
--    readonly preset: string;
--    readonly toneMapping: string;
--    readonly exposureEV: number;
--  };
+-  // T2.2-post: appliedLook is the C-31 runtime look manifest — a varying shape.
+-  readonly appliedLook: Record<string, unknown>;
 -  readonly audioCueLog: () => readonly string[];
 -  readonly hitStopActive: () => boolean;
 -  readonly roundInfo: () => { readonly round: number; readonly timeLeft: number };
@@ -16838,5 +16834,5 @@ index 4bea9f716..000000000
 -  expect(proof.postProcess?.fogBehindCombatLane).toBe(true);
 -}
 -- 
-2.34.1
+2.52.0
 

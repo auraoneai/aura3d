@@ -1,8 +1,7 @@
-From abcb022023d409963e93ef2be7048dc45d68bea0 Mon Sep 17 00:00:00 2001
+From 067c544ffe6e37957e0469d00949025aaa3d62f4 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:48 +0000
-Subject: [PATCH] [qr-prd09] showcase-deep-recovery: delete evidence
- files+blocks (T5.8)
+Subject: [PATCH] showcase-deep-recovery: delete evidence files+blocks (T5.8)
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
@@ -15,8 +14,8 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../scripts/write-route-health.mjs            | 128 -----
  .../showcase-deep-recovery/src/legacy/main.ts | 220 ---------
  apps/showcase-deep-recovery/src/main.ts       |  10 -
- .../src/v2/evidence/index.ts                  | 137 ------
- 10 files changed, 1417 deletions(-)
+ .../src/v2/evidence/index.ts                  | 146 ------
+ 10 files changed, 1426 deletions(-)
  delete mode 100644 apps/showcase-deep-recovery/performance-report.json
  delete mode 100644 apps/showcase-deep-recovery/scripts/build-models.mjs
  delete mode 100644 apps/showcase-deep-recovery/scripts/build-sfx.mjs
@@ -1527,7 +1526,7 @@ index d9a696f8a..18d53c3fd 100644
  syncHud();
 -window.__DEEP_RECOVERY_EVIDENCE__ = collectDeepEvidence();
 diff --git a/apps/showcase-deep-recovery/src/main.ts b/apps/showcase-deep-recovery/src/main.ts
-index cb3606522..534ffa1fa 100644
+index 9807fc812..104091408 100644
 --- a/apps/showcase-deep-recovery/src/main.ts
 +++ b/apps/showcase-deep-recovery/src/main.ts
 @@ -1,14 +1,6 @@
@@ -1545,9 +1544,9 @@ index cb3606522..534ffa1fa 100644
  function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
    const raw = new URL(loc.href).searchParams.get("a3d-qr");
    if (raw === null) return undefined;
-@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
-     ? true
-     : undefined;
+@@ -19,11 +11,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const wanted = [`route-${slug.replace(/_/g, "-")}`, `route_${slug}`, flag];
+   return tokens.some((t) => wanted.includes(t)) ? true : undefined;
  }
 -
  const flags = resolveQrFlags({
@@ -1559,10 +1558,10 @@ index cb3606522..534ffa1fa 100644
  void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
 diff --git a/apps/showcase-deep-recovery/src/v2/evidence/index.ts b/apps/showcase-deep-recovery/src/v2/evidence/index.ts
 deleted file mode 100644
-index 29cd56479..000000000
+index 299b3378b..000000000
 --- a/apps/showcase-deep-recovery/src/v2/evidence/index.ts
 +++ /dev/null
-@@ -1,137 +0,0 @@
+@@ -1,146 +0,0 @@
 -// apps/showcase-deep-recovery/src/v2/evidence/index.ts — §7.2.1 evidence.
 -// Publishes window.__AURA3D_GAME_EVIDENCE__["showcase-deep-recovery"] as lazy
 -// getters. render.readbacksThisFrame is a constant 0: the v2 shell issues no
@@ -1665,6 +1664,15 @@ index 29cd56479..000000000
 -      const g = b.game;
 -      return { backend: g.fx.backend, liveCount: g.fx.liveCount };
 -    },
+-
+-    get framing() {
+-      const ev = b.game.app.camera?.evidence?.();
+-      return {
+-        rig: ev?.rig ?? "deep-recovery.chase",
+-        subjectScreenHeightFraction: ev?.subjectScreenHeightFraction ?? null,
+-        pose: ev?.pose ?? null
+-      };
+-    },
 -    get render() {
 -      const d = b.game.app.diagnostics();
 -      return {
@@ -1701,5 +1709,5 @@ index 29cd56479..000000000
 -  (root as Record<string, unknown>)[DEEP_EVIDENCE_ID] = ev;
 -}
 -- 
-2.34.1
+2.52.0
 

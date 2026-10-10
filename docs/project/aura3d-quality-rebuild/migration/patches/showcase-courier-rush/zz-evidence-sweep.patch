@@ -1,8 +1,7 @@
-From 959b3ad934075e92703e15462eade5bdc7647b72 Mon Sep 17 00:00:00 2001
+From ddaa5b926d3820760a637c558059d6273f41fa89 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:48 +0000
-Subject: [PATCH] [qr-prd09] showcase-courier-rush: delete evidence
- files+blocks (T5.8)
+Subject: [PATCH] showcase-courier-rush: delete evidence files+blocks (T5.8)
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
@@ -838,7 +837,7 @@ index 1d8cf8353..14afc4108 100644
 -});
 \ No newline at end of file
 diff --git a/apps/showcase-courier-rush/src/main.ts b/apps/showcase-courier-rush/src/main.ts
-index 6f721d540..99f40e045 100644
+index a298b2c6d..25423d3db 100644
 --- a/apps/showcase-courier-rush/src/main.ts
 +++ b/apps/showcase-courier-rush/src/main.ts
 @@ -1,14 +1,6 @@
@@ -856,9 +855,9 @@ index 6f721d540..99f40e045 100644
  function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
    const raw = new URL(loc.href).searchParams.get("a3d-qr");
    if (raw === null) return undefined;
-@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
-     ? true
-     : undefined;
+@@ -19,11 +11,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const wanted = [`route-${slug.replace(/_/g, "-")}`, `route_${slug}`, flag];
+   return tokens.some((t) => wanted.includes(t)) ? true : undefined;
  }
 -
  const flags = resolveQrFlags({
@@ -974,5 +973,5 @@ index 67bf01dc1..000000000
 -  };
 -}
 -- 
-2.34.1
+2.52.0
 
