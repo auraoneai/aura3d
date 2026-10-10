@@ -100,6 +100,15 @@ export function publishDeepEvidence(b: DeepEvidenceBindings): void {
       const g = b.game;
       return { backend: g.fx.backend, liveCount: g.fx.liveCount };
     },
+
+    get framing() {
+      const ev = b.game.app.camera?.evidence?.();
+      return {
+        rig: ev?.rig ?? "deep-recovery.chase",
+        subjectScreenHeightFraction: ev?.subjectScreenHeightFraction ?? null,
+        pose: ev?.pose ?? null
+      };
+    },
     get render() {
       const d = b.game.app.diagnostics();
       return {

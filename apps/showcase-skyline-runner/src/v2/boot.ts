@@ -565,6 +565,7 @@ void game.ready().then(() => {
 });
 
 publishSkylineEvidence({
+  game,
   player: () => ({
     x: state.player.x,
     y: state.player.y,

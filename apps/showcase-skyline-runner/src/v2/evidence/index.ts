@@ -1,6 +1,7 @@
 // apps/showcase-skyline-runner/src/v2/evidence/index.ts — lazy evidence sections
 // for games.json requiredConditions and the QR audits.
 import { SKYLINE_SECTION_COUNT } from "../../gameplay/level";
+import type { Game } from "@aura3d/game";
 
 export interface SkylineEvidenceBindings {
   player(): {
@@ -39,6 +40,7 @@ export interface SkylineEvidenceBindings {
   render(): { frame: number; firstFrameAt: number };
   loading(): { sceneSwaps: number; lazyLoadedCount: number };
   appliedLook(): Record<string, unknown>;
+  readonly game: Game;
   rig(): { id: string; position: readonly number[]; target: readonly number[]; fov: number };
   scenario(): { name: string; appliedLook: Record<string, unknown> };
 }
@@ -51,6 +53,15 @@ export function publishSkylineEvidence(bindings: SkylineEvidenceBindings) {
     get fx() { return bindings.fx(); },
     get audio() { return bindings.audio(); },
     get feel() { return bindings.feel(); },
+
+    get framing() {
+      const ev = bindings.game.app.camera?.evidence?.();
+      return {
+        rig: ev?.rig ?? "skyline-runner.follow2d",
+        subjectScreenHeightFraction: ev?.subjectScreenHeightFraction ?? null,
+        pose: ev?.pose ?? null
+      };
+    },
     get render() { return bindings.render(); },
     get loading() { return bindings.loading(); },
     get appliedLook() { return bindings.appliedLook(); },

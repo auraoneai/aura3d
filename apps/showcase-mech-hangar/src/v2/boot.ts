@@ -453,6 +453,7 @@ const appliedLook = () => ({
 
 let lastSnap: BoutSnapshot | null = null;
 const evidence = publishMechEvidence({
+  game,
   sceneId: () => (mode === "arena" ? "pit" : "hangar"),
   combat: () => {
     const stats = bout?.stats();
