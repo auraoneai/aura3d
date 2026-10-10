@@ -21,6 +21,8 @@ import { createRooftopRig, fallbackCameraNode, type RooftopRigState } from "./sc
 import { wireRooftopFx } from "./scene/fx";
 import { publishRooftopEvidence } from "./evidence";
 import { applyRooftopScenario } from "./scenarios";
+import { createRooftopIo, wireRooftopInput } from "./input";
+import { createRooftopActors } from "./actors";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_ROOFTOP_BUCKETS" as const;
 
@@ -121,10 +123,6 @@ const game = createGame({
 
 const fx = wireRooftopFx(game);
 let frame = 0;
-let chargePower = 0;
-let isCharging = false;
-let chargeDirection = 1;
-let aimPitch = 0;
 let lastResult: "make" | "miss" | null = null;
 let elapsedPlayTime = 0;
 const bootedAtMs = performance.now();
@@ -138,26 +136,14 @@ function handle(name: string): NodeHandle {
 
 // ------------------------------------------------------- skinned actors ------
 
-const actorClips = { scorer: "Ready", defender: "Plant" };
-function crossFade(actor: "scorer" | "defender", clip: string, seconds = 0.25): void {
-  if (actorClips[actor] === clip) return;
-  actorClips[actor] = clip;
-  const h = handle(actor === "scorer" ? "skinned-scorer" : "skinned-defender");
-  (h as { crossFadeTo?: (c: string, s: number) => void } | undefined)?.crossFadeTo?.(clip, seconds);
-}
-
-function actorTracksApplied(actor: "scorer" | "defender"): number {
-  const h = handle(actor === "scorer" ? "skinned-scorer" : "skinned-defender") as
-    { animation?: { animationState?: () => { tracksApplied?: number } | undefined }; animationState?: () => { tracksApplied?: number } | undefined } | undefined;
-  return h?.animation?.animationState?.()?.tracksApplied ?? h?.animationState?.()?.tracksApplied ?? 0;
-}
+const { crossFade, actorTracksApplied } = createRooftopActors(handle);
 
 // ------------------------------------------------------------ shot flow ------
 
 function resetBallToSpot(): void {
   ballState = createBallAtSpot(COURT_SPOTS[currentSpotIndex]!, isGold());
-  isCharging = false;
-  chargeDirection = 1;
+  io.charge.charging = false;
+  io.charge.direction = 1;
   fx.stopTrail();
   rigState.ball = null;
   crossFade("scorer", "Ready", 0.3);
@@ -217,86 +203,22 @@ function settleBall(): void {
 
 // ------------------------------------------------------------- input ---------
 
-const held = new Set<string>();
-window.addEventListener("keydown", (e) => {
-  if (!e.repeat) held.add(e.code);
-  if (e.code === "Space" && !e.repeat && !ballState.inFlight && scoreState.state === "playing") {
-    isCharging = true;
-    chargePower = 0;
-    chargeDirection = 1;
-    crossFade("scorer", "Load", 0.2);
-  }
-  if (e.repeat) return;
-  if (e.code === "KeyP" || e.code === "Escape") {
-    game.session.paused ? game.session.resume() : game.session.pause();
-  } else if (e.code === "KeyR") {
-    fullReset();
-  } else if (!ballState.inFlight && scoreState.state === "playing") {
-    if (e.code === "KeyA" || e.code === "ArrowLeft") {
-      currentSpotIndex = (currentSpotIndex - 1 + COURT_SPOTS.length) % COURT_SPOTS.length;
-      resetBallToSpot();
-      syncStaticNodes();
-    } else if (e.code === "KeyD" || e.code === "ArrowRight") {
-      currentSpotIndex = (currentSpotIndex + 1) % COURT_SPOTS.length;
-      resetBallToSpot();
-      syncStaticNodes();
-    }
-  }
-}, { passive: true });
-window.addEventListener("keyup", (e) => {
-  held.delete(e.code);
-  if (e.code === "Space" && isCharging) {
-    isCharging = false;
-    releaseShot(chargePower, aimPitch);
-  }
+const io = createRooftopIo();
+wireRooftopInput(io, {
+  target,
+  unlockAudio,
+  pauseOrResume: () => (game.session.paused ? game.session.resume() : game.session.pause()),
+  fullReset,
+  getBallState: () => ballState,
+  getScoreState: () => scoreState,
+  getSpotIndex: () => currentSpotIndex,
+  setSpotIndex: (v) => { currentSpotIndex = v; },
+  spots: COURT_SPOTS,
+  resetBallToSpot,
+  syncStaticNodes,
+  releaseShot,
+  crossFade,
 });
-window.addEventListener("keydown", (e) => {
-  if (["Space", "KeyA", "KeyD", "KeyW", "KeyS", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.code)) {
-    e.preventDefault();
-  }
-}, { passive: false });
-
-// Touch (§7.2.1 preset "aim-drag"): horizontal drag = pitch, vertical drag =
-// spot change; press-and-hold charges, release shoots.
-const touch = { downAt: 0, x: 0, y: 0, charging: false };
-target.addEventListener("pointerdown", (e) => {
-  unlockAudio();
-  touch.downAt = performance.now();
-  touch.x = e.clientX;
-  touch.y = e.clientY;
-  if (!ballState.inFlight && scoreState.state === "playing") {
-    touch.charging = true;
-    isCharging = true;
-    chargePower = 0;
-    chargeDirection = 1;
-    crossFade("scorer", "Load", 0.2);
-  }
-  (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
-});
-target.addEventListener("pointermove", (e) => {
-  if (!touch.charging) return;
-  const dy = (e.clientY - touch.y) / 240;
-  const dx = (e.clientX - touch.x) / 240;
-  aimPitch = Math.max(-1, Math.min(1, -dy * 1.4));
-  if (Math.abs(dx) > 0.5 && Math.abs(dx) > Math.abs(dy)) {
-    const delta = dx > 0 ? 1 : -1;
-    currentSpotIndex = (currentSpotIndex + delta + COURT_SPOTS.length) % COURT_SPOTS.length;
-    touch.x = e.clientX;
-    resetBallToSpot();
-    syncStaticNodes();
-    isCharging = true;
-    touch.charging = true;
-  }
-});
-target.addEventListener("pointerup", () => {
-  if (touch.charging) {
-    touch.charging = false;
-    isCharging = false;
-    releaseShot(chargePower, aimPitch);
-  }
-  touch.downAt = 0;
-});
-target.addEventListener("pointercancel", () => { touch.charging = false; isCharging = false; touch.downAt = 0; });
 
 // T2.6: hidden tab auto-pauses the session.
 document.addEventListener("visibilitychange", () => {
@@ -318,7 +240,7 @@ let lastHudSignature = "";
 let lastHudWrite = 0;
 function syncHud(): void {
   const spot = COURT_SPOTS[currentSpotIndex]!;
-  const signature = `${scoreState.score}|${scoreState.heat}|${currentSpotIndex}|${Math.round(chargePower * 100)}|${scoreState.state}|${scoreState.shotClock}`;
+  const signature = `${scoreState.score}|${scoreState.heat}|${currentSpotIndex}|${Math.round(io.charge.power * 100)}|${scoreState.state}|${scoreState.shotClock}`;
   if (signature === lastHudSignature && frame - lastHudWrite < 300) return;
   lastHudSignature = signature;
   lastHudWrite = frame;
@@ -326,7 +248,7 @@ function syncHud(): void {
   game.hud.set("heat", `HEAT ${scoreState.heat}`);
   game.hud.set("clock", `${Math.max(0, Math.ceil(scoreState.shotClock))}`);
   game.hud.set("spot", spot.name);
-  game.hud.set("meter", isCharging ? `${Math.round(chargePower * 100)}` : "");
+  game.hud.set("meter", io.charge.charging ? `${Math.round(io.charge.power * 100)}` : "");
 }
 
 game.app.onFrame?.(({ dt: rawDt }) => {
@@ -336,13 +258,13 @@ game.app.onFrame?.(({ dt: rawDt }) => {
   elapsedPlayTime += dt;
 
   // Charge meter ping-pong (0→1→0) while held.
-  if (isCharging) {
-    chargePower += chargeDirection * dt * 1.6;
-    if (chargePower >= 1) { chargePower = 1; chargeDirection = -1; }
-    else if (chargePower <= 0) { chargePower = 0; chargeDirection = 1; pushCue("chargeTick", 0.35); }
+  if (io.charge.charging) {
+    io.charge.power += io.charge.direction * dt * 1.6;
+    if (io.charge.power >= 1) { io.charge.power = 1; io.charge.direction = -1; }
+    else if (io.charge.power <= 0) { io.charge.power = 0; io.charge.direction = 1; pushCue("chargeTick", 0.35); }
   }
-  if (held.has("KeyW") || held.has("ArrowUp")) aimPitch = Math.min(1, aimPitch + dt * 1.4);
-  if (held.has("KeyS") || held.has("ArrowDown")) aimPitch = Math.max(-1, aimPitch - dt * 1.4);
+  if (io.held.has("KeyW") || io.held.has("ArrowUp")) io.charge.pitch = Math.min(1, io.charge.pitch + dt * 1.4);
+  if (io.held.has("KeyS") || io.held.has("ArrowDown")) io.charge.pitch = Math.max(-1, io.charge.pitch - dt * 1.4);
 
   // Heat-clear advance (same rule as legacy: on state transition).
   if (scoreState.state === "heat-cleared") {
@@ -405,7 +327,7 @@ game.app.onFrame?.(({ dt: rawDt }) => {
   // Aim dot: first predicted point while not in flight.
   const aim = handle("aim-preview-dot");
   if (aim && !ballState.inFlight) {
-    const vel = calculateLaunchVelocity(COURT_SPOTS[currentSpotIndex]!, chargePower, aimPitch, hoopState);
+    const vel = calculateLaunchVelocity(COURT_SPOTS[currentSpotIndex]!, io.charge.power, io.charge.pitch, hoopState);
     aim.setPosition(ballState.x + vel.vx * 0.5, ballState.y + vel.vy * 0.5, ballState.z + vel.vz * 0.5).setVisible(true);
   } else {
     aim?.setVisible(false);
@@ -430,7 +352,7 @@ publishRooftopEvidence({
   ball: () => ballState,
   score: () => scoreState,
   hoop: () => hoopState,
-  chargePower: () => chargePower,
+  chargePower: () => io.charge.power,
   spotIndex: () => currentSpotIndex,
   lastResult: () => lastResult,
   skinnedActors: () => [
@@ -447,7 +369,7 @@ const scenario = new URL(location.href).searchParams.get("scenario");
 if (scenario) {
   applyRooftopScenario(scenario, {
     releaseAt: (power, pitch) => releaseShot(power, pitch),
-    chargeTo: (p) => { chargePower = p; isCharging = true; crossFade("scorer", "Load", 0.2); },
+    chargeTo: (p) => { io.charge.power = p; io.charge.charging = true; crossFade("scorer", "Load", 0.2); },
     sync: () => { syncStaticNodes(); syncHud(); }
   });
 }
