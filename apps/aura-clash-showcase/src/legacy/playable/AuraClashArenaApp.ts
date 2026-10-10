@@ -2261,6 +2261,17 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       performanceEvidenceReady = sample === performanceSampleCount - 1;
       gameApp.step(1 / 60);
     }
+    // P-61 (#346 accepted with this fix): the driver is installed before the
+    // warmup windows, so a test can land a hit while the proof still reads
+    // "loading". `pauseOnNextHit` then pauses the round and the paused
+    // early-return in `tickFrame` never republishes the proof, leaving it at
+    // "loading" forever (observed `totalHits: 1`, `status: "loading"`). Once
+    // the performance window has closed, publish the paused status the next
+    // frame would have written.
+    const warmupProof = gameWindow.__AURA_CLASH_ARENA_PROOF__;
+    if (paused && warmupProof?.status === "loading") {
+      gameWindow.__AURA_CLASH_ARENA_PROOF__ = { ...warmupProof, status: "paused" };
+    }
     // The deterministic warmup establishes the bounded performance receipt, then the same
     // production frame loop must resume so keyboard input and authored gameplay continue to
     // advance. Keeping the runtime stopped here published a valid first proof but left every
