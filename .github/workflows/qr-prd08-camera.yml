@@ -35,7 +35,7 @@ on:
       - 'docs/project/aura3d-quality-rebuild/evidence/prd08/**'
       - '.github/workflows/qr-prd08-camera.yml'
   push:
-    branches: [main, 'qr/prd08-*']
+    branches: [main]
     paths:
       - 'packages/engine/src/agent-api/{camera,feel,time,controls,vehicle}/**'
       - 'packages/engine/src/agent-api/app/{frameAlpha,frameLoopDefaults}.ts'

@@ -36,7 +36,7 @@ on:
       - "playwright.animation-matrix.config.ts"
       - ".github/workflows/qr-prd06-animation-browser.yml"
   push:
-    branches: ["qr/prd06-**"]
+    branches: [main]
   workflow_dispatch:
 
 concurrency:

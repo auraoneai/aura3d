@@ -24,7 +24,7 @@ on:
       - "tests/qr/prd05/**"
       - ".github/workflows/qr-prd05-assets-browser.yml"
   push:
-    branches: ['qr/**']
+    branches: [main]
     paths:
       - "packages/assets/src/**"
       - "packages/assets/vendor/**"

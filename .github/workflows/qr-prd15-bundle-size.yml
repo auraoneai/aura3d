@@ -24,7 +24,7 @@ on:
       - "tools/packed-consumer-check/**"
       - ".github/workflows/qr-prd15-bundle-size.yml"
   push:
-    branches: ["qr/**", "main"]
+    branches: ["main"]
     paths:
       - "package.json"
       - "aura.exports.json"

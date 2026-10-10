@@ -74,13 +74,6 @@ on:
         type: string
         required: false
         default: "0"
-  push:
-    branches: ["aura3d-quality-rebuild/audit"]
-    paths:
-      - "tools/quality-rebuild-capture/**"
-      - "benchmarks/quality-rebuild/**"
-      - ".github/workflows/quality-rebuild-capture.yml"
-
 permissions:
   contents: read
 

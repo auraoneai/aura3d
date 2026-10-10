@@ -18,7 +18,7 @@ on:
       - "tests/qr/prd01/**"
       - ".github/workflows/qr-prd01-core.yml"
   push:
-    branches: ["qr/**"]
+    branches: [main]
     paths:
       - "packages/engine/src/lanes/prd01*/**"
       - "packages/engine/src/lanes/prd01.ts"

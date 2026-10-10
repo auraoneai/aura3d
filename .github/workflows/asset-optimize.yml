@@ -14,8 +14,6 @@ on:
       - 'public/aura-assets/**'
       - 'aura.assets.json'
       - '.github/workflows/asset-optimize.yml'
-  push:
-    branches: ['qr/prd05-**', 'qr/prd05/**']
   workflow_dispatch:
     inputs:
       ids:

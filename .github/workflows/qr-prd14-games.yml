@@ -19,7 +19,7 @@ on:
       - "scripts/check-art-direction.mjs"
       - ".github/workflows/qr-prd14-games.yml"
   push:
-    branches: ["qr/prd14-*", "main"]
+    branches: ["main"]
   schedule:
     - cron: "17 4 * * *"
   workflow_dispatch:

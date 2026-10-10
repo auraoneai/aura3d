@@ -16,7 +16,7 @@ on:
       - "tools/generate-resolution-maps/**"
       - ".github/workflows/qr-prd15-arch-gates.yml"
   push:
-    branches: ["qr/**"]
+    branches: [main]
     paths:
       - "aura.exports.json"
       - "tsconfig*.json"
