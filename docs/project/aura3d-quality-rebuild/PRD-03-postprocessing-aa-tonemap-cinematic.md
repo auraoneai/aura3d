@@ -1965,25 +1965,25 @@ Phase 3
   Test: plan unit test with the flag on and off.
 
 Phase 4
-- [x] `TemporalHistory.ts:57-94`, flag on: skip the re-draw (`:89-92`) and the
+- [ ] `TemporalHistory.ts:57-94`, flag on: skip the re-draw (`:89-92`) and the <!-- unticked 03-REC/P-54: no cited remote run yet (was bulk-ticked by d4f65a88) -->
   unsupported-geometry throw (`:73-74`), and return C-14 `{ jittered, unjittered, previous }`. Test:
   `tests/unit/rendering/temporal-history-lifecycle.test.ts` (lane 03's) gains a flag-on case
   asserting that no `ForwardPass` is constructed. The flag-off case is unchanged.
-- [x] `post/shaders/depthDownsample.glsl.ts` pass C: camera velocity (8.3). Test: a browser spec
+- [ ] `post/shaders/depthDownsample.glsl.ts` pass C: camera velocity (8.3). Test: a browser spec <!-- unticked 03-REC/P-54: no cited remote run yet (was bulk-ticked by d4f65a88) -->
   where a 1° camera yaw over a static plane gives velocity within 2% of the analytic value.
-- [x] `forward/Velocity.ts` `bindVelocityUniforms`: the rigid previous-matrix cache keyed by item
+- [ ] `forward/Velocity.ts` `bindVelocityUniforms`: the rigid previous-matrix cache keyed by item <!-- unticked 03-REC/P-54: no cited remote run yet (was bulk-ticked by d4f65a88) -->
   label, moving-item detection (model matrix changed), and the coverage counts reported to
   `post.velocityCoverage`. It binds `u_prevModelMatrix`, `u_prevViewProjection` and
   `u_unjitteredViewProjection` only when the forward target has velocity attachments (Q-01-2).
   Test: unit test with a fake uniform sink, plus `C-14-velocity` conformance for `real`.
-- [x] `post/chunks/velocity.glsl.ts`: feature `prd03.velocity` (rigid, instanced, skinned via the
+- [ ] `post/chunks/velocity.glsl.ts`: feature `prd03.velocity` (rigid, instanced, skinned via the <!-- unticked 03-REC/P-54: no cited remote run yet (was bulk-ticked by d4f65a88) -->
   C-18 deform chunk, morph). Test: `tests/unit/rendering/shader-variants-velocity.test.ts` compiles
   every variant in `ChunkHarness` and asserts `AURA_VELOCITY` outputs at location 1. The per-object
   forward pixels (rigid cube moving +0.1 NDC/frame → velocity 0.05 ±0.002) are integrated (C-02 real
   + Q-01-2).
-- [x] `post/PostAntiAlias.ts`: TAA is allowed only if `moving == movingWithHistory`; otherwise msaa
+- [ ] `post/PostAntiAlias.ts`: TAA is allowed only if `moving == movingWithHistory`; otherwise msaa <!-- unticked 03-REC/P-54: no cited remote run yet (was bulk-ticked by d4f65a88) -->
   with `TAA_VELOCITY_COVERAGE`. Test: unit test.
-- [x] `post/shaders/taa.glsl.ts` per 8.6 (HDR at S5) plus `velocityDilate.glsl.ts`, using the C-14
+- [ ] `post/shaders/taa.glsl.ts` per 8.6 (HDR at S5) plus `velocityDilate.glsl.ts`, using the C-14 <!-- unticked 03-REC/P-54: no cited remote run yet (was bulk-ticked by d4f65a88) -->
   reactive input when present and the luminance-delta heuristic otherwise. Test:
   `tests/browser/post-taa.spec.ts` renders `prd03-taa-motion` for 32 frames and checks:
   - (a) static camera: a 1-px line's temporal luma stddev ≤ 0.01;
@@ -1992,28 +1992,28 @@ Phase 4
 
   Cases (d) skinned character ghost ≤ 2 px and (e) particle quad trail ≤ 2 px with the reactive mask
   on (and > 2 px with it forced to 0) are tagged `@integrated` and run at checkpoints.
-- [x] TAAU: `renderScale < 1` with taa outputs display resolution. Test: `prd03-thin-aa` at scale
+- [ ] TAAU: `renderScale < 1` with taa outputs display resolution. Test: `prd03-thin-aa` at scale <!-- unticked 03-REC/P-54: no cited remote run yet (was bulk-ticked by d4f65a88) -->
   0.67 has edge error ≤ 1.3× full-res TAA.
-- [x] `post/shaders/motionBlur.glsl.ts` per 8.8. `effects.motionBlur` maps `intensity → shutter` in
+- [ ] `post/shaders/motionBlur.glsl.ts` per 8.8. `effects.motionBlur` maps `intensity → shutter` in <!-- unticked 03-REC/P-54: no cited remote run yet (was bulk-ticked by d4f65a88) -->
   the bridge. `maxBlur` follows after Q-07-2. The shutter is scaled by C-23 `timeScale`. Test: a
   browser spec where the blur length of a camera pan at 60 vs 30 simulated fps differs by ≤ 10%.
-- [x] `post/shaders/dof.glsl.ts` per 8.7. The bridge converts the legacy `focus/aperture` with the
+- [ ] `post/shaders/dof.glsl.ts` per 8.7. The bridge converts the legacy `focus/aperture` with the <!-- unticked 03-REC/P-54: no cited remote run yet (was bulk-ticked by d4f65a88) -->
   real near/far. Test: a browser spec on `prd03-dof-bokeh` through `RendererPostProcessOptions.v2`
   (f 50 mm, N 2.8, focus 3 m, 1080 px, `maxBlurPx: 32`, so the clamp is not hit): focus-plane pixels
   are within 2 LSB of the no-DOF render, and a background point light at 30 m produces a bokeh disc
   of diameter 12.3 px ±15%.
-- [x] `agent-api/postBridge.ts`: register the C-38 `post` extension and the flattened `cutCamera`
+- [ ] `agent-api/postBridge.ts`: register the C-38 `post` extension and the flattened `cutCamera` <!-- unticked 03-REC/P-54: no cited remote run yet (was bulk-ticked by d4f65a88) -->
   → C-14 `resetTemporalHistory("camera-cut")`, plus the 5 m/frame auto-cut and the resize,
   tier-change and scene-swap resets. Test: unit test (C-38 conformance "real overrides stub only
   with flag on").
 
 Phase 5
-- [x] `packages/engine/src/agent-api/postPresets.ts`: the 7 presets of 6.8 as `AuraPostPreset` data.
+- [ ] `packages/engine/src/agent-api/postPresets.ts`: the 7 presets of 6.8 as `AuraPostPreset` data. <!-- unticked 03-REC/P-54: no cited remote run yet (was bulk-ticked by d4f65a88) -->
   `output.preset` expands them in the bridge, and explicit effect nodes override preset values
   field by field. Presets naming `agx`/`neutral` report `capability-degraded` while C-05 is a stub.
   Test: `tests/unit/agent-api/post-presets.test.ts` asserts that expansion and override order are
   deterministic, and that the id set equals C-13's.
-- [x] `packages/rendering/src/post/PostQualityTiers.ts` `resolvePostTier(settings, tier, ctx)` per
+- [ ] `packages/rendering/src/post/PostQualityTiers.ts` `resolvePostTier(settings, tier, ctx)` per <!-- unticked 03-REC/P-54: no cited remote run yet (was bulk-ticked by d4f65a88) -->
   the 6.8 table, reading C-27 `AuraQualityTierSettings`. It re-resolves on
   `app.quality.onChange`. `setQualityTier` delegates to `app.quality.set`. Test: a unit table test
   covering every tier × feature cell, with C-27 rows asserted against `QUALITY_TIERS` (no literal
@@ -2034,19 +2034,19 @@ Phase 5
   attach them to Q-14-1 and Q-13-1.
 - [x] Append facts F-03-01..05 (section 10 item 5) to CONTRACTS Appendix B, status `proposed`, each
   with the test that will verify it.
-- [x] Capture all 18 unmodified routes with `?a3d-qr=post` and `none` at DSF1/DSF2/mobile. Assert
+- [ ] Capture all 18 unmodified routes with `?a3d-qr=post` and `none` at DSF1/DSF2/mobile. Assert <!-- unticked 03-REC/P-54: no cited remote run yet (was bulk-ticked by d4f65a88) -->
   no black frame, crash or console error, and the frame-time rule of the Phase 5 exit. Commit to
   `evidence/prd03/phase5/`.
 
 Phase 6
-- [x] `post/shaders/smaa.glsl.ts` plus the `post/smaa/` lazy chunk (`import()` of AreaTex/SearchTex
+- [ ] `post/shaders/smaa.glsl.ts` plus the `post/smaa/` lazy chunk (`import()` of AreaTex/SearchTex <!-- unticked 03-REC/P-54: no cited remote run yet (was bulk-ticked by d4f65a88) -->
   binaries ported from three r185 `SMAAPass.js`, MIT notice kept). Test: a browser spec on
   `prd03-thin-aa` compares the edge-error metric with three `SMAAPass`, and a bundle check confirms
   the textures are absent from the root chunk.
-- [x] `post/shaders/exposure.glsl.ts` per 8.9; `output.autoExposure` read by the bridge
+- [ ] `post/shaders/exposure.glsl.ts` per 8.9; `output.autoExposure` read by the bridge <!-- unticked 03-REC/P-54: no cited remote run yet (was bulk-ticked by d4f65a88) -->
   (CCR-03-2). Test: on `prd03-tone-ramp` 21b, a dark→bright step, EV reaches within 0.1 of target in
   ≤ 1.5 s at speedUp 3, with 0 `readPixels` calls.
-- [x] `app.addPostPass` → C-13 `registerPostPass`, with insertion in `PostGraph`. Test: a browser
+- [ ] `app.addPostPass` → C-13 `registerPostPass`, with insertion in `PostGraph`. Test: a browser <!-- unticked 03-REC/P-54: no cited remote run yet (was bulk-ticked by d4f65a88) -->
   spec where a red-channel-invert pass at `after-tonemap` produces the expected readback, and a pass
   at `before-tonemap` receives an RGBA16F input with values > 1 preserved.
 - [x] `apps/postprocessing-bloom/src/main.ts:100-104`: replace the threshold-0.08 Reinhard demo with
@@ -2054,7 +2054,7 @@ Phase 6
   are lane 03 apps.
 
 Phase 7
-- [x] A WGSL mirror for each `post/shaders/*.glsl.ts` in `post/shaders/*.wgsl.ts`. In
+- [ ] A WGSL mirror for each `post/shaders/*.glsl.ts` in `post/shaders/*.wgsl.ts`. In <!-- unticked 03-REC/P-54: no cited remote run yet (was bulk-ticked by d4f65a88) -->
   `webgpu/WebGPUPostShaders.ts`: exposure becomes a linear multiplier (`:253`), and the 2-tap
   `webgpuFxaaFragment` (`:262-316`) and `webgpuSoftKneeWeight` without the cap (`:224`) are deleted
   behind the flag. Test: `tests/qr/prd03/wgsl-compile.spec.ts` (zero compilation errors). WebGPU
