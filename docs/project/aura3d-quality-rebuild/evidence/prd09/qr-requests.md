@@ -8,7 +8,6 @@ Each row: issue, target lane, request, status. Numbers written back as filed.
 | #596 | prd15 | Red-flag revert: `capture-divergence.spec.ts` vacuous skip → guard test (co-PR'd in the red-flag-revert branch, needs lane-15 acceptance) | open |
 | #603 | prd15 | 09-CI: retarget stale source gates to post-migration layout + restore dropped `game-runtime:*:raw` scripts (co-PR'd in the CI-unit branch) | open |
 | #729 | to:prd15 | 09-OWN/P-61: owner acceptance of #350 lane-15 hunks (root package.json, tools/finalize-dist); lane-13 already accepted on #351 | open |
-| #729 | to:prd15 | 2026-10-09 | 09-OWN/P-61: owner acceptance of #350 lane-15 hunks (root package.json, tools/finalize-dist); lane-13 already accepted on #351 |
 
 - #721 (to:prd15, filed 2026-10-09): browser-matrix `pnpm typecheck` step red on clean main — 477 errors in `tools/*` (mostly `tools/_quarantine/*`). Blocks every lane's ubuntu CI heads; needs tools/CI owner.
 - #727 (to:prd15, filed 2026-10-09): tests/unit/contracts/harness.ts conformance() passes slot.provided (boolean) as the 'real' impl — ContractSlot.provided is a marker, not the impl; lane-09 workaround resolves via slot.get(flagsOn) in PR #726.
