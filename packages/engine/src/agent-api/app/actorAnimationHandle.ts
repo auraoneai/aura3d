@@ -233,6 +233,13 @@ export function resolveAnimationClipsForNode(nodeId: string): Promise<readonly A
   });
 }
 
+/** 06-HANG — drops every queued clip-info waiter for the node after a bounded
+ * wait expires; the callers' promises are left unsettled (and unreferenced).
+ */
+export function dropPendingClipInfoWaiters(nodeId: string): void {
+  actorClipInfoWaiters.delete(nodeId);
+}
+
 /* ------------------------------------------------------------------------ */
 /* T0.18 (PRD-06) — C-19 `animationState()` + the `socket()` bone lookup and   */
 /* the C-31 `animation` diagnostics rows. The `prd06.animation` TypedGLBActor  */

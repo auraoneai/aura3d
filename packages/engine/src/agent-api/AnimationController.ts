@@ -26,7 +26,8 @@ import {
   type AuraResolvedFootPlanting
 } from "./FootPlanting.js";
 import type { AuraBoneMaskSpec, AuraResolvedClipInfo } from "../contracts/animation.js";
-import { qrAnimationFlags } from "./app/actorAnimationHandle.js";
+import { dropPendingClipInfoWaiters, qrAnimationFlags } from "./app/actorAnimationHandle.js";
+import { recordClipResolveDegradation } from "./compiler/animation.js";
 
 export type {
   AnimationClipEvent,
@@ -735,6 +736,14 @@ export const auraAnimationRetargetDocumentedConstraints: readonly AuraAnimationR
   }
 ];
 
+/**
+ * 06-HANG — upper bound on the actor clip-resolve wait. A binding whose
+ * `resolveAnimationClips()` never settles (extension inactive, actor-id
+ * mismatch, an earlier `onLoad` throw) publishes with registry durations
+ * after this; strict throws `ANIMATION_CLIP_RESOLVE_TIMEOUT` instead.
+ */
+const ANIMATION_CLIP_RESOLVE_TIMEOUT_MS = 2_000;
+
 export class AnimationController<
   TClipId extends string = string,
   TEvent extends AnimationClipEvent = AnimationClipEvent
@@ -926,19 +935,55 @@ export class AnimationController<
       const resolve = runtimeNodeResolveAnimationClips(node);
       if (resolve) {
         binding.pendingClips = true;
+        const strict = qrAnimationFlags().on("A3D_QR_STRICT");
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
+        const timedOut = new Promise<true>((done) => {
+          timeoutId = setTimeout(() => done(true), ANIMATION_CLIP_RESOLVE_TIMEOUT_MS);
+        });
         resolve
           .then((infos) => {
+            if (timeoutId !== undefined) clearTimeout(timeoutId);
             this.applyResolvedClipDurations(infos);
             binding.pendingClips = false;
             this.applyRuntimeNodeBinding(binding);
           })
           .catch((error: unknown) => {
+            if (timeoutId !== undefined) clearTimeout(timeoutId);
+            recordClipResolveDegradation(
+              "clip-resolve-failed",
+              node.id,
+              `binding "${id}" could not resolve animation clips; publishing with registry durations.`,
+              error
+            );
             console.warn(
               `ANIMATION_CLIP_RESOLVE_FAILED: binding "${id}" could not resolve animation clips; ` +
                 `the binding stays pending.`,
               error
             );
+            binding.pendingClips = false;
+            if (strict) throw error;
+            binding.snapshot = this.applyRuntimeNodeBinding(binding);
           });
+        void timedOut.then(() => {
+          // 06-HANG — bounded wait: a missing actor clip source must never
+          // freeze clip drive. Emit the C-36 degradation, drop the queued
+          // waiter, and drive the binding with registry durations.
+          if (!binding.pendingClips) return;
+          dropPendingClipInfoWaiters(node.id);
+          recordClipResolveDegradation(
+            "clip-resolve-timeout",
+            node.id,
+            `binding "${id}" waited ${ANIMATION_CLIP_RESOLVE_TIMEOUT_MS} ms for the actor clip source; publishing with registry durations.`
+          );
+          binding.pendingClips = false;
+          if (strict) {
+            throw new Error(
+              `ANIMATION_CLIP_RESOLVE_TIMEOUT: binding "${id}" on node "${node.id}" stayed pending for ` +
+                `${ANIMATION_CLIP_RESOLVE_TIMEOUT_MS} ms — the actor clip source never published.`
+            );
+          }
+          binding.snapshot = this.applyRuntimeNodeBinding(binding);
+        });
       }
     }
     if (!binding.pendingClips) {
