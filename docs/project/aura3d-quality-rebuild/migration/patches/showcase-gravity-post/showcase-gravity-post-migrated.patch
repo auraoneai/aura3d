@@ -1,0 +1,91 @@
+From 52582a6b19e1775f57ba49ab7d5b76d0fca09b28 Mon Sep 17 00:00:00 2001
+From: gchahal+1 <gchahal@veerone.com>
+Date: Fri, 9 Oct 2026 11:09:28 +0000
+Subject: [PATCH] migration(showcase-gravity-post): regenerated patch set
+ (post-PRD-14 layout)
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ apps/showcase-gravity-post/src/evidence.ts    | 16 ++++++++++++++
+ .../src/scenario-drive.ts                     | 22 +++++++++++++++++++
+ .../src/scenarios/index.ts                    | 16 ++++++++++++++
+ 3 files changed, 54 insertions(+)
+ create mode 100644 apps/showcase-gravity-post/src/evidence.ts
+ create mode 100644 apps/showcase-gravity-post/src/scenario-drive.ts
+ create mode 100644 apps/showcase-gravity-post/src/scenarios/index.ts
+
+diff --git a/apps/showcase-gravity-post/src/evidence.ts b/apps/showcase-gravity-post/src/evidence.ts
+new file mode 100644
+index 000000000..ee1d1fd82
+--- /dev/null
++++ b/apps/showcase-gravity-post/src/evidence.ts
+@@ -0,0 +1,16 @@
++/**
++ * evidence.ts — lazy route evidence sections (PRD-09 §6.5). Loaded through
++ * the evidence channel's `sections()` loader only when evidence is requested.
++ */
++export type EvidenceCollect = () => Record<string, unknown>;
++
++let collect: EvidenceCollect | undefined;
++
++export function bindGravityEvidence(fn: EvidenceCollect): void {
++  collect = fn;
++}
++
++export const sections = {
++  gravity: (): Record<string, unknown> =>
++    (collect ?? (() => ({ status: "unbound" })))()
++};
+diff --git a/apps/showcase-gravity-post/src/scenario-drive.ts b/apps/showcase-gravity-post/src/scenario-drive.ts
+new file mode 100644
+index 000000000..c073c4dbd
+--- /dev/null
++++ b/apps/showcase-gravity-post/src/scenario-drive.ts
+@@ -0,0 +1,22 @@
++/**
++ * scenario-drive.ts — imperative drive surface for `?capture=scenario`
++ * staging (PRD-09). Bound once from main.ts.
++ */
++export interface GravityDrive {
++  stepSim(dt: number): void;
++  stepRender(dt: number): void;
++  launch(direction: readonly [number, number], speed: number): void;
++  nextContract(): void;
++  retryContract(): void;
++}
++
++let drive: GravityDrive | undefined;
++
++export function bindGravityDrive(d: GravityDrive): void {
++  drive = d;
++}
++
++export function gravityDrive(): GravityDrive {
++  if (!drive) throw new Error("gravity drive unbound (scenario requested before boot)");
++  return drive;
++}
+diff --git a/apps/showcase-gravity-post/src/scenarios/index.ts b/apps/showcase-gravity-post/src/scenarios/index.ts
+new file mode 100644
+index 000000000..dd31f09f0
+--- /dev/null
++++ b/apps/showcase-gravity-post/src/scenarios/index.ts
+@@ -0,0 +1,16 @@
++import type { GameScenario } from "@aura3d/engine";
++import { gravityDrive } from "../scenario-drive";
++
++const coasting: GameScenario = {
++  description: "Delivery in flight: launch toward Gale with the authored route vector and sim-step ~1.2s so the pod is mid-corridor.",
++  setup(): void {
++    const d = gravityDrive();
++    d.launch([0.94, -0.34], 3.6);
++    for (let i = 0; i < 72; i += 1) d.stepSim(1 / 60);
++  }
++};
++
++export const gravityScenarios: GameScenario[] = [
++  { description: "Default playable boot (no staging).", setup() {} },
++  coasting
++];
+-- 
+2.34.1
+
