@@ -216,7 +216,7 @@ async function boot(): Promise<void> {
 }
 
 function countLitPixels(canvas: HTMLCanvasElement): number {
-  const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true });
+  const gl = canvas.getContext("webgl2", { });
   if (!gl) return 0;
   const pixels = new Uint8Array(canvas.width * canvas.height * 4);
   gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);

@@ -44,7 +44,7 @@ export async function mountExternalInteriorScene(id: string): Promise<void> {
   const canvas = root.querySelector<HTMLCanvasElement>("[data-testid='hr4-scene-canvas']")!;
   const status = root.querySelector<HTMLElement>("[data-testid='hr4-scene-status']")!;
   const lightingSelect = root.querySelector<HTMLSelectElement>("[data-testid='hr4-scene-lighting']")!;
-  const renderer = await Renderer.create({ backend: "webgl2", canvas, width: 1280, height: 820, clearColor: [0.018, 0.021, 0.026, 1], antialias: true, preserveDrawingBuffer: true });
+  const renderer = await Renderer.create({ backend: "webgl2", canvas, width: 1280, height: 820, clearColor: [0.018, 0.021, 0.026, 1], antialias: true, });
 
   function render(): void {
     const lightingPreset = lightingSelect.value as SceneLighting;
