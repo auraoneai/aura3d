@@ -36,6 +36,12 @@ const LEGAL: Readonly<Record<GameSessionState, readonly GameSessionState[]>> = {
 export interface GameSessionOptions {
   readonly seed: number;
   readonly time?: AuraTimeController;
+  /**
+   * Who advances `time`. Default "session": tick() advances it once per real
+   * frame. "driver": a C-23 FixedStepDriver's presentTick already advances it,
+   * so tick() only reads the scale (no double advance, #617 risk 3).
+   */
+  readonly timeAdvancedBy?: "session" | "driver";
 }
 
 export class GameSessionImpl implements GameSession {
@@ -53,17 +59,14 @@ export class GameSessionImpl implements GameSession {
   public constructor(options: GameSessionOptions) {
     this.seed = options.seed;
     this.controller = options.time ?? new StubTimeController();
-    this.controllerAdvancedExternally = options.time !== undefined;
+    this.controllerAdvancedExternally = options.timeAdvancedBy === "driver";
   }
 
   /**
-   * True when something else (a C-23 FixedStepDriver's presentTick) advances
-   * the controller once per presented tick; tick() then only reads the scale.
-   * A controller passed as `options.time` is treated as driver-owned (#617
-   * risk 3); the internal stub and any controller bound with
-   * bindTimeController (createGame binds `app.time`; no package creates a
-   * FixedStepDriver today) are advanced here, or hitStop/slowMo/scaleTo would
-   * never decay.
+   * True only when a C-23 FixedStepDriver owns the controller (opt-in via
+   * `timeAdvancedBy: "driver"`). No package creates a FixedStepDriver today, so
+   * by default tick() advances the controller, or hitStop/slowMo/scaleTo on
+   * `app.time` would never decay.
    */
   private controllerAdvancedExternally: boolean;
 

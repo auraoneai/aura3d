@@ -32,8 +32,9 @@ describe("stubSetInstanceTransforms capacity (risk 2)", () => {
     const { app, handle, node } = instancedHarness(2);
     const m = new Float32Array(32).fill(0).map((_, i) => (i % 16 < 12 && i % 16 % 4 === 0 ? 1 : 0));
     stubSetInstanceTransforms(handle, app, m, 1);
-    const hidden = node.instances[1] as { scale: { x: number } };
-    expect(hidden.scale.x).toBe(0);
+    // AuraTransformSpec.scale is a [x, y, z] tuple (instanceTransforms.ts hidden slot).
+    const hidden = node.instances[1] as { scale: readonly number[] };
+    expect(hidden.scale).toEqual([0, 0, 0]);
   });
 });
 
@@ -50,9 +51,18 @@ describe("GameSession.tick (risk 3)", () => {
     const { GameSessionImpl } = await import("../../../packages/game/src/session/GameSession");
     let advanceCalls = 0;
     const controller = { scale: 0.5, advance: () => ((advanceCalls += 1), 0) } as never;
-    const session = new GameSessionImpl({ seed: 1, time: controller } as never);
+    // Driver-owned controller (opt-in): the session must not advance it again.
+    const session = new GameSessionImpl({ seed: 1, time: controller, timeAdvancedBy: "driver" } as never);
     expect(session.tick(0.4)).toBeCloseTo(0.2);
     expect(advanceCalls).toBe(0);
+  });
+  it("advances a session-owned controller once per tick (default; no FixedStepDriver exists)", async () => {
+    const { GameSessionImpl } = await import("../../../packages/game/src/session/GameSession");
+    let advanceCalls = 0;
+    const controller = { scale: 0.5, hitStopRemaining: 0, advance: (dt: number) => ((advanceCalls += 1), dt * 0.5) } as never;
+    const session = new GameSessionImpl({ seed: 1, time: controller } as never);
+    expect(session.tick(0.4)).toBeCloseTo(0.2);
+    expect(advanceCalls).toBe(1);
   });
 });
 
