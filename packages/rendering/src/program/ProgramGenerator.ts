@@ -201,7 +201,10 @@ function emitCall(state: SpliceState, name: string): string {
 /**
  * Splice one hook in (feature.order, feature.id) order. Declaration hooks
  * append to `state.decls` and return []; body hooks return the call chunks
- * for `main` (each at most once per hook).
+ * for `main` (each at most once per hook). A chunk the same feature also maps
+ * to a declaration hook is a declaration chunk: at a body hook it is declared
+ * for this stage instead of being spliced into `main` (e.g. a `stage:"both"`
+ * chunk listed at `vertex:pars` + `fragment:material`).
  */
 function hookSplice(contributions: readonly Contribution[], hook: ShaderHookPoint, state: SpliceState): string[] {
   const bodies: string[] = [];
@@ -210,9 +213,11 @@ function hookSplice(contributions: readonly Contribution[], hook: ShaderHookPoin
   for (const { feature } of contributions) {
     const idx = feature.hooks.indexOf(hook);
     if (idx === -1 || feature.chunks.length === 0) continue;
-    const chosen = feature.chunks[Math.min(idx, feature.chunks.length - 1)];
+    const chunkAt = (i: number) => feature.chunks[Math.min(i, feature.chunks.length - 1)];
+    const chosen = chunkAt(idx);
     if (chosen === undefined) continue;
-    if (declaration) {
+    const declaredByFeature = feature.hooks.some((h, i) => DECLARATION_HOOKS.has(h) && chunkAt(i) === chosen);
+    if (declaration || declaredByFeature) {
       emitDeclaration(state, chosen);
     } else if (!bodySeen.has(chosen)) {
       bodySeen.add(chosen);

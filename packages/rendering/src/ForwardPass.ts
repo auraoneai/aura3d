@@ -26,6 +26,7 @@ import { type ClusteredForwardLightingResources } from "./ClusteredForwardLighti
 import { programCacheSlot, type ProgramCacheLike, type ProgramFeatures } from "./contracts/program";
 import { normalizeProgramFeatures } from "./program/ProgramFeatures";
 import { materialFeatureWarning, materialUsesGeneratedProgram } from "./program/MaterialFeatures";
+import { bindShaderFeatureUniforms, selectShaderFeatureBits } from "./program/FeatureSelect";
 import { QUALITY_TIERS, type AuraQualityTierSettings } from "./contracts/quality";
 import { rendererQrFlags } from "./renderer/FrameGraph";
 import { qrCoreGeneratorOn, rendererProgramCache, rendererAuraFrame } from "./renderer/qrSubFlags";
@@ -381,6 +382,10 @@ export class ForwardPass extends BaseRenderPass {
     applyWrinkleUniform(item, shader, uniforms);
     applyTransformUniforms(item, shader, uniforms);
     bindVelocityUniforms?.(item, uniforms);
+    if (generated && this.lastProgramFeatures) {
+      // C-02 `ShaderFeature.bindUniforms` for the features this draw selected.
+      bindShaderFeatureUniforms(this.lastProgramFeatures.features, rendererQrFlags(device), item, (name, value) => uniforms.set(name, value));
+    }
     if (item.skinning) {
       this.skinningPaletteUploads.bind(item, item.skinning, baseMaterial, shader, uniforms, device);
     }
@@ -512,9 +517,13 @@ export class ForwardPass extends BaseRenderPass {
     const tier = this.options.qualityTier ?? QUALITY_TIERS.high;
     const mf = material.programFeatures({ flags, tier });
     const axes = forwardPassFeatureAxes(this.options, this.clusteredLighting !== null);
+    // T0-05: registered ShaderFeatures select their bits per draw (C-02 §A.2:
+    // at acquire time); the warmup applies the same selection per item.
+    const selected = item ? selectShaderFeatureBits({ item, pass: "forward", tier, flags }) : {};
     return normalizeProgramFeatures({
       ...mf,
       ...axes,
+      features: { ...mf.features, ...selected },
       // Phase 6: instancing is item-driven — a material's own feature record
       // only declares it when authored instanced; the draw's program must
       // cover the union (attribute matrices are the only generated path).

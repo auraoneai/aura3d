@@ -38,6 +38,8 @@ import type { AuraQualityTier, AuraQualityTierSettings } from "./contracts/quali
 import { QUALITY_TIERS } from "./contracts/quality";
 import { MaterialInstance } from "./MaterialInstance";
 import { materialUsesGeneratedProgram } from "./program/MaterialFeatures";
+import { selectShaderFeatureBits } from "./program/FeatureSelect";
+import type { ProgramFeatures } from "./contracts/program";
 import { collectWarmupFeatures, ProgramWarmup, type WarmupInput } from "./program/ProgramWarmup";
 import { PRD03_EXPOSURE, rendererQrFlags } from "./renderer/FrameGraph";
 import { qrCoreGeneratorOn, qrCoreOutputOn, rendererOutputPass, rendererProgramCache } from "./renderer/qrSubFlags";
@@ -638,7 +640,7 @@ export class Renderer {
     this.frameStatsMonitor?.begin(typeof performance !== "undefined" ? performance.now() : Date.now());
     // T0-06: reset the per-frame sync-compile bound for this render.
     {
-      const flags = rendererQrFlags();
+      const flags = rendererQrFlags(this.device);
       if (qrCoreGeneratorOn(flags)) rendererProgramCache(this.device, flags).beginFrame?.();
     }
     const { source, camera: inputCamera } = normalizeRendererInput(sourceOrInput, camera);
@@ -959,7 +961,7 @@ export class Renderer {
     this.frameStatsMonitor?.begin(typeof performance !== "undefined" ? performance.now() : Date.now());
     // T0-06: reset the per-frame sync-compile bound for this render.
     {
-      const flags = rendererQrFlags();
+      const flags = rendererQrFlags(this.device);
       if (qrCoreGeneratorOn(flags)) rendererProgramCache(this.device, flags).beginFrame?.();
     }
     const { source, camera: inputCamera } = normalizeRendererInput(sourceOrInput, camera);
@@ -1295,18 +1297,26 @@ export class Renderer {
     flags: ReturnType<typeof rendererQrFlags>,
     tier: AuraQualityTier
   ): WarmupInput {
-    const materials = new Map<string, import("./Material").Material>();
+    const ctx = { flags, tier: QUALITY_TIERS[tier] };
+    // T0-05: one record per (material revision, selected feature bits) — the
+    // draw key carries `ShaderFeature.select` bits per item, so the warm list
+    // must too or warmed keys never match draw keys.
+    const records = new Map<string, Partial<ProgramFeatures>>();
     for (const item of items) {
       const m = item.material instanceof MaterialInstance ? item.material.baseMaterial : item.material;
-      if (m && materialUsesGeneratedProgram(m)) materials.set(`${m.shaderKey}:${m.getRevision()}`, m);
+      if (!m || !materialUsesGeneratedProgram(m)) continue;
+      const mf = m.programFeatures(ctx);
+      const selected = selectShaderFeatureBits({ item, pass: "forward", tier: ctx.tier, flags });
+      const features = { ...mf.features, ...selected };
+      const key = `${m.shaderKey}:${m.getRevision()}:${JSON.stringify(Object.entries(features).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)))}`;
+      if (!records.has(key)) records.set(key, { ...mf, features });
     }
-    if (materials.size === 0) return { materials: [] };
+    if (records.size === 0) return { materials: [] };
     const clustered = resolveForwardClusteredLighting(lights, this.width, this.height, cameraViewProjection);
     const axes = forwardPassFeatureAxes({ lights, shadowMap, environmentLighting, environmentFog }, clustered !== null);
     clustered?.dispose();
-    const ctx = { flags, tier: QUALITY_TIERS[tier] };
     return {
-      materials: [...materials.values()].map((m) => m.programFeatures(ctx)),
+      materials: [...records.values()],
       lights: [axes.lights],
       shadows: axes.shadows ? [axes.shadows] : [],
       environments: [axes.environment]
@@ -1349,7 +1359,7 @@ export class Renderer {
     shadowMap: ForwardShadowMapOptions | undefined,
     cameraViewProjection: Float32Array | readonly number[] | undefined
   ): void {
-    const flags = rendererQrFlags();
+    const flags = rendererQrFlags(this.device);
     if (!qrCoreGeneratorOn(flags)) return;
     const tier: AuraQualityTier = this.qualityTierName ?? "high";
     const cache = rendererProgramCache(this.device, flags);
