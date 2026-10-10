@@ -15,8 +15,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: quality-gate-${{ github.ref }}
-  cancel-in-progress: true
+  group: quality-gate-${{ github.ref }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   capture-bench:

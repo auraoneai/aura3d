@@ -30,8 +30,8 @@ on:
         default: ""
 
 concurrency:
-  group: qr-prd14-${{ github.ref }}
-  cancel-in-progress: true
+  group: qr-prd14-${{ github.ref }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read

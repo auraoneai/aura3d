@@ -24,8 +24,8 @@ on:
         type: string
 
 concurrency:
-  group: asset-optimize-${{ github.ref }}-${{ github.event.inputs.ids }}
-  cancel-in-progress: true
+  group: asset-optimize-${{ github.ref }}-${{ github.event.inputs.ids }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   optimize:

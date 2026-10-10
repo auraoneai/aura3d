@@ -46,8 +46,8 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: qr-prd09-game-${{ github.ref }}
-  cancel-in-progress: true
+  group: qr-prd09-game-${{ github.ref }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   unit:

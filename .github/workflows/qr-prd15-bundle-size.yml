@@ -41,8 +41,8 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: qr-prd15-bundle-size-${{ github.ref }}
-  cancel-in-progress: true
+  group: qr-prd15-bundle-size-${{ github.ref }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   bundle-size:

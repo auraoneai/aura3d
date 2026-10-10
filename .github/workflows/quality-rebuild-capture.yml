@@ -85,8 +85,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: quality-rebuild-capture-${{ github.ref }}
-  cancel-in-progress: true
+  group: quality-rebuild-capture-${{ github.ref }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
   QRC_GPU_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
