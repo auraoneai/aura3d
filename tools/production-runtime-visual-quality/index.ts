@@ -1,2 +1,2 @@
-import { writeVisualQualityReports } from '../production-runtime-report-bridge/shared';
+import { writeVisualQualityReports } from '../_quarantine/production-runtime-report-bridge/shared';
 writeVisualQualityReports();

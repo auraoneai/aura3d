@@ -1,6 +1,6 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
-import instancingScene from "../../benchmarks/shared/scenes/instancing.js";
+import instancingScene from "../../../benchmarks/shared/scenes/instancing.js";
 
 const OUTPUT_PATH = "tests/reports/threejs-parity/instancing-parity.json";
 const comparisonPath = "tests/reports/comparison-threejs.json";

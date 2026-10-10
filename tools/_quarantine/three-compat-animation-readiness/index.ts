@@ -8,7 +8,7 @@ import {
   SkinnedMeshThreeCompat,
   createThreeCompatAnimationDiagnostics,
   inspectThreeCompatAnimatedAssets
-} from "../../packages/animation/src";
+} from "../../../packages/animation/src";
 
 interface ThreeCompatAnimationCheck {
   readonly name: string;

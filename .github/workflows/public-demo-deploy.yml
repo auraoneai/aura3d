@@ -110,24 +110,24 @@ jobs:
         uses: actions/deploy-pages@v4
 
       - name: Verify public deployment bytes
-        run: tsx --tsconfig tsconfig.base.json tools/public-demo-deployment-smoke/index.ts
+        run: pnpm verify:public-demo-deployment
         env:
           A3D_PUBLIC_DEMO_URL: ${{ steps.deployment.outputs.page_url }}
 
       - name: Audit production readiness after public smoke
-        run: tsx --tsconfig tsconfig.base.json tools/external-parity-production-readiness/index.ts
+        run: pnpm audit:external-parity-production-readiness
 
       - name: Audit external evidence readiness after public smoke
-        run: tsx --tsconfig tsconfig.base.json tools/external-parity-external-evidence-readiness/index.ts
+        run: pnpm audit:external-parity-external-evidence-readiness
 
       - name: Audit broad parity readiness after public smoke
-        run: tsx --tsconfig tsconfig.base.json tools/external-parity-broad-parity-readiness/index.ts || true
+        run: pnpm audit:external-parity-broad-parity || true
 
       - name: Audit completion after public smoke
-        run: tsx --tsconfig tsconfig.base.json tools/external-parity-completion-audit/index.ts || true
+        run: pnpm audit:external-parity-completion || true
 
       - name: Verify external parity report freshness after public smoke
-        run: tsx --tsconfig tsconfig.base.json tools/external-parity-report-freshness/index.ts
+        run: pnpm verify:external-parity-report-freshness
 
       - name: Upload public deployment reports
         if: always()

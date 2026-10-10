@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-10-09T06:37:01.811Z",
+  "generatedAt": "2026-10-10T14:48:02.518Z",
   "totals": {
-    "scripts": 107,
+    "scripts": 70,
     "keep": 70,
-    "delete": 37,
+    "delete": 0,
     "review": 0,
-    "toolDirs": 183,
+    "toolDirs": 184,
     "unreferencedToolDirs": 0
   },
   "scripts": [
@@ -45,84 +45,6 @@
       ]
     },
     {
-      "name": "audit:external-parity-broad-parity",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        ".github/workflows/public-demo-deploy.yml",
-        "tools/_quarantine/external-parity-completion-audit/index.ts",
-        "tools/_quarantine/external-parity-external-engine-baselines/index.ts",
-        "tools/_quarantine/external-parity-external-evidence-readiness/index.ts",
-        "tools/_quarantine/external-parity-production-readiness/index.ts",
-        "tools/_quarantine/external-parity-verify/index.ts",
-        "tools/external-demo-export/index.ts",
-        "tools/external-parity-broad-parity-readiness/index.ts",
-        "tools/public-demo-deployment-artifacts/index.ts",
-        "tools/public-demo-deployment-smoke/index.ts"
-      ],
-      "invokedToolDirs": [
-        "tools/external-parity-broad-parity-readiness"
-      ]
-    },
-    {
-      "name": "audit:external-parity-completion",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        ".github/workflows/public-demo-deploy.yml",
-        "tools/_quarantine/external-parity-completion-audit/index.ts",
-        "tools/_quarantine/external-parity-external-engine-baselines/index.ts",
-        "tools/_quarantine/external-parity-external-evidence-readiness/index.ts",
-        "tools/_quarantine/external-parity-production-readiness/index.ts",
-        "tools/_quarantine/external-parity-verify/index.ts",
-        "tools/external-demo-export/index.ts",
-        "tools/public-demo-deployment-artifacts/index.ts",
-        "tools/public-demo-deployment-smoke/index.ts"
-      ],
-      "invokedToolDirs": [
-        "tools/external-parity-completion-audit"
-      ]
-    },
-    {
-      "name": "audit:external-parity-external-evidence-readiness",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        ".github/workflows/public-demo-deploy.yml",
-        "tools/_quarantine/external-parity-completion-audit/index.ts",
-        "tools/_quarantine/external-parity-external-engine-baselines/index.ts",
-        "tools/_quarantine/external-parity-external-evidence-handoff/index.ts",
-        "tools/_quarantine/external-parity-external-evidence-readiness/index.ts",
-        "tools/_quarantine/external-parity-production-readiness/index.ts",
-        "tools/_quarantine/external-parity-verify/index.ts",
-        "tools/public-demo-deployment-artifacts/index.ts"
-      ],
-      "invokedToolDirs": [
-        "tools/external-parity-external-evidence-readiness"
-      ]
-    },
-    {
-      "name": "audit:external-parity-production-readiness",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        ".github/workflows/public-demo-deploy.yml",
-        "tools/_quarantine/external-parity-external-engine-baselines/index.ts",
-        "tools/_quarantine/external-parity-external-evidence-handoff/index.ts",
-        "tools/_quarantine/external-parity-external-evidence-readiness/index.ts",
-        "tools/_quarantine/external-parity-external-host-runner/index.ts",
-        "tools/_quarantine/external-parity-production-readiness/index.ts",
-        "tools/_quarantine/external-parity-verify/index.ts",
-        "tools/external-demo-export/index.ts",
-        "tools/external-parity-broad-parity-readiness/index.ts",
-        "tools/public-demo-deployment-artifacts/index.ts",
-        "tools/public-demo-deployment-smoke/index.ts"
-      ],
-      "invokedToolDirs": [
-        "tools/external-parity-production-readiness"
-      ]
-    },
-    {
       "name": "bench:quality",
       "verdict": "keep",
       "reason": "canonical §6.11 name",
@@ -137,6 +59,7 @@
       "reason": "canonical §6.11 name",
       "referencedBy": [
         ".github/workflows/ci.yml",
+        ".github/workflows/lighting-quality.yml",
         ".github/workflows/release.yml",
         ".github/workflows/test.yml",
         "docs/agents/README.md",
@@ -162,8 +85,7 @@
         "tools/package-provenance/index.ts",
         "tools/release-verification/index.ts",
         "tools/requirements-trace/index.ts",
-        "script:build:dist",
-        "script:check:public-api"
+        "script:build:dist"
       ],
       "invokedToolDirs": [
         "tools/finalize-dist"
@@ -197,7 +119,7 @@
     {
       "name": "build:raw",
       "verdict": "keep",
-      "reason": "referenced by 17 source(s)",
+      "reason": "referenced by 18 source(s)",
       "referencedBy": [
         ".github/workflows/agent-output-eval.yml",
         ".github/workflows/browser-matrix.yml",
@@ -209,6 +131,7 @@
         ".github/workflows/qr-prd10-world.yml",
         ".github/workflows/qr-prd15-bundle-size.yml",
         ".github/workflows/qr-prd15-pack-check.yml",
+        ".github/workflows/qr-prd15-specs.yml",
         ".github/workflows/template-lookdev.yml",
         ".github/workflows/test.yml",
         "tools/dist-freshness/index.ts",
@@ -244,46 +167,6 @@
       ]
     },
     {
-      "name": "check:agent-api",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "docs/agents/verification.md",
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/agent-api-surface"
-      ]
-    },
-    {
-      "name": "check:agent-docs",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        ".github/workflows/agent-skills.yml",
-        "docs/agents/verification.md",
-        "tools/muse3jsparity-readiness/baseline-unit-inventory.json",
-        "tools/muse3jsparity-readiness/index.ts",
-        "tools/muse3jsparity-readiness/requirements.ts",
-        "tools/release/l01-producer.ts",
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/agent-docs"
-      ]
-    },
-    {
-      "name": "check:asset-corpus",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/asset-corpus"
-      ]
-    },
-    {
       "name": "check:asset-screening",
       "verdict": "keep",
       "reason": "referenced by 2 source(s)",
@@ -293,145 +176,6 @@
       ],
       "invokedToolDirs": [
         "tools/asset-screening"
-      ]
-    },
-    {
-      "name": "check:assets-cli",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "docs/agents/verification.md",
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/asset-cli"
-      ]
-    },
-    {
-      "name": "check:bundle-size",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "docs/agents/skills-examples/aura3d-performance.md",
-        "docs/agents/verification.md",
-        "tools/bundle-size/markdown.mjs",
-        "tools/muse3jsparity-readiness/source-identity.ts",
-        "tools/release/package-acceptance.mjs",
-        "tools/release/source-identity.mjs",
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/bundle-size"
-      ]
-    },
-    {
-      "name": "check:claim-lineage",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "docs/architecture/claim-lineage.md",
-        "tools/product-remediation/build-threejs-parity.mjs",
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/claim-lineage"
-      ]
-    },
-    {
-      "name": "check:clean-install",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "tools/release/package-acceptance.mjs",
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/package-clean-install"
-      ]
-    },
-    {
-      "name": "check:deployment",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "docs/agents/verification.md",
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/agent-deployment"
-      ]
-    },
-    {
-      "name": "check:devtools",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "docs/agents/verification.md",
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/agent-devtools"
-      ]
-    },
-    {
-      "name": "check:docs-codeblocks",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "docs/agents/verification.md",
-        "tools/_quarantine/muse3jsparity-docs-audit/document-invariants.ts",
-        "tools/muse3jsparity-readiness/requirements.ts",
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/docs-codeblocks"
-      ]
-    },
-    {
-      "name": "check:docs-site",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "docs/agents/verification.md",
-        "tools/muse3jsparity-readiness/requirements.ts",
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/docs-site"
-      ]
-    },
-    {
-      "name": "check:effects-vfx",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/effects-vfx-visual-audit"
-      ]
-    },
-    {
-      "name": "check:error-quality",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/error-message-quality"
-      ]
-    },
-    {
-      "name": "check:examples",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "docs/agents/verification.md",
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/agent-examples"
       ]
     },
     {
@@ -447,117 +191,6 @@
       ]
     },
     {
-      "name": "check:installed-tree-shaking",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "tools/release/package-acceptance.mjs",
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/installed-tree-shaking"
-      ]
-    },
-    {
-      "name": "check:marketing-links",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/marketing-link-audit"
-      ]
-    },
-    {
-      "name": "check:marketing-truth",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "docs/agents/verification.md",
-        "tools/muse3jsparity-readiness/baseline-unit-inventory.json",
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/marketing-truth"
-      ]
-    },
-    {
-      "name": "check:no-three-runtime",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/package-no-three-runtime"
-      ]
-    },
-    {
-      "name": "check:package-graph",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "docs/architecture/package-ownership.md",
-        "tools/eslint-plugin-aura3d-boundaries/index.mjs",
-        "tools/package-tiers.ts",
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/package-graph"
-      ]
-    },
-    {
-      "name": "check:product-cutover",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/product-cutover"
-      ]
-    },
-    {
-      "name": "check:production-path-benchmark",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/production-path-benchmark"
-      ]
-    },
-    {
-      "name": "check:public-api",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "docs/api/contracts/public-api-contract.md",
-        "tools/developer-friction/index.ts",
-        "tools/public-api-contract/index.ts",
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/public-api-contract"
-      ]
-    },
-    {
-      "name": "check:public-surface-diff",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "docs/architecture/2.0-removals.md",
-        "docs/migration/2.0.md",
-        "tools/script-prune/index.ts",
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/public-surface-diff"
-      ]
-    },
-    {
       "name": "check:release",
       "verdict": "keep",
       "reason": "referenced by 6 source(s)",
@@ -570,58 +203,6 @@
         "README.md"
       ],
       "invokedToolDirs": []
-    },
-    {
-      "name": "check:skills",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        ".github/workflows/agent-skills.yml",
-        "docs/agents/README.md",
-        "docs/agents/skills-examples/aura3d-core.md",
-        "tools/agent-skills/check.ts",
-        "script:check:agent-docs"
-      ],
-      "invokedToolDirs": [
-        "tools/agent-skills"
-      ]
-    },
-    {
-      "name": "check:tarballs",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/package-tarball-audit"
-      ]
-    },
-    {
-      "name": "check:template-source-audit",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/template-source-audit"
-      ]
-    },
-    {
-      "name": "check:templates",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        ".github/workflows/agent-skills.yml",
-        "docs/agents/verification.md",
-        "tools/agent-docs/simulation.ts",
-        "tools/release/package-acceptance.mjs",
-        "script:check:release"
-      ],
-      "invokedToolDirs": [
-        "tools/agent-templates"
-      ]
     },
     {
       "name": "check:templates:installed",
@@ -793,18 +374,6 @@
       "invokedToolDirs": []
     },
     {
-      "name": "head-to-head:installed",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        ".github/workflows/muse301-h2h.yml",
-        ".github/workflows/remote-browser-301.yml"
-      ],
-      "invokedToolDirs": [
-        "tools/head-to-head-installed-reproduction"
-      ]
-    },
-    {
       "name": "lint",
       "verdict": "keep",
       "reason": "canonical §6.11 name",
@@ -816,19 +385,6 @@
         "script:check:release"
       ],
       "invokedToolDirs": []
-    },
-    {
-      "name": "muse3jsparity:release",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        ".github/workflows/muse301-aggregate.yml",
-        ".github/workflows/muse301-evidence-closure.yml",
-        ".github/workflows/muse301-final-readiness.yml"
-      ],
-      "invokedToolDirs": [
-        "tools/muse3jsparity-readiness"
-      ]
     },
     {
       "name": "pack:check",
@@ -1059,20 +615,6 @@
       ]
     },
     {
-      "name": "skills:sync",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        "docs/agents/README.md",
-        "docs/agents/skills-examples/aura3d-core.md",
-        "tools/agent-skills/check.ts",
-        "tools/agent-skills/sync.ts"
-      ],
-      "invokedToolDirs": [
-        "tools/agent-skills"
-      ]
-    },
-    {
       "name": "templates:check",
       "verdict": "keep",
       "reason": "canonical §6.11 name",
@@ -1128,20 +670,6 @@
         "tools/requirements-trace/index.ts",
         "tools/script-prune/index.ts",
         "script:test"
-      ],
-      "invokedToolDirs": []
-    },
-    {
-      "name": "test:packages",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        ".github/workflows/build.yml",
-        ".github/workflows/ci.yml",
-        ".github/workflows/test.yml",
-        "tools/external-parity-codebase-root-readiness/index.ts",
-        "tools/quality-gate/root-manifest-pending.json",
-        "script:verify:npm-release"
       ],
       "invokedToolDirs": []
     },
@@ -1293,28 +821,6 @@
       ]
     },
     {
-      "name": "verify:external-parity-report-freshness",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        ".github/workflows/public-demo-deploy.yml",
-        "tools/_quarantine/external-parity-completion-audit/index.ts",
-        "tools/_quarantine/external-parity-external-engine-baselines/index.ts",
-        "tools/_quarantine/external-parity-external-evidence-readiness/index.ts",
-        "tools/_quarantine/external-parity-external-host-runner/index.ts",
-        "tools/_quarantine/external-parity-production-readiness/index.ts",
-        "tools/_quarantine/external-parity-report-freshness/index.ts",
-        "tools/_quarantine/external-parity-verify/index.ts",
-        "tools/external-demo-export/index.ts",
-        "tools/external-parity-broad-parity-readiness/index.ts",
-        "tools/public-demo-deployment-artifacts/index.ts",
-        "tools/public-demo-deployment-smoke/index.ts"
-      ],
-      "invokedToolDirs": [
-        "tools/external-parity-report-freshness"
-      ]
-    },
-    {
       "name": "verify:imports",
       "verdict": "keep",
       "reason": "referenced by 5 source(s)",
@@ -1354,24 +860,6 @@
       ],
       "invokedToolDirs": [
         "tools/package-install-smoke"
-      ]
-    },
-    {
-      "name": "verify:public-demo-deployment",
-      "verdict": "delete",
-      "reason": "target file(s) missing: tsconfig.base.js",
-      "referencedBy": [
-        ".github/workflows/public-demo-deploy.yml",
-        "tools/_quarantine/external-parity-external-evidence-handoff/index.ts",
-        "tools/_quarantine/external-parity-external-evidence-readiness/index.ts",
-        "tools/_quarantine/external-parity-external-host-runner/index.ts",
-        "tools/_quarantine/external-parity-production-readiness/index.ts",
-        "tools/external-demo-export/index.ts",
-        "tools/external-parity-broad-parity-readiness/index.ts",
-        "tools/public-demo-deployment-smoke/index.ts"
-      ],
-      "invokedToolDirs": [
-        "tools/public-demo-deployment-smoke"
       ]
     },
     {
@@ -1425,6 +913,12 @@
       "dir": "tools/_quarantine",
       "referencedBy": [
         "tests/unit/quality-gate/no-verdict-literals.test.ts",
+        "tests/unit/tools/external-parity-hdr-ibl-readiness.test.ts",
+        "tests/unit/tools/head-to-head-measured-outcomes.test.ts",
+        "tests/unit/tools/muse3jsparity-docs-audit.test.ts",
+        "tests/unit/tools/muse3jsparity-document-invariants.test.ts",
+        "tests/unit/tools/muse3jsparity-release-claim-coverage.test.ts",
+        "tests/unit/tools/threejs-parity-current-checklist.test.ts",
         "tools/quality-gate/src/classify-tools.ts",
         ".github/QR_OWNERSHIP.json"
       ],
@@ -1488,7 +982,6 @@
       "dir": "tools/agent-api-surface",
       "referencedBy": [
         "Aura3D-Skills-PRD.md",
-        "package.json",
         "tests/reports/final-subsystem-ownership.json",
         "tools/_quarantine/CLASSIFICATION.json"
       ],
@@ -1497,7 +990,6 @@
     {
       "dir": "tools/agent-deployment",
       "referencedBy": [
-        "package.json",
         "tests/reports/final-subsystem-ownership.json",
         "tools/_quarantine/CLASSIFICATION.json"
       ],
@@ -1506,7 +998,6 @@
     {
       "dir": "tools/agent-devtools",
       "referencedBy": [
-        "package.json",
         "tests/reports/final-subsystem-ownership.json",
         "tools/_quarantine/CLASSIFICATION.json"
       ],
@@ -1518,7 +1009,6 @@
         "Aura3D-Skills-PRD.md",
         "docs/architecture/root-export-dispositions.json",
         "docs/architecture/root-export-inventory.json",
-        "package.json",
         "tests/reports/final-subsystem-ownership.json",
         "tools/_quarantine/CLASSIFICATION.json",
         "tools/deletion-safety/index.ts",
@@ -1554,7 +1044,6 @@
       "referencedBy": [
         "CHANGELOG.md",
         "evidence/prd03/phase6/qr-requests.md",
-        "package.json",
         "tests/reports/final-subsystem-ownership.json",
         "tools/_quarantine/CLASSIFICATION.json"
       ],
@@ -1566,7 +1055,6 @@
         "evidence/prd13/pr-b-t0.4-t0.7-t1.1.md",
         "evidence/prd13/pr-e-t2.1-t2.6.md",
         "evidence/prd13/pr-f-t2.7-t2.14.md",
-        "package.json",
         "tests/unit/tools/agent-skills-check.test.ts",
         "tests/unit/tools/craft-ratio.test.ts",
         "tools/_quarantine/CLASSIFICATION.json",
@@ -1587,6 +1075,7 @@
         "tools/_quarantine/CLASSIFICATION.json",
         "tools/agent-docs/simulation.ts",
         ".github/workflows/agent-output-eval.yml",
+        ".github/workflows/agent-skills.yml",
         ".github/workflows/template-lookdev.yml"
       ],
       "verdict": "referenced"
@@ -1963,7 +1452,6 @@
       "dir": "tools/claim-lineage",
       "referencedBy": [
         "docs/architecture/claim-lineage.md",
-        "package.json",
         "tests/reports/audio-backend-bakeoff/report.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/unit/tools/claim-lineage.test.ts",
@@ -2116,7 +1604,6 @@
     {
       "dir": "tools/docs-codeblocks",
       "referencedBy": [
-        "package.json",
         "tests/reports/final-subsystem-ownership.json",
         "tools/_quarantine/CLASSIFICATION.json",
         "tools/deletion-safety/index.ts"
@@ -2126,7 +1613,6 @@
     {
       "dir": "tools/docs-site",
       "referencedBy": [
-        "package.json",
         "tests/reports/final-subsystem-ownership.json",
         "tools/_quarantine/CLASSIFICATION.json",
         "tools/deletion-safety/index.ts"
@@ -2235,11 +1721,11 @@
     {
       "dir": "tools/external-parity-broad-parity-readiness",
       "referencedBy": [
-        "package.json",
         "tests/reports/final-subsystem-ownership.json",
         "tools/_quarantine/CLASSIFICATION.json",
         "tools/_quarantine/external-parity-external-evidence-handoff/index.ts",
-        "tools/external-parity-product-visual-parity/index.ts"
+        "tools/external-parity-product-visual-parity/index.ts",
+        ".github/workflows/public-demo-deploy.yml"
       ],
       "verdict": "referenced"
     },
@@ -2523,10 +2009,11 @@
     {
       "dir": "tools/head-to-head-installed-reproduction",
       "referencedBy": [
-        "package.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/unit/tools/head-to-head-installed-reproduction.test.ts",
-        "tools/_quarantine/CLASSIFICATION.json"
+        "tools/_quarantine/CLASSIFICATION.json",
+        ".github/workflows/muse301-h2h.yml",
+        ".github/workflows/remote-browser-301.yml"
       ],
       "verdict": "referenced"
     },
@@ -2607,7 +2094,6 @@
     {
       "dir": "tools/muse3jsparity-readiness",
       "referencedBy": [
-        "package.json",
         "tests/browser/game-visual-superiority-harness.ts",
         "tests/browser/game-visual-superiority.spec.ts",
         "tests/browser/gpu-particle-a4.spec.ts",
@@ -2635,7 +2121,10 @@
         "tests/unit/tools/muse3jsparity-temporal-acceptance.test.ts",
         "tests/unit/tools/muse3jsparity-visual-acceptance.test.ts",
         "tests/unit/tools/root-temporal-quality-301.test.ts",
-        "tools/_quarantine/CLASSIFICATION.json"
+        "tools/_quarantine/CLASSIFICATION.json",
+        ".github/workflows/muse301-aggregate.yml",
+        ".github/workflows/muse301-evidence-closure.yml",
+        ".github/workflows/muse301-final-readiness.yml"
       ],
       "verdict": "referenced"
     },
@@ -2690,7 +2179,6 @@
       "referencedBy": [
         "docs/architecture/root-export-dispositions.json",
         "docs/architecture/root-export-inventory.json",
-        "package.json",
         "tests/reports/final-subsystem-ownership.json",
         "tools/_quarantine/CLASSIFICATION.json"
       ],
@@ -2701,7 +2189,6 @@
       "referencedBy": [
         "DESIGN.md",
         "docs/architecture/package-ownership.md",
-        "package.json",
         "tests/reports/audio-backend-bakeoff/report.json",
         "tests/reports/final-subsystem-ownership.json",
         "tools/_quarantine/CLASSIFICATION.json",
@@ -2750,7 +2237,6 @@
     {
       "dir": "tools/package-tarball-audit",
       "referencedBy": [
-        "package.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/unit/tools/package-tarball-pack-result.test.ts",
         "tools/_quarantine/CLASSIFICATION.json"
@@ -2815,7 +2301,6 @@
         "docs/architecture/claim-lineage.md",
         "docs/architecture/root-export-dispositions.json",
         "docs/architecture/root-export-inventory.json",
-        "package.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/unit/tools/production-path-benchmark.test.ts",
         "tools/_quarantine/CLASSIFICATION.json",
@@ -2935,7 +2420,6 @@
       "referencedBy": [
         "docs/architecture/root-export-dispositions.json",
         "docs/architecture/root-export-inventory.json",
-        "package.json",
         "tests/reports/final-subsystem-ownership.json",
         "tools/_quarantine/CLASSIFICATION.json",
         ".github/QR_OWNERSHIP.json"
@@ -2957,21 +2441,27 @@
     {
       "dir": "tools/public-demo-deployment-smoke",
       "referencedBy": [
-        "package.json",
         "tests/reports/final-subsystem-ownership.json",
         "tools/_quarantine/CLASSIFICATION.json",
         "tools/_quarantine/external-parity-external-evidence-handoff/index.ts",
         "tools/_quarantine/external-parity-external-host-runner/index.ts",
-        "tools/_quarantine/external-parity-production-readiness/index.ts"
+        "tools/_quarantine/external-parity-production-readiness/index.ts",
+        ".github/workflows/public-demo-deploy.yml"
       ],
       "verdict": "referenced"
     },
     {
       "dir": "tools/public-surface-diff",
       "referencedBy": [
-        "package.json",
         "tests/unit/tools/public-surface-patch-compatibility.test.ts",
         "tools/_quarantine/CLASSIFICATION.json"
+      ],
+      "verdict": "referenced"
+    },
+    {
+      "dir": "tools/qr-checklist-lint",
+      "referencedBy": [
+        ".github/workflows/qr-required.yml"
       ],
       "verdict": "referenced"
     },
@@ -2992,7 +2482,8 @@
         ".github/workflows/qr-prd01-core.yml",
         ".github/workflows/qr-prd04-materials.yml",
         ".github/workflows/qr-prd08-camera.yml",
-        ".github/workflows/qr-prd10-world.yml"
+        ".github/workflows/qr-prd10-world.yml",
+        ".github/workflows/qr-required.yml"
       ],
       "verdict": "referenced"
     },
@@ -3230,7 +2721,8 @@
       "dir": "tools/script-prune",
       "referencedBy": [
         "tests/unit/tools/script-prune.test.ts",
-        "tools/_quarantine/CLASSIFICATION.json"
+        "tools/_quarantine/CLASSIFICATION.json",
+        ".github/workflows/ci.yml"
       ],
       "verdict": "referenced"
     },

@@ -1,6 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import type { FoundationSourceFileHash } from "../foundation-reporting/index.js";
+import type { FoundationSourceFileHash } from "../../foundation-reporting/index.js";
 import { baseReport, writeJson } from "../external-parity-reporting/index.js";
 import { createExternalParityExternalHostDoctorReport, type ExternalHostBlockedArtifactDetails } from "../external-parity-external-host-doctor/index.js";
 

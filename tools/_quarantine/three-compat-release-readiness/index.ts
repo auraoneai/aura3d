@@ -1,6 +1,6 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { validatePngVisual } from "../three-compat-visual-quality/visualStats";
+import { validatePngVisual } from "../../three-compat-visual-quality/visualStats";
 
 interface ReadinessReport {
   readonly pass?: boolean;

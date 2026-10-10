@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { isIP } from "node:net";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { baseReport, writeJson } from "../external-parity-reporting/index.js";
+import { baseReport, writeJson } from "../_quarantine/external-parity-reporting/index.js";
 
 interface PublicDemoDeploymentSmokeReport {
   readonly ok: boolean;
