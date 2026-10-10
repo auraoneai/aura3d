@@ -12,7 +12,7 @@ import type { AssetOptimizeProfile, ColliderKind, Ktx2Codec } from "./types.js";
 export type AssetOptimizeProfileId =
   | "hero-character" | "npc-character" | "hero-vehicle" | "traffic-vehicle"
   | "product" | "weapon" | "prop-large" | "prop-small"
-  | "world-chunk" | "track" | "backdrop" | "hdri";
+  | "world-chunk" | "track" | "backdrop" | "hdri" | "proxy";
 
 function profile(
   id: AssetOptimizeProfileId,
@@ -53,6 +53,7 @@ export const ASSET_OPTIMIZE_PROFILES: Record<AssetOptimizeProfileId, AssetOptimi
   "prop-small": profile("prop-small", ["prop", "set-dressing"], [100, 1000, 5000], [1, 0.35], [0.25, 0.08], "etc1s", "etc1s", 512, { quantize: true }, "box", { palette: true }),
   "world-chunk": profile("world-chunk", ["world"], [0, 120000, 250000], [1, 0.4, 0.12], [0.25, 0.08, 0.02], "etc1s", "etc1s", 2048, { quantize: true, draco: true }, "trimesh", { palette: true }),
   track: profile("track", ["world"], [0, 60000, 150000], [1, 0.4], [0.25, 0.08], "etc1s", "etc1s", 1024, { quantize: true, draco: true }, "trimesh"),
+  proxy: profile("proxy", ["proxy"], [0, 4000, 15000], [1, 0.4], [0.25, 0.08], "etc1s", "etc1s", 1024, { quantize: true }, "box", { palette: true }),
   backdrop: profile("backdrop", ["backdrop", "set-dressing"], [4, 1000, 2000], [1], [0.02], "etc1s", "none", 2048, { quantize: true }, "none"),
   hdri: profile("hdri", ["hdri"], [0, 0, 0], [1], [1], "none", "none", 2048, { quantize: false }, "none", { join: false })
 };
@@ -75,6 +76,12 @@ export function profileForRole(role: string | undefined, bounds?: readonly [numb
       return ASSET_OPTIMIZE_PROFILES["hero-vehicle"];
     case "world":
       return ASSET_OPTIMIZE_PROFILES["world-chunk"];
+    case "environment":
+      return ASSET_OPTIMIZE_PROFILES["world-chunk"];
+    case "track":
+      return ASSET_OPTIMIZE_PROFILES["track"];
+    case "proxy":
+      return ASSET_OPTIMIZE_PROFILES["proxy"];
     case "backdrop":
       return ASSET_OPTIMIZE_PROFILES["backdrop"];
     case "hdri":
