@@ -88,6 +88,8 @@ export interface EffectNodeLike {
   /** Group nodes nest authored children; false-visible groups hide the subtree. */
   readonly children?: readonly EffectNodeLike[];
   readonly visible?: boolean;
+  /** §8.3 sim backend: "gpu" forces ParticleGpuSim, "auto" picks by count. */
+  readonly simulation?: "auto" | "cpu" | "gpu";
 }
 
 export interface LoweredParticleEffect {
@@ -97,7 +99,7 @@ export interface LoweredParticleEffect {
   readonly batch: LoweredBatchSpec;
   readonly emitter: EmitterDescriptor;
   readonly consumer: "particle-pass";
-  readonly sim: "cpu";
+  readonly sim: "cpu" | "gpu";
 }
 
 export interface LoweredBeamEffect {
@@ -171,6 +173,14 @@ function nodeColor(node: EffectNodeLike): readonly [number, number, number] {
   return COLOR_TABLE[node.materialMode ?? "soft-alpha"] ?? [1, 1, 1];
 }
 
+/** §8.3 sim backend: "gpu" forces it, "auto"/unset picks gpu past the CPU cap. */
+const GPU_AUTO_THRESHOLD = 4096;
+function simFor(node: EffectNodeLike, count: number): "cpu" | "gpu" {
+  if (node.simulation === "gpu") return "gpu";
+  if (node.simulation === "cpu") return "cpu";
+  return count > GPU_AUTO_THRESHOLD ? "gpu" : "cpu";
+}
+
 /** Lower one scene node; `seed` overrides hashing (benchmark scenes pin it). */
 export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): LoweredEffect {
   const nodeId = node.id ?? node.name ?? `effect-${node.effect ?? "none"}`;
@@ -190,7 +200,7 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
         nodeId,
         effect,
         consumer: "particle-pass",
-        sim: "cpu",
+        sim: simFor(node, count),
         batch: {
           blend,
           shading: "unlit",
@@ -238,7 +248,7 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
         nodeId,
         effect,
         consumer: "particle-pass",
-        sim: "cpu",
+        sim: simFor(node, count),
         batch: {
           blend: "alpha",
           shading: "unlit",
@@ -276,7 +286,7 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
         nodeId,
         effect,
         consumer: "particle-pass",
-        sim: "cpu",
+        sim: simFor(node, count),
         batch: {
           blend: "alpha",
           shading: "unlit",

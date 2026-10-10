@@ -37,11 +37,22 @@ import { contextViewProjection, skyDrawPassFor } from "../atmosphere/SkyBackgrou
 import { VolumetricFogPass, froxelGridFor, type VolumetricFogPassInput, type FroxelGridSpec } from "../atmosphere/VolumetricFogPass";
 import type { PackedFogUniforms } from "../atmosphere/HeightFog";
 import { SkyCaptureAdapter, type SkyCaptureAppLike } from "../atmosphere/SkyCaptureAdapter";
+import { ParticleGpuSim, particleGpuSimAvailable, type GpuSimSpec } from "./ParticleGpuSim";
+
+/** §8.3 GPU sim request published per emitter whose sim lowered to "gpu". */
+export interface GpuSimRequest {
+  readonly nodeId: string;
+  readonly batchKey: string;
+  readonly emitCount: number;
+  readonly spec: GpuSimSpec;
+}
 
 /** What the engine-side effects system publishes on the RenderSource. */
 export interface VfxFrameSource {
   /** Upsert batches + write this frame's live instances through the hook. */
   feed(hook: ParticleRenderHook): void;
+  /** §8.3: emitters requesting a ParticleGpuSim (P5-T1). */
+  gpuSimFeed?(): readonly GpuSimRequest[];
   /** Called once after the contributor collected queue items, with observed stats. */
   afterDraw?(diagnostics: ParticlePassDiagnostics): void;
   /** P2-T7 transient lights — read by the prd07.lights contributor in collect. */
@@ -386,12 +397,33 @@ const skyCaptureContributor: FrameContributor = {
  * Requires floatColorBuffer; producers gate on `ParticleGpuSim.isAvailable`
  * and keep the CPU emitter otherwise (PARTICLE_GPU_UNAVAILABLE).
  */
+/** Per-device ParticleGpuSim instances, keyed by emitter nodeId (P5-T1). */
+const gpuSims = new WeakMap<RenderDevice, Map<string, ParticleGpuSim>>();
+
 const gpuSimContributor: FrameContributor = {
   id: "prd07.gpuSim",
   owner: "prd07",
   flag: "A3D_QR_VFX",
   phases: ["collect"],
   collect: (items, ctx) => {
+    const vfx = (ctx.source as Prd07FrameSource).vfx;
+    const requests = vfx?.gpuSimFeed?.() ?? [];
+    if (requests.length > 0 && particleGpuSimAvailable(ctx.device)) {
+      const map = new Map<string, ParticleGpuSim>();
+      const entries: { sim: ParticleGpuSim; emitCount: number }[] = [];
+      for (const r of requests) {
+        const sim = gpuSims.get(ctx.device)?.get(r.nodeId) ?? new ParticleGpuSim(ctx.device, r.spec);
+        map.set(r.nodeId, sim);
+        entries.push({ sim, emitCount: r.emitCount });
+      }
+      gpuSims.set(ctx.device, map);
+      ctx.blackboard.set("prd07.gpuSims", entries);
+    } else {
+      // floatColorBuffer absent (PARTICLE_GPU_UNAVAILABLE) or no gpu emitters:
+      // CPU emitter stays the only sim (§8.3 fallback).
+      ctx.blackboard.set("prd07.gpuSims", []);
+      gpuSims.delete(ctx.device);
+    }
     const sims = ctx.blackboard.get("prd07.gpuSims") as readonly { sim: { step(dt: number, emitCount: number, time: number): unknown }; emitCount: number }[] | undefined;
     if (!sims) return items;
     for (const entry of sims) entry.sim.step(1 / 60, entry.emitCount, ctx.timeSeconds);

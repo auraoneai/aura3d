@@ -8,7 +8,7 @@ import { Texture } from "@aura3d/rendering";
 import type { ParticleBatchDescriptor, ParticleBatchHandle, ParticleRenderHook } from "@aura3d/rendering/contracts";
 import { QUALITY_TIERS, type AuraQualityTier } from "@aura3d/rendering/contracts";
 import type { ParticlePassDiagnostics } from "@aura3d/rendering";
-import { MeshParticleBatch, RibbonBatch, RibbonTrail, DecalBatch, DECAL_TIER_CAP, decalQuadGeometry, ribbonStripToDecalGeometry, PARTICLE_GPU_BUDGET_MS, type BeamDrawSpec, type MeshParticleFeed, type DecalVertexData } from "@aura3d/rendering";
+import { MeshParticleBatch, RibbonBatch, RibbonTrail, DecalBatch, DECAL_TIER_CAP, decalQuadGeometry, ribbonStripToDecalGeometry, PARTICLE_GPU_BUDGET_MS, type BeamDrawSpec, type MeshParticleFeed, type DecalVertexData, type GpuSimSpec } from "@aura3d/rendering";
 import { createEmitter, stepEmitter, writeEmitterInstances, type EmitterState } from "./CpuEmitter";
 import { lowerEffectNode, type LoweredEffect, type EffectNodeLike } from "./EffectNodeLowering";
 import { EffectDiagnostics } from "./EffectDiagnostics";
@@ -665,6 +665,34 @@ export class ProductionEffectSystem {
     this.transientLights.step(dt);
     this.diagnostics.setFrameStats(this.emitters.size, this.liveCount());
     this.diagnostics.setBudget({ tier: this.tier, cap: this.budgetCap, culled: this.culledTotal });
+  }
+
+  /**
+   * §8.3 GPU sim requests — read by the prd07.gpuSims contributor, which owns
+   * the RenderDevice and instantiates one ParticleGpuSim per emitter whose
+   * `sim` lowered to "gpu". The CPU emitter keeps running as the draw source
+   * until the batch pass gains the texture-fetch variant (PARTICLE_SOURCE).
+   */
+  gpuSimFeed(): readonly { nodeId: string; batchKey: string; emitCount: number; spec: GpuSimSpec }[] {
+    const out: { nodeId: string; batchKey: string; emitCount: number; spec: GpuSimSpec }[] = [];
+    for (const binding of this.emitters.values()) {
+      if (binding.lowered.sim !== "gpu") continue;
+      const d = binding.lowered.emitter;
+      out.push({
+        nodeId: d.nodeId,
+        batchKey: d.key,
+        emitCount: d.emissionRate / 60,
+        spec: {
+          capacity: d.capacity,
+          lifetimeMax: d.life[1],
+          gravity: [0, d.gravity, 0],
+          drag: d.drag,
+          seed: d.seed,
+          emitter: { origin: d.origin, direction: d.direction, spread: d.spread, speed: d.speed }
+        }
+      });
+    }
+    return out;
   }
 
   /**
