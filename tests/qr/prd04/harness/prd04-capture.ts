@@ -21,8 +21,14 @@ declare global {
   interface Window {
     __QR_READY__?: unknown;
     __QR_ERROR__?: string;
+    __QR_STAGE__?: string;
+    __QR_BOOT_TIMER__?: number;
   }
 }
+
+// 04-BOOT: stage markers — if the page wedges, the spec (and the HTML watchdog)
+// report the stage it died at instead of a bare timeout.
+window.__QR_STAGE__ = "module-evaluated";
 
 async function main(): Promise<void> {
   const params = new URLSearchParams(window.location.search);
@@ -44,10 +50,12 @@ async function main(): Promise<void> {
     readonly lightsOff?: string;
     readonly pixels?: boolean;
   }) => Promise<unknown>;
+  window.__QR_STAGE__ = "adapter-resolve";
   let loader = (engine === "aura3d" ? auraAdapters : threeAdapters)[sceneId] as AdapterLoader | undefined;
   if (!loader) {
     // Legacy negative-control scenes (e.g. 02-pbr-product, 05-transmission):
     // top-level adapter modules default-export (host) => Promise<ReadyPayload>.
+    window.__QR_STAGE__ = `adapter-import:${engine}/${sceneId}`;
     const mod = (await import(
       /* @vite-ignore */ `/benchmarks/quality-rebuild/${engine}/${sceneId}.ts`
     )) as { default?: (host: HTMLElement) => Promise<unknown> };
@@ -61,6 +69,7 @@ async function main(): Promise<void> {
   const requestedFlags = flags === "none" ? [] : flags.split(",").filter(Boolean);
   const transmission = params.get("transmission") as "auto" | "env" | "off" | null;
   const quality = params.get("quality") as "low" | "medium" | "high" | "ultra" | null;
+  window.__QR_STAGE__ = `adapter-run:${sceneId}`;
   const payload = (await loader(host, {
     qrFlags: requestedFlags,
     ...(transmission !== null ? { transmission } : {}),
@@ -70,12 +79,19 @@ async function main(): Promise<void> {
     ...(params.get("lightsOff") !== null ? { lightsOff: params.get("lightsOff")! } : {}),
     ...(params.get("pixels") === "1" ? { pixels: true } : {})
   })) as Record<string, unknown>;
+  window.__QR_STAGE__ = "payload-published";
   payload.qrFlags = requestedFlags;
   document.body.dataset.qrReady = "true";
   window.__QR_READY__ = payload;
 }
 
-main().catch((error: unknown) => {
-  window.__QR_ERROR__ = error instanceof Error ? `${error.name}: ${error.message}\n${error.stack ?? ""}` : String(error);
-  document.body.dataset.qrError = "true";
-});
+main()
+  .catch((error: unknown) => {
+    window.__QR_ERROR__ = error instanceof Error ? `${error.name}: ${error.message}\n${error.stack ?? ""}` : String(error);
+    document.body.dataset.qrError = "true";
+  })
+  .finally(() => {
+    // The module's own outcome is known — disarm the HTML boot watchdog.
+    window.__QR_STAGE__ = "settled";
+    clearTimeout(window.__QR_BOOT_TIMER__);
+  });

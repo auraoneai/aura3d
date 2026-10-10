@@ -4,6 +4,18 @@
 <style>body{margin:0;background:#111}#stage{position:relative}canvas{display:block}</style></head>
 <body>
 <div id="stage"></div>
-<script type="module" src="./prd04-assets.ts"></script>
+    <script>
+      // 04-BOOT watchdog: arms before the module evaluates; if a specifier
+      // never resolves, the page names the wedge stage instead of hanging.
+      window.__QR_STAGE__ = "module-load";
+      window.__QR_BOOT_TIMER__ = setTimeout(function () {
+        if (window.__QR_READY__ === undefined && window.__QR_ERROR__ === undefined) {
+          window.__QR_ERROR__ =
+            "module load hung at stage \"" + window.__QR_STAGE__ + "\" (boot watchdog 60s)";
+          document.body.dataset.qrError = "true";
+        }
+      }, 60000);
+    </script>
+    <script type="module" src="./prd04-assets.ts"></script>
 </body>
 </html>

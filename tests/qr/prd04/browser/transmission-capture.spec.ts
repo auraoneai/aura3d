@@ -25,18 +25,18 @@ interface TransmissionExtra {
 }
 
 async function loadScene(page: import("@playwright/test").Page, origin: string, sceneId: string) {
-  test.setTimeout(360_000);
+  // P-29: PRD ready budget is <= 30 s — the 300 s budget tolerated the
+  // 04-BOOT hang. The harness watchdog + __QR_STAGE__ now name a wedge instead.
+  test.setTimeout(60_000);
   await page.goto(
     `${origin}/tests/qr/prd04/harness/prd04-capture.html?engine=aura3d&scene=${sceneId}&flags=${FLAGS}&transmission=env`,
     { waitUntil: "domcontentloaded" }
   );
-  // Budget covers the harness's own worst case (90s first-draw + 180s HDRI
-  // deadline); on a hang the page's __QR_STAGE__ names the wedge.
   try {
     await page.waitForFunction(
       () => (window as any).__QR_READY__ !== undefined || (window as any).__QR_ERROR__ !== undefined,
       undefined,
-      { timeout: 300_000 }
+      { timeout: 30_000 }
     );
   } catch (error) {
     const stage = await page.evaluate(() => (window as any).__QR_STAGE__ ?? "pre-adapter").catch(() => "unreadable");

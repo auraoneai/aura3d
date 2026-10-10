@@ -25,9 +25,16 @@ declare global {
 				maxAbs: number;
 				maxRel: number;
 				values: (number | null)[];
-				failures: { idx: number; abs: number; rel: number }[];
+				failures: { idx: number; abs: number; rel: number; args?: Record<string, number> }[];
 				log: string;
 			}[];
+			control?: {
+				fn: string;
+				perturbation: string;
+				total: number;
+				maxAbs: number;
+				failures: { idx: number; abs: number; rel: number }[];
+			};
 		};
 	}
 }
@@ -56,7 +63,7 @@ const CALLS: Record<string, string> = {
 	computeSpecularOcclusion: "o = vec4( a3dPrd04SpecularOcclusion( u_x0, u_x1, u_x2 ), 0.0, 0.0, 1.0 );",
 	applyIorToRoughness: "o = vec4( a3dApplyIorToRoughness( u_x0, u_x1 ), 0.0, 0.0, 1.0 );",
 	volumeAttenuation: "o = vec4( a3dVolumeAttenuation( u_x0, u_f_attenuationColor, u_x1 ), 1.0 );",
-	iorToF0: "o = vec4( a3dPrd04IorToFresnel0f( u_x0, 1.0 ), 0.0, 0.0, 1.0 );",
+	iorToF0: "o = vec4( a3dPrd04IorToF0f( u_x0, 1.0 ), 0.0, 0.0, 1.0 );",
 	specIorSpecularColor: "o = vec4( a3dPrd04SpecIorSpecularColor( u_x0, u_f_specularColorFactor, u_x1 ), 1.0 );",
 	specIorSpecularF90: "o = vec4( a3dPrd04SpecIorSpecularF90( u_x0, u_x1 ), 0.0, 0.0, 1.0 );",
 	clearcoatFccCompose:
@@ -171,10 +178,29 @@ function glslFloat(v: number): string {
 	return Number.isInteger(v) ? `${v}.0` : String(v);
 }
 
+/** Decode a flattened component index back to the case's axis arg values —
+ * failure entries name their grid cell (04-S5 OOB diagnosis). */
+function decodeArgs(c: GoldenCase, componentIdx: number): Record<string, number> {
+	const cell = Math.floor(componentIdx / c.out);
+	const out: Record<string, number> = {};
+	let stride = 1;
+	for (const name of c.argorder) {
+		const axis = c.axes[name]!;
+		out[name] = axis[Math.floor(cell / stride) % axis.length]!;
+		stride *= axis.length;
+	}
+	return out;
+}
+
 function buildFragment(c: GoldenCase, width: number): string {
 	const axes = c.argorder.map((name) => c.axes[name]!);
+	const needs = NEEDS[c.fn] ?? [];
 	const parts: string[] = [PREAMBLE, BRDF_R185_SHIM_CHUNK.glsl];
-	for (const chunk of closure(NEEDS[c.fn] ?? [])) parts.push(chunk.glsl);
+	// 04-S5: the transmission/volume chunks declare everything inside
+	// `#ifdef A3D_TRANSMISSION` (r185 USE_TRANSMISSION parity) — cases that
+	// need them must define it before the chunk bodies, never strip the guard.
+	if (needs.includes("a3d_prd04_transmission")) parts.push("#define A3D_TRANSMISSION 1");
+	for (const chunk of closure(needs)) parts.push(chunk.glsl);
 	for (const [name, value] of Object.entries(c.fixed)) {
 		parts.push(`uniform ${Array.isArray(value) ? "vec3" : "float"} u_f_${name};`);
 	}
@@ -286,7 +312,7 @@ async function main(): Promise<void> {
 	const golden = (await (await fetch("/tests/qr/prd04/fixtures/bsdf/r185-golden.json")).json()) as { cases: GoldenCase[] };
 	for (const c of golden.cases) {
 		const total = c.argorder.reduce((acc, k) => acc * c.axes[k]!.length, 1);
-		const entry = { fn: c.fn, total, out: c.out, maxAbs: 0, maxRel: 0, values: [] as (number | null)[], failures: [] as { idx: number; abs: number; rel: number }[], log: "" };
+		const entry = { fn: c.fn, total, out: c.out, maxAbs: 0, maxRel: 0, values: [] as (number | null)[], failures: [] as { idx: number; abs: number; rel: number; args?: Record<string, number> }[], log: "" };
 		const result = runCase(gl, c, dfgTex);
 		if (!Array.isArray(result)) {
 			entry.log = result.error;
@@ -300,17 +326,49 @@ async function main(): Promise<void> {
 			const expected = c.values[i];
 			if (expected === null) continue; // non-finite golden cell — spec asserts parity separately
 			if (got === null) {
-				entry.failures.push({ idx: i, abs: Infinity, rel: Infinity });
+				entry.failures.push({ idx: i, abs: Infinity, rel: Infinity, args: decodeArgs(c, i) });
 				continue;
 			}
 			const abs = Math.abs(got - expected);
 			const rel = abs / Math.max(Math.abs(expected), 1e-6);
 			entry.maxAbs = Math.max(entry.maxAbs, abs);
 			entry.maxRel = Math.max(entry.maxRel, rel);
-			if (abs > absBound && rel > 1e-3) entry.failures.push({ idx: i, abs, rel });
+			if (abs > absBound && rel > 1e-3) entry.failures.push({ idx: i, abs, rel, args: decodeArgs(c, i) });
 		}
 		report.cases!.push(entry);
 	}
+
+	// 04-S5 §15.4 perturbed control: sheenDirect with sheenColor x0.012 must
+	// FAIL against the unperturbed golden — proves the harness discriminates
+	// a real deviation instead of vacuously passing every grid.
+	{
+		const goldenCase = golden.cases.find((x) => x.fn === "sheenDirect")!;
+		const controlCase: GoldenCase = {
+			...goldenCase,
+			fixed: { ...goldenCase.fixed, sheenColor: (goldenCase.fixed.sheenColor as number[]).map((v) => v * 0.012) }
+		};
+		const result = runCase(gl, controlCase, dfgTex);
+		const control = {
+			fn: "sheenDirect",
+			perturbation: "sheenColor x0.012",
+			total: controlCase.argorder.reduce((acc, k) => acc * controlCase.axes[k]!.length, 1) * controlCase.out,
+			maxAbs: 0,
+			failures: [] as { idx: number; abs: number; rel: number }[]
+		};
+		if (Array.isArray(result)) {
+			for (let i = 0; i < result.length; i++) {
+				const got = result[i];
+				const expected = goldenCase.values[i];
+				if (got === null || expected === null) continue;
+				const abs = Math.abs(got - expected);
+				const rel = abs / Math.max(Math.abs(expected), 1e-6);
+				control.maxAbs = Math.max(control.maxAbs, abs);
+				if (abs > 1e-3 && rel > 1e-3) control.failures.push({ idx: i, abs, rel });
+			}
+		}
+		report.control = control;
+	}
+
 	report.status = "ready";
 	document.getElementById("status")!.textContent = "ready";
 }

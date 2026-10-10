@@ -11,6 +11,21 @@
   </head>
   <body>
     <div id="stage"></div>
+    <script>
+      // 04-BOOT watchdog: armed before the module below evaluates. A specifier
+      // that never resolves (proxy stall, missing alias, Vite optimizeDeps
+      // wedge) used to leave both __QR_READY__/__QR_ERROR__ unset until the
+      // spec deadline — now the page itself names the wedge stage. The module
+      // clears this timer once it starts publishing progress.
+      window.__QR_STAGE__ = "module-load";
+      window.__QR_BOOT_TIMER__ = setTimeout(function () {
+        if (window.__QR_READY__ === undefined && window.__QR_ERROR__ === undefined) {
+          window.__QR_ERROR__ =
+            "module load hung at stage \"" + window.__QR_STAGE__ + "\" (boot watchdog 60s)";
+          document.body.dataset.qrError = "true";
+        }
+      }, 60000);
+    </script>
     <script type="module" src="./prd04-capture.ts"></script>
   </body>
 </html>
