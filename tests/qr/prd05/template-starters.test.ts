@@ -166,7 +166,6 @@ function writeProofFile(template: string, rows: unknown[]): void {
       {
         schema: "aura3d.template-starter-proof/1.0",
         template,
-        generatedAt: new Date().toISOString(),
         summary: `${rows.length} starter entries (${modelCount} models gated G1–G11); ${passable} fully clear today.`,
         rows,
       },
