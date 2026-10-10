@@ -84,7 +84,14 @@ jobs:
           done < <(grep -oE '"--[a-z0-9-]+"' tools/asset-optimize/types.ts | tr -d '"' | sort -u)
           [ "$missing" -eq 0 ]
 
+      - name: derived-ids.txt is fresh against games.json
+        run: node_modules/.bin/tsx --tsconfig tsconfig.base.json tools/asset-optimize/game-referenced-ids.mts --check
+
       - name: run optimize
+        env:
+          # Schema-1.1 writer gate: a real --ids pass writes derived entries
+          # into aura.assets.json as aura3d.assets/1.1 (C-17 stub rule).
+          A3D_QR: assets
         run: |
           set -euo pipefail
           ktx="$(pwd)/${{ steps.ktx.outputs.ktx_bin }}"
@@ -92,10 +99,54 @@ jobs:
           args=(--ktx "$ktx" --report evidence/prd05/assets/optimize-ci.json --out-dir optimize-out)
           if [ -n "$ids" ]; then
             args+=(--ids "$ids" --allow-local-small --no-manifest)
-          else
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
             args+=(--dry-run)
+          else
+            # 05-S10: push / plain dispatch run the real pass over the
+            # game-referenced id set (derived entries + manifest + aggregate).
+            ids="$(grep -v '^#' tools/asset-optimize/derived-ids.txt | grep -v '^$' | paste -sd, -)"
+            [ -n "$ids" ] || { echo "::error::derived-ids.txt has no ids"; exit 1; }
+            args+=(--ids "$ids" --allow-local-small)
           fi
           node_modules/.bin/tsx --tsconfig tsconfig.base.json tools/asset-optimize/index.ts "${args[@]}"
+
+      - name: derived aggregate bytes (05-S10 <= 80 MB over the id set)
+        if: github.event_name != 'pull_request' && github.event.inputs.ids == ''
+        run: |
+          set -euo pipefail
+          python3 - <<'PYEOF'
+          import json, os, re, sys
+          ids = [l.strip() for l in open('tools/asset-optimize/derived-ids.txt')
+                 if l.strip() and not l.startswith('#')]
+          # Primary derived file only: <id>.<hash8>.glb (not .mobile / .collision).
+          files = os.listdir('optimize-out')
+          total = 0
+          rows = []
+          for i in ids:
+              pat = re.compile(re.escape(i) + r'\.[0-9a-f]{8}\.glb$')
+              hits = sorted(f for f in files if pat.match(f))
+              if len(hits) != 1:
+                  rows.append({'id': i, 'bytes': None, 'status': 'MISSING' if not hits else 'AMBIGUOUS', 'files': hits})
+                  continue
+              b = os.path.getsize(os.path.join('optimize-out', hits[0]))
+              total += b
+              rows.append({'id': i, 'file': hits[0], 'bytes': b})
+          limit = 80 * 1024 * 1024
+          bad = [r for r in rows if r['bytes'] is None]
+          doc = {'schema': 'aura3d.derived-aggregate/1.0', 'ids': len(ids),
+                 'derivedBytes': total, 'budgetBytes': limit,
+                 'withinBudget': total <= limit, 'unmeasured': len(bad), 'rows': rows}
+          os.makedirs('evidence/prd05/assets', exist_ok=True)
+          json.dump(doc, open('evidence/prd05/assets/derived-aggregate.json', 'w'), indent=2)
+          print(f"derived total: {total/1024/1024:.1f} MB over {len(ids)} ids (budget 80.0 MB); unmeasured: {len(bad)}")
+          # Fail closed: every id must derive, and the total must fit the budget.
+          if bad:
+              print("::error::ids without exactly one derived GLB: " + ", ".join(r['id'] for r in bad))
+              sys.exit(1)
+          if total > limit:
+              print(f"::error::derived total {total} B exceeds {limit} B")
+              sys.exit(1)
+          PYEOF
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -103,5 +154,8 @@ jobs:
           name: asset-optimize-${{ github.sha }}
           path: |
             evidence/prd05/assets/optimize-ci.json
+            evidence/prd05/assets/derived-aggregate.json
             optimize-out/
+            aura.assets.json
+            src/aura-assets.ts
           retention-days: 14
