@@ -2,6 +2,7 @@ import {
   AudioClip,
   AudioContextManager,
   FootstepPlayer,
+  createGameSoundEngine,
   computeDistanceAttenuation,
   computeDopplerShift,
   createGameSoundEngine,
@@ -316,9 +317,13 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
     if (!engine) {
       const initialVolumes: Partial<Record<GameBusId, number>> = {};
       for (const [busId, volume] of busVolumes) initialVolumes[engineBusOf(busId)] = volume;
-      // C-25 slot resolution: real engine iff provided && A3D_QR_GAME on,
-      // else the silent contract stub (09-CONF conformance: real-or-stub by flag).
-      engine = gameSoundSlot.get(qrFlags)({
+      // C-25: flag on resolves through the contract slot (real engine iff
+      // lane prd09 provided it, else the silent stub — 09-CONF real-or-stub
+      // by flag). Flag off keeps the shipped legacy path, which has always
+      // played through the real game-sound engine: routing it to the silent
+      // stub (#712) muted every flag-off route (flag-off output must not change).
+      const factory = qrGameOn ? gameSoundSlot.get(qrFlags) : createGameSoundEngine;
+      engine = factory({
         context: audioContext as unknown as SoundGraphContext,
         cues: engineCues,
         buses: initialVolumes

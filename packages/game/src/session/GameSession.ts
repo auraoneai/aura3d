@@ -36,6 +36,14 @@ const LEGAL: Readonly<Record<GameSessionState, readonly GameSessionState[]>> = {
 export interface GameSessionOptions {
   readonly seed: number;
   readonly time?: AuraTimeController;
+  /**
+   * C-23 single-advance rule (flag-on risk 3): true when another owner — a
+   * lane-08 `FixedStepDriver.presentTick` — already advances `time` once per
+   * presented tick. The session then only reads the scale. Default false:
+   * `createGame`'s GameAppRuntime loop never advances `app.time`, so the
+   * session is the single owner and advances it exactly once per real frame.
+   */
+  readonly externallyAdvanced?: boolean;
 }
 
 export class GameSessionImpl implements GameSession {
@@ -43,6 +51,7 @@ export class GameSessionImpl implements GameSession {
   private pauseStack: PauseReason[] = [];
   private readonly listeners = new Map<SessionEvent, Set<(s: GameSession) => void>>();
   private controller: AuraTimeController;
+  private externallyAdvanced: boolean;
   /** Per-actor freeze remaining in REAL seconds — decremented in tick(). */
   private readonly actorFreezes = new Map<string, number>();
   /** Scaled dt produced by the last tick — feeds scaledDt()/simTime accounting. */
@@ -53,11 +62,16 @@ export class GameSessionImpl implements GameSession {
   public constructor(options: GameSessionOptions) {
     this.seed = options.seed;
     this.controller = options.time ?? new StubTimeController();
+    this.externallyAdvanced = options.externallyAdvanced ?? false;
   }
 
-  /** Swap the delegate (e.g. once the app mounts `app.time`). */
-  public bindTimeController(controller: AuraTimeController): void {
+  /**
+   * Swap the delegate (e.g. once the app mounts `app.time`). Pass
+   * `externallyAdvanced: true` when a FixedStepDriver owns its advance.
+   */
+  public bindTimeController(controller: AuraTimeController, o?: { externallyAdvanced?: boolean }): void {
     this.controller = controller;
+    this.externallyAdvanced = o?.externallyAdvanced ?? false;
   }
 
   /** Called once per real frame by the runtime hook — advances real + sim time. */
@@ -67,10 +81,13 @@ export class GameSessionImpl implements GameSession {
       if (next <= 0) this.actorFreezes.delete(actor);
       else this.actorFreezes.set(actor, next);
     }
-    // C-23: the FixedStepDriver's presentTick already advances the controller
-    // once per presented tick; advancing it again here would double sim time
-    // per frame. Read the scaled dt instead.
-    this.lastScaledDt = realDt * this.controller.scale;
+    // C-23: exactly one owner advances the controller per real frame. When a
+    // FixedStepDriver's presentTick already did, advancing again would double
+    // sim time (risk 3), so only read the scale; otherwise the session is the
+    // owner (hit-stop decay and simTime depend on it).
+    this.lastScaledDt = this.externallyAdvanced
+      ? (this.controller.hitStopRemaining > 0 ? 0 : realDt * this.controller.scale)
+      : this.controller.advance(realDt);
     return this.lastScaledDt;
   }
 
