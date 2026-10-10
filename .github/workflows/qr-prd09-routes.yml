@@ -35,13 +35,40 @@ on:
       - "eslint/qr/no-route-capture-flags.js"
       - "eslint/qr/prd09.js"
       - ".github/workflows/qr-prd09-routes.yml"
+  # §4.0: lane workflows run on main pushes so a main run can be cited.
+  push:
+    branches: [main]
+    paths:
+      - "packages/game/**"
+      - "packages/audio/**"
+      - "packages/engine/src/game/**"
+      - "packages/engine/src/agent-api/GameAppRuntime.ts"
+      - "packages/engine/src/agent-api/app/createGameApp.ts"
+      - "packages/engine/src/agent-api/nodes/game/**"
+      - "packages/engine/src/contracts/game.ts"
+      - "packages/engine/src/contracts/stubs/game.ts"
+      - "apps/common/**"
+      - "apps/showcase-*/**"
+      - "apps/aura-clash-showcase/**"
+      - "tools/quality-rebuild-capture/route-composition.mjs"
+      - "tools/quality-rebuild-capture/games.json"
+      - "tools/showcase-library/game-capture-parity.mjs"
+      - "tests/qr/prd09/**"
+      - "docs/project/aura3d-quality-rebuild/migration/**"
+      - "docs/project/aura3d-quality-rebuild/PRD-09-shared-game-runtime-route-extraction.md"
+      - "eslint/qr/no-route-capture-flags.js"
+      - "eslint/qr/prd09.js"
+      - ".github/workflows/qr-prd09-routes.yml"
 
 permissions:
   contents: read
 
+# §4.0: never cancel main runs. On main each run gets its own group (run_id),
+# so a newer push neither cancels nor replaces a pending main run; other refs
+# keep superseding their own in-flight runs.
 concurrency:
-  group: qr-prd09-routes-${{ github.ref }}
-  cancel-in-progress: true
+  group: qr-prd09-routes-${{ github.ref == 'refs/heads/main' && github.run_id || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   capture_review_divergence:
