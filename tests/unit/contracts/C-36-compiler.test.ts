@@ -4,12 +4,14 @@ import "@aura3d/engine";
 import { DIAGNOSTIC_ONLY_FIELDS, compileScene, updateCompiledScene } from "@aura3d/engine/contracts";
 import type { MountSceneCompileContext } from "../../../packages/engine/src/agent-api/compiler/compileScene";
 import { asRuntimeImpl } from "../../../packages/engine/src/agent-api/compiler/compileScene";
+import { createProductionRuntimeCollectedLights } from "../../../packages/engine/src/agent-api/compiler/observations";
 import { createProductionRuntimeRendererInput } from "../../../packages/engine/src/agent-api/compiler/renderInput";
 import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
 import { registerNodeHandler } from "../../../packages/engine/src/contracts/compiler";
 import { scene } from "../../../packages/engine/src/agent-api/nodes/scene";
 import { primitive } from "../../../packages/engine/src/agent-api/nodes/primitives";
 import type { AuraSceneSnapshot, AuraRuntimeNodeRegistry } from "../../../packages/engine/src/agent-api/nodes/types";
+import { LightUniforms } from "@aura3d/rendering";
 import type { CollectedLight, EnvironmentLightingOptions } from "@aura3d/rendering";
 
 const stubCanvas = () => ({ width: 800, height: 600 }) as unknown as HTMLCanvasElement;
@@ -148,6 +150,31 @@ describe("C-36 compiler", () => {
     const a = JSON.parse(JSON.stringify({ source: lastInput.source, camera: lastInput.camera }));
     const b = JSON.parse(JSON.stringify({ source: legacy.source, camera: legacy.camera }));
     expect(a).toEqual(b);
+    compiled.dispose();
+  });
+
+  it("T0-09: authored lights are collected once — finite layerMask, no NaN in u_lightData", async () => {
+    const snapshot = litScene();
+    const lit = {
+      ...snapshot,
+      nodes: [
+        ...snapshot.nodes,
+        { kind: "light", light: "directional", name: "key", intensity: 2, position: [3, 4, 3], shadow: true },
+        { kind: "light", light: "point", name: "fill", intensity: 10, position: [0, 3, 0] }
+      ]
+    } as AuraSceneSnapshot;
+    // Mirror the production mount: the mount's ctx carries the legacy
+    // collection (createProductionRuntimeCollectedLights); the C-36 handler
+    // must not add the same lights again.
+    const flags = resolveQrFlags({ options: ["compiler", "lighting"] });
+    const compiled = await compileScene(lit, mountCtx(flags, { collectedLights: createProductionRuntimeCollectedLights(lit) }));
+    const lights = [...(compiled.source?.collectedLights ?? [])];
+    expect(lights).toHaveLength(2);
+    for (const light of lights) {
+      expect(Number.isFinite(light.layerMask)).toBe(true);
+    }
+    const packed = LightUniforms.pack(lights);
+    expect([...packed.data].every(Number.isFinite)).toBe(true);
     compiled.dispose();
   });
 });
