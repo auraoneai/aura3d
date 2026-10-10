@@ -3,11 +3,13 @@
 // RENAMED grows by one row per rename PR (split N/M of #742).
 
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import {
   CREATE_AURA3D_TEMPLATES,
   TEMPLATE_ALIASES,
+  createA3DProject,
   resolveTemplateAlias,
   templateAliasWarning
 } from "../../../packages/create-aura3d/src/index";
@@ -19,7 +21,8 @@ const RENAMED: ReadonlyArray<readonly [retired: string, current: string]> = [
   ["three-compat-asset-inspector", "asset-inspector"],
   ["three-compat-character-viewer", "character-viewer"],
   ["three-compat-postprocess-scene", "postprocess-scene"],
-  ["three-compat-custom-threejs-migration", "custom-scene"]
+  ["three-compat-custom-threejs-migration", "custom-scene"],
+  ["three-compat-large-scene", "large-scene"]
 ];
 
 describe("create-aura3d template aliases (Q-13-4)", () => {
@@ -47,5 +50,23 @@ describe("create-aura3d template aliases (Q-13-4)", () => {
     expect(templateAliasWarning(resolved!)).toBeNull();
     expect(resolveTemplateAlias("no-such-template")).toBeNull();
     expect(resolveTemplateAlias("toString")).toBeNull();
+  });
+
+  it("--template three-compat-large-scene scaffolds large-scene and warns", () => {
+    const resolved = resolveTemplateAlias("three-compat-large-scene");
+    expect(resolved).toEqual({ template: "large-scene", deprecated: "three-compat-large-scene" });
+    expect(templateAliasWarning(resolved!)).toMatch(/three-compat-large-scene.*renamed.*large-scene/);
+    const dir = mkdtempSync(join(tmpdir(), "a3d-alias-"));
+    try {
+      const targetDir = resolve(dir, "app");
+      const result = createA3DProject({ targetDir, template: resolved!.template });
+      expect(result.template).toBe("large-scene");
+      expect(readFileSync(resolve(targetDir, "src/main.ts"), "utf8")).toBe(
+        readFileSync(resolve("packages/create-aura3d/templates/large-scene/src/main.ts"), "utf8")
+      );
+      expect(JSON.parse(readFileSync(resolve(targetDir, "package.json"), "utf8")).name).toBe("aura3d-large-scene");
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });

@@ -29,7 +29,7 @@
     "templates/character-viewer",
     "templates/postprocess-scene",
     "templates/custom-scene",
-    "templates/three-compat-large-scene",
+    "templates/large-scene",
     "!templates/**/node_modules/**",
     "!templates/**/node_modules.publish-aside/**",
     "!templates/**/dist/**",

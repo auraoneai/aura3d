@@ -149,7 +149,7 @@
     "custom-scene": [
       "aura3d-threejs-migration"
     ],
-    "three-compat-large-scene": [
+    "large-scene": [
       "aura3d-threejs-migration",
       "aura3d-performance"
     ]
