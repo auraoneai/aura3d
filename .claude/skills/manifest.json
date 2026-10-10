@@ -136,7 +136,7 @@
       "aura3d-threejs-migration",
       "aura3d-materials-environments"
     ],
-    "three-compat-asset-inspector": [
+    "asset-inspector": [
       "aura3d-threejs-migration"
     ],
     "three-compat-character-viewer": [

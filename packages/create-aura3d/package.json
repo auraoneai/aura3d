@@ -25,7 +25,7 @@
     "templates/premium-product-viewer",
     "templates/architecture-interior",
     "templates/material-authoring",
-    "templates/three-compat-asset-inspector",
+    "templates/asset-inspector",
     "templates/three-compat-character-viewer",
     "templates/three-compat-postprocess-scene",
     "templates/three-compat-custom-threejs-migration",

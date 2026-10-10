@@ -15,7 +15,8 @@ import {
 const RENAMED: ReadonlyArray<readonly [retired: string, current: string]> = [
   ["three-compat-premium-product-viewer", "premium-product-viewer"],
   ["three-compat-architecture-interior", "architecture-interior"],
-  ["three-compat-material-authoring", "material-authoring"]
+  ["three-compat-material-authoring", "material-authoring"],
+  ["three-compat-asset-inspector", "asset-inspector"]
 ];
 
 describe("create-aura3d template aliases (Q-13-4)", () => {
