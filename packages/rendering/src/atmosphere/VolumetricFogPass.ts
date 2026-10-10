@@ -162,10 +162,16 @@ export class VolumetricFogPass {
     const geometry = fullscreenTriangle();
     const vertexBuffer = geometry.vertexBuffer.upload(this.device);
 
-    // 1) inject — one scissored draw per slice into its tile.
+    // 1) inject — one scissored draw per slice into its tile. Temporal grids
+    // amortize the inject over 8 frames (a slice budget, not a full pass per
+    // frame): slices rotate through the grid so per-frame cost stays bounded
+    // while the temporal accumulation hides the staggered update.
     const volumes = packFogVolumes(input.volumes);
     const inject = this.program("inject");
-    for (let slice = 0; slice < this.grid.slices; slice += 1) {
+    const sliceBudget = this.grid.temporal ? Math.ceil(this.grid.slices / 8) : this.grid.slices;
+    const sliceBase = this.grid.temporal ? ((ctx.frameIndex % 8) * sliceBudget) % this.grid.slices : 0;
+    for (let i = 0; i < sliceBudget; i += 1) {
+      const slice = (sliceBase + i) % this.grid.slices;
       const tx = slice % this.grid.tilesX;
       const ty = Math.floor(slice / this.grid.tilesX);
       const u = new Map<string, UniformValue>();

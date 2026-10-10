@@ -370,6 +370,38 @@ export const decalsContributor: FrameContributor = {
 
 /** Per-device froxel pass cache — the grid spec selects the atlas layout. */
 const volumetricPasses = new WeakMap<import("../RenderDevice").RenderDevice, Map<string, VolumetricFogPass>>();
+
+// C-31 measured-cost gate (FIX-froxel-cost): a runtime that measures the
+// volumetric pass feeds samples through `notePrd07VolumetricGpuMs`; once the
+// EWMA clears the tier budget for 8+ frames the contributor stops emitting
+// the froxel pass and the analytic fog path covers it instead.
+interface VolumetricCostEntry { ewma: number; frames: number; fallback: boolean }
+const volumetricCost = new WeakMap<RenderDevice, VolumetricCostEntry>();
+
+/** Feed one measured volumetric-GPU-ms sample for `device`. */
+export function notePrd07VolumetricGpuMs(device: RenderDevice, ms: number): void {
+  const s = volumetricCost.get(device) ?? { ewma: 0, frames: 0, fallback: false };
+  s.ewma = s.frames === 0 ? ms : s.ewma * 0.8 + ms * 0.2;
+  s.frames += 1;
+  volumetricCost.set(device, s);
+}
+
+const WEBDRIVER = (globalThis as { navigator?: { webdriver?: boolean } }).navigator?.webdriver === true;
+/** C-31 atmosphere scope of the §18 tier envelope: 1.2ms medium / 2.0ms high;
+ *  WebDriver (software GL) pins the tight 0.6ms cap. */
+export function froxelBudgetMs(tier: { readonly volumetricFog?: string | null }): number {
+  if (WEBDRIVER) return 0.6;
+  return tier.volumetricFog === "froxel-high" ? 2.0 : 1.2;
+}
+
+/** EWMA-with-hysteresis gate — true while the measured cost exceeds `budgetMs`. */
+export function prd07VolumetricCostFallback(device: RenderDevice, budgetMs: number): boolean {
+  const s = volumetricCost.get(device);
+  if (!s || s.frames < 8) return s?.fallback ?? false;
+  s.fallback = s.fallback ? s.ewma > budgetMs * 0.75 : s.ewma > budgetMs;
+  return s.fallback;
+}
+
 function volumetricPassFor(device: import("../RenderDevice").RenderDevice, grid: FroxelGridSpec): VolumetricFogPass {
   const key = `${grid.tileWidth}x${grid.tileHeight}x${grid.slices}`;
   let map = volumetricPasses.get(device);
@@ -396,6 +428,10 @@ const volumetricContributor: FrameContributor = {
     const depth = resolveSceneDepth(ctx);
     const grid = froxelGridFor(ctx.tier.volumetricFog);
     if (!grid || !depth.available || !ctx.camera) return [];
+    if (prd07VolumetricCostFallback(ctx.device, froxelBudgetMs(ctx.tier))) {
+      ctx.blackboard.set("prd07.volumetric.costFallback", "VOLUMETRIC_COST_FALLBACK");
+      return [];
+    }
     const pass = volumetricPassFor(ctx.device, grid);
     // Fog spec comes from the prd07.fog blackboard entry (written in collect).
     const fogEntry = ctx.flags.on("A3D_QR_VFX_FOG")
