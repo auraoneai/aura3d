@@ -1,6 +1,6 @@
 ---
 name: aura3d-threejs-migration
-description: Ports three.js code to Aura3D by picking the matching `three-compat-*` template, rewriting to `@aura3d/engine` public APIs, and recording every approximation in the migration notes without drop-in claims. Use when porting three.js or R3F code, reading `THREE.*` imports, using `migrateThreeToA3D` or the `three-compat-migrate-three` codemod, or scaffolding any `three-compat-*` template.
+description: Ports three.js code to Aura3D by picking the matching migration template, rewriting to `@aura3d/engine` public APIs, and recording every approximation in the migration notes without drop-in claims. Use when porting three.js or R3F code, reading `THREE.*` imports, running the `aura3d migrate three` codemod (`migrateThreeToA3D`), or scaffolding a migration template (formerly `three-compat-*`).
 ---
 
 # Aura3D three.js migration
@@ -38,16 +38,17 @@ toneMapping constants.
 
    | Source code looks like | Template |
    | --- | --- |
-   | Hand-rolled starter: renderer, ground, lit primitives | `three-compat-custom-threejs-migration` |
-   | Product on a studio stage | `three-compat-premium-product-viewer` |
-   | Room or interior built from boxes | `three-compat-architecture-interior` |
-   | Single asset on an inspection stage | `three-compat-asset-inspector` |
-   | Character on a pedestal | `three-compat-character-viewer` |
-   | Material swatch row | `three-compat-material-authoring` |
-   | Bloom or emissive post pass | `three-compat-postprocess-scene` |
-   | Many repeated meshes | `three-compat-large-scene` |
+   | Hand-rolled starter: renderer, ground, lit primitives | `custom-scene` |
+   | Product on a studio stage | `premium-product-viewer` |
+   | Room or interior built from boxes | `architecture-interior` |
+   | Single asset on an inspection stage | `asset-inspector` |
+   | Character on a pedestal | `character-viewer` |
+   | Material swatch row | `material-authoring` |
+   | Bloom or emissive post pass | `postprocess-scene` |
+   | Many repeated meshes | `large-scene` |
 
-   All eight templates import only `@aura3d/engine`. Keep it that way.
+   The former `three-compat-*` names scaffold the same templates through a
+   deprecation alias (removed next minor). All eight templates import only `@aura3d/engine`. Keep it that way.
 2. Map each construct to the engine API. `createAuraApp` owns the renderer,
    scene graph, camera, and frame loop, so delete them rather than port them.
 
@@ -63,9 +64,10 @@ toneMapping constants.
    | Box, sphere, plane geometry (set dressing) | `primitives.*` |
    | `EffectComposer` bloom | `effects.bloom(...)` |
 
-3. When the port must stay three-shaped for a while, run the codemod in a
-   Node script and keep its output as a report, not as proof:
-   `migrateThreeToA3D(source)` returns `code`, `rewrittenImports`, and
+3. When the port must stay three-shaped for a while, run the CLI codemod and keep its output as a report, not as proof:
+   `aura3d migrate three "src/**/*.ts" --report` walks each file and
+   prints the per-construct verdicts; `--write` applies the rewrite in place.
+   The underlying adapter `migrateThreeToA3D(source)` returns `code`, `rewrittenImports`, and
    `warnings`. Imports in `THREE_COMPAT_UNSUPPORTED_THREE_IMPORTS`
    (`EffectComposer`, `RenderPass`, `UnrealBloomPass`, and others) are left
    unchanged with a `postprocessing-unsupported` warning. Treat that as a
@@ -116,6 +118,6 @@ toneMapping constants.
 - [Migration codemod adapter](https://github.com/auraoneai/aura3d/blob/main/packages/aura3d-cli/src/migrate-three/ThreeToA3DAdapter.ts)
 - [Codemod import map](https://github.com/auraoneai/aura3d/blob/main/packages/aura3d-cli/src/migrate-three/ImportMap.ts)
 - [Codemod warnings](https://github.com/auraoneai/aura3d/blob/main/packages/aura3d-cli/src/migrate-three/CompatibilityWarnings.ts)
-- [Codemod CLI](https://github.com/auraoneai/aura3d/blob/main/tools/three-compat-migrate-three/index.ts)
-- [Custom migration template](https://github.com/auraoneai/aura3d/blob/main/packages/create-aura3d/templates/three-compat-custom-threejs-migration/src/main.ts)
+- [Codemod CLI command (`aura3d migrate three`)](https://github.com/auraoneai/aura3d/blob/main/packages/aura3d-cli/src/commands/prd15/index.ts)
+- [Custom migration template](https://github.com/auraoneai/aura3d/blob/main/packages/create-aura3d/templates/custom-scene/src/main.ts)
 - [three.js lighting stack → Aura3D look](references/look-mapping.md)

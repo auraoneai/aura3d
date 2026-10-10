@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { CREATE_AURA3D_TEMPLATES, createA3DProject, type AuraAgentTarget, type AuraSkillMode, type CreateA3DTemplate } from "./index.js";
+import { CREATE_AURA3D_TEMPLATES, createA3DProject, resolveTemplateAlias, type AuraAgentTarget, type AuraSkillMode } from "./index.js";
 import { compileShowcaseSpecFile } from "./showcase-spec-compiler.js";
 
 const args = process.argv.slice(2);
@@ -30,11 +30,16 @@ if (specPath) {
   if (!result.ok) process.exitCode = 1;
   process.exit();
 }
-const template = readOption("--template") ?? "product-viewer";
-if (!CREATE_AURA3D_TEMPLATES.includes(template as CreateA3DTemplate)) {
-  console.error(`Unknown template "${template}". Available templates: ${CREATE_AURA3D_TEMPLATES.join(", ")}`);
+const templateArg = readOption("--template") ?? "product-viewer";
+const resolved = resolveTemplateAlias(templateArg);
+if (!resolved) {
+  console.error(`Unknown template "${templateArg}". Available templates: ${CREATE_AURA3D_TEMPLATES.join(", ")}`);
   process.exit(1);
 }
+if (resolved.deprecated) {
+  console.error(`Template "${resolved.deprecated}" renamed; "${resolved.deprecated}" alias removed in the next minor — use "${resolved.template}".`);
+}
+const template = resolved.template;
 const agentOption = args.includes("--no-agent") ? undefined : (readOption("--agent") ?? "all");
 if (agentOption && !["claude", "cursor", "copilot", "generic", "all"].includes(agentOption)) {
   console.error(`Unsupported --agent "${agentOption}". Use claude, cursor, copilot, generic, or all.`);
@@ -47,7 +52,7 @@ if (!["core", "all", "none"].includes(skillsOption)) {
 }
 const result = createA3DProject({
   targetDir,
-  template: template as CreateA3DTemplate,
+  template,
   agent: agentOption as AuraAgentTarget | undefined,
   skills: skillsOption as AuraSkillMode
 });

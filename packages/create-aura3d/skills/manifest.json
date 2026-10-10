@@ -124,32 +124,32 @@
       "aura3d-character-animation",
       "aura3d-animation-studio"
     ],
-    "three-compat-premium-product-viewer": [
+    "premium-product-viewer": [
       "aura3d-threejs-migration",
       "aura3d-materials-environments"
     ],
-    "three-compat-architecture-interior": [
+    "architecture-interior": [
       "aura3d-threejs-migration",
       "aura3d-materials-environments"
     ],
-    "three-compat-material-authoring": [
+    "material-authoring": [
       "aura3d-threejs-migration",
       "aura3d-materials-environments"
     ],
-    "three-compat-asset-inspector": [
+    "asset-inspector": [
       "aura3d-threejs-migration"
     ],
-    "three-compat-character-viewer": [
+    "character-viewer": [
       "aura3d-threejs-migration",
       "aura3d-character-animation"
     ],
-    "three-compat-postprocess-scene": [
+    "postprocess-scene": [
       "aura3d-threejs-migration"
     ],
-    "three-compat-custom-threejs-migration": [
+    "custom-scene": [
       "aura3d-threejs-migration"
     ],
-    "three-compat-large-scene": [
+    "large-scene": [
       "aura3d-threejs-migration",
       "aura3d-performance"
     ]
