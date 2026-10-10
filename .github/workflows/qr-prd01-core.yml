@@ -2,6 +2,10 @@
 #
 # Mirrors .github/workflows/qr-contracts.yml conventions: lint + unit gates on
 # ubuntu, browser conformance on macos-14, evidence upload for the browser run.
+#
+# PRD-16 01-CI / P-07: runs on main pushes and nightly (not only qr/** branches),
+# triggers on every lane-01 owned rendering dir, never cancels main runs, and has
+# no masks (no `|| true` on lint, no owner-15 exemption in the ownership gate).
 
 name: qr-prd01-core
 
@@ -9,6 +13,12 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - "packages/rendering/src/**"
+      - "packages/engine/src/agent-api/sceneGraph.ts"
+      - "packages/engine/src/agent-api/color.ts"
+      - "packages/engine/src/agent-api/colorUtils.ts"
+      - "packages/engine/src/agent-api/compiler/sceneGraph.ts"
+      - "packages/engine/src/agent-api/compiler/color.ts"
       - "packages/engine/src/lanes/prd01*/**"
       - "packages/engine/src/lanes/prd01.ts"
       - "packages/engine/src/agent-api/compiler/diagnosticOnly.prd01.ts"
@@ -16,10 +26,17 @@ on:
       - "benchmarks/quality-rebuild/aura3d/scenes/prd01/**"
       - "benchmarks/quality-rebuild/three/scenes/prd01/**"
       - "tests/qr/prd01/**"
+      - "tests/unit/contracts/impl/prd01-*"
       - ".github/workflows/qr-prd01-core.yml"
   push:
-    branches: ["qr/**"]
+    branches: [main, "qr/**"]
     paths:
+      - "packages/rendering/src/**"
+      - "packages/engine/src/agent-api/sceneGraph.ts"
+      - "packages/engine/src/agent-api/color.ts"
+      - "packages/engine/src/agent-api/colorUtils.ts"
+      - "packages/engine/src/agent-api/compiler/sceneGraph.ts"
+      - "packages/engine/src/agent-api/compiler/color.ts"
       - "packages/engine/src/lanes/prd01*/**"
       - "packages/engine/src/lanes/prd01.ts"
       - "packages/engine/src/agent-api/compiler/diagnosticOnly.prd01.ts"
@@ -27,12 +44,19 @@ on:
       - "benchmarks/quality-rebuild/aura3d/scenes/prd01/**"
       - "benchmarks/quality-rebuild/three/scenes/prd01/**"
       - "tests/qr/prd01/**"
+      - "tests/unit/contracts/impl/prd01-*"
       - ".github/workflows/qr-prd01-core.yml"
+  schedule:
+    # Nightly on main (06:17 UTC), so lane 01 has a main run even on quiet days.
+    - cron: "17 6 * * *"
   workflow_dispatch: {}
+  # PRD-16 §2.5: callable from qr-required.
+  workflow_call: {}
 
 concurrency:
-  group: qr-prd01-${{ github.ref }}
-  cancel-in-progress: true
+  group: qr-prd01-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  # Supersede stale runs on PR / lane branches only; never cancel main runs.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
@@ -47,6 +71,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The ownership gate diffs against the merge base; a depth-1 clone has
+          # no origin/main and used to make the diff (and the gate) silently empty.
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
         with:
           version: 11.1.3
@@ -56,16 +84,42 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: QR ownership check (lane prd01 files)
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_REF: ${{ github.base_ref }}
+          PUSH_BEFORE: ${{ github.event.before }}
         run: |
-          set -e
-          # Lane-owned paths must resolve to owner 01. tests/qr/prd01/* currently
-          # resolves to owner 15 — a doc-vs-JSON gap tracked in
-          # docs/project/aura3d-quality-rebuild/qr-requests/prd01.md (Q-15-1).
-          CHANGED=$(git diff --name-only origin/main...HEAD | grep -E 'prd01|PRD-01' || true)
-          if [ -n "$CHANGED" ]; then
-            node tools/qr-ownership/check.mjs $CHANGED
-            NON_LANE=$(node tools/qr-ownership/check.mjs $CHANGED | awk -F'\t' '$1 != "01" && $1 != "15" {print}' || true)
-            if [ -n "$NON_LANE" ]; then echo "$NON_LANE"; exit 1; fi
+          set -euo pipefail
+          # Every changed prd01/PRD-01 path must resolve to owner 01 in
+          # .github/QR_OWNERSHIP.json. No owner exemptions: an out-of-lane file
+          # needs a qr-request + ownership change, not a pass from this gate.
+          ZERO=0000000000000000000000000000000000000000
+          case "$EVENT_NAME" in
+            pull_request)
+              BASE=$(git merge-base "origin/$PR_BASE_REF" HEAD) ;;
+            push)
+              if [ -n "$PUSH_BEFORE" ] && [ "$PUSH_BEFORE" != "$ZERO" ] && git cat-file -e "$PUSH_BEFORE^{commit}" 2>/dev/null; then
+                BASE="$PUSH_BEFORE"
+              else
+                BASE=$(git merge-base origin/main HEAD)
+              fi ;;
+            *)
+              BASE=$(git merge-base origin/main HEAD) ;;
+          esac
+          echo "ownership diff base: $BASE"
+          git diff --name-only "$BASE" HEAD > "$RUNNER_TEMP/changed.txt"
+          awk '/prd01|PRD-01/' "$RUNNER_TEMP/changed.txt" > "$RUNNER_TEMP/lane.txt"
+          if [ ! -s "$RUNNER_TEMP/lane.txt" ]; then
+            echo "no prd01 paths changed vs $BASE"
+            exit 0
+          fi
+          xargs node tools/qr-ownership/check.mjs < "$RUNNER_TEMP/lane.txt" > "$RUNNER_TEMP/owners.txt"
+          cat "$RUNNER_TEMP/owners.txt"
+          awk -F'\t' '$1 != "01"' "$RUNNER_TEMP/owners.txt" > "$RUNNER_TEMP/non-lane.txt"
+          if [ -s "$RUNNER_TEMP/non-lane.txt" ]; then
+            echo "::error::prd01 paths not owned by lane 01:"
+            cat "$RUNNER_TEMP/non-lane.txt"
+            exit 1
           fi
       - name: Typecheck lane files
         run: pnpm exec tsc -p tests/qr/prd01/tsconfig.json --noEmit
@@ -80,7 +134,7 @@ jobs:
             "benchmarks/quality-rebuild/scenes/prd01/**/*.ts" \
             "benchmarks/quality-rebuild/aura3d/scenes/prd01/**/*.ts" \
             "benchmarks/quality-rebuild/three/scenes/prd01/**/*.ts" \
-            "tests/qr/prd01/**/*.ts" || true
+            "tests/qr/prd01/**/*.ts"
 
   build-harness:
     name: Build harness + lane capture smoke
@@ -99,6 +153,7 @@ jobs:
       - name: Build lane harness
         run: pnpm exec vite build --config tests/qr/prd01/harness/vite.config.ts --logLevel warn
       - name: Upload harness dist
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: prd01-harness-dist
@@ -126,13 +181,14 @@ jobs:
       - run: pnpm exec playwright install chromium
       - name: Lane browser specs
         run: pnpm exec playwright test --config tests/qr/prd01/playwright.config.ts
-      - name: Lane capture (flags none + core, identical while unwired)
+      - name: Lane capture (flags none + core)
+        if: always()
         run: node tests/qr/prd01/capture.mjs --flags none,core --out tests/qr/prd01/out/capture
       - name: Upload capture evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: prd01-capture-${{ github.sha }}
+          name: prd01-capture-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             tests/qr/prd01/out/
           retention-days: 14

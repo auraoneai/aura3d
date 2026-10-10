@@ -288,7 +288,9 @@ describe("#245 float readback on RenderDevice", () => {
     expect(out).toBeInstanceOf(Float32Array);
     expect(out.length).toBe(4);
     // Mock backbuffer holds linear values; key property is no 1.0 clamp.
-    expect(d.getDiagnostics().errors ?? []).toHaveLength(0);
+    // (RenderDeviceDiagnostics has no `errors` field; the old `errors ?? []`
+    // assertion was vacuous and failed repo typecheck.)
+    expect(Array.from(out).every(Number.isFinite)).toBe(true);
   });
 
   it("rejects a non-positive readback rectangle", () => {
