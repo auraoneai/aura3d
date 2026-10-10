@@ -12,6 +12,13 @@ export const COMMON_CHUNK_GLSL = /* glsl */ `
 #define RECIPROCAL_PI 0.3183098861837907
 #define EPSILON 1e-6
 float pow2(float x) { return x * x; }
+// r185 common.glsl.js helpers registered chunks rely on (lane 04 Q-01-5:
+// pow2(vec3), pow3/pow4, max3/max4; the C-03 lobes require these via brdf).
+vec3 pow2(vec3 x) { return x * x; }
+float pow3(float x) { return x * x * x; }
+float pow4(float x) { float x2 = x * x; return x2 * x2; }
+float max3(vec3 v) { return max(max(v.x, v.y), v.z); }
+float max4(vec4 v) { return max(max(v.x, v.y), max(v.z, v.w)); }
 vec3 BRDF_Lambert(vec3 diffuseColor) { return RECIPROCAL_PI * diffuseColor; }
 float saturate(float x) { return clamp(x, 0.0, 1.0); }
 vec3 saturate(vec3 v) { return clamp(v, vec3(0.0), vec3(1.0)); }

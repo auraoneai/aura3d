@@ -139,7 +139,9 @@ export function defaultProgramFeatures(material: Material, ctx: MaterialFeatureC
     doubleSided: material.renderState.cullMode === "none",
     vertexColors: attrs.has("a_color"),
     flatShading: paramNumber(material, "u_flatShading") === 1,
-    diffuseModel: paramNumber(material, "u_diffuseModel") === 0 ? "lambert" : "burley",
+    // PRD-01 §8.3: Lambert by default (glTF / three.js); Burley is opt-in
+    // (`u_diffuseModel = 1` → DIFFUSE_BURLEY). 01-GENTEST / C-02 + C-03.
+    diffuseModel: paramNumber(material, "u_diffuseModel") === 1 ? "burley" : "lambert",
     specularAntialiasing: paramNumber(material, "u_specularAntialiasing") !== 0,
     skinning: skinned ? { influences: attrs.has("a_joints1") ? 8 : 4, palette: "uniform" } : undefined,
     morph: attrs.has("a_morphTarget") ? { targetBucket: 4, normals: attrs.has("a_morphNormal"), tangents: attrs.has("a_morphTangent") } : undefined,

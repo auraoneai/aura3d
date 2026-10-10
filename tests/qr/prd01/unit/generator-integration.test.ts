@@ -67,7 +67,9 @@ describe("PRD-01 §15 material feature derivation (C-02)", () => {
     expect(f.extensions).toEqual([]);
     expect(f.alphaMode).toBe("opaque");
     expect(f.doubleSided).toBe(false);
-    expect(f.diffuseModel).toBe("burley");
+    // 01-GENTEST (C-02/C-03, PRD-01 §8.3): Lambert is the default diffuse
+    // model (glTF / three.js); Burley is opt-in behind DIFFUSE_BURLEY.
+    expect(f.diffuseModel).toBe("lambert");
   });
 
   it("UnlitMaterial produces an unlit record", () => {
@@ -87,13 +89,16 @@ describe("PRD-01 §15 material feature derivation (C-02)", () => {
     expect(defaultProgramFeatures(blended, ctxHigh).alphaMode).toBe("blend");
   });
 
-  it("extension factor parameters map to KHR_materials_* records", () => {
-    const m = new PBRMaterial({ clearcoatFactor: 1 });
-    const exts = m.programFeatures(ctxHigh).extensions.map((e) => e.lobe);
-    expect(exts).toContain("KHR_materials_clearcoat");
-    expect(exts).not.toContain("KHR_materials_emissive_strength"); // strength 1 = absent
-    const strong = new PBRMaterial({ emissiveStrength: 4 });
-    expect(strong.programFeatures(ctxHigh).extensions.map((e) => e.lobe)).toContain("KHR_materials_emissive_strength");
+  it("extension factor parameters map to C-03 lobe records (lobes need A3D_QR_MATERIALS)", () => {
+    // 01-GENTEST: PBRMaterial's record comes from lane 04's C-03 registry
+    // (physicalFeatureSet), keyed by lobe id; lobes are gated by their own flag.
+    const ctxMaterials = { flags: resolveQrFlags({ env: { A3D_QR: "core,materials" } }), tier: QUALITY_TIERS.high };
+    const lobesOf = (m: PBRMaterial, ctx = ctxMaterials) => m.programFeatures(ctx).extensions.map((e) => e.lobe);
+    expect(lobesOf(new PBRMaterial({ clearcoatFactor: 1 }), ctxHigh)).toEqual([]); // core only: no lobes
+    const exts = lobesOf(new PBRMaterial({ clearcoatFactor: 1 }));
+    expect(exts).toContain("clearcoat");
+    expect(exts).not.toContain("emissive-strength"); // strength 1 + black emissive = absent
+    expect(lobesOf(new PBRMaterial({ emissiveStrength: 4, emissiveColor: [1, 1, 1] }))).toContain("emissive-strength");
   });
 
   it("materialFeatureWarning flags shaderVariant on allow-listed materials only", () => {
