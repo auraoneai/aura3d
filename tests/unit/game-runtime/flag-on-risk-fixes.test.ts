@@ -32,8 +32,11 @@ describe("stubSetInstanceTransforms capacity (risk 2)", () => {
     const { app, handle, node } = instancedHarness(2);
     const m = new Float32Array(32).fill(0).map((_, i) => (i % 16 < 12 && i % 16 % 4 === 0 ? 1 : 0));
     stubSetInstanceTransforms(handle, app, m, 1);
-    const hidden = node.instances[1] as { scale: { x: number } };
-    expect(hidden.scale.x).toBe(0);
+    // AuraTransformSpec.scale is an AuraVec3 tuple, not {x,y,z}.
+    const hidden = node.instances[1] as { scale: readonly [number, number, number] };
+    expect(hidden.scale).toEqual([0, 0, 0]);
+    // The visible slot keeps its decomposed (unit) scale.
+    expect((node.instances[0] as { scale: readonly number[] }).scale).toEqual([1, 1, 1]);
   });
 });
 
