@@ -20,7 +20,8 @@ import {
   createJuice,
   createOverlayDriver,
   createRumbleDriver,
-  createTweenEngine
+  createTweenEngine,
+  type OverlayDriverDeps
 } from "@aura3d/game";
 import { blockfallScenarios } from "../scenarios";
 import { bindBlockfallDrive, type BlockfallAcceptanceScenario } from "../scenario-drive";
@@ -664,9 +665,10 @@ const blockfallGame = createGame({
   },
   qualityRebuild: { flags: ["game"] }
 });
-const gameApp = blockfallGame.runtime;
+const gameApp = blockfallGame;
 
 const app = gameApp.app;
+if (!app.effects || !app.camera || !app.setOutputOverlay) throw new Error("blockfall-reactor requires effects, camera, and overlay output for juice.");
 
 // ---- juice (PRD-09 §7.6) ----------------------------------------------------
 const blockfallTween = createTweenEngine();
@@ -683,7 +685,7 @@ const blockfallJuice = createJuice<"lock" | "line-clear" | "quad" | "level-up" |
   camera: app.camera,
   session: blockfallGame.session,
   fx: blockfallFx,
-  overlay: createOverlayDriver({ app }),
+  overlay: createOverlayDriver({ app: app as OverlayDriverDeps["app"] }),
   tweens: blockfallTween,
   rumble: createRumbleDriver()
 });
@@ -956,7 +958,7 @@ const acceptanceScenarios = ["play", "single-clear", "quad", "level-up", "danger
 
 let lastPublishedLevel = 1;
 
-gameApp.onFrame(({ dt }) => {
+gameApp.app.onFrame(({ dt }) => {
   input.update(dt);
   blockfallTween.tick(dt);
 

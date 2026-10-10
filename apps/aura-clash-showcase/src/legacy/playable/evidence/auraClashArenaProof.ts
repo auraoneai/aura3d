@@ -46,6 +46,9 @@ export interface AuraClashAudioProof {
   readonly cueCount: number;
   readonly typedAssetCount: number;
   readonly assetUrls: readonly string[];
+  /** AC-A6: pack-provided cue asset URLs (game-sfx-core announcer/bed), split
+   *  from the route's own typed assets so coverage audits can diff them. */
+  readonly packAssetUrls?: readonly string[];
   readonly oscillatorFallback: false;
   readonly audioErrors: readonly string[];
   /** AC-A6: named bus levels, published so independent levels are observable evidence. */

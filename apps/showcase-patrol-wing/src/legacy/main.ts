@@ -31,7 +31,8 @@ import {
   createJuice,
   createOverlayDriver,
   createRumbleDriver,
-  createTweenEngine
+  createTweenEngine,
+  type OverlayDriverDeps
 } from "@aura3d/game";
 import { bindPatrolEvidence } from "../evidence";
 import { bindPatrolDrive } from "../scenario-drive";
@@ -574,7 +575,8 @@ const patrolGame = createGame({
   },
   scenarios: async () => (await import("../scenarios")).patrolScenarios
 });
-const app = patrolGame.runtime;
+const app = patrolGame.app;
+if (!app.effects || !app.camera || !app.setOutputOverlay) throw new Error("patrol-wing requires effects, camera, and overlay output for juice.");
 patrolGame.start();
 const input = patrolGame.input!;
 bindPatrolEvidence(() => collectPatrolEvidence());
@@ -595,7 +597,7 @@ const patrolJuice = createJuice<"cannon" | "drone-hit" | "drone-down" | "hull-al
   camera: app.camera,
   session: patrolGame.session,
   fx: patrolFx,
-  overlay: createOverlayDriver({ app }),
+  overlay: createOverlayDriver({ app: app as OverlayDriverDeps["app"] }),
   tweens: patrolTween,
   rumble: createRumbleDriver()
 });
@@ -1513,7 +1515,7 @@ function syncOrbVisuals(): void {
 }
 
 // ------------------------------------------------------------- frame loop -----
-patrolGame.runtime.onFrame(({ dt }) => {
+patrolGame.app.onFrame(({ dt }) => {
   patrolTween.tick(dt);
   input.update(dt);
   frameCount += 1;

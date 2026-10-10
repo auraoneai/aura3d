@@ -48,7 +48,8 @@ import {
   createJuice,
   createOverlayDriver,
   createRumbleDriver,
-  createTweenEngine
+  createTweenEngine,
+  type OverlayDriverDeps
 } from "@aura3d/game";
 import { rooftopScenarios } from "../scenarios";
 import { bindRooftopDrive } from "../scenario-drive";
@@ -725,6 +726,7 @@ bucketsGame.start();
 
 const gameApp = bucketsGame;
 const app = bucketsGame.app;
+if (!app.effects || !app.camera || !app.setOutputOverlay) throw new Error("rooftop-buckets requires effects, camera, and overlay output for juice.");
 const input = bucketsGame.input!;
 
 // ---- juice (PRD-09 §7.6) ----------------------------------------------------
@@ -747,7 +749,7 @@ const rooftopJuice = createJuice<"swish" | "rim" | "board" | "block" | "fire" | 
   camera: app.camera,
   session: bucketsGame.session,
   fx: rooftopFx,
-  overlay: createOverlayDriver({ app }),
+  overlay: createOverlayDriver({ app: app as OverlayDriverDeps["app"] }),
   tweens: rooftopTween,
   rumble: createRumbleDriver()
 });
@@ -1595,12 +1597,12 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
       // captures its visible baseline. Without this first presentation the
       // visible canvas is still black and the later hidden frame is compared
       // against the wrong state.
-      gameApp.pause();
+      gameApp.app.pause();
       app.pause();
       await app.stepAsync(0);
     },
     async setSubjectSuppressed(suppressed: boolean) {
-      gameApp.pause();
+      gameApp.app.pause();
       app.pause();
       const node = app.nodes.get("backboard-assembly") as AuraRuntimeNodeHandle | undefined;
       node?.setVisible(!suppressed);

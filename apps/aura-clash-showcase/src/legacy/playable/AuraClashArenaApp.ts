@@ -61,7 +61,7 @@ import {
   annotateAuraClashArenaStage,
   collectAuraClashArenaStageEvidence
 } from "./arena/AuraClashArenaStage";
-import { mountHud, mountTouchControls, type HudDocument } from "@aura3d/game";
+import { mountHud, mountTouchControls, type HudDocument, type HudElement } from "@aura3d/game";
 import { createArenaTweaksEvidence, collectArenaTweaksState, type AuraClashArenaTweaksState } from "./arena/ArenaTweaksPanel";
 import { createRenderedArenaStage } from "./arena/RenderedArenaStage";
 import { createPublicCrowdNodes } from "./arena/CrowdInstances";
@@ -110,7 +110,7 @@ import {
   auraClashAudioKoDuck,
   auraClashAudioManifest,
   type AuraClashPackAssetReference
-} from "./audio/auraClashAudioManifest";
+} from "../../playable/audio/auraClashAudioManifest";
 import { createFightHudReplayControlsModel, type FightHudReplayControlsModel } from "../ui/FightHud";
 import type {
   AuraClashArenaProof,
@@ -687,7 +687,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   hudHost.className = "a3g-game-hud";
   stageShell.appendChild(hudHost);
   const clashHud = mountHud(
-    { root: hudHost, doc: document as unknown as HudDocument },
+    { root: hudHost as unknown as HudElement, doc: document as unknown as HudDocument },
     {
       theme: "fighting",
       maxScreenFraction: 0.22,
@@ -719,6 +719,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     },
     {
       preset: "dpad-4btn",
+      haptics: true,
       bindings: {
         "stick.left": "left",
         "stick.right": "right",
@@ -736,11 +737,11 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     },
     {
       doc: document as unknown as HudDocument,
-      root: hudHost,
-      haptics: true,
+      root: hudHost as unknown as HudElement,
       coarsePointer: () => matchMedia("(pointer: coarse)").matches
     }
   );
+  const { auraClashScenarios } = await import("../../scenarios/index");
   const gameApp = createGameApp(null, {
     autoStart: false,
     loop: {
@@ -1565,7 +1566,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       sections: async () => (await import("../../game-evidence")).sections,
       legacyGlobals: []
     },
-    scenarios: async () => (await import("../../scenarios/index")).auraClashScenarios
+    scenarios: { default: auraClashScenarios[0], "match-start": auraClashScenarios[1], "combat-impact": auraClashScenarios[2] }
   });
   const rootStageApp = clashGame.app;
   // The combat sim drives the loop and steps the stage app manually each frame;

@@ -33,7 +33,8 @@ import {
   createJuice,
   createOverlayDriver,
   createRumbleDriver,
-  createTweenEngine
+  createTweenEngine,
+  type OverlayDriverDeps
 } from "@aura3d/game";
 import { bindTurboEvidence } from "../evidence";
 import { bindTurboDrive, turboDrive } from "../scenario-drive";
@@ -3021,7 +3022,8 @@ const turboGame = createGame({
   },
   scenarios: async () => (await import("../scenarios")).turboScenarios
 });
-const app = turboGame.runtime;
+const app = turboGame.app;
+if (!app.effects || !app.camera || !app.setOutputOverlay) throw new Error("turbo-drift-circuit requires effects, camera, and overlay output for juice.");
 turboGame.start();
 
 const playerCar = app.nodes.require("racing-player-car");
@@ -3626,7 +3628,7 @@ const turboJuice = createJuice<"go" | "checkpoint" | "finish" | "off-track" | "d
   camera: app.camera,
   session: turboGame.session,
   fx: turboFx,
-  overlay: createOverlayDriver({ app }),
+  overlay: createOverlayDriver({ app: app as OverlayDriverDeps["app"] }),
   tweens: turboTween,
   rumble: createRumbleDriver()
 });

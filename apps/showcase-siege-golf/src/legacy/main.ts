@@ -26,7 +26,8 @@ import {
   createJuice,
   createOverlayDriver,
   createRumbleDriver,
-  createTweenEngine
+  createTweenEngine,
+  type OverlayDriverDeps
 } from "@aura3d/game";
 import { bindSiegeEvidence } from "../evidence";
 import { bindSiegeDrive } from "../scenario-drive";
@@ -860,7 +861,8 @@ const siegeGame = createGame({
   },
   scenarios: async () => (await import("../scenarios")).siegeScenarios
 });
-const app = siegeGame.runtime;
+const app = siegeGame.app;
+if (!app.effects || !app.camera || !app.setOutputOverlay) throw new Error("siege-golf requires effects, camera, and overlay output for juice.");
 siegeGame.start();
 const input = siegeGame.input!;
 if (!input) throw new Error("Siege Golf failed to create Aura3D input.");
@@ -880,7 +882,7 @@ const siegeJuice = createJuice<"drive-hit" | "impact-wood" | "impact-metal" | "t
   camera: app.camera,
   session: siegeGame.session,
   fx: siegeFx,
-  overlay: createOverlayDriver({ app }),
+  overlay: createOverlayDriver({ app: app as OverlayDriverDeps["app"] }),
   tweens: siegeTween,
   rumble: createRumbleDriver()
 });
@@ -1739,7 +1741,7 @@ stage.addEventListener("pointerup", (event) => {
 }, { passive: true });
 
 // ------------------------------------------------------------- frame loop ----
-siegeGame.runtime.onFrame(({ dt }) => {
+siegeGame.app.onFrame(({ dt }) => {
   siegeTween.tick(dt);
   input.update(dt);
   frameCount += 1;

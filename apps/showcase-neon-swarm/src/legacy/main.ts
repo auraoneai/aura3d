@@ -19,7 +19,8 @@ import {
   createJuice,
   createOverlayDriver,
   createRumbleDriver,
-  createTweenEngine
+  createTweenEngine,
+  type OverlayDriverDeps
 } from "@aura3d/game";
 import { bindNeonEvidence } from "../evidence";
 import { bindNeonDrive } from "../scenario-drive";
@@ -907,6 +908,7 @@ const neonGame = createGame({
   qualityRebuild: { flags: ["game"] }
 });
 const app = neonGame.app;
+if (!app.effects || !app.camera || !app.setOutputOverlay) throw new Error("neon-swarm requires effects, camera, and overlay output for juice.");
 neonGame.start();
 
 bindNeonEvidence(() => collectRouteEvidence());
@@ -988,7 +990,7 @@ const neonJuice = createJuice<
   camera: app.camera,
   session: neonGame.session,
   fx: neonFx,
-  overlay: createOverlayDriver({ app }),
+  overlay: createOverlayDriver({ app: app as OverlayDriverDeps["app"] }),
   tweens: neonTween,
   rumble: createRumbleDriver()
 });

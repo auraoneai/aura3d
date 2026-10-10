@@ -27,7 +27,8 @@ import {
   createJuice,
   createOverlayDriver,
   createRumbleDriver,
-  createTweenEngine
+  createTweenEngine,
+  type OverlayDriverDeps
 } from "@aura3d/game";
 import { bindVaultEvidence } from "../evidence";
 import { bindVaultDrive, vaultDrive } from "../scenario-drive";
@@ -425,7 +426,8 @@ const vaultGame = createGame({
   },
   scenarios: async () => (await import("../scenarios")).vaultScenarios
 });
-const app = vaultGame.runtime;
+const app = vaultGame.app;
+if (!app.effects || !app.camera || !app.setOutputOverlay) throw new Error("vault-breakers requires effects, camera, and overlay output for juice.");
 vaultGame.start();
 const input = vaultGame.input!;
 if (!input) throw new Error("Vault Breakers failed to create Aura3D input.");
@@ -447,7 +449,7 @@ const vaultJuice = createJuice<"serve" | "bumper" | "sling" | "target-down" | "b
   camera: app.camera,
   session: vaultGame.session,
   fx: vaultFx,
-  overlay: createOverlayDriver({ app }),
+  overlay: createOverlayDriver({ app: app as OverlayDriverDeps["app"] }),
   tweens: vaultTween,
   rumble: createRumbleDriver()
 });

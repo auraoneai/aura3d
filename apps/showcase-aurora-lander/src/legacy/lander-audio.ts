@@ -197,32 +197,39 @@ export function createLanderAudio(reducedMotion = false): LanderAudioController 
       thruster: {
         id: "thruster",
         bus: "sfx",
-        priority: "high",
+        priority: "critical",
         asset: { url: landerAudioManifest["thrust-loop"].asset.url }
       }
     }
   });
-  const thrusterLoop = thrusterSound.engine({
-    cue: "thruster",
-    rpmRange: [320, 2100],
-    pitchRange: [0.85, 1.3]
-  });
+  // EngineLoopHandleImpl starts its voices at allocation and exposes no
+  // start() — the loop is created lazily inside unlock() so the voice only
+  // exists while the burn is active and audio is gesture-unlocked.
+  let thrusterLoop: ReturnType<typeof thrusterSound.engine> | undefined;
   let thrusterRunning = false;
   const thruster: LanderThrusterLoop = {
     start() {
       if (thrusterRunning) return;
       thrusterRunning = true;
-      void audio.unlock().then(() => thrusterLoop.start());
+      void audio.unlock().then(() => {
+        if (!thrusterRunning) return;
+        thrusterLoop = thrusterLoop ?? thrusterSound.engine({
+          cue: "thruster",
+          rpmRange: [320, 2100],
+          pitchRange: [0.85, 1.3]
+        });
+      });
     },
     stop() {
       if (!thrusterRunning) return;
       thrusterRunning = false;
-      thrusterLoop.stop();
+      thrusterLoop?.stop();
+      thrusterLoop = undefined;
     },
     setThrottle(throttle01) {
       const t = Math.max(0, Math.min(1, throttle01));
-      thrusterLoop.setRpm(320 + (2100 - 320) * t);
-      thrusterLoop.setLoad(t);
+      thrusterLoop?.setRpm(320 + (2100 - 320) * t);
+      thrusterLoop?.setLoad(t);
     },
     running() {
       return thrusterRunning;

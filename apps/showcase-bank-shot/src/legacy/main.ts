@@ -32,7 +32,8 @@ import {
   createTweenEngine,
   mountHud,
   mountTouchControls,
-  type HudDocument
+  type HudDocument,
+  type OverlayDriverDeps
 } from "@aura3d/game";
 import { bankShotScenarios } from "../scenarios";
 import { bindBankShotDrive } from "../scenario-drive";
@@ -44,7 +45,6 @@ import { rackConfigFor, RACK_COUNT } from "../gameplay/racks";
 import { createTableSimulation, CUE_SPOT, BALL_RADIUS, PLAY_HALF_X, PLAY_HALF_Z, POCKET_CENTERS, rackSpotFor } from "../gameplay/table";
 import { ballEulerFromBody } from "../gameplay/ball-visuals";
 import { createBankShotSound } from "../sound";
->>>>>>> /tmp/mig-base/apps/showcase-bank-shot/src/main.ts
 import { createPoolHallSetDressing } from "./environment";
 import "./styles.css";
 
@@ -357,12 +357,13 @@ const bankGame = createGame({
   scenarios: bankShotScenarios,
   evidence: {
     schema: 1,
-    sections: async () => (await import("./evidence")).sections,
+    sections: async () => (await import("../evidence")).sections,
     legacyGlobals: ["__BANK_SHOT_EVIDENCE__", "__AURA3D_SHOWCASE_BANK_SHOT__"]
   },
   qualityRebuild: { flags: ["game"] }
 });
 const app = bankGame.app;
+if (!app.effects || !app.camera || !app.setOutputOverlay) throw new Error("bank-shot requires effects, camera, and overlay output for juice.");
 const input = bankGame.input!;
 if (!input) throw new Error("Bank Shot failed to create Aura3D input.");
 bankGame.start();
@@ -382,7 +383,7 @@ const bankJuice = createJuice<"pot" | "foul" | "cushion" | "combo">({
   camera: app.camera,
   session: bankGame.session,
   fx: bankFx,
-  overlay: createOverlayDriver({ app }),
+  overlay: createOverlayDriver({ app: app as OverlayDriverDeps["app"] }),
   tweens: bankTween,
   rumble: createRumbleDriver()
 });
@@ -473,7 +474,7 @@ const hudHost = document.createElement("div");
 hudHost.className = "a3g-game-hud";
 document.getElementById("app")!.appendChild(hudHost);
 const hud = mountHud(
-  { root: hudHost, doc: document as unknown as HudDocument },
+  { root: hudHost as unknown as HudElement, doc: document as unknown as HudDocument },
   {
     theme: "tabletop",
     maxScreenFraction: 0.15,
@@ -1061,7 +1062,7 @@ const touchControls = mountTouchControls(
   },
   {
     doc: document as unknown as HudDocument,
-    root: hudHost,
+    root: hudHost as unknown as HudElement,
     coarsePointer: () => matchMedia("(pointer: coarse)").matches
   }
 );

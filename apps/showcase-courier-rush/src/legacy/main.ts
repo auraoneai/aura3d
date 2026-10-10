@@ -32,7 +32,8 @@ import {
   createTweenEngine,
   mountHud,
   mountTouchControls,
-  type HudDocument
+  type HudDocument,
+  type OverlayDriverDeps
 } from "@aura3d/game";
 import { bindCourierEvidence } from "../evidence";
 import { bindCourierDrive, courierDrive } from "../scenario-drive";
@@ -410,7 +411,8 @@ const courierGame = createGame({
   },
   scenarios: async () => (await import("../scenarios")).courierScenarios
 });
-const app = courierGame.runtime;
+const app = courierGame.app;
+if (!app.effects || !app.camera || !app.setOutputOverlay) throw new Error("courier-rush requires effects, camera, and overlay output for juice.");
 courierGame.start();
 
 // ---- juice (PRD-09 §7.6) ----------------------------------------------------
@@ -428,7 +430,7 @@ const courierJuice = createJuice<"pickup" | "deliver" | "combo" | "strike", Cour
   camera: app.camera,
   session: courierGame.session,
   fx: courierFx,
-  overlay: createOverlayDriver({ app }),
+  overlay: createOverlayDriver({ app: app as OverlayDriverDeps["app"] }),
   tweens: courierTween,
   rumble: createRumbleDriver()
 });
@@ -793,7 +795,7 @@ hudHost.className = "a3g-game-hud";
 document.getElementById("app")!.appendChild(hudHost);
 const navBearingRef: { current: number | null } = { current: null };
 const hud = mountHud(
-  { root: hudHost, doc: document as unknown as HudDocument },
+  { root: hudHost as unknown as HudElement, doc: document as unknown as HudDocument },
   {
     theme: "motorsport",
     maxScreenFraction: 0.22,
@@ -832,7 +834,7 @@ const touchControls = mountTouchControls(
   },
   {
     doc: document as unknown as HudDocument,
-    root: hudHost,
+    root: hudHost as unknown as HudElement,
     coarsePointer: () => matchMedia("(pointer: coarse)").matches
   }
 );

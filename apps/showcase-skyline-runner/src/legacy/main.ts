@@ -24,7 +24,8 @@ import {
   createJuice,
   createOverlayDriver,
   createRumbleDriver,
-  createTweenEngine
+  createTweenEngine,
+  type OverlayDriverDeps
 } from "@aura3d/game";
 import { bindSkylineEvidence } from "../evidence";
 import { bindSkylineDrive } from "../scenario-drive";
@@ -2081,6 +2082,7 @@ const skylineGame = createGame({
   scenarios: async () => (await import("../scenarios")).skylineScenarios
 });
 const app = skylineGame.app;
+if (!app.effects || !app.camera || !app.setOutputOverlay) throw new Error("skyline-runner requires effects, camera, and overlay output for juice.");
 skylineGame.start();
 bindSkylineDrive({
   stepRender: (dt) => { app.pause(); app.advance(dt); app.resume(); },
@@ -2106,7 +2108,7 @@ const skylineJuice = createJuice<"jump" | "collect" | "checkpoint" | "hazard" | 
   camera: app.camera,
   session: skylineGame.session,
   fx: skylineFx,
-  overlay: createOverlayDriver({ app }),
+  overlay: createOverlayDriver({ app: app as OverlayDriverDeps["app"] }),
   tweens: skylineTween,
   rumble: createRumbleDriver()
 });

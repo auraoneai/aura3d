@@ -27,7 +27,8 @@ import {
   createJuice,
   createOverlayDriver,
   createRumbleDriver,
-  createTweenEngine
+  createTweenEngine,
+  type OverlayDriverDeps
 } from "@aura3d/game";
 import { bindPulseEvidence } from "../evidence";
 import { bindPulseDrive } from "../scenario-drive";
@@ -118,7 +119,7 @@ const pulseJuice = createJuice<
   camera: app.camera,
   session: pulseGame.session,
   fx: pulseFx,
-  overlay: createOverlayDriver({ app }),
+  overlay: createOverlayDriver({ app: app as OverlayDriverDeps["app"] }),
   tweens: pulseTween,
   rumble: createRumbleDriver()
 });
@@ -886,6 +887,7 @@ const pulseScene = scene()
     .camera(camera.perspective( { position: [0, 0.72, 3.8], target: [0, 0.32, -8], fov: 50 }));
 
 const app = pulseGame.app;
+if (!app.effects || !app.camera || !app.setOutputOverlay) throw new Error("pulse-tunnel requires effects, camera, and overlay output for juice.");
 pulseGame.start();
 
 // ---- runtime handles ---------------------------------------------------------

@@ -28,7 +28,8 @@ import {
   createJuice,
   createOverlayDriver,
   createRumbleDriver,
-  createTweenEngine
+  createTweenEngine,
+  type OverlayDriverDeps
 } from "@aura3d/game";
 import { bindMechEvidence } from "../evidence";
 import { bindMechDrive } from "../scenario-drive";
@@ -117,7 +118,7 @@ const mechJuice = createJuice<"light-hit" | "heavy-hit" | "blocked" | "guard-bre
   camera: app.camera,
   session: mechGame.session,
   fx: mechFx,
-  overlay: createOverlayDriver({ app }),
+  overlay: createOverlayDriver({ app: app as OverlayDriverDeps["app"] }),
   tweens: mechTween,
   rumble: createRumbleDriver()
 });
@@ -802,7 +803,8 @@ const mechGame = createGame({
   },
   scenarios: async () => (await import("../scenarios")).mechScenarios
 });
-const app = mechGame.runtime;
+const app = mechGame.app;
+if (!app.effects || !app.camera || !app.setOutputOverlay) throw new Error("mech-hangar requires effects, camera, and overlay output for juice.");
 mechGame.start();
 
 // ---- runtime handles --------------------------------------------------------

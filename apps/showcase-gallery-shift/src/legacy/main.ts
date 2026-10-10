@@ -41,7 +41,8 @@ import {
   createJuice,
   createOverlayDriver,
   createRumbleDriver,
-  createTweenEngine
+  createTweenEngine,
+  type OverlayDriverDeps
 } from "@aura3d/game";
 import { bindGalleryEvidence } from "../evidence";
 import { bindGalleryDrive } from "../scenario-drive";
@@ -1151,7 +1152,8 @@ const galleryGame = createGame({
   },
   scenarios: async () => (await import("../scenarios")).galleryScenarios
 });
-const app = galleryGame.runtime;
+const app = galleryGame.app;
+if (!app.effects || !app.camera || !app.setOutputOverlay) throw new Error("gallery-shift requires effects, camera, and overlay output for juice.");
 galleryGame.start();
 const input = galleryGame.input!;
 bindGalleryEvidence(() => collectGalleryEvidence());
@@ -1171,7 +1173,7 @@ const galleryJuice = createJuice<"guard-alert" | "alert-rise" | "lift" | "drop" 
   camera: app.camera,
   session: galleryGame.session,
   fx: galleryFx,
-  overlay: createOverlayDriver({ app }),
+  overlay: createOverlayDriver({ app: app as OverlayDriverDeps["app"] }),
   tweens: galleryTween,
   rumble: createRumbleDriver()
 });
@@ -1872,7 +1874,7 @@ function consumeFootsteps(footsteps: readonly GuardFootstep[]): void {
   }
 }
 
-galleryGame.runtime.onFrame(({ dt }) => {
+galleryGame.app.onFrame(({ dt }) => {
   galleryTween.tick(dt);
   if (galleryGame.session.paused) {
     manualAdvanceFrame();

@@ -39,7 +39,8 @@ import {
   createJuice,
   createOverlayDriver,
   createRumbleDriver,
-  createTweenEngine
+  createTweenEngine,
+  type OverlayDriverDeps
 } from "@aura3d/game";
 import { bindAuroraEvidence } from "../evidence";
 import { bindAuroraDrive } from "../scenario-drive";
@@ -957,6 +958,7 @@ function buildWorldScene() {
 }
 
 // ---- app mount ---------------------------------------------------------------
+const { auroraScenarios } = await import("../scenarios");
 const auroraGame = createGame({
   id: "showcase-aurora-lander",
   target: "#app",
@@ -965,16 +967,17 @@ const auroraGame = createGame({
     seed: 20260915,
     continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
   },
-  scene: buildWorldScene(),
+  scene: () => buildWorldScene(),
   qualityRebuild: { flags: ["game"] },
   evidence: {
     schema: 1,
     sections: async () => (await import("../evidence")).sections,
     legacyGlobals: ["__AURA3D_SHOWCASE_AURORA_LANDER__"]
   },
-  scenarios: async () => (await import("../scenarios")).auroraScenarios
+  scenarios: { default: auroraScenarios[0], "descent-start": auroraScenarios[1] }
 });
 const app = auroraGame.app;
+if (!app.effects || !app.camera || !app.setOutputOverlay) throw new Error("aurora-lander requires effects, camera, and overlay output for juice.");
 auroraGame.start();
 bindAuroraEvidence(() => mountedEvidence);
 const auroraTween = createTweenEngine();
@@ -991,7 +994,7 @@ const auroraJuice = createJuice<"touch-soft" | "touch-hard" | "crash" | "pad-loc
   camera: app.camera,
   session: auroraGame.session,
   fx: auroraFx,
-  overlay: createOverlayDriver({ app }),
+  overlay: createOverlayDriver({ app: app as OverlayDriverDeps["app"] }),
   tweens: auroraTween,
   rumble: createRumbleDriver()
 });

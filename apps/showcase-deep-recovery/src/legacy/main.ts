@@ -18,7 +18,8 @@ import {
   createJuice,
   createOverlayDriver,
   createRumbleDriver,
-  createTweenEngine
+  createTweenEngine,
+  type OverlayDriverDeps
 } from "@aura3d/game";
 import { bindDeepEvidence } from "../evidence";
 import { bindDeepDrive } from "../scenario-drive";
@@ -182,7 +183,7 @@ const deepJuice = createJuice<"ping" | "breach" | "seal" | "latch" | "bank" | "b
   camera: app.camera,
   session: deepGame.session,
   fx: deepFx,
-  overlay: createOverlayDriver({ app }),
+  overlay: createOverlayDriver({ app: app as OverlayDriverDeps["app"] }),
   tweens: deepTween,
   rumble: createRumbleDriver()
 });
@@ -486,6 +487,7 @@ const deepGame = createGame({
   scenarios: async () => (await import("../scenarios")).deepScenarios
 });
 const app = deepGame.app;
+if (!app.effects || !app.camera || !app.setOutputOverlay) throw new Error("deep-recovery requires effects, camera, and overlay output for juice.");
 deepGame.start();
 
 app.onFrame((frame) => {
