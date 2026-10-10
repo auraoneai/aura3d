@@ -15,7 +15,7 @@ Requests lane 03 cannot satisfy inside its own ownership boundary
 
 | # | To | Ask | Blocked on | Status |
 |---|---|---|---|---|
-| QR-03-6 | prd12 (capture/adapter custodian) | `post-fxaa.spec.ts`/`post-banding.spec.ts` slot names from the PRD land on owner 15; specs shipped as `qr-prd03-fxaa.spec.ts` / `qr-prd03-post-banding.spec.ts` so they resolve to lane 03. If PRD filenames are contractual, add the `prd03-` test slots to QR_OWNERSHIP.json. | Nothing — tests exist and are lane-owned | OPEN |
+| QR-03-6 (filed #787) | prd12 (capture/adapter custodian) | `post-fxaa.spec.ts`/`post-banding.spec.ts` slot names from the PRD land on owner 15; specs shipped as `qr-prd03-fxaa.spec.ts` / `qr-prd03-post-banding.spec.ts` so they resolve to lane 03. If PRD filenames are contractual, add the `prd03-` test slots to QR_OWNERSHIP.json. | Nothing — tests exist and are lane-owned | FILED #787 |
 | QR-03-7 | prd12 | `qr-prd03-post-harness.ts` mounts `createAuraApp` with `qualityRebuild.flags:["A3D_QR_POST"]` directly; `runAuraScene` (benchmarks/…/aura3d/common.ts) does not accept flags, so `prd03-night-fog-banding` is replicated in-harness rather than run through the adapter. If lane 12 wants the canonical adapter path, `runAuraScene(spec, host, {flags})` needs a third parameter. | Banding metric runs on the replicated scene, not the registered spec | OPEN |
 
 ## Flag-off guarantee notes

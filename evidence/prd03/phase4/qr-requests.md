@@ -19,10 +19,10 @@ Requests lane 03 cannot satisfy inside its own ownership boundary
 
 | ID | Target lane | Ask | Impact | Status |
 |---|---|---|---|---|
-| QR-03-12 | 08 | `app.time.timeScale(channel)` session-level hook per C-23 (motion blur + game feel share the channel). Phase 4 ships the per-node `effects.motionBlur({timeScale})` path — the channel-wide path needs the lane-08 time controller. | MB `timeScale` works per-node; a global timeScale still needs lane-08. | open |
-| QR-03-13 | 08 | `app.camera` (C-22 `AuraCameraController`) not present on `AuraApp` in this build — `postExtras.cameraPan/cameraCut` fall back to the runtime camera node's `setPosition` (position-only pan, fixed target). When C-22 lands the adapter uses `setPose` for position+target pans. | Pan/cut scenes run today at reduced fidelity (yaw pan). | open |
-| QR-03-14 | 01 | Forward target needs location-1/2 attachments (velocity rg16f + reactive r8) — Q-01-2. Until it lands `prd03.velocity` stays opt-in under `A3D_QR_POST_VELOCITY_MRT` and S1-C camera velocity + the luminance-delta heuristic carry TAA. | Per-object velocity vs analytic is gated on the MRT attachments. | open |
-| QR-03-15 | 12 | Scene router still does not glob `aura3d/scenes/prdNN/`/`three/scenes/prdNN/` — prd03-* scenes (incl. the three new Phase-4 ones) cannot be captured through the page router; adapters and index are registered. | All lane scene captures stay blocked. | open (carried from QR-03-2) |
+| QR-03-12 (filed #795) | 08 | `app.time.timeScale(channel)` session-level hook per C-23 (motion blur + game feel share the channel). Phase 4 ships the per-node `effects.motionBlur({timeScale})` path — the channel-wide path needs the lane-08 time controller. | MB `timeScale` works per-node; a global timeScale still needs lane-08. | open |
+| QR-03-13 (filed #796) | 08 | `app.camera` (C-22 `AuraCameraController`) not present on `AuraApp` in this build — `postExtras.cameraPan/cameraCut` fall back to the runtime camera node's `setPosition` (position-only pan, fixed target). When C-22 lands the adapter uses `setPose` for position+target pans. | Pan/cut scenes run today at reduced fidelity (yaw pan). | open |
+| QR-03-14 (filed #797) | 01 | Forward target needs location-1/2 attachments (velocity rg16f + reactive r8) — Q-01-2. Until it lands `prd03.velocity` stays opt-in under `A3D_QR_POST_VELOCITY_MRT` and S1-C camera velocity + the luminance-delta heuristic carry TAA. | Per-object velocity vs analytic is gated on the MRT attachments. | open |
+| QR-03-15 (filed #788) | 12 | Scene router still does not glob `aura3d/scenes/prdNN/`/`three/scenes/prdNN/` — prd03-* scenes (incl. the three new Phase-4 ones) cannot be captured through the page router; adapters and index are registered. | All lane scene captures stay blocked. | open (carried from QR-03-2) |
 
 ## Notes
 
