@@ -3,7 +3,7 @@
 import type { ForwardPointShadowMapOptions, ForwardShadowMapOptions } from "../ForwardPass.js";
 import { MAX_FORWARD_SHADOW_PCF_SAMPLES, identityMatrix, isFiniteArrayLike, toMat4Uniform } from "../ForwardPass.js";
 import { createClusteredForwardLighting, type ClusteredForwardLightingResources } from "../ClusteredForwardLighting.js";
-import { AURA_LIGHTS_MAX } from "../LightUniforms.js";
+import { MAX_DIRECT_LIGHTS, recordAuraLightsCounters } from "../LightUniforms.js";
 import type { CollectedLight } from "../LightCollector.js";
 import { RenderDeviceError, type RenderShaderProgram, type UniformValue } from "../RenderDevice.js";
 import { createShadowFilterKernel, type ShadowFilterKernel } from "../ShadowMap.js";
@@ -477,11 +477,14 @@ export function resolveForwardClusteredLighting(
   height: number,
   cameraViewProjectionMatrix: Float32Array | readonly number[] | undefined
 ): ClusteredForwardLightingResources | null {
-  // PRD-02 §6.3: under A3D_QR_LIGHTING the AuraLights std140 block packs 32
-  // lights directly, so clustering only engages above 32. Legacy stays at 16
-  // (byte-identical flag-off behaviour).
-  const threshold = rendererQrFlags().on("A3D_QR_LIGHTING") ? AURA_LIGHTS_MAX : 16;
-  return (lights?.length ?? 0) > threshold
+  // T0-27: the forward pass uploads direct lights through `LightUniforms.pack`
+  // (MAX_DIRECT_LIGHTS = 16) into `u_lightData[96]` (16 × 6 vec4). The 32-light
+  // AuraLights std140 block has no program consuming it yet, so clustering must
+  // engage above 16 with the flag on as well; a 32 threshold silently dropped
+  // lights 17-32. Raise this only together with the pack cap and the shader
+  // array once the AuraLights block program exists. Flag-off is unchanged (16).
+  const count = lights?.length ?? 0;
+  const clustered = count > FORWARD_DIRECT_LIGHT_CAPACITY
     ? createClusteredForwardLighting(
         lights ?? [],
         width,
@@ -489,4 +492,26 @@ export function resolveForwardClusteredLighting(
         cameraViewProjectionMatrix
       )
     : null;
+  if (rendererQrFlags().on("A3D_QR_LIGHTING")) {
+    recordAuraLightsCounters(forwardLightCounters(count, clustered !== null));
+  }
+  return clustered;
+}
+
+/** T0-27: direct-light capacity of the forward uniform path (pack cap = shader array). */
+export const FORWARD_DIRECT_LIGHT_CAPACITY = MAX_DIRECT_LIGHTS;
+
+/**
+ * T0-27 / C-28: lights the forward pass loses to a capacity cap. Clustered
+ * shading reads every light from the cluster texture; the uniform path keeps
+ * at most `FORWARD_DIRECT_LIGHT_CAPACITY`.
+ */
+export function forwardLightCounters(
+  lightCount: number,
+  clustered: boolean
+): { lightsEvaluated: number; lightsDroppedByCap: number } {
+  return {
+    lightsEvaluated: lightCount,
+    lightsDroppedByCap: clustered ? 0 : Math.max(0, lightCount - FORWARD_DIRECT_LIGHT_CAPACITY)
+  };
 }

@@ -336,6 +336,14 @@ export function auraLightsCounters(): { lightsEvaluated: number; lightsDroppedBy
   return auraLightsLastCounters;
 }
 
+/**
+ * T0-27: the forward pass (flag on) records its real capacity counters here so
+ * C-31 `lightsDroppedByCap` reflects the uniform/cluster path actually drawn.
+ */
+export function recordAuraLightsCounters(counters: { lightsEvaluated: number; lightsDroppedByCap: number }): void {
+  auraLightsLastCounters = { lightsEvaluated: counters.lightsEvaluated, lightsDroppedByCap: counters.lightsDroppedByCap };
+}
+
 /** Read the per-light rows reported by the last `packAuraLightsStd140` call (C-31 §4.2). */
 export function auraLightsLastFrame(): readonly AuraLightSummary[] | null {
   return auraLightsLastLights;

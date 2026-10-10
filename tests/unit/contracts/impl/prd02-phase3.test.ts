@@ -271,7 +271,7 @@ describe("legacy equirect bridge (PRD-02 Phase 3, E5 fix)", () => {
   });
 });
 
-describe("AuraLights uniform block + C-31 counters + >32 clustering (PRD-02 §6.3)", () => {
+describe("AuraLights uniform block + C-31 counters + >16 clustering (PRD-02 §6.3, T0-27)", () => {
   const mkLight = (kind: AuraLightData["kind"] = "point"): AuraLightData => ({
     kind, position: [0, 1, 0], direction: [0, -1, 0], color: [1, 1, 1],
     intensity: 1, range: 10, spotAngle: 0.5, penumbra: 0.2, decay: 2
@@ -290,7 +290,9 @@ describe("AuraLights uniform block + C-31 counters + >32 clustering (PRD-02 §6.
     expect(counters?.lightsDroppedByCap).toBe(4);
   });
 
-  it("clustering engages above 32 under the flag, above 16 without", async () => {
+  // T0-27: the forward uniform path holds 16 lights (LightUniforms.pack /
+  // u_lightData[96]), so clustering engages above 16 with the flag on too.
+  it("clustering engages above 16 with and without the flag (T0-27)", async () => {
     const { resolveForwardClusteredLighting } =
       await import("../../../../packages/rendering/src/forward/Lighting");
     const vp = new Float32Array(16); vp[0] = vp[5] = vp[10] = vp[15] = 1;
@@ -300,7 +302,8 @@ describe("AuraLights uniform block + C-31 counters + >32 clustering (PRD-02 §6.
     expect(resolveForwardClusteredLighting(at(17), 64, 64, vp)).not.toBeNull();
     expect(resolveForwardClusteredLighting(at(16), 64, 64, vp)).toBeNull();
     setRendererQrFlags(LIGHTING_ON);
-    expect(resolveForwardClusteredLighting(at(17), 64, 64, vp)).toBeNull();
+    expect(resolveForwardClusteredLighting(at(16), 64, 64, vp)).toBeNull();
+    expect(resolveForwardClusteredLighting(at(17), 64, 64, vp)).not.toBeNull();
     expect(resolveForwardClusteredLighting(at(33), 64, 64, vp)).not.toBeNull();
   });
 });
