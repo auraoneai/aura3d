@@ -9,7 +9,7 @@
  * Dialogue/caption/viseme still come from the episode (`render-plan.ts`) — that timed
  * track is the AuraVoice contract and is shared across the pipeline.
  *
- * Imports resolve from the published `@aura3d/engine` (advanced-runtime A3DRenderer +
+ * Imports resolve from the published `@aura3d/engine` (renderer-subpath Renderer +
  * production-runtime typed GLB actors + rendering primitives), exactly as the old route.
  */
 
@@ -17,7 +17,7 @@ import { Renderer, TextureBinding as EngineTextureBinding } from "@aura3d/engine
 import { createPerformanceGovernor, createSideViewGameRenderPreset, createStudioLighting, createTypedGLBActor, type TypedGLBActor } from "@aura3d/engine/production-runtime";
 import { createCameraPathFromPreset, sampleCameraPath, type CameraPath } from "@aura3d/engine";
 // I1 clean-room correctness: import the rendering/scene PRIMITIVES from the engine's own subpaths
-// (`@aura3d/engine/rendering` / `@aura3d/engine/scene`) — the SAME copy the A3DRenderer uses — NOT
+// (`@aura3d/engine/rendering` / `@aura3d/engine/scene`) — the SAME copy the Renderer uses — NOT
 // the standalone `@aura3d/rendering` / `@aura3d/scene` packages. In a clean-room (tarball) install
 // those standalone packages are a SECOND copy of the rendering code, so a `Geometry`/`PBRMaterial`/
 // `TextureBinding` built from them is a DIFFERENT class than the renderer's, and the renderer's
@@ -569,7 +569,7 @@ export async function mountScenePlayer(doc: EpisodeDocument): Promise<void> {
   // mip chain, and its BRDF-LUT — is the SAME class and the renderer's `MaterialBinding.bind`
   // (`value instanceof TextureBinding`, see rendering/MaterialBinding.ts) accepts them. In a CLEAN-ROOM
   // install from tarballs the engine resolves into SEVERAL Vite-prebundled chunks: the app's
-  // `@aura3d/rendering` (which builds our env map) and `@aura3d/engine/advanced-runtime` (the renderer,
+  // `@aura3d/rendering` (which builds our env map) and `@aura3d/engine/renderer` (the renderer,
   // which builds the internal env-map/BRDF-LUT bindings) get DIFFERENT `TextureBinding` class objects,
   // so the `instanceof` check fails and the renderer throws `MaterialBindingError`
   // ("u_environmentMapTexture must be texture2d" / "Unsupported uniform value"). This is unfixable from
@@ -579,7 +579,7 @@ export async function mountScenePlayer(doc: EpisodeDocument): Promise<void> {
   //
   // The reliable, NON-POISONING signal is exactly that class-identity divergence: if our baked binding
   // (from `@aura3d/rendering`) is NOT `instanceof` the engine renderer's own `TextureBinding` (from
-  // `@aura3d/engine/advanced-runtime`), the engine is multi-chunk and its internal env bindings will be
+  // `@aura3d/engine/renderer`), the engine is multi-chunk and its internal env bindings will be
   // rejected too → skip IBL. When they ARE the same class (the monorepo / a correctly-deduped install)
   // IBL stays on, so this never changes the monorepo render's success.
   let iblBinding:
