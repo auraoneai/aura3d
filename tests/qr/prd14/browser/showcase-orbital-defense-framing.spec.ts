@@ -42,10 +42,9 @@ test.describe("showcase-orbital-defense framing (T2.3)", () => {
           });
         expect(framing.rig).toBe("orbital-defense.orbit");
         expect(framing.dronesUnderHud).toBe(0);
-        if (framing.subjectScreenHeightFraction !== null && framing.subjectScreenHeightFraction !== undefined) {
-          expect(framing.subjectScreenHeightFraction).toBeGreaterThanOrEqual(FRACTION[0]);
-          expect(framing.subjectScreenHeightFraction).toBeLessThanOrEqual(FRACTION[1]);
-        }
+        expect(framing.subjectScreenHeightFraction, "rig must report a measured fraction (lane-08 #643)").not.toBeNull();
+          expect(framing.subjectScreenHeightFraction!).toBeGreaterThanOrEqual(FRACTION[0]);
+          expect(framing.subjectScreenHeightFraction!).toBeLessThanOrEqual(FRACTION[1]);
         expect(errors).toEqual([]);
       } finally {
         server.close();
