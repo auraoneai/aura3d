@@ -103,17 +103,20 @@ jobs:
           set -euo pipefail
           ktx="$(pwd)/${{ steps.ktx.outputs.ktx_bin }}"
           ids="${{ github.event.inputs.ids }}"
-          args=(--ktx "$ktx" --report evidence/prd05/assets/optimize-ci.json --out-dir optimize-out)
+          # P-57: lane-05 evidence lives under docs/.../evidence/prd05/assets/,
+          # not the repo-root evidence/ tree (lane 15).
+          evidence=docs/project/aura3d-quality-rebuild/evidence/prd05/assets
+          args=(--ktx "$ktx" --out-dir optimize-out)
           if [ -n "$ids" ]; then
-            args+=(--ids "$ids" --allow-local-small --no-manifest)
+            args+=(--ids "$ids" --allow-local-small --no-manifest --report "$evidence/optimize-ci.json")
           elif [ "${{ github.event_name }}" = "pull_request" ]; then
-            args+=(--dry-run)
+            args+=(--dry-run --report "$evidence/optimize-dry-run.json")
           else
             # 05-S10: push / plain dispatch run the real pass over the
             # game-referenced id set (derived entries + manifest + aggregate).
             ids="$(grep -v '^#' tools/asset-optimize/derived-ids.txt | grep -v '^$' | paste -sd, -)"
             [ -n "$ids" ] || { echo "::error::derived-ids.txt has no ids"; exit 1; }
-            args+=(--ids "$ids" --allow-local-small)
+            args+=(--ids "$ids" --allow-local-small --report "$evidence/optimize-ci.json")
           fi
           node_modules/.bin/tsx --tsconfig tsconfig.base.json tools/asset-optimize/index.ts "${args[@]}"
 
@@ -143,8 +146,9 @@ jobs:
           doc = {'schema': 'aura3d.derived-aggregate/1.0', 'ids': len(ids),
                  'derivedBytes': total, 'budgetBytes': limit,
                  'withinBudget': total <= limit, 'unmeasured': len(bad), 'rows': rows}
-          os.makedirs('evidence/prd05/assets', exist_ok=True)
-          json.dump(doc, open('evidence/prd05/assets/derived-aggregate.json', 'w'), indent=2)
+          out = 'docs/project/aura3d-quality-rebuild/evidence/prd05/assets'
+          os.makedirs(out, exist_ok=True)
+          json.dump(doc, open(os.path.join(out, 'derived-aggregate.json'), 'w'), indent=2)
           print(f"derived total: {total/1024/1024:.1f} MB over {len(ids)} ids (budget 80.0 MB); unmeasured: {len(bad)}")
           # Fail closed: every id must derive, and the total must fit the budget.
           if bad:
@@ -160,8 +164,9 @@ jobs:
         with:
           name: asset-optimize-${{ github.sha }}
           path: |
-            evidence/prd05/assets/optimize-ci.json
-            evidence/prd05/assets/derived-aggregate.json
+            docs/project/aura3d-quality-rebuild/evidence/prd05/assets/optimize-ci.json
+            docs/project/aura3d-quality-rebuild/evidence/prd05/assets/optimize-dry-run.json
+            docs/project/aura3d-quality-rebuild/evidence/prd05/assets/derived-aggregate.json
             optimize-out/
             aura.assets.json
             src/aura-assets.ts
