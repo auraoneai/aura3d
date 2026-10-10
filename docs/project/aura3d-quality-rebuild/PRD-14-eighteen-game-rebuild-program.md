@@ -2,7 +2,11 @@
 
 Program: Aura3D visual-quality autopsy and rebuild. Branch `aura3d-quality-rebuild/audit` @ `3a51cba3` (audit capture sha `c08d8acb`); revised for
 contracts-first parallel execution against `CONTRACTS.md` @ `85aafcd0`.
-Status: proposed, parallel-ready. Lane: **PRD 14**. Starts day 0 (2026-10-05) on PR 0a contract types and stubs only; never waits for another lane
+Status (2026-10-10, audit of main b60a669ab): in progress, 0/91 checklist items verified. Phase 1 (art directions,
+baselines, flag-off dispatchers) and Phase 2 (18 v2 shells) are merged but unverified: no `qr-prd14-games.yml` run on
+main has executed static + capture, and no S1-S12 `report.json` exists. 14-LOC (#668-#682), 14-P0FIX (#683) and #725
+were stranded on `qr/prd14-games0` and are being re-landed. Phases 3-6 (kits, content, G-PANEL, promotion) have not
+started. Every route flag is `DEFAULT_ON = false`. Ticks require a cited main `run:<id>` (PRD-16 §0.2). Lane: **PRD 14**. Starts day 0 (2026-10-05) on PR 0a contract types and stubs only; never waits for another lane
 (§12A). Owned paths are exactly CONTRACTS.md §4.1 row "14" (listed in §12A.2). Game work targets `apps/aura-clash-showcase` plus the 17 game dirs
 `apps/showcase-{blockfall-reactor,skyline-runner,turbo-drift-circuit,siege-golf,aurora-lander,neon-swarm,gravity-post,courier-rush,pulse-tunnel,
 mech-hangar,vault-breakers,rooftop-buckets,gallery-shift,deep-recovery,patrol-wing,bank-shot,orbital-defense}`. The other `apps/showcase-*` dirs are
