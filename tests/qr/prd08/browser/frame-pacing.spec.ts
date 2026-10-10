@@ -12,7 +12,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-import { startExampleDevServer, type ExampleDevServer } from "../../../browser/example-dev-server";
+import { startPrd08DevServer as startExampleDevServer, type ExampleDevServer } from "../dev-server";
 
 interface FrameRecord {
   readonly t: number;
@@ -34,6 +34,11 @@ interface HarnessProbe {
 const HARNESS = "/tests/qr/prd08/harness/camera-feel-harness.html";
 
 async function openHarness(page: Page, query = "?scripted=1"): Promise<void> {
+  // Relay page errors so a module-load failure is diagnosable from the CI log.
+  page.on("pageerror", (error) => console.log(`[prd08 harness pageerror] ${error.stack ?? error.message}`));
+  page.on("console", (msg) => {
+    if (msg.type() === "error") console.log(`[prd08 harness console.error] ${msg.text()}`);
+  });
   await page.goto(`${serverOrigin!}${HARNESS}${query}`, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(
     () => {
