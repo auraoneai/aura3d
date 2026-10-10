@@ -49,6 +49,7 @@ Corrections to the earlier version of this record:
 | default-owner (15) files: `tests/unit/agent-api/{look-lint,looks,prompt-plan-v2,structural-qa}.test.ts`, `tests/unit/cli/look-{capture,judge,lint}.test.ts`, `tests/unit/create-aura3d/{templates,look-floor}.test.ts`, `tests/unit/tools/agent-skills-check.test.ts` | 15 | #173, #191, #202, #239, #244, #276, #303 | no request filed | PENDING |
 | default-owner (15) files: root `evidence/prd13/*.md` | 15 | #191, #202, #239, #244, #276, #277, #305 | moving into the lane-13 tree via #503 (13-EVID) | PENDING |
 | default-owner (15) files: `README.md`, `public/llms.txt`, `docs/project/showcase/visual-quality-standard.md`, `.gitignore` | 15 | #239, #244, #269, #276, #277 | no request filed | PENDING |
+| `docs/project/aura3d-quality-rebuild/evidence/prd15/requests/Q-13-*.md` (19 files: issue-number write-back) | 15 | #707 (open) | no request filed; the ledger is at `evidence/prd-13/qr-requests.md` | PENDING |
 
 ### #277 (`[QR-13] T3.4 fighting-game`, 654 files, 33 commits) — out-of-lane footprint
 
