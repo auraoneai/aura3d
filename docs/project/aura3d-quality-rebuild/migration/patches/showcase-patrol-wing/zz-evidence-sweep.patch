@@ -1,4 +1,4 @@
-From 9fdead4956928d224607719dd603cc1cf024aabf Mon Sep 17 00:00:00 2001
+From 48570753c869ca6ae32e4f373c74d43891ea65b2 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 15:34:24 +0000
 Subject: [PATCH] showcase-patrol-wing: delete evidence files+blocks (T5.8)
@@ -17,8 +17,8 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  apps/showcase-patrol-wing/src/evidence.ts     |   8 -
  apps/showcase-patrol-wing/src/legacy/main.ts  | 331 +------------
  apps/showcase-patrol-wing/src/main.ts         |   1 -
- .../src/v2/evidence/index.ts                  | 203 --------
- 11 files changed, 1 insertion(+), 1566 deletions(-)
+ .../src/v2/evidence/index.ts                  | 212 ---------
+ 11 files changed, 1 insertion(+), 1575 deletions(-)
  delete mode 100644 apps/showcase-patrol-wing/performance-report.json
  delete mode 100644 apps/showcase-patrol-wing/scripts/build-models.mjs
  delete mode 100644 apps/showcase-patrol-wing/scripts/build-sfx.mjs
@@ -1566,7 +1566,7 @@ index ffd7f8891..6916b8872 100644
  
  
 diff --git a/apps/showcase-patrol-wing/src/main.ts b/apps/showcase-patrol-wing/src/main.ts
-index 05feb7070..40585c555 100644
+index f9d350334..ac1f55756 100644
 --- a/apps/showcase-patrol-wing/src/main.ts
 +++ b/apps/showcase-patrol-wing/src/main.ts
 @@ -1,7 +1,6 @@
@@ -1579,10 +1579,10 @@ index 05feb7070..40585c555 100644
  const ROUTE_FLAG = "A3D_QR_ROUTE_PATROL_WING" as const;
 diff --git a/apps/showcase-patrol-wing/src/v2/evidence/index.ts b/apps/showcase-patrol-wing/src/v2/evidence/index.ts
 deleted file mode 100644
-index 34e943248..000000000
+index f7130d7df..000000000
 --- a/apps/showcase-patrol-wing/src/v2/evidence/index.ts
 +++ /dev/null
-@@ -1,203 +0,0 @@
+@@ -1,212 +0,0 @@
 -// apps/showcase-patrol-wing/src/v2/evidence/index.ts — §7.2.1 evidence.
 -// Publishes `window.__AURA3D_GAME_EVIDENCE__["showcase-patrol-wing"]` with
 -// lazy section getters. The two games.json required conditions read:
@@ -1754,6 +1754,15 @@ index 34e943248..000000000
 -        backend: b.game.fx.backend
 -      };
 -    },
+-
+-    get framing() {
+-      const ev = b.game.app.camera?.evidence?.();
+-      return {
+-        rig: ev?.rig ?? "patrol-wing.flight",
+-        subjectScreenHeightFraction: ev?.subjectScreenHeightFraction ?? null,
+-        pose: ev?.pose ?? null
+-      };
+-    },
 -    get render() {
 -      return { readbacksThisFrame: 0 };
 -    },
@@ -1787,5 +1796,5 @@ index 34e943248..000000000
 -  };
 -}
 -- 
-2.34.1
+2.52.0
 

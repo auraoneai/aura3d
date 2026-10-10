@@ -1,8 +1,7 @@
-From 3ac0841c32e5f73bbd57ab1c7679461e28d38de0 Mon Sep 17 00:00:00 2001
+From 7f67b5bf825f824a27003aef1156ca8e8ab34a0a Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:49 +0000
-Subject: [PATCH] [qr-prd09] showcase-gallery-shift: delete evidence
- files+blocks (T5.8)
+Subject: [PATCH] showcase-gallery-shift: delete evidence files+blocks (T5.8)
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
@@ -18,8 +17,8 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../scripts/write-route-health.mjs            | 104 ----
  .../showcase-gallery-shift/src/legacy/main.ts | 196 +------
  apps/showcase-gallery-shift/src/main.ts       |  10 -
- .../src/v2/evidence/index.ts                  |  99 ----
- 13 files changed, 1 insertion(+), 1840 deletions(-)
+ .../src/v2/evidence/index.ts                  | 111 ----
+ 13 files changed, 1 insertion(+), 1852 deletions(-)
  delete mode 100644 apps/showcase-gallery-shift/art-candidates/hierarchy-aug31/capture_hierarchy_candidate.mjs
  delete mode 100644 apps/showcase-gallery-shift/art-candidates/museum-world-aug31/capture_integrated_route.mjs
  delete mode 100644 apps/showcase-gallery-shift/art-candidates/museum-world-aug31/capture_preview.mjs
@@ -2133,7 +2132,7 @@ index de16cd62a..6b33ea720 100644
  publishEvidence();
 +
 diff --git a/apps/showcase-gallery-shift/src/main.ts b/apps/showcase-gallery-shift/src/main.ts
-index c11d2d007..879955c11 100644
+index c72898fbe..766b19116 100644
 --- a/apps/showcase-gallery-shift/src/main.ts
 +++ b/apps/showcase-gallery-shift/src/main.ts
 @@ -1,14 +1,6 @@
@@ -2151,9 +2150,9 @@ index c11d2d007..879955c11 100644
  function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
    const raw = new URL(loc.href).searchParams.get("a3d-qr");
    if (raw === null) return undefined;
-@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
-     ? true
-     : undefined;
+@@ -19,11 +11,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const wanted = [`route-${slug.replace(/_/g, "-")}`, `route_${slug}`, flag];
+   return tokens.some((t) => wanted.includes(t)) ? true : undefined;
  }
 -
  const flags = resolveQrFlags({
@@ -2165,14 +2164,16 @@ index c11d2d007..879955c11 100644
  void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
 diff --git a/apps/showcase-gallery-shift/src/v2/evidence/index.ts b/apps/showcase-gallery-shift/src/v2/evidence/index.ts
 deleted file mode 100644
-index a11da7af4..000000000
+index 4f89ec7f9..000000000
 --- a/apps/showcase-gallery-shift/src/v2/evidence/index.ts
 +++ /dev/null
-@@ -1,99 +0,0 @@
+@@ -1,111 +0,0 @@
 -// apps/showcase-gallery-shift/src/v2/evidence/index.ts — lazy evidence sections
 -// the capture + browser specs read. loading.sceneId reports the logical floor
 -// ("floor-1"/"floor-2") while loading.sceneSwaps stays 0 — both floor sets
 -// live in one union scene.
+-
+-import type { Game } from "@aura3d/game";
 -
 -export interface GalleryEvidenceBindings {
 -  sceneId(): "floor-1" | "floor-2";
@@ -2210,6 +2211,7 @@ index a11da7af4..000000000
 -  audio(): { lastCue: string | null; cueLog: readonly string[] };
 -  run(): { paused: boolean; touchEngaged: boolean; replayActive: boolean };
 -  appliedLook(): Record<string, unknown>;
+-  readonly game: Game;
 -  rig(): Record<string, unknown>;
 -  scenario(): string | null;
 -  render(): { frame: number; firstFrameAt: number | null };
@@ -2249,6 +2251,15 @@ index a11da7af4..000000000
 -    get run() {
 -      return bindings.run();
 -    },
+-
+-    get framing() {
+-      const ev = bindings.game.app.camera?.evidence?.();
+-      return {
+-        rig: ev?.rig ?? "gallery-shift.chase",
+-        subjectScreenHeightFraction: ev?.subjectScreenHeightFraction ?? null,
+-        pose: ev?.pose ?? null
+-      };
+-    },
 -    get render() {
 -      return bindings.render();
 -    },
@@ -2269,5 +2280,5 @@ index a11da7af4..000000000
 -  return evidence;
 -}
 -- 
-2.34.1
+2.52.0
 

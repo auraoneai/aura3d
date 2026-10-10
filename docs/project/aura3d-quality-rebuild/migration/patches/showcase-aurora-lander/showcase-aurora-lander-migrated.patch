@@ -1,4 +1,4 @@
-From 4ee6d81ce563c7debb303af0fafc3fe5d1d6dc79 Mon Sep 17 00:00:00 2001
+From 9e55c5ad05f50b1b39fcef86ac124e7510da8f61 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:08:02 +0000
 Subject: [PATCH] migration(showcase-aurora-lander): regenerated patch set
@@ -8,11 +8,11 @@ Subject: [PATCH] migration(showcase-aurora-lander): regenerated patch set
  apps/showcase-aurora-lander/package.json      |   4 +-
  apps/showcase-aurora-lander/src/evidence.ts   |   8 +
  .../src/legacy/lander-audio.ts                |  53 ++++++
- .../showcase-aurora-lander/src/legacy/main.ts | 157 +++++++++++-------
+ .../showcase-aurora-lander/src/legacy/main.ts | 155 +++++++++++-------
  .../src/scenario-drive.ts                     |  11 ++
  .../src/scenarios/index.ts                    |  13 ++
  apps/showcase-aurora-lander/src/v2/boot.ts    |   4 +-
- 7 files changed, 185 insertions(+), 65 deletions(-)
+ 7 files changed, 184 insertions(+), 64 deletions(-)
  create mode 100644 apps/showcase-aurora-lander/src/evidence.ts
  create mode 100644 apps/showcase-aurora-lander/src/scenario-drive.ts
  create mode 100644 apps/showcase-aurora-lander/src/scenarios/index.ts
@@ -135,7 +135,7 @@ index 85f144652..3919603de 100644
        await cue(name);
      },
 diff --git a/apps/showcase-aurora-lander/src/legacy/main.ts b/apps/showcase-aurora-lander/src/legacy/main.ts
-index f228855bd..c084d0a50 100644
+index f50746657..174b63512 100644
 --- a/apps/showcase-aurora-lander/src/legacy/main.ts
 +++ b/apps/showcase-aurora-lander/src/legacy/main.ts
 @@ -33,6 +33,16 @@ import {
@@ -323,16 +323,7 @@ index f228855bd..c084d0a50 100644
    lastGrade = null;
    state = spawnStateFor(currentSite);
    previousControls = { thrust: 0, rotate: 0 };
-@@ -1163,7 +1201,7 @@ function setupPanel(): void {
-   // explicit control instead of permanently eating a quarter of the frame. Touch
-   // controls stay outside the collapsed region because they are gameplay surface.
-   // Review capture expands it so retained evidence still shows the full contract.
--  const reviewCapture = document.body.dataset.capture === "review";
-+  const reviewCapture = false;
-   panel.innerHTML = `
-     <h1>AURORA LANDER</h1>
-     <p class="panel-hint"><kbd>W</kbd> thrust · <kbd>A</kbd>/<kbd>D</kbd> rotate · <kbd>Space</kbd>/<kbd>R</kbd> restart · <kbd>G</kbd> ghost · <kbd>P</kbd> pause</p>
-@@ -1267,6 +1305,8 @@ function gradeFromContact(context: GradingContext): void {
+@@ -1265,6 +1303,8 @@ function gradeFromContact(context: GradingContext): void {
  
    if (graded.grade === "crash") {
      phase = "crashed";
@@ -341,7 +332,7 @@ index f228855bd..c084d0a50 100644
      playCue("crash");
      showBanner(hud, "grade-crash", `CRASH — ${graded.crashReason}. Press R to restart expedition.`);
      bannerTimer = 4;
-@@ -1283,6 +1323,9 @@ function gradeFromContact(context: GradingContext): void {
+@@ -1281,6 +1321,9 @@ function gradeFromContact(context: GradingContext): void {
    });
    siteScores[siteIndex] = Math.max(siteScores[siteIndex] ?? 0, breakdown.total);
    mountedEvidence.campaignScore = campaignScore(SITES.map((_, index) => siteScores[index] ?? 0));
@@ -351,7 +342,7 @@ index f228855bd..c084d0a50 100644
    playCue(graded.grade === "soft" ? "touch-soft" : "touch-hard");
    void landerAudio.cue("site-clear");
    recentAudioCues = ["site-clear", ...recentAudioCues].slice(0, 12);
-@@ -1330,7 +1373,7 @@ let dustCursor = 0;
+@@ -1328,7 +1371,7 @@ let dustCursor = 0;
  
  function tick(dtFixed: number): void {
    frameCount += 1;
@@ -360,7 +351,7 @@ index f228855bd..c084d0a50 100644
    simSeconds += dtFixed;
  
    // Edge-driven audio before integration.
-@@ -1363,11 +1406,12 @@ function tick(dtFixed: number): void {
+@@ -1361,11 +1404,12 @@ function tick(dtFixed: number): void {
    }
    previousControls = effectiveControls;
    state = stepLander(state, effectiveControls, dtFixed, currentSite.gust);
@@ -378,7 +369,7 @@ index f228855bd..c084d0a50 100644
    }
    const rotating = Math.abs(controls.rotate) > 0.05;
    if (rotating && rcsPuffArmed) {
-@@ -1491,8 +1535,8 @@ function toggleGhost(): void {
+@@ -1489,8 +1533,8 @@ function toggleGhost(): void {
  }
  
  function togglePause(): void {
@@ -389,7 +380,7 @@ index f228855bd..c084d0a50 100644
  }
  
  function handleControlEdges(): void {
-@@ -1529,7 +1573,7 @@ function renderUpdate(dtFrame: number): void {
+@@ -1527,7 +1571,7 @@ function renderUpdate(dtFrame: number): void {
    // Plume: visible thrust flame scaled by throttle while the engine burns.
    const groundHere = sampleGridHeight(field, state.x, state.z);
    const altitudeAboveGround = state.y - FOOT_DROP - groundHere;
@@ -398,7 +389,7 @@ index f228855bd..c084d0a50 100644
    const plumeScale = burning ? 0.5 + previousControls.thrust * 0.7 : 0.001;
    plumeNode.setPosition(state.x - Math.sin(state.yaw) * 0.1, state.y - FOOT_DROP * 1.35, state.z - Math.cos(state.yaw) * 0.1);
    plumeNode.setScale([plumeScale * 0.45, plumeScale * 2.4, plumeScale * 0.45]);
-@@ -1574,7 +1618,7 @@ function renderUpdate(dtFrame: number): void {
+@@ -1572,7 +1616,7 @@ function renderUpdate(dtFrame: number): void {
    const extractionVisible = phase === "campaign-clear";
    const extractionPad = currentSite.pads[0]!;
    const extractionGround = field.padHeights[0] ?? groundHere;
@@ -407,7 +398,7 @@ index f228855bd..c084d0a50 100644
      && phase === "flying"
      && altitudeAboveGround > APPROACH_SCAFFOLD_MIN_AGL;
    // The campaign-clear bay is a complete renderer-owned deck laid over the
-@@ -1582,34 +1626,23 @@ function renderUpdate(dtFrame: number): void {
+@@ -1580,34 +1624,23 @@ function renderUpdate(dtFrame: number): void {
    // mesh so nearby ridges cannot protrude through the deck and occlude the
    // already-landed typed vehicle. The Rapier contact and mesh-query evidence
    // has already run and remains published; runtime flight keeps terrain shown.
@@ -450,7 +441,7 @@ index f228855bd..c084d0a50 100644
        node.setPosition(
          extractionPad.x + part.offset[0],
          extractionGround + part.offset[1],
-@@ -1627,8 +1660,8 @@ function renderUpdate(dtFrame: number): void {
+@@ -1625,8 +1658,8 @@ function renderUpdate(dtFrame: number): void {
        );
      }
    });
@@ -461,7 +452,7 @@ index f228855bd..c084d0a50 100644
      extractionBackdropNode
        .setPosition(
          extractionPad.x - 3.5,
-@@ -1663,7 +1696,7 @@ function renderUpdate(dtFrame: number): void {
+@@ -1661,7 +1694,7 @@ function renderUpdate(dtFrame: number): void {
      const emphasized = index === pulsePhase ? 1.9 : 1;
      node.setScale(0.22 * emphasized);
    });
@@ -470,7 +461,7 @@ index f228855bd..c084d0a50 100644
      siteGroups[siteIndex]?.nodes.forEach((node) => node.setVisible(false));
    }
  
-@@ -1768,7 +1801,7 @@ function publishEvidence(): void {
+@@ -1766,7 +1799,7 @@ function publishEvidence(): void {
    mountedEvidence.vspeed = Number(state.vy.toFixed(3));
    mountedEvidence.hspeed = Number(hspeedOf(state).toFixed(3));
    mountedEvidence.attitudeDeg = Number(Math.abs(state.tiltDeg).toFixed(2));
@@ -479,7 +470,7 @@ index f228855bd..c084d0a50 100644
    mountedEvidence.lastGrade = lastGrade;
    mountedEvidence.ghostActive = ghostActive;
    mountedEvidence.terrainQueryFps = terrainQueryFps;
-@@ -1834,7 +1867,7 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+@@ -1832,7 +1865,7 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
        landerNode.setVisible(!suppressed);
      },
      settleSubjectPose() {
@@ -525,10 +516,10 @@ index 000000000..c1fb5b312
 +  }
 +];
 diff --git a/apps/showcase-aurora-lander/src/v2/boot.ts b/apps/showcase-aurora-lander/src/v2/boot.ts
-index 7b4dc1424..5f9b5b990 100644
+index 81023a31c..0e87d243d 100644
 --- a/apps/showcase-aurora-lander/src/v2/boot.ts
 +++ b/apps/showcase-aurora-lander/src/v2/boot.ts
-@@ -45,8 +45,8 @@ import { lightingNodes } from "./scene/lighting";
+@@ -44,8 +44,8 @@ import { lightingNodes } from "./scene/lighting";
  import { createAuroraRig, fallbackCameraNode } from "./scene/camera";
  import { wireAuroraFx } from "./scene/fx";
  import { NIGHT_BG } from "./scene/materials";
@@ -540,5 +531,5 @@ index 7b4dc1424..5f9b5b990 100644
  const ROUTE_FLAG = "A3D_QR_ROUTE_AURORA_LANDER" as const;
  const FIXED_DT = 1 / 60;
 -- 
-2.34.1
+2.52.0
 

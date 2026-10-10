@@ -1,7 +1,7 @@
 {
  "schema": "aura3d.quality-rebuild.route-composition/1",
- "generatedAt": "2026-10-09T15:46:43.067Z",
- "root": "/tmp/cap-shadow",
+ "generatedAt": "2026-10-10T18:08:21.437Z",
+ "root": "/tmp/all-shadow",
  "routes": {
   "aura-clash-showcase": {
    "route": "aura-clash-showcase",
@@ -9,9 +9,9 @@
    "loc": {
     "evidence": 387,
     "presentation": 4029,
-    "gameplay": 43810,
+    "gameplay": 43650,
     "generated": 3862,
-    "classified": 48226,
+    "classified": 48066,
     "evidencePct": 0.8
    },
    "globals": [
@@ -78,9 +78,9 @@
    "loc": {
     "evidence": 192,
     "presentation": 5981,
-    "gameplay": 5435,
+    "gameplay": 5444,
     "generated": 2570,
-    "classified": 11608,
+    "classified": 11617,
     "evidencePct": 1.7
    },
    "globals": [
@@ -107,9 +107,9 @@
    "loc": {
     "evidence": 448,
     "presentation": 16304,
-    "gameplay": 18982,
+    "gameplay": 18986,
     "generated": 27869,
-    "classified": 35734,
+    "classified": 35738,
     "evidencePct": 1.3
    },
    "globals": [
@@ -137,10 +137,10 @@
    "loc": {
     "evidence": 189,
     "presentation": 1437,
-    "gameplay": 4010,
+    "gameplay": 4018,
     "generated": 0,
-    "classified": 5636,
-    "evidencePct": 3.4
+    "classified": 5644,
+    "evidencePct": 3.3
    },
    "globals": [
     "__AURA3D_GAME__",
@@ -166,10 +166,10 @@
    "appDir": "apps/showcase-aurora-lander",
    "loc": {
     "evidence": 134,
-    "presentation": 1219,
-    "gameplay": 4529,
+    "presentation": 1223,
+    "gameplay": 4537,
     "generated": 0,
-    "classified": 5882,
+    "classified": 5894,
     "evidencePct": 2.3
    },
    "globals": [
@@ -196,9 +196,9 @@
    "loc": {
     "evidence": 147,
     "presentation": 1827,
-    "gameplay": 4149,
+    "gameplay": 4159,
     "generated": 0,
-    "classified": 6123,
+    "classified": 6133,
     "evidencePct": 2.4
    },
    "globals": [
@@ -225,11 +225,11 @@
    "appDir": "apps/showcase-gravity-post",
    "loc": {
     "evidence": 136,
-    "presentation": 1225,
-    "gameplay": 4407,
+    "presentation": 1235,
+    "gameplay": 4461,
     "generated": 0,
-    "classified": 5768,
-    "evidencePct": 2.4
+    "classified": 5832,
+    "evidencePct": 2.3
    },
    "globals": [
     "__AURA3D_GAME__",
@@ -256,9 +256,9 @@
    "loc": {
     "evidence": 155,
     "presentation": 1344,
-    "gameplay": 3827,
+    "gameplay": 3835,
     "generated": 0,
-    "classified": 5326,
+    "classified": 5334,
     "evidencePct": 2.9
    },
    "globals": [
@@ -285,11 +285,11 @@
    "appDir": "apps/showcase-pulse-tunnel",
    "loc": {
     "evidence": 266,
-    "presentation": 917,
-    "gameplay": 3482,
+    "presentation": 930,
+    "gameplay": 3587,
     "generated": 0,
-    "classified": 4665,
-    "evidencePct": 5.7
+    "classified": 4783,
+    "evidencePct": 5.6
    },
    "globals": [
     "__AURA3D_GAME__",
@@ -315,10 +315,10 @@
    "appDir": "apps/showcase-mech-hangar",
    "loc": {
     "evidence": 110,
-    "presentation": 1437,
-    "gameplay": 5495,
+    "presentation": 1441,
+    "gameplay": 5505,
     "generated": 0,
-    "classified": 7042,
+    "classified": 7056,
     "evidencePct": 1.6
    },
    "globals": [
@@ -346,9 +346,9 @@
    "loc": {
     "evidence": 149,
     "presentation": 1538,
-    "gameplay": 3294,
+    "gameplay": 3302,
     "generated": 0,
-    "classified": 4981,
+    "classified": 4989,
     "evidencePct": 3
    },
    "globals": [
@@ -376,9 +376,9 @@
    "loc": {
     "evidence": 90,
     "presentation": 1405,
-    "gameplay": 4555,
+    "gameplay": 4563,
     "generated": 0,
-    "classified": 6050,
+    "classified": 6058,
     "evidencePct": 1.5
    },
    "globals": [
@@ -407,9 +407,9 @@
    "loc": {
     "evidence": 117,
     "presentation": 2285,
-    "gameplay": 5839,
+    "gameplay": 5846,
     "generated": 0,
-    "classified": 8241,
+    "classified": 8248,
     "evidencePct": 1.4
    },
    "globals": [
@@ -440,10 +440,10 @@
    "appDir": "apps/showcase-deep-recovery",
    "loc": {
     "evidence": 260,
-    "presentation": 1459,
-    "gameplay": 3891,
+    "presentation": 1465,
+    "gameplay": 3913,
     "generated": 0,
-    "classified": 5610,
+    "classified": 5638,
     "evidencePct": 4.6
    },
    "globals": [
@@ -470,10 +470,10 @@
    "appDir": "apps/showcase-patrol-wing",
    "loc": {
     "evidence": 111,
-    "presentation": 2331,
-    "gameplay": 4079,
+    "presentation": 2335,
+    "gameplay": 4078,
     "generated": 0,
-    "classified": 6521,
+    "classified": 6524,
     "evidencePct": 1.7
    },
    "globals": [
@@ -500,9 +500,9 @@
    "loc": {
     "evidence": 134,
     "presentation": 1760,
-    "gameplay": 3467,
+    "gameplay": 3466,
     "generated": 0,
-    "classified": 5361,
+    "classified": 5360,
     "evidencePct": 2.5
    },
    "globals": [
@@ -530,12 +530,12 @@
    "route": "showcase-orbital-defense",
    "appDir": "apps/showcase-orbital-defense",
    "loc": {
-    "evidence": 191,
+    "evidence": 188,
     "presentation": 351,
-    "gameplay": 1373,
+    "gameplay": 1382,
     "generated": 0,
-    "classified": 1915,
-    "evidencePct": 10
+    "classified": 1921,
+    "evidencePct": 9.8
    },
    "globals": [
     "__AURA3D_GAME_EVIDENCE__",
@@ -560,9 +560,9 @@
  },
  "totals": {
   "loc": {
-   "evidence": 3341,
-   "presentation": 48060,
-   "gameplay": 130497,
+   "evidence": 3338,
+   "presentation": 48101,
+   "gameplay": 130605,
    "generated": 34301
   },
   "captureBranches": {
@@ -578,6 +578,7 @@
   }
  },
  "notes": [
-  "16.1-2: captureBranches all zero \u2014 aurora reviewCapture panel, skyline act-palette option, gravity-post visualReviewCapture (42 sites), aura-clash combat-impact divergences converged to shipped values (main-side #728 + sweeps)."
+  "16.1-2: captureBranches all zero — aurora reviewCapture panel, skyline act-palette option, gravity-post visualReviewCapture (42 sites), aura-clash combat-impact divergences converged to shipped values (main-side #728 + sweeps).",
+  "2026-10-10 regen: 17 patch files regenerated onto origin/main b60a669ab (post #637/#684/#728); captureBranches still all zero."
  ]
 }

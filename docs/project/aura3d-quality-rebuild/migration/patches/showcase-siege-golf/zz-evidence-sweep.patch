@@ -1,8 +1,7 @@
-From d5cf8855ecbab2d88ba81b6ed12fead431631cc6 Mon Sep 17 00:00:00 2001
+From 23cb07b5c2ef5aa82ef0b7710d9b8bcb2d50c7e0 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:54 +0000
-Subject: [PATCH] [qr-prd09] showcase-siege-golf: delete evidence files+blocks
- (T5.8)
+Subject: [PATCH] showcase-siege-golf: delete evidence files+blocks (T5.8)
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
@@ -1268,7 +1267,7 @@ index a863f996b..000000000
 -  return { proof };
 -}
 diff --git a/apps/showcase-siege-golf/src/legacy/main.ts b/apps/showcase-siege-golf/src/legacy/main.ts
-index e3c0c6585..e9f7696e1 100644
+index 418af7733..56819ed9d 100644
 --- a/apps/showcase-siege-golf/src/legacy/main.ts
 +++ b/apps/showcase-siege-golf/src/legacy/main.ts
 @@ -1,11 +1,3 @@
@@ -1851,7 +1850,7 @@ index e3c0c6585..e9f7696e1 100644
  syncHud();
 -publishEvidence();
 diff --git a/apps/showcase-siege-golf/src/main.ts b/apps/showcase-siege-golf/src/main.ts
-index 73f5ce215..2c79fae68 100644
+index f60970c74..25846c31f 100644
 --- a/apps/showcase-siege-golf/src/main.ts
 +++ b/apps/showcase-siege-golf/src/main.ts
 @@ -1,14 +1,6 @@
@@ -1869,9 +1868,9 @@ index 73f5ce215..2c79fae68 100644
  function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
    const raw = new URL(loc.href).searchParams.get("a3d-qr");
    if (raw === null) return undefined;
-@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
-     ? true
-     : undefined;
+@@ -19,11 +11,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const wanted = [`route-${slug.replace(/_/g, "-")}`, `route_${slug}`, flag];
+   return tokens.some((t) => wanted.includes(t)) ? true : undefined;
  }
 -
  const flags = resolveQrFlags({
@@ -2008,5 +2007,5 @@ index e13e1e768..000000000
 -  };
 -}
 -- 
-2.34.1
+2.52.0
 
