@@ -175,6 +175,11 @@ export class Prd02ShadowSystem {
     return this.precompiled;
   }
 
+  /** T0-26: the sun cascade fits of the last `update` (bridge → legacy forward options). */
+  cascadeFits(): readonly DirectionalCascadeFit[] {
+    return this.lastFits;
+  }
+
   /** Diagnostics for the C-31 `shadows` section (observed values only). */
   diagnostics(): {
     readonly cascadeCount: number;
