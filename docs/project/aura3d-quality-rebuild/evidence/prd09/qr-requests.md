@@ -11,3 +11,4 @@ Each row: issue, target lane, request, status. Numbers written back as filed.
 - #721 (to:prd15, filed 2026-10-09): browser-matrix `pnpm typecheck` step red on clean main — 477 errors in `tools/*` (mostly `tools/_quarantine/*`). Blocks every lane's ubuntu CI heads; needs tools/CI owner.
 - #727 (to:prd15, filed 2026-10-09): tests/unit/contracts/harness.ts conformance() passes slot.provided (boolean) as the 'real' impl — ContractSlot.provided is a marker, not the impl; lane-09 workaround resolves via slot.get(flagsOn) in PR #726.
 - #619 | to:prd15 | nodes/types.ts + compiler/diagnosticOnly.prd09.ts — camera up/roll fields + diag rows (#228) — co-PR
+- #619 (to:prd15, filed 2026-10-10): nodes/types.ts + compiler/diagnosticOnly.prd09.ts — camera up/roll fields + diag rows (#228) — co-PR'd in the c25-c23-inbound branch
