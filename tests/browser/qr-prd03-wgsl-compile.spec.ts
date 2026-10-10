@@ -65,8 +65,15 @@ test.describe("PRD-03 Phase 7 — WGSL twins compile (getCompilationInfo)", () =
       const run = (window as { runQrPrd03Wgsl?: () => Promise<WgslRunResult> }).runQrPrd03Wgsl!;
       return await run();
     });
-    test.skip(result.error === "webgpu-unavailable" || result.error === "webgpu-no-adapter",
-      `WebGPU unavailable in this browser (${result.error})`);
+    // P-22 requireOrSkip: on CI the runner must have a WebGPU adapter — a
+    // missing adapter is a red job, not a skipped spec. Local non-CI runs may
+    // still skip so contributor laptops without WebGPU aren't blocked.
+    if (process.env.CI) {
+      expect(result.error ?? null, "CI runner must expose a WebGPU adapter").toBeNull();
+    } else {
+      test.skip(result.error === "webgpu-unavailable" || result.error === "webgpu-no-adapter",
+        `WebGPU unavailable in this browser (${result.error})`);
+    }
 
     expect(result.error ?? null).toBeNull();
     const modules = result.modules!;

@@ -16,7 +16,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 interface Phase6Result {
   readonly schema: string;
-  readonly smaa: { schema: string; none?: { ratio: number }; smaa?: { ratio: number }; error?: string };
+  readonly smaa: { schema: string; none?: { ratio: number }; smaa?: { ratio: number }; fxaa?: { ratio: number }; error?: string };
   readonly exposure: {
     schema: string;
     brightLuma?: number;
@@ -87,20 +87,24 @@ test.describe("PRD-03 Phase 6 — SMAA / auto-exposure / custom passes", () => {
     await server.close();
   });
 
-  test("SMAA smooths thin-wire edges beyond the no-AA staircase baseline", () => {
+  test("SMAA smooths thin-wire edges at least as well as FXAA (§8.14)", () => {
     const r = result.smaa;
     expect(r.error).toBeUndefined();
     expect(r.none).toBeDefined();
     expect(r.smaa).toBeDefined();
+    expect(r.fxaa).toBeDefined();
     // SMAA coverage-blends line edges → materially more intermediate-luma
-    // pixels than the binary staircase baseline.
+    // pixels than the binary staircase baseline, and §8.14 requires the edge
+    // error to be at or below FXAA's. (three-SMAAPass parity: 03-S18a.)
     expect(r.smaa!.ratio).toBeGreaterThan(r.none!.ratio * 1.5);
     expect(r.smaa!.ratio).toBeGreaterThan(0);
+    expect(r.smaa!.ratio).toBeGreaterThanOrEqual((r.fxaa!.ratio * 0.9));
   });
 
   test("auto-exposure settles within 0.1 EV in ≤ 1.5 s, zero engine readbacks", () => {
     const r = result.exposure;
-    if (r.untested) test.skip();
+    // P-22: untested is a failure, not a skip.
+    expect(r.untested).toBeUndefined();
     expect(r.error).toBeUndefined();
     expect(r.settleSeconds).toBeGreaterThan(0);
     expect(r.settleSeconds!).toBeLessThanOrEqual(1.5);
