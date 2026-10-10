@@ -30,8 +30,14 @@ uniform sampler2D a3d_prd04_transmissionSampler;
 uniform vec2 a3d_prd04_transmissionSamplerSize;
 
 uniform mat4 a3d_prd04_modelMatrix;
+#ifdef A3D_GENERATED_PROGRAM
+// C-02 generated programs: view/projection come from the AuraFrame block (C-08).
+#define a3d_prd04_projectionMatrix u_projection
+#define a3d_prd04_viewMatrix u_view
+#else
 uniform mat4 a3d_prd04_projectionMatrix;
 uniform mat4 a3d_prd04_viewMatrix;
+#endif
 
 // Mipped Bicubic Texture Filtering by N8
 // https://www.shadertoy.com/view/Dl2SDW
