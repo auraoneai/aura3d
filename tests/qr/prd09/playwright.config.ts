@@ -10,6 +10,8 @@ export default defineConfig({
   testMatch: ["capture-divergence.spec.ts"],
   timeout: 180_000,
   workers: 1,
+  // P-22: fail CI on a stray test.only / describe.only committed to the lane.
+  forbidOnly: !!process.env.CI,
   use: {
     browserName: "chromium",
     headless: true,
@@ -19,5 +21,6 @@ export default defineConfig({
       args: ["--enable-unsafe-webgpu", "--ignore-gpu-blocklist", "--use-angle=metal", "--enable-gpu", "--mute-audio"],
     },
   },
-  reporter: [["list"], ["json", { outputFile: "tests/qr/prd09/.out/playwright.json" }]],
+  // P-22: no-skipped-reporter fails the run on CI when any test is skipped.
+  reporter: [["list"], ["json", { outputFile: "tests/qr/prd09/.out/playwright.json" }], ["./no-skipped-reporter.ts"]],
 });
