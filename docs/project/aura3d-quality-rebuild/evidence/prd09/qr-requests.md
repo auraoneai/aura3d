@@ -17,3 +17,5 @@ Each row: issue, target lane, request, status. Numbers written back as filed.
 - #619 | to:prd15 | nodes/types.ts + compiler/diagnosticOnly.prd09.ts — camera up/roll fields + diag rows (#228) — co-PR
 
 - **#609** (to:prd15): `tests/browser/layout.spec.ts` + `hud-layout-harness.ts` hud-cap restore — 0.15 desktop / 0.22 mobile caps, added 1920x1080 + 390x844 viewports, `canvasCoverage` + `domText` report fields for the coverage/banned-token/test-hook assertions. Co-PR in the lane-09 layout branch.
+- **#609** (to:prd15): `tests/browser/layout.spec.ts` + `hud-layout-harness.ts` hud-cap restore — 0.15 desktop / 0.22 mobile caps, added 1920x1080 + 390x844 viewports, `canvasCoverage` + `domText` report fields for the coverage/banned-token/test-hook assertions. Co-PR in the lane-09 layout branch.
+- **#613** (to:prd15): `tests/browser/game-shell/**` (nine §15 specs + harnesses + support) and the `example-dev-server.ts` esbuild `import.meta.env.MODE="test"` define. Co-PR in the lane-09 specs branch.

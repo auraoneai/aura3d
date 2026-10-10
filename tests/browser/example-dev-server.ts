@@ -192,6 +192,12 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
         platform: "browser",
         write: false,
         logLevel: "silent",
+        // §15 test-build gate: browser harness bundles are test builds, so
+        // the PRD-09 `__AURA3D_GAME_TEST__` hook installs here while staying
+        // absent from production (vite MODE="production") bundles.
+        define: {
+          "import.meta.env.MODE": '"test"',
+        },
         plugins: [auraResolvePlugin],
         loader: {
           ".glsl": "text",
