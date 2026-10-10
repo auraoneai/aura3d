@@ -3,8 +3,10 @@
 import { createReadStream, existsSync } from "node:fs";
 import { createServer, type Server } from "node:http";
 import { extname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-export const ROOT = join(__dirname, "..", "..", "..", "..");
+// lib/ is five levels below the repo root (tests/qr/prd14/browser/lib).
+export const ROOT = fileURLToPath(new URL("../../../../../", import.meta.url));
 export const APPS = join(ROOT, "apps");
 
 const MIME: Record<string, string> = {

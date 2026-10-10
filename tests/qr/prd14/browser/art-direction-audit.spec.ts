@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { createReadStream, existsSync, readdirSync, readFileSync } from "node:fs";
 import { createServer, type Server } from "node:http";
 import { extname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { auditArtDirection } from "../../../../packages/game/src/art/audit";
 import { snapshotForAudit, assetManifestLike } from "../../../../packages/game/src/art/snapshot";
 import { lookLint } from "../../../../packages/engine/src/contracts/looks";
@@ -19,7 +20,7 @@ import type { GameArtDirection } from "../../../../packages/game/src/art/define"
  * with a src/v2 tree. Skips when no route has v2 (wave work has not landed).
  */
 
-const ROOT = join(__dirname, "..", "..", "..", "..");
+const ROOT = fileURLToPath(new URL("../../../../", import.meta.url));
 const APPS = join(ROOT, "apps");
 const GAMES_JSON = join(ROOT, "tools", "quality-rebuild-capture", "games.json");
 
