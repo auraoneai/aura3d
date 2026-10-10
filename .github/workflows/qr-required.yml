@@ -26,6 +26,9 @@ on:
     branches: [main]
   schedule:
     - cron: "0 5 * * *"   # 05:00 UTC nightly on main
+  # Run allflags-smoke for one qr/** branch on demand:
+  #   gh workflow run qr-required.yml --ref qr/<branch>
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -268,10 +271,18 @@ jobs:
               - 'package.json'
               - 'pnpm-lock.yaml'
 
+  # Budget (0.6): one run is ~26 GitLab macOS min x cost factor 6. It runs on
+  # main pushes, the nightly schedule, workflow_dispatch, and PRs that carry the
+  # `qr-allflags` label. The label is read on opened/synchronize/reopened, so
+  # add it and then push, or dispatch on the branch. A PR without the label
+  # skips this job; the main push run is the gate of record.
   allflags-smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 240
-    if: github.event_name != 'schedule'
+    if: >-
+      github.event_name == 'push' || github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'qr-allflags'))
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Trigger GitLab flags-bisect on this ref
