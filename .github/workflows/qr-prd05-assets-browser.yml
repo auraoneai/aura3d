@@ -58,6 +58,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Decoder bundle budgets (05-S11)
+        run: pnpm exec vitest run tests/qr/prd05/unit/bundle-budget.test.ts
       - run: pnpm exec playwright install chromium
       - name: Compressed GLB decoder gate (ANGLE Metal)
         run: pnpm exec playwright test --config tests/qr/prd05/playwright.config.ts --grep "PRD-05"

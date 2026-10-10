@@ -13,7 +13,7 @@ import { gzipSync } from "node:zlib";
 import { build, type Plugin } from "esbuild";
 import { describe, expect, it } from "vitest";
 
-const root = resolve(import.meta.dirname, "..", "..", "..");
+const root = resolve(import.meta.dirname, "..", "..", "..", "..");
 const MESHOPT_VENDOR = "packages/assets/vendor/meshopt/meshopt_decoder.mjs";
 const BUDGET_INITIAL_GROWTH_GZ = 3 * 1024;
 const BUDGET_MESHOPT_GZ = 20 * 1024;
@@ -54,14 +54,23 @@ async function bundle(stdinContents: string) {
     plugins: [aliasPlugin],
     external: ["three", "node:*"],
   });
+  const output = Object.values(result.metafile?.outputs ?? {})[0];
   return {
     gzipBytes: gzipSync(result.outputFiles[0]!.contents).length,
-    inputs: Object.keys(result.metafile?.inputs ?? {}),
+    // Modules that contribute bytes to the emitted bundle. `metafile.inputs`
+    // also lists every parsed module (including ones esbuild drops), so it
+    // is not evidence of what ships in the initial chunk.
+    emitted: Object.entries(output?.inputs ?? {})
+      .filter(([, info]) => info.bytesInOutput > 0)
+      .map(([input]) => input.replaceAll("\\", "/")),
   };
 }
 
 const ENGINE_ENTRY = 'export * from "./packages/engine/src/public/index.ts";';
 const DECODER_ENTRY = `${ENGINE_ENTRY}\nexport { createAppAssetDecoders } from "./packages/engine/src/agent-api/AssetDecoders";`;
+// Decoder payloads that must load lazily: the vendored copies, the npm
+// packages they come from, and any wasm.
+const LAZY_DECODER_INPUT = /packages\/assets\/vendor\/|\/node_modules\/draco3d\/|\/meshoptimizer\/meshopt_decoder|basis_transcoder|draco_decoder|\.wasm$/;
 
 describe("PRD-05 bundle budgets", () => {
   it("decoder wiring adds ≤ 3 KB gz to the initial engine bundle", async () => {
@@ -70,12 +79,10 @@ describe("PRD-05 bundle budgets", () => {
     expect(withDecoders.gzipBytes - base.gzipBytes).toBeLessThanOrEqual(BUDGET_INITIAL_GROWTH_GZ);
   }, 120_000);
 
-  it("keeps vendored decoders (draco/basis/meshopt + wasm) out of the bundle", async () => {
-    const { inputs } = await bundle(DECODER_ENTRY);
-    const vendored = inputs.filter((input) => input.replaceAll("\\", "/").includes("packages/assets/vendor/"));
-    expect(vendored).toEqual([]);
-    const wasm = inputs.filter((input) => input.endsWith(".wasm"));
-    expect(wasm).toEqual([]);
+  it("keeps draco/basis/meshopt decoders and wasm out of the initial bundle", async () => {
+    const { emitted } = await bundle(DECODER_ENTRY);
+    expect(emitted.length).toBeGreaterThan(0);
+    expect(emitted.filter((input) => LAZY_DECODER_INPUT.test(input))).toEqual([]);
   }, 120_000);
 
   it("vendored meshopt decoder stays ≤ 20 KB gz", () => {
