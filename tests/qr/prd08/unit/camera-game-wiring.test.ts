@@ -58,15 +58,19 @@ const platformerOptions = (
 });
 
 describe("R-11 spec builders under A3D_QR_CAMERA", () => {
-  it("racing follow camera returns a chase rig when the flag is on", () => {
-    const rig = createGameRacingPresentationCamera(racingOptions(QR_ON));
-    expect(rigLike(rig)).toBe(true);
-    expect((rig as unknown as { id: string }).id).toBe("chase");
+  it("racing follow camera returns a spec carrying a chase rig when the flag is on", () => {
+    const spec = createGameRacingPresentationCamera(racingOptions(QR_ON));
+    // 08-RIGCAST: real spec shape + `spec.rig` — no rig-as-spec cast.
+    expect(spec.mode).toBe("follow");
+    expect(rigLike(spec.rig)).toBe(true);
+    expect((spec.rig as unknown as { id: string }).id).toBe("chase");
   });
 
-  it("racing overview returns a topDown rig when the flag is on", () => {
-    const rig = createGameRacingPresentationCamera(racingOptions({ ...QR_ON, mode: "overview" }));
-    expect((rig as unknown as { id: string }).id).toBe("topDown");
+  it("racing overview returns a spec carrying a topDown rig when the flag is on", () => {
+    const spec = createGameRacingPresentationCamera(racingOptions({ ...QR_ON, mode: "overview" }));
+    expect(spec.mode).toBe("perspective");
+    expect(rigLike(spec.rig)).toBe(true);
+    expect((spec.rig as unknown as { id: string }).id).toBe("topDown");
   });
 
   it("flag off and legacySpec return the legacy spec", () => {
@@ -78,9 +82,11 @@ describe("R-11 spec builders under A3D_QR_CAMERA", () => {
     expect(legacy.smoothing).toBeCloseTo(0.045);
   });
 
-  it("platformer follow returns a follow2d rig when the flag is on", () => {
-    const rig = createGamePlatformerPresentationCamera(platformerOptions(QR_ON));
-    expect((rig as unknown as { id: string }).id).toBe("follow2d");
+  it("platformer follow returns a spec carrying a follow2d rig when the flag is on", () => {
+    const spec = createGamePlatformerPresentationCamera(platformerOptions(QR_ON));
+    expect(spec.mode).toBe("follow");
+    expect(rigLike(spec.rig)).toBe(true);
+    expect((spec.rig as unknown as { id: string }).id).toBe("follow2d");
   });
 
   it("platformer flag off returns the legacy spec", () => {
@@ -111,15 +117,17 @@ describe("C-13 racingCamera verdict gate removed", () => {
     expect(spec.mode).toBe("follow");
   });
 
-  it("flag on returns a live rig", () => {
-    const rig = createGameRacingCameraRig({ ...compositionBase, ...QR_ON });
-    expect(rigLike(rig)).toBe(true);
-    expect((rig as unknown as { id: string }).id).toBe("chase");
+  it("flag on returns a spec carrying a live chase rig", () => {
+    const spec = createGameRacingCameraRig({ ...compositionBase, ...QR_ON });
+    expect(spec.mode).toBe("follow");
+    expect(rigLike(spec.rig)).toBe(true);
+    expect((spec.rig as unknown as { id: string }).id).toBe("chase");
   });
 
-  it("flag-on top-down mode returns a topDown rig", () => {
-    const rig = createGameRacingCameraRig({ ...compositionBase, ...QR_ON, mode: "top-down" });
-    expect((rig as unknown as { id: string }).id).toBe("topDown");
+  it("flag-on top-down mode returns a spec carrying a topDown rig", () => {
+    const spec = createGameRacingCameraRig({ ...compositionBase, ...QR_ON, mode: "top-down" });
+    expect(rigLike(spec.rig)).toBe(true);
+    expect((spec.rig as unknown as { id: string }).id).toBe("topDown");
   });
 });
 

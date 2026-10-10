@@ -60,6 +60,13 @@ export interface GameRacingCameraSelectionEvidence {
 export interface GameScenePresentationCameraSpec {
   readonly mode: "perspective" | "follow";
   readonly selectionEvidence?: GameRacingCameraSelectionEvidence;
+  /**
+   * 08-RIGCAST: under `A3D_QR_CAMERA` the flag-on factories attach the live
+   * `AuraCameraRig` here instead of returning it cast as a spec. Callers bind
+   * `spec.rig` via `app.camera.use(rig)`; the spec fields describe the camera
+   * declaratively as before.
+   */
+  readonly rig?: AuraCameraRig;
   readonly position?: Vec3;
   readonly target: Vec3;
   readonly offset?: Vec3;
@@ -522,7 +529,11 @@ export function createGameRacingPresentationCamera(options: GameRacingPresentati
   // GameScenePresentationCameraSpec because the index.ts wrappers (lane 15)
   // pin it — the runtime object is the rig (C-38 runtime shape change).
   if (qrCameraSpecOn(options)) {
-    return racingCameraSpecRig(options) as unknown as GameScenePresentationCameraSpec;
+    // 08-RIGCAST: a real spec plus the live rig — no `as unknown as` cast.
+    return {
+      ...createGameRacingPresentationCamera({ ...options, legacySpec: true }),
+      rig: racingCameraSpecRig(options)
+    };
   }
   if (options.mode === "overview") {
     const track = options.target ?? options.sceneBinding.trackModel.position;
@@ -747,7 +758,11 @@ function platformerCameraSpecRig(options: GamePlatformerPresentationCameraOption
 
 export function createGamePlatformerPresentationCamera(options: GamePlatformerPresentationCameraOptions): GameScenePresentationCameraSpec {
   if (qrCameraSpecOn(options)) {
-    return platformerCameraSpecRig(options) as unknown as GameScenePresentationCameraSpec;
+    // 08-RIGCAST: a real spec plus the live rig — no `as unknown as` cast.
+    return {
+      ...createGamePlatformerPresentationCamera({ ...options, legacySpec: true }),
+      rig: platformerCameraSpecRig(options)
+    };
   }
   const player = options.sceneBinding.toScenePlayer(options.player);
   if (options.mode === "establishing") {
