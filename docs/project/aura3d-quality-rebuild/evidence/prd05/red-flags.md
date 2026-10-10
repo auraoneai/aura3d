@@ -20,7 +20,9 @@ linked revert or annotation PR is merged **and** its lane run on main is green. 
 | 10 | `A3D_QR_ASSETS_LOOKDEV` sits outside the CONTRACTS §5 flag table | Register (lane 05's choice); the CONTRACTS.md row is G5's to write | #540 | OPEN |
 | 11 | Thresholds intact (ΔE2000 ≤ 2.0, 1 cm contact bound) | Holds on main b60a669a. Every lane-05 PR is scanned for loosened thresholds and timeouts, `test.fail`/skip/`continue-on-error`. Masks removed so far: #716's heavy-source skip, existence guards and non-failing aggregate (split 1) | all lane-05 PRs | OPEN |
 
-Pre-existing skip guard found on main (lane 05, not in the brief list):
-`tests/unit/contracts/impl/prd05-asset-optimize.test.ts:19` `describe.runIf(hasToolDeps)` skips all four tests when
+Pre-existing masks found on main (lane 05, not in the brief list):
+- `tests/qr/prd05/template-starters.test.ts:152` `templateId !== undefined || true` always passed. **Removed in this
+  PR**: every generated route-module id must now map to a gated starter row (6/6 pass locally; not evidence).
+- `tests/unit/contracts/impl/prd05-asset-optimize.test.ts:19` `describe.runIf(hasToolDeps)` skips all four tests when
 `tools/asset-optimize/node_modules` is absent (true in every root `pnpm install`). It needs the workspace fix Q-15-6
 (#470) before the guard can go without turning the unit job red for an install reason.

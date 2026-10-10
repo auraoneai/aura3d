@@ -148,10 +148,12 @@ function sanitizeId(id: string): string {
 }
 
 function rowSummary(rows: unknown[], moduleText: string): void {
-  for (const id of moduleText.matchAll(/^\s{2}"([^"]+)": \{/gm)) {
-    expect(rows.some((row) => (row as { templateId?: string }).templateId !== undefined || true)).toBe(true);
-    void id;
-  }
+  // Every id the route module generated must trace to a gated starter row.
+  // (Was `templateId !== undefined || true`, which always passed.)
+  const rowIds = new Set(rows.map((row) => sanitizeId((row as { libraryId: string }).libraryId)));
+  const moduleIds = [...moduleText.matchAll(/^\s{2}"([^"]+)": \{/gm)].map((match) => match[1]!);
+  expect(moduleIds.length).toBeGreaterThan(0);
+  expect(moduleIds.filter((id) => !rowIds.has(id))).toEqual([]);
 }
 
 function writeProofFile(template: string, rows: unknown[]): void {
