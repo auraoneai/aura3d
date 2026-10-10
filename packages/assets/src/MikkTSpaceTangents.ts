@@ -112,18 +112,47 @@ function acquireWorker(): Worker | undefined {
   return worker;
 }
 
+/**
+ * T0-18(f): bounded waits — a stuck wasm compile or a wedged worker must not
+ * hang the GLB load forever (the caller falls back to the legacy generator on
+ * rejection). 30 s matches the largest corpus fixture's worst-case compile.
+ */
+const MIKK_TSPACE_READY_TIMEOUT_MS = 30_000;
+const MIKK_TSPACE_WORKER_TIMEOUT_MS = 30_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string, onTimeout?: () => void): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      onTimeout?.();
+      reject(new Error(`${label} timed out after ${ms} ms`));
+    }, ms);
+    promise.then(
+      (value) => { clearTimeout(timer); resolve(value); },
+      (error) => { clearTimeout(timer); reject(error); }
+    );
+  });
+}
+
 function runInWorker(w: Worker, input: UnweldedInput): Promise<Float32Array> {
   const id = requestSeq++;
   // Copy into tight buffers: caller arrays may be views into larger buffers.
   const positions = new Float32Array(input.positions);
   const normals = new Float32Array(input.normals);
   const uvs = new Float32Array(input.uvs);
-  return new Promise<Float32Array>((resolve, reject) => {
+  const work = new Promise<Float32Array>((resolve, reject) => {
     pending.set(id, { resolve, reject });
     w.postMessage(
       { id, positions: positions.buffer, normals: normals.buffer, uvs: uvs.buffer },
       [positions.buffer, normals.buffer, uvs.buffer]
     );
+  });
+  return withTimeout(work, MIKK_TSPACE_WORKER_TIMEOUT_MS, "MikkTSpace worker tangent generation", () => {
+    pending.delete(id);
+    // The worker is wedged; drop it so the next call retries on a fresh one.
+    if (worker === w) {
+      worker = undefined;
+    }
+    w.terminate();
   });
 }
 
@@ -137,7 +166,7 @@ export async function generateMikkTSpaceTangents(input: MikkTSpaceTangentInput):
   if (!module_) {
     throw new Error("MikkTSpace module not installed: call setMikkTSpaceModule() first");
   }
-  await module_.ready;
+  await withTimeout(Promise.resolve(module_.ready), MIKK_TSPACE_READY_TIMEOUT_MS, "MikkTSpace module ready");
   const streams = unweld(input);
   const w = acquireWorker();
   if (w) {
