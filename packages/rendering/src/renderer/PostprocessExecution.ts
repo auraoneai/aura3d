@@ -17,7 +17,7 @@ import { webgl2DeviceHost } from "../webgl2/Counters";
 import { executePostGraphWebGL2 } from "../webgl2/LegacyPost";
 import type { TemporalGpuBindings } from "../TemporalHistory";
 import { recordPostSkipped } from "../post/postSkipped";
-export { postProductionBuild, postSkippedReasons, recordPostSkipped } from "../post/postSkipped";
+export { postProductionBuild, postSkippedReasons, recordPostSkipped, resetPostSkipped } from "../post/postSkipped";
 
 /* v2 module warm cache — the sync `render()` route cannot `import()`; the
  * first flag-on frame fires it, later frames run the real S1–S12 stages. */
@@ -648,4 +648,3 @@ export class RendererPostprocessPipeline {
     });
   }
 }
-

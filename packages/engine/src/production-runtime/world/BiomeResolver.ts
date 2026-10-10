@@ -148,11 +148,20 @@ export function registerBiomeSources(): () => void {
         const rig = applyBiomeOverrides(describeBiome(node.biome), node.overrides);
         return resolutionFor(rig, tier);
       }
-      // §6.3 "anything else → interior-neutral": the source always resolves —
-      // a biome scene never hits the void/zero-IBL path. Category rows
-      // (product/material → no biome) can't be observed on a snapshot; that
-      // gap is recorded in evidence and F-10-03.
-      const id = defaultBiomeId(sceneSignals(snapshot)) ?? "interior-neutral";
+      // Q-15-6: no world signal → no resolution. Once #266 propagates parent
+      // flags to sub-flags, an always-resolving source would replace the
+      // environment of EVERY all-flags scene with `interior-neutral` (whose
+      // HDRIs are pending admission). The §6.3 "never a void" rule applies to
+      // world scenes only; scenes without terrain, water or room nodes fall
+      // through to lower-priority sources.
+      const signals = sceneSignals(snapshot);
+      const hasWorldSignal =
+        signals.hasTerrain ||
+        signals.hasLakeOrOceanWater ||
+        signals.hasRoom ||
+        findNodes(snapshot, "water").length > 0;
+      if (!hasWorldSignal) return undefined;
+      const id = defaultBiomeId(signals) ?? "interior-neutral";
       return resolutionFor(describeBiome(id), tier);
     }
   });

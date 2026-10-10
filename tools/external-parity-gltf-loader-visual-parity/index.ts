@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
 import { chromium, type Browser, type Page } from "@playwright/test";
-import { baseReport, writeJson } from "../external-parity-reporting/index.js";
+import { baseReport, writeJson } from "../_quarantine/external-parity-reporting/index.js";
 
 type GltfVisualEngine = "aura3d" | "threejs" | "babylon";
 

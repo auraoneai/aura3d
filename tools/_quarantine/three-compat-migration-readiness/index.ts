@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { migrateThreeToA3D } from "../../packages/aura3d-cli/src/migrate-three/ThreeToA3DAdapter";
+import { migrateThreeToA3D } from "../../../packages/aura3d-cli/src/migrate-three/ThreeToA3DAdapter";
 
 const requiredFiles = [
   // PRD-15 T6.2: migration surface moved from the deleted @aura3d/three-compat package
