@@ -18,8 +18,31 @@
 
 import { registerNodeHandleExtension } from "../contracts/runtimeNodes.js";
 import { registerTypedGLBActorExtension } from "../production-runtime/actor/extensions.js";
-import { releaseMorphScratchGeometry, releaseMorphTargetTexture, skinningPaletteCache, paletteKeyOf } from "@aura3d/rendering";
 import type { RenderItem } from "@aura3d/rendering";
+
+// 06-S12 lazy edge: the palette-cache / morph-release internals resolve via a
+// dynamic import on the flag-on path only — skinned or morphed items present —
+// so `SkinningPaletteTextureCache`/`MorphTargetTexture` (and their Texture
+// chains) never enter the static "." critical path nor load under flag-off.
+type RenderingLaneModule = typeof import("@aura3d/rendering");
+// Named-symbol slot, not the module namespace — destructuring in .then keeps
+// the lazy import statically analyzable so the chunk still tree-shakes.
+type RenderingLaneApi = Pick<
+  RenderingLaneModule,
+  | "releaseMorphScratchGeometry"
+  | "releaseMorphTargetTexture"
+  | "skinningPaletteCache"
+  | "paletteKeyOf"
+>;
+let renderingLane: RenderingLaneApi | undefined;
+let renderingLaneLoading: Promise<unknown> | undefined;
+const ensureRenderingLane = (): void => {
+  renderingLaneLoading ??= import("@aura3d/rendering").then(
+    ({ releaseMorphScratchGeometry, releaseMorphTargetTexture, skinningPaletteCache, paletteKeyOf }) => {
+      renderingLane = { releaseMorphScratchGeometry, releaseMorphTargetTexture, skinningPaletteCache, paletteKeyOf };
+    }
+  );
+};
 import { setPoseMixerBlendFlagProvider } from "@aura3d/animation/lanes";
 import { registerDiagnosticsSection } from "../contracts/diagnostics.js";
 import { DIAGNOSTIC_ONLY_FIELDS, registerOptionCoverage } from "../contracts/compiler.js";
@@ -36,7 +59,7 @@ import {
 } from "../agent-api/app/actorAnimationHandle.js";
 import { PRD06_DIAGNOSTIC_ONLY_FIELDS, PRD06_OPTION_COVERAGE } from "../agent-api/compiler/diagnosticOnly.prd06.js";
 import { beginPrd06ShaderWarmup, disposePrd06ShaderWarmup, filterPrd06ShaderWarmupItems, setPrd06ShaderWarmupCompiler, type Prd06ShaderWarmupCompiler } from "../production-runtime/actor/TypedGLBActorAnimation.js";
-import { createPrd06ProgramCacheWarmup, type Prd06ShaderWarmupOptions } from "@aura3d/rendering";
+import type { Prd06ShaderWarmupOptions } from "@aura3d/rendering";
 import { collectTypedGLBActorRenderItems } from "../production-runtime/TypedGLBActor.js";
 
 // T1.11 (PRD-06 §10): `@aura3d/animation` cannot import the engine's flag
@@ -121,10 +144,19 @@ registerTypedGLBActorExtension({
     // on each resolved render-item geometry (the lifecycle spec requires all
     // three counters to return to their pre-load values).
     actor.animation.dispose();
-    for (const item of collectTypedGLBActorRenderItems(actor)) {
-      releaseMorphTargetTexture(item.geometry);
-      releaseMorphScratchGeometry(item.geometry);
-    }
+    // Morph texture/scratch release rides the same lazy edge — the module is
+    // already resident whenever morph items rendered; the `.then` still covers
+    // teardown before the first resolve.
+    ensureRenderingLane();
+    const lane = renderingLane;
+    const releaseAll = (m: RenderingLaneApi) => {
+      for (const item of collectTypedGLBActorRenderItems(actor)) {
+        m.releaseMorphTargetTexture(item.geometry);
+        m.releaseMorphScratchGeometry(item.geometry);
+      }
+    };
+    if (lane) releaseAll(lane);
+    else void renderingLaneLoading?.then(() => releaseAll(renderingLane!));
     for (const key of [actor.id, `${actor.id}:actor`]) {
       actorClipInfoDisposers.get(key)?.();
       actorClipInfoDisposers.delete(key);
@@ -159,14 +191,25 @@ registerTypedGLBActorExtension({
   owner: "prd06",
   flag: "A3D_QR_ANIMATION",
   collectRenderItems: (_actor, items) => {
-    skinningPaletteCache.beginFrame();
+    // No skinned/morph work → never even start the lazy module load.
+    let needsLane = false;
+    for (const item of items) {
+      if (item.skinning || (item.morphWeights !== undefined && item.morphWeights.length > 0)) {
+        needsLane = true;
+        break;
+      }
+    }
+    if (!needsLane) return items as RenderItem[];
+    ensureRenderingLane();
+    const lane = renderingLane;
+    lane?.skinningPaletteCache.beginFrame();
     let stampedAll = items as RenderItem[];
     for (let i = 0; i < items.length; i += 1) {
       const item = items[i]!;
       let stamped = item;
-      const paletteKey = item.skinning ? paletteKeyOf(item.skinning) : null;
+      const paletteKey = lane && item.skinning ? lane.paletteKeyOf(item.skinning) : null;
       if (item.skinning && paletteKey) {
-        const palette = skinningPaletteCache.paletteUniformSet(paletteKey, item.skinning.jointCount);
+        const palette = lane!.skinningPaletteCache.paletteUniformSet(paletteKey, item.skinning.jointCount);
         stamped = { ...stamped, previousJointTexture: palette.previous };
       }
       if (item.morphWeights && item.morphWeights.length > 0) {
@@ -193,7 +236,19 @@ registerTypedGLBActorExtension({
  * called; `passes` lets the app add velocity when its TAA path is on.
  */
 export function installPrd06ShaderWarmup(options: Prd06ShaderWarmupOptions): void {
-  setPrd06ShaderWarmupCompiler(createPrd06ProgramCacheWarmup(options));
+  // 06-S12: the program-cache warmup chain (ProgramWarmup + rendererProgramCache)
+  // stays off the "." critical path — resolve it behind the flag/device edge.
+  let warmup: ((items: readonly RenderItem[]) => Promise<void>) | undefined;
+  let loading: Promise<unknown> | undefined;
+  setPrd06ShaderWarmupCompiler((items) => {
+    if (!warmup) {
+      loading ??= import("@aura3d/rendering").then(({ createPrd06ProgramCacheWarmup }) => {
+        warmup = createPrd06ProgramCacheWarmup(options);
+      });
+      return loading.then(() => warmup!(items));
+    }
+    return warmup(items);
+  });
 }
 
 export type { Prd06ShaderWarmupCompiler };
