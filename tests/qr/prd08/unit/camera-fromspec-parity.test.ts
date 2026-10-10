@@ -3,8 +3,8 @@
  * (index.ts:11078) exactly, over 40 golden tuples and several frame times.
  */
 import { describe, expect, it } from "vitest";
-import { resolveCameraFrame, type AuraCameraSpec, type AuraRuntimeNodeRegistry, type AuraSceneSnapshot } from "@aura3d/engine";
-import { createFromSpecRig, type LegacySpecRigDeps } from "@aura3d/engine/lanes";
+import type { AuraCameraSpec, AuraSceneSnapshot } from "@aura3d/engine";
+import { resolveCameraFrame, type AuraRuntimeNodeRegistry, createFromSpecRig, type LegacySpecRigDeps } from "@aura3d/engine/lanes";
 import type { AuraCameraRigContext, AuraCameraPose } from "@aura3d/engine/contracts";
 
 type V3 = readonly [number, number, number];

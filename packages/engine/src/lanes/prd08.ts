@@ -166,7 +166,27 @@ export {
   type BicycleModelState,
   type BicycleTyreParams
 } from "../agent-api/vehicle/BicycleModel.js";
-export type { FrameLoopTick, FrameLoopTickCallback } from "../agent-api/FrameLoop.js";
+export {
+  createFrameLoop,
+  FrameLoop,
+  type FrameLoopCallback,
+  type FrameLoopFrame,
+  type FrameLoopOptions,
+  type FrameLoopSnapshot,
+  type FrameLoopSource,
+  type FrameLoopTick,
+  type FrameLoopTickCallback
+} from "../agent-api/FrameLoop.js";
+// T0-32: QR-15 (bf1789b0) repointed `@aura3d/engine` to `public/index.ts`,
+// which does not carry these legacy symbols; the lane surface is the
+// supported import site for them now.
+export { resolveCameraFrame } from "../agent-api/compiler/camera.js";
+export type { AuraRuntimeNodeRegistry } from "../agent-api/nodes/types.js";
+export {
+  createShoulderCamera,
+  type ShoulderCamera,
+  type ShoulderCameraOptions
+} from "../agent-api/GameCameraRigs.js";
 
 registerAppExtension({
   id: "prd08.time",

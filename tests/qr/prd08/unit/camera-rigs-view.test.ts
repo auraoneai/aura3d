@@ -3,8 +3,8 @@
  * altitude), the rail rig, and the collision probe/damper (PRD-08 §16).
  */
 import { describe, expect, it } from "vitest";
-import { createShoulderCamera } from "@aura3d/engine";
 import {
+  createShoulderCamera,
   createAltitudeRig,
   createCameraProbe,
   createCollisionDamper,
