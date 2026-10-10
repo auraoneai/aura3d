@@ -13,6 +13,7 @@ import type { WebGL2DeviceHost } from "./DeviceHost";
 // split is opt-in via `fxaa: { variant: "r185" }`; the legacy in-shader
 // `u_hasFxaa` taps stay the default path.
 import { FXAA_185_FRAGMENT_GLSL } from "../post/shaders/fxaa.glsl";
+import { recordPostSkipped } from "../post/postSkipped";
 import type { PostPipelineOptions } from "../contracts/post";
 import type { FrameCamera } from "../contracts/frameGraph";
 import type { LdrPostprocessPassName } from "../RenderDevice";
@@ -2807,10 +2808,18 @@ export function executePostGraphWebGL2(
   const pipelineForOut = needsTail && pipeline.dither !== false
     ? { ...pipeline, dither: false as const }
     : pipeline;
-  const passes = request.passes
-    // §6.9: on the v2 chain S2 GTAO owns occlusion — the legacy SSAO pass is
-    // not scheduled (it would double-darken against the §6.3 apply).
-    .filter((pass) => !(v2 && pipeline.ao && pass.name === ("ssao" as LdrPostprocessPassName)))
+  const mappedPasses = request.passes
+    // §6.9/T0-17 (FLAG-ON-4): on the v2 chain the HDR stages own their
+    // effects — S2 GTAO (ssao), S6 (depth-of-field), S7 (motion-blur),
+    // S5 (taa). The legacy twin must not double-run, and its native depth
+    // read would throw WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED per frame on
+    // the pooled depth-less stage output.
+    .filter((pass) => !(v2 && (
+      (pipeline.ao && pass.name === ("ssao" as LdrPostprocessPassName))
+      || (pipeline.dof && pass.name === ("depth-of-field" as LdrPostprocessPassName))
+      || (pipeline.motionBlur && pass.name === ("motion-blur" as LdrPostprocessPassName))
+      || ((pipeline.antiAliasing === "taa" || Boolean(pipeline.taa)) && pass.name === ("taa" as LdrPostprocessPassName))
+    )))
     .map((pass) => {
     if (pass.name === ("tone-mapping" as LdrPostprocessPassName)) {
       return createLegacyOutputPass(pipelineForOut, pass.options);
@@ -2820,6 +2829,28 @@ export function executePostGraphWebGL2(
     }
     return pass;
   });
+  // T0-17/FLAG-ON-4: the pooled HDR-stage output carries no depth texture —
+  // any remaining native depth pass would throw
+  // WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED per frame; degrade it to a
+  // recorded skip instead.
+  const workSourceDepthless = workSource !== source && !(workSource as WebGL2RenderTarget).depthTextureHandle;
+  const depthSkippedPasses = workSourceDepthless
+    ? mappedPasses.filter((pass) => {
+      if (pass.name === "depth-of-field" || pass.name === "ssao" || pass.name === "ssr") {
+        recordPostSkipped(`WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED:${pass.name}`);
+        return false;
+      }
+      return true;
+    })
+    : mappedPasses;
+  // T0-17/FLAG-ON-3: `output.toneMapping:'none'` drops the legacy tone pass,
+  // but an HDR workSource (HDR stages ran, or an rgba16f forward target)
+  // still needs the §6.1 OUT stage to reach LDR — inject the linear
+  // OutputPass (createLegacyOutputPass maps 'none' to the linear operator)
+  // instead of throwing WEBGL_LDR_POSTPROCESS_FORMAT_UNSUPPORTED per frame.
+  const passes = pipeline.toneMapping === "none" && !depthSkippedPasses.some((pass) => pass.name === ("tone-mapping" as LdrPostprocessPassName))
+    ? [...depthSkippedPasses, createLegacyOutputPass(pipelineForOut)]
+    : depthSkippedPasses;
   host.post.presentLdrPostprocess(workSource, {
     passes,
     ...(ldrTailTarget ?? request.outputTarget ? { outputTarget: ldrTailTarget ?? request.outputTarget } : {}),

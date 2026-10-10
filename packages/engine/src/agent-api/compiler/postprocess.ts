@@ -126,7 +126,11 @@ export function createProductionRuntimePostprocess(
   let options: RendererPostProcessOptions = {
     // Tone mapping requires unclamped linear input. RGBA8 quantized dark clear
     // colors and clipped highlights before ACES, which produced washed-out output.
-    targetFormat: "rgba16f",
+    // T0-17/FLAG-ON-3: `output.toneMapping:'none'` drops the tone pass — an
+    // rgba16f target with no tone pass throws WEBGL_LDR_POSTPROCESS_FORMAT_
+    // UNSUPPORTED (and HDR_BLOOM_TONEMAPPING_REQUIRED with bloom) every
+    // frame, so the legacy route presents LDR instead.
+    targetFormat: postFlagOn && authoredPostContext?.output?.toneMapping === "none" ? "rgba8" : "rgba16f",
     ...(temporalRequested ? {
       temporal: { sceneKey, ...(attach?.frameTime !== undefined ? { frameTime: attach.frameTime } : {}) },
       ...(authoredMotionBlur ? { motionBlur: { samples: 8, scale: clampNumber(authoredMotionBlur.intensity ?? .5, 0, 2) } } : {}),
