@@ -16,6 +16,7 @@ needs, the owning lane, and current status.
 | #723 | prd15 | `tests/unit/apps/skyline-player-feel.test.ts` (lane-15 file): PRD-08 #221 asks to assert shake via `diagnostics().camera.layers` instead of route-unfiltered numbers (C-22/C-31). | open |
 | #724 | prd09 | `sound.engine` rate introspection missing — §14.4 turbo RPM test (3,000→7,000 monotonic) needs `evidence.audio.engine {rpm,rate}` or a public `engineVoice.currentRate`. | open |
 | #805 | prd15 | `text3D` exists (SdfText + extruded backends) but no dot-matrix display material — Vault §6.9.5 DMD backglass stays a stand-in (`standIns[].request` = R-14-15, now maps to this issue). | open |
+| #807 | prd07 | `EffectDiagnostics` (FLAG-4 pulse): tracks `particle-pass` nodes whose draw path isn't mounted for the active flag set → `EFFECT_ZERO_PIXELS` console error on flag-off captures of particle-using legacy routes; S1 needs 0 errors in both states. | open |
 
 ## S12 request-code retag (2026-10-10)
 

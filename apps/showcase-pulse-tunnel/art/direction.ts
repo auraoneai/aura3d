@@ -67,7 +67,8 @@ export default defineArtDirection({
     { feature: "curve/ribbon geometry (PRD 01 curve)", file: "src/v2/scene/tunnel.ts", request: "R-14-14", removeWhen: "C-23 curve/ribbon real" },
     { feature: "drive-scale tunnel textures", file: "src/v2/scene/tunnel.ts", request: "R-14-07", removeWhen: "authored 1-2k mipped maps" },
     { feature: "section lighting sync", file: "src/v2/lighting.ts", request: "R-14-14", removeWhen: "PRD 09 event lighting real" },
-    { feature: "K9 flipbook atlas", file: "src/v2/fx.ts", request: "R-14-07", removeWhen: "K9 flipbooks admitted" }
+    { feature: "K9 flipbook atlas", file: "src/v2/fx.ts", request: "R-14-07", removeWhen: "K9 flipbooks admitted" },
+    { feature: "flag-off ambient dust particles (EFFECT_ZERO_PIXELS on capture)", file: "src/legacy/main.ts", request: "R-14-16", removeWhen: "EffectDiagnostics only tracks mounted consumer passes (#807)" }
   ],
   criticalCategories: ["environment_world", "vfx", "atmospheric_effects"],
   tiers: {
