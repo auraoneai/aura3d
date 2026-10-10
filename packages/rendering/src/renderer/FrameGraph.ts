@@ -46,6 +46,23 @@ export function rendererQrFlags(device?: RenderDevice): QrFlags {
   return (device ? qrFlagsByDevice.get(device) : undefined) ?? defaultQrFlags;
 }
 
+/**
+ * T0-28: run `fn` with the ambient default bound to `device`'s scoped flags so
+ * device-less `rendererQrFlags()` readers inside a synchronous frame see this
+ * renderer's flags. No scoped entry → `fn` runs unchanged. Restores after.
+ */
+export function withRendererQrFlags<T>(device: RenderDevice, fn: () => T): T {
+  const scoped = qrFlagsByDevice.get(device);
+  if (!scoped || scoped === defaultQrFlags) return fn();
+  const previous = defaultQrFlags;
+  defaultQrFlags = scoped;
+  try {
+    return fn();
+  } finally {
+    defaultQrFlags = previous;
+  }
+}
+
 /** Minimal resolved-camera shape produced by Renderer.resolveCamera. */
 export interface ResolvedCameraInput {
   readonly viewProjectionMatrix: Mat4;
