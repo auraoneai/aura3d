@@ -1,0 +1,445 @@
+{
+  "schema": "aura3d.template-starter-proof/1.0",
+  "template": "fighting-game",
+  "generatedAt": "2026-10-09T10:05:38.150Z",
+  "summary": "2 starter entries (2 models gated G1–G11); 0 fully clear today.",
+  "rows": [
+    {
+      "templateId": "showcaseWalkAnimatedGirl",
+      "libraryId": "auraclash-player-rig",
+      "kit": "characters/humanoid-pbr",
+      "quality": "candidate",
+      "optional": false,
+      "notes": "Hero rigged fighter: 35.5k tris, 65 joints, 12 clips + 2 skinned LOD levels + capsule collider (derived GLB already in kit dir). Clip gaps (kick/fall/land) recorded in character-kit.json.",
+      "gateRun": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "message": "G1: 35508 tris inside hero-character band."
+        },
+        {
+          "gate": "G2",
+          "verdict": "fail",
+          "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+        },
+        {
+          "gate": "G3",
+          "verdict": "fail",
+          "message": "G3: PBR slots on 75.9% of rendered area (< 90%)."
+        },
+        {
+          "gate": "G4",
+          "verdict": "pass",
+          "message": "G4: no card geometry detected."
+        },
+        {
+          "gate": "G5",
+          "verdict": "pass",
+          "message": "G5: UVs present and no builder provenance."
+        },
+        {
+          "gate": "G6",
+          "verdict": "fail",
+          "message": "G6: texture sanity not measured — run via `assets admit` (needs tools/asset-optimize deps)."
+        },
+        {
+          "gate": "G7",
+          "verdict": "fail",
+          "message": "G7: no derived measurement — run `assets optimize` first."
+        },
+        {
+          "gate": "G8",
+          "verdict": "fail",
+          "message": "G8: 10 normal-mapped primitive(s) missing TANGENT."
+        },
+        {
+          "gate": "G9",
+          "verdict": "fail",
+          "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+        },
+        {
+          "gate": "G10",
+          "verdict": "fail",
+          "message": "G10: no assets/art-direction/characters-humanoid-pbr.json file."
+        },
+        {
+          "gate": "G11",
+          "verdict": "fail",
+          "message": "G11: no derived record — run `assets optimize` before release."
+        }
+      ],
+      "admissionChecks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 35508,
+            "floor": 5000,
+            "ceiling": 60000,
+            "profile": "hero-character"
+          },
+          "message": "G1: 35508 tris inside hero-character band."
+        },
+        {
+          "gate": "G2",
+          "verdict": "fail",
+          "measured": {
+            "p10": 0.6782716945762108,
+            "p50": 0.7885824292604934,
+            "p90": 0.912302875845253,
+            "band": [
+              0.5,
+              4
+            ],
+            "texelsPerMeterP50": 228.30126438708461,
+            "floor": 256,
+            "camera": {
+              "distance": 4,
+              "fovDegrees": 50,
+              "viewportWidth": 1920,
+              "viewportHeight": 1080
+            },
+            "textureSize": [
+              512,
+              512
+            ],
+            "mobile": {
+              "p50": 1.0090865208546598,
+              "viewport": "390×844"
+            }
+          },
+          "message": "G2: below 256 px/m floor."
+        },
+        {
+          "gate": "G3",
+          "verdict": "fail",
+          "measured": {
+            "coverage": 0.7594344936352372,
+            "covered": 26966,
+            "total": 35508,
+            "missingTexcoord": 0,
+            "missingSlots": 8542,
+            "requiredOcclusion": false,
+            "profile": "hero-character"
+          },
+          "message": "G3: PBR slots on 75.9% of rendered area (< 90%)."
+        },
+        {
+          "gate": "G4",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 35508,
+            "unlitRatio": 0
+          },
+          "message": "G4: no card geometry detected."
+        },
+        {
+          "gate": "G5",
+          "verdict": "pass",
+          "measured": {
+            "noUvRatio": 0,
+            "generator": "Khronos glTF Blender I/O v4.3.47"
+          },
+          "message": "G5: UVs present and no builder provenance."
+        },
+        {
+          "gate": "G6",
+          "verdict": "fail",
+          "measured": {
+            "failures": [
+              "baseColor#0(MI_Ranger): sRGB luminance outside [30,240] on 17.3% of texels",
+              "normal#0(MI_Ranger): normal length outside [0.9,1.1] on 6.9% of texels (> 5%)",
+              "baseColor#1(MI_Regular_Female): metal base colour mean luminance 123 < 140"
+            ],
+            "flags": [
+              "metallicRoughness#1(MI_Regular_Female): channel R constant (σ<0.004) — replace texture with factor",
+              "metallicRoughness#1(MI_Regular_Female): channel B constant (σ<0.004) — replace texture with factor"
+            ],
+            "textures": 8
+          },
+          "message": "G6: baseColor#0(MI_Ranger): sRGB luminance outside [30,240] on 17.3% of texels; normal#0(MI_Ranger): normal length outside [0.9,1.1] on 6.9% of texels (> 5%); baseColor#1(MI_Regular_Female): metal base colour mean luminance 123 < 140"
+        },
+        {
+          "gate": "G7",
+          "verdict": "fail",
+          "measured": {},
+          "message": "G7: no derived measurement — run `assets optimize` first."
+        },
+        {
+          "gate": "G8",
+          "verdict": "fail",
+          "measured": {
+            "missingPrimitives": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9
+            ]
+          },
+          "message": "G8: 10 normal-mapped primitive(s) missing TANGENT."
+        },
+        {
+          "gate": "G9",
+          "verdict": "fail",
+          "measured": {
+            "reviews": 0
+          },
+          "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+        },
+        {
+          "gate": "G10",
+          "verdict": "pass",
+          "measured": {
+            "artDirection": "characters-humanoid-pbr",
+            "shading": "pbr",
+            "palette": 0,
+            "texelDensity": 512
+          },
+          "message": "G10: art direction \"characters-humanoid-pbr\" (pbr) on file."
+        },
+        {
+          "gate": "G11",
+          "verdict": "fail",
+          "measured": {
+            "derived": false
+          },
+          "message": "G11: no derived record — run `assets optimize` before release."
+        }
+      ],
+      "openGates": [
+        "G2",
+        "G3",
+        "G6",
+        "G7",
+        "G8",
+        "G9",
+        "G10",
+        "G11"
+      ]
+    },
+    {
+      "templateId": "showcaseRunnerRobot",
+      "libraryId": "auraclash-rival-rig",
+      "kit": "characters/humanoid-pbr",
+      "quality": "candidate",
+      "optional": false,
+      "notes": "Matching fighter pair for the vs read; same rig conventions.",
+      "gateRun": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "message": "G1: 26982 tris inside hero-character band."
+        },
+        {
+          "gate": "G2",
+          "verdict": "fail",
+          "message": "G2: texel density not measurable — no UV+texture triangle coverage."
+        },
+        {
+          "gate": "G3",
+          "verdict": "pass",
+          "message": "G3: PBR slots on 100.0% of rendered area."
+        },
+        {
+          "gate": "G4",
+          "verdict": "pass",
+          "message": "G4: no card geometry detected."
+        },
+        {
+          "gate": "G5",
+          "verdict": "pass",
+          "message": "G5: UVs present and no builder provenance."
+        },
+        {
+          "gate": "G6",
+          "verdict": "fail",
+          "message": "G6: texture sanity not measured — run via `assets admit` (needs tools/asset-optimize deps)."
+        },
+        {
+          "gate": "G7",
+          "verdict": "fail",
+          "message": "G7: no derived measurement — run `assets optimize` first."
+        },
+        {
+          "gate": "G8",
+          "verdict": "fail",
+          "message": "G8: 10 normal-mapped primitive(s) missing TANGENT."
+        },
+        {
+          "gate": "G9",
+          "verdict": "fail",
+          "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+        },
+        {
+          "gate": "G10",
+          "verdict": "fail",
+          "message": "G10: no assets/art-direction/characters-humanoid-pbr.json file."
+        },
+        {
+          "gate": "G11",
+          "verdict": "fail",
+          "message": "G11: no derived record — run `assets optimize` before release."
+        }
+      ],
+      "admissionChecks": [
+        {
+          "gate": "G1",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 26982,
+            "floor": 5000,
+            "ceiling": 60000,
+            "profile": "hero-character"
+          },
+          "message": "G1: 26982 tris inside hero-character band."
+        },
+        {
+          "gate": "G2",
+          "verdict": "fail",
+          "measured": {
+            "p10": 0.6706283410649856,
+            "p50": 0.7840517864053247,
+            "p90": 0.8255654749704574,
+            "band": [
+              0.5,
+              4
+            ],
+            "texelsPerMeterP50": 226.98960506785366,
+            "floor": 256,
+            "camera": {
+              "distance": 4,
+              "fovDegrees": 50,
+              "viewportWidth": 1920,
+              "viewportHeight": 1080
+            },
+            "textureSize": [
+              512,
+              512
+            ],
+            "mobile": {
+              "p50": 1.0032890157793255,
+              "viewport": "390×844"
+            }
+          },
+          "message": "G2: below 256 px/m floor."
+        },
+        {
+          "gate": "G3",
+          "verdict": "pass",
+          "measured": {
+            "coverage": 1,
+            "covered": 26982,
+            "total": 26982,
+            "missingTexcoord": 0,
+            "missingSlots": 0,
+            "requiredOcclusion": false,
+            "profile": "hero-character"
+          },
+          "message": "G3: PBR slots on 100.0% of rendered area."
+        },
+        {
+          "gate": "G4",
+          "verdict": "pass",
+          "measured": {
+            "triangles": 26982,
+            "unlitRatio": 0
+          },
+          "message": "G4: no card geometry detected."
+        },
+        {
+          "gate": "G5",
+          "verdict": "pass",
+          "measured": {
+            "noUvRatio": 0,
+            "generator": "Khronos glTF Blender I/O v4.3.47"
+          },
+          "message": "G5: UVs present and no builder provenance."
+        },
+        {
+          "gate": "G6",
+          "verdict": "fail",
+          "measured": {
+            "failures": [
+              "baseColor#0(MI_Ranger): sRGB luminance outside [30,240] on 22.0% of texels",
+              "normal#0(MI_Ranger): normal length outside [0.9,1.1] on 6.9% of texels (> 5%)",
+              "baseColor#1(MI_Regular_Male): metal base colour mean luminance 117 < 140"
+            ],
+            "flags": [
+              "metallicRoughness#1(MI_Regular_Male): channel R constant (σ<0.004) — replace texture with factor",
+              "metallicRoughness#1(MI_Regular_Male): channel B constant (σ<0.004) — replace texture with factor"
+            ],
+            "textures": 6
+          },
+          "message": "G6: baseColor#0(MI_Ranger): sRGB luminance outside [30,240] on 22.0% of texels; normal#0(MI_Ranger): normal length outside [0.9,1.1] on 6.9% of texels (> 5%); baseColor#1(MI_Regular_Male): metal base colour mean luminance 117 < 140"
+        },
+        {
+          "gate": "G7",
+          "verdict": "fail",
+          "measured": {},
+          "message": "G7: no derived measurement — run `assets optimize` first."
+        },
+        {
+          "gate": "G8",
+          "verdict": "fail",
+          "measured": {
+            "missingPrimitives": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9
+            ]
+          },
+          "message": "G8: 10 normal-mapped primitive(s) missing TANGENT."
+        },
+        {
+          "gate": "G9",
+          "verdict": "fail",
+          "measured": {
+            "reviews": 0
+          },
+          "message": "G9: no look-dev record — run `assets lookdev` + `assets review`."
+        },
+        {
+          "gate": "G10",
+          "verdict": "pass",
+          "measured": {
+            "artDirection": "characters-humanoid-pbr",
+            "shading": "pbr",
+            "palette": 0,
+            "texelDensity": 512
+          },
+          "message": "G10: art direction \"characters-humanoid-pbr\" (pbr) on file."
+        },
+        {
+          "gate": "G11",
+          "verdict": "fail",
+          "measured": {
+            "derived": false
+          },
+          "message": "G11: no derived record — run `assets optimize` before release."
+        }
+      ],
+      "openGates": [
+        "G2",
+        "G6",
+        "G7",
+        "G8",
+        "G9",
+        "G10",
+        "G11"
+      ]
+    }
+  ]
+}
