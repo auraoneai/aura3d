@@ -6,9 +6,11 @@
 // delta ≤ 3/255. Flag off: the box shows its lit material colour and the two
 // bands differ clearly (sentinel).
 import { camera, createAuraApp, effects, primitives, scene, sky } from "@aura3d/engine";
+import { mountReady } from "./mount-timing.js";
 
 interface FogBgResult {
   readonly status: "ready" | "error";
+  readonly mountMs?: number | null;
   readonly flags?: readonly string[];
   readonly skyBand?: readonly [number, number, number];
   readonly boxBand?: readonly [number, number, number];
@@ -70,7 +72,7 @@ async function main(): Promise<void> {
     autoStart: false,
     ...(flags.length > 0 ? { qualityRebuild: { flags } } : {})
   });
-  await app.ready();
+  const __mount = await mountReady(app);
   for (let i = 0; i < 30; i += 1) {
     app.step(1 / 60);
     await frame();
@@ -99,6 +101,7 @@ async function main(): Promise<void> {
 
   window.__QR_PRD07_FOGBG__ = {
     status: "ready",
+    mountMs: __mount.mountMs,
     flags,
     skyBand,
     boxBand,

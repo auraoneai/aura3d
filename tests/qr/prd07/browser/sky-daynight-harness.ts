@@ -5,9 +5,11 @@
 // zenith mean luma, diagnostics().atmosphere, and the count of visible
 // prd07.legacySky.* runtime nodes.
 import { camera, createAuraApp, lights, primitives, scene, sky } from "@aura3d/engine";
+import { mountReady } from "./mount-timing.js";
 
 interface SkyResult {
   readonly status: "ready" | "error";
+  readonly mountMs?: number | null;
   readonly flags?: readonly string[];
   /** Sum of per-pixel channel values — cheap frame fingerprint. */
   readonly checksum?: number;
@@ -76,7 +78,7 @@ async function main(): Promise<void> {
     autoStart: false,
     ...(flags.length > 0 ? { qualityRebuild: { flags } } : {})
   });
-  await app.ready();
+  const __mount = await mountReady(app);
   for (let i = 0; i < 30; i += 1) {
     app.step(1 / 60);
     await frame();
@@ -109,6 +111,7 @@ async function main(): Promise<void> {
 
   window.__QR_PRD07_SKY__ = {
     status: "ready",
+    mountMs: __mount.mountMs,
     flags,
     checksum,
     skyLumaStd: skyRegion.std,

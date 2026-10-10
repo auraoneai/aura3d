@@ -6,9 +6,11 @@ import { camera, createAuraApp, primitives, scene, sky } from "@aura3d/engine";
 import { WebGL2Device } from "/packages/rendering/src/WebGL2Device.js";
 import { skyPassFor } from "/packages/rendering/src/atmosphere/SkyBackgroundPass.js";
 import { sunDirection } from "/packages/rendering/src/atmosphere/PreethamSky.js";
+import { mountReady } from "./mount-timing.js";
 
 interface SkyBgResult {
   readonly status: "ready" | "error";
+  readonly mountMs?: number | null;
   readonly flags?: readonly string[];
   readonly skyLumaStd?: number;
   readonly horizonMeanLuma?: number;
@@ -64,7 +66,7 @@ async function main(): Promise<void> {
     autoStart: false,
     ...(flags.length > 0 ? { qualityRebuild: { flags } } : {})
   });
-  await app.ready();
+  const __mount = await mountReady(app);
   for (let i = 0; i < 30; i += 1) {
     app.step(1 / 60);
     await frame();
@@ -99,6 +101,7 @@ async function main(): Promise<void> {
 
   window.__QR_PRD07_SKYBG__ = {
     status: "ready",
+    mountMs: __mount.mountMs,
     flags,
     skyLumaStd: skyRegion.std,
     zenithMeanLuma: zenith.mean,

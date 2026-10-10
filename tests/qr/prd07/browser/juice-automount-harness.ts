@@ -6,9 +6,11 @@
 // N+1..N+3 under flags `vfx`, and 0 pixels under `none`.
 import { camera, createAuraApp, createGameEffects, lights, primitives, scene } from "@aura3d/engine";
 import { gameEffectsUnbound } from "/packages/engine/src/agent-api/vfx/effects-api.js";
+import { mountReady } from "./mount-timing.js";
 
 interface JuiceResult {
   readonly status: "ready" | "error";
+  readonly mountMs?: number | null;
   readonly flags?: readonly string[];
   /** Fraction of region pixels changed vs the pre-spawn frame, per frame index. */
   readonly changedFractions?: readonly number[];
@@ -76,7 +78,7 @@ async function main(): Promise<void> {
     autoStart: false,
     ...(flags.length > 0 ? { qualityRebuild: { flags } } : {})
   });
-  await app.ready();
+  const __mount = await mountReady(app);
 
   // The Neon-Swarm juice call: game.effects() with no nodes() — adopted by
   // the §6.3.4 realm when this app is the single live flag-on app.
@@ -107,6 +109,7 @@ async function main(): Promise<void> {
 
   window.__QR_PRD07_JUICE__ = {
     status: "ready",
+    mountMs: __mount.mountMs,
     flags,
     changedFractions: fractions,
     maxChangedFraction: Math.max(...fractions),
