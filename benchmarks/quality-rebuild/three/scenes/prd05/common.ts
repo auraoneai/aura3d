@@ -27,9 +27,12 @@ const assetUrl = (entry: Prd05AssetEntry | { repoPath: string }): string => `/${
 
 export interface Prd05ThreeSceneOptions {
   readonly qrFlags?: readonly string[];
+  /** S6: resolve model objects at the optimizer's input corpus files instead
+   * of the derived outputs — opt-vs-src comparison baseline. */
+  readonly sourceAssets?: boolean;
 }
 
-export async function runPrd05ThreeScene(spec: Prd05SceneSpec, host: HTMLElement, _options: Prd05ThreeSceneOptions = {}): Promise<ReadyPayload> {
+export async function runPrd05ThreeScene(spec: Prd05SceneSpec, host: HTMLElement, options: Prd05ThreeSceneOptions = {}): Promise<ReadyPayload> {
   const started = performance.now();
   const log = new CapabilityLog();
   const errors: string[] = [];
@@ -123,7 +126,7 @@ export async function runPrd05ThreeScene(spec: Prd05SceneSpec, host: HTMLElement
     }
     const entry = prd05Assets[object.asset];
     try {
-      const gltf = await gltfLoader.loadAsync(assetUrl(entry));
+      const gltf = await gltfLoader.loadAsync(options.sourceAssets === true ? `/${entry.source}` : assetUrl(entry));
       const root = gltf.scene;
       root.name = object.name;
       root.position.set(...object.position);
@@ -182,6 +185,7 @@ export async function runPrd05ThreeScene(spec: Prd05SceneSpec, host: HTMLElement
     qrFlags: [...(spec.qrFlags ?? [])],
     extra: {
       decoders: ["meshopt", "ktx2/basis"],
+      assetVariant: options.sourceAssets === true ? "source" : "optimized",
       optimizedAssets: loaded.map((id) => ({ id, sha256: prd05Assets[id as keyof typeof prd05Assets].sha256, profile: prd05Assets[id as keyof typeof prd05Assets].profile }))
     }
   };

@@ -37,20 +37,24 @@ class CapabilityLog {
   }
 }
 
-const auraModelAssets = defineAuraAssets(
-  Object.fromEntries(
-    Object.values(prd05Assets).map((entry) => [
-      entry.id,
-      {
-        type: "model" as const,
-        format: "glb",
-        url: assetUrl(entry),
-        hash: entry.sha256,
-        metadata: { license: entry.provenance, sourcePath: entry.source, profile: entry.profile }
-      }
-    ])
-  ) as never
-);
+// S6 §16.1: `sourceAssets` resolves each object at the optimizer's INPUT file
+// (`entry.source`, the un-optimized corpus GLB) so an opt-vs-src masked-SSIM /
+// silhouette-IoU comparison runs on identical scene composition.
+const auraModelAssetsFor = (sourceAssets: boolean) =>
+  defineAuraAssets(
+    Object.fromEntries(
+      Object.values(prd05Assets).map((entry) => [
+        entry.id,
+        {
+          type: "model" as const,
+          format: "glb",
+          url: sourceAssets ? `/${entry.source}` : assetUrl(entry),
+          hash: entry.sha256,
+          metadata: { license: entry.provenance, sourcePath: entry.source, profile: entry.profile }
+        }
+      ])
+    ) as never
+  );
 
 const auraHdriAssets = defineAuraAssets(
   Object.fromEntries(
@@ -67,7 +71,7 @@ const auraHdriAssets = defineAuraAssets(
   ) as never
 );
 
-function buildScene(spec: Prd05SceneSpec, log: CapabilityLog): AuraSceneNode {
+function buildScene(spec: Prd05SceneSpec, log: CapabilityLog, auraModelAssets: never): AuraSceneNode {
   const built = scene(spec.id).background(
     spec.background.kind === "hdri"
       ? environments.hdri({ hdri: (auraHdriAssets as Record<string, never>)[spec.background.hdri], intensity: spec.background.intensity, fallback: spec.background.fallbackColor })
@@ -131,6 +135,9 @@ const nextFrame = (): Promise<void> => new Promise<void>((resolve) => requestAni
 
 export interface Prd05AuraSceneOptions {
   readonly qrFlags?: readonly string[];
+  /** S6: resolve model objects at the optimizer's input corpus files instead
+   * of the derived outputs — opt-vs-src comparison baseline. */
+  readonly sourceAssets?: boolean;
 }
 
 export async function runPrd05AuraScene(spec: Prd05SceneSpec, host: HTMLElement, options: Prd05AuraSceneOptions = {}): Promise<ReadyPayload> {
@@ -144,7 +151,7 @@ export async function runPrd05AuraScene(spec: Prd05SceneSpec, host: HTMLElement,
   host.style.height = `${spec.resolution.height}px`;
 
   const app: AuraApp = createAuraApp(host, {
-    scene: buildScene(spec, log),
+    scene: buildScene(spec, log, auraModelAssetsFor(options.sourceAssets === true) as never),
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
     pixelRatio: spec.resolution.devicePixelRatio,
     ...(qrFlags.length > 0 ? { qualityRebuild: { flags: [...qrFlags] } } : {}),
@@ -191,6 +198,7 @@ export async function runPrd05AuraScene(spec: Prd05SceneSpec, host: HTMLElement,
       backend: diagnostics.backend,
       renderSize: diagnostics.renderSize,
       assets,
+      assetVariant: options.sourceAssets === true ? "source" : "optimized",
       optimizedAssets: Object.values(prd05Assets)
         .filter((a) => spec.objects.some((o) => o.kind === "model" && o.asset === a.id))
         .map((a) => ({ id: a.id, sha256: a.sha256, profile: a.profile, extensions: a.gltfExtensions }))
