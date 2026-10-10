@@ -1,0 +1,1791 @@
+From 9fdead4956928d224607719dd603cc1cf024aabf Mon Sep 17 00:00:00 2001
+From: gchahal+1 <gchahal@veerone.com>
+Date: Fri, 9 Oct 2026 15:34:24 +0000
+Subject: [PATCH] showcase-patrol-wing: delete evidence files+blocks (T5.8)
+
+Regenerated against the git-am-fuzzed post-migration tree.
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ .../performance-report.json                   |  37 --
+ .../scripts/build-models.mjs                  | 448 ------------------
+ .../scripts/build-sfx.mjs                     | 336 -------------
+ .../scripts/register-assets.mjs               |  76 ---
+ .../scripts/write-deploy-report.mjs           |  37 --
+ .../scripts/write-performance-report.ts       |  37 --
+ .../scripts/write-route-health.mjs            |  53 ---
+ apps/showcase-patrol-wing/src/evidence.ts     |   8 -
+ apps/showcase-patrol-wing/src/legacy/main.ts  | 331 +------------
+ apps/showcase-patrol-wing/src/main.ts         |   1 -
+ .../src/v2/evidence/index.ts                  | 203 --------
+ 11 files changed, 1 insertion(+), 1566 deletions(-)
+ delete mode 100644 apps/showcase-patrol-wing/performance-report.json
+ delete mode 100644 apps/showcase-patrol-wing/scripts/build-models.mjs
+ delete mode 100644 apps/showcase-patrol-wing/scripts/build-sfx.mjs
+ delete mode 100644 apps/showcase-patrol-wing/scripts/register-assets.mjs
+ delete mode 100644 apps/showcase-patrol-wing/scripts/write-deploy-report.mjs
+ delete mode 100644 apps/showcase-patrol-wing/scripts/write-performance-report.ts
+ delete mode 100644 apps/showcase-patrol-wing/scripts/write-route-health.mjs
+ delete mode 100644 apps/showcase-patrol-wing/src/evidence.ts
+ delete mode 100644 apps/showcase-patrol-wing/src/v2/evidence/index.ts
+
+diff --git a/apps/showcase-patrol-wing/performance-report.json b/apps/showcase-patrol-wing/performance-report.json
+deleted file mode 100644
+index b0b842784..000000000
+--- a/apps/showcase-patrol-wing/performance-report.json
++++ /dev/null
+@@ -1,37 +0,0 @@
+-{
+-  "schema": "aura3d.patrol-wing.performance/1.0",
+-  "generatedAt": "2026-09-02T08:57:14.325Z",
+-  "producer": "apps/showcase-patrol-wing/scripts/write-performance-report.ts",
+-  "producerSourceSha256": "a2f7608ca273e6120ee35c902f8df89d78f294fa515ec254b1ea9a49afe72a18",
+-  "routeSourceFiles": [
+-    "apps/showcase-patrol-wing/src/drones.ts",
+-    "apps/showcase-patrol-wing/src/flight.ts",
+-    "apps/showcase-patrol-wing/src/ghost.ts",
+-    "apps/showcase-patrol-wing/src/main.ts",
+-    "apps/showcase-patrol-wing/src/patrol.ts",
+-    "apps/showcase-patrol-wing/src/sky.ts",
+-    "apps/showcase-patrol-wing/src/styles.css",
+-    "apps/showcase-patrol-wing/src/weapons.ts",
+-    "apps/showcase-patrol-wing/src/wing-audio.ts"
+-  ],
+-  "routeSourceSha256": "fe2839eb4854bb8e91676170d12b349a899c3a4fa434df89a009d9bda0810749",
+-  "scope": "Route-local authored arcade-flight/ring CPU sampling plus route-primary root-renderer draw calls when available; no GPU frame-time, aerodynamic, reusable flight-kit, or renderer-parity claim.",
+-  "samples": 20000,
+-  "fixedStepSeconds": 0.016666666666666666,
+-  "budgets": {
+-    "routeLogicCpuP95Ms": 0.2,
+-    "drawCalls": 240
+-  },
+-  "observed": {
+-    "routeLogicCpuP95Ms": 0.004,
+-    "deterministicStateHash": "54dcd06e",
+-    "drawCalls": 88,
+-    "renderSize": [
+-      1412,
+-      900
+-    ],
+-    "browserFrameCount": 34
+-  },
+-  "drawEvidencePending": false,
+-  "pass": true
+-}
+diff --git a/apps/showcase-patrol-wing/scripts/build-models.mjs b/apps/showcase-patrol-wing/scripts/build-models.mjs
+deleted file mode 100644
+index 0ec7d6be6..000000000
+--- a/apps/showcase-patrol-wing/scripts/build-models.mjs
++++ /dev/null
+@@ -1,448 +0,0 @@
+-/**
+- * Patrol Wing model synth — generates original CC0 GLB props entirely in-repo
+- * (aurora-lander / vault-breakers writer pattern: minimal glTF 2.0 GLB writer,
+- * flat-shaded, indexed, no dependencies).
+- *
+- *   - patrolWingPlane.glb     : low-poly stunt plane, local +X = forward, ~2 m wingspan
+- *   - patrolWingDroneA.glb    : menacing quad-rotor pursuit drone (heavy frame)
+- *   - patrolWingDroneB.glb    : lighter, faster quad-rotor variant
+- *   - patrolWingPadBeacon.glb : cliff landing pad with emissive light ring + beacons
+- *
+- * Units are meters. The plane's origin sits at its center of mass; +X is the
+- * nose, +Y is up, +Z is the right wing.
+- *
+- * Run from the repo root:  node apps/showcase-patrol-wing/scripts/build-models.mjs
+- * Output: apps/showcase-patrol-wing/assets/models/*.glb
+- *
+- * After generation register each model with the CLI so it lands in the typed root
+- * asset map the route imports (`../../../src/aura-assets`). This script documents
+- * the commands but does NOT run them:
+- *   pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts assets add apps/showcase-patrol-wing/assets/models/patrolWingPlane.glb --name patrolWingPlane --type model --license CC0-1.0 --author "Aura3D synthesis" --source-page "apps/showcase-patrol-wing/scripts/build-models.mjs"
+- *   ... same for patrolWingDroneA.glb, patrolWingDroneB.glb, patrolWingPadBeacon.glb
+- */
+-import { mkdirSync, writeFileSync } from "node:fs";
+-import { resolve, dirname } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../assets/models");
+-
+-// ---- geometry helpers (vault-breakers writer pattern) ------------------------
+-function part() {
+-  return { positions: [], normals: [], indices: [], nextVertex: 0 };
+-}
+-
+-function addTriangle(p, a, b, c) {
+-  const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
+-  const vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
+-  let nx = uy * vz - uz * vy;
+-  let ny = uz * vx - ux * vz;
+-  let nz = ux * vy - uy * vx;
+-  const len = Math.hypot(nx, ny, nz) || 1;
+-  nx /= len; ny /= len; nz /= len;
+-  for (const v of [a, b, c]) {
+-    p.positions.push(v[0], v[1], v[2]);
+-    p.normals.push(nx, ny, nz);
+-  }
+-  p.indices.push(p.nextVertex, p.nextVertex + 1, p.nextVertex + 2);
+-  p.nextVertex += 3;
+-}
+-
+-function addQuad(p, a, b, c, d) {
+-  addTriangle(p, a, b, c);
+-  addTriangle(p, a, c, d);
+-}
+-
+-function ringZ(n, r, z) {
+-  const pts = [];
+-  for (let i = 0; i < n; i += 1) {
+-    const angle = (i / n) * Math.PI * 2;
+-    pts.push([Math.cos(angle) * r, Math.sin(angle) * r, z]);
+-  }
+-  return pts;
+-}
+-
+-function addBand(p, lower, upper) {
+-  const n = Math.min(lower.length, upper.length);
+-  for (let i = 0; i < n; i += 1) {
+-    const j = (i + 1) % n;
+-    addQuad(p, lower[i], lower[j], upper[j], upper[i]);
+-  }
+-}
+-
+-function addZCap(p, pts, z, front, cx = 0, cy = 0) {
+-  const center = [cx, cy, z];
+-  for (let i = 0; i < pts.length; i += 1) {
+-    const j = (i + 1) % pts.length;
+-    if (front) addTriangle(p, center, pts[i], pts[j]);
+-    else addTriangle(p, center, pts[j], pts[i]);
+-  }
+-}
+-
+-function addBox(p, cx, cy, cz, hx, hy, hz) {
+-  const v = [
+-    [cx - hx, cy - hy, cz - hz], [cx + hx, cy - hy, cz - hz],
+-    [cx + hx, cy - hy, cz + hz], [cx - hx, cy - hy, cz + hz],
+-    [cx - hx, cy + hy, cz - hz], [cx + hx, cy + hy, cz - hz],
+-    [cx + hx, cy + hy, cz + hz], [cx - hx, cy + hy, cz + hz]
+-  ];
+-  addQuad(p, v[0], v[3], v[2], v[1]); // bottom
+-  addQuad(p, v[4], v[5], v[6], v[7]); // top
+-  addQuad(p, v[1], v[2], v[6], v[5]); // +Z
+-  addQuad(p, v[3], v[0], v[4], v[7]); // -Z
+-  addQuad(p, v[0], v[1], v[5], v[4]); // -X
+-  addQuad(p, v[2], v[3], v[7], v[6]); // +X
+-}
+-
+-function ringX(n, radiusY, radiusZ, x, centerY = 0, centerZ = 0) {
+-  const points = [];
+-  for (let index = 0; index < n; index += 1) {
+-    const angle = (index / n) * Math.PI * 2;
+-    points.push([x, centerY + Math.cos(angle) * radiusY, centerZ + Math.sin(angle) * radiusZ]);
+-  }
+-  return points;
+-}
+-
+-function addXCap(p, points, x, front) {
+-  const centerY = points.reduce((sum, point) => sum + point[1], 0) / points.length;
+-  const centerZ = points.reduce((sum, point) => sum + point[2], 0) / points.length;
+-  const center = [x, centerY, centerZ];
+-  for (let index = 0; index < points.length; index += 1) {
+-    const next = (index + 1) % points.length;
+-    if (front) addTriangle(p, center, points[next], points[index]);
+-    else addTriangle(p, center, points[index], points[next]);
+-  }
+-}
+-
+-function addExtrudedPolygonXZ(p, points, bottomY, topY) {
+-  const bottom = points.map(([x, z]) => [x, bottomY, z]);
+-  const top = points.map(([x, z]) => [x, topY, z]);
+-  for (let index = 1; index < points.length - 1; index += 1) {
+-    addTriangle(p, top[0], top[index], top[index + 1]);
+-    addTriangle(p, bottom[0], bottom[index + 1], bottom[index]);
+-  }
+-  for (let index = 0; index < points.length; index += 1) {
+-    const next = (index + 1) % points.length;
+-    addQuad(p, bottom[index], bottom[next], top[next], top[index]);
+-  }
+-}
+-
+-/**
+- * A flat 8-sided rotor disc centered at (x, cy, cz), spinning in the YZ plane
+- * (the drone's +X facing): a thin ring band plus hub, like a blurred prop.
+- */
+-function addRotorAt(p, x, cy, cz, radius) {
+-  const inner = [];
+-  const outer = [];
+-  for (let i = 0; i < 8; i += 1) {
+-    const angle = (i / 8) * Math.PI * 2;
+-    inner.push([x, cy + Math.cos(angle) * radius * 0.18, cz + Math.sin(angle) * radius * 0.18]);
+-    outer.push([x, cy + Math.cos(angle) * radius, cz + Math.sin(angle) * radius]);
+-  }
+-  for (let i = 0; i < 8; i += 1) {
+-    const j = (i + 1) % 8;
+-    addQuad(p, inner[i], inner[j], outer[j], outer[i]);
+-  }
+-}
+-
+-/** An arm along a diagonal in the YZ plane at x, from r0 to r1. */
+-function addArm(p, x, angle, r0, r1, thickness) {
+-  const c = Math.cos(angle), s = Math.sin(angle);
+-  const ax = (r) => [x, c * r, s * r];
+-  const pts = [
+-    [ax(r0)[1] - thickness, ax(r0)[2] - thickness],
+-    [ax(r1)[1] - thickness, ax(r1)[2] - thickness],
+-    [ax(r1)[1] + thickness, ax(r1)[2] + thickness],
+-    [ax(r0)[1] + thickness, ax(r0)[2] + thickness]
+-  ];
+-  addQuad(
+-    p,
+-    [x - thickness * 0.5, pts[0][0], pts[0][1]],
+-    [x - thickness * 0.5, pts[1][0], pts[1][1]],
+-    [x - thickness * 0.5, pts[2][0], pts[2][1]],
+-    [x - thickness * 0.5, pts[3][0], pts[3][1]]
+-  );
+-  addQuad(
+-    p,
+-    [x + thickness * 0.5, pts[3][0], pts[3][1]],
+-    [x + thickness * 0.5, pts[2][0], pts[2][1]],
+-    [x + thickness * 0.5, pts[1][0], pts[1][1]],
+-    [x + thickness * 0.5, pts[0][0], pts[0][1]]
+-  );
+-  addQuad(
+-    p,
+-    [x - thickness * 0.5, pts[0][0], pts[0][1]],
+-    [x + thickness * 0.5, pts[0][0], pts[0][1]],
+-    [x + thickness * 0.5, pts[1][0], pts[1][1]],
+-    [x - thickness * 0.5, pts[1][0], pts[1][1]]
+-  );
+-  addQuad(
+-    p,
+-    [x - thickness * 0.5, pts[1][0], pts[1][1]],
+-    [x + thickness * 0.5, pts[1][0], pts[1][1]],
+-    [x + thickness * 0.5, pts[2][0], pts[2][1]],
+-    [x - thickness * 0.5, pts[2][0], pts[2][1]]
+-  );
+-  addQuad(
+-    p,
+-    [x - thickness * 0.5, pts[2][0], pts[2][1]],
+-    [x + thickness * 0.5, pts[2][0], pts[2][1]],
+-    [x + thickness * 0.5, pts[3][0], pts[3][1]],
+-    [x - thickness * 0.5, pts[3][0], pts[3][1]]
+-  );
+-  addQuad(
+-    p,
+-    [x - thickness * 0.5, pts[3][0], pts[3][1]],
+-    [x + thickness * 0.5, pts[3][0], pts[3][1]],
+-    [x + thickness * 0.5, pts[0][0], pts[0][1]],
+-    [x - thickness * 0.5, pts[0][0], pts[0][1]]
+-  );
+-}
+-
+-// ---- stunt plane -------------------------------------------------------------
+-/**
+- * Low-poly stunt plane, +X = nose. Cream fuselage with a red cowl, 2.0 m
+- * wingspan main wing at x = 0.1, tailplane + fin at the tail.
+- */
+-function buildPlane() {
+-  const fuselage = part();
+-  const bodyRings = [
+-    ringX(8, 0.045, 0.045, 1.52, 0.01),
+-    ringX(8, 0.2, 0.2, 1.12),
+-    ringX(8, 0.31, 0.3, 0.35, 0.01),
+-    ringX(8, 0.29, 0.27, -0.48),
+-    ringX(8, 0.14, 0.13, -1.38, -0.01)
+-  ];
+-  for (let index = 0; index < bodyRings.length - 1; index += 1) addBand(fuselage, bodyRings[index], bodyRings[index + 1]);
+-  addXCap(fuselage, bodyRings[0], 1.52, true);
+-  addXCap(fuselage, bodyRings.at(-1), -1.38, false);
+-
+-  const canopy = part();
+-  addExtrudedPolygonXZ(canopy, [[0.72, -0.2], [0.7, 0.2], [-0.18, 0.23], [-0.46, 0.16], [-0.46, -0.16], [-0.18, -0.23]], 0.18, 0.4);
+-
+-  const wing = part();
+-  addExtrudedPolygonXZ(wing, [[0.52, -0.2], [0.15, -1.68], [-0.55, -1.78], [-0.28, -0.23]], -0.055, 0.025);
+-  addExtrudedPolygonXZ(wing, [[0.52, 0.2], [-0.28, 0.23], [-0.55, 1.78], [0.15, 1.68]], -0.055, 0.025);
+-
+-  const trim = part();
+-  addExtrudedPolygonXZ(trim, [[0.18, -1.28], [0.08, -1.68], [-0.53, -1.76], [-0.42, -1.34]], 0.026, 0.075);
+-  addExtrudedPolygonXZ(trim, [[0.18, 1.28], [-0.42, 1.34], [-0.53, 1.76], [0.08, 1.68]], 0.026, 0.075);
+-
+-  const tail = part();
+-  addExtrudedPolygonXZ(tail, [[-0.84, -0.12], [-1.08, -0.78], [-1.42, -0.82], [-1.28, -0.1]], 0.0, 0.06);
+-  addExtrudedPolygonXZ(tail, [[-0.84, 0.12], [-1.28, 0.1], [-1.42, 0.82], [-1.08, 0.78]], 0.0, 0.06);
+-  addBox(tail, -1.16, 0.29, -0.14, 0.28, 0.29, 0.045);
+-  addBox(tail, -1.16, 0.29, 0.14, 0.28, 0.29, 0.045);
+-
+-  const engines = part();
+-  addBox(engines, -1.37, -0.03, -0.13, 0.035, 0.09, 0.075);
+-  addBox(engines, -1.37, -0.03, 0.13, 0.035, 0.09, 0.075);
+-
+-  return [
+-    { name: "fuselage", part: fuselage, color: [0.18, 0.29, 0.42, 1], roughness: 0.34, metallic: 0.58 },
+-    { name: "canopy", part: canopy, color: [0.08, 0.58, 0.78, 1], roughness: 0.12, metallic: 0.45 },
+-    { name: "wing", part: wing, color: [0.28, 0.46, 0.64, 1], roughness: 0.38, metallic: 0.5 },
+-    { name: "trim", part: trim, color: [1.0, 0.25, 0.34, 1], roughness: 0.28, metallic: 0.35 },
+-    { name: "tail", part: tail, color: [0.15, 0.25, 0.38, 1], roughness: 0.4, metallic: 0.5 },
+-    { name: "engines", part: engines, color: [0.28, 0.95, 1.0, 1], roughness: 0.1, metallic: 0.15 }
+-  ];
+-}
+-
+-// ---- pursuit drones ----------------------------------------------------------
+-/**
+- * Quad-rotor pursuit drone facing +X. Heavy "A" variant: wide arms, big
+- * rotors, dark gunmetal frame with an amber sensor eye.
+- */
+-function buildDrone(variant) {
+-  const heavy = variant === "A";
+-  const frame = part();
+-  const bodyRings = [
+-    ringX(6, 0.035, 0.035, 0.82),
+-    ringX(6, heavy ? 0.2 : 0.16, heavy ? 0.2 : 0.16, 0.46),
+-    ringX(6, heavy ? 0.24 : 0.2, heavy ? 0.23 : 0.19, -0.14),
+-    ringX(6, 0.1, 0.09, -0.72)
+-  ];
+-  for (let index = 0; index < bodyRings.length - 1; index += 1) addBand(frame, bodyRings[index], bodyRings[index + 1]);
+-  addXCap(frame, bodyRings[0], 0.82, true);
+-  addXCap(frame, bodyRings.at(-1), -0.72, false);
+-
+-  const arms = part();
+-  const span = heavy ? 0.9 : 0.76;
+-  addExtrudedPolygonXZ(arms, [[0.34, -0.14], [-0.05, -span], [-0.52, -span * 0.72], [-0.3, -0.12]], -0.035, 0.035);
+-  addExtrudedPolygonXZ(arms, [[0.34, 0.14], [-0.3, 0.12], [-0.52, span * 0.72], [-0.05, span]], -0.035, 0.035);
+-
+-  const rotors = part();
+-  addBox(rotors, -0.5, 0.2, -0.42, 0.2, 0.2, 0.035);
+-  addBox(rotors, -0.5, 0.2, 0.42, 0.2, 0.2, 0.035);
+-
+-  const eye = part();
+-  addBox(eye, 0.78, -0.01, 0, 0.045, 0.065, 0.09);
+-
+-  return [
+-    {
+-      name: "frame",
+-      part: frame,
+-      color: heavy ? [0.34, 0.08, 0.1, 1] : [0.16, 0.1, 0.35, 1],
+-      roughness: 0.45,
+-      metallic: 0.55
+-    },
+-    { name: "arms", part: arms, color: heavy ? [0.82, 0.12, 0.16, 1] : [0.45, 0.2, 0.8, 1], roughness: 0.42, metallic: 0.5 },
+-    { name: "rotors", part: rotors, color: [0.12, 0.14, 0.2, 1], roughness: 0.3, metallic: 0.7 },
+-    {
+-      name: "eye",
+-      part: eye,
+-      color: heavy ? [1.0, 0.55, 0.15, 1] : [0.2, 0.9, 1.0, 1],
+-      roughness: 0.2
+-    }
+-  ];
+-}
+-
+-// ---- landing pad beacon ------------------------------------------------------
+-/**
+- * Cliff pad: a 4.4 m octagonal deck (ringZ disc lying flat by construction in
+- * the XY plane, so it is rotated 90 deg around X at placement) is NOT used —
+- * instead the pad is authored flat in the XZ plane: deck slab, emissive light
+- * ring standing 0.06 m proud, and four corner beacons.
+- */
+-function buildPadBeacon() {
+-  const deck = part();
+-  addBox(deck, 0, -0.09, 0, 2.2, 0.09, 2.2);
+-  addBox(deck, 0, 0.005, 0, 1.55, 0.005, 1.55);
+-
+-  const ring = part();
+-  // Light ring: thin flat octagon band on the deck surface.
+-  const inner = [];
+-  const outer = [];
+-  for (let i = 0; i < 8; i += 1) {
+-    const angle = (i / 8) * Math.PI * 2 + Math.PI / 8;
+-    inner.push([Math.cos(angle) * 1.5, 0.055, Math.sin(angle) * 1.5]);
+-    outer.push([Math.cos(angle) * 1.72, 0.055, Math.sin(angle) * 1.72]);
+-  }
+-  for (let i = 0; i < 8; i += 1) {
+-    const j = (i + 1) % 8;
+-    addQuad(ring, inner[i], inner[j], outer[j], outer[i]);
+-  }
+-
+-  const beacons = part();
+-  for (const [sx, sz] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+-    addBox(beacons, sx * 1.9, 0.18, sz * 1.9, 0.08, 0.18, 0.08);
+-  }
+-
+-  return [
+-    { name: "deck", part: deck, color: [0.24, 0.27, 0.3, 1], roughness: 0.75, metallic: 0.2 },
+-    { name: "ring", part: ring, color: [0.1, 0.5, 0.45, 1], roughness: 0.3 },
+-    { name: "beacons", part: beacons, color: [1.0, 0.75, 0.25, 1], roughness: 0.25 }
+-  ];
+-}
+-
+-// ---- GLB writer --------------------------------------------------------------
+-function writeGlb(path, parts) {
+-  const chunks = [];
+-  const bufferViews = [];
+-  const accessors = [];
+-  const meshes = [];
+-  const nodes = [];
+-  const materials = parts.map((entry) => ({
+-    name: entry.name + "-material",
+-    pbrMetallicRoughness: {
+-      baseColorFactor: entry.color,
+-      metallicFactor: entry.metallic ?? 0.05,
+-      roughnessFactor: entry.roughness
+-    }
+-  }));
+-
+-  let offset = 0;
+-  const pushView = (typedArray, target) => {
+-    const bytes = Buffer.from(typedArray.buffer, typedArray.byteOffset, typedArray.byteLength);
+-    const pad = (4 - (bytes.length % 4)) % 4;
+-    chunks.push(bytes);
+-    if (pad > 0) chunks.push(Buffer.alloc(pad));
+-    bufferViews.push({ buffer: 0, byteOffset: offset, byteLength: bytes.length, target });
+-    offset += bytes.length + pad;
+-    return bufferViews.length - 1;
+-  };
+-
+-  parts.forEach((entry, partIndex) => {
+-    const positionCount = entry.part.positions.length / 3;
+-    if (positionCount === 0 || entry.part.indices.length === 0) {
+-      throw new Error("part " + entry.name + " has no triangles.");
+-    }
+-    const min = [Infinity, Infinity, Infinity];
+-    const max = [-Infinity, -Infinity, -Infinity];
+-    for (let i = 0; i < entry.part.positions.length; i += 3) {
+-      for (let axis = 0; axis < 3; axis += 1) {
+-        min[axis] = Math.min(min[axis], entry.part.positions[i + axis]);
+-        max[axis] = Math.max(max[axis], entry.part.positions[i + axis]);
+-      }
+-    }
+-    const positions = new Float32Array(entry.part.positions);
+-    const normals = new Float32Array(entry.part.normals);
+-    const indices = new Uint32Array(entry.part.indices);
+-    const posView = pushView(positions, 34962);
+-    const normView = pushView(normals, 34962);
+-    const idxView = pushView(indices, 34963);
+-    accessors.push({ bufferView: posView, componentType: 5126, count: positionCount, type: "VEC3", min, max });
+-    accessors.push({ bufferView: normView, componentType: 5126, count: positionCount, type: "VEC3" });
+-    accessors.push({ bufferView: idxView, componentType: 5125, count: indices.length, type: "SCALAR" });
+-    meshes.push({
+-      name: entry.name,
+-      primitives: [{
+-        attributes: { POSITION: accessors.length - 3, NORMAL: accessors.length - 2 },
+-        indices: accessors.length - 1,
+-        material: partIndex
+-      }]
+-    });
+-    nodes.push({ name: entry.name, mesh: partIndex });
+-  });
+-
+-  const body = Buffer.concat(chunks);
+-  const document = {
+-    asset: { version: "2.0", generator: "aura3d showcase-patrol-wing build-models (original CC0)" },
+-    scene: 0,
+-    scenes: [{ name: "root", nodes: nodes.map((_, index) => index) }],
+-    nodes,
+-    meshes,
+-    materials,
+-    accessors,
+-    bufferViews,
+-    buffers: [{ byteLength: body.length }]
+-  };
+-
+-  const jsonSource = Buffer.from(JSON.stringify(document), "utf8");
+-  const jsonPadding = (4 - (jsonSource.length % 4)) % 4;
+-  const jsonData = Buffer.concat([jsonSource, Buffer.alloc(jsonPadding, 0x20)]);
+-  const binPadding = (4 - (body.length % 4)) % 4;
+-  const binData = Buffer.concat([body, Buffer.alloc(binPadding)]);
+-  const total = 12 + 8 + jsonData.length + 8 + binData.length;
+-  const output = Buffer.alloc(total);
+-  output.write("glTF", 0, "ascii");
+-  output.writeUInt32LE(2, 4);
+-  output.writeUInt32LE(total, 8);
+-  output.writeUInt32LE(jsonData.length, 12);
+-  output.writeUInt32LE(0x4e4f534a, 16); // "JSON"
+-  jsonData.copy(output, 20);
+-  const binHead = 20 + jsonData.length;
+-  output.writeUInt32LE(binData.length, binHead);
+-  output.writeUInt32LE(0x004e4942, binHead + 4); // "BIN\0"
+-  binData.copy(output, binHead + 8);
+-  mkdirSync(dirname(path), { recursive: true });
+-  writeFileSync(path, output);
+-  return total;
+-}
+-
+-mkdirSync(OUT_DIR, { recursive: true });
+-
+-const planeParts = buildPlane();
+-const planeBytes = writeGlb(resolve(OUT_DIR, "patrolWingPlane.glb"), planeParts);
+-console.log("wrote", resolve(OUT_DIR, "patrolWingPlane.glb"), "(" + planeBytes + " bytes)");
+-
+-const droneAParts = buildDrone("A");
+-const droneABytes = writeGlb(resolve(OUT_DIR, "patrolWingDroneA.glb"), droneAParts);
+-console.log("wrote", resolve(OUT_DIR, "patrolWingDroneA.glb"), "(" + droneABytes + " bytes)");
+-
+-const droneBParts = buildDrone("B");
+-const droneBBytes = writeGlb(resolve(OUT_DIR, "patrolWingDroneB.glb"), droneBParts);
+-console.log("wrote", resolve(OUT_DIR, "patrolWingDroneB.glb"), "(" + droneBBytes + " bytes)");
+-
+-const padParts = buildPadBeacon();
+-const padBytes = writeGlb(resolve(OUT_DIR, "patrolWingPadBeacon.glb"), padParts);
+-console.log("wrote", resolve(OUT_DIR, "patrolWingPadBeacon.glb"), "(" + padBytes + " bytes)");
+diff --git a/apps/showcase-patrol-wing/scripts/build-sfx.mjs b/apps/showcase-patrol-wing/scripts/build-sfx.mjs
+deleted file mode 100644
+index d7aae61ec..000000000
+--- a/apps/showcase-patrol-wing/scripts/build-sfx.mjs
++++ /dev/null
+@@ -1,336 +0,0 @@
+-/**
+- * Patrol Wing SFX synth — generates original CC0 WAV cues entirely in-repo.
+- *
+- * No network downloads, no sampled material: every cue is synthesized from
+- * oscillators / filtered noise with a small committed generator so provenance
+- * is auditable (author "Aura3D synthesis", license CC0-1.0). Deterministic LCG
+- * noise means regenerating any cue is byte-identical.
+- *
+- * Run from the repo root:  node apps/showcase-patrol-wing/scripts/build-sfx.mjs
+- * Output: apps/showcase-patrol-wing/assets/sfx/*.wav (16-bit PCM mono 44100 Hz)
+- *
+- * After generation, register each audio file with the CLI so it lands in the
+- * typed root asset map the route imports (`../../../src/aura-assets`), e.g.:
+- *   pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts assets add \
+- *     apps/showcase-patrol-wing/assets/sfx/engineLoop.wav --name patrolWingEngineLoopSfx --type audio \
+- *     --license CC0-1.0 --author "Aura3D synthesis" \
+- *     --source-page "apps/showcase-patrol-wing/scripts/build-sfx.mjs"
+- *
+- * Remaining cues use the same command template with these names:
+- *   ringChime.wav   -> patrolWingRingChimeSfx
+- *   cannonFire.wav  -> patrolWingCannonFireSfx
+- *   droneHit.wav    -> patrolWingDroneHitSfx
+- *   droneDown.wav   -> patrolWingDroneDownSfx
+- *   hullAlarm.wav   -> patrolWingHullAlarmSfx
+- *   shotDown.wav    -> patrolWingShotDownSfx
+- *   crashThud.wav   -> patrolWingCrashThudSfx
+- *   touchdown.wav   -> patrolWingTouchdownSfx
+- *   patrolClear.wav -> patrolWingPatrolClearSfx
+- *   ambientWind.wav -> patrolWingAmbientWindSfx  (register LAST — sibling-agent sentinel)
+- */
+-import { mkdirSync, writeFileSync } from "node:fs";
+-import { resolve, dirname } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../assets/sfx");
+-const SAMPLE_RATE = 44100;
+-
+-// ---- waveform / DSP helpers (vault-breakers pattern) ------------------------
+-function noiseBuffer(length) {
+-  const out = new Float32Array(length);
+-  let seed = 0x9e3779b9;
+-  for (let i = 0; i < length; i += 1) {
+-    seed = (seed * 1664525 + 1013904223) >>> 0;
+-    out[i] = ((seed / 0xffffffff) * 2 - 1);
+-  }
+-  return out;
+-}
+-
+-function envelope(length, attack, decay, total) {
+-  const out = new Float32Array(length);
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const start = Math.min(1, t / Math.max(0.0005, attack));
+-    const end = Math.pow(Math.max(0, 1 - t / total), decay);
+-    out[i] = start * end;
+-  }
+-  return out;
+-}
+-
+-function lowpass(samples, cutoff) {
+-  const rc = 1 / (2 * Math.PI * cutoff);
+-  const dt = 1 / SAMPLE_RATE;
+-  const alpha = dt / (rc + dt);
+-  let prev = 0;
+-  const out = new Float32Array(samples.length);
+-  for (let i = 0; i < samples.length; i += 1) {
+-    prev = prev + alpha * (samples[i] - prev);
+-    out[i] = prev;
+-  }
+-  return out;
+-}
+-
+-function highpass(samples, cutoff) {
+-  const rc = 1 / (2 * Math.PI * cutoff);
+-  const dt = 1 / SAMPLE_RATE;
+-  const alpha = dt / (rc + dt);
+-  let lp = 0;
+-  const out = new Float32Array(samples.length);
+-  for (let i = 0; i < samples.length; i += 1) {
+-    lp += alpha * (samples[i] - lp);
+-    out[i] = samples[i] - lp;
+-  }
+-  return out;
+-}
+-
+-function normalize(samples) {
+-  let peak = 0;
+-  for (let i = 0; i < samples.length; i += 1) peak = Math.max(peak, Math.abs(samples[i]));
+-  if (peak > 0) {
+-    const gain = Math.min(1, 0.9 / peak);
+-    for (let i = 0; i < samples.length; i += 1) samples[i] *= gain;
+-  }
+-  return samples;
+-}
+-
+-function renderCue({ tone, noise }) {
+-  const parts = (Array.isArray(tone) ? tone : tone ? [tone] : []);
+-  const totalSec = Math.max(
+-    ...parts.map((p) => p.total ?? 0),
+-    noise?.total ?? 0,
+-    0.1
+-  ) + 0.08;
+-  const length = Math.floor(totalSec * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  for (const part of parts) {
+-    const { wave = "sine", freqStart, freqEnd = freqStart, amp = 0.5, attack = 0.005, decay = 3, total = 0.2 } = part;
+-    const env = envelope(length, attack, decay, total);
+-    for (let i = 0; i < length; i += 1) {
+-      const t = i / SAMPLE_RATE;
+-      const progress = Math.min(1, t / total);
+-      const f = freqStart + (freqEnd - freqStart) * progress;
+-      const phase = 2 * Math.PI * f * t;
+-      let v = 0;
+-      if (wave === "sine") v = Math.sin(phase);
+-      else if (wave === "triangle") v = (2 / Math.PI) * Math.asin(Math.sin(phase));
+-      else if (wave === "sawtooth") v = 2 * (phase / (2 * Math.PI) - Math.floor(0.5 + phase / (2 * Math.PI)));
+-      else if (wave === "square") v = Math.sign(Math.sin(phase));
+-      else v = Math.sin(phase);
+-      out[i] += v * env[i] * amp;
+-    }
+-  }
+-  if (noise) {
+-    const { amp = 0.4, attack = 0.004, decay = 4, total = 0.16, hp = 0, lp = 0 } = noise;
+-    let raw = noiseBuffer(length);
+-    if (hp > 0) raw = highpass(raw, hp);
+-    if (lp > 0) raw = lowpass(raw, lp);
+-    const env = envelope(length, attack, decay, total);
+-    for (let i = 0; i < length; i += 1) out[i] += raw[i] * env[i] * amp;
+-  }
+-  return normalize(out);
+-}
+-
+-/** A click-free looping cue with faded edges (engine / wind beds). */
+-function loopCue(durationSec, fill) {
+-  const length = Math.floor(durationSec * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  fill(out, length);
+-  const fade = Math.floor(0.03 * SAMPLE_RATE);
+-  for (let i = 0; i < fade; i += 1) {
+-    out[i] *= i / fade;
+-    out[length - 1 - i] *= i / fade;
+-  }
+-  return normalize(out);
+-}
+-
+-// ---- cue recipes -------------------------------------------------------------
+-
+-/** engineLoop: smooth, warm, low-rumble twin-turboprop turbine purr (no harsh saw buzzing). */
+-function engineLoop() {
+-  return loopCue(6.0, (out, length) => {
+-    for (let i = 0; i < length; i += 1) {
+-      const t = i / SAMPLE_RATE;
+-      const rpm = 0.95 + 0.05 * Math.sin(t * 0.8);
+-      const base = 70 * rpm;
+-      const sub = Math.sin(2 * Math.PI * base * t) * 0.45;
+-      const mid = Math.sin(2 * Math.PI * base * 2 * t) * 0.25;
+-      const breath = 0.85 + 0.15 * Math.sin(t * 1.5);
+-      out[i] = (sub + mid) * breath * 0.22;
+-    }
+-    const air = noiseBuffer(length);
+-    const band = lowpass(highpass(air, 180), 600);
+-    for (let i = 0; i < length; i += 1) out[i] += band[i] * 0.04;
+-  });
+-}
+-
+-/** ambientWind: soothing open-air island breeze. */
+-function ambientWind() {
+-  return loopCue(8.0, (out, length) => {
+-    const raw = noiseBuffer(length);
+-    const band = highpass(lowpass(raw, 750), 120);
+-    for (let i = 0; i < length; i += 1) {
+-      const t = i / SAMPLE_RATE;
+-      const breath = 0.6 + 0.4 * Math.sin(t * 0.5) * Math.sin(t * 0.25 + 0.8);
+-      out[i] = band[i] * 0.18 * Math.max(0.1, breath);
+-    }
+-  });
+-}
+-
+-/** ringChime: bright, delicate pass chime with warm velvet decay. */
+-function ringChime() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sine", freqStart: 987.77, amp: 0.3, attack: 0.002, decay: 4.5, total: 0.35 },
+-      { wave: "sine", freqStart: 1318.5, amp: 0.24, attack: 0.04, decay: 4.5, total: 0.4 },
+-      { wave: "triangle", freqStart: 1975.5, amp: 0.1, attack: 0.08, decay: 5, total: 0.35 }
+-    ]
+-  });
+-}
+-
+-/** cannonFire: punchy, satisfying aerodynamic pulse. */
+-function cannonFire() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sine", freqStart: 180, freqEnd: 65, amp: 0.4, attack: 0.002, decay: 9, total: 0.08 }
+-    ],
+-    noise: { amp: 0.15, attack: 0.001, decay: 8, total: 0.05, hp: 600, lp: 2500 }
+-  });
+-}
+-
+-/** droneHit: soft metallic hit confirm. */
+-function droneHit() {
+-  return renderCue({
+-    tone: [
+-      { wave: "triangle", freqStart: 380, freqEnd: 240, amp: 0.3, attack: 0.002, decay: 7, total: 0.08 },
+-      { wave: "sine", freqStart: 950, freqEnd: 880, amp: 0.15, attack: 0.002, decay: 6, total: 0.09 }
+-    ]
+-  });
+-}
+-
+-/** droneDown: kill confirm — satisfying ascending chord chime. */
+-function droneDown() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sine", freqStart: 587.33, amp: 0.25, attack: 0.002, decay: 5, total: 0.12 },
+-      { wave: "sine", freqStart: 739.99, amp: 0.25, attack: 0.05, decay: 5, total: 0.16 },
+-      { wave: "sine", freqStart: 880.00, amp: 0.3, attack: 0.1, decay: 4.5, total: 0.25 }
+-    ],
+-    noise: { amp: 0.08, attack: 0.1, decay: 6, total: 0.2, hp: 1200, lp: 3000 }
+-  });
+-}
+-
+-/** hullAlarm: gentle warning tone (soft dual pulse, no harsh ear-piercing buzz). */
+-function hullAlarm() {
+-  const length = Math.floor(0.32 * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  const pulses = [{ start: 0, total: 0.1 }, { start: 0.14, total: 0.12 }];
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    let gate = 0;
+-    for (const p of pulses) {
+-      if (t >= p.start && t < p.start + p.total) {
+-        const u = (t - p.start) / p.total;
+-        gate = Math.min(1, (t - p.start) / 0.005) * Math.pow(1 - u, 2.5);
+-      }
+-    }
+-    const phase = 2 * Math.PI * 330 * t;
+-    out[i] = Math.sin(phase) * 0.25 * gate;
+-  }
+-  return normalize(out);
+-}
+-
+-/** shotDown: gentle descending tone into low rumble. */
+-function shotDown() {
+-  return renderCue({
+-    tone: [
+-      { wave: "triangle", freqStart: 380, freqEnd: 80, amp: 0.35, attack: 0.01, decay: 2.2, total: 0.7 },
+-      { wave: "sine", freqStart: 80, freqEnd: 40, amp: 0.45, attack: 0.3, decay: 2.5, total: 0.8 }
+-    ],
+-    noise: { amp: 0.15, attack: 0.3, decay: 2.5, total: 0.5, hp: 50, lp: 600 }
+-  });
+-}
+-
+-/** crashThud: soft low-frequency impact thud. */
+-function crashThud() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sine", freqStart: 110, freqEnd: 38, amp: 0.55, attack: 0.002, decay: 4, total: 0.25 }
+-    ],
+-    noise: { amp: 0.2, attack: 0.002, decay: 6, total: 0.12, hp: 60, lp: 1200 }
+-  });
+-}
+-
+-/** touchdown: soft smooth landing chime + settling tap. */
+-function touchdown() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sine", freqStart: 330, freqEnd: 440, amp: 0.25, attack: 0.005, decay: 3.5, total: 0.15 },
+-      { wave: "sine", freqStart: 95, freqEnd: 55, amp: 0.35, attack: 0.02, decay: 4, total: 0.25 }
+-    ]
+-  });
+-}
+-
+-/** patrolClear: mission fanfare — lush, warm ascending four-note chord. */
+-function patrolClear() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sine", freqStart: 523.25, amp: 0.25, attack: 0.005, decay: 4, total: 0.2 },
+-      { wave: "sine", freqStart: 659.25, amp: 0.25, attack: 0.08, decay: 4, total: 0.25 },
+-      { wave: "sine", freqStart: 783.99, amp: 0.28, attack: 0.16, decay: 4, total: 0.3 },
+-      { wave: "sine", freqStart: 1046.5, amp: 0.32, attack: 0.24, decay: 3.5, total: 0.5 }
+-    ]
+-  });
+-}
+-
+-// ---- WAV writer --------------------------------------------------------------
+-function writeWav(path, samples) {
+-  const length = samples.length;
+-  const buffer = Buffer.alloc(44 + length * 2);
+-  const numChannels = 1;
+-  const bitsPerSample = 16;
+-  const byteRate = SAMPLE_RATE * numChannels * bitsPerSample / 8;
+-  buffer.write("RIFF", 0);
+-  buffer.writeUInt32LE(36 + length * 2, 4);
+-  buffer.write("WAVE", 8);
+-  buffer.write("fmt ", 12);
+-  buffer.writeUInt32LE(16, 16);
+-  buffer.writeUInt16LE(1, 20);
+-  buffer.writeUInt16LE(numChannels, 22);
+-  buffer.writeUInt32LE(SAMPLE_RATE, 24);
+-  buffer.writeUInt32LE(byteRate, 28);
+-  buffer.writeUInt16LE(numChannels * bitsPerSample / 8, 32);
+-  buffer.writeUInt16LE(bitsPerSample, 34);
+-  buffer.write("data", 36);
+-  buffer.writeUInt32LE(length * 2, 40);
+-  for (let i = 0; i < length; i += 1) {
+-    const v = Math.max(-1, Math.min(1, samples[i]));
+-    buffer.writeInt16LE(Math.round(v * 32767), 44 + i * 2);
+-  }
+-  writeFileSync(path, buffer);
+-  return length / SAMPLE_RATE;
+-}
+-
+-// engineLoop + ambientWind are loops but NOT registered in any special order
+-// here; registration order is a CLI concern (ambientWind registers LAST).
+-const cues = {
+-  engineLoop,
+-  ringChime,
+-  cannonFire,
+-  droneHit,
+-  droneDown,
+-  hullAlarm,
+-  shotDown,
+-  crashThud,
+-  touchdown,
+-  patrolClear,
+-  ambientWind
+-};
+-
+-mkdirSync(OUT_DIR, { recursive: true });
+-for (const [name, fn] of Object.entries(cues)) {
+-  const samples = fn();
+-  const path = resolve(OUT_DIR, `${name}.wav`);
+-  const duration = writeWav(path, samples);
+-  console.log("wrote", path, "(" + duration.toFixed(3) + "s)");
+-}
+-console.log("\nGenerated", Object.keys(cues).length, "cues into", OUT_DIR);
+diff --git a/apps/showcase-patrol-wing/scripts/register-assets.mjs b/apps/showcase-patrol-wing/scripts/register-assets.mjs
+deleted file mode 100644
+index 31fd493d4..000000000
+--- a/apps/showcase-patrol-wing/scripts/register-assets.mjs
++++ /dev/null
+@@ -1,76 +0,0 @@
+-/** Build and register Patrol Wing's deterministic original CC0 assets. */
+-import { createHash } from "node:crypto";
+-import { execFileSync } from "node:child_process";
+-import { existsSync, readFileSync } from "node:fs";
+-import { dirname, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const cli = resolve(repoRoot, "packages/aura3d-cli/dist/cli.js");
+-const probeDir = resolve(repoRoot, "tests/reports/showcase-release-asset-probes");
+-if (!existsSync(cli)) throw new Error("Build packages/aura3d-cli before registering Patrol Wing assets.");
+-
+-execFileSync("node", [resolve(appDir, "scripts/build-models.mjs")], { cwd: repoRoot, stdio: "inherit" });
+-execFileSync("node", [resolve(appDir, "scripts/build-sfx.mjs")], { cwd: repoRoot, stdio: "inherit" });
+-
+-const models = [
+-  ["patrolWingPlane", "vehicle", "Original CC0 stylized flat-color primary aircraft vehicle with a readable swept-wing silhouette, verified +X-forward and +Y-up orientation, and normalized route placement; route-local authored arcade motion owns gameplay and no aerodynamic claim is inferred."],
+-  ["patrolWingDroneA", "vehicle", "Original CC0 stylized flat-color heavy pursuit-drone vehicle with a readable swept-wing silhouette and verified +X-forward and +Y-up orientation; seeded pursuit and combat-world hit truth are separately route-tested."],
+-  ["patrolWingDroneB", "vehicle", "Original CC0 stylized flat-color fast pursuit-drone vehicle with a readable alternate swept-wing silhouette and verified +X-forward and +Y-up orientation; seeded pursuit and combat-world hit truth are separately route-tested."],
+-  ["patrolWingPadBeacon", "prop", "Original CC0 stylized flat-color readable metre-scale 4.4 metre frontier landing-pad and cyan/amber beacon prop; it is role-ready as the landing objective while route-local pad sensor and touchdown bounds are separately tested."]
+-];
+-
+-for (const [id, role, suitability] of models) {
+-  const source = resolve(appDir, `assets/models/${id}.glb`);
+-  const probe = resolve(probeDir, `${id}.json`);
+-  const sourceHash = `sha256-${createHash("sha256").update(readFileSync(source)).digest("hex")}`;
+-  const hasProbe = existsSync(probe) && JSON.parse(readFileSync(probe, "utf8")).renderedProbe?.assetHash === sourceHash;
+-  const args = [
+-    "assets", "add", source, "--name", id, "--type", "model",
+-    "--license", "CC0-1.0", "--license-name", "CC0 1.0 Universal",
+-    "--license-url", "https://creativecommons.org/publicdomain/zero/1.0/",
+-    "--author", "Aura3D synthesis", "--source-family", "aura3d-original",
+-    "--source-page", "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-patrol-wing/scripts/build-models.mjs",
+-    "--download-url", `https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-patrol-wing/assets/models/${id}.glb`,
+-    "--attribution", "Aura3D synthesis — original CC0 Patrol Wing model family",
+-    "--provenance-evidence", "Deterministically generated from committed Patrol Wing model source; geometry, materials, metre scale, and orientation are reproducible.",
+-    "--retrieved-at", "2026-08-24T04:45:00.000Z", "--quality", hasProbe ? "release" : "candidate",
+-    "--role", role, "--suitability", suitability
+-  ];
+-  if (hasProbe) args.push("--rendered-probe-json", probe);
+-  const orientation = resolve(probeDir, `${id}.orientation.json`);
+-  if (existsSync(orientation) && JSON.parse(readFileSync(orientation, "utf8")).orientation?.assetHash === sourceHash) args.push("--orientation-json", orientation);
+-  execFileSync("node", [cli, ...args], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
+-  console.log(`registered ${id} (${hasProbe ? "release + retained probe" : "candidate; probe pending"})`);
+-}
+-
+-const audio = [
+-  ["ambientWind", "patrolWingAmbientWindSfx", "Looping frontier wind bed after user unlock."],
+-  ["cannonFire", "patrolWingCannonFireSfx", "Cannon discharge cue."],
+-  ["crashThud", "patrolWingCrashThudSfx", "Terrain/ocean crash cue."],
+-  ["droneDown", "patrolWingDroneDownSfx", "Drone knockout cue."],
+-  ["droneHit", "patrolWingDroneHitSfx", "Confirmed cannon hit cue."],
+-  ["engineLoop", "patrolWingEngineLoopSfx", "Throttle-driven engine bed after user unlock."],
+-  ["hullAlarm", "patrolWingHullAlarmSfx", "Low-hull and impact warning cue."],
+-  ["patrolClear", "patrolWingPatrolClearSfx", "Completed patrol cue."],
+-  ["ringChime", "patrolWingRingChimeSfx", "Ordered ring entry cue."],
+-  ["shotDown", "patrolWingShotDownSfx", "Hull failure cue."],
+-  ["touchdown", "patrolWingTouchdownSfx", "Safe landing cue."]
+-];
+-for (const [fileName, id, suitability] of audio) {
+-  const source = resolve(appDir, `assets/sfx/${fileName}.wav`);
+-  execFileSync("node", [cli, "assets", "add", source, "--name", id, "--type", "audio",
+-    "--license", "CC0-1.0", "--license-name", "CC0 1.0 Universal",
+-    "--license-url", "https://creativecommons.org/publicdomain/zero/1.0/",
+-    "--author", "Aura3D synthesis", "--source-family", "aura3d-original",
+-    "--source-page", "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-patrol-wing/scripts/build-sfx.mjs",
+-    "--download-url", `https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-patrol-wing/assets/sfx/${fileName}.wav`,
+-    "--attribution", "Aura3D synthesis — original CC0 Patrol Wing audio",
+-    "--provenance-evidence", "Deterministically synthesized from committed oscillator and seeded-noise source; contains no sampled material.",
+-    "--retrieved-at", "2026-08-24T04:45:00.000Z", "--quality", "candidate", "--role", "unknown", "--suitability", suitability
+-  ], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
+-}
+-
+-execFileSync("node", [cli, "assets", "typegen"], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
+-console.log(`Patrol Wing registration complete: ${models.length} original route models and ${audio.length} audio cues.`);
+diff --git a/apps/showcase-patrol-wing/scripts/write-deploy-report.mjs b/apps/showcase-patrol-wing/scripts/write-deploy-report.mjs
+deleted file mode 100644
+index 592ee16ce..000000000
+--- a/apps/showcase-patrol-wing/scripts/write-deploy-report.mjs
++++ /dev/null
+@@ -1,37 +0,0 @@
+-import { createHash } from "node:crypto";
+-import { execFileSync } from "node:child_process";
+-import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+-import { dirname, join, relative, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const cli = resolve(repoRoot, "packages/aura3d-cli/dist/cli.js");
+-const modelIds = ["patrolWingPlane", "patrolWingDroneA", "patrolWingDroneB", "patrolWingPadBeacon"];
+-function run(args) {
+-  try { return JSON.parse(execFileSync("node", [cli, ...args], { cwd: repoRoot, encoding: "utf8", maxBuffer: 128 * 1024 * 1024 })); }
+-  catch (error) { const stdout = error && typeof error === "object" && "stdout" in error ? String(error.stdout ?? "") : ""; if (stdout) return JSON.parse(stdout); throw error; }
+-}
+-function files(directory) { return readdirSync(directory).sort().flatMap((name) => { const path = join(directory, name); return statSync(path).isDirectory() ? files(path) : [path]; }); }
+-function treeHash(directory) { const hash = createHash("sha256"); for (const path of files(directory)) hash.update(relative(directory, path)).update("\0").update(readFileSync(path)).update("\0"); return hash.digest("hex"); }
+-const dist = resolve(appDir, "dist"); const source = resolve(appDir, "src");
+-const common = ["check-deploy", "--dist", dist, "--release", "--source", source];
+-const modelResult = run([...common, ...modelIds.flatMap((id) => ["--asset", id])]);
+-const distResult = run([...common, "--no-assets"]);
+-const producer = "apps/showcase-patrol-wing/scripts/write-deploy-report.mjs";
+-const report = {
+-  schema: "aura3d.patrol-wing.deploy/1.0", generatedAt: new Date().toISOString(), producer,
+-  producerSourceSha256: createHash("sha256").update(readFileSync(resolve(repoRoot, producer))).digest("hex"),
+-  cli: "packages/aura3d-cli/dist/cli.js", cliSourceSha256: createHash("sha256").update(readFileSync(cli)).digest("hex"),
+-  distTreeSha256: treeHash(dist), sourceTreeSha256: treeHash(source),
+-  checks: {
+-    strictModels: { command: "check-deploy --release --source apps/showcase-patrol-wing/src --asset <4 typed models>", ok: modelResult.ok === true, assetCount: modelResult.manifest?.assets?.length ?? 0, assets: (modelResult.manifest?.assets ?? []).map((asset) => ({ id: asset.id, hash: asset.hash, quality: asset.quality, role: asset.role })), warnings: modelResult.warnings ?? [], failures: modelResult.failures ?? [] },
+-    strictDistAndSource: { command: "check-deploy --release --source apps/showcase-patrol-wing/src --no-assets", ok: distResult.ok === true, warnings: distResult.warnings ?? [], failures: distResult.failures ?? [] }
+-  },
+-  audioBoundary: "Eleven deterministic synthesized WAV cues are typed candidate-quality CC0 assets; model-oriented release bounds validation is intentionally not applied to audio.",
+-  pass: modelResult.ok === true && distResult.ok === true && (modelResult.manifest?.assets?.length ?? 0) === modelIds.length
+-};
+-writeFileSync(resolve(appDir, "deploy-report.json"), `${JSON.stringify(report, null, 2)}\n`);
+-console.log(JSON.stringify({ pass: report.pass, models: report.checks.strictModels.assetCount, modelWarnings: report.checks.strictModels.warnings.length, distWarnings: report.checks.strictDistAndSource.warnings.length }));
+-if (!report.pass) process.exitCode = 1;
+-
+diff --git a/apps/showcase-patrol-wing/scripts/write-performance-report.ts b/apps/showcase-patrol-wing/scripts/write-performance-report.ts
+deleted file mode 100644
+index dff617443..000000000
+--- a/apps/showcase-patrol-wing/scripts/write-performance-report.ts
++++ /dev/null
+@@ -1,37 +0,0 @@
+-import { createHash } from "node:crypto";
+-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+-import { join, relative, resolve } from "node:path";
+-import { FlightModel, FLIGHT_DT } from "../src/flight";
+-import { RingTracker } from "../src/patrol";
+-import { terrainSurface } from "../src/sky";
+-
+-const repoRoot = resolve(import.meta.dirname, "../../.."); const appDir = resolve(import.meta.dirname, "..");
+-const SAMPLES = 20_000; const CPU_P95_BUDGET_MS = 0.2; const DRAW_CALL_BUDGET = 240;
+-function files(directory: string): string[] { return readdirSync(directory).sort().flatMap((name) => { const path = join(directory, name); return statSync(path).isDirectory() ? files(path) : /\.(?:ts|css)$/.test(path) ? [path] : []; }); }
+-const sourceFiles = files(join(appDir, "src"));
+-const routeSourceSha256 = (() => { const hash = createHash("sha256"); for (const path of sourceFiles) hash.update(relative(appDir, path)).update("\0").update(readFileSync(path)).update("\0"); return hash.digest("hex"); })();
+-let flight = new FlightModel({ position: [0, 12, 17], headingYaw: Math.PI, grounded: "airborne", throttle: 0.7, speed: 12 });
+-const rings = new RingTracker(); const timings: number[] = []; let stateHash = 2166136261 >>> 0;
+-for (let index = 0; index < SAMPLES; index += 1) {
+-  const started = process.cpuUsage();
+-  const frame = flight.step({ pitchUp: index % 240 < 30, pitchDown: false, rollLeft: false, rollRight: index % 360 < 45, yawLeft: false, yawRight: index % 300 < 30, throttleUp: index % 180 < 20, throttleDown: false }, FLIGHT_DT, terrainSurface);
+-  if (index % 300 === 0) rings.registerEntry((index / 300) % 6);
+-  if (frame.outcome !== "none") flight = new FlightModel({ position: [0, 12, 17], headingYaw: Math.PI, grounded: "airborne", throttle: 0.7, speed: 12 });
+-  const used = process.cpuUsage(started); timings.push((used.user + used.system) / 1_000);
+-  const sample = `${flight.position.map((value) => value.toFixed(3)).join(":")}:${flight.speed.toFixed(3)}:${rings.nextRing}`;
+-  for (let char = 0; char < sample.length; char += 1) stateHash = Math.imul(stateHash ^ sample.charCodeAt(char), 16777619) >>> 0;
+-}
+-const sorted = [...timings].sort((a, b) => a - b); const routeLogicCpuP95Ms = Number((sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))] ?? 0).toFixed(4));
+-const mission = JSON.parse(readFileSync(resolve(repoRoot, "tests/reports/patrol-wing/playable/mission-touch.json"), "utf8"));
+-const receipt = JSON.parse(readFileSync(resolve(repoRoot, "tests/reports/patrol-wing/playable/browser-evidence.json"), "utf8"));
+-const primaryPath = resolve(repoRoot, "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json");
+-const primaryCandidate = existsSync(primaryPath) ? JSON.parse(readFileSync(primaryPath, "utf8")) : null;
+-const primary = primaryCandidate?.pass === true ? primaryCandidate : null;
+-const observed = { routeLogicCpuP95Ms, deterministicStateHash: stateHash.toString(16).padStart(8, "0"), drawCalls: Number(primary?.renderer?.drawCalls ?? 0), renderSize: primary?.renderer?.renderSize ?? [1280, 800], browserFrameCount: Number(mission.boot?.frameCount ?? 0) };
+-const drawEvidencePending = primary === null;
+-const pass = observed.routeLogicCpuP95Ms <= CPU_P95_BUDGET_MS && observed.deterministicStateHash !== "00000000" && (drawEvidencePending || (observed.drawCalls > 0 && observed.drawCalls <= DRAW_CALL_BUDGET)) && receipt.pass === true && receipt.routeSourceSha256 === routeSourceSha256;
+-const producer = "apps/showcase-patrol-wing/scripts/write-performance-report.ts";
+-const report = { schema: "aura3d.patrol-wing.performance/1.0", generatedAt: new Date().toISOString(), producer, producerSourceSha256: createHash("sha256").update(readFileSync(resolve(repoRoot, producer))).digest("hex"), routeSourceFiles: sourceFiles.map((path) => relative(repoRoot, path)), routeSourceSha256,
+-  scope: "Route-local authored arcade-flight/ring CPU sampling plus route-primary root-renderer draw calls when available; no GPU frame-time, aerodynamic, reusable flight-kit, or renderer-parity claim.", samples: SAMPLES, fixedStepSeconds: FLIGHT_DT,
+-  budgets: { routeLogicCpuP95Ms: CPU_P95_BUDGET_MS, drawCalls: DRAW_CALL_BUDGET }, observed, drawEvidencePending, pass };
+-writeFileSync(resolve(appDir, "performance-report.json"), `${JSON.stringify(report, null, 2)}\n`); console.log(JSON.stringify({ pass, observed, drawEvidencePending })); if (!pass) process.exitCode = 1;
+diff --git a/apps/showcase-patrol-wing/scripts/write-route-health.mjs b/apps/showcase-patrol-wing/scripts/write-route-health.mjs
+deleted file mode 100644
+index c65443454..000000000
+--- a/apps/showcase-patrol-wing/scripts/write-route-health.mjs
++++ /dev/null
+@@ -1,53 +0,0 @@
+-import { createHash } from "node:crypto";
+-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+-import { dirname, join, relative, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), ".."); const repoRoot = resolve(appDir, "../..");
+-const reportDir = resolve(repoRoot, "tests/reports/patrol-wing/playable");
+-const modelIds = ["patrolWingPlane", "patrolWingDroneA", "patrolWingDroneB", "patrolWingPadBeacon"];
+-const audioIds = ["patrolWingAmbientWindSfx", "patrolWingCannonFireSfx", "patrolWingCrashThudSfx", "patrolWingDroneDownSfx", "patrolWingDroneHitSfx", "patrolWingEngineLoopSfx", "patrolWingHullAlarmSfx", "patrolWingPatrolClearSfx", "patrolWingRingChimeSfx", "patrolWingShotDownSfx", "patrolWingTouchdownSfx"];
+-const bootstrap = process.env.A3D_PATROL_WING_BOOTSTRAP === "1";
+-function readJson(path) { return JSON.parse(readFileSync(path, "utf8")); }
+-function sha256(path) { return createHash("sha256").update(readFileSync(path)).digest("hex"); }
+-function files(directory) { return readdirSync(directory).sort().flatMap((name) => { const path = join(directory, name); return statSync(path).isDirectory() ? files(path) : /\.(?:ts|css)$/.test(path) ? [path] : []; }); }
+-const routeSourceFiles = files(join(appDir, "src"));
+-const routeSourceSha256 = (() => { const hash = createHash("sha256"); for (const path of routeSourceFiles) hash.update(relative(appDir, path)).update("\0").update(readFileSync(path)).update("\0"); return hash.digest("hex"); })();
+-const sourceText = routeSourceFiles.map((path) => readFileSync(path, "utf8")).join("\n");
+-for (const forbidden of [/\bfrom\s+["']three(?:\/|["'])/, /unsafeModelUrl\s*\(/, /model\s*\(\s*["'][^"']+\.gl(?:b|tf)/]) if (forbidden.test(sourceText)) throw new Error(`Patrol Wing source violates the root-safe asset boundary: ${forbidden}`);
+-if (!existsSync(join(appDir, "README.md"))) throw new Error("Patrol Wing README is missing");
+-if (!sourceText.includes('Object.defineProperty(window, "__AURA3D_SHOWCASE_PATROL_WING__"')) throw new Error("Patrol Wing literal global evidence contract is missing");
+-const manifest = readJson(join(repoRoot, "aura.assets.json")); const assetById = new Map(manifest.assets.map((asset) => [asset.id, asset]));
+-for (const id of modelIds) { const asset = assetById.get(id); if (!asset || asset.type !== "model" || asset.quality !== "release") throw new Error(`${id} is not a release-grade model`); if (!asset.provenance?.license || !asset.provenance?.author || !asset.provenance?.sourcePage || !asset.provenance?.downloadUrl) throw new Error(`${id} durable provenance is incomplete`); if (!asset.renderedProbe?.url || asset.renderedProbe.assetHash !== asset.hash || !existsSync(join(repoRoot, asset.renderedProbe.url))) throw new Error(`${id} rendered probe is missing or stale`); if (!sourceText.includes(`assets.${id}`)) throw new Error(`${id} is not referenced by the live route`); }
+-for (const id of audioIds) { const asset = assetById.get(id); if (!asset || asset.type !== "audio" || asset.quality !== "candidate" || asset.provenance?.license !== "CC0-1.0" || asset.provenance?.author !== "Aura3D synthesis" || !asset.provenance?.sourcePage || !asset.provenance?.downloadUrl) throw new Error(`${id} typed audio provenance/quality is incomplete`); if (!sourceText.includes(`"${id}"`) || !sourceText.includes("assets[key]")) throw new Error(`${id} is not referenced through the typed live audio controller`); }
+-const receipt = readJson(join(reportDir, "browser-evidence.json"));
+-if (receipt.schema !== "aura3d.patrol-wing.playable-evidence/1.0" || receipt.pass !== true || receipt.producerSourceSha256 !== sha256(join(repoRoot, receipt.producer)) || receipt.routeSourceSha256 !== routeSourceSha256) throw new Error("playable browser receipt is missing, failing, or stale");
+-for (const artifact of receipt.artifacts ?? []) if (!existsSync(join(repoRoot, artifact.path)) || artifact.sha256 !== sha256(join(repoRoot, artifact.path))) throw new Error(`playable artifact binding is stale: ${artifact.path}`);
+-for (const scenario of ["takeoff", "keyboard-flight-axes", "ordered-ring-entry", "stable-horizon-chase", "seeded-drone-wave", "cannon-fire", "combat-hit-feedback", "drone-down", "canyon-route-discipline", "low-hull-warning", "damage-fail", "full-reset", "visible-landing-approach", "touchdown-classification", "pause-freeze-resume", "touch-flight-axes", "mobile", "reduced-motion-state-truth"]) if (!receipt.scenarios?.includes(scenario)) throw new Error(`playable receipt is missing ${scenario}`);
+-const mission = readJson(join(reportDir, "mission-touch.json"));
+-if (mission.airborne?.state !== "patrol" || mission.ring?.ringsPassed !== 1 || !(mission.dronePass?.liveDrones > 0) || !(mission.firing?.shotsFired > 0) || !(mission.firing?.combatEvents > 0) || !(mission.firing?.dronesDown > 0) || mission.firing?.liveDrones !== 0 || mission.lowHull?.hull !== 18 || mission.failed?.state !== "shot-down" || mission.touchdown?.state !== "graded" || mission.touchAfter?.position?.join(",") === mission.boot?.position?.join(",") || mission.reduced?.reducedMotion !== true) throw new Error("flight, patrol, combat/down, hull, landing, touch, or reduced-motion proof is incomplete");
+-const pause = readJson(join(reportDir, "pause.json")); if (pause.paused?.state !== "paused" || pause.resumed?.state === "paused") throw new Error("pause freeze/resume proof is incomplete");
+-const performance = readJson(join(appDir, "performance-report.json")); if (performance.schema !== "aura3d.patrol-wing.performance/1.0" || performance.pass !== true || performance.routeSourceSha256 !== routeSourceSha256 || performance.producerSourceSha256 !== sha256(join(repoRoot, performance.producer)) || (!bootstrap && performance.drawEvidencePending)) throw new Error("performance report is missing, failing, stale, or lacks final draw-call evidence");
+-const deploy = readJson(join(appDir, "deploy-report.json")); if (deploy.schema !== "aura3d.patrol-wing.deploy/1.0" || deploy.pass !== true || deploy.checks?.strictModels?.assetCount !== modelIds.length || deploy.producerSourceSha256 !== sha256(join(repoRoot, deploy.producer))) throw new Error("strict deploy report is missing, failing, or stale");
+-if ([...(deploy.checks.strictModels.warnings ?? []), ...(deploy.checks.strictModels.failures ?? []), ...(deploy.checks.strictDistAndSource.warnings ?? []), ...(deploy.checks.strictDistAndSource.failures ?? [])].length > 0) throw new Error("strict deploy report contains warnings or failures");
+-const gates = readJson(join(repoRoot, "tools/showcase-library/route-gates.json")); const gate = gates.routes.find((route) => route.id === "showcase-patrol-wing");
+-if (!gate || gate.releaseClass !== "prototype-blocked" || gate.published !== true || gate.gameTemplateStatus?.publicTemplateReady !== false || JSON.stringify(gate.primaryAssets) !== JSON.stringify(modelIds)) throw new Error("Patrol Wing route gate is missing or over-promoted");
+-const primitiveOccurrences = Array.from(sourceText.matchAll(/\bprimitives\s*\.\s*[A-Za-z_$][\w$]*/g)).length; if (primitiveOccurrences > gate.primitiveBudget) throw new Error("Patrol Wing primitive source budget exceeded");
+-const primaryPath = join(repoRoot, "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json"); const routePrimary = existsSync(primaryPath) ? readJson(primaryPath) : null;
+-if (!bootstrap && (!routePrimary || routePrimary.pass !== true || routePrimary.routePrimaryHeroAsset !== "patrolWingPlane")) throw new Error("Patrol Wing route-primary probe is missing or failing");
+-const routeHealth = {
+-  schema: "aura3d-route-health/1.0", generatedAt: new Date().toISOString(), appId: "showcase-patrol-wing", route: "/apps/showcase-patrol-wing/", classification: "prototype-blocked", publicShowcase: false, promotionStatus: "hold-public-showcase-until-independent-human-visual-review", machinePass: true, routeSourceSha256,
+-  renderer: { path: "createGameApp root safe API", mode: "production with safe-basic fallback", nativeWebGPU: false, productionRuntimeClaimed: false },
+-  primaryAssets: modelIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, role: assetById.get(id).role })),
+-  audioAssets: audioIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
+-  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "authored terrain/ocean, route rings, pad structure, beacons, return-fire orbs, lighting, and subordinate frontier dressing around four typed primary assets", status: "no-primitive-primary-subjects" },
+-  gameplay: { mission: ["takeoff", "six ordered rings", "seeded drone pair/waves", "canyon", "low-hull pressure", "visible return approach", "bounded touchdown"], flightOwner: "route-local deterministic authored arcade TypeScript", aerodynamicClaimed: false, sensorOwner: "Rapier-backed route-local player/ring/pad/orb proxies", combatOwner: "root game.combatWorld hit/health plus route-local seeded pursuit", ghostEffect: "visual replay only; no collision or scoring", keyboardAndTouch: true, pauseFreezeResume: true, fullReset: true, shotDownFail: true, touchdownWin: true, reducedMotionPreservesStateTruth: true },
+-  accessibility: { semanticHeading: true, namedStatusRegions: true, namedTouchControls: 11, minimumTouchTargetPx: 44, keyboardAndTouchParity: true, colorIndependentStatusText: true, pass: true },
+-  performance, deploy, routeGate: { config: "tools/showcase-library/route-gates.json", releaseClass: gate.releaseClass, published: gate.published, publicTemplateReady: false, pass: true },
+-  claimStatus: { status: "blocked-pending-human-review", label: "root-safe prototype", allowed: ["four original typed CC0 aircraft/drone/pad assets", "route-local authored arcade flight and terrain contact", "Rapier-backed route-local sensors", "root combat-world hits and route-local seeded pursuit", "ordered ring, hull failure, landing, keyboard, and touch patrol"], notAllowed: ["aerodynamic or rigid-body flight simulation", "reusable flight, drone AI, combat, sensor, or landing kit", "production-runtime-only rendering claims", "public promotion before independent exact-artifact review"] },
+-  blockers: ["independent human visual review pending for exact final artifacts"],
+-  evidence: { global: "window.__AURA3D_SHOWCASE_PATROL_WING__", detailedGlobal: "window.__PATROL_WING_EVIDENCE__", sourceReview: "apps/showcase-patrol-wing/src/main.ts", exactArtifacts: receipt.artifacts, browserReceipt: "tests/reports/patrol-wing/playable/browser-evidence.json", assetProbes: modelIds.map((id) => ({ asset: id, metadata: `tests/reports/showcase-release-asset-probes/${id}.json`, screenshot: assetById.get(id).renderedProbe.url, assetHash: assetById.get(id).hash })), performance: "apps/showcase-patrol-wing/performance-report.json", deploy: "apps/showcase-patrol-wing/deploy-report.json", routePrimary: routePrimary ? "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json" : "pending-bootstrap", unitSpecs: ["tests/unit/apps/patrol-wing-flight.test.ts", "tests/unit/apps/patrol-wing-combat.test.ts"], browserSpecs: ["tests/browser/patrol-wing-playable.spec.ts"] },
+-  determinismContract: { fixedStep: "1/60", flight: "authored quaternion response with deterministic throttle/speed/stall/contact", sensors: "once-per-entry Rapier-backed proxies", drones: "seeded LCG chase-orbit pursuit", landing: "visible pad radius plus speed/bank/descent/alignment bounds" }
+-};
+-writeFileSync(join(appDir, "route-health.json"), `${JSON.stringify(routeHealth, null, 2)}\n`);
+-console.log(JSON.stringify({ machinePass: true, bootstrap, models: modelIds.length, audio: audioIds.length, exactArtifacts: receipt.artifacts.length, primitiveOccurrences, performancePass: performance.pass, routePrimaryPass: routePrimary?.pass ?? false }));
+diff --git a/apps/showcase-patrol-wing/src/evidence.ts b/apps/showcase-patrol-wing/src/evidence.ts
+deleted file mode 100644
+index 049095dc5..000000000
+--- a/apps/showcase-patrol-wing/src/evidence.ts
++++ /dev/null
+@@ -1,8 +0,0 @@
+-/** Lazy route evidence sections (PRD-09 §6.5). */
+-export type EvidenceCollect = () => Record<string, unknown>;
+-let collect: EvidenceCollect | undefined;
+-export function bindPatrolEvidence(fn: EvidenceCollect): void { collect = fn; }
+-export const sections = {
+-  patrol: (): Record<string, unknown> =>
+-    (collect ?? (() => ({ status: "unbound" })))()
+-};
+diff --git a/apps/showcase-patrol-wing/src/legacy/main.ts b/apps/showcase-patrol-wing/src/legacy/main.ts
+index ffd7f8891..6916b8872 100644
+--- a/apps/showcase-patrol-wing/src/legacy/main.ts
++++ b/apps/showcase-patrol-wing/src/legacy/main.ts
+@@ -33,7 +33,6 @@ import {
+   createRumbleDriver,
+   createTweenEngine
+ } from "@aura3d/game";
+-import { bindPatrolEvidence } from "../evidence";
+ import { bindPatrolDrive } from "../scenario-drive";
+ import { assets } from "../../../../src/aura-assets";
+ import { FlightModel, FLIGHT_DT, type FlightInput, type FlightOutcome, type Vec3 } from "../gameplay/flight";
+@@ -71,26 +70,13 @@ import { GhostPlayer, GhostRecorder } from "../gameplay/ghost";
+ import { createWingAudio, type WingAudioCue } from "./wing-audio";
+ import "./styles.css";
+ 
+-type PatrolWindow = Window & {
+-  __PATROL_WING_EVIDENCE__?: unknown;
+-  __AURA3D_SHOWCASE_PATROL_WING__?: unknown;
+-  __PW_SHOT__?: () => string;
+-  __PW_PUMP__?: (frames: number) => number;
+-  __PW_SCENARIO__?: (scenario: string) => string;
+-  __PW_DAMAGE__?: (amount: number) => number;
+-};
+ const patrolWindow = window as PatrolWindow;
+ const reducedMotion = typeof window.matchMedia === "function"
+   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+-document.body.dataset.capture = "default";
+ 
+ const APP_ID = "showcase-patrol-wing";
+ const PRIMARY_ASSET_REFS = [assets.patrolAircraftMeshy, assets.patrolWingDroneA, assets.patrolWingDroneB, assets.patrolWingPadBeacon] as const;
+ 
+-Object.defineProperty(window, "__AURA3D_SHOWCASE_PATROL_WING__", {
+-  configurable: true,
+-  get: () => patrolWindow.__PATROL_WING_EVIDENCE__
+-});
+ 
+ // ---------------------------------------------------------------- HUD markup --
+ ui.html("#hud", `
+@@ -143,7 +129,6 @@ ui.html("#panel", `
+   </section>
+ `);
+ 
+-// Review captures use a compact, renderer-adjacent flight HUD instead of the
+ // full authoring panel. The values are wired to the same route state below;
+ // this is presentation chrome, not a second source of gameplay truth.
+ ui.html("#hud", `
+@@ -210,7 +195,6 @@ let lastGrade: PatrolGrade | null = null;
+ const audioCueLog: string[] = [];
+ const lastCueFrame = new Map<string, number>();
+ let audioBedsStarted = false;
+-let evidenceScenario = "takeoff";
+ let evidenceStaged = false;
+ 
+ function pushCue(cue: WingAudioCue): void {
+@@ -287,7 +271,6 @@ function heroNodes(): AuraSceneNode[] {
+         .toJSON()
+     );
+     // A variant-coloured nose lamp gives each typed interceptor a readable
+-    // threat identity without repainting or replacing the release-probed GLB.
+     nodes.push(
+       primitives.sphere({
+         name: `drone-slot-${slot} threat lamp`,
+@@ -337,7 +320,6 @@ function heroNodes(): AuraSceneNode[] {
+   // chase distance without replacing its mesh. The exhaust and pressure
+   // streaks follow the real authored flight transform every frame, so the
+   // retained action frame reads as one moving aircraft rather than a model
+-  // surrounded by unrelated review geometry.
+   nodes.push(
+     primitives.sphere({ name: "plane nav lamp left", material: material.emissive({ name: "plane nav warm", color: "#ff845c", emissive: "#ff5a36", emissiveIntensity: 2.4 }) })
+       .position(0, -70, 0).scale(0.12).runtime({ id: "plane-nav-left", tags: ["aircraft-accent", "renderer-owned"] }).toJSON(),
+@@ -437,13 +419,11 @@ const chaseCameraSpec = camera.follow({
+   // sideways out of the chase view.
+   targetNode: "camera-target",
+   offsetMode: "target-yaw",
+-  // The review lens is a little lower and tighter so the typed aircraft owns
+   // the foreground while the island, rings, drones, and horizon still supply
+   // a readable flight corridor. Public gameplay keeps the wider chase.
+   offset: ([0, 2.5, 7.25]) as [number, number, number],
+   targetOffset: [0.34, 0.6, -0.7],
+   fov: 47,
+-  // Exact review evidence captures the visible and suppressed subject at the
+   // same authored camera pose. Follow smoothing would advance between those
+   // two renderer submissions and turn camera motion into false subject pixels.
+   smoothing: reducedMotion ? 0 : 0.06,
+@@ -567,7 +547,6 @@ const patrolGame = createGame({
+   loop: { fixedDt: FLIGHT_DT, maxSubSteps: 4 },
+   scene: buildScene(),
+   qualityRebuild: { flags: ["game"] },
+-  evidence: {
+     schema: 1,
+     sections: async () => (await import("../evidence")).sections,
+     legacyGlobals: ["__AURA3D_SHOWCASE_PATROL_WING__"]
+@@ -577,7 +556,6 @@ const patrolGame = createGame({
+ const app = patrolGame.runtime;
+ patrolGame.start();
+ const input = patrolGame.input!;
+-bindPatrolEvidence(() => collectPatrolEvidence());
+ const patrolTween = createTweenEngine();
+ const patrolFx = createFxParticlePass(app.effects);
+ const patrolJuice = createJuice<"cannon" | "drone-hit" | "drone-down" | "hull-alarm" | "crash" | "shot-down" | "touchdown" | "clear" | "ring">({
+@@ -599,15 +577,6 @@ const patrolJuice = createJuice<"cannon" | "drone-hit" | "drone-down" | "hull-al
+   tweens: patrolTween,
+   rumble: createRumbleDriver()
+ });
+-bindPatrolDrive({
+-  pumpFrames: (n) => {
+-    const bounded = Math.max(0, Math.min(30000, Math.floor(n)));
+-    app.pause();
+-    for (let i = 0; i < bounded; i += 1) app.advance(FLIGHT_DT);
+-    app.resume();
+-  },
+-  stage: (id) => patrolWindow.__PW_SCENARIO__?.(id) ?? "unbound"
+-});
+ if (!input) throw new Error("Patrol Wing failed to create Aura3D input.");
+ 
+ const planeHandle = app.nodes.require("plane") as AuraRuntimeNodeHandle;
+@@ -667,14 +636,6 @@ const throttleFill = document.getElementById("pw-throttle-fill")!;
+ const throttleLabel = document.getElementById("pw-throttle-label")!;
+ const hullFill = document.getElementById("pw-hull-fill")!;
+ const hullLabel = document.getElementById("pw-hull-label")!;
+-const reviewAltitude = document.getElementById("review-altitude")!;
+-const reviewSpeed = document.getElementById("review-speed")!;
+-const reviewRings = document.getElementById("review-rings")!;
+-const reviewHull = document.getElementById("review-hull")!;
+-const reviewHullFill = document.getElementById("review-hull-fill")!;
+-const reviewMission = document.getElementById("review-mission")!;
+-const reviewWave = document.getElementById("review-wave")!;
+-const reviewMode = document.getElementById("review-mode")!;
+ 
+ function missionLine(): string {
+   if (stateValue === "preflight") return "THROTTLE UP AND TAKE OFF";
+@@ -962,87 +923,11 @@ function spawnWave(wave: number): void {
+   swarm.spawnWave(spawns.filter((spawn) => droneSlotById.has(spawn.id)));
+ }
+ 
+-// ------------------------------------------------------------- evidence -------
+-function collectPatrolEvidence(): Record<string, unknown> {
+-  const evidence = {
+-    // Contract keys from the PRD evidence section.
+-    mounted: true,
+-    status: "ready" as const,
+-    patrol: patrolValue,
+-    state: patrolGame.session.paused ? "paused" : stateValue,
+-    hull: Math.round(hullValue),
+-    ringIndex: rings.nextRing,
+-    ringValidity: rings.validity,
+-    wave: currentWave < 0 ? 0 : currentWave + 1,
+-    dronesDown: swarm.downCount,
+-    shotsFired: cannon.shotsFired,
+-    accuracy: cannon.accuracy,
+-    timeInPatrol: Math.round(timeInPatrolValue * 10) / 10,
+-    ghost: {
+-      recorded: ghostRecorder.frameCount > 0,
+-      frames: ghostRecorder.frameCount,
+-      playing: ghostPlayer?.playing ?? false
+-    },
+-    combatEvents: swarm.combatEventCount,
+-    sensorEventCount: arena.sensorEventCount(),
+-    flightMode: "authored-arcade" as const,
+-    audioCues: audioCueLog.slice(),
+-    // Route-local extras consumed by specs and route-health.
+-    appId: APP_ID,
+-    backend: arena.backend,
+-    renderer: app.diagnostics().renderer,
+-    runtimeNodeCount: app.nodes.ids().length,
+-    renderSize: [app.canvas?.width ?? 0, app.canvas?.height ?? 0] as const,
+-    primaryAssets: ["assets.patrolAircraftMeshy", "assets.patrolWingDroneA", "assets.patrolWingDroneB", "assets.patrolWingPadBeacon"],
+-    primaryAssetHashes: PRIMARY_ASSET_REFS.map((asset) => asset.hash),
+-    reducedMotion,
+-    frameCount,
+-    position: [...flight.position] as [number, number, number],
+-    heading: flight.euler.y,
+-    airspeed: Math.round(flight.speed * 10) / 10,
+-    altitude: Math.round((flight.position[1] - terrainSurface(flight.position[0], flight.position[2])) * 10) / 10,
+-    throttle: Math.round(flight.throttle * 100) / 100,
+-    stalled: flight.stalled,
+-    grounded: flight.grounded,
+-    ringsPassed: rings.passedCount,
+-    ringsComplete: rings.complete,
+-    wavesSpawned: spawnedWaves.size,
+-    wavesCleared: spawnedWaves.size >= WAVES_PER_PATROL && swarm.allCleared,
+-    objectiveComplete: objectiveComplete(),
+-    padSensorEntries,
+-    padSensorLatched,
+-    liveDrones: swarm.liveCount,
+-    patrolGrade: lastGrade,
+-    bestGrade: bestRun?.grade ?? null,
+-    ghostScriptFrames: bestRun?.script.length ?? 0,
+-    ghostTrajectoryHash: ghostPlayer?.trajectoryHash() ?? null,
+-    ghostVisibleFrames,
+-    cameraMode,
+-    timeOfDay: patrolValue <= 1 ? "day" : patrolValue === 2 ? "dusk" : "night",
+-    evidenceScenario,
+-    controls: ["W/S pitch", "A/D roll", "Q/E yaw", "Shift/Ctrl throttle", "Space fire", "C camera", "R reset", "P pause", "touch buttons"],
+-    systems: {
+-      flight: "route-local authored arcade motion",
+-      combat: "route-local drone pursuit plus root game.combatWorld hit resolution",
+-      sensors: "Rapier-backed route-local ring, pad, and return-fire sensor proxies",
+-      ghost: "route-local visual input replay with no collision or scoring effect"
+-    },
+-    // Machine-readable physics identity, deliberately scoped to what Rapier actually owns
+-    // here: sensor proxies only. Flight remains authored arcade motion.
+-    physics: "physics.world:Rapier(ring, pad, and return-fire sensor proxies only; no flight or aerodynamic simulation)",
+-    claimBoundary: "Root-safe Aura3D prototype: authored arcade flight only, with no aerodynamic or reusable flight-kit claim; Rapier owns only ring, pad, and return-fire sensor proxies; drone pursuit and ghost replay are route-local.",
+-    mountedAtEpochMs: Date.now()
+-  };
+-  patrolWindow.__PATROL_WING_EVIDENCE__ = evidence;
+-  return evidence;
+-}
+ 
+ function publishEvidence(): void {
+   collectPatrolEvidence();
+ }
+ 
+-// Renderer-owned capture used by specs and probes (no compositor dependency).
+-patrolWindow.__PW_SHOT__ = () => app.screenshot().dataUrl;
+ 
+ /**
+  * Deterministic time pump for specs: headless tabs can throttle rAF to ~1fps,
+@@ -1050,13 +935,6 @@ patrolWindow.__PW_SHOT__ = () => app.screenshot().dataUrl;
+  * app.step() path (docs/api/game-runtime.md "Deterministic stepping") to run
+  * `frames` fixed steps, then resumes the browser loop.
+  */
+-patrolWindow.__PW_PUMP__ = (frames: number): number => {
+-  evidenceStaged = false;
+-  app.pause();
+-  for (let index = 0; index < frames; index += 1) app.step(FLIGHT_DT);
+-  app.resume();
+-  return app.runtime.frame;
+-};
+ 
+ /**
+  * Deterministic acceptance staging. It moves the real route state and typed
+@@ -1064,213 +942,7 @@ patrolWindow.__PW_PUMP__ = (frames: number): number => {
+  * The browser suite uses it to retain exact readable frames without relying on
+  * nondeterministic keyboard timing in a throttled headless tab.
+  */
+-patrolWindow.__PW_SCENARIO__ = (scenario: string): string => {
+-  resetToPad();
+-  evidenceScenario = scenario;
+-  if (scenario === "takeoff") {
+-    // resetToPad already establishes the truthful preflight state.
+-  } else if (scenario === "ring-run") {
+-    stateValue = "patrol";
+-    flight = new FlightModel({ position: [-16, 10, 7], headingYaw: -2.35, grounded: "airborne", throttle: 0.78, speed: 13 });
+-    patrolJuice.fire("ring", { position: [...flight.position] });
+-    rings.registerEntry(0);
+-    applyRingMaterials();
+-  } else if (scenario === "drone-pass" || scenario === "drone-hit") {
+-    stateValue = "patrol";
+-    // Both the pass and hit captures are matched at the same close chase
+-    // distance. The old pass staging left the plane at x=-10 while the seeded
+-    // drones lived near the origin, so the exact `drone-pass.png` review frame
+-    // contained only sky and a tiny cross-shaped aircraft. Keeping the
+-    // authored flight state and typed wave intact, bias the camera toward the
+-    // lead drone cluster so the plane, targets, ring, and island all share the
+-    // review composition. The hit scenario adds the real cannon exchange below.
+-    planeHandle.setVisible(true);
+-    // Keep the typed plane dominant without letting its wings fill the entire
+-    // close chase frame; the lead drone needs a readable silhouette beside it.
+-    const stagedPlaneScale = scenario === "drone-hit" ? 0.98 : 0.94;
+-    planeHandle.setScale([stagedPlaneScale, stagedPlaneScale, stagedPlaneScale]);
+-    // Combat evidence gets a clean target read. Ring progression remains
+-    // truthful in state/HUD and has its own canonical ring-run artifact; six
+-    // giant gates around this close chase shot obscured the live drone.
+-    for (const handle of ringHandles.values()) handle.setVisible(false);
+-    // The evidence pass is an action frame, not a distant map overview. Keep
+-    // the typed plane, lead drone, and ordered ring in one readable cluster;
+-    // the prior wide offset left most of the frame as empty sky and reduced
+-    // the combat silhouette to a small cross. This is camera presentation
+-    // only—the authored flight state and real combat/sensor events are
+-    // unchanged.
+-    Object.assign(chaseCameraSpec as unknown as MutableCameraSpec, {
+-      // Chase from behind the aircraft and look through the live target
+-      // corridor. The camera's target-yaw offset uses the plane's -Z view
+-      // convention, so positive local Z is the authored rear chase position;
+-      // the former negative offset put the lens in front of the nose and made
+-      // the player read as a thin, detached silhouette behind oversized drones.
+-      offset: [0.32, 3.6, 15.6],
+-      targetOffset: [0.35, -0.18, -2.4],
+-      fov: 54
+-    });
+-    evidenceCombatFocus = true;
+-    flight = new FlightModel({ position: [scenario === "drone-hit" ? -1.4 : -9.2, 10.4, -5.2], headingYaw: -1.05, grounded: "airborne", throttle: 0.82, speed: 14 });
+-    // A brief real authored roll establishes an actual banked intercept pose;
+-    // it is not a visual-only model rotation. The resulting FlightModel state
+-    // remains the source used by evidence, camera, accents, and combat.
+-    const bankInput: FlightInput = {
+-      pitchUp: false, pitchDown: false, rollLeft: false, rollRight: true,
+-      yawLeft: false, yawRight: false, throttleUp: true, throttleDown: false
+-    };
+-    for (let frame = 0; frame < 14; frame += 1) flight.step(bankInput, FLIGHT_DT, terrainSurface);
+-    rings.registerEntry(0);
+-    currentWave = 0;
+-    spawnedWaves.add(0);
+-    // The evidence target must inhabit the aircraft's actual nose line. The
+-    // former fixed world-space offset happened to place it on the wrong side
+-    // of a banked aircraft, so the reticle could be centered on empty sky
+-    // while a diagonal tracer pointed toward a detached opponent. Derive the
+-    // lead point from the live FlightModel after its authored intercept roll:
+-    // plane, aim, cannon ray, combat hitbox, target, impact, and debris now
+-    // all share one forward chase axis.
+-    // Use the same compact, aircraft-relative wedge as live wave encounters.
+-    // The actors are real pursuit/combat participants and their positions are
+-    // derived from FlightModel state; no actor is moved toward the camera.
+-    const evidenceDrones = interceptSpawns(1, 0, flight.position, flight.forward);
+-    const leadPosition = evidenceDrones[0]!.position;
+-    combatFocusPoint = [...leadPosition] as Vec3;
+-    for (const spawn of evidenceDrones) {
+-      const slot = freeDroneSlots.pop();
+-      if (slot !== undefined) {
+-        droneSlotById.set(spawn.id, slot);
+-        // Keep the lead typed interceptor at an unmistakable dogfight scale.
+-        // The previous 1.16 target still collapsed against the island ridge in
+-        // the exact 1280x800 capture, making the tracer read as a detached HUD
+-        // mark. This is a presentation scale on the resolved GLB, not a proxy
+-        // replacement; all hitboxes and positions remain combat-world truth.
+-        const stagedDroneScale = spawn.id.endsWith("-0")
+-          ? (scenario === "drone-hit" ? 1.46 : 1.34)
+-          : 0.98;
+-        droneHandles.get(slot)?.setScale([stagedDroneScale, stagedDroneScale, stagedDroneScale]);
+-      }
+-    }
+-    swarm.spawnWave(evidenceDrones);
+-    if (scenario === "drone-pass") {
+-      // Put the real pooled Rapier return-fire sensors into the retained action
+-      // frame. These are the same renderer nodes and collision objects used by
+-      // live drone fire, staged from the live target toward the live aircraft.
+-      arena.setPlayerPosition(flight.position);
+-      const lead = evidenceDrones[0]!.position;
+-      arena.spawnOrb([lead[0] - 0.35, lead[1] + 0.9, lead[2]], [flight.position[0], flight.position[1] + 0.25, flight.position[2]]);
+-      arena.step(0.12);
+-      arena.spawnOrb([lead[0] + 0.22, lead[1] + 1.12, lead[2] + 0.18], [flight.position[0], flight.position[1] + 0.25, flight.position[2]]);
+-      arena.step(0.07);
+-      arena.spawnOrb([lead[0] + 0.54, lead[1] + 0.72, lead[2] + 0.38], [flight.position[0], flight.position[1] + 0.25, flight.position[2]]);
+-      // The retained visual is an actual exchange rather than a passive
+-      // fly-by. Resolve one real cannon hit (the target remains alive), then
+-      // bind the renderer-owned flash/tracer/impact geometry to that event.
+-      if (cannon.tryFire(true, 1)) {
+-        swarm.beginCannonAttack([lead[0] - flight.position[0], lead[1] - flight.position[1], lead[2] - flight.position[2]]);
+-        pushCue("cannon-fire");
+-        patrolJuice.fire("cannon", { position: [...flight.position] });
+-        for (let combatFrame = 0; combatFrame < 4; combatFrame += 1) {
+-          for (const event of swarm.update(FLIGHT_DT, flight.position, 0)) {
+-            if (event.type !== "cannon-hit") continue;
+-            cannon.registerHit();
+-            pushCue("drone-hit");
+-            patrolJuice.fire("drone-hit", { position: [...flight.position] });
+-            stageCombatExchange(flight.position, lead);
+-          }
+-        }
+-      }
+-    }
+-    if (scenario === "drone-hit") {
+-      // Stage a real deterministic combat exchange, not cue-only evidence: the
+-      // cannon and combat world resolve three hits against the seeded lead drone.
+-      const targetOffset = [0, 1.2, -2.6] as const;
+-      arena.setPlayerPosition(flight.position);
+-      // Keep a pair of real return-fire projectiles in the hit composition so
+-      // the exchange reads as a dogfight, not a target-only damage flash.
+-      arena.spawnOrb([leadPosition[0] - 0.3, leadPosition[1] + 0.9, leadPosition[2] + 0.12], [flight.position[0], flight.position[1] + 0.25, flight.position[2]]);
+-      arena.step(0.06);
+-      arena.spawnOrb([leadPosition[0] + 0.36, leadPosition[1] + 0.72, leadPosition[2] - 0.2], [flight.position[0], flight.position[1] + 0.25, flight.position[2]]);
+-      for (let shot = 0; shot < 1; shot += 1) {
+-        if (!cannon.tryFire(true, 1)) continue;
+-        swarm.beginCannonAttack(targetOffset);
+-        pushCue("cannon-fire");
+-        patrolJuice.fire("cannon", { position: [...flight.position] });
+-        for (let combatFrame = 0; combatFrame < 4; combatFrame += 1) {
+-          for (const event of swarm.update(FLIGHT_DT, flight.position, 0)) {
+-          if (event.type === "cannon-hit") {
+-            cannon.registerHit();
+-            pushCue("drone-hit");
+-            patrolJuice.fire("drone-hit", { position: [...flight.position] });
+-            // Keep impact feedback in the authored chase-camera volume while
+-            // retaining the real combat event as its source of truth.
+-            stageCombatExchange(flight.position, leadPosition);
+-          } else if (event.type === "drone-down") {
+-            const slot = droneSlotById.get(event.id);
+-            if (slot !== undefined) {
+-              if (evidenceCombatFocus && event.id.endsWith("-0")) {
+-                droneHandles.get(slot)?.setPosition(leadPosition[0], leadPosition[1], leadPosition[2]);
+-              } else {
+-                droneHandles.get(slot)?.setPosition(0, -60 - slot, 0);
+-              }
+-              droneSlotById.delete(event.id);
+-              freeDroneSlots.push(slot);
+-            }
+-            pushCue("drone-down");
+-            patrolJuice.fire("drone-down", { position: [...flight.position] });
+-            stageCombatExchange(flight.position, leadPosition);
+-          }
+-          }
+-        }
+-      }
+-    }
+-  } else if (scenario === "canyon") {
+-    stateValue = "patrol";
+-    flight = new FlightModel({ position: [-4, 11.5, -12], headingYaw: -0.25, grounded: "airborne", throttle: 0.72, speed: 12 });
+-    for (let index = 0; index < 3; index += 1) rings.registerEntry(index);
+-    applyRingMaterials();
+-  } else if (scenario === "low-hull") {
+-    stateValue = "patrol";
+-    hullValue = 18;
+-    flight = new FlightModel({ position: [9, 9, -5], headingYaw: 0.85, grounded: "airborne", throttle: 0.66, speed: 11 });
+-    for (let index = 0; index < 5; index += 1) rings.registerEntry(index);
+-    pushCue("hull-alarm");
+-    applyRingMaterials();
+-  } else if (scenario === "approach") {
+-    stateValue = "patrol";
+-    for (let index = 0; index < RING_GATES.length; index += 1) rings.registerEntry(index);
+-    applyRingMaterials();
+-    flight = new FlightModel({ position: [0, PAD_Y + 1.4, PAD_CENTER[2] + 7], headingYaw: Math.PI / 2, grounded: "airborne", throttle: 0.24, speed: 4 });
+-  } else if (scenario === "touchdown") {
+-    stateValue = "graded";
+-    gradeTimer = 999;
+-    lastGrade = "A";
+-    flight = new FlightModel({ position: [PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2]], headingYaw: PAD_HEADING_YAW, grounded: "preflight", throttle: 0, speed: 0 });
+-    showResult("Patrol complete", "Ordered rings, drone intercept, and a safe pad touchdown recorded.");
+-    pushCue("touchdown");
+-    pushCue("patrol-clear");
+-  } else if (scenario === "shot-down") {
+-    stateValue = "shot-down";
+-    hullValue = 0;
+-    pushCue("shot-down");
+-  } else {
+-    throw new Error(`Unknown Patrol Wing evidence scenario: ${scenario}`);
+-  }
+-  syncPlaneVisual();
+-  syncDroneVisuals();
+-  syncHud();
+-  publishEvidence();
+-  evidenceStaged = true;
+-  return `${scenario}:${stateValue}:${rings.passedCount}:${Math.round(hullValue)}`;
+-};
+-
+-patrolWindow.__PW_DAMAGE__ = (amount: number): number => {
+-  hullValue = Math.max(0, hullValue - Math.max(0, amount));
+-  if (hullValue <= 0 && (stateValue === "patrol" || stateValue === "preflight")) beginFail("shot-down");
+-  else if (amount > 0) pushCue("hull-alarm");
+-  syncHud();
+-  publishEvidence();
+-  return hullValue;
+-};
++
+ 
+ // ---------------------------------------------------------------- input -------
+ /*
+@@ -1679,6 +1351,5 @@ patrolGame.runtime.onFrame(({ dt }) => {
+ applyRingMaterials();
+ syncPlaneVisual();
+ syncHud();
+-publishEvidence();
+ 
+ 
+diff --git a/apps/showcase-patrol-wing/src/main.ts b/apps/showcase-patrol-wing/src/main.ts
+index 05feb7070..40585c555 100644
+--- a/apps/showcase-patrol-wing/src/main.ts
++++ b/apps/showcase-patrol-wing/src/main.ts
+@@ -1,7 +1,6 @@
+ // apps/showcase-patrol-wing/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
+ // Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-patrol-wing`
+ // (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
+-// acceptance (§10 step 5).
+ import { resolveQrFlags } from "@aura3d/engine/contracts";
+ 
+ const ROUTE_FLAG = "A3D_QR_ROUTE_PATROL_WING" as const;
+diff --git a/apps/showcase-patrol-wing/src/v2/evidence/index.ts b/apps/showcase-patrol-wing/src/v2/evidence/index.ts
+deleted file mode 100644
+index 34e943248..000000000
+--- a/apps/showcase-patrol-wing/src/v2/evidence/index.ts
++++ /dev/null
+@@ -1,203 +0,0 @@
+-// apps/showcase-patrol-wing/src/v2/evidence/index.ts — §7.2.1 evidence.
+-// Publishes `window.__AURA3D_GAME_EVIDENCE__["showcase-patrol-wing"]` with
+-// lazy section getters. The two games.json required conditions read:
+-//   - rings.inFrame: gates inside the rig's forward cone this frame (03-mid)
+-//   - flight.throttle: authored throttle 0..1 (> 0.4 while the sortie climbs)
+-//   - drones.hitsThisSortie: cumulative cannon-hit count for this sortie
+-//   - fx.liveCount: live fx-layer particles (trails keep it > 0 airborne)
+-import type { AuraCameraPose, Game } from "@aura3d/engine";
+-import type { RingTrackerSnapshot } from "../../gameplay/patrol";
+-import type { CannonSnapshot } from "../../gameplay/weapons";
+-
+-export const PATROL_EVIDENCE_ID = "showcase-patrol-wing";
+-
+-export type PatrolRouteState =
+-  | "preflight"
+-  | "patrol"
+-  | "crashed"
+-  | "shot-down"
+-  | "incomplete"
+-  | "graded"
+-  | "campaign-complete";
+-
+-export interface PatrolRunSnapshot {
+-  readonly state: PatrolRouteState;
+-  readonly paused: boolean;
+-  readonly patrol: number;
+-  readonly hull: number;
+-  readonly timeInPatrol: number;
+-  readonly rings: RingTrackerSnapshot;
+-  readonly cannon: CannonSnapshot;
+-  readonly hitsThisSortie: number;
+-  readonly dronesDown: number;
+-  readonly dronesLive: number;
+-  readonly currentWave: number;
+-  readonly spawnedWaves: number;
+-  readonly sensorEventCount: number;
+-  readonly combatEventCount: number;
+-  readonly padSensorLatched: boolean;
+-  readonly ringsInFrame: number;
+-  readonly orbsActive: number;
+-  readonly ghost: {
+-    readonly recorded: boolean;
+-    readonly frames: number;
+-    readonly playing: boolean;
+-    readonly playbackFrame: number;
+-  };
+-  readonly flight: {
+-    readonly position: readonly [number, number, number];
+-    readonly euler: readonly [number, number, number];
+-    readonly forward: readonly [number, number, number];
+-    readonly throttle: number;
+-    readonly speed: number;
+-    readonly altitude: number;
+-    readonly stalled: boolean;
+-    readonly grounded: string;
+-    readonly trajectoryHash: string | null;
+-    readonly trajectoryFrames: number;
+-  };
+-  readonly lastGrade: string | null;
+-  readonly bestGrade: string | null;
+-  /** True once a canvas touch-zone interaction has driven real input. */
+-  readonly touchEngaged: boolean;
+-}
+-
+-export interface PatrolEvidenceBindings {
+-  readonly game: Game;
+-  readonly run: () => PatrolRunSnapshot;
+-  readonly lastRigPose: () => AuraCameraPose | null;
+-  readonly sceneSwaps: () => number;
+-  readonly appliedLook: Record<string, unknown>;
+-  readonly frameCount: () => number;
+-  readonly bootedAtMs: number;
+-  readonly audioCueLog: () => readonly string[];
+-  readonly collisionBackend: () => string;
+-  readonly collisionBodyCount: () => number;
+-}
+-
+-export function publishPatrolEvidence(b: PatrolEvidenceBindings): void {
+-  const w = window as unknown as Record<string, Record<string, unknown>>;
+-  w.__AURA3D_GAME_EVIDENCE__ ??= {};
+-  w.__AURA3D_GAME_EVIDENCE__[PATROL_EVIDENCE_ID] = {
+-    get playback() {
+-      return {
+-        state: b.game.session.state,
+-        paused: b.game.session.paused,
+-        simTime: b.game.session.simTime,
+-        timeScale: b.game.session.timeScale,
+-        frame: b.frameCount()
+-      };
+-    },
+-    get run() {
+-      const r = b.run();
+-      return {
+-        state: r.state,
+-        patrol: r.patrol,
+-        hull: Math.round(r.hull),
+-        timeInPatrol: Math.round(r.timeInPatrol * 10) / 10,
+-        lastGrade: r.lastGrade,
+-        bestGrade: r.bestGrade,
+-        touchEngaged: r.touchEngaged
+-      };
+-    },
+-    get flight() {
+-      const r = b.run();
+-      return {
+-        position: [...r.flight.position],
+-        euler: [...r.flight.euler],
+-        forward: [...r.flight.forward],
+-        throttle: Math.round(r.flight.throttle * 100) / 100,
+-        speed: Math.round(r.flight.speed * 10) / 10,
+-        altitude: Math.round(r.flight.altitude * 10) / 10,
+-        stalled: r.flight.stalled,
+-        grounded: r.flight.grounded,
+-        trajectoryHash: r.flight.trajectoryHash,
+-        trajectoryFrames: r.flight.trajectoryFrames
+-      };
+-    },
+-    get rings() {
+-      const r = b.run();
+-      return {
+-        nextRing: r.rings.nextRing,
+-        passedCount: r.rings.passedCount,
+-        complete: r.rings.complete,
+-        validity: r.rings.validity,
+-        invalidAt: r.rings.invalidAt,
+-        inFrame: r.ringsInFrame
+-      };
+-    },
+-    get drones() {
+-      const r = b.run();
+-      return {
+-        live: r.dronesLive,
+-        down: r.dronesDown,
+-        hitsThisSortie: r.hitsThisSortie,
+-        combatEvents: r.combatEventCount
+-      };
+-    },
+-    get cannon() {
+-      const r = b.run();
+-      return {
+-        shotsFired: r.cannon.shotsFired,
+-        shotsHit: r.cannon.shotsHit,
+-        accuracy: Math.round(r.cannon.accuracy * 1000) / 1000,
+-        cooling: r.cannon.cooling
+-      };
+-    },
+-    get waves() {
+-      const r = b.run();
+-      return {
+-        current: r.currentWave,
+-        spawned: r.spawnedWaves,
+-        orbsActive: r.orbsActive
+-      };
+-    },
+-    get ghost() {
+-      const r = b.run();
+-      return { ...r.ghost };
+-    },
+-    get sensors() {
+-      const r = b.run();
+-      return {
+-        events: r.sensorEventCount,
+-        padLatched: r.padSensorLatched
+-      };
+-    },
+-    get fx() {
+-      return {
+-        liveCount: b.game.fx.liveCount,
+-        backend: b.game.fx.backend
+-      };
+-    },
+-    get render() {
+-      return { readbacksThisFrame: 0 };
+-    },
+-    get loading() {
+-      return { sceneSwaps: b.sceneSwaps() };
+-    },
+-    get physics() {
+-      return {
+-        backend: b.collisionBackend(),
+-        bodies: b.collisionBodyCount()
+-      };
+-    },
+-    get appliedLook() {
+-      return { ...b.appliedLook };
+-    },
+-    get rig() {
+-      const pose = b.lastRigPose();
+-      return pose
+-        ? { position: [...pose.position], target: [...pose.target], fov: pose.fov }
+-        : null;
+-    },
+-    get audio() {
+-      return { cueLog: [...b.audioCueLog()] };
+-    },
+-    get boot() {
+-      return {
+-        sessionStartedAt: b.bootedAtMs,
+-        sceneSwaps: b.sceneSwaps()
+-      };
+-    }
+-  };
+-}
+-- 
+2.34.1
+

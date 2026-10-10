@@ -1,0 +1,2126 @@
+From f59cf71cb499ae090e06ece80ca9eb98db5d0fdc Mon Sep 17 00:00:00 2001
+From: gchahal+1 <gchahal@veerone.com>
+Date: Fri, 9 Oct 2026 13:45:47 +0000
+Subject: [PATCH] [qr-prd09] showcase-blockfall-reactor: delete evidence
+ files+blocks (T5.8)
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ .../scripts/build-review-art.mjs              | 180 ------
+ .../scripts/build-sfx.mjs                     | 558 ------------------
+ .../scripts/write-expert-fixture.ts           |  80 ---
+ .../scripts/write-route-health.mjs            | 193 ------
+ .../src/legacy/main.ts                        | 550 -----------------
+ apps/showcase-blockfall-reactor/src/main.ts   |  10 -
+ .../src/v2/evidence/index.ts                  |  73 ---
+ 7 files changed, 1644 deletions(-)
+ delete mode 100644 apps/showcase-blockfall-reactor/scripts/build-review-art.mjs
+ delete mode 100644 apps/showcase-blockfall-reactor/scripts/build-sfx.mjs
+ delete mode 100644 apps/showcase-blockfall-reactor/scripts/write-expert-fixture.ts
+ delete mode 100644 apps/showcase-blockfall-reactor/scripts/write-route-health.mjs
+ delete mode 100644 apps/showcase-blockfall-reactor/src/v2/evidence/index.ts
+
+diff --git a/apps/showcase-blockfall-reactor/scripts/build-review-art.mjs b/apps/showcase-blockfall-reactor/scripts/build-review-art.mjs
+deleted file mode 100644
+index c19a77aab..000000000
+--- a/apps/showcase-blockfall-reactor/scripts/build-review-art.mjs
++++ /dev/null
+@@ -1,180 +0,0 @@
+-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+-import { dirname, resolve } from "node:path";
+-
+-const align4 = (value) => (value + 3) & ~3;
+-const padded = (bytes, fill = 0) => {
+-  const output = Buffer.alloc(align4(bytes.length), fill);
+-  bytes.copy(output);
+-  return output;
+-};
+-const floats = (values) => {
+-  const output = Buffer.alloc(values.length * 4);
+-  values.forEach((value, index) => output.writeFloatLE(value, index * 4));
+-  return output;
+-};
+-const ushorts = (values) => {
+-  const output = Buffer.alloc(values.length * 2);
+-  values.forEach((value, index) => output.writeUInt16LE(value, index * 2));
+-  return output;
+-};
+-
+-function buildArenaCard() {
+-  const source = "apps/showcase-blockfall-reactor/assets/blockfall-reactor-arena.png";
+-  const output = "apps/showcase-blockfall-reactor/generated/blockfallReactorArena.glb";
+-  const prompt = "apps/showcase-blockfall-reactor/assets/blockfall-reactor-arena.prompt.md";
+-  const name = "Blockfall Reactor Arena";
+-  const halfWidth = 8;
+-  const halfHeight = halfWidth * 1024 / 1536;
+-  const halfDepth = 0.08;
+-  const positions = padded(floats([
+-    -halfWidth, -halfHeight, halfDepth, halfWidth, -halfHeight, halfDepth,
+-    halfWidth, halfHeight, halfDepth, -halfWidth, halfHeight, halfDepth,
+-    -halfWidth, -halfHeight, -halfDepth, halfWidth, -halfHeight, -halfDepth,
+-    halfWidth, halfHeight, -halfDepth, -halfWidth, halfHeight, -halfDepth
+-  ]));
+-  const uvs = padded(floats([0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0]));
+-  const indices = padded(ushorts([0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6]));
+-  const image = padded(readFileSync(resolve(source)));
+-  const offsets = [0, positions.length, positions.length + uvs.length, positions.length + uvs.length + indices.length];
+-  const binary = Buffer.concat([positions, uvs, indices, image]);
+-  const material = {
+-    name: `${name}-unlit`,
+-    doubleSided: true,
+-    pbrMetallicRoughness: {
+-      baseColorFactor: [1, 1, 1, 1], baseColorTexture: { index: 0 }, metallicFactor: 0, roughnessFactor: 1
+-    },
+-    extensions: { KHR_materials_unlit: {} }
+-  };
+-  const gltf = {
+-    asset: {
+-      version: "2.0",
+-      generator: "Aura3D Blockfall Reactor deterministic review-art builder",
+-      extras: { source, prompt, license: "CC0-1.0", role: "renderer-owned-non-primary-background" }
+-    },
+-    extensionsUsed: ["KHR_materials_unlit"],
+-    scene: 0,
+-    scenes: [{ name, nodes: [0] }],
+-    nodes: [{ name: `${name}-card`, mesh: 0 }],
+-    meshes: [{ name: `${name}-mesh`, primitives: [{ attributes: { POSITION: 0, TEXCOORD_0: 1 }, indices: 2, material: 0 }] }],
+-    materials: [material],
+-    textures: [{ name: `${name}-texture`, sampler: 0, source: 0 }],
+-    samplers: [{ magFilter: 9729, minFilter: 9987, wrapS: 33071, wrapT: 33071 }],
+-    images: [{ name: `${name}-image`, bufferView: 3, mimeType: "image/png" }],
+-    accessors: [
+-      { bufferView: 0, componentType: 5126, count: 8, type: "VEC3", min: [-halfWidth, -halfHeight, -halfDepth], max: [halfWidth, halfHeight, halfDepth] },
+-      { bufferView: 1, componentType: 5126, count: 8, type: "VEC2", min: [0, 0], max: [1, 1] },
+-      { bufferView: 2, componentType: 5123, count: 12, type: "SCALAR", min: [0], max: [7] }
+-    ],
+-    bufferViews: [
+-      { buffer: 0, byteOffset: offsets[0], byteLength: positions.length, target: 34962 },
+-      { buffer: 0, byteOffset: offsets[1], byteLength: uvs.length, target: 34962 },
+-      { buffer: 0, byteOffset: offsets[2], byteLength: 24, target: 34963 },
+-      { buffer: 0, byteOffset: offsets[3], byteLength: image.length }
+-    ],
+-    buffers: [{ byteLength: binary.length }]
+-  };
+-  const json = padded(Buffer.from(JSON.stringify(gltf), "utf8"), 0x20);
+-  const body = Buffer.alloc(12 + 8 + json.length + 8 + binary.length);
+-  body.write("glTF", 0, "ascii");
+-  body.writeUInt32LE(2, 4);
+-  body.writeUInt32LE(body.length, 8);
+-  body.writeUInt32LE(json.length, 12);
+-  body.writeUInt32LE(0x4e4f534a, 16);
+-  json.copy(body, 20);
+-  const binaryHeader = 20 + json.length;
+-  body.writeUInt32LE(binary.length, binaryHeader);
+-  body.writeUInt32LE(0x004e4942, binaryHeader + 4);
+-  binary.copy(body, binaryHeader + 8);
+-  const target = resolve(output);
+-  mkdirSync(dirname(target), { recursive: true });
+-  writeFileSync(target, body);
+-  return { output: target, source: resolve(source), bytes: body.length };
+-}
+-
+-function buildActorCard({ source, output, prompt, name, halfWidth, halfHeight }) {
+-  const halfDepth = 0.02;
+-  const positions = padded(floats([
+-    -halfWidth, -halfHeight, halfDepth, halfWidth, -halfHeight, halfDepth,
+-    halfWidth, halfHeight, halfDepth, -halfWidth, halfHeight, halfDepth,
+-    -halfWidth, -halfHeight, -halfDepth, halfWidth, -halfHeight, -halfDepth,
+-    halfWidth, halfHeight, -halfDepth, -halfWidth, halfHeight, -halfDepth
+-  ]));
+-  const uvs = padded(floats([0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0]));
+-  const indices = padded(ushorts([0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6]));
+-  const image = padded(readFileSync(resolve(source)));
+-  const offsets = [0, positions.length, positions.length + uvs.length, positions.length + uvs.length + indices.length];
+-  const binary = Buffer.concat([positions, uvs, indices, image]);
+-  const gltf = {
+-    asset: {
+-      version: "2.0",
+-      generator: "Aura3D Blockfall Reactor deterministic review-art builder",
+-      extras: { source, prompt, license: "CC0-1.0", role: "renderer-owned-event-reactive-character-presentation" }
+-    },
+-    extensionsUsed: ["KHR_materials_unlit"],
+-    scene: 0,
+-    scenes: [{ name, nodes: [0] }],
+-    nodes: [{ name: `${name}-card`, mesh: 0 }],
+-    meshes: [{ name: `${name}-mesh`, primitives: [{ attributes: { POSITION: 0, TEXCOORD_0: 1 }, indices: 2, material: 0 }] }],
+-    materials: [{
+-      name: `${name}-unlit-alpha`,
+-      doubleSided: true,
+-      alphaMode: "MASK",
+-      alphaCutoff: 0.16,
+-      pbrMetallicRoughness: {
+-        baseColorFactor: [1, 1, 1, 1], baseColorTexture: { index: 0 }, metallicFactor: 0, roughnessFactor: 1
+-      },
+-      extensions: { KHR_materials_unlit: {} }
+-    }],
+-    textures: [{ name: `${name}-texture`, sampler: 0, source: 0 }],
+-    samplers: [{ magFilter: 9729, minFilter: 9987, wrapS: 33071, wrapT: 33071 }],
+-    images: [{ name: `${name}-image`, bufferView: 3, mimeType: "image/png" }],
+-    accessors: [
+-      { bufferView: 0, componentType: 5126, count: 8, type: "VEC3", min: [-halfWidth, -halfHeight, -halfDepth], max: [halfWidth, halfHeight, halfDepth] },
+-      { bufferView: 1, componentType: 5126, count: 8, type: "VEC2", min: [0, 0], max: [1, 1] },
+-      { bufferView: 2, componentType: 5123, count: 12, type: "SCALAR", min: [0], max: [7] }
+-    ],
+-    bufferViews: [
+-      { buffer: 0, byteOffset: offsets[0], byteLength: positions.length, target: 34962 },
+-      { buffer: 0, byteOffset: offsets[1], byteLength: uvs.length, target: 34962 },
+-      { buffer: 0, byteOffset: offsets[2], byteLength: 24, target: 34963 },
+-      { buffer: 0, byteOffset: offsets[3], byteLength: image.length }
+-    ],
+-    buffers: [{ byteLength: binary.length }]
+-  };
+-  const json = padded(Buffer.from(JSON.stringify(gltf), "utf8"), 0x20);
+-  const body = Buffer.alloc(12 + 8 + json.length + 8 + binary.length);
+-  body.write("glTF", 0, "ascii");
+-  body.writeUInt32LE(2, 4);
+-  body.writeUInt32LE(body.length, 8);
+-  body.writeUInt32LE(json.length, 12);
+-  body.writeUInt32LE(0x4e4f534a, 16);
+-  json.copy(body, 20);
+-  const binaryHeader = 20 + json.length;
+-  body.writeUInt32LE(binary.length, binaryHeader);
+-  body.writeUInt32LE(0x004e4942, binaryHeader + 4);
+-  binary.copy(body, binaryHeader + 8);
+-  const target = resolve(output);
+-  mkdirSync(dirname(target), { recursive: true });
+-  writeFileSync(target, body);
+-  return { output: target, source: resolve(source), bytes: body.length };
+-}
+-
+-console.log(JSON.stringify([
+-  buildArenaCard(),
+-  buildActorCard({
+-    source: "apps/showcase-blockfall-reactor/assets/blockfall-reactor-mechanic.png",
+-    output: "apps/showcase-blockfall-reactor/generated/blockfallReactorMechanic.glb",
+-    prompt: "apps/showcase-blockfall-reactor/assets/blockfall-reactor-mechanic.prompt.md",
+-    name: "Blockfall Reactor Mechanic",
+-    halfWidth: (1024 / 1536) / 2,
+-    halfHeight: 0.5
+-  }),
+-  buildActorCard({
+-    source: "apps/showcase-blockfall-reactor/assets/blockfall-reactor-plasma-rival.png",
+-    output: "apps/showcase-blockfall-reactor/generated/blockfallReactorPlasmaRival.glb",
+-    prompt: "apps/showcase-blockfall-reactor/assets/blockfall-reactor-plasma-rival.prompt.md",
+-    name: "Blockfall Reactor Plasma Rival",
+-    halfWidth: (1214 / 1295) / 2,
+-    halfHeight: 0.5
+-  })
+-], null, 2));
+diff --git a/apps/showcase-blockfall-reactor/scripts/build-sfx.mjs b/apps/showcase-blockfall-reactor/scripts/build-sfx.mjs
+deleted file mode 100644
+index 990510684..000000000
+--- a/apps/showcase-blockfall-reactor/scripts/build-sfx.mjs
++++ /dev/null
+@@ -1,558 +0,0 @@
+-/**
+- * Blockfall Reactor SFX + music synth — generates original CC0 WAV assets entirely in-repo.
+- *
+- * No network downloads, no sampled material: every cue and music stem is synthesized
+- * from oscillators / noise with this committed generator so provenance is auditable
+- * (author "Aura3D synthesis", license CC0-1.0). Deterministic recipes, 16-bit PCM mono 44.1 kHz.
+- *
+- * Run from the repo root:
+- *   node apps/showcase-blockfall-reactor/scripts/build-sfx.mjs
+- *
+- * Outputs:
+- *   assets/sfx/*.wav    nine one-shot gameplay cues (BF-A1)
+- *   assets/music/*.wav  looping ambient reactor hum + four additive intensity stems
+- */
+-import { mkdirSync, writeFileSync } from "node:fs";
+-import { resolve, dirname } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const HERE = dirname(fileURLToPath(import.meta.url));
+-const SFX_DIR = resolve(HERE, "../assets/sfx");
+-const MUSIC_DIR = resolve(HERE, "../assets/music");
+-const SAMPLE_RATE = 44100;
+-
+-// ---- waveform & DSP helpers -------------------------------------------------
+-function envelope(length, attack, decay, total) {
+-  const out = new Float32Array(length);
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const start = Math.min(1, t / Math.max(0.0005, attack));
+-    const end = Math.pow(Math.max(0, 1 - t / total), decay);
+-    out[i] = start * end;
+-  }
+-  return out;
+-}
+-
+-function noiseBuffer(length) {
+-  let seed = 0x5EEDB10C;
+-  const out = new Float32Array(length);
+-  for (let i = 0; i < length; i += 1) {
+-    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+-    out[i] = (seed / 0x100000000) * 2 - 1;
+-  }
+-  return out;
+-}
+-
+-function lowpass(samples, cutoff) {
+-  const rc = 1 / (2 * Math.PI * cutoff);
+-  const dt = 1 / SAMPLE_RATE;
+-  const alpha = dt / (rc + dt);
+-  let prev = 0;
+-  const out = new Float32Array(samples.length);
+-  for (let i = 0; i < samples.length; i += 1) {
+-    prev = prev + alpha * (samples[i] - prev);
+-    out[i] = prev;
+-  }
+-  return out;
+-}
+-
+-function highpass(samples, cutoff) {
+-  const rc = 1 / (2 * Math.PI * cutoff);
+-  const dt = 1 / SAMPLE_RATE;
+-  const alpha = dt / (rc + dt);
+-  let lp = 0;
+-  const out = new Float32Array(samples.length);
+-  for (let i = 0; i < samples.length; i += 1) {
+-    lp += alpha * (samples[i] - lp);
+-    out[i] = samples[i] - lp;
+-  }
+-  return out;
+-}
+-
+-/**
+- * Render a one-shot cue into a normalized Float32 mono buffer.
+- */
+-function renderCue({ tone, noise }) {
+-  const tones = tone ? (Array.isArray(tone) ? tone : [tone]) : [];
+-  const totals = [
+-    ...tones.map((part) => (part.delay ?? 0) + part.total),
+-    ...(noise ? [(noise.delay ?? 0) + noise.total] : []),
+-    0.1
+-  ];
+-  const totalSec = Math.max(...totals) + 0.05;
+-  const length = Math.floor(totalSec * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-
+-  for (const part of tones) {
+-    const {
+-      wave = "sine", freqStart, freqEnd = freqStart, amp = 0.5,
+-      attack = 0.005, decay = 3, total = 0.2, delay = 0
+-    } = part;
+-    const env = envelope(length, attack, decay, total);
+-    const offset = Math.floor(delay * SAMPLE_RATE);
+-    for (let i = offset; i < length; i += 1) {
+-      const t = (i - offset) / SAMPLE_RATE;
+-      const progress = Math.min(1, t / total);
+-      const f = freqStart + (freqEnd - freqStart) * progress;
+-      const phase = 2 * Math.PI * f * t;
+-      let v = 0;
+-      if (wave === "sine") v = Math.sin(phase);
+-      else if (wave === "triangle") v = 2 / Math.PI * Math.asin(Math.sin(phase));
+-      else if (wave === "sawtooth") v = 2 * (phase / (2 * Math.PI) - Math.floor(0.5 + phase / (2 * Math.PI)));
+-      else if (wave === "square") v = Math.sign(Math.sin(phase));
+-      else v = Math.sin(phase);
+-      out[i] += v * env[i - offset] * amp;
+-    }
+-  }
+-
+-  if (noise) {
+-    const { amp = 0.4, attack = 0.003, decay = 4, total = 0.15, hp = 0, lp = 0, delay = 0 } = noise;
+-    let raw = noiseBuffer(length);
+-    if (hp > 0) raw = highpass(raw, hp);
+-    if (lp > 0) raw = lowpass(raw, lp);
+-    const env = envelope(length, attack, decay, total);
+-    const offset = Math.floor(delay * SAMPLE_RATE);
+-    for (let i = offset; i < length; i += 1) {
+-      out[i] += raw[i - offset] * env[i - offset] * amp;
+-    }
+-  }
+-
+-  let peak = 0;
+-  for (let i = 0; i < length; i += 1) peak = Math.max(peak, Math.abs(out[i]));
+-  if (peak > 0) {
+-    const gain = Math.min(1, 0.9 / peak);
+-    for (let i = 0; i < length; i += 1) out[i] *= gain;
+-  }
+-
+-  return out;
+-}
+-
+-/**
+- * Render a seamless loop without clicks or harsh discontinuities.
+- */
+-function renderLoop({ seconds, parts }) {
+-  const length = Math.round(seconds * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-
+-  for (const part of parts) {
+-    const {
+-      wave = "sine", freq, amp = 0.3, tremoloHz = 0, tremoloDepth = 0,
+-      pulses
+-    } = part;
+-
+-    for (let i = 0; i < length; i += 1) {
+-      const t = i / SAMPLE_RATE;
+-      let sample = 0;
+-
+-      if (freq > 0 && amp > 0) {
+-        const phase = 2 * Math.PI * freq * t;
+-        let v = 0;
+-        if (wave === "sine") v = Math.sin(phase);
+-        else if (wave === "triangle") v = 2 / Math.PI * Math.asin(Math.sin(phase));
+-        else if (wave === "sawtooth") v = 2 * (phase / (2 * Math.PI) - Math.floor(0.5 + phase / (2 * Math.PI)));
+-        else if (wave === "square") v = Math.sign(Math.sin(phase));
+-        let tremolo = 1;
+-        if (tremoloHz > 0) {
+-          tremolo = 1 - tremoloDepth / 2 + (tremoloDepth / 2) * Math.sin(2 * Math.PI * tremoloHz * t);
+-        }
+-        sample += v * amp * tremolo;
+-      }
+-
+-      if (pulses) {
+-        for (const p of pulses) {
+-          const { rateHz, offsetSec = 0, durSec = 0.1, toneFreq = 220, toneEndFreq = toneFreq, toneAmp = 0.3, isNoise = false, noiseHp = 0 } = p;
+-          const period = 1 / rateHz;
+-          const localT = (t - offsetSec + period * 100) % period;
+-          if (localT < durSec) {
+-            const u = localT / durSec;
+-            // Smooth attack + decay envelope
+-            const env = Math.sin(Math.PI * Math.min(1, u / 0.1)) * Math.pow(Math.max(0, 1 - u), 2.5);
+-            if (isNoise) {
+-              const n = (Math.sin((i + offsetSec * 44100) * 12.9898) * 43758.5453) % 1;
+-              sample += (n * 2 - 1) * toneAmp * env;
+-            } else {
+-              const f = toneFreq + (toneEndFreq - toneFreq) * u;
+-              sample += Math.sin(2 * Math.PI * f * localT) * toneAmp * env;
+-            }
+-          }
+-        }
+-      }
+-
+-      out[i] += sample;
+-    }
+-  }
+-
+-  // Crossfade edges so it's guaranteed 100% click-free
+-  const fade = Math.floor(0.015 * SAMPLE_RATE);
+-  for (let i = 0; i < fade; i += 1) {
+-    const k = i / fade;
+-    out[i] *= k;
+-    out[length - 1 - i] *= k;
+-  }
+-
+-  let peak = 0;
+-  for (let i = 0; i < length; i += 1) peak = Math.max(peak, Math.abs(out[i]));
+-  if (peak > 0) {
+-    const gain = Math.min(1, 0.88 / peak);
+-    for (let i = 0; i < length; i += 1) out[i] *= gain;
+-  }
+-
+-  return out;
+-}
+-
+-// ---- one-shot cue recipes (the nine BF-A1 cues) -----------------------------
+-
+-/** Move tick — soft, organic, velvet tactile tap (no harsh beep). */
+-function move() {
+-  const length = Math.floor(0.04 * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  for (let i = 0; i < length; i++) {
+-    const t = i / SAMPLE_RATE;
+-    const env = Math.exp(-t * 120);
+-    const wave = Math.sin(2 * Math.PI * 420 * t) * 0.6 + Math.sin(2 * Math.PI * 840 * t) * 0.2;
+-    out[i] = wave * env * 0.22;
+-  }
+-  return lowpass(out, 1200);
+-}
+-
+-/** Rotate chirp — silky smooth fluid whoosh with warm chime. */
+-function rotate() {
+-  const length = Math.floor(0.07 * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  for (let i = 0; i < length; i++) {
+-    const t = i / SAMPLE_RATE;
+-    const env = Math.sin(Math.PI * (i / length)) * Math.exp(-t * 35);
+-    const f = 520 + 260 * (t / 0.07);
+-    const wave = Math.sin(2 * Math.PI * f * t) * 0.5 + Math.sin(2 * Math.PI * (f * 1.5) * t) * 0.2;
+-    out[i] = wave * env * 0.24;
+-  }
+-  return lowpass(out, 1800);
+-}
+-
+-/** Lock thud — warm, rounded, satisfying acoustic block landing. */
+-function lockThud() {
+-  const length = Math.floor(0.12 * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  for (let i = 0; i < length; i++) {
+-    const t = i / SAMPLE_RATE;
+-    const env = Math.exp(-t * 40);
+-    const f = 110 * Math.exp(-t * 25) + 45;
+-    const body = Math.sin(2 * Math.PI * f * t) * 0.7;
+-    const click = Math.sin(2 * Math.PI * 320 * t) * Math.exp(-t * 160) * 0.3;
+-    out[i] = (body + click) * env * 0.35;
+-  }
+-  return lowpass(out, 500);
+-}
+-
+-/** Line clear — sparkling, warm crystal chime cascade in D major. */
+-function lineClear() {
+-  const length = Math.floor(0.45 * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  const freqs = [587.33, 739.99, 880.00, 1174.66]; // D5, F#5, A5, D6
+-  for (let n = 0; n < freqs.length; n++) {
+-    const delay = n * 0.045;
+-    const offset = Math.floor(delay * SAMPLE_RATE);
+-    const f = freqs[n];
+-    for (let i = offset; i < length; i++) {
+-      const t = (i - offset) / SAMPLE_RATE;
+-      const env = Math.exp(-t * 9);
+-      const tone = Math.sin(2 * Math.PI * f * t) * 0.4 + Math.sin(2 * Math.PI * (f * 2) * t) * 0.15;
+-      out[i] += tone * env * 0.25;
+-    }
+-  }
+-  return lowpass(out, 2800);
+-}
+-
+-/** Quad fanfare — rich, triumphant, warm harmonic bloom for a Tetris clear. */
+-function quadFanfare() {
+-  const length = Math.floor(0.85 * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  const notes = [293.66, 440.00, 587.33, 739.99, 880.00, 1174.66]; // D4..D6
+-  for (let n = 0; n < notes.length; n++) {
+-    const delay = n * 0.055;
+-    const offset = Math.floor(delay * SAMPLE_RATE);
+-    const f = notes[n];
+-    for (let i = offset; i < length; i++) {
+-      const t = (i - offset) / SAMPLE_RATE;
+-      const env = Math.exp(-t * 5.5);
+-      const tone = Math.sin(2 * Math.PI * f * t) * 0.35 + Math.sin(2 * Math.PI * (f * 1.5) * t) * 0.12;
+-      out[i] += tone * env * 0.22;
+-    }
+-  }
+-  return lowpass(out, 3200);
+-}
+-
+-/** Level up — radiant, ascending melodic shimmer. */
+-function levelUp() {
+-  const length = Math.floor(0.75 * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  const notes = [369.99, 440.00, 554.37, 659.25, 739.99, 880.00, 1108.73];
+-  for (let n = 0; n < notes.length; n++) {
+-    const delay = n * 0.06;
+-    const offset = Math.floor(delay * SAMPLE_RATE);
+-    const f = notes[n];
+-    for (let i = offset; i < length; i++) {
+-      const t = (i - offset) / SAMPLE_RATE;
+-      const env = Math.exp(-t * 6.5);
+-      const tone = Math.sin(2 * Math.PI * f * t) * 0.35 + Math.sin(2 * Math.PI * (f * 2) * t) * 0.1;
+-      out[i] += tone * env * 0.22;
+-    }
+-  }
+-  return lowpass(out, 3000);
+-}
+-
+-/** Hold swap — gentle tactile mechanical latch click. */
+-function holdSwap() {
+-  const length = Math.floor(0.06 * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  for (let i = 0; i < length; i++) {
+-    const t = i / SAMPLE_RATE;
+-    const env1 = Math.exp(-t * 110);
+-    const c1 = Math.sin(2 * Math.PI * 480 * t) * env1 * 0.2;
+-    const t2 = t - 0.018;
+-    let c2 = 0;
+-    if (t2 > 0) c2 = Math.sin(2 * Math.PI * 680 * t2) * Math.exp(-t2 * 110) * 0.22;
+-    out[i] = (c1 + c2) * 0.5;
+-  }
+-  return lowpass(out, 1500);
+-}
+-
+-/** Hard-drop slam — resonant, satisfying low-frequency impact. */
+-function hardDropSlam() {
+-  const length = Math.floor(0.22 * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  for (let i = 0; i < length; i++) {
+-    const t = i / SAMPLE_RATE;
+-    const env = Math.exp(-t * 18);
+-    const f = 90 * Math.exp(-t * 30) + 38;
+-    const sub = Math.sin(2 * Math.PI * f * t) * 0.65;
+-    const mid = Math.sin(2 * Math.PI * 180 * t) * Math.exp(-t * 60) * 0.25;
+-    out[i] = (sub + mid) * env * 0.45;
+-  }
+-  return lowpass(out, 400);
+-}
+-
+-/** Game-over sting — gentle, soft descending minor chord cadence. */
+-function gameOverSting() {
+-  const length = Math.floor(0.95 * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  const notes = [440.00, 369.99, 329.63, 293.66];
+-  for (let n = 0; n < notes.length; n++) {
+-    const delay = n * 0.18;
+-    const offset = Math.floor(delay * SAMPLE_RATE);
+-    const f = notes[n];
+-    for (let i = offset; i < length; i++) {
+-      const t = (i - offset) / SAMPLE_RATE;
+-      const env = Math.exp(-t * 4.2);
+-      const tone = Math.sin(2 * Math.PI * f * t) * 0.35 + Math.sin(2 * Math.PI * (f * 1.5) * t) * 0.1;
+-      out[i] += tone * env * 0.22;
+-    }
+-  }
+-  return lowpass(out, 1800);
+-}
+-
+-// ---- loop recipes: 16.0-second seamless ambient progression ----------------
+-const LOOP_SECONDS = 16.0;
+-
+-/**
+- * Ambient reactor bed — lush, warm, tranquil sci-fi atmospheric chord progression (16 seconds).
+- * Evolving gently: Dm9 -> Fmaj7 -> Bbmaj7 -> C(add9).
+- * Zero buzz, zero repetitive thuds, pure warm ambient solace.
+- */
+-function reactorHumLoop() {
+-  const length = Math.floor(LOOP_SECONDS * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  // 4 chords across 16 seconds (4 seconds per chord)
+-  const chords = [
+-    [146.83, 220.00, 261.63, 329.63], // Dm9 (D3, A3, C4, E4)
+-    [174.61, 220.00, 261.63, 329.63], // Fmaj7 (F3, A3, C4, E4)
+-    [116.54, 174.61, 233.08, 293.66], // Bbmaj7 (Bb2, F3, Bb3, D4)
+-    [130.81, 196.00, 261.63, 293.66]  // Cadd9 (C3, G3, C4, D4)
+-  ];
+-
+-  for (let i = 0; i < length; i++) {
+-    const t = i / SAMPLE_RATE;
+-    const chordIndex = Math.floor((t / LOOP_SECONDS) * chords.length) % chords.length;
+-    const chordProgress = (t % (LOOP_SECONDS / chords.length)) / (LOOP_SECONDS / chords.length);
+-    // Smooth crossfade envelope per chord
+-    const chordEnv = Math.sin(Math.PI * chordProgress);
+-    const activeChord = chords[chordIndex];
+-
+-    let sample = 0;
+-    for (const freq of activeChord) {
+-      const phase = 2 * Math.PI * freq * t;
+-      const wave = Math.sin(phase) + 0.25 * Math.sin(phase * 2);
+-      sample += wave * 0.04;
+-    }
+-    // Very gentle slow breathing LFO (0.125 Hz = 8s period)
+-    const breath = 0.75 + 0.25 * Math.sin(2 * Math.PI * 0.125 * t);
+-    out[i] = sample * chordEnv * breath * 0.18;
+-  }
+-
+-  // Crossfade loop boundaries for seamless continuity
+-  const fade = Math.floor(0.08 * SAMPLE_RATE);
+-  for (let i = 0; i < fade; i++) {
+-    const k = i / fade;
+-    out[i] = out[i] * k + out[length - fade + i] * (1 - k);
+-  }
+-  return lowpass(out, 380);
+-}
+-
+-/** Stem 1 (levels 1-5) — deep, warm, tranquil bassline moving slowly with chords (NO repetitive kick!). */
+-function musicStem1() {
+-  const length = Math.floor(LOOP_SECONDS * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  const bassNotes = [73.42, 87.31, 58.27, 65.41]; // D2, F2, Bb1, C2
+-
+-  for (let i = 0; i < length; i++) {
+-    const t = i / SAMPLE_RATE;
+-    const noteIndex = Math.floor((t / LOOP_SECONDS) * bassNotes.length) % bassNotes.length;
+-    const noteT = t % (LOOP_SECONDS / bassNotes.length);
+-    const env = Math.sin(Math.PI * (noteT / (LOOP_SECONDS / bassNotes.length)));
+-    const f = bassNotes[noteIndex];
+-    const wave = Math.sin(2 * Math.PI * f * t) + 0.3 * Math.sin(2 * Math.PI * (f * 2) * t);
+-    out[i] = wave * env * 0.14;
+-  }
+-
+-  const fade = Math.floor(0.08 * SAMPLE_RATE);
+-  for (let i = 0; i < fade; i++) {
+-    const k = i / fade;
+-    out[i] = out[i] * k + out[length - fade + i] * (1 - k);
+-  }
+-  return lowpass(out, 220);
+-}
+-
+-/** Stem 2 (levels 6-10) — soft, delicate ambient rhodes chime arpeggios (16s cycle). */
+-function musicStem2() {
+-  const length = Math.floor(LOOP_SECONDS * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  const notes = [
+-    440.00, 523.25, 659.25, 587.33,
+-    523.25, 659.25, 783.99, 659.25,
+-    466.16, 587.33, 698.46, 587.33,
+-    523.25, 587.33, 783.99, 659.25
+-  ];
+-
+-  for (let i = 0; i < length; i++) {
+-    const t = i / SAMPLE_RATE;
+-    const step = Math.floor((t / LOOP_SECONDS) * notes.length) % notes.length;
+-    const stepT = t % (LOOP_SECONDS / notes.length);
+-    const env = Math.exp(-stepT * 4.5);
+-    const f = notes[step];
+-    const wave = Math.sin(2 * Math.PI * f * t) * 0.4 + Math.sin(2 * Math.PI * (f * 2) * t) * 0.1;
+-    out[i] = wave * env * 0.12;
+-  }
+-
+-  const fade = Math.floor(0.08 * SAMPLE_RATE);
+-  for (let i = 0; i < fade; i++) {
+-    const k = i / fade;
+-    out[i] = out[i] * k + out[length - fade + i] * (1 - k);
+-  }
+-  return lowpass(out, 1600);
+-}
+-
+-/** Stem 3 (levels 11-15) — mellow, warm atmospheric bell melody. */
+-function musicStem3() {
+-  const length = Math.floor(LOOP_SECONDS * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  const melody = [587.33, 0, 659.25, 739.99, 0, 880.00, 739.99, 0];
+-
+-  for (let i = 0; i < length; i++) {
+-    const t = i / SAMPLE_RATE;
+-    const step = Math.floor((t / LOOP_SECONDS) * melody.length) % melody.length;
+-    const f = melody[step];
+-    if (f > 0) {
+-      const stepT = t % (LOOP_SECONDS / melody.length);
+-      const env = Math.exp(-stepT * 3.2);
+-      const wave = Math.sin(2 * Math.PI * f * t) * 0.35 + Math.sin(2 * Math.PI * (f * 1.5) * t) * 0.1;
+-      out[i] = wave * env * 0.11;
+-    }
+-  }
+-
+-  const fade = Math.floor(0.08 * SAMPLE_RATE);
+-  for (let i = 0; i < fade; i++) {
+-    const k = i / fade;
+-    out[i] = out[i] * k + out[length - fade + i] * (1 - k);
+-  }
+-  return lowpass(out, 2000);
+-}
+-
+-/** Stem 4 (levels 16+) — celestial shimmer harmonic air. */
+-function musicStem4() {
+-  const length = Math.floor(LOOP_SECONDS * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  const pads = [880.00, 1046.50, 1174.66, 1318.51];
+-
+-  for (let i = 0; i < length; i++) {
+-    const t = i / SAMPLE_RATE;
+-    const lfo = 0.5 + 0.5 * Math.sin(2 * Math.PI * 0.25 * t);
+-    let sample = 0;
+-    for (const f of pads) {
+-      sample += Math.sin(2 * Math.PI * f * t) * 0.02;
+-    }
+-    out[i] = sample * lfo * 0.08;
+-  }
+-
+-  const fade = Math.floor(0.08 * SAMPLE_RATE);
+-  for (let i = 0; i < fade; i++) {
+-    const k = i / fade;
+-    out[i] = out[i] * k + out[length - fade + i] * (1 - k);
+-  }
+-  return lowpass(out, 2400);
+-}
+-
+-// ---- WAV writer -------------------------------------------------------------
+-function writeWav(path, samples) {
+-  const length = samples.length;
+-  const buffer = Buffer.alloc(44 + length * 2);
+-  const numChannels = 1;
+-  const bitsPerSample = 16;
+-  const byteRate = (SAMPLE_RATE * numChannels * bitsPerSample) / 8;
+-  buffer.write("RIFF", 0);
+-  buffer.writeUInt32LE(36 + length * 2, 4);
+-  buffer.write("WAVE", 8);
+-  buffer.write("fmt ", 12);
+-  buffer.writeUInt32LE(16, 16);
+-  buffer.writeUInt16LE(1, 20); // PCM
+-  buffer.writeUInt16LE(numChannels, 22);
+-  buffer.writeUInt32LE(SAMPLE_RATE, 24);
+-  buffer.writeUInt32LE(byteRate, 28);
+-  buffer.writeUInt16LE((numChannels * bitsPerSample) / 8, 32);
+-  buffer.writeUInt16LE(bitsPerSample, 34);
+-  buffer.write("data", 36);
+-  buffer.writeUInt32LE(length * 2, 40);
+-  for (let i = 0; i < length; i += 1) {
+-    const v = Math.max(-1, Math.min(1, samples[i]));
+-    buffer.writeInt16LE(Math.round(v * 32767), 44 + i * 2);
+-  }
+-  writeFileSync(path, buffer);
+-  return length / SAMPLE_RATE;
+-}
+-
+-mkdirSync(SFX_DIR, { recursive: true });
+-mkdirSync(MUSIC_DIR, { recursive: true });
+-
+-const cues = {
+-  move, rotate, lockThud, lineClear, quadFanfare,
+-  levelUp, holdSwap, hardDropSlam, gameOverSting
+-};
+-const loops = {
+-  reactorHumLoop, musicStem1, musicStem2, musicStem3, musicStem4
+-};
+-
+-const report = {};
+-for (const [name, fn] of Object.entries(cues)) {
+-  const path = resolve(SFX_DIR, name + ".wav");
+-  const duration = writeWav(path, fn());
+-  report[name] = path;
+-  console.log("wrote " + path + " (" + duration.toFixed(3) + "s)");
+-}
+-for (const [name, fn] of Object.entries(loops)) {
+-  const path = resolve(MUSIC_DIR, name + ".wav");
+-  const duration = writeWav(path, fn());
+-  report[name] = path;
+-  console.log("wrote " + path + " (" + duration.toFixed(3) + "s loop)");
+-}
+-console.log("");
+-console.log("Generated " + Object.keys(cues).length + " cues and " + Object.keys(loops).length + " loops into " + SFX_DIR + " and " + MUSIC_DIR);
+-
+diff --git a/apps/showcase-blockfall-reactor/scripts/write-expert-fixture.ts b/apps/showcase-blockfall-reactor/scripts/write-expert-fixture.ts
+deleted file mode 100644
+index 05f8bdbc2..000000000
+--- a/apps/showcase-blockfall-reactor/scripts/write-expert-fixture.ts
++++ /dev/null
+@@ -1,80 +0,0 @@
+-/**
+- * Generates the committed attract-mode fixture (BF-A6).
+- *
+- * The "expert run" is the competent planner segment from rules.ts: the simulated
+- * run plays until its first top-out, and everything before that boundary is a
+- * long, line-clearing stretch of real play. That segment becomes the attract
+- * loop. Run via:
+- *   pnpm exec tsx --tsconfig tsconfig.base.json apps/showcase-blockfall-reactor/scripts/write-expert-fixture.ts
+- */
+-import { mkdirSync, writeFileSync } from "node:fs";
+-import { resolve, dirname } from "node:path";
+-import { fileURLToPath } from "node:url";
+-import {
+-  DEMO_REPLAY_60S,
+-  REPLAY_PROOF_FRAMES,
+-  checksumString,
+-  createOpeningBoard,
+-  sixtySecondReplayPlanFacts,
+-  runReplay
+-} from "../src/rules";
+-import {
+-  ATTRACT_RUN_KIND,
+-  serializeAttractRun,
+-  type AttractRunFixture
+-} from "../src/attract";
+-
+-const here = dirname(fileURLToPath(import.meta.url));
+-
+-const facts = sixtySecondReplayPlanFacts();
+-if (!facts.gameOverProven || facts.segmentBoundaries.length === 0) {
+-  throw new Error("Expected the sixty-second plan to top out at least once; regenerate with a valid planner.");
+-}
+-const boundary = facts.segmentBoundaries[0];
+-if (typeof boundary !== "number" || boundary <= 0) throw new Error("Invalid segment boundary.");
+-
+-// Every event strictly before the first top-out belongs to the expert segment.
+-const events = DEMO_REPLAY_60S.filter((event) => event.frame < boundary);
+-if (events.length === 0) throw new Error("Expert segment came out empty.");
+-
+-const frames = Math.max(...events.map((event) => event.frame + 20), 240);
+-const result = runReplay(events, { frames, board: createOpeningBoard() });
+-if (result.finalSummary.lines === 0 || result.finalSummary.score === 0) {
+-  throw new Error("Expert segment did not clear lines or score; not good enough for attract mode.");
+-}
+-
+-const fixture: AttractRunFixture = {
+-  kind: ATTRACT_RUN_KIND,
+-  label: "expert reactor segment before first top-out",
+-  seed: result.seed,
+-  frames,
+-  openingBoard: true,
+-  events,
+-  expected: {
+-    finalScore: result.finalSummary.score,
+-    finalLines: result.finalSummary.lines,
+-    stateChecksum: result.finalChecksum,
+-    scoreHash: checksumString("score:" + result.finalSummary.score)
+-  }
+-};
+-
+-const outPath = resolve(here, "../../../tests/fixtures/blockfall/expert-run.json");
+-mkdirSync(dirname(outPath), { recursive: true });
+-writeFileSync(outPath, serializeAttractRun(fixture) + "\n");
+-
+-// The mounted route cannot import .json under the TS dev server (browsers need
+-// explicit JSON import attributes), so emit a TS twin of the same bytes. A unit
+-// test asserts the two never drift.
+-const dataPath = resolve(here, "../src/expert-run-data.ts");
+-const dataModule =
+-  "/**\n" +
+-  " * Generated by scripts/write-expert-fixture.ts — do not hand-edit.\n" +
+-  " * Embedded twin of tests/fixtures/blockfall/expert-run.json (BF-A6 attract run).\n" +
+-  " */\n" +
+-  "export const EXPERT_RUN_DATA_JSON = " + JSON.stringify(serializeAttractRun(fixture)) + ";\n";
+-writeFileSync(dataPath, dataModule);
+-console.log("wrote " + dataPath);
+-console.log("wrote " + outPath);
+-console.log("events:", events.length, "frames:", frames, "(proof window is", REPLAY_PROOF_FRAMES + ")");
+-console.log("finalScore:", fixture.expected.finalScore, "lines:", fixture.expected.finalLines);
+-console.log("stateChecksum:", fixture.expected.stateChecksum, "scoreHash:", fixture.expected.scoreHash);
+\ No newline at end of file
+diff --git a/apps/showcase-blockfall-reactor/scripts/write-route-health.mjs b/apps/showcase-blockfall-reactor/scripts/write-route-health.mjs
+deleted file mode 100644
+index c16b095f1..000000000
+--- a/apps/showcase-blockfall-reactor/scripts/write-route-health.mjs
++++ /dev/null
+@@ -1,193 +0,0 @@
+-import { createHash } from "node:crypto";
+-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+-import { dirname, join, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const assetIds = [
+-  "blockfallReactorArenaBackdrop",
+-  "blockfallReactorMechanicHero",
+-  "blockfallReactorPlasmaRival",
+-  "showcaseBlockfallCabinet"
+-];
+-const manifest = JSON.parse(readFileSync(join(repoRoot, "aura.assets.json"), "utf8"));
+-const assets = Object.fromEntries(assetIds.map((assetId) => [
+-  assetId,
+-  manifest.assets?.find((entry) => entry.id === assetId)
+-]));
+-
+-for (const assetId of assetIds) {
+-  const asset = assets[assetId];
+-  if (!asset) throw new Error(`Missing typed asset ${assetId} from aura.assets.json`);
+-  if (asset.quality !== "release") {
+-    throw new Error(`Expected ${assetId} to remain release quality; received ${String(asset.quality)}`);
+-  }
+-}
+-
+-const sourceFiles = walk(join(appDir, "src")).filter((path) => path.endsWith(".ts"));
+-const source = sourceFiles.map((path) => readFileSync(path, "utf8")).join("\n");
+-for (const assetId of assetIds) {
+-  if (!source.includes(`assets.${assetId}`)) {
+-    throw new Error(`Live route does not reference assets.${assetId}`);
+-  }
+-}
+-
+-const primitiveOccurrences = Array.from(source.matchAll(/\bprimitives\.[A-Za-z_$][\w$]*/g)).length;
+-const acceptanceReportPath = join(repoRoot, "tests/reports/blockfall-reactor-fx/acceptance-states.json");
+-if (!existsSync(acceptanceReportPath)) {
+-  throw new Error("Missing current Blockfall exact acceptance-state report; run the focused browser spec first.");
+-}
+-const acceptanceReport = JSON.parse(readFileSync(acceptanceReportPath, "utf8"));
+-const requiredAcceptanceStates = ["play", "single-clear", "quad", "level-up", "danger", "game-over"];
+-if (acceptanceReport.kind !== "blockfall-reactor-exact-acceptance-states") {
+-  throw new Error("Unexpected Blockfall acceptance report kind.");
+-}
+-for (const state of requiredAcceptanceStates) {
+-  const receipt = acceptanceReport.receipts?.[state];
+-  if (!receipt?.checksum || !receipt?.screenshotSha256) {
+-    throw new Error(`Acceptance report is missing checksum/screenshot proof for ${state}.`);
+-  }
+-}
+-const sourceSha256 = createHash("sha256").update(source).digest("hex");
+-const routeHealth = {
+-  schema: "aura3d-route-health/1.0",
+-  generatedAt: new Date().toISOString(),
+-  appId: "showcase-blockfall-reactor",
+-  route: "/apps/showcase-blockfall-reactor/",
+-  classification: "prototype-blocked",
+-  publicShowcase: false,
+-  promotionStatus: "typed-cabinet-and-gameplay-evidence-bounded-candidate",
+-  renderer: {
+-    path: "createAuraApp root safe API",
+-    mode: "safe-basic",
+-    nativeWebGPU: false,
+-    productionRuntime: false
+-  },
+-  primaryAssets: [
+-    {
+-      typedRef: "assets.blockfallReactorArenaBackdrop",
+-      role: "primaryWorld",
+-      status: "typed-primary-asset",
+-      quality: assets.blockfallReactorArenaBackdrop.quality
+-    },
+-    {
+-      typedRef: "assets.showcaseBlockfallCabinet",
+-      role: "primaryWorld",
+-      status: "typed-primary-asset",
+-      quality: assets.showcaseBlockfallCabinet.quality
+-    }
+-  ],
+-  primitiveStatus: {
+-    sourceOccurrences: primitiveOccurrences,
+-    primitiveBudget: 40,
+-    role: "falling-block cells, board rails, ghost guides, reactor indicators, and collision visuals inside the typed arcade cabinet",
+-    status: "gameplay-geometry-with-typed-primary-cabinet"
+-  },
+-  claimStatus: {
+-    status: "bounded",
+-    label: "createAuraApp",
+-    allowed: [
+-      "falling-block development showcase",
+-      "catalog-sourced typed arcade-cabinet environment",
+-      "public game.fallingBlocks gameplay state",
+-      "keyboard and touch interaction proof",
+-      "deterministic line-clear scoring proof",
+-      "route-selected Rapier fidelity proof"
+-    ],
+-    notAllowed: [
+-      "reusable falling-block game kit",
+-      "commercial game launch readiness",
+-      "generic collision-system claim"
+-    ]
+-  },
+-  blockers: ["independent exact-artifact review pending"],
+-  audioFxPass: {
+-    schema: "aura3d-blockfall-audio-fx/1.0",
+-    prd: "the Blockfall Reactor implementation contract",
+-    labelUnchanged: true,
+-    audio: {
+-      generator: "apps/showcase-blockfall-reactor/scripts/build-sfx.mjs",
+-      provenance: "CC0-1.0, author Aura3D synthesis, CLI-registered typed WAVs",
+-      gameplayCues: [
+-        "move", "rotate", "lock", "line-clear", "quad", "level-up",
+-        "hold-swap", "hard-drop", "game-over"
+-      ],
+-      ambientBus: "blockfallReactorHumLoop (looping, own bus)",
+-      musicLayering: "additive intensity stem every five levels via per-stem bus volumes"
+-    },
+-    boardView: {
+-      projectionModule: "src/board-view.ts",
+-      pools: "locked stack per-kind instanced sub-pools + single active-piece pool",
+-      parityTest: "tests/unit/apps/blockfall-board-view.test.ts",
+-      drawCallTelemetry: "mounted A/B probe; see window evidence boardView.drawCallTelemetry"
+-    },
+-    clearFx: {
+-      module: "src/clear-fx.ts",
+-      cameraPunch: "src/camera-feel.ts",
+-      reducedMotionGated: true
+-    },
+-    scoreboard: {
+-      module: "src/board-view.ts (createScoreboardNodes)",
+-      format: "zero-padded SCORE 000000 / LEVEL 01 via engine text3D glyph set"
+-    },
+-    attract: {
+-      module: "src/attract.ts",
+-      fixture: "tests/fixtures/blockfall/expert-run.json",
+-      regressionHarness: "tests/unit/apps/blockfall-attract.test.ts"
+-    },
+-    bloom: {
+-      shippedIntensity: 0.26,
+-      reducedFlashIntensity: 0.12,
+-      guards: { threshold: 0.55, maxIntensity: 1.6, antiBlowout: true },
+-      stills: "tests/reports/blockfall-reactor-bloom/ (before bloom-off / after shipped)"
+-    },
+-    browserSpecs: [
+-      "tests/browser/blockfall-reactor-audio-fx.spec.ts",
+-      "tests/browser/blockfall-bloom-stills.spec.ts"
+-    ]
+-  },
+-  evidence: {
+-    global: "window.__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__",
+-    sourceReview: "apps/showcase-blockfall-reactor/src/main.ts",
+-    sourceSha256,
+-    exactAcceptanceStates: {
+-      report: "tests/reports/blockfall-reactor-fx/acceptance-states.json",
+-      source: acceptanceReport.source,
+-      viewport: acceptanceReport.viewport,
+-      states: Object.fromEntries(requiredAcceptanceStates.map((state) => [state, {
+-        checksum: acceptanceReport.receipts[state].checksum,
+-        screenshot: acceptanceReport.receipts[state].screenshot,
+-        screenshotSha256: acceptanceReport.receipts[state].screenshotSha256
+-      }]))
+-    },
+-    reducedMotionScreenshot: "tests/reports/blockfall-reactor-fx/reduced-motion.png",
+-    currentMobileScreenshot: "tests/reports/blockfall-reactor-fx/acceptance-mobile-play.png",
+-    routePrimaryProbe: "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor.json",
+-    routePrimaryScreenshot: "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor.png",
+-    desktopScreenshot: "tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
+-    mobileScreenshot: "tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
+-    gameplayProof: "tests/reports/showcase-gameplay/showcase-blockfall-reactor.json",
+-    gameplayBeforeScreenshot: "tests/reports/showcase-gameplay/showcase-blockfall-reactor-before-input.png",
+-    gameplayAfterInputScreenshot: "tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
+-    releaseAssetProbes: Object.fromEntries(assetIds.map((assetId) => [
+-      assetId,
+-      `tests/reports/showcase-release-asset-probes/${assetId}.json`
+-    ])),
+-    deployCommand: `pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-blockfall-reactor/dist --release --source apps/showcase-blockfall-reactor/src ${assetIds.map((assetId) => `--asset ${assetId}`).join(" ")}`
+-  },
+-  physics: {
+-    backend: "rapier",
+-    scope: "route-selected showcase fidelity proof"
+-  }
+-};
+-
+-writeFileSync(join(appDir, "route-health.json"), `${JSON.stringify(routeHealth, null, 2)}\n`);
+-
+-function walk(path) {
+-  const entries = readdirSync(path).sort();
+-  return entries.flatMap((entry) => {
+-    const child = join(path, entry);
+-    return statSync(child).isDirectory() ? walk(child) : [child];
+-  });
+-}
+diff --git a/apps/showcase-blockfall-reactor/src/legacy/main.ts b/apps/showcase-blockfall-reactor/src/legacy/main.ts
+index 676dfe9f1..2ae2a5b2a 100644
+--- a/apps/showcase-blockfall-reactor/src/legacy/main.ts
++++ b/apps/showcase-blockfall-reactor/src/legacy/main.ts
+@@ -23,8 +23,6 @@ import {
+   createTweenEngine
+ } from "@aura3d/game";
+ import { blockfallScenarios } from "../scenarios";
+-import { bindBlockfallDrive, type BlockfallAcceptanceScenario } from "../scenario-drive";
+-import { bindBlockfallEvidence } from "../evidence";
+ import { assets } from "../../../../src/aura-assets";
+ import {
+   ACTIVE_BLOCK_SCALE,
+@@ -89,36 +87,17 @@ import { createClearFx, createClearFxNodes, clearFxShardNodeId } from "./clear-f
+ import { createCameraFeel } from "./camera-feel";
+ import { createAttractPlayback, parseAttractRun } from "./attract";
+ import { EXPERT_RUN_DATA_JSON } from "./expert-run-data";
+-
+ import "./styles.css";
+-
+ const reducedMotion = mediaMatches("(prefers-reduced-motion: reduce)");
+ const highContrast = mediaMatches("(prefers-contrast: more)");
+ const reducedFlash = reducedMotion;
+ const compactViewport = window.innerWidth <= 620;
+-/*
+- * The state and replay checksums are route evidence, not player HUD: raw
+- * hashes on screen during normal play is exactly what the debug-visibility rule
+- * forbids. The values stay in the published evidence object for specs and
+- * route-health, and only become visible on an explicit debug pass.
+- */
+-const evidenceOverlay = new URL(window.location.href).searchParams.get("debug") === "1";
+-if (evidenceOverlay) document.documentElement.dataset.evidenceMode = "blockfall";
+ const clearChargeMaterial = material.neon({ name: "single clear reactor charge", color: "#ff9f43", emissive: "#ffb35a", emissiveIntensity: 1.05, roughness: 0.2, opacity: 0.7 });
+ const quadDischargeMaterial = material.neon({ name: "quad clear gold discharge", color: "#ffd45c", emissive: "#fff08a", emissiveIntensity: 1.45, roughness: 0.14, opacity: 0.84 });
+-// The catalog cabinet carries a baked "GAME OVER / RESTART?" marquee. That
+-// artwork is valid asset provenance but contradicts the live running session,
+-// so a shallow scene-native service plate masks only that fixed marquee while
+-// leaving the typed cabinet body, screen, controls, and vents visible.
+ const cabinetLivePlateMaterial = material.pbr({ name: "cabinet live-session marquee plate", color: "#071927", emissive: "#082c3a", emissiveIntensity: 0.42, roughness: 0.32, metallic: 0.58 });
+ const cabinetLivePlateAccentMaterial = material.neon({ name: "cabinet live-session marquee accent", color: "#48d9e5", emissive: "#48d9e5", emissiveIntensity: 0.94, roughness: 0.18 });
+-
+ const REPLAY_FRAME_COUNT = Math.max(240, ...DEMO_REPLAY.map((event) => event.frame + 20));
+-// Keep the boot frame visually in-flight: the opening T sits a few rows into
+-// the well, with a long state-bound ghost guide down to the stack. Gameplay
+-// remains deterministic; this is only the starting presentation pose.
+ const PRESENTATION_ACTIVE_Y = HIDDEN_ROWS + 6;
+-
+ ui.html(
+   "#hud",
+   `
+@@ -210,7 +189,6 @@ ui.html(
+     </main>
+   `
+ );
+-
+ ui.html(
+   "#touch-controls",
+   `
+@@ -238,7 +216,6 @@ ui.html(
+     </div>
+   `
+ );
+-
+ const hudScore = ui.text("#stat-score");
+ const hudLines = ui.text("#stat-lines");
+ const hudLevel = ui.text("#stat-level");
+@@ -265,7 +242,6 @@ const holdButton = ui.button("#hold-button");
+ const pauseButton = ui.button("#pause-button");
+ const resetButton = ui.button("#reset-button");
+ const replayButton = ui.button("#replay-button");
+-
+ const inputOptions = {
+   actions: {
+     left: ["ArrowLeft", "KeyA"],
+@@ -288,14 +264,6 @@ const keyboardActionByCode = new Map<string, BlockfallInputName>(
+   (Object.entries(inputOptions.actions) as Array<[BlockfallInputName, readonly string[]]>)
+     .flatMap(([action, codes]) => codes.map((code) => [code, action] as const))
+ );
+-
+-const hudBindings = game.hud.bindings([
+-  game.hud.meter({ id: "reactor-meter-binding", actorId: "reactor", label: "Reactor charge", valuePath: "reactor.charge", maxPath: "reactor.max", a11yLabel: "reactor charge" }),
+-  game.hud.combo({ id: "combo-binding", actorId: "player", label: "Combo", valuePath: "combo", a11yLabel: "combo count" }),
+-  game.hud.round({ id: "level-binding", label: "Level", valuePath: "level", a11yLabel: "level" }),
+-  game.hud.debugToggle({ id: "evidence-toggle-binding", label: "Evidence", action: "debug", statePath: "evidence.visible", a11yLabel: "evidence status" })
+-]);
+-
+ const accessibilitySources = [
+   game.accessibility.label({
+     targetId: "hud",
+@@ -327,7 +295,6 @@ const accessibilitySources = [
+     menuId: "hud-actions"
+   })
+ ];
+-
+ const touchLayout = game.touchControls({
+   width: window.innerWidth,
+   height: window.innerHeight,
+@@ -341,96 +308,13 @@ const touchLayout = game.touchControls({
+     { id: "touch-hard", action: "hardDrop", label: "Drop", binding: "TouchHardDrop", side: "right" }
+   ]
+ });
+-
+ const replayEvidence = createPublicReplayEvidence();
+-/**
+- * Deterministic 60-second replay proof, computed once at module scope. Declared
+- * before the mounted evidence object that publishes it.
+- */
+ const sixtySecondReplayProof = createSixtySecondReplayProof();
+ const lineClearProof = createPublicLineClearProof();
+ const fallingBlocksKitContractProof = createFallingBlocksKitContractProof();
+-/**
+- * BF-A1 audio controller. Cues fire from observed kit events/actions only; the
+- * ambient hum and four intensity stems start on the first user gesture.
+- */
+ const reactorAudio = createBlockfallReactorAudio(reducedMotion);
+ void reactorAudio.unlock().catch(() => undefined);
+ window.addEventListener("pointerdown", () => { void reactorAudio.unlock().catch(() => undefined); }, { passive: true });
+-const sourceEvidence = {
+-  kind: "aura3d-showcase-blockfall-reactor-source" as const,
+-  route: window.location.pathname,
+-  appId: "showcase-blockfall-reactor",
+-  physics: "game.collisionWorld:Rapier(shared showcase fidelity proof: angular contact response and CCD non-tunneling); board rules are deterministic game.fallingBlocks state, not a rigid-body simulation",
+-  claimBoundary: "Aura3D falling-block development showcase with a catalog-sourced typed arcade cabinet, public game.fallingBlocks gameplay state, route-selected Rapier fidelity proof, and retained gameplay proof.",
+-  publicEngineApi: ["createGameApp", "scene", "model", "primitives", "material", "lights", "effects", "camera", "game.input", "game.collisionWorld", "game.runtimeNode", "game.hud", "game.accessibility", "ui"],
+-  prohibitedApiAvoided: {
+-    importsThree: false,
+-    rawGlbUrls: false,
+-    stringAssetIds: false
+-  },
+-  assets: {
+-    proceduralOnly: false,
+-    typedAssetCount: 4,
+-    typedRefs: [
+-      "assets.blockfallReactorArenaBackdrop",
+-      "assets.blockfallReactorMechanicHero",
+-      "assets.blockfallReactorPlasmaRival",
+-      "assets.showcaseBlockfallCabinet"
+-    ],
+-    primary: "blockfallReactorArenaBackdrop",
+-    attribution: "Project-original CC0 Blockfall Reactor championship arena, mechanic, and plasma rival, plus the catalog-provenanced Arcade Machine, Expressive Robot, and Oobi supporting assets; all are typed assets and the release composition keeps gameplay state renderer-owned."
+-  },
+-  rules: {
+-    deterministicModule: "game.fallingBlocks",
+-    board: `${BOARD_WIDTH}x${BOARD_HEIGHT}`,
+-    visibleRows: VISIBLE_HEIGHT,
+-    hiddenRows: HIDDEN_ROWS,
+-    pieces: PIECE_KINDS,
+-    features: ["seven-bag queue", "rotation with wall kicks", "soft drop", "hard drop", "hold", "line clears", "combo", "back-to-back", "reactor meter derived from public kit events", "speed escalation"]
+-  },
+-  controls: {
+-    keyboard: {
+-      move: ["ArrowLeft", "ArrowRight", "A", "D"],
+-      rotateClockwise: ["ArrowUp", "W", "X", "E"],
+-      rotateCounterClockwise: ["Z", "Q"],
+-      softDrop: ["ArrowDown", "S"],
+-      hardDrop: ["Space"],
+-      hold: ["C", "Shift"],
+-      pause: ["Escape", "P"],
+-      reset: ["R"]
+-    },
+-    touch: touchLayout
+-  },
+-  replay: replayEvidence,
+-  /**
+-   * Deterministic 60-second replay proof. Every mechanic flag is derived from a
+-   * simulated run of the generated sequence, so the route cannot claim a
+-   * mechanic the replay did not actually produce.
+-   */
+-  sixtySecondReplayProof: sixtySecondReplayProof,
+-  kitContractProof: fallingBlocksKitContractProof,
+-  startState: {
+-    source: "clean playable board",
+-    lockedCells: 0,
+-    replayStartsOnlyFromButton: true
+-  },
+-  lineClearProof
+-};
+-
+-// Board-dominant framing: the live playfield is the visual subject and the typed
+-// cabinet frames it. The camera sits close enough that the cabinet screen fills
+-// the majority of the frame height instead of floating in a void band.
+-// Framing is set by measurement, not taste. At fov 40 the playfield well rendered
+-// 347x640 px in 1440x900: 24.1% of canvas width, 71.1% of height, and only **17.1% of
+-// canvas area**, with **71.3% of the frame below luminance 45** and a canvas mean of
+-// 49/255. That is the measurable form of the acceptance criterion "no surrounding void
+-// or dashboard dominating". A 10x20 well is inherently ~0.5 aspect, so in a 1.6-aspect
+-// frame it can never be width-dominant; the honest lever is vertical occupancy. Tightening
+-// the vertical fov to 34 raises the well to ~84.6% of height and ~24.3% of canvas area
+-// without cropping the cabinet, hold, or next columns.
+-// BF-A2/BF-A3/BF-A4 scene extensions. Pools and boards are built before the scene
+-// so their owned mutable state can be captured by the mounted route.
+ const lockedStackPools: readonly InstancedBoardPool[] = createLockedStackPools(LOCKED_POOL_CAPACITY_PER_KIND);
+ const activePiecePool: InstancedBoardPool = createActivePiecePool();
+ const clearFxNodeGroup = createClearFxNodes();
+@@ -458,40 +342,19 @@ const quadCelebrationNodeGroup = [
+       .runtime(game.runtimeNode(`blockfall-quad-crown-${index}`, { tags: ["blockfall", "quad", "renderer-owned", "mascot-reaction"] }))
+   )
+ ];
+-
+-// Embedded twin of tests/fixtures/blockfall/expert-run.json (see
+-// expert-run-data.ts header); parsed through the same validating path.
+ const expertRun = parseAttractRun(JSON.parse(EXPERT_RUN_DATA_JSON));
+-
+ const reactorCamera = camera.perspective({
+   position: [0, compactViewport ? 2.2 :  1.86, compactViewport ? 7.4 : 8.45],
+   target: [0, compactViewport ? 2.16 :  1.82, 0.12],
+   fov: compactViewport ? 54 :  32
+ });
+-// BF-A4 camera punch: mutates the owned camera spec each frame; reduced motion disables it.
+ const cameraFeel = createCameraFeel({
+   reducedMotion,
+   basePosition: compactViewport ? [0, 2.2, 7.4] :  [0, 1.86, 8.45],
+   baseTarget: compactViewport ? [0, 2.16, 0.12] :  [0, 1.82, 0.12]
+ });
+-
+ const cabinetPosition = [-2.8, 0.42, -2.15] as const;
+-// Keep the catalog cabinet present in review captures.  The route gate names
+-// the typed arena backdrop as the hero, but the cabinet is its certified
+-// primary companion and the composition probe isolates this node.  A zero-ish
+-// review scale made the probe measure a few anti-aliased pixels behind the HUD
+-// rather than the actual typed subject.  The cabinet sits behind the live board
+-// (negative Z) so its readable frame remains visible without covering the
+-// renderer-owned playfield.
+ const cabinetTargetSize =  4.2;
+-/**
+- * BF-A5 bloom formalization. Exact shipped intensities:
+- *   - full motion: intensity 0.26, threshold 0.55, maxIntensity 1.6, antiBlowout on
+- *   - reduced flash (prefers-reduced-motion): intensity 0.12, same guards
+- * The threshold + anti-blowout cap keep the emissive cells glowing without washing
+- * out the board backplate; the retained before/after stills live in
+- * tests/reports/blockfall-reactor-bloom/ via blockfall-bloom-stills.spec.ts.
+- */
+ const bloomEffect = effects.neonBloom({
+   name: "blockfall reactor emissive bloom",
+   intensity: reducedFlash ? 0.12 : 0.26,
+@@ -502,8 +365,6 @@ const bloomEffect = effects.neonBloom({
+   softKnee: 0.5,
+   shoulder: 0.6
+ });
+-// The builder stores its node by reference (toJSON returns this.value), so the
+-// stills probe can mutate the exact node object the mounted scene renders.
+ const bloomEffectNode = bloomEffect.toJSON();
+ const reactorScene = scene()
+   .background( "#24103a")
+@@ -644,7 +505,6 @@ const reactorScene = scene()
+     lights.point({ name: "rival corner practical", color: "#ff72c9", intensity:  0.68 }).position(3.35, 1.35, 1.15)
+   ])
+   .camera(reactorCamera);
+-
+ const blockfallGame = createGame({
+   id: "showcase-blockfall-reactor",
+   target: "#app",
+@@ -665,10 +525,7 @@ const blockfallGame = createGame({
+   qualityRebuild: { flags: ["game"] }
+ });
+ const gameApp = blockfallGame.runtime;
+-
+ const app = gameApp.app;
+-
+-// ---- juice (PRD-09 §7.6) ----------------------------------------------------
+ const blockfallTween = createTweenEngine();
+ const blockfallFx = createFxParticlePass(app.effects);
+ const blockfallJuice = createJuice<"lock" | "line-clear" | "quad" | "level-up" | "game-over" | "rotate-denied">({
+@@ -687,16 +544,11 @@ const blockfallJuice = createJuice<"lock" | "line-clear" | "quad" | "level-up" |
+   tweens: blockfallTween,
+   rumble: createRumbleDriver()
+ });
+-
+ const input = gameApp.input!;
+ if (!input) throw new Error("Blockfall Reactor failed to create Aura3D input.");
+-
+ const cabinetHandle = app.nodes.require("blockfall-reactor-cabinet") as AuraRuntimeNodeHandle;
+ const lowerLeftCell = cellPosition(0, 0, 0);
+ const upperRightCell = cellPosition(BOARD_WIDTH - 1, VISIBLE_HEIGHT - 1, 0);
+-
+-
+-
+ const ghostHandles = Array.from({ length: 4 }, (_, index) => app.nodes.require(ghostNodeId(index)) as AuraRuntimeNodeHandle);
+ const clearFlashHandles = Array.from({ length: VISIBLE_HEIGHT }, (_, row) => app.nodes.require(clearFlashNodeId(row)) as AuraRuntimeNodeHandle);
+ const dropGuideHandle = app.nodes.require(DROP_GUIDE_NODE_ID) as AuraRuntimeNodeHandle;
+@@ -723,13 +575,6 @@ const clearFxHandles = clearFxNodeGroup.map((_, index) =>
+ const activePoolHandle = app.nodes.require(activePiecePool.id) as AuraRuntimeNodeHandle;
+ const lockedPoolHandles = lockedStackPools.map((pool) => app.nodes.require(pool.id) as AuraRuntimeNodeHandle);
+ let lastActivePoolKind: PieceKind | null = null;
+-
+-// T1.12 (§6.9.16 P0): the 200-node locked-block per-cell layer, the 4-node
+-// per-cell active layer, and the draw-call A/B probe are deleted. The instanced
+-// pools (lockedStackPools + activePiecePool) are the only tile representation
+-// now — the scene no longer mounts ~200 hidden boxes.
+-
+-// Wall scoreboard digit pools: one pre-built text3D node per digit per slot (BF-A3).
+ const scoreboardDigitHandles = {
+   score: Array.from({ length: 6 }, (_, slot) =>
+     Array.from({ length: 10 }, (_, digit) =>
+@@ -742,7 +587,6 @@ const scoreboardDigitHandles = {
+     )
+   )
+ };
+-
+ const fallingBlocks = game.fallingBlocks({
+   seed: DEFAULT_SEED,
+   width: BOARD_WIDTH,
+@@ -757,30 +601,13 @@ let lastFallingEvents: readonly GameFallingBlocksEvent[] = fallingBlocks.snapsho
+ let state = createBlockfallView(fallingBlocks.snapshot(), "spawn", lastFallingEvents);
+ let lastVisualChecksum = "";
+ let acceptanceScenario: BlockfallAcceptanceScenario | null = null;
+-/**
+- * Rendered beat timers, in seconds remaining. Each beat is driven by an actual
+- * observed game event, so the visible pulse is game state rather than decoration.
+- */
+ const beatTimers = { levelUp: 0, gameOver: 0, reset: 0, burst: 0 };
+-// Keep the line-clear sweep visible long enough to read during real play and
+-// during retained capture. At 0.45 s the renderer could finish encoding the
+-// named frame after the burst had already disappeared, leaving a technically
+-// correct line count but no visible feedback for the event.
+ const beatDurations = { levelUp: 0.85, gameOver: 1.6, reset: 0.7, burst: 0.9 };
+-/**
+- * Rotation-denied feedback (round 7): the kit refuses a rotate press when no
+- * wall kick lands. The refusal has no manifest audio cue (the authored SFX set
+- * is typed asset-bound with no denial sound), so the feedback is a short
+- * visible pulse on the rotate buttons plus a proof counter. Under
+- * prefers-reduced-motion the pulse never arms; the counter still records the
+- * event so evidence stays truthful.
+- */
+ const ROTATE_DENIED_FLASH_SECONDS = 0.28;
+ let rotateDeniedFlash = 0;
+ let lastObservedLevel = 1;
+ let burstRowY = BOARD_CENTER_Y;
+ let lastClearSize = 0;
+-/** Rendered beats that were actually observed at least once this session. */
+ const observedBeatProof = { lineClear: false, levelUp: false, gameOver: false, reset: false };
+ let queuedActions: BlockfallAction[] = [];
+ let replayPlayback: { active: boolean; frame: number } = { active: false, frame: 0 };
+@@ -806,14 +633,6 @@ const repeat = {
+   right: createRepeatGate(0.15, 0.055),
+   soft: createRepeatGate(0.025, 0.025)
+ };
+-
+-/**
+- * BF-A6 attract mode. The route boots straight into a playable game; when the
+- * session sits idle (no input, not paused, not in replay) for
+- * ATTRACT_IDLE_SECONDS the recorded expert run takes over behind the title
+- * card, and the next real input exits attract into a fresh game. The playback
+- * drives the same fallingBlocks kit path as manual play.
+- */
+ const ATTRACT_IDLE_SECONDS = 45;
+ const attractState = {
+   active: false,
+@@ -823,14 +642,6 @@ const attractState = {
+   framesReplayed: 0,
+   exitReason: null as string | null
+ };
+-const attractProofSource = {
+-  label: expertRun.label,
+-  events: expertRun.events.length,
+-  frames: expertRun.frames,
+-  pinnedFinalScore: expertRun.expected.finalScore,
+-  pinnedScoreHash: expertRun.expected.scoreHash,
+-  regressionHarness: "tests/unit/apps/blockfall-attract.test.ts"
+-};
+ let attractCard: HTMLElement | null = null;
+ function ensureAttractCard(): HTMLElement {
+   if (attractCard && document.body.contains(attractCard)) return attractCard;
+@@ -868,12 +679,7 @@ function exitAttract(reason: string): void {
+   card?.remove();
+   attractCard = null;
+ }
+-
+-// BF-A4 clear FX controller bound to the mounted shard pool.
+ const clearFx = createClearFx({ reducedMotion, handles: clearFxHandles });
+-
+-// Declared before the first syncAll() so the boot-time sync never touches a
+-// temporal-dead-zone binding (the functions below are hoisted; these are not).
+ let lastBoardView: ReturnType<typeof createBoardViewModel> | null = null;
+ const boardViewProof = {
+   parityChecks: 0,
+@@ -881,12 +687,6 @@ const boardViewProof = {
+   capacityRespected: true,
+   instancingActive: true
+ };
+-
+-/**
+- * Full visible rows captured immediately before each action batch. Line-clear
+- * events carry only a count, so the burst targets the rows that were full one
+- * step earlier — exactly the rows the event cleared.
+- */
+ function captureFullVisibleRows(): number[] {
+   const board = fallingBlocks.snapshot().board;
+   const rows: number[] = [];
+@@ -905,57 +705,9 @@ const manualInputState = {
+   pressed: new Set<BlockfallInputName>(),
+   held: new Set<BlockfallInputName>()
+ };
+-
+ installDomControls();
+ syncAll(true);
+-
+-// PRD-09: binds the scenario drive used by `?capture=scenario&scenario=<id>`.
+-// The deleted window probes (ACCEPTANCE/ATTRACT/BLOOM/COMPOSITION) funnelled
+-// through the same functions; staging itself is unchanged.
+-bindBlockfallEvidence(collectRouteEvidence);
+-bindBlockfallDrive({
+-  applyAcceptance: (scenario) => applyAcceptanceScenario(scenario),
+-  resumeFromAcceptance: () => {
+-    const result = applyAcceptanceScenario("play");
+-    acceptanceScenario = null;
+-    app.resume();
+-    return result;
+-  },
+-  unfreezeAcceptance: () => {
+-    acceptanceScenario = null;
+-    app.resume();
+-  },
+-  stageRotationTrap: () => {
+-    const snapshot = fallingBlocks.snapshot();
+-    const active = snapshot.active;
+-    if (!active || snapshot.gameOver || blockfallGame.session.paused) return false;
+-    const occupied = new Set(
+-      pieceCells({ kind: active.kind, x: active.x, y: active.y, rotation: active.rotation }).map(
+-        (cell) => `${cell.x},${cell.y}`
+-      )
+-    );
+-    const trapped = snapshot.board.map((row, y) =>
+-      row.map((cell, x) => (occupied.has(`${x},${y}`) ? cell : "I"))
+-    );
+-    fallingBlocks.setBoard(trapped);
+-    return true;
+-  },
+-  enterAttract: (reason = "scenario") => enterAttract(reason),
+-  exitAttract: (reason = "scenario") => exitAttract(reason),
+-  attractActive: () => attractState.active
+-});
+-
+-/**
+- * Exact-artifact acceptance probe. Each scenario mutates the same mounted public
+- * `game.fallingBlocks` kit used by normal play, then freezes the Aura app only
+- * after the real state transition has landed. This gives browser review stable
+- * quad/level/danger/outcome frames without substituting authored evidence for
+- * gameplay truth.
+- */
+-const acceptanceScenarios = ["play", "single-clear", "quad", "level-up", "danger", "game-over"] as const;
+-
+ let lastPublishedLevel = 1;
+-
+ gameApp.onFrame(({ dt }) => {
+   input.update(dt);
+   blockfallTween.tick(dt);
+@@ -1048,7 +800,6 @@ gameApp.onFrame(({ dt }) => {
+ 
+   syncAll(false, dt);
+ });
+-
+ function collectInputActions(dt: number): BlockfallAction[] {
+   const pressed = (action: BlockfallInputName) => input.pressed(action) || manualInputState.pressed.has(action);
+   const held = (action: BlockfallInputName) => input.held(action) || manualInputState.held.has(action);
+@@ -1070,7 +821,6 @@ function collectInputActions(dt: number): BlockfallAction[] {
+   manualInputState.pressed.clear();
+   return actions;
+ }
+-
+ function advanceFallingBlocks(actions: readonly BlockfallAction[] = []): BlockfallState {
+   let lastMove = "frame";
+   let resetApplied = false;
+@@ -1144,12 +894,10 @@ function advanceFallingBlocks(actions: readonly BlockfallAction[] = []): Blockfa
+ 
+   return createBlockfallView(fallingBlocks.snapshot(), lastMove, lastFallingEvents);
+ }
+-
+ function toFallingBlockAction(action: Exclude<BlockfallAction, { readonly type: "pause" } | { readonly type: "reset" }>): GameFallingBlockAction {
+   if (action.type === "tick") return { type: "tick" };
+   return action;
+ }
+-
+ function countFallingBlockEvents(
+   events: readonly GameFallingBlocksEvent[],
+   clearedVisibleRows: readonly number[] = []
+@@ -1205,13 +953,11 @@ function countFallingBlockEvents(
+     cameraFeel.punch(1.1, "level-up");
+   }
+ }
+-
+ function emptyAcceptanceBoard(): (PieceKind | null)[][] {
+   return Array.from({ length: BOARD_HEIGHT }, () =>
+     Array.from<PieceKind | null>({ length: BOARD_WIDTH }).fill(null)
+   );
+ }
+-
+ function clearSetupBoard(
+   lines: number,
+   gapXs: readonly number[] = [4],
+@@ -1244,107 +990,6 @@ function clearSetupBoard(
+   }
+   return board;
+ }
+-
+-function runVerticalClear(lines: number, populateMidGameStack = false): void {
+-  fallingBlocks.setBoard(clearSetupBoard(lines, [4], populateMidGameStack));
+-  // Rotation 1 occupies x + 2 for four vertical cells; x=2 fills column 4.
+-  fallingBlocks.setActive({ kind: "I", x: 2, y: BOARD_HEIGHT - 4, rotation: 1 });
+-  performAcceptanceHardDrop(Array.from({ length: lines }, (_, index) => VISIBLE_HEIGHT - lines + index));
+-}
+-
+-function performAcceptanceHardDrop(completedVisibleRows: readonly number[] = captureFullVisibleRows()): void {
+-  const snapshot = fallingBlocks.hardDrop();
+-  lastFallingEvents = snapshot.events;
+-  countFallingBlockEvents(lastFallingEvents, completedVisibleRows);
+-  state = createBlockfallView(snapshot, "acceptance:hard-drop", lastFallingEvents);
+-}
+-
+-function dangerSetupBoard(): (PieceKind | null)[][] {
+-  const board = emptyAcceptanceBoard();
+-  // A 16-row stepped stack leaves legal wells but reaches the fourth visible
+-  // row from the top, which is the route's actual near-top danger threshold.
+-  for (let y = HIDDEN_ROWS + 3; y < BOARD_HEIGHT; y += 1) {
+-    const gap = 2 + ((y - HIDDEN_ROWS) % 5);
+-    board[y] = board[y].map((_, x) => (x === gap || x === gap + 1 ? null : PIECE_KINDS[(x + y) % PIECE_KINDS.length]));
+-  }
+-  return board;
+-}
+-
+-function gameOverSetupBoard(): (PieceKind | null)[][] {
+-  const board = emptyAcceptanceBoard();
+-  // Occupy the public kit's spawn band. The manually placed O can still lock at
+-  // the floor; the next real spawn then collides and emits `game-over`.
+-  for (let y = 0; y <= 2; y += 1) {
+-    board[y] = board[y].map((_, x) => (x >= 3 && x <= 6 ? "Z" : null));
+-  }
+-  return board;
+-}
+-
+-function applyAcceptanceScenario(scenario: BlockfallAcceptanceScenario): unknown {
+-  app.pause();
+-  exitAttract("acceptance-probe");
+-  acceptanceScenario = scenario;
+-  blockfallGame.session.resume();
+-  replayPlayback = { active: false, frame: 0 };
+-  placedPieces = 0;
+-  lockCount = 0;
+-  queuedActions = [];
+-  manualInputState.pressed.clear();
+-  manualInputState.held.clear();
+-  for (const key of ["levelUp", "gameOver", "reset", "burst"] as const) beatTimers[key] = 0;
+-  const resetSnapshot = fallingBlocks.reset(DEFAULT_SEED);
+-  lastFallingEvents = resetSnapshot.events;
+-  lastObservedLevel = 1;
+-
+-  if (scenario === "play") {
+-    fallingBlocks.setBoard(createOpeningBoard());
+-    fallingBlocks.setActive({ kind: "T", x: Math.floor(BOARD_WIDTH / 2) - 2, y: PRESENTATION_ACTIVE_Y, rotation: 0 });
+-    state = createBlockfallView(fallingBlocks.snapshot(), "acceptance:play", fallingBlocks.snapshot().events);
+-  } else if (scenario === "single-clear") {
+-    fallingBlocks.setBoard(clearSetupBoard(1, [4, 5]));
+-    fallingBlocks.setActive({ kind: "O", x: 3, y: BOARD_HEIGHT - 4, rotation: 0 });
+-    performAcceptanceHardDrop([VISIBLE_HEIGHT - 1]);
+-  } else if (scenario === "quad") {
+-    runVerticalClear(4, true);
+-    const quadEvents = lastFallingEvents;
+-    // Advance the newly spawned controllable piece through the real kit while
+-    // the quad beat is alive. This is the same post-clear transition a player
+-    // sees, and prevents the exact frame from reading as a static stack with no
+-    // current decision. Keep the clear events attached to the view/evidence.
+-    for (let step = 0; step < 5; step += 1) fallingBlocks.softDrop();
+-    lastFallingEvents = quadEvents;
+-    state = createBlockfallView(fallingBlocks.snapshot(), "acceptance:quad-follow-through", quadEvents);
+-    // Freeze at the readable apex of the renderer-owned shard burst and camera
+-    // punch, rather than at t=0 before those mounted nodes have left the origin.
+-    clearFx.update(0.14);
+-    cameraFeel.update(0.06);
+-    cameraFeel.apply(reactorCamera);
+-  } else if (scenario === "level-up") {
+-    runVerticalClear(4);
+-    runVerticalClear(4);
+-    runVerticalClear(2);
+-  } else if (scenario === "danger") {
+-    fallingBlocks.setBoard(dangerSetupBoard());
+-    fallingBlocks.setActive({ kind: "T", x: 3, y: 0, rotation: 0 });
+-    state = createBlockfallView(fallingBlocks.snapshot(), "acceptance:danger", fallingBlocks.snapshot().events);
+-  } else {
+-    fallingBlocks.setBoard(gameOverSetupBoard());
+-    fallingBlocks.setActive({ kind: "O", x: 3, y: BOARD_HEIGHT - 4, rotation: 0 });
+-    performAcceptanceHardDrop();
+-  }
+-
+-  lastVisualChecksum = "";
+-  syncAll(true, 0);
+-  app.step(0);
+-  return {
+-    scenario,
+-    checksum: fallingBlocks.snapshot().checksum,
+-    summary: summarizeBlockfallState(state),
+-    events: lastFallingEvents.map((event) => ({ ...event })),
+-    danger: isDangerState(state)
+-  };
+-}
+-
+ function createBlockfallView(snapshot: GameFallingBlocksSnapshot, lastMove: string, events: readonly GameFallingBlocksEvent[]): BlockfallState {
+   const lineClear = events.find((event) => event.type === "line-clear");
+   const combo = snapshot.combo < 0 ? -1 : snapshot.combo;
+@@ -1374,7 +1019,6 @@ function createBlockfallView(snapshot: GameFallingBlocksSnapshot, lastMove: stri
+     lastClearedRows: []
+   };
+ }
+-
+ function summarizeBlockfallState(nextState: BlockfallState) {
+   return {
+     checksum: blockfallChecksum(nextState),
+@@ -1393,7 +1037,6 @@ function summarizeBlockfallState(nextState: BlockfallState) {
+     paused: nextState.paused
+   };
+ }
+-
+ function blockfallChecksum(nextState: BlockfallState): string {
+   return hashString(JSON.stringify({
+     seed: nextState.seed,
+@@ -1410,7 +1053,6 @@ function blockfallChecksum(nextState: BlockfallState): string {
+     gameOver: nextState.gameOver
+   }));
+ }
+-
+ function hashString(input: string): string {
+   let hash = 0x811c9dc5;
+   for (let index = 0; index < input.length; index += 1) {
+@@ -1419,7 +1061,6 @@ function hashString(input: string): string {
+   }
+   return (hash >>> 0).toString(16).padStart(8, "0");
+ }
+-
+ function formatBlockfallAction(action: BlockfallAction): string {
+   if (action.type === "move") return `move:${action.dx}`;
+   if (action.type === "rotate") return `rotate:${action.direction}`;
+@@ -1430,7 +1071,6 @@ function formatBlockfallAction(action: BlockfallAction): string {
+   if (action.type === "pause") return "pause";
+   return "reset";
+ }
+-
+ function syncAll(force: boolean, dt = 0): void {
+   const checksum = blockfallChecksum(state);
+   if (force || checksum !== lastVisualChecksum) {
+@@ -1449,11 +1089,6 @@ function syncAll(force: boolean, dt = 0): void {
+   rotateLeftButton.classList.toggle("rotate-denied", deniedPulseOn);
+   rotateRightButton.classList.toggle("rotate-denied", deniedPulseOn);
+ }
+-
+-/**
+- * Writes the projected view into the two instanced pool groups (BF-A2). The spec
+- * arrays are owned by reactor-scene and re-read by the renderer every frame.
+- */
+ function syncInstancedPools(): void {
+   const view = lastBoardView;
+   if (!view) return;
+@@ -1494,8 +1129,6 @@ function syncInstancedPools(): void {
+     spec.scale = [ACTIVE_BLOCK_SCALE[0], ACTIVE_BLOCK_SCALE[1], ACTIVE_BLOCK_SCALE[2]];
+   }
+ }
+-
+-/** Wall scoreboard digits mirror score and level with zero-padded formats (BF-A3). */
+ function syncScoreboardDigits(summary: { score: number; level: number }): void {
+   const scoreText = formatScoreDigits(summary.score);
+   for (let slot = 0; slot < scoreboardDigitHandles.score.length; slot += 1) {
+@@ -1520,7 +1153,6 @@ function syncScoreboardDigits(summary: { score: number; level: number }): void {
+     }
+   }
+ }
+-
+ function syncBoardVisuals(): void {
+   lastBoardView = createBoardViewModel(state);
+   boardViewProof.parityChecks += 1;
+@@ -1535,7 +1167,6 @@ function syncBoardVisuals(): void {
+   syncClearFlash();
+   syncReactor();
+ }
+-
+ function syncActivePiece(piece: ActivePiece | null): void {
+   activeFocusHandle.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
+   if (!piece) return;
+@@ -1559,7 +1190,6 @@ function syncActivePiece(piece: ActivePiece | null): void {
+       .setVisible(true);
+   }
+ }
+-
+ function syncGhostPiece(piece: ActivePiece | null): void {
+   ghostHandles.forEach((handle) => handle.setScale(HIDDEN_BLOCK_SCALE).setVisible(false));
+   dropGuideHandle.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
+@@ -1605,7 +1235,6 @@ function syncGhostPiece(piece: ActivePiece | null): void {
+     .setScale([0.014, span * 0.5, 0.018])
+     .setVisible(true);
+ }
+-
+ function syncClearFlash(): void {
+   const clearRows = new Set(state.lastClearedRows.map((row) => row - HIDDEN_ROWS).filter((row) => row >= 0 && row < VISIBLE_HEIGHT));
+   // One timed renderer beat owns the clear sweep. The old implementation also lit a
+@@ -1617,11 +1246,6 @@ function syncClearFlash(): void {
+   const firstClearedRow = [...clearRows][0];
+   if (firstClearedRow !== undefined) burstRowY = cellPosition(0, firstClearedRow, 0)[1];
+ }
+-
+-/**
+- * Advances the rendered beat nodes. Each beat's size/position/visibility comes
+- * from a timer started by a real observed game event.
+- */
+ function syncBeats(dt: number): void {
+   for (const key of ["levelUp", "gameOver", "reset", "burst"] as const) {
+     beatTimers[key] = Math.max(0, beatTimers[key] - Math.max(0, dt));
+@@ -1741,7 +1365,6 @@ function syncBeats(dt: number): void {
+     for (const handle of quadCrownHandles) handle.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
+   }
+ }
+-
+ function syncReactor(): void {
+   const charge = Math.max(0.04, state.reactor / 100);
+   const height = 0.18 + charge * 1.25;
+@@ -1751,11 +1374,9 @@ function syncReactor(): void {
+     .setScale(critical ? [0.12, 0.06, 0.055] : HIDDEN_BLOCK_SCALE)
+     .setVisible(critical);
+ }
+-
+ function isDangerState(nextState: BlockfallState): boolean {
+   return visibleLockedCells(nextState).some((cell) => cell.y <= 4);
+ }
+-
+ function syncHud(): void {
+   const summary = summarizeBlockfallState(state);
+   ui.setText(hudScore, summary.score.toLocaleString("en-US"));
+@@ -1781,169 +1402,6 @@ function syncHud(): void {
+   document.body.dataset.blockfallState = state.gameOver ? "game-over" : state.paused ? "paused" : "running";
+   document.body.dataset.blockfallAttract = attractState.active ? "true" : "false";
+ }
+-
+-function collectRouteEvidence(): Record<string, unknown> {
+-  const summary = summarizeBlockfallState(state);
+-  const hudSnapshot = game.hud.snapshot({
+-    bindings: hudBindings,
+-    round: { index: state.level },
+-    runtime: { frame: state.frame, paused: state.paused },
+-    appState: {
+-      score: state.score,
+-      lines: state.lines,
+-      level: state.level,
+-      combo: state.combo,
+-      reactor: { charge: state.reactor, max: 100 },
+-      evidence: { visible: true }
+-    }
+-  });
+-
+-  return {
+-    ...sourceEvidence,
+-    status: state.gameOver || state.paused ? "ready" : "running",
+-    appId: "showcase-blockfall-reactor",
+-    frameCount: state.frame,
+-    systems: [
+-      "createGameApp fixed-step runtime",
+-      "game.input keyboard and touch mapping",
+-      "runtime node pools for locked, active, ghost, clear flash, and reactor meter blocks",
+-      "public game.fallingBlocks state machine",
+-      "hold piece and next queue",
+-      "line clear, combo, back-to-back, and speed escalation proof",
+-      "replay checksum evidence",
+-      "HUD and accessibility evidence"
+-    ],
+-    controls: [
+-      "ArrowLeft/ArrowRight or A/D move",
+-      "ArrowUp/W/X/E rotate clockwise",
+-      "Z/Q rotate counter-clockwise",
+-      "ArrowDown/S soft drop",
+-      "Space hard drop",
+-      "C or Shift hold",
+-      "Escape/P pause",
+-      "R reset",
+-      "Touch buttons for move, rotate left/right, hold, and drop"
+-    ],
+-    claimBoundary: sourceEvidence.claimBoundary,
+-    diagnostics: app.diagnostics(),
+-    current: summary,
+-    acceptance: {
+-      scenario: acceptanceScenario,
+-      frozenForExactCapture: acceptanceScenario !== null,
+-      danger: isDangerState(state),
+-      snapshotChecksum: fallingBlocks.snapshot().checksum
+-    },
+-    live: {
+-      frame: state.frame,
+-      checksum: summary.checksum,
+-      lastMove: state.lastMove,
+-      activeCells: state.active ? pieceCells(state.active) : [],
+-      visibleLockedCells: visibleLockedCells(state).length,
+-      replayPlayback
+-    },
+-    observedGameplayProof: {
+-      ...observedGameplayProof,
+-      eventCounts: { ...observedGameplayProof.eventCounts }
+-    },
+-    /**
+-     * Rendered in-scene beats. Each flag only becomes true after the matching
+-     * game event fired and drove a visible scene node, so this is mounted beat
+-     * evidence rather than a source-authored declaration.
+-     */
+-    renderedBeatProof: {
+-      ...observedBeatProof,
+-      activeBeats: {
+-        levelUp: beatTimers.levelUp > 0,
+-        gameOver: beatTimers.gameOver > 0 || state.gameOver,
+-        reset: beatTimers.reset > 0,
+-        lineClearBurst: beatTimers.burst > 0
+-      },
+-      beatNodeIds: { ...BEAT_NODE_IDS }
+-    },
+-    runtimeEvidence: app.evidence({
+-      input,
+-      hud: hudBindings,
+-      accessibility: accessibilitySources,
+-      stage: {
+-        id: "blockfall-reactor-well",
+-        safeZones: true,
+-        bounds: { width: BOARD_WIDTH, height: BOARD_HEIGHT, visibleHeight: VISIBLE_HEIGHT },
+-        warnings: []
+-      },
+-      assets: { typedAssets: 2, missingAssets: [] },
+-      source: {
+-        mode: "mounted-runtime",
+-        expectsGame: true,
+-        label: "Blockfall Reactor mounted Aura3D game route"
+-      },
+-      ownership: [
+-        { subsystem: "runtime-nodes", owner: "aura3d", configured: true, evidence: "Every visible block pool is registered with game.runtimeNode." },
+-        { subsystem: "frame-loop", owner: "aura3d", configured: true, evidence: "createGameApp owns the fixed-step frame loop." },
+-        { subsystem: "input", owner: "aura3d", configured: true, evidence: "Aura3D input edges feed the public game.fallingBlocks kit." },
+-        { subsystem: "hud", owner: "app", configured: true, evidence: "DOM HUD is bound through Aura3D ui and game.hud evidence." },
+-        { subsystem: "accessibility", owner: "app", configured: true, evidence: "Pause, focus, and motion preferences are declared through game.accessibility." }
+-      ]
+-    }),
+-    hudSnapshot,
+-    /**
+-     * BF-A1..BF-A6 additive evidence. Every field below is observed mounted
+-     * runtime state, not an authored declaration.
+-     */
+-    audio: reactorAudio.proof(),
+-    audioTriggerMap: {
+-      move: "move action accepted",
+-      rotate: "rotate action accepted",
+-      lock: "lock event from kit",
+-      "line-clear": "line-clear event with 1-3 rows",
+-      quad: "line-clear event with 4 rows",
+-      "level-up": "level increases past last observed level",
+-      "hold-swap": "hold action accepted",
+-      "hard-drop": "hard-drop action accepted",
+-      "game-over": "game-over event from kit",
+-      ambient: "looping reactor hum on its own bus",
+-      music: "additive intensity stem per five levels (volume-automated loops)"
+-    },
+-    boardView: {
+-      renderMode: "instanced",
+-      pools: {
+-        lockedGroups: lockedStackPools.length,
+-        lockedSubPools: lockedStackPools.length,
+-        activePool: 1,
+-        capacityPerKind: LOCKED_POOL_CAPACITY_PER_KIND,
+-        activeCapacity: ACTIVE_POOL_CAPACITY
+-      },
+-      parity: { ...boardViewProof }
+-    },
+-    clearFx: clearFx.proof(),
+-    cameraFeel: cameraFeel.proof(),
+-    scoreboard: {
+-      layout: "reactor wall band behind the cabinet",
+-      scoreDigits: formatScoreDigits(state.score),
+-      levelDigits: formatLevelDigits(state.level),
+-      glyphCompliant: true,
+-      domHudRemainsSourceOfTruth: true,
+-      /** Live scene-graph visibility of every digit node, read at publish time. */
+-      renderedScoreSlots: scoreboardDigitHandles.score.map((slotHandles, slot) => ({
+-        slot,
+-        visibleDigit: slotHandles.findIndex((handle) => handle.visible)
+-      })),
+-      renderedLevelSlots: scoreboardDigitHandles.level.map((slotHandles, slot) => ({
+-        slot,
+-        visibleDigit: slotHandles.findIndex((handle) => handle.visible)
+-      }))
+-    },
+-    attract: {
+-      ...attractProofSource,
+-      idleEntryAfterSeconds: ATTRACT_IDLE_SECONDS,
+-      entryReason: attractState.entryReason,
+-      active: attractState.active,
+-      loopsCompleted: attractState.playback.loopsCompleted,
+-      framesReplayed: attractState.framesReplayed,
+-      exitReason: attractState.exitReason
+-    }
+-  };
+-}
+-
+ function createPublicReplayEvidence() {
+   const runReplay = () => {
+     const kit = game.fallingBlocks({ seed: DEFAULT_SEED, width: BOARD_WIDTH, height: BOARD_HEIGHT, hiddenRows: HIDDEN_ROWS });
+@@ -1993,7 +1451,6 @@ function createPublicReplayEvidence() {
+     secondFinalChecksum: second.finalChecksum
+   };
+ }
+-
+ function createPublicLineClearProof() {
+   const falling = game.fallingBlocks({ seed: 0xC1EA12, width: BOARD_WIDTH, height: BOARD_HEIGHT, hiddenRows: HIDDEN_ROWS });
+   const board = Array.from({ length: BOARD_HEIGHT }, () => Array.from({ length: BOARD_WIDTH }, () => null as PieceKind | null));
+@@ -2021,7 +1478,6 @@ function createPublicLineClearProof() {
+     }
+   };
+ }
+-
+ function createFallingBlocksKitContractProof() {
+   const falling = game.fallingBlocks({ seed: 7 });
+   const start = falling.snapshot();
+@@ -2077,7 +1533,6 @@ function createFallingBlocksKitContractProof() {
+     scoreAfterClear: cleared.score
+   };
+ }
+-
+ function installDomControls(): void {
+   const focusGame = () => {
+     try {
+@@ -2165,7 +1620,6 @@ function installDomControls(): void {
+     manualInputState.held.delete(action);
+   }, { passive: false });
+ }
+-
+ function startReplayPlayback(): void {
+   exitAttract("replay-button");
+   blockfallGame.session.resume();
+@@ -2179,7 +1633,6 @@ function startReplayPlayback(): void {
+   queuedActions = [];
+   syncAll(true);
+ }
+-
+ function renderMiniPiece(kind: PieceKind | null): string {
+   const occupied = new Set<CellPoint>();
+   if (kind) {
+@@ -2196,13 +1649,11 @@ function renderMiniPiece(kind: PieceKind | null): string {
+   }
+   return markup;
+ }
+-
+ function normalizeMiniCells(cells: readonly CellPoint[]): readonly CellPoint[] {
+   const minX = Math.min(...cells.map((cell) => cell.x));
+   const minY = Math.min(...cells.map((cell) => cell.y));
+   return cells.map((cell) => ({ x: cell.x - minX, y: cell.y - minY }));
+ }
+-
+ function createRepeatGate(initialDelay: number, interval: number) {
+   let timer = 0;
+   return {
+@@ -2224,7 +1675,6 @@ function createRepeatGate(initialDelay: number, interval: number) {
+     }
+   };
+ }
+-
+ function mediaMatches(query: string): boolean {
+   return typeof window.matchMedia === "function" && window.matchMedia(query).matches;
+ }
+diff --git a/apps/showcase-blockfall-reactor/src/main.ts b/apps/showcase-blockfall-reactor/src/main.ts
+index 4355c7aa3..836744234 100644
+--- a/apps/showcase-blockfall-reactor/src/main.ts
++++ b/apps/showcase-blockfall-reactor/src/main.ts
+@@ -1,14 +1,6 @@
+-// apps/showcase-blockfall-reactor/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
+-// Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-blockfall-reactor`
+-// (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
+-// acceptance (§10 step 5).
+ import { resolveQrFlags } from "@aura3d/engine/contracts";
+-
+ const ROUTE_FLAG = "A3D_QR_ROUTE_BLOCKFALL_REACTOR" as const;
+ const DEFAULT_ON = false;
+-
+-/** Accepts `?a3d-qr=…,route-blockfall-reactor` and `?a3d-qr=…,A3D_QR_ROUTE_BLOCKFALL_REACTOR`.
+- *  Returns undefined when the flag is absent (CCR-14-2 replaces this helper). */
+ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const raw = new URL(loc.href).searchParams.get("a3d-qr");
+   if (raw === null) return undefined;
+@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+     ? true
+     : undefined;
+ }
+-
+ const flags = resolveQrFlags({
+   url: location.href,
+   env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR },
+   options: { [ROUTE_FLAG]: routeFlagFromUrl(location, ROUTE_FLAG) ?? DEFAULT_ON }
+ });
+-
+ void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
+diff --git a/apps/showcase-blockfall-reactor/src/v2/evidence/index.ts b/apps/showcase-blockfall-reactor/src/v2/evidence/index.ts
+deleted file mode 100644
+index eec32805c..000000000
+--- a/apps/showcase-blockfall-reactor/src/v2/evidence/index.ts
++++ /dev/null
+@@ -1,73 +0,0 @@
+-// apps/showcase-blockfall-reactor/src/v2/evidence/index.ts — §7.2.1 evidence.
+-// games.json required conditions:
+-//   board.linesClearedThisRound >= 1 && fx.liveCount > 0   (shot 04-action, 20s)
+-//   board.stackHeight >= 4                                  (shot 03-mid, 20s)
+-// Plus the lane-standard sections: loading.sceneSwaps, appliedLook parity,
+-// audio cue log, touchEngaged, boardView parity, beat/clearFx proofs.
+-import type { BlockfallAudioProof } from "../../gameplay/reactor-audio";
+-import type { ClearFxProof } from "../../legacy/clear-fx";
+-import type { CameraFeelProof } from "../../legacy/camera-feel";
+-
+-export interface BlockfallEvidenceBindings {
+-  gameplay: () => {
+-    paused: boolean;
+-    gameOver: boolean;
+-    replayActive: boolean;
+-    touchEngaged: boolean;
+-    lastMove: string;
+-    replayIndex: number;
+-    replayTotal: number;
+-  };
+-  board: () => {
+-    lines: number;
+-    linesClearedThisRound: number;
+-    stackHeight: number;
+-    score: number;
+-    level: number;
+-    combo: number;
+-    backToBack: boolean;
+-    reactor: number;
+-    piecesPlaced: number;
+-    lockedCells: number;
+-    activeKind: string | null;
+-    hold: string | null;
+-    queue: readonly string[];
+-  };
+-  boardView: () => {
+-    lastParityMatch: boolean;
+-    capacityRespected: boolean;
+-    lockedGroups: number;
+-    lockedSubPools: number;
+-    perCellNodesDeleted: true;
+-  };
+-  fx: () => { liveCount: number; backend: string };
+-  clearFx: () => ClearFxProof;
+-  cameraFeel: () => CameraFeelProof;
+-  audio: () => BlockfallAudioProof;
+-  render: () => { frame: number; bootedAtMs: number; firstFrameAt: number | null };
+-  loading: () => { sceneSwaps: number; lazyLoadedCount: number };
+-  physics: () => { backend: string; bodyCount: number; sensorCount: number };
+-  appliedLook: Record<string, unknown>;
+-  rig: () => { id: string; driftDeg: number; punch: number };
+-  scenario: () => string | null;
+-}
+-
+-export function publishBlockfallEvidence(b: BlockfallEvidenceBindings): void {
+-  const root = (window as unknown as { __AURA3D_GAME_EVIDENCE__?: Record<string, unknown> });
+-  root.__AURA3D_GAME_EVIDENCE__ ??= {};
+-  root.__AURA3D_GAME_EVIDENCE__["showcase-blockfall-reactor"] = {
+-    get board() { return b.board(); },
+-    get boardView() { return b.boardView(); },
+-    get gameplay() { return b.gameplay(); },
+-    get fx() { return b.fx(); },
+-    get clearFx() { return b.clearFx(); },
+-    get cameraFeel() { return b.cameraFeel(); },
+-    get audio() { return b.audio(); },
+-    get render() { return b.render(); },
+-    get loading() { return b.loading(); },
+-    get physics() { return b.physics(); },
+-    get appliedLook() { return b.appliedLook; },
+-    get rig() { return b.rig(); },
+-    get scenario() { return b.scenario(); }
+-  };
+-}
+-- 
+2.34.1
+

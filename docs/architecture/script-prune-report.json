@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-10-07T01:18:29.679Z",
+  "generatedAt": "2026-10-09T06:37:01.811Z",
   "totals": {
-    "scripts": 70,
+    "scripts": 107,
     "keep": 70,
-    "delete": 0,
+    "delete": 37,
     "review": 0,
-    "toolDirs": 305,
-    "unreferencedToolDirs": 12
+    "toolDirs": 183,
+    "unreferencedToolDirs": 0
   },
   "scripts": [
     {
@@ -45,6 +45,84 @@
       ]
     },
     {
+      "name": "audit:external-parity-broad-parity",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        ".github/workflows/public-demo-deploy.yml",
+        "tools/_quarantine/external-parity-completion-audit/index.ts",
+        "tools/_quarantine/external-parity-external-engine-baselines/index.ts",
+        "tools/_quarantine/external-parity-external-evidence-readiness/index.ts",
+        "tools/_quarantine/external-parity-production-readiness/index.ts",
+        "tools/_quarantine/external-parity-verify/index.ts",
+        "tools/external-demo-export/index.ts",
+        "tools/external-parity-broad-parity-readiness/index.ts",
+        "tools/public-demo-deployment-artifacts/index.ts",
+        "tools/public-demo-deployment-smoke/index.ts"
+      ],
+      "invokedToolDirs": [
+        "tools/external-parity-broad-parity-readiness"
+      ]
+    },
+    {
+      "name": "audit:external-parity-completion",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        ".github/workflows/public-demo-deploy.yml",
+        "tools/_quarantine/external-parity-completion-audit/index.ts",
+        "tools/_quarantine/external-parity-external-engine-baselines/index.ts",
+        "tools/_quarantine/external-parity-external-evidence-readiness/index.ts",
+        "tools/_quarantine/external-parity-production-readiness/index.ts",
+        "tools/_quarantine/external-parity-verify/index.ts",
+        "tools/external-demo-export/index.ts",
+        "tools/public-demo-deployment-artifacts/index.ts",
+        "tools/public-demo-deployment-smoke/index.ts"
+      ],
+      "invokedToolDirs": [
+        "tools/external-parity-completion-audit"
+      ]
+    },
+    {
+      "name": "audit:external-parity-external-evidence-readiness",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        ".github/workflows/public-demo-deploy.yml",
+        "tools/_quarantine/external-parity-completion-audit/index.ts",
+        "tools/_quarantine/external-parity-external-engine-baselines/index.ts",
+        "tools/_quarantine/external-parity-external-evidence-handoff/index.ts",
+        "tools/_quarantine/external-parity-external-evidence-readiness/index.ts",
+        "tools/_quarantine/external-parity-production-readiness/index.ts",
+        "tools/_quarantine/external-parity-verify/index.ts",
+        "tools/public-demo-deployment-artifacts/index.ts"
+      ],
+      "invokedToolDirs": [
+        "tools/external-parity-external-evidence-readiness"
+      ]
+    },
+    {
+      "name": "audit:external-parity-production-readiness",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        ".github/workflows/public-demo-deploy.yml",
+        "tools/_quarantine/external-parity-external-engine-baselines/index.ts",
+        "tools/_quarantine/external-parity-external-evidence-handoff/index.ts",
+        "tools/_quarantine/external-parity-external-evidence-readiness/index.ts",
+        "tools/_quarantine/external-parity-external-host-runner/index.ts",
+        "tools/_quarantine/external-parity-production-readiness/index.ts",
+        "tools/_quarantine/external-parity-verify/index.ts",
+        "tools/external-demo-export/index.ts",
+        "tools/external-parity-broad-parity-readiness/index.ts",
+        "tools/public-demo-deployment-artifacts/index.ts",
+        "tools/public-demo-deployment-smoke/index.ts"
+      ],
+      "invokedToolDirs": [
+        "tools/external-parity-production-readiness"
+      ]
+    },
+    {
       "name": "bench:quality",
       "verdict": "keep",
       "reason": "canonical §6.11 name",
@@ -72,7 +150,10 @@
         "docs/agents/skills-examples/aura3d-threejs-migration.md",
         "docs/agents/templates.md",
         "docs/agents/verification.md",
+        "docs/guides/build-a-browser-game.md",
         "docs/templates/create-aura3d-templates.md",
+        "tools/agent-eval/run.ts",
+        "tools/agent-templates/capture-templates.mjs",
         "tools/asset-geometry-audit/wheel-detect.mjs",
         "tools/asset-screening/screen.mjs",
         "tools/evidence/verify-agent-api-types.mjs",
@@ -81,7 +162,8 @@
         "tools/package-provenance/index.ts",
         "tools/release-verification/index.ts",
         "tools/requirements-trace/index.ts",
-        "script:build:dist"
+        "script:build:dist",
+        "script:check:public-api"
       ],
       "invokedToolDirs": [
         "tools/finalize-dist"
@@ -102,10 +184,10 @@
       "reason": "referenced by 6 source(s)",
       "referencedBy": [
         ".github/workflows/public-demo-deploy.yml",
+        "tools/_quarantine/external-parity-external-evidence-handoff/index.ts",
+        "tools/_quarantine/external-parity-external-evidence-readiness/index.ts",
+        "tools/_quarantine/external-parity-production-readiness/index.ts",
         "tools/external-demo-export/index.ts",
-        "tools/external-parity-external-evidence-handoff/index.ts",
-        "tools/external-parity-external-evidence-readiness/index.ts",
-        "tools/external-parity-production-readiness/index.ts",
         "tools/public-demo-deployment-smoke/index.ts"
       ],
       "invokedToolDirs": [
@@ -115,20 +197,22 @@
     {
       "name": "build:raw",
       "verdict": "keep",
-      "reason": "referenced by 15 source(s)",
+      "reason": "referenced by 17 source(s)",
       "referencedBy": [
+        ".github/workflows/agent-output-eval.yml",
         ".github/workflows/browser-matrix.yml",
         ".github/workflows/build.yml",
         ".github/workflows/muse301-aggregate.yml",
         ".github/workflows/muse301-evidence-closure.yml",
         ".github/workflows/muse301-gallery.yml",
+        ".github/workflows/qr-prd06-animation-browser.yml",
+        ".github/workflows/qr-prd10-world.yml",
         ".github/workflows/qr-prd15-bundle-size.yml",
-        ".github/workflows/qr-prd15-captures.yml",
         ".github/workflows/qr-prd15-pack-check.yml",
+        ".github/workflows/template-lookdev.yml",
         ".github/workflows/test.yml",
         "tools/dist-freshness/index.ts",
         "tools/head-to-head-installed-reproduction/index.ts",
-        "tools/lean-fixture-capture/index.ts",
         "tools/release/package-acceptance.mjs",
         "script:check:templates:installed",
         "script:verify:npm-release"
@@ -160,6 +244,46 @@
       ]
     },
     {
+      "name": "check:agent-api",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "docs/agents/verification.md",
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/agent-api-surface"
+      ]
+    },
+    {
+      "name": "check:agent-docs",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        ".github/workflows/agent-skills.yml",
+        "docs/agents/verification.md",
+        "tools/muse3jsparity-readiness/baseline-unit-inventory.json",
+        "tools/muse3jsparity-readiness/index.ts",
+        "tools/muse3jsparity-readiness/requirements.ts",
+        "tools/release/l01-producer.ts",
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/agent-docs"
+      ]
+    },
+    {
+      "name": "check:asset-corpus",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/asset-corpus"
+      ]
+    },
+    {
       "name": "check:asset-screening",
       "verdict": "keep",
       "reason": "referenced by 2 source(s)",
@@ -169,6 +293,145 @@
       ],
       "invokedToolDirs": [
         "tools/asset-screening"
+      ]
+    },
+    {
+      "name": "check:assets-cli",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "docs/agents/verification.md",
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/asset-cli"
+      ]
+    },
+    {
+      "name": "check:bundle-size",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "docs/agents/skills-examples/aura3d-performance.md",
+        "docs/agents/verification.md",
+        "tools/bundle-size/markdown.mjs",
+        "tools/muse3jsparity-readiness/source-identity.ts",
+        "tools/release/package-acceptance.mjs",
+        "tools/release/source-identity.mjs",
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/bundle-size"
+      ]
+    },
+    {
+      "name": "check:claim-lineage",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "docs/architecture/claim-lineage.md",
+        "tools/product-remediation/build-threejs-parity.mjs",
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/claim-lineage"
+      ]
+    },
+    {
+      "name": "check:clean-install",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "tools/release/package-acceptance.mjs",
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/package-clean-install"
+      ]
+    },
+    {
+      "name": "check:deployment",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "docs/agents/verification.md",
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/agent-deployment"
+      ]
+    },
+    {
+      "name": "check:devtools",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "docs/agents/verification.md",
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/agent-devtools"
+      ]
+    },
+    {
+      "name": "check:docs-codeblocks",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "docs/agents/verification.md",
+        "tools/_quarantine/muse3jsparity-docs-audit/document-invariants.ts",
+        "tools/muse3jsparity-readiness/requirements.ts",
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/docs-codeblocks"
+      ]
+    },
+    {
+      "name": "check:docs-site",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "docs/agents/verification.md",
+        "tools/muse3jsparity-readiness/requirements.ts",
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/docs-site"
+      ]
+    },
+    {
+      "name": "check:effects-vfx",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/effects-vfx-visual-audit"
+      ]
+    },
+    {
+      "name": "check:error-quality",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/error-message-quality"
+      ]
+    },
+    {
+      "name": "check:examples",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "docs/agents/verification.md",
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/agent-examples"
       ]
     },
     {
@@ -184,18 +447,181 @@
       ]
     },
     {
+      "name": "check:installed-tree-shaking",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "tools/release/package-acceptance.mjs",
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/installed-tree-shaking"
+      ]
+    },
+    {
+      "name": "check:marketing-links",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/marketing-link-audit"
+      ]
+    },
+    {
+      "name": "check:marketing-truth",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "docs/agents/verification.md",
+        "tools/muse3jsparity-readiness/baseline-unit-inventory.json",
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/marketing-truth"
+      ]
+    },
+    {
+      "name": "check:no-three-runtime",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/package-no-three-runtime"
+      ]
+    },
+    {
+      "name": "check:package-graph",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "docs/architecture/package-ownership.md",
+        "tools/eslint-plugin-aura3d-boundaries/index.mjs",
+        "tools/package-tiers.ts",
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/package-graph"
+      ]
+    },
+    {
+      "name": "check:product-cutover",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/product-cutover"
+      ]
+    },
+    {
+      "name": "check:production-path-benchmark",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/production-path-benchmark"
+      ]
+    },
+    {
+      "name": "check:public-api",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "docs/api/contracts/public-api-contract.md",
+        "tools/developer-friction/index.ts",
+        "tools/public-api-contract/index.ts",
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/public-api-contract"
+      ]
+    },
+    {
+      "name": "check:public-surface-diff",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "docs/architecture/2.0-removals.md",
+        "docs/migration/2.0.md",
+        "tools/script-prune/index.ts",
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/public-surface-diff"
+      ]
+    },
+    {
       "name": "check:release",
       "verdict": "keep",
       "reason": "referenced by 6 source(s)",
       "referencedBy": [
         "docs/architecture/claim-lineage.md",
         "docs/architecture/package-ownership.md",
-        "tools/external-parity-docs-readiness/index.ts",
+        "tools/_quarantine/external-parity-docs-readiness/index.ts",
         "tools/requirements-trace/index.ts",
         "tools/showcase-library/game-runtime-gates.d.mts",
         "README.md"
       ],
       "invokedToolDirs": []
+    },
+    {
+      "name": "check:skills",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        ".github/workflows/agent-skills.yml",
+        "docs/agents/README.md",
+        "docs/agents/skills-examples/aura3d-core.md",
+        "tools/agent-skills/check.ts",
+        "script:check:agent-docs"
+      ],
+      "invokedToolDirs": [
+        "tools/agent-skills"
+      ]
+    },
+    {
+      "name": "check:tarballs",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/package-tarball-audit"
+      ]
+    },
+    {
+      "name": "check:template-source-audit",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/template-source-audit"
+      ]
+    },
+    {
+      "name": "check:templates",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        ".github/workflows/agent-skills.yml",
+        "docs/agents/verification.md",
+        "tools/agent-docs/simulation.ts",
+        "tools/release/package-acceptance.mjs",
+        "script:check:release"
+      ],
+      "invokedToolDirs": [
+        "tools/agent-templates"
+      ]
     },
     {
       "name": "check:templates:installed",
@@ -367,15 +793,42 @@
       "invokedToolDirs": []
     },
     {
+      "name": "head-to-head:installed",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        ".github/workflows/muse301-h2h.yml",
+        ".github/workflows/remote-browser-301.yml"
+      ],
+      "invokedToolDirs": [
+        "tools/head-to-head-installed-reproduction"
+      ]
+    },
+    {
       "name": "lint",
       "verdict": "keep",
       "reason": "canonical §6.11 name",
       "referencedBy": [
         ".github/workflows/ci.yml",
         ".github/workflows/qr-contracts.yml",
+        ".github/workflows/qr-prd08-camera.yml",
+        ".github/workflows/qr-prd10-world.yml",
         "script:check:release"
       ],
       "invokedToolDirs": []
+    },
+    {
+      "name": "muse3jsparity:release",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        ".github/workflows/muse301-aggregate.yml",
+        ".github/workflows/muse301-evidence-closure.yml",
+        ".github/workflows/muse301-final-readiness.yml"
+      ],
+      "invokedToolDirs": [
+        "tools/muse3jsparity-readiness"
+      ]
     },
     {
       "name": "pack:check",
@@ -410,8 +863,9 @@
     {
       "name": "prompt-animation:browser",
       "verdict": "keep",
-      "reason": "referenced by 1 source(s)",
+      "reason": "referenced by 2 source(s)",
       "referencedBy": [
+        "tools/quality-gate/root-manifest-pending.json",
         "script:prompt-animation:release:raw"
       ],
       "invokedToolDirs": []
@@ -419,8 +873,9 @@
     {
       "name": "prompt-animation:browser:raw",
       "verdict": "keep",
-      "reason": "referenced by 1 source(s)",
+      "reason": "referenced by 2 source(s)",
       "referencedBy": [
+        "tools/quality-gate/root-manifest-pending.json",
         "script:prompt-animation:browser"
       ],
       "invokedToolDirs": []
@@ -604,6 +1059,20 @@
       ]
     },
     {
+      "name": "skills:sync",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        "docs/agents/README.md",
+        "docs/agents/skills-examples/aura3d-core.md",
+        "tools/agent-skills/check.ts",
+        "tools/agent-skills/sync.ts"
+      ],
+      "invokedToolDirs": [
+        "tools/agent-skills"
+      ]
+    },
+    {
       "name": "templates:check",
       "verdict": "keep",
       "reason": "canonical §6.11 name",
@@ -663,13 +1132,28 @@
       "invokedToolDirs": []
     },
     {
+      "name": "test:packages",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        ".github/workflows/build.yml",
+        ".github/workflows/ci.yml",
+        ".github/workflows/test.yml",
+        "tools/external-parity-codebase-root-readiness/index.ts",
+        "tools/quality-gate/root-manifest-pending.json",
+        "script:verify:npm-release"
+      ],
+      "invokedToolDirs": []
+    },
+    {
       "name": "test:packages:dist",
       "verdict": "keep",
-      "reason": "referenced by 4 source(s)",
+      "reason": "referenced by 5 source(s)",
       "referencedBy": [
         ".github/workflows/build.yml",
         ".github/workflows/test.yml",
         "tools/external-parity-codebase-root-readiness/index.ts",
+        "tools/quality-gate/root-manifest-pending.json",
         "script:verify:npm-release"
       ],
       "invokedToolDirs": []
@@ -705,9 +1189,9 @@
       "verdict": "keep",
       "reason": "canonical §6.11 name",
       "referencedBy": [
-        ".github/workflows/browser-matrix.yml",
         "apps/aura-clash-showcase/package.json",
         "tools/aura-clash-flagship-readiness/index.ts",
+        "tools/quality-gate/root-manifest-pending.json",
         "tools/release-verification/index.ts",
         "tools/requirements-trace/index.ts",
         "tools/script-prune/index.ts"
@@ -727,6 +1211,7 @@
         ".github/workflows/test.yml",
         "packages/create-aura3d/templates/animation-channel/package.json",
         "packages/create-aura3d/templates/animation-studio/package.json",
+        "packages/create-aura3d/templates/arena-shooter/package.json",
         "packages/create-aura3d/templates/character-controller/package.json",
         "packages/create-aura3d/templates/cinematic-scene/package.json",
         "packages/create-aura3d/templates/episode-builder/package.json",
@@ -758,9 +1243,14 @@
     {
       "name": "typecheck:raw",
       "verdict": "keep",
-      "reason": "referenced by 3 source(s)",
+      "reason": "referenced by 8 source(s)",
       "referencedBy": [
+        ".github/workflows/post-quality.yml",
         ".github/workflows/qr-contracts.yml",
+        ".github/workflows/qr-prd04-materials.yml",
+        ".github/workflows/qr-prd08-camera.yml",
+        ".github/workflows/qr-prd10-world.yml",
+        ".github/workflows/qr-prd13-authoring.yml",
         "docs/architecture/adr/0001-retain-ecs-and-scripting.md",
         "script:verify:npm-release"
       ],
@@ -771,6 +1261,18 @@
       "verdict": "keep",
       "reason": "canonical §6.11 name",
       "referencedBy": [
+        "tools/script-prune/index.ts"
+      ],
+      "invokedToolDirs": []
+    },
+    {
+      "name": "verify:architecture",
+      "verdict": "keep",
+      "reason": "referenced by 4 source(s)",
+      "referencedBy": [
+        "tools/external-parity-codebase-root-readiness/index.ts",
+        "tools/release-verification/index.ts",
+        "tools/requirements-trace/index.ts",
         "tools/script-prune/index.ts"
       ],
       "invokedToolDirs": []
@@ -791,16 +1293,26 @@
       ]
     },
     {
-      "name": "verify:architecture",
-      "verdict": "keep",
-      "reason": "referenced by 4 source(s)",
+      "name": "verify:external-parity-report-freshness",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
       "referencedBy": [
-        "tools/external-parity-codebase-root-readiness/index.ts",
-        "tools/release-verification/index.ts",
-        "tools/requirements-trace/index.ts",
-        "tools/script-prune/index.ts"
+        ".github/workflows/public-demo-deploy.yml",
+        "tools/_quarantine/external-parity-completion-audit/index.ts",
+        "tools/_quarantine/external-parity-external-engine-baselines/index.ts",
+        "tools/_quarantine/external-parity-external-evidence-readiness/index.ts",
+        "tools/_quarantine/external-parity-external-host-runner/index.ts",
+        "tools/_quarantine/external-parity-production-readiness/index.ts",
+        "tools/_quarantine/external-parity-report-freshness/index.ts",
+        "tools/_quarantine/external-parity-verify/index.ts",
+        "tools/external-demo-export/index.ts",
+        "tools/external-parity-broad-parity-readiness/index.ts",
+        "tools/public-demo-deployment-artifacts/index.ts",
+        "tools/public-demo-deployment-smoke/index.ts"
       ],
-      "invokedToolDirs": []
+      "invokedToolDirs": [
+        "tools/external-parity-report-freshness"
+      ]
     },
     {
       "name": "verify:imports",
@@ -845,6 +1357,24 @@
       ]
     },
     {
+      "name": "verify:public-demo-deployment",
+      "verdict": "delete",
+      "reason": "target file(s) missing: tsconfig.base.js",
+      "referencedBy": [
+        ".github/workflows/public-demo-deploy.yml",
+        "tools/_quarantine/external-parity-external-evidence-handoff/index.ts",
+        "tools/_quarantine/external-parity-external-evidence-readiness/index.ts",
+        "tools/_quarantine/external-parity-external-host-runner/index.ts",
+        "tools/_quarantine/external-parity-production-readiness/index.ts",
+        "tools/external-demo-export/index.ts",
+        "tools/external-parity-broad-parity-readiness/index.ts",
+        "tools/public-demo-deployment-smoke/index.ts"
+      ],
+      "invokedToolDirs": [
+        "tools/public-demo-deployment-smoke"
+      ]
+    },
+    {
       "name": "verify:size",
       "verdict": "keep",
       "reason": "referenced by 4 source(s)",
@@ -878,10 +1408,10 @@
       "reason": "referenced by 7 source(s)",
       "referencedBy": [
         ".github/workflows/public-demo-deploy.yml",
+        "tools/_quarantine/external-parity-external-evidence-handoff/index.ts",
+        "tools/_quarantine/external-parity-external-evidence-readiness/index.ts",
+        "tools/_quarantine/external-parity-production-readiness/index.ts",
         "tools/external-demo-export/index.ts",
-        "tools/external-parity-external-evidence-handoff/index.ts",
-        "tools/external-parity-external-evidence-readiness/index.ts",
-        "tools/external-parity-production-readiness/index.ts",
         "tools/public-demo-deployment-smoke/index.ts",
         "tools/static-demo-server-smoke/index.ts"
       ],
@@ -891,6 +1421,15 @@
     }
   ],
   "toolDirs": [
+    {
+      "dir": "tools/_quarantine",
+      "referencedBy": [
+        "tests/unit/quality-gate/no-verdict-literals.test.ts",
+        "tools/quality-gate/src/classify-tools.ts",
+        ".github/QR_OWNERSHIP.json"
+      ],
+      "verdict": "referenced"
+    },
     {
       "dir": "tools/advanced-gallery-assets",
       "referencedBy": [
@@ -906,6 +1445,7 @@
         "tests/unit/tools/advanced-gallery-report-audit.test.ts",
         "tests/unit/tools/threejs-parity-data-galaxy-generated-assets.test.ts",
         "tests/unit/tools/threejs-parity-product-configurator-generated-assets.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/advanced-gallery-report-audit/index.ts"
       ],
       "verdict": "referenced"
@@ -915,7 +1455,8 @@
       "referencedBy": [
         "tests/browser/advanced-examples-gallery.spec.ts",
         "tests/browser/advanced-gallery-visual-acceptance.ts",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -925,9 +1466,8 @@
         "docs/debug/profiling-and-diagnostics.md",
         "docs/examples/advanced-gallery.md",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/advanced-gallery-report-audit.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
       ],
       "verdict": "referenced"
@@ -937,10 +1477,9 @@
       "referencedBy": [
         "docs/examples/advanced-gallery.md",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/advanced-gallery-artifact-traversal.test.ts",
         "tests/unit/tools/advanced-gallery-visual-review-gate-rules.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
       ],
       "verdict": "referenced"
@@ -949,21 +1488,27 @@
       "dir": "tools/agent-api-surface",
       "referencedBy": [
         "Aura3D-Skills-PRD.md",
-        "tests/reports/final-subsystem-ownership.json"
+        "package.json",
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
     {
       "dir": "tools/agent-deployment",
       "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
+        "package.json",
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
     {
       "dir": "tools/agent-devtools",
       "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
+        "package.json",
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -973,7 +1518,9 @@
         "Aura3D-Skills-PRD.md",
         "docs/architecture/root-export-dispositions.json",
         "docs/architecture/root-export-inventory.json",
+        "package.json",
         "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/deletion-safety/index.ts",
         "tools/generate-resolution-maps/index.ts",
         ".github/workflows/agent-skills.yml"
@@ -985,7 +1532,20 @@
       "referencedBy": [
         "docs/architecture/root-export-dispositions.json",
         "docs/architecture/root-export-inventory.json",
-        "tests/reports/final-subsystem-ownership.json"
+        "evidence/prd13/pr-d-t1.9-t1.13.md",
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
+      ],
+      "verdict": "referenced"
+    },
+    {
+      "dir": "tools/agent-eval",
+      "referencedBy": [
+        "evidence/prd13/pr-a-t0.1-t0.3.md",
+        "evidence/prd13/pr-b-t0.4-t0.7-t1.1.md",
+        "tests/unit/tools/agent-eval-run.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
+        ".github/workflows/agent-output-eval.yml"
       ],
       "verdict": "referenced"
     },
@@ -993,13 +1553,23 @@
       "dir": "tools/agent-examples",
       "referencedBy": [
         "CHANGELOG.md",
-        "tests/reports/final-subsystem-ownership.json"
+        "evidence/prd03/phase6/qr-requests.md",
+        "package.json",
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
     {
       "dir": "tools/agent-skills",
       "referencedBy": [
+        "evidence/prd13/pr-b-t0.4-t0.7-t1.1.md",
+        "evidence/prd13/pr-e-t2.1-t2.6.md",
+        "evidence/prd13/pr-f-t2.7-t2.14.md",
+        "package.json",
+        "tests/unit/tools/agent-skills-check.test.ts",
+        "tests/unit/tools/craft-ratio.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         ".github/workflows/agent-skills.yml"
       ],
       "verdict": "referenced"
@@ -1008,8 +1578,16 @@
       "dir": "tools/agent-templates",
       "referencedBy": [
         "script:check:templates:installed",
+        "benchmarks/agent-eval/baseline/README.md",
+        "evidence/prd13/pr-a-t0.1-t0.3.md",
+        "evidence/prd13/pr-b-t0.4-t0.7-t1.1.md",
         "package.json",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tests/unit/create-aura3d/look-floor.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
+        "tools/agent-docs/simulation.ts",
+        ".github/workflows/agent-output-eval.yml",
+        ".github/workflows/template-lookdev.yml"
       ],
       "verdict": "referenced"
     },
@@ -1017,7 +1595,8 @@
       "dir": "tools/animation-studio-body-motion-gate",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tests/unit/tools/animation-studio-gates.test.ts"
+        "tests/unit/tools/animation-studio-gates.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -1028,9 +1607,8 @@
         "docs/architecture/root-export-dispositions.json",
         "docs/architecture/root-export-inventory.json",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/animation-studio-clean-room.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
       ],
       "verdict": "referenced"
@@ -1039,7 +1617,8 @@
       "dir": "tools/animation-studio-determinism-gate",
       "referencedBy": [
         "docs/animation-studio/quality-and-limitations.md",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -1047,7 +1626,8 @@
       "dir": "tools/animation-studio-docs-claims",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tests/unit/tools/animation-studio-gates.test.ts"
+        "tests/unit/tools/animation-studio-gates.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -1055,7 +1635,8 @@
       "dir": "tools/animation-studio-fidelity-report",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tests/unit/animation-studio/fidelity-tiering.test.ts"
+        "tests/unit/animation-studio/fidelity-tiering.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -1067,9 +1648,9 @@
         "packages/aura3d-cli/skills/aura3d-animation-studio/SKILL.md",
         "packages/create-aura3d/skills/aura3d-animation-studio/SKILL.md",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/animation-studio-gate-suite.test.ts",
+        "tests/unit/tools/corpus/craft-ratio/packages/aura3d-cli/skills/aura3d-animation-studio/SKILL.md",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
       ],
       "verdict": "referenced"
@@ -1078,7 +1659,8 @@
       "dir": "tools/animation-studio-lip-sync-timing-gate",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tests/unit/tools/animation-studio-gates.test.ts"
+        "tests/unit/tools/animation-studio-gates.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -1086,7 +1668,8 @@
       "dir": "tools/animation-studio-motion-quality-gate",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tests/unit/tools/animation-studio-gates.test.ts"
+        "tests/unit/tools/animation-studio-gates.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -1095,7 +1678,8 @@
       "referencedBy": [
         "docs/animation-studio/quality-and-limitations.md",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/unit/tools/animation-studio-gates.test.ts"
+        "tests/unit/tools/animation-studio-gates.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -1103,7 +1687,8 @@
       "dir": "tools/animation-studio-package-proof",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tests/unit/tools/animation-studio-gates.test.ts"
+        "tests/unit/tools/animation-studio-gates.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -1111,7 +1696,8 @@
       "dir": "tools/animation-studio-performance-budget-gate",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tests/unit/tools/animation-studio-gates.test.ts"
+        "tests/unit/tools/animation-studio-gates.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -1119,14 +1705,16 @@
       "dir": "tools/animation-studio-prompt-specificity-gate",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tests/unit/tools/animation-studio-gates.test.ts"
+        "tests/unit/tools/animation-studio-gates.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
     {
       "dir": "tools/animation-studio-readiness",
       "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -1134,7 +1722,8 @@
       "dir": "tools/animation-studio-scene-coherence-gate",
       "referencedBy": [
         "docs/animation-studio/quality-and-limitations.md",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -1142,7 +1731,8 @@
       "dir": "tools/animation-studio-subtitle-timing-gate",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tests/unit/tools/animation-studio-gates.test.ts"
+        "tests/unit/tools/animation-studio-gates.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -1150,7 +1740,8 @@
       "dir": "tools/animation-studio-template-smoke",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tests/unit/tools/animation-studio-gates.test.ts"
+        "tests/unit/tools/animation-studio-gates.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -1158,7 +1749,8 @@
       "dir": "tools/animation-studio-visual-quality-gate",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tests/unit/tools/animation-studio-gates.test.ts"
+        "tests/unit/tools/animation-studio-gates.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -1168,9 +1760,8 @@
         "tests/reports/audio-backend-bakeoff/report.json",
         "tests/reports/ecs-scripting-compatibility/report.json",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/api-docs.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/deletion-safety/index.ts",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
       ],
@@ -1184,6 +1775,8 @@
         "packages/engine/src/agent-api/compiler/optionCoverage.ts",
         "tests/qr/prd15/arch-gates-rules.test.ts",
         "tests/qr/prd15/compiler/optionCoverage.test.ts",
+        "tests/unit/tools/arch-gates-baseline.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         ".github/workflows/qr-prd15-arch-gates.yml"
       ],
       "verdict": "referenced"
@@ -1196,7 +1789,8 @@
         "tests/reports/final-subsystem-ownership.json",
         "tests/unit/apps/turbo-hero-admission.test.ts",
         "tests/unit/assets/gltf-multipart-primitive-submission.test.ts",
-        "tests/unit/aura3d-cli/admission-geometry-fixtures.test.ts"
+        "tests/unit/aura3d-cli/admission-geometry-fixtures.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -1204,7 +1798,30 @@
       "dir": "tools/asset-index-refresh",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json",
         ".github/workflows/asset-index-refresh.yml"
+      ],
+      "verdict": "referenced"
+    },
+    {
+      "dir": "tools/asset-optimize",
+      "referencedBy": [
+        "benchmarks/quality-rebuild/scenes/prd05/assets.ts",
+        "benchmarks/quality-rebuild/scenes/prd05/index.ts",
+        "packages/aura3d-cli/src/admission/gates.ts",
+        "packages/aura3d-cli/src/admission/profiles.ts",
+        "packages/aura3d-cli/src/admission/textureStats.ts",
+        "packages/aura3d-cli/src/commands/prd05/index.ts",
+        "packages/aura3d-cli/src/commands/prd05/optimize.ts",
+        "packages/aura3d-cli/src/contracts/assetManifest.ts",
+        "packages/physics-rapier/src/index.ts",
+        "tests/unit/contracts/impl/prd05-asset-optimize.test.ts",
+        "tests/unit/physics/generated-collider-contact.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
+        ".github/QR_OWNERSHIP.json",
+        ".github/workflows/asset-lookdev.yml",
+        ".github/workflows/asset-optimize.yml",
+        ".github/workflows/qr-prd05-gates.yml"
       ],
       "verdict": "referenced"
     },
@@ -1215,6 +1832,7 @@
         "package.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/unit/aura3d-cli/asset-screening-effects.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/cc0-mirror/mirror.mjs"
       ],
       "verdict": "referenced"
@@ -1224,7 +1842,8 @@
       "referencedBy": [
         "script:assets:provenance:raw",
         "package.json",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -1232,7 +1851,8 @@
       "dir": "tools/aura-clash-flagship-readiness",
       "referencedBy": [
         "apps/aura-clash-showcase/scripts/check-flagship-readiness-evidence.mjs",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -1242,9 +1862,8 @@
         "script:assets:provenance",
         "package.json",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/aura3d105-release-readiness.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
       ],
       "verdict": "referenced"
@@ -1253,7 +1872,8 @@
       "dir": "tools/aura3d11-release-readiness",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tests/unit/tools/animation-studio-gates.test.ts"
+        "tests/unit/tools/animation-studio-gates.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -1261,7 +1881,8 @@
       "dir": "tools/blender-same-corpus-export",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-pbr-gltf-readiness/index.ts"
+        "tools/_quarantine/CLASSIFICATION.json",
+        "tools/_quarantine/external-parity-pbr-gltf-readiness/index.ts"
       ],
       "verdict": "referenced"
     },
@@ -1272,6 +1893,7 @@
         "tests/reports/audio-backend-bakeoff/report.json",
         "tests/reports/ecs-scripting-compatibility/report.json",
         "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/bundle-size/index.ts"
       ],
       "verdict": "referenced"
@@ -1288,6 +1910,7 @@
         "tests/reports/physics-backend-bakeoff/report.json",
         "tests/unit/tools/deletion-safety.test.ts",
         "tests/unit/tools/developer-value.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/developer-friction/index.ts",
         "tsconfig.build.packcheck.json"
       ],
@@ -1297,16 +1920,33 @@
       "dir": "tools/bundle-size",
       "referencedBy": [
         "script:bundle:size",
+        "evidence/prd03/phase0/bundle.json",
+        "evidence/prd03/phase0/qr-requests.md",
+        "evidence/prd13/pr-d-t1.9-t1.13.md",
         "package.json",
         "packages/engine/src/agent-api/media-node.ts",
         "tests/reports/browser-entry-purity.json",
         "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/browser-entry-purity/index.ts",
         "tools/release/budget-continuity.mjs",
         "tools/release/package-acceptance.mjs",
         "tools/release/package-acceptance.test.mjs",
         ".github/QR_OWNERSHIP.json",
+        ".github/workflows/qr-prd11-perf.yml",
         ".github/workflows/qr-prd15-bundle-size.yml"
+      ],
+      "verdict": "referenced"
+    },
+    {
+      "dir": "tools/camera-cast-codemod",
+      "referencedBy": [
+        "packages/aura3d-cli/src/commands/prd08/index.ts",
+        "tests/qr/prd08/unit/camera-cast-codemod.test.ts",
+        "tests/qr/prd08/unit/feel-lint.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
+        ".github/QR_OWNERSHIP.json",
+        ".github/workflows/qr-prd08-camera.yml"
       ],
       "verdict": "referenced"
     },
@@ -1314,6 +1954,7 @@
       "dir": "tools/cc0-mirror",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json",
         ".github/workflows/asset-index-refresh.yml"
       ],
       "verdict": "referenced"
@@ -1322,11 +1963,11 @@
       "dir": "tools/claim-lineage",
       "referencedBy": [
         "docs/architecture/claim-lineage.md",
+        "package.json",
         "tests/reports/audio-backend-bakeoff/report.json",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/claim-lineage.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json",
         "tools/product-remediation/build-threejs-parity.mjs"
       ],
@@ -1336,9 +1977,8 @@
       "dir": "tools/claim-registry",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/claim-registry.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/external-parity-codebase-root-readiness/index.ts",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
       ],
@@ -1349,7 +1989,23 @@
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
         "tests/unit/tools/verify-tools.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/release-verification/index.ts"
+      ],
+      "verdict": "referenced"
+    },
+    {
+      "dir": "tools/codemods",
+      "referencedBy": [
+        "evidence/prd-04/tint-migration.md",
+        "packages/aura3d-cli/src/commands/prd04/modelTintReport.ts",
+        "packages/aura3d-cli/src/commands/prd04/pinEmissiveDefaults.ts",
+        "packages/aura3d-cli/src/commands/prd06/index.ts",
+        "tests/qr/prd04/unit/codemods.test.ts",
+        "tests/qr/prd06/unit/animation-3-1-codemod.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
+        ".github/QR_OWNERSHIP.json",
+        ".github/workflows/qr-prd04-materials.yml"
       ],
       "verdict": "referenced"
     },
@@ -1362,12 +2018,14 @@
         "docs/comparisons/babylonjs.md",
         "tests/browser/engine-comparison.spec.ts",
         "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-benchmarks/index.ts",
-        "tools/external-parity-external-evidence-handoff/index.ts",
+        "tests/unit/quality-gate/compare-engines-no-visual.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
+        "tools/_quarantine/external-parity-benchmarks/index.ts",
+        "tools/_quarantine/external-parity-external-evidence-handoff/index.ts",
+        "tools/_quarantine/threejs-parity-instancing-parity/index.ts",
         "tools/foundation-benchmarks/index.ts",
         "tools/production-path-benchmark/index.ts",
         "tools/release-verification/index.ts",
-        "tools/threejs-parity-instancing-parity/index.ts",
         ".github/QR_OWNERSHIP.json"
       ],
       "verdict": "referenced"
@@ -1379,7 +2037,8 @@
         "tests/browser/current-routes-route-health.spec.ts",
         "tests/browser/gpu-particle-a4.spec.ts",
         "tests/browser/tier12-route-health.spec.ts",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -1387,7 +2046,8 @@
       "dir": "tools/current-routes-threejs-parity",
       "referencedBy": [
         "tests/browser/current-routes-threejs-parity.spec.ts",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -1395,10 +2055,9 @@
       "dir": "tools/current-threejs-baseline",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/current-threejs-baseline.test.ts",
         "tests/unit/tools/head-to-head-installed-reproduction.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/head-to-head-installed-reproduction/index.ts",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
       ],
@@ -1407,14 +2066,12 @@
     {
       "dir": "tools/deletion-safety",
       "referencedBy": [
-        "tests/reports/deletion-safety.json",
         "tests/reports/descriptor-scripting-delete-final.json",
         "tests/reports/ecs-scripting-compatibility/report.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/public-runtime-descriptor-inventory/report.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/deletion-safety.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
       ],
       "verdict": "referenced"
@@ -1423,7 +2080,8 @@
       "dir": "tools/demo-validation",
       "referencedBy": [
         "tests/browser/product-demos.spec.ts",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -1432,6 +2090,7 @@
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
         "tests/unit/tools/developer-value.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/current-threejs-baseline/index.mjs"
       ],
       "verdict": "referenced"
@@ -1440,6 +2099,7 @@
       "dir": "tools/dist-freshness",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/bundle-scenarios/index.ts"
       ],
       "verdict": "referenced"
@@ -1448,14 +2108,17 @@
       "dir": "tools/doc-contradiction-scan",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tests/unit/tools/verify-tools.test.ts"
+        "tests/unit/tools/verify-tools.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
     {
       "dir": "tools/docs-codeblocks",
       "referencedBy": [
+        "package.json",
         "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/deletion-safety/index.ts"
       ],
       "verdict": "referenced"
@@ -1463,7 +2126,9 @@
     {
       "dir": "tools/docs-site",
       "referencedBy": [
+        "package.json",
         "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/deletion-safety/index.ts"
       ],
       "verdict": "referenced"
@@ -1472,9 +2137,8 @@
       "dir": "tools/docs-version-alignment",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/docs-version-alignment.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
       ],
       "verdict": "referenced"
@@ -1485,6 +2149,7 @@
         "eslint.config.js",
         "tests/reports/final-subsystem-ownership.json",
         "tests/unit/tooling/eslint-boundaries.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/generate-resolution-maps/index.ts"
       ],
       "verdict": "referenced"
@@ -1503,10 +2168,9 @@
         "tests/browser/showcase-route-primary-probes.spec.ts",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/public-runtime-descriptor-inventory/report.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/aura3d105-release-readiness.test.ts",
         "tests/unit/tools/evidence-freshness.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/aura3d105-release-readiness/index.ts",
         "tools/evidence-freshness/explain-staleness.mjs",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json",
@@ -1520,9 +2184,8 @@
         "tests/browser/multipart-primitive-draw.spec.ts",
         "tests/browser/showcase-route-primary-probes.spec.ts",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/evidence-freshness.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json",
         "tools/replicability-metrics/index.mjs"
       ],
@@ -1533,7 +2196,8 @@
       "referencedBy": [
         "packages/engine/src/public/devtools.ts",
         "packages/engine/src/public/index.ts",
-        "packages/engine/src/public/renderer.ts"
+        "packages/engine/src/public/renderer.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -1542,8 +2206,7 @@
       "referencedBy": [
         "docs/architecture/adr/0004-physical-simulation-is-optional-rapier.md",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
       ],
       "verdict": "referenced"
@@ -1555,7 +2218,8 @@
         "package.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/unit/tools/verify-tools.test.ts",
-        "tools/external-parity-external-evidence-handoff/index.ts"
+        "tools/_quarantine/CLASSIFICATION.json",
+        "tools/_quarantine/external-parity-external-evidence-handoff/index.ts"
       ],
       "verdict": "referenced"
     },
@@ -1563,143 +2227,27 @@
       "dir": "tools/external-demo-validation",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-evidence-handoff/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-api-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-app-suite-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-asset-corpus",
-      "referencedBy": [
-        "archive/examples/architecture-viewer-rejected/main.ts",
-        "fixtures/external-parity-assets/morph/external-parity-morph-expression/manifest.json",
-        "tests/browser/asset-viewer-external-parity.spec.ts",
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-asset-studio-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-assets",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-evidence-handoff/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-benchmarks",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-claim-gates/index.ts"
+        "tools/_quarantine/CLASSIFICATION.json",
+        "tools/_quarantine/external-parity-external-evidence-handoff/index.ts"
       ],
       "verdict": "referenced"
     },
     {
       "dir": "tools/external-parity-broad-parity-readiness",
       "referencedBy": [
+        "package.json",
         "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-evidence-handoff/index.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
+        "tools/_quarantine/external-parity-external-evidence-handoff/index.ts",
         "tools/external-parity-product-visual-parity/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-character-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-claim-gates",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-code/index.ts",
-        "tools/external-parity-external-evidence-handoff/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-claim-registry",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-docs-readiness/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-code",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-codebase-root-readiness/index.ts",
-        "tools/external-parity-external-evidence-handoff/index.ts"
       ],
       "verdict": "referenced"
     },
     {
       "dir": "tools/external-parity-codebase-root-readiness",
       "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-completion-audit",
-      "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-evidence-handoff/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-current-capability",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-claim-gates/index.ts",
-        "tools/external-parity-code/index.ts",
-        "tools/external-parity-external-evidence-handoff/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-docs-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-ecosystem-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-evidence-handoff/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-editor",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -1709,85 +2257,8 @@
         "docs/architecture/root-export-dispositions.json",
         "docs/architecture/root-export-inventory.json",
         "tests/reports/final-subsystem-ownership.json",
-        "tools/threejs-parity-external-consumer/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-external-engine-baselines",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-evidence-handoff/index.ts",
-        "tools/external-parity-product-visual-parity/productScene.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-external-evidence-handoff",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-evidence-readiness/index.ts",
-        "tools/external-parity-external-host-runner/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-external-evidence-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-evidence-handoff/index.ts",
-        "tools/external-parity-external-host-runner/index.ts",
-        "tools/external-parity-github-external-readiness/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-external-host-doctor",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-evidence-handoff/index.ts",
-        "tools/external-parity-external-evidence-readiness/index.ts",
-        "tools/external-parity-external-host-runner/index.ts",
-        "tools/external-parity-github-external-readiness/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-external-host-runner",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-evidence-handoff/index.ts",
-        "tools/external-parity-external-evidence-readiness/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-external-vite-build",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-fixture-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-github-external-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-evidence-handoff/index.ts",
-        "tools/external-parity-external-evidence-readiness/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-gltf-corpus-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
+        "tools/_quarantine/CLASSIFICATION.json",
+        "tools/_quarantine/threejs-parity-external-consumer/index.ts"
       ],
       "verdict": "referenced"
     },
@@ -1795,35 +2266,9 @@
       "dir": "tools/external-parity-gltf-loader-visual-parity",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tools/compare-engines/index.ts",
-        "tools/external-parity-pbr-gltf-readiness/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-hdr-ibl-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
-        "tests/unit/tools/external-parity-hdr-ibl-readiness.test.ts",
-        "tools/external-parity-hdr-render-target-readiness/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-hdr-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-hdr-render-target-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-evidence-handoff/index.ts",
-        "tools/external-parity-hdr-visual-parity/index.ts"
+        "tools/_quarantine/CLASSIFICATION.json",
+        "tools/_quarantine/external-parity-pbr-gltf-readiness/index.ts",
+        "tools/compare-engines/index.ts"
       ],
       "verdict": "referenced"
     },
@@ -1831,89 +2276,10 @@
       "dir": "tools/external-parity-hdr-visual-parity",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-engine-baselines/index.ts",
-        "tools/external-parity-external-evidence-handoff/index.ts",
-        "tools/external-parity-hdr-render-target-readiness/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-ibl-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-interactive-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-local-port-status",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-evidence-handoff/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-material-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-material-studio-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-package-smoke",
-      "referencedBy": [
-        "docs/architecture/root-export-dispositions.json",
-        "docs/architecture/root-export-inventory.json",
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-parity-status",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-evidence-handoff/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-pbr-gltf-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/public-runtime-descriptor-inventory/report.json",
-        "tools/external-parity-external-evidence-handoff/index.ts",
-        "tools/external-parity-pbr-visual-parity/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-pbr-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-pbr-reference-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/public-runtime-descriptor-inventory/report.json",
-        "tools/external-parity-external-evidence-handoff/index.ts",
-        "tools/external-parity-pbr-gltf-readiness/index.ts"
+        "tools/_quarantine/CLASSIFICATION.json",
+        "tools/_quarantine/external-parity-external-engine-baselines/index.ts",
+        "tools/_quarantine/external-parity-external-evidence-handoff/index.ts",
+        "tools/_quarantine/external-parity-hdr-render-target-readiness/index.ts"
       ],
       "verdict": "referenced"
     },
@@ -1921,23 +2287,10 @@
       "dir": "tools/external-parity-pbr-visual-parity",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-engine-baselines/index.ts",
-        "tools/external-parity-external-evidence-handoff/index.ts",
-        "tools/external-parity-pbr-gltf-readiness/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-performance-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-postprocess-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
+        "tools/_quarantine/CLASSIFICATION.json",
+        "tools/_quarantine/external-parity-external-engine-baselines/index.ts",
+        "tools/_quarantine/external-parity-external-evidence-handoff/index.ts",
+        "tools/_quarantine/external-parity-pbr-gltf-readiness/index.ts"
       ],
       "verdict": "referenced"
     },
@@ -1945,15 +2298,9 @@
       "dir": "tools/external-parity-postprocess-suite",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-engine-baselines/index.ts",
-        "tools/external-parity-external-evidence-handoff/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-product-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
+        "tools/_quarantine/CLASSIFICATION.json",
+        "tools/_quarantine/external-parity-external-engine-baselines/index.ts",
+        "tools/_quarantine/external-parity-external-evidence-handoff/index.ts"
       ],
       "verdict": "referenced"
     },
@@ -1961,109 +2308,10 @@
       "dir": "tools/external-parity-product-visual-parity",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tools/compare-engines/index.ts",
-        "tools/external-parity-external-engine-baselines/index.ts",
-        "tools/external-parity-external-evidence-handoff/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-production-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-evidence-handoff/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-progress",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-release-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-rendering",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-report-freshness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-evidence-handoff/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-reporting",
-      "referencedBy": [
-        "tests/browser/webgpu-parity.spec.ts",
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-evidence-handoff/index.ts",
-        "tools/external-parity-report-freshness/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-roadmap-completion-audit",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-release-readiness/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-roadmap-visual-quality",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-runtime",
-      "referencedBy": [
-        "tests/reports/descriptor-input-action-delete-final.json",
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-scene-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-screenshot-gallery",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-shadow-map-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-evidence-handoff/index.ts",
-        "tools/external-parity-shadow-visual-parity/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-shadow-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
+        "tools/_quarantine/CLASSIFICATION.json",
+        "tools/_quarantine/external-parity-external-engine-baselines/index.ts",
+        "tools/_quarantine/external-parity-external-evidence-handoff/index.ts",
+        "tools/compare-engines/index.ts"
       ],
       "verdict": "referenced"
     },
@@ -2071,62 +2319,10 @@
       "dir": "tools/external-parity-shadow-visual-parity",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-engine-baselines/index.ts",
-        "tools/external-parity-external-evidence-handoff/index.ts",
-        "tools/external-parity-shadow-map-readiness/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-static-preview-smoke",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-template-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-threejs-visual-parity",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-screenshot-gallery/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-truth",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-unity-unreal-parity",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-evidence-handoff/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-verify",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/external-parity-visual-quality",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/public-runtime-descriptor-inventory/report.json",
-        "tools/external-parity-codebase-root-readiness/index.ts"
+        "tools/_quarantine/CLASSIFICATION.json",
+        "tools/_quarantine/external-parity-external-engine-baselines/index.ts",
+        "tools/_quarantine/external-parity-external-evidence-handoff/index.ts",
+        "tools/_quarantine/external-parity-shadow-map-readiness/index.ts"
       ],
       "verdict": "referenced"
     },
@@ -2134,9 +2330,8 @@
       "dir": "tools/final-competitive-baseline",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/final-competitive-baseline.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
       ],
       "verdict": "referenced"
@@ -2146,6 +2341,7 @@
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
         "tests/unit/tools/verify-tools.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/requirements-trace/index.ts"
       ],
       "verdict": "referenced"
@@ -2157,9 +2353,8 @@
         "docs/architecture/final-subsystem-ownership.md",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/physical-character-controller-delete-final.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/release-metrics-rollup.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/evidence-freshness/producer-registry.mjs",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
       ],
@@ -2175,6 +2370,7 @@
         "package.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/unit/tools/generate-resolution-maps.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/generate-resolution-maps/index.ts"
       ],
       "verdict": "referenced"
@@ -2183,14 +2379,16 @@
       "dir": "tools/foundation-benchmarks",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-benchmarks/index.ts"
+        "tools/_quarantine/CLASSIFICATION.json",
+        "tools/_quarantine/external-parity-benchmarks/index.ts"
       ],
       "verdict": "referenced"
     },
     {
       "dir": "tools/foundation-browser-matrix",
       "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -2199,6 +2397,7 @@
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
         "tests/unit/tools/foundation-validation.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/foundation-code/index.ts"
       ],
       "verdict": "referenced"
@@ -2207,6 +2406,7 @@
       "dir": "tools/foundation-code",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/generate-resolution-maps/index.ts"
       ],
       "verdict": "referenced"
@@ -2215,6 +2415,7 @@
       "dir": "tools/foundation-current-capability",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/foundation-code/index.ts"
       ],
       "verdict": "referenced"
@@ -2223,7 +2424,8 @@
       "dir": "tools/foundation-reporting",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tests/unit/tools/foundation-validation.test.ts"
+        "tests/unit/tools/foundation-validation.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -2232,6 +2434,7 @@
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/public-runtime-descriptor-inventory/report.json",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/route-tiers/index.ts"
       ],
       "verdict": "referenced"
@@ -2239,7 +2442,8 @@
     {
       "dir": "tools/foundation-subsystem-report",
       "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -2248,7 +2452,8 @@
       "referencedBy": [
         "apps/aura-clash-showcase/launch-evidence/cross-runtime-evidence.json",
         "apps/aura-clash-showcase/launch-evidence/readiness.json",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -2258,7 +2463,8 @@
         "apps/aura-clash-showcase/launch-evidence/cross-runtime-evidence.json",
         "apps/aura-clash-showcase/launch-evidence/readiness.json",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/public-runtime-descriptor-inventory/report.json"
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -2271,6 +2477,7 @@
         "docs/architecture/root-export-inventory.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/game-runtime-readiness/index.ts"
       ],
       "verdict": "referenced"
@@ -2281,7 +2488,8 @@
         "apps/aura-clash-showcase/launch-evidence/cross-runtime-evidence.json",
         "apps/aura-clash-showcase/launch-evidence/readiness.json",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/public-runtime-descriptor-inventory/report.json"
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -2293,40 +2501,17 @@
         "aura.exports.json",
         "package.json",
         "packages/engine/src/deprecated/advanced-runtime.ts",
-        "packages/engine/src/deprecated/animation-browser.ts",
         "packages/engine/src/deprecated/apps.ts",
-        "packages/engine/src/deprecated/assets-advanced-gallery.ts",
-        "packages/engine/src/deprecated/assets-asset-corpus.ts",
         "packages/engine/src/deprecated/assets-browser.ts",
-        "packages/engine/src/deprecated/assets-gltf-runtime.ts",
-        "packages/engine/src/deprecated/assets-production-runtime.ts",
         "packages/engine/src/deprecated/contracts.ts",
-        "packages/engine/src/deprecated/core.ts",
-        "packages/engine/src/deprecated/create-aura3d.ts",
-        "packages/engine/src/deprecated/debug.ts",
-        "packages/engine/src/deprecated/editor.ts",
-        "packages/engine/src/deprecated/engine-runtime.ts",
-        "packages/engine/src/deprecated/engine.ts",
-        "packages/engine/src/deprecated/environments.ts",
-        "packages/engine/src/deprecated/lean-game.ts",
-        "packages/engine/src/deprecated/lean-product.ts",
-        "packages/engine/src/deprecated/lean.ts",
-        "packages/engine/src/deprecated/materials.ts",
         "packages/engine/src/deprecated/media-node.ts",
-        "packages/engine/src/deprecated/product-studio.ts",
         "packages/engine/src/deprecated/production-runtime.ts",
-        "packages/engine/src/deprecated/rendering-advanced-runtime.ts",
         "packages/engine/src/deprecated/rendering-production-runtime.ts",
         "packages/engine/src/deprecated/rendering-webgpu.ts",
         "packages/engine/src/deprecated/rendering.ts",
-        "packages/engine/src/deprecated/scene-kits-humanoid-walk.ts",
-        "packages/engine/src/deprecated/scene-kits-particle-fountain.ts",
-        "packages/engine/src/deprecated/scene-kits-product-viewer.ts",
-        "packages/engine/src/deprecated/workflows-production-runtime.ts",
         "packages/engine/src/deprecated/workflows-production.ts",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/generate-resolution-maps.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/arch-gates/index.ts",
         "tools/bundle-size/index.ts",
         "tools/public-surface-diff/index.ts",
@@ -2336,158 +2521,21 @@
       "verdict": "referenced"
     },
     {
-      "dir": "tools/head-to-head-cinematic-architecture",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/head-to-head-current-aggregate",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
-        "tests/unit/tools/head-to-head-current-aggregate.test.ts",
-        "tests/unit/tools/head-to-head-measured-outcomes.test.ts",
-        "tools/head-to-head-installed-reproduction/index.ts",
-        "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/head-to-head-custom-material-shader",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/head-to-head-digital-twin-data",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/head-to-head-gltf-product-viewer",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
       "dir": "tools/head-to-head-installed-reproduction",
       "referencedBy": [
+        "package.json",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
-        "tests/unit/tools/head-to-head-installed-reproduction.test.ts"
+        "tests/unit/tools/head-to-head-installed-reproduction.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
     {
-      "dir": "tools/head-to-head-instancing-lod",
+      "dir": "tools/impostor-bake",
       "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/head-to-head-material-laboratory",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/head-to-head-navigation-crowd",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/head-to-head-physical-character",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/head-to-head-physical-vehicle",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/head-to-head-postprocessed-scene",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/head-to-head-primitive",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/head-to-head-product-configurator",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/head-to-head-resource-lifecycle",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/head-to-head-scaffold-to-deploy",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/head-to-head-skinned-morph-animation",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/head-to-head-smart-city",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/head-to-head-webgpu-tsl",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/head-to-head-xr-interaction",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/lean-fixture-capture",
-      "referencedBy": [
-        ".github/workflows/qr-prd15-captures.yml"
+        "packages/aura3d-cli/src/commands/prd10/index.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
+        ".github/QR_OWNERSHIP.json"
       ],
       "verdict": "referenced"
     },
@@ -2506,6 +2554,7 @@
         "tests/unit/assets/rig-pair-disposition-verifier.test.ts",
         "tests/unit/assets/rig-pair-evidence-301.test.ts",
         "tests/unit/assets/rig-pair-quality-301.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         ".github/workflows/native-rig-pairs-301.yml"
       ],
       "verdict": "referenced"
@@ -2517,9 +2566,8 @@
         "docs/architecture/root-export-inventory.json",
         "packages/engine/src/agent-api/compiler/primitives.ts",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/material-structural-parity.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/dist-freshness/index.ts",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
       ],
@@ -2528,9 +2576,8 @@
     {
       "dir": "tools/meshy-secret-scan",
       "referencedBy": [
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/meshy-secret-scan.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
       ],
       "verdict": "referenced"
@@ -2539,25 +2586,10 @@
       "dir": "tools/migrate-2.0",
       "referencedBy": [
         "docs/architecture/root-export-inventory.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/migrate-2.0.test.ts",
         "tests/unit/tools/migration-matrix.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/muse3jsparity-docs-audit",
-      "referencedBy": [
-        "docs/architecture/root-export-dispositions.json",
-        "docs/architecture/root-export-inventory.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
-        "tests/unit/tools/muse3jsparity-docs-audit.test.ts",
-        "tests/unit/tools/muse3jsparity-document-invariants.test.ts",
-        "tests/unit/tools/muse3jsparity-release-claim-coverage.test.ts",
-        "tools/release/q02-producer.ts"
       ],
       "verdict": "referenced"
     },
@@ -2567,6 +2599,7 @@
         "benchmark/context/muse3jsparity-r185-matrix.json",
         "tests/browser/library-parity-superiority.spec.ts",
         "tests/unit/tools/muse3jsparity-decoder-alignment.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/muse3jsparity-readiness/index.ts"
       ],
       "verdict": "referenced"
@@ -2574,6 +2607,7 @@
     {
       "dir": "tools/muse3jsparity-readiness",
       "referencedBy": [
+        "package.json",
         "tests/browser/game-visual-superiority-harness.ts",
         "tests/browser/game-visual-superiority.spec.ts",
         "tests/browser/gpu-particle-a4.spec.ts",
@@ -2586,8 +2620,6 @@
         "tests/browser/shadow-stability-301.spec.ts",
         "tests/browser/showcase-route-primary-probes.spec.ts",
         "tests/browser/smart-city-composition-301.spec.ts",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/finalize-evidence-manifest.test.ts",
         "tests/unit/tools/muse3jsparity-acceptance.test.ts",
         "tests/unit/tools/muse3jsparity-administrative-lineage.test.ts",
@@ -2602,18 +2634,21 @@
         "tests/unit/tools/muse3jsparity-shadow-acceptance.test.ts",
         "tests/unit/tools/muse3jsparity-temporal-acceptance.test.ts",
         "tests/unit/tools/muse3jsparity-visual-acceptance.test.ts",
-        "tests/unit/tools/root-temporal-quality-301.test.ts"
+        "tests/unit/tools/root-temporal-quality-301.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
     {
       "dir": "tools/naming-taxonomy",
       "referencedBy": [
+        "evidence/prd03/phase6/qr-requests.md",
         "tests/browser/advanced-examples-gallery.spec.ts",
         "tests/browser/example-dev-server.ts",
         "tests/browser/naming-taxonomy-aliases.spec.ts",
         "tests/reports/final-subsystem-ownership.json",
         "tests/unit/engine/runtime-parity-production-runtime-public-sdk.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "vite.config.ts"
       ],
       "verdict": "referenced"
@@ -2621,6 +2656,7 @@
     {
       "dir": "tools/native-webgpu-probe",
       "referencedBy": [
+        "tools/_quarantine/CLASSIFICATION.json",
         ".github/workflows/native-rig-pairs-301.yml",
         ".github/workflows/native-webgpu-functional-301.yml",
         ".github/workflows/native-webgpu-probe-301.yml",
@@ -2633,6 +2669,7 @@
       "referencedBy": [
         "docs/migration/navigation-recast-2.0.md",
         "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/evidence-freshness/producer-registry.mjs"
       ],
       "verdict": "referenced"
@@ -2643,7 +2680,8 @@
         "docs/architecture/adr/0002-racing-kit-force-model-needs-a-route-length-scale.md",
         "docs/architecture/physics-backend-decision.md",
         "tests/reports/audio-backend-bakeoff/report.json",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -2652,7 +2690,9 @@
       "referencedBy": [
         "docs/architecture/root-export-dispositions.json",
         "docs/architecture/root-export-inventory.json",
-        "tests/reports/final-subsystem-ownership.json"
+        "package.json",
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -2661,8 +2701,10 @@
       "referencedBy": [
         "DESIGN.md",
         "docs/architecture/package-ownership.md",
+        "package.json",
         "tests/reports/audio-backend-bakeoff/report.json",
         "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/package-tiers.ts"
       ],
       "verdict": "referenced"
@@ -2673,9 +2715,8 @@
         "script:verify:package-install-smoke:fresh",
         "package.json",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/package-install-smoke.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/external-parity-codebase-root-readiness/index.ts",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
       ],
@@ -2685,11 +2726,10 @@
       "dir": "tools/package-provenance",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/package-provenance-exact.test.ts",
         "tests/unit/tools/package-provenance.test.ts",
-        "tools/external-parity-external-evidence-handoff/index.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
+        "tools/_quarantine/external-parity-external-evidence-handoff/index.ts",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json",
         "tools/release/package-acceptance.mjs"
       ],
@@ -2701,6 +2741,7 @@
         "script:verify:size",
         "package.json",
         "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/external-parity-codebase-root-readiness/index.ts",
         "tools/requirements-trace/index.ts"
       ],
@@ -2709,8 +2750,10 @@
     {
       "dir": "tools/package-tarball-audit",
       "referencedBy": [
+        "package.json",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/unit/tools/package-tarball-pack-result.test.ts"
+        "tests/unit/tools/package-tarball-pack-result.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -2718,14 +2761,20 @@
       "dir": "tools/packed-consumer-check",
       "referencedBy": [
         "script:pack:check",
-        "benchmarks/quality-rebuild/scenes/prd15/index.ts",
         "package.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/packed-consumer-check.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         ".github/workflows/qr-prd15-bundle-size.yml",
-        ".github/workflows/qr-prd15-captures.yml",
         ".github/workflows/qr-prd15-pack-check.yml"
+      ],
+      "verdict": "referenced"
+    },
+    {
+      "dir": "tools/perf-gate",
+      "referencedBy": [
+        "tools/_quarantine/CLASSIFICATION.json",
+        ".github/QR_OWNERSHIP.json",
+        ".github/workflows/qr-prd11-perf.yml"
       ],
       "verdict": "referenced"
     },
@@ -2737,6 +2786,7 @@
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/physics-backend-bakeoff/current-rapier-validation.json",
         "tests/reports/physics-backend-bakeoff/report.json",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/evidence-freshness/producer-registry.mjs"
       ],
       "verdict": "referenced"
@@ -2744,6 +2794,7 @@
     {
       "dir": "tools/premium-indie-reference",
       "referencedBy": [
+        "tools/_quarantine/CLASSIFICATION.json",
         ".github/QR_OWNERSHIP.json"
       ],
       "verdict": "referenced"
@@ -2752,8 +2803,8 @@
       "dir": "tools/product-remediation",
       "referencedBy": [
         "docs/architecture/claim-lineage.md",
-        "tests/reports/claim-lineage.json",
         "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/claim-lineage/index.ts"
       ],
       "verdict": "referenced"
@@ -2764,98 +2815,12 @@
         "docs/architecture/claim-lineage.md",
         "docs/architecture/root-export-dispositions.json",
         "docs/architecture/root-export-inventory.json",
+        "package.json",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/production-path-benchmark.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/dist-freshness/index.ts",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/production-runtime-external-consumer",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/threejs-parity-external-consumer/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/production-runtime-external-vite-build",
-      "referencedBy": [
-        "tests/browser/production-runtime-external-consumer-render.spec.ts",
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/production-runtime-package-surface-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        ".github/QR_OWNERSHIP.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/production-runtime-report-bridge",
-      "referencedBy": [
-        "archive/legacy-ai-runtime/tests/browser/ai-scene-screenshot-quality.spec.ts",
-        "tests/browser/advanced-examples-gallery.spec.ts",
-        "tests/browser/current-routes-flagship-viewer.spec.ts",
-        "tests/browser/current-routes-threejs-parity.spec.ts",
-        "tests/browser/large-scene-culling.spec.ts",
-        "tests/browser/postprocess-comprehensive.spec.ts",
-        "tests/browser/production-runtime-hd-flagship.spec.ts",
-        "tests/browser/production-runtime-hd-materials.spec.ts",
-        "tests/browser/production-runtime-hd-product-hero.spec.ts",
-        "tests/browser/root-geometry-instancing-lod-text.spec.ts",
-        "tests/browser/runtime-parity-contact-shadow-parity.spec.ts",
-        "tests/browser/runtime-parity-material-extension-parity.spec.ts",
-        "tests/browser/runtime-parity-material-extensions.spec.ts",
-        "tests/browser/runtime-parity-pbr-shadow-map.spec.ts",
-        "tests/browser/runtime-parity-pmrem-parity.spec.ts",
-        "tests/browser/runtime-parity-product-viewer.spec.ts",
-        "tests/browser/runtime-parity-webgpu-imported-asset.spec.ts",
-        "tests/browser/runtime-parity-webgpu-product-viewer.spec.ts",
-        "tests/browser/runtime-parity-webgpu-threejs-delta.spec.ts",
-        "tests/browser/three-node-postprocess.spec.ts",
-        "tests/browser/threejs-parity-animation-keyframes-parity.spec.ts",
-        "tests/browser/threejs-parity-animation-multiple-parity.spec.ts",
-        "tests/browser/threejs-parity-animation-walk-parity.spec.ts",
-        "tests/browser/threejs-parity-decals-parity.spec.ts",
-        "tests/browser/threejs-parity-gltf-parity.spec.ts",
-        "tests/browser/threejs-parity-loader-material-extensions-parity.spec.ts",
-        "tests/browser/threejs-parity-material-grid-parity.spec.ts",
-        "tests/browser/threejs-parity-morphtargets-parity.spec.ts",
-        "tests/browser/threejs-parity-parallax-parity.spec.ts",
-        "tests/browser/threejs-parity-physical-lights-parity.spec.ts",
-        "tests/browser/threejs-parity-shadowmap-parity.spec.ts",
-        "tests/browser/threejs-parity-skinning-additive-parity.spec.ts",
-        "tests/browser/threejs-parity-skinning-blending-parity.spec.ts",
-        "tests/browser/threejs-parity-skinning-ik-parity.spec.ts",
-        "tests/browser/threejs-parity-stereo-parity.spec.ts",
-        "tests/browser/threejs-parity-unreal-bloom-parity.spec.ts",
-        "tests/browser/webgpu-product-quality.spec.ts",
-        "tests/browser/wow-showcase-screenshots.spec.ts",
-        "tests/reports/final-subsystem-ownership.json",
-        ".github/QR_OWNERSHIP.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/production-runtime-template-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        ".github/QR_OWNERSHIP.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/production-runtime-threejs-parity",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        ".github/QR_OWNERSHIP.json"
       ],
       "verdict": "referenced"
     },
@@ -2863,8 +2828,7 @@
       "dir": "tools/production-runtime-visual-quality",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
       ],
       "verdict": "referenced"
@@ -2876,7 +2840,8 @@
         "apps/aura-clash-showcase/launch-evidence/readiness.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/public-runtime-descriptor-inventory/report.json",
-        "tests/unit/agent-api/prompt-animation-source-gates.test.ts"
+        "tests/unit/agent-api/prompt-animation-source-gates.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -2887,7 +2852,8 @@
         "apps/aura-clash-showcase/launch-evidence/readiness.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/public-runtime-descriptor-inventory/report.json",
-        "tests/unit/agent-api/prompt-animation-source-gates.test.ts"
+        "tests/unit/agent-api/prompt-animation-source-gates.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -2896,7 +2862,8 @@
       "referencedBy": [
         "apps/aura-clash-showcase/launch-evidence/cross-runtime-evidence.json",
         "apps/aura-clash-showcase/launch-evidence/readiness.json",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -2906,7 +2873,8 @@
         "apps/aura-clash-showcase/launch-evidence/cross-runtime-evidence.json",
         "apps/aura-clash-showcase/launch-evidence/readiness.json",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/unit/agent-api/prompt-animation-source-gates.test.ts"
+        "tests/unit/agent-api/prompt-animation-source-gates.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -2917,7 +2885,8 @@
         "apps/aura-clash-showcase/launch-evidence/readiness.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/public-runtime-descriptor-inventory/report.json",
-        "tests/unit/agent-api/prompt-animation-source-gates.test.ts"
+        "tests/unit/agent-api/prompt-animation-source-gates.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -2930,7 +2899,8 @@
         "docs/architecture/root-export-inventory.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/public-runtime-descriptor-inventory/report.json",
-        "tests/unit/agent-api/prompt-animation-source-gates.test.ts"
+        "tests/unit/agent-api/prompt-animation-source-gates.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -2940,7 +2910,8 @@
         "apps/aura-clash-showcase/launch-evidence/cross-runtime-evidence.json",
         "apps/aura-clash-showcase/launch-evidence/readiness.json",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/unit/agent-api/prompt-animation-source-gates.test.ts"
+        "tests/unit/agent-api/prompt-animation-source-gates.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -2953,9 +2924,8 @@
         "docs/architecture/root-export-inventory.json",
         "package.json",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/prompt-parity-readiness.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
       ],
       "verdict": "referenced"
@@ -2965,7 +2935,9 @@
       "referencedBy": [
         "docs/architecture/root-export-dispositions.json",
         "docs/architecture/root-export-inventory.json",
+        "package.json",
         "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json",
         ".github/QR_OWNERSHIP.json"
       ],
       "verdict": "referenced"
@@ -2974,43 +2946,127 @@
       "dir": "tools/public-demo-deployment-artifacts",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-evidence-handoff/index.ts",
-        "tools/external-parity-external-evidence-readiness/index.ts",
-        "tools/external-parity-external-host-runner/index.ts",
-        "tools/external-parity-production-readiness/index.ts"
+        "tools/_quarantine/CLASSIFICATION.json",
+        "tools/_quarantine/external-parity-external-evidence-handoff/index.ts",
+        "tools/_quarantine/external-parity-external-evidence-readiness/index.ts",
+        "tools/_quarantine/external-parity-external-host-runner/index.ts",
+        "tools/_quarantine/external-parity-production-readiness/index.ts"
       ],
       "verdict": "referenced"
     },
     {
       "dir": "tools/public-demo-deployment-smoke",
       "referencedBy": [
+        "package.json",
         "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-evidence-handoff/index.ts",
-        "tools/external-parity-external-host-runner/index.ts",
-        "tools/external-parity-production-readiness/index.ts"
+        "tools/_quarantine/CLASSIFICATION.json",
+        "tools/_quarantine/external-parity-external-evidence-handoff/index.ts",
+        "tools/_quarantine/external-parity-external-host-runner/index.ts",
+        "tools/_quarantine/external-parity-production-readiness/index.ts"
       ],
       "verdict": "referenced"
     },
     {
       "dir": "tools/public-surface-diff",
       "referencedBy": [
-        "tests/unit/tools/public-surface-patch-compatibility.test.ts"
+        "package.json",
+        "tests/unit/tools/public-surface-patch-compatibility.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
     {
       "dir": "tools/qr-ownership",
       "referencedBy": [
+        "evidence/prd-04/phase-1.md",
+        "evidence/prd-04/phase-3.md",
+        "evidence/prd-04/phase-4.md",
+        "evidence/prd-04/phase-5.md",
+        "evidence/prd-04/phase-6.md",
+        "evidence/prd03/phase2/README.md",
+        "tools/_quarantine/CLASSIFICATION.json",
+        "tools/quality-rebuild-codemods/readback-triage.mjs",
         ".github/QR_OWNERSHIP.json",
-        ".github/workflows/qr-contracts.yml"
+        ".github/workflows/post-quality.yml",
+        ".github/workflows/qr-contracts.yml",
+        ".github/workflows/qr-prd01-core.yml",
+        ".github/workflows/qr-prd04-materials.yml",
+        ".github/workflows/qr-prd08-camera.yml",
+        ".github/workflows/qr-prd10-world.yml"
       ],
       "verdict": "referenced"
     },
     {
       "dir": "tools/quality-gate",
       "referencedBy": [
+        "AURA3D-VERIFICATION-MATRIX.md",
+        "benchmarks/quality-rebuild/tsconfig.typecheck.json",
+        "packages/aura3d-cli/src/look/judge.ts",
+        "packages/game/src/art/define.ts",
+        "tests/qr/prd14/unit/games-json.test.ts",
+        "tests/qr/prd14/unit/scorecard.test.ts",
+        "tests/unit/cli/look-judge.test.ts",
         "tests/unit/contracts/C-32-quality-gate.test.ts",
-        ".github/QR_OWNERSHIP.json"
+        "tests/unit/contracts/impl/prd12-gate.test.ts",
+        "tests/unit/contracts/impl/prd12-rubric.test.ts",
+        "tests/unit/contracts/impl/prd14-art.test.ts",
+        "tests/unit/quality-gate/compare-engines-no-visual.test.ts",
+        "tests/unit/quality-gate/scripts.test.ts",
+        "tests/unit/tools/agent-eval-prompts.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
+        "tools/asset-optimize/review-vision.ts",
+        "tools/compare-engines/index.ts",
+        ".github/QR_OWNERSHIP.json",
+        ".github/workflows/qr-prd14-games.yml",
+        ".github/workflows/quality-checkpoint.yml",
+        ".github/workflows/quality-gate.yml",
+        ".github/workflows/quality-review.yml",
+        ".github/workflows/release.yml"
+      ],
+      "verdict": "referenced"
+    },
+    {
+      "dir": "tools/quality-rebuild",
+      "referencedBy": [
+        ".gitlab-ci.yml",
+        "benchmarks/quality-rebuild/capture.mjs",
+        "benchmarks/quality-rebuild/tsconfig.typecheck.json",
+        "evidence/prd03/phase5/README.md",
+        "package.json",
+        "packages/aura3d-cli/src/commands/prd01/index.ts",
+        "packages/aura3d-cli/src/commands/prd03/index.ts",
+        "tests/browser/qr-prd03-capture-dsf2.spec.ts",
+        "tests/qr/prd01/unit/codemod-core-v2.test.ts",
+        "tests/qr/prd06/unit/burst-step.test.ts",
+        "tests/qr/prd09/serve-built-site.mjs",
+        "tests/qr/prd14/unit/games-json.test.ts",
+        "tests/qr/prd14/unit/helpers/schema.ts",
+        "tests/quality-gate.global-setup.ts",
+        "tests/unit/contracts/C-33-capture.test.ts",
+        "tests/unit/contracts/impl/prd03-post-v2-codemod.test.ts",
+        "tests/unit/contracts/impl/prd12-variants.test.ts",
+        "tests/unit/tools/route-composition.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
+        "tools/agent-templates/capture-templates.mjs",
+        "tools/asset-optimize/measure-tiers.mjs",
+        "tools/impostor-bake/bake-page.mjs",
+        "tools/quality-gate/src/scorecard.ts",
+        "tools/quality-rebuild-capture/README.md",
+        "tools/quality-rebuild-capture/capture-games.mjs",
+        "tools/quality-rebuild-capture/games.json",
+        "tools/quality-rebuild-capture/gpu-probe.mjs",
+        "tools/quality-rebuild-capture/route-composition.mjs",
+        "tools/quality-rebuild-codemods/run.ts",
+        ".github/QR_OWNERSHIP.json",
+        ".github/workflows/post-quality.yml",
+        ".github/workflows/prd07-vfx.yml",
+        ".github/workflows/qr-prd03-captures.yml",
+        ".github/workflows/qr-prd09-game.yml",
+        ".github/workflows/qr-prd09-routes.yml",
+        ".github/workflows/qr-prd11-perf.yml",
+        ".github/workflows/qr-prd14-games.yml",
+        ".github/workflows/quality-devices.yml",
+        ".github/workflows/quality-rebuild-capture.yml"
       ],
       "verdict": "referenced"
     },
@@ -3020,10 +3076,40 @@
         "script:capture:games",
         ".gitlab-ci.yml",
         "benchmarks/quality-rebuild/capture.mjs",
+        "benchmarks/quality-rebuild/tsconfig.typecheck.json",
         "package.json",
+        "tests/browser/qr-prd03-capture-dsf2.spec.ts",
+        "tests/qr/prd06/unit/burst-step.test.ts",
+        "tests/qr/prd09/serve-built-site.mjs",
+        "tests/qr/prd14/unit/games-json.test.ts",
+        "tests/qr/prd14/unit/helpers/schema.ts",
+        "tests/quality-gate.global-setup.ts",
         "tests/unit/contracts/C-33-capture.test.ts",
+        "tests/unit/contracts/impl/prd12-variants.test.ts",
+        "tests/unit/tools/route-composition.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
+        "tools/agent-templates/capture-templates.mjs",
+        "tools/asset-optimize/measure-tiers.mjs",
+        "tools/impostor-bake/bake-page.mjs",
+        "tools/quality-gate/src/scorecard.ts",
         ".github/QR_OWNERSHIP.json",
+        ".github/workflows/prd07-vfx.yml",
+        ".github/workflows/qr-prd03-captures.yml",
+        ".github/workflows/qr-prd09-game.yml",
+        ".github/workflows/qr-prd09-routes.yml",
+        ".github/workflows/qr-prd11-perf.yml",
+        ".github/workflows/qr-prd14-games.yml",
+        ".github/workflows/quality-devices.yml",
         ".github/workflows/quality-rebuild-capture.yml"
+      ],
+      "verdict": "referenced"
+    },
+    {
+      "dir": "tools/quality-rebuild-codemods",
+      "referencedBy": [
+        "packages/aura3d-cli/src/commands/prd01/index.ts",
+        "tests/qr/prd01/unit/codemod-core-v2.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -3038,13 +3124,12 @@
         "script:verify:npm-release",
         "CHANGELOG.md",
         "benchmark/runs/round-50/release-blockers.json",
+        "evidence/prd13/pr-a-t0.1-t0.3.md",
         "package.json",
         "release-artifacts/2.0-npm-registry-verification.json",
         "release-artifacts/3.0.1-final-visual-review-manifest.json",
         "tests/browser/release-origin-301.spec.ts",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/release/exact-plan.test.mjs",
         "tests/unit/release/final-review-approval.test.mjs",
         "tests/unit/tools/browser-matrix-receipts.test.ts",
@@ -3055,6 +3140,9 @@
         "tests/unit/tools/publish-all-integrity.test.ts",
         "tests/unit/tools/release-proof-guard.test.ts",
         "tests/unit/tools/verify-tools.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
+        "tools/agent-eval/run.ts",
+        "tools/agent-templates/capture-templates.mjs",
         "tools/head-to-head-installed-reproduction/index.ts",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json",
         "tools/muse3jsparity-readiness/evidence-lineage.ts",
@@ -3063,9 +3151,9 @@
         "tools/muse3jsparity-readiness/release-sequencing.ts",
         "tools/release-verification/index.ts",
         "tools/requirements-trace/index.ts",
+        ".github/workflows/agent-output-eval.yml",
         ".github/workflows/browser-matrix.yml",
         ".github/workflows/muse301-evidence-closure.yml",
-        ".github/workflows/muse301-final-review.yml",
         ".github/workflows/muse301-gallery.yml",
         ".github/workflows/muse301-l01.yml",
         ".github/workflows/muse301-publish.yml",
@@ -3079,6 +3167,7 @@
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
         "tests/unit/tools/verify-tools.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/requirements-trace/index.ts"
       ],
       "verdict": "referenced"
@@ -3088,9 +3177,8 @@
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/public-runtime-descriptor-inventory/report.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/replicability-metrics.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
       ],
       "verdict": "referenced"
@@ -3099,7 +3187,8 @@
       "dir": "tools/requirements-trace",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/public-runtime-descriptor-inventory/report.json"
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -3110,7 +3199,8 @@
         "tests/unit/root-path-integrity/framegraph-resource-flow-t3.test.ts",
         "tests/unit/root-path-integrity/pixel-exports-t1.test.ts",
         "tests/unit/root-path-integrity/primitive-hero-t2.test.ts",
-        "tests/unit/root-path-integrity/renderer-mounts-t1.test.ts"
+        "tests/unit/root-path-integrity/renderer-mounts-t1.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -3119,7 +3209,8 @@
       "referencedBy": [
         "docs/rendering/pbr-gltf-correctness.md",
         "tests/browser/fixtures/c1-extension/assets.ts",
-        "tests/browser/fixtures/c1-extension/aura.assets.json"
+        "tests/browser/fixtures/c1-extension/aura.assets.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -3128,10 +3219,9 @@
       "referencedBy": [
         "tests/browser/tier12-route-health.spec.ts",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/blocked-routes-stay-blocked.test.ts",
         "tests/unit/tools/route-tiers.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
       ],
       "verdict": "referenced"
@@ -3139,7 +3229,8 @@
     {
       "dir": "tools/script-prune",
       "referencedBy": [
-        "tests/unit/tools/script-prune.test.ts"
+        "tests/unit/tools/script-prune.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -3164,7 +3255,7 @@
         "apps/showcase-mech-hangar/scripts/write-route-health.mjs",
         "apps/showcase-neon-swarm/route-health.json",
         "apps/showcase-neon-swarm/scripts/write-route-health.mjs",
-        "apps/showcase-neon-swarm/src/main.ts",
+        "apps/showcase-neon-swarm/src/legacy/main.ts",
         "apps/showcase-patrol-wing/route-health.json",
         "apps/showcase-patrol-wing/scripts/write-route-health.mjs",
         "apps/showcase-pulse-tunnel/README.md",
@@ -3175,7 +3266,7 @@
         "apps/showcase-siege-golf/README.md",
         "apps/showcase-siege-golf/route-health.json",
         "apps/showcase-siege-golf/scripts/write-route-health.mjs",
-        "apps/showcase-turbo-drift-circuit/src/main.ts",
+        "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
         "apps/showcase-vault-breakers/route-health.json",
         "apps/showcase-vault-breakers/scripts/write-route-health.mjs",
         "assets/source/kenney-game-kits/README.md",
@@ -3190,10 +3281,9 @@
         "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/_summary.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/public-runtime-descriptor-inventory/report.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/blocked-routes-stay-blocked.test.ts",
         "tests/unit/tools/evidence-freshness.test.ts",
+        "tests/unit/tools/game-capture-parity.test.ts",
         "tests/unit/tools/game-geometry-contracts.test.ts",
         "tests/unit/tools/game-runtime-gates.test.ts",
         "tests/unit/tools/game-visual-qa.test.ts",
@@ -3205,14 +3295,18 @@
         "tests/unit/tools/showcase-route-gates.test.ts",
         "tests/unit/tools/showcase-visual-review-freshness.test.ts",
         "tests/unit/tools/visual-review-perceptual-binding.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/evidence-freshness/explain-staleness.mjs",
         "tools/evidence-freshness/producer-registry.mjs",
         "tools/product-remediation/build-product-inventory.mjs",
         "tools/product-remediation/build-product-metrics.mjs",
         "tools/product-remediation/build-route-disposition.mjs",
         "tools/product-remediation/check-quality-gates.mjs",
+        "tools/quality-rebuild-capture/route-composition.mjs",
         "tools/route-tiers/index.ts",
         ".github/QR_OWNERSHIP.json",
+        ".github/workflows/qr-prd09-game.yml",
+        ".github/workflows/qr-prd09-routes.yml",
         ".github/workflows/remote-browser-301.yml"
       ],
       "verdict": "referenced"
@@ -3222,7 +3316,8 @@
       "referencedBy": [
         "docs/architecture/root-export-dispositions.json",
         "docs/architecture/root-export-inventory.json",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -3232,241 +3327,29 @@
         "script:verify:static-demo-server-smoke",
         "package.json",
         "tests/reports/final-subsystem-ownership.json",
-        "tools/external-parity-external-evidence-handoff/index.ts",
-        "tools/external-parity-production-readiness/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/superiority-animation-fidelity",
-      "referencedBy": [],
-      "verdict": "unreferenced"
-    },
-    {
-      "dir": "tools/superiority-audit",
-      "referencedBy": [],
-      "verdict": "unreferenced"
-    },
-    {
-      "dir": "tools/superiority-claim-defense",
-      "referencedBy": [],
-      "verdict": "unreferenced"
-    },
-    {
-      "dir": "tools/superiority-common",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/superiority-developer-workflow",
-      "referencedBy": [],
-      "verdict": "unreferenced"
-    },
-    {
-      "dir": "tools/superiority-feature-parity",
-      "referencedBy": [],
-      "verdict": "unreferenced"
-    },
-    {
-      "dir": "tools/superiority-memory-lifecycle",
-      "referencedBy": [],
-      "verdict": "unreferenced"
-    },
-    {
-      "dir": "tools/superiority-performance",
-      "referencedBy": [],
-      "verdict": "unreferenced"
-    },
-    {
-      "dir": "tools/superiority-physics-fidelity",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/superiority-resource-lifecycle",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/superiority-visual-quality",
-      "referencedBy": [],
-      "verdict": "unreferenced"
-    },
-    {
-      "dir": "tools/three-compat-animation-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/three-compat-app-suite-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/three-compat-asset-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/three-compat-broad-replacement-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/three-compat-claim-registry",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/three-compat-completion-audit",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/three-compat-docs-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/three-compat-environment-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/three-compat-external-consumer",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json",
-        "tools/threejs-parity-external-consumer/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/three-compat-external-vite-build",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/three-compat-legacy-prune-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/three-compat-material-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
+        "tools/_quarantine/CLASSIFICATION.json",
+        "tools/_quarantine/external-parity-external-evidence-handoff/index.ts",
+        "tools/_quarantine/external-parity-production-readiness/index.ts"
       ],
       "verdict": "referenced"
     },
     {
       "dir": "tools/three-compat-migrate-three",
       "referencedBy": [
+        "packages/aura3d-cli/skills/aura3d-threejs-migration/SKILL.md",
+        "packages/create-aura3d/skills/aura3d-threejs-migration/SKILL.md",
         "tests/reports/final-subsystem-ownership.json",
-        "tools/three-compat-migration-readiness/index.ts",
-        "tools/threejs-parity-migration-audit/index.ts"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/three-compat-migration-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/three-compat-package-smoke",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/three-compat-package-surface-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/three-compat-progress",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/three-compat-release-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/three-compat-static-preview-smoke",
-      "referencedBy": [
-        "tests/browser/three-compat-external-consumer-static.spec.ts",
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/three-compat-template-readiness",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/three-compat-threejs-runtime-parity",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/three-compat-threejs-visual-parity",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/three-compat-truth",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
+        "tools/_quarantine/CLASSIFICATION.json",
+        "tools/_quarantine/three-compat-migration-readiness/index.ts",
+        "tools/_quarantine/threejs-parity-migration-audit/index.ts"
       ],
       "verdict": "referenced"
     },
     {
       "dir": "tools/three-compat-visual-quality",
       "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -3474,7 +3357,8 @@
       "dir": "tools/threejs-parity-animation-keyframes-parity",
       "referencedBy": [
         "tests/browser/threejs-parity-animation-keyframes-parity.spec.ts",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -3482,7 +3366,8 @@
       "dir": "tools/threejs-parity-animation-multiple-parity",
       "referencedBy": [
         "tests/browser/threejs-parity-animation-multiple-parity.spec.ts",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -3490,48 +3375,18 @@
       "dir": "tools/threejs-parity-animation-walk-parity",
       "referencedBy": [
         "tests/browser/threejs-parity-animation-walk-parity.spec.ts",
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/threejs-parity-api-surface-audit",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/threejs-parity-claim-registry",
-      "referencedBy": [],
-      "verdict": "unreferenced"
-    },
-    {
-      "dir": "tools/threejs-parity-common",
-      "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tests/unit/tools/threejs-parity-current-checklist.test.ts"
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
-    },
-    {
-      "dir": "tools/threejs-parity-completion-audit",
-      "referencedBy": [],
-      "verdict": "unreferenced"
     },
     {
       "dir": "tools/threejs-parity-decals-parity",
       "referencedBy": [
         "tests/browser/threejs-parity-decals-parity.spec.ts",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/public-runtime-descriptor-inventory/report.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/threejs-parity-external-consumer",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -3539,16 +3394,8 @@
       "dir": "tools/threejs-parity-gltf-parity",
       "referencedBy": [
         "tests/browser/threejs-parity-gltf-parity.spec.ts",
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/threejs-parity-instancing-parity",
-      "referencedBy": [
-        "apps/instancing-performance/src/main.ts",
         "tests/reports/final-subsystem-ownership.json",
-        "tools/threejs-parity-threejs-inventory/index.ts"
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -3556,7 +3403,8 @@
       "dir": "tools/threejs-parity-loader-material-extensions-parity",
       "referencedBy": [
         "tests/browser/threejs-parity-loader-material-extensions-parity.spec.ts",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -3564,15 +3412,8 @@
       "dir": "tools/threejs-parity-material-grid-parity",
       "referencedBy": [
         "tests/browser/threejs-parity-material-grid-parity.spec.ts",
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/threejs-parity-migration-audit",
-      "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tools/threejs-parity-threejs-inventory/index.ts"
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -3580,14 +3421,8 @@
       "dir": "tools/threejs-parity-morphtargets-parity",
       "referencedBy": [
         "tests/browser/threejs-parity-morphtargets-parity.spec.ts",
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/threejs-parity-package-smoke",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -3595,39 +3430,17 @@
       "dir": "tools/threejs-parity-parallax-parity",
       "referencedBy": [
         "tests/browser/threejs-parity-parallax-parity.spec.ts",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
-    },
-    {
-      "dir": "tools/threejs-parity-performance",
-      "referencedBy": [],
-      "verdict": "unreferenced"
     },
     {
       "dir": "tools/threejs-parity-physical-lights-parity",
       "referencedBy": [
         "tests/browser/threejs-parity-physical-lights-parity.spec.ts",
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/threejs-parity-route-health",
-      "referencedBy": [],
-      "verdict": "unreferenced"
-    },
-    {
-      "dir": "tools/threejs-parity-runtime-import-audit",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/threejs-parity-same-scene-render",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -3635,7 +3448,8 @@
       "dir": "tools/threejs-parity-shadowmap-parity",
       "referencedBy": [
         "tests/browser/threejs-parity-shadowmap-parity.spec.ts",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -3643,7 +3457,8 @@
       "dir": "tools/threejs-parity-skinning-additive-parity",
       "referencedBy": [
         "tests/browser/threejs-parity-skinning-additive-parity.spec.ts",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -3651,7 +3466,8 @@
       "dir": "tools/threejs-parity-skinning-blending-parity",
       "referencedBy": [
         "tests/browser/threejs-parity-skinning-blending-parity.spec.ts",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -3659,7 +3475,8 @@
       "dir": "tools/threejs-parity-skinning-ik-parity",
       "referencedBy": [
         "tests/browser/threejs-parity-skinning-ik-parity.spec.ts",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -3667,14 +3484,8 @@
       "dir": "tools/threejs-parity-stereo-parity",
       "referencedBy": [
         "tests/browser/threejs-parity-stereo-parity.spec.ts",
-        "tests/reports/final-subsystem-ownership.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/threejs-parity-threejs-inventory",
-      "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -3682,14 +3493,16 @@
       "dir": "tools/threejs-parity-unreal-bloom-parity",
       "referencedBy": [
         "tests/browser/threejs-parity-unreal-bloom-parity.spec.ts",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
     {
       "dir": "tools/threejs-parity-visual-review",
       "referencedBy": [
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -3698,6 +3511,7 @@
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
         "tests/unit/tools/verify-tools.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/external-parity-codebase-root-readiness/index.ts",
         "tools/requirements-trace/index.ts"
       ],
@@ -3710,6 +3524,7 @@
         "package.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/unit/tools/verify-tools.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/requirements-trace/index.ts"
       ],
       "verdict": "referenced"
@@ -3720,7 +3535,8 @@
         "script:verify:imports",
         "package.json",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/unit/tools/verify-tools.test.ts"
+        "tests/unit/tools/verify-tools.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
@@ -3730,6 +3546,7 @@
         "tests/reports/final-subsystem-ownership.json",
         "tests/unit/rendering/shader-marker-coverage.test.ts",
         "tests/unit/tools/verify-tools.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/requirements-trace/index.ts"
       ],
       "verdict": "referenced"
@@ -3741,6 +3558,7 @@
         "package.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/unit/tools/verify-tools.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/external-parity-codebase-root-readiness/index.ts"
       ],
       "verdict": "referenced"
@@ -3750,6 +3568,7 @@
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
         "tests/unit/tools/verify-tools.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/external-parity-codebase-root-readiness/index.ts",
         "tools/requirements-trace/index.ts"
       ],
@@ -3759,30 +3578,28 @@
       "dir": "tools/versioned-release-verification",
       "referencedBy": [
         "tests/reports/final-subsystem-ownership.json",
-        "tests/unit/tools/verify-tools.test.ts"
+        "tests/unit/tools/verify-tools.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
     {
-      "dir": "tools/visual-baseline",
+      "dir": "tools/vfx-atlas-bake",
       "referencedBy": [
-        "script:test:visual",
-        "package.json",
-        "tests/reports/final-subsystem-ownership.json",
-        "tests/unit/tools/verify-tools.test.ts",
-        "tools/requirements-trace/index.ts",
-        ".github/QR_OWNERSHIP.json"
+        "packages/engine/assets/vfx/LICENSE.md",
+        "packages/engine/src/agent-api/vfx/atlas.ts",
+        "tests/qr/prd07/unit/vfx-atlas-bake.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
+        ".github/workflows/prd07-vfx.yml"
       ],
       "verdict": "referenced"
     },
     {
       "dir": "tools/webgpu-completion-audit",
       "referencedBy": [
-        "docs/rendering/webgpu-route-and-report-evidence.md",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/tools/webgpu-completion-audit.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
       ],
       "verdict": "referenced"
@@ -3790,12 +3607,10 @@
     {
       "dir": "tools/webgpu-feature-matrix",
       "referencedBy": [
-        "docs/rendering/webgpu-route-and-report-evidence.md",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/unit.json",
-        "tests/reports/unit2.json",
         "tests/unit/rendering/webgpu-feature-matrix.test.ts",
         "tests/unit/tools/webgpu-feature-matrix.test.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
       ],
       "verdict": "referenced"
@@ -3803,26 +3618,46 @@
     {
       "dir": "tools/webgpu-hardware-matrix",
       "referencedBy": [
-        "docs/rendering/webgpu-hardware-matrix.md",
-        "docs/rendering/webgpu-route-and-report-evidence.md",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
     {
       "dir": "tools/webgpu-route-health",
       "referencedBy": [
-        "docs/rendering/webgpu-route-and-report-evidence.md",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
       ],
       "verdict": "referenced"
     },
     {
       "dir": "tools/webgpu-visual-parity",
       "referencedBy": [
-        "docs/rendering/webgpu-route-and-report-evidence.md",
         "tests/browser/webgpu-route-helpers.ts",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/_quarantine/CLASSIFICATION.json"
+      ],
+      "verdict": "referenced"
+    },
+    {
+      "dir": "tools/wgsl-validate",
+      "referencedBy": [
+        "evidence/prd-04/phase-6.md",
+        "packages/rendering/src/lanes/prd06.ts",
+        "packages/rendering/src/shaders/deform/twins.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
+        ".github/QR_OWNERSHIP.json",
+        ".github/workflows/qr-prd11-perf.yml"
+      ],
+      "verdict": "referenced"
+    },
+    {
+      "dir": "tools/world-content-bake",
+      "referencedBy": [
+        "packages/engine/src/agent-api/world/kits.ts",
+        "tools/_quarantine/CLASSIFICATION.json",
+        ".github/QR_OWNERSHIP.json"
       ],
       "verdict": "referenced"
     }

@@ -678,7 +678,7 @@ export class WebGL2Device implements RenderDevice {
       descriptor.layers !== undefined ||
       descriptor.depthOnly === true ||
       descriptor.depthCompare === true ||
-      (descriptor.colorAttachments?.length ?? 0) > 0
+      (descriptor.colorAttachments?.length ?? 0) > 1
     ) {
       return this.createFeatureRenderTarget(descriptor);
     }
@@ -896,7 +896,7 @@ export class WebGL2Device implements RenderDevice {
     }
     const sampleCount = descriptor.sampleCount ?? 1;
     const colorAttachmentCount = depthOnly ? 0 : Math.max(1, descriptor.colorAttachments?.length ?? 1);
-    if (sampleCount > 1 && (depthOnly || descriptor.depthCompare === true || descriptor.colorAttachments !== undefined || layerCount > 1)) {
+    if (sampleCount > 1 && (depthOnly || descriptor.depthCompare === true || (descriptor.colorAttachments?.length ?? 0) > 1 || layerCount > 1)) {
       throw new RenderDeviceError("Multisample render targets do not support layered, depth-only, compare or MRT descriptors", "INVALID_RENDER_TARGET_SAMPLE_COUNT", {
         sampleCount,
         label: descriptor.label

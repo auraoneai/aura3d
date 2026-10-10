@@ -1,0 +1,150 @@
+{
+  "engine": "aura3d",
+  "scene": "01-simple-geometry",
+  "engineVersion": "3.0.1",
+  "capabilityLog": [
+    {
+      "feature": "tone-mapping:aces-filmic",
+      "status": "supported",
+      "detail": "C-05 `app.setOutput` selects the operator under A3D_QR_CORE_OUTPUT (aces is the frozen default); flag-off keeps the single \"aces\" present path."
+    },
+    {
+      "feature": "tone-mapping:agx",
+      "status": "partial",
+      "detail": "A3D_QR_CORE_OUTPUT adds the r185 AgX operator via `app.setOutput`/?aura3d-tonemap; flag-off has no public selector."
+    },
+    {
+      "feature": "tone-mapping:neutral",
+      "status": "partial",
+      "detail": "A3D_QR_CORE_OUTPUT adds the Khronos PBR Neutral operator via `app.setOutput`; flag-off has no public selector."
+    },
+    {
+      "feature": "exposure",
+      "status": "partial",
+      "detail": "`app.setOutput({ exposure })` multiplies into u_exposure under A3D_QR_CORE_OUTPUT (spec.exposure stays un-wired: createAuraApp takes no exposure option)."
+    },
+    {
+      "feature": "shadow-map-config",
+      "status": "missing",
+      "detail": "No public mapSize/bias/normalBias/frustum options; spec asks mapSize 2048, bias -0.0005, normalBias 0.02, extent 6. Observed values are in extra.shadows."
+    },
+    {
+      "feature": "primitive-tessellation",
+      "status": "missing",
+      "detail": "primitives.sphere/cylinder expose no segment options; production meshes are fixed (sphere 16x12, cylinder 24 segments, no cylinder UVs/tangents). three.js side uses SphereGeometry(64x32), CylinderGeometry(48)."
+    },
+    {
+      "feature": "renderer-backend",
+      "status": "supported",
+      "detail": "mounted backend: production-runtime"
+    },
+    {
+      "feature": "shadow-map",
+      "status": "supported",
+      "detail": "mapRendered=true mapSampled=true"
+    }
+  ],
+  "drawCalls": 9,
+  "warnings": [
+    "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.",
+    "product/material scene has no explicit IBL environment node",
+    "scene has no contact shadow or contact-occlusion grounding cue",
+    "Production runtime bridge active with 0 typed GLB actors and 4 Aura primitives on webgl2.",
+    "Production runtime derived 1 collected direct light from 1 authored scene light.",
+    "1 authored ambient light remain environment-lighting intent and are not mislabeled as direct CollectedLight entries."
+  ],
+  "errors": [],
+  "loadMs": 91614,
+  "variant": "default",
+  "dpr": 1,
+  "appliedExposure": null,
+  "appliedToneMapping": "aces-filmic",
+  "lightUnits": "aura-internal",
+  "shadows": {
+    "mapRendered": true,
+    "mapSampled": true,
+    "mapSize": 1024,
+    "strength": null,
+    "casterName": null
+  },
+  "fallbackLightsActive": null,
+  "assetHashes": {},
+  "qrFlags": [
+    "core"
+  ],
+  "extra": {
+    "backend": "webgl2",
+    "renderSize": [
+      1280,
+      720
+    ],
+    "reportedToneMapping": "aces-filmic",
+    "reportedExposure": {
+      "category": "product",
+      "exposure": 0.92,
+      "evidence": "studio whites preserve product highlights and contact shadows"
+    },
+    "environment": {
+      "enabled": true,
+      "preset": "authored-ambient",
+      "intensity": 0.4,
+      "evidence": "production bridge submitted 1 authored ambient light without an implicit environment map",
+      "iblPixelBacked": false,
+      "hdriStatus": "none"
+    },
+    "shadows": {
+      "enabled": true,
+      "requested": true,
+      "mapRendered": true,
+      "mapSampled": true,
+      "mapSize": 1024,
+      "label": "aura3d-root-production-product-1024px-shadow-map",
+      "nativeShadowMapBindings": 4,
+      "shadowRenderTargetsAllocated": 1,
+      "observed": {
+        "lightMatrix": [
+          0.26926878718570296,
+          -0.2635762017415913,
+          -0.22006740048702442,
+          0,
+          0,
+          0.2353358944121351,
+          -0.3851179508522927,
+          0,
+          -0.35902504958093723,
+          -0.19768215130619346,
+          -0.16505055036526833,
+          0,
+          0.03971567178716739,
+          -0.1800775888608014,
+          -0.19861204305269103,
+          1
+        ],
+        "cascades": [],
+        "pointFaceMatrices": [],
+        "pointFaceRects": [],
+        "stabilize": true,
+        "shadowRenderTargetsAllocated": 1,
+        "submissionFrameId": 37
+      },
+      "contactShadows": 0,
+      "mapType": "pcf-soft",
+      "spot": {
+        "requested": false,
+        "casterIsSpot": false,
+        "casterName": "sun",
+        "spotPixelBacked": false,
+        "reason": "no authored spot requested a shadow map"
+      }
+    },
+    "bloom": {
+      "enabled": false,
+      "rendered": false,
+      "intensity": 0,
+      "threshold": 0,
+      "radius": 0,
+      "antiBlowout": true
+    },
+    "assets": []
+  }
+}

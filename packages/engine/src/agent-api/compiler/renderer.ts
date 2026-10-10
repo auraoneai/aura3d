@@ -28,6 +28,7 @@ import { asRuntimeCompiled, compileScene, updateCompiledScene } from "../../cont
 import type { MountSceneCompileContext } from "./compileScene.js";
 import { createDegradationSink } from "./degradation.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";
+import { markTiming } from "../platform.js";
 import { QUALITY_TIERS, resolveTierSettings, type AuraQualityTier } from "@aura3d/rendering/contracts";
 import { resolveQrFlags } from "../../contracts/flags.js";
 
@@ -74,6 +75,7 @@ export async function createProductionRuntimeSceneRenderer(
   // `preserveDrawingBuffer` is gone: frame capture flows through the C-05
   // `captureFrame`/`toBlob` path after a synchronous render, not the raw
   // WebGL drawing buffer.
+  markTiming("a3d:mount:renderer-create:start");
   const productionRenderer = await Renderer.create({
     canvas,
     width: canvas.width,
@@ -86,6 +88,7 @@ export async function createProductionRuntimeSceneRenderer(
     // matrix-fitted ACES transform so presentation preserves that authored color.
     clearColor: colorToAcesInputClearColor(snapshot.background)
   });
+  markTiming("a3d:mount:renderer-create:resolved");
   // T4.2: a throwing mount (compile handler, HDRI upgrade, C-36 strict)
   // must not leak the created renderer or the HDRI environment.
   let disposeHdriEnvironment: (() => void) | null = null;
@@ -170,7 +173,9 @@ export async function createProductionRuntimeSceneRenderer(
       runtimeWarnings,
       ...(runtimeNodes ? { runtimeNodes } : {})
     };
+    markTiming("a3d:mount:compile-scene:start");
     const compiledScene = await compileScene(snapshot, sceneCompileCtx);
+    markTiming("a3d:mount:compile-scene:resolved");
     const compiled = asRuntimeCompiled(compiledScene);
     if (compiled) {
       actorEntries = compiled.actorEntries as ProductionRuntimeActorEntry[];

@@ -1,0 +1,2848 @@
+From 5b156dd64a44c1d33be45cbecc596214c610b8ee Mon Sep 17 00:00:00 2001
+From: gchahal+1 <gchahal@veerone.com>
+Date: Fri, 9 Oct 2026 13:45:50 +0000
+Subject: [PATCH] [qr-prd09] showcase-mech-hangar: delete evidence files+blocks
+ (T5.8)
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ .../performance-report.json                   |  34 --
+ .../scripts/build-models.mjs                  | 411 ------------------
+ .../scripts/build-sfx.mjs                     | 252 -----------
+ .../scripts/check-modular-family.mjs          | 336 --------------
+ .../scripts/check-modular-family.test.mjs     |  41 --
+ .../scripts/curate-parts.mjs                  | 168 -------
+ .../scripts/register-models.mjs               |  66 ---
+ .../scripts/register-robotcand-shell.mjs      |  49 ---
+ .../scripts/register-sfx.mjs                  |  77 ----
+ .../scripts/verify-default-swap.mjs           |  99 -----
+ .../scripts/write-deploy-report.mjs           |  74 ----
+ .../scripts/write-performance-report.ts       | 103 -----
+ .../scripts/write-route-health.mjs            | 176 --------
+ apps/showcase-mech-hangar/src/legacy/main.ts  | 304 -------------
+ apps/showcase-mech-hangar/src/main.ts         |  10 -
+ .../src/v2/evidence/index.ts                  |  81 ----
+ 16 files changed, 2281 deletions(-)
+ delete mode 100644 apps/showcase-mech-hangar/performance-report.json
+ delete mode 100644 apps/showcase-mech-hangar/scripts/build-models.mjs
+ delete mode 100644 apps/showcase-mech-hangar/scripts/build-sfx.mjs
+ delete mode 100644 apps/showcase-mech-hangar/scripts/check-modular-family.mjs
+ delete mode 100644 apps/showcase-mech-hangar/scripts/check-modular-family.test.mjs
+ delete mode 100644 apps/showcase-mech-hangar/scripts/curate-parts.mjs
+ delete mode 100644 apps/showcase-mech-hangar/scripts/register-models.mjs
+ delete mode 100644 apps/showcase-mech-hangar/scripts/register-robotcand-shell.mjs
+ delete mode 100644 apps/showcase-mech-hangar/scripts/register-sfx.mjs
+ delete mode 100644 apps/showcase-mech-hangar/scripts/verify-default-swap.mjs
+ delete mode 100644 apps/showcase-mech-hangar/scripts/write-deploy-report.mjs
+ delete mode 100644 apps/showcase-mech-hangar/scripts/write-performance-report.ts
+ delete mode 100644 apps/showcase-mech-hangar/scripts/write-route-health.mjs
+ delete mode 100644 apps/showcase-mech-hangar/src/v2/evidence/index.ts
+
+diff --git a/apps/showcase-mech-hangar/performance-report.json b/apps/showcase-mech-hangar/performance-report.json
+deleted file mode 100644
+index 99789f005..000000000
+--- a/apps/showcase-mech-hangar/performance-report.json
++++ /dev/null
+@@ -1,34 +0,0 @@
+-{
+-  "schema": "aura3d-mech-hangar-performance/1.0",
+-  "generatedAt": "2026-09-03T10:03:18.724Z",
+-  "producer": "apps/showcase-mech-hangar/scripts/write-performance-report.ts",
+-  "producerSourceSha256": "ea6f8122d0ee660f3082adb6f7d5688ddcd7e7dc365116610ec348bc9f9b7867",
+-  "routeSourceFiles": [
+-    "apps/showcase-mech-hangar/src/arena/mech-fight.ts",
+-    "apps/showcase-mech-hangar/src/arena/rival.ts",
+-    "apps/showcase-mech-hangar/src/assembly.ts",
+-    "apps/showcase-mech-hangar/src/main.ts",
+-    "apps/showcase-mech-hangar/src/parts-catalog.ts",
+-    "apps/showcase-mech-hangar/src/parts-generated.ts",
+-    "apps/showcase-mech-hangar/src/stats.ts"
+-  ],
+-  "routeSourceSha256": "95b2e78ca5f5989dfbb2625bc42c82924c3dd1f4ab902e1771a7a6b79710e8d5",
+-  "scope": "Headless fixed-step route-local combat timing plus browser-observed root createAuraApp hangar draw calls. GPU frame-time parity is not claimed.",
+-  "samples": 20000,
+-  "fixedStepSeconds": 0.016666666666666666,
+-  "budgets": {
+-    "simulationP95Ms": 0.3,
+-    "hangarDrawCalls": 300
+-  },
+-  "observed": {
+-    "simulationP95Ms": 0.0016,
+-    "matrixSelections": 16,
+-    "hangarDrawCalls": 135,
+-    "renderedWidth": 1665,
+-    "renderedHeight": 1350,
+-    "compatibilityAccepted": 16,
+-    "releaseAccepted": 16,
+-    "deterministicOutcomeSamples": 10
+-  },
+-  "pass": true
+-}
+diff --git a/apps/showcase-mech-hangar/scripts/build-models.mjs b/apps/showcase-mech-hangar/scripts/build-models.mjs
+deleted file mode 100644
+index 99986bd8a..000000000
+--- a/apps/showcase-mech-hangar/scripts/build-models.mjs
++++ /dev/null
+@@ -1,411 +0,0 @@
+-/**
+- * Mech Hangar original authored-family compiler.
+- *
+- * Compiles the sixteen original CC0 GLBs used by the route. The mesh panels,
+- * joints, identity plates, and socket envelopes below are the authored source
+- * of one family, in metres, around stable part-local origins. They are not
+- * whole robots harvested from a catalog and resized until they overlap.
+- *
+- * Compatibility envelope:
+- *   chassis: centered torso; 0.82-1.18m wide, 0.78-0.92m high
+- *   arms:    paired shoulder-to-hand module centered on the chest socket
+- *   legs:    paired hip-to-foot module centered vertically on the hips socket
+- *   weapon:  right-hand module, barrel/working end points toward local +Z
+- *
+- * Run from the repository root:
+- *   node apps/showcase-mech-hangar/scripts/build-models.mjs
+- */
+-import { mkdirSync, writeFileSync } from "node:fs";
+-import { dirname, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../assets/models");
+-// Four-sided bevelled joints keep the family recognisably faceted while staying
+-// below the 40 KB per-part release budget enforced by the curation gate. The
+-// chamfered armour carries the silhouette; these low-sided joints are an
+-// intentional industrial design choice in the authored family.
+-const SEGMENTS = 4;
+-
+-// The first MH-2M pass was technically modular but visually read as four
+-// unrelated boxes. This authored-family pass keeps the same metre-scale socket
+-// contract and CC0 provenance while giving every module a shared industrial
+-// design language: chamfered armour, dark mechanical joints, and luminous
+-// identity/energy materials. The hand-authored mesh recipe is deterministic so
+-// curation and probe scripts remain reproducible.
+-const COLORS = {
+-  // The route's production-safe lighting is intentionally cool and directional.
+-  // The earlier nearly-black navy armour collapsed into a silhouette once it
+-  // was mounted beside the brighter pit fixtures. These lifted steel values
+-  // preserve the industrial night palette while leaving enough albedo for
+-  // bevel highlights, contact shadows, and the authored panel seams to read.
+-  armor: [0.18, 0.31, 0.43, 1],
+-  armorLight: [0.36, 0.53, 0.64, 1],
+-  trim: [0.065, 0.11, 0.17, 1],
+-  joint: [0.09, 0.14, 0.20, 1],
+-  cyan: [0.16, 0.87, 0.98, 1],
+-  amber: [1, 0.55, 0.16, 1],
+-  red: [1, 0.20, 0.32, 1],
+-  lime: [0.64, 0.96, 0.28, 1]
+-};
+-
+-function mesh(name, color, roughness = 0.55, metallic = 0.25, emissive = false) {
+-  return { name, color, roughness, metallic, emissive, positions: [], normals: [], indices: [], nextVertex: 0 };
+-}
+-
+-function triangle(p, a, b, c) {
+-  const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
+-  const vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
+-  let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+-  const length = Math.hypot(nx, ny, nz) || 1;
+-  nx /= length; ny /= length; nz /= length;
+-  for (const point of [a, b, c]) {
+-    p.positions.push(...point);
+-    p.normals.push(nx, ny, nz);
+-  }
+-  p.indices.push(p.nextVertex, p.nextVertex + 1, p.nextVertex + 2);
+-  p.nextVertex += 3;
+-}
+-
+-function quad(p, a, b, c, d) {
+-  // Keep one vertex per corner (rather than six duplicated triangle vertices).
+-  // The authored parts use broad faceted panels, so a single face normal is
+-  // exactly the desired hard-surface shading and materially reduces the GLB
+-  // payload without reducing silhouette detail.
+-  const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
+-  const vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
+-  let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+-  const length = Math.hypot(nx, ny, nz) || 1;
+-  nx /= length; ny /= length; nz /= length;
+-  const base = p.nextVertex;
+-  for (const point of [a, b, c, d]) {
+-    p.positions.push(...point);
+-    p.normals.push(nx, ny, nz);
+-  }
+-  p.indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
+-  p.nextVertex += 4;
+-}
+-
+-function capFan(p, center, points, normal, reverse = false) {
+-  const base = p.nextVertex;
+-  p.positions.push(...center);
+-  p.normals.push(...normal);
+-  for (const point of points) {
+-    p.positions.push(...point);
+-    p.normals.push(...normal);
+-  }
+-  for (let index = 0; index < points.length; index += 1) {
+-    const next = (index + 1) % points.length;
+-    p.indices.push(
+-      base,
+-      base + (reverse ? index + 1 : next + 1),
+-      base + (reverse ? next + 1 : index + 1)
+-    );
+-  }
+-  p.nextVertex += points.length + 1;
+-}
+-
+-function scaleAxis(parts, axis, factor) {
+-  for (const part of parts) {
+-    for (let index = axis; index < part.positions.length; index += 3) part.positions[index] *= factor;
+-  }
+-}
+-
+-function box(p, cx, cy, cz, hx, hy, hz) {
+-  const v = [
+-    [cx - hx, cy - hy, cz - hz], [cx + hx, cy - hy, cz - hz],
+-    [cx + hx, cy - hy, cz + hz], [cx - hx, cy - hy, cz + hz],
+-    [cx - hx, cy + hy, cz - hz], [cx + hx, cy + hy, cz - hz],
+-    [cx + hx, cy + hy, cz + hz], [cx - hx, cy + hy, cz + hz]
+-  ];
+-  quad(p, v[0], v[3], v[2], v[1]); quad(p, v[4], v[5], v[6], v[7]);
+-  quad(p, v[1], v[2], v[6], v[5]); quad(p, v[3], v[0], v[4], v[7]);
+-  quad(p, v[0], v[1], v[5], v[4]); quad(p, v[2], v[3], v[7], v[6]);
+-}
+-
+-/** A chamfered rectangular prism gives the armour a readable highlight break. */
+-function chamferedBox(p, cx, cy, cz, hx, hy, hz, bevel = 0.07, topScale = 1) {
+-  const bx = Math.min(bevel, hx * 0.72, hz * 0.72);
+-  const bz = Math.min(bevel, hx * 0.72, hz * 0.72);
+-  const ring = (y, sx, sz) => [
+-    [-sx + bx, y, -sz], [sx - bx, y, -sz], [sx, y, -sz + bz], [sx, y, sz - bz],
+-    [sx - bx, y, sz], [-sx + bx, y, sz], [-sx, y, sz - bz], [-sx, y, -sz + bz]
+-  ].map(([x, yy, z]) => [cx + x, yy, cz + z]);
+-  const lower = ring(cy - hy, hx, hz);
+-  const upper = ring(cy + hy, hx * topScale, hz * topScale);
+-  for (let index = 0; index < 8; index += 1) {
+-    const next = (index + 1) % 8;
+-    quad(p, lower[index], lower[next], upper[next], upper[index]);
+-  }
+-  capFan(p, [cx, cy - hy, cz], lower, [0, -1, 0]);
+-  capFan(p, [cx, cy + hy, cz], upper, [0, 1, 0], true);
+-}
+-
+-function taperedBox(p, cx, cy, cz, bottomX, bottomZ, topX, topZ, height) {
+-  const y0 = cy - height / 2, y1 = cy + height / 2;
+-  const lower = [[-bottomX, -bottomZ], [bottomX, -bottomZ], [bottomX, bottomZ], [-bottomX, bottomZ]]
+-    .map(([x, z]) => [cx + x, y0, cz + z]);
+-  const upper = [[-topX, -topZ], [topX, -topZ], [topX, topZ], [-topX, topZ]]
+-    .map(([x, z]) => [cx + x, y1, cz + z]);
+-  quad(p, lower[0], lower[3], lower[2], lower[1]);
+-  quad(p, upper[0], upper[1], upper[2], upper[3]);
+-  for (let i = 0; i < 4; i += 1) {
+-    const j = (i + 1) % 4;
+-    quad(p, lower[i], lower[j], upper[j], upper[i]);
+-  }
+-}
+-
+-function ring(axis, coordinate, radius, centerA = 0, centerB = 0) {
+-  return Array.from({ length: SEGMENTS }, (_, index) => {
+-    const angle = index / SEGMENTS * Math.PI * 2;
+-    const a = centerA + Math.cos(angle) * radius;
+-    const b = centerB + Math.sin(angle) * radius;
+-    return axis === "x" ? [coordinate, a, b] : axis === "y" ? [a, coordinate, b] : [a, b, coordinate];
+-  });
+-}
+-
+-function cylinder(p, axis, center, length, radius, centerA = 0, centerB = 0, radius2 = radius) {
+-  const lo = center - length / 2, hi = center + length / 2;
+-  const a = ring(axis, lo, radius, centerA, centerB);
+-  const b = ring(axis, hi, radius2, centerA, centerB);
+-  for (let i = 0; i < SEGMENTS; i += 1) {
+-    const j = (i + 1) % SEGMENTS;
+-    quad(p, a[i], a[j], b[j], b[i]);
+-  }
+-  const c0 = axis === "x" ? [lo, centerA, centerB] : axis === "y" ? [centerA, lo, centerB] : [centerA, centerB, lo];
+-  const c1 = axis === "x" ? [hi, centerA, centerB] : axis === "y" ? [centerA, hi, centerB] : [centerA, centerB, hi];
+-  const capNormal = axis === "x" ? [1, 0, 0] : axis === "y" ? [0, 1, 0] : [0, 0, 1];
+-  capFan(p, c0, a, capNormal.map((value) => -value), false);
+-  capFan(p, c1, b, capNormal, true);
+-}
+-
+-function palette(variant) {
+-  return [COLORS.cyan, COLORS.amber, COLORS.lime, COLORS.red][variant];
+-}
+-
+-function chassis(variant) {
+-  const armor = mesh("torso-armor", variant === 2 ? COLORS.armorLight : COLORS.armor, 0.42, 0.52);
+-  const frame = mesh("torso-frame", COLORS.trim, 0.58, 0.70);
+-  const joint = mesh("torso-joints", COLORS.joint, 0.68, 0.62);
+-  const glow = mesh("cockpit-and-reactor-identity-energy", palette(variant), 0.18, 0.18, true);
+-  const wide = variant === 1 ? 1.08 : variant === 3 ? 0.93 : 1;
+-  const tall = variant === 2 ? 1.04 : variant === 3 ? 0.98 : 1;
+-  // Every variant shares the same shoulders, lower skirt, and chest socket;
+-  // the controlled width/taper differences are what make a swap a real build
+-  // change without breaking the family envelope.
+-  chamferedBox(armor, 0, 0.0, 0, 0.42 * wide, 0.34 * tall, 0.25, 0.08, variant === 3 ? 0.88 : 0.94);
+-  chamferedBox(armor, 0, 0.30, 0.035, 0.34 * wide, 0.13 * tall, 0.22, 0.06, variant === 0 ? 0.82 : 1);
+-  chamferedBox(armor, -0.49 * wide, 0.19, 0, 0.13, 0.16, 0.25, 0.045, 0.88);
+-  chamferedBox(armor, 0.49 * wide, 0.19, 0, 0.13, 0.16, 0.25, 0.045, 0.88);
+-  chamferedBox(frame, 0, -0.34, -0.01, 0.37 * wide, 0.07, 0.19, 0.035, 1);
+-  chamferedBox(frame, 0, 0.01, -0.255, 0.28 * wide, 0.10, 0.025, 0.02, 1);
+-  cylinder(joint, "y", 0.39, 0.10, 0.16, 0, 0);
+-  cylinder(joint, "x", 0, 1.0, 0.08, 0.16, 0);
+-  chamferedBox(glow, 0, 0.12, 0.277, 0.22 * wide, 0.13, 0.026, 0.018, variant === 2 ? 0.76 : 0.9);
+-  cylinder(glow, "z", 0.292, 0.045, 0.105, 0, 0.28);
+-  for (const side of [-1, 1]) {
+-    chamferedBox(frame, side * 0.30, -0.02, 0.262, 0.055, 0.13, 0.018, 0.012, 1);
+-    chamferedBox(glow, side * 0.30, 0.12, 0.295, 0.027, 0.07, 0.012, 0.01, 1);
+-  }
+-  return [armor, frame, joint, glow];
+-}
+-
+-function arms(variant) {
+-  // The armor shell is also the structural frame for this compact module;
+-  // naming both roles keeps the role boundary inspectable in a GLB viewer.
+-  const armor = mesh("arm-armor-frame", variant === 1 ? COLORS.armorLight : COLORS.armor, 0.44, 0.55);
+-  const joint = mesh("arm-joints", COLORS.joint, 0.60, 0.64);
+-  const accent = mesh("arm-identity-energy", palette(variant), 0.2, 0.18, true);
+-  const shoulderScale = variant === 1 ? 1.1 : variant === 3 ? 0.93 : 1;
+-  const gauntletScale = variant === 2 ? 1.12 : variant === 3 ? 0.9 : 1;
+-  for (const side of [-1, 1]) {
+-    const sx = side;
+-    const shoulderX = sx * 0.52;
+-    const elbowX = sx * (0.72 + (variant === 1 ? 0.02 : 0));
+-    const wristX = sx * (0.93 + (variant === 3 ? 0.02 : 0));
+-    cylinder(joint, "x", shoulderX, 0.22, 0.115, 0, 0.12);
+-    cylinder(joint, "x", elbowX, 0.18, 0.10, 0, -0.02);
+-    chamferedBox(armor, shoulderX, 0.09, 0, 0.15 * shoulderScale, 0.22, 0.20, 0.055, 0.92);
+-    chamferedBox(armor, elbowX, -0.08, 0.01, 0.115, 0.19, 0.16, 0.045, 0.82);
+-    chamferedBox(armor, wristX, -0.23, 0.02, 0.13 * gauntletScale, 0.13, 0.15 * gauntletScale, 0.04, 0.9);
+-    cylinder(joint, "y", -0.25, 0.10, 0.075, wristX, 0.02);
+-    chamferedBox(accent, shoulderX, 0.20, 0.205, 0.085 * shoulderScale, 0.035, 0.018, 0.012, 1);
+-    chamferedBox(accent, wristX, -0.23, 0.18, 0.065 * gauntletScale, 0.035, 0.018, 0.012, 1);
+-    // Three compact finger plates make the hand/grip socket legible without
+-    // turning the arm into a noisy silhouette.
+-    for (let finger = -1; finger <= 1; finger += 1) {
+-      chamferedBox(accent, wristX + sx * finger * 0.026, -0.37, 0.04 + finger * 0.04, 0.025, 0.06, 0.026, 0.008, 1);
+-    }
+-  }
+-  const parts = [armor, joint, accent];
+-  scaleAxis(parts, 1, 0.92);
+-  // The broad barricade variant lands one millimetre over the 2.15 m family
+-  // envelope before fitting; keep its shoulders inside the authored socket
+-  // contract rather than weakening the curation bound.
+-  if (variant === 2) scaleAxis(parts, 0, 0.998);
+-  return parts;
+-}
+-
+-function legs(variant) {
+-  // The load-bearing shin/foot shell carries the frame role as well as armor;
+-  // it is one continuous authored surface, not an unlabelled primitive.
+-  const armor = mesh("leg-armor-frame", variant === 2 ? COLORS.armorLight : COLORS.armor, 0.46, 0.54);
+-  const joint = mesh("leg-joints", COLORS.joint, 0.66, 0.66);
+-  const accent = mesh("leg-identity-energy", palette(variant), 0.22, 0.18, true);
+-  const kneeWidth = variant === 1 ? 1.1 : variant === 3 ? 0.9 : 1;
+-  const footLength = variant === 2 ? 1.12 : variant === 3 ? 0.92 : 1;
+-  for (const side of [-1, 1]) {
+-    const x = side * 0.255;
+-    cylinder(joint, "x", x, 0.20, 0.105, 0.0, 0.16);
+-    chamferedBox(armor, x, 0.10, 0, 0.135, 0.14, 0.14, 0.045, 0.92);
+-    cylinder(joint, "x", x, 0.19, 0.10, 0, -0.08);
+-    chamferedBox(armor, x + side * 0.012, -0.12, 0.015, 0.12 * kneeWidth, 0.16, 0.13 * kneeWidth, 0.045, 0.88);
+-    chamferedBox(armor, x - side * 0.012, -0.31, 0.025, 0.115, 0.12, 0.12, 0.04, 0.84);
+-    cylinder(joint, "x", x, 0.16, 0.078, 0, -0.43);
+-    chamferedBox(armor, x, -0.47, 0.085, 0.17, 0.055, 0.22 * footLength, 0.035, 1);
+-    // Piston and ankle band establish a continuous hips -> knee -> foot line.
+-    cylinder(joint, "y", -0.22, 0.27, 0.032, x + side * 0.07, 0.12);
+-    chamferedBox(accent, x, 0.20, 0.14, 0.068, 0.035, 0.018, 0.01, 1);
+-    chamferedBox(accent, x, -0.10, 0.145, 0.06 * kneeWidth, 0.03, 0.018, 0.01, 1);
+-    chamferedBox(accent, x, -0.48, 0.31, 0.095, 0.025, 0.018, 0.01, 1);
+-  }
+-  const parts = [armor, joint, accent];
+-  // The ankle actuator is intentionally deep in local space for +Z working
+-  // orientation; compress the paired module into the documented 0.40–0.52 m
+-  // depth envelope so the feet sit flush beneath the chassis socket.
+-  scaleAxis(parts, 1, 0.90);
+-  scaleAxis(parts, 2, 0.62);
+-  return parts;
+-}
+-
+-function weapon(variant) {
+-  const body = mesh("weapon-armor-frame-body", variant === 2 ? COLORS.armorLight : COLORS.armor, 0.40, 0.58);
+-  const dark = mesh("weapon-mechanism-joints", COLORS.trim, 0.54, 0.68);
+-  const energy = mesh("weapon-energy-identity", palette(variant), 0.14, 0.16, true);
+-  const barrelLength = variant === 2 ? 0.58 : variant === 3 ? 0.42 : 0.5;
+-  if (variant === 0) {
+-    chamferedBox(body, 0, 0.02, 0.04, 0.15, 0.14, 0.24, 0.045, 0.9);
+-    chamferedBox(dark, 0, -0.20, -0.01, 0.07, 0.10, 0.08, 0.025, 1);
+-    cylinder(dark, "z", 0.40, barrelLength, 0.045, -0.075, 0.02);
+-    cylinder(dark, "z", 0.40, barrelLength, 0.045, 0.075, 0.02);
+-    cylinder(energy, "z", 0.68, 0.065, 0.085, 0, 0);
+-    chamferedBox(energy, 0, 0.17, 0.12, 0.08, 0.025, 0.14, 0.012, 1);
+-  } else if (variant === 1) {
+-    cylinder(body, "z", 0.06, 0.46, 0.17, 0, 0);
+-    chamferedBox(body, 0, -0.17, -0.01, 0.10, 0.11, 0.12, 0.03, 1);
+-    cylinder(dark, "z", 0.46, 0.25, 0.10, 0, 0);
+-    cylinder(energy, "z", 0.21, 0.26, 0.075, 0, 0);
+-    cylinder(energy, "z", 0.65, 0.06, 0.12, 0, 0);
+-  } else if (variant === 2) {
+-    chamferedBox(body, 0, 0.06, 0.08, 0.12, 0.12, 0.30, 0.04, 0.86);
+-    cylinder(energy, "z", 0.49, barrelLength, 0.05, 0, 0);
+-    chamferedBox(dark, 0, -0.18, -0.02, 0.06, 0.13, 0.10, 0.025, 1);
+-    chamferedBox(body, 0, 0.17, -0.18, 0.22, 0.035, 0.14, 0.018, 1);
+-    cylinder(dark, "z", 0.78, 0.05, 0.085, 0, 0);
+-  } else {
+-    chamferedBox(body, 0, 0.05, 0.12, 0.22, 0.13, 0.18, 0.05, 0.9);
+-    chamferedBox(body, 0, 0.08, 0.38, 0.16, 0.10, 0.15, 0.04, 0.72);
+-    cylinder(dark, "z", 0.60, barrelLength, 0.075, 0, 0);
+-    cylinder(energy, "z", 0.56, 0.22, 0.045, 0, 0);
+-    chamferedBox(energy, 0, 0.18, 0.28, 0.13, 0.03, 0.025, 0.012, 1);
+-    chamferedBox(dark, 0, -0.19, -0.03, 0.065, 0.12, 0.085, 0.025, 1);
+-  }
+-  return [body, dark, energy];
+-}
+-
+-function writeGlb(path, parts, metadata) {
+-  const chunks = [], bufferViews = [], accessors = [], meshes = [], nodes = [];
+-  let offset = 0;
+-  const materials = parts.map((entry) => ({
+-    name: entry.name + "-material",
+-    pbrMetallicRoughness: {
+-      baseColorFactor: entry.color,
+-      metallicFactor: entry.metallic,
+-      roughnessFactor: entry.roughness
+-    },
+-    ...(entry.name.includes("identity") || entry.name.includes("energy") || entry.name.includes("reactor")
+-      ? { emissiveFactor: entry.color.slice(0, 3).map((value) => value * 0.42) }
+-      : {})
+-  }));
+-  const pushView = (array, target) => {
+-    const bytes = Buffer.from(array.buffer, array.byteOffset, array.byteLength);
+-    const padding = (4 - bytes.length % 4) % 4;
+-    chunks.push(bytes, ...(padding ? [Buffer.alloc(padding)] : []));
+-    bufferViews.push({ buffer: 0, byteOffset: offset, byteLength: bytes.length, target });
+-    offset += bytes.length + padding;
+-    return bufferViews.length - 1;
+-  };
+-  for (const [partIndex, entry] of parts.entries()) {
+-    if (entry.positions.length === 0) continue;
+-    const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
+-    for (let i = 0; i < entry.positions.length; i += 3) {
+-      for (let axis = 0; axis < 3; axis += 1) {
+-        min[axis] = Math.min(min[axis], entry.positions[i + axis]);
+-        max[axis] = Math.max(max[axis], entry.positions[i + axis]);
+-      }
+-    }
+-    const posView = pushView(new Float32Array(entry.positions), 34962);
+-    const normView = pushView(new Float32Array(entry.normals), 34962);
+-    const idxView = pushView(new Uint32Array(entry.indices), 34963);
+-    const base = accessors.length;
+-    accessors.push(
+-      { bufferView: posView, componentType: 5126, count: entry.positions.length / 3, type: "VEC3", min, max },
+-      { bufferView: normView, componentType: 5126, count: entry.normals.length / 3, type: "VEC3" },
+-      { bufferView: idxView, componentType: 5125, count: entry.indices.length, type: "SCALAR" }
+-    );
+-    meshes.push({ name: entry.name, primitives: [{ attributes: { POSITION: base, NORMAL: base + 1 }, indices: base + 2, material: partIndex }] });
+-    nodes.push({ name: entry.name, mesh: meshes.length - 1 });
+-  }
+-  const body = Buffer.concat(chunks);
+-  const document = {
+-    asset: {
+-      version: "2.0",
+-      generator: "Aura3D Mech Hangar modular family synth (original CC0)",
+-      extras: { aura3d: { orientation: { forwardAxis: "+Z", upAxis: "+Y" } } }
+-    },
+-    extras: { aura3dMechPart: metadata },
+-    scene: 0,
+-    scenes: [{ name: "part-root", nodes: nodes.map((_, index) => index) }],
+-    nodes, meshes, materials, accessors, bufferViews, buffers: [{ byteLength: body.length }]
+-  };
+-  const source = Buffer.from(JSON.stringify(document));
+-  const json = Buffer.concat([source, Buffer.alloc((4 - source.length % 4) % 4, 0x20)]);
+-  const bin = Buffer.concat([body, Buffer.alloc((4 - body.length % 4) % 4)]);
+-  const output = Buffer.alloc(12 + 8 + json.length + 8 + bin.length);
+-  output.write("glTF", 0, "ascii"); output.writeUInt32LE(2, 4); output.writeUInt32LE(output.length, 8);
+-  output.writeUInt32LE(json.length, 12); output.writeUInt32LE(0x4e4f534a, 16); json.copy(output, 20);
+-  const binHead = 20 + json.length;
+-  output.writeUInt32LE(bin.length, binHead); output.writeUInt32LE(0x004e4942, binHead + 4); bin.copy(output, binHead + 8);
+-  mkdirSync(dirname(path), { recursive: true });
+-  writeFileSync(path, output);
+-  return output.length;
+-}
+-
+-const definitions = [
+-  { slot: "chassis", socket: "root", build: chassis },
+-  { slot: "arms", socket: "chest", build: arms },
+-  { slot: "legs", socket: "hips", build: legs },
+-  { slot: "weapon", socket: "right-hand", build: weapon }
+-];
+-
+-mkdirSync(OUT_DIR, { recursive: true });
+-for (const definition of definitions) {
+-  for (let variant = 0; variant < 4; variant += 1) {
+-    const letter = String.fromCharCode(65 + variant);
+-    const id = "mech" + definition.slot[0].toUpperCase() + definition.slot.slice(1) + letter;
+-    const bytes = writeGlb(resolve(OUT_DIR, id + ".glb"), definition.build(variant), {
+-      schema: "aura3d.mech-hangar.modular-part/1.0",
+-      family: "MH-2M",
+-      id,
+-      slot: definition.slot,
+-      variant: letter,
+-      unitMeters: 1,
+-      origin: "part-center",
+-      compatibleSocket: definition.socket,
+-      forwardAxis: "+Z",
+-      upAxis: "+Y",
+-      sourceKind: "original-authored-family",
+-      materialRoles: ["armor", "frame", "joints", "emissive", "identity", "energy"]
+-    });
+-    console.log("wrote", id + ".glb", bytes, "bytes");
+-  }
+-}
+diff --git a/apps/showcase-mech-hangar/scripts/build-sfx.mjs b/apps/showcase-mech-hangar/scripts/build-sfx.mjs
+deleted file mode 100644
+index 756a031c5..000000000
+--- a/apps/showcase-mech-hangar/scripts/build-sfx.mjs
++++ /dev/null
+@@ -1,252 +0,0 @@
+-/**
+- * Mech Hangar SFX synth — generates original CC0 WAV cues entirely in-repo.
+- *
+- * No network downloads, no sampled material: every cue is synthesized from
+- * oscillators / noise with this committed generator so provenance is auditable
+- * (author "Aura3D synthesis", license CC0-1.0).
+- *
+- * Run from the app directory:  node scripts/build-sfx.mjs
+- * Output: assets/sfx/*.wav  (16-bit PCM mono 44100 Hz)
+- *
+- * After generation register each cue with the CLI (scripts/register-sfx.mjs).
+- */
+-import { mkdirSync, writeFileSync } from "node:fs";
+-import { resolve, dirname } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../assets/sfx");
+-const SAMPLE_RATE = 44100;
+-// ---- waveform helpers -------------------------------------------------------
+-function noiseBuffer(length, seed) {
+-  let s = (seed ?? 1) >>> 0 || 1;
+-  const out = new Float32Array(length);
+-  for (let i = 0; i < length; i += 1) {
+-    s ^= s << 13; s ^= s >>> 17; s ^= s << 5;
+-    out[i] = ((s >>> 0) / 0xffffffff) * 2 - 1;
+-  }
+-  return out;
+-}
+-
+-function envelope(length, attack, decay, total) {
+-  const out = new Float32Array(length);
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const start = Math.min(1, t / attack);
+-    const end = Math.pow(Math.max(0, 1 - t / total), decay);
+-    out[i] = start * end;
+-  }
+-  return out;
+-}
+-
+-function renderPart(out, part) {
+-  const { wave = "sine", freqStart, freqEnd = freqStart, amp = 0.5, attack = 0.005, decay = 3, total = 0.2 } = part;
+-  const length = out.length;
+-  const env = envelope(length, attack, decay, total);
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const progress = Math.min(1, t / total);
+-    const f = freqStart + (freqEnd - freqStart) * progress;
+-    const phase = 2 * Math.PI * f * t;
+-    let v = 0;
+-    if (wave === "sine") v = Math.sin(phase);
+-    else if (wave === "triangle") v = 2 / Math.PI * Math.asin(Math.sin(phase));
+-    else if (wave === "sawtooth") v = 2 * (phase / (2 * Math.PI) - Math.floor(0.5 + phase / (2 * Math.PI)));
+-    else if (wave === "square") v = Math.sign(Math.sin(phase));
+-    else if (wave === "fm") v = Math.sin(phase + 2.2 * Math.sin(4 * phase));
+-    out[i] += v * env[i] * amp;
+-  }
+-}
+-
+-function renderNoise(out, spec) {
+-  const { amp = 0.4, attack = 0.003, decay = 4, total = 0.15, hp = 0, lp = 0, seed = 7 } = spec;
+-  const raw = noiseBuffer(out.length, seed);
+-  const env = envelope(out.length, attack, decay, total);
+-  let hpPrev = 0;
+-  let lpPrev = 0;
+-  for (let i = 0; i < out.length; i += 1) {
+-    let v = raw[i];
+-    if (hp > 0) {
+-      hpPrev += 0.9 * (v - hpPrev);
+-      v = v - hpPrev;
+-    }
+-    if (lp > 0) {
+-      // one-pole low-pass whose cutoff sweeps down over the cue
+-      const cutoff = lp * Math.max(0.12, 1 - i / out.length);
+-      lpPrev += Math.min(0.95, cutoff) * (v - lpPrev);
+-      v = lpPrev;
+-    }
+-    out[i] += v * env[i] * amp;
+-  }
+-}
+-
+-function renderCue(spec) {
+-  const tone = spec.tone;
+-  const noise = spec.noise;
+-  const tones = tone ? (Array.isArray(tone) ? tone : [tone]) : [];
+-  const totals = tones.map((p) => p.total ?? 0.2).concat([noise?.total ?? 0, 0.1]);
+-  const totalSec = Math.max(...totals) + 0.05;
+-  const length = Math.floor(totalSec * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  for (const part of tones) renderPart(out, part);
+-  if (noise) renderNoise(out, noise);
+-  let peak = 0;
+-  for (const v of out) peak = Math.max(peak, Math.abs(v));
+-  const norm = peak > 0 ? 0.9 / peak : 1;
+-  const g = spec.gain ?? 1;
+-  for (let i = 0; i < out.length; i += 1) out[i] *= norm * g;
+-  return out;
+-}
+-
+-// ---- cue recipes ------------------------------------------------------------
+-/** Servo cycle — short mechanical whirr: FM sweep plus gritty noise. Slot cycles play this. */
+-function servoCycle() {
+-  return renderCue({
+-    tone: [
+-      { wave: "fm", freqStart: 620, freqEnd: 1180, amp: 0.5, attack: 0.004, decay: 5, total: 0.11 },
+-      { wave: "square", freqStart: 310, freqEnd: 590, amp: 0.16, attack: 0.006, decay: 6, total: 0.13 }
+-    ],
+-    noise: { amp: 0.14, attack: 0.003, decay: 7, total: 0.12, hp: 900 }
+-  });
+-}
+-/** Lock-in — heavy clack that settles: low thunk + metallic ping. */
+-function lockIn() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sine", freqStart: 150, freqEnd: 62, amp: 0.85, attack: 0.002, decay: 3.4, total: 0.22 },
+-      { wave: "triangle", freqStart: 1240, freqEnd: 880, amp: 0.3, attack: 0.001, decay: 7, total: 0.16 }
+-    ],
+-    noise: { amp: 0.3, attack: 0.001, decay: 6, total: 0.08, hp: 400, lp: 5200 }
+-  });
+-}
+-/** Walk heavy — slow stomping servo step for arena movement. */
+-function walkHeavy() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sine", freqStart: 96, freqEnd: 48, amp: 0.9, attack: 0.003, decay: 3, total: 0.19 },
+-      { wave: "triangle", freqStart: 220, freqEnd: 120, amp: 0.24, attack: 0.004, decay: 5, total: 0.15 }
+-    ],
+-    noise: { amp: 0.18, attack: 0.002, decay: 6, total: 0.12, hp: 180, lp: 2400 }
+-  });
+-}
+-/** Light hit — quick metallic smack. */
+-function lightHit() {
+-  return renderCue({
+-    tone: [
+-      { wave: "square", freqStart: 720, freqEnd: 260, amp: 0.55, attack: 0.001, decay: 8, total: 0.09 },
+-      { wave: "sine", freqStart: 340, freqEnd: 140, amp: 0.45, attack: 0.001, decay: 5, total: 0.12 }
+-    ],
+-    noise: { amp: 0.34, attack: 0.001, decay: 9, total: 0.07, hp: 1200 }
+-  });
+-}
+-/** Heavy hit — deep impact with metal ring-out. */
+-function heavyHit() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sine", freqStart: 190, freqEnd: 52, amp: 1, attack: 0.001, decay: 3.2, total: 0.3 },
+-      { wave: "triangle", freqStart: 980, freqEnd: 430, amp: 0.28, attack: 0.001, decay: 7, total: 0.26 },
+-      { wave: "square", freqStart: 480, freqEnd: 200, amp: 0.2, attack: 0.002, decay: 8, total: 0.14 }
+-    ],
+-    noise: { amp: 0.42, attack: 0.001, decay: 7, total: 0.12, hp: 300, lp: 6000 }
+-  });
+-}
+-/** Guard block — hard shield clang. */
+-function guardBlock() {
+-  return renderCue({
+-    tone: [
+-      { wave: "triangle", freqStart: 1560, freqEnd: 1100, amp: 0.42, attack: 0.001, decay: 8, total: 0.14 },
+-      { wave: "sine", freqStart: 210, freqEnd: 130, amp: 0.5, attack: 0.002, decay: 4, total: 0.14 }
+-    ],
+-    noise: { amp: 0.26, attack: 0.001, decay: 10, total: 0.06, hp: 2200 }
+-  });
+-}
+-/** Guard break — shattering stagger: descending crunch. */
+-function guardBreak() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sawtooth", freqStart: 640, freqEnd: 90, amp: 0.6, attack: 0.002, decay: 4, total: 0.34 },
+-      { wave: "sine", freqStart: 160, freqEnd: 46, amp: 0.7, attack: 0.002, decay: 3, total: 0.36 }
+-    ],
+-    noise: { amp: 0.5, attack: 0.002, decay: 4, total: 0.26, hp: 350, lp: 7000 }
+-  });
+-}
+-/** Special fire — charge-up zap release. */
+-function specialFire() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sawtooth", freqStart: 180, freqEnd: 1450, amp: 0.5, attack: 0.02, decay: 2.4, total: 0.3 },
+-      { wave: "fm", freqStart: 900, freqEnd: 2300, amp: 0.36, attack: 0.03, decay: 5, total: 0.24 },
+-      { wave: "sine", freqStart: 90, freqEnd: 60, amp: 0.5, attack: 0.01, decay: 3, total: 0.3 }
+-    ],
+-    noise: { amp: 0.22, attack: 0.02, decay: 6, total: 0.18, hp: 800 }
+-  });
+-}
+-/** KO sting — dramatic falling sting with sub drop. */
+-function koSting() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sawtooth", freqStart: 520, freqEnd: 70, amp: 0.55, attack: 0.004, decay: 2.2, total: 0.85 },
+-      { wave: "sine", freqStart: 130, freqEnd: 34, amp: 0.85, attack: 0.004, decay: 2, total: 0.95 },
+-      { wave: "triangle", freqStart: 392, freqEnd: 196, amp: 0.3, attack: 0.02, decay: 2.6, total: 0.7 }
+-    ],
+-    noise: { amp: 0.3, attack: 0.004, decay: 3, total: 0.4, hp: 200, lp: 3600 }
+-  });
+-}
+-/** Ambient hangar — seamless low workshop hum loop (~3.2s), vent hiss + drone. */
+-function ambientHangar() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sine", freqStart: 55, freqEnd: 55, amp: 0.4, attack: 0.4, decay: 0.35, total: 3.1 },
+-      { wave: "sine", freqStart: 110.3, freqEnd: 110.3, amp: 0.16, attack: 0.5, decay: 0.3, total: 3.05 },
+-      { wave: "triangle", freqStart: 164.8, freqEnd: 164.8, amp: 0.06, attack: 0.6, decay: 0.3, total: 3.0 }
+-    ],
+-    noise: { amp: 0.075, attack: 0.7, decay: 0.25, total: 3.1, hp: 500, seed: 99 },
+-    gain: 0.72
+-  });
+-}
+-
+-// ---- wav encoding -----------------------------------------------------------
+-function encodeWav(samples) {
+-  const bytesPerSample = 2;
+-  const buffer = Buffer.alloc(44 + samples.length * bytesPerSample);
+-  buffer.write("RIFF", 0);
+-  buffer.writeUInt32LE(36 + samples.length * bytesPerSample, 4);
+-  buffer.write("WAVE", 8);
+-  buffer.write("fmt ", 12);
+-  buffer.writeUInt32LE(16, 16);
+-  buffer.writeUInt16LE(1, 20); // PCM
+-  buffer.writeUInt16LE(1, 22); // mono
+-  buffer.writeUInt32LE(SAMPLE_RATE, 24);
+-  buffer.writeUInt32LE(SAMPLE_RATE * bytesPerSample, 28);
+-  buffer.writeUInt16LE(bytesPerSample, 32);
+-  buffer.writeUInt16LE(16, 34);
+-  buffer.write("data", 36);
+-  for (let i = 0; i < samples.length; i += 1) {
+-    const clamped = Math.max(-1, Math.min(1, samples[i]));
+-    buffer.writeInt16LE(Math.round(clamped * 32767), 44 + i * bytesPerSample);
+-  }
+-  return buffer;
+-}
+-
+-const cues = {
+-  mechServoCycleSfx: servoCycle,
+-  mechLockInSfx: lockIn,
+-  mechWalkHeavySfx: walkHeavy,
+-  mechLightHitSfx: lightHit,
+-  mechHeavyHitSfx: heavyHit,
+-  mechGuardBlockSfx: guardBlock,
+-  mechGuardBreakSfx: guardBreak,
+-  mechSpecialFireSfx: specialFire,
+-  mechKoStingSfx: koSting,
+-  mechAmbientHangarSfx: ambientHangar
+-};
+-
+-mkdirSync(OUT_DIR, { recursive: true });
+-let written = 0;
+-for (const [name, make] of Object.entries(cues)) {
+-  const wav = encodeWav(make());
+-  const path = resolve(OUT_DIR, name + ".wav");
+-  writeFileSync(path, wav);
+-  console.log("wrote " + path + " (" + wav.length + " bytes)");
+-  written += 1;
+-}
+-console.log("done: " + written + " cues");
+diff --git a/apps/showcase-mech-hangar/scripts/check-modular-family.mjs b/apps/showcase-mech-hangar/scripts/check-modular-family.mjs
+deleted file mode 100644
+index 53037a4d3..000000000
+--- a/apps/showcase-mech-hangar/scripts/check-modular-family.mjs
++++ /dev/null
+@@ -1,336 +0,0 @@
+-/**
+- * Route-local MH-2M visual-family gate.
+- *
+- * This is intentionally stricter than the existing curation gate.  The curation
+- * report proves typed files, hashes, bounds, and release probes; it does not prove
+- * that the files came from a coherent authored modular character family.  This
+- * gate therefore refuses an unbound placeholder source, requires an explicit
+- * family declaration in every GLB, checks the authored material roles, and
+- * evaluates the selected Aegis build as a connected grounded assembly. Every
+- * accepted source kind still needs a license-clean declaration and exact
+- * evidence; it must never silently turn the Robotcand whole-body fallback into
+- * a modular-family pass.
+- *
+- * The checker is deliberately dependency-free so it can run before the root
+- * package build.  It only reads route-local source/GLBs plus the root manifest and
+- * retained probe metadata; it never edits generated reports or assets.
+- */
+-import { createHash } from "node:crypto";
+-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+-import { dirname, join, relative, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const routeSourceDir = join(appDir, "src");
+-const manifestPath = join(repoRoot, "aura.assets.json");
+-const familySourcePath = join(appDir, "assets", "mh-2m-family-source.json");
+-
+-const PARTS = [
+-  { id: "mechChassisA", slot: "chassis", socket: "root" },
+-  { id: "mechArmsA", slot: "arms", socket: "chest" },
+-  { id: "mechLegsA", slot: "legs", socket: "hips" },
+-  { id: "mechWeaponA", slot: "weapon", socket: "right-hand" }
+-];
+-const ALL_PART_IDS = [
+-  "mechChassisA", "mechChassisB", "mechChassisC", "mechChassisD",
+-  "mechArmsA", "mechArmsB", "mechArmsC", "mechArmsD",
+-  "mechLegsA", "mechLegsB", "mechLegsC", "mechLegsD",
+-  "mechWeaponA", "mechWeaponB", "mechWeaponC", "mechWeaponD"
+-];
+-
+-const manifest = readJson(manifestPath);
+-const manifestById = new Map((manifest.assets ?? []).map((asset) => [asset.id, asset]));
+-const routeSourceFiles = filesRecursively(routeSourceDir).filter((path) => /\.(?:ts|css)$/.test(path));
+-const routeSourceText = routeSourceFiles.map((path) => readFileSync(path, "utf8")).join("\n");
+-const routeSourceSha256 = hashSource(routeSourceFiles, appDir);
+-
+-function readJson(path) {
+-  return JSON.parse(readFileSync(path, "utf8"));
+-}
+-
+-function filesRecursively(directory) {
+-  // The route has no nested generated source today, but keeping the traversal
+-  // deterministic means this binding remains valid when one is added.
+-  return readdirSync(directory).sort().flatMap((name) => {
+-    const path = join(directory, name);
+-    return statSync(path).isDirectory() ? filesRecursively(path) : [path];
+-  });
+-}
+-
+-function hashSource(files, baseDir) {
+-  const hash = createHash("sha256");
+-  for (const path of files) {
+-    hash.update(relative(baseDir, path)).update("\0").update(readFileSync(path)).update("\0");
+-  }
+-  return hash.digest("hex");
+-}
+-
+-function sha256Bytes(bytes) {
+-  return `sha256-${createHash("sha256").update(bytes).digest("hex")}`;
+-}
+-
+-function parseGlb(path) {
+-  const bytes = readFileSync(path);
+-  if (bytes.subarray(0, 4).toString("ascii") !== "glTF" || bytes.readUInt32LE(4) !== 2) {
+-    throw new Error("not a glTF 2.0 GLB");
+-  }
+-  const jsonLength = bytes.readUInt32LE(12);
+-  const jsonStart = 20;
+-  const document = JSON.parse(bytes.subarray(jsonStart, jsonStart + jsonLength).toString("utf8").trim());
+-  const binHeader = jsonStart + jsonLength;
+-  const binLength = bytes.readUInt32LE(binHeader);
+-  const binStart = binHeader + 8;
+-  const bin = bytes.subarray(binStart, binStart + binLength);
+-  const accessors = document.accessors ?? [];
+-  const views = document.bufferViews ?? [];
+-  const meshes = (document.meshes ?? []).map((mesh) => {
+-    const primitives = (mesh.primitives ?? []).map((primitive) => {
+-      const accessorIndex = primitive.attributes?.POSITION;
+-      const accessor = accessorIndex === undefined ? undefined : accessors[accessorIndex];
+-      const view = accessor?.bufferView === undefined ? undefined : views[accessor.bufferView];
+-      if (!accessor || !view || accessor.componentType !== 5126 || accessor.type !== "VEC3") return null;
+-      const count = Number(accessor.count ?? 0);
+-      const byteOffset = Number(view.byteOffset ?? 0) + Number(accessor.byteOffset ?? 0);
+-      const min = [Infinity, Infinity, Infinity];
+-      const max = [-Infinity, -Infinity, -Infinity];
+-      // Prefer exact accessor bounds when present, but inspect the binary too so
+-      // stale/overly broad JSON bounds cannot make a detached part pass.
+-      if (Array.isArray(accessor.min) && Array.isArray(accessor.max) && accessor.min.length === 3 && accessor.max.length === 3) {
+-        for (let axis = 0; axis < 3; axis += 1) {
+-          min[axis] = Number(accessor.min[axis]);
+-          max[axis] = Number(accessor.max[axis]);
+-        }
+-      }
+-      const stride = Number(view.byteStride ?? 12);
+-      const exactMin = [Infinity, Infinity, Infinity];
+-      const exactMax = [-Infinity, -Infinity, -Infinity];
+-      for (let index = 0; index < count; index += 1) {
+-        const offset = byteOffset + index * stride;
+-        for (let axis = 0; axis < 3; axis += 1) {
+-          const value = bin.readFloatLE(offset + axis * 4);
+-          exactMin[axis] = Math.min(exactMin[axis], value);
+-          exactMax[axis] = Math.max(exactMax[axis], value);
+-        }
+-      }
+-      if (Number.isFinite(exactMin[0])) return { min: exactMin, max: exactMax, material: primitive.material ?? null };
+-      return { min, max, material: primitive.material ?? null };
+-    }).filter(Boolean);
+-    return { name: mesh.name ?? "unnamed", primitives };
+-  });
+-  return {
+-    bytes,
+-    document,
+-    metadata: document.extras?.aura3dMechPart ?? {},
+-    meshes,
+-    materials: document.materials ?? []
+-  };
+-}
+-
+-function aabbFromMeshes(parsed) {
+-  const min = [Infinity, Infinity, Infinity];
+-  const max = [-Infinity, -Infinity, -Infinity];
+-  for (const mesh of parsed.meshes) for (const primitive of mesh.primitives) {
+-    for (let axis = 0; axis < 3; axis += 1) {
+-      min[axis] = Math.min(min[axis], primitive.min[axis]);
+-      max[axis] = Math.max(max[axis], primitive.max[axis]);
+-    }
+-  }
+-  return { min, max, size: max.map((value, axis) => value - min[axis]) };
+-}
+-
+-function fitScale(slot, size) {
+-  const max = Math.max(...size);
+-  if (slot === "chassis") return 1.05 / Math.max(0.001, size[1]);
+-  if (slot === "legs") return 0.84 / Math.max(0.001, size[1]);
+-  if (slot === "arms") return 2.18 / Math.max(0.001, max);
+-  return 0.68 / Math.max(0.001, max);
+-}
+-
+-function mountOffset(slot, scaledBounds) {
+-  const legFloor = -(scaledBounds.legs.min[1] ?? -0.5);
+-  const legTop = legFloor + (scaledBounds.legs.max[1] ?? 0.4);
+-  const chassisBottom = legTop - 0.045;
+-  if (slot === "legs") return [0, legFloor, 0];
+-  if (slot === "chassis") return [0, chassisBottom - scaledBounds.chassis.min[1], 0];
+-  if (slot === "arms") return [0, chassisBottom + scaledBounds.chassis.size[1] * 0.18 - scaledBounds.arms.min[1], scaledBounds.chassis.size[2] * 0.06];
+-  return [Math.min(0.58, Math.max(0.48, scaledBounds.arms.size[0] * 0.27)), chassisBottom + scaledBounds.chassis.size[1] * 0.30 - scaledBounds.weapon.min[1], scaledBounds.chassis.size[2] * 0.12];
+-}
+-
+-function transformedAabb(parsedBounds, scale, offset) {
+-  return {
+-    min: parsedBounds.min.map((value, axis) => value * scale + offset[axis]),
+-    max: parsedBounds.max.map((value, axis) => value * scale + offset[axis])
+-  };
+-}
+-
+-function intervalOverlap(aMin, aMax, bMin, bMax) {
+-  return Math.min(aMax, bMax) - Math.max(aMin, bMin);
+-}
+-
+-function contact(a, b, threshold = 0.025) {
+-  const overlaps = [0, 1, 2].map((axis) => intervalOverlap(a.min[axis], a.max[axis], b.min[axis], b.max[axis]));
+-  return { overlaps, connected: overlaps.every((value) => value >= threshold) };
+-}
+-
+-function hasMaterialRole(materials, role) {
+-  const needle = role.toLowerCase();
+-  return materials.some((material) => String(material.name ?? "").toLowerCase().includes(needle));
+-}
+-
+-function checkPart(id, expected) {
+-  const failures = [];
+-  const asset = manifestById.get(id);
+-  const sourcePath = join(appDir, "assets/models", `${id}.glb`);
+-  if (!asset) failures.push("manifest-entry-missing");
+-  if (!existsSync(sourcePath)) failures.push("source-glb-missing");
+-  let parsed;
+-  if (existsSync(sourcePath)) {
+-    try { parsed = parseGlb(sourcePath); }
+-    catch (error) { failures.push(`glb-parse-failed:${error instanceof Error ? error.message : String(error)}`); }
+-  }
+-  if (asset && parsed) {
+-    if (asset.hash !== sha256Bytes(parsed.bytes)) failures.push("manifest-hash-stale");
+-    if (asset.quality !== "release") failures.push("quality-not-release");
+-    if (!/^(?:CC0|CC-BY)/.test(String(asset.provenance?.license ?? ""))) failures.push("license-not-clean");
+-    if (asset.renderedProbe?.assetHash !== asset.hash || !asset.renderedProbe?.url || !existsSync(join(repoRoot, asset.renderedProbe.url))) failures.push("release-probe-missing-or-stale");
+-    const metadata = parsed.metadata;
+-    if (metadata.schema !== "aura3d.mech-hangar.modular-part/1.0") failures.push("modular-metadata-schema-missing");
+-    if (metadata.family !== "MH-2M" || metadata.slot !== expected.slot || metadata.compatibleSocket !== expected.socket) failures.push("socket-family-contract-mismatch");
+-    if (metadata.unitMeters !== 1 || metadata.origin !== "part-center" || metadata.forwardAxis !== "+Z" || metadata.upAxis !== "+Y") failures.push("scale-axis-contract-mismatch");
+-    // Every family source must identify itself explicitly. The declaration is
+-    // checked again at generator level below so metadata cannot make an
+-    // otherwise unbound placeholder pass.
+-    if (!(["original-authored-family", "licensed-modular-family", "captured-modular-family"].includes(metadata.sourceKind))) failures.push("non-procedural-family-source-kind-missing");
+-    const roleList = Array.isArray(metadata.materialRoles) ? metadata.materialRoles.map((role) => String(role).toLowerCase()) : [];
+-    if (roleList.length < 3 || !roleList.includes("armor") || !roleList.includes("frame") || !roleList.includes("joints") || !roleList.includes("emissive")) failures.push("authored-material-role-contract-missing");
+-    if (parsed.meshes.length < 3 || parsed.materials.length < 3) failures.push("insufficient-authored-mesh-material-layers");
+-    for (const role of ["armor", "frame", "joint", "identity", "energy", "reactor"]) {
+-      if (!hasMaterialRole(parsed.materials, role) && role !== "reactor") failures.push(`material-role-not-readable:${role}`);
+-    }
+-    const bounds = aabbFromMeshes(parsed);
+-    if (!bounds.size.every((value) => Number.isFinite(value) && value > 0)) failures.push("empty-geometry-bounds");
+-    return { id, slot: expected.slot, socket: expected.socket, failures, parsed, bounds, asset };
+-  }
+-  return { id, slot: expected.slot, socket: expected.socket, failures, parsed, asset };
+-}
+-
+-function checkRouteSource() {
+-  const failures = [];
+-  if (/SHOW_MODULAR_ASSEMBLY\s*=\s*false/.test(routeSourceText)) failures.push("route-hides-modular-family");
+-  if (/!SHOW_MODULAR_ASSEMBLY\s*&&\s*shell\s*&&\s*def\.slot\s*!==\s*["']weapon/.test(routeSourceText)) failures.push("route-suppresses-selected-modular-slots");
+-  if (/model\(assets\.robotcand/.test(routeSourceText)) failures.push("whole-body-Robotcand-shell-is-primary-path");
+-  if (!/model\(asset,/.test(routeSourceText) || !/mountTransformForPart/.test(routeSourceText)) failures.push("typed-part-mount-path-missing");
+-  if (!/material\.(?:pbr|emissive)/.test(routeSourceText)) failures.push("route-material-declarations-missing");
+-  if (/materialOverride|overrideMaterial|\.traverse\s*\(/.test(routeSourceText)) failures.push("global-material-override-detected");
+-  return failures;
+-}
+-
+-function checkGeneratorSource() {
+-  const failures = [];
+-  const path = join(appDir, "scripts/build-models.mjs");
+-  if (!existsSync(path)) return ["family-generator-missing"];
+-  const source = readFileSync(path, "utf8");
+-  // A deterministic authored mesh compiler is valid family source when it is
+-  // explicitly declared and independently reviewed. Reject only the old
+-  // placeholder/fallback signatures, not the low-poly mesh constructors that
+-  // make the authored panels and joints reproducible.
+-  if (/Robotcand|whole-body\s+fallback|procedural-box-cylinder-generator|placeholder/i.test(source)) failures.push("placeholder-family-generator-is-still-active");
+-  if (!/sourceKind:\s*["']original-authored-family["']/.test(source)) failures.push("generator-does-not-declare-real-family-source");
+-  if (!existsSync(familySourcePath)) failures.push("family-source-declaration-missing");
+-  else {
+-    try {
+-      const declaration = readJson(familySourcePath);
+-      if (declaration.schema !== "aura3d.mech-hangar.family-source/1.0") failures.push("family-source-schema-missing");
+-      if (declaration.family !== "MH-2M" || declaration.sourceKind !== "original-authored-family") failures.push("family-source-identity-mismatch");
+-      if (declaration.author !== "Aura3D synthesis" || !String(declaration.license).startsWith("CC0")) failures.push("family-source-license-or-author-missing");
+-      if (declaration.compiler !== "apps/showcase-mech-hangar/scripts/build-models.mjs") failures.push("family-source-compiler-binding-missing");
+-      if (!String(declaration.designIntent ?? "").includes("explicit mesh panels") || !Array.isArray(declaration.materialRoles) || declaration.materialRoles.length < 4) failures.push("family-source-design-contract-missing");
+-    } catch (error) {
+-      failures.push(`family-source-declaration-invalid:${error instanceof Error ? error.message : String(error)}`);
+-    }
+-  }
+-  return failures;
+-}
+-
+-function checkAssembly(partsBySlot) {
+-  const failures = [];
+-  const diagnostics = {};
+-  const scaledBounds = {};
+-  for (const slot of ["chassis", "arms", "legs", "weapon"]) {
+-    const part = partsBySlot[slot];
+-    if (!part?.bounds) {
+-      failures.push(`missing-bounds:${slot}`);
+-      continue;
+-    }
+-    const scale = fitScale(slot, part.bounds.size);
+-    scaledBounds[slot] = {
+-      min: part.bounds.min.map((value) => value * scale),
+-      max: part.bounds.max.map((value) => value * scale),
+-      size: part.bounds.size.map((value) => value * scale)
+-    };
+-    diagnostics[slot] = { scale, scaledSize: scaledBounds[slot].size, scaledMin: scaledBounds[slot].min, scaledMax: scaledBounds[slot].max };
+-  }
+-  if (Object.keys(scaledBounds).length !== 4) return { failures, diagnostics };
+-  const aabbs = {};
+-  for (const slot of ["chassis", "arms", "legs", "weapon"]) {
+-    const part = partsBySlot[slot];
+-    aabbs[slot] = transformedAabb(part.bounds, fitScale(slot, part.bounds.size), mountOffset(slot, scaledBounds));
+-  }
+-  diagnostics.aabbs = aabbs;
+-  const footGap = Math.abs(aabbs.legs.min[1]);
+-  if (footGap > 0.06) failures.push(`feet-not-grounded:${footGap.toFixed(4)}m`);
+-  const legChassis = contact(aabbs.legs, aabbs.chassis);
+-  const armChassis = contact(aabbs.arms, aabbs.chassis);
+-  const weaponArms = contact(aabbs.weapon, aabbs.arms);
+-  diagnostics.contacts = { legChassis, armChassis, weaponArms };
+-  if (!legChassis.connected) failures.push(`legs-chassis-disconnected:${legChassis.overlaps.map((value) => value.toFixed(4)).join(",")}`);
+-  if (!armChassis.connected) failures.push(`arms-chassis-disconnected:${armChassis.overlaps.map((value) => value.toFixed(4)).join(",")}`);
+-  if (!weaponArms.connected) failures.push(`weapon-hand-disconnected:${weaponArms.overlaps.map((value) => value.toFixed(4)).join(",")}`);
+-  // At least one material boundary must cross each contact, otherwise a single
+-  // disconnected slab can pass the AABB check by overlapping empty space.
+-  for (const slot of ["chassis", "arms", "legs", "weapon"]) {
+-    const part = partsBySlot[slot];
+-    if ((part?.parsed?.materials?.length ?? 0) < 3) failures.push(`material-separation-missing:${slot}`);
+-  }
+-  return { failures, diagnostics };
+-}
+-
+-export function evaluateFamily() {
+-  const partResults = ALL_PART_IDS.map((id) => {
+-    const expected = id.includes("Chassis") ? { slot: "chassis", socket: "root" }
+-      : id.includes("Arms") ? { slot: "arms", socket: "chest" }
+-        : id.includes("Legs") ? { slot: "legs", socket: "hips" }
+-          : { slot: "weapon", socket: "right-hand" };
+-    return checkPart(id, expected);
+-  });
+-  const selected = Object.fromEntries(PARTS.map(({ id, slot }) => [slot, partResults.find((part) => part.id === id)]));
+-  const assembly = checkAssembly(selected);
+-  const routeFailures = checkRouteSource();
+-  const generatorFailures = checkGeneratorSource();
+-  const blockers = [];
+-  for (const part of partResults) for (const failure of part.failures) blockers.push(`${part.id}:${failure}`);
+-  for (const failure of assembly.failures) blockers.push(`assembly:${failure}`);
+-  for (const failure of routeFailures) blockers.push(`route:${failure}`);
+-  for (const failure of generatorFailures) blockers.push(`generator:${failure}`);
+-  return {
+-    schema: "aura3d.mech-hangar.modular-family-gate/1.0",
+-    generatedAt: new Date().toISOString(),
+-    routeSourceSha256,
+-    requiredPartCount: ALL_PART_IDS.length,
+-    partResults: partResults.map((part) => ({ id: part.id, slot: part.slot, failures: part.failures, sourceHash: part.parsed ? sha256Bytes(part.parsed.bytes) : null })),
+-    assembly,
+-    routeFailures,
+-    generatorFailures,
+-    blockers,
+-    pass: blockers.length === 0
+-  };
+-}
+-
+-const result = evaluateFamily();
+-console.log(JSON.stringify(result, null, 2));
+-if (!result.pass) {
+-  console.error(`MH-2M modular-family gate: NO-GO (${result.blockers.length} blockers)`);
+-  console.error("A real license-clean typed modular family is required; Robotcand cannot satisfy this gate.");
+-  process.exitCode = 1;
+-}
+diff --git a/apps/showcase-mech-hangar/scripts/check-modular-family.test.mjs b/apps/showcase-mech-hangar/scripts/check-modular-family.test.mjs
+deleted file mode 100644
+index 1f2bb853f..000000000
+--- a/apps/showcase-mech-hangar/scripts/check-modular-family.test.mjs
++++ /dev/null
+@@ -1,41 +0,0 @@
+-import { execFileSync, spawnSync } from "node:child_process";
+-import { test } from "node:test";
+-import { dirname, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-import assert from "node:assert/strict";
+-
+-const scriptsDir = dirname(fileURLToPath(import.meta.url));
+-const familyScript = resolve(scriptsDir, "check-modular-family.mjs");
+-const pairScript = resolve(scriptsDir, "verify-default-swap.mjs");
+-
+-test("family gate is deterministic and accepts the authored MH-2M family", () => {
+-  const first = spawnSync(process.execPath, [familyScript], { encoding: "utf8" });
+-  const second = spawnSync(process.execPath, [familyScript], { encoding: "utf8" });
+-  assert.equal(first.status, 0);
+-  assert.equal(second.status, 0);
+-  const firstResult = JSON.parse(first.stdout);
+-  const secondResult = JSON.parse(second.stdout);
+-  assert.equal(firstResult.schema, "aura3d.mech-hangar.modular-family-gate/1.0");
+-  assert.equal(firstResult.pass, true);
+-  assert.equal(secondResult.pass, true);
+-  assert.equal(firstResult.requiredPartCount, 16);
+-  assert.equal(firstResult.partResults.filter((part) => part.failures.length === 0).length, 16);
+-  assert.deepEqual(firstResult.blockers, []);
+-  assert.deepEqual(secondResult.blockers, []);
+-  // The timestamp is intentionally omitted from the comparison; all gate
+-  // decisions and blocker codes must be stable across invocations.
+-  assert.deepEqual(
+-    { routeSourceSha256: firstResult.routeSourceSha256, blockers: firstResult.blockers },
+-    { routeSourceSha256: secondResult.routeSourceSha256, blockers: secondResult.blockers }
+-  );
+-});
+-
+-test("default/swap verifier accepts the four typed visual bindings", () => {
+-  const result = spawnSync(process.execPath, [pairScript], { encoding: "utf8" });
+-  assert.equal(result.status, 0);
+-  const report = JSON.parse(result.stdout);
+-  assert.equal(report.schema, "aura3d.mech-hangar.default-swap-verification/1.0");
+-  assert.equal(report.pass, true);
+-  assert.deepEqual(report.blockers, []);
+-  assert.deepEqual(report.requiredModularBindings, ["mechChassisA", "mechArmsA", "mechLegsA", "mechWeaponA"]);
+-});
+diff --git a/apps/showcase-mech-hangar/scripts/curate-parts.mjs b/apps/showcase-mech-hangar/scripts/curate-parts.mjs
+deleted file mode 100644
+index ee81521cb..000000000
+--- a/apps/showcase-mech-hangar/scripts/curate-parts.mjs
++++ /dev/null
+@@ -1,168 +0,0 @@
+-/**
+- * Authoritative Mech Hangar MH-2M curation gate.
+- *
+- * Proves that all sixteen GLBs came from the in-repository modular generator,
+- * carry exact slot/socket/unit metadata, occupy a tight authored envelope, are
+- * geometrically distinct, and have current release-grade rendered probes.
+- */
+-import { createHash } from "node:crypto";
+-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+-import { dirname, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const manifest = JSON.parse(readFileSync(resolve(repoRoot, "aura.assets.json"), "utf8"));
+-
+-const SLOT_DEFS = {
+-  chassis: { assemblyRole: "base-body", socket: "root", role: "character", range: [[1.05, 1.45], [0.84, 0.97], [0.58, 0.80]], names: ["Aegis Core", "Vanguard Hull", "Sentinel Shell", "Raptor Frame"] },
+-  arms: { assemblyRole: "accessory", socket: "chest", role: "prop", range: [[1.85, 2.15], [0.50, 0.70], [0.24, 0.46]], names: ["Aegis Manipulators", "Vanguard Gauntlets", "Sentinel Barricade Arms", "Raptor Talons"] },
+-  legs: { assemblyRole: "shoes", socket: "hips", role: "prop", range: [[0.78, 1.00], [0.65, 0.78], [0.40, 0.52]], names: ["Aegis Struts", "Vanguard Treads", "Sentinel Pillars", "Raptor Springs"] },
+-  weapon: { assemblyRole: "weapon", socket: "right-hand", role: "weapon", range: [[0.25, 0.68], [0.28, 0.70], [0.70, 1.28]], names: ["Bolt Repeater", "Arc Cannon", "Plasma Lance", "Siege Maul"] }
+-};
+-
+-const MATRIX = Object.entries(SLOT_DEFS).flatMap(([slot, definition]) => definition.names.map((displayName, index) => {
+-  const letter = String.fromCharCode(65 + index);
+-  return { slot, letter, displayName, name: `mech${slot[0].toUpperCase()}${slot.slice(1)}${letter}`, ...definition };
+-}));
+-
+-function inspectGlb(path) {
+-  const bytes = readFileSync(path);
+-  if (bytes.subarray(0, 4).toString("ascii") !== "glTF" || bytes.readUInt32LE(4) !== 2) throw new Error("not a glTF 2.0 GLB");
+-  const jsonLength = bytes.readUInt32LE(12);
+-  const json = JSON.parse(bytes.subarray(20, 20 + jsonLength).toString("utf8").trim());
+-  const boundsMin = [Infinity, Infinity, Infinity];
+-  const boundsMax = [-Infinity, -Infinity, -Infinity];
+-  for (const mesh of json.meshes ?? []) for (const primitive of mesh.primitives ?? []) {
+-    const accessor = primitive.attributes?.POSITION === undefined
+-      ? undefined
+-      : json.accessors?.[primitive.attributes.POSITION];
+-    if (!Array.isArray(accessor?.min) || !Array.isArray(accessor?.max)) continue;
+-    for (let axis = 0; axis < 3; axis += 1) {
+-      boundsMin[axis] = Math.min(boundsMin[axis], Number(accessor.min[axis]));
+-      boundsMax[axis] = Math.max(boundsMax[axis], Number(accessor.max[axis]));
+-    }
+-  }
+-  return {
+-    sha256: `sha256-${createHash("sha256").update(bytes).digest("hex")}`,
+-    sizeBytes: bytes.length,
+-    meshCount: json.meshes?.length ?? 0,
+-    materialCount: json.materials?.length ?? 0,
+-    boundsMin: boundsMin.every(Number.isFinite) ? boundsMin : undefined,
+-    boundsMax: boundsMax.every(Number.isFinite) ? boundsMax : undefined,
+-    metadata: json.extras?.aura3dMechPart,
+-    orientation: json.asset?.extras?.aura3d?.orientation
+-  };
+-}
+-
+-const inRange = (value, range) => Number.isFinite(value) && value >= range[0] && value <= range[1];
+-const usedHashes = new Set();
+-const parts = [];
+-
+-for (const expected of MATRIX) {
+-  const failures = [];
+-  const entry = manifest.assets.find((asset) => asset.id === expected.name);
+-  const sourcePath = resolve(appDir, `assets/models/${expected.name}.glb`);
+-  let inspection;
+-  if (!existsSync(sourcePath)) failures.push("authored source GLB missing");
+-  else {
+-    try { inspection = inspectGlb(sourcePath); }
+-    catch (error) { failures.push(`GLB inspection failed: ${error instanceof Error ? error.message : String(error)}`); }
+-  }
+-  if (!entry) failures.push("root typed manifest entry missing");
+-  if (entry && inspection) {
+-    if (entry.hash !== inspection.sha256) failures.push("manifest hash does not bind authored source GLB");
+-    if (usedHashes.has(entry.hash)) failures.push("geometry hash duplicates another modular option");
+-    usedHashes.add(entry.hash);
+-    if (entry.type !== "model") failures.push(`manifest type is ${String(entry.type)}`);
+-    if (entry.role !== expected.role) failures.push(`role ${String(entry.role)} does not equal ${expected.role}`);
+-    if (!String(entry.provenance?.license ?? "").startsWith("CC0")) failures.push("license is not CC0");
+-    if (entry.provenance?.author !== "Aura3D synthesis") failures.push("author does not bind original synthesis");
+-    if (!String(entry.provenance?.sourcePage ?? "").includes("showcase-mech-hangar/scripts/build-models.mjs")) failures.push("source page does not bind generator");
+-    if (!String(entry.provenance?.downloadUrl ?? "").endsWith(`/assets/models/${expected.name}.glb`)) failures.push("durable download URL does not bind generated file");
+-    if (!String(entry.provenance?.sourcePath ?? "").endsWith(`apps/showcase-mech-hangar/assets/models/${expected.name}.glb`)) failures.push("manifest sourcePath is not the authored file");
+-    if ((entry.suitabilityReason?.length ?? 0) < 120) failures.push("role/socket suitability rationale is missing or too weak");
+-    if (!Array.isArray(entry.bounds) || entry.bounds.length !== 3) failures.push("manifest bounds missing");
+-    else entry.bounds.forEach((value, axis) => { if (!inRange(value, expected.range[axis])) failures.push(`axis ${axis} bound ${value} outside ${expected.range[axis][0]}-${expected.range[axis][1]}m envelope`); });
+-    if (inspection.meshCount < 3 || inspection.materialCount < 3) failures.push("part lacks three authored silhouette/material layers");
+-    if (inspection.sizeBytes < 7_000 || inspection.sizeBytes > 40_000) failures.push(`GLB byte size ${inspection.sizeBytes} outside family budget`);
+-    const metadata = inspection.metadata ?? {};
+-    if (metadata.schema !== "aura3d.mech-hangar.modular-part/1.0") failures.push("modular-part schema missing");
+-    if (metadata.family !== "MH-2M") failures.push("family is not MH-2M");
+-    if (metadata.id !== expected.name || metadata.slot !== expected.slot || metadata.variant !== expected.letter) failures.push("embedded identity/slot/variant mismatch");
+-    if (metadata.unitMeters !== 1 || metadata.origin !== "part-center") failures.push("embedded metre scale/origin mismatch");
+-    if (metadata.compatibleSocket !== expected.socket) failures.push(`embedded socket is not ${expected.socket}`);
+-    if (inspection.orientation?.forwardAxis !== "+Z" || inspection.orientation?.upAxis !== "+Y") failures.push("axis declaration is not +Z forward/+Y up");
+-  }
+-
+-  const geometryAccepted = failures.length === 0;
+-  const releaseFailures = [...failures];
+-  if (entry?.quality !== "release") releaseFailures.push(`quality is ${String(entry?.quality ?? "missing")}; release required`);
+-  if (!entry?.renderedProbe?.url) releaseFailures.push("hash-bound rendered probe missing");
+-  else {
+-    if (entry.renderedProbe.assetHash !== entry.hash) releaseFailures.push("rendered probe asset hash is stale");
+-    if (!existsSync(resolve(repoRoot, entry.renderedProbe.url))) releaseFailures.push("rendered probe PNG missing on disk");
+-    if (!entry.renderedProbe.foregroundBounds) releaseFailures.push("rendered probe foreground bounds missing");
+-  }
+-
+-  parts.push({
+-    name: expected.name,
+-    status: geometryAccepted ? "accepted" : "missing",
+-    releaseStatus: releaseFailures.length === 0 ? "accepted" : "blocked",
+-    slot: expected.slot,
+-    assemblyRole: expected.assemblyRole,
+-    socket: expected.socket,
+-    letter: expected.letter,
+-    displayName: expected.displayName,
+-    identity: inspection?.sha256,
+-    candidateId: `aura3d-original:MH-2M:${expected.slot}:${expected.letter}`,
+-    title: `${expected.displayName} — MH-2M original modular part`,
+-    source: "aura3d-original",
+-    author: entry?.provenance?.author ?? null,
+-    attribution: entry?.provenance?.attribution ?? entry?.provenance?.author ?? null,
+-    license: entry?.provenance?.license ?? "unverified",
+-    sizeBytes: inspection?.sizeBytes,
+-    hash: entry?.hash,
+-    bounds: entry?.bounds,
+-    boundsMin: inspection?.boundsMin,
+-    boundsMax: inspection?.boundsMax,
+-    retrievedAt: entry?.provenance?.retrievedAt ?? null,
+-    compatibility: { family: "MH-2M", unitMeters: 1, origin: "part-center", socket: expected.socket, forwardAxis: "+Z", upAxis: "+Y", meshCount: inspection?.meshCount, materialCount: inspection?.materialCount },
+-    failures,
+-    releaseFailures
+-  });
+-}
+-
+-const compatible = parts.filter((part) => part.status === "accepted").length;
+-const releaseAccepted = parts.filter((part) => part.releaseStatus === "accepted").length;
+-const verdict = compatible === 16 && releaseAccepted === 16 && usedHashes.size === 16 ? "GO" : "NO-GO";
+-const report = {
+-  schema: "aura3d.mech-hangar.part-curation/2.0",
+-  generatedAt: new Date().toISOString(),
+-  sourceGenerator: "apps/showcase-mech-hangar/scripts/build-models.mjs",
+-  gate: { required: 16, compatibilityAccepted: compatible, releaseAccepted, uniqueGeometryHashes: usedHashes.size, threshold: 16, verdict },
+-  contract: { family: "MH-2M", unitMeters: 1, origins: "part-center", sockets: ["root", "chest", "hips", "right-hand"], requiredPerSlot: 4, proof: "embedded GLB metadata + exact hash + tight per-slot bounds + distinct geometry + retained root createAuraApp rendered probe" },
+-  parts
+-};
+-writeFileSync(resolve(appDir, "parts-curation-report.json"), `${JSON.stringify(report, null, 2)}\n`);
+-
+-const lines = [
+-  "/* GENERATED by scripts/curate-parts.mjs - do not edit by hand. */",
+-  "export interface CuratedPartRecord {",
+-  "  readonly name: string; readonly status: \"accepted\" | \"missing\"; readonly releaseStatus: \"accepted\" | \"blocked\";",
+-  "  readonly slot: \"chassis\" | \"arms\" | \"legs\" | \"weapon\"; readonly assemblyRole?: string; readonly socket?: string; readonly letter?: string; readonly displayName?: string;",
+-  "  readonly identity?: string; readonly candidateId?: string; readonly title?: string; readonly source?: string; readonly author?: string | null; readonly attribution?: string | null; readonly license?: string;",
+-  "  readonly sizeBytes?: number; readonly hash?: string; readonly bounds?: readonly number[]; readonly retrievedAt?: string | null; readonly compatibility?: Readonly<Record<string, unknown>>;",
+-  "  readonly boundsMin?: readonly number[]; readonly boundsMax?: readonly number[];",
+-  "  readonly failures?: readonly string[]; readonly releaseFailures?: readonly string[];",
+-  "}", "", "export const CURATED_PART_RECORDS: readonly CuratedPartRecord[] = ["
+-];
+-for (const part of parts) lines.push(`  ${JSON.stringify(part)},`);
+-lines.push("] as const;", "", `export const PART_CURATION_VERDICT: \"GO\" | \"NO-GO\" = ${JSON.stringify(verdict)};`, "");
+-writeFileSync(resolve(appDir, "src/parts-generated.ts"), lines.join("\n"));
+-
+-console.log(`compatible ${compatible}/16; release-proven ${releaseAccepted}/16; unique ${usedHashes.size}/16; verdict ${verdict}`);
+-if (compatible !== 16) {
+-  for (const part of parts.filter((candidate) => candidate.failures.length > 0)) console.error(part.name, part.failures.join("; "));
+-  process.exitCode = 1;
+-}
+diff --git a/apps/showcase-mech-hangar/scripts/register-models.mjs b/apps/showcase-mech-hangar/scripts/register-models.mjs
+deleted file mode 100644
+index 9cb869e09..000000000
+--- a/apps/showcase-mech-hangar/scripts/register-models.mjs
++++ /dev/null
+@@ -1,66 +0,0 @@
+-/** Register the deterministic MH-2M part family in the root typed asset map. */
+-import { execFileSync } from "node:child_process";
+-import { existsSync } from "node:fs";
+-import { dirname, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const cli = resolve(repoRoot, "packages/aura3d-cli/dist/cli.js");
+-const reportDir = resolve(repoRoot, "tests/reports/showcase-release-asset-probes");
+-
+-if (!existsSync(cli)) throw new Error("Build packages/aura3d-cli before registering Mech Hangar models.");
+-
+-execFileSync("node", [resolve(appDir, "scripts/build-models.mjs")], { cwd: repoRoot, stdio: "inherit" });
+-
+-const definitions = [
+-  {
+-    slot: "chassis", role: "character",
+-    suitability: "Original CC0 faceted MH-2M primary readable character chassis authored at metre scale for the shared root socket envelope; chamfered shoulder pods, collar joint, chest reactor, lower skirt, and separated armor/trim/emissive materials form the continuous torso interface. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. This is a rigid static character module whose behavior is limited to route-local node mounting and combat transforms."
+-  },
+-  {
+-    slot: "arms", role: "prop",
+-    suitability: "Original CC0 faceted MH-2M primary modular arm module: paired shoulder, elbow, wrist, hand, and grip plates authored at metre scale around the shared chest socket; continuous +X/−X joints and separated armor/trim/emissive materials make shoulder-to-hand contact readable. Rigid route-local attachment only."
+-  },
+-  {
+-    slot: "legs", role: "prop",
+-    suitability: "Original CC0 faceted MH-2M primary readable prop leg module: paired hip, knee, piston, ankle, and planted foot assemblies authored at metre scale around the shared hips socket; the shortened depth envelope keeps both feet grounded beneath the chassis with separated armor/trim/emissive materials. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. Rigid route-local attachment only."
+-  },
+-  {
+-    slot: "weapon", role: "weapon",
+-    suitability: "Original CC0 faceted MH-2M readable held weapon authored at metre scale around the shared right-hand socket with declared +Z working orientation; grip, body, barrel/muzzle, mechanism, and emissive energy materials establish a continuous hand-to-muzzle contact line. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. Combat behavior remains route-local."
+-  }
+-];
+-
+-for (const definition of definitions) {
+-  for (let index = 0; index < 4; index += 1) {
+-    const letter = String.fromCharCode(65 + index);
+-    const id = `mech${definition.slot[0].toUpperCase()}${definition.slot.slice(1)}${letter}`;
+-    const source = resolve(appDir, `assets/models/${id}.glb`);
+-    const probe = resolve(reportDir, `${id}.json`);
+-    const hasProbe = existsSync(probe);
+-    const args = [
+-      "assets", "add", source,
+-      "--name", id,
+-      "--type", "model",
+-      "--license", "CC0-1.0",
+-      "--license-name", "CC0 1.0 Universal",
+-      "--license-url", "https://creativecommons.org/publicdomain/zero/1.0/",
+-      "--author", "Aura3D synthesis",
+-      "--source-family", "aura3d-original",
+-      "--source-page", "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-mech-hangar/scripts/build-models.mjs",
+-      "--download-url", `https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-mech-hangar/assets/models/${id}.glb`,
+-      "--attribution", "Aura3D synthesis — original CC0 MH-2M modular mech family",
+-      "--provenance-evidence", "Deterministically generated from the in-repository build-models.mjs source; GLB extras bind family, slot, variant, units, axes, origin, and compatible socket.",
+-      "--retrieved-at", "2026-08-23T22:00:00.000Z",
+-      "--quality", hasProbe ? "release" : "candidate",
+-      "--role", definition.role,
+-      "--suitability", definition.suitability
+-    ];
+-    if (hasProbe) args.push("--rendered-probe-json", probe);
+-    execFileSync("node", [cli, ...args], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
+-    console.log(`registered ${id} (${hasProbe ? "release + probe" : "candidate; probe pending"})`);
+-  }
+-}
+-
+-execFileSync("node", [cli, "assets", "typegen"], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
+diff --git a/apps/showcase-mech-hangar/scripts/register-robotcand-shell.mjs b/apps/showcase-mech-hangar/scripts/register-robotcand-shell.mjs
+deleted file mode 100644
+index cfe0d7eae..000000000
+--- a/apps/showcase-mech-hangar/scripts/register-robotcand-shell.mjs
++++ /dev/null
+@@ -1,49 +0,0 @@
+-/**
+- * Register the reviewed CC-BY Robotcand whole-body shell used by the current
+- * Mech Hangar presentation.  The MH-2M catalog remains the typed slot/socket
+- * contract; this source contributes the continuous visible shell only.  A
+- * hash-matching root probe is required before the shell is promoted to release.
+- */
+-import { execFileSync } from "node:child_process";
+-import { createHash } from "node:crypto";
+-import { existsSync, readFileSync } from "node:fs";
+-import { dirname, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const cli = resolve(repoRoot, "packages/aura3d-cli/dist/cli.js");
+-const source = resolve(repoRoot, "public/aura-assets/robotcand.f71a4701.glb");
+-const probeDir = resolve(repoRoot, "tests/reports/showcase-release-asset-probes");
+-const probe = resolve(probeDir, "robotcand.json");
+-const orientation = resolve(probeDir, "robotcand.orientation.json");
+-
+-if (!existsSync(cli)) throw new Error("Build packages/aura3d-cli before registering Robotcand.");
+-if (!existsSync(source)) throw new Error(`Missing Robotcand source: ${source}`);
+-
+-const hash = `sha256-${createHash("sha256").update(readFileSync(source)).digest("hex")}`;
+-const hasProbe = existsSync(probe) && JSON.parse(readFileSync(probe, "utf8")).renderedProbe?.assetHash === hash;
+-const args = [
+-  "assets", "add", source,
+-  "--name", "robotcand",
+-  "--type", "model",
+-  "--license", "CC-BY-4.0",
+-  "--license-name", "Creative Commons Attribution 4.0 International",
+-  "--license-url", "https://creativecommons.org/licenses/by/4.0/",
+-  "--author", "isramtz",
+-  "--source-family", "objaverse",
+-  "--source-page", "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-002/21092c6569e64cc1ae1a07174a1b1786.glb",
+-  "--source-url", "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-002/21092c6569e64cc1ae1a07174a1b1786.glb",
+-  "--download-url", "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-002/21092c6569e64cc1ae1a07174a1b1786.glb",
+-  "--attribution", "Robotcand by isramtz (CC BY 4.0), adapted as an Aura3D Mech Hangar visual shell",
+-  "--provenance-evidence", "The retained Objaverse/Sketchfab source bytes are hash-bound in the root manifest. The route uses the complete textured body as a static shell; MH-2M typed weapon hardpoints and route-local combat remain separate and authoritative.",
+-  "--retrieved-at", "2026-06-08T01:44:54.833Z",
+-  "--quality", hasProbe ? "release" : "candidate",
+-  "--role", "character",
+-  "--suitability", "Continuous textured robot/mech visual shell with ceramic armor, metal mechanisms, cable details, and optic materials. Grounding, selected hardpoint mounting, build stats, and arena combat remain route-local; no modular, skinning, animation, or reusable-mech-kit capability is claimed."
+-];
+-if (hasProbe) args.push("--rendered-probe-json", probe);
+-if (hasProbe && existsSync(orientation)) args.push("--orientation-json", orientation);
+-execFileSync("node", [cli, ...args], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
+-execFileSync("node", [cli, "assets", "typegen"], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
+-console.log(`Robotcand registration complete (${hasProbe ? "release + root probe" : "candidate; root probe pending"}): ${hash}`);
+diff --git a/apps/showcase-mech-hangar/scripts/register-sfx.mjs b/apps/showcase-mech-hangar/scripts/register-sfx.mjs
+deleted file mode 100644
+index 6fe58821e..000000000
+--- a/apps/showcase-mech-hangar/scripts/register-sfx.mjs
++++ /dev/null
+@@ -1,77 +0,0 @@
+-/**
+- * Register the synthesized SFX cues with the Aura3D asset CLI.
+- *
+- * Run after scripts/build-sfx.mjs, from this app directory:
+- *   node scripts/register-sfx.mjs
+- *
+- * Assets are registered into the REPO ROOT manifest (root aura.assets.json,
+- * src/aura-assets.ts, public/aura-assets/) because showcase routes are served
+- * and tested through the root dev/build server, matching skyline-runner.
+- */
+-import { execFileSync } from "node:child_process";
+-import { existsSync } from "node:fs";
+-import { resolve, dirname } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const cli = resolve(repoRoot, "packages/aura3d-cli/dist/cli.js");
+-if (!existsSync(cli)) {
+-  console.error("CLI dist missing; build it first: pnpm --dir packages/aura3d-cli build");
+-  process.exit(1);
+-}
+-
+-const cues = [
+-  ["mechServoCycleSfx", "Slot-cycle servo cue driven by a successful selected-part change in the hangar."],
+-  ["mechLockInSfx", "Build lock cue driven only by a validated four-part assembly entering the arena."],
+-  ["mechWalkHeavySfx", "Heavy footfall cue rate-limited and driven by grounded player movement."],
+-  ["mechLightHitSfx", "Light impact cue driven by a route-local combat hit event."],
+-  ["mechHeavyHitSfx", "Heavy impact cue driven by a route-local heavy hit event."],
+-  ["mechGuardBlockSfx", "Guard block cue driven by a real guarded combat contact."],
+-  ["mechGuardBreakSfx", "Guard-break cue driven by guard depletion and authored stagger."],
+-  ["mechSpecialFireSfx", "Power-special cue driven by a successful power-gated special start."],
+-  ["mechKoStingSfx", "KO sting driven by the exact route-local KO event."],
+-  ["mechAmbientHangarSfx", "Authored hangar ambience retriggered on a bounded route-local cadence."]
+-];
+-
+-for (const [cue, suitability] of cues) {
+-  const file = resolve(appDir, "assets/sfx", cue + ".wav");
+-  if (!existsSync(file)) {
+-    console.error("missing wav for " + cue + "; run scripts/build-sfx.mjs first");
+-    process.exit(1);
+-  }
+-  // The CLI prints its full manifest report; we do not parse it here — the
+-  // manifest itself is the durable record and is re-read for idempotency.
+-  execFileSync("node", [
+-    cli,
+-    "assets",
+-    "add",
+-    file,
+-    "--name",
+-    cue,
+-    "--type",
+-    "audio",
+-    "--license",
+-    "CC0-1.0",
+-    "--license-name",
+-    "CC0 1.0 Universal",
+-    "--license-url",
+-    "https://creativecommons.org/publicdomain/zero/1.0/",
+-    "--author",
+-    "Aura3D synthesis",
+-    "--source-page",
+-    "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-mech-hangar/scripts/build-sfx.mjs",
+-    "--download-url",
+-    `https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-mech-hangar/assets/sfx/${cue}.wav`,
+-    "--retrieved-at",
+-    "2026-08-23T22:00:00.000Z",
+-    "--quality",
+-    "candidate",
+-    "--role",
+-    "unknown",
+-    "--suitability",
+-    suitability
+-  ], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
+-  console.log("registered " + cue);
+-}
+-console.log("sfx registration pass complete");
+diff --git a/apps/showcase-mech-hangar/scripts/verify-default-swap.mjs b/apps/showcase-mech-hangar/scripts/verify-default-swap.mjs
+deleted file mode 100644
+index f99b17863..000000000
+--- a/apps/showcase-mech-hangar/scripts/verify-default-swap.mjs
++++ /dev/null
+@@ -1,99 +0,0 @@
+-/**
+- * Verify the mandatory default-hangar visual pair without rewriting evidence.
+- *
+- * `mech-hangar-build.spec.ts` is the browser producer: it captures the initial
+- * build, a valid slot swap, and source/asset-bound receipts.  This route-local
+- * verifier is a cheap, deterministic follow-up gate for CI/release scripts. It
+- * checks the receipt's producer and route hashes, retained PNG hashes, material
+- * and occupancy thresholds, and—critically—that the visible bindings are the
+- * four MH-2M modules rather than a whole-body fallback. The verifier is a
+- * passing follow-up gate now that the authored family is the actual primary
+- * subject; it remains deliberately strict about stale receipts and accidental
+- * fallback bindings.
+- */
+-import { createHash } from "node:crypto";
+-import { existsSync, readFileSync } from "node:fs";
+-import { resolve } from "node:path";
+-
+-const repoRoot = resolve(import.meta.dirname, "../../..");
+-const receiptPath = resolve(repoRoot, "tests/reports/mech-hangar/build-core-evidence.json");
+-const producer = "tests/browser/mech-hangar-build.spec.ts";
+-const report = existsSync(receiptPath) ? readJson(receiptPath) : null;
+-const ROUTE_SOURCE_FILES = [
+-  "apps/showcase-mech-hangar/src/arena/feel.ts",
+-  "apps/showcase-mech-hangar/src/arena/mech-fight.ts",
+-  "apps/showcase-mech-hangar/src/arena/rival.ts",
+-  "apps/showcase-mech-hangar/src/assembly.ts",
+-  "apps/showcase-mech-hangar/src/hangar-audio.ts",
+-  "apps/showcase-mech-hangar/src/hangar.ts",
+-  "apps/showcase-mech-hangar/src/hud.ts",
+-  "apps/showcase-mech-hangar/src/main.ts",
+-  "apps/showcase-mech-hangar/src/parts-catalog.ts",
+-  "apps/showcase-mech-hangar/src/parts-generated.ts",
+-  "apps/showcase-mech-hangar/src/stats.ts",
+-  "apps/showcase-mech-hangar/src/styles.css"
+-];
+-const requiredModularBindings = ["mechChassisA", "mechArmsA", "mechLegsA", "mechWeaponA"];
+-
+-function readJson(path) {
+-  return JSON.parse(readFileSync(path, "utf8"));
+-}
+-
+-function sha256File(path) {
+-  return createHash("sha256").update(readFileSync(path)).digest("hex");
+-}
+-
+-function routeSourceSha256() {
+-  const hash = createHash("sha256");
+-  for (const file of ROUTE_SOURCE_FILES) {
+-    hash.update(file.replace("apps/showcase-mech-hangar/", "")).update("\0").update(readFileSync(resolve(repoRoot, file))).update("\0");
+-  }
+-  return hash.digest("hex");
+-}
+-
+-function blocker(code, detail) {
+-  return { code, detail };
+-}
+-
+-const blockers = [];
+-if (!report) blockers.push(blocker("receipt-missing", receiptPath));
+-if (report) {
+-  if (report.schema !== "aura3d.mech-hangar.browser-evidence/1.0" || report.pass !== true) blockers.push(blocker("receipt-not-passing", "build-core-evidence.json must be a passing browser receipt"));
+-  if (report.producer !== producer) blockers.push(blocker("producer-mismatch", String(report.producer)));
+-  if (report.producerSourceSha256 !== sha256File(resolve(repoRoot, producer))) blockers.push(blocker("producer-hash-stale", producer));
+-  const currentRouteHash = routeSourceSha256();
+-  if (report.routeSourceSha256 !== currentRouteHash) blockers.push(blocker("route-source-hash-stale", `${report.routeSourceSha256} != ${currentRouteHash}`));
+-  const artifacts = new Map((report.artifacts ?? []).map((entry) => [entry.path, entry.sha256]));
+-  for (const path of ["tests/reports/mech-hangar/hangar-default.png", "tests/reports/mech-hangar/hangar-swap.png"]) {
+-    if (!artifacts.has(path)) blockers.push(blocker("artifact-not-retained", path));
+-    else if (!existsSync(resolve(repoRoot, path)) || artifacts.get(path) !== sha256File(resolve(repoRoot, path))) blockers.push(blocker("artifact-hash-stale", path));
+-  }
+-  const visualChecks = report.details?.visualChecks ?? {};
+-  if (visualChecks.defaultAndSwapDiffer !== true) blockers.push(blocker("default-swap-not-different", "the valid slot swap did not change pixels"));
+-  for (const [label, composition] of [["default", visualChecks.defaultComposition], ["swap", visualChecks.swapComposition]]) {
+-    if (!composition) blockers.push(blocker(`${label}-composition-missing`, "composition metrics are required"));
+-    else {
+-      if (composition.clipped !== false) blockers.push(blocker(`${label}-composition-clipped`, "primary subject/world is clipped"));
+-      if (!(composition.foregroundCoverageRatio > 0.22)) blockers.push(blocker(`${label}-subject-too-small`, String(composition.foregroundCoverageRatio)));
+-      if (!(composition.distinctBuckets > 70)) blockers.push(blocker(`${label}-material-variation-too-flat`, String(composition.distinctBuckets)));
+-    }
+-  }
+-  const bindings = report.details?.visualPrimaryAssetBindings ?? [];
+-  const ids = new Set(bindings.map((entry) => String(entry.id)));
+-  for (const id of requiredModularBindings) if (!ids.has(id)) blockers.push(blocker("modular-primary-binding-missing", id));
+-  if (ids.has("robotcand")) blockers.push(blocker("whole-body-fallback-is-visible-primary", "Robotcand is not a modular MH-2M family"));
+-}
+-
+-const result = {
+-  schema: "aura3d.mech-hangar.default-swap-verification/1.0",
+-  checkedReceipt: "tests/reports/mech-hangar/build-core-evidence.json",
+-  requiredModularBindings,
+-  blockers,
+-  pass: blockers.length === 0
+-};
+-console.log(JSON.stringify(result, null, 2));
+-if (!result.pass) {
+-  console.error(`MH-2M default/swap verifier: NO-GO (${blockers.length} blockers)`);
+-  console.error("The browser receipt is retained, but its typed MH-2M binding or visual evidence is stale/incomplete.");
+-  process.exitCode = 1;
+-}
+diff --git a/apps/showcase-mech-hangar/scripts/write-deploy-report.mjs b/apps/showcase-mech-hangar/scripts/write-deploy-report.mjs
+deleted file mode 100644
+index 76b2e4527..000000000
+--- a/apps/showcase-mech-hangar/scripts/write-deploy-report.mjs
++++ /dev/null
+@@ -1,74 +0,0 @@
+-import { createHash } from "node:crypto";
+-import { execFileSync } from "node:child_process";
+-import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+-import { dirname, join, relative, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const cli = resolve(repoRoot, "packages/aura3d-cli/dist/cli.js");
+-const dist = resolve(appDir, "dist");
+-const source = resolve(appDir, "src");
+-const modelIds = [
+-  "mechChassisA", "mechChassisB", "mechChassisC", "mechChassisD",
+-  "mechArmsA", "mechArmsB", "mechArmsC", "mechArmsD",
+-  "mechLegsA", "mechLegsB", "mechLegsC", "mechLegsD",
+-  "mechWeaponA", "mechWeaponB", "mechWeaponC", "mechWeaponD"
+-];
+-
+-function run(args) {
+-  try {
+-    return JSON.parse(execFileSync("node", [cli, ...args], { cwd: repoRoot, encoding: "utf8", maxBuffer: 128 * 1024 * 1024 }));
+-  } catch (error) {
+-    const stdout = error && typeof error === "object" && "stdout" in error ? String(error.stdout ?? "") : "";
+-    if (stdout) return JSON.parse(stdout);
+-    throw error;
+-  }
+-}
+-
+-function files(directory) {
+-  return readdirSync(directory).sort().flatMap((name) => {
+-    const path = join(directory, name);
+-    return statSync(path).isDirectory() ? files(path) : [path];
+-  });
+-}
+-
+-function treeHash(directory) {
+-  const hash = createHash("sha256");
+-  for (const path of files(directory)) hash.update(relative(directory, path)).update("\0").update(readFileSync(path)).update("\0");
+-  return hash.digest("hex");
+-}
+-
+-const common = ["check-deploy", "--dist", dist, "--release", "--source", source];
+-const modelResult = run([...common, ...modelIds.flatMap((id) => ["--asset", id])]);
+-const distResult = run([...common, "--no-assets"]);
+-const producer = "apps/showcase-mech-hangar/scripts/write-deploy-report.mjs";
+-const report = {
+-  schema: "aura3d.mech-hangar.deploy/1.0",
+-  generatedAt: new Date().toISOString(),
+-  producer,
+-  producerSourceSha256: createHash("sha256").update(readFileSync(resolve(repoRoot, producer))).digest("hex"),
+-  cli: "packages/aura3d-cli/dist/cli.js",
+-  cliSourceSha256: createHash("sha256").update(readFileSync(cli)).digest("hex"),
+-  distTreeSha256: treeHash(dist),
+-  sourceTreeSha256: treeHash(source),
+-  checks: {
+-    strictModels: {
+-      command: "check-deploy --release --source apps/showcase-mech-hangar/src --asset <each of 16 MH-2M models>",
+-      ok: modelResult.ok === true,
+-      assetCount: modelResult.manifest?.assets?.length ?? 0,
+-      assets: (modelResult.manifest?.assets ?? []).map((asset) => ({ id: asset.id, hash: asset.hash, quality: asset.quality, role: asset.role })),
+-      warnings: modelResult.warnings ?? [], failures: modelResult.failures ?? []
+-    },
+-    strictDistAndSource: {
+-      command: "check-deploy --release --source apps/showcase-mech-hangar/src --no-assets",
+-      ok: distResult.ok === true,
+-      warnings: distResult.warnings ?? [], failures: distResult.failures ?? []
+-    }
+-  },
+-  audioBoundary: "The ten WAV cues are independently validated as current candidate-quality typed CC0 assets by write-route-health.mjs; model-oriented release bounds validation is intentionally not applied to audio.",
+-  pass: modelResult.ok === true && distResult.ok === true && (modelResult.manifest?.assets?.length ?? 0) === 16
+-};
+-writeFileSync(resolve(appDir, "deploy-report.json"), `${JSON.stringify(report, null, 2)}\n`);
+-console.log(JSON.stringify({ pass: report.pass, models: report.checks.strictModels.assetCount, modelWarnings: report.checks.strictModels.warnings.length, distWarnings: report.checks.strictDistAndSource.warnings.length }));
+-if (!report.pass) process.exitCode = 1;
+diff --git a/apps/showcase-mech-hangar/scripts/write-performance-report.ts b/apps/showcase-mech-hangar/scripts/write-performance-report.ts
+deleted file mode 100644
+index 991e94a9e..000000000
+--- a/apps/showcase-mech-hangar/scripts/write-performance-report.ts
++++ /dev/null
+@@ -1,103 +0,0 @@
+-import { createHash } from "node:crypto";
+-import { performance } from "node:perf_hooks";
+-import { readFileSync, writeFileSync } from "node:fs";
+-import { resolve } from "node:path";
+-import { createMechBout, STEP } from "../src/arena/mech-fight";
+-import type { BuildSelection } from "../src/parts-catalog";
+-
+-const repoRoot = resolve(import.meta.dirname, "../../..");
+-const appDir = resolve(import.meta.dirname, "..");
+-const SAMPLES = 20_000;
+-const SIM_P95_BUDGET_MS = 0.3;
+-const DRAW_CALL_BUDGET = 300;
+-const builds: readonly BuildSelection[] = [
+-  { chassis: 0, arms: 0, legs: 0, weapon: 0 },
+-  { chassis: 1, arms: 1, legs: 1, weapon: 1 },
+-  { chassis: 2, arms: 2, legs: 2, weapon: 2 },
+-  { chassis: 3, arms: 3, legs: 3, weapon: 3 }
+-];
+-
+-function p95(values: readonly number[]): number {
+-  const sorted = [...values].sort((a, b) => a - b);
+-  return sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))] ?? 0;
+-}
+-
+-const sourceFiles = [
+-  "src/arena/mech-fight.ts", "src/arena/rival.ts", "src/assembly.ts", "src/main.ts",
+-  "src/parts-catalog.ts", "src/parts-generated.ts", "src/stats.ts"
+-];
+-const routeSourceSha256 = (() => {
+-  const hash = createHash("sha256");
+-  for (const file of sourceFiles) hash.update(file).update("\0").update(readFileSync(resolve(appDir, file))).update("\0");
+-  return hash.digest("hex");
+-})();
+-const producer = "apps/showcase-mech-hangar/scripts/write-performance-report.ts";
+-const producerSourceSha256 = createHash("sha256").update(readFileSync(resolve(repoRoot, producer))).digest("hex");
+-
+-let boutIndex = 0;
+-let bout = createMechBout({ playerSelection: builds[0]!, rivalSelection: builds[1]!, presetIndex: 0, seed: 0x2a3d });
+-const samples: number[] = [];
+-const outcomeHashes = new Set<string>();
+-for (let index = 0; index < SAMPLES; index += 1) {
+-  bout.pushInputs({
+-    moveX: index % 180 < 110 ? 1 : -1,
+-    jump: index % 601 === 0,
+-    light: index % 47 === 0,
+-    heavy: index % 89 === 0,
+-    special: index % 211 === 0,
+-    guard: index % 240 >= 190
+-  });
+-  const started = performance.now();
+-  const snapshot = bout.step(STEP);
+-  samples.push(performance.now() - started);
+-  if (snapshot.phase === "ko" || snapshot.phase === "lost" || snapshot.frame > 2_400) {
+-    outcomeHashes.add(bout.outcomeHash());
+-    boutIndex += 1;
+-    bout = createMechBout({
+-      playerSelection: builds[boutIndex % builds.length]!,
+-      rivalSelection: builds[(boutIndex + 1) % builds.length]!,
+-      presetIndex: boutIndex % 3,
+-      seed: 0x2a3d + boutIndex * 7919
+-    });
+-  }
+-}
+-outcomeHashes.add(bout.outcomeHash());
+-
+-const matrix = JSON.parse(readFileSync(resolve(repoRoot, "tests/reports/mech-hangar/part-matrix.json"), "utf8"));
+-const curation = JSON.parse(readFileSync(resolve(appDir, "parts-curation-report.json"), "utf8"));
+-const observed = {
+-  simulationP95Ms: Number(p95(samples).toFixed(4)),
+-  matrixSelections: Number(matrix.matrixSize ?? 0),
+-  hangarDrawCalls: Number(matrix.diagnostics?.drawCalls ?? 0),
+-  renderedWidth: Number(matrix.diagnostics?.renderSize?.[0] ?? 0),
+-  renderedHeight: Number(matrix.diagnostics?.renderSize?.[1] ?? 0),
+-  compatibilityAccepted: Number(curation.gate?.compatibilityAccepted ?? 0),
+-  releaseAccepted: Number(curation.gate?.releaseAccepted ?? 0),
+-  deterministicOutcomeSamples: outcomeHashes.size
+-};
+-const pass = observed.simulationP95Ms <= SIM_P95_BUDGET_MS
+-  && observed.matrixSelections === 16
+-  && observed.hangarDrawCalls > 0
+-  && observed.hangarDrawCalls <= DRAW_CALL_BUDGET
+-  && observed.renderedWidth > 0
+-  && observed.renderedHeight > 0
+-  && observed.compatibilityAccepted === 16
+-  && observed.releaseAccepted === 16
+-  && observed.deterministicOutcomeSamples > 0;
+-const report = {
+-  schema: "aura3d-mech-hangar-performance/1.0",
+-  generatedAt: new Date().toISOString(),
+-  producer,
+-  producerSourceSha256,
+-  routeSourceFiles: sourceFiles.map((file) => `apps/showcase-mech-hangar/${file}`),
+-  routeSourceSha256,
+-  scope: "Headless fixed-step route-local combat timing plus browser-observed root createAuraApp hangar draw calls. GPU frame-time parity is not claimed.",
+-  samples: SAMPLES,
+-  fixedStepSeconds: STEP,
+-  budgets: { simulationP95Ms: SIM_P95_BUDGET_MS, hangarDrawCalls: DRAW_CALL_BUDGET },
+-  observed,
+-  pass
+-};
+-writeFileSync(resolve(appDir, "performance-report.json"), `${JSON.stringify(report, null, 2)}\n`);
+-console.log(JSON.stringify({ pass, observed }));
+-if (!pass) process.exitCode = 1;
+diff --git a/apps/showcase-mech-hangar/scripts/write-route-health.mjs b/apps/showcase-mech-hangar/scripts/write-route-health.mjs
+deleted file mode 100644
+index facbe5a23..000000000
+--- a/apps/showcase-mech-hangar/scripts/write-route-health.mjs
++++ /dev/null
+@@ -1,176 +0,0 @@
+-import { createHash } from "node:crypto";
+-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+-import { dirname, join, relative, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const reportDir = join(repoRoot, "tests/reports/mech-hangar");
+-const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
+-const sha256 = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
+-const assetIds = [
+-  "mechChassisA", "mechChassisB", "mechChassisC", "mechChassisD",
+-  "mechArmsA", "mechArmsB", "mechArmsC", "mechArmsD",
+-  "mechLegsA", "mechLegsB", "mechLegsC", "mechLegsD",
+-  "mechWeaponA", "mechWeaponB", "mechWeaponC", "mechWeaponD"
+-];
+-// The route's visible subject is the authored four-part MH-2M assembly. Keep
+-// the route-health contract aligned with route-gates.json: a whole-body
+-// Robotcand shell is not a fallback or a primary visual asset.
+-const initialPrimaryAssets = ["mechChassisA", "mechArmsA", "mechLegsA", "mechWeaponA"];
+-const visualPrimaryAssetIds = ["mechChassisA", "mechArmsA", "mechLegsA", "mechWeaponA"];
+-const audioIds = [
+-  "mechServoCycleSfx", "mechLockInSfx", "mechWalkHeavySfx", "mechLightHitSfx", "mechHeavyHitSfx",
+-  "mechGuardBlockSfx", "mechGuardBreakSfx", "mechSpecialFireSfx", "mechKoStingSfx", "mechAmbientHangarSfx"
+-];
+-const artifactFiles = [
+-  "hangar-default.png", "hangar-swap.png", "hangar-build.png", "hangar-stat-panel.png", "part-swap-chassis.png", "part-swap-arms.png",
+-  "part-swap-legs.png", "part-swap-weapon.png", "hangar-arena-opening.png", "arena-opening.png", "arena-hit.png", "arena-paused.png",
+-  "ko-card.png", "hangar-mobile.png", "arena-mobile.png", "arena-reduced-motion.png", "part-matrix.json"
+-];
+-const browserReceipts = ["build-core-evidence.json", "arena-evidence.json", "mobile-evidence.json", "reduced-motion-evidence.json"];
+-
+-function filesRecursively(directory) {
+-  return readdirSync(directory).sort().flatMap((name) => {
+-    const path = join(directory, name);
+-    return statSync(path).isDirectory() ? filesRecursively(path) : [path];
+-  });
+-}
+-const routeSourceFiles = filesRecursively(join(appDir, "src")).filter((path) => /\.(?:ts|css)$/.test(path));
+-const routeSourceSha256 = (() => {
+-  const hash = createHash("sha256");
+-  for (const path of routeSourceFiles) hash.update(relative(appDir, path)).update("\0").update(readFileSync(path)).update("\0");
+-  return hash.digest("hex");
+-})();
+-const sourceText = routeSourceFiles.map((path) => readFileSync(path, "utf8")).join("\n");
+-
+-const manifest = readJson(join(repoRoot, "aura.assets.json"));
+-const assetById = new Map(manifest.assets.map((asset) => [asset.id, asset]));
+-for (const id of assetIds) {
+-  const asset = assetById.get(id);
+-  if (!asset || asset.type !== "model" || asset.quality !== "release" || asset.provenance?.license !== "CC0-1.0" || asset.provenance?.author !== "Aura3D synthesis") throw new Error(`${id} is not a release-grade original CC0 model`);
+-  if (!asset.renderedProbe?.url || asset.renderedProbe.assetHash !== asset.hash || !existsSync(join(repoRoot, asset.renderedProbe.url))) throw new Error(`${id} rendered probe is missing or stale`);
+-  if (!sourceText.includes(`assets.${id}`) && !sourceText.includes(`record.name`)) throw new Error(`${id} is not reachable through the live typed catalog`);
+-}
+-for (const id of visualPrimaryAssetIds) {
+-  const asset = assetById.get(id);
+-  if (!asset || asset.type !== "model" || asset.quality !== "release" || !asset.renderedProbe?.url || asset.renderedProbe.assetHash !== asset.hash || !existsSync(join(repoRoot, asset.renderedProbe.url))) throw new Error(`${id} visual primary asset is missing, not release-probed, or stale`);
+-  if (!sourceText.includes(`assets.${id}`)) throw new Error(`${id} is not reachable through the live typed catalog`);
+-}
+-for (const id of audioIds) {
+-  const asset = assetById.get(id);
+-  if (!asset || asset.type !== "audio" || asset.quality !== "candidate" || asset.provenance?.license !== "CC0-1.0" || asset.provenance?.author !== "Aura3D synthesis" || !asset.provenance?.downloadUrl) throw new Error(`${id} audio provenance/quality is incomplete`);
+-  if (!sourceText.includes(`"${id}"`)) throw new Error(`${id} is not referenced by the live audio manifest`);
+-}
+-
+-const curation = readJson(join(appDir, "parts-curation-report.json"));
+-if (curation.schema !== "aura3d.mech-hangar.part-curation/2.0" || curation.gate?.verdict !== "GO" || curation.gate?.compatibilityAccepted !== 16 || curation.gate?.releaseAccepted !== 16 || curation.gate?.uniqueGeometryHashes !== 16) throw new Error("MH-2M curation gate is incomplete");
+-const currentCurationHashes = new Set(curation.parts.map((part) => part.hash));
+-if (currentCurationHashes.size !== 16 || assetIds.some((id) => !currentCurationHashes.has(assetById.get(id).hash))) throw new Error("Curation report hashes do not match the root manifest");
+-
+-for (const file of artifactFiles) if (!existsSync(join(reportDir, file))) throw new Error(`required exact artifact missing: ${file}`);
+-for (const file of browserReceipts) {
+-  const receipt = readJson(join(reportDir, file));
+-  if (receipt.schema !== "aura3d.mech-hangar.browser-evidence/1.0" || receipt.pass !== true) throw new Error(`${file} is missing or failing`);
+-  if (receipt.producerSourceSha256 !== sha256(join(repoRoot, receipt.producer))) throw new Error(`${file} producer binding is stale`);
+-  if (receipt.routeSourceSha256 !== routeSourceSha256) throw new Error(`${file} route-source binding is stale`);
+-  for (const retained of receipt.artifacts ?? []) if (retained.sha256 !== sha256(join(repoRoot, retained.path))) throw new Error(`${file} artifact hash is stale: ${retained.path}`);
+-}
+-const buildReceipt = readJson(join(reportDir, "build-core-evidence.json"));
+-const buildDetails = buildReceipt.details ?? {};
+-const visualBindings = buildDetails.visualPrimaryAssetBindings ?? [];
+-if (visualBindings.length !== visualPrimaryAssetIds.length || visualPrimaryAssetIds.some((id) => {
+-  const binding = visualBindings.find((entry) => entry.id === id);
+-  return !binding || binding.hash !== assetById.get(id).hash || binding.renderedProbe !== assetById.get(id).renderedProbe.url;
+-})) throw new Error("default hangar receipt is not bound to the current visual primary asset hash/probe");
+-const visualChecks = buildDetails.visualChecks ?? {};
+-if (visualChecks.defaultAndSwapDiffer !== true || visualChecks.defaultArtifact !== "tests/reports/mech-hangar/hangar-default.png" || visualChecks.swapArtifact !== "tests/reports/mech-hangar/hangar-swap.png") throw new Error("default hangar receipt does not prove a distinct valid swap artifact");
+-for (const [label, composition] of [["default", visualChecks.defaultComposition], ["swap", visualChecks.swapComposition]]) {
+-  if (!composition || composition.clipped !== false || composition.foregroundCoverageRatio <= 0.22 || composition.distinctBuckets <= 70) throw new Error(`${label} hangar visual assembly checks are missing or below the authored subject/material bar`);
+-}
+-const matrix = readJson(join(reportDir, "part-matrix.json"));
+-if (matrix.schema !== "aura3d.mech-hangar.part-matrix/1.0" || matrix.pass !== true || matrix.matrixSize !== 16 || matrix.entries?.length !== 16) throw new Error("16-selection browser matrix is missing or failing");
+-if (matrix.producerSourceSha256 !== sha256(join(repoRoot, matrix.producer))) throw new Error("part-matrix producer binding is stale");
+-if (matrix.routeSourceSha256 !== routeSourceSha256) throw new Error("part-matrix route source binding is stale");
+-for (const slot of ["chassis", "arms", "legs", "weapon"]) {
+-  const rows = matrix.entries.filter((entry) => entry.slot === slot);
+-  if (rows.length !== 4 || new Set(rows.map((entry) => entry.partId)).size !== 4 || new Set(rows.map((entry) => entry.pixelSha256)).size !== 4 || new Set(rows.map((entry) => entry.statValue)).size !== 4 || rows.some((entry) => entry.assemblyValidated !== true)) throw new Error(`${slot} matrix does not prove four distinct valid rendered/stat selections`);
+-}
+-
+-const performance = readJson(join(appDir, "performance-report.json"));
+-if (performance.schema !== "aura3d-mech-hangar-performance/1.0" || performance.pass !== true) throw new Error("performance report is missing or failing");
+-if (performance.producerSourceSha256 !== sha256(join(repoRoot, performance.producer))) throw new Error("performance producer binding is stale");
+-const performanceHash = createHash("sha256");
+-for (const full of performance.routeSourceFiles) {
+-  const short = full.replace("apps/showcase-mech-hangar/", "");
+-  performanceHash.update(short).update("\0").update(readFileSync(join(repoRoot, full))).update("\0");
+-}
+-if (performance.routeSourceSha256 !== performanceHash.digest("hex")) throw new Error("performance route-source binding is stale");
+-
+-const deploy = readJson(join(appDir, "deploy-report.json"));
+-if (deploy.schema !== "aura3d.mech-hangar.deploy/1.0" || deploy.pass !== true || deploy.checks?.strictModels?.ok !== true || deploy.checks?.strictModels?.assetCount !== 16 || deploy.checks?.strictDistAndSource?.ok !== true) throw new Error("strict deploy report is missing or failing");
+-if (deploy.producerSourceSha256 !== sha256(join(repoRoot, deploy.producer))) throw new Error("deploy producer binding is stale");
+-if ((deploy.checks.strictModels.warnings?.length ?? 0) > 0 || (deploy.checks.strictModels.failures?.length ?? 0) > 0 || (deploy.checks.strictDistAndSource.warnings?.length ?? 0) > 0 || (deploy.checks.strictDistAndSource.failures?.length ?? 0) > 0) throw new Error("strict deploy report contains warnings or failures");
+-const deployedModelIds = new Set(deploy.checks.strictModels.assets.map((asset) => asset.id));
+-if (assetIds.some((id) => !deployedModelIds.has(id))) throw new Error("strict deploy report does not contain all sixteen MH-2M models");
+-
+-const gates = readJson(join(repoRoot, "tools/showcase-library/route-gates.json"));
+-const gate = gates.routes.find((route) => route.id === "showcase-mech-hangar");
+-if (!gate || gate.releaseClass !== "prototype-blocked" || gate.published !== true || gate.requiresTypedPrimaryAssets !== true || gate.gameTemplateStatus?.publicTemplateReady !== false) throw new Error("Mech Hangar route gate is missing or over-promoted");
+-if (JSON.stringify(gate.primaryAssets) !== JSON.stringify(initialPrimaryAssets)) throw new Error("Mech Hangar initial primary assembly gate is stale");
+-const primitiveOccurrences = Array.from(sourceText.matchAll(/\bprimitives\.[A-Za-z_$][\w$]*/g)).length;
+-if (primitiveOccurrences > gate.primitiveBudget) throw new Error("Mech Hangar primitive source budget exceeded");
+-
+-const routeHealth = {
+-  schema: "aura3d-route-health/1.0",
+-  generatedAt: new Date().toISOString(),
+-  appId: "showcase-mech-hangar",
+-  route: "/apps/showcase-mech-hangar/",
+-  classification: "prototype-blocked",
+-  publicShowcase: false,
+-  promotionStatus: "hold-public-showcase-until-independent-human-visual-review",
+-  machinePass: true,
+-  routeSourceSha256,
+-  renderer: { path: "createAuraApp root safe API", mode: "production with safe-basic fallback", nativeWebGPU: false, productionRuntimeClaimed: false },
+-  primaryAssets: initialPrimaryAssets.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, role: assetById.get(id).role })),
+-  visualPrimaryAssets: visualPrimaryAssetIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, role: assetById.get(id).role, renderedProbe: assetById.get(id).renderedProbe.url })),
+-  partFamily: {
+-    id: "MH-2M", required: 16, compatible: 16, releaseProven: 16, uniqueGeometryHashes: 16,
+-    source: "apps/showcase-mech-hangar/scripts/build-models.mjs", curation: "apps/showcase-mech-hangar/parts-curation-report.json",
+-    contract: "metre-scale centered origins with root/chest/hips/right-hand sockets; +Z forward and +Y up"
+-  },
+-  audioAssets: audioIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
+-  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "hangar/pit set dressing, invisible camera anchor, and renderer-owned hit/dust feedback only", status: "no-primitive-primary-subjects" },
+-  gameplay: { modes: ["hangar", "arena"], slots: ["chassis", "arms", "legs", "weapon"], choicesPerSlot: 4, selectionMatrixProven: 16, controls: ["move", "jump-thrust", "light", "heavy", "special", "guard", "pause", "rematch", "back-to-hangar"], keyboardAndTouch: true, invalidPlanRejection: true, deterministicAggressionPresets: ["keep-away", "balanced", "rushdown"], reducedMotionGatesCameraFeedback: true },
+-  performance,
+-  deploy,
+-  routeGate: { config: "tools/showcase-library/route-gates.json", releaseClass: gate.releaseClass, published: gate.published, publicTemplateReady: false, pass: true },
+-  claimStatus: {
+-    status: "blocked-pending-human-review", label: "root-safe prototype",
+-    allowed: ["typed original modular part assembly", "validated characterAssembly plans", "route-local deterministic mech combat", "seeded createCombatAi aggression roles"],
+-    notAllowed: ["reusable fighting, character, mech, or combat kit", "skinning or animation support", "production-runtime-only rendering claims", "public promotion before independent exact-artifact review"]
+-  },
+-  blockers: ["independent human visual review pending for exact final artifacts"],
+-  evidence: {
+-    global: "window.__AURA3D_SHOWCASE_MECH_HANGAR__",
+-    detailedGlobal: "window.__MECH_HANGAR_EVIDENCE__",
+-    sourceReview: "apps/showcase-mech-hangar/src/main.ts",
+-    curation: "apps/showcase-mech-hangar/parts-curation-report.json",
+-    partMatrix: "tests/reports/mech-hangar/part-matrix.json",
+-    exactArtifacts: artifactFiles.map((file) => ({ path: `tests/reports/mech-hangar/${file}`, sha256: sha256(join(reportDir, file)) })),
+-    browserReceipts: browserReceipts.map((file) => `tests/reports/mech-hangar/${file}`),
+-    assetProbes: [...assetIds, ...visualPrimaryAssetIds].map((id) => ({ asset: id, metadata: `tests/reports/showcase-release-asset-probes/${id}.json`, screenshot: assetById.get(id).renderedProbe.url, assetHash: assetById.get(id).hash })),
+-    performance: "apps/showcase-mech-hangar/performance-report.json",
+-    deploy: "apps/showcase-mech-hangar/deploy-report.json",
+-    routePrimary: "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
+-    browserSpecs: ["tests/browser/mech-hangar-build.spec.ts", "tests/browser/mech-hangar-arena.spec.ts"],
+-    unitSpecs: ["tests/unit/apps/mech-hangar-assembly.test.ts", "tests/unit/apps/mech-hangar-combat.test.ts"],
+-    deployCommands: [
+-      "check-deploy --release --source apps/showcase-mech-hangar/src --asset <each of 16 MH-2M models>",
+-      "check-deploy --release --source apps/showcase-mech-hangar/src --no-assets"
+-    ]
+-  }
+-};
+-
+-writeFileSync(join(appDir, "route-health.json"), `${JSON.stringify(routeHealth, null, 2)}\n`);
+-console.log(JSON.stringify({ machinePass: true, parts: assetIds.length, audio: audioIds.length, matrix: matrix.matrixSize, primitiveOccurrences, performancePass: performance.pass }));
+diff --git a/apps/showcase-mech-hangar/src/legacy/main.ts b/apps/showcase-mech-hangar/src/legacy/main.ts
+index e9c535316..17c58eb98 100644
+--- a/apps/showcase-mech-hangar/src/legacy/main.ts
++++ b/apps/showcase-mech-hangar/src/legacy/main.ts
+@@ -1,14 +1,3 @@
+-/**
+- * Mech Hangar -> Arena — route glue.
+- *
+- * One createAuraApp hosts both sets: the hangar bay (turntable, workshop key +
+- * warm practicals) and the floodlit pit. The shared follow camera tracks a single
+- * anchor node that each mode positions; part swaps re-mount typed GLB nodes so
+- * pixels really change (the anti-skin-swap proof). Evidence publishes to
+- * window.__MECH_HANGAR_EVIDENCE__ per the PRD evidence contract.
+- *
+- * Label: prototype. Root safe API only; combat is route-local; no kit claims.
+- */
+ import {
+   characterAssembly,
+   camera,
+@@ -30,7 +19,6 @@ import {
+   createRumbleDriver,
+   createTweenEngine
+ } from "@aura3d/game";
+-import { bindMechEvidence } from "../evidence";
+ import { bindMechDrive } from "../scenario-drive";
+ import { AGGRESSION_PRESETS, RIVAL_LOADOUTS, aggregateStats, presetForBout } from "../gameplay/stats";
+ import { createHangarAudio, AMBIENT_LOOP_SECONDS, HANGAR_AUDIO_CUES } from "./hangar-audio";
+@@ -52,31 +40,13 @@ import { MECH_SLOTS, PART_OPTIONS, catalogReady, resolvePartAsset, selectedParts
+ import { PART_CURATION_VERDICT } from "../gameplay/parts-generated";
+ import { buildMechAssemblyPlan, mountTransformForPart, validationSummary } from "../gameplay/assembly";
+ import { createMechBout, type BoutEvent, type BoutInputs, type BoutSnapshot } from "../gameplay/arena/mech-fight";
+-// Meshy hero mech: the admitted typed decimated body (root assets map) mounted
+-// as the visible hero silhouette for both fighters. Hangar staging, the live
+-// MH-2M swappable assembly, and route-local combat are unchanged.
+ import { assets as rootAssets } from "../../../../src/aura-assets";
+-
+-declare global {
+-  interface Window {
+-    __MECH_HANGAR_EVIDENCE__: MechHangarEvidence | undefined;
+-  }
+-}
+-
+ const AGGRESSION_PRESET_COUNT = AGGRESSION_PRESETS.length;
+-
+ const reducedMotion = typeof window !== "undefined"
+   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+-if (typeof document !== "undefined") document.body.dataset.capture = "default";
+-
+-
+-// ---- world layout -----------------------------------------------------------
+-/** Hangar set sits at the origin; the pit is offset in -z so mode changes glide. */
+ const HANGAR_CENTER: readonly [number, number, number] = [0, 0, 0];
+ const ARENA_CENTER_Z = -34;
+ const arenaX = (x: number): [number, number, number] => [x, 0, ARENA_CENTER_Z];
+-
+-// ---- input ------------------------------------------------------------------
+ const input = game.input({
+   actions: {
+     left: ["KeyA"],
+@@ -90,8 +60,6 @@ const input = game.input({
+   },
+   bufferMs: 90
+ });
+-
+-bindMechEvidence(() => collectMechEvidence());
+ bindMechDrive({
+   pumpFrames: (n) => {
+     const bounded = Math.max(0, Math.min(30000, Math.floor(n)));
+@@ -101,7 +69,6 @@ bindMechDrive({
+   },
+   enterArena
+ });
+-
+ const mechTween = createTweenEngine();
+ const mechFx = createFxParticlePass(app.effects);
+ const mechJuice = createJuice<"light-hit" | "heavy-hit" | "blocked" | "guard-break" | "special" | "ko" | "lock">({
+@@ -121,11 +88,7 @@ const mechJuice = createJuice<"light-hit" | "heavy-hit" | "blocked" | "guard-bre
+   tweens: mechTween,
+   rumble: createRumbleDriver()
+ });
+-
+-// Hangar + meta keys ride raw keydown because they are UI, not held sim actions.
+ const hangarKeys = (code: string) => code === "Enter" || code === "Digit1" || code === "Digit2" || code === "Digit3" || code === "Digit4" || code === "ArrowLeft" || code === "ArrowRight";
+-
+-// ---- audio ------------------------------------------------------------------
+ const audio = createHangarAudio();
+ const unlock = (): void => {
+   window.removeEventListener("pointerdown", unlock);
+@@ -134,14 +97,10 @@ const unlock = (): void => {
+ };
+ window.addEventListener("pointerdown", unlock);
+ window.addEventListener("keydown", unlock);
+-
+-// ---- mode state -------------------------------------------------------------
+ let mode: "hangar" | "arena" = "hangar";
+ let boutIndex = 0;
+ let lastAmbientAt = -AMBIENT_LOOP_SECONDS;
+ let elapsed = 0;
+-
+-// ---- hangar controller ------------------------------------------------------
+ const hangar = createHangarController(
+   audio,
+   {
+@@ -155,21 +114,6 @@ const hangar = createHangarController(
+   },
+   { reducedMotion }
+ );
+-
+-// The hangar preview is an orbitable turntable (mouse/touch drag). The
+-// controller's pointer binding was previously never attached, so the claimed
+-// "pointer drag" orbit control silently did nothing; wire it to the app host
+-// and gate it to hangar mode so arena camera work stays untouched.
+-{
+-  const appHost = document.getElementById("app");
+-  // Hangar orbit affordance: drag the preview to inspect the authored mech.
+-  // Gated to hangar mode so it never disturbs the bout, and republishes
+-  // evidence on change so the orbit state stays honest even when the frame
+-  // loop is not presenting.
+-  if (appHost) hangar.attachPointer(appHost, () => mode === "hangar", () => publishEvidence());
+-}
+-
+-// ---- panels -----------------------------------------------------------------
+ const panelHost = document.getElementById("panel")!;
+ const hangarHud: HangarHudHandles = setupHangarHud(panelHost, hangar.selection);
+ const arenaPanel = document.createElement("aside");
+@@ -178,11 +122,9 @@ arenaPanel.setAttribute("aria-label", "Mech Hangar arena HUD");
+ document.body.appendChild(arenaPanel);
+ const arenaHud: ArenaHudHandles = setupArenaHud(arenaPanel);
+ setArenaVisible(arenaHud, false);
+-
+ function currentPlan() {
+   return buildMechAssemblyPlan("mechBuild-preview", hangar.selection);
+ }
+-
+ function assemblyStatusLine(): string {
+   if (!catalogReady) return "MH-2M family curation pending - mount disabled";
+   const built = currentPlan();
+@@ -192,13 +134,11 @@ function assemblyStatusLine(): string {
+     ? "assembly validated - base + " + summary.attachedParts + "/" + Math.max(0, summary.totalParts - 1) + " socketed"
+     : "INVALID BUILD (" + summary.errors + " errors)";
+ }
+-
+ function currentAssemblyReady(): boolean {
+   if (!catalogReady) return false;
+   const built = currentPlan();
+   return !("error" in built) && built.report.ready;
+ }
+-
+ function refreshHangarPanel(): void {
+   updateHangarHud(hangarHud, {
+     selection: hangar.selection,
+@@ -209,8 +149,6 @@ function refreshHangarPanel(): void {
+     catalogReady
+   });
+ }
+-
+-// ---- scene nodes ------------------------------------------------------------
+ function fitForSlot(slot: MechSlot): { scaleMode: "fit"; targetHeight?: number; targetMaxDimension?: number } {
+   // These values are the render-side half of the socket contract in
+   // assembly.ts. Keeping them identical to MOUNT_TARGETS is essential: the
+@@ -221,7 +159,6 @@ function fitForSlot(slot: MechSlot): { scaleMode: "fit"; targetHeight?: number;
+   if (slot === "arms") return { scaleMode: "fit", targetMaxDimension: 2.18 };
+   return { scaleMode: "fit", targetMaxDimension: 0.68 };
+ }
+-
+ function partNodeBuilders(side: "player" | "rival"): ReturnType<typeof model>[] {
+   const builders: ReturnType<typeof model>[] = [];
+   for (const slot of MECH_SLOTS) {
+@@ -243,18 +180,7 @@ function partNodeBuilders(side: "player" | "rival"): ReturnType<typeof model>[]
+   }
+   return builders;
+ }
+-
+-// Meshy hero mech (typed assets.mechHeroDecimated): the visible hero body for
+-// both fighters. The validated MH-2M family stays live as the swappable
+-// socketed assembly around this body, so part swaps keep moving pixels/stats
+-// while the dominant silhouette is the coherent admitted hero.
+ const HERO_FEET_LIFT = 0.953; // -boundsMin.y of the hero asset: feet land on the deck plane.
+-// The authored family mounts around the fighter root, so a co-located hero
+-// would be swallowed by the chassis box. Landing the hero just ahead of the
+-// root (+Z local, yaw-rotated) keeps the hero's back in contact with the
+-// socketed armor face: one connected machine with the coherent hero torso
+-// leading and every selected family part visible and swappable around it. The
+-// earlier 0.55 m step opened a daylight gap that read as two separate robots.
+ const HERO_FORWARD = 0.32;
+ function heroNodeBuilders(side: "player" | "rival"): ReturnType<typeof model>[] {
+   return [
+@@ -268,16 +194,13 @@ function heroNodeBuilders(side: "player" | "rival"): ReturnType<typeof model>[]
+     }))
+   ];
+ }
+-
+ const camAnchorBuilder = primitives.sphere({
+   name: "mech cam anchor",
+   material: material.emissive({ name: "cam anchor mat", color: "#101418", emissive: "#000000", emissiveIntensity: 0 })
+ }).position(HANGAR_CENTER[0], 1.05, HANGAR_CENTER[2]).scale([0.001, 0.001, 0.001])
+   .runtime(game.runtimeNode("mech-cam-anchor", { tags: ["camera-anchor"] }));
+-
+ const sparkMaterial = material.emissive({ name: "hit spark mat", color: "#ffd27a", emissive: "#ffb454", emissiveIntensity: 2.2 });
+ const dustMaterial = material.pbr({ name: "pit dust mat", color: "#8b93a1", roughness: 1, metallic: 0 });
+-
+ const SPARK_COUNT = 12;
+ const DUST_COUNT = 10;
+ const sparkBuilders = Array.from({ length: SPARK_COUNT }, (_, index) =>
+@@ -290,10 +213,6 @@ const dustBuilders = Array.from({ length: DUST_COUNT }, (_, index) =>
+     .position(HANGAR_CENTER[0], -70, HANGAR_CENTER[2])
+     .runtime(game.runtimeNode("mech-dust-" + index, { tags: ["particle", "renderer-owned"] }))
+ );
+-
+-// A compact impact-ring pool makes the authored hit point legible at the
+-// camera distance used by the arena.  The ring is renderer-owned feedback; the
+-// bout still owns hit windows, damage, and the event that drives this pool.
+ const impactRingMaterials = [
+   material.emissive({ name: "impact ring amber", color: "#ffd27a", emissive: "#ff9d42", emissiveIntensity: 2.35, opacity: 0.92 }),
+   material.emissive({ name: "impact ring white", color: "#f5fbff", emissive: "#c8f4ff", emissiveIntensity: 2.1, opacity: 0.9 })
+@@ -304,11 +223,6 @@ const impactRingBuilders = Array.from({ length: 8 }, (_, index) =>
+     .scale([0.001, 0.001, 0.001])
+     .runtime(game.runtimeNode("mech-impact-ring-" + index, { tags: ["particle", "renderer-owned", "impact-feedback"] }))
+ );
+-
+-// Team markers are deliberately small and embedded in the authored scene: a
+-// cyan player base, a coral rival base, and a matching chest chevron. They keep
+-// the two same-family modular assemblies separable during the arena exchange
+-// without replacing either typed character asset.
+ const teamMarkerMaterials = {
+   player: material.emissive({ name: "player identity marker", color: "#7de9ff", emissive: "#22c9ff", emissiveIntensity: 1.3, opacity: 0.88 }),
+   rival: material.emissive({ name: "rival identity marker", color: "#ff91b6", emissive: "#ff3f79", emissiveIntensity: 1.2, opacity: 0.88 })
+@@ -324,10 +238,6 @@ const teamMarkerBuilders = (["player", "rival"] as const).flatMap((side) => [
+     .scale([0.001, 0.001, 0.001])
+     .runtime(game.runtimeNode("mech-" + side + "-identity-chevron", { tags: ["team-marker", side, "renderer-owned"] }))
+ ]);
+-
+-// One ring per typed weapon option gives each hardpoint a compact, readable
+-// muzzle signature while the GLB remains the actual mounted weapon.  The
+-// selected ring follows the same authored +Z-forward yaw as the weapon node.
+ const weaponAccentMaterials = [
+   material.emissive({ name: "weapon accent bolt", color: "#7de9ff", emissive: "#25d6ff", emissiveIntensity: 1.65, opacity: 0.94 }),
+   material.emissive({ name: "weapon accent arc", color: "#ffd36e", emissive: "#ff9b3e", emissiveIntensity: 1.55, opacity: 0.94 }),
+@@ -342,13 +252,6 @@ const weaponAccentBuilders = (["player", "rival"] as const).flatMap((side) =>
+       .runtime(game.runtimeNode("mech-" + side + "-weapon-accent-" + def.assetKey, { tags: ["weapon-accent", side, "renderer-owned"] }))
+   )
+ );
+-
+-// The catalog weapon is a rigid typed hardpoint, so the hand-to-tool contact
+-// needs a rendered receiver rather than a floating marker.  These collars are
+-// authored scene geometry (metal sleeve + emissive lock stripe) and are driven
+-// from the exact `mountTransformForPart` position below.  They are deliberately
+-// kept separate from the GLB so the family gate can distinguish a real typed
+-// part from presentation-only contact dressing.
+ const hardpointCollarMaterials = {
+   metal: material.pbr({
+     name: "typed hardpoint collar metal",
+@@ -383,11 +286,6 @@ const hardpointCollarBuilders = (["player", "rival"] as const).flatMap((side) =>
+     .scale([0.001, 0.001, 0.001])
+     .runtime(game.runtimeNode("mech-" + side + "-typed-hardpoint-lock", { tags: ["typed-assembly-contact", "hardpoint-lock", side, "renderer-owned"] }))
+ ]);
+-
+-// Two shallow receiver pads make the feet's actual ground contact inspectable
+-// in both the hangar and arena.  Their y value is fixed to the authored deck
+-// plane while the x/z positions follow each fighter root, so airborne movement
+-// cannot leave a stale pad floating with the model.
+ const footContactMaterial = material.pbr({
+   name: "mech foot contact receiver",
+   color: "#111f2d",
+@@ -396,9 +294,6 @@ const footContactMaterial = material.pbr({
+   clearcoat: 0.2,
+   clearcoatRoughness: 0.32
+ });
+-// T1.12 (§6.9.17): the fake emissive contact discs (flat cylinder "contact
+-// shadow" + emissive foot seals) are deleted — grounding now comes from the
+-// shadowed key light and contactOcclusion, per §7.1.
+ const footContactBuilders = (["player", "rival"] as const).flatMap((side) => [
+   primitives.cylinder({ name: "mech-" + side + "-left-foot-receiver", material: footContactMaterial })
+     .position(HANGAR_CENTER[0], 0.17, HANGAR_CENTER[2])
+@@ -409,7 +304,6 @@ const footContactBuilders = (["player", "rival"] as const).flatMap((side) => [
+     .scale([0.24, 0.035, 0.17])
+     .runtime(game.runtimeNode("mech-" + side + "-right-foot-receiver", { tags: ["typed-assembly-contact", "ground-receiver", side, "renderer-owned"] }))
+ ]);
+-
+ const turntableBuilder = primitives.cylinder({
+   name: "hangar turntable",
+   // Lift the deck out of the near-black floor.  The earlier #344c61 surface
+@@ -419,10 +313,6 @@ const turntableBuilder = primitives.cylinder({
+   // the cool workshop key.
+   material: material.pbr({ name: "turntable steel", color: "#486b83", roughness: 0.44, metallic: 0.58, clearcoat: 0.24, clearcoatRoughness: 0.24 })
+ }).position(HANGAR_CENTER[0], 0.055, HANGAR_CENTER[2]).scale([2.35, 0.11, 2.35]);
+-
+-// A separate matte insert gives the feet a readable receiver surface. It is
+-// authored scene dressing (not a fake DOM shadow) and keeps the black turntable
+-// from swallowing the contact point under the typed family.
+ const turntableContactBuilder = primitives.cylinder({
+   name: "hangar turntable contact insert",
+   // Keep a blue-black value for the receiver, but not absolute black: the
+@@ -431,17 +321,14 @@ const turntableContactBuilder = primitives.cylinder({
+   // boundary while retaining contrast with the cyan ring.
+   material: material.pbr({ name: "turntable contact insert", color: "#214863", roughness: 0.72, metallic: 0.16, clearcoat: 0.16, clearcoatRoughness: 0.32 })
+ }).position(HANGAR_CENTER[0], 0.17, HANGAR_CENTER[2]).scale([1.82, 0.018, 1.82]);
+-
+ const hangarFloorBuilder = primitives.box({
+   name: "hangar floor",
+   material: material.pbr({ name: "hangar deck", color: "#20394e", roughness: 0.74, metallic: 0.30, clearcoat: 0.12, clearcoatRoughness: 0.42 })
+ }).position(HANGAR_CENTER[0], -0.06, HANGAR_CENTER[2]).scale([16, 0.12, 14]);
+-
+ const hangarBackdropBuilder = primitives.box({
+   name: "hangar back wall",
+   material: material.pbr({ name: "hangar wall", color: "#13263a", roughness: 0.84, metallic: 0.12, clearcoat: 0.08, clearcoatRoughness: 0.5 })
+ }).position(HANGAR_CENTER[0], 3.2, HANGAR_CENTER[2] - 6.4).scale([18, 6.6, 0.3]);
+-
+ const hangarFrameMaterial = material.pbr({ name: "hangar frame steel", color: "#263e55", roughness: 0.52, metallic: 0.62 });
+ const hangarStripMaterial = material.emissive({ name: "hangar bay strip", color: "#215f7a", emissive: "#61dfff", emissiveIntensity: 0.7, opacity: 0.82 });
+ const hangarBayBuilders = [-7.2, -3.6, 0, 3.6, 7.2].flatMap((x, index) => [
+@@ -459,7 +346,6 @@ const hangarBeamLightBuilder = primitives.box({
+   name: "hangar upper light",
+   material: material.emissive({ name: "hangar upper light material", color: "#1c4c5e", emissive: "#6fdcff", emissiveIntensity: 0.72 })
+ }).position(HANGAR_CENTER[0], 5.38, HANGAR_CENTER[2] - 5.72).scale([6.8, 0.055, 0.035]);
+-
+ const hangarBaySignMaterial = material.emissive({
+   name: "hangar bay sign material",
+   color: "#194b62",
+@@ -496,7 +382,6 @@ const hangarFloorEdgeBuilders = [-1, 1].flatMap((side) => [
+   primitives.box({ name: `hangar floor warm edge ${side}`, material: hangarStripMaterial })
+     .position(side * 4.75, 0.035, HANGAR_CENTER[2] - 3.42).scale([0.75, 0.025, 0.028])
+ ]);
+-
+ const pitFloorBuilder = primitives.box({
+   name: "arena armored floor",
+   // The deck is a scuffed armored plate, not a mirror. The previous
+@@ -511,12 +396,10 @@ const pitFloorBuilder = primitives.box({
+ // top-down shot.  Keep the authored combat envelope centred under that view so
+ // the active frame reads as an arena instead of ending at the canvas midpoint.
+ }).position(0, -0.065, ARENA_CENTER_Z).scale([20, 0.13, 14]);
+-
+ const pitBackdropBuilder = primitives.box({
+   name: "arena flood wall",
+   material: material.emissive({ name: "pit back wall", color: "#1b4058", emissive: "#176b8f", emissiveIntensity: 0.46 })
+ }).position(0, 3.5, ARENA_CENTER_Z - 5.3).scale([20.5, 7.1, 0.28]);
+-
+ const pitPillarMaterial = material.pbr({ name: "pit structural steel", color: "#172d42", roughness: 0.42, metallic: 0.66 });
+ const pitPillarLight = material.emissive({ name: "pit structural light", color: "#1c5369", emissive: "#47cfff", emissiveIntensity: 0.8 });
+ const pitStructureBuilders = [-7.2, 0, 7.2].flatMap((x, index) => [
+@@ -527,7 +410,6 @@ const pitStructureBuilders = [-7.2, 0, 7.2].flatMap((x, index) => [
+     .position(x, 4.15, ARENA_CENTER_Z - 4.52)
+     .scale([0.22, 0.08, 0.05])
+ ]);
+-
+ const pitDeckPanelMaterial = material.pbr({
+   name: "pit deck panel finish",
+   color: "#203b50",
+@@ -560,10 +442,6 @@ const pitDeckBuilders = Array.from({ length: 10 }, (_, index) => {
+       .scale([0.95, 0.012, 0.018])
+   ];
+ }).flat();
+-
+-// The overhead frame is a major depth cue in the arena capture. Keep it dark
+-// enough to sit behind the fighters, but lift it out of absolute black so the
+-// clipped-at-the-edge beams read as painted steel instead of missing geometry.
+ const pitTrussMaterial = material.pbr({ name: "pit overhead truss", color: "#234c66", roughness: 0.42, metallic: 0.58, clearcoat: 0.18, clearcoatRoughness: 0.3 });
+ const pitTrussLight = material.emissive({ name: "pit overhead light band", color: "#174b63", emissive: "#5ee7ff", emissiveIntensity: 1.25 });
+ const pitTrussBuilders = [
+@@ -577,24 +455,18 @@ const pitTrussBuilders = [
+     .position(0, 5.62, ARENA_CENTER_Z - 3.68)
+     .scale([4.8, 0.045, 0.04])
+ ];
+-
+ const pitMarkingMaterial = material.emissive({ name: "pit lane marks", color: "#23455c", emissive: "#4cc9e8", emissiveIntensity: 0.42 });
+ const pitMarkingBuilders = [-3.6, -1.8, 0, 1.8, 3.6].map((x, index) =>
+   primitives.box({ name: "pit lane mark " + index, material: pitMarkingMaterial })
+     .position(x, 0.012, ARENA_CENTER_Z)
+     .scale([0.035, 0.024, 7.6])
+ );
+-
+ const rimMaterial = material.emissive({ name: "pit rim mat", color: "#2a4a63", emissive: "#59d7ff", emissiveIntensity: 1.1 });
+ const rimBuilders = [-1, 1].map((side) =>
+   primitives.box({ name: "pit rim " + (side < 0 ? "west" : "east"), material: rimMaterial })
+     .position(side * 4.85, 0.09, ARENA_CENTER_Z)
+     .scale([0.7, 0.18, 9])
+ );
+-
+-// A shallow combat ring and warning chevrons give the arena a purposeful
+-// footprint beneath the assembled typed fighters. These are set dressing only;
+-// bout spacing and hit tests remain owned by the route-local combat sim.
+ const arenaRingMaterial = material.emissive({ name: "arena combat ring", color: "#15364a", emissive: "#65e6ff", emissiveIntensity: 0.72, opacity: 0.9 });
+ const arenaRingBuilders = [
+   primitives.torus({ name: "arena outer combat ring", material: arenaRingMaterial })
+@@ -615,11 +487,6 @@ const arenaWarningBuilders = [-3.9, 3.9].flatMap((x, side) =>
+       .scale([0.06, 0.03, 0.54])
+   )
+ );
+-
+-// Break the otherwise empty pit into a readable combat set. These center
+-// plates, back-wall ribs, and suspended light panels are renderer-owned
+-// dressing only; fighter positions, hit windows, and arena bounds remain
+-// owned by the route-local bout simulation.
+ const pitFloorInlay = material.pbr({
+   name: "pit center inlay",
+   color: "#274761",
+@@ -653,7 +520,6 @@ const pitCenterPlateBuilders = Array.from({ length: 12 }, (_, index) => {
+       .scale([0.58, 0.012, 0.018])
+   ];
+ }).flat();
+-
+ const pitBackPanelBuilders = Array.from({ length: 7 }, (_, index) => {
+   const x = -8.4 + index * 2.8;
+   const tint = index % 3 === 0 ? "#ff5f86" : index % 2 === 0 ? "#58e5ff" : "#8f7dff";
+@@ -668,7 +534,6 @@ const pitBackPanelBuilders = Array.from({ length: 7 }, (_, index) => {
+     }).position(x, 4.8 + (index % 2) * 0.18, ARENA_CENTER_Z - 4.62).scale([0.72, 0.08, 0.045])
+   ];
+ }).flat();
+-
+ const pitSuspendedLightBuilders = [-5.6, 0, 5.6].flatMap((x, index) => [
+   primitives.box({ name: `pit suspended light rail ${index}`, material: pitTrussLight })
+     .position(x, 5.15, ARENA_CENTER_Z + 0.8)
+@@ -677,7 +542,6 @@ const pitSuspendedLightBuilders = [-5.6, 0, 5.6].flatMap((x, index) => [
+     .position(x, 4.56, ARENA_CENTER_Z + 0.8)
+     .scale([0.08, 0.54, 0.05])
+ ]);
+-
+ const pitSignMaterial = material.emissive({
+   name: "pit wayfinding sign",
+   color: "#102b42",
+@@ -804,14 +668,6 @@ const mechGame = createGame({
+ });
+ const app = mechGame.runtime;
+ mechGame.start();
+-
+-// ---- runtime handles --------------------------------------------------------
+-// No `await app.ready()` here. A top-level await in this entry deadlocks the
+-// bundled chunk graph under `vite build` — the module halts before the scene
+-// mounts, so the canvas stays black with zero console errors, while the dev
+-// server's module graph hides it. Node handles resolve without waiting (see
+-// AuraAppHandle.onDeviceLost), and the work that genuinely needs a mounted
+-// renderer awaits ready() inside its own async body below.
+ const anchor = app.nodes.require("mech-cam-anchor") as RuntimeNodeHandleLike;
+ const playerNodes = new Map<string, RuntimeNodeHandleLike>();
+ const rivalNodes = new Map<string, RuntimeNodeHandleLike>();
+@@ -856,14 +712,7 @@ const footContactNodes = new Map<"player" | "rival", {
+     rightReceiver: app.nodes.require("mech-" + side + "-right-foot-receiver") as RuntimeNodeHandleLike
+   }])
+ );
+-
+-// The route-primary visual probe isolates the same typed modular assembly that
+-// human reviewers see. Keep suppression state in the route so the regular mount
+-// pass cannot immediately re-show the subject during the two-frame comparison.
+-
+ const feel = createMechHangarFeel({ reducedMotion, arenaZ: ARENA_CENTER_Z, sparkNodes, dustNodes, impactNodes: impactRingNodes });
+-
+-// ---- mounting ---------------------------------------------------------------
+ function mountSide(
+   side: "player" | "rival",
+   selection: BuildSelection,
+@@ -1037,7 +886,6 @@ function mountSide(
+     shadow.setScale([1.6, 0.012, 1.6]);
+   }
+ }
+-
+ function concealRivalHangarContacts(): void {
+   // Rival nodes are never mounted in hangar mode, but the foot receivers
+   // park at the podium (not underground like the parts/accents). Without an
+@@ -1052,23 +900,14 @@ function concealRivalHangarContacts(): void {
+     }
+   }
+ }
+-
+ function remountPreview(): void {
+   if (mode !== "hangar") return;
+   mountSide("player", hangar.selection, HANGAR_CENTER, hangar.snapshot().turntableYaw, playerNodes);
+   concealRivalHangarContacts();
+ }
+-
+-// ---- bout wiring ------------------------------------------------------------
+-/**
+- * The rival build is a FIXED loadout across the session (PRD section 5 keeps
+- * rival loadouts fixed for balance); rematches cycle only the aggression preset.
+- */
+ const RIVAL_FIXED_LOADOUT = RIVAL_LOADOUTS[1]!;
+-
+ let bout: ReturnType<typeof createMechBout> | null = null;
+ let walkCueCooldown = 0;
+-
+ function enterArena(): void {
+   if (!catalogReady || !currentAssemblyReady()) {
+     // Validation refused the lock-in; stay in the hangar and say so.
+@@ -1088,7 +927,6 @@ function enterArena(): void {
+   setArenaVisible(arenaHud, true);
+   startBout();
+ }
+-
+ function startBout(): void {
+   const presetIndex = boutIndex % AGGRESSION_PRESET_COUNT;
+   bout = createMechBout({
+@@ -1106,7 +944,6 @@ function startBout(): void {
+   mountSide("player", hangar.selection, arenaX(-1.9), Math.PI / 2, playerNodes);
+   mountSide("rival", RIVAL_FIXED_LOADOUT.selection, arenaX(1.9), -Math.PI / 2, rivalNodes);
+ }
+-
+ function leaveToHangar(): void {
+   mode = "hangar";
+   mechGame.session.resume();
+@@ -1119,7 +956,6 @@ function leaveToHangar(): void {
+   remountPreview();
+   refreshHangarPanel();
+ }
+-
+ function playerInputsFromActions(): BoutInputs {
+   return {
+     moveX: (input.held("right") ? 1 : 0) - (input.held("left") ? 1 : 0),
+@@ -1130,8 +966,6 @@ function playerInputsFromActions(): BoutInputs {
+     guard: input.held("guard")
+   };
+ }
+-
+-// ---- touch controls ---------------------------------------------------------
+ function bindTouchButton(id: string, down: () => void, up: () => void): void {
+   const button = document.querySelector("[data-touch='" + id + "']");
+   if (!button) return;
+@@ -1142,7 +976,6 @@ function bindTouchButton(id: string, down: () => void, up: () => void): void {
+   button.addEventListener("pointerup", up);
+   button.addEventListener("pointerleave", up);
+ }
+-
+ function ensureTouchControls(): void {
+   if (document.getElementById("mech-touch")) return;
+   const host = document.createElement("div");
+@@ -1182,8 +1015,6 @@ function ensureTouchControls(): void {
+   bindTouchButton("jump", press("jump"), release("jump"));
+ }
+ ensureTouchControls();
+-
+-// ---- keys -------------------------------------------------------------------
+ window.addEventListener("keydown", (event) => {
+   if (mode === "hangar") {
+     if (hangarKeys(event.code)) {
+@@ -1202,16 +1033,11 @@ window.addEventListener("keydown", (event) => {
+     leaveToHangar();
+   }
+ });
+-
+-// ---- route metadata ---------------------------------------------------------
+-/** Authored key bindings surfaced in evidence and README (PRD section 4). */
+ const ROUTE_CONTROLS = {
+   hangar: { selectSlot: ["Digit1", "Digit2", "Digit3", "Digit4"], cyclePart: ["ArrowLeft", "ArrowRight"], lockBuild: ["Enter"], orbitPreview: ["pointer drag"] },
+   arena: { move: ["KeyA", "KeyD"], jumpThrust: ["Space"], lightStrike: ["KeyJ"], heavyStrike: ["KeyK"], special: ["KeyL"], guard: ["ShiftLeft", "ShiftRight"], pause: ["KeyP"], rematch: ["KeyR"], backToHangar: ["Backspace"] },
+   touch: "dual-zone buttons mirroring arena keys"
+ } as const;
+-
+-/** Route-local systems inventory (no kit claims; each is glue in this app). */
+ const ROUTE_SYSTEMS = {
+   assembly: "characterAssembly plan -> validateCharacterAssemblyPlan -> typed part node mounting",
+   combat: "route-local fixed-step bout rules (windows, guard break, power, KO)",
+@@ -1220,8 +1046,6 @@ const ROUTE_SYSTEMS = {
+   audio: "createGameAudio 4-bus mixer over CLI-registered synthesized cues",
+   curation: "deterministic in-repo MH-2M family gate (16 original CC0 parts, explicit sockets/metre scale)"
+ } as const;
+-
+-/** Claim boundary: what this route may and may not claim (docs/agents labels). */
+ const CLAIM_BOUNDARY = {
+   label: "prototype",
+   renderer: "createAuraApp root safe API",
+@@ -1236,131 +1060,12 @@ const CLAIM_BOUNDARY = {
+     "public release candidate until independent human visual review passes"
+   ]
+ } as const;
+-
+-// ---- evidence ---------------------------------------------------------------
+-interface MechHangarEvidence {
+-  status: string;
+-  label: string;
+-  claimBoundary: typeof CLAIM_BOUNDARY;
+-  /** Section-7 physics classification claim. Published so route-health can bind it. */
+-  physics: string;
+-  controls: typeof ROUTE_CONTROLS;
+-  systems: typeof ROUTE_SYSTEMS;
+-  playerMoveId: string | null;
+-  mounted: boolean;
+-  mode: string;
+-  slots: readonly MechSlot[];
+-  selectedParts: readonly string[];
+-  primaryAssetRefs: readonly string[];
+-  stats: ReturnType<typeof aggregateStats>;
+-  assemblyValidated: boolean;
+-  boutState: string;
+-  rivalAggression: string;
+-  koEvents: readonly unknown[];
+-  audioCues: readonly string[];
+-  catalogReady: boolean;
+-  curationVerdict: typeof PART_CURATION_VERDICT;
+-  outcomeHash: string;
+-  pauseFreezesSimulation: boolean;
+-  reducedMotion: boolean;
+-  registeredAudioCues: number;
+-  diagnostics: { readonly drawCalls: number; readonly renderSize: readonly number[]; readonly runtimeBackend?: string };
+-  fighterPositions: { playerX: number; rivalX: number };
+-  fighterVitals: { playerHp: number; rivalHp: number; playerGuard: number; playerPower: number };
+-  feel: unknown;
+-  /** Hangar preview orbit angles — runtime proof the pointer-drag orbit is live. */
+-  orbitAngles: { yaw: number; pitch: number };
+-  heroAsset: { ref: "assets.mechHeroDecimated"; url: string; hash: string; bounds: readonly [number, number, number]; quality: "candidate" };
+-}
+-
+ let lastBoutState = "idle";
+ let lastOutcomeHash = "";
+ const publishedKoEvents: unknown[] = [];
+-
+-/**
+- * Live fighter positions in evidence so route specs can measure behaviour
+- * (approach/retreat profiles per aggression preset) instead of trusting labels.
+- */
+ let lastFighterPositions = { playerX: -1.9, rivalX: 1.9 };
+ let lastFighterVitals = { playerHp: 1, rivalHp: 1, playerGuard: 1, playerPower: 0.5 };
+-
+-/** Time warp scales how many fixed steps run per display frame. Sim stays 60Hz-fixed. */
+ let timeWarp = 1;
+-(window as unknown as Record<string, unknown>).__MECH_HANGAR_SET_TIME_WARP__ = (warp: number) => {
+-  timeWarp = Math.max(1, Math.min(4, Math.floor(warp)));
+-};
+-
+-/**
+- * Synchronous bout pacing for route specs and accessibility: advances the SAME
+- * fixed-step simulation (and its event pipeline -> HUD/audio/feel/KO card)
+- * without waiting on wall-clock frames. This is pacing, not a shortcut: every
+- * rule (windows, guard, power, KO, rematch presets) runs identically.
+- */
+-(window as unknown as Record<string, unknown>).__MECH_HANGAR_SIM_TICK__ = (frames: number, options?: {
+-  toward?: boolean;
+-  strike?: "none" | "light" | "heavy" | "special";
+-  guard?: boolean;
+-}) => {
+-  if (!bout || mechGame.session.paused) return null;
+-  const strikeEvery = options?.strike && options.strike !== "none" ? 34 : Number.MAX_SAFE_INTEGER;
+-  for (let index = 0; index < frames; index += 1) {
+-    const gap = lastFighterPositions.rivalX - lastFighterPositions.playerX;
+-    const inputs: BoutInputs = {
+-      moveX: options?.toward ? Math.sign(gap) : 0,
+-      jump: false,
+-      light: options?.strike === "light" && index % strikeEvery === 0 ? true : false,
+-      heavy: options?.strike === "heavy" && index % strikeEvery === 0 ? true : false,
+-      special: options?.strike === "special" && index % strikeEvery === 0 ? true : false,
+-      guard: Boolean(options?.guard)
+-    };
+-    bout.pushInputs(inputs);
+-    const snap = bout.step(1 / 60);
+-    for (const event of snap.events) handleBoutEvent(event);
+-    // The synchronous evidence driver uses the same renderer-owned feel event
+-    // pipeline as the display loop, but without waiting for a frame callback.
+-    // This keeps impact rings and dust available for the exact post-tick frame.
+-    feel.onEvents(snap.events);
+-    lastFighterPositions = { playerX: snap.player.x, rivalX: snap.rival.x };
+-    const boutStats = bout.stats();
+-    lastFighterVitals = {
+-      playerHp: snap.player.hp / boutStats.player.hpMax,
+-      rivalHp: snap.rival.hp / boutStats.rival.hpMax,
+-      playerGuard: snap.player.guard / boutStats.player.guardMax,
+-      playerPower: snap.player.power / boutStats.player.powerMax
+-    };
+-    mountSide("player", hangar.selection, [snap.player.x, snap.player.y, ARENA_CENTER_Z], Math.PI / 2, playerNodes);
+-    mountSide("rival", RIVAL_FIXED_LOADOUT.selection, [snap.rival.x, snap.rival.y, ARENA_CENTER_Z], -Math.PI / 2, rivalNodes);
+-    if (snap.phase === "ko" || snap.phase === "lost") break;
+-  }
+-  const pacedMidX = (lastFighterPositions.playerX + lastFighterPositions.rivalX) / 2;
+-  anchor.setPosition(pacedMidX, 1.02, ARENA_CENTER_Z);
+-  anchor.setRotation(0, 0, 0);
+-  publishEvidence(bout.snapshot());
+-  return {
+-    phase: bout.snapshot().phase,
+-    vitals: { ...lastFighterVitals },
+-    positions: { ...lastFighterPositions },
+-    koEvents: publishedKoEvents.length,
+-    preset: bout.preset().id
+-  };
+-};
+-
+-(window as unknown as Record<string, unknown>).__MECH_HANGAR_VALIDATION_PROBE__ = () => {
+-  // Proves the live lock-gate validator refuses a floating part inside this very
+-  // page: take the current validated plan, strip the weapon's attachment rule,
+-  // and revalidate. The floating-part failure must come back not-ready.
+-  const built = currentPlan();
+-  if ("error" in built) return { ready: false, errors: 1 };
+-  const stripped = {
+-    ...built.plan,
+-    parts: built.plan.parts.map((part) =>
+-      part.role === ("weapon" as const) ? { ...part, attachment: undefined } : part
+-    )
+-  };
+-  const report = characterAssembly.validatePlan(stripped);
+-  return { ready: report.ready, errors: report.summary.errors };
+-};
+-
+ function collectMechEvidence(snapshot?: BoutSnapshot): MechHangarEvidence {
+   const diagnostics = app.diagnostics();
+   const selected = selectedParts(hangar.selection);
+@@ -1415,16 +1120,11 @@ function collectMechEvidence(snapshot?: BoutSnapshot): MechHangarEvidence {
+   Object.defineProperty(window, "__AURA3D_SHOWCASE_MECH_HANGAR__", { value: evidence, configurable: true, writable: true });
+   return evidence;
+ }
+-
+ function publishEvidence(snapshot?: BoutSnapshot): void {
+   collectMechEvidence(snapshot);
+ }
+-
+-// ---- frame loop -------------------------------------------------------------
+ let frameCount = 0;
+ refreshHangarPanel();
+-remountPreview();
+-
+ function handleBoutEvent(event: BoutEvent): void {
+   if (!bout) return;
+   if (event.type === "hit") {
+@@ -1441,7 +1141,6 @@ function handleBoutEvent(event: BoutEvent): void {
+     showKoCard(arenaHud, event.victimId === "rival", bout.preset());
+   }
+ }
+-
+ app.onFrame(({ dt }) => {
+   mechTween.tick(dt);
+   // Manual zero-delta presentation must not advance the live turntable or bout.
+@@ -1533,7 +1232,4 @@ app.onFrame(({ dt }) => {
+   lastOutcomeHash = bout.outcomeHash();
+   publishEvidence(snap);
+ });
+-
+-publishEvidence();
+-
+ export {};
+diff --git a/apps/showcase-mech-hangar/src/main.ts b/apps/showcase-mech-hangar/src/main.ts
+index 7bd3f20f4..f6e174b1e 100644
+--- a/apps/showcase-mech-hangar/src/main.ts
++++ b/apps/showcase-mech-hangar/src/main.ts
+@@ -1,14 +1,6 @@
+-// apps/showcase-mech-hangar/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
+-// Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-mech-hangar`
+-// (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
+-// acceptance (§10 step 5).
+ import { resolveQrFlags } from "@aura3d/engine/contracts";
+-
+ const ROUTE_FLAG = "A3D_QR_ROUTE_MECH_HANGAR" as const;
+ const DEFAULT_ON = false;
+-
+-/** Accepts `?a3d-qr=…,route-mech-hangar` and `?a3d-qr=…,A3D_QR_ROUTE_MECH_HANGAR`.
+- *  Returns undefined when the flag is absent (CCR-14-2 replaces this helper). */
+ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const raw = new URL(loc.href).searchParams.get("a3d-qr");
+   if (raw === null) return undefined;
+@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+     ? true
+     : undefined;
+ }
+-
+ const flags = resolveQrFlags({
+   url: location.href,
+   env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR },
+   options: { [ROUTE_FLAG]: routeFlagFromUrl(location, ROUTE_FLAG) ?? DEFAULT_ON }
+ });
+-
+ void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
+diff --git a/apps/showcase-mech-hangar/src/v2/evidence/index.ts b/apps/showcase-mech-hangar/src/v2/evidence/index.ts
+deleted file mode 100644
+index 4ebba67a4..000000000
+--- a/apps/showcase-mech-hangar/src/v2/evidence/index.ts
++++ /dev/null
+@@ -1,81 +0,0 @@
+-// apps/showcase-mech-hangar/src/v2/evidence/index.ts — lazy evidence sections the
+-// capture + browser specs read. loading.sceneId reports the logical room
+-// ("hangar" before lock-in, "pit" after) while loading.sceneSwaps stays 0 —
+-// both sets live in one union scene.
+-export interface MechEvidenceBindings {
+-  sceneId(): "hangar" | "pit";
+-  combat(): {
+-    phase: string;
+-    boutIndex: number;
+-    preset: string;
+-    lastHit: "none" | "light" | "heavy";
+-    playerX: number;
+-    rivalX: number;
+-    playerHp: number;
+-    rivalHp: number;
+-    playerGuard: number;
+-    playerPower: number;
+-  };
+-  hangar(): {
+-    locked: boolean;
+-    activeSlot: string;
+-    selection: { chassis: number; arms: number; legs: number; weapon: number };
+-    orbitYaw: number;
+-  };
+-  fx(): { liveCount: number; backend: string };
+-  audio(): { lastCue: string | null; cueLog: readonly string[] };
+-  run(): { paused: boolean; touchEngaged: boolean; replayActive: boolean };
+-  appliedLook(): Record<string, unknown>;
+-  rig(): Record<string, unknown>;
+-  scenario(): string | null;
+-  render(): { frame: number; firstFrameAt: number | null };
+-}
+-
+-export function publishMechEvidence(bindings: MechEvidenceBindings) {
+-  const evidence = {
+-    get player() {
+-      const c = bindings.combat();
+-      return { x: c.playerX, hp: c.playerHp, guard: c.playerGuard, power: c.playerPower };
+-    },
+-    get combat() {
+-      return bindings.combat();
+-    },
+-    get hangar() {
+-      return bindings.hangar();
+-    },
+-    get loading() {
+-      return {
+-        sceneId: bindings.sceneId(),
+-        sceneSwaps: 0,
+-        lazyLoadedCount: 0,
+-        fetchCount: { mechHeroDecimated: 1 }
+-      };
+-    },
+-    get fx() {
+-      return bindings.fx();
+-    },
+-    get audio() {
+-      return bindings.audio();
+-    },
+-    get run() {
+-      return bindings.run();
+-    },
+-    get render() {
+-      return bindings.render();
+-    },
+-    get appliedLook() {
+-      return bindings.appliedLook();
+-    },
+-    get rig() {
+-      return bindings.rig();
+-    },
+-    get scenario() {
+-      return bindings.scenario();
+-    }
+-  };
+-  (window as unknown as { __AURA3D_GAME_EVIDENCE__?: Record<string, unknown> }).__AURA3D_GAME_EVIDENCE__ = {
+-    ...((window as unknown as { __AURA3D_GAME_EVIDENCE__?: Record<string, unknown> }).__AURA3D_GAME_EVIDENCE__ ?? {}),
+-    "showcase-mech-hangar": evidence
+-  };
+-  return evidence;
+-}
+-- 
+2.34.1
+

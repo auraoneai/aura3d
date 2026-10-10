@@ -44,3 +44,9 @@ export function appExtensionsAll(): readonly AppExtension<keyof AuraAppExtension
 // Flattened methods on AuraApp (PR 0a): setOutput, setOutputOverlay, capture, onRendererError (C-05); addPostPass, setQualityTier, cutCamera (C-13/C-14); precompile (C-02/C-27); lookSignature(): Promise<string>, lookManifest(): AuraLookManifest (prd09); onRender (C-23).
 // AuraCreateAppOptions additions (PR 0a, all optional): qualityRebuild, lighting, output, pixelRatio (number | {max?, min?}), assets, animation, camera, accessibility, strict, onDegradation, compat ({ post?: "3.0" }), loop (AuraLoopOptions)
 // AuraCreateAppRendererOptions additions (PR 0a, all optional): quality, output, resolution, msaa, compile, strictMount, debug, renderScale, backend, adaptive, targetFrameRate, batching, vfx, vfxOverrides, skinnedShadows, morph, skinnedPbr, materialStrictness, materialModel, transmission, alphaToCoverage, debugView
+
+// T2.8/Q-ALL-1: A3DAppLifecycle lived only on the deprecated
+// `advanced-runtime` subpath — surface it on "." via the app contract so
+// apps stop importing the subpath.
+export { A3DAppLifecycle } from "../advanced-runtime/A3DAppLifecycle.js";
+export type { A3DAppLifecycleSnapshot, A3DDisposable } from "../advanced-runtime/A3DAppLifecycle.js";

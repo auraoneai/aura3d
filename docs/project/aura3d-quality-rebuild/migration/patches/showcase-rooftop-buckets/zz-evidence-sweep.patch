@@ -1,0 +1,2571 @@
+From b010d4c52f50a21c2527c09f810c7659740f3d16 Mon Sep 17 00:00:00 2001
+From: gchahal+1 <gchahal@veerone.com>
+Date: Fri, 9 Oct 2026 13:45:53 +0000
+Subject: [PATCH] [qr-prd09] showcase-rooftop-buckets: delete evidence
+ files+blocks (T5.8)
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ .../performance-report.json                   |  38 --
+ .../scripts/build-models.mjs                  | 533 ------------------
+ .../scripts/build-production-art.py           | 432 --------------
+ .../scripts/build-v2-art.py                   | 265 ---------
+ .../scripts/register-acquired-athletes.mjs    |  65 ---
+ .../scripts/register-assets.mjs               | 116 ----
+ .../scripts/register-production-art.mjs       |  99 ----
+ .../scripts/register-v2-art.mjs               |  50 --
+ .../scripts/write-deploy-report.mjs           |  67 ---
+ .../scripts/write-route-health.mjs            | 165 ------
+ .../src/legacy/main.ts                        | 287 ----------
+ apps/showcase-rooftop-buckets/src/main.ts     |  10 -
+ .../src/v2/evidence/index.ts                  | 109 ----
+ 13 files changed, 2236 deletions(-)
+ delete mode 100644 apps/showcase-rooftop-buckets/performance-report.json
+ delete mode 100644 apps/showcase-rooftop-buckets/scripts/build-models.mjs
+ delete mode 100644 apps/showcase-rooftop-buckets/scripts/build-production-art.py
+ delete mode 100644 apps/showcase-rooftop-buckets/scripts/build-v2-art.py
+ delete mode 100644 apps/showcase-rooftop-buckets/scripts/register-acquired-athletes.mjs
+ delete mode 100644 apps/showcase-rooftop-buckets/scripts/register-assets.mjs
+ delete mode 100644 apps/showcase-rooftop-buckets/scripts/register-production-art.mjs
+ delete mode 100644 apps/showcase-rooftop-buckets/scripts/register-v2-art.mjs
+ delete mode 100644 apps/showcase-rooftop-buckets/scripts/write-deploy-report.mjs
+ delete mode 100644 apps/showcase-rooftop-buckets/scripts/write-route-health.mjs
+ delete mode 100644 apps/showcase-rooftop-buckets/src/v2/evidence/index.ts
+
+diff --git a/apps/showcase-rooftop-buckets/performance-report.json b/apps/showcase-rooftop-buckets/performance-report.json
+deleted file mode 100644
+index adf32d232..000000000
+--- a/apps/showcase-rooftop-buckets/performance-report.json
++++ /dev/null
+@@ -1,38 +0,0 @@
+-{
+-  "schema": "aura3d.rooftop-buckets.performance/1.0",
+-  "generatedAt": "2026-09-03T10:10:26.167Z",
+-  "producer": "apps/showcase-rooftop-buckets/scripts/write-performance-report.ts",
+-  "producerSourceSha256": "58c29536b6ae2dfd37df5ab4a28b12b2a799174c4dc3096a7c51ac35acdbcaeb",
+-  "routeSourceFiles": [
+-    "apps/showcase-rooftop-buckets/src/buckets-audio.ts",
+-    "apps/showcase-rooftop-buckets/src/court.ts",
+-    "apps/showcase-rooftop-buckets/src/environment.ts",
+-    "apps/showcase-rooftop-buckets/src/main.ts",
+-    "apps/showcase-rooftop-buckets/src/rim.ts",
+-    "apps/showcase-rooftop-buckets/src/scoring.ts",
+-    "apps/showcase-rooftop-buckets/src/shot.ts",
+-    "apps/showcase-rooftop-buckets/src/styles.css"
+-  ],
+-  "routeSourceSha256": "c436b8e1f4f185d082239a18f9c2a1309afbed2e4dc4500baa3aa141f71f67b8",
+-  "scope": "Route-local deterministic authored basketball step CPU timing plus browser-observed root createGameApp draw calls. This does not claim Rapier, rigid bodies, GPU frame-time parity, or a reusable sports simulation.",
+-  "samples": 12000,
+-  "fixedStepSeconds": 0.016666666666666666,
+-  "budgets": {
+-    "ballisticCpuP95Ms": 0.25,
+-    "drawCalls": 150,
+-    "authoredPhysicsBodies": 0
+-  },
+-  "observed": {
+-    "ballisticCpuP95Ms": 0.002,
+-    "deterministicPoseSamples": 100,
+-    "drawCalls": 147,
+-    "renderSize": [
+-      1920,
+-      1200
+-    ],
+-    "authoredPhysicsBodies": 0,
+-    "predictionPoints": 25,
+-    "heatModes": 5
+-  },
+-  "pass": true
+-}
+diff --git a/apps/showcase-rooftop-buckets/scripts/build-models.mjs b/apps/showcase-rooftop-buckets/scripts/build-models.mjs
+deleted file mode 100644
+index 01f6b667d..000000000
+--- a/apps/showcase-rooftop-buckets/scripts/build-models.mjs
++++ /dev/null
+@@ -1,533 +0,0 @@
+-/**
+- * Synthesizes CC0 GLB 3D models for Rooftop Buckets showcase.
+- */
+-import { writeFileSync, mkdirSync } from "node:fs";
+-import { resolve, dirname } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const __dirname = dirname(fileURLToPath(import.meta.url));
+-const MODELS_DIR = resolve(__dirname, "../assets/models");
+-mkdirSync(MODELS_DIR, { recursive: true });
+-
+-function createBoxGlb(dx, dy, dz, colorHex = "#38bdf8", roughness = 0.5, metallic = 0.1) {
+-  const hx = dx / 2, hy = dy / 2, hz = dz / 2;
+-  const positions = new Float32Array([
+-    // Front face
+-    -hx, -hy,  hz,   hx, -hy,  hz,   hx,  hy,  hz,  -hx,  hy,  hz,
+-    // Back face
+-     hx, -hy, -hz,  -hx, -hy, -hz,  -hx,  hy, -hz,   hx,  hy, -hz,
+-    // Top face
+-    -hx,  hy,  hz,   hx,  hy,  hz,   hx,  hy, -hz,  -hx,  hy, -hz,
+-    // Bottom face
+-    -hx, -hy, -hz,   hx, -hy, -hz,   hx, -hy,  hz,  -hx, -hy,  hz,
+-    // Right face
+-     hx, -hy,  hz,   hx, -hy, -hz,   hx,  hy, -hz,   hx,  hy,  hz,
+-    // Left face
+-    -hx, -hy, -hz,  -hx, -hy,  hz,  -hx,  hy,  hz,  -hx,  hy, -hz,
+-  ]);
+-
+-  const normals = new Float32Array([
+-     0,  0,  1,   0,  0,  1,   0,  0,  1,   0,  0,  1,
+-     0,  0, -1,   0,  0, -1,   0,  0, -1,   0,  0, -1,
+-     0,  1,  0,   0,  1,  0,   0,  1,  0,   0,  1,  0,
+-     0, -1,  0,   0, -1,  0,   0, -1,  0,   0, -1,  0,
+-     1,  0,  0,   1,  0,  0,   1,  0,  0,   1,  0,  0,
+-    -1,  0,  0,  -1,  0,  0,  -1,  0,  0,  -1,  0,  0,
+-  ]);
+-
+-  const indices = new Uint16Array([
+-     0,  1,  2,   0,  2,  3,
+-     4,  5,  6,   4,  6,  7,
+-     8,  9, 10,   8, 10, 11,
+-    12, 13, 14,  12, 14, 15,
+-    16, 17, 18,  16, 18, 19,
+-    20, 21, 22,  20, 22, 23,
+-  ]);
+-
+-  return buildGlb(positions, normals, indices, colorHex, roughness, metallic);
+-}
+-
+-function createSphereGlb(radius = 0.5, latBands = 12, lonBands = 16, colorHex = "#ea580c") {
+-  const positions = [];
+-  const normals = [];
+-  const indices = [];
+-
+-  for (let lat = 0; lat <= latBands; lat++) {
+-    const theta = (lat * Math.PI) / latBands;
+-    const sinTheta = Math.sin(theta);
+-    const cosTheta = Math.cos(theta);
+-
+-    for (let lon = 0; lon <= lonBands; lon++) {
+-      const phi = (lon * 2 * Math.PI) / lonBands;
+-      const sinPhi = Math.sin(phi);
+-      const cosPhi = Math.cos(phi);
+-
+-      const x = cosPhi * sinTheta;
+-      const y = cosTheta;
+-      const z = sinPhi * sinTheta;
+-
+-      normals.push(x, y, z);
+-      positions.push(radius * x, radius * y, radius * z);
+-    }
+-  }
+-
+-  for (let lat = 0; lat < latBands; lat++) {
+-    for (let lon = 0; lon < lonBands; lon++) {
+-      const first = lat * (lonBands + 1) + lon;
+-      const second = first + lonBands + 1;
+-      indices.push(first, second, first + 1);
+-      indices.push(second, second + 1, first + 1);
+-    }
+-  }
+-
+-  return buildGlb(
+-    new Float32Array(positions),
+-    new Float32Array(normals),
+-    new Uint16Array(indices),
+-    colorHex,
+-    0.6,
+-    0.05
+-  );
+-}
+-
+-function createTorusGlb(majorR = 0.225, minorR = 0.015, majorSegs = 16, minorSegs = 8, colorHex = "#f97316") {
+-  const positions = [];
+-  const normals = [];
+-  const indices = [];
+-
+-  for (let i = 0; i <= majorSegs; i++) {
+-    const u = (i / majorSegs) * 2 * Math.PI;
+-    const cosU = Math.cos(u);
+-    const sinU = Math.sin(u);
+-
+-    for (let j = 0; j <= minorSegs; j++) {
+-      const v = (j / minorSegs) * 2 * Math.PI;
+-      const cosV = Math.cos(v);
+-      const sinV = Math.sin(v);
+-
+-      const x = (majorR + minorR * cosV) * cosU;
+-      const y = minorR * sinV;
+-      const z = (majorR + minorR * cosV) * sinU;
+-
+-      const nx = cosV * cosU;
+-      const ny = sinV;
+-      const nz = cosV * sinU;
+-
+-      positions.push(x, y, z);
+-      normals.push(nx, ny, nz);
+-    }
+-  }
+-
+-  for (let i = 0; i < majorSegs; i++) {
+-    for (let j = 0; j < minorSegs; j++) {
+-      const a = i * (minorSegs + 1) + j;
+-      const b = (i + 1) * (minorSegs + 1) + j;
+-      indices.push(a, b, a + 1);
+-      indices.push(b, b + 1, a + 1);
+-    }
+-  }
+-
+-  return buildGlb(
+-    new Float32Array(positions),
+-    new Float32Array(normals),
+-    new Uint16Array(indices),
+-    colorHex,
+-    0.3,
+-    0.8
+-  );
+-}
+-
+-function appendBox(positions, normals, indices, cx, cy, cz, dx, dy, dz) {
+-  const hx = dx / 2, hy = dy / 2, hz = dz / 2;
+-  const offset = positions.length / 3;
+-  positions.push(
+-    -hx + cx, -hy + cy,  hz + cz,  hx + cx, -hy + cy,  hz + cz,  hx + cx,  hy + cy,  hz + cz, -hx + cx,  hy + cy,  hz + cz,
+-     hx + cx, -hy + cy, -hz + cz, -hx + cx, -hy + cy, -hz + cz, -hx + cx,  hy + cy, -hz + cz,  hx + cx,  hy + cy, -hz + cz,
+-    -hx + cx,  hy + cy,  hz + cz,  hx + cx,  hy + cy,  hz + cz,  hx + cx,  hy + cy, -hz + cz, -hx + cx,  hy + cy, -hz + cz,
+-    -hx + cx, -hy + cy, -hz + cz,  hx + cx, -hy + cy, -hz + cz,  hx + cx, -hy + cy,  hz + cz, -hx + cx, -hy + cy,  hz + cz,
+-     hx + cx, -hy + cy,  hz + cz,  hx + cx, -hy + cy, -hz + cz,  hx + cx,  hy + cy, -hz + cz,  hx + cx,  hy + cy,  hz + cz,
+-    -hx + cx, -hy + cy, -hz + cz, -hx + cx, -hy + cy,  hz + cz, -hx + cx,  hy + cy,  hz + cz, -hx + cx,  hy + cy, -hz + cz
+-  );
+-  normals.push(
+-     0,0,1, 0,0,1, 0,0,1, 0,0,1, 0,0,-1, 0,0,-1, 0,0,-1, 0,0,-1,
+-     0,1,0, 0,1,0, 0,1,0, 0,1,0, 0,-1,0, 0,-1,0, 0,-1,0, 0,-1,0,
+-     1,0,0, 1,0,0, 1,0,0, 1,0,0, -1,0,0, -1,0,0, -1,0,0, -1,0,0
+-  );
+-  const local = [0,1,2,0,2,3, 4,5,6,4,6,7, 8,9,10,8,10,11, 12,13,14,12,14,15, 16,17,18,16,18,19, 20,21,22,20,22,23];
+-  indices.push(...local.map((index) => offset + index));
+-}
+-
+-function appendSphere(positions, normals, indices, cx, cy, cz, radius, latBands = 10, lonBands = 14) {
+-  const offset = positions.length / 3;
+-  for (let lat = 0; lat <= latBands; lat++) {
+-    const theta = (lat * Math.PI) / latBands;
+-    for (let lon = 0; lon <= lonBands; lon++) {
+-      const phi = (lon * 2 * Math.PI) / lonBands;
+-      const x = Math.cos(phi) * Math.sin(theta);
+-      const y = Math.cos(theta);
+-      const z = Math.sin(phi) * Math.sin(theta);
+-      normals.push(x, y, z);
+-      positions.push(cx + radius * x, cy + radius * y, cz + radius * z);
+-    }
+-  }
+-  for (let lat = 0; lat < latBands; lat++) {
+-    for (let lon = 0; lon < lonBands; lon++) {
+-      const first = offset + lat * (lonBands + 1) + lon;
+-      const second = first + lonBands + 1;
+-      indices.push(first, second, first + 1, second, second + 1, first + 1);
+-    }
+-  }
+-}
+-
+-function appendCylinderBetween(positions, normals, indices, start, end, radius, segments = 12) {
+-  const axis = [end[0] - start[0], end[1] - start[1], end[2] - start[2]];
+-  const length = Math.hypot(axis[0], axis[1], axis[2]);
+-  const up = axis.map((value) => value / length);
+-  const helper = Math.abs(up[1]) < 0.92 ? [0, 1, 0] : [1, 0, 0];
+-  const tangentLength = Math.hypot(
+-    helper[1] * up[2] - helper[2] * up[1],
+-    helper[2] * up[0] - helper[0] * up[2],
+-    helper[0] * up[1] - helper[1] * up[0]
+-  );
+-  const tangent = [
+-    (helper[1] * up[2] - helper[2] * up[1]) / tangentLength,
+-    (helper[2] * up[0] - helper[0] * up[2]) / tangentLength,
+-    (helper[0] * up[1] - helper[1] * up[0]) / tangentLength
+-  ];
+-  const bitangent = [
+-    up[1] * tangent[2] - up[2] * tangent[1],
+-    up[2] * tangent[0] - up[0] * tangent[2],
+-    up[0] * tangent[1] - up[1] * tangent[0]
+-  ];
+-  const offset = positions.length / 3;
+-  for (const point of [start, end]) {
+-    for (let index = 0; index <= segments; index++) {
+-      const angle = (index / segments) * Math.PI * 2;
+-      const radial = [
+-        tangent[0] * Math.cos(angle) + bitangent[0] * Math.sin(angle),
+-        tangent[1] * Math.cos(angle) + bitangent[1] * Math.sin(angle),
+-        tangent[2] * Math.cos(angle) + bitangent[2] * Math.sin(angle)
+-      ];
+-      positions.push(point[0] + radial[0] * radius, point[1] + radial[1] * radius, point[2] + radial[2] * radius);
+-      normals.push(radial[0], radial[1], radial[2]);
+-    }
+-  }
+-  for (let index = 0; index < segments; index++) {
+-    const a = offset + index;
+-    const b = offset + segments + 1 + index;
+-    indices.push(a, b, a + 1, b, b + 1, a + 1);
+-  }
+-}
+-
+-function quaternionFromEuler(x = 0, y = 0, z = 0) {
+-  const cx = Math.cos(x / 2), sx = Math.sin(x / 2);
+-  const cy = Math.cos(y / 2), sy = Math.sin(y / 2);
+-  const cz = Math.cos(z / 2), sz = Math.sin(z / 2);
+-  return [
+-    sx * cy * cz + cx * sy * sz,
+-    cx * sy * cz - sx * cy * sz,
+-    cx * cy * sz + sx * sy * cz,
+-    cx * cy * cz - sx * sy * sz
+-  ];
+-}
+-
+-function createArticulatedPlayerGlb(kind) {
+-  const isShooter = kind === "shooter";
+-  const materials = [
+-    { name: "uniform", color: isShooter ? "#0e7490" : "#be185d", roughness: 0.5 },
+-    { name: "uniform-trim", color: isShooter ? "#67e8f9" : "#f9a8d4", roughness: 0.42 },
+-    { name: "skin", color: "#d69a72", roughness: 0.72 },
+-    { name: "shoes", color: "#f8fafc", roughness: 0.38 },
+-    { name: "hair", color: "#261c24", roughness: 0.84 }
+-  ];
+-  const geometries = {};
+-  for (const geometry of ["box", "sphere", "limb"]) {
+-    const positions = [], normals = [], indices = [];
+-    if (geometry === "box") appendBox(positions, normals, indices, 0, 0, 0, 1, 1, 1);
+-    else if (geometry === "sphere") appendSphere(positions, normals, indices, 0, 0, 0, 0.5, 10, 14);
+-    else appendCylinderBetween(positions, normals, indices, [0, 0, 0], [0, -1, 0], 0.5, 14);
+-    geometries[geometry] = {
+-      positions: new Float32Array(positions),
+-      normals: new Float32Array(normals),
+-      indices: new Uint16Array(indices)
+-    };
+-  }
+-
+-  const limb = (name, start, end, width, materialIndex) => {
+-    const dx = end[0] - start[0], dy = end[1] - start[1], dz = end[2] - start[2];
+-    const positions = [], normals = [], indices = [];
+-    appendCylinderBetween(positions, normals, indices, [0, 0, 0], [dx, dy, dz], width / 2, 14);
+-    // Hands share the forearm's skin material, so bake their visible geometry
+-    // into that articulated mesh while retaining named hand pose nodes below.
+-    // This preserves the connected silhouette and saves one draw per hand.
+-    if (name.endsWith("Forearm")) appendSphere(positions, normals, indices, dx, dy, dz, 0.125, 7, 11);
+-    const geometryName = `limb-${name}`;
+-    geometries[geometryName] = {
+-      positions: new Float32Array(positions),
+-      normals: new Float32Array(normals),
+-      indices: new Uint16Array(indices)
+-    };
+-    return { name, parent: "Root", mesh: [geometryName, materialIndex], translation: start, scale: [1, 1, 1] };
+-  };
+-  const leftArm = isShooter
+-    ? [[-0.3, 1.53, 0], [-0.43, 1.88, -0.04], [-0.48, 2.18, -0.1]]
+-    : [[-0.3, 1.53, 0], [-0.56, 1.86, 0.02], [-0.5, 2.17, 0.06]];
+-  const rightArm = isShooter
+-    ? [[0.3, 1.53, 0], [0.57, 1.8, -0.02], [0.43, 2.08, -0.1]]
+-    : [[0.3, 1.53, 0], [0.56, 1.86, 0.02], [0.5, 2.17, 0.06]];
+-  const parts = [
+-    { name: "Pelvis", parent: "Root", translation: [0, 0.93, 0], scale: [1, 1, 1] },
+-    { name: "Torso", parent: "Root", mesh: ["box", 0], translation: [0, 1.3, -0.015], scale: [0.56, 0.58, 0.32] },
+-    { name: "Head", parent: "Root", mesh: ["sphere", 2], translation: [0, 1.82, -0.015], scale: [0.42, 0.5, 0.4] },
+-    limb("LeftUpperLeg", [-0.16, 0.86, 0], [-0.28, 0.45, 0.05], 0.2, 0),
+-    limb("LeftLowerLeg", [-0.28, 0.45, 0.05], [-0.34, 0.09, 0.12], 0.17, 2),
+-    { name: "LeftShoe", parent: "Root", mesh: ["box", 3], translation: [-0.36, 0.055, 0.02], scale: [0.26, 0.11, 0.42] },
+-    limb("RightUpperLeg", [0.16, 0.86, 0], [0.28, 0.45, -0.04], 0.2, 0),
+-    limb("RightLowerLeg", [0.28, 0.45, -0.04], [0.34, 0.09, 0.04], 0.17, 2),
+-    { name: "RightShoe", parent: "Root", mesh: ["box", 3], translation: [0.36, 0.055, -0.07], scale: [0.26, 0.11, 0.42] },
+-    limb("LeftUpperArm", leftArm[0], leftArm[1], 0.17, 0),
+-    limb("LeftForearm", leftArm[1], leftArm[2], 0.145, 2),
+-    { name: "LeftHand", parent: "Root", translation: leftArm[2], scale: [1, 1, 1] },
+-    limb("RightUpperArm", rightArm[0], rightArm[1], 0.17, 0),
+-    limb("RightForearm", rightArm[1], rightArm[2], 0.145, 2),
+-    { name: "RightHand", parent: "Root", translation: rightArm[2], scale: [1, 1, 1] }
+-  ];
+-  const nodes = [{ name: "Root", children: [] }];
+-  const nodeIndex = new Map([["Root", 0]]);
+-  for (const part of parts) {
+-    const index = nodes.length;
+-    nodeIndex.set(part.name, index);
+-    nodes.push({ name: part.name, translation: part.translation, rotation: part.rotation, scale: part.scale, ...(part.mesh ? { meshKey: `${part.mesh[0]}:${part.mesh[1]}` } : {}), children: [] });
+-  }
+-  for (const part of parts) nodes[nodeIndex.get(part.parent)].children.push(nodeIndex.get(part.name));
+-
+-  const clipDefinitions = isShooter ? [
+-    { name: "Load", duration: 0.34, rotations: { Torso: [-0.18, 0, 0], LeftUpperArm: [-0.15, 0, -1.7], LeftForearm: [0, 0, -0.55], RightUpperArm: [-0.12, 0, 1.55], RightForearm: [0, 0, 0.62], LeftUpperLeg: [0.3, 0, -0.22], RightUpperLeg: [0.28, 0, 0.22] } },
+-    { name: "Release", duration: 0.26, rotations: { Torso: [0.06, 0, -0.06], LeftUpperArm: [-0.18, 0, -2.78], LeftForearm: [0, 0, -0.18], RightUpperArm: [-0.1, 0, 2.35], RightForearm: [0, 0, 0.3], LeftUpperLeg: [-0.08, 0, -0.08], RightUpperLeg: [-0.08, 0, 0.08] } },
+-    { name: "FollowThrough", duration: 0.52, preserveBind: true, rotations: { Torso: [0, 0, 0], LeftUpperArm: [0, 0, 0], LeftForearm: [0, 0, 0], RightUpperArm: [0, 0, 0], RightForearm: [0, 0, 0], LeftHand: [0, 0, 0], RightHand: [0, 0, 0] } }
+-  ] : [
+-    { name: "Plant", duration: 0.28, rotations: { Torso: [-0.1, 0, 0], LeftUpperLeg: [0.26, 0, -0.28], RightUpperLeg: [0.26, 0, 0.28], LeftUpperArm: [0, 0, -0.58], RightUpperArm: [0, 0, 0.58] } },
+-    { name: "Telegraph", duration: 0.38, rotations: { Torso: [-0.2, 0, 0], LeftUpperLeg: [0.38, 0, -0.34], RightUpperLeg: [0.38, 0, 0.34], LeftUpperArm: [-0.1, 0, -1.36], RightUpperArm: [-0.1, 0, 1.36], LeftForearm: [0, 0, -0.34], RightForearm: [0, 0, 0.34] } },
+-    { name: "Jump", duration: 0.3, translation: [0, 0.36, 0], rotations: { Torso: [0.08, 0, 0], LeftUpperArm: [-0.12, 0, -2.72], RightUpperArm: [-0.12, 0, 2.72], LeftForearm: [0, 0, -0.14], RightForearm: [0, 0, 0.14] } },
+-    { name: "Contest", duration: 0.5, preserveBind: true, rotations: { Torso: [0, 0, 0], LeftUpperArm: [0, 0, 0], RightUpperArm: [0, 0, 0], LeftForearm: [0, 0, 0], RightForearm: [0, 0, 0], LeftHand: [0, 0, 0], RightHand: [0, 0, 0] } }
+-  ];
+-
+-  const chunks = [];
+-  const bufferViews = [];
+-  const accessors = [];
+-  let byteOffset = 0;
+-  const pushData = (array, target, type, componentType, count, min, max) => {
+-    const padding = (4 - (byteOffset % 4)) % 4;
+-    if (padding) { chunks.push(Buffer.alloc(padding)); byteOffset += padding; }
+-    const buffer = Buffer.from(array.buffer, array.byteOffset, array.byteLength);
+-    const view = bufferViews.length;
+-    bufferViews.push({ buffer: 0, byteOffset, byteLength: buffer.length, ...(target ? { target } : {}) });
+-    chunks.push(buffer); byteOffset += buffer.length;
+-    const accessor = accessors.length;
+-    accessors.push({ bufferView: view, componentType, count, type, ...(min ? { min } : {}), ...(max ? { max } : {}) });
+-    return accessor;
+-  };
+-  const geometryAccessors = {};
+-  for (const [name, geometry] of Object.entries(geometries)) {
+-    const positionMin = [Infinity, Infinity, Infinity];
+-    const positionMax = [-Infinity, -Infinity, -Infinity];
+-    for (let index = 0; index < geometry.positions.length; index += 3) {
+-      for (let axis = 0; axis < 3; axis += 1) {
+-        positionMin[axis] = Math.min(positionMin[axis], geometry.positions[index + axis]);
+-        positionMax[axis] = Math.max(positionMax[axis], geometry.positions[index + axis]);
+-      }
+-    }
+-    const pos = pushData(geometry.positions, 34962, "VEC3", 5126, geometry.positions.length / 3, positionMin, positionMax);
+-    const norm = pushData(geometry.normals, 34962, "VEC3", 5126, geometry.normals.length / 3);
+-    const idx = pushData(geometry.indices, 34963, "SCALAR", 5123, geometry.indices.length);
+-    geometryAccessors[name] = { pos, norm, idx };
+-  }
+-  const meshes = [];
+-  const meshIndex = new Map();
+-  for (const geometryName of Object.keys(geometries)) {
+-    for (let materialIndex = 0; materialIndex < materials.length; materialIndex += 1) {
+-      const key = `${geometryName}:${materialIndex}`;
+-      const geometry = geometryAccessors[geometryName];
+-      meshIndex.set(key, meshes.length);
+-      meshes.push({ name: key, primitives: [{ attributes: { POSITION: geometry.pos, NORMAL: geometry.norm }, indices: geometry.idx, material: materialIndex }] });
+-    }
+-  }
+-  for (const node of nodes) {
+-    if (node.meshKey) { node.mesh = meshIndex.get(node.meshKey); delete node.meshKey; }
+-    if (!node.children.length) delete node.children;
+-  }
+-  const animations = clipDefinitions.map((clip) => {
+-    const samplers = [], channels = [];
+-    const timeAccessor = pushData(new Float32Array([0, clip.duration]), undefined, "SCALAR", 5126, 2, [0], [clip.duration]);
+-    for (const [name, euler] of Object.entries(clip.rotations)) {
+-      const target = nodes[nodeIndex.get(name)];
+-      const start = target.rotation ?? [0, 0, 0, 1];
+-      const end = clip.preserveBind ? start : quaternionFromEuler(...euler);
+-      const output = pushData(new Float32Array([...start, ...end]), undefined, "VEC4", 5126, 2);
+-      const sampler = samplers.length;
+-      samplers.push({ input: timeAccessor, output, interpolation: "LINEAR" });
+-      channels.push({ sampler, target: { node: nodeIndex.get(name), path: "rotation" } });
+-    }
+-    if (clip.translation) {
+-      const output = pushData(new Float32Array([0, 0, 0, ...clip.translation]), undefined, "VEC3", 5126, 2);
+-      const sampler = samplers.length;
+-      samplers.push({ input: timeAccessor, output, interpolation: "LINEAR" });
+-      channels.push({ sampler, target: { node: 0, path: "translation" } });
+-    }
+-    return { name: clip.name, samplers, channels };
+-  });
+-  const binBuffer = Buffer.concat(chunks);
+-  const gltf = {
+-    asset: { version: "2.0", generator: "Aura3D Rooftop Buckets Articulated CC0 Synthesizer", extras: { aura3d: { orientation: { forwardAxis: "+Z", upAxis: "+Y" }, articulatedPoseNodes: parts.map((part) => part.name), authoredClips: clipDefinitions.map((clip) => clip.name) } } },
+-    scene: 0,
+-    scenes: [{ nodes: [0] }],
+-    nodes,
+-    meshes,
+-    materials: materials.map((entry) => { const r = parseInt(entry.color.slice(1, 3), 16) / 255, g = parseInt(entry.color.slice(3, 5), 16) / 255, b = parseInt(entry.color.slice(5, 7), 16) / 255; return { name: entry.name, pbrMetallicRoughness: { baseColorFactor: [r, g, b, 1], metallicFactor: 0.04, roughnessFactor: entry.roughness } }; }),
+-    animations,
+-    accessors,
+-    bufferViews,
+-    buffers: [{ byteLength: binBuffer.length }]
+-  };
+-  const jsonBuffer = Buffer.from(JSON.stringify(gltf), "utf8");
+-  const paddedJson = Buffer.concat([jsonBuffer, Buffer.alloc((4 - jsonBuffer.length % 4) % 4, 0x20)]);
+-  const header = Buffer.alloc(12), jsonHeader = Buffer.alloc(8), binHeader = Buffer.alloc(8);
+-  header.write("glTF", 0); header.writeUInt32LE(2, 4); header.writeUInt32LE(12 + 8 + paddedJson.length + 8 + binBuffer.length, 8);
+-  jsonHeader.writeUInt32LE(paddedJson.length, 0); jsonHeader.write("JSON", 4);
+-  binHeader.writeUInt32LE(binBuffer.length, 0); binHeader.write("BIN\0", 4);
+-  return Buffer.concat([header, jsonHeader, paddedJson, binHeader, binBuffer]);
+-}
+-
+-function buildGlb(positions, normals, indices, colorHex, roughness, metallic) {
+-  const r = parseInt(colorHex.slice(1, 3), 16) / 255;
+-  const g = parseInt(colorHex.slice(3, 5), 16) / 255;
+-  const b = parseInt(colorHex.slice(5, 7), 16) / 255;
+-
+-  let minX = Infinity, minY = Infinity, minZ = Infinity;
+-  let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+-  for (let i = 0; i < positions.length; i += 3) {
+-    minX = Math.min(minX, positions[i]);
+-    maxX = Math.max(maxX, positions[i]);
+-    minY = Math.min(minY, positions[i + 1]);
+-    maxY = Math.max(maxY, positions[i + 1]);
+-    minZ = Math.min(minZ, positions[i + 2]);
+-    maxZ = Math.max(maxZ, positions[i + 2]);
+-  }
+-
+-  const posByteLength = positions.byteLength;
+-  const normByteLength = normals.byteLength;
+-  const idxByteLength = indices.byteLength;
+-
+-  const posOffset = 0;
+-  const normOffset = posByteLength;
+-  const idxOffset = normOffset + normByteLength;
+-  const totalBinLength = (idxOffset + idxByteLength + 3) & ~3; // 4-byte align
+-
+-  const binBuffer = Buffer.alloc(totalBinLength);
+-  Buffer.from(positions.buffer).copy(binBuffer, posOffset);
+-  Buffer.from(normals.buffer).copy(binBuffer, normOffset);
+-  Buffer.from(indices.buffer).copy(binBuffer, idxOffset);
+-
+-  const gltf = {
+-    asset: {
+-      version: "2.0",
+-      generator: "Aura3D Rooftop Buckets Synthesizer",
+-      extras: { aura3d: { orientation: { forwardAxis: "+Z", upAxis: "+Y" } } }
+-    },
+-    scene: 0,
+-    scenes: [{ nodes: [0] }],
+-    nodes: [{ mesh: 0 }],
+-    meshes: [{
+-      primitives: [{
+-        attributes: { POSITION: 0, NORMAL: 1 },
+-        indices: 2,
+-        material: 0
+-      }]
+-    }],
+-    materials: [{
+-      pbrMetallicRoughness: {
+-        baseColorFactor: [r, g, b, 1.0],
+-        metallicFactor: metallic,
+-        roughnessFactor: roughness
+-      }
+-    }],
+-    accessors: [
+-      {
+-        bufferView: 0,
+-        byteOffset: 0,
+-        componentType: 5126, // FLOAT
+-        count: positions.length / 3,
+-        type: "VEC3",
+-        max: [maxX, maxY, maxZ],
+-        min: [minX, minY, minZ]
+-      },
+-      {
+-        bufferView: 1,
+-        byteOffset: 0,
+-        componentType: 5126, // FLOAT
+-        count: normals.length / 3,
+-        type: "VEC3"
+-      },
+-      {
+-        bufferView: 2,
+-        byteOffset: 0,
+-        componentType: 5123, // UNSIGNED_SHORT
+-        count: indices.length,
+-        type: "SCALAR"
+-      }
+-    ],
+-    bufferViews: [
+-      { buffer: 0, byteOffset: posOffset, byteLength: posByteLength, target: 34962 },
+-      { buffer: 0, byteOffset: normOffset, byteLength: normByteLength, target: 34962 },
+-      { buffer: 0, byteOffset: idxOffset, byteLength: idxByteLength, target: 34963 }
+-    ],
+-    buffers: [{ byteLength: totalBinLength }]
+-  };
+-
+-  const jsonStr = JSON.stringify(gltf);
+-  const jsonBuffer = Buffer.from(jsonStr, "utf8");
+-  const jsonPadding = (4 - (jsonBuffer.length % 4)) % 4;
+-  const paddedJsonBuffer = Buffer.concat([jsonBuffer, Buffer.alloc(jsonPadding, 0x20)]);
+-
+-  const header = Buffer.alloc(12);
+-  header.write("glTF", 0);
+-  header.writeUInt32LE(2, 4); // version
+-  const totalLength = 12 + 8 + paddedJsonBuffer.length + 8 + binBuffer.length;
+-  header.writeUInt32LE(totalLength, 8);
+-
+-  const jsonChunkHeader = Buffer.alloc(8);
+-  jsonChunkHeader.writeUInt32LE(paddedJsonBuffer.length, 0);
+-  jsonChunkHeader.write("JSON", 4);
+-
+-  const binChunkHeader = Buffer.alloc(8);
+-  binChunkHeader.writeUInt32LE(binBuffer.length, 0);
+-  binChunkHeader.write("BIN\0", 4);
+-
+-  return Buffer.concat([header, jsonChunkHeader, paddedJsonBuffer, binChunkHeader, binBuffer]);
+-}
+-
+-// 1. rooftopCourt.glb - Asphalt pad with boundary (16m x 12m x 0.2m)
+-writeFileSync(resolve(MODELS_DIR, "rooftopCourt.glb"), createBoxGlb(16, 0.2, 14, "#1e293b", 0.95, 0.05));
+-console.log("Wrote rooftopCourt.glb");
+-
+-// 2. rooftopBall.glb - unit-normalized basketball sphere (R = 0.5)
+-// The route scales it to the regulation 0.24m diameter used by flight/contact.
+-writeFileSync(resolve(MODELS_DIR, "rooftopBall.glb"), createSphereGlb(0.5, 14, 18, "#ea580c"));
+-console.log("Wrote rooftopBall.glb");
+-
+-// 3. rooftopRim.glb - Steel hoop ring (R = 0.225m)
+-writeFileSync(resolve(MODELS_DIR, "rooftopRim.glb"), createTorusGlb(0.225, 0.015, 18, 10, "#f97316"));
+-console.log("Wrote rooftopRim.glb");
+-
+-// 4. rooftopBackboard.glb - Glass/acrylic backboard (1.8m x 1.05m x 0.05m)
+-writeFileSync(resolve(MODELS_DIR, "rooftopBackboard.glb"), createBoxGlb(1.8, 1.05, 0.05, "#38bdf8", 0.1, 0.9));
+-console.log("Wrote rooftopBackboard.glb");
+-
+-// 5–6. Route-owned articulated athletes expose visible parented limb nodes and
+-// named action clips while the route's shot and contest math remains authoritative.
+-writeFileSync(resolve(MODELS_DIR, "rooftopDefender.glb"), createArticulatedPlayerGlb("defender"));
+-console.log("Wrote rooftopDefender.glb");
+-writeFileSync(resolve(MODELS_DIR, "rooftopShooter.glb"), createArticulatedPlayerGlb("shooter"));
+-console.log("Wrote rooftopShooter.glb");
+-
+-console.log("Rooftop Buckets models synthesized successfully.");
+diff --git a/apps/showcase-rooftop-buckets/scripts/build-production-art.py b/apps/showcase-rooftop-buckets/scripts/build-production-art.py
+deleted file mode 100644
+index 4e04d8503..000000000
+--- a/apps/showcase-rooftop-buckets/scripts/build-production-art.py
++++ /dev/null
+@@ -1,432 +0,0 @@
+-#!/usr/bin/env python3
+-"""Build Rooftop Buckets' release-candidate athlete and venue assets.
+-
+-The previous Rooftop Buckets pass used route-authored box/cylinder mannequins.
+-This producer starts from a license-clean, textured, skinned ``Man Player``
+-GLB and authors basketball-specific clips on its real 102-joint skeleton.  It
+-also emits the court/venue asset with a physical court slab, outside-bounds
+-bleachers, railings, banners, flood bars, and spectator seating.  The hoop,
+-backboard, ball, and all gameplay regions remain route-owned and are not baked
+-into the venue asset.
+-
+-This is route-local art production; registration and rendered probes are kept
+-in the normal Aura3D CLI/evidence pipeline.  No route gameplay or ballistics
+-are authored here.
+-"""
+-
+-from __future__ import annotations
+-
+-import json
+-import math
+-import struct
+-from pathlib import Path
+-
+-import bpy
+-from mathutils import Matrix
+-
+-
+-APP_DIR = Path(__file__).resolve().parent.parent
+-OUT_DIR = APP_DIR / "assets" / "models"
+-SOURCE = APP_DIR / ".candidate-assets" / "acquisition-2026-08-31" / "objaverse-4c7133dbb06e4136891d59231372d818" / "man-player.glb"
+-
+-
+-def clear() -> None:
+-    bpy.ops.object.select_all(action="SELECT")
+-    bpy.ops.object.delete(use_global=False)
+-    for collection in (
+-        bpy.data.materials,
+-        bpy.data.meshes,
+-        bpy.data.armatures,
+-        bpy.data.actions,
+-        bpy.data.cameras,
+-        bpy.data.lights,
+-    ):
+-        for item in list(collection):
+-            collection.remove(item)
+-
+-
+-def imported_source() -> bpy.types.Object:
+-    if not SOURCE.exists():
+-        raise FileNotFoundError(SOURCE)
+-    bpy.ops.import_scene.gltf(filepath=str(SOURCE))
+-    armatures = [obj for obj in bpy.context.scene.objects if obj.type == "ARMATURE"]
+-    if len(armatures) != 1:
+-        raise RuntimeError(f"expected one source armature, found {len(armatures)}")
+-    armature = armatures[0]
+-    # The downloaded scene contains an authoring cube, an icosphere proxy,
+-    # camera, and light.  They are not part of the player and must not leak
+-    # into the release asset.
+-    for obj in list(bpy.context.scene.objects):
+-        if obj.type in {"CAMERA", "LIGHT"} or obj.name in {"Cube", "Icosphere"}:
+-            bpy.data.objects.remove(obj, do_unlink=True)
+-    # The Sketchfab FBX wrapper carries a 0.01 import scale. Blender bakes
+-    # that scale into mesh data on export while retaining the wrapper, which
+-    # would make the release GLB another 100x too small. Bake the factor into
+-    # the source geometry and skeleton, then clear the wrapper scale so the
+-    # exported skin and its clips retain the source's metre-scale 1.8 m bounds
+-    # and do not need a route-side scale hack.
+-    wrapper = bpy.data.objects.get("player.fbx")
+-    if wrapper is not None:
+-        wrapper.scale = (1.0, 1.0, 1.0)
+-    bake_scale = Matrix.Scale(0.01, 4)
+-    armature.data.transform(bake_scale)
+-    for mesh in [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]:
+-        mesh.data.transform(bake_scale)
+-    armature.scale = (1.0, 1.0, 1.0)
+-    return armature
+-
+-
+-def multiply_tint(source: bpy.types.Material, name: str, tint: tuple[float, float, float, float]) -> bpy.types.Material:
+-    """Duplicate a textured material while retaining its texture/normal chain.
+-
+-    The source shirt and shorts use image textures on the Principled Base Color
+-    input.  Inserting a multiply node keeps folds, seams, and texture detail,
+-    while making the two route athletes unmistakably different teams.
+-    """
+-
+-    mat = source.copy()
+-    mat.name = name
+-    mat.use_nodes = True
+-    tree = mat.node_tree
+-    bsdf = tree.nodes.get("Principled BSDF")
+-    if bsdf is None:
+-        return mat
+-    base = bsdf.inputs.get("Base Color")
+-    if base is None:
+-        return mat
+-    links = list(base.links)
+-    if links:
+-        source_socket = links[0].from_socket
+-        for link in links:
+-            tree.links.remove(link)
+-        mix = tree.nodes.new("ShaderNodeMixRGB")
+-        mix.name = "Rooftop team tint"
+-        mix.blend_type = "MULTIPLY"
+-        mix.inputs[0].default_value = 1.0
+-        mix.inputs[1].default_value = (1.0, 1.0, 1.0, 1.0)
+-        mix.inputs[2].default_value = tint
+-        tree.links.new(source_socket, mix.inputs[1])
+-        tree.links.new(mix.outputs[0], base)
+-    else:
+-        base.default_value = tint
+-    return mat
+-
+-
+-def replace_materials(armature: bpy.types.Object, role: str) -> None:
+-    shooter = role == "shooter"
+-    shirt_tint = (0.08, 0.62, 0.74, 1.0) if shooter else (0.72, 0.075, 0.10, 1.0)
+-    shorts_tint = (0.08, 0.12, 0.18, 1.0) if shooter else (0.18, 0.025, 0.035, 1.0)
+-    boot_tint = (0.76, 0.89, 0.92, 1.0) if shooter else (0.12, 0.14, 0.18, 1.0)
+-    team_prefix = "Rooftop teal" if shooter else "Rooftop crimson"
+-    for mesh in [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]:
+-        slots = list(mesh.material_slots)
+-        for slot in slots:
+-            material = slot.material
+-            if material is None:
+-                continue
+-            if material.name == "T_shirt":
+-                slot.material = multiply_tint(material, f"{team_prefix} jersey", shirt_tint)
+-            elif material.name == "Classic_Shorts":
+-                slot.material = multiply_tint(material, f"{team_prefix} shorts", shorts_tint)
+-            elif material.name == "Boots":
+-                slot.material = multiply_tint(material, f"{team_prefix} court shoes", boot_tint)
+-
+-
+-def bone(armature: bpy.types.Object, name: str) -> bpy.types.PoseBone | None:
+-    return armature.pose.bones.get(name)
+-
+-
+-def set_bone_rotation(armature: bpy.types.Object, name: str, value: tuple[float, float, float]) -> None:
+-    target = bone(armature, name)
+-    if target is None:
+-        return
+-    target.rotation_mode = "XYZ"
+-    target.rotation_euler = value
+-
+-
+-def clear_pose(armature: bpy.types.Object) -> None:
+-    for target in armature.pose.bones:
+-        target.rotation_mode = "XYZ"
+-        target.rotation_euler = (0.0, 0.0, 0.0)
+-        target.scale = (1.0, 1.0, 1.0)
+-
+-
+-def authored_clip(armature: bpy.types.Object, name: str, poses: list[tuple[int, dict[str, tuple[float, float, float]]]]) -> bpy.types.Action:
+-    action = bpy.data.actions.new(name)
+-    action.frame_start = 1
+-    action.frame_end = 24
+-    armature.animation_data_create()
+-    armature.animation_data.action = action
+-    # Key every bone at the first frame so no source action or imported pose
+-    # can leak into the release clip.  Subsequent frames key the named
+-    # basketball pose, yielding a genuine skinned deformation rather than a
+-    # route-level scale/rotation imitation.
+-    clear_pose(armature)
+-    bpy.context.scene.frame_set(1)
+-    for target in armature.pose.bones:
+-        target.keyframe_insert(data_path="rotation_euler", frame=1, group=target.name)
+-    for frame, pose in poses:
+-        clear_pose(armature)
+-        for bone_name, rotation in pose.items():
+-            set_bone_rotation(armature, bone_name, rotation)
+-        bpy.context.scene.frame_set(frame)
+-        for target in armature.pose.bones:
+-            target.keyframe_insert(data_path="rotation_euler", frame=frame, group=target.name)
+-    return action
+-
+-
+-def clips_for(role: str) -> list[tuple[str, list[tuple[int, dict[str, tuple[float, float, float]]]]]]:
+-    # Bone names come from the downloaded CC-BY source's inspected 102-joint
+-    # skeleton.  Rotations are deliberately moderate; the route's ballistic
+-    # solver remains the sole owner of translation and contact truth.
+-    pelvis = "CC_Base_Pelvis_03"
+-    waist = "CC_Base_Waist_033"
+-    spine = "CC_Base_Spine01_034"
+-    l_thigh, r_thigh = "CC_Base_L_Thigh_04", "CC_Base_R_Thigh_018"
+-    l_calf, r_calf = "CC_Base_L_Calf_05", "CC_Base_R_Calf_021"
+-    l_upper, r_upper = "CC_Base_L_Upperarm_050", "CC_Base_R_Upperarm_074"
+-    l_fore, r_fore = "CC_Base_L_Forearm_051", "CC_Base_R_Forearm_077"
+-    l_hand, r_hand = "CC_Base_L_Hand_055", "CC_Base_R_Hand_081"
+-    if role == "shooter":
+-        return [
+-            ("Ready", [(1, {})]),
+-            (
+-                "Load",
+-                [
+-                    (8, {pelvis: (0.15, 0.0, 0.0), waist: (0.10, 0.0, 0.0), spine: (0.18, 0.0, 0.0), l_thigh: (-0.22, 0.0, -0.05), r_thigh: (-0.28, 0.0, 0.05), l_calf: (0.34, 0.0, 0.0), r_calf: (0.42, 0.0, 0.0), l_upper: (0.18, 0.0, -0.68), r_upper: (0.20, 0.0, 0.78), l_fore: (-0.30, 0.0, -0.24), r_fore: (-0.35, 0.0, 0.25)}),
+-                    (16, {pelvis: (0.10, 0.0, 0.0), waist: (0.06, 0.0, 0.0), spine: (0.12, 0.0, 0.0), l_thigh: (-0.16, 0.0, -0.03), r_thigh: (-0.20, 0.0, 0.03), l_calf: (0.26, 0.0, 0.0), r_calf: (0.32, 0.0, 0.0), l_upper: (0.05, 0.0, -0.52), r_upper: (0.05, 0.0, 0.58), l_fore: (-0.24, 0.0, -0.18), r_fore: (-0.28, 0.0, 0.20)}),
+-                ],
+-            ),
+-            (
+-                "Release",
+-                [
+-                    (8, {pelvis: (-0.08, 0.0, 0.0), waist: (-0.06, 0.0, 0.0), spine: (-0.16, 0.0, 0.0), l_thigh: (0.08, 0.0, -0.04), r_thigh: (0.12, 0.0, 0.04), l_calf: (-0.14, 0.0, 0.0), r_calf: (-0.16, 0.0, 0.0), l_upper: (-1.05, 0.0, -0.55), r_upper: (-1.38, 0.0, 1.05), l_fore: (-0.35, 0.0, -0.20), r_fore: (-0.62, 0.0, 0.22), l_hand: (-0.12, 0.0, -0.06), r_hand: (-0.20, 0.0, 0.08)}),
+-                    (16, {pelvis: (-0.04, 0.0, 0.0), waist: (-0.04, 0.0, 0.0), spine: (-0.11, 0.0, 0.0), l_thigh: (0.06, 0.0, -0.03), r_thigh: (0.10, 0.0, 0.03), l_calf: (-0.10, 0.0, 0.0), r_calf: (-0.12, 0.0, 0.0), l_upper: (-1.28, 0.0, -0.48), r_upper: (-1.62, 0.0, 1.12), l_fore: (-0.40, 0.0, -0.18), r_fore: (-0.70, 0.0, 0.18), l_hand: (-0.18, 0.0, -0.04), r_hand: (-0.24, 0.0, 0.06)}),
+-                ],
+-            ),
+-            (
+-                "FollowThrough",
+-                [
+-                    (8, {pelvis: (-0.04, 0.0, 0.0), waist: (-0.05, 0.0, 0.0), spine: (-0.12, 0.0, 0.0), l_upper: (-1.18, 0.0, -0.56), r_upper: (-1.58, 0.0, 1.18), l_fore: (-0.62, 0.0, -0.14), r_fore: (-0.82, 0.0, 0.12), l_hand: (-0.20, 0.0, -0.04), r_hand: (-0.30, 0.0, 0.06), l_thigh: (0.04, 0.0, -0.03), r_thigh: (0.12, 0.0, 0.04)}),
+-                    (16, {pelvis: (0.02, 0.0, 0.0), waist: (-0.02, 0.0, 0.0), spine: (-0.08, 0.0, 0.0), l_upper: (-0.92, 0.0, -0.70), r_upper: (-1.72, 0.0, 1.24), l_fore: (-0.40, 0.0, -0.18), r_fore: (-0.90, 0.0, 0.10), l_hand: (-0.16, 0.0, -0.04), r_hand: (-0.34, 0.0, 0.04), l_thigh: (0.02, 0.0, -0.02), r_thigh: (0.08, 0.0, 0.02)}),
+-                ],
+-            ),
+-        ]
+-    return [
+-        ("Plant", [(1, {}), (16, {pelvis: (0.08, 0.0, 0.0), waist: (0.04, 0.0, 0.0), spine: (0.06, 0.0, 0.0), l_thigh: (-0.12, 0.0, -0.30), r_thigh: (-0.12, 0.0, 0.30), l_calf: (0.18, 0.0, 0.0), r_calf: (0.18, 0.0, 0.0), l_upper: (-0.08, 0.0, -0.45), r_upper: (-0.08, 0.0, 0.45)})]),
+-        (
+-            "Telegraph",
+-            [
+-                (8, {pelvis: (0.20, 0.0, 0.0), waist: (0.12, 0.0, 0.0), spine: (0.18, 0.0, 0.0), l_thigh: (-0.34, 0.0, -0.34), r_thigh: (-0.34, 0.0, 0.34), l_calf: (0.48, 0.0, 0.0), r_calf: (0.48, 0.0, 0.0), l_upper: (-0.12, 0.0, -0.92), r_upper: (-0.12, 0.0, 0.92), l_fore: (-0.18, 0.0, -0.22), r_fore: (-0.18, 0.0, 0.22)}),
+-                (16, {pelvis: (0.12, 0.0, 0.0), waist: (0.08, 0.0, 0.0), spine: (0.12, 0.0, 0.0), l_thigh: (-0.24, 0.0, -0.30), r_thigh: (-0.24, 0.0, 0.30), l_calf: (0.34, 0.0, 0.0), r_calf: (0.34, 0.0, 0.0), l_upper: (-0.10, 0.0, -0.74), r_upper: (-0.10, 0.0, 0.74), l_fore: (-0.12, 0.0, -0.18), r_fore: (-0.12, 0.0, 0.18)}),
+-            ],
+-        ),
+-        (
+-            "Jump",
+-            [
+-                (8, {pelvis: (-0.04, 0.0, 0.0), waist: (-0.04, 0.0, 0.0), spine: (-0.08, 0.0, 0.0), l_thigh: (0.22, 0.0, -0.22), r_thigh: (0.22, 0.0, 0.22), l_calf: (-0.38, 0.0, 0.0), r_calf: (-0.38, 0.0, 0.0), l_upper: (-1.18, 0.0, -0.72), r_upper: (-1.18, 0.0, 0.72), l_fore: (-0.42, 0.0, -0.18), r_fore: (-0.42, 0.0, 0.18), l_hand: (-0.16, 0.0, -0.04), r_hand: (-0.16, 0.0, 0.04)}),
+-                (16, {pelvis: (-0.08, 0.0, 0.0), waist: (-0.06, 0.0, 0.0), spine: (-0.10, 0.0, 0.0), l_thigh: (0.30, 0.0, -0.28), r_thigh: (0.30, 0.0, 0.28), l_calf: (-0.46, 0.0, 0.0), r_calf: (-0.46, 0.0, 0.0), l_upper: (-1.34, 0.0, -0.86), r_upper: (-1.34, 0.0, 0.86), l_fore: (-0.52, 0.0, -0.16), r_fore: (-0.52, 0.0, 0.16), l_hand: (-0.20, 0.0, -0.04), r_hand: (-0.20, 0.0, 0.04)}),
+-            ],
+-        ),
+-        (
+-            "Contest",
+-            [
+-                (8, {pelvis: (-0.06, 0.0, 0.0), waist: (-0.04, 0.0, 0.0), spine: (-0.08, 0.0, 0.0), l_thigh: (0.20, 0.0, -0.24), r_thigh: (0.24, 0.0, 0.24), l_calf: (-0.34, 0.0, 0.0), r_calf: (-0.40, 0.0, 0.0), l_upper: (-1.48, 0.0, -0.90), r_upper: (-1.42, 0.0, 0.90), l_fore: (-0.60, 0.0, -0.10), r_fore: (-0.56, 0.0, 0.10), l_hand: (-0.22, 0.0, -0.04), r_hand: (-0.22, 0.0, 0.04)}),
+-                (16, {pelvis: (-0.02, 0.0, 0.0), waist: (-0.02, 0.0, 0.0), spine: (-0.06, 0.0, 0.0), l_thigh: (0.14, 0.0, -0.18), r_thigh: (0.18, 0.0, 0.18), l_calf: (-0.26, 0.0, 0.0), r_calf: (-0.32, 0.0, 0.0), l_upper: (-1.34, 0.0, -0.74), r_upper: (-1.30, 0.0, 0.74), l_fore: (-0.46, 0.0, -0.08), r_fore: (-0.44, 0.0, 0.08), l_hand: (-0.18, 0.0, -0.02), r_hand: (-0.18, 0.0, 0.02)}),
+-            ],
+-        ),
+-    ]
+-
+-
+-def attach_nla_clips(armature: bpy.types.Object, role: str) -> list[str]:
+-    armature.animation_data_clear()
+-    for action in list(bpy.data.actions):
+-        bpy.data.actions.remove(action)
+-    names: list[str] = []
+-    for name, poses in clips_for(role):
+-        action = authored_clip(armature, name, poses)
+-        track = armature.animation_data.nla_tracks.new()
+-        track.name = name
+-        strip = track.strips.new(name, 1, action)
+-        strip.frame_end = 24
+-        names.append(name)
+-    armature.animation_data.action = None
+-    return names
+-
+-
+-def add_orientation_metadata(path: Path, *, clips: list[str], role: str, source: str) -> None:
+-    raw = path.read_bytes()
+-    magic, version, _length = struct.unpack_from("<4sII", raw, 0)
+-    json_length, json_kind = struct.unpack_from("<I4s", raw, 12)
+-    if magic != b"glTF" or version != 2 or json_kind != b"JSON":
+-        raise RuntimeError(f"unexpected GLB header for {path}")
+-    gltf = json.loads(raw[20 : 20 + json_length].decode("utf8"))
+-    gltf.setdefault("asset", {}).setdefault("extras", {})["aura3d"] = {
+-        "orientation": {"forwardAxis": "+Z", "upAxis": "+Y"},
+-        "sourceModel": source,
+-        "role": role,
+-        "authoredClips": clips,
+-        "artFamily": "rooftop-buckets-production-v3",
+-    }
+-    encoded = json.dumps(gltf, separators=(",", ":")).encode("utf8")
+-    encoded += b" " * ((4 - len(encoded) % 4) % 4)
+-    tail = raw[20 + json_length :]
+-    output = struct.pack("<4sII", b"glTF", 2, 12 + 8 + len(encoded) + len(tail))
+-    output += struct.pack("<I4s", len(encoded), b"JSON") + encoded + tail
+-    path.write_bytes(output)
+-
+-
+-def export_glb(path: Path, *, animations: bool, export_yup: bool = True) -> None:
+-    bpy.ops.object.select_all(action="SELECT")
+-    bpy.ops.export_scene.gltf(
+-        filepath=str(path),
+-        export_format="GLB",
+-        # Keep the source's Y-up athlete/venue convention.  The route's
+-        # orientation contract is +Y up / +Z forward; using Blender's Y-up
+-        # conversion here avoids exporting the player on its side.
+-        export_yup=export_yup,
+-        export_materials="EXPORT",
+-        export_cameras=False,
+-        export_lights=False,
+-        export_animations=animations,
+-        export_animation_mode="NLA_TRACKS",
+-        export_nla_strips=True,
+-        export_force_sampling=True,
+-    )
+-
+-
+-def build_athlete(role: str, filename: str) -> None:
+-    clear()
+-    armature = imported_source()
+-    replace_materials(armature, role)
+-    clips = attach_nla_clips(armature, role)
+-    output = OUT_DIR / filename
+-    export_glb(output, animations=True)
+-    add_orientation_metadata(output, clips=clips, role=role, source="Sketchfab 4c7133dbb06e4136891d59231372d818 / Man Player (CC-BY-4.0)")
+-    print(f"wrote {output} ({role}, clips={','.join(clips)})")
+-
+-
+-def mat(name: str, color: tuple[float, float, float, float], metallic: float = 0.0, roughness: float = 0.5, emission: tuple[float, float, float, float] | None = None) -> bpy.types.Material:
+-    material = bpy.data.materials.new(name)
+-    material.use_nodes = True
+-    bsdf = material.node_tree.nodes.get("Principled BSDF")
+-    assert bsdf is not None
+-    bsdf.inputs["Base Color"].default_value = color
+-    bsdf.inputs["Metallic"].default_value = metallic
+-    bsdf.inputs["Roughness"].default_value = roughness
+-    if emission:
+-        bsdf.inputs["Emission Color"].default_value = emission
+-        bsdf.inputs["Emission Strength"].default_value = 0.65
+-    return material
+-
+-
+-def finish(obj: bpy.types.Object, material: bpy.types.Material, bevel: float = 0.0) -> bpy.types.Object:
+-    obj.data.materials.append(material)
+-    if bevel:
+-        modifier = obj.modifiers.new("soft venue edges", "BEVEL")
+-        modifier.width = bevel
+-        modifier.segments = 2
+-    return obj
+-
+-
+-def cube(name: str, location: tuple[float, float, float], scale: tuple[float, float, float], material: bpy.types.Material, bevel: float = 0.0) -> bpy.types.Object:
+-    bpy.ops.mesh.primitive_cube_add(location=location)
+-    obj = bpy.context.object
+-    obj.name = name
+-    obj.scale = scale
+-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+-    return finish(obj, material, bevel)
+-
+-
+-def cylinder(name: str, location: tuple[float, float, float], radius: float, depth: float, material: bpy.types.Material, vertices: int = 20) -> bpy.types.Object:
+-    bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=location)
+-    obj = bpy.context.object
+-    obj.name = name
+-    return finish(obj, material, radius * 0.12)
+-
+-
+-def venue() -> None:
+-    clear()
+-    court = mat("rooftop court sealed concrete", (0.075, 0.105, 0.15, 1), 0.08, 0.58)
+-    court_edge = mat("rooftop court edge", (0.025, 0.04, 0.06, 1), 0.16, 0.48)
+-    bleacher = mat("bleacher painted steel", (0.20, 0.09, 0.27, 1), 0.34, 0.38)
+-    seat = mat("bleacher seat violet", (0.33, 0.12, 0.40, 1), 0.12, 0.44)
+-    rail = mat("venue rail", (0.04, 0.22, 0.28, 1), 0.66, 0.26)
+-    amber = mat("venue amber practical", (0.96, 0.22, 0.04, 1), 0.28, 0.28, (0.93, 0.09, 0.01, 1))
+-    cyan = mat("venue cyan practical", (0.04, 0.48, 0.58, 1), 0.28, 0.3, (0.02, 0.30, 0.70, 1))
+-    crowd_a = mat("crowd warm jacket", (0.74, 0.19, 0.10, 1), 0.02, 0.62)
+-    crowd_b = mat("crowd teal jacket", (0.04, 0.42, 0.50, 1), 0.04, 0.56)
+-    crowd_skin = mat("crowd skin", (0.42, 0.19, 0.10, 1), 0.0, 0.68)
+-
+-    # Preserve the exact 16 x 14 court footprint consumed by COURT_SPOTS.  All
+-    # venue additions begin outside z=-2 so hoop/backboard/ball regions remain
+-    # untouched and collision ownership stays in the route integrator.
+-    cube("court slab", (0, -0.34, 4), (8.0, 0.34, 7.0), court, 0.10)
+-    cube("court perimeter fascia", (0, -0.05, 4), (8.16, 0.10, 7.16), court_edge, 0.06)
+-
+-    # Rear grandstand with stepped tiers, under-seat fascia, handrails, and
+-    # alternating seat colors.  This reads as an authored streetball venue in
+-    # the same frame as the live hoop, unlike the old empty rooftop slab.
+-    for row in range(4):
+-        y = 0.24 + row * 0.34
+-        z = -2.45 - row * 0.22
+-        depth = 0.88 - row * 0.10
+-        cube(f"rear bleacher tier {row + 1}", (0, y, z), (6.9 - row * 0.25, 0.15, depth), bleacher, 0.05)
+-        for x_index in range(-6, 7):
+-            x = x_index * 0.95
+-            cube(f"rear seat {row + 1}-{x_index}", (x, y + 0.18, z - 0.06), (0.33, 0.07, 0.27), seat if (x_index + row) % 2 else bleacher, 0.025)
+-            # A compact spectator silhouette is set dressing, not a gameplay
+-            # character.  The repeated head/torso pair gives the stands human
+-            # scale while remaining far outside all collision regions.
+-            crowd_material = crowd_a if (x_index + row) % 3 else crowd_b
+-            cube(f"crowd torso {row + 1}-{x_index}", (x, y + 0.39, z - 0.04), (0.18, 0.22, 0.10), crowd_material, 0.04)
+-            bpy.ops.mesh.primitive_uv_sphere_add(segments=12, ring_count=8, location=(x, y + 0.75, z - 0.04))
+-            finish(bpy.context.object, crowd_skin)
+-            bpy.context.object.scale = (0.15, 0.15, 0.15)
+-            bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+-        if row < 3:
+-            cylinder(f"rear guard post {row + 1}", (-6.9 + row * 0.25, y + 0.48, z + 0.72), 0.035, 0.95, rail, 12)
+-            cylinder(f"rear guard post {row + 1} right", (6.9 - row * 0.25, y + 0.48, z + 0.72), 0.035, 0.95, rail, 12)
+-            cube(f"rear guard rail {row + 1}", (0, y + 0.90, z + 0.72), (6.9 - row * 0.25, 0.035, 0.035), rail, 0.012)
+-
+-    # Side stands provide depth under the sideline camera and frame the action
+-    # without occluding the player, hoop, or live trajectory.
+-    for side in (-1, 1):
+-        x = side * 8.85
+-        for row in range(3):
+-            y = 0.24 + row * 0.36
+-            z = 3.0 + row * 0.15
+-            cube(f"side bleacher {side} {row + 1}", (x, y, z), (0.78, 0.15, 3.65 - row * 0.22), bleacher, 0.05)
+-            cube(f"side seat trim {side} {row + 1}", (x - side * 0.35, y + 0.18, z), (0.16, 0.07, 3.35 - row * 0.18), seat, 0.02)
+-        cylinder(f"side rail post {side}", (x - side * 0.72, 1.60, 3.0), 0.035, 2.9, rail, 12)
+-        cube(f"side handrail {side}", (x - side * 0.72, 3.02, 3.0), (0.035, 0.035, 3.75), rail, 0.012)
+-
+-    # Lighting and visual identity elements: all are venue geometry and remain
+-    # outside the active court's gameplay bounds.
+-    for side in (-1, 1):
+-        x = side * 7.6
+-        cylinder(f"venue light mast {side}", (x, 3.8, -2.35), 0.08, 7.4, rail, 16)
+-        cube(f"venue flood bar {side}", (x, 7.35, -2.35), (0.70, 0.12, 0.22), amber, 0.04)
+-        cube(f"venue cyan kicker {side}", (x - side * 0.12, 1.2, -2.18), (0.08, 0.72, 0.025), cyan, 0.015)
+-    for x in (-5.6, -2.8, 0, 2.8, 5.6):
+-        cube(f"rear sponsor banner {x}", (x, 2.80, -3.32), (0.82, 0.46, 0.035), amber if x == 0 else cyan, 0.025)
+-        cube(f"rear sponsor bar {x}", (x, 2.18, -3.30), (0.82, 0.035, 0.035), rail, 0.01)
+-
+-    output = OUT_DIR / "rooftopCourt.glb"
+-    # Venue coordinates are authored directly in the route's +Y-up scene
+-    # convention (Y height, Z depth).  Blender's ``export_yup`` conversion is
+-    # for Z-up authoring and would swap these axes, turning the court slab into
+-    # a vertical wall that occludes the entire game camera.  Keep the authored
+-    # route axes intact for this world GLB; athlete exports retain the source
+-    # conversion above because their imported Sketchfab hierarchy carries its
+-    # own Blender wrapper.
+-    export_glb(output, animations=False, export_yup=False)
+-    add_orientation_metadata(output, clips=[], role="world", source="Aura3D Rooftop Buckets venue authoring")
+-    print(f"wrote {output} (venue bleachers + crowd dressing)")
+-
+-
+-if __name__ == "__main__":
+-    OUT_DIR.mkdir(parents=True, exist_ok=True)
+-    build_athlete("shooter", "rooftopLayupScorer.glb")
+-    build_athlete("defender", "rooftopDefender.glb")
+-    venue()
+diff --git a/apps/showcase-rooftop-buckets/scripts/build-v2-art.py b/apps/showcase-rooftop-buckets/scripts/build-v2-art.py
+deleted file mode 100644
+index 035622c2d..000000000
+--- a/apps/showcase-rooftop-buckets/scripts/build-v2-art.py
++++ /dev/null
+@@ -1,265 +0,0 @@
+-#!/usr/bin/env python3
+-"""Author Rooftop Buckets' original V2 art in Blender.
+-
+-This is deliberately route-local art only.  The venue follows the existing
+-16 x 14 m rooftop court footprint but deliberately contains no backboard, rim,
+-net, or collision proxy.  Shooter and defender are real skinned meshes with
+-real armature actions; the route may later bind their named clips without
+-claiming reusable sports animation or physics.
+-"""
+-import bpy
+-import math
+-import json
+-import struct
+-from pathlib import Path
+-
+-OUT = Path(__file__).resolve().parent.parent / "assets" / "models"
+-OUT.mkdir(parents=True, exist_ok=True)
+-
+-def clear():
+-    bpy.ops.object.select_all(action="SELECT")
+-    bpy.ops.object.delete(use_global=False)
+-    for collection in (bpy.data.materials, bpy.data.meshes, bpy.data.armatures, bpy.data.actions):
+-        for item in list(collection):
+-            collection.remove(item)
+-
+-def material(name, color, metallic=0.0, rough=0.5, emission=None):
+-    m = bpy.data.materials.new(name)
+-    m.use_nodes = True
+-    bsdf = m.node_tree.nodes.get("Principled BSDF")
+-    bsdf.inputs["Base Color"].default_value = color
+-    bsdf.inputs["Metallic"].default_value = metallic
+-    bsdf.inputs["Roughness"].default_value = rough
+-    if color[3] < 1:
+-        bsdf.inputs["Alpha"].default_value = color[3]
+-        m.surface_render_method = "DITHERED"
+-    if emission:
+-        bsdf.inputs["Emission Color"].default_value = emission
+-        bsdf.inputs["Emission Strength"].default_value = 0.55
+-    return m
+-
+-def finish(obj, mat, bevel=0.0):
+-    obj.data.materials.append(mat)
+-    if bevel:
+-        mod = obj.modifiers.new("soft production edges", "BEVEL")
+-        mod.width, mod.segments = bevel, 2
+-    return obj
+-
+-def cube(name, loc, scale, mat, bevel=0.0):
+-    bpy.ops.mesh.primitive_cube_add(location=loc)
+-    obj = bpy.context.object
+-    obj.name = name
+-    obj.scale = scale
+-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+-    return finish(obj, mat, bevel)
+-
+-def sphere(name, loc, scale, mat):
+-    bpy.ops.mesh.primitive_uv_sphere_add(segments=24, ring_count=16, location=loc)
+-    obj = bpy.context.object
+-    obj.name = name
+-    obj.scale = scale
+-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+-    return finish(obj, mat)
+-
+-def cyl(name, loc, radius, depth, mat, vertices=20, bevel=0.0):
+-    bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=loc)
+-    return finish(bpy.context.object, mat, bevel)
+-
+-def tapered_limb(name, loc, radius_a, radius_b, depth, mat):
+-    bpy.ops.mesh.primitive_cone_add(vertices=20, radius1=radius_a, radius2=radius_b, depth=depth, location=loc)
+-    return finish(bpy.context.object, mat, min(radius_a, radius_b) * .18)
+-
+-def parent_skin(mesh, armature, bone_name):
+-    mesh.parent = armature
+-    modifier = mesh.modifiers.new("real rigid skin", "ARMATURE")
+-    modifier.object = armature
+-    group = mesh.vertex_groups.new(name=bone_name)
+-    group.add([vertex.index for vertex in mesh.data.vertices], 1.0, "REPLACE")
+-
+-def make_armature(name):
+-    bpy.ops.object.armature_add(enter_editmode=True, location=(0, 0, 0))
+-    arm = bpy.context.object
+-    arm.name = name
+-    arm.data.name = name + "Rig"
+-    root = arm.data.edit_bones[0]
+-    root.name = "Root"
+-    root.head, root.tail = (0, 0, 0), (0, .35, 0)
+-    spec = [
+-        ("Pelvis", "Root", (0,.78,0), (0,1.04,0)),
+-        ("Spine", "Pelvis", (0,1.02,0), (0,1.53,0)),
+-        ("Head", "Spine", (0,1.52,0), (0,2.05,0)),
+-        ("LeftUpperArm", "Spine", (-.29,1.48,0), (-.64,1.37,-.03)),
+-        ("LeftForearm", "LeftUpperArm", (-.64,1.37,-.03), (-.87,1.15,-.06)),
+-        ("RightUpperArm", "Spine", (.29,1.48,0), (.64,1.37,-.03)),
+-        ("RightForearm", "RightUpperArm", (.64,1.37,-.03), (.87,1.15,-.06)),
+-        ("LeftUpperLeg", "Pelvis", (-.17,.82,0), (-.24,.42,.03)),
+-        ("LeftLowerLeg", "LeftUpperLeg", (-.24,.42,.03), (-.21,.08,.11)),
+-        ("RightUpperLeg", "Pelvis", (.17,.82,0), (.24,.42,.03)),
+-        ("RightLowerLeg", "RightUpperLeg", (.24,.42,.03), (.21,.08,.11))
+-    ]
+-    created = {"Root": root}
+-    for bone_name, parent_name, head, tail in spec:
+-        bone = arm.data.edit_bones.new(bone_name)
+-        bone.head, bone.tail = head, tail
+-        bone.parent = created[parent_name]
+-        created[bone_name] = bone
+-    bpy.ops.object.mode_set(mode="POSE")
+-    for bone in arm.pose.bones:
+-        bone.rotation_mode = "XYZ"
+-    bpy.ops.object.mode_set(mode="OBJECT")
+-    return arm
+-
+-def add_text(label, text, loc, scale, mat, parent=None):
+-    bpy.ops.object.text_add(location=loc, rotation=(math.pi/2, 0, 0))
+-    obj = bpy.context.object
+-    obj.name = label
+-    obj.data.body = text
+-    obj.data.align_x = "CENTER"
+-    obj.data.align_y = "CENTER"
+-    obj.data.extrude = .009
+-    obj.data.bevel_depth = .006
+-    obj.scale = scale
+-    bpy.ops.object.convert(target="MESH")
+-    finish(obj, mat, .006)
+-    if parent: parent_skin(obj, parent[0], parent[1])
+-    return obj
+-
+-def athlete(kind):
+-    clear()
+-    shooter = kind == "shooter"
+-    palette = {
+-        "jersey": material("midnight teal jersey" if shooter else "crimson defender jersey", (0.025,.20,.27,1) if shooter else (.36,.025,.07,1), .12,.33),
+-        "trim": material("ice jersey piping" if shooter else "amber defender piping", (.22,.93,.91,1) if shooter else (1,.47,.08,1), .42,.25, (.12,.7,.7,1) if shooter else (.8,.16,.02,1)),
+-        "short": material("tailored shorts", (.018,.06,.1,1) if shooter else (.12,.01,.03,1), .08,.48),
+-        "skin": material("warm skin", (.42,.19,.105,1), 0,.62),
+-        "shoe": material("high top white" if shooter else "high top graphite", (.74,.82,.84,1) if shooter else (.035,.045,.065,1), .3,.27),
+-        "hair": material("braided hair" if shooter else "close-cropped hair", (.025,.012,.008,1), 0,.78),
+-        "accent": material("shooting sleeve" if shooter else "compression sleeve", (.04,.68,.73,1) if shooter else (.95,.19,.05,1), .35,.26)
+-    }
+-    arm = make_armature("RooftopShooterV2" if shooter else "RooftopDefenderV2")
+-    # Custom tapered silhouette: separate real skinned pieces give clothing,
+-    # shoe, head, and limb material definition without masquerading as a skinless
+-    # primitive mannequin.
+-    parts = []
+-    parts += [(tapered_limb("tapered torso", (0,1.30,0), .34,.25,.62,palette["jersey"]), "Spine")]
+-    parts += [(cube("jersey chest panel", (0,1.39,-.255), (.22,.18,.022),palette["trim"],.018), "Spine")]
+-    parts += [(cube("tailored shorts", (0,.91,0), (.33,.17,.25),palette["short"],.055), "Pelvis")]
+-    parts += [(sphere("sculpted head", (0,1.86,-.01), (.245,.29,.23),palette["skin"]), "Head")]
+-    parts += [(sphere("hair cap", (0,2.055,.015), (.255,.10,.238),palette["hair"]), "Head")]
+-    for i in range(5 if shooter else 3):
+-        braid = sphere("hair braid %02d" % i, ((-.12 + i*.06) if shooter else 0, 2.03 - i*.075, .19), (.035,.09,.04), palette["hair"])
+-        parts.append((braid,"Head"))
+-    for side, sign in (("Left",-1),("Right",1)):
+-        parts += [(tapered_limb(side+" upper arm", (sign*.47,1.41,-.02), .115,.14,.42,palette["jersey"]), side+"UpperArm")]
+-        parts += [(tapered_limb(side+" forearm", (sign*.76,1.18,-.05), .09,.11,.38,palette["skin"] if (shooter and side=="Right") else palette["accent"]), side+"Forearm")]
+-        parts += [(sphere(side+" palm", (sign*.9,1.03,-.07), (.10,.105,.09),palette["skin"]), side+"Forearm")]
+-        parts += [(tapered_limb(side+" upper leg", (sign*.18,.59,0), .16,.19,.44,palette["short"]), side+"UpperLeg")]
+-        parts += [(tapered_limb(side+" lower leg", (sign*.22,.23,.06), .105,.13,.42,palette["skin"]), side+"LowerLeg")]
+-        parts += [(cube(side+" high top", (sign*.22,.075,.16), (.16,.09,.29),palette["shoe"],.045), side+"LowerLeg")]
+-        if not shooter:
+-            parts += [(cube(side+" knee pad", (sign*.22,.42,.08), (.125,.105,.075),palette["accent"],.035), side+"LowerLeg")]
+-    for obj,bone in parts: parent_skin(obj,arm,bone)
+-    add_text("jersey number", "11" if shooter else "04", (0,1.37,-.286), (.17,.17,.17), palette["trim"], (arm,"Spine"))
+-    # Real NLA actions on the rig. Each clip has authored bone rotations and,
+-    # for the contest jump, a Root translation. Exported data is inspected below.
+-    clips = ([
+-        ("Load", {"Spine":(-.20,0,0),"LeftUpperArm":(-.40,0,-1.05),"LeftForearm":(-.2,0,-.45),"RightUpperArm":(-.5,0,1.18),"RightForearm":(-.35,0,.44),"LeftUpperLeg":(.18,0,-.12),"RightUpperLeg":(.18,0,.12)}, None),
+-        ("Release", {"Spine":(.10,0,-.08),"LeftUpperArm":(-.55,0,-2.22),"LeftForearm":(-.25,0,-.18),"RightUpperArm":(-.40,0,2.24),"RightForearm":(-.16,0,.16)}, None),
+-        ("FollowThrough", {"Spine":(.08,0,-.04),"LeftUpperArm":(-.45,0,-2.45),"LeftForearm":(-.15,0,-.08),"RightUpperArm":(-.24,0,2.42),"RightForearm":(-.08,0,.08)}, None)
+-    ] if shooter else [
+-        ("Plant", {"Spine":(-.12,0,0),"LeftUpperLeg":(.28,0,-.22),"RightUpperLeg":(.28,0,.22),"LeftUpperArm":(0,0,-.48),"RightUpperArm":(0,0,.48)}, None),
+-        ("Telegraph", {"Spine":(-.24,0,0),"LeftUpperLeg":(.42,0,-.30),"RightUpperLeg":(.42,0,.30),"LeftUpperArm":(-.24,0,-1.34),"RightUpperArm":(-.24,0,1.34)}, None),
+-        ("Jump", {"Spine":(.05,0,0),"LeftUpperArm":(-.30,0,-2.52),"RightUpperArm":(-.30,0,2.52),"LeftForearm":(-.12,0,-.16),"RightForearm":(-.12,0,.16)}, (0,.44,0)),
+-        ("Contest", {"Spine":(.10,0,0),"LeftUpperArm":(-.18,0,-2.74),"RightUpperArm":(-.18,0,2.74),"LeftForearm":(-.06,0,-.08),"RightForearm":(-.06,0,.08)}, (0,.30,0))
+-    ])
+-    arm.animation_data_create()
+-    for clip_name, poses, root_move in clips:
+-        action = bpy.data.actions.new(clip_name)
+-        # Blender 5 owns F-curves through an action slot. Assigning the action
+-        # to the armature before using PoseBone.keyframe_insert creates that
+-        # slot and writes genuine bone transform channels.
+-        arm.animation_data.action = action
+-        for bone_name, rot in poses.items():
+-            bone = arm.pose.bones[bone_name]
+-            bone.rotation_euler = (0, 0, 0)
+-            bone.keyframe_insert(data_path="rotation_euler", frame=1, group=bone_name)
+-            bone.rotation_euler = rot
+-            bone.keyframe_insert(data_path="rotation_euler", frame=16, group=bone_name)
+-        if root_move:
+-            arm.location = (0, 0, 0)
+-            arm.keyframe_insert(data_path="location", frame=1, group="Root")
+-            arm.location = root_move
+-            arm.keyframe_insert(data_path="location", frame=16, group="Root")
+-        track = arm.animation_data.nla_tracks.new()
+-        track.name = clip_name
+-        track.strips.new(clip_name, 1, action)
+-    arm.animation_data.action = None
+-    return arm
+-
+-def venue():
+-    clear()
+-    roof = material("weathered concrete", (.075,.09,.115,1), .08,.64)
+-    steel = material("painted steel", (.04,.09,.12,1), .72,.27)
+-    amber = material("amber street practical", (.9,.23,.035,1), .35,.26, (.95,.12,.01,1))
+-    cyan = material("cool city practical", (.03,.38,.48,1), .42,.24, (.02,.45,.7,1))
+-    crowd = material("bleacher seating", (.16,.055,.19,1), .14,.42)
+-    brick = material("brick service core", (.16,.045,.03,1), .04,.75)
+-    # The active 16 x 14 court remains route-owned. These visual structures
+-    # stay outside its bounds or below y=0 and contain no goal geometry.
+-    cube("under-court roof deck", (0,-.38,4), (8.55,.34,7.35), roof,.08)
+-    for sign in (-1,1):
+-        x=sign*9.15
+-        for row in range(4):
+-            cube("bleacher tier %s %d"%(sign,row),(x, .42+row*.34, 2.9-row*.23),(1.12-row*.12,.16,4.2-row*.34),crowd,.035)
+-        cube("bleacher handrail base %s"%sign,(x-sign*.94,1.52,3.0),(.035,.035,4.15),steel,.012)
+-        for z in (-.8,2.0,4.8,7.5):
+-            cyl("rail post",(x-sign*.94,1.18,z),.035,1.25,steel,12,.01)
+-    for x,z,sx,sz,h in [(-10,-4,1.1,1.3,5.5),(10,-4,1.2,1.4,6.2),(-10,10,1.2,1.0,4.4),(10,10,1.1,1.0,5.1),(0,-6.0,3.0,.65,3.7)]:
+-        cube("service tower",(x,h/2,z),(sx,h/2,sz),brick,.07)
+-        cube("tower illuminated band",(x,h*.62,z-sz-.02),(sx*.76,.10,.025),cyan,.01)
+-    # Four sculpted light pylons plus a water tower add rooftop depth, but no hoop.
+-    for x,z in [(-7.8,-1.8),(7.8,-1.8),(-7.8,9.8),(7.8,9.8)]:
+-        cyl("venue light mast",(x,3.2,z),.09,6.3,steel,16,.02)
+-        cube("venue flood bar",(x,6.22,z),(.55,.10,.18),amber,.03)
+-    for a in range(4):
+-        angle=a*math.tau/4
+-        cyl("water tower leg",(3.8+math.cos(angle)*.65,1.2,-4.65+math.sin(angle)*.65),.07,2.4,steel,12,.012)
+-    cyl("water tower tank",(3.8,2.75,-4.65),.83,1.1,steel,20,.045)
+-    cyl("water tower cap",(3.8,3.35,-4.65),.5,.12,cyan,20,.02)
+-    for x in (-5.4,-2.7,0,2.7,5.4):
+-        cube("streetlight banner",(x,2.65,10.85),(.38,.78,.04),amber if x==0 else cyan,.02)
+-
+-def export(filename, animation=False):
+-    bpy.ops.object.select_all(action="SELECT")
+-    # Authoring coordinates are deliberately Aura's +Y-up route coordinates;
+-    # keep those axes literal in the emitted GLB rather than asking Blender to
+-    # remap its conventional +Z-up scene during export.
+-    bpy.ops.export_scene.gltf(filepath=str(OUT/filename), export_format="GLB", export_yup=False,
+-        export_materials="EXPORT", export_cameras=False, export_lights=False,
+-        export_animations=animation, export_animation_mode="NLA_TRACKS", export_nla_strips=True,
+-        export_force_sampling=True)
+-    # The Aura asset inspector reads orientation from *asset* extras. Blender's
+-    # exporter only serializes custom properties onto nodes/scenes, so add the
+-    # factual route coordinate declaration directly to the emitted GLB header.
+-    path = OUT / filename
+-    raw = path.read_bytes()
+-    magic, version, _length = struct.unpack_from("<4sII", raw, 0)
+-    json_length, json_kind = struct.unpack_from("<I4s", raw, 12)
+-    if magic != b"glTF" or version != 2 or json_kind != b"JSON":
+-        raise RuntimeError("Unexpected GLB structure while adding orientation metadata")
+-    gltf = json.loads(raw[20:20 + json_length].decode("utf8"))
+-    gltf.setdefault("asset", {}).setdefault("extras", {})["aura3d"] = {
+-        "orientation": {"forwardAxis": "+Z", "upAxis": "+Y"}
+-    }
+-    encoded = json.dumps(gltf, separators=(",", ":")).encode("utf8")
+-    encoded += b" " * ((4 - len(encoded) % 4) % 4)
+-    tail = raw[20 + json_length:]
+-    output = struct.pack("<4sII", b"glTF", 2, 12 + 8 + len(encoded) + len(tail))
+-    output += struct.pack("<I4s", len(encoded), b"JSON") + encoded + tail
+-    path.write_bytes(output)
+-
+-if __name__ == "__main__":
+-    athlete("shooter"); export("rooftopShooterV2.glb", True)
+-    athlete("defender"); export("rooftopDefenderV2.glb", True)
+-    venue(); export("rooftopVenueV2.glb")
+-    print("Wrote Rooftop Buckets V2 local art to", OUT)
+diff --git a/apps/showcase-rooftop-buckets/scripts/register-acquired-athletes.mjs b/apps/showcase-rooftop-buckets/scripts/register-acquired-athletes.mjs
+deleted file mode 100644
+index 644b79932..000000000
+--- a/apps/showcase-rooftop-buckets/scripts/register-acquired-athletes.mjs
++++ /dev/null
+@@ -1,65 +0,0 @@
+-/**
+- * Register the reviewed CC-BY Rooftop Buckets athlete derivatives.
+- *
+- * These are static, pose-authored route subjects: the route owns ballistics,
+- * movement, contest state, and all gameplay truth.  The source athlete and the
+- * ball-free defender derivative retain their attribution and adaptation notes;
+- * they are not presented as an animation kit or as a second licensed identity.
+- * Run after the root CLI has been built.  A hash-matching root probe is required
+- * before either entry is promoted from candidate to release.
+- */
+-import { execFileSync } from "node:child_process";
+-import { createHash } from "node:crypto";
+-import { existsSync, readFileSync } from "node:fs";
+-import { dirname, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const cli = resolve(repoRoot, "packages/aura3d-cli/dist/cli.js");
+-const probeDir = resolve(repoRoot, "tests/reports/showcase-release-asset-probes");
+-const sourcePage = "https://sketchfab.com/3d-models/basketball-player-9a1be0ed25f94e9998adee1df3a2d218";
+-const sourceDownload = "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-099/9a1be0ed25f94e9998adee1df3a2d218.glb";
+-const entries = [
+-  {
+-    id: "rooftopAthleteShooter",
+-    file: "rooftopAthleteShooter.glb",
+-    role: "character",
+-    adaptation: "Ball hierarchy removed from the CC-BY source; the route-owned typed basketball remains the sole gameplay ball. Pose, meshes, and packed textures are preserved.",
+-    suitability: "Static, continuous textured basketball shooter in a readable raised-ball release pose. Route-local transforms stage charge, release, airborne contest, and follow-through; this asset makes no controller-capability claim."
+-  },
+-  {
+-    id: "rooftopAthleteDefender",
+-    file: "rooftopAthleteDefender.glb",
+-    role: "character",
+-    adaptation: "Derived from the same CC-BY source: the complete ball hierarchy was removed, the two arm islands were opened into an asymmetric contest V, uniform texels were recolored blue/gold, and the mesh was normalized to 1.95 m.",
+-    suitability: "Static, continuous textured contest defender variant with an asymmetric raised-arm silhouette. It is a visual player variant derived from the same licensed source identity; route-local contest and collision-region state remain authoritative."
+-  }
+-];
+-
+-if (!existsSync(cli)) throw new Error("Build packages/aura3d-cli before registering acquired Rooftop athletes.");
+-
+-for (const entry of entries) {
+-  const source = resolve(appDir, "assets/models", entry.file);
+-  const probe = resolve(probeDir, `${entry.id}.json`);
+-  if (!existsSync(source)) throw new Error(`Missing acquired athlete source: ${source}`);
+-  const hash = `sha256-${createHash("sha256").update(readFileSync(source)).digest("hex")}`;
+-  const hasProbe = existsSync(probe) && JSON.parse(readFileSync(probe, "utf8")).renderedProbe?.assetHash === hash;
+-  const args = [
+-    "assets", "add", source, "--name", entry.id, "--type", "model",
+-    "--license", "CC-BY-4.0", "--license-name", "Creative Commons Attribution 4.0 International", "--license-url", "https://creativecommons.org/licenses/by/4.0/",
+-    "--author", "3DDomino", "--source-family", "objaverse",
+-    "--source-page", sourcePage,
+-    "--source-url", sourceDownload,
+-    "--download-url", sourceDownload,
+-    "--attribution", "Basketball player by 3DDomino (CC BY 4.0); Aura3D route-local derivative",
+-    "--provenance-evidence", `Official Objaverse/Sketchfab source bytes were hash-verified before adaptation. ${entry.adaptation}`,
+-    "--retrieved-at", "2026-08-31T00:00:00.000Z", "--quality", hasProbe ? "release" : "candidate", "--role", entry.role, "--suitability", entry.suitability
+-  ];
+-  if (hasProbe) args.push("--rendered-probe-json", probe);
+-  const orientation = resolve(probeDir, `${entry.id}.orientation.json`);
+-  if (hasProbe && existsSync(orientation)) args.push("--orientation-json", orientation);
+-  execFileSync("node", [cli, ...args], { cwd: repoRoot, stdio: "inherit" });
+-}
+-execFileSync("node", [cli, "assets", "typegen"], { cwd: repoRoot, stdio: "inherit" });
+-console.log(`Rooftop acquired-athlete registration complete: ${entries.map(({ id }) => id).join(", ")}`);
+diff --git a/apps/showcase-rooftop-buckets/scripts/register-assets.mjs b/apps/showcase-rooftop-buckets/scripts/register-assets.mjs
+deleted file mode 100644
+index c1a5f42b2..000000000
+--- a/apps/showcase-rooftop-buckets/scripts/register-assets.mjs
++++ /dev/null
+@@ -1,116 +0,0 @@
+-/** Build and register Rooftop Buckets' deterministic original CC0 assets. */
+-import { execFileSync } from "node:child_process";
+-import { createHash } from "node:crypto";
+-import { existsSync, readFileSync } from "node:fs";
+-import { dirname, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const cli = resolve(repoRoot, "packages/aura3d-cli/dist/cli.js");
+-const probeDir = resolve(repoRoot, "tests/reports/showcase-release-asset-probes");
+-if (!existsSync(cli)) throw new Error("Build packages/aura3d-cli before registering Rooftop Buckets assets.");
+-
+-execFileSync("node", [resolve(appDir, "scripts/build-models.mjs")], { cwd: repoRoot, stdio: "inherit" });
+-execFileSync("node", [resolve(appDir, "scripts/build-sfx.mjs")], { cwd: repoRoot, stdio: "inherit" });
+-
+-const models = [
+-  {
+-    id: "rooftopCourt",
+-    role: "world",
+-    suitability: "Original CC0 metre-scale flat-color 16 by 14 metre rooftop court slab; its readable bounds and authored world scale match the six route-local shooting spots."
+-  },
+-  {
+-    id: "rooftopBackboard",
+-    role: "prop",
+-    suitability: "Original CC0 metre-scale flat-color 1.8 by 1.05 metre backboard prop, synchronized to the composed route-local board contact region and kept visible in the fixed shooting camera."
+-  },
+-  {
+-    id: "rooftopRim",
+-    role: "prop",
+-    suitability: "Original CC0 metre-scale flat-color 0.48 metre hoop prop, synchronized to the composed route-local rim and top-to-bottom scoring regions without claiming reusable physics."
+-  },
+-  {
+-    id: "rooftopBall",
+-    role: "prop",
+-    suitability: "Original CC0 unit-normalized flat-color basketball prop, scaled by the route to a regulation 0.24 metre diameter and synchronized to the authored deterministic flight state."
+-  },
+-  {
+-    id: "rooftopDefender",
+-    role: "character",
+-    suitability: "Original CC0 metre-scale stylized basketball defender character with 16 named parented pose nodes and Plant, Telegraph, Jump, and Contest clips. The route binds those clips to its deterministic contest state; no skinning or reusable defender system is claimed."
+-  },
+-  {
+-    id: "rooftopShooter",
+-    role: "character",
+-    suitability: "Original CC0 metre-scale stylized basketball shooter with 16 named parented pose nodes and Load, Release, and FollowThrough clips. The separately typed ball and route-local flight remain authoritative; no skinning or reusable player system is claimed."
+-  }
+-];
+-
+-for (const model of models) {
+-  const source = resolve(appDir, `assets/models/${model.id}.glb`);
+-  const probe = resolve(probeDir, `${model.id}.json`);
+-  const sourceHash = `sha256-${createHash("sha256").update(readFileSync(source)).digest("hex")}`;
+-  const hasProbe = existsSync(probe)
+-    && JSON.parse(readFileSync(probe, "utf8")).renderedProbe?.assetHash === sourceHash;
+-  const args = [
+-    "assets", "add", source,
+-    "--name", model.id,
+-    "--type", "model",
+-    "--license", "CC0-1.0",
+-    "--license-name", "CC0 1.0 Universal",
+-    "--license-url", "https://creativecommons.org/publicdomain/zero/1.0/",
+-    "--author", "Aura3D synthesis",
+-    "--source-family", "aura3d-original",
+-    "--source-page", "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-rooftop-buckets/scripts/build-models.mjs",
+-    "--download-url", `https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-rooftop-buckets/assets/models/${model.id}.glb`,
+-    "--attribution", "Aura3D synthesis — original CC0 Rooftop Buckets model family",
+-    "--provenance-evidence", "Deterministically generated from the committed Rooftop Buckets model source; geometry, metre/unit scale, materials, and orientation metadata are reproducible.",
+-    "--retrieved-at", "2026-08-24T00:00:00.000Z",
+-    "--quality", hasProbe ? "release" : "candidate",
+-    "--role", model.role,
+-    "--suitability", model.suitability
+-  ];
+-  if (hasProbe) args.push("--rendered-probe-json", probe);
+-  execFileSync("node", [cli, ...args], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
+-  console.log(`registered ${model.id} (${hasProbe ? "release + retained probe" : "candidate; probe pending"})`);
+-}
+-
+-const audio = [
+-  ["ambientRooftop", "rooftopBucketsAmbientRooftopSfx", "Looping dusk rooftop ambience started by the route audio controller."],
+-  ["boardThud", "rooftopBucketsBoardThudSfx", "Backboard thud driven only by the composed board contact event."],
+-  ["brickMiss", "rooftopBucketsBrickMissSfx", "Miss cue driven only by a settled non-scoring shot or gold failure."],
+-  ["buzzerFail", "rooftopBucketsBuzzerFailSfx", "Buzzer cue driven by clock violation or terminal timer failure."],
+-  ["chargeTick", "rooftopBucketsChargeTickSfx", "Rate-limited charge tick driven by live keyboard or touch hold state."],
+-  ["fireIgnite", "rooftopBucketsFireIgniteSfx", "Fire ignition cue driven by the third consecutive make."],
+-  ["goldBall", "rooftopBucketsGoldBallSfx", "Gold-ball cue driven by the single finale launch or verified gold outcome fixture."],
+-  ["heatAdvance", "rooftopBucketsHeatAdvanceSfx", "Heat advance fanfare driven by the player accepting a cleared heat."],
+-  ["rimClank", "rooftopBucketsRimClankSfx", "Rim clank driven only by a composed rim contact event."],
+-  ["swish", "rooftopBucketsSwishSfx", "Swish cue driven by an armed top-to-bottom rim sensor sequence."]
+-];
+-
+-for (const [fileName, id, suitability] of audio) {
+-  const source = resolve(appDir, `assets/sfx/${fileName}.wav`);
+-  execFileSync("node", [cli,
+-    "assets", "add", source,
+-    "--name", id,
+-    "--type", "audio",
+-    "--license", "CC0-1.0",
+-    "--license-name", "CC0 1.0 Universal",
+-    "--license-url", "https://creativecommons.org/publicdomain/zero/1.0/",
+-    "--author", "Aura3D synthesis",
+-    "--source-family", "aura3d-original",
+-    "--source-page", "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-rooftop-buckets/scripts/build-sfx.mjs",
+-    "--download-url", `https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-rooftop-buckets/assets/sfx/${fileName}.wav`,
+-    "--attribution", "Aura3D synthesis — original CC0 Rooftop Buckets audio",
+-    "--provenance-evidence", "Deterministically synthesized from the committed oscillator and seeded-noise generator; contains no sampled material.",
+-    "--retrieved-at", "2026-08-24T00:00:00.000Z",
+-    "--quality", "candidate",
+-    "--role", "unknown",
+-    "--suitability", suitability
+-  ], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
+-  console.log(`registered ${id} (candidate)`);
+-}
+-
+-execFileSync("node", [cli, "assets", "typegen"], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
+-console.log(`Rooftop Buckets registration complete: ${models.length} models, ${audio.length} audio cues.`);
+diff --git a/apps/showcase-rooftop-buckets/scripts/register-production-art.mjs b/apps/showcase-rooftop-buckets/scripts/register-production-art.mjs
+deleted file mode 100644
+index 71ade1d84..000000000
+--- a/apps/showcase-rooftop-buckets/scripts/register-production-art.mjs
++++ /dev/null
+@@ -1,99 +0,0 @@
+-/**
+- * Register the production Rooftop Buckets art once its retained browser
+- * probes are available.
+- *
+- * This command is intentionally dry-run by default. `assets add` writes the
+- * repository's generated root manifest and public asset copies, so the
+- * release coordinator must opt in with `--apply` after the exact route probe
+- * has been captured. The producer and local GLB inspection are independent of
+- * that global manifest step.
+- */
+-import { execFileSync } from "node:child_process";
+-import { createHash } from "node:crypto";
+-import { existsSync, readFileSync } from "node:fs";
+-import { dirname, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const cli = resolve(repoRoot, "packages/aura3d-cli/dist/cli.js");
+-const apply = process.argv.includes("--apply");
+-const probeDir = resolve(repoRoot, "tests/reports/showcase-release-asset-probes");
+-
+-if (!existsSync(cli)) throw new Error("Build packages/aura3d-cli before registering Rooftop Buckets production art.");
+-
+-const entries = [
+-  {
+-    id: "rooftopCourt",
+-    file: "rooftopCourt.glb",
+-    role: "world",
+-    suitability: "Provenance-bound Rooftop Buckets streetball venue with a sealed 16 by 14 metre court slab, stepped rear and side bleachers, railings, sponsor banners, flood bars, and spectator crowd dressing. The stylized flat-color material rationale is intentional: this authored venue uses readable solid-color materials instead of image textures, with the retained browser probe proving visibility and separation. It deliberately contains no hoop, backboard, ball, collider, or scoring authority; the route owns those gameplay regions and typed props."
+-  },
+-  {
+-    id: "rooftopLayupScorer",
+-    file: "rooftopLayupScorer.glb",
+-    role: "character",
+-    suitability: "Provenance-bound CC-BY-4.0 textured humanoid athlete derived from Sketchfab Man Player, with one 191-joint skin, retained image materials, +Y-up/+Z-forward orientation metadata, and truthful route-authored Ready, Load, Release, and FollowThrough clips. The route owns root translation, the separate typed basketball, ballistic flight, contact sensors, and score state."
+-  },
+-  {
+-    id: "rooftopDefender",
+-    file: "rooftopDefender.glb",
+-    role: "character",
+-    suitability: "Provenance-bound CC-BY-4.0 textured humanoid defender derived from Sketchfab Man Player, with one 191-joint skin, a distinct crimson uniform material family, +Y-up/+Z-forward orientation metadata, and truthful Plant, Telegraph, Jump, and Contest clips. The route owns defender root placement, telegraph timing, composed block region, ballistics, and contest scoring; no reusable sports kit is claimed."
+-  }
+-];
+-
+-for (const entry of entries) {
+-  const source = resolve(appDir, `assets/models/${entry.file}`);
+-  if (!existsSync(source)) throw new Error(`Missing production art: ${source}`);
+-  const hash = `sha256-${createHash("sha256").update(readFileSync(source)).digest("hex")}`;
+-  const probe = resolve(probeDir, `${entry.id}.json`);
+-  const hasProbe = existsSync(probe) && JSON.parse(readFileSync(probe, "utf8")).renderedProbe?.assetHash === hash;
+-  const externalAthlete = entry.role === "character";
+-  const args = [
+-    "assets", "add", source,
+-    "--name", entry.id,
+-    "--type", "model",
+-    ...(externalAthlete
+-      ? [
+-          "--license", "CC-BY-4.0",
+-          "--license-name", "Creative Commons Attribution 4.0 International",
+-          "--license-url", "https://creativecommons.org/licenses/by/4.0/",
+-          "--author", "RiverofCreative (Sketchfab Man Player); Aura3D derivative authoring",
+-          "--source-family", "sketchfab-4c7133dbb06e4136891d59231372d818",
+-          "--source-page", "https://sketchfab.com/3d-models/man-player-4c7133dbb06e4136891d59231372d818",
+-          "--download-url", "https://api.sketchfab.com/v3/models/4c7133dbb06e4136891d59231372d818/download",
+-          "--attribution", "RiverofCreative — Man Player (CC-BY-4.0); Aura3D Rooftop Buckets derivative authoring",
+-          "--provenance-evidence", "Derived deterministically by apps/showcase-rooftop-buckets/scripts/build-production-art.py from the retained Sketchfab Man Player source. Local Aura CLI inspection verifies one 191-joint skin, textured materials, metre-scale bounds, +Y-up/+Z-forward orientation, and named role-specific clips before registration."
+-        ]
+-      : [
+-          "--license", "CC0-1.0",
+-          "--license-name", "CC0 1.0 Universal",
+-          "--license-url", "https://creativecommons.org/publicdomain/zero/1.0/",
+-          "--author", "Aura3D synthesis",
+-          "--source-family", "aura3d-original",
+-          "--source-page", "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-rooftop-buckets/scripts/build-production-art.py",
+-          "--download-url", "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-rooftop-buckets/assets/models/rooftopCourt.glb",
+-          "--attribution", "Aura3D synthesis — original Rooftop Buckets venue authoring",
+-          "--provenance-evidence", "Deterministically authored by apps/showcase-rooftop-buckets/scripts/build-production-art.py. Local Aura CLI inspection verifies the sealed 16 by 14 metre court footprint, bleacher/crowd geometry, materials, and +Y-up/+Z-forward orientation before registration."
+-        ]),
+-    "--retrieved-at", "2026-08-31T00:00:00.000Z",
+-    "--quality", hasProbe ? "release" : "candidate",
+-    "--role", entry.role,
+-    "--suitability", entry.suitability
+-  ];
+-  if (hasProbe) args.push("--rendered-probe-json", probe);
+-  const command = ["node", cli, ...args];
+-  if (apply) {
+-    execFileSync(command[0], command.slice(1), { cwd: repoRoot, stdio: "inherit" });
+-  } else {
+-    console.log(command.map((part) => JSON.stringify(part)).join(" "));
+-  }
+-}
+-
+-if (apply) {
+-  execFileSync("node", [cli, "assets", "typegen"], { cwd: repoRoot, stdio: "inherit" });
+-  console.log(`Rooftop Buckets production registration complete: ${entries.map(({ id }) => id).join(", ")}`);
+-} else {
+-  console.log("Dry run only. Re-run with --apply after retained browser probes are captured; this is the only step that writes the global typed manifest.");
+-}
+diff --git a/apps/showcase-rooftop-buckets/scripts/register-v2-art.mjs b/apps/showcase-rooftop-buckets/scripts/register-v2-art.mjs
+deleted file mode 100644
+index 108bc5234..000000000
+--- a/apps/showcase-rooftop-buckets/scripts/register-v2-art.mjs
++++ /dev/null
+@@ -1,50 +0,0 @@
+-/** Register only the hash-inspected Rooftop Buckets V2 art and regenerate types. */
+-import { execFileSync } from "node:child_process";
+-import { createHash } from "node:crypto";
+-import { existsSync, readFileSync } from "node:fs";
+-import { dirname, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const cli = resolve(repoRoot, "packages/aura3d-cli/dist/cli.js");
+-const probeDir = resolve(repoRoot, "tests/reports/showcase-release-asset-probes");
+-const entries = [
+-  {
+-    id: "rooftopShooterV2", role: "character",
+-    suitability: "Original CC0 metre-scale Rooftop Buckets shooter with seven readable uniform/body materials, a real 12-joint skin, and exact Load, Release, and FollowThrough clips. It faces +Z and stands +Y-up; route-local ballistics, scoring, and input own gameplay truth."
+-  },
+-  {
+-    id: "rooftopDefenderV2", role: "character",
+-    suitability: "Original CC0 metre-scale Rooftop Buckets defender with seven readable uniform/body materials, a real 12-joint skin, and exact Plant, Telegraph, Jump, and Contest clips. It faces +Z and stands +Y-up; route-local contest and collision-region state own gameplay truth."
+-  },
+-  {
+-    id: "rooftopVenueV2", role: "environment",
+-    suitability: "Original CC0 metre-scale surrounding rooftop streetball venue with material-varied bleachers, service towers, floodlights, banners, and water tower. Its authored stylized flat-color material rationale keeps structural tiers and sponsor accents readable without image textures. It surrounds the existing active court and deliberately contains no hoop, net, or collision authority."
+-  }
+-];
+-if (!existsSync(cli)) throw new Error("Build packages/aura3d-cli before registering Rooftop Buckets V2 art.");
+-
+-for (const entry of entries) {
+-  const source = resolve(appDir, `assets/models/${entry.id}.glb`);
+-  const probe = resolve(probeDir, `${entry.id}.json`);
+-  if (!existsSync(source)) throw new Error(`Missing authored V2 source: ${source}`);
+-  const hash = `sha256-${createHash("sha256").update(readFileSync(source)).digest("hex")}`;
+-  const hasProbe = existsSync(probe) && JSON.parse(readFileSync(probe, "utf8")).renderedProbe?.assetHash === hash;
+-  const args = [
+-    "assets", "add", source, "--name", entry.id, "--type", "model",
+-    "--license", "CC0-1.0", "--license-name", "CC0 1.0 Universal", "--license-url", "https://creativecommons.org/publicdomain/zero/1.0/",
+-    "--author", "Aura3D synthesis", "--source-family", "aura3d-original",
+-    "--source-page", "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-rooftop-buckets/scripts/build-v2-art.py",
+-    "--download-url", `https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-rooftop-buckets/assets/models/${entry.id}.glb`,
+-    "--attribution", "Aura3D synthesis — original CC0 Rooftop Buckets V2 art",
+-    "--provenance-evidence", "Deterministically authored from committed Blender source; local Aura CLI inspection verifies metre bounds, materials, orientation, skins, and named clips before registration.",
+-    "--retrieved-at", "2026-08-31T21:00:00.000Z", "--quality", hasProbe ? "release" : "candidate", "--role", entry.role, "--suitability", entry.suitability
+-  ];
+-  if (hasProbe) args.push("--rendered-probe-json", probe);
+-  const orientation = resolve(probeDir, `${entry.id}.orientation.json`);
+-  if (hasProbe && existsSync(orientation)) args.push("--orientation-json", orientation);
+-  execFileSync("node", [cli, ...args], { cwd: repoRoot, stdio: "inherit" });
+-}
+-execFileSync("node", [cli, "assets", "typegen"], { cwd: repoRoot, stdio: "inherit" });
+-console.log(`Rooftop Buckets V2 registration complete: ${entries.map(({ id }) => id).join(", ")}`);
+diff --git a/apps/showcase-rooftop-buckets/scripts/write-deploy-report.mjs b/apps/showcase-rooftop-buckets/scripts/write-deploy-report.mjs
+deleted file mode 100644
+index 29bdc61c2..000000000
+--- a/apps/showcase-rooftop-buckets/scripts/write-deploy-report.mjs
++++ /dev/null
+@@ -1,67 +0,0 @@
+-import { createHash } from "node:crypto";
+-import { execFileSync } from "node:child_process";
+-import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+-import { dirname, join, relative, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const cli = resolve(repoRoot, "packages/aura3d-cli/dist/cli.js");
+-const dist = resolve(appDir, "dist");
+-const source = resolve(appDir, "src");
+-const modelIds = ["rooftopCourt", "rooftopVenueV2", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopLayupScorer", "rooftopDefender"];
+-
+-function run(args) {
+-  try {
+-    return JSON.parse(execFileSync("node", [cli, ...args], { cwd: repoRoot, encoding: "utf8", maxBuffer: 128 * 1024 * 1024 }));
+-  } catch (error) {
+-    const stdout = error && typeof error === "object" && "stdout" in error ? String(error.stdout ?? "") : "";
+-    if (stdout) return JSON.parse(stdout);
+-    throw error;
+-  }
+-}
+-function files(directory) {
+-  return readdirSync(directory).sort().flatMap((name) => {
+-    const path = join(directory, name);
+-    return statSync(path).isDirectory() ? files(path) : [path];
+-  });
+-}
+-function treeHash(directory) {
+-  const hash = createHash("sha256");
+-  for (const path of files(directory)) hash.update(relative(directory, path)).update("\0").update(readFileSync(path)).update("\0");
+-  return hash.digest("hex");
+-}
+-
+-const common = ["check-deploy", "--dist", dist, "--release", "--source", source];
+-const modelResult = run([...common, ...modelIds.flatMap((id) => ["--asset", id])]);
+-const distResult = run([...common, "--no-assets"]);
+-const producer = "apps/showcase-rooftop-buckets/scripts/write-deploy-report.mjs";
+-const report = {
+-  schema: "aura3d.rooftop-buckets.deploy/1.0",
+-  generatedAt: new Date().toISOString(),
+-  producer,
+-  producerSourceSha256: createHash("sha256").update(readFileSync(resolve(repoRoot, producer))).digest("hex"),
+-  cli: "packages/aura3d-cli/dist/cli.js",
+-  cliSourceSha256: createHash("sha256").update(readFileSync(cli)).digest("hex"),
+-  distTreeSha256: treeHash(dist),
+-  sourceTreeSha256: treeHash(source),
+-  checks: {
+-    strictModels: {
+-      command: "check-deploy --release --source apps/showcase-rooftop-buckets/src --asset <court, venue, backboard, rim, ball, scorer, defender>",
+-      ok: modelResult.ok === true,
+-      assetCount: modelResult.manifest?.assets?.length ?? 0,
+-      assets: (modelResult.manifest?.assets ?? []).map((asset) => ({ id: asset.id, hash: asset.hash, quality: asset.quality, role: asset.role })),
+-      warnings: modelResult.warnings ?? [], failures: modelResult.failures ?? []
+-    },
+-    strictDistAndSource: {
+-      command: "check-deploy --release --source apps/showcase-rooftop-buckets/src --no-assets",
+-      ok: distResult.ok === true,
+-      warnings: distResult.warnings ?? [], failures: distResult.failures ?? []
+-    }
+-  },
+-  audioBoundary: "Ten deterministic synthesized WAV cues are current candidate-quality typed CC0 assets; model-oriented release bounds validation is intentionally not applied to audio.",
+-  pass: modelResult.ok === true && distResult.ok === true && (modelResult.manifest?.assets?.length ?? 0) === modelIds.length
+-};
+-writeFileSync(resolve(appDir, "deploy-report.json"), `${JSON.stringify(report, null, 2)}\n`);
+-console.log(JSON.stringify({ pass: report.pass, models: report.checks.strictModels.assetCount, modelWarnings: report.checks.strictModels.warnings.length, distWarnings: report.checks.strictDistAndSource.warnings.length }));
+-if (!report.pass) process.exitCode = 1;
+diff --git a/apps/showcase-rooftop-buckets/scripts/write-route-health.mjs b/apps/showcase-rooftop-buckets/scripts/write-route-health.mjs
+deleted file mode 100644
+index 62f9c116f..000000000
+--- a/apps/showcase-rooftop-buckets/scripts/write-route-health.mjs
++++ /dev/null
+@@ -1,165 +0,0 @@
+-import { createHash } from "node:crypto";
+-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+-import { dirname, join, relative, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const reportDir = join(repoRoot, "tests/reports/rooftop-buckets");
+-const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
+-const sha256 = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
+-const modelIds = ["rooftopCourt", "rooftopVenueV2", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopLayupScorer", "rooftopDefender"];
+-const audioIds = [
+-  "rooftopBucketsAmbientRooftopSfx", "rooftopBucketsBoardThudSfx", "rooftopBucketsBrickMissSfx",
+-  "rooftopBucketsBuzzerFailSfx", "rooftopBucketsChargeTickSfx", "rooftopBucketsFireIgniteSfx",
+-  "rooftopBucketsGoldBallSfx", "rooftopBucketsHeatAdvanceSfx", "rooftopBucketsRimClankSfx",
+-  "rooftopBucketsSwishSfx"
+-];
+-
+-function files(directory) {
+-  return readdirSync(directory).sort().flatMap((name) => {
+-    const path = join(directory, name);
+-    return statSync(path).isDirectory() ? files(path) : [path];
+-  });
+-}
+-const routeSourceFiles = files(join(appDir, "src")).filter((path) => /\.(?:ts|css)$/.test(path));
+-const routeSourceSha256 = (() => {
+-  const hash = createHash("sha256");
+-  for (const path of routeSourceFiles) hash.update(relative(appDir, path)).update("\0").update(readFileSync(path)).update("\0");
+-  return hash.digest("hex");
+-})();
+-const sourceText = routeSourceFiles.map((path) => readFileSync(path, "utf8")).join("\n");
+-for (const forbidden of [/\bfrom\s+["']three(?:\/|["'])/, /unsafeModelUrl\s*\(/, /model\s*\(\s*["'][^"']+\.gl(?:b|tf)/]) {
+-  if (forbidden.test(sourceText)) throw new Error(`Rooftop Buckets source violates the root-safe asset boundary: ${forbidden}`);
+-}
+-if (!existsSync(join(appDir, "README.md"))) throw new Error("Rooftop Buckets README is missing");
+-
+-const manifest = readJson(join(repoRoot, "aura.assets.json"));
+-const assetById = new Map(manifest.assets.map((asset) => [asset.id, asset]));
+-for (const id of modelIds) {
+-  const asset = assetById.get(id);
+-  if (!asset || asset.type !== "model" || asset.quality !== "release") throw new Error(`${id} is not a release-grade model`);
+-  const approvedProvenance = asset.provenance?.license === "CC0-1.0"
+-    ? ["Aura3D synthesis", "Kenney"].includes(asset.provenance?.author)
+-      : asset.provenance?.license?.startsWith("CC-BY-4.0")
+-      && ["Daniel Darko", "Daffa Haekal", "3DDomino", "RiverofCreative"].some((author) => asset.provenance?.author?.startsWith(author));
+-  if (!approvedProvenance || !asset.provenance?.sourcePage || !asset.provenance?.downloadUrl) throw new Error(`${id} durable model provenance is incomplete`);
+-  if (!asset.renderedProbe?.url || asset.renderedProbe.assetHash !== asset.hash || !existsSync(join(repoRoot, asset.renderedProbe.url))) throw new Error(`${id} rendered probe is missing or stale`);
+-  if ((id === "rooftopLayupScorer" || id === "rooftopDefender") && (asset.skeleton?.skinCount ?? 0) !== 1) {
+-    throw new Error(`${id} must expose exactly one release-probed skinned actor`);
+-  }
+-  if ((id === "rooftopLayupScorer" || id === "rooftopDefender") && (asset.skeleton?.jointCount ?? 0) < 191) {
+-    throw new Error(`${id} release athlete skeleton is below the 191-joint fidelity floor`);
+-  }
+-  if (!sourceText.includes(`assets.${id}`)) throw new Error(`${id} is not referenced by the live route`);
+-}
+-for (const id of audioIds) {
+-  const asset = assetById.get(id);
+-  if (!asset || asset.type !== "audio" || asset.quality !== "candidate" || asset.provenance?.license !== "CC0-1.0" || asset.provenance?.author !== "Aura3D synthesis" || !asset.provenance?.sourcePage || !asset.provenance?.downloadUrl) throw new Error(`${id} typed audio provenance/quality is incomplete`);
+-  if (!sourceText.includes(`assets.${id}`)) throw new Error(`${id} is not referenced by the live audio controller`);
+-}
+-
+-function validateReceipt(path, schema) {
+-  const receipt = readJson(path);
+-  if (receipt.schema !== schema || receipt.pass !== true) throw new Error(`${relative(repoRoot, path)} is missing or failing`);
+-  if (receipt.producerSourceSha256 !== sha256(join(repoRoot, receipt.producer))) throw new Error(`${relative(repoRoot, path)} producer binding is stale`);
+-  if (receipt.routeSourceSha256 !== routeSourceSha256) throw new Error(`${relative(repoRoot, path)} route-source binding is stale`);
+-  for (const artifact of receipt.artifacts ?? []) {
+-    if (!existsSync(join(repoRoot, artifact.path)) || artifact.sha256 !== sha256(join(repoRoot, artifact.path))) throw new Error(`${relative(repoRoot, path)} artifact binding is stale: ${artifact.path}`);
+-  }
+-  return receipt;
+-}
+-const visualReceipt = validateReceipt(join(reportDir, "browser-evidence.json"), "aura3d.rooftop-buckets.browser-evidence/1.0");
+-const playableReceipt = validateReceipt(join(reportDir, "playable/browser-evidence.json"), "aura3d.rooftop-buckets.playable-evidence/1.0");
+-for (const scenario of ["opening", "charge-arc", "release", "swish", "miss", "defender-contest", "fire", "buzzer", "gold-win", "mobile-opening", "mobile-touch-active", "reduced-motion-arc"]) {
+-  if (!visualReceipt.scenarios?.includes(scenario)) throw new Error(`visual receipt is missing ${scenario}`);
+-}
+-for (const scenario of ["keyboard-spot", "keyboard-aim", "keyboard-charge-release", "authored-flight-settle", "pause-freeze-resume", "full-reset", "open-clear", "three-unique-spots", "pressure-telegraph-offset", "pressure-clear", "fire-three-streak", "gold-miss", "gold-win", "buzzer", "touch-spot", "touch-aim", "touch-charge-release", "touch-pause-reset", "mobile-accessibility"]) {
+-  if (!playableReceipt.scenarios?.includes(scenario)) throw new Error(`playable receipt is missing ${scenario}`);
+-}
+-
+-const visual = readJson(join(reportDir, "visual.json"));
+-if (visual.contest?.hoopMode !== "pressure" || visual.contest?.defenderTelegraph !== "contest" || Math.abs(visual.contest?.contestAimOffset ?? 0) <= 0) throw new Error("defender contest visual state is missing");
+-if (visual.fire?.onFire !== true || visual.fire?.fireAchieved !== true || visual.fire?.lastShotResult !== "swish") throw new Error("fire visual state is missing");
+-if (visual.buzzer?.state !== "game-over" || visual.buzzer?.lastShotResult !== "violation") throw new Error("buzzer failure visual state is missing");
+-if (visual.goldWin?.state !== "victory" || visual.goldWin?.goldMade !== true) throw new Error("gold victory visual state is missing");
+-if (visual.mobileActive?.ballInFlight !== true || visual.reduced?.reducedMotion !== true) throw new Error("mobile or reduced-mode visual state is missing");
+-
+-const playable = readJson(join(reportDir, "playable/five-heats-touch.json"));
+-if (playable.open?.state !== "heat-cleared" || playable.spots?.madeSpotIds?.join(",") !== "1,2,3" || playable.pressureClear?.state !== "heat-cleared" || playable.fire?.state !== "heat-cleared" || playable.goldWin?.state !== "victory") throw new Error("complete five-heat browser arc is missing");
+-if (playable.goldMiss?.state !== "game-over" || playable.touchPaused?.state !== "paused" || playable.touchReset?.state !== "playing") throw new Error("gold failure or touch pause/reset proof is missing");
+-if (!Array.isArray(playable.touchTargets) || playable.touchTargets.length !== 7 || playable.touchTargets.some((target) => target.width < 44 || target.height < 44)) throw new Error("44px mobile touch target proof is missing");
+-
+-const performance = readJson(join(appDir, "performance-report.json"));
+-if (performance.schema !== "aura3d.rooftop-buckets.performance/1.0" || performance.pass !== true || performance.routeSourceSha256 !== routeSourceSha256 || performance.producerSourceSha256 !== sha256(join(repoRoot, performance.producer))) throw new Error("performance report is missing, failing, or stale");
+-const deploy = readJson(join(appDir, "deploy-report.json"));
+-if (deploy.schema !== "aura3d.rooftop-buckets.deploy/1.0" || deploy.pass !== true || deploy.checks?.strictModels?.ok !== true || deploy.checks?.strictModels?.assetCount !== modelIds.length || deploy.checks?.strictDistAndSource?.ok !== true || deploy.producerSourceSha256 !== sha256(join(repoRoot, deploy.producer))) throw new Error("strict deploy report is missing, failing, or stale");
+-if ([...(deploy.checks.strictModels.warnings ?? []), ...(deploy.checks.strictModels.failures ?? []), ...(deploy.checks.strictDistAndSource.warnings ?? []), ...(deploy.checks.strictDistAndSource.failures ?? [])].length > 0) throw new Error("strict deploy report contains warnings or failures");
+-
+-const gates = readJson(join(repoRoot, "tools/showcase-library/route-gates.json"));
+-const gate = gates.routes.find((route) => route.id === "showcase-rooftop-buckets");
+-if (!gate || gate.releaseClass !== "prototype-blocked" || gate.published !== true || gate.requiresTypedPrimaryAssets !== true || gate.gameTemplateStatus?.publicTemplateReady !== false) throw new Error("Rooftop Buckets route gate is missing or over-promoted");
+-if (JSON.stringify(gate.primaryAssets) !== JSON.stringify(modelIds) || gate.routePrimaryHeroAsset !== "rooftopBackboard") throw new Error("Rooftop Buckets route-primary asset gate is stale");
+-const primitiveOccurrences = Array.from(sourceText.matchAll(/\bprimitives\.[A-Za-z_$][\w$]*/g)).length;
+-if (primitiveOccurrences > gate.primitiveBudget) throw new Error("Rooftop Buckets primitive source budget exceeded");
+-
+-const routePrimaryPath = join(repoRoot, "tests/reports/showcase-route-primary-probes/showcase-rooftop-buckets.json");
+-const routePrimary = readJson(routePrimaryPath);
+-if (routePrimary.routeId !== "showcase-rooftop-buckets" || routePrimary.pass !== true || (routePrimary.failures?.length ?? 0) > 0 || routePrimary.routePrimaryHeroAsset !== "rooftopBackboard") throw new Error("Rooftop Buckets route-primary probe is missing or failing");
+-
+-const exactArtifacts = visualReceipt.artifacts.map((artifact) => ({ path: artifact.path, sha256: artifact.sha256 }));
+-const routeHealth = {
+-  schema: "aura3d-route-health/1.0",
+-  generatedAt: new Date().toISOString(),
+-  appId: "showcase-rooftop-buckets",
+-  route: "/apps/showcase-rooftop-buckets/",
+-  classification: "prototype-blocked",
+-  publicShowcase: false,
+-  promotionStatus: "hold-public-showcase-until-independent-human-visual-review",
+-  machinePass: true,
+-  routeSourceSha256,
+-  renderer: { path: "createGameApp root safe API", mode: "production with safe-basic fallback", nativeWebGPU: false, productionRuntimeClaimed: false },
+-  primaryAssets: modelIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, role: assetById.get(id).role })),
+-  audioAssets: audioIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
+-  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "subordinate skyline/court dressing, painted markings, stanchion/net, trajectory guides, and state feedback only", status: "no-primitive-primary-subjects" },
+-  gameplay: {
+-    heats: 5,
+-    heatModes: ["open", "spots", "pressure", "fire", "gold"],
+-    controls: ["spot", "aim arc", "charge/release", "pause", "full reset"],
+-    keyboardAndTouch: true,
+-    deterministicAuthoredFlight: true,
+-    sharedPreviewIntegrator: true,
+-    topToBottomRimSequence: true,
+-    physicsBodies: 0,
+-    defenderInfluence: "visible deterministic pre-launch aim offset",
+-    deterministicOutcomes: ["swish", "bank", "rim-in", "rim-out", "brick", "blocked", "clock violation", "heat clear", "gold fail", "gold victory"],
+-    reducedMotionPreservesAimAndOutcomeTruth: true
+-  },
+-  accessibility: { semanticMainAndHeading: true, namedCanvasRegion: true, namedTouchControls: 7, minimumTouchTargetPx: 44, sequentialFocusProven: true, liveHeatFireAndResultStatus: true, pass: true },
+-  performance,
+-  deploy,
+-  routeGate: { config: "tools/showcase-library/route-gates.json", releaseClass: gate.releaseClass, published: gate.published, publicTemplateReady: false, pass: true },
+-  claimStatus: {
+-    status: "blocked-pending-human-review",
+-    label: "root-safe prototype",
+-    allowed: ["typed original court/target/ball/defender assets", "route-local deterministic authored basketball flight", "composed route-local rim/board/defender regions", "five route-local heat objectives", "bounded first-flight prediction"],
+-    notAllowed: ["reusable basketball or sports kit", "Rapier or rigid-body basketball simulation", "generic rim or collision system", "prediction after first contact", "production-runtime-only rendering claims", "public promotion before independent exact-artifact review"]
+-  },
+-  blockers: ["independent human visual review pending for exact final artifacts"],
+-  evidence: {
+-    global: "window.__AURA3D_SHOWCASE_ROOFTOP_BUCKETS__",
+-    detailedGlobal: "window.__ROOFTOP_BUCKETS_EVIDENCE__",
+-    sourceReview: "apps/showcase-rooftop-buckets/src/main.ts",
+-    exactArtifacts,
+-    browserReceipts: ["tests/reports/rooftop-buckets/browser-evidence.json", "tests/reports/rooftop-buckets/playable/browser-evidence.json"],
+-    assetProbes: modelIds.map((id) => ({ asset: id, metadata: `tests/reports/showcase-release-asset-probes/${id}.json`, screenshot: assetById.get(id).renderedProbe.url, assetHash: assetById.get(id).hash })),
+-    performance: "apps/showcase-rooftop-buckets/performance-report.json",
+-    deploy: "apps/showcase-rooftop-buckets/deploy-report.json",
+-    routePrimary: "tests/reports/showcase-route-primary-probes/showcase-rooftop-buckets.json",
+-    browserSpecs: ["tests/browser/rooftop-buckets-playable.spec.ts", "tests/browser/rooftop-buckets-shot-visual.spec.ts"],
+-    unitSpecs: ["tests/unit/apps/rooftop-buckets-heats.test.ts", "tests/unit/apps/rooftop-buckets-scoring.test.ts"],
+-    deployCommands: ["check-deploy --release --source apps/showcase-rooftop-buckets/src --asset <7 model assets>", "check-deploy --release --source apps/showcase-rooftop-buckets/src --no-assets"]
+-  }
+-};
+-writeFileSync(join(appDir, "route-health.json"), `${JSON.stringify(routeHealth, null, 2)}\n`);
+-console.log(JSON.stringify({ machinePass: true, models: modelIds.length, audio: audioIds.length, exactArtifacts: exactArtifacts.length, primitiveOccurrences, performancePass: performance.pass }));
+diff --git a/apps/showcase-rooftop-buckets/src/legacy/main.ts b/apps/showcase-rooftop-buckets/src/legacy/main.ts
+index caca8287c..566f8d2d9 100644
+--- a/apps/showcase-rooftop-buckets/src/legacy/main.ts
++++ b/apps/showcase-rooftop-buckets/src/legacy/main.ts
+@@ -1,6 +1,3 @@
+-/**
+- * Rooftop Buckets — sports-ballistic charge–release precision against a composed rim collider.
+- */
+ import {
+   scene,
+   camera,
+@@ -52,114 +49,23 @@ import {
+ } from "@aura3d/game";
+ import { rooftopScenarios } from "../scenarios";
+ import { bindRooftopDrive } from "../scenario-drive";
+-import { bindRooftopEvidence } from "../evidence";
+ import { createRooftopSound } from "../sound";
+-
+-
+-export interface RooftopBucketsEvidence {
+-  status: string;
+-  mounted: boolean;
+-  heat: number;
+-  state: string;
+-  currentSpotId: number;
+-  score: number;
+-  target: number;
+-  streak: number;
+-  onFire: boolean;
+-  possession: number;
+-  makes: number;
+-  misses: number;
+-  shotClockMs: number;
+-  heatTimerMs: number;
+-  lastShotResult: string | null;
+-  goldBall: boolean;
+-  goldAttempted: boolean;
+-  goldMade: boolean;
+-  madeSpotIds: readonly number[];
+-  fireAchieved: boolean;
+-  aimPitch: number;
+-  chargePower: number;
+-  charging: boolean;
+-  ballInFlight: boolean;
+-  reducedMotion: boolean;
+-  hoopMode: string;
+-  defenderTelegraph: string;
+-  shooterAnimation: string;
+-  defenderAnimation: string;
+-  shooterMotionPhase: string;
+-  defenderMotionPhase: string;
+-  shooterBodyCompression: number;
+-  defenderReach: number;
+-  contactFxKind: string;
+-  contactFxActive: boolean;
+-  contestReactionActive: boolean;
+-  shooterClips: readonly string[];
+-  defenderClips: readonly string[];
+-  contestAimOffset: number;
+-  sensorEventCount: number;
+-  physicsBodyCount: number;
+-  physicsSolver: string;
+-  simulationOwner: string;
+-  predictionPointCount: number;
+-  primaryAssets: readonly string[];
+-  /** Visible broadcast-pose counterparts; gameplay/clip authority stays in primaryAssets. */
+-  presentationAssets: readonly string[];
+-  systems: Readonly<Record<string, string>>;
+-  controls: readonly string[];
+-  claimBoundary: string;
+-  renderer: { readonly drawCalls: number; readonly renderSize: readonly number[]; readonly backend: string };
+-  audioCues: readonly string[];
+-  ballPos?: { x: number; y: number; z: number };
+-  hoopPos?: { x: number; y: number; z: number };
+-}
+-
+ const APP_ID = "showcase-rooftop-buckets";
+-const ROUTE_SYSTEMS = {
+-  flight: "Rapier-owned hoop simulation (fixed 1/60, adaptive-substep CCD) shared by preview and live ball flight",
+-  scoring: "route-local five-heat objective, sensor-sequence, streak, gold, clock, and shot-lock rules",
+-  contest: "visible deterministic defender telegraph creates a documented pre-launch aim offset",
+-  presentation: "typed court, backboard, rim, ball, and pose-authored athletes with renderer-owned trajectory markers",
+-  audio: "typed synthesized cues driven by charge, contact, score, heat, fire, gold, and buzzer events"
+-} as const;
+ const ROUTE_CONTROLS = ["A/D change spot", "W/S aim arc", "hold/release Space shoot", "P pause", "R reset", "touch aim/spot/shoot/pause/reset"] as const;
+-// The release athletes are real 191-joint skinned GLBs.  Their embedded clips
+-// are named in the manifest and are sampled at deterministic route-owned
+-// action phases below; translation, timing, collision, and scoring remain
+-// owned by this route rather than being inferred from animation data.
+ const SHOOTER_CLIPS = ["Ready", "Load", "Release", "FollowThrough"] as const;
+ const DEFENDER_CLIPS = ["Plant", "Telegraph", "Jump", "Contest"] as const;
+ const ATHLETE_MODEL_SCALE = 1.18;
+-// The acquired broadcast-pose derivatives are the readable presentation lane
+-// for the normal route (the 191-joint clips remain mounted for the explicit
+-// animation probe).  The original 1.16 scale left the shooter and the
+-// contest partner visually subordinate to the venue slab; a modestly larger
+-// scale keeps feet grounded while giving the players the screen weight of a
+-// sports broadcast without changing collision regions or shot math.
+ const PRESENTATION_ATHLETE_SCALE = 1.34;
+-// The release GLBs report a raw minimum Y of -1.016.  Account for the
+-// route's authored model scale so the feet stay on the 16x14 court slab.
+ const ATHLETE_FLOOR_OFFSET = 1.016 * ATHLETE_MODEL_SCALE;
+-// Facial micro-meshes are authored in the release GLBs but contribute no
+-// readable pixels at the broadcast distance. Hiding only those tiny islands
+-// keeps the 191-joint body/jersey/shoes intact and leaves draw-call headroom
+-// for the venue depth package and live effects.
+ const ATHLETE_MICRO_MESHES = [
+   "Object_7", "Object_13", "Object_14", "Object_16", "Object_17",
+   "Object_18", "Object_19", "Object_21", "Object_22"
+ ] as const;
+-// The acquired presentation derivatives carry eight tiny eye/gland/teeth
+-// islands alongside one continuous body mesh. At the broadcast distance those
+-// islands cost more draw calls than readable pixels; suppress only the micro
+-// meshes, preserving the textured face, uniform, limbs, and shoes.
+ const PRESENTATION_MICRO_MESHES = [
+   "m_L_eye__Body_Mid_0", "m_L_gland__Body_Mid_0", "m_L_trans__Eye_trans_0",
+   "m_R_eye__Body_Mid_0", "m_R_gland__Body_Mid_0", "m_R_trans__Eye_trans_0",
+   "m_TeethDown__Body_Mid_0", "m_TeethUp__Body_Mid_0"
+ ] as const;
+-// Keep the venue towers, bleacher tiers, handrails, and sponsor banners in
+-// the review composition. Its tiny illuminated bands and four flood bars are
+-// subordinate details at this camera distance, so omit those meshes instead
+-// of raising the route's draw-call budget after adding a higher-fidelity lane.
+ const VENUE_REVIEW_HIDDEN_NODES = [
+   "under-court roof deck",
+   "tower illuminated band", "tower illuminated band.001", "tower illuminated band.002",
+@@ -178,34 +84,22 @@ const VENUE_REVIEW_HIDDEN_NODES = [
+   // surrounding authored towers preserve the venue depth.
+   "service tower.004"
+ ] as const;
+-
+-// The authored court package includes five rear sponsor banners. The center
+-// amber banner is a venue accent, not a gameplay surface, and its projection
+-// lands directly below the typed hoop in the fixed sideline lens. Keep the
+-// surrounding sponsor rhythm while hiding only this occluding panel (and its
+-// slim rail) so the rim/net remain readable in both composition captures.
+ const COURT_REVIEW_HIDDEN_NODES = [
+   "rear sponsor banner 0",
+   "rear sponsor bar 0"
+ ] as const;
+-
+-// ---------------- Game State ----------------
+ const audio = createRooftopSound();
+-
+ let scoreState: GameScoreState = initialScoreState(1);
+ let currentSpotIndex = 0;
+ let hoopState: HoopState = initialHoopState(1);
+-
+ function isCurrentPossessionGold(possession: number): boolean {
+   void possession;
+   return scoreState.heat === 5;
+ }
+-
+ let ballState: BallState = createBallAtSpot(
+   COURT_SPOTS[currentSpotIndex]!,
+   isCurrentPossessionGold(scoreState.possession)
+ );
+-
+ let aimPitch = 0.0; // [-1.0, 1.0]
+ let chargePower = 0.0;
+ let isCharging = false;
+@@ -215,9 +109,6 @@ let elapsedPlayTime = 0;
+ let chargeTickAccumulator = 0;
+ let touchAimDirection = 0;
+ let touchShootHeld = false;
+-// These are actual embedded GLB clip names.  The route still exposes the
+-// deterministic state machine separately so evidence can distinguish clip
+-// sampling from root translation and ballistic ownership.
+ let shooterAnimationState = "Ready";
+ let defenderAnimationState = "hidden";
+ let shooterMotionPhase = "ready";
+@@ -228,8 +119,6 @@ let contactFxTimer = 0;
+ let contactFxKind: "none" | "rim" | "board" | "swish" | "block" = "none";
+ let contactFxPosition = { x: 0, y: -20, z: 0 };
+ let contestReactionActive = false;
+-
+-// ---------------- DOM Elements ----------------
+ const elHeatBadge = document.getElementById("rb-heat-badge")!;
+ const elFireBadge = document.getElementById("rb-fire-badge")!;
+ const elScoreVal = document.getElementById("rb-score-val")!;
+@@ -246,7 +135,6 @@ const elModal = document.getElementById("rb-modal")!;
+ const elModalTitle = document.getElementById("rb-modal-title")!;
+ const elModalDesc = document.getElementById("rb-modal-desc")!;
+ const elModalBtn = document.getElementById("rb-modal-btn")!;
+-
+ elModalBtn.addEventListener("click", () => {
+   if (scoreState.state === "heat-cleared") {
+     scoreState = advanceHeat(scoreState);
+@@ -261,15 +149,8 @@ elModalBtn.addEventListener("click", () => {
+   }
+   elModal.classList.add("hidden");
+ });
+-
+-// ---------------- Runtime Nodes & Scene ----------------
+ const ballHandle = game.runtimeNode("ball-hero", { tags: ["basketball"] });
+ const rimHandle = game.runtimeNode("rim-assembly", { tags: ["hoop-rim"] });
+-// The typed rim remains the gameplay/scene authority.  This companion handle
+-// owns only a small renderer-side readability ring so the goal stays legible
+-// when the composition probe hides the backboard subject.  It is kept on the
+-// exact live hoop transform below; unlike the original static accent it cannot
+-// drift away from a route-authored hoop pose.
+ const rimReadabilityHandle = game.runtimeNode("rim-readability", {
+   tags: ["hoop-rim", "renderer-owned", "readability"]
+ });
+@@ -277,11 +158,6 @@ const backboardHandle = game.runtimeNode("backboard-assembly", { tags: ["backboa
+ const netPulseHandle = game.runtimeNode("rim-net-pulse", { tags: ["net-feedback", "renderer-owned", "event-driven"] });
+ const defenderHandle = game.runtimeNode("defender-cutout", { tags: ["defender"] });
+ const shooterHandle = game.runtimeNode("shooter-player", { tags: ["shooter", "primary-character"] });
+-// The route keeps the 191-joint skinned actors above as the authoritative
+-// clip/evidence path.  These two registered, hash-bound derivatives provide
+-// the visible broadcast pose: the source's raised-ball release and asymmetric
+-// contest V read as athletes at the court camera distance instead of the
+-// imported bind-pose T silhouette.  Root placement remains route-owned below.
+ const shooterPresentationHandle = game.runtimeNode("shooter-presentation", { tags: ["shooter", "presentation-character"] });
+ const defenderPresentationHandle = game.runtimeNode("defender-presentation", { tags: ["defender", "presentation-character"] });
+ const fireHaloHandle = game.runtimeNode("fire-halo", { tags: ["outcome-feedback", "fire"] });
+@@ -293,14 +169,6 @@ const CONTACT_RAY_COUNT = 8;
+ const contactRayHandles = Array.from({ length: CONTACT_RAY_COUNT }, (_, index) =>
+   game.runtimeNode(`contact-ray-${index}`, { tags: ["contact-feedback", "renderer-owned", "event-driven"] })
+ );
+-// A contest contact has a readable hand/ball relationship in the typed
+-// defender mesh, but the distance between a raised hand and a moving ball can
+-// disappear at the fixed camera distance.  These small renderer-owned sparks
+-// are keyed to contestReactionActive/defenderReach below and make the
+-// asymmetric reach legible without adding a collision or changing the block
+-// region.
+-// A single asymmetric hand spark keeps the defender's real reach/contact
+-// readable without turning the reaction into a particle-cloud substitute.
+ const CONTEST_SPARK_COUNT = 1;
+ const contestSparkHandles = Array.from({ length: CONTEST_SPARK_COUNT }, (_, index) =>
+   game.runtimeNode(`contest-spark-${index}`, { tags: ["contest-feedback", "renderer-owned", "ball-driven", "event-driven"] })
+@@ -678,8 +546,6 @@ function buildScene() {
+       })
+     );
+ }
+-
+-// ---------------- Game App Mount ----------------
+ const bucketsGame = createGame({
+   id: "showcase-rooftop-buckets",
+   target: "#canvas-host",
+@@ -722,14 +588,9 @@ const bucketsGame = createGame({
+   qualityRebuild: { flags: ["game"] }
+ });
+ bucketsGame.start();
+-
+ const gameApp = bucketsGame;
+ const app = bucketsGame.app;
+ const input = bucketsGame.input!;
+-
+-// ---- juice (PRD-09 §7.6) ----------------------------------------------------
+-// swish/contact/outcome cues composed through the shared facade: fx -> C-20
+-// bursts, flash/punch -> C-05 + camera, hitStop -> the real GameSession clock.
+ const rooftopTween = createTweenEngine();
+ const rooftopFx = createFxParticlePass(app.effects);
+ const rooftopJuice = createJuice<"swish" | "rim" | "board" | "block" | "fire" | "gold" | "buzzer" | "victory" | "heat">({
+@@ -752,7 +613,6 @@ const rooftopJuice = createJuice<"swish" | "rim" | "board" | "block" | "fire" |
+   rumble: createRumbleDriver()
+ });
+ audio.startAmbience();
+-
+ function togglePause(): void {
+   // Session owns pause state (user + visibility + menu stack).
+   if (bucketsGame.session.paused) {
+@@ -764,7 +624,6 @@ function togglePause(): void {
+   }
+   updateHUD();
+ }
+-
+ window.addEventListener("keydown", (event) => {
+   if (!event.repeat && (event.code === "KeyA" || event.code === "ArrowLeft")) {
+     event.preventDefault();
+@@ -777,7 +636,6 @@ window.addEventListener("keydown", (event) => {
+     fullReset();
+   }
+ });
+-
+ function changeSpot(delta: number): void {
+   if (ballState.inFlight || scoreState.state !== "playing") return;
+   currentSpotIndex = (currentSpotIndex + delta + COURT_SPOTS.length) % COURT_SPOTS.length;
+@@ -785,7 +643,6 @@ function changeSpot(delta: number): void {
+   updateHUD();
+   syncTransforms();
+ }
+-
+ document.getElementById("rb-touch-spot-left")?.addEventListener("click", () => changeSpot(-1));
+ document.getElementById("rb-touch-spot-right")?.addEventListener("click", () => changeSpot(1));
+ for (const [id, direction] of [["rb-touch-aim-down", -1], ["rb-touch-aim-up", 1]] as const) {
+@@ -800,7 +657,6 @@ touchShoot?.addEventListener("pointerup", () => { touchShootHeld = false; });
+ touchShoot?.addEventListener("pointercancel", () => { touchShootHeld = false; });
+ document.getElementById("rb-touch-pause")?.addEventListener("click", togglePause);
+ document.getElementById("rb-touch-reset")?.addEventListener("click", fullReset);
+-
+ function resetBallToSpot(): void {
+   const spot = COURT_SPOTS[currentSpotIndex]!;
+   const isGold = isCurrentPossessionGold(scoreState.possession);
+@@ -809,7 +665,6 @@ function resetBallToSpot(): void {
+   isCharging = false;
+   chargeDirection = 1;
+ }
+-
+ function fullReset(): void {
+   scoreState = initialScoreState(1);
+   currentSpotIndex = 0;
+@@ -817,7 +672,6 @@ function fullReset(): void {
+   resetBallToSpot();
+   updateHUD();
+ }
+-
+ function releaseShot(powerOverride?: number, pitchOverride?: number): void {
+   if (ballState.inFlight || scoreState.state !== "playing") return;
+ 
+@@ -840,12 +694,9 @@ function releaseShot(powerOverride?: number, pitchOverride?: number): void {
+     audio.playCue("goldBall", 0.9);
+   }
+ }
+-
+-// T1.12: last-written strings so a constant frame writes zero DOM mutations.
+ function setTextIf(el: HTMLElement, value: string): void {
+   if (el.textContent !== value) el.textContent = value;
+ }
+-
+ function updateHUD(): void {
+   const currentSpot = COURT_SPOTS[currentSpotIndex]!;
+   const config = heatConfig(scoreState.heat);
+@@ -898,8 +749,6 @@ function updateHUD(): void {
+     elModal.classList.remove("hidden");
+   }
+ }
+-
+-// ---------------- Frame Simulation Loop ----------------
+ function triggerContactFx(
+   kind: Exclude<typeof contactFxKind, "none">,
+   position: { x: number; y: number; z: number }
+@@ -914,7 +763,6 @@ function triggerContactFx(
+     rooftopJuice.fire(kind, { position: [position.x, position.y, position.z] });
+   }
+ }
+-
+ function stepGame(dt: number): void {
+   input.update(dt);
+   rooftopTween.tick(dt);
+@@ -1039,7 +887,6 @@ function stepGame(dt: number): void {
+   syncTransforms();
+   updateHUD();
+ }
+-
+ function syncTransforms(): void {
+   const currentSpot = COURT_SPOTS[currentSpotIndex]!;
+   const shooterNode = app.nodes.get("shooter-player") as AuraRuntimeNodeHandle | undefined;
+@@ -1430,102 +1277,10 @@ function syncTransforms(): void {
+       ]);
+   }
+ }
+-
+-// Attach app frame loop
+ app.onFrame((frame) => {
+   const dt = typeof frame === "number" ? frame : (frame?.dt ?? 1 / 60);
+   stepGame(Math.min(dt, 0.05));
+ });
+-
+-// ---------------- Evidence & Deterministic Hooks ----------------
+-function collectRouteEvidence(): RooftopBucketsEvidence {
+-  const isGold = isCurrentPossessionGold(scoreState.possession);
+-  const diagnostics = app.diagnostics();
+-  const ev: RooftopBucketsEvidence = {
+-    status: "ready",
+-    mounted: true,
+-    heat: scoreState.heat,
+-    state: bucketsGame.session.paused && scoreState.state === "playing" ? "paused" : scoreState.state,
+-    currentSpotId: COURT_SPOTS[currentSpotIndex]!.id,
+-    score: scoreState.score,
+-    target: scoreState.target,
+-    streak: scoreState.streak,
+-    onFire: scoreState.onFire,
+-    possession: scoreState.possession,
+-    makes: scoreState.makes,
+-    misses: scoreState.misses,
+-    shotClockMs: Math.round(scoreState.shotClock * 1000),
+-    heatTimerMs: Math.round(scoreState.heatTimer * 1000),
+-    lastShotResult: scoreState.lastShotResult,
+-    goldBall: isGold,
+-    goldAttempted: scoreState.goldAttempted,
+-    goldMade: scoreState.goldMade,
+-    madeSpotIds: [...scoreState.madeSpotIds],
+-    fireAchieved: scoreState.fireAchieved,
+-    aimPitch,
+-    chargePower,
+-    charging: isCharging,
+-    ballInFlight: ballState.inFlight,
+-    reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+-    hoopMode: hoopState.mode,
+-    defenderTelegraph: hoopState.defenderTelegraph,
+-    shooterAnimation: shooterAnimationState,
+-    defenderAnimation: defenderAnimationState,
+-    shooterMotionPhase,
+-    defenderMotionPhase,
+-    shooterBodyCompression,
+-    defenderReach,
+-    contactFxKind,
+-    contactFxActive: contactFxTimer > 0 && contactFxKind !== "none",
+-    contestReactionActive,
+-    shooterClips: SHOOTER_CLIPS,
+-    defenderClips: DEFENDER_CLIPS,
+-    contestAimOffset: hoopState.contestAimOffset,
+-    sensorEventCount,
+-    physicsBodyCount: readHoopBodyCount(),
+-    simulationOwner: "canonical Rapier-backed world in hoop-sim.ts: dynamic ball body, static rim/backboard/bracket/floor colliders, downward-pass score sensor, kinematic defender",
+-    physicsSolver: "rapier",
+-    predictionPointCount: AIM_POINT_COUNT,
+-    primaryAssets: ["assets.rooftopCourt", "assets.rooftopVenueV2", "assets.rooftopBackboard", "assets.rooftopRim", "assets.rooftopBall", "assets.rooftopLayupScorer", "assets.rooftopDefender"],
+-    presentationAssets: ["assets.rooftopAthleteShooter", "assets.rooftopAthleteDefender", "assets.rooftopShooterMeshyV1"],
+-    systems: ROUTE_SYSTEMS,
+-    controls: ROUTE_CONTROLS,
+-    claimBoundary: "Root-safe prototype on the canonical Rapier-backed public physics surface: dynamic basketball body, compound static rim/backboard/bracket/floor colliders, downward-pass scoring sensor, and adaptive-substep CCD, with five-heat authored scoring. Authored: the solved launch vector and the kinematic defender pose. No reusable sports, physics, rim, or defender kit claimed.",
+-    renderer: { drawCalls: diagnostics.drawCalls, renderSize: diagnostics.renderSize, backend: diagnostics.renderer?.runtime.backend ?? "unknown" },
+-    audioCues: [...audio.audioCuesHeard],
+-    ballPos: { x: ballState.x, y: ballState.y, z: ballState.z },
+-    hoopPos: { x: hoopState.x, y: hoopState.y, z: hoopState.z }
+-  };
+-  return ev;
+-}
+-
+-bindRooftopEvidence(collectRouteEvidence);
+-
+-(window as unknown as {
+-  __RB_PUMP__?: (frames: number) => number;
+-  __RB_SHOOT__?: (power: number, pitch?: number) => void;
+-}).__RB_PUMP__ = (frames: number) => {
+-  for (let i = 0; i < frames; i++) {
+-    stepGame(1 / 60);
+-  }
+-  return frames;
+-};
+-
+-(window as unknown as {
+-  __RB_SHOOT__?: (power: number, pitch?: number) => void;
+-}).__RB_SHOOT__ = (power: number, pitch = 0) => {
+-  releaseShot(power, pitch);
+-};
+-
+-// Deterministic visual proof pose: a live pressure heat keeps the typed defender
+-// in frame while the authored ball flight and trajectory guide are visible.
+-// This is shared by the visual producer hook and the route-primary composition
+-// probe so the retained exact is an actual basketball beat rather than an
+-// opening mannequin/charge pose.  All state comes from the same route-owned
+-// updateHoop/stepBall functions used by normal play; there is no alternate
+-// capture-only trajectory or scoring shortcut.
+-
+-
+ bindRooftopDrive({
+   resetToHeat: (heat) => {
+     scoreState = initialScoreState(heat);
+@@ -1577,45 +1332,3 @@ bindRooftopDrive({
+     updateHUD();
+   }
+ });
+-
+-
+-
+-Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+-  configurable: true,
+-  value: {
+-    category: "application",
+-    subject: {
+-      position: [BACKBOARD_POSITION.x, BACKBOARD_POSITION.y, BACKBOARD_POSITION.z],
+-      rotation: [0, 0, 0],
+-      targetSize: BACKBOARD_POSITION.width
+-    },
+-    async settleSubjectPose() {
+-      // The route-primary subject is the static typed backboard. Pause the game
+-      // state, then complete one bounded production frame before the producer
+-      // captures its visible baseline. Without this first presentation the
+-      // visible canvas is still black and the later hidden frame is compared
+-      // against the wrong state.
+-      gameApp.pause();
+-      app.pause();
+-      await app.stepAsync(0);
+-    },
+-    async setSubjectSuppressed(suppressed: boolean) {
+-      gameApp.pause();
+-      app.pause();
+-      const node = app.nodes.get("backboard-assembly") as AuraRuntimeNodeHandle | undefined;
+-      node?.setVisible(!suppressed);
+-      // Suppression isolates the declared backboard subject only. Keep the
+-      // typed rim and its route-local readability ring in frame so the goal is
+-      // still an explicit scene landmark in the paired evidence capture.
+-      const rim = app.nodes.get("rim-assembly") as AuraRuntimeNodeHandle | undefined;
+-      rim?.setVisible(true);
+-      const rimReadability = app.nodes.get("rim-readability") as AuraRuntimeNodeHandle | undefined;
+-      rimReadability?.setVisible(true);
+-      // Present the changed production frame without blocking the browser main
+-      // thread. The probe already awaits this promise before taking the hidden
+-      // screenshot. Restoration happens after that screenshot and needs no
+-      // third submission.
+-      if (suppressed) await app.stepAsync(0);
+-    }
+-  }
+-});
+diff --git a/apps/showcase-rooftop-buckets/src/main.ts b/apps/showcase-rooftop-buckets/src/main.ts
+index 389a891ab..61fcfe05d 100644
+--- a/apps/showcase-rooftop-buckets/src/main.ts
++++ b/apps/showcase-rooftop-buckets/src/main.ts
+@@ -1,14 +1,6 @@
+-// apps/showcase-rooftop-buckets/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
+-// Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-rooftop-buckets`
+-// (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
+-// acceptance (§10 step 5).
+ import { resolveQrFlags } from "@aura3d/engine/contracts";
+-
+ const ROUTE_FLAG = "A3D_QR_ROUTE_ROOFTOP_BUCKETS" as const;
+ const DEFAULT_ON = false;
+-
+-/** Accepts `?a3d-qr=…,route-rooftop-buckets` and `?a3d-qr=…,A3D_QR_ROUTE_ROOFTOP_BUCKETS`.
+- *  Returns undefined when the flag is absent (CCR-14-2 replaces this helper). */
+ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const raw = new URL(loc.href).searchParams.get("a3d-qr");
+   if (raw === null) return undefined;
+@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+     ? true
+     : undefined;
+ }
+-
+ const flags = resolveQrFlags({
+   url: location.href,
+   env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR },
+   options: { [ROUTE_FLAG]: routeFlagFromUrl(location, ROUTE_FLAG) ?? DEFAULT_ON }
+ });
+-
+ void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
+diff --git a/apps/showcase-rooftop-buckets/src/v2/evidence/index.ts b/apps/showcase-rooftop-buckets/src/v2/evidence/index.ts
+deleted file mode 100644
+index 83b20a1af..000000000
+--- a/apps/showcase-rooftop-buckets/src/v2/evidence/index.ts
++++ /dev/null
+@@ -1,109 +0,0 @@
+-// apps/showcase-rooftop-buckets/src/v2/evidence/index.ts — §7.2.1 evidence.
+-// Publishes `window.__AURA3D_GAME_EVIDENCE__["showcase-rooftop-buckets"]` with
+-// lazy section getters (no per-frame allocation > 1 KB). Required conditions
+-// read `shot.result`, `shot.meter`, `characters.skinnedVisible`,
+-// `characters.tracksApplied` and `fx.liveCount` here.
+-import type { Game } from "@aura3d/engine";
+-import type { BallState } from "../../gameplay/shot";
+-import type { GameScoreState } from "../../gameplay/scoring";
+-import type { HoopState } from "../../gameplay/rim";
+-
+-export const ROOFTOP_EVIDENCE_ID = "showcase-rooftop-buckets";
+-
+-export interface RooftopEvidenceBindings {
+-  readonly game: Game;
+-  readonly ball: () => BallState;
+-  readonly score: () => GameScoreState;
+-  readonly hoop: () => HoopState;
+-  readonly chargePower: () => number;
+-  readonly spotIndex: () => number;
+-  readonly lastResult: () => "make" | "miss" | null;
+-  readonly skinnedActors: () => readonly { readonly id: string; readonly tracksApplied: number }[];
+-  readonly appliedLook: Record<string, unknown>;
+-  readonly frameCount: () => number;
+-  readonly bootedAtMs: number;
+-  readonly audioCueLog: () => readonly string[];
+-}
+-
+-export function publishRooftopEvidence(b: RooftopEvidenceBindings): void {
+-  const w = window as unknown as Record<string, Record<string, unknown>>;
+-  w.__AURA3D_GAME_EVIDENCE__ ??= {};
+-  w.__AURA3D_GAME_EVIDENCE__[ROOFTOP_EVIDENCE_ID] = {
+-    get playback() {
+-      return {
+-        state: b.game.session.state,
+-        paused: b.game.session.paused,
+-        simTime: b.game.session.simTime,
+-        timeScale: b.game.session.timeScale,
+-        frame: b.frameCount()
+-      };
+-    },
+-    get shot() {
+-      const ball = b.ball();
+-      return {
+-        result: b.lastResult(),
+-        meter: b.chargePower(),
+-        inFlight: ball.inFlight,
+-        hasScored: ball.hasScored,
+-        hitDefender: ball.hitDefender,
+-        spot: b.spotIndex()
+-      };
+-    },
+-    get characters() {
+-      const actors = b.skinnedActors();
+-      return {
+-        skinnedVisible: actors.length,
+-        tracksApplied: actors.reduce((sum, a) => sum + a.tracksApplied, 0),
+-        actors: actors.map((a) => a.id)
+-      };
+-    },
+-    get score() {
+-      const s = b.score();
+-      return {
+-        score: s.score,
+-        heat: s.heat,
+-        state: s.state,
+-        onFire: s.onFire,
+-        streak: s.streak,
+-        possession: s.possession,
+-        madeSpotIds: s.madeSpotIds
+-      };
+-    },
+-    get hoop() {
+-      const h = b.hoop();
+-      return { x: h.x, y: h.y, z: h.z, mode: h.mode, defenderTelegraph: h.defenderTelegraph };
+-    },
+-    get fx() {
+-      return { liveCount: b.game.fx.liveCount, backend: b.game.fx.backend };
+-    },
+-    get framing() {
+-      const ev = b.game.app.camera?.evidence?.();
+-      return {
+-        rig: ev?.rig ?? "rooftop-buckets.shoulder",
+-        subjectScreenHeightFraction: ev?.subjectScreenHeightFraction ?? null,
+-        pose: ev?.pose ?? null
+-      };
+-    },
+-    get render() {
+-      const d = b.game.app.diagnostics();
+-      return {
+-        backend: d.backend,
+-        drawCalls: d.drawCalls,
+-        renderSize: d.renderSize,
+-        fps: d.fps,
+-        errors: d.errors,
+-        warnings: d.warnings
+-      };
+-    },
+-    // T2.6 parity: identical between the play URL and every ?scenario= URL.
+-    get appliedLook() {
+-      return b.appliedLook;
+-    },
+-    get audio() {
+-      return { cues: b.audioCueLog() };
+-    },
+-    get boot() {
+-      return { bootedAtMs: b.bootedAtMs, frame: b.frameCount() };
+-    }
+-  };
+-}
+-- 
+2.34.1
+

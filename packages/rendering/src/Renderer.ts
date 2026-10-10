@@ -73,7 +73,7 @@ export interface RendererAppliedOutput {
   readonly exposure: { readonly applied: number; readonly source: "output" | "grade" | "auto" };
   readonly dithering: boolean;
   readonly targetFormat: "rgba16f" | "rgba8";
-  readonly degraded?: "rgba8-no-float-target";
+  readonly degraded?: "rgba8-no-float-target" | "hdr-msaa-mrt-unsupported";
 }
 
 export interface RendererOptions extends RenderBackendOptions {
@@ -409,6 +409,7 @@ export class Renderer {
   /** C-05 state: requested output options, the resolved HDR scene target, and the depth copy. */
   private outputOptions: RendererOutputOptions;
   private hdrSceneTarget: { readonly target: RenderTarget; readonly key: string } | null = null;
+  private hdrMsaaMrtDegraded = false;
   private sceneDepthCopyTarget: RenderTarget | null = null;
   private lastAppliedOutput: RendererAppliedOutput | null = null;
   private warnedV2Postprocess = false;
@@ -1310,7 +1311,10 @@ export class Renderer {
     const scale = Math.min(Math.max(this.renderScale, 0.01), 1);
     const width = Math.max(1, Math.round(this.width * scale));
     const height = Math.max(1, Math.round(this.height * scale));
-    const key = `${width}x${height}:${format}:depth-texture:4:${coverage ? "cov" : "std"}`;
+    // C-36: WebGL2 does not support multisample MRT — coverage forces a
+    // non-MSAA target and is declared via `hdr-msaa-mrt-unsupported`.
+    const sampleCount = coverage ? 1 : 4;
+    const key = `${width}x${height}:${format}:depth-texture:${sampleCount}:${coverage ? "cov" : "std"}`;
     const cached = this.hdrSceneTarget;
     if (cached && cached.key === key && !cached.target.disposed) return cached.target;
     cached?.target.dispose();
@@ -1319,12 +1323,11 @@ export class Renderer {
       height,
       label: "renderer-hdr-scene",
       format,
-      colorAttachments: coverage
-        ? [{ format }, { format: "rgba8" }]
-        : [{ format }],
+      ...(coverage ? { colorAttachments: [{ format }, { format: "rgba8" }] as const } : {}),
       depth: "texture",
-      sampleCount: 4
+      sampleCount
     });
+    this.hdrMsaaMrtDegraded = coverage;
     this.hdrSceneTarget = { target, key };
     return target;
   }
@@ -1364,7 +1367,7 @@ export class Renderer {
       exposure: { applied: appliedExposure, source: upstream !== undefined ? "grade" : "output" },
       dithering: o.dithering ?? true,
       targetFormat,
-      degraded: targetFormat === "rgba8" ? "rgba8-no-float-target" : undefined
+      degraded: targetFormat === "rgba8" ? "rgba8-no-float-target" : this.hdrMsaaMrtDegraded ? "hdr-msaa-mrt-unsupported" : undefined
     };
   }
   /** Allocates the shared forward-color target once per distinct configuration. */
