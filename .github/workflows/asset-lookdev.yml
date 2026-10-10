@@ -9,9 +9,10 @@ name: Asset look-dev
 on:
   # Push trigger lets the lane prove 05-S8 without workflow_dispatch (the
   # git-manager proxy 403s dispatches — Q-CI-1). Empty inputs fall back to
-  # the §6.7 ten-id corpus (5 known-good + 5 known-bad).
+  # the §6.7 ten-id corpus. `main` is listed because 05-S8 is only done by a
+  # run on main; the paths filter keeps it to look-dev changes.
   push:
-    branches: ['qr/prd05-**']
+    branches: [main, 'qr/prd05-**']
     paths:
       - 'apps/asset-lookdev/**'
       - 'packages/aura3d-cli/src/commands/prd05/**'
