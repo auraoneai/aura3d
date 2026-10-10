@@ -56,7 +56,9 @@ on:
 
 concurrency:
   group: qr-prd04-materials-${{ github.ref }}
-  cancel-in-progress: true
+  # 04-PROMO / CI-0: never cancel main runs (promotion is judged off main runs);
+  # superseded runs on PR/branch refs may still be cancelled.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
   PRD04_CHROMIUM_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
