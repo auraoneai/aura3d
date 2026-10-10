@@ -41,7 +41,8 @@ The fighting kit (lane-05 `game-kits/fighting.ts`) calls this from hit resolutio
 (opt out: `haptics: false` on the feel extension), `audio` → bound `GameSound.play`
 (`rate ∈ 1 ± pitchJitter`, position passthrough), `vfx` → effects, `screen` → §8.3 uniforms.
 
-API: `app.feel` (C-23). Evidence: `feel-bus.test.ts`, `feel-audio-dispatch.test.ts`.
+API: `app.feel` (C-23). Evidence: `feel-bus.test.ts` (**does not exist — status: claimed**, P-52, tracked in 08-SPEC),
+`feel-audio-dispatch.test.ts`, `camera-feel.test.ts`.
 
 ## F-08-3 — `app.time` usage
 
@@ -76,7 +77,8 @@ it applied; Low tier applies flash + vignette only (chroma/radialBlur count 0).
 When no consumer exists, `screenFallback: "dom"` renders flash/vignette as DOM overlay.
 
 API: `AuraScreenFeelUniforms` = `{ flash, chroma, radialBlur, vignette }` + `kind "aura-screen-feel-uniforms"`.
-Evidence: `feel-screenspace.test.ts`; reference in PRD-08 §8.3.
+Evidence: `feel-screenspace.test.ts` (**does not exist — status: claimed**, P-52, tracked in 08-SPEC); the
+camera-feel unit suite covers the blackboard write + DOM fallback. Reference in PRD-08 §8.3.
 
 ## F-08-6 — Forbidden pattern: evidence-only feel
 
