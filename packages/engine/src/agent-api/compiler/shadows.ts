@@ -27,9 +27,12 @@ export interface Prd02ShadowOptions extends RendererShadowOptions {
 
 export function createProductionRuntimeShadowOptions(
   snapshot: AuraSceneSnapshot,
-  collectedLights: readonly CollectedLight[]
+  collectedLights: readonly CollectedLight[],
+  flags?: { on(name: string): boolean }
 ): RendererShadowOptions {
-  if (prd02LightingOn()) return createPrd02ShadowOptions(snapshot);
+  // T0-28: callers with an app-resolved QrFlags pass it (see qr-request);
+  // the ambient URL/env resolution inside prd02LightingOn is the fallback.
+  if (prd02LightingOn(flags)) return createPrd02ShadowOptions(snapshot);
   const nodes = groups.flatten(snapshot.nodes);
   const names = nodes.map((node) => "name" in node ? node.name?.toLowerCase() ?? "" : "");
   const category = resolveRendererSceneCategory(snapshot, names);

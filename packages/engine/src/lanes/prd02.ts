@@ -79,6 +79,7 @@ import { registerDiagnosticsSection } from "../contracts/diagnostics.js";
 import { collectPrd02Lights, physicalLightDescriptor, prd02LightingOn, readLightingModelFromUrl } from "../agent-api/compiler/lights.js";
 import { auraLightsCounters, auraLightsLastFrame } from "../../../rendering/src/LightUniforms.js";
 import type { RenderDevice } from "../../../rendering/src/RenderDevice.js";
+import type { QrFlags } from "@aura3d/rendering/contracts";
 import { prd02ShadowDiagnostics, prd02ContactShadowDiagnostics } from "@aura3d/rendering";
 import type { AuraEnvironmentNodeV2 } from "../agent-api/nodes/environments.js";
 import type { AuraLightingDiagnostics } from "../contracts/lighting.js";
@@ -198,6 +199,13 @@ export class Prd02LightingRuntime {
   private readonly pendingProbes = new Set<string>();
 
   /**
+   * T0-28: the app-resolved QR flags the extension was created with, so
+   * diagnostics sections report the app's flag state — not a second
+   * ambient `?a3d-qr=` / env resolution.
+   */
+  constructor(readonly flags?: QrFlags) {}
+
+  /**
    * C-28 counters are consumed from the bound device, never counted here
    * (PRD-02 Phase 4). The flag-path env/probe binding attaches the device.
    */
@@ -257,12 +265,12 @@ registerAppExtension({
   member: "lighting",
   owner: "prd02",
   flag: "A3D_QR_LIGHTING",
-  create: () => new Prd02LightingRuntime()
+  create: (_app, ctx) => new Prd02LightingRuntime(ctx.flags)
 });
 
 // ---------- C-31 diagnostics sections ("lighting" / "shadows") ----------
 
-interface AppLike { readonly lighting?: { diagnostics(): AuraLightingDiagnostics; lightingTimings?(): unknown } }
+interface AppLike { readonly lighting?: { readonly flags?: QrFlags; diagnostics(): AuraLightingDiagnostics; lightingTimings?(): unknown } }
 
 registerDiagnosticsSection({
   id: "prd02.lighting",
@@ -274,7 +282,7 @@ registerDiagnosticsSection({
     const diag = lighting?.diagnostics();
     const counters = auraLightsCounters();
     return {
-      model: prd02LightingOn() ? readLightingModelFromUrl().model ?? "physical" : "legacy-3.0",
+      model: prd02LightingOn(lighting?.flags) ? readLightingModelFromUrl().model ?? "physical" : "legacy-3.0",
       environment: diag?.environment ?? null,
       lightsEvaluated: counters?.lightsEvaluated ?? null,
       lightsCulledByRange: null,
