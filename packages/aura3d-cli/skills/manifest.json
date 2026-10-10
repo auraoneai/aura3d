@@ -146,7 +146,7 @@
     "postprocess-scene": [
       "aura3d-threejs-migration"
     ],
-    "three-compat-custom-threejs-migration": [
+    "custom-scene": [
       "aura3d-threejs-migration"
     ],
     "three-compat-large-scene": [

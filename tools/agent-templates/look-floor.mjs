@@ -53,7 +53,7 @@ export const TEMPLATE_LOOK_FLOOR = Object.freeze({
   "three-compat-large-scene": Object.freeze({ look: "outdoor-day", anchor: "preset" }),
   "character-viewer": Object.freeze({ look: "character-showcase", anchor: "preset" }),
   "asset-inspector": Object.freeze({ look: "product-studio", anchor: "preset" }),
-  "three-compat-custom-threejs-migration": Object.freeze({ look: "outdoor-day", anchor: "preset" })
+  "custom-scene": Object.freeze({ look: "outdoor-day", anchor: "preset" })
 });
 
 function readIfExists(file) {

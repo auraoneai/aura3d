@@ -1,5 +1,5 @@
 {
-  "name": "aura3d-three-compat-custom-threejs-migration",
+  "name": "aura3d-custom-scene",
   "version": "1.0.0",
   "private": true,
   "type": "module",

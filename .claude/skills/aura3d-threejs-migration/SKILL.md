@@ -117,5 +117,5 @@ toneMapping constants.
 - [Codemod import map](https://github.com/auraoneai/aura3d/blob/main/packages/aura3d-cli/src/migrate-three/ImportMap.ts)
 - [Codemod warnings](https://github.com/auraoneai/aura3d/blob/main/packages/aura3d-cli/src/migrate-three/CompatibilityWarnings.ts)
 - [Codemod CLI](https://github.com/auraoneai/aura3d/blob/main/tools/three-compat-migrate-three/index.ts)
-- [Custom migration template](https://github.com/auraoneai/aura3d/blob/main/packages/create-aura3d/templates/three-compat-custom-threejs-migration/src/main.ts)
+- [Custom migration template](https://github.com/auraoneai/aura3d/blob/main/packages/create-aura3d/templates/custom-scene/src/main.ts)
 - [three.js lighting stack → Aura3D look](references/look-mapping.md)

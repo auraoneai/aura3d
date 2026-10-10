@@ -28,7 +28,7 @@
     "templates/asset-inspector",
     "templates/character-viewer",
     "templates/postprocess-scene",
-    "templates/three-compat-custom-threejs-migration",
+    "templates/custom-scene",
     "templates/three-compat-large-scene",
     "!templates/**/node_modules/**",
     "!templates/**/node_modules.publish-aside/**",
