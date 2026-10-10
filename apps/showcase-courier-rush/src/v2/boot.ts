@@ -372,6 +372,18 @@ if (scenario) {
 // ------------------------------------------------------------------- boot ----
 
 game.start();
+// §6.2 context loss (14-P0FIX): pause on device loss; re-mount and resume on
+// restore so a lost WebGL context cannot leave the route drawing nothing.
+game.app.onDeviceLost?.(() => {
+  game.app.pause();
+});
+game.app.onDeviceRestored?.(() => {
+  game.app.setScene(buildScene());
+  void game.app.ready().then(() => {
+    game.app.resume();
+    game.app.step(1 / 60);
+  });
+});
 void game.ready().then(() => {
   game.app.camera?.use?.(createCourierRig(rigState), { blend: 0.4 });
   // C-05 output: daylight-outdoor preset; post presets stub {} until the
