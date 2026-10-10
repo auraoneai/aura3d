@@ -66,6 +66,7 @@ jobs:
       dirs: ${{ steps.changed.outputs.dirs }}
       flags: ${{ steps.changed.outputs.flags }}
       count: ${{ steps.changed.outputs.count }}
+      skip_ok: ${{ steps.changed.outputs.skip_ok }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -85,6 +86,12 @@ jobs:
           DIRS="$(git diff --name-only "$BASE"...HEAD -- 'apps/' | cut -d/ -f2 | sort -u | paste -sd, -)"
           APPS_TOUCHED="$(git diff --name-only "$BASE"...HEAD -- 'apps/' | wc -l)"
           if [ -n "${GAMES_INPUT:-}" ]; then DIRS="${GAMES_INPUT}"; fi
+          # 14-CI: the nightly run covers all 18 routes so every job executes
+          # on main even when the last commit touched no app.
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            DIRS="$(python3 -c 'import json; print(",".join(e.get("appDir", e["id"]) for e in json.load(open("tools/quality-rebuild-capture/games.json"))["games"]))')"
+            GAMES_INPUT="$DIRS"
+          fi
           echo "changed dirs: ${DIRS:-<none>}"
           if [ "${APPS_TOUCHED:-0}" -gt 0 ] && [ -z "${DIRS:-}" ]; then
             echo "::error:: PR touches apps/** but resolved 0 route dirs — detection broken"
@@ -109,7 +116,7 @@ jobs:
           echo "ids=$IDS" >> "$GITHUB_OUTPUT"
           echo "dirs=${APPDIRS:-$DIRS}" >> "$GITHUB_OUTPUT"
           echo "flags=$FLAGS" >> "$GITHUB_OUTPUT"
-          echo "count=$(tr ',' '\n' <<< "$DIRS" | grep -c . || true)" >> "$GITHUB_OUTPUT"
+          echo "count=$(tr ',' '\n' <<< "$DIRS" | awk 'NF' | wc -l | tr -d ' ')" >> "$GITHUB_OUTPUT"
           # CI-1: downstream jobs may only skip when nothing under apps/**
           # changed and no explicit games input was given. An empty route set
           # on a code-touching PR fails the routes job above instead of
