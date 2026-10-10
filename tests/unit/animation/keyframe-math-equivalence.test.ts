@@ -18,11 +18,11 @@ import {
 // 1,000 random TRS inputs must agree within 1e-6 before lane 06 may re-point the
 // Keyframe helpers at the canonical module.
 //
-// DIVERGENCE FOUND: Keyframe.multiplyMat4 uses row-major indexing over a
-// column-major layout — multiplyMat4Keyframe(a, b) computes B·A where
-// multiplyMat4Canonical(a, b) computes A·B. Lane 06 must preserve operand order
-// when repointing (call the canonical function with swapped arguments, or keep a
-// local wrapper), since Keyframe callers already observe B·A semantics.
+// DIVERGENCE RESOLVED (06-QXX): Keyframe.multiplyMat4 previously used
+// row-major indexing over a column-major layout, computing B·A. Its only
+// callers — Skeleton.worldMatrices/matrixPalette — intend A·B
+// (parent·local, world·inverseBind), so the writer was fixed to
+// column-major A·B rather than preserving operand order with a swap.
 const TOLERANCE = 1e-6;
 const SAMPLES = 1_000;
 
@@ -62,9 +62,9 @@ describe("Keyframe math vs @aura3d/scene/math (Q-06-3)", () => {
 
       const a: KeyframeMat4 = Array.from({ length: 16 }, () => rand(-4, 4)) as unknown as KeyframeMat4;
       const b: KeyframeMat4 = Array.from({ length: 16 }, () => rand(-4, 4)) as unknown as KeyframeMat4;
-      // Keyframe computes B·A (row-major read over column-major storage); the
-      // canonical call with swapped operands must match bit-for-tolerance.
-      expectClose(multiplyMat4Keyframe(a, b), multiplyMat4Canonical(b, a), `multiplyMat4 sample ${i}`);
+      // Keyframe now computes A·B in column-major, matching the canonical
+      // convention element-for-tolerance.
+      expectClose(multiplyMat4Keyframe(a, b), multiplyMat4Canonical(a, b), `multiplyMat4 sample ${i}`);
     }
   });
 });

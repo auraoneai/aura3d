@@ -129,19 +129,20 @@ export function composeMat4(translation: Vec3 = [0, 0, 0], rotation: Quat = [0, 
 }
 
 export function multiplyMat4(a: Mat4, b: Mat4): Mat4 {
+  // Column-major A·B — the convention `@aura3d/scene`'s multiplyMat4, every
+  // GLSL `mat4` consumer, and the palette writers read. The previous body
+  // indexed `a` row-major over column-major storage, computing B·A and
+  // leaving a non-affine row 3 in skinning palettes (06-QXX).
   const out = new Array<number>(16).fill(0);
-  for (let row = 0; row < 4; row += 1) {
-    for (let col = 0; col < 4; col += 1) {
-      const a0 = a[row * 4]!;
-      const a1 = a[row * 4 + 1]!;
-      const a2 = a[row * 4 + 2]!;
-      const a3 = a[row * 4 + 3]!;
-      out[col + row * 4] =
-        a0 * b[col]! +
-        a1 * b[col + 4]! +
-        a2 * b[col + 8]! +
-        a3 * b[col + 12]!;
-    }
+  for (let col = 0; col < 4; col += 1) {
+    const b0 = b[col * 4]!;
+    const b1 = b[col * 4 + 1]!;
+    const b2 = b[col * 4 + 2]!;
+    const b3 = b[col * 4 + 3]!;
+    out[col * 4] = a[0]! * b0 + a[4]! * b1 + a[8]! * b2 + a[12]! * b3;
+    out[col * 4 + 1] = a[1]! * b0 + a[5]! * b1 + a[9]! * b2 + a[13]! * b3;
+    out[col * 4 + 2] = a[2]! * b0 + a[6]! * b1 + a[10]! * b2 + a[14]! * b3;
+    out[col * 4 + 3] = a[3]! * b0 + a[7]! * b1 + a[11]! * b2 + a[15]! * b3;
   }
   return out as unknown as Mat4;
 }
