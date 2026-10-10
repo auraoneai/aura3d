@@ -6,6 +6,7 @@ import { FrameStats } from "../../../../packages/rendering/src/quality/FrameStat
 const EXT_TIME_ELAPSED = 0x88bf;
 const EXT_TIMESTAMP = 0x8e28;
 const EXT_DISJOINT = 0x8fbb;
+const EXT_QUERY_COUNTER_BITS = 0x8864;
 
 /**
  * Fake WebGL2 timer-query surface. Queries become "available" after
@@ -53,6 +54,19 @@ class FakeTimerGl {
   getParameter(pname: number): unknown {
     if (pname === EXT_DISJOINT) return this.disjoint;
     return null;
+  }
+
+  /** `getQuery(TIMESTAMP_EXT, QUERY_COUNTER_BITS_EXT)`; 0 = timestamps disabled (T11-TIMING). */
+  timestampBits = 64;
+
+  getQuery(target: number, pname: number): unknown {
+    if (target === EXT_TIMESTAMP && pname === EXT_QUERY_COUNTER_BITS) return this.timestampBits;
+    return null;
+  }
+
+  /** Live (created, not deleted) query count. */
+  get liveQueries(): number {
+    return this.queries.size;
   }
 
   private ext: Record<string, unknown> | null = null;
@@ -121,6 +135,56 @@ describe("WebGL2 scoped GPU timing (prd11)", () => {
     stats.begin(20);   // drain poll #2 → settles discarded → gpuMs stays null
     stats.end();
     expect(sample.gpuMs).toBeNull();
+  });
+
+  it("T11-TIMING: with 0 timestamp bits, scopes issue no queryCounter and the frame scope uses TIME_ELAPSED", () => {
+    const gl = new FakeTimerGl();
+    gl.timestampBits = 0;
+    let counterCalls = 0;
+    const ext = gl.getExtension("EXT_disjoint_timer_query_webgl2") as Record<string, unknown>;
+    const original = ext.queryCounterEXT as (q: object, t: number) => void;
+    ext.queryCounterEXT = (q: object, t: number) => { counterCalls += 1; original(q, t); };
+    const { backend } = makeBackend(gl);
+    const frame = backend.beginScope("frame");
+    const nested = backend.beginScope("shadow");   // nested: no query (TIME_ELAPSED cannot nest)
+    backend.endScope(nested);
+    backend.endScope(frame);
+    expect(counterCalls).toBe(0);
+    expect(gl.liveQueries).toBe(1);
+    const first = backend.poll();
+    expect(first.map((r) => r.label)).toEqual(["shadow"]);
+    expect(first[0]!.durationMs).toBeNull();
+    const second = backend.poll();
+    expect(second.map((r) => r.label)).toEqual(["frame"]);
+    expect(gl.liveQueries).toBe(0);
+  });
+
+  it("T11-TIMING: pending scopes stay bounded and never-settling queries are deleted", () => {
+    const gl = new FakeTimerGl();
+    gl.settleAfterPolls = Number.POSITIVE_INFINITY;  // a driver that never answers
+    const { backend } = makeBackend(gl);
+    const pendingCounts = () => (backend as unknown as { pendingCounts(): { scopes: number } }).pendingCounts();
+    let maxPending = 0;
+    for (let frame = 0; frame < 600; frame += 1) {
+      for (const name of ["frame", "shadow", "forward", "post"]) {
+        backend.endScope(backend.beginScope(name));
+      }
+      backend.poll();
+      maxPending = Math.max(maxPending, pendingCounts().scopes);
+    }
+    // 4 scopes/frame × at most MAX_PENDING_GENERATIONS (8) + 1 frames in flight.
+    expect(maxPending).toBeLessThanOrEqual(36);
+    expect(gl.liveQueries).toBeLessThanOrEqual(2 * 36);
+  });
+
+  it("T11-TIMING: a disjoint poll discards every in-flight scope and deletes its queries", () => {
+    const { backend, gl } = makeBackend();
+    gl.settleAfterPolls = 5;
+    for (const name of ["a", "b", "c"]) backend.endScope(backend.beginScope(name));
+    gl.disjoint = true;
+    const results = backend.poll();
+    expect(results.map((r) => r.durationMs)).toEqual([null, null, null]);
+    expect(gl.liveQueries).toBe(0);
   });
 
   it("isScopedGpuTimingBackend narrows the factory result", () => {
