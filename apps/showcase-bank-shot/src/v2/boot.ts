@@ -5,8 +5,8 @@
 // existing route samples until C-25 game-sfx is real (standIn R-14-09).
 import { scene } from "@aura3d/engine";
 import { createGame, type Game, lookManifest } from "@aura3d/game";
-import { CueController, AIM_STEP, SPIN_STEP, strikeSpeedFor } from "../gameplay/cue";
-import { RulesEngine, type ShotOutcome } from "../gameplay/rules";
+import { CueController, AIM_STEP, SPIN_STEP } from "../gameplay/cue";
+import { RulesEngine } from "../gameplay/rules";
 import {
   createTableSimulation, CUE_SPOT, BALL_RADIUS, PLAY_HALF_X, PLAY_HALF_Z
 } from "../gameplay/table";
@@ -16,10 +16,9 @@ import { createBilliardsAudio } from "../legacy/billiards-audio";
 import { poolHallRoom, playfieldNodes, BALL_VISUAL_SCALE, BALL_VISUAL_LIFT, BALL_SURFACE_Y } from "./scene/world";
 import { lightingNodes } from "./scene/lighting";
 import { createBankShotRig, fallbackCameraNode } from "./scene/camera";
-import { wireBankShotFx } from "./scene/fx";
 import { publishBankShotEvidence } from "./evidence";
 import { applyBankShotScenario } from "./scenarios";
-import { strikeAudioMap, type StrikeAudioParams } from "./audio-map";
+import { createBankShotFlow } from "./shot-flow";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_BANK_SHOT" as const;
 
@@ -31,7 +30,6 @@ const sim = createTableSimulation();
 const rules = new RulesEngine(1);
 const cueController = new CueController();
 const rigState = { aimAngle: 0, rolling: false };
-let lastStrikeAudio: StrikeAudioParams | null = null;
 
 function buildScene() {
   return scene()
@@ -107,115 +105,12 @@ const game = createGame({
 
 // ------------------------------------------------------------- shot state ----
 
-let shotInFlight = false;
-let stalledFrames = 0;
-let shootingFrames = 0;
-let pottedThisShot: number[] = [];
-let firstRack = true;
 let frame = 0;
 const bootedAtMs = performance.now();
 
-const fx = wireBankShotFx(game, () => {
-  const cue = sim.ballInfos().find((b) => b.number === 0);
-  return cue ? [cue.x, BALL_SURFACE_Y, cue.z] : [CUE_SPOT[0], BALL_SURFACE_Y, CUE_SPOT[1]];
-});
-
-function doStrike(): void {
-  const command = cueController.strike();
-  if (!command || rules.phase !== "aiming") return;
-  if (!rules.beginShot()) return;
-  if (!sim.strike(command.power, command.angle, command.spin)) {
-    rules.finishResolution();
-    return;
-  }
-  shotInFlight = true;
-  stalledFrames = 0;
-  shootingFrames = 0;
-  pottedThisShot = [];
-  if (firstRack) fx.onBreak(); else fx.onStrike();
-  const strikeParams = strikeAudioMap(strikeSpeedFor(command.power));
-  lastStrikeAudio = strikeParams;
-  // §14.4: cue travels its full pull-back → ball contact over 80 ms.
-  strokeAnim = { t0: performance.now(), pullback: 0.04 + command.power * 0.28 };
-  pushCue(strikeParams.cue);
-}
-
-function applyOutcome(outcome: ShotOutcome): void {
-  if (outcome.rackWon) {
-    pushCue("eight-win");
-    void game.hud.banner(rules.sessionComplete ? "SESSION CLEAR" : "RACK CLEAR", { holdMs: 2600 });
-  } else if (outcome.rackLost) {
-    pushCue("rack-fail");
-    void game.hud.banner("RACK LOST", { holdMs: 2200 });
-  } else if (outcome.foul) {
-    pushCue("foul-whistle");
-    void game.hud.toast("SCRATCH — BALL IN HAND", { ms: 1800 });
-    let freeX = CUE_SPOT[0], freeZ = CUE_SPOT[1];
-    if (!sim.canPlaceCue(freeX, freeZ)) {
-      for (let r = 0.05; r <= 0.8 && !sim.canPlaceCue(freeX, freeZ); r += 0.05) {
-        for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
-          const tx = CUE_SPOT[0] + Math.cos(a) * r;
-          const tz = CUE_SPOT[1] + Math.sin(a) * r;
-          if (sim.canPlaceCue(tx, tz)) { freeX = tx; freeZ = tz; }
-        }
-      }
-    }
-    ghost.x = freeX; ghost.z = freeZ;
-  } else if (outcome.pottedLegal.length > 0) {
-    pushCue("combo-chime");
-  }
-}
-
-function resolveShotNow(): void {
-  if (!shotInFlight) return;
-  const facts = sim.shotFacts();
-  const outcome = rules.resolveShot({
-    firstContact: facts.firstContact,
-    cushionAfterContact: facts.cushionAfterContact,
-    potted: pottedThisShot
-  });
-  rules.finishResolution();
-  shotInFlight = false;
-  pottedThisShot = [];
-  stalledFrames = 0;
-  applyOutcome(outcome);
-}
-
-const ghost = { x: CUE_SPOT[0], z: CUE_SPOT[1] };
-
-function advanceRack(): void {
-  rules.advanceRack();
-  sim.resetRack();
-  firstRack = false;
-}
-
-function resetSession(): void {
-  rules.rerack();
-  sim.resetRack();
-  cueController.cancelCharge();
-  shotInFlight = false;
-  pottedThisShot = [];
-  firstRack = true;
-  ghost.x = CUE_SPOT[0];
-  ghost.z = CUE_SPOT[1];
-}
-
-function consumeShotEvents(): void {
-  for (const fact of sim.consumeShotFactEvents()) {
-    if (fact.type === "cue-first-contact") pushCue("ball-hit");
-    else if (fact.type === "cushion-touch") pushCue("cushion-hit");
-  }
-  for (const impact of sim.consumeImpacts()) {
-    if (impact.kind === "ball-ball" && impact.speed > 0.6) pushCue("ball-hit");
-  }
-  for (const pot of sim.consumePotEvents()) {
-    pottedThisShot.push(pot.ball);
-    sinkingBalls.set(pot.ball, performance.now());
-    pushCue("pocket-drop");
-    fx.onPotted(pot.ball);
-    void game.hud.toast(pot.ball === 0 ? "SCRATCH" : `BALL ${pot.ball} DOWN`, { ms: 1600 });
-  }
-}
+const shotFlow = createBankShotFlow({ sim, rules, cueController, game, pushCue });
+const { fx, doStrike, applyOutcome, resolveShotNow, advanceRack, resetSession, consumeShotEvents } = shotFlow;
+const shotCtx = shotFlow.state;
 
 // ------------------------------------------------------------- input ---------
 
@@ -231,8 +126,8 @@ window.addEventListener("keydown", (e) => {
   if (e.code === "Space" && !e.repeat) {
     if (rules.phase === "aiming" && !cueController.charging && sim.cueAtRest()) cueController.beginCharge();
     else if (rules.phase === "ball-in-hand") {
-      if (sim.canPlaceCue(ghost.x, ghost.z)) {
-        if (sim.restoreCueAt(ghost.x, ghost.z) && rules.confirmBallInHand()) pushCue("ball-hit");
+      if (sim.canPlaceCue(shotCtx.ghost.x, shotCtx.ghost.z)) {
+        if (sim.restoreCueAt(shotCtx.ghost.x, shotCtx.ghost.z) && rules.confirmBallInHand()) pushCue("ball-hit");
       }
     } else if (rules.phase === "rack-won") advanceRack();
   }
@@ -305,8 +200,6 @@ function poseLine(h: ReturnType<typeof handle>, x0: number, z0: number, x1: numb
 }
 
 let maxAngularSpeed = 0;
-let strokeAnim: { readonly t0: number; readonly pullback: number } | null = null;
-const sinkingBalls = new Map<number, number>();
 const prevQuat = new Map<string, readonly [number, number, number, number]>();
 
 function syncVisuals(): void {
@@ -316,14 +209,14 @@ function syncVisuals(): void {
     const number = Number(pose.name.slice(5));
     if (rules.potted.includes(number)) {
       // §14.4 pocket drop: the ball sinks 6 cm over 120 ms, then parks.
-      const t0 = sinkingBalls.get(number);
+      const t0 = shotCtx.sinkingBalls.get(number);
       if (t0 !== undefined) {
         const t = (performance.now() - t0) / 120;
         if (t < 1) {
           h.setPosition(pose.position[0], pose.position[1] + BALL_VISUAL_LIFT - 0.06 * t, pose.position[2]);
         } else {
           park(h);
-          sinkingBalls.delete(number);
+          shotCtx.sinkingBalls.delete(number);
         }
       } else park(h);
       prevQuat.delete(pose.name);
@@ -355,19 +248,19 @@ function syncVisuals(): void {
     const angle = cueController.aimAngle;
     const dirX = Math.cos(angle), dirZ = Math.sin(angle);
     // 80 ms stroke: slide the tip from the charged pull-back to contact.
-    const animT = strokeAnim ? Math.min(1, (performance.now() - strokeAnim.t0) / 80) : 1;
-    const back = strokeAnim ? strokeAnim.pullback : 0;
+    const animT = shotCtx.strokeAnim ? Math.min(1, (performance.now() - shotCtx.strokeAnim.t0) / 80) : 1;
+    const back = shotCtx.strokeAnim ? shotCtx.strokeAnim.pullback : 0;
     const dist = back + (-0.045 - back) * animT;
     cueStick?.setScale([BALL_VISUAL_SCALE, BALL_VISUAL_SCALE, BALL_VISUAL_SCALE]);
     cueStick?.setPosition(cueInfo.x - dirX * dist, BALL_SURFACE_Y + 0.008, cueInfo.z - dirZ * dist);
     cueStick?.setRotation(0, -angle, 0.035);
-    if (animT >= 1) strokeAnim = null;
+    if (animT >= 1) shotCtx.strokeAnim = null;
     return;
   }
   if (rules.phase === "ball-in-hand") {
     park(cueStick); park(aimLine); park(aimBank);
     cueGhost?.setScale([BALL_VISUAL_SCALE, BALL_VISUAL_SCALE, BALL_VISUAL_SCALE]);
-    cueGhost?.setPosition(ghost.x, BALL_SURFACE_Y + 0.004, ghost.z);
+    cueGhost?.setPosition(shotCtx.ghost.x, BALL_SURFACE_Y + 0.004, shotCtx.ghost.z);
     return;
   }
   park(cueGhost);
@@ -409,20 +302,20 @@ game.app.onFrame(({ dt }) => {
     if (held.has("KeyS") || held.has("ArrowDown")) cueController.spinBy(-SPIN_STEP);
   } else if (rules.phase === "ball-in-hand") {
     const m = BALL_RADIUS + 0.02;
-    if (held.has("KeyA") || held.has("ArrowLeft")) ghost.x = Math.max(-PLAY_HALF_X + m, ghost.x - BALL_IN_HAND_STEP);
-    if (held.has("KeyD") || held.has("ArrowRight")) ghost.x = Math.min(PLAY_HALF_X - m, ghost.x + BALL_IN_HAND_STEP);
-    if (held.has("KeyW") || held.has("ArrowUp")) ghost.z = Math.max(-PLAY_HALF_Z + m, ghost.z - BALL_IN_HAND_STEP);
-    if (held.has("KeyS") || held.has("ArrowDown")) ghost.z = Math.min(PLAY_HALF_Z - m, ghost.z + BALL_IN_HAND_STEP);
+    if (held.has("KeyA") || held.has("ArrowLeft")) shotCtx.ghost.x = Math.max(-PLAY_HALF_X + m, shotCtx.ghost.x - BALL_IN_HAND_STEP);
+    if (held.has("KeyD") || held.has("ArrowRight")) shotCtx.ghost.x = Math.min(PLAY_HALF_X - m, shotCtx.ghost.x + BALL_IN_HAND_STEP);
+    if (held.has("KeyW") || held.has("ArrowUp")) shotCtx.ghost.z = Math.max(-PLAY_HALF_Z + m, shotCtx.ghost.z - BALL_IN_HAND_STEP);
+    if (held.has("KeyS") || held.has("ArrowDown")) shotCtx.ghost.z = Math.min(PLAY_HALF_Z - m, shotCtx.ghost.z + BALL_IN_HAND_STEP);
   }
 
   if (edge("Space") === "released" && cueController.charging) doStrike();
 
-  if (rules.phase === "shooting" && shotInFlight) {
+  if (rules.phase === "shooting" && shotCtx.shotInFlight) {
     sim.stepFixed(1);
     consumeShotEvents();
-    shootingFrames += 1;
-    stalledFrames = sim.allAtRest(0.08) ? stalledFrames + 1 : 0;
-    if (stalledFrames >= 18 || shootingFrames >= 300) resolveShotNow();
+    shotCtx.shootingFrames += 1;
+    shotCtx.stalledFrames = sim.allAtRest(0.08) ? shotCtx.stalledFrames + 1 : 0;
+    if (shotCtx.stalledFrames >= 18 || shotCtx.shootingFrames >= 300) resolveShotNow();
   }
 
   if (rules.tickClock(scaled * 1000)) {
@@ -431,7 +324,7 @@ game.app.onFrame(({ dt }) => {
   }
 
   rigState.aimAngle = cueController.aimAngle;
-  rigState.rolling = shotInFlight;
+  rigState.rolling = shotCtx.shotInFlight;
 
   syncVisuals();
   if (frame % 6 === 0) syncHud();
@@ -456,12 +349,12 @@ void game.ready().then(() => {
     // T2.2-post: appliedLook derives from the C-31 runtime manifest.
     appliedLook: { ...lookManifest(game.lookSource()), postPreset: "cinematic-film" },
     fxLiveCount: () => game.fx.liveCount,
-    pottedThisShot: () => pottedThisShot,
+    pottedThisShot: () => shotCtx.pottedThisShot,
     maxAngularSpeed: () => maxAngularSpeed,
     bootedAtMs,
     frameCount: () => framePublished,
     audioCueLog: () => audioCueLog,
-    lastStrikeAudio: () => lastStrikeAudio
+    lastStrikeAudio: () => shotCtx.lastStrikeAudio
   });
 
   // `?scenario=<name>` — deterministic state fixtures (T2.1; state only, so
