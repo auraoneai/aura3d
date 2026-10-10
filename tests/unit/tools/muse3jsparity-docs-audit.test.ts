@@ -1,6 +1,6 @@
 import { describe,it,expect } from 'vitest';
-import { scanPublicSource } from '../../../tools/muse3jsparity-docs-audit/index';
-import { claimSurfaceCompatible } from '../../../tools/muse3jsparity-docs-audit/claims';
+import { scanPublicSource } from '../../../tools/_quarantine/muse3jsparity-docs-audit/index';
+import { claimSurfaceCompatible } from '../../../tools/_quarantine/muse3jsparity-docs-audit/claims';
 describe('source audit canonical findings',()=>{
  it('rejects imported model aliases and require/dynamic Three imports',()=>{
  const findings=scanPublicSource('apps/test/main.ts',`import {model as hero} from '@aura3d/engine'; hero('made-up'); require('three'); import('three/addons/test');`);

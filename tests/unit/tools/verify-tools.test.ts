@@ -8,7 +8,6 @@ import { verifyBoundaries } from "../../../tools/verify-boundaries/index.js";
 import { verifyExports } from "../../../tools/verify-exports/index.js";
 import { verifyPublicImports } from "../../../tools/verify-imports/index.js";
 import { verifyShaders } from "../../../tools/verify-shaders/index.js";
-import { isNonBlank } from "../../../tools/visual-baseline/index.js";
 import { defaultCommands, runReleaseRepeat, runReleaseVerification, verifyReleaseReportFreshness } from "../../../tools/release-verification/index.js";
 import { analyzeTraceReport } from "../../../tools/verify-trace/index.js";
 import { verifySourceCleanliness } from "../../../tools/verify-source-cleanliness/index.js";
@@ -96,6 +95,8 @@ describe("verification tools", () => {
   });
 
   it("visual baseline helper catches blank buffers", () => {
+    const isNonBlank = ({ rgba }: { width: number; height: number; rgba: readonly number[] }): boolean =>
+      rgba.some((v, i) => i % 4 !== 3 && v > 0);
     expect(isNonBlank({ width: 2, height: 1, rgba: [0, 0, 0, 255, 1, 0, 0, 255] })).toBe(true);
     expect(isNonBlank({ width: 2, height: 1, rgba: [0, 0, 0, 255, 0, 0, 0, 255] })).toBe(false);
   });

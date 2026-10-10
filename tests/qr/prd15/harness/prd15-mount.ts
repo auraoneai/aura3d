@@ -79,7 +79,7 @@ async function run(): Promise<void> {
           .background("#1d2126")
           .add(lights.ambient({ name: "fill", intensity: 0.12, color: "#ffffff" }))
           .add(lights.directional({ name: "sun", position: [4, 6, 2], intensity: 3, color: "#fff2e0", shadow: true }))
-          .add(primitives.plane({ name: "ground", size: [10, 10], material: material.pbr({ color: "#808080", roughness: 0.9 }) }))
+          .add(primitives.plane({ name: "ground", size: 10, material: material.pbr({ color: "#808080", roughness: 0.9 }) }))
           .add(primitives.box({ name: "occluder", size: [0.8, 2.4, 0.8], position: [0, 1.2, 0], material: material.pbr({ color: "#606060", roughness: 0.7 }), castShadow: true }));
 
   const app = createAuraApp(host, {
@@ -105,7 +105,7 @@ async function run(): Promise<void> {
     return;
   }
 
-  const diag = app.diagnostics() as Record<string, unknown>;
+  const diag = app.diagnostics() as unknown as Record<string, unknown>;
   (window as { __QR_READY__?: unknown }).__QR_READY__ = {
     harness: "prd15-mount", mode, flags, version: __AURA3D_VERSION__,
     mountFailed: false,

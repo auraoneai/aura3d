@@ -61,12 +61,12 @@ function graphFor(opts: { envBackground: boolean; tier: "low" | "high" }): Rende
     writer(
       "prd01.opaque",
       opts.envBackground ? [ENVIRONMENT_BACKGROUND_COLOR_RESOURCE] : [],
-      ["aura.scene.color.opaque", "aura.scene.depth"]
+      ["aura.scene.color.opaque", "aura.scene.depth", "aura.scene.color"]
     )
   );
   for (const p of con.passes!("after-opaque", c)) graph.addPass(p);
   for (const p of con.passes!("transparent", c)) graph.addPass(p);
-  graph.addPass(writer("prd01.transparent", ["aura.scene.color.opaque"], ["aura.scene.color"]));
+  graph.addPass(writer("prd01.transparent", ["aura.scene.color"], ["aura.present"]));
   return graph;
 }
 
@@ -103,6 +103,21 @@ describe("T0-33 world frame passes", () => {
   it("emits no water pass and no unproduced reads when water is absent", () => {
     const plan = graphFor({ envBackground: true, tier: "high" }).compilePlan();
     expect(plan.passes.map((p) => p.name)).not.toContain("prd10.water");
+  });
+
+  it("FIX-P0-tier: low/medium tiers emit no planar-reflection or scene-copy passes", () => {
+    worldWater({ id: "w-t0-33-tier", shape: { kind: "circle", center: [0, 0], radius: 5 }, waves: "calm" });
+    for (const tier of ["low", "medium"] as const) {
+      const plan = graphFor({ envBackground: true, tier }).compilePlan();
+      const names = plan.passes.map((p) => p.name);
+      // planar reflection resolves to ibl below high tier — never emitted
+      expect(names.some((n) => n.includes("reflection"))).toBe(false);
+      // water surface still draws — only the expensive extras are gated
+      expect(names).toContain("prd10.water");
+    }
+    // low additionally skips the scene copies (refraction off below medium)
+    const lowNames = graphFor({ envBackground: true, tier: "low" }).compilePlan().passes.map((p) => p.name);
+    expect(lowNames).not.toContain("prd10.sceneCopy");
   });
 
   afterEach(() => {

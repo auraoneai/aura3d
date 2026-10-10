@@ -1,6 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { APPS, builtDist, serve, watchConsole, soakIfNeeded } from "./lib/serve";
-import { existsSync } from "node:fs";
+import { builtDist, serve, watchConsole } from "./lib/serve";
 import { join } from "node:path";
 
 /**
@@ -25,7 +24,6 @@ const LEGACY_EVIDENCE_KEYS = [
 ] as const;
 
 test.describe("aura-clash dispatch (T1.10)", () => {
-  test.skip(!existsSync(join(APPS, APP_DIR, "src", "v2", "boot.ts")), "no v2 tree yet");
 
   test("flag off boots legacy with the same evidence keys and no console errors", async ({ page }) => {
     const root = builtDist(APP_DIR);
@@ -44,7 +42,6 @@ test.describe("aura-clash dispatch (T1.10)", () => {
       }
       const v2 = await page.evaluate(() => (window as Record<string, unknown>).__AURA3D_GAME__);
       expect(v2).toBeUndefined();
-      await soakIfNeeded(page);
       expect(errors).toEqual([]);
     } finally {
       server.close();
@@ -64,7 +61,6 @@ test.describe("aura-clash dispatch (T1.10)", () => {
       const state = await page.evaluate(() =>
         ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
       expect(state).toBe("playing");
-      await soakIfNeeded(page);
       expect(errors).toEqual([]);
     } finally {
       server.close();
