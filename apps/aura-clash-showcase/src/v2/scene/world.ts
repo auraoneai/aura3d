@@ -4,7 +4,7 @@
 // sign props (emissive practicals), wet clearcoat deck. The four root
 // "shadow evidence" boxes and the spectator card are deleted; no parked
 // nodes, no ambient fill — visibility comes from the rig in lighting.ts.
-import { game, instances, model, primitives } from "@aura3d/engine";
+import { game, instances, model, primitives, type AuraNodeInput } from "@aura3d/engine";
 import { assets } from "../../aura-assets";
 import {
   FOG_CARD_MATERIAL, HIT_FLASH_MATERIAL, NEON_CYAN_MATERIAL, NEON_PINK_MATERIAL,
@@ -55,10 +55,10 @@ export interface AuraClashWorldOptions {
   readonly opponentStart?: readonly [number, number, number];
 }
 
-export function auraClashWorldNodes(o: AuraClashWorldOptions = {}): readonly unknown[] {
+export function auraClashWorldNodes(o: AuraClashWorldOptions = {}): readonly AuraNodeInput[] {
   const p1 = o.playerStart ?? [-1.45, FIGHT_PLANE_Y, 0];
   const p2 = o.opponentStart ?? [1.45, FIGHT_PLANE_Y, 0];
-  const nodes: unknown[] = [];
+  const nodes: AuraNodeInput[] = [];
 
   // Wet rooftop deck + parapet trim (backdrop: castShadow false).
   nodes.push(

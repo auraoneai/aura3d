@@ -8,8 +8,7 @@
 // unchanged; audio plays through the legacy cue controller until C-25
 // lands (standIn R-14-10).
 import { game as engineGame, scene } from "@aura3d/engine";
-import { postPresets } from "@aura3d/engine/contracts";
-import { createGame, type Game } from "@aura3d/game";
+import { createGame, type Game, lookManifest } from "@aura3d/game";
 import { SIEGE_GOLF_HOLES } from "../gameplay/course";
 import { HoleFlow, type SiegeGameEvent } from "../gameplay/hole-flow";
 import { ShotController } from "../gameplay/shot";
@@ -112,7 +111,13 @@ const game = createGame({
     "complete": { trauma: 0.25 },
     "failed": { hitStopMs: 50, trauma: 0.2 }
   },
-  qualityRebuild: { flags: [ROUTE_FLAG] }
+  qualityRebuild: {
+    // FLAG-1: arm the engine features this route uses — `game` selects the
+    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
+    // art/direction.ts sections. `route_siege_golf` uses the engine-parseable
+    // underscore form (URL/dispatch form is `route-siege-golf`).
+    flags: ["route_siege_golf", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+  }
 });
 
 const fx = wireSiegeFx(game);
@@ -405,7 +410,9 @@ game.app.onFrame?.(({ dt: rawDt }) => {
 
 // ------------------------------------------------------------- evidence ------
 
+// T2.2-post: appliedLook derives from the C-31 runtime manifest.
 const appliedLook: Record<string, unknown> = Object.freeze({
+  ...lookManifest(game.lookSource()),
   postPreset: "daylight-outdoor",
   exposureEV: direction.lighting.exposureEV,
   hdri: direction.lighting.environment.hdri,
@@ -448,8 +455,7 @@ void game.ready().then(() => {
   game.app.camera?.use?.(createSiegeRig(rigState), { blend: 0.4 });
   // C-05 output: daylight-outdoor preset; post presets stub {} until the
   // registry ships real output profiles.
-  void postPresets["daylight-outdoor"];
-  game.app.setOutput?.({ exposure: Math.pow(2, direction.lighting.exposureEV) });
+    game.app.setOutput?.({ preset: "daylight-outdoor",  exposure: Math.pow(2, direction.lighting.exposureEV) });
   const firstFrameAt = performance.now();
   const w = window as unknown as Record<string, unknown>;
   w.__AURA3D_GAME__ = {

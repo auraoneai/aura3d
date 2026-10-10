@@ -9,9 +9,12 @@ const DEFAULT_ON = false;
 function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
   const raw = new URL(loc.href).searchParams.get("a3d-qr");
   if (raw === null) return undefined;
-  const entries = raw.split(",").map((s) => s.trim());
-  const short = `route-${flag.replace(/^A3D_QR_ROUTE_/, "").toLowerCase().replace(/_/g, "-")}`;
-  return entries.includes(short) || entries.includes(flag) ? true : undefined;
+  const slug = flag.replace(/^A3D_QR_ROUTE_/, "").toLowerCase();
+  const tokens = raw.split(",").map((s) => s.trim());
+  // Dispatch forms: `route-<id>` (documented), `route_<id>` (engine sub-flag
+  // form usable in URLs), and the raw `A3D_QR_ROUTE_<ID>` id.
+  const wanted = [`route-${slug.replace(/_/g, "-")}`, `route_${slug}`, flag];
+  return tokens.some((t) => wanted.includes(t)) ? true : undefined;
 }
 
 const flags = resolveQrFlags({

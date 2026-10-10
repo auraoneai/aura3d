@@ -5,8 +5,8 @@
 // glue, HUD and evidence. The kept src/gameplay/** modules (combat data,
 // clip maps, secondary motion, replay) back the content wave; the shell
 // keeps positions/facing on the UBC rigs until clip playback lands.
-import { createGame } from "@aura3d/game";
-import { createFightingGameKit, postPresets } from "@aura3d/engine";
+import { createGame, lookManifest } from "@aura3d/game";
+import { camera, createFightingGameKit, scene } from "@aura3d/engine";
 import type { FightingGameSnapshot } from "@aura3d/engine";
 import { auraClashEnvironment, auraClashLights } from "./scene/lighting";
 import { auraClashWorldNodes, P1_NODE, P2_NODE, HIT_FLASH_NODE } from "./scene/world";
@@ -44,13 +44,20 @@ const game = createGame({
   id: "aura-clash-showcase",
   target,
   layout: "full-bleed",
-  scene: () => ({
-    nodes: [
-      ...auraClashWorldNodes(),
-      ...auraClashLights(),
-      auraClashEnvironment()
-    ]
-  }),
+  // FLAG-3: a bare {nodes:[...]} object is not an AuraSceneSnapshot — the real
+  // impl normalizes via the scene() builder (schema/background/camera/…), so
+  // build the snapshot the same way every other v2 route does.
+  scene: () =>
+    scene()
+      .background("#070b12")
+      .camera(
+        // Static fallback only — the fighting rig drives the live camera;
+        // keep the same 32° fov solve so the first frame matches the rig's.
+        camera.orbit({ target: [0, 1, 0], distance: 6.3, fov: 32 })
+      )
+      .addMany(auraClashWorldNodes())
+      .addMany(auraClashLights())
+      .add(auraClashEnvironment()),
   hud: {
     theme: "fighting",
     maxScreenFraction: 0.15,
@@ -87,7 +94,13 @@ const game = createGame({
     "ko-slow-mo": { scale: 0.35, ms: 1100 },
     "impact-shake": { trauma: 0.12 }
   },
-  qualityRebuild: { flags: [ROUTE_FLAG] }
+  qualityRebuild: {
+    // FLAG-1: arm the engine features this route uses — `game` selects the
+    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
+    // art/direction.ts sections. `route_aura_clash` uses the engine-parseable
+    // underscore form (URL/dispatch form is `route-aura-clash`).
+    flags: ["route_aura_clash", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+  }
 });
 
 // Pause/resume with tab visibility (menu/user toggles from P + Esc).
@@ -170,8 +183,7 @@ game.app.onRender?.(() => { frame += 1; });
 game.start();
 void game.ready().then(() => {
   game.app.camera?.use?.(rig, { blend: 0.4 });
-  void postPresets["arena-fight"];
-  game.app.setOutput?.({ toneMapping: "aces", exposure: 2 ** EXPOSURE_EV });
+    game.app.setOutput?.({ preset: "arena-fight",  toneMapping: "aces", exposure: 2 ** EXPOSURE_EV });
 
   const scenario = new URL(location.href).searchParams.get("scenario");
   if (scenario) {
@@ -189,7 +201,8 @@ void game.ready().then(() => {
     game,
     app: () => game.app,
     snapshot: () => latestSnapshot,
-    appliedLook: { preset: "arena-fight", toneMapping: "aces", exposureEV: EXPOSURE_EV },
+    // T2.2-post: appliedLook derives from the C-31 runtime manifest, not literals.
+    appliedLook: { preset: "arena-fight", ...lookManifest(game.lookSource()) },
     audioCueLog: () => audioCueLog,
     hitStopActive: () => performance.now() < hitStopUntilMs,
     roundInfo: () => ({ round: round.number, timeLeft: round.timeLeft }),

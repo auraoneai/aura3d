@@ -13,6 +13,9 @@ import { join } from "node:path";
 
 const APP_DIR = "showcase-bank-shot";
 const ROUTE_FLAG = "route-bank-shot";
+// T1.10: v2 specs carry the same engine list the URL contract uses
+// (boot.ts qualityRebuild.flags + games.json qrFlags).
+const ENGINE_FLAGS = "game,camera,lighting,post,materials,vfx,world,tiers,looks";
 const EVIDENCE = `window.__AURA3D_GAME_EVIDENCE__?.["${APP_DIR}"]`;
 const FRACTION: readonly [number, number] = [0.2, 0.4];
 
@@ -27,7 +30,7 @@ test.describe("showcase-bank-shot framing (T2.3)", () => {
       const { server, url } = await serve(root!);
       try {
         await page.setViewportSize(viewport);
-        await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG}`);
+        await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
         await expect.poll(() => page.evaluate(() =>
           (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
         // Drive to the 03-mid state: charge + release a shot.

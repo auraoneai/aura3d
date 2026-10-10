@@ -17,11 +17,8 @@ export interface OrbitalEvidenceBindings {
   };
   readonly app: () => AuraApp | undefined;
   readonly wave: () => WaveState;
-  readonly appliedLook: {
-    readonly preset: string;
-    readonly toneMapping: string;
-    readonly exposureEV: number;
-  };
+  // T2.2-post: appliedLook is the C-31 runtime look manifest — a varying shape.
+  readonly appliedLook: Record<string, unknown>;
   readonly explosionsLive: () => number;
   readonly audioCueLog: () => readonly string[];
   readonly bootedAtMs: number;

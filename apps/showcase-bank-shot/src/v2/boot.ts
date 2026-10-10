@@ -4,8 +4,7 @@
 // are unchanged (rules/racks/table/cue/ball-visuals); audio plays through the
 // existing route samples until C-25 game-sfx is real (standIn R-14-09).
 import { scene } from "@aura3d/engine";
-import { postPresets } from "@aura3d/engine/contracts";
-import { createGame, type Game } from "@aura3d/game";
+import { createGame, type Game, lookManifest } from "@aura3d/game";
 import { CueController, AIM_STEP, SPIN_STEP, strikeSpeedFor } from "../gameplay/cue";
 import { RulesEngine, type ShotOutcome } from "../gameplay/rules";
 import {
@@ -97,7 +96,13 @@ const game = createGame({
     break: { trauma: 0.25, hitStopMs: 30 },
     "eight-ball-sunk": { slowMo: { scale: 0.5, ms: 600 } }
   },
-  qualityRebuild: { flags: [ROUTE_FLAG] }
+  qualityRebuild: {
+    // FLAG-1: arm the engine features this route uses — `game` selects the
+    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
+    // art/direction.ts sections. `route_bank_shot` uses the engine-parseable
+    // underscore form (URL/dispatch form is `route-bank-shot`).
+    flags: ["route_bank_shot", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+  }
 });
 
 // ------------------------------------------------------------- shot state ----
@@ -443,21 +448,13 @@ void game.ready().then(() => {
   // C-22 camera rig (stand-in: applied when app.camera is real).
   const rig = createBankShotRig(rigState);
   game.app.camera?.use?.(rig, { blend: 0.4 });
-  // C-05 output: exposureEV 0 → linear 1; postPresets["cinematic-film"].output
-  // is {} today (preset stubs), so exposure is set literally.
-  void postPresets["cinematic-film"];
-  game.app.setOutput?.({ exposure: 1 });
+  // C-05 output: "cinematic-film" preset + exposureEV 0 → linear 1.
+  game.app.setOutput?.({ preset: "cinematic-film", exposure: 1 });
 
   publishBankShotEvidence({
     game, sim, rules, cue: cueController, rigState,
-    appliedLook: {
-      background: "#0a0f14",
-      exposureEV: direction.lighting.exposureEV,
-      hdri: direction.lighting.environment.hdri,
-      rig: "bank-shot.aim-orbit",
-      postPreset: "cinematic-film",
-      shadowCasters: 1
-    },
+    // T2.2-post: appliedLook derives from the C-31 runtime manifest.
+    appliedLook: { ...lookManifest(game.lookSource()), postPreset: "cinematic-film" },
     fxLiveCount: () => game.fx.liveCount,
     pottedThisShot: () => pottedThisShot,
     maxAngularSpeed: () => maxAngularSpeed,

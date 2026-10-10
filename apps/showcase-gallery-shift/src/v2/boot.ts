@@ -13,8 +13,7 @@ import {
   type AuraAnimationAssetLike,
   type AuraRuntimeNodeHandle
 } from "@aura3d/engine";
-import { postPresets } from "@aura3d/engine/contracts";
-import { createGame, type Game } from "@aura3d/game";
+import { createGame, lookManifest, type Prd09Game } from "@aura3d/game";
 import direction from "../../art/direction";
 import { assets } from "../../../../src/aura-assets";
 import {
@@ -78,7 +77,7 @@ const buildScene = () =>
 
 const target = document.getElementById("app") ?? document.body;
 
-const game: Game = createGame({
+const game: Prd09Game<string, string> = createGame({
   id: "showcase-gallery-shift",
   target,
   layout: "full-bleed",
@@ -98,9 +97,14 @@ const game: Game = createGame({
     preset: "lane-swipe",
     bindings: { stick: "moveX", tap: "lift", swipeUp: "sprint", swipeDown: "sneak", pause: "menu" }
   },
-  qualityRebuild: { flags: [ROUTE_FLAG] }
+  qualityRebuild: {
+    // FLAG-1: arm the engine features this route uses — `game` selects the
+    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
+    // art/direction.ts sections. `route_gallery_shift` uses the engine-parseable
+    // underscore form (URL/dispatch form is `route-gallery-shift`).
+    flags: ["route_gallery_shift", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+  }
 });
-void postPresets["cinematic-film"];
 
 const fx = wireGalleryFx(game.fx);
 
@@ -639,7 +643,7 @@ const evidence = publishGalleryEvidence({
   }),
   audio: () => ({ lastCue: audioCueLog.at(-1) ?? null, cueLog: audioCueLog.slice() }),
   run: () => ({ paused, touchEngaged, replayActive: autorunActive }),
-  appliedLook: () => galleryScenarioLook(scenario),
+  appliedLook: () => ({ ...lookManifest(game.lookSource()), ...galleryScenarioLook(scenario) }),
   rig: () => ({ id: "gallery-shift.chase", fov: 52 }),
   scenario: () => scenario,
   render: () => ({ frame: frameCount, firstFrameAt })
@@ -922,7 +926,7 @@ void game.ready().then(() => {
     }
   }
   game.app.camera?.use?.(rig as never, { blend: 0.12 });
-  game.app.setOutput?.({ exposure: Math.pow(2, direction.lighting.exposureEV) });
+  game.app.setOutput?.({ preset: "cinematic-film", exposure: Math.pow(2, direction.lighting.exposureEV) });
   (window as unknown as Record<string, unknown>).__AURA3D_GAME__ = {
     route: game.id,
     get app() { return game.app; },

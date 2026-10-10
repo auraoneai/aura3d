@@ -7,8 +7,7 @@
 // salvage/sonar/reef) are unchanged imports; audio plays through the legacy
 // cue controller until C-25 lands.
 import { game as engineGame, scene, type GameInputController, type AuraCameraPose } from "@aura3d/engine";
-import { postPresets } from "@aura3d/engine/contracts";
-import { createGame, type Game } from "@aura3d/game";
+import { createGame, type Game, lookManifest } from "@aura3d/game";
 import { assets } from "../../../../src/aura-assets";
 import { getDepthZone, BUOY_STATION, WRECK_OBSTACLES, type Vec3 } from "../gameplay/reef";
 import { DEFAULT_SUB_CONFIG, initialSubmarineState, updateSubmarine, type SubmarineState } from "../gameplay/sub";
@@ -165,7 +164,13 @@ const game = createGame({
     "bank": { trauma: 0.14 },
     "impact": { trauma: 0.2 }
   },
-  qualityRebuild: { flags: [ROUTE_FLAG] }
+  qualityRebuild: {
+    // FLAG-1: arm the engine features this route uses — `game` selects the
+    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
+    // art/direction.ts sections. `route_deep_recovery` uses the engine-parseable
+    // underscore form (URL/dispatch form is `route-deep-recovery`).
+    flags: ["route_deep_recovery", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+  }
 });
 
 const fx = wireDeepFx(game);
@@ -655,7 +660,9 @@ function syncHud(): void {
 
 // ------------------------------------------------------------- evidence ------
 
+// T2.2-post: appliedLook derives from the C-31 runtime manifest.
 const appliedLook: Record<string, unknown> = {
+  ...lookManifest(game.lookSource()),
   id: direction.id,
   genre: direction.genre,
   rig: "deep-recovery.chase",
@@ -768,8 +775,7 @@ void game.ready().then(() => {
   game.app.camera?.use?.(createDeepRig(rigState), { blend: 0.4 });
   // C-05 output: underwater grade; post presets stub {} until the registry
   // ships real output profiles.
-  void postPresets["underwater"];
-  game.app.setOutput?.({ exposure: Math.pow(2, direction.lighting.exposureEV) });
+    game.app.setOutput?.({ preset: "underwater",  exposure: Math.pow(2, direction.lighting.exposureEV) });
   const firstFrameAt = performance.now();
   (window as unknown as Record<string, unknown>).__AURA3D_GAME__ = {
     route: game.id,
