@@ -5,9 +5,10 @@
  * (`seed`, `size`, `blend`, `maxParticles`, `prewarm`) and lane object kinds
  * (`flipbook`, `emitterSet`).
  *
- * Flags: `--flags <list>` appends `?a3d-qr=<list>` (C-33); the engine resolves
- * flags only from `createAuraApp` options, so the param is read here and
- * forwarded. Absent param = flags off (the flag-off sentinel run).
+ * Flags: `--flags <list>` appends `?a3d-qr=<list>` (C-33); the bench router
+ * (`main.ts`) parses it and passes `qrFlags` to the adapter, which forwards
+ * them to `createAuraApp` (the engine resolves flags only from options).
+ * Absent list or `none` = flags off (the flag-off sentinel run).
  */
 import {
   camera,
@@ -24,6 +25,7 @@ import {
   type AuraNodeInput,
   type AuraSceneBuilder
 } from "@aura3d/engine";
+import { adapterBudgetMs, DEFAULT_CAPTURE_TIMEOUT_MS, waitForFirstDraw } from "../../lib/failfast";
 import type { CapabilityEntry, CapabilityStatus, MaterialSpec, ReadyPayload } from "../../../shared/types";
 import type { AuraVfxKind } from "@aura3d/engine/contracts";
 import type { BurstSheetSpec, DecalObjectSpec, EmitterMemberSpec, Prd07SceneSpec } from "../../../scenes/prd07/specs";
@@ -49,10 +51,14 @@ function toAuraMaterial(spec: MaterialSpec): AuraMaterialSpec {
   };
 }
 
-function flagsFromUrl(): readonly string[] | undefined {
-  const raw = new URLSearchParams(window.location.search).get("a3d-qr");
-  if (raw === null || raw === "" || raw === "none") return undefined;
-  return raw.split(",").filter(Boolean);
+/** Router options (`main.ts` passes `{ variant, dpr, qrFlags }`). */
+export interface Prd07RunOptions {
+  readonly qrFlags?: readonly string[];
+}
+
+function laneFlags(opts: Prd07RunOptions): readonly string[] | undefined {
+  const list = (opts.qrFlags ?? []).filter((flag) => flag !== "" && flag !== "none");
+  return list.length > 0 ? list : undefined;
 }
 
 interface EffectsDiagnosticsShape {
@@ -313,18 +319,17 @@ function buildPrd07AuraScene(spec: Prd07SceneSpec, log: CapabilityLog): AuraScen
   return built;
 }
 
-async function sleep(ms: number): Promise<void> {
-  await new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 async function nextFrame(): Promise<void> {
   await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
 }
 
-export async function runPrd07AuraScene(spec: Prd07SceneSpec, host: HTMLElement): Promise<ReadyPayload> {
+export async function runPrd07AuraScene(spec: Prd07SceneSpec, host: HTMLElement, opts: Prd07RunOptions = {}): Promise<ReadyPayload> {
   const started = performance.now();
   const log = new CapabilityLog();
-  const flags = flagsFromUrl();
+  const flags = laneFlags(opts);
+  // T0-10 (#416): the adapter concludes inside capture.mjs's page window.
+  const runQuery = new URLSearchParams(window.location.search);
+  const adapterDeadline = performance.now() + adapterBudgetMs(Number(runQuery.get("timeout")) || DEFAULT_CAPTURE_TIMEOUT_MS);
   const builtScene = buildPrd07AuraScene(spec, log);
   const app = createAuraApp(host, {
     scene: builtScene,
@@ -336,13 +341,9 @@ export async function runPrd07AuraScene(spec: Prd07SceneSpec, host: HTMLElement)
   });
   await app.ready();
 
-  const drawDeadline = performance.now() + 90_000;
-  while (performance.now() < drawDeadline) {
-    app.step(0);
-    const diagnostics = app.diagnostics();
-    if (diagnostics.drawCalls > 0 || diagnostics.errors.length > 0) break;
-    await sleep(50);
-  }
+  // T0-10 (#416): fail fast — zero draws with errors, or zero draws past the
+  // deadline, throws NoDrawError so the router publishes __QR_ERROR__.
+  await waitForFirstDraw(app, Math.max(1, Math.min(90_000, adapterDeadline - performance.now())));
 
   const sheets = spec.objects.filter((o): o is BurstSheetSpec => o.kind === "burstSheet");
   const runtimeDecals = spec.objects.filter((o): o is DecalObjectSpec => o.kind === "decal" && o.runtime === true);
