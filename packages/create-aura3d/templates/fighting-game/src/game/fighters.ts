@@ -1,14 +1,14 @@
 import {
   AnimationController,
-  validateClipMap,
   type AuraAssetRef,
-  type AuraClipMapEntry,
   type AuraNamedAnimationClipDefinition,
   game,
   material,
   model,
   primitives
 } from "@aura3d/engine";
+// T0.9a clip-map contract ships on the lane barrel, not the "." public surface.
+import { validateClipMap, type AuraClipMapEntry } from "@aura3d/engine/lanes";
 
 export type FighterId = "player" | "rival";
 /**
