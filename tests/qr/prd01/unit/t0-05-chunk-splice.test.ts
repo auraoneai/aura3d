@@ -209,3 +209,51 @@ describe("04-LOBES: PBR descriptors under core,materials", () => {
     expect(ids({ transmission: { factor: 1 } })).toContain("transmission");
   });
 });
+
+describe("T0-05 review fixes (#877)", () => {
+  it("thin-walled transmission keeps the lobe-state volume defaults (no NaN attenuation)", () => {
+    const body = mainBody(gen({ lighting: "lit", lights: LIGHT1, extensions: [ext("transmission")], features: { "prd04.transmissionTarget": true } }).fragment);
+    expect(body).toContain("a3dLobes.transmission = saturate( u_transmissionFactor );");
+    expect(body).not.toContain("u_volumeThicknessFactor");
+    expect(body).not.toContain("u_volumeAttenuationDistance");
+  });
+
+  it("the transmission feature binds the captured opaque-scene target", async () => {
+    const { setCapturedTransmissionTarget } = await import("../../../../packages/rendering/src/forward/transmissionTargetStore");
+    const { bindShaderFeatureUniforms } = await import("../../../../packages/rendering/src/program/FeatureSelect");
+    const texture = { id: "captured" } as never;
+    setCapturedTransmissionTarget({ texture, width: 640, height: 360 });
+    try {
+      const uniforms = new Map<string, unknown>();
+      const item = { material: { getParameter: () => undefined } } as never;
+      bindShaderFeatureUniforms({ "prd04.transmissionTarget": true }, CORE_MATERIALS, item, (k, v) => uniforms.set(k, v));
+      expect((uniforms.get("a3d_prd04_transmissionSampler") as { texture?: unknown } | undefined)?.texture).toBe(texture);
+      expect(Array.from(uniforms.get("a3d_prd04_transmissionSamplerSize") as Float32Array)).toEqual([640, 360]);
+    } finally {
+      setCapturedTransmissionTarget(undefined);
+    }
+  });
+
+  it("features whose body-hook chunks are not call chunks are not selected on the generated path", async () => {
+    const { featureGeneratorIncompatibility } = await import("../../../../packages/rendering/src/program/FeatureSelect");
+    const { shaderFeaturesFor } = await import("../../../../packages/rendering/src/contracts/program");
+    const flags = resolveQrFlags({ env: { A3D_QR: "core,materials,materials_transmission,vfx,world,animation,camera,post" } });
+    const verdicts = new Map(shaderFeaturesFor(flags).map((f) => [f.id, featureGeneratorIncompatibility(f)]));
+    // prd04 + other call-convention features run; declaration-at-body-hook
+    // features are skipped (with a one-time warning) until their lanes split them.
+    for (const id of ["prd04.debugView", "prd04.alphaToCoverage", "prd04.tangentFrame", "prd04.transmissionTarget", "prd06.deform", "prd08.cameraFade"]) {
+      if (verdicts.has(id)) expect(verdicts.get(id), id).toBeUndefined();
+    }
+    if (verdicts.has("prd07.wetness")) expect(verdicts.get("prd07.wetness")).toMatch(/pars\/call split/);
+  });
+
+  it("a deform contributor without a3dDeform() is incompatible", async () => {
+    const { featureGeneratorIncompatibility } = await import("../../../../packages/rendering/src/program/FeatureSelect");
+    registerShaderChunk({ name: "t005_wind_like", owner: "prd10", stage: "vertex", glsl: "vec3 t005WindOffset(vec3 p) { return p; }" });
+    const verdict = featureGeneratorIncompatibility({
+      id: "prd10.t005Wind", owner: "prd10", flag: "A3D_QR_WORLD", select: () => 1, defines: () => ({}),
+      chunks: ["t005_wind_like"], hooks: ["vertex:deform"]
+    });
+    expect(verdict).toMatch(/a3dDeform/);
+  });
+});
