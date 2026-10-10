@@ -156,6 +156,8 @@ export interface GameAudio<TCue extends string = string> {
   setMuted(muted: boolean): GameAudioEvidence<TCue>;
   setBusVolume(bus: GameAudioBusId, volume: number): GameAudioEvidence<TCue>;
   onCue(callback: (event: GameAudioCueEvent<TCue>) => void): () => void;
+  /** §20 `audio.webm`: record the master bus for ~`seconds` (60 default). Null flag-off or when MediaRecorder is unavailable. */
+  recordMaster(seconds?: number): Promise<Blob | null>;
   dispose(): Promise<GameAudioEvidence<TCue>>;
 }
 
@@ -562,6 +564,9 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
     onCue(callback) {
       listeners.add(callback);
       return () => listeners.delete(callback);
+    },
+    recordMaster(seconds) {
+      return getEngine()?.recordMaster?.(seconds) ?? Promise.resolve(null);
     },
     async dispose() {
       disposed = true;

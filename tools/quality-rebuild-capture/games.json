@@ -88,6 +88,11 @@
       ],
       "timeline": [
         {
+          "audio-webm": {
+           "seconds": 60
+          }
+        },
+        {
           "fps": 5000
         },
         {
@@ -2118,6 +2123,11 @@
         "looks"
       ],
       "timeline": [
+        {
+          "audio-webm": {
+           "seconds": 60
+          }
+        },
         {
           "fps": 5000
         },
@@ -4173,6 +4183,11 @@
         "looks"
       ],
       "timeline": [
+        {
+          "audio-webm": {
+           "seconds": 60
+          }
+        },
         {
           "fps": 5000
         },
