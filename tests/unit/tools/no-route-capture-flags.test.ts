@@ -16,13 +16,17 @@ const lint = (code: string, filename: string) =>
   linter.verify(code, [{ languageOptions }, ...ruleset], filename);
 
 describe("eslint/qr/no-route-capture-flags", () => {
-  it("warns on apps/showcase-bank-shot/src/main.ts:49 (unmigrated route)", () => {
-    const main = readFileSync(join(repoRoot, "apps/showcase-bank-shot/src/main.ts"), "utf8");
-    const messages = lint(main, "apps/showcase-bank-shot/src/main.ts");
-    const line49 = messages.filter((m) => m.line === 49);
-    expect(line49.length).toBeGreaterThan(0);
-    expect(line49.every((m) => m.severity === 1)).toBe(true);
-    expect(line49.some((m) => m.message.includes("aura3d/no-route-capture-flags"))).toBe(true);
+  it("warns on apps/showcase-bank-shot/src/legacy/main.ts capture read (unmigrated legacy route)", () => {
+    // Bank-shot's main.ts is now a PRD-14 flag dispatcher; the route-local
+    // ?capture read moved into src/legacy/main.ts (visualReviewCapture).
+    const main = readFileSync(join(repoRoot, "apps/showcase-bank-shot/src/legacy/main.ts"), "utf8");
+    const captureLine = main.split("\n").findIndex((l) => l.includes('searchParams.get') || l.includes('.get("capture")')) + 1;
+    expect(captureLine).toBeGreaterThan(0);
+    const messages = lint(main, "apps/showcase-bank-shot/src/legacy/main.ts");
+    const hits = messages.filter((m) => m.line === captureLine);
+    expect(hits.length).toBeGreaterThan(0);
+    expect(hits.every((m) => m.severity === 1)).toBe(true);
+    expect(hits.some((m) => m.message.includes("aura3d/no-route-capture-flags"))).toBe(true);
   });
 
   it("reports zero on the patched scratch file (no capture reads)", () => {

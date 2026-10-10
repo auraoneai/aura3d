@@ -23,7 +23,7 @@ import { advanceTimeOfDay } from "./TimeOfDayRuntime.js";
 import { QUALITY_TIERS, type AuraQualityTier, type AuraQualityTierSettings } from "@aura3d/rendering/contracts";
 
 /** Settings objects carry no tier name — recover it by identity/structural match. */
-const tierForSettings = (s: AuraQualityTierSettings): AuraQualityTier => {
+export const tierForSettings = (s: AuraQualityTierSettings): AuraQualityTier => {
   for (const [name, settings] of Object.entries(QUALITY_TIERS)) {
     if (settings === s || settings.drawBudget === s.drawBudget && settings.environmentSize === s.environmentSize) {
       return name as AuraQualityTier;

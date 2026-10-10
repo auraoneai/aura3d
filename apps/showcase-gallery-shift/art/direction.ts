@@ -64,9 +64,9 @@ export default defineArtDirection({
   signatureEffect: "Warm exhibit spot-pools on dark marble, two shadowed guard flashlights sweeping real vision cones, and a facing thief threading between them under glass glints.",
   standIns: [
     { feature: "k1-gallery-interior HDRI", file: "src/v2/scene/lighting.ts", request: "R-14-13", removeWhen: "gallery interior HDRI admitted" },
-    { feature: "K4 marble kit + licensed exhibits", file: "src/v2/scene/world.ts", request: "R-14-15", removeWhen: "museum kit + exhibits admitted" },
-    { feature: "rigged thief + guard clips", file: "src/v2/scene/world.ts", request: "R-14-15", removeWhen: "K6 humanoid rigs admitted" },
-    { feature: "K8 surface footsteps + barks", file: "src/v2/audio.ts", request: "R-14-15", removeWhen: "K8 set admitted" }
+    { feature: "K4 marble kit + licensed exhibits", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "museum kit + exhibits admitted" },
+    { feature: "rigged thief + guard clips", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "K6 humanoid rigs admitted" },
+    { feature: "K8 surface footsteps + barks", file: "src/v2/audio.ts", request: "R-14-09", removeWhen: "K8 set admitted" }
   ],
   criticalCategories: ["animation_quality", "lighting"],
   tiers: {

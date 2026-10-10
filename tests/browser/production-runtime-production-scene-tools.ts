@@ -107,7 +107,7 @@ export function createProductionComposedProductionStageScene(
     readonly includeFloor?: boolean;
     readonly includeSoftboxes?: boolean;
     readonly includeBackdrop?: boolean;
-    readonly environmentLighting?: RenderSource["environmentLighting"];
+    readonly environmentLighting?: EnvironmentLightingOptions;
     readonly postprocess?: RenderSource["postprocess"];
     readonly hdrSkybox?: ProductionHdrSkyboxOptions;
   } = {}

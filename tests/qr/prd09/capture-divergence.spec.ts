@@ -4,7 +4,7 @@
  * records postprocess.actualPasses per mode, and writes an updated baseline.json
  * plus per-route PNG pairs under A3D_DIVERGENCE_DIR for artifact upload.
  */
-import { test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -111,7 +111,14 @@ async function captureMode(page: Page, route: string, appDir: string, param: str
 }
 
 test.describe("capture_review_divergence", () => {
+  // P-22: an empty affected set means baseline.json never captured capture-flag
+  // routes — that is a failure on CI, not a reason to skip silently.
   test.skip(affected.length === 0, "no capture-flag routes found in baseline.json");
+  if (process.env.CI) {
+    test("baseline.json lists capture-flag routes", () => {
+      expect(affected.length, "capture-divergence baseline.json produced zero capture-flag routes").toBeGreaterThan(0);
+    });
+  }
 
   for (const r of affected) {
     test(`${r.route}: default vs ?capture=${r.param}`, async ({ page }, testInfo) => {

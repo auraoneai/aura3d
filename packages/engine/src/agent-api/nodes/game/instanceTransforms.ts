@@ -135,7 +135,7 @@ export function stubSetInstanceTransforms(
   // zero-scaled (invisible) instead of dropped, so a later larger count stays
   // within capacity. Decompose once — per-frame re-upload of zero transforms
   // is cheaper than re-decomposing a dense matrix every frame.
-  const hidden: AuraTransformSpec = { position: { x: 0, y: 0, z: 0 }, scale: { x: 0, y: 0, z: 0 } };
+  const hidden: AuraTransformSpec = { position: [0, 0, 0], scale: [0, 0, 0] };
   for (let i = count; i < next.length; i++) {
     next[i] = hidden;
   }
