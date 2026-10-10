@@ -11,6 +11,7 @@ import type { RenderBuffer, RenderDevice, RenderShaderProgram, UniformValue } fr
 import { Sampler, Texture, TextureBinding, VertexFormat } from "@aura3d/rendering";
 import type { FrameContributorContext } from "@aura3d/rendering/contracts";
 import type { RenderPass, RenderPassContext } from "@aura3d/rendering";
+import { ENVIRONMENT_BACKGROUND_COLOR_RESOURCE } from "@aura3d/rendering";
 import {
   bakeTerrainSplat,
   buildCdlodTree,
@@ -433,8 +434,11 @@ export function drawTerrainsForReflection(ctx: FrameContributorContext, device: 
 export function terrainBackgroundPass(ctx: FrameContributorContext): RenderPass {
   return {
     name: "prd10.terrain",
-    reads: [],
-    writes: ["color"],
+    // T0-33: the `background` phase only runs when an EnvironmentBackgroundPass
+    // exists, so this read always has a producer and orders terrain after it.
+    // Unique write name — two passes may not both write "color".
+    reads: [ENVIRONMENT_BACKGROUND_COLOR_RESOURCE],
+    writes: ["prd10.terrain.color"],
     execute(rp: RenderPassContext) {
       const device = rp.device;
       const ds = deviceState(device);
