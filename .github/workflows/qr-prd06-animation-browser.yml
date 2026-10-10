@@ -63,9 +63,13 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Lane impl unit tests
         run: pnpm exec vitest run "tests/unit/contracts/impl/prd06-" "tests/unit/agent-api/production-actor-dispatch" "tests/unit/agent-api/runtime-node-empty-pose" "tests/unit/rendering/texture-update" "tests/unit/rendering/skinning-palette-cache" "tests/unit/assets/gltf-skinning-palette-identity" "tests/unit/animation/animation-controller" "tests/qr/prd06/unit/" --reporter=dot
-      # 06-S12 — lane bundle budget gate (lazy-subpath invariant, P1).
+      # 06-S12 — lane bundle budget gate (lazy-subpath invariant, P1). There is
+      # no `check:bundle-size` script in package.json; run the same packed
+      # consumer measurement as qr-prd15-bundle-size.yml (fails on budget).
+      - name: Build workspace packages (bundle gate)
+        run: pnpm build:raw
       - name: Bundle size gate
-        run: pnpm check:bundle-size
+        run: pnpm exec tsx --tsconfig tsconfig.base.json tools/bundle-size/lit-scene.ts
 
   browser:
     runs-on: macos-14
