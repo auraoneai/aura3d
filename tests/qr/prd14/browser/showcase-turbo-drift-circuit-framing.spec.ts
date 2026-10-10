@@ -34,9 +34,9 @@ test.describe("showcase-turbo-drift-circuit framing (T2.3)", () => {
         // Throttle out of the lights so the chase subject is moving.
         await page.keyboard.down("KeyW");
         await page.waitForTimeout(5200);
-        const framing = await page.evaluate(() =>
+        const framing = await page.evaluate((EVIDENCE: string) =>
           JSON.parse(JSON.stringify(eval(EVIDENCE + ".framing"))) as
-            { rig?: string; subjectScreenHeightFraction?: number | null });
+            { rig?: string; subjectScreenHeightFraction?: number | null }, EVIDENCE);
         await page.keyboard.up("KeyW");
         expect(framing.rig).toBe("turbo-drift.chase");
         expect(framing.subjectScreenHeightFraction, "rig must report a measured fraction (lane-08 #643)").not.toBeNull();

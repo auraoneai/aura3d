@@ -38,9 +38,11 @@ test.describe("aura-clash-showcase framing (T2.3)", () => {
         await page.keyboard.up("KeyD");
         await page.keyboard.press("KeyJ");
         await page.waitForTimeout(400);
-        const framing = await page.evaluate(() =>
-          JSON.parse(JSON.stringify(eval(EVIDENCE + ".framing"))) as
-            { rig?: string; subjectScreenHeightFraction?: number | null });
+        // The evidence expression travels as an argument: page.evaluate runs
+        // in the browser, where Node-side constants are not in scope.
+        const framing = await page.evaluate((expr) =>
+          JSON.parse(JSON.stringify(eval(expr))) as
+            { rig?: string; subjectScreenHeightFraction?: number | null }, EVIDENCE + ".framing");
         expect(framing.rig).toBe("aura-clash.fighting");
         expect(framing.subjectScreenHeightFraction, "rig must report a measured fraction (lane-08 #643)").not.toBeNull();
           expect(framing.subjectScreenHeightFraction!).toBeGreaterThanOrEqual(FRACTION[0]);

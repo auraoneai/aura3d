@@ -34,12 +34,12 @@ test.describe("showcase-orbital-defense framing (T2.3)", () => {
           (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
         // Let drones drift in a little, then read framing + HUD overlap.
         await page.waitForTimeout(2500);
-        const framing = await page.evaluate(() =>
+        const framing = await page.evaluate((EVIDENCE: string) =>
           JSON.parse(JSON.stringify(eval(EVIDENCE + ".framing"))) as {
             rig?: string;
             subjectScreenHeightFraction?: number | null;
             dronesUnderHud?: number;
-          });
+          }, EVIDENCE);
         expect(framing.rig).toBe("orbital-defense.orbit");
         expect(framing.dronesUnderHud).toBe(0);
         expect(framing.subjectScreenHeightFraction, "rig must report a measured fraction (lane-08 #643)").not.toBeNull();
