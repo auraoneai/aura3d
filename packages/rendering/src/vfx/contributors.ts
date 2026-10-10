@@ -35,6 +35,7 @@ import { resolveSceneDepth } from "./SceneDepthAdapter";
 import { contextViewProjection, skyDrawPassFor } from "../atmosphere/SkyBackgroundPass";
 import { VolumetricFogPass, froxelGridFor, type VolumetricFogPassInput, type FroxelGridSpec } from "../atmosphere/VolumetricFogPass";
 import type { PackedFogUniforms } from "../atmosphere/HeightFog";
+import { SkyCaptureAdapter, type SkyCaptureAppLike } from "../atmosphere/SkyCaptureAdapter";
 
 /** What the engine-side effects system publishes on the RenderSource. */
 export interface VfxFrameSource {
@@ -57,6 +58,9 @@ export interface VfxFrameSource {
 /** What the engine-side atmosphere state publishes on the RenderSource. */
 export interface AtmosphereFrameSource {
   readonly sky: AuraSkySpecLike | null;
+  /** P3-T6 — live state + sky-change listener for SkyCaptureAdapter wiring. */
+  state?(): { readonly sky: unknown | null };
+  onSkyChanged?(listener: () => void): (() => void) | void;
 }
 
 export interface Prd07FrameSource extends RenderSource {
@@ -290,6 +294,47 @@ const fogContributor: FrameContributor = {
 };
 
 /**
+ * P3-T6 — prd07.environmentProbe: when the source carries a live atmosphere
+ * (state + onSkyChanged) and no explicit environment, a per-device
+ * SkyCaptureAdapter captures the visible sky into a C-09 probe on mount and
+ * re-captures on every sky change. The probe lands on the blackboard for the
+ * lighting contributors; GPU-side renderFace capture only — no main-thread
+ * CPU prefilter (T0-25).
+ */
+const skyCaptureAdapters = new WeakMap<RenderDevice, { source: unknown; adapter: SkyCaptureAdapter }>();
+
+const skyCaptureContributor: FrameContributor = {
+  id: "prd07.environmentProbe",
+  owner: "prd07",
+  flag: "A3D_QR_VFX",
+  phases: ["collect"],
+  collect: (items, ctx) => {
+    const src = ctx.source as Prd07FrameSource;
+    const atmosphere = src.atmosphere;
+    if (!atmosphere || typeof atmosphere.state !== "function" || typeof atmosphere.onSkyChanged !== "function") {
+      return items;
+    }
+    const environment = src.environmentLighting ?? src.environmentBackground ?? null;
+    let entry = skyCaptureAdapters.get(ctx.device);
+    if (!entry || entry.source !== ctx.source) {
+      entry?.adapter.dispose();
+      entry = {
+        source: ctx.source,
+        adapter: new SkyCaptureAdapter(
+          { atmosphere: atmosphere as SkyCaptureAppLike["atmosphere"], environment },
+          ctx.device,
+          ctx.flags
+        )
+      };
+      skyCaptureAdapters.set(ctx.device, entry);
+    }
+    ctx.blackboard.set("prd07.environmentProbe", entry.adapter.current());
+    return items;
+  },
+  passes: () => []
+};
+
+/**
  * P5-T1 — prd07.gpuSim: steps each ParticleGpuSim published on the blackboard
  * under "prd07.gpuSims" (engine producers push {sim, emitCount}) during the
  * collect phase — before shadows — so draws read frame N-1 state (§6.2.3).
@@ -477,7 +522,7 @@ const volumetricContributor: FrameContributor = {
 
 /** Idempotent lane registration (P1-T1): safe on repeated barrel imports. */
 export function registerPrd07Contributors(): void {
-  for (const contributor of [particlesContributor, lightsContributor, ribbonContributor, beamContributor, meshContributor, gpuSimContributor, fogContributor, skyContributor, decalsContributor, volumetricContributor]) {
+  for (const contributor of [particlesContributor, lightsContributor, ribbonContributor, beamContributor, meshContributor, gpuSimContributor, skyCaptureContributor, fogContributor, skyContributor, decalsContributor, volumetricContributor]) {
     try {
       registerFrameContributor(contributor);
     } catch (error) {
