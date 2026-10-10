@@ -62,8 +62,8 @@ on:
   workflow_call:
 
 concurrency:
-  group: qr-prd08-${{ github.ref }}
-  cancel-in-progress: true
+  group: qr-prd08-${{ github.ref }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
@@ -89,10 +89,6 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # T0-31 (lane 15) tracks pre-existing typecheck errors on main; this step
-      # stays unmasked — no continue-on-error per the program rule.
-      - run: pnpm typecheck:raw
-      - run: pnpm lint
       - name: Lane-08 unit suites (frame loop, time, interpolation, spring, spline, framing, noise, bicycle, fromSpec parity, codemod)
         run: pnpm exec vitest run --config tests/qr/prd08/vitest.config.ts
       - name: Lane-08 engine unit files
@@ -110,6 +106,11 @@ jobs:
           grep -q 'showcase-skyline-runner/src/feel.ts' /tmp/camera-cast.md
           grep -q 'showcase-blockfall-reactor/src/camera-feel.ts' /tmp/camera-cast.md
       - run: node tools/qr-ownership/check.mjs
+      # Repo-wide gates run after the lane suites so lane results are always
+      # reported. T0-31 (lane 15) tracks pre-existing typecheck errors on main;
+      # these steps stay unmasked — no continue-on-error per the program rule.
+      - run: pnpm typecheck:raw
+      - run: pnpm lint
 
   browser-gpu:
     name: browser-gpu (macos-14, ANGLE Metal)
@@ -134,14 +135,14 @@ jobs:
         with:
           name: prd08-frame-pacing-${{ github.run_id }}
           path: tests/reports/prd08/
-          if-no-files-found: warn
+          if-no-files-found: error
       - name: Playwright report
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: prd08-playwright-${{ github.run_id }}
           path: tests/qr/prd08/playwright-report/
-          if-no-files-found: warn
+          if-no-files-found: error
 
   motion-capture:
     name: motion scenes (macos-14, ANGLE Metal)
@@ -154,23 +155,30 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      # Fail closed: the six prd08-motion-* scenes (motion/scenes.ts) must be
+      # discovered, built and captured; no "none registered" skip path.
       - name: Discover registered prd08-motion scenes
         id: scenes
         run: |
-          IDS="$(rg -o 'prd08-motion-[a-z0-9-]+' benchmarks/quality-rebuild/motion/scenes.ts 2>/dev/null | sort -u | paste -sd, -)"
+          IDS="$(grep -oE 'prd08-motion-[a-z0-9-]+' benchmarks/quality-rebuild/motion/scenes.ts | sort -u | paste -sd, -)"
+          if [ -z "${IDS}" ]; then
+            echo "::error::no prd08-motion-* scenes found in benchmarks/quality-rebuild/motion/scenes.ts"
+            exit 1
+          fi
           echo "ids=${IDS}" >> "$GITHUB_OUTPUT"
-          echo "motion scenes: ${IDS:-<none registered yet (08-S9)>}"
+          echo "motion scenes: ${IDS}"
       - name: Build benchmark bundle
-        if: steps.scenes.outputs.ids != ''
         run: pnpm exec vite build --config benchmarks/quality-rebuild/vite.config.ts
+      # capture.mjs exits non-zero when no scene is captured or any capture is
+      # not ready (T0-11/P-01), so quarantined scenes fail this step.
       - name: Capture prd08-motion-* (12-frame strip + WebM, flags=camera)
-        if: steps.scenes.outputs.ids != ''
         env:
           QR_BENCH_CHROME_ARGS: ${{ env.QRC_GPU_ARGS }}
         run: |
           node benchmarks/quality-rebuild/capture.mjs \
             --scenes "${{ steps.scenes.outputs.ids }}" \
-            --engines aura3d,three --variants camera \
+            --engines aura3d,three --flags camera \
             --out benchmarks/quality-rebuild/out/prd08-motion
       - name: Upload motion strips + report
         uses: actions/upload-artifact@v4
@@ -178,4 +186,4 @@ jobs:
         with:
           name: prd08-motion-${{ github.run_id }}
           path: benchmarks/quality-rebuild/out/prd08-motion/
-          if-no-files-found: warn
+          if-no-files-found: error
