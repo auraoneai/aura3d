@@ -51,7 +51,7 @@ export const TEMPLATE_LOOK_FLOOR = Object.freeze({
   "three-compat-postprocess-scene": Object.freeze({ look: "neon-arcade", anchor: "preset" }),
   "material-authoring": Object.freeze({ look: "product-studio", anchor: "preset" }),
   "three-compat-large-scene": Object.freeze({ look: "outdoor-day", anchor: "preset" }),
-  "three-compat-character-viewer": Object.freeze({ look: "character-showcase", anchor: "preset" }),
+  "character-viewer": Object.freeze({ look: "character-showcase", anchor: "preset" }),
   "asset-inspector": Object.freeze({ look: "product-studio", anchor: "preset" }),
   "three-compat-custom-threejs-migration": Object.freeze({ look: "outdoor-day", anchor: "preset" })
 });

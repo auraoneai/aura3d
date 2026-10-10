@@ -1,5 +1,5 @@
 {
-  "name": "aura3d-three-compat-character-viewer",
+  "name": "aura3d-character-viewer",
   "version": "1.0.0",
   "private": true,
   "type": "module",

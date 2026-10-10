@@ -139,7 +139,7 @@
     "asset-inspector": [
       "aura3d-threejs-migration"
     ],
-    "three-compat-character-viewer": [
+    "character-viewer": [
       "aura3d-threejs-migration",
       "aura3d-character-animation"
     ],
