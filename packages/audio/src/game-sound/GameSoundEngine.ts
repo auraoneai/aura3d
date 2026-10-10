@@ -406,6 +406,34 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
     duckT.unref?.();
   };
 
+  /**
+   * §20 `audio.webm`: tap the post-chain master output into a MediaRecorder for
+   * ~`seconds` (default 60). Resolves the recorded Blob (`audio/webm`, Opus when
+   * the runtime offers it), or `null` when MediaRecorder/MediaStreamDestination
+   * are unavailable (headless stub contexts).
+   */
+  const recordMaster = (seconds = 60): Promise<Blob | null> => {
+    const createDest = (ctx as { createMediaStreamDestination?: () => MediaStreamAudioDestinationNode }).createMediaStreamDestination;
+    const Recorder = (globalThis as { MediaRecorder?: typeof MediaRecorder }).MediaRecorder;
+    if (typeof createDest !== "function" || typeof Recorder !== "function") return Promise.resolve(null);
+    const dest = createDest.call(ctx);
+    (chain.output as unknown as AudioNode).connect(dest);
+    const mime = ["audio/webm;codecs=opus", "audio/webm"].find((m) => Recorder.isTypeSupported?.(m) ?? false);
+    const recorder = new Recorder(dest.stream, mime ? { mimeType: mime } : undefined);
+    const chunks: Blob[] = [];
+    recorder.ondataavailable = (e: BlobEvent) => {
+      if (e.data.size > 0) chunks.push(e.data);
+    };
+    return new Promise<Blob | null>((resolve) => {
+      recorder.onstop = () => {
+        (chain.output as unknown as AudioNode).disconnect(dest);
+        resolve(chunks.length ? new Blob(chunks, { type: recorder.mimeType || mime || "audio/webm" }) : null);
+      };
+      recorder.start();
+      setTimeout(() => recorder.state !== "inactive" && recorder.stop(), Math.max(1, seconds) * 1000).unref?.();
+    });
+  };
+
   return {
     ready,
     unlock,
@@ -415,6 +443,7 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
     music,
     setListener,
     setBusVolume,
+    recordMaster,
     setMuted(m: boolean) {
       muted = m;
       chain.setMasterGain(m ? 0 : 1);
