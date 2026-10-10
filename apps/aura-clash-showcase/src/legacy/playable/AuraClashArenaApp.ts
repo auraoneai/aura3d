@@ -455,8 +455,7 @@ export function mountAuraClashArenaApp(): void {
   const root = document.querySelector<HTMLDivElement>("#app");
   if (!root) throw new Error("Missing #app");
   const hudMode = readPlayableHudMode(window.location);
-  const captureMode = new URLSearchParams(window.location.search).get("capture");
-  const reviewCapture = captureMode === "match-start" || captureMode === "combat-impact";
+
   const testDriverEnabled = hudMode.evidence && new URLSearchParams(window.location.search).has("auraTestDriver");
 
   gameWindow.__AURA_CLASH_VISUAL_REVIEW__ = {
@@ -497,7 +496,7 @@ export function mountAuraClashArenaApp(): void {
   };
 
   root.innerHTML = `
-    <main class="aca" data-evidence-mode="${hudMode.evidence ? "true" : "false"}" data-training="${hudMode.training ? "true" : "false"}" data-review-capture="${reviewCapture ? "true" : "false"}" tabindex="0" aria-label="Aura Clash Arena playable game">
+    <main class="aca" data-evidence-mode="${hudMode.evidence ? "true" : "false"}" data-training="${hudMode.training ? "true" : "false"}" tabindex="0" aria-label="Aura Clash Arena playable game">
       <div class="aca-page-bg" aria-hidden="true"><div class="aca-page-grid"></div></div>
       <nav class="aca-nav" aria-label="Aura Clash navigation">
         <h1 class="aca-title"><a class="aca-brand" href="/showcase/aura-clash/playable/"><span></span>Aura Clash Arena</a></h1>
@@ -703,7 +702,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   const arenaCanvas = canvas;
   const searchParams = new URLSearchParams(window.location.search);
   const testDriverEnabled = searchParams.has("auraTestDriver");
-  const combatReviewCapture = searchParams.get("capture") === "combat-impact";
+
 
   const playerState = createFighter("player", "Mara Volt", "Player one", DEFAULT_PLAYER_X, 1, playerClips);
   const rivalState = createFighter("rival", "Rook Atlas", "Rival AI", DEFAULT_RIVAL_X, -1, rivalClips);
@@ -1368,13 +1367,9 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         ...(tweaks.backdrop !== "portal"
           ? arenaBackdropRenderItems
           : []),
-        // The review capture retains the complete typed downtown arena and public root stage,
-        // while omitting duplicate primitive stage dressing and animated sign joints that have
-        // independent I03/I04 receipts. Fighters, lighting, shadows, postprocess, and hit effects
-        // remain on the exact production renderer path measured below.
-        ...(combatReviewCapture ? [] : renderedStage.collect(tweaks, frame)),
+        ...(renderedStage.collect(tweaks, frame)),
         // AC-A5: spring-joint neon signs (static rest pose under reduced motion).
-        ...(combatReviewCapture ? [] : hangingSigns.collect({ reducedMotion: reducedMotion || lowHealthTensionActive() })),
+        ...(hangingSigns.collect({ reducedMotion: reducedMotion || lowHealthTensionActive() })),
         // AC-A4: in-scene round/KO ceremony glyphs (single merged geometry per phrase).
         ...ceremony.collect({ text: ceremonyText, showSeconds: ceremonyShowSeconds, elapsedSeconds: frame / 60, reducedMotion }),
         ...collectFighterRenderItems(playerRuntime),
@@ -1487,10 +1482,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   const rootStageSceneNodes = () => [
     ...rootStageFurniture,
     // I03 and the route screenshot contract own typed-crowd adoption. The
-    // critic-facing combat capture reviews fighters, stage, lighting, shadows,
-    // postprocess and effects, so omit the unrelated 28-copy spectator workload
-    // from that explicit capture mode while retaining it in shipped play.
-    ...((stageSpotlightProbeEnabled || combatReviewCapture) ? [] : publicCrowd.nodes)
+    ...((stageSpotlightProbeEnabled) ? [] : publicCrowd.nodes)
   ];
   const createRootStageScene = () => rootStageSceneNodes().reduce((builder, node) => builder.add(node), scene().background("#020406"))
     .add(lights.spot({
@@ -2091,12 +2083,10 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     // decay, so every accepted hit has one visible FOV/distance kick.
     sharedPunch.update(confirmedHitThisFrame ? CAMERA_PUNCH_DURATION_SECONDS / 2 : cameraDt);
     const renderStartedAt = performance.now();
-    if (!combatReviewCapture) {
-      publicCrowd.update(rootStageApp, {
-        elapsedSeconds: frame / 60, cheer: lowHealthTensionActive() ? Math.min(crowdCheer, 0.12) : crowdCheer,
-        reducedMotion: reducedMotion || lowHealthTensionActive()
-      });
-    }
+    publicCrowd.update(rootStageApp, {
+      elapsedSeconds: frame / 60, cheer: lowHealthTensionActive() ? Math.min(crowdCheer, 0.12) : crowdCheer,
+      reducedMotion: reducedMotion || lowHealthTensionActive()
+    });
     rootStageApp.step(dt);
     renderTimeSamplesMs.push(performance.now() - renderStartedAt);
     if (renderTimeSamplesMs.length > performanceSampleCount) renderTimeSamplesMs.shift();

@@ -1162,13 +1162,11 @@ function setupPanel(): void {
   // multipliers) is documentation, not a player HUD, so it starts collapsed behind an
   // explicit control instead of permanently eating a quarter of the frame. Touch
   // controls stay outside the collapsed region because they are gameplay surface.
-  // Review capture expands it so retained evidence still shows the full contract.
-  const reviewCapture = document.body.dataset.capture === "review";
   panel.innerHTML = `
     <h1>AURORA LANDER</h1>
     <p class="panel-hint"><kbd>W</kbd> thrust · <kbd>A</kbd>/<kbd>D</kbd> rotate · <kbd>Space</kbd>/<kbd>R</kbd> restart · <kbd>G</kbd> ghost · <kbd>P</kbd> pause</p>
-    <button id="panel-reference-toggle" class="panel-toggle" type="button" aria-expanded="${reviewCapture ? "true" : "false"}" aria-controls="panel-reference">Briefing &amp; grading</button>
-    <div id="panel-reference"${reviewCapture ? "" : " hidden"}>
+    <button id="panel-reference-toggle" class="panel-toggle" type="button" aria-expanded="false" aria-controls="panel-reference">Briefing &amp; grading</button>
+    <div id="panel-reference" hidden>
       <h2>Site briefing</h2>
       <p id="panel-site-brief"></p>
       <h2>Controls</h2>
@@ -1194,7 +1192,7 @@ function setupPanel(): void {
       <span></span>
       <span></span>
     </div>
-    <div id="panel-reference-tail"${reviewCapture ? "" : " hidden"}>
+    <div id="panel-reference-tail" hidden>
       <h2>Grading</h2>
       <table class="score-table">
         <tr><td>Soft touchdown (&lt;${SOFT_TOUCHDOWN_MAX_VSPEED} m/s)</td><td>1000 × fuel × site</td></tr>
