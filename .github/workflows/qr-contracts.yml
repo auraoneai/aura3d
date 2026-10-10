@@ -45,4 +45,3 @@ jobs:
       - run: pnpm exec playwright install chromium
       - name: Browser conformance specs
         run: pnpm exec playwright test --config playwright.config.ts tests/browser/contracts
-        continue-on-error: true
