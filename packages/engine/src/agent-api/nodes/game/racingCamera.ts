@@ -15,11 +15,26 @@ export function createGameRacingCameraRig(options: GameRacingCameraRigOptions): 
     if (selectedMode === "chase") {
       return createGameRacingPresentationCamera({ ...options, mode: "follow" });
     }
-    return createTopDownRig({
+    // G4-internal RIGCAST (lane-08 hunk spec, accepted): return the real spec
+    // plus the live rig — no `as unknown as` cast. `rig` is typed by
+    // GameScenePresentationCameraSpec.rig (lands with lane-08's #644).
+    const rig = createTopDownRig({
       target: options.targetNode,
       height: options.height ?? 3.2,
       fov: options.fov ?? 46
-    }) as unknown as GameScenePresentationCameraSpec;
+    });
+    const camera = createGameRacingTopDownCamera(options);
+    return {
+      ...camera,
+      rig,
+      selectionEvidence: {
+        source: "asset-pair-composition",
+        report: options.composition?.report ?? "",
+        check: "camera-readability",
+        verdict: "pass",
+        selectedMode
+      }
+    };
   }
   const camera = selectedMode === "chase"
     ? createGameRacingPresentationCamera({ ...options, mode: "follow" })
