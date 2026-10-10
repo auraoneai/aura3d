@@ -298,7 +298,10 @@ export async function runPrd04AuraScene(
   stage("create-app");
   const app: AuraApp = createAuraApp(host, {
     scene: buildScene(spec, log, options),
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+    // T0-10/T0-13: `mode`/`fallback` are deprecated CCR-15-1 renderer options —
+    // under strict they throw, and a `safe-basic` fallback would silently mask
+    // a failed production mount. qualityProfile is the only surviving field.
+    renderer: { qualityProfile: "production" },
     pixelRatio: spec.resolution.devicePixelRatio,
     // createAuraApp's flags field is `readonly string[]` (lane-15 signature) —
     // it resolves for renderer extensions only; the actor seams above carry the

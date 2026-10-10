@@ -91,7 +91,7 @@ async function main(): Promise<void> {
   stage.style.height = `${height}px`;
   const app: AuraApp = createAuraApp(stage as HTMLElement, {
     scene: built,
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+    renderer: { qualityProfile: "production" }, // T0-10/T0-13: deprecated CCR-15-1 mode/fallback dropped — no silent safe-basic mask
     pixelRatio: 1,
     resize: false,
     autoStart: false
