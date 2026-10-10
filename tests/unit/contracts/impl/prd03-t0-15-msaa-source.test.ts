@@ -101,11 +101,14 @@ describe("T0-15 runV2HdrStages resolves the MSAA source (FLAG-ON-1)", () => {
     const { gl } = fakeGl();
     const { host, resolved } = fakeHost(gl);
     const source = { ...fakeTarget("src"), depthTextureHandle: null };
-    // AO wants linZ; the depth-less source still throws, but only AFTER the
-    // resolve call — the ordering is what FLAG-ON-1 fixes.
-    expect(() =>
-      runV2HdrStages(host, source as RenderTarget, { ...PIPELINE, ao: { samples: 4 } as never }, CAMERA)
-    ).toThrowError(/WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED|depth texture/);
+    // AO wants linZ; the resolve call must land before the depth check
+    // fires — the ordering is what FLAG-ON-1 fixes. The check itself is a
+    // throw pre-T0-17 and a recorded degradation after it; tolerate both.
+    try {
+      runV2HdrStages(host, source as RenderTarget, { ...PIPELINE, ao: { samples: 4 } as never }, CAMERA);
+    } catch (error) {
+      expect(String(error)).toMatch(/WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED|depth texture/);
+    }
     expect(resolved()).toEqual([source]);
   });
 
