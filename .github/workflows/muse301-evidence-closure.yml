@@ -126,7 +126,7 @@ jobs:
       - name: Run full readiness aggregate
         env:
           AURA3D_REMOTE_WORKER_ID: muse301-aggregate-${{ inputs.source_commit }}
-        run: pnpm muse3jsparity:release --evidence-manifest=tests/reports/muse3jsparity/evidence-manifest.json
+        run: pnpm exec tsx --tsconfig tsconfig.base.json tools/muse3jsparity-readiness/index.ts --evidence-manifest=tests/reports/muse3jsparity/evidence-manifest.json
 
       - name: Upload source-bound closure evidence
         if: always()
