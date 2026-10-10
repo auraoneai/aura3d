@@ -167,9 +167,11 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run benchmarks
-        run: pnpm test:bench || true
+        run: pnpm test:bench
 
+      # Evidence uploads even when the bench fails — failed captures are audit data.
       - name: Archive benchmark results
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-results
@@ -180,6 +182,11 @@ jobs:
     name: All Checks Passed
     runs-on: ubuntu-latest
     needs: [lint, typecheck, test, build, verify-tests]
+    if: always()
     steps:
-      - name: Success
-        run: echo "All CI checks passed successfully!"
+      - name: Verify every required job succeeded
+        run: |
+          NEEDS='${{ toJson(needs) }}'
+          echo "$NEEDS" | jq -e 'all(.result == "success")' > /dev/null \
+            || { echo "::error::required jobs did not all succeed: $NEEDS"; exit 1; }
+          echo "All CI checks passed successfully!"

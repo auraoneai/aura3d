@@ -38,7 +38,10 @@ function parseArgs(argv) {
     dprs: [1],
     variants: "none",
     calibrate: false,
-    strict: false
+    // T0-11/P-01: strict is on by default under CI — non-ready captures and
+    // software rasterizers fail there unless --report-only opts out.
+    strict: Boolean(process.env.CI),
+    reportOnly: false
   };
   for (let index = 0; index < argv.length; index += 1) {
     const flag = argv[index];
@@ -53,6 +56,8 @@ function parseArgs(argv) {
     else if (flag === "--variants") { args.variants = value; index += 1; }
     else if (flag === "--calibrate") { args.calibrate = true; }
     else if (flag === "--strict") { args.strict = true; }
+    // T0-11/P-01: --report-only writes the report but never exits non-zero.
+    else if (flag === "--report-only") { args.reportOnly = true; }
   }
   return args;
 }
@@ -154,8 +159,21 @@ async function captureOne(browser, baseUrl, scene, engine, outDir, timeoutMs, fl
     if (state.error) {
       result.error = state.error;
       result.notExpressible = typeof state.error === "string" && state.error.includes("not expressible");
+      // T0-11: classify the page error so the report names the failure class,
+      // not a bare "error". NoDrawError split: mount-failed (renderer pipeline
+      // dead) is renderer-error; no-draw-timeout is no-draw.
+      const text = String(state.error);
+      result.status = result.notExpressible ? "not-expressible"
+        : /mount-failed/i.test(text) ? "renderer-error"
+        : /NoDrawError|no-draw/i.test(text) ? "no-draw"
+        : /timeout|timed out/i.test(text) ? "capture-timeout"
+        : "page-error";
     } else {
-      result.status = "ready";
+      // T0-11: a ready payload that recorded errors or drew nothing is a
+      // failure class, not "ready".
+      const payloadErrors = state.ready?.errors?.length ?? 0;
+      const payloadDraws = state.ready?.drawCalls ?? 0;
+      result.status = payloadErrors > 0 ? "renderer-error" : payloadDraws === 0 ? "no-draw" : "ready";
       result.payload = state.ready;
       // ready.json: the full ReadyPayloadV2 next to each PNG (§9.2).
       writeFileSync(join(outDir, scene, `${fileBase}.ready.json`), JSON.stringify(state.ready, null, 2));
@@ -179,6 +197,7 @@ async function captureOne(browser, baseUrl, scene, engine, outDir, timeoutMs, fl
     result.screenshot = target;
   } catch (error) {
     result.error = String(error?.stack ?? error).slice(0, 4000);
+    result.status = /timeout|timed out/i.test(result.error) ? "capture-timeout" : "page-error";
     try {
       const target = join(outDir, scene, `${engine}.png`);
       await page.locator("#stage").screenshot({ path: target, timeout: 10_000 });
@@ -194,6 +213,48 @@ async function captureOne(browser, baseUrl, scene, engine, outDir, timeoutMs, fl
     await context.close();
   }
   return result;
+}
+
+/**
+ * T0-11: luma variance of a captured PNG, measured in the compare page so no
+ * PNG decoder dependency is needed. An essentially-uniform frame is blank
+ * regardless of what the payload claimed — pixels decide.
+ */
+async function blankCheck(page, result) {
+  if (!result.screenshot || !existsSync(result.screenshot)) return;
+  const dataUrl = `data:image/png;base64,${readFileSync(result.screenshot).toString("base64")}`;
+  try {
+    const stats = await page.evaluate(async (src) => {
+      const image = await new Promise((resolveImage, reject) => {
+        const img = new Image();
+        img.onload = () => resolveImage(img);
+        img.onerror = () => reject(new Error("decode failed"));
+        img.src = src;
+      });
+      const canvas = document.createElement("canvas");
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      const context = canvas.getContext("2d", { willReadFrequently: true });
+      context.drawImage(image, 0, 0);
+      const data = context.getImageData(0, 0, canvas.width, canvas.height).data;
+      const count = canvas.width * canvas.height;
+      let sum = 0, sumSq = 0;
+      for (let index = 0; index < count; index += 1) {
+        const o = index * 4;
+        const luma = 0.2126 * data[o] + 0.7152 * data[o + 1] + 0.0722 * data[o + 2];
+        sum += luma;
+        sumSq += luma * luma;
+      }
+      const mean = sum / count;
+      return { mean, variance: sumSq / count - mean * mean };
+    }, dataUrl);
+    result.lumaMean = stats.mean;
+    result.lumaVariance = stats.variance;
+    // Variance <= 2: a solid (or ~solid) frame — no rendered content.
+    result.blank = stats.variance <= 2;
+  } catch {
+    // Undecodable screenshot — the capture failure status already covers it.
+  }
 }
 
 /**
@@ -417,9 +478,15 @@ async function main() {
       const three = entry.engines.three;
       // Strict-capture guard: any non-ready item or a software rasterizer fails
       // the run (R-8: never treat SwiftShader/llvmpipe frames as evidence).
+      // T0-11: pixel-variance blank check on every captured PNG — a flat
+      // frame is a failure even when the payload claimed ready.
+      for (const result of Object.values(entry.engines).concat(Object.values(entry.variants ?? {}))) {
+        await blankCheck(comparePage, result);
+        if (result.blank && result.status === "ready") result.status = "blank";
+      }
       if (args.strict) {
         for (const result of Object.values(entry.engines).concat(Object.values(entry.variants ?? {}))) {
-          if (result.status !== "ready" && !result.notExpressible) entry.strictFailure = result.error ?? "not ready";
+          if (result.status !== "ready" && !result.notExpressible) entry.strictFailure = result.error ?? `status: ${result.status}`;
           const renderer = String(result.gpu?.renderer ?? "");
           if (/swiftshader|llvmpipe/i.test(renderer)) entry.strictFailure = `software rasterizer: ${renderer}`;
         }
@@ -458,12 +525,27 @@ async function main() {
   const strictFailures = report.scenes.filter((entry) => entry.strictFailure).map((entry) => `${entry.scene}: ${entry.strictFailure}`);
   if (args.strict && (strictFailures.length > 0 || /swiftshader|llvmpipe/i.test(reportGpu))) {
     if (/swiftshader|llvmpipe/i.test(reportGpu)) strictFailures.unshift(`report GPU ${reportGpu} is a software rasterizer`);
-    console.error(`[quality-rebuild] --strict failed: ${strictFailures.join("; ")}`);
-    process.exitCode = 1;
-    return;
+    console.error(`[quality-rebuild] strict failures: ${strictFailures.join("; ")}`);
+    if (!args.reportOnly) {
+      process.exitCode = 1;
+      return;
+    }
   }
-  // Capture failures are audit data, not a script failure; exit non-zero only when nothing rendered at all.
-  if (report.scenes.length > 0 && report.scenes.every((entry) => !entry.metrics)) process.exitCode = 1;
+  // T0-11/P-01: a failed capture is a failed run. notExpressible results are
+  // an intentional audit outcome (§8.4 broken-control variants) and are
+  // excused; every other non-ready engine or variant result fails the
+  // command. report.json is written above either way — the failure report is
+  // the evidence.
+  const captureFailures = report.scenes.flatMap((entry) =>
+    Object.values(entry.engines).concat(Object.values(entry.variants ?? {}))
+      .filter((result) => result.status !== "ready" && !result.notExpressible)
+      .map((result) => `${entry.scene}/${result.engine}(${result.status})`));
+  if ((report.scenes.length === 0 || captureFailures.length > 0) && !args.reportOnly) {
+    console.error(`[quality-rebuild] capture failures: ${captureFailures.length ? captureFailures.join(", ") : "no scenes captured"}`);
+    process.exitCode = 1;
+  } else if (captureFailures.length > 0) {
+    console.log(`[quality-rebuild] report-only: ${captureFailures.length} non-ready arm(s): ${captureFailures.join(", ")}`);
+  }
 }
 
 main().catch((error) => {
