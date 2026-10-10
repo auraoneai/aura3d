@@ -47,7 +47,7 @@
       "comparator": "ratio<=",
       "threshold": 1.5,
       "relative": { "engine": "three", "metric": "payload.loadMs" },
-      "gating": false,
+      "gating": true,
       "phase": 3,
       "comment": "Placeholder for the phase-3 head-to-head; the relative metric becomes three's own frame p50 once its adapter reports frame timing."
     },
@@ -59,7 +59,7 @@
       "metric": "frame.drawCalls",
       "comparator": "<=",
       "threshold": 40,
-      "gating": false,
+      "gating": true,
       "phase": 4,
       "comment": "Section 17.3 draw budget for the tier-ladder scene (matches base 18's <=40 target). Fills in once frame.drawCalls is populated by the counters delta."
     },
