@@ -59,7 +59,9 @@ const entry = (
   id,
   source,
   repoPath: `${dir}/${file}`,
-  url: `/${dir}/${file}`,
+  // Served from the built dist (`vite.config.ts` copy plugin → `/qr-assets/<file>`);
+  // `repoPath` is a repo-relative path, not a URL (#387, #857).
+  url: `/qr-assets/${file}`,
   sha256: `sha256-${sha256}`,
   profile,
   triangles,
