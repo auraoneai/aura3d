@@ -12,3 +12,4 @@ Each row: issue, target lane, request, status. Numbers written back as filed.
 | #588 | prd12 | C-33: beacon readiness (`__AURA3D_GAME__.state === 'playing'`) in `capture-games.mjs` — co-PR'd in the T0-30 branch, needs lane-12 acceptance in the PR thread | open |
 ||||||| parent of 61aa62c40 (feat(prd-09): §20 audio.webm tap — recordMaster + evidence global + step plugin)
 | #817 | to:prd12 | 2026-10-10 | §20/16.1-5: audio-webm step plugin + 3 pilot timeline steps (C-33 hunk, PR qr/prd09-audio-webm) |
+| #824 | to:prd12 | 2026-10-10 | §20/16.1-5: audio-webm step plugin + 3 pilot timeline steps (C-33 hunk, PR qr/prd09-audio-webm; supersedes #817) |
