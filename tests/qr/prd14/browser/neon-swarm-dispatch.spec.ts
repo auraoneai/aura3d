@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { builtDist, serve, watchConsole } from "./lib/serve";
+import { builtDist, serve, watchConsole, soakIfNeeded } from "./lib/serve";
 
 /**
  * T1.10 (Neon Swarm): the route-flag dispatcher boots legacy by default and v2
@@ -29,6 +29,7 @@ test.describe("neon-swarm dispatch (T1.10)", () => {
       // The v2 beacon must NOT publish under flag-off.
       const v2 = await page.evaluate(() => (window as Record<string, unknown>).__AURA3D_GAME__);
       expect(v2).toBeUndefined();
+      await soakIfNeeded(page);
       expect(errors).toEqual([]);
     } finally {
       server.close();
@@ -54,6 +55,7 @@ test.describe("neon-swarm dispatch (T1.10)", () => {
         ((window as Record<string, unknown>).__AURA3D_GAME_EVIDENCE__ as Record<string, unknown> | undefined)?.[app],
         APP_DIR);
       expect(evidence, "v2 evidence section missing").toBeTruthy();
+      await soakIfNeeded(page);
       expect(errors).toEqual([]);
     } finally {
       server.close();

@@ -43,6 +43,16 @@ export function builtDist(appDir: string): string | undefined {
   ].find((d) => existsSync(join(d, "index.html")));
 }
 
+/**
+ * §18: the Firefox matrix job holds each S1 state open for a 60 s timeline
+ * (`A3D_DISPATCH_SOAK_MS`) so "0 console/page errors over 60 s" is actually
+ * measured, not just sampled at boot. Default 0 keeps chromium runs fast.
+ */
+export async function soakIfNeeded(page: { waitForTimeout: (ms: number) => Promise<void> }): Promise<void> {
+  const ms = Number(process.env.A3D_DISPATCH_SOAK_MS ?? 0);
+  if (ms > 0) await page.waitForTimeout(ms);
+}
+
 /** Console errors + page errors collected during a page run. */
 export function watchConsole(page: { on: (ev: string, fn: (m: unknown) => void) => void }): string[] {
   const errors: string[] = [];
