@@ -24,7 +24,7 @@
     "templates/character-controller",
     "templates/premium-product-viewer",
     "templates/architecture-interior",
-    "templates/three-compat-material-authoring",
+    "templates/material-authoring",
     "templates/three-compat-asset-inspector",
     "templates/three-compat-character-viewer",
     "templates/three-compat-postprocess-scene",

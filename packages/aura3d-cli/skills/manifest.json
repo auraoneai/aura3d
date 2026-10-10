@@ -132,7 +132,7 @@
       "aura3d-threejs-migration",
       "aura3d-materials-environments"
     ],
-    "three-compat-material-authoring": [
+    "material-authoring": [
       "aura3d-threejs-migration",
       "aura3d-materials-environments"
     ],

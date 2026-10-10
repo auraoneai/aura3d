@@ -18,7 +18,7 @@ export const CREATE_AURA3D_TEMPLATES = [
   "character-controller",
   "premium-product-viewer",
   "architecture-interior",
-  "three-compat-material-authoring",
+  "material-authoring",
   "three-compat-asset-inspector",
   "three-compat-character-viewer",
   "three-compat-postprocess-scene",
@@ -35,7 +35,8 @@ export type CreateA3DTemplate = (typeof CREATE_AURA3D_TEMPLATES)[number];
  */
 export const TEMPLATE_ALIASES: Readonly<Record<string, CreateA3DTemplate>> = Object.freeze({
   "three-compat-premium-product-viewer": "premium-product-viewer",
-  "three-compat-architecture-interior": "architecture-interior"
+  "three-compat-architecture-interior": "architecture-interior",
+  "three-compat-material-authoring": "material-authoring"
 });
 
 export interface ResolvedTemplateName {
