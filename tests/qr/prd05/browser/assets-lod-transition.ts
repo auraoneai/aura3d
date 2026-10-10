@@ -29,6 +29,7 @@ import { projectedSphereCoverage } from "/packages/engine/src/production-runtime
 import { probeCompressedTextureCapabilities } from "/packages/rendering/src/lanes/prd05.js";
 import { createAppAssetDecoders, attachAppAssetDecoders, getAppAssetDecoders } from "/packages/engine/src/lanes/prd05.js";
 import { WebGL2RendererBackend } from "/packages/rendering/src/production-runtime/index.js";
+import type { RenderItem } from "/packages/rendering/src/contracts/renderItem.js";
 import { canvasPixels, CLEAR, maskedDeltaE, subjectMask } from "../../../../benchmarks/quality-rebuild/scenes/prd04/metrics.js";
 
 declare global {
@@ -163,11 +164,16 @@ async function run() {
     canvas, width: canvas.width, height: canvas.height,
     preserveDrawingBuffer: true, clearColor: [CLEAR[0]!, CLEAR[1]!, CLEAR[2]!, 1]
   });
-  const trianglesOf = (items: readonly { geometry?: { indexCount?: number; vertexCount?: number; instanceCount?: number } }[]): number =>
+  // Mirrors ForwardPass resolveDrawRange / instanceTransformCount: the drawn
+  // element count is drawRange.count, else the index count, else the vertex
+  // count; instanced items draw once per 16-float transform.
+  const trianglesOf = (items: readonly RenderItem[]): number =>
     items.reduce((sum, item) => {
       const g = item.geometry;
-      const per = ((g?.indexCount ?? g?.vertexCount ?? 0) / 3);
-      return sum + per * Math.max(1, g?.instanceCount ?? 1);
+      if (g.topology !== "triangles") return sum;
+      const elements = item.drawRange?.count ?? g.indexBuffer?.count ?? g.vertexBuffer.vertexCount;
+      const instances = item.instanceTransforms ? item.instanceTransforms.length / 16 : 1;
+      return sum + (elements / 3) * instances;
     }, 0);
 
   const frames: FrameRecord[] = [];
