@@ -1749,11 +1749,11 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
 - [x] **P1-T8** `effects/ParticleSystem.ts`. `writeInstances(out: Float32Array, camera): number` writes the §6.2.1 layout
   directly, evaluating sizes, colours and frames over life. `buildBatch` is kept untouched. Test: `seed` 1414 with 2,000
   particles produces byte-identical buffers across two runs.
-- [x] **P1-T9** `vfx/shaders/particle.glsl.ts`. Shader per §8.1, registered as C-02 chunks. It encodes output per
+- [ ] **P1-T9** `vfx/shaders/particle.glsl.ts`. Shader per §8.1, registered as C-02 chunks. It encodes output per
   §6.2.7 (HDR target vs legacy `outputColorSpace`). Tests:
   - unit, `ChunkHarness` text: every chunk wraps;
   - browser, `particle-shader-compile.spec.ts`: all define combinations compile on WebGL2.
-- [x] **P1-T10** `vfx/SceneDepthAdapter.ts`. `resolveSceneDepth(ctx)` returns `ctx.sceneDepth` when available. Otherwise it
+- [ ] **P1-T10** `vfx/SceneDepthAdapter.ts`. `resolveSceneDepth(ctx)` returns `ctx.sceneDepth` when available. Otherwise it
   returns the R-01-1 blackboard target copy, or `{ available: false }` with `SOFT_DEPTH_PENDING`. The soft and near
   fade math is checked in `soft-depth.spec.ts` (browser): a PRD 07-created depth `RenderTarget` (`depth: "texture"`)
   holds a plane at 2 m, a particle at 1.9 m has `alpha × 0.2857` (±1/255), and particle depth beyond 2 m gives alpha 0.
@@ -1804,7 +1804,7 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
 - [x] **P1-T18** `agent-api/vfx/lookLint.ts`. Rule `look/fake-effect-names` flags scene nodes named like VFX (`/spark|smoke|
   fire|rain|snow|explosion|trail|fog|sky/i`) whose kind is `primitive`, and effect nodes not in
   `capabilities.effectsPixelBacked`. Test: fixture scenes with 3 hits and 0 false positives on `prd07-*` scenes.
-- [x] **P1-T19** Browser test `particles-production.spec.ts` (remote macos-14, flags `vfx`). `effects.particles({ seed: 1414,
+- [ ] **P1-T19** Browser test `particles-production.spec.ts` (remote macos-14, flags `vfx`). `effects.particles({ seed: 1414,
   maxParticles: 2000, blend: "additive", color: "#ff9a3c", size: 0.06 })` on production gives:
   - ≥ 1.5% of pixels with `R - B > 15` in the fountain region;
   - `diagnostics().effects.nodes[0].drawCalls ≥ 1`;
@@ -1845,7 +1845,7 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
 - [x] **P2-T7** `production-runtime/effects/TransientLightPool.ts`. Lights are pre-allocated per tier (Low 0, Medium 2,
   High 4, Ultra 8). They are submitted as `CollectedLight`s through the C-01 `collect` phase (`prd07.lights`), with
   intensity 0 when idle. Test: 10 simultaneous explosions use ≤ the cap, and the oldest is recycled.
-- [x] **P2-T8** Browser test `juice-automount.spec.ts`. A Neon-style scene calls `game.effects()` with no `nodes()` call.
+- [ ] **P2-T8** Browser test `juice-automount.spec.ts`. A Neon-style scene calls `game.effects()` with no `nodes()` call.
   `hitSpark` at a known position must change ≥ 0.15% of the canvas pixels in a 64×64 region within frames N+1..N+3
   (flags `vfx`), and change 0 pixels with flags `none`.
 - [x] **P2-T9** Lane scenes `prd07-impact-library` (§17.1 S3 contact sheet; Aura only, `admittedAsReference: false`) and
@@ -1853,21 +1853,21 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
 
 ### Phase 3: sky (day 0)
 
-- [x] **P3-T1** `atmosphere/PreethamSky.ts` + `atmosphere/shaders/sky.glsl.ts`. Port per §8.5, with the MIT header. Unit
+- [ ] **P3-T1** `atmosphere/PreethamSky.ts` + `atmosphere/shaders/sky.glsl.ts`. Port per §8.5, with the MIT header. Unit
   `preetham-cpu-reference.test.ts`: `PreethamSky.evaluate(dir)` at 16 directions matches a hand-computed r185 reference
   table within 1e-4. Browser: a GPU render of the same 16 directions into an `rgba16f` target, read back in the test only,
   matches within 2%.
 - [x] **P3-T2** `atmosphere/GradientSky.ts`, `StarField.ts`, `CloudLayer.ts` (r185 cloud block), and the moon disc with
   phase. Unit tests: the gradient is monotonic between stops, star count is ∝ density, and stars fade to 0 at sun
   elevation > 6°.
-- [x] **P3-T3** `atmosphere/SkyBackgroundPass.ts`. Implements C-21 `SkyBackgroundPassLike` and the `prd07.sky` contributor
+- [ ] **P3-T3** `atmosphere/SkyBackgroundPass.ts`. Implements C-21 `SkyBackgroundPassLike` and the `prd07.sky` contributor
   `passes(ctx)`. The fullscreen triangle is cached at construction. Evaluation is per pixel on Medium+, and on Low uses a
   256×128 sky-view re-rendered only on spec change. `renderToCubeFace` and `horizonRadiance(8)` are implemented. Impl test
   `prd07-C-21.test.ts`. Browser test `sky-background.spec.ts`:
   - sky-region luma std > 6;
   - the horizon is brighter than the zenith at noon;
   - sun disc luminance > 10 in an `rgba16f` debug target.
-- [x] **P3-T4** Carved `agent-api/nodes/sky.ts`. Add `sky.preetham`, `sky.gradient` and `sky.hdri` (`AuraSkyNode`). Rewrite
+- [ ] **P3-T4** Carved `agent-api/nodes/sky.ts`. Add `sky.preetham`, `sky.gradient` and `sky.hdri` (`AuraSkyNode`). Rewrite
   `sky.dayNight` per §6.5 (legacy primitives registered as `prd07.legacySky.<n>` runtime nodes, plus the `sky` node and
   key light). Tests:
   - flag off → pixels identical to `85aafcd0` (`tests/qr/prd07/browser/sky-daynight-identity.spec.ts`);
@@ -1891,7 +1891,7 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
     including `v.y ≈ 0` and `b = 0`;
   - `fog-legacy-parity.test.ts`: the GLSL legacy-parity mode CPU mirror equals `legacyEnvironmentFogFactor` within 1e-6
     on 1,000 points.
-- [x] **P4-T2** `atmosphere/shaders/fog.glsl.ts` + `atmosphere/chunks.ts`. Register chunk `a3d_prd07_fog` (C-21 names) and
+- [ ] **P4-T2** `atmosphere/shaders/fog.glsl.ts` + `atmosphere/chunks.ts`. Register chunk `a3d_prd07_fog` (C-21 names) and
   `ShaderFeature` `prd07.fog` (hook `fragment:fog`; the `select` returns `"height"`/`"volumetric"` only when
   `A3D_QR_VFX_FOG` is on). Browser test `C-21` chunk compile in ChunkHarness.
 - [x] **P4-T3** `production-runtime/effects/LiveAtmosphere.ts` + `agent-api/vfx/atmosphere-api.ts`.
@@ -1917,7 +1917,7 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
   1%.
 - [x] **P4-T6** Absorption mode in `a3d_prd07_fog`. Test: `T = exp(-σ·d)` per channel at 10 m for σ = (0.42, 0.11, 0.07),
   within 1e-5.
-- [x] **P4-T7** Background fog. `prd07.sky` calls `a3dApplyFog` at `backgroundDistance` when `affectsBackground`. A
+- [ ] **P4-T7** Background fog. `prd07.sky` calls `a3dApplyFog` at `backgroundDistance` when `affectsBackground`. A
   solid-colour background with fog draws as a fogged fullscreen colour pass. Browser test `fog-background-match.spec.ts`:
   a fogged horizon pixel and a fogged far-plane geometry pixel differ by ≤ 3/255 (flags `vfx`, legacy forward path).
 - [x] **P4-T8** Lane scenes `prd07-fog-height`, `prd07-fog-transition` and `prd07-underwater` (absorption in PRD 07
@@ -1925,7 +1925,7 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
 
 ### Phase 5: GPU sim, weather, volumetric
 
-- [x] **P5-T1** `vfx/ParticleGpuSim.ts` + `vfx/shaders/gpu-sim.glsl.ts` (§8.3). Two single-target `rgba32f` ping-pong
+- [ ] **P5-T1** `vfx/ParticleGpuSim.ts` + `vfx/shaders/gpu-sim.glsl.ts` (§8.3). Two single-target `rgba32f` ping-pong
   passes, ring emission, curl noise, and plane/heightfield collision. The capability check uses C-28
   `probe.floatColorBuffer`, else CPU fallback with `PARTICLE_GPU_UNAVAILABLE`. Resources are registered with C-29
   `resourceRegistrySlot`. Browser test `gpu-sim-parity.spec.ts`: 50,000 particles under gravity only match the CPU
@@ -1943,7 +1943,7 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
   `ShaderFeature` `prd07.wetness` (`fragment:material`), with uniforms driven by `AtmosphereWetness.ts`. With the C-02
   generator still a stub, the effect system reports `WETNESS_PENDING`, and PRD 07 decal/puddle programs include the chunk
   directly. Test: ChunkHarness compile, plus a CPU mirror of albedo/roughness at wet = 0, 0.5 and 1.
-- [x] **P5-T6** `atmosphere/VolumetricFogPass.ts` + `atmosphere/shaders/volumetric-{inject,integrate,apply}.glsl.ts`
+- [ ] **P5-T6** `atmosphere/VolumetricFogPass.ts` + `atmosphere/shaders/volumetric-{inject,integrate,apply}.glsl.ts`
   (§8.7). Uses 2D tiled atlases, the C-27 `froxelGrid`, temporal on Ultra (needs `previousViewProjectionMatrix`), and the
   alpha-over apply. It runs only when `resolveSceneDepth(ctx).available`. Browser test `froxel-transmittance.spec.ts` uses
   a PRD 07-created depth target, not the frame: homogeneous σ = 0.05 with no light gives transmittance at 20 m of
@@ -1961,7 +1961,7 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
   `AURA_DECAL_MAX_DECALS` is replaced by the tier cap. Test (Mock): 100 decals on one page → 1 draw, and cap eviction is
   oldest-first. Flag off: the draw list is identical to today's.
 - [x] **P6-T2** Decal page in the atlas baker (scorch, crack, tyre-track, puddle, with normal/roughness).
-- [x] **P6-T3** `orientation: "surface"` trails drawn by `prd07.decals` with polygon offset. Test: no depth-fighting on a
+- [ ] **P6-T3** `orientation: "surface"` trails drawn by `prd07.decals` with polygon offset. Test: no depth-fighting on a
   plane at 50 m (browser; max abs diff between two consecutive frames ≤ 1/255 in the mark region).
 - [x] **P6-T4** Optional half-resolution particle target for batches flagged `lowRes`, with a bilateral depth-aware
   upsample when depth is available, else a plain bilinear upsample. Enabled when measured particle GPU ms exceeds the
@@ -1982,7 +1982,7 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
   and weather builders; `renderer.vfx` accepted as a no-op with `QR_FLAG_REMOVED`. Re-file R-02-3, R-03-2 and R-15-4
   for the owners' removals.
 - [x] **P7-T3** Grep gate (§10 item 6) as a failing step in `prd07-vfx.yml`.
-- [x] **P7-T4** C-40 rows flipped to `verified` with run ids. PRD 13 writes the skill text from them. — all 9 F-07 rows verified 2026-10-07; rows F-07-02/03/04 cite completed unit run 37503078850, the rest cite the lane unit suites (189/189 green on merged main) with confirming CI run 37561125962 dispatched.
+- [ ] **P7-T4** C-40 rows flipped to `verified` with run ids. PRD 13 writes the skill text from them. — all 9 F-07 rows verified 2026-10-07; rows F-07-02/03/04 cite completed unit run 37503078850, the rest cite the lane unit suites (189/189 green on merged main) with confirming CI run 37561125962 dispatched.
 
 ## 16. Test requirements
 
