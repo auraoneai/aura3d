@@ -1049,6 +1049,8 @@ Exit: lane 01's §5.4 deletions are merged; `rg -n "u_outputColorSpace|mix\(1\.1
 
 Every item edits only lane 01-owned paths (§13A). Items that need another lane's file are §13.4 requests and are not checklist items. `[S]` marks items whose test is part of standalone acceptance (§17.1).
 
+**Tick rule (PRD-16 P-55):** this checklist stays at 0/73 until checklist-lint exists. After that, an item is ticked only with `run:<id>`, the id of a remote run on a main commit (GitHub Actions run or GitLab pipeline) that executed the item's test. Local or branch-only runs never tick an item.
+
 ### Phase 0
 - [ ] [S] `benchmarks/quality-rebuild/scenes/prd01/index.ts` (+ `aura3d/scenes/prd01/`, `three/scenes/prd01/`): add the six `prd01-*` scene specs exactly as specified in §17.3, each with `owner: "prd01"`, `referenceProfile: "contract"`, `qrFlags: ["core"]`, masks and `primaryCriterion`. Scenes that need unwired engine fields (`blend`, `tessellation`) build their content through `@aura3d/rendering` public APIs in the Aura adapter. Test: `tests/unit/contracts/C-30-bench-registry.test.ts` (unique ids, owner prefix, both adapters) plus a lane-capture run producing both PNGs per scene.
 - [ ] `tests/qr/prd01/metrics/{maskIoU,regionSsim,deltaE2000,temporalSigma}.ts`: pure functions over PNG buffers used by the lane workflow until lane 12's C-33 metric plugins land (Q-12-1). Test: `tests/qr/prd01/unit/metrics.test.ts` with synthetic PNGs (known IoU 0.5, ΔE of a known swatch pair).
