@@ -358,13 +358,38 @@ export class ProductionEffectSystem {
     this.ribbons.enabledOrientations = on ? ["camera"] : ["camera", "surface"];
   }
 
+  /** Scene snapshot the last rebuild was computed from (nodes ref + version). */
+  private lastSceneNodes: readonly EffectNodeLike[] | null = null;
+  private lastSceneVersion = -1;
+
+  private sceneSignature(): { nodes: readonly EffectNodeLike[]; version: number } {
+    const s = this.app.scene as { nodes: readonly EffectNodeLike[]; version?: number };
+    return { nodes: s.nodes, version: s.version ?? -1 };
+  }
+
+  /** Recursive scene walk — group children descend only under a visible ancestor. */
+  private walkNodes(
+    visit: (node: EffectNodeLike, visible: boolean) => void,
+    nodes: readonly EffectNodeLike[] = this.app.scene.nodes,
+    parentVisible = true
+  ): void {
+    for (const node of nodes) {
+      const visible = parentVisible && node.visible !== false;
+      visit(node, visible);
+      if (node.children) this.walkNodes(visit, node.children, visible);
+    }
+  }
+
   private rebuildFromScene(): void {
+    const sig = this.sceneSignature();
+    this.lastSceneNodes = sig.nodes;
+    this.lastSceneVersion = sig.version;
     this.rebuildSkyFromScene();
     this.applyLegacyDecalVisibility();
     const fogNodes: EffectNodeLike[] = [];
     const fogVolumes: EffectNodeLike[] = [];
-    for (const node of this.app.scene.nodes) {
-      if (node.kind !== "effect") continue;
+    this.walkNodes((node, visible) => {
+      if (!visible || node.kind !== "effect") return;
       const lowered = lowerEffectNode(node);
       this.diagnostics.track({
         nodeId: lowered.nodeId,
@@ -382,7 +407,7 @@ export class ProductionEffectSystem {
       if (lowered.consumer === "scene-fog") {
         (lowered.effect === "fogVolume" ? fogVolumes : fogNodes).push(node);
       }
-    }
+    });
     this.atmosphere.trackFogNodes(fogNodes);
     this.atmosphere.trackFogVolumes(fogVolumes);
   }
@@ -593,6 +618,12 @@ export class ProductionEffectSystem {
   private frame(dt: number): void {
     if (this.disposed) return;
     this.time += dt;
+    // Grouped/nested scene changes re-attach on the scene's own version/nodes
+    // turnover — not on every set/onLoad call.
+    const sig = this.sceneSignature();
+    if (sig.nodes !== this.lastSceneNodes || sig.version !== this.lastSceneVersion) {
+      this.rebuildFromScene();
+    }
     // §6.6 live fog state — advance transitions + refresh runtime-handle
     // visibility before the compiler/packers read the resolved spec.
     this.atmosphere.tick(dt);
@@ -602,10 +633,9 @@ export class ProductionEffectSystem {
     // no frustum, so scene-visible == in-frustum here; the contributor's
     // frustum cull narrows it further inside the renderer.
     const visible = new Set<string>();
-    for (const node of this.app.scene.nodes) {
-      const n = node as EffectNodeLike & { visible?: boolean };
-      if (n.visible !== false) visible.add(n.id ?? n.name ?? "");
-    }
+    this.walkNodes((n, v) => {
+      if (v) visible.add(n.id ?? n.name ?? "");
+    });
     this.diagnostics.endFrame(visible);
     for (const binding of this.emitters.values()) {
       stepEmitter(binding.state, dt);
