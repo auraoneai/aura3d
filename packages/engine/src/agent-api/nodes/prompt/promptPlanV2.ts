@@ -5,7 +5,6 @@
 // stay in index.ts (owner 15); v2 extends them here so no CCR is needed.
 
 import type { QrFlags } from "@aura3d/rendering/contracts";
-import { particleRenderHookSlot, skyBackgroundSlot } from "@aura3d/rendering/contracts";
 import type {
   AuraCompiledPromptPlan,
   AuraEffectNode,
@@ -16,7 +15,7 @@ import type {
   AuraSceneNode
 } from "../../index.js";
 import { effects, groups, scene } from "../../index.js";
-import { appExtensionsAll } from "../../../contracts/app.js";
+import { pixelBackedEffectsAvailable, promptContractAvailable } from "../../looks/contractAvailability.js";
 import { resolveQrFlags } from "../../../contracts/flags.js";
 import type { AuraLookId } from "../../../contracts/looks.js";
 import { lookLint, type AuraLookLintContext } from "../../../contracts/looks.js";
@@ -162,17 +161,7 @@ function styleToGrade(style: string | undefined): (typeof PROMPT_PLAN_STYLE_TO_G
 
 // C-20 emitters are accepted only when the slot is real and its flag is on —
 // the stub's primitive-pool bursts are the fake-sphere pattern §6.3 removes.
-function pixelBackedAvailable(flags: QrFlags): boolean {
-  return particleRenderHookSlot.provided && flags.on("A3D_QR_VFX");
-}
-
-function contractAvailable(contract: string, flags: QrFlags): boolean {
-  if (contract === "C-21") return skyBackgroundSlot.provided && flags.on("A3D_QR_VFX");
-  if (contract === "C-13") {
-    return flags.on("A3D_QR_POST") && appExtensionsAll().some((entry) => entry.member === "post" && entry.owner !== "prd15");
-  }
-  return false;
-}
+// The slot probes live in looks/contractAvailability.ts (layering gate).
 
 /** The look group's fog node, when the look already carries one. */
 function findLookFog(builder: ReturnType<typeof scene>): AuraEffectNode | undefined {
@@ -269,7 +258,7 @@ export function compilePromptPlanV2(
         break;
       }
       case "pixel-backed":
-        if (pixelBackedAvailable(flags)) {
+        if (pixelBackedEffectsAvailable(flags)) {
           if (effect === "rain") builder.add(effects.rain({ name: "prompt rain" }));
           if (effect === "particles") builder.add(effects.particles({ name: "prompt particles" }));
           // motion-trail is a C-20 runtime trail (app.effects.trail) — accepted,
@@ -281,7 +270,7 @@ export function compilePromptPlanV2(
         }
         break;
       case "contract":
-        if ((mapping.requires ?? []).every((contract) => contractAvailable(contract, flags))) {
+        if ((mapping.requires ?? []).every((contract) => promptContractAvailable(contract, flags))) {
           if (effect === "wet-reflection") {
             builder.add(effects.screenSpaceReflections({ name: "prompt wet reflection" }));
           }
@@ -335,7 +324,7 @@ export function compilePromptPlanV2(
     production: false,
     capabilities: {
       ambientAdditive: false,
-      effectsPixelBacked: pixelBackedAvailable(flags) ? ["rain", "particles", "motion-trail"] : []
+      effectsPixelBacked: pixelBackedEffectsAvailable(flags) ? ["rain", "particles", "motion-trail"] : []
     }
   };
   const repairHints: string[] = [
