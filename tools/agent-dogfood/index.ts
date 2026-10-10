@@ -693,16 +693,18 @@ test("generated Aura3D app screenshot is non-empty", async ({ page }) => {
     // class-(b) readback -> app.output.capture() (C-05). Rows are flipped
     // back to readPixels (bottom-up) order so every y-fraction predicate
     // below measures the same region as before this migration.
+    // __AURA3D_LIVE_APPS__ is the live-app registry object (not an array);
+    // app.output is the C-05 surface installed under A3D_QR_CORE.
     const apps = (window as unknown as {
-      __AURA3D_LIVE_APPS__?: readonly { output: { capture(o: { type: "image-bitmap" }): Promise<ImageBitmap> } }[];
-    }).__AURA3D_LIVE_APPS__ ?? [];
-    const bitmap = await apps[0]?.output.capture({ type: "image-bitmap" });
-    if (!bitmap) return { error: "missing-webgl2", yellowPixels: 0, rainPixels: 0, centerObjectPixels: 0, uniqueBuckets: 0 };
+      __AURA3D_LIVE_APPS__?: { all(): readonly { output?: { capture(o: { type: "image-bitmap" }): Promise<ImageBitmap> } }[] };
+    }).__AURA3D_LIVE_APPS__?.all() ?? [];
+    const bitmap = await apps[0]?.output?.capture({ type: "image-bitmap" });
+    if (!bitmap) return { error: "missing-app-output-capture", yellowPixels: 0, rainPixels: 0, centerObjectPixels: 0, uniqueBuckets: 0 };
     const readback = document.createElement("canvas");
     readback.width = bitmap.width;
     readback.height = bitmap.height;
     const ctx2d = readback.getContext("2d");
-    if (!ctx2d) return { error: "missing-webgl2", yellowPixels: 0, rainPixels: 0, centerObjectPixels: 0, uniqueBuckets: 0 };
+    if (!ctx2d) return { error: "missing-2d", yellowPixels: 0, rainPixels: 0, centerObjectPixels: 0, uniqueBuckets: 0 };
     ctx2d.drawImage(bitmap, 0, 0);
     const topDown = ctx2d.getImageData(0, 0, readback.width, readback.height).data;
     const width = readback.width;
@@ -943,16 +945,18 @@ test("five-task generated app screenshot shows product, rain, and reflective stu
     // class-(b) readback -> app.output.capture() (C-05). Rows are flipped
     // back to readPixels (bottom-up) order so every y-fraction predicate
     // below measures the same region as before this migration.
+    // __AURA3D_LIVE_APPS__ is the live-app registry object (not an array);
+    // app.output is the C-05 surface installed under A3D_QR_CORE.
     const apps = (window as unknown as {
-      __AURA3D_LIVE_APPS__?: readonly { output: { capture(o: { type: "image-bitmap" }): Promise<ImageBitmap> } }[];
-    }).__AURA3D_LIVE_APPS__ ?? [];
-    const bitmap = await apps[0]?.output.capture({ type: "image-bitmap" });
-    if (!bitmap) return { error: "missing-webgl2", subjectPixels: 0, softboxPixels: 0, rainPixels: 0, reflectionPixels: 0, uniqueBuckets: 0 };
+      __AURA3D_LIVE_APPS__?: { all(): readonly { output?: { capture(o: { type: "image-bitmap" }): Promise<ImageBitmap> } }[] };
+    }).__AURA3D_LIVE_APPS__?.all() ?? [];
+    const bitmap = await apps[0]?.output?.capture({ type: "image-bitmap" });
+    if (!bitmap) return { error: "missing-app-output-capture", subjectPixels: 0, softboxPixels: 0, rainPixels: 0, reflectionPixels: 0, uniqueBuckets: 0 };
     const readback = document.createElement("canvas");
     readback.width = bitmap.width;
     readback.height = bitmap.height;
     const ctx2d = readback.getContext("2d");
-    if (!ctx2d) return { error: "missing-webgl2", subjectPixels: 0, softboxPixels: 0, rainPixels: 0, reflectionPixels: 0, uniqueBuckets: 0 };
+    if (!ctx2d) return { error: "missing-2d", subjectPixels: 0, softboxPixels: 0, rainPixels: 0, reflectionPixels: 0, uniqueBuckets: 0 };
     ctx2d.drawImage(bitmap, 0, 0);
     const topDown = ctx2d.getImageData(0, 0, readback.width, readback.height).data;
     const width = readback.width;
@@ -1100,16 +1104,18 @@ test("initial generated scene is classified as failed prompt fidelity", async ({
     // class-(b) readback -> app.output.capture() (C-05). Rows are flipped
     // back to readPixels (bottom-up) order so every y-fraction predicate
     // below measures the same region as before this migration.
+    // __AURA3D_LIVE_APPS__ is the live-app registry object (not an array);
+    // app.output is the C-05 surface installed under A3D_QR_CORE.
     const apps = (window as unknown as {
-      __AURA3D_LIVE_APPS__?: readonly { output: { capture(o: { type: "image-bitmap" }): Promise<ImageBitmap> } }[];
-    }).__AURA3D_LIVE_APPS__ ?? [];
-    const bitmap = await apps[0]?.output.capture({ type: "image-bitmap" });
-    if (!bitmap) return { error: "missing-webgl2", subjectPixels: 0, rainPixels: 0, reflectionPixels: 0, environmentPixels: 0, uniqueBuckets: 0 };
+      __AURA3D_LIVE_APPS__?: { all(): readonly { output?: { capture(o: { type: "image-bitmap" }): Promise<ImageBitmap> } }[] };
+    }).__AURA3D_LIVE_APPS__?.all() ?? [];
+    const bitmap = await apps[0]?.output?.capture({ type: "image-bitmap" });
+    if (!bitmap) return { error: "missing-app-output-capture", subjectPixels: 0, rainPixels: 0, reflectionPixels: 0, environmentPixels: 0, uniqueBuckets: 0 };
     const readback = document.createElement("canvas");
     readback.width = bitmap.width;
     readback.height = bitmap.height;
     const ctx2d = readback.getContext("2d");
-    if (!ctx2d) return { error: "missing-webgl2", subjectPixels: 0, rainPixels: 0, reflectionPixels: 0, environmentPixels: 0, uniqueBuckets: 0 };
+    if (!ctx2d) return { error: "missing-2d", subjectPixels: 0, rainPixels: 0, reflectionPixels: 0, environmentPixels: 0, uniqueBuckets: 0 };
     ctx2d.drawImage(bitmap, 0, 0);
     const topDown = ctx2d.getImageData(0, 0, readback.width, readback.height).data;
     const width = readback.width;
@@ -1188,16 +1194,18 @@ test("repaired generated scene reaches product-quality prompt fidelity", async (
     // class-(b) readback -> app.output.capture() (C-05). Rows are flipped
     // back to readPixels (bottom-up) order so every y-fraction predicate
     // below measures the same region as before this migration.
+    // __AURA3D_LIVE_APPS__ is the live-app registry object (not an array);
+    // app.output is the C-05 surface installed under A3D_QR_CORE.
     const apps = (window as unknown as {
-      __AURA3D_LIVE_APPS__?: readonly { output: { capture(o: { type: "image-bitmap" }): Promise<ImageBitmap> } }[];
-    }).__AURA3D_LIVE_APPS__ ?? [];
-    const bitmap = await apps[0]?.output.capture({ type: "image-bitmap" });
-    if (!bitmap) return { error: "missing-webgl2", subjectPixels: 0, rainPixels: 0, reflectionPixels: 0, environmentPixels: 0, uniqueBuckets: 0 };
+      __AURA3D_LIVE_APPS__?: { all(): readonly { output?: { capture(o: { type: "image-bitmap" }): Promise<ImageBitmap> } }[] };
+    }).__AURA3D_LIVE_APPS__?.all() ?? [];
+    const bitmap = await apps[0]?.output?.capture({ type: "image-bitmap" });
+    if (!bitmap) return { error: "missing-app-output-capture", subjectPixels: 0, rainPixels: 0, reflectionPixels: 0, environmentPixels: 0, uniqueBuckets: 0 };
     const readback = document.createElement("canvas");
     readback.width = bitmap.width;
     readback.height = bitmap.height;
     const ctx2d = readback.getContext("2d");
-    if (!ctx2d) return { error: "missing-webgl2", subjectPixels: 0, rainPixels: 0, reflectionPixels: 0, environmentPixels: 0, uniqueBuckets: 0 };
+    if (!ctx2d) return { error: "missing-2d", subjectPixels: 0, rainPixels: 0, reflectionPixels: 0, environmentPixels: 0, uniqueBuckets: 0 };
     ctx2d.drawImage(bitmap, 0, 0);
     const topDown = ctx2d.getImageData(0, 0, readback.width, readback.height).data;
     const width = readback.width;

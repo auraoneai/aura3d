@@ -117,7 +117,8 @@ test("agent docs hello-world scene renders the typed robot asset", async ({ page
   }, undefined, { timeout: 60_000 });
   const capture = await page.evaluate(async () => {
     type LiveApp = { stepAsync?: (dt: number) => Promise<void>; step?: (dt: number) => void };
-    const apps = (window as unknown as { __AURA3D_LIVE_APPS__?: LiveApp[] }).__AURA3D_LIVE_APPS__ ?? [];
+    // __AURA3D_LIVE_APPS__ is the live-app registry object (not an array).
+    const apps = (window as unknown as { __AURA3D_LIVE_APPS__?: { all(): readonly LiveApp[] } }).__AURA3D_LIVE_APPS__?.all() ?? [];
     if (apps.length > 0) {
       for (const app of apps) {
         if (app.stepAsync) await app.stepAsync(1 / 60);
