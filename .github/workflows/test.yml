@@ -39,19 +39,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Check formatting (if prettier exists)
-        run: |
-          if [ -f "node_modules/.bin/prettier" ]; then
-            pnpm prettier --check "src/**/*.ts"
-          fi
-        continue-on-error: true
-
-      - name: Run ESLint (if configured)
-        run: |
-          if [ -f "node_modules/.bin/eslint" ]; then
-            pnpm eslint "src/**/*.ts"
-          fi
-        continue-on-error: true
+      # P-10: the former prettier/eslint steps were masked (continue-on-error)
+      # and guarded on a root src/ glob; prettier is not a dependency. Lint the
+      # repo the same way CI / Lint does.
+      - name: Run ESLint
+        run: pnpm lint
 
   # Type checking job
   typecheck:
@@ -190,14 +182,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # P-10: previously guarded on a non-existent src/tests/integration and
+      # masked; run the real tests/integration suite.
       - name: Run integration tests
-        run: |
-          if [ -d "src/tests/integration" ]; then
-            pnpm test src/tests/integration
-          fi
+        run: pnpm test:integration
         env:
           NODE_ENV: test
-        continue-on-error: true
 
   # Build verification
   build:
