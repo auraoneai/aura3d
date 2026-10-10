@@ -134,7 +134,7 @@ const game = createGame({
       "burn": { asset: "gravityPostBurnLoopSfx" },
       "dock": { asset: "gravityPostDockLockSfx" },
       "bounce": { asset: "gravityPostBounceOffSfx" },
-      "ctx.pod-lost": { asset: "gravityPostPodLostSfx" },
+      "pod-lost": { asset: "gravityPostPodLostSfx" },
       "contract-clear": { asset: "gravityPostContractClearSfx" },
       "assist": { asset: "gravityPostAssistChimeSfx" },
       "warp": { asset: "gravityPostWarpHumSfx" },
@@ -146,7 +146,7 @@ const game = createGame({
     "launch": { trauma: 0.1 },
     "dock-clamp": { hitStopMs: 35, trauma: 0.12 },
     "delivery": { hitStopMs: 40, trauma: 0.18 },
-    "ctx.pod-lost": { hitStopMs: 60, trauma: 0.3 },
+    "pod-lost": { hitStopMs: 60, trauma: 0.3 },
     "assist": { trauma: 0.06 }
   },
   qualityRebuild: {
@@ -172,7 +172,7 @@ function handle(name: string): NodeHandle {
 // integrator + one static sensor sphere per station. Real overlap events
 // (sensor begin) dispatch the dock capture/bounce path — same rule as the
 // legacy app.physics sensor layer, routed through collisionWorld.
-const POD_PROXY_ID = "mail-ctx.pod-body";
+const POD_PROXY_ID = "mail-pod-body";
 const collisionWorld = engineGame.collisionWorld({ backend: "rapier", gravity: [0, 0, 0] });
 const dockSensorIds = new Set<string>();
 

@@ -89,7 +89,7 @@ const game = createGame({
       { id: "score", kind: "score", anchor: "top-left", label: "SCORE" },
       { id: "multiplier", kind: "label", anchor: "top-right", label: "MULT" },
       { id: "section", kind: "label", anchor: "top", label: "SECTION" },
-      { id: "rs.shields", kind: "label", anchor: "bottom-left", label: "SHIELDS" },
+      { id: "shields", kind: "label", anchor: "bottom-left", label: "SHIELDS" },
       { id: "message", kind: "label", anchor: "bottom", label: "RUN" }
     ]
   },

@@ -52,7 +52,7 @@ const game: Prd09Game<string, string> = createGame({
   hud: {
     theme: "fighting",
     widgets: [
-      { id: "ctx.mode", kind: "label", anchor: "top", label: "MODE" },
+      { id: "mode", kind: "label", anchor: "top", label: "MODE" },
       { id: "hp", kind: "gauge", anchor: "top-left", label: "HULL" },
       { id: "rival", kind: "gauge", anchor: "top-right", label: "RIVAL" },
       { id: "guard", kind: "gauge", anchor: "bottom-left", label: "GUARD" },
