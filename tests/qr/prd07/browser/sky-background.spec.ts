@@ -18,6 +18,7 @@ declare global {
       readonly horizonMeanLuma?: number;
       readonly zenithMeanLuma?: number;
       readonly background?: string | null;
+      readonly sunDiscLuminance?: number;
       readonly errors?: readonly string[];
       readonly error?: string;
     };
@@ -56,6 +57,8 @@ test.describe("prd07 sky background", () => {
     expect(result?.background).toBe("sky-preetham");
     expect(result?.skyLumaStd ?? 0).toBeGreaterThan(6);
     expect(result?.horizonMeanLuma ?? 0).toBeGreaterThan(result?.zenithMeanLuma ?? Infinity);
+    // P-34 — sun disc is HDR: luminance > 10 in the rgba16f readback.
+    expect(result?.sunDiscLuminance ?? 0).toBeGreaterThan(10);
   });
 
   test("flags vfx: sky node ignored (background not sky-preetham)", async ({ page }) => {
