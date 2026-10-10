@@ -649,25 +649,3 @@ export class RendererPostprocessPipeline {
   }
 }
 
-
-
-export function recordPostSkipped(reason: string): void {
-  postSkippedReasonsSet.add(reason);
-}
-
-export function postSkippedReasons(): readonly string[] {
-  return [...postSkippedReasonsSet];
-}
-
-/** Test hook — clears the §6.9 skip registry. */
-export function resetPostSkipped(): void {
-  postSkippedReasonsSet.clear();
-}
-
-/** `import.meta.env.PROD` / `process.env.NODE_ENV === "production"`. */
-export function postProductionBuild(): boolean {
-  const meta = import.meta as unknown as { readonly env?: { readonly PROD?: boolean } };
-  if (meta.env?.PROD) return true;
-  return (globalThis as { readonly process?: { readonly env?: { readonly NODE_ENV?: string } } })
-    .process?.env?.NODE_ENV === "production";
-}

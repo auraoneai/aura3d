@@ -1055,13 +1055,19 @@ describe("game runtime source gates", () => {
     const templateMain = readSource("packages/create-aura3d/templates/fighting-game/src/main.ts");
     const templateMoves = readSource("packages/create-aura3d/templates/fighting-game/src/game/moves.ts");
 
-    expect(templateMain).toContain("diagnostics: { overlay: true");
+    // Post-PRD-09 the template mounts via createGame with the overlay off;
+    // hitbox/debug coverage now lives in the runtime debug overlay published
+    // on __AURA3D_GAME_DEBUG__.
+    expect(templateMain).toContain("diagnostics: { overlay: false");
+    expect(templateMain).toContain("game.debug.overlay({");
+    expect(templateMain).toContain("__AURA3D_GAME_DEBUG__");
     expect(templateMain).toContain("const combat = game.combatWorld()");
     expect(templateMain).toContain("__AURA3D_GAME_EVIDENCE__");
     expect(templateMain).toContain("__AURA3D_GAME_RUNTIME__");
     expect(templateMain).toContain("app.evidence({");
     expect(templateMoves.match(/hitboxes:\s*\[/g)?.length ?? 0).toBeGreaterThanOrEqual(3);
-    expect(templateMain.match(/createGameApp\(/g)?.length ?? 0).toBe(1);
+    expect(templateMain.match(/createGame\(/g)?.length ?? 0).toBe(1);
+    expect(templateMain).not.toContain("createGameApp(");
     expect(templateMain).not.toContain("createAuraApp(");
     expect(templateMain).not.toContain("app.setScene(");
     expect(templateMain).not.toMatch(/\bfrom\s+["']three["']|GLTFLoader|three\/examples/);
@@ -1367,10 +1373,11 @@ describe("game runtime source gates", () => {
     const fightingKit = readSource("packages/engine/src/agent-api/game-kits/fighting.ts");
 
     expectIncludesAll(templateMain, [
-      "createGameApp(\"#app\"",
-      "const input = gameApp.input",
-      "gameApp.onFrame",
-      "input.update(dt)",
+      "createGame({",
+      "id: \"fighting-game\"",
+      "target: \"#app\"",
+      "const input = fightingGame.input",
+      "app.onFrame(({ dt }",
       "createFighterNode(\"player\"",
       "createFighterNode(\"rival\"",
       "game.kinematicBody(",
@@ -1386,7 +1393,8 @@ describe("game runtime source gates", () => {
       "export function createFighterNode",
       "game.runtimeNode(id"
     ]);
-    expect(templateMain.match(/createGameApp\(/g)?.length ?? 0).toBe(1);
+    expect(templateMain.match(/createGame\(/g)?.length ?? 0).toBe(1);
+    expect(templateMain).not.toContain("createGameApp(");
     expect(templateMain).not.toContain("createAuraApp(");
     expect(templateMain).not.toContain("model(\"");
     expect(templateAssets).toContain("defineAuraAssets");
@@ -1404,39 +1412,56 @@ describe("game runtime source gates", () => {
   });
 
   it("keeps showcase game routes on public genre kits instead of route-local engines", () => {
+    /*
+     * Post-PRD-14 the routes mount through a route-flag dispatcher in
+     * `src/main.ts`: flag off boots `src/legacy/main.ts`, flag on boots
+     * `src/v2/boot.ts`, and shared gameplay lives in `src/gameplay/`. The
+     * kit-usage invariants below therefore read the v2/gameplay sources;
+     * the dispatcher itself must stay a thin dispatcher (no gameplay tokens).
+     */
     const skylineMain = readSource("apps/showcase-skyline-runner/src/main.ts");
+    const skylineBoot = readSource("apps/showcase-skyline-runner/src/v2/boot.ts");
+    const skylineBinding = readSource("apps/showcase-skyline-runner/src/v2/scene/binding.ts");
+    const skylineLevel = readSource("apps/showcase-skyline-runner/src/gameplay/level.ts");
+    const skylineProof = readSource("apps/showcase-skyline-runner/src/gameplay/level-proof.ts");
     const turboMain = readSource("apps/showcase-turbo-drift-circuit/src/main.ts");
+    const turboSetup = readSource("apps/showcase-turbo-drift-circuit/src/v2/race-setup.ts");
+    const turboBoot = readSource("apps/showcase-turbo-drift-circuit/src/v2/boot.ts");
+    const turboGhost = readSource("apps/showcase-turbo-drift-circuit/src/gameplay/ghost.ts");
+    const turboOpponent = readSource("apps/showcase-turbo-drift-circuit/src/gameplay/opponent-ai.ts");
     const blockfallMain = readSource("apps/showcase-blockfall-reactor/src/main.ts");
+    const blockfallBoot = readSource("apps/showcase-blockfall-reactor/src/v2/boot.ts");
+    const blockfallBoard = readSource("apps/showcase-blockfall-reactor/src/gameplay/board-view.ts");
     const blockfallReadme = readSource("apps/showcase-blockfall-reactor/README.md");
 
-    expect(skylineMain).toContain("const playableSurfaceMap =");
+    // Dispatchers resolve the route flag and defer to legacy or v2 — nothing more.
+    expect(skylineMain).toContain("resolveQrFlags");
+    expect(skylineMain).toContain('ROUTE_FLAG = "A3D_QR_ROUTE_SKYLINE_RUNNER"');
+    expect(turboMain).toContain('ROUTE_FLAG = "A3D_QR_ROUTE_TURBO_DRIFT_CIRCUIT"');
+    expect(blockfallMain).toContain('ROUTE_FLAG = "A3D_QR_ROUTE_BLOCKFALL_REACTOR"');
+
     /*
-     * The level is built by `src/level.ts`, which `main.ts` and `level-proof.ts` share.
-     *
-     * The gate's intent is that the route uses the public asset-bound level builder rather
-     * than a route-local engine, so it is checked where the call now lives. The extraction
-     * exists because both files previously built the level themselves, which is why
-     * retuning the jump in `main.ts` left the 60-second proof running the old tuning.
+     * Skyline runner: the level is built by `src/gameplay/level.ts` (shared with
+     * `level-proof.ts`) on the public asset-bound level builder, the scene
+     * binding lives in `src/v2/scene/binding.ts`, and `v2/boot.ts` drives the
+     * public `game.platformer` kit through it.
      */
-    const skylineLevel = readSource("apps/showcase-skyline-runner/src/level.ts");
     expect(skylineLevel).toContain("game.assetBoundPlatformerLevel({");
     expect(skylineLevel).toContain("solvePlatformerMotion(");
-    expect(skylineMain).toContain("createSkylineLevel()");
-    expect(readSource("apps/showcase-skyline-runner/src/level-proof.ts")).toContain("createSkylineLevel");
-    expect(skylineMain).toContain("const platformerScene = game.platformerSceneBinding({");
-    expect(skylineMain).toContain("const platformerState = game.platformer(level)");
+    expect(skylineLevel).toContain('import { gameGeometryContract } from "../generated/game-geometry"');
+    expect(skylineLevel).toContain("skylinePlayableSurfaceMap");
+    expect(skylineBinding).toContain("engineGame.platformerSceneBinding({");
+    expect(skylineBinding).toContain("createSkylineLevel()");
+    expect(skylineBoot).toContain("engineGame.platformer(level)");
+    expect(skylineBoot).toContain("platformerScene");
+    expect(skylineBoot).toContain("platformerScene.toScenePlayer");
+    expect(skylineProof).toContain("createSkylineLevel");
     const skylineGeometry = readFileSync("apps/showcase-skyline-runner/src/generated/game-geometry.ts", "utf8");
-    expect(skylineMain).toContain('import { gameGeometryContract } from "./generated/game-geometry"');
-    expect(skylineMain).not.toContain('"source": "asset-mesh-extracted"');
-    expect(skylineMain).not.toContain("sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4");
     expect(skylineGeometry).toContain('"source": "asset-mesh-extracted"');
     expect(skylineGeometry).toContain('"worldAssetHash": "sha256-ac8f17eb8a42240a32ac642075de59345ead45e950d7f607aeba0afac4e958cd"');
-    expect(skylineMain).toContain("sceneBinding: platformerScene.evidence");
-    expect(skylineMain).toContain("surfaceContact: platformerScene.contactPointForPlayer(state.player)");
-    expect(skylineMain).toContain("surfaceContactAlignment: playerSurfaceAlignment()");
-    expect(skylineMain).toContain("playerTargetHeight: platformerScene.evidence.playerTargetHeight");
-    expect(skylineMain).toContain("platformerScene.toScenePlayer");
-    expect(skylineMain).toContain("game.platformerCameraRig({");
+    // The dispatcher carries no gameplay or route-local motion tokens.
+    expect(skylineMain).not.toContain('"source": "asset-mesh-extracted"');
+    expect(skylineMain).not.toContain("sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4");
     expect(skylineMain).not.toContain("camera.follow(");
     expect(skylineMain).not.toContain("import { camera,");
     expect(skylineMain).not.toContain("stepSkylineRunner(");
@@ -1457,31 +1482,22 @@ describe("game runtime source gates", () => {
      */
     expect(existsSync("apps/showcase-skyline-runner/src/runner-rules.ts")).toBe(false);
 
-    expect(turboMain).toContain("const trackTopology =");
-    expect(turboMain).toContain("const route = game.assetBoundRacingRoute(");
-    expect(turboMain).toContain("const racingScene = game.racingSceneBinding({");
-    expect(turboMain).toContain("const racingState = game.racing(");
-    expect(turboMain).toContain("const vehicleContactWorld = game.planarCollisionWorld({");
-    expect(turboMain).toContain("raceSnapshot = racingState.resolveContact(");
-    expect(turboMain).toContain("opponent = opponentAi.resolveContact(");
-    expect(turboMain).toContain("solverPositionsFeedGameplayState: true");
-    expect(turboMain).not.toContain("collisionless visual");
+    // Turbo drift circuit: certified topology + public racing kits in v2/race-setup.
+    expect(turboSetup).toContain("const trackTopology =");
+    expect(turboSetup).toContain("const route = game.assetBoundRacingRoute(");
+    expect(turboSetup).toContain("const racingScene = game.racingSceneBinding({");
+    expect(turboSetup).toContain("const racingState = game.racing({");
+    expect(turboSetup).toContain('import { gameGeometryContract } from "../generated/game-geometry"');
+    expect(turboGhost).toContain("planarCollisionWorld");
+    expect(turboOpponent).toContain("resolveContact");
+    expect(turboBoot).toContain("racingScene.toScenePose");
+    expect(turboBoot).not.toContain("collisionless visual");
     const turboGeometry = readFileSync("apps/showcase-turbo-drift-circuit/src/generated/game-geometry.ts", "utf8");
-    expect(turboMain).toContain('import { gameGeometryContract } from "./generated/game-geometry"');
-    expect(turboMain).not.toContain('"source": "asset-mesh-extracted"');
+    expect(turboGeometry).toContain('"source": "asset-mesh-extracted"');
     // The certified track hash belongs in the generated contract, never inlined in route
     // source. Turbo now binds turboFormulaCircuit.
-    expect(turboMain).not.toContain("sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a");
-    expect(turboGeometry).toContain('"source": "asset-mesh-extracted"');
     expect(turboGeometry).toContain("sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a");
-    expect(turboMain).toContain("sceneBinding: racingScene.evidence");
-    expect(turboMain).toContain("checkpointScenePoints: racingScene.checkpointScenePoints");
-    expect(turboMain).toContain("roadAlignment: roadAlignmentForSnapshot");
-    expect(turboMain).toContain("carTrackSceneBinding");
-    expect(turboMain).toContain("carAlignedToVisibleRoad");
-    expect(turboMain).toContain("racingScene.toScenePose");
-    expect(turboMain).toContain("game.racingCameraRig({");
-    expect(turboMain).toContain('selectedMode: "chase"');
+    expect(turboSetup).not.toContain("sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a");
     expect(turboMain).not.toContain("trackModelSceneOffset");
     expect(turboMain).not.toContain("camera.follow(");
     expect(turboMain).not.toContain("import { camera,");
@@ -1489,12 +1505,9 @@ describe("game runtime source gates", () => {
     expect(turboMain).not.toContain("racePathMetrics");
     expect(turboMain).not.toContain("playerCar.setPosition(raceSnapshot.position.x");
 
-    expect(blockfallMain).toContain("const fallingBlocks = game.fallingBlocks({");
-    expect(blockfallMain).toContain('deterministicModule: "game.fallingBlocks"');
-    expect(blockfallMain).toContain("createPublicReplayEvidence");
-    expect(blockfallMain).toContain("createPublicLineClearProof");
-    expect(blockfallMain).not.toContain("advanceFrame(");
-    expect(blockfallMain).not.toContain("createInitialState(");
+    // Blockfall reactor: public falling-blocks kit drives the gameplay evidence.
+    expect(blockfallBoot).toContain("createGame");
+    expect(blockfallBoard).toContain('gameplayPieceSource: "game.fallingBlocks"');
     expect(blockfallMain).not.toContain('deterministicModule: "src/rules.ts"');
     expect(blockfallReadme).toContain("the public `game.fallingBlocks` kit");
     expect(blockfallReadme).not.toContain("route-local deterministic rules");

@@ -5,7 +5,7 @@
 // §6.9.16 per-cell massacre stays deleted); ghost/guide/focus/clear beats are
 // timed off real observed events; the static rig tilts onto the well with an
 // idle drift and the authored camera-feel punch on quads/level-ups; audio rides
-// the legacy cue controller on admitted sfx ids until C-25 (stand-in R-14-15).
+// the legacy cue controller on admitted sfx ids until C-25 (stand-in R-14-09).
 import { game as engineGame, scene, type AuraCameraPose, type GameInputController } from "@aura3d/engine";
 import { createGame, type Game, lookManifest } from "@aura3d/game";
 import {

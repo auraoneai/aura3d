@@ -1,9 +1,11 @@
 // tests/qr/prd14/turbo-drift/car-visuals.test.ts — §14.4 body roll & wheels.
 import { describe, expect, it } from "vitest";
+// flatVehicleSurface is intentionally not re-exported from @aura3d/engine's
+// public barrel (CI-0) — import it from its defining module.
 import {
   createVehicleChassis, flatVehicleSurface,
   type VehiclePlanarState
-} from "@aura3d/engine";
+} from "../../../../packages/engine/src/agent-api/VehicleChassis";
 
 // Same spec shape as src/v2/race-setup.ts carChassisSpec (keep values from
 // vehicleChassisSpecFromBounds defaults; only fields that matter here).

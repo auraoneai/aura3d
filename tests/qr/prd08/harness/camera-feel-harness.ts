@@ -41,6 +41,8 @@ interface HarnessState {
   driver?: { renderSubmissionsLastTick: number; step(dt: number): unknown; dispose(): void };
   /** Scripted mode only (?scripted=1): pump one presented frame at dtMs. */
   tick?: (dtMs: number) => void;
+  /** The mounted app (verbatim) — camera-feel.spec.ts drives app.camera/app.feel. */
+  app?: AuraApp;
   csv(): string;
 }
 
@@ -191,6 +193,11 @@ async function boot() {
         })
       });
     });
+
+    // Feel/camera spec surface (camera-feel.spec.ts): the mounted app is
+    // exposed verbatim so the spec drives app.camera / app.feel exactly as a
+    // game would — no test-only hooks.
+    state.app = app;
 
     const hud = document.getElementById("hud");
     setInterval(() => {

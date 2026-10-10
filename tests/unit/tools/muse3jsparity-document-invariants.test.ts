@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkDocumentInvariants, isStructuralDocumentLine, CONTROLLED_CLAIM_DOCUMENTS } from '../../../tools/muse3jsparity-docs-audit/document-invariants';
+import { checkDocumentInvariants, isStructuralDocumentLine, CONTROLLED_CLAIM_DOCUMENTS } from '../../../tools/_quarantine/muse3jsparity-docs-audit/document-invariants';
 const history='## 2.0.4 (old)\nOriginal history\n';
 function fixture(){return Object.fromEntries(CONTROLLED_CLAIM_DOCUMENTS.map(p=>[p,p==='CHANGELOG.md'?'## 3.0.1\n## 3.0.0\n'+history:p==='README.md'?'## Current Release 3.0.1\n### 2.0.4 history':p.includes('llms')?'Source 3.0.1 effects nodes camera rigs gameFeel SDF text decal rigid body':p.includes('release-checklist')?'Version: 3.0.1\naura3d-301-release-notes.md':p.startsWith('marketing/')?'<a href="/releases/tag/v3.0.1">Notes</a> @aura3d/engine@3.0.1 <section id="release-204">2.0.4 history</section>':'bounded evidence']));}
 describe('final document source invariants',()=>{

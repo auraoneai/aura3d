@@ -154,3 +154,7 @@ export function createFlightRig(o: FlightRigOptions): AuraCameraRig {
 function clamp(x: number, max: number): number {
   return Math.max(-max, Math.min(max, x));
 }
+
+import { registerRigFactory } from "./registry.js";
+
+registerRigFactory("flight", (o: unknown) => createFlightRig(o as Parameters<typeof createFlightRig>[0]));

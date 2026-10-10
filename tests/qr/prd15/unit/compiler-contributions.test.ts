@@ -71,7 +71,7 @@ describe("TIER resolved governor tier", () => {
     expect(resolveMountQuality(undefined).tier).toBe("high");
     expect(resolveMountQuality({ quality: { tier: "bogus" } } as never).tier).toBe("high");
     // The full tier settings travel with it (not just the name).
-    const low = resolveMountQuality({ quality: { tier: "low" } } as never);
+    const low = resolveMountQuality({ quality: { tier: "low" } } as never) as { tier: string; maxTextureSize: number };
     expect(low.maxTextureSize).toBe(1024);
   });
 });

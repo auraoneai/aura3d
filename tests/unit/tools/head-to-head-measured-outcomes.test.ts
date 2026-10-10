@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { measuredDeployOutcome } from '../../../tools/head-to-head-current-aggregate/measured-outcomes';
+import { measuredDeployOutcome } from '../../../tools/_quarantine/head-to-head-current-aggregate/measured-outcomes';
 it('derives current byte savings instead of retaining historical constants', () => {
   const result = measuredDeployOutcome({ aura: { javascriptBytes: 80, totalDeployBytes: 180 }, three: { javascriptBytes: 100, totalDeployBytes: 200 } });
   expect(result.verdict).toBe('win');
