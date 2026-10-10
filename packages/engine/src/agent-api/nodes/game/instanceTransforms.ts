@@ -127,20 +127,41 @@ export function stubSetInstanceTransforms(
   if (colors !== undefined && colors.length < 3 * count) {
     throw new RangeError(`setInstanceTransforms expects colors.length >= ${3 * count}, got ${colors.length}.`);
   }
-  const next = node.instances.slice(0, count);
+  const next = node.instances.slice();
   for (let i = 0; i < count; i++) {
     next[i] = decomposeInstanceMatrix(matrices, i * 16);
   }
+  // Capacity must survive a small `count`: slots beyond the visible count are
+  // zero-scaled (invisible) instead of dropped, so a later larger count stays
+  // within capacity. Decompose once — per-frame re-upload of zero transforms
+  // is cheaper than re-decomposing a dense matrix every frame.
+  const hidden: AuraTransformSpec = { position: { x: 0, y: 0, z: 0 }, scale: { x: 0, y: 0, z: 0 } };
+  for (let i = count; i < next.length; i++) {
+    next[i] = hidden;
+  }
   node.instances = next;
   if (colors !== undefined) {
-    node.instanceColors = Array.from({ length: count }, (_, i) => rgbToHex(colors[i * 3], colors[i * 3 + 1], colors[i * 3 + 2]));
+    const prev = node.instanceColors ?? [];
+    node.instanceColors = Array.from({ length: next.length }, (_, i) =>
+      i < count ? rgbToHex(colors[i * 3], colors[i * 3 + 1], colors[i * 3 + 2]) : prev[i] ?? "#000000"
+    );
   }
   return handle;
 }
 
-function qrFlagsOf(app: AuraApp): readonly string[] {
-  const d = (app as { diagnostics?: () => { qrFlags?: readonly string[] } }).diagnostics?.();
-  return d?.qrFlags ?? [];
+const qrFlagsCache = new WeakMap<object, readonly string[]>();
+
+function qrFlagsOf(app: AuraApp | undefined): readonly string[] {
+  // `app` is undefined before `configure` runs — cache per app so a per-read
+  // `diagnostics()` call does not run on every handle extension attach.
+  if (!app) return [];
+  let flags = qrFlagsCache.get(app);
+  if (flags === undefined) {
+    const d = (app as { diagnostics?: () => { qrFlags?: readonly string[] } }).diagnostics?.();
+    flags = d?.qrFlags ?? [];
+    qrFlagsCache.set(app, flags);
+  }
+  return flags;
 }
 
 export const instanceTransformsExtension: NodeHandleExtension<"setInstanceTransforms"> = {

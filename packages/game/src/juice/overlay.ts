@@ -50,6 +50,7 @@ export function createOverlayDriver(deps: OverlayDriverDeps): JuiceOverlayDriver
   const flash: ChannelState = { target: 0, holdUntil: 0, decayMs: 0, start: 0, peak: 0, color: [1, 1, 1] };
   const vignette: ChannelState = { target: 0, holdUntil: 0, decayMs: 0, start: 0, peak: 0, color: [0, 0, 0] };
   const fade: ChannelState = { target: 0, holdUntil: Infinity, decayMs: 0, start: 0, peak: 0, color: [0, 0, 0] };
+  let fadeAutoRelease = 0;
   const fadeResolvers: (() => void)[] = [];
 
   function parseColor(color: string | undefined): [number, number, number] {
@@ -78,6 +79,10 @@ export function createOverlayDriver(deps: OverlayDriverDeps): JuiceOverlayDriver
     const t = now();
     const flashA = amountAt(flash, t);
     const vigA = amountAt(vignette, t);
+    if (fadeAutoRelease > 0 && now() >= fadeAutoRelease && fade.target > 0) {
+      fade.target = 0;
+      fadeAutoRelease = 0;
+    }
     const fadeV = fade.target; // fades persist (hold), not decayed here
     const idle = flashA === 0 && vigA === 0 && fadeV === 0;
 
@@ -100,8 +105,9 @@ export function createOverlayDriver(deps: OverlayDriverDeps): JuiceOverlayDriver
       );
       backend = r.reason === "dom-fallback" ? "dom" : r.applied || r.reason === undefined ? "shader" : "none";
     }
-    // Decayed channels stop the pump; a held fade is static after its write.
-    const decayed = flashA === 0 && vigA === 0;
+    // Decayed channels stop the pump. A fade awaiting its auto-release keeps
+    // the pump alive until the deadline write releases it to 0.
+    const decayed = flashA === 0 && vigA === 0 && !(fadeAutoRelease > 0 && fade.target > 0);
     if (decayed) {
       active = false;
       cancelFrame?.();
@@ -151,8 +157,12 @@ export function createOverlayDriver(deps: OverlayDriverDeps): JuiceOverlayDriver
           fade.target = 0;
           write();
         } else {
-          // Resolve after the requested duration even though the fade holds.
+          // Auto-release: a held fade left `target > 0` forever, keeping the
+          // C-05 output-overlay fade channel non-empty (black canvas while
+          // drawCalls stayed > 0). After the ramp deadline, release to 0.
           const deadline = now() + ms / 1000;
+          fadeAutoRelease = deadline;
+          pump();
           const step = () => {
             if (now() >= deadline) {
               const i = fadeResolvers.indexOf(r);
