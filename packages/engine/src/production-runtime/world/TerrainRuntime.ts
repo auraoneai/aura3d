@@ -35,6 +35,7 @@ import {
   type TerrainRecord
 } from "../../agent-api/world/terrain.js";
 import type { AuraWorldQualityTier } from "../../agent-api/world/types.js";
+import { tierForSettings } from "./WorldFramePasses.js";
 
 const PATCH_FORMAT = new VertexFormat([
   { semantic: "uv", components: 2, offset: 0, shaderName: "a_grid" }
@@ -72,6 +73,11 @@ interface TerrainGpuState {
 
 interface DeviceTerrainState {
   program: RenderShaderProgram | null;
+  /**
+   * T0-33 FIX-compile-cache: set after the first failed compile on this device.
+   * A failing terrain shader is compiled once per device, never once per frame.
+   */
+  programFailure: string | null;
   patchCache: Map<number, { vb: RenderBuffer; ib: RenderBuffer; vertexCount: number; indexCount: number; indexType: "uint16" | "uint32" }>;
   terrains: Map<string, TerrainGpuState>;
 }
@@ -81,7 +87,7 @@ const deviceStates = new WeakMap<RenderDevice, DeviceTerrainState>();
 function deviceState(device: RenderDevice): DeviceTerrainState {
   let s = deviceStates.get(device);
   if (!s) {
-    s = { program: null, patchCache: new Map(), terrains: new Map() };
+    s = { program: null, programFailure: null, patchCache: new Map(), terrains: new Map() };
     deviceStates.set(device, s);
   }
   return s;
@@ -302,23 +308,38 @@ function buildTerrainState(device: RenderDevice, ds: DeviceTerrainState, record:
   return state;
 }
 
-let sharedProgram: RenderShaderProgram | null = null;
-let sharedProgramDevice: RenderDevice | null = null;
+/** True when at least one registered terrain has a resolved height grid (something to draw). */
+function hasDrawableTerrain(): boolean {
+  return terrainRecordIds().some((id) => terrainRecordFor(id)?.grid != null);
+}
 
-function terrainProgram(device: RenderDevice): RenderShaderProgram | null {
-  if (sharedProgram && sharedProgramDevice === device && !sharedProgram.disposed) return sharedProgram;
+/**
+ * T0-33 FIX-compile-cache: the terrain program, cached per device. Compiles
+ * lazily (only once a terrain can draw) and at most once per device after a
+ * failure; the failure is kept in `ds.programFailure` instead of retrying the
+ * compile every frame. A disposed program (device reset) is rebuilt.
+ */
+function terrainProgram(device: RenderDevice, ds: DeviceTerrainState): RenderShaderProgram | null {
+  if (ds.program && !ds.program.disposed) return ds.program;
+  ds.program = null;
+  if (ds.programFailure !== null || !hasDrawableTerrain()) return null;
   try {
-    sharedProgram = device.createShaderProgram({
+    ds.program = device.createShaderProgram({
       label: "prd10.terrain",
       vertex: TERRAIN_VERT_GLSL,
       fragment: TERRAIN_FRAG_GLSL,
       marker: "prd10.terrain"
     });
-    sharedProgramDevice = device;
-    return sharedProgram;
-  } catch {
-    return null; // compile failure → nothing drawn; degraded surfaces in diagnostics
+  } catch (error) {
+    ds.programFailure = error instanceof Error ? error.message : String(error);
   }
+  return ds.program; // null on failure -> nothing drawn; degraded surfaces in diagnostics
+}
+
+/** Terrain program state for a device (diagnostics and tests). */
+export function terrainProgramStatus(device: RenderDevice): { readonly compiled: boolean; readonly failure: string | null } {
+  const ds = deviceStates.get(device);
+  return { compiled: !!ds?.program && !ds.program.disposed, failure: ds?.programFailure ?? null };
 }
 
 /** C-27 lodBias arrives with PRD 05's tier settings; read it when present. */
@@ -421,8 +442,7 @@ export function drawTerrains(
  */
 export function drawTerrainsForReflection(ctx: FrameContributorContext, device: RenderDevice, mirrorViewProjection: Float32Array, mirrorEye: readonly [number, number, number]): void {
   const ds = deviceState(device);
-  if (!ds.program) ds.program = terrainProgram(device);
-  if (!ds.program) return;
+  if (!terrainProgram(device, ds)) return;
   drawTerrains(ctx, device, ds, { position: mirrorEye }, mirrorViewProjection);
 }
 
@@ -442,8 +462,7 @@ export function terrainBackgroundPass(ctx: FrameContributorContext): RenderPass 
     execute(rp: RenderPassContext) {
       const device = rp.device;
       const ds = deviceState(device);
-      if (!ds.program) ds.program = terrainProgram(device);
-      if (!ds.program) return;
+      if (!terrainProgram(device, ds)) return;
       const camera = ctx.camera;
       if (!camera) return;
       drawTerrains(ctx, device, ds, camera, camera.viewProjectionMatrix);
