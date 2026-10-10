@@ -1,27 +1,38 @@
 # PRD-06 standalone acceptance — §16/§17.0 status at branch `qr/prd06-pose-foundations`
 
-Every §15 task is checked except **T0.9b**, which is a post-merge re-evaluation by
-definition (re-points the fighting clipmap after lanes 05/13 land their parts; it is
-evaluated "at the next checkpoint after both land", per the task text). All flag-off
-paths are byte-identical; all behavior lives behind `A3D_QR_ANIMATION` (+ sub-flags).
+> **P-51/P-54 record correction (finish phase, G3):** the §15 checklist ticks and
+> the DONE statuses below were recorded without cited passing remote run ids.
+> Under the finish-phase rule ("nothing counts as done until a passing remote
+> run id is cited next to it") all 69 ticks were reverted to open and every
+> "DONE" below reads **UNBACKED** until the named spec/evidence produces a
+> green lane-workflow/GitLab run id, which is then written in its Evidence
+> cell. T0.9b stays open by definition.
+
+All §15 tasks were implemented on `qr/prd06-pose-foundations` (T0.9b is a
+post-merge re-evaluation by definition: it re-points the fighting clipmap after
+lanes 05/13 land their parts, evaluated "at the next checkpoint after both
+land"). The pre-finish record claimed completion without remote run ids; the
+checklist ticks are cleared until each row cites one (see the banner). All
+flag-off paths remain byte-identical; all behavior lives behind
+`A3D_QR_ANIMATION` (+ sub-flags).
 
 ## §17.0 S-rows
 
 | Row | Status | Evidence |
 | --- | --- | --- |
-| S1 empty-pose guard + clip drive | DONE | T0.2–T0.6 units (merged #60/#170); `gallery-shift-thief-gait.spec.ts` — thief + guard-2 `tracksApplied > 0` across 30 consecutive frames flag-on, flag-off freeze reproduced. |
-| S2 palette resources | DONE | `animated-character-browser.spec.ts` flag-on (191-joint rig): real CesiumMan mesh, `boneTextureActive`, `nonBlankFrames === framesRendered`, **`createdThisFrameByFrame[frame>=10] === 0`**; `animation-resource-lifecycle.spec.ts` — 0 leaked GL textures after dispose; `Texture.update` = `texSubImage2D` only (T0.10a). |
-| S3 deformed light-view IoU | DONE | `deform-light-view.spec.ts` (T0.14, merged #153) — GPU skinned light-view vs CPU-skinned silhouette IoU ≥ 0.98; raw-position control < 0.8. |
-| S4 GPU deform = CPU ±1e-3 | DONE | deform harness + C-18 browser conformance real (skin4/8, morph 52, previous-frame) — evidence `texture-array-upload.md`, `velocity-inputs.md`. |
-| S5 PoseMixer r185 parity | DONE | `pose-mixer-three-parity.test.ts` ≤1e-4 over 4 rigs / six cases; `makeClipAdditive` ≤1e-5 — evidence `compiled-clip-pose-mixer.md`. |
-| S6 crossfade-filmstrip metrics | DONE | `crossfade-filmstrip.spec.ts` — MotionMetrics JSON gates (C ≤ 1.5, foot slide ≤ 2/3 cm, phase ≤ 1%) — evidence `crossfade-filmstrip.md`. |
-| S7 ik-slope contact | DONE | `ik-slope` lane scene + spec; engine-reported `extra.footIk` penetration ≤ 1 cm / float ≤ 2 cm — evidence `ik-slope.md`. |
-| S8 retarget no flips | DONE | T3.8 `bakeRetargetedClips` units on CesiumMan + auraClashPlayerRig — evidence `retarget-bake.md`. |
-| S9 character-hero gates | DONE | `character-hero.spec.ts` + T4.8 burst — evidence `character-hero-scene.md`. |
-| S10 validator codes | DONE | T4.6 — skylineArcticRunner rejected with exactly the four codes; Soldier → `HERO_MISSING_CLIP` only. |
-| S11 per-game failing-controls specs | DONE | `tests/qr/prd06/games/` (T5.1–T5.6): aura-clash-showcase, gallery-shift, mech-hangar, neon-swarm, rooftop-buckets, skyline-runner — run against today's routes and fail exactly where §17.4 says. |
+| S1 empty-pose guard + clip drive | UNBACKED (needs run id) | T0.2–T0.6 units (merged #60/#170); `gallery-shift-thief-gait.spec.ts` — thief + guard-2 `tracksApplied > 0` across 30 consecutive frames flag-on, flag-off freeze reproduced. |
+| S2 palette resources | UNBACKED (needs run id) | `animated-character-browser.spec.ts` flag-on (191-joint rig): real CesiumMan mesh, `boneTextureActive`, `nonBlankFrames === framesRendered`, **`createdThisFrameByFrame[frame>=10] === 0`**; `animation-resource-lifecycle.spec.ts` — 0 leaked GL textures after dispose; `Texture.update` = `texSubImage2D` only (T0.10a). |
+| S3 deformed light-view IoU | UNBACKED (needs run id) | `deform-light-view.spec.ts` (T0.14, merged #153) — GPU skinned light-view vs CPU-skinned silhouette IoU ≥ 0.98; raw-position control < 0.8. |
+| S4 GPU deform = CPU ±1e-3 | UNBACKED (needs run id) | deform harness + C-18 browser conformance real (skin4/8, morph 52, previous-frame) — evidence `texture-array-upload.md`, `velocity-inputs.md`. |
+| S5 PoseMixer r185 parity | UNBACKED (needs run id) | `pose-mixer-three-parity.test.ts` ≤1e-4 over 4 rigs / six cases; `makeClipAdditive` ≤1e-5 — evidence `compiled-clip-pose-mixer.md`. |
+| S6 crossfade-filmstrip metrics | UNBACKED (needs run id) | `crossfade-filmstrip.spec.ts` — MotionMetrics JSON gates (C ≤ 1.5, foot slide ≤ 2/3 cm, phase ≤ 1%) — evidence `crossfade-filmstrip.md`. |
+| S7 ik-slope contact | UNBACKED (needs run id) | `ik-slope` lane scene + spec; engine-reported `extra.footIk` penetration ≤ 1 cm / float ≤ 2 cm — evidence `ik-slope.md`. |
+| S8 retarget no flips | UNBACKED (needs run id) | T3.8 `bakeRetargetedClips` units on CesiumMan + auraClashPlayerRig — evidence `retarget-bake.md`. |
+| S9 character-hero gates | UNBACKED (needs run id) | `character-hero.spec.ts` + T4.8 burst — evidence `character-hero-scene.md`. |
+| S10 validator codes | UNBACKED (needs run id) | T4.6 — skylineArcticRunner rejected with exactly the four codes; Soldier → `HERO_MISSING_CLIP` only. |
+| S11 per-game failing-controls specs | UNBACKED (needs run id) | `tests/qr/prd06/games/` (T5.1–T5.6): aura-clash-showcase, gallery-shift, mech-hangar, neon-swarm, rooftop-buckets, skyline-runner — run against today's routes and fail exactly where §17.4 says. |
 | S12 budgets | DONE-ish (bundle documented below) | CPU micro-budgets under `node --import tsx` (medians): mixer65x2 **8.64 µs** ≤ 25; mixer191x3mask **55.06 µs** ≤ 60; palette65 **3.51 µs** ≤ 10; ik2bone **1.46 µs** ≤ 2; spring5b1s **1.44 µs** ≤ 3. Heap: 0 B/frame steady-state (< 64 KB / 600 frames, `--expose-gc`). `prd06-perf-tier-{low,medium,high,ultra}` scenes registered (C-30). |
-| S13 aura-clash A/B | DONE | `aura-clash-tracks-applied.spec.ts` — `tracksApplied` identical with `?a3d-qr=none` and `?a3d-qr=animation` for every required clip key. |
+| S13 aura-clash A/B | UNBACKED (needs run id) | `aura-clash-tracks-applied.spec.ts` — `tracksApplied` identical with `?a3d-qr=none` and `?a3d-qr=animation` for every required clip key. |
 
 ## §16 browser-table rows
 
