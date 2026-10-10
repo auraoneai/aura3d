@@ -15,6 +15,8 @@ interface FixtureReport {
   anchors: Record<string, string[]>;
   widgetRects: Record<string, RectReport>;
   screenFraction: number;
+  canvasCoverage: number;
+  domText: string;
   touch: {
     preset: string;
     elements: string[];
@@ -93,12 +95,17 @@ function runFixture(suite: (typeof suites)[number]): FixtureReport {
   const visibleAfterTouch = touch.visible;
   const keyhintHiddenAfterTouch = keyhint ? getComputedStyle(keyhint).display === "none" : keyhintBefore === false;
 
+  const hostRect = host.getBoundingClientRect();
+  const canvasCoverage = Math.min(1, (hostRect.width * hostRect.height) / (window.innerWidth * window.innerHeight));
+
   return {
     name: suite.name,
     widgetCount: snap.widgetCount,
     anchors,
     widgetRects,
     screenFraction: snap.screenFraction,
+    canvasCoverage,
+    domText: document.body.innerText,
     touch: {
       preset: suite.touch.preset,
       elements: touchEls.map((el) => el.getAttribute("data-control") ?? "?"),

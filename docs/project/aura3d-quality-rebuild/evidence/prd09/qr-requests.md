@@ -11,3 +11,5 @@ Each row: issue, target lane, request, status. Numbers written back as filed.
 
 - #721 (to:prd15, filed 2026-10-09): browser-matrix `pnpm typecheck` step red on clean main — 477 errors in `tools/*` (mostly `tools/_quarantine/*`). Blocks every lane's ubuntu CI heads; needs tools/CI owner.
 - #727 (to:prd15, filed 2026-10-09): tests/unit/contracts/harness.ts conformance() passes slot.provided (boolean) as the 'real' impl — ContractSlot.provided is a marker, not the impl; lane-09 workaround resolves via slot.get(flagsOn) in PR #726.
+
+- **#609** (to:prd15): `tests/browser/layout.spec.ts` + `hud-layout-harness.ts` hud-cap restore — 0.15 desktop / 0.22 mobile caps, added 1920x1080 + 390x844 viewports, `canvasCoverage` + `domText` report fields for the coverage/banned-token/test-hook assertions. Co-PR in the lane-09 layout branch.
