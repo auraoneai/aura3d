@@ -82,7 +82,9 @@ async function main(): Promise<void> {
 			chunk.wgsl ?? "",
 			// Fragment probe: puts fragment-only builtins in stage context and
 			// gives Tint an entry point to validate against.
-			"@fragment fn __a3d_prd04_wgsl_probe() -> @location(0) vec4f { return vec4f(0.0); }"
+			// 04-P6-1: WGSL identifiers may not start with "__" (reserved) — the
+			// probe entry point is renamed to a legal identifier.
+			"@fragment fn a3d_prd04_wgsl_probe() -> @location(0) vec4f { return vec4f(0.0); }"
 		].join("\n\n");
 		try {
 			const module = device.createShaderModule({ code: source });

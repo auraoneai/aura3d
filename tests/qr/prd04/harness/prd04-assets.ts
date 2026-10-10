@@ -36,6 +36,8 @@ declare global {
   interface Window {
     __QR_READY__?: unknown;
     __QR_ERROR__?: string;
+    __QR_STAGE__?: string;
+    __QR_BOOT_TIMER__?: number;
   }
 }
 
@@ -49,6 +51,8 @@ async function fetchBytes(url: string): Promise<ArrayBuffer> {
   if (!response.ok) throw new Error(`fetch ${url} failed: HTTP ${response.status}`);
   return response.arrayBuffer();
 }
+
+window.__QR_STAGE__ = "module-evaluated";
 
 async function main(): Promise<void> {
   const assetUrl = params.get("asset");
@@ -214,7 +218,12 @@ async function main(): Promise<void> {
   window.__QR_READY__ = report;
 }
 
-main().catch((error) => {
+main()
+  .catch((error) => {
   window.__QR_ERROR__ = error instanceof Error ? `${error.name}: ${error.message}
 ${error.stack ?? ""}` : String(error);
-});
+  })
+  .finally(() => {
+    window.__QR_STAGE__ = "settled";
+    clearTimeout(window.__QR_BOOT_TIMER__);
+  });

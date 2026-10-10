@@ -31,6 +31,8 @@ declare global {
   interface Window {
     __QR_READY__?: unknown;
     __QR_ERROR__?: string;
+    __QR_STAGE__?: string;
+    __QR_BOOT_TIMER__?: number;
   }
 }
 
@@ -43,6 +45,8 @@ const PRESETS: Record<string, () => AuraMaterialSpec> = {
   blackRubber: () => material.blackRubber(),
   frostedGlass: () => material.frostedGlass()
 };
+
+window.__QR_STAGE__ = "module-evaluated";
 
 async function main(): Promise<void> {
   const flags = (params.get("flags") ?? "").split(",").filter((flag) => flag.length > 0);
@@ -84,7 +88,7 @@ async function main(): Promise<void> {
   stage.style.height = `${height}px`;
   const app = createAuraApp(stage as HTMLElement, {
     scene: built,
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+    renderer: { qualityProfile: "production" }, // T0-10/T0-13: deprecated CCR-15-1 mode/fallback dropped — no silent safe-basic mask
     pixelRatio: 1,
     resize: false,
     autoStart: false
@@ -106,7 +110,12 @@ async function main(): Promise<void> {
   };
 }
 
-main().catch((error) => {
+main()
+  .catch((error) => {
   window.__QR_ERROR__ = error instanceof Error ? `${error.name}: ${error.message}
 ${error.stack ?? ""}` : String(error);
-});
+  })
+  .finally(() => {
+    window.__QR_STAGE__ = "settled";
+    clearTimeout(window.__QR_BOOT_TIMER__);
+  });

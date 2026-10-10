@@ -14,11 +14,13 @@ on:
       - "packages/rendering/src/materials/**"
       - "packages/rendering/src/lanes/prd04.ts"
       - "packages/rendering/src/textures/**"
-      - "packages/assets/src/{GLTFRenderResources,GLTFExtensionSupport,MikkTSpaceTangents}.ts"
+      - "packages/rendering/src/forward/**"
+      - "packages/assets/src/**"
       - "packages/engine/src/production-runtime/{TypedGLBActor,ModelMaterialOverrides}.ts"
       - "packages/engine/src/production-runtime/material-physical/**"
       - "packages/engine/src/agent-api/compiler/{modelMaterials,textures}.ts"
       - "packages/engine/src/agent-api/nodes/material.ts"
+      - "packages/engine/src/lanes/prd04.ts"
       - "packages/aura3d-cli/src/commands/prd04/**"
       - "tools/codemods/pin-emissive-defaults.mjs"
       - "tools/codemods/prd04-model-tint-report.mjs"
@@ -28,12 +30,23 @@ on:
       - "fixtures/asset-corpus/**"
       - ".github/workflows/qr-prd04-materials.yml"
   push:
-    branches: ['qr/**']
+    branches: ['qr/**', 'main']
     paths:
       - "tests/qr/prd04/**"
       - "benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd04/**"
       - "packages/rendering/src/shaders/physical/**"
+      - "packages/rendering/src/shaders/physical-wgsl/**"
+      - "packages/rendering/src/materials/**"
+      - "packages/rendering/src/lanes/prd04.ts"
+      - "packages/rendering/src/textures/**"
+      - "packages/rendering/src/forward/**"
+      - "packages/assets/src/**"
+      - "packages/engine/src/lanes/prd04.ts"
       - ".github/workflows/qr-prd04-materials.yml"
+  schedule:
+    # Daily green-signal on main (04-PROMO): promotion is judged off a fresh
+    # main run, so main itself must be exercised on a cadence.
+    - cron: "17 6 * * *"
   workflow_dispatch:
     inputs:
       flags:
@@ -63,7 +76,10 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm typecheck:raw
+      # CI-0/T0-31: lane-scoped typecheck (tests/qr/prd04 + import graph).
+      # The repo-wide `pnpm typecheck:raw` gate stays in its own workflow —
+      # other lanes' breakers are filed as qr-requests #777/#778/#779.
+      - run: pnpm exec tsc --noEmit -p tests/qr/prd04/tsconfig.lane.json
       - name: Lane unit tests (chunk registration, r185 oracle, scenes, codemods)
         run: pnpm exec vitest run -c tests/qr/prd04/vitest.config.ts
       - name: Contract conformance
@@ -106,6 +122,38 @@ jobs:
             tests/reports/prd04-decoders-variants.json
             tests/reports/prd04-wgsl-twins.json
             tests/reports/prd04/probes/**/*.json
+          if-no-files-found: warn
+
+  browser-all:
+    name: Browser conformance (flags=all)
+    runs-on: macos-14
+    env:
+      # P-22: the integrated probes (integrated-acceptance §16.2/§16.3,
+      # scene-perf S16 all-vs-all,-materials) only run when PRD04_FLAGS
+      # contains 'all' — this job is the all-flags arm they were deferred to.
+      PRD04_FLAGS: "all"
+      PRD04_CHROMIUM_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist --enable-unsafe-webgpu"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: All-flags browser specs (integrated acceptance, S16, WGSL twins)
+        run: pnpm exec playwright test --config tests/qr/prd04/playwright.config.ts --grep "PRD-04 §16.2|PRD-04 S16|PRD-04 WGSL twins|PRD-04 transmission"
+      - name: Upload all-flags reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd04-allflags-reports
+          path: tests/reports/prd04/
           if-no-files-found: warn
 
   capture:

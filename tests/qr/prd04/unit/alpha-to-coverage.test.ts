@@ -9,7 +9,7 @@ import { Material } from "../../../../packages/rendering/src/Material";
 import { MaterialInstance } from "../../../../packages/rendering/src/MaterialInstance";
 import { alphaToCoverageFeature } from "../../../../packages/rendering/src/materials/features";
 import type { RenderItem } from "../../../../packages/rendering/src";
-import type { AuraQualityTierSettings } from "../../../../packages/rendering/src/contracts/program";
+import type { AuraQualityTierSettings } from "../../../../packages/rendering/src/contracts/quality";
 
 const itemFor = (material: Material | MaterialInstance) => ({ material }) as unknown as RenderItem;
 const TIER_MSAA = { msaaSamples: 4 } as AuraQualityTierSettings;

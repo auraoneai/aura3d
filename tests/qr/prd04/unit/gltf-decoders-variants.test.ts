@@ -8,6 +8,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { MeshoptDecoder } from "meshoptimizer";
+// @ts-expect-error draco3d ships no types
 import draco3d from "draco3d";
 import {
   GLTFLoader,
@@ -31,7 +32,7 @@ describe("requiredGLTFDecoders + scanGLTFExtensionsUsed (P5-2)", () => {
     expect(requiredGLTFDecoders([])).toEqual([]);
     expect(requiredGLTFDecoders(["KHR_draco_mesh_compression"])).toEqual(["draco"]);
     expect(requiredGLTFDecoders(["KHR_texture_basisu", "KHR_materials_clearcoat"])).toEqual(["ktx2"]);
-    expect(requiredGLTFDecoders(["EXT_meshopt_compression", "KHR_draco_mesh_compression"]).sort()).toEqual(["draco", "meshopt"]);
+    expect([...requiredGLTFDecoders(["EXT_meshopt_compression", "KHR_draco_mesh_compression"])].sort()).toEqual(["draco", "meshopt"]);
   });
 
   it("reads extensionsUsed from a GLB via fetch without running the full loader", async () => {

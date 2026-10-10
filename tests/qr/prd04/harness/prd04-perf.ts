@@ -44,6 +44,8 @@ declare global {
     __AURA3D_LIVE_APPS__?: LiveAppsRegistry;
     __QR_READY__?: unknown;
     __QR_ERROR__?: string;
+    __QR_STAGE__?: string;
+    __QR_BOOT_TIMER__?: number;
   }
 }
 
@@ -61,6 +63,8 @@ function percentile(sorted: readonly number[], p: number): number {
   const index = Math.min(sorted.length - 1, Math.max(0, Math.ceil((p / 100) * sorted.length) - 1));
   return sorted[index];
 }
+
+window.__QR_STAGE__ = "module-evaluated";
 
 async function main(): Promise<void> {
   const sceneId = params.get("scene");
@@ -93,7 +97,7 @@ async function main(): Promise<void> {
     built.add(model(unsafeModelUrl(assetUrl), { name: "probe", scaleMode: "world" }).position(0, 0, 0));
     const app = createAuraApp(stage as HTMLElement, {
       scene: built,
-      renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+      renderer: { qualityProfile: "production" }, // T0-10/T0-13: deprecated CCR-15-1 mode/fallback dropped — no silent safe-basic mask
       pixelRatio: 1,
       resize: false,
       autoStart: false
@@ -154,7 +158,12 @@ async function main(): Promise<void> {
   };
 }
 
-main().catch((error) => {
+main()
+  .catch((error) => {
   window.__QR_ERROR__ = error instanceof Error ? `${error.name}: ${error.message}
 ${error.stack ?? ""}` : String(error);
-});
+  })
+  .finally(() => {
+    window.__QR_STAGE__ = "settled";
+    clearTimeout(window.__QR_BOOT_TIMER__);
+  });

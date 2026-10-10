@@ -42,6 +42,8 @@ test.describe(`prd04 lane captures (flags=${FLAGS})`, () => {
       test(`${sceneId} on ${engine}`, async ({ page }) => {
         const url = `${server.origin}/tests/qr/prd04/harness/prd04-capture.html?engine=${engine}&scene=${sceneId}&flags=${FLAGS}`;
         await page.goto(url, { waitUntil: "domcontentloaded" });
+        // P-20: no mask — a wedge must fail the test and the page's
+        // __QR_STAGE__ names where it died.
         const ready = await page.waitForFunction(
           () =>
             (window as any).__QR_READY__ !== undefined || (window as any).__QR_ERROR__ !== undefined,
@@ -49,12 +51,11 @@ test.describe(`prd04 lane captures (flags=${FLAGS})`, () => {
           { timeout: 120_000 }
         ).then(() => true, () => false);
         if (!ready) {
+          const stage = await page
+            .evaluate(() => (window as any).__QR_STAGE__ ?? "pre-adapter")
+            .catch(() => "unreadable");
           results.push({ scene: sceneId, engine, status: "timeout" });
-          test.fail(true, "harness did not publish ready/error within 120s");
-          // Failing the assertion below makes the test "fail as expected" (the
-          // timeout is tolerated evidence in report.json). `return`ing clean
-          // here reports "expected to fail, but passed" — a real job failure.
-          expect(ready, `${sceneId}/${engine} published ready/error`).toBe(true);
+          throw new Error(`${sceneId}/${engine} timed out at stage "${stage}" (no ready/error in 120s)`);
         }
         const error = await page.evaluate(() => (window as any).__QR_ERROR__ ?? null);
         const payload = await page.evaluate(() => (window as any).__QR_READY__ ?? null);

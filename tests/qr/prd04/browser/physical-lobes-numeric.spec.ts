@@ -45,8 +45,21 @@ test.describe("PRD-04 physical lobes numeric parity (P3-4)", () => {
 				c.failures,
 				`${c.fn}: ${c.failures.length} samples out of bounds ` +
 					`(maxAbs=${c.maxAbs.toExponential(2)} maxRel=${c.maxRel.toExponential(2)}) ` +
-					`first: ${c.failures.slice(0, 3).map((f) => `@${f.idx} abs=${f.abs.toExponential(2)}`).join(", ")}`
+					`first: ${c.failures.slice(0, 3).map((f) => `@${f.idx} abs=${f.abs.toExponential(2)} args=${JSON.stringify(f.args ?? {})}`).join(", ")}`
 			).toEqual([]);
 		}
+		// 04-S5 §15.4: the perturbed control (sheenColor x0.012) must FAIL —
+		// a harness that cannot detect a real deviation is vacuous.
+		const control = result?.control;
+		mkdirSync(resolve("tests/reports/prd04/probes"), { recursive: true });
+		writeFileSync(
+			resolve("tests/reports/prd04/probes/s5-lobes-control.json"),
+			`${JSON.stringify({ probe: "s5-lobes-control", ...control }, null, 2)}\n`
+		);
+		expect(control, "perturbed control ran").toBeDefined();
+		expect(
+			control!.failures.length,
+			`control must fail vs golden (perturbation=${control!.perturbation}, maxAbs=${control!.maxAbs.toExponential(2)})`
+		).toBeGreaterThan(0);
 	});
 });

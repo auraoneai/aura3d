@@ -25,7 +25,7 @@
  *  - `a3dDirectSpecular` — irradiance * BRDF_GGX_Multiscatter
  *    (:556); `a3dDirectLight` — specular + Lambert diffuse (:556-558).
  */
-import type { ShaderChunk } from "@aura3d/rendering/contracts/program";
+import type { ShaderChunk } from "../../../../packages/rendering/src/contracts/program";
 
 const glsl = /* glsl */ `
 // --- r185 common.glsl.js helpers -------------------------------------------

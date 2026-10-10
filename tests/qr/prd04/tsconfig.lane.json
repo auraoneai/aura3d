@@ -1,0 +1,20 @@
+// CI-0 / T0-31: lane-scoped typecheck. The repo gate (`pnpm typecheck:raw`,
+// tsconfig.check.json) stays authoritative repo-wide and still excludes
+// tests/qr/prd04 while other lanes' breakers are being fixed (qr-requests
+// #777 prd05, #778 prd12, #779 prd15); this lane config gives lane 04 a green
+// signal on the files it owns. `browser/` and `harness/` are excluded: their
+// `/packages/...`, `/tests/...`, `/benchmarks/...` import specifiers resolve
+// through tests/qr/prd04/dev-server.ts at runtime, not through tsc paths.
+{
+  "extends": "../../../tsconfig.check.json",
+  "include": [
+    "./*.ts",
+    "./unit/**/*.ts",
+    "./oracles/**/*.ts",
+    "./shims/**/*.ts",
+    "./scenes/**/*.ts"
+  ],
+  "exclude": [
+    "./fixtures/**"
+  ]
+}

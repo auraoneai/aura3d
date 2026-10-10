@@ -8,9 +8,8 @@
  *   - `textureBytes` <= 256 MiB under `textureBudget=268435456`
  *   - every downscaled texture's `to` dimension <= 2048 (maxTextureSize)
  *   - `contextLost` false after a production render
- *   - discrimination probe: at `budget = floor(0.8 x uncapped bytes)` the ledger
- *     reports `downscaled > 0` and stays under budget (the §15.4 control: the
- *     uncapped load must report a larger ledger — recorded in probes/)
+ *   - discrimination probe (PRD control, P-35): with the budget disabled the
+ *     uncapped ledger exceeds 256 MiB — recorded in probes/s9-budget-control.json
  */
 import { expect, test } from "@playwright/test";
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -62,21 +61,17 @@ test.describe("PRD-04 S9 texture budget", () => {
     }
     expect(contextLost, "no context loss after render").toBe(false);
 
-    // §15.4 discrimination: force the ledger below the uncapped size.
-    const forced = await loadProbe(page, `${server.origin}${url("materials", Math.floor(0.8 * uncappedBytes), 2048)}`);
-    const forcedBytes = (forced.extra ?? {}).textureBytes as number;
-    const forcedDownscaled = ((forced.extra ?? {}).downscaledTextures ?? []) as unknown[];
-    expect(forcedDownscaled.length, "forced budget downscales at least one texture").toBeGreaterThan(0);
-    expect(forcedBytes).toBeLessThanOrEqual(Math.floor(0.8 * uncappedBytes));
-    expect(uncappedBytes, "control (uncapped) exceeds the forced budget ledger").toBeGreaterThan(forcedBytes);
+    // P-35: restored PRD control — "budget disabled exceeds 256 MiB". The
+    // uncapped ledger of the heaviest shipped asset must clear the Medium
+    // budget, proving the medium assertions above are not vacuous.
+    expect(uncappedBytes, "control (budget disabled) exceeds 256 MiB").toBeGreaterThan(256 * MIB);
 
     probes.push({
       asset: HERO,
       uncappedBytes,
       mediumBytes,
       mediumDownscaled: downscaled.length,
-      forcedBytes,
-      forcedDownscaled: forcedDownscaled.length,
+      control: "budget disabled exceeds 256 MiB",
       contextLost
     });
   });
