@@ -32,6 +32,17 @@ export const prd10ShaderChunks = [
   a3d_prd10_world_light_fallback
 ] as const;
 
-for (const chunk of prd10ShaderChunks) {
-  registerShaderChunk(chunk);
+let registered = false;
+/**
+ * FIX-chunks (10-CHUNKS): explicit entry point — `"sideEffects": false`
+ * drops this module's registration loop in chunked builds. The engine lane
+ * calls `registerPrd10Chunks()` so registration is a real dependency edge.
+ */
+export function registerPrd10Chunks(): void {
+  if (registered) return;
+  registered = true;
+  for (const chunk of prd10ShaderChunks) {
+    registerShaderChunk(chunk);
+  }
 }
+registerPrd10Chunks();

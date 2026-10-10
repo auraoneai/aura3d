@@ -34,6 +34,12 @@ on:
       - "tests/browser/qr-prd10-*.ts"
       - ".github/workflows/qr-prd10-world.yml"
   workflow_dispatch:
+  # Reusable — other lane/meta workflows may invoke this gate in place.
+  workflow_call:
+  # Nightly lane audit so a broken main cannot sit green-looking until a PR
+  # touches it (10-CI).
+  schedule:
+    - cron: "41 5 * * *"
 
 permissions:
   contents: read
@@ -75,9 +81,10 @@ jobs:
       # browser step collected 0 tests silently (browser.json expected:0).
       - run: pnpm build:raw
       - run: pnpm exec playwright install chromium
-      - name: prd10 browser specs (ChunkHarness GLSL + WGSL, pass depth, time-of-day, flag-off identity)
-        run: pnpm exec playwright test --config playwright.config.ts tests/browser/qr-prd10-chunks.spec.ts tests/browser/qr-prd10-world-pass-depth.spec.ts tests/browser/qr-prd10-time-of-day.spec.ts tests/browser/qr-prd10-flag-off-identity.spec.ts
-        continue-on-error: true
+      # T1.14/10-CI: every qr-prd10-*.spec.ts on disk runs — no masks, no
+      # continue-on-error; a red spec must red the lane.
+      - name: prd10 browser specs (all qr-prd10-*.spec.ts)
+        run: pnpm exec playwright test --config playwright.config.ts tests/browser/qr-prd10-chunks.spec.ts tests/browser/qr-prd10-world-pass-depth.spec.ts tests/browser/qr-prd10-time-of-day.spec.ts tests/browser/qr-prd10-flag-off-identity.spec.ts tests/browser/qr-prd10-terrain-cracks.spec.ts tests/browser/qr-prd10-terrain-gpu-cpu.spec.ts tests/browser/qr-prd10-terrain-splat-bake.spec.ts
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -86,31 +93,39 @@ jobs:
           if-no-files-found: ignore
 
   capture:
-    # Dispatches PRD 12's capture workflow for the prd10-* scenes under both
-    # flag arms. Dispatch only — image diffs live in that workflow's artifacts.
+         # flag arms. Dispatch only — image diffs live in that workflow's artifacts.
     runs-on: ubuntu-latest
     steps:
-      - name: Dispatch quality-rebuild-capture (qr_flags=world)
+      # T1.14/10-CI: GPU evidence routes to the GitLab mirror (qr-gitlab-ci
+      # bridge on saas-macos-medium-m1) — the honest failure modes apply:
+      # dispatch errors fail the job instead of `|| echo` masking them, and
+      # the run lookup is pinned to runs created after dispatch (the old
+      # `-L 1` grab raced other dispatches and could report a stale run).
+      - name: Dispatch GitLab benchmark (qr_flags=world)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh workflow run quality-rebuild-capture.yml \
+          dispatched_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          gh workflow run qr-gitlab-ci.yml \
             -R "${GITHUB_REPOSITORY}" \
             --ref "$GITHUB_REF_NAME" \
-            -f qr_flags=world \
-            -f viewports=1280x720 || echo "dispatch not authorized on this ref"
-          sleep 3
-          run_id=$(gh run list -R "${GITHUB_REPOSITORY}" --workflow=quality-rebuild-capture.yml --branch "$GITHUB_REF_NAME" -L 1 --json databaseId -q '.[0].databaseId')
+            -f suite=benchmark \
+            -f flags=world \
+            -f requester=prd10
+          sleep 5
+          run_id=$(gh run list -R "${GITHUB_REPOSITORY}" --workflow=qr-gitlab-ci.yml --branch "$GITHUB_REF_NAME" -L 5 --json databaseId,createdAt -q "map(select(.createdAt > \"$dispatched_at\")) | .[0].databaseId")
           echo "### capture (world) run: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${run_id}" >> "$GITHUB_STEP_SUMMARY"
-      - name: Dispatch quality-rebuild-capture (qr_flags=none)
+      - name: Dispatch GitLab benchmark (qr_flags=none)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh workflow run quality-rebuild-capture.yml \
+          dispatched_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          gh workflow run qr-gitlab-ci.yml \
             -R "${GITHUB_REPOSITORY}" \
             --ref "$GITHUB_REF_NAME" \
-            -f qr_flags=none \
-            -f viewports=1280x720 || echo "dispatch not authorized on this ref"
-          sleep 3
-          run_id=$(gh run list -R "${GITHUB_REPOSITORY}" --workflow=quality-rebuild-capture.yml --branch "$GITHUB_REF_NAME" -L 1 --json databaseId -q '.[0].databaseId')
+            -f suite=benchmark \
+            -f flags=none \
+            -f requester=prd10
+          sleep 5
+          run_id=$(gh run list -R "${GITHUB_REPOSITORY}" --workflow=qr-gitlab-ci.yml --branch "$GITHUB_REF_NAME" -L 5 --json databaseId,createdAt -q "map(select(.createdAt > \"$dispatched_at\")) | .[0].databaseId")
           echo "### capture (none) run: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${run_id}" >> "$GITHUB_STEP_SUMMARY"

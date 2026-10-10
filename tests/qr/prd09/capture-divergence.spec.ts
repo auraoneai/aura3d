@@ -111,11 +111,11 @@ async function captureMode(page: Page, route: string, appDir: string, param: str
 }
 
 test.describe("capture_review_divergence", () => {
-  // Red-flag guard: an empty affected set used to silently skip the whole
-  // suite, turning a broken baseline regeneration green. It must fail loudly
-  // instead (locally and on CI).
+  // Red-flag guard (P-22): an empty affected set means baseline.json never
+  // captured capture-flag routes — that is a failure, not a reason to skip
+  // silently. Unconditional: fails loudly locally and on CI.
   test("baseline lists at least one capture-flag route", () => {
-    expect(affected.length).toBeGreaterThan(0);
+    expect(affected.length, "capture-divergence baseline.json produced zero capture-flag routes").toBeGreaterThan(0);
   });
 
   for (const r of affected) {

@@ -237,9 +237,15 @@ test("terrain CDLOD: 0 crack pixels over 120 dolly frames across LOD seams", asy
     // Fallback: whole canvas when no frame kept all 4 terrain corners in frustum.
     mask: worstMask ?? { x0: 8, y0: 8, x1: W - 9, y1: H - 9 }
   });
+  // P-22 requireOrSkip: on CI the runner must expose WebGL2 — a missing
+  // adapter is a red job, not a skipped spec; local non-CI may skip.
   if ("error" in result) {
-    test.skip(true, `webgl2 unavailable in this runner: ${result.error}`);
-    return;
+    if (process.env.CI) {
+      expect((result as { error?: string }).error ?? null, "CI runner must expose WebGL2").toBeNull();
+    } else {
+      test.skip(true, `webgl2 unavailable in this runner: ${result.error}`);
+      return;
+    }
   }
   expect(result.crackFrames, `frames with background-coloured pixels inside terrain (max ${result.maxCrackPixels}/frame)`).toBe(0);
 });

@@ -339,7 +339,7 @@ export function drawTerrains(
   camera: { position: readonly [number, number, number] },
   viewProjection: Float32Array
 ): void {
-  const tier = ((ctx.tier as { tier?: AuraWorldQualityTier }).tier ?? "high") as AuraWorldQualityTier;
+  const tier = tierForSettings(ctx.tier);
   const lodBias = lodBiasOf(ctx);
   for (const id of terrainRecordIds()) {
     const record = terrainRecordFor(id);

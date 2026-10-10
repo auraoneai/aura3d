@@ -95,7 +95,14 @@ test("Path S background quad occludes/is occluded by depth correctly", async ({ 
     };
   });
 
-  if ("error" in pixels) test.skip(true, "no WebGL2 in runner");
+  // P-22 requireOrSkip: CI must expose WebGL2 (red, not skip); locals may skip.
+if ("error" in pixels) {
+    if (process.env.CI) {
+      expect((pixels as { error?: string }).error ?? null, "CI runner must expose WebGL2").toBeNull();
+    } else {
+      test.skip(true, "no WebGL2 in runner");
+    }
+  }
   const p = pixels as { left: number[]; right: number[]; center: number[] };
   // Near box (z=3) beats the background (z=5).
   expect(p.left[0]).toBeGreaterThan(150);

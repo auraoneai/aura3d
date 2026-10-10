@@ -2,7 +2,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { readChecklistScope } from "../../../tools/threejs-parity-common/index.js";
+import { readChecklistScope } from "../../../tools/_quarantine/threejs-parity-common/index.js";
 
 describe("current Three.js parity checklist scope", () => {
   it("counts only the bounded current acceptance items", () => {

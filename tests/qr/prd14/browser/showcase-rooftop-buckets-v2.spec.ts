@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { canvasBlankCheck, evaluateRequiredCondition } from "@aura3d/game/art";
 import { decodePngAsRgba } from "../unit/helpers/png";
@@ -62,7 +62,6 @@ async function shootAtSweetSpot(page: Page, ms = 390) {
 
 test.describe("showcase-rooftop-buckets v2 (T2.6)", () => {
   test.use({ hasTouch: true });
-  test.skip(!existsSync(join(APPS, APP_DIR, "src", "v2", "boot.ts")), "no v2 tree yet");
 
   test("boots to playing, scripted timeline clean, conditions met, look parity", async ({ page }) => {
     const root = builtDist(APP_DIR);
