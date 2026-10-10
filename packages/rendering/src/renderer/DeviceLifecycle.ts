@@ -23,7 +23,11 @@ export function subscribeRendererDeviceRestored(device: RenderDevice, listener: 
 }
 
 export function rendererDeviceIsLost(device: RenderDevice): boolean {
-  return (device as DeviceLifecycle).isDeviceLost?.() ?? false;
+  const lifecycle = device as DeviceLifecycle & { readonly contextLost?: boolean };
+  // #271: `WebGPUDevice` has no `isDeviceLost()`; it sets `contextLost` when
+  // `GPUDevice.lost` resolves (the same moment its onDeviceLost listeners fire).
+  if (typeof lifecycle.isDeviceLost === "function") return lifecycle.isDeviceLost();
+  return lifecycle.contextLost === true;
 }
 
 export interface DeviceRestoreRebuildOptions {
