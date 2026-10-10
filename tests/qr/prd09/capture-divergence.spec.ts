@@ -46,6 +46,15 @@ const affected = Object.values(baseline.routes)
   })
   .sort((a, b) => a.route.localeCompare(b.route));
 
+// T0.4 / 09-P0: postPass is recorded at the DEFAULT url for every baseline
+// route (18), not only the capture-flag ones — unaffected routes get a
+// default-only capture.
+const affectedIds = new Set(affected.map((r) => r.route));
+const defaultOnly = Object.values(baseline.routes)
+  .filter((r) => !affectedIds.has(r.route))
+  .map((r) => ({ route: r.route, appDir: r.appDir, readyExpr: games.games.find((g) => g.appDir === r.route)?.readyExpr }))
+  .sort((a, b) => a.route.localeCompare(b.route));
+
 const readyTimeoutMs = games.defaults?.readyTimeoutMs ?? 30_000;
 const readyFallbackMs = games.defaults?.readyFallbackMs ?? 6_000;
 
@@ -67,7 +76,13 @@ test.afterAll(() => {
     if (id in postPass) baseline.routes[id].postPass = postPass[id];
   }
   writeFileSync(join(outDir, "baseline.json"), JSON.stringify(baseline, null, 2) + "\n");
-  writeFileSync(join(outDir, "postpass.json"), JSON.stringify({ generatedAt: new Date().toISOString(), postPass, diagnostics }, null, 2) + "\n");
+  writeFileSync(join(outDir, "postpass.json"), JSON.stringify({
+    generatedAt: new Date().toISOString(),
+    // Provenance for the committed copy (09-P0 cites the run id).
+    run: process.env.GITHUB_RUN_ID ? { provider: "github", runId: process.env.GITHUB_RUN_ID, sha: process.env.GITHUB_SHA ?? null, runner: process.env.RUNNER_OS ?? null } : null,
+    postPass,
+    diagnostics
+  }, null, 2) + "\n");
 });
 
 async function captureMode(page: Page, route: string, appDir: string, param: string | null, readyExpr: string | undefined) {
@@ -102,8 +117,14 @@ async function captureMode(page: Page, route: string, appDir: string, param: str
   });
   const mode = param ?? "default";
   diagnostics[`${route}#${mode}`] = diag;
-  const passes = diag.some((d: any) => (d?.postprocess?.actualPasses ?? d?.runtimePost?.actualPasses ?? 0) > 0);
-  if (mode === "default" || postPass[route] !== true) postPass[route] = passes;
+  // A real value needs a mounted app that reports postprocess diagnostics;
+  // no live app (or no postprocess section) is a failure, never `false`.
+  const reported = diag.filter((d: any) => d && (d.postprocess !== null || d.runtimePost !== null));
+  expect(reported.length, `${route}#${mode}: no live app reported app.diagnostics().postprocess`).toBeGreaterThan(0);
+  const passes = reported.some((d: any) => (d?.postprocess?.actualPasses ?? d?.runtimePost?.actualPasses ?? 0) > 0);
+  // postPass is the shipped (default url) value only; review-mode passes stay
+  // in `diagnostics` for the divergence record.
+  if (mode === "default") postPass[route] = passes;
   const shot = await page.screenshot({ fullPage: false });
   const file = join(outDir, `${route}-${mode}.png`);
   writeFileSync(file, shot);
@@ -126,4 +147,18 @@ test.describe("capture_review_divergence", () => {
       await testInfo.attach(`${r.route}-${r.param}.png`, { path: rev.file, contentType: "image/png" });
     });
   }
+
+  for (const r of defaultOnly) {
+    test(`${r.route}: default postPass (no capture flag)`, async ({ page }, testInfo) => {
+      const def = await captureMode(page, r.route, r.appDir, null, r.readyExpr);
+      await testInfo.attach(`${r.route}-default.png`, { path: def.file, contentType: "image/png" });
+    });
+  }
+
+  // Runs last (tests in a file run in order, workers: 1): every baseline route
+  // must carry a real boolean postPass, so postpass.json has no nulls.
+  test("postPass recorded for every baseline route", () => {
+    const missing = Object.keys(baseline.routes).filter((id) => typeof postPass[id] !== "boolean");
+    expect(missing, "routes without a recorded default-url postPass").toEqual([]);
+  });
 });
