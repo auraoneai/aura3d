@@ -37,6 +37,7 @@ on:
       - "packages/create-aura3d/templates/**"
       - "tools/showcase-library/template-creategame-audit.mjs"
       - "playwright.prd09.config.ts"
+      - "tests/qr/prd09/no-skipped-reporter.ts"
       - ".github/workflows/qr-prd09-game.yml"
   push:
     branches: ["main"]
@@ -175,7 +176,8 @@ jobs:
 
       - name: Game-shell + layout + touch + audio-live specs (Chromium/WebKit/Firefox)
         env:
-          PLAYWRIGHT_JSON_OUTPUT_NAME: browser-prd09-macos.json
+          # Resolved against the config dir (repo root); matches the upload path.
+          PLAYWRIGHT_JSON_OUTPUT_NAME: tests/reports/browser-prd09-macos.json
         run: pnpm exec playwright test --config playwright.prd09.config.ts
 
       - name: Beacon size-limit (< 0.5 kB gz)
