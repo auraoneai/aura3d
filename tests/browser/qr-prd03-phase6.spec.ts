@@ -30,6 +30,8 @@ interface Phase6Result {
     schema: string;
     invert?: { before: number[]; after: number[] };
     hdrGate?: number[];
+    order?: string[];
+    spaceRejection?: string | null;
     error?: string;
   };
 }
@@ -124,5 +126,12 @@ test.describe("PRD-03 Phase 6 — SMAA / auto-exposure / custom passes", () => {
     // HDR gate: the emissive wall's center pixel has u_color.r > 1 → white.
     expect(r.hdrGate![0]).toBe(255);
     expect(r.hdrGate![1]).toBe(255);
+  });
+
+  test("03-S18c: all five insertion points run in §6.1 order; display before tonemap is rejected", () => {
+    const r = result.customPass;
+    expect(r.error).toBeUndefined();
+    expect(r.order).toEqual(["after-depth", "before-taa", "after-taa", "before-tonemap", "after-tonemap"]);
+    expect(r.spaceRejection).toMatch(/POSTPROCESS_SPACE_INVALID:prd03\.s18c-display-before-tonemap/);
   });
 });

@@ -274,7 +274,12 @@ function planForSubmitted(options: RendererPostProcessOptions, width: number, he
 export function collectPostSection(app: AuraApp): PostSectionReport {
   const submitted = (app.canvas ? canvasRecords.get(app.canvas) : undefined) ?? latestSubmittedPostprocess();
   const authoredContext = authoredPostContextFor(app.canvas ?? undefined);
-  const custom = registeredPostPasses().map((pass) => ({ id: pass.id, status: "post-graph-v2-pending" }));
+  // 03-S18c: registered C-13 passes run in the v2 chain (all five §6.1
+  // anchors) when `A3D_QR_POST` is on and compat.post is not "3.0"; otherwise
+  // the legacy chain serves the frame and skips them.
+  const v2Active = Boolean(authoredContext?.flags.post) && !authoredContext?.compatPost3;
+  const customStatus = v2Active ? "v2" : "legacy-chain:A3D_QR_POST-off";
+  const custom = registeredPostPasses().map((pass) => ({ id: pass.id, status: customStatus }));
   const empty = {
     present: false,
     requestedPasses: [],
