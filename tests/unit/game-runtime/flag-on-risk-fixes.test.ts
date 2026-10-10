@@ -32,8 +32,11 @@ describe("stubSetInstanceTransforms capacity (risk 2)", () => {
     const { app, handle, node } = instancedHarness(2);
     const m = new Float32Array(32).fill(0).map((_, i) => (i % 16 < 12 && i % 16 % 4 === 0 ? 1 : 0));
     stubSetInstanceTransforms(handle, app, m, 1);
-    const hidden = node.instances[1] as { scale: { x: number } };
-    expect(hidden.scale.x).toBe(0);
+    // AuraTransformSpec.scale is an AuraVec3 tuple, not {x,y,z}.
+    const hidden = node.instances[1] as { scale: readonly [number, number, number] };
+    expect(hidden.scale).toEqual([0, 0, 0]);
+    // The visible slot keeps its decomposed (unit) scale.
+    expect((node.instances[0] as { scale: readonly number[] }).scale).toEqual([1, 1, 1]);
   });
 });
 
@@ -46,13 +49,22 @@ describe("qrFlagsOf guard (risk 1)", () => {
 
 // ---------- Risk 3: GameSession double advance ----------
 describe("GameSession.tick (risk 3)", () => {
-  it("scales dt without calling controller.advance — the driver advances once", { timeout: 20000 }, async () => {
+  it("scales dt without calling controller.advance when a driver advances it", { timeout: 20000 }, async () => {
     const { GameSessionImpl } = await import("../../../packages/game/src/session/GameSession");
     let advanceCalls = 0;
-    const controller = { scale: 0.5, advance: () => ((advanceCalls += 1), 0) } as never;
-    const session = new GameSessionImpl({ seed: 1, time: controller } as never);
+    const controller = { scale: 0.5, hitStopRemaining: 0, advance: () => ((advanceCalls += 1), 0) } as never;
+    const session = new GameSessionImpl({ seed: 1, time: controller, externallyAdvanced: true });
     expect(session.tick(0.4)).toBeCloseTo(0.2);
     expect(advanceCalls).toBe(0);
+  });
+
+  it("advances the controller exactly once per tick when the session owns it", { timeout: 20000 }, async () => {
+    const { GameSessionImpl } = await import("../../../packages/game/src/session/GameSession");
+    let advanceCalls = 0;
+    const controller = { scale: 0.5, hitStopRemaining: 0, advance: (dt: number) => ((advanceCalls += 1), dt * 0.5) } as never;
+    const session = new GameSessionImpl({ seed: 1, time: controller });
+    expect(session.tick(0.4)).toBeCloseTo(0.2);
+    expect(advanceCalls).toBe(1);
   });
 });
 

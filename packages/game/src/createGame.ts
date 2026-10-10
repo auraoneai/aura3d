@@ -45,6 +45,8 @@ import { createOverlayDriver } from "./juice/overlay";
 import { createRumbleDriver } from "./juice/rumble";
 import { createTweenEngine } from "./juice/tween";
 import { createGameAudio, type GameAudio, type GameAudioOptions } from "@aura3d/engine";
+// Q-09-6 (#213): lane-08 listener glue, public via the lanes entry (C-22).
+import { bindFeelSound } from "@aura3d/engine/lanes";
 import type { Hud, TouchControls } from "@aura3d/engine/contracts";
 
 
@@ -272,6 +274,7 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
       if (disposed) return;
       disposed = true;
       detachLifecycle();
+      feelSoundDetach?.();
       accessibilityUnsub();
       accessibility.dispose();
       beacon.dispose();
@@ -297,9 +300,12 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
   // Dynamic import keeps the module lazy for production bundles, where the
   // gate is false and `window.__AURA3D_GAME_TEST__` stays undefined.
   if ((import.meta as { env?: { MODE?: string } }).env?.MODE === "test") {
-    void import("./testHook").then(({ installGameTestHook }) =>
-      installGameTestHook({ stepper: runtime, getSceneId: () => sceneRevision })
-    );
+    // The lazy import can settle after a fast dispose(); a disposed runtime
+    // rejects firstPresentedFrame(), so never install (or re-arm) past it.
+    void import("./testHook").then(({ installGameTestHook }) => {
+      if (disposed) return;
+      installGameTestHook({ stepper: runtime, getSceneId: () => sceneRevision, isActive: () => !disposed });
+    });
   }
 
   // §20 `audio.webm` tap — one-function global the lane-12 `audio-webm`

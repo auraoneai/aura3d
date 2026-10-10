@@ -157,17 +157,26 @@ describe("createGameAudio", () => {
     expect(context.state).toBe("closed");
   });
 
-  it("C-25: throws on a cue without asset or play when A3D_QR_GAME is on", () => {
+  it("C-25: a cue without asset or play degrades with a diagnostic when A3D_QR_GAME is on (risk 6)", async () => {
+    // Flag-on risk 6 (#617): createGame forwards flags:['game'], so a synth
+    // cue must not crash the boot — it is recorded on evidence and suppressed.
     const context = new FakeAudioContext();
-    expect(() =>
-      createGameAudio({
+    const message = 'Game audio cue "silent" has no asset or play(); synthesized default cues were removed (PRD 09).';
+    const originalWarn = console.warn;
+    console.warn = () => {};
+    try {
+      const audio = createGameAudio({
         context,
         qualityRebuild: { flags: ["game"] },
         cues: { silent: { id: "silent" } }
-      })
-    ).toThrow(
-      'Game audio cue "silent" has no asset or play(); synthesized default cues were removed (PRD 09).'
-    );
+      });
+      expect(audio.evidence.errors).toContain(message);
+      await audio.cue("silent");
+      expect(audio.evidence.playedCueCount).toBe(0);
+      expect(audio.evidence.suppressedCueCount).toBe(1);
+    } finally {
+      console.warn = originalWarn;
+    }
   });
 
   it("C-25: warns and counts the cue as suppressed when A3D_QR_GAME is off", async () => {
