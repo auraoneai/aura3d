@@ -1,0 +1,17 @@
+{
+  "id": "templates-stylized-flat",
+  "shading": "stylized-flat",
+  "genre": "generic",
+  "fantasy": "Template fixtures \u2014 clean factor-colour stylized-flat read for scaffolded starters.",
+  "palette": {
+    "primary": [
+      "#eceff4",
+      "#2e3440"
+    ],
+    "accent": "#ebcb8b"
+  },
+  "texelDensity": 0,
+  "referenceImages": [],
+  "mix": [],
+  "notes": "Approves factor-only materials for template starter fixtures pending look-dev approval per asset."
+}

@@ -58,6 +58,7 @@ interface GltfBufferViewLike {
   readonly byteOffset?: number;
   readonly byteLength: number;
   readonly byteStride?: number;
+  readonly extensions?: Readonly<Record<string, unknown>>;
 }
 
 interface GltfJsonFull extends AdmissionGltfJson {
@@ -71,6 +72,10 @@ function accessorView(json: GltfJsonFull, index: number): AccessorView | undefin
   const accessor = (json.accessors as readonly { readonly componentType?: number; readonly count?: number; readonly type?: string; readonly bufferView?: number; readonly byteOffset?: number }[] | undefined)?.[index];
   if (!accessor || accessor.count === undefined || accessor.type === undefined || accessor.componentType === undefined) return undefined;
   const view = json.bufferViews?.[accessor.bufferView ?? -1];
+  // EXT_meshopt_compression bufferViews address a virtual decoded buffer —
+  // byteOffset is not an offset into the file's BIN chunk. Treat those
+  // accessors as unmeasurable (skipped) rather than indexing out of range.
+  if (view?.extensions?.EXT_meshopt_compression !== undefined) return undefined;
   const componentBytes = COMPONENT_BYTES[accessor.componentType];
   const count = TYPE_COUNT[accessor.type];
   if (componentBytes === undefined || count === undefined) return undefined;
