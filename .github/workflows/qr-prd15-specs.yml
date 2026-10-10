@@ -1,7 +1,24 @@
 name: QR PRD15 specs (browser)
 
+# Throughput: 3 macOS jobs per run. On pull_request they run only when the
+# specs or the surfaces they exercise change; every main push, the nightly
+# schedule and workflow_dispatch run them in full.
 on:
   pull_request:
+    paths:
+      - "tests/qr/prd15/**"
+      - "playwright.prd15-specs.config.ts"
+      - "packages/engine/src/agent-api/compiler/**"
+      - "packages/engine/src/agent-api/app/createAuraApp.ts"
+      - "packages/engine/src/lanes/prd15.ts"
+      - "packages/rendering/src/lean*"
+      - "packages/rendering/src/lean/**"
+      - "packages/rendering/src/LeanWebGL2Device.ts"
+      - "tools/packed-consumer-check/**"
+      - "tools/finalize-dist/**"
+      - ".github/workflows/qr-prd15-specs.yml"
+  push:
+    branches: [main]
   workflow_dispatch:
   schedule:
     - cron: "30 9 * * *"

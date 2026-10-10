@@ -5,11 +5,27 @@ name: Quality Gate
 # ubuntu-latest. No secrets — the gate measures and blocks; it never asserts
 # quality claims. Human review is a separate workflow (quality-review.yml).
 
+# Throughput (5 macOS runners, ~9 macOS jobs per run): on pull_request this
+# gate runs only when the harness / gate itself changes. Every main push runs
+# it in full, and workflow_dispatch runs it on any branch on demand. Engine
+# changes are still gated on main and by the lane workflows' own PR paths.
 on:
   pull_request:
+    paths:
+      - "benchmarks/quality-rebuild/**"
+      - "tools/quality-rebuild-capture/**"
+      - "tools/quality-gate/**"
+      - "tests/visual/rendering-pixels.spec.ts"
+      - "tests/visual/shadow-cascade-motion.spec.ts"
+      - "tests/visual/skinned-animation-pixels.spec.ts"
+      - "tests/quality-gate.global-setup.ts"
+      - "playwright.quality-gate.config.ts"
+      - ".github/workflows/quality-gate.yml"
+      - ".github/workflows/quality-rebuild-capture.yml"
   push:
     branches: ["main"]
   workflow_call:
+  workflow_dispatch:
 
 permissions:
   contents: read
