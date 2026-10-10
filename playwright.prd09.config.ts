@@ -11,9 +11,13 @@ export default defineConfig({
   testDir: "tests/browser",
   timeout: 60_000,
   workers: 1,
+  // P-22: fail CI on a stray test.only / describe.only committed to the lane.
+  forbidOnly: !!process.env.CI,
   reporter: [
     ["list"],
-    ["json", { outputFile: process.env.PLAYWRIGHT_JSON_OUTPUT_NAME ?? "tests/reports/browser-prd09.json" }]
+    ["json", { outputFile: process.env.PLAYWRIGHT_JSON_OUTPUT_NAME ?? "tests/reports/browser-prd09.json" }],
+    // P-22: fails the run on CI when any test is skipped.
+    ["./tests/qr/prd09/no-skipped-reporter.ts"]
   ],
   projects: [
     {
