@@ -56,7 +56,7 @@ async function readEvidence(page: Page) {
 }
 
 /** Hold Space for `ms` then release — the plunger serve gesture. */
-async function serve(page: Page, ms = 650) {
+async function plungerServe(page: Page, ms = 650) {
   await page.keyboard.down("Space");
   await page.waitForTimeout(ms);
   await page.keyboard.up("Space");
@@ -81,7 +81,7 @@ test.describe("showcase-vault-breakers v2 (T2.6)", () => {
 
       // §7.2.1 timeline: serve, then flip while the ball is live until a
       // bumper registers (bumperHitsThisBall >= 1 && fx.liveCount > 0).
-      await serve(page);
+      await plungerServe(page);
       await page.waitForTimeout(400);
       await shot(page, "02-opening");
 
@@ -102,7 +102,7 @@ test.describe("showcase-vault-breakers v2 (T2.6)", () => {
         await page.keyboard.up("KeyD");
         const inPlay = await page.evaluate((EVIDENCE: string) =>
           eval(EVIDENCE + ".ball") as { inPlay?: boolean } | undefined, EVIDENCE);
-        if (!inPlay?.inPlay) await serve(page, 500);
+        if (!inPlay?.inPlay) await plungerServe(page, 500);
       }
       await shot(page, "04-action");
       expect(allMet, "§7.2.1 required conditions not reached by deadline").toBe(true);
@@ -140,7 +140,7 @@ test.describe("showcase-vault-breakers v2 (T2.6)", () => {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
-      await serve(page);
+      await plungerServe(page);
       await expect.poll(async () => page.evaluate((EVIDENCE: string) =>
         (eval(EVIDENCE + ".ball") as { inPlay?: boolean })?.inPlay ?? false, EVIDENCE),
         { timeout: 15_000, intervals: [300] }).toBe(true);
