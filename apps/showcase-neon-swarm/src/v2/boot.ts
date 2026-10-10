@@ -259,7 +259,7 @@ game.app.onFrame?.(({ dt: rawDt }) => {
     ?.setPosition(player.x + forwardX * 0.34, 1.18 + bob, player.z + forwardZ * 0.34)
     .setRotation(0, playerYaw, 0)
     .setVisible(true);
-  handle("neon-courier-shoulder-ctx.frame")
+  handle("neon-courier-shoulder-frame")
     ?.setPosition(player.x + forwardX * 0.34, 1.48 + bob, player.z + forwardZ * 0.34)
     .setRotation(Math.PI / 2, playerYaw, 0)
     .setVisible(true);

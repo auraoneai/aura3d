@@ -37,7 +37,7 @@ export function wireGravityContracts(ctx: GravityCtx, deps: {
         event.type === "planet-strike" || event.type === "solar-escape"
           || event.type === "stranded" || event.type === "timeout"
       ) {
-        pushCue("ctx.pod-lost");
+        pushCue("pod-lost");
         fx.podLost(ctx.pod.kinematic.position[0], ctx.pod.kinematic.position[1]);
       } else if (event.type === "too-fast") {
         pushCue("bounce-off");

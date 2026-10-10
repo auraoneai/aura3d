@@ -176,7 +176,7 @@ const siteQueries = world.fields.map((entry) =>
 const collisionWorld = engineGame.collisionWorld({ backend: "rapier", gravity: [0, 0, 0] });
 
 function rebuildCollisions(): void {
-  if (!ctx.field) throw new Error("Terrain ctx.field missing before collision rebuild.");
+  if (!ctx.field) throw new Error("Terrain field missing before collision rebuild.");
   collisionWorld.clear();
   const terrainBody = collisionWorld.add({
     id: "site-terrain-heightfield",

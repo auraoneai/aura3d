@@ -278,11 +278,11 @@ void game.ready().then(() => {
   const thiefNode = thiefHandle();
   if (thiefNode && !ctx.animationBound) {
     ctx.animationBound = true;
-    thiefAnimation.bindRuntimeNode(thiefNode, { id: "thief-ctx.runtime-animation", defaultClipId: THIEF_CLIPS.idle });
+    thiefAnimation.bindRuntimeNode(thiefNode, { id: "thief-runtime-animation", defaultClipId: THIEF_CLIPS.idle });
     const guard2 = guardHandle("guard-2");
     const controller = guardAnimations[1];
     if (guard2 && controller) {
-      controller.bindRuntimeNode(guard2, { id: "guard-2-ctx.runtime-animation", defaultClipId: GUARD_CLIPS.idle });
+      controller.bindRuntimeNode(guard2, { id: "guard-2-runtime-animation", defaultClipId: GUARD_CLIPS.idle });
     }
   }
   game.app.camera?.use?.(rig as never, { blend: 0.12 });
