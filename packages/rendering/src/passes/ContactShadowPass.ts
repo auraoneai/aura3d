@@ -98,6 +98,7 @@ export class ContactShadowPass extends BaseRenderPass {
 
   execute(context: RenderPassContext): void {
     const { device } = context;
+    const prevTarget = device.getRenderTarget?.() ?? null;
     const w = Math.max(1, Math.floor(context.width / 2));
     const h = Math.max(1, Math.floor(context.height / 2));
     if (!this.mask || this.mask.width !== w || this.mask.height !== h) {
@@ -127,6 +128,7 @@ export class ContactShadowPass extends BaseRenderPass {
       device.setRenderTarget(this.mask);
       device.clear([1, 1, 1, 1]);
       this.lastMask = this.mask.colorTexture;
+      device.setRenderTarget(prevTarget);
       return;
     }
     this.program ??= device.createShaderProgram({
@@ -165,6 +167,7 @@ export class ContactShadowPass extends BaseRenderPass {
     });
     this.lastMask = this.mask.colorTexture;
     this.executed = true;
+    device.setRenderTarget(prevTarget);
   }
 }
 

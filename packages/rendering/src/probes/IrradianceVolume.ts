@@ -101,12 +101,13 @@ export class IrradianceVolumeSystem {
     const faces: Float32Array[] = [];
     for (let f = 0; f < 6; f += 1) {
       const target = this.device.createRenderTarget({ width: size, height: size, format: "rgba16f", label: `iv-f${f}` });
+      const prevTarget = this.device.getRenderTarget?.() ?? null;
       try {
         this.device.setRenderTarget(target);
         this.renderFace(f as 0 | 1 | 2 | 3 | 4 | 5, target, cubeFaceViewProjection(f as 0 | 1 | 2 | 3 | 4 | 5, pos));
         faces.push(this.device.readFloatPixels(0, 0, size, size));
       } finally {
-        this.device.setRenderTarget(null);
+        this.device.setRenderTarget(prevTarget);
         target.dispose();
       }
     }

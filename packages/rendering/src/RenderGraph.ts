@@ -71,19 +71,36 @@ export class RenderGraph {
 
   execute(context: RenderPassContext): void {
     for (const pass of this.compile()) {
+      // C-01: a pass must leave the bound render target unchanged (T0-08).
+      const boundBefore = devAssertsEnabled() ? context.device.getRenderTarget?.() : undefined;
       pass.execute(context);
+      if (boundBefore !== undefined && context.device.getRenderTarget?.() !== boundBefore) {
+        throw new Error(`Render pass "${pass.name}" left a different render target bound`);
+      }
     }
   }
 
   async executeAsync(context: RenderPassContext): Promise<void> {
     for (const pass of this.compile()) {
+      const boundBefore = devAssertsEnabled() ? context.device.getRenderTarget?.() : undefined;
       if (pass.executeAsync) {
         await pass.executeAsync(context);
       } else {
         pass.execute(context);
       }
+      if (boundBefore !== undefined && context.device.getRenderTarget?.() !== boundBefore) {
+        throw new Error(`Render pass "${pass.name}" left a different render target bound`);
+      }
     }
   }
+}
+
+/** `import.meta.env.PROD` / `process.env.NODE_ENV === "production"` gates the C-01 assert off in prod builds. */
+function devAssertsEnabled(): boolean {
+  const meta = import.meta as unknown as { readonly env?: { readonly PROD?: boolean } };
+  if (meta.env?.PROD) return false;
+  return (globalThis as { readonly process?: { readonly env?: { readonly NODE_ENV?: string } } })
+    .process?.env?.NODE_ENV !== "production";
 }
 
 function validatePassResources(pass: RenderPass): void {
