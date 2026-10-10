@@ -297,3 +297,22 @@ export async function runQrPrd03Phase6(): Promise<Phase6Result> {
 }
 
 (window as { runQrPrd03Phase6?: typeof runQrPrd03Phase6 }).runQrPrd03Phase6 = runQrPrd03Phase6;
+
+// 03-S18d: publish a readiness symbol *after* the module has fully evaluated
+// and a WebGL2 context is actually creatable. The spec gates on this symbol
+// instead of polling for the function — the function can never be invoked
+// before the harness is genuinely runnable, and a failure status carries the
+// reason into CI logs.
+{
+  const w = window as { qrPrd03Phase6Ready?: boolean; qrPrd03Phase6Status?: string };
+  w.qrPrd03Phase6Ready = false;
+  w.qrPrd03Phase6Status = "module evaluated";
+  try {
+    const probe = document.createElement("canvas");
+    if (!probe.getContext("webgl2")) throw new Error("webgl2 context unavailable");
+    w.qrPrd03Phase6Status = "ready";
+    w.qrPrd03Phase6Ready = true;
+  } catch (error) {
+    w.qrPrd03Phase6Status = `not ready: ${error}`;
+  }
+}
