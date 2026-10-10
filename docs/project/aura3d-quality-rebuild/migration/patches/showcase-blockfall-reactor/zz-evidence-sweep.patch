@@ -1,8 +1,8 @@
-From f59cf71cb499ae090e06ece80ca9eb98db5d0fdc Mon Sep 17 00:00:00 2001
+From 6a84f494fd24171dd8d7d00bbaca155c1bb1e3d5 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:47 +0000
-Subject: [PATCH] [qr-prd09] showcase-blockfall-reactor: delete evidence
- files+blocks (T5.8)
+Subject: [PATCH] showcase-blockfall-reactor: delete evidence files+blocks
+ (T5.8)
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
@@ -12,8 +12,8 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../scripts/write-route-health.mjs            | 193 ------
  .../src/legacy/main.ts                        | 550 -----------------
  apps/showcase-blockfall-reactor/src/main.ts   |  10 -
- .../src/v2/evidence/index.ts                  |  73 ---
- 7 files changed, 1644 deletions(-)
+ .../src/v2/evidence/index.ts                  |  84 ---
+ 7 files changed, 1655 deletions(-)
  delete mode 100644 apps/showcase-blockfall-reactor/scripts/build-review-art.mjs
  delete mode 100644 apps/showcase-blockfall-reactor/scripts/build-sfx.mjs
  delete mode 100644 apps/showcase-blockfall-reactor/scripts/write-expert-fixture.ts
@@ -2012,7 +2012,7 @@ index 676dfe9f1..2ae2a5b2a 100644
    return typeof window.matchMedia === "function" && window.matchMedia(query).matches;
  }
 diff --git a/apps/showcase-blockfall-reactor/src/main.ts b/apps/showcase-blockfall-reactor/src/main.ts
-index 4355c7aa3..836744234 100644
+index 4ccbf168c..4ab48799d 100644
 --- a/apps/showcase-blockfall-reactor/src/main.ts
 +++ b/apps/showcase-blockfall-reactor/src/main.ts
 @@ -1,14 +1,6 @@
@@ -2030,9 +2030,9 @@ index 4355c7aa3..836744234 100644
  function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
    const raw = new URL(loc.href).searchParams.get("a3d-qr");
    if (raw === null) return undefined;
-@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
-     ? true
-     : undefined;
+@@ -19,11 +11,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const wanted = [`route-${slug.replace(/_/g, "-")}`, `route_${slug}`, flag];
+   return tokens.some((t) => wanted.includes(t)) ? true : undefined;
  }
 -
  const flags = resolveQrFlags({
@@ -2044,10 +2044,10 @@ index 4355c7aa3..836744234 100644
  void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
 diff --git a/apps/showcase-blockfall-reactor/src/v2/evidence/index.ts b/apps/showcase-blockfall-reactor/src/v2/evidence/index.ts
 deleted file mode 100644
-index eec32805c..000000000
+index 5b52c1b37..000000000
 --- a/apps/showcase-blockfall-reactor/src/v2/evidence/index.ts
 +++ /dev/null
-@@ -1,73 +0,0 @@
+@@ -1,84 +0,0 @@
 -// apps/showcase-blockfall-reactor/src/v2/evidence/index.ts — §7.2.1 evidence.
 -// games.json required conditions:
 -//   board.linesClearedThisRound >= 1 && fx.liveCount > 0   (shot 04-action, 20s)
@@ -2055,6 +2055,7 @@ index eec32805c..000000000
 -// Plus the lane-standard sections: loading.sceneSwaps, appliedLook parity,
 -// audio cue log, touchEngaged, boardView parity, beat/clearFx proofs.
 -import type { BlockfallAudioProof } from "../../gameplay/reactor-audio";
+-import type { Game } from "@aura3d/game";
 -import type { ClearFxProof } from "../../legacy/clear-fx";
 -import type { CameraFeelProof } from "../../legacy/camera-feel";
 -
@@ -2098,6 +2099,7 @@ index eec32805c..000000000
 -  loading: () => { sceneSwaps: number; lazyLoadedCount: number };
 -  physics: () => { backend: string; bodyCount: number; sensorCount: number };
 -  appliedLook: Record<string, unknown>;
+-  readonly game: Game;
 -  rig: () => { id: string; driftDeg: number; punch: number };
 -  scenario: () => string | null;
 -}
@@ -2113,6 +2115,15 @@ index eec32805c..000000000
 -    get clearFx() { return b.clearFx(); },
 -    get cameraFeel() { return b.cameraFeel(); },
 -    get audio() { return b.audio(); },
+-
+-    get framing() {
+-      const ev = b.game.app.camera?.evidence?.();
+-      return {
+-        rig: ev?.rig ?? "blockfall-reactor.static",
+-        subjectScreenHeightFraction: ev?.subjectScreenHeightFraction ?? null,
+-        pose: ev?.pose ?? null
+-      };
+-    },
 -    get render() { return b.render(); },
 -    get loading() { return b.loading(); },
 -    get physics() { return b.physics(); },
@@ -2122,5 +2133,5 @@ index eec32805c..000000000
 -  };
 -}
 -- 
-2.34.1
+2.52.0
 

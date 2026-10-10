@@ -1,4 +1,4 @@
-From b130256ba5610b36e2fec6b91848b7ddfad79a63 Mon Sep 17 00:00:00 2001
+From 0bf92669a4326de55c687fc670a9370c1f52a818 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 15:41:47 +0000
 Subject: [PATCH] showcase-aurora-lander: delete evidence files+blocks +
@@ -15,10 +15,10 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../scripts/write-performance-report.ts       | 128 -------
  .../scripts/write-route-health.mjs            | 226 ------------
  apps/showcase-aurora-lander/src/evidence.ts   |   8 -
- .../showcase-aurora-lander/src/legacy/main.ts | 110 +-----
+ .../showcase-aurora-lander/src/legacy/main.ts | 102 ------
  apps/showcase-aurora-lander/src/main.ts       |   1 -
  .../src/v2/evidence/index.ts                  | 165 ---------
- 12 files changed, 3 insertions(+), 1613 deletions(-)
+ 12 files changed, 1608 deletions(-)
  delete mode 100644 apps/showcase-aurora-lander/performance-report.json
  delete mode 100644 apps/showcase-aurora-lander/scripts/build-models.mjs
  delete mode 100644 apps/showcase-aurora-lander/scripts/build-review-extraction-bay.mjs
@@ -1425,7 +1425,7 @@ index af1232122..000000000
 -    (collect ?? (() => ({ status: "unbound" })))()
 -};
 diff --git a/apps/showcase-aurora-lander/src/legacy/main.ts b/apps/showcase-aurora-lander/src/legacy/main.ts
-index c084d0a50..798685c22 100644
+index 174b63512..798685c22 100644
 --- a/apps/showcase-aurora-lander/src/legacy/main.ts
 +++ b/apps/showcase-aurora-lander/src/legacy/main.ts
 @@ -41,7 +41,6 @@ import {
@@ -1578,32 +1578,7 @@ index c084d0a50..798685c22 100644
    // and site transitions complete within the browser gate even on a software-rendered worker.
    return createLanderState({ x: pad.x, y: padHeight + (dropEvidenceMode ? 14 : 26), z: pad.z }, site.fuelBudget);
  }
-@@ -1200,13 +1144,11 @@ function setupPanel(): void {
-   // multipliers) is documentation, not a player HUD, so it starts collapsed behind an
-   // explicit control instead of permanently eating a quarter of the frame. Touch
-   // controls stay outside the collapsed region because they are gameplay surface.
--  // Review capture expands it so retained evidence still shows the full contract.
--  const reviewCapture = false;
-   panel.innerHTML = `
-     <h1>AURORA LANDER</h1>
-     <p class="panel-hint"><kbd>W</kbd> thrust · <kbd>A</kbd>/<kbd>D</kbd> rotate · <kbd>Space</kbd>/<kbd>R</kbd> restart · <kbd>G</kbd> ghost · <kbd>P</kbd> pause</p>
--    <button id="panel-reference-toggle" class="panel-toggle" type="button" aria-expanded="${reviewCapture ? "true" : "false"}" aria-controls="panel-reference">Briefing &amp; grading</button>
--    <div id="panel-reference"${reviewCapture ? "" : " hidden"}>
-+    <button id="panel-reference-toggle" class="panel-toggle" type="button" aria-expanded="false" aria-controls="panel-reference">Briefing &amp; grading</button>
-+    <div id="panel-reference" hidden>
-       <h2>Site briefing</h2>
-       <p id="panel-site-brief"></p>
-       <h2>Controls</h2>
-@@ -1232,7 +1174,7 @@ function setupPanel(): void {
-       <span></span>
-       <span></span>
-     </div>
--    <div id="panel-reference-tail"${reviewCapture ? "" : " hidden"}>
-+    <div id="panel-reference-tail" hidden>
-       <h2>Grading</h2>
-       <table class="score-table">
-         <tr><td>Soft touchdown (&lt;${SOFT_TOUCHDOWN_MAX_VSPEED} m/s)</td><td>1000 × fuel × site</td></tr>
-@@ -1333,7 +1275,6 @@ function gradeFromContact(context: GradingContext): void {
+@@ -1331,7 +1275,6 @@ function gradeFromContact(context: GradingContext): void {
  
    const isLastSite = siteIndex >= SITES.length - 1;
    phase = isLastSite ? "campaign-clear" : "landed";
@@ -1611,7 +1586,7 @@ index c084d0a50..798685c22 100644
    // campaign producer advances normally through all three sites.
    advanceTimer = isLastSite || hardDropEvidenceMode ? -1 : 1.8;
    showBanner(
-@@ -1378,7 +1319,6 @@ function tick(dtFixed: number): void {
+@@ -1376,7 +1319,6 @@ function tick(dtFixed: number): void {
  
    // Edge-driven audio before integration.
    const controls = readControls();
@@ -1619,7 +1594,7 @@ index c084d0a50..798685c22 100644
    // (-0.6 m/s near the deck) so grading, sensor and audio paths run without human
    // input and the scripted approach touches down softly on the pad.
    let effectiveControls = controls;
-@@ -1448,7 +1388,6 @@ function tick(dtFixed: number): void {
+@@ -1446,7 +1388,6 @@ function tick(dtFixed: number): void {
    }
    const events = collisionWorld.step(dtFixed);
  
@@ -1627,7 +1602,7 @@ index c084d0a50..798685c22 100644
    let sample: SurfaceSample | undefined;
    if (surfaceQuery) {
      sample = surfaceQuery.sample(state.x, state.z);
-@@ -1622,9 +1561,7 @@ function renderUpdate(dtFrame: number): void {
+@@ -1620,9 +1561,7 @@ function renderUpdate(dtFrame: number): void {
      && phase === "flying"
      && altitudeAboveGround > APPROACH_SCAFFOLD_MIN_AGL;
    // The campaign-clear bay is a complete renderer-owned deck laid over the
@@ -1637,7 +1612,7 @@ index c084d0a50..798685c22 100644
    // has already run and remains published; runtime flight keeps terrain shown.
      extractionNodes.forEach((node, index) => {
      node.setVisible(extractionVisible && true);
-@@ -1766,7 +1703,6 @@ function renderUpdate(dtFrame: number): void {
+@@ -1764,7 +1703,6 @@ function renderUpdate(dtFrame: number): void {
      }
    }
  
@@ -1645,7 +1620,7 @@ index c084d0a50..798685c22 100644
    terrainQueryClock += dtFrame;
    if (terrainQueryClock >= 1) {
      terrainQueryFps = Math.round(terrainQueryCountWindow / terrainQueryClock);
-@@ -1832,47 +1768,9 @@ function publishEvidence(): void {
+@@ -1830,47 +1768,9 @@ function publishEvidence(): void {
  }
  
  // ---- main loop -----------------------------------------------------------------
@@ -1693,14 +1668,14 @@ index c084d0a50..798685c22 100644
  // Point the active field/query/site at the requested site (site 1 by default).
  if (initialSiteIndex > 0) {
    loadSite(initialSiteIndex);
-@@ -1883,5 +1781,3 @@ if (initialSiteIndex > 0) {
+@@ -1881,5 +1781,3 @@ if (initialSiteIndex > 0) {
    surfaceQuery = entry.query;
    resetAttempt();
  }
 -mountedEvidence.mounted = true;
 -mountedEvidence.status = "ready";
 diff --git a/apps/showcase-aurora-lander/src/main.ts b/apps/showcase-aurora-lander/src/main.ts
-index 6bb6d93ce..6e083b529 100644
+index 6f239e303..441e72711 100644
 --- a/apps/showcase-aurora-lander/src/main.ts
 +++ b/apps/showcase-aurora-lander/src/main.ts
 @@ -1,7 +1,6 @@
@@ -1883,5 +1858,5 @@ index e9c48049d..000000000
 -  };
 -}
 -- 
-2.34.1
+2.52.0
 

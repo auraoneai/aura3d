@@ -1,8 +1,8 @@
-From 95a9d6a663eedaa7e75ba00ba0fef9f2bad5b9cb Mon Sep 17 00:00:00 2001
+From d41e80ffd810f9f26cf1e295b1d987008d490738 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:55 +0000
-Subject: [PATCH] [qr-prd09] showcase-turbo-drift-circuit: delete evidence
- files+blocks (T5.8)
+Subject: [PATCH] showcase-turbo-drift-circuit: delete evidence files+blocks
+ (T5.8)
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
@@ -20,8 +20,8 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../src/legacy/main.ts                        |  2074 ---
  apps/showcase-turbo-drift-circuit/src/main.ts |     7 -
  .../src/race-proof.ts                         |     3 -
- .../src/v2/evidence/index.ts                  |   102 -
- 15 files changed, 17999 deletions(-)
+ .../src/v2/evidence/index.ts                  |    99 -
+ 15 files changed, 17996 deletions(-)
  delete mode 100644 apps/showcase-turbo-drift-circuit/scripts/build-circuit-environment-v2.py
  delete mode 100644 apps/showcase-turbo-drift-circuit/scripts/build-clean-tsukuba-visual.mjs
  delete mode 100644 apps/showcase-turbo-drift-circuit/scripts/build-formula-circuit.mjs
@@ -18460,7 +18460,7 @@ index a53097063..cdd033079 100644
    const element = document.getElementById(id);
    if (!element) throw new Error("Missing element #" + id);
 diff --git a/apps/showcase-turbo-drift-circuit/src/main.ts b/apps/showcase-turbo-drift-circuit/src/main.ts
-index be40b330e..ece8bc6d8 100644
+index 7ecfa8d3a..c52f1981e 100644
 --- a/apps/showcase-turbo-drift-circuit/src/main.ts
 +++ b/apps/showcase-turbo-drift-circuit/src/main.ts
 @@ -1,11 +1,6 @@
@@ -18475,9 +18475,9 @@ index be40b330e..ece8bc6d8 100644
  function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
    const raw = new URL(loc.href).searchParams.get("a3d-qr");
    if (raw === null) return undefined;
-@@ -13,11 +8,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
-   const short = `route-${flag.replace(/^A3D_QR_ROUTE_/, "").toLowerCase().replace(/_/g, "-")}`;
-   return entries.includes(short) || entries.includes(flag) ? true : undefined;
+@@ -16,11 +11,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const wanted = [`route-${slug.replace(/_/g, "-")}`, `route_${slug}`, flag];
+   return tokens.some((t) => wanted.includes(t)) ? true : undefined;
  }
 -
  const flags = resolveQrFlags({
@@ -18498,10 +18498,10 @@ index d225e6368..000000000
 -export * from "./gameplay/race-proof";
 diff --git a/apps/showcase-turbo-drift-circuit/src/v2/evidence/index.ts b/apps/showcase-turbo-drift-circuit/src/v2/evidence/index.ts
 deleted file mode 100644
-index e28ff9c82..000000000
+index 5a7beccc4..000000000
 --- a/apps/showcase-turbo-drift-circuit/src/v2/evidence/index.ts
 +++ /dev/null
-@@ -1,102 +0,0 @@
+@@ -1,99 +0,0 @@
 -// apps/showcase-turbo-drift-circuit/src/v2/evidence/index.ts — T2.5 evidence.
 -// §7.2.1 sections for showcase-turbo-drift-circuit under
 -// window.__AURA3D_GAME_EVIDENCE__["showcase-turbo-drift-circuit"], lazily
@@ -18521,11 +18521,8 @@ index e28ff9c82..000000000
 -  };
 -  readonly app: () => AuraApp | undefined;
 -  readonly snapshot: () => GameRacingSnapshot;
--  readonly appliedLook: {
--    readonly preset: string;
--    readonly toneMapping: string;
--    readonly exposureEV: number;
--  };
+-  // T2.2-post: appliedLook is the C-31 runtime look manifest — a varying shape.
+-  readonly appliedLook: Record<string, unknown>;
 -  readonly raceStatus: () => string;
 -  readonly opponentGap: () => number;
 -  readonly audioCueLog: () => readonly string[];
@@ -18605,5 +18602,5 @@ index e28ff9c82..000000000
 -  };
 -}
 -- 
-2.34.1
+2.52.0
 

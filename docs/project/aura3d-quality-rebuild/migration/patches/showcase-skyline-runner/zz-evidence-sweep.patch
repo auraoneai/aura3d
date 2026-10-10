@@ -1,4 +1,4 @@
-From 53aa068f5093b1c70fc389cefba5b44c1152b067 Mon Sep 17 00:00:00 2001
+From d28b5a6a1065930004ef8d221245b3a857908a01 Mon Sep 17 00:00:00 2001
 From: Devin <devin@cognition.ai>
 Date: Fri, 9 Oct 2026 15:26:49 +0000
 Subject: [PATCH] showcase-skyline-runner: delete evidence files+blocks (T5.8)
@@ -19,8 +19,8 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../src/legacy/main.ts                        | 1372 -----------------
  .../src/level-proof.ts                        |    3 -
  apps/showcase-skyline-runner/src/main.ts      |    1 -
- .../src/v2/evidence/index.ts                  |   65 -
- 13 files changed, 3 insertions(+), 2945 deletions(-)
+ .../src/v2/evidence/index.ts                  |   76 -
+ 13 files changed, 3 insertions(+), 2956 deletions(-)
  delete mode 100644 apps/showcase-skyline-runner/scripts/build-level-one-world.ts
  delete mode 100644 apps/showcase-skyline-runner/scripts/build-review-backdrop.mjs
  delete mode 100644 apps/showcase-skyline-runner/scripts/build-review-hero.mjs
@@ -3257,7 +3257,7 @@ index f06dcc964..000000000
 -// tests/unit/apps (lane 15) re-points its imports (qr-request tracked).
 -export * from "./gameplay/level-proof";
 diff --git a/apps/showcase-skyline-runner/src/main.ts b/apps/showcase-skyline-runner/src/main.ts
-index 2fab0d09b..0d7c758dc 100644
+index b93c5a2c1..e40321a16 100644
 --- a/apps/showcase-skyline-runner/src/main.ts
 +++ b/apps/showcase-skyline-runner/src/main.ts
 @@ -1,7 +1,6 @@
@@ -3270,13 +3270,14 @@ index 2fab0d09b..0d7c758dc 100644
  const ROUTE_FLAG = "A3D_QR_ROUTE_SKYLINE_RUNNER" as const;
 diff --git a/apps/showcase-skyline-runner/src/v2/evidence/index.ts b/apps/showcase-skyline-runner/src/v2/evidence/index.ts
 deleted file mode 100644
-index 1809a8e1a..000000000
+index 42a05f395..000000000
 --- a/apps/showcase-skyline-runner/src/v2/evidence/index.ts
 +++ /dev/null
-@@ -1,65 +0,0 @@
+@@ -1,76 +0,0 @@
 -// apps/showcase-skyline-runner/src/v2/evidence/index.ts — lazy evidence sections
 -// for games.json requiredConditions and the QR audits.
 -import { SKYLINE_SECTION_COUNT } from "../../gameplay/level";
+-import type { Game } from "@aura3d/game";
 -
 -export interface SkylineEvidenceBindings {
 -  player(): {
@@ -3315,6 +3316,7 @@ index 1809a8e1a..000000000
 -  render(): { frame: number; firstFrameAt: number };
 -  loading(): { sceneSwaps: number; lazyLoadedCount: number };
 -  appliedLook(): Record<string, unknown>;
+-  readonly game: Game;
 -  rig(): { id: string; position: readonly number[]; target: readonly number[]; fov: number };
 -  scenario(): { name: string; appliedLook: Record<string, unknown> };
 -}
@@ -3327,6 +3329,15 @@ index 1809a8e1a..000000000
 -    get fx() { return bindings.fx(); },
 -    get audio() { return bindings.audio(); },
 -    get feel() { return bindings.feel(); },
+-
+-    get framing() {
+-      const ev = bindings.game.app.camera?.evidence?.();
+-      return {
+-        rig: ev?.rig ?? "skyline-runner.follow2d",
+-        subjectScreenHeightFraction: ev?.subjectScreenHeightFraction ?? null,
+-        pose: ev?.pose ?? null
+-      };
+-    },
 -    get render() { return bindings.render(); },
 -    get loading() { return bindings.loading(); },
 -    get appliedLook() { return bindings.appliedLook(); },
@@ -3340,5 +3351,5 @@ index 1809a8e1a..000000000
 -  };
 -}
 -- 
-2.34.1
+2.52.0
 

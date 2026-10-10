@@ -1,8 +1,7 @@
-From 5b156dd64a44c1d33be45cbecc596214c610b8ee Mon Sep 17 00:00:00 2001
+From dd735a0de11289a49af5abe442f46012cd68c639 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:50 +0000
-Subject: [PATCH] [qr-prd09] showcase-mech-hangar: delete evidence files+blocks
- (T5.8)
+Subject: [PATCH] showcase-mech-hangar: delete evidence files+blocks (T5.8)
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
@@ -21,8 +20,8 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../scripts/write-route-health.mjs            | 176 --------
  apps/showcase-mech-hangar/src/legacy/main.ts  | 304 -------------
  apps/showcase-mech-hangar/src/main.ts         |  10 -
- .../src/v2/evidence/index.ts                  |  81 ----
- 16 files changed, 2281 deletions(-)
+ .../src/v2/evidence/index.ts                  |  93 ----
+ 16 files changed, 2293 deletions(-)
  delete mode 100644 apps/showcase-mech-hangar/performance-report.json
  delete mode 100644 apps/showcase-mech-hangar/scripts/build-models.mjs
  delete mode 100644 apps/showcase-mech-hangar/scripts/build-sfx.mjs
@@ -2726,7 +2725,7 @@ index e9c535316..17c58eb98 100644
 -
  export {};
 diff --git a/apps/showcase-mech-hangar/src/main.ts b/apps/showcase-mech-hangar/src/main.ts
-index 7bd3f20f4..f6e174b1e 100644
+index f65007279..0089826bd 100644
 --- a/apps/showcase-mech-hangar/src/main.ts
 +++ b/apps/showcase-mech-hangar/src/main.ts
 @@ -1,14 +1,6 @@
@@ -2744,9 +2743,9 @@ index 7bd3f20f4..f6e174b1e 100644
  function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
    const raw = new URL(loc.href).searchParams.get("a3d-qr");
    if (raw === null) return undefined;
-@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
-     ? true
-     : undefined;
+@@ -19,11 +11,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const wanted = [`route-${slug.replace(/_/g, "-")}`, `route_${slug}`, flag];
+   return tokens.some((t) => wanted.includes(t)) ? true : undefined;
  }
 -
  const flags = resolveQrFlags({
@@ -2758,14 +2757,16 @@ index 7bd3f20f4..f6e174b1e 100644
  void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
 diff --git a/apps/showcase-mech-hangar/src/v2/evidence/index.ts b/apps/showcase-mech-hangar/src/v2/evidence/index.ts
 deleted file mode 100644
-index 4ebba67a4..000000000
+index d5ea9a020..000000000
 --- a/apps/showcase-mech-hangar/src/v2/evidence/index.ts
 +++ /dev/null
-@@ -1,81 +0,0 @@
+@@ -1,93 +0,0 @@
 -// apps/showcase-mech-hangar/src/v2/evidence/index.ts — lazy evidence sections the
 -// capture + browser specs read. loading.sceneId reports the logical room
 -// ("hangar" before lock-in, "pit" after) while loading.sceneSwaps stays 0 —
 -// both sets live in one union scene.
+-import type { Game } from "@aura3d/game";
+-
 -export interface MechEvidenceBindings {
 -  sceneId(): "hangar" | "pit";
 -  combat(): {
@@ -2790,6 +2791,7 @@ index 4ebba67a4..000000000
 -  audio(): { lastCue: string | null; cueLog: readonly string[] };
 -  run(): { paused: boolean; touchEngaged: boolean; replayActive: boolean };
 -  appliedLook(): Record<string, unknown>;
+-  readonly game: Game;
 -  rig(): Record<string, unknown>;
 -  scenario(): string | null;
 -  render(): { frame: number; firstFrameAt: number | null };
@@ -2824,6 +2826,15 @@ index 4ebba67a4..000000000
 -    get run() {
 -      return bindings.run();
 -    },
+-
+-    get framing() {
+-      const ev = bindings.game.app.camera?.evidence?.();
+-      return {
+-        rig: ev?.rig ?? "mech-hangar.fighting",
+-        subjectScreenHeightFraction: ev?.subjectScreenHeightFraction ?? null,
+-        pose: ev?.pose ?? null
+-      };
+-    },
 -    get render() {
 -      return bindings.render();
 -    },
@@ -2844,5 +2855,5 @@ index 4ebba67a4..000000000
 -  return evidence;
 -}
 -- 
-2.34.1
+2.52.0
 
