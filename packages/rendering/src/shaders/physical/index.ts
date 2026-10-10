@@ -30,6 +30,7 @@ import { A3D_PRD04_TANGENT_FRAME } from "./tangent_frame.glsl.js";
 import { A3D_PRD04_UV_TRANSFORM } from "./uv_transform.glsl.js";
 import { A3D_PRD04_ALPHA_A2C } from "./alpha_a2c.glsl.js";
 import { A3D_PRD04_DEBUG_VIEW } from "./debug_view.glsl.js";
+import { PRD04_CALL_CHUNKS } from "./lobe_calls.glsl.js";
 
 export const PRD04_SHADER_CHUNKS = [
 	A3D_PRD04_BSDF_LOBES_COMMON,
@@ -52,19 +53,22 @@ export const PRD04_SHADER_CHUNKS = [
 let registered = false;
 
 /**
- * Register every a3d_prd04_* chunk with the program registry (C-02).
+ * Register every a3d_prd04_* chunk with the program registry (C-02): the
+ * fifteen declaration chunks plus their pars/call split (`lobe_calls`, T0-05).
  * Idempotent: a second call is a no-op so repeated lane-barrel evaluation
  * or test setups cannot double-register.
  */
 export function registerPrd04ShaderChunks(): void {
 	if (registered) return;
-	for (const chunk of PRD04_SHADER_CHUNKS) {
+	for (const chunk of [...PRD04_SHADER_CHUNKS, ...PRD04_CALL_CHUNKS]) {
 		if (shaderChunk(chunk.name) === undefined) {
 			registerShaderChunk(chunk);
 		}
 	}
 	registered = true;
 }
+
+export { PRD04_CALL_CHUNKS };
 
 export {
 	A3D_PRD04_BSDF_LOBES_COMMON,
