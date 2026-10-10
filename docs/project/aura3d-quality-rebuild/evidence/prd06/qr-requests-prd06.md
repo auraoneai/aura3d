@@ -236,7 +236,9 @@ extensions flatten onto matching handles").
 
 ## Filed issues (P-64 write-back, 2026-10-09)
 
-Ledger rows filed as `qr-request` + `to:prdNN` issues; earlier block filed by #498:
+Ledger rows filed as `qr-request` + `to:prdNN` issues (folded in from #661). Rows marked
+NOT FILED pointed at lane-05 filings (body "From: lane-05") and still need a lane-06 issue
+(06-REQ); the lane-05 issue may be reused if its owner extends it to the lane-06 ask:
 
 | Ledger row | Issue |
 |---|---|
@@ -256,18 +258,18 @@ Ledger rows filed as `qr-request` + `to:prdNN` issues; earlier block filed by #4
 | Q-13-1 fighterClipMap wiring | #488 |
 | Q-13-3 character-hero module → template | #493 |
 | Q-XX non-affine matrices row-3 payload | #494 |
-| Q-14-1..4 game route changes | #457-460 |
+| Q-14-1..4 game route changes | #428, #429, #430, #431 (see `qr-requests-q14.md`) |
 | Q-14-5 mech-hangar route | #432 |
 | Q-14-6 gallery-shift route | #433 |
 | Q-14-7 world-war-x codemod | #434 |
 | Q-14-8 games.json burst steps | #435 |
-| Q-02-1 DepthPass C-11 composition | #446 |
-| Q-04-* material/actor rows | #448-450 |
-| Q-11-1 WebGPU storage-buffer palette | #451 |
-| Q-11-2 tier table C-27 fields | #452 |
-| Q-12-1 checkpoint captures + LFS | #453 |
-| Q-13-2 skill rewrite | #455 |
-| Q-15-1..3 renderInput/lean/manifest | #461-463 |
+| Q-02-1 DepthPass C-11 composition | NOT FILED for lane 06 (#446 is the lane-05 Q-02-1 filing) |
+| Q-04-1 / Q-04-3 material rows | NOT FILED for lane 06 (#448, #450 are lane-05 filings); Q-04-2 is #657 |
+| Q-11-1 WebGPU storage-buffer palette | NOT FILED for lane 06 (#451 is the lane-05 Q-11-1 filing) |
+| Q-11-2 tier table C-27 fields | NOT FILED for lane 06 (#452 is the lane-05 Q-11-2 filing) |
+| Q-12-1 checkpoint captures + LFS | NOT FILED for lane 06 (#453 is the lane-05 Q-12-1 filing) |
+| Q-13-2 skill rewrite | NOT FILED for lane 06 (#455 is the lane-05 Q-13-2 filing) |
+| Q-15-1..3 renderInput/lean/manifest | NOT FILED for lane 06 (#461-463 are lane-05 filings) |
 | 06-S4 C-18/C-19 browser contract specs (tests/browser/contracts/ is lane-15-owned) | #688 |
 | Baseline tools/* tsc red blocking every PR's unit check (quarantined-module imports) | #744 |
 | Baseline lit-scene pack fail — retarget.worker.ts missing from engine dist tarball (bundle-size red on every PR) | #746 |
