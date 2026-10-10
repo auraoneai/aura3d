@@ -30,7 +30,7 @@ import {
   primitives,
   scene,
   type AuraApp,
-  type AuraCreateAppRendererOptions
+  type AuraCreateAppOptions
 } from "@aura3d/engine";
 import type { ReadyPayload } from "../../../shared/types";
 
@@ -103,18 +103,26 @@ export default async function run(host: HTMLElement): Promise<ReadyPayload> {
   const app: AuraApp = createAuraApp(host, {
     scene: built.add(effects.fog({ density: 0.03, color: "#8fa3b8", intensity: 1 }))
       .add(effects.bloom({ intensity: 0.7, radius: 0.4, threshold: 0.85, quality: "cinematic" })),
+    // T0-13 lane-11 copy: no mode override, no safe-basic fallback — a failed
+    // production mount must surface as a mount error, not a degraded renderer.
     renderer: {
-      mode: "production",
       qualityProfile: "production",
-      fallback: "safe-basic",
       ...(auraQuality !== null ? { quality: auraQuality } : {})
-    } satisfies AuraCreateAppRendererOptions,
+    } satisfies NonNullable<AuraCreateAppOptions["renderer"]>,
     qualityRebuild: { flags: qrFlags },
     resize: false,
     autoStart: false
   });
   (window as unknown as { __PRD11_APP__?: AuraApp }).__PRD11_APP__ = app;
   await app.ready();
+  const mountDiag = app.diagnostics();
+  if (mountDiag.errors.length > 0) {
+    throw new Error(`prd11 lane mount failed: ${mountDiag.errors.join("; ")}`);
+  }
+  const fallbackWarning = mountDiag.warnings.find((w) => /safe-basic|fallback/i.test(w));
+  if (fallbackWarning) {
+    throw new Error(`prd11 lane mount fell back to safe-basic: ${fallbackWarning}`);
+  }
 
   // Continuous rAF loop: optional simulated game-logic load, then a stepped frame.
   // `window.__PRD11_LOAD_MS__` overrides `?loadMs=` live, so lane specs can
