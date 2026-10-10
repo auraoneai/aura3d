@@ -43,8 +43,7 @@ import {
   type TexturedPBRTextureSlot,
   isTexturedPbrTextureSlotShaderActive,
   DEFAULT_TEXTURED_PBR_SHADER_NAME,
-  applyTextureBudget,
-  programCacheSlot
+  applyTextureBudget
 } from "@aura3d/rendering";
 import { Bounds3 as SceneBounds3, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import {
@@ -1954,11 +1953,14 @@ function createDefaultGLTFMaterial(
 ): Material {
   // Use a neutral light-gray base color instead of glTF-spec white ([1,1,1,1])
   // so missing-material fallbacks do not blow out as bright white artifacts.
-  // PRD-04 P2-12/E23: flag-on uses the glTF-spec default ([1,1,1,1], metallic 1, roughness 1).
+  // PRD-04 P2-12/E23: flag-on uses the glTF-spec default ([1,1,1,1], roughness 1).
+  // T0-18(a): metallic stays 0, not the spec's 1 — a fully metallic surface has
+  // no diffuse response and renders near-black until a C-09 probe/IBL is bound;
+  // restore spec metallic once environment lighting is guaranteed on this path.
   const defaults = materialsR185 ? {
     name: mesh.material,
     baseColor: [1, 1, 1, 1] as const,
-    metallic: 1,
+    metallic: 0,
     roughness: 1,
     environmentIntensity: DEFAULT_PBR_ENVIRONMENT_INTENSITY
   } as const : {
@@ -2075,12 +2077,16 @@ export interface GLTFTransmissionQrContext {
  * E22 gate (PRD-04 P4-3): real transmission rendering exists — so the legacy
  * unbacked-scalar-transmission rewrite must not run — exactly when
  * `A3D_QR_MATERIALS` **and** `A3D_QR_MATERIALS_TRANSMISSION` are on **and**
- * `programCacheSlot.provided` (C-02 real) or `renderer.transmission === "env"`.
+ * `renderer.transmission === "env"` (the env-refraction path).
+ * T0-18(b): `programCacheSlot.provided` is not evidence — it is true whenever
+ * the prd01 barrel loaded, which skipped E22 even though the scene-copy path
+ * did not draw. `"auto"` keeps the E22 rewrite until the transmission target
+ * is bound end-to-end on generated programs (04-S10).
  */
 function qrTransmissionRealPath(qr?: GLTFTransmissionQrContext): boolean {
   return qr?.materialsR185 === true
     && qr?.materialsTransmission === true
-    && (programCacheSlot.provided || qr.transmission === "env");
+    && qr.transmission === "env";
 }
 
 function usesUnbackedScalarTransmission(material: GLTFMaterialAsset, qr?: GLTFTransmissionQrContext): boolean {
