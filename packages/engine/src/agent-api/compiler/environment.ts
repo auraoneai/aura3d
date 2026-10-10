@@ -280,7 +280,16 @@ export function bindPrd02EnvironmentProbe(
   // mode is echoed so the capture report can label it (toggle-delta reads it).
   const pmremMode: "cpu" | "auto" = readLightingKillSwitches().pmrem === "cpu" ? "cpu" : "auto";
   if (request === "neutral") {
-    return { probe: cache.neutral(tier), pending: null, resolution, pmremMode };
+    // T0-25: `cache.neutral` is now the analytic constant floor (no main-thread
+    // GGX prefilter); the baked `neutral` preset upgrades it through
+    // `cache.acquire` so specular detail lands without the ~33M-iter pass. A
+    // failed load degrades to the floor instead of an unhandled rejection.
+    const pending = cache.acquire({ preset: "neutral", tier }).then((probe) => {
+      options.onUpgrade?.(probe);
+      return probe;
+    });
+    pending.catch(() => {});
+    return { probe: cache.neutral(tier), pending, resolution, pmremMode };
   }
   const floor = cache.neutral(tier);
   if (typeof request === "object" && "capture" in request) {

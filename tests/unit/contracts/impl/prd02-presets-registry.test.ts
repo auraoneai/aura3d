@@ -15,9 +15,9 @@ import {
 const DIR = resolve("public/aura-environments");
 
 describe("aura-environments baked presets (PRD-02 §6.2)", () => {
-  it("registry has all five presets with CC0 license + tags", () => {
+  it("registry has all six presets with CC0 license + tags", () => {
     const names = AURA_ENVIRONMENT_PRESETS.map((p) => p.name);
-    expect(names).toEqual(["studio", "outdoor", "sunset", "night", "indoor"]);
+    expect(names).toEqual(["studio", "outdoor", "sunset", "night", "indoor", "neutral"]);
     for (const p of AURA_ENVIRONMENT_PRESETS) {
       expect(p.license).toBe("CC0");
       expect(p.tags.length).toBeGreaterThan(0);

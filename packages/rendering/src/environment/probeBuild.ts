@@ -165,6 +165,58 @@ export function buildProbeFromLevels(
   });
 }
 
+/**
+ * Linear radiance of the analytic neutral floor (T0-25): constant chosen so the
+ * probe's SH9 DC equals the baked `neutral` preset's (1.8945 ≈ c·3.5483).
+ */
+export const NEUTRAL_FLOOR_RADIANCE = 0.5339295346775188;
+
+/**
+ * The baked `neutral` preset's SH9 verbatim (`neutral.sh9.f32`, CC0 bake) —
+ * the floor carries it so diffuse IBL is identical before and after the baked
+ * specular cube lands via `acquire`.
+ */
+export const NEUTRAL_FLOOR_SH9 = new Float32Array([
+  1.8945446, 1.8945446, 1.8945446,
+  -1.4085772, -1.4085772, -1.4085772,
+  1.1517786, 1.1517786, 1.1517786,
+  -0.096516535, -0.096516535, -0.096516535,
+  0.12132652, 0.12132652, 0.12132652,
+  1.2429792, 1.2429792, 1.2429792,
+  0.63450480, 0.63450480, 0.63450480,
+  -0.23291537, -0.23291537, -0.23291537,
+  -0.50483990, -0.50483990, -0.50483990
+]);
+
+/**
+ * Instant analytic neutral floor: a constant cube at `NEUTRAL_FLOOR_RADIANCE`
+ * plus the baked `NEUTRAL_FLOOR_SH9` — no CPU GGX prefilter. Specular detail
+ * arrives through the baked `neutral` preset upgrade.
+ */
+export function buildNeutralFloorProbe(
+  faceSize: EnvironmentProbe["faceSize"],
+  options: Prd02ProbeBuildOptions = {}
+): Prd02EnvironmentProbe {
+  const face = new Float32Array(faceSize * faceSize * 4);
+  for (let i = 0; i < faceSize * faceSize; i += 1) {
+    face[i * 4] = NEUTRAL_FLOOR_RADIANCE;
+    face[i * 4 + 1] = NEUTRAL_FLOOR_RADIANCE;
+    face[i * 4 + 2] = NEUTRAL_FLOOR_RADIANCE;
+    face[i * 4 + 3] = 1;
+  }
+  const faces: Float32Array[] = [face, face, face, face, face, face];
+  return buildProbeFromLevels(
+    [{ faceSize, faces }],
+    faceSize,
+    {
+      ...options,
+      label: options.label ?? "env-neutral-floor",
+      source: options.source ?? "neutral",
+      sh9: options.sh9 ?? new Float32Array(NEUTRAL_FLOOR_SH9)
+    }
+  );
+}
+
 /** Rasterize the analytic RoomEnvironmentScene into six float faces. */
 export function buildRoomFaces(faceSize: number): Float32Array[] {
   const faces: Float32Array[] = [];

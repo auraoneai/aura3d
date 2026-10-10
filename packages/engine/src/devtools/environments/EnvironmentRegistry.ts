@@ -76,7 +76,7 @@ export function createThreeCompatEnvironmentGalleryModel(manifest = loadThreeCom
 // change when Q-05-1 lands.
 
 export interface AuraEnvironmentPresetEntry {
-  readonly name: "studio" | "outdoor" | "sunset" | "night" | "indoor";
+  readonly name: "studio" | "outdoor" | "sunset" | "night" | "indoor" | "neutral";
   /** URL the runtime fetches (served from `public/`). */
   readonly specularUrl: string;
   readonly sh9Url: string;
@@ -151,6 +151,19 @@ export const AURA_ENVIRONMENT_PRESETS: readonly AuraEnvironmentPresetEntry[] = [
     sha256: {
       specular: "40b9eb910ccd2e5e3713abb28f0abaf9e99868148467ff3fccd70e6b3fdc78ac",
       sh9: "545a1d00bf23ee1520a2366e7b64f47768b610418a8283ecdb254e4f12e5665b"
+    },
+    tags: ["neutral", "stand-in"]
+  },
+  {
+    name: "neutral",
+    specularUrl: "/aura-environments/neutral.specular.ktx2",
+    sh9Url: "/aura-environments/neutral.sh9.f32",
+    manifestUrl: "/aura-environments/neutral.manifest.json",
+    license: "CC0",
+    sourceFile: "RoomEnvironmentScene.ts (r185 neutral room port — the C-09 runtime floor, T0-25)",
+    sha256: {
+      specular: "da314875ca28ed4e2db2de1b66b526d8d3615d9942bd9a5d7ddacd3901495069",
+      sh9: "01a47aaf260c942fd4d917032ad886e060fa39a093bc5a4bc6e52967c7a75c67"
     },
     tags: ["neutral", "stand-in"]
   }
