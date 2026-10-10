@@ -450,6 +450,13 @@ export function runV2HdrStages(
     || (hdrCustoms.some((pass) => pass.inputs.includes("velocity")) && temporalOk);
   if (!wantsAo && !wantsGodRays && !wantsCa && !taaActive && !wantsDof && !mbActive && !wantsAutoExposure && hdrCustoms.length === 0) return { target: source, aoPending: false, skipped };
 
+  // T0-15: the forward HDR target is multisampled by default (`sampleCount` 4
+  // in `Renderer`), so its `colorHandle`/`depthTextureHandle` only contain
+  // resolved content once the driver has blitted the MSAA surface. The
+  // legacy presents resolve their source themselves; the v2 stage driver
+  // never did and sampled the untouched resolve textures (black HDR). This
+  // is a no-op when the source is single-sampled or already resolved.
+  host.resolveMultisampleTarget(source as Parameters<WebGL2DeviceHost["resolveMultisampleTarget"]>[0]);
   const src = asGlTarget(source);
   if ((needsLinZ || needsVelocity) && !src.depthTextureHandle) {
     throw new RenderDeviceError(
