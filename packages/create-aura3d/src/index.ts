@@ -21,7 +21,7 @@ export const CREATE_AURA3D_TEMPLATES = [
   "material-authoring",
   "asset-inspector",
   "character-viewer",
-  "three-compat-postprocess-scene",
+  "postprocess-scene",
   "three-compat-custom-threejs-migration",
   "three-compat-large-scene"
 ] as const;
@@ -38,7 +38,8 @@ export const TEMPLATE_ALIASES: Readonly<Record<string, CreateA3DTemplate>> = Obj
   "three-compat-architecture-interior": "architecture-interior",
   "three-compat-material-authoring": "material-authoring",
   "three-compat-asset-inspector": "asset-inspector",
-  "three-compat-character-viewer": "character-viewer"
+  "three-compat-character-viewer": "character-viewer",
+  "three-compat-postprocess-scene": "postprocess-scene"
 });
 
 export interface ResolvedTemplateName {

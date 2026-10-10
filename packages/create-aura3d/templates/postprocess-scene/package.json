@@ -1,5 +1,5 @@
 {
-  "name": "aura3d-three-compat-postprocess-scene",
+  "name": "aura3d-postprocess-scene",
   "version": "1.0.0",
   "private": true,
   "type": "module",

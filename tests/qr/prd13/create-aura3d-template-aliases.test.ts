@@ -17,7 +17,8 @@ const RENAMED: ReadonlyArray<readonly [retired: string, current: string]> = [
   ["three-compat-architecture-interior", "architecture-interior"],
   ["three-compat-material-authoring", "material-authoring"],
   ["three-compat-asset-inspector", "asset-inspector"],
-  ["three-compat-character-viewer", "character-viewer"]
+  ["three-compat-character-viewer", "character-viewer"],
+  ["three-compat-postprocess-scene", "postprocess-scene"]
 ];
 
 describe("create-aura3d template aliases (Q-13-4)", () => {
