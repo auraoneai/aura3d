@@ -23,7 +23,7 @@
     "templates/episode-builder",
     "templates/character-controller",
     "templates/premium-product-viewer",
-    "templates/three-compat-architecture-interior",
+    "templates/architecture-interior",
     "templates/three-compat-material-authoring",
     "templates/three-compat-asset-inspector",
     "templates/three-compat-character-viewer",

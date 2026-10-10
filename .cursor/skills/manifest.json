@@ -128,7 +128,7 @@
       "aura3d-threejs-migration",
       "aura3d-materials-environments"
     ],
-    "three-compat-architecture-interior": [
+    "architecture-interior": [
       "aura3d-threejs-migration",
       "aura3d-materials-environments"
     ],

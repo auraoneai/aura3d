@@ -13,7 +13,8 @@ import {
 } from "../../../packages/create-aura3d/src/index";
 
 const RENAMED: ReadonlyArray<readonly [retired: string, current: string]> = [
-  ["three-compat-premium-product-viewer", "premium-product-viewer"]
+  ["three-compat-premium-product-viewer", "premium-product-viewer"],
+  ["three-compat-architecture-interior", "architecture-interior"]
 ];
 
 describe("create-aura3d template aliases (Q-13-4)", () => {
