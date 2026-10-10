@@ -9,7 +9,8 @@ import type { AuraVec3 } from "../../index.js";
 import type { AuraCameraRig } from "../../../contracts/camera.js";
 import { springDamp } from "../Spring.js";
 import { createCollisionDamper, type CollisionDamper } from "../collision.js";
-import { add, mul, sub } from "./rigUtils.js";
+import { distanceForFractionInContext } from "../framing.js";
+import { add, mul, sub, subjectHeight } from "./rigUtils.js";
 
 const DEG = Math.PI / 180;
 
@@ -22,6 +23,8 @@ export interface OrbitRigOptions {
   readonly halflife?: number;
   readonly collision?: boolean | { readonly radius?: number };
   readonly fov?: number;
+  /** When set (and `target` is a subject), distance is solved so the subject fills this fraction of frame height (#76). */
+  readonly framing?: { readonly subjectHeightFraction: number };
 }
 
 export interface AuraOrbitRig extends AuraCameraRig {
@@ -66,11 +69,17 @@ export function createOrbitRig(o: OrbitRigOptions = {}): AuraOrbitRig {
       }
     },
     update(ctx) {
+      const subject = typeof o.target === "string" ? ctx.subject(o.target) : undefined;
       const target: AuraVec3 | undefined =
         typeof o.target === "string"
-          ? ctx.subject(o.target)?.position
+          ? subject?.position
           : (o.target ?? [0, 0, 0]);
       if (!target) return ctx.previous;
+      // Framing solver wins over the fixed distance when set (#76).
+      const dist =
+        o.framing !== undefined && subject !== undefined
+          ? distanceForFractionInContext(subjectHeight(subject), fov, o.framing.subjectHeightFraction, { aspect: ctx.aspect })
+          : distance;
 
       yaw = springDamp(yaw, yawT, halflife, ctx.dt);
       pitch = springDamp(pitch, pitchT, halflife, ctx.dt);
@@ -81,7 +90,7 @@ export function createOrbitRig(o: OrbitRigOptions = {}): AuraOrbitRig {
         Math.sin(pr),
         Math.cos(yr) * Math.cos(pr)
       ];
-      const desiredEye = add(target, mul(dir, distance));
+      const desiredEye = add(target, mul(dir, dist));
       const eye = o.collision
         ? (damper ??= createCollisionDamper(ctx.probe, typeof o.collision === "object" ? o.collision : {})).resolve(
             target,
@@ -98,7 +107,7 @@ export function createOrbitRig(o: OrbitRigOptions = {}): AuraOrbitRig {
         up,
         roll: 0,
         fov,
-        near: Math.max(0.05, 0.02 * distance),
+        near: Math.max(0.05, 0.02 * dist),
         far: ctx.previous.far
       };
     }

@@ -7,7 +7,8 @@
 import type { AuraVec3 } from "../../index.js";
 import type { AuraCameraRig } from "../../../contracts/camera.js";
 import { springDampVec3 } from "../Spring.js";
-import { add, mul } from "./rigUtils.js";
+import { distanceForFractionInContext } from "../framing.js";
+import { add, mul, subjectHeight } from "./rigUtils.js";
 
 const DEG = Math.PI / 180;
 
@@ -21,6 +22,8 @@ export interface TopDownRigOptions {
   readonly bounds?: { readonly min: AuraVec3; readonly max: AuraVec3 };
   readonly fov?: number;
   readonly centreHalflife?: number;
+  /** When set, altitude is solved so the tallest subject fills this fraction of frame height (#76). */
+  readonly framing?: { readonly subjectHeightFraction: number };
 }
 
 export function createTopDownRig(o: TopDownRigOptions = {}): AuraCameraRig {
@@ -30,8 +33,8 @@ export function createTopDownRig(o: TopDownRigOptions = {}): AuraCameraRig {
   const fov = o.fov ?? 45;
   const centreHalflife = o.centreHalflife ?? 0.12;
   const pitch = pitchDeg * DEG;
-  // Arm: straight down for pitch 90°, else tilted back along +Z.
-  const back = Math.cos(pitch) * height;
+  // Arm: straight down for pitch 90°, else tilted back along +Z (per-frame:
+  // `back` scales with the solved altitude, not just `o.height`).
   // Up-vector degeneracy: at ≥89.5° the view axis is (near) parallel to
   // world-up — pass the plane forward instead (§6.4).
   const upVec: AuraVec3 = Math.abs(pitchDeg) >= 89.5 ? [0, 0, -1] : [0, 1, 0];
@@ -46,9 +49,13 @@ export function createTopDownRig(o: TopDownRigOptions = {}): AuraCameraRig {
     update(ctx) {
       const refs = Array.isArray(o.target) ? o.target : [o.target].filter((t): t is string => !!t);
       const pts: AuraVec3[] = [];
+      let maxSubjectH = 0;
       for (const ref of refs) {
         const s = ctx.subject(ref);
-        if (s) pts.push(s.position);
+        if (s) {
+          pts.push(s.position);
+          maxSubjectH = Math.max(maxSubjectH, subjectHeight(s));
+        }
       }
       if (pts.length === 0 && refs.length === 0) pts.push(ctx.previous.target);
       if (pts.length === 0) return ctx.previous;
@@ -56,8 +63,15 @@ export function createTopDownRig(o: TopDownRigOptions = {}): AuraCameraRig {
       for (let i = 1; i < pts.length; i++) centroid = add(centroid, pts[i]);
       centroid = mul(centroid, 1 / pts.length);
 
+      // Framing solver wins over the fixed altitude when set (#76): the
+      // tallest subject fills `subjectHeightFraction` of frame height.
+      const heightNow =
+        o.framing !== undefined && maxSubjectH > 0
+          ? distanceForFractionInContext(maxSubjectH, fov, o.framing.subjectHeightFraction, { aspect: ctx.aspect })
+          : height;
+
       // World-space dead zone on the ground plane.
-      const halfH = Math.tan(((fov / 2) * Math.PI) / 180) * height;
+      const halfH = Math.tan(((fov / 2) * Math.PI) / 180) * heightNow;
       const halfW = halfH * ctx.aspect;
       if (centre === undefined) centre = centroid;
       const dzX = deadZone.x * halfW;
@@ -82,12 +96,12 @@ export function createTopDownRig(o: TopDownRigOptions = {}): AuraCameraRig {
       }
 
       return {
-        position: [centre[0], height, centre[2] + back],
+        position: [centre[0], heightNow, centre[2] + Math.cos(pitch) * heightNow],
         target: centre,
         up: upVec,
         roll: 0,
         fov,
-        near: Math.max(0.05, height * 0.02),
+        near: Math.max(0.05, heightNow * 0.02),
         far: ctx.previous.far
       };
     }

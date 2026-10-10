@@ -86,7 +86,7 @@ export interface ShoulderCameraOptions {
 }
 
 export interface ShoulderCamera {
-  update(dt: number, target: GameCameraRigTarget): GameCameraRigSnapshot;
+  update(dt: number, target: GameCameraRigTarget, overrides?: { readonly distance?: number }): GameCameraRigSnapshot;
   snapshot(): GameCameraRigSnapshot;
   reset(eye: GameCameraRigVec3): void;
 }
@@ -110,7 +110,7 @@ export function createShoulderCamera(options: ShoulderCameraOptions = {}): Shoul
   let look: GameCameraRigVec3 = [0, 1, -lookAhead];
   let currentFov = fov;
 
-  const solve = (target: GameCameraRigTarget): { eye: GameCameraRigVec3; look: GameCameraRigVec3 } => {
+  const solve = (target: GameCameraRigTarget, dist = distance): { eye: GameCameraRigVec3; look: GameCameraRigVec3 } => {
     assertVec3(target.position, api, "target.position");
     const yaw = target.facing ?? 0;
     assertFinite(yaw, api, "target.facing");
@@ -119,9 +119,9 @@ export function createShoulderCamera(options: ShoulderCameraOptions = {}): Shoul
     const [px, py, pz] = target.position;
     return {
       eye: [
-        px - forward[0] * distance + right[0] * sideSign * sideOffset,
+        px - forward[0] * dist + right[0] * sideSign * sideOffset,
         py + heightOffset,
-        pz - forward[2] * distance + right[2] * sideSign * sideOffset
+        pz - forward[2] * dist + right[2] * sideSign * sideOffset
       ],
       look: [px + forward[0] * lookAhead, py + heightOffset * 0.55, pz + forward[2] * lookAhead]
     };
@@ -135,9 +135,11 @@ export function createShoulderCamera(options: ShoulderCameraOptions = {}): Shoul
   });
 
   return {
-    update(dt: number, target: GameCameraRigTarget): GameCameraRigSnapshot {
+    update(dt: number, target: GameCameraRigTarget, overrides?: { readonly distance?: number }): GameCameraRigSnapshot {
       assertFinite(dt, api, "dt");
-      const solved = solve(target);
+      // #76: `overrides.distance` lets the shoulder rig re-solve the back-off
+      // each frame (framing.subjectHeightFraction); absent → fixed distance.
+      const solved = solve(target, overrides?.distance ?? distance);
       const alpha = dampFactor(smoothing, dt);
       eye = lerpTuple(eye, solved.eye, alpha);
       look = lerpTuple(look, solved.look, alpha);
