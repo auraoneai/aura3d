@@ -325,6 +325,11 @@ test-data/
 fixtures/
 # PRD-15 lane fixtures (codemod inputs/outputs, C-30 lean template scenes).
 !tests/qr/prd15/fixtures/
+# Lane test fixtures that unit/contract tests read (prd03 .cube LUTs, prd05
+# route-bundle + codemod inputs) and the camera-cast codemod fixtures.
+!tests/qr/prd03/fixtures/
+!tests/qr/prd05/fixtures/
+!tools/camera-cast-codemod/fixtures/
 # Lane-owned reference-game fixtures (PRD-09 §10) are tracked sources.
 !packages/game/fixtures/
 !packages/game/fixtures/**

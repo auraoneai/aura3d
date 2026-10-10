@@ -967,7 +967,7 @@ export class WebGL2Device implements RenderDevice {
       }
       colorHandles.push(handle);
       colorTextures.push(
-        new Texture({ width: descriptor.width, height: descriptor.height, format, label: colorAttachmentCount > 1 ? `${label}-color-${attachment}` : descriptor.label ?? "render-target-color", dimension, layers: dimension === "2d" ? undefined : layerCount })
+        new Texture({ width: descriptor.width, height: descriptor.height, format, label: colorAttachmentCount > 1 ? `${label}-color-${attachment}` : descriptor.label ?? "render-target-color", dimension, layers: dimension === "2d" ? undefined : layerCount, renderAttachment: true })
       );
       gl.bindTexture(textureTarget, handle);
       gl.texParameteri(textureTarget, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -996,7 +996,8 @@ export class WebGL2Device implements RenderDevice {
         format: "depth24",
         label: `${label}-depth`,
         dimension,
-        layers: dimension === "2d" ? undefined : layerCount
+        layers: dimension === "2d" ? undefined : layerCount,
+        renderAttachment: true
       });
       gl.bindTexture(textureTarget, depthTextureHandle);
       gl.texParameteri(textureTarget, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -1092,7 +1093,7 @@ export class WebGL2Device implements RenderDevice {
     gl.activeTexture(previousActiveTexture);
     this.stateCache.invalidate();
 
-    const colorTexture = colorTextures[0] ?? new Texture({ width: descriptor.width, height: descriptor.height, format: "rgba8", label: `${label}-colorless`, dimension });
+    const colorTexture = colorTextures[0] ?? new Texture({ width: descriptor.width, height: descriptor.height, format: "rgba8", label: `${label}-colorless`, dimension, renderAttachment: true });
     let parentColorHandle = colorHandles[0];
     if (!parentColorHandle) {
       // Depth-only targets keep a placeholder Texture in `colorTexture`; give it a

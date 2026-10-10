@@ -1,8 +1,9 @@
 /* §6.9 skip registry — shared by `renderer/PostprocessExecution` (CPU-pass
  * record-and-skip), `webgl2/LegacyPost` (v2-route degradations) and
- * `post/v2Stages` (HDR-stage degradations). Lives in `post/` so the v2
+ * `post/v2Stages` (HDR-stage degradations). Dependency-free, so the v2
  * drivers can record without importing the renderer barrel (import-cycle
- * safe). `postSections` folds these into `diagnostics().post.skipped`. */
+ * safe); kept out of `post/` so PostprocessExecution has no static `post/`
+ * import (§9 bundle gate, prd03-post-bundle-split). `postSections` folds these into `diagnostics().post.skipped`. */
 const postSkippedReasonsSet = new Set<string>();
 
 export function recordPostSkipped(reason: string): void {

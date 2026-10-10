@@ -70,7 +70,8 @@ describe("prd12 ref scenes", () => {
 
   it("showcase scenes require masks and a primary criterion", () => {
     for (const spec of REF_SCENES) {
-      expect(spec.masks.length).toBeGreaterThanOrEqual(4);
+      expect(spec.masks, spec.id).toBeDefined();
+      expect(spec.masks!.length).toBeGreaterThanOrEqual(4);
       expect(spec.primaryCriterion).toBeTruthy();
       expect(spec.primaryRegion).toBeTruthy();
     }

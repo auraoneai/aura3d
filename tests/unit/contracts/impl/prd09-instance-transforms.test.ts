@@ -58,8 +58,11 @@ describe("prd09 setInstanceTransforms (PRD-09 1749)", () => {
     stubSetInstanceTransforms(handle, appWith([node]), m, 2);
     expect(node.instances[0].position).toEqual([5, 6, 7]);
     expect(node.instances[1].position).toEqual([-1, -2, -3]);
-    // count < capacity: remaining instances stay
-    expect(node.instances).toHaveLength(2);
+    // count < capacity (#617): capacity survives; slots past `count` are
+    // zero-scaled (hidden), so a later larger count stays within capacity.
+    expect(node.instances).toHaveLength(4);
+    expect((node.instances[2] as { scale?: number[] }).scale).toEqual([0, 0, 0]);
+    expect((node.instances[3] as { scale?: number[] }).scale).toEqual([0, 0, 0]);
     expect(node.instances[0].quaternion).toEqual([0, 0, 0, 1]);
   });
 
@@ -67,7 +70,8 @@ describe("prd09 setInstanceTransforms (PRD-09 1749)", () => {
     const node = instancedNode();
     const colors = new Float32Array([1, 0, 0, 0, 1, 0]);
     stubSetInstanceTransforms(handle, appWith([node]), new Float32Array(32).fill(0), 2, colors);
-    expect(node.instanceColors).toEqual(["#ff0000", "#00ff00"]);
+    // Hidden capacity slots keep their previous colour (none here -> #000000).
+    expect(node.instanceColors).toEqual(["#ff0000", "#00ff00", "#000000", "#000000"]);
   });
 
   it("throws INSTANCE_NODE_REQUIRED on non-instanced kinds", () => {

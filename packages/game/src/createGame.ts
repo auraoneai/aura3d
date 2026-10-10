@@ -45,6 +45,7 @@ import { createOverlayDriver } from "./juice/overlay";
 import { createRumbleDriver } from "./juice/rumble";
 import { createTweenEngine } from "./juice/tween";
 import { createGameAudio, type GameAudio, type GameAudioOptions } from "@aura3d/engine";
+import { bindFeelSound } from "@aura3d/engine/lanes";
 import type { Hud, TouchControls } from "@aura3d/engine/contracts";
 
 
@@ -272,6 +273,7 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
       if (disposed) return;
       disposed = true;
       detachLifecycle();
+      feelSoundDetach?.();
       accessibilityUnsub();
       accessibility.dispose();
       beacon.dispose();

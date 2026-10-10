@@ -195,9 +195,13 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
   // app and exactly one render runs per tick; flag off keeps the legacy
   // step-per-frame path.
   const cameraLoopOn = resolveQrFlags({ options: options.qualityRebuild?.flags }).on("A3D_QR_CAMERA_LOOP");
+  const advance = app.advance?.bind(app);
+  if (cameraLoopOn && !advance) {
+    throw new Error("A3D_QR_CAMERA_LOOP requires an app with advance(dt) (createAuraApp); this handle has none.");
+  }
   const loopFrameUnsubscribe = loop.onFrame(
-    cameraLoopOn
-      ? (frame) => { app.advance(frame.dt); }
+    cameraLoopOn && advance
+      ? (frame) => { advance(frame.dt); }
       : (frame) => { app.step(frame.dt); }
   );
   const loopTickUnsubscribe = cameraLoopOn ? loop.onTick(() => { app.step(0); }) : undefined;

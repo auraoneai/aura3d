@@ -13,7 +13,7 @@ import type { WebGL2DeviceHost } from "./DeviceHost";
 // split is opt-in via `fxaa: { variant: "r185" }`; the legacy in-shader
 // `u_hasFxaa` taps stay the default path.
 import { FXAA_185_FRAGMENT_GLSL } from "../post/shaders/fxaa.glsl";
-import { recordPostSkipped } from "../post/postSkipped";
+import { recordPostSkipped } from "../renderer/postSkipped";
 import type { PostPipelineOptions } from "../contracts/post";
 import type { FrameCamera } from "../contracts/frameGraph";
 import type { LdrPostprocessPassName } from "../RenderDevice";

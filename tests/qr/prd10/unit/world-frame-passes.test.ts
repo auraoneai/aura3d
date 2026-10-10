@@ -7,7 +7,7 @@ import { RenderGraph, type RenderPass } from "../../../../packages/rendering/src
 import { ENVIRONMENT_BACKGROUND_COLOR_RESOURCE } from "../../../../packages/rendering/src";
 import { resolveQrFlags } from "../../../../packages/engine/src/contracts/flags";
 import { QUALITY_TIERS } from "../../../../packages/rendering/src/contracts";
-import type { FrameContributorContext } from "../../../../packages/rendering/src/contracts";
+import type { FrameContributor, FrameContributorContext } from "../../../../packages/rendering/src/contracts";
 import { registerWorldFramePasses } from "../../../../packages/engine/src/production-runtime/world/WorldFramePasses";
 import { frameContributors } from "../../../../packages/rendering/src/contracts/frameGraph";
 import { worldTerrain } from "../../../../packages/engine/src/agent-api/world/terrain";
@@ -15,7 +15,7 @@ import { worldWater, clearWaterRecords } from "../../../../packages/engine/src/a
 
 const flagsOn = resolveQrFlags({ options: ["world"], env: {} });
 
-function ctx(tier: "low" | "high"): FrameContributorContext {
+function ctx(tier: "low" | "medium" | "high"): FrameContributorContext {
   return {
     device: null,
     width: 1280,
@@ -41,13 +41,13 @@ const writer = (name: string, reads: string[], writes: string[]): RenderPass => 
 
 let disposeContributor: (() => void) | null = null;
 
-function contributor(): { passes?: (phase: string, c: FrameContributorContext) => readonly RenderPass[] } {
+function contributor(): FrameContributor {
   const con = frameContributors(flagsOn).find((c) => c.id === "prd10.world");
   if (!con) throw new Error("prd10.world contributor not registered");
   return con;
 }
 
-function graphFor(opts: { envBackground: boolean; tier: "low" | "high" }): RenderGraph {
+function graphFor(opts: { envBackground: boolean; tier: "low" | "medium" | "high" }): RenderGraph {
   const graph = new RenderGraph();
   if (opts.envBackground) graph.addPass(writer("environment-background", [], [ENVIRONMENT_BACKGROUND_COLOR_RESOURCE]));
   const c = ctx(opts.tier);
@@ -83,13 +83,13 @@ describe("T0-33 world frame passes", () => {
     worldTerrain({
       id: "t-t0-33",
       size: [8, 8],
-      height: { kind: "array", columns: 2, rows: 2, heights: [0, 0.1, 0.1, 0.2] },
-      layers: [{ name: "grass", albedo: [0.2, 0.5, 0.2, 1] }],
+      height: { kind: "array", columns: 2, rows: 2, heights: new Float32Array([0, 0.1, 0.1, 0.2]) },
+      layers: [{ name: "grass", tint: "#338033" }],
       collider: false
     });
     expect(() => graphFor({ envBackground: true, tier: "low" }).compilePlan()).not.toThrow();
     expect(() => graphFor({ envBackground: true, tier: "high" }).compilePlan()).not.toThrow();
-    worldWater({ id: "w-t0-33", shape: { kind: "circle", center: [0, 0], radius: 5 }, waves: [{ wavelength: 2, steepness: 0.1, direction: [1, 0] }] });
+    worldWater({ id: "w-t0-33", kind: "lake", shape: { kind: "circle", center: [0, 0], radius: 5 }, waves: [{ wavelength: 2, steepness: 0.1, directionDeg: 0 }] });
     expect(() => graphFor({ envBackground: true, tier: "low" }).compilePlan()).not.toThrow();
     expect(() => graphFor({ envBackground: true, tier: "high" }).compilePlan()).not.toThrow();
     const plan = graphFor({ envBackground: true, tier: "high" }).compilePlan();
@@ -106,7 +106,7 @@ describe("T0-33 world frame passes", () => {
   });
 
   it("FIX-P0-tier: low/medium tiers emit no planar-reflection or scene-copy passes", () => {
-    worldWater({ id: "w-t0-33-tier", shape: { kind: "circle", center: [0, 0], radius: 5 }, waves: "calm" });
+    worldWater({ id: "w-t0-33-tier", kind: "lake", shape: { kind: "circle", center: [0, 0], radius: 5 }, waves: "calm" });
     for (const tier of ["low", "medium"] as const) {
       const plan = graphFor({ envBackground: true, tier }).compilePlan();
       const names = plan.passes.map((p) => p.name);

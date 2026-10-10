@@ -36,6 +36,12 @@ const LEGAL: Readonly<Record<GameSessionState, readonly GameSessionState[]>> = {
 export interface GameSessionOptions {
   readonly seed: number;
   readonly time?: AuraTimeController;
+  /**
+   * Who advances `time`. Default "session": tick() advances it once per real
+   * frame. "driver": a C-23 FixedStepDriver's presentTick already advances it,
+   * so tick() only reads the scale (no double advance, #617 risk 3).
+   */
+  readonly timeAdvancedBy?: "session" | "driver";
 }
 
 export class GameSessionImpl implements GameSession {
@@ -53,11 +59,21 @@ export class GameSessionImpl implements GameSession {
   public constructor(options: GameSessionOptions) {
     this.seed = options.seed;
     this.controller = options.time ?? new StubTimeController();
+    this.controllerAdvancedExternally = options.timeAdvancedBy === "driver";
   }
 
+  /**
+   * True only when a C-23 FixedStepDriver owns the controller (opt-in via
+   * `timeAdvancedBy: "driver"`). No package creates a FixedStepDriver today, so
+   * by default tick() advances the controller, or hitStop/slowMo/scaleTo on
+   * `app.time` would never decay.
+   */
+  private controllerAdvancedExternally: boolean;
+
   /** Swap the delegate (e.g. once the app mounts `app.time`). */
-  public bindTimeController(controller: AuraTimeController): void {
+  public bindTimeController(controller: AuraTimeController, o?: { readonly advancedBy?: "session" | "driver" }): void {
     this.controller = controller;
+    this.controllerAdvancedExternally = o?.advancedBy === "driver";
   }
 
   /** Called once per real frame by the runtime hook — advances real + sim time. */
@@ -67,10 +83,13 @@ export class GameSessionImpl implements GameSession {
       if (next <= 0) this.actorFreezes.delete(actor);
       else this.actorFreezes.set(actor, next);
     }
-    // C-23: the FixedStepDriver's presentTick already advances the controller
-    // once per presented tick; advancing it again here would double sim time
-    // per frame. Read the scaled dt instead.
-    this.lastScaledDt = realDt * this.controller.scale;
+    // C-23: when a FixedStepDriver owns the controller (bindTimeController
+    // advancedBy "driver") its presentTick already advanced it; advancing again
+    // would double sim time. Otherwise the session is the only advancer.
+    const owned = this.controller as AuraTimeController & { advance?(dt: number): number };
+    this.lastScaledDt = !this.controllerAdvancedExternally && typeof owned.advance === "function"
+      ? owned.advance(realDt)
+      : realDt * this.controller.scale;
     return this.lastScaledDt;
   }
 
