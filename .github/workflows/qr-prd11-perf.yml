@@ -1,7 +1,7 @@
 name: QR PRD-11 Perf
 
 # Lane 11 (GPU architecture / performance tiers) standalone gate (PRD-11 §15, §18).
-# Runs on PRs carrying the `lane:prd11` label and nightly; also dispatchable.
+# Runs on PRs carrying the `lane:prd11` label, on push to main and nightly; also dispatchable.
 # Every job that renders logs the WebGL2/WebGPU probe into the prd11-probe artifact.
 
 on:
@@ -19,7 +19,10 @@ on:
       - "tools/bundle-size/**"
       - "tests/qr/prd11/**"
       - ".github/workflows/qr-prd11-perf.yml"
+  push:
+    branches: [main]
   schedule:
+    # Nightly on main (PRD-16 11 CI-0: two consecutive green nightlies).
     - cron: "35 5 * * *"
   workflow_dispatch:
     inputs:
@@ -37,7 +40,8 @@ permissions:
 
 concurrency:
   group: qr-prd11-perf-${{ github.ref }}
-  cancel-in-progress: true
+  # Never cancel main runs (PRD-16 0.2); superseded branch runs may be cancelled.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
   QR_BENCH_CHROME_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
@@ -80,7 +84,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install chromium
       - name: GPU probe log
-        run: node tools/quality-rebuild-capture/gpu-probe.mjs --out tests/qr/prd11/out/gpu-probe.json
+        run: |
+          mkdir -p tests/qr/prd11/out
+          node tools/quality-rebuild-capture/gpu-probe.mjs --out tests/qr/prd11/out/gpu-probe.json
       - name: Lane browser specs
         run: pnpm exec playwright test -c tests/qr/prd11/playwright.config.ts
       - uses: actions/upload-artifact@v4
@@ -113,7 +119,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install chromium
       - name: GPU probe log
-        run: node tools/quality-rebuild-capture/gpu-probe.mjs --out benchmarks/quality-rebuild/scenes/prd11/out/gpu-probe.json
+        run: |
+          mkdir -p benchmarks/quality-rebuild/scenes/prd11/out
+          node tools/quality-rebuild-capture/gpu-probe.mjs --out benchmarks/quality-rebuild/scenes/prd11/out/gpu-probe.json
       - name: Lane captures (flags + none) with WebGPU smoke probe
         run: node benchmarks/quality-rebuild/scenes/prd11/capture.mjs --flags "$PRD11_FLAGS" --scenes "$PRD11_SCENES" --engines aura3d,three --webgpu-probe --out benchmarks/quality-rebuild/scenes/prd11/out
       - name: perf-gate over lane report
@@ -127,10 +135,9 @@ jobs:
           retention-days: 30
 
   webgpu-smoke:
-    name: WebGPU smoke (non-gating)
+    name: WebGPU smoke
     runs-on: macos-14
     timeout-minutes: 20
-    continue-on-error: true
     if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'lane:prd11')
     steps:
       - uses: actions/checkout@v4
@@ -179,8 +186,8 @@ jobs:
           shopt -s nullglob
           files=(tools/wgsl-validate/out/*.wgsl)
           if [ ${#files[@]} -eq 0 ]; then
-            echo "No WGSL twins registered yet — nothing to validate (non-fatal pre-G-WGPU)."
-            exit 0
+            echo "::error::emit-twins produced 0 WGSL twins; the naga gate requires at least one (PRD-16 P-09)."
+            exit 1
           fi
           for f in "${files[@]}"; do
             echo "== naga $f"
