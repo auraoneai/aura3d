@@ -15,9 +15,11 @@ export {
   createAppAssetDecoders,
   prepareModelDecoders,
   sniffGLBRequiredDecoders,
+  typedGLBActorDecoderOptions,
   WEBGPU_COMPRESSED_CAPS,
   AssetDecoderUnavailable,
-  type AppAssetDecoders
+  type AppAssetDecoders,
+  type TypedGLBActorDecoderOptions
 } from "../agent-api/AssetDecoders.js";
 
 const appAssetDecoders = new WeakMap<object, AssetDecoderRegistry>();
