@@ -39,7 +39,8 @@ test.describe("PRD-06 T5.3 skyline-runner §17.4 gates", () => {
     // Asset-level gate (runs in node — the mounted hero asset itself).
     const report = validateHeroGlb(new Uint8Array(readFileSync(HERO_GLB)));
     writeFileSync(join(ARTIFACT_DIR, "hero-validator.json"), JSON.stringify({ ok: report.ok, reasonCodes: report.reasonCodes }, null, 2));
-    expect(report.ok, `S11 gate (expected-red until Q-14-3): skyline hero fails hero-character: ${report.reasonCodes.join(", ")}`).toBe(true);
+    test.fail(!report.ok, `S11 named gate Q-14-3 (#430): skyline hero fails hero-character (${report.reasonCodes.join(", ")})`);
+    expect(report.ok, `S11 gate (expected-red until Q-14-3 #430): skyline hero fails hero-character: ${report.reasonCodes.join(", ")}`).toBe(true);
 
     // Runtime gate: the player node carries a bound skeleton and applies tracks.
     await page.goto(`${server.origin}/?a3d-qr=animation`, { waitUntil: "domcontentloaded" });

@@ -44,7 +44,11 @@ test.describe("PRD-06 T5.1 aura-clash §17.4 gates", () => {
     const skinnedIds = await listSocketCapableNodeIds(page);
     const fighters = FIGHTER_IDS.filter((id) => skinnedIds.includes(id));
     writeFileSync(join(ARTIFACT_DIR, "skinned-nodes.json"), JSON.stringify({ skinnedIds, fighters }, null, 2));
-    expect(fighters.length, `S11 gate (expected-red until Q-14-1): skinned fighter nodes found: ${skinnedIds.join(", ")}`).toBeGreaterThanOrEqual(2);
+    // Named gate: expected-fail is armed only when this exact condition is
+    // observed; once Q-14-1 (#428) lands the condition is false and every
+    // gate below must pass.
+    test.fail(fighters.length < 2, "S11 named gate Q-14-1 (#428): fewer than 2 skinned fighter nodes");
+    expect(fighters.length, `S11 gate (expected-red until Q-14-1 #428): skinned fighter nodes found: ${skinnedIds.join(", ")}`).toBeGreaterThanOrEqual(2);
 
     // tracksApplied > 0 over several rendered frames per fighter.
     const tracks: Record<string, number[]> = {};

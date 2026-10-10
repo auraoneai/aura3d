@@ -38,7 +38,8 @@ test.describe("PRD-06 T5.4 neon-swarm §17.4 gates", () => {
 
     const report = validateHeroGlb(new Uint8Array(readFileSync(COURIER_GLB)));
     writeFileSync(join(ARTIFACT_DIR, "hero-validator.json"), JSON.stringify({ ok: report.ok, reasonCodes: report.reasonCodes }, null, 2));
-    expect(report.ok, `S11 gate (expected-red until Q-14-4): neonCourierAvatar fails hero-character: ${report.reasonCodes.join(", ")}`).toBe(true);
+    test.fail(!report.ok, `S11 named gate Q-14-4 (#431): neonCourierAvatar fails hero-character (${report.reasonCodes.join(", ")})`);
+    expect(report.ok, `S11 gate (expected-red until Q-14-4 #431): neonCourierAvatar fails hero-character: ${report.reasonCodes.join(", ")}`).toBe(true);
 
     await page.goto(`${server.origin}/?a3d-qr=animation`, { waitUntil: "domcontentloaded" });
     await waitForApps(page);

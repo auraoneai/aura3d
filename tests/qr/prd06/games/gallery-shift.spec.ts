@@ -42,7 +42,8 @@ test.describe("PRD-06 T5.6 gallery-shift §17.4 gates", () => {
 
     const hips = await findHipsBone(page, "thief");
     writeFileSync(join(ARTIFACT_DIR, "thief-hips.json"), JSON.stringify({ hips }, null, 2));
-    expect(hips, "S11 gate (expected-red until Q-14-6): thief has no Hips socket — still the voxel figure, not a rigged character").not.toBeNull();
+    test.fail(hips === null, "S11 named gate Q-14-6 (#433): thief has no Hips socket (voxel figure)");
+    expect(hips, "S11 gate (expected-red until Q-14-6 #433): thief has no Hips socket — still the voxel figure, not a rigged character").not.toBeNull();
     expect(await socketValid(page, "thief", hips!), `thief socket("${hips}") invalid`).toBe(true);
 
     for (const id of ["thief", "guard-1", "guard-2"]) {
