@@ -45,4 +45,24 @@ describe("P1-T18 look/fake-effect-names", () => {
     );
     expect(findings.filter((f) => f.code === "look/fake-effect-names")).toEqual([]);
   });
+
+  // #879 — the lane-07 registration replaces the lane-13 default, so it must
+  // keep that coverage: research §4.4 names / stems on any node kind,
+  // including groups and nested children.
+  it("flags §4.4 fake-effect names on groups and nested children (lane-13 coverage)", () => {
+    const findings = lookLint(
+      sceneWith([
+        { kind: "group", name: "wet reflection card", children: [] },
+        {
+          kind: "group",
+          name: "hero",
+          children: [{ kind: "mesh", name: "hero contact shadow" }, { kind: "mesh", name: "hero body" }]
+        },
+        { kind: "mesh", name: "large emissive magenta glow halo" }
+      ]),
+      ctx([])
+    );
+    const hits = findings.filter((f) => f.code === "look/fake-effect-names");
+    expect(hits.map((h) => h.nodes?.[0])).toEqual(["wet reflection card", "hero contact shadow", "large emissive magenta glow halo"]);
+  });
 });
