@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createGameSoundEngine } from "../../../packages/audio/src/game-sound/GameSoundEngine";
-import { FakeContext, FakeSource } from "./fake-context";
+import { FakeContext, FakeNode, FakeSource } from "./fake-context";
 
 const asset = (url: string) => ({ url, hash: "x", license: "CC0", provenance: "sample" as const });
 
@@ -128,6 +128,47 @@ describe("createGameSoundEngine (PRD-09 §7.5/1733)", () => {
       expect(fetched).toEqual(["/packs/game-sfx-core/sports.billiard-clack.00.opus.webm"]);
     } finally {
       globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("recordMaster returns null without MediaRecorder, taps+untaps the master output when available", async () => {
+    const ctx = new FakeContext();
+    const engine = createGameSoundEngine(options(ctx));
+    // Neither createMediaStreamDestination nor MediaRecorder → null (headless path).
+    expect(await engine.recordMaster(0.01)).toBeNull();
+
+    const dest = new FakeNode("media-stream-destination") as FakeNode & { stream: MediaStream };
+    dest.stream = {} as MediaStream;
+    (ctx as unknown as Record<string, unknown>).createMediaStreamDestination = () => dest;
+    class FakeRecorder {
+      static isTypeSupported(): boolean {
+        return true;
+      }
+      readonly mimeType = "audio/webm;codecs=opus";
+      state: "inactive" | "recording" = "inactive";
+      ondataavailable: ((e: BlobEvent) => void) | null = null;
+      onstop: (() => void) | null = null;
+      start(): void {
+        this.state = "recording";
+        this.ondataavailable?.({ data: new Blob(["pcm"]) } as BlobEvent);
+      }
+      stop(): void {
+        this.state = "inactive";
+        this.onstop?.();
+      }
+      constructor(_stream: MediaStream, _opts?: { mimeType?: string }) {}
+    }
+    const prev = (globalThis as { MediaRecorder?: unknown }).MediaRecorder;
+    (globalThis as { MediaRecorder?: unknown }).MediaRecorder = FakeRecorder;
+    try {
+      const blob = await engine.recordMaster(0.01);
+      expect(blob).not.toBeNull();
+      expect(blob!.type).toContain("webm");
+      // Tap released after stop — the chain output no longer feeds `dest`.
+      const output = ctx.ofKind("shaper")[0];
+      expect(output.connectedTo).not.toContain(dest);
+    } finally {
+      (globalThis as { MediaRecorder?: unknown }).MediaRecorder = prev;
     }
   });
 });
