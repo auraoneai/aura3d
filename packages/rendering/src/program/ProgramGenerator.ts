@@ -40,7 +40,7 @@ import { programKey } from "./ProgramKey";
 export const GENERATED_PROGRAM_MARKER = "a3d-generated-program";
 
 export interface ProgramDegradation {
-  readonly code: "extension-lobe-pending";
+  readonly code: "extension-lobe-pending" | "program-compile-failed";
   readonly message: string;
   readonly ownerPrd?: number;
 }

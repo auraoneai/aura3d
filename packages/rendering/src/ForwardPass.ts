@@ -474,9 +474,18 @@ export class ForwardPass extends BaseRenderPass {
       if (warning) console.warn(`[prd01] ${warning}`);
       this.lastProgramFeatures = this.programFeaturesFor(material, item);
       const handle = this.programCache(device).acquire(this.lastProgramFeatures);
-      // async-skip: a not-yet-ready or failed program skips the draw this frame
-      // (C-02 §A.2 semantics; warm-then-block warmup renders them ready up front).
-      return handle.status === "ready" ? handle.program : undefined;
+      if (handle.status === "failed") {
+        // T0-03: the cache already emitted `program-compile-failed` (C-36) +
+        // console.error. Strict escalates to a throw; otherwise the draw falls
+        // back to the legacy shaderKey path below.
+        if (flags.on("A3D_QR_STRICT")) {
+          throw new RenderDeviceError(`generated program failed to compile: ${handle.error ?? handle.key}`, "PROGRAM_COMPILE_FAILED", { key: handle.key });
+        }
+      } else {
+        // async-skip: a not-yet-ready program skips the draw this frame
+        // (C-02 §A.2 semantics; warm-then-block warmup renders them ready up front).
+        return handle.status === "ready" ? handle.program : undefined;
+      }
     }
     const cacheKey = shaderCacheKey(material);
     const shaderCache = getForwardPassShaderCache(device, this.shaderLibrary);
