@@ -120,3 +120,23 @@ Pick one option:
 - **B. Signed scope cut.** §16.3 is cut from PRD-15. Record the cut here and on #525, signed and dated.
 
 Decision (owner): `A | B`. Date: `____`. Signature: `____`. Record the same decision as a comment on #525.
+
+## 9. T5.6-CI: Device Farm OIDC role (lane 12, optional until device runs exist)
+
+`quality-devices.yml` uses OIDC once G5's T5.6-CI PR lands; no AWS keys are stored in GitHub. The owner creates the role
+with the designated AWS setup (`/Users/gurbakshchahal/AuraOne/scripts/setup-auraone-shared-aws.sh`, operator
+profile). Agents never create IAM trust. The role must:
+
+- trust `token.actions.githubusercontent.com` with `sub = repo:auraoneai/aura3d:ref:refs/heads/main` and `aud = sts.amazonaws.com`;
+- allow `devicefarm:*` only on resources tagged `project=aura3d-quality-gate`.
+
+Then set these as repository **variables** (not secrets):
+
+```bash
+gh variable set DEVICE_FARM_ROLE_ARN --repo auraoneai/aura3d --body "<role arn>"
+gh variable set DEVICE_FARM_PROJECT_ARN --repo auraoneai/aura3d --body "<project arn>"
+gh variable set DEVICE_FARM_POOL_IOS --repo auraoneai/aura3d --body "<pool arn>"
+gh variable set DEVICE_FARM_POOL_ANDROID --repo auraoneai/aura3d --body "<pool arn>"
+```
+
+Afterwards, delete the stored secrets `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` if they exist; they are not set today.
