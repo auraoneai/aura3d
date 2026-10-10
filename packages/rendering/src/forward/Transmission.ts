@@ -35,6 +35,11 @@ import { MaterialInstance } from "../MaterialInstance.js";
 import { TransmissionRenderTarget } from "../TransmissionRenderTarget.js";
 import { PRD01_FORWARD_TARGET } from "../renderer/FrameGraph.js";
 import { qrCoreOutputOn } from "../renderer/qrSubFlags.js";
+import {
+  TRANSMISSION_COPY_FRAGMENT,
+  TRANSMISSION_COPY_MARKER,
+  TRANSMISSION_COPY_VERTEX
+} from "../shaders/physical/transmission_copy.glsl.js";
 
 export const TRANSMISSION_PHASE = "transmission" as const;
 export const TRANSMISSION_BLACKBOARD_KEY = "prd04.transmissionTarget";
@@ -123,29 +128,13 @@ export function prd04TransmissionDiagnostics(): Prd04TransmissionDiagnostics {
 }
 
 // The device requires `marker` to appear verbatim in both GLSL stages.
+// GLSL lives in `shaders/physical/transmission_copy.glsl.ts` (glsl-location
+// arch-gate allows `#version` strings only in chunk/post/output locations).
 const COPY_SHADER = {
   label: "a3d-prd04-transmission-copy",
-  marker: "a3d_prd04_transmission_copy",
-  vertex: `#version 300 es
-// a3d_prd04_transmission_copy
-precision highp float;
-out vec2 v_uv;
-void main() {
-  vec2 position = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2));
-  v_uv = position;
-  gl_Position = vec4(position * 2.0 - 1.0, 0.0, 1.0);
-}
-`,
-  fragment: `#version 300 es
-// a3d_prd04_transmission_copy
-precision highp float;
-uniform sampler2D u_source;
-in vec2 v_uv;
-out vec4 outColor;
-void main() {
-  outColor = texture(u_source, v_uv);
-}
-`
+  marker: TRANSMISSION_COPY_MARKER,
+  vertex: TRANSMISSION_COPY_VERTEX,
+  fragment: TRANSMISSION_COPY_FRAGMENT
 };
 
 /**
