@@ -29,7 +29,7 @@ import {
   type ReflectionRequest
 } from "@aura3d/rendering/world";
 import { colorToRgba } from "../../agent-api/index.js";
-import { resolveTierValue } from "../../agent-api/world/terrain.js";
+import { resolveTierValue, terrainRecordIds } from "../../agent-api/world/terrain.js";
 import { drawTerrainsForReflection } from "./TerrainRuntime.js";
 import { waterRecordFor, waterRecordIds, type WaterRecord } from "../../agent-api/world/water.js";
 import type { AuraWorldQualityTier } from "../../agent-api/world/types.js";
@@ -91,7 +91,7 @@ function waterState(id: string): WaterGpuState | null {
   return st;
 }
 
-function allWaterStates(): WaterGpuState[] {
+export function allWaterStates(): WaterGpuState[] {
   const out: WaterGpuState[] = [];
   for (const id of waterRecordIds()) {
     const st = waterState(id);
@@ -275,10 +275,21 @@ export function waterAfterOpaquePasses(ctx: FrameContributorContext): readonly R
 
 /** §9.1 step 6 + §8.7 — water surfaces and the underwater shell. */
 export function waterTransparentPass(ctx: FrameContributorContext): RenderPass {
+  const tier = ((ctx.tier as { tier?: AuraWorldQualityTier }).tier ?? "high") as AuraWorldQualityTier;
+  const states = allWaterStates();
+  // T0-33: declare a read only when its producer exists this frame — the
+  // planar reflection pass and the scene copies are emitted only when a
+  // state actually requests them, so reading them unconditionally threw
+  // "reads X, but no pass writes it" and killed the frame loop. The opaque
+  // read orders water after prd01.opaque on Path S (always emitted).
+  const reads: string[] = ["aura.scene.color.opaque"];
+  if (terrainRecordIds().length > 0) reads.push("prd10.terrain.color");
+  if (states.some((st) => reflectionRequest(st, tier))) reads.push(PLANAR_REFLECTION_KEY);
+  if (states.some((st) => wantsRefraction(st, tier))) reads.push(SCENE_COPY_COLOR_KEY, SCENE_COPY_DEPTH_KEY);
   return {
     name: "prd10.water",
-    reads: [PLANAR_REFLECTION_KEY, SCENE_COPY_COLOR_KEY, SCENE_COPY_DEPTH_KEY],
-    writes: ["color"],
+    reads,
+    writes: ["prd10.water.color"],
     execute(rp: RenderPassContext) {
       const device = rp.device;
       const camera = ctx.camera;
