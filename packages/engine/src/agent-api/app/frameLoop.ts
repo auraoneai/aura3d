@@ -9,7 +9,7 @@ import { camera } from "../nodes/camera.js";
 import { collectAuraSceneEvidence } from "../sceneEvidence.js";
 import { collectLabelTelemetry, summarizeTextBuckets } from "../LabelTelemetry.js";
 import { createProductionSceneRenderer } from "./mountRenderer.js";
-import { devicePixelRatioSafe, performanceNow } from "../platform.js";
+import { devicePixelRatioSafe, markTiming, performanceNow } from "../platform.js";
 import { groups } from "../nodes/groups.js";
 import { isWebGLRenderableNode, productionRenderErrorMessage } from "../compiler/observations.js";
 import { labels } from "../nodes/labels.js";
@@ -113,6 +113,9 @@ export async function startProductionRender(
 
   const renderFrame = (time = performanceNow(), submittedDrawCalls?: number, explicit = false) => {
     if (disposed) return;
+    // T0-12: first real frame — closes the mount-timing window the bench
+    // harness reads from payload.extra.mountTiming.
+    if (lastTime === 0) markTiming("a3d:mount:first-renderFrame");
     const delta = lastTime > 0 ? Math.max(1, time - lastTime) : 16.67;
     lastTime = time;
     if (!explicit && !isPaused()) beforeRender?.(delta / 1000, "raf");
