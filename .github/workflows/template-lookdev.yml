@@ -5,7 +5,8 @@ name: Template lookdev
 # GPU runner (ANGLE Metal, full Chromium — the GitHub provider of CI-ROUTING.md).
 # Output is the look-dev artifact set under tools/agent-templates/out/template-lookdev/
 # (PNGs + report.json). No secrets are used; artifacts always upload.
-# Never runs untrusted fork code: triggers are dispatch and push to main only.
+# Never runs untrusted fork code: pull_request runs are limited to same-repo
+# branches by the job-level `if:` guard below.
 
 on:
   workflow_dispatch:
@@ -30,6 +31,16 @@ on:
       - "packages/create-aura3d/src/**"
       - "tools/agent-templates/**"
       - ".github/workflows/template-lookdev.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "packages/create-aura3d/templates/**"
+      - "packages/create-aura3d/src/**"
+      - "tools/agent-templates/**"
+      - ".github/workflows/template-lookdev.yml"
+  schedule:
+    # Weekly lookdev drift check (Mondays 06:00 UTC).
+    - cron: "0 6 * * 1"
 
 permissions:
   contents: read
@@ -46,6 +57,9 @@ jobs:
     name: Template captures (macos-14, ANGLE Metal)
     runs-on: macos-14
     timeout-minutes: 240
+    # pull_request triggers run only for same-repo branches — fork code never
+    # reaches this job (dispatch/push/schedule are unaffected).
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     env:
       QRC_TEMPLATES: ${{ github.event_name == 'workflow_dispatch' && inputs.templates || '' }}
       QRC_FLAGS: ${{ github.event_name == 'workflow_dispatch' && inputs.qr_flags || 'none' }}
@@ -80,7 +94,6 @@ jobs:
 
       - name: Capture templates
         id: capture
-        continue-on-error: true
         run: node tools/agent-templates/capture-templates.mjs
 
       - name: Upload template lookdev artifacts

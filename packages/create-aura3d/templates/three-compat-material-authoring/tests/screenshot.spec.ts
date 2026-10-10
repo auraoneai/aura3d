@@ -12,7 +12,7 @@ test("Aura3D three compat material authoring screenshot clears the look floor", 
   await page.goto("/");
   await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 150_000 }).toBe("true");
 
-  const floor = await assertTemplateLookFloor(page, { subject: { x: 0.21, y: 0.33, width: 0.64, height: 0.53 } });
+  const floor = await assertTemplateLookFloor(page, { subject: { x: 0.2, y: 0.35, width: 0.6, height: 0.4 } });
   const screenshot = await page.screenshot({ fullPage: false });
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/screenshot.png"), screenshot);

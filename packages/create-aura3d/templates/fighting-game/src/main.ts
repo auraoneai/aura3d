@@ -167,19 +167,10 @@ const arena = scene()
   ])
   .camera(camera.perspective({ position: [0, 1.75, 5.8], target: [0, 0.85, 0], fov: 42 }));
 
-// Headless evidence runs on software GL cannot sustain the full-quality skinned
-// scene: the gameplay-smoke replay must satisfy its evidence inside the tab's
-// crash window, so automated runs constrain the initial render budget. The
-// assertions are resolution- and shadow-size independent, and interactive use
-// keeps the authored quality.
-const evidenceMode = navigator.webdriver;
 const fightingGame = createGame({
   id: "fighting-game",
   target: "#app",
   autoStart: true,
-  performanceQuality: evidenceMode
-    ? { resolutionScale: 0.5, particleScale: 0.5, lodBias: 2, shadowSize: 512 }
-    : undefined,
   diagnostics: { overlay: false, performancePanel: false },
   input: inputOptions,
   loop: { fixedDt: 1 / 60 },
