@@ -1,0 +1,9 @@
+{
+  "status": "NOT RUN",
+  "row": "04-S6",
+  "spec": "tests/qr/prd04/browser/texture-tiling.spec.ts",
+  "control": "tiling ratio scaled by same factor — must fail",
+  "runtimeArtifact": "tests/reports/prd04/probes/s6-tiling-control.json",
+  "reason": "remote browser run pending on PR #784 (qr/prd04-boot-trackp); this stub is replaced by the measured control JSON from the completed run",
+  "lane": "prd04"
+}

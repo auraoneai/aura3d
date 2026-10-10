@@ -1,0 +1,9 @@
+{
+  "status": "NOT RUN",
+  "row": "04-S3",
+  "spec": "tests/qr/prd04/browser/model-material-override.spec.ts",
+  "control": "legacy tint glows/flattens under flag-off — must fail",
+  "runtimeArtifact": "tests/reports/prd04/probes/s3-tint-control.json",
+  "reason": "remote browser run pending on PR #784 (qr/prd04-boot-trackp); this stub is replaced by the measured control JSON from the completed run",
+  "lane": "prd04"
+}
