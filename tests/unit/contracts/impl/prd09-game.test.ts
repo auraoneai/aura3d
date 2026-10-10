@@ -54,6 +54,7 @@ describe("PRD-09 C-24 slot + session impl", () => {
     expect(s.scaledDt(0.016, "cue")).toBeCloseTo(0.016, 6);
     s.hitStop(0.05);
     expect(s.scaledDt(0.016)).toBe(0);
+    time.advance(0.05); // C-23 (#620): the FixedStepDriver advances the controller, not session.tick
     s.tick(0.05);
     expect(s.isFrozen("ball")).toBe(false);
     expect(s.isFrozen()).toBe(false);
@@ -69,10 +70,13 @@ describe("PRD-09 C-24 slot + session impl", () => {
     expect(() => s.setTimeScale(Number.NaN)).toThrow(/GAME_TIMESCALE_NAN/);
     s.slowMo(0.2, 100, { ease: "out" });
     expect(time.scale).toBe(0.2);
+    time.advance(0.2); // C-23 (#620): the FixedStepDriver advances the controller, not session.tick
     s.tick(0.2);
     // slow-mo expired; the ease-out ramp back to 1 is scheduled but not applied yet
+    time.advance(0.4); // C-23 (#620): the FixedStepDriver advances the controller, not session.tick
     s.tick(0.4);
     expect(time.scale).toBeGreaterThan(0.2);
+    time.advance(10); // C-23 (#620): the FixedStepDriver advances the controller, not session.tick
     s.tick(10);
     expect(time.scale).toBe(1);
   });
@@ -81,9 +85,11 @@ describe("PRD-09 C-24 slot + session impl", () => {
     const time = new StubTimeController();
     const s = new GameSessionImpl({ seed: 0, time });
     s.setTimeScale(0.5, { rampMs: 200 });
+    time.advance(0.1); // C-23 (#620): the FixedStepDriver advances the controller, not session.tick
     s.tick(0.1);
     expect(time.scale).toBeLessThan(1);
     expect(time.scale).toBeGreaterThan(0.5);
+    time.advance(10); // C-23 (#620): the FixedStepDriver advances the controller, not session.tick
     s.tick(10);
     expect(time.scale).toBe(0.5);
   });

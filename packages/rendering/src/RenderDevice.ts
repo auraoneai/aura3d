@@ -773,12 +773,12 @@ export class MockRenderDevice implements RenderDevice {
     for (let attachment = 0; attachment < colorAttachmentCount; attachment += 1) {
       const format = descriptor.colorAttachments?.[attachment]?.format ?? descriptor.format ?? "rgba8";
       const textureLabel = colorAttachmentCount > 1 ? `${label}-color-${attachment}` : descriptor.label ?? "render-target-color";
-      colorTextures.push(new Texture({ width: descriptor.width, height: descriptor.height, format, label: textureLabel, dimension, layers: layerCount > 1 ? layerCount : undefined }));
+      colorTextures.push(new Texture({ width: descriptor.width, height: descriptor.height, format, label: textureLabel, dimension, layers: layerCount > 1 ? layerCount : undefined, renderAttachment: true }));
       if (attachment > 0) attachmentPixels.push(new Uint8Array(descriptor.width * descriptor.height * 4));
     }
-    const colorTexture = colorTextures[0] ?? new Texture({ width: descriptor.width, height: descriptor.height, format: "rgba8", label: `${label}-colorless`, dimension });
+    const colorTexture = colorTextures[0] ?? new Texture({ width: descriptor.width, height: descriptor.height, format: "rgba8", label: `${label}-colorless`, dimension, renderAttachment: true });
     const depthTexture = depthOnly || descriptor.depth === "texture" || descriptor.depthCompare
-      ? new Texture({ width: descriptor.width, height: descriptor.height, format: "depth24", label: `${label}-depth`, dimension, layers: layerCount > 1 ? layerCount : undefined })
+      ? new Texture({ width: descriptor.width, height: descriptor.height, format: "depth24", label: `${label}-depth`, dimension, layers: layerCount > 1 ? layerCount : undefined, renderAttachment: true })
       : undefined;
     const target = new MockRenderTarget(
       this.nextId++,
