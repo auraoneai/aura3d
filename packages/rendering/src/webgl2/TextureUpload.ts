@@ -197,7 +197,22 @@ export class WebGL2TextureRegistry {
       // every later Texture.update() re-uploads the sub-image in place.
       const uploadFormat = textureUploadFormat(this.host.gl, texture);
       this.host.gl.texStorage2D(this.host.gl.TEXTURE_2D, 1, textureStorageInternalFormat(this.host.gl, texture), texture.width, texture.height);
-      if (texture.data) {
+      // 06-S2: WebKit (ANGLE Metal) can reject float texStorage2D even though
+      // it is core WebGL2 — on a storage error fall back to a mutable
+      // texImage2D allocation; texSubImage2D updates work identically there.
+      if (this.host.lifecycle.readError()) {
+        this.host.gl.texImage2D(
+          this.host.gl.TEXTURE_2D,
+          0,
+          uploadFormat.internalFormat,
+          texture.width,
+          texture.height,
+          0,
+          uploadFormat.format,
+          uploadFormat.type,
+          texture.data ? texturePixelUploadData(texture.data, texture.format) : null
+        );
+      } else if (texture.data) {
         this.host.gl.texSubImage2D(
           this.host.gl.TEXTURE_2D,
           0,
