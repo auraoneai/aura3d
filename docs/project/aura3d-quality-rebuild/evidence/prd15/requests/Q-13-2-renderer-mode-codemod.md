@@ -1,5 +1,7 @@
 # Q-13-2: lane-13 `mode: "safe-basic"` hit — informational, no action needed
 
+**GitHub issue:** #697
+
 **From:** lane 15 · **To:** lane 13 · **Filed:** 2026-10-06
 
 T4.5 removed `renderer.mode`/`renderer.fallback` from

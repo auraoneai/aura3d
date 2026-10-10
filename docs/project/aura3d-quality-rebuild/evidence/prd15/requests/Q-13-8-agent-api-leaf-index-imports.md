@@ -1,5 +1,7 @@
 # Q-13-8: lane-13 agent-api leaves still import `../index.js` — repoint to leaf sources
 
+**GitHub issue:** #696
+
 **From:** lane 15 · **To:** lane 13 · **Filed:** 2026-10-06 · ****Status:** APPLIED BY LANE 15 (2026-10-06)
 
 PRD-15 T3.1 split `agent-api/index.ts` (~14k lines) into leaf modules; the

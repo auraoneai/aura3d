@@ -1,5 +1,7 @@
 # Q-13-14 — Template spec timing, TDZ boot fix, and wall-clock input waits
 
+**GitHub issue:** #691
+
 **Requester:** Lane 15 (PRD-15, Phase 8 `check:templates` bring-up)
 **Owner:** Lane 13 (`packages/create-aura3d/templates/**`)
 **Status:** applied (fixes landed on `qr/prd15-40-removal`); this file documents the edits per §6.6

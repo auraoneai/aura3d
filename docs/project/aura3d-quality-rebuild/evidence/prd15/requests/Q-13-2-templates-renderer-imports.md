@@ -1,5 +1,7 @@
 # Q-13-2 — run `renderer-imports` (and later codemods) on templates/examples
 
+**GitHub issue:** #706
+
 **From:** PRD 15 (T2.12) · **To:** lane 13 (`templates/`, `examples/`,
 `packages/create-aura3d/`) · **Filed:** 2026-10-06 · **SLA:** 2 working days
 

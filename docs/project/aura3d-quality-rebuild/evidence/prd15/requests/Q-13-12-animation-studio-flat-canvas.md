@@ -1,5 +1,7 @@
 # Q-13-12 — animation-studio live canvas renders flat (Skills gate uniqueBuckets)
 
+**GitHub issue:** #693
+
 **Lane:** 13 (templates / agent tooling)
 **Filed by:** Lane 15 (PRD-15, PR #357 wave-7 triage)
 **Severity:** gate-blocking once Skills gate reaches the template browser phase
