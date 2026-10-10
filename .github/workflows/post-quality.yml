@@ -28,7 +28,6 @@ on:
       - "tests/browser/qr-prd03-*.spec.ts"
       - "tests/browser/qr-prd03-*harness.*"
       - "tests/unit/contracts/impl/prd03-*"
-      - "evidence/prd03/**"
       - ".github/workflows/post-quality.yml"
       - ".github/workflows/qr-prd03-captures.yml"
   push:
@@ -52,7 +51,6 @@ on:
       - "tests/browser/qr-prd03-*.spec.ts"
       - "tests/browser/qr-prd03-*harness.*"
       - "tests/unit/contracts/impl/prd03-*"
-      - "evidence/prd03/**"
       - ".github/workflows/post-quality.yml"
       - ".github/workflows/qr-prd03-captures.yml"
   schedule:
@@ -73,6 +71,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The ownership audit diffs against origin/main; a depth-1 checkout
+          # has no merge base and the audit died before printing anything.
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -81,9 +83,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # Typecheck stays repo-wide per T0-31 (do not scope the gate away).
       - run: pnpm typecheck:raw
-      - run: pnpm exec vitest run tests/unit/contracts/impl
-      - name: Ownership audit (all changed files resolve to lane 03)
-        run: git diff --name-only origin/main...HEAD | xargs node tools/qr-ownership/check.mjs
+      # 03-CI2: the lane gate runs the lane's own contract units; other lanes'
+      # tests/unit/contracts/impl/prdNN-* run in their own lane workflows.
+      - run: pnpm exec vitest run tests/unit/contracts/impl/prd03-
+      - name: Ownership audit (owner of every changed file)
+        run: git diff --name-only origin/main...HEAD | xargs -r node tools/qr-ownership/check.mjs
 
   browser:
     name: Lane 03 browser specs (macos-14, ANGLE Metal)

@@ -14,7 +14,9 @@ import {
   createRendererPostprocessPlanDiagnostics
 } from "../../../../packages/rendering/src/RendererPostprocessPlan";
 import {
-  RendererPostprocessPipeline
+  postSkippedReasons,
+  RendererPostprocessPipeline,
+  resetPostSkipped
 } from "../../../../packages/rendering/src/renderer/PostprocessExecution";
 import { MockRenderDevice } from "../../../../packages/rendering/src/RenderDevice";
 import { buildChunkHarnessProgram } from "../../../../packages/rendering/src/contracts/testing/ChunkHarness";
@@ -183,7 +185,11 @@ describe("PRD-03 Phase 3 — §6.9 contact-shadow removal + CPU-readback ban", (
     expect(diagnostics.clarityWarnings.some((w) => w.includes("POST_PASS_DEPRECATED:contact-shadow"))).toBe(true);
   });
 
-  it("flag-on pixel pass throws POSTPROCESS_PASS_NOT_GPU; cpu-deterministic is exempt", () => {
+  // T0-17 / FLAG-ON-4 (PRD-16 §2.2, #780): under A3D_QR_POST a CPU pixel pass
+  // never kills the frame. It is recorded as POSTPROCESS_PASS_NOT_GPU:<name>
+  // on the §6.9 skip registry (diagnostics().post.skipped) and the input is
+  // copied through. cpu-deterministic is the explicit opt-out: no record.
+  it("flag-on pixel pass records POSTPROCESS_PASS_NOT_GPU instead of throwing; cpu-deterministic is exempt", () => {
     const device = new MockRenderDevice();
     const host = {
       device,
@@ -196,22 +202,21 @@ describe("PRD-03 Phase 3 — §6.9 contact-shadow removal + CPU-readback ban", (
     const forward = device.createRenderTarget({ width: 8, height: 8, format: "rgba8", depth: false });
 
     setRendererQrFlags(POST_ON);
-    let thrown: unknown;
-    try {
-      pipeline.executePostprocess({ filmGrain: { intensity: 0.05 } as never }, [forward]);
-    } catch (error) {
-      thrown = error;
-    }
-    expect((thrown as { code?: string })?.code).toBe("POSTPROCESS_PASS_NOT_GPU");
+    resetPostSkipped();
+    expect(() => pipeline.executePostprocess({ filmGrain: { intensity: 0.05 } as never }, [forward])).not.toThrow();
+    expect(postSkippedReasons()).toContain("POSTPROCESS_PASS_NOT_GPU:film-grain");
 
-    // The deterministic reference path is the explicit opt-out: the assert is
-    // skipped, so any failure past it is an unrelated stub limitation — assert
-    // only that POSTPROCESS_PASS_NOT_GPU is not raised.
+    // The deterministic reference path is the explicit opt-out: no skip is
+    // recorded, so any failure past it is an unrelated stub limitation —
+    // assert only that POSTPROCESS_PASS_NOT_GPU is neither raised nor recorded.
+    resetPostSkipped();
     try {
       pipeline.executePostprocess({ filmGrain: { intensity: 0.05 } as never, execution: "cpu-deterministic" }, [forward]);
     } catch (error) {
       expect(String(error)).not.toContain("POSTPROCESS_PASS_NOT_GPU");
     }
+    expect(postSkippedReasons()).not.toContain("POSTPROCESS_PASS_NOT_GPU:film-grain");
+    resetPostSkipped();
   });
 });
 

@@ -101,10 +101,18 @@ describe("post v2 bundle split (§9 gate)", () => {
     // dynamic import() edge — a static string keeps it splittable by esbuild.
     expect(exec).toContain('import("../post/v2Entry")');
     // No static `import { ... } from "<post module>"` of phase-2 GPU code.
-    const staticPostImports = exec.match(/^import\s.*from\s+"[^"]*post\//gm) ?? [];
+    // Single exception: `post/postSkipped` — the §6.9 skip registry (a Set of
+    // strings, T0-17). It must stay import-free so it can never pull GPU code
+    // onto the critical path; that is asserted here, not assumed.
+    const SKIP_REGISTRY = /from\s+"\.\.\/post\/postSkipped";?$/;
+    const staticPostImports = exec.match(/^import\s.*from\s+"[^"]*post\/.*$/gm) ?? [];
     for (const line of staticPostImports) {
+      if (SKIP_REGISTRY.test(line)) continue;
       expect(line).toContain("import type");
     }
+    const skipRegistry = readFileSync(resolve(root, "packages/rendering/src/post/postSkipped.ts"), "utf8");
+    expect(skipRegistry).not.toMatch(/^\s*(?:import|export)\s[^;]*\sfrom\s/m);
+    expect(skipRegistry).not.toMatch(/\bimport\s*\(/);
 
     const barrel = readFileSync(resolve(root, "packages/rendering/src/lanes/prd03.ts"), "utf8")
       .replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, ""); // strip comments — only real specifiers count
