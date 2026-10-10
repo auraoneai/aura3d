@@ -22,11 +22,11 @@ import type { ResolvedSceneDepth } from "./SceneDepthAdapter";
 /** §6.2 particle GPU budget per tier (ms). Custom tier settings fall back to
  *  matching by `particleBudget`, then to the `high` budget. */
 export const PARTICLE_GPU_BUDGET_MS: Record<keyof typeof QUALITY_TIERS | "default", number> = {
-  low: 8,
-  medium: 6,
-  high: 4,
-  ultra: 3,
-  default: 4
+  low: 0.8,
+  medium: 1.2,
+  high: 2.0,
+  ultra: 3.0,
+  default: 2.0
 };
 
 export function particleGpuBudgetMs(tier: AuraQualityTierSettings): number {

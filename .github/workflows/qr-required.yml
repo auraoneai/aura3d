@@ -1,0 +1,330 @@
+# qr-required — §2.5 mandatory all-flags gate (PRD-16). Every PR, every main push.
+#
+# Lane 12 authors; lane 15 flips it to a required check via the main ruleset
+# (process/OWNER-ACTIONS.md) once the skeleton is green on main.
+#
+#   paths          — which lane jobs a PR must run (lanes' workflows become
+#                    workflow_call and hang off this; until then the outputs
+#                    are the contract)
+#   allflags-smoke — GitLab flags-bisect on the 6-probe matrix x
+#                    none / $ALL / $ALL,strict. `none` arm is a hard gate.
+#                    $ALL arms are expected-red while Track 0 is open
+#                    (#375); a PR that regresses a previously-green arm fails
+#                    (baseline: process/baselines/allflags-smoke.json).
+#   nightly        — full matrix on main (18 base + lane scenes, both engines,
+#                    none + $ALL; 9/9 games at 1280x720 with all).
+#   qr-required    — aggregator; fails on any failure/cancelled in needs.
+#
+# Remote-only honesty: this file never masks. Missing mirror refs, failed
+# triggers, or a red `none` arm all fail loudly.
+
+name: qr-required
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 5 * * *"   # 05:00 UTC nightly on main
+
+permissions:
+  contents: read
+
+env:
+  GITLAB_PROJECT_ID: "87152020"
+  GITLAB_API: "https://gitlab.com/api/v4"
+  QR_PROBES: "01-simple-geometry,16-instancing,12-shadows,03-damaged-helmet,08-skinned-character,14-particles"
+  QR_ALL_FLAGS: "core,lighting,post,materials,assets,animation,vfx,camera,game,world,tiers,looks,compiler"
+  TRACK0_ISSUE: "375"
+
+jobs:
+  paths:
+    runs-on: ubuntu-latest
+    outputs:
+      changes: ${{ steps.filter.outputs.changes }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dorny/paths-filter@0e4a8c6effa4802afeda77dc8d303f8176d7dfad # v3
+        id: filter
+        with:
+          list-files: json
+          filters: |
+          lane01:
+            - '**/lanes/prd01/**'
+            - '**/commands/prd01*'
+            - '**/scenes/prd01/**'
+            - '**/diagnosticOnly.prd01.*'
+            - '**/qr-01-*'
+            - '**/impl/prd01-*'
+            - '**/evidence/prd-01/**'
+            - '**/evidence/prd01/**'
+            - '**/PRD-01-*'
+          lane02:
+            - '**/lanes/prd02/**'
+            - '**/commands/prd02*'
+            - '**/scenes/prd02/**'
+            - '**/diagnosticOnly.prd02.*'
+            - '**/qr-02-*'
+            - '**/impl/prd02-*'
+            - '**/evidence/prd-02/**'
+            - '**/evidence/prd02/**'
+            - '**/PRD-02-*'
+          lane03:
+            - '**/lanes/prd03/**'
+            - '**/commands/prd03*'
+            - '**/scenes/prd03/**'
+            - '**/diagnosticOnly.prd03.*'
+            - '**/qr-03-*'
+            - '**/impl/prd03-*'
+            - '**/evidence/prd-03/**'
+            - '**/evidence/prd03/**'
+            - '**/PRD-03-*'
+          lane04:
+            - '**/lanes/prd04/**'
+            - '**/commands/prd04*'
+            - '**/scenes/prd04/**'
+            - '**/diagnosticOnly.prd04.*'
+            - '**/qr-04-*'
+            - '**/impl/prd04-*'
+            - '**/evidence/prd-04/**'
+            - '**/evidence/prd04/**'
+            - '**/PRD-04-*'
+          lane05:
+            - '**/lanes/prd05/**'
+            - '**/commands/prd05*'
+            - '**/scenes/prd05/**'
+            - '**/diagnosticOnly.prd05.*'
+            - '**/qr-05-*'
+            - '**/impl/prd05-*'
+            - '**/evidence/prd-05/**'
+            - '**/evidence/prd05/**'
+            - '**/PRD-05-*'
+          lane06:
+            - '**/lanes/prd06/**'
+            - '**/commands/prd06*'
+            - '**/scenes/prd06/**'
+            - '**/diagnosticOnly.prd06.*'
+            - '**/qr-06-*'
+            - '**/impl/prd06-*'
+            - '**/evidence/prd-06/**'
+            - '**/evidence/prd06/**'
+            - '**/PRD-06-*'
+          lane07:
+            - '**/lanes/prd07/**'
+            - '**/commands/prd07*'
+            - '**/scenes/prd07/**'
+            - '**/diagnosticOnly.prd07.*'
+            - '**/qr-07-*'
+            - '**/impl/prd07-*'
+            - '**/evidence/prd-07/**'
+            - '**/evidence/prd07/**'
+            - '**/PRD-07-*'
+          lane08:
+            - '**/lanes/prd08/**'
+            - '**/commands/prd08*'
+            - '**/scenes/prd08/**'
+            - '**/diagnosticOnly.prd08.*'
+            - '**/qr-08-*'
+            - '**/impl/prd08-*'
+            - '**/evidence/prd-08/**'
+            - '**/evidence/prd08/**'
+            - '**/PRD-08-*'
+          lane09:
+            - '**/lanes/prd09/**'
+            - '**/commands/prd09*'
+            - '**/scenes/prd09/**'
+            - '**/diagnosticOnly.prd09.*'
+            - '**/qr-09-*'
+            - '**/impl/prd09-*'
+            - '**/evidence/prd-09/**'
+            - '**/evidence/prd09/**'
+            - '**/PRD-09-*'
+          lane10:
+            - '**/lanes/prd10/**'
+            - '**/commands/prd10*'
+            - '**/scenes/prd10/**'
+            - '**/diagnosticOnly.prd10.*'
+            - '**/qr-10-*'
+            - '**/impl/prd10-*'
+            - '**/evidence/prd-10/**'
+            - '**/evidence/prd10/**'
+            - '**/PRD-10-*'
+          lane11:
+            - '**/lanes/prd11/**'
+            - '**/commands/prd11*'
+            - '**/scenes/prd11/**'
+            - '**/diagnosticOnly.prd11.*'
+            - '**/qr-11-*'
+            - '**/impl/prd11-*'
+            - '**/evidence/prd-11/**'
+            - '**/evidence/prd11/**'
+            - '**/PRD-11-*'
+          lane13:
+            - '**/lanes/prd13/**'
+            - '**/commands/prd13*'
+            - '**/scenes/prd13/**'
+            - '**/diagnosticOnly.prd13.*'
+            - '**/qr-13-*'
+            - '**/impl/prd13-*'
+            - '**/evidence/prd-13/**'
+            - '**/evidence/prd13/**'
+            - '**/PRD-13-*'
+          lane14:
+            - '**/lanes/prd14/**'
+            - '**/commands/prd14*'
+            - '**/scenes/prd14/**'
+            - '**/diagnosticOnly.prd14.*'
+            - '**/qr-14-*'
+            - '**/impl/prd14-*'
+            - '**/evidence/prd-14/**'
+            - '**/evidence/prd14/**'
+            - '**/PRD-14-*'
+          lane16:
+            - '**/lanes/prd16/**'
+            - '**/commands/prd16*'
+            - '**/scenes/prd16/**'
+            - '**/diagnosticOnly.prd16.*'
+            - '**/qr-16-*'
+            - '**/impl/prd16-*'
+            - '**/evidence/prd-16/**'
+            - '**/evidence/prd16/**'
+            - '**/PRD-16-*'
+          shared:
+            - 'packages/engine/**'
+            - 'packages/rendering/**'
+            - 'packages/contracts/**'
+            - 'benchmarks/**'
+            - 'tools/**'
+            - '.github/workflows/**'
+            - '.gitlab-ci.yml'
+            - 'package.json'
+            - 'pnpm-lock.yaml'
+
+  allflags-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    if: github.event_name != 'schedule'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Trigger GitLab flags-bisect on this ref
+        id: trigger
+        env:
+          TRIGGER_TOKEN: ${{ secrets.GITLAB_QR_TRIGGER_TOKEN }}
+          # The mirror only has qr/** branches (qr-gitlab-ci.yml sync job);
+          # a PR branch must be qr/** for this gate to see its head.
+          REF: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+          SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test -n "$TRIGGER_TOKEN" || { echo "::error::GITLAB_QR_TRIGGER_TOKEN secret missing"; exit 1; }
+          case "$REF" in
+            main|qr/*|aura3d-quality-rebuild/*) ;;
+            *) echo "::error::allflags-smoke needs a synced ref (push branch '$REF' as qr/<name> so the mirror has it)"; exit 1 ;;
+          esac
+          body="$(jq -n --arg token "$TRIGGER_TOKEN" --arg ref "$REF" --arg run "$GITHUB_RUN_ID"             --arg scenes "$QR_PROBES" --arg sets "none;$QR_ALL_FLAGS;$QR_ALL_FLAGS,strict"             '{token:$token, ref:$ref, inputs:{suite:"flags-bisect", games:"", viewports:"1280x720",
+              local_build:false, mobile:false, qr_flags:"none", requester:"qr-required", github_run:$run,
+              bench_scenes:$scenes, bench_engines:"aura3d", bench_flag_sets:$sets}}')"
+          resp="$(curl -sS --max-time 60 -X POST -H "Content-Type: application/json" --data-binary @- \
+            "$GITLAB_API/projects/$GITLAB_PROJECT_ID/trigger/pipeline" <<< "$body")"
+          id="$(echo "$resp" | jq -r '.id // empty')"; url="$(echo "$resp" | jq -r '.web_url // empty')"
+          psha="$(echo "$resp" | jq -r '.sha // empty')"
+          test -n "$id" || { echo "::error::GitLab trigger failed (is $REF synced?): $resp"; exit 1; }
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+          echo "GitLab pipeline: $url (sha $psha)" | tee -a "$GITHUB_STEP_SUMMARY"
+          if [ "$psha" != "$SHA" ]; then
+            echo "::error::GitLab pipeline started on $psha, expected $SHA (stale mirror — push the ref again)"
+            exit 1
+          fi
+
+      - name: Wait for GitLab pipeline
+        env:
+          API_TOKEN: ${{ secrets.GITLAB_QR_API_TOKEN }}
+          PIPELINE_ID: ${{ steps.trigger.outputs.id }}
+        run: |
+          set -euo pipefail
+          status=unknown; deadline=$((SECONDS + 13200))
+          while [ "$SECONDS" -lt "$deadline" ]; do
+            status="$(curl -fsS --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 5 -H "PRIVATE-TOKEN: $API_TOKEN" \
+              "$GITLAB_API/projects/$GITLAB_PROJECT_ID/pipelines/$PIPELINE_ID" | jq -r .status)" || status=unknown
+            case "$status" in success|failed|canceled|skipped) break ;; esac
+            sleep 45
+          done
+          echo "GitLab pipeline $PIPELINE_ID finished: **$status**" >> "$GITHUB_STEP_SUMMARY"
+          [ "$status" = "success" ] || { echo "::error::GitLab pipeline $PIPELINE_ID ended $status"; exit 1; }
+
+      - name: Evaluate bisect-summary.json
+        env:
+          API_TOKEN: ${{ secrets.GITLAB_QR_API_TOKEN }}
+          PIPELINE_ID: ${{ steps.trigger.outputs.id }}
+        run: |
+          set -euo pipefail
+          jid="$(curl -fsS -H "PRIVATE-TOKEN: $API_TOKEN" \
+            "$GITLAB_API/projects/$GITLAB_PROJECT_ID/pipelines/$PIPELINE_ID/jobs?per_page=50" \
+            | jq -r '.[] | select(.name == "qr:benchmark") | .id' | head -1)"
+          test -n "$jid" || { echo "::error::qr:benchmark job not found in pipeline $PIPELINE_ID"; exit 1; }
+          curl -fsSL --max-time 900 -H "PRIVATE-TOKEN: $API_TOKEN" -o bench.zip \
+            "$GITLAB_API/projects/$GITLAB_PROJECT_ID/jobs/$jid/artifacts"
+          unzip -q -o bench.zip -d bench-artifacts
+          node benchmarks/quality-rebuild/allflags-smoke-eval.mjs \
+            bench-artifacts/benchmarks/quality-rebuild/out/bisect-summary.json \
+            process/baselines/allflags-smoke.json "$QR_ALL_FLAGS" "$TRACK0_ISSUE" >> "$GITHUB_STEP_SUMMARY"
+
+  nightly:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - name: Nightly full matrix on main
+        env:
+          TRIGGER_TOKEN: ${{ secrets.GITLAB_QR_TRIGGER_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$TRIGGER_TOKEN" || { echo "::error::GITLAB_QR_TRIGGER_TOKEN secret missing"; exit 1; }
+          for qr_flags in none "$QR_ALL_FLAGS"; do
+            body="$(jq -n --arg token "$TRIGGER_TOKEN" --arg flags "$qr_flags" \
+              '{token:$token, ref:"main", inputs:{suite:"benchmark", games:"", viewports:"1280x720",
+                local_build:false, mobile:false, qr_flags:$flags, requester:"qr-required-nightly", github_run:"",
+                bench_scenes:"", bench_engines:"aura3d,three", bench_flag_sets:""}}')"
+            curl -sS --max-time 60 -X POST -H "Content-Type: application/json" --data-binary @- \
+              "$GITLAB_API/projects/$GITLAB_PROJECT_ID/trigger/pipeline" <<< "$body" | jq -r '.web_url // .message' | tee -a "$GITHUB_STEP_SUMMARY"
+            sleep 5
+          done
+          body="$(jq -n --arg token "$TRIGGER_TOKEN" \
+            '{token:$token, ref:"main", inputs:{suite:"games", games:"", viewports:"1280x720",
+              local_build:true, mobile:false, qr_flags:"all", requester:"qr-required-nightly", github_run:"",
+              bench_scenes:"", bench_engines:"aura3d", bench_flag_sets:""}}')"
+          curl -sS --max-time 60 -X POST -H "Content-Type: application/json" --data-binary @- \
+            "$GITLAB_API/projects/$GITLAB_PROJECT_ID/trigger/pipeline" <<< "$body" | jq -r '.web_url // .message' | tee -a "$GITHUB_STEP_SUMMARY"
+
+  ownership:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Ownership audit (every tracked file resolves to an owner)
+        run: node tools/qr-ownership/check.mjs
+
+  checklist-lint:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - name: Ticked rows must cite a green remote run (diff scope)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLAB_QR_API_TOKEN: ${{ secrets.GITLAB_QR_API_TOKEN }}
+        run: node tools/qr-checklist-lint/check.mjs
+
+  qr-required:
+    if: always()
+    needs: [paths, allflags-smoke, ownership, checklist-lint]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Aggregate
+        run: |
+          set -euo pipefail
+          echo '${{ toJson(needs) }}' | jq -r 'to_entries[] | "\(.key): \(.value.result)"' | tee -a "$GITHUB_STEP_SUMMARY"
+          echo '${{ toJson(needs) }}' | jq -e '[.[] | .result] | all(. == "success" or . == "skipped")' >/dev/null \
+            || { echo "::error::qr-required: a required job failed or was cancelled"; exit 1; }

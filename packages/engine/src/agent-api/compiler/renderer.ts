@@ -27,6 +27,7 @@ import { material } from "../nodes/material.js";
 import { asRuntimeCompiled, compileScene, updateCompiledScene } from "../../contracts/compiler.js";
 import type { MountSceneCompileContext } from "./compileScene.js";
 import { createDegradationSink } from "./degradation.js";
+import { markTiming } from "../platform.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import { resolveQrFlags } from "../../contracts/flags.js";
 
@@ -73,6 +74,7 @@ export async function createProductionRuntimeSceneRenderer(
   // `preserveDrawingBuffer` is gone: frame capture flows through the C-05
   // `captureFrame`/`toBlob` path after a synchronous render, not the raw
   // WebGL drawing buffer.
+  markTiming("a3d:mount:renderer-create:start");
   const productionRenderer = await Renderer.create({
     canvas,
     width: canvas.width,
@@ -85,6 +87,7 @@ export async function createProductionRuntimeSceneRenderer(
     // matrix-fitted ACES transform so presentation preserves that authored color.
     clearColor: colorToAcesInputClearColor(snapshot.background)
   });
+  markTiming("a3d:mount:renderer-create:resolved");
   let latestDeviceDiagnostics: RenderDeviceDiagnostics = productionRenderer.getDiagnostics();
   let latestFeatures: readonly ProductionRendererFeature[] = rendererFeatureReport(productionRenderer);
   // M2 streaming distances measure against the live camera eye; refreshed
@@ -162,7 +165,9 @@ export async function createProductionRuntimeSceneRenderer(
     runtimeWarnings,
     ...(runtimeNodes ? { runtimeNodes } : {})
   };
+  markTiming("a3d:mount:compile-scene:start");
   const compiledScene = await compileScene(snapshot, sceneCompileCtx);
+  markTiming("a3d:mount:compile-scene:resolved");
   const compiled = asRuntimeCompiled(compiledScene);
   if (compiled) {
     actorEntries = compiled.actorEntries as ProductionRuntimeActorEntry[];

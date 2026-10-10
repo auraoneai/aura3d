@@ -1,0 +1,978 @@
+From 959b3ad934075e92703e15462eade5bdc7647b72 Mon Sep 17 00:00:00 2001
+From: gchahal+1 <gchahal@veerone.com>
+Date: Fri, 9 Oct 2026 13:45:48 +0000
+Subject: [PATCH] [qr-prd09] showcase-courier-rush: delete evidence
+ files+blocks (T5.8)
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ .../performance-report.json                   |  20 --
+ .../scripts/register-models.mjs               |  34 ---
+ .../scripts/write-performance-report.ts       |  55 -----
+ .../scripts/write-route-health.mjs            | 135 -----------
+ apps/showcase-courier-rush/src/legacy/main.ts | 228 ------------------
+ apps/showcase-courier-rush/src/main.ts        |  10 -
+ .../src/v2/evidence/index.ts                  |  99 --------
+ 7 files changed, 581 deletions(-)
+ delete mode 100644 apps/showcase-courier-rush/performance-report.json
+ delete mode 100644 apps/showcase-courier-rush/scripts/register-models.mjs
+ delete mode 100644 apps/showcase-courier-rush/scripts/write-performance-report.ts
+ delete mode 100644 apps/showcase-courier-rush/scripts/write-route-health.mjs
+ delete mode 100644 apps/showcase-courier-rush/src/v2/evidence/index.ts
+
+diff --git a/apps/showcase-courier-rush/performance-report.json b/apps/showcase-courier-rush/performance-report.json
+deleted file mode 100644
+index 7c8e2eff7..000000000
+--- a/apps/showcase-courier-rush/performance-report.json
++++ /dev/null
+@@ -1,20 +0,0 @@
+-{
+-  "schema": "aura3d-courier-rush-performance/1.0",
+-  "generatedAt": "2026-09-03T10:00:41.926Z",
+-  "scope": "Headless timing of route-local dispatch and seeded eight-car authored lane-loop simulation. GPU/frame-time parity is not claimed.",
+-  "samples": 12000,
+-  "fixedStepSeconds": 0.008333333333333333,
+-  "budgets": {
+-    "dispatchP95Ms": 0.25,
+-    "trafficP95Ms": 1,
+-    "trafficCars": 8,
+-    "fullShiftDrawCalls": 600
+-  },
+-  "observed": {
+-    "dispatchP95Ms": 0.0011,
+-    "trafficP95Ms": 0.0117,
+-    "trafficCars": 8,
+-    "fullShiftDrawCalls": 34
+-  },
+-  "pass": true
+-}
+diff --git a/apps/showcase-courier-rush/scripts/register-models.mjs b/apps/showcase-courier-rush/scripts/register-models.mjs
+deleted file mode 100644
+index 55b54b5ef..000000000
+--- a/apps/showcase-courier-rush/scripts/register-models.mjs
++++ /dev/null
+@@ -1,34 +0,0 @@
+-import { spawnSync } from "node:child_process";
+-import { resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(fileURLToPath(new URL("..", import.meta.url)));
+-const repoRoot = resolve(appDir, "../..");
+-const cli = "packages/aura3d-cli/src/cli.ts";
+-const definitions = [
+-  ["courierVan", "public/aura-assets/courierVan.1984ad81.glb", "vehicle", "Daniel Zhabotinsky", "2026-08-21T20:52:03.185Z", "a350a422d200485ea57778dc42139edc", "000-053", "Typed textured delivery van with a readable commercial silhouette, used as the primary route subject through authored arcade handling; no physical vehicle claim."],
+-  ["courierParcel", "public/aura-assets/courierParcel.b04bff68.glb", "prop", "macriciox", "2026-08-21T22:45:04.198Z", "76fa80950b1f48a8ad6a8441fe443241", "000-089", "Typed textured parcel visibly mounted and unmounted from scene state by pickup and drop events."],
+-  ["courierTrafficSedan", "public/aura-assets/courierTrafficSedan.69f41bfa.glb", "vehicle", "Daniel Zhabotinsky", "2026-08-21T22:45:21.245Z", "892b2684fb37442299bfad9222cf331c", "000-078", "Typed textured traffic sedan used on seeded authored lane loops; no navigation or physical-driving claim."],
+-  ["courierTrafficHatch", "public/aura-assets/courierTrafficHatch.ee239312.glb", "vehicle", "Daniel Zhabotinsky", "2026-08-21T22:46:28.398Z", "055ff8a21b8d4d279debca089e2fafcd", "000-125", "Typed textured traffic hatch used on seeded authored lane loops; no navigation or physical-driving claim."],
+-  ["courierZoneAwning", "public/aura-assets/courierZoneAwning.97e71538.glb", "prop", "Pixel_Monster", "2026-08-21T22:45:26.134Z", "e8720eef53cc4202a44657e28dfbda96", "000-131", "Typed textured awning used as a readable pickup and drop landmark alongside real route-local sensor state."],
+-  ["courierZoneBollard", "public/aura-assets/courierZoneBollard.a696b2f7.glb", "prop", "chriskujath2", "2026-08-21T22:45:24.572Z", "9b2904585b5f4276982553f45d74c173", "000-131", "Typed textured bollard used as zone and curb set dressing; it is not the sensor or primary subject."]
+-];
+-
+-for (const [id, file, role, author, retrievedAt, uuid, shard, suitability] of definitions) {
+-  const downloadUrl = `https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/${shard}/${uuid}.glb`;
+-  const result = spawnSync("pnpm", [
+-    "exec", "tsx", "--tsconfig", "tsconfig.base.json", cli,
+-    "assets", "add", file, "--name", id, "--type", "model",
+-    "--license", "CC-BY-4.0", "--license-url", "https://creativecommons.org/licenses/by/4.0/",
+-    "--source-page", `https://sketchfab.com/3d-models/${uuid}`, "--download-url", downloadUrl,
+-    "--author", author, "--retrieved-at", retrievedAt, "--quality", "release",
+-    "--role", role, "--suitability", suitability
+-  ], { cwd: repoRoot, encoding: "utf8", maxBuffer: 128 * 1024 * 1024 });
+-  let payload;
+-  try { payload = JSON.parse(result.stdout); } catch { payload = null; }
+-  if (payload?.ok !== true) {
+-    process.stderr.write(result.stderr || result.stdout);
+-    process.exit(result.status ?? 1);
+-  }
+-  console.log(`Registered ${id}`);
+-}
+diff --git a/apps/showcase-courier-rush/scripts/write-performance-report.ts b/apps/showcase-courier-rush/scripts/write-performance-report.ts
+deleted file mode 100644
+index f85cd954c..000000000
+--- a/apps/showcase-courier-rush/scripts/write-performance-report.ts
++++ /dev/null
+@@ -1,55 +0,0 @@
+-import { performance } from "node:perf_hooks";
+-import { readFileSync, writeFileSync } from "node:fs";
+-import { resolve } from "node:path";
+-import { createDispatchState, stepDispatch } from "../src/dispatch";
+-import { createTrafficSimulation, TRAFFIC_CAR_COUNT } from "../src/traffic";
+-
+-const STEP_SAMPLES = 12_000;
+-const STEP_SECONDS = 1 / 120;
+-const DISPATCH_P95_BUDGET_MS = 0.25;
+-const TRAFFIC_P95_BUDGET_MS = 1;
+-const DRAW_CALL_BUDGET = 600;
+-
+-function p95(values: readonly number[]): number {
+-  const sorted = [...values].sort((a, b) => a - b);
+-  return sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))] ?? 0;
+-}
+-
+-const traffic = createTrafficSimulation({ seed: 0xc0a13e });
+-let dispatch = createDispatchState();
+-const dispatchSamples: number[] = [];
+-const trafficSamples: number[] = [];
+-for (let index = 0; index < STEP_SAMPLES; index += 1) {
+-  let started = performance.now();
+-  const result = stepDispatch(dispatch, STEP_SECONDS * 1000, { vanX: 31, vanZ: 25 });
+-  dispatch = result.state.phase === "shiftOver" ? createDispatchState() : result.state;
+-  dispatchSamples.push(performance.now() - started);
+-  started = performance.now();
+-  traffic.step(STEP_SECONDS, 31, 25);
+-  trafficSamples.push(performance.now() - started);
+-}
+-
+-const browser = JSON.parse(readFileSync(resolve(import.meta.dirname, "../../..", "tests/reports/showcase-courier-rush/full-shift-evidence.json"), "utf8"));
+-const observed = {
+-  dispatchP95Ms: Number(p95(dispatchSamples).toFixed(4)),
+-  trafficP95Ms: Number(p95(trafficSamples).toFixed(4)),
+-  trafficCars: traffic.cars().length,
+-  fullShiftDrawCalls: Number(browser.final?.diagnostics?.drawCalls ?? 0)
+-};
+-const report = {
+-  schema: "aura3d-courier-rush-performance/1.0",
+-  generatedAt: new Date().toISOString(),
+-  scope: "Headless timing of route-local dispatch and seeded eight-car authored lane-loop simulation. GPU/frame-time parity is not claimed.",
+-  samples: STEP_SAMPLES,
+-  fixedStepSeconds: STEP_SECONDS,
+-  budgets: { dispatchP95Ms: DISPATCH_P95_BUDGET_MS, trafficP95Ms: TRAFFIC_P95_BUDGET_MS, trafficCars: TRAFFIC_CAR_COUNT, fullShiftDrawCalls: DRAW_CALL_BUDGET },
+-  observed,
+-  pass: observed.dispatchP95Ms <= DISPATCH_P95_BUDGET_MS
+-    && observed.trafficP95Ms <= TRAFFIC_P95_BUDGET_MS
+-    && observed.trafficCars === TRAFFIC_CAR_COUNT
+-    && observed.fullShiftDrawCalls > 0
+-    && observed.fullShiftDrawCalls <= DRAW_CALL_BUDGET
+-};
+-writeFileSync(resolve(import.meta.dirname, "..", "performance-report.json"), JSON.stringify(report, null, 2) + "\n");
+-console.log(JSON.stringify({ pass: report.pass, observed }));
+-if (!report.pass) process.exitCode = 1;
+diff --git a/apps/showcase-courier-rush/scripts/write-route-health.mjs b/apps/showcase-courier-rush/scripts/write-route-health.mjs
+deleted file mode 100644
+index 005731d93..000000000
+--- a/apps/showcase-courier-rush/scripts/write-route-health.mjs
++++ /dev/null
+@@ -1,135 +0,0 @@
+-import { createHash } from "node:crypto";
+-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+-import { dirname, join, relative, resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+-const repoRoot = resolve(appDir, "../..");
+-const reportDir = join(repoRoot, "tests/reports/showcase-courier-rush");
+-const modelAssetIds = ["courierVan", "courierParcel", "courierTrafficSedan", "courierTrafficHatch", "courierZoneAwning", "courierZoneBollard"];
+-const primaryAssetIds = ["courierVan", "courierParcel"];
+-const supportingAssetIds = modelAssetIds.filter((id) => !primaryAssetIds.includes(id));
+-const audioAssetIds = []; // sound cues come from the shared game-sfx-core pack, not route-typed assets
+-const acceptanceFiles = ["load.png", "pickup-zone.png", "parcel-in-bed.png", "busy-intersection.png", "drop-flash.png", "traffic-strike-fail.png", "timer-fail-summary.png", "shift-clear.png", "mobile.png", "reduced-motion.png"];
+-
+-const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
+-const sha256 = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
+-const sourceFiles = readdirSync(join(appDir, "src")).filter((file) => /\.(?:ts|css)$/.test(file)).sort();
+-const sourceHash = (() => {
+-  const hash = createHash("sha256");
+-  for (const file of sourceFiles) hash.update(file).update("\0").update(readFileSync(join(appDir, "src", file))).update("\0");
+-  return hash.digest("hex");
+-})();
+-const source = sourceFiles.map((file) => readFileSync(join(appDir, "src", file), "utf8")).join("\n");
+-
+-const manifest = readJson(join(repoRoot, "aura.assets.json"));
+-const assetById = new Map((manifest.assets ?? []).map((entry) => [entry.id, entry]));
+-for (const id of [...modelAssetIds, ...audioAssetIds]) {
+-  const asset = assetById.get(id);
+-  if (!asset?.hash || !asset?.url || !asset?.provenance?.license) throw new Error(`Missing current typed/provenanced asset ${id}`);
+-}
+-for (const id of modelAssetIds) {
+-  const asset = assetById.get(id);
+-  if (asset.quality !== "release" || !asset.renderedProbe?.sha256) throw new Error(`${id} lacks release-quality rendered-probe evidence`);
+-  if (!source.includes(`assets.${id}`)) throw new Error(`Live route does not use assets.${id}`);
+-}
+-for (const id of audioAssetIds) if (!source.includes(`"${id}"`)) throw new Error(`Live route does not reference typed audio ${id}`);
+-
+-function validateBrowserEvidence(file, schema) {
+-  const report = readJson(join(reportDir, file));
+-  if (report.schema !== schema) throw new Error(`${file} schema is stale`);
+-  if (report.producerSourceSha256 !== sha256(join(repoRoot, report.producer))) throw new Error(`${file} producer hash is stale`);
+-  if (report.routeSourceSha256 !== sourceHash) throw new Error(`${file} route source hash is stale`);
+-  for (const artifact of report.artifacts ?? []) {
+-    if (!artifact.path || artifact.sha256 !== sha256(join(repoRoot, artifact.path))) throw new Error(`${file} artifact hash is stale`);
+-  }
+-  return report;
+-}
+-
+-const fullShift = validateBrowserEvidence("full-shift-evidence.json", "aura3d-courier-rush-full-shift/1.0");
+-const failure = validateBrowserEvidence("failure-evidence.json", "aura3d-courier-rush-failure/1.0");
+-const mobile = validateBrowserEvidence("mobile-evidence.json", "aura3d-courier-rush-mobile/1.0");
+-const reduced = validateBrowserEvidence("reduced-motion-evidence.json", "aura3d-courier-rush-reduced-motion/1.0");
+-if (fullShift.final?.state !== "shiftClear" || fullShift.pickupEvents !== 5 || fullShift.dropEvents !== 5 || fullShift.allFiveDeliveriesInsideTimers !== true) throw new Error("Full-shift evidence does not prove five timely deliveries");
+-if (failure.trafficStrikeFailure?.state !== "shiftOver" || failure.trafficStrikeFailure?.strikes !== 3 || failure.timerFailure?.timerFailObserved !== true || failure.reset?.state !== "awaitingPickup") throw new Error("Failure evidence is incomplete");
+-if (mobile.touchPointerDriven !== true || mobile.driveChangedState !== true || Math.abs(mobile.vanSpeed ?? 0) <= 0.4) throw new Error("Mobile evidence is not touch-driven");
+-if (reduced.reducedMotion !== true || reduced.gameplayState !== "awaitingPickup") throw new Error("Reduced-motion evidence is incomplete");
+-
+-const performance = readJson(join(appDir, "performance-report.json"));
+-if (performance.schema !== "aura3d-courier-rush-performance/1.0" || performance.pass !== true) throw new Error("Courier performance report is missing or failing");
+-const gates = readJson(join(repoRoot, "tools/showcase-library/route-gates.json"));
+-const gate = gates.routes?.find((entry) => entry.id === "showcase-courier-rush");
+-if (!gate || gate.releaseClass !== "prototype-blocked" || gate.published !== true || gate.gameTemplateStatus?.publicTemplateReady !== false) throw new Error("Courier route gate is missing or over-promoted");
+-const primitiveOccurrences = Array.from(source.matchAll(/\bprimitives\.[A-Za-z_$][\w$]*/g)).length;
+-if (primitiveOccurrences > gate.primitiveBudget) throw new Error("Courier primitive source budget exceeded");
+-
+-const routeHealth = {
+-  schema: "aura3d-route-health/1.0",
+-  generatedAt: new Date().toISOString(),
+-  appId: "showcase-courier-rush",
+-  route: "/apps/showcase-courier-rush/",
+-  classification: "prototype-blocked",
+-  publicShowcase: false,
+-  promotionStatus: "hold-public-showcase-until-independent-human-visual-review",
+-  machinePass: true,
+-  renderer: { path: "createAuraApp root safe API", mode: "safe-basic", nativeWebGPU: false, productionRuntime: false },
+-  primaryAssets: primaryAssetIds.map((id) => ({
+-    typedRef: `assets.${id}`,
+-    role: id === "courierVan" ? "primary-vehicle" : id === "courierParcel" ? "visible-cargo" : id.includes("Traffic") ? "authored-lane-loop-traffic" : "zone-landmark-prop",
+-    status: "release-validated-typed-asset",
+-    quality: assetById.get(id).quality,
+-    hash: assetById.get(id).hash,
+-    license: assetById.get(id).provenance.license,
+-    author: assetById.get(id).provenance.author,
+-    renderedProbeSha256: assetById.get(id).renderedProbe.sha256
+-  })),
+-  supportingAssets: supportingAssetIds.map((id) => ({
+-    typedRef: `assets.${id}`,
+-    role: id.includes("Traffic") ? "authored-lane-loop-traffic" : "zone-landmark-prop",
+-    status: "release-validated-typed-supporting-asset",
+-    quality: assetById.get(id).quality,
+-    hash: assetById.get(id).hash,
+-    license: assetById.get(id).provenance.license,
+-    author: assetById.get(id).provenance.author,
+-    renderedProbeSha256: assetById.get(id).renderedProbe.sha256
+-  })),
+-  audioAssets: audioAssetIds.map((id) => ({ typedRef: `assets.${id}`, quality: assetById.get(id).quality, hash: assetById.get(id).hash, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
+-  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "street/zone guides, light pools, feedback, and non-subject set dressing", status: "within-stated-role-and-budget" },
+-  gameplay: {
+-    deliveries: 5,
+-    arc: ["nearby-zone-teach", "cross-traffic", "two-route-choice", "fragile-express-pressure", "combined-final-run"],
+-    traffic: "eight seeded cars on two authored lane loops with courtesy windows; no navmesh or free-roam claim",
+-    sensors: "route-local pickup/drop containment transitions scene-visible typed parcel state exactly once",
+-    failures: "three pinned collision strikes or one expired dispatch timer ends the shift",
+-    fullShiftEvidence: "tests/reports/showcase-courier-rush/full-shift-evidence.json"
+-  },
+-  performance,
+-  routeGate: { config: "tools/showcase-library/route-gates.json", releaseClass: gate.releaseClass, published: gate.published, publicTemplateReady: false, pass: true },
+-  claimStatus: {
+-    status: "blocked-pending-human-review",
+-    label: "prototype",
+-    allowed: ["five-delivery route-local arcade courier prototype", "seeded authored lane-loop traffic with courtesy windows", "typed van, parcel, traffic, landmarks, and ten state-driven audio cues", "root-safe pickup/drop scene state and deterministic scoring/failure rules"],
+-    notAllowed: ["physical suspension, tyre, damage, or open-world navigation claims", "production renderer, HDR/IBL, WebGPU, or postprocess claims", "public promotion before independent exact-artifact review"]
+-  },
+-  blockers: ["independent human visual review pending for exact final artifacts"],
+-  evidence: {
+-    global: "window.__AURA3D_SHOWCASE_COURIER_RUSH__",
+-    sourceReview: "apps/showcase-courier-rush/src/main.ts",
+-    detailedGameplayGlobal: "window.__COURIER_RUSH_EVIDENCE__",
+-    fullShift: "tests/reports/showcase-courier-rush/full-shift-evidence.json",
+-    failure: "tests/reports/showcase-courier-rush/failure-evidence.json",
+-    mobile: "tests/reports/showcase-courier-rush/mobile-evidence.json",
+-    reducedMotion: "tests/reports/showcase-courier-rush/reduced-motion-evidence.json",
+-    acceptanceArtifacts: acceptanceFiles.map((file) => ({
+-      path: `tests/reports/showcase-courier-rush/${file}`,
+-      sha256: sha256(join(reportDir, file))
+-    })),
+-    performance: "apps/showcase-courier-rush/performance-report.json",
+-    browserSpecs: ["tests/browser/courier-rush-playable.spec.ts", "tests/browser/courier-rush-scene.spec.ts"],
+-    unitSpecs: ["tests/unit/apps/courier-rush-dispatch.test.ts", "tests/unit/apps/courier-rush-traffic.test.ts"],
+-    deployCommand: "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-courier-rush/dist --release --source apps/showcase-courier-rush/src --asset courierVan --asset courierParcel --asset courierTrafficSedan --asset courierTrafficHatch --asset courierZoneAwning --asset courierZoneBollard"
+-  }
+-};
+-
+-writeFileSync(join(appDir, "route-health.json"), JSON.stringify(routeHealth, null, 2) + "\n");
+-console.log(JSON.stringify({ machinePass: true, primitiveOccurrences, performancePass: performance.pass }));
+diff --git a/apps/showcase-courier-rush/src/legacy/main.ts b/apps/showcase-courier-rush/src/legacy/main.ts
+index 1d8cf8353..14afc4108 100644
+--- a/apps/showcase-courier-rush/src/legacy/main.ts
++++ b/apps/showcase-courier-rush/src/legacy/main.ts
+@@ -1,14 +1,3 @@
+-/**
+- * Courier Rush - mounted route.
+- *
+- * Night-shift courier on the cityBlock night kit: drive to the lit pickup
+- * sensor, carry the typed parcel in the van bed, drop it in the marked zone
+- * before the dispatch timer dies. Five deliveries per shift, combo multiplier
+- * for early drops, strikes for collisions, R resets the shift.
+- *
+- * Claim label: prototype. Root safe API only (createAuraApp + public helpers);
+- * evidence publishes to window.__COURIER_RUSH_EVIDENCE__ per the PRD contract.
+- */
+ import {
+   createGameArcadeVehicle,
+   camera,
+@@ -34,7 +23,6 @@ import {
+   mountTouchControls,
+   type HudDocument
+ } from "@aura3d/game";
+-import { bindCourierEvidence } from "../evidence";
+ import { bindCourierDrive, courierDrive } from "../scenario-drive";
+ import { assets } from "../../../../src/aura-assets";
+ import {
+@@ -67,53 +55,21 @@ import {
+   type VanDriveInput
+ } from "../gameplay/van";
+ import { createCourierSound, type CourierCue, type CourierSoundController } from "../sound";
+-
+ interface CourierRouteReadyFlag {
+   readonly ready: boolean;
+   readonly diagnostics?: unknown;
+ }
+-declare global {
+-  interface Window {
+-    __COURIER_RUSH_EVIDENCE__?: Record<string, unknown>;
+-    __COURIER_RUSH_DEBUG__?: {
+-      placeVan(x: number, z: number, heading?: number): void;
+-      vanSnapshot(): { x: number; z: number; heading: number; speed: number };
+-      pump(frameCount: number): number;
+-      present(): Promise<number>;
+-    };
+-    __AURA3D_ROUTE_READY__?: CourierRouteReadyFlag;
+-    __AURA3D_COMPOSITION_PROBE__?: {
+-      readonly category: "application";
+-      readonly subject: {
+-        readonly position: readonly [number, number, number];
+-        readonly rotation: readonly [number, number, number];
+-        readonly targetSize: number;
+-      };
+-      setSubjectSuppressed(suppressed: boolean): Promise<void>;
+-      settleSubjectPose(): Promise<void>;
+-    };
+-  }
+-}
+-
+-// ---- diagnostics switches ---------------------------------------------------
+ const urlParams = new URLSearchParams(window.location.search);
+ const autopilotEnabled = urlParams.get("autopilot") === "1";
+ const timerScale = Number(urlParams.get("timerScale") ?? "1") || 1;
+ const debugMode = urlParams.get("debug") === "1";
+-document.body.dataset.capture = "default";
+-
+-/** Deterministic shift seed (drives traffic line variation). */
+ const SHIFT_SEED = 20260821;
+-
+-// ---- accessibility ----------------------------------------------------------
+ const prefersReducedMotion =
+   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+ const accessibilitySettings = game.accessibility.settings([
+   game.accessibility.reducedMotion({ enabled: prefersReducedMotion })
+ ]);
+ const reducedMotion = accessibilitySettings.reducedMotion;
+-
+-// ---- audio ------------------------------------------------------------------
+ const courierAudio: CourierSoundController = createCourierSound();
+ let audioUnlocked = false;
+ const unlockAudio = (): void => {
+@@ -125,8 +81,6 @@ const playCue = (cue: CourierCue): void => {
+   if (!audioUnlocked) return;
+   void courierAudio.cue(cue);
+ };
+-
+-// ---- input ------------------------------------------------------------------
+ const input = game.input({
+   actions: {
+     throttle: ["KeyW", "ArrowUp"],
+@@ -145,33 +99,17 @@ const input = game.input({
+ });
+ window.addEventListener("keydown", unlockAudio, { once: true });
+ window.addEventListener("pointerdown", unlockAudio, { once: true });
+-
+-// ---- world data -------------------------------------------------------------
+-// The review route uses a coordinate-aligned presentation slice of the same
+-// east-avenue world road as the selected live traffic. It changes lens and
+-// exposure only; dynamic cars, collision, cargo, and delivery state remain
+-// the normal route simulation.
+ const dressing = buildCityDressing(assets);
+ const propColliders: readonly PropCollider[] = buildPropColliders();
+ const trafficSim = createTrafficSimulation({ seed: SHIFT_SEED });
+-
+-/**
+- * Van fit size. The hero is the typed Meshy decimated van (bounds
+- * [1.905, 0.867, 0.847]): the longest bound is the length, so fitting to 2.7
+- * yields a van about 1.2 wide - a comfortable single-vehicle footprint on a
+- * 2.64-wide road. The collider derives from the same hero bounds, so the
+- * strike authority always matches the visible vehicle.
+- */
+ const VAN_TARGET_LENGTH = 2.7;
+ const vanBounds = assets.courierVanMeshyV2Decimated.bounds;
+ const vanScale = VAN_TARGET_LENGTH / Math.max(...vanBounds);
+ const VAN_HALF_WIDTH = (vanScale * Math.min(vanBounds[0]!, vanBounds[2]!)) / 2;
+ const VAN_COLLIDER_RADIUS = VAN_HALF_WIDTH + 0.05;
+-
+ const START_SITE: ZoneSite = ZONE_SITES.find((site) => site.id === "depot-west-curb") ?? ZONE_SITES[0]!;
+ const START_HEADING = Math.PI / 2;
+ void START_HEADING;
+-
+ const vanVehicle: GameArcadeVehicle = createGameArcadeVehicle({
+   maxSpeed: VAN_TUNE.maxSpeed,
+   acceleration: VAN_TUNE.acceleration,
+@@ -180,26 +118,15 @@ const vanVehicle: GameArcadeVehicle = createGameArcadeVehicle({
+   drag: VAN_TUNE.drag,
+   steerRate: VAN_TUNE.steerRate
+ });
+-
+-// ---- simulation state ---------------------------------------------------------
+ let dispatch: DispatchState = createDispatchState();
+-
+ let frameCount = 0;
+ let dropLookbackRemainingSeconds = 0;
+ let lastVanSpeed = 0;
+ let lastVanHeading = START_HEADING;
+ let parcelAttachedVisible = false;
+-/**
+- * Renderer-owned impact envelope, fed only by a real strike, never by a HUD
+- * timer or a decorative loop. The hold covers the named scene producer's
+- * strike-poll latency (100 ms sample intervals) plus key release, settle wait,
+- * and screenshot latency, so the retained exact pressure frame deterministically
+- * shows the causal contact feedback instead of a clean van parked behind a car.
+- */
+ const IMPACT_FEEDBACK_SECONDS = 1.15;
+ let impactFeedbackRemainingSeconds = 0;
+ let impactPose: { x: number; z: number; heading: number } | null = null;
+-
+ interface ZoneEventRecord {
+   readonly type: string;
+   readonly zoneId: string;
+@@ -207,7 +134,6 @@ interface ZoneEventRecord {
+   readonly deliveryIndex: number;
+   readonly timerMsAtEvent: number;
+ }
+-
+ const zoneEvents: ZoneEventRecord[] = [];
+ const strikeLog: { source: string; x: number; z: number; timerMs: number }[] = [];
+ const observed = {
+@@ -225,16 +151,11 @@ const observed = {
+   parcelVisibleInBed: false,
+   allDeliveriesInsideTimers: false
+ };
+-
+-/** Shift start: on the free southbound lane, nose north toward the first dock. */
+ const SPAWN_POSE = { x: -0.45, z: 18.6, heading: -Math.PI / 2 };
+-
+ function resetVan(): void {
+   vanVehicle.reset({ x: SPAWN_POSE.x, z: SPAWN_POSE.z, heading: SPAWN_POSE.heading, speed: 0, drift: 0 });
+ }
+ resetVan();
+-
+-// ---- chase camera -------------------------------------------------------------
+ const chaseCamera = camera.follow({
+   // The catalog van needs a +PI/2 mesh correction, while a follow camera needs
+   // the simulation's actual heading. A dedicated invisible rig keeps those two
+@@ -256,10 +177,7 @@ const chaseCamera = camera.follow({
+   // a real collision is framed where the simulation says it occurred.
+   smoothing: CHASE_CAMERA.smoothing
+ });
+-
+ type MutableChaseCamera = { offset?: readonly [number, number, number] };
+-
+-// ---- scene --------------------------------------------------------------------
+ const courierGame = createGame({
+   id: "showcase-courier-rush",
+   target: "#app",
+@@ -412,10 +330,6 @@ const courierGame = createGame({
+ });
+ const app = courierGame.runtime;
+ courierGame.start();
+-
+-// ---- juice (PRD-09 §7.6) ----------------------------------------------------
+-// `fire` composes fx/camera/overlay/rumble per event; the DOM strike flash and
+-// the hand-rolled `game.effects` pool are gone (C-05 backend + C-20 bursts).
+ const courierTween = createTweenEngine();
+ const courierFx = createFxParticlePass(app.effects);
+ const courierJuice = createJuice<"pickup" | "deliver" | "combo" | "strike", CourierCue>({
+@@ -432,8 +346,6 @@ const courierJuice = createJuice<"pickup" | "deliver" | "combo" | "strike", Cour
+   tweens: courierTween,
+   rumble: createRumbleDriver()
+ });
+-
+-/** Two warm emissive pools ahead of the van: readable headlight practicals. */
+ function vanHeadlightPools() {
+   return ["left", "right"].map((side) =>
+     primitives.box({
+@@ -450,9 +362,6 @@ function vanHeadlightPools() {
+       .runtime({ id: "courier-headlight-" + side, tags: ["headlight", "renderer-owned"] })
+   );
+ }
+-
+-/** Renderer-owned ground streaks that make the van's live forward motion read
+- * in a still capture without pretending that CSS or a HUD is the road. */
+ function vanSpeedStreaks() {
+   const streakMaterial = material.emissive({ name: "van speed streak", color: "#5eead4", emissive: "#14b8a6", emissiveIntensity: 1.35, opacity: 0.86 });
+   return ["left", "right", "center"].map((side) =>
+@@ -463,13 +372,6 @@ function vanSpeedStreaks() {
+       .runtime({ id: "courier-speed-streak-" + side, tags: ["vehicle-motion", "renderer-owned"] })
+   );
+ }
+-
+-/**
+- * Four small wet-contact patches sit exactly under the van's wheels. They
+- * appear only while the kinematic vehicle has speed and lengthen with it, so
+- * the reflected road response belongs to the moving typed van rather than to
+- * a static neon decal or the HUD.
+- */
+ function vanTireContactPatches() {
+   const contactMaterial = material.emissive({
+     name: "courier wet tyre contact reflection",
+@@ -485,12 +387,6 @@ function vanTireContactPatches() {
+       .runtime({ id: "courier-tyre-contact-" + corner, tags: ["vehicle-motion", "wet-road-contact", "renderer-owned"] })
+   );
+ }
+-
+-/**
+- * Route-owned delivery livery accents keep the typed van legible from its
+- * trailing gameplay lens. They are attached to the model's real pose every
+- * frame; the typed GLB remains the vehicle identity and collision authority.
+- */
+ function vanLiveryTrimNodes() {
+   const trimMaterial = material.emissive({
+     name: "courier van cyan service trim",
+@@ -506,8 +402,6 @@ function vanLiveryTrimNodes() {
+       .runtime({ id: "courier-van-trim-" + side, tags: ["vehicle-identity", "renderer-owned"] })
+   );
+ }
+-
+-/** A compact rear bumper catches the warm road rake and anchors van contact. */
+ function vanRearBumperNode() {
+   return primitives.box({
+     name: "courier van rear safety bumper",
+@@ -525,8 +419,6 @@ function vanRearBumperNode() {
+     .scale([1.42, 0.1, 0.1])
+     .runtime({ id: "courier-van-rear-bumper", tags: ["vehicle-contact", "renderer-owned"] });
+ }
+-
+-/** The parcel beacon is visible only while a real pickup leaves cargo aboard. */
+ function vanParcelBeaconNode() {
+   return primitives.cylinder({
+     name: "courier parcel status beacon",
+@@ -541,8 +433,6 @@ function vanParcelBeaconNode() {
+     .scale([0.14, 0.12, 0.14])
+     .runtime({ id: "courier-parcel-beacon", tags: ["cargo-state", "renderer-owned"] });
+ }
+-
+-/** A small route-owned roof beacon gives the typed van an unmistakable courier silhouette. */
+ function vanRoofBeaconNode() {
+   return primitives.cylinder({
+     name: "courier van roof beacon",
+@@ -558,13 +448,6 @@ function vanRoofBeaconNode() {
+     .scale([0.16, 0.1, 0.16])
+     .runtime({ id: "courier-van-roof-beacon", tags: ["vehicle-identity", "renderer-owned"] });
+ }
+-
+-/**
+- * A persistent pair of scene nodes carries the measured traffic-strike point
+- * through the review frame. The effect is hidden until the real collision
+- * callback supplies its collider-boundary pose, so it cannot imply contact
+- * from a timer or a decorative animation.
+- */
+ function impactFeedbackNodes() {
+   const impactMaterial = material.emissive({
+     name: "courier traffic impact ember",
+@@ -585,8 +468,6 @@ function impactFeedbackNodes() {
+       .runtime({ id: "courier-impact-slash", tags: ["traffic-contact", "renderer-owned"] })
+   ];
+ }
+-
+-/** Small typed-traffic headlight bars make the live contact car readable. */
+ function trafficHeadlightNodes() {
+   const headlightMaterial = material.emissive({
+     name: "courier traffic headlight wash",
+@@ -602,8 +483,6 @@ function trafficHeadlightNodes() {
+       .runtime({ id: car.id + "-headlight", tags: ["traffic", "vehicle-motion", "renderer-owned"] })
+   );
+ }
+-
+-// ---- runtime handles -----------------------------------------------------------
+ const vanNode = app.nodes.require("courier-van");
+ const cameraTargetNode = app.nodes.require("courier-camera-target");
+ const parcelNode = app.nodes.require("courier-parcel");
+@@ -627,9 +506,6 @@ for (const car of trafficSim.cars()) {
+   trafficNodes.set(car.id, app.nodes.require(car.id));
+   trafficHeadlights.set(car.id, app.nodes.require(car.id + "-headlight"));
+ }
+-
+-
+-// ---- evidence ------------------------------------------------------------------
+ const mountedEvidence = {
+   schema: "aura3d-showcase-courier-rush/1.0",
+   appId: "showcase-courier-rush",
+@@ -708,7 +584,6 @@ const mountedEvidence = {
+   },
+   diagnostics: undefined as unknown
+ };
+-
+ function refreshAudioEvidence(): void {
+   const proof = courierAudio.proof();
+   mountedEvidence.audio.gestureUnlocked = audioUnlocked;
+@@ -718,23 +593,6 @@ function refreshAudioEvidence(): void {
+   mountedEvidence.audio.contextState = proof.contextState;
+   mountedEvidence.audio.assetUrls = courierAudio.assetUrls.slice();
+ }
+-
+-Object.defineProperty(window, "__COURIER_RUSH_EVIDENCE__", {
+-  value: mountedEvidence as unknown as Record<string, unknown>,
+-  configurable: true,
+-  writable: true
+-});
+-Object.defineProperty(window, "__AURA3D_SHOWCASE_COURIER_RUSH__", {
+-  value: mountedEvidence as unknown as Record<string, unknown>,
+-  configurable: true,
+-  writable: true
+-});
+-
+-/**
+- * Diagnostic hook used by browser specs: places the van at an exact pose. The
+- * placement itself changes no rules; everything after it is normal simulation.
+- */
+-bindCourierEvidence(() => mountedEvidence);
+ bindCourierDrive({
+   async pumpFrames(frames: number): Promise<void> {
+     for (let i = 0; i < frames; i += 1) await app.stepAsync(1 / 60);
+@@ -743,51 +601,6 @@ bindCourierDrive({
+     vanVehicle.reset({ x, z, heading, speed: 0, drift: 0 });
+   }
+ });
+-
+-Object.defineProperty(window, "__COURIER_RUSH_DEBUG__", {
+-  value: {
+-    placeVan(x: number, z: number, heading = START_HEADING): void {
+-      vanVehicle.reset({ x, z, heading, speed: 0, drift: 0 });
+-    },
+-    vanSnapshot(): { x: number; z: number; heading: number; speed: number } {
+-      const snap = vanVehicle.snapshot();
+-      return { x: snap.x, z: snap.z, heading: snap.heading, speed: snap.speed };
+-    },
+-    /**
+-     * Real-input deterministic pump for browser play verification. Headless
+-     * software rendering can take 15s+ per presented frame, so wall-clock play
+-     * is infeasible there; this runs `frameCount` fixed steps through the
+-     * production onFrame path with the REAL held keyboard state, skipping only
+-     * the redundant GPU presentations (mirrors the patrol `__PW_PUMP__` seam).
+-     * Callers hold real keys via CDP input, pump, then read the evidence
+-     * global to prove input changed game state. Test-only: no rules altered.
+-     */
+-    pump(frameCount: number): number {
+-      const bounded = Math.max(0, Math.min(30_000, Math.floor(frameCount)));
+-      app.pause();
+-      for (let index = 0; index < bounded; index += 1) {
+-        app.advance(1 / 60);
+-      }
+-      updateMountedEvidence();
+-      app.resume();
+-      return app.runtime.frame;
+-    },
+-    /** Presents one production frame of the current (possibly pumped) state. */
+-    async present(): Promise<number> {
+-      app.pause();
+-      await app.stepAsync(0);
+-      updateMountedEvidence();
+-      app.resume();
+-      return app.runtime.frame;
+-    }
+-  } satisfies NonNullable<Window["__COURIER_RUSH_DEBUG__"]>,
+-  configurable: true
+-});
+-
+-// ---- HUD ------------------------------------------------------------------------
+-// Shared HUD kit (PRD-09 Phase 4): motorsport theme, widgets per §7.7; the
+-// #panel aside's dispatch card / status strip / touch row is deleted with
+-// src/hud.ts. Prose moves to the shell `about` menu when the route adopts it.
+ const hudHost = document.createElement("div");
+ hudHost.className = "a3g-game-hud";
+ document.getElementById("app")!.appendChild(hudHost);
+@@ -837,11 +650,9 @@ const touchControls = mountTouchControls(
+   }
+ );
+ void touchControls; // visibility is rule-driven; update() runs in the frame loop
+-
+ function radioToast(html: string, seconds: number): void {
+   hud.toast(html.replace(/<[^>]+>/g, ""), { ms: seconds * 1000 });
+ }
+-
+ function showShiftSummary(input: {
+   cleared: boolean;
+   failReason: "timer" | "strikes" | null;
+@@ -869,11 +680,9 @@ function showShiftSummary(input: {
+     { ms: 6000 }
+   );
+ }
+-
+ function hideShiftSummary(): void {
+   // Banners/toasts expire on their own; nothing to hide eagerly.
+ }
+-
+ function syncHud(): void {
+   const frame = currentHudFrame();
+   navBearingRef.current = frame.arrowBearing;
+@@ -886,20 +695,17 @@ function syncHud(): void {
+   const bearing = frame.arrowBearing;
+   hud.set("nav", bearing === null ? [0.5, 0.5] : [0.5 + 0.42 * Math.sin(bearing), 0.5 - 0.42 * Math.cos(bearing)]);
+ }
+-
+ function objectiveText(state: DispatchState): string {
+   const plan = currentDelivery(state);
+   if (!plan) return state.phase === "shiftClear" ? "Shift complete - press R for a new one" : "Shift over - press R to retry";
+   if (state.phase === "awaitingPickup") return "Pick up the parcel at " + plan.pickup.label;
+   return "Deliver to " + plan.drop.label;
+ }
+-
+ function activeTargetSite(state: DispatchState): ZoneSite | null {
+   const plan = currentDelivery(state);
+   if (!plan) return null;
+   return state.phase === "awaitingPickup" ? plan.pickup : plan.drop;
+ }
+-
+ function summaryInput(cleared: boolean) {
+   return {
+     cleared,
+@@ -910,7 +716,6 @@ function summaryInput(cleared: boolean) {
+     earlyDrops: dispatch.earlyDrops
+   };
+ }
+-
+ function handleCourierEvents(
+   events: readonly CourierEvent[],
+   vanX: number,
+@@ -997,23 +802,12 @@ function handleCourierEvents(
+     }
+   }
+ }
+-
+-
+-// ---- autopilot -----------------------------------------------------------------
+ let legWaypoints: GridPoint[] = [];
+ let legKey = "";
+-
+-/**
+- * Diagnostic autopilot: projects the van onto the AUTHORED leg polyline and
+- * pursues a look-ahead point at capped speed. Same VanDriveInput contract as
+- * keyboard play; evidence marks autopilot=true so nothing here reads as human
+- * play.
+- */
+ let activeLeg: readonly GridPoint[] = [];
+ let activeLegKey = "";
+ let legProgressIndex = 0;
+ let mountedEvidenceAutopilot: { x: number; z: number; left: number } | null = null;
+-
+ function projectOntoLeg(vanX: number, vanZ: number): void {
+   // Advance the progress segment while the van has passed the current one.
+   let guard = 0;
+@@ -1038,7 +832,6 @@ function projectOntoLeg(vanX: number, vanZ: number): void {
+     break;
+   }
+ }
+-
+ function autopilotDrive(vanX: number, vanZ: number, heading: number, speed: number): VanDriveInput {
+   const target = activeTargetSite(dispatch);
+   if (!target) return { throttle: 0, brake: 1, steer: 0, handbrake: false };
+@@ -1158,10 +951,7 @@ function autopilotDrive(vanX: number, vanZ: number, heading: number, speed: numb
+       : finalDistance < 2.8 ? 0.14 : vertexTurnSharpness > 0.35 && speed > 7.6 ? 0 : 0.52;
+   return { throttle, brake: approachBrake, steer, handbrake: false };
+ }
+-
+-// ---- strike handling --------------------------------------------------------------
+ const PARALLEL_PASS_SPEED_TOLERANCE = 1.35;
+-
+ function collisionHits(vanX: number, vanZ: number, vanSpeed: number): PropCollider[] {
+   const hits: PropCollider[] = [];
+   const colliders: readonly PropCollider[] = [...propColliders, ...trafficSim.staticColliders()];
+@@ -1177,7 +967,6 @@ function collisionHits(vanX: number, vanZ: number, vanSpeed: number): PropCollid
+   }
+   return hits;
+ }
+-
+ function pushOut(vanX: number, vanZ: number, collider: PropCollider): { x: number; z: number } {
+   const dx = vanX - collider.x;
+   const dz = vanZ - collider.z;
+@@ -1185,8 +974,6 @@ function pushOut(vanX: number, vanZ: number, collider: PropCollider): { x: numbe
+   const reach = collider.radius + VAN_COLLIDER_RADIUS;
+   return { x: collider.x + (dx / distance) * reach, z: collider.z + (dz / distance) * reach };
+ }
+-
+-// ---- main loop ----------------------------------------------------------------------
+ app.onFrame(({ dt }) => {
+   const stepSeconds = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
+   frameCount += 1;
+@@ -1511,7 +1298,6 @@ app.onFrame(({ dt }) => {
+   syncHud();
+   refreshAudioEvidence();
+ });
+-
+ function currentHudFrame() {
+   const plan = currentDelivery(dispatch);
+   const vanSnap = vanVehicle.snapshot();
+@@ -1539,7 +1325,6 @@ function currentHudFrame() {
+     carrying: dispatch.phase === "carrying"
+   };
+ }
+-
+ function updateMountedEvidence(): void {
+   const vanSnap = vanVehicle.snapshot();
+   const activeSite = activeTargetSite(dispatch);
+@@ -1577,21 +1362,8 @@ function updateMountedEvidence(): void {
+   mountedEvidence.gameplay = { ...observed };
+   (mountedEvidence as unknown as { strikeLog: unknown }).strikeLog = strikeLog.slice(-12);
+ }
+-
+ function round3(value: number): number {
+   return Math.round(value * 1000) / 1000;
+ }
+-
+ syncHud();
+ radioToast("<strong>Dispatch:</strong> five jobs tonight. Shift starts when you hit the gas.", 4);
+-
+-void app.ready().then(() => {
+-  const diagnostics = app.diagnostics();
+-  document.body.dataset.aura3dReady = "true";
+-  document.body.dataset.aura3dRuntimeBackend = String(
+-    (diagnostics as { runtimeBackend?: string }).runtimeBackend ?? (diagnostics as { backend?: string }).backend ?? ""
+-  );
+-  window.__AURA3D_ROUTE_READY__ = { ready: true, diagnostics };
+-}).catch((error: unknown) => {
+-  document.body.dataset.aura3dError = error instanceof Error ? error.message : String(error);
+-});
+\ No newline at end of file
+diff --git a/apps/showcase-courier-rush/src/main.ts b/apps/showcase-courier-rush/src/main.ts
+index 6f721d540..99f40e045 100644
+--- a/apps/showcase-courier-rush/src/main.ts
++++ b/apps/showcase-courier-rush/src/main.ts
+@@ -1,14 +1,6 @@
+-// apps/showcase-courier-rush/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
+-// Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-courier-rush`
+-// (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
+-// acceptance (§10 step 5).
+ import { resolveQrFlags } from "@aura3d/engine/contracts";
+-
+ const ROUTE_FLAG = "A3D_QR_ROUTE_COURIER_RUSH" as const;
+ const DEFAULT_ON = false;
+-
+-/** Accepts `?a3d-qr=…,route-courier-rush` and `?a3d-qr=…,A3D_QR_ROUTE_COURIER_RUSH`.
+- *  Returns undefined when the flag is absent (CCR-14-2 replaces this helper). */
+ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const raw = new URL(loc.href).searchParams.get("a3d-qr");
+   if (raw === null) return undefined;
+@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+     ? true
+     : undefined;
+ }
+-
+ const flags = resolveQrFlags({
+   url: location.href,
+   env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR },
+   options: { [ROUTE_FLAG]: routeFlagFromUrl(location, ROUTE_FLAG) ?? DEFAULT_ON }
+ });
+-
+ void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
+diff --git a/apps/showcase-courier-rush/src/v2/evidence/index.ts b/apps/showcase-courier-rush/src/v2/evidence/index.ts
+deleted file mode 100644
+index 67bf01dc1..000000000
+--- a/apps/showcase-courier-rush/src/v2/evidence/index.ts
++++ /dev/null
+@@ -1,99 +0,0 @@
+-// apps/showcase-courier-rush/src/v2/evidence/index.ts — §7.2.1 evidence.
+-// Publishes `window.__AURA3D_GAME_EVIDENCE__["showcase-courier-rush"]` with
+-// lazy section getters (no per-frame allocation > 1 KB). The required
+-// condition reads `delivery.completed` here; van/traffic/fx sections feed the
+-// capture reports.
+-import type { Game } from "@aura3d/engine";
+-import type { DispatchState } from "../../gameplay/dispatch";
+-import type { TrafficCarSnapshot } from "../../gameplay/traffic";
+-
+-export const COURIER_EVIDENCE_ID = "showcase-courier-rush";
+-
+-export interface CourierEvidenceBindings {
+-  readonly game: Game;
+-  readonly dispatch: () => DispatchState;
+-  readonly van: () => { x: number; z: number; heading: number; speed: number };
+-  readonly traffic: () => readonly TrafficCarSnapshot[];
+-  readonly autopilot: () => { enabled: boolean; aim: { x: number; z: number; left: number } };
+-  readonly appliedLook: Record<string, unknown>;
+-  readonly frameCount: () => number;
+-  readonly bootedAtMs: number;
+-  readonly audioCueLog: () => readonly string[];
+-}
+-
+-export function publishCourierEvidence(b: CourierEvidenceBindings): void {
+-  const w = window as unknown as Record<string, Record<string, unknown>>;
+-  w.__AURA3D_GAME_EVIDENCE__ ??= {};
+-  w.__AURA3D_GAME_EVIDENCE__[COURIER_EVIDENCE_ID] = {
+-    get playback() {
+-      return {
+-        state: b.game.session.state,
+-        paused: b.game.session.paused,
+-        simTime: b.game.session.simTime,
+-        timeScale: b.game.session.timeScale,
+-        frame: b.frameCount()
+-      };
+-    },
+-    get delivery() {
+-      const d = b.dispatch();
+-      return {
+-        completed: d.deliveriesCompleted,
+-        phase: d.phase,
+-        deliveryIndex: d.deliveryIndex,
+-        score: d.score,
+-        strikes: d.strikes,
+-        combo: d.combo,
+-        timerMs: d.timerMs,
+-        failReason: d.failReason
+-      };
+-    },
+-    get van() {
+-      const v = b.van();
+-      return { x: v.x, z: v.z, heading: v.heading, speed: v.speed };
+-    },
+-    get traffic() {
+-      const cars = b.traffic();
+-      return {
+-        count: cars.length,
+-        moving: cars.filter((c) => c.speed > 0.4).length,
+-        courtesyStopped: cars.some((c) => c.courtesyStopped)
+-      };
+-    },
+-    get autopilot() {
+-      const ap = b.autopilot();
+-      return { enabled: ap.enabled, aim: ap.aim };
+-    },
+-    get fx() {
+-      return { liveCount: b.game.fx.liveCount, backend: b.game.fx.backend };
+-    },
+-    get framing() {
+-      const ev = b.game.app.camera?.evidence?.();
+-      return {
+-        rig: ev?.rig ?? "courier-rush.chase",
+-        subjectScreenHeightFraction: ev?.subjectScreenHeightFraction ?? null,
+-        pose: ev?.pose ?? null
+-      };
+-    },
+-    get render() {
+-      const d = b.game.app.diagnostics();
+-      return {
+-        backend: d.backend,
+-        drawCalls: d.drawCalls,
+-        renderSize: d.renderSize,
+-        fps: d.fps,
+-        errors: d.errors,
+-        warnings: d.warnings
+-      };
+-    },
+-    // T2.6 parity: identical between the play URL and every ?scenario= URL.
+-    get appliedLook() {
+-      return b.appliedLook;
+-    },
+-    get audio() {
+-      return { cues: b.audioCueLog() };
+-    },
+-    get boot() {
+-      return { bootedAtMs: b.bootedAtMs, frame: b.frameCount() };
+-    }
+-  };
+-}
+-- 
+2.34.1
+

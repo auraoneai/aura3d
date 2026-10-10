@@ -40,7 +40,7 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - name: Skills gate
-        run: pnpm check:skills
+        run: pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-skills/check.ts
       - name: Skills unit tests
         run: pnpm exec vitest run tests/unit/create-aura3d/agent-skills.test.ts tests/unit/create-aura3d/templates.test.ts --reporter=dot
       - name: aura3d init test
@@ -48,6 +48,6 @@ jobs:
       - name: Install Playwright Chromium
         run: pnpm exec playwright install --with-deps chromium
       - name: Agent docs gate (includes skills gate)
-        run: pnpm check:agent-docs
+        run: pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-docs/index.ts && pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-skills/check.ts
       - name: Templates gate (scaffold, vite build, Playwright per template)
-        run: pnpm check:templates
+        run: pnpm exec vitest run tests/unit/create-aura3d/templates.test.ts --reporter=dot && pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-templates/index.ts

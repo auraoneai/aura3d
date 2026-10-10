@@ -1,0 +1,932 @@
+From e7160ec2bb2d04b7fd2e13ecf82706b2263f8cb1 Mon Sep 17 00:00:00 2001
+From: Gurbaksh Chahal <gchahal@veerone.com>
+Date: Fri, 9 Oct 2026 11:08:10 +0000
+Subject: [PATCH] migration(showcase-blockfall-reactor): regenerated patch set
+ (post-PRD-14 layout)
+
+---
+ apps/showcase-blockfall-reactor/package.json  |   3 +-
+ .../src/evidence.ts                           |  17 +
+ .../src/gameplay/board-view.ts                |  10 +-
+ .../src/gameplay/reactor-scene.ts             |   6 +-
+ .../src/legacy/main.ts                        | 294 ++++++++----------
+ .../src/scenario-drive.ts                     |  35 +++
+ .../src/scenarios/acceptance.ts               |  17 +
+ .../src/scenarios/attract.ts                  |  13 +
+ .../src/scenarios/index.ts                    |  19 ++
+ .../src/scenarios/rotation-trap.ts            |   8 +
+ .../showcase-blockfall-reactor/src/v2/boot.ts |   4 +-
+ 11 files changed, 255 insertions(+), 171 deletions(-)
+ create mode 100644 apps/showcase-blockfall-reactor/src/evidence.ts
+ create mode 100644 apps/showcase-blockfall-reactor/src/scenario-drive.ts
+ create mode 100644 apps/showcase-blockfall-reactor/src/scenarios/acceptance.ts
+ create mode 100644 apps/showcase-blockfall-reactor/src/scenarios/attract.ts
+ create mode 100644 apps/showcase-blockfall-reactor/src/scenarios/index.ts
+ create mode 100644 apps/showcase-blockfall-reactor/src/scenarios/rotation-trap.ts
+
+diff --git a/apps/showcase-blockfall-reactor/package.json b/apps/showcase-blockfall-reactor/package.json
+index 0d6e1fc20..117d321a5 100644
+--- a/apps/showcase-blockfall-reactor/package.json
++++ b/apps/showcase-blockfall-reactor/package.json
+@@ -13,7 +13,8 @@
+     "preview": "vite preview --host 127.0.0.1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "workspace:*"
++    "@aura3d/engine": "workspace:*",
++    "@aura3d/game": "workspace:*"
+   },
+   "devDependencies": {
+     "typescript": "^5.8.3",
+diff --git a/apps/showcase-blockfall-reactor/src/evidence.ts b/apps/showcase-blockfall-reactor/src/evidence.ts
+new file mode 100644
+index 000000000..9496628be
+--- /dev/null
++++ b/apps/showcase-blockfall-reactor/src/evidence.ts
+@@ -0,0 +1,17 @@
++/**
++ * evidence.ts — lazy route evidence sections (PRD-09 §6.5). Loaded through the
++ * evidence channel's `sections()` loader only when evidence is requested;
++ * production play never imports this.
++ */
++export type EvidenceCollect = () => Record<string, unknown>;
++
++let collect: EvidenceCollect | undefined;
++
++export function bindBlockfallEvidence(fn: EvidenceCollect): void {
++  collect = fn;
++}
++
++export const sections = {
++  blockfall: (): Record<string, unknown> =>
++    (collect ?? (() => ({ status: "unbound" })))()
++};
+diff --git a/apps/showcase-blockfall-reactor/src/gameplay/board-view.ts b/apps/showcase-blockfall-reactor/src/gameplay/board-view.ts
+index 3bccaf57e..bff680a15 100644
+--- a/apps/showcase-blockfall-reactor/src/gameplay/board-view.ts
++++ b/apps/showcase-blockfall-reactor/src/gameplay/board-view.ts
+@@ -347,7 +347,7 @@ function digitSlotNodes(
+ }
+ 
+ /** Builds every wall board node: SCORE + six digits, LEVEL + two digits, NEXT. */
+-export function createScoreboardNodes(reviewCapture = false): AuraNodeInput[] {
++export function createScoreboardNodes(): AuraNodeInput[] {
+   const materials = scoreboardMaterials();
+   const layout = SCOREBOARD_LAYOUT;
+   const nodes: AuraNodeInput[] = [];
+@@ -357,7 +357,7 @@ export function createScoreboardNodes(reviewCapture = false): AuraNodeInput[] {
+     geometry.custom(
+       { kind: "aura-custom-geometry", positions: scoreWord.positions, indices: scoreWord.indices },
+       { name: "blockfall-scoreboard-score-word", material: materials.label }
+-    ).position(layout.score.centerX - scoreWord.width / 2, reviewCapture ? -50 : layout.score.wordY - layout.score.wordSize / 2, layout.z)
++    ).position(layout.score.centerX - scoreWord.width / 2,  layout.score.wordY - layout.score.wordSize / 2, layout.z)
+   );
+   for (let slot = 0; slot < 6; slot += 1) {
+     nodes.push(...digitSlotNodes(slot, 6, layout.score.centerX, layout.score.digitsY, layout.score.digitSize, layout.z, materials.score, scoreDigitNodeId));
+@@ -368,7 +368,7 @@ export function createScoreboardNodes(reviewCapture = false): AuraNodeInput[] {
+     geometry.custom(
+       { kind: "aura-custom-geometry", positions: levelWord.positions, indices: levelWord.indices },
+       { name: "blockfall-scoreboard-level-word", material: materials.label }
+-    ).position(layout.level.centerX - levelWord.width / 2, reviewCapture ? -50 : layout.level.wordY - layout.level.wordSize / 2, layout.z)
++    ).position(layout.level.centerX - levelWord.width / 2,  layout.level.wordY - layout.level.wordSize / 2, layout.z)
+   );
+   for (let slot = 0; slot < 2; slot += 1) {
+     nodes.push(...digitSlotNodes(slot, 2, layout.level.centerX, layout.level.digitsY, layout.level.digitSize, layout.z, materials.level, levelDigitNodeId));
+@@ -379,12 +379,12 @@ export function createScoreboardNodes(reviewCapture = false): AuraNodeInput[] {
+     geometry.custom(
+       { kind: "aura-custom-geometry", positions: nextWord.positions, indices: nextWord.indices },
+       { name: "blockfall-scoreboard-next-word", material: materials.label }
+-    ).position(layout.next.centerX - nextWord.width / 2, reviewCapture ? -50 : layout.next.wordY - layout.next.wordSize / 2, layout.z)
++    ).position(layout.next.centerX - nextWord.width / 2,  layout.next.wordY - layout.next.wordSize / 2, layout.z)
+   );
+ 
+   // A dim mounting rail ties the three boards into one wall instrument.
+   nodes.push(
+-    primitives.box({ name: "wall scoreboard mount rail", material: materials.label }).position(0, reviewCapture ? -50 : 4.28, layout.z + 0.02).scale([6.4, 0.03, 0.03])
++    primitives.box({ name: "wall scoreboard mount rail", material: materials.label }).position(0,  4.28, layout.z + 0.02).scale([6.4, 0.03, 0.03])
+   );
+   return nodes;
+ }
+diff --git a/apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts b/apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts
+index bcabac9ac..6e1d6e589 100644
+--- a/apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts
++++ b/apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts
+@@ -368,7 +368,7 @@ export function createArcadeRoomNodes(): AuraNodeInput[] {
+   ];
+ }
+ 
+-export function createBoardShell(reviewCapture = false): AuraNodeInput[] {
++export function createBoardShell(): AuraNodeInput[] {
+   const nodes: AuraNodeInput[] = [
+     // A layered metal bezel and lower service deck make the well read as the
+     // face of a working cabinet instead of a flat rectangle over the backdrop.
+@@ -475,8 +475,8 @@ export function createBoardShell(reviewCapture = false): AuraNodeInput[] {
+       ]
+     }),
+     primitives.box({ name: "reactor cabinet floor", material: material.metal({ color: "#111a18", roughness: 0.58, metallic: 0.28 }), receiveShadow: true }).position(0, -0.12, -0.48).scale([4.08, 0.055, 1.25]),
+-    primitives.box({ name: "left cyan arcade light column", material: material.neon({ color: "#39f6ff", emissive: "#39f6ff", emissiveIntensity: 0.6 }) }).position(-1.46, BOARD_CENTER_Y, 0.04).scale(reviewCapture ? HIDDEN_BLOCK_SCALE : [0.018, 2.06, 0.022]),
+-    primitives.box({ name: "right magenta arcade light column", material: material.neon({ color: "#e279ff", emissive: "#e279ff", emissiveIntensity: 0.56 }) }).position(1.46, BOARD_CENTER_Y, 0.04).scale(reviewCapture ? HIDDEN_BLOCK_SCALE : [0.018, 2.06, 0.022]),
++    primitives.box({ name: "left cyan arcade light column", material: material.neon({ color: "#39f6ff", emissive: "#39f6ff", emissiveIntensity: 0.6 }) }).position(-1.46, BOARD_CENTER_Y, 0.04).scale( [0.018, 2.06, 0.022]),
++    primitives.box({ name: "right magenta arcade light column", material: material.neon({ color: "#e279ff", emissive: "#e279ff", emissiveIntensity: 0.56 }) }).position(1.46, BOARD_CENTER_Y, 0.04).scale( [0.018, 2.06, 0.022]),
+     // State-bound effects are mounted up front and parked offstage. Their
+     // transforms are updated by main.ts from the live falling-block snapshot;
+     // no review-only geometry is used to stand in for the game.
+diff --git a/apps/showcase-blockfall-reactor/src/legacy/main.ts b/apps/showcase-blockfall-reactor/src/legacy/main.ts
+index 1ac1fe753..676dfe9f1 100644
+--- a/apps/showcase-blockfall-reactor/src/legacy/main.ts
++++ b/apps/showcase-blockfall-reactor/src/legacy/main.ts
+@@ -1,6 +1,5 @@
+ import {
+   camera,
+-  createGameApp,
+   effects,
+   game,
+   geometry,
+@@ -15,6 +14,17 @@ import {
+   type GameFallingBlocksEvent,
+   type GameFallingBlocksSnapshot
+ } from "@aura3d/engine";
++import {
++  createFxParticlePass,
++  createGame,
++  createJuice,
++  createOverlayDriver,
++  createRumbleDriver,
++  createTweenEngine
++} from "@aura3d/game";
++import { blockfallScenarios } from "../scenarios";
++import { bindBlockfallDrive, type BlockfallAcceptanceScenario } from "../scenario-drive";
++import { bindBlockfallEvidence } from "../evidence";
+ import { assets } from "../../../../src/aura-assets";
+ import {
+   ACTIVE_BLOCK_SCALE,
+@@ -79,29 +89,13 @@ import { createClearFx, createClearFxNodes, clearFxShardNodeId } from "./clear-f
+ import { createCameraFeel } from "./camera-feel";
+ import { createAttractPlayback, parseAttractRun } from "./attract";
+ import { EXPERT_RUN_DATA_JSON } from "./expert-run-data";
+-import { createShowcaseRapierPhysicsProof } from "../../../common/src/rapier-physics-proof";
+-import "./styles.css";
+-
+-type BlockfallWindow = Window & {
+-  __AURA3D_SHOWCASE_BLOCKFALL_REACTOR__?: unknown;
+-  __AURA3D_BLOCKFALL_ACCEPTANCE_PROBE__?: {
+-    readonly scenarios: readonly BlockfallAcceptanceScenario[];
+-    readonly apply: (scenario: BlockfallAcceptanceScenario) => unknown;
+-    readonly resume: () => unknown;
+-    readonly unfreeze: () => void;
+-    /** Evidence staging: boxes the active piece in so the next rotate press is refused. */
+-    readonly stageRotationTrap: () => boolean;
+-  };
+-};
+ 
+-type BlockfallAcceptanceScenario = "play" | "single-clear" | "quad" | "level-up" | "danger" | "game-over";
++import "./styles.css";
+ 
+-const blockfallWindow = window as BlockfallWindow;
+ const reducedMotion = mediaMatches("(prefers-reduced-motion: reduce)");
+ const highContrast = mediaMatches("(prefers-contrast: more)");
+ const reducedFlash = reducedMotion;
+ const compactViewport = window.innerWidth <= 620;
+-const visualReviewCapture = new URL(window.location.href).searchParams.get("capture") === "review";
+ /*
+  * The state and replay checksums are route evidence, not player HUD: raw
+  * hashes on screen during normal play is exactly what the debug-visibility rule
+@@ -110,7 +104,6 @@ const visualReviewCapture = new URL(window.location.href).searchParams.get("capt
+  */
+ const evidenceOverlay = new URL(window.location.href).searchParams.get("debug") === "1";
+ if (evidenceOverlay) document.documentElement.dataset.evidenceMode = "blockfall";
+-if (visualReviewCapture) document.documentElement.dataset.reviewCapture = "blockfall";
+ const clearChargeMaterial = material.neon({ name: "single clear reactor charge", color: "#ff9f43", emissive: "#ffb35a", emissiveIntensity: 1.05, roughness: 0.2, opacity: 0.7 });
+ const quadDischargeMaterial = material.neon({ name: "quad clear gold discharge", color: "#ffd45c", emissive: "#fff08a", emissiveIntensity: 1.45, roughness: 0.14, opacity: 0.84 });
+ // The catalog cabinet carries a baked "GAME OVER / RESTART?" marquee. That
+@@ -357,7 +350,6 @@ const replayEvidence = createPublicReplayEvidence();
+ const sixtySecondReplayProof = createSixtySecondReplayProof();
+ const lineClearProof = createPublicLineClearProof();
+ const fallingBlocksKitContractProof = createFallingBlocksKitContractProof();
+-const physicsProof = createShowcaseRapierPhysicsProof("blockfall-reactor");
+ /**
+  * BF-A1 audio controller. Cues fire from observed kit events/actions only; the
+  * ambient hum and four intensity stems start on the first user gesture.
+@@ -442,7 +434,7 @@ const sourceEvidence = {
+ const lockedStackPools: readonly InstancedBoardPool[] = createLockedStackPools(LOCKED_POOL_CAPACITY_PER_KIND);
+ const activePiecePool: InstancedBoardPool = createActivePiecePool();
+ const clearFxNodeGroup = createClearFxNodes();
+-const scoreboardNodeGroup = createScoreboardNodes(visualReviewCapture);
++const scoreboardNodeGroup = createScoreboardNodes();
+ const quadWordGeometry = buildWallWord("QUAD", 0.58);
+ const cabinetLiveWordGeometry = buildWallWord("LIVE", 0.32);
+ const quadCelebrationNodeGroup = [
+@@ -472,15 +464,15 @@ const quadCelebrationNodeGroup = [
+ const expertRun = parseAttractRun(JSON.parse(EXPERT_RUN_DATA_JSON));
+ 
+ const reactorCamera = camera.perspective({
+-  position: [0, compactViewport ? 2.2 : visualReviewCapture ? 2.4 : 1.86, compactViewport ? 7.4 : 8.45],
+-  target: [0, compactViewport ? 2.16 : visualReviewCapture ? 2.36 : 1.82, 0.12],
+-  fov: compactViewport ? 54 : visualReviewCapture ? 33 : 32
++  position: [0, compactViewport ? 2.2 :  1.86, compactViewport ? 7.4 : 8.45],
++  target: [0, compactViewport ? 2.16 :  1.82, 0.12],
++  fov: compactViewport ? 54 :  32
+ });
+ // BF-A4 camera punch: mutates the owned camera spec each frame; reduced motion disables it.
+ const cameraFeel = createCameraFeel({
+   reducedMotion,
+-  basePosition: compactViewport ? [0, 2.2, 7.4] : visualReviewCapture ? [0, 2.4, 8.45] : [0, 1.86, 8.45],
+-  baseTarget: compactViewport ? [0, 2.16, 0.12] : visualReviewCapture ? [0, 2.36, 0.12] : [0, 1.82, 0.12]
++  basePosition: compactViewport ? [0, 2.2, 7.4] :  [0, 1.86, 8.45],
++  baseTarget: compactViewport ? [0, 2.16, 0.12] :  [0, 1.82, 0.12]
+ });
+ 
+ const cabinetPosition = [-2.8, 0.42, -2.15] as const;
+@@ -491,7 +483,7 @@ const cabinetPosition = [-2.8, 0.42, -2.15] as const;
+ // rather than the actual typed subject.  The cabinet sits behind the live board
+ // (negative Z) so its readable frame remains visible without covering the
+ // renderer-owned playfield.
+-const cabinetTargetSize = visualReviewCapture ? 3.85 : 4.2;
++const cabinetTargetSize =  4.2;
+ /**
+  * BF-A5 bloom formalization. Exact shipped intensities:
+  *   - full motion: intensity 0.26, threshold 0.55, maxIntensity 1.6, antiBlowout on
+@@ -514,15 +506,15 @@ const bloomEffect = effects.neonBloom({
+ // stills probe can mutate the exact node object the mounted scene renders.
+ const bloomEffectNode = bloomEffect.toJSON();
+ const reactorScene = scene()
+-  .background(visualReviewCapture ? "#07131d" : "#24103a")
++  .background( "#24103a")
+   .add(
+     model(assets.blockfallReactorArenaBackdrop, {
+       name: "blockfall reactor championship arena",
+       role: "primaryWorld",
+       scaleMode: "fit",
+-      targetHeight: visualReviewCapture ? 14.2 : 8.25
++      targetHeight:  8.25
+     })
+-      .position(0, visualReviewCapture ? -0.38 : 1.82, -3.52)
++      .position(0,  1.82, -3.52)
+       .runtime(game.runtimeNode("blockfall-reactor-arena-backdrop", {
+         tags: ["typed-supporting-asset", "review-background", "release-probed", "non-gameplay-set-dressing"]
+       }))
+@@ -545,12 +537,12 @@ const reactorScene = scene()
+     // contradictory game-over copy in a running frame. This plate is a thin
+     // physical fascia, not a DOM overlay or a second gameplay surface.
+     primitives.box({ name: "cabinet live-session marquee plate", material: cabinetLivePlateMaterial, castShadow: false, receiveShadow: false })
+-      .position(-2.8, visualReviewCapture ? 3.04 : 3.2, -0.98)
+-      .scale([1.72, visualReviewCapture ? 1.38 : 1.56, 0.035])
++      .position(-2.8,  3.2, -0.98)
++      .scale([1.72,  1.56, 0.035])
+   )
+   .add(
+     primitives.box({ name: "cabinet live-session marquee accent", material: cabinetLivePlateAccentMaterial, castShadow: false, receiveShadow: false })
+-      .position(-2.8, visualReviewCapture ? 3.54 : 3.7, -0.935)
++      .position(-2.8,  3.7, -0.935)
+       .scale([1.18, 0.032, 0.018])
+   )
+   .add(
+@@ -558,7 +550,7 @@ const reactorScene = scene()
+       { kind: "aura-custom-geometry", positions: cabinetLiveWordGeometry.positions, indices: cabinetLiveWordGeometry.indices },
+       { name: "cabinet live-session marquee word", material: cabinetLivePlateAccentMaterial }
+     )
+-      .position(-2.8 - cabinetLiveWordGeometry.width / 2, visualReviewCapture ? 2.94 : 3.1, -0.93)
++      .position(-2.8 - cabinetLiveWordGeometry.width / 2,  3.1, -0.93)
+   )
+   .add(
+     // The route's authored mechanic and plasma-rival cutouts carry the actual
+@@ -569,11 +561,11 @@ const reactorScene = scene()
+       name: "blockfall-reactor-arena-mascot",
+       role: "setDressing",
+       scaleMode: "fit",
+-      targetMaxDimension: visualReviewCapture ? 1.8 : 2.46,
++      targetMaxDimension:  2.46,
+       castShadow: true,
+       receiveShadow: true
+     })
+-      .position(visualReviewCapture ? -4.1 : -3.48, visualReviewCapture ? 0.18 : 0.2, visualReviewCapture ? -2.4 : -1.96)
++      .position( -3.48,  0.2,  -1.96)
+       .rotate(0, 0, 0)
+       .runtime(game.runtimeNode("blockfall-reactor-arena-mascot", {
+         tags: ["typed-supporting-asset", "arcade-mechanic-mascot", "release-probed", "non-gameplay-set-dressing"]
+@@ -584,11 +576,11 @@ const reactorScene = scene()
+       name: "blockfall-reactor-rival-mascot",
+       role: "setDressing",
+       scaleMode: "fit",
+-      targetMaxDimension: visualReviewCapture ? 1.5 : 2.2,
++      targetMaxDimension:  2.2,
+       castShadow: true,
+       receiveShadow: true
+     })
+-      .position(visualReviewCapture ? 4.6 : 3.02, visualReviewCapture ? 0.18 : 0.2, visualReviewCapture ? -2.4 : -1.98)
++      .position( 3.02,  0.2,  -1.98)
+       .rotate(0, 0, 0)
+       .runtime(game.runtimeNode("blockfall-reactor-rival-mascot", {
+         tags: ["typed-supporting-asset", "arcade-plasma-rival", "release-probed", "non-gameplay-set-dressing"]
+@@ -620,8 +612,10 @@ const reactorScene = scene()
+         tags: ["typed-supporting-asset", "quad-event-presentation", "review-only", "release-probed"]
+       }))
+   )
+-  .addMany(visualReviewCapture ? [] : createArcadeRoomNodes())
+-  .addMany(createBoardShell(visualReviewCapture))
++  .addMany( createArcadeRoomNodes())
++  .addMany(createBoardShell())
++  .addMany(createLockedBlockNodes())
++  .addMany(createActiveBlockNodes())
+   .addMany(createGhostNodes())
+   .addMany(createClearFlashNodes())
+   .addMany(createBeatNodes())
+@@ -641,17 +635,20 @@ const reactorScene = scene()
+     effects.fog({ name: "arcade room depth haze", density: 0.028, color: "#0d0514", intensity: 0.3 }),
+     effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.1 }),
+     effects.antiAlias({ mode: "fxaa" }),
+-    lights.ambient({ name: "low arcade room wash", color: "#e0c5ff", intensity: visualReviewCapture ? 0.82 : 0.58 }),
++    lights.ambient({ name: "low arcade room wash", color: "#e0c5ff", intensity:  0.58 }),
+     lights.directional({ name: "overhead arcade key", color: "#fff5dd", intensity: 1.05 }).position(-1.2, 6.4, 4.2),
+     lights.point({ name: "reactor green bounce", color: "#74ff91", intensity: reducedFlash ? 0.72 : 1.28 }).position(2.4, 2.1, 2.6),
+-    lights.point({ name: "magenta arcade rim", color: "#ff42c8", intensity: visualReviewCapture ? 1.68 : 1.18 }).position(-2.15, 3.3, 1.35),
+-    lights.point({ name: "cyan playfield spill", color: "#8ff7ff", intensity: visualReviewCapture ? 1.82 : 1.42 }).position(0, 2.5, 1.55),
+-    lights.point({ name: "warm floor practical", color: "#ffc15b", intensity: visualReviewCapture ? 0.76 : 0.42 }).position(0, -0.45, 0.9),
+-    lights.point({ name: "rival corner practical", color: "#ff72c9", intensity: visualReviewCapture ? 1.34 : 0.68 }).position(3.35, 1.35, 1.15)
++    lights.point({ name: "magenta arcade rim", color: "#ff42c8", intensity:  1.18 }).position(-2.15, 3.3, 1.35),
++    lights.point({ name: "cyan playfield spill", color: "#8ff7ff", intensity:  1.42 }).position(0, 2.5, 1.55),
++    lights.point({ name: "warm floor practical", color: "#ffc15b", intensity:  0.42 }).position(0, -0.45, 0.9),
++    lights.point({ name: "rival corner practical", color: "#ff72c9", intensity:  0.68 }).position(3.35, 1.35, 1.15)
+   ])
+   .camera(reactorCamera);
+ 
+-const gameApp = createGameApp("#app", {
++const blockfallGame = createGame({
++  id: "showcase-blockfall-reactor",
++  target: "#app",
++  scene: () => reactorScene,
+   diagnostics: { overlay: false, performancePanel: false },
+   physics: {
+     seed: 20260909,
+@@ -659,70 +656,46 @@ const gameApp = createGameApp("#app", {
+   },
+   input: inputOptions,
+   loop: { fixedDt: 1 / 60, maxSubSteps: 2 },
+-  scene: reactorScene
++  scenarios: blockfallScenarios,
++  evidence: {
++    schema: 1,
++    sections: async () => (await import("../evidence")).sections,
++    legacyGlobals: ["__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__"]
++  },
++  qualityRebuild: { flags: ["game"] }
+ });
++const gameApp = blockfallGame.runtime;
+ 
+ const app = gameApp.app;
++
++// ---- juice (PRD-09 §7.6) ----------------------------------------------------
++const blockfallTween = createTweenEngine();
++const blockfallFx = createFxParticlePass(app.effects);
++const blockfallJuice = createJuice<"lock" | "line-clear" | "quad" | "level-up" | "game-over" | "rotate-denied">({
++  events: {
++    lock: { fx: { kind: "dust", count: 5, color: "#8ff7ff" }, shake: 0.06 },
++    "line-clear": { fx: { kind: "streak", count: 12, color: "#48d9e5" }, flash: { color: "#48d9e5", peak: 0.14, ms: 140 } },
++    quad: { fx: { kind: "ring", count: 20, color: "#ffe866" }, shake: 0.22, punch: { fovDeg: 3.5, ms: 160 }, hitStop: 0.05 },
++    "level-up": { fx: { kind: "spark", count: 10, color: "#e279ff" }, flash: { color: "#e279ff", peak: 0.12, ms: 160 } },
++    "game-over": { flash: { color: "#ff4d4d", peak: 0.22, ms: 300 }, vignette: { amount: 0.4, ms: 500, color: "#20060a" }, hitStop: 0.06 },
++    "rotate-denied": { flash: { color: "#ff4d4d", peak: 0.1, ms: 120 } }
++  },
++  camera: app.camera,
++  session: blockfallGame.session,
++  fx: blockfallFx,
++  overlay: createOverlayDriver({ app }),
++  tweens: blockfallTween,
++  rumble: createRumbleDriver()
++});
++
+ const input = gameApp.input!;
+ if (!input) throw new Error("Blockfall Reactor failed to create Aura3D input.");
+ 
+ const cabinetHandle = app.nodes.require("blockfall-reactor-cabinet") as AuraRuntimeNodeHandle;
+ const lowerLeftCell = cellPosition(0, 0, 0);
+ const upperRightCell = cellPosition(BOARD_WIDTH - 1, VISIBLE_HEIGHT - 1, 0);
+-Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+-  value: {
+-    category: "falling-blocks",
+-    camera: reactorCamera,
+-    subject: { position: cabinetPosition, rotation: [0, -Math.PI / 2, 0], targetSize: cabinetTargetSize },
+-    playSpacePoints: [lowerLeftCell, upperRightCell],
+-    contactPoint: cellPosition(Math.floor(BOARD_WIDTH / 2), 0, 0),
+-    setSubjectSuppressed: async (suppressed: boolean) => {
+-      app.pause();
+-      await app.ready();
+-      cabinetHandle.setScale(suppressed ? 0.0001 : 1);
+-      await app.stepAsync(0);
+-    }
+-  },
+-  configurable: true
+-});
+ 
+-/**
+- * BF-A7 evidence hook: the retained bloom stills toggle the shipped effect's own
+- * intensity between 0 ("before") and the shipped value ("after") on one mounted
+- * scene, so the pair differs only by the bloom pass. See
+- * tests/browser/blockfall-bloom-stills.spec.ts.
+- */
+-Object.defineProperty(window, "__AURA3D_BLOCKFALL_BLOOM_PROBE__", {
+-  value: {
+-    shippedIntensity: reducedFlash ? 0.12 : 0.26,
+-    intensity: () => bloomEffectNode.intensity,
+-    // The declared node field is readonly for authors; the stills probe is the one
+-    // sanctioned writer, so it goes through a local mutable alias of the same object.
+-    setIntensity(next: number) {
+-      const mutableBloom = bloomEffectNode as { intensity?: number };
+-      mutableBloom.intensity = next;
+-    }
+-  },
+-  configurable: true
+-});
+ 
+-/**
+- * Deterministic attract probe for browser evidence: enters/exits through the
+- * exact same code path the idle timer and player input use, so specs do not
+- * have to wait out ATTRACT_IDLE_SECONDS in real time.
+- */
+-Object.defineProperty(window, "__AURA3D_BLOCKFALL_ATTRACT_PROBE__", {
+-  value: {
+-    // Lazy read: ATTRACT_IDLE_SECONDS is declared later in module scope.
+-    get idleEntryAfterSeconds() {
+-      return ATTRACT_IDLE_SECONDS;
+-    },
+-    isActive: () => attractState.active,
+-    enter: () => enterAttract("probe"),
+-    exit: () => exitAttract("probe")
+-  },
+-  configurable: true
+-});
+ 
+ const ghostHandles = Array.from({ length: 4 }, (_, index) => app.nodes.require(ghostNodeId(index)) as AuraRuntimeNodeHandle);
+ const clearFlashHandles = Array.from({ length: VISIBLE_HEIGHT }, (_, row) => app.nodes.require(clearFlashNodeId(row)) as AuraRuntimeNodeHandle);
+@@ -778,7 +751,6 @@ const fallingBlocks = game.fallingBlocks({
+   board: createOpeningBoard()
+ });
+ fallingBlocks.setActive({ kind: "T", x: Math.floor(BOARD_WIDTH / 2) - 2, y: PRESENTATION_ACTIVE_Y, rotation: 0 });
+-let paused = false;
+ let placedPieces = 0;
+ let lockCount = 0;
+ let lastFallingEvents: readonly GameFallingBlocksEvent[] = fallingBlocks.snapshot().events;
+@@ -937,38 +909,26 @@ const manualInputState = {
+ installDomControls();
+ syncAll(true);
+ 
+-/**
+- * Exact-artifact acceptance probe. Each scenario mutates the same mounted public
+- * `game.fallingBlocks` kit used by normal play, then freezes the Aura app only
+- * after the real state transition has landed. This gives browser review stable
+- * quad/level/danger/outcome frames without substituting authored evidence for
+- * gameplay truth.
+- */
+-const acceptanceScenarios = ["play", "single-clear", "quad", "level-up", "danger", "game-over"] as const;
+-blockfallWindow.__AURA3D_BLOCKFALL_ACCEPTANCE_PROBE__ = {
+-  scenarios: acceptanceScenarios,
+-  apply: applyAcceptanceScenario,
+-  resume() {
++// PRD-09: binds the scenario drive used by `?capture=scenario&scenario=<id>`.
++// The deleted window probes (ACCEPTANCE/ATTRACT/BLOOM/COMPOSITION) funnelled
++// through the same functions; staging itself is unchanged.
++bindBlockfallEvidence(collectRouteEvidence);
++bindBlockfallDrive({
++  applyAcceptance: (scenario) => applyAcceptanceScenario(scenario),
++  resumeFromAcceptance: () => {
+     const result = applyAcceptanceScenario("play");
+     acceptanceScenario = null;
+     app.resume();
+     return result;
+   },
+-  unfreeze() {
++  unfreezeAcceptance: () => {
+     acceptanceScenario = null;
+     app.resume();
+   },
+-  /**
+-   * Evidence staging (round 7): boxes the active piece in through real kit
+-   * transitions so the next rotate press is genuinely refused — every wall
+-   * kick collides, so the kit emits no "rotate" event and the rotation-denied
+-   * feedback path fires. Locked cells fill the whole well except the active
+-   * piece's own cells, which keep their current state.
+-   */
+-  stageRotationTrap() {
++  stageRotationTrap: () => {
+     const snapshot = fallingBlocks.snapshot();
+     const active = snapshot.active;
+-    if (!active || snapshot.gameOver || paused) return false;
++    if (!active || snapshot.gameOver || blockfallGame.session.paused) return false;
+     const occupied = new Set(
+       pieceCells({ kind: active.kind, x: active.x, y: active.y, rotation: active.rotation }).map(
+         (cell) => `${cell.x},${cell.y}`
+@@ -979,13 +939,26 @@ blockfallWindow.__AURA3D_BLOCKFALL_ACCEPTANCE_PROBE__ = {
+     );
+     fallingBlocks.setBoard(trapped);
+     return true;
+-  }
+-};
++  },
++  enterAttract: (reason = "scenario") => enterAttract(reason),
++  exitAttract: (reason = "scenario") => exitAttract(reason),
++  attractActive: () => attractState.active
++});
++
++/**
++ * Exact-artifact acceptance probe. Each scenario mutates the same mounted public
++ * `game.fallingBlocks` kit used by normal play, then freezes the Aura app only
++ * after the real state transition has landed. This gives browser review stable
++ * quad/level/danger/outcome frames without substituting authored evidence for
++ * gameplay truth.
++ */
++const acceptanceScenarios = ["play", "single-clear", "quad", "level-up", "danger", "game-over"] as const;
+ 
+ let lastPublishedLevel = 1;
+ 
+ gameApp.onFrame(({ dt }) => {
+   input.update(dt);
++  blockfallTween.tick(dt);
+ 
+   // Exact acceptance captures intentionally freeze gameplay after a real kit
+   // transition. `app.step(0)` is still allowed to flush the renderer, but it
+@@ -1008,7 +981,8 @@ gameApp.onFrame(({ dt }) => {
+       manualInputState.pressed.clear();
+       queuedActions = [];
+       replayPlayback = { active: false, frame: 0 };
+-      paused = false;
++      blockfallGame.session.resume();
++      app.resume();
+       placedPieces = 0;
+       lockCount = 0;
+       const freshSnapshot = fallingBlocks.reset(DEFAULT_SEED);
+@@ -1028,7 +1002,7 @@ gameApp.onFrame(({ dt }) => {
+     || manualInputState.pressed.size > 0
+     || manualInputState.held.size > 0
+     || BLOCKFALL_INPUT_NAMES.some((name) => input.pressed(name) || input.held(name));
+-  if (!attractState.active && !paused && !state.gameOver && !replayPlayback.active) {
++  if (!attractState.active && !blockfallGame.session.paused && !state.gameOver && !replayPlayback.active) {
+     if (anyInputThisFrame || dt === 0) {
+       attractState.idleSeconds = 0;
+     } else {
+@@ -1103,12 +1077,19 @@ function advanceFallingBlocks(actions: readonly BlockfallAction[] = []): Blockfa
+ 
+   for (const action of actions) {
+     if (action.type === "pause") {
+-      paused = !paused;
+-      lastMove = paused ? "pause" : "resume";
++      if (blockfallGame.session.paused) {
++        blockfallGame.session.resume();
++        app.resume();
++      } else {
++        blockfallGame.session.pause("user");
++        app.pause();
++      }
++      lastMove = blockfallGame.session.paused ? "pause" : "resume";
+       continue;
+     }
+     if (action.type === "reset") {
+-      paused = false;
++      blockfallGame.session.resume();
++      app.resume();
+       placedPieces = 0;
+       lockCount = 0;
+       const resetSnapshot = fallingBlocks.reset(action.seed ?? DEFAULT_SEED);
+@@ -1123,7 +1104,7 @@ function advanceFallingBlocks(actions: readonly BlockfallAction[] = []): Blockfa
+       observedBeatProof.reset = true;
+       continue;
+     }
+-    if (paused || state.gameOver) continue;
++    if (blockfallGame.session.paused || state.gameOver) continue;
+     const fallingAction = toFallingBlockAction(action);
+     if (action.type === "move") observedGameplayProof.movement = true;
+     if (action.type === "rotate") observedGameplayProof.rotation = true;
+@@ -1142,13 +1123,16 @@ function advanceFallingBlocks(actions: readonly BlockfallAction[] = []): Blockfa
+     // "accepted". Edge-triggered per refused press via the event absence.
+     if (action.type === "rotate" && !accepted.has("rotate")) {
+       observedGameplayProof.rotateDenied += 1;
+-      if (!reducedMotion) rotateDeniedFlash = ROTATE_DENIED_FLASH_SECONDS;
++      if (!reducedMotion) {
++        rotateDeniedFlash = ROTATE_DENIED_FLASH_SECONDS;
++        blockfallJuice.fire("rotate-denied");
++      }
+     }
+     lastMove = formatBlockfallAction(action);
+     countFallingBlockEvents(lastFallingEvents, rowsBeforeAction);
+   }
+ 
+-  if (!resetApplied && !paused && !fallingBlocks.snapshot().gameOver) {
++  if (!resetApplied && !blockfallGame.session.paused && !fallingBlocks.snapshot().gameOver) {
+     const rowsBeforeTick = captureFullVisibleRows();
+     const tickSnapshot = fallingBlocks.tick();
+     lastFallingEvents = tickSnapshot.events;
+@@ -1179,6 +1163,7 @@ function countFallingBlockEvents(
+     placedPieces += locks;
+     observedGameplayProof.eventCounts.lock += locks;
+     void reactorAudio.cue("lock");
++    blockfallJuice.fire("lock", { position: [0, burstRowY, 0.4] });
+   }
+   if (lineClears > 0) {
+     observedGameplayProof.lineClear = true;
+@@ -1197,6 +1182,7 @@ function countFallingBlockEvents(
+     }
+     void reactorAudio.cue(quad ? "quad" : "line-clear");
+     clearFx.burst(clearedVisibleRows, linesCleared);
++    blockfallJuice.fire(quad ? "quad" : "line-clear", { position: [0, burstRowY, 0.4] });
+     if (quad) cameraFeel.punch(1.6, "quad");
+   }
+   if (gameOvers > 0) {
+@@ -1205,6 +1191,7 @@ function countFallingBlockEvents(
+     beatTimers.gameOver = beatDurations.gameOver;
+     observedBeatProof.gameOver = true;
+     void reactorAudio.cue("game-over");
++    blockfallJuice.fire("game-over");
+   }
+   const snapshot = fallingBlocks.snapshot();
+   observedGameplayProof.scoring ||= snapshot.score > 0;
+@@ -1214,6 +1201,7 @@ function countFallingBlockEvents(
+     beatTimers.levelUp = beatDurations.levelUp;
+     observedBeatProof.levelUp = true;
+     void reactorAudio.cue("level-up");
++    blockfallJuice.fire("level-up");
+     cameraFeel.punch(1.1, "level-up");
+   }
+ }
+@@ -1296,7 +1284,7 @@ function applyAcceptanceScenario(scenario: BlockfallAcceptanceScenario): unknown
+   app.pause();
+   exitAttract("acceptance-probe");
+   acceptanceScenario = scenario;
+-  paused = false;
++  blockfallGame.session.resume();
+   replayPlayback = { active: false, frame: 0 };
+   placedPieces = 0;
+   lockCount = 0;
+@@ -1379,7 +1367,7 @@ function createBlockfallView(snapshot: GameFallingBlocksSnapshot, lastMove: stri
+     piecesPlaced: placedPieces,
+     lockCount,
+     frame: snapshot.frame,
+-    paused,
++    paused: blockfallGame.session.paused,
+     gameOver: snapshot.gameOver,
+     lastMove,
+     lastClearedLines: lineClear?.lines ?? 0,
+@@ -1460,7 +1448,6 @@ function syncAll(force: boolean, dt = 0): void {
+   const deniedPulseOn = rotateDeniedFlash > 0;
+   rotateLeftButton.classList.toggle("rotate-denied", deniedPulseOn);
+   rotateRightButton.classList.toggle("rotate-denied", deniedPulseOn);
+-  publishEvidence();
+ }
+ 
+ /**
+@@ -1516,7 +1503,7 @@ function syncScoreboardDigits(summary: { score: number; level: number }): void {
+     for (let digit = 0; digit <= 9; digit += 1) {
+       const handle = scoreboardDigitHandles.score[slot]?.[digit];
+       if (!handle) continue;
+-      const visible = !visualReviewCapture && digit === shown;
++      const visible = digit === shown;
+       handle.setVisible(visible);
+       handle.setScale(visible ? [1, 1, 1] : [HIDDEN_BLOCK_SCALE[0], HIDDEN_BLOCK_SCALE[1], HIDDEN_BLOCK_SCALE[2]]);
+     }
+@@ -1527,7 +1514,7 @@ function syncScoreboardDigits(summary: { score: number; level: number }): void {
+     for (let digit = 0; digit <= 9; digit += 1) {
+       const handle = scoreboardDigitHandles.level[slot]?.[digit];
+       if (!handle) continue;
+-      const visible = !visualReviewCapture && digit === shown;
++      const visible = digit === shown;
+       handle.setVisible(visible);
+       handle.setScale(visible ? [1, 1, 1] : [HIDDEN_BLOCK_SCALE[0], HIDDEN_BLOCK_SCALE[1], HIDDEN_BLOCK_SCALE[2]]);
+     }
+@@ -1699,27 +1686,15 @@ function syncBeats(dt: number): void {
+       quadWordHandle
+         .setPosition(-quadWordGeometry.width * 0.24, 4.18 + (1 - burstProgress) * 0.04, 0.52)
+         .setScale(0.46 + (1 - burstProgress) * 0.04)
+-        .setVisible(!visualReviewCapture);
++        .setVisible(true);
+       // The typed mascot's authored review Dance clip remains the animation source;
+       // the quad timer adds a visible whole-body jump/lean so the frozen exact
+       // frame reads as a reaction instead of neutral set dressing.
+       const reactionArc = Math.sin((1 - burstProgress) * Math.PI);
+-      if (visualReviewCapture) {
+-        mascotNode.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
+-        rivalMascotNode.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
+-        quadMechanicNode
+-          .setPosition(-3.22, 1.08 + reactionArc * 0.05, -0.82)
+-          .setScale(0.8 + reactionArc * 0.03)
+-          .setVisible(true);
+-        quadPlasmaRivalNode
+-          .setPosition(3.18, 1.05 - reactionArc * 0.04, -0.8)
+-          .setScale(0.78 + reactionArc * 0.025)
+-          .setVisible(true);
+-      } else {
+-        mascotNode
++      mascotNode
+           .setPosition(-3.48, 0.28 + 0.42 * reactionArc + 0.18 * burstProgress, -2.05)
+           .setRotation(0, -0.22, -0.12 - 0.18 * reactionArc);
+-      }
++
+       const ringScale = 0.34 + (1 - burstProgress) * 0.72;
+       for (let index = 0; index < quadRingHandles.length; index += 1) {
+         const side = index % 2 === 0 ? -1 : 1;
+@@ -1728,13 +1703,13 @@ function syncBeats(dt: number): void {
+           .setPosition(side * (1.72 + band * 0.28), 1.12 + band * 1.08, 0.36)
+           .setRotation(Math.PI / 2, 0, 0)
+           .setScale([ringScale * (0.72 + band * 0.12), ringScale * (0.72 + band * 0.12), 0.045])
+-          .setVisible(!visualReviewCapture);
++          .setVisible(true);
+       }
+       for (let index = 0; index < quadCrownHandles.length; index += 1) {
+         quadCrownHandles[index]!
+           .setPosition(-3.72 + index * 0.38, 3.02 + (index === 1 ? 0.24 : 0), -1.38)
+           .setScale(0.13 + burstProgress * 0.055)
+-          .setVisible(!visualReviewCapture);
++          .setVisible(true);
+       }
+     } else {
+       const chargeHeight = 0.12 + (1 - burstProgress) * 0.38;
+@@ -1751,7 +1726,7 @@ function syncBeats(dt: number): void {
+     beatHandles.burst.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
+     clearWaveHandle.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
+     mascotNode
+-      .setPosition(visualReviewCapture ? -3.34 : -3.48, visualReviewCapture ? 0.18 : 0.28, visualReviewCapture ? -1.72 : -2.15)
++      .setPosition( -3.48,  0.28,  -2.15)
+       .setScale(1)
+       .setVisible(true)
+       .setRotation(0, 0, 0);
+@@ -1807,7 +1782,7 @@ function syncHud(): void {
+   document.body.dataset.blockfallAttract = attractState.active ? "true" : "false";
+ }
+ 
+-function publishEvidence(): void {
++function collectRouteEvidence(): Record<string, unknown> {
+   const summary = summarizeBlockfallState(state);
+   const hudSnapshot = game.hud.snapshot({
+     bindings: hudBindings,
+@@ -1823,7 +1798,7 @@ function publishEvidence(): void {
+     }
+   });
+ 
+-  blockfallWindow.__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__ = {
++  return {
+     ...sourceEvidence,
+     status: state.gameOver || state.paused ? "ready" : "running",
+     appId: "showcase-blockfall-reactor",
+@@ -1887,7 +1862,6 @@ function publishEvidence(): void {
+     },
+     runtimeEvidence: app.evidence({
+       input,
+-      collisionWorld: physicsProof.collisionWorld,
+       hud: hudBindings,
+       accessibility: accessibilitySources,
+       stage: {
+@@ -1910,7 +1884,6 @@ function publishEvidence(): void {
+         { subsystem: "accessibility", owner: "app", configured: true, evidence: "Pause, focus, and motion preferences are declared through game.accessibility." }
+       ]
+     }),
+-    physics: physicsProof.evidence,
+     hudSnapshot,
+     /**
+      * BF-A1..BF-A6 additive evidence. Every field below is observed mounted
+@@ -2195,7 +2168,8 @@ function installDomControls(): void {
+ 
+ function startReplayPlayback(): void {
+   exitAttract("replay-button");
+-  paused = false;
++  blockfallGame.session.resume();
++  app.resume();
+   placedPieces = 0;
+   lockCount = 0;
+   const resetSnapshot = fallingBlocks.reset(DEFAULT_SEED);
+diff --git a/apps/showcase-blockfall-reactor/src/scenario-drive.ts b/apps/showcase-blockfall-reactor/src/scenario-drive.ts
+new file mode 100644
+index 000000000..996440088
+--- /dev/null
++++ b/apps/showcase-blockfall-reactor/src/scenario-drive.ts
+@@ -0,0 +1,35 @@
++/**
++ * scenario-drive.ts — gameplay-only surface the `src/scenarios/` modules use.
++ * Bound once from `main.ts`; scenario files never reach for route internals
++ * directly. Replaces the deleted __AURA3D_BLOCKFALL_{ACCEPTANCE,ATTRACT,
++ * BLOOM,COMPOSITION}_PROBE__ window globals (PRD-09).
++ */
++export type BlockfallAcceptanceScenario =
++  "play" | "single-clear" | "quad" | "level-up" | "danger" | "game-over";
++
++export interface BlockfallDrive {
++  /** Runs the exact acceptance staging on the live kit, then freezes the app. */
++  applyAcceptance(scenario: BlockfallAcceptanceScenario): unknown;
++  /** Restages "play" and resumes the app (was ACCEPTANCE_PROBE.resume). */
++  resumeFromAcceptance(): unknown;
++  /** Clears the acceptance freeze without restaging. */
++  unfreezeAcceptance(): void;
++  /** Boxes the active piece in so the next rotate press is refused. */
++  stageRotationTrap(): boolean;
++  enterAttract(reason?: string): void;
++  exitAttract(reason?: string): void;
++  attractActive(): boolean;
++}
++
++let active: BlockfallDrive | undefined;
++
++export function bindBlockfallDrive(impl: BlockfallDrive): void {
++  active = impl;
++}
++
++export function blockfallDrive(): BlockfallDrive {
++  if (active === undefined) {
++    throw new Error("Blockfall scenario drive is not bound yet — call createGame first.");
++  }
++  return active;
++}
+diff --git a/apps/showcase-blockfall-reactor/src/scenarios/acceptance.ts b/apps/showcase-blockfall-reactor/src/scenarios/acceptance.ts
+new file mode 100644
+index 000000000..a004eb4dd
+--- /dev/null
++++ b/apps/showcase-blockfall-reactor/src/scenarios/acceptance.ts
+@@ -0,0 +1,17 @@
++/** Exact acceptance staging — the deleted ACCEPTANCE_PROBE.apply surface. */
++import type { GameScenario } from "@aura3d/engine";
++import { blockfallDrive, type BlockfallAcceptanceScenario } from "../scenario-drive";
++
++function acceptance(id: BlockfallAcceptanceScenario, description: string): GameScenario {
++  return {
++    description,
++    setup: () => { blockfallDrive().applyAcceptance(id); }
++  };
++}
++
++export const playScenario = acceptance("play", "Deterministic opening board: T piece mid-field.");
++export const singleClearScenario = acceptance("single-clear", "O hard-drop that clears exactly one line.");
++export const quadScenario = acceptance("quad", "Vertical I quad clear with a live follow-through piece.");
++export const levelUpScenario = acceptance("level-up", "Ten cleared lines across three quads; level-up beat armed.");
++export const dangerScenario = acceptance("danger", "Stepped stack near the top-out threshold.");
++export const gameOverScenario = acceptance("game-over", "Spawn band occupied; next lock emits game-over.");
+diff --git a/apps/showcase-blockfall-reactor/src/scenarios/attract.ts b/apps/showcase-blockfall-reactor/src/scenarios/attract.ts
+new file mode 100644
+index 000000000..e64db46cc
+--- /dev/null
++++ b/apps/showcase-blockfall-reactor/src/scenarios/attract.ts
+@@ -0,0 +1,13 @@
++/** Attract-mode staging — the deleted ATTRACT_PROBE surface. */
++import type { GameScenario } from "@aura3d/engine";
++import { blockfallDrive } from "../scenario-drive";
++
++export const attractEnterScenario: GameScenario = {
++  description: "Enters the expert-run attract loop immediately (no 45 s idle wait).",
++  setup: () => { blockfallDrive().enterAttract("scenario"); }
++};
++
++export const attractExitScenario: GameScenario = {
++  description: "Exits the attract loop back into a fresh playable game.",
++  setup: () => { blockfallDrive().exitAttract("scenario"); }
++};
+diff --git a/apps/showcase-blockfall-reactor/src/scenarios/index.ts b/apps/showcase-blockfall-reactor/src/scenarios/index.ts
+new file mode 100644
+index 000000000..e410bb394
+--- /dev/null
++++ b/apps/showcase-blockfall-reactor/src/scenarios/index.ts
+@@ -0,0 +1,19 @@
++import type { GameScenario } from "@aura3d/engine";
++import {
++  playScenario, singleClearScenario, quadScenario,
++  levelUpScenario, dangerScenario, gameOverScenario
++} from "./acceptance";
++import { attractEnterScenario, attractExitScenario } from "../legacy/attract";
++import { rotationTrapScenario } from "./rotation-trap";
++
++export const blockfallScenarios: Readonly<Record<string, GameScenario>> = {
++  "play": playScenario,
++  "single-clear": singleClearScenario,
++  "quad": quadScenario,
++  "level-up": levelUpScenario,
++  "danger": dangerScenario,
++  "game-over": gameOverScenario,
++  "rotation-trap": rotationTrapScenario,
++  "attract-enter": attractEnterScenario,
++  "attract-exit": attractExitScenario
++};
+diff --git a/apps/showcase-blockfall-reactor/src/scenarios/rotation-trap.ts b/apps/showcase-blockfall-reactor/src/scenarios/rotation-trap.ts
+new file mode 100644
+index 000000000..fed064b71
+--- /dev/null
++++ b/apps/showcase-blockfall-reactor/src/scenarios/rotation-trap.ts
+@@ -0,0 +1,8 @@
++/** Rotation-denied staging — the deleted ACCEPTANCE_PROBE.stageRotationTrap. */
++import type { GameScenario } from "@aura3d/engine";
++import { blockfallDrive } from "../scenario-drive";
++
++export const rotationTrapScenario: GameScenario = {
++  description: "Boxes the active piece in through real kit transitions so the next rotate is refused.",
++  setup: () => { blockfallDrive().stageRotationTrap(); }
++};
+diff --git a/apps/showcase-blockfall-reactor/src/v2/boot.ts b/apps/showcase-blockfall-reactor/src/v2/boot.ts
+index f74c85d56..13bbea322 100644
+--- a/apps/showcase-blockfall-reactor/src/v2/boot.ts
++++ b/apps/showcase-blockfall-reactor/src/v2/boot.ts
+@@ -59,8 +59,8 @@ import { blockfallLighting } from "./scene/lighting";
+ import { createBlockfallRig, blockfallCameraSpec, BASE_POSE } from "./scene/camera";
+ import { wireBlockfallFx } from "./scene/fx";
+ import { ROOM_BG } from "./scene/materials";
+-import { publishBlockfallEvidence } from "./evidence";
+-import { applyBlockfallScenario, parseBlockfallScenario } from "./scenarios";
++import { publishBlockfallEvidence } from "../evidence";
++import { applyBlockfallScenario, parseBlockfallScenario } from "../scenarios";
+ 
+ const ROUTE_FLAG = "A3D_QR_ROUTE_BLOCKFALL_REACTOR" as const;
+ const SIM_STEP = 1 / 60;
+-- 
+2.34.1
+

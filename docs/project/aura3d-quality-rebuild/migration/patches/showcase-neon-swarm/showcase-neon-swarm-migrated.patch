@@ -1,0 +1,1114 @@
+From 3fb079c0ad75f79618d152cfb9f825c310353545 Mon Sep 17 00:00:00 2001
+From: Gurbaksh Chahal <gchahal@veerone.com>
+Date: Fri, 9 Oct 2026 11:09:15 +0000
+Subject: [PATCH] migration(showcase-neon-swarm): regenerated patch set
+ (post-PRD-14 layout)
+
+---
+ apps/showcase-neon-swarm/package.json         |   3 +-
+ apps/showcase-neon-swarm/src/evidence.ts      |  16 +
+ .../showcase-neon-swarm/src/gameplay/swarm.ts |   3 +-
+ .../src/legacy/environment.ts                 |  60 +--
+ apps/showcase-neon-swarm/src/legacy/main.ts   | 408 +++++++++---------
+ .../showcase-neon-swarm/src/scenario-drive.ts |  22 +
+ .../src/scenarios/index.ts                    |  17 +
+ apps/showcase-neon-swarm/src/v2/boot.ts       |   4 +-
+ 8 files changed, 256 insertions(+), 277 deletions(-)
+ create mode 100644 apps/showcase-neon-swarm/src/evidence.ts
+ create mode 100644 apps/showcase-neon-swarm/src/scenario-drive.ts
+ create mode 100644 apps/showcase-neon-swarm/src/scenarios/index.ts
+
+diff --git a/apps/showcase-neon-swarm/package.json b/apps/showcase-neon-swarm/package.json
+index edde022a2..6febe2961 100644
+--- a/apps/showcase-neon-swarm/package.json
++++ b/apps/showcase-neon-swarm/package.json
+@@ -16,7 +16,8 @@
+     "preview": "vite preview --host 127.0.0.1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "workspace:*"
++    "@aura3d/engine": "workspace:*",
++    "@aura3d/game": "workspace:*"
+   },
+   "devDependencies": {
+     "typescript": "^5.8.3",
+diff --git a/apps/showcase-neon-swarm/src/evidence.ts b/apps/showcase-neon-swarm/src/evidence.ts
+new file mode 100644
+index 000000000..4d686fca0
+--- /dev/null
++++ b/apps/showcase-neon-swarm/src/evidence.ts
+@@ -0,0 +1,16 @@
++/**
++ * evidence.ts — lazy route evidence sections (PRD-09 §6.5). Loaded through the
++ * evidence channel's `sections()` loader only when evidence is requested.
++ */
++export type EvidenceCollect = () => Record<string, unknown>;
++
++let collect: EvidenceCollect | undefined;
++
++export function bindNeonEvidence(fn: EvidenceCollect): void {
++  collect = fn;
++}
++
++export const sections = {
++  neon: (): Record<string, unknown> =>
++    (collect ?? (() => ({ status: "unbound" })))()
++};
+diff --git a/apps/showcase-neon-swarm/src/gameplay/swarm.ts b/apps/showcase-neon-swarm/src/gameplay/swarm.ts
+index abe156c4d..c2ceeb083 100644
+--- a/apps/showcase-neon-swarm/src/gameplay/swarm.ts
++++ b/apps/showcase-neon-swarm/src/gameplay/swarm.ts
+@@ -130,7 +130,6 @@ export interface SwarmSimulation {
+  * between the larger typed elite presentations.
+  */
+ export interface SwarmVisualOptions {
+-  readonly reviewCapture?: boolean;
+ }
+ 
+ function makeTransforms(count: number): PoolTransform[] {
+@@ -440,7 +439,7 @@ export function createSwarmSimulation(options: SwarmVisualOptions = {}): SwarmSi
+       // gameplay transforms, pool capacities, and hashes remain unchanged.
+       let scale = isElite
+         ? 0.52
+-        : (options.reviewCapture ? 0.42 + (i % 5) * 0.02 : 0.32 + (i % 5) * 0.016);
++        : ( 0.32 + (i % 5) * 0.016);
+       if (drone.flashRemaining > 0) scale *= 1.18;
+       if (isElite && drone.burstRemaining > 0) scale *= 1.12;
+       const profile = i % 6;
+diff --git a/apps/showcase-neon-swarm/src/legacy/environment.ts b/apps/showcase-neon-swarm/src/legacy/environment.ts
+index df7c0dcfe..fcb2c6921 100644
+--- a/apps/showcase-neon-swarm/src/legacy/environment.ts
++++ b/apps/showcase-neon-swarm/src/legacy/environment.ts
+@@ -9,24 +9,24 @@
+  */
+ import { primitives, material, lights, type AuraSceneNode } from "@aura3d/engine";
+ 
+-export function createNeonSwarmDistrictDressing(reviewCapture = false): AuraSceneNode[] {
++export function createNeonSwarmDistrictDressing(): AuraSceneNode[] {
+   const nodes: AuraSceneNode[] = [];
+ 
+   nodes.push(
+     lights.ambient({
+       name: "cyber-ambient",
+       color: "#475569",
+-      intensity: reviewCapture ? 0.82 : 1.05
++      intensity:  1.05
+     }).toJSON(),
+     lights.directional({
+       name: "cyber-key-light",
+       color: "#e0f2fe",
+-      intensity: reviewCapture ? 1.72 : 2.0
++      intensity:  2.0
+     }).position(8, 20, 8).toJSON(),
+     lights.directional({
+       name: "cyber-rim-light",
+       color: "#f43f5e",
+-      intensity: reviewCapture ? 1.08 : 0.72
++      intensity:  0.72
+     }).position(-8, 16, -12).toJSON(),
+     lights.point({
+       name: "cyber-core-glow",
+@@ -35,58 +35,6 @@ export function createNeonSwarmDistrictDressing(reviewCapture = false): AuraScen
+     }).position(0, 4.0, 0).toJSON()
+   );
+ 
+-  if (reviewCapture) {
+-    // The exact finale needs one cohesive survival arena, not a street-grid
+-    // graph. Low-profile arms establish a restrained center vortex without
+-    // impersonating combat or simulation state.
+-    nodes.push(
+-      primitives.box({
+-        name: "finale arena ground",
+-        material: material.pbr({
+-          name: "finale arena ground material",
+-          color: "#07131d",
+-          roughness: 0.68,
+-          metallic: 0.18
+-        })
+-      }).position(0, -0.035, 3).scale([52, 0.06, 34]).toJSON()
+-    );
+-
+-    const armColors = ["#244a43", "#31584d", "#3d5148", "#29413f", "#3b4942"] as const;
+-    for (let arm = 0; arm < 5; arm += 1) {
+-      for (let segment = 0; segment < 7; segment += 1) {
+-        const angle = arm * (Math.PI * 2 / 5) + segment * 0.31;
+-        const radius = 1.7 + segment * 1.7;
+-        nodes.push(
+-          primitives.box({
+-            name: `finale vortex arm ${arm}-${segment}`,
+-            material: material.pbr({
+-              name: `finale vortex material ${arm}-${segment}`,
+-              color: armColors[arm]!,
+-              roughness: 0.52,
+-              metallic: 0.28
+-            })
+-          })
+-            .position(Math.cos(angle) * radius, 0.012, 3 + Math.sin(angle) * radius * 0.82)
+-            .rotate(0, -angle + Math.PI / 2, 0)
+-            .scale([1.12 + segment * 0.17, 0.025, 0.34 + segment * 0.035])
+-            .toJSON()
+-        );
+-      }
+-    }
+-
+-    nodes.push(
+-      primitives.box({
+-        name: "finale north pressure rail",
+-        material: material.emissive({ name: "finale north rail material", color: "#143e49", emissive: "#35e6ff", emissiveIntensity: 0.32 })
+-      }).position(0, 0.08, -13.6).scale([44, 0.08, 0.18]).toJSON(),
+-      primitives.box({
+-        name: "finale south pressure rail",
+-        material: material.emissive({ name: "finale south rail material", color: "#4b183d", emissive: "#ff4fd8", emissiveIntensity: 0.3 })
+-      }).position(0, 0.08, 19.6).scale([44, 0.08, 0.18]).toJSON()
+-    );
+-    return nodes;
+-  }
+-
+   // Normal play uses a compact authored street language around the typed
+   // props and instanced swarm. Keeping these rails in one small branch leaves
+   // negative space for individual threat silhouettes and keeps the route's
+diff --git a/apps/showcase-neon-swarm/src/legacy/main.ts b/apps/showcase-neon-swarm/src/legacy/main.ts
+index 67b502753..15269925b 100644
+--- a/apps/showcase-neon-swarm/src/legacy/main.ts
++++ b/apps/showcase-neon-swarm/src/legacy/main.ts
+@@ -13,9 +13,19 @@
+  *
+  * Evidence: window.__NEON_SWARM_EVIDENCE__ (schema in README).
+  */
++import {
++  createFxParticlePass,
++  createGame,
++  createJuice,
++  createOverlayDriver,
++  createRumbleDriver,
++  createTweenEngine
++} from "@aura3d/game";
++import { bindNeonEvidence } from "../evidence";
++import { bindNeonDrive } from "../scenario-drive";
++import { neonScenarios } from "../scenarios";
+ import {
+   camera,
+-  createAuraApp,
+   distanceLod,
+   effects,
+   game,
+@@ -122,16 +132,6 @@ declare global {
+     __NEON_SWARM_EVIDENCE__?: NeonSwarmEvidence;
+     __AURA3D_SHOWCASE_NEON_SWARM__?: NeonSwarmEvidence;
+     __NEON_SWARM_DEBUG__?: NeonSwarmDebugHooks;
+-    __AURA3D_COMPOSITION_PROBE__?: {
+-      readonly category: "application";
+-      readonly subject: {
+-        readonly position: readonly [number, number, number];
+-        readonly rotation: readonly [number, number, number];
+-        readonly targetSize: number;
+-      };
+-      setSubjectSuppressed(suppressed: boolean): Promise<void>;
+-      settleSubjectPose(): Promise<void>;
+-    };
+   }
+ }
+ 
+@@ -173,8 +173,7 @@ const INTERMISSION_FIRST_SECONDS = 3.2;
+ 
+ const reducedMotion = typeof window !== "undefined"
+   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+-const visualReviewCapture = typeof window !== "undefined"
+-  && new URLSearchParams(window.location.search).get("capture") === "review";
++
+ // The retained desktop probe is a 1440x900 frame. Keep its camera language
+ // closer to the actual horde-survival reference (player hierarchy first,
+ // threats readable around a broad play pocket) without changing the gameplay
+@@ -186,8 +185,7 @@ const desktopComposition = typeof window !== "undefined"
+ // Normal play uses a compact authored lane so the instanced swarm remains the
+ // visual subject and the route can prove its bounded draw contract. The full
+ // dressing remains available to the dedicated art/provenance mode below.
+-const compactDefaultComposition = !visualReviewCapture;
+-if (typeof document !== "undefined") document.body.dataset.capture = visualReviewCapture ? "review" : "default";
++
+ 
+ const controls = [
+   "WASD / arrows move",
+@@ -213,7 +211,7 @@ const claimBoundary =
+ const arenaLayout = createArenaLayout();
+ const rect = playRect(arenaLayout.bounds);
+ 
+-const swarm = createSwarmSimulation({ reviewCapture: visualReviewCapture });
++const swarm = createSwarmSimulation();
+ const combatFeel = createCombatFeel({ reducedMotion, reducedFlash: reducedMotion });
+ 
+ function buildLaneStrips(): Array<{ position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }> {
+@@ -250,19 +248,19 @@ const canopyColors = canopyTransforms.map((_, index) =>
+ );
+ 
+ const appScene = scene()
+-  .background(visualReviewCapture ? "#0b1519" : "#081316")
+-  .addMany(visualReviewCapture ? [] : createNeonSwarmDistrictDressing(false))
++  .background( "#081316")
++  .addMany( createNeonSwarmDistrictDressing())
+   .add(model(assets.neonRainGardenArenaBackdrop, {
+     name: "rain garden review arena",
+     role: "primaryWorld",
+     scaleMode: "fit",
+     targetMaxDimension: 21.5
+-  }).position(0, visualReviewCapture ? 0.025 : -8, 2.6).runtime(game.runtimeNode("neon-review-arena", {
++  }).position(0,  -8, 2.6).runtime(game.runtimeNode("neon-review-arena", {
+     tags: ["set-dressing", "typed-asset", "review-background", "non-gameplay"]
+   })))
+   .add(primitives.box({
+     name: "wet asphalt street plane",
+-    size: visualReviewCapture ? [0.001, 0.001, 0.001] : [57, 0.5, 39],
++    size:  [57, 0.5, 39],
+     position: [0, -0.26, 0],
+     // A lifted blue-gray base preserves the wet-street value structure under
+     // emissive lanes and gives the typed courier a grounded shadow plane.
+@@ -276,7 +274,7 @@ const appScene = scene()
+     transforms: laneStripTransforms,
+     colors: laneStripTransforms.map((_, index) => (index % 2 === 0 ? "#ff4fd8" : "#35e6ff")),
+     material: material.emissive({ color: "#101527", emissive: "#35e6ff" }),
+-    size: visualReviewCapture ? [0.001, 0.001, 0.001] : [3.4, 0.06, 0.16]
++    size:  [3.4, 0.06, 0.16]
+   }))
+   .add(instances.sphere({
+     name: "rain-garden canopy frame",
+@@ -288,7 +286,7 @@ const appScene = scene()
+       roughness: 0.92,
+       metallic: 0.02
+     }),
+-    size: visualReviewCapture ? 0.001 : 1
++    size:  1
+   }).runtime(game.runtimeNode("rain-garden-canopy-frame", {
+     tags: ["set-dressing", "renderer-owned", "non-colliding", "instanced", "organic-silhouette"]
+   })));
+@@ -297,10 +295,10 @@ const appScene = scene()
+ // shape, material rhythm, and near/mid depth. It is permanent arena geometry,
+ // never a stand-in for an attack or simulation effect. The dark blades sit
+ // below actors and deliberately leave the typed courier's footprint clear.
+-const rainGardenBlades = Array.from({ length: visualReviewCapture ? 0 : compactDefaultComposition ? 6 : 16 }, (_, index) => {
+-  const bladeCount = visualReviewCapture ? 1 : compactDefaultComposition ? 6 : 16;
+-  const angle = (index / bladeCount) * Math.PI * 2 + index * (visualReviewCapture ? 0.075 : 0.035);
+-  const radius = (visualReviewCapture ? 2.55 : 3.55) + (index % 3) * (visualReviewCapture ? 0.48 : 0.22);
++const rainGardenBlades = Array.from({ length:   6 }, (_, index) => {
++  const bladeCount =   6 ;
++  const angle = (index / bladeCount) * Math.PI * 2 + index * ( 0.035);
++  const radius = ( 3.55) + (index % 3) * ( 0.22);
+   return primitives.box({
+     name: `central rain-garden blade ${index}`,
+     material: material.pbr({
+@@ -318,9 +316,9 @@ const rainGardenBlades = Array.from({ length: visualReviewCapture ? 0 : compactD
+     .position(Math.sin(angle) * radius, 0.035, 3 + Math.cos(angle) * radius)
+     .rotate(0, angle, 0)
+     .scale([
+-      (visualReviewCapture ? 0.48 : 0.72) + (index % 3) * 0.1,
++      ( 0.72) + (index % 3) * 0.1,
+       0.025,
+-      (visualReviewCapture ? 2.9 : 2.45) + (index % 4) * 0.28
++      ( 2.45) + (index % 4) * 0.28
+     ])
+     .runtime(game.runtimeNode(`neon-rain-garden-blade-${index}`, {
+       tags: ["arena-language", "renderer-owned", "non-colliding", "material-depth"]
+@@ -336,7 +334,7 @@ appScene.addMany(rainGardenBlades);
+ // The compact default frame had the same black-horizon problem this block exists to
+ // solve, but was switched off entirely. It now renders a reduced ring so the arena sits
+ // in a place rather than floating in a void.
+-const districtFrameNodes = Array.from({ length: visualReviewCapture ? 0 : compactDefaultComposition ? 8 : 14 }, (_, index) => {
++const districtFrameNodes = Array.from({ length:   8 }, (_, index) => {
+   const side = index % 2 === 0 ? -1 : 1;
+   const lane = Math.floor(index / 2);
+   const z = -14 + lane * 4.35;
+@@ -395,8 +393,7 @@ appScene.add(
+     transforms: skylineWindowTransforms,
+     colors: skylineWindowColors,
+     material: material.emissive({ name: "district window lattice material", color: "#35e6ff", emissive: "#35e6ff", emissiveIntensity: 0.34, opacity: 0.78 }),
+-    size: visualReviewCapture || compactDefaultComposition ? [0.001, 0.001, 0.001] : [0.12, 0.18, 0.42]
+-  }).runtime(game.runtimeNode("neon-district-window-lattice", {
++    size:  [0.001, 0.001, 0.001] }).runtime(game.runtimeNode("neon-district-window-lattice", {
+     tags: ["set-dressing", "renderer-owned", "non-colliding", "instanced", "district-frame"]
+   }))
+ );
+@@ -423,15 +420,14 @@ appScene.add(
+     transforms: districtCanopyTransforms,
+     colors: districtCanopyColors,
+     material: material.pbr({ name: "district canopy cluster material", color: "#1e4752", roughness: 0.88, metallic: 0.04 }),
+-    size: visualReviewCapture || compactDefaultComposition ? 0.001 : 1
+-  }).runtime(game.runtimeNode("neon-district-canopy-clusters", {
++    size:  0.001 }).runtime(game.runtimeNode("neon-district-canopy-clusters", {
+     tags: ["set-dressing", "renderer-owned", "non-colliding", "instanced", "organic-silhouette"]
+   }))
+ );
+ 
+ // Small renderer-owned garden lights pull the eye toward the center lane and
+ // add depth cues between the typed street props and the far skyline.
+-const gardenLightNodes = Array.from({ length: visualReviewCapture || compactDefaultComposition ? 0 : 12 }, (_, index) => {
++const gardenLightNodes = Array.from({ length:  0 }, (_, index) => {
+   const side = index % 2 === 0 ? -1 : 1;
+   const lane = Math.floor(index / 2);
+   const tint = index % 3 === 0 ? "#ffc857" : side < 0 ? "#35e6ff" : "#ff4fd8";
+@@ -589,41 +585,37 @@ const courierCoreRingNode = primitives.torus({
+   tags: ["primary-actor-accent", "renderer-owned", "non-colliding"]
+ }));
+ appScene.add(courierCoreRingNode);
+-
+-if (!visualReviewCapture) {
+-  for (const obstacle of arenaLayout.obstacles) {
+-    appScene.add(
+-      model(assets.neonBarricadeProp, {
+-        name: "street barricade " + obstacle.x + ":" + obstacle.z,
+-        role: "primaryWorld",
+-        scaleMode: "fit",
+-        targetMaxDimension: 2.7
+-      })
+-        .position(obstacle.x, 0, obstacle.z)
+-        .rotate(0, obstacle.rotationY, 0)
+-    );
+-  }
++for (const obstacle of arenaLayout.obstacles) {
++  appScene.add(
++    model(assets.neonBarricadeProp, {
++      name: "street barricade " + obstacle.x + ":" + obstacle.z,
++      role: "primaryWorld",
++      scaleMode: "fit",
++      targetMaxDimension: 2.7
++    })
++      .position(obstacle.x, 0, obstacle.z)
++      .rotate(0, obstacle.rotationY, 0)
++  );
+ }
+ 
++
+ let lampIndex = 0;
+ for (const lamp of arenaLayout.lamps) {
+-  if (!visualReviewCapture) {
+-    appScene.add(
+-      model(assets.neonStreetLampProp, {
+-        name: "street lamp " + lampIndex,
+-        role: "primaryWorld",
+-        scaleMode: "fit",
+-        targetMaxDimension: 4.2
+-      }).position(lamp.x, 0, lamp.z)
+-    );
+-    appScene.add(
+-      lights.point({
+-        position: [lamp.x, 3.6, lamp.z],
+-        color: lampIndex % 2 === 0 ? "#35e6ff" : "#ff4fd8",
+-        intensity: 16
+-      })
+-    );
+-  }
++  appScene.add(
++    model(assets.neonStreetLampProp, {
++      name: "street lamp " + lampIndex,
++      role: "primaryWorld",
++      scaleMode: "fit",
++      targetMaxDimension: 4.2
++    }).position(lamp.x, 0, lamp.z)
++  );
++  appScene.add(
++    lights.point({
++      position: [lamp.x, 3.6, lamp.z],
++      color: lampIndex % 2 === 0 ? "#35e6ff" : "#ff4fd8",
++      intensity: 16
++    })
++  );
+   lampIndex += 1;
+ }
+ 
+@@ -637,25 +629,6 @@ appScene.add(lights.point({ position: [-1.5, 4.5, 0], color: "#35e6ff", intensit
+ // The finale camera looks down the central street. These shallow median
+ // islands add a near/mid/far rhythm to the frame without occupying the
+ // courier's playable lane or changing any simulation bounds.
+-if (!visualReviewCapture && !compactDefaultComposition) {
+-  for (let island = -1; island <= 1; island += 1) {
+-    const z = -5.8 + island * 5.8;
+-    appScene.addMany([
+-      primitives.box({
+-        name: `street median island ${island}`,
+-        material: material.pbr({ name: `street median material ${island}`, color: island === 0 ? "#5a416c" : "#314b6c", roughness: 0.48, metallic: 0.25 })
+-      }).position(0, 0.04, z).scale([3.4, 0.1, 0.7]),
+-      primitives.box({
+-        name: `street median cyan edge ${island}`,
+-        material: material.emissive({ name: `street median cyan material ${island}`, color: "#35e6ff", emissive: "#35e6ff", roughness: 0.16 })
+-      }).position(-3.05, 0.17, z).scale([0.08, 0.08, 0.48]),
+-      primitives.box({
+-        name: `street median magenta edge ${island}`,
+-        material: material.emissive({ name: `street median magenta material ${island}`, color: "#ff4fd8", emissive: "#ff4fd8", roughness: 0.16 })
+-      }).position(3.05, 0.17, z).scale([0.08, 0.08, 0.48])
+-    ]);
+-  }
+-}
+ 
+ // distanceLod relay beacon: near reads as a glowing sphere, far collapses to a
+ // compact box - the documented root-safe LOD helper used as set dressing.
+@@ -685,7 +658,7 @@ for (const door of PICKUP_DOORS) {
+ }
+ 
+ appScene.add(
+-  model(visualReviewCapture ? assets.neonRainCourierHero : assets.neonCourierAvatar, {
++  model( assets.neonCourierAvatar, {
+     name: "courier avatar",
+     role: "primaryCharacter",
+     material: material.pbr({
+@@ -693,19 +666,19 @@ appScene.add(
+       // The courier is the only pale value in the finale palette. That value
+       // separation keeps the typed actor readable through 320 darker threats,
+       // while cyan visor and magenta core accents retain its route identity.
+-      color: visualReviewCapture ? "#f0d8c5" : "#214f68",
+-      roughness: visualReviewCapture ? 0.42 : 0.3,
+-      metallic: visualReviewCapture ? 0.16 : 0.42,
+-      emissive: visualReviewCapture ? "#e7a894" : "#2bd7e7",
+-      emissiveIntensity: visualReviewCapture ? 0.08 : 0.24
++      color:  "#214f68",
++      roughness:  0.3,
++      metallic:  0.42,
++      emissive:  "#2bd7e7",
++      emissiveIntensity:  0.24
+     }),
+     scaleMode: "fit",
+     // Give the typed courier a clear silhouette above the finale pool while
+     // keeping the instanced threat field readable around it.
+-    targetHeight: visualReviewCapture ? undefined : 2.95,
+-    targetMaxDimension: visualReviewCapture ? 3.65 : undefined
++    targetHeight:  2.95,
++    targetMaxDimension:  undefined
+   })
+-    .position(0, visualReviewCapture ? 0.14 : 0, 3)
++    .position(0,  0, 3)
+     .runtime(game.runtimeNode("neon-player", { tags: ["primary-actor", "typed-primary-asset"] }))
+ );
+ 
+@@ -746,7 +719,7 @@ appScene.add(
+ appScene.addMany([
+   primitives.box({
+     name: "courier pulse shot ray",
+-    size: [visualReviewCapture ? 0.035 : 0.075, 0.08, visualReviewCapture ? 2.3 : 3.0],
++    size: [ 0.075, 0.08,  3.0],
+     material: material.emissive({ color: "#8cf8ff", emissive: "#35e6ff", emissiveIntensity: 2.1 })
+   }).position(0, -8, 0).runtime(game.runtimeNode("neon-pulse-shot-ray", { tags: ["actual-event-feedback", "pulse-fire"] })),
+   primitives.torus({
+@@ -775,17 +748,16 @@ appScene.addMany(Array.from({ length: 6 }, (_, index) =>
+ // the courier's movement/aim relationship legible even when the 320-drone
+ // pool is active. It is scene geometry, not a DOM overlay or a simulation
+ // shortcut; the ring never owns damage, collision, or scoring.
+-if (!visualReviewCapture) {
+-  appScene.add(
+-    primitives.torus({
+-      name: "arena center route ring",
+-      material: material.emissive({ color: "#123c59", emissive: "#35e6ff", emissiveIntensity: 0.28 }),
+-      position: [0, 0.035, 3],
+-      rotation: [Math.PI / 2, 0, 0],
+-      scale: [4.65, 4.65, 0.035]
+-    }).runtime(game.runtimeNode("arena-center-route-ring", { tags: ["arena-language", "non-colliding"] }))
+-  );
+-}
++appScene.add(
++  primitives.torus({
++    name: "arena center route ring",
++    material: material.emissive({ color: "#123c59", emissive: "#35e6ff", emissiveIntensity: 0.28 }),
++    position: [0, 0.035, 3],
++    rotation: [Math.PI / 2, 0, 0],
++    scale: [4.65, 4.65, 0.035]
++  }).runtime(game.runtimeNode("arena-center-route-ring", { tags: ["arena-language", "non-colliding"] }))
++);
++
+ 
+ // Real burst readability: radial spokes are scene geometry, hidden until
+ // fireBurst() runs the public burst transition. Damage and scoring still belong
+@@ -875,20 +847,6 @@ appScene.add(
+ // instantiate 48 hidden GLB actors in normal play: hidden assets still consume
+ // renderer/shadow bookkeeping and were pushing the default instancing producer
+ // past its honest draw/memory budget before the first input was processed.
+-if (visualReviewCapture) {
+-  appScene.addMany(Array.from({ length: REVIEW_ELITE_CARD_COUNT }, (_, index) =>
+-    model(assets.neonCrownMothElite, {
+-      name: `live crown moth presentation ${index}`,
+-      role: "primaryCharacter",
+-      scaleMode: "fit",
+-      targetMaxDimension: 0.88
+-    })
+-      .position(0, -8, 0)
+-      .runtime(game.runtimeNode(`neon-live-crown-moth-${index}`, {
+-        tags: ["live-enemy-presentation", "typed-asset", "elite", "review-only"]
+-      }))
+-  ));
+-}
+ 
+ appScene.add(
+   instances.sphere({
+@@ -903,8 +861,8 @@ appScene.add(
+ appScene.add(effects.fog({ density: 0.02, color: "#070a14" }));
+ appScene.add(effects.ambientOcclusion({
+   name: "district contact occlusion",
+-  intensity: visualReviewCapture ? 0.52 : 0.34,
+-  radius: visualReviewCapture ? 0.82 : 0.68
++  intensity:  0.34,
++  radius:  0.68
+ }));
+ appScene.add(effects.contactOcclusion({ name: "courier horde contact", intensity: 0.34, radius: 0.5 }));
+ if (!reducedMotion) {
+@@ -920,10 +878,10 @@ appScene.camera(
+     // problem the player is solving: courier in a readable center pocket,
+     // threats pressing from every edge, and the live pulse aimed through it.
+     // Runtime play keeps the lower chase-biased camera below.
+-    distance: visualReviewCapture ? 12.4 : 13.8,
+-    offset: (visualReviewCapture ? [0, 9.2, 3.6] : [0, 9.1, 4.8]) as [number, number, number],
+-    fov: visualReviewCapture ? 47 : 53,
+-    smoothing: visualReviewCapture || desktopComposition ? 0 : 0.14
++    distance:  13.8,
++    offset: ( [0, 9.1, 4.8]) as [number, number, number],
++    fov:  53,
++    smoothing: false || desktopComposition ? 0 : 0.14
+   })
+ );
+ 
+@@ -931,12 +889,47 @@ appScene.camera(
+ // App + systems
+ // ---------------------------------------------------------------------------
+ 
+-const app = createAuraApp("#app", {
+-  scene: appScene,
++const neonGame = createGame({
++  id: "showcase-neon-swarm",
++  target: "#app",
++  scene: () => appScene,
+   diagnostics: { overlay: false, performancePanel: false },
+   physics: {
+     seed: 20260913,
+     continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
++  },
++  scenarios: neonScenarios,
++  evidence: {
++    schema: 1,
++    sections: async () => (await import("../evidence")).sections,
++    legacyGlobals: ["__NEON_SWARM_EVIDENCE__", "__AURA3D_SHOWCASE_NEON_SWARM__"]
++  },
++  qualityRebuild: { flags: ["game"] }
++});
++const app = neonGame.app;
++neonGame.start();
++
++bindNeonEvidence(() => collectRouteEvidence());
++bindNeonDrive({
++  jumpToWave(target: number): void {
++    if (target >= 1) startWave(Math.floor(target));
++  },
++  stageFinalePulse(): void {
++    if (runState !== "wave-active" || wave !== MAX_CAMPAIGN_WAVES) return;
++    burstCharge = 100;
++    mouseAim = { x: 0.66, z: -0.75 };
++    player.fireCooldownRemaining = 0;
++    firePulse();
++    update(1 / 60);
++  },
++  finishFinale(): void {
++    if (runState !== "wave-active" || wave !== MAX_CAMPAIGN_WAVES) return;
++    spawnedCount = schedule.length;
++    waveElapsed = Math.max(waveElapsed, FINALE_SURVIVAL_SECONDS);
++    update(1 / 60);
++  },
++  stepFixed(frames: number): void {
++    for (let i = 0; i < frames; i += 1) update(1 / 60);
+   }
+ });
+ 
+@@ -974,6 +967,31 @@ const hud: HudController = setupHud(
+ );
+ 
+ const audio: SwarmAudioController = createSwarmAudio();
++const neonTween = createTweenEngine();
++const neonFx = createFxParticlePass(app.effects);
++const neonJuice = createJuice<
++  "pulse-fire" | "drone-hit" | "drone-die" | "graze" | "player-hurt" | "burst" | "dash" | "pickup" | "wave-start" | "wave-clear" | "death"
++>({
++  events: {
++    "pulse-fire": { fx: { kind: "muzzle", count: 3, color: "#7ef4ff" }, shake: 0.02 },
++    "drone-hit": { fx: { kind: "spark", count: 4, color: "#ffd166" } },
++    "drone-die": { fx: { kind: "debris", count: 8, color: "#ff8f5a" }, shake: 0.05 },
++    graze: { fx: { kind: "spark", count: 5, color: "#ffe08a" }, shake: 0.04 },
++    "player-hurt": { flash: { color: "#ff4d4d", peak: 0.16, ms: 160 }, shake: 0.18 },
++    burst: { fx: { kind: "ring", count: 24, color: "#66f0ff" }, shake: 0.3, punch: { fovDeg: 4, ms: 200 }, hitStop: 0.05 },
++    dash: { fx: { kind: "streak", count: 6, color: "#9fd8ff" }, shake: 0.05 },
++    pickup: { fx: { kind: "pickup", count: 10, color: "#a3ff9e" }, flash: { color: "#a3ff9e", peak: 0.1, ms: 140 } },
++    "wave-start": { punch: { fovDeg: 2, ms: 180 }, fx: { kind: "ring", count: 12, color: "#48e5ff" } },
++    "wave-clear": { fx: { kind: "pickup", count: 14, color: "#ffe866" }, punch: { fovDeg: 2.5, ms: 200 } },
++    death: { flash: { color: "#ff4d4d", peak: 0.24, ms: 320 }, vignette: { amount: 0.4, ms: 560, color: "#1c0508" }, hitStop: 0.07 }
++  },
++  camera: app.camera,
++  session: neonGame.session,
++  fx: neonFx,
++  overlay: createOverlayDriver({ app }),
++  tweens: neonTween,
++  rumble: createRumbleDriver()
++});
+ const cameraDirector = game.cameraDirector({ baseFov: 41, distance: 19, reducedMotion });
+ const gameEffects = game.effects({ poolSize: 48, reducedMotion, reducedFlash: reducedMotion });
+ 
+@@ -992,7 +1010,6 @@ let combo = 0;
+ let maxCombo = 0;
+ let comboDecayRemaining = 0;
+ let seed = SEED_DEFAULT;
+-let paused = false;
+ // Evidence-only finale hash excludes wall-clock combat drift.
+ let debugFinaleHash: string | null = null;
+ let intermissionRemaining = 0;
+@@ -1019,7 +1036,6 @@ let damageEvents = 0;
+ let pickupActive = false;
+ let pickupPosition = riskPickupForWave(1);
+ let pickupsCollected = 0;
+-let compositionSubjectSuppressed = false;
+ let burstFxRemaining = 0;
+ let pulseFxRemaining = 0;
+ let burstFxOrigin = { x: 0, z: 3 };
+@@ -1053,6 +1069,8 @@ function beginIntermission(seconds: number): void {
+   if (wave > 0) {
+     hud.showDoors();
+     audio.cue("wave-clear").catch(() => undefined);
++    neonJuice.fire("wave-clear");
++    neonJuice.fire("wave-clear");
+     hud.showBanner("Wave " + wave + " clear", "Choose an upgrade door before the next wave");
+   } else {
+     hud.hideDoors();
+@@ -1077,6 +1095,7 @@ function startWave(next: number): void {
+   hud.hideDoors();
+   hud.hideBanner();
+   audio.cue("wave-start").catch(() => undefined);
++  neonJuice.fire("wave-start");
+   hud.showBanner(
+     wave === MAX_CAMPAIGN_WAVES
+       ? "Finale - vector panic"
+@@ -1128,7 +1147,7 @@ function resetRun(newSeed?: number): void {
+   app.nodes.get("neon-courier-pulse-muzzle-flash")?.setVisible(false);
+   for (let index = 0; index < 8; index += 1) app.nodes.get("neon-burst-spoke-" + index)?.setVisible(false);
+   burstRequested = false;
+-  paused = false;
++  neonGame.session.resume();
+   debugFinaleHash = null;
+   beginIntermission(INTERMISSION_FIRST_SECONDS);
+   hud.showBanner("Neon Swarm", "Five escalating waves. Read the opening, choose upgrades, survive the 320-drone finale.");
+@@ -1145,6 +1164,7 @@ function chooseDoor(kind: string): void {
+   upgrades.shieldCharges = next.shieldCharges;
+   hud.markDoorChosen(kind);
+   audio.cue("pickup").catch(() => undefined);
++    neonJuice.fire("pickup");
+   gameEffects.spawn("ring-shockwave", [door.x, 0.6, door.z], { color: "#ffc857", intensity: 0.8, duration: 0.5, radius: 2.2 });
+   // An intermission choice can arrive from a HUD button click instead of the fixed
+   // simulation step. Evidence is normally republished at the end of update(), so without
+@@ -1152,7 +1172,7 @@ function chooseDoor(kind: string): void {
+   // gameplay truth until the next frame, and not at all while rAF is suspended in a
+   // backgrounded tab. Re-publish here so the projection can never contradict gameplay
+   // state, exactly as the staged evidence paths below already do.
+-  publishEvidence();
++  collectRouteEvidence();
+ }
+ 
+ function collectRiskPickup(): void {
+@@ -1167,6 +1187,7 @@ function collectRiskPickup(): void {
+   });
+   combatFeel.spawnSparks({ x: pickupPosition.x, z: pickupPosition.z, count: 14, strength: 0.8 });
+   audio.cue("pickup").catch(() => undefined);
++    neonJuice.fire("pickup");
+ }
+ 
+ function firePulse(): void {
+@@ -1177,6 +1198,7 @@ function firePulse(): void {
+   if (result.hits > 0) {
+     combatFeel.spawnSparks({ x: player.x + aim.x * 1.4, z: player.z + aim.z * 1.4, count: 4, strength: 0.55 });
+     audio.cue("drone-hit").catch(() => undefined);
++    neonJuice.fire("drone-hit");
+   }
+   gameEffects.spawn("shockwave", [player.x + aim.x * 2.2, 0.5, player.z + aim.z * 2.2], {
+     color: "#35e6ff",
+@@ -1186,11 +1208,11 @@ function firePulse(): void {
+   });
+   const pulseYaw = Math.atan2(aim.x, aim.z);
+   app.nodes.get("neon-pulse-shot-ray")
+-    ?.setPosition(player.x + aim.x * (visualReviewCapture ? 1.15 : 1.55), visualReviewCapture ? 0.72 : 0.34, player.z + aim.z * (visualReviewCapture ? 1.15 : 1.55))
++    ?.setPosition(player.x + aim.x * ( 1.55),  0.34, player.z + aim.z * ( 1.55))
+     .setRotation(0, pulseYaw, 0)
+     .setVisible(true);
+   app.nodes.get("neon-pulse-impact-ring")
+-    ?.setPosition(player.x + aim.x * (visualReviewCapture ? 2.35 : 3.15), visualReviewCapture ? 0.7 : 0.12, player.z + aim.z * (visualReviewCapture ? 2.35 : 3.15))
++    ?.setPosition(player.x + aim.x * ( 3.15),  0.12, player.z + aim.z * ( 3.15))
+     .setRotation(Math.PI / 2, 0, 0)
+     .setVisible(true);
+   // Keep the event marker anchored to the carbine's +Z-facing basis so the
+@@ -1201,25 +1223,26 @@ function firePulse(): void {
+   app.nodes.get("neon-courier-pulse-muzzle-flash")
+     ?.setPosition(
+       player.x + aim.x * 1.14 + pulseRightX * 0.24,
+-      visualReviewCapture ? 1.58 : 1.48,
++       1.48,
+       player.z + aim.z * 1.14 + pulseRightZ * 0.24
+     )
+     .setRotation(0, pulseYaw, 0)
+     .setVisible(true);
+   for (let index = 0; index < 6; index += 1) {
+     const angle = index * Math.PI / 3 + 0.25;
+-    const hitDistance = visualReviewCapture ? 2.35 : 3.15;
++    const hitDistance =  3.15;
+     app.nodes.get(`neon-pulse-impact-shard-${index}`)
+       ?.setPosition(
+         player.x + aim.x * hitDistance + Math.sin(angle) * 0.38,
+-        visualReviewCapture ? 0.76 : 0.18,
++         0.18,
+         player.z + aim.z * hitDistance + Math.cos(angle) * 0.38
+       )
+       .setRotation(0, -angle, index % 2 === 0 ? 0.45 : -0.45)
+       .setVisible(true);
+   }
+-  pulseFxRemaining = visualReviewCapture ? 2 : 0.3;
++  pulseFxRemaining =  0.3;
+   audio.cue("pulse-fire").catch(() => undefined);
++  neonJuice.fire("pulse-fire", { position: [player.x, 0.9, player.z] });
+ }
+ 
+ function handleDroneKilled(drone: { readonly x: number; readonly z: number }): void {
+@@ -1231,10 +1254,11 @@ function handleDroneKilled(drone: { readonly x: number; readonly z: number }): v
+   burstCharge = Math.min(100, burstCharge + 10);
+   combatFeel.spawnSparks({ x: drone.x, z: drone.z, count: 10, strength: 1 });
+   audio.cue("drone-die").catch(() => undefined);
++    neonJuice.fire("drone-die");
+ }
+ 
+ function fireBurst(): void {
+-  if (runState !== "wave-active" || paused || burstCharge < 100) return;
++  if (runState !== "wave-active" || neonGame.session.paused || burstCharge < 100) return;
+   burstCharge = 0;
+   bursts += 1;
+   burstFxRemaining = 0.55;
+@@ -1258,6 +1282,7 @@ function fireBurst(): void {
+   combatFeel.spawnSparks({ x: player.x, z: player.z, count: 24, strength: 1 });
+   cameraDirector.impact(1.2, 0.22);
+   audio.cue("burst").catch(() => undefined);
++  neonJuice.fire("burst", { position: [player.x, 0.9, player.z] });
+ }
+ 
+ function resolveAim(): { x: number; z: number } {
+@@ -1269,6 +1294,7 @@ function killPlayer(): void {
+   runState = "dead";
+   combo = 0;
+   audio.cue("death-sting").catch(() => undefined);
++  neonJuice.fire("death");
+   if (score > bestScore) {
+     bestScore = score;
+     writeBestScore(bestScore);
+@@ -1278,7 +1304,7 @@ function killPlayer(): void {
+ 
+ function completeRun(): void {
+   runState = "complete";
+-  paused = false;
++  neonGame.session.resume();
+   combo = 0;
+   audio.cue("wave-clear").catch(() => undefined);
+   if (score > bestScore) {
+@@ -1317,7 +1343,7 @@ window.addEventListener("pointerdown", unlockAudioOnce);
+ window.addEventListener("keydown", unlockAudioOnce);
+ 
+ window.addEventListener("mousedown", (event) => {
+-  if (event.button === 0 && !paused && runState === "wave-active" && player.fireCooldownRemaining <= 0) {
++  if (event.button === 0 && !neonGame.session.paused && runState === "wave-active" && player.fireCooldownRemaining <= 0) {
+     firePulse();
+     player.fireCooldownRemaining = DEFAULT_PLAYER_TUNING.fireCooldownSeconds * upgrades.fireRateMultiplier;
+   }
+@@ -1392,8 +1418,12 @@ bindTouchStick(touchLayout.controls[1]?.id ?? "fire-stick", (dx, dz, active) =>
+ 
+ function update(dt: number): void {
+   input.update(dt);
++  neonTween.tick(dt);
+   hud.tickBanner(dt);
+-  if (input.pressed("pause") && runState !== "dead" && runState !== "complete") paused = !paused;
++  if (input.pressed("pause") && runState !== "dead" && runState !== "complete") {
++    if (neonGame.session.paused) neonGame.session.resume();
++    else neonGame.session.pause("user");
++  }
+   if (input.pressed("reset")) {
+     seed = (seed * 1664525 + 1013904223) >>> 0;
+     resetRun(seed);
+@@ -1403,8 +1433,8 @@ function update(dt: number): void {
+     fireBurst();
+   }
+ 
+-  if (paused) {
+-    publishEvidence();
++  if (neonGame.session.paused) {
++    collectRouteEvidence();
+     return;
+   }
+ 
+@@ -1487,6 +1517,7 @@ function update(dt: number): void {
+   }, dt, runRect);
+   if (stepResult.dashed) {
+     audio.cue("dash").catch(() => undefined);
++    neonJuice.fire("dash", { position: [player.x, 0.9, player.z] });
+     cameraDirector.impact(0.5, 0.14);
+     if (!reducedMotion) hud.flashVignette();
+     gameEffects.spawn("dash-trail", [player.x, 0.5, player.z], { color: "#35e6ff", duration: 0.3, ownerId: "courier" });
+@@ -1516,19 +1547,19 @@ function update(dt: number): void {
+     app.nodes.get("neon-courier-visor-accent")
+       ?.setPosition(player.x + forwardX * 0.34, 2.22 + bob, player.z + forwardZ * 0.34)
+       .setRotation(0, playerYaw, 0)
+-      .setVisible(!visualReviewCapture);
++      .setVisible(true);
+     app.nodes.get("neon-courier-chest-core")
+       ?.setPosition(player.x + forwardX * 0.34, 1.18 + bob, player.z + forwardZ * 0.34)
+       .setRotation(0, playerYaw, 0)
+-      .setVisible(!visualReviewCapture);
++      .setVisible(true);
+     app.nodes.get("neon-courier-shoulder-frame")
+       ?.setPosition(player.x + forwardX * 0.34, 1.48 + bob, player.z + forwardZ * 0.34)
+       .setRotation(Math.PI / 2, playerYaw, 0)
+-      .setVisible(!visualReviewCapture);
++      .setVisible(true);
+     app.nodes.get("neon-courier-pulse-emitter")
+       ?.setPosition(player.x + forwardX * 0.22, 0.84 + bob, player.z + forwardZ * 0.22)
+       .setRotation(0, playerYaw, 0)
+-      .setVisible(!visualReviewCapture);
++      .setVisible(true);
+ 
+     // Weapon attachment: slight right-hand offset plus forward reach keeps the
+     // receiver distinct from the typed torso while preserving a clean player
+@@ -1596,23 +1627,7 @@ function update(dt: number): void {
+     }
+ 
+     swarm.step(dt, player, arenaLayout.obstacles, undefined, inset);
+-    if (visualReviewCapture) {
+-      for (let index = 0; index < REVIEW_ELITE_CARD_COUNT; index += 1) {
+-        const transform = swarm.eliteTransforms[index]!;
+-        const active = transform.position[1] > -4 && transform.scale[0] > 0;
+-        const node = app.nodes.get(`neon-live-crown-moth-${index}`);
+-        node?.setVisible(active);
+-        if (!active) continue;
+-        node
+-          ?.setPosition(transform.position[0], 0.62, transform.position[2])
+-          .setRotation(0, transform.rotation[1], 0)
+-          .setScale([0.86 + (index % 5) * 0.07, 1, 0.86 + ((index + 2) % 5) * 0.06]);
+-        // The detailed card is a one-for-one visual presentation of this live
+-        // slot, so suppress only its duplicate batched body for this frame.
+-        transform.scale = [0, 0, 0];
+-      }
+-    }
+-    combatFeel.stepSparks(dt);
++        combatFeel.stepSparks(dt);
+ 
+     if (pickupActive && senseRiskPickup(player, pickupPosition)) collectRiskPickup();
+ 
+@@ -1628,6 +1643,7 @@ function update(dt: number): void {
+           color: "#ffc857", intensity: 0.45, duration: 0.18, radius: 1.25
+         });
+         audio.cue("graze").catch(() => undefined);
++        neonJuice.fire("graze");
+       }
+     } else {
+       grazeAccumulator = 0;
+@@ -1638,6 +1654,7 @@ function update(dt: number): void {
+       if (dealt > 0) {
+         damageEvents += 1;
+         audio.cue("player-hurt").catch(() => undefined);
++        neonJuice.fire("player-hurt", { position: [player.x, 0.9, player.z] });
+         cameraDirector.impact(1, 0.2);
+         if (!reducedMotion) hud.flashVignette();
+         combatFeel.spawnSparks({ x: player.x, z: player.z, count: 6, strength: 0.6 });
+@@ -1668,7 +1685,7 @@ function update(dt: number): void {
+     id: "courier",
+     position: [player.x, 0.6, player.z] as const
+   }]);
+-  void cameraState;
++  app.camera.setPose({ position: cameraState.position, target: cameraState.target, fov: cameraState.fov });
+ 
+   hud.update({
+     state: runState,
+@@ -1685,14 +1702,14 @@ function update(dt: number): void {
+     shieldCharges: upgrades.shieldCharges,
+     dashReadyFraction: 1 - player.dashCooldownRemaining /
+       Math.max(0.001, DEFAULT_PLAYER_TUNING.dashCooldownSeconds * upgrades.dashCooldownMultiplier),
+-    paused,
++    paused: neonGame.session.paused,
+     intermissionRemaining: runState === "intermission" ? intermissionRemaining : 0
+   });
+ 
+-  publishEvidence();
++  collectRouteEvidence();
+ }
+ 
+-function publishEvidence(): void {
++function collectRouteEvidence(): NeonSwarmEvidence {
+   const diagnostics = safeDiagnostics();
+   const audioProof = audio.proof();
+   const aliveGrunt = swarm.aliveGruntCount();
+@@ -1730,7 +1747,7 @@ function publishEvidence(): void {
+     maxHp: player.maxHp,
+     kills,
+     seed,
+-    paused,
++    paused: neonGame.session.paused,
+     reducedMotion,
+     audioCues: audioProof.recentCues,
+     audioCueCount: audioProof.cueCount,
+@@ -1781,9 +1798,8 @@ function publishEvidence(): void {
+     physics: "none (intentionally non-physical deterministic game: authored kinematic swarm steering plus deterministic typed-array overlap queries for pulse hits, grazes, contact damage and pickup doors; no solver surface is imported, no rigid-body simulation or physical-parity claim)",
+     claimBoundary
+   };
+-  window.__NEON_SWARM_EVIDENCE__ = evidence;
+-  window.__AURA3D_SHOWCASE_NEON_SWARM__ = evidence;
+   document.body.dataset.aura3dShowcaseReady = "true";
++  return evidence;
+ }
+ 
+ interface SafeDiagnostics {
+@@ -1946,7 +1962,7 @@ window.__NEON_SWARM_DEBUG__ = {
+     // 35-frame browser fixture, which would make the graze award depend on
+     // frame timing rather than the simulation-owned countWithin query.
+     swarm.spawn({ x: player.x + 2.05, z: player.z, archetype: "elite", speedMultiplier: 0 });
+-    publishEvidence();
++    collectRouteEvidence();
+   },
+   stageBurstCluster(count = 10) {
+     if (runState !== "wave-active") return;
+@@ -1968,7 +1984,7 @@ window.__NEON_SWARM_DEBUG__ = {
+         speedMultiplier: i === count - 1 ? 0 : 1
+       });
+     }
+-    publishEvidence();
++    collectRouteEvidence();
+   },
+   stagePickupAtPlayer() {
+     if (runState !== "wave-active") return;
+@@ -1977,7 +1993,7 @@ window.__NEON_SWARM_DEBUG__ = {
+     app.nodes.get("swarm-pickup")
+       ?.setPosition(pickupPosition.x, 1.1, pickupPosition.z)
+       .setVisible(true);
+-    publishEvidence();
++    collectRouteEvidence();
+   },
+   stageContact() {
+     if (runState !== "wave-active") return;
+@@ -1986,7 +2002,7 @@ window.__NEON_SWARM_DEBUG__ = {
+     player.invulnerableRemaining = 0;
+     player.contactDebt = 0;
+     swarm.spawn({ x: player.x, z: player.z, archetype: "grunt", speedMultiplier: 0 });
+-    publishEvidence();
++    collectRouteEvidence();
+   },
+   dumpDiagnostics() {
+     try {
+@@ -1997,46 +2013,6 @@ window.__NEON_SWARM_DEBUG__ = {
+   }
+ };
+ 
+-Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+-  value: {
+-    category: "application" as const,
+-    get subject() {
+-      return {
+-        position: [player.x, 0.88, player.z] as const,
+-        rotation: [0, Math.atan2(resolveAim().x, resolveAim().z), 0] as const,
+-        targetSize: 2.2
+-      };
+-    },
+-    async setSubjectSuppressed(suppressed: boolean) {
+-      app.pause();
+-      await app.ready();
+-      compositionSubjectSuppressed = suppressed;
+-      app.nodes.get("neon-player")?.setVisible(!suppressed);
+-      app.nodes.get("neon-player-burst-radius")?.setVisible(!suppressed);
+-      app.nodes.get("neon-player-aim-vector")?.setVisible(!suppressed);
+-      await app.stepAsync(0);
+-    },
+-    async settleSubjectPose() {
+-      app.pause();
+-      await app.ready();
+-      paused = true;
+-      player.x = 0;
+-      player.z = 3;
+-      const node = app.nodes.get("neon-player");
+-      // The old 1.34 neutral scale made the low-poly courier occupy most of
+-      // the retained 1440x900 frame and hid the live threat field. Keep the
+-      // typed primary asset fully present while restoring a clear player-over-
+-      // horde hierarchy in the composition probe.
+-      const neutralScale = desktopComposition || visualReviewCapture
+-        ? [0.72, 0.8, 0.72] as [number, number, number]
+-        : [0.94, 0.98, 0.94] as [number, number, number];
+-      node?.setPosition(player.x, 0.06, player.z).setRotation(0, 0, 0).setScale(neutralScale);
+-      node?.setVisible(!compositionSubjectSuppressed);
+-      await app.stepAsync(0);
+-    }
+-  },
+-  configurable: true
+-});
+ 
+ function requireHudElement(): HTMLElement {
+   const el = document.querySelector("#hud");
+@@ -2051,4 +2027,4 @@ app.onFrame(({ time }) => {
+ });
+ 
+ resetRun(SEED_DEFAULT);
+-publishEvidence();
++collectRouteEvidence();
+diff --git a/apps/showcase-neon-swarm/src/scenario-drive.ts b/apps/showcase-neon-swarm/src/scenario-drive.ts
+new file mode 100644
+index 000000000..803a5aa00
+--- /dev/null
++++ b/apps/showcase-neon-swarm/src/scenario-drive.ts
+@@ -0,0 +1,22 @@
++/**
++ * scenario-drive.ts — imperative drive surface for `?capture=scenario`
++ * staging (PRD-09). Bound once from main.ts; scenario definitions call these
++ * rather than reaching for route globals.
++ */
++export interface NeonDrive {
++  jumpToWave(target: number): void;
++  stageFinalePulse(): void;
++  finishFinale(): void;
++  stepFixed(frames: number): void;
++}
++
++let drive: NeonDrive | undefined;
++
++export function bindNeonDrive(d: NeonDrive): void {
++  drive = d;
++}
++
++export function neonDrive(): NeonDrive {
++  if (!drive) throw new Error("neon drive unbound (scenario requested before boot)");
++  return drive;
++}
+diff --git a/apps/showcase-neon-swarm/src/scenarios/index.ts b/apps/showcase-neon-swarm/src/scenarios/index.ts
+new file mode 100644
+index 000000000..16644c73b
+--- /dev/null
++++ b/apps/showcase-neon-swarm/src/scenarios/index.ts
+@@ -0,0 +1,17 @@
++import type { GameScenario } from "@aura3d/engine";
++import { neonDrive } from "../scenario-drive";
++
++const finale: GameScenario = {
++  description: "Staged finale: jump to the last campaign wave, stage the charged-pulse decision frame with all threats live.",
++  setup(): void {
++    const d = neonDrive();
++    d.jumpToWave(5);
++    d.stepFixed(1);
++    d.stageFinalePulse();
++  }
++};
++
++export const neonScenarios: GameScenario[] = [
++  { description: "Default playable boot (no staging).", setup() {} },
++  finale
++];
+diff --git a/apps/showcase-neon-swarm/src/v2/boot.ts b/apps/showcase-neon-swarm/src/v2/boot.ts
+index 2ba556dd6..8633083b7 100644
+--- a/apps/showcase-neon-swarm/src/v2/boot.ts
++++ b/apps/showcase-neon-swarm/src/v2/boot.ts
+@@ -30,8 +30,8 @@ import { swarmWorldNodes } from "./scene/world";
+ import { lightingNodes } from "./scene/lighting";
+ import { createSwarmRig, fallbackCameraNode } from "./scene/camera";
+ import { wireSwarmFx } from "./scene/fx";
+-import { publishSwarmEvidence } from "./evidence";
+-import { applySwarmScenario } from "./scenarios";
++import { publishSwarmEvidence } from "../evidence";
++import { applySwarmScenario } from "../scenarios";
+ 
+ const ROUTE_FLAG = "A3D_QR_ROUTE_NEON_SWARM" as const;
+ const SEED_DEFAULT = 20260821;
+-- 
+2.34.1
+

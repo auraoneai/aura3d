@@ -1,9 +1,9 @@
 spec:
   inputs:
     suite:
-      description: "games | benchmark | all (games + benchmark) | unit (Linux typecheck/lint/unit) | probe (GPU launch probe)"
+      description: "games | benchmark | all (games + benchmark) | unit (Linux typecheck/lint/unit) | probe (GPU launch probe) | flags-bisect (benchmark only, aura3d, strict)"
       default: all
-      options: [all, games, benchmark, unit, probe]
+      options: [all, games, benchmark, unit, probe, flags-bisect]
     games:
       description: "Comma-separated game ids from tools/quality-rebuild-capture/games.json (empty = all 18)"
       default: ""
@@ -24,6 +24,18 @@ spec:
       description: "A3D_QR_* flag set (none | all | comma list). Only 'none' is accepted until C-33 (PR 0b-3) adds --flags to the capture tools"
       default: none
       regex: ^[A-Za-z0-9_,.-]+$
+    bench_scenes:
+      description: "Comma-separated benchmark scene ids (empty = all)"
+      default: ""
+      regex: ^[a-z0-9,-]*$
+    bench_engines:
+      description: "aura3d | three | aura3d,three"
+      default: "aura3d,three"
+      regex: ^(aura3d|three)(,(aura3d|three))?$
+    bench_flag_sets:
+      description: "';'-separated flag sets captured in ONE job (one build, one runner boot)"
+      default: ""
+      regex: ^[A-Za-z0-9_,.;=-]*$
     requester:
       description: "Lane tag recorded in the report, e.g. prd02"
       default: unspecified
@@ -67,6 +79,9 @@ variables:
   QRC_FLAGS: "$[[ inputs.qr_flags ]]"
   QR_REQUESTER: "$[[ inputs.requester ]]"
   QR_GITHUB_RUN: "$[[ inputs.github_run ]]"
+  QR_BENCH_SCENES: "$[[ inputs.bench_scenes ]]"
+  QR_BENCH_ENGINES: "$[[ inputs.bench_engines ]]"
+  QR_BENCH_FLAG_SETS: "$[[ inputs.bench_flag_sets ]]"
   NODE_VERSION: "22.23.2"
   PNPM_VERSION: "11.1.3"
   GIT_DEPTH: "50"
@@ -111,7 +126,7 @@ qr:games-capture:
       if [ "$QRC_LOCAL_BUILD" = "true" ]; then git lfs pull; fi
       [ "$QR_MOBILE" = "true" ] || export QRC_NO_MOBILE=1
     - node tools/quality-rebuild-capture/capture-games.mjs --validate
-    - node tools/quality-rebuild-capture/capture-games.mjs --build-only || echo "build step failed; captures continue for production routes"
+    - node tools/quality-rebuild-capture/capture-games.mjs --build-only
     # QRC_GPU_ARGS was unset in before_script, so capture-games.mjs uses its built-in Metal flags.
     - node tools/quality-rebuild-capture/capture-games.mjs --skip-build --channel headless-shell
   artifacts:
@@ -126,7 +141,7 @@ qr:benchmark:
   extends: .macos
   stage: capture
   rules:
-    - if: '$QR_SUITE == "benchmark" || $QR_SUITE == "all"'
+    - if: '$QR_SUITE == "benchmark" || $QR_SUITE == "all" || $QR_SUITE == "flags-bisect"'
   script:
     - export PATH="$HOME/node/bin:$PATH"
     - export QR_BENCH_OUT=benchmarks/quality-rebuild/out QR_BENCH_CHANNEL=headless-shell QR_BENCH_CHROME_ARGS="--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
