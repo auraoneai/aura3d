@@ -53,11 +53,24 @@ export class GameSessionImpl implements GameSession {
   public constructor(options: GameSessionOptions) {
     this.seed = options.seed;
     this.controller = options.time ?? new StubTimeController();
+    this.controllerAdvancedExternally = options.time !== undefined;
   }
 
+  /**
+   * True when something else (a C-23 FixedStepDriver's presentTick) advances
+   * the controller once per presented tick; tick() then only reads the scale.
+   * A controller passed as `options.time` is treated as driver-owned (#617
+   * risk 3); the internal stub and any controller bound with
+   * bindTimeController (createGame binds `app.time`; no package creates a
+   * FixedStepDriver today) are advanced here, or hitStop/slowMo/scaleTo would
+   * never decay.
+   */
+  private controllerAdvancedExternally: boolean;
+
   /** Swap the delegate (e.g. once the app mounts `app.time`). */
-  public bindTimeController(controller: AuraTimeController): void {
+  public bindTimeController(controller: AuraTimeController, o?: { readonly advancedBy?: "session" | "driver" }): void {
     this.controller = controller;
+    this.controllerAdvancedExternally = o?.advancedBy === "driver";
   }
 
   /** Called once per real frame by the runtime hook — advances real + sim time. */
@@ -67,10 +80,13 @@ export class GameSessionImpl implements GameSession {
       if (next <= 0) this.actorFreezes.delete(actor);
       else this.actorFreezes.set(actor, next);
     }
-    // C-23: the FixedStepDriver's presentTick already advances the controller
-    // once per presented tick; advancing it again here would double sim time
-    // per frame. Read the scaled dt instead.
-    this.lastScaledDt = realDt * this.controller.scale;
+    // C-23: when a FixedStepDriver owns the controller (bindTimeController
+    // advancedBy "driver") its presentTick already advanced it; advancing again
+    // would double sim time. Otherwise the session is the only advancer.
+    const owned = this.controller as AuraTimeController & { advance?(dt: number): number };
+    this.lastScaledDt = !this.controllerAdvancedExternally && typeof owned.advance === "function"
+      ? owned.advance(realDt)
+      : realDt * this.controller.scale;
     return this.lastScaledDt;
   }
 

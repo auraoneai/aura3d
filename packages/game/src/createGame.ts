@@ -27,7 +27,6 @@ import type {
   GameScenario,
   TransitionSpec
 } from "@aura3d/engine/contracts";
-import { StubTimeController } from "@aura3d/engine/contracts";
 import { GameSessionImpl } from "./session/GameSession";
 import { awaitFirstPresentedDraw, drawCallsOf } from "./session/presented";
 import { attachSessionLifecycle, type LifecycleSound } from "./session/lifecycle";
@@ -89,8 +88,9 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
   options: Prd09CreateGameOptions<TCue, TEvent>
 ): Prd09Game<TCue, TEvent> {
   const capture: CaptureContext = captureFromUrl(currentUrl());
-  const fallbackTime = new StubTimeController();
-  const session = new GameSessionImpl({ seed: capture.seed ?? 0, time: fallbackTime });
+  // No `time` option: the session's internal stub (and the `app.time` bound
+  // below) is advanced by session.tick — nothing else drives it (C-23).
+  const session = new GameSessionImpl({ seed: capture.seed ?? 0 });
 
   const authoredScene = normalizeSceneSnapshot(
     options.scene() as AuraSceneBuilder | AuraSceneSnapshot
