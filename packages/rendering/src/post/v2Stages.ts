@@ -905,6 +905,12 @@ export function runV2HdrStages(
   if (linZFull && linZOwnedByPool) state.pool.release(linZFull);
   if (minmaxHalf) state.pool.release(minmaxHalf);
   state.frameIndex += 1;
+  // T0-16: `draw()`/the stage bodies issue raw GL (bindFramebuffer,
+  // useProgram, bindVertexArray, texture binds) that bypasses
+  // `host.stateCache`, leaving its cached program/VAO/FBO/texture state
+  // stale — the next cached-state consumer would skip re-issuing real
+  // state. Invalidate so nothing downstream trusts the poisoned entries.
+  host.stateCache.invalidate();
   // AO_INDIRECT_FRACTION_PENDING: the C-02 `prd03.indirectFraction` feature
   // is registered but generateProgram (lane 01) is still pending, so the
   // apply ran the §6.3 `u_aoFallbackStrength` path.
@@ -972,6 +978,9 @@ export function runV2LdrTail(
     gl.uniform2f(gl.getUniformLocation(prog, "u_resolution"), w, h);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     gl.bindVertexArray(null);
+    // T0-16: raw GL above bypassed the state cache — invalidate before the
+    // next frame's first cached-state user.
+    host.stateCache.invalidate();
     return;
   }
 
@@ -1070,6 +1079,9 @@ export function runV2LdrTail(
   gl.uniform1f(gl.getUniformLocation(prog, "u_rcasSharpness"), rcas);
   gl.drawArrays(gl.TRIANGLES, 0, 3);
   gl.bindVertexArray(null);
+  // T0-16: invalidate the bypassed state cache (see above) — the last v2
+  // stage leaves GL nothing like the cache believes.
+  host.stateCache.invalidate();
   if (current !== ldr) state.pool.release(current);
 }
 
