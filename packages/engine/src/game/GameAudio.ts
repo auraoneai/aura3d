@@ -2,7 +2,6 @@ import {
   AudioClip,
   AudioContextManager,
   FootstepPlayer,
-  createGameSoundEngine,
   computeDistanceAttenuation,
   computeDopplerShift,
   createGameSoundEngine,
