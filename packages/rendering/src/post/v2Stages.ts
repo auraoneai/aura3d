@@ -40,6 +40,7 @@ import type { RenderItem } from "../ForwardPass";
 import type { Texture } from "../Texture";
 import type { TemporalGpuBindings } from "../TemporalHistory";
 import { rendererQrFlags } from "../renderer/FrameGraph";
+import { recordPostSkipped } from "./postSkipped";
 import { PostResources } from "./PostResources";
 import { QUALITY_TIERS } from "../contracts/quality";
 import {
@@ -452,17 +453,15 @@ export function runV2HdrStages(
 
   const src = asGlTarget(source);
   if ((needsLinZ || needsVelocity) && !src.depthTextureHandle) {
-    throw new RenderDeviceError(
-      "v2 S1/S2/S4/S5/S6/S7 need a sampleable depth texture on the HDR target.",
-      "WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED",
-      { targetId: source.id }
-    );
+    // T0-17/FLAG-ON-4: no per-frame throw — a depth-less HDR source degrades
+    // the depth-gated stages to a recorded skip and the frame continues
+    // (the present still runs on the untouched source).
+    recordPostSkipped("WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED:v2-hdr-stages");
+    return { target: source, aoPending: false, skipped: [...skipped, "V2_DEPTH_UNAVAILABLE"] };
   }
   if ((wantsAo || wantsGodRays || needsVelocity) && !camera) {
-    throw new RenderDeviceError(
-      "v2 S2 GTAO / S4 god rays / S1-C camera velocity need the frame camera.",
-      "POST_GRAPH_V2_CAMERA_REQUIRED"
-    );
+    recordPostSkipped("POST_GRAPH_V2_CAMERA_REQUIRED:v2-hdr-stages");
+    return { target: source, aoPending: false, skipped: [...skipped, "V2_CAMERA_UNAVAILABLE"] };
   }
 
   const gl = host.gl;
