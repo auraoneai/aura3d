@@ -30,7 +30,7 @@ import { setTypedGLBActorQrFlags } from "../../production-runtime/actor/extensio
 import { setQrAnimationFlags } from "./actorAnimationHandle.js";
 import { appExtensionsAll } from "../../contracts/app.js";
 import { diagnosticsSectionsAll } from "../../contracts/diagnostics.js";
-import { resolveTierSettings, type AuraQualityTier } from "@aura3d/rendering/contracts";
+import type { AuraQualityTier } from "@aura3d/rendering/contracts";
 import { createAuraRuntimeNodeRegistry } from "./runtimeNodes.js";
 import { setPrd01ModelMatrixCache } from "../compiler/renderInput.js";
 import { createModelMatrixCache } from "../sceneGraph.js";
@@ -84,8 +84,8 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       throw new AuraMigrationError({ removedApi: removed.join(" + "), replacement: "renderer.quality", prd: 15 });
     }
   }
-  const qrQualityTier = resolveTierSettings("high");
-  void qrQualityTier;
+  // TIER: the compile ctx's quality.tier resolves from renderer.quality at
+  // mount (compiler/renderer.ts) — no app-side stub remains.
   const diagnosticsState = createInitialDiagnostics(renderSnapshot, options.renderer);
   const canvas = resolveCanvas(target);
   if (canvas) {

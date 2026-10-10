@@ -27,8 +27,9 @@ import { material } from "../nodes/material.js";
 import { asRuntimeCompiled, compileScene, updateCompiledScene } from "../../contracts/compiler.js";
 import type { MountSceneCompileContext } from "./compileScene.js";
 import { createDegradationSink } from "./degradation.js";
-import { markTiming } from "../platform.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";
+import { markTiming } from "../platform.js";
+import { QUALITY_TIERS, resolveTierSettings, type AuraQualityTier } from "@aura3d/rendering/contracts";
 import { resolveQrFlags } from "../../contracts/flags.js";
 
 export async function createProductionRuntimeSceneRenderer(
@@ -88,295 +89,326 @@ export async function createProductionRuntimeSceneRenderer(
     clearColor: colorToAcesInputClearColor(snapshot.background)
   });
   markTiming("a3d:mount:renderer-create:resolved");
-  let latestDeviceDiagnostics: RenderDeviceDiagnostics = productionRenderer.getDiagnostics();
-  let latestFeatures: readonly ProductionRendererFeature[] = rendererFeatureReport(productionRenderer);
-  // M2 streaming distances measure against the live camera eye; refreshed
-  // every render so residency follows the camera instead of mount intent.
-  let latestCameraEye: AuraVec3 = resolveCameraFrame(snapshot, snapshot.camera, 0, runtimeNodes).eye;
-  const runtimeWarnings = new Set<string>();
-  // C1 textured upgrade: fire-and-forget after mount. Scalar first frames stay
-  // fast; outcomes land in textureUpgradeWarnings, which render() never clears
-  // (per-frame runtimeWarnings are rebuilt every frame).
-  const textureUpgradeWarnings = new Set<string>();
-  void upgradeProductionPrimitiveTextures(primitiveEntries, (message) => {
-    textureUpgradeWarnings.add(message);
-  }, webGL2MaxTextureSize(canvas)).catch((error) => {
-    textureUpgradeWarnings.add(`textured upgrade pass failed (${error instanceof Error ? error.message : String(error)}); scalar materials retained`);
-  });
-  const productionEnvironment = createProductionRuntimeEnvironment(snapshot);
-  // B3 HDRI upgrade: fire-and-forget after mount. First frames render the
-  // studio procedural fallback; the HDR chain swaps the lighting object the
-  // render closure reads every frame. Outcomes land in hdriWarnings, which
-  // render() never clears (per-frame runtimeWarnings are rebuilt every frame).
-  let currentEnvironmentLighting = productionEnvironment.lighting;
-  const hdriWarnings = new Set<string>();
-  const hdriState: {
-    status: "none" | "pending" | "ready" | "fallback";
-    maxLinearValue?: number;
-    specularMipCount?: number;
-    dualProbe?: boolean;
-  } = { status: productionEnvironment.hdriUrl ? "pending" : "none" };
+  // T4.2: a throwing mount (compile handler, HDRI upgrade, C-36 strict)
+  // must not leak the created renderer or the HDRI environment.
   let disposeHdriEnvironment: (() => void) | null = null;
-  if (flattened.some((node) => node.kind === "environment" && node.environment === "hdri" && (node.texture as { kind?: string } | undefined)?.kind !== "aura-asset-ref")) {
-    hdriWarnings.add("hdri environment has no texture asset ref; studio procedural fallback retained");
-  }
-  if (productionEnvironment.hdriUrl) {
-    const hdriUrl = productionEnvironment.hdriUrl;
-    const hdriReflectionUrl = productionEnvironment.hdriReflectionUrl;
-    const hdriIntensity = productionEnvironment.intensity;
-    const hdriRotation = productionEnvironment.hdriRotation;
-    void upgradeProductionEnvironmentHdri(hdriUrl, hdriIntensity, hdriReflectionUrl, hdriRotation)
-      .then((result) => {
-        disposeHdriEnvironment?.();
-        disposeHdriEnvironment = result.dispose;
-        currentEnvironmentLighting = result.lighting;
-        hdriState.status = "ready";
-        hdriState.maxLinearValue = result.maxLinearValue;
-        hdriState.specularMipCount = result.specularMipCount;
-        hdriState.dualProbe = result.dualProbe;
-      })
-      .catch((error) => {
-        hdriState.status = "fallback";
-        hdriWarnings.add(`HDRI upgrade failed for ${hdriUrl} (${error instanceof Error ? error.message : String(error)}); studio procedural fallback retained`);
-      });
-  }
-  const productionRuntimeLights = createProductionRuntimeCollectedLights(snapshot);
-
-  // T3.11 (C-36): compile once at mount. With A3D_QR_COMPILER off the contract
-  // stub returns `source: null` and every call below keeps the legacy path
-  // byte-identical; with the flag on, the real compile owns entry assembly and
-  // `updateCompiledScene` builds each frame's RenderSource.
-  const sceneCompileCtx: MountSceneCompileContext = {
-    renderer: productionRenderer,
-    assets: undefined,
-    quality: { tier: "high" } as MountSceneCompileContext["quality"],
-    strict: degradation?.strict ?? flags.on("A3D_QR_STRICT"),
-    flags,
-    // T4.1: the C-36 degrade handler. Strict → AuraRuntimeError with code and
-    // cause; non-strict → C-38 onDegradation + warn-once per (code,nodeId).
-    degrade: createDegradationSink({
-      strict: degradation?.strict ?? flags.on("A3D_QR_STRICT"),
-      ...(degradation?.onDegradation ? { onDegradation: degradation.onDegradation } : {}),
-      warn: (message) => { runtimeWarnings.add(message); }
-    }),
-    canvas,
-    environmentLighting: () => currentEnvironmentLighting,
-    collectedLights: productionRuntimeLights,
-    runtimeWarnings,
-    ...(runtimeNodes ? { runtimeNodes } : {})
-  };
-  markTiming("a3d:mount:compile-scene:start");
-  const compiledScene = await compileScene(snapshot, sceneCompileCtx);
-  markTiming("a3d:mount:compile-scene:resolved");
-  const compiled = asRuntimeCompiled(compiledScene);
-  if (compiled) {
-    actorEntries = compiled.actorEntries as ProductionRuntimeActorEntry[];
-    primitiveEntries = compiled.primitiveEntries as ProductionRuntimePrimitiveEntry[];
-    // C-37: bind the mounted compiled scene so registry add/remove can take the
-    // subtree-compile path (no remount) under A3D_QR_COMPILER.
-    (runtimeNodes as { attachCompiled?: (scene: unknown) => void } | undefined)?.attachCompiled?.(compiledScene);
-  }
-  const authoredLightNodes = flattened.filter((node): node is AuraLightNode => node.kind === "light");
-  const authoredDirectLightNodes = authoredLightNodes.filter((node) => node.light !== "ambient");
-  const authoredAmbientLightCount = authoredLightNodes.length - authoredDirectLightNodes.length;
-  const authoredAreaProxyCount = authoredDirectLightNodes.filter((node) => node.light === "rect" || node.light === "softbox").length;
-
-  // N1 + G1 + M2 observations refresh on every diagnostics read from the
-  // live entries/device state — never cached intent.
-  const buildDiagnostics = (): AuraRendererDiagnosticReport => {
-    const shadowObservation = createProductionRuntimeShadowObservation(
-      { ...createProductionRuntimeShadowOptions(snapshot, productionRuntimeLights), ...(getRootPerformanceQuality(canvas) ? { size: getRootPerformanceQuality(canvas)!.shadowSize } : {}) },
-      latestDeviceDiagnostics,
-      productionRenderer.getShadowEvidence()
-    );
-    const spotCaster = productionRuntimeLights.find((light) => light.castsShadow);
-    const spotAngle = spotCaster?.kind === "spot" ? spotCaster.spotAngle : undefined;
-    const texturesObservation = createProductionTexturesObservation(
-      primitiveEntries,
-      latestCameraEye,
-      rendererOptions?.textureBudgetBytes ?? normalizeTextureBudgetBytes(undefined)
-    );
-    const streamingWarnings = texturesObservation.overBudget
-      ? [`texture streaming over budget by ${texturesObservation.overBudgetBytes} bytes `
-        + `(${texturesObservation.residentEntries} resident, `
-        + `${texturesObservation.evictedEntries.length} evicted: ${texturesObservation.evictedEntries.join(", ") || "none"}); `
-        + `raise renderer.textureBudgetBytes above ${texturesObservation.requestedBytes} bytes or move textures closer`]
-      : [];
-    return createRendererDiagnosticReport(
-      snapshot,
-      {
-        mounted: true,
-        backend: "production-runtime",
-        postprocess: createProductionRuntimePostprocessObservation(latestDeviceDiagnostics),
-        shadow: {
-          ...shadowObservation,
-          spot: describeProductionSpotShadow({
-            requested: flattened.some((node) => node.kind === "light" && node.light === "spot" && node.shadow === true),
-            casterIsSpot: spotCaster?.kind === "spot",
-            ...(spotCaster === undefined ? {} : { casterName: spotCaster.source.name }),
-            ...(spotAngle === undefined ? {} : { angle: spotAngle }),
-            ...(spotCaster?.kind === "spot" ? { penumbra: spotCaster.penumbra, range: spotCaster.range } : {}),
-            mapRendered: shadowObservation.mapRendered,
-            mapSampled: shadowObservation.mapSampled
-          })
-        },
-        text: createProductionTextObservation(primitiveEntries),
-        textures: texturesObservation,
-      environment: {
-        enabled: true,
-        preset: productionEnvironment.preset,
-        intensity: productionEnvironment.intensity,
-        evidence: hdriState.status === "ready"
-          ? `${productionEnvironment.evidence} — HDRI chain ready${hdriState.dualProbe ? " (dual-probe: illumination diffuse + reflection specular)" : " (single probe)"} (maxLinear ${hdriState.maxLinearValue}, ${hdriState.specularMipCount} specular mips)`
-          : productionEnvironment.evidence,
-        // B3 iblPixelBacked: true only after the HDR chain swaps the live
-        // lighting object. Procedural first frames and fallbacks never claim it.
-        iblPixelBacked: hdriState.status === "ready",
-        hdriStatus: hdriState.status,
-        ...(hdriState.dualProbe === undefined ? {} : { dualProbe: hdriState.dualProbe }),
-        ...(productionEnvironment.hdriRotation === undefined ? {} : { hdriRotation: productionEnvironment.hdriRotation })
-      },
-      warnings: [
-        `Production runtime bridge active with ${actorEntries.length} typed GLB actor${actorEntries.length === 1 ? "" : "s"} and ${primitiveEntries.length} Aura primitive${primitiveEntries.length === 1 ? "" : "s"} on ${productionRenderer.device.kind as AuraBackend}.`,
-        ...(authoredDirectLightNodes.length === 0
-          ? ["Production runtime direct-light fallback active: the scene has no authored directional, point, studio, rect, or softbox light."]
-          : [`Production runtime derived ${productionRuntimeLights.length} collected direct light${productionRuntimeLights.length === 1 ? "" : "s"} from ${authoredDirectLightNodes.length} authored scene light${authoredDirectLightNodes.length === 1 ? "" : "s"}.`]),
-        ...(authoredAmbientLightCount > 0
-          ? [`${authoredAmbientLightCount} authored ambient light${authoredAmbientLightCount === 1 ? "" : "s"} remain environment-lighting intent and are not mislabeled as direct CollectedLight entries.`]
-          : []),
-        ...(authoredAreaProxyCount > 0
-          ? [`${authoredAreaProxyCount} authored rect/softbox light${authoredAreaProxyCount === 1 ? "" : "s"} use bounded spot-light proxies whose cone and range derive from authored width and height; this does not claim physical area-light shading.`]
-          : []),
-        ...(flattened.some((node) => node.kind === "effect")
-          ? ["Effect nodes are requested in the scene graph; production bridge diagnostics report them, but unsupported postprocess/effect passes remain non-pixel-backed until the runtime feature reports support."]
-          : []),
-
-        ...latestFeatures
-          .filter((feature) => feature.state !== "supported")
-          .map((feature) => `Production runtime feature ${feature.id} is ${feature.state}: ${feature.detail}`),
-        ...runtimeWarnings,
-        ...textureUpgradeWarnings,
-        ...streamingWarnings,
-        ...hdriWarnings
-      ],
-      deviceDiagnostics: latestDeviceDiagnostics,
-      lodSelections: primitiveEntries
-        .filter((entry) => Boolean(entry.node.lod?.levels.length))
-        .map((entry) => ({
-          nodeName: entry.node.name ?? "unnamed distance LOD",
-          levelIndex: entry.currentLodIndex,
-          levelName: entry.resources[entry.currentLodIndex]?.name ?? `level-${entry.currentLodIndex}`
-        })),
-      texturedMaterials: primitiveEntries.flatMap((entry) =>
-        entry.resources.map((resource) => ({
-          nodeName: entry.node.name ?? `aura-primitive-${entry.node.primitive}`,
-          levelName: resource.name,
-          status: resource.textureStatus,
-          slots: resource.textureSlots,
-          pixelBacked: resource.textureStatus === "textured" && resource.texturedMaterial !== null,
-          warnings: resource.textureWarnings
-        }))
-      )
-      },
-      rendererOptions
-    );
-  };
-
-  let preparedFrame: { readonly time: number; readonly input: ProductionRendererInput } | undefined;
-  const buildFrame = (time: number): ProductionRendererInput => {
-    latestCameraEye = resolveCameraFrame(snapshot, snapshot.camera, time, runtimeNodes).eye;
-    if (compiled) {
-      // C-36 real path: per-frame update on the mounted compiled scene.
-      updateCompiledScene(compiledScene, snapshot, runtimeNodes as AuraRuntimeNodeRegistry, time);
-      return compiled.lastInput! as ProductionRendererInput;
+  try {
+    let latestDeviceDiagnostics: RenderDeviceDiagnostics = productionRenderer.getDiagnostics();
+    let latestFeatures: readonly ProductionRendererFeature[] = rendererFeatureReport(productionRenderer);
+    // M2 streaming distances measure against the live camera eye; refreshed
+    // every render so residency follows the camera instead of mount intent.
+    let latestCameraEye: AuraVec3 = resolveCameraFrame(snapshot, snapshot.camera, 0, runtimeNodes).eye;
+    const runtimeWarnings = new Set<string>();
+    // C1 textured upgrade: fire-and-forget after mount. Scalar first frames stay
+    // fast; outcomes land in textureUpgradeWarnings, which render() never clears
+    // (per-frame runtimeWarnings are rebuilt every frame).
+    const textureUpgradeWarnings = new Set<string>();
+    void upgradeProductionPrimitiveTextures(primitiveEntries, (message) => {
+      textureUpgradeWarnings.add(message);
+    }, webGL2MaxTextureSize(canvas)).catch((error) => {
+      textureUpgradeWarnings.add(`textured upgrade pass failed (${error instanceof Error ? error.message : String(error)}); scalar materials retained`);
+    });
+    const productionEnvironment = createProductionRuntimeEnvironment(snapshot);
+    // B3 HDRI upgrade: fire-and-forget after mount. First frames render the
+    // studio procedural fallback; the HDR chain swaps the lighting object the
+    // render closure reads every frame. Outcomes land in hdriWarnings, which
+    // render() never clears (per-frame runtimeWarnings are rebuilt every frame).
+    let currentEnvironmentLighting = productionEnvironment.lighting;
+    const hdriWarnings = new Set<string>();
+    const hdriState: {
+      status: "none" | "pending" | "ready" | "fallback";
+      maxLinearValue?: number;
+      specularMipCount?: number;
+      dualProbe?: boolean;
+    } = { status: productionEnvironment.hdriUrl ? "pending" : "none" };
+    if (flattened.some((node) => node.kind === "environment" && node.environment === "hdri" && (node.texture as { kind?: string } | undefined)?.kind !== "aura-asset-ref")) {
+      hdriWarnings.add("hdri environment has no texture asset ref; studio procedural fallback retained");
     }
-    runtimeWarnings.clear();
-    return createProductionRuntimeRendererInput(
-      snapshot,
-      canvas,
-      actorEntries,
-      primitiveEntries,
-      time,
-      runtimeNodes,
-      runtimeWarnings,
-      currentEnvironmentLighting,
-      productionRuntimeLights
-    );
-  };
-  const takePreparedFrame = (time: number): ProductionRendererInput => {
-    const prepared = preparedFrame?.time === time ? preparedFrame.input : undefined;
-    preparedFrame = undefined;
-    return prepared ?? buildFrame(time);
-  };
+    if (productionEnvironment.hdriUrl) {
+      const hdriUrl = productionEnvironment.hdriUrl;
+      const hdriReflectionUrl = productionEnvironment.hdriReflectionUrl;
+      const hdriIntensity = productionEnvironment.intensity;
+      const hdriRotation = productionEnvironment.hdriRotation;
+      void upgradeProductionEnvironmentHdri(hdriUrl, hdriIntensity, hdriReflectionUrl, hdriRotation)
+        .then((result) => {
+          disposeHdriEnvironment?.();
+          disposeHdriEnvironment = result.dispose;
+          currentEnvironmentLighting = result.lighting;
+          hdriState.status = "ready";
+          hdriState.maxLinearValue = result.maxLinearValue;
+          hdriState.specularMipCount = result.specularMipCount;
+          hdriState.dualProbe = result.dualProbe;
+        })
+        .catch((error) => {
+          hdriState.status = "fallback";
+          hdriWarnings.add(`HDRI upgrade failed for ${hdriUrl} (${error instanceof Error ? error.message : String(error)}); studio procedural fallback retained`);
+        });
+    }
+    const productionRuntimeLights = createProductionRuntimeCollectedLights(snapshot);
 
-  return {
-    get backend() {
-      return productionRenderer.device.kind as AuraBackend;
-    },
-    get diagnostics() {
-      return buildDiagnostics();
-    },
-    update(time) {
-      // Building the frame applies controller-bound actor clips, root-motion
-      // consumption, foot IK, morphs and imported-asset evidence. Discarding the
-      // returned input deliberately avoids a GPU/device submission.
-      preparedFrame = { time, input: buildFrame(time) };
-    },
-    render(time) {
-      const input = takePreparedFrame(time);
-      validateProductionRendererInput(input);
-      latestDeviceDiagnostics = productionRenderer.render(input.source, input.camera);
-      getRootRenderSource(canvas)?.onFrame?.(latestDeviceDiagnostics, [...(input.source.collectRenderItems?.() ?? [])]);
-      latestFeatures = rendererInteractiveFeatureReport(productionRenderer, latestDeviceDiagnostics, input);
-      return latestDeviceDiagnostics.drawCalls;
-    },
-    async renderAsync(time) {
-      const input = takePreparedFrame(time);
-      validateProductionRendererInput(input);
-      latestDeviceDiagnostics = await productionRenderer.renderAsync(input.source, input.camera);
-      getRootRenderSource(canvas)?.onFrame?.(latestDeviceDiagnostics, [...(input.source.collectRenderItems?.() ?? [])]);
-      latestFeatures = rendererInteractiveFeatureReport(productionRenderer, latestDeviceDiagnostics, input);
-      return latestDeviceDiagnostics.drawCalls;
-    },
-    viewProjection(time) {
-      return createViewProjection(snapshot, canvas.width / Math.max(1, canvas.height), time, runtimeNodes);
-    },
-    // PRD-01 C-05 seam (Q-15-1): the lane's `Renderer` when the backend is WebGL2.
-    get auraRenderer() {
-      return productionRenderer;
-    },
-    resetTemporalHistory(reason) {
-      productionRenderer.resetTemporalHistory(reason);
-    },
-    resize(width, height) {
-      productionRenderer.resize(width, height);
-    },
-    onDeviceLost(listener) {
-      return productionRenderer.onDeviceLost(listener);
-    },
-    onDeviceRestored(listener) {
-      return productionRenderer.onDeviceRestored(listener);
-    },
-    deviceLost() {
-      return productionRenderer.isDeviceLost();
-    },
-    dispose() {
-      disposeHdriEnvironment?.();
-      productionRenderer.dispose();
+    // T3.11 (C-36): compile once at mount. With A3D_QR_COMPILER off the contract
+    // stub returns `source: null` and every call below keeps the legacy path
+    // byte-identical; with the flag on, the real compile owns entry assembly and
+    // `updateCompiledScene` builds each frame's RenderSource.
+    const sceneCompileCtx: MountSceneCompileContext = {
+      renderer: productionRenderer,
+      assets: undefined,
+      // TIER: the caller's quality governor value reaches the compile ctx —
+      // rendererOptions.quality.tier (C-27, prd11) wins; absent/"auto" keeps
+      // the desktop default "high" (the same stub resolution the lighting
+      // handlers use for their own auto tier).
+      quality: resolveMountQuality(rendererOptions),
+      strict: degradation?.strict ?? flags.on("A3D_QR_STRICT"),
+      flags,
+      // T4.1: the C-36 degrade handler. Strict → AuraRuntimeError with code and
+      // cause; non-strict → C-38 onDegradation + warn-once per (code,nodeId).
+      degrade: createDegradationSink({
+        strict: degradation?.strict ?? flags.on("A3D_QR_STRICT"),
+        ...(degradation?.onDegradation ? { onDegradation: degradation.onDegradation } : {}),
+        warn: (message) => { runtimeWarnings.add(message); }
+      }),
+      canvas,
+      environmentLighting: () => currentEnvironmentLighting,
+      collectedLights: productionRuntimeLights,
+      runtimeWarnings,
+      ...(runtimeNodes ? { runtimeNodes } : {})
+    };
+    markTiming("a3d:mount:compile-scene:start");
+    const compiledScene = await compileScene(snapshot, sceneCompileCtx);
+    markTiming("a3d:mount:compile-scene:resolved");
+    const compiled = asRuntimeCompiled(compiledScene);
+    if (compiled) {
+      actorEntries = compiled.actorEntries as ProductionRuntimeActorEntry[];
+      primitiveEntries = compiled.primitiveEntries as ProductionRuntimePrimitiveEntry[];
+      // C-37: bind the mounted compiled scene so registry add/remove can take the
+      // subtree-compile path (no remount) under A3D_QR_COMPILER.
+      (runtimeNodes as { attachCompiled?: (scene: unknown) => void } | undefined)?.attachCompiled?.(compiledScene);
+    }
+    const authoredLightNodes = flattened.filter((node): node is AuraLightNode => node.kind === "light");
+    const authoredDirectLightNodes = authoredLightNodes.filter((node) => node.light !== "ambient");
+    const authoredAmbientLightCount = authoredLightNodes.length - authoredDirectLightNodes.length;
+    const authoredAreaProxyCount = authoredDirectLightNodes.filter((node) => node.light === "rect" || node.light === "softbox").length;
+
+    // N1 + G1 + M2 observations refresh on every diagnostics read from the
+    // live entries/device state — never cached intent.
+    const buildDiagnostics = (): AuraRendererDiagnosticReport => {
+      const shadowObservation = createProductionRuntimeShadowObservation(
+        { ...createProductionRuntimeShadowOptions(snapshot, productionRuntimeLights), ...(getRootPerformanceQuality(canvas) ? { size: getRootPerformanceQuality(canvas)!.shadowSize } : {}) },
+        latestDeviceDiagnostics,
+        productionRenderer.getShadowEvidence()
+      );
+      const spotCaster = productionRuntimeLights.find((light) => light.castsShadow);
+      const spotAngle = spotCaster?.kind === "spot" ? spotCaster.spotAngle : undefined;
+      const texturesObservation = createProductionTexturesObservation(
+        primitiveEntries,
+        latestCameraEye,
+        rendererOptions?.textureBudgetBytes ?? normalizeTextureBudgetBytes(undefined)
+      );
+      const streamingWarnings = texturesObservation.overBudget
+        ? [`texture streaming over budget by ${texturesObservation.overBudgetBytes} bytes `
+          + `(${texturesObservation.residentEntries} resident, `
+          + `${texturesObservation.evictedEntries.length} evicted: ${texturesObservation.evictedEntries.join(", ") || "none"}); `
+          + `raise renderer.textureBudgetBytes above ${texturesObservation.requestedBytes} bytes or move textures closer`]
+        : [];
+      return createRendererDiagnosticReport(
+        snapshot,
+        {
+          mounted: true,
+          backend: "production-runtime",
+          postprocess: createProductionRuntimePostprocessObservation(latestDeviceDiagnostics),
+          shadow: {
+            ...shadowObservation,
+            spot: describeProductionSpotShadow({
+              requested: flattened.some((node) => node.kind === "light" && node.light === "spot" && node.shadow === true),
+              casterIsSpot: spotCaster?.kind === "spot",
+              ...(spotCaster === undefined ? {} : { casterName: spotCaster.source.name }),
+              ...(spotAngle === undefined ? {} : { angle: spotAngle }),
+              ...(spotCaster?.kind === "spot" ? { penumbra: spotCaster.penumbra, range: spotCaster.range } : {}),
+              mapRendered: shadowObservation.mapRendered,
+              mapSampled: shadowObservation.mapSampled
+            })
+          },
+          text: createProductionTextObservation(primitiveEntries),
+          textures: texturesObservation,
+        environment: {
+          enabled: true,
+          preset: productionEnvironment.preset,
+          intensity: productionEnvironment.intensity,
+          evidence: hdriState.status === "ready"
+            ? `${productionEnvironment.evidence} — HDRI chain ready${hdriState.dualProbe ? " (dual-probe: illumination diffuse + reflection specular)" : " (single probe)"} (maxLinear ${hdriState.maxLinearValue}, ${hdriState.specularMipCount} specular mips)`
+            : productionEnvironment.evidence,
+          // B3 iblPixelBacked: true only after the HDR chain swaps the live
+          // lighting object. Procedural first frames and fallbacks never claim it.
+          iblPixelBacked: hdriState.status === "ready",
+          hdriStatus: hdriState.status,
+          ...(hdriState.dualProbe === undefined ? {} : { dualProbe: hdriState.dualProbe }),
+          ...(productionEnvironment.hdriRotation === undefined ? {} : { hdriRotation: productionEnvironment.hdriRotation })
+        },
+        warnings: [
+          `Production runtime bridge active with ${actorEntries.length} typed GLB actor${actorEntries.length === 1 ? "" : "s"} and ${primitiveEntries.length} Aura primitive${primitiveEntries.length === 1 ? "" : "s"} on ${productionRenderer.device.kind as AuraBackend}.`,
+          ...(authoredDirectLightNodes.length === 0
+            ? ["Production runtime direct-light fallback active: the scene has no authored directional, point, studio, rect, or softbox light."]
+            : [`Production runtime derived ${productionRuntimeLights.length} collected direct light${productionRuntimeLights.length === 1 ? "" : "s"} from ${authoredDirectLightNodes.length} authored scene light${authoredDirectLightNodes.length === 1 ? "" : "s"}.`]),
+          ...(authoredAmbientLightCount > 0
+            ? [`${authoredAmbientLightCount} authored ambient light${authoredAmbientLightCount === 1 ? "" : "s"} remain environment-lighting intent and are not mislabeled as direct CollectedLight entries.`]
+            : []),
+          ...(authoredAreaProxyCount > 0
+            ? [`${authoredAreaProxyCount} authored rect/softbox light${authoredAreaProxyCount === 1 ? "" : "s"} use bounded spot-light proxies whose cone and range derive from authored width and height; this does not claim physical area-light shading.`]
+            : []),
+          ...(flattened.some((node) => node.kind === "effect")
+            ? ["Effect nodes are requested in the scene graph; production bridge diagnostics report them, but unsupported postprocess/effect passes remain non-pixel-backed until the runtime feature reports support."]
+            : []),
+
+          ...latestFeatures
+            .filter((feature) => feature.state !== "supported")
+            .map((feature) => `Production runtime feature ${feature.id} is ${feature.state}: ${feature.detail}`),
+          ...runtimeWarnings,
+          ...textureUpgradeWarnings,
+          ...streamingWarnings,
+          ...hdriWarnings
+        ],
+        deviceDiagnostics: latestDeviceDiagnostics,
+        lodSelections: primitiveEntries
+          .filter((entry) => Boolean(entry.node.lod?.levels.length))
+          .map((entry) => ({
+            nodeName: entry.node.name ?? "unnamed distance LOD",
+            levelIndex: entry.currentLodIndex,
+            levelName: entry.resources[entry.currentLodIndex]?.name ?? `level-${entry.currentLodIndex}`
+          })),
+        texturedMaterials: primitiveEntries.flatMap((entry) =>
+          entry.resources.map((resource) => ({
+            nodeName: entry.node.name ?? `aura-primitive-${entry.node.primitive}`,
+            levelName: resource.name,
+            status: resource.textureStatus,
+            slots: resource.textureSlots,
+            pixelBacked: resource.textureStatus === "textured" && resource.texturedMaterial !== null,
+            warnings: resource.textureWarnings
+          }))
+        )
+        },
+        rendererOptions
+      );
+    };
+
+    let preparedFrame: { readonly time: number; readonly input: ProductionRendererInput } | undefined;
+    const buildFrame = (time: number): ProductionRendererInput => {
+      latestCameraEye = resolveCameraFrame(snapshot, snapshot.camera, time, runtimeNodes).eye;
       if (compiled) {
-        (runtimeNodes as { detachCompiled?: (scene: unknown) => void } | undefined)?.detachCompiled?.(compiledScene);
-        compiled.dispose();
-        return;
+        // C-36 real path: per-frame update on the mounted compiled scene.
+        updateCompiledScene(compiledScene, snapshot, runtimeNodes as AuraRuntimeNodeRegistry, time);
+        return compiled.lastInput! as ProductionRendererInput;
       }
-      for (const { actor } of actorEntries) actor.dispose();
-      for (const { resources } of primitiveEntries) {
-        for (const { geometry, material, texturedMaterial, textureDisposer } of resources) {
-          textureDisposer?.();
-          geometry.dispose();
-          material.dispose();
-          texturedMaterial?.dispose();
+      runtimeWarnings.clear();
+      return createProductionRuntimeRendererInput(
+        snapshot,
+        canvas,
+        actorEntries,
+        primitiveEntries,
+        time,
+        runtimeNodes,
+        runtimeWarnings,
+        currentEnvironmentLighting,
+        productionRuntimeLights
+      );
+    };
+    const takePreparedFrame = (time: number): ProductionRendererInput => {
+      const prepared = preparedFrame?.time === time ? preparedFrame.input : undefined;
+      preparedFrame = undefined;
+      return prepared ?? buildFrame(time);
+    };
+
+    return {
+      get backend() {
+        return productionRenderer.device.kind as AuraBackend;
+      },
+      get diagnostics() {
+        return buildDiagnostics();
+      },
+      update(time) {
+        // Building the frame applies controller-bound actor clips, root-motion
+        // consumption, foot IK, morphs and imported-asset evidence. Discarding the
+        // returned input deliberately avoids a GPU/device submission.
+        preparedFrame = { time, input: buildFrame(time) };
+      },
+      render(time) {
+        const input = takePreparedFrame(time);
+        validateProductionRendererInput(input);
+        latestDeviceDiagnostics = productionRenderer.render(input.source, input.camera);
+        getRootRenderSource(canvas)?.onFrame?.(latestDeviceDiagnostics, [...(input.source.collectRenderItems?.() ?? [])]);
+        latestFeatures = rendererInteractiveFeatureReport(productionRenderer, latestDeviceDiagnostics, input);
+        return latestDeviceDiagnostics.drawCalls;
+      },
+      async renderAsync(time) {
+        const input = takePreparedFrame(time);
+        validateProductionRendererInput(input);
+        latestDeviceDiagnostics = await productionRenderer.renderAsync(input.source, input.camera);
+        getRootRenderSource(canvas)?.onFrame?.(latestDeviceDiagnostics, [...(input.source.collectRenderItems?.() ?? [])]);
+        latestFeatures = rendererInteractiveFeatureReport(productionRenderer, latestDeviceDiagnostics, input);
+        return latestDeviceDiagnostics.drawCalls;
+      },
+      viewProjection(time) {
+        return createViewProjection(snapshot, canvas.width / Math.max(1, canvas.height), time, runtimeNodes);
+      },
+      // PRD-01 C-05 seam (Q-15-1): the lane's `Renderer` when the backend is WebGL2.
+      get auraRenderer() {
+        return productionRenderer;
+      },
+      resetTemporalHistory(reason) {
+        productionRenderer.resetTemporalHistory(reason);
+      },
+      resize(width, height) {
+        productionRenderer.resize(width, height);
+      },
+      onDeviceLost(listener) {
+        return productionRenderer.onDeviceLost(listener);
+      },
+      onDeviceRestored(listener) {
+        return productionRenderer.onDeviceRestored(listener);
+      },
+      deviceLost() {
+        return productionRenderer.isDeviceLost();
+      },
+      dispose() {
+        disposeHdriEnvironment?.();
+        productionRenderer.dispose();
+        if (compiled) {
+          (runtimeNodes as { detachCompiled?: (scene: unknown) => void } | undefined)?.detachCompiled?.(compiledScene);
+          compiled.dispose();
+          return;
+        }
+        for (const { actor } of actorEntries) actor.dispose();
+        for (const { resources } of primitiveEntries) {
+          for (const { geometry, material, texturedMaterial, textureDisposer } of resources) {
+            textureDisposer?.();
+            geometry.dispose();
+            material.dispose();
+            texturedMaterial?.dispose();
+          }
         }
       }
-    }
-  };
+    };
+  } catch (mountError) {
+    // Flow analysis narrows the declared-`null` disposer to `never` here
+    // (its try-body assignment never ran on this path); the cast restores the
+    // declared type for the optional call.
+    const disposeEnv = disposeHdriEnvironment as (() => void) | null;
+    try { disposeEnv?.(); } catch { /* best-effort dispose */ }
+    productionRenderer.dispose();
+    throw mountError;
+  }
+}
+
+/**
+ * TIER: resolve the mount compile ctx quality surface from the caller's
+ * renderer options. `rendererOptions.quality.tier` (C-27, prd11) wins;
+ * absent or "auto" keeps the desktop default "high" — the same stub
+ * resolution the lighting handlers apply to their own auto tier.
+ */
+export function resolveMountQuality(
+  rendererOptions?: AuraCreateAppRendererOptions
+): MountSceneCompileContext["quality"] {
+  const governed = (rendererOptions?.quality as { tier?: unknown } | undefined)?.tier;
+  const tier: AuraQualityTier =
+    typeof governed === "string" && governed !== "auto" && governed in QUALITY_TIERS ? (governed as AuraQualityTier) : "high";
+  return { ...resolveTierSettings(tier), tier };
 }

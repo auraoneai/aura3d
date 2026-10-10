@@ -125,7 +125,7 @@ export class CompiledSceneImpl implements CompiledScene {
   dynamicRoots = new Map<string, AuraSceneNode>();
   /** Flattened nodes belonging to each dynamic root (for subtree dispose). */
   dynamicFlat = new Map<string, AuraSceneNode[]>();
-  /** RenderItem reuse cache for A3D_QR_COMPILER frames (T3.12): node version → last item. */
+  /** RenderItem reuse cache for A3D_QR_COMPILER frames (T3.12): `${runtimeId}:${itemIndex}` → {version, item}. */
   itemCache = new Map<string, { version: number; item: RenderItem }>();
   /** Source contributions made by dynamically added subtree handlers. */
   persistentContributions = createContributions();
@@ -390,6 +390,14 @@ async function compileSceneReal(snapshot: AuraSceneSnapshot, ctx: SceneCompileCo
     snapshot.nodes,
     flattened.slice()
   );
+  // C36-DROP: contributions made by handlers' compile() (addItems/addLights/
+  // set — e.g. prd02 lights/environment/probe, prd10 world) were dropped before
+  // the t=0 frame. They are persistent for the scene's life: merge them into
+  // the same bucket the dynamic-subtree path extends.
+  compiled.persistentContributions.items.push(...contributions.items);
+  compiled.persistentContributions.lights.push(...contributions.lights);
+  for (const [field, value] of contributions.overrides) compiled.persistentContributions.overrides.set(field, value);
+  for (const feature of contributions.features) compiled.persistentContributions.features.add(feature);
   // Build the t=0 frame so `compiled.source` is a real RenderSource at mount.
   updateCompiledSceneReal(compiled, snapshot, mount.runtimeNodes as AuraRuntimeNodeRegistry, 0);
   return compiled;
@@ -507,18 +515,30 @@ function reuseRenderItems(
     if (actor) return impl.actorEntries[Number(actor[1])]?.node;
     return undefined;
   };
+  // T0-19: a node can emit several items — key on `${runtimeId}:${itemIndex}`
+  // (the per-node emission order) so multi-item nodes don't collide on
+  // `runtimeId` alone. Volatile nodes (animation/skin/morph/clips) are never
+  // reused: their item content changes without a version bump.
+  const perNodeIndex = new Map<string, number>();
+  const isVolatile = (node: AuraSceneNode): boolean => {
+    const n = node as { animation?: unknown; skin?: unknown; morph?: unknown; clips?: unknown; skeleton?: unknown };
+    return n.animation !== undefined || n.skin !== undefined || n.morph !== undefined || n.clips !== undefined || n.skeleton !== undefined;
+  };
   const reused = items.map((item) => {
     const node = nodeForItem(item);
     const runtimeId = node ? runtimeIdOf(node) : "";
     const handle = runtimeId ? runtime?.get(runtimeId) : undefined;
-    if (!handle) return item;
+    if (!handle || (node && isVolatile(node))) return item;
+    const index = perNodeIndex.get(runtimeId) ?? 0;
+    perNodeIndex.set(runtimeId, index + 1);
+    const key = `${runtimeId}:${index}`;
     const version = handle.version ?? 0;
-    const cached = impl.itemCache.get(runtimeId);
+    const cached = impl.itemCache.get(key);
     if (cached && cached.version === version) {
-      nextCache.set(runtimeId, cached);
+      nextCache.set(key, cached);
       return cached.item;
     }
-    nextCache.set(runtimeId, { version, item });
+    nextCache.set(key, { version, item });
     return item;
   });
   impl.itemCache = nextCache;
