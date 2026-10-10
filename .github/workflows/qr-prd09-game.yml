@@ -76,9 +76,13 @@ jobs:
         run: |
           node tools/showcase-library/game-capture-parity.mjs --routes aura-clash-showcase --fail-on-any
           node tools/showcase-library/game-capture-parity.mjs
-      - name: Beacon size-limit (< 0.5 kB gz)
+      - name: Beacon size-limit (< 0.5 kB min+gz)
         working-directory: packages/game
-        run: pnpm exec size-limit --config size-limit.json
+        # @size-limit/file gzips the file as-is, so measure the minified
+        # module (the budget is min+gzip), not the commented TS source.
+        run: |
+          pnpm exec esbuild src/evidence/beacon.ts --minify --format=esm --log-level=warning --outfile=.size-limit/beacon.min.js
+          pnpm exec size-limit --config size-limit.json
 
   all-routes-shadow:
     # Shadow-migration proof (PRD-09 §10): apply every shipped patch set onto a
@@ -183,9 +187,13 @@ jobs:
           PLAYWRIGHT_JSON_OUTPUT_NAME: tests/reports/browser-prd09-macos.json
         run: pnpm exec playwright test --config playwright.prd09.config.ts
 
-      - name: Beacon size-limit (< 0.5 kB gz)
+      - name: Beacon size-limit (< 0.5 kB min+gz)
         working-directory: packages/game
-        run: pnpm exec size-limit --config size-limit.json
+        # @size-limit/file gzips the file as-is, so measure the minified
+        # module (the budget is min+gzip), not the commented TS source.
+        run: |
+          pnpm exec esbuild src/evidence/beacon.ts --minify --format=esm --log-level=warning --outfile=.size-limit/beacon.min.js
+          pnpm exec size-limit --config size-limit.json
 
       - name: Upload browser evidence
         if: always()
