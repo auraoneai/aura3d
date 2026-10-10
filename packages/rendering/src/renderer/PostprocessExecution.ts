@@ -15,6 +15,8 @@ import type { PostPipelineOptions } from "../contracts/post";
 import { webgl2DeviceHost } from "../webgl2/Counters";
 import { executePostGraphWebGL2 } from "../webgl2/LegacyPost";
 import type { TemporalGpuBindings } from "../TemporalHistory";
+import { recordPostSkipped } from "../post/postSkipped";
+export { postProductionBuild, postSkippedReasons, recordPostSkipped } from "../post/postSkipped";
 
 /* v2 module warm cache — the sync `render()` route cannot `import()`; the
  * first flag-on frame fires it, later frames run the real S1–S12 stages. */
@@ -484,13 +486,17 @@ export class RendererPostprocessPipeline {
   }
 
   private executePixelPostprocessPass(pass: RendererPostProcessPassPlan, source: RenderTarget, target: RenderTarget | undefined, forwardTarget: RenderTarget, cpuDeterministic = false): void {
-    this.assertPostPassOnGpu(pass.name, cpuDeterministic);
     this.host.device.setRenderTarget(source);
     const input = this.host.device.readPixels(0, 0, source.width, source.height);
-    const rendererDepth = isDepthPostprocessPass(pass.name) && !postprocessPassHasDepth(pass.options)
+    const skipped = this.postCpuPassSkipped(pass.name, cpuDeterministic);
+    const rendererDepth = !skipped && isDepthPostprocessPass(pass.name) && !postprocessPassHasDepth(pass.options)
       ? this.readRendererOwnedDepthTexture(forwardTarget)
       : undefined;
-    const result = pass.name === "color-grade"
+    const result = skipped
+      // §6.9 record-and-skip (T0-17/FLAG-ON-4): copy the input through so
+      // the chain survives; the skip is on diagnostics().post.skipped.
+      ? input
+      : pass.name === "color-grade"
       ? colorGradePixels(input, source.width, source.height, pass.options as ColorGradeOptions).pixels
       : pass.name === "chromatic-aberration"
         ? chromaticAberrationPixels(input, source.width, source.height, pass.options as ChromaticAberrationOptions).pixels
@@ -522,12 +528,14 @@ export class RendererPostprocessPipeline {
   }
 
   private async executePixelPostprocessPassAsync(pass: RendererPostProcessPassPlan, source: RenderTarget, target: RenderTarget | undefined, forwardTarget: RenderTarget, cpuDeterministic = false): Promise<void> {
-    this.assertPostPassOnGpu(pass.name, cpuDeterministic);
     const input = await this.readRenderTargetPixelsAsync(source);
-    const rendererDepth = isDepthPostprocessPass(pass.name) && !postprocessPassHasDepth(pass.options)
+    const skipped = this.postCpuPassSkipped(pass.name, cpuDeterministic);
+    const rendererDepth = !skipped && isDepthPostprocessPass(pass.name) && !postprocessPassHasDepth(pass.options)
       ? this.readRendererOwnedDepthTexture(forwardTarget)
       : undefined;
-    const result = pass.name === "color-grade"
+    const result = skipped
+      ? input
+      : pass.name === "color-grade"
       ? colorGradePixels(input, source.width, source.height, pass.options as ColorGradeOptions).pixels
       : pass.name === "chromatic-aberration"
         ? chromaticAberrationPixels(input, source.width, source.height, pass.options as ChromaticAberrationOptions).pixels
@@ -559,23 +567,18 @@ export class RendererPostprocessPipeline {
   }
 
   /**
-   * §6.9: with `A3D_QR_POST` on, a non-GPU post pass is a violation unless
-   * `execution === "cpu-deterministic"`. Dev builds throw
-   * `POSTPROCESS_PASS_NOT_GPU`; production builds skip the pass and record it
-   * (`postSkippedReasons` surfaces it into `diagnostics().post.skipped`).
+   * §6.9/T0-17 (FLAG-ON-4): with `A3D_QR_POST` on, a non-GPU post pass must
+   * never kill the frame — every build records
+   * `POSTPROCESS_PASS_NOT_GPU:<name>` and the caller copies the input
+   * through (`postSkippedReasons` surfaces it into
+   * `diagnostics().post.skipped`). The previous dev-only throw fired per
+   * frame once the v2 seam declined.
    */
-  private assertPostPassOnGpu(passName: string, cpuDeterministic: boolean): void {
+  private postCpuPassSkipped(passName: string, cpuDeterministic: boolean): boolean {
     const flags = rendererQrFlags();
-    if (!flags?.on("A3D_QR_POST") || cpuDeterministic) return;
-    if (postProductionBuild()) {
-      recordPostSkipped(`POSTPROCESS_PASS_NOT_GPU:${passName}`);
-      return;
-    }
-    throw new RenderDeviceError(
-      `Post pass "${passName}" has no GPU implementation on the v2 chain; set postprocess.execution = "cpu-deterministic" for the reference path.`,
-      "POSTPROCESS_PASS_NOT_GPU",
-      { pass: passName }
-    );
+    if (!flags?.on("A3D_QR_POST") || cpuDeterministic) return false;
+    recordPostSkipped(`POSTPROCESS_PASS_NOT_GPU:${passName}`);
+    return true;
   }
 
   private async readRenderTargetPixelsAsync(target: RenderTarget): Promise<Uint8Array> {
@@ -615,23 +618,4 @@ export class RendererPostprocessPipeline {
   }
 }
 
-/* §6.9 prod-skip registry — the record a production build leaves in place of
- * the dev `POSTPROCESS_PASS_NOT_GPU` throw. `postSections` folds these into
- * `diagnostics().post.skipped`. */
-const postSkippedReasonsSet = new Set<string>();
 
-export function recordPostSkipped(reason: string): void {
-  postSkippedReasonsSet.add(reason);
-}
-
-export function postSkippedReasons(): readonly string[] {
-  return [...postSkippedReasonsSet];
-}
-
-/** `import.meta.env.PROD` / `process.env.NODE_ENV === "production"`. */
-export function postProductionBuild(): boolean {
-  const meta = import.meta as unknown as { readonly env?: { readonly PROD?: boolean } };
-  if (meta.env?.PROD) return true;
-  return (globalThis as { readonly process?: { readonly env?: { readonly NODE_ENV?: string } } })
-    .process?.env?.NODE_ENV === "production";
-}
