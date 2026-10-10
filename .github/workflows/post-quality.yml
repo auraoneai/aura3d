@@ -65,7 +65,9 @@ permissions:
 
 concurrency:
   group: post-quality-${{ github.ref }}
-  cancel-in-progress: true
+  # 03-CI1: never cancel main runs (each main commit needs its own result);
+  # superseded PR/branch runs are still cancelled.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   unit:
