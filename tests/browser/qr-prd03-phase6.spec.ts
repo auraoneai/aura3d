@@ -58,25 +58,29 @@ test.describe("PRD-03 Phase 6 — SMAA / auto-exposure / custom passes", () => {
       if (res.status() >= 400) console.log("[phase6-status]", res.status(), res.url().slice(0, 160));
     });
     await page.goto(`${server.origin}/tests/browser/qr-prd03-phase6-harness.html`);
-    // Deferred module script may still be resolving after `load` — wait for the
-    // harness global before evaluating (was flaky: `run is not a function`).
+    // 03-S18d: gate on the harness's published ready symbol — it flips only
+    // after the module fully evaluated AND registered runQrPrd03Phase6 AND a
+    // WebGL2 probe context succeeded. Waiting on the symbol (not the
+    // function's presence) makes `run is not a function` impossible.
+    const waitReady = () =>
+      page.waitForFunction(
+        () => (window as { qrPrd03Phase6Ready?: boolean }).qrPrd03Phase6Ready === true,
+        undefined,
+        { timeout: 150_000 },
+      );
     try {
-      await page.waitForFunction(
-      () => typeof (window as { runQrPrd03Phase6?: unknown }).runQrPrd03Phase6 === "function",
-      undefined,
-      { timeout: 150_000 },
-    );
+      await waitReady();
     } catch {
       // Cold CI transform of the engine module graph can outrun one
       // budget; the dev server caches transpiled modules, so a reload
       // re-serves the whole graph from cache and lands the global.
       await page.reload();
-      await page.waitForFunction(
-      () => typeof (window as { runQrPrd03Phase6?: unknown }).runQrPrd03Phase6 === "function",
-      undefined,
-      { timeout: 150_000 },
-    );
+      await waitReady();
     }
+    const status = await page.evaluate(
+      () => (window as { qrPrd03Phase6Status?: string }).qrPrd03Phase6Status ?? "unset",
+    );
+    console.log("[phase6-ready]", status);
     result = await page.evaluate(async () => {
       const run = (window as { runQrPrd03Phase6?: () => Promise<Phase6Result> }).runQrPrd03Phase6!;
       return run();
