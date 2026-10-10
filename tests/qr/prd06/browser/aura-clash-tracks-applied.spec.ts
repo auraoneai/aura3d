@@ -105,9 +105,10 @@ test.describe("PRD-06 Aura Clash tracksApplied A/B (S13)", () => {
       await page.goto(`${server.origin}/playable/?auraTestDriver=1&a3d-qr=${qr}`, { waitUntil: "domcontentloaded" });
       // Shared-Metal CI runners starve rAF badly — `status === "running"` is
       // gated behind the steady-state performance window that can take
-      // minutes. This spec only needs the test driver + resolved clips; the
-      // driver installs after the cold warmup window (pre-#346 ordering), so
-      // gate on driver presence + clipReadiness instead of the perf status.
+      // minutes. This spec only needs the test driver + resolved clips, so it
+      // gates on driver presence + clipReadiness instead of the perf status.
+      // The driver install order in AuraClashArenaApp.ts is lane-14 (G4) code
+      // and is left as on main; any change to it goes through a G4 qr-request.
       await page.waitForFunction(
         () => !!window.__AURA_CLASH_ARENA_TEST_DRIVER__ && window.__AURA_CLASH_ARENA_PROOF__?.animation?.clipReadiness?.ok === true,
         undefined,
