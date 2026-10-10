@@ -15,6 +15,7 @@
  */
 
 import type { CompressedTextureCapabilities } from "@aura3d/rendering/contracts";
+import { AssetDecoderUnavailable, withDecoderTimeout } from "./decoderLoad.js";
 import { createMeshoptDecoder, createDracoDecoder, type GLTFMeshoptDecoderModule, type GLTFDracoDecoderModule } from "./GLTFCompressionDecoders.js";
 import { selectKTX2TargetFormat, type KTX2BasisTargetFormat } from "./KTX2TargetSelection.js";
 import { ktx2TargetToTextureFormat, loadBasisTranscoderModule, transcodeKTX2BasisTexture } from "./KTX2BasisTextureTranscoder.js";
@@ -44,16 +45,7 @@ export interface AssetDecoderRegistry {
   dispose(): void;
 }
 
-export class AssetDecoderUnavailable extends Error {
-  public readonly decoderId: string;
-  public readonly url: string;
-  constructor(decoderId: string, url: string) {
-    super(`AssetDecoderUnavailable:${decoderId}:${url}`);
-    this.name = "AssetDecoderUnavailable";
-    this.decoderId = decoderId;
-    this.url = url;
-  }
-}
+export { AssetDecoderUnavailable };
 
 export interface AssetDecoderRegistryOptions {
   /** Same-origin decoder root, e.g. `/aura-decoders/` (trailing slash optional). */
@@ -118,14 +110,29 @@ export function createAssetDecoderRegistry(options: AssetDecoderRegistryOptions)
     });
 
   const loadDraco = (): Promise<ReturnType<typeof createDracoDecoder>> =>
-    withRetry("draco", `${basePath}draco/draco_decoder.js`, async () => {
-      const factory = await loadUmdGlobal("draco", `${basePath}draco/`, "draco_decoder.js", "DracoDecoderModule");
-      const instance = await (factory as (config?: Record<string, unknown>) => Promise<GLTFDracoDecoderModule> | GLTFDracoDecoderModule)({});
-      if (instance && typeof instance === "object" && "ready" in instance) {
-        await (instance as { ready: PromiseLike<unknown> }).ready;
-      }
-      return createDracoDecoder(instance as GLTFDracoDecoderModule);
-    });
+    withRetry("draco", `${basePath}draco/draco_decoder.js`, () =>
+      withDecoderTimeout(
+        (async () => {
+          const factory = await loadUmdGlobal("draco", `${basePath}draco/`, "draco_decoder.js", "DracoDecoderModule");
+          // Emscripten MODULARIZE: a missing/SPA-fallback wasm aborts through
+          // `onAbort`; without it the factory promise never settles.
+          const instance = await new Promise<GLTFDracoDecoderModule>((resolve, reject) => {
+            const config: Record<string, unknown> = {
+              onAbort: (reason: unknown) => reject(new Error(`draco decoder aborted: ${String(reason)}`))
+            };
+            try {
+              resolve((factory as (config?: Record<string, unknown>) => Promise<GLTFDracoDecoderModule> | GLTFDracoDecoderModule)(config));
+            } catch (error) {
+              reject(error);
+            }
+          });
+          if (instance && typeof instance === "object" && "ready" in instance) {
+            await (instance as { ready: PromiseLike<unknown> }).ready;
+          }
+          return createDracoDecoder(instance);
+        })(),
+        "draco decoder load"
+      ));
 
   const buildKtx2ImageDecoder = async (): Promise<GLTFImageDecoder> => {
     const transcoderUrl = `${basePath}basis/`;
@@ -248,20 +255,23 @@ async function loadUmdGlobal(id: AssetDecoderId, dirUrl: string, fileName: strin
     }
     return bound;
   }
-  return new Promise<unknown>((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = url;
-    script.onload = () => {
-      const bound = (globalThis as Record<string, unknown>)[globalName];
-      if (bound === undefined) reject(new Error(`${globalName} not bound by ${url}`));
-      else if (typeof bound === "function") {
-        // Emscripten MODULARIZE: same-object config/return; wasm via locateFile.
-        resolve((config?: Record<string, unknown>) => bound({ ...config, locateFile: (file: string) => `${dirUrl}${file}` }));
-      } else resolve(bound);
-    };
-    script.onerror = () => reject(new Error(`script load failed: ${url}`));
-    document.head.appendChild(script);
-  });
+  return withDecoderTimeout(
+    new Promise<unknown>((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = url;
+      script.onload = () => {
+        const bound = (globalThis as Record<string, unknown>)[globalName];
+        if (bound === undefined) reject(new Error(`${globalName} not bound by ${url}`));
+        else if (typeof bound === "function") {
+          // Emscripten MODULARIZE: same-object config/return; wasm via locateFile.
+          resolve((config?: Record<string, unknown>) => bound({ ...config, locateFile: (file: string) => `${dirUrl}${file}` }));
+        } else resolve(bound);
+      };
+      script.onerror = () => reject(new Error(`script load failed: ${url}`));
+      document.head.appendChild(script);
+    }),
+    `script load ${url}`
+  );
 }
 
 
