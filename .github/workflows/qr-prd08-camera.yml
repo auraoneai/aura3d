@@ -99,12 +99,13 @@ jobs:
         run: |
           node tools/camera-cast-codemod/index.mjs apps packages/create-aura3d/templates --report \
             | tee /tmp/camera-cast.md
-          grep -q 'showcase-courier-rush/src/main.ts:1394' /tmp/camera-cast.md
-          grep -q 'showcase-patrol-wing/src/main.ts:805' /tmp/camera-cast.md
-          grep -q 'showcase-turbo-drift-circuit/src/main.ts:2760' /tmp/camera-cast.md
+          # Lane 14 moved the pre-v2 game sources to src/legacy/; same cast sites.
+          grep -q 'showcase-courier-rush/src/legacy/main.ts:1394' /tmp/camera-cast.md
+          grep -q 'showcase-patrol-wing/src/legacy/main.ts:796' /tmp/camera-cast.md
+          grep -q 'showcase-turbo-drift-circuit/src/legacy/main.ts:2760' /tmp/camera-cast.md
           grep -q 'showcase-cinematic-architecture/src/main.ts:500' /tmp/camera-cast.md
-          grep -q 'showcase-skyline-runner/src/feel.ts' /tmp/camera-cast.md
-          grep -q 'showcase-blockfall-reactor/src/camera-feel.ts' /tmp/camera-cast.md
+          grep -q 'showcase-skyline-runner/src/legacy/feel.ts' /tmp/camera-cast.md
+          grep -q 'showcase-blockfall-reactor/src/legacy/camera-feel.ts' /tmp/camera-cast.md
       - run: node tools/qr-ownership/check.mjs
       # Repo-wide gates run after the lane suites so lane results are always
       # reported. T0-31 (lane 15) tracks pre-existing typecheck errors on main;
