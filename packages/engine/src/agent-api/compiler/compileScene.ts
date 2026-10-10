@@ -36,7 +36,14 @@ import { createAssetProvenance } from "../diagnostics.js";
 import { applyModelTintBridge } from "./modelMaterials.js";
 import { createProductionRuntimePrimitiveEntries } from "./primitives.js";
 import { createProductionRuntimeRendererInput } from "./renderInput.js";
-import type { CollectedLight, EnvironmentLightingOptions, ProductionRendererInput, RenderItem, RenderSource } from "@aura3d/rendering";
+import type { CollectedLight, EnvironmentLightingOptions, ProductionRendererInput, RenderDevice, RenderItem, RenderSource } from "@aura3d/rendering";
+import type { EnvironmentProbe } from "@aura3d/rendering/contracts";
+import { environmentProbeFactorySlot } from "@aura3d/rendering/contracts";
+import { EnvironmentCache, defaultProbeLoader } from "../../../../rendering/src/environment/EnvironmentCache.js";
+import { bindPrd02EnvironmentProbe } from "./environment.js";
+import { resolveEnvironment } from "../../contracts/environment.js";
+import { prd02LightingOn } from "./lights.js";
+import { colorToLinearRgb } from "../colorUtils.js";
 import { isKnownNodeKind, resolveNodeHandler } from "./handlers.js";
 import { AuraRuntimeError } from "./errors.js";
 import { bindRuntimeCompiled } from "../../contracts/compiler.js";
@@ -122,6 +129,12 @@ export class CompiledSceneImpl implements CompiledScene {
   itemCache = new Map<string, { version: number; item: RenderItem }>();
   /** Source contributions made by dynamically added subtree handlers. */
   persistentContributions = createContributions();
+  /** T0-24: one shared C-09 environment cache per mounted app. */
+  environmentCache: EnvironmentCache | null = null;
+  /** Currently bound probe — the neutral floor until an async request lands. */
+  environmentProbe: EnvironmentProbe | null = null;
+  /** Fingerprint of the `resolution.probe` request the live binding was made for. */
+  environmentProbeRequest: string | undefined;
   private disposed = false;
   private readonly rawSceneNodes: readonly AuraSceneNode[];
 
@@ -252,6 +265,9 @@ export class CompiledSceneImpl implements CompiledScene {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    this.environmentCache?.dispose();
+    this.environmentCache = null;
+    this.environmentProbe = null;
     for (const actor of this.actors) actor.dispose();
     for (const { resources } of this.primitiveEntries) {
       for (const { geometry, material, texturedMaterial, textureDisposer } of resources) {
@@ -419,6 +435,52 @@ function updateCompiledSceneReal(
   );
   const reusedSource = reuseRenderItems(impl, input.source, runtime);
   const mergedSource = mergeContributions(mergeContributions(reusedSource, impl.persistentContributions), contributions);
+  // T0-24: bind the C-09 environment probe (one shared cache per app). The
+  // resolution runs every update so an authored environments.* node flips the
+  // binding live; an hdri/preset request keeps the neutral floor until the
+  // async acquire lands and `onUpgrade` swaps it.
+  if (prd02LightingOn(ctx.flags)) {
+    const device = (ctx.renderer as { readonly device?: RenderDevice } | undefined)?.device;
+    if (device) {
+      const tier = ctx.quality.tier;
+      const resolution = resolveEnvironment(liveSnapshot, tier, ctx.flags);
+      if (resolution.kind !== "legacy") {
+        impl.environmentCache ??= new EnvironmentCache(
+          device,
+          environmentProbeFactorySlot.get(ctx.flags)(device),
+          defaultProbeLoader(environmentProbeFactorySlot.get(ctx.flags)(device))
+        );
+        const requestKey = JSON.stringify(resolution.probe);
+        if (impl.environmentProbeRequest !== requestKey) {
+          impl.environmentProbeRequest = requestKey;
+          const binding = bindPrd02EnvironmentProbe(resolution, {
+            device,
+            tier,
+            flags: ctx.flags,
+            cache: impl.environmentCache,
+            onUpgrade: (probe) => { impl.environmentProbe = probe; }
+          });
+          impl.environmentProbe = binding.probe;
+        }
+        const probed = mergedSource as RenderSource & {
+          environmentLighting?: EnvironmentLightingOptions | false;
+          environmentProbe?: EnvironmentProbe | null;
+          environmentProbeDiffuseIntensity?: number;
+          environmentProbeSpecularIntensity?: number;
+          environmentProbeAmbient?: { readonly color: readonly [number, number, number]; readonly intensity: number } | null;
+        };
+        // Flag-on the C-09 probe owns environment lighting — the legacy studio
+        // procedural object would early-return `collectEnvironmentLighting`.
+        probed.environmentLighting = undefined;
+        probed.environmentProbe = impl.environmentProbe;
+        probed.environmentProbeDiffuseIntensity = resolution.diffuseIntensity;
+        probed.environmentProbeSpecularIntensity = resolution.specularIntensity;
+        probed.environmentProbeAmbient = resolution.ambient
+          ? { color: colorToLinearRgb(resolution.ambient.color), intensity: resolution.ambient.intensity }
+          : null;
+      }
+    }
+  }
   impl.lastInput = { ...input, source: mergedSource };
   impl.source = mergedSource;
   return mergedSource;

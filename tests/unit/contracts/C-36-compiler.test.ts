@@ -177,4 +177,38 @@ describe("C-36 compiler", () => {
     expect([...packed.data].every(Number.isFinite)).toBe(true);
     compiled.dispose();
   });
+
+
+  it("binds the C-09 neutral probe on an ambient-only scene under compiler+lighting (T0-24)", async () => {
+    const { MockRenderDevice } = await import("../../../packages/rendering/src/RenderDevice");
+    const flags = resolveQrFlags({ options: ["compiler", "lighting"] });
+    const snapshot = {
+      schema: "aura3d-scene-snapshot/1.0",
+      background: "#000000",
+      camera: { mode: "orbit", position: [0, 2, 5], target: [0, 0, 0] },
+      diagnostics: { enabled: false },
+      nodes: [
+        { kind: "primitive", primitive: "box", name: "b", size: 1 },
+        { kind: "light", light: "ambient", name: "amb", intensity: 0.5, color: "#ffffff" }
+      ]
+    } as unknown as AuraSceneSnapshot;
+    const compiled = await compileScene(
+      snapshot,
+      mountCtx(flags, { renderer: { device: new MockRenderDevice() } as MountSceneCompileContext["renderer"] })
+    );
+    const source = compiled.source as unknown as {
+      environmentProbe?: { source?: string } | null;
+      environmentProbeDiffuseIntensity?: number;
+      environmentProbeSpecularIntensity?: number;
+      environmentProbeAmbient?: { color: readonly number[]; intensity: number } | null;
+      environmentLighting?: unknown;
+    };
+    expect(source.environmentProbe?.source).toBe("neutral");
+    expect(source.environmentProbeDiffuseIntensity).toBe(1);
+    expect(source.environmentProbeSpecularIntensity).toBe(1);
+    expect(source.environmentProbeAmbient?.intensity).toBe(0.5);
+    expect(source.environmentLighting).toBeUndefined();
+    compiled.dispose();
+  });
+
 });
