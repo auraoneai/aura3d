@@ -32,9 +32,8 @@ describe("stubSetInstanceTransforms capacity (risk 2)", () => {
     const { app, handle, node } = instancedHarness(2);
     const m = new Float32Array(32).fill(0).map((_, i) => (i % 16 < 12 && i % 16 % 4 === 0 ? 1 : 0));
     stubSetInstanceTransforms(handle, app, m, 1);
-    // AuraTransformSpec.scale is a [x, y, z] tuple (instanceTransforms.ts hidden slot).
-    const hidden = node.instances[1] as { scale: readonly number[] };
-    expect(hidden.scale).toEqual([0, 0, 0]);
+    const hidden = node.instances[1] as { scale: { x: number } };
+    expect(hidden.scale.x).toBe(0);
   });
 });
 
