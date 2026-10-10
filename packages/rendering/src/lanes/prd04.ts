@@ -53,5 +53,6 @@ export {
   type TextureBudgetPolicy
 } from "../textures/TextureBudget.js";
 // P4-1: frame-graph flag seam — lane-15 wires `setRendererQrFlags` inside
-// createAuraApp eventually (qr-request); harnesses set it directly until then.
+// createAuraApp eventually (qr-request #145, lane-04 dependency comment);
+// harnesses set it directly until then.
 export { setRendererQrFlags, rendererQrFlags } from "../renderer/FrameGraph.js";

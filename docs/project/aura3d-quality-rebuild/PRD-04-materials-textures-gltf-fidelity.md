@@ -1246,14 +1246,14 @@ meantime and which criterion moves to the next checkpoint after it lands.
 | Q-01-4 | 01 | Legacy tangent transform by `mat3(u_model)` instead of `u_normalMatrix` (`ShaderLibrary.ts:602, 1132, 2112, 2118`) | §3.7 | generated `tangent_frame` only |
 | Q-01-5 | 01 | `brdf` chunk per r185 (DFG LUT `DFGLUTData.js` byte-identical in `BRDFLut.ts`, axis `(roughness, NdotV)`, multiscatter, spec-AA, Lambert) and `PhysicalMaterial` fields of §8.2; PRD 04 attaches `tests/qr/prd04/oracles/physical-bsdf-reference.ts`, the r185 golden JSON and a byte-identity test for the LUT | C-02 | lobes tested against `tests/qr/prd04/shims/brdf_r185.glsl.ts` |
 | Q-01-6 | 01 | ForwardPass: copy `material.renderState.alphaToCoverage` into `RenderCommandState`; transmissive queue drawn after the C-01 `transmission` phase in the split ForwardPass | C-01, C-04 | A2C and refraction order integrated |
-| Q-01-7 | 01 | Delete `production-runtime/shaders/chunks/{brdf,ibl,pbr.frag,pbr.vert,shadows}.glsl` (E34) once unimported | — | — |
+| Q-01-7 → [#769] | 01 | Delete `production-runtime/shaders/chunks/{brdf,ibl,pbr.frag,pbr.vert,shadows}.glsl` (E34) once unimported | — | — |
 | Q-02-1 | 02 | IBL chunk applies r185 `computeSpecularOcclusion` with the material `ao`; transmissive surfaces receive shadows (C-11); env sampler fix `ExternalParityRenderPreset.ts:169` | C-09, C-11 | integrated |
 | Q-05-1 | 05 | Vendor r185 `examples/jsm/libs/mikktspace.module.js` (MIT header) into `packages/assets/vendor/mikktspace/`, add to `LICENSE-THIRD-PARTY` | C-16 | runtime keeps `generateMeshTangents`; unit tests load from `node_modules/three` |
 | Q-05-2 | 05 | Honour the per-image `colorSpace` intent PRD 04 passes to `gltf/ImageDecode.ts`/transcoder; encode fixtures (UASTC-all-maps DamagedHelmet KTX2, Draco, Meshopt) with pinned encoders | C-16, C-17 | PRD 04 lane CI encodes once with a pinned external encoder, commits to `fixtures/asset-corpus/`, records command + version in `provenance` |
-| Q-05-3 | 05 | Replace the `loaders/KTX2Loader.ts` stub with a real re-export (E34) | C-16 | — |
+| Q-05-3 → [#772] | 05 | Replace the `loaders/KTX2Loader.ts` stub with a real re-export (E34) | C-16 | — |
 | Q-06-1 | 06 | Confirm `applyTextureBudget` call in `webgl2/TextureUpload.ts` (PR 0b-2) and the deform chunk order before `prd04.tangentFrame`; review scenes 08/15 | C-18 | — |
 | Q-11-1 | 11 | Delete `productPropBodyGate/OrangeGate/Albedo`, `smoothedProductNormal`, fixed `lightDirection`, `2.25`, `data[170]` (`WebGPUDevice.ts:3555-3588, 3665, 3675-3691, 3765, 2234`) | C-29 | gates already inert once PRD 04 deletes the Duck route write (E39) |
-| Q-11-2 | 11 | Delete `production-runtime/shaders/wgsl/pbr.wgsl` stub (E34); WGSL generator target consumes `ShaderChunk.wgsl` twins | C-02, C-29 | — |
+| Q-11-2 → [#771] | 11 | Delete `production-runtime/shaders/wgsl/pbr.wgsl` stub (E34); WGSL generator target consumes `ShaderChunk.wgsl` twins | C-02, C-29 | — |
 | Q-12-1 | 12 | Add the new `fixtures/asset-corpus/` LFS paths to `benchmarks/quality-rebuild/ci.sh`; material rubric prompt lines for §16.2 criteria | C-30, C-32 | lane workflow pulls LFS itself |
 | Q-13-1 | 13 | Remove the "procedural texture … has no rasterizer" generated-code warning (`index.ts:18262-18269`) when the C-15 real path is active; skills from facts F-04-*; no template passes `replaceTextures: true` | C-34, C-40 | — |
 | Q-14-1 | 14 | Per-route: apply §10.2 decisions, run `pin-emissive-defaults`, opt into `A3D_QR_MATERIALS` | R21 | standalone acceptance uses lane scenes, not routes |
@@ -1261,9 +1261,17 @@ meantime and which criterion moves to the next checkpoint after it lands.
 | Q-15-1 | 15 | `model()` (`index.ts:2098-2123`) forwards `materialOverrides` and `variant`; `AuraModelNode` (`:1484`) declares them | C-15 | runtime `handle.materials.setMaterialOverrides/setMaterialVariant` |
 | Q-15-2 | 15 | `createProductionPrimitiveMaterial` (`index.ts:14877`) calls `resolveMaterialSpecDefaults(spec, flags)` and uses it for the `:14896`/`:14912` fallbacks | C-36 | primitive emissive defaults unchanged until it lands |
 | Q-15-3 | 15 | Apply §10.2 decisions in `apps/` default sites (data-galaxy, material-asset-inspector, product-configurator, asset-audition) | R21 | — |
-| Q-15-4 | 15 | Remove E34 re-exports from `packages/rendering/src/index.ts`; decide `@aura3d/materials` fate | — | — |
+| Q-15-4 → [#774] | 15 | Remove E34 re-exports from `packages/rendering/src/index.ts`; decide `@aura3d/materials` fate | — | — |
 | CCR-04-1 | 15 + consumer | `AuraProceduralTextureSpec.seed?: number`; `@deprecated` JSDoc on `textureAnisotropy` | C-15 | seed hashed from params |
 | CCR-04-2 | 15 + consumer | `AuraMaterialDiagnostics` numeric fields that can be unmeasurable become `number \| null` | C-15, C-31 | issue `material-program-pending` |
+
+| QR-04-01 → [#770] | 01 | `aura.scene.color` producer for the transmission phase reads edge (`Transmission.ts` currently reads `aura.scene.color.opaque`/`color` by graph flavor) | C-01 | reads edge declared on the produced resource names |
+| QR-04-02 → [#775] | 15 | `createAuraApp`/`model()` forwards `renderer.transmission` to `setTypedGLBActorQrTransmissionMode` (`TypedGLBActor.ts:222-238`) | C-36 | harnesses set the mode directly; flag-on reachability via dev-server URL until it lands |
+| QR-04-03 → [#776] | 15 | `model()` forwards `textureBudgetBytes`/`maxTextureSize`/decoders/variant/tangents into `TypedGLBActor` options | C-27 | harnesses pass options on the pipeline directly (prd04-assets.ts URL params) |
+| QR-04-04 → [#777] | 05 | CI-0 typecheck breaker `tests/qr/prd05/route-bundle-no-asset-metadata.test.ts:48` (TS2339) | — | lane typecheck scoped to lane tsconfig; repo gate unchanged |
+| QR-04-05 → [#778] | 12 | CI-0 typecheck breaker `tests/unit/contracts/impl/prd12-variants.test.ts:73` (TS18048) | — | same |
+| QR-04-06 → [#779] | 15 | CI-0 typecheck breakers `tests/browser/production-runtime-production-scene-tools.ts:151`, `route-cue-maps.test.ts:21-28`, `tests/unit/tools/*` | — | same |
+| QR-04-07 → [#773] | 05 | MikkTSpace vendored module as a lazy chunk; install `setMikkTSpaceModule`/`setMikkTSpaceWorkerFactory` on demand | C-16 | `generateMeshTangents` fallback stays; T0-18(f) timeouts added |
 
 PRD 09 consumes C-15 for game kits and needs no request.
 
