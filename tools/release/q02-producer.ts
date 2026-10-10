@@ -24,8 +24,8 @@ import { artifact, newRunId, sameSource, sourceIdentity, validateReceipt, writeI
   type Artifact, type ProducerReceipt } from '../muse3jsparity-readiness/evidence-lineage';
 import { loadMuse301ExecutionRequirements } from '../muse3jsparity-readiness/requirements';
 import { produceRouteAcceptance, produceTypedAssetAcceptance } from '../muse3jsparity-readiness/route-acceptance';
-import { auditSource } from '../muse3jsparity-docs-audit/index';
-import { validateFinalClaims } from '../muse3jsparity-docs-audit/claims';
+import { auditSource } from '../_quarantine/muse3jsparity-docs-audit/index';
+import { validateFinalClaims } from '../_quarantine/muse3jsparity-docs-audit/claims';
 
 const root = process.cwd();
 const output = relative(root, resolve(root, process.argv[2] ?? `tests/reports/muse3jsparity/q02/${newRunId()}`));

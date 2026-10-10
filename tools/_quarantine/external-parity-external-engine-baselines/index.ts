@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { productVisualParityScene } from "../external-parity-product-visual-parity/productScene.js";
+import { productVisualParityScene } from "../../external-parity-product-visual-parity/productScene.js";
 import { baseReport, writeJson } from "../external-parity-reporting/index.js";
 
 const reportPath = "tests/reports/external-parity-external-engine-baselines.json";

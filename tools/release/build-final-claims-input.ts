@@ -23,8 +23,8 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { finalClaimsDocuments } from '../muse3jsparity-docs-audit/claims';
-import { structuralDocumentLineNumbers, isDescriptiveDocumentLine } from '../muse3jsparity-docs-audit/document-invariants';
+import { finalClaimsDocuments } from '../_quarantine/muse3jsparity-docs-audit/claims';
+import { structuralDocumentLineNumbers, isDescriptiveDocumentLine } from '../_quarantine/muse3jsparity-docs-audit/document-invariants';
 import { artifact, sourceIdentity, type Artifact } from '../muse3jsparity-readiness/evidence-lineage';
 
 /** A measured claim names a direction and states a number the receipt can contradict. */
