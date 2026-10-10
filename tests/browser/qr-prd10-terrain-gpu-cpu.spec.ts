@@ -44,9 +44,15 @@ test("terrain GPU height readback == CPU bilinear within 1e-4 m (1000 pts)", asy
       return { error: String(e) } as const;
     }
   }, { srcUpload, srcReadback, grid: { columns: grid.columns, rows: grid.rows, heights: Array.from(grid.heights) }, uvs, heightScale });
+  // P-22 requireOrSkip: on CI the runner must expose WebGL2 — a missing
+  // adapter is a red job, not a skipped spec; local non-CI may skip.
   if ("error" in gpu) {
-    test.skip(true, `webgl2 unavailable in this runner: ${gpu.error}`);
-    return;
+    if (process.env.CI) {
+      expect((gpu as { error?: string }).error ?? null, "CI runner must expose WebGL2").toBeNull();
+    } else {
+      test.skip(true, `webgl2 unavailable in this runner: ${gpu.error}`);
+      return;
+    }
   }
   const cpu = Float32Array.from(uvs, (uv) => terrainHeightBilinear(grid, uv, heightScale));
   let maxErr = 0;
