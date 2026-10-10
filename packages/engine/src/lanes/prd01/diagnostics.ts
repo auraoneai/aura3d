@@ -153,6 +153,7 @@ export function collectPrograms(app: AuraApp): unknown {
     compileMsTotal: stats.compileMsTotal,
     reused: introspective.reused ?? null,
     active: stats.compiled,
+    compiledSinceReady: stats.compiledSinceReady ?? null,
     cacheKeys: introspective.keys?.() ?? ([] as const),
     programs: introspective.keys?.() ?? ([] as const),
     deviceProgramCompiles: counters?.programCompiles ?? null
