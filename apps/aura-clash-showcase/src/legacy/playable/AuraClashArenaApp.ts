@@ -1,5 +1,8 @@
 import { summarizePublicCrowdDraws } from "./arena/CrowdDrawEvidence";
-import { camera, createAuraApp, lights, material, primitives, createGameApp, createGameAudio, game, scene, type GameAudio, type GameCombatEvent, type GameCombatMove, type GameCombatWorldSnapshot } from "@aura3d/engine";
+import { camera, lights, material, primitives, createGameApp, createGameAudio, game, scene, type GameAudio, type GameCombatEvent, type GameCombatMove, type GameCombatWorldSnapshot } from "@aura3d/engine";
+import { createGame } from "@aura3d/game";
+import { bindClashDrive } from "../../scenario-drive";
+import { mountedEvidence } from "../../game-evidence";
 import {
   attachRootRenderSource,
   createSideViewGameRenderPreset,
@@ -58,6 +61,7 @@ import {
   annotateAuraClashArenaStage,
   collectAuraClashArenaStageEvidence
 } from "./arena/AuraClashArenaStage";
+import { mountHud, mountTouchControls, type HudDocument } from "@aura3d/game";
 import { createArenaTweaksEvidence, collectArenaTweaksState, type AuraClashArenaTweaksState } from "./arena/ArenaTweaksPanel";
 import { createRenderedArenaStage } from "./arena/RenderedArenaStage";
 import { createPublicCrowdNodes } from "./arena/CrowdInstances";
@@ -84,8 +88,7 @@ import {
 import {
   CLASH_INPUT_BUFFER_LIFETIME_MS,
   clashHitStopSeconds,
-  comboClockText,
-  comboFlashText,
+
   readPlayableHudMode,
   resolveRivalAiRole,
   rivalAiStrikeBias,
@@ -105,7 +108,8 @@ import {
   auraClashAudioAssets,
   auraClashAudioBusLevels,
   auraClashAudioKoDuck,
-  auraClashAudioManifest
+  auraClashAudioManifest,
+  type AuraClashPackAssetReference
 } from "./audio/auraClashAudioManifest";
 import { createFightHudReplayControlsModel, type FightHudReplayControlsModel } from "../ui/FightHud";
 import type {
@@ -255,6 +259,8 @@ interface AudioRuntime {
   cue(name: string): void;
   /** AC-A6: drop the sfx bus for the round-over KO duck window. */
   beginKoDuck(): void;
+  /** PRD-09 1740: start the arena crowd bed once (first round ceremony). */
+  startBeds(): void;
   /** AC-A6: advance duck restore timing; call once per frame. */
   update(dt: number): void;
   proof(): AudioProof;
@@ -510,33 +516,8 @@ export function mountAuraClashArenaApp(): void {
         </div>
       </nav>
 
-      <section class="aca-hud" aria-label="Fight HUD" data-hud="fight-hud" role="status">
-        <article class="aca-card">
-          <span>Player one</span>
-          <h2 id="player-name">Mara Volt</h2>
-          <p>Skinned GLB fighter driven by Aura3D production animation runtime.</p>
-          <div class="aca-rounds" id="player-rounds" aria-label="Player rounds"></div>
-          <div class="aca-bar aca-health" data-testid="player-health" aria-label="Player health"><i id="player-health"></i></div>
-          <div class="aca-bar aca-meter" aria-label="Player meter"><i id="player-meter"></i></div>
-          <span id="player-burst" class="aca-burst" data-ready="false" aria-live="polite">BURST CHARGING</span>
-          <b id="player-state" class="aca-training">LOADING - 100 HP</b>
-        </article>
-        <article class="aca-clock" data-testid="round-timer" aria-label="Round timer">
-          <strong id="round-time">99</strong>
-          <span id="callout">LOAD</span>
-          <em id="combo-count" class="aca-combo-count"></em>
-        </article>
-        <article class="aca-card aca-rival-card">
-          <span>Rival AI</span>
-          <h2 id="rival-name">Rook Atlas</h2>
-          <p>Independent second GLB instance with its own clips, spacing, and hit windows.</p>
-          <div class="aca-rounds" id="rival-rounds" aria-label="Rival rounds"></div>
-          <div class="aca-bar aca-health"><i id="rival-health"></i></div>
-          <div class="aca-bar aca-meter" aria-label="Rival meter"><i id="rival-meter"></i></div>
-          <span id="rival-burst" class="aca-burst" data-ready="false" aria-live="polite">BURST CHARGING</span>
-          <b id="rival-state" class="aca-training">LOADING - 100 HP</b>
-        </article>
-      </section>
+      <!-- PRD-09 1767: broadcast fight HUD now mounts through @aura3d/game mountHud
+           (fighting theme) over the canvas; the card grid below is deleted. -->
 
       <section class="aca-stage-shell" aria-label="Aura Clash Arena production GLB stage">
         <canvas id="aura-clash-arena-canvas" class="aca-canvas" aria-label="Aura3D production renderer canvas"></canvas>
@@ -544,25 +525,12 @@ export function mountAuraClashArenaApp(): void {
           <span id="render-status">Loading skinned GLB animation runtime</span>
           <span id="clip-status">clips pending</span>
         </div>
-        <div id="toast" class="aca-toast">Loading Aura Clash Arena production GLB fighter route.</div>
-        <div id="combo-flash" class="aca-combo" aria-live="polite"></div>
         <!-- AC-A2: training-only exchange-replay strip. Hidden outside debug/training mode. -->
         <div id="replay-scrub" class="aca-replay-scrub" aria-live="polite" hidden></div>
       </section>
 
-      <section class="aca-controls" aria-label="Controls">
-        <button type="button" data-hold="left">A / Left</button>
-        <button type="button" data-hold="right">D / Right</button>
-        <button type="button" data-hold="down">S / Down</button>
-        <button type="button" data-press="jump">W Jump</button>
-        <button type="button" data-press="dash">Space Dash</button>
-        <button type="button" data-hold="guard">Shift / Q Block</button>
-        <button type="button" data-press="light">J Light</button>
-        <button type="button" data-press="heavy">K Heavy</button>
-        <button type="button" data-press="special">L Special</button>
-        <button type="button" data-press="pause">P Pause</button>
-        <button type="button" data-press="reset">R Reset</button>
-      </section>
+      <!-- PRD-09 1767: DOM key-hint buttons replaced by the dpad-4btn touch
+           preset writing into the same controls sink the keyboard feeds. -->
 
       <!--
         Evidence prose is collapsed by default so the arena and fighters own the primary
@@ -691,8 +659,7 @@ export function mountAuraClashArenaApp(): void {
       deterministicReplay: createDeterministicReplayProof(),
       engineCombat: fallbackEngineCombatProof()
     });
-    setText(root, "#callout", "ERROR");
-    setText(root, "#toast", `Aura Clash Arena failed: ${message}`);
+    setText(root, "#render-status", `Aura Clash Arena failed: ${message}`);
   });
 }
 
@@ -706,7 +673,74 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
 
   const playerState = createFighter("player", "Mara Volt", "Player one", DEFAULT_PLAYER_X, 1, playerClips);
   const rivalState = createFighter("rival", "Rook Atlas", "Rival AI", DEFAULT_RIVAL_X, -1, rivalClips);
+  clashSession.fighters.set("player", playerState);
+  clashSession.fighters.set("rival", rivalState);
   const controls = createControls(root);
+
+  // PRD-09 1767: fighting-theme HUD + dpad-4btn touch on the shared kit. The
+  // old `.aca-hud` card grid and `.aca-controls` button strip are deleted from
+  // the scaffold; two ghosted health meters, round/meter bars, timer, edge
+  // combo, callout and ROUND/FIGHT/KO banners all route through `clashHud`.
+  const stageShell = root.querySelector<HTMLElement>(".aca-stage-shell");
+  if (!stageShell) throw new Error("Missing .aca-stage-shell host");
+  const hudHost = document.createElement("div");
+  hudHost.className = "a3g-game-hud";
+  stageShell.appendChild(hudHost);
+  const clashHud = mountHud(
+    { root: hudHost, doc: document as unknown as HudDocument },
+    {
+      theme: "fighting",
+      maxScreenFraction: 0.22,
+      widgets: [
+        { id: "p1-name", kind: "prompt", anchor: "top-left" },
+        { id: "p1-rounds", kind: "lives", anchor: "top-left", label: "Player rounds" },
+        { id: "p1-health", kind: "meter", max: START_HEALTH, ghost: true, anchor: "top-left", label: "Mara Volt", color: "#39d353" },
+        { id: "p1-meter", kind: "meter", max: 100, anchor: "top-left", label: "Meter", color: "#e8b93f" },
+        { id: "p1-state", kind: "prompt", anchor: "top-left", mobileAnchor: "hidden" },
+        { id: "p2-name", kind: "prompt", anchor: "top-right" },
+        { id: "p2-rounds", kind: "lives", anchor: "top-right", label: "Rival rounds" },
+        { id: "p2-health", kind: "meter", max: START_HEALTH, ghost: true, anchor: "top-right", label: "Rook Atlas", color: "#39d353" },
+        { id: "p2-meter", kind: "meter", max: 100, anchor: "top-right", label: "Meter", color: "#e8b93f" },
+        { id: "p2-state", kind: "prompt", anchor: "top-right", mobileAnchor: "hidden" },
+        { id: "clock", kind: "timer", mode: "countdown", warnAt: 10, anchor: "top" },
+        { id: "callout", kind: "prompt", anchor: "top" },
+        { id: "combo", kind: "combo", anchor: "left" },
+        { id: "burst", kind: "prompt", anchor: "bottom-left" }
+      ]
+    }
+  );
+  clashHud.set("p1-name", "Mara Volt");
+  clashHud.set("p2-name", "Rook Atlas");
+  const touchControls = mountTouchControls(
+    {
+      press: (action) => controls.setTouch(action, true),
+      release: (action) => controls.setTouch(action, false),
+      setAction: (action, held) => controls.setTouch(action, held)
+    },
+    {
+      preset: "dpad-4btn",
+      bindings: {
+        "stick.left": "left",
+        "stick.right": "right",
+        "stick.up": "jump",
+        "stick.down": "down",
+        "rstick.up": "dash",
+        left: "left",
+        right: "right",
+        block: "guard",
+        light: "light",
+        heavy: "heavy",
+        special: "special",
+        jump: "jump"
+      }
+    },
+    {
+      doc: document as unknown as HudDocument,
+      root: hudHost,
+      haptics: true,
+      coarsePointer: () => matchMedia("(pointer: coarse)").matches
+    }
+  );
   const gameApp = createGameApp(null, {
     autoStart: false,
     loop: {
@@ -894,6 +928,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
 
   const renderedStage = createRenderedArenaStage();
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  clashSession.reducedMotion = reducedMotion;
   const renderPreset = createSideViewGameRenderPreset({
     debugVolumesEnabled: false,
     reducedMotion
@@ -1505,7 +1540,9 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   // The root owns this route's sole GPU renderer. Existing actor/stage geometry
   // is explicitly production-runtime compatibility; root spotlights and typed
   // instances are mounted directly in its public scene.
-  const rootStageApp = createAuraApp(canvas, {
+  const clashGame = createGame({
+    id: "aura-clash",
+    target: canvas,
     autoStart: false, diagnostics: false,
     // CSS-pixel resolution is a real supported route configuration and keeps
     // the evidence readback bounded; normal users retain the authored DPR cap.
@@ -1521,8 +1558,20 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         ? Math.min(1, 320 / Math.max(1, window.innerWidth))
         : Math.min(window.devicePixelRatio || 1, 1.75),
     renderer: { mode: "production", qualityProfile: "production" },
-    scene: createRootStageScene()
+    scene: () => createRootStageScene(),
+    qualityRebuild: { flags: ["game"] },
+    evidence: {
+      schema: 1,
+      sections: async () => (await import("../../game-evidence")).sections,
+      legacyGlobals: []
+    },
+    scenarios: async () => (await import("../../scenarios/index")).auraClashScenarios
   });
+  const rootStageApp = clashGame.app;
+  // The combat sim drives the loop and steps the stage app manually each frame;
+  // ready() (not start()) moves the session to "playing" once mounted so the
+  // C-33 beacon reflects live state without a second runtime RAF.
+  void clashGame.ready();
   await rootStageApp.ready();
   // Submit one mount frame before evidence sampling. This compiles the live
   // production pipeline and uploads static stage resources without claiming a
@@ -1620,6 +1669,9 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     ceremonyText = roundCeremonyTextForRound(roundIndex);
     ceremonyShowSeconds = 0;
     ceremonyIntroRemaining = ROUND_INTRO_SECONDS;
+    // PRD-09 1740: ROUND n announcer + the arena crowd bed under the fight.
+    audio.cue("round");
+    audio.startBeds();
     // AC-A1/A2/A3: presentation state resets with the round.
     clipBridges.player.reset();
     clipBridges.rival.reset();
@@ -1641,12 +1693,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     });
   };
 
-  const installTestDriver = (): void => {
-    if (!testDriverEnabled) {
-      delete gameWindow.__AURA_CLASH_ARENA_TEST_DRIVER__;
-      return;
-    }
-    gameWindow.__AURA_CLASH_ARENA_TEST_DRIVER__ = {
+  const arenaTestDriver = {
     setPlayerHealth(health: number) {
       playerState.health = clamp(health, 0, START_HEALTH);
       playerState.action = playerState.health <= 0 ? "ko" : playerState.action === "ko" ? "idle" : playerState.action;
@@ -1811,7 +1858,29 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       gameApp.step(1 / 60);
     }
   };
+
+  const installTestDriver = (): void => {
+    if (!testDriverEnabled) {
+      delete gameWindow.__AURA_CLASH_ARENA_TEST_DRIVER__;
+      return;
+    }
+    gameWindow.__AURA_CLASH_ARENA_TEST_DRIVER__ = arenaTestDriver;
   };
+
+  bindClashDrive({
+    pumpFrames(frames: number) {
+      for (let i = 0; i < frames; i += 1) arenaTestDriver.advanceFrame();
+    },
+    setPositions(playerX: number, rivalX: number) {
+      arenaTestDriver.setPositions(playerX, rivalX);
+    },
+    queuePlayerAttack(move: string) {
+      arenaTestDriver.queuePlayerAttack(move as MoveId);
+    },
+    reset() {
+      arenaTestDriver.resetForCapture();
+    }
+  });
 
   function tickFrame(timeMs: number): void {
     const elapsedSeconds = lastTimeMs === 0 ? 1 / 60 : Math.max(0, (timeMs - lastTimeMs) / 1000);
@@ -1823,6 +1892,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     lastTimeMs = timeMs;
     frame += 1;
     controls.beginFrame();
+    touchControls.update();
 
     if (controls.pressed("pause")) {
       paused = !paused;
@@ -1966,7 +2036,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
             blockSpark.life = Math.max(blockSpark.life, 0.48);
           }
           const defender = combatResult.blockedBy === "player" ? playerState : rivalState;
-          defender.hitStopRemaining = Math.max(defender.hitStopRemaining, 0.1);
+          clashSession.hitStop(0.1, { actors: [defender.id] });
           clipImpulse = Math.min(1.4, clipImpulse + 0.45);
           audio.cue("guard-break");
           // A guard break is a confirmed combat impact even though it applies guard damage
@@ -2022,6 +2092,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         // AC-A3/A5: a finisher is the biggest slam of the round.
         crowdCheer = Math.min(1, crowdCheer + (callout === "DRAW" ? 0.5 : 1));
         slamImpulse = callout === "KO" ? 1.2 : 0.9;
+        // PRD-09 1740: the KO landing hit rides under the announcer line.
+        if (callout === "KO") audio.cue("ko-impact");
         audio.cue(callout.toLowerCase());
       }
     }
@@ -2055,7 +2127,11 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     // AC-A4 ceremony clock: intro countdown clears the round text; round-over text holds.
     if (ceremonyIntroRemaining > 0) {
       ceremonyIntroRemaining = Math.max(0, ceremonyIntroRemaining - dt);
-      if (ceremonyIntroRemaining === 0 && !roundOver) ceremonyText = null;
+      if (ceremonyIntroRemaining === 0 && !roundOver) {
+        ceremonyText = null;
+        // PRD-09 1740: FIGHT announcer when the intro ceremony clears.
+        audio.cue("fight");
+      }
     }
     if (ceremonyText !== null) ceremonyShowSeconds += dt;
     updateSparks(sparks, dt);
@@ -2101,7 +2177,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       scrubOffsetSeconds,
       bufferedSeconds: exchangeReplay.bufferedSeconds()
     });
-    updateHud(root, playerState, rivalState, roundTime, callout, toast, playerScore, rivalScore, replayControls);
+    updateHud(root, clashHud, playerState, rivalState, roundTime, callout, toast, playerScore, rivalScore, replayControls);
     writeProof({
       root,
       status: performanceEvidenceReady
@@ -2155,7 +2231,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
 
   setText(root, "#render-status", "Aura3D production GLB animation runtime ready");
   setText(root, "#clip-status", "jab / cross / sword / guard clips bound");
-  updateHud(root, playerState, rivalState, roundTime, callout, toast, playerScore, rivalScore);
+  updateHud(root, clashHud, playerState, rivalState, roundTime, callout, toast, playerScore, rivalScore);
   let frameErrorLogged = false;
   gameWindow.__AURA3D_GAME_RUNTIME__ = gameApp.evidence;
   gameApp.onFrame((_runtimeFrame) => {
@@ -2227,7 +2303,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         engineCombat: engineCombatProof(combatSnapshot)
       });
       gameWindow.__AURA3D_GAME_RUNTIME__ = gameApp.evidence;
-      updateHud(root, playerState, rivalState, roundTime, callout, toast, playerScore, rivalScore);
+      updateHud(root, clashHud, playerState, rivalState, roundTime, callout, toast, playerScore, rivalScore);
     }
   });
   // The evidence driver owns frame scheduling, so it must publish one real
@@ -3283,13 +3359,31 @@ function moveHitStop(id: MoveId): number {
   return clashHitStopSeconds(id as ClashMoveId);
 }
 
+// PRD-09 §7.6/1755 — route hit-stop goes through the session contract:
+// `hitStop(seconds, { actors })` freezes the named fighters' visual clip clocks
+// (the route's existing presentation-only freeze; the combat sim and replay are
+// untouched). When the createGame migration lands, this adapter swaps for the
+// real GameSession whose C-23 time controller freezes actors directly.
+const clashSession = {
+  fighters: new Map<string, FighterState>(),
+  reducedMotion: false,
+  reducedFlash: false,
+  hitStop(seconds: number, options?: { actors?: readonly string[] }): void {
+    const targets = options?.actors ?? [...this.fighters.keys()];
+    for (const id of targets) {
+      const fighter = this.fighters.get(id);
+      if (fighter) fighter.hitStopRemaining = Math.max(fighter.hitStopRemaining, seconds);
+    }
+  },
+  slowMo(): void {}
+};
+
 // Hit-stop + impact impulse + spark burst on a confirmed hit. Both fighters freeze their visual pose
 // for the move's hit-stop window; the defender recoils (and the attacker follows through) via the
 // secondary-motion squash spring. Deterministic + presentation-only (combat sim/replay untouched).
 function applyHitStopAndImpact(attacker: FighterState, defender: FighterState, moveId: MoveId): void {
   const hs = moveHitStop(moveId);
-  attacker.hitStopRemaining = Math.max(attacker.hitStopRemaining, hs);
-  defender.hitStopRemaining = Math.max(defender.hitStopRemaining, hs);
+  clashSession.hitStop(hs, { actors: [attacker.id, defender.id] });
   const recoil = moveId === "special" ? 0.9 : moveId === "heavy" ? 0.62 : 0.4;
   defender.pendingImpulse = Math.max(defender.pendingImpulse, recoil);
   attacker.pendingImpulse = Math.max(attacker.pendingImpulse, recoil * 0.35);
@@ -3673,6 +3767,10 @@ function createPerformanceProof(dt: number, renderSamplesMs: readonly number[], 
 function createAudioRuntime(): AudioRuntime {
   const recentCues: string[] = [];
   const assetUrls = Object.values(auraClashAudioAssets).map((asset) => asset.url);
+  const packAssetUrls = Object.values(auraClashAudioManifest)
+    .map((definition) => definition.asset)
+    .filter((asset): asset is AuraClashPackAssetReference => "pack" in asset)
+    .map((asset) => asset.url);
   const cueEntries = Object.fromEntries(
     Object.values(auraClashAudioManifest).map((definition) => [
       definition.cue,
@@ -3680,7 +3778,8 @@ function createAudioRuntime(): AudioRuntime {
         id: definition.cue,
         bus: definition.bus,
         volume: definition.volume,
-        asset: definition.asset
+        asset: definition.asset,
+        loop: definition.loop
       }
     ])
   ) as unknown as Record<keyof typeof auraClashAudioManifest, Parameters<typeof createGameAudio<keyof typeof auraClashAudioManifest>>[0]["cues"][keyof typeof auraClashAudioManifest]>;
@@ -3692,6 +3791,7 @@ function createAudioRuntime(): AudioRuntime {
     cues: cueEntries
   });
   let koDuckRemaining = 0;
+  let bedsStarted = false;
 
   function cue(name: string): void {
     const definition = auraClashAudioManifest[name as keyof typeof auraClashAudioManifest];
@@ -3703,6 +3803,11 @@ function createAudioRuntime(): AudioRuntime {
 
   return {
     cue,
+    startBeds() {
+      if (bedsStarted) return;
+      bedsStarted = true;
+      void audio.cue("crowd-bed");
+    },
     beginKoDuck() {
       koDuckRemaining = auraClashAudioKoDuck.restoreAfterSeconds;
       audio.setBusVolume(auraClashAudioKoDuck.bus, auraClashAudioKoDuck.duckedLevel);
@@ -3726,6 +3831,7 @@ function createAudioRuntime(): AudioRuntime {
         cueCount: Object.keys(auraClashAudioManifest).length,
         typedAssetCount: assetUrls.length,
         assetUrls,
+        packAssetUrls,
         oscillatorFallback: false,
         audioErrors: evidence.errors,
         // AC-A6 additive telemetry.
@@ -3748,13 +3854,22 @@ function fallbackAudioProof(enabled: boolean): AudioProof {
     cueCount: Object.keys(auraClashAudioManifest).length,
     typedAssetCount: Object.keys(auraClashAudioAssets).length,
     assetUrls: Object.values(auraClashAudioAssets).map((asset) => asset.url),
+    packAssetUrls: Object.values(auraClashAudioManifest)
+      .map((definition) => definition.asset)
+      .filter((asset): asset is AuraClashPackAssetReference => "pack" in asset)
+      .map((asset) => asset.url),
     oscillatorFallback: false,
     audioErrors: []
   };
 }
 
+type FightHud = ReturnType<typeof mountHud>;
+let lastHudCallout = "";
+let lastHudToast = "";
+
 function updateHud(
   root: HTMLElement,
+  hud: FightHud | null,
   player: FighterState,
   rival: FighterState,
   roundTime: number,
@@ -3764,24 +3879,35 @@ function updateHud(
   rivalScore = 0,
   replayControls?: FightHudReplayControlsModel
 ): void {
-  setText(root, "#round-time", String(Math.ceil(roundTime)).padStart(2, "0"));
-  setText(root, "#callout", callout);
-  setText(root, "#player-name", player.name);
-  setText(root, "#rival-name", rival.name);
-  setText(root, "#player-state", `${stateLabel(player)} - ${Math.round(player.health)} HP`);
-  setText(root, "#rival-state", `${stateLabel(rival)} - ${Math.round(rival.health)} HP`);
-  setText(root, "#toast", toast);
+  if (!hud) return;
+  // Ceremony callouts double as banners (PRD-09 1767): ROUND/FIGHT/KO etc.
+  if (callout !== lastHudCallout) {
+    lastHudCallout = callout;
+    if (callout && callout !== "FIGHT") void hud.banner(callout, { holdMs: 900, style: "fight" });
+    else if (callout === "FIGHT") void hud.banner("FIGHT", { holdMs: 700, style: "fight" });
+  }
+  hud.set("clock", roundTime);
+  hud.set("callout", callout);
+  hud.set("p1-state", `${stateLabel(player)} - ${Math.round(player.health)} HP`);
+  hud.set("p2-state", `${stateLabel(rival)} - ${Math.round(rival.health)} HP`);
+  if (toast && toast !== lastHudToast) {
+    lastHudToast = toast;
+    hud.toast(toast, { ms: 2400 });
+  }
   setText(root, "#clip-status", `${player.clip} / ${rival.clip}`);
-  setText(root, "#combo-count", comboClockText(player.combo.count));
-  setText(root, "#combo-flash", comboFlashText(player.combo.count));
-  setRoundMarks(root, "#player-rounds", playerScore);
-  setRoundMarks(root, "#rival-rounds", rivalScore);
-  setBar(root, "#player-health", player.health / START_HEALTH);
-  setBar(root, "#rival-health", rival.health / START_HEALTH);
-  setBar(root, "#player-meter", player.meter / 100);
-  setBar(root, "#rival-meter", rival.meter / 100);
-  updateBurstIndicator(root, "#player-burst", player);
-  updateBurstIndicator(root, "#rival-burst", rival);
+  hud.set("combo", player.combo.count);
+  hud.set("p1-rounds", playerScore);
+  hud.set("p2-rounds", rivalScore);
+  hud.set("p1-health", player.health);
+  hud.set("p2-health", rival.health);
+  hud.set("p1-meter", player.meter);
+  hud.set("p2-meter", rival.meter);
+  hud.set(
+    "burst",
+    player.meter >= SPECIAL_METER_COST && player.specialCooldown <= 0 && player.health > 0
+      ? "BURST READY"
+      : `BURST ${Math.round(player.meter)}%`
+  );
   // Static HUD emphasis only. Renderer-owned crowd/sign items above carry the actual presentation
   // simplification; CSS does not stand in for stage lighting or gameplay effects.
   const hudShell = root.matches(".aca") ? root : root.querySelector<HTMLElement>(".aca");
@@ -3804,15 +3930,6 @@ function updateHud(
       scrubHost.dataset.scrubbing = replayControls.scrubLabel ? "true" : "false";
     }
   }
-}
-
-/** Keep the special affordance in the broadcast HUD tied to the simulation-owned meter/cooldown. */
-function updateBurstIndicator(root: HTMLElement, selector: string, fighter: FighterState): void {
-  const indicator = root.querySelector<HTMLElement>(selector);
-  if (!indicator) return;
-  const ready = fighter.meter >= SPECIAL_METER_COST && fighter.specialCooldown <= 0 && fighter.health > 0;
-  indicator.dataset.ready = String(ready);
-  indicator.textContent = ready ? "BURST READY" : `BURST ${Math.round(fighter.meter)}%`;
 }
 
 function writeProof(input: {
@@ -3936,7 +4053,7 @@ function writeProof(input: {
     ...(input.trainingReplay ? { trainingReplay: input.trainingReplay } : {})
   });
   gameWindow.__AURA_CLASH_ARENA_PROOF__ = proof;
-  gameWindow.__AURA3D_GAME_EVIDENCE__ = {
+  mountedEvidence.auraClash = {
     route: proof.route,
     version: proof.version,
     frame: proof.frame,
@@ -4187,6 +4304,10 @@ interface Controls {
   endFrame(): void;
   pressed(action: keyof typeof actionKeys): boolean;
   held(action: keyof typeof actionKeys): boolean;
+  /** PRD-09 1767: touch preset sink — held feeds `held`, each rising edge also
+   * latches one `pressed` frame (cleared in `endFrame`), matching the DOM
+   * button semantics this replaced. */
+  setTouch(action: string, held: boolean): void;
 }
 
 function createControls(root: HTMLElement): Controls {
@@ -4231,6 +4352,16 @@ function createControls(root: HTMLElement): Controls {
     },
     held(action) {
       return heldButtons.has(action) || actionKeys[action].some((code) => heldKeys.has(code));
+    },
+    setTouch(action, held) {
+      const key = action as keyof typeof actionKeys;
+      if (!(key in actionKeys)) return;
+      if (held) {
+        if (!heldButtons.has(key)) pressedButtons.add(key);
+        heldButtons.add(key);
+      } else {
+        heldButtons.delete(key);
+      }
     }
   };
 }
@@ -4245,27 +4376,9 @@ function isHeld(input: ReturnType<typeof game.input>, controls: Controls, action
   return controls.held(action);
 }
 
-function setRoundMarks(root: HTMLElement, selector: string, wins: number, max = 2): void {
-  const host = root.querySelector<HTMLElement>(selector);
-  if (!host) return;
-  const marks = Math.max(0, Math.min(max, Math.round(wins)));
-  host.replaceChildren(
-    ...Array.from({ length: max }, (_, index) => {
-      const mark = document.createElement("i");
-      mark.dataset.won = index < marks ? "true" : "false";
-      return mark;
-    })
-  );
-}
-
 function setText(root: HTMLElement, selector: string, value: string): void {
   const element = root.querySelector<HTMLElement>(selector);
   if (element) element.textContent = value;
-}
-
-function setBar(root: HTMLElement, selector: string, value: number): void {
-  const element = root.querySelector<HTMLElement>(selector);
-  if (element) element.style.inlineSize = `${Math.round(clamp(value, 0, 1) * 100)}%`;
 }
 
 function clamp(value: number, min: number, max: number): number {

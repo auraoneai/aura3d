@@ -923,3 +923,8 @@ input {
   color: #ffe978;
   text-shadow: 0 0 8px rgba(255, 233, 120, 0.55);
 }
+
+/* PRD-09 1767: shared fighting-theme HUD + dpad-4btn touch overlay (kit). */
+.a3g-game-hud { position: absolute; inset: 0; pointer-events: none; z-index: 30; }
+.a3g-game-hud .a3g-tc { pointer-events: auto; }
+.aca-stage-shell { position: relative; }

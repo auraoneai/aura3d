@@ -48,7 +48,7 @@ export const auraClashPosterScenarios: AuraClashPosterScenario[] = [
   {
     id: "match-start",
     title: "Match start composition",
-    route: "/playable/?capture=match-start",
+    route: "/playable/?scenario=match-start",
     outputFile: "aura-clash-match-start.png",
     composition: "Opening gameplay frame with both fighters grounded, HUD readable, stage depth visible, and no impact effects hiding silhouette.",
     evidenceRole: "visual-quality",
@@ -79,7 +79,7 @@ export const auraClashPosterScenarios: AuraClashPosterScenario[] = [
   {
     id: "combat-impact",
     title: "Combat impact composition",
-    route: "/playable/?capture=combat-impact",
+    route: "/playable/?scenario=combat-impact",
     outputFile: "aura-clash-combat-impact.png",
     composition: "Mid-combat hit frame with hit spark, readable attacker/defender poses, HUD state, and stage depth still visible.",
     evidenceRole: "visual-quality",

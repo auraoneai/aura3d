@@ -12,8 +12,8 @@ import { auraClashEnvironment, auraClashLights } from "./scene/lighting";
 import { auraClashWorldNodes, P1_NODE, P2_NODE, HIT_FLASH_NODE } from "./scene/world";
 import { createAuraClashFightingRig } from "./scene/camera";
 import { auraClashFxFrame } from "./scene/fx";
-import { publishAuraClashEvidence } from "./evidence";
-import { applyAuraClashScenario } from "./scenarios";
+import { publishAuraClashEvidence } from "../legacy/evidence";
+import { applyAuraClashScenario } from "../scenarios";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_AURA_CLASH" as const;
 const EXPOSURE_EV = -0.3;

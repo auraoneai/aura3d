@@ -437,21 +437,21 @@ test("AuraClash resolves a hit", async ({ page }) => {
 
 test("AuraClash updates HUD health", async ({ page }) => {
   const proof = await landPlayerHit(page);
-  await expect(page.locator("#rival-state")).toContainText(`${proof.rival.health} HP`);
-  await expect(page.locator("#toast")).toContainText(/lands|damage/i);
+  await expect(page.locator('[data-widget-id="p2-state"]')).toContainText(`${proof.rival.health} HP`);
+  await expect(page.locator(".a3g-toast")).toContainText(/lands|damage/i);
 });
 
 test("AuraClash public HUD keeps names, bars, and round marks without training copy", async ({ page }) => {
   await loadPlayable(page);
-  await expect(page.locator("#player-name")).toHaveText(/Mara Volt/i);
-  await expect(page.locator("#rival-name")).toHaveText(/Rook Atlas/i);
-  await expect(page.locator("#player-health")).toBeVisible();
-  await expect(page.locator("#player-meter")).toBeVisible();
-  await expect(page.locator("#player-rounds")).toBeVisible();
-  await expect(page.locator("#rival-rounds")).toBeVisible();
-  await expect(page.locator("#combo-flash")).toHaveText("");
-  await expect(page.locator("#player-state")).toBeHidden();
-  await expect(page.locator("#toast")).toBeHidden();
+  await expect(page.locator('[data-widget-id="p1-name"]')).toHaveText(/Mara Volt/i);
+  await expect(page.locator('[data-widget-id="p2-name"]')).toHaveText(/Rook Atlas/i);
+  await expect(page.locator('[data-widget-id="p1-health"]')).toBeVisible();
+  await expect(page.locator('[data-widget-id="p1-meter"]')).toBeVisible();
+  await expect(page.locator('[data-widget-id="p1-rounds"]')).toBeVisible();
+  await expect(page.locator('[data-widget-id="p2-rounds"]')).toBeVisible();
+  await expect(page.locator('[data-widget-id="combo"]')).toHaveText("x1");
+  await expect(page.locator('[data-widget-id="p1-state"]')).toBeHidden();
+  await expect(page.locator(".a3g-toast")).toBeHidden();
   const bodyText = ((await page.locator("body").textContent()) ?? "").toLowerCase();
   expect(bodyText).not.toContain("hitbox");
   expect(bodyText).not.toContain("hurtbox");
@@ -460,16 +460,16 @@ test("AuraClash public HUD keeps names, bars, and round marks without training c
 
 test("AuraClash training numbers appear only on the training query", async ({ page }) => {
   await loadPlayable(page, "?debug=1");
-  await expect(page.locator("#player-state")).toBeVisible();
-  await expect(page.locator("#player-state")).toContainText("HP");
-  await expect(page.locator("#toast")).toBeVisible();
+  await expect(page.locator('[data-widget-id="p1-state"]')).toBeVisible();
+  await expect(page.locator('[data-widget-id="p1-state"]')).toContainText("HP");
+  await expect(page.locator(".a3g-toast")).toBeVisible();
 });
 
 test("AuraClash supports pause", async ({ page }) => {
   await loadPlayable(page);
   await hold(page, "KeyP", 180);
   await expect.poll(async () => (await readProof(page)).status).toBe("paused");
-  await expect(page.locator("#callout")).toHaveText("PAUSE");
+  await expect(page.locator('[data-widget-id="callout"]')).toHaveText("PAUSE");
   await hold(page, "KeyP", 180);
   await expect.poll(async () => (await readProof(page)).status).toBe("running");
 });

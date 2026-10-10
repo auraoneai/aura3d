@@ -58,7 +58,8 @@
   },
   "dependencies": {
     "@aura3d/animation": "workspace:*",
-    "@aura3d/engine": "workspace:*"
+    "@aura3d/engine": "workspace:*",
+    "@aura3d/game": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.3",
