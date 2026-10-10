@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { createExternalParityHdrIblReadinessReport } from "../../../tools/external-parity-hdr-ibl-readiness/index";
+import { createExternalParityHdrIblReadinessReport } from "../../../tools/_quarantine/external-parity-hdr-ibl-readiness/index";
 
 const temporaryRoots: string[] = [];
 
