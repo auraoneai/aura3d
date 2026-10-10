@@ -2,7 +2,10 @@ import { expect, test, type Page } from "@playwright/test";
 import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { canvasBlankCheck, evaluateRequiredCondition } from "@aura3d/game/art";
+// Source imports: the lane jobs do not build package dist/, so the
+// "@aura3d/game/art" export (dist/art/index.js) does not resolve there.
+import { canvasBlankCheck } from "../../../../packages/game/src/art/acceptance/canvasBlankCheck";
+import { evaluateRequiredCondition } from "../../../../packages/game/src/art/acceptance/requiredConditions";
 import { decodePngAsRgba } from "../unit/helpers/png";
 
 /**
@@ -103,7 +106,7 @@ test.describe("showcase-neon-swarm v2 (T2.6)", () => {
           if (results.every((r) => r.ok)) break;
         }
         await driveAndFire(page);
-        const run = await page.evaluate(() => eval(EVIDENCE + ".run") as { burstCharge?: number });
+        const run = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".run") as { burstCharge?: number }, EVIDENCE);
         if ((run?.burstCharge ?? 0) >= 100) await page.keyboard.press("Space");
       }
       await shot(page, "05-burst");
@@ -142,11 +145,11 @@ test.describe("showcase-neon-swarm v2 (T2.6)", () => {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
-      const before = await page.evaluate(() => eval(EVIDENCE + ".player") as { x?: number; z?: number });
+      const before = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".player") as { x?: number; z?: number }, EVIDENCE);
       await page.keyboard.down("KeyW");
       await page.waitForTimeout(700);
       await page.keyboard.up("KeyW");
-      const after = await page.evaluate(() => eval(EVIDENCE + ".player") as { x?: number; z?: number });
+      const after = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".player") as { x?: number; z?: number }, EVIDENCE);
       expect(Math.abs((after.z ?? 0) - (before.z ?? 0))).toBeGreaterThan(0.3);
       await page.keyboard.press("KeyJ");
       await page.waitForTimeout(200);
@@ -165,7 +168,7 @@ test.describe("showcase-neon-swarm v2 (T2.6)", () => {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
-      const before = await page.evaluate(() => eval(EVIDENCE + ".player") as { x?: number; z?: number });
+      const before = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".player") as { x?: number; z?: number }, EVIDENCE);
       // Left-half drag = move stick (down-drag → +z move).
       await page.evaluate(() => {
         const el = document.getElementById("app") ?? document.body;
@@ -183,7 +186,7 @@ test.describe("showcase-neon-swarm v2 (T2.6)", () => {
         const el = document.getElementById("app") ?? document.body;
         el.dispatchEvent(new PointerEvent("pointerup", { pointerId: 11, bubbles: true }));
       });
-      const after = await page.evaluate(() => eval(EVIDENCE + ".player") as { x?: number; z?: number });
+      const after = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".player") as { x?: number; z?: number }, EVIDENCE);
       expect(Math.hypot((after.x ?? 0) - (before.x ?? 0), (after.z ?? 0) - (before.z ?? 0))).toBeGreaterThan(0.3);
       // Right-half drag = aim/fire stick.
       await page.evaluate(() => {
@@ -198,7 +201,7 @@ test.describe("showcase-neon-swarm v2 (T2.6)", () => {
         }));
       });
       await page.waitForTimeout(400);
-      const cues = await page.evaluate(() => eval(EVIDENCE + ".audio") as { cues?: string[] });
+      const cues = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".audio") as { cues?: string[] }, EVIDENCE);
       await page.evaluate(() => {
         const el = document.getElementById("app") ?? document.body;
         el.dispatchEvent(new PointerEvent("pointerup", { pointerId: 12, bubbles: true }));
@@ -218,14 +221,14 @@ test.describe("showcase-neon-swarm v2 (T2.6)", () => {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
-      const playLook = await page.evaluate(() =>
-        JSON.stringify(eval(EVIDENCE + ".appliedLook")));
+      const playLook = await page.evaluate((EVIDENCE: string) =>
+        JSON.stringify(eval(EVIDENCE + ".appliedLook")), EVIDENCE);
       for (const scenario of ["wave-two", "finale", "burst-ready"]) {
         await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&scenario=${scenario}`);
         await expect.poll(() => page.evaluate(() =>
           (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
-        const scenarioLook = await page.evaluate(() =>
-          JSON.stringify(eval(EVIDENCE + ".appliedLook")));
+        const scenarioLook = await page.evaluate((EVIDENCE: string) =>
+          JSON.stringify(eval(EVIDENCE + ".appliedLook")), EVIDENCE);
         expect(scenarioLook, `appliedLook drifted on scenario ${scenario}`).toBe(playLook);
       }
     } finally {

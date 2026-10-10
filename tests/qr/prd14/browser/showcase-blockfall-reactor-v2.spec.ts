@@ -2,7 +2,10 @@ import { expect, test, type Page } from "@playwright/test";
 import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { canvasBlankCheck, evaluateRequiredCondition } from "@aura3d/game/art";
+// Source imports: the lane jobs do not build package dist/, so the
+// "@aura3d/game/art" export (dist/art/index.js) does not resolve there.
+import { canvasBlankCheck } from "../../../../packages/game/src/art/acceptance/canvasBlankCheck";
+import { evaluateRequiredCondition } from "../../../../packages/game/src/art/acceptance/requiredConditions";
 import { decodePngAsRgba } from "../unit/helpers/png";
 
 /**
@@ -89,9 +92,9 @@ test.describe("showcase-blockfall-reactor v2 (T2.6)", () => {
       await shot(page, "03-mid");
 
       // Instanced-pool parity: the projected board view must equal kit state.
-      const parity = await page.evaluate(() => eval(EVIDENCE + ".boardView.lastParityMatch"));
+      const parity = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".boardView.lastParityMatch"), EVIDENCE);
       expect(parity).toBe(true);
-      const sceneSwaps = await page.evaluate(() => eval(EVIDENCE + ".loading.sceneSwaps"));
+      const sceneSwaps = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".loading.sceneSwaps"), EVIDENCE);
       expect(sceneSwaps).toBe(0);
 
       // visibilitychange → session.paused === true, resume on visible.
@@ -127,15 +130,15 @@ test.describe("showcase-blockfall-reactor v2 (T2.6)", () => {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
-      const before = await page.evaluate(() => eval(EVIDENCE + ".board.piecesPlaced"));
+      const before = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".board.piecesPlaced"), EVIDENCE);
       await page.keyboard.press("ArrowLeft");
       await page.keyboard.press("KeyZ");
       await page.keyboard.press("KeyC");
       await page.keyboard.press("Space");
       await expect.poll(async () =>
-        page.evaluate(() => eval(EVIDENCE + ".board.piecesPlaced")), { timeout: 10_000 })
+        page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".board.piecesPlaced"), EVIDENCE), { timeout: 10_000 })
         .toBeGreaterThan(before as number);
-      const hold = await page.evaluate(() => eval(EVIDENCE + ".board.hold"));
+      const hold = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".board.hold"), EVIDENCE);
       expect(hold).not.toBeNull();
       expect(errors).toEqual([]);
     } finally {
@@ -157,7 +160,7 @@ test.describe("showcase-blockfall-reactor v2 (T2.6)", () => {
         const b = (c ?? document.body).getBoundingClientRect();
         return { x: b.x, y: b.y, w: b.width, h: b.height };
       });
-      const before = await page.evaluate(() => eval(EVIDENCE + ".board.piecesPlaced"));
+      const before = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".board.piecesPlaced"), EVIDENCE);
       await page.evaluate(({ x, y, w, h }) => {
         const c = document.querySelector("canvas") ?? document.body;
         // Left-zone tap = move left.
@@ -184,10 +187,10 @@ test.describe("showcase-blockfall-reactor v2 (T2.6)", () => {
         c.dispatchEvent(new PointerEvent("pointerup", { pointerId: 53, bubbles: true }));
       }, r);
       await page.waitForTimeout(400);
-      const engaged = await page.evaluate(() => eval(EVIDENCE + ".gameplay.touchEngaged"));
+      const engaged = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".gameplay.touchEngaged"), EVIDENCE);
       expect(engaged).toBe(true);
       await expect.poll(async () =>
-        page.evaluate(() => eval(EVIDENCE + ".board.piecesPlaced")), { timeout: 10_000 })
+        page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".board.piecesPlaced"), EVIDENCE), { timeout: 10_000 })
         .toBeGreaterThan(before as number);
       expect(errors).toEqual([]);
     } finally {
@@ -206,7 +209,7 @@ test.describe("showcase-blockfall-reactor v2 (T2.6)", () => {
         await expect.poll(() => page.evaluate(() =>
           (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
         await page.waitForTimeout(300);
-        looks.push(await page.evaluate(() => eval(EVIDENCE + ".appliedLook")));
+        looks.push(await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".appliedLook"), EVIDENCE));
       }
       expect(looks[0]).toBeTruthy();
       expect(looks[0]).toEqual(looks[1]);

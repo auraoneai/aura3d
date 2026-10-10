@@ -2,7 +2,10 @@ import { expect, test, type Page } from "@playwright/test";
 import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { canvasBlankCheck, evaluateRequiredCondition } from "@aura3d/game/art";
+// Source imports: the lane jobs do not build package dist/, so the
+// "@aura3d/game/art" export (dist/art/index.js) does not resolve there.
+import { canvasBlankCheck } from "../../../../packages/game/src/art/acceptance/canvasBlankCheck";
+import { evaluateRequiredCondition } from "../../../../packages/game/src/art/acceptance/requiredConditions";
 import { decodePngAsRgba } from "../unit/helpers/png";
 
 /**
@@ -118,21 +121,21 @@ test.describe("showcase-deep-recovery v2 (T2.6)", () => {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
-      const before = await page.evaluate(() => eval(EVIDENCE + ".sub.speed"));
+      const before = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".sub.speed"), EVIDENCE);
       await page.keyboard.down("KeyW");
       await page.waitForTimeout(500);
-      const thrusting = await page.evaluate(() => eval(EVIDENCE + ".sub.speed"));
+      const thrusting = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".sub.speed"), EVIDENCE);
       expect(thrusting).toBeGreaterThan(before ?? -1);
-      const yawBefore = await page.evaluate(() => eval(EVIDENCE + ".sub.yaw"));
+      const yawBefore = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".sub.yaw"), EVIDENCE);
       await page.keyboard.down("KeyA");
       await page.waitForTimeout(400);
       await page.keyboard.up("KeyA");
       await page.keyboard.up("KeyW");
-      const yawAfter = await page.evaluate(() => eval(EVIDENCE + ".sub.yaw"));
+      const yawAfter = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".sub.yaw"), EVIDENCE);
       expect(yawAfter).not.toBe(yawBefore);
       await page.keyboard.press("Space");
       await page.waitForTimeout(300);
-      const pings = await page.evaluate(() => eval(EVIDENCE + ".sonar.pings"));
+      const pings = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".sonar.pings"), EVIDENCE);
       expect(pings).toBeGreaterThanOrEqual(1);
       expect(errors).toEqual([]);
     } finally {
@@ -165,7 +168,7 @@ test.describe("showcase-deep-recovery v2 (T2.6)", () => {
         }));
       }, r);
       await page.waitForTimeout(600);
-      const speed = await page.evaluate(() => eval(EVIDENCE + ".sub.speed"));
+      const speed = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".sub.speed"), EVIDENCE);
       expect(speed).toBeGreaterThan(0.4);
       // Right-half tap (mid band) = grapple attempt.
       await page.evaluate(({ x, y, w, h }) => {
@@ -196,7 +199,7 @@ test.describe("showcase-deep-recovery v2 (T2.6)", () => {
         await expect.poll(() => page.evaluate(() =>
           (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
         await page.waitForTimeout(300);
-        looks.push(await page.evaluate(() => eval(EVIDENCE + ".appliedLook")));
+        looks.push(await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".appliedLook"), EVIDENCE));
       }
       expect(looks[0]).toBeTruthy();
       expect(looks[0]).toEqual(looks[1]);

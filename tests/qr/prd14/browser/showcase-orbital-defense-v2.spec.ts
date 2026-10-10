@@ -2,7 +2,10 @@ import { expect, test, type Page } from "@playwright/test";
 import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { canvasBlankCheck, evaluateRequiredCondition } from "@aura3d/game/art";
+// Source imports: the lane jobs do not build package dist/, so the
+// "@aura3d/game/art" export (dist/art/index.js) does not resolve there.
+import { canvasBlankCheck } from "../../../../packages/game/src/art/acceptance/canvasBlankCheck";
+import { evaluateRequiredCondition } from "../../../../packages/game/src/art/acceptance/requiredConditions";
 import { decodePngAsRgba } from "../unit/helpers/png";
 
 /**
@@ -135,8 +138,8 @@ test.describe("showcase-orbital-defense v2 (T2.6)", () => {
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       // Rotate + fire until the score moves (drones circle in by design).
       await page.keyboard.down("Space");
-      const scored = await expect.poll(async () => page.evaluate(() =>
-        (eval(EVIDENCE + ".defense") as { score?: number })?.score ?? 0),
+      const scored = await expect.poll(async () => page.evaluate((EVIDENCE: string) =>
+        (eval(EVIDENCE + ".defense") as { score?: number })?.score ?? 0, EVIDENCE),
         { timeout: 25_000, intervals: [400] }).toBeGreaterThan(0).then(() => true).catch(() => false);
       await page.keyboard.up("Space");
       if (!scored) {
@@ -149,7 +152,7 @@ test.describe("showcase-orbital-defense v2 (T2.6)", () => {
         }
         await page.keyboard.up("Space");
       }
-      const defense = await page.evaluate(() => eval(EVIDENCE + ".defense"));
+      const defense = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".defense"), EVIDENCE);
       expect(defense).toBeTruthy();
       expect(errors).toEqual([]);
     } finally {
@@ -171,7 +174,7 @@ test.describe("showcase-orbital-defense v2 (T2.6)", () => {
       await page.waitForTimeout(300);
       await page.touchscreen.tap(140, 620);
       await page.waitForTimeout(400);
-      const defense = await page.evaluate(() => eval(EVIDENCE + ".defense"));
+      const defense = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".defense"), EVIDENCE);
       expect(defense).toBeTruthy();
       expect(errors).toEqual([]);
     } finally {
@@ -187,14 +190,14 @@ test.describe("showcase-orbital-defense v2 (T2.6)", () => {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
-      const playLook = await page.evaluate(() =>
-        JSON.stringify(eval(EVIDENCE + ".appliedLook")));
+      const playLook = await page.evaluate((EVIDENCE: string) =>
+        JSON.stringify(eval(EVIDENCE + ".appliedLook")), EVIDENCE);
       for (const scenario of ["wave-4", "shield-save", "low-integrity"]) {
         await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&scenario=${scenario}`);
         await expect.poll(() => page.evaluate(() =>
           (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
-        const scenarioLook = await page.evaluate(() =>
-          JSON.stringify(eval(EVIDENCE + ".appliedLook")));
+        const scenarioLook = await page.evaluate((EVIDENCE: string) =>
+          JSON.stringify(eval(EVIDENCE + ".appliedLook")), EVIDENCE);
         expect(scenarioLook, `appliedLook drifted on scenario ${scenario}`).toBe(playLook);
       }
     } finally {

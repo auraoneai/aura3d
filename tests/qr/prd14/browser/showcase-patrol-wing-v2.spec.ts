@@ -2,7 +2,10 @@ import { expect, test, type Page } from "@playwright/test";
 import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { canvasBlankCheck, evaluateRequiredCondition } from "@aura3d/game/art";
+// Source imports: the lane jobs do not build package dist/, so the
+// "@aura3d/game/art" export (dist/art/index.js) does not resolve there.
+import { canvasBlankCheck } from "../../../../packages/game/src/art/acceptance/canvasBlankCheck";
+import { evaluateRequiredCondition } from "../../../../packages/game/src/art/acceptance/requiredConditions";
 import { decodePngAsRgba } from "../unit/helpers/png";
 
 /**
@@ -123,13 +126,13 @@ test.describe("showcase-patrol-wing v2 (T2.6)", () => {
       // "airborne" once speed crosses takeoffSpeed.
       await page.keyboard.down("ShiftLeft");
       await expect.poll(async () =>
-        page.evaluate(() => eval(EVIDENCE + ".flight.throttle")), { timeout: 10_000 })
+        page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".flight.throttle"), EVIDENCE), { timeout: 10_000 })
         .toBeGreaterThan(0.4);
       await expect.poll(async () =>
-        page.evaluate(() => eval(EVIDENCE + ".flight.grounded")), { timeout: 15_000 })
+        page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".flight.grounded"), EVIDENCE), { timeout: 15_000 })
         .toBe("airborne");
       await page.keyboard.up("ShiftLeft");
-      const state = await page.evaluate(() => eval(EVIDENCE + ".run.state"));
+      const state = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".run.state"), EVIDENCE);
       expect(state).toBe("patrol");
       await page.keyboard.down("KeyA");
       await page.waitForTimeout(300);
@@ -137,7 +140,7 @@ test.describe("showcase-patrol-wing v2 (T2.6)", () => {
       await page.keyboard.down("Space");
       await page.waitForTimeout(200);
       await page.keyboard.up("Space");
-      const fired = await page.evaluate(() => eval(EVIDENCE + ".cannon.shotsFired"));
+      const fired = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".cannon.shotsFired"), EVIDENCE);
       expect(fired).toBeGreaterThanOrEqual(1);
       expect(errors).toEqual([]);
     } finally {
@@ -176,9 +179,9 @@ test.describe("showcase-patrol-wing v2 (T2.6)", () => {
         }));
       }, r);
       await page.waitForTimeout(900);
-      const throttle = await page.evaluate(() => eval(EVIDENCE + ".flight.throttle"));
+      const throttle = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".flight.throttle"), EVIDENCE);
       expect(throttle).toBeGreaterThan(0);
-      const engaged = await page.evaluate(() => eval(EVIDENCE + ".run.touchEngaged"));
+      const engaged = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".run.touchEngaged"), EVIDENCE);
       expect(engaged).toBe(true);
       await page.evaluate(() => {
         const c = document.querySelector("canvas") ?? document.body;
@@ -202,7 +205,7 @@ test.describe("showcase-patrol-wing v2 (T2.6)", () => {
         await expect.poll(() => page.evaluate(() =>
           (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
         await page.waitForTimeout(300);
-        looks.push(await page.evaluate(() => eval(EVIDENCE + ".appliedLook")));
+        looks.push(await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".appliedLook"), EVIDENCE));
       }
       expect(looks[0]).toBeTruthy();
       expect(looks[0]).toEqual(looks[1]);
