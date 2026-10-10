@@ -292,12 +292,20 @@ export async function runTaaPanProbe() {
       return f;
     })();
     let ghostPx = 0;
+    let minX = width, maxX = -1;
     for (let i = 0; i < width * height; i++) {
       const mv = lumaAt(moving, i * 4);
       const st = lumaAt(settled, i * 4);
-      if (mv > 120 && st < 60) ghostPx += 1;
+      if (mv > 120 && st < 60) {
+        ghostPx += 1;
+        const x = i % width;
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+      }
     }
-    return { schema: "taa-pan/v1", ghostPixels: ghostPx, width, height };
+    // P-22: the §8.6 criterion is ghost *width* ≤ 2 px, not a pixel count.
+    const ghostWidth = ghostPx > 0 ? maxX - minX + 1 : 0;
+    return { schema: "taa-pan/v1", ghostPixels: ghostPx, ghostWidth, width, height };
   } finally {
     app.dispose();
     host.remove();

@@ -49,7 +49,7 @@ function lumaAt(pixels: Uint8Array, i: number): number {
 }
 
 async function mount(opts: {
-  readonly antiAlias?: "none" | "smaa";
+  readonly antiAlias?: "none" | "smaa" | "fxaa";
   readonly autoExposure?: { minEv: number; maxEv: number; speedUp: number; speedDown: number; meteringMask?: "center-weighted" | "average"; compensationEv?: number };
   readonly bright?: boolean;
   readonly size?: number;
@@ -82,8 +82,8 @@ async function mount(opts: {
   // §8.14: AA is authored as a scene effect node — `mount({antiAlias:"smaa"})`
   // must attach it or the smaa/none mounts are identical. "none" leaves the
   // default (off) pipeline.
-  const withEffects = opts.antiAlias === "smaa"
-    ? built.add(effects.antiAlias({ mode: "smaa" }))
+  const withEffects = opts.antiAlias && opts.antiAlias !== "none"
+    ? built.add(effects.antiAlias({ mode: opts.antiAlias }))
     : built;
 
   const app = createAuraApp(host, {
@@ -158,7 +158,15 @@ export async function runSmaaEdgeProbe() {
   smaa.app.dispose();
   smaa.host.remove();
 
-  return { schema: "smaa-edge/v1", none: noneRatio, smaa: smaaRatio };
+  // P-22: SMAA must be at least as good as FXAA — measure the FXAA arm on the
+  // same wire scene so the restored §8.14 criterion has its comparator.
+  const fxaa = await mount({ antiAlias: "fxaa" });
+  await fxaa.runFrames(4);
+  const fxaaRatio = edgeBandIntermediateRatio(fxaa.read(), fxaa.width, fxaa.height);
+  fxaa.app.dispose();
+  fxaa.host.remove();
+
+  return { schema: "smaa-edge/v1", none: noneRatio, smaa: smaaRatio, fxaa: fxaaRatio };
 }
 
 /* ---------------------------- auto-exposure ----------------------------- */

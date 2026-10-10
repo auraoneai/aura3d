@@ -16,15 +16,14 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
  *  - Metric DoF (§8.9): focus-plane pixels within 2 LSB of no-DoF; bokeh
  *    diameter of a 30 m point light near the analytic 12.3 px.
  *
- * Runs on the remote browser lane (CI-ROUTING); cases tagged untested are
- * asserted only when the runtime surface exists.
+ * Runs on the remote browser lane (CI-ROUTING); untested is a failure (P-22).
  */
 
 interface Phase4Result {
   readonly schema: string;
   readonly cameraVelocity: { maxRelError?: number; error?: string };
   readonly taaStatic: { maxStddev?: number; meanStddev?: number; error?: string };
-  readonly taaPan: { ghostPixels?: number; untested?: string; error?: string };
+  readonly taaPan: { ghostPixels?: number; ghostWidth?: number; untested?: string; error?: string };
   readonly taaCut: { pixelsOver2Lsb?: number; untested?: string; error?: string };
   readonly motionBlur: { relDiff?: number; untested?: boolean; error?: string };
   readonly dofMetric: { focusViolations?: number; bokehDiameter?: number; expectedBokeh?: number; error?: string };
@@ -85,20 +84,23 @@ test.describe("PRD-03 Phase 4 — temporal/AA/cinematic", () => {
     expect(result.taaStatic.maxStddev!).toBeLessThanOrEqual(0.01);
   });
 
-  test("TAA case b — camera pan ghost pixels (report-only until C-22 lands)", () => {
-    if (result.taaPan.untested) test.info().annotations.push({ type: "untested", description: result.taaPan.untested });
+  test("TAA case b — camera pan ghost width ≤ 2 px (§8.6)", () => {
+    // P-22: untested is a failure, not a pass.
+    expect(result.taaPan.untested).toBeUndefined();
     expect(result.taaPan.error ?? null).toBeNull();
-    if (!result.taaPan.untested) expect(result.taaPan.ghostPixels!).toBeLessThanOrEqual(64); // ~2 px on a 320² frame
+    expect(result.taaPan.ghostWidth!).toBeLessThanOrEqual(2);
   });
 
   test("TAA case c — cutCamera() post-cut frame equals no-history within 2 LSB", () => {
+    expect(result.taaCut.untested).toBeUndefined();
     expect(result.taaCut.error ?? null).toBeNull();
-    if (!result.taaCut.untested) expect(result.taaCut.pixelsOver2Lsb!).toBe(0);
+    expect(result.taaCut.pixelsOver2Lsb!).toBe(0);
   });
 
   test("motion blur extent at 60 vs 30 simulated fps differs ≤10%", () => {
+    expect(result.motionBlur.untested).toBeUndefined();
     expect(result.motionBlur.error ?? null).toBeNull();
-    if (!result.motionBlur.untested) expect(result.motionBlur.relDiff!).toBeLessThanOrEqual(0.1);
+    expect(result.motionBlur.relDiff!).toBeLessThanOrEqual(0.1);
   });
 
   test("metric DoF — focus plane within 2 LSB, bokeh diameter ≈12.3 px ±15%", () => {
@@ -111,11 +113,9 @@ test.describe("PRD-03 Phase 4 — temporal/AA/cinematic", () => {
   test("TAAU — renderScale 0.67 edge error ≤ 1.3× full-res TAA (§8.6)", () => {
     const r = result.taau;
     expect(r.error ?? null).toBeNull();
-    if (r.untested) test.info().annotations.push({ type: "untested", description: r.untested });
-    if (!r.untested) {
-      expect(r.fullResError!).toBeGreaterThanOrEqual(0);
-      expect(r.upscaledError!).toBeGreaterThanOrEqual(0);
-      expect(r.upscaledError!).toBeLessThanOrEqual(Math.max(1.3 * r.fullResError!, 0.05));
-    }
+    expect(r.untested).toBeUndefined();
+    expect(r.fullResError!).toBeGreaterThanOrEqual(0);
+    expect(r.upscaledError!).toBeGreaterThanOrEqual(0);
+    expect(r.upscaledError!).toBeLessThanOrEqual(Math.max(1.3 * r.fullResError!, 0.05));
   });
 });
