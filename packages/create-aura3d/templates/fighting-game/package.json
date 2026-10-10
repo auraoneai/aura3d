@@ -11,6 +11,7 @@
     "test": "playwright test tests/route-health.spec.ts tests/gameplay-smoke.spec.ts tests/certified-rig.spec.ts --workers=1"
   },
   "dependencies": {
+    "@aura3d/assets": "3.0.1",
     "@aura3d/engine": "3.0.1",
     "@aura3d/navigation-recast": "3.0.1"
   },

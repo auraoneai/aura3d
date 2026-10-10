@@ -15,6 +15,10 @@
     "./gltf-runtime": {
       "types": "./dist/gltf-runtime.d.ts",
       "import": "./dist/gltf-runtime.js"
+    },
+    "./vite": {
+      "types": "./dist/vite/auraDecoders.d.ts",
+      "import": "./dist/vite/auraDecoders.js"
     }
   },
   "main": "./dist/index.js",
@@ -59,6 +63,7 @@
   },
   "files": [
     "README.md",
-    "dist"
+    "dist",
+    "vendor"
   ]
 }
