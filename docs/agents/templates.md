@@ -70,11 +70,11 @@ not market it as production-ready.
 
 ## Evidence descriptor convention
 
-Evidence descriptors passed to `app.evidence({ hud: [...] })` /
-`createGame({ evidence })` (`hudBindings`, `accessibilitySources`, etc.) are
-`as const` arrays — plain mutable literals widen `kind`/`binding`/`feature`
-to `string` and fail the packed-consumer `tsc` gate
-(`GameHudBindingDescriptor`). Fields that `createGameHudBinding` defaults to
+Evidence descriptors passed to
+`app.evidence({ hud: [...], accessibility: [...] })` (`hudBindings`,
+`accessibilitySources`, etc.) are `as const` arrays — plain mutable literals
+widen `kind`/`binding`/`feature` to `string` and fail the packed-consumer
+`tsc` gate (`GameHudBindingDescriptor`, `GameAccessibilitySource`). Fields that `createGameHudBinding` defaults to
 `false` (`interactive`, `debugOnly`) are omitted entirely unless a binding
 genuinely needs them non-default; keep the descriptor in sync with the
 canonical binding type rather than echoing its defaults.
