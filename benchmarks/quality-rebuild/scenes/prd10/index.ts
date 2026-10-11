@@ -59,7 +59,7 @@ const shadows = (extent: number): ShadowSpec => ({
   normalBias: 0.02
 });
 
-function base(id: string, index: number, title: string, purpose: string): Pick<SceneSpec, "id" | "index" | "title" | "purpose" | "resolution" | "toneMapping" | "exposure" | "time" | "settleFrames" | "owner" | "qrFlags"> {
+function base(id: string, index: number, title: string, purpose: string): Pick<SceneSpec, "id" | "index" | "title" | "purpose" | "resolution" | "toneMapping" | "exposure" | "time" | "settleFrames" | "owner" | "qrFlags" | "referenceProfile" | "brokenControls"> {
   return {
     id,
     index,
@@ -71,6 +71,10 @@ function base(id: string, index: number, title: string, purpose: string): Pick<S
     time: CAPTURE_TIME,
     settleFrames: SETTLE_FRAMES,
     owner: "prd10",
+    // C-30 required registry fields: without them the registry quarantines the
+    // scene (`missing-registry-fields`) and no capture ever runs it.
+    referenceProfile: "contract",
+    brokenControls: [],
     qrFlags: ["world"]
   };
 }
