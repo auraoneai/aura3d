@@ -8,7 +8,7 @@
  */
 
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { MaterialBinding, MaterialBindingError, PBRMaterial, Renderer, Texture, TextureBinding } from "@aura3d/rendering";
+import { MaterialBinding, MaterialBindingError, PBRMaterial, Renderer, Texture, TexturedPBRMaterial } from "@aura3d/rendering";
 import { resolveQrFlags } from "../../../../packages/engine/src/contracts/flags";
 import { setRendererQrFlags } from "../../../../packages/rendering/src/renderer/FrameGraph";
 import { Geometry } from "../../../../packages/rendering/src/Geometry";
@@ -41,11 +41,13 @@ function triangle(format: VertexFormat, uv: boolean): Geometry {
 }
 
 /** A lit material whose lane-04 look bound base-color and normal maps. */
-function mappedMaterial(): PBRMaterial {
-  const material = new PBRMaterial();
-  material.setParameter("u_baseColorTexture", new TextureBinding({ name: "u_baseColorTexture", texture: texture("srgb") }));
-  material.setParameter("u_normalTexture", new TextureBinding({ name: "u_normalTexture", texture: texture() }));
-  return material;
+function mappedMaterial(): TexturedPBRMaterial {
+  // Physical feature generation reads the material descriptor, so use the
+  // supported textured-material options to keep bindings and features aligned.
+  return new TexturedPBRMaterial({
+    baseColorTexture: texture("srgb"),
+    normalTexture: texture()
+  });
 }
 
 const has = (names: string[]) => (n: string) => names.includes(n);
@@ -97,7 +99,10 @@ describe("generated draws follow geometry attributes ($ALL, mock device)", () =>
     const drawn: { label: string; attributes: string[]; vertex: string }[] = [];
     const draw = device.draw.bind(device);
     device.draw = (command) => {
-      drawn.push({ label: command.shader.label, attributes: [...command.shader.reflection.attributes.keys()], vertex: sources.get(command.shader.label)?.vertex ?? "" });
+      const shader = command.shader;
+      if (shader) {
+        drawn.push({ label: shader.label, attributes: [...shader.reflection.attributes.keys()], vertex: sources.get(shader.label)?.vertex ?? "" });
+      }
       draw(command);
     };
     try {

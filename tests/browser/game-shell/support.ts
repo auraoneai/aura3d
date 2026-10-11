@@ -60,6 +60,18 @@ export async function pagePixels(page: Page, evidenceName?: string): Promise<num
 
 export function withServer(fn: (getServer: () => ExampleDevServer) => void): void {
   let server: ExampleDevServer;
+  test.beforeEach(async ({ page }) => {
+    // Module evaluation failures occur before the harness can publish its status.
+    // Preserve the actual browser error alongside any readiness timeout.
+    page.on("pageerror", (error) => console.error("[game-shell pageerror]", error.stack ?? error.message));
+    page.on("console", (message) => {
+      if (message.type() === "error") console.error("[game-shell console]", message.text());
+    });
+    page.on("requestfailed", (request) => console.error("[game-shell requestfailed]", request.url(), request.failure()?.errorText));
+    page.on("response", (response) => {
+      if (response.status() >= 400) console.error("[game-shell response]", response.status(), response.url());
+    });
+  });
   test.beforeAll(async () => {
     server = await startExampleDevServer();
   });
