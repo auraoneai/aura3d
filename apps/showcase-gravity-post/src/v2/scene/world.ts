@@ -148,7 +148,11 @@ export function gravityWorldNodes(): GravityWorldNodes {
   // ------------------------------------------------------------ stations ---
   for (const station of stations) {
     nodes.push(
-      model(assets.gravityPostStationRing, {
+      // T0-29: gravityPostStationRing is 2150 meshes / 458k tris / 45 MB per
+      // instance (x6 stations = ~12.9k draws vs a 120 budget), which stalled
+      // first draw ~11 s with no flags on. The dock beacon is the legacy
+      // station prop: 30 meshes, 15k tris, 3 MB.
+      model(assets.gravityPostDockBeacon, {
         name: station.nodeId,
         role: "setDressing",
         scaleMode: "fit",
