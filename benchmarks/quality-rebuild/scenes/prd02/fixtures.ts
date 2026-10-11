@@ -14,8 +14,11 @@
  */
 import { registerFrameContributor } from "@aura3d/rendering/contracts";
 import { createPrd02ReceiveShadowContributor } from "@aura3d/rendering/lanes";
+import { probes } from "@aura3d/engine/lanes";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import { LightProbeGenerator } from "three/examples/jsm/lights/LightProbeGenerator.js";
+import { PROBE_STRIPE_ROOM } from "./specs";
 
 declare global {
   interface Window {
@@ -57,6 +60,69 @@ export function applyThreeRoomEnvironment(sceneId: string): boolean {
   const pmrem = new THREE.PMREMGenerator(graph.renderer);
   graph.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
   pmrem.dispose();
+  graph.renderer.render(graph.scene, graph.camera);
+  return true;
+}
+
+// ---------- 02-S12 probe fixtures ----------------------------------------------
+
+/** Room box shared by the prd02-probe-stripe-room spec and its probe (specs.ts). */
+export { PROBE_STRIPE_ROOM };
+
+/** Probe sample point for the red-wall bounce reference (in front of "white cube a"). */
+export const RED_WALL_PROBE_POINT = [-1.6, 0.4, -0.4] as const;
+
+/**
+ * PRD 02 probe nodes the shared spec format cannot express. The lane page
+ * appends them to the mounted Aura scene (`app.setScene`) — the public
+ * `probes.reflection()` / `probes.irradianceVolume()` builders.
+ */
+export function auraProbeNodes(sceneId: string): readonly unknown[] {
+  if (sceneId === "prd02-probe-stripe-room") {
+    return [
+      probes.reflection({ name: "stripe room probe", position: [0, 1.5, 0], box: { min: PROBE_STRIPE_ROOM.min, max: PROBE_STRIPE_ROOM.max }, resolution: 256, blendDistance: 1 }).toJSON()
+    ];
+  }
+  if (sceneId === "prd02-red-wall-bounce") {
+    return [probes.irradianceVolume({ name: "red wall volume", bounds: { min: [-3, 0, -4], max: [3, 3.2, 2] }, resolution: [4, 4, 4] }).toJSON()];
+  }
+  return [];
+}
+
+interface ProbeAppLike {
+  readonly scene: { readonly nodes: readonly unknown[] };
+  setScene(scene: unknown): void;
+  step(dt: number): void;
+}
+
+/** Append the scene's probe nodes and let the `once` bakes run. */
+export async function applyAuraProbes(sceneId: string, app: ProbeAppLike): Promise<number> {
+  const nodes = auraProbeNodes(sceneId);
+  if (nodes.length === 0) return 0;
+  app.setScene({ ...app.scene, nodes: [...app.scene.nodes, ...nodes] });
+  for (let frame = 0; frame < 12; frame += 1) {
+    app.step(1 / 60);
+    await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
+  }
+  return nodes.length;
+}
+
+/**
+ * Three reference for the red-wall bounce: a CubeCamera capture at
+ * `RED_WALL_PROBE_POINT` → `LightProbeGenerator.fromCubeRenderTarget` (SH
+ * irradiance) added to the scene, then the READY frame is re-rendered.
+ */
+export async function applyThreeLightProbe(sceneId: string): Promise<boolean> {
+  if (sceneId !== "prd02-red-wall-bounce") return false;
+  const graph = window.__QR_THREE_GRAPH__;
+  if (!graph) throw new Error(`${sceneId}: runThreeScene did not publish __QR_THREE_GRAPH__`);
+  const target = new THREE.WebGLCubeRenderTarget(64, { type: THREE.HalfFloatType });
+  const cubeCamera = new THREE.CubeCamera(0.05, 40, target);
+  cubeCamera.position.set(...RED_WALL_PROBE_POINT);
+  graph.scene.add(cubeCamera);
+  cubeCamera.update(graph.renderer, graph.scene);
+  const probe = await LightProbeGenerator.fromCubeRenderTarget(graph.renderer, target);
+  graph.scene.add(probe);
   graph.renderer.render(graph.scene, graph.camera);
   return true;
 }

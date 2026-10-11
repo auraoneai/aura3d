@@ -5,9 +5,12 @@
  */
 import type { SceneSpec } from "../../shared/types";
 
-export type Prd02BrokenControl = "no-shadows" | "no-ibl" | "no-background" | "receive-shadow-off" | "receive-shadow-on";
+export type Prd02BrokenControl = "no-shadows" | "no-ibl" | "no-background" | "receive-shadow-off" | "receive-shadow-on" | "with-probes";
 
 export function applyBrokenControl(spec: SceneSpec, control: string): SceneSpec {
+  // 02-S12: the spec is unchanged; the lane page appends the probe fixtures
+  // (scenes/prd02/fixtures.ts) when this control is selected.
+  if (control === "with-probes") return spec;
   if (control === "no-shadows") {
     return {
       ...spec,

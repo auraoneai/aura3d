@@ -31,7 +31,8 @@ const FIXTURES = [
   "prd02-csm-poles",
   "prd02-softbox",
   "prd02-wet-floor",
-  "prd02-pole-behind-camera"
+  "prd02-pole-behind-camera",
+  "prd02-probe-stripe-room"
 ] as const;
 
 describe("prd02 scene registry", () => {

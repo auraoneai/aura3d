@@ -15,7 +15,7 @@ import { runAuraScene } from "../../aura3d/common";
 import { runThreeScene } from "../../three/common";
 import type { ReadyPayload } from "../../shared/types";
 import { applyBrokenControl } from "./controls";
-import { applyThreeRoomEnvironment, installReceiveShadowFixture } from "./fixtures";
+import { applyAuraProbes, applyThreeLightProbe, applyThreeRoomEnvironment, installReceiveShadowFixture } from "./fixtures";
 import { getPrd02Spec } from "./specs";
 
 declare global {
@@ -48,17 +48,23 @@ async function runRenderMode(): Promise<void> {
     // 02-T1923: the receive-shadow controls also register the C-01 collect
     // fixture (production items get `receiveShadow` only after Q-15-5/Q-04-2).
     if (engine !== "three" && control) installReceiveShadowFixture(control);
+    // 02-S12: the `with-probes` control appends the probe nodes (Aura) or the
+    // CubeCamera + LightProbeGenerator reference (three); default captures
+    // keep the probe-free day-0 scene.
+    const withProbes = control === "with-probes";
     const payload = engine === "three"
-      ? await runThreeScene(spec, host).then((ready) => {
+      ? await runThreeScene(spec, host).then(async (ready) => {
           applyThreeRoomEnvironment(sceneId);
+          if (withProbes) await applyThreeLightProbe(sceneId);
           return ready;
         })
       : await runAuraScene(spec, host, {
           ...(qrFlags !== undefined ? { qrFlags } : {}),
           // Shadow specs (S5/S6) step frames and read diagnostics after READY.
-          collectExtra: (app) => {
+          collectExtra: async (app) => {
             window.__qrPrd02App = app;
-            return {};
+            const probeNodes = withProbes ? await applyAuraProbes(sceneId, app as unknown as Parameters<typeof applyAuraProbes>[1]) : 0;
+            return probeNodes > 0 ? { prd02ProbeNodes: probeNodes } : {};
           }
         });
     window.__QR_READY__ = payload;
