@@ -159,3 +159,13 @@ describe("#266 default-on sub-flag expansion", () => {
     expect(resolveQrFlags({ options: "all" }).values.A3D_QR_WORLD_BIOME).toBe(true);
   });
 });
+
+describe("#266 sub-flag expansion honours later kill switches", () => {
+  it("['all', '-world.terrain'] keeps terrain off and water/biome on", async () => {
+    const { resolveQrFlags } = await import("../../../../packages/engine/src/contracts/flags");
+    const flags = resolveQrFlags({ options: ["all", "-world.terrain"], env: {} });
+    expect(flags.on("A3D_QR_WORLD_TERRAIN")).toBe(false);
+    expect(flags.on("A3D_QR_WORLD_WATER")).toBe(true);
+    expect(flags.on("A3D_QR_WORLD_BIOME")).toBe(true);
+  });
+});

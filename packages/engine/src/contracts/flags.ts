@@ -86,12 +86,9 @@ function setEntry(out: Record<string, QrFlagValue>, name: QrFlagName, value: QrF
 function applyList(out: Record<string, QrFlagValue>, list: string): void {
   const trimmed = list.trim();
   if (trimmed === "all") {
-    for (const flag of LANE_FLAGS) {
-      setEntry(out, flag, true);
-      // An earlier source that turned the lane off keeps its sub-flags unset.
-      if (!flagValueOn(out[flag])) continue;
-      for (const sub of DEFAULT_ON_SUB_FLAGS[flag] ?? []) setEntry(out, sub, true);
-    }
+    // Sub-flags are filled by propagateSubFlags after every source applied, so
+    // a later explicit kill switch (e.g. ["all", "-world.terrain"]) still wins.
+    for (const flag of LANE_FLAGS) setEntry(out, flag, true);
     return;
   }
   if (trimmed === "none" || trimmed === "") {
