@@ -50,7 +50,7 @@ const snapshot = (): AuraSceneSnapshot =>
   ({ schema: "aura3d-scene-snapshot/1.0", background: "#000000", diagnostics: { enabled: false }, nodes: [primitives.box({ size: 1 }).toJSON()], camera: { mode: "orbit", position: [0, 0, 5], target: [0, 0, 0] } });
 const canvas = () => ({ width: 64, height: 64, getContext: () => null }) as unknown as HTMLCanvasElement;
 
-const FLAGS_OFF = resolveQrFlags({});
+const FLAGS_OFF = resolveQrFlags({ options: ["none"] });
 
 afterEach(() => {
   setRendererQrFlags(FLAGS_OFF);
@@ -155,7 +155,10 @@ describe("#266 default-on sub-flag expansion", () => {
     // opt-in sub-flags and lane-01's helper-resolved sub-flags are not implied; flag-off stays empty
     expect(all.on("A3D_QR_POST_VELOCITY_MRT")).toBe(false);
     expect(resolveQrFlags({ options: ["core"] }).values.A3D_QR_CORE_OUTPUT).toBeUndefined();
-    expect(Object.keys(resolveQrFlags({}).values)).toEqual([]);
+    // `none` writes every lane flag false (so it also turns default-on flags off)
+    const none = resolveQrFlags({ options: ["none"] });
+    expect(Object.values(none.values).every((v) => v === false)).toBe(true);
+    expect(none.on("A3D_QR_LIGHTING")).toBe(false);
     expect(resolveQrFlags({ options: "all" }).values.A3D_QR_WORLD_BIOME).toBe(true);
   });
 });

@@ -1,0 +1,83 @@
+{
+  "summary": {
+    "flag": "lighting",
+    "scenes": 6,
+    "scored": 6,
+    "broken": [],
+    "regressed": [],
+    "unscorable": [],
+    "meanLpipsNone": 0.19723065321644148,
+    "meanLpipsFlag": 0.17851966867844263,
+    "meanFlipNone": 0.14627905003726482,
+    "meanFlipFlag": 0.12505717389285564,
+    "verdict": "PASS"
+  },
+  "rows": [
+    {
+      "scene": "01-simple-geometry",
+      "none": "ready",
+      "flag": "ready",
+      "identical": false,
+      "lpips_none": 0.03365544602274895,
+      "lpips_flag": 0.02328679710626602,
+      "flip_none": 0.08877746760845184,
+      "flip_flag": 0.08642403781414032,
+      "verdict": "OK"
+    },
+    {
+      "scene": "03-damaged-helmet",
+      "none": "ready",
+      "flag": "ready",
+      "identical": false,
+      "lpips_none": 0.02873658761382103,
+      "lpips_flag": 0.028235480189323425,
+      "flip_none": 0.044386379420757294,
+      "flip_flag": 0.043536100536584854,
+      "verdict": "OK"
+    },
+    {
+      "scene": "08-skinned-character",
+      "none": "ready",
+      "flag": "ready",
+      "identical": false,
+      "lpips_none": 0.029632359743118286,
+      "lpips_flag": 0.009751085191965103,
+      "flip_none": 0.04969726875424385,
+      "flip_flag": 0.04672681912779808,
+      "verdict": "OK"
+    },
+    {
+      "scene": "12-shadows",
+      "none": "ready",
+      "flag": "ready",
+      "identical": false,
+      "lpips_none": 0.0547923743724823,
+      "lpips_flag": 0.029667336493730545,
+      "flip_none": 0.1104063019156456,
+      "flip_flag": 0.10351284593343735,
+      "verdict": "OK"
+    },
+    {
+      "scene": "14-particles",
+      "none": "ready",
+      "flag": "ready",
+      "identical": false,
+      "lpips_none": 0.266116738319397,
+      "lpips_flag": 0.20972689986228943,
+      "flip_none": 0.14963117241859436,
+      "flip_flag": 0.03536752983927727,
+      "verdict": "OK"
+    },
+    {
+      "scene": "16-instancing",
+      "none": "ready",
+      "flag": "ready",
+      "identical": true,
+      "lpips_none": 0.7704504132270813,
+      "lpips_flag": 0.7704504132270813,
+      "flip_none": 0.434775710105896,
+      "flip_flag": 0.434775710105896,
+      "verdict": "OK"
+    }
+  ]
+}

@@ -12,7 +12,9 @@ import { featureGeneratorIncompatibility, selectShaderFeatureBits } from "../../
 import { normalizeProgramFeatures } from "../../../../packages/rendering/src/program/ProgramFeatures";
 import { generateProgramImpl } from "../../../../packages/rendering/src/program/ProgramGenerator";
 
-const FLAGS = resolveQrFlags({ env: { A3D_QR: "world" } });
+// Only lane 10 on: lighting is default-on now, and its program features would
+// change the selection under test.
+const FLAGS = resolveQrFlags({ env: { A3D_QR: "world,-lighting" } });
 const LIGHT1 = { dir: 1, point: 0, spot: 0, rect: 0, clustered: false, hemisphere: false } as const;
 
 function feature(id: string) {

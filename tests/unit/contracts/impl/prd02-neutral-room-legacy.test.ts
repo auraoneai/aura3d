@@ -25,7 +25,7 @@ import { NEUTRAL_FLOOR_RADIANCE, NEUTRAL_FLOOR_SH9 } from "../../../../packages/
 import { createProductionRuntimeEnvironment } from "../../../../packages/engine/src/agent-api/compiler/environment";
 
 const LIGHTING_ON = resolveQrFlags({ options: { A3D_QR_LIGHTING: true } });
-const BASE = resolveQrFlags({});
+const BASE = resolveQrFlags({ options: ["none"] });
 afterEach(() => setRendererQrFlags(BASE));
 
 // The engine's legacy bridge marks the fallback of a scene with no environment and no lights.

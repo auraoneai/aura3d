@@ -63,7 +63,7 @@ function mockHost() {
 const paramsOf = (calls: { parameter: number; value: number }[]) => new Map(calls.map((c) => [c.parameter, c.value]));
 
 const FLAGS_ON = resolveQrFlags({ options: { A3D_QR_LIGHTING: true } });
-const FLAGS_OFF = resolveQrFlags({});
+const FLAGS_OFF = resolveQrFlags({ options: ["none"] });
 
 describe("prd02 C-12 WebGL2SamplerRegistry (device mock)", () => {
   beforeEach(() => setRendererQrFlags(FLAGS_ON));

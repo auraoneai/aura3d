@@ -19,7 +19,7 @@
  */
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeAll, afterAll, vi } from "vitest";
 import { createProductionRuntimeEnvironment } from "../../../../packages/engine/src/agent-api/compiler/environment.js";
 import { createProductionRuntimeCollectedLights } from "../../../../packages/engine/src/agent-api/compiler/observations.js";
 import { createProductionRuntimeShadowOptions } from "../../../../packages/engine/src/agent-api/compiler/shadows.js";
@@ -96,6 +96,17 @@ function cpuTerms(snapshot: AuraSceneSnapshot): unknown {
     shadows: shadows ?? null
   });
 }
+
+
+// This file pins the A3D_QR_LIGHTING-off contract. The compile path reads the
+// ambient env (compiler/lights.ts prd02LightingOn), and lighting is now
+// default-on (flags.state.ts), so pin it off explicitly.
+beforeAll(() => {
+  vi.stubEnv("A3D_QR_LIGHTING", "0");
+});
+afterAll(() => {
+  vi.unstubAllEnvs();
+});
 
 describe("02-S1 prd02 legacy golden — 18 C-30 base scenes, flag off (85aafcd0 lineage)", () => {
   it("fixtures cover exactly the 18 base scenes", () => {

@@ -71,7 +71,7 @@ describe("02-DEPTH depth-feature composition", () => {
   it("enumerates every active depth feature, other lanes' included", () => {
     const ids = activeDepthFeatures(FLAGS_ON).map((feature) => feature.id);
     expect(ids).toEqual(expect.arrayContaining(["prd02.depthInstancing", "prd02.depthAlpha", "prd02.depthSkinning", "test.deform", "test.offsetOnly"]));
-    expect(activeDepthFeatures(resolveQrFlags({})).map((feature) => feature.id)).not.toContain("test.deform");
+    expect(activeDepthFeatures(resolveQrFlags({ options: ["none"] })).map((feature) => feature.id)).not.toContain("test.deform");
   });
 
   it("splices the deform chunk and the C-18 call; a spliced deform owns skinning", () => {
