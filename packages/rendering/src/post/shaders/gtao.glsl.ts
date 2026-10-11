@@ -119,7 +119,11 @@ void main() {
   vec2 uv = gl_FragCoord.xy * texel;
   vec3 viewPos = getViewPosition(uv, viewZ);
   vec3 viewNormal = computeNormalFromDepth(p, texel);
-  vec3 viewDir = normalize(-viewPos);
+  // Orthographic: every view ray is parallel to the optical axis, so the
+  // direction to the eye is +Z everywhere. normalize(-viewPos) tilted it with
+  // the pixel's x/y offset, so a flat floor read as a slope facing away and
+  // the open floor was occluded (34% darker, GPU run 38147488474).
+  vec3 viewDir = u_ortho ? vec3(0.0, 0.0, 1.0) : normalize(-viewPos);
 
   // radius metres → pixels at this depth, clamped to the march budget.
   float projScale = u_projMatrix[1][1] * size.y * 0.5;
