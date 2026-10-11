@@ -51,11 +51,23 @@ describe("#1139 prd03.indirectFraction composes into a valid forward program", (
     expect(fragment).toContain("a3dWriteIndirectFraction(vec4(a3dColor, a3dAlpha), indirectDiffuse + indirectSpecular)");
     expect(fragment).not.toMatch(/\bo_color\b/);
     expect(fragment).not.toMatch(/\ba3dIndirectRadiance\b/);
+    // The symbols the body uses are declared by the generator itself.
+    expect(fragment).toMatch(/vec3 a3dColor = /);
+    expect(fragment).toMatch(/float a3dAlpha = /);
+    expect(fragment).toMatch(/vec3 indirectDiffuse = /);
+    expect(fragment).toMatch(/vec3 indirectSpecular = /);
     // The write lands before the generator's single output write.
     expect(fragment.indexOf("a3dWriteIndirectFraction(vec4(a3dColor")).toBeLessThan(fragment.indexOf("outColor = vec4(a3dColor, a3dAlpha);"));
   });
 
   const validator = glslang();
+  // No silent skip in the lane gate: post-quality's unit job installs
+  // glslang-tools and sets A3D_REQUIRE_GLSLANG=1, so a missing validator there
+  // fails. Other suites (and local runs without the tool) still run the
+  // structural checks above.
+  it.runIf(process.env.A3D_REQUIRE_GLSLANG === "1")("glslangValidator is installed (A3D_REQUIRE_GLSLANG)", () => {
+    expect(validator, "glslangValidator missing (apt-get install glslang-tools)").not.toBeNull();
+  });
   it.runIf(validator !== null).each(CASES)("%s: glslangValidator compiles the fragment", (name, partial) => {
     const dir = mkdtempSync(join(tmpdir(), "prd03-indfrac-"));
     const file = join(dir, `${name}.frag`);
