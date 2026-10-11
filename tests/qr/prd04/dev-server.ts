@@ -26,6 +26,8 @@ import { benchmarkAssetFiles } from "../../../benchmarks/quality-rebuild/shared/
 export type { ExampleDevServer };
 
 const ESCAPE = /[.*+?^${}()|[\]\\]/g;
+/** Request paths whose bodies are ES module source (safe to rewrite as UTF-8). */
+const MODULE_SOURCE = /\.(?:[cm]?[jt]sx?)$/;
 
 /**
  * Exact-specifier aliases missing from the shared map, in the same
@@ -138,7 +140,13 @@ export async function startPrd04DevServer(root = process.cwd()): Promise<Example
       up.on("end", () => {
         const body = Buffer.concat(chunks);
         const type = String(up.headers["content-type"] ?? "");
-        const payload = /javascript|text\/plain/.test(type)
+        // P-35 (GPU run 38117582189): the shared server answers unknown
+        // extensions (`.hdr`, `.ktx2`, ...) as `text/plain`. A UTF-8 round trip
+        // corrupted those bytes (1.5 MB studio HDRI served as 4.1 MB), and the
+        // RGBE decoder then threw "run exceeds width 1024". Only rewrite
+        // JavaScript responses, or text/plain module sources.
+        const isModuleSource = /javascript/.test(type) || (/text\/plain/.test(type) && MODULE_SOURCE.test(requestPath));
+        const payload = isModuleSource
           ? applyDefines(rewriteLaneImports(body.toString("utf8")), defines)
           : body;
         // `resolveDirectoryModuleRedirect` answers extension-less directory
