@@ -9,6 +9,7 @@ import { camera } from "../nodes/camera.js";
 import { collectAuraSceneEvidence } from "../sceneEvidence.js";
 import { collectLabelTelemetry, summarizeTextBuckets } from "../LabelTelemetry.js";
 import { createProductionSceneRenderer } from "./mountRenderer.js";
+import { appTierMaxPixelRatio, currentDevicePixelRatio, minimumBackingSize, resolveAppPixelRatio } from "./pixelRatio.js";
 import { devicePixelRatioSafe, markTiming, performanceNow } from "../platform.js";
 import { groups } from "../nodes/groups.js";
 import { declaresWebGLContent, productionRenderErrorMessage } from "../compiler/observations.js";
@@ -77,7 +78,20 @@ export async function startProductionRender(
   const sceneWantsFrames = shouldContinuouslyRender(snapshot);
   const labelLayer = createSceneLabelLayer(canvas, snapshot);
   const rendererSelection = normalizeCreateAppRendererOptions(options.renderer);
-  const pixelRatio = (typeof options.pixelRatio === "number" ? options.pixelRatio : options.pixelRatio?.max ?? undefined) ?? rendererSelection.profile.pixelRatio ?? devicePixelRatioSafe();
+  // PRD-01 §6.9 (Q-15-1): same resolver as createAuraApp; under A3D_QR_CORE it
+  // is re-evaluated on every resize (devicePixelRatio can change) with a 1×1 minimum.
+  const coreDpr = qrFlags.on("A3D_QR_CORE");
+  const backingMinimum = minimumBackingSize(coreDpr);
+  const tierMaxPixelRatio = appTierMaxPixelRatio(options.renderer);
+  const resolvePixelRatio = (): number => resolveAppPixelRatio({
+    flagOn: coreDpr,
+    option: options.pixelRatio,
+    profilePixelRatio: rendererSelection.profile.pixelRatio,
+    maxPixelRatio: tierMaxPixelRatio,
+    devicePixelRatio: currentDevicePixelRatio(),
+    legacyDevicePixelRatio: devicePixelRatioSafe
+  });
+  const legacyPixelRatio = coreDpr ? 0 : resolvePixelRatio();
   let disposed = false;
   let animationHandle = 0;
   let lastTime = 0;
@@ -98,8 +112,9 @@ export async function startProductionRender(
     const parentRect = canvas.parentElement?.getBoundingClientRect();
     const cssWidth = parentRect?.width || canvas.clientWidth || (typeof window !== "undefined" ? window.innerWidth : 960) || 960;
     const cssHeight = parentRect?.height || canvas.clientHeight || (typeof window !== "undefined" ? window.innerHeight : 540) || 540;
-    const width = Math.max(1, Math.round(Math.max(320, cssWidth * pixelRatio) * (getRootPerformanceQuality(canvas)?.resolutionScale ?? 1)));
-    const height = Math.max(1, Math.round(Math.max(220, cssHeight * pixelRatio) * (getRootPerformanceQuality(canvas)?.resolutionScale ?? 1)));
+    const pixelRatio = coreDpr ? resolvePixelRatio() : legacyPixelRatio;
+    const width = Math.max(1, Math.round(Math.max(backingMinimum.width, cssWidth * pixelRatio) * (getRootPerformanceQuality(canvas)?.resolutionScale ?? 1)));
+    const height = Math.max(1, Math.round(Math.max(backingMinimum.height, cssHeight * pixelRatio) * (getRootPerformanceQuality(canvas)?.resolutionScale ?? 1)));
     if (canvas.width === width && canvas.height === height) return;
     canvas.style.width = `${cssWidth}px`;
     canvas.style.height = `${cssHeight}px`;
@@ -288,6 +303,11 @@ export async function startProductionRender(
     onDeviceLost: renderer.onDeviceLost ? (listener: () => void) => renderer.onDeviceLost!(listener) : undefined,
     onDeviceRestored: renderer.onDeviceRestored ? (listener: () => void) => renderer.onDeviceRestored!(listener) : undefined,
     deviceLost: renderer.deviceLost ? () => renderer.deviceLost!() : undefined,
+    // PRD-01 C-05 seam (Q-15-1): createAuraApp hangs this on
+    // app[Symbol.for("a3d.prd01.renderer")] so app.setOutput / setOutputOverlay
+    // reach the live lane Renderer. Without it setOutput only queued (#1083 GPU:
+    // tone mapping + exposure never applied).
+    get auraRenderer() { return renderer.auraRenderer; },
     dispose() {
       disposed = true;
       if (animationHandle && typeof cancelAnimationFrame !== "undefined") cancelAnimationFrame(animationHandle);

@@ -490,6 +490,8 @@ export interface WebGLRenderController {
   onDeviceLost?(listener: () => void): () => void;
   onDeviceRestored?(listener: () => void): () => void;
   deviceLost?(): boolean;
+  /** PRD-01 C-05 seam (Q-15-1): the lane Renderer, forwarded from WebGLSceneRenderer.auraRenderer. */
+  readonly auraRenderer?: unknown;
 }
 
 export interface ProductionRuntimeActorEntry {
