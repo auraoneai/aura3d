@@ -13,7 +13,9 @@ import type { QrFlagName } from "./core";
 export type QrFlagState = "dev" | "standalone-accepted" | "integrated-accepted" | "default-on" | "removed";
 
 export const QR_FLAG_STATES: Readonly<Partial<Record<QrFlagName, QrFlagState>>> = {
-  A3D_QR_CORE: "dev",
+  // Promoted 2026-10-11 (owner rule): GPU L4 promote run 38172695387 on
+  // 1102f10ae, PASS, mean LPIPS vs three.js 0.0750 -> 0.0573, 0 regressed beyond noise.
+  A3D_QR_CORE: "default-on",
   // Promoted 2026-10-11 (owner rule): GPU L4 promote run 38159877336 on
   // 8b38273f, PASS, mean LPIPS vs three.js 0.1972 -> 0.1785, 0 regressed.
   A3D_QR_LIGHTING: "default-on",
