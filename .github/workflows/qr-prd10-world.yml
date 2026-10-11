@@ -118,6 +118,10 @@ jobs:
     #   - bisect-summary.json must list every prd10 scene in both arms as
     #     `ready` with drawCalls > 0 and no error (bisect-summary.mjs alone
     #     only fails on the `none` control, so the `world` arm is checked here).
+    # GitLab budget: a push to a qr/** branch that has a PR would run the same
+    # pipeline twice (push + pull_request), so branch pushes leave capture to
+    # the pull_request run; main pushes, schedule, dispatch and workflow_call run it.
+    if: github.event_name != 'push' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 240
     env:
