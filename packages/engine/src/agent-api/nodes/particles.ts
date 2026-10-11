@@ -4,7 +4,16 @@ import type { AuraColor, AuraEffectNode, AuraParticleBudgetDiagnostics, AuraPart
 import { groups } from "./groups.js";
 import { prefabs } from "./prefabs/index.js";
 import { particleFountain } from "../particle-fountain-runtime.js";
-import { lastParticleUpdateMs } from "@aura3d/rendering";
+
+// arch-gates layering: nodes/ may not value-import @aura3d/rendering. The
+// measured `particles` scope ms is injected by the lane-07 barrel
+// (`engine/src/lanes/prd07.ts`) instead; null until a provider is installed.
+let particleUpdateMsProvider: () => number | null = () => null;
+
+/** Installed once by `lanes/prd07.ts` with rendering's `lastParticleUpdateMs`. */
+export function setParticleUpdateMsProvider(provider: () => number | null): void {
+  particleUpdateMsProvider = provider;
+}
 
 export const particles = {
   materialModes: (): readonly AuraParticleMaterialMode[] => ["additive-glow", "soft-alpha", "spark", "smoke", "splash", "dust", "star"],
@@ -32,7 +41,7 @@ export function collectParticleBudgetDiagnostics(nodes: readonly AuraSceneNode[]
     heuristicUpdateCostMs: Number((totalParticles * 0.00018 + particleEffects.length * 0.04).toFixed(3)),
     // C-20/C-28: last measured "particles" scope ms; null until a live
     // prd07 frame wraps update+draw (static scenes stay null, not zero).
-    measuredUpdateMs: lastParticleUpdateMs(),
+    measuredUpdateMs: particleUpdateMsProvider(),
     modes,
     texturedBillboards: particleEffects.filter((node) => node.texturedBillboard !== false).length,
     declared: totalParticles,
