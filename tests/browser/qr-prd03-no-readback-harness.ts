@@ -75,6 +75,11 @@ export async function runPostNoReadbackProbe(frameCount = 300): Promise<NoReadba
       app.step(1 / 60);
       const frame = (app.diagnostics() as { frame?: { readbacksThisFrame?: number } }).frame;
       deviceReadbacks += frame?.readbacksThisFrame ?? 0;
+      // Yield a frame: 300 back-to-back GTAO/god-ray frames in one task let
+      // the GPU queue grow unbounded on the paravirtual runner GPU (main
+      // 38098853109 hit the 240 s beforeAll budget). The counters are per
+      // frame, so yielding changes nothing they measure.
+      await new Promise((r) => requestAnimationFrame(r));
     }
     if (gl && original) {
       gl.readPixels = original;
