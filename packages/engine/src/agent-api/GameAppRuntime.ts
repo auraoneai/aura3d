@@ -202,9 +202,15 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
   const loopFrameUnsubscribe = loop.onFrame(
     cameraLoopOn && advance
       ? (frame) => { advance(frame.dt); }
-      : (frame) => { app.step(frame.dt); }
+      : (frame) => {
+        app.step(frame.dt);
+        if (presentedWaiters.size > 0) resolvePresented(app.runtime.frame);
+      }
   );
-  const loopTickUnsubscribe = cameraLoopOn ? loop.onTick(() => { app.step(0); }) : undefined;
+  const loopTickUnsubscribe = cameraLoopOn ? loop.onTick(() => {
+    app.step(0);
+    if (presentedWaiters.size > 0) resolvePresented(app.runtime.frame);
+  }) : undefined;
   const internalFrameUnsubscribe = app.onFrame((frame) => {
     const loopSnapshot = loop.snapshot();
     for (const input of ownedInputs) input.update(frame.dt);
