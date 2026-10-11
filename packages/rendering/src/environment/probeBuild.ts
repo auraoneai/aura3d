@@ -9,7 +9,7 @@ import { Texture, type TextureCubeFace } from "../Texture.js";
 import type { EnvironmentProbe } from "../contracts/environment.js";
 import { sampleRoomEnvironment } from "./RoomEnvironmentScene.js";
 import { projectCubeToSH9 } from "./SphericalHarmonics.js";
-import { faceUvToDir, prefilterCubeGGX, sampleCube, type PrefilterCubeSource, type PrefilterResult } from "./workers/cpuPrefilter.js";
+import { CUBE_FACE_BASIS, faceUvToDir, prefilterCubeGGX, sampleCube, type PrefilterCubeSource, type PrefilterResult } from "./workers/cpuPrefilter.js";
 
 export const CUBE_FACE_ORDER = ["px", "nx", "py", "ny", "pz", "nz"] as const;
 
@@ -242,14 +242,7 @@ export function cubeFaceViewProjection(
   near = 0.05,
   far = 100
 ): Float32Array {
-  const basis = [
-    [[1, 0, 0], [0, -1, 0], [0, 0, -1]],
-    [[-1, 0, 0], [0, -1, 0], [0, 0, 1]],
-    [[0, 1, 0], [0, 0, 1], [1, 0, 0]],
-    [[0, -1, 0], [0, 0, -1], [1, 0, 0]],
-    [[0, 0, 1], [0, -1, 0], [-1, 0, 0]],
-    [[0, 0, -1], [0, -1, 0], [1, 0, 0]]
-  ] as const;
+  const basis = CUBE_FACE_BASIS; // GL face basis: up = −V, right = U
   const [n, ux, vx] = basis[face]!;
   // view = lookAt along +n with up derived from the face basis (vx is "down" on the face).
   const up: [number, number, number] = [-vx[0], -vx[1], -vx[2]];

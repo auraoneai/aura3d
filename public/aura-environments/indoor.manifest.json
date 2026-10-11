@@ -7,8 +7,8 @@
   "specular": "indoor.specular.ktx2",
   "sh9": "indoor.sh9.f32",
   "sha256": {
-    "specular": "40b9eb910ccd2e5e3713abb28f0abaf9e99868148467ff3fccd70e6b3fdc78ac",
-    "sh9": "545a1d00bf23ee1520a2366e7b64f47768b610418a8283ecdb254e4f12e5665b"
+    "specular": "d4eb5f821c8ee2b25d2d101ab1cef3715d60d87acadd203658dc58b457eb71e1",
+    "sh9": "82eb00c5d5290635f5a0a552d1e0f16f4e2ceb57b0f2e1f21c5acc1f1753d106"
   },
   "license": "CC0",
   "tags": [
