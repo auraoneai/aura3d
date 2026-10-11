@@ -17,6 +17,9 @@ export const A3D_PRD06_DEFORM_GLSL = /* glsl */ `
 #ifdef A3D_HAS_TANGENT
 layout(location = 3) in vec4 a_tangent;
 #endif
+// C-18 entry marker: later vertex:deform chunks (prd10.wind, #1143) see the
+// entry is taken and do not redefine a3dDeform in the same program.
+#define A3D_DEFORM_ENTRY 1
 void a3dDeform(out vec4 localPos, out vec3 localNormal, out vec4 localTangent) {
 #ifdef A3D_DEPTH_ONLY
   vec3 p = a_position;

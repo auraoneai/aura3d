@@ -1,19 +1,22 @@
 /**
  * `a3d_prd10_caustics` — PRD-10 §8.7 underwater caustics chunk.
- * On Path G it lands as the C-02 `ShaderFeature` `prd10.caustics` (hook
- * `fragment:lights`, define `A3D_PRD10_CAUSTICS`); on Path S it is linked into
+ * On Path G the C-02 `ShaderFeature` `prd10.caustics` uses the split
+ * `a3d_prd10_caustics_pars` / `_apply` chunks below (define
+ * `A3D_PRD10_CAUSTICS`, #1143); on Path S this chunk is linked into
  * the lane's own terrain/kit programs. Multiplies the direct sun term by the
  * 16-frame caustic atlas projected along the sun direction.
  */
 import type { ShaderChunk } from "../../../contracts/program.js";
 
-const glsl = /* glsl */ `
+const CAUSTICS_UNIFORMS_GLSL = /* glsl */ `
 uniform sampler2D u_causticAtlas;   // 4x4 grid of 16 frames
 uniform float u_causticScale;       // world metres per atlas tile
 uniform float u_causticStrength;
-uniform float u_time;
 uniform float u_waterHeight;
+`;
 
+/** Sampling + boost helpers, shared by the Path S chunk and the Path G pars chunk. */
+const CAUSTICS_FUNCTIONS_GLSL = /* glsl */ `
 // Sample the crossfaded caustic value at atlas-local uv in [0,1].
 float a3dCausticSample(vec2 atlasUv, float t) {
   float frame = mod(floor(t * 12.0), 16.0);
@@ -36,6 +39,9 @@ float a3dCausticsBoost(vec3 worldPos, vec3 sunDir, float t) {
   return 1.0 + u_causticStrength * c * exp(-depth * 0.15);
 }
 `;
+
+const glsl = /* glsl */ `${CAUSTICS_UNIFORMS_GLSL}uniform float u_time;
+${CAUSTICS_FUNCTIONS_GLSL}`;
 
 const wgsl = /* wgsl */ `
 @group(0) @binding(0) var u_causticAtlas : texture_2d<f32>;
@@ -74,4 +80,41 @@ export const a3d_prd10_caustics: ShaderChunk = {
   stage: "fragment",
   glsl,
   wgsl
+};
+
+/**
+ * #1143 — generated-program (C-02, Path G) split of the caustics chunk.
+ * `a3d_prd10_caustics_pars` is the global-scope declaration chunk at
+ * `fragment:pars` (no `u_time`: the call reads frame time from the AuraFrame
+ * block, `u_resolutionFarTime.w`, so it cannot collide with another feature's
+ * `u_time`). `a3d_prd10_caustics_apply` is the statements-only call chunk at
+ * `fragment:indirect`, which the generator appends after the default indirect
+ * body, so the default light loop still runs and the boost scales its direct
+ * accumulators. `u_causticSunDir` points toward the sun.
+ */
+const parsGlsl = /* glsl */ `${CAUSTICS_UNIFORMS_GLSL}uniform vec3 u_causticSunDir;
+${CAUSTICS_FUNCTIONS_GLSL}`;
+
+const applyGlsl = /* glsl */ `
+#ifdef A3D_PRD10_CAUSTICS
+  float a3dCausticBoost = a3dCausticsBoost(v_worldPosition, normalize(u_causticSunDir), u_resolutionFarTime.w);
+  directDiffuse *= a3dCausticBoost;
+  directSpecular *= a3dCausticBoost;
+#endif
+`;
+
+export const a3d_prd10_caustics_pars: ShaderChunk = {
+  name: "a3d_prd10_caustics_pars",
+  owner: "prd10",
+  stage: "fragment",
+  glsl: parsGlsl,
+  wgsl
+};
+
+export const a3d_prd10_caustics_apply: ShaderChunk = {
+  name: "a3d_prd10_caustics_apply",
+  owner: "prd10",
+  stage: "fragment",
+  glsl: applyGlsl,
+  requires: ["a3d_prd10_caustics_pars"]
 };
