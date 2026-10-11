@@ -127,6 +127,9 @@ jobs:
       QRC_GAMES: ${{ inputs.games || '' }}
       QRC_VIEWPORTS: ${{ inputs.viewports || '1280x720' }}
       QRC_SOURCEMAP: ${{ inputs.sourcemap && 'true' || 'false' }}
+      # #626: GPU game captures use exact flags, so `none` is truly flags-off
+      # (games.json defaults are never prepended). Takes effect with #1120.
+      QRC_FLAGS_EXACT: "true"
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
