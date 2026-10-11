@@ -1,4 +1,4 @@
-From 52582a6b19e1775f57ba49ab7d5b76d0fca09b28 Mon Sep 17 00:00:00 2001
+From fc4ea97892efc8786adabab10edb2db9c8c729b1 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:09:28 +0000
 Subject: [PATCH] migration(showcase-gravity-post): regenerated patch set
@@ -6,10 +6,13 @@ Subject: [PATCH] migration(showcase-gravity-post): regenerated patch set
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- apps/showcase-gravity-post/src/evidence.ts    | 16 ++++++++++++++
- .../src/scenario-drive.ts                     | 22 +++++++++++++++++++
- .../src/scenarios/index.ts                    | 16 ++++++++++++++
- 3 files changed, 54 insertions(+)
+ apps/showcase-gravity-post/src/evidence.ts    | 16 ++++
+ .../src/scenario-drive.ts                     | 22 ++++++
+ .../src/scenarios/index.ts                    | 16 ++++
+ apps/showcase-gravity-post/src/v2/boot.ts     | 74 +++++--------------
+ .../src/v2/prediction.ts                      |  2 +-
+ apps/showcase-gravity-post/src/v2/state.ts    |  4 +-
+ 6 files changed, 75 insertions(+), 59 deletions(-)
  create mode 100644 apps/showcase-gravity-post/src/evidence.ts
  create mode 100644 apps/showcase-gravity-post/src/scenario-drive.ts
  create mode 100644 apps/showcase-gravity-post/src/scenarios/index.ts
@@ -86,6 +89,141 @@ index 000000000..dd31f09f0
 +  { description: "Default playable boot (no staging).", setup() {} },
 +  coasting
 +];
+diff --git a/apps/showcase-gravity-post/src/v2/boot.ts b/apps/showcase-gravity-post/src/v2/boot.ts
+index 265061342..c8c7dd848 100644
+--- a/apps/showcase-gravity-post/src/v2/boot.ts
++++ b/apps/showcase-gravity-post/src/v2/boot.ts
+@@ -8,7 +8,7 @@
+ // imported, not modified; audio plays through the legacy cue controller on
+ // admitted sfx ids until C-25 lands (stand-in R-14-09).
+ import { game as engineGame, scene, type AuraCameraPose, type GameInputController } from "@aura3d/engine";
+-import { createGame, type Game, lookManifest } from "@aura3d/game";
++import { createGame, type Game } from "@aura3d/game";
+ import { CONTRACTS, WELL_BODIES, stationById, stationPosition } from "../gameplay/contracts";
+ import { createFlybyState, flybyBody, requestFlyby, skipFlyby, updateFlyby } from "../gameplay/flyby";
+ import {
+@@ -38,9 +38,8 @@ import { lightingNodes } from "./scene/lighting";
+ import { createGravityRig, fallbackCameraNode } from "./scene/camera";
+ import { wireGravityFx } from "./scene/fx";
+ import { SPACE_BG } from "./scene/materials";
+-import { publishGravityEvidence, type GravityRunSnapshot, type LaunchedBy } from "./evidence";
+ import { applyGravityScenario } from "./scenarios";
+-import { createGravityCtx } from "./state";
++import { createGravityCtx, type LaunchedBy } from "./state";
+ import { createPostAudioBlock } from "./audio";
+ import { createGravityInput, wireGravityAim } from "./input";
+ import { wireGravityContracts } from "./contracts";
+@@ -155,6 +154,21 @@ const game = createGame({
+     // art/direction.ts sections. `route_gravity_post` uses the engine-parseable
+     // underscore form (URL/dispatch form is `route-gravity-post`).
+     flags: ["route_gravity_post", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
++  },
++  // T5.8: route evidence rides the shared createGame channel (C-24) —
++  // only the sections games.json requiredConditions read.
++  evidence: {
++    schema: 1,
++    sections: {
++      pod: (): { state: string; launchedBy: LaunchedBy } => ({
++        state: ctx.paused
++          ? "paused"
++          : ctx.pod.state === "coasting"
++            ? "in-flight"
++            : ctx.pod.state === "docked" || ctx.pod.state === "lost" ? ctx.pod.state : "aiming",
++        launchedBy: ctx.launchedBy
++      })
++    }
+   }
+ });
+ 
+@@ -246,60 +260,6 @@ const { updateGameplay } = update;
+ // ------------------------------------------------------------- tick ----------
+ 
+ 
+-// ------------------------------------------------------------- evidence ------
+-
+-// T2.2-post: appliedLook derives from the C-31 runtime manifest.
+-const appliedLook: Record<string, unknown> = {
+-  ...lookManifest(game.lookSource()),
+-  id: direction.id,
+-  genre: direction.genre,
+-  rig: "gravity-post.orbit",
+-  fov: 46,
+-  background: SPACE_BG,
+-  hdri: "data_galaxy_deep_space_1k",
+-  palette: direction.palette,
+-  signatureEffect: direction.signatureEffect
+-};
+-
+-const runSnapshot = (): GravityRunSnapshot => ({
+-  contractIndex: ctx.contractIndex,
+-  contract: contract(),
+-  pod: ctx.pod,
+-  score: ctx.score,
+-  failedContracts: ctx.failedContracts,
+-  completedContracts: ctx.completedContracts,
+-  shiftOver: ctx.shiftOver,
+-  campaignComplete: ctx.campaignComplete,
+-  paused: ctx.paused,
+-  aiming: ctx.aiming,
+-  warping: ctx.warpActive,
+-  launchedBy: ctx.launchedBy,
+-  lastScoreCard: ctx.lastScoreCard,
+-  lastFailReason: ctx.lastFailReason,
+-  dockEventCount: ctx.dockEventCount,
+-  dockEvents: ctx.dockEventLog.map((record) => record.stationId + ":" + record.kind),
+-  flybyBeatsRun: ctx.flyby.beatsRun,
+-  flybyActive: ctx.flyby.active,
+-  visitedFlybys: [...ctx.flyby.visited],
+-  predictionSteps: ctx.predictionSteps,
+-  predictionComparedSamples: ctx.predictionComparedSamples,
+-  predictionMaxDivergence: ctx.predictionMaxDivergence,
+-  predictionTolerance: PREDICTION_DIVERGENCE_TOLERANCE,
+-  actualPathPoints: ctx.actualPath.length
+-});
+-
+-publishGravityEvidence({
+-  game,
+-  run: runSnapshot,
+-  stations: () => ctx.stations,
+-  lastRigPose: () => game.app.camera?.evidence?.().pose ?? null,
+-  sceneSwaps: () => sceneSwaps,
+-  appliedLook,
+-  frameCount: () => ctx.frame,
+-  bootedAtMs,
+-  audioCueLog: () => audioCueLog
+-});
+-
+ const scenarioParam = routeParams.get("scenario");
+ if (scenarioParam) {
+   applyGravityScenario(scenarioParam, {
+diff --git a/apps/showcase-gravity-post/src/v2/prediction.ts b/apps/showcase-gravity-post/src/v2/prediction.ts
+index 44f3543c9..adbfe8771 100644
+--- a/apps/showcase-gravity-post/src/v2/prediction.ts
++++ b/apps/showcase-gravity-post/src/v2/prediction.ts
+@@ -8,7 +8,7 @@ import {
+ import { PLAY_PLANE_Y } from "../gameplay/stations";
+ import { FIXED_DT, integratePath } from "../gameplay/wells";
+ import { ACTUAL_PATH_BEADS, PREDICTION_BEADS, type gravityWorldNodes } from "./scene/world";
+-import type { LaunchedBy } from "./evidence";
++import type { LaunchedBy } from "./state";
+ import type { GravityCtx } from "./state";
+ import { MIN_LAUNCH_POWER, MAX_LAUNCH_SPEED } from "./input";
+ import { currentContract } from "./state";
+diff --git a/apps/showcase-gravity-post/src/v2/state.ts b/apps/showcase-gravity-post/src/v2/state.ts
+index 517f33381..c73d58c8f 100644
+--- a/apps/showcase-gravity-post/src/v2/state.ts
++++ b/apps/showcase-gravity-post/src/v2/state.ts
+@@ -6,7 +6,9 @@ import type { ScoreBreakdown } from "../gameplay/scoring";
+ import { buildStations, type StationWorld } from "../gameplay/stations";
+ import type { TrajectorySample } from "../gameplay/wells";
+ import { SPARK_COUNT } from "./scene/world";
+-import type { LaunchedBy } from "./evidence";
++
++/** Who fired the active launch (the `pod.launchedBy` evidence field). */
++export type LaunchedBy = "pointer" | "keyboard" | "autopilot" | null;
+ 
+ export interface GravityCtx {
+   readonly stations: StationWorld[];
 -- 
-2.34.1
+2.52.0
 

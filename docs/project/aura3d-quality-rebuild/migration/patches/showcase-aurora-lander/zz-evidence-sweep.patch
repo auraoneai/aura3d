@@ -1,4 +1,4 @@
-From 8e701b4ddb21385e8bdbbeeeffd11f7bc8da7fd2 Mon Sep 17 00:00:00 2001
+From cfba3dca9ed654975f35b063302dce5535217dc9 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 15:41:47 +0000
 Subject: [PATCH] showcase-aurora-lander: delete evidence files+blocks +
@@ -14,11 +14,10 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../scripts/register-sfx.mjs                  |  56 ---
  .../scripts/write-performance-report.ts       | 128 -------
  .../scripts/write-route-health.mjs            | 226 ------------
- apps/showcase-aurora-lander/src/evidence.ts   |   8 -
- .../showcase-aurora-lander/src/legacy/main.ts | 102 ------
+ .../showcase-aurora-lander/src/legacy/main.ts |  41 ---
  apps/showcase-aurora-lander/src/main.ts       |   1 -
  .../src/v2/evidence/index.ts                  | 165 ---------
- 12 files changed, 1608 deletions(-)
+ 11 files changed, 1539 deletions(-)
  delete mode 100644 apps/showcase-aurora-lander/performance-report.json
  delete mode 100644 apps/showcase-aurora-lander/scripts/build-models.mjs
  delete mode 100644 apps/showcase-aurora-lander/scripts/build-review-extraction-bay.mjs
@@ -27,7 +26,6 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  delete mode 100644 apps/showcase-aurora-lander/scripts/register-sfx.mjs
  delete mode 100644 apps/showcase-aurora-lander/scripts/write-performance-report.ts
  delete mode 100644 apps/showcase-aurora-lander/scripts/write-route-health.mjs
- delete mode 100644 apps/showcase-aurora-lander/src/evidence.ts
  delete mode 100644 apps/showcase-aurora-lander/src/v2/evidence/index.ts
 
 diff --git a/apps/showcase-aurora-lander/performance-report.json b/apps/showcase-aurora-lander/performance-report.json
@@ -1410,55 +1408,11 @@ index d904fb630..000000000
 -    return statSync(child).isDirectory() ? walk(child) : [child];
 -  });
 -}
-diff --git a/apps/showcase-aurora-lander/src/evidence.ts b/apps/showcase-aurora-lander/src/evidence.ts
-deleted file mode 100644
-index af1232122..000000000
---- a/apps/showcase-aurora-lander/src/evidence.ts
-+++ /dev/null
-@@ -1,8 +0,0 @@
--/** Lazy route evidence sections (PRD-09 §6.5). */
--export type EvidenceCollect = () => Record<string, unknown>;
--let collect: EvidenceCollect | undefined;
--export function bindAuroraEvidence(fn: EvidenceCollect): void { collect = fn; }
--export const sections = {
--  aurora: (): Record<string, unknown> =>
--    (collect ?? (() => ({ status: "unbound" })))()
--};
 diff --git a/apps/showcase-aurora-lander/src/legacy/main.ts b/apps/showcase-aurora-lander/src/legacy/main.ts
-index 174b63512..798685c22 100644
+index 3268b8579..29861b36a 100644
 --- a/apps/showcase-aurora-lander/src/legacy/main.ts
 +++ b/apps/showcase-aurora-lander/src/legacy/main.ts
-@@ -41,7 +41,6 @@ import {
-   createRumbleDriver,
-   createTweenEngine
- } from "@aura3d/game";
--import { bindAuroraEvidence } from "../evidence";
- import { bindAuroraDrive } from "../scenario-drive";
- import { assets } from "../../../../src/aura-assets";
- import {
-@@ -97,8 +96,6 @@ const FIXED_DT = 1 / 60;
-  * controls and must complete the three-site campaign on software-rendered workers.
-  */
- const PLAYER_MAX_CATCHUP_SECONDS = 0.5;
--const DROP_EVIDENCE_MAX_CATCHUP_SECONDS = 2;
--const MAX_SUBSTEPS = Math.round(DROP_EVIDENCE_MAX_CATCHUP_SECONDS / FIXED_DT);
- /**
-  * The opening approach is intentionally framed as a launch/deorbit hand-off:
-  * a renderer-owned gantry sits under the typed lander while it is high above
-@@ -118,12 +115,9 @@ type Phase = "flying" | "landed" | "crashed" | "campaign-clear";
-  */
- const routeParams = new URLSearchParams(window.location.search);
- const dropMode = routeParams.get("drop");
--document.body.dataset.capture = "default";
- const dropEvidenceMode = dropMode === "1" || dropMode === "hard";
- const hardDropEvidenceMode = dropMode === "hard";
--// A human-playable close approach for mobile/touch evidence. Unlike `drop=1`,
- // this changes only the spawn and never supplies controls to the integrator.
--const approachEvidenceMode = routeParams.get("approach") === "1";
- const requestedSite = Number(routeParams.get("site") ?? "1");
- const initialSiteIndex = Number.isInteger(requestedSite)
-   ? Math.max(0, Math.min(SITES.length - 1, requestedSite - 1))
-@@ -335,7 +329,6 @@ const EXTRACTION_INFRASTRUCTURE: readonly ExtractionInfrastructurePart[] = [
+@@ -335,7 +335,6 @@ const EXTRACTION_INFRASTRUCTURE: readonly ExtractionInfrastructurePart[] = [
    { id: "threshold-right", offset: [1.55, 0.17, 5.7], scale: [1.15, 0.1, 0.14], color: "#fef3c7", emissive: "#f59e0b" }
  ];
  
@@ -1466,7 +1420,7 @@ index 174b63512..798685c22 100644
  const mountedEvidence = {
    schema: "aura3d-showcase-aurora-lander-evidence/1.0",
    appId: "showcase-aurora-lander",
-@@ -403,14 +396,6 @@ const mountedEvidence = {
+@@ -403,14 +402,6 @@ const mountedEvidence = {
  
  // Canonical gate global (route-gates convention) plus the PRD §8 alias —
  // both names expose the SAME live object.
@@ -1481,7 +1435,7 @@ index 174b63512..798685c22 100644
  
  // ---- scene construction ------------------------------------------------------
  /**
-@@ -866,7 +851,6 @@ function buildWorldScene() {
+@@ -866,7 +857,6 @@ function buildWorldScene() {
        .runtime(game.runtimeNode("extraction-halo", { tags: ["campaign-clear", "extraction-tableau", "renderer-owned"] }))
    );
  
@@ -1489,7 +1443,7 @@ index 174b63512..798685c22 100644
    // material depth. It is non-colliding background set dressing only: the live
    // typed lander, Rapier contacts, terrain queries, pad state, and campaign
    // progression remain the gameplay authorities.
-@@ -920,7 +904,6 @@ function buildWorldScene() {
+@@ -920,7 +910,6 @@ function buildWorldScene() {
      .add(effects.colorGrade({ exposure: 1.06, contrast: 1.05, saturation: 1.12 }))
      .add(effects.antiAlias({ mode: "fxaa" }))
      // Ambient-only teal wash at 0.95 flattened the regolith into a single bright
@@ -1497,7 +1451,7 @@ index 174b63512..798685c22 100644
      // fill, keep a cool sky bounce, and let the moon key carry the shaping.
      .add(lights.ambient({ name: "aurora sky fill", color: "#67e8f9", intensity: 0.4 }))
      .add(lights.directional({ name: "regolith bounce fill", color: "#2f4a3d", intensity: 0.55 }).position(14, -26, 18))
-@@ -938,7 +921,6 @@ function buildWorldScene() {
+@@ -938,7 +927,6 @@ function buildWorldScene() {
        targetNode: "lander",
        distance: 15,
        // The opening approach is still a wide three-quarter chase, but the
@@ -1505,7 +1459,7 @@ index 174b63512..798685c22 100644
        // route-primary frame.  Bring the eye in one measured step so the
        // lander's antenna, cabin, legs, and the scaffold's runway cues read as
        // one intentional focal unit without changing any world coordinates or
-@@ -947,7 +929,6 @@ function buildWorldScene() {
+@@ -947,7 +935,6 @@ function buildWorldScene() {
        // Desktop pitch was 27deg with a 54deg cone, which put the frame's top edge at
        // the world horizon and clipped the sky band out of shot. A slightly shallower
        // 23deg pitch inside a 58deg cone admits the sky without the 64deg version's
@@ -1513,64 +1467,7 @@ index 174b63512..798685c22 100644
        offset: [0, 5.8, 13.2],
        targetOffset: [0, 0, 0],
        fov: 58,
-@@ -967,7 +948,6 @@ const auroraGame = createGame({
-   },
-   scene: buildWorldScene(),
-   qualityRebuild: { flags: ["game"] },
--  evidence: {
-     schema: 1,
-     sections: async () => (await import("../evidence")).sections,
-     legacyGlobals: ["__AURA3D_SHOWCASE_AURORA_LANDER__"]
-@@ -976,7 +956,6 @@ const auroraGame = createGame({
- });
- const app = auroraGame.app;
- auroraGame.start();
--bindAuroraEvidence(() => mountedEvidence);
- const auroraTween = createTweenEngine();
- const auroraFx = createFxParticlePass(app.effects);
- const auroraJuice = createJuice<"touch-soft" | "touch-hard" | "crash" | "pad-lock" | "site-clear" | "launch">({
-@@ -1010,40 +989,6 @@ interface SiteGroupHandles {
- }
- const siteGroups: SiteGroupHandles[] = [];
- 
--function captureNodeHandles(): void {
--  landerNode = requireNode("lander");
--  extractionLanderNode = requireNode("extraction-lander");
--  ghostNode = requireNode("lander-ghost");
--  plumeNode = requireNode("thrust-plume");
--  shockwaveNode = requireNode("impact-shockwave");
--  predictionNode = requireNode("landing-prediction");
--  auroraBands = AURORA_SHEET_NAMES.map((name) => requireNode(name));
--  dustNodes = Array.from({ length: 12 }, (_, i) => requireNode(`dust-${i + 1}`));
--  debrisNodes = Array.from({ length: 10 }, (_, i) => requireNode(`debris-${i + 1}`));
--  whiteoutNodes = Array.from({ length: 72 }, (_, i) => requireNode(`whiteout-${i + 1}`));
--  extractionNodes = [requireNode("extraction-title"), requireNode("extraction-halo")];
--  extractionBackdropNode = requireNode("extraction-bay-backdrop");
--  extractionInfrastructureNodes = EXTRACTION_INFRASTRUCTURE.map((part) => requireNode(`extraction-${part.id}`));
--  extractionInfrastructureNodes.forEach((node) => node.setVisible(false));
--  ghostPlaybackNode = ghostNode;
--
--  SITES.forEach((site, index) => {
--    const prefix = `s${site.id}`;
--    const nodes = [
--      requireNode(`${prefix}-terrain`),
--      requireNode(`${prefix}-pad-ring`),
--      requireNode(`${prefix}-beacon-left`),
--      requireNode(`${prefix}-beacon-right`),
--      requireNode(`${prefix}-marker`)
-- ];
--    const lights = [1, 2, 3, 4].map((i) => requireNode(`${prefix}-pad-light-${i}`));
--    siteGroups[index] = { nodes: [...nodes, ...lights], padLights: lights };
--    // Only the active site renders; every other group parks hidden.
--    const isActive = index === siteIndex;
--    [...nodes, ...lights].forEach((handle) => handle.setVisible(isActive));
-- });
--  padLights = siteGroups[siteIndex]!.padLights;
--}
- 
- // ---- collision world per site -------------------------------------------------
- function rebuildCollisions(): void {
-@@ -1146,7 +1091,6 @@ function spawnStateFor(site: LanderSite): LanderState {
+@@ -1146,7 +1133,6 @@ function spawnStateFor(site: LanderSite): LanderState {
    const pad = site.pads[0]!;
    const activeField = siteFields.find((entry) => entry.site.id === site.id)?.field;
    const padHeight = activeField?.padHeights[0] ?? 0;
@@ -1578,7 +1475,7 @@ index 174b63512..798685c22 100644
    // and site transitions complete within the browser gate even on a software-rendered worker.
    return createLanderState({ x: pad.x, y: padHeight + (dropEvidenceMode ? 14 : 26), z: pad.z }, site.fuelBudget);
  }
-@@ -1331,7 +1275,6 @@ function gradeFromContact(context: GradingContext): void {
+@@ -1331,7 +1317,6 @@ function gradeFromContact(context: GradingContext): void {
  
    const isLastSite = siteIndex >= SITES.length - 1;
    phase = isLastSite ? "campaign-clear" : "landed";
@@ -1586,7 +1483,7 @@ index 174b63512..798685c22 100644
    // campaign producer advances normally through all three sites.
    advanceTimer = isLastSite || hardDropEvidenceMode ? -1 : 1.8;
    showBanner(
-@@ -1376,7 +1319,6 @@ function tick(dtFixed: number): void {
+@@ -1376,7 +1361,6 @@ function tick(dtFixed: number): void {
  
    // Edge-driven audio before integration.
    const controls = readControls();
@@ -1594,7 +1491,7 @@ index 174b63512..798685c22 100644
    // (-0.6 m/s near the deck) so grading, sensor and audio paths run without human
    // input and the scripted approach touches down softly on the pad.
    let effectiveControls = controls;
-@@ -1446,7 +1388,6 @@ function tick(dtFixed: number): void {
+@@ -1446,7 +1430,6 @@ function tick(dtFixed: number): void {
    }
    const events = collisionWorld.step(dtFixed);
  
@@ -1602,7 +1499,7 @@ index 174b63512..798685c22 100644
    let sample: SurfaceSample | undefined;
    if (surfaceQuery) {
      sample = surfaceQuery.sample(state.x, state.z);
-@@ -1620,9 +1561,7 @@ function renderUpdate(dtFrame: number): void {
+@@ -1620,9 +1603,7 @@ function renderUpdate(dtFrame: number): void {
      && phase === "flying"
      && altitudeAboveGround > APPROACH_SCAFFOLD_MIN_AGL;
    // The campaign-clear bay is a complete renderer-owned deck laid over the
@@ -1612,7 +1509,7 @@ index 174b63512..798685c22 100644
    // has already run and remains published; runtime flight keeps terrain shown.
      extractionNodes.forEach((node, index) => {
      node.setVisible(extractionVisible && true);
-@@ -1764,7 +1703,6 @@ function renderUpdate(dtFrame: number): void {
+@@ -1764,7 +1745,6 @@ function renderUpdate(dtFrame: number): void {
      }
    }
  
@@ -1620,30 +1517,10 @@ index 174b63512..798685c22 100644
    terrainQueryClock += dtFrame;
    if (terrainQueryClock >= 1) {
      terrainQueryFps = Math.round(terrainQueryCountWindow / terrainQueryClock);
-@@ -1830,47 +1768,9 @@ function publishEvidence(): void {
- }
- 
- // ---- main loop -----------------------------------------------------------------
--app.onFrame((frame) => {
--  syncTimedFlightControls(performance.now());
--  const maxCatchupSeconds = dropEvidenceMode
--    ? DROP_EVIDENCE_MAX_CATCHUP_SECONDS
--    : PLAYER_MAX_CATCHUP_SECONDS;
--  accumulator = Math.min(accumulator + frame.dt, maxCatchupSeconds);
--  let substeps = 0;
--  while (accumulator >= FIXED_DT && substeps < MAX_SUBSTEPS) {
--    input.update(FIXED_DT);
--    handleControlEdges();
--    tick(FIXED_DT);
--    accumulator -= FIXED_DT;
--    substeps += 1;
--  }
--  renderUpdate(frame.dt);
--});
- 
+@@ -1850,27 +1830,6 @@ app.onFrame((frame) => {
  // ---- boot ----------------------------------------------------------------------
  setupPanel();
--captureNodeHandles();
+ captureNodeHandles();
 -Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
 -  value: {
 -    category: "application",
@@ -1668,12 +1545,6 @@ index 174b63512..798685c22 100644
  // Point the active field/query/site at the requested site (site 1 by default).
  if (initialSiteIndex > 0) {
    loadSite(initialSiteIndex);
-@@ -1881,5 +1781,3 @@ if (initialSiteIndex > 0) {
-   surfaceQuery = entry.query;
-   resetAttempt();
- }
--mountedEvidence.mounted = true;
--mountedEvidence.status = "ready";
 diff --git a/apps/showcase-aurora-lander/src/main.ts b/apps/showcase-aurora-lander/src/main.ts
 index 6f239e303..441e72711 100644
 --- a/apps/showcase-aurora-lander/src/main.ts

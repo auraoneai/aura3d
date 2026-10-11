@@ -1,4 +1,4 @@
-From e80a35a7c55fc87542c09d3bb4e4edc9205fcf81 Mon Sep 17 00:00:00 2001
+From d765c47ce29864f1385ee377e5786a70bc493a23 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:08:02 +0000
 Subject: [PATCH] migration(showcase-aurora-lander): regenerated patch set
@@ -11,8 +11,8 @@ Subject: [PATCH] migration(showcase-aurora-lander): regenerated patch set
  .../showcase-aurora-lander/src/legacy/main.ts | 155 +++++++++++-------
  .../src/scenario-drive.ts                     |  11 ++
  .../src/scenarios/index.ts                    |  13 ++
- apps/showcase-aurora-lander/src/v2/boot.ts    |   4 +-
- 7 files changed, 184 insertions(+), 64 deletions(-)
+ apps/showcase-aurora-lander/src/v2/boot.ts    |  87 +++-------
+ 7 files changed, 205 insertions(+), 126 deletions(-)
  create mode 100644 apps/showcase-aurora-lander/src/evidence.ts
  create mode 100644 apps/showcase-aurora-lander/src/scenario-drive.ts
  create mode 100644 apps/showcase-aurora-lander/src/scenarios/index.ts
@@ -135,7 +135,7 @@ index 85f144652..3919603de 100644
        await cue(name);
      },
 diff --git a/apps/showcase-aurora-lander/src/legacy/main.ts b/apps/showcase-aurora-lander/src/legacy/main.ts
-index f50746657..174b63512 100644
+index f50746657..3268b8579 100644
 --- a/apps/showcase-aurora-lander/src/legacy/main.ts
 +++ b/apps/showcase-aurora-lander/src/legacy/main.ts
 @@ -33,6 +33,16 @@ import {
@@ -276,7 +276,7 @@ index f50746657..174b63512 100644
      continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
    },
 -  scene: buildWorldScene()
-+  scene: buildWorldScene(),
++  scene: () => buildWorldScene(),
 +  qualityRebuild: { flags: ["game"] },
 +  evidence: {
 +    schema: 1,
@@ -516,20 +516,126 @@ index 000000000..c1fb5b312
 +  }
 +];
 diff --git a/apps/showcase-aurora-lander/src/v2/boot.ts b/apps/showcase-aurora-lander/src/v2/boot.ts
-index 96af7347f..1687838e7 100644
+index 96af7347f..56f838f13 100644
 --- a/apps/showcase-aurora-lander/src/v2/boot.ts
 +++ b/apps/showcase-aurora-lander/src/v2/boot.ts
-@@ -44,8 +44,8 @@ import { lightingNodes } from "./scene/lighting";
- import { createAuroraRig, fallbackCameraNode } from "./scene/camera";
+@@ -7,8 +7,8 @@
+ // §7.2.1 contract). Gameplay modules (lander/terrain/sites/touchdown/
+ // prediction/ghost) are unchanged; audio plays through the legacy cue
+ // controller until C-25 lands (standIn R-14-09).
+-import { game as engineGame, createMeshSurfaceQuery, scene, type AuraCameraPose, type GameInputController, type MeshSurfaceQuery, type SurfaceSample } from "@aura3d/engine";
+-import { createGame, type Game, lookManifest } from "@aura3d/game";
++import { game as engineGame, createMeshSurfaceQuery, scene, type GameInputController, type MeshSurfaceQuery, type SurfaceSample } from "@aura3d/engine";
++import { createGame, type Game } from "@aura3d/game";
+ import { SITES, campaignScore, type LanderSite } from "../gameplay/sites";
+ import { sampleGridHeight, type TerrainField } from "../gameplay/terrain";
+ import {
+@@ -41,10 +41,9 @@ import { createLanderAudio, type LanderAudioCue } from "../legacy/lander-audio";
+ import direction from "../../art/direction";
+ import { auroraWorldNodes, siteGroupNames, EXTRACTION_INFRASTRUCTURE } from "./scene/world";
+ import { lightingNodes } from "./scene/lighting";
+-import { createAuroraRig, fallbackCameraNode } from "./scene/camera";
++import { createAuroraRig, fallbackCameraNode, pointInRigFrame } from "./scene/camera";
  import { wireAuroraFx } from "./scene/fx";
  import { NIGHT_BG } from "./scene/materials";
 -import { publishAuroraEvidence, type AuroraRunSnapshot } from "./evidence";
--import { applyAuroraScenario } from "./scenarios";
-+import { publishAuroraEvidence, type AuroraRunSnapshot } from "../evidence";
-+import { applyAuroraScenario } from "../scenarios";
+ import { applyAuroraScenario } from "./scenarios";
  import { createAuroraCtx } from "./state";
  import { createLanderAudioBlock, wireLanderAudioUnlock } from "./audio";
- import { createLanderInput, wireLanderInput } from "./input";
+@@ -143,6 +142,26 @@ const game = createGame({
+     // art/direction.ts sections. `route_aurora_lander` uses the engine-parseable
+     // underscore form (URL/dispatch form is `route-aurora-lander`).
+     flags: ["route_aurora_lander", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
++  },
++  // T5.8: route evidence rides the shared createGame channel (C-24) —
++  // only the sections games.json requiredConditions read.
++  evidence: {
++    schema: 1,
++    sections: {
++      lander: (): Record<string, unknown> => ({
++        altitude: Math.max(0, rigState.agl),
++        touchdown: ctx.paused
++          ? "paused"
++          : ctx.phase === "crashed"
++            ? "crashed"
++            : ctx.phase === "landed" || ctx.phase === "campaign-clear" ? "landed" : "in-flight"
++      }),
++      framing: (): Record<string, unknown> => {
++        const pose = game.app.camera?.evidence?.().pose ?? null;
++        const pad = ctx.currentSite.pads[0]!;
++        return { padInFrame: pose ? pointInRigFrame(pose, [pad.x, ctx.field?.padHeights[0] ?? 0, pad.z]) : false };
++      }
++    }
+   }
+ });
+ 
+@@ -229,66 +248,6 @@ const { spawnStateFor, setSiteGroupVisible, resetAttempt, loadSite, beginGhostFr
+ const render = wireAuroraRender(ctx, { game, world, handle, fx, reducedMotion, rigState, loadSite });
+ const { syncHud, renderUpdate } = render;
+ 
+-// -------------------------------------------------------------- evidence ----
+-
+-function runSnapshot(): AuroraRunSnapshot {
+-  return {
+-    siteIndex: ctx.siteIndex,
+-    phase: ctx.phase,
+-    paused: ctx.paused,
+-    lastGrade: ctx.lastGrade,
+-    crashReason: ctx.crashReason,
+-    state: {
+-      x: ctx.state.x,
+-      y: ctx.state.y,
+-      z: ctx.state.z,
+-      vy: ctx.state.vy,
+-      hspeed: hspeedOf(ctx.state),
+-      tiltDeg: ctx.state.tiltDeg,
+-      fuel: ctx.state.fuel / ctx.currentSite.fuelBudget
+-    },
+-    altitude: Math.max(0, rigState.agl),
+-    prediction: ctx.latestPrediction,
+-    hull: ctx.campaignHull / LANDER_MAX_HULL,
+-    campaignScore: campaignScore(SITES.map((_, i) => ctx.siteScores[i] ?? 0)),
+-    completedSites: ctx.siteScores.filter((s) => s > 0).length,
+-    siteScores: ctx.siteScores
+-  };
+-}
+-
+-function b_pose(): AuraCameraPose | null {
+-  return game.app.camera?.evidence?.().pose ?? null;
+-}
+-
+-// T2.2-post: appliedLook derives from the C-31 runtime manifest.
+-const appliedLook: Record<string, unknown> = {
+-  ...lookManifest(game.lookSource()),
+-  direction: direction.id,
+-  rig: "aurora-lander.altitude",
+-  key: "moonlight 6500K directional (shadowed)",
+-  fill: "ibl data_galaxy_deep_space_1k @0.35",
+-  practicals: 2,
+-  background: NIGHT_BG,
+-  hdri: "k1-starfield stand-in (data_galaxy_deep_space_1k)",
+-  exposureEV: -0.2
+-};
+-
+-publishAuroraEvidence({
+-  game,
+-  run: runSnapshot,
+-  site: () => ctx.currentSite,
+-  field: () => ctx.field,
+-  padWorldY: () => ctx.field?.padHeights[0] ?? 0,
+-  lastRigPose: () => b_pose(),
+-  contact: () => ({ seen: ctx.contactEventsSeen, queryAgreement: ctx.contactQueryAgreement, padSensorArmed: ctx.padSensorArmed }),
+-  ghost: () => ({ active: ctx.ghostActive, replayHash: ctx.ghostReplayHash ?? (ctx.ghostActive ? null : trajectoryHash(ctx.attemptSamples) || null) }),
+-  sceneSwaps: () => sceneSwaps,
+-  appliedLook,
+-  frameCount: () => ctx.frame,
+-  bootedAtMs,
+-  audioCueLog: () => audioCueLog
+-});
+-
+ // --------------------------------------------------------------- boot -------
+ 
+ const scenario = applyAuroraScenario(routeParams.get("scenario"), {
 -- 
 2.52.0
 

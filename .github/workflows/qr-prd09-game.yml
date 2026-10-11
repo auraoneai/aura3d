@@ -38,6 +38,8 @@ on:
       - "tools/showcase-library/template-creategame-audit.mjs"
       - "playwright.prd09.config.ts"
       - "tests/qr/prd09/no-skipped-reporter.ts"
+      - "tests/qr/prd09/migrated-tree-bundle-check.mjs"
+      - "docs/project/aura3d-quality-rebuild/migration/patches/**"
       - ".github/workflows/qr-prd09-game.yml"
   push:
     branches: ["main"]
@@ -90,9 +92,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - name: Apply every migration patch set to a main worktree
         run: |
           git config user.email "qr-prd09@example.invalid"
@@ -102,6 +107,18 @@ jobs:
           for dir in "$GITHUB_WORKSPACE"/docs/project/aura3d-quality-rebuild/migration/patches/*/; do
             git am "$dir"*.patch
           done
+      - name: "Migrated tree compiles (bundle + route-local tsc vs main + createGame contract, issue 884)"
+        # Every game route's src/main.ts must esbuild-bundle on the migrated
+        # tree (missing files/exports and syntax errors fail), the route-local
+        # `tsc --noResolve` check must add no errors over unmigrated main
+        # (undeclared names, missing exports, TDZ use), and createGame({ scene })
+        # must be a function that reads nothing declared after the call.
+        run: |
+          git worktree add /tmp/main-base origin/main --detach
+          ln -s "$GITHUB_WORKSPACE/node_modules" /tmp/all-shadow/node_modules
+          ln -s "$GITHUB_WORKSPACE/node_modules" /tmp/main-base/node_modules
+          node tests/qr/prd09/migrated-tree-bundle-check.mjs \
+            --root /tmp/all-shadow --base /tmp/main-base --json /tmp/migrated-compile.json
       - name: Capture-parity gate on the migrated tree
         run: |
           # Per-route gate first (clear failure attribution), then the fleet
@@ -125,6 +142,7 @@ jobs:
           path: |
             /tmp/composition-before.json
             /tmp/composition-after.json
+            /tmp/migrated-compile.json
           retention-days: 30
           if-no-files-found: warn
 

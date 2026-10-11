@@ -1,4 +1,4 @@
-From dd1b077ca0e5e432d5b71984742733196f641069 Mon Sep 17 00:00:00 2001
+From 22e31bd35db1c8370bc6503a2b8b2755a69dfa24 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:11:00 +0000
 Subject: [PATCH] migration(showcase-vault-breakers): regenerated patch set
@@ -6,12 +6,12 @@ Subject: [PATCH] migration(showcase-vault-breakers): regenerated patch set
 
 ---
  apps/showcase-vault-breakers/package.json     |   3 +-
- apps/showcase-vault-breakers/src/evidence.ts  |   8 +
- .../src/legacy/main.ts                        | 147 +++++++++++-------
+ apps/showcase-vault-breakers/src/evidence.ts  |   8 ++
+ .../src/legacy/main.ts                        | 132 +++++++++++-------
  .../src/scenario-drive.ts                     |  11 ++
- .../src/scenarios/index.ts                    |  16 ++
- apps/showcase-vault-breakers/src/v2/boot.ts   |   4 +-
- 6 files changed, 130 insertions(+), 59 deletions(-)
+ .../src/scenarios/index.ts                    |  16 +++
+ apps/showcase-vault-breakers/src/v2/boot.ts   |  37 ++---
+ 6 files changed, 133 insertions(+), 74 deletions(-)
  create mode 100644 apps/showcase-vault-breakers/src/evidence.ts
  create mode 100644 apps/showcase-vault-breakers/src/scenario-drive.ts
  create mode 100644 apps/showcase-vault-breakers/src/scenarios/index.ts
@@ -45,7 +45,7 @@ index 000000000..a626180b3
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
 diff --git a/apps/showcase-vault-breakers/src/legacy/main.ts b/apps/showcase-vault-breakers/src/legacy/main.ts
-index 7478c4134..7983f36df 100644
+index 7478c4134..939a05919 100644
 --- a/apps/showcase-vault-breakers/src/legacy/main.ts
 +++ b/apps/showcase-vault-breakers/src/legacy/main.ts
 @@ -9,7 +9,6 @@
@@ -120,12 +120,12 @@ index 7478c4134..7983f36df 100644
    diagnostics: { overlay: false, performancePanel: false },
    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
    physics: {
-@@ -408,11 +416,50 @@ const gameApp = createGameApp("#app", {
+@@ -408,11 +416,51 @@ const gameApp = createGameApp("#app", {
      touch: true
    },
    loop: { fixedDt: 1 / 60, maxSubSteps: 2 },
 -  scene: buildScene()
-+  scene: buildScene(),
++  scene: () => buildScene(),
 +  qualityRebuild: { flags: ["game"] },
 +  evidence: {
 +    schema: 1,
@@ -134,9 +134,9 @@ index 7478c4134..7983f36df 100644
 +  },
 +  scenarios: async () => (await import("../scenarios")).vaultScenarios
  });
--const app = gameApp.app;
++const gameApp = vaultGame.runtime;
+ const app = gameApp.app;
 -const input = gameApp.input!;
-+const app = vaultGame.runtime;
 +vaultGame.start();
 +const input = vaultGame.input!;
  if (!input) throw new Error("Vault Breakers failed to create Aura3D input.");
@@ -174,30 +174,16 @@ index 7478c4134..7983f36df 100644
  
  let dynamicHandles = new Map<string, AuraRuntimeNodeHandle>();
  const scoreboardHandles = new Map<string, AuraRuntimeNodeHandle>();
-@@ -517,15 +564,13 @@ function syncHud(): void {
-   hudText("#stat-tilt", snap.tiltLocked ? "TILT" : `${snap.tiltStrikes} OF 3`);
-   hudText("#vb-mission", snap.missionLine);
-   const charge = plunger.state();
--  const width = Math.round(charge.charge * 100) + "%";
--  if (powerFill.style.width !== width) powerFill.style.width = width;
--  const plungerText = plunger.charging ? `Plunge ${Math.round(charge.charge * 100)}%` : "Plunger";
--  if (powerLabel.textContent !== plungerText) powerLabel.textContent = plungerText;
--  hudText("#vb-ev-backend", snap.backend);
--  hudText("#vb-ev-flipper", "joint");
--  hudText("#vb-ev-sensors", String(snap.sensorEventCount));
--  hudText("#vb-ev-joints", String(snap.jointCount));
+@@ -525,7 +573,7 @@ function syncHud(): void {
+   hudText("#vb-ev-flipper", "joint");
+   hudText("#vb-ev-sensors", String(snap.sensorEventCount));
+   hudText("#vb-ev-joints", String(snap.jointCount));
 -  const bannerText = paused
-+  powerFill.style.width = Math.round(charge.charge * 100) + "%";
-+  powerLabel.textContent = plunger.charging ? `Plunge ${Math.round(charge.charge * 100)}%` : "Plunger";
-+  ui.setText("#vb-ev-backend", snap.backend);
-+  ui.setText("#vb-ev-flipper", "joint");
-+  ui.setText("#vb-ev-sensors", String(snap.sensorEventCount));
-+  ui.setText("#vb-ev-joints", String(snap.jointCount));
-+  banner.textContent = vaultGame.session.paused
++  const bannerText = vaultGame.session.paused
      ? "PAUSED - P TO RESUME"
      : snap.phase === "attract"
        ? "VAULT BREAKERS - HOLD SPACE, RELEASE TO SERVE"
-@@ -546,11 +591,11 @@ function doServe(charge: number): void {
+@@ -546,11 +594,11 @@ function doServe(charge: number): void {
  }
  
  function togglePause(): void {
@@ -211,7 +197,7 @@ index 7478c4134..7983f36df 100644
    else app.resume();
  }
  
-@@ -581,9 +626,10 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
+@@ -581,9 +629,10 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
      switch (event.type) {
        case "serve":
          pushCue("plunger-release");
@@ -223,7 +209,7 @@ index 7478c4134..7983f36df 100644
          {
            const [x, z] = BUMPER_IMPACT_POSITIONS[bumperImpactIndex % 3]!;
            bumperImpactIndex += 1;
-@@ -591,7 +637,7 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
+@@ -591,7 +640,7 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
          }
          break;
        case "sling":
@@ -232,7 +218,7 @@ index 7478c4134..7983f36df 100644
          {
            const [x, z] = slingImpactIndex++ % 2 === 0 ? [-1.2, 2.1] : [1.2, 2.1];
            triggerImpact([x, 0.55, z], "amber", 0.24);
-@@ -601,6 +647,7 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
+@@ -601,6 +650,7 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
          if (!downTargets.has(event.id)) {
            downTargets.add(event.id);
            pushCue("target-down");
@@ -240,7 +226,7 @@ index 7478c4134..7983f36df 100644
          }
          const handle = targetHandles.get(`target:${event.id}`);
          if (handle) {
-@@ -612,16 +659,19 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
+@@ -612,16 +662,19 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
        }
        case "bank-clear":
          pushCue("bank-clear");
@@ -260,7 +246,7 @@ index 7478c4134..7983f36df 100644
          break;
        case "jackpot":
          if (cueReady("vault-open", 30)) pushCue("vault-open");
-@@ -632,6 +682,7 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
+@@ -632,6 +685,7 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
          break;
        case "ball-drain":
          pushCue("ball-drain");
@@ -268,7 +254,7 @@ index 7478c4134..7983f36df 100644
          break;
        case "ball-end":
          resolveHandles();
-@@ -639,6 +690,7 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
+@@ -639,6 +693,7 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
        case "tilt-strike":
        case "tilt-lock":
          pushCue("tilt-warn");
@@ -276,7 +262,7 @@ index 7478c4134..7983f36df 100644
          break;
        case "game-over":
          pushCue("ball-drain");
-@@ -721,7 +773,7 @@ function syncDoor(dt: number): void {
+@@ -721,7 +776,7 @@ function syncDoor(dt: number): void {
  }
  
  // ------------------------------------------------------------- evidence ------
@@ -285,7 +271,7 @@ index 7478c4134..7983f36df 100644
    const snap = flow.snapshot();
    const flipperSnap = flippers.snapshot();
    const diagnostics: AuraDiagnostics = app.diagnostics();
-@@ -737,7 +789,7 @@ function publishEvidence(): void {
+@@ -737,7 +792,7 @@ function publishEvidence(): void {
      vaultOpen: snap.vaultOpen,
      multiball: snap.multiball,
      tiltStrikes: snap.tiltStrikes,
@@ -294,7 +280,7 @@ index 7478c4134..7983f36df 100644
      flipperMode: flipperSnap.mode,
      flipperEvents: flipperSnap.activationCount,
      sensorEventCount: snap.sensorEventCount,
-@@ -793,6 +845,11 @@ function publishEvidence(): void {
+@@ -793,6 +848,11 @@ function publishEvidence(): void {
      mountedAtEpochMs: Date.now()
    };
    vaultWindow.__VAULT_BREAKERS_EVIDENCE__ = evidence;
@@ -306,7 +292,7 @@ index 7478c4134..7983f36df 100644
  }
  
  // Renderer-owned capture used by specs and probes (no compositor dependency).
-@@ -811,7 +868,9 @@ vaultWindow.__VB_PUMP__ = (frames: number): number => {
+@@ -811,7 +871,9 @@ vaultWindow.__VB_PUMP__ = (frames: number): number => {
    return app.runtime.frame;
  };
  
@@ -317,7 +303,7 @@ index 7478c4134..7983f36df 100644
    resetGame();
    let events: readonly VaultGameEvent[] = [];
    if (scenario === "bank-near-complete") events = flow.evidenceClearBanks(4);
-@@ -833,7 +892,7 @@ vaultWindow.__VB_SCENARIO__ = (scenario: string): string => {
+@@ -833,7 +895,7 @@ vaultWindow.__VB_SCENARIO__ = (scenario: string): string => {
    syncHud();
    publishEvidence();
    return `${scenario}:${flow.snapshot().phase}:${flow.snapshot().banksDown}:${flow.snapshot().activeBalls}`;
@@ -326,7 +312,7 @@ index 7478c4134..7983f36df 100644
  
  // ---------------------------------------------------------------- input -------
  /*
-@@ -934,6 +993,7 @@ againButton.addEventListener("click", () => resetGame());
+@@ -934,6 +996,7 @@ againButton.addEventListener("click", () => resetGame());
  
  // ------------------------------------------------------------- frame loop ----
  gameApp.onFrame(({ dt }) => {
@@ -334,7 +320,7 @@ index 7478c4134..7983f36df 100644
    input.update(dt);
    frameCount += 1;
  
-@@ -941,7 +1001,7 @@ gameApp.onFrame(({ dt }) => {
+@@ -941,7 +1004,7 @@ gameApp.onFrame(({ dt }) => {
      resolveHandles();
    }
  
@@ -343,7 +329,7 @@ index 7478c4134..7983f36df 100644
      manualAdvanceFrame();
      return;
    }
-@@ -973,32 +1033,7 @@ gameApp.onFrame(({ dt }) => {
+@@ -973,32 +1036,7 @@ gameApp.onFrame(({ dt }) => {
    publishEvidence();
  });
  
@@ -417,20 +403,74 @@ index 000000000..0cd0b2953
 +  stage("game-over")
 +];
 diff --git a/apps/showcase-vault-breakers/src/v2/boot.ts b/apps/showcase-vault-breakers/src/v2/boot.ts
-index b23b19151..985ab773d 100644
+index b23b19151..4a3c73031 100644
 --- a/apps/showcase-vault-breakers/src/v2/boot.ts
 +++ b/apps/showcase-vault-breakers/src/v2/boot.ts
-@@ -17,8 +17,8 @@ import { lightingNodes } from "./scene/lighting";
+@@ -4,7 +4,7 @@
+ // (table/ball-flow/flippers/plunger/missions/scoring) are unchanged; audio
+ // plays through the legacy cue map until C-25 game-sfx is real (standIn R-14-10).
+ import { scene } from "@aura3d/engine";
+-import { createGame, type Game, lookManifest } from "@aura3d/game";
++import { createGame, type Game } from "@aura3d/game";
+ import { createTableSimulation, quatToEuler } from "../gameplay/table";
+ import { VaultFlow } from "../gameplay/ball-flow";
+ import { FlipperController } from "../gameplay/flippers";
+@@ -17,7 +17,6 @@ import { lightingNodes } from "./scene/lighting";
  import { createVaultRig, fallbackCameraNode, type VaultRigState } from "./scene/camera";
  import { wireVaultFx } from "./scene/fx";
  import { createEventConsumer } from "./flow-events";
 -import { publishVaultEvidence } from "./evidence";
--import { applyVaultScenario } from "./scenarios";
-+import { publishVaultEvidence } from "../evidence";
-+import { applyVaultScenario } from "../scenarios";
+ import { applyVaultScenario } from "./scenarios";
  
  const ROUTE_FLAG = "A3D_QR_ROUTE_VAULT_BREAKERS" as const;
+@@ -106,6 +105,16 @@ const game = createGame({
+     // art/direction.ts sections. `route_vault_breakers` uses the engine-parseable
+     // underscore form (URL/dispatch form is `route-vault-breakers`).
+     flags: ["route_vault_breakers", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
++  },
++  // T5.8: route evidence rides the shared createGame channel (C-24) —
++  // only the sections games.json requiredConditions read.
++  evidence: {
++    schema: 1,
++    sections: {
++      table: (): { bumperHitsThisBall: number } => ({ bumperHitsThisBall }),
++      ball: (): { inPlay: boolean } => ({ inPlay: flow.phase === "play" }),
++      fx: (): { liveCount: number } => ({ liveCount: game.fx.liveCount })
++    }
+   }
+ });
  
+@@ -298,30 +307,6 @@ game.app.onFrame?.(({ dt: rawDt }) => {
+   if (frame % 6 === 0 || events.length > 0) syncLampsAndBoard();
+ });
+ 
+-// ------------------------------------------------------------- evidence ------
+-
+-// T2.2-post: appliedLook derives from the C-31 runtime manifest.
+-const appliedLook: Record<string, unknown> = Object.freeze({
+-  ...lookManifest(game.lookSource()),
+-  postPreset: "neon-night",
+-  exposureEV: direction.lighting.exposureEV,
+-  hdri: direction.lighting.environment.hdri,
+-  rig: "vault-breakers.static-table"
+-});
+-
+-publishVaultEvidence({
+-  game,
+-  flow,
+-  ballInPlay: () => flow.phase === "play",
+-  bumperHitsThisBall: () => bumperHitsThisBall,
+-  liveBallPositions: () => sim.kinematics().filter((k) => k.state === "play").map((k) => k.position),
+-  appliedLook,
+-  fxLiveCount: () => game.fx.liveCount,
+-  frameCount: () => frame,
+-  bootedAtMs,
+-  audioCueLog: () => audioCueLog
+-});
+-
+ const scenario = new URL(location.href).searchParams.get("scenario");
+ if (scenario) {
+   applyVaultScenario(scenario, { flow, sync: () => { syncVisuals(); syncLampsAndBoard(); } });
 -- 
 2.52.0
 

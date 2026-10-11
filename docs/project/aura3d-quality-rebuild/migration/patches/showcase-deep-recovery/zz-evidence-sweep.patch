@@ -1,4 +1,4 @@
-From 38bcdfdceb91a6b6d277cebd7d11660dc8d7dec1 Mon Sep 17 00:00:00 2001
+From d2b0735a16299977b2f80708e9c8253cfa2a87f7 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:48 +0000
 Subject: [PATCH] showcase-deep-recovery: delete evidence files+blocks (T5.8)
@@ -12,10 +12,10 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../scripts/write-deploy-report.mjs           |  52 --
  .../scripts/write-performance-report.ts       |  72 ---
  .../scripts/write-route-health.mjs            | 128 -----
- .../showcase-deep-recovery/src/legacy/main.ts | 220 ---------
+ .../showcase-deep-recovery/src/legacy/main.ts | 143 ------
  apps/showcase-deep-recovery/src/main.ts       |  10 -
  .../src/v2/evidence/index.ts                  | 146 ------
- 10 files changed, 1426 deletions(-)
+ 10 files changed, 1349 deletions(-)
  delete mode 100644 apps/showcase-deep-recovery/performance-report.json
  delete mode 100644 apps/showcase-deep-recovery/scripts/build-models.mjs
  delete mode 100644 apps/showcase-deep-recovery/scripts/build-sfx.mjs
@@ -1118,7 +1118,7 @@ index 781b964a7..000000000
 -writeFileSync(join(appDir, "route-health.json"), `${JSON.stringify(routeHealth, null, 2)}\n`);
 -console.log(JSON.stringify({ machinePass: true, models: modelIds.length, audio: audioIds.length, exactArtifacts: exactArtifacts.length, primitiveOccurrences, performancePass: performance.pass }));
 diff --git a/apps/showcase-deep-recovery/src/legacy/main.ts b/apps/showcase-deep-recovery/src/legacy/main.ts
-index d9a696f8a..18d53c3fd 100644
+index a5eb47355..734c21372 100644
 --- a/apps/showcase-deep-recovery/src/legacy/main.ts
 +++ b/apps/showcase-deep-recovery/src/legacy/main.ts
 @@ -1,6 +1,3 @@
@@ -1136,89 +1136,7 @@ index d9a696f8a..18d53c3fd 100644
  import { bindDeepDrive } from "../scenario-drive";
  import { assets } from "../../../../src/aura-assets";
  import {
-@@ -58,81 +54,7 @@ import {
-   type SalvageCrate
- } from "../gameplay/salvage";
- import { DeepAudioController } from "./deep-audio";
--
--export interface DeepRecoveryEvidence {
--  readonly mounted: boolean;
--  readonly status: "loading" | "ready";
--  readonly state: "playing" | "paused" | "blackout" | "won";
--  readonly missionStage: MissionStage;
--  readonly depth: number;
--  readonly oxygen: number;
--  readonly hull: number;
--  readonly salvageValue: number;
--  readonly bankedValue: number;
--  readonly cratesSecured: number;
--  readonly cratesTotal: number;
--  readonly sonarPings: number;
--  readonly sonarReturns: number;
--  readonly markerAgeOuts: number;
--  readonly sensorEventCount: number;
--  readonly motionMode: "authored";
--  readonly frameCount: number;
--  readonly audioCues: readonly string[];
--  readonly subPosition: readonly [number, number, number];
--  readonly standardBanked: boolean;
--  readonly heavyBanked: boolean;
--  readonly breachCount: number;
--  readonly repairCount: number;
--  readonly towMassKg: number;
--  readonly towDrag: number;
--  readonly reducedMotion: boolean;
--  readonly sonarContacts: readonly { readonly id: string; readonly kind: string; readonly position: readonly [number, number, number]; readonly distance: number }[];
--  readonly systems: readonly string[];
--  readonly controls: readonly string[];
--  readonly physics: string;
--  readonly claimBoundary: string;
--  readonly primaryAssets: readonly string[];
--  readonly primaryAssetHashes: readonly string[];
--  readonly recoveryInventory: {
--    readonly backend: string;
--    readonly drawCalls: number;
--    readonly readyAssets: number;
--    readonly renderSize: readonly number[] | undefined;
--    readonly recoveryContract: "app-owned-pause_explicit-remount";
--    /** U2: per-class re-creation state (post targets, B1 shadows, A1 bloom bytes, atlases, G1 text, A5 fog, animation). */
--    readonly runtimeBackend: string;
--    readonly postPasses: readonly string[];
--    readonly postTargetFormat: string | undefined;
--    readonly shadowTargetsAllocated: number;
--    readonly shadowMapRendered: boolean;
--    readonly bloomTargetBytes: number;
--    readonly textureResidentEntries: number;
--    readonly sdfTexts: number;
--    readonly textQuadCount: number;
--    readonly fogPreset: string;
--    readonly animatedNodes: number;
--  };
--  readonly renderer: unknown;
--}
--
- type MissionStage = "descent" | "wreck-approach" | "standard-salvage" | "breach-repair" | "heavy-salvage" | "ascent" | "surface-complete" | "blackout";
--
--declare global {
--  interface Window {
--    __DEEP_RECOVERY_EVIDENCE__?: DeepRecoveryEvidence;
--    __AURA3D_SHOWCASE_DEEP_RECOVERY__?: DeepRecoveryEvidence;
--    __DR_PUMP__?: (frames: number) => number;
--    __DR_TELEPORT__?: (x: number, y: number, z: number) => void;
--    __DR_TELEPORT_CRATE__?: (id: string, x: number, y: number, z: number) => void;
--    __DR_IMPACT__?: (speed: number) => void;
--    __DR_SET_OXYGEN__?: (oxygen: number) => void;
--    __DR_REPAIR__?: () => boolean;
--    __DR_CAPTURE_PAUSE__?: () => Promise<void>;
--    __DR_CAPTURE_RESUME__?: () => void;
--  }
--}
--
--// ---------------- State Initialization ----------------
- let gameState: "playing" | "paused" | "blackout" | "won" = "playing";
- let subState: SubmarineState = initialSubmarineState();
- let oxygenState: OxygenState = initialOxygenState();
-@@ -151,12 +73,6 @@ let surfaceCuePlayed = false;
+@@ -151,12 +147,6 @@ let surfaceCuePlayed = false;
  let oxygenWarningCuePlayed = false;
  let compositionProbeActive = false;
  const reducedMotion = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1231,20 +1149,8 @@ index d9a696f8a..18d53c3fd 100644
  const PRIMARY_ASSET_REFS = [
    assets.deepRecoverySub,
    assets.deepRecoveryWreckHull,
-@@ -164,8 +80,6 @@ const PRIMARY_ASSET_REFS = [
-   assets.deepRecoveryCrateHeavy,
-   assets.deepRecoveryBuoyBeacon
- ] as const;
--
--bindDeepEvidence(() => collectDeepEvidence());
- const deepTween = createTweenEngine();
- const deepFx = createFxParticlePass(app.effects);
- const deepJuice = createJuice<"ping" | "breach" | "seal" | "latch" | "bank" | "blackout" | "won" | "impact">({
-@@ -190,11 +104,8 @@ bindDeepDrive({
-   stepSim: (dt) => { app.pause(); app.advance(dt); app.resume(); },
-   stepRender: (dt) => { app.pause(); app.advance(dt); app.resume(); }
- });
--
+@@ -168,8 +158,6 @@ const PRIMARY_ASSET_REFS = [
+ 
  const audio = new DeepAudioController();
  void audio.init();
 -
@@ -1252,7 +1158,7 @@ index d9a696f8a..18d53c3fd 100644
  const keys = new Set<string>();
  window.addEventListener("keydown", (e) => {
    keys.add(e.code);
-@@ -218,8 +129,6 @@ window.addEventListener("keydown", (e) => {
+@@ -193,8 +181,6 @@ window.addEventListener("keydown", (e) => {
  window.addEventListener("keyup", (e) => {
    keys.delete(e.code);
  });
@@ -1261,7 +1167,7 @@ index d9a696f8a..18d53c3fd 100644
  const elZoneBadge = document.getElementById("dr-zone-badge")!;
  const elBreachBadge = document.getElementById("dr-breach-badge")!;
  const elOxygenFill = document.getElementById("dr-oxygen-fill")!;
-@@ -240,7 +149,6 @@ const elModalTitle = document.getElementById("dr-modal-title")!;
+@@ -215,7 +201,6 @@ const elModalTitle = document.getElementById("dr-modal-title")!;
  const elModalDesc = document.getElementById("dr-modal-desc")!;
  const elModalActionBtn = document.getElementById("dr-modal-action-btn")!;
  const elModalRetryBtn = document.getElementById("dr-modal-retry-btn")!;
@@ -1269,7 +1175,7 @@ index d9a696f8a..18d53c3fd 100644
  document.getElementById("dr-ping-btn")?.addEventListener("click", () => handlePing());
  document.getElementById("dr-grapple-btn")?.addEventListener("click", () => handleGrappleToggle());
  document.getElementById("dr-repair-btn")?.addEventListener("click", () => handleRepair());
-@@ -248,7 +156,6 @@ document.getElementById("dr-pause-btn")?.addEventListener("click", () => toggleP
+@@ -223,7 +208,6 @@ document.getElementById("dr-pause-btn")?.addEventListener("click", () => toggleP
  document.getElementById("dr-restart-btn")?.addEventListener("click", () => resetGame());
  elModalActionBtn.addEventListener("click", () => resetGame());
  elModalRetryBtn.addEventListener("click", () => resetGame());
@@ -1277,7 +1183,7 @@ index d9a696f8a..18d53c3fd 100644
  function bindHeldButton(id: string, code: string): void {
    const button = document.getElementById(id);
    if (!button) return;
-@@ -264,10 +171,7 @@ bindHeldButton("dr-forward-btn", "KeyW");
+@@ -239,10 +223,7 @@ bindHeldButton("dr-forward-btn", "KeyW");
  bindHeldButton("dr-right-btn", "KeyD");
  bindHeldButton("dr-dive-btn", "KeyQ");
  bindHeldButton("dr-surface-btn", "KeyE");
@@ -1288,7 +1194,7 @@ index d9a696f8a..18d53c3fd 100644
  const initialSonarTargets = [
    { id: "buoy", position: BUOY_STATION },
    ...WRECK_OBSTACLES.map((target) => ({ id: target.id, position: target })),
-@@ -277,7 +181,6 @@ const SILT_OFFSETS = [
+@@ -252,7 +233,6 @@ const SILT_OFFSETS = [
    [-4, 1.8, 3], [-2.8, -1.2, 5], [-1.2, 2.4, 7], [1.1, -2, 4], [2.7, 1.1, 6], [4.2, -0.5, 8],
    [-5.2, -2.1, 10], [-3.5, 3, 12], [-0.4, -2.8, 11], [2, 2.8, 10], [4.8, 1.7, 13], [5.5, -2.4, 15]
  ] as const;
@@ -1296,7 +1202,7 @@ index d9a696f8a..18d53c3fd 100644
  const sceneDef = scene()
    // Grade the water as a deep, almost-black salvage map so the warm wreck
    // windows and cyan sonar returns establish the focal hierarchy. The typed
-@@ -468,7 +371,6 @@ const sceneDef = scene()
+@@ -443,7 +423,6 @@ const sceneDef = scene()
        }).scale([1.05, 1.05, 0.1]).position(target.position.x, target.position.y, target.position.z).runtime({ id: `sonar-marker-${target.id}`, tags: ["sonar-return", "world-space-truth"] })
      )
    ]);
@@ -1304,12 +1210,15 @@ index d9a696f8a..18d53c3fd 100644
  const deepGame = createGame({
    id: "showcase-deep-recovery",
    target: "#canvas-host",
-@@ -487,15 +389,11 @@ const deepGame = createGame({
- });
+@@ -463,7 +442,6 @@ const deepGame = createGame({
  const app = deepGame.app;
  deepGame.start();
--
- app.onFrame((frame) => {
+ 
+-bindDeepEvidence(() => collectDeepEvidence() as unknown as Record<string, unknown>);
+ const deepTween = createTweenEngine();
+ const deepFx = createFxParticlePass(app.effects);
+ const deepJuice = createJuice<"ping" | "breach" | "seal" | "latch" | "bank" | "blackout" | "won" | "impact">({
+@@ -493,10 +471,7 @@ app.onFrame((frame) => {
    const dt = typeof frame === "number" ? frame : (frame?.dt ?? 1 / 60);
    runSimulationStep(Math.min(dt, 0.05));
  });
@@ -1320,7 +1229,7 @@ index d9a696f8a..18d53c3fd 100644
  function handlePing(): void {
    if (gameState !== "playing") return;
    const subPos = { x: subState.x, y: subState.y, z: subState.z };
-@@ -521,12 +419,10 @@ function handlePing(): void {
+@@ -522,12 +497,10 @@ function handlePing(): void {
      }
    }
  }
@@ -1333,7 +1242,7 @@ index d9a696f8a..18d53c3fd 100644
  function handleRepair(): boolean {
    if (gameState !== "playing" || !oxygenState.breached || !atBuoyServiceZone()) return false;
    oxygenState = patchBreach(oxygenState);
-@@ -538,7 +434,6 @@ function handleRepair(): boolean {
+@@ -539,7 +512,6 @@ function handleRepair(): boolean {
    window.__DEEP_RECOVERY_EVIDENCE__ = collectDeepEvidence();
    return true;
  }
@@ -1341,7 +1250,7 @@ index d9a696f8a..18d53c3fd 100644
  function handleGrappleToggle(): void {
    if (gameState !== "playing") return;
    const subPos = { x: subState.x, y: subState.y, z: subState.z };
-@@ -555,7 +450,6 @@ function handleGrappleToggle(): void {
+@@ -556,7 +528,6 @@ function handleGrappleToggle(): void {
      }
    }
  }
@@ -1349,7 +1258,7 @@ index d9a696f8a..18d53c3fd 100644
  function togglePause(): void {
    if (gameState === "blackout" || gameState === "won") return;
    if (gameState === "playing") {
-@@ -569,7 +463,6 @@ function togglePause(): void {
+@@ -570,7 +541,6 @@ function togglePause(): void {
    }
    window.__DEEP_RECOVERY_EVIDENCE__ = collectDeepEvidence();
  }
@@ -1357,7 +1266,7 @@ index d9a696f8a..18d53c3fd 100644
  function resetGame(): void {
    subState = initialSubmarineState();
    oxygenState = initialOxygenState();
-@@ -594,8 +487,6 @@ function resetGame(): void {
+@@ -595,8 +565,6 @@ function resetGame(): void {
    syncHud();
    window.__DEEP_RECOVERY_EVIDENCE__ = collectDeepEvidence();
  }
@@ -1366,7 +1275,7 @@ index d9a696f8a..18d53c3fd 100644
  function runSimulationStep(dt: number): void {
    deepTween.tick(dt);
    if (compositionProbeActive) {
-@@ -733,7 +624,6 @@ function runSimulationStep(dt: number): void {
+@@ -734,7 +702,6 @@ function runSimulationStep(dt: number): void {
    // 8. Publish Evidence
    window.__DEEP_RECOVERY_EVIDENCE__ = collectDeepEvidence();
  }
@@ -1374,7 +1283,7 @@ index d9a696f8a..18d53c3fd 100644
  function syncVisualNodes(): void {
    // Update camera target rig
    const camNode = app.nodes.get("camera-target");
-@@ -831,7 +721,6 @@ function syncVisualNodes(): void {
+@@ -832,7 +799,6 @@ function syncVisualNodes(): void {
      }
    }
  }
@@ -1382,7 +1291,7 @@ index d9a696f8a..18d53c3fd 100644
  function missionStage(): MissionStage {
    if (gameState === "blackout") return "blackout";
    if (gameState === "won") return "surface-complete";
-@@ -843,7 +732,6 @@ function missionStage(): MissionStage {
+@@ -844,7 +810,6 @@ function missionStage(): MissionStage {
    if (sonarState.pingCount > 0 || Math.abs(subState.y) >= 12) return "wreck-approach";
    return "descent";
  }
@@ -1390,7 +1299,7 @@ index d9a696f8a..18d53c3fd 100644
  const OBJECTIVES: Record<MissionStage, string> = {
    descent: "DESCEND TO 15 M · PULSE SONAR",
    "wreck-approach": "FOLLOW CYAN RETURNS TO THE WRECK",
-@@ -854,7 +742,6 @@ const OBJECTIVES: Record<MissionStage, string> = {
+@@ -855,7 +820,6 @@ const OBJECTIVES: Record<MissionStage, string> = {
    "surface-complete": "RECOVERY COMPLETE",
    blackout: "BLACKOUT · RESET TO RETRY"
  };
@@ -1398,7 +1307,7 @@ index d9a696f8a..18d53c3fd 100644
  function syncHud(): void {
    const zone = getDepthZone(subState.y);
    const stage = missionStage();
-@@ -901,7 +788,6 @@ function syncHud(): void {
+@@ -902,7 +866,6 @@ function syncHud(): void {
      ? "No returns — pulse sonar"
      : sonarState.contacts.slice(0, 6).map((contact) => `${contact.kind.replace("crate-", "").toUpperCase()} ${contact.distance.toFixed(0)}m`).join(" · ");
  }
@@ -1406,7 +1315,7 @@ index d9a696f8a..18d53c3fd 100644
  function showModal(title: string, desc: string, isFail: boolean): void {
    elModalTitle.textContent = title;
    elModalDesc.textContent = desc;
-@@ -915,7 +801,6 @@ function showModal(title: string, desc: string, isFail: boolean): void {
+@@ -916,7 +879,6 @@ function showModal(title: string, desc: string, isFail: boolean): void {
    }
    elModal.classList.add("active");
  }
@@ -1414,7 +1323,7 @@ index d9a696f8a..18d53c3fd 100644
  function collectDeepEvidence(): DeepRecoveryEvidence {
    const tetheredCrates = crates.filter((c) => c.tethered);
    const currentZone = getDepthZone(subState.y);
-@@ -1002,110 +887,5 @@ function collectDeepEvidence(): DeepRecoveryEvidence {
+@@ -1003,110 +965,5 @@ function collectDeepEvidence(): DeepRecoveryEvidence {
      renderer: diagnostics
    };
  }

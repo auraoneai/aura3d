@@ -1,4 +1,4 @@
-From dc62b6b06d7a8bce8b853af83f08f3ad7e9c1a7f Mon Sep 17 00:00:00 2001
+From b1fab3360debd364d8994b2b6a595b13586b794c Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:54 +0000
 Subject: [PATCH] showcase-siege-golf: delete evidence files+blocks (T5.8)
@@ -10,19 +10,15 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../showcase-siege-golf/scripts/build-sfx.mjs | 306 ------------------
  .../scripts/write-performance-report.ts       |  78 -----
  .../scripts/write-route-health.mjs            | 216 -------------
- .../src/gameplay/replay-proof.ts              | 215 ------------
- apps/showcase-siege-golf/src/legacy/main.ts   | 178 ----------
+ apps/showcase-siege-golf/src/legacy/main.ts   | 115 +------
  apps/showcase-siege-golf/src/main.ts          |  10 -
- apps/showcase-siege-golf/src/replay-proof.ts  |   3 -
  .../src/v2/evidence/index.ts                  | 111 -------
- 10 files changed, 1507 deletions(-)
+ 8 files changed, 1 insertion(+), 1225 deletions(-)
  delete mode 100644 apps/showcase-siege-golf/performance-report.json
  delete mode 100644 apps/showcase-siege-golf/scripts/build-course-world.mjs
  delete mode 100644 apps/showcase-siege-golf/scripts/build-sfx.mjs
  delete mode 100644 apps/showcase-siege-golf/scripts/write-performance-report.ts
  delete mode 100644 apps/showcase-siege-golf/scripts/write-route-health.mjs
- delete mode 100644 apps/showcase-siege-golf/src/gameplay/replay-proof.ts
- delete mode 100644 apps/showcase-siege-golf/src/replay-proof.ts
  delete mode 100644 apps/showcase-siege-golf/src/v2/evidence/index.ts
 
 diff --git a/apps/showcase-siege-golf/performance-report.json b/apps/showcase-siege-golf/performance-report.json
@@ -1045,229 +1041,8 @@ index 44bf9d576..000000000
 -    return statSync(child).isDirectory() ? walk(child) : [child];
 -  });
 -}
-diff --git a/apps/showcase-siege-golf/src/gameplay/replay-proof.ts b/apps/showcase-siege-golf/src/gameplay/replay-proof.ts
-deleted file mode 100644
-index a863f996b..000000000
---- a/apps/showcase-siege-golf/src/gameplay/replay-proof.ts
-+++ /dev/null
-@@ -1,215 +0,0 @@
--/**
-- * Siege Golf deterministic 60-second replay proof (PRD DoD: ">=60s meaningful
-- * play per hole demonstrated").
-- *
-- * A scripted stroke plan drives the real route simulation (`HoleFlow` over
-- * `createHoleSimulation`) at the fixed 60 Hz step for at least 3600 simulated
-- * frames. Every mechanic flag is derived from what actually happened in the
-- * run - nothing is declared. The plan varies aim and power per stroke, so the
-- * flags cannot pass on a single degenerate shot.
-- *
-- * Scope boundary (mirrors blockfall's contract): this replays the route's own
-- * hole-flow module headlessly; mounted browser input is proven separately by
-- * tests/browser/siege-golf-playable.spec.ts.
-- */
--import { SIEGE_GOLF_HOLES, type HoleDefinition } from "./course";
--import { HoleFlow } from "./hole-flow";
--import { hashString } from "./structures";
--
--/** 60 seconds of meaningful play at the route's fixed 60 Hz step. */
--export const REPLAY_PROOF_FRAMES = 3600;
--
--export interface ReplayStrokePlan {
--  readonly frame: number;
--  readonly angle: number;
--  readonly power: number;
--}
--
--/**
-- * Stroke cadence: one resolved stroke roughly every 600 frames (10 s), with
-- * alternating fine-aim offsets and varied powers so aim, charge variance, and
-- * repeat sinks are exercised across the window. The opening stroke is the
-- * verified hole-1 direct solution, ensuring every derived completion flag is
-- * grounded in a legal player shot rather than a synthetic sensor mutation.
-- */
--export function createSixtySecondReplayPlan(): readonly ReplayStrokePlan[] {
--  const plan: ReplayStrokePlan[] = [];
--  const angles = [0, 0.06, -0.06, 0.03, -0.03, 0];
--  const powers = [1.9, 1.25, 1.6, 2.2, 1.55, 0.9];
--  for (let index = 0; index < 6; index += 1) {
--    plan.push({
--      frame: 120 + index * 600,
--      angle: angles[index % angles.length]!,
--      // 0.9..2.2 keeps every strike inside the ShotController clamp ceiling.
--      power: powers[index]!
--    });
--  }
--  return plan;
--}
--
--export interface SixtySecondReplayProof {
--  readonly kind: "siege-golf-sixty-second-replay-proof";
--  readonly replayName: "sixty-second-wrecking-green-demonstration";
--  /** Scope: route-local HoleFlow simulation, not mounted browser playback. */
--  readonly simulation: "apps/showcase-siege-golf/src/hole-flow.ts";
--  readonly provesMountedKitPlayback: false;
--  readonly holeId: string;
--  readonly frames: number;
--  readonly replayedSeconds: number;
--  readonly meetsSixtySecondTarget: boolean;
--  readonly eventCount: number;
--  readonly lastEventFrame: number;
--  readonly strokes: number;
--  readonly deterministic: boolean;
--  readonly finalChecksum: string;
--  readonly secondFinalChecksum: string;
--  readonly timelineChecksum: string;
--  readonly mechanics: {
--    readonly aimAdjust: boolean;
--    readonly chargeVariance: boolean;
--    readonly strike: boolean;
--    readonly sensorFire: boolean;
--    readonly targetDown: boolean;
--    readonly targetSunk: boolean;
--    readonly holeComplete: boolean;
--    readonly reset: boolean;
--    readonly hashProof: boolean;
--  };
--  readonly missingMechanics: readonly string[];
--  readonly sensorEventCount: number;
--  /** Peak sunk count observed during the window; reset restores it to zero. */
--  readonly targetsSunkPeak: number;
--  readonly targetsSunk: number;
--  readonly resetHashMatch: boolean | null;
--  readonly pass: boolean;
--}
--
--function checksumOfEvents(events: readonly string[]): string {
--  return hashString(events.join("|"));
--}
--
--export function runSixtySecondReplay(hole: HoleDefinition = SIEGE_GOLF_HOLES[0]!, frames = REPLAY_PROOF_FRAMES): {
--  proof: SixtySecondReplayProof;
--} {
--  const buildOnce = (): {
--    finalChecksum: string;
--    timelineChecksum: string;
--    eventCount: number;
--    lastEventFrame: number;
--    strokes: number;
--    sensorEventCount: number;
--    targetsSunkPeak: number;
--    targetsSunk: number;
--    resetHashMatch: boolean | null;
--    mechanics: SixtySecondReplayProof["mechanics"];
--  } => {
--    const flow = new HoleFlow(hole);
--    // Mirror the route's boot: settle the stacking transient before aiming.
--    flow.sim.stepFixed(30);
--    let frame = 30;
--    const eventsSeen: string[] = [];
--    const plan = createSixtySecondReplayPlan();
--    const usedAngles = new Set<number>();
--    const usedPowers = new Set<number>();
--    let lastEventFrame = 0;
--    let sensorEventCount = 0;
--    let targetsSunkPeak = 0;
--    let resetHashMatch: boolean | null = null;
--
--    while (frame < frames) {
--      const due = plan.find((entry) => entry.frame === frame);
--      if (due && flow.phase === "aiming") {
--        // Fine aim: rotate to the planned offset before charging.
--        flow.strike(
--          [Math.sin(due.angle), -Math.cos(due.angle)],
--          due.power
--        );
--        usedAngles.add(Number(due.angle.toFixed(3)));
--        usedPowers.add(Number(due.power.toFixed(3)));
--      }
--      // Reset exactly once mid-window after a completed hole to prove the
--      // byte-identical restore inside the same 60-second session.
--      if (
--        resetHashMatch === null
--        && frame >= frames / 2
--        && flow.phase === "hole-complete"
--      ) {
--        flow.resetHole();
--        resetHashMatch = flow.resetHashMatch;
--      }
--      const events = flow.update(1);
--      for (const event of events) {
--        eventsSeen.push(event.type + "@" + frame);
--        lastEventFrame = frame;
--        if (event.type === "cup-flash") sensorEventCount += 1;
--      }
--      targetsSunkPeak = Math.max(targetsSunkPeak, flow.snapshot().targetsSunk);
--      frame += 1;
--    }
--
--    const eventTypes = new Set(eventsSeen.map((entry) => entry.split("@")[0]!));
--    const mechanics: SixtySecondReplayProof["mechanics"] = {
--      aimAdjust: usedAngles.size > 1,
--      chargeVariance: usedPowers.size > 1,
--      strike: eventTypes.has("strike"),
--      sensorFire: eventTypes.has("cup-flash"),
--      targetDown: eventTypes.has("pin-down"),
--      targetSunk: eventTypes.has("pin-sunk"),
--      holeComplete: eventTypes.has("complete"),
--      reset: resetHashMatch === true,
--      hashProof: eventTypes.has("strike") && flow.lastShotHash.length === 8
--    };
--    return {
--      finalChecksum: flow.sim.poseHash(),
--      timelineChecksum: checksumOfEvents(eventsSeen),
--      eventCount: eventsSeen.length,
--      lastEventFrame,
--      strokes: flow.strokes,
--      sensorEventCount,
--      targetsSunkPeak,
--      targetsSunk: flow.snapshot().targetsSunk,
--      resetHashMatch,
--      mechanics
--    };
--  };
--
--  const first = buildOnce();
--  const second = buildOnce();
--
--  const missingMechanics = Object.entries(first.mechanics)
--    .filter(([, proven]) => !proven)
--    .map(([name]) => name);
--  const replayedSeconds = frames / 60;
--
--  const proof: SixtySecondReplayProof = {
--    kind: "siege-golf-sixty-second-replay-proof",
--    replayName: "sixty-second-wrecking-green-demonstration",
--    simulation: "apps/showcase-siege-golf/src/hole-flow.ts",
--    provesMountedKitPlayback: false,
--    holeId: hole.id,
--    frames,
--    replayedSeconds,
--    meetsSixtySecondTarget: replayedSeconds >= 60,
--    eventCount: first.eventCount,
--    lastEventFrame: first.lastEventFrame,
--    strokes: first.strokes,
--    deterministic:
--      first.finalChecksum === second.finalChecksum
--      && first.timelineChecksum === second.timelineChecksum,
--    finalChecksum: first.finalChecksum,
--    secondFinalChecksum: second.finalChecksum,
--    timelineChecksum: first.timelineChecksum,
--    mechanics: first.mechanics,
--    missingMechanics,
--    sensorEventCount: first.sensorEventCount,
--    targetsSunkPeak: first.targetsSunkPeak,
--    targetsSunk: first.targetsSunk,
--    resetHashMatch: first.resetHashMatch,
--    pass:
--      first.finalChecksum === second.finalChecksum
--      && first.timelineChecksum === second.timelineChecksum
--      && replayedSeconds >= 60
--      && missingMechanics.length === 0
--  };
--  return { proof };
--}
 diff --git a/apps/showcase-siege-golf/src/legacy/main.ts b/apps/showcase-siege-golf/src/legacy/main.ts
-index 418af7733..56819ed9d 100644
+index 7187ceaa6..86041ae65 100644
 --- a/apps/showcase-siege-golf/src/legacy/main.ts
 +++ b/apps/showcase-siege-golf/src/legacy/main.ts
 @@ -1,11 +1,3 @@
@@ -1290,7 +1065,11 @@ index 418af7733..56819ed9d 100644
  import { bindSiegeDrive } from "../scenario-drive";
  import { assets } from "../../../../src/aura-assets";
  import { SIEGE_GOLF_HOLES, type HoleDefinition } from "../gameplay/course";
-@@ -40,18 +31,10 @@ import { runSixtySecondReplay } from "../gameplay/replay-proof";
+@@ -36,22 +27,13 @@ import { HoleFlow } from "../gameplay/hole-flow";
+ import { createGolfAudio } from "./golf-audio";
+ import { ShotController, canonicalShotInput } from "../gameplay/shot";
+ import { roundTotals, versusPar, type HoleScoreEntry } from "../gameplay/score";
+-import { runSixtySecondReplay } from "../gameplay/replay-proof";
  import { quatToEuler } from "../gameplay/structures";
  import { SIEGE_GOLF_WORLD_SURFACE_MAPPING } from "./course-world";
  import "./styles.css";
@@ -1300,7 +1079,8 @@ index 418af7733..56819ed9d 100644
 -  __AURA3D_SHOWCASE_SIEGE_GOLF__?: unknown;
 -  __SG_SHOT__?: () => string;
 -};
- const siegeWindow = window as SiegeWindow;
+-const siegeWindow = window as SiegeWindow;
++const siegeWindow = window as Window & { __SIEGE_GOLF_EVIDENCE__?: unknown };
  const reducedMotion = typeof window.matchMedia === "function"
    && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
  const compactViewport = window.innerWidth <= 720;
@@ -1309,7 +1089,7 @@ index 418af7733..56819ed9d 100644
  const APP_ID = "showcase-siege-golf";
  const SIEGE_MODEL_ASSETS = {
    siegeGolfCourseWorld: assets.siegeGolfCourseWorld,
-@@ -60,11 +43,6 @@ const SIEGE_MODEL_ASSETS = {
+@@ -60,11 +42,6 @@ const SIEGE_MODEL_ASSETS = {
    siegeWoodenBarrel: assets.siegeWoodenBarrel,
    siegePlankSet: assets.siegePlankSet
  } as const;
@@ -1321,89 +1101,7 @@ index 418af7733..56819ed9d 100644
  const paintedTimberMaterial = material.pbr({
    name: "painted arcade timber",
    color: "#f26b4f",
-@@ -72,81 +50,13 @@ const paintedTimberMaterial = material.pbr({
-   metallic: 0.08,
-   clearcoat: 0.24
- });
--
--// ---------------------------------------------------------------- HUD markup --
--ui.html("#hud", `
--  <div class="hole-banner" id="sg-hole-banner" aria-live="polite">Loading hole...</div>
--  <div class="result-card is-hidden" id="sg-result" data-testid="siege-golf-result">
--    <h2 id="sg-result-title">Hole complete</h2>
--    <p id="sg-result-detail"></p>
--    <div class="stars" id="sg-result-stars"></div>
--    <div class="action-row"><button id="sg-next-button" type="button">Next hole</button></div>
--  </div>
--  <section class="mobile-shot-controls" aria-label="Touch shot controls" data-testid="siege-golf-mobile-controls">
--    <div class="mobile-shot-readout">
--      <span id="sg-mobile-state">Aim</span>
--      <div class="mobile-power-meter" aria-label="Touch shot power"><span id="sg-mobile-power-fill"></span></div>
--      <strong id="sg-mobile-power-label">0%</strong>
--    </div>
--    <div class="mobile-shot-buttons">
--      <button id="sg-aim-left-button" type="button" aria-label="Aim left">&#8592;</button>
--      <button id="sg-mobile-strike-button" type="button">Hold to charge</button>
--      <button id="sg-aim-right-button" type="button" aria-label="Aim right">&#8594;</button>
--    </div>
--  </section>
- `);
--
--ui.html("#panel", `
--  <section class="sg-brand">
--    <p class="eyebrow">Aura3D Prototype</p>
--    <h1>Siege Golf</h1>
--    <p class="blurb" id="sg-blurb"></p>
--  </section>
--  <section class="stat-grid" aria-label="Round status">
--    <article><span>Hole</span><strong id="stat-hole">1/9</strong></article>
--    <article><span>Par</span><strong id="stat-par">-</strong></article>
--    <article><span>Strokes</span><strong id="stat-strokes">0</strong></article>
--    <article><span>Targets</span><strong id="stat-targets">0/1</strong></article>
--    <article><span>Sunk</span><strong id="stat-sensors">0</strong></article>
--    <article><span>Round</span><strong id="stat-round">E</strong></article>
--  </section>
--  <div class="power-meter" aria-label="Shot power"><span id="sg-power-fill"></span></div>
--  <div class="power-meta"><span id="sg-power-label">Power</span><span>hold Space</span></div>
--  <section class="precision-shot" aria-label="Precision shot controls">
--    <label for="sg-aim-dial">Aim offset <output id="sg-aim-dial-value">0.000</output></label>
--    <input id="sg-aim-dial" type="range" min="-1.047" max="1.047" step="0.000001" value="0" />
--    <label for="sg-power-dial">Set power <output id="sg-power-dial-value">1.900</output></label>
--    <input id="sg-power-dial" type="range" min="0.55" max="2.3" step="0.000001" value="1.9" />
--    <button id="sg-precision-strike-button" type="button">Strike set shot (J)</button>
--  </section>
--  <ul class="controls-list" aria-label="Keyboard controls">
--    <li>Aim <b>&larr;/&rarr;</b> - Charge <b>Space</b></li>
--    <li>Strike <b>release</b> or <b>J</b></li>
--    <li>Hole reset <b>R</b> - Round reset <b>T</b></li>
--    <li>Pause <b>P</b> - Best line <b>G</b></li>
--  </ul>
--  <section class="action-row" aria-label="Game actions">
--    <button id="sg-strike-button" type="button">Charge / Strike</button>
--    <button id="sg-reset-button" type="button">Reset hole</button>
--    <button id="sg-round-button" type="button">Reset round</button>
--    <button id="sg-pause-button" type="button">Pause</button>
--  </section>
--  <section class="evidence-strip" aria-label="Route evidence">
--    <span>Backend <code id="sg-ev-backend">booting</code></span>
--    <span>Bodies <code id="sg-ev-bodies">0</code> - Sensors <code id="sg-ev-sensors">0</code></span>
--    <span>Pre-shot hash <code id="sg-ev-hash">pending</code></span>
--    <span>Reset hash match <code id="sg-ev-resetmatch">n/a</code></span>
--  </section>
- `);
--
--// ---------------------------------------------------------------- audio ------
- const audio = createGolfAudio(reducedMotion);
- window.addEventListener("pointerdown", () => {
-   void audio.unlock().then(() => audio.cue("ambient-wind")).catch(() => undefined);
- }, { passive: true });
- window.addEventListener("keydown", () => { void audio.unlock(); }, { passive: true });
--
--// ---------------------------------------------------------------- state ------
- let holeIndex = 0;
- let flow = new HoleFlow(SIEGE_GOLF_HOLES[0]!);
- const shot = new ShotController({});
-@@ -224,8 +134,6 @@ function cueReady(name: string, gapFrames: number): boolean {
+@@ -224,8 +201,6 @@ function cueReady(name: string, gapFrames: number): boolean {
    lastCueFrame.set(name, frameCount);
    return true;
  }
@@ -1412,7 +1110,7 @@ index 418af7733..56819ed9d 100644
  const TRAIL_COUNT = 8;
  const AIM_NODE_COUNT = 17;
  const STRIKE_CHEVRON_COUNT = 3;
-@@ -245,7 +153,6 @@ interface DustPuff { frames: number; age: number; node: AuraRuntimeNodeHandle; v
+@@ -245,7 +220,6 @@ interface DustPuff { frames: number; age: number; node: AuraRuntimeNodeHandle; v
  const dustPuffs: DustPuff[] = [];
  let dustIndex = 0;
  let dustBurstCount = 0;
@@ -1420,7 +1118,7 @@ index 418af7733..56819ed9d 100644
  function primitiveNode(
    name: string,
    shape: "box" | "sphere" | "torus",
-@@ -281,7 +188,6 @@ function primitiveNode(
+@@ -281,7 +255,6 @@ function primitiveNode(
      .runtime(game.runtimeNode(name, { tags: ["physics-visual"] }))
      .toJSON();
  }
@@ -1428,7 +1126,7 @@ index 418af7733..56819ed9d 100644
  function authoredAsset(
    name: string,
    typedAsset: keyof typeof SIEGE_MODEL_ASSETS,
-@@ -303,7 +209,6 @@ function authoredAsset(
+@@ -303,7 +276,6 @@ function authoredAsset(
      .rotate(...rotation)
      .toJSON();
  }
@@ -1436,7 +1134,7 @@ index 418af7733..56819ed9d 100644
  function visualNodes(phase: SiegeCameraPhase = "opening"): AuraSceneNode[] {
    const nodes: AuraSceneNode[] = [];
    for (const v of flow.sim.visuals) {
-@@ -437,7 +342,6 @@ function visualNodes(phase: SiegeCameraPhase = "opening"): AuraSceneNode[] {
+@@ -437,7 +409,6 @@ function visualNodes(phase: SiegeCameraPhase = "opening"): AuraSceneNode[] {
    }
    return nodes;
  }
@@ -1444,7 +1142,7 @@ index 418af7733..56819ed9d 100644
  function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "opening"): AuraSceneNode[] {
    const nodes: AuraSceneNode[] = [];
    const stone = material.pbr({ name: "siege garden warm stone", color: "#bca775", roughness: 0.9, metallic: 0.01 });
-@@ -663,7 +567,6 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
+@@ -663,7 +634,6 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
  
    return nodes;
  }
@@ -1452,7 +1150,7 @@ index 418af7733..56819ed9d 100644
  function cameraForPhase(hole: HoleDefinition, phase: SiegeCameraPhase) {
    const courseMidZ = (hole.tee[1] + hole.cups[0]!.z) * 0.5;
    if (phase === "opening") {
-@@ -702,7 +605,6 @@ function cameraForPhase(hole: HoleDefinition, phase: SiegeCameraPhase) {
+@@ -702,7 +672,6 @@ function cameraForPhase(hole: HoleDefinition, phase: SiegeCameraPhase) {
      fov: compactViewport ? 55 : 43
    });
  }
@@ -1460,7 +1158,7 @@ index 418af7733..56819ed9d 100644
  function buildValleyEnvironment(hole: HoleDefinition): AuraSceneNode[] {
    // The typed course world is a ~10 x 17 m island. Before this pass the route
    // rendered it over a flat mint `background()`, so every camera angle that
-@@ -761,7 +663,6 @@ function buildValleyEnvironment(hole: HoleDefinition): AuraSceneNode[] {
+@@ -761,7 +730,6 @@ function buildValleyEnvironment(hole: HoleDefinition): AuraSceneNode[] {
    }
    return nodes;
  }
@@ -1468,7 +1166,7 @@ index 418af7733..56819ed9d 100644
  function buildCourseWorld(): AuraSceneNode[] {
    // The world stays at authored metre scale. Its companion surface mapping
    // documents why the route's static Rapier floor and containment rails remain
-@@ -782,7 +683,6 @@ function buildCourseWorld(): AuraSceneNode[] {
+@@ -782,7 +750,6 @@ function buildCourseWorld(): AuraSceneNode[] {
    // grass slab.
    }).position(0, -0.11, 0).toJSON()];
  }
@@ -1476,7 +1174,7 @@ index 418af7733..56819ed9d 100644
  function buildHoleScene(hole: HoleDefinition, phase: SiegeCameraPhase = "opening"): ReturnType<typeof scene> {
    const teeZ = hole.tee[1];
    return scene()
-@@ -826,8 +726,6 @@ function buildHoleScene(hole: HoleDefinition, phase: SiegeCameraPhase = "opening
+@@ -826,8 +793,6 @@ function buildHoleScene(hole: HoleDefinition, phase: SiegeCameraPhase = "opening
      ])
      .camera(cameraForPhase(hole, phase));
  }
@@ -1485,7 +1183,7 @@ index 418af7733..56819ed9d 100644
  const siegeGame = createGame({
    id: "showcase-siege-golf",
    target: "#app",
-@@ -864,7 +762,6 @@ const app = siegeGame.runtime;
+@@ -864,7 +829,6 @@ const app = siegeGame.app;
  siegeGame.start();
  const input = siegeGame.input!;
  if (!input) throw new Error("Siege Golf failed to create Aura3D input.");
@@ -1493,7 +1191,7 @@ index 418af7733..56819ed9d 100644
  const siegeTween = createTweenEngine();
  const siegeFx = createFxParticlePass(app.effects);
  const siegeJuice = createJuice<"drive-hit" | "impact-wood" | "impact-metal" | "target-down" | "cup-sink" | "hole-complete" | "bogey">({
-@@ -892,7 +789,6 @@ bindSiegeDrive({
+@@ -892,7 +856,6 @@ bindSiegeDrive({
      app.resume();
    }
  });
@@ -1501,7 +1199,7 @@ index 418af7733..56819ed9d 100644
  function resolveHandles(): void {
    dynamicHandles = new Map();
    for (const name of flow.sim.dynamicVisualNames) {
-@@ -924,7 +820,6 @@ function resolveHandles(): void {
+@@ -924,7 +887,6 @@ function resolveHandles(): void {
    }
  }
  resolveHandles();
@@ -1509,7 +1207,7 @@ index 418af7733..56819ed9d 100644
  function applyCameraPhase(next: SiegeCameraPhase): void {
    if (cameraPhase === next) return;
    cameraPhase = next;
-@@ -936,8 +831,6 @@ function applyCameraPhase(next: SiegeCameraPhase): void {
+@@ -936,8 +898,6 @@ function applyCameraPhase(next: SiegeCameraPhase): void {
    syncAim();
    syncBestGhost();
  }
@@ -1518,7 +1216,7 @@ index 418af7733..56819ed9d 100644
  const banner = document.getElementById("sg-hole-banner")!;
  const resultCard = document.getElementById("sg-result")!;
  const resultTitle = document.getElementById("sg-result-title")!;
-@@ -945,16 +838,11 @@ const resultDetail = document.getElementById("sg-result-detail")!;
+@@ -945,16 +905,11 @@ const resultDetail = document.getElementById("sg-result-detail")!;
  const resultStars = document.getElementById("sg-result-stars")!;
  const nextButton = document.getElementById("sg-next-button") as HTMLButtonElement;
  const panel = document.getElementById("panel")!;
@@ -1535,7 +1233,7 @@ index 418af7733..56819ed9d 100644
  const hudCache = new Map<string, { el: HTMLElement; text: string }>();
  function hudText(selector: string, value: string): void {
    let entry = hudCache.get(selector);
-@@ -967,12 +855,10 @@ function hudText(selector: string, value: string): void {
+@@ -967,12 +922,10 @@ function hudText(selector: string, value: string): void {
      entry.text = value;
    }
  }
@@ -1548,7 +1246,7 @@ index 418af7733..56819ed9d 100644
  function showResultCard(title: string, detail: string, stars: string, nextLabel: string, failed: boolean): void {
    resultTitle.textContent = title;
    resultDetail.textContent = detail;
-@@ -986,7 +872,6 @@ function showResultCard(title: string, detail: string, stars: string, nextLabel:
+@@ -986,7 +939,6 @@ function showResultCard(title: string, detail: string, stars: string, nextLabel:
    panel.classList.add("result-open");
    pendingAdvance = failed ? "retry-hole" : holeIndex >= SIEGE_GOLF_HOLES.length - 1 ? "new-round" : "next-hole";
  }
@@ -1556,7 +1254,7 @@ index 418af7733..56819ed9d 100644
  function queueResultCard(title: string, detail: string, stars: string, nextLabel: string, failed: boolean): void {
    // Hold the card back long enough for the settled-target evidence frame to
    // be captured deterministically.  Evidence mode owns the long delay below;
-@@ -1004,7 +889,6 @@ function queueResultCard(title: string, detail: string, stars: string, nextLabel
+@@ -1004,7 +956,6 @@ function queueResultCard(title: string, detail: string, stars: string, nextLabel
      frames: reducedMotion ? 30 : 45
    };
  }
@@ -1564,7 +1262,7 @@ index 418af7733..56819ed9d 100644
  function syncHud(): void {
    const hole = flow.hole;
    hudText("#stat-hole", (holeIndex + 1) + "/" + SIEGE_GOLF_HOLES.length);
-@@ -1060,12 +944,9 @@ function syncHud(): void {
+@@ -1059,12 +1010,9 @@ function syncHud(): void {
          : hole.name + " · Par " + hole.par + " · Stroke " + (flow.strokes + 1);
    if (banner.textContent !== bannerText) banner.textContent = bannerText;
  }
@@ -1577,7 +1275,7 @@ index 418af7733..56819ed9d 100644
  function loadHole(index: number): void {
    holeIndex = index;
    const hole = SIEGE_GOLF_HOLES[index]!;
-@@ -1086,20 +967,17 @@ function loadHole(index: number): void {
+@@ -1085,20 +1033,17 @@ function loadHole(index: number): void {
    syncBestGhost();
    syncHud();
  }
@@ -1598,7 +1296,7 @@ index 418af7733..56819ed9d 100644
  function applyStrike(result: NonNullable<ReturnType<ShotController["strike"]>>): void {
    const applied = flow.strike(result.input.vector, result.input.power);
    if (applied) {
-@@ -1113,7 +991,6 @@ function applyStrike(result: NonNullable<ReturnType<ShotController["strike"]>>):
+@@ -1112,7 +1057,6 @@ function applyStrike(result: NonNullable<ReturnType<ShotController["strike"]>>):
    }
    syncHud();
  }
@@ -1606,7 +1304,7 @@ index 418af7733..56819ed9d 100644
  function doPrecisionStrike(): void {
    if (flow.phase !== "aiming") return;
    shot.cancelCharge();
-@@ -1121,7 +998,6 @@ function doPrecisionStrike(): void {
+@@ -1120,7 +1064,6 @@ function doPrecisionStrike(): void {
    const result = shot.strikeAtPower(Number(powerDial.value));
    if (result) applyStrike(result);
  }
@@ -1614,7 +1312,7 @@ index 418af7733..56819ed9d 100644
  function resetHoleAction(): void {
    flow.resetHole();
    currentShotInputs = [];
-@@ -1138,13 +1014,11 @@ function resetHoleAction(): void {
+@@ -1137,13 +1080,11 @@ function resetHoleAction(): void {
    pushCue("ui-confirm");
    syncHud();
  }
@@ -1628,7 +1326,7 @@ index 418af7733..56819ed9d 100644
  function advanceAction(): void {
    if (pendingAdvance === "retry-hole") {
      loadHole(holeIndex);
-@@ -1159,7 +1033,6 @@ function advanceAction(): void {
+@@ -1158,7 +1099,6 @@ function advanceAction(): void {
    loadHole(holeIndex + 1);
    pushCue("ui-confirm");
  }
@@ -1636,7 +1334,7 @@ index 418af7733..56819ed9d 100644
  function togglePause(): void {
    if (siegeGame.session.paused) siegeGame.session.resume(); else siegeGame.session.pause("user");
    pushCue("ui-confirm");
-@@ -1173,8 +1046,6 @@ function togglePause(): void {
+@@ -1172,8 +1112,6 @@ function togglePause(): void {
      app.resume();
    }
  }
@@ -1645,7 +1343,7 @@ index 418af7733..56819ed9d 100644
  function consumeEvents(events: readonly import("../gameplay/hole-flow").SiegeGameEvent[]): void {
    for (const event of events) {
      recentEventLog.push(event.type + ":" + frameCount);
-@@ -1243,8 +1114,6 @@ function consumeEvents(events: readonly import("../gameplay/hole-flow").SiegeGam
+@@ -1242,8 +1180,6 @@ function consumeEvents(events: readonly import("../gameplay/hole-flow").SiegeGam
      }
    }
  }
@@ -1654,7 +1352,7 @@ index 418af7733..56819ed9d 100644
  function syncVisuals(): void {
    for (const pose of flow.sim.poses()) {
      const handle = dynamicHandles.get(pose.name);
-@@ -1254,7 +1123,6 @@ function syncVisuals(): void {
+@@ -1253,7 +1189,6 @@ function syncVisuals(): void {
      handle.setRotation(e.x, e.y, e.z);
    }
  }
@@ -1662,7 +1360,7 @@ index 418af7733..56819ed9d 100644
  function recordTrajectoryPoint(): void {
    if (flow.phase !== "simulating" || frameCount % 4 !== 0) return;
    const p = flow.sim.ball.position;
-@@ -1264,7 +1132,6 @@ function recordTrajectoryPoint(): void {
+@@ -1263,7 +1198,6 @@ function recordTrajectoryPoint(): void {
      currentTrajectory.push(point);
    }
  }
@@ -1670,7 +1368,7 @@ index 418af7733..56819ed9d 100644
  function commitBestSolution(): void {
    const id = flow.hole.id;
    const previous = bestSolutions.get(id);
-@@ -1279,7 +1146,6 @@ function commitBestSolution(): void {
+@@ -1278,7 +1212,6 @@ function commitBestSolution(): void {
    localStorage.setItem(BEST_SOLUTION_STORAGE_KEY, JSON.stringify([...bestSolutions.entries()]));
    syncBestGhost();
  }
@@ -1678,7 +1376,7 @@ index 418af7733..56819ed9d 100644
  function syncBestGhost(): void {
    const replay = bestSolutions.get(flow.hole.id);
    const points = replay?.trajectory ?? [];
-@@ -1299,12 +1165,10 @@ function syncBestGhost(): void {
+@@ -1298,12 +1231,10 @@ function syncBestGhost(): void {
      handle.setVisible(true);
    }
  }
@@ -1691,7 +1389,7 @@ index 418af7733..56819ed9d 100644
  function syncTrail(dt: number): void {
    // Power-shot trail: renderer-owned puffs dropped along the real ball path.
    if (trailArmed && !reducedMotion && frameCount % 3 === 0 && ballSpeed() > 4) {
-@@ -1327,18 +1191,11 @@ function syncTrail(dt: number): void {
+@@ -1326,18 +1257,11 @@ function syncTrail(dt: number): void {
      }
    }
  }
@@ -1710,7 +1408,7 @@ index 418af7733..56819ed9d 100644
  function syncAim(): void {
    const aiming = flow.phase === "aiming" && !siegeGame.session.paused;
    const dirX = Math.sin(shot.state.angle);
-@@ -1409,7 +1266,6 @@ function syncAim(): void {
+@@ -1408,7 +1332,6 @@ function syncAim(): void {
      handle.setScale([(0.12 + (i / (AIM_NODE_COUNT - 1)) * 0.13) * fade, 0.035, 0.23 * fade]);
    }
  }
@@ -1718,7 +1416,7 @@ index 418af7733..56819ed9d 100644
  function spawnImpactDust(kind: "wood" | "metal"): void {
    if (reducedMotion) return;
    const p = flow.sim.ball.position;
-@@ -1435,7 +1291,6 @@ function spawnImpactDust(kind: "wood" | "metal"): void {
+@@ -1434,7 +1357,6 @@ function spawnImpactDust(kind: "wood" | "metal"): void {
    // evidence routes continue without a pause or any physics-state mutation.
  
  }
@@ -1726,7 +1424,7 @@ index 418af7733..56819ed9d 100644
  function syncDust(dt: number): void {
    const visualDt = Math.min(dt, 1 / 30);
    for (let i = dustPuffs.length - 1; i >= 0; i -= 1) {
-@@ -1452,8 +1307,6 @@ function syncDust(dt: number): void {
+@@ -1451,8 +1373,6 @@ function syncDust(dt: number): void {
      }
    }
  }
@@ -1735,7 +1433,15 @@ index 418af7733..56819ed9d 100644
  function collectSiegeEvidence(): Record<string, unknown> {
    const snap = flow.snapshot();
    const diagnostics = app.diagnostics();
-@@ -1552,34 +1405,17 @@ function collectSiegeEvidence(): Record<string, unknown> {
+@@ -1517,7 +1437,6 @@ function collectSiegeEvidence(): Record<string, unknown> {
+     controls: ["ArrowLeft/Right aim", "Space charge/release", "precision aim/power + J", "R hole reset", "T round reset", "P pause", "G best-line toggle", "touch drag-back"],
+     claimBoundary: "Aura3D prototype: route-local rigid-body golf on the public physics surface; no reusable game kit claimed.",
+     mountedAtEpochMs: mountedAtEpochMs(),
+-    sixtySecondReplayProof,
+     chargePhase: shot.state.phase,
+     chargeFraction: shot.state.charge,
+     aimAngleRadians: shot.state.angle,
+@@ -1551,34 +1470,16 @@ function collectSiegeEvidence(): Record<string, unknown> {
    });
    return evidence;
  }
@@ -1751,7 +1457,7 @@ index 418af7733..56819ed9d 100644
 -
 -// Headless 60-second replay proof (route-local simulation scope; the browser
 -// specs prove mounted input separately). Computed once at mount.
- const sixtySecondReplayProof = runSixtySecondReplay().proof;
+-const sixtySecondReplayProof = runSixtySecondReplay().proof;
 -
 -// Renderer-owned capture used by specs and probes (no compositor dependency).
 -siegeWindow.__SG_SHOT__ = () => app.screenshot().dataUrl;
@@ -1770,7 +1476,7 @@ index 418af7733..56819ed9d 100644
  function manualEdge(code: string): "pressed" | "released" | "held" | "idle" {
    const now = manualHeld.has(code);
    const before = manualPrev.get(code) ?? false;
-@@ -1587,13 +1423,11 @@ function manualEdge(code: string): "pressed" | "released" | "held" | "idle" {
+@@ -1586,13 +1487,11 @@ function manualEdge(code: string): "pressed" | "released" | "held" | "idle" {
    if (!now && before) return "released";
    return now ? "held" : "idle";
  }
@@ -1784,7 +1490,7 @@ index 418af7733..56819ed9d 100644
  window.addEventListener("keydown", (event) => {
    if (!event.repeat) manualHeld.add(event.code);
    if (flow.phase === "aiming" && (event.code === "Space" || event.code === "ArrowLeft" || event.code === "ArrowRight")) {
-@@ -1639,12 +1473,10 @@ window.addEventListener("keydown", (event) => {
+@@ -1638,12 +1537,10 @@ window.addEventListener("keydown", (event) => {
      event.preventDefault();
    }
  }, { passive: false });
@@ -1797,7 +1503,7 @@ index 418af7733..56819ed9d 100644
  const aimDial = document.getElementById("sg-aim-dial") as HTMLInputElement;
  const powerDial = document.getElementById("sg-power-dial") as HTMLInputElement;
  const aimDialValue = document.getElementById("sg-aim-dial-value") as HTMLOutputElement;
-@@ -1660,8 +1492,6 @@ powerDial.addEventListener("input", () => {
+@@ -1659,8 +1556,6 @@ powerDial.addEventListener("input", () => {
    powerDialValue.value = Number(powerDial.value).toFixed(3);
  });
  ui.onClick("#sg-precision-strike-button", () => doPrecisionStrike());
@@ -1806,7 +1512,7 @@ index 418af7733..56819ed9d 100644
  const strikeButton = ui.button("#sg-strike-button");
  strikeButton.addEventListener("pointerdown", (event) => {
    event.preventDefault();
-@@ -1677,7 +1507,6 @@ strikeButton.addEventListener("pointerleave", () => {
+@@ -1676,7 +1571,6 @@ strikeButton.addEventListener("pointerleave", () => {
    pointerChargeHeld = false;
    if (shot.charging) shot.cancelCharge();
  });
@@ -1814,7 +1520,7 @@ index 418af7733..56819ed9d 100644
  function bindAimButton(selector: string, direction: -1 | 1): void {
    const button = ui.button(selector);
    const start = (event: PointerEvent): void => {
-@@ -1695,7 +1524,6 @@ function bindAimButton(selector: string, direction: -1 | 1): void {
+@@ -1694,7 +1588,6 @@ function bindAimButton(selector: string, direction: -1 | 1): void {
  }
  bindAimButton("#sg-aim-left-button", -1);
  bindAimButton("#sg-aim-right-button", 1);
@@ -1822,7 +1528,7 @@ index 418af7733..56819ed9d 100644
  const mobileStrikeButton = ui.button("#sg-mobile-strike-button");
  mobileStrikeButton.addEventListener("pointerdown", (event) => {
    event.preventDefault();
-@@ -1711,8 +1539,6 @@ mobileStrikeButton.addEventListener("pointercancel", () => {
+@@ -1710,8 +1603,6 @@ mobileStrikeButton.addEventListener("pointercancel", () => {
    pointerChargeHeld = false;
    if (shot.charging) shot.cancelCharge();
  });
@@ -1831,7 +1537,7 @@ index 418af7733..56819ed9d 100644
  const stage = document.getElementById("app")!;
  let dragStart: { x: number; y: number } | null = null;
  stage.addEventListener("pointerdown", (event) => {
-@@ -1737,8 +1563,6 @@ stage.addEventListener("pointerup", (event) => {
+@@ -1736,8 +1627,6 @@ stage.addEventListener("pointerup", (event) => {
      shot.armNextShot();
    }
  }, { passive: true });
@@ -1840,7 +1546,7 @@ index 418af7733..56819ed9d 100644
  siegeGame.runtime.onFrame(({ dt }) => {
    siegeTween.tick(dt);
    input.update(dt);
-@@ -1809,8 +1633,6 @@ siegeGame.runtime.onFrame(({ dt }) => {
+@@ -1808,8 +1697,6 @@ siegeGame.runtime.onFrame(({ dt }) => {
    if (frameCount % 6 === 0 || events.length > 0) syncHud();
    publishEvidence();
  });
@@ -1880,15 +1586,6 @@ index f60970c74..25846c31f 100644
  });
 -
  void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
-diff --git a/apps/showcase-siege-golf/src/replay-proof.ts b/apps/showcase-siege-golf/src/replay-proof.ts
-deleted file mode 100644
-index fa67e5d91..000000000
---- a/apps/showcase-siege-golf/src/replay-proof.ts
-+++ /dev/null
-@@ -1,3 +0,0 @@
--// T1.10 path shim — module moved in PRD-14 §10; re-exported at the old path until
--// tests/unit/apps (lane 15) re-points its imports (qr-request tracked).
--export * from "./gameplay/replay-proof";
 diff --git a/apps/showcase-siege-golf/src/v2/evidence/index.ts b/apps/showcase-siege-golf/src/v2/evidence/index.ts
 deleted file mode 100644
 index e13e1e768..000000000

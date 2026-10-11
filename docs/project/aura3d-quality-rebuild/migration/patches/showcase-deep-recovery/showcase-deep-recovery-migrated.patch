@@ -1,4 +1,4 @@
-From c0223100dc53397bead2dae157c69e619df69add Mon Sep 17 00:00:00 2001
+From 76e5088a7142857dcc55fd37d583f79e4f242454 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:07:51 +0000
 Subject: [PATCH] migration(showcase-deep-recovery): regenerated patch set
@@ -8,12 +8,12 @@ Subject: [PATCH] migration(showcase-deep-recovery): regenerated patch set
  apps/showcase-deep-recovery/package.json      |   4 +-
  apps/showcase-deep-recovery/src/evidence.ts   |   8 +
  .../src/legacy/deep-audio.ts                  | 115 ++++---
- .../src/legacy/environment.ts                 | 306 +++++-------------
- .../showcase-deep-recovery/src/legacy/main.ts | 181 ++++++-----
+ .../src/legacy/environment.ts                 | 295 +++++-------------
+ .../showcase-deep-recovery/src/legacy/main.ts | 186 ++++++-----
  .../src/scenario-drive.ts                     |  11 +
  .../src/scenarios/index.ts                    |  13 +
- apps/showcase-deep-recovery/src/v2/boot.ts    |   4 +-
- 8 files changed, 292 insertions(+), 350 deletions(-)
+ apps/showcase-deep-recovery/src/v2/boot.ts    |  87 +-----
+ 8 files changed, 305 insertions(+), 414 deletions(-)
  create mode 100644 apps/showcase-deep-recovery/src/evidence.ts
  create mode 100644 apps/showcase-deep-recovery/src/scenario-drive.ts
  create mode 100644 apps/showcase-deep-recovery/src/scenarios/index.ts
@@ -197,7 +197,7 @@ index 271bb4b61..25e14a21a 100644
      return this.cueHistory;
    }
 diff --git a/apps/showcase-deep-recovery/src/legacy/environment.ts b/apps/showcase-deep-recovery/src/legacy/environment.ts
-index 4fa2cb236..cd4064248 100644
+index 4fa2cb236..a8f9a64f8 100644
 --- a/apps/showcase-deep-recovery/src/legacy/environment.ts
 +++ b/apps/showcase-deep-recovery/src/legacy/environment.ts
 @@ -10,7 +10,7 @@ import { model, primitives, material, lights, text3D, type AuraNodeInput } from
@@ -323,25 +323,21 @@ index 4fa2cb236..cd4064248 100644
      primitives.torus({
        name: "wreck salvage beacon ring",
        material: material.emissive({
-@@ -184,24 +174,11 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
+@@ -184,7 +174,7 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
      // silt plates sit under the existing chapel dressing and make its edges,
      // contact shadows, and cyan/amber navigation seams readable from the
      // launch camera without becoming a screen-space backdrop.
 -    ...(!options.review ? [
--      primitives.sphere({
--        name: "default salvage basin west shelf",
--        material: material.pbr({ name: "default basin west silt", color: "#2b666b", emissive: "#15484b", emissiveIntensity: 0.34, roughness: 0.98, metallic: 0.02 })
--      }).position(-6.4, -15.55, -11.8).scale([8.8, 0.16, 6.4]).rotate(0.02, -0.18, 0.01),
--      primitives.sphere({
--        name: "default salvage basin east shelf",
--        material: material.pbr({ name: "default basin east silt", color: "#356d69", emissive: "#1b4b46", emissiveIntensity: 0.3, roughness: 0.98, metallic: 0.02 })
--      }).position(4.2, -15.62, -8.4).scale([7.4, 0.14, 5.2]).rotate(0.02, 0.16, -0.01),
--      primitives.torus({
--        name: "default salvage basin route ring",
--        material: material.emissive({ name: "default basin route ring", color: "#0f7180", emissive: "#51e4e3", emissiveIntensity: 0.82, opacity: 0.78 })
--      }).position(-4.8, -15.15, -10.8).scale([4.8, 4.8, 0.08]).rotate(Math.PI / 2, 0, 0)
++    ...[
+       primitives.sphere({
+         name: "default salvage basin west shelf",
+         material: material.pbr({ name: "default basin west silt", color: "#2b666b", emissive: "#15484b", emissiveIntensity: 0.34, roughness: 0.98, metallic: 0.02 })
+@@ -197,11 +187,11 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
+         name: "default salvage basin route ring",
+         material: material.emissive({ name: "default basin route ring", color: "#0f7180", emissive: "#51e4e3", emissiveIntensity: 0.82, opacity: 0.78 })
+       }).position(-4.8, -15.15, -10.8).scale([4.8, 4.8, 0.08]).rotate(Math.PI / 2, 0, 0)
 -    ] : []),
-+    ...([]),
++    ],
      // A short chain of physical sonar waypoints ties the approach vehicle to
      // the wreck basin. Each marker is a tiny world-space beacon with a halo,
      // so the route remains legible even when the transient pulse has faded.
@@ -350,7 +346,7 @@ index 4fa2cb236..cd4064248 100644
        { x: -0.8, y: -8.2, z: -2.8, color: "#55e6ee" },
        { x: -2.2, y: -9.1, z: -5.4, color: "#55e6ee" },
        { x: -3.9, y: -10.1, z: -8.0, color: "#f8c56c" },
-@@ -220,52 +197,52 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
+@@ -220,52 +210,52 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
          primitives.torus({ name: `default salvage route halo ${index + 1}`, material: markerMaterial })
            .position(waypoint.x, waypoint.y - 0.04, waypoint.z).scale([0.32 + index * 0.03, 0.32 + index * 0.03, 0.035]).rotate(Math.PI / 2, 0, 0)
        ];
@@ -414,7 +410,7 @@ index 4fa2cb236..cd4064248 100644
      // A string of small warm windows gives the wreck a designed focal rhythm
      // rather than a single unlit brown silhouette.
      ...[-2.1, -0.7, 0.7, 2.1].map((x, index) => primitives.box({
-@@ -279,11 +256,11 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
+@@ -279,11 +269,11 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
    // grounded and readable when the salvage-map camera swings into the wreck;
    // it is a real scene light, not a screen-space highlight.
    nodes.push(
@@ -429,7 +425,7 @@ index 4fa2cb236..cd4064248 100644
      // Mooring Anchor Chain from Buoy Station to Seabed (Located at Buoy Station x=-10, z=15)
      for (let y = -2; y > -58; y -= 4) {
        nodes.push(
-@@ -343,7 +320,7 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
+@@ -343,7 +333,7 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
              metallic: 0.2
            })
          })
@@ -438,7 +434,7 @@ index 4fa2cb236..cd4064248 100644
          .scale([reef.rx, reef.ry, reef.rz]),
        primitives
          .sphere({
-@@ -355,7 +332,7 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
+@@ -355,7 +345,7 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
              roughness: 0.3
            })
          })
@@ -447,7 +443,7 @@ index 4fa2cb236..cd4064248 100644
          .scale([reef.rx * 0.9, 0.9, reef.rz * 0.9])
      );
    });
-@@ -367,28 +344,28 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
+@@ -367,28 +357,28 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
          name: "sea-arch-left-pillar",
            material: material.pbr({ name: "arch basalt", color: "#4b7183", roughness: 0.78, metallic: 0.1 })
        })
@@ -480,7 +476,7 @@ index 4fa2cb236..cd4064248 100644
        .scale(0.8)
    );
  
-@@ -411,7 +388,7 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
+@@ -411,7 +401,7 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
        primitives.cylinder({
          name: `midwater coral fan ${index + 1}`,
          material: fanMaterials[index % fanMaterials.length]!
@@ -489,7 +485,7 @@ index 4fa2cb236..cd4064248 100644
        primitives.sphere({
          name: `midwater coral fan beacon ${index + 1}`,
          material: material.emissive({
-@@ -421,20 +398,20 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
+@@ -421,20 +411,20 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
            emissiveIntensity: 0.95,
            opacity: 0.78
          })
@@ -515,7 +511,7 @@ index 4fa2cb236..cd4064248 100644
      const defaultCaustic = material.emissive({
        name: "default water caustic slashes",
        color: "#217b8a",
-@@ -498,7 +475,7 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
+@@ -498,7 +488,7 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
          // The overhead review composition has its own compact chapel/wreck
          // landmark. Push the distant trench ribs out of that lens so their
          // edge-on silhouettes do not become long black bars across the map.
@@ -524,7 +520,7 @@ index 4fa2cb236..cd4064248 100644
          .scale([rib.w, rib.h, 0.7])
          .rotate(0, 0, rib.rotZ)
      );
-@@ -512,7 +489,7 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
+@@ -512,7 +502,7 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
      { x: 30, z: 20, h: 10, color: "#fb923c" }
    ];
  
@@ -533,7 +529,7 @@ index 4fa2cb236..cd4064248 100644
      nodes.push(
        primitives
          .cylinder({
-@@ -550,7 +527,7 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
+@@ -550,7 +540,7 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
      { x: 0, y: -54, z: -35, color: "#38bdf8", scaleY: 7.0 }
    ];
  
@@ -542,7 +538,7 @@ index 4fa2cb236..cd4064248 100644
      nodes.push(
        primitives
          .cylinder({
-@@ -575,30 +552,30 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
+@@ -575,30 +565,30 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
    // dark water grade without using DOM/CSS as a world effect.
    const ruinStone = material.pbr({
      name: "sunless salvage-island stone",
@@ -587,7 +583,7 @@ index 4fa2cb236..cd4064248 100644
      roughness: 0.54,
      metallic: 0.28
    });
-@@ -674,51 +651,7 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
+@@ -674,51 +664,7 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
      { x: 4.4, y: -13.9, z: -19.1, sx: 4.0, sy: 0.58, sz: 2.1 }
    ] as const;
    nodes.push(
@@ -640,7 +636,7 @@ index 4fa2cb236..cd4064248 100644
      primitives.sphere({
        name: "salvage island submerged cyan light pool",
        material: material.emissive({
-@@ -728,7 +661,7 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
+@@ -728,7 +674,7 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
          emissiveIntensity: 0.34,
          opacity: 0.22
        })
@@ -649,7 +645,7 @@ index 4fa2cb236..cd4064248 100644
      primitives.sphere({
        name: "salvage island submerged amber light pool",
        material: material.emissive({
-@@ -738,24 +671,14 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
+@@ -738,24 +684,14 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
          emissiveIntensity: 0.3,
          opacity: 0.16
        })
@@ -659,7 +655,7 @@ index 4fa2cb236..cd4064248 100644
 -      .position(options.review ? -1.5 : -7, options.review ? -15.62 : -16.15, -13).scale(options.review ? [10.8, 0.42, 7.4] : [4.85, 0.58, 3.7]),
 -    ...(!options.review ? islandFragments : []).map((fragment, index) => primitives.sphere({
 +      .position(-7, -16.15, -13).scale([4.85, 0.58, 3.7]),
-+    ...(![]).map((fragment, index) => primitives.sphere({
++    ...islandFragments.map((fragment, index) => primitives.sphere({
        name: `salvage island submerged fragment ${index + 1}`,
        material: index % 2 === 0 ? ruinStone : ruinEdge
      }).position(fragment.x, fragment.y, fragment.z).scale([fragment.sx, 0.3 + (index % 3) * 0.08, fragment.sz])),
@@ -678,7 +674,7 @@ index 4fa2cb236..cd4064248 100644
      primitives.sphere({ name: "drowned chapel broad contact bed", material: sedimentMottles[0] })
        .position(-2.35, -14.66, -13.0).scale([5.2, 0.025, 3.65]),
      primitives.sphere({ name: "drowned chapel amber falloff", material: material.emissive({
-@@ -764,24 +687,7 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
+@@ -764,24 +700,7 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
      primitives.sphere({ name: "drowned chapel cyan falloff", material: material.emissive({
        name: "drowned chapel cyan falloff material", color: "#145f60", emissive: "#55d8d2", emissiveIntensity: 0.3, opacity: 0.14
      }) }).position(-0.7, -14.6, -13.0).scale([3.4, 0.018, 2.5]),
@@ -704,7 +700,7 @@ index 4fa2cb236..cd4064248 100644
      primitives.box({ name: "salvage island west shelf", material: ruinEdge })
        .position(-10.1, -14.7, -13.4).scale([1.15, 2.9, 2.2]).rotate(0, 0.12, -0.16),
      primitives.box({ name: "salvage island east shelf", material: ruinEdge })
-@@ -835,38 +741,38 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
+@@ -835,38 +754,38 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
        name: `drowned chapel clerestory lamp ${index + 1}`,
        material: ruinWindow
      }).position(x, -13.62, -12.05).scale(0.18 + index * 0.015)),
@@ -753,7 +749,7 @@ index 4fa2cb236..cd4064248 100644
      primitives.torus({ name: "salvage island outer chart ring", material: ruinMapLine })
        .position(-7, -15.05, -13)
        .scale([4.35, 4.35, 0.08])
-@@ -899,55 +805,7 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
+@@ -899,55 +818,7 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean
    // basin viewed from above. These low-opacity caustic slashes, beacon pylons,
    // and suspended marker rings establish near/mid/far depth around the typed
    // sub and wreck while remaining ordinary renderer-owned scene geometry.
@@ -811,7 +807,7 @@ index 4fa2cb236..cd4064248 100644
    return nodes;
  }
 diff --git a/apps/showcase-deep-recovery/src/legacy/main.ts b/apps/showcase-deep-recovery/src/legacy/main.ts
-index b74af4976..d9a696f8a 100644
+index b74af4976..a5eb47355 100644
 --- a/apps/showcase-deep-recovery/src/legacy/main.ts
 +++ b/apps/showcase-deep-recovery/src/legacy/main.ts
 @@ -12,6 +12,16 @@ import {
@@ -841,41 +837,18 @@ index b74af4976..d9a696f8a 100644
  // The review lens is a deliberately staged mission moment, not the launch
  // pose.  Keeping the submarine on the west approach and the Drowned Chapel in
  // the same camera-facing basin makes the typed vehicle/world relationship
-@@ -156,9 +165,30 @@ const PRIMARY_ASSET_REFS = [
+@@ -156,10 +165,6 @@ const PRIMARY_ASSET_REFS = [
    assets.deepRecoveryBuoyBeacon
  ] as const;
  
 -Object.defineProperty(window, "__AURA3D_SHOWCASE_DEEP_RECOVERY__", {
 -  configurable: true,
 -  get: () => window.__DEEP_RECOVERY_EVIDENCE__
-+bindDeepEvidence(() => collectDeepEvidence());
-+const deepTween = createTweenEngine();
-+const deepFx = createFxParticlePass(app.effects);
-+const deepJuice = createJuice<"ping" | "breach" | "seal" | "latch" | "bank" | "blackout" | "won" | "impact">({
-+  events: {
-+    ping: { fx: { kind: "ring", count: 12, color: "#55e6ee" } },
-+    breach: { flash: { color: "#ff4d4d", peak: 0.2, ms: 280 }, vignette: { amount: 0.32, ms: 520, color: "#160408" }, shake: 0.18 },
-+    seal: { fx: { kind: "ring", count: 8, color: "#9ef2c1" }, punch: { fovDeg: 1.4, ms: 140 } },
-+    latch: { fx: { kind: "spark", count: 8, color: "#f8c56c" }, punch: { fovDeg: 1.2, ms: 120 } },
-+    bank: { fx: { kind: "pickup", count: 14, color: "#ffe866" }, flash: { color: "#ffe866", peak: 0.12, ms: 200 } },
-+    blackout: { flash: { color: "#ff4d4d", peak: 0.3, ms: 400 }, vignette: { amount: 0.5, ms: 900, color: "#050208" }, hitStop: 0.08 },
-+    won: { fx: { kind: "ring", count: 18, color: "#ffe866" }, flash: { color: "#ffe866", peak: 0.18, ms: 320 } },
-+    impact: { fx: { kind: "debris", count: 8, color: "#9fd8ff" }, shake: 0.12 }
-+  },
-+  camera: app.camera,
-+  session: deepGame.session,
-+  fx: deepFx,
-+  overlay: createOverlayDriver({ app }),
-+  tweens: deepTween,
-+  rumble: createRumbleDriver()
-+});
-+bindDeepDrive({
-+  stepSim: (dt) => { app.pause(); app.advance(dt); app.resume(); },
-+  stepRender: (dt) => { app.pause(); app.advance(dt); app.resume(); }
- });
+-});
  
  const audio = new DeepAudioController();
-@@ -290,24 +320,23 @@ const sceneDef = scene()
+ void audio.init();
+@@ -290,24 +295,23 @@ const sceneDef = scene()
        // The comparison state is a salvage chart, so its dedicated camera is
        // genuinely overhead: the submarine, chapel island, rings, and wreck
        // form one readable map instead of a forest of near-camera columns.
@@ -904,7 +877,7 @@ index b74af4976..d9a696f8a 100644
  
      // Camera target rig
      primitives
-@@ -324,11 +353,10 @@ const sceneDef = scene()
+@@ -324,11 +328,10 @@ const sceneDef = scene()
        name: "buoy-station",
        role: "primaryWorld",
        scaleMode: "fit",
@@ -918,7 +891,7 @@ index b74af4976..d9a696f8a 100644
        model(assets.deepRecoveryWreckHull, {
          name: `wreck-${obs.id}`,
          role: "setDressing",
-@@ -342,7 +370,7 @@ const sceneDef = scene()
+@@ -342,7 +345,7 @@ const sceneDef = scene()
        name: "sub-root",
        role: "primaryVehicle",
        scaleMode: "fit",
@@ -927,7 +900,7 @@ index b74af4976..d9a696f8a 100644
        // The typed source is a deep-navy vehicle that disappears against the
        // trench walls in the sonar frame. Keep its geometry and provenance,
        // but give the hero a cool teal PBR finish so the hull, nose lamps, and
-@@ -351,7 +379,7 @@ const sceneDef = scene()
+@@ -351,7 +354,7 @@ const sceneDef = scene()
          name: "deep recovery sub teal hull",
          color: "#2ab0c0",
          emissive: "#1596a8",
@@ -936,7 +909,7 @@ index b74af4976..d9a696f8a 100644
          roughness: 0.3,
          metallic: 0.46,
          clearcoat: 0.2,
-@@ -366,59 +394,27 @@ const sceneDef = scene()
+@@ -366,59 +369,27 @@ const sceneDef = scene()
        name: "sonar reveal wreck landmark",
        role: "primaryWorld",
        scaleMode: "fit",
@@ -1002,7 +975,7 @@ index b74af4976..d9a696f8a 100644
      primitives.sphere({
        name: "breach-beacon",
        material: material.emissive({ name: "breach warning", color: "#7f1d1d", emissive: "#ef4444", opacity: 0.85 })
-@@ -454,7 +450,7 @@ const sceneDef = scene()
+@@ -454,7 +425,7 @@ const sceneDef = scene()
        .scale([0.1, 0.05, 0.1]),
  
      // Crates
@@ -1011,7 +984,7 @@ index b74af4976..d9a696f8a 100644
        model(c.kind === "crate-heavy" ? assets.deepRecoveryCrateHeavy : assets.deepRecoveryCrateStandard, {
          name: `crate-node-${c.id}`,
          role: "setDressing",
-@@ -465,7 +461,7 @@ const sceneDef = scene()
+@@ -465,7 +436,7 @@ const sceneDef = scene()
  
      // Contact markers occupy the target's real world position and are hidden
      // until the spherical sonar query returns that exact target.
@@ -1020,15 +993,16 @@ index b74af4976..d9a696f8a 100644
        primitives.torus({
          name: `sonar-marker-${target.id}`,
          material: material.emissive({ name: "sonar contact", color: "#075985", emissive: "#67e8f9", emissiveIntensity: 2.1, opacity: 0.88 })
-@@ -473,13 +469,24 @@ const sceneDef = scene()
+@@ -473,12 +444,49 @@ const sceneDef = scene()
      )
    ]);
  
 -const app = createAuraApp("#canvas-host", {
+-  scene: sceneDef,
 +const deepGame = createGame({
 +  id: "showcase-deep-recovery",
 +  target: "#canvas-host",
-   scene: sceneDef,
++  scene: () => sceneDef,
    physics: {
      seed: 20260918,
      continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
@@ -1041,13 +1015,38 @@ index b74af4976..d9a696f8a 100644
 +    legacyGlobals: ["__AURA3D_SHOWCASE_DEEP_RECOVERY__"]
 +  },
 +  scenarios: async () => (await import("../scenarios")).deepScenarios
- });
++});
 +const app = deepGame.app;
 +deepGame.start();
++
++bindDeepEvidence(() => collectDeepEvidence() as unknown as Record<string, unknown>);
++const deepTween = createTweenEngine();
++const deepFx = createFxParticlePass(app.effects);
++const deepJuice = createJuice<"ping" | "breach" | "seal" | "latch" | "bank" | "blackout" | "won" | "impact">({
++  events: {
++    ping: { fx: { kind: "ring", count: 12, color: "#55e6ee" } },
++    breach: { flash: { color: "#ff4d4d", peak: 0.2, ms: 280 }, vignette: { amount: 0.32, ms: 520, color: "#160408" }, shake: 0.18 },
++    seal: { fx: { kind: "ring", count: 8, color: "#9ef2c1" }, punch: { fovDeg: 1.4, ms: 140 } },
++    latch: { fx: { kind: "spark", count: 8, color: "#f8c56c" }, punch: { fovDeg: 1.2, ms: 120 } },
++    bank: { fx: { kind: "pickup", count: 14, color: "#ffe866" }, flash: { color: "#ffe866", peak: 0.12, ms: 200 } },
++    blackout: { flash: { color: "#ff4d4d", peak: 0.3, ms: 400 }, vignette: { amount: 0.5, ms: 900, color: "#050208" }, hitStop: 0.08 },
++    won: { fx: { kind: "ring", count: 18, color: "#ffe866" }, flash: { color: "#ffe866", peak: 0.18, ms: 320 } },
++    impact: { fx: { kind: "debris", count: 8, color: "#9fd8ff" }, shake: 0.12 }
++  },
++  camera: app.camera,
++  session: deepGame.session,
++  fx: deepFx,
++  overlay: createOverlayDriver({ app }),
++  tweens: deepTween,
++  rumble: createRumbleDriver()
++});
++bindDeepDrive({
++  stepSim: (dt) => { app.pause(); app.advance(dt); app.resume(); },
++  stepRender: (dt) => { app.pause(); app.advance(dt); app.resume(); }
+ });
  
  app.onFrame((frame) => {
-   const dt = typeof frame === "number" ? frame : (frame?.dt ?? 1 / 60);
-@@ -509,6 +516,7 @@ function handlePing(): void {
+@@ -509,6 +517,7 @@ function handlePing(): void {
      sonarState = result.nextState;
      audio.playCue("sonar-ping", 0.9);
      if (result.newContacts.length > 0) {
@@ -1055,7 +1054,7 @@ index b74af4976..d9a696f8a 100644
        setTimeout(() => audio.playCue("sonar-return", 0.75), 250);
      }
    }
-@@ -525,8 +533,9 @@ function handleRepair(): boolean {
+@@ -525,8 +534,9 @@ function handleRepair(): boolean {
    repairCount += 1;
    sensorEventCount += 1;
    audio.playCue("patch-seal", 0.85);
@@ -1066,7 +1065,7 @@ index b74af4976..d9a696f8a 100644
    return true;
  }
  
-@@ -541,6 +550,7 @@ function handleGrappleToggle(): void {
+@@ -541,6 +551,7 @@ function handleGrappleToggle(): void {
      const res = tryGrappleCrates(subPos, crates);
      if (res.latchedCrate) {
        audio.playCue("grapple-latch", 0.85);
@@ -1074,7 +1073,7 @@ index b74af4976..d9a696f8a 100644
        sensorEventCount += 1;
      }
    }
-@@ -550,12 +560,14 @@ function togglePause(): void {
+@@ -550,12 +561,14 @@ function togglePause(): void {
    if (gameState === "blackout" || gameState === "won") return;
    if (gameState === "playing") {
      gameState = "paused";
@@ -1090,7 +1089,7 @@ index b74af4976..d9a696f8a 100644
  }
  
  function resetGame(): void {
-@@ -580,18 +592,19 @@ function resetGame(): void {
+@@ -580,18 +593,19 @@ function resetGame(): void {
    elModalActionBtn.style.display = "inline-block";
    syncVisualNodes();
    syncHud();
@@ -1113,7 +1112,7 @@ index b74af4976..d9a696f8a 100644
      return;
    }
  
-@@ -602,6 +615,12 @@ function runSimulationStep(dt: number): void {
+@@ -602,6 +616,12 @@ function runSimulationStep(dt: number): void {
    let throttle = 0;
    if (keys.has("KeyW") || keys.has("ArrowUp")) throttle += 1;
    if (keys.has("KeyS") || keys.has("ArrowDown")) throttle -= 1;
@@ -1126,7 +1125,7 @@ index b74af4976..d9a696f8a 100644
  
    let turn = 0;
    if (keys.has("KeyD") || keys.has("ArrowRight")) turn += 1;
-@@ -632,12 +651,14 @@ function runSimulationStep(dt: number): void {
+@@ -632,12 +652,14 @@ function runSimulationStep(dt: number): void {
  
    // Check collision impact
    if (subState.impactSpeedLastFrame > 3.5) {
@@ -1142,7 +1141,7 @@ index b74af4976..d9a696f8a 100644
        sensorEventCount += 1;
      }
    }
-@@ -659,6 +680,7 @@ function runSimulationStep(dt: number): void {
+@@ -659,6 +681,7 @@ function runSimulationStep(dt: number): void {
    if (oxygenState.blackout && gameState === "playing") {
      gameState = "blackout";
      audio.playCue("blackout", 1.0);
@@ -1150,7 +1149,7 @@ index b74af4976..d9a696f8a 100644
      audio.stopAmbience();
      showModal("Submarine Blackout", "Life support depleted. Oxygen level hit 0%.", true);
    }
-@@ -687,6 +709,7 @@ function runSimulationStep(dt: number): void {
+@@ -687,6 +710,7 @@ function runSimulationStep(dt: number): void {
    if (bankRes.bankedCount > 0) {
      bankedTotal += bankRes.bankedValue;
      audio.playCue("crate-bank", 0.9);
@@ -1158,7 +1157,7 @@ index b74af4976..d9a696f8a 100644
      sensorEventCount += 1;
  
      standardBanked ||= bankRes.bankedKinds.includes("crate-standard");
-@@ -696,6 +719,7 @@ function runSimulationStep(dt: number): void {
+@@ -696,6 +720,7 @@ function runSimulationStep(dt: number): void {
    if (standardBanked && heavyBanked && breachCount > 0 && repairCount > 0 && !oxygenState.breached && subState.y >= -1 && gameState === "playing") {
      gameState = "won";
      audio.playCue("surface-break", 1);
@@ -1166,7 +1165,7 @@ index b74af4976..d9a696f8a 100644
      audio.stopAmbience();
      showModal("Recovery Complete", `Standard and heavy salvage secured for ${bankedTotal} CR. Crew surfaced with life support online.`, false);
    }
-@@ -707,7 +731,7 @@ function runSimulationStep(dt: number): void {
+@@ -707,7 +732,7 @@ function runSimulationStep(dt: number): void {
    syncHud();
  
    // 8. Publish Evidence
@@ -1175,7 +1174,7 @@ index b74af4976..d9a696f8a 100644
  }
  
  function syncVisualNodes(): void {
-@@ -732,7 +756,7 @@ function syncVisualNodes(): void {
+@@ -732,7 +757,7 @@ function syncVisualNodes(): void {
      subState.z + Math.cos(subState.yaw) * 3.4
    );
    lampNode?.setRotation?.(subState.pitch, subState.yaw, 0);
@@ -1184,7 +1183,7 @@ index b74af4976..d9a696f8a 100644
    for (const [index, side] of [-0.52, 0.52].entries()) {
      const beam = app.nodes.get(index === 0 ? "sub-lamp-port" : "sub-lamp-starboard");
      const sideX = Math.cos(subState.yaw) * side;
-@@ -743,7 +767,7 @@ function syncVisualNodes(): void {
+@@ -743,7 +768,7 @@ function syncVisualNodes(): void {
        subState.z + sideZ + Math.cos(subState.yaw) * 3.1
      );
      beam?.setRotation?.(Math.PI / 2 + subState.pitch, subState.yaw, 0);
@@ -1193,7 +1192,7 @@ index b74af4976..d9a696f8a 100644
    }
    SILT_OFFSETS.forEach((offset, index) => {
      const drift = reducedMotion ? 0 : Math.sin(timeSinceStart * 0.7 + index * 1.3) * 0.22;
-@@ -892,7 +916,7 @@ function showModal(title: string, desc: string, isFail: boolean): void {
+@@ -892,7 +917,7 @@ function showModal(title: string, desc: string, isFail: boolean): void {
    elModal.classList.add("active");
  }
  
@@ -1202,7 +1201,7 @@ index b74af4976..d9a696f8a 100644
    const tetheredCrates = crates.filter((c) => c.tethered);
    const currentZone = getDepthZone(subState.y);
    const cargoVal = tetheredCrates.reduce((sum, c) => sum + Math.round(c.baseValue * currentZone.valueMultiplier), 0);
-@@ -902,9 +926,9 @@ function updateEvidence(): void {
+@@ -902,9 +927,9 @@ function updateEvidence(): void {
    // map 1:1 onto AuraRendererDiagnosticReport — no fictional fields.
    const diagnostics: AuraDiagnostics = app.diagnostics();
    const tetheredMass = tetheredCrates.reduce((sum, crate) => sum + crate.mass, 0);
@@ -1214,7 +1213,7 @@ index b74af4976..d9a696f8a 100644
      state: gameState,
      missionStage: missionStage(),
      depth: Math.abs(subState.y),
-@@ -996,7 +1020,7 @@ window.__DR_TELEPORT__ = (x: number, y: number, z: number): void => {
+@@ -996,7 +1021,7 @@ window.__DR_TELEPORT__ = (x: number, y: number, z: number): void => {
    subState.vz = 0;
    syncVisualNodes();
    syncHud();
@@ -1223,7 +1222,7 @@ index b74af4976..d9a696f8a 100644
  };
  
  window.__DR_TELEPORT_CRATE__ = (id: string, x: number, y: number, z: number): void => {
-@@ -1009,7 +1033,7 @@ window.__DR_TELEPORT_CRATE__ = (id: string, x: number, y: number, z: number): vo
+@@ -1009,7 +1034,7 @@ window.__DR_TELEPORT_CRATE__ = (id: string, x: number, y: number, z: number): vo
    crate.vy = 0;
    crate.vz = 0;
    syncVisualNodes();
@@ -1232,7 +1231,7 @@ index b74af4976..d9a696f8a 100644
  };
  
  window.__DR_IMPACT__ = (speed: number): void => {
-@@ -1020,10 +1044,11 @@ window.__DR_IMPACT__ = (speed: number): void => {
+@@ -1020,10 +1045,11 @@ window.__DR_IMPACT__ = (speed: number): void => {
      sensorEventCount += 1;
      audio.playCue("breach-alarm", 0.9);
      audio.playCue("hull-creak", 0.8);
@@ -1245,7 +1244,7 @@ index b74af4976..d9a696f8a 100644
  };
  
  window.__DR_SET_OXYGEN__ = (oxygen: number): void => {
-@@ -1031,7 +1056,7 @@ window.__DR_SET_OXYGEN__ = (oxygen: number): void => {
+@@ -1031,7 +1057,7 @@ window.__DR_SET_OXYGEN__ = (oxygen: number): void => {
    oxygenState = { ...oxygenState, oxygen: clamped, warningActive: clamped > 0 && clamped <= 25, blackout: false };
    oxygenWarningCuePlayed = false;
    syncHud();
@@ -1254,7 +1253,7 @@ index b74af4976..d9a696f8a 100644
  };
  
  window.__DR_REPAIR__ = (): boolean => handleRepair();
-@@ -1055,14 +1080,12 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+@@ -1055,14 +1081,12 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
    configurable: true,
    value: {
      category: "application",
@@ -1271,7 +1270,7 @@ index b74af4976..d9a696f8a 100644
        // Seed the same sonar contact that the playable producer uses for its
        // named wreck-approach artifact.  This keeps both the normal route
        // primary probe and the dedicated review lens grounded in an actual
-@@ -1071,7 +1094,7 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+@@ -1071,7 +1095,7 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
        handlePing();
        syncVisualNodes();
        syncHud();
@@ -1280,7 +1279,7 @@ index b74af4976..d9a696f8a 100644
        await app.stepAsync(0);
      },
      async setSubjectSuppressed(suppressed: boolean) {
-@@ -1085,4 +1108,4 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+@@ -1085,4 +1109,4 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
  
  syncVisualNodes();
  syncHud();
@@ -1323,20 +1322,126 @@ index 000000000..9141ee321
 +  }
 +];
 diff --git a/apps/showcase-deep-recovery/src/v2/boot.ts b/apps/showcase-deep-recovery/src/v2/boot.ts
-index 3ca2f6010..af8280f86 100644
+index 3ca2f6010..cb1d1a793 100644
 --- a/apps/showcase-deep-recovery/src/v2/boot.ts
 +++ b/apps/showcase-deep-recovery/src/v2/boot.ts
-@@ -44,8 +44,8 @@ import { lightingNodes } from "./scene/lighting";
+@@ -7,7 +7,7 @@
+ // salvage/sonar/reef) are unchanged imports; audio plays through the legacy
+ // cue controller until C-25 lands.
+ import { game as engineGame, scene, type GameInputController, type AuraCameraPose } from "@aura3d/engine";
+-import { createGame, type Game, lookManifest } from "@aura3d/game";
++import { createGame, type Game } from "@aura3d/game";
+ import { assets } from "../../../../src/aura-assets";
+ import { getDepthZone, BUOY_STATION, WRECK_OBSTACLES, type Vec3 } from "../gameplay/reef";
+ import { DEFAULT_SUB_CONFIG, initialSubmarineState, updateSubmarine, type SubmarineState } from "../gameplay/sub";
+@@ -44,7 +44,6 @@ import { lightingNodes } from "./scene/lighting";
  import { createDeepRig, fallbackCameraNode } from "./scene/camera";
  import { wireDeepFx } from "./scene/fx";
  import { WATER_BG } from "./scene/materials";
 -import { publishDeepEvidence, type DeepRunSnapshot } from "./evidence";
--import { applyDeepScenario } from "./scenarios";
-+import { publishDeepEvidence, type DeepRunSnapshot } from "../evidence";
-+import { applyDeepScenario } from "../scenarios";
+ import { applyDeepScenario } from "./scenarios";
  import { createDeepCtx } from "./state";
  import { createDeepAudioBlock } from "./audio";
- import { createDeepInput, wireDeepTouch, touchInputs } from "./input";
+@@ -151,6 +150,16 @@ const game = createGame({
+     // art/direction.ts sections. `route_deep_recovery` uses the engine-parseable
+     // underscore form (URL/dispatch form is `route-deep-recovery`).
+     flags: ["route_deep_recovery", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
++  },
++  // T5.8: route evidence rides the shared createGame channel (C-24) —
++  // only the sections games.json requiredConditions read. The v2 shell
++  // issues no GPU readbacks, so readbacksThisFrame is a constant 0.
++  evidence: {
++    schema: 1,
++    sections: {
++      salvage: (): { grappled: number } => ({ grappled: ctx.grappleLatchCount }),
++      render: (): { readbacksThisFrame: number } => ({ readbacksThisFrame: 0 })
++    }
+   }
+ });
+ 
+@@ -191,82 +200,8 @@ const update = wireDeepUpdate(ctx, {
+ });
+ const { updateGameplay } = update;
+ 
+-// ------------------------------------------------------------- evidence ------
+-
+-// T2.2-post: appliedLook derives from the C-31 runtime manifest.
+-const appliedLook: Record<string, unknown> = {
+-  ...lookManifest(game.lookSource()),
+-  id: direction.id,
+-  genre: direction.genre,
+-  rig: "deep-recovery.chase",
+-  fov: 62,
+-  background: WATER_BG,
+-  palette: direction.palette,
+-  signatureEffect: direction.signatureEffect
+-};
+-
+ const rigState = { x: ctx.subState.x, y: ctx.subState.y, z: ctx.subState.z, yaw: ctx.subState.yaw };
+ 
+-const runSnapshot = (): DeepRunSnapshot => {
+-  const tethered = ctx.crates.filter((c) => c.tethered);
+-  return {
+-    phase: ctx.phase,
+-    missionStage: missionStage(),
+-    sub: {
+-      x: ctx.subState.x,
+-      y: ctx.subState.y,
+-      z: ctx.subState.z,
+-      yaw: ctx.subState.yaw,
+-      speed: ctx.subState.speed,
+-      throttle: ctx.subState.throttle,
+-      depth: Math.max(0, -ctx.subState.y),
+-      sprint: ctx.subState.sprint
+-    },
+-    oxygen: {
+-      oxygen: ctx.oxygenState.oxygen,
+-      hull: ctx.oxygenState.hull,
+-      breached: ctx.oxygenState.breached,
+-      warningActive: ctx.oxygenState.warningActive,
+-      blackout: ctx.oxygenState.blackout,
+-      breachCount: ctx.breachCount,
+-      repairCount: ctx.repairCount
+-    },
+-    salvage: {
+-      grappled: ctx.grappleLatchCount,
+-      tethered: tethered.length,
+-      banked: ctx.bankedCountTotal,
+-      bankedValue: ctx.bankedTotal,
+-      cratesTotal: ctx.crates.length,
+-      towMassKg: Math.round(tethered.reduce((sum, c) => sum + c.mass, 0)),
+-      standardBanked: ctx.standardBanked,
+-      heavyBanked: ctx.heavyBanked
+-    },
+-    sonar: {
+-      pings: ctx.sonarState.pingCount,
+-      returns: ctx.sonarState.returnCount,
+-      liveContacts: ctx.sonarState.contacts.length,
+-      cooldown: ctx.sonarState.pingCooldownRemaining
+-    },
+-    contracts: {
+-      active: ctx.phase === "won" ? 3 : ctx.heavyBanked ? 2 : ctx.standardBanked || ctx.repairCount > 0 ? 1 : 0,
+-      title: CONTRACTS[Math.min(2, ctx.standardBanked || ctx.repairCount > 0 ? (ctx.heavyBanked ? 2 : 1) : 0)]!.title,
+-      quotaValue: CONTRACTS[Math.min(2, ctx.standardBanked || ctx.repairCount > 0 ? (ctx.heavyBanked ? 2 : 1) : 0)]!.quotaValue,
+-      complete: ctx.phase === "won"
+-    },
+-    sensorEventCount: ctx.sensorEventCount,
+-    grappleLineLive: tethered.length > 0
+-  };
+-};
+-
+-publishDeepEvidence({
+-  game,
+-  snapshot: runSnapshot,
+-  appliedLook: () => appliedLook,
+-  audioCueLog: () => audioCueLog,
+-  bootedAtMs: () => bootedAtMs,
+-  frameCount: () => ctx.frame
+-});
+-
+ const scenarioParam = routeParams.get("scenario");
+ if (scenarioParam) {
+   applyDeepScenario(scenarioParam, {
 -- 
 2.52.0
 

@@ -1,4 +1,4 @@
-From 734416af70fda142f05f40e046c0924b62a630e3 Mon Sep 17 00:00:00 2001
+From 4dfc5432d0a5b69012712f3f55b2bd436b249c79 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:49 +0000
 Subject: [PATCH] showcase-gallery-shift: delete evidence files+blocks (T5.8)
@@ -15,10 +15,10 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../scripts/write-deploy-report.mjs           |  52 --
  .../scripts/write-performance-report.ts       |  69 ---
  .../scripts/write-route-health.mjs            | 104 ----
- .../showcase-gallery-shift/src/legacy/main.ts | 196 +------
+ .../showcase-gallery-shift/src/legacy/main.ts |  94 +---
  apps/showcase-gallery-shift/src/main.ts       |  10 -
  .../src/v2/evidence/index.ts                  | 111 ----
- 13 files changed, 1 insertion(+), 1852 deletions(-)
+ 13 files changed, 1 insertion(+), 1750 deletions(-)
  delete mode 100644 apps/showcase-gallery-shift/art-candidates/hierarchy-aug31/capture_hierarchy_candidate.mjs
  delete mode 100644 apps/showcase-gallery-shift/art-candidates/museum-world-aug31/capture_integrated_route.mjs
  delete mode 100644 apps/showcase-gallery-shift/art-candidates/museum-world-aug31/capture_preview.mjs
@@ -1628,7 +1628,7 @@ index 306e97f27..000000000
 -writeFileSync(join(appDir, "route-health.json"), `${JSON.stringify(routeHealth, null, 2)}\n`);
 -console.log(JSON.stringify({ machinePass: true, models: modelIds.length, supportingModels: supportingModelIds.length, audio: audioIds.length, exactArtifacts: exactArtifacts.length, primitiveOccurrences, performancePass: performance.pass }));
 diff --git a/apps/showcase-gallery-shift/src/legacy/main.ts b/apps/showcase-gallery-shift/src/legacy/main.ts
-index de16cd62a..6b33ea720 100644
+index c0d7bae75..1b34ef4d8 100644
 --- a/apps/showcase-gallery-shift/src/legacy/main.ts
 +++ b/apps/showcase-gallery-shift/src/legacy/main.ts
 @@ -1,21 +1,3 @@
@@ -1661,32 +1661,7 @@ index de16cd62a..6b33ea720 100644
  import { bindGalleryDrive } from "../scenario-drive";
  import { assets } from "../../../../src/aura-assets";
  import {
-@@ -74,24 +55,9 @@ import { createHeistAudio, type HeistAudioCue } from "./heist-audio";
- import { createGalleryEnvironment } from "./environment";
- import { galleryShiftCutawayMuseumWorld } from "../gameplay/gallery-world-candidate";
- import "./styles.css";
--
--type GalleryWindow = Window & {
--  __GALLERY_SHIFT_EVIDENCE__?: unknown;
--  __AURA3D_SHOWCASE_GALLERY_SHIFT__?: unknown;
--  __GS_SHOT__?: () => string;
--  __GS_PUMP__?: (frames: number) => number;
--  __GS_RESET_CAPTURE__?: () => number;
--  __GS_TELEPORT__?: (x: number, z: number, preserveDetection?: boolean) => { readonly x: number; readonly z: number };
--  __AURA3D_COMPOSITION_PROBE__?: unknown;
--};
- const galleryWindow = window as GalleryWindow;
--Object.defineProperty(window, "__AURA3D_SHOWCASE_GALLERY_SHIFT__", {
--  configurable: true,
--  get: () => galleryWindow.__GALLERY_SHIFT_EVIDENCE__
--});
- const reducedMotion = typeof window.matchMedia === "function"
-   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
--document.body.dataset.capture = "default";
- const THIEF_FOCUS_MATERIAL = material.emissive({
-   name: "thief tactical focus ring",
-   color: "#123b3a",
-@@ -193,25 +159,14 @@ const ALERT_LINE_GEOMETRY = geometry.define({
+@@ -193,25 +174,14 @@ const ALERT_LINE_GEOMETRY = geometry.define({
    indices: [0, 1, 2, 0, 2, 3],
    bounds: { min: [-0.11, 0.065, 0], max: [0.11, 0.065, 4.6] }
  });
@@ -1712,7 +1687,7 @@ index de16cd62a..6b33ea720 100644
  function addActorBox(mesh: ActorDetailMesh, center: readonly [number, number, number], size: readonly [number, number, number]): void {
    const [cx, cy, cz] = center;
    const [sx, sy, sz] = size;
-@@ -235,23 +190,16 @@ function addActorBox(mesh: ActorDetailMesh, center: readonly [number, number, nu
+@@ -235,23 +205,16 @@ function addActorBox(mesh: ActorDetailMesh, center: readonly [number, number, nu
      mesh.indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
    }
  }
@@ -1736,7 +1711,7 @@ index de16cd62a..6b33ea720 100644
  addActorBox(guardDetailMesh, [0, 1.38, 0], [0.98, 0.48, 0.16]);
  addActorBox(guardDetailMesh, [0, 1.78, 0.17], [0.78, 0.08, 0.06]);
  addActorBox(guardDetailMesh, [0, 2.34, 0.24], [0.86, 0.1, 0.08]);
-@@ -261,11 +209,7 @@ const GUARD_DETAIL_GEOMETRY = defineActorDetail(guardDetailMesh);
+@@ -261,11 +224,7 @@ const GUARD_DETAIL_GEOMETRY = defineActorDetail(guardDetailMesh);
  const debugValue = new URLSearchParams(window.location.search).get("debug");
  const debugMode = debugValue !== null;
  const showDebugOverlay = debugValue === "visual";
@@ -1748,87 +1723,7 @@ index de16cd62a..6b33ea720 100644
  const COMPOSITION_SUBJECT_NODE = "museum-interior";
  const PRIMARY_ASSET_REFS = [
    galleryShiftCutawayMuseumWorld,
-@@ -283,79 +227,8 @@ const GUARD_EYE_HEIGHT = 1.55;
- const THIEF_EYE_HEIGHT = 1.1;
- const MAX_NOISE_LOG = 48;
- const MAX_CUE_LOG = 48;
--
--// ---------------------------------------------------------------- HUD markup --
--ui.html("#hud", `
--  <div class="hall-banner" id="gs-banner" aria-live="polite">GALLERY SHIFT - SNEAK IN, LIFT THREE, WALK OUT</div>
--  <div class="review-brief" id="gs-brief" aria-live="polite">STEALTH LINK // SCANNING</div>
--  <div class="mission-rail" id="gs-mission-rail" aria-label="Live heist route">
--    <div class="mission-rail-head"><span>HEIST ROUTE</span><b id="gs-route-state">MARBLE HALL / LIVE</b></div>
--    <div class="mission-steps" aria-label="Exhibit sequence">
--      <span id="gs-step-1" class="mission-step">01 ARCHIVE</span>
--      <span id="gs-step-2" class="mission-step">02 TREASURY</span>
--      <span id="gs-step-3" class="mission-step">03 SKYLINE</span>
--      <span id="gs-step-exit" class="mission-step">EXIT</span>
--    </div>
--    <div class="mission-legend">
--      <span><i class="legend-dot legend-player"></i>PLAYER</span>
--      <span><i class="legend-dot legend-patrol"></i>PATROL TRACK</span>
--      <span><i class="legend-dot legend-los"></i>LIVE LOS</span>
--    </div>
--  </div>
--  <div class="detection-wrap" aria-label="Detection meter">
--    <span class="meter-label">DETECTION</span>
--    <div class="detection-meter"><span id="gs-detection-fill"></span></div>
--    <span class="meter-ticks"><i id="gs-tick-suspicious"></i><i id="gs-tick-alert"></i></span>
--  </div>
--  <div class="lift-progress is-hidden" id="gs-lift">
--    <span id="gs-lift-label">LIFTING</span>
--    <div class="lift-bar"><span id="gs-lift-fill"></span></div>
--  </div>
--  <div class="result-card is-hidden" id="gs-result" data-testid="gallery-shift-result">
--    <h2 id="gs-result-title">Caught</h2>
--    <p id="gs-result-detail"></p>
--    <div class="action-row"><button id="gs-retry-button" type="button">Retry floor</button></div>
--  </div>
- `);
--
--ui.html("#panel", `
--  <section class="gs-brand">
--    <p class="eyebrow">Aura3D Prototype</p>
--    <h1>Gallery Shift</h1>
--    <p class="blurb">Night shift at a private gallery. Lift three exhibits across two floors, dodge the patrols, then escape through the alarm return route.</p>
--  </section>
--  <section class="stat-grid" aria-label="Heist status">
--    <article><span>Floor</span><strong id="stat-floor">1 - Marble Hall</strong></article>
--    <article><span>Exhibits</span><strong id="stat-exhibits">0 OF 3</strong></article>
--    <article><span>Score</span><strong id="stat-score">0</strong></article>
--    <article><span>Ghost</span><strong id="stat-ghost">CLEAN</strong></article>
--    <article><span>Gait</span><strong id="stat-gait">WALK</strong></article>
--    <article><span>Exit</span><strong id="stat-exit">SEALED</strong></article>
--  </section>
--  <section class="guard-list" aria-label="Guard status">
--    <p class="section-label">Patrols</p>
--    <div id="gs-guard-rows"></div>
--  </section>
--  <ul class="controls-list" aria-label="Keyboard controls">
--    <li>Move <b>WASD</b> / arrows</li>
--    <li>Sneak <b>Shift</b> (toggle) - silent</li>
--    <li>Sprint <b>hold X</b> - loud</li>
--    <li>Lift exhibit <b>hold E</b> at a pedestal</li>
--    <li>Restart floor <b>R</b> - Pause <b>P</b></li>
--  </ul>
--  <section class="action-row" aria-label="Touch controls">
--    <button id="gs-up-button" type="button">Up</button>
--    <button id="gs-down-button" type="button">Down</button>
--    <button id="gs-left-button" type="button">Left</button>
--    <button id="gs-right-button" type="button">Right</button>
--    <button id="gs-sneak-button" type="button">Sneak</button>
--    <button id="gs-lift-button" type="button">Hold to lift</button>
--    <button id="gs-restart-button" type="button">Restart</button>
--    <button id="gs-pause-button" type="button">Pause</button>
--  </section>
- `);
--
--// ---------------------------------------------------------------- audio ------
- const audio = createHeistAudio();
- let ambientStarted = false;
- window.addEventListener("pointerdown", () => {
-@@ -374,7 +247,6 @@ window.addEventListener("keydown", () => {
+@@ -374,7 +333,6 @@ window.addEventListener("keydown", () => {
      }
    }).catch(() => undefined);
  }, { passive: true });
@@ -1836,7 +1731,7 @@ index de16cd62a..6b33ea720 100644
  const audioCueLog: string[] = [];
  const lastCueFrame = new Map<string, number>();
  function pushCue(cue: HeistAudioCue): void {
-@@ -388,10 +260,7 @@ function cueReady(name: string, gapFrames: number): boolean {
+@@ -388,10 +346,7 @@ function cueReady(name: string, gapFrames: number): boolean {
    lastCueFrame.set(name, frameCount);
    return true;
  }
@@ -1847,7 +1742,7 @@ index de16cd62a..6b33ea720 100644
  interface FloorRuntime {
    readonly layout: FloorLayout;
    readonly world: FloorWorld;
-@@ -406,11 +275,9 @@ interface FloorRuntime {
+@@ -406,11 +361,9 @@ interface FloorRuntime {
    floorScore: number;
    lastSeen: Vec2 | null;
  }
@@ -1859,7 +1754,7 @@ index de16cd62a..6b33ea720 100644
  let frameCount = 0;
  let totalScore = 0;
  let completedBeforeFloor = 0;
-@@ -418,19 +285,14 @@ let alarmActive = false;
+@@ -418,19 +371,14 @@ let alarmActive = false;
  let alarmGraceRemaining = 0;
  let bootWarmupScheduled = false;
  let sensorEventCount = 0;
@@ -1879,7 +1774,7 @@ index de16cd62a..6b33ea720 100644
  function buildFloorRuntime(index: number): FloorRuntime {
    const layout = FLOOR_LAYOUTS[index] ?? FLOOR_LAYOUTS[0]!;
    const world = createFloorWorld(layout);
-@@ -451,9 +313,7 @@ function buildFloorRuntime(index: number): FloorRuntime {
+@@ -451,9 +399,7 @@ function buildFloorRuntime(index: number): FloorRuntime {
      lastSeen: null
    };
  }
@@ -1889,7 +1784,7 @@ index de16cd62a..6b33ea720 100644
  function restartFloor(): void {
    runtime = buildFloorRuntime(floorIndex);
    alarmActive = false;
-@@ -467,7 +327,6 @@ function restartFloor(): void {
+@@ -467,7 +413,6 @@ function restartFloor(): void {
    syncHud();
    publishEvidence();
  }
@@ -1897,7 +1792,7 @@ index de16cd62a..6b33ea720 100644
  function resetMission(): void {
    floorIndex = 0;
    completedBeforeFloor = 0;
-@@ -484,7 +343,6 @@ function resetMission(): void {
+@@ -484,7 +429,6 @@ function resetMission(): void {
    syncHud();
    publishEvidence();
  }
@@ -1905,7 +1800,7 @@ index de16cd62a..6b33ea720 100644
  function floorClearAdvance(): void {
    const cleared = runtime;
    const timeBonus = Math.max(0, Math.round(1500 - 6 * cleared.timeInFloor));
-@@ -510,8 +368,6 @@ function floorClearAdvance(): void {
+@@ -510,8 +454,6 @@ function floorClearAdvance(): void {
    syncHud();
    publishEvidence();
  }
@@ -1914,7 +1809,7 @@ index de16cd62a..6b33ea720 100644
  function guardCharacterNodes(): AuraSceneNode[] {
    return runtime.layout.guards.flatMap((spawn) => {
      const archivePatrol = spawn.id === "guard-1";
-@@ -578,7 +434,6 @@ function guardCharacterNodes(): AuraSceneNode[] {
+@@ -578,7 +520,6 @@ function guardCharacterNodes(): AuraSceneNode[] {
      return nodes;
    });
  }
@@ -1922,7 +1817,7 @@ index de16cd62a..6b33ea720 100644
  function pedestalAndExhibitNodes(): AuraSceneNode[] {
    const nodes: AuraSceneNode[] = [];
    // FloorLayout owns exactly three mission pedestals (p1/p2 on floor 1 and
-@@ -613,7 +468,6 @@ function pedestalAndExhibitNodes(): AuraSceneNode[] {
+@@ -613,7 +554,6 @@ function pedestalAndExhibitNodes(): AuraSceneNode[] {
    }
    return nodes;
  }
@@ -1930,7 +1825,7 @@ index de16cd62a..6b33ea720 100644
  function floor1CoverNodes(): AuraSceneNode[] {
    return FLOOR_LAYOUTS[0]!.cases.map((displayCase) =>
      model(assets.galleryShiftDisplayCase, {
-@@ -629,14 +483,6 @@ function floor1CoverNodes(): AuraSceneNode[] {
+@@ -629,14 +569,6 @@ function floor1CoverNodes(): AuraSceneNode[] {
        .toJSON()
    );
  }
@@ -1945,7 +1840,7 @@ index de16cd62a..6b33ea720 100644
  const GALLERY_SUITE_DISPLAY_SPECS: readonly {
    readonly id: string;
    readonly x: number;
-@@ -657,7 +503,6 @@ const GALLERY_SUITE_DISPLAY_NODE_NAMES = GALLERY_SUITE_DISPLAY_SPECS.flatMap(({
+@@ -657,7 +589,6 @@ const GALLERY_SUITE_DISPLAY_NODE_NAMES = GALLERY_SUITE_DISPLAY_SPECS.flatMap(({
    `suite-case-${id}`,
    `suite-exhibit-${id}`
  ]);
@@ -1953,7 +1848,7 @@ index de16cd62a..6b33ea720 100644
  function museumDisplaySuiteNodes(): AuraSceneNode[] {
    return GALLERY_SUITE_DISPLAY_SPECS.flatMap((display) => [
      model(assets.galleryShiftDisplayCase, {
-@@ -684,7 +529,6 @@ function museumDisplaySuiteNodes(): AuraSceneNode[] {
+@@ -684,7 +615,6 @@ function museumDisplaySuiteNodes(): AuraSceneNode[] {
        .toJSON()
    ]);
  }
@@ -1961,7 +1856,7 @@ index de16cd62a..6b33ea720 100644
  function floor2WallNodes(): AuraSceneNode[] {
    const marble = material.pbr({ name: "floor-2 marble", color: "#232a38", roughness: 0.55, metallic: 0.08 });
    const nodes: AuraSceneNode[] = [
-@@ -748,7 +592,6 @@ function floor2WallNodes(): AuraSceneNode[] {
+@@ -748,7 +678,6 @@ function floor2WallNodes(): AuraSceneNode[] {
    }
    return nodes;
  }
@@ -1969,7 +1864,7 @@ index de16cd62a..6b33ea720 100644
  function lightPoolNodes(): AuraSceneNode[] {
    // These are authored gameplay-zone markers, not a physical lighting claim.
    // Keep the same nodes in normal play and review captures so transparency
-@@ -778,7 +621,6 @@ function lightPoolNodes(): AuraSceneNode[] {
+@@ -778,7 +707,6 @@ function lightPoolNodes(): AuraSceneNode[] {
    }
    return nodes;
  }
@@ -1977,7 +1872,7 @@ index de16cd62a..6b33ea720 100644
  function exitNodes(): AuraSceneNode[] {
    return [
      primitives.box({
-@@ -798,7 +640,6 @@ function exitNodes(): AuraSceneNode[] {
+@@ -798,7 +726,6 @@ function exitNodes(): AuraSceneNode[] {
        .toJSON()
    ];
  }
@@ -1985,7 +1880,7 @@ index de16cd62a..6b33ea720 100644
  function threatFeedbackNodes(): AuraSceneNode[] {
    const wedgeMaterial = material.emissive({ name: "release real LOS alert wedge", color: "#7d173c", emissive: "#ff477b", emissiveIntensity: 1.9, opacity: 0.8 });
    const beamMaterial = material.emissive({ name: "release real LOS center beam", color: "#c43765", emissive: "#ffd0dc", emissiveIntensity: 2.35, opacity: 0.99 });
-@@ -841,12 +682,6 @@ function threatFeedbackNodes(): AuraSceneNode[] {
+@@ -841,12 +768,6 @@ function threatFeedbackNodes(): AuraSceneNode[] {
        .toJSON()
    ]);
  }
@@ -1998,7 +1893,7 @@ index de16cd62a..6b33ea720 100644
  function liveHierarchyNodes(): AuraSceneNode[] {
    const nodes: AuraSceneNode[] = [
      text3D("PLAYER", { name: "live-player-label", size: 0.42, depth: 0.05, letterSpacing: 0.03, material: LIVE_PLAYER_MATERIAL, backend: "sdf" })
-@@ -893,7 +728,6 @@ function liveHierarchyNodes(): AuraSceneNode[] {
+@@ -893,7 +814,6 @@ function liveHierarchyNodes(): AuraSceneNode[] {
    }
    return nodes;
  }
@@ -2006,7 +1901,7 @@ index de16cd62a..6b33ea720 100644
  function debugOverlayNodes(): AuraSceneNode[] {
    if (!showDebugOverlay) return [];
    const nodes: AuraSceneNode[] = [];
-@@ -933,7 +767,6 @@ function debugOverlayNodes(): AuraSceneNode[] {
+@@ -933,7 +853,6 @@ function debugOverlayNodes(): AuraSceneNode[] {
    }
    return nodes;
  }
@@ -2014,7 +1909,7 @@ index de16cd62a..6b33ea720 100644
  function meshyThiefCandidateNodes(): AuraSceneNode[] {
    // Meshy candidate museum thief (galleryThief, quality: candidate).
    // Review-composition only: one grounded identity study beside the thief
-@@ -959,7 +792,6 @@ function meshyThiefCandidateNodes(): AuraSceneNode[] {
+@@ -959,7 +878,6 @@ function meshyThiefCandidateNodes(): AuraSceneNode[] {
        .toJSON()
    ];
  }
@@ -2022,7 +1917,7 @@ index de16cd62a..6b33ea720 100644
  function buildScene(): ReturnType<typeof scene> {
    return scene()
      .background("#05070d")
-@@ -1115,8 +947,6 @@ function buildScene(): ReturnType<typeof scene> {
+@@ -1115,8 +1033,6 @@ function buildScene(): ReturnType<typeof scene> {
        target: [0, 0.6, -0.6],
        fov: 43}));
  }
@@ -2031,45 +1926,15 @@ index de16cd62a..6b33ea720 100644
  const galleryGame = createGame({
    id: "showcase-gallery-shift",
    target: "#app",
-@@ -1154,7 +984,6 @@ const galleryGame = createGame({
- const app = galleryGame.runtime;
+@@ -1154,7 +1070,6 @@ const galleryGame = createGame({
+ const app = galleryGame.app;
  galleryGame.start();
  const input = galleryGame.input!;
 -bindGalleryEvidence(() => collectGalleryEvidence());
  const galleryTween = createTweenEngine();
  const galleryFx = createFxParticlePass(app.effects);
  const galleryJuice = createJuice<"guard-alert" | "alert-rise" | "lift" | "drop" | "win" | "caught" | "camera-whir" | "artifact">({
-@@ -1175,29 +1004,13 @@ const galleryJuice = createJuice<"guard-alert" | "alert-rise" | "lift" | "drop"
-   tweens: galleryTween,
-   rumble: createRumbleDriver()
- });
--bindGalleryDrive({
--  pumpFrames: (n) => {
--    const bounded = Math.max(0, Math.min(30000, Math.floor(n)));
--    app.pause();
--    for (let i = 0; i < bounded; i += 1) app.advance(1 / 60);
--    app.resume();
--  },
--  teleport: (x, z) => galleryWindow.__GS_TELEPORT__?.(x, z)
--});
- if (!input) throw new Error("Gallery Shift failed to create Aura3D input.");
--
--// ------------------------------------------------------ animation controllers -
- const thiefAnimation = new AnimationController<string>({
-   id: "thief-animation",
-   clipRegistry: assets.showcaseRunnerGirl as unknown as AuraAnimationAssetLike,
-   requiredClips: [THIEF_CLIPS.idle, THIEF_CLIPS.walk, THIEF_CLIPS.sneak, THIEF_CLIPS.sprint, THIEF_CLIPS.lift, THIEF_CLIPS.carry],
-   suppressRootMotion: true
- });
--// Guard-1 is the typed Robotcand security shell and carries no embedded
--// locomotion clips; its patrol is the route-local authored transform. Guard-2
--// is the expressive humanoid sentry and owns the real Idle/Walking/Running
--// clips. Keep the controller slot so guard IDs stay stable in evidence without
--// claiming animation metadata that Robotcand does not contain.
- const guardAnimations: Array<AnimationController<string> | null> = [
-   null,
-   new AnimationController<string>({
-@@ -1207,7 +1020,6 @@ const guardAnimations: Array<AnimationController<string> | null> = [
+@@ -1207,7 +1122,6 @@ const guardAnimations: Array<AnimationController<string> | null> = [
      suppressRootMotion: true
    })
  ];
@@ -2077,7 +1942,7 @@ index de16cd62a..6b33ea720 100644
  const thiefNodeHandle = app.nodes.get("thief") as AuraRuntimeNodeHandle | undefined;
  if (thiefNodeHandle) thiefAnimation.bindRuntimeNode(thiefNodeHandle, { id: "thief-runtime-animation", defaultClipId: THIEF_CLIPS.idle });
  const guardNodeHandles = new Map<string, AuraRuntimeNodeHandle>();
-@@ -1221,7 +1033,6 @@ guardAnimations.forEach((controller, index) => {
+@@ -1221,7 +1135,6 @@ guardAnimations.forEach((controller, index) => {
    const handle = guardNodeHandles.get(id);
    if (handle) controller.bindRuntimeNode(handle, { id: `${id}-runtime-animation`, defaultClipId: GUARD_CLIPS.idle });
  });
@@ -2085,7 +1950,7 @@ index de16cd62a..6b33ea720 100644
  let thiefClipActive: string | null = null;
  function playThiefClip(clip: string): void {
    if (thiefClipActive === clip) return;
-@@ -1232,7 +1043,6 @@ function playThiefClip(clip: string): void {
+@@ -1232,7 +1145,6 @@ function playThiefClip(clip: string): void {
      // Diagnostics surface registration issues; never break the frame loop.
    }
  }
@@ -2093,7 +1958,7 @@ index de16cd62a..6b33ea720 100644
  const guardClipActive = new Map<string, string>();
  function playGuardClip(guardId: string, controllerIndex: number, clip: string): void {
    const controller = guardAnimations[controllerIndex];
-@@ -1245,8 +1055,6 @@ function playGuardClip(guardId: string, controllerIndex: number, clip: string):
+@@ -1245,8 +1157,6 @@ function playGuardClip(guardId: string, controllerIndex: number, clip: string):
      // See above.
    }
  }
@@ -2102,7 +1967,7 @@ index de16cd62a..6b33ea720 100644
  const banner = document.getElementById("gs-banner")!;
  const reviewBrief = document.getElementById("gs-brief")!;
  const routeState = document.getElementById("gs-route-state")!;
-@@ -1263,7 +1071,6 @@ const liftLabel = document.getElementById("gs-lift-label")!;
+@@ -1263,7 +1173,6 @@ const liftLabel = document.getElementById("gs-lift-label")!;
  const resultCard = document.getElementById("gs-result")!;
  const resultTitle = document.getElementById("gs-result-title")!;
  const resultDetail = document.getElementById("gs-result-detail")!;
@@ -2110,7 +1975,7 @@ index de16cd62a..6b33ea720 100644
  function hideResultCard(): void {
    resultCard.classList.add("is-hidden");
  }
-@@ -1272,7 +1079,6 @@ function showResult(title: string, detail: string): void {
+@@ -1272,7 +1181,6 @@ function showResult(title: string, detail: string): void {
    resultDetail.textContent = detail;
    resultCard.classList.remove("is-hidden");
  }
@@ -2118,7 +1983,7 @@ index de16cd62a..6b33ea720 100644
  function guardRowsMarkup(): string {
    return runtime.guards
      .map((guard) => {
-@@ -1284,7 +1090,6 @@ function guardRowsMarkup(): string {
+@@ -1284,7 +1192,6 @@ function guardRowsMarkup(): string {
      })
      .join("");
  }
@@ -2126,7 +1991,7 @@ index de16cd62a..6b33ea720 100644
  function syncHud(): void {
    const snap = runtime.thief.snapshot();
    ui.setText("#stat-floor", `${runtime.layout.id} - ${runtime.layout.name}`);
-@@ -2085,3 +1890,4 @@ syncAlarmVisuals();
+@@ -2085,3 +1992,4 @@ syncAlarmVisuals();
  syncLiveHierarchy();
  syncHud();
  publishEvidence();
