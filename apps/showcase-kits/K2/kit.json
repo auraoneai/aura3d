@@ -1,0 +1,33 @@
+{
+  "$schema": "../kit.schema.json",
+  "schemaVersion": 1,
+  "kit": "K2",
+  "name": "Neon-night kit",
+  "consumers": [
+    "aura-clash-showcase",
+    "showcase-courier-rush",
+    "showcase-neon-swarm",
+    "showcase-rooftop-buckets",
+    "showcase-pulse-tunnel",
+    "showcase-vault-breakers"
+  ],
+  "budget": {
+    "summary": "<= 25 MB raw -> <= 8 MB KTX2",
+    "maxBytesRaw": 25000000,
+    "maxBytesShipped": 8000000
+  },
+  "contents": [
+    "wet asphalt + puddle mask PBR (2k tiling)",
+    "emissive window-atlas buildings (4 variants, instanced)",
+    "signage atlas",
+    "street props (bollard, lamp <= 5k tris, AC unit)",
+    "rain/steam flipbooks"
+  ],
+  "lookdev": {
+    "runId": null,
+    "reviewer": null,
+    "verdict": "pending"
+  },
+  "files": [],
+  "notes": "Scaffold: no candidate files staged yet. Verdict stays pending until files are staged and a human reviewer accepts them on the three r185 look-dev pane."
+}

@@ -1,0 +1,10 @@
+{
+  "name": "@aura3d/showcase-kits",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "PRD-14 shared kit staging (K1-K9 manifests) and the internal three r185 + Aura look-dev page. Never deployed.",
+  "dependencies": {
+    "three": "0.185.1"
+  }
+}

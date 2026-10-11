@@ -1,0 +1,912 @@
+{
+  "schemaVersion": 1,
+  "kit": "K8",
+  "name": "SFX core",
+  "loudness": {
+    "targetIntegratedLufs": -16,
+    "tool": "ffmpeg -af ebur128",
+    "measuredOn": null,
+    "runId": null
+  },
+  "samples": [
+    {
+      "id": "kenney-hit",
+      "path": "apps/aura-clash-showcase/public/aura-assets/auraClashHitSfx.b33a8f14.ogg",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "licence": "CC0-1.0",
+      "author": "Kenney",
+      "provenance": "sample",
+      "sha256": "b33a8f14068aec24ec69ba85e5e87fdc41228975f6a1a3e44a6e7d6fc3d9f8d8",
+      "bytes": 11617,
+      "loudness": {
+        "integratedLufs": null,
+        "truePeakDbtp": null,
+        "runId": null
+      }
+    },
+    {
+      "id": "kenney-guard",
+      "path": "apps/aura-clash-showcase/public/aura-assets/auraClashGuardSfx.a96f879f.ogg",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "licence": "CC0-1.0",
+      "author": "Kenney",
+      "provenance": "sample",
+      "sha256": "a96f879fec0864a8938e0c745b6996a6c5679c16a234ce31a01cc995e8401003",
+      "bytes": 7117,
+      "loudness": {
+        "integratedLufs": null,
+        "truePeakDbtp": null,
+        "runId": null
+      }
+    },
+    {
+      "id": "kenney-jump",
+      "path": "apps/aura-clash-showcase/public/aura-assets/auraClashJumpSfx.0fdc474d.ogg",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "licence": "CC0-1.0",
+      "author": "Kenney",
+      "provenance": "sample",
+      "sha256": "0fdc474d93f209debf1fc4ea77765a669dcb7676db31b4d8a0a509685bccf374",
+      "bytes": 201216,
+      "loudness": {
+        "integratedLufs": null,
+        "truePeakDbtp": null,
+        "runId": null
+      }
+    },
+    {
+      "id": "kenney-dash",
+      "path": "apps/aura-clash-showcase/public/aura-assets/auraClashDashSfx.72b589ea.ogg",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "licence": "CC0-1.0",
+      "author": "Kenney",
+      "provenance": "sample",
+      "sha256": "72b589eadd41781257ac859e4f4d030222e623390e4a1a83f6d05329a6e026f1",
+      "bytes": 7286,
+      "loudness": {
+        "integratedLufs": null,
+        "truePeakDbtp": null,
+        "runId": null
+      }
+    },
+    {
+      "id": "kenney-special",
+      "path": "apps/aura-clash-showcase/public/aura-assets/auraClashSpecialSfx.a56d9579.ogg",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "licence": "CC0-1.0",
+      "author": "Kenney",
+      "provenance": "sample",
+      "sha256": "a56d95794cd732d6c2d66ce488c14cf557fe526c282897c9a77675c2bd9b77e6",
+      "bytes": 25566,
+      "loudness": {
+        "integratedLufs": null,
+        "truePeakDbtp": null,
+        "runId": null
+      }
+    },
+    {
+      "id": "kenney-ko",
+      "path": "apps/aura-clash-showcase/public/aura-assets/auraClashKoSfx.3cb48d86.ogg",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "licence": "CC0-1.0",
+      "author": "Kenney",
+      "provenance": "sample",
+      "sha256": "3cb48d86dab63140cfb9aaeea4d4a6846abaca5831d157d8adbec0490da26343",
+      "bytes": 14317,
+      "loudness": {
+        "integratedLufs": null,
+        "truePeakDbtp": null,
+        "runId": null
+      }
+    },
+    {
+      "id": "kenney-ui-confirm",
+      "path": "apps/aura-clash-showcase/public/aura-assets/auraClashUiConfirmSfx.06356470.ogg",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "licence": "CC0-1.0",
+      "author": "Kenney",
+      "provenance": "sample",
+      "sha256": "063564703b6094d70718a3e787a55cc9141611e4ecd6b6637f8828f79b4a8c3a",
+      "bytes": 8968,
+      "loudness": {
+        "integratedLufs": null,
+        "truePeakDbtp": null,
+        "runId": null
+      }
+    },
+    {
+      "id": "kenney-ui-toggle",
+      "path": "apps/aura-clash-showcase/public/aura-assets/auraClashUiToggleSfx.ca1d2dde.ogg",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "licence": "CC0-1.0",
+      "author": "Kenney",
+      "provenance": "sample",
+      "sha256": "ca1d2dde5f0b286abac4f070e23edab8f30927c8a533665cdf2ac6492a415e49",
+      "bytes": 7369,
+      "loudness": {
+        "integratedLufs": null,
+        "truePeakDbtp": null,
+        "runId": null
+      }
+    },
+    {
+      "id": "kenney-denied",
+      "path": "apps/aura-clash-showcase/public/aura-assets/auraClashDeniedSfx.46e67425.ogg",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "licence": "CC0-1.0",
+      "author": "Kenney",
+      "provenance": "sample",
+      "sha256": "46e67425d16339772e8d328fb36a49426c9467418686e11beeb71ff84b0f6433",
+      "bytes": 7373,
+      "loudness": {
+        "integratedLufs": null,
+        "truePeakDbtp": null,
+        "runId": null
+      }
+    },
+    {
+      "id": "kenney-win",
+      "path": "apps/aura-clash-showcase/public/aura-assets/auraClashWinSfx.568967a3.ogg",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "licence": "CC0-1.0",
+      "author": "Kenney",
+      "provenance": "sample",
+      "sha256": "568967a3d9f8a8f6af54ea01729c4882284308f2a27d78c07ffd7ee0d6951661",
+      "bytes": 12391,
+      "loudness": {
+        "integratedLufs": null,
+        "truePeakDbtp": null,
+        "runId": null
+      }
+    },
+    {
+      "id": "kenney-draw",
+      "path": "apps/aura-clash-showcase/public/aura-assets/auraClashDrawSfx.d21d0f0b.ogg",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "licence": "CC0-1.0",
+      "author": "Kenney",
+      "provenance": "sample",
+      "sha256": "d21d0f0b782445db579d11e2506b24cd1ac9d664ee33aeaf807761aa7b6fd710",
+      "bytes": 4848,
+      "loudness": {
+        "integratedLufs": null,
+        "truePeakDbtp": null,
+        "runId": null
+      }
+    }
+  ],
+  "cues": [
+    {
+      "appDir": "aura-clash-showcase",
+      "event": "hit",
+      "cue": "kenney-hit",
+      "variants": 6,
+      "samples": [
+        "kenney-hit",
+        "kenney-guard"
+      ],
+      "status": "partial"
+    },
+    {
+      "appDir": "aura-clash-showcase",
+      "event": "whoosh",
+      "cue": "move-whoosh",
+      "variants": 3,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "aura-clash-showcase",
+      "event": "announcer",
+      "cue": "round-fight-ko",
+      "variants": 3,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "aura-clash-showcase",
+      "event": "bed",
+      "cue": "crowd-bed",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "aura-clash-showcase",
+      "event": "music",
+      "cue": "clash-music",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-aurora-lander",
+      "event": "throttle",
+      "cue": "thruster-rpm",
+      "variants": 3,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-aurora-lander",
+      "event": "wind",
+      "cue": "high-altitude-wind-bed",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-aurora-lander",
+      "event": "touchdown",
+      "cue": "landing-thud",
+      "variants": 3,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-aurora-lander",
+      "event": "crash",
+      "cue": "hull-crunch",
+      "variants": 2,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-aurora-lander",
+      "event": "success",
+      "cue": "pad-stinger",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-bank-shot",
+      "event": "ball-impact",
+      "cue": "billiard-clack",
+      "variants": 3,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-bank-shot",
+      "event": "cushion",
+      "cue": "cushion",
+      "variants": 2,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-bank-shot",
+      "event": "pocket",
+      "cue": "pocket",
+      "variants": 2,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-bank-shot",
+      "event": "cue-strike",
+      "cue": "cue-strike",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-bank-shot",
+      "event": "bed",
+      "cue": "room-tone",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-blockfall-reactor",
+      "event": "tile-lock",
+      "cue": "block-lock-thud",
+      "variants": 3,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-blockfall-reactor",
+      "event": "line-clear",
+      "cue": "clear-sweep",
+      "variants": 3,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-blockfall-reactor",
+      "event": "quad-clear",
+      "cue": "quad-detonation",
+      "variants": 2,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-blockfall-reactor",
+      "event": "level-up",
+      "cue": "level-fanfare",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-blockfall-reactor",
+      "event": "reactor-hum",
+      "cue": "arcade-ambience-bed",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-courier-rush",
+      "event": "engine",
+      "cue": "van-engine-loop",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-courier-rush",
+      "event": "skid",
+      "cue": "wet-skid",
+      "variants": 3,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-courier-rush",
+      "event": "horn",
+      "cue": "city-horn",
+      "variants": 2,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-courier-rush",
+      "event": "pickup",
+      "cue": "pickup-chime",
+      "variants": 2,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-courier-rush",
+      "event": "bed",
+      "cue": "rain-city-bed",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-deep-recovery",
+      "event": "thruster",
+      "cue": "prop-wash",
+      "variants": 2,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-deep-recovery",
+      "event": "sonar",
+      "cue": "sonar-ping-return",
+      "variants": 2,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-deep-recovery",
+      "event": "grapple",
+      "cue": "grapple-clamp",
+      "variants": 2,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-deep-recovery",
+      "event": "lift",
+      "cue": "winch-strain",
+      "variants": 2,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-deep-recovery",
+      "event": "bed",
+      "cue": "abyss-drone-bed",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-gallery-shift",
+      "event": "footstep-marble",
+      "cue": "steps-marble",
+      "variants": 6,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-gallery-shift",
+      "event": "footstep-wood",
+      "cue": "steps-wood",
+      "variants": 6,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-gallery-shift",
+      "event": "guard-bark",
+      "cue": "radio-bark",
+      "variants": 4,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-gallery-shift",
+      "event": "alarm",
+      "cue": "gallery-alarm",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-gallery-shift",
+      "event": "tension-layer",
+      "cue": "heist-tension",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-gravity-post",
+      "event": "launch",
+      "cue": "slingshot-release",
+      "variants": 2,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-gravity-post",
+      "event": "thrust",
+      "cue": "thruster-loop",
+      "variants": 2,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-gravity-post",
+      "event": "dock",
+      "cue": "dock-clamp",
+      "variants": 2,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-gravity-post",
+      "event": "delivered",
+      "cue": "delivery-stinger",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-gravity-post",
+      "event": "bed",
+      "cue": "space-hum",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-mech-hangar",
+      "event": "metal-impact",
+      "cue": "mech-hit-metal",
+      "variants": 5,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-mech-hangar",
+      "event": "servo",
+      "cue": "mech-servo",
+      "variants": 4,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-mech-hangar",
+      "event": "footstep",
+      "cue": "mech-footstep-thud",
+      "variants": 4,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-mech-hangar",
+      "event": "hangar-bed",
+      "cue": "hangar-ambience",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-mech-hangar",
+      "event": "pit-music",
+      "cue": "pit-fight-loop",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-neon-swarm",
+      "event": "fire",
+      "cue": "energy-fire",
+      "variants": 4,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-neon-swarm",
+      "event": "hit",
+      "cue": "drone-hit",
+      "variants": 4,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-neon-swarm",
+      "event": "explosion",
+      "cue": "drone-explode",
+      "variants": 3,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-neon-swarm",
+      "event": "pickup",
+      "cue": "energy-pickup",
+      "variants": 2,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-neon-swarm",
+      "event": "bed",
+      "cue": "neon-night-bed",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-orbital-defense",
+      "event": "fire",
+      "cue": "laser",
+      "variants": 3,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-orbital-defense",
+      "event": "explosion",
+      "cue": "explosion",
+      "variants": 3,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-orbital-defense",
+      "event": "shield",
+      "cue": "shield-hit",
+      "variants": 2,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-orbital-defense",
+      "event": "bed",
+      "cue": "space-hum",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-orbital-defense",
+      "event": "music",
+      "cue": "orbital-music",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-patrol-wing",
+      "event": "engine-rpm",
+      "cue": "prop-plane-rpm",
+      "variants": 3,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-patrol-wing",
+      "event": "wind-speed",
+      "cue": "airspeed-wind-bed",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-patrol-wing",
+      "event": "gunfire",
+      "cue": "cannon-burst",
+      "variants": 3,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-patrol-wing",
+      "event": "drone-destroyed",
+      "cue": "air-burst",
+      "variants": 2,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-patrol-wing",
+      "event": "ring-clear",
+      "cue": "gate-chime",
+      "variants": 2,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-pulse-tunnel",
+      "event": "perfect",
+      "cue": "pulse-perfect",
+      "variants": 2,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-pulse-tunnel",
+      "event": "graze",
+      "cue": "pulse-graze",
+      "variants": 2,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-pulse-tunnel",
+      "event": "hit",
+      "cue": "pulse-hit",
+      "variants": 2,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-pulse-tunnel",
+      "event": "music",
+      "cue": "pulse-track-stems",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-pulse-tunnel",
+      "event": "bed",
+      "cue": "tunnel-wind-bed",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-rooftop-buckets",
+      "event": "bounce",
+      "cue": "ball-bounce-court",
+      "variants": 4,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-rooftop-buckets",
+      "event": "rim",
+      "cue": "rim-hit",
+      "variants": 3,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-rooftop-buckets",
+      "event": "swish",
+      "cue": "net-swish",
+      "variants": 2,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-rooftop-buckets",
+      "event": "crowd",
+      "cue": "crowd-swell",
+      "variants": 2,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-rooftop-buckets",
+      "event": "bed",
+      "cue": "city-dusk-bed",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-siege-golf",
+      "event": "launch",
+      "cue": "trebuchet-launch",
+      "variants": 2,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-siege-golf",
+      "event": "bounce",
+      "cue": "stone-bounce",
+      "variants": 4,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-siege-golf",
+      "event": "break",
+      "cue": "wood-splinter",
+      "variants": 4,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-siege-golf",
+      "event": "hole",
+      "cue": "hole-clear-stinger",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-siege-golf",
+      "event": "bed",
+      "cue": "valley-wind-bed",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-skyline-runner",
+      "event": "footstep",
+      "cue": "snow-metal-steps",
+      "variants": 6,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-skyline-runner",
+      "event": "jump",
+      "cue": "runner-jump",
+      "variants": 3,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-skyline-runner",
+      "event": "land",
+      "cue": "runner-land",
+      "variants": 3,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-skyline-runner",
+      "event": "pickup",
+      "cue": "shard-pickup",
+      "variants": 3,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-skyline-runner",
+      "event": "act-ambience",
+      "cue": "winter-wind-bed",
+      "variants": 5,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-turbo-drift-circuit",
+      "event": "engine",
+      "cue": "car-sport-rpm",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-turbo-drift-circuit",
+      "event": "skid",
+      "cue": "skid-loop",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-turbo-drift-circuit",
+      "event": "wind",
+      "cue": "speed-wind",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-turbo-drift-circuit",
+      "event": "bed",
+      "cue": "crowd-bed",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-turbo-drift-circuit",
+      "event": "music",
+      "cue": "turbo-music",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-vault-breakers",
+      "event": "flipper",
+      "cue": "pinball-flipper",
+      "variants": 3,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-vault-breakers",
+      "event": "bumper",
+      "cue": "pinball-bumper",
+      "variants": 4,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-vault-breakers",
+      "event": "plunger",
+      "cue": "pinball-plunger",
+      "variants": 2,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-vault-breakers",
+      "event": "ball-roll",
+      "cue": "rubber-ball-loop",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-vault-breakers",
+      "event": "mission",
+      "cue": "vault-stinger",
+      "variants": 3,
+      "samples": [],
+      "status": "unsourced"
+    },
+    {
+      "appDir": "showcase-vault-breakers",
+      "event": "bed",
+      "cue": "arcade-ambience",
+      "variants": 1,
+      "samples": [],
+      "status": "unsourced"
+    }
+  ],
+  "notes": "Until PRD 09's assets/packs/game-sfx-core/ (C-25) lands, cues reference licensed samples as C-25 AudioAssetRef with provenance \"sample\". The 11 Kenney samples Aura Clash already ships are referenced in place. Measured loudness stays null until the remote ebur128 run records values."
+}

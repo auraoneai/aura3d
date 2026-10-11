@@ -83,8 +83,11 @@ jobs:
           # CI-1: no shallow re-fetch — it broke "$BASE...HEAD" merge-base
           # resolution and silently emptied DIRS, skipping static+capture.
           set -o pipefail
-          DIRS="$(git diff --name-only "$BASE"...HEAD -- 'apps/' | cut -d/ -f2 | sort -u | paste -sd, -)"
-          APPS_TOUCHED="$(git diff --name-only "$BASE"...HEAD -- 'apps/' | wc -l)"
+          # 14-KITS: apps/showcase-kits is kit staging + the internal look-dev
+          # page, not a route (no route-health.json, not in games.json); its
+          # manifests are gated by tests/qr/prd14/unit/kits.test.ts in `unit`.
+          DIRS="$(git diff --name-only "$BASE"...HEAD -- 'apps/' ':(exclude)apps/showcase-kits/**' | cut -d/ -f2 | sort -u | paste -sd, -)"
+          APPS_TOUCHED="$(git diff --name-only "$BASE"...HEAD -- 'apps/' ':(exclude)apps/showcase-kits/**' | wc -l)"
           if [ -n "${GAMES_INPUT:-}" ]; then DIRS="${GAMES_INPUT}"; fi
           # 14-CI: the nightly run covers all 18 routes so every job executes
           # on main even when the last commit touched no app.
