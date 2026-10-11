@@ -109,20 +109,30 @@ jobs:
 
   capture:
     # T1.14 / 10-CI / P-04 + T0-33 evidence: the prd10 scenes (plus base
-    # controls 09/17) are captured on GitHub macos-14 under `none` and `world`
-    # with --strict, then every scene must be `ready`, draw, and report no
-    # error in BOTH arms. GitLab capture moved to `capture-gitlab`
-    # (workflow_dispatch only) after the GitLab quota ran out; frames from
-    # this job are only compared with other GitHub macos-14 runs.
+    # controls 09/17) are captured under `none` and `world` with --strict
+    # (software rasterizers fail), then every scene must be `ready`, draw, and
+    # report no error in BOTH arms. Two GPU legs: GitHub macos-14 (ANGLE Metal)
+    # and the self-hosted Azure L4 (ANGLE Vulkan). Frames are compared only
+    # within one leg. GitLab capture is `capture-gitlab` (workflow_dispatch).
     # A qr/** branch push leaves capture to its pull_request run so one head
-    # uses one of the org's 5 macOS slots, not two.
+    # uses one GPU slot per leg, not two.
     if: github.event_name != 'push' || github.ref == 'refs/heads/main'
-    runs-on: macos-14
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - leg: macos14
+            runner: macos-14
+            chrome_args: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+          - leg: azure-l4
+            runner: [self-hosted, azure-gpu]
+            chrome_args: "--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist"
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 90
     env:
-      QR_BENCH_CHROME_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+      QR_BENCH_CHROME_ARGS: ${{ matrix.chrome_args }}
       QR_PRD10_SCENES: "09-outdoor-environment,17-large-environment,prd10-terrain-flyover,prd10-terrain-layers,prd10-forest-wind,prd10-meadow-grass,prd10-coast-water,prd10-city-street,prd10-interior-room,prd10-biomes-sweep,prd10-space-orbit"
-      OUT_DIR: "benchmarks/quality-rebuild/out/prd10-${{ github.run_id }}"
+      OUT_DIR: "benchmarks/quality-rebuild/out/prd10-${{ matrix.leg }}-${{ github.run_id }}"
     steps:
       - uses: actions/checkout@v4
         with:
@@ -188,7 +198,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: qr-prd10-capture-${{ github.run_id }}
+          name: qr-prd10-capture-${{ matrix.leg }}-${{ github.run_id }}
           path: ${{ env.OUT_DIR }}/
           retention-days: 30
           if-no-files-found: warn
