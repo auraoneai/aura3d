@@ -69,6 +69,22 @@ describe("L-4 one render per tick", () => {
     driver.dispose();
   });
 
+  it("renderPerSubstep camera timestamps are strictly monotonic across 0-substep ticks", () => {
+    const times: number[] = [];
+    const app = { advance: () => {}, step: () => {} };
+    const driver = createFixedStepDriver(app, {
+      useRaf: false,
+      flags: interpFlags,
+      renderPerSubstep: true,
+      camera: { present: (_dt: number, timeMs: number) => times.push(timeMs) }
+    });
+    // Sub-fixed tick (debt-only present), then ticks whose first substep follows it.
+    for (const dt of [0.005, 1 / 60 + 0.004, 0.001, 2 / 60, 0.012, 0.03]) driver.step(dt);
+    expect(times.length).toBeGreaterThan(4);
+    for (let i = 1; i < times.length; i += 1) expect(times[i]).toBeGreaterThan(times[i - 1]);
+    driver.dispose();
+  });
+
   it("renderPerSubstep keeps camera real time advancing on 0-substep ticks (hit-stop)", () => {
     const presented: number[] = [];
     const steps: number[] = [];
