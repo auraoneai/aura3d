@@ -194,7 +194,7 @@ jobs:
               bash benchmarks/quality-rebuild/ci.sh ;;
             promote)
               test -n "$PROMOTE_FLAG" || { echo "::error::suite=promote needs promote_flag"; exit 1; }
-              [[ "$PROMOTE_FLAG" =~ ^[a-z0-9_.]+$ ]] || { echo "::error::invalid promote_flag '$PROMOTE_FLAG'"; exit 1; }
+              [[ "$PROMOTE_FLAG" =~ ^[a-z0-9][a-z0-9_.-]*$ ]] || { echo "::error::invalid promote_flag '$PROMOTE_FLAG'"; exit 1; }
               # Both engines: the three.js frame is the shared target both arms are scored against.
               export QR_BENCH_ENGINES="aura3d,three" QR_BENCH_FLAG_SETS="none;$PROMOTE_FLAG"
               bash benchmarks/quality-rebuild/ci.sh ;;
