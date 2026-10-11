@@ -13,8 +13,9 @@ const AURA_ONLY = new Set(["prd07-impact-library", "prd07-trails-beams", "prd07-
 describe("prd07 lane scenes in the bench registry", () => {
   const lane = REGISTRY.filter((entry) => entry.id.startsWith("prd07-"));
 
-  it("registers all 17 lane scenes", () => {
-    expect(lane.map((entry) => entry.id)).toHaveLength(17);
+  // 17 lane scenes + the five 07 Phase D S4 hour scenes (prd07-sky-h06..h21).
+  it("registers all 22 lane scenes", () => {
+    expect(lane.map((entry) => entry.id)).toHaveLength(22);
   });
 
   it("every scene with both adapters is active", () => {
