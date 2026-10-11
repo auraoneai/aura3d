@@ -69,6 +69,16 @@ async function run(): Promise<void> {
     const px = await canvasPixels(canvas);
     variantResults[name] = { applied, meanLab: meanLab(px, subjectMask(px)) };
   }
+  // 04-S11/S12 control: cycling back to the first variant reproduces it (ΔE < 1), so the
+  // pairwise ≥ 10 gaps are variant-driven, not run-to-run noise. Loaded without QR flags (flag off).
+  let variantRoundTripDeltaE: number | null = null;
+  const first = variants[0];
+  if (first !== undefined && variantResults[first]) {
+    await shoe.pipeline.resources.setMaterialVariant(first);
+    render(shoe.staged);
+    const again = await canvasPixels(canvas);
+    variantRoundTripDeltaE = deltaE00(variantResults[first]!.meanLab, meanLab(again, subjectMask(again)));
+  }
   const unknownResult = await shoe.pipeline.resources.setMaterialVariant("__no-such-variant__");
   const pairwise: number[] = [];
   const names = Object.keys(variantResults);
@@ -81,6 +91,7 @@ async function run(): Promise<void> {
     variants,
     variantResults,
     variantPairwiseDeltaE: pairwise,
+    variantRoundTripDeltaE,
     variantUnknown: unknownResult
   };
 }

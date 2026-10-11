@@ -1,5 +1,7 @@
 # PRD-04 phase-1 evidence — flag-`none` baselines (PR A)
 
+> **Status (04-EVID, 2026-10-11):** every PASS below is a *local* unit or code-read result. No row here has a remote run id yet, so every browser, capture or CI-gated item is **NOT RUN** until a GitHub macos-14 run on a main commit is cited inline. The S3/S6/S7/S9 probe controls are measured by the lane browser job into `tests/reports/prd04/probes/*.json` (artifact `prd04-material-conformance`); the NOT RUN placeholder stubs were removed (P-56).
+
 Phase-1 exit per PRD-04 §13: lobe chunks registered + compiling in
 ChunkHarness, r185 CPU oracle goldens green, ten `prd04-*` lane scenes +
 legacy negative controls capturable on both engines at flag `none`,
