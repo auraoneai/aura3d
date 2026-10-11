@@ -278,7 +278,9 @@ function vertexSource(f: ProgramFeatures, contributions: readonly Contribution[]
     "#ifdef A3D_NEED_NORMAL\nout vec3 v_normal;\n#endif",
     "#ifdef A3D_NEED_UV0\nout vec2 v_uv;\n#endif",
     "#ifdef A3D_NEED_UV1\nout vec2 v_uv1;\n#endif",
-    "#ifdef VERTEX_COLORS\nout vec4 v_color;\n#endif"
+    "#ifdef VERTEX_COLORS\nout vec4 v_color;\n#endif",
+    // #1140: per-instance colour reaches the fragment (legacy instanced-pbr multiplies base rgba).
+    "#ifdef USE_INSTANCING_COLOR\nout vec4 v_instanceColor;\n#endif"
   ];
   const body = [
     "void main() {",
@@ -301,6 +303,7 @@ function vertexSource(f: ProgramFeatures, contributions: readonly Contribution[]
     "#ifdef A3D_NEED_UV0\n  v_uv = a_uv;\n#endif",
     "#ifdef A3D_NEED_UV1\n  v_uv1 = a_uv1;\n#endif",
     "#ifdef VERTEX_COLORS\n  v_color = a_color;\n#endif",
+    "#ifdef USE_INSTANCING_COLOR\n  v_instanceColor = a_instanceColor;\n#endif",
     "  gl_Position = u_viewProjection * a3dWorld;",
     "  gl_PointSize = u_pointSize;",
     ...endHooks,
@@ -349,6 +352,9 @@ in vec2 v_uv1;
 #endif
 #ifdef VERTEX_COLORS
 in vec4 v_color;
+#endif
+#ifdef USE_INSTANCING_COLOR
+in vec4 v_instanceColor;
 #endif`;
 
 /** Default `fragment:lights` body: `u_lightData` kind-discriminated loop.
@@ -444,6 +450,7 @@ function forwardFragmentSource(f: ProgramFeatures, contributions: readonly Contr
   // fragment:material — default fills base/metal/rough + PhysicalMaterial.
   body.push("  vec4 a3dBaseColor = u_baseColor;");
   body.push("#ifdef VERTEX_COLORS\n  a3dBaseColor *= v_color;\n#endif");
+  body.push("#ifdef USE_INSTANCING_COLOR\n  a3dBaseColor *= v_instanceColor;\n#endif");
   body.push(`#ifdef USE_BASE_COLOR_MAP\n  a3dBaseColor *= texture(u_baseColorMap, ${uvExpr(f, "baseColor")});\n#endif`);
   body.push("  float a3dMetallic = u_metallic;");
   body.push("  float a3dRoughness = u_roughness;");

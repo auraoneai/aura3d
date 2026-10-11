@@ -60,6 +60,29 @@ describe("#1140: lane barrels survive production tree-shaking", () => {
     expect(bundle).toMatch(/installProgramGenerator\(\(features\) => generateProgramImpl\(features\)\)/);
   }, 120_000);
 
+  it("keeps every lane barrel's top-level provide/register call in a bundled build", async () => {
+    const bundle = await bundleRenderingEntry();
+    const lanesDir = join(renderingDir, "src/lanes");
+    const barrels = readdirSync(lanesDir).filter((f) => /^prd\d\d\.ts$/.test(f));
+    const missing: string[] = [];
+    let checked = 0;
+    for (const file of barrels) {
+      const source = readFileSync(join(lanesDir, file), "utf8");
+      // Column-0 call statements are the barrel's import-time side effects.
+      for (const match of source.matchAll(/^([A-Za-z_$][\w$]*(?:\(\))?(?:\.[A-Za-z_$][\w$]*)*)\(/gm)) {
+        const callee = match[1]!;
+        // esbuild may suffix a renamed binding (`registerShaderChunk2`).
+        const parts = callee.split(".").map((p) => p.replace(/\(\)$/, "").replace(/[$]/g, "\\$"));
+        const head = `${parts[0]}\\d*${callee.split(".")[0]!.endsWith("()") ? "\\(\\)" : ""}`;
+        const pattern = new RegExp(`(^|[^\\w$.])${[head, ...parts.slice(1)].join("\\.")}\\(`, "m");
+        checked += 1;
+        if (!pattern.test(bundle)) missing.push(`${file}: ${callee}(`);
+      }
+    }
+    expect(checked).toBeGreaterThan(40);
+    expect(missing).toEqual([]);
+  }, 120_000);
+
   it("declares every lane barrel and the generator as side-effectful in package.json", () => {
     const pkg = JSON.parse(readFileSync(join(renderingDir, "package.json"), "utf8")) as { sideEffects?: unknown };
     expect(Array.isArray(pkg.sideEffects)).toBe(true);
@@ -152,5 +175,25 @@ describe("#1140: generated programs get the environment map the flag-off path sa
     const uniforms = new Map<string, unknown>();
     applyGeneratedEnvironmentMapUniforms({ color: [1, 1, 1], intensity: 1, proceduralMap: {} } as never, { label: "t" } as never, shader, uniforms as never);
     expect(uniforms.get("u_environmentMapIntensity")).toBe(0);
+  });
+});
+
+describe("#1140: generated instanced programs keep per-instance colour", () => {
+  it("forwards a_instanceColor to the fragment and multiplies base colour (legacy instanced-pbr parity)", async () => {
+    await import("../../../../packages/rendering/src/lanes/prd01");
+    const { generateProgramImpl } = await import("../../../../packages/rendering/src/program/ProgramGenerator");
+    const { normalizeProgramFeatures } = await import("../../../../packages/rendering/src/program/ProgramFeatures");
+    const flags = resolveQrFlags({ env: { A3D_QR_CORE: "v2" } });
+    const lit = { dir: 1, point: 0, spot: 0, rect: 0, clustered: false, hemisphere: false } as const;
+    const withColor = generateProgramImpl(normalizeProgramFeatures({ pass: "forward", lighting: "lit", lights: lit, instancing: { color: true } }), { flags });
+    expect(withColor.defines.USE_INSTANCING_COLOR).toBe(true);
+    expect(withColor.vertex).toMatch(/#ifdef USE_INSTANCING_COLOR\nout vec4 v_instanceColor;/);
+    expect(withColor.vertex).toContain("v_instanceColor = a_instanceColor;");
+    expect(withColor.fragment).toMatch(/#ifdef USE_INSTANCING_COLOR\nin vec4 v_instanceColor;/);
+    expect(withColor.fragment).toContain("a3dBaseColor *= v_instanceColor;");
+    // Base colour is modulated before PhysicalMaterial is built (albedo, not post-lighting tint).
+    expect(withColor.fragment.indexOf("a3dBaseColor *= v_instanceColor;")).toBeLessThan(withColor.fragment.indexOf("PhysicalMaterial material = a3dMakeMaterial("));
+    const noColor = generateProgramImpl(normalizeProgramFeatures({ pass: "forward", lighting: "lit", lights: lit, instancing: { color: false } }), { flags });
+    expect(noColor.defines.USE_INSTANCING_COLOR).toBeUndefined();
   });
 });
