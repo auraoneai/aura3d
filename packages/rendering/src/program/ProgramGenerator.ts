@@ -405,7 +405,9 @@ function defaultIndirectBody(f: ProgramFeatures): string {
   lines.push("#ifdef A3D_ENV_SAMPLE");
   lines.push("  float a3dRoughLod = material.roughness * 8.0;");
   lines.push("  vec3 a3dReflect = reflect(-V, N);");
-  lines.push("  vec3 a3dEnvIrradiance = a3dSampleEnvironment(N, 8.0);");
+  // brdf's a3dIndirect* take π-scaled irradiance (three r185 getIBLIrradiance
+  // returns PI * envMapColor), not the raw radiance sample (#1140).
+  lines.push("  vec3 a3dEnvIrradiance = PI * a3dSampleEnvironment(N, 8.0);");
   lines.push("  indirectSpecular += a3dIndirectSpecular(a3dSampleEnvironment(a3dReflect, a3dRoughLod), a3dEnvIrradiance, V, N, material);");
   lines.push("  indirectDiffuse += a3dIndirectDiffuse(a3dEnvIrradiance, V, N, material);");
   lines.push("#endif");
