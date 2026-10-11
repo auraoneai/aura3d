@@ -506,12 +506,40 @@ export const decalsContributor: FrameContributor = {
     const now = ctx.timeSeconds;
     return [{
       name: "prd07.decals",
-      reads: ["aura.scene.depth"],
-      writes: ["aura.scene.color"],
+      // Ordered after the opaque pass; depth-tests against the bound forward
+      // depth attachment (no sampled scene depth).
+      reads: [prd07OpaqueColorResource(ctx)],
+      writes: ["prd07.decals.color"],
       execute: () => pass.draw(batch, ctx, now)
     }];
   }
 };
+
+/**
+ * T0-34 / #1111 — render-graph resources the after-opaque lane passes may
+ * declare. Only resources a pass in `Renderer.render()` actually writes:
+ * the opaque forward pass writes `aura.scene.color.opaque` on the v2 output
+ * path (A3D_QR_CORE_OUTPUT, else A3D_QR_CORE) and `color` on the legacy
+ * path; `aura.scene.depth.copy` exists only on the v2 path (SceneDepthCopyPass).
+ * Nothing writes `aura.scene.depth`, and `aura.scene.color` is written once,
+ * by the final transparent pass — declaring either made `compilePlan` throw.
+ * Each lane pass writes its own namespaced resource (single-producer rule).
+ * Inlined (renderer/qrSubFlags pulls OutputPass into the vfx chunk).
+ */
+function v2OutputOn(ctx: FrameContributorContext): boolean {
+  return ctx.flags.values["A3D_QR_CORE_OUTPUT"] !== undefined
+    ? ctx.flags.on("A3D_QR_CORE_OUTPUT")
+    : ctx.flags.on("A3D_QR_CORE");
+}
+
+export function prd07OpaqueColorResource(ctx: FrameContributorContext): string {
+  return v2OutputOn(ctx) ? "aura.scene.color.opaque" : "color";
+}
+
+/** Reads for a pass that samples the scene-depth copy (v2 path only). */
+export function prd07DepthCopyReads(ctx: FrameContributorContext): readonly string[] {
+  return v2OutputOn(ctx) ? [prd07OpaqueColorResource(ctx), "aura.scene.depth.copy"] : [prd07OpaqueColorResource(ctx)];
+}
 
 /** Per-device froxel pass cache — the grid spec selects the atlas layout. */
 const volumetricPasses = new WeakMap<import("../RenderDevice").RenderDevice, Map<string, VolumetricFogPass>>();
@@ -602,8 +630,10 @@ const volumetricContributor: FrameContributor = {
     };
     return [{
       name: "prd07.volumetric",
-      reads: ["aura.scene.depth", "aura.scene.color"],
-      writes: ["aura.scene.color"],
+      // Samples the scene-depth copy (resolveSceneDepth), applies into the
+      // forward target after opaque.
+      reads: prd07DepthCopyReads(ctx),
+      writes: ["prd07.volumetric.color"],
       execute: () => {
         const { apply } = pass.update(input, ctx);
         // T0-34: apply into the live forward target (prd01.forwardTarget), not
