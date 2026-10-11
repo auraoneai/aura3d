@@ -39,7 +39,7 @@ const MAX_FLOAT_M = 0.02;
 /** Engine under test only: the three reference adapter keeps the contact-error parity check. */
 function expectPlantTolerance(payload: ReadyLike | undefined, engine: string): void {
   for (const foot of payload!.extra!.footIk!.feet ?? []) {
-    expect(foot.signedError, `${engine} foot ${foot.side} signedError missing`).toBeTypeOf("number");
+    expect(typeof foot.signedError, `${engine} foot ${foot.side} signedError missing`).toBe("number");
     const signed = foot.signedError!;
     expect(Math.max(0, -signed), `${engine} foot ${foot.side} penetration ${(-signed * 100).toFixed(2)} cm`).toBeLessThanOrEqual(MAX_PENETRATION_M);
     expect(Math.max(0, signed), `${engine} foot ${foot.side} float ${(signed * 100).toFixed(2)} cm`).toBeLessThanOrEqual(MAX_FLOAT_M);
