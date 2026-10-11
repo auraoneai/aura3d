@@ -35,6 +35,7 @@ import { isRenderableModelNode } from "./observations.js";
 import { createAssetProvenance } from "../diagnostics.js";
 import { applyModelTintBridge } from "./modelMaterials.js";
 import { createProductionRuntimePrimitiveEntries } from "./primitives.js";
+import { qrPrimitiveGeometryOptions } from "./geometry.js";
 import { createProductionRuntimeRendererInput } from "./renderInput.js";
 import type { CollectedLight, EnvironmentLightingOptions, ProductionRendererInput, RenderDevice, RenderItem, RenderSource } from "@aura3d/rendering";
 import type { EnvironmentProbe } from "@aura3d/rendering/contracts";
@@ -179,7 +180,7 @@ export class CompiledSceneImpl implements CompiledScene {
     const contributions = this.persistentContributions;
     const out = new SourceContributions(contributions);
     const ctx = this.mountCtx;
-    const extraPrimitive = createProductionRuntimePrimitiveEntries(flatNodes);
+    const extraPrimitive = createProductionRuntimePrimitiveEntries(flatNodes, qrPrimitiveGeometryOptions(ctx.flags, ctx.quality));
     this.primitiveEntries.push(...extraPrimitive);
 
     const newModelNodes = flatNodes.filter((candidate): candidate is AuraModelNode =>
@@ -340,7 +341,7 @@ async function compileSceneReal(snapshot: AuraSceneSnapshot, ctx: SceneCompileCo
         })));
       })()
     : [];
-  const primitiveEntries = createProductionRuntimePrimitiveEntries(flattened);
+  const primitiveEntries = createProductionRuntimePrimitiveEntries(flattened, qrPrimitiveGeometryOptions(ctx.flags, ctx.quality));
 
   const handledNodes: { node: AuraSceneNode; handler: AnyNodeHandler }[] = [];
   const contributions = createContributions();
