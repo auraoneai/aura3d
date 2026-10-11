@@ -52,7 +52,7 @@ export function attachVfxBridge(canvas: HTMLCanvasElement, system: ProductionEff
     }
   };
   try {
-    const detach = attachRootRenderSource(canvas, { source: source as never });
+    const detach = attachRootRenderSource(canvas, { source });
     return { detach, attached: true };
   } catch {
     system.diagnostics.note(
