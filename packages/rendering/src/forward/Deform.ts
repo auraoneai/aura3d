@@ -107,12 +107,15 @@ export class SkinningPaletteUploadManager {
   ): void {
     // Recorded before the upload so a contract failure still leaves its reason code behind.
     this.recordDecision(item, skinning, shader);
-    // All-flags safety: validate before any palette upload, and degrade the item —
-    // never throw out of a mid-frame pass. A barely-visible weight or an overshoot
-    // vertex must not take every sibling item's draw with it; the item draws
-    // unskinned (recorded as a `skinning-geometry-contract` cpu fallback) instead.
+    // All-flags safety (flag-on, non-strict only): validate before any palette
+    // upload and degrade the item — never throw out of a mid-frame pass. A
+    // barely-visible weight or an overshoot vertex must not take every sibling
+    // item's draw with it; the item is skipped (recorded as a
+    // `skinning-geometry-contract` cpu fallback). Flag-off and strict (C-36)
+    // keep the pre-rebuild order and throws verbatim (validated after upload).
+    const degradeOnContract = prd06FlagsOn("A3D_QR_ANIMATION") && !prd06FlagsOn("A3D_QR_STRICT");
     const validatedJointCounts = SkinningPaletteUploadManager.validatedGeometryJointCounts.get(item.geometry) ?? new Set<number>();
-    if (!validatedJointCounts.has(skinning.jointCount)) {
+    if (degradeOnContract && !validatedJointCounts.has(skinning.jointCount)) {
       try {
         validateSkinningGeometryContract(item, skinning);
       } catch {
@@ -145,6 +148,11 @@ export class SkinningPaletteUploadManager {
     const eightInfluence = item.geometry.vertexBuffer.format.hasAttribute("joints1")
       && item.geometry.vertexBuffer.format.hasAttribute("weights1");
     if (eightInfluence) this.eightInfluenceSubmissions += 1;
+    if (!validatedJointCounts.has(skinning.jointCount)) {
+      validateSkinningGeometryContract(item, skinning);
+      validatedJointCounts.add(skinning.jointCount);
+      SkinningPaletteUploadManager.validatedGeometryJointCounts.set(item.geometry, validatedJointCounts);
+    }
     this.submissions += 1;
     this.jointsUploaded += skinning.jointCount;
     this.maxJointCount = Math.max(this.maxJointCount, skinning.jointCount);
