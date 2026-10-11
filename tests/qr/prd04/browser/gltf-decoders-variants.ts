@@ -44,7 +44,7 @@ async function run(): Promise<void> {
   // T2.6: `renderImportedAsset` moved to `rendererProofCapture`, which validates
   // real mesh/material counts, so pass the pipeline metadata through.
   const render = (staged: ProductionStagedScene, metadata: unknown) =>
-    rendererProofCapture(renderer, { source: staged.source, camera: staged.camera, metadata: metadata as never });
+    rendererProofCapture(renderer, { source: staged.source, camera: staged.camera, metadata: metadata as never, viewport: { width: canvas.width, height: canvas.height } });
 
   // P5-2: baseline vs C-16-decoded variants on one renderer/build.
   const base = await loadAndStage("/fixtures/asset-corpus/damaged-helmet.glb", "helmet");
