@@ -4,47 +4,40 @@
  * `ShadowFrameUniforms` under `prd02.shadowFrameUniforms` on the blackboard,
  * and binds the matching `u_prd02*` parameters onto each item's material so
  * the `a3d_prd02_shadow_lookup` chunk samples this frame's maps.
+ *
+ * T0-26: renders only when a forward program declares the lookup chunk; when
+ * the legacy forward shader is the consumer, `Prd02ShadowBridge` already
+ * rendered the cascades in the renderer's shadow step and this pass only
+ * publishes them.
  */
 
-import { DirectionalLight, PointLight, SpotLight, type Light, type Vec3 } from "@aura3d/scene";
+import { PointLight, SpotLight, type Light, type Vec3 } from "@aura3d/scene";
+import type { CollectedLight } from "../LightCollector";
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass";
-import type { RenderDevice } from "../RenderDevice";
 import type { FrameContributor, FrameContributorContext } from "../contracts/frameGraph";
 import { SHADOW_BLACKBOARD_KEY } from "../contracts/shadows";
-import { collectRendererShadowOptions } from "../renderer/ShadowOrchestration";
 import { sceneFromSource } from "../renderer/RenderShared";
-import { Prd02ShadowSystem, type Prd02ShadowFrameUniforms, type ShadowSystemConfigInput, type ShadowSystemLocalLight } from "./ShadowSystem";
+import type { Prd02ShadowFrameUniforms, Prd02ShadowSystem, ShadowSystemConfigInput, ShadowSystemLocalLight } from "./ShadowSystem";
 import { bindShadowFrameUniforms, shadowBindingMaterial } from "./ShadowFrameBinding";
-import { prd02SubFlagOff, readPrd02KillSwitches, SUB_FLAG_CSM } from "../passes/Prd02SubFlags";
+import { readPrd02KillSwitches } from "../passes/Prd02SubFlags";
 import { prd02ShadowCasterEligible } from "./Prd02DepthShaderLibrary";
+import {
+  prd02LookupConsumerExists,
+  prd02ShadowConfig,
+  prd02SunDirection,
+  recordPrd02FrameObservation,
+  shadowSystemForDevice,
+  takePrd02BridgedShadowFrame
+} from "./Prd02ShadowBridge";
 
-const DEFAULT_NORMAL_BIAS_TEXELS = 1.5;
+export { shadowSystemForDevice } from "./Prd02ShadowBridge";
 
-/** RendererShadowOptions → ShadowSystemConfigInput (PRD-02 §6.4 mapping). */
+/**
+ * RendererShadowOptions → ShadowSystemConfigInput (PRD-02 §6.4 mapping).
+ * T0-26: the compiler's `source.shadow.prd02Shadows` wins when present.
+ */
 export function shadowSystemConfigFromSource(ctx: FrameContributorContext): ShadowSystemConfigInput {
-  const options = collectRendererShadowOptions(ctx.source);
-  const tierShadow = ctx.tier.shadow;
-  const cascades = (options?.cascadeCount ?? tierShadow.cascades) as 1 | 2 | 3 | 4;
-  // RendererShadowOptions.filter is "none" | "pcf" (legacy); "pcf" → the
-  // flag-path filtered compare pipeline, "none" → a single hard tap.
-  const kill = readPrd02KillSwitches(ctx.source);
-  // `shadowFilter=legacy-grid` keeps the unfiltered single-tap path (§6.5);
-  // `A3D_QR_LIGHTING_CSM` off or `?a3dLighting=csm=off` → one fitted map.
-  const filter: ShadowSystemConfigInput["filter"] =
-    kill.shadowFilter === "legacy-grid" ? "hard"
-      : options?.filter === "none" ? "hard" : "pcf";
-  const csmOn = kill.csm && !prd02SubFlagOff(ctx.flags, SUB_FLAG_CSM);
-  return {
-    enabled: options?.enabled !== false,
-    mapSize: options?.size ?? tierShadow.mapSize,
-    cascades: (csmOn ? cascades : 1) as 1 | 2 | 3 | 4,
-    maxDistance: ctx.camera?.far ?? 200,
-    splitLambda: options?.cascadeLambda ?? 0.6,
-    filter,
-    strength: options?.strength ?? 1,
-    bias: options?.bias ?? 0,
-    normalBias: DEFAULT_NORMAL_BIAS_TEXELS
-  };
+  return prd02ShadowConfig(ctx.source, ctx.flags, ctx.tier, ctx.camera?.far);
 }
 
 function lightWorldPosition(light: Light): Vec3 {
@@ -63,62 +56,62 @@ function spotWorldDirection(light: SpotLight): Vec3 {
   return [x / length, y / length, z / length];
 }
 
-/** Visible shadow-casting lights → system inputs (deterministic slot order). */
+/**
+ * Visible shadow-casting lights → system inputs (deterministic slot order).
+ * T0-26: reads the compiled `source.collectedLights` when present (the same
+ * list the forward pass shades with); the scene graph is the fallback.
+ */
 export function collectShadowSystemLights(ctx: FrameContributorContext): {
   readonly sunDirection: Vec3 | null;
   readonly localLights: ShadowSystemLocalLight[];
 } {
   const atlasOn = readPrd02KillSwitches(ctx.source).atlas;
-  const scene = sceneFromSource(ctx.source);
-  const lights = scene?.collectLights().filter((light) => light.visible && light.castsShadow) ?? [];
-  const sun = lights.find((light) => light.kind === "directional") ?? null;
+  const collected = (ctx.source as { collectedLights?: Iterable<CollectedLight> }).collectedLights;
   const localLights: ShadowSystemLocalLight[] = [];
   let slot = 0;
-  for (const light of lights) {
-    if (light instanceof SpotLight) {
+  if (collected !== undefined) {
+    for (const light of collected) {
+      if (!light.castsShadow || light.source?.visible === false) continue;
+      if (light.kind !== "spot" && light.kind !== "point") continue;
       localLights.push({
         shadowIndex: slot,
-        kind: "spot",
-        position: lightWorldPosition(light),
-        direction: spotWorldDirection(light),
+        kind: light.kind,
+        position: light.position,
+        direction: light.kind === "spot" ? light.direction : [0, -1, 0],
         range: light.range,
-        outerAngleRadians: light.angle
-      });
-      slot += 1;
-    } else if (light instanceof PointLight) {
-      localLights.push({
-        shadowIndex: slot,
-        kind: "point",
-        position: lightWorldPosition(light),
-        direction: [0, -1, 0],
-        range: light.range
+        ...(light.kind === "spot" ? { outerAngleRadians: light.spotAngle } : {})
       });
       slot += 1;
     }
+  } else {
+    const scene = sceneFromSource(ctx.source);
+    const lights = scene?.collectLights().filter((light) => light.visible && light.castsShadow) ?? [];
+    for (const light of lights) {
+      if (light instanceof SpotLight) {
+        localLights.push({
+          shadowIndex: slot,
+          kind: "spot",
+          position: lightWorldPosition(light),
+          direction: spotWorldDirection(light),
+          range: light.range,
+          outerAngleRadians: light.angle
+        });
+        slot += 1;
+      } else if (light instanceof PointLight) {
+        localLights.push({
+          shadowIndex: slot,
+          kind: "point",
+          position: lightWorldPosition(light),
+          direction: [0, -1, 0],
+          range: light.range
+        });
+        slot += 1;
+      }
+    }
   }
-  let sunDirection: Vec3 | null = null;
-  if (sun instanceof DirectionalLight) {
-    sunDirection = sun.getDirection();
-    const length = Math.hypot(sunDirection[0], sunDirection[1], sunDirection[2]) || 1;
-    sunDirection = [sunDirection[0] / length, sunDirection[1] / length, sunDirection[2] / length];
-  }
+  const sun = prd02SunDirection(ctx.source);
   // `?a3dLighting=atlas=off` → sun-only shadows (no local-light atlas tiles).
-  return { sunDirection, localLights: atlasOn ? localLights : [] };
-}
-
-/**
- * One `Prd02ShadowSystem` per device, shared across passes; recreated when the
- * resolved config changes (map size / cascades / filter).
- */
-const shadowSystems = new WeakMap<RenderDevice, { config: ShadowSystemConfigInput; system: Prd02ShadowSystem }>();
-
-export function shadowSystemForDevice(device: RenderDevice, config: ShadowSystemConfigInput): Prd02ShadowSystem {
-  const existing = shadowSystems.get(device);
-  if (existing && JSON.stringify(existing.config) === JSON.stringify(config)) return existing.system;
-  existing?.system.dispose();
-  const system = new Prd02ShadowSystem(device, config);
-  shadowSystems.set(device, { config, system });
-  return system;
+  return { sunDirection: sun ? [sun[0], sun[1], sun[2]] : null, localLights: atlasOn ? localLights : [] };
 }
 
 /** Latest observed shadow frame for the C-31 `shadows` diagnostics section. */
@@ -146,6 +139,20 @@ class Prd02ShadowsRenderPass extends BaseRenderPass {
 
   execute(_context: RenderPassContext): void {
     const ctx = this.ctx;
+    // T0-26: the bridge already rendered this frame's sun cascades for the
+    // legacy forward shader — publish them, do not render a second time.
+    const bridged = takePrd02BridgedShadowFrame(ctx.device);
+    if (bridged) {
+      ctx.blackboard.set(SHADOW_BLACKBOARD_KEY, bridged.uniforms);
+      this.recordDiagnostics(bridged.config, bridged.system, true);
+      return;
+    }
+    // Allocate cascades only for a forward consumer of a3d_prd02_shadow_lookup.
+    if (!prd02LookupConsumerExists(ctx.items)) {
+      ctx.blackboard.set(SHADOW_BLACKBOARD_KEY, null);
+      latestShadowDiagnostics = { shadows: [], droppedFeatures: [] };
+      return;
+    }
     const config = shadowSystemConfigFromSource(ctx);
     const casters = ctx.items.filter(prd02ShadowCasterEligible);
     const { sunDirection, localLights } = collectShadowSystemLights(ctx);
@@ -161,6 +168,15 @@ class Prd02ShadowsRenderPass extends BaseRenderPass {
         })
       : null;
     ctx.blackboard.set(SHADOW_BLACKBOARD_KEY, uniforms);
+    this.recordDiagnostics(config, system, uniforms !== null);
+    if (!uniforms) return;
+    for (const item of ctx.items) {
+      if (item.receiveShadow === false || !item.material) continue;
+      bindShadowFrameUniforms(shadowBindingMaterial(item.material), uniforms, config);
+    }
+  }
+
+  private recordDiagnostics(config: ShadowSystemConfigInput, system: Prd02ShadowSystem, rendered: boolean): void {
     const diag = system.diagnostics();
     latestShadowDiagnostics = {
       shadows: [
@@ -168,22 +184,17 @@ class Prd02ShadowsRenderPass extends BaseRenderPass {
           light: "sun",
           filter: config.filter,
           casterVariants: diag.casterVariants,
-          sampled: uniforms !== null && diag.cascadeCount > 0
+          sampled: rendered && diag.cascadeCount > 0
         },
         ...Array.from({ length: diag.localLights }, (_, i) => ({
           light: `local-${i}`,
           filter: config.filter,
           casterVariants: diag.casterVariants,
-          sampled: uniforms !== null
+          sampled: rendered
         }))
       ],
       droppedFeatures: diag.droppedFeatures
     };
-    if (!uniforms) return;
-    for (const item of ctx.items) {
-      if (item.receiveShadow === false || !item.material) continue;
-      bindShadowFrameUniforms(shadowBindingMaterial(item.material), uniforms, config);
-    }
   }
 }
 
@@ -192,8 +203,18 @@ export function createPrd02ShadowsContributor(): FrameContributor {
     id: "prd02.shadows",
     owner: "prd02",
     flag: "A3D_QR_LIGHTING",
-    phases: ["shadows"],
+    phases: ["collect", "shadows"],
     order: 0,
+    collect(items, ctx) {
+      // T0-26: runs before the renderer's shadow step; the bridge reads this
+      // (frame camera for structural CameraLikes, lookup consumers among all
+      // items, not just casters). Items pass through unchanged.
+      recordPrd02FrameObservation(ctx.device, {
+        camera: ctx.camera ? { viewProjectionMatrix: ctx.camera.viewProjectionMatrix, near: ctx.camera.near, far: ctx.camera.far } : null,
+        lookupConsumer: prd02LookupConsumerExists(items)
+      });
+      return items;
+    },
     passes(phase, ctx) {
       // `?a3dLighting=shadows=off` → no prd02 shadow passes (§6.5 kill switch).
       return phase === "shadows" && readPrd02KillSwitches(ctx.source).shadows

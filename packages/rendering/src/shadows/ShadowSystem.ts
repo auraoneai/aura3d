@@ -117,7 +117,8 @@ export class Prd02ShadowSystem {
           casters,
           mapSize: this.config.mapSize,
           cascadeCount: this.config.cascades,
-          splitLambda: this.config.splitLambda
+          splitLambda: this.config.splitLambda,
+          maxDistance: this.config.maxDistance
         })
       : [];
     const localRequests = (frame.localLights ?? []).map((light) => ({
@@ -173,6 +174,11 @@ export class Prd02ShadowSystem {
 
   get isPrecompiled(): boolean {
     return this.precompiled;
+  }
+
+  /** T0-26: the sun cascade fits of the last `update` (bridge → legacy forward options). */
+  cascadeFits(): readonly DirectionalCascadeFit[] {
+    return this.lastFits;
   }
 
   /** Diagnostics for the C-31 `shadows` section (observed values only). */

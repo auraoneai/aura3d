@@ -41,6 +41,12 @@ export interface DirectionalCascadeFitOptions {
   readonly cascadeCount: number;
   readonly splitLambda?: number;
   readonly padding?: number;
+  /**
+   * Shadow distance cap (view-space, PRD-02 §6.4 `maxDistance`): cascades
+   * cover [near, min(far, maxDistance)]. The camera's own far still anchors
+   * the frustum-corner interpolation.
+   */
+  readonly maxDistance?: number;
 }
 
 function invertMat4(m: readonly number[] | Float32Array): Float32Array {
@@ -129,10 +135,13 @@ export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): D
   const invVp = invertMat4(vp);
   const near = Math.max(1e-3, options.camera.near ?? 0.1);
   const far = Math.max(near + 1e-3, options.camera.far ?? 100);
+  const shadowFar = options.maxDistance !== undefined && Number.isFinite(options.maxDistance) && options.maxDistance > near
+    ? Math.min(far, options.maxDistance)
+    : far;
   const splits = CascadedShadowMaps.computeSplits({
     cascadeCount: options.cascadeCount,
     near,
-    far,
+    far: shadowFar,
     lambda: options.splitLambda ?? 0.75
   });
   const nearCorners = [-1, 1].flatMap((x) => [-1, 1].map((y) => ndcToWorld(invVp, x, y, -1)));
