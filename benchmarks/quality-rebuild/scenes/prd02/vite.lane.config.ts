@@ -16,7 +16,12 @@ export default mergeConfig(baseConfig, {
     outDir: "scenes/prd02/dist",
     emptyOutDir: true,
     rollupOptions: {
-      input: resolve(laneDir, "lane.html")
+      // Object input replaces the base string input (mergeConfig only
+      // concatenates arrays). chunks.html is the 02-S14 ChunkHarness page.
+      input: {
+        lane: resolve(laneDir, "lane.html"),
+        chunks: resolve(laneDir, "chunks.html")
+      }
     }
   }
 });

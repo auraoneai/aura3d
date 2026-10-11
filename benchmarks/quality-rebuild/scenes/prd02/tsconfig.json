@@ -6,6 +6,7 @@
     "masks.ts",
     "controls.ts",
     "lane-main.ts",
+    "chunks-main.ts",
     "vite.lane.config.ts",
     "../../aura3d/scenes/prd02/**/*.ts",
     "../../three/scenes/prd02/**/*.ts",
