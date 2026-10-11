@@ -83,6 +83,14 @@ export class FixedStepDriver {
    * any run the camera advances by exactly the real time that elapsed.
    */
   private cameraDebt = 0;
+  /**
+   * Per-substep mode: the camera's own clock (seconds), advanced by exactly
+   * the dt of every present. Strictly monotonic across substep and
+   * debt-only presents, so time-keyed rigs (legacy follow treats an equal
+   * timestamp as a duplicate frame) never see a repeated time after a
+   * 0-substep tick (Codex review on #948).
+   */
+  private cameraClock = 0;
 
   constructor(app: FixedStepDriverApp, options: FixedStepDriverOptions = {}) {
     this.app = app;
@@ -167,7 +175,8 @@ export class FixedStepDriver {
       // Legacy escape hatch: each substep is a submitted frame, so the camera
       // must be presented for that substep before it renders; otherwise every
       // submission shows the previous tick's pose (Codex review on #911).
-      const timeMs = (this.time.realTime + this.rendersThisTick * this.fixedDtValue) * 1000;
+      this.cameraClock += this.fixedDtValue;
+      const timeMs = this.cameraClock * 1000;
       this.rendersThisTick += 1;
       const current = this.interpolation?.resolve(1);
       this.camera?.present(this.fixedDtValue, timeMs, current ? (id) => current.get(id)?.position : undefined);
@@ -197,7 +206,8 @@ export class FixedStepDriver {
       if (this.camera) {
         this.cameraDebt += realDt;
         if (this.cameraDebt > 1e-9) {
-          this.camera.present(this.cameraDebt, this.time.realTime * 1000, resolved ? (id) => resolved.get(id)?.position : undefined);
+          this.cameraClock += this.cameraDebt;
+          this.camera.present(this.cameraDebt, this.cameraClock * 1000, resolved ? (id) => resolved.get(id)?.position : undefined);
           this.cameraDebt = 0;
         }
       }
