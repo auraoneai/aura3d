@@ -33,7 +33,7 @@ on:
       scenes:
         description: "Lane scene ids (comma-separated; default all prd11 scenes)"
         required: false
-        default: "prd11-tier-ladder"
+        default: "prd11-tier-ladder,prd11-draw-call-stress,prd11-instancing-100k"
 
 permissions:
   contents: read
@@ -103,7 +103,7 @@ jobs:
     if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'lane:prd11')
     env:
       PRD11_FLAGS: ${{ github.event_name == 'workflow_dispatch' && inputs.flags || 'tiers,none' }}
-      PRD11_SCENES: ${{ github.event_name == 'workflow_dispatch' && inputs.scenes || 'prd11-tier-ladder' }}
+      PRD11_SCENES: ${{ github.event_name == 'workflow_dispatch' && inputs.scenes || 'prd11-tier-ladder,prd11-draw-call-stress,prd11-instancing-100k' }}
     steps:
       - uses: actions/checkout@v4
         with:
