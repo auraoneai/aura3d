@@ -23,8 +23,20 @@
  * Usage:
  *   node tools/asset-optimize/measure-tiers.mjs \
  *     [--games showcase-skyline-runner,...] [--tiers low,medium,high,ultra] \
+ *     [--qr-flags assets,all] [--devices desktop,iphone,android] \
  *     [--base-url https://aura3d.auraone.ai] \
  *     [--out docs/.../tier-measurements.json] [--sample-ms 4000]
+ *
+ * Each row is compared against the §17.1 per-tier budgets (texture VRAM,
+ * visible triangles, draw calls, >50 ms long tasks, ready bytes); exceedances
+ * land in the doc's top-level `budgetExceedances` list — one record per
+ * exceeded budget, the "issue per exceeded budget" enumerable. `--devices`
+ * profiles are Playwright device descriptors (iphone = 390×844 DPR 3 = §19
+ * mobile viewport, android = Pixel 7); real-device lab rows still supersede.
+ * `--qr-flags` lists flag *sets* separated by `,`; join flags inside one set
+ * with `+` (e.g. `assets+lod,all`). `tiers` is always added so the real
+ * QualityController can be forced. Rows on a software renderer (SwiftShader)
+ * or with navigation errors are marked `error` and the script exits 1.
  */
 
 import { createRequire } from "node:module";
@@ -34,7 +46,7 @@ import fs from "node:fs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const require = createRequire(path.join(repoRoot, "package.json"));
-const { chromium } = require("@playwright/test");
+const { chromium, devices: playwrightDevices } = require("@playwright/test");
 
 function opt(flag, env, fallback) {
   const argv = process.argv.slice(2);
@@ -72,6 +84,72 @@ const games = (gameFilter ? gameFilter.split(",") : PILOTS).map((id) => {
 });
 const tiers = tierFilter ? tierFilter.split(",") : TIERS;
 for (const t of tiers) if (!TIERS.includes(t)) throw new Error(`unknown tier ${t}`);
+
+// QR flag sets each run is measured under (§6.7: `assets` and `all` variants).
+const qrFlagSets = opt("qr-flags", "PRD05_TIER_QR_FLAGS", "assets")
+  .split(",").map((s) => s.trim()).filter(Boolean);
+
+// Emulated device profiles — the "manual iPhone/Android rows" proxy until the
+// device-lab rows land: iphone = 390×844 DPR 3 (§19 mobile viewport), android
+// = Pixel 7 (412×915 DPR 2.625). Desktop keeps the historical 1080p probe.
+const DEVICE_PROFILES = {
+  desktop: { name: "desktop", viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 },
+  iphone: { ...playwrightDevices["iPhone 13"], name: "iphone" },
+  android: { ...playwrightDevices["Pixel 7"], name: "android" },
+};
+const deviceSpecs = opt("devices", "PRD05_TIER_DEVICES", "desktop")
+  .split(",").map((d) => {
+    const spec = DEVICE_PROFILES[d.trim()];
+    if (!spec) throw new Error(`unknown device profile "${d}" (expected ${Object.keys(DEVICE_PROFILES).join("|")})`);
+    return spec;
+  });
+
+// §17.1 asset-attributable budgets — the probe measures exactly these five.
+const TIER_BUDGETS = {
+  low: { vramBytes: 96 << 20, triangles: 300_000, drawCalls: 150, longTaskMs: 50, resourceBytes: 8 << 20 },
+  medium: { vramBytes: 192 << 20, triangles: 750_000, drawCalls: 300, longTaskMs: 50, resourceBytes: 15 << 20 },
+  high: { vramBytes: 384 << 20, triangles: 1_500_000, drawCalls: 500, longTaskMs: 50, resourceBytes: 25 << 20 },
+  ultra: { vramBytes: 768 << 20, triangles: 3_000_000, drawCalls: 800, longTaskMs: 50, resourceBytes: 40 << 20 },
+};
+
+// `tier` is the tier the app actually ran on; unforced (stub-controller) runs
+// pass null — their tier is unknown, so no budget can be attributed to them.
+function checkBudgets(tier, metrics) {
+  const limits = tier ? TIER_BUDGETS[tier] : undefined;
+  if (!limits || !metrics || metrics.error) return { budgets: [], exceedances: [] };
+  const measured = {
+    vramBytes: metrics.vramBytes,
+    triangles: metrics.trianglesPerFrame,
+    drawCalls: metrics.drawCallsPerFrame,
+    longTaskMs: metrics.longTasks?.maxMs,
+    resourceBytes: metrics.resourceBytes,
+  };
+  const budgets = [];
+  const exceedances = [];
+  for (const [name, limit] of Object.entries(limits)) {
+    const m = measured[name];
+    // An unmeasured metric is `pass: null` (visible, not a pass), never an
+    // exceedance: one issue per *measured* exceeded budget.
+    const pass = typeof m === "number" ? m <= limit : null;
+    budgets.push({ budget: name, limit, measured: m ?? null, pass });
+    if (pass === false) exceedances.push({ budget: name, limit, measured: m });
+  }
+  return { budgets, exceedances };
+}
+
+// Tier forcing needs the real QualityController, which only runs under
+// A3D_QR_TIERS; every measured flag set therefore also carries `tiers`.
+function urlQrFlagsFor(qrFlags) {
+  const parts = qrFlags.split("+").map((s) => s.trim()).filter(Boolean);
+  if (parts.includes("all") || parts.includes("tiers")) return parts.join(",");
+  return [...parts, "tiers"].join(",");
+}
+
+// §15: software rasterisation is not a tier measurement.
+function softwareRenderer(metrics) {
+  const renderer = String(metrics?.gpu?.renderer ?? "");
+  return /swiftshader|llvmpipe|software/i.test(renderer) ? renderer : null;
+}
 
 /** WebGL2 probe injected before app code: upload accounting + draw stats + long tasks. */
 const PROBE_SOURCE = `
@@ -228,17 +306,17 @@ async function patchTierCache(page, tier) {
   })()`);
 }
 
-async function measureRun(browser, game, tier) {
-  const context = await browser.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
+async function measureRun(browser, game, tier, qrFlags, deviceSpec) {
+  const context = await browser.newContext({ ...deviceSpec });
   const page = await context.newPage();
   await page.addInitScript(PROBE_SOURCE);
-  const url = `${baseUrl}${game.route}`;
+  const url = `${baseUrl}${game.route}${game.route.includes("?") ? "&" : "?"}a3d-qr=${encodeURIComponent(urlQrFlagsFor(qrFlags))}`;
   const navAt = Date.now();
   try {
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 90_000 });
   } catch (err) {
     await context.close();
-    return { game: game.id, tier, url, error: `navigation failed: ${err.message}` };
+    return { game: game.id, tier, qrFlags, emulatedDevice: deviceSpec.name, url, error: `navigation failed: ${err.message}` };
   }
   // Wait for canvas + first frames so the engine's own cache write lands.
   const readyAt = Date.now() + 60_000;
@@ -254,8 +332,9 @@ async function measureRun(browser, game, tier) {
     const sampleEnd = Date.now() + sampleMs;
     await page.waitForTimeout(sampleMs);
     const metrics = await collect(page).catch((err) => ({ error: String(err) }));
+    const { budgets, exceedances } = checkBudgets(null, metrics);
     await context.close();
-    return { game: game.id, tierRequested: tier, tierObserved: "auto", url, forced: false, readyMs: Date.now() - navAt - sampleMs, note: "tier cache never written (stub controller — flag-off); run measured on app-decided tier", metrics };
+    return { game: game.id, tierRequested: tier, tierObserved: "auto", qrFlags, emulatedDevice: deviceSpec.name, url, forced: false, readyMs: Date.now() - navAt - sampleMs, note: "tier cache never written (stub controller); run measured on app-decided tier, so no tier budget applies", metrics, budgets, budgetExceedances: exceedances };
   }
   await page.reload({ waitUntil: "domcontentloaded" });
   const reloadAt = Date.now();
@@ -269,40 +348,70 @@ async function measureRun(browser, game, tier) {
   const readyMs = Date.now() - reloadAt;
   await page.waitForTimeout(sampleMs);
   const metrics = await collect(page).catch((err) => ({ error: String(err) }));
+  const { budgets, exceedances } = checkBudgets(tier, metrics);
   await context.close();
-  return { game: game.id, tierRequested: tier, tierObserved: tier, url, forced: true, readyMs, metrics };
+  return { game: game.id, tierRequested: tier, tierObserved: tier, qrFlags, emulatedDevice: deviceSpec.name, url, forced: true, readyMs, metrics, budgets, budgetExceedances: exceedances };
 }
 
 async function main() {
-  const browser = await chromium.launch({ args: ["--enable-unsafe-swiftshader"] });
+  // No --enable-unsafe-swiftshader: a host without a GPU must not produce
+  // software-rendered tier rows. Hardware args come from the lane env
+  // (qr-prd05-assets-browser.yml uses the same PRD05_CHROMIUM_ARGS).
+  const launchArgs = (process.env.PRD05_CHROMIUM_ARGS ?? "").split(/\s+/).filter(Boolean);
+  const browser = await chromium.launch({ args: launchArgs });
   const rows = [];
   for (const game of games) {
-    for (const tier of tiers) {
-      const t0 = Date.now();
-      process.stderr.write(`[measure-tiers] ${game.id} @ ${tier} ... `);
-      await new Promise((r) => setTimeout(r, 0));
-      const row = await measureRun(browser, game, tier);
-      row.elapsedMs = Date.now() - t0;
-      if (row.forced === false && rows.some((r) => r.game === game.id && r.forced === false)) {
-        process.stderr.write("skipped duplicate unforced sample\n");
-        continue;
+    for (const qrFlags of qrFlagSets) {
+      for (const deviceSpec of deviceSpecs) {
+        for (const tier of tiers) {
+          const t0 = Date.now();
+          process.stderr.write(`[measure-tiers] ${game.id} @ ${tier} ${qrFlags} ${deviceSpec.name} ... `);
+          await new Promise((r) => setTimeout(r, 0));
+          const row = await measureRun(browser, game, tier, qrFlags, deviceSpec);
+          row.elapsedMs = Date.now() - t0;
+          const software = softwareRenderer(row.metrics);
+          if (software) {
+            row.error = `software renderer "${software}" — not a tier measurement (§15)`;
+            row.budgets = [];
+            row.budgetExceedances = [];
+          }
+          if (row.forced === false && rows.some((r) => r.game === game.id && r.qrFlags === qrFlags && r.emulatedDevice === deviceSpec.name && r.forced === false)) {
+            process.stderr.write("skipped duplicate unforced sample\n");
+            continue;
+          }
+          rows.push(row);
+          process.stderr.write(`${row.error ? "ERROR " + row.error : `vram=${((row.metrics?.vramBytes ?? 0) / 1048576).toFixed(1)}MiB draws=${row.metrics?.drawCallsPerFrame ?? "?"} tris=${row.metrics?.trianglesPerFrame ?? "?"} (${row.elapsedMs}ms)`}\n`);
+        }
       }
-      rows.push(row);
-      process.stderr.write(`${row.error ? "ERROR " + row.error : `vram=${((row.metrics?.vramBytes ?? 0) / 1048576).toFixed(1)}MiB draws=${row.metrics?.drawCallsPerFrame ?? "?"} tris=${row.metrics?.trianglesPerFrame ?? "?"} (${row.elapsedMs}ms)`}\n`);
     }
   }
   await browser.close();
+  // §17.1: one record per exceeded (game, tier, flags, device, budget) — the
+  // "issue per exceeded budget" enumerable.
+  const budgetExceedances = rows.flatMap((r) =>
+    (r.budgetExceedances ?? []).map((e) => ({
+      game: r.game, tier: r.tierRequested, qrFlags: r.qrFlags, device: r.emulatedDevice,
+      forced: r.forced, ...e,
+    }))
+  );
   const doc = {
     schema: "aura3d.tier-measurements/1.0",
     generatedAt: new Date().toISOString(),
     baseUrl,
     sampleMs,
-    runner: { browser: browser.version(), note: "forced via aura3d.quality.v1 seed + ?a3d-qr=tiers" },
+    qrFlags: qrFlagSets,
+    devices: deviceSpecs.map((d) => d.name),
+    runner: { browser: browser.version(), launchArgs, note: `forced via aura3d.quality.v1 seed + ?a3d-qr=<set>,tiers for sets ${qrFlagSets.join(" | ")}` },
     rows,
+    budgetExceedances,
   };
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, JSON.stringify(doc, null, 2) + "\n");
-  console.log(`wrote ${outPath} (${rows.length} runs)`);
+  const errored = rows.filter((r) => r.error).length;
+  console.log(`wrote ${outPath} (${rows.length} runs, ${errored} errored, ${budgetExceedances.length} budget exceedances)`);
+  // Errored rows (navigation failures, software renderer) fail the run; the
+  // JSON is still written so the failure is inspectable.
+  if (errored > 0) process.exitCode = 1;
 }
 
 main().catch((err) => { console.error(err); process.exit(1); });

@@ -1,0 +1,62 @@
+{
+  "schema": "aura3d.assets/1.0",
+  "assetBasePath": "/aura-assets",
+  "outputDir": "public/aura-assets",
+  "typegen": "src/aura-assets.ts",
+  "assets": [
+    {
+      "id": "courierParcel",
+      "type": "model",
+      "format": "glb",
+      "source": "repo/assets/courier-parcel.glb",
+      "outputPath": "public/aura-assets/courier-parcel.glb",
+      "url": "/aura-assets/courier-parcel.glb",
+      "hash": "sha256-fixture-parcel",
+      "sizeBytes": 1024,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "provenance": {
+        "license": "cc0",
+        "licenseRaw": "CC0 1.0 Universal",
+        "author": "Fixture Author"
+      },
+      "suitabilityReason": "fixture: provenance fields must not leak into the route module"
+    },
+    {
+      "id": "courierVan",
+      "type": "model",
+      "format": "glb",
+      "source": "repo/assets/courier-van.glb",
+      "outputPath": "public/aura-assets/courier-van.glb",
+      "url": "/aura-assets/courier-van.glb",
+      "hash": "sha256-fixture-van",
+      "sizeBytes": 2048,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "provenance": {
+        "licenseName": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Fixture Author"
+      }
+    },
+    {
+      "id": "unreferencedProp",
+      "type": "model",
+      "format": "glb",
+      "source": "repo/assets/unreferenced-prop.glb",
+      "outputPath": "public/aura-assets/unreferenced-prop.glb",
+      "url": "/aura-assets/unreferenced-prop.glb",
+      "hash": "sha256-fixture-prop",
+      "sizeBytes": 512,
+      "materials": [],
+      "animations": [],
+      "textures": [],
+      "provenance": {
+        "license": "cc0",
+        "licenseRaw": "CC0 1.0 Universal"
+      }
+    }
+  ]
+}

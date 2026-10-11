@@ -18,6 +18,7 @@ import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import { hdriAssets } from "../../../shared/assets";
 import type { CapabilityEntry, CapabilityStatus, ReadyPayload } from "../../../shared/types";
 import { prd05Assets } from "../../../scenes/prd05/assets";
+import { THREE_BASIS_TRANSCODER_PATH } from "./common";
 import { prd05SceneSpecs } from "../../../scenes/prd05/index";
 
 interface LodChain {
@@ -25,7 +26,8 @@ interface LodChain {
   readonly name: string;
   readonly coverage: readonly number[];
   readonly center: THREE.Vector3;
-  readonly radius: number;
+  /** World-space level-0 bounding radius, filled once transforms are final. */
+  radius: number;
 }
 
 interface LodSwitch {
@@ -79,7 +81,7 @@ export default async (host: HTMLElement, _opts?: { qrFlags?: readonly string[] }
     const pmrem = new THREE.PMREMGenerator(renderer);
     pmrem.compileEquirectangularShader();
     try {
-      const hdr = await new RGBELoader().loadAsync(`/${hdriEntry.repoPath}`);
+      const hdr = await new RGBELoader().loadAsync(hdriEntry.url);
       hdr.mapping = THREE.EquirectangularReflectionMapping;
       scene.environment = pmrem.fromEquirectangular(hdr).texture;
       scene.environmentIntensity = spec.environment?.intensity ?? 1;
@@ -121,9 +123,10 @@ export default async (host: HTMLElement, _opts?: { qrFlags?: readonly string[] }
       const json = parser.json as {
         nodes?: Array<{ extensions?: { MSFT_lod?: { nodeIds?: number[] } }; extras?: { MSFT_screencoverage?: number[] } }>;
       };
-      for (const [object, assoc] of parser.associations) {
+      for (const [associated, assoc] of parser.associations) {
         const nodeIndex = (assoc as { nodes?: number }).nodes;
-        if (typeof nodeIndex !== "number" || !(object as THREE.Object3D).isObject3D) continue;
+        if (typeof nodeIndex !== "number" || !(associated as THREE.Object3D).isObject3D) continue;
+        const object = associated as THREE.Object3D;
         const nodeDef = json.nodes?.[nodeIndex];
         const ext = nodeDef?.extensions?.MSFT_lod;
         if (!ext?.nodeIds?.length || !object.parent) continue;
@@ -161,7 +164,7 @@ export default async (host: HTMLElement, _opts?: { qrFlags?: readonly string[] }
   }));
   gltfLoader.setMeshoptDecoder(MeshoptDecoder);
   const ktx2 = new KTX2Loader()
-    .setTranscoderPath("/node_modules/three/examples/jsm/libs/basis/")
+    .setTranscoderPath(THREE_BASIS_TRANSCODER_PATH)
     .detectSupport(renderer);
   gltfLoader.setKTX2Loader(ktx2);
   log.add("optimized-decoders", "supported", "GLTFLoader + MeshoptDecoder + KTX2Loader + MSFT_lod plugin");
@@ -183,7 +186,7 @@ export default async (host: HTMLElement, _opts?: { qrFlags?: readonly string[] }
     }
     const entry = prd05Assets[object.asset];
     try {
-      const gltf = await gltfLoader.loadAsync(`/${entry.repoPath}`);
+      const gltf = await gltfLoader.loadAsync(entry.url);
       const root = gltf.scene;
       root.name = object.name;
       root.position.set(...object.position);
