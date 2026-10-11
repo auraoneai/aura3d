@@ -90,3 +90,38 @@ export function postDiagnostics(app: unknown): unknown {
     errors: d.errors
   };
 }
+
+/**
+ * GL error trace for diagnosis runs: wraps `drawArrays`/`drawElements` so each
+ * call records `getError()` and the bound draw framebuffer's completeness.
+ * Only first-seen (program label, error) pairs are kept. Probe-only: it adds
+ * a getError per draw, so it is installed by the diagnosis harness, never by
+ * a timing probe.
+ */
+export interface GlErrorTrace { readonly entries: string[]; uninstall(): void }
+
+export function traceGlErrors(gl: WebGL2RenderingContext): GlErrorTrace {
+  const entries: string[] = [];
+  const seen = new Set<string>();
+  const names: Record<number, string> = { 0x0500: "INVALID_ENUM", 0x0501: "INVALID_VALUE", 0x0502: "INVALID_OPERATION", 0x0506: "INVALID_FRAMEBUFFER_OPERATION", 0x0505: "OUT_OF_MEMORY" };
+  const wrap = (method: "drawArrays" | "drawElements") => {
+    const original = gl[method].bind(gl) as (...a: unknown[]) => void;
+    (gl as unknown as Record<string, unknown>)[method] = (...args: unknown[]) => {
+      const before = gl.getError();
+      const status = gl.checkFramebufferStatus(gl.DRAW_FRAMEBUFFER);
+      original(...args);
+      const after = gl.getError();
+      const program = gl.getParameter(gl.CURRENT_PROGRAM) as WebGLProgram | null;
+      const fbo = gl.getParameter(gl.DRAW_FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
+      const viewport = Array.from(gl.getParameter(gl.VIEWPORT) as Int32Array).join("x");
+      const tag = `${method} fbo=${fbo ? "pooled" : "default"} vp=${viewport} status=${status === gl.FRAMEBUFFER_COMPLETE ? "complete" : `0x${status.toString(16)}`} pre=${names[before] ?? before} err=${names[after] ?? after} prog=${program ? "set" : "null"}`;
+      if ((after !== 0 || before !== 0 || status !== gl.FRAMEBUFFER_COMPLETE) && !seen.has(tag)) {
+        seen.add(tag);
+        entries.push(tag);
+      }
+    };
+    return () => { (gl as unknown as Record<string, unknown>)[method] = original; };
+  };
+  const undo = [wrap("drawArrays"), wrap("drawElements")];
+  return { entries, uninstall: () => undo.forEach((fn) => fn()) };
+}

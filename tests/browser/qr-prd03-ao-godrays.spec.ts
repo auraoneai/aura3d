@@ -40,6 +40,7 @@ test.describe("PRD-03 S12/S13 — GTAO grounding and god-ray shafts", () => {
       const file = testInfo.outputPath(`${label}.png`);
       writeFileSync(file, Buffer.from(frame.png.split(",")[1]!, "base64"));
       console.log(`[ao-godrays-frame] ${label} meanLuma=${frame.meanLuma.toFixed(2)} ${JSON.stringify(frame.diagnostics).slice(0, 1500)}`);
+      console.log(`[ao-godrays-glerrors] ${label} ${JSON.stringify((frame as { glErrors?: string[] }).glErrors ?? [])}`);
     }
     console.log("[ao-godrays]", JSON.stringify({ ao: result.ao, godrays: result.godrays }));
     ao = result.ao;

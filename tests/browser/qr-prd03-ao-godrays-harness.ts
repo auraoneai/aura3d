@@ -19,7 +19,7 @@
  * stepped frames.
  */
 import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
-import { frameToPngDataUrl, installFrameCapture, meanLuma, postDiagnostics } from "./qr-prd03-frame-capture";
+import { frameToPngDataUrl, installFrameCapture, meanLuma, postDiagnostics, traceGlErrors } from "./qr-prd03-frame-capture";
 import { postV2ModulesReady } from "@aura3d/rendering";
 
 const SIZE = 256;
@@ -37,7 +37,7 @@ function luma(pixels: Uint8Array, i: number): number {
 }
 
 /** Diagnostics for the spec artifacts: a PNG, mean luma and the post/output state per render. */
-export const frameDiagnostics: Record<string, { png: string; meanLuma: number; diagnostics: unknown }> = {};
+export const frameDiagnostics: Record<string, { png: string; meanLuma: number; diagnostics: unknown; glErrors?: string[] }> = {};
 
 async function renderFrame(built: ReturnType<typeof scene>, flags: readonly string[], frames = 8, label = ""): Promise<{ pixels: Uint8Array; reads: number }> {
   const host = document.createElement("div");
@@ -55,7 +55,9 @@ async function renderFrame(built: ReturnType<typeof scene>, flags: readonly stri
     await app.ready();
     await postV2ModulesReady();
     // Read in the stepping task from the default framebuffer (qr-prd03-frame-capture).
-    const capture = installFrameCapture(app, host.querySelector("canvas")!);
+    const canvasEl = host.querySelector("canvas")!;
+    const capture = installFrameCapture(app, canvasEl);
+    const errors = label ? traceGlErrors(canvasEl.getContext("webgl2") as WebGL2RenderingContext) : null;
     const before = readsDuringSteps;
     for (let i = 0; i < frames; i++) {
       insideStep = true;
@@ -65,7 +67,8 @@ async function renderFrame(built: ReturnType<typeof scene>, flags: readonly stri
     }
     const reads = readsDuringSteps - before;
     const pixels = capture.read();
-    if (label) frameDiagnostics[label] = { png: frameToPngDataUrl(pixels, SIZE, SIZE), meanLuma: meanLuma(pixels), diagnostics: postDiagnostics(app) };
+    errors?.uninstall();
+    if (label) frameDiagnostics[label] = { png: frameToPngDataUrl(pixels, SIZE, SIZE), meanLuma: meanLuma(pixels), diagnostics: postDiagnostics(app), glErrors: errors?.entries };
     return { pixels, reads };
   } finally {
     insideStep = false;
