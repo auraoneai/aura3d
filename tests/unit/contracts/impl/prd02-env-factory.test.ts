@@ -34,7 +34,11 @@ describe("C-09 Prd02EnvironmentProbeFactory", () => {
 
   it("neutral(tier) builds a mip-mapped rgba16f cube + SH9 without device reads", () => {
     const device = new MockRenderDevice();
-    const factory = createEnvironmentProbeFactory(device);
+    // Structure-only assertions (size, mips, format, SH9): 4 GGX samples instead
+    // of the default keeps the 256 px tier build but ~3x cheaper (CPU prefilter
+    // was 0.7 s locally / 5.3 s on CI → the 5 s unit timeout). SH9 comes from
+    // the base faces, so it is identical at any sample count.
+    const factory = new Prd02EnvironmentProbeFactory(device, { samples: 4 });
     const probe = factory.neutral("medium"); // C-27 medium environmentSize = 256
     expect(probe.kind).toBe("environment-probe");
     expect(probe.source).toBe("neutral");
