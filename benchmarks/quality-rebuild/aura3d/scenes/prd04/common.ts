@@ -29,14 +29,19 @@ import { setTypedGLBActorQrFlags, setTypedGLBActorQrTransmissionMode, registered
 import { prd04TransmissionDiagnostics, resolveSamplerAnisotropy, setRendererQrFlags } from "@aura3d/rendering";
 import { decodePngDataUrl, lumaMap, rowProfileSpike, temporalLumaStddev } from "../../../scenes/prd04/metrics";
 import { expandPrd04FlagList } from "../../../scenes/prd04/flags";
-import { hdriAssets } from "../../../shared/assets";
+import { hdriAssets, benchmarkAssetFiles } from "../../../shared/assets";
 import type { CapabilityEntry, CapabilityStatus, ReadyPayload } from "../../../shared/types";
 import { prd04ModelAssets, prd04TextureAssets } from "../../../scenes/prd04/assets";
 import type { Prd04SceneSpec } from "../../../scenes/prd04/spec";
 
 declare const __AURA3D_VERSION__: string;
 
-const assetUrl = (repoPath: string): string => `/${repoPath}`;
+// [QR-04] The built bench page (vite build, `suite=promote`/flags-bisect) only serves the
+// shared asset table under /qr-assets/; `/${repoPath}` 404'd there, so every prd04 GLB
+// failed to load in both arms. The lane dev server (dev mode) serves the repo root.
+const SERVED_ASSET_URLS = new Map(benchmarkAssetFiles().map((file) => [file.repoPath, file.url]));
+const assetUrl = (repoPath: string): string =>
+  (import.meta.env?.PROD ? SERVED_ASSET_URLS.get(repoPath) : undefined) ?? `/${repoPath}`;
 
 class CapabilityLog {
   readonly entries: CapabilityEntry[] = [];

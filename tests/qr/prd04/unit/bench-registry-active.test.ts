@@ -31,6 +31,26 @@ describe("prd04 lane scenes are active in the benchmark registry", () => {
   });
 });
 
+describe("prd04 assets ship with the built bench page", () => {
+  it("every prd04 asset is in the served /qr-assets/ table", async () => {
+    const { benchmarkAssetFiles } = await import("../../../../benchmarks/quality-rebuild/shared/assets");
+    const { prd04AssetFiles } = await import("../../../../benchmarks/quality-rebuild/scenes/prd04/assets");
+    const served = new Set(benchmarkAssetFiles().map((f) => `${f.repoPath}=>${f.url}`));
+    for (const file of prd04AssetFiles()) {
+      expect(file.url.startsWith("/qr-assets/"), file.url).toBe(true);
+      expect(served.has(`${file.repoPath}=>${file.url}`), file.repoPath).toBe(true);
+    }
+  });
+
+  it("ci.sh fetches every prd04 LFS blob", async () => {
+    const { prd04ModelAssets } = await import("../../../../benchmarks/quality-rebuild/scenes/prd04/assets");
+    const ci = readFileSync(resolve(ROOT, "benchmarks/quality-rebuild/ci.sh"), "utf8");
+    for (const entry of Object.values(prd04ModelAssets)) {
+      if (entry.lfs) expect(ci, entry.repoPath).toContain(entry.repoPath);
+    }
+  });
+});
+
 describe("prd04 page adapters forward the page's qrFlags", () => {
   for (const registration of prd04Scenes) {
     it(`${registration.id} passes opts.qrFlags to runPrd04AuraScene`, () => {
