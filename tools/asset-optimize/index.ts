@@ -191,12 +191,14 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
     for (const file of options.files) {
       const sourcePath = join(repoRoot, file.path);
       if (!existsSync(sourcePath)) {
-        log(`skip ${file.path}: missing source`);
+        log(`${file.path}: ERROR missing source`);
+        rows.push({ id: file.path, checks: [], error: "missing source" });
         continue;
       }
       const profile = ASSET_OPTIMIZE_PROFILES[file.profile as AssetOptimizeProfileId];
       if (!profile) {
-        log(`skip ${file.path}: unknown profile "${file.profile}"`);
+        log(`${file.path}: ERROR unknown profile "${file.profile}"`);
+        rows.push({ id: file.path, checks: [], error: `unknown profile "${file.profile}"` });
         continue;
       }
       const sourceBytes = embedExternalGlbImages(readFileSync(sourcePath), dirname(sourcePath), log);
@@ -238,14 +240,19 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
     const rel = (entry as { source?: string }).source ?? entry.outputPath;
     const sourcePath = join(manifestDir, rel);
     if (!existsSync(sourcePath)) {
-      log(`skip ${entry.id}: missing source ${rel}`);
+      // Fail closed (P-57): a manifest model whose source is not in the
+      // repo is a report row with an error, not a silent omission (the
+      // 213/226 dry-run gap was these skips).
+      log(`${entry.id}: ERROR missing source ${rel}`);
+      rows.push({ id: entry.id, checks: [], error: `missing source ${rel}` });
       continue;
     }
     const sourceBytes = readFileSync(sourcePath);
     const sourceHash = createHash("sha256").update(sourceBytes).digest("hex");
     const profile = options.profile ? ASSET_OPTIMIZE_PROFILES[options.profile as AssetOptimizeProfileId] : profileForRole(entry.role, entry.bounds);
     if (!profile) {
-      log(`skip ${entry.id}: unknown profile "${options.profile}"`);
+      log(`${entry.id}: ERROR unknown profile "${options.profile}"`);
+      rows.push({ id: entry.id, checks: [], error: `unknown profile "${options.profile}"` });
       continue;
     }
 
@@ -369,6 +376,14 @@ async function main(): Promise<number> {
     mkdirSync(dirname(out), { recursive: true });
     writeFileSync(out, JSON.stringify({ generatedAt: new Date().toISOString(), dryRun, rows: result.rows }, null, 2) + "\n");
     console.log(`wrote ${reportPath}`);
+  }
+  // Fail closed: any errored row (missing source, unknown profile, decode or
+  // optimize failure) fails the run. Before this, errors were logged and the
+  // CLI exited 0, so a run where every entry failed still reported success.
+  const errored = result.rows.filter((row) => row.error !== undefined);
+  if (errored.length > 0) {
+    console.error(`asset-optimize: ${errored.length}/${result.rows.length} row(s) errored: ${errored.map((row) => row.id).join(", ")}`);
+    return 1;
   }
   return 0;
 }
