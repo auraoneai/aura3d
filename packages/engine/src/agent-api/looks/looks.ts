@@ -201,7 +201,10 @@ function buildLookHdriAssets() {
   return defineAuraAssets({
     autumnFieldPuresky1k: { type: "texture", format: "hdr", url: "/hdri/autumn_field_puresky_1k.hdr" },
     kloppenheim06Puresky1k: { type: "texture", format: "hdr", url: "/hdri/kloppenheim_06_puresky_1k.hdr" },
-    studioSmall081k: { type: "texture", format: "hdr", url: "/hdri/studio_small_08_1k.hdr" }
+    studioSmall081k: { type: "texture", format: "hdr", url: "/hdri/studio_small_08_1k.hdr" },
+    // A3D_QR_LOOKS only: Poly Haven qwantani_night_puresky (CC0), the
+    // aura.library.json `night-2k` entry.
+    night2k: { type: "texture", format: "hdr", url: "/hdri/night-2k.hdr" }
   });
 }
 function lookHdriAssets(): LookHdriAssets {
@@ -211,8 +214,38 @@ function lookHdriAssets(): LookHdriAssets {
 const HDRI_ASSET = {
   get autumn_field_puresky_1k() { return lookHdriAssets().autumnFieldPuresky1k; },
   get kloppenheim_06_puresky_1k() { return lookHdriAssets().kloppenheim06Puresky1k; },
-  get studio_small_08_1k() { return lookHdriAssets().studioSmall081k; }
+  get studio_small_08_1k() { return lookHdriAssets().studioSmall081k; },
+  get "night-2k"() { return lookHdriAssets().night2k; }
 } as const;
+
+/**
+ * A3D_QR_LOOKS (flag on) upgrades to the v0 expansion. Flag off keeps the
+ * frozen §7.1.1 v0 values byte-identical (13-S9 flag-off identity).
+ * The §7.1 dark looks had no HDRI at all, so with the flag on they had no IBL
+ * (look/no-ibl) and dielectrics/metals showed no specular. They now get a
+ * real night-sky HDRI at a low intensity. `background: false` keeps the
+ * authored dark backdrop where a starry sky would be wrong (an indoor arcade).
+ * space and underwater stay without an HDRI: the corpus has no admitted
+ * licensed deep-space or underwater probe, and a sky probe would light them
+ * wrongly.
+ */
+interface LookQrUpgrade {
+  readonly hdri: keyof typeof HDRI_ASSET;
+  readonly environmentIntensity: number;
+  readonly background: boolean;
+}
+const LOOK_QR_UPGRADES: Partial<Record<AuraLookId, LookQrUpgrade>> = {
+  "night-city": { hdri: "night-2k", environmentIntensity: 0.45, background: true },
+  "polar-night": { hdri: "night-2k", environmentIntensity: 0.55, background: true },
+  "neon-arcade": { hdri: "night-2k", environmentIntensity: 0.35, background: false }
+};
+
+/** HDRI files a look references (flag-aware); template scaffolds copy these. */
+export function lookHdriFiles(id: AuraLookId, flags: QrFlags = resolveFlags()): readonly string[] {
+  const upgrade = flags.on("A3D_QR_LOOKS") ? LOOK_QR_UPGRADES[id] : undefined;
+  const hdri = upgrade?.hdri ?? describeOrThrow(id).v0.hdri;
+  return hdri === null ? [] : [`${hdri}.hdr`];
+}
 
 function applyOverrides(preset: AuraLookPreset, overrides: AuraLookOverrides | undefined): AuraLookPreset["v0"] {
   if (overrides === undefined) return preset.v0;
@@ -240,10 +273,20 @@ function applyOverrides(preset: AuraLookPreset, overrides: AuraLookOverrides | u
 }
 
 /** Flat v0 children for a preset (the group's contents, and `looks.nodes`). */
-function v0Children(preset: AuraLookPreset, overrides: AuraLookOverrides | undefined): AuraSceneNode[] {
+function v0Children(preset: AuraLookPreset, overrides: AuraLookOverrides | undefined, flags: QrFlags): AuraSceneNode[] {
   const v0 = applyOverrides(preset, overrides);
   const children: AuraSceneNode[] = [];
-  if (v0.hdri !== null) {
+  const upgrade = flags.on("A3D_QR_LOOKS") ? LOOK_QR_UPGRADES[preset.id] : undefined;
+  if (upgrade !== undefined) {
+    children.push(
+      environments.hdri({
+        name: `look hdri ${upgrade.hdri}`,
+        intensity: upgrade.environmentIntensity,
+        texture: HDRI_ASSET[upgrade.hdri],
+        background: upgrade.background
+      }).toJSON()
+    );
+  } else if (v0.hdri !== null) {
     children.push(
       environments.hdri({
         name: `look hdri ${v0.hdri}`,
@@ -315,9 +358,10 @@ function describeOrThrow(id: AuraLookId): AuraLookPreset {
  *  (T1.13); exported for it, not part of the authoring surface. */
 export function expandLookChildren(
   id: AuraLookId,
-  overrides?: AuraLookOverrides
+  overrides?: AuraLookOverrides,
+  flags: QrFlags = resolveFlags()
 ): readonly AuraSceneNode[] {
-  return v0Children(describeOrThrow(id), clampLookOverrides(overrides));
+  return v0Children(describeOrThrow(id), clampLookOverrides(overrides), flags);
 }
 
 function presetImpl(
@@ -341,7 +385,7 @@ function presetImpl(
       clamped?.background !== undefined && clamped.background !== "look"
         ? clamped.background
         : preset.v0.background,
-    children: v0Children(preset, clamped)
+    children: v0Children(preset, clamped, resolveFlags(options))
   } as AuraGroupNode);
 }
 
@@ -366,7 +410,7 @@ export const looks = {
   /** Flat v0 children (same list the group carries). */
   nodes(id: AuraLookId, overrides?: AuraLookOverrides): readonly AuraNodeBuilder<AuraSceneNode>[] {
     const preset = describeOrThrow(id);
-    return v0Children(preset, clampLookOverrides(overrides)).map((node) => new AuraNodeBuilder(node));
+    return v0Children(preset, clampLookOverrides(overrides), resolveFlags()).map((node) => new AuraNodeBuilder(node));
   },
 
   /** v0 only: renderer quality + DPR cap live here, not in authored code.
