@@ -169,3 +169,26 @@ describe("#266 sub-flag expansion honours later kill switches", () => {
     expect(flags.on("A3D_QR_WORLD_BIOME")).toBe(true);
   });
 });
+
+describe("#625 'all' / 'none' inside comma lists", () => {
+  it("route_bank_shot,all arms every lane flag plus the route flag", async () => {
+    const { resolveQrFlags } = await import("../../../../packages/engine/src/contracts/flags");
+    const flags = resolveQrFlags({ options: ["route.bank_shot,all"], env: {} });
+    expect(flags.on("A3D_QR_GAME")).toBe(true);
+    expect(flags.on("A3D_QR_WORLD")).toBe(true);
+    expect(flags.on("A3D_QR_ROUTE_BANK_SHOT")).toBe(true);
+  });
+  it("all,-world keeps world (and its sub-flags) off", async () => {
+    const { resolveQrFlags } = await import("../../../../packages/engine/src/contracts/flags");
+    const flags = resolveQrFlags({ options: ["all,-world"], env: {} });
+    expect(flags.on("A3D_QR_WORLD")).toBe(false);
+    expect(flags.on("A3D_QR_WORLD_TERRAIN")).toBe(false);
+    expect(flags.on("A3D_QR_CAMERA")).toBe(true);
+  });
+  it("none,game keeps game on and everything else off", async () => {
+    const { resolveQrFlags } = await import("../../../../packages/engine/src/contracts/flags");
+    const flags = resolveQrFlags({ options: ["none,game"], env: {} });
+    expect(flags.on("A3D_QR_GAME")).toBe(true);
+    expect(flags.on("A3D_QR_CAMERA")).toBe(false);
+  });
+});
