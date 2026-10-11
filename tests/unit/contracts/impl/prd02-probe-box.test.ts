@@ -82,3 +82,41 @@ describe("02-S12 pre-frame capture driver", () => {
     expect(calls).toBe(1);
   });
 });
+
+describe("02-S12 wiring to lane 01 (#1115): pre-frame capture + per-item environmentCube", () => {
+  it("prd02BeforeFrame captures 6 faces through renderProbeFace; collect binds the probe cube on items inside it", async () => {
+    const { MockRenderDevice } = await import("../../../../packages/rendering/src/RenderDevice");
+    const { resolveQrFlags } = await import("../../../../packages/engine/src/contracts/flags");
+    const { Geometry } = await import("../../../../packages/rendering/src/Geometry");
+    const { identityMat4 } = await import("@aura3d/scene");
+    const { applyProbeEnvironmentCubes, prd02BeforeFrame } = await import("../../../../packages/rendering/src/probes/Prd02ProbesContributor");
+    const device = new MockRenderDevice();
+    const faces: number[] = [];
+    const renderer = {
+      device,
+      renderProbeFace: (_source: unknown, face: number) => { faces.push(face); return {}; }
+    };
+    const source = {
+      "prd02.probes.room": { kind: "probe", probe: "reflection", name: "room", options: { position: [0, 1, 0], boxHalfExtents: [2, 2, 2], resolution: 128 } }
+    } as never;
+    const flags = resolveQrFlags({ options: { A3D_QR_LIGHTING: true } });
+    expect(prd02BeforeFrame(renderer as never, source, flags)).toEqual(["room"]);
+    expect(faces).toEqual([0, 1, 2, 3, 4, 5]);
+    // once-mode: no recapture next frame
+    expect(prd02BeforeFrame(renderer as never, source, flags)).toEqual([]);
+    expect(faces).toHaveLength(6);
+
+    const inside = { geometry: Geometry.triangle(), modelMatrix: identityMat4(), label: "inside" };
+    const far = { geometry: Geometry.triangle(), modelMatrix: Float32Array.from([1,0,0,0, 0,1,0,0, 0,0,1,0, 40,0,0,1]), label: "far" };
+    const [a, b] = applyProbeEnvironmentCubes([inside, far] as never, device);
+    expect((a as { environmentCube?: { name: string } }).environmentCube?.name).toBe("u_environmentCubeMapTexture");
+    expect((a as { environmentCubeMip?: number }).environmentCubeMip).toBeGreaterThan(1);
+    expect((b as { environmentCube?: unknown }).environmentCube).toBeUndefined();
+  });
+
+  it("flipRows turns GL bottom-up readback rows top-down", async () => {
+    const { flipRows } = await import("../../../../packages/rendering/src/probes/ReflectionProbeSystem");
+    const img = new Float32Array([1, 1, 1, 1, 2, 2, 2, 2]); // 1×2: bottom row 1, top row 2
+    expect(Array.from(flipRows(img, 1, 2))).toEqual([2, 2, 2, 2, 1, 1, 1, 1]);
+  });
+});

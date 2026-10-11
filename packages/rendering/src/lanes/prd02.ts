@@ -249,7 +249,12 @@ export {
   ROUGHNESS_TO_LOD_BLACKBOARD_KEY,
   createPrd02ProbesContributor,
   installPrd02ProbeRenderer,
-  probeNodesFromSource
+  probeNodesFromSource,
+  // 02-S12: frame-host pre-frame hook (#1113) + collect-phase cube override.
+  prd02BeforeFrame,
+  applyProbeEnvironmentCubes,
+  PROBE_BINDINGS_BLACKBOARD_KEY,
+  type Prd02ProbeCaptureRenderer
 } from "../probes/Prd02ProbesContributor.js";
 export {
   fetchLtcLutTextures,
