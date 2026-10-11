@@ -7,7 +7,8 @@ import { resolveQrFlags } from "@aura3d/engine/contracts";
 import { createFrameLoop, type FrameLoopTick } from "@aura3d/engine/lanes";
 
 const loopFlags = resolveQrFlags({ options: ["camera.loop"] });
-const offFlags = resolveQrFlags({});
+// A3D_QR_CAMERA is default-on (#1224): "off" must be explicit.
+const offFlags = resolveQrFlags({ options: ["-camera"] });
 
 function makeLoop(options: Record<string, unknown> = {}) {
   return createFrameLoop({ useRaf: false, flags: loopFlags, ...options });

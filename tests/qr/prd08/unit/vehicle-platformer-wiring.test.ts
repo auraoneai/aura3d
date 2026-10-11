@@ -12,7 +12,8 @@ import {
 } from "../../../../packages/engine/src/agent-api/GameGenreKits.js";
 
 const QR_ON = { flags: resolveQrFlags({ options: ["camera"] }) };
-const QR_OFF = { flags: resolveQrFlags({ options: [] }) };
+// A3D_QR_CAMERA is default-on (#1224): "off" must be explicit.
+const QR_OFF = { flags: resolveQrFlags({ options: ["-camera"] }) };
 
 const route = {
   id: "test-loop",
