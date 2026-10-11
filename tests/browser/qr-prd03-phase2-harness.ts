@@ -69,10 +69,23 @@ function bakeLut3D(gl: WebGL2RenderingContext): WebGLTexture {
   gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
   gl.texImage3D(gl.TEXTURE_3D, 0, gl.RGBA8, LUT_SIZE, LUT_SIZE, LUT_SIZE, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+  // `u_userLut` is a statically used sampler3D that defaults to unit 0, where
+  // the LUT being rendered into is bound: a feedback loop. ANGLE Vulkan
+  // rejects that draw (INVALID_OPERATION), so the LUT stayed empty and every
+  // ramp step read 0 vs 255 (GPU run 38147488474). Unbind the target and give
+  // u_userLut its own 1×1×1 texture on unit 1, as the engine does with its
+  // identity LUT.
+  gl.bindTexture(gl.TEXTURE_3D, null);
+  const dummyUserLut = gl.createTexture()!;
+  gl.activeTexture(gl.TEXTURE1);
+  gl.bindTexture(gl.TEXTURE_3D, dummyUserLut);
+  gl.texImage3D(gl.TEXTURE_3D, 0, gl.RGBA8, 1, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([255, 255, 255, 255]));
+  gl.activeTexture(gl.TEXTURE0);
   const fbo = gl.createFramebuffer()!;
   gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
   gl.viewport(0, 0, LUT_SIZE, LUT_SIZE);
   gl.useProgram(program);
+  gl.uniform1i(gl.getUniformLocation(program, "u_userLut"), 1);
   gl.uniform1i(gl.getUniformLocation(program, "u_hasUserLut"), 0);
   gl.uniform1f(gl.getUniformLocation(program, "u_lutIntensity"), LUT_PARAMS.lutIntensity);
   gl.uniform1f(gl.getUniformLocation(program, "u_contrast"), LUT_PARAMS.contrast);
