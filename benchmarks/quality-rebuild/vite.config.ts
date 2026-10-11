@@ -1,5 +1,5 @@
 import { copyFileSync, cpSync, createReadStream, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { basename, dirname, resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig, type Plugin } from "vite";
 import rootConfig from "../../vite.config";
@@ -92,7 +92,12 @@ function qualityRebuildAssets(): Plugin {
           skipped.push({ repoPath: file.repoPath, reason: "unfetched Git LFS pointer (check out with lfs: true or run git lfs pull)" });
           continue;
         }
-        copyFileSync(source, resolve(target, basename(file.url)));
+        // Keep the URL's sub-path (/qr-assets/draco/…, /qr-assets/basis/…): flattening
+        // to basename(url) broke the draco/ URLs and would collide basis/ files (#857).
+        const dest = resolve(outDir, file.url.replace(/^\/+/, ""));
+        if (!dest.startsWith(target)) throw new Error(`quality-rebuild: asset url escapes qr-assets: ${file.url}`);
+        mkdirSync(dirname(dest), { recursive: true });
+        copyFileSync(source, dest);
       }
       writeFileSync(resolve(target, "asset-copy-report.json"), JSON.stringify({ copied: files.length - skipped.length, skipped }, null, 2));
       for (const item of skipped) this.warn(`quality-rebuild asset skipped: ${item.repoPath} (${item.reason})`);
