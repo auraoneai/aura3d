@@ -343,10 +343,13 @@ export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): D
     const depth = (zHi - zLo) + depthPad * 2;
     // view already centres z on (min+max)/2 — the proj z column must NOT
     // translate again (double-centring pushed off-frustum casters past z=1).
+    // #1141: view z runs along `forward` (light travel), so depth must grow
+    // with +z. The old -2/depth flipped it: the less-equal depth pass kept the
+    // surface FARTHEST from the light and receivers behind casters tested lit.
     const proj = new Float32Array([
       1 / half, 0, 0, 0,
       0, 1 / half, 0, 0,
-      0, 0, -2 / depth, 0,
+      0, 0, 2 / depth, 0,
       0, 0, 0, 1
     ]);
     // proj*(view*p): row-major compose proj × view.
