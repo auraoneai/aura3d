@@ -68,6 +68,8 @@ async function renderFrame(built: ReturnType<typeof scene>, flags: readonly stri
       if (!post?.setQualityTier) throw new Error("app.post.setQualityTier unavailable");
       post.setQualityTier(tier);
       (app as unknown as { setScene(s: unknown): void }).setScene(built);
+      const q = (app as { quality?: { tier?: unknown; current?: unknown } }).quality;
+      console.log(`[ao-godrays-tier] ${label} requested=${tier} surface=${String((post as { qualityTier?: unknown }).qualityTier)} appQuality=${q ? JSON.stringify({ tier: q.tier ?? null, current: q.current ?? null }) : "absent"}`);
     }
     // Read in the stepping task from the default framebuffer (qr-prd03-frame-capture).
     const canvasEl = host.querySelector("canvas")!;
