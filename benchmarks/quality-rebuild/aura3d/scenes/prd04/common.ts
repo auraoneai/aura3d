@@ -358,8 +358,11 @@ export async function runPrd04AuraScene(
   if (wantStrip) {
     const interval = spec.strip!.intervalMs / 1000;
     for (let i = 0; i < spec.strip!.frames; i++) {
-      app.step(interval);
       await nextFrame();
+      // Render and read back in the same task: once the frame is composited the
+      // WebGL drawing buffer may already be cleared, and toDataURL returns a
+      // blank image (see the `pixels` capture below).
+      app.step(interval);
       const shot = app.screenshot();
       const decoded = await decodePngDataUrl(shot.dataUrl);
       frameLumas.push(lumaMap(decoded.pixels));
@@ -409,6 +412,12 @@ export async function runPrd04AuraScene(
 
   let frame: Record<string, unknown> | undefined;
   if (options.pixels === true) {
+    // GPU runs 38144924567/38156695015: S3 / §16.2 tinted-hero / alpha-mask frames
+    // came back as pure clear colour (subject mask 0, every metric 0). The
+    // screenshot ran a frame after the last step(), when the drawing buffer had
+    // already been presented and cleared. Re-render immediately before reading
+    // back, in the same task. step(0) does not advance time.
+    app.step(0);
     const shot = app.screenshot();
     const decoded = await decodePngDataUrl(shot.dataUrl);
     frame = decoded;
