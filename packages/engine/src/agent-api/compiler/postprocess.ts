@@ -253,7 +253,9 @@ export function createProductionRuntimePostprocess(
   // pass at all, and volumetric fog runs as the CPU `volumetric-light` pass.
   if (postFlagOn && !strictPostFields) {
     for (const effectName of ["film-grain", "chromatic-aberration"] as const) {
-      if (nodes.some((node) => node.kind === "effect" && node.effect === effectName)) {
+      // film-grain / chromatic-aberration are lane-03 factory ids outside the
+      // frozen AuraEffectType union, so compare as strings.
+      if (nodes.some((node) => node.kind === "effect" && (node.effect as string) === effectName)) {
         fieldDiagnostics.push({ code: "EFFECT_PENDING_GPU_PASS", effect: effectName, message: `${effectName} has no GPU pass on the compat.post "3.0" chain` });
       }
     }
