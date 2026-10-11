@@ -67,6 +67,12 @@ export type SideViewGameBudgetedFeature =
 export interface SideViewGameRenderPresetOptions {
   readonly debugVolumesEnabled?: boolean;
   readonly reducedMotion?: boolean;
+  /**
+   * #67 (R-14-06): scene/post target format. Pass C-05
+   * `probeHdrTargetFormat(device)` so HDR-capable devices get `rgba16f`;
+   * omitted keeps the historical `rgba8` (no default change without a flag).
+   */
+  readonly hdrTargetFormat?: "rgba8" | "rgba16f";
 }
 
 /**
@@ -460,7 +466,7 @@ export function createSideViewGameRenderPreset(
       ]
     },
     postprocess: {
-      targetFormat: "rgba8",
+      targetFormat: options.hdrTargetFormat ?? "rgba8",
       bloom: {
         threshold: 0.78,
         intensity: reducedMotion ? 0.18 : 0.32,
@@ -481,6 +487,12 @@ export function createSideViewGameRenderPreset(
 export interface TopDownGameRenderPresetOptions {
   readonly debugVolumesEnabled?: boolean;
   readonly reducedMotion?: boolean;
+  /**
+   * #67 (R-14-06): scene/post target format. Pass C-05
+   * `probeHdrTargetFormat(device)` so HDR-capable devices get `rgba16f`;
+   * omitted keeps the historical `rgba8` (no default change without a flag).
+   */
+  readonly hdrTargetFormat?: "rgba8" | "rgba16f";
 }
 
 export interface TopDownGameRenderPreset {
@@ -537,7 +549,7 @@ export function createTopDownGameRenderPreset(
       ]
     },
     postprocess: {
-      targetFormat: "rgba8",
+      targetFormat: options.hdrTargetFormat ?? "rgba8",
       bloom: {
         threshold: 0.78,
         intensity: reducedMotion ? 0.18 : 0.32,
