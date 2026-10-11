@@ -119,26 +119,29 @@ describe("RoomEnvironmentScene matches pinned three r185 RoomEnvironment", () =>
   });
 });
 
-describe("legacy diffuse reads SH9 irradiance, not a 1×1 average (02-S2 follow-up)", () => {
-  it("sh9IrradianceEquirect: constant radiance L → L everywhere; the neutral room is brighter facing up", async () => {
-    const { sh9IrradianceEquirect } = await import("../../../../packages/rendering/src/environment/probeBuild");
-    const L = 0.7;
-    const constant = new Float32Array(27);
-    constant[0] = constant[1] = constant[2] = L * Math.sqrt(4 * Math.PI);
-    const flat = sh9IrradianceEquirect(constant, 8, 4);
-    for (let i = 0; i < flat.length; i += 4) expect(flat[i]).toBeCloseTo(L, 3);
-    const room = sh9IrradianceEquirect(NEUTRAL_FLOOR_SH9, 8, 4);
-    const top = room[(0 * 8 + 4) * 4]!;
-    const bottom = room[(3 * 8 + 4) * 4]!;
-    expect(top).toBeGreaterThan(bottom);
+describe("legacy neutral room is directional (02-S2 follow-up)", () => {
+  it("the last cube level is SH9 irradiance / pi: brighter facing the lit ceiling than the floor", async () => {
+    const { buildNeutralRoomLegacyProbe } = await import("../../../../packages/rendering/src/environment/probeBuild");
+    const probe = buildNeutralRoomLegacyProbe();
+    expect(probe.mipCount).toBe(4);
+    const faces = probe.specularCube.cubeFaces;
+    const last = (face: number) => faces[face]!.mipLevels[3]!;
+    expect(last(2).width).toBe(16);
+    // Positive half floats order like their uint16 bit patterns.
+    const centre = (face: number) => {
+      const level = last(face);
+      const i = ((level.height / 2) * level.width + level.width / 2) * 4;
+      return (level.data as Uint16Array)[i]!;
+    };
+    // GL cube order +x, -x, +y, -y, +z, -z: +y (2) looks at the 100-intensity ceiling panel.
+    expect(centre(2)).toBeGreaterThan(centre(3));
   });
 
-  it("the bound mip count lands the shader's diffuse lod on the 32-wide irradiance level", () => {
+  it("collectEnvironmentLighting binds that probe's cube for a no-light scene", () => {
     setRendererQrFlags(LIGHTING_ON);
     const lighting = collectEnvironmentLighting({} as never)!;
-    const tex = lighting.environmentMapTexture!.texture!;
-    const level = tex.mipLevels[lighting.environmentMapMipCount! - 1]!;
-    expect(level.width).toBe(32);
-    expect(lighting.environmentMapMipCount).toBeLessThan(tex.mipLevels.length);
+    const cube = lighting.environmentCubeMapTexture!.texture!;
+    expect(cube.cubeFaces[0]!.mipLevels).toHaveLength(4);
+    expect(cube.label).toBe("env-neutral-room-legacy");
   });
 });

@@ -218,6 +218,80 @@ export function buildNeutralFloorProbe(
   );
 }
 
+/** Nearest 2× upsample of one square float RGBA face. */
+function upsampleFace(face: Float32Array, size: number): Float32Array {
+  const out = new Float32Array(size * size * 16);
+  for (let y = 0; y < size * 2; y += 1) {
+    for (let x = 0; x < size * 2; x += 1) {
+      const src = ((y >> 1) * size + (x >> 1)) * 4;
+      const dst = (y * size * 2 + x) * 4;
+      out[dst] = face[src]!; out[dst + 1] = face[src + 1]!; out[dst + 2] = face[src + 2]!; out[dst + 3] = face[src + 3]!;
+    }
+  }
+  return out;
+}
+
+/** 2×2 box downsample of one square float RGBA face. */
+function downsampleFace(face: Float32Array, size: number): Float32Array {
+  const half = size / 2;
+  const out = new Float32Array(half * half * 4);
+  for (let y = 0; y < half; y += 1) {
+    for (let x = 0; x < half; x += 1) {
+      for (let c = 0; c < 4; c += 1) {
+        const at = (yy: number, xx: number) => face[(yy * size + xx) * 4 + c]!;
+        out[(y * half + x) * 4 + c] = 0.25 * (at(2 * y, 2 * x) + at(2 * y, 2 * x + 1) + at(2 * y + 1, 2 * x) + at(2 * y + 1, 2 * x + 1));
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * Directional neutral room for the legacy forward path (#1141 / 02-S2).
+ * The legacy shader reads diffuse from the *last* level of the bound cube
+ * (lod = mipCount − 1, clamped), so the constant `buildNeutralFloorProbe`
+ * gives every normal the same light. This probe is the analytic r185 room at
+ * 64 px (no GGX prefilter: ~24k analytic samples, once; nearest-upsampled
+ * to the 128 px mip 0), a 2×2 box mip at 32 px for glossy reflections, and a 16 px last level
+ * holding the SH9 cosine irradiance ÷ π (Lambert-equivalent radiance), so
+ * diffuse is directional and cosine-weighted like three's PMREM.
+ */
+export function buildNeutralRoomLegacyProbe(options: Prd02ProbeBuildOptions = {}): Prd02EnvironmentProbe {
+  const base = 128;
+  const sh9 = options.sh9 ?? new Float32Array(NEUTRAL_FLOOR_SH9);
+  // Sample the room at 64 px (24k analytic rays) and nearest-upsample to the
+  // 128 px base the probe contract requires: keeps the one-off main-thread
+  // cost well under the T0-25 50 ms long-task budget.
+  const sampled = buildRoomFaces(base / 2);
+  const levels: { faceSize: number; faces: Float32Array[] }[] = [
+    { faceSize: base, faces: sampled.map((face) => upsampleFace(face, base / 2)) },
+    { faceSize: base / 2, faces: sampled }
+  ];
+  levels.push({ faceSize: base / 4, faces: sampled.map((face) => downsampleFace(face, base / 2)) });
+  const last = 16;
+  const irradiance: Float32Array[] = [];
+  for (let f = 0; f < 6; f += 1) {
+    const face = new Float32Array(last * last * 4);
+    for (let y = 0; y < last; y += 1) {
+      for (let x = 0; x < last; x += 1) {
+        const d = faceUvToDir(f, ((x + 0.5) / last) * 2 - 1, ((y + 0.5) / last) * 2 - 1);
+        const len = Math.hypot(d[0], d[1], d[2]) || 1;
+        const [r, g, b] = evaluateSH9Irradiance(sh9, [d[0] / len, d[1] / len, d[2] / len]);
+        const i = (y * last + x) * 4;
+        face[i] = Math.max(0, r / Math.PI); face[i + 1] = Math.max(0, g / Math.PI); face[i + 2] = Math.max(0, b / Math.PI); face[i + 3] = 1;
+      }
+    }
+    irradiance.push(face);
+  }
+  levels.push({ faceSize: last, faces: irradiance });
+  return buildProbeFromLevels(levels, base, {
+    ...options,
+    label: options.label ?? "env-neutral-room-legacy",
+    source: options.source ?? "neutral",
+    sh9
+  });
+}
+
 /** Rasterize the analytic RoomEnvironmentScene into six float faces. */
 export function buildRoomFaces(faceSize: number): Float32Array[] {
   const faces: Float32Array[] = [];
@@ -323,43 +397,9 @@ function downsampleRgba(src: Float32Array, w: number, h: number): { data: Float3
  * no RGBA8), which fixes the E5 dim/clip problem on the legacy environment
  * path when the flag is on. Mip chain is a CPU box filter.
  */
-/** SH9 cosine irradiance ÷ π per equirect texel (same direction convention as `probeToEquirectTexture`). */
-export function sh9IrradianceEquirect(sh9: Float32Array, width: number, height: number): Float32Array {
-  const out = new Float32Array(width * height * 4);
-  for (let row = 0; row < height; row += 1) {
-    const theta = ((row + 0.5) / height) * Math.PI;
-    const sinT = Math.sin(theta);
-    const cosT = Math.cos(theta);
-    for (let col = 0; col < width; col += 1) {
-      const phi = ((col + 0.5) / width) * 2 * Math.PI - Math.PI;
-      const [r, g, b] = evaluateSH9Irradiance(sh9, [-Math.cos(phi) * sinT, cosT, Math.sin(phi) * sinT]);
-      const i = (row * width + col) * 4;
-      out[i] = Math.max(0, r / Math.PI); out[i + 1] = Math.max(0, g / Math.PI); out[i + 2] = Math.max(0, b / Math.PI); out[i + 3] = 1;
-    }
-  }
-  return out;
-}
-
-/** Mip count to bind so the legacy shader's diffuse lod (mipCount − 1) lands on the irradiance level. */
-export function legacyDiffuseMipCount(texture: Texture, irradianceLevelWidth: number): number {
-  const index = texture.mipLevels.findIndex((level) => level.width === irradianceLevelWidth);
-  return index > 0 ? index + 1 : texture.mipLevels.length;
-}
-
 export function probeToEquirectTexture(
   probe: EnvironmentProbe,
-  options: {
-    readonly width?: number;
-    readonly height?: number;
-    /**
-     * Replace the mip level of this width with the probe's SH9 cosine
-     * irradiance ÷ π (Lambert-equivalent radiance) — the legacy forward
-     * shader reads its diffuse from the last *bound* mip (see
-     * `legacyDiffuseMipCount`), so that level becomes directional diffuse
-     * instead of a box-filtered 1×1 average (#1141 / 02-S2).
-     */
-    readonly irradianceLevelWidth?: number;
-  } = {}
+  options: { readonly width?: number; readonly height?: number } = {}
 ): Texture {
   const width = options.width ?? probe.faceSize * 2;
   const height = options.height ?? probe.faceSize;
@@ -395,12 +435,7 @@ export function probeToEquirectTexture(
   let h = height;
   while (w > 1 || h > 1) {
     const next = downsampleRgba(equirect, w, h);
-    const irradiance = options.irradianceLevelWidth === next.width && probe.sh9.length === 27;
-    mipLevels.push({
-      width: next.width,
-      height: next.height,
-      data: faceToHalf(irradiance ? sh9IrradianceEquirect(probe.sh9, next.width, next.height) : next.data)
-    });
+    mipLevels.push({ width: next.width, height: next.height, data: faceToHalf(next.data) });
     equirect = next.data;
     w = next.width;
     h = next.height;

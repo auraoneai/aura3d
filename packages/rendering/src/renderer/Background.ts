@@ -8,7 +8,7 @@ import type { EnvironmentProbe } from "../contracts/environment";
 import type { Texture } from "../Texture";
 import { TextureBinding } from "../TextureBinding";
 import { Sampler } from "../Sampler";
-import { buildNeutralFloorProbe, legacyDiffuseMipCount, probeToEquirectTexture } from "../environment/probeBuild";
+import { buildNeutralRoomLegacyProbe, probeToEquirectTexture } from "../environment/probeBuild";
 import { isIterable } from "./RenderShared";
 import { Scene } from "@aura3d/scene";
 import { rendererQrFlags } from "./FrameGraph";
@@ -119,7 +119,7 @@ export function isPrd02LegacyFallbackEnvironment(lighting: EnvironmentLightingOp
   return store[PRD02_LEGACY_FALLBACK_ENVIRONMENTS]?.has(lighting) ?? false;
 }
 
-/** One neutral floor per renderer process: analytic constant cube + baked SH (T0-25), no prefilter. */
+/** One directional neutral room per renderer process (analytic r185 room + SH9 irradiance last level; no GGX prefilter). */
 let prd02NeutralFloor: EnvironmentProbe | null = null;
 
 /**
@@ -130,7 +130,7 @@ let prd02NeutralFloor: EnvironmentProbe | null = null;
  * heuristics under the flag).
  */
 export function resolvePrd02NeutralRoomLighting(legacy: EnvironmentLightingOptions | undefined): EnvironmentLightingOptions {
-  prd02NeutralFloor ??= buildNeutralFloorProbe(128, { label: "env-neutral-floor-legacy" });
+  prd02NeutralFloor ??= buildNeutralRoomLegacyProbe();
   const ambientOnly = legacy && !legacy.proceduralMap && !legacy.environmentMapTexture && !legacy.environmentCubeMapTexture;
   const ambient = ambientOnly && legacy.intensity > 0
     ? { color: [legacy.color[0], legacy.color[1], legacy.color[2]] as [number, number, number], intensity: legacy.intensity }
@@ -138,9 +138,6 @@ export function resolvePrd02NeutralRoomLighting(legacy: EnvironmentLightingOptio
   const probeSource = { environmentProbe: prd02NeutralFloor, environmentProbeAmbient: ambient } as unknown as RenderSource;
   return resolvePrd02EnvironmentLighting(probeSource)!;
 }
-
-/** Width of the equirect mip replaced by SH9 irradiance ÷ π (32×16: smooth, cheap, far above 1×1). */
-const PRD02_IRRADIANCE_LEVEL_WIDTH = 32;
 
 /** One mipped rgba16f equirect per bound probe (WeakMap; disposed with the probe's specular cube). */
 const prd02ProbeEquirects = new WeakMap<EnvironmentProbe, Texture>();
@@ -155,7 +152,7 @@ export function resolvePrd02EnvironmentLighting(source: RenderSource): Environme
   if (!probe) return undefined;
   let equirect = prd02ProbeEquirects.get(probe);
   if (!equirect) {
-    equirect = probeToEquirectTexture(probe, { irradianceLevelWidth: PRD02_IRRADIANCE_LEVEL_WIDTH });
+    equirect = probeToEquirectTexture(probe);
     prd02ProbeEquirects.set(probe, equirect);
   }
   const meta = source as RenderSourceWithProbe;
@@ -181,10 +178,7 @@ export function resolvePrd02EnvironmentLighting(source: RenderSource): Environme
     }),
     environmentMapIntensity: diffuse,
     environmentMapSpecularIntensity: specular,
-    // The legacy shader samples diffuse at lod (mipCount − 1) and specular at
-    // roughness·(mipCount − 1): binding up to the SH irradiance level gives
-    // directional cosine diffuse; rough specular tops out at the same level.
-    environmentMapMipCount: legacyDiffuseMipCount(equirect, PRD02_IRRADIANCE_LEVEL_WIDTH),
+    environmentMapMipCount: equirect.mipLevels.length,
     environmentMapEncoding: "linear"
   };
 }
