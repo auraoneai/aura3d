@@ -2,7 +2,9 @@
 // holds a plane at viewZ 2m; a particle at 1.9m keeps alpha × 0.2857
 // (depth gap 0.1 / softDistance 0.35); beyond 2m → 0.
 
-import { LeanWebGL2Device } from "/packages/rendering/src/LeanWebGL2Device.js";
+// WebGL2Device was deleted by the lean collapse (0a5214bd3); WebGL2Device
+// is the same device with identical create() defaults.
+import { WebGL2Device } from "/packages/rendering/src/WebGL2Device.js";
 import { ParticleBatchPass } from "/packages/rendering/src/vfx/ParticleBatchPass.js";
 import { PARTICLE_INSTANCE_FLOATS } from "/packages/rendering/src/vfx/ParticleInstanceLayout.js";
 import { VertexFormat } from "/packages/rendering/src/VertexFormat.js";
@@ -36,7 +38,7 @@ const depthForViewZ = (viewZ: number) => (FAR - (NEAR * FAR) / viewZ) / (FAR - N
 
 const IDENTITY = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
 
-function fillDepth(device: LeanWebGL2Device, target: ReturnType<LeanWebGL2Device["createRenderTarget"]>, depth: number): void {
+function fillDepth(device: WebGL2Device, target: ReturnType<WebGL2Device["createRenderTarget"]>, depth: number): void {
   const vertexBuffer = device.createBuffer(
     "vertex",
     9 * 4,
@@ -67,7 +69,7 @@ void main() { gl_FragDepth = u_d; outColor = vec4(1.0); }`
   device.presentRenderTarget?.(target);
 }
 
-function particleAt(device: LeanWebGL2Device, pass: ParticleBatchPass, viewZ: number): void {
+function particleAt(device: WebGL2Device, pass: ParticleBatchPass, viewZ: number): void {
   const atlas = new Texture({ width: 1, height: 1, label: "a3d-soft-dot", data: new Uint8Array([255, 255, 255, 255]) });
   const handle = pass.upsertBatch({
     key: `soft-${viewZ}`,
@@ -88,7 +90,7 @@ function particleAt(device: LeanWebGL2Device, pass: ParticleBatchPass, viewZ: nu
   pass.writeInstances(handle, instance, 1);
 }
 
-function drawOnce(device: LeanWebGL2Device, pass: ParticleBatchPass, sceneDepthTexture: Texture, target: ReturnType<LeanWebGL2Device["createRenderTarget"]>): number {
+function drawOnce(device: WebGL2Device, pass: ParticleBatchPass, sceneDepthTexture: Texture, target: ReturnType<WebGL2Device["createRenderTarget"]>): number {
   const ctx = {
     device,
     width: W,
@@ -126,9 +128,9 @@ function drawOnce(device: LeanWebGL2Device, pass: ParticleBatchPass, sceneDepthT
 
 function main(): void {
   const canvas = document.getElementById("glstage") as HTMLCanvasElement;
-  let device: LeanWebGL2Device;
+  let device: WebGL2Device;
   try {
-    device = LeanWebGL2Device.create({ canvas, alpha: false, preserveDrawingBuffer: true });
+    device = WebGL2Device.create({ canvas, alpha: false, preserveDrawingBuffer: true });
   } catch (error) {
     window.__QR_PRD07_SOFT_DEPTH__ = { status: "error", error: String(error) };
     return;

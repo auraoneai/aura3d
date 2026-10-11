@@ -3,7 +3,9 @@
 // camera distance must not z-fight: two consecutive identical frames differ
 // by at most 1/255 in the mark region.
 
-import { LeanWebGL2Device } from "/packages/rendering/src/LeanWebGL2Device.js";
+// WebGL2Device was deleted by the lean collapse (0a5214bd3); WebGL2Device
+// is the same device with identical create() defaults.
+import { WebGL2Device } from "/packages/rendering/src/WebGL2Device.js";
 import { VertexFormat } from "/packages/rendering/src/VertexFormat.js";
 import { RibbonBatch, RIBBON_VERTEX_FLOATS } from "/packages/rendering/src/vfx/RibbonBatch.js";
 import { DecalBatch, ribbonStripToDecalGeometry } from "/packages/rendering/src/vfx/DecalBatch.js";
@@ -73,7 +75,7 @@ function mul(a: Float32Array, b: Float32Array): Float32Array {
 }
 
 /** Coplanar ground quad at y=0, depth-writing, no polygon offset. */
-function drawGround(device: LeanWebGL2Device, vp: Float32Array): void {
+function drawGround(device: WebGL2Device, vp: Float32Array): void {
   const vertexBuffer = device.createBuffer(
     "vertex",
     6 * 3 * 4,
@@ -125,7 +127,7 @@ function buildTrailBatch(): DecalBatch {
   return batch;
 }
 
-function renderFrame(device: LeanWebGL2Device, pass: DecalPass, batch: DecalBatch, vp: Float32Array, rt: ReturnType<LeanWebGL2Device["createRenderTarget"]>): Uint8Array {
+function renderFrame(device: WebGL2Device, pass: DecalPass, batch: DecalBatch, vp: Float32Array, rt: ReturnType<WebGL2Device["createRenderTarget"]>): Uint8Array {
   const ctx = {
     device,
     width: W,
@@ -162,9 +164,9 @@ function renderFrame(device: LeanWebGL2Device, pass: DecalPass, batch: DecalBatc
 
 function main(): void {
   const canvas = document.getElementById("glstage") as HTMLCanvasElement;
-  let device: LeanWebGL2Device;
+  let device: WebGL2Device;
   try {
-    device = LeanWebGL2Device.create({ canvas, alpha: false, preserveDrawingBuffer: true });
+    device = WebGL2Device.create({ canvas, alpha: false, preserveDrawingBuffer: true });
   } catch (error) {
     window.__QR_PRD07_DECAL_TRAIL__ = { status: "error", error: String(error) };
     return;
