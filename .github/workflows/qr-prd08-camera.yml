@@ -142,6 +142,12 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install chromium
+      # Fail closed on a software rasterizer (SwiftShader/llvmpipe) before any
+      # GPU evidence is recorded; renderer.txt is uploaded with the reports.
+      - name: GPU preflight (reject software rendering)
+        env:
+          CHROME_ARGS: ${{ env.QRC_GPU_ARGS }}
+        run: node tests/qr/prd08/gpu-preflight.mjs
       - name: L-9 frame pacing + camera/feel specs (S1/S2/S3, scripted rAF)
         env:
           A3D_QR: camera
