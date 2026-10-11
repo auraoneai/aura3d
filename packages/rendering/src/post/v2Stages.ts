@@ -165,6 +165,20 @@ function v2State(host: WebGL2DeviceHost): PostV2State {
   return state;
 }
 
+/**
+ * Inserts `#define` lines after the `#version` directive. GLSL ES 3.00
+ * requires `#version 300 es` to be the first line, so prepending defines (as
+ * the DoF ring count and motion-blur tile size did) made the shader a
+ * GLSL ES 1.00 source and the compile failed ("#version must occur first"),
+ * which aborted the whole v2 frame (black output on the GPU lane,
+ * post-quality 38138763970).
+ */
+export function withDefines(source: string, defines: Readonly<Record<string, string | number>>): string {
+  const lines = Object.entries(defines).map(([name, value]) => `#define ${name} ${value}`).join("\n");
+  const match = /^\s*#version[^\n]*\n/.exec(source);
+  return match ? `${match[0]}${lines}\n${source.slice(match[0].length)}` : `${lines}\n${source}`;
+}
+
 function program(state: PostV2State, gl: WebGL2RenderingContext, key: string, fragment: string): WebGLProgram {
   const cached = state.programs.get(key);
   if (cached) return cached;
@@ -596,7 +610,7 @@ export function runV2HdrStages(
     const directions = ao.directions ?? 4;
     const steps = ao.steps ?? 4;
     const aoRaw = state.pool.acquire({ width: hw, height: hh, format: "rgba8", samples: 1, depth: false });
-    const gtaoSrc = `#define AURA_GTAO_DIRECTIONS ${directions}\n#define AURA_GTAO_STEPS ${steps}\n` + GTAO_GLSL;
+    const gtaoSrc = withDefines(GTAO_GLSL, { AURA_GTAO_DIRECTIONS: directions, AURA_GTAO_STEPS: steps });
     const gtaoProg = program(state, gl, `gtao-${directions}x${steps}`, gtaoSrc);
     const invProj = Float32Array.from(invertMat4(camera.projectionMatrix as unknown as Mat4));
     draw(host, state, gtaoProg, asGlTarget(aoRaw), [asGlTarget(minmaxHalf).colorHandle], (g) => {
@@ -672,7 +686,7 @@ export function runV2HdrStages(
     const lightUv: [number, number] = clip[2] !== 0
       ? [(clip[0]! / clip[2]) * 0.5 + 0.5, (clip[1]! / clip[2]) * 0.5 + 0.5]
       : [0.5, 0.5];
-    const godSrc = `#define AURA_GODRAY_SAMPLES ${samples}\n` + GODRAYS_GLSL;
+    const godSrc = withDefines(GODRAYS_GLSL, { AURA_GODRAY_SAMPLES: samples });
     const godProg = program(state, gl, `godrays-${samples}`, godSrc);
     draw(host, state, godProg, asGlTarget(godTarget), [asGlTarget(hdr).colorHandle, asGlTarget(minmaxHalf).colorHandle], (g) => {
       g.uniform1i(g.getUniformLocation(godProg, "u_hdr"), 0);
@@ -819,7 +833,7 @@ export function runV2HdrStages(
       g.uniform1i(g.getUniformLocation(tileProg, "u_prefilter"), 0);
     });
     const gather = state.pool.acquire({ width: dw, height: dh, format: "rgba16f", samples: 1, depth: false });
-    const gatherSrc = `#define DOF_RINGS ${rings}\n` + DOF_GATHER_GLSL;
+    const gatherSrc = withDefines(DOF_GATHER_GLSL, { DOF_RINGS: rings });
     const gatherProg = program(state, gl, `dof-gather-${rings}`, gatherSrc);
     draw(host, state, gatherProg, asGlTarget(gather), [asGlTarget(prefilter).colorHandle, asGlTarget(nearTile).colorHandle], (g) => {
       g.uniform1i(g.getUniformLocation(gatherProg, "u_prefilter"), 0);
@@ -844,7 +858,7 @@ export function runV2HdrStages(
     const samples = mb.samples ?? 12;
     const tw = Math.max(1, Math.ceil(w / tile)), th = Math.max(1, Math.ceil(h / tile));
     const tileMax = state.pool.acquire({ width: tw, height: th, format: "rgba16f", samples: 1, depth: false });
-    const tileProg = program(state, gl, `mb-tile-${tile}`, `#define MB_TILE_SIZE ${tile}\n` + MB_TILE_MAX_GLSL);
+    const tileProg = program(state, gl, `mb-tile-${tile}`, withDefines(MB_TILE_MAX_GLSL, { MB_TILE_SIZE: tile }));
     draw(host, state, tileProg, asGlTarget(tileMax), [asGlTarget(dilatedVelocity).colorHandle], (g) => {
       g.uniform1i(g.getUniformLocation(tileProg, "u_velocity"), 0);
     });
