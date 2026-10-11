@@ -178,6 +178,9 @@ export async function runPrd05ThreeScene(spec: Prd05SceneSpec, host: HTMLElement
     scene: spec.id,
     engineVersion: THREE.REVISION,
     capabilityLog: log.entries,
+    // capture.mjs classifies a payload without drawCalls as no-draw: report the
+    // renderer's own counter for the last rendered frame (as three/common.ts does).
+    drawCalls: renderer.info.render.calls,
     triangles: Math.round(triangles),
     warnings: [],
     errors,
