@@ -339,11 +339,26 @@ export async function runPrd07AuraScene(spec: Prd07SceneSpec, host: HTMLElement,
     autoStart: false,
     ...(flags !== undefined ? { qualityRebuild: { flags: [...flags] } } : {})
   });
+  // T0-EXIT-1 (#375): phase timing so a slow lane scene names its slow phase
+  // (main run 38086978485: 14-particles took 132 s to READY under vfx flags).
+  const phase: Record<string, number> = {};
+  const mark = (name: string) => { phase[name] = Math.round(performance.now() - started); };
+  mark("create-app");
   await app.ready();
+  mark("ready");
 
   // T0-10 (#416): fail fast — zero draws with errors, or zero draws past the
   // deadline, throws NoDrawError so the router publishes __QR_ERROR__.
   await waitForFirstDraw(app, Math.max(1, Math.min(90_000, adapterDeadline - performance.now())));
+  mark("first-draw");
+  // Cost of one rendered step(0), sampled 3× — separates per-frame render
+  // cost (e.g. volumetric / sky passes) from one-off mount or compile stalls.
+  const stepMs: number[] = [];
+  for (let i = 0; i < 3; i += 1) {
+    const t0 = performance.now();
+    app.step(0);
+    stepMs.push(Math.round((performance.now() - t0) * 10) / 10);
+  }
 
   const sheets = spec.objects.filter((o): o is BurstSheetSpec => o.kind === "burstSheet");
   const runtimeDecals = spec.objects.filter((o): o is DecalObjectSpec => o.kind === "decal" && o.runtime === true);
@@ -407,11 +422,13 @@ export async function runPrd07AuraScene(spec: Prd07SceneSpec, host: HTMLElement,
     }
     app.step(spec.time - elapsed);
   }
+  mark("advanced");
   for (let frame = 0; frame < spec.settleFrames; frame += 1) {
     await nextFrame();
     app.step(0);
   }
   await nextFrame();
+  mark("settled");
 
   const diagnostics = app.diagnostics();
   const fx = effectsDiagnostics(app);
@@ -435,7 +452,12 @@ export async function runPrd07AuraScene(spec: Prd07SceneSpec, host: HTMLElement,
       backend: diagnostics.backend,
       renderSize: diagnostics.renderSize,
       qrFlags: flags ?? [],
-      effects: fx
+      effects: fx,
+      // ms since adapter start at each phase + three sampled step(0) costs.
+      adapterTiming: { ...phase, stepMs },
+      mountTiming: performance.getEntriesByType("mark")
+        .filter((entry) => entry.name.startsWith("a3d:"))
+        .map((entry) => ({ name: entry.name, startTime: Math.round(entry.startTime * 100) / 100 }))
     }
   };
 }
