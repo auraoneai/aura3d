@@ -14,7 +14,7 @@ import { Renderer } from "../../../../packages/rendering/src/Renderer";
 import { Geometry } from "../../../../packages/rendering/src/Geometry";
 import { PBRMaterial } from "../../../../packages/rendering/src/PBRMaterial";
 import type { DrawCommand } from "../../../../packages/rendering/src/RenderDevice";
-import { prd02ShadowDepthProbe } from "../../../../packages/rendering/src/shadows/Prd02ShadowBridge";
+import { prd02ShadowBridgeReason, prd02ShadowDepthProbe } from "../../../../packages/rendering/src/shadows/Prd02ShadowBridge";
 
 const FLAGS_ON = resolveQrFlags({ options: { A3D_QR_LIGHTING: true } });
 
@@ -100,6 +100,7 @@ describe("shadow pixels: the bridged prd02 cascade reaches the receiver", () => 
 
   it("prd02ShadowDepthProbe reports one entry per rendered cascade (lane-page GPU evidence)", async () => {
     const { renderer } = await renderOnce();
+    expect(prd02ShadowBridgeReason(renderer.device)).toBe("rendered");
     const stats = prd02ShadowDepthProbe(renderer.device);
     expect(stats.length).toBeGreaterThan(0);
     for (const stat of stats) {

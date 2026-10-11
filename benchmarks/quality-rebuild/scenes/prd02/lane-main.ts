@@ -17,7 +17,7 @@ import type { ReadyPayload } from "../../shared/types";
 import { applyBrokenControl } from "./controls";
 import { applyAuraProbes, applyThreeLightProbe, applyThreeRoomEnvironment, installReceiveShadowFixture } from "./fixtures";
 import { getPrd02Spec } from "./specs";
-import { prd02ShadowDepthProbe } from "@aura3d/rendering/lanes";
+import { prd02ShadowBridgeReason, prd02ShadowDepthProbe } from "@aura3d/rendering/lanes";
 
 declare global {
   interface Window {
@@ -68,8 +68,10 @@ async function runRenderMode(): Promise<void> {
             // Shadow-pixels GPU evidence: cascade depth stats of the flag-path
             // bridge after the ready frame (empty when the bridge did not run).
             const laneRenderer = (app as unknown as Record<symbol, { device?: unknown } | undefined>)[Symbol.for("a3d.prd01.renderer")];
-            const shadowDepth = laneRenderer?.device ? prd02ShadowDepthProbe(laneRenderer.device as never) : [];
-            return { ...(probeNodes > 0 ? { prd02ProbeNodes: probeNodes } : {}), ...(shadowDepth.length > 0 ? { prd02ShadowDepth: shadowDepth } : {}) };
+            const laneDevice = laneRenderer?.device as never | undefined;
+            const shadowDepth = laneDevice ? prd02ShadowDepthProbe(laneDevice) : [];
+            const prd02ShadowBridge = laneDevice ? prd02ShadowBridgeReason(laneDevice) : "no-lane-renderer";
+            return { ...(probeNodes > 0 ? { prd02ProbeNodes: probeNodes } : {}), prd02ShadowDepth: shadowDepth, prd02ShadowBridge };
           }
         });
     window.__QR_READY__ = payload;

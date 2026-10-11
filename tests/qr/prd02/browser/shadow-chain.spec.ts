@@ -55,15 +55,18 @@ test("prd02 shadow chain: cascade depth is written and shadowed texels are darke
   const threeOn = await captureLaneScene(page, server, { scene: SCENE, engine: "three", flags: "lighting" });
   const threeOff = await captureLaneScene(page, server, { scene: SCENE, engine: "three", flags: "lighting", control: "no-shadows" });
 
-  const depth = ((auraOn.payload as { prd02ShadowDepth?: DepthStat[] } | null)?.prd02ShadowDepth ?? []) as DepthStat[];
+  const ready = auraOn.payload as { prd02ShadowDepth?: DepthStat[]; prd02ShadowBridge?: string } | null;
+  const depth = (ready?.prd02ShadowDepth ?? []) as DepthStat[];
+  const bridge = ready?.prd02ShadowBridge ?? "no-payload";
   const mask = shadowMask(threeOn.pixels, threeOff.pixels);
   const lit = meanLumaIn(auraOff.pixels, mask);
   const shadowed = meanLumaIn(auraOn.pixels, mask);
-  const evidence = { depth, maskPixels: lit.count, auraNoShadowsLuma: lit.mean, auraDefaultLuma: shadowed.mean };
+  const evidence = { bridge, depth, maskPixels: lit.count, auraNoShadowsLuma: lit.mean, auraDefaultLuma: shadowed.mean };
   await testInfo.attach("shadow-chain.json", { body: JSON.stringify(evidence, null, 2), contentType: "application/json" });
   console.log(`[prd02-shadow-chain] ${JSON.stringify(evidence)}`);
 
   expect(lit.count, "three shadow mask is non-empty").toBeGreaterThan(500);
+  expect(bridge, "prd02 shadow bridge rendered this frame").toBe("rendered");
   expect(depth.length, "bridge produced at least one cascade").toBeGreaterThan(0);
   expect(Math.max(...depth.map((d) => d.covered)), "casters reached the cascade depth surface").toBeGreaterThan(0);
   expect(Math.min(...depth.map((d) => d.min)), "cascade depth has caster texels < 1").toBeLessThan(1);
