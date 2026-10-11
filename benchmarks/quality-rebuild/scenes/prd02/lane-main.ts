@@ -75,7 +75,7 @@ async function runRenderMode(): Promise<void> {
             const prd02ShadowBridge = prd02ShadowBridgeReason(laneDevice);
             // Draw tap: what the GPU forward draws of shadow receivers were
             // handed over the next two frames (binding, enable, strength).
-            const prd02ShadowDraws = await tapShadowReceiverDraws(laneDevice ?? (prd02LastBridgeDevice() as never));
+            const prd02ShadowDraws = tapShadowReceiverDraws(laneDevice ?? (prd02LastBridgeDevice() as never), () => (app as unknown as { step(dt: number): void }).step(0));
             return { ...(probeNodes > 0 ? { prd02ProbeNodes: probeNodes } : {}), prd02ShadowDepth: shadowDepth, prd02ShadowBridge, prd02ShadowDraws };
           }
         });
@@ -102,8 +102,8 @@ if (params.get("mode") === "metrics") {
   void runRenderMode();
 }
 
-/** Records shadow uniforms of up to 8 forward draws over two frames (GPU evidence). */
-async function tapShadowReceiverDraws(device: { draw?: (command: unknown) => void } | null | undefined): Promise<unknown[]> {
+/** Records shadow uniforms of up to 8 forward draws over one stepped frame (GPU evidence). */
+function tapShadowReceiverDraws(device: { draw?: (command: unknown) => void } | null | undefined, renderFrame: () => void): unknown[] {
   if (!device || typeof device.draw !== "function") return [];
   const original = device.draw;
   const seen: unknown[] = [];
@@ -127,7 +127,7 @@ async function tapShadowReceiverDraws(device: { draw?: (command: unknown) => voi
     return original.call(this, command);
   };
   try {
-    for (let i = 0; i < 2; i += 1) await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+    renderFrame();
   } finally {
     device.draw = original;
   }
