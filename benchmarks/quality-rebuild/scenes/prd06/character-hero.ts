@@ -151,6 +151,9 @@ export const prd06CharacterHero: CharacterHeroSpec = {
   time: 0,
   settleFrames: 0,
   owner: "prd06",
+  referenceProfile: "contract",
+  brokenControls: [],
+  primaryCriterion: "Hero locomotion sequence (idle, walk, run, stop, jump, land) with spring and look-at secondary motion",
   qrFlags: ["animation"],
   admittedAsReference: false,
   characterHero: {

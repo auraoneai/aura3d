@@ -111,3 +111,72 @@ jobs:
             tests/reports/
             test-results/
           if-no-files-found: ignore
+
+  # Lane-06 GPU visual proof (self-hosted NVIDIA L4, Vulkan ANGLE): base scenes
+  # 01-simple-geometry (rigid control), 08-skinned-character (bind pose) and
+  # 15-animation-skinning (walk clip) plus the prd06 lane scenes, captured per flag set
+  # (none / animation / $ALL / $ALL,strict) on both engines, PNGs and
+  # report.json uploaded. Same-repo PRs and manual dispatch only, so fork PR
+  # code never reaches the self-hosted runner. Frames compare only within this
+  # job's GPU class (renderer string recorded first).
+  gpu:
+    name: GPU lane capture (self-hosted azure-gpu / Vulkan)
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: [self-hosted, azure-gpu, gpu-l4]
+    timeout-minutes: 120
+    env:
+      QR_BENCH_OUT: benchmarks/quality-rebuild/out
+      QR_BENCH_SCENES: "01-simple-geometry,08-skinned-character,15-animation-skinning,prd06-skinned-character-posed,prd06-crossfade-filmstrip,prd06-morph-face,prd06-ik-slope,prd06-character-hero"
+      QR_BENCH_ENGINES: "aura3d,three"
+      QR_ALL_FLAGS: "core,lighting,post,materials,assets,animation,vfx,camera,game,world,tiers,looks,compiler"
+      QR_AZURE_GPU_CHROME_ARGS: ${{ vars.QR_AZURE_GPU_CHROME_ARGS }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: Chromium GPU args
+        run: |
+          set -euo pipefail
+          args="${QR_AZURE_GPU_CHROME_ARGS:---headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist}"
+          echo "QR_BENCH_CHROME_ARGS=$args" >> "$GITHUB_ENV"
+          echo "chromium args: $args" | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Record the WebGL renderer (fails on a software renderer)
+        run: |
+          set -euo pipefail
+          mkdir -p "$QR_BENCH_OUT"
+          node --input-type=module -e '
+            import { chromium } from "@playwright/test";
+            const args = (process.env.QR_BENCH_CHROME_ARGS ?? "").split(/\s+/).filter(Boolean);
+            const browser = await chromium.launch({ args });
+            const page = await browser.newPage();
+            const r = await page.evaluate(() => {
+              const gl = document.createElement("canvas").getContext("webgl2");
+              if (!gl) return "no-webgl2";
+              const ext = gl.getExtension("WEBGL_debug_renderer_info");
+              return String(ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER));
+            });
+            await browser.close();
+            console.log(r);
+            if (/swiftshader|llvmpipe|software|no-webgl2/i.test(r)) { console.error("software renderer: " + r); process.exit(1); }
+          ' | tee "$QR_BENCH_OUT/renderer.txt" | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "runner: $RUNNER_NAME" | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Capture lane scenes per flag set
+        run: |
+          set -euo pipefail
+          export QR_BENCH_FLAG_SETS="none;animation;$QR_ALL_FLAGS;$QR_ALL_FLAGS,strict"
+          bash benchmarks/quality-rebuild/ci.sh
+      - name: Upload GPU evidence (PNGs, report.json, bisect-summary.json)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd06-gpu-${{ github.run_id }}-${{ github.run_attempt }}
+          path: benchmarks/quality-rebuild/out/
+          retention-days: 30
+          if-no-files-found: error
