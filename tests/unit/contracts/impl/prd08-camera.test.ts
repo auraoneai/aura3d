@@ -10,7 +10,8 @@ import "@aura3d/engine/lanes";
 
 const ext = () => appExtensionsAll().find((e) => e.id === "prd08.camera");
 const flagsOn = resolveQrFlags({ options: ["camera"] });
-const flagsOff = resolveQrFlags({ options: "none" });
+// A3D_QR_CAMERA is default-on (#1224): "off" must be explicit.
+const flagsOff = resolveQrFlags({ options: ["-camera"] });
 
 const fakeApp = () => ({
   nodes: { get: () => undefined, all: () => [] },
