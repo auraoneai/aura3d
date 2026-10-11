@@ -166,6 +166,9 @@ jobs:
       # Chromium with QR_BENCH_CHROME_ARGS. The script is optional; the job is a no-op without it.
       QR_BENCH_OUT: benchmarks/quality-rebuild/out
       QR_BENCH_CHROME_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+      # CI-2: forward the requested flag set; capture.mjs reads QRC_FLAGS, so the
+      # bench report's qrFlags previously stayed "none" for every request.
+      QRC_FLAGS: ${{ inputs.qr_flags || 'none' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -194,11 +197,9 @@ jobs:
         id: bench
         run: |
           mkdir -p "$QR_BENCH_OUT"
-          if [ -f benchmarks/quality-rebuild/ci.sh ]; then
-            bash benchmarks/quality-rebuild/ci.sh
-          else
-            echo "benchmarks/quality-rebuild/ci.sh not present at ${GITHUB_SHA}; benchmark skipped." | tee "$QR_BENCH_OUT/SKIPPED.txt"
-          fi
+          # RF5: a missing ci.sh was reported as a successful skip.
+          test -f benchmarks/quality-rebuild/ci.sh || { echo "::error::benchmarks/quality-rebuild/ci.sh missing at ${GITHUB_SHA}"; exit 1; }
+          bash benchmarks/quality-rebuild/ci.sh
 
       - name: Upload benchmark results
         if: always()

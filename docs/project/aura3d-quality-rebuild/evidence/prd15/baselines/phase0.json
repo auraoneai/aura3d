@@ -1,4 +1,6 @@
 {
+  "status": "placeholder",
+  "statusNote": "P-56 (2026-10-10): no IC-0 run on main backs this ledger yet; do not cite it as evidence until a main run id replaces this status.",
   "$schema": "IC-0 phase-0 sentinel baseline ledger (PRD-15)",
   "generated_utc": "2026-10-06",
   "notes": [

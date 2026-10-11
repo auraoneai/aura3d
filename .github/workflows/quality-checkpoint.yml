@@ -42,13 +42,14 @@ jobs:
         id: plan
         run: |
           set -euo pipefail
-          k=$(ls benchmarks/quality-rebuild/history/rounds/IC-*.json 2>/dev/null | wc -l)
+          # pipefail + `ls` on no match exited the step before IC-0 could be planned.
+          shopt -s nullglob
+          rounds=(benchmarks/quality-rebuild/history/rounds/IC-*.json)
+          k=${#rounds[@]}
           gpanel=false
           if [ "$((k % 4))" = "0" ]; then gpanel=true; fi
           lanes=$(node -e 'const m=JSON.parse(require("fs").readFileSync(".github/QR_OWNERSHIP.json","utf8"));const owners=m.rules.map(r=>r.owner).filter(o=>/^\d+$/.test(o));console.log(JSON.stringify(owners))')
-          echo "k=$k" >> "$GITHUB_OUTPUT"
-          echo "gpanel=$gpanel" >> "$GITHUB_OUTPUT"
-          echo "lanes=$lanes" >> "$GITHUB_OUTPUT"
+          { echo "k=$k"; echo "gpanel=$gpanel"; echo "lanes=$lanes"; } >> "$GITHUB_OUTPUT"
 
   capture-none:
     name: Capture (flags=none)
@@ -98,7 +99,9 @@ jobs:
   collect:
     name: Metrics + round record
     needs: [prepare, capture-none, capture-all]
-    if: ${{ always() && ! inputs.lanes_only }}
+    # Collect only when both captures completed; a failed or skipped capture
+    # must not become an empty round record (T1.17-fix).
+    if: ${{ !cancelled() && ! inputs.lanes_only && needs.prepare.result == 'success' && needs.capture-none.result == 'success' && needs.capture-all.result == 'success' }}
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -131,6 +134,7 @@ jobs:
       - name: Score captures and write round record
         id: collect
         run: |
+          set -euo pipefail
           node tools/quality-gate/bin/collect-checkpoint.mjs \
             --artifacts artifacts --k "${{ needs.prepare.outputs.k }}" \
             --run-id "${{ github.run_id }}" --sha "${{ github.sha }}"
@@ -138,7 +142,7 @@ jobs:
       - name: Open bot PR with the round record
         run: |
           set -euo pipefail
-          branch="qr/ic-${{ needs.prepare.outputs.k }}-record"
+          branch="qr/ic-${{ needs.prepare.outputs.k }}-record-${{ github.run_id }}"
           git config user.email "devin-quality-checkpoint[bot]@users.noreply.github.com"
           git config user.name "Devin Quality Checkpoint"
           git checkout -b "$branch"
@@ -150,7 +154,7 @@ jobs:
           git push origin "$branch"
           gh pr create --title "[QR-12] Checkpoint IC-${{ needs.prepare.outputs.k }} round record" \
             --body "Automated integrated-checkpoint record (CONTRACTS §7). Never merge-blocked. Record: benchmarks/quality-rebuild/history/rounds/IC-${{ needs.prepare.outputs.k }}.json" \
-            --label "qr-request" || true
+            --label "qr-request"
 
       - name: File qr-ic-regression issues
         if: ${{ steps.collect.outputs.regressions == 'true' }}

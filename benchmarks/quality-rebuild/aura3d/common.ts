@@ -366,6 +366,16 @@ async function nextFrame(): Promise<void> {
   await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
 }
 
+/**
+ * T0-12: harness phase marks. Round 1 on main (GitLab 2934643849) showed the
+ * engine's a3d:mount:* marks ending at ~0.37 s while ready took ~110 s, so the
+ * dominant cost is after mount. These marks split it into named phases; they
+ * ride along in payload.extra.mountTiming.
+ */
+function harnessMark(phase: string): void {
+  if (typeof performance !== "undefined" && typeof performance.mark === "function") performance.mark(`qr:harness:${phase}`);
+}
+
 interface RendererDiagnosticsShape {
   readonly warnings?: readonly string[];
   readonly exposure?: { readonly category?: string; readonly exposure?: number };
@@ -410,6 +420,7 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
       : {})
   });
   await app.ready();
+  harnessMark("app-ready");
 
   // PRD-01 Phase 5: `tm`/`exp` (or `aura3d-tonemap`/`aura3d-exp`) select the
   // output operator through the C-05 surface — the base-scene A/B wiring.
@@ -435,6 +446,7 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
   // NoDrawError on deadline; either way the page publishes __QR_ERROR__ and
   // capture.mjs records the real failure instead of a masked ready/timeout.
   await waitForFirstDraw(app, Math.max(1, Math.min(90_000, adapterDeadline - performance.now())));
+  harnessMark("first-draw");
 
   // PRD-06 T3.9: spec-declared `animation.footIk` registers the foot-ik pose
   // constraint on the actor once it is loaded (draw-wait above guarantees the
@@ -516,6 +528,7 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
     }
     const environment = rendererDiagnostics(app)?.environment;
     log.add("hdri-ibl", environment?.iblPixelBacked ? "supported" : "missing", `environments.hdri(): hdriStatus=${environment?.hdriStatus ?? "unknown"} iblPixelBacked=${String(environment?.iblPixelBacked ?? false)}`);
+    harnessMark("hdri");
   }
 
   // Advance simulated time to the capture time, then settle.
@@ -572,11 +585,13 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
   } else {
     app.step(spec.time);
   }
+  harnessMark("advance");
   for (let frame = 0; frame < spec.settleFrames; frame += 1) {
     await nextFrame();
     app.step(0);
   }
   await nextFrame();
+  harnessMark("settle");
 
   // PRD-01 Phase 6 (§15/I8): the flagged path must compile nothing after
   // ready+settle — read the C-31 programs section before and after an extra
@@ -586,6 +601,7 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
     app.step(0);
     await nextFrame();
   }
+  harnessMark("programs-window");
   const programsAfter = (app.diagnostics() as unknown as { programs?: { deviceProgramCompiles?: number | null } }).programs?.deviceProgramCompiles ?? null;
   if (programsBefore !== null || programsAfter !== null) {
     const delta = (programsAfter ?? 0) - (programsBefore ?? 0);
@@ -648,7 +664,7 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
       // createAuraApp through the first renderFrame — one remote run names
       // which phase owns the ~90 s pre-first-frame cost.
       mountTiming: performance.getEntriesByType("mark")
-        .filter((mark) => mark.name.startsWith("a3d:"))
+        .filter((mark) => mark.name.startsWith("a3d:") || mark.name.startsWith("qr:harness:"))
         .map((mark) => ({ name: mark.name, startTime: Math.round(mark.startTime * 100) / 100 })),
       backend: diagnostics.backend,
       renderSize: diagnostics.renderSize,
