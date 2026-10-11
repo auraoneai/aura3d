@@ -22,9 +22,16 @@ export const DOF_PREFILTER_WGSL = /* wgsl */ `struct DofPrefilterParams {
 @fragment
 fn fs_dof_prefilter(@builtin(position) frag_coord: vec4<f32>) -> @location(0) vec4<f32> {
   let pixel = vec2<i32>(frag_coord.xy);
-  let color = textureLoad(u_color_tex, pixel, 0).rgb;
+  // Full-res HDR source: box-average its 2×2 block (03-S15, GLSL parity).
+  let full_max = vec2<i32>(textureDimensions(u_color_tex)) - vec2<i32>(1);
+  let base = pixel * 2;
+  let color = 0.25 * (
+    textureLoad(u_color_tex, clamp(base, vec2<i32>(0), full_max), 0).rgb +
+    textureLoad(u_color_tex, clamp(base + vec2<i32>(1, 0), vec2<i32>(0), full_max), 0).rgb +
+    textureLoad(u_color_tex, clamp(base + vec2<i32>(0, 1), vec2<i32>(0), full_max), 0).rgb +
+    textureLoad(u_color_tex, clamp(base + vec2<i32>(1, 1), vec2<i32>(0), full_max), 0).rgb);
   let z = textureLoad(u_linear_depth_tex,
-    clamp(pixel * 2, vec2<i32>(0), vec2<i32>(textureDimensions(u_linear_depth_tex)) - vec2<i32>(1)), 0).r;
+    clamp(base, vec2<i32>(0), vec2<i32>(textureDimensions(u_linear_depth_tex)) - vec2<i32>(1)), 0).r;
   let f = u_params.focal_length_mm;
   let aperture = f / max(u_params.f_stop, 0.01);
   let z_mm = max(z * 1000.0, 1.0);
@@ -58,9 +65,10 @@ fn fs_dof_near_tile(@builtin(position) frag_coord: vec4<f32>) -> @location(0) ve
 
 export const DOF_GATHER_WGSL = /* wgsl */ `// DOF_RINGS — pipeline-overridable gather rings (3 = High, 2 = Medium).
 override DOF_RINGS: i32 = 3;
+const DOF_HALF_RES_RADIUS: f32 = 0.25;
 
 struct DofGatherParams {
-  max_blur_px: f32,        // full-res px; radius here is half that
+  max_blur_px: f32,        // full-res px (CoC diameter)
   _pad: vec3<f32>,
 };
 
@@ -75,7 +83,8 @@ fn fs_dof_gather(@builtin(position) frag_coord: vec4<f32>) -> @location(0) vec4<
   let center = textureLoad(u_prefilter_tex, pixel, 0);
   let center_coc = center.a;
   let center_near = textureLoad(u_near_tile_tex, pixel / 8, 0).r;
-  let radius = max(abs(center_coc), center_near) * 0.5;
+  // Full-res CoC diameter → half-res disc radius (03-S15, GLSL parity).
+  let radius = max(abs(center_coc), center_near) * DOF_HALF_RES_RADIUS;
   var sum = center.rgb;
   var wsum = 1.0;
   for (var ring = 1; ring <= DOF_RINGS; ring = ring + 1) {
@@ -88,7 +97,7 @@ fn fs_dof_gather(@builtin(position) frag_coord: vec4<f32>) -> @location(0) vec4<
       let tap_near = textureLoad(u_near_tile_tex, tap / 8, 0).r;
       // A tap contributes when its own blur reaches this pixel, or when the
       // tile's near field does (foreground bleeds over sharp background).
-      let reach = max(abs(t.a), tap_near) * 0.5;
+      let reach = max(abs(t.a), tap_near) * DOF_HALF_RES_RADIUS;
       let w = clamp((reach + 0.5) / max(length(vec2<f32>(tap - pixel)), 0.5), 0.0, 1.0);
       sum = sum + t.rgb * w;
       wsum = wsum + w;

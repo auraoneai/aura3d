@@ -92,7 +92,8 @@ jobs:
   browser:
     name: Lane 03 browser specs (macos-14, ANGLE Metal)
     runs-on: macos-14
-    timeout-minutes: 45
+    # 03-S11 adds the 18-game × 300-frame readback sweep to post-no-readback.
+    timeout-minutes: 90
     env:
       QRC_GPU_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
     steps:
@@ -121,6 +122,7 @@ jobs:
             tests/browser/qr-prd03-wgsl-compile.spec.ts
             tests/browser/qr-prd03-phase6.spec.ts
             tests/browser/qr-prd03-bloom-energy.spec.ts
+            tests/browser/qr-prd03-s15-mb-dof.spec.ts
           )
           for spec in "${specs[@]}"; do
             if [ ! -f "$spec" ]; then
@@ -136,6 +138,8 @@ jobs:
           name: qr03-post-quality-${{ github.run_id }}
           path: |
             tests/reports/browser.json
+            tests/reports/qr-prd03-s11-readbacks.json
+            tests/reports/qr-prd03-s15.json
             test-results/
           retention-days: 30
           if-no-files-found: warn
