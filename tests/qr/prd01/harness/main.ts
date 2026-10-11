@@ -75,6 +75,21 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (tools === "perf-throughput" || tools === "perf-orbit" || tools === "perf-instancing" || tools === "parallel-compile") {
+    // 01-S13 / 01-S7 perf job tools (tests/qr/prd01/perf/*.spec.ts).
+    status.textContent = `running ${tools}`;
+    const report: { errors: readonly string[] } =
+      tools === "parallel-compile" ? await (await import("./parallelCompile")).runParallelCompileTool(stage)
+      : tools === "perf-throughput" ? await (await import("./perf")).runThroughputTool(stage)
+      : tools === "perf-orbit" ? await (await import("./perf")).runOrbitTool(stage, Number(params.get("seconds") ?? "60"))
+      : await (await import("./perf")).runInstancingTool(stage);
+    (window as unknown as { __QR_PERF__?: unknown }).__QR_PERF__ = report;
+    window.__QR_READY__ = { engine: "aura3d", scene: tools, errors: report.errors };
+    status.textContent = `ready ${tools}`;
+    document.title = `ready ${tools}`;
+    return;
+  }
+
   if (tools === "canvas-dpr" || tools === "app-capture" || tools === "renderer-mount-failure") {
     status.textContent = `running ${tools}`;
     const { runCanvasDprTool, runAppCaptureTool, runMountFailureTool } = await import("./appTools");

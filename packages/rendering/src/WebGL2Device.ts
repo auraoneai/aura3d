@@ -546,8 +546,92 @@ export class WebGL2Device implements RenderDevice {
     this.host.counters.readbacks = 0;
   }
 
+  /**
+   * PRD-01 §6.4 / 01-S7: with `KHR_parallel_shader_compile`, compile and
+   * link are issued without querying status, and the promise resolves once
+   * `COMPLETION_STATUS_KHR` reports done (polled per animation frame), so
+   * the caller's frame is not blocked. Without the extension this is the
+   * synchronous `createShaderProgram` wrapped in a resolved promise.
+   */
   compileAsync(sources: ShaderSources): Promise<RenderShaderProgram> {
-    return Promise.resolve(this.createShaderProgram(sources));
+    const ext = this.parallelShaderCompileExtension();
+    if (!ext) return Promise.resolve(this.createShaderProgram(sources));
+    this.host.lifecycle.assertAlive();
+    this.assertShaderMarker(sources);
+    const vertexShader = this.issueShaderCompile(this.gl.VERTEX_SHADER, sources.vertex, sources.label);
+    const fragmentShader = this.issueShaderCompile(this.gl.FRAGMENT_SHADER, sources.fragment, sources.label);
+    const program = this.gl.createProgram();
+    if (!program) {
+      throw new RenderDeviceError("Failed to allocate WebGL shader program", "WEBGL_ALLOCATION_FAILED");
+    }
+    this.host.counters.shaderProgramCreateCount += 1;
+    this.gl.attachShader(program, vertexShader);
+    this.gl.attachShader(program, fragmentShader);
+    this.gl.linkProgram(program);
+    this.host.counters.programCompiles += 1;
+    this.parallelCompilesPending += 1;
+    return new Promise<RenderShaderProgram>((resolve, reject) => {
+      const poll = (): void => {
+        if (this.host.disposed || this.host.contextLost) {
+          this.parallelCompilesPending -= 1;
+          reject(new RenderDeviceError("Device lost during parallel shader compile", "DEVICE_LOST", { label: sources.label }));
+          return;
+        }
+        if (this.gl.getProgramParameter(program, ext.COMPLETION_STATUS_KHR) !== true) {
+          scheduleParallelCompilePoll(poll);
+          return;
+        }
+        this.parallelCompilesPending -= 1;
+        try {
+          for (const [shader, type] of [[vertexShader, "vertex"], [fragmentShader, "fragment"]] as const) {
+            if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
+              const log = this.gl.getShaderInfoLog(shader) ?? "Unknown shader compile error";
+              this.gl.deleteShader(vertexShader);
+              this.gl.deleteShader(fragmentShader);
+              this.gl.deleteProgram(program);
+              throw new RenderDeviceError("WebGL shader compile failed", "SHADER_COMPILE_FAILED", { label: sources.label, log, stage: type });
+            }
+          }
+          this.gl.deleteShader(vertexShader);
+          this.gl.deleteShader(fragmentShader);
+          resolve(this.finalizeLinkedProgram(program, sources));
+        } catch (error) {
+          reject(error);
+        }
+      };
+      scheduleParallelCompilePoll(poll);
+    });
+  }
+
+  /** Programs issued through `compileAsync`'s parallel path that have not completed yet. */
+  parallelCompilesPending = 0;
+
+  private parallelCompileExt: { readonly COMPLETION_STATUS_KHR: GLenum } | null | undefined;
+
+  private parallelShaderCompileExtension(): { readonly COMPLETION_STATUS_KHR: GLenum } | null {
+    if (this.parallelCompileExt === undefined) {
+      this.parallelCompileExt = (this.gl.getExtension("KHR_parallel_shader_compile") as { readonly COMPLETION_STATUS_KHR: GLenum } | null) ?? null;
+    }
+    return this.parallelCompileExt;
+  }
+
+  private issueShaderCompile(type: GLenum, source: string, label: string): WebGLShader {
+    const shader = this.gl.createShader(type);
+    if (!shader) {
+      throw new RenderDeviceError("Failed to allocate WebGL shader", "WEBGL_ALLOCATION_FAILED", { label });
+    }
+    this.gl.shaderSource(shader, source);
+    this.gl.compileShader(shader);
+    return shader;
+  }
+
+  private assertShaderMarker(sources: ShaderSources): void {
+    if (!sources.vertex.includes(sources.marker) || !sources.fragment.includes(sources.marker)) {
+      throw new RenderDeviceError("Shader source marker is missing from compiled sources", "SHADER_MARKER_MISSING", {
+        label: sources.label,
+        marker: sources.marker
+      });
+    }
   }
 
   multiDrawElementsInstanced(draws: readonly unknown[]): void {
@@ -640,12 +724,7 @@ export class WebGL2Device implements RenderDevice {
 
   createShaderProgram(sources: ShaderSources): RenderShaderProgram {
     this.host.lifecycle.assertAlive();
-    if (!sources.vertex.includes(sources.marker) || !sources.fragment.includes(sources.marker)) {
-      throw new RenderDeviceError("Shader source marker is missing from compiled sources", "SHADER_MARKER_MISSING", {
-        label: sources.label,
-        marker: sources.marker
-      });
-    }
+    this.assertShaderMarker(sources);
     const vertexShader = this.compileShader(this.gl.VERTEX_SHADER, sources.vertex, sources.label);
     const fragmentShader = this.compileShader(this.gl.FRAGMENT_SHADER, sources.fragment, sources.label);
     const program = this.gl.createProgram();
@@ -659,7 +738,11 @@ export class WebGL2Device implements RenderDevice {
     this.host.counters.programCompiles += 1;
     this.gl.deleteShader(vertexShader);
     this.gl.deleteShader(fragmentShader);
+    return this.finalizeLinkedProgram(program, sources);
+  }
 
+  /** LINK_STATUS check, named-block bindings and reflection for a linked program. */
+  private finalizeLinkedProgram(program: WebGLProgram, sources: ShaderSources): RenderShaderProgram {
     if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
       const log = this.gl.getProgramInfoLog(program) ?? "Unknown shader link error";
       this.gl.deleteProgram(program);
@@ -1732,3 +1815,10 @@ export class WebGL2Device implements RenderDevice {
 
 
 
+
+/** Next animation frame when available (browser), else a macrotask. */
+function scheduleParallelCompilePoll(poll: () => void): void {
+  const raf = (globalThis as { requestAnimationFrame?: (cb: () => void) => number }).requestAnimationFrame;
+  if (typeof raf === "function") raf(poll);
+  else setTimeout(poll, 0);
+}

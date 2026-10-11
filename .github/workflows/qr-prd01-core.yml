@@ -195,3 +195,40 @@ jobs:
           path: |
             tests/qr/prd01/out/
           retention-days: 14
+
+  perf:
+    # PRD-01 §16.3, row 01-S13: steady-state counters, heap and CPU submit on
+    # `prd01-draw-throughput` content, 60 s orbit compiles, plus the unit
+    # budgets (pipeline cache, 10k instances = 1 draw, VAO eviction at 1,000
+    # buffers, 576-box consolidateStatic). Counters report uploaded always.
+    name: Perf (macos-14 / chromium)
+    runs-on: macos-14
+    needs: build-harness
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          name: prd01-harness-dist
+          path: tests/qr/prd01/harness/dist/
+      - run: pnpm exec playwright install chromium
+      - name: Unit perf budgets
+        run: pnpm exec vitest run --config tests/qr/prd01/vitest.config.ts tests/qr/prd01/unit/submission-perf.test.ts --reporter=verbose
+      - name: Perf specs
+        run: pnpm exec playwright test --config tests/qr/prd01/playwright.perf.config.ts
+      - name: Upload perf counters report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd01-perf-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            tests/qr/prd01/out/perf/
+            tests/qr/prd01/out/perf.json
+          retention-days: 14
