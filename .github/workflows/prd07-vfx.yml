@@ -253,7 +253,10 @@ jobs:
     env:
       QR_BENCH_CHROME_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
       SCENE_LIST: "14-particles,09-outdoor-environment,17-large-environment,18-game-scene,prd07-particles-fountain,prd07-flipbook,prd07-particles-stress,prd07-impact-library,prd07-trails-beams,prd07-sky-timeofday,prd07-outdoor-sky,prd07-fog-height,prd07-fog-transition,prd07-underwater,prd07-rain-night,prd07-snow,prd07-volumetric-shafts,prd07-lit-smoke,prd07-soft-particles,prd07-water-interleave,prd07-decals"
-      ALL_FLAGS: "core,lighting,post,materials,assets,animation,vfx,camera,game,world,tiers,looks,compiler"
+      # $ALL plus the vfx sub-flags: resolveQrFlags does not imply
+      # A3D_QR_VFX_{SKY,FOG,VOLUMETRIC,DECALS} from `vfx`, and without them the
+      # lane scenes run their legacy paths in both arms (review on #941).
+      ALL_FLAGS: "core,lighting,post,materials,assets,animation,vfx,vfx.sky,vfx.fog,vfx.volumetric,vfx.decals,camera,game,world,tiers,looks,compiler"
       ALL_MINUS_VFX_FLAGS: "core,lighting,post,materials,assets,animation,camera,game,world,tiers,looks,compiler"
       EVIDENCE_DIR: "docs/project/aura3d-quality-rebuild/evidence/prd07/${{ github.run_id }}"
     steps:
