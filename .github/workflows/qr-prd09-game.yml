@@ -102,8 +102,10 @@ jobs:
         run: |
           git config user.email "qr-prd09@example.invalid"
           git config user.name "qr-prd09 shadow"
-          git worktree add /tmp/all-shadow origin/main --detach
-          cd /tmp/all-shadow
+          # Scratch trees live in the per-job RUNNER_TEMP: /tmp persists across
+          # jobs on this runner pool, so a fixed /tmp path collides.
+          git worktree add "$RUNNER_TEMP/all-shadow" origin/main --detach
+          cd "$RUNNER_TEMP/all-shadow"
           base="$(git rev-parse --short HEAD)"
           for dir in "$GITHUB_WORKSPACE"/docs/project/aura3d-quality-rebuild/migration/patches/*/; do
             # A patch that no longer applies means main moved under the route
@@ -120,11 +122,11 @@ jobs:
         # (undeclared names, missing exports, TDZ use), and createGame({ scene })
         # must be a function that reads nothing declared after the call.
         run: |
-          git worktree add /tmp/main-base origin/main --detach
-          ln -s "$GITHUB_WORKSPACE/node_modules" /tmp/all-shadow/node_modules
-          ln -s "$GITHUB_WORKSPACE/node_modules" /tmp/main-base/node_modules
+          git worktree add "$RUNNER_TEMP/main-base" origin/main --detach
+          ln -s "$GITHUB_WORKSPACE/node_modules" "$RUNNER_TEMP/all-shadow"/node_modules
+          ln -s "$GITHUB_WORKSPACE/node_modules" "$RUNNER_TEMP/main-base"/node_modules
           node tests/qr/prd09/migrated-tree-bundle-check.mjs \
-            --root /tmp/all-shadow --base /tmp/main-base --json /tmp/migrated-compile.json
+            --root "$RUNNER_TEMP/all-shadow" --base "$RUNNER_TEMP/main-base" --json "$RUNNER_TEMP/migrated-compile.json"
       - name: Capture-parity gate on the migrated tree
         run: |
           # Per-route gate first (clear failure attribution), then the fleet
@@ -132,23 +134,23 @@ jobs:
           for dir in docs/project/aura3d-quality-rebuild/migration/patches/*/; do
             route=$(basename "$dir")
             node tools/showcase-library/game-capture-parity.mjs \
-              --root /tmp/all-shadow --routes "$route" --fail-on-any
+              --root "$RUNNER_TEMP/all-shadow" --routes "$route" --fail-on-any
           done
           node tools/showcase-library/game-capture-parity.mjs \
-            --root /tmp/all-shadow --fail-on-art --fail-on-framing --fail-on-transient
+            --root "$RUNNER_TEMP/all-shadow" --fail-on-art --fail-on-framing --fail-on-transient
       - name: Route-composition before/after
         run: |
-          node tools/quality-rebuild-capture/route-composition.mjs --json /tmp/composition-before.json
-          node tools/quality-rebuild-capture/route-composition.mjs --root /tmp/all-shadow --json /tmp/composition-after.json
+          node tools/quality-rebuild-capture/route-composition.mjs --json "$RUNNER_TEMP/composition-before.json"
+          node tools/quality-rebuild-capture/route-composition.mjs --root "$RUNNER_TEMP/all-shadow" --json "$RUNNER_TEMP/composition-after.json"
       - name: Upload composition evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: prd09-route-composition
           path: |
-            /tmp/composition-before.json
-            /tmp/composition-after.json
-            /tmp/migrated-compile.json
+            ${{ runner.temp }}/composition-before.json
+            ${{ runner.temp }}/composition-after.json
+            ${{ runner.temp }}/migrated-compile.json
           retention-days: 30
           if-no-files-found: warn
 
