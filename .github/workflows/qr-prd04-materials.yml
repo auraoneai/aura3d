@@ -57,6 +57,12 @@ on:
         description: 'GPU job (self-hosted azure-gpu): JSON array of QrFlag lists, one matrix leg each, e.g. ["core,materials","all,strict"]'
         required: false
         default: '["core,materials"]'
+      gpu_class:
+        description: "GPU job runner class: l4 (runners labelled gpu-l4) | any (whole azure-gpu pool, includes the unlabelled T4s). Pin l4 for golden/pixel comparisons."
+        required: false
+        default: "l4"
+        type: choice
+        options: [l4, any]
 
 concurrency:
   group: qr-prd04-materials-${{ github.ref }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
@@ -204,7 +210,10 @@ jobs:
     # same-repo guard mirrors qr-azure-gpu.yml (#956).
     name: GPU (azure-gpu, flags=${{ matrix.flags }})
     if: github.event_name == 'workflow_dispatch' && github.repository == 'auraoneai/aura3d'
-    runs-on: [self-hosted, azure-gpu]
+    # Pool labels: self-hosted,azure-gpu plus gpu-l4 | gpu-t4 (#956). The
+    # default pins L4 so per-device goldens (r185-goldens.json) and captures
+    # never mix GPU classes; `any` takes whichever runner is free.
+    runs-on: ${{ (inputs.gpu_class || 'l4') == 'any' && fromJSON('["self-hosted","azure-gpu"]') || fromJSON(format('["self-hosted","azure-gpu","gpu-{0}"]', inputs.gpu_class || 'l4')) }}
     timeout-minutes: 150
     permissions:
       contents: read
@@ -215,6 +224,7 @@ jobs:
     env:
       PRD04_FLAGS: ${{ matrix.flags }}
       PRD04_PERF_TIER: azure-gpu
+      GPU_CLASS: ${{ inputs.gpu_class || 'l4' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -245,6 +255,10 @@ jobs:
         run: |
           set -euo pipefail
           node tests/qr/prd04/gpu-probe.mjs
+          # Label-drift guard: a pinned class must be the GPU actually present.
+          if [ "${GPU_CLASS}" = "l4" ]; then
+            node -e 'const r=require("./tests/reports/prd04/gpu-probe.json");if(!/NVIDIA L4/.test(r.webgl.renderer)){console.error("::error::gpu_class=l4 but renderer is "+r.webgl.renderer);process.exit(1)}'
+          fi
           node -e 'const r=require("./tests/reports/prd04/gpu-probe.json");console.log(`renderer: ${r.webgl.renderer}\nwebgpu adapter: ${r.webgpu.adapter} ${JSON.stringify(r.webgpu.info)}`)' | tee -a "$GITHUB_STEP_SUMMARY"
       - name: prd04 browser specs (all; flag-pinned specs keep their own flags)
         run: pnpm exec playwright test --config tests/qr/prd04/playwright.config.ts --grep-invert "lane captures"
