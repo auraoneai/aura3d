@@ -7,7 +7,8 @@ Status is updated as jobs complete; a job not listed below had not completed at 
 | Job | Job id | Result | First error | Attributed to |
 |---|---|---|---|---|
 | mobile | 114315418024 | failure (8/8 specs) | `TimeoutError: page.waitForFunction: Timeout 90000ms exceeded` at `juice-automount.spec.ts:41`; every spec times out the same way, including the flags-none sentinels | `tests/browser/example-dev-server.ts:96` (lane 15), see below |
-| unit, grep-gate, bake, typecheck, browser, capture, games | — | PENDING (queued on macos-14 at 2026-10-11 ~00:40Z) | — | to be filled when the jobs complete |
+| unit | 114315418017 | success | — | — |
+| grep-gate, bake, typecheck, browser, capture, games | — | PENDING (queued on macos-14 at 2026-10-11 ~02:10Z) | — | to be filled when the jobs complete |
 
 ## mobile — 8/8 `waitForFunction` timeouts
 
