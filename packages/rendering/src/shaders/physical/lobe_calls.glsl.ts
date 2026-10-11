@@ -234,7 +234,9 @@ if ( a3dLobes.iridescence > 0.0 ) {
 	vec3 a3dIrSingle = vec3( 0.0 );
 	vec3 a3dIrMulti = vec3( 0.0 );
 	a3dPrd04ComputeMultiscatteringIridescence( N, V, material.specularColorBlended, material.specularF90, a3dLobes.iridescence, a3dLobes.iridescenceF0, material.roughness, a3dIrSingle, a3dIrMulti );
-	indirectSpecular += a3dIrEnv * ( a3dIrSingle + a3dIrMulti ) - a3dIndirectSpecular( a3dIrEnv, V, N, material );
+	// r185 RE_IndirectSpecular_Physical: radiance * single + multi * irradiance / PI
+	// (a3dEnvIrradiance comes from the default indirect body, same #ifdef).
+	indirectSpecular += a3dIrEnv * a3dIrSingle + a3dIrMulti * ( a3dEnvIrradiance * RECIPROCAL_PI ) - a3dIndirectSpecular( a3dIrEnv, a3dEnvIrradiance, V, N, material );
 }
 #endif`, ["a3d_prd04_iridescence_pars"]);
 
@@ -284,7 +286,7 @@ if ( a3dLobes.anisotropy > 0.0 ) {
 	vec3 a3dAnBent = a3dPrd04AnisotropyBentNormal( V, N, material.roughness, a3dLobes.anisotropyB, a3dLobes.anisotropy );
 	vec3 a3dAnEnvBent = a3dSampleEnvironment( reflect( -V, a3dAnBent ), material.roughness * 8.0 );
 	vec3 a3dAnEnvIso = a3dSampleEnvironment( reflect( -V, N ), material.roughness * 8.0 );
-	indirectSpecular += a3dIndirectSpecular( a3dAnEnvBent, V, N, material ) - a3dIndirectSpecular( a3dAnEnvIso, V, N, material );
+	indirectSpecular += a3dIndirectSpecular( a3dAnEnvBent, a3dEnvIrradiance, V, N, material ) - a3dIndirectSpecular( a3dAnEnvIso, a3dEnvIrradiance, V, N, material );
 }
 #endif`, ["a3d_prd04_anisotropy_pars"]);
 
