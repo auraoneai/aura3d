@@ -182,7 +182,9 @@ export async function runGodRayShaftProbe() {
   // volumetricFog, so the forward inscatter on the pillar faces counted as
   // "god-ray light in the occluded mask" (+71%, GPU run 38151583035).
   const off = await renderFrame(shaftScene("on"), ["post"], 8, "shaft-off", "low");
-  const on = await renderFrame(shaftScene("on"), ["post"], 8, "shaft-on", "high");
+  // "high" is the default tier: no switch/re-submit on this leg (GPU run
+  // 38162155588 logged "Render device is disposed" after a re-submit here).
+  const on = await renderFrame(shaftScene("on"), ["post"], 8, "shaft-on");
   // Pillar mask and its bounding rows/columns.
   const pillar = new Uint8Array(SIZE * SIZE);
   let minX = SIZE, maxX = -1, minY = SIZE, maxY = -1;
