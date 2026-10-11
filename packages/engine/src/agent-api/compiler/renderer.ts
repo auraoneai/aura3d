@@ -18,6 +18,7 @@ import { createProductionRuntimeEnvironment } from "./environment.js";
 import { webGL2MaxTextureSize } from "./webglRuntime.js";
 import { applyModelTintBridge } from "./modelMaterials.js";
 import { createProductionRuntimePrimitiveEntries, upgradeProductionEnvironmentHdri } from "./primitives.js";
+import { qrPrimitiveGeometryOptions } from "./geometry.js";
 import { createProductionRuntimeRendererInput } from "./renderInput.js";
 import { createProductionRuntimeShadowOptions, describeProductionSpotShadow } from "./shadows.js";
 import { upgradeProductionPrimitiveTextures } from "./textures.js";
@@ -70,7 +71,7 @@ export async function createProductionRuntimeSceneRenderer(
         })));
       })()
     : [];
-  let primitiveEntries: readonly ProductionRuntimePrimitiveEntry[] = flagsOn ? [] : createProductionRuntimePrimitiveEntries(flattened);
+  let primitiveEntries: readonly ProductionRuntimePrimitiveEntry[] = flagsOn ? [] : createProductionRuntimePrimitiveEntries(flattened, qrPrimitiveGeometryOptions(flags, resolveMountQuality(rendererOptions)));
   // T2.4 — C-29 `Renderer.create` replaces `ProductionRuntimeRenderer.create`.
   // `preserveDrawingBuffer` is gone: frame capture flows through the C-05
   // `captureFrame`/`toBlob` path after a synchronous render, not the raw

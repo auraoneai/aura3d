@@ -1,8 +1,10 @@
-// PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
+// PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines
+// above the Q-15-2 section (flag-gated `createQrPrimitiveMesh`, appended).
 
 import type { GltfBounds } from "./gltfRuntime.js";
 import type { ProductionPrimitiveMesh } from "./primitives.js";
 import { tilingSecondUnwrap } from "./primitives.js";
+import { createPrimitiveGeometry, type Geometry } from "@aura3d/rendering";
 
 export function createPlaneGeometry(): ProductionPrimitiveMesh {
   const uvs = new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]);
@@ -196,4 +198,109 @@ export function createTorusGeometry(): { readonly positions: Float32Array; reado
 
 export function createCapsuleApproxGeometry(): { readonly positions: Float32Array; readonly normals: Float32Array; readonly indices: Uint16Array; readonly bounds: GltfBounds } {
   return createSphereGeometry();
+}
+
+/* ------------------------------------------------------------------------ */
+/* Q-15-2 (C-07, PRD-01 §15 Phase 1): under A3D_QR_CORE the engine primitives  */
+/* come from @aura3d/rendering `createPrimitiveGeometry`: three.js-class        */
+/* tessellation (sphere 64×32, cylinder 48 with split cap normals, torus        */
+/* 64×16), a real capsule with hemispherical caps instead of the sphere stand-in, */
+/* and C-27 tier halving. Flag off: the generators above, unchanged.            */
+
+/** Resolved per mount from the QR flags + C-27 quality tier. */
+export interface QrPrimitiveGeometryOptions {
+  /** `A3D_QR_CORE` on. */
+  readonly core: boolean;
+  /** C-27 `primitiveSegments` ("half" on low tiers). Defaults to "full". */
+  readonly primitiveSegments?: "half" | "full";
+}
+
+export function qrPrimitiveGeometryOptions(
+  flags: { on(name: "A3D_QR_CORE"): boolean } | undefined,
+  /** C-27 tier settings (the compile ctx types it loosely); only `primitiveSegments` is read. */
+  quality?: unknown
+): QrPrimitiveGeometryOptions | undefined {
+  if (!flags?.on("A3D_QR_CORE")) return undefined;
+  const segments = (quality as { readonly primitiveSegments?: unknown } | undefined)?.primitiveSegments;
+  return { core: true, primitiveSegments: segments === "half" ? "half" : "full" };
+}
+
+type QrBuiltinPrimitive = "box" | "sphere" | "plane" | "cylinder" | "capsule" | "torus";
+
+function hasSemantic(geometry: Geometry, semantic: string): boolean {
+  return geometry.vertexBuffer.format.attributes.some((attribute) => attribute.semantic === semantic);
+}
+
+/**
+ * Copies the CPU data of the shared (cached, never uploaded or disposed here)
+ * rendering geometry into an engine primitive mesh, so every resource still
+ * owns and disposes its own `Geometry` exactly like the legacy path.
+ *
+ * Capsule (§6.3): the rendering factory folds `size` into the geometry so the
+ * caps stay hemispherical. The engine model matrix still applies `S(size)`, so
+ * the mesh is pre-divided by `size`: positions / D, normals ∝ n ⊙ D (the
+ * renderer's inverse-transpose normal matrix divides by D again, restoring n),
+ * tangents ∝ t / D (tangents transform with the model matrix).
+ */
+export function createQrPrimitiveMesh(
+  primitive: QrBuiltinPrimitive,
+  size: readonly [number, number, number],
+  options: QrPrimitiveGeometryOptions
+): ProductionPrimitiveMesh {
+  const dims = [Math.max(1e-6, Math.abs(size[0])), Math.max(1e-6, Math.abs(size[1])), Math.max(1e-6, Math.abs(size[2]))] as const;
+  const fold = primitive === "capsule";
+  const source = createPrimitiveGeometry(primitive, undefined, { primitiveSegments: options.primitiveSegments ?? "full" }, fold ? dims : undefined);
+  const vertexBuffer = source.vertexBuffer;
+  const count = vertexBuffer.vertexCount;
+  const textured = hasSemantic(source, "uv") && hasSemantic(source, "tangent");
+  const positions = new Float32Array(count * 3);
+  const normals = new Float32Array(count * 3);
+  const uvs = textured ? new Float32Array(count * 2) : undefined;
+  const tangents = textured ? new Float32Array(count * 4) : undefined;
+  const sx = fold ? dims[0] : 1;
+  const sy = fold ? dims[1] : 1;
+  const sz = fold ? dims[2] : 1;
+  for (let index = 0; index < count; index += 1) {
+    const p = vertexBuffer.getAttribute(index, "position");
+    positions[index * 3] = p[0]! / sx;
+    positions[index * 3 + 1] = p[1]! / sy;
+    positions[index * 3 + 2] = p[2]! / sz;
+    const n = vertexBuffer.getAttribute(index, "normal");
+    const nx = n[0]! * sx;
+    const ny = n[1]! * sy;
+    const nz = n[2]! * sz;
+    const nl = Math.hypot(nx, ny, nz) || 1;
+    normals[index * 3] = nx / nl;
+    normals[index * 3 + 1] = ny / nl;
+    normals[index * 3 + 2] = nz / nl;
+    if (uvs && tangents) {
+      const uv = vertexBuffer.getAttribute(index, "uv");
+      uvs[index * 2] = uv[0]!;
+      uvs[index * 2 + 1] = uv[1]!;
+      const t = vertexBuffer.getAttribute(index, "tangent");
+      const tx = t[0]! / sx;
+      const ty = t[1]! / sy;
+      const tz = t[2]! / sz;
+      const tl = Math.hypot(tx, ty, tz) || 1;
+      tangents[index * 4] = tx / tl;
+      tangents[index * 4 + 1] = ty / tl;
+      tangents[index * 4 + 2] = tz / tl;
+      tangents[index * 4 + 3] = t[3]!;
+    }
+  }
+  // Default tessellations stay far below 65,536 vertices (sphere 64×32 = 2,145).
+  if (count > 0xffff) throw new Error(`createQrPrimitiveMesh: ${primitive} has ${count} vertices; 16-bit indices required`);
+  const indexData = source.indexBuffer?.data;
+  const indices = indexData ? Uint16Array.from(indexData) : Uint16Array.from({ length: count }, (_, index) => index);
+  const bounds: GltfBounds = {
+    min: [source.bounds.min[0] / sx, source.bounds.min[1] / sy, source.bounds.min[2] / sz],
+    max: [source.bounds.max[0] / sx, source.bounds.max[1] / sy, source.bounds.max[2] / sz]
+  };
+  return {
+    positions,
+    normals,
+    indices,
+    bounds,
+    ...(uvs && tangents ? { uvs, uv1s: tilingSecondUnwrap(uvs), tangents } : {})
+  };
 }
