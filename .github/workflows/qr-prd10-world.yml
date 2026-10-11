@@ -44,7 +44,10 @@ permissions:
   contents: read
 
 concurrency:
-  group: qr-prd10-world-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
+  # Main runs never cancel each other: GitHub keeps only ONE pending run per
+  # group even with cancel-in-progress false, so a shared main group replaced
+  # 38118155278 (#910's merge commit). Main and dispatch runs get their own group.
+  group: qr-prd10-world-${{ github.ref }}${{ (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && format('-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
