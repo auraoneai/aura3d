@@ -43,6 +43,7 @@ import { createSwarmWorld, createSwarmHandle } from "./nodes";
 import { publishSwarmEvidenceBlock } from "./evidence-block";
 import { buildSwarmScene } from "./scene-build";
 import { applyNeonScenario } from "./scenario";
+import { assets } from "../../../../src/aura-assets";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_NEON_SWARM" as const;
 
@@ -95,19 +96,19 @@ const game = createGame({
   },
   sound: {
     cues: {
-      "pulse-fire": { asset: "neonPulseFireSfx" },
-      "drone-hit": { asset: "neonDroneHitSfx" },
-      "drone-die": { asset: "neonDroneDieSfx" },
-      "player-hurt": { asset: "neonPlayerHurtSfx" },
-      "dash": { asset: "neonDashSfx" },
-      "pickup": { asset: "neonPickupSfx" },
-      "wave-start": { asset: "neonWaveStartSfx" },
-      "wave-clear": { asset: "neonWaveClearSfx" },
-      "death-sting": { asset: "neonDeathStingSfx" },
-      "burst": { asset: "neonBurstSfx" },
-      "graze": { asset: "neonGrazeSfx" },
-      "combo-break": { asset: "neonComboBreakSfx" },
-      "ambient": { asset: "neonAmbientHumSfx" }
+      "pulse-fire": { asset: assets.neonPulseFireSfx },
+      "drone-hit": { asset: assets.neonDroneHitSfx },
+      "drone-die": { asset: assets.neonDroneDieSfx },
+      "player-hurt": { asset: assets.neonPlayerHurtSfx },
+      "dash": { asset: assets.neonDashSfx },
+      "pickup": { asset: assets.neonPickupSfx },
+      "wave-start": { asset: assets.neonWaveStartSfx },
+      "wave-clear": { asset: assets.neonWaveClearSfx },
+      "death-sting": { asset: assets.neonDeathStingSfx },
+      "burst": { asset: assets.neonBurstSfx },
+      "graze": { asset: assets.neonGrazeSfx },
+      "combo-break": { asset: assets.neonComboBreakSfx },
+      "ambient": { asset: assets.neonAmbientHumSfx }
     }
   },
   juice: {

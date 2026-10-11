@@ -23,6 +23,7 @@ import { publishRooftopEvidence } from "./evidence";
 import { applyRooftopScenario } from "./scenarios";
 import { createRooftopIo, wireRooftopInput } from "./input";
 import { createRooftopActors } from "./actors";
+import { assets } from "../../../../src/aura-assets";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_ROOFTOP_BUCKETS" as const;
 
@@ -93,16 +94,16 @@ const game = createGame({
   },
   sound: {
     cues: {
-      "charge-tick": { asset: "rooftopBucketsChargeTickSfx" },
-      "rim-clank": { asset: "rooftopBucketsRimClankSfx" },
-      "board-thud": { asset: "rooftopBucketsBoardThudSfx" },
-      "swish": { asset: "rooftopBucketsSwishSfx" },
-      "brick-miss": { asset: "rooftopBucketsBrickMissSfx" },
-      "fire-ignite": { asset: "rooftopBucketsFireIgniteSfx" },
-      "gold-ball": { asset: "rooftopBucketsGoldBallSfx" },
-      "heat-advance": { asset: "rooftopBucketsHeatAdvanceSfx" },
-      "buzzer-fail": { asset: "rooftopBucketsBuzzerFailSfx" },
-      "ambient": { asset: "rooftopBucketsAmbientRooftopSfx" }
+      "charge-tick": { asset: assets.rooftopBucketsChargeTickSfx },
+      "rim-clank": { asset: assets.rooftopBucketsRimClankSfx },
+      "board-thud": { asset: assets.rooftopBucketsBoardThudSfx },
+      "swish": { asset: assets.rooftopBucketsSwishSfx },
+      "brick-miss": { asset: assets.rooftopBucketsBrickMissSfx },
+      "fire-ignite": { asset: assets.rooftopBucketsFireIgniteSfx },
+      "gold-ball": { asset: assets.rooftopBucketsGoldBallSfx },
+      "heat-advance": { asset: assets.rooftopBucketsHeatAdvanceSfx },
+      "buzzer-fail": { asset: assets.rooftopBucketsBuzzerFailSfx },
+      "ambient": { asset: assets.rooftopBucketsAmbientRooftopSfx }
     }
   },
   juice: {

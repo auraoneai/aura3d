@@ -48,6 +48,7 @@ import { wireGravityPrediction } from "./prediction";
 import { wireGravitySync } from "./sync";
 import { wireGravityHud } from "./hud";
 import { wireGravityUpdate } from "./update";
+import { assets } from "../../../../src/aura-assets";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_GRAVITY_POST" as const;
 const MAX_LAUNCH_SPEED = 2.85;
@@ -130,16 +131,16 @@ const game = createGame({
   },
   sound: {
     cues: {
-      "launch": { asset: "gravityPostLaunchWhooshSfx" },
-      "burn": { asset: "gravityPostBurnLoopSfx" },
-      "dock": { asset: "gravityPostDockLockSfx" },
-      "bounce": { asset: "gravityPostBounceOffSfx" },
-      "pod-lost": { asset: "gravityPostPodLostSfx" },
-      "contract-clear": { asset: "gravityPostContractClearSfx" },
-      "assist": { asset: "gravityPostAssistChimeSfx" },
-      "warp": { asset: "gravityPostWarpHumSfx" },
-      "ui-confirm": { asset: "gravityPostUiConfirmSfx" },
-      "ambient": { asset: "gravityPostAmbientSpaceSfx" }
+      "launch": { asset: assets.gravityPostLaunchWhooshSfx },
+      "burn": { asset: assets.gravityPostBurnLoopSfx },
+      "dock": { asset: assets.gravityPostDockLockSfx },
+      "bounce": { asset: assets.gravityPostBounceOffSfx },
+      "pod-lost": { asset: assets.gravityPostPodLostSfx },
+      "contract-clear": { asset: assets.gravityPostContractClearSfx },
+      "assist": { asset: assets.gravityPostAssistChimeSfx },
+      "warp": { asset: assets.gravityPostWarpHumSfx },
+      "ui-confirm": { asset: assets.gravityPostUiConfirmSfx },
+      "ambient": { asset: assets.gravityPostAmbientSpaceSfx }
     }
   },
   juice: {
