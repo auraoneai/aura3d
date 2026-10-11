@@ -40,7 +40,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: qr-prd06-${{ github.ref }}
+  group: qr-prd06-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:

@@ -36,7 +36,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: qr-prd05-assets-browser-${{ github.ref }}
+  group: qr-prd05-assets-browser-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:

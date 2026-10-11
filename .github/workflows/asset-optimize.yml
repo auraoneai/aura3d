@@ -24,7 +24,7 @@ on:
         type: string
 
 concurrency:
-  group: asset-optimize-${{ github.ref }}-${{ github.event.inputs.ids }}
+  group: asset-optimize-${{ github.ref }}-${{ github.event.inputs.ids }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:

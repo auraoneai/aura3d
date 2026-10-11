@@ -47,7 +47,7 @@ permissions:
   actions: write
 
 concurrency:
-  group: qr-prd03-captures-${{ github.ref }}-${{ inputs.qr_flags }}
+  group: qr-prd03-captures-${{ github.ref }}-${{ inputs.qr_flags }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
   cancel-in-progress: false
 
 jobs:
