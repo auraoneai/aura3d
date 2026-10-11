@@ -55,13 +55,17 @@ test("prd02 shadow chain: cascade depth is written and shadowed texels are darke
   const threeOn = await captureLaneScene(page, server, { scene: SCENE, engine: "three", flags: "lighting" });
   const threeOff = await captureLaneScene(page, server, { scene: SCENE, engine: "three", flags: "lighting", control: "no-shadows" });
 
-  const ready = auraOn.payload as { prd02ShadowDepth?: DepthStat[]; prd02ShadowBridge?: string } | null;
-  const depth = (ready?.prd02ShadowDepth ?? []) as DepthStat[];
-  const bridge = ready?.prd02ShadowBridge ?? "no-payload";
+  // runAuraScene nests collectExtra fields under `extra` (aura3d/common.ts).
+  const ready = auraOn.payload as {
+    shadows?: unknown;
+    extra?: { prd02ShadowDepth?: DepthStat[]; prd02ShadowBridge?: string; shadows?: unknown };
+  } | null;
+  const depth = (ready?.extra?.prd02ShadowDepth ?? []) as DepthStat[];
+  const bridge = ready?.extra?.prd02ShadowBridge ?? (ready ? "no-extra" : "no-payload");
   const mask = shadowMask(threeOn.pixels, threeOff.pixels);
   const lit = meanLumaIn(auraOff.pixels, mask);
   const shadowed = meanLumaIn(auraOn.pixels, mask);
-  const evidence = { bridge, depth, maskPixels: lit.count, auraNoShadowsLuma: lit.mean, auraDefaultLuma: shadowed.mean };
+  const evidence = { bridge, depth, readyShadows: ready?.shadows ?? null, rendererShadows: ready?.extra?.shadows ?? null, maskPixels: lit.count, auraNoShadowsLuma: lit.mean, auraDefaultLuma: shadowed.mean };
   await testInfo.attach("shadow-chain.json", { body: JSON.stringify(evidence, null, 2), contentType: "application/json" });
   console.log(`[prd02-shadow-chain] ${JSON.stringify(evidence)}`);
 
