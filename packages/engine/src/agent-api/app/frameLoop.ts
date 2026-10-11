@@ -11,7 +11,7 @@ import { collectLabelTelemetry, summarizeTextBuckets } from "../LabelTelemetry.j
 import { createProductionSceneRenderer } from "./mountRenderer.js";
 import { devicePixelRatioSafe, markTiming, performanceNow } from "../platform.js";
 import { groups } from "../nodes/groups.js";
-import { isWebGLRenderableNode, productionRenderErrorMessage } from "../compiler/observations.js";
+import { declaresWebGLContent, productionRenderErrorMessage } from "../compiler/observations.js";
 import { labels } from "../nodes/labels.js";
 import { normalizeCreateAppRendererOptions } from "./rendererOptions.js";
 import { qrFlagsWithAnimationMixer, resolveQrFlags } from "../../contracts/flags.js";
@@ -52,7 +52,7 @@ export async function startProductionRender(
   // Use the same ownership rule as initial mount and setScene. A compatibility
   // source continues supplying arena/fighter geometry when public nodes are
   // temporarily absent (for example the crowd-hidden negative control).
-  if (!hasRootRenderableContent(canvas, snapshot.nodes.some(isWebGLRenderableNode))) {
+  if (!hasRootRenderableContent(canvas, declaresWebGLContent(snapshot.nodes))) {
     throw new AuraRuntimeError(
       "missing-asset",
       "Aura3D production rendering requires at least one typed model asset or primitive. Suggested fix: add model(assets.product), primitives.box(), primitives.sphere(), primitives.cylinder(), or primitives.plane()."

@@ -55,6 +55,23 @@ export function isWebGLRenderableNode(node: AuraSceneNode): node is AuraModelNod
 }
 
 /**
+ * PRD-10 world nodes the production renderer draws through the prd10 frame
+ * contributor (terrain CDLOD, water surface, grass). They are not
+ * `AuraSceneNode` kinds in the type union, so this reads `kind` as a string.
+ */
+const WEBGL_WORLD_NODE_KINDS: ReadonlySet<string> = new Set(["terrain", "water", "grass"]);
+
+/**
+ * True when the scene declares content only WebGL can draw: a renderable
+ * model/primitive or a PRD-10 world node. A scene made only of world nodes
+ * (e.g. terrain + sky) previously counted as "nothing renderable" and mounted
+ * the diagnostic canvas2d backend, so its terrain never drew (#1175).
+ */
+export function declaresWebGLContent(nodes: readonly AuraSceneNode[]): boolean {
+  return nodes.some((node) => isWebGLRenderableNode(node) || WEBGL_WORLD_NODE_KINDS.has((node as { readonly kind: string }).kind));
+}
+
+/**
  * Translates a public `effects.fog(...)` node into renderer forward-pass fog.
  *
  * Without this the root bridge never set `environmentFog`, so `effects.fog()` was
