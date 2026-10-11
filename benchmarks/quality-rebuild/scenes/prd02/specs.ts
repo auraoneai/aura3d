@@ -101,7 +101,9 @@ const batchGrid3x3: ObjectSpec = {
     const transforms: { position: Vec3; rotation: Vec3 }[] = [];
     for (let ix = 0; ix < 3; ix += 1) {
       for (let iz = 0; iz < 3; iz += 1) {
-        transforms.push({ position: [-2.4 + ix * 0.6, 0.2, -1.8 + iz * 0.6], rotation: [0, rng() * Math.PI, 0] });
+        // 0.9 m pitch: a 0.4 m box's shadow (≤ 0.29 m + 0.28 m half-diagonal under
+        // the [4,7,3] sun) never reaches its neighbour, so S4 counts 9 components.
+        transforms.push({ position: [-2.0 + ix * 0.9, 0.2, -2.4 + iz * 0.9], rotation: [0, rng() * Math.PI, 0] });
       }
     }
     return transforms;
@@ -120,7 +122,9 @@ const fixtureInstances16: ObjectSpec = {
     const rng = createRng(7070);
     const transforms: { position: Vec3; rotation: Vec3 }[] = [];
     for (let index = 0; index < 16; index += 1) {
-      transforms.push({ position: [0.6 + (index % 4) * 0.5, 0.3, -2 + Math.floor(index / 4) * 0.5], rotation: [0, rng() * Math.PI, 0] });
+      // 1 m pitch: a 0.6 m box's shadow (≈ 0.43 m) stays clear of the next
+      // instance, so S4 counts 16 components.
+      transforms.push({ position: [0.8 + (index % 4) * 1.0, 0.3, -3.8 + Math.floor(index / 4) * 1.0], rotation: [0, rng() * Math.PI, 0] });
     }
     return transforms;
   })(),
@@ -363,7 +367,7 @@ export const prd02Specs = {
       { kind: "model", name: "skinned soldier", asset: "soldier", position: [-3.4, 0, 1.2], castShadow: true, receiveShadow: true, animation: { clip: "Walk", time: CAPTURE_TIME } },
       batchGrid3x3,
       fixtureInstances16,
-      primitive("alpha leaf card", "plane", [1.6, 1.6, 1.6], [2.8, 0.9, 1.4], { color: "#3e7d3a", roughness: 0.9, metalness: 0, opacity: 0.55 }, { rotation: [0, 0.5, 0] })
+      primitive("alpha leaf card", "plane", [1.6, 1.6, 1.6], [2.8, 0.9, 1.4], { color: "#3e7d3a", roughness: 0.9, metalness: 0, opacity: 0.55 }, { rotation: [0, 0.5, 0], castShadow: true })
     ],
     shadows: defaultShadows(8),
     owner: "prd02",

@@ -59,6 +59,23 @@ function footprintRegion(spec: SceneSpec, size: ImageSize, min: Vec3, max: Vec3,
   return worldQuadMask(spec, size, [[x0, 0, z0], [x1, 0, z0], [x1, 0, z1], [x0, 0, z1]]);
 }
 
+/** Footprint region of an instanced caster group: AABB of every instance (yaw-safe half-diagonal) swept to the ground. */
+function instancedRegion(spec: SceneSpec, size: ImageSize, name: string): MaskBuffer {
+  const group = spec.objects.find((object) => object.name === name);
+  if (!group || group.kind !== "instanced") throw new Error(`${spec.id}: missing instanced "${name}"`);
+  const half = Math.hypot(group.size[0], group.size[2]) / 2;
+  const min: [number, number, number] = [Infinity, 0, Infinity];
+  const max: [number, number, number] = [-Infinity, 0, -Infinity];
+  for (const { position } of group.transforms) {
+    min[0] = Math.min(min[0], position[0] - half);
+    min[2] = Math.min(min[2], position[2] - half);
+    max[0] = Math.max(max[0], position[0] + half);
+    max[2] = Math.max(max[2], position[2] + half);
+    max[1] = Math.max(max[1], position[1] + group.size[1] / 2);
+  }
+  return footprintRegion(spec, size, min, max, 0.1);
+}
+
 function and(a: MaskBuffer, b: MaskBuffer): MaskBuffer {
   const out = new Uint8Array(a.length);
   for (let i = 0; i < a.length; i += 1) out[i] = a[i] && b[i] ? 255 : 0;
@@ -98,8 +115,8 @@ function fixtureRegions(spec: SceneSpec, size: ImageSize): { soldier: MaskBuffer
   });
   return {
     soldier: footprintRegion(spec, size, [-4.0, 0, 0.6], [-2.8, 1.85, 1.8], 0.35),
-    batch: footprintRegion(spec, size, [-2.7, 0, -2.1], [-0.9, 0.4, -0.3], 0.15),
-    instances: footprintRegion(spec, size, [0.4, 0, -2.2], [2.3, 0.6, -0.3], 0.15),
+    batch: instancedRegion(spec, size, "batched box grid"),
+    instances: instancedRegion(spec, size, "sixteen instances"),
     card: worldQuadMask(spec, size, corners)
   };
 }
