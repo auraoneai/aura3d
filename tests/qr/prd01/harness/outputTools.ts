@@ -17,7 +17,7 @@
 import * as THREE from "three";
 import { OutputPass, WebGL2Device, type RenderTarget, type UniformValue } from "../../../../packages/rendering/src";
 import type { OutputOverlayUniforms } from "../../../../packages/rendering/src/contracts/output";
-import { errorText, fullscreenDraw, linearToSrgb8, OPAQUE_STATE, placeCanvas, THREE_TONE_MAPPING } from "./specKit";
+import { enableFloatTargets, errorText, fullscreenDraw, glTrace, linearToSrgb8, OPAQUE_STATE, placeCanvas, THREE_TONE_MAPPING } from "./specKit";
 
 const RAMP_W = 1280;
 const RAMP_H = 4;
@@ -63,24 +63,37 @@ interface OutputRig {
   present(ramp: readonly [number, number], options: { toneMapping: string; exposure: number; dithering: boolean; overlay?: OutputOverlayUniforms }): Uint8Array;
 }
 
+/** GL errors traced per step (reported as tool errors, named by step). */
+const traced: string[] = [];
+
 function outputRig(canvas: HTMLCanvasElement): OutputRig {
-  const device = WebGL2Device.create({ canvas, preserveDrawingBuffer: true, errorCheckMode: "strict" });
-  const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
+  const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true }) as WebGL2RenderingContext;
+  if (!enableFloatTargets(gl)) traced.push(`${canvas.id}: EXT_color_buffer_float unavailable`);
+  // No strict throw: every step is traced instead, so the run names the step
+  // that raised an error (strict reported only the next uniform upload).
+  const device = WebGL2Device.create({ canvas, preserveDrawingBuffer: true });
+  const trace = glTrace(gl);
+  trace.drain();
   const w = canvas.width;
   const h = canvas.height;
   const target = device.createRenderTarget({ width: w, height: h, label: "qr-output-hdr", colorAttachments: [{ format: "rgba16f" }] });
   const fill = fullscreenDraw(device, "qr-output-fill", FILL_FRAGMENT);
   const pass = new OutputPass(device);
+  trace.check(`${canvas.id} setup`);
+  let presents = 0;
   return {
     device,
     gl,
     target,
     pass,
     present(ramp, options) {
+      const step = `${canvas.id} present#${presents++} ${options.toneMapping}`;
       device.beginFrame(w, h);
       device.setRenderTarget(target);
       device.clearRenderTarget([0, 0, 0, 1]);
+      trace.check(`${step} clear`);
       fill.draw(OPAQUE_STATE, new Map<string, UniformValue>([["u_size", [w, h]], ["u_ramp", [ramp[0], ramp[1]]]]));
+      trace.check(`${step} fill draw`);
       pass.execute(
         target,
         null,
@@ -93,11 +106,12 @@ function outputRig(canvas: HTMLCanvasElement): OutputRig {
         },
         "canvas"
       );
+      trace.check(`${step} OutputPass.execute`);
       device.setRenderTarget(null);
-      const pixels = new Uint8Array(w * h * 4);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-      gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+      const pixels = device.readPixels(0, 0, w, h);
+      trace.check(`${step} readPixels`);
       device.endFrame();
+      for (const entry of trace.entries.splice(0)) traced.push(entry);
       return pixels;
     }
   };
@@ -222,6 +236,7 @@ export async function runOutputPassTool(stage: HTMLElement): Promise<OutputPassR
     errors.push(`output: ${errorText(error)}`);
   }
 
+  errors.push(...traced.map((entry) => `gl: ${entry}`));
   const report: OutputPassReport = { dither, greyCard, exposureRamp, emissive4, overlayZeroIdentical, overlayZeroDiffPixels, errors };
   window.__QR_SPEC__ = report;
   return report;

@@ -261,7 +261,9 @@ export async function runMountFailureTool(stage: HTMLElement): Promise<MountFail
       .toJSON();
     const app = createAuraApp(canvas, {
       scene: snapshot,
-      renderer: { mode: "production", fallback: "safe-basic", ...rendererOptions },
+      // PRD-15 removed `renderer.mode` + `renderer.fallback` (AuraMigrationError);
+      // the mount-failure contract is exercised on the default production path.
+      renderer: { ...rendererOptions },
       pixelRatio: 1,
       resize: false,
       autoStart: false,

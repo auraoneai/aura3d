@@ -33,6 +33,8 @@ export interface FrameGraphReport {
   /** Depth sampled from the copy, 0..255 (null when nothing ran). */
   readonly centerDepth: number | null;
   readonly cornerDepth: number | null;
+  /** Size of the published depth-copy target (null when none was sampled). */
+  readonly depthCopySize: readonly [number, number] | null;
   readonly drawCalls: number;
   readonly errors: readonly string[];
 }
@@ -53,6 +55,7 @@ export async function runFrameGraphTool(stage: HTMLElement): Promise<FrameGraphR
   let forwardTargetPublished = false;
   let centerDepth: number | null = null;
   let cornerDepth: number | null = null;
+  let depthCopySize: [number, number] | null = null;
   let probe: { device: RenderDevice; target: RenderTarget; draw: FullscreenDraw } | null = null;
 
   const probePass = (ctx: FrameContributorContext): RenderPass => ({
@@ -70,9 +73,13 @@ export async function runFrameGraphTool(stage: HTMLElement): Promise<FrameGraphR
       }
       const previous = ctx.device.getRenderTarget?.() ?? null;
       ctx.device.setRenderTarget(probe.target);
+      // Sentinel 0.5 (code 128): a probe draw that never lands reads 128, not
+      // a plausible depth of 0, so the spec can tell "draw failed" from "depth 0".
+      ctx.device.clearRenderTarget?.([0.5, 0.5, 0.5, 1]);
       probe.draw.draw(OPAQUE_STATE, new Map<string, UniformValue>([["u_depth", new TextureBinding({ name: "u_depth", texture, required: true })]]));
       centerDepth = ctx.device.readPixels(4, 4, 1, 1)[0] ?? null;
       cornerDepth = ctx.device.readPixels(0, 0, 1, 1)[0] ?? null;
+      depthCopySize = copy ? [copy.width, copy.height] : null;
       ctx.device.setRenderTarget(previous);
     }
   });
@@ -116,6 +123,7 @@ export async function runFrameGraphTool(stage: HTMLElement): Promise<FrameGraphR
     forwardTargetPublished,
     centerDepth,
     cornerDepth,
+    depthCopySize,
     drawCalls: app?.diagnostics().drawCalls ?? 0,
     errors: [...errors, ...(app?.diagnostics().errors ?? [])]
   };
