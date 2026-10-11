@@ -354,10 +354,20 @@ export async function runPrd07AuraScene(spec: Prd07SceneSpec, host: HTMLElement,
   // Cost of one rendered step(0), sampled 3× — separates per-frame render
   // cost (e.g. volumetric / sky passes) from one-off mount or compile stalls.
   const stepMs: number[] = [];
+  const diagnosticsMs: number[] = [];
+  const rafMs: number[] = [];
   for (let i = 0; i < 3; i += 1) {
-    const t0 = performance.now();
+    let t0 = performance.now();
     app.step(0);
     stepMs.push(Math.round((performance.now() - t0) * 10) / 10);
+    // app.diagnostics() collects every registered C-31 section; the adapters
+    // call it in their wait loops, so its cost is part of time-to-ready.
+    t0 = performance.now();
+    app.diagnostics();
+    diagnosticsMs.push(Math.round((performance.now() - t0) * 10) / 10);
+    t0 = performance.now();
+    await nextFrame();
+    rafMs.push(Math.round((performance.now() - t0) * 10) / 10);
   }
 
   const sheets = spec.objects.filter((o): o is BurstSheetSpec => o.kind === "burstSheet");
@@ -453,8 +463,9 @@ export async function runPrd07AuraScene(spec: Prd07SceneSpec, host: HTMLElement,
       renderSize: diagnostics.renderSize,
       qrFlags: flags ?? [],
       effects: fx,
-      // ms since adapter start at each phase + three sampled step(0) costs.
-      adapterTiming: { ...phase, stepMs },
+      // ms since adapter start at each phase + three sampled step(0),
+      // diagnostics() and requestAnimationFrame costs.
+      adapterTiming: { ...phase, stepMs, diagnosticsMs, rafMs },
       mountTiming: performance.getEntriesByType("mark")
         .filter((entry) => entry.name.startsWith("a3d:"))
         .map((entry) => ({ name: entry.name, startTime: Math.round(entry.startTime * 100) / 100 }))
