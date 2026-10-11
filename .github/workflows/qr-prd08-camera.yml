@@ -68,7 +68,7 @@ on:
   workflow_call:
 
 concurrency:
-  group: qr-prd08-${{ github.ref }}
+  group: qr-prd08-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
