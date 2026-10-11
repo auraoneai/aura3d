@@ -8,8 +8,8 @@ import type { ShaderChunk } from "../../../contracts/program.js";
 
 const glsl = /* glsl */ `
 uniform vec4 u_waves[8];      // dir.x, dir.y, steepness, wavelength
-uniform float u_waveSpeed[8];
-uniform int u_waveCount;
+uniform vec4 u_waveSpeed[8];  // x: speed multiplier (vec4: the device rejects 8-float arrays)
+uniform float u_waveCount;     // float: the device has no int uniform upload (#491)
 uniform float u_time;
 
 // Displaced surface point + analytic normal via tangent/binormal accumulation.
@@ -17,10 +17,10 @@ vec3 a3dGerstner(vec2 xz, out vec3 normal) {
   vec3 p = vec3(xz.x, 0.0, xz.y);
   vec3 tangent = vec3(1.0, 0.0, 0.0), binormal = vec3(0.0, 0.0, 1.0);
   for (int i = 0; i < 8; i++) {
-    if (i >= u_waveCount) break;
+    if (float(i) >= u_waveCount) break;
     vec2 d = u_waves[i].xy;
     float k = 6.2831853 / u_waves[i].w;
-    float c = sqrt(9.81 / k) * u_waveSpeed[i];
+    float c = sqrt(9.81 / k) * u_waveSpeed[i].x;
     float f = k * (dot(d, xz) - c * u_time);
     float a = u_waves[i].z / k;
     p.x += d.x * a * cos(f);
@@ -37,10 +37,10 @@ vec3 a3dGerstner(vec2 xz, out vec3 normal) {
 float a3dGerstnerCrest(vec2 xz) {
   float j = 0.0;
   for (int i = 0; i < 8; i++) {
-    if (i >= u_waveCount) break;
+    if (float(i) >= u_waveCount) break;
     vec2 d = u_waves[i].xy;
     float k = 6.2831853 / u_waves[i].w;
-    float c = sqrt(9.81 / k) * u_waveSpeed[i];
+    float c = sqrt(9.81 / k) * u_waveSpeed[i].x;
     float f = k * (dot(d, xz) - c * u_time);
     j += u_waves[i].z * sin(f);
   }

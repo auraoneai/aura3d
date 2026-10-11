@@ -59,6 +59,7 @@ export interface SplatBakeResult {
 const MAX_RULES = 8;
 
 const BAKE_VERT = /* glsl */ `#version 300 es
+// prd10-terrain-splat-bake — RenderDevice shader marker (both stages)
 in vec2 a_pos;
 out vec2 v_uv;
 void main() {
@@ -74,6 +75,7 @@ void main() {
  * weights.
  */
 const BAKE_FRAG = /* glsl */ `#version 300 es
+// prd10-terrain-splat-bake — RenderDevice shader marker (both stages)
 precision highp float;
 precision highp int;
 in vec2 v_uv;
