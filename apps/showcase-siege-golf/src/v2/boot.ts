@@ -7,6 +7,7 @@
 // Gameplay modules (shot/course/hole-flow/score/structures/solutions) are
 // unchanged; audio plays through the legacy cue controller until C-25
 // lands (standIn R-14-09).
+import { instrumentAudio } from "./audio-proof";
 import { game as engineGame, scene } from "@aura3d/engine";
 import { createGame, type Game, lookManifest } from "@aura3d/game";
 import { SIEGE_GOLF_HOLES } from "../gameplay/course";
@@ -49,7 +50,7 @@ function buildScene() {
 
 // ----------------------------------------------------------------- audio -----
 
-const audio = createGolfAudio();
+const audio = instrumentAudio(createGolfAudio(), { cue: null });
 const audioCueLog: string[] = [];
 function pushCue(cue: GolfAudioCue): void {
   audioCueLog.push(cue);

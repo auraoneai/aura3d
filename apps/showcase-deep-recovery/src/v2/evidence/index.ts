@@ -3,6 +3,7 @@
 // getters. render.readbacksThisFrame is a constant 0: the v2 shell issues no
 // GPU readbacks — the §6.9.14 volumetric-fog readback was removed at day-0
 // (the four render.readbacksThisFrame===0 conditions measure exactly that).
+import { audioProof } from "../audio-proof";
 import type { Game } from "@aura3d/engine";
 
 export const DEEP_EVIDENCE_ID = "showcase-deep-recovery";
@@ -135,7 +136,7 @@ export function publishDeepEvidence(b: DeepEvidenceBindings): void {
       return b.appliedLook();
     },
     get audio() {
-      return { cues: b.audioCueLog() };
+      return { cues: b.audioCueLog(), ...audioProof.snapshot() };
     },
     get boot() {
       return { bootedAtMs: b.bootedAtMs(), frame: b.frameCount() };

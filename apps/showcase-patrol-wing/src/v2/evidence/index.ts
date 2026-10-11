@@ -5,6 +5,7 @@
 //   - flight.throttle: authored throttle 0..1 (> 0.4 while the sortie climbs)
 //   - drones.hitsThisSortie: cumulative cannon-hit count for this sortie
 //   - fx.liveCount: live fx-layer particles (trails keep it > 0 airborne)
+import { audioProof } from "../audio-proof";
 import type { AuraCameraPose, Game } from "@aura3d/engine";
 import type { RingTrackerSnapshot } from "../../gameplay/patrol";
 import type { CannonSnapshot } from "../../gameplay/weapons";
@@ -200,7 +201,7 @@ export function publishPatrolEvidence(b: PatrolEvidenceBindings): void {
         : null;
     },
     get audio() {
-      return { cueLog: [...b.audioCueLog()] };
+      return { cueLog: [...b.audioCueLog()], ...audioProof.snapshot() };
     },
     get boot() {
       return {

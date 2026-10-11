@@ -1,9 +1,10 @@
 // Audio block — extracted from boot.ts for 14-LOC.
+import { instrumentAudio } from "./audio-proof";
 import { createBlockfallReactorAudio } from "../gameplay/reactor-audio";
 import type { BlockfallAudioCue } from "../gameplay/blockfall-audio-manifest";
 
 export function createBlockfallAudioBlock(reducedMotion: boolean) {
-  const audio = createBlockfallReactorAudio(reducedMotion);
+  const audio = instrumentAudio(createBlockfallReactorAudio(reducedMotion), { cue: null });
   const audioCueLog: string[] = [];
   function pushCue(cue: BlockfallAudioCue): void {
     audioCueLog.push(cue);

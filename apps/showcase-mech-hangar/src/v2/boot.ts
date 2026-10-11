@@ -3,6 +3,7 @@
 // floodlit pit ctx.bout. One union scene: the hangar set sits at z=0 and the pit
 // at z=-34; entering the arena only moves the camera anchor, mounts the rival
 // family and flips loading.sceneId — loading.sceneSwaps stays 0.
+import { instrumentAudio } from "./audio-proof";
 import { game as engineGame, scene } from "@aura3d/engine";
 import type { AuraRuntimeNodeHandle } from "@aura3d/engine";
 import { createGame, lookManifest, type Prd09Game } from "@aura3d/game";
@@ -88,7 +89,7 @@ const anchorHandle = handle(CAM_ANCHOR_ID);
 const reducedMotion = engineGame.accessibility
   .settings([engineGame.accessibility.reducedMotion({ enabled: matchMedia("(prefers-reduced-motion: reduce)").matches })])
   .reducedMotion;
-const audio = createHangarAudio();
+const audio = instrumentAudio(createHangarAudio(), { cue: null });
 const unlockAudio = () => {
   window.removeEventListener("pointerdown", unlockAudio);
   window.removeEventListener("keydown", unlockAudio);

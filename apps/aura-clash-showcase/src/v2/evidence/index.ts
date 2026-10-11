@@ -3,6 +3,7 @@
 // window.__AURA3D_GAME_EVIDENCE__["aura-clash-showcase"], lazily computed,
 // no per-frame allocation > 1KB. `session` is shell-owned — the route
 // publishes `playback` instead (spec reads paused via __AURA3D_GAME__.session).
+import { audioProof } from "../audio-proof";
 import type {
   AuraApp, FightingGameSnapshot, GameSession
 } from "@aura3d/engine";
@@ -86,7 +87,7 @@ export function publishAuraClashEvidence(b: AuraClashEvidenceBindings): void {
       };
     },
     get audio() {
-      return { cueLog: b.audioCueLog() };
+      return { cueLog: b.audioCueLog(), ...audioProof.snapshot() };
     }
   };
 }

@@ -1,5 +1,6 @@
 // apps/showcase-skyline-runner/src/v2/evidence/index.ts — lazy evidence sections
 // for games.json requiredConditions and the QR audits.
+import { audioProof } from "../audio-proof";
 import { SKYLINE_SECTION_COUNT } from "../../gameplay/level";
 import type { Game } from "@aura3d/game";
 
@@ -51,7 +52,7 @@ export function publishSkylineEvidence(bindings: SkylineEvidenceBindings) {
     get level() { return bindings.level(); },
     get run() { return bindings.run(); },
     get fx() { return bindings.fx(); },
-    get audio() { return bindings.audio(); },
+    get audio() { return { ...bindings.audio(), ...audioProof.snapshot() }; },
     get feel() { return bindings.feel(); },
 
     get framing() {

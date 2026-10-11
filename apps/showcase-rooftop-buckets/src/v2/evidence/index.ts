@@ -3,6 +3,7 @@
 // lazy section getters (no per-frame allocation > 1 KB). Required conditions
 // read `shot.result`, `shot.meter`, `characters.skinnedVisible`,
 // `characters.tracksApplied` and `fx.liveCount` here.
+import { audioProof } from "../audio-proof";
 import type { Game } from "@aura3d/engine";
 import type { BallState } from "../../gameplay/shot";
 import type { GameScoreState } from "../../gameplay/scoring";
@@ -100,7 +101,7 @@ export function publishRooftopEvidence(b: RooftopEvidenceBindings): void {
       return b.appliedLook;
     },
     get audio() {
-      return { cues: b.audioCueLog() };
+      return { cues: b.audioCueLog(), ...audioProof.snapshot() };
     },
     get boot() {
       return { bootedAtMs: b.bootedAtMs, frame: b.frameCount() };

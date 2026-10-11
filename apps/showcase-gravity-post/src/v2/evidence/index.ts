@@ -3,6 +3,7 @@
 // lazy section getters. The required condition reads `pod.state` (normalized
 // "in-flight" while the authored integrator is coasting) and `pod.launchedBy`
 // ("keyboard" when the Enter-key launch path fired, "pointer" for the drag).
+import { audioProof } from "../audio-proof";
 import type { AuraCameraPose, Game } from "@aura3d/engine";
 import type { ContractSpec } from "../../gameplay/contracts";
 import type { PodRuntimeState } from "../../gameplay/pod";
@@ -181,7 +182,7 @@ export function publishGravityEvidence(b: GravityEvidenceBindings): void {
       return b.appliedLook;
     },
     get audio() {
-      return { cues: [...b.audioCueLog()] };
+      return { cues: [...b.audioCueLog()], ...audioProof.snapshot() };
     },
     get boot() {
       return { startedAtMs: b.bootedAtMs };

@@ -2,6 +2,7 @@
 // Publishes `window.__AURA3D_GAME_EVIDENCE__["showcase-neon-swarm"]` with
 // lazy section getters. The required conditions read `swarm.killsThisWave`
 // and `fx.liveCount` here.
+import { audioProof } from "../audio-proof";
 import type { Game } from "@aura3d/engine";
 import type { PlayerState, PlayerUpgrades } from "../../gameplay/player";
 
@@ -102,7 +103,7 @@ export function publishSwarmEvidence(b: SwarmEvidenceBindings): void {
       return b.appliedLook;
     },
     get audio() {
-      return { cues: b.audioCueLog() };
+      return { cues: b.audioCueLog(), ...audioProof.snapshot() };
     },
     get boot() {
       return { bootedAtMs: b.bootedAtMs, frame: b.frameCount() };

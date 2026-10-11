@@ -5,6 +5,7 @@
 // PT-01 honest fallback). Gameplay modules (beat-clock/gates/patterns/
 // player/style) are unchanged; music + sfx play through the legacy
 // stem-bus tunnel audio until C-25 lands (standIn R-14-09).
+import { instrumentAudio } from "./audio-proof";
 import { game as engineGame, scene } from "@aura3d/engine";
 import { createGame, type Game, lookManifest } from "@aura3d/game";
 import { pulseSectionAtTime, pulseTimeForBeat } from "../gameplay/beat-clock";
@@ -64,7 +65,7 @@ function buildScene() {
 
 // ----------------------------------------------------------------- audio -----
 
-const tunnelAudio = createTunnelAudio();
+const tunnelAudio = instrumentAudio(createTunnelAudio(), { sfx: null, startRun: "track-stems" });
 const audioCueLog: string[] = [];
 function pushCue(cue: PulseSfxCue): void {
   audioCueLog.push(cue);

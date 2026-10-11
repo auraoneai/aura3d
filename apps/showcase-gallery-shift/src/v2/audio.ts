@@ -1,11 +1,12 @@
 // Heist audio + cue log — extracted from boot.ts for 14-LOC.
+import { instrumentAudio } from "./audio-proof";
 import { createHeistAudio, type HeistAudioCue } from "../legacy/heist-audio";
 import type { GalleryCtx } from "./state";
 
 const MAX_CUE_LOG = 48;
 
 export function createHeistAudioBlock(ctx: GalleryCtx) {
-  const audio = createHeistAudio();
+  const audio = instrumentAudio(createHeistAudio(), { cue: null });
   const audioCueLog: string[] = [];
   const lastCueFrame = new Map<string, number>();
   function pushCue(cue: HeistAudioCue): void {

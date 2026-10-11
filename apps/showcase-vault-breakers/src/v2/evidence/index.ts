@@ -2,6 +2,7 @@
 // Publishes `window.__AURA3D_GAME_EVIDENCE__["showcase-vault-breakers"]` with
 // lazy section getters (no per-frame allocation > 1 KB). The §7.2.1 required
 // conditions read `ball.inPlay` and `table.bumperHitsThisBall` + `fx.liveCount`.
+import { audioProof } from "../audio-proof";
 import type { Game } from "@aura3d/engine";
 import type { VaultFlow } from "../../gameplay/ball-flow";
 
@@ -89,7 +90,7 @@ export function publishVaultEvidence(b: VaultEvidenceBindings): void {
       return b.appliedLook;
     },
     get audio() {
-      return { cues: b.audioCueLog() };
+      return { cues: b.audioCueLog(), ...audioProof.snapshot() };
     },
     get boot() {
       return { bootedAtMs: b.bootedAtMs, frame: b.frameCount() };

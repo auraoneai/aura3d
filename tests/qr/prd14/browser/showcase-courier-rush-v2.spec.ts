@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
+import { expectS11Audio } from "./lib/audio-proof";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 // Source imports: the lane jobs do not build package dist/, so the
@@ -109,6 +110,9 @@ test.describe("showcase-courier-rush v2 (T2.6)", () => {
       )).toBe(false);
 
       expect(errors).toEqual([]);
+      // S11 (PRD-14 §16.1): synthCues === 0 and every art/direction.ts
+      // audio[] event voiced at least once during the scripted timeline.
+      await expectS11Audio(page, APP_DIR);
     } finally {
       server.close();
     }

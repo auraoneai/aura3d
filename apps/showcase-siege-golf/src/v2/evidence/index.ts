@@ -2,6 +2,7 @@
 // Publishes `window.__AURA3D_GAME_EVIDENCE__["showcase-siege-golf"]` with
 // lazy section getters. The required conditions read
 // `structures.toppledThisShot`, `loading.sceneSwaps` and `shot.power` here.
+import { audioProof } from "../audio-proof";
 import type { Game } from "@aura3d/engine";
 import type { HoleFlowSnapshot } from "../../gameplay/hole-flow";
 import type { AimState } from "../../gameplay/shot";
@@ -102,7 +103,7 @@ export function publishSiegeEvidence(b: SiegeEvidenceBindings): void {
       return b.appliedLook;
     },
     get audio() {
-      return { cues: b.audioCueLog() };
+      return { cues: b.audioCueLog(), ...audioProof.snapshot() };
     },
     get boot() {
       return { bootedAtMs: b.bootedAtMs, frame: b.frameCount() };

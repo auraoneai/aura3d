@@ -2,6 +2,7 @@
 // Publishes `window.__AURA3D_GAME_EVIDENCE__["showcase-pulse-tunnel"]` with
 // lazy section getters. The required conditions read `gates.passedOnBeat`,
 // `fx.liveCount` and `framing.canvasMatchesViewport` here.
+import { audioProof } from "../audio-proof";
 import type { Game } from "@aura3d/engine";
 import type { PulsePlayerState } from "../../gameplay/player";
 import type { BeatClockSample } from "../../gameplay/beat-clock";
@@ -130,7 +131,7 @@ export function publishPulseEvidence(b: PulseEvidenceBindings): void {
       return b.appliedLook;
     },
     get audio() {
-      return { cues: b.audioCueLog() };
+      return { cues: b.audioCueLog(), ...audioProof.snapshot() };
     },
     get boot() {
       return { bootedAtMs: b.bootedAtMs, frame: b.frameCount() };
