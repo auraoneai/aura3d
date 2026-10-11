@@ -314,6 +314,24 @@ export const A3D_PRD04_DEBUG_VIEW_CALL = chunk("a3d_prd04_debug_view_call", /* g
 }`, ["a3d_prd04_debug_view", "a3d_prd04_lobes_state"]);
 
 /** Every pars/call chunk above, registered with the fifteen declaration chunks. */
+// ── rim (#88, R-14-14 §8.10) ────────────────────────────────────────────────
+// Lane-original (no r185 counterpart): a view-dependent Fresnel-style rim added
+// to the emissive term, so it survives tone mapping like other emission and is
+// not attenuated by the coat/sheen energy terms. Lit programs only (N, V).
+
+export const A3D_PRD04_RIM_PARS = chunk("a3d_prd04_rim_pars", /* glsl */ `
+uniform vec3 u_prd04RimColor;
+uniform float u_prd04RimStrength;
+uniform float u_prd04RimPower;
+`, ["common"]);
+
+export const A3D_PRD04_RIM_CALL = chunk("a3d_prd04_rim_call", /* glsl */ `#ifdef A3D_LIT
+{
+	float a3dRim = pow( 1.0 - saturate( dot( N, V ) ), max( u_prd04RimPower, 0.01 ) );
+	a3dEmissive += u_prd04RimColor * ( u_prd04RimStrength * a3dRim );
+}
+#endif`, ["a3d_prd04_rim_pars"]);
+
 export const PRD04_CALL_CHUNKS: readonly ShaderChunk[] = [
 	A3D_PRD04_LOBES_STATE,
 	A3D_PRD04_SPECULAR_IOR_CALL,
@@ -340,5 +358,7 @@ export const PRD04_CALL_CHUNKS: readonly ShaderChunk[] = [
 	A3D_PRD04_TANGENT_FRAME_VERTEX_CALL,
 	A3D_PRD04_TANGENT_FRAME_CALL,
 	A3D_PRD04_ALPHA_A2C_CALL,
-	A3D_PRD04_DEBUG_VIEW_CALL
+	A3D_PRD04_DEBUG_VIEW_CALL,
+	A3D_PRD04_RIM_PARS,
+	A3D_PRD04_RIM_CALL
 ];
