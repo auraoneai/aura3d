@@ -78,7 +78,12 @@ export function meanLuma(pixels: Uint8Array): number {
 export function postDiagnostics(app: unknown): unknown {
   const d = (app as { diagnostics?: () => Record<string, unknown> }).diagnostics?.() ?? {};
   const post = (d.post ?? {}) as Record<string, unknown>;
+  // Errors first: the spec log line is truncated, and a frame-aborting
+  // renderer error is the first thing a black frame needs explained.
   return {
+    errors: d.errors,
+    lastError: (d as { lastError?: unknown }).lastError,
+    renderer: (d as { renderer?: { lastError?: unknown; errors?: unknown } }).renderer?.lastError ?? (d as { renderer?: { errors?: unknown } }).renderer?.errors,
     post: {
       pipeline: post.pipeline,
       submittedPasses: post.submittedPasses,
@@ -86,8 +91,7 @@ export function postDiagnostics(app: unknown): unknown {
       customPasses: post.customPasses,
       warnings: post.warnings
     },
-    output: d.output,
-    errors: d.errors
+    output: d.output
   };
 }
 
