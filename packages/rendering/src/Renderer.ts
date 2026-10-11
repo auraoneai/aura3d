@@ -449,6 +449,8 @@ export class Renderer {
   private readonly unsubscribeDprWatch?: () => void;
   /** C-28 FrameStats feeding the governor (intervalMs until lane 11's gpuMs lands). */
   private readonly frameStatsMonitor?: FrameStatsLike;
+  /** PRD-02 S12: private graph for `renderProbeFace` (never the main frame graph). */
+  private probeGraph?: RenderGraph;
   constructor(device: RenderDevice, options: RendererOptions & { readonly shaderLibrary: ShaderLibrary }, temporalHistory: TemporalHistory) {
     this.device = device;
     if (options.qrFlags) setRendererQrFlags(options.qrFlags, device);
@@ -503,6 +505,56 @@ export class Renderer {
   /** C-28 monitor (PRD-01 Phase 6): lane capture reads cpuSubmitMs percentiles. */
   get frameStats(): FrameStatsLike | undefined {
     return this.frameStatsMonitor;
+  }
+
+  /**
+   * PRD-02 S12 (lane-01 half): render `source` into one reflection-probe face.
+   * Signature matches `ReflectionFaceRenderer` (probes/ReflectionProbeSystem.ts)
+   * so it can be passed straight to the probe system:
+   *   new ReflectionProbeSystem(..., (face, target, vp) => renderer.renderProbeFace(scene, face, target, vp))
+   * - `target` may be any size (128/256 px faces): the probe frame is sized to
+   *   it, so RENDER_TARGET_VIEWPORT_MISMATCH does not apply.
+   * - Call it OUTSIDE a frame (before `render`): it opens and closes its own
+   *   device frame and throws FRAME_ALREADY_ACTIVE if one is open (no nesting).
+   * - It uses a private RenderGraph, so the main frame's graph is not cleared.
+   * - Linear output, scene lights + environment, no shadows / post / output
+   *   encode / frame contributors (a probe is radiance input to shading).
+   * Flag-independent; nothing calls it unless a probe system does.
+   */
+  renderProbeFace(source: RenderSource | Iterable<RenderItem> | Scene, face: 0 | 1 | 2 | 3 | 4 | 5, target: RenderTarget, viewProjection: Float32Array | readonly number[]): RenderDeviceDiagnostics {
+    if (target.disposed) {
+      throw new RenderDeviceError("Probe face target is disposed", "RENDER_TARGET_DISPOSED", { face });
+    }
+    const vp = toMat4(viewProjection, "viewProjection", `probe face ${face}`);
+    sceneFromSource(source)?.updateWorldTransforms();
+    const items = collectRenderItems(source, vp).filter((item) => !item.environmentCube);
+    const split = splitForwardItems(items, undefined);
+    const shared: ForwardPassOptions = {
+      items: split.opaque,
+      lights: collectRenderLights(source),
+      environmentLighting: collectEnvironmentLighting(source),
+      environmentFog: collectEnvironmentFog(source),
+      cameraViewProjectionMatrix: vp,
+      outputColorSpace: "linear"
+    };
+    const graph = (this.probeGraph ??= new RenderGraph());
+    graph.clear();
+    graph.addPass(new ForwardPass({ ...shared, framePass: { name: "prd01.probe.opaque", writes: ["aura.probe.color"] } }));
+    if (split.transparent.length > 0) {
+      graph.addPass(new ForwardPass({ ...shared, items: split.transparent, framePass: { name: "prd01.probe.transparent", reads: ["aura.probe.color"], writes: ["aura.probe.color"] } }));
+    }
+    const previous = this.device.getRenderTarget?.() ?? null;
+    this.device.beginFrame(target.width, target.height);
+    try {
+      this.device.setRenderTarget(target);
+      this.device.clear(this.clearColor);
+      graph.execute({ device: this.device, width: target.width, height: target.height });
+    } finally {
+      this.device.setRenderTarget(previous);
+      this.device.endFrame();
+      graph.clear();
+    }
+    return this.device.getDiagnostics();
   }
 
   /** C-28 (#91): run `fn` under the frameStats "post" scope when a monitor exists. */

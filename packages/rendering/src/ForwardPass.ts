@@ -1098,7 +1098,7 @@ function applyEnvironmentLightingUniforms(
   uniforms.set("u_environmentColor", color);
   uniforms.set("u_environmentIntensity", environment.intensity);
   applyProceduralEnvironmentMapUniforms(environment.proceduralMap, item, shader, uniforms);
-  applySampledEnvironmentMapUniforms(environment, item, shader, uniforms);
+  applySampledEnvironmentMapUniforms(withItemEnvironmentCube(environment, item), item, shader, uniforms);
 }
 
 function applyProceduralEnvironmentMapUniforms(
@@ -1156,6 +1156,20 @@ function clearProceduralEnvironmentMapUniforms(
   if (shader.reflection.uniforms.has("u_environmentSpecularIntensity")) {
     uniforms.set("u_environmentSpecularIntensity", 0);
   }
+}
+
+/**
+ * PRD-02 S12 (lane-01 half): a RenderItem's `environmentCube` (a captured
+ * reflection probe) replaces the scene environment's cube for that draw only.
+ * Items without one get `environment` back unchanged (same object).
+ */
+function withItemEnvironmentCube(environment: EnvironmentLightingOptions, item: RenderItem): EnvironmentLightingOptions {
+  if (!item.environmentCube) return environment;
+  return {
+    ...environment,
+    environmentCubeMapTexture: item.environmentCube,
+    ...(item.environmentCubeMip !== undefined ? { environmentMapMipCount: item.environmentCubeMip } : {})
+  };
 }
 
 function applySampledEnvironmentMapUniforms(
