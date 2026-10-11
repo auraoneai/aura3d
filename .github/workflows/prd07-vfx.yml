@@ -240,6 +240,71 @@ jobs:
             fi
           done
 
+  # 07 T0-34 (PRD-16 §2.4/§2.5) — vfx attribution on GitHub macos-14 (GitLab
+  # quota is exhausted). The `$ALL` and `$ALL,-vfx` arms capture the same
+  # scenes; vfx-attribution.mjs fails on any scene broken only with vfx on.
+  # Each arm stays --strict, so this job is red while `$ALL` is red for any
+  # lane (#375); the attribution step and its JSON carry the T0-34 verdict.
+  # Runs on main pushes, the nightly and dispatch, not on PRs (macOS budget).
+  vfx-attribution:
+    if: github.event_name != 'pull_request'
+    runs-on: macos-14
+    timeout-minutes: 120
+    env:
+      QR_BENCH_CHROME_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+      SCENE_LIST: "14-particles,09-outdoor-environment,17-large-environment,18-game-scene,prd07-particles-fountain,prd07-flipbook,prd07-particles-stress,prd07-impact-library,prd07-trails-beams,prd07-sky-timeofday,prd07-outdoor-sky,prd07-fog-height,prd07-fog-transition,prd07-underwater,prd07-rain-night,prd07-snow,prd07-volumetric-shafts,prd07-lit-smoke,prd07-soft-particles,prd07-water-interleave,prd07-decals"
+      ALL_FLAGS: "core,lighting,post,materials,assets,animation,vfx,camera,game,world,tiers,looks,compiler"
+      ALL_MINUS_VFX_FLAGS: "core,lighting,post,materials,assets,animation,camera,game,world,tiers,looks,compiler"
+      EVIDENCE_DIR: "docs/project/aura3d-quality-rebuild/evidence/prd07/${{ github.run_id }}"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - name: Fetch bench LFS blobs
+        run: |
+          git lfs pull --include="fixtures/asset-corpus/damaged-helmet.glb,fixtures/asset-corpus/antique-camera.glb,fixtures/asset-corpus/clear-coat-test.glb,fixtures/asset-corpus/sheen-test-grid.glb,public/aura-assets/propRockA.52dd1f0f.glb,public/aura-assets/propRockB.c94b2733.glb,public/aura-assets/deepRecoveryCrateStandard.02520123.glb"
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: Build benchmark bundle
+        run: pnpm exec vite build --config benchmarks/quality-rebuild/vite.config.ts
+      - name: Capture (flags $ALL)
+        run: >-
+          node benchmarks/quality-rebuild/capture.mjs
+          --dist benchmarks/quality-rebuild/dist
+          --out "$EVIDENCE_DIR/attribution-all"
+          --scenes "$SCENE_LIST"
+          --flags "$ALL_FLAGS"
+          --strict
+      - name: Capture (flags $ALL,-vfx)
+        if: always()
+        run: >-
+          node benchmarks/quality-rebuild/capture.mjs
+          --dist benchmarks/quality-rebuild/dist
+          --out "$EVIDENCE_DIR/attribution-all-minus-vfx"
+          --scenes "$SCENE_LIST"
+          --flags "$ALL_MINUS_VFX_FLAGS"
+          --strict
+      - name: vfx attribution ($ALL vs $ALL,-vfx)
+        if: always()
+        run: >-
+          node tests/qr/prd07/ci/vfx-attribution.mjs
+          "$EVIDENCE_DIR/attribution-all"
+          "$EVIDENCE_DIR/attribution-all-minus-vfx"
+          "$EVIDENCE_DIR/vfx-attribution.json"
+      - name: Upload attribution evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd07-vfx-attribution-${{ github.run_id }}
+          path: ${{ env.EVIDENCE_DIR }}/
+          retention-days: 30
+          if-no-files-found: warn
+
   games:
     runs-on: macos-14
     timeout-minutes: 120
