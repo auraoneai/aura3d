@@ -144,6 +144,10 @@ jobs:
   lane-capture:
     name: lane capture + baselines
     runs-on: macos-14
+    # 02-BASE opens a baseline PR on update_baseline dispatches.
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -168,18 +172,31 @@ jobs:
             --engines "${{ github.event.inputs.engines || 'aura3d,three' }}" \
             $SCENES_ARG \
             --out benchmarks/quality-rebuild/scenes/prd02/out
-      - name: commit flag-none baseline
+      # 02-BASE: never push to main from a workflow. The baseline lands on
+      # qr/prd02-baseline-<run_id> with a PR; the merge queue merges it.
+      - name: commit flag-none baseline (branch + PR)
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.update_baseline == 'true' && (github.event.inputs.flags == '' || github.event.inputs.flags == 'none')
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: qr/prd02-baseline-${{ github.run_id }}
         run: |
+          set -euo pipefail
           git config user.name "qr-prd02-bot"
           git config user.email "qr-prd02-bot@users.noreply.github.com"
-          mkdir -p docs/project/aura3d-quality-rebuild/evidence/prd02/lighting-baseline
-          cp -r benchmarks/quality-rebuild/scenes/prd02/out docs/project/aura3d-quality-rebuild/evidence/prd02/lighting-baseline/prd02-"$(date +%Y%m%d)"
+          dest="docs/project/aura3d-quality-rebuild/evidence/prd02/lighting-baseline/run-${{ github.run_id }}"
+          mkdir -p "$dest"
+          cp -r benchmarks/quality-rebuild/scenes/prd02/out/. "$dest/"
+          git checkout -b "$BRANCH"
           git add docs/project/aura3d-quality-rebuild/evidence/prd02/lighting-baseline
-          git diff --cached --quiet && echo "no baseline changes — nothing to commit" || git commit -m "chore(qr-02): refresh prd02 flag-none baseline"
-          git push
+          if git diff --cached --quiet; then
+            echo "no baseline changes; nothing to commit"
+            exit 0
+          fi
+          git commit -m "chore(qr-02): prd02 flag-none lane baseline from run ${{ github.run_id }}"
+          git push origin "$BRANCH"
+          gh pr create --base main --head "$BRANCH" \
+            --title "[QR-02] 02-BASE: prd02 flag-none lane baseline (run ${{ github.run_id }})" \
+            --body "02-BASE / P-57: flags=none lane captures from lighting-quality run ${{ github.run_id }} on ${{ github.sha }}, committed under evidence/prd02/lighting-baseline/run-${{ github.run_id }}/."
       - uses: actions/upload-artifact@v4
         if: always()
         with:
