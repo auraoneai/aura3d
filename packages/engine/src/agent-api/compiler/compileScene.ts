@@ -189,6 +189,7 @@ export class CompiledSceneImpl implements CompiledScene {
     for (const [index, modelNode] of newModelNodes.entries()) {
       void (async () => {
         const { createTypedGLBActor } = await import("../../production-runtime/TypedGLBActor.js");
+        const { typedGLBActorDecoderOptions } = await import("../AssetDecoders.js"); // Q-15-1 (#461)
         const actor = await createTypedGLBActor({
           asset: modelNode.asset,
           id: modelNode.runtime?.id ?? modelNode.asset.id ?? `added-model-${index + 1}`,
@@ -197,6 +198,7 @@ export class CompiledSceneImpl implements CompiledScene {
           height: ctx.canvas.height,
           ...(modelNode.hiddenNodeNames ? { hiddenNodeNames: modelNode.hiddenNodeNames } : {}),
           ...(modelNode.role === "primaryWorld" ? { consolidateStaticMeshes: true } : {}),
+          ...typedGLBActorDecoderOptions(ctx.flags, undefined),
           ...applyModelTintBridge(modelNode)
         });
         if (this.disposed || !runtimeIdStillLive(this, runtimeIdOf(modelNode))) {
@@ -326,6 +328,8 @@ async function compileSceneReal(snapshot: AuraSceneSnapshot, ctx: SceneCompileCo
   const actorEntries: ProductionRuntimeActorEntry[] = modelNodes.length > 0
     ? await (async () => {
         const { createTypedGLBActor } = await import("../../production-runtime/TypedGLBActor.js");
+        const { typedGLBActorDecoderOptions } = await import("../AssetDecoders.js"); // Q-15-1 (#461)
+        const decoderOptions = typedGLBActorDecoderOptions(ctx.flags, undefined);
         return await Promise.all(modelNodes.map(async (node, index) => ({
           node,
           actor: await createTypedGLBActor({
@@ -336,6 +340,7 @@ async function compileSceneReal(snapshot: AuraSceneSnapshot, ctx: SceneCompileCo
             height: canvas.height,
             ...(node.hiddenNodeNames ? { hiddenNodeNames: node.hiddenNodeNames } : {}),
             ...(node.role === "primaryWorld" ? { consolidateStaticMeshes: true } : {}),
+            ...decoderOptions,
             ...applyModelTintBridge(node)
           })
         })));
