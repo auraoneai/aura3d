@@ -120,8 +120,18 @@ export async function startPrd08DevServer(root = process.cwd()): Promise<Example
       })();
       return;
     }
+    // S19: `?coi=1` pages are served cross-origin isolated (COOP + COEP) so
+    // `performance.now()` resolution is 5 µs, not the coarsened 100 µs — the
+    // lane CPU budgets are sub-millisecond. Every subresource the harness
+    // loads is same-origin, so `require-corp` blocks nothing.
+    const isolate = /[?&]coi=1(?:&|$)/.test(req.url ?? "");
     const proxy = httpRequest(new URL(req.url ?? "/", upstream.origin), { method: req.method, headers: req.headers }, (up) => {
-      res.writeHead(up.statusCode ?? 502, up.headers);
+      res.writeHead(
+        up.statusCode ?? 502,
+        isolate
+          ? { ...up.headers, "cross-origin-opener-policy": "same-origin", "cross-origin-embedder-policy": "require-corp" }
+          : up.headers
+      );
       up.pipe(res);
     });
     proxy.on("error", (err) => {

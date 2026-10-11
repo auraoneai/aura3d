@@ -146,3 +146,141 @@ export function checkDriftUnicycle(expect: Expect, r: ReturnType<typeof driftScr
   expect(r.maxAbsSlip, "unicycle telemetry slip").toBeLessThanOrEqual(0.01);
   expect(r.maxMotionSlip, "unicycle motion slip").toBeLessThanOrEqual(0.01);
 }
+
+/* ------------------------------------------------------------------------ */
+/* S19 / §17 per-tier lane budgets (tier-budgets.spec.ts + unit mirror).     */
+/* ------------------------------------------------------------------------ */
+
+export type Prd08Tier = "low" | "medium" | "high" | "ultra";
+export const PRD08_TIERS: readonly Prd08Tier[] = ["low", "medium", "high", "ultra"];
+
+export interface Prd08TierBudget {
+  /** Lane GPU ms per presented frame (fade + screen-feel on minus off). */
+  readonly gpuMs: number;
+  /** Lane main-thread CPU ms per presented frame (median and p95 gated). */
+  readonly cpuMs: number;
+  readonly sphereCasts: number;
+  /** Ultra's dedicated occluder query on top of the casts. */
+  readonly occluderQueries: number;
+  /** Low: fade feature off; screen-feel flash + vignette only. */
+  readonly fade: boolean;
+  readonly handles: number;
+  readonly memoryBytes: number;
+}
+
+/** PRD-08 §17 table, verbatim. */
+export const PRD08_TIER_BUDGETS: Readonly<Record<Prd08Tier, Prd08TierBudget>> = {
+  low: { gpuMs: 0.1, cpuMs: 0.35, sphereCasts: 1, occluderQueries: 0, fade: false, handles: 300, memoryBytes: 64 * 1024 },
+  medium: { gpuMs: 0.15, cpuMs: 0.45, sphereCasts: 2, occluderQueries: 0, fade: true, handles: 600, memoryBytes: 96 * 1024 },
+  high: { gpuMs: 0.2, cpuMs: 0.55, sphereCasts: 3, occluderQueries: 0, fade: true, handles: 1000, memoryBytes: 128 * 1024 },
+  ultra: { gpuMs: 0.25, cpuMs: 0.7, sphereCasts: 3, occluderQueries: 1, fade: true, handles: 2000, memoryBytes: 192 * 1024 }
+};
+
+/** Frames per CPU sample run and per GPU phase (on / off). */
+export const PRD08_TIER_CPU_FRAMES = 600;
+export const PRD08_TIER_GPU_FRAMES = 240;
+
+/** Shape returned by the `tier-cpu` harness scenario (scenarios-tier.ts). */
+export interface TierCpuResult {
+  readonly tier: string;
+  readonly qualityTier: string;
+  readonly handles: number;
+  readonly storeSize: number;
+  readonly frames: number;
+  readonly cpuMs: readonly number[];
+  /** Per-frame probe stats read after the frame's full cast demand. */
+  readonly casts: readonly { sphereCasts: number; occluderQueries: number; deniedCasts: number; deniedOccluderQueries: number }[];
+  /** Attempts per frame: the tier cap + 1 sphere casts, + 1 occluder query. */
+  readonly castDemand: number;
+  readonly fadeTracked: number;
+  /** Max |chroma| / |radialBlur| published by the tiered screen-feel uniforms. */
+  readonly maxChroma: number;
+  readonly maxRadialBlur: number;
+  readonly maxFlash: number;
+  /** Fade contributor pass-through on this tier (input array returned as-is). */
+  readonly contributorPassThrough: boolean;
+  readonly listenerCalls: number;
+}
+
+export const median = (xs: readonly number[]) => {
+  const s = [...xs].sort((a, b) => a - b);
+  const m = s.length >> 1;
+  return s.length % 2 ? s[m]! : (s[m - 1]! + s[m]!) / 2;
+};
+export const percentile = (xs: readonly number[], p: number) => {
+  const s = [...xs].sort((a, b) => a - b);
+  return s[Math.min(s.length - 1, Math.max(0, Math.ceil(p * s.length) - 1))]!;
+};
+
+/**
+ * S19 headless-checkable part: tier forced, handle count populated, cast cap
+ * held under over-demand, fade + screen-feel gated per tier, listener glue
+ * ran once per frame.
+ */
+export function checkTierGating(expect: Expect, tier: Prd08Tier, r: TierCpuResult) {
+  const b = PRD08_TIER_BUDGETS[tier];
+  expect(r.qualityTier, "app.quality.set forced the tier").toBe(tier);
+  expect(r.handles, "handles populated to the tier cap").toBe(b.handles);
+  expect(r.storeSize, "interpolation store tracks every handle").toBe(b.handles);
+  expect(r.casts.length, "cast stats per frame").toBe(r.frames);
+  expect(r.castDemand, "demand exceeds the cap").toBeGreaterThan(b.sphereCasts);
+  for (let i = 0; i < r.casts.length; i += 1) {
+    const c = r.casts[i]!;
+    expect(c.sphereCasts, `sphere casts @${i}`).toBe(b.sphereCasts);
+    expect(c.occluderQueries, `occluder queries @${i}`).toBe(b.occluderQueries);
+    expect(c.deniedCasts, `over-cap casts refused @${i}`).toBeGreaterThanOrEqual(1);
+  }
+  expect(r.listenerCalls, "listener glue once per frame").toBe(r.frames);
+  expect(r.maxFlash, "flash published").toBeGreaterThan(0);
+  if (b.fade) {
+    expect(r.contributorPassThrough, "fade contributor active").toBe(false);
+    expect(r.maxChroma, "chroma published above Low").toBeGreaterThan(0);
+  } else {
+    expect(r.fadeTracked, "Low: fade feature off").toBe(0);
+    expect(r.contributorPassThrough, "Low: fade contributor passes through").toBe(true);
+    expect(r.maxChroma, "Low: chroma gated").toBe(0);
+    expect(r.maxRadialBlur, "Low: radial blur gated").toBe(0);
+    for (const c of r.casts) expect(c.deniedOccluderQueries, "Low: occluder query denied").toBeGreaterThanOrEqual(1);
+  }
+}
+
+/** S19 CPU: lane main-thread ms per presented frame, median and p95. */
+export function checkTierCpu(expect: Expect, tier: Prd08Tier, r: TierCpuResult) {
+  const b = PRD08_TIER_BUDGETS[tier];
+  expect(r.cpuMs.length, "CPU samples").toBe(PRD08_TIER_CPU_FRAMES);
+  expect(median(r.cpuMs), `${tier} CPU median ms`).toBeLessThanOrEqual(b.cpuMs);
+  expect(percentile(r.cpuMs, 0.95), `${tier} CPU p95 ms`).toBeLessThanOrEqual(b.cpuMs);
+}
+
+/** S19 memory: lane retained-heap delta after forced GC. */
+export function checkTierMemory(expect: Expect, tier: Prd08Tier, retainedBytes: number) {
+  expect(Number.isFinite(retainedBytes), "retained heap measured").toBe(true);
+  expect(retainedBytes, `${tier} lane retained heap bytes`).toBeLessThanOrEqual(PRD08_TIER_BUDGETS[tier].memoryBytes);
+}
+
+/** Shape returned by the `tier-gpu` harness scenario. */
+export interface TierGpuResult {
+  readonly tier: string;
+  readonly frames: number;
+  /** GPU ms per presented frame (TIME_ELAPSED over the whole tick). */
+  readonly gpuMs: readonly number[];
+  readonly disjoint: number;
+  readonly fadedItems: number;
+}
+
+/** S19 GPU: lane delta (fade + screen-feel on minus off) within the tier budget. */
+export function checkTierGpu(expect: Expect, tier: Prd08Tier, on: TierGpuResult, off: TierGpuResult) {
+  const b = PRD08_TIER_BUDGETS[tier];
+  expect(on.gpuMs.length, "GPU samples (on)").toBe(PRD08_TIER_GPU_FRAMES);
+  expect(off.gpuMs.length, "GPU samples (off)").toBe(PRD08_TIER_GPU_FRAMES);
+  expect(on.disjoint + off.disjoint, "no disjoint GPU timer frames").toBe(0);
+  if (b.fade) expect(on.fadedItems, "fade stamped draws (feature on)").toBeGreaterThan(0);
+  else expect(on.fadedItems, "Low: no faded draws").toBe(0);
+  expect(median(on.gpuMs) - median(off.gpuMs), `${tier} lane GPU ms delta`).toBeLessThanOrEqual(b.gpuMs);
+}
+
+/** §17 net-frame: with maxSubSteps ≥ 2, per-presented-frame GPU drops vs one submission per substep. */
+export function checkNetFrameGpu(expect: Expect, oneSubmission: TierGpuResult, perSubstep: TierGpuResult) {
+  expect(oneSubmission.disjoint + perSubstep.disjoint, "no disjoint GPU timer frames").toBe(0);
+  expect(median(oneSubmission.gpuMs), "net-frame GPU per presented frame").toBeLessThan(median(perSubstep.gpuMs));
+}

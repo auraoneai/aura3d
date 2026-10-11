@@ -5,6 +5,7 @@
  */
 import { feelAccounting, hitStopGlobal, hitStopScoped, shakeImpulse, type ScenarioContext } from "./scenarios-feel";
 import { chaseFraming, driftScript, orbitWall, railLap } from "./scenarios-motion";
+import { tierCpu, tierGpu, tierMount, tierUnmount } from "./scenarios-tier";
 
 export type { ScenarioContext };
 
@@ -19,7 +20,11 @@ export const SCENARIOS: Readonly<Record<string, Scenario>> = {
   "chase-framing": chaseFraming,
   "orbit-wall": orbitWall,
   "rail-lap": railLap,
-  "drift-script": driftScript
+  "drift-script": driftScript,
+  "tier-mount": tierMount,
+  "tier-unmount": tierUnmount,
+  "tier-cpu": tierCpu,
+  "tier-gpu": tierGpu
 };
 
 export function runScenario(ctx: ScenarioContext, name: string, opts: unknown): unknown {
