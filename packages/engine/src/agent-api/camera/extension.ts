@@ -495,5 +495,28 @@ export function createAuraCameraController(
     }
   }
 
+  /*
+   * Scene swaps restore the outgoing authored camera immediately. An idle
+   * camera (static rig settled → onFrame unsubscribed, no present driver)
+   * never reaches `rebindIfNeeded`, so without this hook the previous
+   * builder/spec kept the last presented pose after `app.setScene()` and a
+   * later reuse rendered the mutated camera (Codex review on #1209). The app
+   * method is wrapped on this app instance only; flag-off apps never install
+   * the real controller, so they are untouched.
+   */
+  const appWithSetScene = app as { setScene?: (next: unknown) => unknown };
+  if (typeof appWithSetScene.setScene === "function") {
+    const originalSetScene = appWithSetScene.setScene.bind(app);
+    appWithSetScene.setScene = (next: unknown) => {
+      restoreRenderCamera();
+      renderCamera = undefined;
+      renderCameraBackup = undefined;
+      const result = originalSetScene(next);
+      rebindIfNeeded();
+      arm();
+      return result;
+    };
+  }
+
   return armed;
 }

@@ -75,6 +75,32 @@ describe("presented pose reaches the renderer's camera (pixels)", () => {
     expect((renderSnapshot.camera as { position: number[] }).position).toEqual([7, 8, 9]);
   });
 
+  it("app.setScene restores the outgoing authored camera even when the camera is idle", () => {
+    const authored = { mode: "follow", targetNode: "hero", position: [0, 2, 6], target: [0, 0, 0], fov: 50 };
+    const callbacks = new Set<FrameCb>();
+    const app = {
+      scene: { camera: authored as Record<string, unknown>, nodes: [] as unknown[] },
+      nodes: { all: () => [], get: () => undefined },
+      onFrame(cb: FrameCb) {
+        callbacks.add(cb);
+        return () => callbacks.delete(cb);
+      },
+      setScene(next: { camera?: Record<string, unknown>; nodes: unknown[] }) {
+        this.scene = next as never;
+      }
+    };
+    const camera = createAuraCameraController(app as unknown as AuraApp);
+    camera.setPose({ position: [3, 4, 5], target: [1, 1, 1], fov: 70 });
+    for (const cb of [...callbacks]) cb({ dt: 1 / 60, time: 0.016 });
+    expect(authored.position).toEqual([3, 4, 5]);
+    // No presented()/onFrame call after the swap: only setScene runs.
+    (app as unknown as { setScene(n: unknown): void }).setScene({ camera: { position: [0, 5, 5], target: [0, 0, 0], fov: 40 }, nodes: [] });
+    expect(authored.mode).toBe("follow");
+    expect(authored.position).toEqual([0, 2, 6]);
+    expect(authored.fov).toBe(50);
+    expect("up" in authored).toBe(false);
+  });
+
   it("the authored pose is restored when the scene's camera changes (reused builder/spec)", () => {
     const authored = { mode: "follow", targetNode: "hero", position: [0, 2, 6], target: [0, 0, 0], fov: 50 };
     const { app, tick } = appWithRenderSnapshot(authored);
