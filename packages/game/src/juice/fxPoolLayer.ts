@@ -76,6 +76,7 @@ export interface PoolFxLayer {
 export function createPoolFxLayer(deps: PoolFxLayerDeps): PoolFxLayer {
   const warn = deps.warn ?? ((m: string) => console.warn(m));
   const handles = new Map<GameFxKind, PoolNodeHandle | null>();
+  const warned = new Set<GameFxKind>();
   let hidden = false;
   let trails = 0;
 
@@ -88,7 +89,8 @@ export function createPoolFxLayer(deps: PoolFxLayerDeps): PoolFxLayer {
         h = null;
       }
       if (h && typeof h.setInstanceTransforms !== "function") {
-        warn(`a3g-fx: pool node ${fxPoolNodeName(kind)} has no setInstanceTransforms (C-37); bursts of "${kind}" will not render`);
+        if (!warned.has(kind)) warn(`a3g-fx: pool node ${fxPoolNodeName(kind)} has no setInstanceTransforms (C-37); bursts of "${kind}" will not render`);
+        warned.add(kind);
         h = null;
       }
       if (h) handles.set(kind, h);
@@ -138,6 +140,7 @@ export function createPoolFxLayer(deps: PoolFxLayerDeps): PoolFxLayer {
     },
     reset() {
       handles.clear();
+      warned.clear();
       sinks.clear();
       hidden = false;
     }

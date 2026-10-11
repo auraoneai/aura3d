@@ -17,7 +17,7 @@ import type { DrawCommand } from "../../../../packages/rendering/src/RenderDevic
 const FLAGS_ON = resolveQrFlags({ options: { A3D_QR_LIGHTING: true } });
 
 function translate(x: number, y: number, z: number): Float32Array {
-  const m = identityMat4();
+  const m = Float32Array.from(identityMat4());
   m[12] = x;
   m[13] = y;
   m[14] = z;
@@ -51,7 +51,6 @@ function source(prd02 = true) {
 function camera() {
   const cam = new PerspectiveCamera({ fovYRadians: Math.PI / 3, aspect: 16 / 9, near: 0.1, far: 50 });
   cam.transform.setPosition(0, 4, 8);
-  cam.lookAt?.([0, 0, 0]);
   cam.updateCameraMatrices();
   return cam;
 }

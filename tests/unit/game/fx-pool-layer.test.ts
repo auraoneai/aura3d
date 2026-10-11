@@ -65,6 +65,17 @@ describe("pool FX layer (PRD-09 §6.7, 16.1-6)", () => {
     expect(h.writes.get("a3g-fx-debris")?.at(-1)).toBe(8);
   });
 
+  it("retries a node that was unavailable during the first frame", () => {
+    const h = fakeHandles();
+    let ready = false;
+    const fx = createPoolFxLayer({ node: (id) => ready ? h.node(id) : undefined });
+    fx.tick(1 / 60);
+    ready = true;
+    fx.burst("spark", [0, 0, 0], { count: 4 });
+    fx.tick(1 / 60);
+    expect(h.writes.get("a3g-fx-spark")?.at(-1)).toBe(4);
+  });
+
   it("warns once and renders nothing when the pool node lacks C-37", () => {
     const warnings: string[] = [];
     const fx = createPoolFxLayer({ node: () => ({}), warn: (m) => warnings.push(m) });

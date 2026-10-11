@@ -15,6 +15,8 @@ import { Geometry } from "../../../../packages/rendering/src/Geometry";
 import { VertexBuffer } from "../../../../packages/rendering/src/VertexBuffer";
 import { VertexFormat } from "../../../../packages/rendering/src/VertexFormat";
 import { featuresForGeometry } from "../../../../packages/rendering/src/program/MaterialFeatures";
+import { QUALITY_TIERS } from "../../../../packages/rendering/src/contracts/quality";
+import type { RenderDevice, ShaderSources } from "../../../../packages/rendering/src/RenderDevice";
 import type { RenderItem } from "../../../../packages/rendering/src/ForwardPass";
 
 const ALL_LANES = "core,lighting,post,materials,assets,animation,vfx,camera,game,world,tiers,looks,compiler";
@@ -49,7 +51,7 @@ function mappedMaterial(): PBRMaterial {
 const has = (names: string[]) => (n: string) => names.includes(n);
 
 describe("featuresForGeometry (#867 games)", () => {
-  const record = () => mappedMaterial().programFeatures({ flags: ALL, tier: undefined as never });
+  const record = () => mappedMaterial().programFeatures({ flags: ALL, tier: QUALITY_TIERS.high });
 
   it("geometry without uv: uv maps (base color, normal) are dropped", () => {
     const out = featuresForGeometry(record(), has(["a_position", "a_normal"]));
@@ -85,11 +87,17 @@ describe("generated draws follow geometry attributes ($ALL, mock device)", () =>
   async function renderOne(item: RenderItem, flags = ALL_STRICT) {
     setRendererQrFlags(flags);
     const renderer = await Renderer.create({ backend: "mock", width: 16, height: 16 });
-    const device = (renderer as unknown as { device: { draw(c: { shader: { label: string; reflection: { attributes: Map<string, number> } } }): void } }).device;
-    const drawn: { label: string; attributes: string[] }[] = [];
+    const device = (renderer as unknown as { device: RenderDevice }).device;
+    const sources = new Map<string, ShaderSources>();
+    const compile = device.createShaderProgram.bind(device);
+    vi.spyOn(device, "createShaderProgram").mockImplementation((source) => {
+      sources.set(source.label, source);
+      return compile(source);
+    });
+    const drawn: { label: string; attributes: string[]; vertex: string }[] = [];
     const draw = device.draw.bind(device);
     device.draw = (command) => {
-      drawn.push({ label: command.shader.label, attributes: [...command.shader.reflection.attributes.keys()] });
+      drawn.push({ label: command.shader.label, attributes: [...command.shader.reflection.attributes.keys()], vertex: sources.get(command.shader.label)?.vertex ?? "" });
       draw(command);
     };
     try {
@@ -99,16 +107,19 @@ describe("generated draws follow geometry attributes ($ALL, mock device)", () =>
     }
   }
 
-  const generatedOf = (drawn: { label: string; attributes: string[] }[]) => drawn.filter((d) => d.label.startsWith("a3d-program:"));
+  const generatedOf = (drawn: { label: string; attributes: string[]; vertex: string }[]) => drawn.filter((d) => d.label.startsWith("a3d-program:"));
 
-  it("primitive without uv: the generated program draws and declares no a_uv / a_tangent", async () => {
+  it("primitive without uv: the generated program draws with a_uv disabled and no a_tangent", async () => {
     const item = { geometry: triangle(VertexFormat.P3N3, false), material: mappedMaterial(), modelMatrix: IDENTITY, label: "box" } as RenderItem;
     const { diagnostics, drawn } = await renderOne(item);
     expect(diagnostics.drawCalls).toBeGreaterThan(0);
     const generated = generatedOf(drawn);
     expect(generated.length).toBeGreaterThan(0);
     for (const d of generated) {
-      expect(d.attributes).not.toContain("a_uv");
+      // Mock reflection sees inactive declarations; the GPU preprocessor
+      // removes this guarded input when geometry-driven features omit UV0.
+      expect(d.vertex).toMatch(/#ifdef A3D_NEED_UV0\s+layout\(location = 2\) in vec2 a_uv;\s+#endif/);
+      expect(d.vertex).not.toMatch(/^#define A3D_NEED_UV0\b/m);
       expect(d.attributes).not.toContain("a_tangent");
     }
   });
@@ -121,6 +132,7 @@ describe("generated draws follow geometry attributes ($ALL, mock device)", () =>
     expect(generated.length).toBeGreaterThan(0);
     for (const d of generated) {
       expect(d.attributes).toContain("a_uv");
+      expect(d.vertex).toMatch(/^#define A3D_NEED_UV0\b/m);
       expect(d.attributes).not.toContain("a_tangent");
     }
   });
