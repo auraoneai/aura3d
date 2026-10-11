@@ -123,9 +123,13 @@ function scoreWidget(spec: HudScoreSpec, doc: HudDocument): HudWidgetInstance {
     apply(v) {
       applied = v;
       if (typeof v === "string") { text = v; write(); return; }
+      const wasText = text !== null;
       text = null;
       target = num(v);
-      if (rollSeconds === 0) { shown = target; write(); }
+      if (rollSeconds === 0) shown = target;
+      // Leaving a string override repaints even when no roll is pending
+      // (tick() returns early once shown === target).
+      if (rollSeconds === 0 || wasText) write();
     },
     tick(dt) {
       if (shown === target) return;

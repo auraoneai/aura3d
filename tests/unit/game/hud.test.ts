@@ -246,6 +246,18 @@ describe("mountHud (PRD-09 1758/1759)", () => {
     const scoreValue = all.find((n) => n.parent?.dataset.widgetId === "s" && String(n.className).includes("a3g-w-value"))!;
     expect(scoreValue.textContent).toBe("PAR 3");
   });
+
+  it("#1086: a rolling score repaints when a string gives way to its current number", () => {
+    const { root, hud, pump } = makeHud({ widgets: [{ id: "s", kind: "score", anchor: "top", rollMs: 300 }] });
+    hud.set("s", "READY");
+    pump();
+    hud.set("s", 0);
+    pump();
+    const hudEl = root.children[0] as FakeEl;
+    const slot = hudEl.children.find((c) => c.dataset.anchor === "top")!;
+    const value = (slot.children[0] as FakeEl).children.find((n) => String(n.className).includes("a3g-w-value"))!;
+    expect(value.textContent).toBe("0");
+  });
 });
 
 describe("screenFraction", () => {
