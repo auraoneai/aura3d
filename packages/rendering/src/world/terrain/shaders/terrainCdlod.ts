@@ -30,7 +30,8 @@ float a3dTerrainHeightBilinear(vec2 uv) {
 export const terrainCdlodGlsl = /* glsl */ `
 ${a3dTerrainHeightBilinearGlsl}
 uniform vec4 u_terrain;                 // originX, originZ, sizeX, sizeZ
-uniform vec2 u_morph[8];                // per LOD: morphStart, morphEnd (distance)
+uniform vec4 u_morph[8];                // per LOD: x morphStart, y morphEnd (distance); vec4 so the
+                                        // 32-float upload is a vec4 array, not a 16-float "mat4"
 uniform float u_gridDim;                // patch quads per side (32 or 64)
 
 out vec3 v_worldPosition;

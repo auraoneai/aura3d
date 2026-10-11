@@ -7,6 +7,7 @@ import { terrainCdlodGlsl, terrainCdlodWgsl } from "./terrainCdlod.js";
 import { terrainSplatGlsl, terrainSplatWgsl } from "./terrainSplat.js";
 
 export const TERRAIN_VERT_GLSL = /* glsl */ `#version 300 es
+// prd10.terrain — RenderDevice shader marker (both stages; the device rejects a program without it)
 precision highp float;
 in vec2 a_grid;
 in vec4 a_node;
@@ -22,13 +23,14 @@ void main() {
 }
 `;
 
-export const TERRAIN_FRAG_GLSL = /* glsl */ `#version 300 es
+const terrainFragBody = /* glsl */ `// prd10.terrain — RenderDevice shader marker
 precision highp float;
 in vec3 v_worldPosition;
 in vec2 v_terrainUv;
 out vec4 o_color;
-uniform int u_layerCount;
-uniform int u_solidMode;          // 1 = no layer texture arrays bound (tint-only fallback)
+// float, not int: the device uploads JS numbers with uniform1f, which is
+// INVALID_OPERATION on an int uniform (the count stayed 0 → black terrain).
+uniform float u_layerCount;
 uniform vec3 u_cameraPosition;
 uniform vec3 u_ambient;
 uniform vec3 u_keyLightDir;      // direction light travels (e.g. sun → scene)
@@ -36,30 +38,31 @@ uniform vec3 u_keyLightColor;
 ${terrainSplatGlsl}
 void main() {
   if (a3dTerrainDiscardHole(v_terrainUv)) discard;
+  int layerCount = int(u_layerCount + 0.5);
   vec3 n = a3dTerrainMacroNormal(v_terrainUv);
   float w[8];
-  a3dTerrainSplatWeights(v_terrainUv, u_layerCount, w);
+  a3dTerrainSplatWeights(v_terrainUv, layerCount, w);
   float viewDist = distance(u_cameraPosition, v_worldPosition);
-  a3dTerrainHeightBlend(w, v_worldPosition.xz, viewDist, u_layerCount);
+  a3dTerrainHeightBlend(w, v_worldPosition.xz, viewDist, layerCount);
   float macro = texture(u_macroVariation, v_worldPosition.xz / 256.0).r;
   vec3 albedo = vec3(0.0);
   float roughness = 0.0;
   for (int i = 0; i < 8; i++) {
-    if (i >= u_layerCount) break;
+    if (i >= layerCount) break;
     vec4 params = u_layerParams[i];
     vec3 tint = u_layerTintOrm[i].rgb;
-    if (u_solidMode == 0) {
-      vec2 uvA = v_worldPosition.xz / max(params.x, 1e-3);
-      vec2 uvB = mat2(0.80902, 0.58779, -0.58779, 0.80902) * uvA; // rot(0.62) second-scale anti-tiling
-      vec4 ah = mix(texture(u_layerAlbedoHeight, vec3(uvA, float(i))),
-                    texture(u_layerAlbedoHeight, vec3(uvB, float(i))),
-                    clamp(macro * 2.0, 0.0, 1.0));
-      albedo += ah.rgb * tint * w[i];
-      roughness += texture(u_layerOrm, vec3(uvA, float(i))).g * w[i];
-    } else {
-      albedo += tint * w[i];
-      roughness += 0.85 * w[i];
-    }
+#ifdef A3D_TERRAIN_SOLID
+    albedo += tint * (0.85 + 0.3 * macro) * w[i];
+    roughness += 0.85 * w[i];
+#else
+    vec2 uvA = v_worldPosition.xz / max(params.x, 1e-3);
+    vec2 uvB = mat2(0.80902, 0.58779, -0.58779, 0.80902) * uvA; // rot(0.62) second-scale anti-tiling
+    vec4 ah = mix(texture(u_layerAlbedoHeight, vec3(uvA, float(i))),
+                  texture(u_layerAlbedoHeight, vec3(uvB, float(i))),
+                  clamp(macro * 2.0, 0.0, 1.0));
+    albedo += ah.rgb * tint * w[i];
+    roughness += texture(u_layerOrm, vec3(uvA, float(i))).g * w[i];
+#endif
     roughness += u_layerTintOrm[i].a * w[i];
   }
   float ndl = max(dot(n, -u_keyLightDir), 0.0);
@@ -67,6 +70,12 @@ void main() {
   o_color = vec4(col, 1.0);
 }
 `;
+
+/** Textured terrain program (layer albedo/height + ORM texture arrays bound). */
+export const TERRAIN_FRAG_GLSL = `#version 300 es\n${terrainFragBody}`;
+
+/** Tint-only terrain program for Path S: declares no sampler2DArray (see the splat chunk). */
+export const TERRAIN_FRAG_SOLID_GLSL = `#version 300 es\n#define A3D_TERRAIN_SOLID 1\n${terrainFragBody}`;
 
 /** WGSL Path-G mirror (composed from the chunk bodies like the GLSL path). */
 export const TERRAIN_WGSL = /* wgsl */ `
