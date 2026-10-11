@@ -38,6 +38,11 @@ on:
   push:
     branches: ["main"]
   workflow_dispatch:
+    inputs:
+      scenes:
+        description: "Comma-separated bench scene ids for the gpu job (default: lane set). 'all18+lane' = the 18 base scenes plus the prd06 lane scenes (A3D_QR_ANIMATION promotion table)."
+        required: false
+        default: ""
 
 concurrency:
   group: qr-prd06-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
@@ -133,7 +138,9 @@ jobs:
     timeout-minutes: 120
     env:
       QR_BENCH_OUT: benchmarks/quality-rebuild/out
-      QR_BENCH_SCENES: "01-simple-geometry,08-skinned-character,15-animation-skinning,prd06-skinned-character-posed,prd06-crossfade-filmstrip,prd06-morph-face,prd06-ik-slope,prd06-character-hero"
+      QR_LANE_SCENES: "01-simple-geometry,08-skinned-character,15-animation-skinning,prd06-skinned-character-posed,prd06-crossfade-filmstrip,prd06-morph-face,prd06-ik-slope,prd06-character-hero"
+      QR_BASE18_SCENES: "01-simple-geometry,02-pbr-product,03-damaged-helmet,04-clearcoat,05-transmission,06-metal-roughness-sweep,07-sheen-fabric,08-skinned-character,09-outdoor-environment,10-indoor-environment,11-multiple-lights,12-shadows,13-ibl-only,14-particles,15-animation-skinning,16-instancing,17-large-environment,18-game-scene"
+      QR_SCENES_INPUT: ${{ inputs.scenes }}
       QR_BENCH_ENGINES: "aura3d,three"
       QR_ALL_FLAGS: "core,lighting,post,materials,assets,animation,vfx,camera,game,world,tiers,looks,compiler"
       QR_AZURE_GPU_CHROME_ARGS: ${{ vars.QR_AZURE_GPU_CHROME_ARGS }}
@@ -178,6 +185,12 @@ jobs:
         run: |
           set -euo pipefail
           export QR_BENCH_FLAG_SETS="none;animation;$QR_ALL_FLAGS;$QR_ALL_FLAGS,strict"
+          case "${QR_SCENES_INPUT:-}" in
+            "") export QR_BENCH_SCENES="$QR_LANE_SCENES" ;;
+            all18+lane) export QR_BENCH_SCENES="$QR_BASE18_SCENES,prd06-skinned-character-posed,prd06-crossfade-filmstrip,prd06-morph-face,prd06-ik-slope,prd06-character-hero" ;;
+            *) export QR_BENCH_SCENES="$QR_SCENES_INPUT" ;;
+          esac
+          echo "scenes: $QR_BENCH_SCENES" | tee -a "$GITHUB_STEP_SUMMARY"
           bash benchmarks/quality-rebuild/ci.sh
       - name: Build workspace packages (lane specs)
         if: always()
