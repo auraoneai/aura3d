@@ -3,7 +3,7 @@
 // prd07.* frame contributors see them through ctx.source.
 // (Workaround for CCR-07-1: FrameContributorContext has no canvas/app pointer.)
 
-import { attachRootRenderSource } from "../RootRuntimeSupport";
+import { attachRootRenderSourceOverlay } from "../RootRuntimeSupport";
 import type { ProductionEffectSystem } from "../../production-runtime/effects/ProductionEffectSystem";
 
 export interface VfxBridge {
@@ -12,10 +12,12 @@ export interface VfxBridge {
 }
 
 /**
- * Attach the bridge. When a bridge already exists on the canvas (e.g. a second
- * app on the same element, which attachRootRenderSource itself rejects), the
- * call reports VFX_APP_BINDING_AMBIGUOUS and stays detached — the effects API
- * still functions for API-level calls but nothing reaches the renderer.
+ * Attach the bridge as a source overlay, so it coexists with an app-owned
+ * compatibility bridge (attachRootRenderSource) on the same canvas in either
+ * order. When a vfx overlay already exists on the canvas (a second app on the
+ * same element), the call reports VFX_APP_BINDING_AMBIGUOUS and stays
+ * detached — the effects API still functions for API-level calls but nothing
+ * reaches the renderer.
  */
 export function attachVfxBridge(canvas: HTMLCanvasElement, system: ProductionEffectSystem): VfxBridge {
   const source = {
@@ -52,13 +54,13 @@ export function attachVfxBridge(canvas: HTMLCanvasElement, system: ProductionEff
     }
   };
   try {
-    const detach = attachRootRenderSource(canvas, { source });
+    const detach = attachRootRenderSourceOverlay(canvas, source);
     return { detach, attached: true };
   } catch {
     system.diagnostics.note(
       "VFX_APP_BINDING_AMBIGUOUS",
       "",
-      "canvas already has a production-runtime source bridge; prd07 effects cannot bind to this app's renderer"
+      "canvas already has a prd07 vfx source overlay; prd07 effects cannot bind to this app's renderer"
     );
     return { detach: () => {}, attached: false };
   }
