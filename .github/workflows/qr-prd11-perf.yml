@@ -220,6 +220,9 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       # naga-cli pinned exact (PRD-11 §6.2 ◦); never on the Mac, CI-only.
+      # The toolchain is installed explicitly: main run 38102809394 landed on a
+      # runner without cargo (exit 127), so the job must not rely on the image.
+      - uses: dtolnay/rust-toolchain@686976e191b89faba57d3206551f0f330d8cb249 # stable
       - name: Install naga-cli 30.0.1
         run: cargo install naga-cli --locked --version 30.0.1
       - name: Emit WGSL twins
