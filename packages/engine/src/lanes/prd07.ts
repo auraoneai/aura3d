@@ -16,6 +16,12 @@ import { collectEffectsSection, collectAtmosphereSection } from "../agent-api/vf
 import { registerPrd07LookLintRules } from "../agent-api/vfx/lookLint";
 import { skyNodeHandler } from "../agent-api/compiler/sky";
 import { registerPrd07OptionCoverage } from "../agent-api/compiler/effects";
+import { setParticleUpdateMsProvider } from "../agent-api/nodes/particles";
+import { lastParticleUpdateMs } from "@aura3d/rendering";
+
+// P1-T3 — particle budget diagnostics read the measured `particles` scope
+// through this seam (nodes/ may not value-import @aura3d/rendering).
+setParticleUpdateMsProvider(lastParticleUpdateMs);
 
 // C-38 — app.effects and app.atmosphere. createAuraApp's extension loop calls
 // create() with {flags, options}; the factories return stubs when the flag is
