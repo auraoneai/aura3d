@@ -1,7 +1,8 @@
 import { AnimationClip, AnimationMixer, AnimationTrack, Bone, Skeleton, buildSkinningPalette, solveTwoBoneIk, type AnimationValue } from "@aura3d/animation";
 import { createGLTFRenderResources, GLTFLoader, LoadContext, type GLTFMeshAsset, type GLTFRenderResources, type GLTFSkinAsset } from "@aura3d/assets";
 import { AudioClip, AudioListener, AudioSource, AudioSystem, SceneAudioBridge, SpatialAudio } from "@aura3d/audio";
-import { createSceneCameraControlAdapter, InputPlayback, InputRecorder, InputSnapshot, InputSystem, ThirdPersonFollowControls, sampleVirtualTouchJoystickFixture, type GamepadLike, type InputPlaybackSnapshot, type InputRecording } from "@aura3d/input";
+import { createSceneCameraControlAdapter, ThirdPersonFollowControls } from "@aura3d/controls";
+import { InputPlayback, InputRecorder, InputSnapshot, InputSystem, sampleVirtualTouchJoystickFixture, type GamepadLike, type InputPlaybackSnapshot, type InputRecording } from "@aura3d/input";
 import {
   ArcadeCharacterController,
   PhysicsWorld,

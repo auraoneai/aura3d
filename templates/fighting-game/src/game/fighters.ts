@@ -7,6 +7,8 @@ import {
   model,
   primitives
 } from "@aura3d/engine";
+// T0.9a clip-map contract ships on the lane barrel, not the "." public surface.
+import { validateClipMap, type AuraClipMapEntry } from "@aura3d/engine/lanes";
 
 export type FighterId = "player" | "rival";
 /**
@@ -95,6 +97,22 @@ export function createFighterAnimationController(
   id: FighterId,
   asset?: AuraAssetRef<"model">
 ): AnimationController<FighterClip> {
+  if (asset) {
+    // Adopt the T0.9a clip-map contract (Q-06-8 / #488): every fighter state
+    // resolves through `validateClipMap` against the embedded GLB clips, so an
+    // absent clip throws FIGHTER_CLIP_MISSING and stand-ins warn uniformly.
+    const certified = FIGHTER_CERTIFIED_CLIP[id];
+    // No fallback to the certified clip: an asset without embedded animation
+    // metadata must fail validation, not pass it by assumption.
+    const embedded = asset.metadata?.animations;
+    const availableClips = Array.isArray(embedded)
+      ? embedded.filter((clip): clip is string => typeof clip === "string")
+      : [];
+    const clipMap = Object.fromEntries(
+      REQUIRED_FIGHTER_CLIPS.map((state) => [state, { clip: certified, standIn: true as const }])
+    ) as Record<FighterClip, AuraClipMapEntry>;
+    validateClipMap(clipMap, { availableClips, requiredStates: REQUIRED_FIGHTER_CLIPS, label: id });
+  }
   return new AnimationController<FighterClip>({
     id: `${id}-animation-controller`,
     ...(asset ? { clipRegistry: animationClipRegistry(asset) } : {}),

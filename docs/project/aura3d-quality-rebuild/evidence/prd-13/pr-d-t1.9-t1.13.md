@@ -1,5 +1,8 @@
 # PRD-13 PR D evidence — T1.9–T1.13
 
+> **NOT RUN (remote) — P-57:** this file cites no remote CI run id (`run:<id>` / `capture:<id>`). Any "green"/"pass" result below is a local run by the authoring agent and is not acceptance evidence until a lane-workflow run on main is linked here. File moved from `evidence/prd13/` → `docs/project/aura3d-quality-rebuild/evidence/prd-13/` (13-EVID).
+
+
 Branch: `qr/prd13-prompt-plan-v2` (stacked on `qr/prd13-looks-lint-maps` / PR #173).
 Flag: `A3D_QR_LOOKS` (behaviour changes only when on; flag-off paths byte-identical).
 
@@ -105,13 +108,13 @@ flag-off empty value; handler emits `look.product-studio` +
 
 ## qr-request issues filed
 
-- Q-04-1: `@deprecated` JSDoc on `material.visualQA` (nodes/material.ts).
+- Q-04-1: `@deprecated` JSDoc on `material.visualQA` (nodes/material.ts). → #192
 - Q-15-2: `@deprecated` JSDoc on the other six `visualQA` surfaces + widening
-  `material`/`charts` `visualQA` return-type annotations for the additive keys.
-- Q-11-1: `lanes/prd13.ts` entry for `tools/bundle-size`.
+  `material`/`charts` `visualQA` return-type annotations for the additive keys. → #193
+- Q-11-1: `lanes/prd13.ts` entry for `tools/bundle-size`. → #194
 - `lights.ambient()` hits outside PRD-13 paths (tests/browser harnesses,
   tests/clean-room mains, tools/agent-dogfood) — prd02's ambient-flattens rule
-  will flag them once lanes land.
+  will flag them once lanes land. → #195 (closed)
 
 ## NOT RUN
 

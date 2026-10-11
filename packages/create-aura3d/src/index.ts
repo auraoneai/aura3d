@@ -28,6 +28,35 @@ export const CREATE_AURA3D_TEMPLATES = [
 ] as const;
 export type CreateA3DTemplate = (typeof CREATE_AURA3D_TEMPLATES)[number];
 
+/**
+ * Retired template names → current names (Q-13-4 / #700: the `three-compat-*`
+ * starters take their §6.8 names). Each entry is a one-minor deprecation alias:
+ * the CLI scaffolds the current template and prints `templateAliasWarning`.
+ * Entries are added as each template is renamed and dropped in the next minor.
+ */
+export const TEMPLATE_ALIASES: Readonly<Record<string, CreateA3DTemplate>> = Object.freeze({});
+
+export interface ResolvedTemplateName {
+  readonly template: CreateA3DTemplate;
+  /** The retired name the caller used, or null for a current template name. */
+  readonly deprecated: string | null;
+}
+
+/** Resolve a current template name or a retired alias; null when neither. */
+export function resolveTemplateAlias(name: string): ResolvedTemplateName | null {
+  if ((CREATE_AURA3D_TEMPLATES as readonly string[]).includes(name)) {
+    return { template: name as CreateA3DTemplate, deprecated: null };
+  }
+  const template = Object.prototype.hasOwnProperty.call(TEMPLATE_ALIASES, name) ? TEMPLATE_ALIASES[name] : undefined;
+  return template ? { template, deprecated: name } : null;
+}
+
+/** Deprecation warning for a resolved alias; null when no alias was used. */
+export function templateAliasWarning(resolved: ResolvedTemplateName): string | null {
+  if (!resolved.deprecated) return null;
+  return `Template "${resolved.deprecated}" renamed to "${resolved.template}"; the "${resolved.deprecated}" alias is removed in the next minor.`;
+}
+
 export interface CreateA3DProjectOptions {
   readonly targetDir: string;
   readonly template?: CreateA3DTemplate;
