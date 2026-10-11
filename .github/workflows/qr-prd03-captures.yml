@@ -1,10 +1,12 @@
 name: QR-03 captures
 
 # Lane 03 (PRD-03) capture evidence. "Captured" in PRD-03 means a run of this
-# workflow. Per CI-ROUTING.md, lane visual evidence goes to the GitLab macOS
-# route via the qr-gitlab-ci.yml bridge (same provider for every judged image);
-# this workflow dispatches that bridge with requester=prd03 rather than running
-# on GitHub macos-14 itself.
+# workflow. `provider` picks the capture route; frames are compared only within
+# one provider:
+#   github (default) — GitHub macos-14 via the reusable
+#     quality-rebuild-capture.yml games job (program-lead ruling: macos-14 runs
+#     on main count as remote proof while the GitLab quota is exhausted).
+#   gitlab — the qr-gitlab-ci.yml bridge with requester=prd03 (CI-ROUTING.md).
 #
 # The DSF2 spec (tests/browser/qr-prd03-capture-dsf2.spec.ts) records
 # canvas.width / clientWidth per game route — a device property, not a judged
@@ -41,6 +43,11 @@ on:
         description: "Run the DSF2 backing-ratio spec on GitHub macos-14"
         type: boolean
         default: true
+      provider:
+        description: "Capture route: github (macos-14, reusable quality-rebuild-capture) | gitlab (bridge)"
+        type: choice
+        options: [github, gitlab]
+        default: github
 
 permissions:
   contents: read
@@ -51,8 +58,21 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  github-games:
+    name: Game captures on GitHub macos-14 (requester=prd03)
+    if: inputs.provider == 'github'
+    uses: ./.github/workflows/quality-rebuild-capture.yml
+    with:
+      games: ${{ inputs.games }}
+      viewports: ${{ inputs.viewports }}
+      qr_flags: ${{ inputs.qr_flags }}
+      local_build_all: ${{ inputs.local_build == 'true' }}
+      artifact_suffix: -prd03-${{ inputs.qr_flags }}
+      bench: false
+
   gitlab-dispatch:
     name: Dispatch GitLab games suite (requester=prd03)
+    if: inputs.provider == 'gitlab'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
