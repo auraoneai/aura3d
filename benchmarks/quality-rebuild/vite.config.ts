@@ -1,4 +1,4 @@
-import { copyFileSync, createReadStream, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, cpSync, createReadStream, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig, type Plugin } from "vite";
@@ -24,6 +24,16 @@ if (threeVersion !== "0.185.1") {
   throw new Error(`quality-rebuild requires three@0.185.1, found ${threeVersion} in node_modules/three`);
 }
 
+/** Engine runtime files under public/ that the renderer fetches by absolute URL. */
+const ENGINE_RUNTIME_DIRS = ["aura-environments", "aura-decoders"] as const;
+
+function engineRuntimeFile(path: string): string | null {
+  const dir = ENGINE_RUNTIME_DIRS.find((d) => path.startsWith(`/${d}/`));
+  if (!dir) return null;
+  const file = resolve(repoRoot, "public", path.slice(1));
+  return file.startsWith(resolve(repoRoot, "public", dir)) && existsSync(file) ? file : null;
+}
+
 /** Serves (dev) and copies (build) the shared asset table so both engines load identical bytes from /qr-assets/. */
 function qualityRebuildAssets(): Plugin {
   const files = benchmarkAssetFiles();
@@ -36,6 +46,11 @@ function qualityRebuildAssets(): Plugin {
     configureServer(server) {
       server.middlewares.use((request, response, next) => {
         const path = (request.url ?? "").split("?")[0] ?? "";
+        const engineFile = engineRuntimeFile(path);
+        if (engineFile) {
+          createReadStream(engineFile).pipe(response);
+          return;
+        }
         const match = files.find((file) => file.url === path);
         if (!match) {
           next();
@@ -52,6 +67,15 @@ function qualityRebuildAssets(): Plugin {
       });
     },
     closeBundle() {
+      // publicDir is off (the benchmark must not ship public/aura-assets'
+      // 1.6 GB), so copy the engine's runtime directories explicitly: the
+      // flag-on renderer fetches /aura-environments/<preset>.manifest.json
+      // and decoders, which 404'd in every $ALL arm (GPU run 38117264282).
+      for (const dir of ENGINE_RUNTIME_DIRS) {
+        const source = resolve(repoRoot, "public", dir);
+        if (!existsSync(source)) throw new Error(`quality-rebuild: engine runtime directory public/${dir} is missing`);
+        cpSync(source, resolve(outDir, dir), { recursive: true });
+      }
       const target = resolve(outDir, "qr-assets");
       mkdirSync(target, { recursive: true });
       // Missing or unfetched-LFS assets are skipped (and listed) instead of failing the build,
