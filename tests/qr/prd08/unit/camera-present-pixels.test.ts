@@ -47,23 +47,49 @@ describe("presented pose reaches the renderer's camera (pixels)", () => {
     expect(rendered.mode).toBe("perspective");
   });
 
-  it("follow fields are cleared so the renderer uses the presented pose verbatim", () => {
+  it("08-POSE: authored targetNode/offset/smoothing survive; up and roll are recorded", () => {
     const authored = { mode: "follow", targetNode: "hero", offset: [0, 2, 6], smoothing: 0.05, position: [0, 2, 6], target: [0, 0, 0], fov: 50 };
     const { app, renderSnapshot, tick } = appWithRenderSnapshot(authored);
-    createAuraCameraController(app);
+    const camera = createAuraCameraController(app);
+    camera.setPose({ position: [3, 4, 5], target: [1, 1, 1], up: [0, 1, 0], roll: 0.2 });
     tick(1 / 60, 16);
     const rendered = renderSnapshot.camera as Record<string, unknown>;
+    // Perspective mode: the renderer's resolver ignores follow fields, so the pose draws verbatim.
     expect(rendered.mode).toBe("perspective");
-    expect(rendered.targetNode).toBeUndefined();
-    expect(rendered.offset).toBeUndefined();
-    expect(rendered.smoothing).toBeUndefined();
+    expect(rendered.position).toEqual([3, 4, 5]);
+    expect(rendered.targetNode).toBe("hero");
+    expect(rendered.offset).toEqual([0, 2, 6]);
+    expect(rendered.smoothing).toBe(0.05);
+    expect(rendered.up).toEqual([0, 1, 0]);
+    expect(rendered.roll).toBeCloseTo(0.2, 9);
   });
 
-  it("frozen authored specs fall back to replacement (no throw)", () => {
-    const { app, tick } = appWithRenderSnapshot(Object.freeze({ position: [0, 2, 6], target: [0, 0, 0], fov: 50 }) as Record<string, unknown>);
-    const camera = createAuraCameraController(app);
-    camera.setPose({ position: [1, 2, 3] });
+  it("freezeSpecs: app.scene.camera stays frozen but the renderer-held camera still updates", () => {
+    const { app, renderSnapshot, tick } = appWithRenderSnapshot({ position: [0, 2, 6], target: [0, 0, 0], fov: 50 });
+    const camera = createAuraCameraController(app, { freezeSpecs: true });
+    camera.setPose({ position: [7, 8, 9], target: [0, 1, 0] });
     expect(() => tick(1 / 60, 16)).not.toThrow();
-    expect((app.scene as unknown as { camera: { position: number[] } }).camera.position).toEqual([1, 2, 3]);
+    const exposed = (app.scene as unknown as { camera: { position: number[] } }).camera;
+    expect(Object.isFrozen(exposed)).toBe(true);
+    expect(exposed.position).toEqual([7, 8, 9]);
+    expect((renderSnapshot.camera as { position: number[] }).position).toEqual([7, 8, 9]);
+  });
+
+  it("the authored pose is restored when the scene's camera changes (reused builder/spec)", () => {
+    const authored = { mode: "follow", targetNode: "hero", position: [0, 2, 6], target: [0, 0, 0], fov: 50 };
+    const { app, tick } = appWithRenderSnapshot(authored);
+    const camera = createAuraCameraController(app);
+    camera.setPose({ position: [3, 4, 5], target: [1, 1, 1], fov: 70 });
+    tick(1 / 60, 16);
+    expect(authored.position).toEqual([3, 4, 5]);
+    // setScene swaps in a new camera object; the next presented frame rebinds.
+    (app.scene as unknown as { camera: unknown }).camera = { position: [0, 5, 5], target: [0, 0, 0], fov: 40 };
+    camera.presented();
+    expect(authored.mode).toBe("follow");
+    expect(authored.position).toEqual([0, 2, 6]);
+    expect(authored.target).toEqual([0, 0, 0]);
+    expect(authored.fov).toBe(50);
+    expect("up" in authored).toBe(false);
+    expect("roll" in authored).toBe(false);
   });
 });
