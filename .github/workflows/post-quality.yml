@@ -57,6 +57,11 @@ on:
     # Nightly checkpoint at 02:17 US/Pacific (09:17 UTC during PDT).
     - cron: "17 9 * * *"
   workflow_dispatch:
+    inputs:
+      qr_flags:
+        description: "Flag list recorded for the GPU lane run (the qr-prd03 post specs pin A3D_QR_POST themselves)"
+        required: false
+        default: "post"
 
 permissions:
   contents: read
@@ -136,6 +141,70 @@ jobs:
           name: qr03-post-quality-${{ github.run_id }}
           path: |
             tests/reports/browser.json
+            test-results/
+          retention-days: 30
+          if-no-files-found: warn
+
+  # Lane 03 GPU lane: the same qr-prd03 post specs on the self-hosted NVIDIA L4
+  # runners, Chromium new-headless with ANGLE on Vulkan
+  # (playwright.prd03-gpu.config.ts). Dispatch-only. qr-prd03-gpu-probe fails
+  # the job if WebGL lands on a software rasterizer. Frames are compared only
+  # within this lane.
+  browser-gpu:
+    name: Lane 03 browser specs (GPU L4, ANGLE Vulkan)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: [self-hosted, azure-gpu]
+    timeout-minutes: 60
+    env:
+      A3D_REQUIRE_HW_GPU: "1"
+      # Same override as qr-azure-gpu.yml (#956); the config's default is the
+      # Vulkan ANGLE set when the repo variable is unset.
+      QR_AZURE_GPU_CHROME_ARGS: ${{ vars.QR_AZURE_GPU_CHROME_ARGS }}
+      A3D_QR_FLAGS: ${{ inputs.qr_flags }}
+      PLAYWRIGHT_JSON_OUTPUT_NAME: tests/reports/browser-gpu.json
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: GPU visible to the runner
+        run: nvidia-smi --query-gpu=name,driver_version --format=csv
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Lane 03 post specs on the GPU (@integrated skipped)
+        run: |
+          specs=(
+            tests/browser/qr-prd03-gpu-probe.spec.ts
+            tests/browser/qr-prd03-fxaa.spec.ts
+            tests/browser/qr-prd03-post-banding.spec.ts
+            tests/browser/qr-prd03-post-lut.spec.ts
+            tests/browser/qr-prd03-v2-tone.spec.ts
+            tests/browser/qr-prd03-post-no-readback.spec.ts
+            tests/browser/qr-prd03-phase4.spec.ts
+            tests/browser/qr-prd03-capture-dsf2.spec.ts
+            tests/browser/qr-prd03-wgsl-compile.spec.ts
+            tests/browser/qr-prd03-phase6.spec.ts
+            tests/browser/qr-prd03-bloom-energy.spec.ts
+          )
+          for spec in "${specs[@]}"; do
+            if [ ! -f "$spec" ]; then
+              echo "missing lane-03 spec: $spec" >&2
+              exit 1
+            fi
+          done
+          echo "qr_flags=${A3D_QR_FLAGS}"
+          pnpm exec playwright test --config playwright.prd03-gpu.config.ts "${specs[@]}" --grep-invert @integrated
+      - name: Upload GPU spec artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qr03-post-quality-gpu-${{ github.run_id }}
+          path: |
+            tests/reports/browser-gpu.json
             test-results/
           retention-days: 30
           if-no-files-found: warn
