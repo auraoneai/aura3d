@@ -44,7 +44,7 @@ const deckMaterial = material.pbr({ color: "#24272e", roughness: 0.62, metalness
 
 // frameAsset fits the product to ~1/padding of frame height; padding 1.6 puts
 // the subject at ~60% — inside the look's 45–70% framing band.
-const autoframe = camera.frameAsset(assets.quaterniusSportsCar, {
+const autoframe = camera.frameAsset(assets.product, {
   targetHeight: 1.62,
   padding: 1.6,
   fov: 32,
@@ -61,16 +61,16 @@ const productScene = scene()
       .scale([6.2, 1, 5.2])
   )
   .add(
-    primitives.box({ name: "car plinth", material: plinthMaterial })
+    primitives.box({ name: "product plinth", material: plinthMaterial })
       .position(0, 0.06, -0.62)
       .scale([1.82, 0.18, 1.4])
   )
   .add(
-    model(assets.quaterniusSportsCar, { name: "typed studio car", castShadow: true })
+    model(assets.product, { name: "typed studio product", castShadow: true })
       .position(0, 1.08, -0.62)
       .scale(0.66)
   )
-  .add(interactions.orbit({ target: "typed studio car" }))
+  .add(interactions.orbit({ target: "typed studio product" }))
   .camera(autoframe);
 
 const app = createAuraApp("#app", { scene: productScene });
@@ -84,7 +84,7 @@ window.__AURA3D_PRODUCT_VIEWER__ = {
     subjectHeightFraction: [0.45, 0.7],
     orbit: true
   },
-  product: { assetId: assets.quaterniusSportsCar.id, url: assets.quaterniusSportsCar.url, metres: assets.quaterniusSportsCar.bounds },
+  product: { assetId: assets.product.id, url: assets.product.url, metres: assets.product.bounds },
   evidence: { entry: "@aura3d/engine" }
 };
 
