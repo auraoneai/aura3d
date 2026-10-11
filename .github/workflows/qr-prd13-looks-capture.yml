@@ -88,3 +88,54 @@ jobs:
             build.log
           retention-days: 30
           if-no-files-found: warn
+
+  # Same capture on the L4 GPU runners (Vulkan ANGLE). Frames are compared only
+  # within one runner type: never macos-14 vs gpu-l4.
+  capture-gpu:
+    name: Looks capture (gpu-l4 Vulkan, flags=${{ matrix.flags }})
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, azure-gpu]
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix:
+        flags: [none, looks]
+    env:
+      QRC_TEMPLATES: ${{ github.event_name == 'workflow_dispatch' && inputs.templates || '' }}
+      QRC_GPU_ARGS: "--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install chromium
+      - name: Build templates against workspace sources
+        id: build
+        run: |
+          pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-templates/build-templates-workspace.ts \
+            --out tools/agent-templates/out/workspace-build | tee build.log
+          echo "sources=$(tail -n 1 build.log)" >> "$GITHUB_OUTPUT"
+      - name: Capture templates (flags=${{ matrix.flags }})
+        env:
+          QRC_FLAGS: ${{ matrix.flags }}
+          QRC_OUT: tools/agent-templates/out/looks-capture-gpu-${{ matrix.flags }}
+        run: node tools/agent-templates/capture-templates.mjs --source "${{ steps.build.outputs.sources }}"
+      - name: Upload captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd13-looks-capture-gpu-${{ matrix.flags }}
+          path: |
+            tools/agent-templates/out/looks-capture-gpu-${{ matrix.flags }}/
+            tools/agent-templates/out/workspace-build/build-report.json
+            build.log
+          retention-days: 30
+          if-no-files-found: warn
