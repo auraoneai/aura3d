@@ -514,12 +514,15 @@ export function createAuraCameraController(
       // the next update writes the pose into it again.
       const result = originalSetScene(next);
       if (previous && liveSpec() === previous) {
-        // The new scene reuses the same camera object (e.g. repeated
-        // AuraSceneBuilder.toJSON()): keep it as the renderer-held camera and
-        // force the rig to re-read its restored authored values (Codex review
-        // on #1213: clearing renderCamera first left updates pixel-inert).
-        boundSpec = undefined;
-        writeSpec = undefined;
+        // Same camera object kept across the swap: the runtime-node remount
+        // (`app.nodes.add/remove` → setScene({ ...scene, nodes }),
+        // runtimeNodes.ts) or a repeated AuraSceneBuilder.toJSON(). Keep the
+        // binding: do NOT rebind (controller.use would drop setPose/FOV/roll
+        // overrides and any custom rig; Codex review on #1215). Re-write the
+        // current presented pose so the remounted renderer draws it (#1213).
+        applyPose(controller.presented());
+        arm();
+        return result;
       }
       rebindIfNeeded();
       arm();
