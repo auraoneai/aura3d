@@ -1,0 +1,76 @@
+name: Lead game shots (before/after, L4)
+
+# Program-lead before/after evidence: all 18 showcase games built from source at
+# a given ref, captured at 1280x720 on an NVIDIA L4 self-hosted runner with
+# Vulkan ANGLE. Push to qr/lead-shots runs the fixed A/B/C matrix; dispatch runs
+# one set. The job fails if the runner is not an L4 (never mix GPU classes).
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref: { description: "Commit/ref to build and capture", required: true }
+      flags: { description: "none | all | comma list", required: false, default: "none" }
+      label: { description: "Artifact label (before|after|...)", required: true }
+  push:
+    branches: ["qr/lead-shots"]
+    paths: [".github/workflows/lead-game-shots.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  shots:
+    name: "shots ${{ matrix.label }} (${{ matrix.flags }})"
+    runs-on: [self-hosted, azure-gpu, gpu-l4]
+    timeout-minutes: 170
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('[{{"ref":"{0}","flags":"{1}","label":"{2}"}}]', inputs.ref, inputs.flags, inputs.label) || '[{"ref":"afb475c2f093b4d5f2501a218203729c1c8bb117","flags":"none","label":"A-before"},{"ref":"322d78b1391f1c8293cc8e714c7d8a6ba7541343","flags":"none","label":"B-after"},{"ref":"322d78b1391f1c8293cc8e714c7d8a6ba7541343","flags":"all","label":"C-after-all"}]') }}
+    env:
+      QRC_LOCAL_BUILD: "true"
+      QRC_NO_MOBILE: "true"
+      QRC_VIEWPORTS: "1280x720"
+      QRC_FLAGS: ${{ matrix.flags }}
+      QRC_GPU_ARGS: "--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist"
+    steps:
+      - name: Require NVIDIA L4
+        run: |
+          set -euo pipefail
+          gpu="$(nvidia-smi --query-gpu=name --format=csv,noheader | head -1)"
+          echo "runner=$RUNNER_NAME gpu=$gpu" | tee -a "$GITHUB_STEP_SUMMARY"
+          case "$gpu" in *L4*) ;; *) echo "::error::not an L4 runner ($gpu)"; exit 1 ;; esac
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ matrix.ref }}
+          lfs: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: Build all 18 games from source
+        run: node tools/quality-rebuild-capture/capture-games.mjs --build-only --no-alt-routes
+      - name: Capture
+        run: |
+          set -uo pipefail
+          node tools/quality-rebuild-capture/capture-games.mjs --skip-build --no-alt-routes
+          echo "capture exit $?" | tee -a "$GITHUB_STEP_SUMMARY"
+          { echo "ref=${{ matrix.ref }}"; echo "sha=$(git rev-parse HEAD)"; echo "flags=$QRC_FLAGS";
+            echo "runner=$RUNNER_NAME"; nvidia-smi --query-gpu=name,driver_version --format=csv,noheader; } \
+            > tools/quality-rebuild-capture/out/run-meta.txt
+      - name: Upload
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: lead-shots-${{ matrix.label }}
+          path: |
+            tools/quality-rebuild-capture/out/**/*.png
+            tools/quality-rebuild-capture/out/report.json
+            tools/quality-rebuild-capture/out/run-meta.txt
+          retention-days: 14
+          if-no-files-found: warn
