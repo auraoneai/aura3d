@@ -31,6 +31,7 @@ withServer((getServer) => {
 
     await page.evaluate(() => {
       Object.defineProperty(document, "hidden", { configurable: true, get: () => true });
+      Object.defineProperty(document, "visibilityState", { configurable: true, get: () => "hidden" });
       document.dispatchEvent(new Event("visibilitychange"));
     });
     await page.waitForFunction(() => {
@@ -41,6 +42,7 @@ withServer((getServer) => {
 
     await page.evaluate(() => {
       Object.defineProperty(document, "hidden", { configurable: true, get: () => false });
+      Object.defineProperty(document, "visibilityState", { configurable: true, get: () => "visible" });
       document.dispatchEvent(new Event("visibilitychange"));
     });
   });
