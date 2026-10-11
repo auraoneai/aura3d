@@ -14,7 +14,7 @@
 import { registerFrameContributor } from "@aura3d/rendering/contracts";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import { programCacheSlot } from "@aura3d/rendering/contracts";
-import { terrainAfterOpaquePass, terrainBackgroundPass } from "./TerrainRuntime.js";
+import { noteWorldPhase, terrainAfterOpaquePass, terrainBackgroundPass } from "./TerrainRuntime.js";
 import { allWaterStates, waterAfterOpaquePasses, waterBackgroundPasses, waterTransparentPass, WORLD_BACKGROUND_PHASE_KEY } from "./WaterRuntime.js";
 import { terrainRecordIds } from "../../agent-api/world/terrain.js";
 import { timeOfDayRecords } from "../../agent-api/compiler/world.js";
@@ -44,6 +44,7 @@ export function registerWorldFramePasses(): () => void {
     order: 10,
     phases: ["collect", "background", "after-opaque", "transparent"],
     collect(items, ctx) {
+      noteWorldPhase("collect");
       ctx.blackboard.set("prd10.drawPath", worldDrawPath(ctx.flags));
       // T6.4 — advance every compiled time-of-day node; the blackboard record
       // carries this frame's rig, sun, practical scale and capture request
@@ -57,6 +58,7 @@ export function registerWorldFramePasses(): () => void {
       return items;
     },
     passes(phase, ctx) {
+      noteWorldPhase(`${phase}:${worldDrawPath(ctx.flags)}`);
       // §9.1: world opaque draws land in `background` (after the environment
       // background pass) on Path S; Path G emits them as opaque RenderItems.
       // §9.1 order: planar reflections (waterBackgroundPasses, step 2) run
