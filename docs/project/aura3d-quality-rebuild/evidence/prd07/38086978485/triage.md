@@ -8,7 +8,33 @@ Status is updated as jobs complete; a job not listed below had not completed at 
 |---|---|---|---|---|
 | mobile | 114315418024 | failure (8/8 specs) | `TimeoutError: page.waitForFunction: Timeout 90000ms exceeded` at `juice-automount.spec.ts:41`; every spec times out the same way, including the flags-none sentinels | `tests/browser/example-dev-server.ts:96` (lane 15), see below |
 | unit | 114315418017 | success | — | — |
-| grep-gate, bake, typecheck, browser, capture, games | — | PENDING (queued on macos-14 at 2026-10-11 ~02:10Z) | — | to be filled when the jobs complete |
+| grep-gate | — | success | — | — |
+| bake | — | success | — | — |
+| capture | 114315418050 | failure | `09-outdoor-environment` aura3d `capture-timeout` (240 s `waitForFunction`, `capture.mjs:156`); same for 17 and 18 | see "capture" below; the `none` arm never ran |
+| typecheck, browser, games | — | PENDING (queued on macos-14 at 2026-10-11 ~06:30Z) | — | to be filled when the jobs complete |
+
+## capture — vite build OK; only 4 of 21 scenes captured; 3 base scenes time out
+
+- **07-BUILD / T0-23: verified.** `vite build --config benchmarks/quality-rebuild/vite.config.ts`
+  succeeded ("built in 8.87s"), so `@aura3d/rendering/world` resolves.
+- **Lane scenes dropped.** The log reads `4 scenes x aura3d+three`. `capture.mjs:445` keeps only the
+  `SCENE_LIST` ids present in the page's `window.__QR_SCENES__` (`ACTIVE_SCENE_IDS`). The C-30
+  registry (`benchmarks/quality-rebuild/shared/registry.ts:90-113`) quarantined all 17 prd07 scenes:
+  - `missing-adapter`: the adapters were `{aura3d,three}/scenes/prd07/prd07-<slug>.ts`, but
+    `adapterPath()` (`registry.ts:69-74`) resolves `prd07/<slug>.ts`.
+  - after the rename, `missing-registry-fields: masks,brokenControls`: the spec base
+    (`benchmarks/quality-rebuild/scenes/prd07/specs.ts` `base()`) set neither.
+  - The four Aura-only scenes (impact-library, trails-beams, fog-transition, underwater) also have
+    no three adapter.
+  - Lane-07 fix: adapter rename + both fields. 13/17 scenes become active
+    (`tests/qr/prd07/unit/scene-registry.test.ts`). The Aura-only four need a registry or adapter
+    decision.
+- **Base scenes under `vfx,vfx.sky,vfx.fog,vfx.volumetric,vfx.decals`:** aura3d timed out on
+  09-outdoor-environment (294 s), 17-large-environment (310 s) and 18-game-scene (271 s).
+  14-particles reached ready only after 132 s. three.js was ready on all four in under 5 s.
+  - Not yet attributable: the `Capture (flags none)` step had no `if: always()` and was skipped
+    after the vfx arm failed. The step now runs unconditionally.
+  - The `vfx-attribution` job (`$ALL` vs `$ALL,-vfx`) answers T0-34 on the next main run.
 
 ## mobile — 8/8 `waitForFunction` timeouts
 

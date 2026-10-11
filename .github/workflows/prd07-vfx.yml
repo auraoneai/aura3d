@@ -209,6 +209,9 @@ jobs:
           --flags "$VFX_FLAGS"
           --strict
       - name: Capture (flags none)
+        # Runs even when the vfx arm failed: the none control is what makes a
+        # vfx-arm failure attributable (the job still fails on either arm).
+        if: always()
         run: >-
           node benchmarks/quality-rebuild/capture.mjs
           --dist benchmarks/quality-rebuild/dist
