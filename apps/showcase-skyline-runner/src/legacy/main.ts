@@ -1863,8 +1863,10 @@ const app = createAuraApp("#app", {
   // FS-304: this route is the root renderer integration reference, so it opts
   // explicitly into the typed-GLB production bridge. That makes the bloom, fog,
   // and shadow features it already authors actually render, each of which has its
-  // own root-only browser contract. `fallback: "safe-basic"` keeps the route honest
-  // if the bridge is ever ineligible.
+  // own root-only browser contract. PRD-15 T4.5 removed `renderer.mode` and
+  // `renderer.fallback`: every quality profile resolves the production renderer
+  // and the safe-basic fallback is the engine default, so `qualityProfile` alone
+  // keeps the same selection (and no longer throws AuraMigrationError under strict).
   //
   // Adopting the bridge originally regressed this scene badly (draw calls
   // 175 -> 26, typed world GLB and most platforms missing). The cause was the
@@ -1872,7 +1874,7 @@ const app = createAuraApp("#app", {
   // actually-loaded GLB bounds, which collapsed models toward zero size. That is
   // fixed in the bridge itself; the two paths now agree to within 611 of 1.3M
   // pixels on this route.
-  renderer: { mode: "production", qualityProfile: "safe-basic", fallback: "safe-basic" },
+  renderer: { qualityProfile: "safe-basic" },
   // The retained software-WebGL release target cannot sustain the profile default
   // 1.0 pixel ratio with this long typed world; preserve CSS composition while
   // lowering raster cost for the route-local performance budget.
