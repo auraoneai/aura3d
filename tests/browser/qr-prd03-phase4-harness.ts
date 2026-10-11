@@ -262,6 +262,13 @@ function findCameraNode(app: unknown, target: readonly [number, number, number])
 export async function runTaaStaticProbe() {
   const { app, host, read, width, height } = await mountTaaScene();
   try {
+    // §8.6 case a is the converged (steady-state) shimmer: let the history
+    // accumulate first, then measure 32 frames. Measuring from the seed
+    // frame counted the one-off convergence ramp as temporal noise.
+    for (let i = 0; i < 16; i++) {
+      app.step(1 / 60);
+      await new Promise((r) => requestAnimationFrame(r));
+    }
     const frames: Uint8Array[] = [];
     for (let i = 0; i < 32; i++) {
       app.step(1 / 60);
