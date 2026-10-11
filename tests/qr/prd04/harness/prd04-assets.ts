@@ -215,7 +215,9 @@ async function main(): Promise<void> {
     report.extra.contextLost = contextLost;
     report.extra.renderSummary = summarizeProductionWebGL2Proof(proof);
     if (params.get("pixels") === "1") {
-      report.extra.frame = { width, height, pixels: await canvasPixels(canvas) };
+      // Plain array: a Uint8ClampedArray does not survive page.evaluate as an
+      // array, so probeFrame's "frame pixels populated" check always failed.
+      report.extra.frame = { width, height, pixels: Array.from(await canvasPixels(canvas)) };
     }
     if (contextLost) report.warnings.push("context-lost");
     renderer.dispose();
