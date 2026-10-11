@@ -52,6 +52,11 @@ export interface RunOptions {
    * merged into ReadyPayload.extra.
    */
   readonly collectExtra?: (app: AuraApp) => Readonly<Record<string, unknown>> | Promise<Readonly<Record<string, unknown>>>;
+  /**
+   * #1109 (lane 10 → 12): lane adapters append public-API nodes to the built
+   * scene (e.g. `world.*` when the lane flag is on). No hook → no change.
+   */
+  readonly extraNodes?: (ctx: { readonly qrFlags: readonly string[] }) => readonly AuraNodeInput[];
 }
 
 // Variant machinery lives in aura3d/lib/variants.ts (T2.4, §8.4).
@@ -142,7 +147,7 @@ function toAuraMaterial(spec: MaterialSpec): AuraMaterialSpec {
   });
 }
 
-function buildAuraScene(spec: SceneSpec, log: CapabilityLog) {
+function buildAuraScene(spec: SceneSpec, log: CapabilityLog, extraNodes: readonly AuraNodeInput[] = []) {
   const built = scene();
   const nodes: AuraNodeInput[] = [];
 
@@ -331,6 +336,7 @@ function buildAuraScene(spec: SceneSpec, log: CapabilityLog) {
     }));
   }
 
+  nodes.push(...extraNodes);
   for (const node of nodes) built.add(node);
   return built;
 }
@@ -401,7 +407,7 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
   if (variant !== "default" && variant !== "aura3d-tuned") {
     log.add(`variant:${variant}`, "supported", "Broken-control variant applied through the public API.");
   }
-  const builtScene = buildAuraScene(spec, log);
+  const builtScene = buildAuraScene(spec, log, opts.extraNodes?.({ qrFlags: opts.qrFlags ?? spec.qrFlags ?? [] }) ?? []);
   const app = createAuraApp(host, {
     scene: builtScene,
     // T0-13: only qualityProfile — renderer.mode/renderer.fallback are not
