@@ -66,14 +66,14 @@ jobs:
     # P7-T3 / §10 item 6 — fails when a legacy-seam symbol appears outside the
     # allowlist (new seams are forbidden; after the removal PR the emptied
     # allowlist makes any leftover fail).
-    runs-on: macos-14
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Grep gate
         run: bash tests/qr/prd07/grep-gate.sh
 
   typecheck:
-    runs-on: macos-14
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
