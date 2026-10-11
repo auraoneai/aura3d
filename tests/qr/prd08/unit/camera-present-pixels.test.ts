@@ -99,6 +99,35 @@ describe("presented pose reaches the renderer's camera (pixels)", () => {
     expect((renderSnapshot.camera as { position: number[] }).position).toEqual([9, 9, 9]);
   });
 
+  it("same-camera remount (runtime node add/remove) keeps setPose overrides and the pose on screen", () => {
+    const shared = { position: [0, 2, 6], target: [0, 0, 0], fov: 50 } as Record<string, unknown>;
+    const callbacks = new Set<FrameCb>();
+    let renderSnapshot = { camera: shared, nodes: [] as unknown[] };
+    const app = {
+      scene: { camera: shared, nodes: [] as unknown[] },
+      nodes: { all: () => [], get: () => undefined },
+      onFrame(cb: FrameCb) {
+        callbacks.add(cb);
+        return () => callbacks.delete(cb);
+      },
+      setScene(next: { camera: Record<string, unknown>; nodes: unknown[] }) {
+        this.scene = next as never;
+        renderSnapshot = { ...next, nodes: [...next.nodes] };
+      }
+    };
+    const camera = createAuraCameraController(app as unknown as AuraApp);
+    camera.setPose({ position: [9, 9, 9], target: [0, 1, 0], fov: 40 });
+    for (const cb of [...callbacks]) cb({ dt: 1 / 60, time: 0.016 });
+    // runtimeNodes.ts remount: same camera object, new nodes array.
+    (app as unknown as { setScene(n: unknown): void }).setScene({ ...app.scene, nodes: [{ kind: "primitive" }] });
+    // Immediately after the remount the renderer still shows the presented pose ...
+    expect((renderSnapshot.camera as { position: number[] }).position).toEqual([9, 9, 9]);
+    // ... and the override survives further frames (no rebind reset it).
+    for (const cb of [...callbacks]) cb({ dt: 1 / 60, time: 0.033 });
+    expect(camera.presented().position).toEqual([9, 9, 9]);
+    expect(camera.presented().fov).toBeCloseTo(40, 6);
+  });
+
   it("app.setScene restores the outgoing authored camera even when the camera is idle", () => {
     const authored = { mode: "follow", targetNode: "hero", position: [0, 2, 6], target: [0, 0, 0], fov: 50 };
     const callbacks = new Set<FrameCb>();
