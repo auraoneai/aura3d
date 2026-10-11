@@ -93,6 +93,15 @@ const auraTextureAssets = defineAuraAssets(
   ) as never
 );
 
+/**
+ * Options `main.ts` hands a page adapter (`?a3d-qr=<list>` → `qrFlags`). The
+ * per-scene adapters must forward them: dropping them rendered every flag arm
+ * flags-off, so `suite=promote` scored identical frames (materials NO-EFFECT).
+ */
+export interface Prd04PageOptions {
+  readonly qrFlags?: readonly string[];
+}
+
 export interface Prd04AuraSceneOptions {
   readonly transmission?: "auto" | "env" | "off";
   /** Set the C-27 quality tier after create (e.g. `?quality=medium` for S9). */
