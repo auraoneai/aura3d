@@ -501,7 +501,7 @@ function updateCompiledSceneReal(
  * changed keeps its object identity, so unchanged nodes cost no re-allocation.
  */
 function reuseRenderItems(
-  impl: CompiledSceneImpl,
+  impl: Pick<CompiledSceneImpl, "primitiveEntries" | "actorEntries" | "itemCache">,
   source: RenderSource,
   runtime: AuraRuntimeNodeRegistry
 ): RenderSource {
@@ -529,13 +529,20 @@ function reuseRenderItems(
     const node = nodeForItem(item);
     const runtimeId = node ? runtimeIdOf(node) : "";
     const handle = runtimeId ? runtime?.get(runtimeId) : undefined;
-    if (!handle || (node && isVolatile(node))) return item;
+    // #1142: volatility is also an item property. A skinned/morphed GLB with
+    // no authored animation (08-skinned-character, bind pose) still carries a
+    // per-frame skin palette / morph state, so its item is never reused.
+    if (!handle || (node && isVolatile(node)) || isVolatileItem(item)) return item;
     const index = perNodeIndex.get(runtimeId) ?? 0;
     perNodeIndex.set(runtimeId, index + 1);
     const key = `${runtimeId}:${index}`;
     const version = handle.version ?? 0;
     const cached = impl.itemCache.get(key);
-    if (cached && cached.version === version) {
+    // #1142: async upgrades (GLB/primitive texture upload, HDRI) rebuild an
+    // item's material or geometry without bumping the node version. Reuse
+    // only while the fresh item still points at the same resources; else the
+    // first-frame (untextured) item would be presented forever.
+    if (cached && cached.version === version && sameItemResources(cached.item, item)) {
       nextCache.set(key, cached);
       return cached.item;
     }
@@ -545,6 +552,19 @@ function reuseRenderItems(
   impl.itemCache = nextCache;
   return { ...source, collectRenderItems: () => reused };
 }
+
+/** Items whose content changes every frame without a node version bump. */
+function isVolatileItem(item: RenderItem): boolean {
+  return item.skinning !== undefined || (item.morphTargets?.length ?? 0) > 0 || (item.morphWeights?.length ?? 0) > 0;
+}
+
+/** Same geometry and material objects → the cached item is still current. */
+function sameItemResources(cached: RenderItem, fresh: RenderItem): boolean {
+  return cached.geometry === fresh.geometry && cached.material === fresh.material;
+}
+
+/** @internal test seam for the T3.12 reuse rules (#1142). */
+export const reuseRenderItemsForTest = reuseRenderItems;
 
 /** The real C-36 impl, provided once from `lanes/prd15.ts`. */
 export const realCompilerImpl: CompilerImpl = {
