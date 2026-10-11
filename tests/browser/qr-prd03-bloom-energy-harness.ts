@@ -42,7 +42,9 @@ type Subject = { readonly kind: "sphere"; readonly strength: number } | { readon
 /** Diagnostics for the spec artifacts (strength-4 sphere and the wall). */
 export const bloomFrames: Record<string, { png: string; meanLuma: number; diagnostics: unknown }> = {};
 
-async function render(subject: Subject, bloom: boolean): Promise<Uint8Array> {
+interface Frame { readonly pixels: Uint8Array; readonly width: number; readonly height: number }
+
+async function render(subject: Subject, bloom: boolean): Promise<Frame> {
   const host = document.createElement("div");
   host.style.cssText = `position:fixed;left:-2400px;top:0;width:${SIZE}px;height:${SIZE}px;`;
   document.body.appendChild(host);
@@ -71,7 +73,12 @@ async function render(subject: Subject, bloom: boolean): Promise<Uint8Array> {
     pixelRatio: 1,
     resize: false,
     autoStart: false,
-    output: { toneMapping: "linear", exposure: EXPOSURE, dither: false },
+    // Dither on: with the 5-mip halo spread across the frame at a few LSB,
+    // undithered 8-bit rounding biased the faint strength-2 halo upward
+    // (GPU 38154706149: ratios 2.74 / 6.27 while the core read exactly
+    // strength). The triangular dither makes the quantized sum unbiased; it
+    // is deterministic per pixel/frame, so it cancels in on − off.
+    output: { toneMapping: "linear", exposure: EXPOSURE, dither: true },
     qualityRebuild: { flags: ["post"] }
   } as never);
   try {
@@ -86,11 +93,14 @@ async function render(subject: Subject, bloom: boolean): Promise<Uint8Array> {
       await new Promise((r) => requestAnimationFrame(r));
     }
     const pixels = capture.read();
+    const width = capture.width, height = capture.height;
     const label = `${subject.kind === "sphere" ? `sphere-${subject.strength}` : "wall"}-${bloom ? "on" : "off"}`;
     if (label.startsWith("sphere-4") || label.startsWith("wall")) {
-      bloomFrames[label] = { png: frameToPngDataUrl(pixels, SIZE, SIZE), meanLuma: meanLuma(pixels), diagnostics: postDiagnostics(app) };
+      bloomFrames[label] = { png: frameToPngDataUrl(pixels, width, height), meanLuma: meanLuma(pixels), diagnostics: postDiagnostics(app) };
     }
-    return pixels;
+    // GPU 38154706149 presented a 320×600 frame for the 320×320 host; index
+    // the frame that was actually read, never the requested host size.
+    return { pixels, width, height };
   } finally {
     app.dispose();
     host.remove();
@@ -98,17 +108,19 @@ async function render(subject: Subject, bloom: boolean): Promise<Uint8Array> {
 }
 
 /** Halo mask: pixels farther than `pad` px from any core pixel of the bloom-off frame. */
-function haloMask(off: Uint8Array, pad: number): Uint8Array {
-  const core = new Uint8Array(SIZE * SIZE);
-  for (let p = 0; p < SIZE * SIZE; p++) core[p] = linearLuma(off, p * 4) > 1e-3 ? 1 : 0;
-  const mask = new Uint8Array(SIZE * SIZE).fill(1);
-  for (let y = 0; y < SIZE; y++) {
-    for (let x = 0; x < SIZE; x++) {
-      if (!core[y * SIZE + x]) continue;
+function haloMask(off: Frame, pad: number): Uint8Array {
+  const { width, height } = off;
+  const core = new Uint8Array(width * height);
+  // 1e-3 linear sits above the ±1 LSB dither floor on black (≈ 3e-4).
+  for (let p = 0; p < width * height; p++) core[p] = linearLuma(off.pixels, p * 4) > 1e-3 ? 1 : 0;
+  const mask = new Uint8Array(width * height).fill(1);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (!core[y * width + x]) continue;
       for (let dy = -pad; dy <= pad; dy++) {
         for (let dx = -pad; dx <= pad; dx++) {
           const yy = y + dy, xx = x + dx;
-          if (yy >= 0 && yy < SIZE && xx >= 0 && xx < SIZE) mask[yy * SIZE + xx] = 0;
+          if (yy >= 0 && yy < height && xx >= 0 && xx < width) mask[yy * width + xx] = 0;
         }
       }
     }
@@ -128,14 +140,21 @@ export interface BloomEnergyCase {
   readonly offMeanLuma?: number;
   readonly onMeanLuma?: number;
   readonly pixelCount?: number;
+  readonly frameSize?: readonly [number, number];
 }
 
 async function measure(subject: Subject): Promise<BloomEnergyCase> {
-  const off = await render(subject, false);
-  const on = await render(subject, true);
-  const mask = haloMask(off, 2);
+  const offFrame = await render(subject, false);
+  const onFrame = await render(subject, true);
+  if (onFrame.width !== offFrame.width || onFrame.height !== offFrame.height) {
+    throw new Error(`bloom on/off frames differ in size: ${onFrame.width}x${onFrame.height} vs ${offFrame.width}x${offFrame.height}`);
+  }
+  const { width, height } = offFrame;
+  const off = offFrame.pixels, on = onFrame.pixels;
+  const mask = haloMask(offFrame, 2);
+  const pixelTotal = width * height;
   let halo = 0, offTotal = 0, onTotal = 0, saturated = 0;
-  for (let p = 0; p < SIZE * SIZE; p++) {
+  for (let p = 0; p < pixelTotal; p++) {
     const lOn = linearLuma(on, p * 4), lOff = linearLuma(off, p * 4);
     onTotal += lOn;
     offTotal += lOff;
@@ -147,13 +166,14 @@ async function measure(subject: Subject): Promise<BloomEnergyCase> {
     haloEnergy: halo / EXPOSURE,
     offEnergy: offTotal / EXPOSURE,
     addedFraction: offTotal > 0 ? (onTotal - offTotal) / offTotal : 0,
-    saturatedFraction: saturated / (SIZE * SIZE),
+    saturatedFraction: saturated / pixelTotal,
     // Diagnostics: GPU lane 38127246424 logged frame mean luma 9.55 for a
     // render whose case reported offEnergy 0 — record both sides here.
-    coreLuma: linearLuma(off, ((SIZE / 2) * SIZE + SIZE / 2) * 4) / EXPOSURE,
+    coreLuma: linearLuma(off, (Math.floor(height / 2) * width + Math.floor(width / 2)) * 4) / EXPOSURE,
     offMeanLuma: meanLuma(off),
     onMeanLuma: meanLuma(on),
-    pixelCount: off.length / 4
+    pixelCount: pixelTotal,
+    frameSize: [width, height] as const
   };
 }
 
