@@ -15,6 +15,7 @@ import { isWebGLRenderableNode, productionRenderErrorMessage } from "../compiler
 import { labels } from "../nodes/labels.js";
 import { normalizeCreateAppRendererOptions } from "./rendererOptions.js";
 import { qrFlagsWithAnimationMixer, resolveQrFlags } from "../../contracts/flags.js";
+import type { QrFlags } from "@aura3d/rendering/contracts";
 import { renderer } from "../rendererDiagnostics.js";
 import { resolveCameraFrame } from "../compiler/camera.js";
 import { text3D } from "../nodes/text3d.js";
@@ -44,7 +45,9 @@ export async function startProductionRender(
    * Supplied by the app so a paused scene renders at its own simulated time rather than at
    * wall-clock time. Without it, `pause()` froze the simulation but not time-driven rendering.
    */
-  pausedRenderTime: () => number = () => 0
+  pausedRenderTime: () => number = () => 0,
+  /** T0-28: the app's flags, resolved once in `createAuraApp`; absent → resolved here (legacy callers). */
+  appQrFlags?: QrFlags
 ): Promise<WebGLRenderController> {
   // Use the same ownership rule as initial mount and setScene. A compatibility
   // source continues supplying arena/fighter geometry when public nodes are
@@ -56,7 +59,7 @@ export async function startProductionRender(
       );
   }
 
-  const qrFlags = qrFlagsWithAnimationMixer(
+  const qrFlags = appQrFlags ?? qrFlagsWithAnimationMixer(
     resolveQrFlags({
       options: options.qualityRebuild?.flags,
       // Same C-38 source chain as createAuraApp: URL `?a3d-qr=` applies unless

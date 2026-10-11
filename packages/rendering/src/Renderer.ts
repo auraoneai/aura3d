@@ -4,6 +4,7 @@ import { applyRendererOwnedStaticBatching, applyRendererOwnedStaticMeshConsolida
 import { rendererDeviceIsLost, subscribeRendererDeviceLost, subscribeRendererDeviceRestored } from "./renderer/DeviceLifecycle";
 import { createRendererFrameHooks, toFrameCamera } from "./renderer/FrameGraph";
 import type { FrameCamera } from "./contracts/frameGraph";
+import type { QrFlags } from "./contracts/core";
 import { RendererPostprocessPipeline, collectPostprocess, createPostprocessDiagnostics, defaultPostprocessTargetFormat, postprocessRequiresDepthTexture } from "./renderer/PostprocessExecution";
 import type { RendererHost } from "./renderer/RendererHost";
 import { createRenderer } from "./renderer/RendererFactory";
@@ -39,7 +40,7 @@ import { QUALITY_TIERS } from "./contracts/quality";
 import { MaterialInstance } from "./MaterialInstance";
 import { materialUsesGeneratedProgram } from "./program/MaterialFeatures";
 import { collectWarmupFeatures, ProgramWarmup, type WarmupInput } from "./program/ProgramWarmup";
-import { PRD03_EXPOSURE, rendererQrFlags } from "./renderer/FrameGraph";
+import { PRD03_EXPOSURE, rendererQrFlags, setRendererQrFlags, withRendererQrFlags } from "./renderer/FrameGraph";
 import { qrCoreGeneratorOn, qrCoreOutputOn, rendererOutputPass, rendererProgramCache } from "./renderer/qrSubFlags";
 import { forwardPassFeatureAxes, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
 import { InterleavedTransparentPass } from "./renderer/InterleavedTransparentPass";
@@ -93,6 +94,12 @@ export interface RendererOptions extends RenderBackendOptions {
   readonly qualityTierName?: AuraQualityTier;
   readonly shaderLibrary?: ShaderLibrary;
   readonly requiredFeatures?: readonly RendererFeature[];
+  /**
+   * T0-28: this renderer's resolved QR flags (`createAuraApp` passes the app's
+   * flags). Bound to the device so two renderers on one page never share
+   * state; absent → the module-level `setRendererQrFlags` default (back-compat).
+   */
+  readonly qrFlags?: QrFlags;
 }
 
 export interface ResizeToDisplayOptions {
@@ -442,6 +449,7 @@ export class Renderer {
   private readonly frameStatsMonitor?: FrameStatsLike;
   constructor(device: RenderDevice, options: RendererOptions & { readonly shaderLibrary: ShaderLibrary }, temporalHistory: TemporalHistory) {
     this.device = device;
+    if (options.qrFlags) setRendererQrFlags(options.qrFlags, device);
     this.temporalHistory = temporalHistory;
     this.unsubscribeTemporalDeviceLoss = (device as RenderDevice & {onDeviceLost?: (listener: () => void) => () => void}).onDeviceLost?.(() => this.temporalHistory.dispose());
     this.canvas = options.canvas;
@@ -633,12 +641,18 @@ export class Renderer {
   render(input: RendererInput): RenderDeviceDiagnostics;
   render(source: RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RenderDeviceDiagnostics;
   render(sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RenderDeviceDiagnostics {
+    // T0-28: ambient `rendererQrFlags()` readers (Lighting, Background, post…)
+    // see this renderer's flags for the duration of the synchronous frame.
+    return withRendererQrFlags(this.device, () => this.renderFrame(sourceOrInput, camera));
+  }
+
+  private renderFrame(sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RenderDeviceDiagnostics {
     this.assertAlive();
     // §6.9: FrameStats samples every render while a governor exists (resolution opt-in).
     this.frameStatsMonitor?.begin(typeof performance !== "undefined" ? performance.now() : Date.now());
     // T0-06: reset the per-frame sync-compile bound for this render.
     {
-      const flags = rendererQrFlags();
+      const flags = rendererQrFlags(this.device);
       if (qrCoreGeneratorOn(flags)) rendererProgramCache(this.device, flags).beginFrame?.();
     }
     const { source, camera: inputCamera } = normalizeRendererInput(sourceOrInput, camera);
@@ -959,7 +973,7 @@ export class Renderer {
     this.frameStatsMonitor?.begin(typeof performance !== "undefined" ? performance.now() : Date.now());
     // T0-06: reset the per-frame sync-compile bound for this render.
     {
-      const flags = rendererQrFlags();
+      const flags = rendererQrFlags(this.device);
       if (qrCoreGeneratorOn(flags)) rendererProgramCache(this.device, flags).beginFrame?.();
     }
     const { source, camera: inputCamera } = normalizeRendererInput(sourceOrInput, camera);
@@ -1349,7 +1363,7 @@ export class Renderer {
     shadowMap: ForwardShadowMapOptions | undefined,
     cameraViewProjection: Float32Array | readonly number[] | undefined
   ): void {
-    const flags = rendererQrFlags();
+    const flags = rendererQrFlags(this.device);
     if (!qrCoreGeneratorOn(flags)) return;
     const tier: AuraQualityTier = this.qualityTierName ?? "high";
     const cache = rendererProgramCache(this.device, flags);

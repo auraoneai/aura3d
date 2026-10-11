@@ -67,14 +67,9 @@ jobs:
         with:
           name: bundle-baseline-${{ github.run_id }}
           path: docs/project/aura3d-quality-rebuild/evidence/prd15/bundle-baseline.json
-          if-no-files-found: warn
-      - name: Commit baseline on main pushes
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: |
-          git config user.name "devin-ai-integration[bot]"
-          git config user.email "158243242+devin-ai-integration[bot]@users.noreply.github.com"
-          git add docs/project/aura3d-quality-rebuild/evidence/prd15/bundle-baseline.json
-          git diff --cached --quiet || git commit -m "chore(prd15): bundle baseline refresh [skip ci]
-
-          Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>"
-          git push
+          if-no-files-found: error
+      # The baseline is evidence, published as the artifact above. The former
+      # "Commit baseline on main pushes" step pushed a bot commit straight to
+      # main: GITHUB_TOKEN is read-only here (403 on main run for 48595faa), and
+      # direct pushes conflict with the main ruleset (OA-1). Refresh the
+      # committed baseline through a PR when a lane needs it on disk.

@@ -143,9 +143,11 @@ export async function compileScene(snapshot: AuraSceneSnapshot, ctx: SceneCompil
   return stubCompilerImpl.compile(snapshot, ctx);
 }
 
-export function updateCompiledScene(compiled: CompiledScene, snapshot: AuraSceneSnapshot, runtime: AuraRuntimeNodeRegistry, timeSeconds: number): unknown /* RenderSource */ {
+export function updateCompiledScene(compiled: CompiledScene, snapshot: AuraSceneSnapshot, runtime: AuraRuntimeNodeRegistry, timeSeconds: number, flags?: QrFlags): unknown /* RenderSource */ {
   if (compilerSlot.provided) {
-    const impl = compilerSlot.get(resolveQrFlags({ options: "all" }));
+    // T0-28: the mounting app's flags select the impl (the same flags that
+    // picked it in compileScene); `all` stays the fallback for app-less callers.
+    const impl = compilerSlot.get(flags ?? resolveQrFlags({ options: "all" }));
     return impl.update(compiled, snapshot, runtime, timeSeconds);
   }
   return compiled.source;
