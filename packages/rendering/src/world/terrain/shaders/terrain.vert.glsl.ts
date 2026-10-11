@@ -68,6 +68,7 @@ void main() {
   float ndl = max(dot(n, -u_keyLightDir), 0.0);
   vec3 col = albedo * (u_ambient + u_keyLightColor * ndl);
   o_color = vec4(col, 1.0);
+  o_color = vec4(w[0], w[1], w[2], 1.0); // DEBUG splat weights
 }
 `;
 
