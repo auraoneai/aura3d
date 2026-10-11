@@ -113,7 +113,8 @@ jobs:
           if-no-files-found: ignore
 
   # Lane-06 GPU visual proof (self-hosted NVIDIA L4, Vulkan ANGLE): base scenes
-  # 08-skinned-character (bind pose) and 15-animation-skinning (walk clip) plus the prd06 lane scenes, captured per flag set
+  # 01-simple-geometry (rigid control), 08-skinned-character (bind pose) and
+  # 15-animation-skinning (walk clip) plus the prd06 lane scenes, captured per flag set
   # (none / animation / $ALL / $ALL,strict) on both engines, PNGs and
   # report.json uploaded. Same-repo PRs and manual dispatch only, so fork PR
   # code never reaches the self-hosted runner. Frames compare only within this
@@ -125,7 +126,7 @@ jobs:
     timeout-minutes: 120
     env:
       QR_BENCH_OUT: benchmarks/quality-rebuild/out
-      QR_BENCH_SCENES: "08-skinned-character,15-animation-skinning,prd06-skinned-character-posed,prd06-crossfade-filmstrip,prd06-morph-face,prd06-ik-slope,prd06-character-hero"
+      QR_BENCH_SCENES: "01-simple-geometry,08-skinned-character,15-animation-skinning,prd06-skinned-character-posed,prd06-crossfade-filmstrip,prd06-morph-face,prd06-ik-slope,prd06-character-hero"
       QR_BENCH_ENGINES: "aura3d,three"
       QR_ALL_FLAGS: "core,lighting,post,materials,assets,animation,vfx,camera,game,world,tiers,looks,compiler"
       QR_AZURE_GPU_CHROME_ARGS: ${{ vars.QR_AZURE_GPU_CHROME_ARGS }}
