@@ -3,6 +3,18 @@
 import type { AuraScreenshot } from "../nodes/types.js";
 import { AuraRuntimeError } from "./errors.js";
 
+/**
+ * #1131: readback-free access to an app's canvas. Diagnostics only need the
+ * backing size; calling screenshot() (toDataURL, a full GPU readback + PNG
+ * encode) on every diagnostics() call owned ~85-95 % of READY time.
+ */
+export const AURA_APP_CANVAS = Symbol.for("aura3d.app.canvas");
+
+/** Canvas of an app created by createAuraApp, without any readback. */
+export function appCanvasOf(app: object): HTMLCanvasElement | undefined {
+  return (app as { [AURA_APP_CANVAS]?: HTMLCanvasElement })[AURA_APP_CANVAS];
+}
+
 export function captureAuraScreenshot(target?: HTMLCanvasElement): AuraScreenshot {
   if (!target) {
     return {

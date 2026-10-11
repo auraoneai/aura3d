@@ -182,6 +182,11 @@ jobs:
             benchmark)
               bash benchmarks/quality-rebuild/ci.sh ;;
             games)
+              # Checkout is lfs:false; the games load GLB/texture blobs from
+              # public/aura-assets and apps/*/public, which would otherwise be
+              # served as LFS pointer files. Fatal on failure, never silent.
+              git lfs version >/dev/null 2>&1 || { echo "::error::git-lfs is not installed on this runner"; exit 1; }
+              git lfs pull --include="public/aura-assets/**,apps/*/public/**" || { echo "::error::git lfs pull for game assets failed"; exit 1; }
               export QRC_LOCAL_BUILD=true
               node tools/quality-rebuild-capture/capture-games.mjs --build-only
               node tools/quality-rebuild-capture/capture-games.mjs --skip-build ;;
