@@ -9,7 +9,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [main, 'qr/**', 'aura3d-quality-rebuild/**']
+    branches: [main]
   workflow_dispatch:
 
 concurrency:

@@ -39,7 +39,7 @@ on:
       - "playwright.prd09.config.ts"
       - ".github/workflows/qr-prd09-game.yml"
   push:
-    branches: ["qr/prd09-*", "main"]
+    branches: ["main"]
   # Nightly sweep of the owned source — catches drift PR gates can't see.
   schedule:
     - cron: "0 5 * * *"

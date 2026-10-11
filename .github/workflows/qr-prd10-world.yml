@@ -21,7 +21,7 @@ on:
       - "tests/browser/qr-prd10-*.ts"
       - ".github/workflows/qr-prd10-world.yml"
   push:
-    branches: [main, "qr/**"]
+    branches: [main]
     paths:
       - "packages/engine/src/agent-api/world/**"
       - "packages/engine/src/lanes/prd10.ts"

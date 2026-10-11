@@ -30,7 +30,7 @@ on:
       - "fixtures/asset-corpus/**"
       - ".github/workflows/qr-prd04-materials.yml"
   push:
-    branches: ['qr/**', 'main']
+    branches: ['main']
     paths:
       - "tests/qr/prd04/**"
       - "benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd04/**"

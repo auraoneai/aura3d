@@ -17,7 +17,7 @@ on:
       - 'tests/unit/aura3d-cli/**'
       - '.github/workflows/qr-prd05-gates.yml'
   push:
-    branches: ['qr/prd05-**', 'qr/prd05/**']
+    branches: [main]
   workflow_dispatch:
 
 concurrency:

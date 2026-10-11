@@ -28,8 +28,12 @@ jobs:
       qr_flags: "all"
       artifact_suffix: "-gate-bench"
 
+  # Game-capture shards are 3 x macos-14 jobs. The org has 5 macOS runners, so on
+  # pull_request they starved every other lane (#839). They run on every main push,
+  # workflow_call and dispatch; PRs get the bench + analytic pixel gate.
   capture-games-1:
     name: Capture games shard 1 (macos-14)
+    if: github.event_name != 'pull_request'
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
       games: "aura-clash-showcase,showcase-blockfall-reactor,showcase-skyline-runner,showcase-turbo-drift-circuit,showcase-siege-golf,showcase-aurora-lander"
@@ -39,6 +43,7 @@ jobs:
 
   capture-games-2:
     name: Capture games shard 2 (macos-14)
+    if: github.event_name != 'pull_request'
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
       games: "showcase-neon-swarm,showcase-gravity-post,showcase-courier-rush,showcase-pulse-tunnel,showcase-mech-hangar,showcase-vault-breakers"
@@ -48,6 +53,7 @@ jobs:
 
   capture-games-3:
     name: Capture games shard 3 (macos-14)
+    if: github.event_name != 'pull_request'
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
       games: "showcase-rooftop-buckets,showcase-gallery-shift,showcase-deep-recovery,showcase-patrol-wing,showcase-bank-shot,showcase-orbital-defense"
@@ -90,6 +96,10 @@ jobs:
     name: Metrics (ubuntu-latest)
     runs-on: ubuntu-latest
     needs: [capture-bench, capture-games-1, capture-games-2, capture-games-3]
+    # Shards are skipped on pull_request; failed or cancelled shards still block.
+    if: >-
+      !cancelled() && needs.capture-bench.result == 'success' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
