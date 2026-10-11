@@ -57,7 +57,11 @@ export const prd04SceneSpecs: Record<string, Prd04SceneSpec> = {
     purpose: "Mirrored-UV normal maps light consistently; halves differ by <=2 dE when tangents are correct.",
     camera: { position: [0, 0.15, 5.0], target: [0, 0, 0], fov: 36, near: 0.1, far: 50 },
     background: { kind: "color", color: "#232629" },
-    lights: [{ kind: "ambient", name: "fill", color: "#ffffff", intensity: 0.25 }, sun(2.5, [3, 4, 4])],
+    // The sun sits on the mirror plane (x = 0). At [3, 4, 4] it lit the two halves
+    // differently, so the mirrored-halves probe measured the light, not the
+    // tangents: three.js r185 scored the same mean dE76 22.6 as aura (GPU run
+    // 38159881759, T4).
+    lights: [{ kind: "ambient", name: "fill", color: "#ffffff", intensity: 0.25 }, sun(2.5, [0, 4, 4])],
     objects: [
       { kind: "model", name: "normal-tangent", asset: "normalTangentTest", position: [-1.75, 0, 0], castShadow: false, receiveShadow: false },
       {
