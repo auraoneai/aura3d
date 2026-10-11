@@ -10,7 +10,7 @@ import { TimeController } from "@aura3d/engine/lanes";
 
 describe("prd08 app extensions", () => {
   const flagsOn = resolveQrFlags({ options: ["camera"] });
-  const flagsOff = resolveQrFlags({});
+  const flagsOff = resolveQrFlags({ options: "none" });
 
   it("time extension is registered with member 'time' and flag A3D_QR_CAMERA", () => {
     const ext = appExtensionsAll().find((e) => e.id === "prd08.time");
