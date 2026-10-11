@@ -7,7 +7,7 @@ const chromiumExecutablePath = process.env.A3D_WEBGPU_BROWSER_EXECUTABLE ||
 
 export default defineConfig({
   testDir: ".",
-  testMatch: ["capture-divergence.spec.ts", "look-perf.spec.ts"],
+  testMatch: ["capture-divergence.spec.ts"],
   timeout: 180_000,
   workers: 1,
   // P-22: fail CI on a stray test.only / describe.only committed to the lane.

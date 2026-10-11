@@ -187,45 +187,12 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
   armFirstPresented();
 
   const perfRing = createPerfRing();
-  // §17 (16.1-8) CPU span: `performance.now()` around the session tick, last
-  // 600 frames, read only through the opted-in `spans` evidence section.
-  const SPAN_CAP = 600;
-  const sessionSpans = new Float32Array(SPAN_CAP);
-  let spanHead = 0;
-  let spanCount = 0;
-  const now = (): number => (typeof performance !== "undefined" ? performance.now() : Date.now());
   // Session time delegates per real frame: dt flowing through the loop is
   // real time; the controller returns the scaled dt routes should simulate on.
   runtime.onFrame((frame) => {
-    const t0 = now();
     session.tick(frame.dt);
-    sessionSpans[spanHead] = now() - t0;
-    spanHead = (spanHead + 1) % SPAN_CAP;
-    spanCount = Math.min(spanCount + 1, SPAN_CAP);
     perfRing.record(frame.dt * 1000);
   });
-  const spanSamples = (): number[] => {
-    const out: number[] = [];
-    const start = spanCount < SPAN_CAP ? 0 : spanHead;
-    for (let i = 0; i < spanCount; i += 1) out.push(sessionSpans[(start + i) % SPAN_CAP]);
-    return out;
-  };
-
-  // 09-MIG look signature for the opted-in `look` evidence section: hashed
-  // asynchronously on first read per scene revision; later reads return it.
-  let look: { revision: number; signature: string | null; error: string | null } | null = null;
-  const lookSection = () => {
-    const revision = sceneRevision;
-    if (look === null || look.revision !== revision) {
-      const pending = { revision, signature: null as string | null, error: null as string | null };
-      look = pending;
-      lookSignature(lookSource).then(
-        (sig) => { pending.signature = sig; },
-        (e: unknown) => { pending.error = String(e); }
-      );
-    }
-    return { revision: look.revision, signature: look.signature, error: look.error };
-  };
 
   // AuraCameraController already carries shake/punch/evidence (JuiceCamera);
   // OverlayApp needs the optional C-38 setOutputOverlay — DOM fallback covers
@@ -352,9 +319,7 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
     builtins: {
       session: () => ({ state: session.state, seed: session.seed, simTime: session.simTime }),
       capture: () => capture,
-      perf: () => perfRing.summary(),
-      spans: () => ({ session: spanSamples() }),
-      look: lookSection
+      perf: () => perfRing.summary()
     },
     loader: options.evidence?.sections === undefined
       ? undefined
