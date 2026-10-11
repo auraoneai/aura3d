@@ -16,6 +16,7 @@ import { FXAA_185_FRAGMENT_GLSL } from "../../packages/rendering/src/post/shader
 import { FXAAShader } from "/node_modules/three/examples/jsm/shaders/FXAAShader.js";
 import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
 import { readDefaultFramebuffer } from "./qr-prd03-frame-capture";
+import { contourSteps } from "./qr-prd03-banding-oracle";
 import { postV2ModulesReady } from "@aura3d/rendering";
 
 const LUMA = [0.3, 0.59, 0.11] as const;
@@ -240,17 +241,15 @@ export function bandingMetrics(pixels: Uint8Array, width: number, height: number
     const ideal = width / Math.max(1, max - min);
     if (max - min >= 8) worstRatio = Math.max(worstRatio, maxRun / ideal);
   }
-  // Sobel contour count: |G| >= 1 LSB on quantized luma.
-  let contours = 0;
-  for (let y = 1; y < height - 1; y += 1) {
-    for (let x = 1; x < width - 1; x += 1) {
-      const at = (dx: number, dy: number) => Math.round(luma(pixels, ((y + dy) * width + x + dx) * 4));
-      const gx = -at(-1, -1) - 2 * at(-1, 0) - at(-1, 1) + at(1, -1) + 2 * at(1, 0) + at(1, 1);
-      const gy = -at(-1, -1) - 2 * at(0, -1) - at(1, -1) + at(-1, 1) + 2 * at(0, 1) + at(1, 1);
-      if (Math.abs(gx) >= 1 || Math.abs(gy) >= 1) contours += 1;
-    }
-  }
-  return { maxRun, worstRatio, contourFraction: contours / ((width - 2) * (height - 2)) };
+  // 03-S8 contour steps (#944, PRD-03:1658 "no contour steps > 1 LSB"): the
+  // Sobel |G| >= 1 count this replaced fired on every 1-LSB quantization step
+  // and on dither noise (0.176 / 0.895 on smooth gradients), so it could not
+  // pass for any output. `contourSteps` is validated on dithered, undithered
+  // and 2-LSB-banded gradients in prd03-banding-oracle.test.ts.
+  const luma8 = new Float32Array(width * height);
+  for (let p = 0; p < width * height; p += 1) luma8[p] = Math.round(luma(pixels, p * 4));
+  const steps = contourSteps(luma8, width, height);
+  return { maxRun, worstRatio, contourFraction: steps.contourFraction, contourMaskPixels: steps.maskPixels, maxResidualStep: steps.maxResidualStep };
 }
 
 /** Mean |Δluma| edge energy — sharp content scores high, blurred content low. */

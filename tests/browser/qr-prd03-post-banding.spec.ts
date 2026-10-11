@@ -5,7 +5,9 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
  * PRD-03 S12 / Phase-1: `triangularDither` (PCG2D) on the last write of the
  * FXAA path kills 8-bit banding. Renders `prd03-night-fog-banding` flag-on and
  * asserts the longest identical-8bit run along the fog gradient stays ≤ 1.5×
- * the ideal quantization run, and Sobel (|G| ≥ 1 LSB) finds < 0.5% contour
+ * the ideal quantization run, and the contour-step oracle (#944: steps of
+ * more than 1.5 LSB on smooth gradient pixels, validated on dithered /
+ * undithered / 2-LSB-banded gradients) finds < 0.5% contour
  * pixels.
  *
  * Also checks §6.11: `depthOfField` focused at 10 m on a 0.05/100 camera keeps
@@ -16,6 +18,8 @@ interface BandingResult {
   maxRun: number;
   worstRatio: number;
   contourFraction: number;
+  contourMaskPixels?: number;
+  maxResidualStep?: number;
   error?: string;
 }
 
@@ -78,6 +82,7 @@ test.describe("PRD-03 Phase 1 — dither banding + depthRange DOF", () => {
   test("triangularDither keeps the night-fog gradient contour-free", () => {
     expect(harness.banding.error ?? null).toBeNull();
     expect(harness.banding.worstRatio).toBeLessThanOrEqual(1.5);
+    expect(harness.banding.contourMaskPixels ?? 0).toBeGreaterThan(1000);
     expect(harness.banding.contourFraction).toBeLessThan(0.005);
   });
 
