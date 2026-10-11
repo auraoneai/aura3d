@@ -5,7 +5,13 @@ import { defineConfig, devices } from "@playwright/test";
 // tests/browser/example-dev-server.ts, so packages/game/fixtures/* is
 // reachable as a route.
 
-const chromiumLaunchArgs = ["--enable-unsafe-webgpu", "--ignore-gpu-blocklist"];
+// QR_CHROMIUM_ARGS (set by qr-prd09-game.yml's runner step) adds the GPU
+// runner's Chromium flags, e.g. Vulkan ANGLE on the Linux L4 pool (#956).
+const chromiumLaunchArgs = [
+  "--enable-unsafe-webgpu",
+  "--ignore-gpu-blocklist",
+  ...(process.env.QR_CHROMIUM_ARGS ?? "").split(/\s+/).filter(Boolean)
+];
 
 export default defineConfig({
   testDir: "tests/browser",

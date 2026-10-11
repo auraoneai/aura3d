@@ -47,6 +47,12 @@ on:
   schedule:
     - cron: "0 5 * * *"
   workflow_dispatch:
+    inputs:
+      runner:
+        description: "Browser job runner: macos-14 (Metal, default) | azure-gpu (self-hosted Linux L4, Vulkan ANGLE) | track0"
+        type: choice
+        options: [macos-14, azure-gpu, track0]
+        default: macos-14
 
 concurrency:
   group: qr-prd09-game-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
@@ -182,8 +188,10 @@ jobs:
     # Metal) as primary, plus the WebKit and Firefox projects. Specs self-serve
     # the repo root via tests/browser/example-dev-server.ts, which also exposes
     # packages/game/fixtures/* to the specs that need fixture routes.
+    # Default macos-14 (Metal). workflow_dispatch `runner` can move it to the
+    # Linux L4 pool; compare frames only within one runner class.
     name: Browser specs (macos-14)
-    runs-on: macos-14
+    runs-on: ${{ (inputs.runner || 'macos-14') == 'macos-14' && 'macos-14' || (inputs.runner == 'track0' && fromJSON('["self-hosted","track0","gpu-l4"]')) || fromJSON('["self-hosted","azure-gpu","gpu-l4"]') }}
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
@@ -202,13 +210,41 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Install Playwright browsers
-        run: pnpm exec playwright install chromium webkit firefox
+        run: |
+          if [ "${{ inputs.runner || 'macos-14' }}" = "macos-14" ]; then
+            pnpm exec playwright install chromium webkit firefox
+          else
+            pnpm exec playwright install chromium
+          fi
+
+      - name: Chromium GPU flags for this runner (#956 pattern)
+        env:
+          RUNNER_KIND: ${{ inputs.runner || 'macos-14' }}
+          QR_AZURE_GPU_CHROME_ARGS: ${{ vars.QR_AZURE_GPU_CHROME_ARGS }}
+        run: |
+          set -euo pipefail
+          case "$RUNNER_KIND" in
+            macos-14) ;;  # configs keep their Metal defaults
+            azure-gpu|track0)
+              args="${QR_AZURE_GPU_CHROME_ARGS:---headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist}"
+              { echo "QR_CHROMIUM_ARGS=$args"; echo "QRC_GPU_ARGS=$args"; } >> "$GITHUB_ENV"
+              # Record the GPU so frames are only compared within this class.
+              QR_CHROMIUM_ARGS="$args" node tools/quality-rebuild-capture/gpu-renderer.mjs | tee -a "$GITHUB_STEP_SUMMARY" ;;
+            *) echo "::error::unknown runner '$RUNNER_KIND'"; exit 1 ;;
+          esac
 
       - name: Game-shell + layout + touch + audio-live specs (Chromium/WebKit/Firefox)
         env:
           # Resolved against the config dir (repo root); matches the upload path.
           PLAYWRIGHT_JSON_OUTPUT_NAME: tests/reports/browser-prd09-macos.json
-        run: pnpm exec playwright test --config playwright.prd09.config.ts
+        # Linux GPU runners carry Chromium only (no WebKit/Firefox system deps
+        # on the self-hosted pool); the full §18 matrix stays on macos-14.
+        run: |
+          if [ "${{ inputs.runner || 'macos-14' }}" = "macos-14" ]; then
+            pnpm exec playwright test --config playwright.prd09.config.ts
+          else
+            pnpm exec playwright test --config playwright.prd09.config.ts --project=chromium --project=chromium-mobile
+          fi
 
       - name: Beacon size-limit (< 0.5 kB min+gz)
         working-directory: packages/game
