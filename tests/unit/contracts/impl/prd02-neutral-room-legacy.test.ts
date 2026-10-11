@@ -1,7 +1,7 @@
 /**
- * #1141 / 02-S2 — the neutral room lights legacy-path scenes under
- * A3D_QR_LIGHTING, and the analytic room matches three r185's
- * RoomEnvironment (point-lit white walls, y = -3.5 scene offset).
+ * #1141 / 02-S2 — the analytic neutral room matches three r185's
+ * RoomEnvironment (point-lit white walls, y = -3.5 scene offset); the legacy
+ * path keeps its environment under A3D_QR_LIGHTING until #1200 lands.
  *
  * Without A3D_QR_COMPILER no C-09 probe is bound (only compileScene binds
  * one), so before this fix a flag-on scene with no environment map was lit
@@ -14,8 +14,6 @@ import "../../../../packages/rendering/src/lanes/prd02";
 import { resolveQrFlags } from "../../../../packages/engine/src/contracts/flags";
 import { setRendererQrFlags } from "../../../../packages/rendering/src/renderer/FrameGraph";
 import { collectEnvironmentLighting } from "../../../../packages/rendering/src/renderer/Background";
-import { TextureBinding } from "../../../../packages/rendering/src/TextureBinding";
-import { Texture } from "../../../../packages/rendering/src/Texture";
 import {
   createRoomEnvironmentScene,
   ROOM_ENVIRONMENT_SCENE_OFFSET_Y,
@@ -34,38 +32,15 @@ const PROCEDURAL = {
   proceduralMap: { skyColor: [0.6, 0.7, 0.9] as [number, number, number], horizonColor: [0.9, 0.8, 0.6] as [number, number, number], groundColor: [0.1, 0.1, 0.1] as [number, number, number], specularColor: [1, 1, 1] as [number, number, number], intensity: 0.5, specularIntensity: 0.8 }
 };
 
-describe("legacy path under A3D_QR_LIGHTING binds the neutral room (#1141 / 02-S2)", () => {
-  it("ambient-only scene: neutral-room map bound, authored ambient stays additive", () => {
+describe("legacy path under A3D_QR_LIGHTING keeps the legacy environment (revert of #1183's Background half)", () => {
+  // #1183 swapped legacy environments for the neutral room under the flag and
+  // brightened lit base scenes on L4 (qr-azure-gpu 38150848623: 01 median
+  // 130 -> 187 vs three 128, 12-shadows 184 -> 227 vs three 193). Reverted
+  // until the no-light-only version (#1200) has GPU proof.
+  it("flag on returns the legacy environment as-is", () => {
     setRendererQrFlags(LIGHTING_ON);
-    const lighting = collectEnvironmentLighting({ environmentLighting: AMBIENT_ONLY } as never)!;
-    expect(lighting.environmentMapTexture?.texture?.format).toBe("rgba16f");
-    expect(lighting.environmentMapEncoding).toBe("linear");
-    expect(lighting.environmentMapIntensity).toBe(1);
-    expect(lighting.intensity).toBe(0.05);
-    expect(lighting.color).toEqual([1, 1, 1]);
-  });
-
-  it("no lights / category procedural map: neutral room replaces it, no ambient added", () => {
-    setRendererQrFlags(LIGHTING_ON);
-    for (const source of [{}, { environmentLighting: PROCEDURAL }]) {
-      const lighting = collectEnvironmentLighting(source as never)!;
-      expect(lighting.environmentMapTexture).toBeDefined();
-      expect(lighting.proceduralMap).toBeUndefined();
-      expect(lighting.intensity).toBe(0);
-    }
-  });
-
-  it("an authored environment map still wins under the flag", () => {
-    setRendererQrFlags(LIGHTING_ON);
-    const map = new TextureBinding({ name: "u_environmentMapTexture", texture: new Texture({ label: "hdri", width: 2, height: 1 }), required: true });
-    const authored = { ...PROCEDURAL, environmentMapTexture: map, environmentMapIntensity: 0.8 };
-    expect(collectEnvironmentLighting({ environmentLighting: authored } as never)).toBe(authored);
-  });
-
-  it("flag off is unchanged: the legacy environment is returned as-is", () => {
-    setRendererQrFlags(BASE);
     expect(collectEnvironmentLighting({ environmentLighting: AMBIENT_ONLY } as never)).toBe(AMBIENT_ONLY);
-    expect(collectEnvironmentLighting({} as never)?.environmentMapTexture).toBeUndefined();
+    expect(collectEnvironmentLighting({ environmentLighting: PROCEDURAL } as never)).toBe(PROCEDURAL);
   });
 });
 
