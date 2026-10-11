@@ -1,5 +1,5 @@
 import { prd05SceneSpecs } from "../../../scenes/prd05/index";
-import { runPrd05AuraScene } from "./common";
+import { runPrd05AuraScene, type Prd05AuraSceneOptions } from "./common";
 
-export default (host: HTMLElement, opts?: { qrFlags?: readonly string[] }) =>
+export default (host: HTMLElement, opts?: Prd05AuraSceneOptions) =>
   runPrd05AuraScene(prd05SceneSpecs["prd05-optimized-pbr-product"], host, opts);
