@@ -46,6 +46,18 @@ window.__QR_TOOLS__ = {
   metrics
 };
 
+const SPEC_TOOLS = new Set([
+  "blend-modes",
+  "output-pass",
+  "output-scene",
+  "primitive",
+  "instance-grid",
+  "box-uploads",
+  "frame-graph",
+  "capture-pdb",
+  "dpr"
+]);
+
 async function main(): Promise<void> {
   const params = new URLSearchParams(window.location.search);
   const engine = params.get("engine") ?? "aura3d";
@@ -100,6 +112,17 @@ async function main(): Promise<void> {
       tools === "canvas-dpr" ? await runCanvasDprTool(stage)
       : tools === "app-capture" ? await runAppCaptureTool(stage)
       : await runMountFailureTool(stage);
+    window.__QR_READY__ = { engine: "aura3d", scene: tools, errors: report.errors };
+    status.textContent = `ready ${tools}`;
+    document.title = `ready ${tools}`;
+    return;
+  }
+
+  if (tools !== null && SPEC_TOOLS.has(tools)) {
+    // Lane-01 S-row spec tools (01-S1/S3/S4/S6/S10/S11): report on window.__QR_SPEC__.
+    status.textContent = `running ${tools}`;
+    const { runSpecTool } = await import("./specTools");
+    const report = await runSpecTool(tools, stage);
     window.__QR_READY__ = { engine: "aura3d", scene: tools, errors: report.errors };
     status.textContent = `ready ${tools}`;
     document.title = `ready ${tools}`;
