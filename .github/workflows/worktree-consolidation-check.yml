@@ -1,0 +1,88 @@
+name: Worktree consolidation checks
+on:
+  push:
+    branches: ["consolidate/**"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  focused:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Verify remote HDRI payloads
+        run: |
+          git lfs pull --include='fixtures/environment-corpus/hdri/*.hdr'
+          python3 - <<'PY'
+          import hashlib, pathlib, subprocess
+          for path in subprocess.check_output(['git','ls-files','fixtures/environment-corpus/hdri/*.hdr'], text=True).splitlines():
+              blob = subprocess.check_output(['git','show','HEAD:'+path])
+              data = pathlib.Path(path).read_bytes()
+              if blob.startswith(b'version https://git-lfs.github.com/spec/v1'):
+                  fields = dict(line.split(' ',1) for line in blob.decode().splitlines())
+                  assert len(data) == int(fields['size']), path
+                  assert hashlib.sha256(data).hexdigest() == fields['oid'].split(':')[1], path
+              else:
+                  assert hashlib.sha256(data).digest() == hashlib.sha256(blob).digest(), path
+              print('verified', path, len(data))
+          PY
+      - name: Focused game, environment and contract regressions
+        if: ${{ !cancelled() }}
+        run: pnpm exec vitest run tests/unit/contracts/C-00-flags.test.ts tests/unit/contracts/C-01-frame-graph.test.ts tests/unit/contracts/impl/prd01-frame-graph.test.ts tests/unit/contracts/impl/prd01-frame-uniforms.test.ts tests/unit/contracts/impl/prd01-instance-buffer.test.ts tests/unit/contracts/impl/prd10-world-graph.test.ts tests/unit/contracts/impl/prd08-camera.test.ts tests/unit/contracts/impl/prd08-time.test.ts tests/unit/engine/game-app-runtime.test.ts tests/unit/game/fx-pool.test.ts tests/unit/game/fx-pool-layer.test.ts tests/unit/game/hud.test.ts tests/unit/environments/production-runtime-hdr-environment-corpus.test.ts tests/unit/contracts/impl/prd02-shadow-pixels.test.ts tests/unit/contracts/impl/prd02-cascade-fitter-bounded.test.ts tests/unit/contracts/impl/prd10-world-uniforms.test.ts tests/unit/contracts/impl/prd10-ready-attribution.test.ts
+      - name: Generated world effects and showcase regressions
+        if: ${{ !cancelled() }}
+        run: |
+          cat > .consolidation.vitest.config.ts <<'CONFIG'
+          import { defineConfig } from 'vitest/config';
+          import root from './vitest.config';
+          export default defineConfig({ ...root, test: { ...root.test, include: ['tests/qr/prd10/unit/generated-path-features.test.ts', 'tests/qr/prd14/unit/kits.test.ts', 'tests/qr/prd14/courier-rush/context-loss.test.ts'] } });
+          CONFIG
+          pnpm exec vitest run -c .consolidation.vitest.config.ts
+      - name: Rendering feature regression suite
+        if: ${{ !cancelled() }}
+        run: pnpm exec vitest run -c tests/qr/prd01/vitest.config.ts
+      - name: Authoring regression suite
+        if: ${{ !cancelled() }}
+        run: pnpm exec vitest run -c tests/qr/prd13/vitest.qr-prd13.config.ts
+      - name: Consolidated types and build
+        if: ${{ !cancelled() }}
+        run: pnpm typecheck && pnpm build:raw
+      - name: Shader compilation and exclusion reporting
+        if: ${{ !cancelled() }}
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y glslang-tools
+          pnpm exec vitest run tests/qr/prd01/glsl/every-chunk-compiles.test.ts
+          A3D_GLSL_REPORT_EXCLUDED=1 pnpm exec vitest run tests/qr/prd01/glsl/every-chunk-compiles.test.ts -t report-only
+  browser:
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Game lifecycle, rendering and HUD browser regressions
+        run: pnpm exec playwright test tests/browser/game-shell/context-loss.spec.ts tests/browser/game-shell/fx-instances.spec.ts tests/browser/game-shell/juice-pixels.spec.ts tests/browser/game-shell/hitstop.spec.ts tests/browser/game-shell/shell-flow.spec.ts tests/browser/layout.spec.ts --global-timeout=900000 --timeout=180000 --shard=${{ matrix.shard }}/3 --trace=retain-on-failure
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: consolidation-browser-results-${{ matrix.shard }}
+          path: |
+            tests/reports/browser.json
+            test-results/

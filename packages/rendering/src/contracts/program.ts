@@ -98,6 +98,16 @@ export function shaderChunk(name: string): ShaderChunk | undefined {
   return shaderChunks.get(name);
 }
 
+/**
+ * #198 (QR-11 Q-01-4): read-only enumeration of every registered chunk, in
+ * registration order — for the WGSL-twin manifest parity report
+ * (`program/chunks/manifest.ts`) and the C-02 "every registered chunk
+ * compiles" check. Returns a snapshot; registering later does not mutate it.
+ */
+export function allShaderChunks(): readonly ShaderChunk[] {
+  return [...shaderChunks.values()];
+}
+
 /** Registered features, ordered for hook splicing: (order ?? 0, id). */
 export function shaderFeaturesFor(flags: QrFlags): readonly ShaderFeature[] {
   return shaderFeatures.active(flags);

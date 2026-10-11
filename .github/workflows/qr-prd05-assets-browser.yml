@@ -1,10 +1,16 @@
 name: QR PRD-05 assets browser
 
-# Lane 05 workflow (PRD-05 §13 P1): compressed-GLB browser gate — the shared
-# corpus loads through the vendored C-16 decoder registry (meshopt + draco +
-# KTX2) on macos-14 Chromium/ANGLE Metal, same-origin only. Integrated
-# typed-GLB spec stays skipped until Q-04-1/Q-15-1 land.
-# Artifacts: tests/reports/prd05-assets-compressed-glb.json.
+# Lane 05 workflow (PRD-05 §13 P1 + 05-BROWSERS): compressed-GLB browser
+# gate — the shared corpus loads through the vendored C-16 decoder registry
+# (meshopt + draco + KTX2), same-origin only.
+#   - macos-14: chromium (ANGLE Metal reference), webkit, firefox —
+#     decode correctness re-verified on all three engines. The macos job
+#     fails if the probe renderer string is SwiftShader.
+#   - windows-latest: non-visual BC-selection job — decoder-failure path,
+#     shader chunks, and KTX2 format selection under capability mocks.
+# Integrated typed-GLB spec stays skipped until Q-04-1/Q-15-1 land.
+# Artifacts: tests/reports/prd05-assets-*.json (+ per-project .webkit/
+# .firefox variants).
 
 on:
   pull_request:
@@ -22,6 +28,7 @@ on:
       - "public/aura-decoders/**"
       - "apps/loader-ktx2/**"
       - "tests/qr/prd05/**"
+      - "tests/browser/**"
       - ".github/workflows/qr-prd05-assets-browser.yml"
   push:
     branches: ['main']
@@ -32,11 +39,39 @@ on:
       - "packages/engine/src/agent-api/AssetDecoders.ts"
       - "public/aura-decoders/**"
       - "tests/qr/prd05/**"
+      - "tests/browser/**"
       - ".github/workflows/qr-prd05-assets-browser.yml"
   workflow_dispatch:
+    inputs:
+      suite:
+        description: "specs = the lane browser gates; bench = benchmark-scene capture on macos-14 (ANGLE Metal)"
+        type: choice
+        options: [specs, bench, phases]
+        default: specs
+      bench_scenes:
+        description: "suite=bench: comma-separated benchmark scene ids"
+        required: false
+        default: "03-damaged-helmet,08-skinned-character,prd05-optimized-damaged-helmet,prd05-optimized-skinned,prd05-optimized-pbr-product,prd05-optimized-outdoor,prd05-optimized-game-scene,prd05-asset-lod-transition"
+      bench_flag_sets:
+        description: "suite=bench: ';'-separated flag sets (one build, one runner)"
+        required: false
+        default: "none;assets;core,lighting,post,materials,assets,animation,vfx,camera,game,world,tiers,looks,compiler"
+      bench_engines:
+        description: "suite=bench: aura3d | three | aura3d,three"
+        required: false
+        default: "aura3d,three"
+      phase_flag_sets:
+        description: "suite=phases: ';'-separated flag sets for the QR05-DIAG GLB mount-phase spec"
+        required: false
+        default: "none;core,lighting,post,materials,assets,animation,vfx,camera,game,world,tiers,looks,compiler"
+      bench_runner:
+        description: "suite=bench: azure-gpu (self-hosted NVIDIA L4/T4, ANGLE Vulkan) | macos-14 (ANGLE Metal). Never compare frames across runner types."
+        type: choice
+        options: [azure-gpu, macos-14]
+        default: azure-gpu
 
 concurrency:
-  group: qr-prd05-assets-browser-${{ github.ref }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  group: qr-prd05-assets-browser-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
@@ -44,6 +79,7 @@ env:
 
 jobs:
   browser:
+    if: github.event_name != 'workflow_dispatch' || inputs.suite == 'specs'
     runs-on: macos-14
     timeout-minutes: 45
     steps:
@@ -58,15 +94,149 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install chromium
-      - name: Compressed GLB decoder gate (ANGLE Metal)
+      - name: Decoder bundle budgets (05-S11)
+        run: pnpm exec vitest run tests/qr/prd05/unit/bundle-budget.test.ts
+      - run: pnpm exec playwright install chromium webkit firefox
+      - name: Compressed GLB decoder gate (chromium/webkit/firefox)
         run: pnpm exec playwright test --config tests/qr/prd05/playwright.config.ts --grep "PRD-05"
+      - name: SwiftShader guard
+        if: always()
+        run: |
+          set -euo pipefail
+          # Fail closed: the guard needs at least one report that recorded a
+          # probe renderer; a run that wrote none proves nothing about the GPU.
+          if ! grep -rlq '"rendererString"' tests/reports/; then
+            echo "::error::no prd05 report recorded a rendererString — cannot prove a real GPU" >&2
+            exit 1
+          fi
+          if grep -rl '"rendererString": *"[^"]*SwiftShader' tests/reports/; then
+            echo "::error::probe renderer is SwiftShader — visual evidence must come from a real GPU" >&2
+            exit 1
+          fi
       - name: Upload reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: prd05-assets-browser
           path: |
-            tests/reports/prd05-assets-compressed-glb.json
-            tests/reports/prd05-assets-compressed-typed-glb.json
+            tests/reports/prd05-assets-compressed-glb*.json
+            tests/reports/prd05-assets-decoder-failure*.json
+            tests/reports/prd05-assets-lod-transition*.json
+            tests/reports/prd05-assets-tier-texture-cap*.json
+            tests/reports/prd05-assets-bc-selection*.json
           if-no-files-found: warn
+
+  browser-windows:
+    if: github.event_name != 'workflow_dispatch' || inputs.suite == 'specs'
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      # Non-visual (05-BROWSERS): decoder-failure path, shader-chunk compiles,
+      # and KTX2 format selection under capability mocks (BC formats).
+      - name: Windows BC-selection + non-visual gates
+        env:
+          PRD05_CHROMIUM_ARGS: ""
+        run: pnpm exec playwright test --config tests/qr/prd05/playwright.config.ts --project=chromium assets-bc-selection assets-decoder-failure debug-view-chunks lod-dither-chunks
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd05-assets-browser-windows
+          path: |
+            tests/reports/prd05-assets-*.json
+          if-no-files-found: warn
+
+  # Lane-05 visual proof on the GitHub GPU path (macos-14, ANGLE Metal):
+  # benchmark scenes × flag sets through benchmarks/quality-rebuild/ci.sh
+  # (one build, one runner, per-set out dirs + bisect-summary.json). PNGs
+  # and report.json upload as an artifact; look at them before claiming
+  # anything. Frames compare only within this runner type.
+  bench:
+    if: github.event_name == 'workflow_dispatch' && inputs.suite == 'bench'
+    runs-on: ${{ inputs.bench_runner == 'macos-14' && 'macos-14' || fromJSON('["self-hosted","azure-gpu"]') }}
+    timeout-minutes: 90
+    env:
+      QR_BENCH_OUT: benchmarks/quality-rebuild/out
+      QR_BENCH_CHROME_ARGS: ${{ inputs.bench_runner == 'macos-14' && '--use-angle=metal --enable-gpu --ignore-gpu-blocklist' || '--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist' }}
+      QR_BENCH_SCENES: ${{ inputs.bench_scenes }}
+      QR_BENCH_ENGINES: ${{ inputs.bench_engines }}
+      QR_BENCH_FLAG_SETS: ${{ inputs.bench_flag_sets }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: GPU guard (no software rasterizer)
+        run: |
+          set -euo pipefail
+          if [ "${{ inputs.bench_runner }}" = "azure-gpu" ]; then
+            nvidia-smi --query-gpu=name,driver_version --format=csv,noheader
+          fi
+      - name: Benchmark capture (flag sets)
+        run: |
+          set -euo pipefail
+          mkdir -p "$QR_BENCH_OUT"
+          bash benchmarks/quality-rebuild/ci.sh
+      - name: Upload captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd05-bench-${{ inputs.bench_runner }}-${{ github.run_id }}
+          path: benchmarks/quality-rebuild/out/
+          retention-days: 30
+          if-no-files-found: error
+
+  # Track 0 #375 ready-time attribution (lane-05 GLB load phases): streams
+  # a3d:* marks, long tasks and main-thread heartbeat gaps from the real
+  # benchmark page (benchmark vite dev server) for 03/08. Red until the
+  # scenes publish __QR_READY__ inside 30 s; the JSON reports are the output.
+  phases:
+    if: github.event_name == 'workflow_dispatch' && inputs.suite == 'phases'
+    runs-on: ${{ inputs.bench_runner == 'macos-14' && 'macos-14' || fromJSON('["self-hosted","azure-gpu"]') }}
+    timeout-minutes: 60
+    env:
+      PRD05_CHROMIUM_ARGS: ${{ inputs.bench_runner == 'macos-14' && '--use-angle=metal --enable-gpu --ignore-gpu-blocklist' || '--use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist' }}
+      PRD05_PHASE_FLAG_SETS: ${{ inputs.phase_flag_sets }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: GLB mount phases (QR05-DIAG)
+        run: pnpm exec playwright test --config tests/qr/prd05/playwright.config.ts --project=chromium --grep "QR05-DIAG"
+      - name: Upload phase reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd05-phases-${{ inputs.bench_runner }}-${{ github.run_id }}
+          path: tests/reports/prd05-glb-mount-phases.*.json
+          retention-days: 30
+          if-no-files-found: error

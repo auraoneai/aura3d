@@ -27,6 +27,7 @@ on:
       - "tools/generate-extension-matrix.mjs"
       - "benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd04/**"
       - "tests/qr/prd04/**"
+      - "benchmarks/quality-rebuild/sentinels.json"
       - "fixtures/asset-corpus/**"
       - ".github/workflows/qr-prd04-materials.yml"
   push:
@@ -53,9 +54,19 @@ on:
         description: "QrFlag list for the capture job (none|materials|comma list)"
         required: false
         default: "none"
+      gpu_flag_sets:
+        description: 'GPU job (self-hosted azure-gpu): JSON array of QrFlag lists, one matrix leg each, e.g. ["core,materials","all,strict"]'
+        required: false
+        default: '["core,materials"]'
+      gpu_class:
+        description: "GPU job runner class: l4 (gpu-l4 runners) | t4 (gpu-t4 runners) | any (whole azure-gpu pool). Pin one class for golden/pixel comparisons."
+        required: false
+        default: "l4"
+        type: choice
+        options: [l4, t4, any]
 
 concurrency:
-  group: qr-prd04-materials-${{ github.ref }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  group: qr-prd04-materials-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
@@ -76,6 +87,10 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: "04-S4: spec-exact glTF import + Duck route (flag-on, flag-off controls)"
+        # PRD-04 §16.1 S4. Named step so the row's run id cites these two files
+        # directly; they also run again in the full lane vitest step below.
+        run: pnpm exec vitest run -c tests/qr/prd04/vitest.config.ts tests/qr/prd04/unit/gltf-material-mapping-spec-exact.test.ts tests/qr/prd04/unit/duck-route-materials.test.ts
       # CI-0/T0-31: lane-scoped typecheck (tests/qr/prd04 + import graph).
       # The repo-wide `pnpm typecheck:raw` gate stays in its own workflow —
       # other lanes' breakers are filed as qr-requests #777/#778/#779.
@@ -89,6 +104,12 @@ jobs:
 
   browser:
     runs-on: macos-14
+    permissions:
+      contents: read
+      actions: read # 04-S1: download the latest main sentinel capture artifact
+    env:
+      PRD04_PERF_TIER: macos-14
+      PRD04_SENTINEL_BASELINE_DIR: tests/reports/prd04/sentinels/baseline
     steps:
       - uses: actions/checkout@v4
         with:
@@ -102,11 +123,30 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install chromium
+      - name: "04-S1: fetch sentinel baseline (latest main prd04-sentinels-none artifact)"
+        # CONTRACTS §6.1 / CI-ROUTING: the S1 baseline is the latest GitHub
+        # macos-14 flag-off sentinel capture on main. With none yet, the step
+        # leaves the directory empty and sentinel-identity.spec.ts FAILS with
+        # "no baseline" — the step never passes S1 by itself.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$PRD04_SENTINEL_BASELINE_DIR"
+          run_id=$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts?name=prd04-sentinels-none&per_page=100" \
+            --jq "[.artifacts[] | select(.expired == false and .workflow_run.head_branch == \"main\" and .workflow_run.id != ${GITHUB_RUN_ID})] | sort_by(.created_at) | last | .workflow_run.id // empty")
+          if [ -z "$run_id" ]; then
+            echo "::warning::no main prd04-sentinels-none artifact yet; 04-S1 will fail with 'no baseline'"
+            exit 0
+          fi
+          gh run download "$run_id" -n prd04-sentinels-none -D "$PRD04_SENTINEL_BASELINE_DIR"
+          echo "PRD04_SENTINEL_BASELINE_RUN_ID=$run_id" >> "$GITHUB_ENV"
+          ls -la "$PRD04_SENTINEL_BASELINE_DIR"
       - name: Browser conformance (ChunkHarness, ANGLE Metal)
         # All PRD-04 unit-gated browser specs: chunk conformance, lobe numeric parity,
         # transmission capture, decoders/variants. Scene captures run in the `capture` job;
         # the integrated (`qr_flags=all`) probes and WGSL twins run in `browser-all`.
-        run: pnpm exec playwright test --config tests/qr/prd04/playwright.config.ts --grep "PRD-04 lobe chunks|PRD-04 physical lobes|PRD-04 transmission|PRD-04 glTF decoders|PRD-04 S3|PRD-04 S6|PRD-04 S7|PRD-04 S9|PRD-04 S16" --grep-invert "qr_flags=all"
+        run: pnpm exec playwright test --config tests/qr/prd04/playwright.config.ts --grep "PRD-04 lobe chunks|PRD-04 physical lobes|PRD-04 transmission|PRD-04 glTF decoders|PRD-04 S1 |PRD-04 S3|PRD-04 S6|PRD-04 S7|PRD-04 S9|PRD-04 S16|PRD-04 r185 golden" --grep-invert "qr_flags=all"
       - name: Extension matrix --check (P6-2 truthful matrix)
         # material-conformance.json was just written by the chunk-conformance spec;
         # the tool fails when the report is missing or the matrices drift from it.
@@ -123,6 +163,21 @@ jobs:
             tests/reports/prd04-decoders-variants.json
             tests/reports/prd04-wgsl-twins.json
             tests/reports/prd04/probes/**/*.json
+            tests/reports/prd04/perf/*.json
+          if-no-files-found: warn
+      - name: "04-S1: upload sentinel captures (next run's baseline when on main)"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd04-sentinels-none
+          path: tests/reports/prd04/sentinels/current/
+          if-no-files-found: warn
+      - name: "04-P1-3: upload regenerated r185 golden (commit to tests/qr/prd04/fixtures/bsdf/ from a main run)"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd04-r185-golden
+          path: tests/reports/prd04/r185-golden/
           if-no-files-found: warn
 
   browser-all:
@@ -135,6 +190,7 @@ jobs:
       # WebGPU adapter and fail (not skip) without one; this macos-14 job is the
       # WebGPU runner (`--enable-unsafe-webgpu`).
       PRD04_FLAGS: "all"
+      PRD04_PERF_TIER: macos-14
       PRD04_CHROMIUM_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist --enable-unsafe-webgpu"
     steps:
       - uses: actions/checkout@v4
@@ -184,10 +240,109 @@ jobs:
           PRD04_SCENES: "prd04-texture-transform,prd04-normal-tangent,prd04-iridescence,prd04-anisotropy,prd04-dispersion,prd04-variants,prd04-ktx2,prd04-tiled-ground,prd04-tinted-hero,prd04-alpha-mask,prd04-damaged-helmet,prd04-transmission,02-pbr-product,03-damaged-helmet,04-clearcoat,05-transmission,06-metal-roughness-sweep,07-sheen-fabric,08-skinned-character"
           PRD04_ENGINES: "aura3d,three"
         run: pnpm exec playwright test --config tests/qr/prd04/playwright.config.ts --grep "lane captures"
+      - name: "04-EVID: package Phase 1 flags-none baselines (prd04-* x 2 engines)"
+        # Runs after a failed capture too, so the partial bundle is uploaded for
+        # inspection; the packager itself exits 1 on any missing/non-ready frame.
+        if: always() && (github.event_name != 'workflow_dispatch' || inputs.flags == 'none')
+        run: node tests/qr/prd04/package-phase1-baselines.mjs
+      - name: "04-EVID: upload Phase 1 baseline bundle (commit from a main run)"
+        if: always() && (github.event_name != 'workflow_dispatch' || inputs.flags == 'none')
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd04-phase1-baselines-none
+          path: tests/reports/prd04/phase-1-baselines/
+          if-no-files-found: warn
       - name: Upload captures
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: prd04-captures-${{ github.event_name == 'workflow_dispatch' && inputs.flags || 'none' }}
           path: tests/reports/prd04/
+          if-no-files-found: warn
+
+  gpu:
+    # Linux NVIDIA GPU leg (self-hosted azure-gpu pool, L4/T4 class): the prd04
+    # browser specs and the 19-scene x 2-engine lane captures under one flag set
+    # per matrix leg. Dispatch only, so untrusted PR code never reaches a
+    # self-hosted runner on this public repo (ci-selection policy); the
+    # same-repo guard mirrors qr-azure-gpu.yml (#956).
+    name: GPU (azure-gpu, flags=${{ matrix.flags }})
+    if: github.event_name == 'workflow_dispatch' && github.repository == 'auraoneai/aura3d'
+    # Pool labels: self-hosted,azure-gpu plus gpu-l4 | gpu-t4 (#956). The
+    # default pins L4 so per-device goldens (r185-goldens.json) and captures
+    # never mix GPU classes; `any` takes whichever runner is free.
+    runs-on: ${{ (inputs.gpu_class || 'l4') == 'any' && fromJSON('["self-hosted","azure-gpu"]') || fromJSON(format('["self-hosted","azure-gpu","gpu-{0}"]', inputs.gpu_class || 'l4')) }}
+    timeout-minutes: 150
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        flags: ${{ fromJSON(inputs.gpu_flag_sets || '["core,materials"]') }}
+    env:
+      PRD04_FLAGS: ${{ matrix.flags }}
+      PRD04_PERF_TIER: azure-gpu
+      GPU_CLASS: ${{ inputs.gpu_class || 'l4' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: Chromium GPU flags (vars.QR_AZURE_GPU_CHROME_ARGS, #956 convention)
+        # Same source and default as qr-azure-gpu.yml: Vulkan ANGLE under new
+        # headless (no Xvfb). WebGPU is requested for the WGSL twins.
+        env:
+          QR_AZURE_GPU_CHROME_ARGS: ${{ vars.QR_AZURE_GPU_CHROME_ARGS }}
+        run: |
+          set -euo pipefail
+          args="${QR_AZURE_GPU_CHROME_ARGS:---headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist}"
+          echo "PRD04_CHROMIUM_ARGS=$args --enable-unsafe-webgpu" >> "$GITHUB_ENV"
+          if [ -n "${QR_AZURE_GPU_CHROME_ARGS:-}" ]; then src="vars.QR_AZURE_GPU_CHROME_ARGS"; else src="#956 default (var unset)"; fi
+          echo "chromium args ($src): $args --enable-unsafe-webgpu" | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: GPU preflight (WebGL renderer must be a GPU; WebGPU availability recorded)
+        # Fails on SwiftShader/llvmpipe. Swap to tools/quality-rebuild-capture/
+        # gpu-renderer.mjs once #956 is on main; this probe also records WebGPU.
+        run: |
+          set -euo pipefail
+          node tests/qr/prd04/gpu-probe.mjs
+          # Label-drift guard: a pinned class must be the GPU actually present.
+          case "${GPU_CLASS}" in
+            l4) want="NVIDIA L4" ;;
+            t4) want="Tesla T4" ;;
+            *) want="" ;;
+          esac
+          if [ -n "$want" ]; then
+            WANT="$want" node -e 'const r=require("./tests/reports/prd04/gpu-probe.json");if(!r.webgl.renderer.includes(process.env.WANT)){console.error(`::error::gpu_class=${process.env.GPU_CLASS} but renderer is ${r.webgl.renderer}`);process.exit(1)}'
+          fi
+          node -e 'const r=require("./tests/reports/prd04/gpu-probe.json");console.log(`renderer: ${r.webgl.renderer}\nwebgpu adapter: ${r.webgpu.adapter} ${JSON.stringify(r.webgpu.info)}`)' | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: prd04 browser specs (all; flag-pinned specs keep their own flags)
+        run: pnpm exec playwright test --config tests/qr/prd04/playwright.config.ts --grep-invert "lane captures"
+      - name: Lane captures (19 scenes x 2 engines)
+        # Runs after a red spec step too (separate evidence); the job stays red.
+        if: ${{ !cancelled() }}
+        env:
+          PRD04_SCENES: "prd04-texture-transform,prd04-normal-tangent,prd04-iridescence,prd04-anisotropy,prd04-dispersion,prd04-variants,prd04-ktx2,prd04-tiled-ground,prd04-tinted-hero,prd04-alpha-mask,prd04-damaged-helmet,prd04-transmission,02-pbr-product,03-damaged-helmet,04-clearcoat,05-transmission,06-metal-roughness-sweep,07-sheen-fabric,08-skinned-character"
+          PRD04_ENGINES: "aura3d,three"
+        run: pnpm exec playwright test --config tests/qr/prd04/playwright.config.ts --grep "lane captures"
+      - name: Upload GPU reports and captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd04-gpu-${{ matrix.flags }}
+          path: |
+            tests/reports/prd04/
+            tests/reports/material-conformance.json
+            tests/reports/prd04-chunk-harness.json
+            tests/reports/physical-lobes-numeric.json
+            tests/reports/prd04-decoders-variants.json
+            tests/reports/prd04-wgsl-twins.json
+            test-results/
           if-no-files-found: warn

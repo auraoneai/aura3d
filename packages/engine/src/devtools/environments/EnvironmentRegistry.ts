@@ -97,8 +97,8 @@ export const AURA_ENVIRONMENT_PRESETS: readonly AuraEnvironmentPresetEntry[] = [
     license: "CC0",
     sourceFile: "fixtures/environment-corpus/hdri/studio_small_08_1k.hdr",
     sha256: {
-      specular: "4f9c4f2b064ce3041f77f157cf5b803bb1f28d817c70a7c084c7c5854eb66994",
-      sh9: "bb143f21c720aa2cf1a80a63ed7f5db810613c1b7544a59c9ff6536c6747facd"
+      specular: "5082ddb4c9823aa8fd5d7a4071aae53490dc27f50a6db58fc218bb535fc6128c",
+      sh9: "92e70a87d78dd13c3c4cc650a3d9fffb3418e572f2b8a1b25b7fcb9f5f017f60"
     },
     tags: ["stand-in"]
   },
@@ -110,8 +110,8 @@ export const AURA_ENVIRONMENT_PRESETS: readonly AuraEnvironmentPresetEntry[] = [
     license: "CC0",
     sourceFile: "fixtures/environment-corpus/hdri/autumn_field_puresky_1k.hdr",
     sha256: {
-      specular: "8104b92e544efda1af3cca6e734e33a3fde9b2077261a4fefbfb9e0c873ac287",
-      sh9: "393eb19ca13b083d011983e162847938e941f37e5985eb04493217ae15188ef3"
+      specular: "cc11e7135b72879ab5f1469a9b9e17d9dc7c08352f94602939101c5c212b9edc",
+      sh9: "5290f84b2737f64fb2916731460b94ed7c8d691b57d087616deb8f7ecf401252"
     },
     tags: ["stand-in"]
   },
@@ -123,8 +123,8 @@ export const AURA_ENVIRONMENT_PRESETS: readonly AuraEnvironmentPresetEntry[] = [
     license: "CC0",
     sourceFile: "fixtures/environment-corpus/hdri/kloppenheim_06_puresky_1k.hdr",
     sha256: {
-      specular: "e38bb254e2f0d45f8f455d21c8c9fefb3b655725c4642ace8c953864ecfa00fd",
-      sh9: "94551a4af6e2a5a890d1272eb9504121f6e72d3354f42a142351c436628dfaf0"
+      specular: "6867ee06f4ab2c25462e6529a6f6ae885e721df7bfeeae2ab0cd4762dd37aed4",
+      sh9: "ffac6765180a490e920df1f51cb5b87aee8461a2dde75ffc2b95aec9ee0cb505"
     },
     tags: ["stand-in"]
   },
@@ -136,8 +136,8 @@ export const AURA_ENVIRONMENT_PRESETS: readonly AuraEnvironmentPresetEntry[] = [
     license: "CC0",
     sourceFile: "fixtures/environment-corpus/hdri/kloppenheim_06_puresky_1k.hdr (intensity 0.05, yaw 140°)",
     sha256: {
-      specular: "4d1d924caf54e891905a9fcb6ef0cc4343bc859489885cb61d1827c6fd57c111",
-      sh9: "1337cfa7fbbab83e270442ae1044583629e163fc5c48d1ed6c8d6b3a0cf40210"
+      specular: "01e7b0c9593db261196d2d74df1d5b0247bbbc4a5ffb869fd016e2d833612967",
+      sh9: "8ef9560f155db7e30661ae9cb15a31e6b89d6beb14f17ee16a721e1eba9bbdd1"
     },
     tags: ["stand-in"]
   },
@@ -149,8 +149,8 @@ export const AURA_ENVIRONMENT_PRESETS: readonly AuraEnvironmentPresetEntry[] = [
     license: "CC0",
     sourceFile: "RoomEnvironmentScene.ts (r185 neutral room port)",
     sha256: {
-      specular: "40b9eb910ccd2e5e3713abb28f0abaf9e99868148467ff3fccd70e6b3fdc78ac",
-      sh9: "545a1d00bf23ee1520a2366e7b64f47768b610418a8283ecdb254e4f12e5665b"
+      specular: "a862e519defc6dcd93d66ebd98fc0fba4c67cffa7e9181e9e4c1f2dd88187ca3",
+      sh9: "7d4625b73b8c04a00c52c5379c3b9bb9944b026a938eb0ba3e029947aff8914f"
     },
     tags: ["neutral", "stand-in"]
   },
@@ -162,8 +162,8 @@ export const AURA_ENVIRONMENT_PRESETS: readonly AuraEnvironmentPresetEntry[] = [
     license: "CC0",
     sourceFile: "RoomEnvironmentScene.ts (r185 neutral room port — the C-09 runtime floor, T0-25)",
     sha256: {
-      specular: "da314875ca28ed4e2db2de1b66b526d8d3615d9942bd9a5d7ddacd3901495069",
-      sh9: "01a47aaf260c942fd4d917032ad886e060fa39a093bc5a4bc6e52967c7a75c67"
+      specular: "a862e519defc6dcd93d66ebd98fc0fba4c67cffa7e9181e9e4c1f2dd88187ca3",
+      sh9: "7d4625b73b8c04a00c52c5379c3b9bb9944b026a938eb0ba3e029947aff8914f"
     },
     tags: ["neutral", "stand-in"]
   }

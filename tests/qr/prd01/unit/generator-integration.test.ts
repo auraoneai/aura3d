@@ -28,7 +28,7 @@ const ctxHigh = { flags: resolveQrFlags({ env: { A3D_QR_CORE: "v2" } }), tier: Q
 
 describe("PRD-01 §15 sub-flag resolution", () => {
   it("flag-off leaves both sub-flags off", () => {
-    const flags = resolveQrFlags({ env: {} });
+    const flags = resolveQrFlags({ env: { A3D_QR: "none" } });
     expect(qrCoreGeneratorOn(flags)).toBe(false);
     expect(qrCoreOutputOn(flags)).toBe(false);
   });
@@ -118,7 +118,12 @@ describe("PRD-01 §15 pass-owned feature axes", () => {
     expect(axes.lights).toEqual({ dir: 2, point: 1, spot: 0, rect: 0, clustered: false, hemisphere: false });
     const many = forwardPassFeatureAxes({ lights: Array(9).fill(light("point")) }, false);
     expect(many.lights.point).toBe(8);
-    expect(many.lights.clustered).toBe(true);
+    // #1140: up to 16 lights live in u_lightData; clustering (and its cluster
+    // textures) only engages above FORWARD_DIRECT_LIGHT_CAPACITY, as in
+    // resolveForwardClusteredLighting. 9-16 lights was black under core.
+    expect(many.lights.clustered).toBe(false);
+    expect(forwardPassFeatureAxes({ lights: Array(17).fill(light("point")) }, false).lights.clustered).toBe(true);
+    expect(forwardPassFeatureAxes({ lights: Array(9).fill(light("point")) }, true).lights.clustered).toBe(true);
   });
 
   it("no shadowMap → cascades 0 (shadows off)", () => {
@@ -129,7 +134,10 @@ describe("PRD-01 §15 pass-owned feature axes", () => {
 
   it("environment + fog records come from the pass options", () => {
     expect(forwardPassFeatureAxes({}, false).environment).toBe("none");
-    expect(forwardPassFeatureAxes({ environmentLighting: { proceduralMap: {} } as never }, false).environment).toBe("equirect");
+    // #1140: equirect only with a bound 2D environment map — a procedural-only
+    // (or cube-only) environment has no texture for the equirect sampler.
+    expect(forwardPassFeatureAxes({ environmentLighting: { proceduralMap: {} } as never }, false).environment).toBe("none");
+    expect(forwardPassFeatureAxes({ environmentLighting: { environmentMapTexture: { texture: {} } } as never }, false).environment).toBe("equirect");
     expect(forwardPassFeatureAxes({ environmentFog: { mode: "exponential" } as never }, false).fog).toBe("exp2");
     expect(forwardPassFeatureAxes({ environmentFog: { mode: "linear" } as never }, false).fog).toBe("linear");
   });

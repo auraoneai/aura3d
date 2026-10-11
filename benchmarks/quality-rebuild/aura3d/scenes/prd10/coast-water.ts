@@ -1,5 +1,19 @@
-/** Lane prd10 adapter module (aura3d). Runs the `prd10-coast-water` spec through `runAuraScene`. */
+/**
+ * Lane prd10 adapter module (aura3d). Runs `prd10-coast-water` through `runAuraScene`.
+ * With `world` on, the primitive stand-ins are replaced by real `world.*`
+ * nodes (see ./world.ts); with `world` off the spec renders unchanged.
+ */
 import { getPrd10Scene } from "../../../scenes/prd10/index";
-import { runAuraScene } from "../../common";
+import { runAuraScene, type RunOptions } from "../../common";
+import { prd10SpecFor, prd10WorldEvidence, prd10WorldNodes, worldOn } from "./world";
 
-export default (host: HTMLElement) => runAuraScene(getPrd10Scene("prd10-coast-water"), host);
+const ID = "prd10-coast-water";
+
+export default (host: HTMLElement, opts: RunOptions = {}) => {
+  const on = worldOn(opts.qrFlags);
+  return runAuraScene(prd10SpecFor(getPrd10Scene(ID), on), host, {
+    ...opts,
+    extraNodes: () => prd10WorldNodes(ID, on),
+    collectExtra: (app) => prd10WorldEvidence(app, opts.qrFlags ?? [])
+  });
+};

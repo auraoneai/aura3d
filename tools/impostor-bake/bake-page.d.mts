@@ -15,4 +15,6 @@ export declare function bakeImpostorPage(args: {
     readonly normalDepthOut: string;
   };
   readonly source: string;
+  readonly materials?: readonly number[];
+  readonly nodes?: readonly string[];
 }): Promise<BakePageResult>;

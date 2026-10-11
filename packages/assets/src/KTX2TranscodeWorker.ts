@@ -5,6 +5,7 @@
  * handling is required and module/wasm URLs stay same-origin.
  */
 
+import { AssetDecoderUnavailable, looksLikeWasmBinary, withDecoderTimeout } from "./decoderLoad.js";
 import type { KTX2TranscodedLevel } from "./KTX2TranscodeDriver.js";
 
 const WORKER_SOURCE = `
@@ -13,16 +14,21 @@ let readyPromise = null;
 self.addEventListener("message", function (e) {
   const message = e.data;
   if (message.type === "init") {
-    const mod = { wasmBinary: message.wasmBinary, onRuntimeInitialized: null };
-    readyPromise = new Promise(function (resolve) {
+    const mod = { wasmBinary: message.wasmBinary, onRuntimeInitialized: null, onAbort: null };
+    readyPromise = new Promise(function (resolve, reject) {
       mod.onRuntimeInitialized = resolve;
+      // A corrupt/short wasmBinary aborts emscripten through onAbort — without
+      // this the worker never answered and every queued transcode hung.
+      mod.onAbort = function (reason) { reject(new Error("basis_transcoder aborted: " + reason)); };
       BASIS(mod);
     }).then(function () {
       basisModule = mod;
       basisModule.initializeBasis();
     });
-    readyPromise = readyPromise.then(function () {
+    readyPromise.then(function () {
       self.postMessage({ type: "ready", id: message.id });
+    }, function (error) {
+      self.postMessage({ type: "error", id: message.id, error: error && error.message ? error.message : String(error) });
     });
     return;
   }
@@ -34,6 +40,8 @@ self.addEventListener("message", function (e) {
       } catch (error) {
         self.postMessage({ type: "error", id: message.id, error: error && error.message ? error.message : String(error) });
       }
+    }, function (error) {
+      self.postMessage({ type: "error", id: message.id, error: error && error.message ? error.message : String(error) });
     });
   }
 });
@@ -103,6 +111,10 @@ export interface KTX2WorkerTranscodeResult {
 interface PoolWorker {
   readonly worker: Worker;
   busy: boolean;
+  /** Set once the worker errors or its init aborts — never pumped again. */
+  dead: boolean;
+  /** Job currently assigned to this slot (for kill-time rejection). */
+  currentJobId?: number;
 }
 
 interface PendingJob {
@@ -131,38 +143,75 @@ export function createKTX2TranscodeWorkerPool(transcoderUrl: string, workerCount
   let disposed = false;
 
   const init = async (): Promise<PoolWorker[]> => {
-    initPromise ??= (async () => {
-      const [jsText, wasmBinary] = await Promise.all([
-        fetch(`${base}basis_transcoder.js`).then((response) => {
-          if (!response.ok) throw new Error(`basis_transcoder.js fetch failed with ${response.status}`);
-          return response.text();
-        }),
-        fetch(`${base}basis_transcoder.wasm`).then((response) => {
-          if (!response.ok) throw new Error(`basis_transcoder.wasm fetch failed with ${response.status}`);
-          return response.arrayBuffer();
-        })
-      ]);
-      const blob = new Blob([WORKER_SOURCE, "\n", jsText, "\n", DRIVER_SOURCE], { type: "text/javascript" });
-      const workerUrl = URL.createObjectURL(blob);
-      const workers: PoolWorker[] = [];
-      for (let index = 0; index < size; index += 1) {
-        const worker = new Worker(workerUrl);
-        worker.onmessage = (event: MessageEvent) => onWorkerMessage(workers[index]!, event);
-        workers.push({ worker, busy: false });
-        worker.postMessage({ type: "init", id: 0, wasmBinary: wasmBinary.slice(0) }, [wasmBinary.slice(0)]);
-      }
-      return workers;
-    })();
+    initPromise ??= withDecoderTimeout(
+      (async () => {
+        const jsUrl = `${base}basis_transcoder.js`;
+        const wasmUrl = `${base}basis_transcoder.wasm`;
+        const [jsText, wasmBinary] = await Promise.all([
+          fetch(jsUrl).then((response) => {
+            if (!response.ok) throw new AssetDecoderUnavailable("ktx2", jsUrl);
+            return response.text();
+          }),
+          fetch(wasmUrl).then(async (response) => {
+            if (!response.ok) throw new AssetDecoderUnavailable("ktx2", wasmUrl);
+            const buffer = await response.arrayBuffer();
+            // An SPA index.html fallback answers 200 with HTML — reject here,
+            // feeding it to the worker aborts emscripten without a listener.
+            if (!looksLikeWasmBinary(buffer)) throw new AssetDecoderUnavailable("ktx2", wasmUrl);
+            return buffer;
+          })
+        ]);
+        if (jsText.trimStart().startsWith("<")) throw new AssetDecoderUnavailable("ktx2", jsUrl);
+        const blob = new Blob([WORKER_SOURCE, "\n", jsText, "\n", DRIVER_SOURCE], { type: "text/javascript" });
+        const workerUrl = URL.createObjectURL(blob);
+        const workers: PoolWorker[] = [];
+        for (let index = 0; index < size; index += 1) {
+          const worker = new Worker(workerUrl);
+          worker.onmessage = (event: MessageEvent) => onWorkerMessage(workers[index]!, event);
+          worker.onerror = () => killWorker(workers[index]!, "ktx2 transcode worker error");
+          worker.onmessageerror = () => killWorker(workers[index]!, "ktx2 transcode worker message error");
+          workers.push({ worker, busy: false, dead: false });
+          worker.postMessage({ type: "init", id: 0, wasmBinary: wasmBinary.slice(0) }, [wasmBinary.slice(0)]);
+        }
+        return workers;
+      })(),
+      "ktx2 worker init"
+    );
     return initPromise;
+  };
+
+  const killWorker = (slot: PoolWorker, reason: string): void => {
+    if (slot.dead) return;
+    slot.dead = true;
+    if (slot.currentJobId !== undefined) {
+      const job = jobIds.get(slot.currentJobId);
+      if (job) {
+        jobIds.delete(slot.currentJobId);
+        job.reject(new Error(reason));
+      }
+      slot.currentJobId = undefined;
+    }
+    // With every worker dead the queue can never drain — reject it now.
+    void initPromise?.then((workers) => {
+      if (workers.every((w) => w.dead)) {
+        for (const job of queue.splice(0)) job.reject(new Error(reason));
+      }
+    }).catch(() => {});
   };
 
   const onWorkerMessage = (slot: PoolWorker, event: MessageEvent): void => {
     const message = event.data as { type?: string; id?: number; result?: KTX2WorkerTranscodeResult; error?: string };
-    if (message.type === "ready") { slot.busy = false; pump(slot); return; }
+    if (message.type === "ready") { slot.busy = false; slot.currentJobId = undefined; pump(slot); return; }
+    if (message.type === "error" && message.id === 0) {
+      // init abort — the worker can never transcode; fail its jobs fast.
+      killWorker(slot, message.error ?? "ktx2 transcode worker init failed");
+      return;
+    }
     const job = message.id !== undefined ? jobIds.get(message.id) : undefined;
     if (job) {
       jobIds.delete(message.id!);
       slot.busy = false;
+      slot.currentJobId = undefined;
       if (message.type === "transcode") job.resolve(message.result!);
       else job.reject(new Error(message.error ?? "KTX2 transcode failed"));
     }
@@ -170,11 +219,12 @@ export function createKTX2TranscodeWorkerPool(transcoderUrl: string, workerCount
   };
 
   const pump = (slot: PoolWorker): void => {
-    if (slot.busy || disposed) return;
+    if (slot.busy || slot.dead || disposed) return;
     const job = queue.shift();
     if (!job) return;
     slot.busy = true;
     const id = nextJobId++;
+    slot.currentJobId = id;
     jobIds.set(id, job);
     const payload = { type: "transcode", id, buffer: job.request.bytes.buffer.slice(0), transcoderFormat: job.request.transcoderFormat, maxDimension: job.request.maxDimension };
     slot.worker.postMessage(payload, [payload.buffer]);
@@ -184,9 +234,10 @@ export function createKTX2TranscodeWorkerPool(transcoderUrl: string, workerCount
     async transcode(request: KTX2WorkerTranscodeRequest): Promise<KTX2WorkerTranscodeResult> {
       if (disposed) throw new Error("KTX2 worker pool is disposed");
       const workers = await init();
+      if (workers.every((slot) => slot.dead)) throw new AssetDecoderUnavailable("ktx2", `${base}basis_transcoder.wasm`);
       return new Promise<KTX2WorkerTranscodeResult>((resolve, reject) => {
         const job: PendingJob = { request, resolve, reject };
-        const free = workers.find((slot) => !slot.busy);
+        const free = workers.find((slot) => !slot.busy && !slot.dead);
         if (free) { queue.push(job); pump(free); }
         else queue.push(job);
       });
@@ -196,7 +247,7 @@ export function createKTX2TranscodeWorkerPool(transcoderUrl: string, workerCount
       for (const job of queue.splice(0)) job.reject(new Error("KTX2 worker pool disposed"));
       for (const job of [...jobIds.values()]) job.reject(new Error("KTX2 worker pool disposed"));
       jobIds.clear();
-      initPromise?.then((workers) => workers.forEach((slot) => slot.worker.terminate()));
+      initPromise?.then((workers) => workers.forEach((slot) => slot.worker.terminate())).catch(() => {});
     }
   };
 }

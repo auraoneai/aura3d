@@ -1,5 +1,8 @@
 # T4.3 — `characterHero` reference module (Q-13-3 input)
 
+> **06-REC note (finish phase, G3):** this file cites no passing remote run id; every completion claim below is recorded as **unbacked** until a green lane-workflow/GitLab run id is added next to it.
+
+
 `benchmarks/quality-rebuild/aura3d/scenes/prd06/characterHero.ts` — the
 `characterAnimation(controller, hero, spec)` wiring that replaces the
 character-controller template's `.animate({ clip: "Take 001" })` and its

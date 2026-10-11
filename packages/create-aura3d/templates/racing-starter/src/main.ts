@@ -1,6 +1,7 @@
 import {
   camera,
   game,
+  gameFeel,
   looks,
   material,
   model,
@@ -85,7 +86,8 @@ const ROUTE_BOUNDS = {
 const TRACK_Y = -1.0;
 const CAR_RIDE_Y = 1.206;
 
-// Chase framing: 8 m back and 3.4 m up at fov 60, aimed a car-length ahead.
+// Chase framing: 8 m back and 3.4 m up at fov 60 — authored in the scene spec
+// below as the flag-off fallback; the mounted rig owns it under PRD 08.
 const CHASE = { back: 8, up: 3.4, ahead: 4, fov: 60 } as const;
 
 const inputOptions = {
@@ -112,7 +114,13 @@ const racing = game.racing({
   maxSpeed: 40,
   acceleration: 60,
   drag: 1.4,
-  steerRate: 2.85
+  steerRate: 2.85,
+  // F-08-1: bicycle vehicle model + V-5 chassis presentation publish the
+  // vLong/lateralG telemetry the chase rig's perSpeed FOV and bank read.
+  model: "bicycle",
+  chassis: true,
+  // F-08-5: kit edges (boost/drift/collision/lap) emit on the app feel bus.
+  feelBus: { emit: (name, o) => app?.feel?.emit(name, { strength: o?.strength }) }
 });
 
 const routeEvents = game.eventLog({ label: "racing starter events", maxEvents: 16 });
@@ -125,11 +133,9 @@ const hudBindings = [
   { kind: "aura-game-hud-binding", owner: "app", binding: "event-log", id: "hud:event-log", label: "event log", source: "app-state", valuePath: "appState.events", format: "text", a11yLabel: "game event log", debugOnly: true }
 ] as const;
 
-const evidenceMode = navigator.webdriver;
 const racingGame = createGame({
   id: "racing-starter",
   target: "#app",
-  autoStart: !evidenceMode,
   diagnostics: { overlay: true, performancePanel: true },
   scene: buildScene,
   input: inputOptions,
@@ -177,10 +183,20 @@ const hudRoot = createHud();
 let objective = "Clear six gates across a 3-lap typed-asset route.";
 const raceEventLabels: string[] = [];
 
-// C-22 camera surface: the chase rig pins the framing, and every frame writes
-// the actual chase pose behind the car heading — camera state lives on the
-// camera, not in evidence.
-app.camera?.use(camera.rigs.chase({ target: "race-car" }));
+// F-08-1: the chase rig owns the presented camera — speed-scaled FOV,
+// velocity look-ahead and lateral bank come from the rig spec (flag-off
+// mounts the no-op stub controller; the scene camera spec is the fallback).
+// F-08-5: feel bus + GameFeel attach through app.time.
+app.camera?.use(
+  camera.rigs.chase({
+    target: "race-car",
+    fov: { base: 60, perSpeed: 0.4 },
+    lookAhead: { seconds: 0.35, max: 4 },
+    bank: { gain: 0.5, maxDeg: 6 }
+  })
+);
+const feel = gameFeel.create({ app, time: app.time });
+app.feel?.preset("racing");
 
 app.onFrame(({ dt }) => {
   if (input.pressed("reset")) {
@@ -225,21 +241,7 @@ app.onFrame(({ dt }) => {
   checkpointMarker.setVisible(state.checkpoint === 0);
   finishMarker.setScale(state.status === "finished" ? [1.15, 0.08, 0.14] : [0.86, 0.08, 0.12]);
 
-  const forwardX = Math.cos(state.heading);
-  const forwardZ = Math.sin(state.heading);
-  app.camera?.setPose({
-    position: [
-      state.position.x - forwardX * CHASE.back,
-      CAR_RIDE_Y + CHASE.up,
-      state.position.y - forwardZ * CHASE.back
-    ],
-    target: [
-      state.position.x + forwardX * CHASE.ahead,
-      CAR_RIDE_Y + 0.4,
-      state.position.y + forwardZ * CHASE.ahead
-    ]
-  });
-
+  feel.update(dt * 1000);
   renderHud(state);
   publishEvidence(state);
 });
@@ -247,27 +249,6 @@ app.onFrame(({ dt }) => {
 publishEvidence(racing.snapshot());
 renderHud(racing.snapshot());
 
-// Keep browser evidence deterministic on software GPUs without replacing real
-// keyboard input. The input controller receives each DOM event first; this
-// handler then advances the same app.onFrame gameplay callback and presents one
-// completed frame. Generated apps outside WebDriver retain continuous playback.
-if (evidenceMode) {
-  await app.ready();
-  // Present the initial production frame asynchronously. SwiftShader can take
-  // seconds to drain a typed GLB scene; a synchronous submission here blocks
-  // Playwright's state readback and turns an input contract into a timeout.
-  await app.stepAsync(0);
-  const advanceFromKeyboard = (event: KeyboardEvent) => {
-    const frames = event.type === "keydown" ? 18 : 1;
-    // Advance the real input/game callbacks immediately. The playable contract
-    // reads simulation-owned evidence, so it does not need another GPU frame
-    // for every key transition; visual lifecycle coverage retains the initial
-    // completed production frame above.
-    for (let frame = 0; frame < frames; frame += 1) app.advance(1 / 60);
-  };
-  window.addEventListener("keydown", advanceFromKeyboard);
-  window.addEventListener("keyup", advanceFromKeyboard);
-}
 
 function buildScene() {
   const nodes: AuraNodeInput[] = [

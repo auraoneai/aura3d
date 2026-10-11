@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "aura3d.prd13.s-record.look-capture-timing/1",
+  "title": "13-S6 look-capture timing: 3 consecutive `aura3d look capture --runner gh-actions` runs for one template, each returning PNGs + appliedLook in <= 8 min",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "row", "runId", "runUrl", "workflow", "job", "branch", "provider", "headSha", "recordedAt", "template", "command", "runs"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "notes": { "type": "string" },
+    "kind": { "const": "look-capture-timing" },
+    "row": { "const": "13-S6" },
+    "runId": { "type": "string", "pattern": "^[1-9][0-9]*$", "description": "the first of the 3 runs (also listed in runs[])" },
+    "runUrl": { "type": "string", "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/actions/runs/[1-9][0-9]*" },
+    "workflow": { "const": ".github/workflows/aura3d-lookdev.yml" },
+    "job": { "type": "string", "minLength": 1 },
+    "branch": { "const": "main" },
+    "provider": { "const": "github-macos-14" },
+    "headSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "recordedAt": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T" },
+    "template": { "enum": ["product-viewer", "mini-game"] },
+    "command": { "type": "string", "pattern": "^aura3d look capture .*--runner gh-actions" },
+    "runs": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["runId", "repository", "conclusion", "durationSeconds", "pngs", "appliedLookPath", "appliedLookSha256"],
+        "properties": {
+          "runId": { "type": "string", "pattern": "^[1-9][0-9]*$" },
+          "repository": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$" },
+          "conclusion": { "const": "success" },
+          "durationSeconds": { "type": "number", "minimum": 0, "maximum": 480 },
+          "pngs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["file", "sha256"],
+              "properties": {
+                "file": { "type": "string", "pattern": "\\.png$" },
+                "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+              }
+            }
+          },
+          "appliedLookPath": { "type": "string", "pattern": "appliedLook\\.json$" },
+          "appliedLookSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        }
+      }
+    }
+  }
+}

@@ -1,5 +1,7 @@
 # Q-11-1: lane-11 production-runtime files — minimal import repoints (applied)
 
+**Issue:** #1025 (P-64 writeback)
+
 **From:** lane 15 · **To:** lane 11 · **Filed:** 2026-10-06
 
 T2.6 deleted `ProductionWebGL2Renderer.ts`/`ProductionRuntimeRenderer.ts`. Two

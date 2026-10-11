@@ -46,10 +46,10 @@
       "metric": "frame.intervalMs.p50",
       "comparator": "ratio<=",
       "threshold": 1.5,
-      "relative": { "engine": "three", "metric": "payload.loadMs" },
-      "gating": false,
+      "relative": { "engine": "three", "metric": "frame.intervalMs.p50" },
+      "gating": true,
       "phase": 3,
-      "comment": "Placeholder for the phase-3 head-to-head; the relative metric becomes three's own frame p50 once its adapter reports frame timing."
+      "comment": "Phase-3 head-to-head: aura3d frame p50 over three's frame p50 (three adapter publishes window.__PRD11_FRAME__, P-30)."
     },
     {
       "id": "S3-draw-calls",
@@ -59,9 +59,33 @@
       "metric": "frame.drawCalls",
       "comparator": "<=",
       "threshold": 40,
-      "gating": false,
+      "gating": true,
       "phase": 4,
       "comment": "Section 17.3 draw budget for the tier-ladder scene (matches base 18's <=40 target). Fills in once frame.drawCalls is populated by the counters delta."
+    },
+    {
+      "id": "S4-draw-call-stress-legacy",
+      "scene": "prd11-draw-call-stress",
+      "engine": "aura3d",
+      "flags": "none",
+      "metric": "payload.drawCalls",
+      "comparator": "<=",
+      "threshold": 110,
+      "gating": false,
+      "phase": 3,
+      "comment": "11-S4 (§17.3): draw-call-stress on the legacy (flag-off) path stays <= 110 draws. Recorded until the first measured main run."
+    },
+    {
+      "id": "S5-instancing-100k-draws",
+      "scene": "prd11-instancing-100k",
+      "engine": "aura3d",
+      "flags": "tiers",
+      "metric": "payload.drawCalls",
+      "comparator": "<=",
+      "threshold": 1600,
+      "gating": false,
+      "phase": 3,
+      "comment": "11-S5 (§17.3): 100k instances submit <= 1,600 draws with tiers. Recorded until the first measured main run."
     }
   ]
 }

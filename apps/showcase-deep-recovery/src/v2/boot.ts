@@ -102,13 +102,13 @@ const game = createGame({
     theme: "sci-fi-telemetry",
     maxScreenFraction: 0.16,
     widgets: [
-      { id: "objective", kind: "label", anchor: "top", label: "OBJECTIVE" },
-      { id: "depth", kind: "gauge", anchor: "top-left", label: "DEPTH" },
-      { id: "oxygen", kind: "gauge", anchor: "top-right", label: "O2" },
-      { id: "hull", kind: "gauge", anchor: "left", label: "HULL" },
+      { id: "objective", kind: "prompt", anchor: "top", label: "OBJECTIVE" },
+      { id: "depth", kind: "prompt", anchor: "top-left", label: "DEPTH" },
+      { id: "oxygen", kind: "prompt", anchor: "top-right", label: "O2" },
+      { id: "hull", kind: "prompt", anchor: "left", label: "HULL" },
       { id: "salvage", kind: "score", anchor: "bottom-left", label: "SALVAGE" },
-      { id: "sonar", kind: "label", anchor: "bottom-right", label: "SONAR" },
-      { id: "message", kind: "label", anchor: "bottom", label: "STATUS" }
+      { id: "sonar", kind: "prompt", anchor: "bottom-right", label: "SONAR" },
+      { id: "message", kind: "prompt", anchor: "bottom", label: "STATUS" }
     ]
   },
   touch: {
@@ -125,17 +125,17 @@ const game = createGame({
   },
   sound: {
     cues: {
-      "sonar-ping": { asset: "deepRecoverySonarPingSfx" },
-      "sonar-return": { asset: "deepRecoverySonarReturnSfx" },
-      "hull-creak": { asset: "deepRecoveryHullCreakSfx" },
-      "breach-alarm": { asset: "deepRecoveryBreachAlarmSfx" },
-      "patch-seal": { asset: "deepRecoveryPatchSealSfx" },
-      "grapple-latch": { asset: "deepRecoveryGrappleLatchSfx" },
-      "crate-bank": { asset: "deepRecoveryCrateBankSfx" },
-      "oxygen-warn": { asset: "deepRecoveryOxygenWarnSfx" },
-      "blackout": { asset: "deepRecoveryBlackoutSfx" },
-      "surface-break": { asset: "deepRecoverySurfaceBreakSfx" },
-      "ambient-deep": { asset: "deepRecoveryAmbientDeepSfx" }
+      "sonar-ping": { asset: assets.deepRecoverySonarPingSfx },
+      "sonar-return": { asset: assets.deepRecoverySonarReturnSfx },
+      "hull-creak": { asset: assets.deepRecoveryHullCreakSfx },
+      "breach-alarm": { asset: assets.deepRecoveryBreachAlarmSfx },
+      "patch-seal": { asset: assets.deepRecoveryPatchSealSfx },
+      "grapple-latch": { asset: assets.deepRecoveryGrappleLatchSfx },
+      "crate-bank": { asset: assets.deepRecoveryCrateBankSfx },
+      "oxygen-warn": { asset: assets.deepRecoveryOxygenWarnSfx },
+      "blackout": { asset: assets.deepRecoveryBlackoutSfx },
+      "surface-break": { asset: assets.deepRecoverySurfaceBreakSfx },
+      "ambient-deep": { asset: assets.deepRecoveryAmbientDeepSfx }
     },
     reverb: "underwater"
   },
@@ -146,11 +146,11 @@ const game = createGame({
     "impact": { trauma: 0.2 }
   },
   qualityRebuild: {
-    // FLAG-1: arm the engine features this route uses — `game` selects the
-    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
-    // art/direction.ts sections. `route_deep_recovery` uses the engine-parseable
-    // underscore form (URL/dispatch form is `route-deep-recovery`).
-    flags: ["route_deep_recovery", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+    // T0-29 (#1232): only what the route itself needs — its route token and
+    // `game` (the real C-24 shell: beacon/evidence/HUD/touch). Engine lane
+    // flags come from URL/env/defaults like every other route, so `none`
+    // and `-<flag>` arms actually turn them off.
+    flags: ["route_deep_recovery", "game"]
   }
 });
 

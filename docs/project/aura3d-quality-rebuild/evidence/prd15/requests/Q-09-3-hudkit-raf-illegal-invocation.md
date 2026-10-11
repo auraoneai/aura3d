@@ -1,5 +1,7 @@
 # Q-09-3 → to:prd09 (qr-request, CONTRACTS §6.5)
 
+**Issue:** #1020 (P-64 writeback)
+
 **Files:** `packages/game/src/hud/HudKit.ts` (09-owned)
 **Contract served:** PRD-15 T8.2 — the restored `check:templates` gate runs
 every create-aura3d template's browser specs; every `createGame()`-based

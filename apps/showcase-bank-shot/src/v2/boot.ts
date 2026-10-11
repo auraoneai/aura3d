@@ -71,10 +71,10 @@ const game = createGame({
     theme: "tabletop",
     maxScreenFraction: 0.15,
     widgets: [
-      { id: "turn", kind: "label", anchor: "top-left", label: "BANK SHOT" },
-      { id: "tray", kind: "tray", anchor: "top-right", label: "SUNK" },
-      { id: "power", kind: "meter", anchor: "bottom", label: "STRIKE" },
-      { id: "score", kind: "score", anchor: "top", label: "SCORE" }
+      { id: "turn", kind: "prompt", anchor: "top-left", label: "BANK SHOT" },
+      { id: "tray", kind: "prompt", anchor: "top-right", label: "SUNK" },
+      { id: "power", kind: "prompt", anchor: "bottom", label: "STRIKE" },
+      { id: "score", kind: "prompt", anchor: "top", label: "SCORE" }
     ]
   },
   touch: {
@@ -95,11 +95,11 @@ const game = createGame({
     "eight-ball-sunk": { slowMo: { scale: 0.5, ms: 600 } }
   },
   qualityRebuild: {
-    // FLAG-1: arm the engine features this route uses — `game` selects the
-    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
-    // art/direction.ts sections. `route_bank_shot` uses the engine-parseable
-    // underscore form (URL/dispatch form is `route-bank-shot`).
-    flags: ["route_bank_shot", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+    // T0-29 (#1232): only what the route itself needs — its route token and
+    // `game` (the real C-24 shell: beacon/evidence/HUD/touch). Engine lane
+    // flags come from URL/env/defaults like every other route, so `none`
+    // and `-<flag>` arms actually turn them off.
+    flags: ["route_bank_shot", "game"]
   }
 });
 
@@ -284,7 +284,7 @@ function syncHud(): void {
   const snap = rules.snapshot();
   game.hud.set("turn", `RACK ${snap.rack} · ${snap.phase.toUpperCase()}`);
   game.hud.set("tray", snap.potted.join(" "));
-  game.hud.set("power", cueController.state().charge);
+  game.hud.set("power", `${Math.round(cueController.state().charge * 100)}%`);
   game.hud.set("score", String(snap.score));
 }
 

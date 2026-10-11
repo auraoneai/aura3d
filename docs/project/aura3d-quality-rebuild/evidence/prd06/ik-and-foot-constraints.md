@@ -1,5 +1,8 @@
 # PRD-06 T3.1 + T3.2 — two-bone rotation IK + pose-space foot-IK constraint
 
+> **06-REC note (finish phase, G3):** this file cites no passing remote run id; every completion claim below is recorded as **unbacked** until a green lane-workflow/GitLab run id is added next to it.
+
+
 ## T3.1 `solveTwoBoneIkRotations` (`packages/animation/src/IK.ts`)
 
 Pose-space two-bone IK per §7.2: resolves `spec.root/mid/tip` by name on the bound

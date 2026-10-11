@@ -1,0 +1,271 @@
+name: QR GPU suites
+
+# Track 0 / lane-12 GPU suites on a configurable runner (program-lead ruling
+# 2026-10-11): GitLab macOS is out (quota), GitHub macos-14 (Metal) is the
+# default, and `runner: azure-gpu` targets the self-hosted GPU scale set
+# (labels self-hosted + azure-gpu) once it exists. Same suites as the GitLab
+# qr:benchmark / qr:games jobs, driven by benchmarks/quality-rebuild/ci.sh and
+# tools/quality-rebuild-capture/capture-games.mjs.
+#
+#   suite=benchmark     ci.sh over bench_scenes x bench_engines with qr_flags
+#   suite=flags-bisect  ci.sh, one build, every ';'-separated bench_flag_sets
+#   suite=games         capture-games.mjs (games, viewports, qr_flags)
+#
+# Never compare frames across runner types or providers (macos-14 vs GitLab vs
+# azure-gpu): each provider keeps its own baselines (IC-0 per provider).
+# Honest failures: a red `none` control, a missing summary or a missing
+# artifact fails the job; nothing here is masked.
+
+on:
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: "benchmark | flags-bisect | games"
+        type: choice
+        options: [benchmark, flags-bisect, games, promote]
+        default: flags-bisect
+      runner:
+        description: "azure-gpu (self-hosted NVIDIA, Vulkan ANGLE) | macos-14 (Metal)"
+        type: choice
+        options: [azure-gpu, track0, macos-14]
+        default: azure-gpu
+      gpu_class:
+        description: "azure-gpu only: l4 | t4 pin a class (needs gpu-l4/gpu-t4 runner labels; baselines); any = first free GPU runner (within-job comparisons such as flags-bisect)"
+        type: choice
+        options: [any, l4, t4]
+        default: any
+      bench_scenes:
+        description: "Comma-separated benchmark scene ids (empty = all)"
+        required: false
+        default: "01-simple-geometry,16-instancing,12-shadows,03-damaged-helmet,08-skinned-character,14-particles"
+      bench_engines:
+        description: "aura3d | three | aura3d,three"
+        type: choice
+        options: [aura3d, three, "aura3d,three"]
+        default: aura3d
+      bench_flag_sets:
+        description: "';'-separated flag sets for flags-bisect (empty = none;$ALL;$ALL,strict)"
+        required: false
+        default: ""
+      qr_flags:
+        description: "Flag set for benchmark / games (none | all | comma list)"
+        required: false
+        default: "none"
+      games:
+        description: "Comma-separated game ids for suite=games (empty = all 18)"
+        required: false
+        default: ""
+      viewports:
+        description: "Game viewports WIDTHxHEIGHT, comma-separated"
+        required: false
+        default: "1280x720"
+      sourcemap:
+        description: "suite=games: sourcemapped builds + mapped crash table (T0-29)"
+        type: boolean
+        default: false
+      allflags_eval:
+        description: "Evaluate bisect-summary.json with the §2.5 allflags-smoke gate"
+        type: boolean
+        default: false
+      promote_flag:
+        description: "suite=promote: lane flag to score against flags-off (e.g. lighting). Captures none + flag with aura3d AND three.js; scores LPIPS/FLIP vs the three.js frame."
+        required: false
+        default: ""
+  workflow_call:
+    inputs:
+      suite: { type: string, required: false, default: flags-bisect }
+      runner: { type: string, required: false, default: azure-gpu }
+      gpu_class: { type: string, required: false, default: any }
+      bench_scenes: { type: string, required: false, default: "01-simple-geometry,16-instancing,12-shadows,03-damaged-helmet,08-skinned-character,14-particles" }
+      bench_engines: { type: string, required: false, default: aura3d }
+      bench_flag_sets: { type: string, required: false, default: "" }
+      qr_flags: { type: string, required: false, default: "none" }
+      games: { type: string, required: false, default: "" }
+      viewports: { type: string, required: false, default: "1280x720" }
+      sourcemap: { type: boolean, required: false, default: false }
+      allflags_eval: { type: boolean, required: false, default: false }
+      promote_flag: { type: string, required: false, default: "" }
+  push:
+    branches: [main]
+    paths:
+      - "benchmarks/quality-rebuild/**"
+      - "tools/quality-rebuild-capture/**"
+      - ".github/workflows/qr-azure-gpu.yml"
+  pull_request:
+    paths:
+      - "benchmarks/quality-rebuild/**"
+      - "tools/quality-rebuild-capture/**"
+      - ".github/workflows/qr-azure-gpu.yml"
+  schedule:
+    - cron: "30 4 * * *"   # nightly flags-bisect control on main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qr-gpu-${{ github.ref }}-${{ inputs.suite || 'default' }}-${{ inputs.promote_flag || inputs.bench_flag_sets || 'x' }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  QR_ALL_FLAGS: "core,lighting,post,materials,assets,animation,vfx,camera,game,world,tiers,looks,compiler"
+  TRACK0_ISSUE: "375"
+
+jobs:
+  gpu-suite:
+    name: "QR GPU ${{ inputs.suite || 'flags-bisect' }} (${{ inputs.runner || 'azure-gpu' }})"
+    # Fork PR heads never reach a self-hosted runner.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    # Self-hosted GPU runners carry self-hosted,linux,azure-gpu plus a GPU-class
+    # label (gpu-l4 | gpu-t4); captures pin one class so L4 and T4 frames are
+    # never mixed. Push / schedule / PR events default to azure-gpu + l4.
+    # track0: gcp-gpu-7..10, dedicated to Track 0 (self-hosted,linux,gpu-l4,track0;
+    # no azure-gpu label, so lane jobs never take them).
+    runs-on: ${{ (inputs.runner || 'azure-gpu') == 'azure-gpu' && ((inputs.gpu_class || 'any') == 'any' && fromJSON('["self-hosted","azure-gpu"]') || fromJSON(format('["self-hosted","azure-gpu","gpu-{0}"]', inputs.gpu_class))) || (inputs.runner == 'track0' && fromJSON('["self-hosted","track0","gpu-l4"]')) || inputs.runner }}
+    timeout-minutes: 180
+    env:
+      SUITE: ${{ inputs.suite || 'flags-bisect' }}
+      RUNNER_KIND: ${{ inputs.runner || 'azure-gpu' }}
+      GPU_CLASS: ${{ (inputs.runner || 'azure-gpu') == 'azure-gpu' && (inputs.gpu_class || 'any') || (inputs.runner == 'track0' && 'l4') || 'metal' }}
+      QR_BENCH_OUT: benchmarks/quality-rebuild/out
+      QR_BENCH_SCENES: ${{ inputs.bench_scenes || '01-simple-geometry,16-instancing,12-shadows,03-damaged-helmet,08-skinned-character,14-particles' }}
+      QR_BENCH_ENGINES: ${{ inputs.bench_engines || 'aura3d' }}
+      IN_FLAG_SETS: ${{ inputs.bench_flag_sets || '' }}
+      QRC_FLAGS: ${{ inputs.qr_flags || 'none' }}
+      QRC_GAMES: ${{ inputs.games || '' }}
+      QRC_VIEWPORTS: ${{ inputs.viewports || '1280x720' }}
+      QRC_SOURCEMAP: ${{ inputs.sourcemap && 'true' || 'false' }}
+      # #626: GPU game captures use exact flags, so `none` is truly flags-off
+      # (games.json defaults are never prepended). Takes effect with #1120.
+      QRC_FLAGS_EXACT: "true"
+      PROMOTE_FLAG: ${{ inputs.promote_flag || '' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          lfs: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+
+      - name: Chromium GPU flags for this runner
+        run: |
+          set -euo pipefail
+          case "$RUNNER_KIND" in
+            macos-14) args="--use-angle=metal --enable-gpu --ignore-gpu-blocklist" ;;
+            # Linux NVIDIA (verified by the program lead on gcp-gpu-1..6; no
+            # Xvfb): Vulkan ANGLE. vars.QR_AZURE_GPU_CHROME_ARGS overrides.
+            azure-gpu|track0) args="${QR_AZURE_GPU_CHROME_ARGS:---headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist}" ;;
+            *) echo "::error::unknown runner '$RUNNER_KIND'"; exit 1 ;;
+          esac
+          { echo "QR_CHROMIUM_ARGS=$args"; echo "QR_BENCH_CHROME_ARGS=$args"; echo "QRC_GPU_ARGS=$args"; } >> "$GITHUB_ENV"
+
+      - name: Record the GPU renderer string (frames compare within this class only)
+        run: |
+          set -euo pipefail
+          node tools/quality-rebuild-capture/gpu-renderer.mjs | tee renderer.txt | tee -a "$GITHUB_STEP_SUMMARY"
+          renderer="$(cat renderer.txt)"
+          # A pinned class must match the GPU actually present (label drift guard).
+          case "$GPU_CLASS" in
+            l4) grep -q " L4" renderer.txt || { echo "::error::gpu_class=l4 but renderer is: $renderer"; exit 1; } ;;
+            t4) grep -q " T4" renderer.txt || { echo "::error::gpu_class=t4 but renderer is: $renderer"; exit 1; } ;;
+          esac
+          mkdir -p "$QR_BENCH_OUT" && cp renderer.txt "$QR_BENCH_OUT/renderer.txt"
+          echo "gpu_class: $GPU_CLASS ($RUNNER_KIND, $RUNNER_NAME)" | tee -a "$GITHUB_STEP_SUMMARY"
+        env:
+          QR_AZURE_GPU_CHROME_ARGS: ${{ vars.QR_AZURE_GPU_CHROME_ARGS }}
+
+      - name: Run suite
+        id: suite
+        # A hung capture must not eat the job: the step dies here and the
+        # always() steps below still upload whatever was written so far.
+        timeout-minutes: 140
+        run: |
+          set -euo pipefail
+          case "$SUITE" in
+            flags-bisect)
+              export QR_BENCH_FLAG_SETS="${IN_FLAG_SETS:-none;$QR_ALL_FLAGS;$QR_ALL_FLAGS,strict}"
+              bash benchmarks/quality-rebuild/ci.sh ;;
+            benchmark)
+              bash benchmarks/quality-rebuild/ci.sh ;;
+            promote)
+              test -n "$PROMOTE_FLAG" || { echo "::error::suite=promote needs promote_flag"; exit 1; }
+              [[ "$PROMOTE_FLAG" =~ ^[a-z0-9][a-z0-9_.-]*$ ]] || { echo "::error::invalid promote_flag '$PROMOTE_FLAG'"; exit 1; }
+              # Both engines: the three.js frame is the shared target both arms are scored against.
+              export QR_BENCH_ENGINES="aura3d,three" QR_BENCH_FLAG_SETS="none;$PROMOTE_FLAG"
+              bash benchmarks/quality-rebuild/ci.sh ;;
+            games)
+              # Checkout is lfs:false; the games load GLB/texture blobs from
+              # public/aura-assets and apps/*/public, which would otherwise be
+              # served as LFS pointer files. Fatal on failure, never silent.
+              git lfs version >/dev/null 2>&1 || { echo "::error::git-lfs is not installed on this runner"; exit 1; }
+              git lfs pull --include="public/aura-assets/**,apps/*/public/**" || { echo "::error::git lfs pull for game assets failed"; exit 1; }
+              export QRC_LOCAL_BUILD=true
+              node tools/quality-rebuild-capture/capture-games.mjs --build-only
+              node tools/quality-rebuild-capture/capture-games.mjs --skip-build ;;
+            *) echo "::error::unknown suite '$SUITE'"; exit 1 ;;
+          esac
+
+      # Checkpoint: partial results survive a timeout or a dead runner. Both
+      # harnesses rewrite their report.json after every scene / game, so this
+      # snapshot is complete up to the last finished item.
+      - name: Checkpoint upload (partial results)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qr-gpu-checkpoint-${{ inputs.suite || 'flags-bisect' }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            benchmarks/quality-rebuild/out/**/report.json
+            benchmarks/quality-rebuild/out/renderer.txt
+            tools/quality-rebuild-capture/out/report.json
+            tools/quality-rebuild-capture/.build/build-report.json
+          retention-days: 14
+          if-no-files-found: warn
+
+      - name: Sourcemapped crash table (T0-29)
+        if: ${{ always() && inputs.sourcemap && (inputs.suite || 'flags-bisect') == 'games' }}
+        run: |
+          set -euo pipefail
+          test -f tools/quality-rebuild-capture/out/report.json || { echo "::error::no capture report to map"; exit 1; }
+          node tools/quality-rebuild-capture/map-stack.mjs --report tools/quality-rebuild-capture/out/report.json \
+            tools/quality-rebuild-capture/.build | tee tools/quality-rebuild-capture/out/crash-table.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Setup Python (promotion score)
+        if: ${{ always() && inputs.suite == 'promote' }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Promotion score (owner rule; flag-on vs flags-off against three.js)
+        if: ${{ always() && inputs.suite == 'promote' }}
+        run: |
+          set -euo pipefail
+          pip install -r tools/quality-gate/metrics/requirements.lock
+          cd tools/quality-gate/metrics
+          # Exit 0 only on PASS; FAIL / NO-EFFECT / unscorable fail the job.
+          arm="${PROMOTE_FLAG//[^A-Za-z0-9_-]/_}"   # same sanitising as ci.sh set dirs
+          python -m metrics.promote "$GITHUB_WORKSPACE/$QR_BENCH_OUT" "$arm" \
+            --json "$GITHUB_WORKSPACE/$QR_BENCH_OUT/promote-$PROMOTE_FLAG.json" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: allflags-smoke evaluation (§2.5)
+        if: ${{ always() && inputs.allflags_eval }}
+        run: |
+          set -euo pipefail
+          test -f "$QR_BENCH_OUT/bisect-summary.json" || { echo "::error::no bisect-summary.json was written"; exit 1; }
+          node benchmarks/quality-rebuild/allflags-smoke-eval.mjs \
+            "$QR_BENCH_OUT/bisect-summary.json" process/baselines/allflags-smoke.json "$QR_ALL_FLAGS" "$TRACK0_ISSUE" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload results (report.json, bisect-summary.json, PNGs)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qr-gpu-${{ inputs.suite || 'flags-bisect' }}-${{ inputs.runner || 'azure-gpu' }}-${{ (inputs.runner || 'azure-gpu') == 'azure-gpu' && (inputs.gpu_class || 'any') || (inputs.runner == 'track0' && 'l4') || 'metal' }}-${{ github.run_id }}
+          path: |
+            benchmarks/quality-rebuild/out/
+            tools/quality-rebuild-capture/out/
+          retention-days: 30
+          if-no-files-found: error

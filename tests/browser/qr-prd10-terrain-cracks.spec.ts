@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { requireOrSkip } from "../support/requireOrSkip";
 import { TERRAIN_VERT_GLSL } from "../../packages/rendering/src/world/terrain/shaders/terrain.vert.glsl";
 import {
   buildCdlodTree,
@@ -81,10 +82,10 @@ test("terrain CDLOD: 0 crack pixels over 120 dolly frames across LOD seams", asy
   const levels = 4;
   const tree = buildCdlodTree(grid, size, [0, 0], levels);
   const ranges = cdlodRanges(levels, tree.leafSize, 1, 0.33);
-  const morph = new Float32Array(16);
+  const morph = new Float32Array(32); // u_morph is vec4[8]
   for (const r of ranges) {
-    morph[r.lod * 2] = r.morphStart;
-    morph[r.lod * 2 + 1] = r.morphEnd;
+    morph[r.lod * 4] = r.morphStart;
+    morph[r.lod * 4 + 1] = r.morphEnd;
   }
 
   // Dolly: 120 camera positions sweeping diagonally so nodes flip LOD mid-run.
@@ -189,7 +190,7 @@ test("terrain CDLOD: 0 crack pixels over 120 dolly frames across LOD seams", asy
     gl.uniform4f(u("u_terrain"), 0, 0, size[0], size[1]);
     gl.uniform1f(u("u_heightScale"), heightScale);
     gl.uniform2f(u("u_heightTexSize"), columns, rows);
-    gl.uniform2fv(u("u_morph"), new Float32Array(morph));
+    gl.uniform4fv(u("u_morph"), new Float32Array(morph));
     gl.uniform1f(u("u_gridDim"), patchN);
     gl.uniform1i(u("u_height"), 0);
     gl.enable(gl.DEPTH_TEST);
@@ -237,15 +238,9 @@ test("terrain CDLOD: 0 crack pixels over 120 dolly frames across LOD seams", asy
     // Fallback: whole canvas when no frame kept all 4 terrain corners in frustum.
     mask: worstMask ?? { x0: 8, y0: 8, x1: W - 9, y1: H - 9 }
   });
-  // P-22 requireOrSkip: on CI the runner must expose WebGL2 — a missing
-  // adapter is a red job, not a skipped spec; local non-CI may skip.
-  if ("error" in result) {
-    if (process.env.CI) {
-      expect((result as { error?: string }).error ?? null, "CI runner must expose WebGL2").toBeNull();
-    } else {
-      test.skip(true, `webgl2 unavailable in this runner: ${result.error}`);
-      return;
-    }
-  }
+  // P-22: CI must expose WebGL2 (a missing adapter or failed program is red);
+  // local non-CI runs skip with the reason.
+  requireOrSkip(test, !("error" in result), "webgl2", `runner must expose WebGL2: ${"error" in result ? result.error : ""}`);
+  if ("error" in result) return; // unreachable: requireOrSkip threw or skipped
   expect(result.crackFrames, `frames with background-coloured pixels inside terrain (max ${result.maxCrackPixels}/frame)`).toBe(0);
 });

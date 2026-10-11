@@ -1,5 +1,7 @@
 # Q-06-3 — Keyframe.ts math imports @aura3d/scene/math
 
+**Issue:** #1012 (P-64 writeback)
+
 **Status:** OPEN (property test attached and green)
 **Requesting lane:** 15 (PRD-15 Phase 6, math unification T6.8)
 **Owning lane:** 06 (`packages/animation/`)

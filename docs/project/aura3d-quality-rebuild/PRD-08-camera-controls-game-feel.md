@@ -1743,7 +1743,7 @@ a claim of three.js-level quality (CONTRACTS §7 honesty rule). Each criterion h
 | S9 | Motion-scene metrics (M1–M6 automated columns below) | `prd08-motion-*` scenes, C-33 strips | per-row automated threshold | per-row control |
 | S10 | Feel accounting | `app.feel` against the PR 0a stubs | `executed.shake/punch/hitStop/haptics` > 0 after an emit; `executed.vfx` counts C-20 primitive-pool bursts; `executed.screen` 0 unless the DOM fallback is on; `executed.audio` 0 with no sound bound | a stub-only channel counted as executed fails the test |
 | S11 | Rail continuity | closed 6-point rail | no positional discontinuity > 1 % of rail length between last and first frame; speed variation ≤ 5 % | today's smoothstep `CameraChoreographer` exceeds 5 % |
-| S12 | Bicycle drift | scripted input, flat ground, `μ 1.0` | accelerate to 15 u/s, full steer + handbrake 0.5 s, release with steer held: `abs(slipAngle) > 0.2 rad` for ≥ 0.6 s and `drifting`; counter-steer −0.5: `abs(slipAngle) < 0.05 rad` within 1.5 s | `model: "unicycle"` never exceeds 0.01 rad |
+| S12 | Bicycle drift | scripted input, flat ground, `μ 1.0` | accelerate to 15 u/s, full steer + handbrake 0.35 s (deviation D-08-1, see below), release with steer held: `abs(slipAngle) > 0.2 rad` for ≥ 0.6 s and `drifting`; counter-steer −0.5: `abs(slipAngle) < 0.05 rad` within 1.5 s | `model: "unicycle"` never exceeds 0.01 rad |
 | S13 | Platformer accel | kit body | max speed in 0.08–0.12 s on ground; stop in 0.06–0.10 s | `instantVelocity: true` reaches max in 1 step |
 | S14 | Touch | lane harness mini-game configuration, emulated 390×844 DPR 3 | play end-to-end by touch only; no keyboard prompt text in the DOM while `activeDevice() === "touch"`; all targets ≥ 48 CSS px | keyboard-only build shows the prompt |
 | S15 | Fade chunk | ChunkHarness, 64×64 | `cameraFade 0.5` → 50 % ± 2 % covered pixels; `1.0` → 100 %; no-feature program source byte-identical | — |
@@ -1751,6 +1751,8 @@ a claim of three.js-level quality (CONTRACTS §7 honesty rule). Each criterion h
 | S17 | Codemod + doctor | fixtures + report-mode run | all style-(a) fixtures rewritten, style-(b) reported; doctor rule flags the three evidence-only fixtures and passes clean fixtures | — |
 | S18 | Audio glue | fake `GameSound` | one `setListener` per presented frame equal to the presented pose; `engine().setRpm` series equals vehicle `rpm` | — |
 | S19 | Budgets | lane harness per tier (§17) | CPU/GPU/memory/bundle per tier within §17 | — |
+
+> **D-08-1 (recorded deviation, 2026-10-11, G4 ruling):** the S12 handbrake entry is 0.35 s, not 0.5 s. With the bicycle model's tyre parameters, a 0.5 s full-steer handbrake drives body slip to about −0.52 rad, and the spec's −0.5 counter-steer can no longer recover the spin. 0.35 s is the deepest entry the model can still recover from, and every other S12 threshold stays as written (`abs(slipAngle) > 0.2 rad` for ≥ 0.6 s with `drifting`, then `< 0.05 rad` within 1.5 s). Proof: `tests/qr/prd08/unit/vehicle-drift.test.ts` ("handbrake-release keeps |slipAngle| > 0.2 rad ≥ 0.6 s …") and `tests/qr/prd08/browser/vehicle-rail.spec.ts` (drift, with the unicycle control).
 
 Motion scenes (lane-08 `benchmarks/quality-rebuild/motion/`, registered as `prd08-motion-*` via C-30; same input to
 Aura3D and three@0.185.1, fixed seed, 1280×720 DPR 1, 12-frame strip at 0.1 s via PRD 12's `strip` step + 3 s WebM via

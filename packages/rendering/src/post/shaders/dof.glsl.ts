@@ -9,7 +9,7 @@
  * zf=3 m, z=30 m on a 1080 px frame → |coc| ≈ 12.3 px.
  *
  * Passes:
- *   DOF_PREFILTER_GLSL — half-res: rgb = HDR color, a = signed cocPx
+ *   DOF_PREFILTER_GLSL — half-res: rgb = 2×2 box of the HDR color, a = signed cocPx
  *     (positive = far field, negative = near field), clamped to maxBlurPx.
  *   DOF_NEAR_TILE_GLSL — 8 px tiles of the half-res map: maximum near-field
  *     magnitude (−min(coc)) so the gather can dilate foreground bokeh.
@@ -40,9 +40,16 @@ ${POST_COMMON_GLSL}
 
 void main() {
   ivec2 pixel = ivec2(gl_FragCoord.xy);
-  ivec2 size = textureSize(u_color, 0);
-  vec3 color = texelFetch(u_color, pixel, 0).rgb;
-  float z = texelFetch(u_linearDepth, clamp(pixel * 2, ivec2(0), textureSize(u_linearDepth, 0) - 1), 0).r;
+  // u_color is the FULL-res HDR target: box-average its 2×2 block (03-S15 —
+  // a texelFetch at the half-res index read only the lower-left quadrant).
+  ivec2 fullMax = textureSize(u_color, 0) - 1;
+  ivec2 base = pixel * 2;
+  vec3 color = 0.25 * (
+    texelFetch(u_color, clamp(base, ivec2(0), fullMax), 0).rgb +
+    texelFetch(u_color, clamp(base + ivec2(1, 0), ivec2(0), fullMax), 0).rgb +
+    texelFetch(u_color, clamp(base + ivec2(0, 1), ivec2(0), fullMax), 0).rgb +
+    texelFetch(u_color, clamp(base + ivec2(1, 1), ivec2(0), fullMax), 0).rgb);
+  float z = texelFetch(u_linearDepth, clamp(base, ivec2(0), textureSize(u_linearDepth, 0) - 1), 0).r;
   float f = u_focalLengthMm;
   float aperture = f / max(u_fStop, 0.01);
   float zMm = max(z * 1000.0, 1.0);
@@ -76,8 +83,10 @@ void main() {
 export const DOF_GATHER_GLSL = /* glsl */ `${HEADER}
 uniform highp sampler2D u_prefilter; // half-res color + signed coc
 uniform highp sampler2D u_nearTile;  // 8px tiles, .r = near |coc|
-uniform float u_maxBlurPx;           // full-res px; radius here is half that
+uniform float u_maxBlurPx;           // full-res px (CoC diameter)
 out vec4 o_color;
+
+const float DOF_HALF_RES_RADIUS = 0.25;
 
 void main() {
   ivec2 pixel = ivec2(gl_FragCoord.xy);
@@ -85,7 +94,10 @@ void main() {
   vec4 center = texelFetch(u_prefilter, pixel, 0);
   float centerCoc = center.a;
   float centerNear = texelFetch(u_nearTile, pixel / 8, 0).r;
-  float radius = max(abs(centerCoc), centerNear) * 0.5;
+  // .a is the full-res CoC *diameter* in px: the half-res disc radius is
+  // diameter / 2 (radius) / 2 (half res) = 0.25 · |coc| (03-S15 — 0.5 drew a
+  // bokeh twice the thin-lens diameter).
+  float radius = max(abs(centerCoc), centerNear) * DOF_HALF_RES_RADIUS;
   vec3 sum = center.rgb;
   float wsum = 1.0;
   const int RINGS = DOF_RINGS;
@@ -98,7 +110,7 @@ void main() {
       float tapNear = texelFetch(u_nearTile, tap / 8, 0).r;
       // A tap contributes when its own blur reaches this pixel, or when the
       // tile's near field does (foreground bleeds over sharp background).
-      float reach = max(abs(t.a), tapNear) * 0.5;
+      float reach = max(abs(t.a), tapNear) * DOF_HALF_RES_RADIUS;
       float w = clamp((reach + 0.5) / max(length(vec2(tap - pixel)), 0.5), 0.0, 1.0);
       sum += t.rgb * w;
       wsum += w;

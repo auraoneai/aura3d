@@ -6,16 +6,16 @@
  * (SceneCopyFallback, Phase 4), `transparent` (water, Phase 4). `opaque` and
  * `output` stay reserved to PRD 01.
  *
- * Draw path: Path G iff `programCacheSlot.provided && A3D_QR_CORE === "v2"`,
- * else Path S (self-linked programs with `a3d_prd10_world_light_fallback`).
- * Day 0: `collect` records the path on the blackboard; `passes` contributes
- * nothing until Phase 2.
+ * Draw path: always Path S (self-linked programs with
+ * `a3d_prd10_world_light_fallback`) until a Path G item emitter exists — see
+ * `worldDrawPath`.
  */
 import { registerFrameContributor } from "@aura3d/rendering/contracts";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import { programCacheSlot } from "@aura3d/rendering/contracts";
-import { terrainBackgroundPass } from "./TerrainRuntime.js";
-import { allWaterStates, waterAfterOpaquePasses, waterBackgroundPasses, waterTransparentPass } from "./WaterRuntime.js";
+import { optInWorldFeatures, publishWorldFeatureState } from "./WorldFeatureState.js";
+import { noteWorldPhase, terrainAfterOpaquePass, terrainBackgroundPass } from "./TerrainRuntime.js";
+import { allWaterStates, waterAfterOpaquePasses, waterBackgroundPasses, waterTransparentPass, WORLD_BACKGROUND_PHASE_KEY } from "./WaterRuntime.js";
 import { terrainRecordIds } from "../../agent-api/world/terrain.js";
 import { timeOfDayRecords } from "../../agent-api/compiler/world.js";
 import { worldSubflagOn } from "../../agent-api/world/flags.js";
@@ -32,8 +32,17 @@ export const tierForSettings = (s: AuraQualityTierSettings): AuraQualityTier => 
   return "high";
 };
 
-export function worldDrawPath(flags: QrFlags): "S" | "G" {
-  return programCacheSlot.provided && flags.values["A3D_QR_CORE"] === "v2" ? "G" : "S";
+/**
+ * World draw path. Path G (world draws as generated-program RenderItems) has
+ * no emitter yet — nothing reads "G" — so returning it under
+ * `A3D_QR_CORE=v2` made every terrain, water and grass draw vanish whenever
+ * `core` was on (e.g. the `$ALL` arm). The Path S passes are correct on both
+ * the legacy and the C-23 HDR output paths (#1111), so world always draws
+ * through them until a Path G emitter lands; diagnostics keep listing the
+ * Path G slots as pending.
+ */
+export function worldDrawPath(_flags: QrFlags): "S" | "G" {
+  return "S";
 }
 
 export function registerWorldFramePasses(): () => void {
@@ -44,6 +53,7 @@ export function registerWorldFramePasses(): () => void {
     order: 10,
     phases: ["collect", "background", "after-opaque", "transparent"],
     collect(items, ctx) {
+      noteWorldPhase("collect");
       ctx.blackboard.set("prd10.drawPath", worldDrawPath(ctx.flags));
       // T6.4 — advance every compiled time-of-day node; the blackboard record
       // carries this frame's rig, sun, practical scale and capture request
@@ -54,9 +64,12 @@ export function registerWorldFramePasses(): () => void {
           advanceTimeOfDay(timeOfDayRecords, ctx.timeSeconds, tierForSettings(ctx.tier))
         );
       }
-      return items;
+      // #1143 follow-up: generated-path wind/caustics get this frame's state,
+      // and world-owned items opt in through their label prefix.
+      return optInWorldFeatures(items, publishWorldFeatureState(ctx));
     },
     passes(phase, ctx) {
+      noteWorldPhase(`${phase}:${worldDrawPath(ctx.flags)}`);
       // §9.1: world opaque draws land in `background` (after the environment
       // background pass) on Path S; Path G emits them as opaque RenderItems.
       // §9.1 order: planar reflections (waterBackgroundPasses, step 2) run
@@ -67,11 +80,18 @@ export function registerWorldFramePasses(): () => void {
       // (duplicate "color" writers / reads with no producer) on every Path S
       // frame, even with zero world nodes, and killed the frame loop.
       if (phase === "background" && worldDrawPath(ctx.flags) === "S") {
+        // Lane 01 runs `background` only when an EnvironmentBackgroundPass
+        // exists; record that it ran so later phases know which producers exist.
+        ctx.blackboard.set(WORLD_BACKGROUND_PHASE_KEY, true);
         const passes = waterBackgroundPasses(ctx);
         return terrainRecordIds().length > 0 ? [...passes, terrainBackgroundPass(ctx)] : passes;
       }
       if (phase === "after-opaque" && worldDrawPath(ctx.flags) === "S") {
-        return waterAfterOpaquePasses(ctx);
+        // Colour-background frames skip `background`, so terrain draws here.
+        const late = terrainRecordIds().length > 0 && ctx.blackboard.get(WORLD_BACKGROUND_PHASE_KEY) !== true
+          ? [terrainAfterOpaquePass(ctx)]
+          : [];
+        return [...late, ...waterAfterOpaquePasses(ctx)];
       }
       if (phase === "transparent" && worldDrawPath(ctx.flags) === "S") {
         return allWaterStates().length > 0 ? [waterTransparentPass(ctx)] : [];

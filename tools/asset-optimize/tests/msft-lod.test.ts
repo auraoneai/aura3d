@@ -4,18 +4,13 @@
  * `extras.MSFT_screencoverage`, read it back, assert structure.
  */
 
-import { existsSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { Document, Format, NodeIO } from "@gltf-transform/core";
 import { MSFTLod, MSFTLodNode, MSFT_LOD_EXTENSION_NAME, MSFT_SCREENCOVERAGE_EXTRA } from "../extensions/msft-lod";
 
-const toolDir = dirname(fileURLToPath(import.meta.url));
-const depsInstalled = existsSync(join(toolDir, "..", "node_modules", "@gltf-transform"));
-const d = depsInstalled ? describe : describe.skip;
-
-d("MSFTLod extension", () => {
+// Fail closed: runs under tools/asset-optimize/vitest.config.ts with the tool
+// deps installed (asset-optimize.yml); no deps-present skip guard.
+describe("MSFTLod extension", () => {
   it("writes extensions.MSFT_lod.ids + extras.MSFT_screencoverage and reads them back", async () => {
     const doc = new Document();
     doc.createBuffer();

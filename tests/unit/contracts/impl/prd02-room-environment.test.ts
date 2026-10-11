@@ -56,10 +56,11 @@ describe("prd02 RoomEnvironmentScene (r185 verbatim port)", () => {
 
   it("sampleRoomEnvironment returns panel radiance toward a panel face and wall bounce elsewhere", () => {
     // Ray at the -x panel (position [-16.116, 14.37, 8.208], emissive 50) reads ~50; wall reads lambertian.
-    const [towardX] = sampleRoomEnvironment([-16.116, 14.37, 8.208] as const);
+    // r185 shifts the room by y = -3.5, so the capture point is (0, 3.5, 0) in scene space.
+    const [towardX] = sampleRoomEnvironment([-16.116, 14.37 - 3.5, 8.208] as const);
     expect(towardX).toBeGreaterThan(10); // somewhere in an emissive panel
     const [towardWall] = sampleRoomEnvironment([0.4, -0.9, 0.4] as const);
     expect(towardWall).toBeGreaterThan(0);
-    expect(towardWall).toBeLessThan(5); // walls are ~0.1–0.5, not emissive
+    expect(towardWall).toBeLessThan(5); // point-lit white walls are ~0.3–1, not emissive
   });
 });

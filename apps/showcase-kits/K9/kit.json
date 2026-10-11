@@ -1,0 +1,33 @@
+{
+  "$schema": "../kit.schema.json",
+  "schemaVersion": 1,
+  "kit": "K9",
+  "name": "VFX flipbooks",
+  "consumers": [
+    "all 18"
+  ],
+  "budget": {
+    "summary": "<= 6 MB total KTX2",
+    "maxBytesRaw": null,
+    "maxBytesShipped": 6000000
+  },
+  "contents": [
+    "spark",
+    "smoke",
+    "dust",
+    "explosion (3 sizes)",
+    "muzzle",
+    "splash",
+    "bubble",
+    "electric arc",
+    "confetti",
+    "8x8 sheets, 2k, premultiplied"
+  ],
+  "lookdev": {
+    "runId": null,
+    "reviewer": null,
+    "verdict": "pending"
+  },
+  "files": [],
+  "notes": "Scaffold: no candidate files staged yet. Verdict stays pending until files are staged and a human reviewer accepts them on the three r185 look-dev pane."
+}

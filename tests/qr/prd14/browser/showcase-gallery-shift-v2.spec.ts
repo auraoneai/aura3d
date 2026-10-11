@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
+import { expectRuntimeMatchesDeclared } from "./lib/look";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 // Source imports: the lane jobs do not build package dist/, so the
@@ -211,6 +212,8 @@ test.describe("showcase-gallery-shift v2 (T2.6)", () => {
           (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
         const look = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".appliedLook"), EVIDENCE);
         expect(look).toEqual({ applied: scenario, kind: "v2-scenario", honest: true });
+        // T2.2-post: the renderer applied the look this route declares.
+        await expectRuntimeMatchesDeclared(APP_DIR, await page.evaluate(() => (window as unknown as { __AURA3D_GAME__?: { app?: { diagnostics?: () => { appliedLook?: unknown } } } }).__AURA3D_GAME__?.app?.diagnostics?.().appliedLook ?? null));
       }
       // The floor-2 scenario lands in the Skyline Wing through the real
       // floor-advance path — same union scene, still zero swaps.

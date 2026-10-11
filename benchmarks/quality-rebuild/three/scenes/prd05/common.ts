@@ -11,7 +11,8 @@ import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import { hdriAssets } from "../../../shared/assets";
 import type { CapabilityEntry, CapabilityStatus, ReadyPayload } from "../../../shared/types";
-import { prd05Assets, type Prd05AssetEntry } from "../../../scenes/prd05/assets";
+import { prd05Assets } from "../../../scenes/prd05/assets";
+import { prd05HdriUrl, prd05ModelUrl, threeBasisTranscoderPath, type Prd05UrlOptions } from "../../../scenes/prd05/urls";
 import type { Prd05SceneSpec } from "../../../scenes/prd05/spec";
 
 const EULER_ORDER: THREE.EulerOrder = "ZYX";
@@ -23,13 +24,14 @@ class CapabilityLog {
   }
 }
 
-const assetUrl = (entry: Prd05AssetEntry | { repoPath: string }): string => `/${entry.repoPath}`;
+// URLs come from scenes/prd05/urls.ts: dist `/qr-assets/` by default (capture.mjs
+// serves only the built dist), repo paths under a repo-root dev server.
 
-export interface Prd05ThreeSceneOptions {
+export interface Prd05ThreeSceneOptions extends Prd05UrlOptions {
   readonly qrFlags?: readonly string[];
 }
 
-export async function runPrd05ThreeScene(spec: Prd05SceneSpec, host: HTMLElement, _options: Prd05ThreeSceneOptions = {}): Promise<ReadyPayload> {
+export async function runPrd05ThreeScene(spec: Prd05SceneSpec, host: HTMLElement, options: Prd05ThreeSceneOptions = {}): Promise<ReadyPayload> {
   const started = performance.now();
   const log = new CapabilityLog();
   const errors: string[] = [];
@@ -59,7 +61,7 @@ export async function runPrd05ThreeScene(spec: Prd05SceneSpec, host: HTMLElement
     const pmrem = new THREE.PMREMGenerator(renderer);
     pmrem.compileEquirectangularShader();
     try {
-      const hdr = await new RGBELoader().loadAsync(assetUrl(hdriEntry));
+      const hdr = await new RGBELoader().loadAsync(prd05HdriUrl(hdriEntry, options));
       hdr.mapping = THREE.EquirectangularReflectionMapping;
       const envRt = pmrem.fromEquirectangular(hdr);
       scene.environment = envRt.texture;
@@ -96,7 +98,7 @@ export async function runPrd05ThreeScene(spec: Prd05SceneSpec, host: HTMLElement
   const gltfLoader = new GLTFLoader();
   gltfLoader.setMeshoptDecoder(MeshoptDecoder);
   const ktx2 = new KTX2Loader()
-    .setTranscoderPath("/node_modules/three/examples/jsm/libs/basis/")
+    .setTranscoderPath(threeBasisTranscoderPath(options))
     .detectSupport(renderer);
   gltfLoader.setKTX2Loader(ktx2);
   log.add("optimized-decoders", "supported", "GLTFLoader + MeshoptDecoder + KTX2Loader(basis transcoder)");
@@ -123,7 +125,7 @@ export async function runPrd05ThreeScene(spec: Prd05SceneSpec, host: HTMLElement
     }
     const entry = prd05Assets[object.asset];
     try {
-      const gltf = await gltfLoader.loadAsync(assetUrl(entry));
+      const gltf = await gltfLoader.loadAsync(prd05ModelUrl(entry, options));
       const root = gltf.scene;
       root.name = object.name;
       root.position.set(...object.position);
@@ -131,7 +133,8 @@ export async function runPrd05ThreeScene(spec: Prd05SceneSpec, host: HTMLElement
         root.rotation.order = EULER_ORDER;
         root.rotation.set(...object.rotation);
       }
-      if (object.scale !== undefined) root.scale.setScalar(object.scale);
+      if (typeof object.scale === "number") root.scale.setScalar(object.scale);
+      else if (object.scale !== undefined) root.scale.set(...object.scale);
       root.traverse((child) => {
         const mesh = child as THREE.Mesh;
         if (!mesh.isMesh) return;
@@ -175,6 +178,9 @@ export async function runPrd05ThreeScene(spec: Prd05SceneSpec, host: HTMLElement
     scene: spec.id,
     engineVersion: THREE.REVISION,
     capabilityLog: log.entries,
+    // capture.mjs classifies a payload without drawCalls as no-draw: report the
+    // renderer's own counter for the last rendered frame (as three/common.ts does).
+    drawCalls: renderer.info.render.calls,
     triangles: Math.round(triangles),
     warnings: [],
     errors,

@@ -150,6 +150,73 @@ export function defaultProgramFeatures(material: Material, ctx: MaterialFeatureC
   };
 }
 
+/** Geometry attribute presence test, by shader name (`a_uv`, `a_joints`, …). */
+export type GeometryAttributeTest = (shaderName: string) => boolean;
+
+/** True when the geometry carries a full skin (joints + weights). */
+export function geometryHasSkin(has: GeometryAttributeTest): boolean {
+  return has("a_joints") && has("a_weights");
+}
+
+/**
+ * #867 (games): the program's feature set follows the geometry, as in
+ * three.js. A primitive or procedural mesh with no `a_uv` cannot sample
+ * uv-set-0 maps (they and the extension lobe maps are dropped); no `a_uv1`
+ * drops uv-set-1 maps; no `a_color` drops vertex colors; no joints/weights
+ * drops skinning segments from `prd06.deform` (morph is texture-driven and
+ * untouched). Normal maps need only uv: the generated program never reads `a_tangent`
+ * (derivative TBN when the geometry has none). Returns `record` itself when
+ * nothing is dropped, so program keys stay stable for complete geometry.
+ */
+export function featuresForGeometry<T extends FeatureRecord>(record: T, has: GeometryAttributeTest): T {
+  const uv0 = has("a_uv");
+  const uv1 = has("a_uv1");
+  const skin = geometryHasSkin(has);
+  let changed = false;
+  const maps = {} as { -readonly [K in keyof ProgramFeatures["maps"]]: ProgramFeatures["maps"][K] };
+  for (const [slot, feature] of Object.entries(record.maps) as [keyof ProgramFeatures["maps"], TextureSlotFeature | undefined][]) {
+    if (!feature) continue;
+    if ((feature.uvSet === 1 ? uv1 : uv0)) maps[slot] = feature;
+    else changed = true;
+  }
+  const extensions = uv0
+    ? record.extensions
+    : record.extensions.map((ext) => {
+        if (ext.maps.length === 0) return ext;
+        changed = true;
+        return { ...ext, maps: [] };
+      });
+  const vertexColors = record.vertexColors && has("a_color");
+  if (vertexColors !== record.vertexColors) changed = true;
+  const extraSkin = skin && has("a_joints1") && has("a_weights1");
+  const skinning = skin
+    ? record.skinning?.influences === 8 && !extraSkin
+      ? { ...record.skinning, influences: 4 as const }
+      : record.skinning
+    : undefined;
+  if (skinning !== record.skinning) changed = true;
+  let features = record.features;
+  const deform = features["prd06.deform"];
+  if (deform !== undefined) {
+    // Selection may combine skinning and texture-driven morphs. Dropping the
+    // whole feature for a geometry without joint attributes freezes morphs.
+    const masked = typeof deform === "string"
+      ? deform.split("|").flatMap((part) => {
+          if (part === "skin4" || part === "skin8") return skin ? [part === "skin8" && !extraSkin ? "skin4" : part] : [];
+          return [part];
+        }).join("|") || undefined
+      : skin ? deform : undefined;
+    if (masked !== deform) {
+      features = { ...features };
+      if (masked === undefined) delete (features as Record<string, string | number | boolean>)["prd06.deform"];
+      else features = { ...features, "prd06.deform": masked };
+      changed = true;
+    }
+  }
+  if (!changed) return record;
+  return { ...record, maps, extensions, vertexColors, skinning, features };
+}
+
 /** Allow-listed shader → covered by the generated path. */
 export function materialUsesGeneratedProgram(material: Material): boolean {
   return ALLOWLIST_PROGRAM_SHADERS.has(material.shaderKey);

@@ -22,7 +22,7 @@ import {
 } from "../../../../packages/rendering/src/environment/EnvironmentCache";
 
 const LIGHTING_ON = resolveQrFlags({ options: { A3D_QR_LIGHTING: true } });
-const LIGHTING_OFF = resolveQrFlags({});
+const LIGHTING_OFF = resolveQrFlags({ options: ["none"] });
 
 describe("C-09 Prd02EnvironmentProbeFactory", () => {
   it("slot.get resolves the real factory under the flag and the pending stub without it", () => {
@@ -34,7 +34,11 @@ describe("C-09 Prd02EnvironmentProbeFactory", () => {
 
   it("neutral(tier) builds a mip-mapped rgba16f cube + SH9 without device reads", () => {
     const device = new MockRenderDevice();
-    const factory = createEnvironmentProbeFactory(device);
+    // Structure-only assertions (size, mips, format, SH9): 4 GGX samples instead
+    // of the default keeps the 256 px tier build but ~3x cheaper (CPU prefilter
+    // was 0.7 s locally / 5.3 s on CI → the 5 s unit timeout). SH9 comes from
+    // the base faces, so it is identical at any sample count.
+    const factory = new Prd02EnvironmentProbeFactory(device, { samples: 4 });
     const probe = factory.neutral("medium"); // C-27 medium environmentSize = 256
     expect(probe.kind).toBe("environment-probe");
     expect(probe.source).toBe("neutral");
@@ -189,11 +193,12 @@ describe("EnvironmentCache", () => {
     expect(probe.source).toBe("neutral");
     expect(probe.faceSize).toBe(256);
     expect(probe.mipCount).toBe(1); // single constant level — the GGX chain yields 5
-    // Floor carries the baked room-neutral SH9 verbatim → diffuse parity before/after upgrade.
+    // Floor carries the baked room-neutral SH9 verbatim → diffuse parity before/after upgrade
+    // (point-lit r185 room, re-baked for #1141 / 02-S2).
     expect(probe.sh9).toHaveLength(27);
-    expect(probe.sh9[0]).toBeCloseTo(1.8945446, 6);
-    expect(probe.sh9[1]).toBeCloseTo(1.8945446, 6);
-    expect(probe.sh9[2]).toBeCloseTo(1.8945446, 6);
-    expect(probe.sh9[3]).toBeCloseTo(-1.4085772, 6);
+    expect(probe.sh9[0]).toBeCloseTo(3.7560017, 6);
+    expect(probe.sh9[1]).toBeCloseTo(3.7560017, 6);
+    expect(probe.sh9[2]).toBeCloseTo(3.7560017, 6);
+    expect(probe.sh9[3]).toBeCloseTo(-1.7286245, 6);
   });
 });

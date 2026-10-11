@@ -79,11 +79,13 @@ export const ENABLE_CRAFT_TARGETS = true;
 /** C-39 registry commands referenced by skills before their T2.16-T2.18 CLI
  *  implementations land (§7.6): `aura3d look capture|judge|rubric|lint`. */
 export const REGISTRY_COMMANDS: ReadonlyMap<string, ReadonlySet<string>> = new Map([
-  ["look", new Set(["capture", "judge", "rubric", "lint"])]
+  ["look", new Set(["capture", "judge", "rubric", "lint"])],
+  // PRD-15 T6.1 `aura3d migrate three <glob> [--write] [--report]` (commands/prd15).
+  ["migrate", new Set(["three"])]
 ]);
 export const REGISTRY_FLAGS: ReadonlySet<string> = new Set([
   "--route", "--shots", "--viewports", "--runner", "--out", "--json",
-  "--validate", "--judge", "--genre"
+  "--validate", "--judge", "--genre", "--write", "--report"
 ]);
 
 // ---------------------------------------------------------------------------

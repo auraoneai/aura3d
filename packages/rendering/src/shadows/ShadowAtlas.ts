@@ -117,12 +117,18 @@ export function spotShadowMatrix(position: V3, direction: V3, range: number, out
   return toTileUv(spotClip(position, direction, range, outerAngleRadians));
 }
 
-/** NDC → tile rect NDC (atlas draw): scale by tile fraction, offset to its corner. */
-function atlasTileClipMatrix(alloc: ShadowAtlasAllocation, atlasSize: number): Float32Array {
+/**
+ * NDC → tile rect NDC (atlas draw): scale by the tile fraction and move the
+ * tile centre to the allocation's centre, so NDC ±1 lands on the rect edges
+ * [x, x + w] / A — the same rect the receiver samples (`rect.xy + uv·rect.zw`).
+ * (The offset previously omitted +w/A, +h/A, drawing each tile half a tile
+ * away from where it is sampled.)
+ */
+export function atlasTileClipMatrix(alloc: ShadowAtlasAllocation, atlasSize: number): Float32Array {
   const sx = alloc.width / atlasSize;
   const sy = alloc.height / atlasSize;
-  const tx = (2 * alloc.x) / atlasSize - 1;
-  const ty = (2 * alloc.y) / atlasSize - 1;
+  const tx = (2 * alloc.x + alloc.width) / atlasSize - 1;
+  const ty = (2 * alloc.y + alloc.height) / atlasSize - 1;
   return new Float32Array([
     sx, 0, 0, 0,
     0, sy, 0, 0,

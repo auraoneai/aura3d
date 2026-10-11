@@ -86,18 +86,21 @@ describe("PRD-03 Phase 3 — §6.9 AO bridge (S2 GTAO)", () => {
     expect(authored.radius).toBeCloseTo(0.4, 6);
   });
 
-  it("two AO effect nodes throw POST_DUPLICATE_STAGE", () => {
-    expect(() =>
-      createRootPostPipeline(
-        snapshotWith(
-          { effect: "ambient-occlusion" },
-          { effect: "contact-occlusion" }
-        ),
-        { near: 0.1, far: 100, mode: "perspective" },
-        undefined,
-        tier
-      )
-    ).toThrow(/POST_DUPLICATE_STAGE/);
+  it("two AO effect nodes merge into one S2 stage with a POST_DUPLICATE_STAGE diagnostic (T0-29: no mount throw)", () => {
+    const result = createRootPostPipeline(
+      snapshotWith(
+        { effect: "contact-occlusion", radius: 0.2, postAuthored: ["radius"] },
+        { effect: "ambient-occlusion", radius: 0.9, postAuthored: ["radius"] }
+      ),
+      { near: 0.1, far: 100, mode: "perspective" },
+      undefined,
+      tier
+    );
+    // The ambient-occlusion node drives S2 regardless of authoring order.
+    expect((result.options.ao as { radius: number }).radius).toBeCloseTo(0.9, 6);
+    const duplicate = result.diagnostics.find((d) => d.code === "POST_DUPLICATE_STAGE");
+    expect(duplicate?.effect).toBe("S2-gtao");
+    expect(duplicate?.message).toMatch(/contact-occlusion \+ ambient-occlusion/);
   });
 });
 
@@ -226,7 +229,9 @@ describe("PRD-03 Phase 3 — C-02 indirectFraction chunks", () => {
     expect(write).toBeDefined();
     const built = buildChunkHarnessProgram([pars!, write!]);
     expect(built.fragment).toContain("a3dWriteIndirectFraction");
-    expect(built.fragment).toContain("o_color = a3dWriteIndirectFraction(o_color, a3dIndirectRadiance)");
+    // #1139: the body uses the C-02 generator's own forward-fragment symbols
+    // (compiled for real in prd03-indirect-fraction-compile.test.ts).
+    expect(built.fragment).toContain("a3dAlpha = a3dWriteIndirectFraction(vec4(a3dColor, a3dAlpha), indirectDiffuse + indirectSpecular).a");
   });
 
   it("feature selects forward passes, defaults on under A3D_QR_POST, and -post_ao opts out", () => {

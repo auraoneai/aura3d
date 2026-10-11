@@ -1,5 +1,7 @@
 {
   "schema": "aura3d.tier-measurements/1.0",
+  "status": "placeholder",
+  "statusNote": "P-56 / lane-05 red flag 6: not a measurement. Run against production URLs with the stub tier controller (tierObserved=auto on every row, tier cache never written) on a SwiftShader software renderer, not a real GPU. Do not cite. Replaced only by a remote measure-tiers run with run ids (05-TIERS, #732).",
   "generatedAt": "2026-10-07T11:51:04.915Z",
   "baseUrl": "https://aura3d.auraone.ai",
   "sampleMs": 4000,

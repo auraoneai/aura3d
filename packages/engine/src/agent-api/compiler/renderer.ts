@@ -8,7 +8,7 @@ import { primitive } from "../nodes/primitives.js";
 import { createRendererDiagnosticReport } from "../rendererDiagnostics.js";
 import { clamp01, createViewProjection } from "../sceneMath.js";
 import { resolveCameraFrame } from "./camera.js";
-import { createProductionRuntimeCollectedLights, createProductionRuntimePostprocessObservation, createProductionRuntimeShadowObservation, createProductionTexturesObservation, isRenderableModelNode } from "./observations.js";
+import { createProductionRuntimeCollectedLights, createProductionRuntimePostprocessObservation, createProductionRuntimeShadowObservation, createProductionTexturesObservation, declaresWebGLContent, isRenderableModelNode, isWebGLRenderableNode } from "./observations.js";
 import { createProductionTextObservation } from "./text.js";
 import { getRootPerformanceQuality, getRootRenderSource } from "../RootRuntimeSupport.js";
 import { Renderer, type RenderBackendKind, type ProductionRendererFeature, type ProductionRendererInput, type RenderDeviceDiagnostics } from "@aura3d/rendering";
@@ -18,6 +18,7 @@ import { createProductionRuntimeEnvironment } from "./environment.js";
 import { webGL2MaxTextureSize } from "./webglRuntime.js";
 import { applyModelTintBridge } from "./modelMaterials.js";
 import { createProductionRuntimePrimitiveEntries, upgradeProductionEnvironmentHdri } from "./primitives.js";
+import { qrPrimitiveGeometryOptions } from "./geometry.js";
 import { createProductionRuntimeRendererInput } from "./renderInput.js";
 import { createProductionRuntimeShadowOptions, describeProductionSpotShadow } from "./shadows.js";
 import { upgradeProductionPrimitiveTextures } from "./textures.js";
@@ -55,6 +56,11 @@ export async function createProductionRuntimeSceneRenderer(
     : modelNodes.length > 0
     ? await (async () => {
         const { createTypedGLBActor } = await import("../../production-runtime/TypedGLBActor.js");
+        // Q-15-1 (#461, C-16 §7.3): with A3D_QR_ASSETS on, compressed GLBs
+        // (meshopt/draco/KTX2) require their decoders from /aura-decoders/
+        // and fail closed with AssetDecoderUnavailable; flag off spreads {}.
+        const { typedGLBActorDecoderOptions } = await import("../AssetDecoders.js");
+        const decoderOptions = typedGLBActorDecoderOptions(flags, undefined);
         return await Promise.all(modelNodes.map(async (node, index) => ({
           node,
           actor: await createTypedGLBActor({
@@ -65,12 +71,13 @@ export async function createProductionRuntimeSceneRenderer(
             height: canvas.height,
             ...(node.hiddenNodeNames ? { hiddenNodeNames: node.hiddenNodeNames } : {}),
             ...(node.role === "primaryWorld" ? { consolidateStaticMeshes: true } : {}),
+            ...decoderOptions,
             ...applyModelTintBridge(node)
           })
         })));
       })()
     : [];
-  let primitiveEntries: readonly ProductionRuntimePrimitiveEntry[] = flagsOn ? [] : createProductionRuntimePrimitiveEntries(flattened);
+  let primitiveEntries: readonly ProductionRuntimePrimitiveEntry[] = flagsOn ? [] : createProductionRuntimePrimitiveEntries(flattened, qrPrimitiveGeometryOptions(flags, resolveMountQuality(rendererOptions)));
   // T2.4 — C-29 `Renderer.create` replaces `ProductionRuntimeRenderer.create`.
   // `preserveDrawingBuffer` is gone: frame capture flows through the C-05
   // `captureFrame`/`toBlob` path after a synchronous render, not the raw
@@ -180,9 +187,19 @@ export async function createProductionRuntimeSceneRenderer(
     const compiledScene = await compileScene(snapshot, sceneCompileCtx);
     markTiming("a3d:mount:compile-scene:resolved");
     const compiled = asRuntimeCompiled(compiledScene);
+    const probeStatus = (): "pending" | "ready" | "fallback" | undefined =>
+      (compiledScene as { environmentProbeStatus?: "pending" | "ready" | "fallback" }).environmentProbeStatus;
     if (compiled) {
       actorEntries = compiled.actorEntries as ProductionRuntimeActorEntry[];
       primitiveEntries = compiled.primitiveEntries as ProductionRuntimePrimitiveEntry[];
+      // #1142: the C1 textured upgrade above ran on the pre-compile entry list,
+      // which is empty with A3D_QR_COMPILER on — compiled primitives never got
+      // their base-colour/normal/roughness maps. Run it on the compiled set.
+      void upgradeProductionPrimitiveTextures(primitiveEntries, (message) => {
+        textureUpgradeWarnings.add(message);
+      }, webGL2MaxTextureSize(canvas)).catch((error) => {
+        textureUpgradeWarnings.add(`textured upgrade pass failed (${error instanceof Error ? error.message : String(error)}); scalar materials retained`);
+      });
       // C-37: bind the mounted compiled scene so registry add/remove can take the
       // subtree-compile path (no remount) under A3D_QR_COMPILER.
       (runtimeNodes as { attachCompiled?: (scene: unknown) => void } | undefined)?.attachCompiled?.(compiledScene);
@@ -242,8 +259,11 @@ export async function createProductionRuntimeSceneRenderer(
             : productionEnvironment.evidence,
           // B3 iblPixelBacked: true only after the HDR chain swaps the live
           // lighting object. Procedural first frames and fallbacks never claim it.
-          iblPixelBacked: hdriState.status === "ready",
-          hdriStatus: hdriState.status,
+          // #1142: when the compiled C-09 probe owns IBL (compiler + lighting),
+          // a still-pending probe acquire keeps the scene "pending" too, so
+          // captures wait for real specular instead of the analytic floor.
+          iblPixelBacked: hdriState.status === "ready" && probeStatus() !== "pending",
+          hdriStatus: probeStatus() === "pending" && hdriState.status !== "none" ? "pending" : hdriState.status,
           ...(hdriState.dualProbe === undefined ? {} : { dualProbe: hdriState.dualProbe }),
           ...(productionEnvironment.hdriRotation === undefined ? {} : { hdriRotation: productionEnvironment.hdriRotation })
         },
@@ -314,7 +334,20 @@ export async function createProductionRuntimeSceneRenderer(
         productionRuntimeLights
       );
     };
-    const takePreparedFrame = (time: number): ProductionRendererInput => {
+    /*
+   * #1175 follow-up: a scene whose only drawable content is PRD-10 world
+   * nodes (terrain/water/grass, drawn by the prd10 frame contributor) has no
+   * mesh primitive in the production input, so the mesh-primitive
+   * precondition threw "requires at least one real mesh primitive" and the
+   * frame never ran. World-only scenes skip that precondition only; a frame
+   * that still draws nothing fails the mount's NoDrawError check.
+   */
+  const worldOnlyScene = declaresWebGLContent(snapshot.nodes) && !snapshot.nodes.some(isWebGLRenderableNode);
+  const validateFrameInput = (input: ProductionRendererInput): void => {
+    if (worldOnlyScene && input.metadata.primitiveCount <= 0) return;
+    validateProductionRendererInput(input);
+  };
+  const takePreparedFrame = (time: number): ProductionRendererInput => {
       const prepared = preparedFrame?.time === time ? preparedFrame.input : undefined;
       preparedFrame = undefined;
       return prepared ?? buildFrame(time);
@@ -335,7 +368,7 @@ export async function createProductionRuntimeSceneRenderer(
       },
       render(time) {
         const input = takePreparedFrame(time);
-        validateProductionRendererInput(input);
+        validateFrameInput(input);
         latestDeviceDiagnostics = productionRenderer.render(input.source, input.camera);
         getRootRenderSource(canvas)?.onFrame?.(latestDeviceDiagnostics, [...(input.source.collectRenderItems?.() ?? [])]);
         latestFeatures = rendererInteractiveFeatureReport(productionRenderer, latestDeviceDiagnostics, input);
@@ -343,7 +376,7 @@ export async function createProductionRuntimeSceneRenderer(
       },
       async renderAsync(time) {
         const input = takePreparedFrame(time);
-        validateProductionRendererInput(input);
+        validateFrameInput(input);
         latestDeviceDiagnostics = await productionRenderer.renderAsync(input.source, input.camera);
         getRootRenderSource(canvas)?.onFrame?.(latestDeviceDiagnostics, [...(input.source.collectRenderItems?.() ?? [])]);
         latestFeatures = rendererInteractiveFeatureReport(productionRenderer, latestDeviceDiagnostics, input);

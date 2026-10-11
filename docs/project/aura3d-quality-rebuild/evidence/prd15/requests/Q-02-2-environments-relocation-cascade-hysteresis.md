@@ -1,5 +1,7 @@
 # Q-02-2 — environments relocation + shadows/CascadeHysteresis.ts decision
 
+**Issue:** #996 (P-64 writeback)
+
 **Status:** OPEN (environment files resolved by lane 15 — see below; CascadeHysteresis decision still with lane 02)
 **Requesting lane:** 15 (PRD-15 Phase 6, honest packages T6.5)
 **Owning lane:** 02 (PRD-02, rendering environment/PMREM surface)

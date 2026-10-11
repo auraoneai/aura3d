@@ -25,7 +25,7 @@ const game = createGame({
         primitives.box({ name: "rail s", material: RAIL }).position(0, 0.05, 0.53).scale([2.1, 0.1, 0.08]),
         primitives.box({ name: "rail e", material: RAIL }).position(1.03, 0.05, 0).scale([0.08, 0.1, 1.0]),
         primitives.box({ name: "rail w", material: RAIL }).position(-1.03, 0.05, 0).scale([0.08, 0.1, 1.0]),
-        primitives.sphere({ name: "cue ball", material: CUE_BALL }).position(-0.6, 0.03, 0).scale([0.06, 0.06, 0.06]),
+        primitives.sphere({ name: "cue ball", material: CUE_BALL }).position(-0.6, 0.03, 0).scale([0.06, 0.06, 0.06]).runtime({ id: "cue-ball" }),
         primitives.sphere({ name: "red ball", material: RED_BALL }).position(0.3, 0.03, -0.05).scale([0.06, 0.06, 0.06]),
         primitives.sphere({ name: "eight ball", material: BLACK_BALL }).position(0.36, 0.03, 0.04).scale([0.06, 0.06, 0.06]),
         lights.point({ name: "pendant", color: "#fff3d0", intensity: 4.0 }).position(0, 1.6, 0),
@@ -37,7 +37,7 @@ const game = createGame({
       description: "cue ball pots the red ball corner-right",
       async setup(g) {
         g.session.transition("playing");
-        const cue = g.app.scene.node("cue ball");
+        const cue = g.app.nodes.require("cue-ball");
         cue.setPosition(-0.35, 0.03, 0.01);
         await new Promise((r) => setTimeout(r, 120));
         cue.setPosition(0.22, 0.03, -0.04);

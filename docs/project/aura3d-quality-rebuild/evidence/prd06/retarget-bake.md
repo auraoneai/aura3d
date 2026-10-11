@@ -1,5 +1,8 @@
 # T3.8 — `bakeRetargetedClips` + `addClipsFrom` (PRD-06 §7.2, R11)
 
+> **06-REC note (finish phase, G3):** this file cites no passing remote run id; every completion claim below is recorded as **unbacked** until a green lane-workflow/GitLab run id is added next to it.
+
+
 Branch `qr/prd06-pose-foundations` / PR #346.
 
 ## Surface

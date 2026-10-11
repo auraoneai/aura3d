@@ -8,7 +8,6 @@ import type { QrFlags, AuraQualityTier } from "@aura3d/rendering/contracts";
 import { StubAppEffects } from "../../contracts/effects";
 import { ProductionEffectSystem, type AppLike } from "../../production-runtime/effects/ProductionEffectSystem";
 import { attachVfxBridge } from "./bridge";
-import { bindPrd07RendererFlags } from "@aura3d/rendering";
 
 interface EffectEntry {
   readonly id: string;
@@ -208,7 +207,7 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
           size: [size, size],
           normal: at.normal,
           baseOpacity: options?.opacity ?? 0.85,
-          ...(options?.color !== undefined ? { color: options.color as never } : {}),
+          ...(options?.color !== undefined ? { color: options.color } : {}),
           ...(options?.lifetime !== undefined ? { lifetime: options.lifetime } : {})
         }
       });
@@ -312,7 +311,6 @@ function releasePrd07App(value: object): void {
  * surface identical; no draws reach the renderer because the prd07.particles
  * contributor is flag-gated. */
 export function createEffectsExtension(app: AuraApp, ctx: AuraEffectsExtensionContext): import("../../contracts/effects").AuraAppEffects {
-  bindPrd07RendererFlags(ctx.flags);
   const system = registerPrd07System(app, () => new ProductionEffectSystem(app as unknown as AppLike, {
     // T0-34 FIX-transient-lights: resolved C-27 tier from app.quality, not a
     // hard-coded "high" (controls transient-light cap and particle budget).

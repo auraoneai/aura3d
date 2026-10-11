@@ -1,5 +1,7 @@
 # Q-01-6 — inline GLSL in `ShaderLibrary.ts` / `ShaderLibraryCore.ts` (glsl-location gate)
 
+**Issue:** #993 (P-64 writeback)
+
 **Owner:** 01 (rendering core) · **Requester:** 15 · **SLA:** 2 working days
 **Gate:** `glsl-location` (fail mode since T4.9) — allowlist entries until
 2026-11-30.

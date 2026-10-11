@@ -256,7 +256,34 @@ export const alphaToCoverageFeature: ShaderFeature = {
   }
 };
 
-const FEATURES: readonly ShaderFeature[] = [uvTransformFeature, tangentFrameFeature, debugViewFeature, transmissionTargetFeature, alphaToCoverageFeature];
+/**
+ * `prd04.rim` (#88, R-14-14 §8.10): view-dependent rim emission on lit generated
+ * programs. Selected iff the material carries `u_prd04RimStrength > 0`; the rim
+ * colour defaults to white and the falloff power to 3 when the material omits them.
+ */
+export const rimFeature: ShaderFeature = {
+  id: "prd04.rim",
+  owner: OWNER,
+  flag: FLAG,
+  hooks: ["fragment:emissive"],
+  chunks: ["a3d_prd04_rim_call"],
+  select(input: ShaderFeatureSelectInput) {
+    const material = input.item.material as ParameterSource | undefined;
+    const strength = material?.getParameter("u_prd04RimStrength");
+    return typeof strength === "number" && strength > 0 ? true : undefined;
+  },
+  defines(value): Readonly<Record<string, string | number | true>> {
+    return value === true ? { A3D_PRD04_RIM: 1 } : {};
+  },
+  bindUniforms(_value, item, set) {
+    const material = item.material as ParameterSource | undefined;
+    set("u_prd04RimStrength", material?.getParameter("u_prd04RimStrength") ?? 0);
+    set("u_prd04RimColor", material?.getParameter("u_prd04RimColor") ?? new Float32Array([1, 1, 1]));
+    set("u_prd04RimPower", material?.getParameter("u_prd04RimPower") ?? 3);
+  }
+};
+
+const FEATURES: readonly ShaderFeature[] = [uvTransformFeature, tangentFrameFeature, debugViewFeature, transmissionTargetFeature, alphaToCoverageFeature, rimFeature];
 
 let registered = false;
 

@@ -1622,28 +1622,35 @@ meantime and which criterion moves to the next checkpoint after it lands.
 
 | ID | To | File / change | Contract | Meanwhile |
 |---|---|---|---|---|
-| Q-15-1 | 15 | `compiler/primitives.ts` (from `index.ts:14747-14754`): `localNode` keeps `size: node.size` (R18 declared fix) | C-36 | world content bypasses this path (§9.3); benchmark 16 recovery is an integrated observation |
-| Q-15-2 | 15 | `index.ts:9241-9245` `city.block/cityBlock` aliases: add `@deprecated` JSDoc pointing at `world.street` | — | aliases call PRD 10's `prefabs.cityBlock`, which already warns |
-| Q-15-3 | 15 | `packages/engine/package.json#exports`: reserve `@aura3d/engine/world` → `src/agent-api/world/index.ts` | §3.8 | `world` exported from the root through the lazy lane barrel |
-| Q-15-4 | 15 | `packages/materials/src/TextureSet.ts:40-59`: mark `THREE_COMPAT_TEXTURE_SETS` "not a terrain/foliage source" | — | PRD 10 ships its own layer presets |
-| Q-15-5 | 15 | `.github/QR_OWNERSHIP.json`: confirm `packages/engine/src/agent-api/compiler/world.ts` and `production-runtime/world/` map to prd10 (CONTRACTS §4.1 row 10) | §4 | — |
-| Q-02-1 | 02 | `DepthPass.ts`: apply registered C-11 depth features (`prd10.wind`) and the `alphaTest`/`instanced` variant for world casters on PRD 02's real path | C-11 | world draws cast no shadows on Path S; reported `pending: ["C-11:shadows"]` |
-| Q-02-2 | 02 | Accept `"sky-capture"` resolutions from `prd10.*` sources whose `probe.capture.include = "sky-only"` (already in the C-09 union) and report `iblPixelBacked` in `lighting.diagnostics().environment` | C-09 | PRD 10 reports `iblPixelBacked: null` |
-| Q-02-3 | 02 | `EnvironmentPlatform.ts:395-415`: delete `createProceduralSkyDome`/`createEnvironmentStage` (no callers, 08 §8.5) | — | PRD 10 never calls them |
-| CCR-10-1 | 15 + 02 | C-09 additive field `AuraEnvironmentSourceResolution.blendFrom?: { readonly probe: unknown; readonly weight: number }` for time-of-day crossfade | C-09 | hard cut on probe swap (§6.7) |
-| Q-07-1 | 07 | `nodes/weather.ts`: `weather.wetGround` `@deprecated` → C-21 wetness + `world.street({ wet })` | C-21 | `world.street({ wet })` is option-ignored on Path S |
-| Q-07-2 | 07 | C-21 `AuraSkySpec` gradient `bands` support for an aurora band (`polar-night`) and a city glow band (`night-city`) | C-21 | rigs use plain gradient; aurora is absent and reported |
-| Q-07-3 | 07 | C-21 real `setFog({ mode: "absorption", absorption })` for underwater | C-21 | linear fog fallback + degradation |
-| Q-04-1 | 04 | `nodes/material.ts`: add `material.foliage/terrainLayer/planet` as aliases of `world.materials.*` | C-15 | agents use `world.materials.*` |
-| Q-04-2 | 04 | C-15 real: honour `alphaMode: "mask"`, `alphaCutoff`, `alphaToCoverage`, `doubleSided` on forward materials (kit GLBs with foliage) | C-15 | PRD 10 programs honour them; forward kit materials alpha-blend as today |
-| Q-11-1 | 11 | `WebGPUDevice.ts:3179` `createNativeShaderSources`: consume C-02 `ShaderChunk.wgsl` twins of `a3d_prd10_*` and a storage-buffer instance array | C-02, C-29 | WebGPU excluded from PRD 10 standalone acceptance (§18) |
-| Q-11-2 | 11 | `QUALITY_TIERS` CCR (additive) only if §17 world budgets need tier fields; none planned | C-27 | PRD 10 tables in §17 read existing fields |
-| Q-11-3 | 11 | `devtools/sceneKitBudgets.ts` (from `index.ts:9689`): replace the "instanced or impostored by family" `cityBlock.evidence` string with `diagnostics().world` values | C-31 | PRD 10 diagnostics report the real values |
-| Q-12-1 | 12 | Add `packages/engine/assets/world/**` binary paths to LFS in `.gitattributes` and `benchmarks/quality-rebuild/ci.sh`; re-baseline scenes affected by T2 and V4 fixes; rubric lines for §16.2 | C-30, C-32 | lane workflow `qr-prd10-world.yml` pulls LFS itself |
-| Q-13-1 | 13 | Skills/templates from facts `F-10-01..08`; no template uses `water.surface`, `city.block` or primitive trees | C-40 | — |
-| Q-14-1 | 14 | Per-route adoption of `world.*` per §1 target table, using `prd10-world-migrate`; delete review-capture world forks (K7) | R21 | standalone acceptance uses lane scenes, not routes |
-| Q-15-6 | 15 | `contracts/flags.ts` `resolveQrFlags`: fill unset `A3D_QR_WORLD_{TERRAIN,WATER,BIOME}` from an enabled `A3D_QR_WORLD` after all flag sources run, so sub-flags are on-by-default per §13 while `-world.biome`/`A3D_QR_WORLD_BIOME=0` still disable | §13 | lane code reads sub-flags via `worldSubflagOn` (parent-default-on); the C-09 env sources keep the `A3D_QR_WORLD_BIOME` registry gate and activate on explicit `world.biome` until this lands |
-| Q-15-7 | 15 | `tests/unit/rendering/environment-preset-pack.test.ts` + `tests/fixtures/b3-preset-pack-rows.json` (both owner 15): adopt `presetPackExposureFactor`/`presetPackSsimReference` and per-preset SSIM references per T6.5 | T6.5 | selectors are exported from `EnvironmentPresetPack.ts` behind `A3D_QR_WORLD_BIOME`; legacy normalized path untouched flag-off |
+| Q-15-1 (#247) | 15 | `compiler/primitives.ts` (from `index.ts:14747-14754`): `localNode` keeps `size: node.size` (R18 declared fix) | C-36 | world content bypasses this path (§9.3); benchmark 16 recovery is an integrated observation |
+| Q-15-2 (#248) | 15 | `index.ts:9241-9245` `city.block/cityBlock` aliases: add `@deprecated` JSDoc pointing at `world.street` | — | aliases call PRD 10's `prefabs.cityBlock`, which already warns |
+| Q-15-3 (#249) | 15 | `packages/engine/package.json#exports`: reserve `@aura3d/engine/world` → `src/agent-api/world/index.ts` | §3.8 | `world` exported from the root through the lazy lane barrel |
+| Q-15-4 (#250) | 15 | `packages/materials/src/TextureSet.ts:40-59`: mark `THREE_COMPAT_TEXTURE_SETS` "not a terrain/foliage source" | — | PRD 10 ships its own layer presets |
+| Q-15-5 (#251) | 15 | `.github/QR_OWNERSHIP.json`: confirm `packages/engine/src/agent-api/compiler/world.ts` and `production-runtime/world/` map to prd10 (CONTRACTS §4.1 row 10) | §4 | — |
+| Q-02-1 (#252) | 02 | `DepthPass.ts`: apply registered C-11 depth features (`prd10.wind`) and the `alphaTest`/`instanced` variant for world casters on PRD 02's real path | C-11 | world draws cast no shadows on Path S; reported `pending: ["C-11:shadows"]` |
+| Q-02-2 (#253) | 02 | Accept `"sky-capture"` resolutions from `prd10.*` sources whose `probe.capture.include = "sky-only"` (already in the C-09 union) and report `iblPixelBacked` in `lighting.diagnostics().environment` | C-09 | PRD 10 reports `iblPixelBacked: null` |
+| Q-02-3 (#254) | 02 | `EnvironmentPlatform.ts:395-415`: delete `createProceduralSkyDome`/`createEnvironmentStage` (no callers, 08 §8.5) | — | PRD 10 never calls them |
+| CCR-10-1 (#255) | 15 + 02 | C-09 additive field `AuraEnvironmentSourceResolution.blendFrom?: { readonly probe: unknown; readonly weight: number }` for time-of-day crossfade | C-09 | hard cut on probe swap (§6.7) |
+| Q-07-1 (#256) | 07 | `nodes/weather.ts`: `weather.wetGround` `@deprecated` → C-21 wetness + `world.street({ wet })` | C-21 | `world.street({ wet })` is option-ignored on Path S |
+| Q-07-2 (#257) | 07 | C-21 `AuraSkySpec` gradient `bands` support for an aurora band (`polar-night`) and a city glow band (`night-city`) | C-21 | rigs use plain gradient; aurora is absent and reported |
+| Q-07-3 (#187) | 07 | C-21 real `setFog({ mode: "absorption", absorption })` for underwater | C-21 | linear fog fallback + degradation |
+| Q-04-1 (#258) | 04 | `nodes/material.ts`: add `material.foliage/terrainLayer/planet` as aliases of `world.materials.*` | C-15 | agents use `world.materials.*` |
+| Q-04-2 (#259) | 04 | C-15 real: honour `alphaMode: "mask"`, `alphaCutoff`, `alphaToCoverage`, `doubleSided` on forward materials (kit GLBs with foliage) | C-15 | PRD 10 programs honour them; forward kit materials alpha-blend as today |
+| Q-11-1 (#260) | 11 | `WebGPUDevice.ts:3179` `createNativeShaderSources`: consume C-02 `ShaderChunk.wgsl` twins of `a3d_prd10_*` and a storage-buffer instance array | C-02, C-29 | WebGPU excluded from PRD 10 standalone acceptance (§18) |
+| Q-11-2 (#261, closed: none needed) | 11 | `QUALITY_TIERS` CCR (additive) only if §17 world budgets need tier fields; none planned | C-27 | PRD 10 tables in §17 read existing fields |
+| Q-11-3 (#262) | 11 | `devtools/sceneKitBudgets.ts` (from `index.ts:9689`): replace the "instanced or impostored by family" `cityBlock.evidence` string with `diagnostics().world` values | C-31 | PRD 10 diagnostics report the real values |
+| Q-12-1 (#263) | 12 | Add `packages/engine/assets/world/**` binary paths to LFS in `.gitattributes` and `benchmarks/quality-rebuild/ci.sh`; re-baseline scenes affected by T2 and V4 fixes; rubric lines for §16.2 | C-30, C-32 | lane workflow `qr-prd10-world.yml` pulls LFS itself |
+| Q-13-1 (#264) | 13 | Skills/templates from facts `F-10-01..08`; no template uses `water.surface`, `city.block` or primitive trees | C-40 | — |
+| Q-14-1 (#265; keep-deprecated importer list #188) | 14 | Per-route adoption of `world.*` per §1 target table, using `prd10-world-migrate`; delete review-capture world forks (K7) | R21 | standalone acceptance uses lane scenes, not routes |
+| Q-15-6 (#266) | 15 | `contracts/flags.ts` `resolveQrFlags`: fill unset `A3D_QR_WORLD_{TERRAIN,WATER,BIOME}` from an enabled `A3D_QR_WORLD` after all flag sources run, so sub-flags are on-by-default per §13 while `-world.biome`/`A3D_QR_WORLD_BIOME=0` still disable | §13 | lane code reads sub-flags via `worldSubflagOn` (parent-default-on); the C-09 env sources keep the `A3D_QR_WORLD_BIOME` registry gate and activate on explicit `world.biome` until this lands |
+| Q-15-7 (#267) | 15 | `tests/unit/rendering/environment-preset-pack.test.ts` + `tests/fixtures/b3-preset-pack-rows.json` (both owner 15): adopt `presetPackExposureFactor`/`presetPackSsimReference` and per-preset SSIM references per T6.5 | T6.5 | selectors are exported from `EnvironmentPresetPack.ts` behind `A3D_QR_WORLD_BIOME`; legacy normalized path untouched flag-off |
+| Q-15-8 (#821) | 15 | `packages/rendering/package.json` `sideEffects`: replace `false` with a list covering `./src/lanes/**` and `./dist/lanes/**` so `rendering/src/lanes/prd10.ts` chunk registration survives bundling (FIX-chunks; run 37497949014) | C-02 | explicit `registerPrd10Chunks()` from `engine/src/lanes/prd10.ts` (#829) |
+| Q-01-1 (#822) | 01 | A frame-contributor `passes()`/graph-compile throw degrades to C-36 (flag-off render + reason) instead of killing `frameLoop.ts:133`; ForwardPass loads, not clears, the depth written in `background` (FIX-depth) | C-36, C-01 | lane-10 passes emit only when their producers exist (#820); `qr-prd10-world-pass-depth.spec.ts` stays red until this lands |
+| Q-12-2 (#823) | 12 + 15 | Register T0-33 (FIX-P0-graph, owner 10) as a Track 0 row: a lane-10 culprit for the `$ALL` arm | §2.2 | lane 10 proves it with flags-bisect `none;world` and `$ALL;$ALL,-world` |
+| Q-15-9 (#177) | 15 | `.github/QR_OWNERSHIP.json`: add `packages/engine/assets/world/` to the owner-10 rule. It resolves to 15 today, but CONTRACTS §4.1 row 10 gives it to 10 (P-61) | §4 | lane 10 writes only the existing `manifest.json`/`noise/`/`water/`/`kits/` under the CONTRACTS carve-out |
+| Q-15-10 (#204) | 15 | Reassign `agent-api/nodes/prefabs/cityBlock.ts` to 10 for the T5.6 `world.street` rebuild | §4 | `cityBlock` stays on the owner-15 implementation; T5.6 stays unticked |
+| Q-15-11 (#1068) | 15 | `engine/src/contracts/app.ts`: add a lazy C-38 app-extension/registration seam so the lane barrel can defer the world runtime to its first world node (§17.4) | C-38 | eager barrel: root growth is measured and reported over budget; §17.4 stays unticked |
+| Q-03-1 (#1065) | 03 | `post/v2Stages.ts`: forward the frame-graph blackboard into the C-13 custom-pass frame context (`state.postBlackboard` is never written), and gate registry passes on `active(flags)` | C-13 | `prd10.underwaterDistortion` cannot enable on the v2 path. A unit proves it is never compiled while `UNDERWATER_KEY` is false |
 
 PRD 06 (C-26 ground for foot IK), PRD 07 (C-26 height for splashes and rain) and PRD 09 (game runtime hosting
 `app.world` handles) consume C-26 and need no request from PRD 10.
@@ -1818,19 +1825,20 @@ Every task edits only PRD 10-owned paths (§Parallel execution) unless it says "
 repo root; "flag" means `A3D_QR_WORLD` (or the named sub-flag) gates the behaviour.
 
 Phase 1 (day 0):
-- [x] T1.1 `packages/rendering/src/TerrainHeightfield.ts:133-141`: replace the `Math.round` texel pick (`:134-135`) with
+(P-55: T1.1-T1.5 are code-landed but unticked until a main run id is cited; checklist-lint, PRD-16 §4b.)
+- [ ] T1.1 `packages/rendering/src/TerrainHeightfield.ts:133-141`: replace the `Math.round` texel pick (`:134-135`) with
   bilinear interpolation of the 4 neighbours; add `toHeightTexture(fixture): { data: Float32Array; width; height }`.
   Test `tests/qr/prd10/unit/terrain-bilinear.test.ts`: midpoint of a 2×2 ramp equals the mean ±1e-6.
   (landed at `tests/unit/contracts/impl/prd10-terrain-bilinear.test.ts` — `tests/qr/` is not lane-owned or vitest-included)
-- [x] T1.2 `packages/rendering/src/TerrainTiles.ts`: delete `createTerrainTileGrid` and `TerrainTilePlan` (`:15-96`),
+- [ ] T1.2 `packages/rendering/src/TerrainTiles.ts`: delete `createTerrainTileGrid` and `TerrainTilePlan` (`:15-96`),
   replace the `:1-13` header with "budget and query utilities only"; keep a `@deprecated` `createTerrainTileGrid` that
   throws `AuraRuntimeError("removed-world-planner")`. (types kept as `@deprecated` — index.ts re-export is lane-01's)
-- [x] T1.3 `packages/rendering/src/VegetationScatter.ts:134`: claim boundary names `world.scatter` as the runtime and
+- [ ] T1.3 `packages/rendering/src/VegetationScatter.ts:134`: claim boundary names `world.scatter` as the runtime and
   this module as an offline placement helper.
-- [x] T1.4 `packages/rendering/src/EnvironmentPreset.ts`: delete `createNamedEnvironmentPreset` (`:47-128`) after
+- [ ] T1.4 `packages/rendering/src/EnvironmentPreset.ts`: delete `createNamedEnvironmentPreset` (`:47-128`) after
   `rg -n createNamedEnvironmentPreset packages apps examples templates` shows only its definition; leave a throwing
   `@deprecated` export.
-- [x] T1.5 `fixtures/three-compat/environments/manifest.json`: delete `industrial-sunset-puresky`, `spruit-sunrise`,
+- [ ] T1.5 `fixtures/three-compat/environments/manifest.json`: delete `industrial-sunset-puresky`, `spruit-sunrise`,
   `venice-sunset`; `rg` the ids in `benchmarks/` and file Q-12-1 with any hit. (no `benchmarks/` hits — Q-12-1 not needed;
   `flagshipBindings` repointed to the canonical ids; `requirements` corrected to the honest 9 presets / 3 real HDRIs)
 - [ ] T1.6 `packages/engine/src/agent-api/world/types.ts`, `biomes.ts`: types of §7.1.1-7.1.2 re-exporting C-26

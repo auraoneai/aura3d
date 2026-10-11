@@ -19,16 +19,31 @@ on:
       - '.github/workflows/agent-skills.yml'
   pull_request:
     branches: [main, develop]
+    paths:
+      - 'packages/aura3d-cli/skills/**'
+      - 'packages/create-aura3d/skills/**'
+      - 'packages/create-aura3d/src/**'
+      - 'packages/aura3d-cli/src/**'
+      - '.cursor/skills/**'
+      - '.claude/skills/**'
+      - '.agents/skills/**'
+      - 'tools/agent-skills/**'
+      - 'tools/agent-docs/**'
+      - 'docs/agents/**'
+      - 'llms.txt'
+      - 'public/llms.txt'
+      - '.github/workflows/agent-skills.yml'
   workflow_dispatch:
 
 concurrency:
-  group: agent-skills-${{ github.ref }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  group: agent-skills-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   skills:
     name: Skills gate + agent docs
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

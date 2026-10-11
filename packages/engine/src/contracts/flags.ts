@@ -10,9 +10,9 @@
  */
 
 import type { QrFlagName, QrFlagValue, QrFlags } from "@aura3d/rendering/contracts";
-import { REMOVED_QR_FLAGS } from "@aura3d/rendering/contracts/flags.state";
+import { QR_FLAG_STATES, REMOVED_QR_FLAGS } from "@aura3d/rendering/contracts/flags.state";
 
-export type QrFlagInput = "all" | readonly string[] | Readonly<Partial<Record<QrFlagName, QrFlagValue>>>;
+export type QrFlagInput = "all" | "none" | (string & {}) | readonly string[] | Readonly<Partial<Record<QrFlagName, QrFlagValue>>>;
 
 const SHORT_NAMES: Readonly<Record<string, QrFlagName>> = {
   core: "A3D_QR_CORE",
@@ -56,6 +56,17 @@ function flagValueOn(v: QrFlagValue | undefined): boolean {
 }
 
 /** #266: fill unset default-on sub-flags of every lane flag that resolved on. */
+/**
+ * Promotion (§5.3, owner decision 2026-10-11): a flag whose state is
+ * `default-on` in flags.state.ts is on unless some source set it explicitly.
+ * Runs after every source, so `none`, `-x` and `A3D_QR_X=0` still turn it off.
+ */
+function applyDefaultOnStates(out: Record<string, QrFlagValue>): void {
+  for (const [name, state] of Object.entries(QR_FLAG_STATES)) {
+    if (state === "default-on") setEntry(out, name as QrFlagName, true);
+  }
+}
+
 function propagateSubFlags(out: Record<string, QrFlagValue>): void {
   for (const [parent, subs] of Object.entries(DEFAULT_ON_SUB_FLAGS)) {
     if (!flagValueOn(out[parent]) || !subs) continue;
@@ -111,8 +122,10 @@ function applyList(out: Record<string, QrFlagValue>, list: string): void {
 }
 
 function applyInput(out: Record<string, QrFlagValue>, input: QrFlagInput): void {
-  if (input === "all") {
-    applyList(out, "all");
+  // Any string ("all", "none", "camera,-post") is a flag list. Before this, "none"
+  // fell through to Object.entries(string), set nothing, and default-on flags won.
+  if (typeof input === "string") {
+    applyList(out, input);
     return;
   }
   if (Array.isArray(input)) {
@@ -157,7 +170,9 @@ export function qrFlagsWithAnimationMixer(flags: QrFlags, mixer: "pose" | "legac
 
 export function resolveQrFlags(input: { readonly options?: QrFlagInput; readonly url?: URL | string; readonly env?: Readonly<Record<string, string | undefined>> }): QrFlags {
   const values: Record<string, QrFlagValue> = {};
-  if (input.options !== undefined) applyInput(values, input.options);
+  // Precedence (first write wins): URL `a3d-qr` > env (A3D_QR list, then A3D_QR_X) >
+  // programmatic options > flags.state default-on. Runtime overrides must beat
+  // values baked into app code, or `-x` / `none` can't measure a flag (#1232).
   if (input.url !== undefined) {
     const url = typeof input.url === "string" ? new URL(input.url, "http://localhost/") : input.url;
     const list = url.searchParams.get("a3d-qr");
@@ -168,6 +183,8 @@ export function resolveQrFlags(input: { readonly options?: QrFlagInput; readonly
     if (list !== undefined) applyList(values, list);
     applyPerFlagEnv(values, input.env);
   }
+  if (input.options !== undefined) applyInput(values, input.options);
+  applyDefaultOnStates(values);
   propagateSubFlags(values);
   for (const removed of REMOVED_QR_FLAGS) {
     if (values[removed] !== undefined) {

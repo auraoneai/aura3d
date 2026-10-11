@@ -1,5 +1,8 @@
 # PRD-06 T2.9 — `prd06-morph-face` lane scene (06)
 
+> **06-REC note (finish phase, G3):** this file cites no passing remote run id; every completion claim below is recorded as **unbacked** until a green lane-workflow/GitLab run id is added next to it.
+
+
 ## Scene
 
 RobotExpressive (`fixtures/threejs-parity/assets/character/robot-expressive.glb`) held at a

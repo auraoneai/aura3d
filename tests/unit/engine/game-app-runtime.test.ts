@@ -48,6 +48,24 @@ describe("GameAppRuntime time seam (PRD-09)", () => {
     runtime.dispose();
   });
 
+  it("resolves presentation waiters when the scheduled loop renders via app.step", async () => {
+    let tick: ((time: number) => void) | undefined;
+    const runtime = createGameApp(null, {
+      autoStart: false,
+      scene: runtimeScene(),
+      loop: { now: () => 0, requestFrame: (callback) => { tick = callback; return 1; }, cancelFrame: () => {} }
+    });
+    try {
+      runtime.start();
+      const first = runtime.firstPresentedFrame();
+      expect(tick).toBeDefined();
+      tick!(34);
+      await expect(first).resolves.toBeGreaterThan(0);
+    } finally {
+      runtime.dispose();
+    }
+  });
+
   it("re-arms: a fresh firstPresentedFrame() call resolves on the next presented frame", async () => {
     const runtime = createGameApp(null, { autoStart: false, scene: runtimeScene() });
     runtime.start();

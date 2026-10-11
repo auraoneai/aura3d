@@ -1,9 +1,12 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
 import { dirname, extname, join, relative, resolve, sep } from "node:path";
 import { inflateSync } from "node:zlib";
 import { writeAgentSkills, type AuraSkillMode } from "create-aura3d";
+import { measureLoudness } from "@aura3d/audio";
 import { admitAssetForRole } from "./asset-role-admission.js";
 import { hasStylizedFlatApproval } from "./admission/artDirection.js";
 import { AUDIO_SYNTH_RELEASE_ALLOWLIST, isSynthesizedAudioProvenance } from "./admission/audio.js";
@@ -35,6 +38,7 @@ import type {
   AuraCliAssetEntry,
   AuraCliAssetManifest,
   AuraCliAssetProvenance,
+  AuraCliAudioMetadata,
   AuraCliGeneratedAssetProvenance,
   AuraCliAssetRole,
   AuraCliAssetType,
@@ -172,6 +176,7 @@ export type {
   AuraCliAssetEntry,
   AuraCliAssetManifest,
   AuraCliAssetProvenance,
+  AuraCliAudioMetadata,
   AuraCliGeneratedAssetProvenance,
   AuraCliAssetRole,
   AuraCliAssetType,
@@ -314,6 +319,45 @@ export function readRenderedProbeMetadata(options: ReadRenderedProbeMetadataOpti
   };
 }
 
+/**
+ * BS.1770 loudness + true-peak for `assets add --type audio` — the same
+ * decode→measureLoudness path `sfx admit` uses (48 kHz f32 PCM). Returns
+ * `loudnessMeasured: true` even when integrated LUFS is unmeasurable
+ * (sub-400 ms files), so a short blip records a measured-null rather than
+ * looking unmeasured to the C-25 release gate. `undefined` when ffmpeg is
+ * missing or the file will not decode.
+ */
+function measureAudioLoudness(sourcePath: string): Pick<AuraCliAudioMetadata, "loudnessLufs" | "truePeakDb" | "loudnessMeasured"> | undefined {
+  try {
+    const channelCount =
+      Number(
+        execFileSync("ffprobe", ["-v", "error", "-select_streams", "a:0", "-show_entries", "stream=channels", "-of", "csv=p=0", sourcePath], {
+          maxBuffer: 1 << 24
+        })
+          .toString("utf8")
+          .trim()
+      ) || 1;
+    const pcm = execFileSync(
+      "ffmpeg",
+      ["-hide_banner", "-loglevel", "error", "-y", "-i", sourcePath, "-f", "f32le", "-ac", String(channelCount), "-ar", "48000", "-"],
+      { maxBuffer: 1 << 28 }
+    );
+    const channels = Array.from({ length: channelCount }, (_, c) => {
+      const out = new Float32Array(pcm.length / 4 / channelCount);
+      for (let i = 0; i < out.length; i++) out[i] = pcm.readFloatLE((i * channelCount + c) * 4);
+      return out;
+    });
+    const measured = measureLoudness({ channels, sampleRate: 48_000 });
+    return {
+      loudnessMeasured: true,
+      ...(Number.isFinite(measured.lufs) ? { loudnessLufs: measured.lufs } : {}),
+      truePeakDb: measured.truePeakDb
+    };
+  } catch {
+    return undefined;
+  }
+}
+
 export function addAsset(options: AddAssetOptions): AssetCliResult {
   const projectDir = resolve(options.projectDir ?? process.cwd());
   const sourcePath = resolve(projectDir, options.file);
@@ -396,7 +440,22 @@ export function addAsset(options: AddAssetOptions): AssetCliResult {
     ...(options.renderedProbe ?? existing?.renderedProbe ? { renderedProbe: options.renderedProbe ?? existing?.renderedProbe } : {}),
     ...(options.gameGeometry ?? existing?.gameGeometry ? { gameGeometry: options.gameGeometry ?? existing?.gameGeometry } : {}),
     ...(options.artDirection ?? existing?.artDirection ? { artDirection: options.artDirection ?? existing?.artDirection } : {}),
-    ...(options.audio ?? existing?.audio ? { audio: options.audio ?? existing?.audio } : {}),
+    /*
+     * `#165`/C-25: audio entries carry a measured loudness record — `assets
+     * add --type audio` runs BS.1770 itself (ffmpeg decode + measureLoudness),
+     * and `--loudness-lufs`/`--true-peak-db` remain manual overrides that win
+     * over the measured values.
+     */
+    ...(type === "audio"
+      ? (() => {
+          const measured = measureAudioLoudness(sourcePath);
+          const supplied = options.audio ?? existing?.audio;
+          const merged = { ...measured, ...supplied };
+          return Object.keys(merged).length > 0 ? { audio: merged } : {};
+        })()
+      : options.audio ?? existing?.audio
+        ? { audio: options.audio ?? existing?.audio }
+        : {}),
     // C-17 clip objects: written only when the inspection produced real
     // durations (the lane-06 inspector hook, Q-05-1); a prior richer record is
     // preserved on re-add.
@@ -926,6 +985,20 @@ export function validateAssets(options: AssetValidationOptions = {}): AssetValid
     // is on the admission allowlist.
     if (release && asset.type === "audio" && isSynthesizedAudioProvenance(provenance) && !AUDIO_SYNTH_RELEASE_ALLOWLIST.includes(asset.id)) {
       warnings.push(`${asset.id}: release audio asset has synthesized provenance without an admission allowlist entry.`);
+    }
+    // #165 (C-25 sfx provenance, adopted from lane 09's `sfx admit`): a
+    // release audio entry requires license + sourceUrl + author + loudness
+    // measurements on its `audio` block.
+    if (release && asset.type === "audio") {
+      const meta = asset.audio;
+      const missingAudio = [
+        !hasUsableLicenseEvidence(provenance) ? "license" : undefined,
+        !(provenance?.sourceUrl || provenance?.sourcePage || meta?.sourceUrl) ? "sourceUrl" : undefined,
+        !(provenance?.author || meta?.author) ? "author" : undefined,
+        meta?.loudnessLufs === undefined && meta?.loudnessMeasured !== true ? "loudnessLufs" : undefined,
+        meta?.truePeakDb === undefined ? "truePeakDb" : undefined,
+      ].filter(Boolean);
+      if (missingAudio.length) failures.push(`${asset.id}: release audio missing C-25 provenance fields: ${missingAudio.join(", ")}.`);
     }
     warnings.push(...createDerivedMetadataDriftWarnings(outputPath, asset));
     if (release) warnings.push(...createReleaseStructuredQualityWarnings(projectDir, asset));
@@ -2797,7 +2870,11 @@ function createAssetWarnings(path: string, inspection: AssetInspection): readonl
   const warnings: string[] = [];
   const size = statSync(path).size;
   if (size > 25 * 1024 * 1024) warnings.push("asset exceeds 25 MB; consider compression before deployment");
-  if (!inspection.bounds) warnings.push("bounds could not be extracted");
+  // Bounds are only meaningful on geometry-bearing formats — audio/texture
+  // files can never produce them, so warning (and release-blocking) on them
+  // is noise, matching the format scoping the texture/orientation warnings
+  // below already use.
+  if (!inspection.bounds && ["glb", "gltf"].includes(extname(path).slice(1).toLowerCase())) warnings.push("bounds could not be extracted");
   if (inspection.textures.length === 0 && ["glb", "gltf"].includes(extname(path).slice(1).toLowerCase())) warnings.push("no texture references detected");
   if (inspection.orientation.source === "unknown" && ["glb", "gltf"].includes(extname(path).slice(1).toLowerCase())) warnings.push("orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis");
   if (inspection.materialMetadata.some((material) => !material.visible || !material.readable)) warnings.push("one or more materials are invisible or unreadable");
@@ -3782,28 +3859,20 @@ function genericAgentText(agent = "AI coding agent", skillsPath?: string): strin
   const skillsLine = skillsPath
     ? `Load the Aura3D skills in ./${skillsPath}/ on demand. Start with aura3d-core; it routes to the task skill (scene authoring, assets, evidence review, games, animation, migration, materials, performance).\n`
     : "";
+  // Q-05-1 (#242): the body is the canonical agent file shipped in
+  // skills/agent-files/AGENTS.md (PRD-13 T2.15), not a copy — scaffolded
+  // files can never drift from it again. Its own `# ` title line is dropped;
+  // the per-agent prelude keeps the heading + skills path.
+  // Both src/index.ts (tsx) and dist/index.js sit one level below the package
+  // root, whose published `files` include `skills/`.
+  const canonicalPath = resolve(fileURLToPath(import.meta.url), "..", "..", "skills", "agent-files", "AGENTS.md");
+  if (!existsSync(canonicalPath)) {
+    throw new Error(`canonical agent file not found at ${canonicalPath}`);
+  }
+  const canonical = readFileSync(canonicalPath, "utf8").replace(/^#[^\n]*\n+/, "").trimEnd();
   return `# Aura3D Instructions For ${agent}
 
-Read ./llms.txt first. ${skillsLine}Full agent manual: https://github.com/auraoneai/aura3d/blob/main/docs/agents/README.md
-
-Use @aura3d/engine public imports only:
-- createAuraApp
-- scene
-- model
-- camera
-- lights
-- material
-- effects
-- timeline
-- interactions
-- defineAuraAssets
-
-Do not invent asset paths or asset ids. Read ./src/aura-assets.ts after running:
-
-npx @aura3d/cli@latest assets add ./assets/model.glb --name model
-
-Use model(assets.model), not model("model").
-Run npm run build and the template route-health/screenshot tests before claiming the scene is done.
+${skillsLine}${canonical}
 `;
 }
 

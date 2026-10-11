@@ -102,8 +102,7 @@ function definesFor(f: ProgramFeatures, contributions: readonly Contribution[]):
   // may loop over with `a3dLegacyLightRadiance` (0 on the clustered path).
   d.A3D_GENERATED_PROGRAM = true;
   if (f.pass === "forward" && f.lighting === "lit") d.A3D_LIT = true;
-  const directLights = totalLightCount(f.lights);
-  d.A3D_NUM_DIRECT_LIGHTS = f.lights.clustered || directLights > 8 ? 0 : directLights;
+  d.A3D_NUM_DIRECT_LIGHTS = directLightLoopBound(f);
   if (f.instancing) {
     d.USE_INSTANCING = true;
     if (f.instancing.color) d.USE_INSTANCING_COLOR = true;
@@ -127,14 +126,19 @@ function definesFor(f: ProgramFeatures, contributions: readonly Contribution[]):
   if (f.backgroundCoverage) d.BACKGROUND_COVERAGE = true;
   if (f.environment === "equirect") d.ENVMAP_TYPE_EQUIRECT = true;
   if (f.environment === "pmrem-cube") d.ENVMAP_TYPE_CUBE_UV = true;
+  // Either sampler provides a3dSampleEnvironment (indirect_default); the
+  // default indirect body and C-03 lobe IBL calls guard on this.
+  if (f.environment !== "none") d.A3D_ENV_SAMPLE = true;
   if (f.fog === "linear") d.FOG_LINEAR = true;
   if (f.fog === "exp2" || f.fog === "height") d.FOG_EXP2 = true;
   if (f.fog === "height") d.FOG_HEIGHT = true;
   if (f.skinning) d.USE_SKINNING = true;
   if (f.morph) d.USE_MORPH = true;
   if (f.drawId) d.USE_DRAW_ID = true;
-  const total = totalLightCount(f.lights);
-  if (f.lights.clustered || total > 8) {
+  // #1140: clustering follows the pass's resolved cluster resources only
+  // (ForwardPass: more than FORWARD_DIRECT_LIGHT_CAPACITY lights). Up to 16
+  // lights live in u_lightData; a bucket sum above 8 is not "clustered".
+  if (f.lights.clustered) {
     d.LIGHTS_CLUSTERED = true;
   } else {
     d.NUM_DIR_LIGHTS = f.lights.dir;
@@ -278,7 +282,9 @@ function vertexSource(f: ProgramFeatures, contributions: readonly Contribution[]
     "#ifdef A3D_NEED_NORMAL\nout vec3 v_normal;\n#endif",
     "#ifdef A3D_NEED_UV0\nout vec2 v_uv;\n#endif",
     "#ifdef A3D_NEED_UV1\nout vec2 v_uv1;\n#endif",
-    "#ifdef VERTEX_COLORS\nout vec4 v_color;\n#endif"
+    "#ifdef VERTEX_COLORS\nout vec4 v_color;\n#endif",
+    // #1140: per-instance colour reaches the fragment (legacy instanced-pbr multiplies base rgba).
+    "#ifdef USE_INSTANCING_COLOR\nout vec4 v_instanceColor;\n#endif"
   ];
   const body = [
     "void main() {",
@@ -301,6 +307,7 @@ function vertexSource(f: ProgramFeatures, contributions: readonly Contribution[]
     "#ifdef A3D_NEED_UV0\n  v_uv = a_uv;\n#endif",
     "#ifdef A3D_NEED_UV1\n  v_uv1 = a_uv1;\n#endif",
     "#ifdef VERTEX_COLORS\n  v_color = a_color;\n#endif",
+    "#ifdef USE_INSTANCING_COLOR\n  v_instanceColor = a_instanceColor;\n#endif",
     "  gl_Position = u_viewProjection * a3dWorld;",
     "  gl_PointSize = u_pointSize;",
     ...endHooks,
@@ -349,29 +356,57 @@ in vec2 v_uv1;
 #endif
 #ifdef VERTEX_COLORS
 in vec4 v_color;
+#endif
+#ifdef USE_INSTANCING_COLOR
+in vec4 v_instanceColor;
 #endif`;
 
-/** Default `fragment:lights` body: `u_lightData` kind-discriminated loop.
- * Bucketed total ({0,1,2,4,8}) is baked so each bucket compiles its own bound;
- * `a3dLegacyLightRadiance` switches on directionKind.w, so packing order is
- * irrelevant. Above 8 / clustered, only the cluster path runs. */
-function defaultLightsBody(f: ProgramFeatures): string {
-  const lines = ["  vec3 L;"];
+/** u_lightData capacity (LightUniforms.pack MAX_DIRECT_LIGHTS, `u_lightData[96]` = 16 × 6 vec4). */
+const MAX_PACKED_DIRECT_LIGHTS = 16;
+
+/**
+ * Compile-time bound of the `u_lightData` loop (#1140). Buckets {0,1,2,4}
+ * are exact upper bounds; a per-kind bucket of 8 means "5 or more", so any
+ * total above 4 compiles the full packed capacity. The loop also breaks at
+ * the runtime `u_lightCount`, so unused slots are never shaded. Clustered
+ * programs read lights from the cluster textures only.
+ */
+function directLightLoopBound(f: ProgramFeatures): number {
+  if (f.lights.clustered) return 0;
   const total = totalLightCount(f.lights);
-  const clustered = f.lights.clustered || total > 8;
-  if (!clustered && total > 0) {
-    lines.push(`  for (int i = 0; i < ${Math.min(total, 8)}; ++i) {  // bucketed light count`);
+  return total <= 4 ? total : MAX_PACKED_DIRECT_LIGHTS;
+}
+
+/** Default `fragment:lights` body: `u_lightData` kind-discriminated loop.
+ * `a3dLegacyLightRadiance` switches on directionKind.w, so packing order is
+ * irrelevant. Clustered (cluster resources bound), only the cluster path runs. */
+function defaultLightsBody(f: ProgramFeatures, lobeDirect: readonly string[] = []): string {
+  const lines = ["  vec3 L;"];
+  // C-03 per-light lobe hook (04-LOBES): each active lobe's `direct` call chunk
+  // runs inside every light iteration (bucketed AND clustered) with L, radiance,
+  // V, N, material and the direct accumulators in scope.
+  const direct = lobeDirect.map((s) => indent(indent(s)));
+  const bound = directLightLoopBound(f);
+  if (bound > 0) {
+    lines.push(`  for (int i = 0; i < ${bound}; ++i) {  // bucketed light count (bound; breaks at u_lightCount)`);
+    lines.push("    if (i >= int(u_lightCount)) break;");
     lines.push("    vec3 radiance = a3dLegacyLightRadiance(i * 6, v_worldPosition, L);");
     lines.push("    a3dDirectLight(L, radiance, V, N, material, directDiffuse, directSpecular);");
+    lines.push(...direct);
     lines.push("  }");
   }
+  // Cluster index texel layout (forward/Lighting.ts createClusteredForwardLighting,
+  // same as the flag-off shader): texel (0, cluster).g = light count; texel
+  // (i, cluster).r = i-th light index, i from 0.
   lines.push("#ifdef LIGHTS_CLUSTERED");
   lines.push("  int a3dCluster = a3dClusterIndex(gl_FragCoord.xy);");
-  lines.push("  int a3dClusterCount = int(texelFetch(u_clusterLightIndices, ivec2(0, a3dCluster), 0).r);");
-  lines.push("  for (int j = 1; j <= a3dClusterCount; ++j) {");
+  lines.push("  int a3dClusterCount = min(int(texelFetch(u_clusterLightIndices, ivec2(0, a3dCluster), 0).g), 64);");
+  lines.push("  for (int j = 0; j < 64; ++j) {");
+  lines.push("    if (j >= a3dClusterCount) break;");
   lines.push("    int lightIndex = int(texelFetch(u_clusterLightIndices, ivec2(j, a3dCluster), 0).r);");
   lines.push("    vec3 radiance = a3dClusteredLightRadiance(lightIndex, v_worldPosition, L);");
   lines.push("    a3dDirectLight(L, radiance, V, N, material, directDiffuse, directSpecular);");
+  lines.push(...direct);
   lines.push("  }");
   lines.push("#endif");
   return lines.join("\n");
@@ -387,11 +422,14 @@ function uvExpr(f: ProgramFeatures, slot: keyof ProgramFeatures["maps"]): string
 function defaultIndirectBody(f: ProgramFeatures): string {
   const lines: string[] = [];
   lines.push("  indirectDiffuse += a3dAmbientDiffuse(material.diffuseContribution);");
-  lines.push("#ifdef ENVMAP_TYPE_EQUIRECT");
+  lines.push("#ifdef A3D_ENV_SAMPLE");
   lines.push("  float a3dRoughLod = material.roughness * 8.0;");
   lines.push("  vec3 a3dReflect = reflect(-V, N);");
-  lines.push("  indirectSpecular += a3dIndirectSpecular(a3dSampleEnvironment(a3dReflect, a3dRoughLod), V, N, material);");
-  lines.push("  indirectDiffuse += a3dIndirectDiffuse(a3dSampleEnvironment(N, 8.0), V, N, material);");
+  // brdf's a3dIndirect* take π-scaled irradiance (three r185 getIBLIrradiance
+  // returns PI * envMapColor), not the raw radiance sample (#1140).
+  lines.push("  vec3 a3dEnvIrradiance = PI * a3dSampleEnvironment(N, 8.0);");
+  lines.push("  indirectSpecular += a3dIndirectSpecular(a3dSampleEnvironment(a3dReflect, a3dRoughLod), a3dEnvIrradiance, V, N, material);");
+  lines.push("  indirectDiffuse += a3dIndirectDiffuse(a3dEnvIrradiance, V, N, material);");
   lines.push("#endif");
   lines.push("#ifdef USE_OCCLUSION_MAP");
   lines.push(`  float a3dAo = texture(u_occlusionMap, ${uvExpr(f, "occlusion")}).r;`);
@@ -437,6 +475,7 @@ function forwardFragmentSource(f: ProgramFeatures, contributions: readonly Contr
   // fragment:material — default fills base/metal/rough + PhysicalMaterial.
   body.push("  vec4 a3dBaseColor = u_baseColor;");
   body.push("#ifdef VERTEX_COLORS\n  a3dBaseColor *= v_color;\n#endif");
+  body.push("#ifdef USE_INSTANCING_COLOR\n  a3dBaseColor *= v_instanceColor;\n#endif");
   body.push(`#ifdef USE_BASE_COLOR_MAP\n  a3dBaseColor *= texture(u_baseColorMap, ${uvExpr(f, "baseColor")});\n#endif`);
   body.push("  float a3dMetallic = u_metallic;");
   body.push("  float a3dRoughness = u_roughness;");
@@ -456,7 +495,7 @@ function forwardFragmentSource(f: ProgramFeatures, contributions: readonly Contr
   body.push("  vec3 indirectDiffuse = vec3(0.0);");
   body.push("  vec3 indirectSpecular = vec3(0.0);");
   if (lit) {
-    body.push(lightsHooks.length > 0 ? lightsHooks.map((s) => indent(s)).join("\n") : defaultLightsBody(f));
+    body.push(lightsHooks.length > 0 ? lightsHooks.map((s) => indent(s)).join("\n") : defaultLightsBody(f, lobeChunks.direct));
     // fragment:indirect appends to the default ambient + env body (T0-05);
     // lobe `ibl` calls run last, over the final direct + indirect accumulators.
     body.push(defaultIndirectBody(f));
@@ -550,6 +589,8 @@ function indent(src: string): string {
 interface LobeCalls {
   readonly fragment: string[];
   readonly ibl: string[];
+  /** Per-light call chunks, spliced inside every light loop iteration. */
+  readonly direct: string[];
 }
 
 /** `emissive-strength` → `EMISSIVE_STRENGTH`; `prd10.foliage` → `PRD10_FOLIAGE`; `filmIor` → `FILM_IOR`. */
@@ -564,7 +605,7 @@ function defineToken(id: string): string {
  * `defines`. Unmatched extensions report `extension-lobe-pending`.
  */
 function extensionLobeChunks(f: ProgramFeatures, flags: QrFlags | undefined, state: SpliceState, defines: Record<string, string | number | true>, report: (d: ProgramDegradation) => void): LobeCalls {
-  const out: LobeCalls = { fragment: [], ibl: [] };
+  const out: LobeCalls = { fragment: [], ibl: [], direct: [] };
   if (f.extensions.length === 0) return out;
   const lobes = flags ? materialLobes(flags) : [];
   const matches = (ext: { readonly lobe: string }, lobe: (typeof lobes)[number]) => ext.lobe === lobe.id || (lobe.glTFExtension !== undefined && ext.lobe === lobe.glTFExtension);
@@ -580,6 +621,7 @@ function extensionLobeChunks(f: ProgramFeatures, flags: QrFlags | undefined, sta
   if (f.pass !== "forward" || f.lighting !== "lit") return out;
   const fragmentSeen = new Set<string>();
   const iblSeen = new Set<string>();
+  const directSeen = new Set<string>();
   for (const lobe of lobes) {
     const ext = f.extensions.find((e) => matches(e, lobe));
     if (!ext) continue;
@@ -598,6 +640,12 @@ function extensionLobeChunks(f: ProgramFeatures, flags: QrFlags | undefined, sta
       iblSeen.add(lobe.chunks.ibl);
       out.ibl.push(emitCall(state, lobe.chunks.ibl));
     }
+    if (lobe.chunks.direct && !directSeen.has(lobe.chunks.direct)) {
+      directSeen.add(lobe.chunks.direct);
+      out.direct.push(emitCall(state, lobe.chunks.direct));
+    }
+    // Lobe textures (glTF texCoord 0) need the UV varying even when no core map does.
+    if (ext.maps.length > 0) defines.A3D_NEED_UV0 = true;
   }
   return out;
 }

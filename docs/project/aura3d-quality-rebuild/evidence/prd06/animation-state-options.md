@@ -1,5 +1,8 @@
 # PRD-06 PR E — animationState + diagnostics + resolvePrd06Options (T0.17–T0.19)
 
+> **06-REC note (finish phase, G3):** this file cites no passing remote run id; every completion claim below is recorded as **unbacked** until a green lane-workflow/GitLab run id is added next to it.
+
+
 ## Scope
 
 | Task | What landed |

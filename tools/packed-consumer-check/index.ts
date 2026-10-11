@@ -11,7 +11,9 @@
  *    this repo's tsconfig paths (e.g. `@aura3d/engine/lanes`) fails fast, since
  *    the packed tarball's `exports` map is the only truth consumers see;
  *  - the install/build pipeline itself: names missing from the packed "." fail
- *    tsc, and missing/broken dist files fail vite build.
+ *    tsc, and missing/broken dist files fail vite build;
+ *  - a dist URL rule (T0-20): no `new URL("*.ts", import.meta.url)` in the
+ *    packed dist, and relative `*.worker.js` URL targets must be packed.
  *
  * CLI: `pnpm exec tsx --tsconfig tsconfig.base.json tools/packed-consumer-check/index.ts`
  *   --only <substr>     restrict to templates whose dir name contains <substr>
@@ -32,7 +34,7 @@ import {
   writeFileSync
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { basename, dirname, join, resolve } from "node:path";
+import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -87,6 +89,52 @@ export function specifierAllowed(specifier: string, exportsKeys: ReadonlySet<str
   const sub = specifier.slice(ENGINE_PACKAGE.length);
   if (!sub.startsWith("/")) return false;
   return exportsKeys.has(`.${sub}`);
+}
+
+export interface DistUrlViolation {
+  readonly file: string;
+  readonly specifier: string;
+  readonly reason: "typescript-source" | "missing-worker";
+}
+
+const NEW_URL_RE = /new\s+URL\(\s*(["'`])([^"'`]+)\1\s*,\s*import\.meta\.url/g;
+
+/**
+ * T0-20 dist URL rule: every `new URL("<rel>", import.meta.url)` inside the
+ * packed `dist/` must point at emitted JavaScript. A `.ts`/`.tsx`/`.mts`/`.cts`
+ * target is a source file the tarball never ships (the retarget worker
+ * regression), and a relative `*.worker.js` target must exist beside its
+ * caller. Returned paths are relative to `distDir`.
+ */
+export function findDistUrlViolations(distDir: string): readonly DistUrlViolation[] {
+  const violations: DistUrlViolation[] = [];
+  const walk = (current: string): void => {
+    for (const entry of readdirSync(current, { withFileTypes: true })) {
+      const path = join(current, entry.name);
+      if (entry.isDirectory()) {
+        walk(path);
+        continue;
+      }
+      if (!/\.(js|mjs|cjs)$/.test(entry.name)) continue;
+      const file = relative(distDir, path).split(sep).join("/");
+      for (const match of readFileSync(path, "utf8").matchAll(NEW_URL_RE)) {
+        const specifier = match[2]!;
+        if (/\.[mc]?tsx?$/.test(specifier)) {
+          violations.push({ file, specifier, reason: "typescript-source" });
+        } else if (/^\.{1,2}\//.test(specifier) && /\.worker\.[mc]?js$/.test(specifier) && !existsSync(join(dirname(path), specifier))) {
+          violations.push({ file, specifier, reason: "missing-worker" });
+        }
+      }
+    }
+  };
+  if (existsSync(distDir)) walk(distDir);
+  return violations;
+}
+
+function checkTarballDistUrls(tarball: string, extractDir: string): readonly DistUrlViolation[] {
+  mkdirSync(extractDir, { recursive: true });
+  execFileSync("tar", ["-xzf", tarball, "-C", extractDir], { stdio: "pipe" });
+  return findDistUrlViolations(join(extractDir, "package/dist"));
 }
 
 function readTarballExports(tarball: string, extractDir: string): ReadonlySet<string> {
@@ -243,6 +291,10 @@ function main(): void {
   const tarball = packEngineTarball(tmp);
   const exportsKeys = readTarballExports(tarball, join(tmp, "tarball-meta"));
   console.log(`tarball ${basename(tarball)} with ${exportsKeys.size} export keys`);
+  const urlViolations = checkTarballDistUrls(tarball, join(tmp, "tarball-full"));
+  for (const v of urlViolations) {
+    console.error(`FAIL dist-url ${v.file} — new URL("${v.specifier}", import.meta.url): ${v.reason}`);
+  }
 
   // `--extra-pkg <dir>:<specifier>` packs additional workspace packages and
   // rewrites that specifier to its tarball in consumer package.json files
@@ -272,10 +324,14 @@ function main(): void {
 
   const failures = results.filter((r) => r.detail);
   if (!keepTmp) execSync(`rm -rf "${tmp}"`);
+  if (urlViolations.length > 0) {
+    console.error(`packed-consumer-check: ${urlViolations.length} dist new URL(...) references point at TypeScript sources or missing workers`);
+    process.exitCode = 1;
+  }
   if (failures.length > 0) {
     console.error(`packed-consumer-check: ${failures.length}/${results.length} templates failed`);
     process.exitCode = 1;
-  } else {
+  } else if (urlViolations.length === 0) {
     console.log(`packed-consumer-check: all ${results.length} templates pass`);
   }
 }

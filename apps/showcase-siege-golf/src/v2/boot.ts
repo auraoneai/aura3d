@@ -22,6 +22,7 @@ import { RANGE_BG } from "./scene/materials";
 import { publishSiegeEvidence } from "./evidence";
 import { applySiegeScenario } from "./scenarios";
 import { createSiegeFlowState, wireSiegeHoleFlow } from "./hole-flow";
+import { assets } from "../../../../src/aura-assets";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_SIEGE_GOLF" as const;
 const AIM_RATE = 0.9; // radians/s while an aim key is held
@@ -71,11 +72,11 @@ const game = createGame({
     theme: "sports-broadcast",
     maxScreenFraction: 0.15,
     widgets: [
-      { id: "hole", kind: "label", anchor: "top", label: "HOLE" },
-      { id: "score", kind: "score", anchor: "top-left", label: "STROKES" },
-      { id: "power", kind: "label", anchor: "top-right", label: "POWER" },
-      { id: "targets", kind: "label", anchor: "bottom-left", label: "TARGETS" },
-      { id: "message", kind: "label", anchor: "bottom", label: "STATUS" }
+      { id: "hole", kind: "prompt", anchor: "top", label: "HOLE" },
+      { id: "score", kind: "prompt", anchor: "top-left", label: "STROKES" },
+      { id: "power", kind: "prompt", anchor: "top-right", label: "POWER" },
+      { id: "targets", kind: "prompt", anchor: "bottom-left", label: "TARGETS" },
+      { id: "message", kind: "prompt", anchor: "bottom", label: "STATUS" }
     ]
   },
   touch: {
@@ -84,15 +85,15 @@ const game = createGame({
   },
   sound: {
     cues: {
-      "drive-hit": { asset: "siegeDriveHitSfx" },
-      "wood-crack": { asset: "siegeWoodCrackSfx" },
-      "metal-clang": { asset: "siegeMetalClangSfx" },
-      "target-down": { asset: "siegeTargetDownSfx" },
-      "cup-sink": { asset: "siegeCupSinkSfx" },
-      "par-chime": { asset: "siegeParChimeSfx" },
-      "bogey-sting": { asset: "siegeBogeyStingSfx" },
-      "ui-confirm": { asset: "siegeUiConfirmSfx" },
-      "ambient-wind": { asset: "siegeAmbientWindSfx" }
+      "drive-hit": { asset: assets.siegeDriveHitSfx },
+      "wood-crack": { asset: assets.siegeWoodCrackSfx },
+      "metal-clang": { asset: assets.siegeMetalClangSfx },
+      "target-down": { asset: assets.siegeTargetDownSfx },
+      "cup-sink": { asset: assets.siegeCupSinkSfx },
+      "par-chime": { asset: assets.siegeParChimeSfx },
+      "bogey-sting": { asset: assets.siegeBogeyStingSfx },
+      "ui-confirm": { asset: assets.siegeUiConfirmSfx },
+      "ambient-wind": { asset: assets.siegeAmbientWindSfx }
     }
   },
   juice: {
@@ -102,11 +103,11 @@ const game = createGame({
     "failed": { hitStopMs: 50, trauma: 0.2 }
   },
   qualityRebuild: {
-    // FLAG-1: arm the engine features this route uses — `game` selects the
-    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
-    // art/direction.ts sections. `route_siege_golf` uses the engine-parseable
-    // underscore form (URL/dispatch form is `route-siege-golf`).
-    flags: ["route_siege_golf", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+    // T0-29 (#1232): only what the route itself needs — its route token and
+    // `game` (the real C-24 shell: beacon/evidence/HUD/touch). Engine lane
+    // flags come from URL/env/defaults like every other route, so `none`
+    // and `-<flag>` arms actually turn them off.
+    flags: ["route_siege_golf", "game"]
   }
 });
 

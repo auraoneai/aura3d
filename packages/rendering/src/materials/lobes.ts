@@ -16,8 +16,11 @@ import {
   type MaterialLobeInput
 } from "../contracts/materialLobes";
 import type { Texture } from "../Texture";
+import { TextureBinding } from "../TextureBinding";
 
 const FLAG = "A3D_QR_MATERIALS";
+/** Generator-owned map slots (u_*Map samplers), never rebound by a lobe. */
+const CORE_SLOTS: ReadonlySet<string> = new Set(["baseColor", "normal", "metallicRoughness", "occlusion", "emissive"]);
 const OWNER = "prd04";
 
 type Params = MaterialLobeInput["parameters"];
@@ -72,6 +75,15 @@ function lobe(entry: {
     },
     bind(material, set) {
       entry.bind(material.parameters, (u, v) => set(u, v as never));
+      // 04-LOBES: bound lobe textures go to the sampler the pars chunk declares
+      // (`u_<slot>Texture`, the glTF parameter name). Core map slots are the
+      // generator's own samplers and are never rebound here.
+      for (const slot of entry.samplerSlots) {
+        const texture = tex(material.textures, slot);
+        if (!texture || CORE_SLOTS.has(slot)) continue;
+        const name = `u_${slot}Texture`;
+        set(name, new TextureBinding({ name, texture, required: false }));
+      }
     }
   };
 }
@@ -112,7 +124,7 @@ const LOBES: readonly MaterialLobe[] = [
     id: "clearcoat",
     order: 30,
     glTFExtension: "KHR_materials_clearcoat",
-    chunks: { pars: "a3d_prd04_clearcoat_pars", fragment: "a3d_prd04_clearcoat_call", ibl: "a3d_prd04_clearcoat_ibl_call" },
+    chunks: { pars: "a3d_prd04_clearcoat_pars", fragment: "a3d_prd04_clearcoat_call", ibl: "a3d_prd04_clearcoat_ibl_call", direct: "a3d_prd04_clearcoat_direct_call" },
     samplerSlots: ["clearcoat", "clearcoatRoughness", "clearcoatNormal"],
     active: (p, t) =>
       num(p, "clearcoatFactor") > 0 ||
@@ -134,7 +146,7 @@ const LOBES: readonly MaterialLobe[] = [
     id: "sheen",
     order: 20,
     glTFExtension: "KHR_materials_sheen",
-    chunks: { pars: "a3d_prd04_sheen_pars", fragment: "a3d_prd04_sheen_call", ibl: "a3d_prd04_sheen_ibl_call" },
+    chunks: { pars: "a3d_prd04_sheen_pars", fragment: "a3d_prd04_sheen_call", ibl: "a3d_prd04_sheen_ibl_call", direct: "a3d_prd04_sheen_direct_call" },
     samplerSlots: ["sheenColor", "sheenRoughness"],
     active: (p, t) =>
       p.sheenColorFactor !== undefined ||
@@ -151,8 +163,9 @@ const LOBES: readonly MaterialLobe[] = [
   }),
   lobe({
     id: "iridescence",
+    order: 5,
     glTFExtension: "KHR_materials_iridescence",
-    chunks: { pars: "a3d_prd04_iridescence_pars", fragment: "a3d_prd04_iridescence_call" },
+    chunks: { pars: "a3d_prd04_iridescence_pars", fragment: "a3d_prd04_iridescence_call", ibl: "a3d_prd04_iridescence_ibl_call", direct: "a3d_prd04_iridescence_direct_call" },
     samplerSlots: ["iridescence", "iridescenceThickness"],
     active: (p, t) =>
       num(p, "iridescenceFactor") > 0 ||
@@ -171,8 +184,9 @@ const LOBES: readonly MaterialLobe[] = [
   }),
   lobe({
     id: "anisotropy",
+    order: 5,
     glTFExtension: "KHR_materials_anisotropy",
-    chunks: { pars: "a3d_prd04_anisotropy_pars", fragment: "a3d_prd04_anisotropy_call" },
+    chunks: { pars: "a3d_prd04_anisotropy_pars", fragment: "a3d_prd04_anisotropy_call", ibl: "a3d_prd04_anisotropy_ibl_call", direct: "a3d_prd04_anisotropy_direct_call" },
     samplerSlots: ["anisotropy"],
     active: (p, t) => num(p, "anisotropyStrength") > 0 || tex(t, "anisotropy") !== undefined,
     bits: (p, t) => ({ map: tex(t, "anisotropy") !== undefined }),

@@ -12,7 +12,7 @@
 import { RenderDeviceError, type RenderDevice, type RenderTarget } from "../RenderDevice.js";
 import type { Texture } from "../Texture.js";
 import type { EnvironmentProbe } from "../contracts/environment.js";
-import { equirectToCubeFaces } from "./HdrEquirect.js";
+import { equirectRgbImage, equirectToCubeFaces } from "./HdrEquirect.js";
 import {
   buildProbeFromFaces,
   cubeFaceViewProjection,
@@ -62,7 +62,8 @@ export class GPUPMREMGenerator {
         { format: source.format, hasSource: source.source != null }
       );
     }
-    const faces = equirectToCubeFaces({ width: source.width, height: source.height, data: source.data }, faceSize);
+    // #1153: the texture holds RGBA (rgba32f); the projection reads RGB.
+    const faces = equirectToCubeFaces(equirectRgbImage(source.width, source.height, source.data), faceSize);
     return buildProbeFromFaces(faces, faceSize, {
       ...this.buildOptions(options), source: "hdri", background: source, label: "env-equirect"
     });

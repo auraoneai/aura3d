@@ -25,7 +25,7 @@ npx create-aura3d@latest my-fighter --template fighting-game
 npx create-aura3d@latest my-episode --template prompt-animation-channel
 npx create-aura3d@latest my-studio --template animation-studio
 npx create-aura3d@latest my-character --template character-controller
-npx create-aura3d@latest my-migration --template three-compat-custom-threejs-migration
+npx create-aura3d@latest my-migration --template custom-scene
 ```
 
 Run the full list at any time:

@@ -369,8 +369,10 @@ export function applyClusteredLightingUniforms(
   shader: RenderShaderProgram,
   uniforms: Map<string, UniformValue>
 ): void {
+  // #1140: generated programs declare the cluster inputs without the legacy
+  // `u_clusteredLightEnabled` switch (LIGHTS_CLUSTERED is compile-time there).
+  const legacySwitch = shader.reflection.uniforms.has("u_clusteredLightEnabled");
   const required = [
-    "u_clusteredLightEnabled",
     "u_clusterGridSize",
     "u_clusterViewportSize",
     "u_clusterLightData",
@@ -378,14 +380,14 @@ export function applyClusteredLightingUniforms(
   ];
   if (!required.every((name) => shader.reflection.uniforms.has(name))) return;
   if (!clustered) {
-    uniforms.set("u_clusteredLightEnabled", 0);
+    if (legacySwitch) uniforms.set("u_clusteredLightEnabled", 0);
     uniforms.set("u_clusterGridSize", [1, 1]);
     uniforms.set("u_clusterViewportSize", [1, 1]);
     uniforms.set("u_clusterLightData", new TextureBinding({ name: "u_clusterLightData", required: false }));
     uniforms.set("u_clusterLightIndices", new TextureBinding({ name: "u_clusterLightIndices", required: false }));
     return;
   }
-  uniforms.set("u_clusteredLightEnabled", 1);
+  if (legacySwitch) uniforms.set("u_clusteredLightEnabled", 1);
   uniforms.set("u_clusterGridSize", [clustered.diagnostics.gridWidth, clustered.diagnostics.gridHeight]);
   uniforms.set("u_clusterViewportSize", [
     clustered.diagnostics.viewportWidth,

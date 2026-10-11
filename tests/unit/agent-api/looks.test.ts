@@ -184,7 +184,7 @@ describe("looks.preset v0 expansion (T1.2)", () => {
 
 describe("looks expansion resolution (T1.2)", () => {
   it("resolves v0-current-engine with all five contracts missing when nothing is provided", () => {
-    const resolved = resolveLookExpansion({ flags: resolveQrFlags({ options: [] }) });
+    const resolved = resolveLookExpansion({ flags: resolveQrFlags({ options: ["none"] }) });
     expect(resolved.expansion).toBe("v0-current-engine");
     expect(resolved.missingContracts).toEqual([
       "environments.preset",
@@ -229,7 +229,7 @@ describe("looks expansion resolution (T1.2)", () => {
       "quality.auto"
     ]);
     try {
-      const resolved = resolveLookExpansion({ flags: resolveQrFlags({ options: [] }) });
+      const resolved = resolveLookExpansion({ flags: resolveQrFlags({ options: ["none"] }) });
       expect(resolved.expansion).toBe("v0-current-engine");
       expect(resolved.missingContracts).toHaveLength(5);
     } finally {

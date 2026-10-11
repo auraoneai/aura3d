@@ -18,6 +18,7 @@ import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import { hdriAssets } from "../../../shared/assets";
 import type { CapabilityEntry, CapabilityStatus, ReadyPayload } from "../../../shared/types";
 import { prd05Assets } from "../../../scenes/prd05/assets";
+import { prd05HdriUrl, prd05ModelUrl, threeBasisTranscoderPath, type Prd05UrlOptions } from "../../../scenes/prd05/urls";
 import { prd05SceneSpecs } from "../../../scenes/prd05/index";
 
 interface LodChain {
@@ -25,7 +26,8 @@ interface LodChain {
   readonly name: string;
   readonly coverage: readonly number[];
   readonly center: THREE.Vector3;
-  readonly radius: number;
+  /** World-space level-0 bounding radius, filled once transforms are final. */
+  radius: number;
 }
 
 interface LodSwitch {
@@ -53,7 +55,8 @@ const pickLevel = (coverage: number, thresholds: readonly number[]): number => {
   return thresholds.length - 1;
 };
 
-export default async (host: HTMLElement, _opts?: { qrFlags?: readonly string[] }): Promise<ReadyPayload> => {
+export default async (host: HTMLElement, opts?: { qrFlags?: readonly string[] } & Prd05UrlOptions): Promise<ReadyPayload> => {
+  const urls: Prd05UrlOptions = opts ?? {};
   const started = performance.now();
   const log = new CapabilityLog();
   const errors: string[] = [];
@@ -79,7 +82,7 @@ export default async (host: HTMLElement, _opts?: { qrFlags?: readonly string[] }
     const pmrem = new THREE.PMREMGenerator(renderer);
     pmrem.compileEquirectangularShader();
     try {
-      const hdr = await new RGBELoader().loadAsync(`/${hdriEntry.repoPath}`);
+      const hdr = await new RGBELoader().loadAsync(prd05HdriUrl(hdriEntry, urls));
       hdr.mapping = THREE.EquirectangularReflectionMapping;
       scene.environment = pmrem.fromEquirectangular(hdr).texture;
       scene.environmentIntensity = spec.environment?.intensity ?? 1;
@@ -121,9 +124,10 @@ export default async (host: HTMLElement, _opts?: { qrFlags?: readonly string[] }
       const json = parser.json as {
         nodes?: Array<{ extensions?: { MSFT_lod?: { nodeIds?: number[] } }; extras?: { MSFT_screencoverage?: number[] } }>;
       };
-      for (const [object, assoc] of parser.associations) {
+      for (const [associated, assoc] of parser.associations) {
         const nodeIndex = (assoc as { nodes?: number }).nodes;
-        if (typeof nodeIndex !== "number" || !(object as THREE.Object3D).isObject3D) continue;
+        if (typeof nodeIndex !== "number" || !(associated as THREE.Object3D).isObject3D) continue;
+        const object = associated as THREE.Object3D;
         const nodeDef = json.nodes?.[nodeIndex];
         const ext = nodeDef?.extensions?.MSFT_lod;
         if (!ext?.nodeIds?.length || !object.parent) continue;
@@ -161,7 +165,7 @@ export default async (host: HTMLElement, _opts?: { qrFlags?: readonly string[] }
   }));
   gltfLoader.setMeshoptDecoder(MeshoptDecoder);
   const ktx2 = new KTX2Loader()
-    .setTranscoderPath("/node_modules/three/examples/jsm/libs/basis/")
+    .setTranscoderPath(threeBasisTranscoderPath(urls))
     .detectSupport(renderer);
   gltfLoader.setKTX2Loader(ktx2);
   log.add("optimized-decoders", "supported", "GLTFLoader + MeshoptDecoder + KTX2Loader + MSFT_lod plugin");
@@ -183,7 +187,7 @@ export default async (host: HTMLElement, _opts?: { qrFlags?: readonly string[] }
     }
     const entry = prd05Assets[object.asset];
     try {
-      const gltf = await gltfLoader.loadAsync(`/${entry.repoPath}`);
+      const gltf = await gltfLoader.loadAsync(prd05ModelUrl(entry, urls));
       const root = gltf.scene;
       root.name = object.name;
       root.position.set(...object.position);
@@ -264,6 +268,9 @@ export default async (host: HTMLElement, _opts?: { qrFlags?: readonly string[] }
     scene: spec.id,
     engineVersion: THREE.REVISION,
     capabilityLog: log.entries,
+    // capture.mjs classifies a payload without drawCalls as no-draw: report the
+    // renderer's own counter for the last rendered frame (as three/common.ts does).
+    drawCalls: renderer.info.render.calls,
     triangles: Math.round(triangles),
     warnings: [],
     errors,

@@ -238,6 +238,11 @@ function base(id: string, index: number, title: string, purpose: string) {
     settleFrames: 4,
     owner: "prd07" as const,
     referenceProfile: "contract" as const,
+    // C-30 registry required fields: without them every lane scene was
+    // quarantined and the capture job silently dropped it. No region masks
+    // or broken-control variants are defined for the lane scenes yet.
+    masks: [] as const,
+    brokenControls: [] as const,
     qrFlags: ["vfx"] as const
   };
 }
@@ -568,6 +573,33 @@ export const skyTimeOfDay: Prd07SceneSpec = {
     }
   ]
 };
+
+/**
+ * 07 Phase D S4 — `prd07-sky-timeofday` geometry at the five §17 hours
+ * (6/9/12/18/21) with flags `vfx,vfx.sky,vfx.fog`. Each hour is its own scene
+ * id so both adapters capture it in the same batch (the three side is Sky.js
+ * at the same dayNight sun). The base `prd07-sky-timeofday` (hour 19) is kept.
+ */
+export const S4_SKY_HOURS = [6, 9, 12, 18, 21] as const;
+
+function skyHour(hour: (typeof S4_SKY_HOURS)[number], index: number): Prd07SceneSpec {
+  const id = `prd07-sky-h${String(hour).padStart(2, "0")}`;
+  return {
+    ...skyTimeOfDay,
+    ...base(id, index, `Sky at hour ${hour}`, `S4 — dayNight sky at hour ${hour} (preetham + clouds + stars)`),
+    qrFlags: ["vfx", "vfx.sky", "vfx.fog"] as const,
+    primaryCriterion: "atmosphere",
+    primaryRegion: "frame",
+    time: skyTimeOfDay.time,
+    dayNight: { ...skyTimeOfDay.dayNight!, hour }
+  };
+}
+
+export const skyH06 = skyHour(6, 718);
+export const skyH09 = skyHour(9, 719);
+export const skyH12 = skyHour(12, 720);
+export const skyH18 = skyHour(18, 721);
+export const skyH21 = skyHour(21, 722);
 
 /**
  * S14 — noon preetham sky over terrain with exp2 fog tuned so both adapters
@@ -1141,6 +1173,11 @@ export const prd07Specs = {
   "prd07-impact-library": impactLibrary,
   "prd07-trails-beams": trailsBeams,
   "prd07-sky-timeofday": skyTimeOfDay,
+  "prd07-sky-h06": skyH06,
+  "prd07-sky-h09": skyH09,
+  "prd07-sky-h12": skyH12,
+  "prd07-sky-h18": skyH18,
+  "prd07-sky-h21": skyH21,
   "prd07-outdoor-sky": outdoorSky,
   "prd07-fog-height": fogHeight,
   "prd07-fog-transition": fogTransition,

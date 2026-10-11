@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 // Importing the engine barrel runs the lane index, which is what applies the
 // lane's Phase-0 registrations.
 import "@aura3d/engine/lanes";
-import { appExtensionsAll, DIAGNOSTIC_ONLY_FIELDS, diagnosticsSectionsAll, resolveQrFlags } from "@aura3d/engine/contracts";
+import { appExtensionsAll, DIAGNOSTIC_ONLY_FIELDS, diagnosticsSectionsAll, optionCoverageRows, resolveQrFlags } from "@aura3d/engine/contracts";
 import { PRD01_SCENE_SPECS } from "../../../../benchmarks/quality-rebuild/scenes/prd01/index";
 
 describe("prd01 lane registrations (Phase 0)", () => {
@@ -35,13 +35,19 @@ describe("prd01 lane registrations (Phase 0)", () => {
       "material.blend",
       "material.depthWrite",
       "material.ior",
-      "transform.rotationOrder",
-      "transform.quaternion",
       "background.toneMapped"
     ]) {
       expect(DIAGNOSTIC_ONLY_FIELDS[key], `missing ${key}`).toBeDefined();
       expect(DIAGNOSTIC_ONLY_FIELDS[key]!.ownerPrd).toBe(1);
     }
+  });
+
+  it("01-T1.5: rotationOrder/quaternion are wired, not diagnostic-only", () => {
+    expect(DIAGNOSTIC_ONLY_FIELDS["transform.rotationOrder"]).toBeUndefined();
+    expect(DIAGNOSTIC_ONLY_FIELDS["transform.quaternion"]).toBeUndefined();
+    const rows = optionCoverageRows().filter((row) => row.builder === "transform");
+    expect(rows.map((row) => row.field).sort()).toEqual(["quaternion", "rotationOrder"]);
+    expect(rows.every((row) => row.ownerPrd === 1)).toBe(true);
   });
 
   it("ships six lane scene specs, one per PRD-01 §17.3 scene", () => {

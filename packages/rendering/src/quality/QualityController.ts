@@ -45,6 +45,8 @@ export interface AuraQualityControllerEnv {
   readonly targetFrameRate?: number;
   /** `adaptive: false` (C-27 option): detection still runs; no governor is built. */
   readonly adaptive?: boolean;
+  /** `"url"` when `?aura3d-quality=` chose the requested tier (decision `source: "url"`). */
+  readonly requestedSource?: "url" | "options";
 }
 
 export interface QualityDiagnostics {
@@ -79,8 +81,8 @@ export class AuraQuality implements AuraQualityController {
     this.overrides = overrides;
     this.decisionValue = {
       tier: this.currentTier,
-      source: requested === "auto" ? "default" : "explicit",
-      reason: requested === "auto" ? "auto-pending-probe" : "explicit"
+      source: requested === "auto" ? "default" : env.requestedSource === "url" ? "url" : "explicit",
+      reason: requested === "auto" ? "auto-pending-probe" : env.requestedSource === "url" ? "url:aura3d-quality" : "explicit"
     };
   }
 
@@ -102,7 +104,7 @@ export class AuraQuality implements AuraQualityController {
   attachProbe(probe: DeviceProbe): void {
     if (this.probe === probe) return;
     this.probe = probe;
-    if (this.decisionValue.source === "explicit") {
+    if (this.decisionValue.source === "explicit" || this.decisionValue.source === "url") {
       this.buildGovernor();
       return;
     }

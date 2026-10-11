@@ -85,12 +85,12 @@ const game: Prd09Game<string, string> = createGame({
     theme: "sci-fi-telemetry",
     maxScreenFraction: 0.2,
     widgets: [
-      { id: "act", kind: "label", anchor: "top-left", label: "ACT" },
-      { id: "score", kind: "label", anchor: "top", label: "SCORE" },
-      { id: "lives", kind: "label", anchor: "top-right", label: "LIVES" },
-      { id: "shards", kind: "label", anchor: "top-right", label: "SHARDS" },
-      { id: "flow", kind: "gauge", anchor: "bottom-left", label: "FLOW" },
-      { id: "state", kind: "label", anchor: "bottom", label: "STATUS" }
+      { id: "act", kind: "prompt", anchor: "top-left", label: "ACT" },
+      { id: "score", kind: "prompt", anchor: "top", label: "SCORE" },
+      { id: "lives", kind: "prompt", anchor: "top-right", label: "LIVES" },
+      { id: "shards", kind: "prompt", anchor: "top-right", label: "SHARDS" },
+      { id: "flow", kind: "prompt", anchor: "bottom-left", label: "FLOW" },
+      { id: "state", kind: "prompt", anchor: "bottom", label: "STATUS" }
     ]
   },
   touch: {
@@ -98,11 +98,11 @@ const game: Prd09Game<string, string> = createGame({
     bindings: { stick: "moveX", tap: "jump", swipeDown: "fastfall", swipeRight: "dash", pause: "menu" }
   },
   qualityRebuild: {
-    // FLAG-1: arm the engine features this route uses — `game` selects the
-    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
-    // art/direction.ts sections. `route_skyline_runner` uses the engine-parseable
-    // underscore form (URL/dispatch form is `route-skyline-runner`).
-    flags: ["route_skyline_runner", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+    // T0-29 (#1232): only what the route itself needs — its route token and
+    // `game` (the real C-24 shell: beacon/evidence/HUD/touch). Engine lane
+    // flags come from URL/env/defaults like every other route, so `none`
+    // and `-<flag>` arms actually turn them off.
+    flags: ["route_skyline_runner", "game"]
   }
 });
 

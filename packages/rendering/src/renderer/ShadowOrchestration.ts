@@ -14,6 +14,7 @@ import type { RenderSource } from "../contracts/renderSource";
 import { collectItemBounds, isIterable, sceneFromSource, toMat4 } from "./RenderShared";
 import type { RendererHost } from "./RendererHost";
 import { rendererQrFlags } from "./FrameGraph";
+import { executePrd02BridgedShadowMap, type Prd02BridgeFrameCamera } from "../shadows/Prd02ShadowBridge";
 import { Bounds3 as SceneBounds3, Camera, DirectionalLight, Light, type Mat4, PerspectiveCamera, PointLight, Scene, SpotLight, type Vec3, identityMat4, multiplyMat4, orthographicMat4, perspectiveMat4 } from "@aura3d/scene";
 
 export function collectForwardShadowMap(source: RenderSource | Iterable<RenderItem> | Scene): ForwardShadowMapOptions | undefined {
@@ -288,16 +289,27 @@ export class RendererShadowOrchestrator {
     readonly ownedTargets: RenderTarget[];
     readonly ownedShadowPasses: Array<{ dispose(): void }>;
     readonly camera?: Camera;
+    /** #1141: VP + eye of the frame's (possibly structural) camera, for the prd02 bridge. */
+    readonly frameCamera?: Prd02BridgeFrameCamera;
   }): ForwardShadowMapOptions | undefined {
     if (!options.shadowOptions || options.shadowOptions.enabled === false) {
       return undefined;
     }
     if (rendererQrFlags().on("A3D_QR_LIGHTING")) {
-      // C-11 flag path (PRD-02 Phase 4): the `prd02.shadows` frame contributor
-      // renders the shadow system in the graph's shadows phase and binds the
-      // ShadowFrameUniforms; the legacy map/cascade/point bodies below stay
-      // byte-identical for the flag-off path.
-      return undefined;
+      // C-11 flag path (PRD-02 Phase 4). T0-26: until the C-02 generator
+      // path compiles `a3d_prd02_shadow_lookup` into forward programs, the
+      // prd02 sun cascades are bridged into legacy ForwardShadowMapOptions
+      // here; with a lookup consumer the `prd02.shadows` contributor renders
+      // and binds instead (bridge returns undefined). The legacy
+      // map/cascade/point bodies below stay byte-identical for flag-off.
+      return executePrd02BridgedShadowMap({
+        device: this.host.device,
+        source: options.source,
+        items: options.items,
+        camera: options.camera,
+        ...(options.frameCamera ? { frameCamera: options.frameCamera } : {}),
+        flags: rendererQrFlags()
+      });
     }
     if (!this.host.device.info.capabilities?.includes("render-targets")) {
       throw new RenderDeviceError("Renderer-owned shadows require render targets", "SHADOW_RENDER_TARGET_UNSUPPORTED", {

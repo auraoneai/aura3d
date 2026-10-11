@@ -10,13 +10,18 @@
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { join, relative, resolve, sep } from "node:path";
 
 const args = Object.fromEntries(process.argv.slice(2).flatMap((arg, i, all) =>
   arg.startsWith("--") ? [[arg.slice(2), all[i + 1] && !all[i + 1].startsWith("--") ? all[i + 1] : "true"]] : []
 ));
 const artifactsDir = resolve(args.artifacts ?? "artifacts");
-const k = Number(args.k ?? "0");
+const k = Number(args.k);
+// T1.17-fix / V20: an unset or non-numeric round index wrote IC-NaN.json.
+if (!Number.isInteger(k) || k < 0) {
+  console.error(`collect-checkpoint: --k must be a non-negative integer (got ${JSON.stringify(args.k)})`);
+  process.exit(2);
+}
 const outDir = join(artifactsDir, "checkpoint");
 mkdirSync(outDir, { recursive: true });
 const roundsDir = "benchmarks/quality-rebuild/history/rounds";
@@ -34,32 +39,39 @@ function* walk(dir) {
   }
 }
 
-// Pair bench-<scene>.<engine>.png frames by scene id; masks live as
-// bench-<scene>.three.<mask>.mask.png next to the reference frame.
-const frames = new Map(); // sceneId -> {aura3d, three, masks:{}}
+// Pair aura3d/three frames per capture set and scene. capture.mjs writes
+// <out>/<scene>/<engine>[@dprN].png with masks <out>/<scene>/three.<mask>.mask.png;
+// each capture job uploads its own artifact dir (e.g. threejs-benchmark-none),
+// so the set is the first path segment under --artifacts. The legacy flat
+// bench-<scene>.<engine>.png naming is still accepted.
+const frames = new Map(); // `${set}/${scene}` -> {set, scene, aura3d, three, masks:{}}
+const frameEntry = (set, scene) => {
+  const key = `${set}/${scene}`;
+  const entry = frames.get(key) ?? { set, scene, masks: {} };
+  frames.set(key, entry);
+  return entry;
+};
 for (const file of walk(artifactsDir)) {
-  const name = file.split("/").pop();
-  const match = /^bench-(.+)\.(aura3d|three)(?:@dpr\d+)?\.png$/.exec(name);
-  const maskMatch = /^bench-(.+)\.three\.([a-z-]+)\.mask\.png$/.exec(name);
-  if (match) {
-    const [, scene, engine] = match;
-    const entry = frames.get(scene) ?? { masks: {} };
-    entry[engine] = file;
-    frames.set(scene, entry);
-  } else if (maskMatch) {
-    const [, scene, mask] = maskMatch;
-    const entry = frames.get(scene) ?? { masks: {} };
-    entry.masks[mask] = file;
-    frames.set(scene, entry);
-  }
+  const parts = relative(artifactsDir, file).split(sep);
+  const name = parts[parts.length - 1];
+  const set = parts.length > 1 ? parts[0] : "";
+  const legacy = /^bench-(.+)\.(aura3d|three)(?:@dpr\d+)?\.png$/.exec(name);
+  const legacyMask = /^bench-(.+)\.three\.([a-z-]+)\.mask\.png$/.exec(name);
+  const frame = /^(aura3d|three)(?:@dpr1)?\.png$/.exec(name);
+  const mask = /^three\.([a-z-]+)\.mask\.png$/.exec(name);
+  if (legacy) frameEntry(set, legacy[1])[legacy[2]] = file;
+  else if (legacyMask) frameEntry(set, legacyMask[1]).masks[legacyMask[2]] = file;
+  else if (frame && parts.length >= 2) frameEntry(set, parts[parts.length - 2])[frame[1]] = file;
+  else if (mask && parts.length >= 2) frameEntry(set, parts[parts.length - 2]).masks[mask[1]] = file;
 }
 
 const items = [];
-for (const [scene, entry] of frames) {
+for (const entry of frames.values()) {
   if (!entry.aura3d || !entry.three) continue;
+  const scene = entry.scene;
   const regions = ["frame", ...Object.keys(entry.masks).map((mask) => REGION_BY_MASK[mask] ?? mask)];
   items.push({
-    itemId: `bench:${scene}@dpr1`,
+    itemId: entry.set ? `bench:${scene}@dpr1#${entry.set}` : `bench:${scene}@dpr1`,
     kind: "benchmark-scene",
     aura: entry.aura3d,
     reference: entry.three,
@@ -68,6 +80,12 @@ for (const [scene, entry] of frames) {
   });
 }
 writeFileSync(join(outDir, "items.json"), JSON.stringify(items, null, 2));
+// RF2: zero paired captures means the capture jobs produced nothing — a round
+// record built from it would be empty evidence. Fail instead of recording.
+if (items.length === 0) {
+  console.error(`collect-checkpoint: 0 paired aura3d/three frames under ${artifactsDir}; refusing to write IC-${k}.json`);
+  process.exit(1);
+}
 
 let metrics = { items: [] };
 if (items.length > 0) {

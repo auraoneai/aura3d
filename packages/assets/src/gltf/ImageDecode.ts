@@ -9,12 +9,25 @@
 import type { GLTFAsset, GLTFImageAsset } from "../GLTFLoader";
 import { ktx2TargetToTextureFormat, transcodeKTX2BasisTexture } from "../KTX2BasisTextureTranscoder";
 import type { DecodedGLTFImage, GLTFRenderResourceOptions } from "../GLTFRenderResources";
+import { assetPhaseMark } from "../assetPhaseMarks";
 
 export async function decodeImageInBrowser(
   image: GLTFImageAsset,
   _imageIndex: number,
   asset: GLTFAsset,
   options: GLTFRenderResourceOptions = {}
+): Promise<DecodedGLTFImage> {
+  assetPhaseMark(`image-decode:start:${_imageIndex}`);
+  const decoded = await decodeImageInBrowserUnmarked(image, _imageIndex, asset, options);
+  assetPhaseMark(`image-decode:end:${_imageIndex}`);
+  return decoded;
+}
+
+async function decodeImageInBrowserUnmarked(
+  image: GLTFImageAsset,
+  _imageIndex: number,
+  asset: GLTFAsset,
+  options: GLTFRenderResourceOptions
 ): Promise<DecodedGLTFImage> {
   if (isKTX2BasisImage(image)) {
     const bytes = new Uint8Array(await readImageBytes(asset, image));

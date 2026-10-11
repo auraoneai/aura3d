@@ -1,5 +1,7 @@
 # QR request → lane 14
 
+**Issue:** #1041 (P-64 writeback)
+
 **From:** lane 15 (PRD-15 api/package architecture consolidation)
 **Date:** 2026-10-07
 **Status:** open — deprecated "." name kept until repointed

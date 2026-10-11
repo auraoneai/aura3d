@@ -281,11 +281,12 @@ export class ProductionEffectSystem {
 
   /** P3-T4 — sky nodes land on LiveAtmosphere (consumed by prd07.sky flag-on). */
   private rebuildSkyFromScene(): void {
-    for (const node of this.app.scene.nodes) {
-      if ((node as { kind?: string }).kind !== "sky") continue;
+    // Grouped-effects walk: sky nodes inside visible groups count too.
+    this.walkNodes((node, visible) => {
+      if (!visible || (node as { kind?: string }).kind !== "sky") return;
       const spec = (node as { spec?: unknown }).spec;
       if (spec && typeof spec === "object") this.atmosphere.setSky(spec as Parameters<LiveAtmosphere["setSky"]>[0]);
-    }
+    });
     this.applyLegacySkyVisibility();
   }
 
@@ -297,12 +298,7 @@ export class ProductionEffectSystem {
    */
   private applyLegacySkyVisibility(): void {
     if (!this.skyFlagOn || !this.app.nodes) return;
-    for (const node of this.app.scene.nodes) {
-      const runtimeId = (node as { runtime?: { id?: string } }).runtime?.id;
-      if (typeof runtimeId === "string" && runtimeId.startsWith("prd07.legacySky.")) {
-        this.app.nodes.get(runtimeId)?.setVisible?.(false);
-      }
-    }
+    this.hideTaggedLegacyNodes("prd07.legacySky.");
   }
 
   /** Bound by the C-38 extension factory with the app's resolved flag state. */
@@ -319,12 +315,7 @@ export class ProductionEffectSystem {
    */
   private applyLegacyWeatherVisibility(): void {
     if (!this.weatherFlagOn || !this.app.nodes) return;
-    for (const node of this.app.scene.nodes) {
-      const runtimeId = (node as { runtime?: { id?: string } }).runtime?.id;
-      if (typeof runtimeId === "string" && runtimeId.startsWith("prd07.legacyWeather.")) {
-        this.app.nodes.get(runtimeId)?.setVisible?.(false);
-      }
-    }
+    this.hideTaggedLegacyNodes("prd07.legacyWeather.");
   }
 
   /** Bound by the C-38 extension factory with the app's resolved flag state. */
@@ -341,12 +332,7 @@ export class ProductionEffectSystem {
    */
   private applyLegacyDecalVisibility(): void {
     if (!this.decalFlagOn || !this.app.nodes) return;
-    for (const node of this.app.scene.nodes) {
-      const runtimeId = (node as { runtime?: { id?: string } }).runtime?.id;
-      if (typeof runtimeId === "string" && runtimeId.startsWith("prd07.legacyDecal.")) {
-        this.app.nodes.get(runtimeId)?.setVisible?.(false);
-      }
-    }
+    this.hideTaggedLegacyNodes("prd07.legacyDecal.");
   }
 
   /** Bound by the C-38 extension factory with the app's resolved flag state. */
@@ -365,6 +351,21 @@ export class ProductionEffectSystem {
   private sceneSignature(): { nodes: readonly EffectNodeLike[]; version: number } {
     const s = this.app.scene as { nodes: readonly EffectNodeLike[]; version?: number };
     return { nodes: s.nodes, version: s.version ?? -1 };
+  }
+
+  /**
+   * Hide every runtime-tagged legacy primitive with `prefix`, including ones
+   * nested in groups (grouped-effects walk). Hidden ancestors already hide
+   * their subtree, so only visible branches are visited.
+   */
+  private hideTaggedLegacyNodes(prefix: string): void {
+    const nodes = this.app.nodes;
+    if (!nodes) return;
+    this.walkNodes((node, visible) => {
+      if (!visible) return;
+      const runtimeId = (node as { runtime?: { id?: string } }).runtime?.id;
+      if (typeof runtimeId === "string" && runtimeId.startsWith(prefix)) nodes.get(runtimeId)?.setVisible?.(false);
+    });
   }
 
   /** Recursive scene walk — group children descend only under a visible ancestor. */

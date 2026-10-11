@@ -52,12 +52,12 @@ const game: Prd09Game<string, string> = createGame({
   hud: {
     theme: "fighting",
     widgets: [
-      { id: "mode", kind: "label", anchor: "top", label: "MODE" },
-      { id: "hp", kind: "gauge", anchor: "top-left", label: "HULL" },
-      { id: "rival", kind: "gauge", anchor: "top-right", label: "RIVAL" },
-      { id: "guard", kind: "gauge", anchor: "bottom-left", label: "GUARD" },
-      { id: "power", kind: "gauge", anchor: "bottom", label: "POWER" },
-      { id: "phase", kind: "label", anchor: "bottom-right", label: "BOUT" }
+      { id: "mode", kind: "prompt", anchor: "top", label: "MODE" },
+      { id: "hp", kind: "prompt", anchor: "top-left", label: "HULL" },
+      { id: "rival", kind: "prompt", anchor: "top-right", label: "RIVAL" },
+      { id: "guard", kind: "prompt", anchor: "bottom-left", label: "GUARD" },
+      { id: "power", kind: "prompt", anchor: "bottom", label: "POWER" },
+      { id: "phase", kind: "prompt", anchor: "bottom-right", label: "BOUT" }
     ]
   },
   touch: {
@@ -65,11 +65,11 @@ const game: Prd09Game<string, string> = createGame({
     bindings: { stick: "moveX", tap: "light", swipeUp: "jump", swipeDown: "guard", swipeRight: "heavy", pause: "menu" }
   },
   qualityRebuild: {
-    // FLAG-1: arm the engine features this route uses — `game` selects the
-    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
-    // art/direction.ts sections. `route_mech_hangar` uses the engine-parseable
-    // underscore form (URL/dispatch form is `route-mech-hangar`).
-    flags: ["route_mech_hangar", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+    // T0-29 (#1232): only what the route itself needs — its route token and
+    // `game` (the real C-24 shell: beacon/evidence/HUD/touch). Engine lane
+    // flags come from URL/env/defaults like every other route, so `none`
+    // and `-<flag>` arms actually turn them off.
+    flags: ["route_mech_hangar", "game"]
   }
 });
 

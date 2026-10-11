@@ -86,7 +86,7 @@ on:
         default: false
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  group: ${{ github.workflow }}-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
@@ -105,6 +105,15 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: lane typecheck
         run: pnpm exec tsc --noEmit -p benchmarks/quality-rebuild/scenes/prd02/tsconfig.json
+      # prd02-depth-variants-glsl (#867) validates every composed depth variant
+      # with glslangValidator and fails when the binary is missing.
+      - name: Install glslang
+        run: |
+          if ! command -v glslangValidator >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq glslang-tools
+          fi
+          glslangValidator --version
       - name: lane unit tests
         run: pnpm exec vitest run --config tests/qr/prd02/vitest.config.ts
       - name: scene lint (lane config)
@@ -130,6 +139,10 @@ jobs:
       # is a missing module (the 2/5 lane.spec failure in run 37774324490).
       - name: build package dist
         run: pnpm build
+      # 02-S8/S10 pixel specs render lane.html from the lane bundle
+      # (tests/qr/prd02/browser/lane-page.ts throws if it is missing).
+      - name: build lane bundle
+        run: pnpm exec vite build --config benchmarks/quality-rebuild/scenes/prd02/vite.lane.config.ts
       - run: pnpm exec playwright install chromium
       - name: prd02 browser specs
         run: pnpm exec playwright test tests/qr/prd02/browser --config tests/qr/prd02/playwright.prd02.config.ts
@@ -144,6 +157,10 @@ jobs:
   lane-capture:
     name: lane capture + baselines
     runs-on: macos-14
+    # 02-BASE opens a baseline PR on update_baseline dispatches.
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -168,21 +185,107 @@ jobs:
             --engines "${{ github.event.inputs.engines || 'aura3d,three' }}" \
             $SCENES_ARG \
             --out benchmarks/quality-rebuild/scenes/prd02/out
-      - name: commit flag-none baseline
+      # 02-BASE: never push to main from a workflow. The baseline lands on
+      # qr/prd02-baseline-<run_id> with a PR; the merge queue merges it.
+      - name: commit flag-none baseline (branch + PR)
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.update_baseline == 'true' && (github.event.inputs.flags == '' || github.event.inputs.flags == 'none')
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: qr/prd02-baseline-${{ github.run_id }}
         run: |
+          set -euo pipefail
           git config user.name "qr-prd02-bot"
           git config user.email "qr-prd02-bot@users.noreply.github.com"
-          mkdir -p docs/project/aura3d-quality-rebuild/evidence/prd02/lighting-baseline
-          cp -r benchmarks/quality-rebuild/scenes/prd02/out docs/project/aura3d-quality-rebuild/evidence/prd02/lighting-baseline/prd02-"$(date +%Y%m%d)"
+          dest="docs/project/aura3d-quality-rebuild/evidence/prd02/lighting-baseline/run-${{ github.run_id }}"
+          mkdir -p "$dest"
+          cp -r benchmarks/quality-rebuild/scenes/prd02/out/. "$dest/"
+          git checkout -b "$BRANCH"
           git add docs/project/aura3d-quality-rebuild/evidence/prd02/lighting-baseline
-          git diff --cached --quiet && echo "no baseline changes — nothing to commit" || git commit -m "chore(qr-02): refresh prd02 flag-none baseline"
-          git push
+          if git diff --cached --quiet; then
+            echo "no baseline changes; nothing to commit"
+            exit 0
+          fi
+          git commit -m "chore(qr-02): prd02 flag-none lane baseline from run ${{ github.run_id }}"
+          git push origin "$BRANCH"
+          gh pr create --base main --head "$BRANCH" \
+            --title "[QR-02] 02-BASE: prd02 flag-none lane baseline (run ${{ github.run_id }})" \
+            --body "02-BASE / P-57: flags=none lane captures from lighting-quality run ${{ github.run_id }} on ${{ github.sha }}, committed under evidence/prd02/lighting-baseline/run-${{ github.run_id }}/."
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: prd02-lane-capture-${{ github.sha }}
           path: benchmarks/quality-rebuild/scenes/prd02/out
+          retention-days: 30
+
+  # Lane-02 GPU job (program-lead ruling 2026-10-11): the prd02 browser specs
+  # and the lane capture on the self-hosted NVIDIA scale set (labels
+  # self-hosted + azure-gpu, Vulkan ANGLE), alongside the macos-14 jobs.
+  # Dispatch-only, so PR code (forks included) never reaches the self-hosted
+  # runner. Chrome args follow qr-azure-gpu.yml (#956):
+  # vars.QR_AZURE_GPU_CHROME_ARGS, else the Vulkan ANGLE default below.
+  # The renderer step fails the job on a missing WebGL2 context or a software
+  # rasterizer. Frames are never compared across runner types.
+  gpu:
+    name: prd02 specs + lane capture (azure-gpu)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: [self-hosted, azure-gpu]
+    timeout-minutes: 180
+    env:
+      QR_AZURE_GPU_CHROME_ARGS: ${{ vars.QR_AZURE_GPU_CHROME_ARGS }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: chrome args
+        run: |
+          args="${QR_AZURE_GPU_CHROME_ARGS:---headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist}"
+          source="default"; [ -n "$QR_AZURE_GPU_CHROME_ARGS" ] && source="vars.QR_AZURE_GPU_CHROME_ARGS"
+          echo "chrome args ($source): $args" | tee -a "$GITHUB_STEP_SUMMARY"
+          { echo "QR_PRD02_CHROME_ARGS=$args"; echo "QR_BENCH_CHROME_ARGS=$args"; } >> "$GITHUB_ENV"
+      - name: WebGL renderer must be the GPU
+        id: renderer
+        run: |
+          mkdir -p benchmarks/quality-rebuild/scenes/prd02/out
+          pnpm exec tsx benchmarks/quality-rebuild/scenes/prd02/gpu-probe.ts | tee benchmarks/quality-rebuild/scenes/prd02/out/renderer.json
+          echo "renderer: $(cat benchmarks/quality-rebuild/scenes/prd02/out/renderer.json)" >> "$GITHUB_STEP_SUMMARY"
+      - name: build package dist
+        run: pnpm build
+      - name: build lane bundle
+        id: bundle
+        run: pnpm exec vite build --config benchmarks/quality-rebuild/scenes/prd02/vite.lane.config.ts
+      - name: prd02 browser specs
+        run: pnpm exec playwright test tests/qr/prd02/browser --config tests/qr/prd02/playwright.prd02.config.ts
+      # Runs after a red spec step too (the job stays red): the captures are
+      # the screenshots that go with the spec numbers.
+      - name: lane capture
+        if: (success() || failure()) && steps.renderer.outcome == 'success' && steps.bundle.outcome == 'success'
+        env:
+          IN_FLAGS: ${{ github.event.inputs.flags || 'none' }}
+          IN_SCENES: ${{ github.event.inputs.scenes }}
+          IN_ENGINES: ${{ github.event.inputs.engines || 'aura3d,three' }}
+        run: |
+          scenes_arg=()
+          if [ -n "$IN_SCENES" ]; then scenes_arg=(--scenes "$IN_SCENES"); fi
+          pnpm exec tsx benchmarks/quality-rebuild/scenes/prd02/capture-lane.ts \
+            --flags "$IN_FLAGS" \
+            --engines "$IN_ENGINES" \
+            "${scenes_arg[@]}" \
+            --out benchmarks/quality-rebuild/scenes/prd02/out
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: prd02-gpu-${{ github.sha }}-${{ github.run_attempt }}
+          path: |
+            tests/reports/qr-prd02-browser.json
+            benchmarks/quality-rebuild/scenes/prd02/out
+          if-no-files-found: warn
           retention-days: 30

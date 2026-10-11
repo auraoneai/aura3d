@@ -1,5 +1,8 @@
 # PRD-06 evidence — CompiledClip + PoseMixer + applyClips + clip-name fallback (T1.2, T1.3, T1.7, T1.8)
 
+> **06-REC note (finish phase, G3):** this file cites no passing remote run id; every completion claim below is recorded as **unbacked** until a green lane-workflow/GitLab run id is added next to it.
+
+
 Branch: `qr/prd06-pose-foundations`. Parity target: three r185 `AnimationMixer`/`AnimationAction` semantics within 1e-4 (quats up to sign) across soldier.glb, fox.glb, CesiumMan.glb, RobotExpressive.glb.
 
 ## What landed

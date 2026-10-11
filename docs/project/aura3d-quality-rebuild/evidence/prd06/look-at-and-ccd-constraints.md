@@ -1,5 +1,8 @@
 # PRD-06 T3.3 + T3.4 — LookAtConstraint & CcdIkConstraint
 
+> **06-REC note (finish phase, G3):** this file cites no passing remote run id; every completion claim below is recorded as **unbacked** until a green lane-workflow/GitLab run id is added next to it.
+
+
 ## T3.3 `packages/animation/src/pose/LookAtConstraint.ts`
 - `createLookAtConstraint(spec)` → `{apply(pose, skeleton, modelMatrix, target, dt), smoothed, reset}`.
 - Spec `{bones: {bone, weight}[], forwardAxis "+z"|"-z"|"+y" (default "+z"), yawLimitDeg 90, pitchLimitDeg 60, eyes?[], halfLife 0.12}`.

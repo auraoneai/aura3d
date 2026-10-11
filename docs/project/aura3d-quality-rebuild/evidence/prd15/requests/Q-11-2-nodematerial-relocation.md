@@ -1,5 +1,7 @@
 # Q-11-2 — NodeMaterial disposition (relocated, not deleted)
 
+**Issue:** #1026 (P-64 writeback)
+
 Status: RESOLVED BY LANE 15 — ownership premise in PRD was wrong
 
 PRD-15 T6.6 lists `packages/materials/src/NodeMaterial.ts` as owner 11.

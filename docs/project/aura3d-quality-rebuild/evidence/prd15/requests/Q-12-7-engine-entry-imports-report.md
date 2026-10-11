@@ -1,5 +1,7 @@
 # Q-12-7 — `engine-entry-imports` / `devtools-imports` codemod report (benchmarks + parity tools)
 
+**Issue:** #1038 (P-64 writeback)
+
 **From:** PRD 15 (T5.9) · **To:** lane 12 (`benchmarks/`, `tools/threejs-parity-*`,
 `tools/head-to-head-*`, `tools/showcase-library/game-visual-qa.mjs`) ·
 **Filed:** 2026-10-06 · **SLA:** 2 working days

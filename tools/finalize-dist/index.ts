@@ -77,7 +77,47 @@ for (const packageName of packageNames) {
 writeFileSync(join(rootDist, "index.js"), `${rootIndexLines.join("\n")}\n`);
 writeFileSync(join(rootDist, "index.d.ts"), `${rootTypeLines.join("\n")}\n`);
 
+assertWorkerUrlsEmitted();
+
 console.log(`Finalized dist exports for ${packageNames.length} packages.`);
+
+// T0-20: `new Worker(new URL("./x.worker.js", import.meta.url))` only works in
+// a consumer if the emitted `.js` sits beside the caller. Every
+// `packages/<pkg>/src/**/*.worker.ts` must land as `.worker.js` in each dist
+// tree that ships the package, and no emitted file may still point a
+// `new URL(...)` at a `.ts` source (dead inside the packed tarball).
+function assertWorkerUrlsEmitted(): void {
+  const problems: string[] = [];
+  for (const packageName of packageNames) {
+    const packageSource = join(packageRoot, packageName, "src");
+    const distTrees = [join(rootDist, packageName), join(packageRoot, packageName, "dist")].filter((dir) => existsSync(dir));
+    for (const worker of walkWorkerSources(packageSource)) {
+      const emitted = relative(packageSource, worker).replace(/\.ts$/, ".js");
+      for (const tree of distTrees) {
+        if (!existsSync(join(tree, emitted))) problems.push(`missing emitted worker ${relative(root, join(tree, emitted))}`);
+      }
+    }
+    for (const tree of distTrees) {
+      for (const file of walkFiles(tree)) {
+        if (!file.endsWith(".js")) continue;
+        for (const match of readFileSync(file, "utf8").matchAll(/new\s+URL\(\s*["'`]([^"'`]+\.[mc]?tsx?)["'`]\s*,\s*import\.meta\.url/g)) {
+          problems.push(`${relative(root, file)} references TypeScript source new URL("${match[1]!}")`);
+        }
+      }
+    }
+  }
+  if (problems.length > 0) throw new Error(`finalize-dist worker URL check failed:\n  ${problems.join("\n  ")}`);
+}
+
+function walkWorkerSources(dir: string, out: string[] = []): string[] {
+  if (!existsSync(dir)) return out;
+  for (const entry of readdirSync(dir)) {
+    const path = join(dir, entry);
+    if (statSync(path).isDirectory()) walkWorkerSources(path, out);
+    else if (path.endsWith(".worker.ts") && !path.endsWith(".d.ts")) out.push(path);
+  }
+  return out;
+}
 
 function walkFiles(dir: string, out: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {

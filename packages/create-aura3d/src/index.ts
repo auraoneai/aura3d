@@ -2,6 +2,7 @@ import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { writeAgentSkills } from "./agent-skills.js";
+import { copyTemplateHdris, TEMPLATE_HDRI_DIR, templateAuthorsLook } from "./template-hdri.js";
 
 export const CREATE_AURA3D_TEMPLATES = [
   "product-viewer",
@@ -16,16 +17,55 @@ export const CREATE_AURA3D_TEMPLATES = [
   "animation-studio",
   "episode-builder",
   "character-controller",
-  "three-compat-premium-product-viewer",
-  "three-compat-architecture-interior",
-  "three-compat-material-authoring",
-  "three-compat-asset-inspector",
-  "three-compat-character-viewer",
-  "three-compat-postprocess-scene",
-  "three-compat-custom-threejs-migration",
-  "three-compat-large-scene"
+  "premium-product-viewer",
+  "architecture-interior",
+  "material-authoring",
+  "asset-inspector",
+  "character-viewer",
+  "postprocess-scene",
+  "custom-scene",
+  "large-scene"
 ] as const;
 export type CreateA3DTemplate = (typeof CREATE_AURA3D_TEMPLATES)[number];
+
+/**
+ * Retired template names → current names (Q-13-4 / #700: the `three-compat-*`
+ * starters take their §6.8 names). Each entry is a one-minor deprecation alias:
+ * the CLI scaffolds the current template and prints `templateAliasWarning`.
+ * Entries are added as each template is renamed and dropped in the next minor.
+ */
+export const TEMPLATE_ALIASES = Object.freeze({
+  "three-compat-premium-product-viewer": "premium-product-viewer",
+  "three-compat-architecture-interior": "architecture-interior",
+  "three-compat-material-authoring": "material-authoring",
+  "three-compat-asset-inspector": "asset-inspector",
+  "three-compat-character-viewer": "character-viewer",
+  "three-compat-postprocess-scene": "postprocess-scene",
+  "three-compat-custom-threejs-migration": "custom-scene",
+  "three-compat-large-scene": "large-scene"
+} as const satisfies Record<string, CreateA3DTemplate>);
+export type CreateA3DTemplateAlias = keyof typeof TEMPLATE_ALIASES;
+
+export interface ResolvedTemplateName {
+  readonly template: CreateA3DTemplate;
+  /** The retired name the caller used, or null for a current template name. */
+  readonly deprecated: string | null;
+}
+
+/** Resolve a current template name or a retired alias; null when neither. */
+export function resolveTemplateAlias(name: string): ResolvedTemplateName | null {
+  if ((CREATE_AURA3D_TEMPLATES as readonly string[]).includes(name)) {
+    return { template: name as CreateA3DTemplate, deprecated: null };
+  }
+  const template = Object.prototype.hasOwnProperty.call(TEMPLATE_ALIASES, name) ? TEMPLATE_ALIASES[name as CreateA3DTemplateAlias] : undefined;
+  return template ? { template, deprecated: name } : null;
+}
+
+/** Deprecation warning for a resolved alias; null when no alias was used. */
+export function templateAliasWarning(resolved: ResolvedTemplateName): string | null {
+  if (!resolved.deprecated) return null;
+  return `Template "${resolved.deprecated}" renamed to "${resolved.template}"; the "${resolved.deprecated}" alias is removed in the next minor.`;
+}
 
 export interface CreateA3DProjectOptions {
   readonly targetDir: string;
@@ -72,6 +112,9 @@ export function createA3DProject(options: CreateA3DProjectOptions): CreateA3DPro
   }
   packageJson.dependencies = dependencies;
   writeFileSync(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`);
+  // Look presets load /hdri/<file>.hdr; ship the package's HDRI set (sibling of
+  // templates/ under the same root) with every template that authors a look.
+  if (templateAuthorsLook(targetDir)) copyTemplateHdris(resolve(rootDir, TEMPLATE_HDRI_DIR), targetDir);
   const agentSkills = options.agent
     ? writeAgentSkills({ projectDir: targetDir, agent: options.agent, skills: options.skills ?? "core", template })
     : undefined;

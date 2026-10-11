@@ -52,6 +52,11 @@ export interface RunOptions {
    * merged into ReadyPayload.extra.
    */
   readonly collectExtra?: (app: AuraApp) => Readonly<Record<string, unknown>> | Promise<Readonly<Record<string, unknown>>>;
+  /**
+   * #1109 (lane 10 → 12): lane adapters append public-API nodes to the built
+   * scene (e.g. `world.*` when the lane flag is on). No hook → no change.
+   */
+  readonly extraNodes?: (ctx: { readonly qrFlags: readonly string[] }) => readonly AuraNodeInput[];
 }
 
 // Variant machinery lives in aura3d/lib/variants.ts (T2.4, §8.4).
@@ -142,7 +147,7 @@ function toAuraMaterial(spec: MaterialSpec): AuraMaterialSpec {
   });
 }
 
-function buildAuraScene(spec: SceneSpec, log: CapabilityLog) {
+function buildAuraScene(spec: SceneSpec, log: CapabilityLog, extraNodes: readonly AuraNodeInput[] = []) {
   const built = scene();
   const nodes: AuraNodeInput[] = [];
 
@@ -331,6 +336,7 @@ function buildAuraScene(spec: SceneSpec, log: CapabilityLog) {
     }));
   }
 
+  nodes.push(...extraNodes);
   for (const node of nodes) built.add(node);
   return built;
 }
@@ -366,6 +372,16 @@ async function nextFrame(): Promise<void> {
   await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
 }
 
+/**
+ * T0-12: harness phase marks. Round 1 on main (GitLab 2934643849) showed the
+ * engine's a3d:mount:* marks ending at ~0.37 s while ready took ~110 s, so the
+ * dominant cost is after mount. These marks split it into named phases; they
+ * ride along in payload.extra.mountTiming.
+ */
+function harnessMark(phase: string): void {
+  if (typeof performance !== "undefined" && typeof performance.mark === "function") performance.mark(`qr:harness:${phase}`);
+}
+
 interface RendererDiagnosticsShape {
   readonly warnings?: readonly string[];
   readonly exposure?: { readonly category?: string; readonly exposure?: number };
@@ -391,7 +407,7 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
   if (variant !== "default" && variant !== "aura3d-tuned") {
     log.add(`variant:${variant}`, "supported", "Broken-control variant applied through the public API.");
   }
-  const builtScene = buildAuraScene(spec, log);
+  const builtScene = buildAuraScene(spec, log, opts.extraNodes?.({ qrFlags: opts.qrFlags ?? spec.qrFlags ?? [] }) ?? []);
   const app = createAuraApp(host, {
     scene: builtScene,
     // T0-13: only qualityProfile — renderer.mode/renderer.fallback are not
@@ -410,6 +426,7 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
       : {})
   });
   await app.ready();
+  harnessMark("app-ready");
 
   // PRD-01 Phase 5: `tm`/`exp` (or `aura3d-tonemap`/`aura3d-exp`) select the
   // output operator through the C-05 surface — the base-scene A/B wiring.
@@ -435,6 +452,7 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
   // NoDrawError on deadline; either way the page publishes __QR_ERROR__ and
   // capture.mjs records the real failure instead of a masked ready/timeout.
   await waitForFirstDraw(app, Math.max(1, Math.min(90_000, adapterDeadline - performance.now())));
+  harnessMark("first-draw");
 
   // PRD-06 T3.9: spec-declared `animation.footIk` registers the foot-ik pose
   // constraint on the actor once it is loaded (draw-wait above guarantees the
@@ -505,17 +523,26 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
   // Wait for the HDRI chain to swap in (or fail loudly). T0-10: bounded by
   // the adapter deadline and abandoned on recorded errors — after a failed
   // mount the chain can never resolve.
+  // T0-12: only a *pending* chain is worth waiting for. hdriStatus "none" (or
+  // no environment diagnostics at all) means no chain exists — the flags-off
+  // path never starts one — and the loop used to spin to the adapter deadline
+  // (0.8 x timeout = 96 s), which was the whole 87-110 s ready time and the
+  // 6/6 control timeouts (Round 1, GPU run 38117264282). A pending chain gets
+  // at most HDRI_PENDING_MS before the capture proceeds on the fallback.
   if (spec.environment) {
-    const hdriDeadline = Math.min(performance.now() + 180_000, adapterDeadline);
+    const HDRI_PENDING_MS = 20_000;
+    const hdriDeadline = Math.min(performance.now() + HDRI_PENDING_MS, adapterDeadline);
     while (performance.now() < hdriDeadline) {
       const environment = rendererDiagnostics(app)?.environment;
       if (environment?.iblPixelBacked || environment?.hdriStatus === "ready" || environment?.hdriStatus === "fallback") break;
+      if (environment?.hdriStatus !== "pending") break;
       if (app.diagnostics().errors.length > 0) break;
       app.step(0);
       await sleep(100);
     }
     const environment = rendererDiagnostics(app)?.environment;
     log.add("hdri-ibl", environment?.iblPixelBacked ? "supported" : "missing", `environments.hdri(): hdriStatus=${environment?.hdriStatus ?? "unknown"} iblPixelBacked=${String(environment?.iblPixelBacked ?? false)}`);
+    harnessMark("hdri");
   }
 
   // Advance simulated time to the capture time, then settle.
@@ -572,11 +599,13 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
   } else {
     app.step(spec.time);
   }
+  harnessMark("advance");
   for (let frame = 0; frame < spec.settleFrames; frame += 1) {
     await nextFrame();
     app.step(0);
   }
   await nextFrame();
+  harnessMark("settle");
 
   // PRD-01 Phase 6 (§15/I8): the flagged path must compile nothing after
   // ready+settle — read the C-31 programs section before and after an extra
@@ -586,6 +615,7 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
     app.step(0);
     await nextFrame();
   }
+  harnessMark("programs-window");
   const programsAfter = (app.diagnostics() as unknown as { programs?: { deviceProgramCompiles?: number | null } }).programs?.deviceProgramCompiles ?? null;
   if (programsBefore !== null || programsAfter !== null) {
     const delta = (programsAfter ?? 0) - (programsBefore ?? 0);
@@ -648,7 +678,7 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
       // createAuraApp through the first renderFrame — one remote run names
       // which phase owns the ~90 s pre-first-frame cost.
       mountTiming: performance.getEntriesByType("mark")
-        .filter((mark) => mark.name.startsWith("a3d:"))
+        .filter((mark) => mark.name.startsWith("a3d:") || mark.name.startsWith("qr:harness:"))
         .map((mark) => ({ name: mark.name, startTime: Math.round(mark.startTime * 100) / 100 })),
       backend: diagnostics.backend,
       renderSize: diagnostics.renderSize,

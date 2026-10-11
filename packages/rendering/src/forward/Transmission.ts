@@ -192,6 +192,9 @@ class TransmissionCapturePass extends BaseRenderPass {
       frame.blackboard.set(TRANSMISSION_BLACKBOARD_KEY, texture);
       // T0-05: per-draw bindUniforms has no blackboard; see transmissionTargetStore.
       setCapturedTransmissionTarget({ texture: texture.colorTexture, width, height });
+    } else {
+      // 04-S10 / T0-18(d): never leave a previous frame's target bound.
+      setCapturedTransmissionTarget(undefined);
     }
     // The producer publishes its RenderTarget under PRD01_FORWARD_TARGET once
     // the forward target exists (HDR path and postprocess path both do); on
@@ -279,10 +282,14 @@ export class TransmissionFrameContributor implements FrameContributor {
     const scale = TRANSMISSION_TIER_SCALE[resolveTierName(ctx.tier)];
     if (scale === null || scale === undefined) {
       lastDiagnostics = INACTIVE_DIAGNOSTICS;
+      // 04-S10: no capture this frame -> the store must not keep last frame's target.
+      setCapturedTransmissionTarget(undefined);
       return [];
     }
     if (!ctx.items.some(itemReportsTransmissionLobe)) {
       lastDiagnostics = INACTIVE_DIAGNOSTICS;
+      // 04-S10: no capture this frame -> the store must not keep last frame's target.
+      setCapturedTransmissionTarget(undefined);
       return [];
     }
     let state = this.devices.get(ctx.device);
@@ -321,6 +328,8 @@ export class TransmissionFrameContributor implements FrameContributor {
     }
     this.devices.clear();
     lastDiagnostics = INACTIVE_DIAGNOSTICS;
+    // T0-18(d): the disposed targets' textures must not stay reachable from the store.
+    setCapturedTransmissionTarget(undefined);
   }
 }
 

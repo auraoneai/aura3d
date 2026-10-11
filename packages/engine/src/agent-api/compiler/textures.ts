@@ -183,7 +183,12 @@ export async function upgradeProductionPrimitiveTextures(
       const urls = [intent.baseColorUrl, intent.normalUrl, intent.roughnessUrl, intent.metalnessUrl, intent.occlusionUrl, intent.emissiveUrl, ...Object.values(intent.extensionMaps ?? {}).map((map) => map.url)].filter(
         (url): url is string => typeof url === "string" && url.length > 0
       );
-      if (urls.length === 0) continue;
+      // S7 (main GPU run 38144924567): a procedural-only spec (material.fabric,
+      // brushedMetal, blackRubber, frostedGlass: no URL maps) was skipped here, so
+      // flag-on never rasterized it and the frame equalled flag-off bit for bit.
+      // Flag-on, a procedural input alone is enough to run the textured upgrade.
+      const proceduralOnly = qrMaterials && intent.proceduralInputs.length > 0;
+      if (urls.length === 0 && !proceduralOnly) continue;
       if (resource.textureStatus !== "none") continue;
       resource.textureStatus = "pending";
       try {

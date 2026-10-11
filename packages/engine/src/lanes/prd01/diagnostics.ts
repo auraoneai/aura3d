@@ -9,6 +9,7 @@ import type { AuraApp } from "../../agent-api/index";
 import type { AuraOutputSurface } from "../../contracts/output";
 import { rendererProgramCachePeek } from "@aura3d/rendering";
 import type { DeviceCounters } from "@aura3d/rendering/contracts";
+import { appCanvasOf } from "../../agent-api/app/screenshot.js";
 
 /** The output surface keeps its own state block for the diagnostics section. */
 export const PRD01_OUTPUT_STATE = Symbol.for("a3d.prd01.output-state");
@@ -102,11 +103,13 @@ export function collectResolution(app: AuraApp): unknown {
   let canvasWidth: number | null = null;
   let canvasHeight: number | null = null;
   let cssWidth: number | null = null;
-  const appCanvas = (app as { canvas?: HTMLCanvasElement }).canvas;
+  const appCanvas = appCanvasOf(app) ?? (app as { canvas?: HTMLCanvasElement }).canvas;
   try {
-    const shot = app.screenshot();
-    canvasWidth = shot.width > 0 ? shot.width : null;
-    canvasHeight = shot.height > 0 ? shot.height : null;
+    // #1131: read the backing size off the canvas; screenshot() would run a
+    // full toDataURL readback on every diagnostics() call.
+    const size = appCanvas ?? app.screenshot();
+    canvasWidth = size.width > 0 ? size.width : null;
+    canvasHeight = size.height > 0 ? size.height : null;
     if (appCanvas && typeof appCanvas.getBoundingClientRect === "function") {
       const rect = appCanvas.getBoundingClientRect();
       cssWidth = rect.width > 0 ? rect.width : null;

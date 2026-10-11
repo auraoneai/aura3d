@@ -5,10 +5,10 @@ import { afterEach, describe, expect, it } from "vitest";
 import { prd07FeatureBits, prd07FogSelect, prd07WetnessSelect } from "../../../../packages/rendering/src/vfx/prd07FeaturePars";
 import { setPrd07WetnessState } from "../../../../packages/rendering/src/atmosphere/shaders/wetness.glsl";
 
-const input = (flagNames: string[], volumetricFog: "analytic" | "froxel") =>
+const input = (flagNames: string[], volumetricFog: "analytic" | "froxel", shaderKey = "pbr", pass = "forward") =>
   ({
-    item: {} as never,
-    pass: "forward" as never,
+    item: { material: { shaderKey } } as never,
+    pass: pass as never,
     tier: { volumetricFog } as never,
     flags: { on: (n: string) => flagNames.includes(n) } as never
   });
@@ -38,5 +38,21 @@ describe("P4/P5 prd07 feature pars", () => {
     expect(bits).toEqual({ "prd07.fog": "volumetric" });
     setPrd07WetnessState({ snowCover: 0.4 });
     expect(prd07FeatureBits(input(["A3D_QR_VFX_FOG"], "froxel"))["prd07.wetness"]).toBe(true);
+  });
+
+  // Wetness landmine / #880: the call chunk edits `PhysicalMaterial material`,
+  // so only lit forward draws in a wet scene may select it.
+  it("wetness never selects a plain PBR item in a dry scene", () => {
+    expect(prd07WetnessSelect(input([], "analytic", "pbr"))).toBeUndefined();
+    expect(prd07FeatureBits(input([], "analytic", "pbr"))).toEqual({});
+  });
+
+  it("wetness selects only lit forward items while wet", () => {
+    setPrd07WetnessState({ wetness: 0.8 });
+    expect(prd07WetnessSelect(input([], "analytic", "pbr"))).toBe(true);
+    expect(prd07WetnessSelect(input([], "analytic", "skinned-lit"))).toBe(true);
+    expect(prd07WetnessSelect(input([], "analytic", "unlit"))).toBeUndefined();
+    expect(prd07WetnessSelect(input([], "analytic", "pbr", "depth"))).toBeUndefined();
+    expect(prd07WetnessSelect(input([], "analytic", "pbr", "shadow"))).toBeUndefined();
   });
 });

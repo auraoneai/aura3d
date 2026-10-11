@@ -22,7 +22,7 @@ const ctxFor = (flagsOn: boolean, frameIndex = 0): FrameContributorContext =>
   ({
     device: {}, width: 64, height: 64, frameIndex, timeSeconds: 0,
     camera: null, source: {}, items: [], tier: {},
-    flags: resolveQrFlags({ options: flagsOn ? ["camera"] : [] }),
+    flags: resolveQrFlags({ options: flagsOn ? ["camera"] : ["-camera"] }),
     sceneDepth: { texture: null, linearize: { near: 0.1, far: 100, orthographic: false }, available: false },
     blackboard: new Map()
   }) as unknown as FrameContributorContext;

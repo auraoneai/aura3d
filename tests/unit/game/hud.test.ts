@@ -215,6 +215,90 @@ describe("mountHud (PRD-09 1758/1759)", () => {
       )
     ).toThrow(/duplicate widget id/);
   });
+
+  it("#1086: unknown widget kinds fail fast with a named error", () => {
+    const doc = new FakeDoc();
+    const root = doc.createElement("div");
+    expect(() =>
+      mountHud(
+        { root, doc, devAssertions: false, schedule: () => ({ cancel: () => {} }) },
+        { widgets: [{ id: "p1-hp", kind: "healthbar", anchor: "top-left" } as never] }
+      )
+    ).toThrow('a3g-hud: unsupported widget kind "healthbar" for "p1-hp"');
+  });
+
+  it("#1086: meter without max defaults to full scale 1; score renders strings verbatim", () => {
+    const { root, hud, pump } = makeHud({
+      widgets: [
+        { id: "m", kind: "meter", anchor: "top" } as never,
+        { id: "s", kind: "score", anchor: "top-left", rollMs: 0 }
+      ]
+    });
+    hud.set("m", 0.25);
+    hud.set("s", "PAR 3");
+    pump();
+    const hudEl = root.children[0] as FakeEl;
+    const all: FakeEl[] = [];
+    const walk = (n: FakeEl) => { all.push(n); n.children.forEach(walk); };
+    walk(hudEl);
+    const fill = all.find((n) => String(n.className).includes("a3g-meter-fill"))!;
+    expect(fill.style.width).toBe("25.00%");
+    const scoreValue = all.find((n) => n.parent?.dataset.widgetId === "s" && String(n.className).includes("a3g-w-value"))!;
+    expect(scoreValue.textContent).toBe("PAR 3");
+  });
+
+  it("#1086: a rolling score repaints when a string gives way to its current number", () => {
+    const { root, hud, pump } = makeHud({ widgets: [{ id: "s", kind: "score", anchor: "top", rollMs: 300 }] });
+    hud.set("s", "READY");
+    pump();
+    hud.set("s", 0);
+    pump();
+    const hudEl = root.children[0] as FakeEl;
+    const slot = hudEl.children.find((c) => c.dataset.anchor === "top")!;
+    const value = (slot.children[0] as FakeEl).children.find((n) => String(n.className).includes("a3g-w-value"))!;
+    expect(value.textContent).toBe("0");
+  });
+
+  it("applies mobileAnchor only while the mobile layout query matches", () => {
+    const doc = new FakeDoc();
+    const root = doc.createElement("div");
+    const listeners = new Set<() => void>();
+    const query = {
+      matches: false,
+      addEventListener: (_t: "change", cb: () => void) => { listeners.add(cb); },
+      removeEventListener: (_t: "change", cb: () => void) => { listeners.delete(cb); }
+    };
+    const hud = mountHud(
+      { root, doc, devAssertions: false, mobileQuery: query, schedule: () => ({ cancel: () => {} }) },
+      {
+        widgets: [
+          { id: "combo", kind: "combo", anchor: "top-right", mobileAnchor: "bottom-right" },
+          { id: "speed", kind: "speedometer", anchor: "bottom-right", mobileAnchor: "hidden" }
+        ]
+      }
+    );
+    const hudEl = root.children[0] as FakeEl;
+    const slotIds = (anchor: string) =>
+      hudEl.children.find((c) => c.dataset.anchor === anchor)!.children.map((c) => c.dataset.widgetId);
+    // Desktop: both widgets sit in their desktop anchors; "hidden" is a CSS
+    // class that only the mobile media query turns into display:none.
+    expect(slotIds("top-right")).toEqual(["combo"]);
+    expect(slotIds("bottom-right")).toEqual(["speed"]);
+    const speed = hudEl.children.find((c) => c.dataset.anchor === "bottom-right")!.children[0] as FakeEl;
+    expect(speed.classList.contains("a3g-mobile-hidden")).toBe(true);
+
+    query.matches = true;
+    listeners.forEach((cb) => cb());
+    expect(slotIds("top-right")).toEqual([]);
+    expect(slotIds("bottom-right")).toEqual(["speed", "combo"]);
+
+    query.matches = false;
+    listeners.forEach((cb) => cb());
+    expect(slotIds("top-right")).toEqual(["combo"]);
+
+    hud.dispose();
+    expect(listeners.size).toBe(0);
+  });
 });
 
 describe("screenFraction", () => {

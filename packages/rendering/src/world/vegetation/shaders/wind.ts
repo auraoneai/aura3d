@@ -5,13 +5,8 @@
  */
 import type { ShaderChunk } from "../../../contracts/program.js";
 
-const glsl = /* glsl */ `
-layout(std140) uniform A3DWind {
-  vec4 u_windDirStrength;   // dir.xz, strength, time
-  vec4 u_windGust;          // gustStrength, 1/gustScale, -, -
-};
-uniform sampler2D u_windNoise; // 64² RG8, repeat
-
+/** `a3dWindOffset` body, shared by the Path S UBO chunk and the Path G deform chunk. */
+const WIND_OFFSET_FN_GLSL = /* glsl */ `
 vec3 a3dWindOffset(vec3 localPos, vec3 instanceOrigin, vec4 weights /* vertex colour */, float assetHeight) {
   vec2 dir = u_windDirStrength.xy; float strength = u_windDirStrength.z; float t = u_windDirStrength.w;
   vec2 gustUv = instanceOrigin.xz * u_windGust.y - dir * t * 0.08;
@@ -24,9 +19,19 @@ vec3 a3dWindOffset(vec3 localPos, vec3 instanceOrigin, vec4 weights /* vertex co
   offset += vec3(flutter, flutter * 0.4, -flutter);
   // length preservation: keep the vertex on a sphere around the root to avoid stretching
   vec3 bent = localPos + offset;
-  return normalize(bent) * length(localPos) - localPos;                // length-preserving offset
+  float len = length(localPos);
+  if (len < 1e-5) return vec3(0.0);                                    // root vertex (WindCpu parity)
+  return normalize(bent) * len - localPos;                             // length-preserving offset
 }
 `;
+
+const glsl = /* glsl */ `
+layout(std140) uniform A3DWind {
+  vec4 u_windDirStrength;   // dir.xz, strength, time
+  vec4 u_windGust;          // gustStrength, 1/gustScale, -, -
+};
+uniform sampler2D u_windNoise; // 64² RG8, repeat
+${WIND_OFFSET_FN_GLSL}`;
 
 const wgsl = /* wgsl */ `
 struct A3DWind {
@@ -59,5 +64,51 @@ export const a3d_prd10_wind: ShaderChunk = {
   owner: "prd10",
   stage: "vertex",
   glsl,
+  wgsl
+};
+
+/**
+ * #1143 — `a3d_prd10_wind_deform`: the generated-program (C-02, Path G) form
+ * of the wind chunk at `vertex:deform`. The generated path binds per-draw
+ * uniforms by name and only assigns binding points for AuraFrame/AuraLights,
+ * so an `A3DWind` block there would alias binding 0 (AuraFrame). This chunk
+ * declares the same two vec4s as plain uniforms (bound by the `prd10.wind`
+ * feature's `bindUniforms`) and defines the canonical C-18 entry
+ * `a3dDeform(inout vec4, inout vec3, inout vec4)` that the generator and the
+ * PRD-02 depth library call.
+ *
+ * Instance origin: the attribute-instancing translation column when present.
+ * Weights: vertex colour when present, else a trunk-bend default. A program
+ * that already defines a C-18 entry (prd06.deform, emitted first by id
+ * order) sets `A3D_DEFORM_ENTRY` and exports `a3dDeformBeforeWind`, so wind
+ * composes after morph/skin instead of silently suppressing either effect.
+ */
+const deformGlsl = /* glsl */ `
+uniform vec4 u_windDirStrength;   // dir.xz, strength, time
+uniform vec4 u_windGust;          // gustStrength, 1/gustScale, -, -
+uniform sampler2D u_windNoise;    // 64² RG8, repeat
+uniform float u_windAssetHeight;  // metres, asset bounds height
+${WIND_OFFSET_FN_GLSL}
+void a3dDeform(inout vec4 localPos, inout vec3 localNormal, inout vec4 localTangent) {
+#ifdef A3D_DEFORM_ENTRY
+  a3dDeformBeforeWind(localPos, localNormal, localTangent);
+#endif
+  vec3 origin = vec3(0.0);
+#if defined(USE_INSTANCING) && defined(A3D_STAGE_VERTEX)
+  origin = a_instanceMatrix3.xyz;
+#endif
+  vec4 weights = vec4(1.0, 1.0, 0.5, 1.0);
+#if defined(VERTEX_COLORS) && defined(A3D_STAGE_VERTEX)
+  weights = a_color;
+#endif
+  localPos.xyz += a3dWindOffset(localPos.xyz, origin, weights, max(u_windAssetHeight, 0.01));
+}
+`;
+
+export const a3d_prd10_wind_deform: ShaderChunk = {
+  name: "a3d_prd10_wind_deform",
+  owner: "prd10",
+  stage: "vertex",
+  glsl: deformGlsl,
   wgsl
 };

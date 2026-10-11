@@ -1,5 +1,7 @@
 # PRD-04 phase-2 evidence — materials seam (PR B)
 
+> **Status (04-EVID, 2026-10-11):** every PASS below is a *local* unit or code-read result. No row here has a remote run id yet, so every browser, capture or CI-gated item is **NOT RUN** until a GitHub macos-14 run on a main commit is cited inline. The S3/S6/S7/S9 probe controls are measured by the lane browser job into `tests/reports/prd04/probes/*.json` (artifact `prd04-material-conformance`); the NOT RUN placeholder stubs were removed (P-56).
+
 Phase-2 wiring per PRD-04 §13 (P2-1..P2-14) plus Phase-1 pure files
 P1-4..P1-8 (ModelMaterialOverrides, MikkTSpaceTangents, TextureBudget,
 ProceduralMaterialTextures, TransmissionRenderTarget). Everything is behind

@@ -46,6 +46,19 @@ window.__QR_TOOLS__ = {
   metrics
 };
 
+const SPEC_TOOLS = new Set([
+  "blend-modes",
+  "output-pass",
+  "output-scene",
+  "primitive",
+  "instance-grid",
+  "box-uploads",
+  "frame-graph",
+  "capture-pdb",
+  "dpr",
+  "temporal-dolly"
+]);
+
 async function main(): Promise<void> {
   const params = new URLSearchParams(window.location.search);
   const engine = params.get("engine") ?? "aura3d";
@@ -56,6 +69,7 @@ async function main(): Promise<void> {
 
   if (tools === "render-targets") {
     status.textContent = "running render-target tools";
+    harnessStage = "tools=render-targets";
     const { runRenderTargetTools } = await import("./renderTargets");
     const report = await runRenderTargetTools(stage);
     window.__QR_READY__ = { engine: "aura3d", scene: "render-targets", errors: report.errors };
@@ -66,6 +80,7 @@ async function main(): Promise<void> {
 
   if (tools === "program-compile") {
     status.textContent = "running program-compile";
+    harnessStage = "tools=program-compile";
     const { runProgramCompileTool } = await import("./programCompile");
     const report = await runProgramCompileTool();
     window.__QR_READY__ = { engine: "aura3d", scene: "program-compile", errors: report.errors };
@@ -75,13 +90,40 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (tools === "perf-throughput" || tools === "perf-orbit" || tools === "perf-instancing" || tools === "parallel-compile") {
+    // 01-S13 / 01-S7 perf job tools (tests/qr/prd01/perf/*.spec.ts).
+    status.textContent = `running ${tools}`;
+    const report: { errors: readonly string[] } =
+      tools === "parallel-compile" ? await (await import("./parallelCompile")).runParallelCompileTool(stage)
+      : tools === "perf-throughput" ? await (await import("./perf")).runThroughputTool(stage)
+      : tools === "perf-orbit" ? await (await import("./perf")).runOrbitTool(stage, Number(params.get("seconds") ?? "60"))
+      : await (await import("./perf")).runInstancingTool(stage);
+    (window as unknown as { __QR_PERF__?: unknown }).__QR_PERF__ = report;
+    window.__QR_READY__ = { engine: "aura3d", scene: tools, errors: report.errors };
+    status.textContent = `ready ${tools}`;
+    document.title = `ready ${tools}`;
+    return;
+  }
+
   if (tools === "canvas-dpr" || tools === "app-capture" || tools === "renderer-mount-failure") {
     status.textContent = `running ${tools}`;
+    harnessStage = `tools=${tools}`;
     const { runCanvasDprTool, runAppCaptureTool, runMountFailureTool } = await import("./appTools");
     const report =
       tools === "canvas-dpr" ? await runCanvasDprTool(stage)
       : tools === "app-capture" ? await runAppCaptureTool(stage)
       : await runMountFailureTool(stage);
+    window.__QR_READY__ = { engine: "aura3d", scene: tools, errors: report.errors };
+    status.textContent = `ready ${tools}`;
+    document.title = `ready ${tools}`;
+    return;
+  }
+
+  if (tools !== null && SPEC_TOOLS.has(tools)) {
+    // Lane-01 S-row spec tools (01-S1/S3/S4/S6/S10/S11): report on window.__QR_SPEC__.
+    status.textContent = `running ${tools}`;
+    const { runSpecTool } = await import("./specTools");
+    const report = await runSpecTool(tools, stage);
     window.__QR_READY__ = { engine: "aura3d", scene: tools, errors: report.errors };
     status.textContent = `ready ${tools}`;
     document.title = `ready ${tools}`;
@@ -97,15 +139,30 @@ async function main(): Promise<void> {
     throw new Error(message);
   }
   status.textContent = `mounting ${sceneId} on ${engine}`;
+  harnessStage = `mount ${sceneId} on ${engine}`;
   const payload = await adapter.mount(stage);
   window.__QR_READY__ = payload;
   status.textContent = `ready ${sceneId} on ${engine}`;
   document.title = `ready ${sceneId}`;
 }
 
-main().catch((error) => {
-  const message = error instanceof Error ? error.stack ?? error.message : String(error);
-  window.__QR_ERROR__ = message;
+// 01-HANG: whatever step stalls (mount, ready, a tool), the page publishes a
+// named __QR_ERROR__ before the 120 s spec timeout, so the failure says where
+// it hung instead of "waitForFunction timed out".
+const HARNESS_WATCHDOG_MS = 110_000;
+let harnessStage = "boot";
+const watchdog = setTimeout(() => {
+  if (window.__QR_READY__ !== undefined || window.__QR_ERROR__ !== undefined) return;
+  window.__QR_ERROR__ = `prd01 harness watchdog: no __QR_READY__ after ${HARNESS_WATCHDOG_MS} ms (stuck at: ${harnessStage})`;
   const status = document.getElementById("status");
-  if (status) status.textContent = message;
-});
+  if (status) status.textContent = String(window.__QR_ERROR__);
+}, HARNESS_WATCHDOG_MS);
+
+main()
+  .catch((error) => {
+    const message = error instanceof Error ? error.stack ?? error.message : String(error);
+    window.__QR_ERROR__ = message;
+    const status = document.getElementById("status");
+    if (status) status.textContent = message;
+  })
+  .finally(() => clearTimeout(watchdog));

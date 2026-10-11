@@ -1,5 +1,7 @@
 # Q-01-8 — lane 01 converges `@aura3d/rendering` index names onto their owners
 
+**Issue:** #995 (P-64 writeback)
+
 - **Requester:** lane 15 (PRD-15 T5.8, `unique-ownership` gate)
 - **Owner:** lane 01
 - **SLA:** 2 working days

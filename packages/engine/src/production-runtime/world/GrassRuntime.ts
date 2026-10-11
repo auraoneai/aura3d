@@ -41,7 +41,7 @@ in vec2 a_blade; // [t, side]
 uniform mat4 u_viewProjection;
 uniform vec3 u_cameraPosition;
 uniform vec4 u_grassChunk;   // originXZ, size, seed
-uniform int u_grassBladeCount;
+uniform float u_grassBladeCount;
 uniform float u_grassRadius;
 uniform float u_grassBladeHeight;
 uniform float u_grassBladeWidth;
@@ -73,7 +73,7 @@ float heightBilinear(vec2 xz) {
 }
 void main() {
   int instance = gl_InstanceID;
-  if (instance >= u_grassBladeCount) { gl_Position = vec4(0.0); return; }
+  if (float(instance) >= u_grassBladeCount) { gl_Position = vec4(0.0); return; }
   float yaw; float height; float bend; float phase;
   vec3 root = a3dGrassBladeRoot(instance, yaw, height, bend, phase);
   root.y = heightBilinear(root.xz);
@@ -94,7 +94,7 @@ in vec2 a_quad; // [-1..1, 0..1]
 uniform mat4 u_viewProjection;
 uniform vec3 u_cameraPosition;
 uniform vec4 u_grassChunk;
-uniform int u_grassBladeCount;
+uniform float u_grassBladeCount;
 uniform float u_grassRadius;
 uniform float u_grassBladeHeight;
 uniform float u_grassBladeWidth;
@@ -126,7 +126,7 @@ float heightBilinear(vec2 xz) {
 }
 void main() {
   int instance = gl_InstanceID;
-  if (instance >= u_grassBladeCount) { gl_Position = vec4(0.0); return; }
+  if (float(instance) >= u_grassBladeCount) { gl_Position = vec4(0.0); return; }
   float yaw; float height; float bend; float phase;
   vec3 root = a3dGrassBladeRoot(instance, yaw, height, bend, phase);
   root.y = heightBilinear(root.xz);

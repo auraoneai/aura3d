@@ -5,19 +5,40 @@ name: qr-prd07-vfx
 # the tsc gate. P-03: no masks — capture and games go red on any non-ready,
 # zero-draw or blank scene; every run captures with the full sub-flag set.
 
+# Path filters are listed flat: GitHub path filters do not expand `{a,b}`
+# braces, so the braced globs matched nothing and lane PRs never ran this.
 on:
   pull_request:
     paths:
-      - "packages/rendering/src/{vfx,atmosphere,effects,cinematic}/**"
-      - "packages/rendering/src/{DayNightSky,Weather,VolumetricFog,SpriteFlipbook}.ts"
+      - "packages/rendering/src/vfx/**"
+      - "packages/rendering/src/atmosphere/**"
+      - "packages/rendering/src/effects/**"
+      - "packages/rendering/src/cinematic/**"
+      - "packages/rendering/src/DayNightSky.ts"
+      - "packages/rendering/src/Weather.ts"
+      - "packages/rendering/src/VolumetricFog.ts"
+      - "packages/rendering/src/SpriteFlipbook.ts"
       - "packages/rendering/src/lanes/prd07.ts"
-      - "packages/engine/src/{agent-api/vfx,production-runtime/effects}/**"
-      - "packages/engine/src/agent-api/{Decals.ts,compiler/{fog,effects,sky}.ts,nodes/{effects,sky,weather,particles}.ts,compiler/diagnosticOnly.prd07.ts}"
+      - "packages/engine/src/agent-api/vfx/**"
+      - "packages/engine/src/production-runtime/effects/**"
+      - "packages/engine/src/agent-api/Decals.ts"
+      - "packages/engine/src/agent-api/compiler/fog.ts"
+      - "packages/engine/src/agent-api/compiler/effects.ts"
+      - "packages/engine/src/agent-api/compiler/sky.ts"
+      - "packages/engine/src/agent-api/nodes/effects.ts"
+      - "packages/engine/src/agent-api/nodes/sky.ts"
+      - "packages/engine/src/agent-api/nodes/weather.ts"
+      - "packages/engine/src/agent-api/nodes/particles.ts"
+      - "packages/engine/src/agent-api/compiler/diagnosticOnly.prd07.ts"
       - "packages/engine/src/lanes/prd07.ts"
       - "packages/engine/assets/vfx/**"
       - "packages/aura3d-cli/src/commands/prd07/**"
-      - "benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd07/**"
-      - "tools/{vfx-atlas-bake,effects-vfx-visual-audit}/**"
+      - "benchmarks/quality-rebuild/scenes/prd07/**"
+      - "benchmarks/quality-rebuild/aura3d/scenes/prd07/**"
+      - "benchmarks/quality-rebuild/aura3d/lib/failfast.ts"
+      - "benchmarks/quality-rebuild/three/scenes/prd07/**"
+      - "tools/vfx-atlas-bake/**"
+      - "tools/effects-vfx-visual-audit/**"
       - "tests/qr/prd07/**"
       - "tests/unit/contracts/impl/prd07-*"
       - "docs/project/aura3d-quality-rebuild/evidence/prd07/**"
@@ -26,16 +47,35 @@ on:
   push:
     branches: [main]
     paths:
-      - "packages/rendering/src/{vfx,atmosphere,effects,cinematic}/**"
-      - "packages/rendering/src/{DayNightSky,Weather,VolumetricFog,SpriteFlipbook}.ts"
+      - "packages/rendering/src/vfx/**"
+      - "packages/rendering/src/atmosphere/**"
+      - "packages/rendering/src/effects/**"
+      - "packages/rendering/src/cinematic/**"
+      - "packages/rendering/src/DayNightSky.ts"
+      - "packages/rendering/src/Weather.ts"
+      - "packages/rendering/src/VolumetricFog.ts"
+      - "packages/rendering/src/SpriteFlipbook.ts"
       - "packages/rendering/src/lanes/prd07.ts"
-      - "packages/engine/src/{agent-api/vfx,production-runtime/effects}/**"
-      - "packages/engine/src/agent-api/{Decals.ts,compiler/{fog,effects,sky}.ts,nodes/{effects,sky,weather,particles}.ts,compiler/diagnosticOnly.prd07.ts}"
+      - "packages/engine/src/agent-api/vfx/**"
+      - "packages/engine/src/production-runtime/effects/**"
+      - "packages/engine/src/agent-api/Decals.ts"
+      - "packages/engine/src/agent-api/compiler/fog.ts"
+      - "packages/engine/src/agent-api/compiler/effects.ts"
+      - "packages/engine/src/agent-api/compiler/sky.ts"
+      - "packages/engine/src/agent-api/nodes/effects.ts"
+      - "packages/engine/src/agent-api/nodes/sky.ts"
+      - "packages/engine/src/agent-api/nodes/weather.ts"
+      - "packages/engine/src/agent-api/nodes/particles.ts"
+      - "packages/engine/src/agent-api/compiler/diagnosticOnly.prd07.ts"
       - "packages/engine/src/lanes/prd07.ts"
       - "packages/engine/assets/vfx/**"
       - "packages/aura3d-cli/src/commands/prd07/**"
-      - "benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd07/**"
-      - "tools/{vfx-atlas-bake,effects-vfx-visual-audit}/**"
+      - "benchmarks/quality-rebuild/scenes/prd07/**"
+      - "benchmarks/quality-rebuild/aura3d/scenes/prd07/**"
+      - "benchmarks/quality-rebuild/aura3d/lib/failfast.ts"
+      - "benchmarks/quality-rebuild/three/scenes/prd07/**"
+      - "tools/vfx-atlas-bake/**"
+      - "tools/effects-vfx-visual-audit/**"
       - "tests/qr/prd07/**"
       - "tests/unit/contracts/impl/prd07-*"
       - "docs/project/aura3d-quality-rebuild/evidence/prd07/**"
@@ -44,7 +84,12 @@ on:
   # Nightly lane audit so a broken main cannot sit green-looking until a PR touches it.
   schedule:
     - cron: "23 6 * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      ic0_baseline_run:
+        description: "07-IC0: run id of the earlier GitHub macos-14 prd07-vfx run whose prd07-ic0-<id> artifact is the IC-0 baseline"
+        required: false
+        default: ""
 
 jobs:
   unit:
@@ -141,7 +186,7 @@ jobs:
     timeout-minutes: 90
     env:
       QR_BENCH_CHROME_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
-      SCENE_LIST: "14-particles,09-outdoor-environment,17-large-environment,18-game-scene,prd07-particles-fountain,prd07-flipbook,prd07-particles-stress,prd07-impact-library,prd07-trails-beams,prd07-sky-timeofday,prd07-outdoor-sky,prd07-fog-height,prd07-fog-transition,prd07-underwater,prd07-rain-night,prd07-snow,prd07-volumetric-shafts,prd07-lit-smoke,prd07-soft-particles,prd07-water-interleave,prd07-decals"
+      SCENE_LIST: "14-particles,09-outdoor-environment,17-large-environment,18-game-scene,prd07-particles-fountain,prd07-flipbook,prd07-particles-stress,prd07-impact-library,prd07-trails-beams,prd07-sky-timeofday,prd07-sky-h06,prd07-sky-h09,prd07-sky-h12,prd07-sky-h18,prd07-sky-h21,prd07-outdoor-sky,prd07-fog-height,prd07-fog-transition,prd07-underwater,prd07-rain-night,prd07-snow,prd07-volumetric-shafts,prd07-lit-smoke,prd07-soft-particles,prd07-water-interleave,prd07-decals"
       VFX_FLAGS: "vfx,vfx.sky,vfx.fog,vfx.volumetric,vfx.decals"
       EVIDENCE_DIR: "docs/project/aura3d-quality-rebuild/evidence/prd07/${{ github.run_id }}"
     steps:
@@ -169,6 +214,9 @@ jobs:
           --flags "$VFX_FLAGS"
           --strict
       - name: Capture (flags none)
+        # Runs even when the vfx arm failed: the none control is what makes a
+        # vfx-arm failure attributable (the job still fails on either arm).
+        if: always()
         run: >-
           node benchmarks/quality-rebuild/capture.mjs
           --dist benchmarks/quality-rebuild/dist
@@ -179,6 +227,11 @@ jobs:
       - name: Verify capture reports (no non-ready / zero-draw / missing frame)
         if: always()
         run: node tests/qr/prd07/ci/verify-reports.mjs capture
+      - name: Numeric visual checks (vfx vs none frames)
+        # Lane-07 S-rows, numeric half: not blank/flat, vfx changes the frame,
+        # emitter-colour coverage, sky gradient. Writes vfx-pixels.json.
+        if: always()
+        run: node tests/qr/prd07/ci/vfx-pixels.mjs "$EVIDENCE_DIR"
       - name: Upload capture evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -199,6 +252,74 @@ jobs:
               echo "none"
             fi
           done
+
+  # 07 T0-34 (PRD-16 §2.4/§2.5) — vfx attribution on GitHub macos-14 (GitLab
+  # quota is exhausted). The `$ALL` and `$ALL,-vfx` arms capture the same
+  # scenes; vfx-attribution.mjs fails on any scene broken only with vfx on.
+  # Each arm stays --strict, so this job is red while `$ALL` is red for any
+  # lane (#375); the attribution step and its JSON carry the T0-34 verdict.
+  # Runs on main pushes, the nightly and dispatch, not on PRs (macOS budget).
+  vfx-attribution:
+    if: github.event_name != 'pull_request'
+    runs-on: macos-14
+    timeout-minutes: 120
+    env:
+      QR_BENCH_CHROME_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+      SCENE_LIST: "14-particles,09-outdoor-environment,17-large-environment,18-game-scene,prd07-particles-fountain,prd07-flipbook,prd07-particles-stress,prd07-impact-library,prd07-trails-beams,prd07-sky-timeofday,prd07-outdoor-sky,prd07-fog-height,prd07-fog-transition,prd07-underwater,prd07-rain-night,prd07-snow,prd07-volumetric-shafts,prd07-lit-smoke,prd07-soft-particles,prd07-water-interleave,prd07-decals"
+      # $ALL plus the vfx sub-flags: resolveQrFlags does not imply
+      # A3D_QR_VFX_{SKY,FOG,VOLUMETRIC,DECALS} from `vfx`, and without them the
+      # lane scenes run their legacy paths in both arms (review on #941).
+      ALL_FLAGS: "core,lighting,post,materials,assets,animation,vfx,vfx.sky,vfx.fog,vfx.volumetric,vfx.decals,camera,game,world,tiers,looks,compiler"
+      ALL_MINUS_VFX_FLAGS: "core,lighting,post,materials,assets,animation,camera,game,world,tiers,looks,compiler"
+      EVIDENCE_DIR: "docs/project/aura3d-quality-rebuild/evidence/prd07/${{ github.run_id }}"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - name: Fetch bench LFS blobs
+        run: |
+          git lfs pull --include="fixtures/asset-corpus/damaged-helmet.glb,fixtures/asset-corpus/antique-camera.glb,fixtures/asset-corpus/clear-coat-test.glb,fixtures/asset-corpus/sheen-test-grid.glb,public/aura-assets/propRockA.52dd1f0f.glb,public/aura-assets/propRockB.c94b2733.glb,public/aura-assets/deepRecoveryCrateStandard.02520123.glb"
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: Build benchmark bundle
+        run: pnpm exec vite build --config benchmarks/quality-rebuild/vite.config.ts
+      - name: Capture (flags $ALL)
+        run: >-
+          node benchmarks/quality-rebuild/capture.mjs
+          --dist benchmarks/quality-rebuild/dist
+          --out "$EVIDENCE_DIR/attribution-all"
+          --scenes "$SCENE_LIST"
+          --flags "$ALL_FLAGS"
+          --strict
+      - name: Capture (flags $ALL,-vfx)
+        if: always()
+        run: >-
+          node benchmarks/quality-rebuild/capture.mjs
+          --dist benchmarks/quality-rebuild/dist
+          --out "$EVIDENCE_DIR/attribution-all-minus-vfx"
+          --scenes "$SCENE_LIST"
+          --flags "$ALL_MINUS_VFX_FLAGS"
+          --strict
+      - name: vfx attribution ($ALL vs $ALL,-vfx)
+        if: always()
+        run: >-
+          node tests/qr/prd07/ci/vfx-attribution.mjs
+          "$EVIDENCE_DIR/attribution-all"
+          "$EVIDENCE_DIR/attribution-all-minus-vfx"
+          "$EVIDENCE_DIR/vfx-attribution.json"
+      - name: Upload attribution evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd07-vfx-attribution-${{ github.run_id }}
+          path: ${{ env.EVIDENCE_DIR }}/
+          retention-days: 30
+          if-no-files-found: warn
 
   games:
     runs-on: macos-14
@@ -231,6 +352,122 @@ jobs:
           name: prd07-games-${{ github.run_id }}
           path: ${{ env.EVIDENCE_DIR }}/
           retention-days: 30
+          if-no-files-found: warn
+
+  # 07 Phase D (FINISH-LANE-07) — S1..S15 evaluated from this run's capture
+  # and games artefacts. Fails on any engineering defect (non-ready, zero
+  # draws, missing sub-flags, EFFECT_ZERO_PIXELS with vfx, readbacks ≠ 0).
+  # Judge (C-32), H and unmeasured checks are reported `pending` in
+  # s-rows.json — never pass — until the quality-review judge records are
+  # added and the promotion evaluation re-runs with --strict.
+  phase-d:
+    needs: [capture, games]
+    if: always()
+    runs-on: ubuntu-latest
+    env:
+      EVIDENCE_DIR: "docs/project/aura3d-quality-rebuild/evidence/prd07/${{ github.run_id }}"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Download capture evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: prd07-capture-${{ github.run_id }}
+          path: ${{ env.EVIDENCE_DIR }}
+      - name: Download game evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: prd07-games-${{ github.run_id }}
+          path: ${{ env.EVIDENCE_DIR }}
+      - name: Evaluate S1..S15
+        run: pnpm exec tsx tests/qr/prd07/ci/s-rows.ts --evidence "$EVIDENCE_DIR" --out "$EVIDENCE_DIR/s-rows.json"
+      - name: Upload S-row report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd07-s-rows-${{ github.run_id }}
+          path: ${{ env.EVIDENCE_DIR }}/s-rows.json
+          retention-days: 30
+          if-no-files-found: error
+
+  # 07-IC0 (PRD-07 §22.3) — flag-off identity on all 18 base scenes and all
+  # 18 games against the IC-0 baseline run (same provider: GitHub macos-14,
+  # program lead ruling 2026-10-10). The noise floor is measured in this job
+  # from a second flag-off pass (sentinels.json: never assumed). Without a
+  # baseline run id (input `ic0_baseline_run` or repo variable
+  # PRD07_IC0_BASELINE_RUN) the verdict is `pending` and this run's frames
+  # are the baseline candidate. Nightly and dispatch only (macOS budget).
+  ic0:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: macos-14
+    timeout-minutes: 240
+    permissions:
+      contents: read
+      actions: read
+    env:
+      QR_BENCH_CHROME_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+      QRC_GPU_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+      BASE_SCENES: "01-simple-geometry,02-pbr-product,03-damaged-helmet,04-clearcoat,05-transmission,06-metal-roughness-sweep,07-sheen-fabric,08-skinned-character,09-outdoor-environment,10-indoor-environment,11-multiple-lights,12-shadows,13-ibl-only,14-particles,15-animation-skinning,16-instancing,17-large-environment,18-game-scene"
+      BASELINE_RUN: ${{ inputs.ic0_baseline_run || vars.PRD07_IC0_BASELINE_RUN || '' }}
+      IC0_DIR: "docs/project/aura3d-quality-rebuild/evidence/prd07/${{ github.run_id }}/ic0"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - name: Fetch bench LFS blobs
+        run: |
+          git lfs pull --include="fixtures/asset-corpus/damaged-helmet.glb,fixtures/asset-corpus/antique-camera.glb,fixtures/asset-corpus/clear-coat-test.glb,fixtures/asset-corpus/sheen-test-grid.glb,public/aura-assets/propRockA.52dd1f0f.glb,public/aura-assets/propRockB.c94b2733.glb,public/aura-assets/deepRecoveryCrateStandard.02520123.glb"
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: Build benchmark bundle
+        run: pnpm exec vite build --config benchmarks/quality-rebuild/vite.config.ts
+      - name: Base scenes, flags none (pass 1)
+        run: node benchmarks/quality-rebuild/capture.mjs --dist benchmarks/quality-rebuild/dist --out "$IC0_DIR/scenes-none" --scenes "$BASE_SCENES" --engines aura3d --flags none --strict
+      - name: Base scenes, flags none (pass 2, noise floor)
+        if: always()
+        run: node benchmarks/quality-rebuild/capture.mjs --dist benchmarks/quality-rebuild/dist --out "$IC0_DIR/scenes-none-repeat" --scenes "$BASE_SCENES" --engines aura3d --flags none --strict
+      - name: Games, flags none (pass 1)
+        if: always()
+        run: node tools/quality-rebuild-capture/capture-games.mjs --flags none --skip-build --strict --out "$IC0_DIR/games-none" --no-mobile
+      - name: Games, flags none (pass 2, noise floor)
+        if: always()
+        run: node tools/quality-rebuild-capture/capture-games.mjs --flags none --skip-build --strict --out "$IC0_DIR/games-none-repeat" --no-mobile
+      - name: Download IC-0 baseline
+        if: always() && env.BASELINE_RUN != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: prd07-ic0-${{ env.BASELINE_RUN }}
+          run-id: ${{ env.BASELINE_RUN }}
+          github-token: ${{ github.token }}
+          path: ic0-baseline
+      - name: Identity vs IC-0 baseline
+        if: always()
+        run: |
+          base=()
+          if [ -n "$BASELINE_RUN" ]; then
+            base=(--baseline-capture "ic0-baseline/scenes-none" --baseline-games "ic0-baseline/games-none")
+          fi
+          pnpm exec tsx tests/qr/prd07/ci/ic0.ts \
+            --capture "$IC0_DIR/scenes-none" --repeat "$IC0_DIR/scenes-none-repeat" \
+            --games "$IC0_DIR/games-none" --repeat-games "$IC0_DIR/games-none-repeat" \
+            "${base[@]}" --out "$IC0_DIR/ic0.json"
+      - name: Upload IC-0 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd07-ic0-${{ github.run_id }}
+          path: ${{ env.IC0_DIR }}/
+          retention-days: 90
           if-no-files-found: warn
 
   mobile:

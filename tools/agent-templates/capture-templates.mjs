@@ -23,6 +23,7 @@
  *   node tools/agent-templates/capture-templates.mjs --skip-pack
  *   node tools/agent-templates/capture-templates.mjs --flags a3d_qr_looks
  *   node tools/agent-templates/capture-templates.mjs --source <dir,...>   # pre-built dirs
+ *   QRC_SOURCE_REF=v3.0.1 node tools/agent-templates/capture-templates.mjs   # records templateSource
  *
  * --source mode (T0.5 agent-output-eval capture leg): each argument is a
  * directory containing a built index.html (a dist/ dir, or a project whose
@@ -40,6 +41,7 @@ import { fileURLToPath } from "node:url";
 const toolDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(toolDir, "..", "..");
 const templateRoot = path.join(repoRoot, "packages", "create-aura3d", "templates");
+const hdriSource = path.join(repoRoot, "packages", "create-aura3d", "hdri");
 const packDir = path.join(repoRoot, "tests", "reports", "release-tarballs");
 
 // -------------------------------------------------------------------------
@@ -77,6 +79,19 @@ if (qrFlags !== "none" && qrFlags !== "all" && !/^[A-Za-z0-9_,.-]+$/.test(qrFlag
   process.exit(2);
 }
 const urlFlags = qrFlags === "none" ? [] : qrFlags.split(",");
+
+// 13-BASE: the workflow's `source_ref` step swaps packages/create-aura3d/templates
+// for a tagged tree (e.g. v3.0.1) before this tool runs. Record the ref and the
+// commit it resolves to so baseline frames are attributable; packages and this
+// tool stay at the checked-out commit (environment.sha).
+const sourceRef = opt("--source-ref", "QRC_SOURCE_REF", "");
+const sourceRefCommit = sourceRef
+  ? spawnSync("git", ["rev-parse", "--verify", `${sourceRef}^{commit}`], { cwd: repoRoot, encoding: "utf8" }).stdout?.trim() || null
+  : null;
+if (sourceRef && !sourceRefCommit) {
+  console.error(`--source-ref "${sourceRef}" does not resolve to a commit (fetch the tag first)`);
+  process.exit(2);
+}
 
 const VIEWPORTS = [
   { name: "desktop-1920x1080", width: 1920, height: 1080, dpr: 1, mobile: false },
@@ -199,7 +214,34 @@ function scaffoldTemplate(id) {
     recursive: true,
     filter: (src) => !path.relative(source, src).split(/[\\/]/).some((part) => part === "node_modules" || part === "dist" || part === "test-results")
   });
+  // Mirror createA3DProject (packages/create-aura3d/src/template-hdri.ts): a
+  // template that authors a look gets the package's HDRI set under
+  // public/hdri, or every look IBL/sky 404s in the captured frame.
+  if (templateAuthorsLook(dir)) copyTemplateHdris(dir);
   return dir;
+}
+
+function templateAuthorsLook(dir) {
+  const src = path.join(dir, "src");
+  if (!existsSync(src)) return false;
+  const stack = [src];
+  while (stack.length) {
+    const current = stack.pop();
+    for (const entry of readdirSync(current, { withFileTypes: true })) {
+      const file = path.join(current, entry.name);
+      if (entry.isDirectory()) stack.push(file);
+      else if (/\.(ts|tsx|js|mjs)$/.test(entry.name) && /\blooks\.(preset|nodes)\(/.test(readFileSync(file, "utf8"))) return true;
+    }
+  }
+  return false;
+}
+
+function copyTemplateHdris(dir) {
+  const hdrs = existsSync(hdriSource) ? readdirSync(hdriSource).filter((name) => name.endsWith(".hdr")).sort() : [];
+  if (hdrs.length === 0) throw new Error(`no look HDRIs found in ${hdriSource}`);
+  const target = path.join(dir, "public", "hdri");
+  mkdirSync(target, { recursive: true });
+  for (const file of [...hdrs, "ATTRIBUTION.md"]) cpSync(path.join(hdriSource, file), path.join(target, file));
 }
 // -------------------------------------------------------------------------
 // In-page instrumentation (identical to tools/quality-rebuild-capture)
@@ -409,6 +451,7 @@ async function main() {
       browserChannel: channelOpt,
       sha: process.env.GITHUB_SHA ?? process.env.CI_COMMIT_SHA ?? spawnSync("git", ["rev-parse", "HEAD"], { cwd: repoRoot, encoding: "utf8" }).stdout?.trim() ?? null
     },
+    templateSource: { ref: sourceRef || null, commit: sourceRefCommit },
     flags: { requested: qrFlags, urlParam: urlFlags },
     viewports: VIEWPORTS,
     shots: SHOTS,

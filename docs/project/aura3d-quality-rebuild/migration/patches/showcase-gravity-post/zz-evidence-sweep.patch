@@ -1,4 +1,4 @@
-From b4135f50855090811fc2f61e9351dfeda656e139 Mon Sep 17 00:00:00 2001
+From 2a9ab82b5f7f29bc33bf69e3b8da0fdb36610331 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 15:46:15 +0000
 Subject: [PATCH] showcase-gravity-post: delete evidence files+blocks +
@@ -7,26 +7,26 @@ Subject: [PATCH] showcase-gravity-post: delete evidence files+blocks +
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
  .../performance-report.json                   | 105 ---
- .../scripts/build-courier-skiff.py            | 422 ----------
- .../scripts/build-freight-district.py         | 606 --------------
- .../scripts/build-sfx.mjs                     | 200 -----
+ .../scripts/build-courier-skiff.py            | 422 ------------
+ .../scripts/build-freight-district.py         | 606 ------------------
+ .../scripts/build-sfx.mjs                     | 200 ------
  .../scripts/capture-courier-skiff-preview.mjs |  58 --
  .../capture-freight-district-preview.mjs      |  61 --
  .../scripts/courier-skiff-preview/index.html  |  16 -
- .../scripts/courier-skiff-preview/main.ts     | 119 ---
+ .../scripts/courier-skiff-preview/main.ts     | 119 ----
  .../freight-district-preview/index.html       |  16 -
- .../scripts/freight-district-preview/main.ts  |  73 --
+ .../scripts/freight-district-preview/main.ts  |  73 ---
  .../scripts/inspect-freight-district.py       |  57 --
- .../scripts/register-models.mjs               | 112 ---
+ .../scripts/register-models.mjs               | 112 ----
  .../scripts/register-sfx.mjs                  |  46 --
- .../scripts/verify-contracts.ts               | 150 ----
- .../scripts/write-performance-report.ts       | 117 ---
- .../scripts/write-route-health.mjs            | 225 -----
+ .../scripts/verify-contracts.ts               | 150 -----
+ .../scripts/write-performance-report.ts       | 117 ----
+ .../scripts/write-route-health.mjs            | 224 -------
  apps/showcase-gravity-post/src/evidence.ts    |  16 -
- apps/showcase-gravity-post/src/legacy/main.ts | 774 +-----------------
+ apps/showcase-gravity-post/src/legacy/main.ts | 475 +++-----------
  apps/showcase-gravity-post/src/main.ts        |   1 -
- .../src/v2/evidence/index.ts                  | 190 -----
- 20 files changed, 40 insertions(+), 3324 deletions(-)
+ .../src/v2/evidence/index.ts                  | 190 ------
+ 20 files changed, 84 insertions(+), 2980 deletions(-)
  delete mode 100644 apps/showcase-gravity-post/performance-report.json
  delete mode 100644 apps/showcase-gravity-post/scripts/build-courier-skiff.py
  delete mode 100644 apps/showcase-gravity-post/scripts/build-freight-district.py
@@ -2296,10 +2296,10 @@ index 2ec6c8b2d..000000000
 -if (!report.pass) process.exitCode = 1;
 diff --git a/apps/showcase-gravity-post/scripts/write-route-health.mjs b/apps/showcase-gravity-post/scripts/write-route-health.mjs
 deleted file mode 100644
-index b79c8e0c5..000000000
+index 8019b16f9..000000000
 --- a/apps/showcase-gravity-post/scripts/write-route-health.mjs
 +++ /dev/null
-@@ -1,225 +0,0 @@
+@@ -1,224 +0,0 @@
 -import { createHash } from "node:crypto";
 -import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 -import { dirname, join, relative, resolve } from "node:path";
@@ -2450,7 +2450,6 @@ index b79c8e0c5..000000000
 -    author: assetById.get(id).provenance.author
 -  })),
 -  primitiveStatus: {
--    sourceOccurrences: primitiveOccurrences,
 -    primitiveBudget: routeGate.primitiveBudget,
 -    role: "authored planets, well/capture guides, prediction beads, dock sparks, and flyby presentation around typed pod/beacons plus typed non-colliding freight world/transit",
 -    status: "within-stated-role-and-budget"
@@ -2548,44 +2547,33 @@ index ee1d1fd82..000000000
 -    (collect ?? (() => ({ status: "unbound" })))()
 -};
 diff --git a/apps/showcase-gravity-post/src/legacy/main.ts b/apps/showcase-gravity-post/src/legacy/main.ts
-index b5308393a..1092f0090 100644
+index b5308393a..ff8ef477d 100644
 --- a/apps/showcase-gravity-post/src/legacy/main.ts
 +++ b/apps/showcase-gravity-post/src/legacy/main.ts
-@@ -66,65 +66,48 @@ const FLYBY_DRONES = 6;
- const ORBITAL_DUST_COUNT = 24;
- const TRAIL_STREAK_COUNT = 7;
+@@ -68,13 +68,7 @@ const TRAIL_STREAK_COUNT = 7;
  const CONTACT_WAKE_COUNT = 6;
--const REVIEW_COURIER_PROGRESS = 0.54;
--const REVIEW_COURIER_LATERAL = 0.35;
- // The public route keeps the full orbital board readable for planning. The
+ const REVIEW_COURIER_PROGRESS = 0.54;
+ const REVIEW_COURIER_LATERAL = 0.35;
+-// The public route keeps the full orbital board readable for planning. The
 -// named visual-review capture is an evidence-only close courier composition:
- // it keeps the live typed pod, destination hardware, and flown path large
- // enough to judge at the same scale as an action reference without changing
- // gameplay coordinates or the public camera.
+-// it keeps the live typed pod, destination hardware, and flown path large
+-// enough to judge at the same scale as an action reference without changing
+-// gameplay coordinates or the public camera.
 -const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
 -document.body.dataset.capture = visualReviewCapture ? "review" : "default";
++document.body.dataset.capture = "default";
  // The board is a wide solar-system composition; the catalog pod needs enough
  // screen coverage to remain legible while it is in flight, not only at a dock.
  // The source skiff is authored at a broad truck-like span.  At the close
--// review lens its former 0.78 scale put the Rust-endpoint delivery outside the
- // near-plane and made the exact chained artifact a clipped lower-left sliver.
- // Keep the typed vehicle substantial enough to read as the hero courier in an
- // action frame, while leaving the roadway, route history, and Gale gate
--// visible around it.  The review lens is intentionally larger than the public
- // planning-board pod; this is a presentation scale only and never changes the
- // authored sensor radius or flight integrator.
--// The courier is the action subject in the named review lens. Keep it
- // materially larger than the shoulder architecture so its canopy, four
- // contact drives, and guarded parcel read before the destination scenery.
--// The review scale is intentionally just under 1x: it gives the skiff a clear
+@@ -92,39 +86,37 @@ document.body.dataset.capture = visualReviewCapture ? "review" : "default";
  // silhouette while leaving the typed terminal shuttle, route lane, and Gale
  // gate in the same honest frame. This is presentation scale only; authored
  // flight/sensor coordinates are unchanged.
 -const POD_VISUAL_SCALE = visualReviewCapture ? 0.94 : 1.7;
 +const POD_VISUAL_SCALE = 1.7;
  
--// The parcel prop is a real typed GLB, but its release probe is nearly as tall
--// as it is wide. Keep the review carton compact and seat it on the courier's
+ // The parcel prop is a real typed GLB, but its release probe is nearly as tall
+ // as it is wide. Keep the review carton compact and seat it on the courier's
  // rear cradle so the package reads as cargo instead of a floating foreground
  // block. The public planning board keeps the larger teaching-scale carton.
 -const courierParcelLift = visualReviewCapture ? 0.24 : 0.61;
@@ -2595,11 +2583,11 @@ index b5308393a..1092f0090 100644
  // A registered, static courier operator gives the skiff a human-scale job
  // read at the same distance as the parcel and landing pods. This is a
  // presentation attachment only: it has no body, controller, animation, or
--// gameplay ownership. The asset is already release-probed and typed in the
+ // gameplay ownership. The asset is already release-probed and typed in the
  // shared catalog; mounting it here does not alter the route manifest.
 -const courierOperatorTargetHeight = visualReviewCapture ? 0.68 : 0.54;
--// The review camera approaches Rust from behind the route. A slight aft seat
 +const courierOperatorTargetHeight = 0.54;
+ // The review camera approaches Rust from behind the route. A slight aft seat
  // offset keeps the operator's feet visibly grounded in the canopy instead of
  // projecting them into the Gale gate silhouette.
 -const courierOperatorSeatOffset = visualReviewCapture ? -0.08 : -0.06;
@@ -2621,136 +2609,22 @@ index b5308393a..1092f0090 100644
 -  ? courierOperatorSeatHeight + courierOperatorTargetHeight * 0.57
 -  : courierOperatorSeatHeight + courierOperatorTargetHeight * 0.55;
 +const courierHandoffParcelTargetDimension = 0.12;
++const courierHandoffParcelLateralOffset = -0.16;
++const courierHandoffParcelForwardOffset = 0.025;
 +const courierHandoffParcelHeight = courierOperatorSeatHeight + courierOperatorTargetHeight * 0.55;
  
  // NASA/VTAD textured planet assets furnish the fictional wells' visual bodies.
  // These are visual analogues, not assertions of real solar-system dynamics.
-@@ -154,9 +137,7 @@ const BODY_MOONS: Readonly<Record<string, readonly (readonly [number, number, nu
- };
- 
- // A deterministic, renderer-owned dust field keeps the solar board from
--// reading as an empty flat card at the close review lens. These are visual
- // motes only: they never participate in the authored gravity integrator,
--// sensor bodies, scoring, or route evidence state.
- const ORBITAL_DUST: readonly (readonly [number, number, number, number])[] =
-   Array.from({ length: ORBITAL_DUST_COUNT }, (_, index) => {
-     const angle = index * 2.399963229728653;
-@@ -182,94 +163,8 @@ const CLAIM_BOUNDARY =
-   "no orbital mechanics, n-body, or physics-parity claims. Solar kit nodes are presentational dressing.";
- 
- // ---------------------------------------------------------------------------
--// Evidence contract
- // ---------------------------------------------------------------------------
--interface GravityPostEvidence {
--  readonly schema: "aura3d-showcase-gravity-post/1.0";
--  readonly mounted: boolean;
--  /** True once the WebGL production renderer has settled its mount; step() renders nothing before this. */
--  readonly rendererMounted: boolean;
--  readonly appId: "showcase-gravity-post";
--  readonly status: "ready";
--  readonly claimLabel: "prototype";
--  readonly frame: number;
--  readonly drawCalls: number;
--  readonly contractIndex: number;
--  readonly contractId: string;
--  readonly propellant: number;
--  readonly podPosition: readonly [number, number];
--  readonly podSpeed: number;
--  readonly podState: string;
--  readonly assists: readonly string[];
--  readonly predictionSteps: number;
--  readonly predictionComparedSamples: number;
--  readonly predictionMaxDivergence: number;
--  readonly predictionTolerance: number;
--  readonly predictionWithinTolerance: boolean;
--  readonly actualPathPoints: number;
--  readonly correctionTokensRemaining: number;
--  readonly correctionsUsed: number;
--  readonly flightSeconds: number;
--  readonly dockEventCount: number;
--  readonly dockEvents: readonly string[];
--  readonly failedContracts: number;
--  readonly lastFailReason: string | null;
--  readonly completedContracts: number;
--  readonly score: number;
--  readonly shiftOver: boolean;
--  readonly campaignComplete: boolean;
--  readonly paused: boolean;
--  readonly warping: boolean;
--  readonly aiming: boolean;
--  readonly adriftSeconds: number;
--  readonly flybyBeatsRun: number;
--  readonly flybyActive: boolean;
--  readonly visitedFlybys: readonly string[];
--  readonly reducedMotion: boolean;
--  readonly audioCues: readonly string[];
--  readonly audioProof: {
--    readonly cueCount: number;
--    readonly busCount: number;
--    readonly unlocked: boolean;
--    readonly playedCueCount: number;
--  };
--  readonly primaryAssets: readonly string[];
--  readonly typedAssets: readonly {
--    readonly id: string;
--    readonly typedRef: string;
--    readonly role: string;
--  }[];
--  readonly systems: readonly string[];
--  readonly controls: readonly string[];
--  readonly physics: string;
--  readonly claimBoundary: string;
--  readonly lastDockHash: number | null;
--}
- 
--declare global {
--  interface Window {
--    __GRAVITY_POST_EVIDENCE__?: GravityPostEvidence;
--    __AURA3D_SHOWCASE_GRAVITY_POST__?: GravityPostEvidence;
--    __AURA3D_COMPOSITION_PROBE__?: {
--      readonly category: "application";
--      readonly subject: {
--        readonly position: readonly [number, number, number];
--        readonly rotation: readonly [number, number, number];
--        readonly targetSize: number;
--      };
--      setSubjectSuppressed(suppressed: boolean): Promise<void>;
--      settleSubjectPose(): Promise<void>;
--    };
--    /** Deterministic test hook: manually advance the mounted app by dt seconds. */
--    __GRAVITY_POST_STEP__?: (dtSeconds: number) => void;
--    /** Deterministic test hook: advance gameplay without rendering. */
--    __GRAVITY_POST_SIM_STEP__?: (dtSeconds: number) => void;
--    /** Deterministic test hook: render one frame and read back the canvas atomically. */
--    __GRAVITY_POST_CAPTURE__?: () => string;
--    /** Deterministic test hook: current evidence snapshot. */
--    __GRAVITY_POST_EVIDENCE_SNAPSHOT__?: () => GravityPostEvidence | undefined;
--  }
--}
- 
- function solarKitBackdrop(): readonly AuraSceneNode[] {
-   // The kit's animated planets jump at their 18-second loop wrap, so gameplay
-@@ -280,27 +175,18 @@ function solarKitBackdrop(): readonly AuraSceneNode[] {
+@@ -280,7 +272,7 @@ function solarKitBackdrop(): readonly AuraSceneNode[] {
    return prefabs.solarSystem({ labels: "none", starCount: 84, dustCount: 24 }).filter((node) => {
      if (node.kind === "effect" || node.kind === "light") return true;
      const name = "name" in node ? String(node.name ?? "") : "";
 -    if (visualReviewCapture) return false;
++    
      return /(star|dust|sun|corona|glow)/i.test(name);
    });
  }
- 
- const stations = buildStations();
--const reviewRustStation = stations.find((station) => station.id === "rust-exchange")!;
--const reviewGaleStation = stations.find((station) => station.id === "gale-terminal")!;
--const reviewRouteDx = reviewGaleStation.x - reviewRustStation.x;
--const reviewRouteDz = reviewGaleStation.z - reviewRustStation.z;
--const reviewRouteLength = Math.hypot(reviewRouteDx, reviewRouteDz);
--const reviewRoutePerpX = -reviewRouteDz / reviewRouteLength;
--const reviewRoutePerpZ = reviewRouteDx / reviewRouteLength;
- 
- let sceneBuilder = scene()
--  // The review corridor uses a lifted blue-hour sky so the courier's navy
-   // hull, amber parcel, and cyan hardware separate from the freightway rather
+@@ -300,7 +292,7 @@ let sceneBuilder = scene()
    // than collapsing into one near-black teal mass. The public planning board
    // keeps a space backdrop, but lifted out of near-black so planets, labels,
    // and the aim line read in a default screenshot instead of a dark void.
@@ -2759,274 +2633,154 @@ index b5308393a..1092f0090 100644
    .addMany(solarKitBackdrop());
  
  const orbitalDustMaterials = [
-@@ -309,213 +195,14 @@ const orbitalDustMaterials = [
-   material.emissive({ name: "orbital dust amber", color: "#fde68a", emissive: "#f59e0b", emissiveIntensity: 0.64, opacity: 0.76 })
- ] as const;
- 
--sceneBuilder = sceneBuilder.addMany(ORBITAL_DUST.map(([x, y, z, scale], index) =>
--  primitives.sphere({
--    name: "gravity post orbital dust " + (index + 1),
--    material: orbitalDustMaterials[index % orbitalDustMaterials.length]!
--  })
--    .position(x, y, z)
+@@ -315,7 +307,7 @@ sceneBuilder = sceneBuilder.addMany(ORBITAL_DUST.map(([x, y, z, scale], index) =
+     material: orbitalDustMaterials[index % orbitalDustMaterials.length]!
+   })
+     .position(x, y, z)
 -    .scale(visualReviewCapture ? 0.001 : scale)
--    .runtime(game.runtimeNode("gravity-post-orbital-dust-" + index, {
--      tags: ["renderer-owned", "set-dressing", "non-colliding"]
--    }))
--));
- 
++    .scale(scale)
+     .runtime(game.runtimeNode("gravity-post-orbital-dust-" + index, {
+       tags: ["renderer-owned", "set-dressing", "non-colliding"]
+     }))
+@@ -324,7 +316,7 @@ sceneBuilder = sceneBuilder.addMany(ORBITAL_DUST.map(([x, y, z, scale], index) =
  // Orbital faint ellipse guide rings around Sol
--for (const body of WELL_BODIES) {
--  if (body.id === "sol") continue;
+ for (const body of WELL_BODIES) {
+   if (body.id === "sol") continue;
 -  if (visualReviewCapture) continue;
--  const dist = Math.hypot(body.position[0], body.position[1]);
--  sceneBuilder = sceneBuilder.add(
--    primitives.torus({
--      name: body.name + " orbit path ring guide",
--      material: material.emissive({ color: "#071522", emissive: "#1aa6c7", emissiveIntensity: 0.72, opacity: 0.1 })
--    }).position(0, PLAY_PLANE_Y - 0.01, 0).rotate(1.5708, 0, 0).scale([dist * 1.92, dist * 1.92, 0.002])
--  );
--}
- 
- // Authored well bodies at static positions — the game board.
--for (const body of WELL_BODIES) {
--  if (body.id === "sol") continue; // sun family comes from the kit backdrop
--  // The review frame is the constructed Rust -> Gale delivery corridor. The
--  // planning board still shows every authored well, but detached planet balls
--  // do not belong inside the close freightway composition.
++  
+   const dist = Math.hypot(body.position[0], body.position[1]);
+   sceneBuilder = sceneBuilder.add(
+     primitives.torus({
+@@ -340,7 +332,7 @@ for (const body of WELL_BODIES) {
+   // The review frame is the constructed Rust -> Gale delivery corridor. The
+   // planning board still shows every authored well, but detached planet balls
+   // do not belong inside the close freightway composition.
 -  if (visualReviewCapture) continue;
--  const planetAsset = WELL_PLANET_ASSETS[body.id as keyof typeof WELL_PLANET_ASSETS];
--  if (!planetAsset) throw new Error(`Missing typed visual planet for ${body.id}`);
--  const planetDiameter = body.visualRadius * 4.8;
--  const planetBounds = planetAsset.bounds ?? [1, 1, 1];
--  const planetHeight = planetDiameter * planetBounds[1] / Math.max(...planetBounds);
--  sceneBuilder = sceneBuilder.add(
--    model(planetAsset, {
--      name: body.name + " typed gravity-well planet",
--      role: "primaryWorld",
--      scaleMode: "fit",
--      targetMaxDimension: planetDiameter,
--      castShadow: true,
--      receiveShadow: true
--    })
--      // Fit models are grounded at min-Y; center this spherical visual on the
--      // unchanged well position. No collider, force, orbit or contract changes.
--      .position(body.position[0], PLAY_PLANE_Y - planetHeight * 0.5, body.position[1])
--      .runtime(game.runtimeNode(`gravity-post-planet-${body.id}`, {
--        tags: ["typed-planet", "gravity-well-visual", "non-colliding"]
--      }))
--  );
- 
--  // Atmospheric and celestial planet accessories
--  if (body.id === "gale") {
--    // Planetary ring system for Gale (gas giant)
++  
+   const planetAsset = WELL_PLANET_ASSETS[body.id as keyof typeof WELL_PLANET_ASSETS];
+   if (!planetAsset) throw new Error(`Missing typed visual planet for ${body.id}`);
+   const planetDiameter = body.visualRadius * 4.8;
+@@ -366,17 +358,17 @@ for (const body of WELL_BODIES) {
+   // Atmospheric and celestial planet accessories
+   if (body.id === "gale") {
+     // Planetary ring system for Gale (gas giant)
 -    if (!visualReviewCapture) sceneBuilder = sceneBuilder.add(
--      primitives.torus({
--        name: "Gale planetary ring system",
--        material: material.emissive({ color: "#78716c", emissive: "#e7e5e4", opacity: 0.32 })
++    sceneBuilder = sceneBuilder.add(
+       primitives.torus({
+         name: "Gale planetary ring system",
+         material: material.emissive({ color: "#78716c", emissive: "#e7e5e4", opacity: 0.32 })
 -      }).position(body.position[0], PLAY_PLANE_Y, body.position[1]).rotate(1.2, 0.35, 0).scale([body.visualRadius * (visualReviewCapture ? 1.8 : 5.05), body.visualRadius * (visualReviewCapture ? 1.8 : 5.05), 0.006])
--    );
++      }).position(body.position[0], PLAY_PLANE_Y, body.position[1]).rotate(1.2, 0.35, 0).scale([body.visualRadius * (5.05), body.visualRadius * (5.05), 0.006])
+     );
 -    if (!visualReviewCapture) sceneBuilder = sceneBuilder.add(
--      primitives.torus({
--        name: "Gale secondary atmosphere band",
--        material: material.emissive({ color: "#6d5ca8", emissive: "#a78bfa", emissiveIntensity: 0.42, opacity: 0.24 })
++    sceneBuilder = sceneBuilder.add(
+       primitives.torus({
+         name: "Gale secondary atmosphere band",
+         material: material.emissive({ color: "#6d5ca8", emissive: "#a78bfa", emissiveIntensity: 0.42, opacity: 0.24 })
 -      }).position(body.position[0], PLAY_PLANE_Y + 0.018, body.position[1]).rotate(0.72, -0.42, 0.18).scale([body.visualRadius * (visualReviewCapture ? 1.5 : 4.2), body.visualRadius * (visualReviewCapture ? 1.5 : 4.2), 0.004])
--    );
--  } else if (body.id === "aquaria") {
--    // Ocean world luminous ionosphere
--    sceneBuilder = sceneBuilder.add(
--      primitives.sphere({
--        name: "Aquaria ionosphere glow",
--        material: material.emissive({ color: "#0369a1", emissive: "#38bdf8", opacity: 0.18 })
--      }).position(body.position[0], PLAY_PLANE_Y, body.position[1]).scale(body.visualRadius * 3.28)
--    );
--    sceneBuilder = sceneBuilder.add(
--      primitives.torus({
--        name: "Aquaria equator highlight",
--        material: material.emissive({ color: "#0e7490", emissive: "#67e8f9", emissiveIntensity: 0.54, opacity: 0.3 })
--      }).position(body.position[0], PLAY_PLANE_Y + 0.016, body.position[1]).rotate(1.48, 0.22, 0).scale([body.visualRadius * 3.7, body.visualRadius * 3.7, 0.003])
--    );
--  } else if (body.id === "verdance") {
--    // Bio-world luminous atmosphere
--    sceneBuilder = sceneBuilder.add(
--      primitives.sphere({
--        name: "Verdance atmosphere haze",
--        material: material.emissive({ color: "#065f46", emissive: "#34d399", opacity: 0.16 })
--      }).position(body.position[0], PLAY_PLANE_Y, body.position[1]).scale(body.visualRadius * 3.28)
--    );
--  } else if (body.id === "rust") {
--    // Terracotta dust atmospheric rim
--    sceneBuilder = sceneBuilder.add(
--      primitives.sphere({
--        name: "Rust dust atmospheric rim",
--        material: material.emissive({ color: "#7c2d12", emissive: "#f97316", opacity: 0.16 })
--      }).position(body.position[0], PLAY_PLANE_Y, body.position[1]).scale(body.visualRadius * 3.28)
--    );
--  }
++      }).position(body.position[0], PLAY_PLANE_Y + 0.018, body.position[1]).rotate(0.72, -0.42, 0.18).scale([body.visualRadius * (4.2), body.visualRadius * (4.2), 0.004])
+     );
+   } else if (body.id === "aquaria") {
+     // Ocean world luminous ionosphere
+@@ -429,7 +421,7 @@ for (const body of WELL_BODIES) {
+ }
  
--  // Small authored moons break the single-color planet read into a more
--  // dimensional solar-system composition. They are presentation geometry
--  // around the typed well body; route-local gravity still samples WELL_BODIES.
--  const moonMaterial = material.pbr({
--    name: body.name + " moonlet material",
--    color: "#d8e4ef",
--    roughness: 0.72,
--    metallic: 0.08
--  });
--  for (const [offsetX, offsetY, offsetZ] of BODY_MOONS[body.id] ?? []) {
--    sceneBuilder = sceneBuilder.add(
--      primitives.sphere({ name: body.name + " moonlet", material: moonMaterial })
--        .position(body.position[0] + offsetX, PLAY_PLANE_Y + offsetY, body.position[1] + offsetZ)
--        .scale(Math.max(0.055, body.visualRadius * 0.64))
--    );
--  }
--}
--
--for (const body of WELL_BODIES) {
+ for (const body of WELL_BODIES) {
 -  if (visualReviewCapture) continue;
--  sceneBuilder = sceneBuilder.add(
--    primitives.torus({
--      name: body.name + " well boundary ring readability guide",
--      material: material.emissive({ color: "#071522", emissive: "#49c6e8", emissiveIntensity: 0.7, opacity: body.id === "sol" ? 0.05 : 0.085 })
--    }).position(body.position[0], PLAY_PLANE_Y + 0.005, body.position[1]).rotate(1.5708, 0, 0).scale([body.wellRadius * 1.86, body.wellRadius * 1.86, 0.003])
--  );
--  sceneBuilder = sceneBuilder.add(
--    primitives.torus({
--      name: body.name + " red collision exclusion ring",
--      material: material.emissive({ color: "#3f0a16", emissive: "#fb7185", emissiveIntensity: 0.8, opacity: 0.28 })
--    }).position(body.position[0], PLAY_PLANE_Y + 0.012, body.position[1]).rotate(1.5708, 0, 0).scale([body.visualRadius * 3.2, body.visualRadius * 3.2, 0.005])
--  );
--}
--
--// Stations: typed GLB beacon props + pulsing capture-window rings.
--for (const station of stations) {
--  const reviewStationRelevant = station.id === "gale-terminal";
--  // A tiny scale still submits every GLB primitive. Omit off-camera station
--  // hardware from the evidence-only action composition entirely; the live
--  // station sensor/ring state remains present while Gale keeps the typed
--  // arrival beacon and gate. The completed Rust origin no longer competes
--  // with the parcel-bearing courier in the foreground.
++  
+   sceneBuilder = sceneBuilder.add(
+     primitives.torus({
+       name: body.name + " well boundary ring readability guide",
+@@ -452,7 +444,7 @@ for (const station of stations) {
+   // station sensor/ring state remains present while Gale keeps the typed
+   // arrival beacon and gate. The completed Rust origin no longer competes
+   // with the parcel-bearing courier in the foreground.
 -  if (!visualReviewCapture || reviewStationRelevant) {
--    sceneBuilder = sceneBuilder.add(
--      model(assets.gravityPostDockBeacon, { name: station.nodeId })
--        // Offset the release-probed satellite beside Gale's capture center so
--        // its solar-panel silhouette reads as destination hardware instead of
--        // stacking over the courier lane. Sensor coordinates remain owned by
--        // stations.ts and are not moved.
--        .position(
++  {
+     sceneBuilder = sceneBuilder.add(
+       model(assets.gravityPostDockBeacon, { name: station.nodeId })
+         // Offset the release-probed satellite beside Gale's capture center so
+@@ -460,9 +452,9 @@ for (const station of stations) {
+         // stacking over the courier lane. Sensor coordinates remain owned by
+         // stations.ts and are not moved.
+         .position(
 -          station.x + (visualReviewCapture && reviewStationRelevant ? reviewRoutePerpX * 0.7 : 0),
--          PLAY_PLANE_Y + 0.06,
++          station.x + (0),
+           PLAY_PLANE_Y + 0.06,
 -          station.z + (visualReviewCapture && reviewStationRelevant ? reviewRoutePerpZ * 0.7 : 0)
--        )
--        .rotate(0, 0.6, 0)
--        // The review destination is one of only two live endpoint silhouettes;
--        // keep the typed beacon large enough to read beside the courier while
--        // preserving the same station coordinates and sensor ownership.
--        // The satellite's authored wingspan is 13 world units; the full
--        // planning-board scale would project the panels into the lower-left
--        // foreground of the close freight lens. Keep the typed beacon present
--        // as a destination identity cue, but compact enough to sit beside the
--        // Gale gate instead of reading as a second vehicle.
++          station.z + (0)
+         )
+         .rotate(0, 0.6, 0)
+         // The review destination is one of only two live endpoint silhouettes;
+@@ -473,11 +465,11 @@ for (const station of stations) {
+         // foreground of the close freight lens. Keep the typed beacon present
+         // as a destination identity cue, but compact enough to sit beside the
+         // Gale gate instead of reading as a second vehicle.
 -        .scale(visualReviewCapture ? 0.075 : 0.14)
--        .runtime(game.runtimeNode(station.nodeId))
--    );
--  }
++        .scale(0.14)
+         .runtime(game.runtimeNode(station.nodeId))
+     );
+   }
 -  if (!visualReviewCapture || station.id === "gale-terminal") {
--    sceneBuilder = sceneBuilder.add(
--      // Typed gate hardware gives every destination a readable silhouette;
--      // the pulse ring below remains the live capture-window state indicator.
--      model(assets.gravityPostDockGate, {
--        name: station.id + " dock gate",
--        role: "setDressing",
--        scaleMode: "fit",
--          // The arrival gate is deliberately legible at the review distance;
--          // this is a scale relationship to the existing typed asset, not a
--          // duplicate gate or a screen-space marker.
++  {
+     sceneBuilder = sceneBuilder.add(
+       // Typed gate hardware gives every destination a readable silhouette;
+       // the pulse ring below remains the live capture-window state indicator.
+@@ -488,7 +480,7 @@ for (const station of stations) {
+           // The arrival gate is deliberately legible at the review distance;
+           // this is a scale relationship to the existing typed asset, not a
+           // duplicate gate or a screen-space marker.
 -          targetMaxDimension: visualReviewCapture ? 0.82 : 0.98,
--        material: material.pbr({
--          name: station.id + " dock gate finish",
--          color: "#b7f4ff",
--          roughness: 0.26,
--          metallic: 0.42,
--          emissive: "#22d3ee",
--          emissiveIntensity: 0.18
--        })
--      })
--        .position(station.x, PLAY_PLANE_Y + 0.12, station.z)
--        .runtime(game.runtimeNode(station.id + "-dock-gate", { tags: ["typed-asset", "destination-gate"] }))
--    );
--  }
--  sceneBuilder = sceneBuilder.add(
--      primitives.torus({
--        name: station.pulseNodeId + " capture window pulse ring",
--        material: material.emissive({ color: "#0b2230", emissive: "#67e8f9", opacity: 0.64 })
--      }).position(station.x, PLAY_PLANE_Y + 0.01, station.z).rotate(1.5708, 0, 0)
++          targetMaxDimension: 0.98,
+         material: material.pbr({
+           name: station.id + " dock gate finish",
+           color: "#b7f4ff",
+@@ -507,9 +499,7 @@ for (const station of stations) {
+         name: station.pulseNodeId + " capture window pulse ring",
+         material: material.emissive({ color: "#0b2230", emissive: "#67e8f9", opacity: 0.64 })
+       }).position(station.x, PLAY_PLANE_Y + 0.01, station.z).rotate(1.5708, 0, 0)
 -        .scale(visualReviewCapture && !reviewStationRelevant
 -          ? [0.001, 0.001, 0.001]
 -          : [DOCK_SENSOR_RADIUS * 2.8, DOCK_SENSOR_RADIUS * 2.8, 0.014])
--        .runtime(game.runtimeNode(station.pulseNodeId))
--  );
--}
- 
- // The final contract terminates at Gale Terminal. Build one renderer-owned
--// freight corridor on the real Rust -> Gale route so the review frame reads as
- // a courier journey through constructed space, rather than a pod and a few
- // disconnected orbital props. None of these nodes carry colliders or alter the
- // dock sensor owned by stations.ts.
-@@ -560,7 +247,6 @@ const courierContactShadow = material.pbr({
- // identity at action distance. They are attached to the GLB in
- // `syncPodVisual`; the GLB remains the primary vehicle and owns the actual
- // chassis/cargo silhouette. These fittings only provide readable livery,
--// running lights, and deck contact feedback in the review frame.
- const courierIdentityCyan = material.emissive({
-   name: "Courier postal cyan livery",
-   color: "#0b4355",
-@@ -611,7 +297,6 @@ const routeUnitZ = routeDz / routeLength;
- const routePerpX = -routeUnitZ;
- const routePerpZ = routeUnitX;
- // The catalog's release-validated MailPod is a detailed CC-BY transit craft,
--// distinct from the route-owned skiff.  In the review lens it serves as one
- // stationary terminal shuttle on the same Rust -> Gale vector: a grounded
- // scale reference and a second silhouette that makes Gale read as an active
- // freight destination.  It is set dressing only; the live pod, sensors, and
-@@ -619,9 +304,6 @@ const routePerpZ = routeUnitX;
- // Keep the supporting transit shuttle at the Gale-side apron, behind and
- // outside the live lane. It remains a typed destination cue, but no longer
- // competes with the parcel-bearing courier for foreground silhouette.
--const reviewMailPodProgress = 0.95;
--const reviewMailPodLateral = 1.52;
--const reviewMailPodYaw = Math.atan2(routeUnitX, routeUnitZ);
- // Boxes use local X as their long axis, so this yaw aligns them to the live
- // origin/destination vector instead of a screen-authored arbitrary angle.
- const approachYaw = -Math.atan2(routeDz, routeDx);
-@@ -663,17 +345,15 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
-         tags: ["typed-asset", "freight-world", "renderer-owned", "non-colliding"]
-       }));
-   // The compact GLB remains available on the normal planning board as a
--  // typed supporting-world asset.  The close review keeps one compact,
-   // side-mounted copy as the textured loading-bay anchor: it gives the
-   // otherwise authored corridor a concrete freight-city material break at
-   // action distance without occluding the live courier lane or destination
++        .scale([DOCK_SENSOR_RADIUS * 2.8, DOCK_SENSOR_RADIUS * 2.8, 0.014])
+         .runtime(game.runtimeNode(station.pulseNodeId))
+   );
+ }
+@@ -670,30 +660,8 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
    // gate.  The procedural freightway remains the continuous deck, skyline,
    // and destination architecture; this is one renderer-owned set-dressing
    // node and never participates in gameplay, sensors, or scoring.
 -  if (!visualReviewCapture) {
 +  {
      sceneBuilder = sceneBuilder.add(freightDistrictNode);
-   } else {
+-  } else {
 -    // The review lens previously put the freight district at the far-left
-     // shoulder, where its dark hull read as a disconnected asset-filled void.
-     // Stage one smaller, grounded copy at the Gale-side loading apron instead:
-     // it now shares depth with the destination gate and shoulder cargo while
-@@ -698,77 +378,17 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
+-    // shoulder, where its dark hull read as a disconnected asset-filled void.
+-    // Stage one smaller, grounded copy at the Gale-side loading apron instead:
+-    // it now shares depth with the destination gate and shoulder cargo while
+-    // leaving the courier's approach lane open. The asset's recorded lower
+-    // bound (minY=-2.05) is seated on PLAY_PLANE_Y; this is world geometry,
+-    // never a billboard or camera-only fill.
+-    const [sidecarX, sidecarZ] = corridorPoint(0.82, -1.48);
+-    sceneBuilder = sceneBuilder.add(
+-      model(assets.gravityPostFreightDistrict, {
+-        name: "Gravity Post grounded Gale loading district",
+-        role: "setDressing",
+-        scaleMode: "fit",
+-        targetMaxDimension: 1.72
+-      })
+-        .position(sidecarX, PLAY_PLANE_Y + 0.12, sidecarZ)
+-        .rotate(0, approachYaw, 0)
+-        .runtime(game.runtimeNode("gravity-post-textured-loading-bay-sidecar", {
+-          tags: ["typed-asset", "freight-world", "review-set-dressing", "non-colliding"]
+-        }))
+-    );
+   }
  }
  
- // Meshy candidate freight canyon (gravityPostMeshyFreight, quality: candidate).
--// Review-composition only: one small grounded sidecar on the opposite shoulder
--// from the CC0 district so the capture shows the candidate's material break at
- // action distance. Non-colliding set dressing; gameplay, sensors, scoring, and
+@@ -704,22 +672,7 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
  // the default planning board are untouched. Candidate decimated to 250k tris
--// (from 5.62M); it stays review-only under the candidate-quality gate, so it
+ // (from 5.62M); it stays review-only under the candidate-quality gate, so it
  // stays out of the default route.
 -if (visualReviewCapture) {
 -  const [meshyX, meshyZ] = corridorPoint(0.62, 1.9);
@@ -3044,13 +2798,11 @@ index b5308393a..1092f0090 100644
 -      }))
 -  );
 -}
++
  
  // An existing release-validated catalog craft supplies one non-primitive
  // destination-scale cue that the synthesized skiff cannot provide alone. The
--// MailPod is mounted only in the named review composition beside Gale's apron;
- // its +Z-forward orientation is aligned to the real Rust -> Gale vector and
- // its grounded placement is derived from the same corridor points. During the
--// frozen review pose it stays on the outer Gale apron with one typed carton on
+@@ -730,45 +683,7 @@ if (visualReviewCapture) {
  // its aft rack, providing logistics depth without competing with the live
  // courier. No second physics body, route state, collision region, or camera
  // adjustment is added.
@@ -3093,10 +2845,11 @@ index b5308393a..1092f0090 100644
 -      }))
 -  );
 -}
++
  
  const terminalRunwayPanels = Array.from({ length: 7 }, (_, index) => {
    const progress = index / 6;
-@@ -784,78 +404,6 @@ const terminalRunwayPanels = Array.from({ length: 7 }, (_, index) => {
+@@ -784,17 +699,8 @@ const terminalRunwayPanels = Array.from({ length: 7 }, (_, index) => {
  const terminalDeckCenter = corridorPoint(0.835);
  const terminalDockCenter = corridorPoint(0.975);
  const terminalDeckLength = routeLength * 0.34;
@@ -3111,79 +2864,12 @@ index b5308393a..1092f0090 100644
 -  ]);
 -}
 -if (!visualReviewCapture) sceneBuilder = sceneBuilder.addMany([
--  // The former 110 MB orbital-dock audition is intentionally not mounted.
--  // It was rejected as a heavy, high-submesh ring and made the normal planning
--  // board spend tens of seconds decoding a redundant destination prop. The
--  // release-validated typed beacon + gate above, together with this authored
--  // terminal deck, keep Gale readable while preserving the same destination
--  // identity and sensor coordinates without loading the rejected asset.
--  primitives.box({
--    name: "Gale Terminal armored approach deck",
--    size: [terminalDeckLength, 0.1, 1.56],
--    material: terminalDeck
--  }).position(terminalDeckCenter[0], PLAY_PLANE_Y - 0.07, terminalDeckCenter[1]).rotate(0, approachYaw, 0),
--  ...([-1, 1] as const).map((side) => {
--    const [x, z] = corridorPoint(0.835, side * 0.77);
--    return primitives.box({
--      name: `Gale Terminal continuous deck curb ${side}`,
--      size: [terminalDeckLength, 0.1, 0.075],
--      material: side < 0 ? terminalSignal : terminalHazard
--    }).position(x, PLAY_PLANE_Y - 0.005, z).rotate(0, approachYaw, 0);
--  }),
--  ...terminalRunwayPanels,
--  primitives.cylinder({ name: "Gale Terminal orbital deck", material: terminalDeck })
--    .position(terminalDockCenter[0], PLAY_PLANE_Y - 0.08, terminalDockCenter[1])
--    .scale([0.84, 0.08, 0.84]),
--  primitives.torus({ name: "Gale Terminal outer gantry", material: terminalFrame })
--    .position(terminalDockCenter[0], PLAY_PLANE_Y + 0.12, terminalDockCenter[1])
--    .rotate(1.5708, 0, 0)
--    .scale([0.88, 0.88, 0.045]),
--  ...[-1, 1].flatMap((side) => [
--    primitives.box({ name: `Gale Terminal grounded portal pylon ${side}`, material: terminalFrame })
--      .position(...(() => {
--        const [x, z] = corridorPoint(0.955, side * 0.79);
--        return [x, PLAY_PLANE_Y + 0.25, z] as const;
--      })())
--      .scale([0.09, 0.42, 0.09]),
--    primitives.box({ name: `Gale Terminal signal bar ${side}`, material: side < 0 ? terminalSignal : terminalHazard })
--      .position(...(() => {
--        const [x, z] = corridorPoint(0.955, side * 0.79);
--        return [x, PLAY_PLANE_Y + 0.51, z] as const;
--      })())
--      .rotate(0, approachYaw, 0)
--      .scale([0.24, 0.045, 0.045])
--  ]),
--  primitives.box({ name: "Gale Terminal portal header", material: terminalSignal })
--    .position(terminalDockCenter[0], PLAY_PLANE_Y + 0.63, terminalDockCenter[1])
--    .rotate(0, acrossRouteYaw, 0)
--    .scale([0.8, 0.055, 0.055]),
--  ...([-1, 1] as const).flatMap((side) => {
--    const [moduleX, moduleZ] = corridorPoint(0.87, side * 1.12);
--    const [windowX, windowZ] = corridorPoint(0.87, side * 0.9);
--    return [
--      primitives.box({ name: `Gale Terminal grounded service wing ${side}`, material: terminalDeck })
--        .position(moduleX, PLAY_PLANE_Y + 0.16, moduleZ)
--        .rotate(0, approachYaw, 0)
--        .scale([0.52, 0.26, 0.25]),
--      primitives.box({ name: `Gale Terminal service wing viewport ${side}`, material: side < 0 ? terminalSignal : terminalHazard })
--        .position(windowX, PLAY_PLANE_Y + 0.2, windowZ)
--        .rotate(0, approachYaw, 0)
--        .scale([0.32, 0.07, 0.018])
--    ];
--  })
--]);
- 
- // The courier's orange delivery module is authored into the vehicle shell,
- // but a delivery scene also needs a package that reads as a package at a
-@@ -865,7 +413,6 @@ if (!visualReviewCapture) sceneBuilder = sceneBuilder.addMany([
- // participates in physics, sensors, scoring, or the route integrator.
- const courierParcelScaleRatio = POD_VISUAL_SCALE / 0.68;
- // Keep the real parcel subordinate to the skiff's own guarded payload module:
--// at the review scale this is a visible handoff carton, not a box that hides
- // the canopy and drive silhouette.
- const courierParcelMaxDimension = courierParcelMaxDimensionBase * courierParcelScaleRatio;
- sceneBuilder = sceneBuilder.add(
-@@ -885,27 +432,6 @@ sceneBuilder = sceneBuilder.add(
++
++sceneBuilder = sceneBuilder.addMany([
+   // The former 110 MB orbital-dock audition is intentionally not mounted.
+   // It was rejected as a heavy, high-submesh ring and made the normal planning
+   // board spend tens of seconds decoding a redundant destination prop. The
+@@ -885,27 +791,7 @@ sceneBuilder = sceneBuilder.add(
  // Rust -> Gale lane read as an active logistics district, not only a colored
  // architectural backdrop. Their placement is derived from the same live route
  // vector as the freightway, and they remain renderer-only set dressing.
@@ -3208,10 +2894,11 @@ index b5308393a..1092f0090 100644
 -    );
 -  }
 -}
++
  
  // Primary courier: original CC0 parcel skiff with a low working chassis, four
  // contact-drive pods, directional cockpit/drive lights, and a guarded amber
-@@ -917,7 +443,7 @@ sceneBuilder = sceneBuilder
+@@ -917,7 +803,7 @@ sceneBuilder = sceneBuilder
        name: "mail-pod",
        role: "primaryVehicle",
        scaleMode: "fit",
@@ -3220,23 +2907,7 @@ index b5308393a..1092f0090 100644
      })
        .position(stations[0]!.x, PLAY_PLANE_Y, stations[0]!.z)
        .runtime(game.runtimeNode("mail-pod"))
-@@ -939,7 +465,6 @@ sceneBuilder = sceneBuilder
-       }))
-   )
-   // A compact typed handoff carton sits at the operator's lead hand. It gives
--  // the character/vehicle pair a concrete delivery action in the review
-   // frame, while the larger typed parcel remains secured on the skiff's aft
-   // cradle. This is a renderer-owned attachment only: no gameplay state is
-   // inferred from the prop and no second cargo body is created.
-@@ -960,7 +485,6 @@ sceneBuilder = sceneBuilder
-       }))
-   )
-   // A renderer-owned soft landing mark keeps the four skids visibly married
--  // to the freight deck in the frozen review frame. It is deliberately a
-   // shallow scene cylinder (not a CSS shadow, collider, or physics footprint)
-   // and follows the courier's authored position below.
-   .add(
-@@ -973,7 +497,7 @@ sceneBuilder = sceneBuilder
+@@ -973,7 +859,7 @@ sceneBuilder = sceneBuilder
        // contact cue, never a second physics body.
        .position(stations[0]!.x, PLAY_PLANE_Y + 0.018, stations[0]!.z)
        .rotate(0, 0, 0)
@@ -3245,38 +2916,28 @@ index b5308393a..1092f0090 100644
        .runtime(game.runtimeNode("mail-pod-contact-shadow", {
          tags: ["pod-contact-shadow", "renderer-owned", "non-colliding"]
        }))
-@@ -1155,14 +679,6 @@ for (let index = 0; index < PREDICTION_BEADS; index += 1) {
- 
- // Cream actual-path beads persist after launch so prediction and flown truth
- // remain visually separable through assists, hazards, and docking.
--for (let index = 0; index < ACTUAL_PATH_BEADS; index += 1) {
--  sceneBuilder = sceneBuilder.add(
--    primitives.sphere({
--      name: "actual path bead " + (index + 1),
--      material: material.emissive({ color: "#6b4b1b", emissive: "#ffe7a3", emissiveIntensity: 1.55, opacity: 0.98 })
+@@ -1160,7 +1046,7 @@ for (let index = 0; index < ACTUAL_PATH_BEADS; index += 1) {
+     primitives.sphere({
+       name: "actual path bead " + (index + 1),
+       material: material.emissive({ color: "#6b4b1b", emissive: "#ffe7a3", emissiveIntensity: 1.55, opacity: 0.98 })
 -    }).position(0, -4, 0).scale(visualReviewCapture ? 0.026 : 0.085).runtime(game.runtimeNode("actual-path-bead-" + index))
--  );
--}
- 
- // Dock spark burst pool (in-scene FX).
- for (let index = 0; index < SPARK_COUNT; index += 1) {
-@@ -1184,60 +700,10 @@ for (let index = 0; index < FLYBY_DRONES; index += 1) {
++    }).position(0, -4, 0).scale(0.085).runtime(game.runtimeNode("actual-path-bead-" + index))
    );
  }
  
--sceneBuilder = sceneBuilder
--  .add(effects.neonBloom({ name: "gravity route glow", intensity: 0.18, threshold: 0.62, maxIntensity: 0.9, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
--  .add(effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }))
--  .add(effects.antiAlias({ mode: "fxaa" }))
--  // Keep enough cool fill for the board while allowing the freight district's
--  // graphite/alloy/rust material groups to retain real value separation in the
--  // review lens. A warm opposing directional reveals bevels and parcel edges.
+@@ -1191,30 +1077,23 @@ sceneBuilder = sceneBuilder
+   // Keep enough cool fill for the board while allowing the freight district's
+   // graphite/alloy/rust material groups to retain real value separation in the
+   // review lens. A warm opposing directional reveals bevels and parcel edges.
 -  .add(lights.ambient({ intensity: visualReviewCapture ? 0.85 : 0.64, color: "#e0f4ff" }))
 -  .add(lights.directional({ position: [2.4, 6.2, 3.2], intensity: visualReviewCapture ? 3.0 : 1.48, color: "#e9f7ff" }))
 -  .add(lights.directional({ name: "freight material warm rake", position: [-4.2, 3.6, -3.8], intensity: visualReviewCapture ? 2.0 : 0.42, color: "#ffc58d" }))
--  .add(lights.point({ name: "solar rim", color: "#fb923c", intensity: 1.8 }).position(-2.5, 2.6, 1.5))
--  .add(lights.point({ name: "route cyan practical", color: "#38d6ff", intensity: 1.4 }).position(-2.2, 1.15, -1.5))
--  .add(lights.point({ name: "route amber practical", color: "#fbbf24", intensity: 1.3 }).position(2.2, 1.0, 1.5))
++  .add(lights.ambient({ intensity: 0.64, color: "#e0f4ff" }))
++  .add(lights.directional({ position: [2.4, 6.2, 3.2], intensity: 1.48, color: "#e9f7ff" }))
++  .add(lights.directional({ name: "freight material warm rake", position: [-4.2, 3.6, -3.8], intensity: 0.42, color: "#ffc58d" }))
+   .add(lights.point({ name: "solar rim", color: "#fb923c", intensity: 1.8 }).position(-2.5, 2.6, 1.5))
+   .add(lights.point({ name: "route cyan practical", color: "#38d6ff", intensity: 1.4 }).position(-2.2, 1.15, -1.5))
+   .add(lights.point({ name: "route amber practical", color: "#fbbf24", intensity: 1.3 }).position(2.2, 1.0, 1.5))
 -  .add(lights.point({ name: "hazard-mail courier key", color: "#e8f7ff", intensity: visualReviewCapture ? 5.4 : 4 }).position(3.0, 2.2, -2.1))
 -  .add(lights.point({ name: "hazard-mail engine rim", color: "#fb923c", intensity: visualReviewCapture ? 3.6 : 2.2 }).position(1.8, 1.1, -2.15))
 -  .add(effects.fog({ density: visualReviewCapture ? 0.0018 : 0.005, color: visualReviewCapture ? "#28546a" : "#0a2038" }));
@@ -3289,61 +2950,55 @@ index b5308393a..1092f0090 100644
 -    .add(lights.point({ name: "parcel amber locality", color: "#fb923c", intensity: 2.45 })
 -      .position(courierLightX - routePerpX * 0.42, PLAY_PLANE_Y + 0.58, courierLightZ - routePerpZ * 0.42));
 -}
++  .add(lights.point({ name: "hazard-mail courier key", color: "#e8f7ff", intensity: 4 }).position(3.0, 2.2, -2.1))
++  .add(lights.point({ name: "hazard-mail engine rim", color: "#fb923c", intensity: 2.2 }).position(1.8, 1.1, -2.15))
++  .add(effects.fog({ density: 0.005, color: "#0a2038" }));
++
 +
  
  // World labels remain available on the normal planning board, but the named
--// review capture is a renderer-first action frame. Omitting these DOM-backed
+ // review capture is a renderer-first action frame. Omitting these DOM-backed
  // annotations only for that query keeps the live pod, route geometry, and dock
--// hardware visually legible without changing gameplay or evidence state.
+ // hardware visually legible without changing gameplay or evidence state.
 -if (!visualReviewCapture) {
--  for (const body of WELL_BODIES) {
--    sceneBuilder = sceneBuilder.add(
--      labels.anchor(body.name, body.name + " gravity-well body tag", {
--        name: body.name + " body label",
--        position: [body.position[0], PLAY_PLANE_Y + 0.34 + body.visualRadius, body.position[1]],
--        size: 0.14,
--        collisionAvoidance: true,
--        occlusionAware: true
--      })
--    );
--  }
--  for (const station of stations) {
--    sceneBuilder = sceneBuilder.add(
--      labels.anchor(station.name, station.name + " dock label", {
--        name: station.id + " station label",
--        position: [station.x, PLAY_PLANE_Y + 0.3, station.z],
--        size: 0.11,
--        collisionAvoidance: true,
--        occlusionAware: true
--      })
--    );
--  }
--}
- 
- 
- const app = createAuraApp("#app", {
-@@ -1248,8 +714,7 @@ const app = createAuraApp("#app", {
++{
+   for (const body of WELL_BODIES) {
+     sceneBuilder = sceneBuilder.add(
+       labels.anchor(body.name, body.name + " gravity-well body tag", {
+@@ -1248,31 +1127,7 @@ const app = createAuraApp("#app", {
      seed: 20260914,
      continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
    },
 -  scene: sceneBuilder.camera(visualReviewCapture ? camera.perspective({
 -    // Anchor the evidence lens to the immutable Rust -> Gale route instead of
-+  scene: sceneBuilder.camera(
-     // the moving courier.  The former close lens put the Rust endpoint outside
-     // the lower-left frustum, so the real courier became a clipped sliver in
-     // the chained-assist artifact.  Pull the same oblique route lens back and
-@@ -1288,10 +753,6 @@ for (const station of stations) {
-   physics.createBody({ ...dockSensorBodySpec(station), layer: "dock" });
- }
- 
--interface DockEventRecord {
--  readonly stationId: string;
--  readonly kind: "capture" | "bounce";
--}
- 
- const pendingDocks: string[] = [];
- const dockEventLog: DockEventRecord[] = [];
-@@ -1340,7 +801,7 @@ const input = app.input({
+-    // the moving courier.  The former close lens put the Rust endpoint outside
+-    // the lower-left frustum, so the real courier became a clipped sliver in
+-    // the chained-assist artifact.  Pull the same oblique route lens back and
+-    // up, and widen it just enough to keep both endpoint hardware silhouettes
+-    // plus the live roadway courier in one honest frame.  Nothing here moves a
+-    // gameplay coordinate, sensor, or visual asset.
+-    // Frame the courier from a lower, route-approach vantage: the lane and
+-    // facade cadence recede toward Gale while the typed skiff remains the
+-    // readable foreground subject. This is paired with the authored paving,
+-    // lamps, and arrival threshold below; it is not a camera-only substitute
+-    // for world geometry.
+-    position: [
+-      rustExchange.x - routeDx * 0.45 + routePerpX * 0.38,
+-      PLAY_PLANE_Y + 1.9,
+-      rustExchange.z - routeDz * 0.45 + routePerpZ * 0.38
+-    ],
+-    target: [
+-      rustExchange.x + routeDx * 0.62,
+-      PLAY_PLANE_Y + 0.3,
+-      rustExchange.z + routeDz * 0.62
+-    ],
+-    fov: 56
+-  }) : camera.perspective({
++  scene: sceneBuilder.camera(camera.perspective({
+     position: [0.3, 7.25, 6.65],
+     target: [0.28, 0.08, -0.55],
+     fov: 41
+@@ -1340,7 +1195,7 @@ const input = app.input({
  const hud: HTMLElement = (() => {
    const element = document.querySelector<HTMLElement>("#hud");
    if (!element) throw new Error("Gravity Post requires #hud.");
@@ -3352,121 +3007,78 @@ index b5308393a..1092f0090 100644
    return element;
  })();
  
-@@ -1365,11 +826,7 @@ let launchPrediction: readonly TrajectorySample[] = [];
- let predictionComparedSamples = 0;
- let predictionMaxDivergence = 0;
- let compositionSubjectSuppressed = false;
--// Route-primary probes begin on Delivery 1 (Sol Relay), which sits outside
--// the Rust -> Gale review corridor. Keep the gameplay state and telemetry at
- // their real contract coordinates, but allow the application composition
--// probe to request one renderer-only courier pose on that corridor so the
--// named typed vehicle is actually present in the review artifact.
- let compositionPresentationOverride = false;
- // Renderer-only velocity memory lets the skiff communicate acceleration and
- // lateral correction through its suspension/bank pose.  The authored
-@@ -1465,46 +922,6 @@ function launchActiveAim(): boolean {
- }
- 
- const canvas = app.canvas;
--if (canvas) {
--  canvas.style.touchAction = "none";
--  canvas.addEventListener("pointerdown", (event) => {
--    audio.unlock();
--    if (pod.state !== "ready" || paused || flyby.active) return;
--    aiming = true;
--    aimStart.x = event.clientX;
--    aimStart.y = event.clientY;
--    aimCurrent.x = event.clientX;
--    aimCurrent.y = event.clientY;
--    // Pointer capture is useful for a real pointer leaving the canvas, but a
--    // browser-driven evidence run may deliver a synthetic PointerEvent while
--    // software WebGL is busy.  In that case the browser has no active native
--    // pointer to capture and throws NotFoundError; capture is an input
--    // convenience, not part of the launch contract, so keep the actual aim
--    // state alive and continue without it.
--    try {
--      canvas.setPointerCapture(event.pointerId);
--    } catch {
--      // The pointerdown/move/up handlers remain the same; only capture is
--      // unavailable for this synthetic evidence delivery.
--    }
--  });
--  canvas.addEventListener("pointermove", (event) => {
--    if (!aiming) return;
--    aimCurrent.x = event.clientX;
--    aimCurrent.y = event.clientY;
--  });
--  const releaseAim = (): void => {
--    if (!aiming) return;
--    aiming = false;
--    const vector = currentAimVector();
--    if (vector && vector.power >= MIN_LAUNCH_POWER) {
--      const speed = MIN_LAUNCH_POWER + vector.power * (MAX_LAUNCH_SPEED - MIN_LAUNCH_POWER);
--      launchWithPrediction([vector.dirX, vector.dirZ], speed);
--    }
--  };
--  canvas.addEventListener("pointerup", releaseAim);
--  canvas.addEventListener("pointercancel", releaseAim);
--}
- 
- window.addEventListener("keydown", () => {
-   audio.unlock();
-@@ -1658,7 +1075,7 @@ function syncActualPath(): void {
+@@ -1658,7 +1513,7 @@ function syncActualPath(): void {
    for (let index = 0; index < ACTUAL_PATH_BEADS; index += 1) {
      const node = app.nodes.get("actual-path-bead-" + index);
      const point = actualPath[index];
 -    if (!node || !point || (visualReviewCapture && index % 3 !== 0)) {
-+    if (!node || !point || (false)) {
++    if (!node || !point) {
        node?.setVisible(false);
        continue;
      }
-@@ -1725,8 +1142,8 @@ function syncLaunchPredictionPath(): void {
+@@ -1725,8 +1580,8 @@ function syncLaunchPredictionPath(): void {
      }
      node
        .setPosition(bead.x, PLAY_PLANE_Y - 0.045, bead.z)
 -      .setScale(visualReviewCapture ? 0.028 : 0.052)
 -      .setVisible(!visualReviewCapture || index % 2 === 0);
 +      .setScale(0.052)
-+      .setVisible(!index % 2 === 0);
++      .setVisible(true);
    }
  }
  
-@@ -1755,14 +1172,13 @@ function syncPodVisual(): void {
+@@ -1755,29 +1610,18 @@ function syncPodVisual(): void {
    const restraintAmberNode = app.nodes.get("mail-pod-parcel-restraint-amber");
    const rearRouteSignalNode = app.nodes.get("mail-pod-rear-route-signal");
    const roofPostalLightBarNode = app.nodes.get("mail-pod-roof-postal-light-bar");
 -  // The named review producer pauses immediately before encoding its live
-   // contract-four action frame. Browser scheduling can cross that pause one
-   // fixed step earlier or later, moving only the fast courier by a few pixels.
-   // Settle presentation (not simulation) to one route-derived coasting point
-   // while paused so independent producer contexts prove identical pixels. On
-   // resume, the visual returns to the untouched authored pod state.
+-  // contract-four action frame. Browser scheduling can cross that pause one
+-  // fixed step earlier or later, moving only the fast courier by a few pixels.
+-  // Settle presentation (not simulation) to one route-derived coasting point
+-  // while paused so independent producer contexts prove identical pixels. On
+-  // resume, the visual returns to the untouched authored pod state.
 -  const settledReviewPose = visualReviewCapture && paused && pod.state === "coasting";
 -  const compositionReviewPose = visualReviewCapture && compositionPresentationOverride;
-+  const settledReviewPose = false;
-+  const compositionReviewPose = false;
-   const reviewPose = settledReviewPose || compositionReviewPose;
-   const [x, z] = reviewPose
-     ? corridorPoint(compositionReviewPose ? REVIEW_COURIER_PROGRESS : 0.58, REVIEW_COURIER_LATERAL)
-@@ -1772,9 +1188,7 @@ function syncPodVisual(): void {
+-  const reviewPose = settledReviewPose || compositionReviewPose;
+-  const [x, z] = reviewPose
+-    ? corridorPoint(compositionReviewPose ? REVIEW_COURIER_PROGRESS : 0.58, REVIEW_COURIER_LATERAL)
+-    : [pod.kinematic.position[0], pod.kinematic.position[1]] as const;
++  const [x, z] = [pod.kinematic.position[0], pod.kinematic.position[1]] as const;
+   const measuredSpeed = Math.hypot(pod.kinematic.velocity[0], pod.kinematic.velocity[1]);
+   // Match the precision of the genuine HUD readout while settled; sub-pixel
    // plume length must not encode scheduler-only floating-point residue.
-   const speed = reviewPose ? Number(measuredSpeed.toFixed(2)) : measuredSpeed;
+-  const speed = reviewPose ? Number(measuredSpeed.toFixed(2)) : measuredSpeed;
++  const speed = measuredSpeed;
    // The route-primary composition starts from a ready contract for honest
--  // gameplay evidence, but its named review frame is an action presentation.
+   // gameplay evidence, but its named review frame is an action presentation.
    // Give renderer-owned streaks the same bounded visual velocity as a live
--  // coasting moment without mutating the authored pod state or HUD telemetry.
-   const visualSpeed = compositionReviewPose ? 1.42 : speed;
-   const dirX = reviewPose ? routeUnitX : (speed > 1e-4 ? pod.kinematic.velocity[0] / speed : 0);
-   const dirZ = reviewPose ? routeUnitZ : (speed > 1e-4 ? pod.kinematic.velocity[1] / speed : 0);
-@@ -1841,7 +1255,6 @@ function syncPodVisual(): void {
-   // Keep the real textured parcel seated on the skiff's rear cargo cradle.
-   // The offset is expressed in the same route-authored forward axis as the
-   // vehicle, so it remains attached through launch, corrections, and the
--  // deterministic review pose without touching gameplay coordinates.
-   const parcelBackOffset = 0.43 * courierParcelScaleRatio;
-   parcelNode
-     ?.setPosition(
-@@ -1858,9 +1271,9 @@ function syncPodVisual(): void {
+   // coasting moment without mutating the authored pod state or HUD telemetry.
+-  const visualSpeed = compositionReviewPose ? 1.42 : speed;
+-  const dirX = reviewPose ? routeUnitX : (speed > 1e-4 ? pod.kinematic.velocity[0] / speed : 0);
+-  const dirZ = reviewPose ? routeUnitZ : (speed > 1e-4 ? pod.kinematic.velocity[1] / speed : 0);
++  const visualSpeed = speed;
++  const dirX = (speed > 1e-4 ? pod.kinematic.velocity[0] / speed : 0);
++  const dirZ = (speed > 1e-4 ? pod.kinematic.velocity[1] / speed : 0);
+   const perpX = -dirZ;
+   const perpZ = dirX;
+   const podYaw = Math.atan2(dirX, dirZ);
+@@ -1795,12 +1639,12 @@ function syncPodVisual(): void {
+   const accelerationAlong = accelerationX * dirX + accelerationZ * dirZ;
+   const accelerationAcross = accelerationX * (-dirZ) + accelerationZ * dirX;
+   const presentationPitch = Math.max(-0.075, Math.min(0.075,
+-    (compositionReviewPose ? -0.028 : 0) - accelerationAlong * 0.055
++    (0) - accelerationAlong * 0.055
+   ));
+   const presentationBank = Math.max(-0.09, Math.min(0.09,
+-    (compositionReviewPose ? 0.06 : 0) + accelerationAcross * 0.16
++    (0) + accelerationAcross * 0.16
+   ));
+-  if (!visualVelocityInitialized || reviewPose) {
++  if (!visualVelocityInitialized) {
+     previousVisualVelocity = [displayedVelocityX, displayedVelocityZ];
+     visualVelocityInitialized = true;
+   } else {
+@@ -1858,13 +1702,13 @@ function syncPodVisual(): void {
      ?.setPosition(x, PLAY_PLANE_Y + 0.02, z)
      .setRotation(0, podYaw, 0)
      .setScale([
@@ -3479,7 +3091,12 @@ index b5308393a..1092f0090 100644
      ])
      .setVisible(!compositionSubjectSuppressed && pod.state !== "lost");
    const visibleMotes = !compositionSubjectSuppressed &&
-@@ -1909,7 +1322,7 @@ function syncPodVisual(): void {
+-    ((pod.state === "coasting" && speed > 0.08) || compositionReviewPose);
++    ((pod.state === "coasting" && speed > 0.08));
+   // The contact pair is intentionally tied to the same displayed velocity as
+   // the trail: faster/coasting frames compress the suspension and stretch the
+   // wake, while a cross-route correction introduces a small bank.  This makes
+@@ -1909,7 +1753,7 @@ function syncPodVisual(): void {
      .setRotation(presentationPitch, podYaw, presentationBank)
      .setVisible(restraintVisible);
    const scanVisible = !compositionSubjectSuppressed && pod.state !== "lost" &&
@@ -3488,113 +3105,139 @@ index b5308393a..1092f0090 100644
    const scanBreathe = 1 + Math.sin(frame * 0.22) * 0.08;
    deliveryScanRingNode
      ?.setPosition(x, PLAY_PLANE_Y + 0.72, z)
-@@ -1917,7 +1330,6 @@ function syncPodVisual(): void {
-     .setVisible(scanVisible);
-   // Four emissive drive markers sit just above the lane at the same offsets
-   // as the skiff's modeled contact pods. They pulse subtly while coasting (or
--  // in the frozen review pose) and disappear when the courier is hidden/lost.
-   for (let index = 0; index < courierDriveOffsets.length; index += 1) {
-     const node = app.nodes.get(`mail-pod-drive-contact-${index + 1}`);
-     const [side, longitudinal] = courierDriveOffsets[index]!;
-@@ -1931,7 +1343,7 @@ function syncPodVisual(): void {
+@@ -1931,7 +1775,7 @@ function syncPodVisual(): void {
        )
        .setRotation(presentationPitch, podYaw, presentationBank)
        .setScale([0.12 * contactPulse, 0.045 * contactCompression, 0.16 * contactPulse])
 -      .setVisible(visibleMotes || (visualReviewCapture && !compositionSubjectSuppressed));
-+      .setVisible(visibleMotes || (false));
++      .setVisible(visibleMotes);
      app.nodes.get(`mail-pod-drive-contact-ring-${index + 1}`)
        ?.setPosition(
          x + perpX * side * 0.44 + dirX * longitudinal,
-@@ -1940,22 +1352,22 @@ function syncPodVisual(): void {
+@@ -1940,22 +1784,18 @@ function syncPodVisual(): void {
        )
        .setRotation(1.5708, 0, 0)
        .setScale([0.16 * contactPulse, 0.16 * contactPulse * (1 + (1 - contactCompression) * 0.7), 0.014])
 -      .setVisible(visibleMotes || (visualReviewCapture && !compositionSubjectSuppressed));
-+      .setVisible(visibleMotes || (false));
++      .setVisible(visibleMotes);
    }
    for (let index = 0; index < TRAIL_STREAK_COUNT; index += 1) {
      const mote = app.nodes.get("mail-pod-trail-" + index);
      if (!mote) continue;
 -    const distance = (visualReviewCapture ? 0.48 : 0.34) + index * (visualReviewCapture ? 0.31 : 0.23);
 -    const width = visualReviewCapture ? Math.max(0.18, 0.54 - index * 0.09) : Math.max(0.28, 0.92 - index * 0.09);
+-    const length = settledReviewPose
+-      ? 0.68
+-      : visualReviewCapture
+-        ? 0.52 + Math.min(0.72, visualSpeed * 0.18)
+-        : 0.8 + Math.min(1.35, visualSpeed * 0.28) + index * 0.06;
 +    const distance = (0.34) + index * (0.23);
 +    const width = Math.max(0.28, 0.92 - index * 0.09);
-     const length = settledReviewPose
-       ? 0.68
--      : visualReviewCapture
-+      : false
-         ? 0.52 + Math.min(0.72, visualSpeed * 0.18)
-         : 0.8 + Math.min(1.35, visualSpeed * 0.28) + index * 0.06;
++    const length = 0.8 + Math.min(1.35, visualSpeed * 0.28) + index * 0.06;
      mote.setPosition(x - dirX * distance, PLAY_PLANE_Y + 0.04 + index * 0.006, z - dirZ * distance)
        .setRotation(0, podYaw, 0)
        .setScale([width, width, length])
 -      .setVisible(visibleMotes && (!visualReviewCapture || index < 5));
-+      .setVisible(visibleMotes && (!index < 5));
++      .setVisible(visibleMotes);
    }
    for (let index = 0; index < CONTACT_WAKE_COUNT; index += 1) {
      for (const side of [-1, 1] as const) {
-@@ -1984,14 +1396,12 @@ function syncPodVisual(): void {
+@@ -1973,7 +1813,7 @@ function syncPodVisual(): void {
+         .setScale([
+           Math.max(0.34, 0.72 - index * 0.064 + Math.abs(accelerationAlong) * 0.035),
+           1,
+-          (settledReviewPose ? 0.88 : 0.82) * (1 + visualSpeed * 0.035)
++          (0.82) * (1 + visualSpeed * 0.035)
+         ])
+         .setVisible(visibleMotes);
+     }
+@@ -1982,56 +1822,22 @@ function syncPodVisual(): void {
+   thrustPlume
+     ?.setPosition(x - dirX * 0.48, PLAY_PLANE_Y + 0.035, z - dirZ * 0.48)
      .setRotation(presentationPitch, podYaw, presentationBank)
-     .setScale(settledReviewPose
-       ? [0.62, 0.62, 0.54]
+-    .setScale(settledReviewPose
+-      ? [0.62, 0.62, 0.54]
 -      : visualReviewCapture
-+      : false
-         ? [0.62, 0.62, 0.38 + Math.min(0.5, visualSpeed * 0.2)]
-         : [1, 1, 0.52 + Math.min(0.8, visualSpeed * 0.32)])
+-        ? [0.62, 0.62, 0.38 + Math.min(0.5, visualSpeed * 0.2)]
+-        : [1, 1, 0.52 + Math.min(0.8, visualSpeed * 0.32)])
++    .setScale([1, 1, 0.52 + Math.min(0.8, visualSpeed * 0.32)])
      .setVisible(visibleMotes);
-   if (settledReviewPose) {
-     // Settle the renderer-owned flown-history beads to the same real route
+-  if (settledReviewPose) {
+-    // Settle the renderer-owned flown-history beads to the same real route
 -    // segment as the courier. The telemetry array remains untouched; this only
 -    // removes one-step sampling jitter from the paused evidence composition.
-     for (let index = 0; index < ACTUAL_PATH_BEADS; index += 1) {
-       const bead = app.nodes.get("actual-path-bead-" + index);
-       if (!bead) continue;
-@@ -2004,20 +1414,17 @@ function syncPodVisual(): void {
-     }
-   }
+-    for (let index = 0; index < ACTUAL_PATH_BEADS; index += 1) {
+-      const bead = app.nodes.get("actual-path-bead-" + index);
+-      if (!bead) continue;
+-      if (index >= 8) {
+-        bead.setVisible(false);
+-        continue;
+-      }
+-      const [beadX, beadZ] = corridorPoint(0.045 + index * 0.052);
+-      bead.setPosition(beadX, PLAY_PLANE_Y + 0.025, beadZ).setVisible(true);
+-    }
+-  }
++  
    // A route-primary composition override is renderer-only: keep the live
--  // physics body at its authored Sol Relay position while the probe is
--  // paused on the Rust -> Gale visual corridor. The coasting review settle,
+   // physics body at its authored Sol Relay position while the probe is
+   // paused on the Rust -> Gale visual corridor. The coasting review settle,
    // by contrast, mirrors the displayed point so its sensor state remains
    // deterministic while paused.
-   podBody.setPosition(compositionReviewPose && pod.state === "ready"
-     ? [pod.kinematic.position[0], PLAY_PLANE_Y, pod.kinematic.position[1]]
-     : [x, PLAY_PLANE_Y, z]);
+-  podBody.setPosition(compositionReviewPose && pod.state === "ready"
+-    ? [pod.kinematic.position[0], PLAY_PLANE_Y, pod.kinematic.position[1]]
+-    : [x, PLAY_PLANE_Y, z]);
++  podBody.setPosition([x, PLAY_PLANE_Y, z]);
  
--  // In the review lens the typed MailPod is a small inbound shuttle on the
+   // In the review lens the typed MailPod is a small inbound shuttle on the
    // outer Gale loading apron. Keep it out of the active courier lane so the
    // primary silhouette stays unambiguous. This is a renderer-only depth cue:
    // the shuttle and its typed carton never enter the pod sensor, integrator,
    // or scoring state.
 -  if (visualReviewCapture) {
-+  if (false) {
-     const [shuttleX, shuttleZ] = corridorPoint(reviewMailPodProgress, reviewMailPodLateral);
-     shuttleNode
-       ?.setPosition(shuttleX, PLAY_PLANE_Y + 0.095, shuttleZ)
-@@ -2039,7 +1446,7 @@ function syncStationPulses(): void {
+-    const [shuttleX, shuttleZ] = corridorPoint(reviewMailPodProgress, reviewMailPodLateral);
+-    shuttleNode
+-      ?.setPosition(shuttleX, PLAY_PLANE_Y + 0.095, shuttleZ)
+-      .setRotation(0, reviewMailPodYaw, 0)
+-      .setVisible(!compositionSubjectSuppressed);
+-    shuttleParcelNode
+-      ?.setPosition(
+-        shuttleX - routeUnitX * 0.22,
+-        PLAY_PLANE_Y + 0.34,
+-        shuttleZ - routeUnitZ * 0.22
+-      )
+-      .setRotation(0, reviewMailPodYaw, 0)
+-      .setVisible(!compositionSubjectSuppressed);
+-  }
++  
+ }
+ 
+ function syncStationPulses(): void {
+@@ -2039,29 +1845,15 @@ function syncStationPulses(): void {
    for (const station of stations) {
      const pulse = app.nodes.get(station.pulseNodeId);
      if (!pulse) continue;
 -    if (visualReviewCapture) {
-+    if (false) {
-       // The live origin beacon is useful before launch, then yields to the
-       // flown route and destination. This removes the spent, clipped origin
-       // ring from the in-flight artifact without inventing a second visual
-@@ -2047,11 +1454,11 @@ function syncStationPulses(): void {
-       const isOriginBriefing = station.id === "rust-exchange" && pod.state === "ready";
-       app.nodes.get(station.nodeId)?.setVisible(station.id === "gale-terminal" || isOriginBriefing);
-     }
+-      // The live origin beacon is useful before launch, then yields to the
+-      // flown route and destination. This removes the spent, clipped origin
+-      // ring from the in-flight artifact without inventing a second visual
+-      // state: visibility is bound directly to the pod state.
+-      const isOriginBriefing = station.id === "rust-exchange" && pod.state === "ready";
+-      app.nodes.get(station.nodeId)?.setVisible(station.id === "gale-terminal" || isOriginBriefing);
+-    }
 -    if (visualReviewCapture && station.id !== "gale-terminal") {
-+    if (false) {
-       pulse.setScale([0.001, 0.001, 0.001]);
-       continue;
-     }
+-      pulse.setScale([0.001, 0.001, 0.001]);
+-      continue;
+-    }
 -    if (visualReviewCapture && paused && station.id === "gale-terminal") {
-+    if (false) {
-       const settledScale = station.dockRadius * 1.35;
-       pulse.setScale([settledScale, settledScale, 0.02]);
-       continue;
-@@ -2061,7 +1468,7 @@ function syncStationPulses(): void {
+-      const settledScale = station.dockRadius * 1.35;
+-      pulse.setScale([settledScale, settledScale, 0.02]);
+-      continue;
+-    }
++    
++    
++    
+     const distance = Math.hypot(pod.kinematic.position[0] - station.x, pod.kinematic.position[1] - station.z);
+     const isOpen = station.id === destination.id && pod.state === "coasting" &&
        distance < station.dockRadius * 3.2 &&
        Math.hypot(pod.kinematic.velocity[0], pod.kinematic.velocity[1]) < contract().captureLimit * 1.2;
      const breathe = isOpen ? 1.25 + Math.sin(frame * 0.35) * 0.22 : 1;
@@ -3603,7 +3246,7 @@ index b5308393a..1092f0090 100644
      pulse.setScale([station.dockRadius * reviewScale * breathe, station.dockRadius * reviewScale * breathe, 0.02]);
    }
  }
-@@ -2172,14 +1579,14 @@ function renderHud(): void {
+@@ -2172,14 +1964,14 @@ function renderHud(): void {
      metric("Fuel", fuelPct + "%"),
      '<div class="gp-fuel"><i style="width:' + fuelPct + '%"></i></div>',
      '<div class="gp-row">' +
@@ -3621,15 +3264,7 @@ index b5308393a..1092f0090 100644
        metric("Warp", "x" + (warpActive && pod.state === "coasting" ? TIME_WARP_MULTIPLIER : 1)) +
      "</div>",
      '<p class="gp-status">' + escapeHtml(statusLine) + "</p>",
-@@ -2216,7 +1623,6 @@ function bindHold(selector: string, down: () => void, up: () => void): void {
- }
- 
- // ---------------------------------------------------------------------------
--// Evidence
- // ---------------------------------------------------------------------------
- function publishEvidence(): void {
-   const proof = audio.proof();
-@@ -2311,11 +1717,6 @@ function updateGameplay(dt: number): void {
+@@ -2311,11 +2103,7 @@ function updateGameplay(dt: number): void {
    input.update(dt);
    if (input.pressed("pause")) {
      paused = !paused;
@@ -3638,10 +3273,11 @@ index b5308393a..1092f0090 100644
 -      syncStationPulses();
 -      renderHud();
 -    }
++    
    }
    if (input.pressed("retry")) retryContract();
    if (input.pressed("next")) nextContract();
-@@ -2392,104 +1793,9 @@ app.onFrame(({ time }) => {
+@@ -2392,104 +2180,9 @@ app.onFrame(({ time }) => {
  });
  
  renderHud();
@@ -3748,7 +3384,7 @@ index b5308393a..1092f0090 100644
 -});
 +
 diff --git a/apps/showcase-gravity-post/src/main.ts b/apps/showcase-gravity-post/src/main.ts
-index 68ddd1ad5..1433042c2 100644
+index 60639484c..d0af7198f 100644
 --- a/apps/showcase-gravity-post/src/main.ts
 +++ b/apps/showcase-gravity-post/src/main.ts
 @@ -1,7 +1,6 @@
@@ -3956,5 +3592,5 @@ index b882c476d..000000000
 -  };
 -}
 -- 
-2.34.1
+2.52.0
 

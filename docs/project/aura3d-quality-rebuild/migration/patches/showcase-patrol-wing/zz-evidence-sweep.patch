@@ -1,4 +1,4 @@
-From 32ecdea843c979256f152fdd4922a594b8a3c552 Mon Sep 17 00:00:00 2001
+From 6491de4f42e674a487ac87de7ebb7c902295f8f3 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 15:34:24 +0000
 Subject: [PATCH] showcase-patrol-wing: delete evidence files+blocks (T5.8)
@@ -15,10 +15,10 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../scripts/write-performance-report.ts       |  37 --
  .../scripts/write-route-health.mjs            |  53 ---
  apps/showcase-patrol-wing/src/evidence.ts     |   8 -
- apps/showcase-patrol-wing/src/legacy/main.ts  | 331 +------------
+ apps/showcase-patrol-wing/src/legacy/main.ts  |  19 -
  apps/showcase-patrol-wing/src/main.ts         |   1 -
  .../src/v2/evidence/index.ts                  | 212 ---------
- 11 files changed, 1 insertion(+), 1575 deletions(-)
+ 11 files changed, 1264 deletions(-)
  delete mode 100644 apps/showcase-patrol-wing/performance-report.json
  delete mode 100644 apps/showcase-patrol-wing/scripts/build-models.mjs
  delete mode 100644 apps/showcase-patrol-wing/scripts/build-sfx.mjs
@@ -1038,7 +1038,7 @@ index dff617443..000000000
 -writeFileSync(resolve(appDir, "performance-report.json"), `${JSON.stringify(report, null, 2)}\n`); console.log(JSON.stringify({ pass, observed, drawEvidencePending })); if (!pass) process.exitCode = 1;
 diff --git a/apps/showcase-patrol-wing/scripts/write-route-health.mjs b/apps/showcase-patrol-wing/scripts/write-route-health.mjs
 deleted file mode 100644
-index c65443454..000000000
+index 8566595b6..000000000
 --- a/apps/showcase-patrol-wing/scripts/write-route-health.mjs
 +++ /dev/null
 @@ -1,53 +0,0 @@
@@ -1084,7 +1084,7 @@ index c65443454..000000000
 -  renderer: { path: "createGameApp root safe API", mode: "production with safe-basic fallback", nativeWebGPU: false, productionRuntimeClaimed: false },
 -  primaryAssets: modelIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, role: assetById.get(id).role })),
 -  audioAssets: audioIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
--  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "authored terrain/ocean, route rings, pad structure, beacons, return-fire orbs, lighting, and subordinate frontier dressing around four typed primary assets", status: "no-primitive-primary-subjects" },
+-  primitiveStatus: { primitiveBudget: gate.primitiveBudget, role: "authored terrain/ocean, route rings, pad structure, beacons, return-fire orbs, lighting, and subordinate frontier dressing around four typed primary assets", status: "no-primitive-primary-subjects" },
 -  gameplay: { mission: ["takeoff", "six ordered rings", "seeded drone pair/waves", "canyon", "low-hull pressure", "visible return approach", "bounded touchdown"], flightOwner: "route-local deterministic authored arcade TypeScript", aerodynamicClaimed: false, sensorOwner: "Rapier-backed route-local player/ring/pad/orb proxies", combatOwner: "root game.combatWorld hit/health plus route-local seeded pursuit", ghostEffect: "visual replay only; no collision or scoring", keyboardAndTouch: true, pauseFreezeResume: true, fullReset: true, shotDownFail: true, touchdownWin: true, reducedMotionPreservesStateTruth: true },
 -  accessibility: { semanticHeading: true, namedStatusRegions: true, namedTouchControls: 11, minimumTouchTargetPx: 44, keyboardAndTouchParity: true, colorIndependentStatusText: true, pass: true },
 -  performance, deploy, routeGate: { config: "tools/showcase-library/route-gates.json", releaseClass: gate.releaseClass, published: gate.published, publicTemplateReady: false, pass: true },
@@ -1110,7 +1110,7 @@ index 049095dc5..000000000
 -    (collect ?? (() => ({ status: "unbound" })))()
 -};
 diff --git a/apps/showcase-patrol-wing/src/legacy/main.ts b/apps/showcase-patrol-wing/src/legacy/main.ts
-index ffd7f8891..6916b8872 100644
+index ba7584ccb..a89bb4bde 100644
 --- a/apps/showcase-patrol-wing/src/legacy/main.ts
 +++ b/apps/showcase-patrol-wing/src/legacy/main.ts
 @@ -33,7 +33,6 @@ import {
@@ -1121,34 +1121,7 @@ index ffd7f8891..6916b8872 100644
  import { bindPatrolDrive } from "../scenario-drive";
  import { assets } from "../../../../src/aura-assets";
  import { FlightModel, FLIGHT_DT, type FlightInput, type FlightOutcome, type Vec3 } from "../gameplay/flight";
-@@ -71,26 +70,13 @@ import { GhostPlayer, GhostRecorder } from "../gameplay/ghost";
- import { createWingAudio, type WingAudioCue } from "./wing-audio";
- import "./styles.css";
- 
--type PatrolWindow = Window & {
--  __PATROL_WING_EVIDENCE__?: unknown;
--  __AURA3D_SHOWCASE_PATROL_WING__?: unknown;
--  __PW_SHOT__?: () => string;
--  __PW_PUMP__?: (frames: number) => number;
--  __PW_SCENARIO__?: (scenario: string) => string;
--  __PW_DAMAGE__?: (amount: number) => number;
--};
- const patrolWindow = window as PatrolWindow;
- const reducedMotion = typeof window.matchMedia === "function"
-   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
--document.body.dataset.capture = "default";
- 
- const APP_ID = "showcase-patrol-wing";
- const PRIMARY_ASSET_REFS = [assets.patrolAircraftMeshy, assets.patrolWingDroneA, assets.patrolWingDroneB, assets.patrolWingPadBeacon] as const;
- 
--Object.defineProperty(window, "__AURA3D_SHOWCASE_PATROL_WING__", {
--  configurable: true,
--  get: () => patrolWindow.__PATROL_WING_EVIDENCE__
--});
- 
- // ---------------------------------------------------------------- HUD markup --
- ui.html("#hud", `
-@@ -143,7 +129,6 @@ ui.html("#panel", `
+@@ -143,7 +142,6 @@ ui.html("#panel", `
    </section>
  `);
  
@@ -1156,15 +1129,7 @@ index ffd7f8891..6916b8872 100644
  // full authoring panel. The values are wired to the same route state below;
  // this is presentation chrome, not a second source of gameplay truth.
  ui.html("#hud", `
-@@ -210,7 +195,6 @@ let lastGrade: PatrolGrade | null = null;
- const audioCueLog: string[] = [];
- const lastCueFrame = new Map<string, number>();
- let audioBedsStarted = false;
--let evidenceScenario = "takeoff";
- let evidenceStaged = false;
- 
- function pushCue(cue: WingAudioCue): void {
-@@ -287,7 +271,6 @@ function heroNodes(): AuraSceneNode[] {
+@@ -287,7 +285,6 @@ function heroNodes(): AuraSceneNode[] {
          .toJSON()
      );
      // A variant-coloured nose lamp gives each typed interceptor a readable
@@ -1172,7 +1137,7 @@ index ffd7f8891..6916b8872 100644
      nodes.push(
        primitives.sphere({
          name: `drone-slot-${slot} threat lamp`,
-@@ -337,7 +320,6 @@ function heroNodes(): AuraSceneNode[] {
+@@ -337,7 +334,6 @@ function heroNodes(): AuraSceneNode[] {
    // chase distance without replacing its mesh. The exhaust and pressure
    // streaks follow the real authored flight transform every frame, so the
    // retained action frame reads as one moving aircraft rather than a model
@@ -1180,7 +1145,7 @@ index ffd7f8891..6916b8872 100644
    nodes.push(
      primitives.sphere({ name: "plane nav lamp left", material: material.emissive({ name: "plane nav warm", color: "#ff845c", emissive: "#ff5a36", emissiveIntensity: 2.4 }) })
        .position(0, -70, 0).scale(0.12).runtime({ id: "plane-nav-left", tags: ["aircraft-accent", "renderer-owned"] }).toJSON(),
-@@ -437,13 +419,11 @@ const chaseCameraSpec = camera.follow({
+@@ -437,13 +433,11 @@ const chaseCameraSpec = camera.follow({
    // sideways out of the chase view.
    targetNode: "camera-target",
    offsetMode: "target-yaw",
@@ -1194,142 +1159,25 @@ index ffd7f8891..6916b8872 100644
    // same authored camera pose. Follow smoothing would advance between those
    // two renderer submissions and turn camera motion into false subject pixels.
    smoothing: reducedMotion ? 0 : 0.06,
-@@ -567,7 +547,6 @@ const patrolGame = createGame({
+@@ -567,17 +561,11 @@ const patrolGame = createGame({
    loop: { fixedDt: FLIGHT_DT, maxSubSteps: 4 },
-   scene: buildScene(),
+   scene: () => buildScene(),
    qualityRebuild: { flags: ["game"] },
 -  evidence: {
-     schema: 1,
-     sections: async () => (await import("../evidence")).sections,
-     legacyGlobals: ["__AURA3D_SHOWCASE_PATROL_WING__"]
-@@ -577,7 +556,6 @@ const patrolGame = createGame({
- const app = patrolGame.runtime;
+-    schema: 1,
+-    sections: async () => (await import("../evidence")).sections,
+-    legacyGlobals: ["__AURA3D_SHOWCASE_PATROL_WING__"]
+-  },
+   scenarios: async () => (await import("../scenarios")).patrolScenarios
+ });
+ const app = patrolGame.app;
  patrolGame.start();
  const input = patrolGame.input!;
 -bindPatrolEvidence(() => collectPatrolEvidence());
  const patrolTween = createTweenEngine();
  const patrolFx = createFxParticlePass(app.effects);
  const patrolJuice = createJuice<"cannon" | "drone-hit" | "drone-down" | "hull-alarm" | "crash" | "shot-down" | "touchdown" | "clear" | "ring">({
-@@ -599,15 +577,6 @@ const patrolJuice = createJuice<"cannon" | "drone-hit" | "drone-down" | "hull-al
-   tweens: patrolTween,
-   rumble: createRumbleDriver()
- });
--bindPatrolDrive({
--  pumpFrames: (n) => {
--    const bounded = Math.max(0, Math.min(30000, Math.floor(n)));
--    app.pause();
--    for (let i = 0; i < bounded; i += 1) app.advance(FLIGHT_DT);
--    app.resume();
--  },
--  stage: (id) => patrolWindow.__PW_SCENARIO__?.(id) ?? "unbound"
--});
- if (!input) throw new Error("Patrol Wing failed to create Aura3D input.");
- 
- const planeHandle = app.nodes.require("plane") as AuraRuntimeNodeHandle;
-@@ -667,14 +636,6 @@ const throttleFill = document.getElementById("pw-throttle-fill")!;
- const throttleLabel = document.getElementById("pw-throttle-label")!;
- const hullFill = document.getElementById("pw-hull-fill")!;
- const hullLabel = document.getElementById("pw-hull-label")!;
--const reviewAltitude = document.getElementById("review-altitude")!;
--const reviewSpeed = document.getElementById("review-speed")!;
--const reviewRings = document.getElementById("review-rings")!;
--const reviewHull = document.getElementById("review-hull")!;
--const reviewHullFill = document.getElementById("review-hull-fill")!;
--const reviewMission = document.getElementById("review-mission")!;
--const reviewWave = document.getElementById("review-wave")!;
--const reviewMode = document.getElementById("review-mode")!;
- 
- function missionLine(): string {
-   if (stateValue === "preflight") return "THROTTLE UP AND TAKE OFF";
-@@ -962,87 +923,11 @@ function spawnWave(wave: number): void {
-   swarm.spawnWave(spawns.filter((spawn) => droneSlotById.has(spawn.id)));
- }
- 
--// ------------------------------------------------------------- evidence -------
--function collectPatrolEvidence(): Record<string, unknown> {
--  const evidence = {
--    // Contract keys from the PRD evidence section.
--    mounted: true,
--    status: "ready" as const,
--    patrol: patrolValue,
--    state: patrolGame.session.paused ? "paused" : stateValue,
--    hull: Math.round(hullValue),
--    ringIndex: rings.nextRing,
--    ringValidity: rings.validity,
--    wave: currentWave < 0 ? 0 : currentWave + 1,
--    dronesDown: swarm.downCount,
--    shotsFired: cannon.shotsFired,
--    accuracy: cannon.accuracy,
--    timeInPatrol: Math.round(timeInPatrolValue * 10) / 10,
--    ghost: {
--      recorded: ghostRecorder.frameCount > 0,
--      frames: ghostRecorder.frameCount,
--      playing: ghostPlayer?.playing ?? false
--    },
--    combatEvents: swarm.combatEventCount,
--    sensorEventCount: arena.sensorEventCount(),
--    flightMode: "authored-arcade" as const,
--    audioCues: audioCueLog.slice(),
--    // Route-local extras consumed by specs and route-health.
--    appId: APP_ID,
--    backend: arena.backend,
--    renderer: app.diagnostics().renderer,
--    runtimeNodeCount: app.nodes.ids().length,
--    renderSize: [app.canvas?.width ?? 0, app.canvas?.height ?? 0] as const,
--    primaryAssets: ["assets.patrolAircraftMeshy", "assets.patrolWingDroneA", "assets.patrolWingDroneB", "assets.patrolWingPadBeacon"],
--    primaryAssetHashes: PRIMARY_ASSET_REFS.map((asset) => asset.hash),
--    reducedMotion,
--    frameCount,
--    position: [...flight.position] as [number, number, number],
--    heading: flight.euler.y,
--    airspeed: Math.round(flight.speed * 10) / 10,
--    altitude: Math.round((flight.position[1] - terrainSurface(flight.position[0], flight.position[2])) * 10) / 10,
--    throttle: Math.round(flight.throttle * 100) / 100,
--    stalled: flight.stalled,
--    grounded: flight.grounded,
--    ringsPassed: rings.passedCount,
--    ringsComplete: rings.complete,
--    wavesSpawned: spawnedWaves.size,
--    wavesCleared: spawnedWaves.size >= WAVES_PER_PATROL && swarm.allCleared,
--    objectiveComplete: objectiveComplete(),
--    padSensorEntries,
--    padSensorLatched,
--    liveDrones: swarm.liveCount,
--    patrolGrade: lastGrade,
--    bestGrade: bestRun?.grade ?? null,
--    ghostScriptFrames: bestRun?.script.length ?? 0,
--    ghostTrajectoryHash: ghostPlayer?.trajectoryHash() ?? null,
--    ghostVisibleFrames,
--    cameraMode,
--    timeOfDay: patrolValue <= 1 ? "day" : patrolValue === 2 ? "dusk" : "night",
--    evidenceScenario,
--    controls: ["W/S pitch", "A/D roll", "Q/E yaw", "Shift/Ctrl throttle", "Space fire", "C camera", "R reset", "P pause", "touch buttons"],
--    systems: {
--      flight: "route-local authored arcade motion",
--      combat: "route-local drone pursuit plus root game.combatWorld hit resolution",
--      sensors: "Rapier-backed route-local ring, pad, and return-fire sensor proxies",
--      ghost: "route-local visual input replay with no collision or scoring effect"
--    },
--    // Machine-readable physics identity, deliberately scoped to what Rapier actually owns
--    // here: sensor proxies only. Flight remains authored arcade motion.
--    physics: "physics.world:Rapier(ring, pad, and return-fire sensor proxies only; no flight or aerodynamic simulation)",
--    claimBoundary: "Root-safe Aura3D prototype: authored arcade flight only, with no aerodynamic or reusable flight-kit claim; Rapier owns only ring, pad, and return-fire sensor proxies; drone pursuit and ghost replay are route-local.",
--    mountedAtEpochMs: Date.now()
--  };
--  patrolWindow.__PATROL_WING_EVIDENCE__ = evidence;
--  return evidence;
--}
- 
- function publishEvidence(): void {
-   collectPatrolEvidence();
- }
- 
--// Renderer-owned capture used by specs and probes (no compositor dependency).
--patrolWindow.__PW_SHOT__ = () => app.screenshot().dataUrl;
- 
- /**
-  * Deterministic time pump for specs: headless tabs can throttle rAF to ~1fps,
-@@ -1050,13 +935,6 @@ patrolWindow.__PW_SHOT__ = () => app.screenshot().dataUrl;
+@@ -1050,13 +1038,6 @@ patrolWindow.__PW_SHOT__ = () => app.screenshot().dataUrl;
   * app.step() path (docs/api/game-runtime.md "Deterministic stepping") to run
   * `frames` fixed steps, then resumes the browser loop.
   */
@@ -1343,228 +1191,6 @@ index ffd7f8891..6916b8872 100644
  
  /**
   * Deterministic acceptance staging. It moves the real route state and typed
-@@ -1064,213 +942,7 @@ patrolWindow.__PW_PUMP__ = (frames: number): number => {
-  * The browser suite uses it to retain exact readable frames without relying on
-  * nondeterministic keyboard timing in a throttled headless tab.
-  */
--patrolWindow.__PW_SCENARIO__ = (scenario: string): string => {
--  resetToPad();
--  evidenceScenario = scenario;
--  if (scenario === "takeoff") {
--    // resetToPad already establishes the truthful preflight state.
--  } else if (scenario === "ring-run") {
--    stateValue = "patrol";
--    flight = new FlightModel({ position: [-16, 10, 7], headingYaw: -2.35, grounded: "airborne", throttle: 0.78, speed: 13 });
--    patrolJuice.fire("ring", { position: [...flight.position] });
--    rings.registerEntry(0);
--    applyRingMaterials();
--  } else if (scenario === "drone-pass" || scenario === "drone-hit") {
--    stateValue = "patrol";
--    // Both the pass and hit captures are matched at the same close chase
--    // distance. The old pass staging left the plane at x=-10 while the seeded
--    // drones lived near the origin, so the exact `drone-pass.png` review frame
--    // contained only sky and a tiny cross-shaped aircraft. Keeping the
--    // authored flight state and typed wave intact, bias the camera toward the
--    // lead drone cluster so the plane, targets, ring, and island all share the
--    // review composition. The hit scenario adds the real cannon exchange below.
--    planeHandle.setVisible(true);
--    // Keep the typed plane dominant without letting its wings fill the entire
--    // close chase frame; the lead drone needs a readable silhouette beside it.
--    const stagedPlaneScale = scenario === "drone-hit" ? 0.98 : 0.94;
--    planeHandle.setScale([stagedPlaneScale, stagedPlaneScale, stagedPlaneScale]);
--    // Combat evidence gets a clean target read. Ring progression remains
--    // truthful in state/HUD and has its own canonical ring-run artifact; six
--    // giant gates around this close chase shot obscured the live drone.
--    for (const handle of ringHandles.values()) handle.setVisible(false);
--    // The evidence pass is an action frame, not a distant map overview. Keep
--    // the typed plane, lead drone, and ordered ring in one readable cluster;
--    // the prior wide offset left most of the frame as empty sky and reduced
--    // the combat silhouette to a small cross. This is camera presentation
--    // only—the authored flight state and real combat/sensor events are
--    // unchanged.
--    Object.assign(chaseCameraSpec as unknown as MutableCameraSpec, {
--      // Chase from behind the aircraft and look through the live target
--      // corridor. The camera's target-yaw offset uses the plane's -Z view
--      // convention, so positive local Z is the authored rear chase position;
--      // the former negative offset put the lens in front of the nose and made
--      // the player read as a thin, detached silhouette behind oversized drones.
--      offset: [0.32, 3.6, 15.6],
--      targetOffset: [0.35, -0.18, -2.4],
--      fov: 54
--    });
--    evidenceCombatFocus = true;
--    flight = new FlightModel({ position: [scenario === "drone-hit" ? -1.4 : -9.2, 10.4, -5.2], headingYaw: -1.05, grounded: "airborne", throttle: 0.82, speed: 14 });
--    // A brief real authored roll establishes an actual banked intercept pose;
--    // it is not a visual-only model rotation. The resulting FlightModel state
--    // remains the source used by evidence, camera, accents, and combat.
--    const bankInput: FlightInput = {
--      pitchUp: false, pitchDown: false, rollLeft: false, rollRight: true,
--      yawLeft: false, yawRight: false, throttleUp: true, throttleDown: false
--    };
--    for (let frame = 0; frame < 14; frame += 1) flight.step(bankInput, FLIGHT_DT, terrainSurface);
--    rings.registerEntry(0);
--    currentWave = 0;
--    spawnedWaves.add(0);
--    // The evidence target must inhabit the aircraft's actual nose line. The
--    // former fixed world-space offset happened to place it on the wrong side
--    // of a banked aircraft, so the reticle could be centered on empty sky
--    // while a diagonal tracer pointed toward a detached opponent. Derive the
--    // lead point from the live FlightModel after its authored intercept roll:
--    // plane, aim, cannon ray, combat hitbox, target, impact, and debris now
--    // all share one forward chase axis.
--    // Use the same compact, aircraft-relative wedge as live wave encounters.
--    // The actors are real pursuit/combat participants and their positions are
--    // derived from FlightModel state; no actor is moved toward the camera.
--    const evidenceDrones = interceptSpawns(1, 0, flight.position, flight.forward);
--    const leadPosition = evidenceDrones[0]!.position;
--    combatFocusPoint = [...leadPosition] as Vec3;
--    for (const spawn of evidenceDrones) {
--      const slot = freeDroneSlots.pop();
--      if (slot !== undefined) {
--        droneSlotById.set(spawn.id, slot);
--        // Keep the lead typed interceptor at an unmistakable dogfight scale.
--        // The previous 1.16 target still collapsed against the island ridge in
--        // the exact 1280x800 capture, making the tracer read as a detached HUD
--        // mark. This is a presentation scale on the resolved GLB, not a proxy
--        // replacement; all hitboxes and positions remain combat-world truth.
--        const stagedDroneScale = spawn.id.endsWith("-0")
--          ? (scenario === "drone-hit" ? 1.46 : 1.34)
--          : 0.98;
--        droneHandles.get(slot)?.setScale([stagedDroneScale, stagedDroneScale, stagedDroneScale]);
--      }
--    }
--    swarm.spawnWave(evidenceDrones);
--    if (scenario === "drone-pass") {
--      // Put the real pooled Rapier return-fire sensors into the retained action
--      // frame. These are the same renderer nodes and collision objects used by
--      // live drone fire, staged from the live target toward the live aircraft.
--      arena.setPlayerPosition(flight.position);
--      const lead = evidenceDrones[0]!.position;
--      arena.spawnOrb([lead[0] - 0.35, lead[1] + 0.9, lead[2]], [flight.position[0], flight.position[1] + 0.25, flight.position[2]]);
--      arena.step(0.12);
--      arena.spawnOrb([lead[0] + 0.22, lead[1] + 1.12, lead[2] + 0.18], [flight.position[0], flight.position[1] + 0.25, flight.position[2]]);
--      arena.step(0.07);
--      arena.spawnOrb([lead[0] + 0.54, lead[1] + 0.72, lead[2] + 0.38], [flight.position[0], flight.position[1] + 0.25, flight.position[2]]);
--      // The retained visual is an actual exchange rather than a passive
--      // fly-by. Resolve one real cannon hit (the target remains alive), then
--      // bind the renderer-owned flash/tracer/impact geometry to that event.
--      if (cannon.tryFire(true, 1)) {
--        swarm.beginCannonAttack([lead[0] - flight.position[0], lead[1] - flight.position[1], lead[2] - flight.position[2]]);
--        pushCue("cannon-fire");
--        patrolJuice.fire("cannon", { position: [...flight.position] });
--        for (let combatFrame = 0; combatFrame < 4; combatFrame += 1) {
--          for (const event of swarm.update(FLIGHT_DT, flight.position, 0)) {
--            if (event.type !== "cannon-hit") continue;
--            cannon.registerHit();
--            pushCue("drone-hit");
--            patrolJuice.fire("drone-hit", { position: [...flight.position] });
--            stageCombatExchange(flight.position, lead);
--          }
--        }
--      }
--    }
--    if (scenario === "drone-hit") {
--      // Stage a real deterministic combat exchange, not cue-only evidence: the
--      // cannon and combat world resolve three hits against the seeded lead drone.
--      const targetOffset = [0, 1.2, -2.6] as const;
--      arena.setPlayerPosition(flight.position);
--      // Keep a pair of real return-fire projectiles in the hit composition so
--      // the exchange reads as a dogfight, not a target-only damage flash.
--      arena.spawnOrb([leadPosition[0] - 0.3, leadPosition[1] + 0.9, leadPosition[2] + 0.12], [flight.position[0], flight.position[1] + 0.25, flight.position[2]]);
--      arena.step(0.06);
--      arena.spawnOrb([leadPosition[0] + 0.36, leadPosition[1] + 0.72, leadPosition[2] - 0.2], [flight.position[0], flight.position[1] + 0.25, flight.position[2]]);
--      for (let shot = 0; shot < 1; shot += 1) {
--        if (!cannon.tryFire(true, 1)) continue;
--        swarm.beginCannonAttack(targetOffset);
--        pushCue("cannon-fire");
--        patrolJuice.fire("cannon", { position: [...flight.position] });
--        for (let combatFrame = 0; combatFrame < 4; combatFrame += 1) {
--          for (const event of swarm.update(FLIGHT_DT, flight.position, 0)) {
--          if (event.type === "cannon-hit") {
--            cannon.registerHit();
--            pushCue("drone-hit");
--            patrolJuice.fire("drone-hit", { position: [...flight.position] });
--            // Keep impact feedback in the authored chase-camera volume while
--            // retaining the real combat event as its source of truth.
--            stageCombatExchange(flight.position, leadPosition);
--          } else if (event.type === "drone-down") {
--            const slot = droneSlotById.get(event.id);
--            if (slot !== undefined) {
--              if (evidenceCombatFocus && event.id.endsWith("-0")) {
--                droneHandles.get(slot)?.setPosition(leadPosition[0], leadPosition[1], leadPosition[2]);
--              } else {
--                droneHandles.get(slot)?.setPosition(0, -60 - slot, 0);
--              }
--              droneSlotById.delete(event.id);
--              freeDroneSlots.push(slot);
--            }
--            pushCue("drone-down");
--            patrolJuice.fire("drone-down", { position: [...flight.position] });
--            stageCombatExchange(flight.position, leadPosition);
--          }
--          }
--        }
--      }
--    }
--  } else if (scenario === "canyon") {
--    stateValue = "patrol";
--    flight = new FlightModel({ position: [-4, 11.5, -12], headingYaw: -0.25, grounded: "airborne", throttle: 0.72, speed: 12 });
--    for (let index = 0; index < 3; index += 1) rings.registerEntry(index);
--    applyRingMaterials();
--  } else if (scenario === "low-hull") {
--    stateValue = "patrol";
--    hullValue = 18;
--    flight = new FlightModel({ position: [9, 9, -5], headingYaw: 0.85, grounded: "airborne", throttle: 0.66, speed: 11 });
--    for (let index = 0; index < 5; index += 1) rings.registerEntry(index);
--    pushCue("hull-alarm");
--    applyRingMaterials();
--  } else if (scenario === "approach") {
--    stateValue = "patrol";
--    for (let index = 0; index < RING_GATES.length; index += 1) rings.registerEntry(index);
--    applyRingMaterials();
--    flight = new FlightModel({ position: [0, PAD_Y + 1.4, PAD_CENTER[2] + 7], headingYaw: Math.PI / 2, grounded: "airborne", throttle: 0.24, speed: 4 });
--  } else if (scenario === "touchdown") {
--    stateValue = "graded";
--    gradeTimer = 999;
--    lastGrade = "A";
--    flight = new FlightModel({ position: [PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2]], headingYaw: PAD_HEADING_YAW, grounded: "preflight", throttle: 0, speed: 0 });
--    showResult("Patrol complete", "Ordered rings, drone intercept, and a safe pad touchdown recorded.");
--    pushCue("touchdown");
--    pushCue("patrol-clear");
--  } else if (scenario === "shot-down") {
--    stateValue = "shot-down";
--    hullValue = 0;
--    pushCue("shot-down");
--  } else {
--    throw new Error(`Unknown Patrol Wing evidence scenario: ${scenario}`);
--  }
--  syncPlaneVisual();
--  syncDroneVisuals();
--  syncHud();
--  publishEvidence();
--  evidenceStaged = true;
--  return `${scenario}:${stateValue}:${rings.passedCount}:${Math.round(hullValue)}`;
--};
--
--patrolWindow.__PW_DAMAGE__ = (amount: number): number => {
--  hullValue = Math.max(0, hullValue - Math.max(0, amount));
--  if (hullValue <= 0 && (stateValue === "patrol" || stateValue === "preflight")) beginFail("shot-down");
--  else if (amount > 0) pushCue("hull-alarm");
--  syncHud();
--  publishEvidence();
--  return hullValue;
--};
-+
- 
- // ---------------------------------------------------------------- input -------
- /*
-@@ -1679,6 +1351,5 @@ patrolGame.runtime.onFrame(({ dt }) => {
- applyRingMaterials();
- syncPlaneVisual();
- syncHud();
--publishEvidence();
- 
- 
 diff --git a/apps/showcase-patrol-wing/src/main.ts b/apps/showcase-patrol-wing/src/main.ts
 index f9d350334..ac1f55756 100644
 --- a/apps/showcase-patrol-wing/src/main.ts

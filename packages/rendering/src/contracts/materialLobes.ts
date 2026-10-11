@@ -16,7 +16,8 @@ export interface MaterialLobe extends RegistryEntry {
   readonly id: MaterialLobeId;
   /** Return the extension feature for this material or undefined when the lobe is inactive. */
   feature(material: MaterialLobeInput): MaterialExtensionFeature | undefined;
-  readonly chunks: { readonly pars: string; readonly fragment: string; readonly ibl?: string };  // chunk names (C-02)
+  /** Chunk names (C-02). `direct` (optional) is a per-light call chunk spliced inside every light-loop iteration. */
+  readonly chunks: { readonly pars: string; readonly fragment: string; readonly ibl?: string; readonly direct?: string };
   readonly samplerSlots: readonly string[];          // counted by the PRD 02 sampler budget (C-12)
   bind(material: MaterialLobeInput, set: (uniform: string, value: UniformValue) => void): void;
   readonly glTFExtension?: string;                   // e.g. "KHR_materials_clearcoat"

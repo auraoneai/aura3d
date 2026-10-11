@@ -1,4 +1,4 @@
-From b68063d10ed49e42469f7bf94a10811417f55cee Mon Sep 17 00:00:00 2001
+From b4e33e64a1ea855e2604132f34eabe8a29f085b3 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:08:31 +0000
 Subject: [PATCH] migration(showcase-courier-rush): regenerated patch set
@@ -22,15 +22,17 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../scripts/register-sfx.mjs                  |   40 -
  .../scripts/write-route-health.mjs            |    2 +-
  apps/showcase-courier-rush/src/evidence.ts    |    8 +
- apps/showcase-courier-rush/src/legacy/city.ts |  192 +--
+ apps/showcase-courier-rush/src/legacy/city.ts |  185 +--
  .../src/legacy/courier-audio.ts               |  217 ---
  apps/showcase-courier-rush/src/legacy/hud.ts  |  215 ---
- apps/showcase-courier-rush/src/legacy/main.ts |  321 +++--
+ apps/showcase-courier-rush/src/legacy/main.ts |  323 +++--
  .../src/legacy/styles.css                     |    4 +
  .../src/scenario-drive.ts                     |   11 +
  .../src/scenarios/index.ts                    |   13 +
  apps/showcase-courier-rush/src/sound.ts       |  144 ++
- apps/showcase-courier-rush/src/v2/boot.ts     |    4 +-
+ apps/showcase-courier-rush/src/v2/boot.ts     |   40 +-
+ .../src/v2/scene/world.ts                     |    2 +-
+ .../src/v2/strike-zone.ts                     |    4 +-
  .../courierAmbientCitySfx.995b1230.wav        |    3 -
  .../courierAmbientCitySfx.thumb.svg           |    1 -
  .../courierDispatchBlipSfx.8f47ba51.wav       |    3 -
@@ -53,7 +55,7 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../courierStrikeHitSfx.c75e32f0.wav          |    3 -
  .../aura-assets/courierStrikeHitSfx.thumb.svg |    1 -
  src/aura-assets.ts                            | 1224 +++--------------
- 47 files changed, 591 insertions(+), 2190 deletions(-)
+ 49 files changed, 603 insertions(+), 2215 deletions(-)
  delete mode 100644 apps/showcase-courier-rush/assets/sfx/ambientCity.wav
  delete mode 100644 apps/showcase-courier-rush/assets/sfx/dispatchBlip.wav
  delete mode 100644 apps/showcase-courier-rush/assets/sfx/earlyBonus.wav
@@ -577,7 +579,7 @@ index eb9a86607..000000000
 -  console.log(`Registered ${id}`);
 -}
 diff --git a/apps/showcase-courier-rush/scripts/write-route-health.mjs b/apps/showcase-courier-rush/scripts/write-route-health.mjs
-index 9d017c903..005731d93 100644
+index 14c7e1ca7..ec4e669df 100644
 --- a/apps/showcase-courier-rush/scripts/write-route-health.mjs
 +++ b/apps/showcase-courier-rush/scripts/write-route-health.mjs
 @@ -9,7 +9,7 @@ const reportDir = join(repoRoot, "tests/reports/showcase-courier-rush");
@@ -604,7 +606,7 @@ index 000000000..e53e7357e
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
 diff --git a/apps/showcase-courier-rush/src/legacy/city.ts b/apps/showcase-courier-rush/src/legacy/city.ts
-index 2ca1c883b..713cf3b52 100644
+index 2ca1c883b..a45a4ba0d 100644
 --- a/apps/showcase-courier-rush/src/legacy/city.ts
 +++ b/apps/showcase-courier-rush/src/legacy/city.ts
 @@ -90,168 +90,6 @@ function roadGuidanceNodes(): AuraNodeInput[] {
@@ -776,18 +778,14 @@ index 2ca1c883b..713cf3b52 100644
  
  /**
   * A small authored skyline layer makes the chase frame read as a lived-in
-@@ -756,33 +594,23 @@ export interface CityZoneDressing {
-  * Every model comes from the generated typed map, so a catalog swap needs no
-  * edit in this file.
+@@ -758,31 +596,24 @@ export interface CityZoneDressing {
   */
--export function buildCityDressing(
--  assets: CityAssetRefs,
+ export function buildCityDressing(
+   assets: CityAssetRefs,
 -  reviewCapture = false,
--  timeOfDay: "day" | "night" = "night"
--): CityZoneDressing {
--  const kitNodes = stripKitParkedCars(city.block({ timeOfDay, blocks: 20 }));
-+export function buildCityDressing(assets: CityAssetRefs): CityZoneDressing {
-+  const kitNodes = stripKitParkedCars(city.block({ timeOfDay: "night", blocks: 20 }));
+   timeOfDay: "day" | "night" = "night"
+ ): CityZoneDressing {
+   const kitNodes = stripKitParkedCars(city.block({ timeOfDay, blocks: 20 }));
    const guidanceNodes = roadGuidanceNodes();
 -  const staticNodes: AuraNodeInput[] = reviewCapture
 -    // The cinematic capture is an east-avenue slice, not a separate stage:
@@ -802,7 +800,7 @@ index 2ca1c883b..713cf3b52 100644
 -        ...courierStreetSignatureNodes()
 -      ];
 +  const staticNodes: AuraNodeInput[] = [
-+    group("courier city block night kit", kitNodes, {}).scale([CITY_SCALE, CITY_SCALE, CITY_SCALE]),
++    group(`courier city block ${timeOfDay} kit`, kitNodes, {}).scale([CITY_SCALE, CITY_SCALE, CITY_SCALE]),
 +    ...guidanceNodes,
 +    ...skylineDressingNodes(),
 +    ...courierStreetSignatureNodes()
@@ -1265,7 +1263,7 @@ index 53bb8d434..000000000
 -  hud.summaryOverlay.dataset.visible = "false";
 -}
 diff --git a/apps/showcase-courier-rush/src/legacy/main.ts b/apps/showcase-courier-rush/src/legacy/main.ts
-index fa4e955df..1d8cf8353 100644
+index fa4e955df..f71bf706a 100644
 --- a/apps/showcase-courier-rush/src/legacy/main.ts
 +++ b/apps/showcase-courier-rush/src/legacy/main.ts
 @@ -10,7 +10,6 @@
@@ -1363,7 +1361,7 @@ index fa4e955df..1d8cf8353 100644
  let frameCount = 0;
  let dropLookbackRemainingSeconds = 0;
  let lastVanSpeed = 0;
-@@ -247,21 +248,21 @@ const chaseCamera = camera.follow({
+@@ -247,27 +248,27 @@ const chaseCamera = camera.follow({
    // desktop frame, which hid the cargo identity and made the scene read like
    // an empty road board. This is still the same follow rig and simulation
    // heading; only the visual composition is corrected.
@@ -1392,6 +1390,13 @@ index fa4e955df..1d8cf8353 100644
    diagnostics: { overlay: debugMode, performancePanel: false },
    physics: {
      seed: 20260911,
+     continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
+   },
+-  scene: scene()
++  scene: () => scene()
+   .background("#030711")
+     .addMany(dressing.staticNodes)
+     .addMany(dressing.pickupZone)
 @@ -321,7 +322,7 @@ const app = createAuraApp("#app", {
          scaleMode: "fit",
          // Give the typed vehicle a modest presentation lift in the named
@@ -1433,7 +1438,7 @@ index fa4e955df..1d8cf8353 100644
 +  },
 +  scenarios: async () => (await import("../scenarios")).courierScenarios
 +});
-+const app = courierGame.runtime;
++const app = courierGame.app;
 +courierGame.start();
 +
 +// ---- juice (PRD-09 §7.6) ----------------------------------------------------
@@ -2086,20 +2091,126 @@ index 000000000..584aeb9a0
 +  };
 +}
 diff --git a/apps/showcase-courier-rush/src/v2/boot.ts b/apps/showcase-courier-rush/src/v2/boot.ts
-index 751fd059a..f5a806f2e 100644
+index dcfe53e74..3374fb112 100644
 --- a/apps/showcase-courier-rush/src/v2/boot.ts
 +++ b/apps/showcase-courier-rush/src/v2/boot.ts
-@@ -25,8 +25,8 @@ import { lightingNodes } from "./scene/lighting";
+@@ -7,7 +7,7 @@
+ import {
+   createGameArcadeVehicle, game as engineGame, scene
+ } from "@aura3d/engine";
+-import { createGame, type Game, lookManifest } from "@aura3d/game";
++import { createGame, type Game } from "@aura3d/game";
+ import { assets } from "../../../../src/aura-assets";
+ import { buildPropColliders, type PropCollider, type ZoneSite } from "../legacy/city";
+ import {
+@@ -19,13 +19,12 @@ import {
+   handbrakeSpeedMultiplier, toArcadeVehicleInput, VAN_TUNE, type VanDriveInput
+ } from "../gameplay/van";
+ import direction from "../../art/direction";
+-import { createCourierAudio, type CourierAudioCue } from "../legacy/courier-audio";
++import { createCourierSound, type CourierCue } from "../sound";
+ import { courierWorldNodes } from "./scene/world";
+ import { lightingNodes } from "./scene/lighting";
  import { createCourierRig, fallbackCameraNode } from "./scene/camera";
  import { wireCourierFx } from "./scene/fx";
  import { createCourierAutopilot } from "./autopilot";
 -import { publishCourierEvidence } from "./evidence";
--import { applyCourierScenario } from "./scenarios";
-+import { publishCourierEvidence } from "../evidence";
-+import { applyCourierScenario } from "../scenarios";
+ import { applyCourierScenario } from "./scenarios";
  import { createStrikeZoneTools } from "./strike-zone";
  import { wireCourierTouch } from "./touch-input";
- import { installCourierContextLoss } from "./context-loss";
+@@ -77,10 +76,10 @@ function buildScene() {
+ 
+ // ----------------------------------------------------------------- audio -----
+ 
+-const audio = createCourierAudio();
++const audio = createCourierSound();
+ const audioCueLog: string[] = [];
+ let audioUnlocked = false;
+-function pushCue(cue: CourierAudioCue): void {
++function pushCue(cue: CourierCue): void {
+   audioCueLog.push(cue);
+   if (audioCueLog.length > 64) audioCueLog.shift();
+   void audio.cue(cue).catch(() => undefined);
+@@ -139,6 +138,14 @@ const game = createGame({
+     // art/direction.ts sections. `route_courier_rush` uses the engine-parseable
+     // underscore form (URL/dispatch form is `route-courier-rush`).
+     flags: ["route_courier_rush", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
++  },
++  // T5.8: route evidence rides the shared createGame channel (C-24) —
++  // only the sections games.json requiredConditions read.
++  evidence: {
++    schema: 1,
++    sections: {
++      delivery: (): { completed: number } => ({ completed: dispatch.deliveriesCompleted })
++    }
+   }
+ });
+ 
+@@ -331,29 +338,6 @@ game.app.onFrame?.(({ dt: rawDt }) => {
+   if (frame % 6 === 0) syncHud();
+ });
+ 
+-// ------------------------------------------------------------- evidence ------
+-
+-// T2.2-post: appliedLook derives from the C-31 runtime manifest.
+-const appliedLook: Record<string, unknown> = Object.freeze({
+-  ...lookManifest(game.lookSource()),
+-  postPreset: "daylight-outdoor",
+-  exposureEV: direction.lighting.exposureEV,
+-  hdri: direction.lighting.environment.hdri,
+-  rig: "courier-rush.chase"
+-});
+-
+-publishCourierEvidence({
+-  game,
+-  dispatch: () => dispatch,
+-  van: () => lastVan,
+-  traffic: () => trafficSim.cars(),
+-  autopilot: () => ({ enabled: autopilotEnabled, aim: autopilot.aim }),
+-  appliedLook,
+-  frameCount: () => frame,
+-  bootedAtMs,
+-  audioCueLog: () => audioCueLog
+-});
+-
+ const scenario = new URL(location.href).searchParams.get("scenario");
+ if (new URL(location.href).searchParams.get("autopilot") === "1") autopilotEnabled = true;
+ if (scenario) {
+diff --git a/apps/showcase-courier-rush/src/v2/scene/world.ts b/apps/showcase-courier-rush/src/v2/scene/world.ts
+index 164ad6f2e..58d14560e 100644
+--- a/apps/showcase-courier-rush/src/v2/scene/world.ts
++++ b/apps/showcase-courier-rush/src/v2/scene/world.ts
+@@ -18,7 +18,7 @@ export interface CourierWorldNodes {
+ 
+ /** Whole static + runtime world: kit dressing, zone rigs, van, traffic, fx nodes. */
+ export function courierWorldNodes(): CourierWorldNodes {
+-  const dressing = buildCityDressing(assets, false, "day");
++  const dressing = buildCityDressing(assets, "day");
+   const nodes: AuraNodeInput[] = [...dressing.staticNodes, ...dressing.pickupZone, ...dressing.dropZone];
+ 
+   // Hero van: typed Meshy body fit to the delivery footprint; the sim pose
+diff --git a/apps/showcase-courier-rush/src/v2/strike-zone.ts b/apps/showcase-courier-rush/src/v2/strike-zone.ts
+index 8a282eed6..8ba709a5d 100644
+--- a/apps/showcase-courier-rush/src/v2/strike-zone.ts
++++ b/apps/showcase-courier-rush/src/v2/strike-zone.ts
+@@ -6,7 +6,7 @@ import type { PropCollider, ZoneSite } from "../legacy/city";
+ import type { CourierEvent, DispatchState } from "../gameplay/dispatch";
+ import { currentDelivery } from "../gameplay/dispatch";
+ import type { createTrafficSimulation } from "../gameplay/traffic";
+-import type { CourierAudioCue } from "../legacy/courier-audio";
++import type { CourierCue } from "../sound";
+ import type { wireCourierFx } from "./scene/fx";
+ 
+ export interface StrikeZoneDeps {
+@@ -15,7 +15,7 @@ export interface StrikeZoneDeps {
+   vanColliderRadius: number;
+   vanVehicle: GameArcadeVehicle;
+   spawnPose: { x: number; z: number; heading: number };
+-  pushCue(cue: CourierAudioCue): void;
++  pushCue(cue: CourierCue): void;
+   fx: ReturnType<typeof wireCourierFx>;
+   lastVanHeading(): number;
+   setDropLookback(v: number): void;
 diff --git a/public/aura-assets/courierAmbientCitySfx.995b1230.wav b/public/aura-assets/courierAmbientCitySfx.995b1230.wav
 deleted file mode 100644
 index ef5dbc18f..000000000

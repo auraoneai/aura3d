@@ -1,5 +1,7 @@
 # Q-ALL-1 — run `renderer-imports` on non-15-owned apps
 
+**Issue:** #1048 (P-64 writeback)
+
 **From:** PRD 15 (T2.12) · **To:** owners of `apps/postprocessing-*` (03),
 `apps/{asset-lookdev,loader-ktx2}` (05), `apps/wow-webgpu-product-viewer` (04),
 `apps/{webgpu-lab,wow-webgpu-instancing}` (11), `apps/threejs-parity-lab` (12),

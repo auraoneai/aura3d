@@ -101,7 +101,9 @@ const batchGrid3x3: ObjectSpec = {
     const transforms: { position: Vec3; rotation: Vec3 }[] = [];
     for (let ix = 0; ix < 3; ix += 1) {
       for (let iz = 0; iz < 3; iz += 1) {
-        transforms.push({ position: [-2.4 + ix * 0.6, 0.2, -1.8 + iz * 0.6], rotation: [0, rng() * Math.PI, 0] });
+        // 0.9 m pitch: a 0.4 m box's shadow (≤ 0.29 m + 0.28 m half-diagonal under
+        // the [4,7,3] sun) never reaches its neighbour, so S4 counts 9 components.
+        transforms.push({ position: [-2.0 + ix * 0.9, 0.2, -2.4 + iz * 0.9], rotation: [0, rng() * Math.PI, 0] });
       }
     }
     return transforms;
@@ -120,7 +122,9 @@ const fixtureInstances16: ObjectSpec = {
     const rng = createRng(7070);
     const transforms: { position: Vec3; rotation: Vec3 }[] = [];
     for (let index = 0; index < 16; index += 1) {
-      transforms.push({ position: [0.6 + (index % 4) * 0.5, 0.3, -2 + Math.floor(index / 4) * 0.5], rotation: [0, rng() * Math.PI, 0] });
+      // 1 m pitch: a 0.6 m box's shadow (≈ 0.43 m) stays clear of the next
+      // instance, so S4 counts 16 components.
+      transforms.push({ position: [0.8 + (index % 4) * 1.0, 0.3, -3.8 + Math.floor(index / 4) * 1.0], rotation: [0, rng() * Math.PI, 0] });
     }
     return transforms;
   })(),
@@ -139,6 +143,9 @@ const emissiveProps: ObjectSpec[] = [
   primitive("emissive pillar b", "box", [0.3, 1.6, 0.3], [1.8, 0.8, -5.5], { color: "#141010", roughness: 0.4, metalness: 0.1, emissive: "#ff8a3c", emissiveIntensity: 5 }),
   primitive("emissive slab", "box", [2.4, 0.12, 0.12], [0, 2.6, -7], { color: "#101418", roughness: 0.4, metalness: 0, emissive: "#b7f04a", emissiveIntensity: 3 })
 ];
+
+/** Inner box of prd02-probe-stripe-room (walls at ±3 m, floor 0, ceiling 3 m) — the 02-S12 probe box. */
+export const PROBE_STRIPE_ROOM = { min: [-3, 0, -3] as const, max: [3, 3, 3] as const };
 
 export const prd02Specs = {
   // --- copies of base scenes (PRD-02 §16.1 scene list) ------------------------
@@ -360,7 +367,7 @@ export const prd02Specs = {
       { kind: "model", name: "skinned soldier", asset: "soldier", position: [-3.4, 0, 1.2], castShadow: true, receiveShadow: true, animation: { clip: "Walk", time: CAPTURE_TIME } },
       batchGrid3x3,
       fixtureInstances16,
-      primitive("alpha leaf card", "plane", [1.6, 1.6, 1.6], [2.8, 0.9, 1.4], { color: "#3e7d3a", roughness: 0.9, metalness: 0, opacity: 0.55 }, { rotation: [0, 0.5, 0] })
+      primitive("alpha leaf card", "plane", [1.6, 1.6, 1.6], [2.8, 0.9, 1.4], { color: "#3e7d3a", roughness: 0.9, metalness: 0, opacity: 0.55 }, { rotation: [0, 0.5, 0], castShadow: true })
     ],
     shadows: defaultShadows(8),
     owner: "prd02",
@@ -400,6 +407,67 @@ export const prd02Specs = {
     strip: { frames: 60, intervalMs: 33, orbitDegrees: 6 },
     primaryCriterion: "cascade-boundary-and-shimmer",
     primaryRegion: "shadow-receiver"
+  },
+  "prd02-pole-behind-camera": {
+    id: "prd02-pole-behind-camera",
+    index: 110,
+    title: "Pole behind the camera",
+    purpose: "A tall pole 3 m behind the camera under a low sun from behind — its shadow must still reach the view (02-S5, casters come from the pre-cull collect snapshot)",
+    resolution: RESOLUTION,
+    toneMapping: "aces-filmic",
+    exposure: 1,
+    time: CAPTURE_TIME,
+    settleFrames: SETTLE_FRAMES,
+    camera: { position: [0, 1.6, 6], target: [0, 0.4, -4], fov: 50, near: 0.1, far: 80 },
+    background: { kind: "color", color: "#9fb0c2" },
+    lights: [
+      { kind: "ambient", name: "ambient", color: "#ffffff", intensity: 0.15 },
+      sun(3, [0, 6, 29], true)
+    ],
+    objects: [
+      ground(60, { color: "#9a9fa5", roughness: 0.9, metalness: 0 }),
+      primitive("pole behind camera", "cylinder", [0.5, 6, 0.5], [0.6, 3, 9], { color: "#8d949c", roughness: 0.7, metalness: 0.2 })
+    ],
+    shadows: defaultShadows(30),
+    owner: "prd02",
+    referenceProfile: "contract",
+    qrFlags: ["lighting"],
+    dprs: [1],
+    masks: ["shadow-receiver"],
+    brokenControls: ["no-shadows"],
+    primaryCriterion: "off-screen-caster",
+    primaryRegion: "shadow-receiver"
+  },
+  "prd02-probe-stripe-room": {
+    id: "prd02-probe-stripe-room",
+    index: 111,
+    title: "Probe stripe room",
+    purpose: "Closed 6 m room with an emissive stripe on the left wall and a mirror sphere — the box-projected probe reflection must put the stripe where a ray-traced reflection does (02-S12)",
+    resolution: RESOLUTION,
+    toneMapping: "aces-filmic",
+    exposure: 1,
+    time: CAPTURE_TIME,
+    settleFrames: SETTLE_FRAMES,
+    camera: { position: [0.8, 1.3, 2.6], target: [0, 0.9, -1.2], fov: 50, near: 0.05, far: 40 },
+    background: { kind: "color", color: "#05070a" },
+    lights: [{ kind: "ambient", name: "ambient", color: "#ffffff", intensity: 0.35 }],
+    objects: [
+      ground(6, { color: "#5a5e66", roughness: 0.85, metalness: 0 }),
+      primitive("back wall", "box", [6.4, 3, 0.2], [0, 1.5, -3.1], { color: "#4a4f58", roughness: 0.9, metalness: 0 }, { castShadow: false }),
+      primitive("left wall", "box", [0.2, 3, 6.4], [-3.1, 1.5, 0], { color: "#4a4f58", roughness: 0.9, metalness: 0 }, { castShadow: false }),
+      primitive("right wall", "box", [0.2, 3, 6.4], [3.1, 1.5, 0], { color: "#4a4f58", roughness: 0.9, metalness: 0 }, { castShadow: false }),
+      primitive("ceiling", "box", [6.4, 0.2, 6.4], [0, 3.1, 0], { color: "#3a3e46", roughness: 0.9, metalness: 0 }, { castShadow: false }),
+      primitive("wall stripe", "box", [0.02, 3, 0.3], [-2.99, 1.5, -1.0], { color: "#000000", roughness: 1, metalness: 0, emissive: "#00ff40", emissiveIntensity: 3 }, { castShadow: false, receiveShadow: false }),
+      primitive("mirror sphere", "sphere", [1.2, 1.2, 1.2], [0, 0.9, -1.2], { color: "#ffffff", roughness: 0, metalness: 1 })
+    ],
+    owner: "prd02",
+    referenceProfile: "contract",
+    qrFlags: ["lighting"],
+    dprs: [1],
+    masks: ["metal", "object-id"],
+    brokenControls: ["no-ibl"],
+    primaryCriterion: "box-projected-stripe",
+    primaryRegion: "metal"
   },
   "prd02-softbox": {
     id: "prd02-softbox",

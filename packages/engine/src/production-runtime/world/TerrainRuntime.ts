@@ -24,7 +24,7 @@ import {
   type CdlodTree,
   type SplatBakeResult
 } from "@aura3d/rendering/world";
-import { TERRAIN_FRAG_GLSL, TERRAIN_VERT_GLSL } from "@aura3d/rendering/world";
+import { TERRAIN_FRAG_SOLID_GLSL, TERRAIN_VERT_GLSL } from "@aura3d/rendering/world";
 import {
   evalSplatRules,
   defaultSplatRules,
@@ -73,6 +73,11 @@ interface TerrainGpuState {
 
 interface DeviceTerrainState {
   program: RenderShaderProgram | null;
+  /**
+   * T0-33 FIX-compile-cache: set after the first failed compile on this device.
+   * A failing terrain shader is compiled once per device, never once per frame.
+   */
+  programFailure: string | null;
   patchCache: Map<number, { vb: RenderBuffer; ib: RenderBuffer; vertexCount: number; indexCount: number; indexType: "uint16" | "uint32" }>;
   terrains: Map<string, TerrainGpuState>;
 }
@@ -82,7 +87,7 @@ const deviceStates = new WeakMap<RenderDevice, DeviceTerrainState>();
 function deviceState(device: RenderDevice): DeviceTerrainState {
   let s = deviceStates.get(device);
   if (!s) {
-    s = { program: null, patchCache: new Map(), terrains: new Map() };
+    s = { program: null, programFailure: null, patchCache: new Map(), terrains: new Map() };
     deviceStates.set(device, s);
   }
   return s;
@@ -221,10 +226,12 @@ function buildTerrainState(device: RenderDevice, ds: DeviceTerrainState, record:
   const tree = buildCdlodTree(grid, record.size, [record.origin[0], record.origin[2]], levels);
   const morphRatio = record.options.lod?.morphRatio ?? 0.33;
   const ranges = cdlodRanges(levels, tree.leafSize, 1, morphRatio);
-  const morph = new Float32Array(16);
+  // u_morph is vec4[8] (x start, y end): 32 floats upload as a vec4 array;
+  // a 16-float vec2[8] was uploaded as a mat4 (INVALID_OPERATION).
+  const morph = new Float32Array(32);
   for (const r of ranges) {
-    morph[r.lod * 2] = r.morphStart;
-    morph[r.lod * 2 + 1] = r.morphEnd;
+    morph[r.lod * 4] = r.morphStart;
+    morph[r.lod * 4 + 1] = r.morphEnd;
   }
   const splatRes = 256;
   const { tex0, tex1 } = bakeSplat(record, splatRes); // CPU fallback (kept — also feeds tests)
@@ -303,23 +310,40 @@ function buildTerrainState(device: RenderDevice, ds: DeviceTerrainState, record:
   return state;
 }
 
-let sharedProgram: RenderShaderProgram | null = null;
-let sharedProgramDevice: RenderDevice | null = null;
+/** True when at least one registered terrain has a resolved height grid (something to draw). */
+function hasDrawableTerrain(): boolean {
+  return terrainRecordIds().some((id) => terrainRecordFor(id)?.grid != null);
+}
 
-function terrainProgram(device: RenderDevice): RenderShaderProgram | null {
-  if (sharedProgram && sharedProgramDevice === device && !sharedProgram.disposed) return sharedProgram;
+/**
+ * T0-33 FIX-compile-cache: the terrain program, cached per device. Compiles
+ * lazily (only once a terrain can draw) and at most once per device after a
+ * failure; the failure is kept in `ds.programFailure` instead of retrying the
+ * compile every frame. A disposed program (device reset) is rebuilt.
+ */
+function terrainProgram(device: RenderDevice, ds: DeviceTerrainState): RenderShaderProgram | null {
+  if (ds.program && !ds.program.disposed) return ds.program;
+  ds.program = null;
+  if (ds.programFailure !== null || !hasDrawableTerrain()) return null;
   try {
-    sharedProgram = device.createShaderProgram({
+    ds.program = device.createShaderProgram({
       label: "prd10.terrain",
       vertex: TERRAIN_VERT_GLSL,
-      fragment: TERRAIN_FRAG_GLSL,
+      // Tint-only program: Path S binds no layer texture arrays (#752).
+      fragment: TERRAIN_FRAG_SOLID_GLSL,
       marker: "prd10.terrain"
     });
-    sharedProgramDevice = device;
-    return sharedProgram;
-  } catch {
-    return null; // compile failure → nothing drawn; degraded surfaces in diagnostics
+  } catch (error) {
+    ds.programFailure = error instanceof Error ? error.message : String(error);
+    lastTerrainProgramFailure = `terrain program failed to compile: ${ds.programFailure}`;
   }
+  return ds.program; // null on failure -> nothing drawn; degraded surfaces in diagnostics
+}
+
+/** Terrain program state for a device (diagnostics and tests). */
+export function terrainProgramStatus(device: RenderDevice): { readonly compiled: boolean; readonly failure: string | null } {
+  const ds = deviceStates.get(device);
+  return { compiled: !!ds?.program && !ds.program.disposed, failure: ds?.programFailure ?? null };
 }
 
 /** C-27 lodBias arrives with PRD 05's tier settings; read it when present. */
@@ -363,7 +387,10 @@ export function drawTerrains(
     }
     const ranges = lodBias === 1 ? st.ranges : cdlodRanges(st.ranges.length, st.tree.leafSize, lodBias, record.options.lod?.morphRatio ?? 0.33);
     const nodes = selectCdlodNodes(st.tree, camera.position, ranges, {});
-    if (nodes.length === 0 || nodes.length > st.instCap) continue;
+    if (nodes.length === 0 || nodes.length > st.instCap) {
+      terrainFrameStats.set(id, { id, nodesDrawn: 0, trianglesDrawn: 0, layers: st.layerCount, degraded: true, reason: `CDLOD selected ${nodes.length} nodes (cap ${st.instCap})` });
+      continue;
+    }
     const inst = new Float32Array(nodes.length * 4);
     nodes.forEach((n: (typeof nodes)[number], i: number) => {
       inst[i * 4] = n.origin[0];
@@ -388,7 +415,6 @@ export function drawTerrains(
       ["u_terrainWorldSize", Math.min(record.size[0], record.size[1])],
       ["u_terrainHeightScale", record.heightScale],
       ["u_layerCount", st.layerCount],
-      ["u_solidMode", 1],
       ["u_layerParams", st.layerParams],
       ["u_layerTintOrm", st.layerTintOrm],
       ["u_ambient", new Float32Array([0.25, 0.28, 0.32])],
@@ -412,8 +438,43 @@ export function drawTerrains(
       shader: ds.program!,
       uniforms
     });
+    terrainFrameStats.set(id, {
+      id,
+      nodesDrawn: nodes.length,
+      trianglesDrawn: nodes.length * Math.floor(st.indexCount / 3),
+      layers: st.layerCount,
+      degraded: false
+    });
   }
 }
+
+/** §7.1.10: last measured terrain draw per terrain id (read by the C-31 world section). */
+export interface TerrainFrameStat {
+  readonly id: string;
+  readonly nodesDrawn: number;
+  readonly trianglesDrawn: number;
+  readonly layers: number;
+  readonly degraded: boolean;
+  readonly reason?: string;
+}
+const terrainFrameStats = new Map<string, TerrainFrameStat>();
+
+/**
+ * Terrain draw diagnostics: every registered terrain reports what the last
+ * terrain pass submitted for it. A terrain whose pass never ran (or ran with
+ * no compiled program) reports 0 nodes and `degraded`, never silence.
+ */
+export function terrainDiagnostics(): readonly TerrainFrameStat[] {
+  return terrainRecordIds().map((id) => terrainFrameStats.get(id) ?? {
+    id,
+    nodesDrawn: 0,
+    trianglesDrawn: 0,
+    layers: terrainRecordFor(id)?.options.layers.length ?? 0,
+    degraded: true,
+    reason: lastTerrainProgramFailure ?? `terrain pass not drawn (emitted ${terrainPassCounters.emitted}, executed ${terrainPassCounters.executed}, no camera ${terrainPassCounters.noCamera}, last ${terrainPassCounters.lastName || "-"}; phases ${JSON.stringify(worldPhaseCalls)})`
+  });
+}
+let lastTerrainProgramFailure: string | null = null;
 
 /**
  * §9.1 step 2 — terrain re-draw for a planar water reflection. Called from
@@ -422,8 +483,7 @@ export function drawTerrains(
  */
 export function drawTerrainsForReflection(ctx: FrameContributorContext, device: RenderDevice, mirrorViewProjection: Float32Array, mirrorEye: readonly [number, number, number]): void {
   const ds = deviceState(device);
-  if (!ds.program) ds.program = terrainProgram(device);
-  if (!ds.program) return;
+  if (!terrainProgram(device, ds)) return;
   drawTerrains(ctx, device, ds, { position: mirrorEye }, mirrorViewProjection);
 }
 
@@ -433,20 +493,49 @@ export function drawTerrainsForReflection(ctx: FrameContributorContext, device: 
  * per patch size across terrains on the device).
  */
 export function terrainBackgroundPass(ctx: FrameContributorContext): RenderPass {
+  return terrainPass(ctx, "prd10.terrain", [ENVIRONMENT_BACKGROUND_COLOR_RESOURCE]);
+}
+
+/**
+ * Fallback for frames without an environment background: lane 01 runs the
+ * `background` phase only when an EnvironmentBackgroundPass exists, so a
+ * scene with a plain colour background never drew its terrain. This pass is
+ * emitted in `after-opaque` instead — depth-tested against the opaque depth,
+ * so occlusion is identical; no declared read, so it orders by insertion
+ * (after ForwardPass) and needs no producer.
+ */
+export function terrainAfterOpaquePass(ctx: FrameContributorContext): RenderPass {
+  return terrainPass(ctx, "prd10.terrain.late", []);
+}
+
+/** Pass-level counters behind the "not executed" diagnostics reason. */
+const terrainPassCounters = { emitted: 0, executed: 0, noCamera: 0, lastName: "" };
+/** prd10 contributor hook invocations per phase (WorldFramePasses reports them). */
+const worldPhaseCalls: Record<string, number> = {};
+export function noteWorldPhase(phase: string): void {
+  worldPhaseCalls[phase] = (worldPhaseCalls[phase] ?? 0) + 1;
+}
+
+function terrainPass(ctx: FrameContributorContext, name: string, reads: readonly string[]): RenderPass {
+  terrainPassCounters.emitted += 1;
+  terrainPassCounters.lastName = name;
   return {
-    name: "prd10.terrain",
-    // T0-33: the `background` phase only runs when an EnvironmentBackgroundPass
-    // exists, so this read always has a producer and orders terrain after it.
-    // Unique write name — two passes may not both write "color".
-    reads: [ENVIRONMENT_BACKGROUND_COLOR_RESOURCE],
+    name,
+    // T0-33: the `background` variant reads the environment background colour
+    // so it orders after EnvironmentBackgroundPass. Unique write name — two
+    // passes may not both write "color".
+    reads,
     writes: ["prd10.terrain.color"],
     execute(rp: RenderPassContext) {
+      terrainPassCounters.executed += 1;
       const device = rp.device;
       const ds = deviceState(device);
-      if (!ds.program) ds.program = terrainProgram(device);
-      if (!ds.program) return;
+      if (!terrainProgram(device, ds)) return;
       const camera = ctx.camera;
-      if (!camera) return;
+      if (!camera) {
+        terrainPassCounters.noCamera += 1;
+        return;
+      }
       drawTerrains(ctx, device, ds, camera, camera.viewProjectionMatrix);
     }
   };

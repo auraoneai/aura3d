@@ -57,6 +57,23 @@ env:
   EVAL_TEMPLATE: ${{ github.event_name == 'workflow_dispatch' && inputs.template || '' }}
 
 jobs:
+  plan:
+    name: Plan eval matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      prompts: ${{ steps.plan.outputs.prompts }}
+      seeds: ${{ steps.plan.outputs.seeds }}
+    steps:
+      # Dispatch inputs select the cells (e.g. the 13-S7 pilot: prompts
+      # P01,P06,P08,P12, seeds 0); empty prompts = all 12 §18.3 prompts.
+      - id: plan
+        run: |
+          to_json() { node -e 'const v=process.argv[1].split(",").map(s=>s.trim()).filter(Boolean);process.stdout.write(JSON.stringify(process.argv[2]==="num"?v.map(Number):v))' "$1" "$2"; }
+          prompts="${EVAL_PROMPTS:-P01,P02,P03,P04,P05,P06,P07,P08,P09,P10,P11,P12}"
+          echo "prompts=$(to_json "$prompts" str)" >> "$GITHUB_OUTPUT"
+          echo "seeds=$(to_json "$EVAL_SEEDS" num)" >> "$GITHUB_OUTPUT"
+
   pack:
     name: Pack release tarballs
     runs-on: ubuntu-latest
@@ -84,13 +101,16 @@ jobs:
     name: Agent cell ${{ matrix.prompt }}-s${{ matrix.seed }}
     runs-on: ubuntu-latest # no GPU needed for the agent leg
     timeout-minutes: 90
-    needs: pack
+    needs: [plan, pack]
     strategy:
       fail-fast: false
       matrix:
-        prompt: [P01, P02, P03, P04, P05, P06, P07, P08, P09, P10, P11, P12]
-        seed: [0, 1, 2]
+        prompt: ${{ fromJSON(needs.plan.outputs.prompts) }}
+        seed: ${{ fromJSON(needs.plan.outputs.seeds) }}
     env:
+      # Kiro Prism (default-first LLM layer): the runner sets
+      # ANTHROPIC_BASE_URL=https://prism.auraone.ai and ANTHROPIC_AUTH_TOKEN
+      # from this secret (tools/agent-eval/agents.ts). Owner action OA-2/#137.
       KIRO_PRISM_API_KEY: ${{ secrets.KIRO_PRISM_API_KEY }}
     steps:
       - uses: actions/checkout@v4
@@ -102,13 +122,15 @@ jobs:
           node-version: '22'
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
+      - name: Install Claude Code CLI (pinned)
+        if: env.EVAL_AGENT == 'claude-code' && env.EVAL_DRY_RUN == ''
+        run: npm install -g @anthropic-ai/claude-code@2.1.296
       - uses: actions/download-artifact@v4
         with:
           name: release-tarballs-${{ github.run_id }}
           path: tests/reports/release-tarballs
       - name: Run agent cell
         id: cell
-        continue-on-error: true
         run: |
           pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-eval/run.ts \
             --only "${{ matrix.prompt }}" --seeds "${{ matrix.seed }}" \
@@ -123,17 +145,15 @@ jobs:
           path: benchmarks/agent-eval/runs/${{ github.run_id }}/${{ matrix.prompt }}-s${{ matrix.seed }}/
           retention-days: 30
           if-no-files-found: warn
-      - name: Report cell outcome
-        if: always()
-        run: |
-          echo "cell=${{ steps.cell.outcome }}"
-          test "${{ steps.cell.outcome }}" = "success"
 
   capture:
     name: Capture agent output (macos-14, flags ${{ matrix.qr_flags }})
     runs-on: macos-14
     timeout-minutes: 180
     needs: agent
+    # Capture the cells that did build even when another cell failed; the
+    # failed agent job still fails the run (no continue-on-error).
+    if: ${{ !cancelled() }}
     strategy:
       fail-fast: false
       matrix:
@@ -157,7 +177,6 @@ jobs:
           merge-multiple: true
       - name: Capture agent dist dirs
         id: capture
-        continue-on-error: true
         env:
           QRC_FLAGS: ${{ matrix.qr_flags }}
           QRC_OUT: tools/agent-templates/out/agent-eval-${{ matrix.qr_flags }}
@@ -172,11 +191,6 @@ jobs:
           path: tools/agent-templates/out/agent-eval-${{ matrix.qr_flags }}/
           retention-days: 30
           if-no-files-found: warn
-      - name: Report capture outcome
-        if: always()
-        run: |
-          echo "capture=${{ steps.capture.outcome }}"
-          test "${{ steps.capture.outcome }}" = "success"
 
   panel-packet:
     name: Assemble panel packet

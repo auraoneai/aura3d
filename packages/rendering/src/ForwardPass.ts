@@ -2,7 +2,7 @@ import { Geometry } from "./Geometry";
 import { type CollectedLight } from "./LightCollector";
 import { LightUniforms } from "./LightUniforms";
 import { Material, type RenderState } from "./Material";
-import { MaterialBinding } from "./MaterialBinding";
+import { MaterialBinding, MaterialBindingError } from "./MaterialBinding";
 import { MaterialInstance } from "./MaterialInstance";
 import { type InstanceVertexAttribute, type RenderBuffer, type RenderDevice, RenderDeviceError, type RenderShaderProgram, type UniformValue } from "./RenderDevice";
 import { RenderPipeline } from "./RenderPipeline";
@@ -25,8 +25,9 @@ import { type VertexFormat } from "./VertexFormat";
 import { type ClusteredForwardLightingResources } from "./ClusteredForwardLighting";
 import { programCacheSlot, type ProgramCacheLike, type ProgramFeatures } from "./contracts/program";
 import { normalizeProgramFeatures } from "./program/ProgramFeatures";
-import { materialFeatureWarning, materialUsesGeneratedProgram } from "./program/MaterialFeatures";
+import { featuresForGeometry, geometryHasSkin, materialFeatureWarning, materialUsesGeneratedProgram } from "./program/MaterialFeatures";
 import { bindShaderFeatureUniforms, selectShaderFeatureBits } from "./program/FeatureSelect";
+import { bindMaterialLobeUniforms } from "./materials/PhysicalFeatures";
 import { QUALITY_TIERS, type AuraQualityTierSettings } from "./contracts/quality";
 import { rendererQrFlags } from "./renderer/FrameGraph";
 import { qrCoreGeneratorOn, rendererProgramCache, rendererAuraFrame } from "./renderer/qrSubFlags";
@@ -34,8 +35,8 @@ import { qrCoreGeneratorOn, rendererProgramCache, rendererAuraFrame } from "./re
 
 // PR 0b-2 re-imports for moved carve-out modules (CONTRACTS.md §3.3).
 import { SkinningPaletteUploadManager, applyGpuMorphUniforms, resolveRenderGeometry } from "./forward/Deform.js";
-import { applyClusteredLightingUniforms, applyForwardShadowMapUniforms, resolveForwardClusteredLighting, selectForwardShadowMap } from "./forward/Lighting.js";
-import { submitDraw } from "./forward/DrawSubmit.js";
+import { FORWARD_DIRECT_LIGHT_CAPACITY, applyClusteredLightingUniforms, applyForwardShadowMapUniforms, resolveForwardClusteredLighting, selectForwardShadowMap } from "./forward/Lighting.js";
+import { flushMultiDrawQueue, submitDraw } from "./forward/DrawSubmit.js";
 import { bindVelocityUniforms } from "./forward/Velocity.js";
 
 export type { RenderItem };
@@ -327,6 +328,8 @@ export class ForwardPass extends BaseRenderPass {
       for (const item of sortForwardRenderItems(this.options.items, this.options.cameraPosition)) {
         this.drawItem(context.device, item);
       }
+      // #181: issue any trailing multi-draw run deferred by `submitDraw`.
+      flushMultiDrawQueue(context.device);
     } finally {
       this.clusteredLighting?.dispose();
       this.clusteredLighting = null;
@@ -337,9 +340,11 @@ export class ForwardPass extends BaseRenderPass {
     const material = item.material ?? new UnlitMaterial();
     const baseMaterial = getBaseMaterial(material);
     this.applyLightUniforms(material);
-    const shader = this.getShader(baseMaterial, device, item);
+    let shader = this.getShader(baseMaterial, device, item);
     if (shader === undefined) return; // A3D_QR_CORE_GENERATOR async-skip (C-02 §A.2)
-    const generated = qrCoreGeneratorOn(rendererQrFlags(device)) && materialUsesGeneratedProgram(baseMaterial);
+    // Generated iff getShader resolved a generated program for this draw (a
+    // compile-failed fallback or an unskinnable skinned item is a legacy draw).
+    let generated = this.lastProgramFeatures !== undefined;
     if (item.instanceTransforms && baseMaterial.renderState.cullMode !== "none" && instancedItemNeedsPerInstanceCullState(item)) {
       for (const expanded of expandInstancedRenderItem(item)) {
         this.drawItem(device, expanded);
@@ -362,13 +367,35 @@ export class ForwardPass extends BaseRenderPass {
       }
       return;
     }
-    const uniforms = generated ? this.acquireUniformPacket(device) : new Map<string, UniformValue>();
-    const binding = generated
-      ? this.materialBinding.bindGenerated(material, shader, this.lastProgramFeatures, uniforms)
-      : this.materialBinding.bind(material, shader);
+    let uniforms = generated ? this.acquireUniformPacket(device) : new Map<string, UniformValue>();
+    // #867 (games): binding validation never kills the frame. A generated
+    // draw that fails validation falls back to the legacy shaderKey program;
+    // a legacy draw that fails is skipped with one warning. Strict throws.
+    let binding: ReturnType<MaterialBinding["bind"]> | null = null;
+    try {
+      binding = generated
+        ? this.materialBinding.bindGenerated(material, shader, this.lastProgramFeatures, uniforms)
+        : this.materialBinding.bind(material, shader);
+    } catch (error) {
+      if (!(error instanceof MaterialBindingError) || rendererQrFlags(device).on("A3D_QR_STRICT")) throw error;
+      warnBindingOnce(item, baseMaterial, error, generated);
+      if (!generated) return;
+      this.lastProgramFeatures = undefined;
+      generated = false;
+      shader = this.legacyShader(baseMaterial, device);
+      uniforms = new Map<string, UniformValue>();
+      try {
+        binding = this.materialBinding.bind(material, shader);
+      } catch (legacyError) {
+        if (!(legacyError instanceof MaterialBindingError)) throw legacyError;
+        warnBindingOnce(item, baseMaterial, legacyError, false);
+        return;
+      }
+    }
     if (!generated) for (const [k, v] of binding.uniforms) uniforms.set(k, v);
     applyClusteredLightingUniforms(this.clusteredLighting, shader, uniforms);
     applyEnvironmentLightingUniforms(this.options.environmentLighting, item, shader, uniforms);
+    if (generated) applyGeneratedEnvironmentMapUniforms(this.options.environmentLighting, item, shader, uniforms);
     applyEnvironmentFogUniforms(this.options.environmentFog, item, shader, uniforms);
     applyForwardShadowMapUniforms(
       selectForwardShadowMap(this.options.shadowMap, item, this.options.cameraViewMatrix, this.options.cameraPosition),
@@ -385,14 +412,25 @@ export class ForwardPass extends BaseRenderPass {
     if (generated && this.lastProgramFeatures) {
       // C-02 `ShaderFeature.bindUniforms` for the features this draw selected.
       bindShaderFeatureUniforms(this.lastProgramFeatures.features, rendererQrFlags(device), item, (name, value) => uniforms.set(name, value));
+      // C-03 `lobe.bind` (04-LOBES): descriptor factors and lobe textures for the
+      // lobes this record carries. Material parameters stay authoritative.
+      bindMaterialLobeUniforms(this.lastProgramFeatures.extensions, baseMaterial, rendererQrFlags(device), (name, value) => {
+        if (!uniforms.has(name)) uniforms.set(name, value);
+      });
     }
-    if (item.skinning) {
+    if (item.skinning && !generated) {
+      // Legacy skinned programs take the u_jointMatrices palette; on the
+      // generated path prd06.deform's bindUniforms binds the bone texture, and
+      // a generated draw without it has no skin attributes (featuresForGeometry).
       this.skinningPaletteUploads.bind(item, item.skinning, baseMaterial, shader, uniforms, device);
     }
     const instanceBinding = item.instanceTransforms ? this.applyInstanceBinding(device, item, shader, uniforms, generated) : { count: 1 };
     const gpuMorph = item.morphTargets || item.morphWeights ? applyGpuMorphUniforms(item, shader, uniforms) : false;
     const geometry = gpuMorph ? item.geometry : resolveRenderGeometry(item);
-    validateMaterialGeometryContract(item, baseMaterial, geometry);
+    // Generated programs validate their selected attributes in MaterialBinding.
+    // The legacy descriptor can require maps/tangents deliberately masked out
+    // for this geometry, so it is not the generated program contract.
+    if (!generated) validateMaterialGeometryContract(item, baseMaterial, geometry);
     try {
       const vertexBuffer = geometry.vertexBuffer.upload(device);
       const indexBuffer = geometry.indexBuffer?.upload(device);
@@ -478,6 +516,16 @@ export class ForwardPass extends BaseRenderPass {
       const warning = materialFeatureWarning(material);
       if (warning) console.warn(`[prd01] ${warning}`);
       this.lastProgramFeatures = this.programFeaturesFor(material, device, item);
+      // #867: a skinned draw needs its program to skin. When no registered
+      // deform feature (prd06.deform, A3D_QR_ANIMATION) selected this item,
+      // the generated program has no skinning, so the draw keeps the legacy
+      // skinned shaderKey program instead of rendering the bind pose.
+      // A skinned item whose geometry has no joints/weights draws unskinned on
+      // the generated program (features follow the geometry, #867 games).
+      if (item?.skinning && geometryHasSkin((a) => geometryHasAttribute(item.geometry, a)) && this.lastProgramFeatures.features["prd06.deform"] === undefined) {
+        this.lastProgramFeatures = undefined;
+        return this.legacyShader(material, device);
+      }
       const handle = this.programCache(device).acquire(this.lastProgramFeatures);
       if (handle.status === "failed") {
         // T0-03: the cache already emitted `program-compile-failed` (C-36) +
@@ -486,12 +534,19 @@ export class ForwardPass extends BaseRenderPass {
         if (flags.on("A3D_QR_STRICT")) {
           throw new RenderDeviceError(`generated program failed to compile: ${handle.error ?? handle.key}`, "PROGRAM_COMPILE_FAILED", { key: handle.key });
         }
+        // The fallback draw is a legacy draw: bind it as one.
+        this.lastProgramFeatures = undefined;
       } else {
         // async-skip: a not-yet-ready program skips the draw this frame
         // (C-02 §A.2 semantics; warm-then-block warmup renders them ready up front).
         return handle.status === "ready" ? handle.program : undefined;
       }
     }
+    return this.legacyShader(material, device);
+  }
+
+  /** Frozen legacy shaderKey program (flag-off path, and generated-path fallbacks). */
+  private legacyShader(material: Material, device: RenderDevice): RenderShaderProgram {
     const cacheKey = shaderCacheKey(material);
     const shaderCache = getForwardPassShaderCache(device, this.shaderLibrary);
     let module = shaderCache.get(cacheKey);
@@ -520,14 +575,18 @@ export class ForwardPass extends BaseRenderPass {
     // T0-05: registered ShaderFeatures select their bits per draw (C-02 §A.2:
     // at acquire time); the warmup applies the same selection per item.
     const selected = item ? selectShaderFeatureBits({ item, pass: "forward", tier, flags }) : {};
+    // #867 (games): the feature set follows what the geometry carries
+    // (three.js semantics): no uv → no uv maps, no joints/weights → no skin.
+    const record = item ? featuresForGeometry({ ...mf, features: { ...mf.features, ...selected } }, (a) => geometryHasAttribute(item.geometry, a)) : { ...mf, features: { ...mf.features, ...selected } };
     return normalizeProgramFeatures({
-      ...mf,
+      ...record,
       ...axes,
-      features: { ...mf.features, ...selected },
       // Phase 6: instancing is item-driven — a material's own feature record
       // only declares it when authored instanced; the draw's program must
       // cover the union (attribute matrices are the only generated path).
       ...(item?.instanceTransforms ? { instancing: { color: item.instanceColors !== undefined } } : {}),
+      // #1140: a per-item probe cube (PRD-02 S12) is sampled as a cube.
+      ...(item?.environmentCube?.texture?.dimension === "cube" ? { environment: "pmrem-cube" as const } : {}),
       backgroundCoverage: this.options.backgroundCoverage === true,
       pass: "forward",
       target: "glsl300es"
@@ -604,7 +663,11 @@ export class ForwardPass extends BaseRenderPass {
         vertexFormat: geometry.vertexBuffer.format,
         topology: geometry.topology,
         renderState,
-        requiredAttributes: baseMaterial.requiredAttributes
+        requiredAttributes: this.lastProgramFeatures
+          ? baseMaterial.requiredAttributes.filter((attribute) =>
+              !["a_uv", "a_uv1", "a_color", "a_tangent", "a_joints", "a_weights", "a_joints1", "a_weights1"].includes(attribute)
+              || geometry.vertexBuffer.format.attributes.some((a) => a.semantic === attribute || a.shaderName === attribute))
+          : baseMaterial.requiredAttributes
       });
       cache.set(key, pipeline);
     }
@@ -644,8 +707,8 @@ function lightBucket(count: number, max: 4 | 8 = 8): 0 | 1 | 2 | 4 | 8 {
 
 /**
  * Pass-owned feature axes (C-02): lights/shadows/environment/fog shared by every
- * material in the pass. `clustered` is the pass's resolved state; callers that
- * only have counts should pass `dir>8||point>8||spot>8||rect>8`.
+ * material in the pass. `clustered` is the pass's resolved state; above
+ * FORWARD_DIRECT_LIGHT_CAPACITY lights the axes report clustered regardless.
  */
 export function forwardPassFeatureAxes(
   options: Pick<ForwardPassOptions, "lights" | "shadowMap" | "environmentLighting" | "environmentFog">,
@@ -676,16 +739,24 @@ export function forwardPassFeatureAxes(
       point: lightBucket(point),
       spot: lightBucket(spot),
       rect: lightBucket(rect, 4) as 0 | 1 | 2 | 4,
-      clustered: clustered || directional > 8 || point > 8 || spot > 8 || rect > 8,
+      // #1140: mirrors resolveForwardClusteredLighting (clusters above the
+      // u_lightData capacity), not the per-kind key bucket.
+      clustered: clustered || directional + point + spot + rect > FORWARD_DIRECT_LIGHT_CAPACITY,
       hemisphere: env?.proceduralMap !== undefined
     },
     shadows: options.shadowMap
       ? { cascades: Math.max(1, Math.min(4, options.shadowMap.cascades?.length ?? 1)) as 0 | 1 | 2 | 3 | 4, pcfTaps: 4, localShadows: 0, contact: false }
       : { cascades: 0, pcfTaps: 4, localShadows: 0, contact: false },
     environment:
-      env?.environmentMapTexture || env?.environmentCubeMapTexture || env?.proceduralMap
-        ? "equirect"
-        : "none",
+      // #1140: the generated env chunk samples exactly the texture it was
+      // selected for. The prefiltered cube wins when present (the flag-off
+      // shader mixes to the cube whenever it is enabled); otherwise the 2D
+      // `environmentMapTexture`. Procedural-only → no sampler at all.
+      env?.environmentCubeMapTexture?.texture?.dimension === "cube"
+        ? "pmrem-cube"
+        : env?.environmentMapTexture?.texture !== undefined
+          ? "equirect"
+          : "none",
     fog: fogMode
   };
 }
@@ -890,6 +961,18 @@ function resolveDrawRange(geometry: Geometry, range: RenderItemDrawRange | undef
     });
   }
   return range;
+}
+
+const warnedBindings = new WeakMap<Material, Set<string>>();
+
+/** One console warning per (material, item label, path) for a non-fatal binding failure. */
+function warnBindingOnce(item: RenderItem, material: Material, error: MaterialBindingError, generated: boolean): void {
+  const key = `${item.label ?? ""}|${generated ? "generated" : "legacy"}`;
+  const seen = warnedBindings.get(material) ?? new Set<string>();
+  if (seen.has(key)) return;
+  seen.add(key);
+  warnedBindings.set(material, seen);
+  console.warn(`[prd01] ${generated ? "generated draw falls back to the legacy program" : "draw skipped"} for "${item.label ?? material.name}": ${error.message}`);
 }
 
 function geometryHasAttribute(geometry: Geometry, attribute: string): boolean {
@@ -1098,7 +1181,63 @@ function applyEnvironmentLightingUniforms(
   uniforms.set("u_environmentColor", color);
   uniforms.set("u_environmentIntensity", environment.intensity);
   applyProceduralEnvironmentMapUniforms(environment.proceduralMap, item, shader, uniforms);
-  applySampledEnvironmentMapUniforms(environment, item, shader, uniforms);
+  applySampledEnvironmentMapUniforms(withItemEnvironmentCube(environment, item), item, shader, uniforms);
+}
+
+/**
+ * #1140: generated-program environment map (`indirect_default` chunk). The
+ * legacy binder above only fills the frozen library's `u_environmentMapTexture*`
+ * names, so a generated program's sampler used to stay unbound (sampling
+ * whatever its texture unit held). Binds whichever sampler the program
+ * declares: `u_environmentCubeMap` (ENVMAP_TYPE_CUBE_UV — the prefiltered
+ * cube, honouring the per-item probe cube) or `u_environmentMap`
+ * (ENVMAP_TYPE_EQUIRECT — the 2D map), plus the shared intensity / rotation /
+ * mip range / encoding uniforms.
+ */
+export function applyGeneratedEnvironmentMapUniforms(
+  environment: EnvironmentLightingOptions | undefined,
+  item: RenderItem,
+  shader: RenderShaderProgram,
+  uniforms: Map<string, UniformValue>
+): void {
+  const cube = shader.reflection.uniforms.has("u_environmentCubeMap");
+  if (!cube && !shader.reflection.uniforms.has("u_environmentMap")) return;
+  const env = environment ? withItemEnvironmentCube(environment, item) : undefined;
+  const binding = cube ? env?.environmentCubeMapTexture : env?.environmentMapTexture;
+  if (!env || !binding?.texture) {
+    // forwardPassFeatureAxes never selects a sampler whose texture is absent;
+    // a stale program draws with no environment contribution, never garbage.
+    uniforms.set("u_environmentMapIntensity", 0);
+    return;
+  }
+  const dimension = cube ? "cube" : "2d";
+  validateEnvironmentTextureBinding(cube ? "Environment cube map texture" : "Environment map texture", binding, dimension, item);
+  const intensity = env.environmentMapIntensity ?? 1;
+  const rotation = env.environmentMapRotation ?? 0;
+  const mipCount = env.environmentMapMipCount ?? 1;
+  const encoding = env.environmentMapEncoding ?? "srgb";
+  if (!Number.isFinite(intensity) || intensity < 0 || !Number.isFinite(rotation) || !Number.isInteger(mipCount) || mipCount < 1) {
+    throw new RenderDeviceError("Sampled environment map options are invalid", "ENVIRONMENT_LIGHTING_CONTRACT", {
+      label: item.label,
+      intensity,
+      rotation,
+      mipCount
+    });
+  }
+  const name = cube ? "u_environmentCubeMap" : "u_environmentMap";
+  uniforms.set(name, new TextureBinding({
+    name,
+    texture: binding.texture,
+    sampler: binding.sampler,
+    required: true,
+    ready: binding.ready,
+    expectedColorSpace: binding.expectedColorSpace,
+    expectedDimension: dimension
+  }));
+  uniforms.set("u_environmentMapIntensity", intensity);
+  uniforms.set("u_environmentMapRotation", rotation);
+  uniforms.set("u_environmentMapMaxLod", Math.max(mipCount - 1, 0));
+  uniforms.set("u_environmentMapEncoding", encoding === "rgbe" ? 1 : encoding === "linear" ? 2 : 0);
 }
 
 function applyProceduralEnvironmentMapUniforms(
@@ -1156,6 +1295,20 @@ function clearProceduralEnvironmentMapUniforms(
   if (shader.reflection.uniforms.has("u_environmentSpecularIntensity")) {
     uniforms.set("u_environmentSpecularIntensity", 0);
   }
+}
+
+/**
+ * PRD-02 S12 (lane-01 half): a RenderItem's `environmentCube` (a captured
+ * reflection probe) replaces the scene environment's cube for that draw only.
+ * Items without one get `environment` back unchanged (same object).
+ */
+function withItemEnvironmentCube(environment: EnvironmentLightingOptions, item: RenderItem): EnvironmentLightingOptions {
+  if (!item.environmentCube) return environment;
+  return {
+    ...environment,
+    environmentCubeMapTexture: item.environmentCube,
+    ...(item.environmentCubeMip !== undefined ? { environmentMapMipCount: item.environmentCubeMip } : {})
+  };
 }
 
 function applySampledEnvironmentMapUniforms(

@@ -16,10 +16,12 @@ import type { QrFlags } from "../contracts/core";
 import type { AuraQualityTierSettings } from "../contracts/quality";
 import type { RenderItem } from "../contracts/renderItem";
 import {
+  depthVariantFeaturesFor,
   registerDepthVariantFeature,
   type DepthVariantFeature,
   type ShadowCasterVariantKey
 } from "../contracts/shadows";
+import { shaderChunk, type ShaderChunk } from "../contracts/program";
 import { MAX_UNIFORM_SKINNING_JOINTS } from "../ShaderChunks";
 import { MaterialInstance } from "../MaterialInstance";
 import type { Material } from "../Material";
@@ -54,7 +56,7 @@ uniform mat4 u_instanceMatrices[${PRD02_DEPTH_MAX_INSTANCES}];
 uniform float u_instanceCount;
 #endif
 #if A3D_DEPTH_SKINNED
-#include skinning_common
+#include <skinning_common>
 #endif
 void main() {
 #if A3D_DEPTH_ALPHA
@@ -160,6 +162,86 @@ export function prd02DepthFeatures(): readonly DepthVariantFeature[] {
   return prd02Features;
 }
 
+/**
+ * 02-DEPTH: every C-11 depth-variant feature active under `flags` for the
+ * shadow "depth" pass — prd02's own plus other lanes' (prd05.lodDither,
+ * prd06.deform, prd10.wind, prd11.drawId) via lane 01's
+ * `depthVariantFeaturesFor` (#751).
+ */
+export function activeDepthFeatures(flags: QrFlags): readonly DepthVariantFeature[] {
+  ensurePrd02DepthFeatures();
+  return depthVariantFeaturesFor(flags).filter((feature) => feature.passes.includes("depth"));
+}
+
+/** Features selected for this variant that claim the C-18 `vertex:deform` hook. */
+function selectedDeformFeatures(
+  key: ShadowCasterVariantKey,
+  depthFeatures: readonly DepthVariantFeature[]
+): DepthVariantFeature[] {
+  return depthFeatures.filter((feature) => key.features[feature.id] !== undefined && feature.hooks.includes("vertex:deform"));
+}
+
+/** `requires`-first closure of a feature's chunks (each chunk once). */
+function chunkClosure(names: readonly string[], out: ShaderChunk[], seen: Set<string>, stack: string[] = []): void {
+  for (const name of names) {
+    if (seen.has(name)) continue;
+    if (stack.includes(name)) throw new Error(`SHADER_CHUNK_CYCLE:${[...stack, name].join(">")}`);
+    const chunk = shaderChunk(name);
+    if (!chunk) throw new Error(`SHADER_CHUNK_MISSING:${name}`);
+    chunkClosure(chunk.requires ?? [], out, seen, [...stack, name]);
+    seen.add(name);
+    out.push(chunk);
+  }
+}
+
+/** Why a deform feature cannot be spliced (C-18 needs `a3dDeform`), or null. */
+export function depthDeformIncompatibility(feature: DepthVariantFeature): string | null {
+  const chunks: ShaderChunk[] = [];
+  try {
+    chunkClosure(feature.chunks, chunks, new Set());
+  } catch (error) {
+    return `${feature.id}: ${error instanceof Error ? error.message : String(error)}`;
+  }
+  if (chunks.some((chunk) => chunk.stage === "fragment")) return `${feature.id}: fragment-stage chunk at vertex:deform`;
+  return chunks.some((chunk) => /\ba3dDeform\s*\(/.test(chunk.glsl)) ? null : `${feature.id}: no a3dDeform() entry point (C-18)`;
+}
+
+/**
+ * 02-DEPTH: splice the selected `vertex:deform` features into the depth
+ * vertex source — chunk closure at global scope before `main`, and the
+ * canonical C-18 call `a3dDeform(pos, nrm, tan)` replacing the object-space
+ * position. Features without an `a3dDeform` entry point are not spliced; the
+ * caller reports them (C-31 droppedFeatures).
+ */
+export function composeDepthDeformVertex(
+  vertex: string,
+  key: ShadowCasterVariantKey,
+  depthFeatures: readonly DepthVariantFeature[]
+): string {
+  const deform = selectedDeformFeatures(key, depthFeatures).filter((feature) => depthDeformIncompatibility(feature) === null);
+  if (deform.length === 0) return vertex;
+  const chunks: ShaderChunk[] = [];
+  const seen = new Set<string>();
+  for (const feature of deform) chunkClosure(feature.chunks, chunks, seen);
+  const decls = chunks.map((chunk) => chunk.glsl).join("\n");
+  const call = [
+    "  // C-18 deform (02-DEPTH): registered vertex:deform features own object space.",
+    "  vec3 a3dDeformNormal = vec3(0.0, 0.0, 1.0);",
+    "  vec4 a3dDeformTangent = vec4(0.0);",
+    "  a3dDeform(local, a3dDeformNormal, a3dDeformTangent);"
+  ].join("\n");
+  const mainAt = vertex.indexOf("void main() {");
+  if (mainAt < 0) throw new Error("PRD02_DEPTH_DEFORM_ANCHOR_MISSING:main");
+  // The call goes after `local` is formed and before it is projected (the
+  // first instancing or gl_Position statement; #if blocks may already be
+  // resolved by the preprocessor).
+  const body = vertex.slice(mainAt);
+  const anchor = /\n[ \t]*(?:#if A3D_DEPTH_INSTANCED|int instanceIndex|gl_Position\s*=)/.exec(body);
+  if (!anchor) throw new Error("PRD02_DEPTH_DEFORM_ANCHOR_MISSING:projection");
+  const at = mainAt + anchor.index;
+  return `${vertex.slice(0, mainAt)}${decls}\n${vertex.slice(mainAt, at)}\n${call}${vertex.slice(at)}`;
+}
+
 /** Base material of an item's RenderMaterial (instances unwrap). */
 function baseOf(material: NonNullable<RenderItem["material"]>): Material {
   return material instanceof MaterialInstance ? material.baseMaterial : material;
@@ -201,8 +283,13 @@ export function resolvePrd02ShadowCasterVariant(
   const batched =
     (item.instanceTransforms?.length ?? 0) > 16 ||
     /^static-batch-/.test(item.label ?? "");
+  // A spliced vertex:deform feature (e.g. prd06.deform) owns skinning/morph
+  // in object space, so the built-in prd02 skinning path stays off for it.
+  const deformOwnsSkinning = depthFeatures.some(
+    (feature) => features[feature.id] !== undefined && feature.hooks.includes("vertex:deform") && depthDeformIncompatibility(feature) === null
+  );
   return {
-    skinning: skinning ? (skinning.extraInfluences ? 8 : 4) : 0,
+    skinning: skinning && !deformOwnsSkinning ? (skinning.extraInfluences ? 8 : 4) : 0,
     skinningTexture: (skinning?.jointCount ?? 0) > MAX_UNIFORM_SKINNING_JOINTS,
     morphTargets: (item.morphTargets?.length ?? 0) > 0 || (item.morphWeights?.length ?? 0) > 0,
     instanced,
@@ -282,7 +369,7 @@ export function prd02DepthProgram(
     program = device.createShaderProgram({
       label: source.label,
       marker: source.marker,
-      vertex: source.vertex,
+      vertex: composeDepthDeformVertex(source.vertex, key, features),
       fragment: source.fragment,
       ...(source.webgpu ? { webgpu: source.webgpu } : {}),
       ...(source.portableBindings ? { portableBindings: source.portableBindings } : {})
@@ -316,7 +403,7 @@ export async function precompilePrd02DepthVariants(
     const sources = {
       label: source.label,
       marker: source.marker,
-      vertex: source.vertex,
+      vertex: composeDepthDeformVertex(source.vertex, variant.key, variant.features),
       fragment: source.fragment,
       ...(source.webgpu ? { webgpu: source.webgpu } : {}),
       ...(source.portableBindings ? { portableBindings: source.portableBindings } : {})

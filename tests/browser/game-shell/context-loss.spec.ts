@@ -23,25 +23,20 @@ withServer((getServer) => {
       ext.loseContext();
       return "lost" as const;
     });
-    // If the context/extension isn't obtainable the canvas isn't WebGL-driven
-    // in this build — assert the shell still reports playing and move on.
-    if (lost === "lost") {
-      const outcome = await page.waitForFunction(() => {
-        const g = window.__AURA3D_SHELL__!.game as { sessionImpl: { state: string } };
-        const menu = document.querySelector(".a3g-shell-menu, [data-a3g-context-lost]");
-        const hud = document.querySelector<HTMLElement>(".a3g-hud, .a3g-game-hud");
-        return {
-          state: g.sessionImpl.state,
-          menuVisible: menu !== null && getComputedStyle(menu as HTMLElement).display !== "none",
-          hudHidden: hud !== null && getComputedStyle(hud).display === "none"
-        };
-      }, undefined, { timeout: 500 }).then((h) => h.jsonValue()).catch(() => null);
-      expect(outcome, "context-lost affordance within 100 ms").not.toBeNull();
-      if (outcome) {
-        expect(["context-lost", "paused"]).toContain(outcome.state);
-        expect(outcome.menuVisible).toBe(true);
-      }
-    }
+    // The harness renders through WebGL2 on the macos-14 runner; a missing
+    // context/extension is a failure, not a pass.
+    expect(lost, "WEBGL_lose_context unavailable on the harness canvas").toBe("lost");
+    // The ContextLost screen must open (and the session pause) promptly.
+    await page.waitForFunction(() => {
+      const menu = document.querySelector<HTMLElement>(".a3g-context-lost");
+      return menu !== null && getComputedStyle(menu).display !== "none";
+    }, undefined, { timeout: 500 });
+    const outcome = await page.evaluate(() => {
+      const g = window.__AURA3D_SHELL__!.game as { sessionImpl: { state: string; pauseReasons: readonly string[] } };
+      return { state: g.sessionImpl.state, reasons: [...g.sessionImpl.pauseReasons] };
+    });
+    expect(outcome.state).toBe("paused");
+    expect(outcome.reasons).toContain("context-lost");
   });
 
   test("withheld restore keeps the Reload affordance", async ({ page }) => {
@@ -56,12 +51,12 @@ withServer((getServer) => {
       ext.loseContext();
       return true;
     });
-    if (!lost) return;
+    expect(lost, "WEBGL_lose_context unavailable on the harness canvas").toBe(true);
     // C-24 contract: after 3 s unrecovered the shell shows a Reload button.
     await page.waitForTimeout(3_100);
     const reload = await page.evaluate(() => {
-      const buttons = [...Array.from(document.querySelectorAll("button, [role='button']"))];
-      return buttons.some((b) => /reload/i.test(b.textContent ?? ""));
+      const buttons = [...Array.from(document.querySelectorAll<HTMLElement>("button, [role='button']"))];
+      return buttons.some((b) => /reload/i.test(b.textContent ?? "") && b.getClientRects().length > 0);
     });
     expect(reload, "Reload affordance after 3 s unrecovered context").toBe(true);
   });

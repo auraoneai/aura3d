@@ -9,10 +9,12 @@ on:
     branches: [main]
   push:
     branches: [main]
+  schedule:
+    - cron: '0 6 * * *'
   workflow_dispatch:
 
 concurrency:
-  group: qr-prd13-${{ github.ref }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  group: qr-prd13-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
@@ -33,3 +35,39 @@ jobs:
       - run: pnpm exec vitest run tests/unit/agent-api/looks.test.ts tests/unit/agent-api/look-lint.test.ts tests/unit/agent-api/prompt-plan-v2.test.ts tests/unit/agent-api/structural-qa.test.ts tests/unit/agent-api/agent-api.test.ts tests/unit/contracts
       - name: PRD-13 delta suite (bundle delta ≤ 12 KB gz)
         run: pnpm exec vitest run --config tests/qr/prd13/vitest.qr-prd13.config.ts
+
+  # 13-SPECS: the three §17.2 browser specs (looks-expansion,
+  # template-look-floor, prompt-plan-render) on an Apple-silicon GPU runner
+  # (ANGLE Metal, the template-lookdev.yml pattern). The config sets
+  # forbidOnly and retries: 0; nothing here is continue-on-error. The report
+  # uploads on every outcome; the job result is the spec result.
+  browser:
+    name: Browser specs (macos-14, ANGLE Metal)
+    runs-on: macos-14
+    timeout-minutes: 120
+    env:
+      PRD13_CHROMIUM_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build workspace packages
+        run: pnpm build:raw
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install chromium
+      - name: 13-SPECS browser specs
+        run: pnpm exec playwright test -c tests/qr/prd13/playwright.config.ts
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qr-prd13-browser-report
+          path: tests/reports/prd13-browser/
+          retention-days: 30
+          if-no-files-found: warn

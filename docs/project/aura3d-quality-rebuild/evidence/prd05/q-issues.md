@@ -4,7 +4,7 @@ Status 2026-10-06: prepared but NOT filed — no GitHub API auth in the lane
 session (`gh` unauthenticated). File each as `gh issue create` with labels
 `qr-request` + `to:prdNN` per CONTRACTS §6.5 (CCR-05-1 uses label `ccr`).
 
-## Q-02-1 → lane 02 (C-11)
+## Q-02-1 → lane 02 (C-11) — #446
 
 `DepthPass.ts`: compose the registered `prd05.lodDither` depth feature;
 select caster LOD `min(level + 1, maxLevel)` from `RenderItem.lodLevel`/
@@ -12,14 +12,14 @@ select caster LOD `min(level + 1, maxLevel)` from `RenderItem.lodLevel`/
 
 Meanwhile: casters use the active level; shadow dither absent (hard switch).
 
-## Q-02-2 → lane 02 (C-09)
+## Q-02-2 → lane 02 (C-09) — #447
 
 `EnvironmentSource`: advertise whether KTX2 `R16G16B16A16_SFLOAT` /
 UASTC-HDR input is accepted.
 
 Meanwhile: `hdri` profile keeps RGBE `.hdr`.
 
-## Q-04-1 → lane 04 (C-16, §3.6)
+## Q-04-1 → lane 04 (C-16, §3.6) — #448
 
 `TypedGLBActor.ts:184-191`: forward the pre-declared
 `options.decoders.{meshopt,draco,imageDecoder}` and `options.maxTextureSize`
@@ -31,7 +31,7 @@ material overrides.
 Meanwhile: lane tests and look-dev call the pipeline directly with registry
 decoders.
 
-## Q-04-2 → lane 04 (§4.3 generated-file)
+## Q-04-2 → lane 04 (§4.3 generated-file) — #449
 
 `GLTFExtensionSupport.ts` via `tools/generate-extension-matrix.mjs`:
 register `MSFT_lod` (`runtime-supported`, `GLTFLoader` +
@@ -41,14 +41,14 @@ register `MSFT_lod` (`runtime-supported`, `GLTFLoader` +
 Meanwhile: lane-05 `GLTFLoader.ts` parses `MSFT_lod` regardless of the
 matrix.
 
-## Q-04-3 → lane 04 (C-16)
+## Q-04-3 → lane 04 (C-16) — #450
 
 Review (not approve-gate) the sRGB compressed-format mapping in
 `webgl2/TextureFormats.ts`.
 
 Meanwhile: merges on lane 05 tests; review comments land as follow-ups.
 
-## Q-11-1 → lane 11 (C-16, C-29)
+## Q-11-1 → lane 11 (C-16, C-29) — #451
 
 `WebGPUDevice.ts`: compressed upload path (`writeTexture` per mip,
 block-aligned `bytesPerRow`) for the §8 item 1 format table
@@ -61,7 +61,7 @@ through `CompressedTextureCapabilities`; quantized vertex formats
 Meanwhile: WebGPU capabilities report none → transcoder emits RGBA8 levels
 (correct, more VRAM).
 
-## Q-11-2 → lane 11 (C-27)
+## Q-11-2 → lane 11 (C-27) — #452
 
 C-27 table: confirm `maxTextureSize` stays the device ceiling and lane 05
 applies per-role caps (§17.1) below it; confirm `lodBias` semantics
@@ -70,7 +70,7 @@ applies per-role caps (§17.1) below it; confirm `lodBias` semantics
 Meanwhile: lane 05 uses `min(C-27 cap, role cap)` and `lodBias` as coverage
 multiplier.
 
-## Q-12-1 → lane 12 (C-30, C-32)
+## Q-12-1 → lane 12 (C-30, C-32) — #453
 
 Include `prd05-*` lane scenes in checkpoint captures (automatic via C-30
 registry); add `public/aura-decoders/**`, `assets/library/**` LFS paths to
@@ -78,7 +78,7 @@ registry); add `public/aura-decoders/**`, `assets/library/**` LFS paths to
 
 Meanwhile: lane workflows capture their own scenes.
 
-## Q-13-1 → lane 13 (C-40)
+## Q-13-1 → lane 13 (C-40) — #454
 
 Rewrite `packages/aura3d-cli/skills/{aura3d-assets/SKILL.md:109,
 meshy-cli/SKILL.md:56-66, aura3d-performance/SKILL.md,
@@ -86,7 +86,7 @@ aura3d-materials-environments/SKILL.md:9-10}` from facts F-05-01..06
 (published `proposed` in CONTRACTS.md Appendix B), then `pnpm skills:sync` /
 `pnpm check:skills`.
 
-## Q-13-2 → lane 13 (C-17, C-40)
+## Q-13-2 → lane 13 (C-17, C-40) — #455
 
 Replace starters in
 `packages/create-aura3d/templates/{product-viewer,racing-starter,mini-game,fighting-game,character-controller,falling-blocks-starter}/aura.assets.json`
@@ -99,11 +99,11 @@ Template-manifest migration rows are in
 Meanwhile: lane fixture project `tests/qr/prd05/fixtures/template-starter/`
 proves the entries pass G1–G11.
 
-## Q-13-3 → lane 13 (§5.4)
+## Q-13-3 → lane 13 (§5.4) — #456
 
 Template opt-in to `A3D_QR_ASSETS` once `standalone-accepted`.
 
-## Q-14-1 → lane 14 (C-17)
+## Q-14-1 → lane 14 (C-17) — #457
 
 `apps/showcase-*/scripts/{register-models,register-assets}.mjs`: pass
 `--quality prototype --role proxy` for scripted geometry so re-runs cannot
@@ -112,14 +112,14 @@ re-register `release`.
 Meanwhile: `assets add --quality release` already errors (Phase 0, landed
 in this PR), so the scripts cannot re-promote.
 
-## Q-14-2 → lane 14 (C-39)
+## Q-14-2 → lane 14 (C-39) — #458
 
 Run `aura3d codemod assets-route-modules --write` on every
 `apps/showcase-*/src/main.ts` (import `src/aura-assets.route.ts`).
 
 Meanwhile: monolithic module still generated; report attached.
 
-## Q-14-3 → lane 14 (C-17, C-35)
+## Q-14-3 → lane 14 (C-17, C-35) — #459
 
 Apply per-game replacement lists (§10.1 classes C/D/F) and the six pilot
 swaps (Skyline Runner, Mech Hangar, Courier Rush, Vault Breakers, Gravity
@@ -127,14 +127,14 @@ Post, Bank Shot).
 
 Meanwhile: lane scenes show the library assets in isolation.
 
-## Q-14-4 → lane 14 (C-33)
+## Q-14-4 → lane 14 (C-33) — #460
 
 `tools/quality-rebuild-capture/games.json`: add
 `qrFlags: ["A3D_QR_ASSETS"]` for swapped routes.
 
 Meanwhile: checkpoint `all` run covers them.
 
-## Q-15-1 → lane 15 (C-16, C-36)
+## Q-15-1 → lane 15 (C-16, C-36) — #461
 
 `compiler/renderer.ts` (ex-`index.ts:13540-13841`), model-node actor
 creation: `await prepareModelDecoders(asset, app.assetDecoders)` from
@@ -144,7 +144,7 @@ creation: `await prepareModelDecoders(asset, app.assetDecoders)` from
 
 Meanwhile: lane tests drive the pipeline directly.
 
-## Q-15-2 → lane 15 (C-17, C-36)
+## Q-15-2 → lane 15 (C-17, C-36) — #462
 
 Model physics binding: when `physics` is set and `asset.colliderUrl` exists
 and `collider !== "bounds"`, call `createCollidersFromSidecar`
@@ -153,7 +153,7 @@ and `collider !== "bounds"`, call `createCollidersFromSidecar`
 Meanwhile: option DIAGNOSTIC_ONLY; lane physics test calls the API
 directly.
 
-## Q-15-3 → lane 15 (§4.4)
+## Q-15-3 → lane 15 (§4.4) — #463
 
 `root-manifest` batch: pin `draco3d` `^1.5.7` → `1.5.7` in root
 `package.json:731`; root script `"assets:optimize": "aura3d assets
@@ -161,20 +161,20 @@ optimize"`.
 
 Meanwhile: tools pin `draco3d@1.5.7` in their own `package.json`.
 
-## Q-15-4 → lane 15 (C-17)
+## Q-15-4 → lane 15 (C-17) — #464
 
 Agree the export shape of `src/aura-assets.route.ts` (package boundary) and
 that `assets/GLTFLoader.ts` stays the single glTF parser.
 
 Meanwhile: generator emits the shape in §6.9.
 
-## CCR-05-1 (label `ccr`, approved by lane 15 + one consumer)
+## CCR-05-1 (label `ccr`, approved by lane 15 + one consumer) — #465
 
 Add optional `RenderItem.lodLevel?: number` and `lodLevels?: number` beside
 the pre-declared `lodFade?` (used only by the integrated shadow-LOD request
 Q-02-1).
 
-## Q-04-3 → lane 04 (C-16 seam, informational)
+## Q-04-3 → lane 04 (C-16 seam, informational) — #466
 
 `GLTFRenderResources.ts` is lane-04-owned but carries the PRD-05 C-16 decode
 channel: `GLTFRenderResourceOptions.qrAssets` (flag channel — assets has no
@@ -186,7 +186,7 @@ flag-off decode paths are byte-identical.
 Meanwhile: edits shipped in lane-05 Phase 1; lane 04 may reclaim the seam
 when their texture work moves in.
 
-## Q-13-1 → lane 13 (C-16, template vendoring)
+## Q-13-1 → lane 13 (C-16, template vendoring) — #467
 
 Templates under `packages/create-aura3d/templates/*/public/` ship
 `aura-assets/` but have no `aura-decoders/`. App-scaffolded consumers of the
@@ -198,7 +198,14 @@ Source of truth: `public/aura-decoders/` (lane 05, sha256-verified).
 Meanwhile: repo apps serve them from the root `public/` dir; scaffolds
 fall back to `AssetDecoderUnavailable` until the templates vendor them.
 
-## Q-15-5 → lane 15 (root manifest, pruned scripts still referenced by workflows)
+Update (PR #615): `@aura3d/assets/vite` now exports `auraDecodersPlugin()`,
+which copies `packages/assets/vendor/{basis,draco,meshopt}` to
+`<outDir>/aura-decoders/` in app builds and serves the tree under
+`/aura-decoders/` in dev. Lane 13 may either vendor the files into each
+template's `public/` or add the plugin to the scaffold's vite config —
+the plugin is the single-code-path option.
+
+## Q-15-5 → lane 15 (root manifest, pruned scripts still referenced by workflows) — #468
 
 QR-15's T7 prune deleted `check:skills`, `check:agent-docs` and `skills:sync`
 from root `package.json`, but `.github/workflows/agent-skills.yml` still runs
@@ -214,7 +221,7 @@ Meanwhile: verified 2026-10-07 — same failure reproduces on origin/main, so it
 is repo-wide, not lane-05. Lane 05 is not re-adding the scripts (root
 package.json is lane 15's).
 
-## Q-13-2 → lane 13 (skills content rot after T7 deletions)
+## Q-13-2 → lane 13 (skills content rot after T7 deletions) — #469
 
 With `check:skills` runnable again, 11 real failures remain, all in
 lane-13-owned skills text: `manifest.templates` keys ≠ `CREATE_AURA3D_TEMPLATES`
@@ -229,7 +236,7 @@ Meanwhile: skills gate stays red on those rows until lane 13 repairs the
 skill text and regenerates the mirrors; lane 05 is not touching
 `packages/aura3d-cli/skills/**`.
 
-## Q-15-6 → lane 15 (pnpm workspace does not cover `tools/asset-optimize`)
+## Q-15-6 → lane 15 (pnpm workspace does not cover `tools/asset-optimize`) — #470
 
 CONTRACTS §4.4 allows `tools/*` manifests, but `pnpm-workspace.yaml` only
 globs `packages/*` and `workers/*`. `tools/asset-optimize/package.json` needs
@@ -242,7 +249,7 @@ module-resolution errors for its files on runners that skipped that step.
 Meanwhile: `asset-optimize.yml` runs `npm ci` first; tool unit tests skip when
 `tools/asset-optimize/node_modules` is absent so shared lanes stay green.
 
-## Q-15-7 → lane 15 (`arch:check` fails repo-wide on drifted sibling files)
+## Q-15-7 → lane 15 (`arch:check` fails repo-wide on drifted sibling files) — #471
 
 `tools/arch-gates/index.ts` (fail mode) reports 38 enforced findings on the
 merged tree — layering `compiler/ → app/` + SCC-153 in
@@ -261,7 +268,7 @@ Meanwhile: lane 05 adds no GLSL strings, no package exports, and no
 `packages/*/src` value-imports across the banned boundaries; the failure is
 informational for this lane.
 
-## Q-15-5 → lane 15 (per-frame camera channel for `prd05.typed-glb-actor-lod`)
+## Q-15-5 → lane 15 (per-frame camera channel for `prd05.typed-glb-actor-lod`) — #472
 
 `registerTypedGLBActorExtension`'s `collectRenderItems(actor, items)` (PR
 0b-3) carries no frame-camera input, and `actor.pipeline.camera` is frozen
@@ -283,7 +290,7 @@ drives `collectRenderItems` per frame against a mutated `pipeline.camera`,
 which proves selection, hysteresis, and per-chain switching end-to-end; the
 integrated per-frame path activates the moment the request lands.
 
-## Q-05-7 → lane 01 (`layout(binding=N)` UBOs illegal in GLSL ES 3.00)
+## Q-05-7 → lane 01 (`layout(binding=N)` UBOs illegal in GLSL ES 3.00) — #473
 
 `resources/UniformBlock.ts` `uniformBlockGlsl` emits
 `layout(std140, binding = N) uniform AuraFrame` — the `binding` layout
@@ -301,7 +308,7 @@ Meanwhile: `apps/asset-lookdev` shims `device.createShaderProgram`
 (`installGeneratedProgramUboShim`) — strips the qualifier and binds named
 blocks to their C-08 points post-link.
 
-## Q-05-8 → lane 01 (`hookSplice` emits `requires` AFTER the requiring chunk)
+## Q-05-8 → lane 01 (`hookSplice` emits `requires` AFTER the requiring chunk) — #474
 
 `program/ProgramGenerator.ts:132-153`: chunk dependencies are pushed onto
 `pending` and spliced **after** the chunk that declared them — so a
@@ -316,7 +323,7 @@ pars-stage deps.
 Meanwhile: lane-05 chunks declare `requires: []` and reach every hook via
 the feature's own `hooks`/`chunks` lists.
 
-## Q-05-9 → lane 04 (`prd04.debugView` is never invoked on the generated path)
+## Q-05-9 → lane 04 (`prd04.debugView` is never invoked on the generated path) — #475
 
 `shaders/physical/debug_view.glsl.ts` (chunk `a3d_prd04_debug_view`, spliced
 at `fragment:end` by feature `prd04.debugView`) only **defines**
@@ -330,7 +337,7 @@ Meanwhile: `prd05.debugView` owns the material channels itself (channels
 metallic/occlusion/uvLayout read `a3dBaseColor`/`v_normal`/`a3dRoughness`/
 `a3dMetallic`/`u_occlusionMap` in scope at `fragment:end`).
 
-## Q-05-10 → lane 01 (`ProgramCache.options.flags` never set → features dead)
+## Q-05-10 → lane 01 (`ProgramCache.options.flags` never set → features dead) — #476
 
 `qrSubFlags.ts` `rendererProgramCache` calls
 `programCacheSlot.get(flags)(device)` — the slot factory signature is
@@ -344,14 +351,14 @@ bit is silently dropped on the real path.
 Meanwhile: the look-dev adapter hands the singleton the resolved flags
 post-construction (`cache.options.flags = resolved`).
 
-## Q-05-6 (referenced; filed earlier — forward path never calls
+## Q-05-6 — #490 (filed as Q-01-4) (referenced; filed earlier — forward path never calls
 `select`/`bindUniforms`): feature activation on forward draws comes solely
 from `material.programFeatures(ctx).features` — the look-dev adapter
 injects the bit via a cloned material (`LookdevDebugMaterial`) and stamps
 the feature uniforms (`a3d_prd05_debugSampler`, `u_prd05LodLevel`,
 `u_prd05TexelBand`) the uninvoked `bindUniforms` would have produced.
 
-## Q-15-8 → lane 15 (lane-owned alias ordering in vite configs)
+## Q-15-8 → lane 15 (lane-owned alias ordering in vite configs) — #477
 
 Generated `vite.aliases.generated.ts` is lane 15's; the look-dev app's own
 `vite.config.ts` must sort aliases longest-first or `/packages/engine`
@@ -359,20 +366,20 @@ shadows `/packages/engine/src/...` subpaths. Filed here since the file is
 lane-owned; workaround is local (explicit sorted alias table in
 `apps/asset-lookdev/vite.config.ts`).
 
-## Q-02-2 → lane 02 (`HdrEquirect.ts` uses `Buffer` at module scope)
+## Q-02-2 → lane 02 (`HdrEquirect.ts` uses `Buffer` at module scope) — #478
 
 `packages/rendering/src/environment/HdrEquirect.ts` evaluates `Buffer`
 helpers at module top level → `ReferenceError: Buffer is not defined` in
 browser bundles. `apps/asset-lookdev` ships `src/buffer-polyfill.ts` as its
 first import; the file should declare its dependency or guard the calls.
 
-## Q-15-9 → lane 15/asset-corpus barrel (`node:crypto` in browser bundles)
+## Q-15-9 → lane 15/asset-corpus barrel (`node:crypto` in browser bundles) — #479
 
 `packages/assets/src/asset-corpus` barrel evaluates `node:crypto` at module
 scope → crash in the browser bundle; consumers must import
 `ProductionGLTFRenderPipeline.js` directly, bypassing the index.
 
-## Q-14-2 → lane 14 (rewrite `apps/showcase-*/src/main.ts` asset imports to route modules)
+## Q-14-2 → lane 14 (rewrite `apps/showcase-*/src/main.ts` asset imports to route modules) — #480
 
 `assets-route-modules` codemod (C-39, `commands/prd05/codemods/assetsRouteModules.ts`)
 reported `--report` over `apps/showcase-*/src/main.ts`: 27 files scanned, 9 carry a
@@ -382,7 +389,7 @@ Lane 14 owns the pilot mains and applies `--write` after running
 `assets typegen --route apps/<app>` per route (route modules are generated, not
 committed).
 
-## Q-13-2 → lane 13 (template manifest entries for the §6.6 library)
+## Q-13-2 → lane 13 (template manifest entries for the §6.6 library) — #481
 
 `evidence/prd05/assets/template-starters.json` maps each starter template's
 `aura.assets.json` ids onto admitted `aura.library.json` entries (with per-slot
@@ -390,7 +397,7 @@ notes where the replacement is an approximation — e.g. no star/coin/key models
 exist in the kit yet). Lane 13 edits `templates/*/aura.assets.json` to point at
 library ids; proof + typegen output under `tests/qr/prd05/fixtures/template-starter/`.
 
-## Q-14-3 / Q-14-4 → lane 14 (pilot replacement lists + leave-one-out attribution)
+## Q-14-3 / Q-14-4 → lane 14 (pilot replacement lists + leave-one-out attribution) — #482
 
 Phase-7 artifacts published in `evidence/prd05/assets/replacement-lists.json`
 (six pilots → admitted library ids + expected `qrFlags`) and
@@ -399,3 +406,21 @@ Q-14-3: route owners adopt the listed replacements and flip the listed flag
 bundles. Q-14-4: `qr-ic-regression` misses are attributed per game by
 leave-one-out against the lane-14 `tools/quality-rebuild-capture` default-URL
 captures (no `?capture=review`).
+
+## Q-CI-1 → infrastructure (workflow_dispatch 403 through git-manager proxy)
+
+`gh workflow run` and the REST `dispatches` endpoint return
+`HTTP 403 Resource not accessible by integration` on this repo, so
+dispatch-only workflows (`asset-lookdev.yml`) cannot be triggered from
+sessions at all. Lane-side alternatives: add a `push:` trigger scoped to a
+lane path filter, or run the same capture via the GitLab bridge. This blocks
+05-S8 (the workflow has 0 runs) — the capture itself is implemented
+(`apps/asset-lookdev/capture.mjs`), only the trigger is missing.
+
+Update 2026-10-09: workaround shipped on `qr/prd05-lookdev-push` (#635) —
+`asset-lookdev.yml` gained a `push` trigger on `qr/prd05-**` scoped to
+`apps/asset-lookdev/**`, prd05 CLI command sources, `lookdev.stage.json`
+and the workflow file, with `LOOKDEV_ASSETS` defaulting to the §6.7
+ten-id corpus when `github.event.inputs.assets` is empty. Push queued
+run 37914665208 (the workflow's first remote execution). The dispatch
+403 itself is still open — other dispatch-only workflows stay untriggerable.

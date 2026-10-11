@@ -3,7 +3,7 @@
 // {no lights, sun, sun+spot} yields the expected terms and no term zeroes
 // another; ambient is additive and never replaces IBL (F-02-01).
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeAll, afterAll, vi } from "vitest";
 import { resolveEnvironment, resolveQrFlags } from "@aura3d/engine/contracts";
 import {
   collectPrd02Lights,
@@ -16,7 +16,7 @@ import {
 import type { AuraLightNode, AuraSceneNode, AuraSceneSnapshot } from "@aura3d/engine";
 
 const FLAGS_ON = resolveQrFlags({ options: { A3D_QR_LIGHTING: true } });
-const FLAGS_OFF = resolveQrFlags({ options: {} });
+const FLAGS_OFF = resolveQrFlags({ options: { A3D_QR_LIGHTING: false } });
 
 const snapshot = (nodes: readonly (unknown | AuraSceneNode)[]): AuraSceneSnapshot => ({
   schema: "aura3d-scene-snapshot/1.0",
@@ -47,6 +47,17 @@ const envSets: Record<string, AuraSceneNode[]> = {
   hdri: [envHdri],
   "none()": [envNone]
 };
+
+
+// This file pins the A3D_QR_LIGHTING-off contract. The compile path reads the
+// ambient env (compiler/lights.ts prd02LightingOn), and lighting is now
+// default-on (flags.state.ts), so pin it off explicitly.
+beforeAll(() => {
+  vi.stubEnv("A3D_QR_LIGHTING", "0");
+});
+afterAll(() => {
+  vi.unstubAllEnvs();
+});
 
 describe("prd02 lighting composition — flag on (S1)", () => {
   it("flag resolution: lighting flag on via options", () => {

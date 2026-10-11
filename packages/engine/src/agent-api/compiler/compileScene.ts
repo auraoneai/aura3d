@@ -35,10 +35,11 @@ import { isRenderableModelNode } from "./observations.js";
 import { createAssetProvenance } from "../diagnostics.js";
 import { applyModelTintBridge } from "./modelMaterials.js";
 import { createProductionRuntimePrimitiveEntries } from "./primitives.js";
+import { qrPrimitiveGeometryOptions } from "./geometry.js";
 import { createProductionRuntimeRendererInput } from "./renderInput.js";
 import type { CollectedLight, EnvironmentLightingOptions, ProductionRendererInput, RenderDevice, RenderItem, RenderSource } from "@aura3d/rendering";
 import type { EnvironmentProbe } from "@aura3d/rendering/contracts";
-import { environmentProbeFactorySlot } from "@aura3d/rendering/contracts";
+import { environmentProbeFactorySlot, isEnvironmentProbeFactoryPending } from "@aura3d/rendering/contracts";
 import { EnvironmentCache, defaultProbeLoader } from "../../../../rendering/src/environment/EnvironmentCache.js";
 import { bindPrd02EnvironmentProbe } from "./environment.js";
 import { resolveEnvironment } from "../../contracts/environment.js";
@@ -135,6 +136,12 @@ export class CompiledSceneImpl implements CompiledScene {
   environmentProbe: EnvironmentProbe | null = null;
   /** Fingerprint of the `resolution.probe` request the live binding was made for. */
   environmentProbeRequest: string | undefined;
+  /**
+   * #1142: state of the async C-09 probe acquire. Flag-on (compiler +
+   * lighting) the probe owns IBL, so readiness must wait for it like the
+   * legacy HDR chain; `undefined` = no probe binding (legacy path owns IBL).
+   */
+  environmentProbeStatus: "pending" | "ready" | "fallback" | undefined;
   private disposed = false;
   private readonly rawSceneNodes: readonly AuraSceneNode[];
 
@@ -179,7 +186,7 @@ export class CompiledSceneImpl implements CompiledScene {
     const contributions = this.persistentContributions;
     const out = new SourceContributions(contributions);
     const ctx = this.mountCtx;
-    const extraPrimitive = createProductionRuntimePrimitiveEntries(flatNodes);
+    const extraPrimitive = createProductionRuntimePrimitiveEntries(flatNodes, qrPrimitiveGeometryOptions(ctx.flags, ctx.quality));
     this.primitiveEntries.push(...extraPrimitive);
 
     const newModelNodes = flatNodes.filter((candidate): candidate is AuraModelNode =>
@@ -188,6 +195,7 @@ export class CompiledSceneImpl implements CompiledScene {
     for (const [index, modelNode] of newModelNodes.entries()) {
       void (async () => {
         const { createTypedGLBActor } = await import("../../production-runtime/TypedGLBActor.js");
+        const { typedGLBActorDecoderOptions } = await import("../AssetDecoders.js"); // Q-15-1 (#461)
         const actor = await createTypedGLBActor({
           asset: modelNode.asset,
           id: modelNode.runtime?.id ?? modelNode.asset.id ?? `added-model-${index + 1}`,
@@ -196,6 +204,7 @@ export class CompiledSceneImpl implements CompiledScene {
           height: ctx.canvas.height,
           ...(modelNode.hiddenNodeNames ? { hiddenNodeNames: modelNode.hiddenNodeNames } : {}),
           ...(modelNode.role === "primaryWorld" ? { consolidateStaticMeshes: true } : {}),
+          ...typedGLBActorDecoderOptions(ctx.flags, undefined),
           ...applyModelTintBridge(modelNode)
         });
         if (this.disposed || !runtimeIdStillLive(this, runtimeIdOf(modelNode))) {
@@ -325,6 +334,8 @@ async function compileSceneReal(snapshot: AuraSceneSnapshot, ctx: SceneCompileCo
   const actorEntries: ProductionRuntimeActorEntry[] = modelNodes.length > 0
     ? await (async () => {
         const { createTypedGLBActor } = await import("../../production-runtime/TypedGLBActor.js");
+        const { typedGLBActorDecoderOptions } = await import("../AssetDecoders.js"); // Q-15-1 (#461)
+        const decoderOptions = typedGLBActorDecoderOptions(ctx.flags, undefined);
         return await Promise.all(modelNodes.map(async (node, index) => ({
           node,
           actor: await createTypedGLBActor({
@@ -335,12 +346,13 @@ async function compileSceneReal(snapshot: AuraSceneSnapshot, ctx: SceneCompileCo
             height: canvas.height,
             ...(node.hiddenNodeNames ? { hiddenNodeNames: node.hiddenNodeNames } : {}),
             ...(node.role === "primaryWorld" ? { consolidateStaticMeshes: true } : {}),
+            ...decoderOptions,
             ...applyModelTintBridge(node)
           })
         })));
       })()
     : [];
-  const primitiveEntries = createProductionRuntimePrimitiveEntries(flattened);
+  const primitiveEntries = createProductionRuntimePrimitiveEntries(flattened, qrPrimitiveGeometryOptions(ctx.flags, ctx.quality));
 
   const handledNodes: { node: AuraSceneNode; handler: AnyNodeHandler }[] = [];
   const contributions = createContributions();
@@ -453,22 +465,42 @@ function updateCompiledSceneReal(
       const tier = ctx.quality.tier;
       const resolution = resolveEnvironment(liveSnapshot, tier, ctx.flags);
       if (resolution.kind !== "legacy") {
+        // The loader resolves the C-09 factory per load (getter), so a
+        // provider registered after this cache exists is still used.
         impl.environmentCache ??= new EnvironmentCache(
           device,
           environmentProbeFactorySlot.get(ctx.flags)(device),
-          defaultProbeLoader(environmentProbeFactorySlot.get(ctx.flags)(device))
+          defaultProbeLoader(() => environmentProbeFactorySlot.get(ctx.flags)(device))
         );
         const requestKey = JSON.stringify(resolution.probe);
-        if (impl.environmentProbeRequest !== requestKey) {
+        // `pending:<key>` = the last bind hit the C-09 stub; rebind once the
+        // provider is real (no per-frame retry while it stays pending).
+        const awaitingProvider = impl.environmentProbeRequest === `pending:${requestKey}`
+          && isEnvironmentProbeFactoryPending(environmentProbeFactorySlot.get(ctx.flags)(device));
+        if (impl.environmentProbeRequest !== requestKey && !awaitingProvider) {
           impl.environmentProbeRequest = requestKey;
           const binding = bindPrd02EnvironmentProbe(resolution, {
             device,
             tier,
             flags: ctx.flags,
             cache: impl.environmentCache,
-            onUpgrade: (probe) => { impl.environmentProbe = probe; }
+            onUpgrade: (probe) => { impl.environmentProbe = probe; },
+            // Probe still pending: keep the floor and bind again next update.
+            onUpgradeFailed: (_error, retryable) => {
+              if (retryable && impl.environmentProbeRequest === requestKey) impl.environmentProbeRequest = `pending:${requestKey}`;
+            }
           });
           impl.environmentProbe = binding.probe;
+          if (binding.pending) {
+            impl.environmentProbeStatus = "pending";
+            const key = requestKey;
+            binding.pending.then(
+              () => { if (impl.environmentProbeRequest === key) impl.environmentProbeStatus = "ready"; },
+              () => { if (impl.environmentProbeRequest === key) impl.environmentProbeStatus = "fallback"; }
+            );
+          } else {
+            impl.environmentProbeStatus = "ready";
+          }
         }
         const probed = mergedSource as RenderSource & {
           environmentLighting?: EnvironmentLightingOptions | false;
@@ -500,7 +532,7 @@ function updateCompiledSceneReal(
  * changed keeps its object identity, so unchanged nodes cost no re-allocation.
  */
 function reuseRenderItems(
-  impl: CompiledSceneImpl,
+  impl: Pick<CompiledSceneImpl, "primitiveEntries" | "actorEntries" | "itemCache">,
   source: RenderSource,
   runtime: AuraRuntimeNodeRegistry
 ): RenderSource {
@@ -528,13 +560,20 @@ function reuseRenderItems(
     const node = nodeForItem(item);
     const runtimeId = node ? runtimeIdOf(node) : "";
     const handle = runtimeId ? runtime?.get(runtimeId) : undefined;
-    if (!handle || (node && isVolatile(node))) return item;
+    // #1142: volatility is also an item property. A skinned/morphed GLB with
+    // no authored animation (08-skinned-character, bind pose) still carries a
+    // per-frame skin palette / morph state, so its item is never reused.
+    if (!handle || (node && isVolatile(node)) || isVolatileItem(item)) return item;
     const index = perNodeIndex.get(runtimeId) ?? 0;
     perNodeIndex.set(runtimeId, index + 1);
     const key = `${runtimeId}:${index}`;
     const version = handle.version ?? 0;
     const cached = impl.itemCache.get(key);
-    if (cached && cached.version === version) {
+    // #1142: async upgrades (GLB/primitive texture upload, HDRI) rebuild an
+    // item's material or geometry without bumping the node version. Reuse
+    // only while the fresh item still points at the same resources; else the
+    // first-frame (untextured) item would be presented forever.
+    if (cached && cached.version === version && sameItemResources(cached.item, item)) {
       nextCache.set(key, cached);
       return cached.item;
     }
@@ -544,6 +583,19 @@ function reuseRenderItems(
   impl.itemCache = nextCache;
   return { ...source, collectRenderItems: () => reused };
 }
+
+/** Items whose content changes every frame without a node version bump. */
+function isVolatileItem(item: RenderItem): boolean {
+  return item.skinning !== undefined || (item.morphTargets?.length ?? 0) > 0 || (item.morphWeights?.length ?? 0) > 0;
+}
+
+/** Same geometry and material objects → the cached item is still current. */
+function sameItemResources(cached: RenderItem, fresh: RenderItem): boolean {
+  return cached.geometry === fresh.geometry && cached.material === fresh.material;
+}
+
+/** @internal test seam for the T3.12 reuse rules (#1142). */
+export const reuseRenderItemsForTest = reuseRenderItems;
 
 /** The real C-36 impl, provided once from `lanes/prd15.ts`. */
 export const realCompilerImpl: CompilerImpl = {

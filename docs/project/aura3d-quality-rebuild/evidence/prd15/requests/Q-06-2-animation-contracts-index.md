@@ -1,5 +1,7 @@
 # Q-06-2 — create packages/animation/src/contracts/index.ts
 
+**Issue:** #1009 (P-64 writeback)
+
 **Status:** APPLIED BY LANE 15 (2026-10-06)
 **Requesting lane:** 15 (PRD-15 Phase 5, public surface)
 **Owning lane:** 06 (`packages/animation/`)

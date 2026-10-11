@@ -103,11 +103,11 @@ const game = createGame({
     theme: "motorsport",
     maxScreenFraction: 0.15,
     widgets: [
-      { id: "job", kind: "label", anchor: "top", label: "DISPATCH" },
-      { id: "score", kind: "score", anchor: "top-left", label: "PAY" },
-      { id: "timer", kind: "label", anchor: "top-right", label: "TIMER" },
-      { id: "strikes", kind: "label", anchor: "bottom-left", label: "STRIKES" },
-      { id: "prompt", kind: "label", anchor: "bottom", label: "ACTION" }
+      { id: "job", kind: "prompt", anchor: "top", label: "DISPATCH" },
+      { id: "score", kind: "prompt", anchor: "top-left", label: "PAY" },
+      { id: "timer", kind: "prompt", anchor: "top-right", label: "TIMER" },
+      { id: "strikes", kind: "prompt", anchor: "bottom-left", label: "STRIKES" },
+      { id: "prompt", kind: "prompt", anchor: "bottom", label: "ACTION" }
     ]
   },
   touch: {
@@ -116,16 +116,16 @@ const game = createGame({
   },
   sound: {
     cues: {
-      "engine": { asset: "courierEngineSfx" },
-      "ambient-city": { asset: "courierAmbientCitySfx" },
-      "dispatch": { asset: "courierDispatchBlipSfx" },
-      "pickup": { asset: "courierParcelPickupSfx" },
-      "drop": { asset: "courierParcelDropSfx" },
-      "early-bonus": { asset: "courierEarlyBonusSfx" },
-      "strike": { asset: "courierStrikeHitSfx" },
-      "horn": { asset: "courierHornNearSfx" },
-      "shift-clear": { asset: "courierShiftClearSfx" },
-      "shift-fail": { asset: "courierShiftFailSfx" }
+      "engine": { asset: assets.courierEngineSfx },
+      "ambient-city": { asset: assets.courierAmbientCitySfx },
+      "dispatch": { asset: assets.courierDispatchBlipSfx },
+      "pickup": { asset: assets.courierParcelPickupSfx },
+      "drop": { asset: assets.courierParcelDropSfx },
+      "early-bonus": { asset: assets.courierEarlyBonusSfx },
+      "strike": { asset: assets.courierStrikeHitSfx },
+      "horn": { asset: assets.courierHornNearSfx },
+      "shift-clear": { asset: assets.courierShiftClearSfx },
+      "shift-fail": { asset: assets.courierShiftFailSfx }
     }
   },
   juice: {
@@ -134,11 +134,11 @@ const game = createGame({
     "shift-fail": { trauma: 0.2, hitStopMs: 50 }
   },
   qualityRebuild: {
-    // FLAG-1: arm the engine features this route uses — `game` selects the
-    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
-    // art/direction.ts sections. `route_courier_rush` uses the engine-parseable
-    // underscore form (URL/dispatch form is `route-courier-rush`).
-    flags: ["route_courier_rush", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+    // T0-29 (#1232): only what the route itself needs — its route token and
+    // `game` (the real C-24 shell: beacon/evidence/HUD/touch). Engine lane
+    // flags come from URL/env/defaults like every other route, so `none`
+    // and `-<flag>` arms actually turn them off.
+    flags: ["route_courier_rush", "game"]
   }
 });
 

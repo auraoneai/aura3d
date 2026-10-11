@@ -1,5 +1,7 @@
 # Q-12-4 — `MIGRATION-2.0.md` relocated to `docs/migration/2.0.md`
 
+**Issue:** #1035 (P-64 writeback)
+
 **From:** Lane 15 (PRD-15, Phase 7 T7.8)
 **To:** Lane 12 (owner of `tools/external-parity-docs-readiness`)
 **Status:** filed

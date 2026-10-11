@@ -1,5 +1,7 @@
 # Q-11-7 → to:prd11 (qr-request, CONTRACTS §6.5)
 
+**Issue:** #1031 (P-64 writeback)
+
 **Files:** `tools/bundle-size/index.ts`, `tools/bundle-size/markdown.mjs` (11-owned)
 **Contract served:** PRD-15 T8.1 — `packages/lean` is deleted in 4.0.0. The
 bundle-size tool's first scenario still points at

@@ -19,6 +19,11 @@ on:
         description: "Desktop viewports, WIDTHxHEIGHT comma-separated"
         required: false
         default: "1920x1080,1280x720"
+      flags_exact:
+        description: "#626: qr_flags is the entire flag list (games.json defaults are not prepended). Keep on for flags-off / promotion baselines."
+        type: boolean
+        required: false
+        default: true
       qr_flags:
         description: "QrFlag list passed to captures as a3d-qr=<list> (none|all|comma list)"
         required: false
@@ -32,6 +37,11 @@ on:
         type: boolean
         required: false
         default: true
+      sourcemap:
+        description: "T0-29: build games with sourcemaps and write a mapped crash table (crash-table.md)"
+        type: boolean
+        required: false
+        default: false
       ref:
         description: "Git ref to check out (e.g. a baseline commit like c08d8acb for T1.12 detectors)"
         required: false
@@ -54,6 +64,10 @@ on:
         type: string
         required: false
         default: "1920x1080,1280x720"
+      flags_exact:
+        type: boolean
+        required: false
+        default: false
       qr_flags:
         type: string
         required: false
@@ -66,6 +80,10 @@ on:
         type: boolean
         required: false
         default: true
+      sourcemap:
+        type: boolean
+        required: false
+        default: false
       ref:
         type: string
         required: false
@@ -85,7 +103,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: quality-rebuild-capture-${{ github.ref }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  group: quality-rebuild-capture-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
@@ -101,7 +119,10 @@ jobs:
       QRC_VIEWPORTS: ${{ inputs.viewports || '1920x1080,1280x720' }}
       QRC_LOCAL_BUILD: ${{ inputs.local_build_all && 'true' || 'false' }}
       QRC_FLAGS: ${{ inputs.qr_flags || 'none' }}
+      # #626: exact mode on dispatch (default) so a flags-off capture is really flags-off.
+      QRC_FLAGS_EXACT: ${{ inputs.flags_exact && 'true' || 'false' }}
       QRC_TITLE_REPEATS: ${{ inputs.title_repeats || '0' }}
+      QRC_SOURCEMAP: ${{ inputs.sourcemap && 'true' || 'false' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -139,6 +160,14 @@ jobs:
         id: capture
         run: node tools/quality-rebuild-capture/capture-games.mjs --skip-build
 
+      - name: Sourcemapped crash table (T0-29)
+        if: ${{ always() && inputs.sourcemap }}
+        run: |
+          set -euo pipefail
+          test -f tools/quality-rebuild-capture/out/report.json || { echo "::error::no capture report to map"; exit 1; }
+          node tools/quality-rebuild-capture/map-stack.mjs --report tools/quality-rebuild-capture/out/report.json \
+            tools/quality-rebuild-capture/.build | tee tools/quality-rebuild-capture/out/crash-table.md >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload game captures
         if: always()
         uses: actions/upload-artifact@v4
@@ -166,6 +195,9 @@ jobs:
       # Chromium with QR_BENCH_CHROME_ARGS. The script is optional; the job is a no-op without it.
       QR_BENCH_OUT: benchmarks/quality-rebuild/out
       QR_BENCH_CHROME_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+      # CI-2: forward the requested flag set; capture.mjs reads QRC_FLAGS, so the
+      # bench report's qrFlags previously stayed "none" for every request.
+      QRC_FLAGS: ${{ inputs.qr_flags || 'none' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -194,11 +226,9 @@ jobs:
         id: bench
         run: |
           mkdir -p "$QR_BENCH_OUT"
-          if [ -f benchmarks/quality-rebuild/ci.sh ]; then
-            bash benchmarks/quality-rebuild/ci.sh
-          else
-            echo "benchmarks/quality-rebuild/ci.sh not present at ${GITHUB_SHA}; benchmark skipped." | tee "$QR_BENCH_OUT/SKIPPED.txt"
-          fi
+          # RF5: a missing ci.sh was reported as a successful skip.
+          test -f benchmarks/quality-rebuild/ci.sh || { echo "::error::benchmarks/quality-rebuild/ci.sh missing at ${GITHUB_SHA}"; exit 1; }
+          bash benchmarks/quality-rebuild/ci.sh
 
       - name: Upload benchmark results
         if: always()

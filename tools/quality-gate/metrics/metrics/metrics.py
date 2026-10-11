@@ -98,12 +98,27 @@ def _mask_flat(mask: np.ndarray | None, shape: tuple[int, int]) -> np.ndarray:
 # --------------------------------------------------------------------------
 
 def flip(ref: np.ndarray, test: np.ndarray, mask: np.ndarray | None = None) -> float:
-    """NVlabs flip-evaluator, LDR mode, ppd=67.0 (default viewing conditions)."""
+    """NVlabs flip-evaluator, LDR mode, ppd=67.0 (default viewing conditions).
+
+    flip-evaluator==1.7 (requirements.lock) signature: evaluate(reference, test,
+    dynamicRangeString, ..., parameters={"ppd": ...}) -> (errorMap, meanError,
+    parameters). The previous call passed ppd= as a keyword and unpacked the
+    tuple as (mean, weighted, map), so FLIP raised TypeError under the pins
+    (GPU run 38140681359). With a mask, the mean is taken over masked pixels.
+    """
     from flip_evaluator import evaluate as flip_evaluate  # lazy: pinned dep
 
     ref_c, test_c = _same_size(ref, test)
-    mean, _weighted, _map = flip_evaluate(ref_c.astype(np.float32), test_c.astype(np.float32), "LDR", ppd=67.0)
-    return float(mean)
+    error_map, mean_error, _params = flip_evaluate(
+        ref_c.astype(np.float32), test_c.astype(np.float32), "LDR", parameters={"ppd": 67.0}
+    )
+    if mask is None:
+        return float(mean_error)
+    m = np.asarray(mask, dtype=bool)
+    if m.shape != error_map.shape[:2] or not m.any():
+        return float(mean_error)
+    values = error_map[..., 0] if error_map.ndim == 3 else error_map
+    return float(values[m].mean())
 
 
 def _gaussian_window(size: int, sigma: float) -> np.ndarray:

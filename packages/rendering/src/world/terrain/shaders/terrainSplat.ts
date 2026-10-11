@@ -11,9 +11,15 @@ uniform highp sampler2D u_height;       // shared with the vertex stage
 uniform highp sampler2D u_splat0;       // layers 0..3 weights in RGBA
 uniform highp sampler2D u_splat1;       // layers 4..7 weights (optional)
 uniform highp sampler2D u_holes;        // 1-bit hole mask
+// A3D_TERRAIN_SOLID (tint-only Path S program): no layer texture arrays are
+// declared. An unbound sampler2DArray defaults to texture unit 0 next to the
+// sampler2D u_height, and two sampler types on one unit make every draw fail
+// with INVALID_OPERATION — the terrain never reached the frame.
+#ifndef A3D_TERRAIN_SOLID
 uniform highp sampler2DArray u_layerAlbedoHeight; // per layer: albedo RGB + height A
 uniform highp sampler2DArray u_layerNormal;       // per layer: tangent normal RG
 uniform highp sampler2DArray u_layerOrm;          // per layer: occlusion/roughness/metalness
+#endif
 uniform sampler2D u_macroVariation;     // macro anti-tiling noise
 uniform vec4 u_layerParams[8];          // x: uvScale, y: triplanar flag, z: heightBlendContrast, w: layer count
 uniform vec4 u_layerTintOrm[8];         // rgb: tint, a: roughness bias
@@ -54,7 +60,11 @@ void a3dTerrainHeightBlend(inout float w[8], vec2 worldXZ, float viewDist, int l
     if (i >= layerCount) break;
     vec4 params = u_layerParams[i];
     vec2 uvA = worldXZ / max(params.x, 1e-3);
+#ifdef A3D_TERRAIN_SOLID
+    float heightA = 0.0 * uvA.x; // tint-only: no per-layer height maps
+#else
     float heightA = texture(u_layerAlbedoHeight, vec3(uvA, float(i))).a;
+#endif
     w[i] += heightA * params.z + macro * t * 0.05;
     hbMax = max(hbMax, w[i]);
   }

@@ -1,14 +1,15 @@
 /**
  * PRD-02 §7.1 — the neutral-room environment scene, ported verbatim from
  * three.js r185 examples/jsm/environments/RoomEnvironment.js (MIT).
- * Geometry/emissive values match the r185 file so the CPU prefilter and the
- * GPU path render the same neutral studio.
+ * Geometry/emissive values match the r185 file (node_modules/three, pinned
+ * 0.185.1) so the CPU prefilter and the GPU path render the same neutral
+ * studio, including the scene's y = -3.5 offset and the point-lit walls.
  */
 export interface RoomBox {
   readonly position: readonly [number, number, number];
   readonly scale: readonly [number, number, number];
   readonly rotationY: number;
-  /** Non-emissive reflectance (walls use ≈0.32 white lambertian). */
+  /** Lambertian reflectance: r185 uses default (white) `MeshStandardMaterial`s → 1. */
   readonly albedo: readonly [number, number, number];
 }
 export interface RoomEmissivePanel {
@@ -31,6 +32,9 @@ export interface RoomEnvironmentSceneDescriptor {
   readonly light: RoomPointLight;
 }
 
+/** r185 `RoomEnvironment` sets `this.position.y = -3.5`: the whole room sits 3.5 below the capture point. */
+export const ROOM_ENVIRONMENT_SCENE_OFFSET_Y = -3.5;
+
 /** Panel emissive intensities, r185 verbatim. */
 export const ROOM_ENVIRONMENT_PANEL_RADIANCES: readonly number[] = [50, 50, 17, 43, 20, 100];
 
@@ -39,15 +43,15 @@ export function createRoomEnvironmentScene(): RoomEnvironmentSceneDescriptor {
     position: [-0.757, 13.219, 0.717],
     scale: [31.713, 28.305, 28.591],
     rotationY: 0,
-    albedo: [0.32, 0.32, 0.32]
+    albedo: [1, 1, 1]
   };
   const boxes: RoomBox[] = [
-    { position: [-10.906, 2.009, 1.846], scale: [2.328, 7.905, 4.651], rotationY: -0.195, albedo: [0.3, 0.3, 0.3] },
-    { position: [-5.607, -0.754, -0.758], scale: [1.970, 1.534, 3.955], rotationY: 0.994, albedo: [0.3, 0.3, 0.3] },
-    { position: [6.167, 0.857, 7.803], scale: [3.927, 6.285, 3.687], rotationY: 0.561, albedo: [0.3, 0.3, 0.3] },
-    { position: [-2.017, 0.018, 6.124], scale: [2.002, 4.566, 2.064], rotationY: 0.333, albedo: [0.3, 0.3, 0.3] },
-    { position: [2.291, -0.756, -2.621], scale: [1.546, 1.552, 1.496], rotationY: -0.286, albedo: [0.3, 0.3, 0.3] },
-    { position: [-2.193, -0.369, -5.547], scale: [3.875, 3.487, 2.986], rotationY: 0.516, albedo: [0.3, 0.3, 0.3] }
+    { position: [-10.906, 2.009, 1.846], scale: [2.328, 7.905, 4.651], rotationY: -0.195, albedo: [1, 1, 1] },
+    { position: [-5.607, -0.754, -0.758], scale: [1.970, 1.534, 3.955], rotationY: 0.994, albedo: [1, 1, 1] },
+    { position: [6.167, 0.857, 7.803], scale: [3.927, 6.285, 3.687], rotationY: 0.561, albedo: [1, 1, 1] },
+    { position: [-2.017, 0.018, 6.124], scale: [2.002, 4.566, 2.064], rotationY: 0.333, albedo: [1, 1, 1] },
+    { position: [2.291, -0.756, -2.621], scale: [1.546, 1.552, 1.496], rotationY: -0.286, albedo: [1, 1, 1] },
+    { position: [-2.193, -0.369, -5.547], scale: [3.875, 3.487, 2.986], rotationY: 0.516, albedo: [1, 1, 1] }
   ];
   const panels: RoomEmissivePanel[] = [
     { position: [-16.116, 14.37, 8.208], scale: [0.1, 2.428, 2.739], rotationY: 0, emissive: [50, 50, 50] },   // -x right
@@ -75,9 +79,14 @@ const add = (a: V3, b: V3): V3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 const scale = (a: V3, s: number): V3 => [a[0] * s, a[1] * s, a[2] * s];
 const dot = (a: V3, b: V3): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 
+/**
+ * World → box-local for a box with three's `rotation.y = angle`. three's
+ * `makeRotationY(a)` maps local → world as x' = c·x + s·z, z' = −s·x + c·z,
+ * so the inverse is x = c·x' − s·z', z = s·x' + c·z'.
+ */
 function rotateYInv(p: V3, angle: number): V3 {
-  const c = Math.cos(-angle);
-  const s = Math.sin(-angle);
+  const c = Math.cos(angle);
+  const s = Math.sin(angle);
   return [p[0] * c - p[2] * s, p[1], p[0] * s + p[2] * c];
 }
 
@@ -108,41 +117,94 @@ function boxHit(origin: V3, dir: V3, box: { position: readonly number[]; scale: 
   return slabHit(o, d, [box.scale[0]! / 2, box.scale[1]! / 2, box.scale[2]! / 2]);
 }
 
+/** Physical point-light distance falloff, three r185 `getDistanceAttenuation`. */
+function distanceAttenuation(d: number, cutoff: number, decay: number): number {
+  let falloff = 1 / Math.max(d ** decay, 0.01);
+  if (cutoff > 0) {
+    const x = Math.min(Math.max(1 - (d / cutoff) ** 4, 0), 1);
+    falloff *= x * x;
+  }
+  return falloff;
+}
+
+interface SurfaceHit {
+  readonly t: number;
+  readonly normal: V3;
+}
+
+/** Ray vs a Y-rotated box: hit distance and the world-space normal facing the ray. */
+function boxSurfaceHit(origin: V3, dir: V3, box: { position: readonly number[]; scale: readonly number[]; rotationY: number }): SurfaceHit | null {
+  const o = rotateYInv(sub(origin, box.position as V3), box.rotationY);
+  const d = rotateYInv(dir, box.rotationY);
+  const half: V3 = [box.scale[0]! / 2, box.scale[1]! / 2, box.scale[2]! / 2];
+  const t = slabHit(o, d, half);
+  if (t <= 0) return null;
+  // The hit face is the slab whose plane the local hit point lies on.
+  const p = add(o, scale(d, t));
+  let axis = 0;
+  let best = Infinity;
+  for (let i = 0; i < 3; i += 1) {
+    const gap = Math.abs(Math.abs(p[i]!) - half[i]!);
+    if (gap < best) { best = gap; axis = i; }
+  }
+  // Facing the ray: outside faces (props) and the room's inner faces (BackSide) alike.
+  const local: V3 = [0, 0, 0];
+  local[axis] = d[axis]! > 0 ? -1 : 1;
+  const c = Math.cos(box.rotationY);
+  const s = Math.sin(box.rotationY);
+  return { t, normal: [local[0] * c + local[2] * s, local[1], -local[0] * s + local[2] * c] };
+}
+
+let cachedScene: RoomEnvironmentSceneDescriptor | null = null;
+
 /**
- * Analytic radiance of the room scene along `dir` from the origin:
- * nearest of (emissive panels → their emissive) and (room interior walls,
- * boxes → lambertian bounce ≈ albedo/π attenuated by distance, floor a bit
- * darker). Deterministic — used by `environments bake` for the neutral
- * preset and by tests comparing against the r185 source.
+ * Analytic radiance of the r185 room along `dir`, seen from the PMREM capture
+ * point. three's `RoomEnvironment` shifts the whole scene by y = -3.5
+ * (`this.position.y`), so the capture point sits at y = +3.5 in scene space.
+ *
+ *  - emissive panels (`MeshLambertMaterial`, black colour, white emissive ×
+ *    intensity) → their emissive radiance;
+ *  - room walls (BackSide) and prop boxes are default `MeshStandardMaterial`s
+ *    (white, roughness 1, metalness 0): Lambertian albedo 1 lit only by the
+ *    `PointLight(0xffffff, 900, 28, 2)`, i.e. `(1/π) · 900 · max(0, n·l) ·
+ *    attenuation(d)`. No shadows: PMREM capture renders without shadow maps.
+ *
+ * Deterministic. Used by `environments bake` for the neutral preset, by the
+ * neutral floor constants, and by tests against the pinned three file.
  */
 export function sampleRoomEnvironment(dir: readonly [number, number, number]): V3 {
-  const scene = createRoomEnvironmentScene();
-  const origin: V3 = [0, 0, 0];
+  const scene = (cachedScene ??= createRoomEnvironmentScene());
+  const origin: V3 = [0, -ROOM_ENVIRONMENT_SCENE_OFFSET_Y, 0];
+  const len = Math.hypot(dir[0], dir[1], dir[2]) || 1;
+  const ray: V3 = [dir[0] / len, dir[1] / len, dir[2] / len];
   let bestT = Infinity;
   let radiance: V3 = [0, 0, 0];
   for (const panel of scene.panels) {
-    const t = boxHit(origin, dir as V3, panel);
+    const t = boxHit(origin, ray, panel);
     if (t > 0 && t < bestT) {
       bestT = t;
       radiance = [panel.emissive[0], panel.emissive[1], panel.emissive[2]];
     }
   }
-  const wallT = boxHit(origin, dir as V3, scene.room);
-  for (const box of scene.boxes) {
-    const t = boxHit(origin, dir as V3, box);
-    if (t > 0 && t < bestT && t < wallT) {
-      bestT = t;
-      const hit = add(origin, scale(dir as V3, t));
-      const darkening = hit[1] < scene.room.position[1] ? 0.6 : 1.0; // lower boxes shade
-      const l = 0.32 * darkening / Math.PI;
-      radiance = [l, l, l];
+  let surface: { hit: SurfaceHit; albedo: readonly [number, number, number] } | null = null;
+  for (const box of [scene.room, ...scene.boxes]) {
+    const hit = boxSurfaceHit(origin, ray, box);
+    if (hit && hit.t < bestT) {
+      bestT = hit.t;
+      surface = { hit, albedo: box.albedo };
     }
   }
-  if (bestT === Infinity && wallT > 0) {
-    const hit = add(origin, scale(dir as V3, wallT));
-    const floorish = dir[1] < -0.2 ? 0.05 : 0.0;
-    const l = 0.32 / Math.PI + floorish;
-    radiance = [l, l, l];
+  if (surface) {
+    const p = add(origin, scale(ray, surface.hit.t));
+    const toLight = sub(scene.light.position as V3, p);
+    const d = Math.hypot(toLight[0], toLight[1], toLight[2]);
+    const nDotL = Math.max(0, dot(surface.hit.normal, scale(toLight, 1 / d)));
+    const e = scene.light.intensity * nDotL * distanceAttenuation(d, scene.light.distance, scene.light.decay);
+    radiance = [
+      (surface.albedo[0] / Math.PI) * e * scene.light.color[0],
+      (surface.albedo[1] / Math.PI) * e * scene.light.color[1],
+      (surface.albedo[2] / Math.PI) * e * scene.light.color[2]
+    ];
   }
   return radiance;
 }

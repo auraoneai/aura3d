@@ -113,3 +113,41 @@ describe("flag on — R15 defaults for preset-defaulted values only", () => {
     expect(lowered.find((o) => o.emissiveColor !== undefined)?.emissiveStrength).toBe(1.0);
   });
 });
+
+describe("R-14-14 presets (#80, #84) and visualQA deprecation (#192)", () => {
+  it("felt is a sheen lobe preset; lacquer and carPaint carry a clearcoat lobe", () => {
+    const felt = material.felt();
+    expect(felt.sheen).toBeGreaterThan(0);
+    expect(felt.clearcoat ?? 0).toBe(0);
+    expect(material.lacquer().clearcoat).toBe(1);
+    const paint = material.carPaint();
+    expect(paint.clearcoat).toBe(1);
+    expect(paint.metallic).toBeGreaterThan(0.5);
+    expect(material.presets()).toHaveProperty("carPaint");
+  });
+
+  it("new presets stamp the marker and honour caller overrides", () => {
+    const paint = material.carPaint({ color: "#0000ff" });
+    expect(paint.color).toBe("#0000ff");
+    expect(defaultedKeys(paint)?.has("color")).toBe(false);
+    expect(defaultedKeys(paint)?.has("clearcoat")).toBe(true);
+  });
+
+  it("planet delegates to the solar preset table; every preset field is marked defaulted", () => {
+    const ice = material.planet("ice");
+    expect(ice.color).toBe("#93c5fd");
+    expect(ice.clearcoat).toBe(1);
+    const keys = defaultedKeys(ice);
+    expect(keys?.has("color")).toBe(true);
+    expect(keys?.has("clearcoat")).toBe(true);
+    const custom = material.planet("moon", { color: "#ffffff" });
+    expect(custom.color).toBe("#ffffff");
+    expect(defaultedKeys(custom)?.has("color")).toBe(false);
+  });
+
+  it("atmosphere is a translucent emissive shell", () => {
+    const shell = material.atmosphere();
+    expect(shell.opacity).toBeLessThan(1);
+    expect(shell.emissive).toBeDefined();
+  });
+});

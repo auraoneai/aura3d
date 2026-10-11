@@ -42,7 +42,7 @@ void main() {
 `;
 
 /**
- * Display-grade bake: one draw per slice into the 33³ RGBA8 TEXTURE_3D with
+ * Display-grade bake: one draw per slice into the 65³ RGBA8 TEXTURE_3D with
  * `framebufferTextureLayer`. Applies contrast (pivot 0.5), saturation,
  * vibrance and the optional user `.cube` sample, in the display domain —
  * the same math the analytic grade would apply per pixel.

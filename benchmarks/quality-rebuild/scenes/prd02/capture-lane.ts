@@ -112,7 +112,9 @@ async function captureOne(
   timeoutMs: number,
   flags: string
 ): Promise<CaptureResult> {
-  const flagsQuery = flags && flags !== "none" ? `&a3d-qr=${encodeURIComponent(flags)}` : "";
+  // Always pass the flag set: lane specs default to qrFlags ["lighting"], so
+  // omitting `a3d-qr` for flags=none silently captured flag-on frames.
+  const flagsQuery = `&a3d-qr=${encodeURIComponent(flags || "none")}`;
   const controlQuery = control ? `&control=${encodeURIComponent(control)}` : "";
   const context = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1, colorScheme: "dark" });
   const page = await context.newPage();
@@ -121,8 +123,8 @@ async function captureOne(
   try {
     await page.goto(`${baseUrl}/scenes/prd02/lane.html?engine=${engine}&scene=${scene}${flagsQuery}${controlQuery}`, { waitUntil: "load", timeout: 60_000 });
     // String payloads: esbuild `__name` must not leak into page.evaluate.
-    await page.waitForFunction("() => Boolean(window.__QR_READY__ || window.__QR_ERROR__)", undefined, { timeout: timeoutMs, polling: 250 });
-    const state = await page.evaluate("() => ({ ready: window.__QR_READY__ ?? null, error: window.__QR_ERROR__ ?? null })") as { ready: unknown; error: string | null };
+    await page.waitForFunction("Boolean(window.__QR_READY__ || window.__QR_ERROR__)", undefined, { timeout: timeoutMs, polling: 250 });
+    const state = await page.evaluate("({ ready: window.__QR_READY__ ?? null, error: window.__QR_ERROR__ ?? null })") as { ready: unknown; error: string | null };
     if (state.error) {
       result.error = state.error;
     } else {
@@ -157,11 +159,11 @@ async function metricsPass(
   const context = await browser.newContext();
   const page = await context.newPage();
   await page.goto(`${baseUrl}/scenes/prd02/lane.html?mode=metrics`, { waitUntil: "load", timeout: 60_000 });
-  await page.waitForFunction("() => Boolean(window.__qrPrd02)", undefined, { timeout: 60_000, polling: 250 });
+  await page.waitForFunction("Boolean(window.__qrPrd02)", undefined, { timeout: 60_000, polling: 250 });
 
   // NOTE: passed as a STRING, not a function — tsx/esbuild wraps evaluated
   // functions in its `__name` helper, which does not exist in page context.
-  const report = await page.evaluate(`async ({ sceneIds, engines }) => {
+  const report = await page.evaluate(`(async ({ sceneIds, engines }) => {
     const api = window.__qrPrd02;
 
     const loadPixels = async (path) => {
@@ -201,7 +203,7 @@ async function metricsPass(
       out[sceneId] = api.sceneMetrics.computeSceneMetrics(sceneId, spec, { aura, three, controls });
     }
     return out;
-  }`, { sceneIds, engines });
+  })(${JSON.stringify({ sceneIds, engines })})`);
 
   await context.close();
   return report as Record<string, unknown>;
@@ -214,7 +216,9 @@ async function main(): Promise<void> {
   }
   mkdirSync(args.out, { recursive: true });
   const { server, url } = await serve(args.dist, args.out);
-  const browser = await chromium.launch({ args: GPU_ARGS });
+  // `--headless=new` in the args (lighting-quality `gpu` job): Playwright
+  // must not add its own headless flag on top.
+  const browser = await chromium.launch({ args: GPU_ARGS, headless: !GPU_ARGS.some((arg) => arg.startsWith("--headless")) });
   const results: CaptureResult[] = [];
   try {
     for (const scene of args.scenes) {

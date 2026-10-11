@@ -1,5 +1,8 @@
 # Lane 12 evidence — real-device lane (T5.6)
 
+> **Status: placeholder** (P-56, 2026-10-10). No device run exists; this file records the
+> provisioning blocker only and is not evidence for T5.6.
+
 ## Provisioning status: DENIED (operator action required)
 
 AWS Device Farm provisioning is an interactive, credentialled operation that lives

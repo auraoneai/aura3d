@@ -1,5 +1,7 @@
 # Q-13-7 — add `@types/node` to scaffold templates whose tsconfig typechecks `node:` imports
 
+**Issue:** #702 (P-64 writeback)
+
 **Lane:** 13 (owns `packages/create-aura3d/` and `templates/`)
 **Requested by:** lane 15 (PRD-15 T1.6 packed-consumer check)
 **Status:** OPEN

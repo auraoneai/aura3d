@@ -1,5 +1,7 @@
 # Q-05-10 → to:prd05 (qr-request, CONTRACTS §6.5)
 
+**Issue:** #1004 (P-64 writeback)
+
 **Files:** `packages/aura3d-cli/src/asset-manifest.ts` (05-owned),
 `tests/unit/aura3d-cli/assets.test.ts` (05-owned — fixture expectations)
 **Contract served:** PRD-15 T8.1 — `@aura3d/lean` is removed in 4.0.0. The CLI

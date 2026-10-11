@@ -112,6 +112,45 @@ function writeRgbe(data: Float32Array, width: number, _h: number, y: number, x: 
 }
 
 /** Sample the equirect image along `dir` (bilinear). dir = normalized [x,y,z]. */
+/**
+ * #1153: an `rgba32f` Texture needs exactly width·height·4 floats (16 bytes
+ * per texel); `decodeHdrEquirect` yields RGB (3 floats). Expand with A = 1.
+ */
+export function hdrImageToRgba32f(img: HdrImage): Float32Array {
+  const texels = img.width * img.height;
+  if (img.data.length !== texels * 3) {
+    throw new Error(`HDR_IMAGE_SIZE_MISMATCH: ${img.width}x${img.height} needs ${texels * 3} RGB floats, got ${img.data.length}`);
+  }
+  const out = new Float32Array(texels * 4);
+  for (let i = 0; i < texels; i += 1) {
+    out[i * 4] = img.data[i * 3]!;
+    out[i * 4 + 1] = img.data[i * 3 + 1]!;
+    out[i * 4 + 2] = img.data[i * 3 + 2]!;
+    out[i * 4 + 3] = 1;
+  }
+  return out;
+}
+
+/**
+ * Float pixels of an equirect texture as the RGB `HdrImage` the projection
+ * reads: RGBA (rgba32f/rgba16f-as-float, 4 floats/texel) is narrowed to RGB;
+ * RGB input passes through. Any other length is rejected.
+ */
+export function equirectRgbImage(width: number, height: number, data: Float32Array): HdrImage {
+  const texels = width * height;
+  if (data.length === texels * 3) return { width, height, data };
+  if (data.length !== texels * 4) {
+    throw new Error(`EQUIRECT_SIZE_MISMATCH: ${width}x${height} needs ${texels * 4} RGBA floats, got ${data.length}`);
+  }
+  const rgb = new Float32Array(texels * 3);
+  for (let i = 0; i < texels; i += 1) {
+    rgb[i * 3] = data[i * 4]!;
+    rgb[i * 3 + 1] = data[i * 4 + 1]!;
+    rgb[i * 3 + 2] = data[i * 4 + 2]!;
+  }
+  return { width, height, data: rgb };
+}
+
 export function sampleEquirect(img: HdrImage, dir: readonly [number, number, number]): [number, number, number] {
   const [x, y, z] = dir;
   const phi = Math.atan2(z, x);                       // [-π, π]

@@ -10,7 +10,8 @@
  *
  * CLI: `tsx --tsconfig tsconfig.base.json tools/asset-optimize/index.ts
  *        [--ids a,b] [--profile id] [--geometry meshopt|draco|none]
- *        [--dry-run] [--allow-local-small] [--ktx <path>] [--report <path>]`
+ *        [--dry-run] [--allow-local-small] [--ktx <path>] [--report <path>]
+ *        [--manifest <dir-with-aura.assets.json>]`
  */
 
 import { createHash } from "node:crypto";
@@ -24,8 +25,80 @@ import type { AssetQualityCheck } from "../../packages/aura3d-cli/src/contracts/
 import { readAssetManifest, writeAssetManifest } from "../../packages/aura3d-cli/src/asset-manifest.js";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const DERIVED_DIR = join(repoRoot, "public", "aura-assets");
 const LOCAL_KTX2_MAX_SOURCE_BYTES = 5 * 1024 * 1024;
+
+const GLB_MAGIC = 0x46546c67;
+const GLB_CHUNK_JSON = 0x4e4f534a;
+const GLB_CHUNK_BIN = 0x004e4942;
+const MIME_BY_EXT: Readonly<Record<string, string>> = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp" };
+
+/**
+ * Re-embeds GLB image references that use external `uri` (non-spec-compliant
+ * but shipped by some exports, e.g. showcaseRunnerGirl's `Textures/*.png`).
+ * gltf-transform's `binaryToJSON` cannot resolve them, so the optimize pass
+ * would die on the entry — here we read each file relative to the GLB's own
+ * directory, append it to the BIN chunk, and rewrite the JSON chunk. Returns
+ * the original bytes when the GLB needs no repair.
+ */
+function embedExternalGlbImages(bytes: Buffer, glbDir: string, log: (l: string) => void): Buffer {
+  if (bytes.length < 20 || bytes.readUInt32LE(0) !== GLB_MAGIC) return bytes;
+  const jsonLen = bytes.readUInt32LE(12);
+  if (bytes.readUInt32LE(16) !== GLB_CHUNK_JSON) return bytes;
+  const json = JSON.parse(bytes.subarray(20, 20 + jsonLen).toString("utf8")) as {
+    images?: { uri?: string; bufferView?: number; mimeType?: string }[];
+    bufferViews?: { buffer: number; byteOffset: number; byteLength: number }[];
+    buffers?: { byteLength: number }[];
+  };
+  const external = (json.images ?? []).filter((i) => i.uri !== undefined && !i.uri.startsWith("data:"));
+  if (external.length === 0) return bytes;
+
+  let binOffset = 20 + jsonLen;
+  let bin = Buffer.alloc(0);
+  while (binOffset + 8 <= bytes.length) {
+    const len = bytes.readUInt32LE(binOffset);
+    if (bytes.readUInt32LE(binOffset + 4) === GLB_CHUNK_BIN) {
+      bin = Buffer.from(bytes.subarray(binOffset + 8, binOffset + 8 + len));
+      break;
+    }
+    binOffset += 8 + len;
+  }
+  if (bin.length === 0) throw new Error("GLB has external images but no BIN chunk");
+
+  const bufferViews = (json.bufferViews ??= []);
+  for (const image of external) {
+    const rel = decodeURIComponent(image.uri!).replace(/\\/g, "/");
+    const file = resolve(glbDir, rel);
+    if (!file.startsWith(resolve(glbDir))) throw new Error(`image uri escapes source dir: ${image.uri}`);
+    if (!existsSync(file)) throw new Error(`external image not found beside GLB: ${rel}`);
+    const imgBytes = readFileSync(file);
+    const pad = (4 - (bin.length % 4)) % 4;
+    if (pad) bin = Buffer.concat([bin, Buffer.alloc(pad)]);
+    bufferViews.push({ buffer: 0, byteOffset: bin.length, byteLength: imgBytes.length });
+    image.bufferView = bufferViews.length - 1;
+    image.mimeType = MIME_BY_EXT[rel.split(".").pop()!.toLowerCase()] ?? "application/octet-stream";
+    delete image.uri;
+    bin = Buffer.concat([bin, imgBytes]);
+    log(`  embedded external image ${rel} (${(imgBytes.length / 1024).toFixed(0)} KB)`);
+  }
+  if (json.buffers?.[0]) json.buffers[0].byteLength = bin.length;
+
+  const jsonBytes = Buffer.from(JSON.stringify(json), "utf8");
+  const jsonPad = (4 - (jsonBytes.length % 4)) % 4;
+  const jsonChunk = Buffer.concat([jsonBytes, Buffer.alloc(jsonPad, 0x20)]);
+  const binPad = (4 - (bin.length % 4)) % 4;
+  const binChunk = Buffer.concat([bin, Buffer.alloc(binPad)]);
+  const out = Buffer.alloc(12 + 8 + jsonChunk.length + 8 + binChunk.length);
+  out.writeUInt32LE(GLB_MAGIC, 0);
+  out.writeUInt32LE(2, 4);
+  out.writeUInt32LE(out.length, 8);
+  out.writeUInt32LE(jsonChunk.length, 12);
+  out.writeUInt32LE(GLB_CHUNK_JSON, 16);
+  jsonChunk.copy(out, 20);
+  out.writeUInt32LE(binChunk.length, 20 + jsonChunk.length);
+  out.writeUInt32LE(GLB_CHUNK_BIN, 20 + jsonChunk.length + 4);
+  binChunk.copy(out, 20 + jsonChunk.length + 8);
+  return out;
+}
 
 interface OptimizeRow {
   readonly id: string;
@@ -57,6 +130,10 @@ export interface OptimizeAssetsOptions {
   readonly blenderBinary?: string;
   readonly reportPath?: string;
   readonly writeManifest?: boolean;
+  /** Directory holding the aura.assets.json to read/update (default: repo root).
+   *  Set it to a template/app dir so its manifest entries can earn `derived`
+   *  records — the default repo-root manifest cannot carry template assets. */
+  readonly manifestDir?: string;
   readonly log?: (line: string) => void;
 }
 
@@ -106,22 +183,25 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
   const log = options.log ?? ((line: string) => console.log(line));
   const inCi = process.env.CI === "true" || process.env.GITHUB_ACTIONS === "true";
   const ktxBinary = findKtxBinary(options.ktxBinary);
-  const manifest = readAssetManifest(repoRoot);
+  const manifestDir = resolve(options.manifestDir ?? repoRoot);
+  const manifest = readAssetManifest(manifestDir);
   const rows: OptimizeRow[] = [];
 
   if (options.files?.length) {
     for (const file of options.files) {
       const sourcePath = join(repoRoot, file.path);
       if (!existsSync(sourcePath)) {
-        log(`skip ${file.path}: missing source`);
+        log(`${file.path}: ERROR missing source`);
+        rows.push({ id: file.path, checks: [], error: "missing source" });
         continue;
       }
       const profile = ASSET_OPTIMIZE_PROFILES[file.profile as AssetOptimizeProfileId];
       if (!profile) {
-        log(`skip ${file.path}: unknown profile "${file.profile}"`);
+        log(`${file.path}: ERROR unknown profile "${file.profile}"`);
+        rows.push({ id: file.path, checks: [], error: `unknown profile "${file.profile}"` });
         continue;
       }
-      const sourceBytes = readFileSync(sourcePath);
+      const sourceBytes = embedExternalGlbImages(readFileSync(sourcePath), dirname(sourcePath), log);
       const result = await optimizeGLB(new Uint8Array(sourceBytes), {
         profile,
         geometry: options.geometry,
@@ -131,6 +211,7 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
         fromGenerated: options.fromGenerated,
         remote: options.remote,
         blenderBinary: options.blenderBinary,
+        sourcePath,
         log
       });
       const hash = createHash("sha256").update(result.glb).digest("hex");
@@ -157,16 +238,21 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
 
   for (const entry of modelEntries) {
     const rel = (entry as { source?: string }).source ?? entry.outputPath;
-    const sourcePath = join(repoRoot, rel);
+    const sourcePath = join(manifestDir, rel);
     if (!existsSync(sourcePath)) {
-      log(`skip ${entry.id}: missing source ${rel}`);
+      // Fail closed (P-57): a manifest model whose source is not in the
+      // repo is a report row with an error, not a silent omission (the
+      // 213/226 dry-run gap was these skips).
+      log(`${entry.id}: ERROR missing source ${rel}`);
+      rows.push({ id: entry.id, checks: [], error: `missing source ${rel}` });
       continue;
     }
     const sourceBytes = readFileSync(sourcePath);
     const sourceHash = createHash("sha256").update(sourceBytes).digest("hex");
     const profile = options.profile ? ASSET_OPTIMIZE_PROFILES[options.profile as AssetOptimizeProfileId] : profileForRole(entry.role, entry.bounds);
     if (!profile) {
-      log(`skip ${entry.id}: unknown profile "${options.profile}"`);
+      log(`${entry.id}: ERROR unknown profile "${options.profile}"`);
+      rows.push({ id: entry.id, checks: [], error: `unknown profile "${options.profile}"` });
       continue;
     }
 
@@ -178,9 +264,10 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
     }
 
     const mobileCap = profile.id === "hero-character" || profile.id === "hero-vehicle" ? 1024 : 512;
+    const glbBytes = embedExternalGlbImages(sourceBytes, dirname(sourcePath), log);
     let result;
     try {
-      result = await optimizeGLB(new Uint8Array(sourceBytes), {
+      result = await optimizeGLB(new Uint8Array(glbBytes), {
         profile,
         geometry: options.geometry,
         ktxBinary,
@@ -189,6 +276,7 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
         fromGenerated: options.fromGenerated,
         remote: options.remote ?? inCi,
         blenderBinary: options.blenderBinary,
+        sourcePath,
         log
       });
     } catch (err) {
@@ -203,7 +291,9 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
     const url = `/aura-assets/${entry.id}.${hash8}.glb`;
     const outputPath = `public/aura-assets/${entry.id}.${hash8}.glb`;
     const checks = gateChecks(result.budget.triangles, profile, result.flags);
-    const derivedDir = options.outDir ? join(repoRoot, options.outDir) : DERIVED_DIR;
+    const derivedDir = options.outDir
+      ? join(manifestDir, options.outDir)
+      : join(manifestDir, "public", "aura-assets");
 
     if (!options.dryRun) {
       mkdirSync(derivedDir, { recursive: true });
@@ -221,7 +311,7 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
       }
 
       if (options.writeManifest !== false) {
-        const fresh = readAssetManifest(repoRoot);
+        const fresh = readAssetManifest(manifestDir);
         const target = fresh.assets.find((a) => a.id === entry.id);
         if (target) {
           (target as { derived?: unknown }).derived = {
@@ -238,7 +328,7 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
             lods: [],
             measurements: { before: result.budgetBefore, after: result.budget }
           };
-          writeAssetManifest(repoRoot, fresh);
+          writeAssetManifest(manifestDir, fresh);
         }
       }
     }
@@ -277,6 +367,7 @@ async function main(): Promise<number> {
     remote: argv.includes("--remote") ? (readFlag(argv, "--remote") !== "false") : undefined,
     blenderBinary: readFlag(argv, "--blender"),
     writeManifest: !argv.includes("--no-manifest"),
+    manifestDir: readFlag(argv, "--manifest"),
     ktxBinary: readFlag(argv, "--ktx"),
     log: (line) => console.log(line)
   });
@@ -285,6 +376,14 @@ async function main(): Promise<number> {
     mkdirSync(dirname(out), { recursive: true });
     writeFileSync(out, JSON.stringify({ generatedAt: new Date().toISOString(), dryRun, rows: result.rows }, null, 2) + "\n");
     console.log(`wrote ${reportPath}`);
+  }
+  // Fail closed: any errored row (missing source, unknown profile, decode or
+  // optimize failure) fails the run. Before this, errors were logged and the
+  // CLI exited 0, so a run where every entry failed still reported success.
+  const errored = result.rows.filter((row) => row.error !== undefined);
+  if (errored.length > 0) {
+    console.error(`asset-optimize: ${errored.length}/${result.rows.length} row(s) errored: ${errored.map((row) => row.id).join(", ")}`);
+    return 1;
   }
   return 0;
 }

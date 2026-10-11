@@ -37,10 +37,11 @@ PhysicalMaterial a3dMakeMaterial(vec3 baseColor, float metallic, float roughness
   return m;
 }
 
-vec3 F_Schlick(vec3 f0, float f90, float dotVH) { float f = pow(1.0 - dotVH, 5.0); return f0 * (1.0 - f) + f90 * f; }
+// r185 common.glsl.js F_Schlick: Epic's exp2 fit (SIGGRAPH '13), not pow5 (01-S8).
+vec3 F_Schlick(vec3 f0, float f90, float dotVH) { float f = exp2((-5.55473 * dotVH - 6.98316) * dotVH); return f0 * (1.0 - f) + f90 * f; }
 // Scalar overload + inverse (r185 bsdfs.glsl.js F_Schlick / Schlick_to_F0) for
 // the C-03 iridescence lobe (lane 04 Q-01-5).
-float F_Schlick(float f0, float f90, float dotVH) { float f = pow(1.0 - dotVH, 5.0); return f0 * (1.0 - f) + f90 * f; }
+float F_Schlick(float f0, float f90, float dotVH) { float f = exp2((-5.55473 * dotVH - 6.98316) * dotVH); return f0 * (1.0 - f) + f90 * f; }
 vec3 Schlick_to_F0(vec3 f, float f90, float dotVH) {
   float x = clamp(1.0 - dotVH, 0.0, 1.0);
   float x2 = x * x;
@@ -106,35 +107,38 @@ void a3dDirectLight(vec3 L, vec3 radiance, vec3 V, vec3 N, PhysicalMaterial m, i
   specularOut += irradiance * a3dDirectSpecular(L, V, N, m);
 }
 
-// Indirect specular: three r185 RE_IndirectSpecular_Physical — multiscatter is run
-// separately with the dielectric specularColor and the metallic base color, mixed
-// by metallic. 'radiance' is the env sample (probe normalization is lane 02 C-09).
-vec3 a3dIndirectSpecular(vec3 radiance, vec3 V, vec3 N, PhysicalMaterial m) {
-  float dotNV = saturate(dot(N, V));
-  vec2 dfg = a3dDFG(m.roughness, dotNV);
-  vec3 singleDielectric = m.specularColor * dfg.x + m.specularF90 * dfg.y;
-  vec3 singleMetallic = m.baseColor * dfg.x + dfg.y;
-  vec3 single = mix(singleDielectric, singleMetallic, m.metallic);
-  // Multiscatter per r185 computeMultiscattering on both lobes.
-  vec3 FavgDielectric = m.specularColor + (1.0 - m.specularColor) * 0.047619;
-  vec3 FavgMetallic = m.baseColor + (1.0 - m.baseColor) * 0.047619;
-  float Ems = 1.0 - (dfg.x + dfg.y);
-  vec3 multiDielectric = singleDielectric * FavgDielectric / (1.0 - Ems * FavgDielectric + EPSILON) * Ems;
-  vec3 multiMetallic = singleMetallic * FavgMetallic / (1.0 - Ems * FavgMetallic + EPSILON) * Ems;
-  vec3 multi = mix(multiDielectric, multiMetallic, m.metallic);
-  return radiance * (single + multi);
+// Indirect: verbatim three r185 computeMultiscattering + RE_IndirectSpecular_Physical
+// (lights_physical_pars_fragment.glsl.js:392-421, 590-627; no clearcoat/sheen/
+// iridescence). Multiscatter runs for the dielectric specularColor and the
+// metallic base colour (both with specularF90), mixed by metallic. 'radiance' is
+// the prefiltered env sample, 'irradiance' the pi-scaled diffuse irradiance
+// (probe normalization is lane 02 C-09).
+void a3dMultiscatter(vec3 N, vec3 V, vec3 specularColor, float specularF90, float roughness, inout vec3 singleScatter, inout vec3 multiScatter) {
+  vec2 fab = a3dDFG(roughness, saturate(dot(N, V)));
+  vec3 FssEss = specularColor * fab.x + specularF90 * fab.y;
+  float Ems = 1.0 - (fab.x + fab.y);
+  vec3 Favg = specularColor + (1.0 - specularColor) * 0.047619; // 1/21
+  vec3 Fms = FssEss * Favg / (1.0 - Ems * Favg);
+  singleScatter += FssEss;
+  multiScatter += Fms * Ems;
 }
 
-// Ambient/env diffuse: irradiance is cosine-weighted (RECIPROCAL_PI inside Lambert);
-// weighted down by the dielectric specular energy like r185 (single+multi terms).
+vec3 a3dIndirectSpecular(vec3 radiance, vec3 irradiance, vec3 V, vec3 N, PhysicalMaterial m) {
+  vec3 singleDielectric = vec3(0.0), multiDielectric = vec3(0.0);
+  vec3 singleMetallic = vec3(0.0), multiMetallic = vec3(0.0);
+  a3dMultiscatter(N, V, m.specularColor, m.specularF90, m.roughness, singleDielectric, multiDielectric);
+  a3dMultiscatter(N, V, m.baseColor, m.specularF90, m.roughness, singleMetallic, multiMetallic);
+  vec3 single = mix(singleDielectric, singleMetallic, m.metallic);
+  vec3 multi = mix(multiDielectric, multiMetallic, m.metallic);
+  return radiance * single + multi * (irradiance * RECIPROCAL_PI);
+}
+
+// Indirect diffuse: r185 diffuse energy conservation uses the dielectric path only
+// (diffuseContribution is already 0 for metals).
 vec3 a3dIndirectDiffuse(vec3 irradiance, vec3 V, vec3 N, PhysicalMaterial m) {
-  float dotNV = saturate(dot(N, V));
-  vec2 dfg = a3dDFG(m.roughness, dotNV);
-  vec3 singleDielectric = m.specularColor * dfg.x + m.specularF90 * dfg.y;
-  vec3 FavgDielectric = m.specularColor + (1.0 - m.specularColor) * 0.047619;
-  float Ems = 1.0 - (dfg.x + dfg.y);
-  vec3 multiDielectric = singleDielectric * FavgDielectric / (1.0 - Ems * FavgDielectric + EPSILON) * Ems;
-  vec3 remaining = m.diffuseContribution * (vec3(1.0) - mix(singleDielectric + multiDielectric, vec3(0.0), m.metallic));
-  return irradiance * RECIPROCAL_PI * remaining;
+  vec3 singleDielectric = vec3(0.0), multiDielectric = vec3(0.0);
+  a3dMultiscatter(N, V, m.specularColor, m.specularF90, m.roughness, singleDielectric, multiDielectric);
+  vec3 remaining = m.diffuseContribution * (vec3(1.0) - (singleDielectric + multiDielectric));
+  return remaining * (irradiance * RECIPROCAL_PI);
 }
 `;

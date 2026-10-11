@@ -687,7 +687,7 @@ export function multiplyMat4Into(out: Float32Array, outOffset: number, a: ArrayL
   }
 }
 
-/** Column-major general 4×4 inverse into `out` (adjugate / determinant, gl-matrix layout). §13: `invertMat4` allocates two objects per call — over 600 frames that alone blows the steady-state budget. */
+/** Column-major general 4×4 inverse into `out` (adjugate / determinant, gl-matrix `mat4.invert`; 06-T0: out[7], out[10], out[11], out[14], out[15] previously used the wrong cofactor terms, so even inverse(identity) had out[11] = -1 and every skinning palette carried a non-affine row 3 that projected skinned vertices off-screen on the GPU). §13: `invertMat4` allocates two objects per call — over 600 frames that alone blows the steady-state budget. */
 export function invertMat4Into(out: Float32Array, a: ArrayLike<number>): Float32Array {
   const a00 = a[0]!, a01 = a[1]!, a02 = a[2]!, a03 = a[3]!;
   const a10 = a[4]!, a11 = a[5]!, a12 = a[6]!, a13 = a[7]!;
@@ -721,15 +721,15 @@ export function invertMat4Into(out: Float32Array, a: ArrayLike<number>): Float32
   out[4] = (a12 * b08 - a10 * b11 - a13 * b07) * det;
   out[5] = (a00 * b11 - a02 * b08 + a03 * b07) * det;
   out[6] = (a32 * b02 - a30 * b05 - a33 * b01) * det;
-  out[7] = (a20 * b04 - a22 * b02 + a23 * b01) * det;
+  out[7] = (a20 * b05 - a22 * b02 + a23 * b01) * det;
   out[8] = (a10 * b10 - a11 * b08 + a13 * b06) * det;
   out[9] = (a01 * b08 - a00 * b10 - a03 * b06) * det;
-  out[10] = (a30 * b03 - a31 * b02 + a33 * b00) * det;
-  out[11] = (a21 * b01 - a20 * b03 - a22 * b00) * det;
+  out[10] = (a30 * b04 - a31 * b02 + a33 * b00) * det;
+  out[11] = (a21 * b02 - a20 * b04 - a23 * b00) * det;
   out[12] = (a11 * b07 - a10 * b09 - a12 * b06) * det;
   out[13] = (a00 * b09 - a01 * b07 + a02 * b06) * det;
-  out[14] = (a31 * b01 - a30 * b02 - a32 * b00) * det;
-  out[15] = (a20 * b02 - a21 * b01 + a22 * b00) * det;
+  out[14] = (a31 * b01 - a30 * b03 - a32 * b00) * det;
+  out[15] = (a20 * b03 - a21 * b01 + a22 * b00) * det;
   return out;
 }
 

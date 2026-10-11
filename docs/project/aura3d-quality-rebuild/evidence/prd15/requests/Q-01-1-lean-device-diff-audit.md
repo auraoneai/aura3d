@@ -1,5 +1,7 @@
 # Q-01-1 — lean-device diff audit: no bugfix lines to port
 
+**Issue:** #987 (P-64 writeback)
+
 **Lane:** 01 (owns `packages/rendering/src/WebGL2Device.ts`)
 **Requested by:** lane 15 (PRD-15 T2.3)
 **Status:** OPEN — sign-off requested, no code change asked

@@ -33,7 +33,10 @@ float a3dRoughnessToLod(float r) {
 }
 
 // Unpack 27 folded coefficients from u_envSH[7] and evaluate
-// Ramamoorthi–Hanrahan irradiance at n (constants folded at upload).
+// Ramamoorthi–Hanrahan irradiance at n. packEnvSH already folds the cosine
+// band constants A_l = {π, 2π/3, π/4} into the coefficients, so only the
+// plain real-SH basis Y_lm(n) is applied here (02 IBL fix: the previous
+// constants multiplied A_l a second time).
 vec3 a3dSH9Irradiance(vec3 n) {
   n = normalize(n);
   float x = n.x, y = n.y, z = n.z;
@@ -46,11 +49,11 @@ vec3 a3dSH9Irradiance(vec3 n) {
   vec3 c6 = vec3(u_envSH[4].z, u_envSH[4].w, u_envSH[5].x);
   vec3 c7 = u_envSH[5].yzw;
   vec3 c8 = u_envSH[6].xyz;
-  vec3 E = c0 * 0.886227;
-  E += c1 * (-1.023328 * y) + c2 * (1.023328 * z) + c3 * (-1.023328 * x);
-  E += c4 * (0.858086 * x * y) + c5 * (0.858086 * y * z);
-  E += c6 * (0.247708 * (3.0 * z * z - 1.0));
-  E += c7 * (0.858086 * x * z) + c8 * (0.429043 * (x * x - y * y));
+  vec3 E = c0 * 0.282095;
+  E += c1 * (-0.488603 * y) + c2 * (0.488603 * z) + c3 * (-0.488603 * x);
+  E += c4 * (1.092548 * x * y) + c5 * (1.092548 * y * z);
+  E += c6 * (0.315392 * (3.0 * z * z - 1.0));
+  E += c7 * (1.092548 * x * z) + c8 * (0.546274 * (x * x - y * y));
   return max(E, vec3(0.0));
 }
 

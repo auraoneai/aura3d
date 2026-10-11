@@ -65,6 +65,18 @@ export interface TextureFilterAnisotropicExtension {
 
 export const WEBGL_CUBE_FACES: readonly TextureCubeFace[] = ["px", "nx", "py", "ny", "pz", "nz"];
 
+/**
+ * #621 (01-RTARRAY): immutable storage (`texStorage2D/3D`) only accepts SIZED
+ * internal formats. `resolveRenderTargetFormat("rgba8")` returns unsized
+ * `gl.RGBA`, which is valid for the `texImage2D` 2d path but makes
+ * texStorage raise INVALID_ENUM and allocate nothing, so cube/array colour
+ * framebuffers come out incomplete (GPU run 38143556299: "array: WebGL render
+ * target framebuffer status is invalid"). Float formats are already sized.
+ */
+export function renderTargetStorageFormat(gl: Pick<WebGL2RenderingContext, "RGBA" | "RGBA8">, internalFormat: GLenum): GLenum {
+  return internalFormat === gl.RGBA ? gl.RGBA8 : internalFormat;
+}
+
 /** C-08 named uniform-block → binding-point assignment applied post-link (T0-02). */
 const NAMED_UNIFORM_BLOCK_BINDINGS: ReadonlyArray<readonly [blockName: string, binding: number]> = [
   ["AuraFrame", AURA_FRAME_BINDING],
@@ -425,6 +437,9 @@ export class WebGL2Device implements RenderDevice {
     host.textureRegistry = new WebGL2TextureRegistry(host);
     host.samplers = new WebGL2SamplerRegistry(host);
     host.drawBinder = new WebGL2DrawCallBinder(host);
+    // #94 (Q-01-1): the C-29 restore hook (`renderer/DeviceLifecycle.ts`)
+    // calls `host.invalidateGpuObjects?.()` before the registry rebuild.
+    (host as WebGL2DeviceHost & { invalidateGpuObjects: () => void }).invalidateGpuObjects = () => this.invalidateGpuObjects();
     host.probe = new WebGL2ReadbackProbe(host);
     host.post = new WebGL2LegacyPostPipeline(host);
     this.host = host;
@@ -546,12 +561,112 @@ export class WebGL2Device implements RenderDevice {
     this.host.counters.readbacks = 0;
   }
 
+  /**
+   * PRD-01 §6.4 / 01-S7: with `KHR_parallel_shader_compile`, compile and
+   * link are issued without querying status, and the promise resolves once
+   * `COMPLETION_STATUS_KHR` reports done (polled per animation frame), so
+   * the caller's frame is not blocked. Without the extension this is the
+   * synchronous `createShaderProgram` wrapped in a resolved promise.
+   */
   compileAsync(sources: ShaderSources): Promise<RenderShaderProgram> {
-    return Promise.resolve(this.createShaderProgram(sources));
+    const ext = this.parallelShaderCompileExtension();
+    if (!ext) return Promise.resolve(this.createShaderProgram(sources));
+    this.host.lifecycle.assertAlive();
+    this.assertShaderMarker(sources);
+    const vertexShader = this.issueShaderCompile(this.gl.VERTEX_SHADER, sources.vertex, sources.label);
+    const fragmentShader = this.issueShaderCompile(this.gl.FRAGMENT_SHADER, sources.fragment, sources.label);
+    const program = this.gl.createProgram();
+    if (!program) {
+      throw new RenderDeviceError("Failed to allocate WebGL shader program", "WEBGL_ALLOCATION_FAILED");
+    }
+    this.host.counters.shaderProgramCreateCount += 1;
+    this.gl.attachShader(program, vertexShader);
+    this.gl.attachShader(program, fragmentShader);
+    this.gl.linkProgram(program);
+    this.host.counters.programCompiles += 1;
+    this.parallelCompilesPending += 1;
+    return new Promise<RenderShaderProgram>((resolve, reject) => {
+      const poll = (): void => {
+        if (this.host.disposed || this.host.contextLost) {
+          this.parallelCompilesPending -= 1;
+          reject(new RenderDeviceError("Device lost during parallel shader compile", "DEVICE_LOST", { label: sources.label }));
+          return;
+        }
+        if (this.gl.getProgramParameter(program, ext.COMPLETION_STATUS_KHR) !== true) {
+          scheduleParallelCompilePoll(poll);
+          return;
+        }
+        this.parallelCompilesPending -= 1;
+        try {
+          for (const [shader, type] of [[vertexShader, "vertex"], [fragmentShader, "fragment"]] as const) {
+            if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
+              const log = this.gl.getShaderInfoLog(shader) ?? "Unknown shader compile error";
+              this.gl.deleteShader(vertexShader);
+              this.gl.deleteShader(fragmentShader);
+              this.gl.deleteProgram(program);
+              throw new RenderDeviceError("WebGL shader compile failed", "SHADER_COMPILE_FAILED", { label: sources.label, log, stage: type });
+            }
+          }
+          this.gl.deleteShader(vertexShader);
+          this.gl.deleteShader(fragmentShader);
+          resolve(this.finalizeLinkedProgram(program, sources));
+        } catch (error) {
+          reject(error);
+        }
+      };
+      scheduleParallelCompilePoll(poll);
+    });
+  }
+
+  /** Programs issued through `compileAsync`'s parallel path that have not completed yet. */
+  parallelCompilesPending = 0;
+
+  private parallelCompileExt: { readonly COMPLETION_STATUS_KHR: GLenum } | null | undefined;
+
+  private parallelShaderCompileExtension(): { readonly COMPLETION_STATUS_KHR: GLenum } | null {
+    if (this.parallelCompileExt === undefined) {
+      this.parallelCompileExt = (this.gl.getExtension("KHR_parallel_shader_compile") as { readonly COMPLETION_STATUS_KHR: GLenum } | null) ?? null;
+    }
+    return this.parallelCompileExt;
+  }
+
+  private issueShaderCompile(type: GLenum, source: string, label: string): WebGLShader {
+    const shader = this.gl.createShader(type);
+    if (!shader) {
+      throw new RenderDeviceError("Failed to allocate WebGL shader", "WEBGL_ALLOCATION_FAILED", { label });
+    }
+    this.gl.shaderSource(shader, source);
+    this.gl.compileShader(shader);
+    return shader;
+  }
+
+  private assertShaderMarker(sources: ShaderSources): void {
+    if (!sources.vertex.includes(sources.marker) || !sources.fragment.includes(sources.marker)) {
+      throw new RenderDeviceError("Shader source marker is missing from compiled sources", "SHADER_MARKER_MISSING", {
+        label: sources.label,
+        marker: sources.marker
+      });
+    }
   }
 
   multiDrawElementsInstanced(draws: readonly unknown[]): void {
     this.host.drawBinder.multiDrawElementsInstanced(draws);
+  }
+
+  /**
+   * #94 (Q-01-1, C-28/C-29): forget every GL object name and uploaded value
+   * cached against the lost context — VAOs, uniform locations, last-value
+   * uniform snapshots, the GL state shadow and texture-unit bindings — so
+   * they recreate lazily on the next draw after `webglcontextrestored`.
+   * `counters().liveVertexArrays` reads 0 afterwards. Buffers, textures and
+   * programs are recreated by the C-29 ResourceRegistry rebuild that runs
+   * right after this in the restore hook.
+   */
+  invalidateGpuObjects(): void {
+    this.host.drawBinder.invalidateGpuObjects();
+    this.host.stateCache.invalidate();
+    this.host.samplers.activeTextureUnitIndex = -1;
+    this.host.samplers.textureUnitBindings.clear();
   }
 
   createBuffer(usage: BufferUsage, byteLength: number, initialData?: ArrayBufferView): RenderBuffer {
@@ -640,12 +755,7 @@ export class WebGL2Device implements RenderDevice {
 
   createShaderProgram(sources: ShaderSources): RenderShaderProgram {
     this.host.lifecycle.assertAlive();
-    if (!sources.vertex.includes(sources.marker) || !sources.fragment.includes(sources.marker)) {
-      throw new RenderDeviceError("Shader source marker is missing from compiled sources", "SHADER_MARKER_MISSING", {
-        label: sources.label,
-        marker: sources.marker
-      });
-    }
+    this.assertShaderMarker(sources);
     const vertexShader = this.compileShader(this.gl.VERTEX_SHADER, sources.vertex, sources.label);
     const fragmentShader = this.compileShader(this.gl.FRAGMENT_SHADER, sources.fragment, sources.label);
     const program = this.gl.createProgram();
@@ -659,7 +769,11 @@ export class WebGL2Device implements RenderDevice {
     this.host.counters.programCompiles += 1;
     this.gl.deleteShader(vertexShader);
     this.gl.deleteShader(fragmentShader);
+    return this.finalizeLinkedProgram(program, sources);
+  }
 
+  /** LINK_STATUS check, named-block bindings and reflection for a linked program. */
+  private finalizeLinkedProgram(program: WebGLProgram, sources: ShaderSources): RenderShaderProgram {
     if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
       const log = this.gl.getProgramInfoLog(program) ?? "Unknown shader link error";
       this.gl.deleteProgram(program);
@@ -977,9 +1091,9 @@ export class WebGL2Device implements RenderDevice {
       if (dimension === "2d") {
         gl.texImage2D(textureTarget, 0, textureFormat.internalFormat, descriptor.width, descriptor.height, 0, gl.RGBA, textureFormat.type, null);
       } else if (dimension === "cube") {
-        gl.texStorage2D(textureTarget, 1, textureFormat.internalFormat, descriptor.width, descriptor.height);
+        gl.texStorage2D(textureTarget, 1, renderTargetStorageFormat(gl, textureFormat.internalFormat), descriptor.width, descriptor.height);
       } else {
-        gl.texStorage3D(textureTarget, 1, textureFormat.internalFormat, descriptor.width, descriptor.height, layerCount);
+        gl.texStorage3D(textureTarget, 1, renderTargetStorageFormat(gl, textureFormat.internalFormat), descriptor.width, descriptor.height, layerCount);
       }
     }
 
@@ -1732,3 +1846,10 @@ export class WebGL2Device implements RenderDevice {
 
 
 
+
+/** Next animation frame when available (browser), else a macrotask. */
+function scheduleParallelCompilePoll(poll: () => void): void {
+  const raf = (globalThis as { requestAnimationFrame?: (cb: () => void) => number }).requestAnimationFrame;
+  if (typeof raf === "function") raf(poll);
+  else setTimeout(poll, 0);
+}

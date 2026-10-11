@@ -13,6 +13,7 @@ on:
       - 'packages/aura3d-cli/src/asset-manifest.ts'
       - 'public/aura-assets/**'
       - 'aura.assets.json'
+      - 'tests/unit/asset-optimize/**'
       - '.github/workflows/asset-optimize.yml'
   push:
     branches: [main]
@@ -24,7 +25,7 @@ on:
         type: string
 
 concurrency:
-  group: asset-optimize-${{ github.ref }}-${{ github.event.inputs.ids }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  group: asset-optimize-${{ github.ref }}-${{ github.event.inputs.ids }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
@@ -45,6 +46,12 @@ jobs:
         # root .gitignore forbids committed package-lock.json (pnpm repo);
         # package.json carries exact pins so `npm install` is deterministic.
         run: npm install --no-audit --no-fund --prefix tools/asset-optimize
+
+      - name: asset-optimize tool tests (determinism, MSFT_lod, profiles)
+        # PRD-16 05-S5: the pipeline must be byte-deterministic. This job is
+        # the only place tools/asset-optimize/node_modules exists, so the tool
+        # suite runs here under its own config, with no skip guards.
+        run: node_modules/.bin/vitest run --config tools/asset-optimize/vitest.config.ts
 
       - name: install ktx from tool-versions.json
         id: ktx
@@ -84,24 +91,83 @@ jobs:
           done < <(grep -oE '"--[a-z0-9-]+"' tools/asset-optimize/types.ts | tr -d '"' | sort -u)
           [ "$missing" -eq 0 ]
 
+      - name: derived-ids.txt is fresh against games.json
+        run: node_modules/.bin/tsx --tsconfig tsconfig.base.json tools/asset-optimize/game-referenced-ids.mts --check
+
       - name: run optimize
+        env:
+          # Schema-1.1 writer gate: a real --ids pass writes derived entries
+          # into aura.assets.json as aura3d.assets/1.1 (C-17 stub rule).
+          A3D_QR: assets
         run: |
           set -euo pipefail
           ktx="$(pwd)/${{ steps.ktx.outputs.ktx_bin }}"
           ids="${{ github.event.inputs.ids }}"
-          args=(--ktx "$ktx" --report evidence/prd05/assets/optimize-ci.json --out-dir optimize-out)
+          # P-57: lane-05 evidence lives under docs/.../evidence/prd05/assets/,
+          # not the repo-root evidence/ tree (lane 15).
+          evidence=docs/project/aura3d-quality-rebuild/evidence/prd05/assets
+          args=(--ktx "$ktx" --out-dir optimize-out)
           if [ -n "$ids" ]; then
-            args+=(--ids "$ids" --allow-local-small --no-manifest)
+            args+=(--ids "$ids" --allow-local-small --no-manifest --report "$evidence/optimize-ci.json")
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            args+=(--dry-run --report "$evidence/optimize-dry-run.json")
           else
-            args+=(--dry-run)
+            # 05-S10: push / plain dispatch run the real pass over the
+            # game-referenced id set (derived entries + manifest + aggregate).
+            ids="$(grep -v '^#' tools/asset-optimize/derived-ids.txt | grep -v '^$' | paste -sd, -)"
+            [ -n "$ids" ] || { echo "::error::derived-ids.txt has no ids"; exit 1; }
+            args+=(--ids "$ids" --allow-local-small --report "$evidence/optimize-ci.json")
           fi
           node_modules/.bin/tsx --tsconfig tsconfig.base.json tools/asset-optimize/index.ts "${args[@]}"
+
+      - name: derived aggregate bytes (05-S10 <= 80 MB over the id set)
+        if: github.event_name != 'pull_request' && github.event.inputs.ids == ''
+        run: |
+          set -euo pipefail
+          python3 - <<'PYEOF'
+          import json, os, re, sys
+          ids = [l.strip() for l in open('tools/asset-optimize/derived-ids.txt')
+                 if l.strip() and not l.startswith('#')]
+          # Primary derived file only: <id>.<hash8>.glb (not .mobile / .collision).
+          files = os.listdir('optimize-out')
+          total = 0
+          rows = []
+          for i in ids:
+              pat = re.compile(re.escape(i) + r'\.[0-9a-f]{8}\.glb$')
+              hits = sorted(f for f in files if pat.match(f))
+              if len(hits) != 1:
+                  rows.append({'id': i, 'bytes': None, 'status': 'MISSING' if not hits else 'AMBIGUOUS', 'files': hits})
+                  continue
+              b = os.path.getsize(os.path.join('optimize-out', hits[0]))
+              total += b
+              rows.append({'id': i, 'file': hits[0], 'bytes': b})
+          limit = 80 * 1024 * 1024
+          bad = [r for r in rows if r['bytes'] is None]
+          doc = {'schema': 'aura3d.derived-aggregate/1.0', 'ids': len(ids),
+                 'derivedBytes': total, 'budgetBytes': limit,
+                 'withinBudget': total <= limit, 'unmeasured': len(bad), 'rows': rows}
+          out = 'docs/project/aura3d-quality-rebuild/evidence/prd05/assets'
+          os.makedirs(out, exist_ok=True)
+          json.dump(doc, open(os.path.join(out, 'derived-aggregate.json'), 'w'), indent=2)
+          print(f"derived total: {total/1024/1024:.1f} MB over {len(ids)} ids (budget 80.0 MB); unmeasured: {len(bad)}")
+          # Fail closed: every id must derive, and the total must fit the budget.
+          if bad:
+              print("::error::ids without exactly one derived GLB: " + ", ".join(r['id'] for r in bad))
+              sys.exit(1)
+          if total > limit:
+              print(f"::error::derived total {total} B exceeds {limit} B")
+              sys.exit(1)
+          PYEOF
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: asset-optimize-${{ github.sha }}
           path: |
-            evidence/prd05/assets/optimize-ci.json
+            docs/project/aura3d-quality-rebuild/evidence/prd05/assets/optimize-ci.json
+            docs/project/aura3d-quality-rebuild/evidence/prd05/assets/optimize-dry-run.json
+            docs/project/aura3d-quality-rebuild/evidence/prd05/assets/derived-aggregate.json
             optimize-out/
+            aura.assets.json
+            src/aura-assets.ts
           retention-days: 14

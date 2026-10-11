@@ -25,6 +25,7 @@ import { applyPulseScenario } from "./scenarios";
 import { createPulseRunCtx, createPulseSystems, wirePulseRunState, MAX_SHIELDS } from "./run-state";
 import { createGateVisuals } from "./gate-visuals";
 import { wirePulseTouch, consumePulseTouch } from "./touch";
+import { assets } from "../../../../src/aura-assets";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_PULSE_TUNNEL" as const;
 const RUN_SECONDS = 90;
@@ -86,11 +87,11 @@ const game = createGame({
     theme: "sci-fi-telemetry",
     maxScreenFraction: 0.15,
     widgets: [
-      { id: "score", kind: "score", anchor: "top-left", label: "SCORE" },
-      { id: "multiplier", kind: "label", anchor: "top-right", label: "MULT" },
-      { id: "section", kind: "label", anchor: "top", label: "SECTION" },
-      { id: "shields", kind: "label", anchor: "bottom-left", label: "SHIELDS" },
-      { id: "message", kind: "label", anchor: "bottom", label: "RUN" }
+      { id: "score", kind: "prompt", anchor: "top-left", label: "SCORE" },
+      { id: "multiplier", kind: "prompt", anchor: "top-right", label: "MULT" },
+      { id: "section", kind: "prompt", anchor: "top", label: "SECTION" },
+      { id: "shields", kind: "prompt", anchor: "bottom-left", label: "SHIELDS" },
+      { id: "message", kind: "prompt", anchor: "bottom", label: "RUN" }
     ]
   },
   touch: {
@@ -103,19 +104,19 @@ const game = createGame({
   },
   sound: {
     cues: {
-      "lane-switch": { asset: "pulseLaneSwitchSfx" },
-      "jump": { asset: "pulseJumpSfx" },
-      "slide": { asset: "pulseSlideSfx" },
-      "graze": { asset: "pulseGrazeSfx" },
-      "shield-hit": { asset: "pulseShieldHitSfx" },
-      "shield-break": { asset: "pulseShieldBreakSfx" },
-      "section-rise": { asset: "pulseSectionRiseSfx" },
-      "run-over": { asset: "pulseRunOverSfx" },
-      "ui-confirm": { asset: "pulseUiConfirmSfx" },
-      "stem-drums": { asset: "pulseDrumsStem" },
-      "stem-bass": { asset: "pulseBassStem" },
-      "stem-lead": { asset: "pulseLeadStem" },
-      "stem-air": { asset: "pulseAirStem" }
+      "lane-switch": { asset: assets.pulseLaneSwitchSfx },
+      "jump": { asset: assets.pulseJumpSfx },
+      "slide": { asset: assets.pulseSlideSfx },
+      "graze": { asset: assets.pulseGrazeSfx },
+      "shield-hit": { asset: assets.pulseShieldHitSfx },
+      "shield-break": { asset: assets.pulseShieldBreakSfx },
+      "section-rise": { asset: assets.pulseSectionRiseSfx },
+      "run-over": { asset: assets.pulseRunOverSfx },
+      "ui-confirm": { asset: assets.pulseUiConfirmSfx },
+      "stem-drums": { asset: assets.pulseDrumsStem },
+      "stem-bass": { asset: assets.pulseBassStem },
+      "stem-lead": { asset: assets.pulseLeadStem },
+      "stem-air": { asset: assets.pulseAirStem }
     }
   },
   juice: {
@@ -126,11 +127,11 @@ const game = createGame({
     "run-fail": { hitStopMs: 90, trauma: 0.55 }
   },
   qualityRebuild: {
-    // FLAG-1: arm the engine features this route uses — `game` selects the
-    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
-    // art/direction.ts sections. `route_pulse_tunnel` uses the engine-parseable
-    // underscore form (URL/dispatch form is `route-pulse-tunnel`).
-    flags: ["route_pulse_tunnel", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+    // T0-29 (#1232): only what the route itself needs — its route token and
+    // `game` (the real C-24 shell: beacon/evidence/HUD/touch). Engine lane
+    // flags come from URL/env/defaults like every other route, so `none`
+    // and `-<flag>` arms actually turn them off.
+    flags: ["route_pulse_tunnel", "game"]
   }
 });
 

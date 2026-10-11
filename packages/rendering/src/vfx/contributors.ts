@@ -28,6 +28,7 @@ import {
   type Vec3
 } from "../atmosphere/HeightFog";
 import { packFogVolumes, type Prd07FogVolume } from "../atmosphere/FogVolumes";
+import { setPrd07ForwardFog } from "../atmosphere/fogUniformStore";
 import { evaluateSky, skyFrame } from "../atmosphere/SkyEval";
 import { RibbonPass } from "./RibbonPass";
 import { DecalPass } from "./DecalPass";
@@ -245,14 +246,26 @@ const meshContributor: FrameContributor = {
   }
 };
 
+/**
+ * The Renderer runs the `background` phase only when the frame has an
+ * environment background (HDRI or a lane-02 probe). A sky node over a colour
+ * background therefore never drew. The contributor marks the frame's
+ * blackboard when it drew in `background`; otherwise it draws in
+ * `after-opaque`, depth-tested against the forward depth so the sky fills
+ * only uncovered pixels (lane-07 S4/S5).
+ */
+const SKY_DRAWN_KEY = "prd07.sky.drawnInBackground";
+
 const skyContributor: FrameContributor = {
   id: "prd07.sky",
   owner: "prd07",
   flag: "A3D_QR_VFX_SKY",
-  phases: ["background"],
-  passes: (_phase, ctx) => {
+  phases: ["background", "after-opaque"],
+  passes: (phase, ctx) => {
     const atmosphere = (ctx.source as Prd07FrameSource).atmosphere;
     if (!atmosphere?.sky) return [];
+    if (phase === "after-opaque" && ctx.blackboard.get(SKY_DRAWN_KEY) === true) return [];
+    if (phase === "background") ctx.blackboard.set(SKY_DRAWN_KEY, true);
     const pass = skyDrawPassFor(ctx.device);
     pass.setSpec(atmosphere.sky, ctx.timeSeconds);
     pass.setViewProjection(contextViewProjection(ctx));
@@ -281,7 +294,13 @@ const skyContributor: FrameContributor = {
           }
         : null
     );
-    return [pass];
+    if (phase === "background") return [pass];
+    return [{
+      name: "prd07.sky.late",
+      reads: [prd07OpaqueColorResource(ctx)],
+      writes: ["prd07.sky.late.color"],
+      execute: () => pass.executeDepthTested()
+    }];
   }
 };
 
@@ -304,7 +323,10 @@ const fogContributor: FrameContributor = {
       clockNow?: () => number;
       sky?: Record<string, unknown> | null;
     } | undefined;
-    if (!atmosphere) return items;
+    if (!atmosphere) {
+      setPrd07ForwardFog(null);
+      return items;
+    }
     const cam = ctx.camera;
     const forward: readonly [number, number, number] = cam
       ? [-cam.viewMatrix[2], -cam.viewMatrix[6], -cam.viewMatrix[10]]
@@ -318,7 +340,15 @@ const fogContributor: FrameContributor = {
       ? skyHorizonRadiance(sky, azimuth) ?? PRD07_FOG_DEFAULTS.fallbackColor
       : parseFogColor(resolved.color, PRD07_FOG_DEFAULTS.fallbackColor);
     // Legacy generator (C-04 stub) → parity-mode slots; real C-02 → v2 slots.
-    const parity = ctx.flags.values["A3D_QR_CORE"] !== "v2";
+    // #187: keyed on the same gate ForwardPass uses for generated programs
+    // (qrCoreGeneratorOn: A3D_QR_CORE_GENERATOR, else A3D_QR_CORE — `true` or "v2"), so an
+    // absorption spec reaches forward geometry as mode 5, not the legacy
+    // luminance-weighted exp collapse.
+    // Inlined (renderer/qrSubFlags pulls OutputPass into the vfx chunk).
+    const generatorOn = ctx.flags.values["A3D_QR_CORE_GENERATOR"] !== undefined
+      ? ctx.flags.on("A3D_QR_CORE_GENERATOR")
+      : ctx.flags.on("A3D_QR_CORE");
+    const parity = !generatorOn;
     const packed = packV2(resolved, {
       fogColor,
       cameraY: cam?.position[1] ?? 0,
@@ -327,19 +357,30 @@ const fogContributor: FrameContributor = {
     // §6.6 sun inscatter colour — sky radiance at the sun direction (clamped);
     // only multiplied by sunInscatter (default 0) so the approximation is inert.
     let sunColor: Vec3 = [1, 1, 1];
+    let sunDirection: Vec3 = [0, 1, 0];
     if (sky) {
       try {
         const frame = skyFrame(sky as Parameters<typeof skyFrame>[0]);
         const sunDir = frame.preetham?.sunDirection ?? frame.gradient?.sunDirection ?? ([0, 1, 0] as Vec3);
+        sunDirection = sunDir;
         const e = evaluateSky(frame, sunDir);
         sunColor = [Math.min(e[0], 8), Math.min(e[1], 8), Math.min(e[2], 8)];
       } catch {
         // keep the unit fallback
       }
     }
+    const volumes = (atmosphere.fogVolumes?.() ?? []) as readonly Prd07FogVolume[];
+    // #187/#82 — forward geometry on the C-02 path binds these per draw via the
+    // prd07.fog feature's bindUniforms (absorption = mode 5, Beer-Lambert).
+    // No live fog node → mode 0 on forward geometry (IC-0), not default height fog.
+    setPrd07ForwardFog(
+      spec
+        ? { uniforms: packed, volumes, sunDirection, sunColor, cameraPosition: cam ? [cam.position[0], cam.position[1], cam.position[2]] : [0, 0, 0] }
+        : null
+    );
     ctx.blackboard.set("prd07.fog", {
       uniforms: packed,
-      volumes: (atmosphere.fogVolumes?.() ?? []) as readonly Prd07FogVolume[],
+      volumes,
       sunColor,
       affectsBackground: resolved.affectsBackground !== false,
       backgroundDistance: resolved.backgroundDistance ?? cam?.far ?? 1000
@@ -483,12 +524,40 @@ export const decalsContributor: FrameContributor = {
     const now = ctx.timeSeconds;
     return [{
       name: "prd07.decals",
-      reads: ["aura.scene.depth"],
-      writes: ["aura.scene.color"],
+      // Ordered after the opaque pass; depth-tests against the bound forward
+      // depth attachment (no sampled scene depth).
+      reads: [prd07OpaqueColorResource(ctx)],
+      writes: ["prd07.decals.color"],
       execute: () => pass.draw(batch, ctx, now)
     }];
   }
 };
+
+/**
+ * T0-34 / #1111 — render-graph resources the after-opaque lane passes may
+ * declare. Only resources a pass in `Renderer.render()` actually writes:
+ * the opaque forward pass writes `aura.scene.color.opaque` on the v2 output
+ * path (A3D_QR_CORE_OUTPUT, else A3D_QR_CORE) and `color` on the legacy
+ * path; `aura.scene.depth.copy` exists only on the v2 path (SceneDepthCopyPass).
+ * Nothing writes `aura.scene.depth`, and `aura.scene.color` is written once,
+ * by the final transparent pass — declaring either made `compilePlan` throw.
+ * Each lane pass writes its own namespaced resource (single-producer rule).
+ * Inlined (renderer/qrSubFlags pulls OutputPass into the vfx chunk).
+ */
+function v2OutputOn(ctx: FrameContributorContext): boolean {
+  return ctx.flags.values["A3D_QR_CORE_OUTPUT"] !== undefined
+    ? ctx.flags.on("A3D_QR_CORE_OUTPUT")
+    : ctx.flags.on("A3D_QR_CORE");
+}
+
+export function prd07OpaqueColorResource(ctx: FrameContributorContext): string {
+  return v2OutputOn(ctx) ? "aura.scene.color.opaque" : "color";
+}
+
+/** Reads for a pass that samples the scene-depth copy (v2 path only). */
+export function prd07DepthCopyReads(ctx: FrameContributorContext): readonly string[] {
+  return v2OutputOn(ctx) ? [prd07OpaqueColorResource(ctx), "aura.scene.depth.copy"] : [prd07OpaqueColorResource(ctx)];
+}
 
 /** Per-device froxel pass cache — the grid spec selects the atlas layout. */
 const volumetricPasses = new WeakMap<import("../RenderDevice").RenderDevice, Map<string, VolumetricFogPass>>();
@@ -579,8 +648,10 @@ const volumetricContributor: FrameContributor = {
     };
     return [{
       name: "prd07.volumetric",
-      reads: ["aura.scene.depth", "aura.scene.color"],
-      writes: ["aura.scene.color"],
+      // Samples the scene-depth copy (resolveSceneDepth), applies into the
+      // forward target after opaque.
+      reads: prd07DepthCopyReads(ctx),
+      writes: ["prd07.volumetric.color"],
       execute: () => {
         const { apply } = pass.update(input, ctx);
         // T0-34: apply into the live forward target (prd01.forwardTarget), not

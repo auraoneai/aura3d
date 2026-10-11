@@ -288,6 +288,9 @@ async function main(): Promise<void> {
   // fail compile for every generated program in a real browser. Blocks default
   // to binding point 0, matching `bindUniformBuffer(…, 0)` — strip the illegal
   // qualifier here and compile the (otherwise untouched) generated source.
+  // Issue-linked workaround (06-PARITY, P-row): tracked by T0-02 #378
+  // (= Q-01-6 #492, Q-05-7 #473). Delete this strip when #378 lands on main;
+  // the spec must then compile the generated source unmodified.
   const stripUboBinding = (src: string): string => src.replace(/layout\(std140, binding = \d+\)/g, "layout(std140)");
   const compileGenerated = (features: Parameters<typeof generateProgramImpl>[0]): { program: RenderShaderProgram; key: string; error?: string } => {
     const generated = generateProgramImpl(features, { flags: FLAGS });

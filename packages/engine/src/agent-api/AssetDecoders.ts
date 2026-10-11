@@ -10,9 +10,9 @@ import {
   type CompressedTextureSupportRequest,
   type KTX2BasisTargetFormat
 } from "@aura3d/assets/browser";
-import type { CompressedTextureCapabilities } from "@aura3d/rendering/contracts";
+import type { CompressedTextureCapabilities, QrFlags } from "@aura3d/rendering/contracts";
 import type { AuraAssetDefinition } from "./index.js";
-import type { AuraAssetsOption, AuraAssetRequiredDecoder } from "../contracts/assets.js";
+import type { AuraAssetDecodersOption, AuraAssetsOption, AuraAssetRequiredDecoder } from "../contracts/assets.js";
 import type { AuraQualityTierSettings } from "@aura3d/rendering/contracts";
 
 /**
@@ -154,6 +154,41 @@ export const assets = {
   createAppAssetDecoders,
   prepareModelDecoders
 } as const;
+
+/** The decoder fields `createTypedGLBActor` forwards to `loadProductionGLTFRenderPipeline`. */
+export interface TypedGLBActorDecoderOptions {
+  readonly decoders?: AuraAssetDecodersOption;
+  readonly maxTextureSize?: number;
+  readonly compressedTextureCapabilities?: CompressedTextureCapabilities;
+}
+
+/**
+ * 05-WIRE (C-16 §7.3): the lane-05 half of putting the decoder registry on the
+ * default `model()` path. The compiler (Q-15-1, `compiler/renderer.ts`) spreads
+ * the result into every `createTypedGLBActor({...})` call:
+ *
+ *   ...typedGLBActorDecoderOptions(flags, options.assets, caps)
+ *
+ * With `A3D_QR_ASSETS` on, it always returns `decoders` (an empty object when
+ * the app sets no `assets.decoders`), so the pipeline scans
+ * `extensionsUsed`/`extensionsRequired` and requires meshopt/draco/ktx2
+ * before parsing. A missing or disabled decoder then fails closed with
+ * `AssetDecoderUnavailable` instead of parsing a compressed GLB with no
+ * decoder. With the flag off it returns `{}`, so the legacy path is
+ * byte-identical.
+ */
+export function typedGLBActorDecoderOptions(
+  flags: Pick<QrFlags, "on">,
+  assetsOption: AuraAssetsOption | undefined,
+  caps?: CompressedTextureCapabilities
+): TypedGLBActorDecoderOptions {
+  if (!flags.on("A3D_QR_ASSETS")) return {};
+  return {
+    decoders: assetsOption?.decoders ?? {},
+    ...(assetsOption?.maxTextureSize !== undefined ? { maxTextureSize: assetsOption.maxTextureSize } : {}),
+    ...(caps ? { compressedTextureCapabilities: caps } : {})
+  };
+}
 
 export {
   AssetDecoderUnavailable

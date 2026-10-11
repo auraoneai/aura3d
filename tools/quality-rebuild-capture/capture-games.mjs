@@ -12,6 +12,8 @@
  *
  *   node tools/quality-rebuild-capture/capture-games.mjs                 # 17 production + Orbital from source
  *   node tools/quality-rebuild-capture/capture-games.mjs --build-only    # only build the local-source games
+ *   node tools/quality-rebuild-capture/capture-games.mjs --sourcemap     # T0-29: emit .js.map so crash stacks
+ *                                                                        # map back via map-stack.mjs
  *   node tools/quality-rebuild-capture/capture-games.mjs --skip-build    # reuse .build/ output
  *   node tools/quality-rebuild-capture/capture-games.mjs --local-build   # build + serve all selected games from source
  *   node tools/quality-rebuild-capture/capture-games.mjs --games showcase-bank-shot,aura-clash-showcase
@@ -27,6 +29,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { inflateSync } from "node:zlib";
+import { captureFlagList, captureUrlWithFlags } from "./capture-flags.mjs";
 
 const toolDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(toolDir, "..", "..");
@@ -56,6 +59,9 @@ const sourceOpt = String(opt("--source", "QRC_SOURCE", "")).toLowerCase();
 const prBuild = flag("--pr-build") || (process.env.GITHUB_EVENT_NAME === "pull_request" && sourceOpt !== "production");
 const localBuildAll = flag("--local-build") || truthy(process.env.QRC_LOCAL_BUILD) || prBuild;
 const buildOnly = flag("--build-only");
+// T0-29: sourcemapped game builds so aura-engine-*.js:<line>:<col> crash frames
+// can be attributed (tools/quality-rebuild-capture/map-stack.mjs).
+const sourcemap = flag("--sourcemap") || truthy(process.env.QRC_SOURCEMAP);
 const skipBuild = flag("--skip-build") || truthy(process.env.QRC_SKIP_BUILD);
 const strict = flag("--strict");
 const validateOnly = flag("--validate");
@@ -66,7 +72,9 @@ const includeAlt = !flag("--no-alt-routes");
 const channelOpt = opt("--channel", "QRC_CHANNEL", "chromium");
 const channel = channelOpt === "headless-shell" ? "" : channelOpt;
 const executablePath = opt("--executable", "QRC_EXECUTABLE", "");
-const gpuArgs = opt("--gpu-args", "QRC_GPU_ARGS", "--use-angle=metal --enable-gpu --ignore-gpu-blocklist")
+// QR_CHROMIUM_ARGS (provider-neutral) overrides the macOS Metal default, e.g.
+// Linux NVIDIA runners: --headless=new --use-angle=vulkan --enable-features=Vulkan.
+const gpuArgs = opt("--gpu-args", "QRC_GPU_ARGS", process.env.QR_CHROMIUM_ARGS || "--use-angle=metal --enable-gpu --ignore-gpu-blocklist")
   .split(/\s+/).filter(Boolean);
 const gameTimeoutMs = Number(opt("--game-timeout", "QRC_GAME_TIMEOUT_MS", "420000"));
 const runTimeoutMs = Number(opt("--run-timeout", "QRC_RUN_TIMEOUT_MS", "150000"));
@@ -85,8 +93,10 @@ const selectedGames = gamesConfig.games.filter((g) => requestedIds.length === 0 
 const isLocal = (game) => localBuildAll || game.deployed === false;
 
 // C-33 (PR 0b-3): --flags passthrough. Appends `a3d-qr=<list>` to every captured URL; the
-// engine's resolveQrFlags reads the same param. Per-game `qrFlags[]` union in on top.
+// engine's resolveQrFlags reads the same param. Per-game `qrFlags[]` union in on top unless
+// --flags-exact / QRC_FLAGS_EXACT=1 makes the requested list the entire list (#626).
 const qrFlags = opt("--flags", "QRC_FLAGS", "none");
+const qrFlagsExact = flag("--flags-exact") || truthy(process.env.QRC_FLAGS_EXACT);
 // T1.13: extra 01-title recaptures per run so title determinism can be measured on the runner.
 const titleRepeats = Math.max(0, Number(opt("--title-repeats", "QRC_TITLE_REPEATS", "0")) || 0);
 if (qrFlags !== "none" && qrFlags !== "all" && !/^[A-Za-z0-9_,.-]+$/.test(qrFlags)) {
@@ -94,9 +104,7 @@ if (qrFlags !== "none" && qrFlags !== "all" && !/^[A-Za-z0-9_,.-]+$/.test(qrFlag
   process.exit(2);
 }
 function captureUrlFor(game, route) {
-  const flags = [...new Set([...(game.qrFlags ?? []), ...(qrFlags === "none" ? [] : [qrFlags])])];
-  if (!flags.length) return route;
-  return `${route}${route.includes("?") ? "&" : "?"}a3d-qr=${encodeURIComponent(flags.join(","))}`;
+  return captureUrlWithFlags(route, captureFlagList(game.qrFlags, qrFlags, qrFlagsExact));
 }
 
 // C-33 (PR 0b-3): capture step plugins. Every ./steps/*.mjs default-exports (or exports a
@@ -229,7 +237,7 @@ export default {
     ...build,
     outDir: ${JSON.stringify(outputDir)},
     emptyOutDir: true,
-    sourcemap: false,
+    sourcemap: ${sourcemap ? "true" : "false"},
     reportCompressedSize: false,
     rollupOptions: { ...rollupOptions, input: rollupOptions.input ?? ${JSON.stringify(path.join(appDir, "index.html"))} }
   }
@@ -725,7 +733,7 @@ function timelineHasStep(steps, key) {
 async function captureRun(browser, game, run, url, gameDir, options = {}) {
   const record = {
     run: run.name, url, viewport: { width: run.width, height: run.height }, deviceScaleFactor: run.dpr, mobile: run.mobile,
-    shots: [], conditions: [], consoleErrors: [], consoleWarningCount: 0, consoleWarningSample: [], pageErrors: [], failedRequests: []
+    shots: [], conditions: [], consoleErrors: [], consoleWarningCount: 0, consoleWarningSample: [], consoleWarningKinds: Object.create(null), pageErrors: [], failedRequests: []
   };
   // Video is enabled only when the timeline carries a webm step (steps/webm.mjs);
   // the file finalizes on context.close().
@@ -751,6 +759,12 @@ async function captureRun(browser, game, run, url, gameDir, options = {}) {
     } else if (type === "warning") {
       record.consoleWarningCount++;
       if (record.consoleWarningSample.length < 10) record.consoleWarningSample.push(msg.text().slice(0, 300));
+      // Distinct-warning histogram: the 10-entry sample hides repeated
+      // per-frame warnings (e.g. a probe or compile failure logged each draw).
+      const kind = msg.text().slice(0, 200).replace(/\d+(\.\d+)?/g, "#");
+      if (kind in record.consoleWarningKinds || Object.keys(record.consoleWarningKinds).length < 60) {
+        record.consoleWarningKinds[kind] = (record.consoleWarningKinds[kind] ?? 0) + 1;
+      }
     }
   });
   page.on("pageerror", (err) => { if (record.pageErrors.length < 100) record.pageErrors.push(String(err?.stack ?? err?.message ?? err).slice(0, 800)); });
@@ -864,7 +878,7 @@ async function captureRun(browser, game, run, url, gameDir, options = {}) {
     }
     // T5.5 (§9.6): engine self-reported fps (diagnostics().fps / frameTiming) vs the
     // rAF sampler — disagreement > 20% is recorded as fps-self-report-mismatch.
-    const selfFps = Number(record.engineAtEnd?.[0]?.frameTiming?.fps ?? record.engineAtEnd?.[0]?.fps ?? NaN);
+    const selfFps = Number(record.engineAtEnd?.[0]?.frameTiming?.rafFps ?? record.engineAtEnd?.[0]?.frameTiming?.fps ?? record.engineAtEnd?.[0]?.fps ?? NaN);
     const rafFps = Number(record.fps?.fps ?? NaN);
     if (Number.isFinite(selfFps) && Number.isFinite(rafFps) && rafFps > 0) {
       const rel = Math.abs(selfFps - rafFps) / rafFps;

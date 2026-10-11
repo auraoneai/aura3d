@@ -1,4 +1,4 @@
-From 89647510c1d858fb0645468820515a7ce855ae54 Mon Sep 17 00:00:00 2001
+From 304d4c64ee6fb631a832150c71fa0cc2bd883cc8 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:08:54 +0000
 Subject: [PATCH] migration(showcase-gallery-shift): regenerated patch set
@@ -10,8 +10,8 @@ Subject: [PATCH] migration(showcase-gallery-shift): regenerated patch set
  .../showcase-gallery-shift/src/legacy/main.ts | 173 ++++++++++--------
  .../src/scenario-drive.ts                     |  11 ++
  .../src/scenarios/index.ts                    |  14 ++
- apps/showcase-gallery-shift/src/v2/boot.ts    |   4 +-
- 6 files changed, 133 insertions(+), 80 deletions(-)
+ apps/showcase-gallery-shift/src/v2/boot.ts    |  93 +++-------
+ 6 files changed, 159 insertions(+), 143 deletions(-)
  create mode 100644 apps/showcase-gallery-shift/src/evidence.ts
  create mode 100644 apps/showcase-gallery-shift/src/scenario-drive.ts
  create mode 100644 apps/showcase-gallery-shift/src/scenarios/index.ts
@@ -45,7 +45,7 @@ index 000000000..c6db6b06f
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
 diff --git a/apps/showcase-gallery-shift/src/legacy/main.ts b/apps/showcase-gallery-shift/src/legacy/main.ts
-index 40e5b37b7..de16cd62a 100644
+index 40e5b37b7..c0d7bae75 100644
 --- a/apps/showcase-gallery-shift/src/legacy/main.ts
 +++ b/apps/showcase-gallery-shift/src/legacy/main.ts
 @@ -1,3 +1,4 @@
@@ -216,7 +216,7 @@ index 40e5b37b7..de16cd62a 100644
    },
    loop: { fixedDt: 1 / 60, maxSubSteps: 2 },
 -  scene: buildScene()
-+  scene: buildScene(),
++  scene: () => buildScene(),
 +  qualityRebuild: { flags: ["game"] },
 +  evidence: {
 +    schema: 1,
@@ -225,7 +225,7 @@ index 40e5b37b7..de16cd62a 100644
 +  },
 +  scenarios: async () => (await import("../scenarios")).galleryScenarios
 +});
-+const app = galleryGame.runtime;
++const app = galleryGame.app;
 +galleryGame.start();
 +const input = galleryGame.input!;
 +bindGalleryEvidence(() => collectGalleryEvidence());
@@ -496,27 +496,141 @@ index 000000000..14919fd17
 +  }
 +];
 diff --git a/apps/showcase-gallery-shift/src/v2/boot.ts b/apps/showcase-gallery-shift/src/v2/boot.ts
-index 49a0ef472..e84411701 100644
+index 49a0ef472..54dab5395 100644
 --- a/apps/showcase-gallery-shift/src/v2/boot.ts
 +++ b/apps/showcase-gallery-shift/src/v2/boot.ts
-@@ -41,7 +41,7 @@ import {
+@@ -13,7 +13,7 @@ import {
+   type AuraAnimationAssetLike,
+   type AuraRuntimeNodeHandle
+ } from "@aura3d/engine";
+-import { createGame, lookManifest, type Prd09Game } from "@aura3d/game";
++import { createGame, type Prd09Game } from "@aura3d/game";
+ import direction from "../../art/direction";
+ import { assets } from "../../../../src/aura-assets";
+ import {
+@@ -41,7 +41,6 @@ import {
    type WatcherPose
  } from "../gameplay/vision";
  import { createHeistAudio, type HeistAudioCue } from "../legacy/heist-audio";
 -import { publishGalleryEvidence } from "./evidence";
-+import { publishGalleryEvidence } from "../evidence";
  import { createGalleryCtx, type FloorRuntime, type Phase } from "./state";
  import { createHeistAudioBlock } from "./audio";
  import { createGalleryAnim } from "./anim";
-@@ -50,7 +50,7 @@ import { wireGallerySync } from "./sync";
+@@ -50,7 +49,7 @@ import { wireGallerySync } from "./sync";
  import { createGalleryInput, wireGalleryTouch } from "./input";
  import { wireGalleryHud } from "./hud";
  import { wireGalleryUpdate } from "./update";
 -import { applyGalleryScenario, galleryScenarioLook, parseGalleryScenario, type GalleryScenario } from "./scenarios";
-+import { applyGalleryScenario, galleryScenarioLook, parseGalleryScenario, type GalleryScenario } from "../scenarios";
++import { applyGalleryScenario, parseGalleryScenario, type GalleryScenario } from "./scenarios";
  import { createGalleryRig, galleryCameraSpec } from "./scene/camera";
  import { wireGalleryFx } from "./scene/fx";
  import { galleryLighting } from "./scene/lighting";
+@@ -111,6 +110,32 @@ const game: Prd09Game<string, string> = createGame({
+     // art/direction.ts sections. `route_gallery_shift` uses the engine-parseable
+     // underscore form (URL/dispatch form is `route-gallery-shift`).
+     flags: ["route_gallery_shift", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
++  },
++  // T5.8: route evidence rides the shared createGame channel (C-24) —
++  // only the sections games.json requiredConditions read.
++  evidence: {
++    schema: 1,
++    sections: {
++      guard: (): { state: string } => {
++        const order = { idle: 0, investigate: 1, alert: 2 } as const;
++        const state = ctx.runtime.guards.reduce<string>(
++          (worst, g) => (order[g.state as keyof typeof order] > order[worst as keyof typeof order] ? g.state : worst),
++          "idle"
++        );
++        return { state };
++      },
++      characters: (): { thiefTracksApplied: number; thiefYawErrorDeg: number } => ({
++        thiefTracksApplied: (thiefAnimation.snapshot().runtimeNodeBindings ?? [])
++          .filter((binding) => binding.appliedClipId || binding.activeClipId).length,
++        thiefYawErrorDeg: ctx.thiefYawErrorDeg
++      }),
++      fx: (): { conesVisible: number } => ({
++        conesVisible: world.coneNodeIds.filter((id) => {
++          const node = handle(id);
++          return Boolean(node && node.visible !== false);
++        }).length
++      })
++    }
+   }
+ });
+ 
+@@ -154,67 +179,6 @@ const { autorunInputs } = touch;
+ const hud = wireGalleryHud(ctx, { game });
+ const { syncHud } = hud;
+ 
+-// ---- evidence -----------------------------------------------------------------------
+-
+-const evidence = publishGalleryEvidence({
+-  game,
+-  sceneId: () => (ctx.runtime.layout.id === 1 ? "floor-1" : "floor-2"),
+-  mission: () => ({
+-    floor: ctx.runtime.layout.id,
+-    phase: ctx.paused ? "paused" : ctx.phase,
+-    lifted: ctx.runtime.liftedIds.length,
+-    totalLifted: ctx.completedBeforeFloor + ctx.runtime.liftedIds.length,
+-    score: ctx.totalScore + ctx.runtime.floorScore,
+-    ghost: ctx.runtime.ghostRun,
+-    alarmActive: ctx.alarmActive
+-  }),
+-  thief: () => {
+-    const snap = ctx.runtime.thief.snapshot();
+-    return {
+-      x: snap.x,
+-      z: snap.z,
+-      gait: snap.gait,
+-      clip: snap.clip,
+-      carrying: snap.carrying,
+-      facingYaw: ctx.thiefFacingYaw,
+-      yawErrorDeg: ctx.thiefYawErrorDeg
+-    };
+-  },
+-  guard: () => {
+-    const states = ctx.runtime.guards.map((guard) => ({ id: guard.id, state: guard.state, x: guard.x, z: guard.z }));
+-    const order = { idle: 0, investigate: 1, alert: 2 } as const;
+-    const state = states.reduce<string>((worst, s) => (order[s.state as keyof typeof order] > order[worst as keyof typeof order] ? s.state : worst), "idle");
+-    return { state, states };
+-  },
+-  characters: () => {
+-    const bindings = thiefAnimation.snapshot().runtimeNodeBindings ?? [];
+-    return {
+-      thiefTracksApplied: bindings.filter((binding) => binding.appliedClipId || binding.activeClipId).length,
+-      thiefYawErrorDeg: ctx.thiefYawErrorDeg,
+-      thiefClip: ctx.thiefClipActive,
+-      guardClips: ctx.runtime.guards.map((guard) => ctx.guardClipActive.get(guard.id) ?? null)
+-    };
+-  },
+-  fx: () => ({
+-    conesVisible: world.coneNodeIds.filter((id) => {
+-      const node = handle(id);
+-      return Boolean(node && node.visible !== false);
+-    }).length,
+-    liveCount: game.fx.liveCount,
+-    backend: game.fx.backend
+-  }),
+-  detection: () => ({
+-    value: ctx.runtime.detection.value,
+-    seen: ctx.lastThreatSamples.some((sample) => sample.seesThief),
+-    lastSeen: ctx.runtime.lastSeen
+-  }),
+-  audio: () => ({ lastCue: audioCueLog.at(-1) ?? null, cueLog: audioCueLog.slice() }),
+-  run: () => ({ paused: ctx.paused, touchEngaged: ctx.touchEngaged, replayActive: ctx.autorunActive }),
+-  appliedLook: () => ({ ...lookManifest(game.lookSource()), ...galleryScenarioLook(scenario) }),
+-  rig: () => ({ id: "gallery-shift.chase", fov: 52 }),
+-  scenario: () => scenario,
+-  render: () => ({ frame: ctx.frameCount, firstFrameAt: ctx.firstFrameAt })
+-});
+ 
+ 
+ // ---- scenarios ----------------------------------------------------------------------
+@@ -298,4 +262,3 @@ void game.ready().then(() => {
+     sessionStartedAt: performance.now()
+   };
+ });
+-void evidence;
 -- 
 2.52.0
 

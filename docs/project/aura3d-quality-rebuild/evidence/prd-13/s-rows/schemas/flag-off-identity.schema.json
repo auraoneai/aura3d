@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "aura3d.prd13.s-record.flag-off-identity/1",
+  "title": "13-S9 flag-off identity: with qr flags none, compilePromptPlan outputs, the index.ts warning text, the recipe census and the C-36 RenderSource of the 18 base snapshots are byte/deep-equal to 85aafcd0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "row", "runId", "runUrl", "workflow", "job", "branch", "provider", "headSha", "recordedAt", "referenceSha", "flags", "checks"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "notes": { "type": "string" },
+    "kind": { "const": "flag-off-identity" },
+    "row": { "const": "13-S9" },
+    "runId": { "type": "string", "pattern": "^[1-9][0-9]*$" },
+    "runUrl": { "type": "string", "pattern": "^https://github\\.com/auraoneai/aura3d/actions/runs/[1-9][0-9]*" },
+    "workflow": { "type": "string", "pattern": "^\\.github/workflows/[a-z0-9-]+\\.yml$" },
+    "job": { "type": "string", "minLength": 1 },
+    "branch": { "const": "main" },
+    "provider": { "const": "github-macos-14" },
+    "headSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "recordedAt": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T" },
+    "referenceSha": { "const": "85aafcd0b50f86d1b1c487cee4753a1145f79b6c" },
+    "flags": { "const": "none" },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["compilePromptPlan", "warningText", "recipeCensus", "renderSourceC36"],
+      "properties": {
+        "compilePromptPlan": { "$ref": "#/$defs/check" },
+        "warningText": { "$ref": "#/$defs/check" },
+        "recipeCensus": { "$ref": "#/$defs/check" },
+        "renderSourceC36": {
+          "allOf": [{ "$ref": "#/$defs/check" }],
+          "type": "object",
+          "properties": { "compared": { "const": 18 } }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["equal", "comparison", "compared", "differing"],
+      "properties": {
+        "equal": { "type": "boolean" },
+        "comparison": { "enum": ["byte", "deep"] },
+        "compared": { "type": "integer", "minimum": 1 },
+        "differing": { "type": "integer", "minimum": 0 },
+        "diffSample": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

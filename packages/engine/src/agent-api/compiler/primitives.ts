@@ -1,11 +1,12 @@
-// PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
+// PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; the only logic change is the
+// flag-gated Q-15-2 `qr` option (A3D_QR_CORE primitives via @aura3d/rendering); omitted = unchanged.
 
 import type { AuraColor, AuraModelNode, AuraPrimitiveNode, AuraRuntimeNodeRegistry, AuraSceneNode, AuraTransformSpec, AuraVec3, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource, ProductionRuntimePrimitiveState } from "../nodes/types.js";
 import { colorToLinearRgba } from "../colorUtils.js";
 import { animation } from "../nodes/animation.js";
 import { geometry } from "../nodes/geometry.js";
 import { primitive } from "../nodes/primitives.js";
-import { createModelMatrix, shouldNormalizeModelNode } from "../sceneMath.js";
+import { createModelMatrix, primitiveSize, shouldNormalizeModelNode } from "../sceneMath.js";
 import { selectAuraRootLodLevel } from "../RootGeometry.js";
 import { evaluateDistancePrioritizedMipResidency, type TextureStreamingCandidate, type TextureStreamingResidency } from "@aura3d/assets/browser";
 import { createDualProbeEnvironmentLightingResources, createProductionEnvironmentLightingResources, createProductionPbrHdrPipelineFromRadiance, type EnvironmentLightingOptions } from "@aura3d/rendering";
@@ -13,22 +14,28 @@ import { normalizeTextureBudgetBytes } from "../app/rendererOptions.js";
 import { blankProductionPrimitiveTextureState, createSdfTextPrimitiveResource } from "./textures.js";
 import { material } from "../nodes/material.js";
 
-export function createProductionRuntimePrimitiveEntries(nodes: readonly AuraSceneNode[]): ProductionRuntimePrimitiveEntry[] {
+/**
+ * Q-15-2: `qr` (from `qrPrimitiveGeometryOptions(flags, quality)`) routes the
+ * builtin primitives through @aura3d/rendering `createPrimitiveGeometry` under
+ * A3D_QR_CORE. Omitted / undefined = the legacy generators, unchanged.
+ */
+export function createProductionRuntimePrimitiveEntries(nodes: readonly AuraSceneNode[], qr?: QrPrimitiveGeometryOptions): ProductionRuntimePrimitiveEntry[] {
   return nodes
     .filter((node): node is AuraPrimitiveNode => node.kind === "primitive")
-    .map((node) => ({ node, resources: createProductionPrimitiveResources(node), currentLodIndex: 0 }));
+    .map((node) => ({ node, resources: createProductionPrimitiveResources(node, qr), currentLodIndex: 0 }));
 }
 
-export function createProductionPrimitiveResources(node: AuraPrimitiveNode): readonly ProductionRuntimePrimitiveResource[] {
+export function createProductionPrimitiveResources(node: AuraPrimitiveNode, qr?: QrPrimitiveGeometryOptions): readonly ProductionRuntimePrimitiveResource[] {
   const sdfWarnings: string[] = [];
   const sdfResource = createSdfTextPrimitiveResource(node, (message) => { sdfWarnings.push(message); });
   const levels = node.lod?.levels;
   if (!levels?.length) {
     if (sdfResource) return [sdfResource];
+    const qrMesh = qrPrimitiveMeshFor(node, qr);
     const fallback = {
-      geometry: createProductionPrimitiveGeometry(node),
+      geometry: qrMesh ? createProductionGeometryFromPrimitiveMesh(qrMesh) : createProductionPrimitiveGeometry(node),
       material: createProductionPrimitiveMaterial(node),
-      bounds: primitiveGeometryBounds(node),
+      bounds: qrMesh?.bounds ?? primitiveGeometryBounds(node),
       name: node.name ?? node.primitive,
       materialSpec: node.material,
       sourceNode: node,
@@ -51,10 +58,11 @@ export function createProductionPrimitiveResources(node: AuraPrimitiveNode): rea
     const levelWarnings: string[] = [];
     const levelSdf = createSdfTextPrimitiveResource(levelNode, (message) => { levelWarnings.push(message); });
     if (levelSdf) return { ...levelSdf, name: level.name };
+    const levelQrMesh = qrPrimitiveMeshFor(levelNode, qr);
     const levelFallback = {
-      geometry: createProductionPrimitiveGeometry(levelNode),
+      geometry: levelQrMesh ? createProductionGeometryFromPrimitiveMesh(levelQrMesh) : createProductionPrimitiveGeometry(levelNode),
       material: createProductionPrimitiveMaterial(levelNode),
-      bounds: primitiveGeometryBounds(levelNode),
+      bounds: levelQrMesh?.bounds ?? primitiveGeometryBounds(levelNode),
       name: level.name,
       materialSpec: levelNode.material,
       sourceNode: levelNode,
@@ -209,7 +217,7 @@ import { renderer } from "../rendererDiagnostics.js";
 import { scene } from "../nodes/scene.js";
 import { colorToLinearRgb } from "../colorUtils.js";
 import type { GltfBounds } from "./gltfRuntime.js";
-import { createPlaneGeometry, createBoxGeometry, createSphereGeometry, createCylinderGeometry, createTorusGeometry, createCapsuleApproxGeometry } from "./geometry.js";
+import { createPlaneGeometry, createBoxGeometry, createSphereGeometry, createCylinderGeometry, createTorusGeometry, createCapsuleApproxGeometry, createQrPrimitiveMesh, type QrPrimitiveGeometryOptions } from "./geometry.js";
 import { clamp01 } from "../sceneMath.js";
 
 /**
@@ -364,6 +372,12 @@ export function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRM
       cullMode: node.primitive === "plane" || opacity < 0.999 ? "none" : "back"
     }
   });
+}
+
+/** Q-15-2: the flag-on mesh for a builtin primitive node; undefined = legacy path (flag off, custom, geometry spec). */
+export function qrPrimitiveMeshFor(node: AuraPrimitiveNode, qr: QrPrimitiveGeometryOptions | undefined): ProductionPrimitiveMesh | undefined {
+  if (!qr?.core || node.geometry || node.primitive === "custom") return undefined;
+  return createQrPrimitiveMesh(node.primitive, primitiveSize(node), qr);
 }
 
 export function createProductionPrimitiveGeometry(node: AuraPrimitiveNode): Geometry {
