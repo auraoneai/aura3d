@@ -136,19 +136,22 @@ async function main() {
             await page.waitForFunction(() => Boolean(window.__QR_READY__), undefined, { timeout: 120_000, polling: 500 });
             phases.readyMs = Date.now() - started;
             // Let frame telemetry accumulate >=35 samples before reading.
+            // aura3d reads `diagnostics().frame`; three adapters publish the same
+            // shape through `window.__PRD11_FRAME__()` (P-30 head-to-head p50).
             await page.waitForFunction(() => {
-              const app = window.__PRD11_APP__;
-              if (!app) return false;
               try {
-                return (app.diagnostics().frame?.frames ?? 0) >= 35;
+                const app = window.__PRD11_APP__;
+                const frame = app ? app.diagnostics().frame : window.__PRD11_FRAME__?.();
+                return (frame?.frames ?? 0) >= 35;
               } catch { return false; }
             }, undefined, { timeout: 60_000, polling: 500 }).catch(() => undefined);
             const ready = await page.evaluate(() => window.__QR_READY__ ?? null);
-            const frame = engine === "aura3d" ? await page.evaluate(() => {
-              const app = window.__PRD11_APP__;
-              if (!app) return null;
-              try { return app.diagnostics().frame ?? null; } catch { return null; }
-            }) : null;
+            const frame = await page.evaluate(() => {
+              try {
+                const app = window.__PRD11_APP__;
+                return (app ? app.diagnostics().frame : window.__PRD11_FRAME__?.()) ?? null;
+              } catch { return null; }
+            });
             entry.engines[engine] = { status: ready?.errors?.length ? "error" : "ready", wallMs: Date.now() - started, phases, progress: await progress(), payload: ready, frame, consoleErrors };
             console.log(`[prd11-capture] ${sceneId} ${flags} ${engine}: ${entry.engines[engine].status} (${Date.now() - started} ms)`);
           } catch (error) {

@@ -46,10 +46,10 @@
       "metric": "frame.intervalMs.p50",
       "comparator": "ratio<=",
       "threshold": 1.5,
-      "relative": { "engine": "three", "metric": "payload.loadMs" },
+      "relative": { "engine": "three", "metric": "frame.intervalMs.p50" },
       "gating": true,
       "phase": 3,
-      "comment": "Placeholder for the phase-3 head-to-head; the relative metric becomes three's own frame p50 once its adapter reports frame timing."
+      "comment": "Phase-3 head-to-head: aura3d frame p50 over three's frame p50 (three adapter publishes window.__PRD11_FRAME__, P-30)."
     },
     {
       "id": "S3-draw-calls",
