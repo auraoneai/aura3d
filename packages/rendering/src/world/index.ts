@@ -13,6 +13,7 @@ export * from "./terrain/shaders/terrain.vert.glsl.js";
 export * from "./vegetation/InstanceChunkGrid.js";
 export * from "./vegetation/WindField.js";
 export * from "./chunks.js";
+export * from "./vegetation/WindCpu.js";
 export * from "./vegetation/FoliageMaterial.js";
 export * from "./vegetation/ImpostorMaterial.js";
 export * from "./vegetation/GrassField.js";

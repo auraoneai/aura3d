@@ -15,6 +15,13 @@ import {
   type AuraScatterOptions
 } from "../../../../packages/engine/src/agent-api/world/scatter";
 import { worldTerrain } from "../../../../packages/engine/src/agent-api/world/terrain";
+import {
+  PRD10_FOREST_WIND_CHECKSUM,
+  PRD10_FOREST_WIND_INSTANCES,
+  PRD10_FOREST_WIND_SCATTER,
+  PRD10_MEADOW_CHECKSUM,
+  PRD10_MEADOW_SCATTER
+} from "../../../../benchmarks/quality-rebuild/scenes/prd10/forest-scatter";
 import { instances } from "../../../../packages/engine/src/agent-api/nodes/instances";
 import type { AuraTransformSpec } from "../../../../packages/engine/src/agent-api/index";
 
@@ -79,6 +86,19 @@ describe("prd10 scatter planner", () => {
 
   it("worldScatter rejects empty layers", () => {
     expect(() => worldScatter(scatterOptions({ layers: [] }))).toThrow(/layer/);
+  });
+
+  // S5 Node half: the prd10-forest-wind rules (seed 103) pin one checksum.
+  // `tests/browser/qr-prd10-scatter-checksum.spec.ts` evaluates the same
+  // fixture inside Chromium and must reproduce these exact bytes.
+  it("S5: prd10-forest-wind checksum is pinned and order-independent", () => {
+    const first = worldScatter(PRD10_FOREST_WIND_SCATTER as never);
+    const meadow = worldScatter(PRD10_MEADOW_SCATTER as never);
+    const again = worldScatter(PRD10_FOREST_WIND_SCATTER as never);
+    expect(first.instanceCount).toBe(PRD10_FOREST_WIND_INSTANCES);
+    expect(first.checksum).toBe(PRD10_FOREST_WIND_CHECKSUM);
+    expect(again.checksum).toBe(first.checksum);
+    expect(meadow.checksum).toBe(PRD10_MEADOW_CHECKSUM);
   });
 });
 

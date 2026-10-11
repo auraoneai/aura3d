@@ -18,6 +18,7 @@ on:
       - "benchmarks/quality-rebuild/**/prd10/**"
       - "tests/unit/contracts/impl/prd10-*.ts"
       - "tests/browser/qr-prd10-*.ts"
+      - "tools/impostor-bake/**"
       - ".github/workflows/qr-prd10-world.yml"
   push:
     branches: [main]
@@ -31,6 +32,7 @@ on:
       - "benchmarks/quality-rebuild/**/prd10/**"
       - "tests/unit/contracts/impl/prd10-*.ts"
       - "tests/browser/qr-prd10-*.ts"
+      - "tools/impostor-bake/**"
       - ".github/workflows/qr-prd10-world.yml"
   workflow_dispatch:
   # Reusable — other lane/meta workflows may invoke this gate in place.
@@ -44,7 +46,10 @@ permissions:
   contents: read
 
 concurrency:
-  group: qr-prd10-world-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
+  # Main runs never cancel each other: GitHub keeps only ONE pending run per
+  # group even with cancel-in-progress false, so a shared main group replaced
+  # 38118155278 (#910's merge commit). Main and dispatch runs get their own group.
+  group: qr-prd10-world-${{ github.ref }}${{ (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && format('-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
@@ -68,6 +73,9 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
+      # S8 bakes a real foliage mesh (LFS): fetch only that blob.
+      - name: Fetch S8 foliage LFS blob
+        run: git lfs pull --include="public/aura-assets/propPineTree.12243e81.glb"
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -82,7 +90,7 @@ jobs:
       # T1.14/10-CI: every qr-prd10-*.spec.ts on disk runs — no masks, no
       # continue-on-error; a red spec must red the lane.
       - name: prd10 browser specs (all qr-prd10-*.spec.ts)
-        run: pnpm exec playwright test --config playwright.config.ts tests/browser/qr-prd10-chunks.spec.ts tests/browser/qr-prd10-world-pass-depth.spec.ts tests/browser/qr-prd10-time-of-day.spec.ts tests/browser/qr-prd10-flag-off-identity.spec.ts tests/browser/qr-prd10-terrain-cracks.spec.ts tests/browser/qr-prd10-terrain-gpu-cpu.spec.ts tests/browser/qr-prd10-terrain-splat-bake.spec.ts
+        run: pnpm exec playwright test --config playwright.config.ts tests/browser/qr-prd10-chunks.spec.ts tests/browser/qr-prd10-world-pass-depth.spec.ts tests/browser/qr-prd10-time-of-day.spec.ts tests/browser/qr-prd10-flag-off-identity.spec.ts tests/browser/qr-prd10-terrain-cracks.spec.ts tests/browser/qr-prd10-terrain-gpu-cpu.spec.ts tests/browser/qr-prd10-terrain-splat-bake.spec.ts tests/browser/qr-prd10-wind-chunk.spec.ts tests/browser/qr-prd10-water-gerstner.spec.ts tests/browser/qr-prd10-scatter-checksum.spec.ts tests/browser/qr-prd10-impostor.spec.ts
       # 10-CI: an empty collection or a skipped test is a red job — never a
       # green report on nothing. Collected/skipped counts come from the JSON
       # report Playwright writes next to the HTML one.
@@ -108,20 +116,108 @@ jobs:
           if-no-files-found: ignore
 
   capture:
-    # T1.14 / 10-CI / P-04: GPU evidence for the prd10 scenes runs on the
-    # GitLab mirror (saas-macos-medium-m1) as ONE flags-bisect pipeline with
-    # both arms (`none;world`, one build, one runner boot). This job triggers
-    # it, WAITS for it, and fails on its result — no fire-and-forget:
-    #   - the mirror must hold this exact SHA before the trigger (main is
-    #     mirrored by mirror-to-gitlab.yml, qr/** by qr-gitlab-ci.yml sync);
-    #   - the pipeline must start on this SHA and end `success`;
-    #   - bisect-summary.json must list every prd10 scene in both arms as
-    #     `ready` with drawCalls > 0 and no error (bisect-summary.mjs alone
-    #     only fails on the `none` control, so the `world` arm is checked here).
-    # GitLab budget: a push to a qr/** branch that has a PR would run the same
-    # pipeline twice (push + pull_request), so branch pushes leave capture to
-    # the pull_request run; main pushes, schedule, dispatch and workflow_call run it.
+    # T1.14 / 10-CI / P-04 + T0-33 evidence: the prd10 scenes (plus base
+    # controls 09/17) are captured under `none` and `world` with --strict
+    # (software rasterizers fail), then every scene must be `ready`, draw, and
+    # report no error in BOTH arms. Two GPU legs: GitHub macos-14 (ANGLE Metal)
+    # and the self-hosted Azure L4 (ANGLE Vulkan). Frames are compared only
+    # within one leg. GitLab capture is `capture-gitlab` (workflow_dispatch).
+    # A qr/** branch push leaves capture to its pull_request run so one head
+    # uses one GPU slot per leg, not two.
     if: github.event_name != 'push' || github.ref == 'refs/heads/main'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - leg: macos14
+            runner: macos-14
+            chrome_args: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+          - leg: azure-l4
+            runner: [self-hosted, azure-gpu]
+            chrome_args: "--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist"
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    env:
+      QR_BENCH_CHROME_ARGS: ${{ matrix.chrome_args }}
+      QR_PRD10_SCENES: "09-outdoor-environment,17-large-environment,prd10-terrain-flyover,prd10-terrain-layers,prd10-forest-wind,prd10-meadow-grass,prd10-coast-water,prd10-city-street,prd10-interior-room,prd10-biomes-sweep,prd10-space-orbit"
+      OUT_DIR: "benchmarks/quality-rebuild/out/prd10-${{ matrix.leg }}-${{ github.run_id }}"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+          persist-credentials: false
+      - name: Fetch bench LFS blobs
+        run: |
+          git lfs pull --include="fixtures/asset-corpus/damaged-helmet.glb,fixtures/asset-corpus/antique-camera.glb,fixtures/asset-corpus/clear-coat-test.glb,fixtures/asset-corpus/sheen-test-grid.glb,public/aura-assets/propRockA.52dd1f0f.glb,public/aura-assets/propRockB.c94b2733.glb,public/aura-assets/deepRecoveryCrateStandard.02520123.glb"
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: Build benchmark bundle
+        run: pnpm exec vite build --config benchmarks/quality-rebuild/vite.config.ts
+      - name: Capture (flags none)
+        run: >-
+          node benchmarks/quality-rebuild/capture.mjs
+          --dist benchmarks/quality-rebuild/dist
+          --out "$OUT_DIR/none"
+          --scenes "$QR_PRD10_SCENES"
+          --engines aura3d
+          --flags none
+          --strict
+      - name: Capture (flags world)
+        if: always()
+        run: >-
+          node benchmarks/quality-rebuild/capture.mjs
+          --dist benchmarks/quality-rebuild/dist
+          --out "$OUT_DIR/world"
+          --scenes "$QR_PRD10_SCENES"
+          --engines aura3d
+          --flags world
+          --strict
+      - name: Every scene ready with draws and no error in both arms
+        if: always()
+        run: |
+          set -euo pipefail
+          node - <<'JS' | tee -a "$GITHUB_STEP_SUMMARY"
+            const fs = require("fs");
+            const scenes = process.env.QR_PRD10_SCENES.split(",");
+            const bad = [];
+            for (const set of ["none", "world"]) {
+              const f = `${process.env.OUT_DIR}/${set}/report.json`;
+              if (!fs.existsSync(f)) { bad.push(`${set}: no report.json`); continue; }
+              const report = JSON.parse(fs.readFileSync(f, "utf8"));
+              for (const scene of scenes) {
+                const entry = (report.scenes || []).find((e) => e.scene === scene);
+                const result = entry && Object.values(entry.engines || {}).find((r) => (r.engine ?? "aura3d") === "aura3d");
+                if (!result) { bad.push(`${set}/${scene}: not captured`); continue; }
+                const p = result.payload || {};
+                const err = (p.errors && p.errors[0]) || result.error || entry.strictFailure || "";
+                const ok = result.status === "ready" && (p.drawCalls ?? 0) > 0 && !err;
+                console.log(`${ok ? "ok  " : "FAIL"} ${set}/${scene} status=${result.status} drawCalls=${p.drawCalls} loadMs=${p.loadMs} error=${String(err).slice(0, 200)}`);
+                if (!ok) bad.push(`${set}/${scene}`);
+              }
+            }
+            if (bad.length) { console.error("prd10 capture failures: " + bad.join("; ")); process.exit(1); }
+          JS
+      - name: Upload capture evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qr-prd10-capture-${{ matrix.leg }}-${{ github.run_id }}
+          path: ${{ env.OUT_DIR }}/
+          retention-days: 30
+          if-no-files-found: warn
+
+  capture-gitlab:
+    # GitLab variant (saas-macos-medium-m1, chromium-headless-shell), kept for
+    # manual runs only while the GitLab quota is exhausted. Triggers ONE
+    # flags-bisect pipeline (`none;world`), WAITS for it, and fails on its
+    # result: the mirror must hold this SHA, the pipeline must end `success`
+    # on it, and every prd10 scene must be ready with draws in both arms.
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 240
     env:
@@ -129,10 +225,8 @@ jobs:
       GITLAB_API: "https://gitlab.com/api/v4"
       QR_PRD10_SCENES: "prd10-terrain-flyover,prd10-terrain-layers,prd10-forest-wind,prd10-meadow-grass,prd10-coast-water,prd10-city-street,prd10-interior-room,prd10-biomes-sweep,prd10-space-orbit"
       QR_PRD10_SETS: "none;world"
-      # PR runs test the PR head on its own (qr/**) branch; every other event
-      # (push, schedule, dispatch, workflow_call) tests the ref it ran on.
-      REF: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
-      SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      REF: ${{ github.ref_name }}
+      SHA: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v4
         with:
