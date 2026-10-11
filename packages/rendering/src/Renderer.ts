@@ -505,6 +505,11 @@ export class Renderer {
     return this.frameStatsMonitor;
   }
 
+  /** C-28 (#91): run `fn` under the frameStats "post" scope when a monitor exists. */
+  private scopePost<T>(fn: () => T): T {
+    return this.frameStatsMonitor ? this.frameStatsMonitor.scope("post", fn) : fn();
+  }
+
   /** C-05: current output configuration (`app.setOutput` / `renderer.output` seam). */
   get output(): RendererOutputOptions {
     return this.outputOptions;
@@ -932,11 +937,15 @@ export class Renderer {
             }
           }
         };
-        frameHooks.runPhase("post-hdr", items, postprocess !== undefined);
-        this.executePostprocess(postprocess, ownedTargets, explicitRenderTarget);
+        // C-28 (#91): the post-hdr contributors and the postprocess chain report
+        // under the "post" scope (lane 03 owns the chain internals).
+        this.scopePost(() => {
+          frameHooks.runPhase("post-hdr", items, postprocess !== undefined);
+          this.executePostprocess(postprocess!, ownedTargets, explicitRenderTarget);
+        });
         if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.temporalHistory.commit();
       } else if (qrOutput) {
-        frameHooks.runPhase("post-hdr", items, true);
+        this.scopePost(() => frameHooks.runPhase("post-hdr", items, true));
         this.executeOutputPass(frameHooks, items, ownedTargets[0] ?? null, explicitRenderTarget);
       }
       frameHooks.runPhase("after-output", items);
@@ -1253,11 +1262,15 @@ export class Renderer {
             }
           }
         };
-        await frameHooks.runPhaseAsync("post-hdr", items, postprocess !== undefined);
-        await this.executePostprocessAsync(postprocess, ownedTargets, explicitRenderTarget);
+        // C-28 (#91): "post" scope. FrameStats.scope is synchronous, so on the
+        // async path it times the CPU submission up to the first await.
+        await this.scopePost(async () => {
+          await frameHooks.runPhaseAsync("post-hdr", items, postprocess !== undefined);
+          await this.executePostprocessAsync(postprocess!, ownedTargets, explicitRenderTarget);
+        });
         if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.temporalHistory.commit();
       } else if (qrOutput) {
-        await frameHooks.runPhaseAsync("post-hdr", items, true);
+        await this.scopePost(() => frameHooks.runPhaseAsync("post-hdr", items, true));
         this.executeOutputPass(frameHooks, items, ownedTargets[0] ?? null, explicitRenderTarget);
       }
       await frameHooks.runPhaseAsync("after-output", items);
