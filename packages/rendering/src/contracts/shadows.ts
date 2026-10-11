@@ -57,6 +57,11 @@ export function registerDepthVariantFeature(feature: DepthVariantFeature): () =>
   return depthVariantFeatures.register(feature);
 }
 
+/** Depth-variant features active under `flags`, in (order, id) order (#751, 02-DEPTH). */
+export function depthVariantFeaturesFor(flags: QrFlags): readonly DepthVariantFeature[] {
+  return depthVariantFeatures.active(flags);
+}
+
 export interface ShadowFrameUniforms {
   readonly cascadeTexture: Texture | null; readonly cascadeMatrices: Float32Array; readonly cascadeSplits: Float32Array; readonly cascadeTexelWorld: Float32Array;
   readonly atlasTexture: Texture | null; readonly localShadowData: Float32Array; readonly perLightShadowIndex: Int32Array;
