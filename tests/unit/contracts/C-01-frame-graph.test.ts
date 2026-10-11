@@ -4,7 +4,7 @@ import { resolveQrFlags } from "@aura3d/engine/contracts";
 
 describe("C-01 FrameGraph", () => {
   it("all-flags-off yields zero contributors", () => {
-    const flags = resolveQrFlags({ options: [] });
+    const flags = resolveQrFlags({ options: "none" });
     expect(frameContributors(flags).length).toBe(0);
   });
   it("registered contributor shows up under its flag", () => {
@@ -16,7 +16,7 @@ describe("C-01 FrameGraph", () => {
     const dispose = registerFrameContributor(c);
     const flags = resolveQrFlags({ options: ["core"] });
     expect(frameContributors(flags).map((x) => x.id)).toContain("prd01.test");
-    const off = resolveQrFlags({ options: [] });
+    const off = resolveQrFlags({ options: "none" });
     expect(frameContributors(off).map((x) => x.id)).not.toContain("prd01.test");
     dispose();
   });

@@ -10,7 +10,7 @@ import "@aura3d/engine/lanes";
 
 const ext = () => appExtensionsAll().find((e) => e.id === "prd08.camera");
 const flagsOn = resolveQrFlags({ options: ["camera"] });
-const flagsOff = resolveQrFlags({});
+const flagsOff = resolveQrFlags({ options: "none" });
 
 const fakeApp = () => ({
   nodes: { get: () => undefined, all: () => [] },
