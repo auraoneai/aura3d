@@ -146,8 +146,15 @@ export function createAuraFeelBus(app: AuraApp, options: AuraFeelExtensionOption
     presentedViewProjection: () => liveCamera()?.evidence?.().viewProjection
   });
 
+  /*
+   * §17 tier gating: the published uniforms are the live C-27 tier's view —
+   * on Low only flash + vignette (chroma/radial blur zeroed), so a C-13
+   * consumer never pays for the heavier parts there. Re-read every frame so
+   * `app.quality.set` applies on the next publish.
+   */
+  const tierUniforms = () => bus.screenUniformsForTier(screenFeelTier((app as { quality?: { tier?: unknown } }).quality?.tier));
   /** Latest published uniforms — read by the `prd08.screenFeel` contributor. */
-  const latest = { uniforms: bus.screenUniforms() };
+  const latest = { uniforms: tierUniforms() };
   /*
    * 08-LOOP: subscribe `advance` only while the bus has pending energy — a
    * permanently-registered onFrame callback keeps `requiresFrames()` true and
@@ -161,7 +168,7 @@ export function createAuraFeelBus(app: AuraApp, options: AuraFeelExtensionOption
     if (!unframe && typeof onFrame === "function") {
       unframe = onFrame.call(app, ({ dt }) => {
         bus.advance(Math.max(0, dt));
-        const u = bus.screenUniforms();
+        const u = tierUniforms();
         latest.uniforms = u;
         overlay?.apply(u);
         if (bus.isIdle()) {
@@ -219,6 +226,11 @@ export function createAuraFeelBus(app: AuraApp, options: AuraFeelExtensionOption
     }
   });
   return impl;
+}
+
+/** C-27 tier name for the screen-feel publish; unknown (no controller) → high. */
+export function screenFeelTier(tier: unknown): "low" | "medium" | "high" | "ultra" {
+  return tier === "low" || tier === "medium" || tier === "high" || tier === "ultra" ? tier : "high";
 }
 
 /** Deterministic tiny hash — no `Math.random()` anywhere in lane code. */

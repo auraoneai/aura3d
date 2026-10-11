@@ -22,7 +22,57 @@ export interface ProbePhysicsEntry {
   readonly id?: string;
 }
 
+export type AuraCameraProbeTier = "low" | "medium" | "high" | "ultra";
+
+/**
+ * Per-presented-frame probe budget (PRD-08 §17 / §19): `sphereCasts` is the
+ * camera's sphere-cast cap; `occluderQueries` are dedicated occluder queries
+ * on top of it (Ultra only); `fade` false gates the occluder-fade query off
+ * entirely (Low: "fade feature off"). With fade on and no dedicated query
+ * left, `occluders()` spends one sphere-cast slot.
+ */
+export interface AuraCameraProbeBudget {
+  readonly sphereCasts: number;
+  readonly occluderQueries: number;
+  readonly fade: boolean;
+}
+
+/** §17 tier → probe budget (C-27 `QUALITY_TIERS` names). */
+export const CAMERA_PROBE_TIER_BUDGETS: Readonly<Record<AuraCameraProbeTier, AuraCameraProbeBudget>> = Object.freeze({
+  low: Object.freeze({ sphereCasts: 1, occluderQueries: 0, fade: false }),
+  medium: Object.freeze({ sphereCasts: 2, occluderQueries: 0, fade: true }),
+  high: Object.freeze({ sphereCasts: 3, occluderQueries: 0, fade: true }),
+  ultra: Object.freeze({ sphereCasts: 3, occluderQueries: 1, fade: true })
+});
+
+/** Budget for a C-27 tier name; anything else (missing controller) → high. */
+export function cameraProbeBudgetForTier(tier: unknown): AuraCameraProbeBudget {
+  return CAMERA_PROBE_TIER_BUDGETS[
+    tier === "low" || tier === "medium" || tier === "high" || tier === "ultra" ? tier : "high"
+  ];
+}
+
+/** Per-frame probe counters since the last `beginFrame()`. */
+export interface AuraCameraProbeFrameStats {
+  readonly sphereCasts: number;
+  readonly occluderQueries: number;
+  /** Casts/queries refused by the budget this frame. */
+  readonly deniedCasts: number;
+  readonly deniedOccluderQueries: number;
+}
+
+export interface AuraBudgetedCameraProbe extends AuraCameraProbe {
+  /** Reset the per-frame budget; the camera calls this once per presented frame. */
+  beginFrame(): void;
+  stats(): AuraCameraProbeFrameStats;
+}
+
 export interface AuraCameraProbeDeps {
+  /**
+   * Live per-frame budget (read at `beginFrame`). Absent → unlimited, the
+   * pre-§17 behaviour for standalone probes.
+   */
+  readonly budget?: () => AuraCameraProbeBudget | undefined;
   /** Live collider list; when it yields ≥1 entry the physics sweep is used. */
   readonly colliders?: () => Iterable<ProbePhysicsEntry>;
   /** Axis-aligned bounds of every potentially occluding node. */
@@ -69,11 +119,36 @@ function rayHitsExpandedAabb(
   return tMin;
 }
 
-export function createCameraProbe(deps: AuraCameraProbeDeps): AuraCameraProbe {
+const NO_HIT = Object.freeze({ hit: false, distance: Number.POSITIVE_INFINITY });
+
+export function createCameraProbe(deps: AuraCameraProbeDeps): AuraBudgetedCameraProbe {
   const ignore = deps.ignore ?? (() => false);
+  let budget = deps.budget?.();
+  let casts = 0;
+  let queries = 0;
+  let deniedCasts = 0;
+  let deniedQueries = 0;
+  const castAllowed = () => !budget || casts < budget.sphereCasts;
 
   return {
+    beginFrame() {
+      budget = deps.budget?.();
+      casts = 0;
+      queries = 0;
+      deniedCasts = 0;
+      deniedQueries = 0;
+    },
+    stats() {
+      return { sphereCasts: casts, occluderQueries: queries, deniedCasts, deniedOccluderQueries: deniedQueries };
+    },
     sphereCast(from, to, radius) {
+      // Over the tier cap: no hit (the damper eases back out on its slow
+      // push-out spring) — never an unbudgeted cast.
+      if (!castAllowed()) {
+        deniedCasts += 1;
+        return NO_HIT;
+      }
+      casts += 1;
       const delta = sub(to, from);
       const distance = len(delta);
       if (distance <= 1e-9) return { hit: false, distance: Number.POSITIVE_INFINITY };
@@ -118,6 +193,20 @@ export function createCameraProbe(deps: AuraCameraProbeDeps): AuraCameraProbe {
     },
 
     occluders(from, to) {
+      if (budget) {
+        if (!budget.fade) {
+          deniedQueries += 1;
+          return [];
+        }
+        if (queries < budget.occluderQueries) queries += 1;
+        else if (castAllowed()) casts += 1;
+        else {
+          deniedQueries += 1;
+          return [];
+        }
+      } else {
+        queries += 1;
+      }
       const delta = sub(to, from);
       const ids: string[] = [];
       // Thin-probe radius so occluders() reports what a near-infinitesimal cast hits.
