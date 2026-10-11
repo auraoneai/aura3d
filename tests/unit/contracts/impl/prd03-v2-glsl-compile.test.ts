@@ -96,3 +96,14 @@ describe("v2 post fragments compile as GLSL ES 3.00", () => {
     expect(log, log).not.toMatch(/ERROR/);
   });
 });
+
+describe("god-ray tint coercion (S12 black frames)", () => {
+  it("accepts the bridge's {r,g,b} object, an array, and falls back on bad input", async () => {
+    const { godRayColor } = await import("../../../../packages/rendering/src/post/v2Stages");
+    expect(godRayColor({ r: 0.44, g: 0.52, b: 0.73 })).toEqual([0.44, 0.52, 0.73]);
+    expect(godRayColor([0.1, 0.2, 0.3])).toEqual([0.1, 0.2, 0.3]);
+    expect(godRayColor(undefined)).toEqual([1, 0.96, 0.9]);
+    expect(godRayColor({ r: Number.NaN, g: 0.5 })).toEqual([1, 0.5, 0.9]);
+    for (const v of godRayColor({ r: 0.44, g: 0.52, b: 0.73 })) expect(Number.isFinite(v)).toBe(true);
+  });
+});
