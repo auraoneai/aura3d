@@ -263,7 +263,7 @@ export function createAuraCameraController(
     const scene = app.scene as unknown as { camera?: CameraSpecMutable } | undefined;
     if (!scene) return;
     const mode = pose.orthographicSize !== undefined ? "orthographic" : "perspective";
-    const fields = {
+    const fields: CameraSpecMutable = {
       mode,
       position: pose.position,
       target: pose.target,
@@ -272,8 +272,29 @@ export function createAuraCameraController(
       far: pose.far,
       orthographicSize: pose.orthographicSize
     };
-    // Always REPLACE the spec: writing fields would mutate the object the
-    // bound rig reads as authored input (feedback into its own smoothing).
+    /*
+     * Pixels, not evidence: the production renderer reads the camera from its
+     * own render snapshot, a shallow copy made at mount (`{ ...snapshot,
+     * nodes }`) that keeps a reference to the authored camera object.
+     * Replacing `app.scene.camera` therefore never reached the GPU: every
+     * flag-on frame rendered the authored spec pose (promote run 38151983512:
+     * byte-identical PNGs, verdict NO-EFFECT). So the presented pose is written
+     * INTO the shared authored object, which both snapshots hold. Its
+     * follow/path fields (`targetNode`, `offset`, `smoothing`, ...) are
+     * dropped so the renderer resolves the presented pose verbatim. The bound
+     * rig reads its own copy (`createFromSpecRig({ ...spec })`), so there is
+     * no feedback into its input.
+     * Frozen specs (`freezeSpecs`) and scenes without an authored camera
+     * object fall back to replacement.
+     */
+    const live = scene.camera;
+    if (live && !Object.isFrozen(live)) {
+      for (const key of Object.keys(live)) if (!(key in fields)) delete live[key];
+      Object.assign(live, fields);
+      if (pose.orthographicSize === undefined) delete live.orthographicSize;
+      writeSpec = live;
+      return;
+    }
     const next: CameraSpecMutable = { ...fields };
     scene.camera = options.freezeSpecs ? Object.freeze(next) : next;
     writeSpec = next;
@@ -303,7 +324,8 @@ export function createAuraCameraController(
   const controller = createCameraController({
     resolveSubject,
     probe,
-    specDeps: specDepsFor((app.scene?.camera as LegacyCameraSpec | undefined) ?? {}),
+    // Copy: applyPose writes the presented pose into the authored object.
+    specDeps: specDepsFor({ ...((app.scene?.camera as LegacyCameraSpec | undefined) ?? {}) }),
     aspect: () => {
       const canvas = (app as { canvas?: { width: number; height: number } }).canvas;
       return canvas && canvas.height > 0 ? canvas.width / canvas.height : 16 / 9;
@@ -327,7 +349,7 @@ export function createAuraCameraController(
           return canvas && canvas.height > 0 ? canvas.width / canvas.height : 16 / 9;
         })()
       }),
-    initial: { spec: currentSpec() }
+    initial: { spec: (() => { const s = currentSpec(); return s ? { ...s } : undefined; })() }
   });
 
   // Rebind when the scene's camera spec object changes (setScene / new spec).
@@ -335,7 +357,9 @@ export function createAuraCameraController(
     const spec = liveSpec() as LegacyCameraSpec | undefined;
     if (spec && spec !== boundSpec && spec !== (writeSpec as LegacyCameraSpec | undefined)) {
       boundSpec = spec;
-      const rig = createFromSpecRig({ ...spec }, specDepsFor(spec));
+      // Snapshot the authored spec: applyPose later overwrites this object in place.
+      const authored = { ...spec };
+      const rig = createFromSpecRig(authored, specDepsFor(authored));
       controller.use(rig);
     }
   };
