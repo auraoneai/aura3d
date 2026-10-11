@@ -2,7 +2,7 @@
 
 import { computeRuntimeAlpha } from "./frameAlpha.js";
 import type { AuraApp, AuraAppTarget, AuraBackend, AuraCreateAppOptions, AuraFrameCallback, AuraFrameInfo, AuraModelNode, AuraPrimitiveNode, AuraSceneSnapshot, WebGLRenderController } from "../nodes/types.js";
-import { isWebGLRenderableNode, productionRenderErrorMessage } from "../compiler/observations.js";
+import { declaresWebGLContent, productionRenderErrorMessage } from "../compiler/observations.js";
 import { createDiagnosticsOverlay, renderDiagnosticPreviewToCanvas, shouldRenderOverlay } from "../public/devtools.js";
 import { createInitialDiagnostics, snapshotDiagnostics, validateSceneAssets } from "../diagnostics.js";
 import { createRuntimeScenePhysics, eulerToQuat, physics, resolveNodePhysicsShape } from "../nodes/physics.js";
@@ -276,7 +276,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     for (const callback of [...frameCallbacks]) callback(frame);
   };
   const shouldUseProductionRendererForCurrentScene = () =>
-    Boolean(canvas && hasRootRenderableContent(canvas, renderSnapshot.nodes.some(isWebGLRenderableNode)) && typeof window !== "undefined");
+    Boolean(canvas && hasRootRenderableContent(canvas, declaresWebGLContent(renderSnapshot.nodes)) && typeof window !== "undefined");
   const resetDiagnosticsForCurrentScene = (backend: AuraBackend) => {
     const fresh = createInitialDiagnostics(renderSnapshot, options.renderer);
     diagnosticsState.backend = backend;
@@ -341,7 +341,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
      * So the two cases are separated. A renderable scene with no usable canvas now raises a diagnosable
      * error naming the cause, instead of drawing something plausible.
      */
-    const declaresRenderableContent = hasRootRenderableContent(canvas, renderSnapshot.nodes.some(isWebGLRenderableNode));
+    const declaresRenderableContent = hasRootRenderableContent(canvas, declaresWebGLContent(renderSnapshot.nodes));
     /*
      * Scoped to the case that is actually a lie: a canvas WAS supplied, so the caller is looking at
      * pixels, and the scene has renderable content — but WebGL declined it, so those pixels would be a
