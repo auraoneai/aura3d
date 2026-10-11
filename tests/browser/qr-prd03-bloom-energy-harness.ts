@@ -5,12 +5,12 @@
  * bloom threshold 1.0, knee 0.25, plus one diffuse white wall lit to linear
  * luma ≤ 0.6.
  *
- * Measurement is linear: `output.toneMapping: "linear"` with exposure 1/16
- * and no dither, so the presented RGBA8 is sRGB(clamp(x / 16)). Bloom runs
+ * Measurement is linear: `output.toneMapping: "linear"`, no dither, so the
+ * presented RGBA8 is sRGB(clamp(x · exposure)) (exposure per `exposureFor`). Bloom runs
  * before the output exposure, so thresholds see the authored HDR values. Each
  * case renders bloom-on and bloom-off; halo energy is
  * Σ linear-luma(on − off) over the halo mask (the frame outside the dilated
- * sphere silhouette), × 16 back to scene units.
+ * sphere silhouette), ÷ exposure back to scene units.
  *
  * Asserted by `qr-prd03-bloom-energy.spec.ts`:
  *  - strength 2/4/8: halo energy ∝ excess (1/3/7) within ±10% ("no hidden gain");
@@ -28,6 +28,22 @@ import { postV2ModulesReady } from "@aura3d/rendering";
 const SIZE = 320;
 const EXPOSURE = 1 / 16;
 
+/**
+ * S9 8/2 attribution (GPU 38164110361): the bloom is linear in the excess —
+ * every ring within 60 px of the sphere scales with (s − 1) to < 1 % — but
+ * the far tail (> 60 px) read 4133 / 3884 / 3828 per unit excess at
+ * strength 2 / 4 / 8. At a fixed 1/16 exposure the strength-2 tail sits at
+ * ~1 display LSB, where sRGB 8-bit rounding inflates it; that bias, not the
+ * bloom, made 8/2 read 6.27. Each above-threshold strength is therefore
+ * captured at `exposure = 1 / (4 · (s − 1))`, which puts the halo at the same
+ * 8-bit level for every strength (bloom runs before the output exposure, so
+ * the measured scene-unit energy is unchanged). Cases at or below threshold
+ * keep 1/16.
+ */
+function exposureFor(subject: Subject): number {
+  return subject.kind === "sphere" && subject.strength > 1 ? 1 / (4 * (subject.strength - 1)) : EXPOSURE;
+}
+
 function srgbToLinear(v: number): number {
   const c = v / 255;
   return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
@@ -44,7 +60,7 @@ export const bloomFrames: Record<string, { png: string; meanLuma: number; diagno
 
 interface Frame { readonly pixels: Uint8Array; readonly width: number; readonly height: number }
 
-async function render(subject: Subject, bloom: boolean): Promise<Frame> {
+async function render(subject: Subject, bloom: boolean, exposure = exposureFor(subject)): Promise<Frame> {
   const host = document.createElement("div");
   host.style.cssText = `position:fixed;left:-2400px;top:0;width:${SIZE}px;height:${SIZE}px;`;
   document.body.appendChild(host);
@@ -79,7 +95,7 @@ async function render(subject: Subject, bloom: boolean): Promise<Frame> {
     pixelRatio: 1,
     resize: false,
     autoStart: false,
-    output: { toneMapping: "linear", exposure: EXPOSURE, dither: false },
+    output: { toneMapping: "linear", exposure, dither: false },
     qualityRebuild: { flags: ["post"] }
   } as never);
   try {
@@ -144,7 +160,7 @@ export interface BloomEnergyCase {
   readonly frameSize?: readonly [number, number];
   /**
    * S9 attribution diagnostics (not asserted): bloom-added scene energy
-   * (Σ on − off, × 1/EXPOSURE) in 4-px rings around the sphere centroid, the
+   * (Σ on − off, ÷ exposure) in 4-px rings around the sphere centroid, the
    * halo under alternative masks, and core pixel counts. A linear bloom gives
    * ring profiles that scale exactly with (strength − 1).
    */
@@ -176,14 +192,14 @@ function dilate(core: Uint8Array, width: number, height: number, pad: number): U
   return mask;
 }
 
-function attribution(off: Frame, on: Frame, strength: number): NonNullable<BloomEnergyCase["attribution"]> {
+function attribution(off: Frame, on: Frame, strength: number, exposure: number): NonNullable<BloomEnergyCase["attribution"]> {
   const { width, height } = off;
   const n = width * height;
   const coreAny = new Uint8Array(n), coreHalf = new Uint8Array(n);
   let cx = 0, cy = 0, cw = 0, offEdge = 0;
   for (let p = 0; p < n; p++) {
-    const l = linearLuma(off.pixels, p * 4) / EXPOSURE;
-    if (l * EXPOSURE > 1e-3) {
+    const l = linearLuma(off.pixels, p * 4) / exposure;
+    if (l * exposure > 1e-3) {
       coreAny[p] = 1;
       cx += (p % width) * l; cy += Math.floor(p / width) * l; cw += l;
     }
@@ -195,7 +211,7 @@ function attribution(off: Frame, on: Frame, strength: number): NonNullable<Bloom
   const pad4 = dilate(coreAny, width, height, 4), pad8 = dilate(coreAny, width, height, 8), half2 = dilate(coreHalf, width, height, 2);
   let h4 = 0, h8 = 0, hh = 0, cAny = 0, cHalf = 0;
   for (let p = 0; p < n; p++) {
-    const d = (linearLuma(on.pixels, p * 4) - linearLuma(off.pixels, p * 4)) / EXPOSURE;
+    const d = (linearLuma(on.pixels, p * 4) - linearLuma(off.pixels, p * 4)) / exposure;
     const x = p % width, y = Math.floor(p / width);
     const ring = Math.min(15, Math.floor(Math.hypot(x - cx, y - cy) / 4));
     rings[ring]! += d;
@@ -214,6 +230,7 @@ async function measure(subject: Subject): Promise<BloomEnergyCase> {
     throw new Error(`bloom on/off frames differ in size: ${onFrame.width}x${onFrame.height} vs ${offFrame.width}x${offFrame.height}`);
   }
   const { width, height } = offFrame;
+  const exposure = exposureFor(subject);
   const off = offFrame.pixels, on = onFrame.pixels;
   const mask = haloMask(offFrame, 2);
   const pixelTotal = width * height;
@@ -223,22 +240,28 @@ async function measure(subject: Subject): Promise<BloomEnergyCase> {
     onTotal += lOn;
     offTotal += lOff;
     if (mask[p]) halo += lOn - lOff;
-    if (on[p * 4]! === 255 && on[p * 4 + 1]! === 255 && on[p * 4 + 2]! === 255) saturated += 1;
+  }
+  // The blow-out check keeps the fixed 1/16 exposure it was specified at
+  // (a lower per-strength exposure would make "≤ 2 % at 255" easier).
+  const saturationFrame = exposure === EXPOSURE ? onFrame : await render(subject, true, EXPOSURE);
+  for (let p = 0; p < pixelTotal; p++) {
+    const q = saturationFrame.pixels;
+    if (q[p * 4]! === 255 && q[p * 4 + 1]! === 255 && q[p * 4 + 2]! === 255) saturated += 1;
   }
   return {
     subject: subject.kind === "sphere" ? `sphere-${subject.strength}` : "wall",
-    haloEnergy: halo / EXPOSURE,
-    offEnergy: offTotal / EXPOSURE,
+    haloEnergy: halo / exposure,
+    offEnergy: offTotal / exposure,
     addedFraction: offTotal > 0 ? (onTotal - offTotal) / offTotal : 0,
     saturatedFraction: saturated / pixelTotal,
     // Diagnostics: GPU lane 38127246424 logged frame mean luma 9.55 for a
     // render whose case reported offEnergy 0 — record both sides here.
-    coreLuma: linearLuma(off, (Math.floor(height / 2) * width + Math.floor(width / 2)) * 4) / EXPOSURE,
+    coreLuma: linearLuma(off, (Math.floor(height / 2) * width + Math.floor(width / 2)) * 4) / exposure,
     offMeanLuma: meanLuma(off),
     onMeanLuma: meanLuma(on),
     pixelCount: pixelTotal,
     frameSize: [width, height] as const,
-    ...(subject.kind === "sphere" ? { attribution: attribution(offFrame, onFrame, subject.strength) } : {})
+    ...(subject.kind === "sphere" ? { attribution: attribution(offFrame, onFrame, subject.strength, exposure) } : {})
   };
 }
 
