@@ -53,7 +53,10 @@ async function render(subject: Subject, bloom: boolean): Promise<Uint8Array> {
     built = built.add(primitives.sphere({
       name: "emitter",
       size: 0.7,
-      material: material.emissive({ color: "#000000", emissive: "#ffffff", emissiveIntensity: subject.strength })
+      // envMapIntensity 0: the probe assumes linear luma == strength; the
+      // production environment's specular on a roughness-0.35 sphere added a
+      // constant (GPU 38153304062: halo 2.70 / 6.14 ≈ excess (s − 1 + 0.06)).
+      material: material.emissive({ color: "#000000", emissive: "#ffffff", emissiveIntensity: subject.strength, envMapIntensity: 0 })
     }));
   } else {
     built = built
@@ -120,6 +123,8 @@ export interface BloomEnergyCase {
   /** Bloom-added luma over the whole frame as a fraction of the bloom-off frame's luma. */
   readonly addedFraction: number;
   readonly saturatedFraction: number;
+  /** Scene-linear luma at the frame centre of the bloom-off frame (sphere core ≈ strength). */
+  readonly coreLuma?: number;
   readonly offMeanLuma?: number;
   readonly onMeanLuma?: number;
   readonly pixelCount?: number;
@@ -145,6 +150,7 @@ async function measure(subject: Subject): Promise<BloomEnergyCase> {
     saturatedFraction: saturated / (SIZE * SIZE),
     // Diagnostics: GPU lane 38127246424 logged frame mean luma 9.55 for a
     // render whose case reported offEnergy 0 — record both sides here.
+    coreLuma: linearLuma(off, ((SIZE / 2) * SIZE + SIZE / 2) * 4) / EXPOSURE,
     offMeanLuma: meanLuma(off),
     onMeanLuma: meanLuma(on),
     pixelCount: off.length / 4

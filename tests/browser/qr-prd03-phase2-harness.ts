@@ -205,7 +205,9 @@ export async function runToneEvalProbe(): Promise<{
       built = built.add(primitives.box({
         name: `step-${e}`,
         size: [0.6, 0.6, 0.05],
-        material: material.pbr({ color: "#000000", emissive: "#ffffff", emissiveIntensity: e, roughness: 1 })
+        // envMapIntensity 0: HDR pixel must be exactly E (GPU 38153304062 read
+        // step 0 at 156 vs 152 — environment specular on the black base).
+        material: material.pbr({ color: "#000000", emissive: "#ffffff", emissiveIntensity: e, roughness: 1, envMapIntensity: 0 })
       }).position(-2.25 + i * 0.9, 0, 0));
     });
     // No bloom here: bloom adds energy above threshold by design (S9), so a
