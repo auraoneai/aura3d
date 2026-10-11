@@ -121,7 +121,7 @@ const routeHealth = {
   renderer: { path: "createGameApp root safe API", mode: "production with safe-basic fallback", nativeWebGPU: false, productionRuntimeClaimed: false },
   primaryAssets: modelIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, role: assetById.get(id).role })),
   audioAssets: audioIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
-  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "subordinate skyline/court dressing, painted markings, stanchion/net, trajectory guides, and state feedback only", status: "no-primitive-primary-subjects" },
+  primitiveStatus: { primitiveBudget: gate.primitiveBudget, role: "subordinate skyline/court dressing, painted markings, stanchion/net, trajectory guides, and state feedback only", status: "no-primitive-primary-subjects" },
   gameplay: {
     heats: 5,
     heatModes: ["open", "spots", "pressure", "fire", "gold"],

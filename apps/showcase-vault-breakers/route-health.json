@@ -126,7 +126,6 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 8,
     "primitiveBudget": 96,
     "role": "subordinate felt, rails, slings, target state, lane, drain, lights, scoreboard, and feedback around typed primary assets",
     "status": "no-primitive-primary-subjects"

@@ -4,7 +4,7 @@
 // in beat mode, deterministic pattern mode when no AudioContext exists —
 // PT-01 honest fallback). Gameplay modules (beat-clock/gates/patterns/
 // player/style) are unchanged; music + sfx play through the legacy
-// stem-bus tunnel audio until C-25 lands (standIn R-14-10).
+// stem-bus tunnel audio until C-25 lands (standIn R-14-09).
 import { game as engineGame, scene } from "@aura3d/engine";
 import { createGame, type Game, lookManifest } from "@aura3d/game";
 import { pulseSectionAtTime, pulseTimeForBeat } from "../gameplay/beat-clock";

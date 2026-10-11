@@ -67,7 +67,7 @@ export default defineArtDirection({
     { feature: "spline-extruded road + splat terrain", file: "src/v2/scene/world.ts", request: "R-14-13", removeWhen: "PRD 10 road/terrain/scatter real" },
     { feature: "clearcoat car paint + flake normal", file: "src/v2/scene/materials.ts", request: "R-14-14", removeWhen: "PRD 04 clearcoat real (§8.6)" },
     { feature: "3-cascade CSM sun shadows", file: "src/v2/scene/lighting.ts", request: "R-14-14", removeWhen: "C-10 CSM real" },
-    { feature: "car-sport RPM engine layer", file: "src/v2/audio.ts", request: "R-14-09", removeWhen: "C-25 game-sfx real" }
+    { feature: "car-sport RPM engine layer", file: "src/v2/boot.ts", request: "R-14-09", removeWhen: "C-25 game-sfx real" }
   ],
   criticalCategories: ["environment_world", "shadows", "vfx"],
   tiers: {

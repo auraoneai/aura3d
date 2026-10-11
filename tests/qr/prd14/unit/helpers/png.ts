@@ -45,7 +45,7 @@ export function decodePngAsRgba(buf: Buffer): DecodedPng {
     offset += 12 + length;
   }
   if (bitDepth !== 8 || interlace !== 0 || (colorType !== 2 && colorType !== 6)) {
-    throw new Error(`${path}: unsupported PNG (bitDepth=${bitDepth}, colorType=${colorType}, interlace=${interlace})`);
+    throw new Error(`unsupported PNG (bitDepth=${bitDepth}, colorType=${colorType}, interlace=${interlace})`);
   }
   const bpp = colorType === 6 ? 4 : 3;
   const stride = width * bpp;

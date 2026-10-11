@@ -3,7 +3,7 @@
 // under a 4300 K dawn key, typed van + lane-loop traffic, zone rings, drop
 // look-back chase rig, autopilot scenario. Gameplay modules (van/traffic/
 // dispatch/city street graph) are unchanged; audio plays through the legacy
-// cue map until C-25 game-sfx is real (standIn R-14-10).
+// cue map until C-25 game-sfx is real (standIn R-14-09).
 import {
   createGameArcadeVehicle, game as engineGame, scene
 } from "@aura3d/engine";

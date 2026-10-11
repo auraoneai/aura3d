@@ -107,7 +107,7 @@ const routeHealth = {
   primaryAssets: initialPrimaryAssets.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, role: assetById.get(id).role })),
   typedModelFamily: modelIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, role: assetById.get(id).role })),
   audioAssets: audioIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
-  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "pool-hall architecture, rail sights, chalk, aim/bank guides, contact marker, and lighting only", status: "no-primitive-primary-subjects" },
+  primitiveStatus: { primitiveBudget: gate.primitiveBudget, role: "pool-hall architecture, rail sights, chalk, aim/bank guides, contact marker, and lighting only", status: "no-primitive-primary-subjects" },
   gameplay: {
     racks: 3, rackClocksMs: [240000, 210000, 180000], publicRapierBodies: 34, pocketSensors: 6,
     controls: ["aim", "top/draw authored contact nudge", "charge/strike", "ball-in-hand placement", "pause", "full reset"],

@@ -24,11 +24,11 @@ test.describe("showcase-mech-hangar union-scene (§14.4)", () => {
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       await page.waitForTimeout(2500);
-      const loading = await page.evaluate(() =>
+      const loading = await page.evaluate((EVIDENCE: string) =>
         JSON.parse(JSON.stringify(eval(EVIDENCE + ".loading"))) as {
           sceneId?: string;
           sceneSwaps?: number;
-        });
+        }, EVIDENCE);
       expect(loading.sceneId).toBe("pit");
       expect(loading.sceneSwaps).toBe(0);
       expect(errors.filter((e) => e.includes("error")), "page errors").toEqual([]);

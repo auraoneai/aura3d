@@ -153,7 +153,6 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 44,
     "primitiveBudget": 46,
     "role": "hangar/pit set dressing, invisible camera anchor, and renderer-owned hit/dust feedback only",
     "status": "no-primitive-primary-subjects"

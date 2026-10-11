@@ -123,7 +123,6 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 36,
     "primitiveBudget": 40,
     "role": "arena, player guides, collectible, boundaries, and effects around typed primary assets and abstract instanced enemies",
     "pass": true

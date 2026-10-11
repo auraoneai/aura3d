@@ -97,7 +97,6 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 16,
     "primitiveBudget": 20,
     "role": "terrain/weather/pad/effect support around typed vehicle and beacon assets",
     "pass": true
