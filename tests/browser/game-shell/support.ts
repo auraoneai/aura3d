@@ -40,6 +40,14 @@ export async function sessionState(page: Page): Promise<string> {
 
 /** Page-composite pixels (canvas + DOM layers), same 4×4 stride as readPixels. */
 export async function pagePixels(page: Page, evidenceName?: string): Promise<number[] | null> {
+  // These probes compare explicit simulation frames. Leave the game loop
+  // paused between captures so wall-clock RAF ticks cannot consume the flash
+  // envelope or particle lifetime while Playwright composites the page.
+  // runtime.step() continues to render while paused.
+  await page.evaluate(() => {
+    const game = window.__AURA3D_SHELL__!.game as { runtime: { pause(): unknown } };
+    game.runtime.pause();
+  });
   const png = await page.screenshot({ clip: { x: 0, y: 0, width: 1280, height: 720 } });
   // Evidence frames land in test-results/ (uploaded as prd09-browser-macos).
   if (evidenceName) writeFileSync(test.info().outputPath(`${evidenceName}.png`), png);
