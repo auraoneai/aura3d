@@ -78,6 +78,20 @@ describe("#1141 bounded-scene sun cascade (12-shadows)", () => {
     const t = top[1] / -sunDirection[1];
     expect(inside([top[0] + sunDirection[0] * t, 0, top[2] + sunDirection[2] * t])).toBe(true);
   });
+
+  it("orders depth nearest-to-light first, so the less-equal depth pass keeps occluders", () => {
+    const cascade = fit12();
+    const top: V3 = [-1.9, 2, -0.4];
+    const t = top[1] / -sunDirection[1];
+    const ground: V3 = [top[0] + sunDirection[0] * t, 0, top[2] + sunDirection[2] * t];
+    const [uTop, vTop, zTop] = apply(cascade.viewProjection, top);
+    const [uGround, vGround, zGround] = apply(cascade.viewProjection, ground);
+    // Same shadow-map texel (the ray from the occluder hits this ground point)…
+    expect(uGround!).toBeCloseTo(uTop!, 5);
+    expect(vGround!).toBeCloseTo(vTop!, 5);
+    // …and the receiver is deeper than its occluder.
+    expect(zGround!).toBeGreaterThan(zTop!);
+  });
 });
 
 describe("sliceDepthWithinRect", () => {
