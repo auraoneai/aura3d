@@ -40,6 +40,19 @@ import type {
 declare const __AURA3D_VERSION__: string;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** 01-HANG: bounds inside the 120 s lane spec timeout (ready + first draw + settle + measure). */
+const READY_TIMEOUT_MS = 45_000;
+const DRAW_TIMEOUT_MS = 30_000;
+
+/** Reject with `message` if `promise` has not settled within `ms`. */
+function withDeadline<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(message)), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
 const nextFrame = () => new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
 
 class CapabilityLog {
@@ -325,7 +338,9 @@ export async function mountAuraLaneScene(sceneId: string, spec: Prd01LaneSceneSp
     autoStart: animated,
     qualityRebuild: { flags: [qrList] }
   });
-  await app.ready();
+  // 01-HANG / T0-10 fail-fast: a mount that never settles must publish
+  // __QR_ERROR__ (via the harness catch), not hang until the spec timeout.
+  await withDeadline(app.ready(), READY_TIMEOUT_MS, `prd01 lane scene "${sceneId}" app.ready() did not settle within ${READY_TIMEOUT_MS} ms (ready-timeout)`);
   const mountDiag = app.diagnostics();
   if (mountDiag.errors.length > 0) {
     throw new Error(`prd01 lane mount failed: ${mountDiag.errors.join("; ")}`);
@@ -349,12 +364,22 @@ export async function mountAuraLaneScene(sceneId: string, spec: Prd01LaneSceneSp
     log.add("tone-mapping-variant", app.setOutput ? "supported" : "missing", `setOutput toneMapping=${tmName ?? "default"} exposure=${tmExposure}`);
   }
 
-  const drawDeadline = performance.now() + 60_000;
+  const drawDeadline = performance.now() + DRAW_TIMEOUT_MS;
+  let firstDraw = app.diagnostics();
   while (performance.now() < drawDeadline) {
     if (!animated) app.step(0);
-    const diagnostics = app.diagnostics();
-    if (diagnostics.drawCalls > 0 || diagnostics.errors.length > 0) break;
+    firstDraw = app.diagnostics();
+    if (firstDraw.drawCalls > 0 || firstDraw.errors.length > 0) break;
     await sleep(50);
+  }
+  // T0-10: errors during the first frames, or no draw at all, fail the mount.
+  // Before, the adapter fell through and published a "ready" payload with
+  // drawCalls 0 (a blank frame reported as success).
+  if (firstDraw.errors.length > 0) {
+    throw new Error(`prd01 lane scene "${sceneId}" failed while drawing: ${firstDraw.errors.join("; ")}`);
+  }
+  if (firstDraw.drawCalls === 0) {
+    throw new Error(`prd01 lane scene "${sceneId}" drew 0 calls within ${DRAW_TIMEOUT_MS} ms of ready (no-draw-timeout)`);
   }
   if (animated) {
     // Live motion: let the RAF loop run; strip captures photograph it mid-flight.

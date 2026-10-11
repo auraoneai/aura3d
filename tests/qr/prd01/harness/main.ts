@@ -56,6 +56,7 @@ async function main(): Promise<void> {
 
   if (tools === "render-targets") {
     status.textContent = "running render-target tools";
+    harnessStage = "tools=render-targets";
     const { runRenderTargetTools } = await import("./renderTargets");
     const report = await runRenderTargetTools(stage);
     window.__QR_READY__ = { engine: "aura3d", scene: "render-targets", errors: report.errors };
@@ -66,6 +67,7 @@ async function main(): Promise<void> {
 
   if (tools === "program-compile") {
     status.textContent = "running program-compile";
+    harnessStage = "tools=program-compile";
     const { runProgramCompileTool } = await import("./programCompile");
     const report = await runProgramCompileTool();
     window.__QR_READY__ = { engine: "aura3d", scene: "program-compile", errors: report.errors };
@@ -77,6 +79,7 @@ async function main(): Promise<void> {
 
   if (tools === "canvas-dpr" || tools === "app-capture" || tools === "renderer-mount-failure") {
     status.textContent = `running ${tools}`;
+    harnessStage = `tools=${tools}`;
     const { runCanvasDprTool, runAppCaptureTool, runMountFailureTool } = await import("./appTools");
     const report =
       tools === "canvas-dpr" ? await runCanvasDprTool(stage)
@@ -97,15 +100,30 @@ async function main(): Promise<void> {
     throw new Error(message);
   }
   status.textContent = `mounting ${sceneId} on ${engine}`;
+  harnessStage = `mount ${sceneId} on ${engine}`;
   const payload = await adapter.mount(stage);
   window.__QR_READY__ = payload;
   status.textContent = `ready ${sceneId} on ${engine}`;
   document.title = `ready ${sceneId}`;
 }
 
-main().catch((error) => {
-  const message = error instanceof Error ? error.stack ?? error.message : String(error);
-  window.__QR_ERROR__ = message;
+// 01-HANG: whatever step stalls (mount, ready, a tool), the page publishes a
+// named __QR_ERROR__ before the 120 s spec timeout, so the failure says where
+// it hung instead of "waitForFunction timed out".
+const HARNESS_WATCHDOG_MS = 110_000;
+let harnessStage = "boot";
+const watchdog = setTimeout(() => {
+  if (window.__QR_READY__ !== undefined || window.__QR_ERROR__ !== undefined) return;
+  window.__QR_ERROR__ = `prd01 harness watchdog: no __QR_READY__ after ${HARNESS_WATCHDOG_MS} ms (stuck at: ${harnessStage})`;
   const status = document.getElementById("status");
-  if (status) status.textContent = message;
-});
+  if (status) status.textContent = String(window.__QR_ERROR__);
+}, HARNESS_WATCHDOG_MS);
+
+main()
+  .catch((error) => {
+    const message = error instanceof Error ? error.stack ?? error.message : String(error);
+    window.__QR_ERROR__ = message;
+    const status = document.getElementById("status");
+    if (status) status.textContent = message;
+  })
+  .finally(() => clearTimeout(watchdog));
