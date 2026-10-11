@@ -1,0 +1,44 @@
+name: lead-live-shots
+on:
+  push:
+    branches: ['qr/lead-live-shots']
+jobs:
+  shots:
+    runs-on: [self-hosted, linux, gpu-l4, track0]
+    timeout-minutes: 45
+    steps:
+      - run: |
+          set -eu
+          mkdir -p shots && cd shots
+          npm init -y >/dev/null && npm i -s playwright-core@1.59.1 >/dev/null
+          cat > s.mjs <<'JS'
+          import { chromium } from 'playwright-core';
+          import { writeFileSync } from 'node:fs';
+          const args = (process.env.ARGS || '').split(' ').filter(Boolean);
+          const games = ['aura-clash-showcase','showcase-aurora-lander','showcase-bank-shot','showcase-blockfall-reactor','showcase-courier-rush','showcase-deep-recovery','showcase-gallery-shift','showcase-gravity-post','showcase-mech-hangar','showcase-neon-swarm','showcase-orbital-defense','showcase-patrol-wing','showcase-pulse-tunnel','showcase-rooftop-buckets','showcase-siege-golf','showcase-skyline-runner','showcase-turbo-drift-circuit','showcase-vault-breakers'];
+          const out = [];
+          const b = await chromium.launch({ channel: 'chrome', headless: true, args });
+          for (const g of games) {
+            const p = await b.newPage({ viewport: { width: 1280, height: 720 } });
+            const errs = []; p.on('pageerror', e => errs.push(String(e).slice(0, 200)));
+            const cons = []; p.on('console', m => { if (m.type() === 'error') cons.push(m.text().slice(0, 200)); });
+            let status = 0;
+            try { const r = await p.goto(`https://aura3d.auraone.ai/apps/${g}/`, { waitUntil: 'load', timeout: 60000 }); status = r ? r.status() : 0; } catch (e) { errs.push('goto: ' + String(e).slice(0, 120)); }
+            await p.waitForTimeout(10000);
+            await p.screenshot({ path: `${g}-a.png` }).catch(() => {});
+            await p.keyboard.press('Space').catch(() => {}); await p.keyboard.down('ArrowRight').catch(() => {});
+            await p.waitForTimeout(4000);
+            await p.keyboard.up('ArrowRight').catch(() => {});
+            await p.screenshot({ path: `${g}-b.png` }).catch(() => {});
+            out.push({ g, status, errs, cons: cons.slice(0, 5) });
+            console.log(JSON.stringify(out[out.length - 1]));
+            await p.close();
+          }
+          await b.close();
+          writeFileSync('report.json', JSON.stringify(out, null, 2));
+          JS
+          ARGS="${{ vars.QR_AZURE_GPU_CHROME_ARGS }}" node s.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: live-games, path: 'shots/*.png
+          shots/report.json' }
