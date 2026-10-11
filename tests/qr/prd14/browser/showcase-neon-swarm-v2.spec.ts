@@ -132,8 +132,54 @@ test.describe("showcase-neon-swarm v2 (T2.6)", () => {
       )).toBe(false);
 
       expect(errors).toEqual([]);
-      // S11 (PRD-14 §16.1): synthCues === 0 and every art/direction.ts
-      // audio[] event voiced at least once during the scripted timeline.
+    } finally {
+      server.close();
+    }
+  });
+
+  test("showcase-neon-swarm: S11 audio — synthCues 0, every audio[] event played", async ({ page }) => {
+    const root = builtDist(APP_DIR);
+    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+    const errors = watchConsole(page);
+    const { server, url } = await serve(root!);
+    try {
+      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
+      await expect.poll(() => page.evaluate(() =>
+        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+      // Same scripted timeline as the boot test (its S2 assertions omitted):
+      // S11 reads the audio proof once the timeline has run.
+      const state = await page.evaluate(() =>
+        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
+      expect(state).toBe("playing");
+
+      // The seeded wave spawns 36 grunts over 8 s; pulse J while strafing.
+      const deadline = Math.max(...REQUIRED.map((c) => c.deadlineMs), 20_000);
+      const started = Date.now();
+      let allMet = false;
+      while (Date.now() - started < deadline) {
+        const ev = await readEvidence(page);
+        if (ev) {
+          const results = REQUIRED.map((c) => evaluateRequiredCondition(c.expr, ev));
+          if (results.every((r) => r.ok)) { allMet = true; break; }
+        }
+        await driveAndFire(page);
+      }
+      // The 05-burst 20-live-fx deadline (30 s) is separate: keep fighting and
+      // fire a charged radial burst when it reaches 100 for the burst shot.
+      const burstEnd = started + Math.max(...REQUIRED.map((c) => c.deadlineMs), 30_000);
+      while (Date.now() < burstEnd) {
+        const ev = await readEvidence(page);
+        if (ev) {
+          const results = REQUIRED.map((c) => evaluateRequiredCondition(c.expr, ev));
+          if (results.every((r) => r.ok)) break;
+        }
+        await driveAndFire(page);
+        const run = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".run") as { burstCharge?: number }, EVIDENCE);
+        if ((run?.burstCharge ?? 0) >= 100) await page.keyboard.press("Space");
+      }
+
+      // S11 (PRD-14 §16.1): synthCues === 0, voicesPlayed covers audio[], and
+      // every art/direction.ts audio[] event voiced during the timeline.
       await expectS11Audio(page, APP_DIR);
     } finally {
       server.close();

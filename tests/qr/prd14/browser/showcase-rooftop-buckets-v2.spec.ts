@@ -126,8 +126,51 @@ test.describe("showcase-rooftop-buckets v2 (T2.6)", () => {
       )).toBe(false);
 
       expect(errors).toEqual([]);
-      // S11 (PRD-14 §16.1): synthCues === 0 and every art/direction.ts
-      // audio[] event voiced at least once during the scripted timeline.
+    } finally {
+      server.close();
+    }
+  });
+
+  test("showcase-rooftop-buckets: S11 audio — synthCues 0, every audio[] event played", async ({ page }) => {
+    const root = builtDist(APP_DIR);
+    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+    const errors = watchConsole(page);
+    const { server, url } = await serve(root!);
+    try {
+      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
+      await expect.poll(() => page.evaluate(() =>
+        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+      // Same scripted timeline as the boot test (its S2 assertions omitted):
+      // S11 reads the audio proof once the timeline has run.
+      const state = await page.evaluate(() =>
+        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
+      expect(state).toBe("playing");
+
+      // §7.2.1 timeline: charge past 0.5, release at sweetPower — flight,
+      // contacts, and scoring all run through the real solver.
+      await shootAtSweetSpot(page);
+      await page.waitForTimeout(400);
+
+      const deadline = Math.max(...REQUIRED.map((c) => c.deadlineMs), 20_000);
+      const started = Date.now();
+      let allMet = false;
+      while (Date.now() - started < deadline) {
+        const ev = await readEvidence(page);
+        if (ev) {
+          const results = REQUIRED.map((c) => evaluateRequiredCondition(c.expr, ev));
+          if (results.every((r) => r.ok)) { allMet = true; break; }
+        }
+        const shotState = await page.evaluate((EVIDENCE: string) =>
+          eval(EVIDENCE + ".shot") as { inFlight?: boolean; result?: string | null } | undefined, EVIDENCE);
+        if (!shotState?.inFlight) {
+          // Re-shoot until a make lands (moving-hoop sway can rim-out a look).
+          await shootAtSweetSpot(page);
+        }
+        await page.waitForTimeout(250);
+      }
+
+      // S11 (PRD-14 §16.1): synthCues === 0, voicesPlayed covers audio[], and
+      // every art/direction.ts audio[] event voiced during the timeline.
       await expectS11Audio(page, APP_DIR);
     } finally {
       server.close();
