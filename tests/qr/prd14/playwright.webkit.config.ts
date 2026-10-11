@@ -9,10 +9,13 @@ export default defineConfig({
   testMatch: ["**/*-dispatch.spec.ts", "**/*-v2.spec.ts"],
   timeout: 120_000,
   workers: 1,
+  // P-22: fail CI on stray test.only/describe.only committed to the lane.
+  forbidOnly: !!process.env.CI,
   use: {
     browserName: "webkit",
     headless: true,
     viewport: { width: 1920, height: 1080 }
   },
-  reporter: [["list"], ["json", { outputFile: process.env.PLAYWRIGHT_JSON_OUTPUT_NAME ?? "tests/qr/prd14/reports/browser-webkit.json" }]]
+  // P-22: a skipped test fails the run on CI (no-skip-reporter.ts).
+  reporter: [["list"], ["./no-skip-reporter.ts"], ["json", { outputFile: process.env.PLAYWRIGHT_JSON_OUTPUT_NAME ?? "tests/qr/prd14/reports/browser-webkit.json" }]]
 });

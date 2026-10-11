@@ -2,7 +2,10 @@ import { expect, test, type Page } from "@playwright/test";
 import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { canvasBlankCheck, evaluateRequiredCondition } from "@aura3d/game/art";
+// Source imports: the lane jobs do not build package dist/, so the
+// "@aura3d/game/art" export (dist/art/index.js) does not resolve there.
+import { canvasBlankCheck } from "../../../../packages/game/src/art/acceptance/canvasBlankCheck";
+import { evaluateRequiredCondition } from "../../../../packages/game/src/art/acceptance/requiredConditions";
 import { decodePngAsRgba } from "../unit/helpers/png";
 
 /**
@@ -87,7 +90,7 @@ test.describe("showcase-skyline-runner v2 (T2.6)", () => {
       expect(allMet, "§7.2.1 required conditions not reached by deadline").toBe(true);
       await shot(page, "03-mid");
 
-      const sceneSwaps = await page.evaluate(() => eval(EVIDENCE + ".loading.sceneSwaps"));
+      const sceneSwaps = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".loading.sceneSwaps"), EVIDENCE);
       expect(sceneSwaps).toBe(0);
 
       // visibilitychange → session.paused === true, resume on visible.
@@ -123,13 +126,13 @@ test.describe("showcase-skyline-runner v2 (T2.6)", () => {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
-      const startX = await page.evaluate(() => eval(EVIDENCE + ".player.x") as number);
+      const startX = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".player.x") as number, EVIDENCE);
       await page.keyboard.down("KeyD");
       await page.keyboard.press("Space");
       await page.keyboard.press("ShiftLeft");
       await page.waitForTimeout(900);
       await page.keyboard.up("KeyD");
-      const after = await page.evaluate(() => eval(EVIDENCE + ".player.x") as number);
+      const after = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".player.x") as number, EVIDENCE);
       expect(after).toBeGreaterThan(startX + 0.5);
       expect(errors).toEqual([]);
     } finally {
@@ -151,7 +154,7 @@ test.describe("showcase-skyline-runner v2 (T2.6)", () => {
         const b = (c ?? document.body).getBoundingClientRect();
         return { x: b.x, y: b.y, w: b.width, h: b.height };
       });
-      const startX = await page.evaluate(() => eval(EVIDENCE + ".player.x") as number);
+      const startX = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".player.x") as number, EVIDENCE);
       // Hold the right third to run, then tap centre to jump.
       await page.evaluate(({ x, y, w, h }) => {
         const c = document.querySelector("canvas") ?? document.body;
@@ -165,9 +168,9 @@ test.describe("showcase-skyline-runner v2 (T2.6)", () => {
         c.dispatchEvent(new PointerEvent("pointerup", { pointerId: 8, bubbles: true }));
       });
       await page.waitForTimeout(200);
-      const after = await page.evaluate(() => eval(EVIDENCE + ".player.x") as number);
+      const after = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".player.x") as number, EVIDENCE);
       expect(after).toBeGreaterThan(startX);
-      const engaged = await page.evaluate(() => eval(EVIDENCE + ".run.touchEngaged"));
+      const engaged = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".run.touchEngaged"), EVIDENCE);
       expect(engaged).toBe(true);
       expect(errors).toEqual([]);
     } finally {
@@ -186,7 +189,7 @@ test.describe("showcase-skyline-runner v2 (T2.6)", () => {
         await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&scenario=${scenario}`);
         await expect.poll(() => page.evaluate(() =>
           (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
-        looks.push(await page.evaluate(() => eval(EVIDENCE + ".appliedLook")));
+        looks.push(await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".appliedLook"), EVIDENCE));
       }
       expect(looks[0]?.key).toEqual(looks[1]?.key);
       expect(looks[0]?.scene).toBe(looks[1]?.scene);

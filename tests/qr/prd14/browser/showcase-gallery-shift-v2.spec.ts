@@ -2,7 +2,10 @@ import { expect, test, type Page } from "@playwright/test";
 import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { canvasBlankCheck, evaluateRequiredCondition } from "@aura3d/game/art";
+// Source imports: the lane jobs do not build package dist/, so the
+// "@aura3d/game/art" export (dist/art/index.js) does not resolve there.
+import { canvasBlankCheck } from "../../../../packages/game/src/art/acceptance/canvasBlankCheck";
+import { evaluateRequiredCondition } from "../../../../packages/game/src/art/acceptance/requiredConditions";
 import { decodePngAsRgba } from "../unit/helpers/png";
 
 /**
@@ -84,9 +87,9 @@ test.describe("showcase-gallery-shift v2 (T2.6)", () => {
       await shot(page, "04-action");
       expect(allMet, "§7.2.1 required conditions not reached by deadline").toBe(true);
 
-      const sceneSwaps = await page.evaluate(() => eval(EVIDENCE + ".loading.sceneSwaps"));
+      const sceneSwaps = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".loading.sceneSwaps"), EVIDENCE);
       expect(sceneSwaps).toBe(0);
-      const sceneId = await page.evaluate(() => eval(EVIDENCE + ".loading.sceneId"));
+      const sceneId = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".loading.sceneId"), EVIDENCE);
       expect(sceneId).toBe("floor-1");
       await shot(page, "03-mid");
 
@@ -124,34 +127,34 @@ test.describe("showcase-gallery-shift v2 (T2.6)", () => {
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
 
-      const start = await page.evaluate(() => eval(EVIDENCE + ".thief.x"));
+      const start = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".thief.x"), EVIDENCE);
       // Move toward the archive wing (west + north) so the thief walks.
       await page.keyboard.down("KeyA");
       await page.waitForTimeout(700);
       await page.keyboard.up("KeyA");
-      const moved = await page.evaluate(() => eval(EVIDENCE + ".thief.x"));
+      const moved = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".thief.x"), EVIDENCE);
       expect(moved).toBeLessThan(start as number);
 
       // Sneak gait while Shift is held.
       await page.keyboard.down("ShiftLeft");
       await page.keyboard.down("KeyA");
       await page.waitForTimeout(400);
-      const gait = await page.evaluate(() => eval(EVIDENCE + ".thief.gait"));
+      const gait = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".thief.gait"), EVIDENCE);
       await page.keyboard.up("KeyA");
       await page.keyboard.up("ShiftLeft");
       expect(gait).toBe("sneak");
 
       // Animation tracks apply to the rigged infiltrator while it walks.
-      const tracks = await page.evaluate(() => eval(EVIDENCE + ".characters.thiefTracksApplied"));
+      const tracks = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".characters.thiefTracksApplied"), EVIDENCE);
       expect(tracks).toBeGreaterThan(0);
 
       // Pause via P.
       await page.keyboard.press("KeyP");
       await page.waitForTimeout(150);
-      expect(await page.evaluate(() => eval(EVIDENCE + ".run.paused"))).toBe(true);
+      expect(await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".run.paused"), EVIDENCE)).toBe(true);
       await page.keyboard.press("KeyP");
       await page.waitForTimeout(150);
-      expect(await page.evaluate(() => eval(EVIDENCE + ".run.paused"))).toBe(false);
+      expect(await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".run.paused"), EVIDENCE)).toBe(false);
       expect(errors).toEqual([]);
     } finally {
       server.close();
@@ -181,15 +184,15 @@ test.describe("showcase-gallery-shift v2 (T2.6)", () => {
           }));
         }, { ...r, phase, nx, ny, pid });
 
-      const start = await page.evaluate(() => eval(EVIDENCE + ".thief.x"));
+      const start = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".thief.x"), EVIDENCE);
       // Left-half drag left = move left (touch stick).
       await pointer("down", 0.25, 0.5, 61);
       await pointer("move", 0.15, 0.5, 61);
       await page.waitForTimeout(500);
       await pointer("up", 0.15, 0.5, 61);
-      const moved = await page.evaluate(() => eval(EVIDENCE + ".thief.x"));
+      const moved = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".thief.x"), EVIDENCE);
       expect(moved).toBeLessThan(start as number);
-      const engaged = await page.evaluate(() => eval(EVIDENCE + ".run.touchEngaged"));
+      const engaged = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".run.touchEngaged"), EVIDENCE);
       expect(engaged).toBe(true);
       expect(errors).toEqual([]);
     } finally {
@@ -206,15 +209,15 @@ test.describe("showcase-gallery-shift v2 (T2.6)", () => {
         await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&scenario=${scenario}`);
         await expect.poll(() => page.evaluate(() =>
           (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
-        const look = await page.evaluate(() => eval(EVIDENCE + ".appliedLook"));
+        const look = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".appliedLook"), EVIDENCE);
         expect(look).toEqual({ applied: scenario, kind: "v2-scenario", honest: true });
       }
       // The floor-2 scenario lands in the Skyline Wing through the real
       // floor-advance path — same union scene, still zero swaps.
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&scenario=floor-2`);
-      await expect.poll(() => page.evaluate(() => eval(EVIDENCE + ".loading.sceneId")), { timeout: 15_000 })
+      await expect.poll(() => page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".loading.sceneId"), EVIDENCE), { timeout: 15_000 })
         .toBe("floor-2");
-      expect(await page.evaluate(() => eval(EVIDENCE + ".loading.sceneSwaps"))).toBe(0);
+      expect(await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".loading.sceneSwaps"), EVIDENCE)).toBe(0);
     } finally {
       server.close();
     }

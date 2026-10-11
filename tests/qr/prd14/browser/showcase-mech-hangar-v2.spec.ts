@@ -2,7 +2,10 @@ import { expect, test, type Page } from "@playwright/test";
 import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { canvasBlankCheck, evaluateRequiredCondition } from "@aura3d/game/art";
+// Source imports: the lane jobs do not build package dist/, so the
+// "@aura3d/game/art" export (dist/art/index.js) does not resolve there.
+import { canvasBlankCheck } from "../../../../packages/game/src/art/acceptance/canvasBlankCheck";
+import { evaluateRequiredCondition } from "../../../../packages/game/src/art/acceptance/requiredConditions";
 import { decodePngAsRgba } from "../unit/helpers/png";
 
 /**
@@ -85,9 +88,9 @@ test.describe("showcase-mech-hangar v2 (T2.6)", () => {
       await shot(page, "04-action");
       expect(allMet, "§7.2.1 required conditions not reached by deadline").toBe(true);
 
-      const sceneSwaps = await page.evaluate(() => eval(EVIDENCE + ".loading.sceneSwaps"));
+      const sceneSwaps = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".loading.sceneSwaps"), EVIDENCE);
       expect(sceneSwaps).toBe(0);
-      const sceneId = await page.evaluate(() => eval(EVIDENCE + ".loading.sceneId"));
+      const sceneId = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".loading.sceneId"), EVIDENCE);
       expect(sceneId).toBe("pit");
 
       await shot(page, "03-mid");
@@ -129,11 +132,11 @@ test.describe("showcase-mech-hangar v2 (T2.6)", () => {
       // Hangar: cycle arms, then lock.
       await page.keyboard.press("Digit2");
       await page.keyboard.press("ArrowRight");
-      const selection = await page.evaluate(() => eval(EVIDENCE + ".hangar.selection.arms"));
+      const selection = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".hangar.selection.arms"), EVIDENCE);
       expect(selection).toBe(1);
       await page.keyboard.press("Enter");
       await expect.poll(async () =>
-        page.evaluate(() => eval(EVIDENCE + ".loading.sceneId")), { timeout: 10_000 })
+        page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".loading.sceneId"), EVIDENCE), { timeout: 10_000 })
         .toBe("pit");
 
       // Wait out the countdown, then advance and throw heavies until one lands.
@@ -144,7 +147,7 @@ test.describe("showcase-mech-hangar v2 (T2.6)", () => {
         await page.waitForTimeout(180);
         await page.keyboard.up("KeyD");
         await page.keyboard.press("KeyK");
-        const hit = await page.evaluate(() => eval(EVIDENCE + ".combat.lastHit"));
+        const hit = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".combat.lastHit"), EVIDENCE);
         if (hit === "light" || hit === "heavy") { lastHitKind = hit as string; break; }
       }
       expect(lastHitKind, "no player strike landed").not.toBe("none");
@@ -181,7 +184,7 @@ test.describe("showcase-mech-hangar v2 (T2.6)", () => {
       // Tap anywhere in hangar locks and enters the pit.
       await tap(0.5, 0.5, 51);
       await expect.poll(async () =>
-        page.evaluate(() => eval(EVIDENCE + ".loading.sceneId")), { timeout: 10_000 })
+        page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".loading.sceneId"), EVIDENCE), { timeout: 10_000 })
         .toBe("pit");
       // Strike zone: upper-right of canvas = heavy.
       const started = Date.now();
@@ -189,7 +192,7 @@ test.describe("showcase-mech-hangar v2 (T2.6)", () => {
       while (Date.now() - started < 25_000) {
         await tap(0.75, 0.3, 52);
         await tap(0.85, 0.3, 53);
-        const hit = await page.evaluate(() => eval(EVIDENCE + ".combat.lastHit"));
+        const hit = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".combat.lastHit"), EVIDENCE);
         if (hit === "light" || hit === "heavy") { lastHitKind = hit as string; break; }
         // held-left strip press to close range
         await page.evaluate(({ x, y, w, h }) => {
@@ -204,7 +207,7 @@ test.describe("showcase-mech-hangar v2 (T2.6)", () => {
           c.dispatchEvent(new PointerEvent("pointerup", { pointerId: 54, bubbles: true }));
         }, {});
       }
-      const engaged = await page.evaluate(() => eval(EVIDENCE + ".run.touchEngaged"));
+      const engaged = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".run.touchEngaged"), EVIDENCE);
       expect(engaged).toBe(true);
       expect(lastHitKind, "no touch strike landed").not.toBe("none");
       expect(errors).toEqual([]);
@@ -222,16 +225,16 @@ test.describe("showcase-mech-hangar v2 (T2.6)", () => {
         await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&scenario=${scenario}`);
         await expect.poll(() => page.evaluate(() =>
           (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
-        const look = await page.evaluate(() => {
+        const look = await page.evaluate((EVIDENCE: string) => {
           const l = eval(EVIDENCE + ".appliedLook") as Record<string, unknown>;
           const { applied, ...rest } = l;
           return rest;
-        });
+        }, EVIDENCE);
         expect(look.rigId).toBe("mech-hangar.fighting");
         expect(look.fov).toBe(52);
         if (scenario === "arena") {
           await expect.poll(async () =>
-            page.evaluate(() => eval(EVIDENCE + ".loading.sceneId")), { timeout: 10_000 })
+            page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".loading.sceneId"), EVIDENCE), { timeout: 10_000 })
             .toBe("pit");
         }
         await shot(page, `scenario-${scenario}`);

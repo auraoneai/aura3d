@@ -2,7 +2,10 @@ import { expect, test, type Page } from "@playwright/test";
 import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { canvasBlankCheck, evaluateRequiredCondition } from "@aura3d/game/art";
+// Source imports: the lane jobs do not build package dist/, so the
+// "@aura3d/game/art" export (dist/art/index.js) does not resolve there.
+import { canvasBlankCheck } from "../../../../packages/game/src/art/acceptance/canvasBlankCheck";
+import { evaluateRequiredCondition } from "../../../../packages/game/src/art/acceptance/requiredConditions";
 import { decodePngAsRgba } from "../unit/helpers/png";
 
 /**
@@ -123,11 +126,11 @@ test.describe("showcase-gravity-post v2 (T2.6)", () => {
       await page.keyboard.up("KeyA");
       await page.keyboard.press("Enter");
       await page.waitForTimeout(400);
-      const podState = await page.evaluate(() => eval(EVIDENCE + ".pod.state"));
+      const podState = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".pod.state"), EVIDENCE);
       expect(podState).toBe("in-flight");
-      const launchedBy = await page.evaluate(() => eval(EVIDENCE + ".pod.launchedBy"));
+      const launchedBy = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".pod.launchedBy"), EVIDENCE);
       expect(launchedBy).toBe("keyboard");
-      const speed = await page.evaluate(() => eval(EVIDENCE + ".pod.speed"));
+      const speed = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".pod.speed"), EVIDENCE);
       expect(speed).toBeGreaterThan(0.1);
       expect(errors).toEqual([]);
     } finally {
@@ -164,9 +167,9 @@ test.describe("showcase-gravity-post v2 (T2.6)", () => {
         }));
       }, r);
       await page.waitForTimeout(400);
-      const podState = await page.evaluate(() => eval(EVIDENCE + ".pod.state"));
+      const podState = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".pod.state"), EVIDENCE);
       expect(podState).toBe("in-flight");
-      const launchedBy = await page.evaluate(() => eval(EVIDENCE + ".pod.launchedBy"));
+      const launchedBy = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".pod.launchedBy"), EVIDENCE);
       expect(launchedBy).toBe("pointer");
       expect(errors).toEqual([]);
     } finally {
@@ -185,7 +188,7 @@ test.describe("showcase-gravity-post v2 (T2.6)", () => {
         await expect.poll(() => page.evaluate(() =>
           (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
         await page.waitForTimeout(300);
-        looks.push(await page.evaluate(() => eval(EVIDENCE + ".appliedLook")));
+        looks.push(await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".appliedLook"), EVIDENCE));
       }
       expect(looks[0]).toBeTruthy();
       expect(looks[0]).toEqual(looks[1]);
