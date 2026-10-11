@@ -60,6 +60,11 @@ on:
         description: "suite=bench: aura3d | three | aura3d,three"
         required: false
         default: "aura3d,three"
+      bench_runner:
+        description: "suite=bench: azure-gpu (self-hosted NVIDIA L4/T4, ANGLE Vulkan) | macos-14 (ANGLE Metal). Never compare frames across runner types."
+        type: choice
+        options: [azure-gpu, macos-14]
+        default: azure-gpu
 
 concurrency:
   group: qr-prd05-assets-browser-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
@@ -156,11 +161,11 @@ jobs:
   # anything. Frames compare only within this runner type.
   bench:
     if: github.event_name == 'workflow_dispatch' && inputs.suite == 'bench'
-    runs-on: macos-14
+    runs-on: ${{ inputs.bench_runner == 'macos-14' && 'macos-14' || fromJSON('["self-hosted","azure-gpu"]') }}
     timeout-minutes: 90
     env:
       QR_BENCH_OUT: benchmarks/quality-rebuild/out
-      QR_BENCH_CHROME_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+      QR_BENCH_CHROME_ARGS: ${{ inputs.bench_runner == 'macos-14' && '--use-angle=metal --enable-gpu --ignore-gpu-blocklist' || '--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist' }}
       QR_BENCH_SCENES: ${{ inputs.bench_scenes }}
       QR_BENCH_ENGINES: ${{ inputs.bench_engines }}
       QR_BENCH_FLAG_SETS: ${{ inputs.bench_flag_sets }}
@@ -177,6 +182,12 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install chromium
+      - name: GPU guard (no software rasterizer)
+        run: |
+          set -euo pipefail
+          if [ "${{ inputs.bench_runner }}" = "azure-gpu" ]; then
+            nvidia-smi --query-gpu=name,driver_version --format=csv,noheader
+          fi
       - name: Benchmark capture (flag sets)
         run: |
           set -euo pipefail
@@ -186,7 +197,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: prd05-bench-${{ github.run_id }}
+          name: prd05-bench-${{ inputs.bench_runner }}-${{ github.run_id }}
           path: benchmarks/quality-rebuild/out/
           retention-days: 30
           if-no-files-found: error
