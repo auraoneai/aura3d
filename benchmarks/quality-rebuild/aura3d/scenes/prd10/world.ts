@@ -141,10 +141,11 @@ export function prd10WorldNodes(sceneId: string, on: boolean): readonly AuraNode
  * none-vs-world frame difference — or its absence — is attributable.
  */
 export function prd10WorldEvidence(app: AuraApp, qrFlags: readonly string[]): Readonly<Record<string, unknown>> {
-  const runtime = (app as unknown as { world?: { diagnostics?: () => unknown } }).world;
+  // The engine's own C-31 "world" section (collected by the engine's module
+  // instances), not this adapter's imports.
   let diagnostics: unknown = null;
   try {
-    diagnostics = runtime?.diagnostics?.() ?? null;
+    diagnostics = (app.diagnostics() as unknown as { world?: unknown }).world ?? null;
   } catch (error) {
     diagnostics = { error: error instanceof Error ? error.message : String(error) };
   }

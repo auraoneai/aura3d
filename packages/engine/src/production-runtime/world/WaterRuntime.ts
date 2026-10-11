@@ -382,7 +382,7 @@ export function waterTransparentPass(ctx: FrameContributorContext): RenderPass {
           ["u_sunDirection", new Float32Array([0.42, -0.9, 0.18])],
           ["u_sunColor", new Float32Array([1.4, 1.35, 1.25])],
           ["u_skyHorizonColor", new Float32Array([0.5, 0.7, 0.9])],
-          ["u_shIrradiance", new Float32Array(27)],
+          ["u_shIrradiance", new Float32Array(36)], // vec4[9]
           ["u_fogColor", new Float32Array([0.6, 0.72, 0.85])],
           ["u_fogNearFar", new Float32Array([200, 1200])],
           ["u_ambientSH", new Float32Array([0.25, 0.28, 0.32])],

@@ -82,7 +82,7 @@ void main() {
   vec3 n = vec3(nXY.xy, sqrt(max(1.0 - dot(nXY.xy, nXY.xy), 0.0)));
   o_color = vec4(albedo.rgb * max(dot(n, normalize(vec3(0.4, 0.8, 0.3))), 0.2), 1.0);
   // statically assigned on every path (GLSL ES 3.0): pass-through unless High+
-  gl_FragDepth = u_impostorWriteDepth == 1
+  gl_FragDepth = u_impostorWriteDepth > 0.5
     ? clamp(gl_FragCoord.z - (depth - 0.5) * 0.02, 0.0, 1.0)
     : gl_FragCoord.z;
 }

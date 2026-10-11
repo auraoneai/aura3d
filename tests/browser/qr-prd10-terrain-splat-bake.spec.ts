@@ -91,11 +91,10 @@ test("GPU splat bake == CPU evalSplatRules within ±1/255 at 64 points", async (
     gl.uniform2f(u("u_heightTexSize"), columns, rows);
     gl.uniform1f(u("u_heightScale"), heightScale);
     gl.uniform1f(u("u_texelWorld"), texelWorld);
-    gl.uniform1i(u("u_layerOffset"), 0);
-    gl.uniform1i(u("u_layerCount"), 4);
-    gl.uniform1i(u("u_ruleCount"), encoded.ruleCount);
-    gl.uniform1iv(u("u_ruleLayer"), new Int32Array(encoded.ruleLayer));
-    gl.uniform1fv(u("u_ruleWeight"), new Float32Array(encoded.ruleWeight));
+    gl.uniform1f(u("u_layerOffset"), 0);
+    gl.uniform1f(u("u_layerCount"), 4);
+    gl.uniform1f(u("u_ruleCount"), encoded.ruleCount);
+    gl.uniform4fv(u("u_ruleLW"), new Float32Array(encoded.ruleLW)); // vec4[8]: layer, weight
     gl.uniform4fv(u("u_ruleSlope"), new Float32Array(encoded.ruleSlope));
     gl.uniform4fv(u("u_ruleHeight"), new Float32Array(encoded.ruleHeight));
     gl.uniform4fv(u("u_ruleNoise"), new Float32Array(encoded.ruleNoise));
@@ -115,6 +114,7 @@ test("GPU splat bake == CPU evalSplatRules within ±1/255 at 64 points", async (
     encoded: {
       ruleCount: encoded.ruleCount,
       ruleLayer: Array.from(encoded.ruleLayer),
+      ruleLW: Array.from(encoded.ruleLW),
       ruleWeight: Array.from(encoded.ruleWeight),
       ruleSlope: Array.from(encoded.ruleSlope),
       ruleHeight: Array.from(encoded.ruleHeight),
