@@ -31,6 +31,8 @@ const templateRoot = path.join(repoRoot, "packages", "create-aura3d", "templates
 // (aura.library.json studio-soft / outdoor-midday / outdoor-golden cite the
 // same sources); copied here for capture/validation builds.
 const hdriSource = path.join(repoRoot, "fixtures", "environment-corpus", "hdri");
+const libraryHdriSource = path.join(repoRoot, "assets", "library", "hdri");
+const LIBRARY_HDRIS = ["night-2k.hdr"] as const;
 
 const argv = process.argv.slice(2);
 const opt = (name: string, fallback: string): string => {
@@ -92,6 +94,12 @@ function scaffold(id: string): { dir: string; hdri: string[] } {
     mkdirSync(target, { recursive: true });
     for (const file of readdirSync(hdriSource).filter((name) => name.endsWith(".hdr"))) {
       cpSync(path.join(hdriSource, file), path.join(target, file));
+      hdri.push(file);
+    }
+    // A3D_QR_LOOKS night looks (looks.ts LOOK_QR_UPGRADES): the CC0
+    // aura.library.json `night-2k` HDRI.
+    for (const file of LIBRARY_HDRIS) {
+      cpSync(path.join(libraryHdriSource, file), path.join(target, file));
       hdri.push(file);
     }
   }

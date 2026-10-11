@@ -28,7 +28,7 @@ export const lookNodeHandler: NodeHandler<AuraLookNode> = {
     // kind's handler when one exists (environment → C-09 contributions, post →
     // C-13, biome-driven lighting → C-26). Child kinds without a registered
     // handler are skipped — the stub compiler keeps them in the source.
-    const children = expandLookChildren(node.look, node.overrides);
+    const children = expandLookChildren(node.look, node.overrides, ctx.flags);
     let dispatched = 0;
     for (const child of children) {
       const handler = nodeHandlerFor(child.kind);
