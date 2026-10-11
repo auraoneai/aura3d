@@ -5,6 +5,7 @@
  *
  * `?animate=0` disables the per-frame node motion (hit-stop and the
  * control-node checks need it on; overlay-identity wants a still frame).
+ * `?fx=0` drops the instanced "fx markers" node (draw-call attribution).
  * `?overlay=dom` forces the DOM overlay path (shell.overlay: "dom").
  */
 import { instances, lights, material, primitives, scene } from "@aura3d/engine";
@@ -13,6 +14,9 @@ import { bankShotTouchOptions } from "../../../packages/game/fixtures/bank-shot/
 
 const params = new URLSearchParams(location.search);
 const ANIMATE = params.get("animate") !== "0";
+// `?fx=0` omits the "fx markers" instanced node so fx-instances.spec can
+// attribute the scene's draw-call delta to that one node.
+const FX_MARKERS = params.get("fx") !== "0";
 
 const FELT = material.pbr({ name: "fixture felt", color: "#0f7a4d", roughness: 0.92 });
 const RAIL = material.pbr({ name: "fixture walnut rail", color: "#5a3b22", roughness: 0.6 });
@@ -34,7 +38,7 @@ function buildScene() {
       primitives.sphere({ name: "red ball", material: RED_BALL }).position(0.3, 0.03, -0.05).scale([0.06, 0.06, 0.06]),
       primitives.sphere({ name: "eight ball", material: BLACK_BALL }).position(0.36, 0.03, 0.04).scale([0.06, 0.06, 0.06]),
       primitives.sphere({ name: "spark marker", material: SPARK }).position(0, 0.3, 0).scale([0.04, 0.04, 0.04]),
-      instances.sphere({
+      ...(FX_MARKERS ? [instances.sphere({
         name: "fx markers",
         material: SPARK,
         transforms: [
@@ -42,7 +46,7 @@ function buildScene() {
           { position: [-0.2, 0.1, -0.3], scale: 0.05 },
           { position: [0.1, 0.1, -0.3], scale: 0.05 }
         ]
-      }),
+      })] : []),
       lights.point({ name: "pendant", color: "#fff3d0", intensity: 4.0 }).position(0, 1.6, 0),
       lights.ambient({ name: "room", color: "#35435a", intensity: 0.2 })
     ]);

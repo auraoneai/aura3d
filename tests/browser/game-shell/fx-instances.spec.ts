@@ -2,13 +2,26 @@
  * fx-instances.spec.ts (PRD-09 §15): moving one instance of the "fx markers"
  * instanced sphere via `setInstanceTransforms` changes pixels at the new
  * projected position and not at the old one; the node's draw count stays 1
- * (`app.diagnostics()` draw-call counter). The C-37 extension is registered
+ * (`app.diagnostics()` counts the whole scene, so the node's share is the
+ * delta against the same harness loaded with `?fx=0`). The C-37 extension is registered
  * under the "game" flag — the spec asserts its presence loudly if absent.
  */
 import { expect, test, loadHarness, stepFrames, withServer } from "./support";
 
 withServer((getServer) => {
   test("setInstanceTransforms moves one instance, draw count stays 1", async ({ page }) => {
+    const sceneDrawCalls = () =>
+      page.evaluate(() => {
+        const g = window.__AURA3D_SHELL__!.game as { app: { diagnostics?: () => { drawCalls?: number; draws?: number } } };
+        const d = g.app.diagnostics?.() ?? {};
+        return d.drawCalls ?? d.draws ?? -1;
+      });
+    // Baseline: same scene without the instanced node.
+    await loadHarness(page, getServer(), "?scenario=frozen&animate=0&fx=0");
+    await stepFrames(page, 2);
+    const withoutFx = await sceneDrawCalls();
+    expect(withoutFx, "diagnostics().drawCalls unavailable").toBeGreaterThan(0);
+
     await loadHarness(page, getServer(), "?scenario=frozen&animate=0");
     await stepFrames(page, 2);
 
@@ -27,7 +40,7 @@ withServer((getServer) => {
       return { hasApi, drawCalls: diag.drawCalls ?? diag.draws ?? -1 };
     });
     expect(probe.hasApi, "C-37 setInstanceTransforms missing on instanced node").toBe(true);
-    expect(probe.drawCalls, "instanced node must draw in 1 call").toBe(1);
+    expect(probe.drawCalls - withoutFx, "instanced node (3 instances) must draw in 1 call").toBe(1);
 
     const before = await page.evaluate(() => window.__AURA3D_SHELL__!.readPixels?.() ?? null);
 
@@ -60,11 +73,6 @@ withServer((getServer) => {
     expect(changed, "instance move produced no pixel change").toBeGreaterThan(0);
 
     // Draw count must still be 1 after the write.
-    const drawAfter = await page.evaluate(() => {
-      const g = window.__AURA3D_SHELL__!.game as { app: { diagnostics?: () => { drawCalls?: number; draws?: number } } };
-      const d = g.app.diagnostics?.() ?? {};
-      return d.drawCalls ?? d.draws ?? -1;
-    });
-    expect(drawAfter).toBe(1);
+    expect((await sceneDrawCalls()) - withoutFx, "instanced node draw count after the write").toBe(1);
   });
 });
