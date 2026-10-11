@@ -101,7 +101,8 @@ function startStaticServer(root) {
 function launchArgs() {
   const common = ["--ignore-gpu-blocklist", "--enable-gpu-rasterization", "--disable-background-timer-throttling", "--disable-renderer-backgrounding", "--force-color-profile=srgb"];
   // CI contract (.github/workflows/quality-rebuild-capture.yml): QR_BENCH_CHROME_ARGS overrides the GPU flags.
-  const override = (process.env.QR_BENCH_CHROME_ARGS ?? "").split(/\s+/).filter(Boolean);
+  // QR_CHROMIUM_ARGS is the provider-neutral name (GPU runners: Vulkan ANGLE).
+  const override = (process.env.QR_CHROMIUM_ARGS || process.env.QR_BENCH_CHROME_ARGS || "").split(/\s+/).filter(Boolean);
   if (override.length > 0) return [...new Set([...common, ...override])];
   if (process.platform === "darwin") return [...common, "--use-angle=metal", "--enable-gpu"];
   // Linux runners have no GPU: SwiftShader is the deterministic software fallback.

@@ -291,9 +291,10 @@ jobs:
     uses: ./.github/workflows/qr-azure-gpu.yml
     with:
       suite: flags-bisect
-      # macos-14 (Metal) until the self-hosted GPU scale set exists; set
-      # vars.QR_GPU_RUNNER=azure-gpu to move Track 0 there (re-baseline IC-0).
-      runner: ${{ vars.QR_GPU_RUNNER || 'macos-14' }}
+      # Self-hosted NVIDIA GPU runners (L4 class) by default; vars.QR_GPU_RUNNER
+      # = macos-14 falls back to GitHub Metal (separate baselines per provider).
+      runner: ${{ vars.QR_GPU_RUNNER || 'azure-gpu' }}
+      gpu_class: l4
       bench_engines: aura3d
       allflags_eval: true
 

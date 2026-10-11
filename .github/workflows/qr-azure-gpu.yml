@@ -25,10 +25,15 @@ on:
         options: [benchmark, flags-bisect, games]
         default: flags-bisect
       runner:
-        description: "macos-14 (Metal) | azure-gpu (self-hosted GPU)"
+        description: "azure-gpu (self-hosted NVIDIA, Vulkan ANGLE) | macos-14 (Metal)"
         type: choice
-        options: [macos-14, azure-gpu]
-        default: macos-14
+        options: [azure-gpu, macos-14]
+        default: azure-gpu
+      gpu_class:
+        description: "azure-gpu only: pin one GPU class (frames are compared within a class only)"
+        type: choice
+        options: [l4, t4]
+        default: l4
       bench_scenes:
         description: "Comma-separated benchmark scene ids (empty = all)"
         required: false
@@ -65,7 +70,8 @@ on:
   workflow_call:
     inputs:
       suite: { type: string, required: false, default: flags-bisect }
-      runner: { type: string, required: false, default: macos-14 }
+      runner: { type: string, required: false, default: azure-gpu }
+      gpu_class: { type: string, required: false, default: l4 }
       bench_scenes: { type: string, required: false, default: "01-simple-geometry,16-instancing,12-shadows,03-damaged-helmet,08-skinned-character,14-particles" }
       bench_engines: { type: string, required: false, default: aura3d }
       bench_flag_sets: { type: string, required: false, default: "" }
@@ -101,14 +107,18 @@ env:
 
 jobs:
   gpu-suite:
-    name: "QR GPU ${{ inputs.suite || 'flags-bisect' }} (${{ inputs.runner || 'macos-14' }})"
+    name: "QR GPU ${{ inputs.suite || 'flags-bisect' }} (${{ inputs.runner || 'azure-gpu' }})"
     # Fork PR heads never reach a self-hosted runner.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ${{ (inputs.runner == 'azure-gpu' && fromJSON('["self-hosted","azure-gpu"]')) || inputs.runner || 'macos-14' }}
+    # Self-hosted GPU runners carry self-hosted,linux,azure-gpu plus a GPU-class
+    # label (gpu-l4 | gpu-t4); captures pin one class so L4 and T4 frames are
+    # never mixed. Push / schedule / PR events default to azure-gpu + l4.
+    runs-on: ${{ (inputs.runner || 'azure-gpu') == 'azure-gpu' && fromJSON(format('["self-hosted","azure-gpu","gpu-{0}"]', inputs.gpu_class || 'l4')) || inputs.runner }}
     timeout-minutes: 180
     env:
       SUITE: ${{ inputs.suite || 'flags-bisect' }}
-      RUNNER_KIND: ${{ inputs.runner || 'macos-14' }}
+      RUNNER_KIND: ${{ inputs.runner || 'azure-gpu' }}
+      GPU_CLASS: ${{ (inputs.runner || 'azure-gpu') == 'azure-gpu' && (inputs.gpu_class || 'l4') || 'metal' }}
       QR_BENCH_OUT: benchmarks/quality-rebuild/out
       QR_BENCH_SCENES: ${{ inputs.bench_scenes || '01-simple-geometry,16-instancing,12-shadows,03-damaged-helmet,08-skinned-character,14-particles' }}
       QR_BENCH_ENGINES: ${{ inputs.bench_engines || 'aura3d' }}
@@ -136,13 +146,18 @@ jobs:
           set -euo pipefail
           case "$RUNNER_KIND" in
             macos-14) args="--use-angle=metal --enable-gpu --ignore-gpu-blocklist" ;;
-            # Linux NVIDIA: flags are confirmed by the program lead once the
-            # scale set is verified; until then fail loudly instead of guessing.
-            azure-gpu) args="${QR_AZURE_GPU_CHROME_ARGS:-}"
-              test -n "$args" || { echo "::error::azure-gpu Chromium flags not configured (vars.QR_AZURE_GPU_CHROME_ARGS)"; exit 1; } ;;
+            # Linux NVIDIA (verified by the program lead on gcp-gpu-1..6; no
+            # Xvfb): Vulkan ANGLE. vars.QR_AZURE_GPU_CHROME_ARGS overrides.
+            azure-gpu) args="${QR_AZURE_GPU_CHROME_ARGS:---headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist}" ;;
             *) echo "::error::unknown runner '$RUNNER_KIND'"; exit 1 ;;
           esac
-          echo "QR_BENCH_CHROME_ARGS=$args" >> "$GITHUB_ENV"
+          { echo "QR_CHROMIUM_ARGS=$args"; echo "QR_BENCH_CHROME_ARGS=$args"; echo "QRC_GPU_ARGS=$args"; } >> "$GITHUB_ENV"
+
+      - name: Record the GPU renderer string (frames compare within this class only)
+        run: |
+          set -euo pipefail
+          node tools/quality-rebuild-capture/gpu-renderer.mjs | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "gpu_class: $GPU_CLASS ($RUNNER_KIND, $RUNNER_NAME)" | tee -a "$GITHUB_STEP_SUMMARY"
         env:
           QR_AZURE_GPU_CHROME_ARGS: ${{ vars.QR_AZURE_GPU_CHROME_ARGS }}
 
@@ -183,7 +198,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: qr-gpu-${{ inputs.suite || 'flags-bisect' }}-${{ inputs.runner || 'macos-14' }}-${{ github.run_id }}
+          name: qr-gpu-${{ inputs.suite || 'flags-bisect' }}-${{ inputs.runner || 'azure-gpu' }}-${{ (inputs.runner || 'azure-gpu') == 'azure-gpu' && (inputs.gpu_class || 'l4') || 'metal' }}-${{ github.run_id }}
           path: |
             benchmarks/quality-rebuild/out/
             tools/quality-rebuild-capture/out/

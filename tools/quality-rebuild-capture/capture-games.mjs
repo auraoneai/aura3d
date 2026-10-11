@@ -71,7 +71,9 @@ const includeAlt = !flag("--no-alt-routes");
 const channelOpt = opt("--channel", "QRC_CHANNEL", "chromium");
 const channel = channelOpt === "headless-shell" ? "" : channelOpt;
 const executablePath = opt("--executable", "QRC_EXECUTABLE", "");
-const gpuArgs = opt("--gpu-args", "QRC_GPU_ARGS", "--use-angle=metal --enable-gpu --ignore-gpu-blocklist")
+// QR_CHROMIUM_ARGS (provider-neutral) overrides the macOS Metal default, e.g.
+// Linux NVIDIA runners: --headless=new --use-angle=vulkan --enable-features=Vulkan.
+const gpuArgs = opt("--gpu-args", "QRC_GPU_ARGS", process.env.QR_CHROMIUM_ARGS || "--use-angle=metal --enable-gpu --ignore-gpu-blocklist")
   .split(/\s+/).filter(Boolean);
 const gameTimeoutMs = Number(opt("--game-timeout", "QRC_GAME_TIMEOUT_MS", "420000"));
 const runTimeoutMs = Number(opt("--run-timeout", "QRC_RUN_TIMEOUT_MS", "150000"));
