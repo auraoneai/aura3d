@@ -174,6 +174,16 @@ export interface Prd02BridgedShadowFrame {
 
 const bridgedFrames = new WeakMap<RenderDevice, Prd02BridgedShadowFrame>();
 
+/**
+ * GPU evidence probe for the lane page: cascade depth statistics of the
+ * bridge's shadow system on `device` (empty before the bridge first runs).
+ */
+export function prd02ShadowDepthProbe(device: RenderDevice): ReturnType<Prd02ShadowSystem["readCascadeDepthStats"]> {
+  return shadowSystems.get(device)?.system.readCascadeDepthStats() ?? [];
+}
+
+
+
 /** Consume (and clear) the bridged frame for `device`, if the bridge ran this frame. */
 export function takePrd02BridgedShadowFrame(device: RenderDevice): Prd02BridgedShadowFrame | null {
   const frame = bridgedFrames.get(device) ?? null;

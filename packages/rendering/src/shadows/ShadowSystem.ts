@@ -210,6 +210,40 @@ export class Prd02ShadowSystem {
     };
   }
 
+  /**
+   * GPU evidence probe (shadow-pixels investigation): min/max/mean of each
+   * rendered cascade's depth texture via `readDepthPixels`, plus the share of
+   * texels nearer than the cleared far plane. A healthy cascade over casters
+   * has `covered > 0` and `min < 1`; an all-1.0 map means casters never
+   * reached the depth surface. Call between frames (sets the render target).
+   */
+  readCascadeDepthStats(): { index: number; width: number; min: number; max: number; mean: number; covered: number }[] {
+    if (!this.device.readDepthPixels) return [];
+    const prev = this.device.getRenderTarget?.() ?? null;
+    const out: { index: number; width: number; min: number; max: number; mean: number; covered: number }[] = [];
+    try {
+      for (const target of this.cascadeTargets) {
+        if (!target || target.disposed || !target.depthTexture) continue;
+        this.device.setRenderTarget(target);
+        const depth = this.device.readDepthPixels(0, 0, target.width, target.height);
+        let min = Infinity;
+        let max = -Infinity;
+        let sum = 0;
+        let covered = 0;
+        for (const d of depth) {
+          if (d < min) min = d;
+          if (d > max) max = d;
+          sum += d;
+          if (d < 0.9999) covered += 1;
+        }
+        out.push({ index: out.length, width: target.width, min, max, mean: sum / Math.max(1, depth.length), covered: covered / Math.max(1, depth.length) });
+      }
+    } finally {
+      this.device.setRenderTarget(prev);
+    }
+    return out;
+  }
+
   dispose(): void {
     for (const target of this.cascadeTargets) target?.dispose();
     this.cascadeTargets = [];
