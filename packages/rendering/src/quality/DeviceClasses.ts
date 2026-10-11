@@ -10,7 +10,9 @@
 
 import type { AuraQualityTier } from "../contracts/quality";
 
-export const DEVICE_CLASS_TABLE_VERSION = 1;
+// v2 (11-S8): vendor marks such as `Iris(R) Xe`, `Arc(TM) A370M` and
+// `Adreno (TM) 730`, as real UNMASKED_RENDERER strings carry them, now match.
+export const DEVICE_CLASS_TABLE_VERSION = 2;
 
 /** Software rasterisers hit the hard floor before the class table (§6.4 step 1). */
 export const SOFTWARE_RENDERER_PATTERN = /SwiftShader|llvmpipe|Microsoft Basic Render|WARP|Software (Rendering|Adapter|Rasterizer)/i;
@@ -50,9 +52,9 @@ export const DEVICE_CLASSES: readonly DeviceClassEntry[] = [
     tier: "medium",
     patterns: [
       /\bApple\s+M[1-4]\b(?!\s*(Pro|Max|Ultra))/i, // M1-M4 base
-      /\bIris\s+Xe\b/i,
-      /\bArc\s+A?[357]\d\d\b/i,       // Intel Arc A3/A5/A7 integrated class
-      /\bAdreno\s+[67]\d\d\b/i,       // Adreno 650-799
+      /\bIris(?:\(R\))?\s+Xe\b/i,
+      /\bArc(?:\(TM\))?\s+A?[357]\d\d[A-Z]?\b/i, // Intel Arc A3/A5/A7 integrated class
+      /\bAdreno\s*(?:\(TM\)\s*)?(?:6[5-9]\d|7\d\d)\b/i, // Adreno 650-799 (600-649 fall through to Low)
       /\bApple\s+A1[4-9]\b/i,         // Apple A14 and newer
       /\bApple\s+A2\d\b/i
     ]
@@ -64,7 +66,7 @@ export const DEVICE_CLASSES: readonly DeviceClassEntry[] = [
       /\bUHD\b/i,                     // Intel UHD
       /\bIntel\s+HD\b/i,
       /\bHD\s+Graphics\b/i,
-      /\bAdreno\s+[56][0-4]\d\b/i,    // Adreno 500-640
+      /\bAdreno\s*(?:\(TM\)\s*)?[56][0-4]\d\b/i, // Adreno 500-640
       /\bMali[\s-]?G[57]\d\b/i,       // Mali-G5x / G7x
       /\bApple\s+A1[23]\b/i,          // A12 / A13
       /\bParavirtual\b/i              // Apple Paravirtual device (CI runner)

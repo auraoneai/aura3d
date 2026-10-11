@@ -21,6 +21,21 @@ on:
       - ".github/workflows/qr-prd11-perf.yml"
   push:
     branches: [main]
+    # Same scope as the PR trigger: every main merge used to queue three
+    # macos-14 jobs here (18 queued on 2026-10-11) and starve the org's 5 macOS
+    # slots. Main commits outside these paths are covered by the nightly.
+    paths:
+      - "packages/rendering/src/**"
+      - "packages/engine/src/lanes/prd11.ts"
+      - "packages/engine/src/production-runtime/**"
+      - "packages/engine/src/agent-api/**"
+      - "benchmarks/quality-rebuild/scenes/prd11/**"
+      - "benchmarks/quality-rebuild/aura3d/scenes/prd11/**"
+      - "benchmarks/quality-rebuild/three/scenes/prd11/**"
+      - "tools/perf-gate/**"
+      - "tools/bundle-size/**"
+      - "tests/qr/prd11/**"
+      - ".github/workflows/qr-prd11-perf.yml"
   schedule:
     # Nightly on main (PRD-16 11 CI-0: two consecutive green nightlies).
     - cron: "35 5 * * *"
@@ -39,7 +54,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: qr-prd11-perf-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
+  # Main runs never cancel each other: GitHub keeps only ONE pending run per
+  # group even with cancel-in-progress false, so a shared main group replaced
+  # 38124724678 (#1053's merge), 38126324070 and 38126458286 and no lane-11
+  # main run completed. Main and dispatch runs get their own group (as lane 10).
+  group: qr-prd11-perf-${{ github.ref }}${{ (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && format('-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
@@ -63,6 +82,14 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Lane unit tests
         run: pnpm exec vitest run -c tests/qr/prd11/vitest.config.ts
+      # 11-S10 (PRD-11 Phase 1 freeze): the removed product-path shading and
+      # CPU rasterizer must not come back into the WebGPU device.
+      - name: S10 — no product/rasterizer paths in WebGPUDevice.ts
+        run: |
+          if grep -nE 'productProp|u_productColorSmoothing|rasterizeDraw|colorPixels' packages/rendering/src/WebGPUDevice.ts; then
+            echo "::error::S10: forbidden product/rasterizer identifiers found in WebGPUDevice.ts"
+            exit 1
+          fi
 
   lane-browser:
     name: Lane browser specs (macos-14, ANGLE Metal)
@@ -212,6 +239,9 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       # naga-cli pinned exact (PRD-11 §6.2 ◦); never on the Mac, CI-only.
+      # The toolchain is installed explicitly: main run 38102809394 landed on a
+      # runner without cargo (exit 127), so the job must not rely on the image.
+      - uses: dtolnay/rust-toolchain@686976e191b89faba57d3206551f0f330d8cb249 # stable
       - name: Install naga-cli 30.0.1
         run: cargo install naga-cli --locked --version 30.0.1
       - name: Emit WGSL twins

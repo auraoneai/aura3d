@@ -128,7 +128,28 @@ export default async function run(host: HTMLElement): Promise<ReadyPayload> {
   }
 
   let frames = 0;
-  const loop = (): void => {
+  // P-30: frame-interval telemetry with the same semantics and nearest-rank
+  // percentiles as aura3d's `diagnostics().frame.intervalMs` (FrameStats, 240
+  // samples), so perf-gate S3-p50-ratio compares frame p50 to frame p50.
+  const intervals: number[] = [];
+  let lastStamp: number | null = null;
+  const percentiles = (): { p50: number; p95: number; p99: number; max: number } => {
+    const values = [...intervals].sort((a, b) => a - b);
+    if (values.length === 0) return { p50: 0, p95: 0, p99: 0, max: 0 };
+    const rank = (q: number): number => values[Math.min(values.length - 1, Math.ceil(q * values.length) - 1)]!;
+    return { p50: rank(0.5), p95: rank(0.95), p99: rank(0.99), max: values[values.length - 1]! };
+  };
+  (window as unknown as { __PRD11_FRAME__?: () => unknown }).__PRD11_FRAME__ = () => ({
+    frames: intervals.length,
+    intervalMs: percentiles(),
+    drawCalls: renderer.info.render.calls
+  });
+  const loop = (stamp: number): void => {
+    if (lastStamp !== null) {
+      intervals.push(stamp - lastStamp);
+      if (intervals.length > 240) intervals.shift();
+    }
+    lastStamp = stamp;
     if (loadMs > 0) busyLoop(loadMs);
     renderer.render(scene, camera);
     frames += 1;
