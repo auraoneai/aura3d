@@ -25,6 +25,8 @@ import type { AuraQualityTierSettings } from "../contracts/quality";
 import { fitDirectionalCascades, type CascadeFitterCamera, type DirectionalCascadeFit } from "./DirectionalCascadeFitter";
 import { planLocalShadowAtlas, type AtlasTile } from "./ShadowAtlas";
 import {
+  activeDepthFeatures,
+  depthDeformIncompatibility,
   ensurePrd02DepthFeatures,
   prd02DepthFeatures,
   resolvePrd02ShadowCasterVariant,
@@ -94,7 +96,7 @@ export class Prd02ShadowSystem {
   private lastVariants: string[] = [];
   private lastDropped: string[] = [];
   private readonly shaderLibrary: ShaderLibrary;
-  private readonly depthFeatures: readonly DepthVariantFeature[];
+  private depthFeatures: readonly DepthVariantFeature[];
   private precompiled = false;
 
   constructor(
@@ -148,6 +150,14 @@ export class Prd02ShadowSystem {
       }
     }
 
+    // 02-DEPTH: compose every active C-11 depth feature (all lanes), not only
+    // prd02's own; deform features without a C-18 entry point are reported.
+    this.depthFeatures = activeDepthFeatures(frame.flags);
+    for (const feature of this.depthFeatures) {
+      if (!feature.hooks.includes("vertex:deform")) continue;
+      const reason = depthDeformIncompatibility(feature);
+      if (reason) this.lastDropped.push(`depth.deform:${reason}`);
+    }
     const variantKeys = new Map<string, { key: ShadowCasterVariantKey; features: readonly DepthVariantFeature[] }>();
     const resolve = (item: RenderItem): ShadowCasterVariantKey =>
       resolvePrd02ShadowCasterVariant(item, frame.flags, frame.tier, this.depthFeatures);
@@ -164,6 +174,7 @@ export class Prd02ShadowSystem {
 
   /** One-time async warm-up so steady-state `programCompileCount` delta is 0. */
   async precompile(frame: Omit<ShadowSystemFrame, "sun" | "localLights">): Promise<void> {
+    this.depthFeatures = activeDepthFeatures(frame.flags);
     const variants = new Map<string, { key: ShadowCasterVariantKey; features: readonly DepthVariantFeature[] }>();
     for (const caster of frame.casters) {
       const key = resolvePrd02ShadowCasterVariant(caster, frame.flags, frame.tier, this.depthFeatures);
