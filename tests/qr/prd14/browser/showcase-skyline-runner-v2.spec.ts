@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
+import { expectRuntimeMatchesDeclared } from "./lib/look";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 // Source imports: the lane jobs do not build package dist/, so the
@@ -195,7 +196,7 @@ test.describe("showcase-skyline-runner v2 (T2.6)", () => {
       expect(route[0]?.key).toEqual(route[1]?.key);
       expect(route[0]?.scene).toBe(route[1]?.scene);
       // S6: what the renderer actually applied (C-31) is identical too.
-      expect(looks[0]?.runtime, "renderer reports no appliedLook (C-31)").not.toBeNull();
+      await expectRuntimeMatchesDeclared(APP_DIR, looks[0]?.runtime);
       expect(looks[0]?.runtime).toEqual(looks[1]?.runtime);
       expect(errors).toEqual([]);
     } finally {

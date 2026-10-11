@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
+import { expectRuntimeMatchesDeclared } from "./lib/look";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 // Source imports: the lane jobs do not build package dist/, so the
@@ -199,7 +200,7 @@ test.describe("aura-clash-showcase v2 (T2.6)", () => {
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       const playLook = await page.evaluate((EVIDENCE: string) =>
         JSON.stringify({ route: eval(EVIDENCE + ".appliedLook"), runtime: (window as unknown as { __AURA3D_GAME__?: { app?: { diagnostics?: () => { appliedLook?: unknown } } } }).__AURA3D_GAME__?.app?.diagnostics?.().appliedLook ?? null }), EVIDENCE);
-      expect(JSON.parse(playLook).runtime, "renderer reports no appliedLook (C-31)").not.toBeNull();
+      await expectRuntimeMatchesDeclared(APP_DIR, JSON.parse(playLook).runtime);
       for (const scenario of ["mid-round", "final-round", "ko"]) {
         await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&scenario=${scenario}`);
         await expect.poll(() => page.evaluate(() =>
