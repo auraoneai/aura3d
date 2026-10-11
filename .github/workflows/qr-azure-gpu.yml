@@ -27,7 +27,7 @@ on:
       runner:
         description: "azure-gpu (self-hosted NVIDIA, Vulkan ANGLE) | macos-14 (Metal)"
         type: choice
-        options: [azure-gpu, macos-14]
+        options: [azure-gpu, track0, macos-14]
         default: azure-gpu
       gpu_class:
         description: "azure-gpu only: l4 | t4 pin a class (needs gpu-l4/gpu-t4 runner labels; baselines); any = first free GPU runner (within-job comparisons such as flags-bisect)"
@@ -113,12 +113,14 @@ jobs:
     # Self-hosted GPU runners carry self-hosted,linux,azure-gpu plus a GPU-class
     # label (gpu-l4 | gpu-t4); captures pin one class so L4 and T4 frames are
     # never mixed. Push / schedule / PR events default to azure-gpu + l4.
-    runs-on: ${{ (inputs.runner || 'azure-gpu') == 'azure-gpu' && ((inputs.gpu_class || 'any') == 'any' && fromJSON('["self-hosted","azure-gpu"]') || fromJSON(format('["self-hosted","azure-gpu","gpu-{0}"]', inputs.gpu_class))) || inputs.runner }}
+    # track0: gcp-gpu-7..10, dedicated to Track 0 (self-hosted,linux,gpu-l4,track0;
+    # no azure-gpu label, so lane jobs never take them).
+    runs-on: ${{ (inputs.runner || 'azure-gpu') == 'azure-gpu' && ((inputs.gpu_class || 'any') == 'any' && fromJSON('["self-hosted","azure-gpu"]') || fromJSON(format('["self-hosted","azure-gpu","gpu-{0}"]', inputs.gpu_class))) || (inputs.runner == 'track0' && fromJSON('["self-hosted","track0","gpu-l4"]')) || inputs.runner }}
     timeout-minutes: 180
     env:
       SUITE: ${{ inputs.suite || 'flags-bisect' }}
       RUNNER_KIND: ${{ inputs.runner || 'azure-gpu' }}
-      GPU_CLASS: ${{ (inputs.runner || 'azure-gpu') == 'azure-gpu' && (inputs.gpu_class || 'any') || 'metal' }}
+      GPU_CLASS: ${{ (inputs.runner || 'azure-gpu') == 'azure-gpu' && (inputs.gpu_class || 'any') || (inputs.runner == 'track0' && 'l4') || 'metal' }}
       QR_BENCH_OUT: benchmarks/quality-rebuild/out
       QR_BENCH_SCENES: ${{ inputs.bench_scenes || '01-simple-geometry,16-instancing,12-shadows,03-damaged-helmet,08-skinned-character,14-particles' }}
       QR_BENCH_ENGINES: ${{ inputs.bench_engines || 'aura3d' }}
@@ -151,7 +153,7 @@ jobs:
             macos-14) args="--use-angle=metal --enable-gpu --ignore-gpu-blocklist" ;;
             # Linux NVIDIA (verified by the program lead on gcp-gpu-1..6; no
             # Xvfb): Vulkan ANGLE. vars.QR_AZURE_GPU_CHROME_ARGS overrides.
-            azure-gpu) args="${QR_AZURE_GPU_CHROME_ARGS:---headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist}" ;;
+            azure-gpu|track0) args="${QR_AZURE_GPU_CHROME_ARGS:---headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist}" ;;
             *) echo "::error::unknown runner '$RUNNER_KIND'"; exit 1 ;;
           esac
           { echo "QR_CHROMIUM_ARGS=$args"; echo "QR_BENCH_CHROME_ARGS=$args"; echo "QRC_GPU_ARGS=$args"; } >> "$GITHUB_ENV"
@@ -213,7 +215,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: qr-gpu-${{ inputs.suite || 'flags-bisect' }}-${{ inputs.runner || 'azure-gpu' }}-${{ (inputs.runner || 'azure-gpu') == 'azure-gpu' && (inputs.gpu_class || 'any') || 'metal' }}-${{ github.run_id }}
+          name: qr-gpu-${{ inputs.suite || 'flags-bisect' }}-${{ inputs.runner || 'azure-gpu' }}-${{ (inputs.runner || 'azure-gpu') == 'azure-gpu' && (inputs.gpu_class || 'any') || (inputs.runner == 'track0' && 'l4') || 'metal' }}-${{ github.run_id }}
           path: |
             benchmarks/quality-rebuild/out/
             tools/quality-rebuild-capture/out/
