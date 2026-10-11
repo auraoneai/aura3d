@@ -129,7 +129,10 @@ describe("PRD-01 §15 pass-owned feature axes", () => {
 
   it("environment + fog records come from the pass options", () => {
     expect(forwardPassFeatureAxes({}, false).environment).toBe("none");
-    expect(forwardPassFeatureAxes({ environmentLighting: { proceduralMap: {} } as never }, false).environment).toBe("equirect");
+    // #1140: equirect only with a bound 2D environment map — a procedural-only
+    // (or cube-only) environment has no texture for the equirect sampler.
+    expect(forwardPassFeatureAxes({ environmentLighting: { proceduralMap: {} } as never }, false).environment).toBe("none");
+    expect(forwardPassFeatureAxes({ environmentLighting: { environmentMapTexture: { texture: {} } } as never }, false).environment).toBe("equirect");
     expect(forwardPassFeatureAxes({ environmentFog: { mode: "exponential" } as never }, false).fog).toBe("exp2");
     expect(forwardPassFeatureAxes({ environmentFog: { mode: "linear" } as never }, false).fog).toBe("linear");
   });

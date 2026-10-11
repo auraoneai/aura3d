@@ -374,6 +374,7 @@ export class ForwardPass extends BaseRenderPass {
     if (!generated) for (const [k, v] of binding.uniforms) uniforms.set(k, v);
     applyClusteredLightingUniforms(this.clusteredLighting, shader, uniforms);
     applyEnvironmentLightingUniforms(this.options.environmentLighting, item, shader, uniforms);
+    if (generated) applyGeneratedEnvironmentMapUniforms(this.options.environmentLighting, item, shader, uniforms);
     applyEnvironmentFogUniforms(this.options.environmentFog, item, shader, uniforms);
     applyForwardShadowMapUniforms(
       selectForwardShadowMap(this.options.shadowMap, item, this.options.cameraViewMatrix, this.options.cameraPosition),
@@ -710,7 +711,11 @@ export function forwardPassFeatureAxes(
       ? { cascades: Math.max(1, Math.min(4, options.shadowMap.cascades?.length ?? 1)) as 0 | 1 | 2 | 3 | 4, pcfTaps: 4, localShadows: 0, contact: false }
       : { cascades: 0, pcfTaps: 4, localShadows: 0, contact: false },
     environment:
-      env?.environmentMapTexture || env?.environmentCubeMapTexture || env?.proceduralMap
+      // #1140: the generated equirect chunk samples the renderer's 2D
+      // `environmentMapTexture`. A cube-only or procedural-only environment has
+      // no such texture (pmrem-cube is lane 02's C-09 chunk), so it must not
+      // declare ENVMAP_TYPE_EQUIRECT — that sampler would be unbound.
+      env?.environmentMapTexture?.texture !== undefined
         ? "equirect"
         : "none",
     fog: fogMode
@@ -1126,6 +1131,55 @@ function applyEnvironmentLightingUniforms(
   uniforms.set("u_environmentIntensity", environment.intensity);
   applyProceduralEnvironmentMapUniforms(environment.proceduralMap, item, shader, uniforms);
   applySampledEnvironmentMapUniforms(withItemEnvironmentCube(environment, item), item, shader, uniforms);
+}
+
+/**
+ * #1140: generated-program environment map (`indirect_default` chunk,
+ * ENVMAP_TYPE_EQUIRECT). The legacy binder above only fills the frozen
+ * library's `u_environmentMapTexture*` names, so a generated program's
+ * `u_environmentMap` used to stay unbound (sampling whatever texture unit 0
+ * held) with `u_environmentMapIntensity` unset.
+ */
+export function applyGeneratedEnvironmentMapUniforms(
+  environment: EnvironmentLightingOptions | undefined,
+  item: RenderItem,
+  shader: RenderShaderProgram,
+  uniforms: Map<string, UniformValue>
+): void {
+  if (!shader.reflection.uniforms.has("u_environmentMap")) return;
+  const binding = environment?.environmentMapTexture;
+  if (!environment || !binding?.texture) {
+    // forwardPassFeatureAxes never selects equirect without a 2D map; a stale
+    // program is drawn with no environment contribution rather than garbage.
+    uniforms.set("u_environmentMapIntensity", 0);
+    return;
+  }
+  validateEnvironmentTextureBinding("Environment map texture", binding, "2d", item);
+  const intensity = environment.environmentMapIntensity ?? 1;
+  const rotation = environment.environmentMapRotation ?? 0;
+  const mipCount = environment.environmentMapMipCount ?? 1;
+  const encoding = environment.environmentMapEncoding ?? "srgb";
+  if (!Number.isFinite(intensity) || intensity < 0 || !Number.isFinite(rotation) || !Number.isInteger(mipCount) || mipCount < 1) {
+    throw new RenderDeviceError("Sampled environment map options are invalid", "ENVIRONMENT_LIGHTING_CONTRACT", {
+      label: item.label,
+      intensity,
+      rotation,
+      mipCount
+    });
+  }
+  uniforms.set("u_environmentMap", new TextureBinding({
+    name: "u_environmentMap",
+    texture: binding.texture,
+    sampler: binding.sampler,
+    required: true,
+    ready: binding.ready,
+    expectedColorSpace: binding.expectedColorSpace,
+    expectedDimension: "2d"
+  }));
+  uniforms.set("u_environmentMapIntensity", intensity);
+  uniforms.set("u_environmentMapRotation", rotation);
+  uniforms.set("u_environmentMapMaxLod", Math.max(mipCount - 1, 0));
+  uniforms.set("u_environmentMapEncoding", encoding === "rgbe" ? 1 : encoding === "linear" ? 2 : 0);
 }
 
 function applyProceduralEnvironmentMapUniforms(
