@@ -82,11 +82,11 @@ const game = createGame({
     theme: "arcade-neon",
     maxScreenFraction: 0.15,
     widgets: [
-      { id: "wave", kind: "label", anchor: "top", label: "WAVE" },
-      { id: "score", kind: "score", anchor: "top-left", label: "SCORE" },
-      { id: "combo", kind: "label", anchor: "top-right", label: "COMBO" },
-      { id: "hp", kind: "label", anchor: "bottom-left", label: "HP" },
-      { id: "burst", kind: "label", anchor: "bottom-right", label: "BURST" }
+      { id: "wave", kind: "prompt", anchor: "top", label: "WAVE" },
+      { id: "score", kind: "prompt", anchor: "top-left", label: "SCORE" },
+      { id: "combo", kind: "prompt", anchor: "top-right", label: "COMBO" },
+      { id: "hp", kind: "prompt", anchor: "bottom-left", label: "HP" },
+      { id: "burst", kind: "prompt", anchor: "bottom-right", label: "BURST" }
     ]
   },
   touch: {

@@ -26,7 +26,7 @@ export function wireGalleryHud(ctx: GalleryCtx, deps: { game: Game }) {
     game.hud.set("floor", `FLOOR ${ctx.runtime.layout.id} — ${ctx.runtime.layout.name.toUpperCase()}`);
     game.hud.set("exhibits", `EXHIBITS ${totalLifted} OF 3`);
     game.hud.set("score", `SCORE ${ctx.totalScore + ctx.runtime.floorScore}`);
-    game.hud.set("detection", Math.min(1, ctx.runtime.detection.value));
+    game.hud.set("detection", `${Math.round(Math.min(1, ctx.runtime.detection.value) * 100)}%`);
     game.hud.set("guardState", `PATROL ${guardState.toUpperCase()}${snap.gait === "sneak" ? " · SNEAK" : ""}`);
     game.hud.set(
       "phase",

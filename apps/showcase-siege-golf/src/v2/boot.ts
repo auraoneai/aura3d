@@ -71,11 +71,11 @@ const game = createGame({
     theme: "sports-broadcast",
     maxScreenFraction: 0.15,
     widgets: [
-      { id: "hole", kind: "label", anchor: "top", label: "HOLE" },
-      { id: "score", kind: "score", anchor: "top-left", label: "STROKES" },
-      { id: "power", kind: "label", anchor: "top-right", label: "POWER" },
-      { id: "targets", kind: "label", anchor: "bottom-left", label: "TARGETS" },
-      { id: "message", kind: "label", anchor: "bottom", label: "STATUS" }
+      { id: "hole", kind: "prompt", anchor: "top", label: "HOLE" },
+      { id: "score", kind: "prompt", anchor: "top-left", label: "STROKES" },
+      { id: "power", kind: "prompt", anchor: "top-right", label: "POWER" },
+      { id: "targets", kind: "prompt", anchor: "bottom-left", label: "TARGETS" },
+      { id: "message", kind: "prompt", anchor: "bottom", label: "STATUS" }
     ]
   },
   touch: {

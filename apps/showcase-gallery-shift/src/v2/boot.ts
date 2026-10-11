@@ -93,12 +93,12 @@ const game: Prd09Game<string, string> = createGame({
   hud: {
     theme: "sci-fi-telemetry",
     widgets: [
-      { id: "floor", kind: "label", anchor: "top-left", label: "FLOOR" },
-      { id: "exhibits", kind: "label", anchor: "top", label: "EXHIBITS" },
-      { id: "score", kind: "label", anchor: "top-right", label: "SCORE" },
-      { id: "detection", kind: "gauge", anchor: "bottom", label: "DETECTION" },
-      { id: "guardState", kind: "label", anchor: "bottom-left", label: "PATROL" },
-      { id: "phase", kind: "label", anchor: "bottom-right", label: "STATUS" }
+      { id: "floor", kind: "prompt", anchor: "top-left", label: "FLOOR" },
+      { id: "exhibits", kind: "prompt", anchor: "top", label: "EXHIBITS" },
+      { id: "score", kind: "prompt", anchor: "top-right", label: "SCORE" },
+      { id: "detection", kind: "prompt", anchor: "bottom", label: "DETECTION" },
+      { id: "guardState", kind: "prompt", anchor: "bottom-left", label: "PATROL" },
+      { id: "phase", kind: "prompt", anchor: "bottom-right", label: "STATUS" }
     ]
   },
   touch: {

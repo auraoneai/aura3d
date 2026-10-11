@@ -102,13 +102,13 @@ const game = createGame({
     theme: "sci-fi-telemetry",
     maxScreenFraction: 0.16,
     widgets: [
-      { id: "objective", kind: "label", anchor: "top", label: "OBJECTIVE" },
-      { id: "depth", kind: "gauge", anchor: "top-left", label: "DEPTH" },
-      { id: "oxygen", kind: "gauge", anchor: "top-right", label: "O2" },
-      { id: "hull", kind: "gauge", anchor: "left", label: "HULL" },
+      { id: "objective", kind: "prompt", anchor: "top", label: "OBJECTIVE" },
+      { id: "depth", kind: "prompt", anchor: "top-left", label: "DEPTH" },
+      { id: "oxygen", kind: "prompt", anchor: "top-right", label: "O2" },
+      { id: "hull", kind: "prompt", anchor: "left", label: "HULL" },
       { id: "salvage", kind: "score", anchor: "bottom-left", label: "SALVAGE" },
-      { id: "sonar", kind: "label", anchor: "bottom-right", label: "SONAR" },
-      { id: "message", kind: "label", anchor: "bottom", label: "STATUS" }
+      { id: "sonar", kind: "prompt", anchor: "bottom-right", label: "SONAR" },
+      { id: "message", kind: "prompt", anchor: "bottom", label: "STATUS" }
     ]
   },
   touch: {

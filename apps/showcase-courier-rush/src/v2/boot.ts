@@ -103,11 +103,11 @@ const game = createGame({
     theme: "motorsport",
     maxScreenFraction: 0.15,
     widgets: [
-      { id: "job", kind: "label", anchor: "top", label: "DISPATCH" },
-      { id: "score", kind: "score", anchor: "top-left", label: "PAY" },
-      { id: "timer", kind: "label", anchor: "top-right", label: "TIMER" },
-      { id: "strikes", kind: "label", anchor: "bottom-left", label: "STRIKES" },
-      { id: "prompt", kind: "label", anchor: "bottom", label: "ACTION" }
+      { id: "job", kind: "prompt", anchor: "top", label: "DISPATCH" },
+      { id: "score", kind: "prompt", anchor: "top-left", label: "PAY" },
+      { id: "timer", kind: "prompt", anchor: "top-right", label: "TIMER" },
+      { id: "strikes", kind: "prompt", anchor: "bottom-left", label: "STRIKES" },
+      { id: "prompt", kind: "prompt", anchor: "bottom", label: "ACTION" }
     ]
   },
   touch: {

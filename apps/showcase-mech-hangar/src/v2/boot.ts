@@ -52,12 +52,12 @@ const game: Prd09Game<string, string> = createGame({
   hud: {
     theme: "fighting",
     widgets: [
-      { id: "mode", kind: "label", anchor: "top", label: "MODE" },
-      { id: "hp", kind: "gauge", anchor: "top-left", label: "HULL" },
-      { id: "rival", kind: "gauge", anchor: "top-right", label: "RIVAL" },
-      { id: "guard", kind: "gauge", anchor: "bottom-left", label: "GUARD" },
-      { id: "power", kind: "gauge", anchor: "bottom", label: "POWER" },
-      { id: "phase", kind: "label", anchor: "bottom-right", label: "BOUT" }
+      { id: "mode", kind: "prompt", anchor: "top", label: "MODE" },
+      { id: "hp", kind: "prompt", anchor: "top-left", label: "HULL" },
+      { id: "rival", kind: "prompt", anchor: "top-right", label: "RIVAL" },
+      { id: "guard", kind: "prompt", anchor: "bottom-left", label: "GUARD" },
+      { id: "power", kind: "prompt", anchor: "bottom", label: "POWER" },
+      { id: "phase", kind: "prompt", anchor: "bottom-right", label: "BOUT" }
     ]
   },
   touch: {

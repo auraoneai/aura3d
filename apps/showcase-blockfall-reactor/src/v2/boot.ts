@@ -111,13 +111,13 @@ const game = createGame({
     theme: "arcade-neon",
     maxScreenFraction: 0.18,
     widgets: [
-      { id: "score", kind: "label", anchor: "top", label: "SCORE" },
-      { id: "lines", kind: "label", anchor: "top-left", label: "LINES" },
-      { id: "level", kind: "label", anchor: "top-left", label: "LEVEL" },
-      { id: "reactor", kind: "gauge", anchor: "top-right", label: "REACTOR" },
-      { id: "hold", kind: "label", anchor: "bottom-left", label: "HOLD" },
-      { id: "next", kind: "label", anchor: "bottom-right", label: "NEXT" },
-      { id: "mode", kind: "label", anchor: "bottom", label: "STATUS" }
+      { id: "score", kind: "prompt", anchor: "top", label: "SCORE" },
+      { id: "lines", kind: "prompt", anchor: "top-left", label: "LINES" },
+      { id: "level", kind: "prompt", anchor: "top-left", label: "LEVEL" },
+      { id: "reactor", kind: "prompt", anchor: "top-right", label: "REACTOR" },
+      { id: "hold", kind: "prompt", anchor: "bottom-left", label: "HOLD" },
+      { id: "next", kind: "prompt", anchor: "bottom-right", label: "NEXT" },
+      { id: "mode", kind: "prompt", anchor: "bottom", label: "STATUS" }
     ]
   },
   touch: {

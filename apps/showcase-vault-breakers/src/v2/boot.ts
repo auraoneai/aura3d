@@ -70,10 +70,10 @@ const game = createGame({
     theme: "arcade-neon",
     maxScreenFraction: 0.15,
     widgets: [
-      { id: "score", kind: "score", anchor: "top", label: "SCORE" },
-      { id: "ball", kind: "label", anchor: "top-left", label: "BALL" },
-      { id: "mission", kind: "label", anchor: "bottom", label: "MISSION" },
-      { id: "power", kind: "meter", anchor: "right", label: "PLUNGER" }
+      { id: "score", kind: "prompt", anchor: "top", label: "SCORE" },
+      { id: "ball", kind: "prompt", anchor: "top-left", label: "BALL" },
+      { id: "mission", kind: "prompt", anchor: "bottom", label: "MISSION" },
+      { id: "power", kind: "prompt", anchor: "right", label: "PLUNGER" }
     ]
   },
   touch: {
