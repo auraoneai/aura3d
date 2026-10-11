@@ -5,10 +5,11 @@
 // PRD-02 flag paths must not alter them). CPU snapshot; the pixel-level
 // flag-off proof is the IC-0 ΔE2000 gate in lane 15.
 
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createProductionRuntimeEnvironment } from "../../../packages/engine/src/agent-api/compiler/environment.js";
 import { createProductionRuntimeCollectedLights, type AuraSceneSnapshot } from "@aura3d/engine";
 import { createProductionRuntimeShadowOptions } from "../../../packages/engine/src/agent-api/compiler/shadows.js";
+import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags.js";
 import "@aura3d/engine/lanes"; // lane registrations must not perturb flag-off paths
 
 const baseScene01Nodes = [
@@ -37,10 +38,15 @@ const round = (v: unknown): unknown => {
 /** Golden captured from the flag-off legacy path (85aafcd0 lineage). */
 const GOLDEN = {"env":{"preset":"studio","intensity":1,"evidence":"production bridge submitted the authored studio environment through generated HDR studio lighting","lighting":{"color":[0.44,0.48,0.54],"intensity":0.18,"environmentMapIntensity":0.44,"environmentMapSpecularIntensity":0.92,"environmentMapRotation":0.06},"hdriUrl":null},"lights":[{"kind":"directional","color":[1,1,1],"intensity":2,"position":[3,4,3],"direction":[-0.514496,-0.685994,-0.514496],"range":0,"spotAngle":0,"penumbra":0,"castsShadow":true},{"kind":"spot","color":[1,1,1],"intensity":20,"position":[0,3,2],"direction":[0,-0.747409,-0.664364],"range":12,"spotAngle":0.5,"penumbra":0.4,"castsShadow":false}],"shadows":{"enabled":true,"size":1024,"bias":0.004,"strength":0.32,"pcfRadius":1.2,"pcfSamples":9,"filter":"pcf","label":"aura3d-root-production-neon-1024px-shadow-map"}} as const;
 
+// A3D_QR_LIGHTING is default-on since #1238, so flag-off must be explicit:
+// the shadow options take the flags directly, and the collected-light
+// fallback resolves the ambient env (A3D_QR_LIGHTING=0 below).
+const LIGHTING_OFF = resolveQrFlags({ options: { A3D_QR_LIGHTING: false } });
+
 function flagOffCpuSnapshot() {
   const env = createProductionRuntimeEnvironment(snapshot);
   const lights = createProductionRuntimeCollectedLights(snapshot);
-  const shadows = createProductionRuntimeShadowOptions(snapshot, lights);
+  const shadows = createProductionRuntimeShadowOptions(snapshot, lights, LIGHTING_OFF);
   return {
     env: {
       preset: env.preset,
@@ -65,6 +71,9 @@ function flagOffCpuSnapshot() {
 }
 
 describe("prd02 legacy golden — flag off (85aafcd0 lineage)", () => {
+  beforeEach(() => vi.stubEnv("A3D_QR_LIGHTING", "0"));
+  afterEach(() => vi.unstubAllEnvs());
+
   it("CPU RenderSource terms are deep-equal to the golden", () => {
     expect(flagOffCpuSnapshot()).toEqual(GOLDEN);
   });
