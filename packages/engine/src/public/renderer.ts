@@ -18,6 +18,11 @@ export type { RenderMaterial } from "@aura3d/rendering";
 
 /** @deprecated 3.1.0, removed 4.0.0. Alias of Renderer. */
 export { Renderer as A3DRenderer } from "@aura3d/rendering";
+/**
+ * @deprecated 3.1.0, removed 4.0.0. Frame helpers the `renderer-imports` codemod
+ * points callers at (13 showcase apps import them from this subpath).
+ */
+export { a3dRenderFrame, a3dRenderFrameAsync } from "../advanced-runtime/a3dCompat.js";
 /** @deprecated 3.1.0, removed 4.0.0. Alias of RendererCreateOptions. */
 export type { RendererCreateOptions as A3DRendererOptions } from "@aura3d/rendering/contracts";
 
