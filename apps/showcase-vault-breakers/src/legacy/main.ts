@@ -389,7 +389,7 @@ function buildScene(): ReturnType<typeof scene> {
 // ---------------------------------------------------------------- mount ------
 const gameApp = createGameApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
-  renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+  renderer: { qualityProfile: "production" },
   physics: {
     seed: 20260906,
     continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }

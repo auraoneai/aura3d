@@ -674,7 +674,7 @@ const pitSignBuilders = [
 ];
 const app = createAuraApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
-  renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+  renderer: { qualityProfile: "production" },
   physics: {
     seed: 20260920,
     continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }

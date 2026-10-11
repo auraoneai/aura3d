@@ -1520,7 +1520,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         // postprocess pipeline while keeping native GPU work inside its budget.
         ? Math.min(1, 320 / Math.max(1, window.innerWidth))
         : Math.min(window.devicePixelRatio || 1, 1.75),
-    renderer: { mode: "production", qualityProfile: "production" },
+    renderer: { qualityProfile: "production" },
     scene: createRootStageScene()
   });
   await rootStageApp.ready();
