@@ -62,31 +62,26 @@ export async function stepFrames(page: Page, frames: number): Promise<void> {
 }
 
 /**
- * Move the camera through the public surfaces the shared translator uses
- * (C-22 `app.camera.setPose`, else the runtime camera node), then present one
- * frame. Returns false when neither surface exists.
+ * Move the camera by re-presenting the scene snapshot with a new
+ * `camera.position` / `camera.target` (`app.setScene`, public, flag-neutral),
+ * then present one frame. The frame camera is resolved from
+ * `snapshot.camera` every frame (compiler/camera.ts `resolveCameraFrame`);
+ * `app.camera.setPose` is a no-op stub unless A3D_QR_CAMERA is on, so a lane-02
+ * spec that used it measured an unmoved camera (azure-gpu run 38155871625:
+ * 60-frame dolly meanFrameDiff exactly 0). Returns false without `setScene`.
  */
 export async function setCameraPose(page: Page, position: Vec3, target: Vec3): Promise<boolean> {
   return (await page.evaluate(`(async () => {
     const app = window.__qrPrd02App;
+    if (!app || typeof app.setScene !== "function" || !app.scene) return false;
     const position = ${JSON.stringify(position)};
     const target = ${JSON.stringify(target)};
-    let moved = false;
-    if (app.camera && typeof app.camera.setPose === "function") {
-      app.camera.setPose({ position, target });
-      moved = true;
-    } else if (app.nodes && typeof app.nodes.all === "function") {
-      const cam = app.nodes.all().find((node) => node.kind === "camera");
-      if (cam && typeof cam.setPosition === "function") {
-        cam.setPosition(position[0], position[1], position[2]);
-        moved = true;
-      }
-    }
+    app.setScene({ ...app.scene, camera: { ...app.scene.camera, position, target } });
     app.step(1 / 60);
     await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
     app.step(0);
     await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
-    return moved;
+    return true;
   })()`)) as boolean;
 }
 

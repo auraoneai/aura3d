@@ -22,6 +22,8 @@ const POLE = "prd02-pole-behind-camera";
 const DOLLY_FRAMES = 60;
 const DOLLY_STEP_M = 0.01;
 const SHIMMER_MAX = 1.5;
+/** Mean |Δluma| (0..255) the 0.59 m dolly must at least produce over the whole frame. */
+const MIN_DOLLY_FRAME_DIFF = 0.05;
 
 test.describe("02-S5 shadow stability", () => {
   let server: LaneServer;
@@ -48,14 +50,21 @@ test.describe("02-S5 shadow stability", () => {
     for (let frame = 0; frame < DOLLY_FRAMES; frame += 1) {
       const p: Vec3 = [position[0] + step[0] * frame, position[1] + step[1] * frame, position[2] + step[2] * frame];
       const t: Vec3 = [target[0] + step[0] * frame, target[1] + step[1] * frame, target[2] + step[2] * frame];
-      expect(await setCameraPose(page, p, t), "camera surface (app.camera.setPose or camera node)").toBe(true);
+      expect(await setCameraPose(page, p, t), "app.setScene camera move").toBe(true);
       frames.push(await stagePixels(page));
     }
     const edge = boundaryRing(shadowMask(frames[0]!, off), frames[0]!, 1);
     const diff = meanFrameDiff(frames, edge);
-    const report = { edgePixels: maskPixelCount(edge), meanFrameDiff: diff };
+    // The dolly must reach the renderer: the first and last frames (0.59 m
+    // apart) differ across the frame. Without this a camera surface that
+    // ignores the move makes every frame identical and the shimmer gate
+    // passes trivially (azure-gpu run 38155871625: meanFrameDiff 0).
+    const fullFrame = new Uint8Array(frames[0]!.width * frames[0]!.height).fill(255);
+    const moved = meanFrameDiff([frames[0]!, frames[frames.length - 1]!], fullFrame);
+    const report = { edgePixels: maskPixelCount(edge), meanFrameDiff: diff, firstToLastFrameDiff: moved };
     await testInfo.attach("02-S5-dolly.json", { body: JSON.stringify(report), contentType: "application/json" });
     expect(report.edgePixels, "frame-0 shadow edges").toBeGreaterThan(500);
+    expect(moved, `the dolly must change the rendered frame: ${JSON.stringify(report)}`).toBeGreaterThan(MIN_DOLLY_FRAME_DIFF);
     expect(diff, JSON.stringify(report)).toBeLessThanOrEqual(SHIMMER_MAX);
   });
 
