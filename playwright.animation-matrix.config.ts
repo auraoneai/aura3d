@@ -20,6 +20,9 @@ const chromiumLaunchOptions = {
     ...(process.platform === "darwin" ? ["--use-angle=metal"] : []),
     "--enable-unsafe-webgpu",
     "--ignore-gpu-blocklist",
+    // GPU job (self-hosted L4): A3D_PRD06_CHROME_ARGS adds the Vulkan ANGLE
+    // flags, e.g. "--headless=new --use-angle=vulkan --enable-features=Vulkan".
+    ...(process.env.A3D_PRD06_CHROME_ARGS ?? "").split(/\s+/).filter(Boolean),
   ],
 };
 
