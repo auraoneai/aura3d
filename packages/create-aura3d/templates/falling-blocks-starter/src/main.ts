@@ -163,11 +163,9 @@ const hudBindings = [
 
 setupPracticeBoard();
 
-const evidenceMode = navigator.webdriver;
 const blockfallGame = createGame({
   id: "falling-blocks-starter",
   target: "#app",
-  autoStart: !evidenceMode,
   diagnostics: { overlay: true, performancePanel: true },
   scene: () => buildScene(falling.snapshot().board),
   input: inputOptions,
@@ -262,22 +260,6 @@ renderBoard(falling.snapshot());
 renderHud(falling.snapshot());
 publishEvidence(falling.snapshot());
 
-// Keep browser evidence deterministic on software GPUs without replacing real
-// keyboard input. The input controller receives each DOM event first; this
-// handler then advances the same app.onFrame gameplay callback and presents one
-// completed frame. Generated apps outside WebDriver retain continuous playback.
-if (evidenceMode) {
-  await app.ready();
-  // Complete one real production frame for the exact-installed visual gate.
-  // Software renderers may take seconds to drain this typed GLB scene, so keep
-  // later input-contract reads free of synchronous GPU submissions.
-  await app.stepAsync(0);
-  const advanceFromKeyboard = () => {
-    app.advance(1 / 60);
-  };
-  window.addEventListener("keydown", advanceFromKeyboard);
-  window.addEventListener("keyup", advanceFromKeyboard);
-}
 
 function recordKitEvents(state: KitState): void {
   for (const event of state.events) {

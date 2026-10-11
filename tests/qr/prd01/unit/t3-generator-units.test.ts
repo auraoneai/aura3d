@@ -52,21 +52,37 @@ describe("01-T3: depth program with a deform chunk", () => {
 
 describe("01-T3: exactly one environment sampler", () => {
   const samplerDecls = (src: string) => (src.match(/^\s*uniform\s+sampler(?:2D|Cube)\s+u_environment\w*\s*;/gm) ?? []);
+  /** The env samplers sit in mutually exclusive `#if CUBE_UV / #elif EQUIRECT` branches (#1140 cube IBL). */
+  const branchOf = (src: string, decl: string) => {
+    const at = src.indexOf(decl);
+    const cube = src.lastIndexOf("#if defined(ENVMAP_TYPE_CUBE_UV)", at);
+    const equirect = src.lastIndexOf("#elif defined(ENVMAP_TYPE_EQUIRECT)", at);
+    const end = src.indexOf("#endif", Math.max(cube, equirect));
+    return at < 0 || at > end ? "none" : equirect > cube ? "equirect" : "cube";
+  };
 
-  it("lit forward + equirect declares exactly one env sampler", () => {
+  it("lit forward + equirect compiles exactly one env sampler (the 2D map)", () => {
     const out = gen({ lighting: "lit", lights: LIGHT1, environment: "equirect" });
-    expect(samplerDecls(out.fragment)).toEqual(["uniform sampler2D u_environmentMap;"]);
+    expect(out.defines.ENVMAP_TYPE_EQUIRECT).toBe(true);
+    expect(out.defines.ENVMAP_TYPE_CUBE_UV).toBeUndefined();
+    expect(branchOf(out.fragment, "uniform sampler2D u_environmentMap;")).toBe("equirect");
+    expect(branchOf(out.fragment, "uniform samplerCube u_environmentCubeMap;")).toBe("cube");
     expect(samplerDecls(out.vertex)).toEqual([]);
   });
 
+  it("lit forward + pmrem-cube selects the cube branch only", () => {
+    const out = gen({ lighting: "lit", lights: LIGHT1, environment: "pmrem-cube" });
+    expect(out.defines.ENVMAP_TYPE_CUBE_UV).toBe(true);
+    expect(out.defines.ENVMAP_TYPE_EQUIRECT).toBeUndefined();
+    expect(out.defines.A3D_ENV_SAMPLE).toBe(true);
+  });
+
   it("no environment and unlit programs declare none", () => {
-    // The lit declaration sits behind `#ifdef ENVMAP_TYPE_EQUIRECT`: with no
-    // environment the guard define is absent, so no sampler is compiled in.
+    // With no environment neither guard define is set, so no sampler is compiled in.
     const noEnv = gen({ lighting: "lit", lights: LIGHT1 });
     expect(noEnv.defines.ENVMAP_TYPE_EQUIRECT).toBeUndefined();
     expect(noEnv.defines.ENVMAP_TYPE_CUBE_UV).toBeUndefined();
-    const guarded = noEnv.fragment.slice(noEnv.fragment.indexOf("#ifdef ENVMAP_TYPE_EQUIRECT"));
-    expect(guarded.indexOf("uniform sampler2D u_environmentMap;")).toBeLessThan(guarded.indexOf("#endif"));
+    expect(noEnv.defines.A3D_ENV_SAMPLE).toBeUndefined();
     expect(samplerDecls(gen({ lighting: "unlit", environment: "equirect" }).fragment)).toEqual([]);
   });
 });

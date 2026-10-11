@@ -106,11 +106,11 @@ const game: Prd09Game<string, string> = createGame({
     bindings: { stick: "moveX", tap: "lift", swipeUp: "sprint", swipeDown: "sneak", pause: "menu" }
   },
   qualityRebuild: {
-    // FLAG-1: arm the engine features this route uses — `game` selects the
-    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
-    // art/direction.ts sections. `route_gallery_shift` uses the engine-parseable
-    // underscore form (URL/dispatch form is `route-gallery-shift`).
-    flags: ["route_gallery_shift", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+    // T0-29 (#1232): only what the route itself needs — its route token and
+    // `game` (the real C-24 shell: beacon/evidence/HUD/touch). Engine lane
+    // flags come from URL/env/defaults like every other route, so `none`
+    // and `-<flag>` arms actually turn them off.
+    flags: ["route_gallery_shift", "game"]
   }
 });
 

@@ -58,6 +58,28 @@ test.describe("PRD-04 S3 model material override", () => {
       const lapBase = maskedLaplacianVariance(base.pixels, base.width, base.height, mask);
       const shadowBase = shadowQuartileLuma(base.pixels, mask);
       const rgBase = maskedChannelRatio(base.pixels, mask, 0, 1);
+      // Record the raw measurements before any assertion (diagnostic only; the
+      // gates below are unchanged), so a failing GPU run still uploads numbers.
+      {
+        const whiteFrame = probeFrame(white);
+        const redFrame = probeFrame(red);
+        const offFrame = probeFrame(redOff);
+        probes.push({
+          scene: sceneId,
+          stage: "measured",
+          maskedPixels: mask.reduce((n, m) => n + m, 0),
+          rgBase,
+          rgRed: maskedChannelRatio(redFrame.pixels, mask, 0, 1),
+          rgRedOff: maskedChannelRatio(offFrame.pixels, mask, 0, 1),
+          ssimWhite: maskedSsim(whiteFrame.pixels, base.pixels, base.width, base.height, mask),
+          lapBase,
+          lapRed: maskedLaplacianVariance(redFrame.pixels, base.width, base.height, mask),
+          shadowBase,
+          shadowRed: shadowQuartileLuma(redFrame.pixels, mask),
+          redAppliedFlags: (red.extra ?? {}).appliedQrFlags ?? null,
+          redLog: (red.extra ?? {}).log ?? (red as { log?: unknown }).log ?? null
+        });
+      }
 
       // Gate 1: white tint is a no-op on retained maps.
       const whiteFrame = probeFrame(white);

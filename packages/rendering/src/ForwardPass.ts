@@ -35,7 +35,7 @@ import { qrCoreGeneratorOn, rendererProgramCache, rendererAuraFrame } from "./re
 
 // PR 0b-2 re-imports for moved carve-out modules (CONTRACTS.md §3.3).
 import { SkinningPaletteUploadManager, applyGpuMorphUniforms, resolveRenderGeometry } from "./forward/Deform.js";
-import { applyClusteredLightingUniforms, applyForwardShadowMapUniforms, resolveForwardClusteredLighting, selectForwardShadowMap } from "./forward/Lighting.js";
+import { FORWARD_DIRECT_LIGHT_CAPACITY, applyClusteredLightingUniforms, applyForwardShadowMapUniforms, resolveForwardClusteredLighting, selectForwardShadowMap } from "./forward/Lighting.js";
 import { flushMultiDrawQueue, submitDraw } from "./forward/DrawSubmit.js";
 import { bindVelocityUniforms } from "./forward/Velocity.js";
 
@@ -427,7 +427,10 @@ export class ForwardPass extends BaseRenderPass {
     const instanceBinding = item.instanceTransforms ? this.applyInstanceBinding(device, item, shader, uniforms, generated) : { count: 1 };
     const gpuMorph = item.morphTargets || item.morphWeights ? applyGpuMorphUniforms(item, shader, uniforms) : false;
     const geometry = gpuMorph ? item.geometry : resolveRenderGeometry(item);
-    validateMaterialGeometryContract(item, baseMaterial, geometry);
+    // Generated programs validate their selected attributes in MaterialBinding.
+    // The legacy descriptor can require maps/tangents deliberately masked out
+    // for this geometry, so it is not the generated program contract.
+    if (!generated) validateMaterialGeometryContract(item, baseMaterial, geometry);
     try {
       const vertexBuffer = geometry.vertexBuffer.upload(device);
       const indexBuffer = geometry.indexBuffer?.upload(device);
@@ -582,6 +585,8 @@ export class ForwardPass extends BaseRenderPass {
       // only declares it when authored instanced; the draw's program must
       // cover the union (attribute matrices are the only generated path).
       ...(item?.instanceTransforms ? { instancing: { color: item.instanceColors !== undefined } } : {}),
+      // #1140: a per-item probe cube (PRD-02 S12) is sampled as a cube.
+      ...(item?.environmentCube?.texture?.dimension === "cube" ? { environment: "pmrem-cube" as const } : {}),
       backgroundCoverage: this.options.backgroundCoverage === true,
       pass: "forward",
       target: "glsl300es"
@@ -698,8 +703,8 @@ function lightBucket(count: number, max: 4 | 8 = 8): 0 | 1 | 2 | 4 | 8 {
 
 /**
  * Pass-owned feature axes (C-02): lights/shadows/environment/fog shared by every
- * material in the pass. `clustered` is the pass's resolved state; callers that
- * only have counts should pass `dir>8||point>8||spot>8||rect>8`.
+ * material in the pass. `clustered` is the pass's resolved state; above
+ * FORWARD_DIRECT_LIGHT_CAPACITY lights the axes report clustered regardless.
  */
 export function forwardPassFeatureAxes(
   options: Pick<ForwardPassOptions, "lights" | "shadowMap" | "environmentLighting" | "environmentFog">,
@@ -730,20 +735,24 @@ export function forwardPassFeatureAxes(
       point: lightBucket(point),
       spot: lightBucket(spot),
       rect: lightBucket(rect, 4) as 0 | 1 | 2 | 4,
-      clustered: clustered || directional > 8 || point > 8 || spot > 8 || rect > 8,
+      // #1140: mirrors resolveForwardClusteredLighting (clusters above the
+      // u_lightData capacity), not the per-kind key bucket.
+      clustered: clustered || directional + point + spot + rect > FORWARD_DIRECT_LIGHT_CAPACITY,
       hemisphere: env?.proceduralMap !== undefined
     },
     shadows: options.shadowMap
       ? { cascades: Math.max(1, Math.min(4, options.shadowMap.cascades?.length ?? 1)) as 0 | 1 | 2 | 3 | 4, pcfTaps: 4, localShadows: 0, contact: false }
       : { cascades: 0, pcfTaps: 4, localShadows: 0, contact: false },
     environment:
-      // #1140: the generated equirect chunk samples the renderer's 2D
-      // `environmentMapTexture`. A cube-only or procedural-only environment has
-      // no such texture (pmrem-cube is lane 02's C-09 chunk), so it must not
-      // declare ENVMAP_TYPE_EQUIRECT — that sampler would be unbound.
-      env?.environmentMapTexture?.texture !== undefined
-        ? "equirect"
-        : "none",
+      // #1140: the generated env chunk samples exactly the texture it was
+      // selected for. The prefiltered cube wins when present (the flag-off
+      // shader mixes to the cube whenever it is enabled); otherwise the 2D
+      // `environmentMapTexture`. Procedural-only → no sampler at all.
+      env?.environmentCubeMapTexture?.texture?.dimension === "cube"
+        ? "pmrem-cube"
+        : env?.environmentMapTexture?.texture !== undefined
+          ? "equirect"
+          : "none",
     fog: fogMode
   };
 }
@@ -1172,11 +1181,14 @@ function applyEnvironmentLightingUniforms(
 }
 
 /**
- * #1140: generated-program environment map (`indirect_default` chunk,
- * ENVMAP_TYPE_EQUIRECT). The legacy binder above only fills the frozen
- * library's `u_environmentMapTexture*` names, so a generated program's
- * `u_environmentMap` used to stay unbound (sampling whatever texture unit 0
- * held) with `u_environmentMapIntensity` unset.
+ * #1140: generated-program environment map (`indirect_default` chunk). The
+ * legacy binder above only fills the frozen library's `u_environmentMapTexture*`
+ * names, so a generated program's sampler used to stay unbound (sampling
+ * whatever its texture unit held). Binds whichever sampler the program
+ * declares: `u_environmentCubeMap` (ENVMAP_TYPE_CUBE_UV — the prefiltered
+ * cube, honouring the per-item probe cube) or `u_environmentMap`
+ * (ENVMAP_TYPE_EQUIRECT — the 2D map), plus the shared intensity / rotation /
+ * mip range / encoding uniforms.
  */
 export function applyGeneratedEnvironmentMapUniforms(
   environment: EnvironmentLightingOptions | undefined,
@@ -1184,19 +1196,22 @@ export function applyGeneratedEnvironmentMapUniforms(
   shader: RenderShaderProgram,
   uniforms: Map<string, UniformValue>
 ): void {
-  if (!shader.reflection.uniforms.has("u_environmentMap")) return;
-  const binding = environment?.environmentMapTexture;
-  if (!environment || !binding?.texture) {
-    // forwardPassFeatureAxes never selects equirect without a 2D map; a stale
-    // program is drawn with no environment contribution rather than garbage.
+  const cube = shader.reflection.uniforms.has("u_environmentCubeMap");
+  if (!cube && !shader.reflection.uniforms.has("u_environmentMap")) return;
+  const env = environment ? withItemEnvironmentCube(environment, item) : undefined;
+  const binding = cube ? env?.environmentCubeMapTexture : env?.environmentMapTexture;
+  if (!env || !binding?.texture) {
+    // forwardPassFeatureAxes never selects a sampler whose texture is absent;
+    // a stale program draws with no environment contribution, never garbage.
     uniforms.set("u_environmentMapIntensity", 0);
     return;
   }
-  validateEnvironmentTextureBinding("Environment map texture", binding, "2d", item);
-  const intensity = environment.environmentMapIntensity ?? 1;
-  const rotation = environment.environmentMapRotation ?? 0;
-  const mipCount = environment.environmentMapMipCount ?? 1;
-  const encoding = environment.environmentMapEncoding ?? "srgb";
+  const dimension = cube ? "cube" : "2d";
+  validateEnvironmentTextureBinding(cube ? "Environment cube map texture" : "Environment map texture", binding, dimension, item);
+  const intensity = env.environmentMapIntensity ?? 1;
+  const rotation = env.environmentMapRotation ?? 0;
+  const mipCount = env.environmentMapMipCount ?? 1;
+  const encoding = env.environmentMapEncoding ?? "srgb";
   if (!Number.isFinite(intensity) || intensity < 0 || !Number.isFinite(rotation) || !Number.isInteger(mipCount) || mipCount < 1) {
     throw new RenderDeviceError("Sampled environment map options are invalid", "ENVIRONMENT_LIGHTING_CONTRACT", {
       label: item.label,
@@ -1205,14 +1220,15 @@ export function applyGeneratedEnvironmentMapUniforms(
       mipCount
     });
   }
-  uniforms.set("u_environmentMap", new TextureBinding({
-    name: "u_environmentMap",
+  const name = cube ? "u_environmentCubeMap" : "u_environmentMap";
+  uniforms.set(name, new TextureBinding({
+    name,
     texture: binding.texture,
     sampler: binding.sampler,
     required: true,
     ready: binding.ready,
     expectedColorSpace: binding.expectedColorSpace,
-    expectedDimension: "2d"
+    expectedDimension: dimension
   }));
   uniforms.set("u_environmentMapIntensity", intensity);
   uniforms.set("u_environmentMapRotation", rotation);

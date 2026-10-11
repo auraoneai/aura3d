@@ -48,7 +48,7 @@ export const prd04ModelAssets: Readonly<Record<Prd04ModelAssetId, Prd04AssetEntr
     id: "textureTransformTest",
     repoPath: "fixtures/asset-corpus/texture-transform-test.glb",
     url: `${base}texture-transform-test.glb`,
-    sha256: "sha256-e2f930d2ec20d5b89e7d5e93aae010c7d3cae117fb09ea57494b253fe4d2c3ae",
+    sha256: "sha256-05e03a4952b41fa0496efc484060d5bdd8c666932372b93d2a0e7f0c4ca119fb", // JSON chunk re-padded with 0x20 (was NUL; invalid per glTF 2.0 §4.4.3.1)
     lfs: true,
     worldSize: [3.2, 2.191, 0.01],
     gltfExtensions: ["KHR_texture_transform"],

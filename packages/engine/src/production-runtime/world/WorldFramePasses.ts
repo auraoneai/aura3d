@@ -6,14 +6,14 @@
  * (SceneCopyFallback, Phase 4), `transparent` (water, Phase 4). `opaque` and
  * `output` stay reserved to PRD 01.
  *
- * Draw path: Path G iff `programCacheSlot.provided && A3D_QR_CORE === "v2"`,
- * else Path S (self-linked programs with `a3d_prd10_world_light_fallback`).
- * Day 0: `collect` records the path on the blackboard; `passes` contributes
- * nothing until Phase 2.
+ * Draw path: always Path S (self-linked programs with
+ * `a3d_prd10_world_light_fallback`) until a Path G item emitter exists — see
+ * `worldDrawPath`.
  */
 import { registerFrameContributor } from "@aura3d/rendering/contracts";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import { programCacheSlot } from "@aura3d/rendering/contracts";
+import { optInWorldFeatures, publishWorldFeatureState } from "./WorldFeatureState.js";
 import { noteWorldPhase, terrainAfterOpaquePass, terrainBackgroundPass } from "./TerrainRuntime.js";
 import { allWaterStates, waterAfterOpaquePasses, waterBackgroundPasses, waterTransparentPass, WORLD_BACKGROUND_PHASE_KEY } from "./WaterRuntime.js";
 import { terrainRecordIds } from "../../agent-api/world/terrain.js";
@@ -32,8 +32,17 @@ export const tierForSettings = (s: AuraQualityTierSettings): AuraQualityTier => 
   return "high";
 };
 
-export function worldDrawPath(flags: QrFlags): "S" | "G" {
-  return programCacheSlot.provided && flags.values["A3D_QR_CORE"] === "v2" ? "G" : "S";
+/**
+ * World draw path. Path G (world draws as generated-program RenderItems) has
+ * no emitter yet — nothing reads "G" — so returning it under
+ * `A3D_QR_CORE=v2` made every terrain, water and grass draw vanish whenever
+ * `core` was on (e.g. the `$ALL` arm). The Path S passes are correct on both
+ * the legacy and the C-23 HDR output paths (#1111), so world always draws
+ * through them until a Path G emitter lands; diagnostics keep listing the
+ * Path G slots as pending.
+ */
+export function worldDrawPath(_flags: QrFlags): "S" | "G" {
+  return "S";
 }
 
 export function registerWorldFramePasses(): () => void {
@@ -55,7 +64,9 @@ export function registerWorldFramePasses(): () => void {
           advanceTimeOfDay(timeOfDayRecords, ctx.timeSeconds, tierForSettings(ctx.tier))
         );
       }
-      return items;
+      // #1143 follow-up: generated-path wind/caustics get this frame's state,
+      // and world-owned items opt in through their label prefix.
+      return optInWorldFeatures(items, publishWorldFeatureState(ctx));
     },
     passes(phase, ctx) {
       noteWorldPhase(`${phase}:${worldDrawPath(ctx.flags)}`);

@@ -33,6 +33,7 @@ import { wirePatrolSync } from "./sync";
 import { wirePatrolHud } from "./hud";
 import { wirePatrolUpdate } from "./update";
 import { applyPatrolScenario } from "./scenarios";
+import { assets } from "../../../../src/aura-assets";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_PATROL_WING" as const;
 
@@ -97,17 +98,17 @@ const game = createGame({
   },
   sound: {
     cues: {
-      "engine-loop": { asset: "patrolWingEngineLoopSfx" },
-      "ring-chime": { asset: "patrolWingRingChimeSfx" },
-      "cannon-fire": { asset: "patrolWingCannonFireSfx" },
-      "drone-hit": { asset: "patrolWingDroneHitSfx" },
-      "drone-down": { asset: "patrolWingDroneDownSfx" },
-      "hull-alarm": { asset: "patrolWingHullAlarmSfx" },
-      "shot-down": { asset: "patrolWingShotDownSfx" },
-      "crash-thud": { asset: "patrolWingCrashThudSfx" },
-      touchdown: { asset: "patrolWingTouchdownSfx" },
-      "patrol-clear": { asset: "patrolWingPatrolClearSfx" },
-      "ambient-wind": { asset: "patrolWingAmbientWindSfx" }
+      "engine-loop": { asset: assets.patrolWingEngineLoopSfx },
+      "ring-chime": { asset: assets.patrolWingRingChimeSfx },
+      "cannon-fire": { asset: assets.patrolWingCannonFireSfx },
+      "drone-hit": { asset: assets.patrolWingDroneHitSfx },
+      "drone-down": { asset: assets.patrolWingDroneDownSfx },
+      "hull-alarm": { asset: assets.patrolWingHullAlarmSfx },
+      "shot-down": { asset: assets.patrolWingShotDownSfx },
+      "crash-thud": { asset: assets.patrolWingCrashThudSfx },
+      touchdown: { asset: assets.patrolWingTouchdownSfx },
+      "patrol-clear": { asset: assets.patrolWingPatrolClearSfx },
+      "ambient-wind": { asset: assets.patrolWingAmbientWindSfx }
     }
   },
   juice: {
@@ -117,11 +118,11 @@ const game = createGame({
     touchdown: { hitStopMs: 40, trauma: 0.1 }
   },
   qualityRebuild: {
-    // FLAG-1: arm the engine features this route uses — `game` selects the
-    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
-    // art/direction.ts sections. `route_patrol_wing` uses the engine-parseable
-    // underscore form (URL/dispatch form is `route-patrol-wing`).
-    flags: ["route_patrol_wing", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+    // T0-29 (#1232): only what the route itself needs — its route token and
+    // `game` (the real C-24 shell: beacon/evidence/HUD/touch). Engine lane
+    // flags come from URL/env/defaults like every other route, so `none`
+    // and `-<flag>` arms actually turn them off.
+    flags: ["route_patrol_wing", "game"]
   }
 });
 

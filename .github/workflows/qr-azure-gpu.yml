@@ -181,6 +181,9 @@ jobs:
 
       - name: Run suite
         id: suite
+        # A hung capture must not eat the job: the step dies here and the
+        # always() steps below still upload whatever was written so far.
+        timeout-minutes: 140
         run: |
           set -euo pipefail
           case "$SUITE" in
@@ -191,7 +194,7 @@ jobs:
               bash benchmarks/quality-rebuild/ci.sh ;;
             promote)
               test -n "$PROMOTE_FLAG" || { echo "::error::suite=promote needs promote_flag"; exit 1; }
-              [[ "$PROMOTE_FLAG" =~ ^[a-z0-9_.]+$ ]] || { echo "::error::invalid promote_flag '$PROMOTE_FLAG'"; exit 1; }
+              [[ "$PROMOTE_FLAG" =~ ^[a-z0-9][a-z0-9_.-]*$ ]] || { echo "::error::invalid promote_flag '$PROMOTE_FLAG'"; exit 1; }
               # Both engines: the three.js frame is the shared target both arms are scored against.
               export QR_BENCH_ENGINES="aura3d,three" QR_BENCH_FLAG_SETS="none;$PROMOTE_FLAG"
               bash benchmarks/quality-rebuild/ci.sh ;;
@@ -207,8 +210,24 @@ jobs:
             *) echo "::error::unknown suite '$SUITE'"; exit 1 ;;
           esac
 
+      # Checkpoint: partial results survive a timeout or a dead runner. Both
+      # harnesses rewrite their report.json after every scene / game, so this
+      # snapshot is complete up to the last finished item.
+      - name: Checkpoint upload (partial results)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qr-gpu-checkpoint-${{ inputs.suite || 'flags-bisect' }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            benchmarks/quality-rebuild/out/**/report.json
+            benchmarks/quality-rebuild/out/renderer.txt
+            tools/quality-rebuild-capture/out/report.json
+            tools/quality-rebuild-capture/.build/build-report.json
+          retention-days: 14
+          if-no-files-found: warn
+
       - name: Sourcemapped crash table (T0-29)
-        if: ${{ !cancelled() && inputs.sourcemap && (inputs.suite || 'flags-bisect') == 'games' }}
+        if: ${{ always() && inputs.sourcemap && (inputs.suite || 'flags-bisect') == 'games' }}
         run: |
           set -euo pipefail
           test -f tools/quality-rebuild-capture/out/report.json || { echo "::error::no capture report to map"; exit 1; }
@@ -216,13 +235,13 @@ jobs:
             tools/quality-rebuild-capture/.build | tee tools/quality-rebuild-capture/out/crash-table.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Setup Python (promotion score)
-        if: ${{ !cancelled() && inputs.suite == 'promote' }}
+        if: ${{ always() && inputs.suite == 'promote' }}
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
       - name: Promotion score (owner rule; flag-on vs flags-off against three.js)
-        if: ${{ !cancelled() && inputs.suite == 'promote' }}
+        if: ${{ always() && inputs.suite == 'promote' }}
         run: |
           set -euo pipefail
           pip install -r tools/quality-gate/metrics/requirements.lock
@@ -233,7 +252,7 @@ jobs:
             --json "$GITHUB_WORKSPACE/$QR_BENCH_OUT/promote-$PROMOTE_FLAG.json" | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: allflags-smoke evaluation (§2.5)
-        if: ${{ !cancelled() && inputs.allflags_eval }}
+        if: ${{ always() && inputs.allflags_eval }}
         run: |
           set -euo pipefail
           test -f "$QR_BENCH_OUT/bisect-summary.json" || { echo "::error::no bisect-summary.json was written"; exit 1; }

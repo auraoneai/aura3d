@@ -22,7 +22,7 @@ import {
 } from "../../../../packages/rendering/src/environment/EnvironmentCache";
 
 const LIGHTING_ON = resolveQrFlags({ options: { A3D_QR_LIGHTING: true } });
-const LIGHTING_OFF = resolveQrFlags({});
+const LIGHTING_OFF = resolveQrFlags({ options: ["none"] });
 
 describe("C-09 Prd02EnvironmentProbeFactory", () => {
   it("slot.get resolves the real factory under the flag and the pending stub without it", () => {
@@ -193,11 +193,12 @@ describe("EnvironmentCache", () => {
     expect(probe.source).toBe("neutral");
     expect(probe.faceSize).toBe(256);
     expect(probe.mipCount).toBe(1); // single constant level — the GGX chain yields 5
-    // Floor carries the baked room-neutral SH9 verbatim → diffuse parity before/after upgrade.
+    // Floor carries the baked room-neutral SH9 verbatim → diffuse parity before/after upgrade
+    // (point-lit r185 room, re-baked for #1141 / 02-S2).
     expect(probe.sh9).toHaveLength(27);
-    expect(probe.sh9[0]).toBeCloseTo(1.8945446, 6);
-    expect(probe.sh9[1]).toBeCloseTo(1.8945446, 6);
-    expect(probe.sh9[2]).toBeCloseTo(1.8945446, 6);
-    expect(probe.sh9[3]).toBeCloseTo(-1.4085772, 6);
+    expect(probe.sh9[0]).toBeCloseTo(3.7560017, 6);
+    expect(probe.sh9[1]).toBeCloseTo(3.7560017, 6);
+    expect(probe.sh9[2]).toBeCloseTo(3.7560017, 6);
+    expect(probe.sh9[3]).toBeCloseTo(-1.7286245, 6);
   });
 });

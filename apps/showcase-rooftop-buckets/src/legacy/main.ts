@@ -740,7 +740,7 @@ const gameApp = createGameApp("#canvas-host", {
   // asset probes.  The game runtime remains the gameplay owner, while the
   // renderer setting makes the route's typed athletes/court use the audited
   // production backend instead of an implicit profile.
-  renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+  renderer: { qualityProfile: "production" },
   physics: {
     seed: 20260907,
     continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }

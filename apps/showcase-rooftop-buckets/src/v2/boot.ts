@@ -23,6 +23,7 @@ import { publishRooftopEvidence } from "./evidence";
 import { applyRooftopScenario } from "./scenarios";
 import { createRooftopIo, wireRooftopInput } from "./input";
 import { createRooftopActors } from "./actors";
+import { assets } from "../../../../src/aura-assets";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_ROOFTOP_BUCKETS" as const;
 
@@ -93,16 +94,16 @@ const game = createGame({
   },
   sound: {
     cues: {
-      "charge-tick": { asset: "rooftopBucketsChargeTickSfx" },
-      "rim-clank": { asset: "rooftopBucketsRimClankSfx" },
-      "board-thud": { asset: "rooftopBucketsBoardThudSfx" },
-      "swish": { asset: "rooftopBucketsSwishSfx" },
-      "brick-miss": { asset: "rooftopBucketsBrickMissSfx" },
-      "fire-ignite": { asset: "rooftopBucketsFireIgniteSfx" },
-      "gold-ball": { asset: "rooftopBucketsGoldBallSfx" },
-      "heat-advance": { asset: "rooftopBucketsHeatAdvanceSfx" },
-      "buzzer-fail": { asset: "rooftopBucketsBuzzerFailSfx" },
-      "ambient": { asset: "rooftopBucketsAmbientRooftopSfx" }
+      "charge-tick": { asset: assets.rooftopBucketsChargeTickSfx },
+      "rim-clank": { asset: assets.rooftopBucketsRimClankSfx },
+      "board-thud": { asset: assets.rooftopBucketsBoardThudSfx },
+      "swish": { asset: assets.rooftopBucketsSwishSfx },
+      "brick-miss": { asset: assets.rooftopBucketsBrickMissSfx },
+      "fire-ignite": { asset: assets.rooftopBucketsFireIgniteSfx },
+      "gold-ball": { asset: assets.rooftopBucketsGoldBallSfx },
+      "heat-advance": { asset: assets.rooftopBucketsHeatAdvanceSfx },
+      "buzzer-fail": { asset: assets.rooftopBucketsBuzzerFailSfx },
+      "ambient": { asset: assets.rooftopBucketsAmbientRooftopSfx }
     }
   },
   juice: {
@@ -111,11 +112,11 @@ const game = createGame({
     "buzzer-fail": { trauma: 0.2, hitStopMs: 50 }
   },
   qualityRebuild: {
-    // FLAG-1: arm the engine features this route uses — `game` selects the
-    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
-    // art/direction.ts sections. `route_rooftop_buckets` uses the engine-parseable
-    // underscore form (URL/dispatch form is `route-rooftop-buckets`).
-    flags: ["route_rooftop_buckets", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+    // T0-29 (#1232): only what the route itself needs — its route token and
+    // `game` (the real C-24 shell: beacon/evidence/HUD/touch). Engine lane
+    // flags come from URL/env/defaults like every other route, so `none`
+    // and `-<flag>` arms actually turn them off.
+    flags: ["route_rooftop_buckets", "game"]
   }
 });
 

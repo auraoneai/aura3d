@@ -122,7 +122,8 @@ export async function runRenderTargetTools(stage: HTMLElement): Promise<RenderTa
     // Sample layer 3 of the array through a sampler2DArray program and present it.
     const sample = createFullscreenDraw(
       device,
-      `uniform sampler2DArray u_layers;
+      `precision mediump sampler2DArray; // GLSL ES 3.00 has no default precision for sampler2DArray (#621)
+uniform sampler2DArray u_layers;
 out vec4 outColor;
 void main() {
   outColor = texture(u_layers, vec3(gl_FragCoord.xy / 8.0, 3.0));

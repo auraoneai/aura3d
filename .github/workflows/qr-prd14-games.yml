@@ -28,6 +28,13 @@ on:
         description: "QRC_GAMES override (comma-separated app dirs)"
         required: false
         default: ""
+      runner:
+        # 14-S1..S9 on the GPU pool (program-lead ruling): same labels as
+        # qr-azure-gpu.yml (#956). Frames compare within one runner class only.
+        description: "Capture runner: macos-14 (default) | azure-gpu (L4) | track0 (L4)"
+        type: choice
+        options: [macos-14, azure-gpu, track0]
+        default: macos-14
 
 concurrency:
   group: qr-prd14-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
@@ -151,8 +158,10 @@ jobs:
       - run: node scripts/check-art-direction.mjs --routes "${{ needs.routes.outputs.dirs }}"
 
   capture:
-    name: Capture changed games + runtime audit (macos-14)
-    runs-on: macos-14
+    name: Capture changed games + runtime audit (${{ inputs.runner || 'macos-14' }})
+    # Fork PR heads never reach a self-hosted runner (non-dispatch events and
+    # unset input stay on macos-14).
+    runs-on: ${{ (inputs.runner || 'macos-14') == 'azure-gpu' && fromJSON('["self-hosted","azure-gpu","gpu-l4"]') || ((inputs.runner || 'macos-14') == 'track0' && fromJSON('["self-hosted","track0","gpu-l4"]')) || 'macos-14' }}
     # 14-S1..S9: capture + every lane chromium spec for the selected routes
     # (18 routes on the nightly run, each with a 60 s S9 window).
     timeout-minutes: 180
@@ -176,6 +185,18 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install chromium
+      - name: Chromium GPU flags for this runner
+        env:
+          RUNNER_KIND: ${{ inputs.runner || 'macos-14' }}
+          QR_AZURE_GPU_CHROME_ARGS: ${{ vars.QR_AZURE_GPU_CHROME_ARGS }}
+        run: |
+          set -euo pipefail
+          case "$RUNNER_KIND" in
+            macos-14) args="--use-angle=metal --enable-gpu --ignore-gpu-blocklist" ;;
+            azure-gpu|track0) args="${QR_AZURE_GPU_CHROME_ARGS:---headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist}" ;;
+            *) echo "::error::unknown runner '$RUNNER_KIND'"; exit 1 ;;
+          esac
+          { echo "QRC_GPU_ARGS=$args"; echo "QR_CHROMIUM_ARGS=$args"; } >> "$GITHUB_ENV"
       - name: Fail when route detection produced no dirs on a code PR
         if: needs.routes.outputs.dirs == ''
         run: |
@@ -218,7 +239,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: prd14-evidence-${{ github.sha }}
+          name: prd14-evidence-${{ inputs.runner || 'macos-14' }}-${{ github.sha }}
           path: |
             tools/quality-rebuild-capture/out/
             tests/qr/prd14/reports/

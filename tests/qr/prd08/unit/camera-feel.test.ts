@@ -31,7 +31,7 @@ function ctx(flagsOn: boolean): FrameContributorContext {
     width: 64, height: 64, frameIndex: 0, timeSeconds: 0,
     camera: null, source: {} as never, items: [],
     tier: {} as never,
-    flags: resolveQrFlags({ options: flagsOn ? ["camera"] : [] }),
+    flags: resolveQrFlags({ options: flagsOn ? ["camera"] : ["-camera"] }),
     sceneDepth: { texture: null, linearize: { near: 0.1, far: 100, orthographic: false }, available: false },
     blackboard: new Map()
   } as FrameContributorContext;

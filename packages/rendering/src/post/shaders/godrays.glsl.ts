@@ -4,7 +4,7 @@
  * Radial light-shaft march replacing the CPU `volumetricLightPixels` path
  * (which cost ~0.5 fps in Deep Recovery):
  *   occlusion src  = (linZ ≥ far·0.999 || luma(hdr) > 4.0) ? hdr.rgb : 0
- *                    + light-disk mask smoothstep(r1, r0, |uv − lightUv|)
+ *                    × light-disk mask smoothstep(r1, r0, |uv − lightUv|)
  *   march          = samples taps from uv toward lightUv, weight decay^i·weight
  *   output         = accum · color · intensity · offScreenFade
  *   offScreenFade  = saturate(1 − (max(|lightUv−0.5|) − 0.5)·4) · step(0, lightClip.w)
@@ -57,8 +57,11 @@ void main() {
     float luma = dot(hdr.rgb, vec3(0.2126, 0.7152, 0.0722));
     // Emitters: sky pixels (the "gap" through occluders) or HDR highlights.
     vec3 src = (sky || luma > 4.0) ? hdr.rgb : vec3(0.0);
-    // The light disk itself is an emitter regardless of coverage.
-    src += vec3(smoothstep(u_diskOuter, u_diskInner, length(sampleUv - u_lightUv)));
+    // PRD-03 §8.5: the light-disk mask gates the occlusion source, so only
+    // unoccluded sky/highlight texels near the light emit. Adding the disk
+    // "regardless of coverage" let occluders in front of the sun emit too
+    // (occluded pillar mask +78% on GPU run 38147488474).
+    src *= smoothstep(u_diskOuter, u_diskInner, length(sampleUv - u_lightUv));
     accum += marchWeight * src;
     marchWeight *= u_decay;
   }

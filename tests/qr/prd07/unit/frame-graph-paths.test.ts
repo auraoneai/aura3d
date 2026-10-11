@@ -14,6 +14,7 @@
 import { describe, expect, it } from "vitest";
 import { RenderGraph, ENVIRONMENT_BACKGROUND_COLOR_RESOURCE, type RenderPass } from "../../../../packages/rendering/src";
 import { MockRenderDevice } from "../../../../packages/rendering/src/RenderDevice";
+import { Texture } from "../../../../packages/rendering/src/Texture";
 import "../../../../packages/rendering/src/lanes/prd07";
 import { resolveQrFlags } from "../../../../packages/engine/src/contracts/flags";
 import { QUALITY_TIERS } from "../../../../packages/rendering/src/contracts";
@@ -26,12 +27,15 @@ const VFX = ["vfx", "vfx.sky", "vfx.fog", "vfx.volumetric", "vfx.decals"];
 const writer = (name: string, reads: readonly string[], writes: readonly string[]): RenderPass => ({ name, reads, writes, execute() {} });
 const flagsFor = (core: boolean) => resolveQrFlags({ options: core ? [...VFX, "core"] : VFX, env: {} });
 const device = new MockRenderDevice();
+const depthCopy = new Texture({ label: "depth-copy", width: 4, height: 4, format: "rgba8", data: new Uint8Array(64) });
 const identity = () => new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
 
 function ctx(v: Variant): FrameContributorContext {
   const blackboard = new Map<string, unknown>();
   // Lane 01 publishes the depth copy only on the v2 path (setSceneDepthCopy).
-  if (v.core) blackboard.set(FRAME_RESOURCES.sceneDepthCopy, { width: 1280, height: 720 });
+  // #1056: resolveSceneDepth accepts only a sampleable Texture (or a target
+  // with a depthTexture), so publish a real one rather than a size stub.
+  if (v.core) blackboard.set(FRAME_RESOURCES.sceneDepthCopy, depthCopy);
   return {
     device, width: 1280, height: 720, frameIndex: 0, timeSeconds: 0,
     camera: { position: [0, 2, 6], viewMatrix: identity(), projectionMatrix: identity(), viewProjectionMatrix: identity(), near: 0.1, far: 200 },

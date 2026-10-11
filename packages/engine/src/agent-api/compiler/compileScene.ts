@@ -39,7 +39,7 @@ import { qrPrimitiveGeometryOptions } from "./geometry.js";
 import { createProductionRuntimeRendererInput } from "./renderInput.js";
 import type { CollectedLight, EnvironmentLightingOptions, ProductionRendererInput, RenderDevice, RenderItem, RenderSource } from "@aura3d/rendering";
 import type { EnvironmentProbe } from "@aura3d/rendering/contracts";
-import { environmentProbeFactorySlot } from "@aura3d/rendering/contracts";
+import { environmentProbeFactorySlot, isEnvironmentProbeFactoryPending } from "@aura3d/rendering/contracts";
 import { EnvironmentCache, defaultProbeLoader } from "../../../../rendering/src/environment/EnvironmentCache.js";
 import { bindPrd02EnvironmentProbe } from "./environment.js";
 import { resolveEnvironment } from "../../contracts/environment.js";
@@ -465,20 +465,30 @@ function updateCompiledSceneReal(
       const tier = ctx.quality.tier;
       const resolution = resolveEnvironment(liveSnapshot, tier, ctx.flags);
       if (resolution.kind !== "legacy") {
+        // The loader resolves the C-09 factory per load (getter), so a
+        // provider registered after this cache exists is still used.
         impl.environmentCache ??= new EnvironmentCache(
           device,
           environmentProbeFactorySlot.get(ctx.flags)(device),
-          defaultProbeLoader(environmentProbeFactorySlot.get(ctx.flags)(device))
+          defaultProbeLoader(() => environmentProbeFactorySlot.get(ctx.flags)(device))
         );
         const requestKey = JSON.stringify(resolution.probe);
-        if (impl.environmentProbeRequest !== requestKey) {
+        // `pending:<key>` = the last bind hit the C-09 stub; rebind once the
+        // provider is real (no per-frame retry while it stays pending).
+        const awaitingProvider = impl.environmentProbeRequest === `pending:${requestKey}`
+          && isEnvironmentProbeFactoryPending(environmentProbeFactorySlot.get(ctx.flags)(device));
+        if (impl.environmentProbeRequest !== requestKey && !awaitingProvider) {
           impl.environmentProbeRequest = requestKey;
           const binding = bindPrd02EnvironmentProbe(resolution, {
             device,
             tier,
             flags: ctx.flags,
             cache: impl.environmentCache,
-            onUpgrade: (probe) => { impl.environmentProbe = probe; }
+            onUpgrade: (probe) => { impl.environmentProbe = probe; },
+            // Probe still pending: keep the floor and bind again next update.
+            onUpgradeFailed: (_error, retryable) => {
+              if (retryable && impl.environmentProbeRequest === requestKey) impl.environmentProbeRequest = `pending:${requestKey}`;
+            }
           });
           impl.environmentProbe = binding.probe;
           if (binding.pending) {

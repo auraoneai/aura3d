@@ -10,6 +10,7 @@ import type { RendererHost } from "./renderer/RendererHost";
 import { createRenderer } from "./renderer/RendererFactory";
 import { collectItemBounds, isIterable, renderableWorldBounds, sceneFromSource, toMat4 } from "./renderer/RenderShared";
 import { RendererShadowOrchestrator, collectForwardShadowMap, collectRendererShadowOptions } from "./renderer/ShadowOrchestration";
+import { shadowFrameCamera, type Prd02BridgeFrameCamera } from "./shadows/Prd02ShadowBridge";
 import { type RenderSource } from "./contracts/renderSource";
 import { Bounds3 as SceneBounds3, Camera, DirectionalLight, Light, PerspectiveCamera, PointLight, Scene, SpotLight, identityMat4, invertMat4, multiplyMat4, orthographicMat4, perspectiveMat4, transformPoint, toMathMat4, type Mat4, type Vec3, type SceneNode } from "@aura3d/scene";
 import { Frustum, type Ray } from "@aura3d/math";
@@ -58,11 +59,18 @@ import { createStaticMeshConsolidationCache, type MeshConsolidationInput, type M
  * under `A3D_QR_CORE_OUTPUT`. Flag-off: recorded but never applied (legacy
  * present path is untouched).
  */
+/** #1140: OutputPass dithering default (three.js parity); `output.dithering` overrides. */
+export const DEFAULT_OUTPUT_DITHERING = false;
+
 export interface RendererOutputOptions {
   readonly toneMapping?: AuraToneMappingOperatorLike;
   /** Exposure multiplier (default 1); combined with blackboard `"prd03.exposure"` upstream. */
   readonly exposure?: number;
-  /** Triangular-dither the 8-bit write (default true). */
+  /**
+   * Triangular-dither the 8-bit write. Default false (#1140): three.js does not
+   * dither by default, and the dither noise alone regressed LPIPS vs three on
+   * every promotion scene (L4 run 38156934612). Opt in for banding-prone gradients.
+   */
   readonly dithering?: boolean;
   /** R8 coverage attachment + unmapped-background mix (§6.5; default false). */
   readonly backgroundCoverage?: boolean;
@@ -835,7 +843,8 @@ export class Renderer {
           lights,
           ownedTargets,
           ownedShadowPasses,
-          camera: resolvedCamera?.camera
+          camera: resolvedCamera?.camera,
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition)
         })) ?? explicitShadowMap ?? this.executeRendererShadowMap({
           shadowOptions,
           source,
@@ -843,7 +852,8 @@ export class Renderer {
           lights,
           ownedTargets,
           ownedShadowPasses,
-          camera: resolvedCamera?.camera
+          camera: resolvedCamera?.camera,
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition)
         });
       frameHooks.addPasses(this.graph, "shadows", items);
       this.lastShadowEvidence = rendererShadowMap ? {
@@ -1160,7 +1170,8 @@ export class Renderer {
           lights,
           ownedTargets,
           ownedShadowPasses,
-          camera: resolvedCamera?.camera
+          camera: resolvedCamera?.camera,
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition)
         })) ?? explicitShadowMap ?? this.executeRendererShadowMap({
           shadowOptions,
           source,
@@ -1168,7 +1179,8 @@ export class Renderer {
           lights,
           ownedTargets,
           ownedShadowPasses,
-          camera: resolvedCamera?.camera
+          camera: resolvedCamera?.camera,
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition)
         });
       frameHooks.addPasses(this.graph, "shadows", items);
       this.lastShadowEvidence = rendererShadowMap ? {
@@ -1559,14 +1571,14 @@ export class Renderer {
     rendererOutputPass(this.device).execute(hdrTarget, coverage ? hdrTarget : null, {
       toneMapping: o.toneMapping ?? DEFAULT_TONE_MAPPING,
       exposure: appliedExposure,
-      dithering: o.dithering ?? true,
+      dithering: o.dithering ?? DEFAULT_OUTPUT_DITHERING,
       backgroundCoverage: coverage,
       overlay: o.overlay
     }, explicitRenderTarget ?? "canvas");
     this.lastAppliedOutput = {
       toneMapping: o.toneMapping ?? DEFAULT_TONE_MAPPING,
       exposure: { applied: appliedExposure, source: upstream !== undefined ? "grade" : "output" },
-      dithering: o.dithering ?? true,
+      dithering: o.dithering ?? DEFAULT_OUTPUT_DITHERING,
       targetFormat,
       degraded: targetFormat === "rgba8" ? "rgba8-no-float-target" : this.hdrMsaaMrtDegraded ? "hdr-msaa-mrt-unsupported" : undefined
     };
@@ -1616,6 +1628,7 @@ export class Renderer {
     readonly ownedTargets: RenderTarget[];
     readonly ownedShadowPasses: Array<{ dispose(): void }>;
     readonly camera?: Camera;
+    readonly frameCamera?: Prd02BridgeFrameCamera;
   }): ForwardShadowMapOptions | undefined {
     return this.host.shadows.executeRendererShadowMap(options);
   }

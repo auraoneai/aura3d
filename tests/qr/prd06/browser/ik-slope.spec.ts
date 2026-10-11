@@ -20,7 +20,7 @@ interface FootIkReport {
   groundedFeet?: number;
   targetError?: number | null;
   maxContactError: number | null;
-  feet?: readonly { side: "left" | "right"; worldPosition: readonly [number, number, number]; contactError: number; locked: boolean }[];
+  feet?: readonly { side: "left" | "right"; worldPosition: readonly [number, number, number]; contactError: number; signedError?: number; locked: boolean }[];
 }
 
 interface ReadyLike {
@@ -32,6 +32,19 @@ interface ReadyLike {
 }
 
 const MAX_CONTACT_ERROR = 0.05;
+/** 06-S7 (PRD-06 §17.0 / T3.9): penetration ≤ 1 cm, float ≤ 2 cm on the 20° ramp and 18 cm stairs. */
+const MAX_PENETRATION_M = 0.01;
+const MAX_FLOAT_M = 0.02;
+
+/** Engine under test only: the three reference adapter keeps the contact-error parity check. */
+function expectPlantTolerance(payload: ReadyLike | undefined, engine: string): void {
+  for (const foot of payload!.extra!.footIk!.feet ?? []) {
+    expect(typeof foot.signedError, `${engine} foot ${foot.side} signedError missing`).toBe("number");
+    const signed = foot.signedError!;
+    expect(Math.max(0, -signed), `${engine} foot ${foot.side} penetration ${(-signed * 100).toFixed(2)} cm`).toBeLessThanOrEqual(MAX_PENETRATION_M);
+    expect(Math.max(0, signed), `${engine} foot ${foot.side} float ${(signed * 100).toFixed(2)} cm`).toBeLessThanOrEqual(MAX_FLOAT_M);
+  }
+}
 
 function expectFootIk(payload: ReadyLike | undefined, engine: string): void {
   expect(payload, `${engine} payload missing`).toBeTruthy();
@@ -73,6 +86,7 @@ test.describe("PRD-06 ik-slope (T3.9)", () => {
     expect(harness?.status, harness?.error ?? "harness failed").toBe("ok");
     const payload = await page.evaluate(() => window.__PRD06_IK_SLOPE__) as ReadyLike | undefined;
     expectFootIk(payload, "aura3d");
+    expectPlantTolerance(payload, "aura3d");
   });
 
   test("three adapter plants both feet via CCDIKSolver on the same terrain", async ({ page }) => {

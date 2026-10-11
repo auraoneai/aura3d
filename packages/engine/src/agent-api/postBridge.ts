@@ -530,7 +530,7 @@ export const POST_EFFECT_DEPRECATED_FIELDS: Readonly<Record<string, readonly str
 };
 
 export interface PostFieldDiagnostic {
-  readonly code: "POST_FIELD_UNSUPPORTED" | "post-field-deprecated" | "BLOOM_THRESHOLD_BELOW_HDR_WHITE" | "preset-capability-degraded" | "post-tier-disabled" | "EFFECT_PENDING_GPU_PASS";
+  readonly code: "POST_FIELD_UNSUPPORTED" | "post-field-deprecated" | "BLOOM_THRESHOLD_BELOW_HDR_WHITE" | "preset-capability-degraded" | "post-tier-disabled" | "EFFECT_PENDING_GPU_PASS" | "POST_DUPLICATE_STAGE";
   readonly effect: string;
   readonly field?: string;
   readonly message: string;
@@ -708,18 +708,27 @@ export function createRootPostPipeline(
   const ssrNode = effect("screen-space-reflections");
 
   // §6.9/§8.4 (Phase 3): ambient-occlusion and contact-occlusion both target
-  // S2 GTAO — two AO nodes are a pipeline error (`POST_DUPLICATE_STAGE`;
-  // a lane-15 `AuraRuntimeError` union entry is qr-requested). `radius` is
-  // interpreted in metres flag-on; contactOcclusion is ambientOcclusion with
-  // a 0.2 m default radius.
+  // S2 GTAO, and the graph has one AO stage. `radius` is interpreted in
+  // metres flag-on; contactOcclusion is ambientOcclusion with a 0.2 m
+  // default radius.
+  //
+  // T0-29 (#979): six legacy games author both nodes (the post-v2 codemod
+  // merges them, §APIs). Throwing here failed the production mount, so with
+  // `post` on those routes drew 0 calls. The bridge now applies the codemod's
+  // merge at runtime: the ambient-occlusion node drives S2, the extra AO
+  // node is dropped and reported as `POST_DUPLICATE_STAGE` (a diagnostic, not
+  // a mount failure).
   const aoNodes = effectNodes.filter((node): node is AuraEffectNode =>
     node.kind === "effect" && (node.effect === "ambient-occlusion" || node.effect === "contact-occlusion"));
+  const aoNode = aoNodes.find((node) => node.effect === "ambient-occlusion") ?? aoNodes[0];
   if (aoNodes.length > 1) {
-    throw new Error(
-      `POST_DUPLICATE_STAGE: two AO effect nodes (${aoNodes.map((node) => node.effect).join(" + ")}) target stage S2-gtao.`
-    );
+    diagnostics.push({
+      code: "POST_DUPLICATE_STAGE",
+      effect: "S2-gtao",
+      message: `POST_DUPLICATE_STAGE: ${aoNodes.length} AO effect nodes (${aoNodes.map((node) => node.effect).join(" + ")}) target stage S2-gtao; `
+        + `${aoNode!.effect} drives it and the rest are dropped (run the post-v2 codemod to merge contactOcclusion).`
+    });
   }
-  const aoNode = aoNodes[0];
 
   // §6.9: the god-ray light is the strongest DIRECTIONAL light in the
   // compiled RenderSource — direction TOWARD the light for the S4 project.

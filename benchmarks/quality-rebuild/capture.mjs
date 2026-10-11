@@ -129,7 +129,10 @@ async function gpuInfo(page) {
 
 async function captureOne(browser, baseUrl, scene, engine, outDir, timeoutMs, flags, run = {}) {
   // C-33 (PR 0b-3): --flags passthrough appends a3d-qr=<list>; resolveQrFlags reads it.
-  const flagsQuery = flags && flags !== "none" ? `&a3d-qr=${encodeURIComponent(flags)}` : "";
+  // `none` is sent explicitly: with default-on flags (flags.state.ts) an absent
+  // parameter means "defaults", not "flags off", so the baseline arm would
+  // silently include every promoted flag.
+  const flagsQuery = flags ? `&a3d-qr=${encodeURIComponent(flags)}` : "&a3d-qr=none";
   const dprQuery = run.dpr && run.dpr !== 1 ? `&dpr=${run.dpr}` : "";
   const variantQuery = run.variant ? `&variant=${encodeURIComponent(run.variant)}` : "";
   // Mask passes render in the same page load after READY (three side only, §9.5).

@@ -149,9 +149,11 @@ describe("C-02 every registered chunk compiles (glslangValidator, GLSL ES 3.00)"
  * never compose them, because the runtime never selects them. Runs only when A3D_GLSL_REPORT_EXCLUDED=1.
  */
 describe.runIf(process.env.A3D_GLSL_REPORT_EXCLUDED === "1")("report-only: raw validation of KNOWN_EXCLUDED features", () => {
+  // An empty list is the goal state: report it (a suite with no test fails vitest).
   if (Object.keys(KNOWN_EXCLUDED).length === 0) {
-    it("no generated-path exclusions remain", () => {
-      expect(Object.keys(KNOWN_EXCLUDED)).toEqual([]);
+    it("KNOWN_EXCLUDED is empty", () => {
+      expect(excluded.size).toBe(0);
+      console.log("[report-only] KNOWN_EXCLUDED is empty: every registered feature composes on the generator path");
     });
   }
   for (const id of Object.keys(KNOWN_EXCLUDED)) {
@@ -171,6 +173,32 @@ describe.runIf(process.env.A3D_GLSL_REPORT_EXCLUDED === "1")("report-only: raw v
         }
       }
       console.log(`[report-only] ${id} ${KNOWN_EXCLUDED[id]}: ${failures.length === 0 ? "compiles raw — candidate for removal" : `\n  ${failures.join("\n  ")}`}`);
+    });
+  }
+});
+
+/**
+ * #1140 follow-up (cube/PMREM IBL): both generated environment samplers
+ * compile with every lobe IBL call that uses `a3dSampleEnvironment`, and the
+ * cube program declares exactly the samplerCube (no stray sampler2D env).
+ */
+describe("generated environment samplers compile with every C-03 lobe IBL call", () => {
+  const LOBES = ["KHR_materials_clearcoat", "KHR_materials_sheen", "KHR_materials_iridescence", "KHR_materials_anisotropy", "KHR_materials_transmission", "KHR_materials_specular", "KHR_materials_ior", "KHR_materials_emissive_strength"];
+  for (const environment of ["equirect", "pmrem-cube"] as const) {
+    it(`${environment}: lit forward + all features + all lobes compiles`, () => {
+      const record = normalizeProgramFeatures({
+        ...base("forward", Object.fromEntries(features.map((f) => [f.id, selectedValue(f)]))),
+        environment,
+        extensions: LOBES.map((lobe) => ({ lobe, maps: [], bits: {} }))
+      } as Partial<ProgramFeatures>);
+      const failures = compileAll(`forward-env-${environment}`, record);
+      expect(failures, failures.join("\n\n")).toEqual([]);
+      const program = generateProgramImpl(record, { flags: ALL_STRICT });
+      expect(program.defines.A3D_ENV_SAMPLE).toBe(true);
+      if (environment === "pmrem-cube") {
+        expect(program.defines.ENVMAP_TYPE_CUBE_UV).toBe(true);
+        expect(program.fragment).toContain("uniform samplerCube u_environmentCubeMap;");
+      }
     });
   }
 });

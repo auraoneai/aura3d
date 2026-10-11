@@ -40,6 +40,14 @@ const probeFactoryPending: EnvironmentProbeFactory = {
   neutral() { throw new Error("ENVIRONMENT_PROBE_PENDING:neutral"); }
 };
 
+/**
+ * True for the pending stub (C-09 slot not provided yet, or A3D_QR_LIGHTING
+ * off). Consumers keep their fallback environment instead of calling it.
+ */
+export function isEnvironmentProbeFactoryPending(factory: EnvironmentProbeFactory): boolean {
+  return factory === probeFactoryPending;
+}
+
 export const environmentProbeFactorySlot: ContractSlot<(device: RenderDevice) => EnvironmentProbeFactory> =
   defineContractSlot("C-09", "prd02", "A3D_QR_LIGHTING", () => probeFactoryPending);
 

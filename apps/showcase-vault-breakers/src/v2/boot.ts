@@ -19,6 +19,7 @@ import { wireVaultFx } from "./scene/fx";
 import { createEventConsumer } from "./flow-events";
 import { publishVaultEvidence } from "./evidence";
 import { applyVaultScenario } from "./scenarios";
+import { assets } from "../../../../src/aura-assets";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_VAULT_BREAKERS" as const;
 
@@ -82,17 +83,17 @@ const game = createGame({
   },
   sound: {
     cues: {
-      "flipper-snap": { asset: "vaultFlipperSnapSfx" },
-      "bumper-hit": { asset: "vaultBumperHitSfx" },
-      "sling-pop": { asset: "vaultSlingPopSfx" },
-      "target-down": { asset: "vaultTargetDownSfx" },
-      "bank-clear": { asset: "vaultBankClearSfx" },
-      "vault-open": { asset: "vaultVaultOpenSfx" },
-      "multiball": { asset: "vaultMultiballSfx" },
-      "ball-drain": { asset: "vaultBallDrainSfx" },
-      "tilt-warn": { asset: "vaultTiltWarnSfx" },
-      "plunger-release": { asset: "vaultPlungerReleaseSfx" },
-      "ramp-roll": { asset: "vaultRampRollSfx" }
+      "flipper-snap": { asset: assets.vaultFlipperSnapSfx },
+      "bumper-hit": { asset: assets.vaultBumperHitSfx },
+      "sling-pop": { asset: assets.vaultSlingPopSfx },
+      "target-down": { asset: assets.vaultTargetDownSfx },
+      "bank-clear": { asset: assets.vaultBankClearSfx },
+      "vault-open": { asset: assets.vaultVaultOpenSfx },
+      "multiball": { asset: assets.vaultMultiballSfx },
+      "ball-drain": { asset: assets.vaultBallDrainSfx },
+      "tilt-warn": { asset: assets.vaultTiltWarnSfx },
+      "plunger-release": { asset: assets.vaultPlungerReleaseSfx },
+      "ramp-roll": { asset: assets.vaultRampRollSfx }
     }
   },
   juice: {
@@ -101,11 +102,11 @@ const game = createGame({
     "ball-drain": { hitStopMs: 40 }
   },
   qualityRebuild: {
-    // FLAG-1: arm the engine features this route uses — `game` selects the
-    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
-    // art/direction.ts sections. `route_vault_breakers` uses the engine-parseable
-    // underscore form (URL/dispatch form is `route-vault-breakers`).
-    flags: ["route_vault_breakers", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+    // T0-29 (#1232): only what the route itself needs — its route token and
+    // `game` (the real C-24 shell: beacon/evidence/HUD/touch). Engine lane
+    // flags come from URL/env/defaults like every other route, so `none`
+    // and `-<flag>` arms actually turn them off.
+    flags: ["route_vault_breakers", "game"]
   }
 });
 

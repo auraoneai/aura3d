@@ -16,6 +16,9 @@ const base = {
   owner: "prd04",
   referenceProfile: "contract",
   masks: ["object-id"],
+  // Required for `active` registry status (C-30); without it every prd04 scene was
+  // quarantined and never captured by flags-bisect / promote.
+  brokenControls: [],
   primaryRegion: "subject",
   qrFlags: ["materials"]
 } as const;

@@ -70,7 +70,12 @@ function adapterPath(engine: "aura3d" | "three", laneId: string): string | undef
   const owner = laneId.match(OWNER_PATTERN)?.[0]?.slice(0, -1);
   if (!owner) return undefined;
   const slug = laneId.slice(owner.length + 1);
-  return `../${engine}/scenes/${owner}/${slug}.ts`;
+  const slugPath = `../${engine}/scenes/${owner}/${slug}.ts`;
+  // Lanes 03/04 name adapter files by the full scene id (`prd04/prd04-iridescence.ts`).
+  // Without this fallback every such scene was quarantined `missing-adapter`, dropped
+  // from __QR_SCENES__, and `suite=promote` never rendered a lane scene (NO-EFFECT).
+  const idPath = `../${engine}/scenes/${owner}/${laneId}.ts`;
+  return !(slugPath in ADAPTER_MODULES) && idPath in ADAPTER_MODULES ? idPath : slugPath;
 }
 
 /** Module path in `main.ts`'s glob space (`./{engine}/scenes/{owner}/{slug}.ts`). */

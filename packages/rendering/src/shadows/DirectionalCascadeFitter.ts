@@ -94,6 +94,24 @@ function ndcToWorld(inv: Float32Array, x: number, y: number, z: number): [number
 
 type V3 = readonly [number, number, number];
 
+/**
+ * #1141: near/far of a perspective camera known only by its view-projection
+ * and eye (structural CameraLikes carry no near/far): distances from the eye
+ * to the unprojected NDC centres of the near and far planes.
+ */
+export function clipRangeFromViewProjection(
+  viewProjection: Float32Array | readonly number[],
+  eye: readonly [number, number, number]
+): { near: number; far: number } | null {
+  let inv: Float32Array;
+  try { inv = invertMat4(viewProjection); } catch { return null; }
+  const n = ndcToWorld(inv, 0, 0, -1);
+  const f = ndcToWorld(inv, 0, 0, 1);
+  const near = Math.hypot(n[0] - eye[0], n[1] - eye[1], n[2] - eye[2]);
+  const far = Math.hypot(f[0] - eye[0], f[1] - eye[1], f[2] - eye[2]);
+  return Number.isFinite(near) && Number.isFinite(far) && far > near && near > 0 ? { near, far } : null;
+}
+
 function lightBasis(direction: V3): { right: V3; up: V3; forward: V3 } {
   const len = Math.hypot(direction[0], direction[1], direction[2]) || 1;
   const fwd: V3 = [direction[0] / len, direction[1] / len, direction[2] / len];
@@ -330,10 +348,13 @@ export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): D
     const depth = (zHi - zLo) + depthPad * 2;
     // view already centres z on (min+max)/2 — the proj z column must NOT
     // translate again (double-centring pushed off-frustum casters past z=1).
+    // #1141: view z runs along `forward` (light travel), so depth must grow
+    // with +z. The old -2/depth flipped it: the less-equal depth pass kept the
+    // surface FARTHEST from the light and receivers behind casters tested lit.
     const proj = new Float32Array([
       1 / half, 0, 0, 0,
       0, 1 / half, 0, 0,
-      0, 0, -2 / depth, 0,
+      0, 0, 2 / depth, 0,
       0, 0, 0, 1
     ]);
     // proj*(view*p): row-major compose proj × view.

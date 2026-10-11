@@ -65,6 +65,7 @@ import { createBlockfallAudioBlock } from "./audio";
 import { createBlockfallInput, wireBlockfallTouch } from "./input";
 import { wireBlockfallSync } from "./sync";
 import { wireBlockfallFlow } from "./flow";
+import { assets } from "../../../../src/aura-assets";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_BLOCKFALL_REACTOR" as const;
 const SIM_STEP = 1 / 60;
@@ -131,16 +132,16 @@ const game = createGame({
   },
   sound: {
     cues: {
-      move: { asset: "blockfallMoveSfx" },
-      rotate: { asset: "blockfallRotateSfx" },
-      "hold-swap": { asset: "blockfallHoldSwapSfx" },
-      "hard-drop": { asset: "blockfallHardDropSlamSfx" },
-      lock: { asset: "blockfallLockThudSfx" },
-      "line-clear": { asset: "blockfallLineClearSfx" },
-      quad: { asset: "blockfallQuadFanfareSfx" },
-      "level-up": { asset: "blockfallLevelUpSfx" },
-      "game-over": { asset: "blockfallGameOverStingSfx" },
-      "ambient-hum": { asset: "blockfallReactorHumLoop" }
+      move: { asset: assets.blockfallMoveSfx },
+      rotate: { asset: assets.blockfallRotateSfx },
+      "hold-swap": { asset: assets.blockfallHoldSwapSfx },
+      "hard-drop": { asset: assets.blockfallHardDropSlamSfx },
+      lock: { asset: assets.blockfallLockThudSfx },
+      "line-clear": { asset: assets.blockfallLineClearSfx },
+      quad: { asset: assets.blockfallQuadFanfareSfx },
+      "level-up": { asset: assets.blockfallLevelUpSfx },
+      "game-over": { asset: assets.blockfallGameOverStingSfx },
+      "ambient-hum": { asset: assets.blockfallReactorHumLoop }
     }
   },
   juice: {
@@ -151,11 +152,11 @@ const game = createGame({
     "game-over": { hitStopMs: 90, trauma: 0.35 }
   },
   qualityRebuild: {
-    // FLAG-1: arm the engine features this route uses — `game` selects the
-    // real C-24 impl (beacon/evidence/HUD/touch); the rest cover the
-    // art/direction.ts sections. `route_blockfall_reactor` uses the engine-parseable
-    // underscore form (URL/dispatch form is `route-blockfall-reactor`).
-    flags: ["route_blockfall_reactor", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
+    // T0-29 (#1232): only what the route itself needs — its route token and
+    // `game` (the real C-24 shell: beacon/evidence/HUD/touch). Engine lane
+    // flags come from URL/env/defaults like every other route, so `none`
+    // and `-<flag>` arms actually turn them off.
+    flags: ["route_blockfall_reactor", "game"]
   }
 });
 

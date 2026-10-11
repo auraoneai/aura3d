@@ -166,6 +166,27 @@ function v2State(host: WebGL2DeviceHost): PostV2State {
 }
 
 /**
+ * God-ray tint as an RGB triple. The engine bridge compiles
+ * `effects.volumetricFog({ color })` to a `{ r, g, b }` object, while direct
+ * callers pass `[r, g, b]`. Indexing the object as an array gave
+ * `uniform3f(undefined, …)`; the resulting NaN tint went through the additive
+ * blend and turned the whole HDR frame black (shaft-on mean luma 0 on the GPU
+ * lane, runs 38140351314 and 38141069039). Non-finite channels fall back to
+ * the default warm tint.
+ */
+export function godRayColor(color: unknown): [number, number, number] {
+  const fallback: [number, number, number] = [1, 0.96, 0.9];
+  let rgb: unknown[] | undefined;
+  if (Array.isArray(color)) rgb = color;
+  else if (color && typeof color === "object") {
+    const o = color as { r?: unknown; g?: unknown; b?: unknown };
+    rgb = [o.r, o.g, o.b];
+  }
+  if (!rgb) return fallback;
+  return [0, 1, 2].map((i) => (typeof rgb![i] === "number" && Number.isFinite(rgb![i]) ? (rgb![i] as number) : fallback[i]!)) as [number, number, number];
+}
+
+/**
  * Inserts `#define` lines after the `#version` directive. GLSL ES 3.00
  * requires `#version 300 es` to be the first line, so prepending defines (as
  * the DoF ring count and motion-blur tile size did) made the shader a
@@ -695,8 +716,8 @@ export function runV2HdrStages(
       g.uniform1f(g.getUniformLocation(godProg, "u_far"), far);
       g.uniform2f(g.getUniformLocation(godProg, "u_lightUv"), lightUv[0], lightUv[1]);
       g.uniform1f(g.getUniformLocation(godProg, "u_lightClipW"), clip[2]!);
-      const c = god.color ?? [1, 0.96, 0.9];
-      g.uniform3f(g.getUniformLocation(godProg, "u_color"), c[0]!, c[1]!, c[2]!);
+      const c = godRayColor(god.color);
+      g.uniform3f(g.getUniformLocation(godProg, "u_color"), c[0], c[1], c[2]);
       g.uniform1f(g.getUniformLocation(godProg, "u_intensity"), god.intensity ?? 0.7);
       g.uniform1f(g.getUniformLocation(godProg, "u_decay"), god.decay ?? 0.94);
       g.uniform1f(g.getUniformLocation(godProg, "u_weight"), god.weight ?? god.intensity ?? 0.7);

@@ -12,7 +12,7 @@
 import type { QrFlagName, QrFlagValue, QrFlags } from "@aura3d/rendering/contracts";
 import { QR_FLAG_STATES, REMOVED_QR_FLAGS } from "@aura3d/rendering/contracts/flags.state";
 
-export type QrFlagInput = "all" | readonly string[] | Readonly<Partial<Record<QrFlagName, QrFlagValue>>>;
+export type QrFlagInput = "all" | "none" | (string & {}) | readonly string[] | Readonly<Partial<Record<QrFlagName, QrFlagValue>>>;
 
 const SHORT_NAMES: Readonly<Record<string, QrFlagName>> = {
   core: "A3D_QR_CORE",
@@ -122,8 +122,10 @@ function applyList(out: Record<string, QrFlagValue>, list: string): void {
 }
 
 function applyInput(out: Record<string, QrFlagValue>, input: QrFlagInput): void {
-  if (input === "all") {
-    applyList(out, "all");
+  // Any string ("all", "none", "camera,-post") is a flag list. Before this, "none"
+  // fell through to Object.entries(string), set nothing, and default-on flags won.
+  if (typeof input === "string") {
+    applyList(out, input);
     return;
   }
   if (Array.isArray(input)) {
@@ -168,7 +170,9 @@ export function qrFlagsWithAnimationMixer(flags: QrFlags, mixer: "pose" | "legac
 
 export function resolveQrFlags(input: { readonly options?: QrFlagInput; readonly url?: URL | string; readonly env?: Readonly<Record<string, string | undefined>> }): QrFlags {
   const values: Record<string, QrFlagValue> = {};
-  if (input.options !== undefined) applyInput(values, input.options);
+  // Precedence (first write wins): URL `a3d-qr` > env (A3D_QR list, then A3D_QR_X) >
+  // programmatic options > flags.state default-on. Runtime overrides must beat
+  // values baked into app code, or `-x` / `none` can't measure a flag (#1232).
   if (input.url !== undefined) {
     const url = typeof input.url === "string" ? new URL(input.url, "http://localhost/") : input.url;
     const list = url.searchParams.get("a3d-qr");
@@ -179,6 +183,7 @@ export function resolveQrFlags(input: { readonly options?: QrFlagInput; readonly
     if (list !== undefined) applyList(values, list);
     applyPerFlagEnv(values, input.env);
   }
+  if (input.options !== undefined) applyInput(values, input.options);
   applyDefaultOnStates(values);
   propagateSubFlags(values);
   for (const removed of REMOVED_QR_FLAGS) {
