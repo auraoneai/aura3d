@@ -27,11 +27,12 @@ interface DepthStat {
   readonly covered: number;
 }
 
-function meanLumaIn(pixels: { data: Uint8Array | Uint8ClampedArray }, mask: { data: Uint8Array }): { mean: number; count: number } {
+/** `shadowMask` returns a bare Uint8Array (255 = differs between on/off). */
+function meanLumaIn(pixels: { data: Uint8Array | Uint8ClampedArray }, mask: Uint8Array): { mean: number; count: number } {
   let sum = 0;
   let count = 0;
-  for (let i = 0; i < mask.data.length; i += 1) {
-    if (!mask.data[i]) continue;
+  for (let i = 0; i < mask.length; i += 1) {
+    if (!mask[i]) continue;
     const o = i * 4;
     sum += 0.2126 * pixels.data[o]! + 0.7152 * pixels.data[o + 1]! + 0.0722 * pixels.data[o + 2]!;
     count += 1;
