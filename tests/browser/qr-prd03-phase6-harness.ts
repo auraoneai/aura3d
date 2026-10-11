@@ -18,6 +18,7 @@
  *    without the pass.
  */
 import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
+import { installFrameCapture } from "./qr-prd03-frame-capture";
 import { postV2ModulesReady } from "@aura3d/rendering";
 import { smaaTexturesSettled } from "../../packages/rendering/src/post/v2Stages";
 import { registerPostPass } from "@aura3d/rendering/contracts";
@@ -111,11 +112,9 @@ async function mount(opts: {
   const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
   const width = canvas.width;
   const height = canvas.height;
-  const read = () => {
-    const pixels = new Uint8Array(width * height * 4);
-    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-    return pixels;
-  };
+  // Read in the stepping task from the default framebuffer (qr-prd03-frame-capture).
+  const capture = installFrameCapture(app, canvas);
+  const read = () => capture.read();
   const runFrames = async (n: number, dt = 1 / 60) => {
     for (let i = 0; i < n; i++) {
       insideStep = true;

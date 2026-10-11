@@ -205,6 +205,7 @@ jobs:
             tests/browser/qr-prd03-wgsl-compile.spec.ts
             tests/browser/qr-prd03-phase6.spec.ts
             tests/browser/qr-prd03-bloom-energy.spec.ts
+            tests/browser/qr-prd03-ao-godrays.spec.ts
           )
           for spec in "${specs[@]}"; do
             if [ ! -f "$spec" ]; then

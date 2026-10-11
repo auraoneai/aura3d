@@ -15,6 +15,7 @@ import { FXAA_185_FRAGMENT_GLSL } from "../../packages/rendering/src/post/shader
 // @ts-expect-error raw node_modules module (r185 FXAAShader, MIT)
 import { FXAAShader } from "/node_modules/three/examples/jsm/shaders/FXAAShader.js";
 import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
+import { readDefaultFramebuffer } from "./qr-prd03-frame-capture";
 import { postV2ModulesReady } from "@aura3d/rendering";
 
 const LUMA = [0.3, 0.59, 0.11] as const;
@@ -280,8 +281,7 @@ async function mountApp(flags: readonly string[], build: ReturnType<typeof scene
   app.step(0);
   const canvas = host.querySelector("canvas")!;
   const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
-  const pixels = new Uint8Array(canvas.width * canvas.height * 4);
-  gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  const pixels = readDefaultFramebuffer(gl, canvas.width, canvas.height);
   const size = { width: canvas.width, height: canvas.height };
   app.dispose();
   host.remove();

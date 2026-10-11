@@ -19,6 +19,7 @@
  * Strength 1 sits inside the knee and is reported, not asserted.
  */
 import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
+import { installFrameCapture } from "./qr-prd03-frame-capture";
 import { postV2ModulesReady } from "@aura3d/rendering";
 
 const SIZE = 192;
@@ -68,16 +69,14 @@ async function render(subject: Subject, bloom: boolean): Promise<Uint8Array> {
     await app.ready();
     // The v2 stages load deferred; wait so measured frames run the real chain.
     await postV2ModulesReady();
-    // The v2 stage modules load on the first flag-on frame; settle a few.
+    // Read each frame in its own task from the default framebuffer
+    // (qr-prd03-frame-capture); settle a few frames first.
+    const capture = installFrameCapture(app, host.querySelector("canvas")!);
     for (let i = 0; i < 8; i++) {
       app.step(1 / 60);
       await new Promise((r) => requestAnimationFrame(r));
     }
-    const canvas = host.querySelector("canvas")!;
-    const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
-    const pixels = new Uint8Array(canvas.width * canvas.height * 4);
-    gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-    return pixels;
+    return capture.read();
   } finally {
     app.dispose();
     host.remove();

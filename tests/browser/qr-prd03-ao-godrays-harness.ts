@@ -19,6 +19,7 @@
  * stepped frames.
  */
 import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
+import { installFrameCapture } from "./qr-prd03-frame-capture";
 import { postV2ModulesReady } from "@aura3d/rendering";
 
 const SIZE = 256;
@@ -50,6 +51,8 @@ async function renderFrame(built: ReturnType<typeof scene>, flags: readonly stri
   try {
     await app.ready();
     await postV2ModulesReady();
+    // Read in the stepping task from the default framebuffer (qr-prd03-frame-capture).
+    const capture = installFrameCapture(app, host.querySelector("canvas")!);
     const before = readsDuringSteps;
     for (let i = 0; i < frames; i++) {
       insideStep = true;
@@ -58,11 +61,7 @@ async function renderFrame(built: ReturnType<typeof scene>, flags: readonly stri
       await new Promise((r) => requestAnimationFrame(r));
     }
     const reads = readsDuringSteps - before;
-    const canvas = host.querySelector("canvas")!;
-    const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
-    const pixels = new Uint8Array(SIZE * SIZE * 4);
-    gl.readPixels(0, 0, SIZE, SIZE, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-    return { pixels, reads };
+    return { pixels: capture.read(), reads };
   } finally {
     insideStep = false;
     app.dispose();
