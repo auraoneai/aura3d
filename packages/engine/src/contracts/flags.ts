@@ -10,7 +10,7 @@
  */
 
 import type { QrFlagName, QrFlagValue, QrFlags } from "@aura3d/rendering/contracts";
-import { REMOVED_QR_FLAGS } from "@aura3d/rendering/contracts/flags.state";
+import { QR_FLAG_STATES, REMOVED_QR_FLAGS } from "@aura3d/rendering/contracts/flags.state";
 
 export type QrFlagInput = "all" | readonly string[] | Readonly<Partial<Record<QrFlagName, QrFlagValue>>>;
 
@@ -56,6 +56,17 @@ function flagValueOn(v: QrFlagValue | undefined): boolean {
 }
 
 /** #266: fill unset default-on sub-flags of every lane flag that resolved on. */
+/**
+ * Promotion (§5.3, owner decision 2026-10-11): a flag whose state is
+ * `default-on` in flags.state.ts is on unless some source set it explicitly.
+ * Runs after every source, so `none`, `-x` and `A3D_QR_X=0` still turn it off.
+ */
+function applyDefaultOnStates(out: Record<string, QrFlagValue>): void {
+  for (const [name, state] of Object.entries(QR_FLAG_STATES)) {
+    if (state === "default-on") setEntry(out, name as QrFlagName, true);
+  }
+}
+
 function propagateSubFlags(out: Record<string, QrFlagValue>): void {
   for (const [parent, subs] of Object.entries(DEFAULT_ON_SUB_FLAGS)) {
     if (!flagValueOn(out[parent]) || !subs) continue;
@@ -168,6 +179,7 @@ export function resolveQrFlags(input: { readonly options?: QrFlagInput; readonly
     if (list !== undefined) applyList(values, list);
     applyPerFlagEnv(values, input.env);
   }
+  applyDefaultOnStates(values);
   propagateSubFlags(values);
   for (const removed of REMOVED_QR_FLAGS) {
     if (values[removed] !== undefined) {
