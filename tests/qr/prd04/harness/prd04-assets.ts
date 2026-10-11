@@ -109,9 +109,12 @@ async function main(): Promise<void> {
     assetId: params.get("assetId") ?? assetUrl.split("/").pop() ?? "probe-asset",
     imageDecoder,
     decoders: {
-      // Same corpus dir as gltf-decoders-variants.ts — basis/draco/meshopt
-      // wasm + JS glue live under fixtures/asset-corpus/decoders/.
-      basePath: params.get("decoders") ?? "/fixtures/asset-corpus/decoders/",
+      // The C-16 registry expects the vendored per-decoder layout
+      // (`<base>basis/`, `draco/`, `meshopt/`), which public/aura-decoders/
+      // ships and the dev server serves at /aura-decoders/. The flat
+      // fixtures/asset-corpus/decoders/ dir failed with AssetDecoderUnavailable:ktx2
+      // (GPU run 38158880794).
+      basePath: params.get("decoders") ?? "/aura-decoders/",
       ktx2: true,
       draco: true,
       meshopt: true
@@ -215,7 +218,9 @@ async function main(): Promise<void> {
     report.extra.contextLost = contextLost;
     report.extra.renderSummary = summarizeProductionWebGL2Proof(proof);
     if (params.get("pixels") === "1") {
-      report.extra.frame = { width, height, pixels: await canvasPixels(canvas) };
+      // Plain array: a Uint8ClampedArray does not survive page.evaluate as an
+      // array, so probeFrame's "frame pixels populated" check always failed.
+      report.extra.frame = { width, height, pixels: Array.from(await canvasPixels(canvas)) };
     }
     if (contextLost) report.warnings.push("context-lost");
     renderer.dispose();

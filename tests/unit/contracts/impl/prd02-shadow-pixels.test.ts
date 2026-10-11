@@ -6,6 +6,7 @@
  * flag-off renderer keeps its legacy behaviour.
  */
 import { describe, expect, it } from "vitest";
+import { prd02ShadowBridgeReason, prd02ShadowDepthProbe } from "../../../../packages/rendering/src/shadows/Prd02ShadowBridge";
 import "../../../../packages/rendering/src/lanes/prd02";
 import { resolveQrFlags } from "../../../../packages/engine/src/contracts/flags";
 import { identityMat4, PerspectiveCamera } from "@aura3d/scene";
@@ -86,4 +87,27 @@ describe("shadow bindings reach the forward pass", () => {
       expect(binding.label).toMatch(/^prd02-cascade-/);
     });
   }
+});
+
+
+describe("shadow bridge depth diagnostics", () => {
+  it("reports current cascades and restores the previous render target", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 320, height: 180, qrFlags: FLAGS_ON });
+    try {
+      renderer.render(source() as never, camera());
+      const previous = renderer.device.getRenderTarget?.() ?? null;
+      expect(prd02ShadowBridgeReason(renderer.device)).toBe("rendered");
+      const stats = prd02ShadowDepthProbe(renderer.device);
+      expect(stats.map((entry) => entry.index)).toEqual([0, 1]);
+      for (const stat of stats) {
+        expect(stat.width).toBe(1024);
+        expect(stat.covered).toBeGreaterThanOrEqual(0);
+        expect(stat.covered).toBeLessThanOrEqual(1);
+        expect(stat.min).toBeLessThanOrEqual(stat.max);
+      }
+      expect(renderer.device.getRenderTarget?.() ?? null).toBe(previous);
+    } finally {
+      renderer.dispose();
+    }
+  });
 });

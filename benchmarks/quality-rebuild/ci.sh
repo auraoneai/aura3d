@@ -16,6 +16,9 @@ mkdir -p "$QR_BENCH_OUT"
 # (Khronos corpus GLBs and three typed catalog props). RF4: failure is fatal — a pointer
 # file served as a GLB turns a scene into a load error that reads like an engine bug.
 lfs_paths="fixtures/asset-corpus/damaged-helmet.glb,fixtures/asset-corpus/antique-camera.glb,fixtures/asset-corpus/clear-coat-test.glb,fixtures/asset-corpus/sheen-test-grid.glb,public/aura-assets/propRockA.52dd1f0f.glb,public/aura-assets/propRockB.c94b2733.glb,public/aura-assets/deepRecoveryCrateStandard.02520123.glb"
+# [QR-04] lane-04 KHR_materials_* corpus (scenes/prd04/assets.ts): without these the
+# prd04 scenes 404'd / loaded pointers and `promote_flag=materials` never scored them.
+lfs_paths+=",fixtures/asset-corpus/texture-transform-test.glb,fixtures/asset-corpus/normal-tangent-test.glb,fixtures/asset-corpus/normal-tangent-mirror-test.glb,fixtures/asset-corpus/iridescence-lamp.glb,fixtures/asset-corpus/anisotropy-barn-lamp.glb,fixtures/asset-corpus/anisotropy-rotation-test.glb,fixtures/asset-corpus/dispersion-test.glb,fixtures/asset-corpus/materials-variants-shoe.glb,fixtures/asset-corpus/alpha-blend-mode-test.glb,fixtures/asset-corpus/compare-transmission.glb,fixtures/asset-corpus/damaged-helmet-uastc.glb,fixtures/asset-corpus/damaged-helmet-etc1s.glb,public/aura-assets/courierVanMeshyV2Decimated.6f509ab0.glb,public/aura-assets/patrolAircraftMeshy.183e83f8.glb"
 if command -v git-lfs >/dev/null 2>&1 || git lfs version >/dev/null 2>&1; then
   git lfs pull --include="$lfs_paths" || { echo "::error::git lfs pull failed for the benchmark corpus"; exit 1; }
 else

@@ -8,6 +8,7 @@
  */
 
 import { test, expect } from "@playwright/test";
+import { requireOrSkip } from "../../../support/requireOrSkip";
 import { createServer, type ViteDevServer } from "vite";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -63,16 +64,14 @@ test("readbacksThisFrame stays 0 across 300 frames", async ({ page }) => {
   });
 
   if ("skipped" in result && result.skipped) {
-    test.skip(true, result.skipped);
-    return;
+    throw new Error(`lane scene not mounted: ${result.skipped}`);
   }
   if (result.frames < 60) {
-    test.skip(true, `only ${result.frames} frames — no real WebGL2 loop on this host`);
+    requireOrSkip(test, false, "webgl2-frames", `only ${result.frames} frames — runner must run a real WebGL2 loop`);
     return;
   }
   if (result.startReads === undefined) {
-    test.skip(true, "readbacksThisFrame absent — counters not reporting on this host");
-    return;
+    throw new Error("readbacksThisFrame absent — frame counters not reporting");
   }
   expect(result.maxReadbacks, `readbacks observed during ${result.frames} frames`).toBe(0);
 });

@@ -7,7 +7,7 @@ import * as THREE from "three";
 import { GLTFLoader, type GLTF } from "three/addons/loaders/GLTFLoader.js";
 import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
-import { hdriAssets } from "../../../shared/assets";
+import { hdriAssets, benchmarkAssetFiles } from "../../../shared/assets";
 import type { CapabilityEntry, CapabilityStatus, ReadyPayload } from "../../../shared/types";
 import { prd04ModelAssets, prd04TextureAssets } from "../../../scenes/prd04/assets";
 import type { Prd04ModelSpec, Prd04SceneSpec } from "../../../scenes/prd04/spec";
@@ -41,9 +41,14 @@ class CapabilityLog {
   }
 }
 
-/** Serve the same bytes the canonical /qr-assets/ URL will serve. */
+/**
+ * Serve the same bytes the canonical /qr-assets/ URL serves. [QR-04]: the built bench
+ * page only ships /qr-assets/ (the `/${repoPath}` form 404'd there); the lane dev server
+ * (dev mode) serves the repo root.
+ */
+const SERVED_ASSET_URLS = new Map(benchmarkAssetFiles().map((file) => [file.repoPath, file.url]));
 function assetUrl(repoPath: string): string {
-  return `/${repoPath}`;
+  return (import.meta.env?.PROD ? SERVED_ASSET_URLS.get(repoPath) : undefined) ?? `/${repoPath}`;
 }
 
 function applyModelTint(root: THREE.Object3D, color: string, log: CapabilityLog): void {

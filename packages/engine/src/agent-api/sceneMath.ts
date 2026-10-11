@@ -335,7 +335,7 @@ export type AuraLookLowering = (node: AuraSceneNode) => readonly AuraSceneNode[]
 const LOWERED_LOOK = Symbol.for("@aura3d/lowered-look");
 /** Keep the diagnostic look node without expanding it again on a second flatten. */
 export function markLookNodeLowered(node: AuraSceneNode): AuraSceneNode {
-  return { ...node, [LOWERED_LOOK]: true } as AuraSceneNode;
+  return Object.assign({}, node, { [LOWERED_LOOK]: true });
 }
 let lookLowering: AuraLookLowering | undefined;
 export function setLookLowering(lowering: AuraLookLowering | undefined): void {

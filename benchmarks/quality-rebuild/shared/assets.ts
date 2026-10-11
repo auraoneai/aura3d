@@ -15,6 +15,7 @@
  */
 
 import { prd05Assets } from "../scenes/prd05/assets";
+import { prd04AssetFiles } from "../scenes/prd04/assets";
 
 export type ModelAssetId =
   | "damagedHelmet"
@@ -261,6 +262,9 @@ export function benchmarkAssetFiles(): readonly { readonly repoPath: string; rea
     { repoPath: "fixtures/asset-corpus/decoders/draco_decoder_gltf.wasm", url: `${base}draco/draco_decoder.wasm` },
     // #857: PRD-05 lane-scene derived GLBs (urls /qr-assets/<file>, scenes/prd05/assets.ts).
     ...Object.values(prd05Assets).map(({ repoPath, url }) => ({ repoPath, url })),
+    // [QR-04]: lane-04 KHR_materials_* corpus + texture set (scenes/prd04/assets.ts). Not
+    // served before, so every prd04 GLB 404'd in the built page and no promote run scored them.
+    ...prd04AssetFiles(),
     // #857: three's KTX2Loader transcoder for the three prd05 adapters (/qr-assets/basis/).
     { repoPath: "node_modules/three/examples/jsm/libs/basis/basis_transcoder.js", url: `${base}basis/basis_transcoder.js` },
     { repoPath: "node_modules/three/examples/jsm/libs/basis/basis_transcoder.wasm", url: `${base}basis/basis_transcoder.wasm` }
