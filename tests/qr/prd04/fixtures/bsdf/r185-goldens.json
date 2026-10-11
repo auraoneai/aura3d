@@ -12,6 +12,16 @@
       "sha": "e1334c9d3a488af985725fb04d47cbccb0ab30f7"
     },
     {
+      "id": "nvidia-t4-vulkan",
+      "rendererMatch": "Tesla T4 .*Vulkan|Vulkan.*Tesla T4",
+      "file": "r185-golden.nvidia-t4-vulkan.json",
+      "provider": "github self-hosted azure-gpu (gpu-t4), ANGLE Vulkan, Chromium new headless",
+      "renderer": "ANGLE (NVIDIA, Vulkan 1.4.312 (NVIDIA Tesla T4 (0x00001EB8)), NVIDIA)",
+      "generatedBy": "tests/qr/prd04/browser/generate-r185-golden.spec.ts",
+      "runId": 38162504439,
+      "sha": "d6912d9356ee84809105e1870075e529f09979de"
+    },
+    {
       "id": "llvmpipe",
       "rendererMatch": "llvmpipe",
       "file": "r185-golden.json",
