@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
+import { expectRuntimeMatchesDeclared } from "./lib/look";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 // Source imports: the lane jobs do not build package dist/, so the
@@ -209,9 +210,10 @@ test.describe("showcase-blockfall-reactor v2 (T2.6)", () => {
         await expect.poll(() => page.evaluate(() =>
           (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
         await page.waitForTimeout(300);
-        looks.push(await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".appliedLook"), EVIDENCE));
+        looks.push(await page.evaluate((EVIDENCE: string) => ({ route: eval(EVIDENCE + ".appliedLook"), runtime: (window as unknown as { __AURA3D_GAME__?: { app?: { diagnostics?: () => { appliedLook?: unknown } } } }).__AURA3D_GAME__?.app?.diagnostics?.().appliedLook ?? null }), EVIDENCE));
       }
       expect(looks[0]).toBeTruthy();
+      await expectRuntimeMatchesDeclared(APP_DIR, (looks[0] as { runtime?: unknown }).runtime);
       expect(looks[0]).toEqual(looks[1]);
       expect(looks[1]).toEqual(looks[2]);
     } finally {

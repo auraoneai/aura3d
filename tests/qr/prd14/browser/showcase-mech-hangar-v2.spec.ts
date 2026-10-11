@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
+import { expectRuntimeMatchesDeclared } from "./lib/look";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 // Source imports: the lane jobs do not build package dist/, so the
@@ -231,6 +232,8 @@ test.describe("showcase-mech-hangar v2 (T2.6)", () => {
           return rest;
         }, EVIDENCE);
         expect(look.rigId).toBe("mech-hangar.fighting");
+        // T2.2-post: the renderer applied the look this route declares.
+        await expectRuntimeMatchesDeclared(APP_DIR, await page.evaluate(() => (window as unknown as { __AURA3D_GAME__?: { app?: { diagnostics?: () => { appliedLook?: unknown } } } }).__AURA3D_GAME__?.app?.diagnostics?.().appliedLook ?? null));
         expect(look.fov).toBe(52);
         if (scenario === "arena") {
           await expect.poll(async () =>
