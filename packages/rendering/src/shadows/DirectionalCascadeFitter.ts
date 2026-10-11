@@ -94,6 +94,24 @@ function ndcToWorld(inv: Float32Array, x: number, y: number, z: number): [number
 
 type V3 = readonly [number, number, number];
 
+/**
+ * #1141: near/far of a perspective camera known only by its view-projection
+ * and eye (structural CameraLikes carry no near/far): distances from the eye
+ * to the unprojected NDC centres of the near and far planes.
+ */
+export function clipRangeFromViewProjection(
+  viewProjection: Float32Array | readonly number[],
+  eye: readonly [number, number, number]
+): { near: number; far: number } | null {
+  let inv: Float32Array;
+  try { inv = invertMat4(viewProjection); } catch { return null; }
+  const n = ndcToWorld(inv, 0, 0, -1);
+  const f = ndcToWorld(inv, 0, 0, 1);
+  const near = Math.hypot(n[0] - eye[0], n[1] - eye[1], n[2] - eye[2]);
+  const far = Math.hypot(f[0] - eye[0], f[1] - eye[1], f[2] - eye[2]);
+  return Number.isFinite(near) && Number.isFinite(far) && far > near && near > 0 ? { near, far } : null;
+}
+
 function lightBasis(direction: V3): { right: V3; up: V3; forward: V3 } {
   const len = Math.hypot(direction[0], direction[1], direction[2]) || 1;
   const fwd: V3 = [direction[0] / len, direction[1] / len, direction[2] / len];
