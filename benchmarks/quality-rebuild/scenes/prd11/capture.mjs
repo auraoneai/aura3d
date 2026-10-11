@@ -114,11 +114,25 @@ async function main() {
           const started = Date.now();
           // Track 0 ready-time attribution: wall-clock phases on the runner side,
           // plus the adapter's own marks (window.__PRD11_PROGRESS__), also on timeout.
-          const phases = { gotoMs: null, readyMs: null };
+          const phases = { gotoMs: null, rafHz: null, readyMs: null };
           const progress = () => page.evaluate(() => window.__PRD11_PROGRESS__ ?? null).catch(() => null);
           try {
             await page.goto(url, { waitUntil: "load", timeout: 60_000 });
             phases.gotoMs = Date.now() - started;
+            // rAF cadence right after load: headless GPU runners can throttle
+            // rAF (lane 07 saw ~200 s ready even flag-off), which stretches any
+            // frame-count wait. Measured per page so arms stay comparable.
+            phases.rafHz = await page.evaluate(() => new Promise((resolve) => {
+              let frames = 0;
+              const t0 = performance.now();
+              const tick = () => {
+                frames += 1;
+                if (performance.now() - t0 < 1000) requestAnimationFrame(tick);
+                else resolve(Math.round((frames * 1000) / (performance.now() - t0)));
+              };
+              requestAnimationFrame(tick);
+              setTimeout(() => resolve(frames), 5000);
+            })).catch(() => null);
             await page.waitForFunction(() => Boolean(window.__QR_READY__), undefined, { timeout: 120_000, polling: 500 });
             phases.readyMs = Date.now() - started;
             // Let frame telemetry accumulate >=35 samples before reading.
