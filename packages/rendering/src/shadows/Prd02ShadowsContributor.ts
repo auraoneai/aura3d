@@ -25,6 +25,7 @@ import {
   prd02LookupConsumerExists,
   prd02ShadowConfig,
   prd02SunDirection,
+  recordPrd02FrameObservation,
   shadowSystemForDevice,
   takePrd02BridgedShadowFrame
 } from "./Prd02ShadowBridge";
@@ -202,8 +203,18 @@ export function createPrd02ShadowsContributor(): FrameContributor {
     id: "prd02.shadows",
     owner: "prd02",
     flag: "A3D_QR_LIGHTING",
-    phases: ["shadows"],
+    phases: ["collect", "shadows"],
     order: 0,
+    collect(items, ctx) {
+      // T0-26: runs before the renderer's shadow step; the bridge reads this
+      // (frame camera for structural CameraLikes, lookup consumers among all
+      // items, not just casters). Items pass through unchanged.
+      recordPrd02FrameObservation(ctx.device, {
+        camera: ctx.camera ? { viewProjectionMatrix: ctx.camera.viewProjectionMatrix, near: ctx.camera.near, far: ctx.camera.far } : null,
+        lookupConsumer: prd02LookupConsumerExists(items)
+      });
+      return items;
+    },
     passes(phase, ctx) {
       // `?a3dLighting=shadows=off` → no prd02 shadow passes (§6.5 kill switch).
       return phase === "shadows" && readPrd02KillSwitches(ctx.source).shadows

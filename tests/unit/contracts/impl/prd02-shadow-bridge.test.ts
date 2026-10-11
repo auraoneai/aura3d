@@ -227,3 +227,45 @@ describe("T0-26 flag-off keeps the legacy shadow path", () => {
     expect(labels.filter((l) => l.startsWith("prd02-cascade-"))).toHaveLength(2);
   });
 });
+
+describe("T0-26 review fixes (structural camera, receiver consumers, maxDistance)", () => {
+  function collectCtx(device: RenderDevice, items: readonly RenderItem[], cam: PerspectiveCamera | null): FrameContributorContext {
+    return {
+      ...contributorCtx(device, items),
+      camera: cam ? { viewProjectionMatrix: cam.viewProjectionMatrix, near: cam.near, far: cam.far } : null
+    } as unknown as FrameContributorContext;
+  }
+
+  it("uses the collect-phase frame camera when the renderer has no concrete Camera", () => {
+    const { device, labels } = countingDevice();
+    const contributor = createPrd02ShadowsContributor();
+    const items = [item()];
+    expect(contributor.phases).toContain("collect");
+    expect(contributor.collect?.([...items], collectCtx(device, items, camera()))).toEqual(items);
+    device.beginFrame(256, 256);
+    const map = executePrd02BridgedShadowMap({ device, source: source(), items, camera: undefined, flags: FLAGS_ON });
+    device.endFrame();
+    expect(map?.cascades).toHaveLength(2);
+    expect(labels.filter((l) => l.startsWith("prd02-cascade-"))).toHaveLength(2);
+  });
+
+  it("defers to the contributor when a non-caster receiver declares the lookup chunk", () => {
+    const { device, labels } = countingDevice();
+    const receiver = { ...item(lookupMaterial()), castShadow: false } as RenderItem;
+    const caster = item();
+    createPrd02ShadowsContributor().collect?.([caster, receiver], collectCtx(device, [caster, receiver], camera()));
+    // The renderer passes casters only.
+    expect(executePrd02BridgedShadowMap({ device, source: source(), items: [caster], camera: camera(), flags: FLAGS_ON })).toBeUndefined();
+    expect(labels).toEqual([]);
+  });
+
+  it("caps cascade splits at prd02Shadows.maxDistance", () => {
+    const { device } = countingDevice();
+    const capped = source({ shadow: { enabled: true, prd02Shadows: { ...PRD02_SHADOWS, maxDistance: 20 } } });
+    device.beginFrame(256, 256);
+    const map = executePrd02BridgedShadowMap({ device, source: capped, items: [item()], camera: camera(), flags: FLAGS_ON });
+    device.endFrame();
+    const last = map!.cascades![map!.cascades!.length - 1]!;
+    expect(last.far).toBeCloseTo(20, 5);
+  });
+});

@@ -181,6 +181,31 @@ export function takePrd02BridgedShadowFrame(device: RenderDevice): Prd02BridgedS
   return frame;
 }
 
+/**
+ * The renderer hands `executeRendererShadowMap` only a concrete `Camera`;
+ * compiled sources render through a structural CameraLike and frame items
+ * reach the shadow step pre-filtered to casters. The `prd02.shadows`
+ * contributor's collect phase (which runs first, with the C-01 frame context)
+ * records the frame camera and whether ANY frame item — casters or not —
+ * declares the lookup chunk.
+ */
+interface Prd02FrameObservation {
+  readonly camera: { readonly viewProjectionMatrix: Float32Array | readonly number[]; readonly near?: number; readonly far?: number } | null;
+  readonly lookupConsumer: boolean;
+}
+
+const frameObservations = new WeakMap<RenderDevice, Prd02FrameObservation>();
+
+export function recordPrd02FrameObservation(device: RenderDevice, observation: Prd02FrameObservation): void {
+  frameObservations.set(device, observation);
+}
+
+function takeFrameObservation(device: RenderDevice): Prd02FrameObservation | undefined {
+  const observation = frameObservations.get(device);
+  frameObservations.delete(device);
+  return observation;
+}
+
 const NEAREST_CLAMP = new Sampler({
   minFilter: "nearest",
   magFilter: "nearest",
@@ -207,11 +232,13 @@ export interface Prd02BridgeInput {
  */
 export function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardShadowMapOptions | undefined {
   bridgedFrames.delete(input.device);
+  const observed = takeFrameObservation(input.device);
   if (!readPrd02KillSwitches(input.source).shadows) return undefined;
-  if (input.items.length === 0 || prd02LookupConsumerExists(input.items)) return undefined;
+  if (input.items.length === 0 || observed?.lookupConsumer === true || prd02LookupConsumerExists(input.items)) return undefined;
   const capabilities = input.device.info.capabilities;
   if (!capabilities?.includes("render-targets") || !capabilities.includes("depth-textures")) return undefined;
-  const camera = input.camera as (Camera & { near?: number; far?: number }) | undefined;
+  const concrete = input.camera as (Camera & { near?: number; far?: number }) | undefined;
+  const camera = concrete?.viewProjectionMatrix ? concrete : observed?.camera ?? undefined;
   if (!camera?.viewProjectionMatrix) return undefined;
   const sun = prd02SunDirection(input.source);
   if (!sun) return undefined;
@@ -220,8 +247,8 @@ export function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardSh
   if (!config.enabled) return undefined;
   const system = shadowSystemForDevice(input.device, config);
   const near = camera.near ?? 0.1;
-  // The fitter lerps between the VP's near/far corners, so it needs the
-  // camera's real clip range (same as the contributor), not maxDistance.
+  // The fitter lerps between the VP's near/far corners, so it gets the
+  // camera's real clip range; `config.maxDistance` caps the cascade splits.
   const uniforms = system.update({
     camera: { viewProjectionMatrix: camera.viewProjectionMatrix, near, far: camera.far ?? 200 },
     sun: { direction: sun },

@@ -117,7 +117,8 @@ export class Prd02ShadowSystem {
           casters,
           mapSize: this.config.mapSize,
           cascadeCount: this.config.cascades,
-          splitLambda: this.config.splitLambda
+          splitLambda: this.config.splitLambda,
+          maxDistance: this.config.maxDistance
         })
       : [];
     const localRequests = (frame.localLights ?? []).map((light) => ({
