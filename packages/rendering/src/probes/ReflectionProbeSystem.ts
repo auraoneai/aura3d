@@ -122,7 +122,10 @@ export class ReflectionProbeSystem {
     try {
       this.device.setRenderTarget(target);
       this.renderFace(face, target, cubeFaceViewProjection(face, entry.spec.position, entry.spec.near, entry.spec.far));
-      const pixels = this.device.readFloatPixels(0, 0, size, size);
+      // GL readPixels returns rows bottom-up; lane-02 faces store row 0 at
+      // v = −1 (top, CUBE_FACE_BASIS), so WebGL2 readbacks flip vertically.
+      const raw = this.device.readFloatPixels(0, 0, size, size);
+      const pixels = this.device.kind === "webgl2" ? flipRows(raw, size, size) : raw;
       entry.slice ??= { faces: [], next: 0 };
       entry.slice.faces[face] = pixels;
     } finally {
@@ -187,4 +190,14 @@ export function boxWeight(spec: ReflectionProbeSpec, p: readonly [number, number
   const d = Math.hypot(dx, dy, dz);
   const blend = Math.max(spec.blendDistance, 1e-6);
   return Math.max(0, 1 - d / blend);
+}
+
+/** Vertical flip of an RGBA float image (GL bottom-up → top-down rows). */
+export function flipRows(pixels: Float32Array, width: number, height: number): Float32Array {
+  const out = new Float32Array(pixels.length);
+  const stride = width * 4;
+  for (let y = 0; y < height; y += 1) {
+    out.set(pixels.subarray((height - 1 - y) * stride, (height - y) * stride), y * stride);
+  }
+  return out;
 }
