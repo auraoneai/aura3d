@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { writeFileSync } from "node:fs";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 /**
@@ -37,10 +38,15 @@ test.describe("PRD-03 S9 — bloom energy (no hidden gain)", () => {
       { timeout: 180_000 }
     );
     const result = await page.evaluate(async () => {
-      const run = (window as { runQrPrd03BloomEnergy?: () => Promise<{ cases: BloomEnergyCase[] }> }).runQrPrd03BloomEnergy!;
+      const run = (window as { runQrPrd03BloomEnergy?: () => Promise<{ cases: BloomEnergyCase[]; frames?: unknown }> }).runQrPrd03BloomEnergy!;
       return await run();
     });
-    console.log("[bloom-energy]", JSON.stringify(result));
+    const frames = (result as { frames?: Record<string, { png: string; meanLuma: number; diagnostics: unknown }> }).frames ?? {};
+    for (const [label, frame] of Object.entries(frames)) {
+      writeFileSync(testInfo.outputPath(`${label}.png`), Buffer.from(frame.png.split(",")[1]!, "base64"));
+      console.log(`[bloom-energy-frame] ${label} meanLuma=${frame.meanLuma.toFixed(2)} ${JSON.stringify(frame.diagnostics).slice(0, 1500)}`);
+    }
+    console.log("[bloom-energy]", JSON.stringify(result.cases));
     cases = Object.fromEntries(result.cases.map((c) => [c.subject, c]));
     await page.close();
   });

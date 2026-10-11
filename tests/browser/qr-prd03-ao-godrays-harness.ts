@@ -19,7 +19,7 @@
  * stepped frames.
  */
 import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
-import { installFrameCapture } from "./qr-prd03-frame-capture";
+import { frameToPngDataUrl, installFrameCapture, meanLuma, postDiagnostics } from "./qr-prd03-frame-capture";
 import { postV2ModulesReady } from "@aura3d/rendering";
 
 const SIZE = 256;
@@ -36,7 +36,10 @@ function luma(pixels: Uint8Array, i: number): number {
   return (pixels[i]! * 0.2126 + pixels[i + 1]! * 0.7152 + pixels[i + 2]! * 0.0722) / 255;
 }
 
-async function renderFrame(built: ReturnType<typeof scene>, flags: readonly string[], frames = 8): Promise<{ pixels: Uint8Array; reads: number }> {
+/** Diagnostics for the spec artifacts: a PNG, mean luma and the post/output state per render. */
+export const frameDiagnostics: Record<string, { png: string; meanLuma: number; diagnostics: unknown }> = {};
+
+async function renderFrame(built: ReturnType<typeof scene>, flags: readonly string[], frames = 8, label = ""): Promise<{ pixels: Uint8Array; reads: number }> {
   const host = document.createElement("div");
   host.style.cssText = `position:fixed;left:-2400px;top:0;width:${SIZE}px;height:${SIZE}px;`;
   document.body.appendChild(host);
@@ -61,7 +64,9 @@ async function renderFrame(built: ReturnType<typeof scene>, flags: readonly stri
       await new Promise((r) => requestAnimationFrame(r));
     }
     const reads = readsDuringSteps - before;
-    return { pixels: capture.read(), reads };
+    const pixels = capture.read();
+    if (label) frameDiagnostics[label] = { png: frameToPngDataUrl(pixels, SIZE, SIZE), meanLuma: meanLuma(pixels), diagnostics: postDiagnostics(app) };
+    return { pixels, reads };
   } finally {
     insideStep = false;
     app.dispose();
@@ -94,8 +99,8 @@ function footprintDistance(px: number, py: number): number {
 }
 
 export async function runAoGroundingProbe() {
-  const off = await renderFrame(aoScene(false), ["A3D_QR_POST"]);
-  const on = await renderFrame(aoScene(true), ["A3D_QR_POST"]);
+  const off = await renderFrame(aoScene(false), ["A3D_QR_POST"], 8, "ao-off");
+  const on = await renderFrame(aoScene(true), ["A3D_QR_POST"], 8, "ao-on");
   let bandOn = 0, bandOff = 0, bandN = 0, openOn = 0, openOff = 0, openN = 0;
   for (let py = 0; py < SIZE; py++) {
     for (let px = 0; px < SIZE; px++) {
@@ -146,9 +151,9 @@ function shaftScene(mode: "off" | "on" | "mask") {
 }
 
 export async function runGodRayShaftProbe() {
-  const mask = await renderFrame(shaftScene("mask"), [], 2);
-  const off = await renderFrame(shaftScene("off"), ["A3D_QR_POST"]);
-  const on = await renderFrame(shaftScene("on"), ["A3D_QR_POST"]);
+  const mask = await renderFrame(shaftScene("mask"), [], 2, "shaft-mask");
+  const off = await renderFrame(shaftScene("off"), ["A3D_QR_POST"], 8, "shaft-off");
+  const on = await renderFrame(shaftScene("on"), ["A3D_QR_POST"], 8, "shaft-on");
   // Pillar mask and its bounding rows/columns.
   const pillar = new Uint8Array(SIZE * SIZE);
   let minX = SIZE, maxX = -1, minY = SIZE, maxY = -1;
@@ -181,7 +186,7 @@ export async function runGodRayShaftProbe() {
 export async function runQrPrd03AoGodrays() {
   const ao = await runAoGroundingProbe().catch((e) => ({ schema: "ao-grounding/v1", error: String(e) }));
   const godrays = await runGodRayShaftProbe().catch((e) => ({ schema: "godray-shafts/v1", error: String(e) }));
-  return { schema: "prd03-ao-godrays/v1", ao, godrays };
+  return { schema: "prd03-ao-godrays/v1", ao, godrays, frames: frameDiagnostics };
 }
 
 (window as { runQrPrd03AoGodrays?: typeof runQrPrd03AoGodrays }).runQrPrd03AoGodrays = runQrPrd03AoGodrays;

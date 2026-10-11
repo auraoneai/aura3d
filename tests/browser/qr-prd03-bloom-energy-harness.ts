@@ -19,7 +19,7 @@
  * Strength 1 sits inside the knee and is reported, not asserted.
  */
 import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
-import { installFrameCapture } from "./qr-prd03-frame-capture";
+import { frameToPngDataUrl, installFrameCapture, meanLuma, postDiagnostics } from "./qr-prd03-frame-capture";
 import { postV2ModulesReady } from "@aura3d/rendering";
 
 const SIZE = 192;
@@ -35,6 +35,9 @@ function linearLuma(pixels: Uint8Array, i: number): number {
 }
 
 type Subject = { readonly kind: "sphere"; readonly strength: number } | { readonly kind: "wall" };
+
+/** Diagnostics for the spec artifacts (strength-4 sphere and the wall). */
+export const bloomFrames: Record<string, { png: string; meanLuma: number; diagnostics: unknown }> = {};
 
 async function render(subject: Subject, bloom: boolean): Promise<Uint8Array> {
   const host = document.createElement("div");
@@ -76,7 +79,12 @@ async function render(subject: Subject, bloom: boolean): Promise<Uint8Array> {
       app.step(1 / 60);
       await new Promise((r) => requestAnimationFrame(r));
     }
-    return capture.read();
+    const pixels = capture.read();
+    const label = `${subject.kind === "sphere" ? `sphere-${subject.strength}` : "wall"}-${bloom ? "on" : "off"}`;
+    if (label.startsWith("sphere-4") || label.startsWith("wall")) {
+      bloomFrames[label] = { png: frameToPngDataUrl(pixels, SIZE, SIZE), meanLuma: meanLuma(pixels), diagnostics: postDiagnostics(app) };
+    }
+    return pixels;
   } finally {
     app.dispose();
     host.remove();
@@ -132,11 +140,11 @@ async function measure(subject: Subject): Promise<BloomEnergyCase> {
   };
 }
 
-export async function runQrPrd03BloomEnergy(): Promise<{ readonly schema: "prd03-bloom-energy/v1"; readonly cases: readonly BloomEnergyCase[] }> {
+export async function runQrPrd03BloomEnergy(): Promise<{ readonly schema: "prd03-bloom-energy/v1"; readonly cases: readonly BloomEnergyCase[]; readonly frames: typeof bloomFrames }> {
   const cases: BloomEnergyCase[] = [];
   for (const strength of [0.5, 1, 2, 4, 8]) cases.push(await measure({ kind: "sphere", strength }));
   cases.push(await measure({ kind: "wall" }));
-  return { schema: "prd03-bloom-energy/v1", cases };
+  return { schema: "prd03-bloom-energy/v1", cases, frames: bloomFrames };
 }
 
 (window as { runQrPrd03BloomEnergy?: typeof runQrPrd03BloomEnergy }).runQrPrd03BloomEnergy = runQrPrd03BloomEnergy;

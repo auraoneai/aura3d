@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { writeFileSync } from "node:fs";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 /**
@@ -30,10 +31,17 @@ test.describe("PRD-03 S12/S13 — GTAO grounding and god-ray shafts", () => {
       { timeout: 180_000 }
     );
     const result = await page.evaluate(async () => {
-      const run = (window as { runQrPrd03AoGodrays?: () => Promise<{ ao: AoResult; godrays: ShaftResult }> }).runQrPrd03AoGodrays!;
+      const run = (window as { runQrPrd03AoGodrays?: () => Promise<{ ao: AoResult; godrays: ShaftResult; frames?: unknown }> }).runQrPrd03AoGodrays!;
       return await run();
     });
-    console.log("[ao-godrays]", JSON.stringify(result));
+    const frames = (result as { frames?: Record<string, { png: string; meanLuma: number; diagnostics: unknown }> }).frames ?? {};
+    for (const [label, frame] of Object.entries(frames)) {
+      // PNG per render under test-results (uploaded on always()) + the post state.
+      const file = testInfo.outputPath(`${label}.png`);
+      writeFileSync(file, Buffer.from(frame.png.split(",")[1]!, "base64"));
+      console.log(`[ao-godrays-frame] ${label} meanLuma=${frame.meanLuma.toFixed(2)} ${JSON.stringify(frame.diagnostics).slice(0, 1500)}`);
+    }
+    console.log("[ao-godrays]", JSON.stringify({ ao: result.ao, godrays: result.godrays }));
     ao = result.ao;
     godrays = result.godrays;
     await page.close();

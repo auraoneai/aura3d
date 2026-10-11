@@ -62,6 +62,10 @@ on:
         description: "Flag list recorded for the GPU lane run (the qr-prd03 post specs pin A3D_QR_POST themselves)"
         required: false
         default: "post"
+      gpu_specs:
+        description: "GPU lane only: space-separated qr-prd03 spec paths to run instead of the full list (diagnosis runs)"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -177,6 +181,7 @@ jobs:
       # Vulkan ANGLE set when the repo variable is unset.
       QR_AZURE_GPU_CHROME_ARGS: ${{ vars.QR_AZURE_GPU_CHROME_ARGS }}
       A3D_QR_FLAGS: ${{ inputs.qr_flags }}
+      GPU_SPECS: ${{ inputs.gpu_specs }}
       PLAYWRIGHT_JSON_OUTPUT_NAME: tests/reports/browser-gpu.json
     steps:
       - uses: actions/checkout@v4
@@ -214,6 +219,13 @@ jobs:
             fi
           done
           echo "qr_flags=${A3D_QR_FLAGS}"
+          if [ -n "${GPU_SPECS}" ]; then
+            read -r -a specs <<< "tests/browser/qr-prd03-gpu-probe.spec.ts ${GPU_SPECS}"
+            for spec in "${specs[@]}"; do
+              case "$spec" in tests/browser/qr-prd03-*.spec.ts) ;; *) echo "gpu_specs must be tests/browser/qr-prd03-*.spec.ts: $spec" >&2; exit 1 ;; esac
+              [ -f "$spec" ] || { echo "missing lane-03 spec: $spec" >&2; exit 1; }
+            done
+          fi
           pnpm exec playwright test --config playwright.prd03-gpu.config.ts "${specs[@]}" --grep-invert @integrated
       - name: Upload GPU spec artifacts
         if: always()
