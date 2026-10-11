@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
+import { expectS11Audio } from "./lib/audio-proof";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 // Source imports: the lane jobs do not build package dist/, so the
@@ -109,6 +110,44 @@ test.describe("showcase-courier-rush v2 (T2.6)", () => {
       )).toBe(false);
 
       expect(errors).toEqual([]);
+    } finally {
+      server.close();
+    }
+  });
+
+  test("showcase-courier-rush: S11 audio — synthCues 0, every audio[] event played", async ({ page }) => {
+    const root = builtDist(APP_DIR);
+    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+    const errors = watchConsole(page);
+    const { server, url } = await serve(root!);
+    try {
+      // The seeded autopilot drives the real dispatch loop: the van reaches
+      // the pickup zone (trigger-enter loads the parcel) and the drop zone.
+      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&autopilot=1`);
+      await expect.poll(() => page.evaluate(() =>
+        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+      // Same scripted timeline as the boot test (its S2 assertions omitted):
+      // S11 reads the audio proof once the timeline has run.
+      const state = await page.evaluate(() =>
+        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
+      expect(state).toBe("playing");
+
+      const deadline = Math.max(...REQUIRED.map((c) => c.deadlineMs), 20_000);
+      const started = Date.now();
+      let allMet = false;
+      while (Date.now() - started < deadline) {
+        const ev = await readEvidence(page);
+        if (ev) {
+          const results = REQUIRED.map((c) => evaluateRequiredCondition(c.expr, ev));
+          if (results.every((r) => r.ok)) { allMet = true; break; }
+        }
+        await page.waitForTimeout(500);
+      }
+      const delivery = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".delivery") as { completed?: number }, EVIDENCE);
+
+      // S11 (PRD-14 §16.1): synthCues === 0, voicesPlayed covers audio[], and
+      // every art/direction.ts audio[] event voiced during the timeline.
+      await expectS11Audio(page, APP_DIR);
     } finally {
       server.close();
     }

@@ -2,6 +2,7 @@
 // Publishes `window.__AURA3D_GAME_EVIDENCE__["showcase-bank-shot"]` with lazy
 // section getters (no per-frame allocation > 1 KB). The §7.2.1 required
 // conditions read `table.pottedThisShot` and `balls.maxAngularSpeed` here.
+import { audioProof } from "../audio-proof";
 import type { Game } from "@aura3d/engine";
 import type { CueController } from "../../gameplay/cue";
 import type { RulesEngine } from "../../gameplay/rules";
@@ -94,7 +95,7 @@ export function publishBankShotEvidence(b: BankShotEvidenceBindings): void {
       return { maxAngularSpeed: b.maxAngularSpeed(), liveCount: b.sim.liveBallCount() };
     },
     get audio() {
-      return { cues: [...b.audioCueLog()], lastStrike: b.lastStrikeAudio() };
+      return { cues: [...b.audioCueLog()], lastStrike: b.lastStrikeAudio(), ...audioProof.snapshot() };
     },
     get aim() {
       const s = b.cue.state();

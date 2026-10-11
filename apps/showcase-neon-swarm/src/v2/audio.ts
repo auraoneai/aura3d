@@ -1,9 +1,10 @@
 // Audio block — extracted from boot.ts for 14-LOC. Cue log + unlock gesture
 // wiring unchanged; listeners attach on construction like before.
+import { instrumentAudio } from "./audio-proof";
 import { createSwarmAudio, type SwarmCue } from "../legacy/swarm-audio";
 
 export function createSwarmAudioBlock() {
-  const audio = createSwarmAudio();
+  const audio = instrumentAudio(createSwarmAudio(), { cue: null });
   const audioCueLog: string[] = [];
   let audioUnlocked = false;
   function pushCue(cue: SwarmCue): void {

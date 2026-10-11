@@ -1,8 +1,9 @@
 // Audio controller + cue log — extracted from boot.ts for 14-LOC.
+import { instrumentAudio } from "./audio-proof";
 import { createGravityPostAudio } from "../legacy/post-audio";
 
 export function createPostAudioBlock() {
-  const audio = createGravityPostAudio();
+  const audio = instrumentAudio(createGravityPostAudio(), { play: null });
   const audioCueLog: string[] = [];
   function pushCue(cue: Parameters<typeof audio.play>[0]): void {
     audioCueLog.push(cue);

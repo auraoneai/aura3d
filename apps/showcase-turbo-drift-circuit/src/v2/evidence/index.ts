@@ -4,6 +4,7 @@
 // computed, no per-frame allocation > 1KB. `session` is shell-owned — the
 // route republishes playback as `playback` (spec reads paused via
 // __AURA3D_GAME__.session).
+import { audioProof } from "../audio-proof";
 import type {
   AuraApp, GameRacingSnapshot, GameSession
 } from "@aura3d/engine";
@@ -93,7 +94,7 @@ export function publishTurboDriftEvidence(b: TurboDriftEvidenceBindings): void {
       };
     },
     get audio() {
-      return { cueLog: b.audioCueLog() };
+      return { cueLog: b.audioCueLog(), ...audioProof.snapshot() };
     }
   };
 }

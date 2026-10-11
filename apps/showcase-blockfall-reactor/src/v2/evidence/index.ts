@@ -4,6 +4,7 @@
 //   board.stackHeight >= 4                                  (shot 03-mid, 20s)
 // Plus the lane-standard sections: loading.sceneSwaps, appliedLook parity,
 // audio cue log, touchEngaged, boardView parity, beat/clearFx proofs.
+import { audioProof } from "../audio-proof";
 import type { BlockfallAudioProof } from "../../gameplay/reactor-audio";
 import type { Game } from "@aura3d/game";
 import type { ClearFxProof } from "../../legacy/clear-fx";
@@ -64,7 +65,7 @@ export function publishBlockfallEvidence(b: BlockfallEvidenceBindings): void {
     get fx() { return b.fx(); },
     get clearFx() { return b.clearFx(); },
     get cameraFeel() { return b.cameraFeel(); },
-    get audio() { return b.audio(); },
+    get audio() { return { ...b.audio(), ...audioProof.snapshot() }; },
 
     get framing() {
       const ev = b.game.app.camera?.evidence?.();

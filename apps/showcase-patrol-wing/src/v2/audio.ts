@@ -1,10 +1,11 @@
+import { instrumentAudio } from "./audio-proof";
 import { createWingAudio, type WingAudioCue } from "../legacy/wing-audio";
 import type { PatrolCtx } from "./state";
 
 export function createPatrolAudioBlock(ctx: PatrolCtx) {
 // ------------------------------------------------------------------ audio ---
 
-const audio = createWingAudio();
+const audio = instrumentAudio(createWingAudio(), { cue: null });
 const audioCueLog: string[] = [];
 function pushCue(cue: WingAudioCue): void {
   audioCueLog.push(cue);

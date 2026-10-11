@@ -3,6 +3,7 @@
 // ("floor-1"/"floor-2") while loading.sceneSwaps stays 0 — both floor sets
 // live in one union scene.
 
+import { audioProof } from "../audio-proof";
 import type { Game } from "@aura3d/game";
 
 export interface GalleryEvidenceBindings {
@@ -76,7 +77,7 @@ export function publishGalleryEvidence(bindings: GalleryEvidenceBindings) {
       return bindings.detection();
     },
     get audio() {
-      return bindings.audio();
+      return { ...bindings.audio(), ...audioProof.snapshot() };
     },
     get run() {
       return bindings.run();

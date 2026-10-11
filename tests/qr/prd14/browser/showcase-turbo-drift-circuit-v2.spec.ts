@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
+import { expectS11Audio } from "./lib/audio-proof";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 // Source imports: the lane jobs do not build package dist/, so the
@@ -138,6 +139,77 @@ test.describe("showcase-turbo-drift-circuit v2 (T2.6)", () => {
       ).toBe(false);
 
       expect(errors).toEqual([]);
+    } finally {
+      server.close();
+    }
+  });
+
+  test("showcase-turbo-drift-circuit: S11 audio — synthCues 0, every audio[] event played", async ({ page }) => {
+    const root = builtDist(APP_DIR);
+    expect(root, `${APP_DIR} not built`).not.toBeUndefined();
+    const errors = watchConsole(page);
+    const { server, url } = await serve(root!);
+    try {
+      await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
+      await expect.poll(() => page.evaluate(() =>
+        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+      // Same scripted timeline as the boot test (its S2 assertions omitted):
+      // S11 reads the audio proof once the timeline has run.
+      const state = await page.evaluate(() =>
+        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
+      expect(state).toBe("playing");
+
+      // §7.2.1 scripted timeline (mirrors games.json): throttle, steer, drift.
+      await page.keyboard.down("KeyW");
+      await page.waitForTimeout(2000);
+      await page.waitForTimeout(4000);
+      await page.keyboard.down("KeyA");
+      await page.waitForTimeout(500);
+      await page.keyboard.up("KeyA");
+      await page.waitForTimeout(700);
+      await page.keyboard.down("KeyD");
+      await page.keyboard.down("Space");
+      await page.waitForTimeout(1300);
+      await page.keyboard.up("Space");
+      await page.keyboard.up("KeyD");
+      await page.waitForTimeout(900);
+      await page.keyboard.down("KeyA");
+      await page.keyboard.down("Space");
+      await page.waitForTimeout(1000);
+      await page.keyboard.up("Space");
+      await page.keyboard.up("KeyA");
+      await page.keyboard.up("KeyW");
+
+      // Required conditions by deadline: car.speedKph >= 120 (03-mid),
+      // car.drifting === true && fx.liveCount > 0 (04-action).
+      const deadline = Math.max(...REQUIRED.map((c) => c.deadlineMs), 15_000);
+      const started = Date.now();
+      let allMet = false;
+      // Keep driving while polling: the drift window may be shorter than a poll.
+      await page.keyboard.down("KeyW");
+      while (Date.now() - started < deadline) {
+        const ev = await readEvidence(page);
+        if (ev) {
+          const results = REQUIRED.map((c) => evaluateRequiredCondition(c.expr, ev));
+          if (results.every((r) => r.ok)) { allMet = true; break; }
+        }
+        if ((Date.now() - started) % 900 < 200) {
+          await page.keyboard.down("Space");
+          await page.keyboard.down("KeyA");
+        }
+        if ((Date.now() - started) % 900 > 400) {
+          await page.keyboard.up("Space");
+          await page.keyboard.up("KeyA");
+        }
+        await page.waitForTimeout(150);
+      }
+      await page.keyboard.up("KeyW");
+      await page.keyboard.up("Space");
+      await page.keyboard.up("KeyA");
+
+      // S11 (PRD-14 §16.1): synthCues === 0, voicesPlayed covers audio[], and
+      // every art/direction.ts audio[] event voiced during the timeline.
+      await expectS11Audio(page, APP_DIR);
     } finally {
       server.close();
     }

@@ -3,6 +3,7 @@
 // mechanism GLBs, chrome ball, lit inserts, one shadowed key. Gameplay modules
 // (table/ball-flow/flippers/plunger/missions/scoring) are unchanged; audio
 // plays through the legacy cue map until C-25 game-sfx is real (standIn R-14-09).
+import { instrumentAudio } from "./audio-proof";
 import { scene } from "@aura3d/engine";
 import { createGame, type Game, lookManifest } from "@aura3d/game";
 import { createTableSimulation, quatToEuler } from "../gameplay/table";
@@ -44,7 +45,7 @@ function buildScene() {
 
 // ----------------------------------------------------------------- audio -----
 
-const audio = createVaultAudio();
+const audio = instrumentAudio(createVaultAudio(), { cue: null });
 const audioCueLog: string[] = [];
 let audioUnlocked = false;
 function pushCue(cue: Parameters<typeof audio.cue>[0]): void {

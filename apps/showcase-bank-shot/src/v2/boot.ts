@@ -3,6 +3,7 @@
 // (no ambient, one shadowed spot, vendored HDRI reflections); gameplay modules
 // are unchanged (rules/racks/table/cue/ball-visuals); audio plays through the
 // existing route samples until C-25 game-sfx is real (standIn R-14-09).
+import { instrumentAudio } from "./audio-proof";
 import { scene } from "@aura3d/engine";
 import { createGame, type Game, lookManifest } from "@aura3d/game";
 import { CueController, AIM_STEP, SPIN_STEP } from "../gameplay/cue";
@@ -42,7 +43,7 @@ function buildScene() {
 
 // ----------------------------------------------------------------- audio -----
 
-const audio = createBilliardsAudio();
+const audio = instrumentAudio(createBilliardsAudio(), { cue: null });
 const audioCueLog: string[] = [];
 let audioUnlocked = false;
 function pushCue(cue: Parameters<typeof audio.cue>[0]): void {

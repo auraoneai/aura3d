@@ -3,6 +3,7 @@
 // scorer/defender via C-19 crossFadeTo, arc-ribbon ball trail, shoulder rig.
 // Gameplay modules (court/hoop-sim/rim/scoring/shot) are unchanged; audio
 // plays through the legacy cue map until C-25 game-sfx is real (R-14-10).
+import { instrumentAudio } from "./audio-proof";
 import { scene } from "@aura3d/engine";
 import { createGame, type Game, lookManifest } from "@aura3d/game";
 import { COURT_SPOTS } from "../gameplay/court";
@@ -51,7 +52,7 @@ function buildScene() {
 
 // ----------------------------------------------------------------- audio -----
 
-const audio = new BucketsAudioController();
+const audio = instrumentAudio(new BucketsAudioController(), { playCue: null });
 const audioCueLog: string[] = [];
 let audioUnlocked = false;
 function pushCue(cue: BucketsAudioCue, volume = 0.8): void {

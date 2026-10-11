@@ -1,9 +1,10 @@
 // Lander audio + cue log — extracted from boot.ts for 14-LOC.
+import { instrumentAudio } from "./audio-proof";
 import { createLanderAudio, type LanderAudioCue } from "../legacy/lander-audio";
 import type { AuroraCtx } from "./state";
 
 export function createLanderAudioBlock(ctx: AuroraCtx, reducedMotion: boolean) {
-  const audio = createLanderAudio(reducedMotion);
+  const audio = instrumentAudio(createLanderAudio(reducedMotion), { cue: null });
   const audioCueLog: string[] = [];
   function pushCue(cue: LanderAudioCue): void {
     audioCueLog.push(cue);

@@ -3,6 +3,7 @@
 // lazy section getters (no per-frame allocation > 1 KB). The required
 // condition reads `delivery.completed` here; van/traffic/fx sections feed the
 // capture reports.
+import { audioProof } from "../audio-proof";
 import type { Game } from "@aura3d/engine";
 import type { DispatchState } from "../../gameplay/dispatch";
 import type { TrafficCarSnapshot } from "../../gameplay/traffic";
@@ -90,7 +91,7 @@ export function publishCourierEvidence(b: CourierEvidenceBindings): void {
       return b.appliedLook;
     },
     get audio() {
-      return { cues: b.audioCueLog() };
+      return { cues: b.audioCueLog(), ...audioProof.snapshot() };
     },
     get boot() {
       return { bootedAtMs: b.bootedAtMs, frame: b.frameCount() };

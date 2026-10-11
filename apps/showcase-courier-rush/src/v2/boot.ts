@@ -4,6 +4,7 @@
 // look-back chase rig, autopilot scenario. Gameplay modules (van/traffic/
 // dispatch/city street graph) are unchanged; audio plays through the legacy
 // cue map until C-25 game-sfx is real (standIn R-14-09).
+import { instrumentAudio } from "./audio-proof";
 import {
   createGameArcadeVehicle, game as engineGame, scene
 } from "@aura3d/engine";
@@ -77,7 +78,7 @@ function buildScene() {
 
 // ----------------------------------------------------------------- audio -----
 
-const audio = createCourierAudio();
+const audio = instrumentAudio(createCourierAudio(), { cue: null });
 const audioCueLog: string[] = [];
 let audioUnlocked = false;
 function pushCue(cue: CourierAudioCue): void {

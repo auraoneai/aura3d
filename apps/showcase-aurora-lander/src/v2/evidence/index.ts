@@ -3,6 +3,7 @@
 // lazy section getters. The required conditions read `lander.touchdown`
 // ("landed" once a graded touchdown holds), `lander.altitude` (feet-plane AGL)
 // and `framing.padInFrame` (active pad inside the rig's cone) here.
+import { audioProof } from "../audio-proof";
 import type { AuraCameraPose, Game } from "@aura3d/engine";
 import { pointInRigFrame } from "../scene/camera";
 import type { LanderSite } from "../../gameplay/sites";
@@ -156,7 +157,7 @@ export function publishAuroraEvidence(b: AuroraEvidenceBindings): void {
       return b.appliedLook;
     },
     get audio() {
-      return { cues: b.audioCueLog() };
+      return { cues: b.audioCueLog(), ...audioProof.snapshot() };
     },
     get boot() {
       return { bootedAtMs: b.bootedAtMs, frame: b.frameCount() };

@@ -2,6 +2,7 @@
 // capture + browser specs read. loading.sceneId reports the logical room
 // ("hangar" before lock-in, "pit" after) while loading.sceneSwaps stays 0 —
 // both sets live in one union scene.
+import { audioProof } from "../audio-proof";
 import type { Game } from "@aura3d/game";
 
 export interface MechEvidenceBindings {
@@ -58,7 +59,7 @@ export function publishMechEvidence(bindings: MechEvidenceBindings) {
       return bindings.fx();
     },
     get audio() {
-      return bindings.audio();
+      return { ...bindings.audio(), ...audioProof.snapshot() };
     },
     get run() {
       return bindings.run();

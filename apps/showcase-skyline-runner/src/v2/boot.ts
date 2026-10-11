@@ -1,6 +1,7 @@
 // apps/showcase-skyline-runner/src/v2/boot.ts — Skyline Runner v2 shell (T2.x).
 // Drives the real platformer kit through the shared scene binding, with the
 // Rapier character solver deciding contact truth exactly like the legacy loop.
+import { instrumentAudio } from "./audio-proof";
 import { game as engineGame, scene } from "@aura3d/engine";
 import { createGame, lookManifest, type Prd09Game } from "@aura3d/game";
 import type { AuraRuntimeNodeHandle, GamePlatformerSnapshot } from "@aura3d/engine";
@@ -67,7 +68,7 @@ const accessibilitySettings = engineGame.accessibility.settings([
   })
 ]);
 const reducedMotion: boolean = accessibilitySettings.reducedMotion;
-const audio = createSkylineAudio(reducedMotion);
+const audio = instrumentAudio(createSkylineAudio(reducedMotion), { cue: null, setAmbienceAct: "act-ambience" });
 const feel = createSkylineFeel({
   reducedMotion,
   cameraTuning: skylineCameraTuning(false),
