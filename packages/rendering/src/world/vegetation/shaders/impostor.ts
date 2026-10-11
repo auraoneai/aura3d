@@ -12,7 +12,7 @@ uniform highp sampler2D u_impostorNormalDepth; // 8x8 atlas: tile-space normal X
 uniform float u_impostorGridDim;           // 8.0
 uniform float u_impostorParallax;          // parallax offset scale
 uniform float u_impostorAlphaCutoff;
-uniform int u_impostorWriteDepth;          // High+ only; Low skips for early-Z
+uniform float u_impostorWriteDepth;          // High+ only; Low skips for early-Z
 
 // World/view direction -> hemi-octahedral UV on the 8x8 grid.
 vec2 a3dOctahedralUV(vec3 dir) {

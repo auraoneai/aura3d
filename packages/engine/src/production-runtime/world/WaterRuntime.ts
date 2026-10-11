@@ -70,6 +70,12 @@ const gpuStates = new Map<string, WaterGpuState>();
  * `background` phase (lane 01 runs it only with an environment background).
  * Producers emitted only in `background` (planar reflections) exist iff set.
  */
+/** u_waveSpeed is vec4[8] (x used): 32 floats upload as a vec4 array; the device rejects 8-float arrays. */
+function waveSpeedVec4(speed: ArrayLike<number>): Float32Array {
+  const out = new Float32Array(32);
+  for (let i = 0; i < Math.min(8, speed.length); i += 1) out[i * 4] = speed[i]!;
+  return out;
+}
 export const WORLD_BACKGROUND_PHASE_KEY = "prd10.backgroundPhase";
 let frameCtx: FrameContributorContext | null = null;
 
@@ -345,7 +351,7 @@ export function waterTransparentPass(ctx: FrameContributorContext): RenderPass {
           ["u_worldOffset", new Float32Array([st.centerX, 0, st.centerZ])],
           ["u_waterHeight", record.height],
           ["u_waves", w.waves],
-          ["u_waveSpeed", w.waveSpeed],
+          ["u_waveSpeed", waveSpeedVec4(w.waveSpeed)],
           ["u_waveCount", w.waveCount],
           ["u_time", t],
           ["u_cameraPosition", new Float32Array([camera.position[0], camera.position[1], camera.position[2]])],
@@ -376,7 +382,7 @@ export function waterTransparentPass(ctx: FrameContributorContext): RenderPass {
           ["u_sunDirection", new Float32Array([0.42, -0.9, 0.18])],
           ["u_sunColor", new Float32Array([1.4, 1.35, 1.25])],
           ["u_skyHorizonColor", new Float32Array([0.5, 0.7, 0.9])],
-          ["u_shIrradiance", new Float32Array(27)],
+          ["u_shIrradiance", new Float32Array(36)], // vec4[9]
           ["u_fogColor", new Float32Array([0.6, 0.72, 0.85])],
           ["u_fogNearFar", new Float32Array([200, 1200])],
           ["u_ambientSH", new Float32Array([0.25, 0.28, 0.32])],
