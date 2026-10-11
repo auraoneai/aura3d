@@ -22,6 +22,7 @@ import {
 } from "../../../../packages/rendering/src";
 import { registerFrameContributor, type FrameContributorContext } from "../../../../packages/rendering/src/contracts/frameGraph";
 import type { RenderPass } from "../../../../packages/rendering/src/RenderPass";
+import { DEPTH_TEXTURE_SAMPLER } from "../../../../packages/rendering/src/renderer/SceneDepthCopyPass";
 import { errorText, fullscreenDraw, mountAura, OPAQUE_STATE, placeCanvas, settleAura, type FullscreenDraw } from "./specKit";
 
 export interface FrameGraphReport {
@@ -76,7 +77,7 @@ export async function runFrameGraphTool(stage: HTMLElement): Promise<FrameGraphR
       // Sentinel 0.5 (code 128): a probe draw that never lands reads 128, not
       // a plausible depth of 0, so the spec can tell "draw failed" from "depth 0".
       ctx.device.clearRenderTarget?.([0.5, 0.5, 0.5, 1]);
-      probe.draw.draw(OPAQUE_STATE, new Map<string, UniformValue>([["u_depth", new TextureBinding({ name: "u_depth", texture, required: true })]]));
+      probe.draw.draw(OPAQUE_STATE, new Map<string, UniformValue>([["u_depth", new TextureBinding({ name: "u_depth", texture, sampler: DEPTH_TEXTURE_SAMPLER, required: true })]]));
       centerDepth = ctx.device.readPixels(4, 4, 1, 1)[0] ?? null;
       cornerDepth = ctx.device.readPixels(0, 0, 1, 1)[0] ?? null;
       depthCopySize = copy ? [copy.width, copy.height] : null;
