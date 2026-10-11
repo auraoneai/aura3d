@@ -30,7 +30,7 @@ import { VertexFormat } from "../../../../packages/rendering/src/VertexFormat";
 import type { RenderItem } from "../../../../packages/rendering/src/ForwardPass";
 
 const V2 = resolveQrFlags({ env: { A3D_QR_CORE: "v2" } });
-const OFF = resolveQrFlags({ env: {} });
+const OFF = resolveQrFlags({ env: { A3D_QR_CORE: "0" } });
 
 function device(): MockRenderDevice {
   const d = new MockRenderDevice();

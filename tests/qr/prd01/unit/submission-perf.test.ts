@@ -40,7 +40,7 @@ import { setRendererQrFlags } from "../../../../packages/rendering/src/renderer/
 import { composeMat4, type Mat4 } from "../../../../packages/scene/src";
 
 const V2 = resolveQrFlags({ env: { A3D_QR_CORE: "v2" } });
-const OFF = resolveQrFlags({ env: {} });
+const OFF = resolveQrFlags({ env: { A3D_QR_CORE: "0" } });
 
 function executeFrame(device: MockRenderDevice, pass: ForwardPass): void {
   device.beginFrame(16, 16);

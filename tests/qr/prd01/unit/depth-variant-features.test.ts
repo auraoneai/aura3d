@@ -32,7 +32,7 @@ describe("#751 depthVariantFeaturesFor", () => {
 
   it("flags off: none of them", () => {
     disposers.push(registerDepthVariantFeature(feature("prd01.t751off", "A3D_QR_CORE")));
-    expect(depthVariantFeaturesFor(resolveQrFlags({ env: {} })).some((f) => f.id === "prd01.t751off")).toBe(false);
+    expect(depthVariantFeaturesFor(resolveQrFlags({ env: { A3D_QR_CORE: "0" } })).some((f) => f.id === "prd01.t751off")).toBe(false);
   });
 
   it("unregistering removes the feature", () => {

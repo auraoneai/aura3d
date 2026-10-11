@@ -40,7 +40,7 @@ function attr(geometry: Geometry, index: number, semantic: "position" | "normal"
 
 describe("Q-15-2 flag off: legacy primitives unchanged", () => {
   it("qrPrimitiveGeometryOptions is undefined without A3D_QR_CORE", () => {
-    expect(qrPrimitiveGeometryOptions(resolveQrFlags({}))).toBeUndefined();
+    expect(qrPrimitiveGeometryOptions(resolveQrFlags({ options: ["-core"] }))).toBeUndefined();
     expect(qrPrimitiveGeometryOptions(undefined)).toBeUndefined();
     expect(qrPrimitiveGeometryOptions(resolveQrFlags({ options: ["core"] }), { primitiveSegments: "half" })).toEqual({ core: true, primitiveSegments: "half" });
   });
@@ -48,7 +48,7 @@ describe("Q-15-2 flag off: legacy primitives unchanged", () => {
   it("entries built with and without the (undefined) option are byte-identical to the legacy geometry", () => {
     const nodes: AuraSceneNode[] = PRIMITIVES.map((primitive) => node(primitive, { size: [1, 2, 3] }));
     const legacy = createProductionRuntimePrimitiveEntries(nodes);
-    const off = createProductionRuntimePrimitiveEntries(nodes, qrPrimitiveGeometryOptions(resolveQrFlags({})));
+    const off = createProductionRuntimePrimitiveEntries(nodes, qrPrimitiveGeometryOptions(resolveQrFlags({ options: ["-core"] })));
     expect(off).toHaveLength(PRIMITIVES.length);
     off.forEach((entry, index) => {
       const a = legacy[index]!.resources[0]!;
