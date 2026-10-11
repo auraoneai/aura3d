@@ -1,0 +1,104 @@
+name: qr-prd07-gpu
+
+# Lane 07 GPU visual proof on a real GPU (self-hosted azure-gpu, NVIDIA L4,
+# ANGLE Vulkan). Captures 14-particles and the PRD 07 outdoor/game scenes under
+# `none`, `$ALL` and `$ALL,strict`, each arm --strict, then verifies every
+# report (ready, drawCalls > 0, errors == []) with verify-reports.mjs.
+# Self-hosted runner + public repo: the job only runs for same-repo PRs and
+# dispatch — fork PR code never reaches the runner. No secrets are used.
+
+on:
+  pull_request:
+    paths:
+      - "packages/rendering/src/{vfx,atmosphere}/**"
+      - "packages/rendering/src/lanes/prd07.ts"
+      - "benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd07/**"
+      - ".github/workflows/qr-prd07-gpu.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qr-prd07-gpu-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gpu-capture:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, azure-gpu]
+    timeout-minutes: 60
+    env:
+      QR_BENCH_CHROME_ARGS: "--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist"
+      SCENE_LIST: "14-particles,09-outdoor-environment,17-large-environment,18-game-scene"
+      # $ALL written out (matches qr-required.yml QR_ALL_FLAGS).
+      QR_ALL_FLAGS: "core,lighting,post,materials,assets,animation,vfx,camera,game,world,tiers,looks,compiler"
+      EVIDENCE_DIR: "docs/project/aura3d-quality-rebuild/evidence/prd07/gpu-${{ github.run_id }}"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - name: Fetch bench LFS blobs
+        run: |
+          git lfs pull --include="fixtures/asset-corpus/damaged-helmet.glb,fixtures/asset-corpus/antique-camera.glb,fixtures/asset-corpus/clear-coat-test.glb,fixtures/asset-corpus/sheen-test-grid.glb,public/aura-assets/propRockA.52dd1f0f.glb,public/aura-assets/propRockB.c94b2733.glb,public/aura-assets/deepRecoveryCrateStandard.02520123.glb"
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: GPU info
+        run: nvidia-smi --query-gpu=name,driver_version --format=csv
+      - name: Build benchmark bundle
+        run: pnpm exec vite build --config benchmarks/quality-rebuild/vite.config.ts
+      - name: Capture (flags none)
+        run: >-
+          node benchmarks/quality-rebuild/capture.mjs
+          --dist benchmarks/quality-rebuild/dist
+          --out "$EVIDENCE_DIR/capture-none"
+          --scenes "$SCENE_LIST"
+          --flags none
+          --strict
+      - name: Capture (flags $ALL)
+        if: always()
+        run: >-
+          node benchmarks/quality-rebuild/capture.mjs
+          --dist benchmarks/quality-rebuild/dist
+          --out "$EVIDENCE_DIR/capture-all"
+          --scenes "$SCENE_LIST"
+          --flags "$QR_ALL_FLAGS"
+          --strict
+      - name: Capture (flags $ALL,strict)
+        if: always()
+        run: >-
+          node benchmarks/quality-rebuild/capture.mjs
+          --dist benchmarks/quality-rebuild/dist
+          --out "$EVIDENCE_DIR/capture-all-strict"
+          --scenes "$SCENE_LIST"
+          --flags "$QR_ALL_FLAGS,strict"
+          --strict
+      - name: Verify capture reports (ready / drawCalls > 0 / errors == [])
+        if: always()
+        run: node tests/qr/prd07/ci/verify-reports.mjs capture
+      - name: 14-particles summary
+        if: always()
+        run: |
+          for f in "$EVIDENCE_DIR"/capture-*/report.json; do
+            [ -f "$f" ] || continue
+            node -e '
+              const r = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+              const gpu = JSON.stringify(r.environment?.gpu ?? null);
+              for (const s of (r.scenes ?? []).filter((x) => x.scene === "14-particles")) {
+                const a = s.engines?.aura3d ?? {};
+                console.log(`${process.argv[1]}: gpu=${gpu} status=${a.status} drawCalls=${a.payload?.drawCalls} errors=${(a.payload?.errors ?? []).length}`);
+              }' "$f" | tee -a "$GITHUB_STEP_SUMMARY"
+          done
+      - name: Upload frames + reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qr-prd07-gpu-${{ github.run_id }}
+          path: ${{ env.EVIDENCE_DIR }}/
+          retention-days: 30
+          if-no-files-found: error
