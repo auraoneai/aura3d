@@ -40,6 +40,7 @@ import { fileURLToPath } from "node:url";
 const toolDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(toolDir, "..", "..");
 const templateRoot = path.join(repoRoot, "packages", "create-aura3d", "templates");
+const hdriSource = path.join(repoRoot, "packages", "create-aura3d", "hdri");
 const packDir = path.join(repoRoot, "tests", "reports", "release-tarballs");
 
 // -------------------------------------------------------------------------
@@ -199,7 +200,34 @@ function scaffoldTemplate(id) {
     recursive: true,
     filter: (src) => !path.relative(source, src).split(/[\\/]/).some((part) => part === "node_modules" || part === "dist" || part === "test-results")
   });
+  // Mirror createA3DProject (packages/create-aura3d/src/template-hdri.ts): a
+  // template that authors a look gets the package's HDRI set under
+  // public/hdri, or every look IBL/sky 404s in the captured frame.
+  if (templateAuthorsLook(dir)) copyTemplateHdris(dir);
   return dir;
+}
+
+function templateAuthorsLook(dir) {
+  const src = path.join(dir, "src");
+  if (!existsSync(src)) return false;
+  const stack = [src];
+  while (stack.length) {
+    const current = stack.pop();
+    for (const entry of readdirSync(current, { withFileTypes: true })) {
+      const file = path.join(current, entry.name);
+      if (entry.isDirectory()) stack.push(file);
+      else if (/\.(ts|tsx|js|mjs)$/.test(entry.name) && /\blooks\.(preset|nodes)\(/.test(readFileSync(file, "utf8"))) return true;
+    }
+  }
+  return false;
+}
+
+function copyTemplateHdris(dir) {
+  const hdrs = existsSync(hdriSource) ? readdirSync(hdriSource).filter((name) => name.endsWith(".hdr")).sort() : [];
+  if (hdrs.length === 0) throw new Error(`no look HDRIs found in ${hdriSource}`);
+  const target = path.join(dir, "public", "hdri");
+  mkdirSync(target, { recursive: true });
+  for (const file of [...hdrs, "ATTRIBUTION.md"]) cpSync(path.join(hdriSource, file), path.join(target, file));
 }
 // -------------------------------------------------------------------------
 // In-page instrumentation (identical to tools/quality-rebuild-capture)

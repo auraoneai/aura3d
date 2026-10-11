@@ -24,15 +24,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { build } from "vite";
 import { aliasEntries } from "../../vite.aliases.generated";
+import { copyTemplateHdris, TEMPLATE_HDRI_DIR, templateAuthorsLook } from "../../packages/create-aura3d/src/template-hdri";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const templateRoot = path.join(repoRoot, "packages", "create-aura3d", "templates");
-// The §7.1.1 look HDRIs (lookPresets.ts `hdri`). Poly Haven CC0 originals
-// (aura.library.json studio-soft / outdoor-midday / outdoor-golden cite the
-// same sources); copied here for capture/validation builds.
-const hdriSource = path.join(repoRoot, "fixtures", "environment-corpus", "hdri");
-const libraryHdriSource = path.join(repoRoot, "assets", "library", "hdri");
-const LIBRARY_HDRIS = ["night-2k.hdr"] as const;
+// The look HDRIs (looks.ts HDRI_ASSET, incl. the A3D_QR_LOOKS night-2k):
+// Poly Haven CC0 originals shipped by create-aura3d (hdri/ATTRIBUTION.md).
+const hdriSource = path.join(repoRoot, "packages", "create-aura3d", TEMPLATE_HDRI_DIR);
 
 const argv = process.argv.slice(2);
 const opt = (name: string, fallback: string): string => {
@@ -86,39 +84,11 @@ function scaffold(id: string): { dir: string; hdri: string[] } {
     recursive: true,
     filter: (src) => !path.relative(source, src).split(/[\\/]/).some((part) => ["node_modules", "dist", "test-results"].includes(part))
   });
-  // A template that authors a look gets the §7.1.1 HDRIs its presets
-  // reference (/hdri/<file>.hdr); without them every look IBL 404s.
-  const hdri: string[] = [];
-  if (templateAuthorsLook(dir) && existsSync(hdriSource)) {
-    const target = path.join(dir, "public", "hdri");
-    mkdirSync(target, { recursive: true });
-    for (const file of readdirSync(hdriSource).filter((name) => name.endsWith(".hdr"))) {
-      cpSync(path.join(hdriSource, file), path.join(target, file));
-      hdri.push(file);
-    }
-    // A3D_QR_LOOKS night looks (looks.ts LOOK_QR_UPGRADES): the CC0
-    // aura.library.json `night-2k` HDRI.
-    for (const file of LIBRARY_HDRIS) {
-      cpSync(path.join(libraryHdriSource, file), path.join(target, file));
-      hdri.push(file);
-    }
-  }
+  // A template that authors a look gets the HDRIs its presets reference
+  // (/hdri/<file>.hdr); without them every look IBL 404s. Same helper and
+  // same single source (packages/create-aura3d/hdri) as createA3DProject.
+  const hdri = templateAuthorsLook(dir) ? copyTemplateHdris(hdriSource, dir) : [];
   return { dir, hdri };
-}
-
-function templateAuthorsLook(dir: string): boolean {
-  const src = path.join(dir, "src");
-  if (!existsSync(src)) return false;
-  const stack = [src];
-  while (stack.length) {
-    const current = stack.pop()!;
-    for (const entry of readdirSync(current, { withFileTypes: true })) {
-      const file = path.join(current, entry.name);
-      if (entry.isDirectory()) stack.push(file);
-      else if (/\.(ts|tsx|js|mjs)$/.test(entry.name) && /\blooks\.(preset|nodes)\(/.test(readFileSync(file, "utf8"))) return true;
-    }
-  }
-  return false;
 }
 
 const rows: BuildRow[] = [];
