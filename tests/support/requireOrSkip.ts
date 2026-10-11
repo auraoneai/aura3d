@@ -45,8 +45,14 @@ export function integratedPending(now: Date = new Date()): readonly IntegratedPe
     const e = entry as Partial<IntegratedPendingEntry>;
     const valid = typeof e.id === "string" && typeof e.owner === "string" && Number.isInteger(e.issue) &&
       typeof e.expires === "string" && !Number.isNaN(Date.parse(e.expires)) && typeof e.reason === "string";
-    return valid && Date.parse(e.expires as string) >= now.getTime();
+    return valid && expiryEnd(e.expires as string) > now.getTime();
   });
+}
+
+/** A date-only expiry (YYYY-MM-DD) stays valid through the end of that UTC day. */
+function expiryEnd(expires: string): number {
+  const t = Date.parse(expires);
+  return /^\d{4}-\d{2}-\d{2}$/.test(expires) ? t + 86_400_000 : t;
 }
 
 export function isIntegratedPending(id: string, now: Date = new Date()): boolean {
