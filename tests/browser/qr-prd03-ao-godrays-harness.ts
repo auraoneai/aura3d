@@ -181,10 +181,11 @@ export async function runGodRayShaftProbe() {
   // else (PostQualityTiers godRays gate). The old "off" leg had no
   // volumetricFog, so the forward inscatter on the pillar faces counted as
   // "god-ray light in the occluded mask" (+71%, GPU run 38151583035).
-  const off = await renderFrame(shaftScene("on"), ["post"], 8, "shaft-off", "low");
-  // "high" is the default tier: no switch/re-submit on this leg (GPU run
-  // 38162155588 logged "Render device is disposed" after a re-submit here).
+  // On leg first, at the default tier with no switch: the recorded tier
+  // carries into the next app (postBridge.ts:176, run 38162635813 showed the
+  // on leg at "low" too), so the "low" leg must come last.
   const on = await renderFrame(shaftScene("on"), ["post"], 8, "shaft-on");
+  const off = await renderFrame(shaftScene("on"), ["post"], 8, "shaft-off", "low");
   // Pillar mask and its bounding rows/columns.
   const pillar = new Uint8Array(SIZE * SIZE);
   let minX = SIZE, maxX = -1, minY = SIZE, maxY = -1;
