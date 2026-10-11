@@ -146,7 +146,12 @@ export class SkyDrawPass extends BaseRenderPass {
   private viewProjection: Float32Array = IDENTITY;
 
   constructor(private readonly device: RenderDevice) {
-    super("prd07.sky.background", [], ["aura.scene.color"]);
+    // T0-34 / #1111: the background phase runs only after
+    // EnvironmentBackgroundPass, which writes "environment-background-color"
+    // (ENVIRONMENT_BACKGROUND_COLOR_RESOURCE, literal to keep that module out
+    // of the vfx chunk). Writing `aura.scene.color` collided with the final
+    // transparent pass on the v2 output path ("written by both" throw).
+    super("prd07.sky.background", ["environment-background-color"], ["prd07.sky.background.color"]);
   }
 
   setSpec(spec: AuraSkySpecLike, time: number): void {
