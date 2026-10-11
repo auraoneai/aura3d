@@ -508,10 +508,19 @@ export function createAuraCameraController(
   if (typeof appWithSetScene.setScene === "function") {
     const originalSetScene = appWithSetScene.setScene.bind(app);
     appWithSetScene.setScene = (next: unknown) => {
+      const previous = renderCamera;
       restoreRenderCamera();
-      renderCamera = undefined;
-      renderCameraBackup = undefined;
+      // If this throws, the scene did not change: renderCamera stays bound and
+      // the next update writes the pose into it again.
       const result = originalSetScene(next);
+      if (previous && liveSpec() === previous) {
+        // The new scene reuses the same camera object (e.g. repeated
+        // AuraSceneBuilder.toJSON()): keep it as the renderer-held camera and
+        // force the rig to re-read its restored authored values (Codex review
+        // on #1213: clearing renderCamera first left updates pixel-inert).
+        boundSpec = undefined;
+        writeSpec = undefined;
+      }
       rebindIfNeeded();
       arm();
       return result;
