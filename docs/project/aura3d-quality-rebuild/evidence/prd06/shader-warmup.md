@@ -1,5 +1,8 @@
 # PRD-06 T2.8 — shader warm-up on actor load (§9.7)
 
+> **06-REC note (finish phase, G3):** this file cites no passing remote run id; every completion claim below is recorded as **unbacked** until a green lane-workflow/GitLab run id is added next to it.
+
+
 ## What changed
 
 The `prd06.animation` `TypedGLBActorExtension` now precompiles the programs for every

@@ -1,5 +1,8 @@
 # T3.9 — `prd06-ik-slope` lane scene (PRD-06:1249-1277)
 
+> **06-REC note (finish phase, G3):** this file cites no passing remote run id; every completion claim below is recorded as **unbacked** until a green lane-workflow/GitLab run id is added next to it.
+
+
 Scene `prd06-ik-slope` in `benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd06/`.
 Soldier `Idle` stands straddling a shared terrain seam: a 20° ramp (`z < 0`) and four
 18 cm stairs (`z ≥ 0`) from `benchmarks/quality-rebuild/shared/terrain.ts`

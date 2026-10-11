@@ -6,6 +6,8 @@ None block PRD-06 progress; lane-local fallbacks are in place for each.
 
 ## Q-01-CCR-06-6 — contracts: deform.ts PR 0a surface should carry real C-18 shapes
 
+**Filed:** #483.
+
 `packages/rendering/src/contracts/deform.ts` (opened under PR 0a, owner 01)
 declares different C-18 shapes than CONTRACTS.md :1172-1210
 (`SkinningPaletteBinding`, `SkinningPaletteTextureCacheLike`,
@@ -17,12 +19,16 @@ real surface.
 
 ## Q-15-2 / Q-11-3 — sub-image upload parity on LeanWebGL2 / WebGPU
 
+**Filed:** #484.
+
 `Texture.update(data, region?)` + revision-based `texSubImage*` dispatch landed
 for the WebGL2 texture registry only (`webgl2/TextureUpload.ts`). LeanWebGL2 and
 WebGPU still re-upload whole textures every revision bump. Request parity so the
 0-textures/frame palette path holds on those backends too.
 
 ## Q-15-4 — engine should install resolved QR flags via setRendererQrFlags
+
+**Filed:** #485.
 
 `resolveQrFlags` in `lanes/prd06.ts` honors the installed `rendererQrFlags`
 (`FrameGraph.ts:28-38`), but nothing in the engine app path calls
@@ -39,12 +45,16 @@ side (`prd06FlagsOn`), so the aliases are inert until installation lands.
 
 ## tests/unit/contracts/harness.ts — conformance() cannot take provided slots
 
+**Filed:** #486.
+
 `conformance(slot, suite)` passes `slot.provided` — a boolean — as the real
 impl, so any slot that has had `.provide()` called fails trivially. PRD-06 impl
 tests (`tests/unit/contracts/impl/prd06-deform.test.ts`) call `slot.get(flags)`
 directly instead. Owner: 01.
 
 ## Q-05-1 — wire inspectAnimationClips fields into inspectGltfAnimations
+
+**Filed:** #487.
 
 PRD-06 T0.7 landed the pure extractor `inspectAnimationClips(json, bin)` in
 `packages/aura3d-cli/src/commands/prd06/inspectAnimationClips.ts` (lane-owned)
@@ -56,6 +66,8 @@ lane 05 call `inspectAnimationClips` (or re-implement the accessor math) so the
 manifest surfaces real durations instead of `durationSource: "defaulted"`.
 
 ## Q-13-1 — wire fighterClipMap into the fighting-game template
+
+**Filed:** #488.
 
 PRD-06 T0.9a shipped `tests/qr/prd06/fixtures/fighting-clipmap/fighterClipMap.ts`
 (`Record<FighterAssetKey, Record<FighterClip, {clip, standIn?}>>`) and the
@@ -69,12 +81,16 @@ warnings (`FIGHTER_CLIP_STAND_IN`) and missing-clip errors
 
 ## tests/browser/example-dev-server.ts — deep contracts/* subpath unresolved
 
+**Filed:** #489.
+
 `packageEntryPoints` only maps exact `@aura3d/rendering/contracts` — deep
 subpaths (`@aura3d/rendering/contracts/deform`, `.../deform-shapes`) miss and
 throw. Lane harnesses work around it with strict-JSON importmaps inside the
 harness HTML (`tests/qr/prd06/browser/*-harness.html`). Owner: 15.
 
 ## Q-01-4 — forward path needs a per-item select/bindUniforms consumer at program-acquire
+
+**Filed:** #490.
 
 `contracts/program.ts`'s `ShaderFeature.select`/`bindUniforms` contract is only
 honored on the depth path today: `Prd02DepthShaderLibrary` calls
@@ -96,6 +112,8 @@ morph-bucket program keys actually materialize.
 
 ## Q-01-5 — MultiDraw has no integer-uniform upload path
 
+**Filed:** #491.
+
 `webgl2/MultiDraw.ts:115-194` uploads only floats: `number` → `uniform1f`,
 arrays → `uniformMatrix4fv`/`uniform4fv`/`uniform3fv`/`uniform2fv`. There is no
 `uniform1i`/`uniformNi`v dispatch, and `ReadonlyMap<string, UniformValue>`
@@ -110,6 +128,8 @@ the only missing piece for §8.2 texture-array bindings is integer uploads.)
 
 ## Q-06-1 (inbound → lane 15) — drain takeClipApplyDegradations through ctx.degrade
 
+**Note:** inbound to lane 06 (PRD-15's Q-06-1) — not re-filed; lane-15 owns the outbound request.
+
 PRD-15's Q-06-1 asks lane 06 to route `applyProductionActorAnimation` clip
 failures through `ctx.degrade`. `SceneCompileContext` does not reach the
 runtime render path, so T1.8 records them into a pending queue instead —
@@ -120,6 +140,8 @@ Entries carry `{ code: "clip-apply-failed", nodeId?, message, cause? }`
 (AuraDegradation minus `frame`).
 
 ## Q-01-6 — generated UBO `layout(binding = N)` is not valid WebGL2 GLSL
+
+**Filed:** #492.
 
 `resources/UniformBlock.ts` `uniformBlockGlsl(name, fields, binding)` emits
 `layout(std140, binding = 0) uniform AuraFrame { … }` when a binding is passed.
@@ -145,6 +167,8 @@ sources before `createShaderProgram` (documented in
 
 ## Q-01-2 (restate) — `physicalFeatureSet` never stamps `features:{}`
 
+**Filed:** #495.
+
 `SkinnedLitMaterial`/`physicalFeatureSet` produces a `ProgramFeatures` record
 with an empty `features` map, so even after Q-01-4's select consumer lands,
 the generated PBR program for a skinned PBR item has no `prd06.deform` key to
@@ -153,6 +177,8 @@ stamp (`skin4`/`skin8`/morph bucket) — the parity spec verifies the deform
 program against a static twin with the stamp applied manually.
 
 ## Q-13-3 — apply the `character-hero` reference module to the character-controller template
+
+**Filed:** #493.
 
 T4.3 ships `benchmarks/quality-rebuild/aura3d/scenes/prd06/characterHero.ts`
 (the `characterAnimation(controller, hero, spec)` wiring that replaces the
@@ -169,6 +195,8 @@ and add the template test mirroring
 exist on the hero; `animationState().activeActions.length ≥ 2` mid-ramp).
 
 ## Q-XX — `renderable.skinning.matrices` bottom row carries non-affine data (needs owner adjudication)
+
+**Filed:** #494. **Resolved by fix:** PR #517 — the convention-mix half confirmed and fixed: `Keyframe.multiplyMat4` computed B·A (row-major read); now column-major A·B, with `tests/qr/prd06/unit/palette-affine-row.test.ts` pinning row 3 == (0,0,0,1) and canonical parity. The packed-payload alternative was not substantiated — both palette consumers copy `matrixPalette()` verbatim. Deform w-pin kept.
 
 Found while root-causing the deform-light-view chromium failure: every joint
 slot's row-3 (elements 3, 7, 11, 15 read col-major) holds a structured
@@ -189,6 +217,8 @@ needs the convention fix.
 
 ## C-37 (cross-lane 06→15, landed in lane-15 file) — node-handle extension attach consumer
 
+**Filed:** #496.
+
 PRD line 956 assigns `app/runtimeNodes.ts` to lane 15 as "the C-37 consumer",
 but nothing in `packages/`/`apps/` ever called the registered
 `NodeHandleExtension`s — `handle.animation` (C-19, prd06) was write-only and
@@ -203,3 +233,44 @@ extensions whose `create(handle, app)` needs it. Flag-off keeps the member
 absent — the `?a3d-qr=none` handle shape is unchanged. Regression test:
 `tests/unit/contracts/C-37-runtime-nodes.test.ts` ("registered node-handle
 extensions flatten onto matching handles").
+
+## Filed issues (P-64 write-back, 2026-10-09)
+
+Ledger rows filed as `qr-request` + `to:prdNN` issues (folded in from #661). Rows marked
+NOT FILED pointed at lane-05 filings (body "From: lane-05") and still need a lane-06 issue
+(06-REQ); the lane-05 issue may be reused if its owner extends it to the lane-06 ask:
+
+| Ledger row | Issue |
+|---|---|
+| Q-01-1 skinned/morph fork deletion | #653 |
+| Q-01-2 generator honours prd06.deform select | #654 |
+| Q-01-3 sampler2DArray reflection | #655 |
+| Q-03-1 TemporalHistory previous-frame fields | #656 |
+| Q-04-2 TypedGLBActor onLoad-before-collect | #657 |
+| Q-05-2 hero rig + fighter pair admission | #658 |
+| Q-09-1 game.characterAnimation alias | #659 |
+| Q-13-4 codemod run on templates | #660 |
+| Q-01-CCR-06-6 deform.ts contract surface | #483 |
+| Q-15-2 / Q-11-3 sub-image upload parity | #484 |
+| Q-15-4 setRendererQrFlags install | #485 |
+| contracts/harness conformance() provided slots | #486 |
+| Q-05-1 inspectAnimationClips wiring | #487 |
+| Q-13-1 fighterClipMap wiring | #488 |
+| Q-13-3 character-hero module → template | #493 |
+| Q-XX non-affine matrices row-3 payload | #494 |
+| Q-14-1..4 game route changes | #428, #429, #430, #431 (see `qr-requests-q14.md`) |
+| Q-14-5 mech-hangar route | #432 |
+| Q-14-6 gallery-shift route | #433 |
+| Q-14-7 world-war-x codemod | #434 |
+| Q-14-8 games.json burst steps | #435 |
+| Q-02-1 DepthPass C-11 composition | NOT FILED for lane 06 (#446 is the lane-05 Q-02-1 filing) |
+| Q-04-1 / Q-04-3 material rows | NOT FILED for lane 06 (#448, #450 are lane-05 filings); Q-04-2 is #657 |
+| Q-11-1 WebGPU storage-buffer palette | NOT FILED for lane 06 (#451 is the lane-05 Q-11-1 filing) |
+| Q-11-2 tier table C-27 fields | NOT FILED for lane 06 (#452 is the lane-05 Q-11-2 filing) |
+| Q-12-1 checkpoint captures + LFS | NOT FILED for lane 06 (#453 is the lane-05 Q-12-1 filing) |
+| Q-13-2 skill rewrite | NOT FILED for lane 06 (#455 is the lane-05 Q-13-2 filing) |
+| Q-15-1..3 renderInput/lean/manifest | NOT FILED for lane 06 (#461-463 are lane-05 filings) |
+| 06-S4 C-18/C-19 browser contract specs (tests/browser/contracts/ is lane-15-owned) | #688 |
+| Baseline tools/* tsc red blocking every PR's unit check (quarantined-module imports) | #744 |
+| Baseline lit-scene pack fail — retarget.worker.ts missing from engine dist tarball (bundle-size red on every PR) | #746 |
+| Baseline Skills-gate scaffold-smoke red (animation-studio uniqueBuckets / episode-builder route 30s timeout / character-controller subjectBounds.y 0.36) | #747 |
