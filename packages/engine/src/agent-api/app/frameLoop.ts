@@ -10,6 +10,7 @@ import { collectAuraSceneEvidence } from "../sceneEvidence.js";
 import { collectLabelTelemetry, summarizeTextBuckets } from "../LabelTelemetry.js";
 import { createProductionSceneRenderer } from "./mountRenderer.js";
 import { appTierMaxPixelRatio, currentDevicePixelRatio, minimumBackingSize, resolveAppPixelRatio } from "./pixelRatio.js";
+import { resolveMountQuality } from "../compiler/renderer.js";
 import { devicePixelRatioSafe, markTiming, performanceNow } from "../platform.js";
 import { groups } from "../nodes/groups.js";
 import { declaresWebGLContent, productionRenderErrorMessage } from "../compiler/observations.js";
@@ -82,7 +83,7 @@ export async function startProductionRender(
   // is re-evaluated on every resize (devicePixelRatio can change) with a 1×1 minimum.
   const coreDpr = qrFlags.on("A3D_QR_CORE");
   const backingMinimum = minimumBackingSize(coreDpr);
-  const tierMaxPixelRatio = appTierMaxPixelRatio(options.renderer);
+  const tierMaxPixelRatio = appTierMaxPixelRatio(resolveMountQuality(options.renderer).tier);
   const resolvePixelRatio = (): number => resolveAppPixelRatio({
     flagOn: coreDpr,
     option: options.pixelRatio,
