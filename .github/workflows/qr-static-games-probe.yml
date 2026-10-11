@@ -1,0 +1,56 @@
+name: qr-static-games-probe
+# Throwaway diagnostic (branch-only, never merged): re-captures the three
+# showcase games that looked static in lead-live-shots run 38183561982, using
+# each game's real start input, and dumps rAF rate + evidence globals.
+on:
+  push:
+    branches: ['qr/static-games-probe']
+jobs:
+  probe:
+    runs-on: [self-hosted, linux, gpu-l4, track0]
+    timeout-minutes: 20
+    steps:
+      - run: |
+          set -eu
+          mkdir -p shots && cd shots
+          npm init -y >/dev/null && npm i -s playwright-core@1.59.1 >/dev/null
+          cat > s.mjs <<'JS'
+          import { chromium } from 'playwright-core';
+          import { writeFileSync } from 'node:fs';
+          const args = (process.env.ARGS || '').split(' ').filter(Boolean);
+          const wait = (p, ms) => p.waitForTimeout(ms);
+          // Per-game start input (from apps/showcase-*/src/legacy/main.ts).
+          const plans = {
+            'showcase-gravity-post': async (p) => { await p.keyboard.down('ArrowRight'); await wait(p, 1500); await p.keyboard.up('ArrowRight'); await p.keyboard.press('Enter'); await wait(p, 2500); },
+            'showcase-turbo-drift-circuit': async (p) => { await p.keyboard.down('ArrowUp'); await wait(p, 3000); await p.keyboard.down('ArrowRight'); await wait(p, 1500); await p.keyboard.up('ArrowRight'); await p.keyboard.up('ArrowUp'); },
+            'showcase-mech-hangar': async (p) => { await p.keyboard.press('Enter'); await wait(p, 2500); await p.keyboard.down('KeyD'); await wait(p, 1500); await p.keyboard.up('KeyD'); },
+          };
+          const rafRate = (p) => p.evaluate(() => new Promise((res) => { let n = 0; const t0 = performance.now(); const f = () => { n++; if (performance.now() - t0 < 1000) requestAnimationFrame(f); else res(n); }; requestAnimationFrame(f); }));
+          const ev = (p) => p.evaluate(() => { const e = window.__GRAVITY_POST_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__; try { return JSON.stringify(e).slice(0, 1500); } catch (x) { return 'err ' + x; } });
+          const out = [];
+          const b = await chromium.launch({ channel: 'chrome', headless: true, args });
+          for (const [g, plan] of Object.entries(plans)) {
+            const p = await b.newPage({ viewport: { width: 1280, height: 720 } });
+            const errs = []; p.on('pageerror', e => errs.push(String(e).slice(0, 300)));
+            const cons = []; p.on('console', m => { if (m.type() === 'error' || m.type() === 'warning') cons.push(m.type() + ': ' + m.text().slice(0, 300)); });
+            await p.goto(`https://aura3d.auraone.ai/apps/${g}/`, { waitUntil: 'load', timeout: 60000 }).catch(e => errs.push('goto ' + e));
+            await wait(p, 10000);
+            const r = { g, rafA: await rafRate(p), evA: await ev(p) };
+            await p.screenshot({ path: `${g}-a.png` });
+            await plan(p);
+            await p.screenshot({ path: `${g}-b.png` });
+            Object.assign(r, { rafB: await rafRate(p), evB: await ev(p), errs, cons: cons.slice(0, 12) });
+            out.push(r); console.log(JSON.stringify(r));
+            await p.close();
+          }
+          await b.close();
+          writeFileSync('report.json', JSON.stringify(out, null, 2));
+          JS
+          ARGS="${{ vars.QR_AZURE_GPU_CHROME_ARGS }}" node s.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: static-games-probe
+          path: |
+            shots/*.png
+            shots/report.json
