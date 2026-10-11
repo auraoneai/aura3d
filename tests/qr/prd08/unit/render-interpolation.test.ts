@@ -6,6 +6,7 @@ import { resolveQrFlags } from "@aura3d/engine/contracts";
 import {
   createFixedStepDriver,
   createInterpolationStore,
+  createTimeController,
   type AuraInterpolableHandle
 } from "@aura3d/engine/lanes";
 import type { AuraVec3 } from "@aura3d/engine";
@@ -66,6 +67,25 @@ describe("L-4 one render per tick", () => {
     driver.step(2 / 60);
     // Each submitted frame must carry this substep's pose, never the previous tick's.
     expect(log).toEqual(["advance", `present:${(1 / 60).toFixed(4)}`, "step", "advance", `present:${(1 / 60).toFixed(4)}`, "step"]);
+    driver.dispose();
+  });
+
+  it("renderPerSubstep camera clock continues from an already-advanced supplied time controller", () => {
+    const time = createTimeController();
+    time.advance(5); // the app ran 5 s before the driver attached
+    const times: number[] = [];
+    const app = { advance: () => {}, step: () => {} };
+    const driver = createFixedStepDriver(app, {
+      useRaf: false,
+      flags: interpFlags,
+      time,
+      renderPerSubstep: true,
+      camera: { present: (_dt: number, timeMs: number) => times.push(timeMs) }
+    });
+    driver.step(2 / 60);
+    // No rewind: every timestamp continues past the 5 s already elapsed.
+    expect(times.length).toBeGreaterThan(0);
+    expect(times[0]).toBeGreaterThan(5000);
     driver.dispose();
   });
 

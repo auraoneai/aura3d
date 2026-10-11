@@ -97,6 +97,10 @@ export class FixedStepDriver {
     this.camera = options.camera;
     this.renderPerSubstep = options.renderPerSubstep === true;
     this.time = options.time ?? new TimeController({ resolveHandle: options.resolveHandle });
+    // Continue from the supplied controller's clock: a driver attached to an
+    // already-advanced `options.time` must not rewind time-keyed rigs (legacy
+    // follow snaps on rewind; dolly/path restart their phase). Codex review on #1001.
+    this.cameraClock = this.time.realTime;
     const interpolationEnabled =
       options.interpolation === true ||
       (options.interpolation !== false &&
