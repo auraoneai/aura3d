@@ -1,8 +1,9 @@
 // tests/qr/prd14/browser/lib/serve.ts — static server over a built route dist.
 // Shared by the per-route dispatch specs (T1.10) and v2 specs (T2.x).
 import { createReadStream, existsSync } from "node:fs";
+import type { Page } from "@playwright/test";
 import { createServer, type Server } from "node:http";
-import { extname, join } from "node:path";
+import { basename, extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // lib/ is five levels below the repo root (tests/qr/prd14/browser/lib).
@@ -20,7 +21,11 @@ const MIME: Record<string, string> = {
 
 export function serve(dir: string): Promise<{ server: Server; url: string }> {
   const server = createServer((req, res) => {
-    const path = new URL(req.url ?? "/", "http://x").pathname;
+    const raw = new URL(req.url ?? "/", "http://x").pathname;
+    // capture-games builds with `base: /apps/<dir>/`; serve those URLs from
+    // the dist root so the built index.html resolves its assets.
+    const base = `/apps/${basename(dir)}/`;
+    const path = raw.startsWith(base) ? `/${raw.slice(base.length)}` : raw;
     const file = join(dir, path === "/" ? "index.html" : path);
     if (!existsSync(file) || !file.startsWith(dir)) {
       res.writeHead(404); res.end("not found"); return;
@@ -40,6 +45,7 @@ export function serve(dir: string): Promise<{ server: Server; url: string }> {
 /** Build outputs the lane workflow produces (capture-games --local-build or vite). */
 export function builtDist(appDir: string): string | undefined {
   return [
+    join(ROOT, "tools", "quality-rebuild-capture", ".build", "site", "apps", appDir),
     join(ROOT, "tools", "quality-rebuild-capture", ".build", appDir),
     join(APPS, appDir, "dist")
   ].find((d) => existsSync(join(d, "index.html")));
@@ -56,12 +62,11 @@ export async function soakIfNeeded(page: { waitForTimeout: (ms: number) => Promi
 }
 
 /** Console errors + page errors collected during a page run. */
-export function watchConsole(page: { on: (ev: string, fn: (m: unknown) => void) => void }): string[] {
+export function watchConsole(page: Page): string[] {
   const errors: string[] = [];
-  page.on("console", (m) => {
-    const msg = m as { type: () => string; text: () => string };
+  page.on("console", (msg) => {
     if (msg.type() === "error") errors.push(msg.text());
   });
-  page.on("pageerror", (m) => errors.push(String(m)));
+  page.on("pageerror", (err) => errors.push(String(err)));
   return errors;
 }

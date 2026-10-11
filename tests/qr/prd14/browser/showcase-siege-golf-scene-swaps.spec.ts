@@ -25,12 +25,12 @@ test.describe("showcase-siege-golf sceneSwaps=0 across a shot (§14.4)", () => {
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       // Autorun must actually take a stroke — don't accept a trivially-zero counter.
-      await expect.poll(() => page.evaluate(() =>
-        eval(EVIDENCE + ".shot")?.strokes ?? 0), { timeout: 30_000 }).toBeGreaterThanOrEqual(1);
-      const loading = await page.evaluate(() =>
+      await expect.poll(() => page.evaluate((EVIDENCE: string) =>
+        eval(EVIDENCE + ".shot")?.strokes ?? 0, EVIDENCE), { timeout: 30_000 }).toBeGreaterThanOrEqual(1);
+      const loading = await page.evaluate((EVIDENCE: string) =>
         JSON.parse(JSON.stringify(eval(EVIDENCE + ".loading"))) as {
           sceneSwaps?: number;
-        });
+        }, EVIDENCE);
       expect(loading.sceneSwaps).toBe(0);
       expect(errors.filter((e) => e.includes("error")), "page errors").toEqual([]);
     } finally {

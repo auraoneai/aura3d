@@ -24,10 +24,11 @@ test.describe("showcase-gallery-shift animated thief (§14.4)", () => {
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       // The binding applies the default idle clip on the first post-ready
       // frame; poll until the evidence reports it.
-      await expect.poll(() => page.evaluate(() =>
-        JSON.parse(JSON.stringify(eval(EVIDENCE + ".characters"))) as {
-          thiefTracksApplied?: number;
-        }).thiefTracksApplied ?? 0, { timeout: 15_000 }).toBeGreaterThan(0);
+      // Read the field inside the page: the old form read it off the
+      // evaluate() Promise, which is always undefined (poll never passed).
+      await expect.poll(() => page.evaluate((EVIDENCE: string) =>
+        (eval(EVIDENCE + ".characters") as { thiefTracksApplied?: number } | undefined)?.thiefTracksApplied ?? 0,
+        EVIDENCE), { timeout: 15_000 }).toBeGreaterThan(0);
       expect(errors.filter((e) => e.includes("error")), "page errors").toEqual([]);
     } finally {
       server.close();

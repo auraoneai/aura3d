@@ -45,7 +45,7 @@ async function shot(page: Page, name: string) {
   const png = await page.screenshot();
   const { rgba, width, height } = decodePngAsRgba(png);
   const result = canvasBlankCheck(rgba, width, height, [], BLANK_LIMITS);
-  expect(result.verdict, `${name} is likely blank`).toBe("pass");
+  expect(result.pass, `${name} is likely blank (dark ${result.darkFraction.toFixed(3)}, ${result.distinctColors} colours)`).toBe(true);
 }
 
 async function readEvidence(page: Page) {

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
-import { createReadStream, existsSync, readdirSync, readFileSync } from "node:fs";
+import { createReadStream, existsSync, readdirSync, readFileSync, realpathSync } from "node:fs";
 import { createServer, type Server } from "node:http";
-import { extname, join } from "node:path";
+import { basename, extname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { auditArtDirection } from "../../../../packages/game/src/art/audit";
 import { snapshotForAudit, assetManifestLike } from "../../../../packages/game/src/art/snapshot";
@@ -37,7 +37,10 @@ function serve(dir: string): Promise<{ server: Server; url: string }> {
   // prefixes ("/apps/foo" vs "/apps/foo-bar") cannot escape the build dir.
   const root = realpathSync(resolve(dir));
   const server = createServer((req, res) => {
-    const path = new URL(req.url ?? "/", "http://x").pathname;
+    const raw = new URL(req.url ?? "/", "http://x").pathname;
+    // capture-games builds with `base: /apps/<dir>/` (see lib/serve.ts).
+    const base = `/apps/${basename(root)}/`;
+    const path = raw.startsWith(base) ? `/${raw.slice(base.length)}` : raw;
     const file = resolve(root, "." + (path === "/" ? "/index.html" : path));
     if ((!file.startsWith(root + sep) && file !== root) || !existsSync(file)) {
       res.writeHead(404); res.end("not found"); return;
@@ -82,11 +85,6 @@ function routeEntries(): readonly { appDir: string; entry: GamesEntry }[] {
     .map((entry) => ({ appDir: entry.dir ?? entry.id, entry }));
 }
 
-function routeFlagShort(entry: GamesEntry): string | undefined {
-  const flag = (entry.qrFlags ?? []).find((f) => /^A3D_QR_ROUTE_/.test(f));
-  return flag === undefined ? undefined : `route-${flag.replace("A3D_QR_ROUTE_", "").toLowerCase().replace(/_/g, "-")}`;
-}
-
 /** Serializes beacon.app.scene + diagnostics out of the mounted page. */
 async function readMountedSnapshot(page: Page): Promise<unknown> {
   return page.evaluate(() => {
@@ -122,8 +120,11 @@ test.describe("art-direction runtime audit (T1.9)", () => {
 
       const { server, url } = await serve(root!);
       try {
-        const flag = routeFlagShort(entry);
-        await page.goto(`${url}/?a3d-qr=${flag ?? "all"}`);
+        // games.json qrFlags is the URL contract (route-<id> + engine short
+        // flags); falling back to "all" never selected the v2 route.
+        const flags = (entry.qrFlags ?? []).join(",");
+        expect(flags, `${appDir}: games.json has no qrFlags`).not.toBe("");
+        await page.goto(`${url}/?a3d-qr=${flags}`);
         await expect.poll(async () => page.evaluate(() => Boolean((window as { __AURA3D_GAME__?: unknown }).__AURA3D_GAME__))).toBe(true);
 
         const mounted = (await readMountedSnapshot(page)) as {

@@ -16,6 +16,7 @@ export default defineConfig({
     headless: true,
     viewport: { width: 1920, height: 1080 }
   },
-  // P-22: a skipped test fails the run on CI (no-skip-reporter.ts).
-  reporter: [["list"], ["./no-skip-reporter.ts"], ["json", { outputFile: process.env.PLAYWRIGHT_JSON_OUTPUT_NAME ?? "tests/qr/prd14/reports/browser.json" }]]
+  // P-22: a skipped test fails the run on CI (no-skip-reporter.ts). The JSON
+  // report path is relative to this config (tests/qr/prd14/reports/).
+  reporter: [["list"], ["./no-skip-reporter.ts"], ["json", { outputFile: process.env.PLAYWRIGHT_JSON_OUTPUT_NAME ?? "./reports/browser.json" }]]
 });
