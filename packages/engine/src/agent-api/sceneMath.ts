@@ -322,9 +322,32 @@ export function flattenSceneSnapshot(snapshot: AuraSceneSnapshot): AuraSceneSnap
   };
 }
 
+/**
+ * A3D_QR_LOOKS (lane 13): a v1 `{ kind: "look" }` node carries no children —
+ * its env/key light/fog/grade/bloom only existed as compile-handler
+ * diagnostics, so a v1 look never reached pixels. Lane 13 registers the
+ * lowering (its v0 child list); flatten keeps the look node (the C-36 handler
+ * still sees it) and splices the lowered children right after it, so every
+ * flattened consumer (compiler, legacy mount, frame source) renders them.
+ * Registered from the prd13 barrel to keep sceneMath free of looks imports.
+ */
+export type AuraLookLowering = (node: AuraSceneNode) => readonly AuraSceneNode[] | undefined;
+let lookLowering: AuraLookLowering | undefined;
+export function setLookLowering(lowering: AuraLookLowering | undefined): void {
+  lookLowering = lowering;
+}
+export function lowerLookNode(node: AuraSceneNode): readonly AuraSceneNode[] | undefined {
+  return (node as { kind?: string }).kind === "look" ? lookLowering?.(node) : undefined;
+}
+
 export function flattenSceneNodes(nodes: readonly AuraSceneNode[], parentTransform: AuraTransformSpec = {}): AuraSceneNode[] {
   const flattened: AuraSceneNode[] = [];
   for (const node of nodes) {
+    const lowered = lowerLookNode(node);
+    if (lowered !== undefined) {
+      flattened.push(node, ...flattenSceneNodes(lowered, parentTransform));
+      continue;
+    }
     if (node.kind === "group") {
       const groupTransform = composeAuraTransform(parentTransform, node);
       flattened.push(...flattenSceneNodes(node.children, groupTransform));

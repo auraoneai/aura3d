@@ -32,7 +32,7 @@ import type { AuraEffectNode, AuraModelNode, AuraPrimitiveNode, AuraSceneNode, A
 import type { GltfBounds } from "./gltfRuntime.js";
 import type { AuraEulerOrder, AuraQuat, AuraWorldTransform } from "../../contracts/sceneGraph.js";
 import { SCENE_GRAPH_SHEAR, composeTRSInto, decomposeMatrix, eulerToQuaternion, localMatrixOf, multiplyMat4Into, quaternionMultiply } from "../sceneGraph.js";
-import { animatedPosition, animatedRotation, flattenSceneNodes as legacyFlattenSceneNodes, createModelMatrix as legacyCreateModelMatrix, primitiveSize, resolveModelFitScale } from "../sceneMath.js";
+import { animatedPosition, animatedRotation, flattenSceneNodes as legacyFlattenSceneNodes, createModelMatrix as legacyCreateModelMatrix, lowerLookNode, primitiveSize, resolveModelFitScale } from "../sceneMath.js";
 
 export { SCENE_GRAPH_SHEAR };
 
@@ -250,6 +250,13 @@ function flattenInto(
   out: AuraSceneNode[]
 ): void {
   for (const node of nodes) {
+    // A3D_QR_LOOKS: v1 look node keeps its slot; its lowered children follow.
+    const lowered = lowerLookNode(node);
+    if (lowered !== undefined) {
+      out.push(node);
+      flattenInto(lowered, parentWorld, parentLookAt, cache, options, out);
+      continue;
+    }
     if (node.kind === "group") {
       const groupWorld = hasTransform(node) ? cache.world(node, parentWorld) : parentWorld;
       flattenInto(node.children, groupWorld, node.lookAt ?? parentLookAt, cache, options, out);

@@ -4,7 +4,7 @@ import type { AuraColor, AuraSceneNode, AuraPhysicsWorldController, AuraCameraSp
 import { AURA_NORMALIZED_MODEL_MAX_DIMENSION, boundsFromAsset, boundsHeight, boundsMaxDimension, boundsSize } from "../SceneGroundingUtils.js";
 import { AuraNodeBuilder } from "./builder.js";
 import { camera } from "./camera.js";
-import { isPositiveFinite } from "../sceneMath.js";
+import { isPositiveFinite, lowerLookNode } from "../sceneMath.js";
 import { physics } from "./physics.js";
 import { resolveCameraClipping } from "../RootRuntimeSupport.js";
 import { timeline } from "./timeline.js";
@@ -23,7 +23,9 @@ const DEFAULT_SCENE_BACKGROUND: AuraColor = "#070b12";
  */
 function lookBackdrop(nodes: readonly AuraSceneNode[]): AuraColor | undefined {
   let found: AuraColor | undefined;
-  for (const node of nodes) {
+  for (const raw of nodes) {
+    // A v1 `look` node backs onto the same v0 group its lowering produces.
+    const node = lowerLookNode(raw)?.[0] ?? raw;
     const group = node as { kind?: string; name?: string; background?: AuraColor };
     if (group.kind === "group" && typeof group.name === "string" && group.name.startsWith("aura-look:") && group.background !== undefined) {
       found = group.background;
