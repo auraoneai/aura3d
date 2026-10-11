@@ -58,6 +58,19 @@ test.describe("PRD-04 S6 texture tiling", () => {
     const stripOn = stripOf(on);
     const stripOff = stripOf(off);
     const aniso = ((on.extra ?? {}).samplerAnisotropy ?? {}) as { requestedApplied?: number; tier?: string };
+    // Record measurements before asserting, so a failing GPU run still uploads
+    // the numbers (the probe JSON was empty on runs 38140816058/38144924567).
+    probes.push({
+      scene: "prd04-tiled-ground",
+      farStdOn: stripOn.farThirdLumaStd,
+      farStdOff: stripOff.farThirdLumaStd,
+      spikeOn: stripOn.tileFreqSpike,
+      spikeOff: stripOff.tileFreqSpike,
+      maskedPixelsOn: stripOn.maskedPixels,
+      anisotropy: aniso,
+      appliedFlagsOn: (on.extra ?? {}).appliedQrFlags ?? null,
+      controlFails: { shimmer: stripOn.farThirdLumaStd <= 0.5 * stripOff.farThirdLumaStd }
+    });
 
     expect(stripOn.maskedPixels, "subject mask populated in the far strip").toBeGreaterThan(0);
     expect(
@@ -66,15 +79,6 @@ test.describe("PRD-04 S6 texture tiling", () => {
     ).toBeLessThanOrEqual(0.5 * stripOff.farThirdLumaStd);
     expect(aniso.requestedApplied, "anisotropy 16 on High").toBe(16);
     expect(stripOn.tileFreqSpike, `tile-freq spike ${stripOn.tileFreqSpike} <= 3x median`).toBeLessThanOrEqual(3);
-
-    probes.push({
-      scene: "prd04-tiled-ground",
-      farStdOn: stripOn.farThirdLumaStd,
-      farStdOff: stripOff.farThirdLumaStd,
-      spikeOn: stripOn.tileFreqSpike,
-      spikeOff: stripOff.tileFreqSpike,
-      controlFails: { shimmer: stripOn.farThirdLumaStd <= 0.5 * stripOff.farThirdLumaStd }
-    });
   });
 
   test("prd04-tiled-ground: Medium reports anisotropy 8", async ({ page }) => {
