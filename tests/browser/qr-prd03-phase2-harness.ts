@@ -15,8 +15,8 @@
 import { LUT_BAKE_GLSL, DISPLAY_GRADE_GLSL } from "../../packages/rendering/src/post/shaders/displayGrade.glsl";
 import { DisplayLutCache } from "../../packages/rendering/src/post/DisplayLutCache";
 import { applyToneOperator } from "../../packages/rendering/src/post/ToneOperators";
-import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
-import { readDefaultFramebuffer } from "./qr-prd03-frame-capture";
+import { camera, createAuraApp, lights, material, primitives, scene } from "@aura3d/engine";
+import { meanLuma, postDiagnostics, readDefaultFramebuffer } from "./qr-prd03-frame-capture";
 import { postV2ModulesReady } from "@aura3d/rendering";
 
 // The LUT-bake fragment reads `in vec2 v_uv`; a vertex shader without the
@@ -175,23 +175,42 @@ export function runLutRebakeProbe(): { bakeCount: number; frames: number; error?
 /** prd03-tone-ramp content: emissive ladder, no lights — HDR pixel ≈ E. */
 const LADDER = [0.25, 0.5, 1, 2, 4, 8] as const;
 
-export async function runToneEvalProbe(): Promise<{ perStep: number[]; expected: number[]; pipeline: string | null; error?: string }> {
+export async function runToneEvalProbe(): Promise<{
+  perStep: number[];
+  expected: number[];
+  pipeline: string | null;
+  /** Diagnostics: the same ladder after 3 more stepped frames, frame mean luma, post/output state. */
+  perStepSettled?: number[];
+  meanLuma?: number;
+  meanLumaSettled?: number;
+  diagnostics?: unknown;
+  error?: string;
+}> {
   const host = document.createElement("div");
-  host.style.cssText = "position:fixed;left:-2000px;top:0;width:320px;height:200px;";
+  // configureCanvas enforces a 320×220 minimum backing store; match it so the
+  // probe's layout maths uses the size actually rendered.
+  host.style.cssText = "position:fixed;left:-2000px;top:0;width:320px;height:220px;";
   document.body.appendChild(host);
   try {
     let built = scene()
       .background("#000000")
       .camera(camera.orthographic({ position: [0, 0, 10], target: [0, 0, 0], orthographicSize: 3.75 }));
     built = built.add(lights.ambient({ name: "off", intensity: 0, color: "#000000" }));
+    // GPU lane 38141069039 read 0 at every ladder step: `primitives.plane` is
+    // the horizontal XZ ground plane (size is a Vec3; `[1.4, 1.4]` left z
+    // undefined), so from this camera on +Z every step was edge-on and
+    // nothing was drawn. Thin boxes face the camera.
     LADDER.forEach((e, i) => {
-      built = built.add(primitives.plane({
+      built = built.add(primitives.box({
         name: `step-${e}`,
-        size: [1.4, 1.4],
+        size: [1.4, 1.4, 0.05],
         material: material.pbr({ color: "#000000", emissive: "#ffffff", emissiveIntensity: e, roughness: 1 })
       }).position(-4.5 + i * 1.8, 0, 0));
     });
-    built = built.add(effects.bloom({ intensity: 0.1, threshold: 1.0 }));
+    // No bloom here: bloom adds energy above threshold by design (S9), so a
+    // 1-LSB single-tone-eval oracle cannot hold for the E ≥ 2 steps with it
+    // on. The flag-on route stays v2 (`["tone-mapping"]` fuses; asserted by
+    // the spec through `post.pipeline`).
     const app = createAuraApp(host, {
       scene: built,
       renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
@@ -209,18 +228,24 @@ export async function runToneEvalProbe(): Promise<{ perStep: number[]; expected:
     const gl = canvas.getContext("webgl2")!;
     const pixels = readDefaultFramebuffer(gl, canvas.width, canvas.height);
     const post = (app.diagnostics() as { post?: { pipeline?: string } }).post;
+    const diagnostics = postDiagnostics(app);
+    // Diagnostics only: is a black ladder a first-frame effect?
+    for (let i = 0; i < 3; i++) app.step(1 / 60);
+    const settled = readDefaultFramebuffer(gl, canvas.width, canvas.height);
     app.dispose();
     const cy = Math.round(canvas.height / 2);
     const halfWidth = 3.75 * (canvas.width / canvas.height);
     const cx = (i: number) => Math.round(((-4.5 + i * 1.8) / (2 * halfWidth) + 0.5) * canvas.width);
-    const perStep = LADDER.map((_, i) => pixels[(cy * canvas.width + Math.min(canvas.width - 1, Math.max(0, cx(i)))) * 4]!);
+    const sample = (frame: Uint8Array) => LADDER.map((_, i) => frame[(cy * canvas.width + Math.min(canvas.width - 1, Math.max(0, cx(i)))) * 4]!);
+    const perStep = sample(pixels);
+    const perStepSettled = sample(settled);
     // The canvas holds the sRGB-encoded display value (the v2 OutputPass
     // writes outputColorSpace "srgb"), so the oracle is sRGB(aces(E)), not
     // the linear operator output (main 38098853109: step 0 off by exactly
     // the encode, 80 LSB).
     const srgb = (c: number) => (c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055);
     const expected = [...LADDER].map((e) => Math.round(srgb(applyToneOperator("aces", [e, e, e], 1)[0]!) * 255));
-    return { perStep, expected, pipeline: post?.pipeline ?? null };
+    return { perStep, expected, pipeline: post?.pipeline ?? null, perStepSettled, meanLuma: meanLuma(pixels), meanLumaSettled: meanLuma(settled), diagnostics };
   } catch (error) {
     return { perStep: [], expected: [], pipeline: null, error: error instanceof Error ? error.message : String(error) };
   } finally {

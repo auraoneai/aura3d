@@ -25,6 +25,12 @@ export interface NativeBloomOptions {
   readonly quality: BloomQualityPreset;
   readonly softKnee: number;
   readonly shoulder: number;
+  /**
+   * PRD-03 §6.6 (flag-on `v2` stamp only): the HDR bright extract keeps the
+   * soft-knee *excess* over threshold, so an input of excess E blooms E (S9
+   * "no hidden gain"). Absent flag-off: the legacy full-colour gate.
+   */
+  readonly excess?: true;
 }
 
 export interface NativeDepthOfFieldOptions {
@@ -809,6 +815,7 @@ export class WebGL2LegacyPostPipeline {
     this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_hdr"), hdr ? 1 : 0);
     this.host.gl.uniform1f(this.host.gl.getUniformLocation(brightProgram, "u_threshold"), options.threshold);
     this.host.gl.uniform1f(this.host.gl.getUniformLocation(brightProgram, "u_softKnee"), options.softKnee);
+    this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_excess"), options.excess === true ? 1 : 0);
     this.host.gl.drawArrays(this.host.gl.TRIANGLES, 0, 3);
 
     const blurProgram = this.ensureBloomBlurProgram();
@@ -911,6 +918,7 @@ export class WebGL2LegacyPostPipeline {
       this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_hdr"), hdr ? 1 : 0);
       this.host.gl.uniform1f(this.host.gl.getUniformLocation(brightProgram, "u_threshold"), options.threshold);
       this.host.gl.uniform1f(this.host.gl.getUniformLocation(brightProgram, "u_softKnee"), options.softKnee);
+      this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_excess"), options.excess === true ? 1 : 0);
       this.host.gl.drawArrays(this.host.gl.TRIANGLES, 0, 3);
     };
 
@@ -955,6 +963,7 @@ export class WebGL2LegacyPostPipeline {
     this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_hdr"), hdr ? 1 : 0);
     this.host.gl.uniform1f(this.host.gl.getUniformLocation(brightProgram, "u_threshold"), options.threshold);
     this.host.gl.uniform1f(this.host.gl.getUniformLocation(brightProgram, "u_softKnee"), options.softKnee);
+    this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_excess"), options.excess === true ? 1 : 0);
     this.host.gl.drawArrays(this.host.gl.TRIANGLES, 0, 3);
 
     // Level 0 downsamples the extracted highlight field, then blurs H into
@@ -1574,54 +1583,7 @@ void main() {
     if (this.bloomBrightExtractProgram) {
       return this.bloomBrightExtractProgram;
     }
-    this.bloomBrightExtractProgram = this.createFullscreenProgram(`#version 300 es
-precision highp float;
-precision highp int;
-uniform sampler2D u_source;
-uniform sampler2D u_brightLut;
-uniform int u_hdr;
-uniform float u_threshold;
-uniform float u_softKnee;
-out vec4 outColor;
-
-uvec4 byteTexel(sampler2D source, ivec2 coordinate) {
-  return uvec4(texelFetch(source, coordinate, 0) * 255.0 + 0.5);
-}
-
-void main() {
-  ivec2 pixel = ivec2(gl_FragCoord.xy);
-  if (u_hdr == 1) {
-    vec4 source = texelFetch(u_source, pixel, 0);
-    float luma = dot(source.rgb, vec3(0.2126, 0.7152, 0.0722));
-    float kneeLow = max(u_threshold - u_softKnee, 0.0);
-    float kneeHigh = min(u_threshold + u_softKnee, 1.0);
-    float weight = u_softKnee <= 0.0
-      ? (luma >= u_threshold ? 1.0 : 0.0)
-      : smoothstep(kneeLow, kneeHigh, luma);
-    outColor = source * weight;
-    return;
-  }
-  uvec4 source = byteTexel(u_source, pixel);
-  uint colorIndex = (source.r << 16u) | (source.g << 8u) | source.b;
-  uint byteIndex = colorIndex >> 3u;
-  uint texelIndex = byteIndex >> 2u;
-  ivec2 lutCoordinate = ivec2(
-    int(texelIndex % ${BLOOM_BRIGHT_LUT_WIDTH}u),
-    int(texelIndex / ${BLOOM_BRIGHT_LUT_WIDTH}u)
-  );
-  uvec4 packed = byteTexel(u_brightLut, lutCoordinate);
-  uint component = byteIndex & 3u;
-  uint packedByte = component == 0u
-    ? packed.r
-    : component == 1u
-      ? packed.g
-      : component == 2u
-        ? packed.b
-        : packed.a;
-  bool bright = ((packedByte >> (colorIndex & 7u)) & 1u) == 1u;
-  outColor = bright ? vec4(source) / 255.0 : vec4(0.0);
-}
-`, "webgl2-bloom-bright-extract");
+    this.bloomBrightExtractProgram = this.createFullscreenProgram(BLOOM_BRIGHT_EXTRACT_GLSL, "webgl2-bloom-bright-extract");
     return this.bloomBrightExtractProgram;
   }
 
@@ -2524,7 +2486,7 @@ export function normalizeNativeBloomOptions(options: Readonly<Record<string, unk
   } catch {
     throw new RenderDeviceError("Bloom quality must be one of performance|balanced|cinematic.", "INVALID_POSTPROCESS_OPTIONS", { quality: options.quality });
   }
-  return { threshold, intensity, radius, quality, softKnee, shoulder };
+  return { threshold, intensity, radius, quality, softKnee, shoulder, ...(v2 ? { excess: true as const } : {}) };
 }
 
 function normalizeNativeDepthOfFieldOptions(options: Readonly<Record<string, unknown>>): NativeDepthOfFieldOptions {
@@ -2866,3 +2828,71 @@ export function executePostGraphWebGL2(
     v2.releaseV2Target(host, ldrTailTarget);
   }
 }
+
+/**
+ * Native bloom bright-extract fragment (exported for the glslang unit gate).
+ * HDR sources: flag-on (`u_excess`) keeps the §6.6 soft-knee excess over
+ * threshold; flag-off keeps the legacy full-colour gate. LDR sources use the
+ * packed bright LUT.
+ */
+export const BLOOM_BRIGHT_EXTRACT_GLSL = `#version 300 es
+precision highp float;
+precision highp int;
+uniform sampler2D u_source;
+uniform sampler2D u_brightLut;
+uniform int u_hdr;
+uniform float u_threshold;
+uniform float u_softKnee;
+uniform int u_excess;
+out vec4 outColor;
+
+uvec4 byteTexel(sampler2D source, ivec2 coordinate) {
+  return uvec4(texelFetch(source, coordinate, 0) * 255.0 + 0.5);
+}
+
+void main() {
+  ivec2 pixel = ivec2(gl_FragCoord.xy);
+  if (u_hdr == 1) {
+    vec4 source = texelFetch(u_source, pixel, 0);
+    float luma = dot(source.rgb, vec3(0.2126, 0.7152, 0.0722));
+    if (u_excess == 1) {
+      // PRD-03 §6.6 soft-knee threshold weight (bloom.glsl prefilter twin):
+      // keep only the excess over threshold — quadratic inside the knee,
+      // linear above it — so bloom energy is proportional to the excess.
+      // u_softKnee is the absolute knee width (threshold × knee ratio).
+      float knee = max(u_softKnee, 0.0);
+      float soft = clamp(luma - u_threshold + knee, 0.0, 2.0 * knee);
+      soft = soft * soft / (4.0 * knee + 1e-5);
+      float excessWeight = max(soft, luma - u_threshold) / max(luma, 1e-5);
+      outColor = vec4(source.rgb * excessWeight, source.a);
+      return;
+    }
+    float kneeLow = max(u_threshold - u_softKnee, 0.0);
+    float kneeHigh = min(u_threshold + u_softKnee, 1.0);
+    float weight = u_softKnee <= 0.0
+      ? (luma >= u_threshold ? 1.0 : 0.0)
+      : smoothstep(kneeLow, kneeHigh, luma);
+    outColor = source * weight;
+    return;
+  }
+  uvec4 source = byteTexel(u_source, pixel);
+  uint colorIndex = (source.r << 16u) | (source.g << 8u) | source.b;
+  uint byteIndex = colorIndex >> 3u;
+  uint texelIndex = byteIndex >> 2u;
+  ivec2 lutCoordinate = ivec2(
+    int(texelIndex % ${BLOOM_BRIGHT_LUT_WIDTH}u),
+    int(texelIndex / ${BLOOM_BRIGHT_LUT_WIDTH}u)
+  );
+  uvec4 packed = byteTexel(u_brightLut, lutCoordinate);
+  uint component = byteIndex & 3u;
+  uint packedByte = component == 0u
+    ? packed.r
+    : component == 1u
+      ? packed.g
+      : component == 2u
+        ? packed.b
+        : packed.a;
+  bool bright = ((packedByte >> (colorIndex & 7u)) & 1u) == 1u;
+  outColor = bright ? vec4(source) / 255.0 : vec4(0.0);
+}
+`;
