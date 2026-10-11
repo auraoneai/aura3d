@@ -5,7 +5,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { DeviceProbe } from "../../../../packages/rendering/src/contracts/device";
-import { QUALITY_TIERS } from "../../../../packages/rendering/src/contracts/quality";
+import { QUALITY_TIERS, type AuraQualityTier } from "../../../../packages/rendering/src/contracts/quality";
 import { classifyRendererString } from "../../../../packages/rendering/src/quality/DeviceClasses";
 import {
   TierResolver,
@@ -16,7 +16,8 @@ import {
 } from "../../../../packages/rendering/src/quality/TierResolver";
 import {
   createRenderScaleController,
-  effectiveRenderScaleFloor
+  effectiveRenderScaleFloor,
+  type RenderScaleSource
 } from "../../../../packages/rendering/src/quality/RenderScaleController";
 import { QualityGovernor } from "../../../../packages/rendering/src/quality/QualityGovernor";
 import { AuraQuality } from "../../../../packages/rendering/src/quality/QualityController";
@@ -221,18 +222,113 @@ describe("QualityGovernor (§6.5)", () => {
     expect(steps[0]).toBe("ambientOcclusion");
   });
 
-  it("never steps while locked and steps back up on sustained headroom", () => {
-    const gov = makeGovernor();
-    const steps: { direction: string; feature: string }[] = [];
-    gov.onStep((s) => steps.push({ direction: s.direction, feature: s.feature }));
+});
+
+/**
+ * P-31 / 11-S7: PRD-11 §14 Phase 4 governor model. A stub `RenderScaleSource`
+ * is pinned at the governor's effective floor (or at scale 1 for headroom), so
+ * step timing depends only on the governor's own windows, not on the
+ * render-scale controller's hysteresis.
+ */
+describe("QualityGovernor §14 Phase 4 model (P-31)", () => {
+  class PinnedScale implements RenderScaleSource {
+    scale = 1;
+    readonly minScale = 0.5;
+    readonly maxScale = 1;
+    readonly overFrames = 0;
+    readonly underFrames = 0;
+    sample(): number { return this.scale; }
+  }
+
+  type Recorded = { frame: number; direction: "down" | "up"; feature: string; from: unknown; to: unknown };
+
+  function pinnedGovernor(opts: { tier?: AuraQualityTier; mobile?: boolean; targetFrameMs?: number } = {}) {
+    const source = new PinnedScale();
+    const gov = new QualityGovernor({
+      tier: opts.tier ?? "high",
+      mobile: opts.mobile === true,
+      ...(opts.targetFrameMs !== undefined ? { targetFrameMs: opts.targetFrameMs } : {}),
+      devicePixelRatio: 1,
+      scaleSource: source
+    });
+    source.scale = gov.effectiveFloor;
+    let frame = 0;
+    const steps: Recorded[] = [];
+    gov.onStep((s) => steps.push({ frame, direction: s.direction, feature: s.feature, from: s.from, to: s.to }));
+    const run = (count: number, ms: number | (() => number)): void => {
+      for (let i = 0; i < count; i += 1) {
+        frame += 1;
+        gov.tick(typeof ms === "number" ? ms : ms(), null);
+      }
+    };
+    return { gov, source, steps, run, frameNow: () => frame };
+  }
+
+  function directionChanges(steps: readonly Recorded[]): number {
+    let changes = 0;
+    for (let i = 1; i < steps.length; i += 1) if (steps[i]!.direction !== steps[i - 1]!.direction) changes += 1;
+    return changes;
+  }
+
+  it("High at the floor, 20 ms frames (1.2x): ssr at frame 300 ± 1, ambientOcclusion at 600 ± 1, one step each", () => {
+    const { steps, run } = pinnedGovernor({ tier: "high", targetFrameMs: 16.7 });
+    run(600, 20);
+    expect(steps.map((s) => `${s.direction}:${s.feature}`)).toEqual(["down:ssr", "down:ambientOcclusion"]);
+    expect(Math.abs(steps[0]!.frame - 300)).toBeLessThanOrEqual(1);
+    expect(Math.abs(steps[1]!.frame - 600)).toBeLessThanOrEqual(1);
+    // Each step adopts the next-lower tier's value (C-27 table: high → medium).
+    expect(steps[0]).toMatchObject({ from: QUALITY_TIERS.high.ssr, to: QUALITY_TIERS.medium.ssr });
+    expect(steps[1]).toMatchObject({ from: QUALITY_TIERS.high.ambientOcclusion, to: QUALITY_TIERS.medium.ambientOcclusion });
+  });
+
+  it("10 ms frames at scale 1 after the drop: first up-step at 600 ± 1 frames, restoring ambientOcclusion (LIFO)", () => {
+    const { gov, source, steps, run, frameNow } = pinnedGovernor({ tier: "high", targetFrameMs: 16.7 });
+    run(600, 20);
+    expect(steps).toHaveLength(2);
+    const dropAt = frameNow();
+    source.scale = 1;
+    run(700, 10);
+    const ups = steps.filter((s) => s.direction === "up");
+    expect(ups.length).toBeGreaterThanOrEqual(1);
+    expect(ups[0]!.feature).toBe("ambientOcclusion");
+    expect(Math.abs(ups[0]!.frame - dropAt - 600)).toBeLessThanOrEqual(1);
+    expect(gov.effectiveSettings().ambientOcclusion).toBe(QUALITY_TIERS.high.ambientOcclusion);
+    expect(gov.effectiveSettings().ssr).toBe(QUALITY_TIERS.medium.ssr);
+  });
+
+  it("lock() → zero steps over 2,000 frames of 20 ms", () => {
+    const { gov, steps, run } = pinnedGovernor({ tier: "high", targetFrameMs: 16.7 });
     gov.setLocked(true);
-    for (let i = 0; i < 12000; i += 1) gov.tick(30, null);
+    run(2000, 20);
     expect(steps).toHaveLength(0);
-    gov.setLocked(false);
-    for (let i = 0; i < 12000; i += 1) gov.tick(30, null);
-    expect(steps.filter((s) => s.direction === "down").length).toBeGreaterThan(0);
-    for (let i = 0; i < 13000; i += 1) gov.tick(8, null);
-    expect(steps.some((s) => s.direction === "up")).toBe(true);
+  });
+
+  it("tier medium skips ssr (already off) and steps ambientOcclusion first", () => {
+    expect(QUALITY_TIERS.medium.ssr).toBe(QUALITY_TIERS.low.ssr);
+    const { steps, run } = pinnedGovernor({ tier: "medium", targetFrameMs: 16.7 });
+    run(300, 20);
+    expect(steps).toHaveLength(1);
+    expect(steps[0]).toMatchObject({ direction: "down", feature: "ambientOcclusion" });
+    expect(Math.abs(steps[0]!.frame - 300)).toBeLessThanOrEqual(1);
+  });
+
+  it("mobile uses 120-frame windows (default 33.3 ms budget)", () => {
+    const { steps, run } = pinnedGovernor({ tier: "high", mobile: true });
+    run(240, 40); // 1.2 x 33.3 ms
+    expect(steps.map((s) => s.feature)).toEqual(["ssr", "ambientOcclusion"]);
+    expect(Math.abs(steps[0]!.frame - 120)).toBeLessThanOrEqual(1);
+    expect(Math.abs(steps[1]!.frame - 240)).toBeLessThanOrEqual(1);
+  });
+
+  it("oscillation: 1.2x base load, each down-step removes 10% → ≤ 2 direction changes in 3,000 frames, none in the last 1,000", () => {
+    const target = 16.7;
+    const base = 1.2 * target;
+    const { steps, run } = pinnedGovernor({ tier: "high", targetFrameMs: target });
+    const net = (): number => steps.reduce((n, s) => n + (s.direction === "down" ? 1 : -1), 0);
+    run(3000, () => base * (1 - 0.1 * net()));
+    expect(steps.length).toBeGreaterThan(0);
+    expect(directionChanges(steps)).toBeLessThanOrEqual(2);
+    expect(steps.filter((s) => s.frame > 2000)).toHaveLength(0);
   });
 });
 
