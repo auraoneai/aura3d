@@ -171,6 +171,15 @@ jobs:
           glslangValidator --version
       - name: Compose + validate every registered chunk
         run: pnpm exec vitest run --root . tests/qr/prd01/glsl/every-chunk-compiles.test.ts --reporter=verbose
+      # Report-only, not a gate: raw glslang status of KNOWN_EXCLUDED features
+      # (prd10.caustics #1143, prd10.wind #881). The report tests only log their
+      # findings and do not assert, so this step does not go red over a tracked
+      # exclusion. It runs after the gate step and does not affect it.
+      - name: Report-only — raw validation of KNOWN_EXCLUDED features
+        if: ${{ !cancelled() }}
+        env:
+          A3D_GLSL_REPORT_EXCLUDED: "1"
+        run: pnpm exec vitest run --root . tests/qr/prd01/glsl/every-chunk-compiles.test.ts -t "report-only" --reporter=verbose
 
   build-harness:
     name: Build harness + lane capture smoke
