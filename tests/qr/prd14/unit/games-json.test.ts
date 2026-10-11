@@ -70,9 +70,11 @@ function routeFlagFor(id: string): string {
   return `A3D_QR_ROUTE_${id.replace(/^showcase-/, "").replace(/-showcase$/, "").replace(/-/g, "_").toUpperCase()}`;
 }
 
-// FLAG-1: qrFlags is the URL-form flag list — `route-<id>` dispatch token plus
-// the engine short flags each v2 route needs (same list as the route's
-// src/v2/boot.ts qualityRebuild.flags, in engine-parse order).
+// FLAG-1: qrFlags is the capture harness's default URL-form flag list —
+// `route-<id>` dispatch token plus the engine short flags the v2 capture arm
+// turns on. Since T0-29 (#1232) the v2 boots no longer force these flags
+// (v2-flags.test.ts); the URL is the only source, so exact `none` /
+// `-<flag>` arms can turn them off.
 const ENGINE_QR_FLAGS = ["game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"] as const;
 
 function routeUrlFlagFor(id: string): string {
