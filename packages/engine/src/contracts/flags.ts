@@ -84,20 +84,21 @@ function setEntry(out: Record<string, QrFlagValue>, name: QrFlagName, value: QrF
 
 /** `all` | `none` | comma list of short names with `-name` exclusions and `name=value` values. */
 function applyList(out: Record<string, QrFlagValue>, list: string): void {
-  const trimmed = list.trim();
-  if (trimmed === "all") {
-    // Sub-flags are filled by propagateSubFlags after every source applied, so
-    // a later explicit kill switch (e.g. ["all", "-world.terrain"]) still wins.
-    for (const flag of LANE_FLAGS) setEntry(out, flag, true);
-    return;
-  }
-  if (trimmed === "none" || trimmed === "") {
+  const tokens = list.split(",").map((t) => t.trim()).filter((t) => t.length > 0);
+  if (tokens.length === 0) {
     for (const flag of LANE_FLAGS) setEntry(out, flag, false);
     return;
   }
-  for (const token of trimmed.split(",")) {
-    const t = token.trim();
-    if (!t) continue;
+  // #625: `all` / `none` are positional tokens too (`route_bank_shot,all`).
+  // First write wins, so explicit tokens apply before the blanket one: in
+  // `all,-world` the explicit `-world` still turns world off. Sub-flags are
+  // filled by propagateSubFlags after every source applied.
+  let blanket: "all" | "none" | null = null;
+  for (const t of tokens) {
+    if (t === "all" || t === "none") {
+      blanket ??= t;
+      continue;
+    }
     const negated = t.startsWith("-");
     const body = negated ? t.slice(1) : t;
     const eq = body.indexOf("=");
@@ -106,6 +107,7 @@ function applyList(out: Record<string, QrFlagValue>, list: string): void {
     const value: QrFlagValue = negated ? false : eq >= 0 ? body.slice(eq + 1) : true;
     setEntry(out, name, value);
   }
+  if (blanket !== null) for (const flag of LANE_FLAGS) setEntry(out, flag, blanket === "all");
 }
 
 function applyInput(out: Record<string, QrFlagValue>, input: QrFlagInput): void {
