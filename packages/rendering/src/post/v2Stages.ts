@@ -619,6 +619,7 @@ export function runV2HdrStages(
       g.uniformMatrix4fv(g.getUniformLocation(gtaoProg, "u_invProjMatrix"), false, invProj);
       g.uniform1f(g.getUniformLocation(gtaoProg, "u_near"), near);
       g.uniform1f(g.getUniformLocation(gtaoProg, "u_far"), far);
+      g.uniform1i(g.getUniformLocation(gtaoProg, "u_ortho"), ortho ? 1 : 0);
       g.uniform1f(g.getUniformLocation(gtaoProg, "u_radius"), ao.radius ?? 0.35);
       g.uniform1f(g.getUniformLocation(gtaoProg, "u_intensity"), ao.intensity ?? 1);
       g.uniform1f(g.getUniformLocation(gtaoProg, "u_falloff"), ao.falloff ?? 1);
