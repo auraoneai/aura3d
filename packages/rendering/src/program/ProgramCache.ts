@@ -106,7 +106,7 @@ export class ProgramCache implements ProgramCacheLike {
       };
     } catch (error) {
       entry.status = "failed";
-      entry.error = error instanceof Error ? error.message : String(error);
+      entry.error = describeCompileError(error);
       this.reportCompileFailure(entry);
       return this.toHandle(entry);
     }
@@ -121,7 +121,7 @@ export class ProgramCache implements ProgramCacheLike {
         })
         .catch((error: unknown) => {
           entry.status = "failed";
-          entry.error = error instanceof Error ? error.message : String(error);
+          entry.error = describeCompileError(error);
           this.reportCompileFailure(entry);
           this.compileMsTotal += Date.now() - started;
         });
@@ -138,7 +138,7 @@ export class ProgramCache implements ProgramCacheLike {
         this.noteCompiled();
       } catch (error) {
         entry.status = "failed";
-        entry.error = error instanceof Error ? error.message : String(error);
+        entry.error = describeCompileError(error);
         this.reportCompileFailure(entry);
       }
       this.compileMsTotal += Date.now() - started;
@@ -205,4 +205,19 @@ export class ProgramCache implements ProgramCacheLike {
   private toHandle(entry: CacheEntry): ProgramHandle {
     return entry as ProgramHandle;
   }
+}
+
+/**
+ * Error text for a failed program (T0-03/C-36). It appends the driver info log
+ * and the stage from `RenderDeviceError.details`, so a remote run (strict
+ * throw, console.error, C-36 degradation) says which line failed and why
+ * instead of only "WebGL shader compile failed".
+ */
+export function describeCompileError(error: unknown): string {
+  if (!(error instanceof Error)) return String(error);
+  const details = (error as { details?: { log?: unknown; stage?: unknown } }).details;
+  const log = typeof details?.log === "string" ? details.log.trim() : "";
+  if (!log) return error.message;
+  const stage = details?.stage === undefined ? "" : ` [stage ${String(details.stage)}]`;
+  return `${error.message}${stage}: ${log.length > 1200 ? `${log.slice(0, 1200)}…` : log}`;
 }

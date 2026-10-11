@@ -16,10 +16,12 @@ import {
   type MaterialLobeInput
 } from "../contracts/materialLobes";
 import type { Texture } from "../Texture";
+import { TextureBinding } from "../TextureBinding";
 
 const FLAG = "A3D_QR_MATERIALS";
+/** Generator-owned map slots (u_*Map samplers), never rebound by a lobe. */
+const CORE_SLOTS: ReadonlySet<string> = new Set(["baseColor", "normal", "metallicRoughness", "occlusion", "emissive"]);
 const OWNER = "prd04";
-const PARS = "a3d_prd04_bsdf_lobes_common";
 
 type Params = MaterialLobeInput["parameters"];
 type Textures = MaterialLobeInput["textures"];
@@ -36,21 +38,31 @@ const tex = (t: Textures, slot: string): Texture | undefined => t[slot];
 const boundSlots = (t: Textures, slots: readonly string[]): readonly string[] =>
   slots.filter((slot) => t[slot] !== undefined);
 
+/**
+ * T0-05 pars/call split (shaders/physical/lobe_calls.glsl.ts): `pars` is a
+ * global-scope declaration chunk, `fragment` a call chunk spliced at
+ * `fragment:material`, `ibl` a call chunk appended to `fragment:indirect`.
+ * Previously `fragment` named the function chunk itself, which the generator
+ * spliced inside `main()` (function definitions there do not compile).
+ */
 function lobe(entry: {
   readonly id: MaterialLobe["id"];
   readonly glTFExtension: string;
-  readonly chunk: string;
+  readonly chunks: MaterialLobe["chunks"];
   readonly samplerSlots: readonly string[];
   readonly active: (p: Params, t: Textures) => boolean;
   readonly bits?: (p: Params, t: Textures) => Record<string, string | number | boolean>;
   readonly bind: (p: Params, set: (u: string, v: number | readonly number[]) => void) => void;
+  /** Splice order (C-02 (order, id)): r185 composes transmission → sheen → clearcoat. */
+  readonly order?: number;
 }): MaterialLobe {
   return {
     id: entry.id,
     owner: OWNER,
     flag: FLAG,
+    ...(entry.order !== undefined ? { order: entry.order } : {}),
     glTFExtension: entry.glTFExtension,
-    chunks: { pars: PARS, fragment: entry.chunk },
+    chunks: entry.chunks,
     samplerSlots: entry.samplerSlots,
     feature(material) {
       return entry.active(material.parameters, material.textures)
@@ -63,6 +75,15 @@ function lobe(entry: {
     },
     bind(material, set) {
       entry.bind(material.parameters, (u, v) => set(u, v as never));
+      // 04-LOBES: bound lobe textures go to the sampler the pars chunk declares
+      // (`u_<slot>Texture`, the glTF parameter name). Core map slots are the
+      // generator's own samplers and are never rebound here.
+      for (const slot of entry.samplerSlots) {
+        const texture = tex(material.textures, slot);
+        if (!texture || CORE_SLOTS.has(slot)) continue;
+        const name = `u_${slot}Texture`;
+        set(name, new TextureBinding({ name, texture, required: false }));
+      }
     }
   };
 }
@@ -71,7 +92,7 @@ const LOBES: readonly MaterialLobe[] = [
   lobe({
     id: "ior",
     glTFExtension: "KHR_materials_ior",
-    chunk: "a3d_prd04_specular_ior",
+    chunks: { pars: "a3d_prd04_specular_ior", fragment: "a3d_prd04_specular_ior_call" },
     samplerSlots: [],
     active: (p) =>
       num(p, "ior", 1.5) !== 1.5 ||
@@ -84,7 +105,7 @@ const LOBES: readonly MaterialLobe[] = [
   lobe({
     id: "specular",
     glTFExtension: "KHR_materials_specular",
-    chunk: "a3d_prd04_specular_ior",
+    chunks: { pars: "a3d_prd04_specular_ior", fragment: "a3d_prd04_specular_ior_call" },
     samplerSlots: ["specular", "specularColor"],
     active: (p, t) =>
       p.specularFactor !== undefined ||
@@ -101,8 +122,9 @@ const LOBES: readonly MaterialLobe[] = [
   }),
   lobe({
     id: "clearcoat",
+    order: 30,
     glTFExtension: "KHR_materials_clearcoat",
-    chunk: "a3d_prd04_clearcoat",
+    chunks: { pars: "a3d_prd04_clearcoat_pars", fragment: "a3d_prd04_clearcoat_call", ibl: "a3d_prd04_clearcoat_ibl_call", direct: "a3d_prd04_clearcoat_direct_call" },
     samplerSlots: ["clearcoat", "clearcoatRoughness", "clearcoatNormal"],
     active: (p, t) =>
       num(p, "clearcoatFactor") > 0 ||
@@ -122,8 +144,9 @@ const LOBES: readonly MaterialLobe[] = [
   }),
   lobe({
     id: "sheen",
+    order: 20,
     glTFExtension: "KHR_materials_sheen",
-    chunk: "a3d_prd04_sheen",
+    chunks: { pars: "a3d_prd04_sheen_pars", fragment: "a3d_prd04_sheen_call", ibl: "a3d_prd04_sheen_ibl_call", direct: "a3d_prd04_sheen_direct_call" },
     samplerSlots: ["sheenColor", "sheenRoughness"],
     active: (p, t) =>
       p.sheenColorFactor !== undefined ||
@@ -140,8 +163,9 @@ const LOBES: readonly MaterialLobe[] = [
   }),
   lobe({
     id: "iridescence",
+    order: 5,
     glTFExtension: "KHR_materials_iridescence",
-    chunk: "a3d_prd04_iridescence",
+    chunks: { pars: "a3d_prd04_iridescence_pars", fragment: "a3d_prd04_iridescence_call", ibl: "a3d_prd04_iridescence_ibl_call", direct: "a3d_prd04_iridescence_direct_call" },
     samplerSlots: ["iridescence", "iridescenceThickness"],
     active: (p, t) =>
       num(p, "iridescenceFactor") > 0 ||
@@ -160,8 +184,9 @@ const LOBES: readonly MaterialLobe[] = [
   }),
   lobe({
     id: "anisotropy",
+    order: 5,
     glTFExtension: "KHR_materials_anisotropy",
-    chunk: "a3d_prd04_anisotropy",
+    chunks: { pars: "a3d_prd04_anisotropy_pars", fragment: "a3d_prd04_anisotropy_call", ibl: "a3d_prd04_anisotropy_ibl_call", direct: "a3d_prd04_anisotropy_direct_call" },
     samplerSlots: ["anisotropy"],
     active: (p, t) => num(p, "anisotropyStrength") > 0 || tex(t, "anisotropy") !== undefined,
     bits: (p, t) => ({ map: tex(t, "anisotropy") !== undefined }),
@@ -172,8 +197,9 @@ const LOBES: readonly MaterialLobe[] = [
   }),
   lobe({
     id: "transmission",
+    order: 10,
     glTFExtension: "KHR_materials_transmission",
-    chunk: "a3d_prd04_transmission",
+    chunks: { pars: "a3d_prd04_transmission_pars", fragment: "a3d_prd04_transmission_call", ibl: "a3d_prd04_transmission_ibl_call" },
     samplerSlots: ["transmission"],
     active: (p, t) => num(p, "transmissionFactor") > 0 || tex(t, "transmission") !== undefined,
     bits: (p, t) => ({ map: tex(t, "transmission") !== undefined }),
@@ -182,7 +208,7 @@ const LOBES: readonly MaterialLobe[] = [
   lobe({
     id: "volume",
     glTFExtension: "KHR_materials_volume",
-    chunk: "a3d_prd04_volume",
+    chunks: { pars: "a3d_prd04_volume_pars", fragment: "a3d_prd04_volume_call" },
     samplerSlots: ["volumeThickness"],
     active: (p, t) =>
       p.volumeThicknessFactor !== undefined || tex(t, "volumeThickness") !== undefined,
@@ -196,7 +222,7 @@ const LOBES: readonly MaterialLobe[] = [
   lobe({
     id: "dispersion",
     glTFExtension: "KHR_materials_dispersion",
-    chunk: "a3d_prd04_dispersion",
+    chunks: { pars: "a3d_prd04_dispersion_pars", fragment: "a3d_prd04_dispersion_call" },
     samplerSlots: [],
     active: (p) => num(p, "dispersion") > 0,
     bind: (p, set) => set("u_dispersion", num(p, "dispersion"))
@@ -204,7 +230,7 @@ const LOBES: readonly MaterialLobe[] = [
   lobe({
     id: "emissive-strength",
     glTFExtension: "KHR_materials_emissive_strength",
-    chunk: "a3d_prd04_emissive_strength",
+    chunks: { pars: "a3d_prd04_emissive_strength", fragment: "a3d_prd04_emissive_strength_call" },
     samplerSlots: ["emissive"],
     active: (p) =>
       num(p, "emissiveStrength", 1) !== 1 ||
@@ -215,7 +241,7 @@ const LOBES: readonly MaterialLobe[] = [
   lobe({
     id: "unlit",
     glTFExtension: "KHR_materials_unlit",
-    chunk: "a3d_prd04_unlit",
+    chunks: { pars: "a3d_prd04_unlit", fragment: "a3d_prd04_unlit_call" },
     samplerSlots: ["baseColor", "emissive"],
     active: (p) => p.unlit === true,
     bind: () => {}

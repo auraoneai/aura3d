@@ -8,13 +8,31 @@
  *   indirect_default/fog_default/depth) with registered C-02 chunks spliced
  *   at the hook points in `(feature.order, feature.id)` order.
  *
- * Splice convention: a ShaderFeature's `chunks[i]` lands at `hooks[min(i,
- * hooks.length - 1)]`, deduplicated by chunk name per program. A `*:pars`
- * hook emits at global scope before `main`; a body hook emits inside `main`
- * where the default body would have run — registering a feature at a body
- * hook replaces that hook's default. The `vertex:deform` call is canonical:
- * the generator emits `a3dDeform(pos, nrm, tan)` when a registered feature
- * claims the hook and the C-18 passthrough otherwise (CONTRACTS §8.5).
+ * Splice convention (pars/call split, T0-05): a ShaderFeature's `chunks[i]`
+ * lands at `hooks[min(i, hooks.length - 1)]`.
+ *   - Declaration hooks (`vertex:pars`, `vertex:deform`, `fragment:pars`) emit
+ *     the chunk at global scope before `main`.
+ *   - Body hooks emit the chunk (a *call* chunk: statements only) inside
+ *     `main`; its `requires` closure is emitted at global scope.
+ *   - `requires` are resolved requires-first (depth-first post-order), each
+ *     chunk at most once per stage. `brdf`/`common` name the built-in lane-01
+ *     chunks. A missing or cyclic `requires` throws (`SHADER_CHUNK_MISSING` /
+ *     `SHADER_CHUNK_CYCLE`), which the cache reports as C-36
+ *     `program-compile-failed`. Missing chunks are never skipped silently.
+ *   - `fragment:indirect` contributions are appended after the default
+ *     indirect body (ambient + env); every other body hook that a feature
+ *     claims replaces that hook's default.
+ * The `vertex:deform` call is canonical: the generator emits
+ * `a3dDeform(pos, nrm, tan)` when a registered feature claims the hook and
+ * the C-18 passthrough otherwise (CONTRACTS §8.5).
+ *
+ * C-03 lobes (lit forward programs): `chunks.pars` is emitted at global scope,
+ * `chunks.fragment` is a call chunk at `fragment:material` (after
+ * `PhysicalMaterial material` exists), and `chunks.ibl` is a call chunk
+ * appended to `fragment:indirect`. A record's extension matches a lobe by
+ * `lobe.id` or `lobe.glTFExtension`. Each active lobe defines
+ * `A3D_LOBE_<ID>` (plus `A3D_LOBE_<ID>_<BIT>` for truthy bits) so chunk
+ * guards follow the record.
  *
  * Unknown extensions (`features.extensions` with no matching C-03 lobe in
  * `materialLobes`) record `extension-lobe-pending` (`ownerPrd: 4`) into
@@ -79,6 +97,12 @@ function contributingFeatures(f: ProgramFeatures, flags: QrFlags | undefined): C
 
 function definesFor(f: ProgramFeatures, contributions: readonly Contribution[]): Record<string, string | number | true> {
   const d: Record<string, string | number | true> = {};
+  // Chunk-guard vocabulary for registered chunks (T0-05): generated program,
+  // lit forward shading, and the bucketed direct-light count a lobe call chunk
+  // may loop over with `a3dLegacyLightRadiance` (0 on the clustered path).
+  d.A3D_GENERATED_PROGRAM = true;
+  if (f.pass === "forward" && f.lighting === "lit") d.A3D_LIT = true;
+  d.A3D_NUM_DIRECT_LIGHTS = directLightLoopBound(f);
   if (f.instancing) {
     d.USE_INSTANCING = true;
     if (f.instancing.color) d.USE_INSTANCING_COLOR = true;
@@ -102,14 +126,19 @@ function definesFor(f: ProgramFeatures, contributions: readonly Contribution[]):
   if (f.backgroundCoverage) d.BACKGROUND_COVERAGE = true;
   if (f.environment === "equirect") d.ENVMAP_TYPE_EQUIRECT = true;
   if (f.environment === "pmrem-cube") d.ENVMAP_TYPE_CUBE_UV = true;
+  // Either sampler provides a3dSampleEnvironment (indirect_default); the
+  // default indirect body and C-03 lobe IBL calls guard on this.
+  if (f.environment !== "none") d.A3D_ENV_SAMPLE = true;
   if (f.fog === "linear") d.FOG_LINEAR = true;
   if (f.fog === "exp2" || f.fog === "height") d.FOG_EXP2 = true;
   if (f.fog === "height") d.FOG_HEIGHT = true;
   if (f.skinning) d.USE_SKINNING = true;
   if (f.morph) d.USE_MORPH = true;
   if (f.drawId) d.USE_DRAW_ID = true;
-  const total = totalLightCount(f.lights);
-  if (f.lights.clustered || total > 8) {
+  // #1140: clustering follows the pass's resolved cluster resources only
+  // (ForwardPass: more than FORWARD_DIRECT_LIGHT_CAPACITY lights). Up to 16
+  // lights live in u_lightData; a bucket sum above 8 is not "clustered".
+  if (f.lights.clustered) {
     d.LIGHTS_CLUSTERED = true;
   } else {
     d.NUM_DIR_LIGHTS = f.lights.dir;
@@ -128,27 +157,78 @@ function definesFor(f: ProgramFeatures, contributions: readonly Contribution[]):
   return d;
 }
 
-/** Chunks spliced per hook point, in (feature.order, feature.id) order, deduped by name. */
-function hookSplice(contributions: readonly Contribution[], hook: ShaderHookPoint): string[] {
-  const parts: string[] = [];
-  const seen = new Set<string>();
+/** Lane-01 chunks emitted at fixed slots; registered chunks may `require` them by name. */
+const BUILTIN_CHUNKS: ReadonlySet<string> = new Set(["brdf", "common"]);
+
+/** Hooks whose chunks are global-scope declarations (everything else is a body hook inside `main`). */
+const DECLARATION_HOOKS: ReadonlySet<ShaderHookPoint> = new Set<ShaderHookPoint>(["vertex:pars", "vertex:deform", "fragment:pars"]);
+
+/** Per-stage splice state: global declarations in requires-first order, deduped by chunk name. */
+interface SpliceState {
+  readonly seen: Set<string>;
+  readonly decls: string[];
+  /** Built-in chunk names some spliced chunk required. */
+  readonly builtins: Set<string>;
+}
+
+function newSpliceState(): SpliceState {
+  return { seen: new Set(), decls: [], builtins: new Set() };
+}
+
+function requireChunk(name: string, requiredBy: string | undefined): NonNullable<ReturnType<typeof shaderChunk>> {
+  const chunk = shaderChunk(name);
+  if (!chunk) throw new Error(`SHADER_CHUNK_MISSING:${name}${requiredBy ? ` (required by ${requiredBy})` : ""}`);
+  return chunk;
+}
+
+/** Emit `name` and its `requires` closure at global scope, requires first (depth-first post-order). */
+function emitDeclaration(state: SpliceState, name: string, path: readonly string[] = []): void {
+  if (BUILTIN_CHUNKS.has(name)) {
+    state.builtins.add(name);
+    return;
+  }
+  if (state.seen.has(name)) return;
+  if (path.includes(name)) throw new Error(`SHADER_CHUNK_CYCLE:${[...path, name].join(" > ")}`);
+  const chunk = requireChunk(name, path[path.length - 1]);
+  for (const req of chunk.requires ?? []) emitDeclaration(state, req, [...path, name]);
+  state.seen.add(name);
+  state.decls.push(chunk.glsl);
+}
+
+/** A call chunk: its `requires` go to global scope; its own GLSL is returned for `main`. */
+function emitCall(state: SpliceState, name: string): string {
+  const chunk = requireChunk(name, undefined);
+  for (const req of chunk.requires ?? []) emitDeclaration(state, req, [name]);
+  return chunk.glsl;
+}
+
+/**
+ * Splice one hook in (feature.order, feature.id) order. Declaration hooks
+ * append to `state.decls` and return []; body hooks return the call chunks
+ * for `main` (each at most once per hook). A chunk the same feature also maps
+ * to a declaration hook is a declaration chunk: at a body hook it is declared
+ * for this stage instead of being spliced into `main` (e.g. a `stage:"both"`
+ * chunk listed at `vertex:pars` + `fragment:material`).
+ */
+function hookSplice(contributions: readonly Contribution[], hook: ShaderHookPoint, state: SpliceState): string[] {
+  const bodies: string[] = [];
+  const bodySeen = new Set<string>();
+  const declaration = DECLARATION_HOOKS.has(hook);
   for (const { feature } of contributions) {
     const idx = feature.hooks.indexOf(hook);
-    if (idx === -1) continue;
-    const chunkNames = feature.chunks.length > 0 ? feature.chunks : [];
-    const chosen = chunkNames[Math.min(idx, Math.max(chunkNames.length - 1, 0))] ?? chunkNames[0];
-    const pending = chosen !== undefined ? [chosen] : [];
-    while (pending.length > 0) {
-      const name = pending.shift()!;
-      if (seen.has(name)) continue;
-      const chunk = shaderChunk(name);
-      if (!chunk) continue;
-      seen.add(name);
-      for (const req of chunk.requires ?? []) pending.push(req);
-      parts.push(chunk.glsl);
+    if (idx === -1 || feature.chunks.length === 0) continue;
+    const chunkAt = (i: number) => feature.chunks[Math.min(i, feature.chunks.length - 1)];
+    const chosen = chunkAt(idx);
+    if (chosen === undefined) continue;
+    const declaredByFeature = feature.hooks.some((h, i) => DECLARATION_HOOKS.has(h) && chunkAt(i) === chosen);
+    if (declaration || declaredByFeature) {
+      emitDeclaration(state, chosen);
+    } else if (!bodySeen.has(chosen)) {
+      bodySeen.add(chosen);
+      bodies.push(emitCall(state, chosen));
     }
   }
-    return parts;
+  return bodies;
 }
 
 function hasHookContributor(contributions: readonly Contribution[], hook: ShaderHookPoint): boolean {
@@ -170,11 +250,17 @@ layout(location = 4) in vec4 a_color;
 #endif`;
 
 function vertexSource(f: ProgramFeatures, contributions: readonly Contribution[], defines: Record<string, string | number | true>, marker: string): string {
-  const localDefines = defines;
-  const parsHooks = hookSplice(contributions, "vertex:pars");
-  const deformHooks = hookSplice(contributions, "vertex:deform");
-  const worldHooks = hookSplice(contributions, "vertex:world");
-  const endHooks = hookSplice(contributions, "vertex:end");
+  // Stage define: `both`-stage chunks branch on A3D_STAGE_VERTEX (C-02 §8.5).
+  const localDefines = { ...defines, A3D_STAGE_VERTEX: true as const };
+  const state = newSpliceState();
+  // vertex:pars + vertex:deform contributors declare at global scope (the
+  // deform chunk declares a3dDeform(); the call is canonical inside main(),
+  // C-18, CONTRACTS §8.5).
+  hookSplice(contributions, "vertex:pars", state);
+  hookSplice(contributions, "vertex:deform", state);
+  const worldHooks = hookSplice(contributions, "vertex:world", state);
+  const endHooks = hookSplice(contributions, "vertex:end", state);
+  if (state.builtins.has("brdf")) throw new Error("SHADER_CHUNK_STAGE:brdf is fragment-only (required by a vertex hook chunk)");
   const deformCall = hasHookContributor(contributions, "vertex:deform")
     ? "  a3dDeform(a3dDeformPos, objectNormal, objectTangent);  // C-18"
     : "  // C-18 passthrough: no deform chunk registered";
@@ -191,15 +277,14 @@ function vertexSource(f: ProgramFeatures, contributions: readonly Contribution[]
     "uniform float u_pointSize;",
     VERTEX_ATTRIBUTES,
     INSTANCING_VERTEX_PARS_GLSL,
-    ...parsHooks,
-    // vertex:deform contributors declare a3dDeform() here; the call itself is
-    // canonical inside main() (C-18, CONTRACTS §8.5).
-    ...deformHooks,
+    ...state.decls,
     "out vec3 v_worldPosition;",
     "#ifdef A3D_NEED_NORMAL\nout vec3 v_normal;\n#endif",
     "#ifdef A3D_NEED_UV0\nout vec2 v_uv;\n#endif",
     "#ifdef A3D_NEED_UV1\nout vec2 v_uv1;\n#endif",
-    "#ifdef VERTEX_COLORS\nout vec4 v_color;\n#endif"
+    "#ifdef VERTEX_COLORS\nout vec4 v_color;\n#endif",
+    // #1140: per-instance colour reaches the fragment (legacy instanced-pbr multiplies base rgba).
+    "#ifdef USE_INSTANCING_COLOR\nout vec4 v_instanceColor;\n#endif"
   ];
   const body = [
     "void main() {",
@@ -222,6 +307,7 @@ function vertexSource(f: ProgramFeatures, contributions: readonly Contribution[]
     "#ifdef A3D_NEED_UV0\n  v_uv = a_uv;\n#endif",
     "#ifdef A3D_NEED_UV1\n  v_uv1 = a_uv1;\n#endif",
     "#ifdef VERTEX_COLORS\n  v_color = a_color;\n#endif",
+    "#ifdef USE_INSTANCING_COLOR\n  v_instanceColor = a_instanceColor;\n#endif",
     "  gl_Position = u_viewProjection * a3dWorld;",
     "  gl_PointSize = u_pointSize;",
     ...endHooks,
@@ -270,29 +356,57 @@ in vec2 v_uv1;
 #endif
 #ifdef VERTEX_COLORS
 in vec4 v_color;
+#endif
+#ifdef USE_INSTANCING_COLOR
+in vec4 v_instanceColor;
 #endif`;
 
-/** Default `fragment:lights` body: `u_lightData` kind-discriminated loop.
- * Bucketed total ({0,1,2,4,8}) is baked so each bucket compiles its own bound;
- * `a3dLegacyLightRadiance` switches on directionKind.w, so packing order is
- * irrelevant. Above 8 / clustered, only the cluster path runs. */
-function defaultLightsBody(f: ProgramFeatures): string {
-  const lines = ["  vec3 L;"];
+/** u_lightData capacity (LightUniforms.pack MAX_DIRECT_LIGHTS, `u_lightData[96]` = 16 × 6 vec4). */
+const MAX_PACKED_DIRECT_LIGHTS = 16;
+
+/**
+ * Compile-time bound of the `u_lightData` loop (#1140). Buckets {0,1,2,4}
+ * are exact upper bounds; a per-kind bucket of 8 means "5 or more", so any
+ * total above 4 compiles the full packed capacity. The loop also breaks at
+ * the runtime `u_lightCount`, so unused slots are never shaded. Clustered
+ * programs read lights from the cluster textures only.
+ */
+function directLightLoopBound(f: ProgramFeatures): number {
+  if (f.lights.clustered) return 0;
   const total = totalLightCount(f.lights);
-  const clustered = f.lights.clustered || total > 8;
-  if (!clustered && total > 0) {
-    lines.push(`  for (int i = 0; i < ${Math.min(total, 8)}; ++i) {  // bucketed light count`);
+  return total <= 4 ? total : MAX_PACKED_DIRECT_LIGHTS;
+}
+
+/** Default `fragment:lights` body: `u_lightData` kind-discriminated loop.
+ * `a3dLegacyLightRadiance` switches on directionKind.w, so packing order is
+ * irrelevant. Clustered (cluster resources bound), only the cluster path runs. */
+function defaultLightsBody(f: ProgramFeatures, lobeDirect: readonly string[] = []): string {
+  const lines = ["  vec3 L;"];
+  // C-03 per-light lobe hook (04-LOBES): each active lobe's `direct` call chunk
+  // runs inside every light iteration (bucketed AND clustered) with L, radiance,
+  // V, N, material and the direct accumulators in scope.
+  const direct = lobeDirect.map((s) => indent(indent(s)));
+  const bound = directLightLoopBound(f);
+  if (bound > 0) {
+    lines.push(`  for (int i = 0; i < ${bound}; ++i) {  // bucketed light count (bound; breaks at u_lightCount)`);
+    lines.push("    if (i >= int(u_lightCount)) break;");
     lines.push("    vec3 radiance = a3dLegacyLightRadiance(i * 6, v_worldPosition, L);");
     lines.push("    a3dDirectLight(L, radiance, V, N, material, directDiffuse, directSpecular);");
+    lines.push(...direct);
     lines.push("  }");
   }
+  // Cluster index texel layout (forward/Lighting.ts createClusteredForwardLighting,
+  // same as the flag-off shader): texel (0, cluster).g = light count; texel
+  // (i, cluster).r = i-th light index, i from 0.
   lines.push("#ifdef LIGHTS_CLUSTERED");
   lines.push("  int a3dCluster = a3dClusterIndex(gl_FragCoord.xy);");
-  lines.push("  int a3dClusterCount = int(texelFetch(u_clusterLightIndices, ivec2(0, a3dCluster), 0).r);");
-  lines.push("  for (int j = 1; j <= a3dClusterCount; ++j) {");
+  lines.push("  int a3dClusterCount = min(int(texelFetch(u_clusterLightIndices, ivec2(0, a3dCluster), 0).g), 64);");
+  lines.push("  for (int j = 0; j < 64; ++j) {");
+  lines.push("    if (j >= a3dClusterCount) break;");
   lines.push("    int lightIndex = int(texelFetch(u_clusterLightIndices, ivec2(j, a3dCluster), 0).r);");
   lines.push("    vec3 radiance = a3dClusteredLightRadiance(lightIndex, v_worldPosition, L);");
   lines.push("    a3dDirectLight(L, radiance, V, N, material, directDiffuse, directSpecular);");
+  lines.push(...direct);
   lines.push("  }");
   lines.push("#endif");
   return lines.join("\n");
@@ -308,11 +422,14 @@ function uvExpr(f: ProgramFeatures, slot: keyof ProgramFeatures["maps"]): string
 function defaultIndirectBody(f: ProgramFeatures): string {
   const lines: string[] = [];
   lines.push("  indirectDiffuse += a3dAmbientDiffuse(material.diffuseContribution);");
-  lines.push("#ifdef ENVMAP_TYPE_EQUIRECT");
+  lines.push("#ifdef A3D_ENV_SAMPLE");
   lines.push("  float a3dRoughLod = material.roughness * 8.0;");
   lines.push("  vec3 a3dReflect = reflect(-V, N);");
-  lines.push("  indirectSpecular += a3dIndirectSpecular(a3dSampleEnvironment(a3dReflect, a3dRoughLod), V, N, material);");
-  lines.push("  indirectDiffuse += a3dIndirectDiffuse(a3dSampleEnvironment(N, 8.0), V, N, material);");
+  // brdf's a3dIndirect* take π-scaled irradiance (three r185 getIBLIrradiance
+  // returns PI * envMapColor), not the raw radiance sample (#1140).
+  lines.push("  vec3 a3dEnvIrradiance = PI * a3dSampleEnvironment(N, 8.0);");
+  lines.push("  indirectSpecular += a3dIndirectSpecular(a3dSampleEnvironment(a3dReflect, a3dRoughLod), a3dEnvIrradiance, V, N, material);");
+  lines.push("  indirectDiffuse += a3dIndirectDiffuse(a3dEnvIrradiance, V, N, material);");
   lines.push("#endif");
   lines.push("#ifdef USE_OCCLUSION_MAP");
   lines.push(`  float a3dAo = texture(u_occlusionMap, ${uvExpr(f, "occlusion")}).r;`);
@@ -322,18 +439,19 @@ function defaultIndirectBody(f: ProgramFeatures): string {
   return lines.join("\n");
 }
 
-function forwardFragmentSource(f: ProgramFeatures, contributions: readonly Contribution[], defines: Record<string, string | number | true>, marker: string, lobeChunks: { pars: string[]; fragment: string[]; ibl: string[] }): string {
-  const parsHooks = hookSplice(contributions, "fragment:pars");
-  const alphaHooks = hookSplice(contributions, "fragment:alpha");
-  const normalHooks = hookSplice(contributions, "fragment:normal");
-  const materialHooks = hookSplice(contributions, "fragment:material");
-  const lightsHooks = hookSplice(contributions, "fragment:lights");
-  const indirectHooks = hookSplice(contributions, "fragment:indirect");
-  const emissiveHooks = hookSplice(contributions, "fragment:emissive");
-  const fogHooks = hookSplice(contributions, "fragment:fog");
-  const endHooks = hookSplice(contributions, "fragment:end");
+function forwardFragmentSource(f: ProgramFeatures, contributions: readonly Contribution[], defines: Record<string, string | number | true>, marker: string, state: SpliceState, lobeChunks: LobeCalls): string {
+  hookSplice(contributions, "fragment:pars", state);
+  const alphaHooks = hookSplice(contributions, "fragment:alpha", state);
+  const normalHooks = hookSplice(contributions, "fragment:normal", state);
+  const materialHooks = hookSplice(contributions, "fragment:material", state);
+  const lightsHooks = hookSplice(contributions, "fragment:lights", state);
+  const indirectHooks = hookSplice(contributions, "fragment:indirect", state);
+  const emissiveHooks = hookSplice(contributions, "fragment:emissive", state);
+  const fogHooks = hookSplice(contributions, "fragment:fog", state);
+  const endHooks = hookSplice(contributions, "fragment:end", state);
 
   const lit = f.lighting === "lit";
+  const withBrdf = lit || state.builtins.has("brdf");
   const body: string[] = [];
   body.push("void main() {");
   if (lit) {
@@ -357,6 +475,7 @@ function forwardFragmentSource(f: ProgramFeatures, contributions: readonly Contr
   // fragment:material — default fills base/metal/rough + PhysicalMaterial.
   body.push("  vec4 a3dBaseColor = u_baseColor;");
   body.push("#ifdef VERTEX_COLORS\n  a3dBaseColor *= v_color;\n#endif");
+  body.push("#ifdef USE_INSTANCING_COLOR\n  a3dBaseColor *= v_instanceColor;\n#endif");
   body.push(`#ifdef USE_BASE_COLOR_MAP\n  a3dBaseColor *= texture(u_baseColorMap, ${uvExpr(f, "baseColor")});\n#endif`);
   body.push("  float a3dMetallic = u_metallic;");
   body.push("  float a3dRoughness = u_roughness;");
@@ -369,15 +488,18 @@ function forwardFragmentSource(f: ProgramFeatures, contributions: readonly Contr
     body.push("  PhysicalMaterial material = a3dMakeMaterial(a3dBaseColor.rgb, a3dMetallic, a3dRoughness, u_ior, u_specularIntensity, u_specularColorFactor, geometryNormal);");
   }
   if (materialHooks.length > 0) body.push(...materialHooks.map((s) => indent(s)));
-  if (lobeChunks.fragment.length > 0) body.push(...lobeChunks.fragment.map((s) => indent(s)));
+  if (lit && lobeChunks.fragment.length > 0) body.push(...lobeChunks.fragment.map((s) => indent(s)));
 
   body.push("  vec3 directDiffuse = vec3(0.0);");
   body.push("  vec3 directSpecular = vec3(0.0);");
   body.push("  vec3 indirectDiffuse = vec3(0.0);");
   body.push("  vec3 indirectSpecular = vec3(0.0);");
   if (lit) {
-    body.push(lightsHooks.length > 0 ? lightsHooks.map((s) => indent(s)).join("\n") : defaultLightsBody(f));
-    body.push(indirectHooks.length > 0 ? indirectHooks.map((s) => indent(s)).join("\n") : defaultIndirectBody(f));
+    body.push(lightsHooks.length > 0 ? lightsHooks.map((s) => indent(s)).join("\n") : defaultLightsBody(f, lobeChunks.direct));
+    // fragment:indirect appends to the default ambient + env body (T0-05);
+    // lobe `ibl` calls run last, over the final direct + indirect accumulators.
+    body.push(defaultIndirectBody(f));
+    if (indirectHooks.length > 0) body.push(...indirectHooks.map((s) => indent(s)));
     if (lobeChunks.ibl.length > 0) body.push(...lobeChunks.ibl.map((s) => indent(s)));
   }
 
@@ -412,17 +534,18 @@ function forwardFragmentSource(f: ProgramFeatures, contributions: readonly Contr
     "#version 300 es",
     `// ${marker}`,
     "precision highp float;",
-    emitDefines(defines),
+    emitDefines({ ...defines, A3D_STAGE_FRAGMENT: true }),
     COMMON_CHUNK_GLSL,
     FRAGMENT_VARYINGS,
     MATERIAL_UNIFORMS,
-    ...(lit ? [BRDF_CHUNK_GLSL] : []),
+    ...(withBrdf ? [BRDF_CHUNK_GLSL] : []),
     ...(lit || f.maps.normal ? [NORMAL_CHUNK_GLSL] : []),
     ALPHA_CHUNK_GLSL,
     ...(lit ? [LIGHTS_LEGACY_CHUNK_GLSL, INDIRECT_DEFAULT_CHUNK_GLSL] : []),
     ...(f.fog !== "none" ? [FOG_DEFAULT_CHUNK_GLSL] : []),
-    ...lobeChunks.pars,
-    ...parsHooks,
+    // Lobe pars + feature declarations + every call chunk's requires, in
+    // requires-first order (T0-05).
+    ...state.decls,
     "layout(location = 0) out vec4 outColor;",
     "#ifdef BACKGROUND_COVERAGE\nlayout(location = 1) out vec4 outCoverage;\n#endif",
     ...body
@@ -462,29 +585,67 @@ function indent(src: string): string {
   return src.split("\n").map((line) => (line.trim().length > 0 ? `  ${line}` : line)).join("\n");
 }
 
-/** Extension lobes registered through C-03 for this record, keyed by splice point. */
-function extensionLobeChunks(f: ProgramFeatures, flags: QrFlags | undefined, report: (d: ProgramDegradation) => void): { pars: string[]; fragment: string[]; ibl: string[] } {
-  const out = { pars: [] as string[], fragment: [] as string[], ibl: [] as string[] };
-  if (!flags || f.extensions.length === 0) return out;
-  const lobes = materialLobes(flags);
-  const wanted = new Set(f.extensions.map((ext) => ext.lobe));
-  for (const lobe of lobes) {
-    if (lobe.glTFExtension === undefined || !wanted.has(lobe.glTFExtension)) continue;
-    for (const [key, chunkName] of [["pars", lobe.chunks.pars], ["fragment", lobe.chunks.fragment], ["ibl", lobe.chunks.ibl]] as const) {
-      if (!chunkName) continue;
-      const chunk = shaderChunk(chunkName);
-      if (!chunk) continue;
-      const list = key === "pars" ? out.pars : key === "fragment" ? out.fragment : out.ibl;
-      if (!list.includes(chunk.glsl)) list.push(chunk.glsl);
-    }
-  }
-  const pending = f.extensions.filter((ext) => !lobes.some((l) => l.glTFExtension === ext.lobe));
+/** Lobe call chunks for `main` (pars go straight into the fragment splice state). */
+interface LobeCalls {
+  readonly fragment: string[];
+  readonly ibl: string[];
+  /** Per-light call chunks, spliced inside every light loop iteration. */
+  readonly direct: string[];
+}
+
+/** `emissive-strength` → `EMISSIVE_STRENGTH`; `prd10.foliage` → `PRD10_FOLIAGE`; `filmIor` → `FILM_IOR`. */
+function defineToken(id: string): string {
+  return id.replace(/([a-z0-9])([A-Z])/g, "$1_$2").replace(/[^A-Za-z0-9]+/g, "_").toUpperCase();
+}
+
+/**
+ * Extension lobes registered through C-03 for this record. Lobe pars (and
+ * every call chunk's requires) go into `state`; the fragment/ibl call chunks
+ * are returned. Each active lobe adds `A3D_LOBE_<ID>` (+ truthy bits) to
+ * `defines`. Unmatched extensions report `extension-lobe-pending`.
+ */
+function extensionLobeChunks(f: ProgramFeatures, flags: QrFlags | undefined, state: SpliceState, defines: Record<string, string | number | true>, report: (d: ProgramDegradation) => void): LobeCalls {
+  const out: LobeCalls = { fragment: [], ibl: [], direct: [] };
+  if (f.extensions.length === 0) return out;
+  const lobes = flags ? materialLobes(flags) : [];
+  const matches = (ext: { readonly lobe: string }, lobe: (typeof lobes)[number]) => ext.lobe === lobe.id || (lobe.glTFExtension !== undefined && ext.lobe === lobe.glTFExtension);
+  const pending = f.extensions.filter((ext) => !lobes.some((l) => matches(ext, l)));
   if (pending.length > 0) {
     report({
       code: "extension-lobe-pending",
       message: `extension lobe(s) pending lane 04 registration: ${pending.map((ext) => ext.lobe).join(", ")}`,
       ownerPrd: 4
     });
+  }
+  // Lobes are physical-shading terms: unlit and depth-like programs take none.
+  if (f.pass !== "forward" || f.lighting !== "lit") return out;
+  const fragmentSeen = new Set<string>();
+  const iblSeen = new Set<string>();
+  const directSeen = new Set<string>();
+  for (const lobe of lobes) {
+    const ext = f.extensions.find((e) => matches(e, lobe));
+    if (!ext) continue;
+    const token = `A3D_LOBE_${defineToken(lobe.id)}`;
+    defines[token] = true;
+    for (const [bit, value] of Object.entries(ext.bits)) {
+      if (!value) continue; // `#ifdef` reads truthy bits only
+      defines[`${token}_${defineToken(bit)}`] = value === true ? true : value;
+    }
+    emitDeclaration(state, lobe.chunks.pars);
+    if (lobe.chunks.fragment && !fragmentSeen.has(lobe.chunks.fragment)) {
+      fragmentSeen.add(lobe.chunks.fragment);
+      out.fragment.push(emitCall(state, lobe.chunks.fragment));
+    }
+    if (lobe.chunks.ibl && !iblSeen.has(lobe.chunks.ibl)) {
+      iblSeen.add(lobe.chunks.ibl);
+      out.ibl.push(emitCall(state, lobe.chunks.ibl));
+    }
+    if (lobe.chunks.direct && !directSeen.has(lobe.chunks.direct)) {
+      directSeen.add(lobe.chunks.direct);
+      out.direct.push(emitCall(state, lobe.chunks.direct));
+    }
+    // Lobe textures (glTF texCoord 0) need the UV varying even when no core map does.
+    if (ext.maps.length > 0) defines.A3D_NEED_UV0 = true;
   }
   return out;
 }
@@ -509,7 +670,6 @@ export function generateProgramImpl(features: ProgramFeatures, options: Generate
   const contributions = contributingFeatures(f, options.flags);
   const defines = definesFor(f, contributions);
   // Varying/attribute needs shared by both stages (drives A3D_NEED_* in each).
-  const isDepthLike = f.pass === "depth" || f.pass === "distance" || f.pass === "velocity";
   if (f.lighting === "lit" || (f.pass === "forward" && f.flatShading)) defines.A3D_NEED_NORMAL = true;
   if (Object.values(f.maps).some((m) => m && (m.uvSet ?? 0) === 0)) defines.A3D_NEED_UV0 = true;
   if (Object.values(f.maps).some((m) => m && m.uvSet === 1)) defines.A3D_NEED_UV1 = true;
@@ -517,11 +677,12 @@ export function generateProgramImpl(features: ProgramFeatures, options: Generate
     programDegradationLog.push(d);
     options.onDegradation?.(d);
   };
-  const lobes = extensionLobeChunks(f, options.flags, report);
+  const fragmentState = newSpliceState();
+  const lobes = extensionLobeChunks(f, options.flags, fragmentState, defines, report);
   const vertex = vertexSource(f, contributions, defines, marker);
   const fragment =
     f.pass === "forward"
-      ? forwardFragmentSource(f, contributions, defines, marker, lobes)
+      ? forwardFragmentSource(f, contributions, defines, marker, fragmentState, lobes)
       : depthFragmentSource(f, defines, marker);
   return { key, vertex, fragment, defines };
 }

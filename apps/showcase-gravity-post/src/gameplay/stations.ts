@@ -1,7 +1,7 @@
 /**
  * Gravity Post — station nodes + dock sensor specs.
  *
- * Stations are typed GLB ring props (assets.gravityPostStationRing) with a
+ * Stations are typed GLB dock-beacon props (assets.gravityPostDockBeacon) with a
  * pulsing emissive capture-window ring and ONE static physics sensor body per
  * station. The pod (kinematic body) overlaps sensors; the route listens to
  * app.physics.onTriggerEnter for real trigger-driven captures.

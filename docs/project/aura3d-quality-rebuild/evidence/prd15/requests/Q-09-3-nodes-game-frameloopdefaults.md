@@ -1,5 +1,7 @@
 # Q-09-3: `nodes/game/index.ts` imports `app/frameLoopDefaults.ts` — layering violation
 
+**Issue:** #1021 (P-64 writeback)
+
 **From:** lane 15 · **To:** lane 09 · **Filed:** 2026-10-06 · **Status:** OPEN
 
 PRD-15 §6.3 layering: `nodes/` may not import `app/` values. The T3.14

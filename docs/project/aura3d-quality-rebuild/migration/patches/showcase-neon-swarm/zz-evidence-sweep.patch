@@ -1,22 +1,22 @@
-From 78b1493f2203ed8d27eef32f74e4e3011f52a94a Mon Sep 17 00:00:00 2001
+From 1c9b78e67538e107fc3c73b9e905b289025cdbb7 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:51 +0000
-Subject: [PATCH] [qr-prd09] showcase-neon-swarm: delete evidence files+blocks
- (T5.8)
+Subject: [PATCH] showcase-neon-swarm: delete evidence files+blocks (T5.8)
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- .../performance-report.json                   |  23 -
- .../scripts/build-review-art.mjs              | 111 ----
- .../showcase-neon-swarm/scripts/build-sfx.mjs | 272 ----------
- .../scripts/register-models.mjs               |  66 ---
- .../scripts/register-sfx.mjs                  |  51 --
- .../scripts/write-performance-report.ts       |  90 ----
- .../scripts/write-route-health.mjs            | 280 -----------
- apps/showcase-neon-swarm/src/legacy/main.ts   | 472 ------------------
+ .../performance-report.json                   |  23 --
+ .../scripts/build-review-art.mjs              | 111 ------
+ .../showcase-neon-swarm/scripts/build-sfx.mjs | 272 -------------
+ .../scripts/register-models.mjs               |  66 ----
+ .../scripts/register-sfx.mjs                  |  51 ---
+ .../scripts/write-performance-report.ts       |  90 -----
+ .../scripts/write-route-health.mjs            | 279 -------------
+ apps/showcase-neon-swarm/src/legacy/main.ts   | 366 ------------------
  apps/showcase-neon-swarm/src/main.ts          |  10 -
- .../src/v2/evidence/index.ts                  | 111 ----
- 10 files changed, 1486 deletions(-)
+ .../src/v2/evidence-block.ts                  |  51 ---
+ .../src/v2/evidence/index.ts                  | 111 ------
+ 11 files changed, 1430 deletions(-)
  delete mode 100644 apps/showcase-neon-swarm/performance-report.json
  delete mode 100644 apps/showcase-neon-swarm/scripts/build-review-art.mjs
  delete mode 100644 apps/showcase-neon-swarm/scripts/build-sfx.mjs
@@ -24,6 +24,7 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  delete mode 100644 apps/showcase-neon-swarm/scripts/register-sfx.mjs
  delete mode 100644 apps/showcase-neon-swarm/scripts/write-performance-report.ts
  delete mode 100644 apps/showcase-neon-swarm/scripts/write-route-health.mjs
+ delete mode 100644 apps/showcase-neon-swarm/src/v2/evidence-block.ts
  delete mode 100644 apps/showcase-neon-swarm/src/v2/evidence/index.ts
 
 diff --git a/apps/showcase-neon-swarm/performance-report.json b/apps/showcase-neon-swarm/performance-report.json
@@ -677,10 +678,10 @@ index 965ddb997..000000000
 -if (!pass) process.exitCode = 1;
 diff --git a/apps/showcase-neon-swarm/scripts/write-route-health.mjs b/apps/showcase-neon-swarm/scripts/write-route-health.mjs
 deleted file mode 100644
-index dbe9a04de..000000000
+index 1a3f2d545..000000000
 --- a/apps/showcase-neon-swarm/scripts/write-route-health.mjs
 +++ /dev/null
-@@ -1,280 +0,0 @@
+@@ -1,279 +0,0 @@
 -import { createHash } from "node:crypto";
 -import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 -import { dirname, join, resolve } from "node:path";
@@ -872,7 +873,6 @@ index dbe9a04de..000000000
 -    };
 -  }),
 -  primitiveStatus: {
--    sourceOccurrences: primitiveOccurrences,
 -    primitiveBudget: routeGate.primitiveBudget,
 -    role: "arena, player guides, collectible, boundaries, and effects around typed primary assets and abstract instanced enemies",
 -    pass: true
@@ -962,7 +962,7 @@ index dbe9a04de..000000000
 -  });
 -}
 diff --git a/apps/showcase-neon-swarm/src/legacy/main.ts b/apps/showcase-neon-swarm/src/legacy/main.ts
-index 15269925b..4d378831b 100644
+index f93118064..2f68f7a0f 100644
 --- a/apps/showcase-neon-swarm/src/legacy/main.ts
 +++ b/apps/showcase-neon-swarm/src/legacy/main.ts
 @@ -1,18 +1,3 @@
@@ -992,128 +992,7 @@ index 15269925b..4d378831b 100644
  import { bindNeonDrive } from "../scenario-drive";
  import { neonScenarios } from "../scenarios";
  import {
-@@ -73,120 +57,14 @@ import {
-   type CampaignStage
- } from "../gameplay/run";
- type RunState = "booting" | "intermission" | "wave-active" | "complete" | "dead";
--
--interface NeonSwarmEvidence {
--  readonly schema: "aura3d-showcase-neon-swarm/1.0";
--  readonly mounted: boolean;
--  readonly appId: "showcase-neon-swarm";
--  readonly status: "ready";
--  readonly state: RunState;
--  readonly wave: number;
--  readonly alive: number;
--  readonly aliveGrunt: number;
--  readonly aliveElite: number;
--  readonly instanceCount: number;
--  readonly drawCalls: number;
--  readonly nativeInstancedSubmissions: number;
--  readonly score: number;
--  readonly combo: number;
--  readonly maxCombo: number;
--  readonly hp: number;
--  readonly maxHp: number;
--  readonly kills: number;
--  readonly seed: number;
--  readonly paused: boolean;
--  readonly reducedMotion: boolean;
--  readonly audioCues: readonly string[];
--  readonly audioCueCount: number;
--  readonly waveChecksum: number;
--  readonly waveChecksums: readonly number[];
--  readonly stage: CampaignStage;
--  readonly arenaInset: number;
--  readonly finaleSurvivalRemaining: number;
--  readonly outcomeHash: string | null;
--  readonly upgrades: Readonly<PlayerUpgrades>;
--  readonly playerPosition: { readonly x: number; readonly z: number };
--  readonly burstCharge: number;
--  readonly bursts: number;
--  readonly grazes: number;
--  readonly comboBreaks: number;
--  readonly damageEvents: number;
--  readonly pickupActive: boolean;
--  readonly pickupPosition: { readonly x: number; readonly z: number };
--  readonly pickupsCollected: number;
--  readonly audio: SwarmAudioProof;
--  readonly primaryAssets: readonly string[];
--  readonly typedAssets: readonly {
--    readonly id: string;
--    readonly typedRef: string;
--    readonly role: string;
--  }[];
--  readonly systems: Readonly<Record<string, string>>;
--  readonly controls: readonly string[];
--  readonly physics: string;
--  readonly claimBoundary: string;
--}
--
--declare global {
--  interface Window {
--    __NEON_SWARM_EVIDENCE__?: NeonSwarmEvidence;
--    __AURA3D_SHOWCASE_NEON_SWARM__?: NeonSwarmEvidence;
--    __NEON_SWARM_DEBUG__?: NeonSwarmDebugHooks;
--  }
--}
--
--/** Test hooks: deterministic stepping + staged states so browser specs run fast. */
--interface NeonSwarmDebugHooks {
--  stepFixed(frames: number): void;
--  startWaveNow(): void;
--  drainPlayerHp(): void;
--  chooseDoor(kind: string): void;
--  /** Evidence staging: fill both pools with live drones immediately. */
--  spawnTestSwarm(total: number): void;
--  /** Evidence staging: ring of drones within pulse reach of the courier. */
--  stageKillCluster(count?: number): void;
--  /** Evidence staging: begin a specific wave immediately. */
--  jumpToWave(target: number): void;
--  /** Evidence staging: clear the active wave through the normal transition. */
--  clearActiveWave(): void;
--  /** Evidence staging: satisfy the authored finale survival clock. */
--  finishFinale(): void;
--  /** Evidence staging: fire one real pulse into the retained finale field. */
--  stageFinalePulse(): void;
--  /** Replay fixture reset without changing the requested seed. */
--  resetWithSeed(value: number): void;
--  /** Evidence staging: one orbiting elite inside the graze annulus. */
--  stageGraze(): void;
--  /** Evidence staging: a charged burst with nearby simulation-owned targets. */
--  stageBurstCluster(count?: number): void;
--  /** Evidence staging: move the real collectible onto the courier sensor. */
--  stagePickupAtPlayer(): void;
--  /** Evidence staging: stationary simulation-owned contact target. */
--  stageContact(): void;
--  /** Full renderer diagnostics dump for telemetry debugging/evidence. */
--  dumpDiagnostics(): unknown;
--}
--
- const SEED_DEFAULT = 20260821;
- const COMBO_WINDOW_SECONDS = 2;
- const INTERMISSION_FIRST_SECONDS = 3.2;
--
- const reducedMotion = typeof window !== "undefined"
-   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
--
--// The retained desktop probe is a 1440x900 frame. Keep its camera language
--// closer to the actual horde-survival reference (player hierarchy first,
--// threats readable around a broad play pocket) without changing the gameplay
--// capture mode or any deterministic state. Narrower playtest viewports retain
--// the chase-biased camera used by the normal route.
- const desktopComposition = typeof window !== "undefined"
-   && window.innerWidth >= 1400
-   && window.innerHeight >= 880;
--// Normal play uses a compact authored lane so the instanced swarm remains the
--// visual subject and the route can prove its bounded draw contract. The full
--// dressing remains available to the dedicated art/provenance mode below.
--
--
- const controls = [
-   "WASD / arrows move",
-   "mouse aims the courier",
-@@ -195,7 +73,6 @@ const controls = [
+@@ -195,7 +179,6 @@ const controls = [
    "Space / K radial burst when charged",
    "P pause, R reset five-wave run"
  ] as const;
@@ -1121,7 +1000,7 @@ index 15269925b..4d378831b 100644
  const claimBoundary =
    "Prototype label. Root-safe createAuraApp route: two native instances.* enemy pools " +
    "(two custom-geometry enemy draw submissions) with route-local seek/separation/orbit/flee/elite steering, a finite " +
-@@ -203,17 +80,10 @@ const claimBoundary =
+@@ -203,17 +186,10 @@ const claimBoundary =
    "courier/prop assets. Drones are explicitly abstract instanced geometry, not character models. " +
    "Steering is route-local; no Recast/crowd-sim, physics-kit, WebGPU, postprocess-parity, or " +
    "production-rendering claims.";
@@ -1139,7 +1018,7 @@ index 15269925b..4d378831b 100644
  function buildLaneStrips(): Array<{ position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }> {
    const strips: Array<{ position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }> = [];
    for (let i = 0; i < 9; i += 1) {
-@@ -226,13 +96,7 @@ function buildLaneStrips(): Array<{ position: [number, number, number]; rotation
+@@ -226,13 +202,7 @@ function buildLaneStrips(): Array<{ position: [number, number, number]; rotation
    }
    return strips;
  }
@@ -1153,7 +1032,7 @@ index 15269925b..4d378831b 100644
  const canopyTransforms = Array.from({ length: 48 }, (_, index) => {
    const angle = (index / 48) * Math.PI * 2;
    const radiusX = 18.2 + (index % 4) * 1.15;
-@@ -246,7 +110,6 @@ const canopyTransforms = Array.from({ length: 48 }, (_, index) => {
+@@ -246,7 +216,6 @@ const canopyTransforms = Array.from({ length: 48 }, (_, index) => {
  const canopyColors = canopyTransforms.map((_, index) =>
    index % 5 === 0 ? "#4f806f" : index % 3 === 0 ? "#315e59" : "#244448"
  );
@@ -1161,7 +1040,7 @@ index 15269925b..4d378831b 100644
  const appScene = scene()
    .background( "#081316")
    .addMany( createNeonSwarmDistrictDressing())
-@@ -290,11 +153,6 @@ const appScene = scene()
+@@ -290,11 +259,6 @@ const appScene = scene()
    }).runtime(game.runtimeNode("rain-garden-canopy-frame", {
      tags: ["set-dressing", "renderer-owned", "non-colliding", "instanced", "organic-silhouette"]
    })));
@@ -1173,7 +1052,7 @@ index 15269925b..4d378831b 100644
  const rainGardenBlades = Array.from({ length:   6 }, (_, index) => {
    const bladeCount =   6 ;
    const angle = (index / bladeCount) * Math.PI * 2 + index * ( 0.035);
-@@ -325,15 +183,6 @@ const rainGardenBlades = Array.from({ length:   6 }, (_, index) => {
+@@ -325,15 +289,6 @@ const rainGardenBlades = Array.from({ length:   6 }, (_, index) => {
      }));
  });
  appScene.addMany(rainGardenBlades);
@@ -1189,7 +1068,7 @@ index 15269925b..4d378831b 100644
  const districtFrameNodes = Array.from({ length:   8 }, (_, index) => {
    const side = index % 2 === 0 ? -1 : 1;
    const lane = Math.floor(index / 2);
-@@ -368,11 +217,6 @@ const districtFrameNodes = Array.from({ length:   8 }, (_, index) => {
+@@ -368,11 +323,6 @@ const districtFrameNodes = Array.from({ length:   8 }, (_, index) => {
    ];
  }).flat();
  appScene.addMany(districtFrameNodes);
@@ -1201,7 +1080,7 @@ index 15269925b..4d378831b 100644
  const skylineWindowTransforms = Array.from({ length: 64 }, (_, index) => {
    const side = index % 2 === 0 ? -1 : 1;
    const lane = Math.floor(index / 2);
-@@ -397,7 +241,6 @@ appScene.add(
+@@ -397,7 +347,6 @@ appScene.add(
      tags: ["set-dressing", "renderer-owned", "non-colliding", "instanced", "district-frame"]
    }))
  );
@@ -1209,7 +1088,7 @@ index 15269925b..4d378831b 100644
  const districtCanopyTransforms = Array.from({ length: 56 }, (_, index) => {
    const edge = index % 4;
    const slot = Math.floor(index / 4);
-@@ -424,9 +267,6 @@ appScene.add(
+@@ -424,9 +373,6 @@ appScene.add(
      tags: ["set-dressing", "renderer-owned", "non-colliding", "instanced", "organic-silhouette"]
    }))
  );
@@ -1219,7 +1098,7 @@ index 15269925b..4d378831b 100644
  const gardenLightNodes = Array.from({ length:  0 }, (_, index) => {
    const side = index % 2 === 0 ? -1 : 1;
    const lane = Math.floor(index / 2);
-@@ -444,7 +284,6 @@ const gardenLightNodes = Array.from({ length:  0 }, (_, index) => {
+@@ -444,7 +390,6 @@ const gardenLightNodes = Array.from({ length:  0 }, (_, index) => {
    }));
  });
  appScene.addMany(gardenLightNodes);
@@ -1227,7 +1106,7 @@ index 15269925b..4d378831b 100644
  const courierAccentMaterial = material.emissive({
    name: "courier cyan core accent",
    color: "#2bd7e7",
-@@ -474,10 +313,6 @@ const courierCoreNode = primitives.sphere({
+@@ -474,10 +419,6 @@ const courierCoreNode = primitives.sphere({
  }).runtime(game.runtimeNode("neon-courier-chest-core", {
    tags: ["primary-actor-accent", "renderer-owned", "non-colliding"]
  }));
@@ -1238,7 +1117,7 @@ index 15269925b..4d378831b 100644
  const courierShoulderFrameNode = primitives.torus({
    name: "courier shoulder frame",
    material: material.emissive({
-@@ -507,11 +342,6 @@ const courierPulseEmitterNode = primitives.box({
+@@ -507,11 +448,6 @@ const courierPulseEmitterNode = primitives.box({
  }).runtime(game.runtimeNode("neon-courier-pulse-emitter", {
    tags: ["primary-actor-accent", "renderer-owned", "non-colliding"]
  }));
@@ -1250,7 +1129,7 @@ index 15269925b..4d378831b 100644
  const courierPulseRifleNode = model(assets.mechWeaponA, {
    name: "courier pulse carbine — typed Bolt Repeater",
    role: "setDressing",
-@@ -568,7 +398,6 @@ appScene.addMany([
+@@ -568,7 +504,6 @@ appScene.addMany([
    courierPulseMuzzleRingNode,
    courierPulseMuzzleFlashNode
  ]);
@@ -1258,7 +1137,7 @@ index 15269925b..4d378831b 100644
  const courierCoreRingNode = primitives.torus({
    name: "courier core ring",
    material: material.emissive({
-@@ -597,8 +426,6 @@ for (const obstacle of arenaLayout.obstacles) {
+@@ -597,8 +532,6 @@ for (const obstacle of arenaLayout.obstacles) {
        .rotate(0, obstacle.rotationY, 0)
    );
  }
@@ -1267,7 +1146,7 @@ index 15269925b..4d378831b 100644
  let lampIndex = 0;
  for (const lamp of arenaLayout.lamps) {
    appScene.add(
-@@ -618,20 +445,11 @@ for (const lamp of arenaLayout.lamps) {
+@@ -618,20 +551,11 @@ for (const lamp of arenaLayout.lamps) {
    );
    lampIndex += 1;
  }
@@ -1288,7 +1167,7 @@ index 15269925b..4d378831b 100644
  appScene.add(
    distanceLod({
      name: "risky charge pickup",
-@@ -644,7 +462,6 @@ appScene.add(
+@@ -644,7 +568,6 @@ appScene.add(
      scale: 0.62
    }).runtime(game.runtimeNode("swarm-pickup", { tags: ["pickup", "collectible", "gameplay-state"] }))
  );
@@ -1296,7 +1175,7 @@ index 15269925b..4d378831b 100644
  for (const door of PICKUP_DOORS) {
    appScene.add(
      primitives.torus({
-@@ -656,7 +473,6 @@ for (const door of PICKUP_DOORS) {
+@@ -656,7 +579,6 @@ for (const door of PICKUP_DOORS) {
      }).runtime(game.runtimeNode("pickup-gate-" + door.kind, { tags: ["pickup-sensor"] }))
    );
  }
@@ -1304,7 +1183,7 @@ index 15269925b..4d378831b 100644
  appScene.add(
    model( assets.neonCourierAvatar, {
      name: "courier avatar",
-@@ -681,10 +497,6 @@ appScene.add(
+@@ -681,10 +603,6 @@ appScene.add(
      .position(0,  0, 3)
      .runtime(game.runtimeNode("neon-player", { tags: ["primary-actor", "typed-primary-asset"] }))
  );
@@ -1315,7 +1194,7 @@ index 15269925b..4d378831b 100644
  appScene.add(
    primitives.torus({
      name: "courier burst radius",
-@@ -694,7 +506,6 @@ appScene.add(
+@@ -694,7 +612,6 @@ appScene.add(
      scale: [1.22, 1.22, 1.22]
    }).runtime(game.runtimeNode("neon-player-burst-radius", { tags: ["player-readability", "burst-radius"] }))
  );
@@ -1323,7 +1202,7 @@ index 15269925b..4d378831b 100644
  appScene.add(
    primitives.torus({
      name: "charged burst event ring",
-@@ -704,7 +515,6 @@ appScene.add(
+@@ -704,7 +621,6 @@ appScene.add(
      scale: [0.42, 0.42, 0.42]
    }).runtime(game.runtimeNode("neon-burst-event-ring", { tags: ["actual-event-feedback", "burst"] }))
  );
@@ -1331,7 +1210,7 @@ index 15269925b..4d378831b 100644
  appScene.add(
    primitives.box({
      name: "courier aim vector",
-@@ -713,9 +523,6 @@ appScene.add(
+@@ -713,9 +629,6 @@ appScene.add(
      position: [0, 0.22, 1.6]
    }).runtime(game.runtimeNode("neon-player-aim-vector", { tags: ["player-readability", "aim-vector"] }))
  );
@@ -1341,7 +1220,7 @@ index 15269925b..4d378831b 100644
  appScene.addMany([
    primitives.box({
      name: "courier pulse shot ray",
-@@ -729,7 +536,6 @@ appScene.addMany([
+@@ -729,7 +642,6 @@ appScene.addMany([
      scale: [0.58, 0.58, 0.12]
    }).position(0, -8, 0).runtime(game.runtimeNode("neon-pulse-impact-ring", { tags: ["actual-event-feedback", "pulse-hit"] }))
  ]);
@@ -1349,7 +1228,7 @@ index 15269925b..4d378831b 100644
  appScene.addMany(Array.from({ length: 6 }, (_, index) =>
    primitives.box({
      name: `pulse impact shard ${index}`,
-@@ -743,11 +549,6 @@ appScene.addMany(Array.from({ length: 6 }, (_, index) =>
+@@ -743,11 +655,6 @@ appScene.addMany(Array.from({ length: 6 }, (_, index) =>
      tags: ["actual-event-feedback", "pulse-hit", "impact-shard"]
    }))
  ));
@@ -1361,7 +1240,7 @@ index 15269925b..4d378831b 100644
  appScene.add(
    primitives.torus({
      name: "arena center route ring",
-@@ -757,11 +558,6 @@ appScene.add(
+@@ -757,11 +664,6 @@ appScene.add(
      scale: [4.65, 4.65, 0.035]
    }).runtime(game.runtimeNode("arena-center-route-ring", { tags: ["arena-language", "non-colliding"] }))
  );
@@ -1373,7 +1252,7 @@ index 15269925b..4d378831b 100644
  appScene.addMany(Array.from({ length: 8 }, (_, index) =>
    primitives.box({
      name: "burst cascade spoke " + index,
-@@ -772,7 +568,6 @@ appScene.addMany(Array.from({ length: 8 }, (_, index) =>
+@@ -772,7 +674,6 @@ appScene.addMany(Array.from({ length: 8 }, (_, index) =>
      .rotate(0, index * Math.PI / 4, 0)
      .runtime(game.runtimeNode("neon-burst-spoke-" + index, { tags: ["actual-event-feedback", "burst-cascade"] }))
  ));
@@ -1381,7 +1260,7 @@ index 15269925b..4d378831b 100644
  for (const edge of ["north", "south", "east", "west"] as const) {
    appScene.add(
      primitives.box({
-@@ -783,11 +578,6 @@ for (const edge of ["north", "south", "east", "west"] as const) {
+@@ -783,11 +684,6 @@ for (const edge of ["north", "south", "east", "west"] as const) {
      }).runtime(game.runtimeNode("arena-pressure-" + edge, { tags: ["arena-boundary", "danger"] }))
    );
  }
@@ -1393,7 +1272,7 @@ index 15269925b..4d378831b 100644
  function createFacetedThreatGeometry(elite: boolean) {
    // Elites read top-down, so they need a threat silhouette with a nose, swept
    // wings, and a notched tail — the earlier 16-point flower ring rendered as
-@@ -820,11 +610,8 @@ function createFacetedThreatGeometry(elite: boolean) {
+@@ -820,11 +716,8 @@ function createFacetedThreatGeometry(elite: boolean) {
    }
    return geometry.define({ positions, indices });
  }
@@ -1405,7 +1284,7 @@ index 15269925b..4d378831b 100644
  appScene.add(
    instances.custom(THORN_MOTH_GEOMETRY, {
      name: "thorn moth swarm grunt pool",
-@@ -833,7 +620,6 @@ appScene.add(
+@@ -833,7 +726,6 @@ appScene.add(
      material: material.pbr({ color: "#315f57", emissive: "#73b99d", emissiveIntensity: 0.5, roughness: 0.48, metallic: 0.12 })
    })
  );
@@ -1413,7 +1292,7 @@ index 15269925b..4d378831b 100644
  appScene.add(
    instances.custom(CROWN_HUNTER_GEOMETRY, {
      name: "crown hunter elite pool",
-@@ -842,12 +628,6 @@ appScene.add(
+@@ -842,12 +734,6 @@ appScene.add(
      material: material.pbr({ color: "#7a1f3d", emissive: "#ff4d7e", emissiveIntensity: 0.55, roughness: 0.42, metallic: 0.12 })
    })
  );
@@ -1426,7 +1305,7 @@ index 15269925b..4d378831b 100644
  appScene.add(
    instances.sphere({
      name: "impact spark pool",
-@@ -857,7 +637,6 @@ appScene.add(
+@@ -857,7 +743,6 @@ appScene.add(
      size: 0.16
    })
  );
@@ -1434,7 +1313,7 @@ index 15269925b..4d378831b 100644
  appScene.add(effects.fog({ density: 0.02, color: "#070a14" }));
  appScene.add(effects.ambientOcclusion({
    name: "district contact occlusion",
-@@ -870,7 +649,6 @@ if (!reducedMotion) {
+@@ -870,7 +755,6 @@ if (!reducedMotion) {
  }
  appScene.add(effects.colorGrade({ exposure: 1.05, contrast: 1.08, saturation: 1.12 }));
  appScene.add(effects.antiAlias({ mode: "fxaa" }));
@@ -1442,7 +1321,7 @@ index 15269925b..4d378831b 100644
  appScene.camera(
    camera.follow({
      targetNode: "neon-player",
-@@ -884,11 +662,6 @@ appScene.camera(
+@@ -884,11 +768,6 @@ appScene.camera(
      smoothing: false || desktopComposition ? 0 : 0.14
    })
  );
@@ -1454,16 +1333,16 @@ index 15269925b..4d378831b 100644
  const neonGame = createGame({
    id: "showcase-neon-swarm",
    target: "#app",
-@@ -908,8 +681,6 @@ const neonGame = createGame({
+@@ -908,8 +787,6 @@ const neonGame = createGame({
  });
  const app = neonGame.app;
  neonGame.start();
 -
--bindNeonEvidence(() => collectRouteEvidence());
+-bindNeonEvidence(() => collectRouteEvidence() as unknown as Record<string, unknown>);
  bindNeonDrive({
    jumpToWave(target: number): void {
      if (target >= 1) startWave(Math.floor(target));
-@@ -932,7 +703,6 @@ bindNeonDrive({
+@@ -932,7 +809,6 @@ bindNeonDrive({
      for (let i = 0; i < frames; i += 1) update(1 / 60);
    }
  });
@@ -1471,7 +1350,7 @@ index 15269925b..4d378831b 100644
  const input = game.input({
    actions: {
      up: ["KeyW", "ArrowUp"],
-@@ -951,21 +721,18 @@ const input = game.input({
+@@ -951,21 +827,18 @@ const input = game.input({
    },
    bufferMs: 120
  });
@@ -1493,7 +1372,7 @@ index 15269925b..4d378831b 100644
  const audio: SwarmAudioController = createSwarmAudio();
  const neonTween = createTweenEngine();
  const neonFx = createFxParticlePass(app.effects);
-@@ -994,14 +761,8 @@ const neonJuice = createJuice<
+@@ -994,14 +867,8 @@ const neonJuice = createJuice<
  });
  const cameraDirector = game.cameraDirector({ baseFov: 41, distance: 19, reducedMotion });
  const gameEffects = game.effects({ poolSize: 48, reducedMotion, reducedFlash: reducedMotion });
@@ -1508,7 +1387,7 @@ index 15269925b..4d378831b 100644
  let runState: RunState = "booting";
  let wave = 0;
  let score = 0;
-@@ -1010,7 +771,6 @@ let combo = 0;
+@@ -1010,7 +877,6 @@ let combo = 0;
  let maxCombo = 0;
  let comboDecayRemaining = 0;
  let seed = SEED_DEFAULT;
@@ -1516,7 +1395,7 @@ index 15269925b..4d378831b 100644
  let debugFinaleHash: string | null = null;
  let intermissionRemaining = 0;
  let waveElapsed = 0;
-@@ -1039,9 +799,7 @@ let pickupsCollected = 0;
+@@ -1039,9 +905,7 @@ let pickupsCollected = 0;
  let burstFxRemaining = 0;
  let pulseFxRemaining = 0;
  let burstFxOrigin = { x: 0, z: 3 };
@@ -1526,7 +1405,7 @@ index 15269925b..4d378831b 100644
  function readBestScore(): number {
    try {
      return Number(window.localStorage.getItem(BEST_KEY) ?? "0") || 0;
-@@ -1049,7 +807,6 @@ function readBestScore(): number {
+@@ -1049,7 +913,6 @@ function readBestScore(): number {
      return 0;
    }
  }
@@ -1534,7 +1413,7 @@ index 15269925b..4d378831b 100644
  function writeBestScore(value: number): void {
    try {
      window.localStorage.setItem(BEST_KEY, String(value));
-@@ -1057,9 +814,7 @@ function writeBestScore(value: number): void {
+@@ -1057,9 +920,7 @@ function writeBestScore(value: number): void {
      /* in-page persistence is best-effort */
    }
  }
@@ -1544,7 +1423,7 @@ index 15269925b..4d378831b 100644
  function beginIntermission(seconds: number): void {
    runState = "intermission";
    pickupActive = false;
-@@ -1076,7 +831,6 @@ function beginIntermission(seconds: number): void {
+@@ -1076,7 +937,6 @@ function beginIntermission(seconds: number): void {
      hud.hideDoors();
    }
  }
@@ -1552,7 +1431,7 @@ index 15269925b..4d378831b 100644
  function startWave(next: number): void {
    wave = next;
    const spec = waveSpec(wave);
-@@ -1105,7 +859,6 @@ function startWave(next: number): void {
+@@ -1105,7 +965,6 @@ function startWave(next: number): void {
      spec.droneCount + " drones over " + spec.spawnWindowSeconds + "s · " + campaignStage(wave)
    );
  }
@@ -1560,7 +1439,7 @@ index 15269925b..4d378831b 100644
  function resetRun(newSeed?: number): void {
    if (typeof newSeed === "number") seed = newSeed >>> 0;
    player.hp = player.maxHp;
-@@ -1152,7 +905,6 @@ function resetRun(newSeed?: number): void {
+@@ -1152,7 +1011,6 @@ function resetRun(newSeed?: number): void {
    beginIntermission(INTERMISSION_FIRST_SECONDS);
    hud.showBanner("Neon Swarm", "Five escalating waves. Read the opening, choose upgrades, survive the 320-drone finale.");
  }
@@ -1568,7 +1447,7 @@ index 15269925b..4d378831b 100644
  function chooseDoor(kind: string): void {
    if (runState !== "intermission" || wave <= 0 || chosenDoor) return;
    const door = PICKUP_DOORS.find((entry) => entry.kind === kind);
-@@ -1174,7 +926,6 @@ function chooseDoor(kind: string): void {
+@@ -1174,7 +1032,6 @@ function chooseDoor(kind: string): void {
    // state, exactly as the staged evidence paths below already do.
    collectRouteEvidence();
  }
@@ -1576,7 +1455,7 @@ index 15269925b..4d378831b 100644
  function collectRiskPickup(): void {
    if (!pickupActive || runState !== "wave-active") return;
    pickupActive = false;
-@@ -1189,7 +940,6 @@ function collectRiskPickup(): void {
+@@ -1189,7 +1046,6 @@ function collectRiskPickup(): void {
    audio.cue("pickup").catch(() => undefined);
      neonJuice.fire("pickup");
  }
@@ -1584,7 +1463,7 @@ index 15269925b..4d378831b 100644
  function firePulse(): void {
    const aim = resolveAim();
    const result = swarm.firePulse(player, aim.x, aim.z, DEFAULT_PLAYER_TUNING.pulseDamage, {
-@@ -1244,7 +994,6 @@ function firePulse(): void {
+@@ -1244,7 +1100,6 @@ function firePulse(): void {
    audio.cue("pulse-fire").catch(() => undefined);
    neonJuice.fire("pulse-fire", { position: [player.x, 0.9, player.z] });
  }
@@ -1592,7 +1471,7 @@ index 15269925b..4d378831b 100644
  function handleDroneKilled(drone: { readonly x: number; readonly z: number }): void {
    kills += 1;
    combo += 1;
-@@ -1256,7 +1005,6 @@ function handleDroneKilled(drone: { readonly x: number; readonly z: number }): v
+@@ -1256,7 +1111,6 @@ function handleDroneKilled(drone: { readonly x: number; readonly z: number }): v
    audio.cue("drone-die").catch(() => undefined);
      neonJuice.fire("drone-die");
  }
@@ -1600,7 +1479,7 @@ index 15269925b..4d378831b 100644
  function fireBurst(): void {
    if (runState !== "wave-active" || neonGame.session.paused || burstCharge < 100) return;
    burstCharge = 0;
-@@ -1284,12 +1032,10 @@ function fireBurst(): void {
+@@ -1284,12 +1138,10 @@ function fireBurst(): void {
    audio.cue("burst").catch(() => undefined);
    neonJuice.fire("burst", { position: [player.x, 0.9, player.z] });
  }
@@ -1613,7 +1492,7 @@ index 15269925b..4d378831b 100644
  function killPlayer(): void {
    runState = "dead";
    combo = 0;
-@@ -1301,7 +1047,6 @@ function killPlayer(): void {
+@@ -1301,7 +1153,6 @@ function killPlayer(): void {
    }
    hud.showSummary(score, wave, kills, bestScore);
  }
@@ -1621,7 +1500,7 @@ index 15269925b..4d378831b 100644
  function completeRun(): void {
    runState = "complete";
    neonGame.session.resume();
-@@ -1314,11 +1059,6 @@ function completeRun(): void {
+@@ -1314,11 +1165,6 @@ function completeRun(): void {
    hud.hideDoors();
    hud.showVictory(score, kills, maxCombo, seed, bestScore);
  }
@@ -1633,7 +1512,7 @@ index 15269925b..4d378831b 100644
  window.addEventListener("pointermove", (event) => {
    const canvasRect = app.canvas?.getBoundingClientRect();
    if (!canvasRect) return;
-@@ -1332,23 +1072,19 @@ window.addEventListener("pointermove", (event) => {
+@@ -1332,23 +1178,19 @@ window.addEventListener("pointermove", (event) => {
    const len = Math.hypot(wx, wz);
    if (len > 0.08) mouseAim = { x: wx / len, z: wz / len };
  });
@@ -1657,7 +1536,7 @@ index 15269925b..4d378831b 100644
  function bindTouchStick(elementId: string, onDrag: (dx: number, dz: number, active: boolean) => void): void {
    let pointerId: number | null = null;
    let centerX = 0;
-@@ -1381,7 +1117,6 @@ function bindTouchStick(elementId: string, onDrag: (dx: number, dz: number, acti
+@@ -1381,7 +1223,6 @@ function bindTouchStick(elementId: string, onDrag: (dx: number, dz: number, acti
      onDrag(0, 0, false);
    });
  }
@@ -1665,7 +1544,7 @@ index 15269925b..4d378831b 100644
  function renderTouchSticks(): void {
    const coarse = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
    if (!coarse) {
-@@ -1397,9 +1132,6 @@ function renderTouchSticks(): void {
+@@ -1397,9 +1238,6 @@ function renderTouchSticks(): void {
    })));
  }
  renderTouchSticks();
@@ -1675,7 +1554,7 @@ index 15269925b..4d378831b 100644
  bindTouchStick(touchLayout.controls[0]?.id ?? "move-stick", (dx, dz, active) => {
    touchMove = active ? { x: dx, z: dz } : { x: 0, z: 0 };
  });
-@@ -1411,11 +1143,6 @@ bindTouchStick(touchLayout.controls[1]?.id ?? "fire-stick", (dx, dz, active) =>
+@@ -1411,11 +1249,6 @@ bindTouchStick(touchLayout.controls[1]?.id ?? "fire-stick", (dx, dz, active) =>
      touchAimFire = false;
    }
  });
@@ -1687,7 +1566,7 @@ index 15269925b..4d378831b 100644
  function update(dt: number): void {
    input.update(dt);
    neonTween.tick(dt);
-@@ -1708,7 +1435,6 @@ function update(dt: number): void {
+@@ -1708,7 +1541,6 @@ function update(dt: number): void {
  
    collectRouteEvidence();
  }
@@ -1695,7 +1574,7 @@ index 15269925b..4d378831b 100644
  function collectRouteEvidence(): NeonSwarmEvidence {
    const diagnostics = safeDiagnostics();
    const audioProof = audio.proof();
-@@ -1801,12 +1527,10 @@ function collectRouteEvidence(): NeonSwarmEvidence {
+@@ -1801,12 +1633,10 @@ function collectRouteEvidence(): NeonSwarmEvidence {
    document.body.dataset.aura3dShowcaseReady = "true";
    return evidence;
  }
@@ -1708,7 +1587,7 @@ index 15269925b..4d378831b 100644
  function safeDiagnostics(): SafeDiagnostics {
    try {
      const report = app.diagnostics() as unknown as {
-@@ -1821,210 +1545,14 @@ function safeDiagnostics(): SafeDiagnostics {
+@@ -1821,210 +1651,14 @@ function safeDiagnostics(): SafeDiagnostics {
      return { drawCalls: 0, nativeInstancedSubmissions: 0 };
    }
  }
@@ -1920,7 +1799,7 @@ index 15269925b..4d378831b 100644
  resetRun(SEED_DEFAULT);
 -collectRouteEvidence();
 diff --git a/apps/showcase-neon-swarm/src/main.ts b/apps/showcase-neon-swarm/src/main.ts
-index 1bd5aefe8..47ede36b6 100644
+index a0bc875a0..410ce2f9b 100644
 --- a/apps/showcase-neon-swarm/src/main.ts
 +++ b/apps/showcase-neon-swarm/src/main.ts
 @@ -1,14 +1,6 @@
@@ -1938,9 +1817,9 @@ index 1bd5aefe8..47ede36b6 100644
  function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
    const raw = new URL(loc.href).searchParams.get("a3d-qr");
    if (raw === null) return undefined;
-@@ -17,11 +9,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
-     ? true
-     : undefined;
+@@ -19,11 +11,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
+   const wanted = [`route-${slug.replace(/_/g, "-")}`, `route_${slug}`, flag];
+   return tokens.some((t) => wanted.includes(t)) ? true : undefined;
  }
 -
  const flags = resolveQrFlags({
@@ -1950,6 +1829,63 @@ index 1bd5aefe8..47ede36b6 100644
  });
 -
  void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
+diff --git a/apps/showcase-neon-swarm/src/v2/evidence-block.ts b/apps/showcase-neon-swarm/src/v2/evidence-block.ts
+deleted file mode 100644
+index 4de8667a2..000000000
+--- a/apps/showcase-neon-swarm/src/v2/evidence-block.ts
++++ /dev/null
+@@ -1,51 +0,0 @@
+-// Evidence publish — extracted from boot.ts for 14-LOC. appliedLook derives
+-// from the C-31 runtime manifest (T2.2-post).
+-import { lookManifest, type Prd09Game } from "@aura3d/game";
+-import direction from "../../art/direction";
+-import { campaignStage } from "../gameplay/run";
+-import type { PlayerState, PlayerUpgrades } from "../gameplay/player";
+-import type { createSwarmSimulation } from "../gameplay/swarm";
+-import { publishSwarmEvidence } from "./evidence";
+-import type { SwarmRunCtx } from "./state";
+-
+-export function publishSwarmEvidenceBlock(ctx: SwarmRunCtx, deps: {
+-  game: Prd09Game<string, string>;
+-  swarm: ReturnType<typeof createSwarmSimulation>;
+-  player: PlayerState;
+-  upgrades: PlayerUpgrades;
+-  audioCueLog: () => readonly string[];
+-  bootedAtMs: number;
+-}): void {
+-  const { game, swarm, player, upgrades } = deps;
+-  const appliedLook: Record<string, unknown> = Object.freeze({
+-    ...lookManifest(game.lookSource()),
+-    postPreset: "neon-night",
+-    exposureEV: direction.lighting.exposureEV,
+-    hdri: direction.lighting.environment.hdri,
+-    rig: "neon-swarm.topdown"
+-  });
+-  publishSwarmEvidence({
+-    game,
+-    run: () => ({
+-      state: ctx.runState,
+-      wave: ctx.wave,
+-      stage: campaignStage(Math.max(1, ctx.wave)),
+-      intermissionRemaining: ctx.intermissionRemaining,
+-      score: ctx.score,
+-      combo: ctx.combo,
+-      maxCombo: ctx.maxCombo,
+-      burstCharge: ctx.burstCharge,
+-      kills: ctx.kills,
+-      killsThisWave: ctx.killsThisWave,
+-      spawned: ctx.spawnedCount,
+-      scheduled: ctx.schedule.length
+-    }),
+-    swarm: () => ({ aliveGrunt: swarm.aliveGruntCount(), aliveElite: swarm.aliveEliteCount() }),
+-    player: () => player,
+-    upgrades: () => upgrades,
+-    appliedLook,
+-    frameCount: () => ctx.frame,
+-    bootedAtMs: deps.bootedAtMs,
+-    audioCueLog: () => deps.audioCueLog()
+-  });
+-}
 diff --git a/apps/showcase-neon-swarm/src/v2/evidence/index.ts b/apps/showcase-neon-swarm/src/v2/evidence/index.ts
 deleted file mode 100644
 index 6b2a20f5b..000000000
@@ -2068,5 +2004,5 @@ index 6b2a20f5b..000000000
 -  };
 -}
 -- 
-2.34.1
+2.52.0
 

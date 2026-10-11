@@ -151,6 +151,9 @@ export const prd06CharacterHero: CharacterHeroSpec = {
   time: 0,
   settleFrames: 0,
   owner: "prd06",
+  referenceProfile: "contract",
+  brokenControls: [],
+  primaryCriterion: "Hero locomotion sequence (idle, walk, run, stop, jump, land) with spring and look-at secondary motion",
   qrFlags: ["animation"],
   admittedAsReference: false,
   characterHero: {
@@ -182,8 +185,14 @@ export const prd06CharacterHero: CharacterHeroSpec = {
       // foot_l anchors; ball_l aims at the simulated ball_leaf_l particle.
       // (A 2-bone chain would write nothing — bones[1..n-2] needs ≥3.)
       bones: ["foot_l", "ball_l", "ball_leaf_l"],
-      stiffness: 60,
-      damping: 10,
+      // 06-S9: near-critical damping (zeta = 32 / (2·sqrt(250)) ≈ 1.0,
+      // omega ≈ 15.8 rad/s). The landing Crouch_Idle one-shot keeps moving the
+      // foot_l anchor until ~0.2 s after touchdown; at the old 60/10
+      // (zeta ≈ 0.65, omega ≈ 7.7) the toe was still 21.7° off rest at the
+      // airEnd + 0.6 s gate (L4 run 38133451186) and reached < 1° only ~1 s
+      // after landing. The gate itself (< 1° from airEnd + 0.6 s) is unchanged.
+      stiffness: 250,
+      damping: 32,
       relativeDamping: 12,
       gravityScale: 0.15,
       substepHz: 60

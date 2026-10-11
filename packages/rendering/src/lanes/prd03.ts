@@ -12,9 +12,10 @@ import { provideVelocityHistory } from "../forward/Velocity.js";
 import { registerShaderChunk, registerShaderFeature } from "../contracts/program.js";
 import { registerIndirectFractionShader } from "../post/chunks/indirectFraction.glsl.js";
 import { registerVelocityShader } from "../post/chunks/velocity.glsl.js";
+import { registerScreenFeelConsumer } from "../post/ScreenFeelPass.js";
 
-// C-13: v2 post graph (thin real — plans stages, execute() throws
-// POST_GRAPH_V2_PENDING until Phase 2 wires the GPU chain).
+// C-13: v2 post graph (plans + validates the §6.1 chain; the GPU chain runs in
+// post/v2Stages.ts, including custom passes at all five anchors).
 postPipelineSlot.provide(new PostGraph());
 
 // C-14: camera-level temporal history + velocity-MRT uniform binder
@@ -32,9 +33,19 @@ registerIndirectFractionShader(registerShaderChunk, registerShaderFeature);
 // (`A3D_QR_POST_VELOCITY_MRT`) until Q-01-2 wires the MRT target.
 registerVelocityShader(registerShaderChunk, registerShaderFeature);
 
+// #207 / Q-03-1: the C-13 consumer of lane 08's `prd08.screenFeel` uniforms.
+// The bridge contributor is flag-gated (`A3D_QR_POST`) and registers the
+// `prd03.screenFeel` post pass lazily from its flag-on collect, so flag-off
+// frames and the post-pass registry are unchanged.
+registerScreenFeelConsumer();
+
 export { postPipelineSlot, PostGraph, planPostGraph, resolvePostGraph, type PostGraphLike, type PostGraphFrame } from "../post/PostGraph.js";
 export { velocityHistorySlot, VelocityHistory, postVelocityCoverage, type VelocitySurface, type VelocityUniformBinder, bindVelocityUniforms } from "../forward/Velocity.js";
 export { PostTimer } from "../post/PostTimer.js";
+export { SCREEN_FEEL_PASS_ID, screenFeelFrameState } from "../post/ScreenFeelPass.js";
+// 03-S18c: the renderer-side outcome of the last v2 seam call, so
+// `diagnostics().post.customPasses` reports what executed, not what was authored.
+export { postGraphV2LastOutcome, postV2ModulesReady } from "../renderer/PostprocessExecution.js";
 export { applyToneOperator, POST_TONE_OPERATORS, acesFilmicToneMapping, agxToneMapping, neutralToneMapping, reinhardToneMapping, linearToneMapping, cineonToneMapping, type AuraToneOperator, type Vec3 } from "../post/ToneOperators.js";
 export { MSAA_PIXEL_GUARD, resolvePostAntiAlias, type PostAntiAliasAuthoredMode, type PostAntiAliasInput, type PostAntiAliasResolution } from "../post/PostAntiAlias.js";
 // Phase 5 (§6.8): C-27 → post tier mapping. Pure table data like

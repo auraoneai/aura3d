@@ -1,4 +1,6 @@
-import { defineConfig } from "@playwright/test";
+import { defineConfig, type ReporterDescription } from "@playwright/test";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import baseConfig from "../../../playwright.config";
 
 /**
@@ -9,8 +11,24 @@ import baseConfig from "../../../playwright.config";
 const extraArgs = (process.env.PRD04_CHROMIUM_ARGS ?? "").split(" ").filter(Boolean);
 const baseLaunch = (baseConfig.use?.launchOptions ?? {}) as { args?: string[] };
 
+/**
+ * Playwright resolves a relative custom reporter path against the directory of
+ * the config file that declares it, and this config lives in tests/qr/prd04.
+ * The root config's `./tests/support/noSkipInCiReporter.ts` (P-22) therefore
+ * failed to load ("Cannot find module") and aborted every lane browser/GPU run
+ * (main run 38134912113). Re-anchor relative reporter paths at the repo root,
+ * keeping the same reporters.
+ */
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+const anchor = (name: string): string =>
+  name.startsWith("./") || name.startsWith("../") ? resolve(REPO_ROOT, name) : name;
+const reporter: ReporterDescription[] = (Array.isArray(baseConfig.reporter) ? (baseConfig.reporter as ReporterDescription[]) : []).map(
+  ([name, options]) => (options === undefined ? [anchor(name)] : [anchor(name), options])
+);
+
 export default defineConfig({
   ...baseConfig,
+  ...(Array.isArray(baseConfig.reporter) ? { reporter } : {}),
   testDir: ".",
   testMatch: ["browser/**/*.spec.ts"],
   timeout: 180_000,

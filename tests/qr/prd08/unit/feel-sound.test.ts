@@ -78,6 +78,28 @@ describe("S-18 bindFeelSound: listener tracks presented pose (A-3)", () => {
     expect(app.cbCount()).toBe(0);
   });
 
+  // T0-29 (#979): createGame passes GameAudio, whose listener API is
+  // setListenerPosition({x,y,z}); calling a missing setListener threw inside
+  // the frame loop and stopped every flag-on game from drawing.
+  it("GameAudio surface: setListenerPosition receives the presented position once per frame", () => {
+    const app = makeApp({ position: [4, 5, 6], target: [4, 5, 0], up: [0, 1, 0] });
+    const positions: { x: number; y: number; z: number }[] = [];
+    bindFeelSound(app as never, { setListenerPosition: (p: { x: number; y: number; z: number }) => positions.push(p) } as never);
+    expect(() => {
+      app.frame(1 / 60);
+      app.frame(1 / 60);
+    }).not.toThrow();
+    expect(positions).toEqual([{ x: 4, y: 5, z: 6 }, { x: 4, y: 5, z: 6 }]);
+  });
+
+  it("a sound object with no listener method binds nothing and never throws", () => {
+    const app = makeApp({ position: [0, 0, 0], target: [0, 0, -5], up: [0, 1, 0] });
+    const unbind = bindFeelSound(app as never, { play: () => {} } as never);
+    expect(app.cbCount()).toBe(0);
+    expect(() => app.frame(1 / 60)).not.toThrow();
+    unbind();
+  });
+
   it("stub app (no onFrame / no camera.presented) binds a harmless no-op", () => {
     const calls: Call[] = [];
     const unbind = bindFeelSound({} as never, { setListener: (o: Call) => calls.push(o) });

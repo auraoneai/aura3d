@@ -1060,5 +1060,61 @@
     "expires": "2026-11-15",
     "request": "Q-15-3",
     "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision \u2014 see Q-15-3"
+  },
+  {
+    "rule": "no-cross-package-relative",
+    "file": "packages/engine/src/lanes/prd02.ts",
+    "expires": "2026-10-31",
+    "reason": "lane-02 file (G1): :80-81 import rendering/src LightUniforms + RenderDevice; repoint to @aura3d/rendering",
+    "request": "#959"
+  },
+  {
+    "rule": "no-cross-package-relative",
+    "file": "packages/engine/src/agent-api/compiler/environment.ts",
+    "expires": "2026-10-31",
+    "reason": "lane-02: :230-231 import rendering/src RenderDevice + EnvironmentCache",
+    "request": "#959"
+  },
+  {
+    "rule": "no-cross-package-relative",
+    "file": "packages/engine/src/agent-api/compiler/lights.ts",
+    "expires": "2026-10-31",
+    "reason": "lane-02: :14 type-imports rendering/src LightUniforms",
+    "request": "#959"
+  },
+  {
+    "rule": "no-cross-package-relative",
+    "file": "packages/aura3d-cli/src/commands/prd02/environmentsBake.ts",
+    "expires": "2026-10-31",
+    "reason": "lane-02: :21-22 import rendering/src/lanes/prd02",
+    "request": "#959"
+  },
+  {
+    "rule": "no-cross-package-relative",
+    "file": "packages/engine/src/lanes/prd10.ts",
+    "expires": "2026-10-31",
+    "reason": "lane-10: :18 imports rendering/src/lanes/prd10 registerPrd10Chunks",
+    "request": "#960"
+  },
+  {
+    "rule": "no-cross-package-relative",
+    "file": "packages/aura3d-cli/src/commands/prd08/feelLint.ts",
+    "expires": "2026-10-31",
+    "reason": "lane-08: :7 imports engine/src feelSourceScan",
+    "request": "#961"
+  },
+  {
+    "rule": "no-cross-package-relative",
+    "file": "packages/engine/src/threejs-example-parity/index.ts",
+    "expires": "2026-10-31",
+    "reason": "lane-15: removed with T2.8/T2.12/T3.1 advanced-runtime removal",
+    "request": "#962"
+  },
+  {
+    "rule": "no-cross-package-relative",
+    "file": "packages/engine/src/agent-api/compiler/compileScene.ts",
+    "expires": "2026-10-31",
+    "reason": "lane-15: :42 imports rendering/src EnvironmentCache",
+    "request": "#962"
   }
 ]

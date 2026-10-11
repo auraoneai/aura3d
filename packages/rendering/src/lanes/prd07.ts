@@ -5,16 +5,15 @@
 import { particleRenderHookSlot } from "../contracts/particles";
 import { skyBackgroundSlot } from "../contracts/atmosphere";
 import { registerShaderFeature } from "../contracts/program";
-import type { QrFlags } from "../contracts";
-import { setRendererQrFlags } from "../renderer/FrameGraph";
 import { particlePassFor, registerPrd07Contributors } from "../vfx/contributors";
 import { skyPassFor } from "../atmosphere/SkyBackgroundPass";
 import { registerParticleChunks } from "../vfx/shaders/particle.glsl";
 import { registerSkyChunks } from "../atmosphere/sky.glsl";
-import { registerPrd07Chunks, FOG_CHUNK_NAME, WETNESS_CHUNK_NAME } from "../atmosphere/fogChunks";
+import { registerPrd07Chunks, FOG_CHUNK_NAME, FOG_APPLY_CHUNK_NAME, WETNESS_CHUNK_NAME, WETNESS_APPLY_CHUNK_NAME } from "../atmosphere/fogChunks";
 import { registerPrd07VolumeChunk } from "../vfx/shaders/volume.glsl";
 import { prd07WetnessState } from "../atmosphere/shaders/wetness.glsl";
 import { prd07FogSelect, prd07WetnessSelect } from "../vfx/prd07FeaturePars";
+import { bindPrd07FogUniforms } from "../atmosphere/fogUniformStore";
 import { TextureBinding } from "../TextureBinding";
 
 // C-20 / C-21 provides — real implementations keyed by device.
@@ -39,19 +38,30 @@ try {
     owner: "prd07",
     flag: "A3D_QR_VFX_FOG",
     select: (input) => prd07FogSelect(input),
-    defines: (value) => ({ A3D_FOG: 1, FOG_VOLUMETRIC: value === "volumetric" ? 1 : 0 }),
-    chunks: [FOG_CHUNK_NAME],
-    hooks: ["fragment:fog"]
+    // No FOG_VOLUMETRIC on forward programs: `#define FOG_VOLUMETRIC 0` is
+    // still `defined()` and pulled in an undefined a3dSampleFroxel(); the
+    // froxel volume is composited by VolumetricFogPass apply instead. The
+    // select value still keys the "height" vs "volumetric" program variant.
+    defines: (value) => ({ A3D_FOG: 1, ...(value === "volumetric" ? { A3D_FOG_FROXEL_TIER: 1 } : {}) }),
+    // #880: pars (declarations) at fragment:pars, call at fragment:fog.
+    chunks: [FOG_CHUNK_NAME, FOG_APPLY_CHUNK_NAME],
+    hooks: ["fragment:pars", "fragment:fog"],
+    // #187/#82 — packed §8.4 uniforms from the prd07.fog contributor (module
+    // store; bindUniforms sees no blackboard). Mode 5 = real absorption.
+    bindUniforms: (_value, _item, set) => bindPrd07FogUniforms(set)
   });
   registerShaderFeature({
     id: "prd07.wetness",
     owner: "prd07",
     flag: "A3D_QR_VFX",
-    // gated on live wetness state so dry scenes keep the chunk out (IC-0)
-    select: () => prd07WetnessSelect(),
+    // gated on live wetness state so dry scenes keep the chunk out (IC-0),
+    // and per item: lit forward draws only (the call chunk edits `material`)
+    select: (input) => prd07WetnessSelect(input),
     defines: () => ({ A3D_WETNESS: 1 }),
-    chunks: [WETNESS_CHUNK_NAME],
-    hooks: ["fragment:material"],
+    // #880: pars (uniforms + functions) at fragment:pars; the call chunk
+    // appends to the default material at fragment:material.
+    chunks: [WETNESS_CHUNK_NAME, WETNESS_APPLY_CHUNK_NAME],
+    hooks: ["fragment:pars", "fragment:material"],
     // §6.8 globals — driven by AtmosphereWetness/WeatherVolume via
     // setPrd07WetnessState (bindUniforms sees no blackboard; module store).
     bindUniforms: (_value, _item, set) => {
@@ -68,15 +78,9 @@ try {
   if (!(error instanceof Error && error.message.startsWith("SHADER_FEATURE"))) throw error;
 }
 
-/**
- * PRD 15's `setRendererQrFlags` has no caller yet (qr-request filed). Lane 07
- * needs renderer-side flags so its contributors gate on the app's resolved
- * flags; the engine's `effects` extension calls this from its create() with
- * the app's `qrFlags`. Global store — last app wins; flagged on the CCR.
- */
-export function bindPrd07RendererFlags(flags: QrFlags): void {
-  setRendererQrFlags(flags);
-}
+// T0-28: no global flag binding here. Renderer-side flags resolve per device
+// via the Renderer's `qrFlags` option (set by the engine at mount); lane 07
+// contributors read them through FrameContributorContext.flags.
 
 export { particlePassFor, notePrd07VolumetricGpuMs, froxelBudgetMs, prd07VolumetricCostFallback, lastParticleUpdateMs } from "../vfx/contributors";
 export { skyPassFor, skyDrawPassFor, SkyBackgroundPass } from "../atmosphere/SkyBackgroundPass";

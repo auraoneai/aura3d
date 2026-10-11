@@ -19,7 +19,7 @@ export class WebGL2DrawCallBinder {
 
   nextVertexFormatId = 1;
 
-  readonly uniformLocationCache = new WeakMap<WebGL2ShaderProgram, Map<string, WebGLUniformLocation | null>>();
+  uniformLocationCache = new WeakMap<WebGL2ShaderProgram, Map<string, WebGLUniformLocation | null>>();
 
   /**
    * PRD-01 Phase 6: per-program last-value uniform cache — skips the GL call
@@ -27,7 +27,7 @@ export class WebGL2DrawCallBinder {
    * (numbers by value, arrays element-wise vs a retained snapshot, texture
    * bindings by texture/sampler/transform identity).
    */
-  private readonly uniformValueCache = new WeakMap<WebGL2ShaderProgram, Map<string, unknown>>();
+  private uniformValueCache = new WeakMap<WebGL2ShaderProgram, Map<string, unknown>>();
 
   readonly vertexArrayCache = new Map<string, WebGL2VertexArrayCacheEntry>();
 
@@ -36,7 +36,32 @@ export class WebGL2DrawCallBinder {
 
   readonly vertexFormatIds = new WeakMap<VertexFormat, number>();
 
+  /** #180: `WEBGL_multi_draw`, queried lazily (`undefined` = not queried yet). */
+  private multiDrawExt: WebGLMultiDrawExtension | null | undefined;
+
+  /**
+   * #94 (Q-01-1, C-29): drop every cache that holds a GL object name or a
+   * value uploaded into the lost context, so VAOs, uniform locations and the
+   * last-value uniform snapshots recreate lazily on the next draw after
+   * `webglcontextrestored`. VAO handles are not deleted: they died with the
+   * context. Buffers, textures and programs are rebuilt by the C-29
+   * ResourceRegistry (they need CPU-side sources this binder does not own).
+   */
+  invalidateGpuObjects(): void {
+    this.vertexArrayCache.clear();
+    this.bufferVaoIndex.clear();
+    this.uniformLocationCache = new WeakMap();
+    this.uniformValueCache = new WeakMap();
+    this.multiDrawExt = undefined;
+  }
+
   draw(command: DrawCommand): void {
+    this.prepareDraw(command);
+    this.issueDraw(command);
+  }
+
+  /** State, program, uniforms and vertex input for `command` (everything before the GL draw call). */
+  private prepareDraw(command: DrawCommand): void {
     this.host.lifecycle.assertFrame();
     const vertexBuffer = this.requireBuffer(command.vertexBuffer);
     this.applyRenderState(command.renderState);
@@ -76,11 +101,15 @@ export class WebGL2DrawCallBinder {
       this.bindNoVertexArray();
       this.host.stateCache.bindBuffer(this.host.gl.ARRAY_BUFFER, vertexBuffer.handle, () => this.host.gl.bindBuffer(this.host.gl.ARRAY_BUFFER, vertexBuffer.handle));
     }
-    if (command.indexBuffer) {
+    if (command.indexBuffer && (!shader || !command.vertexFormat)) {
       const indexBuffer = this.requireBuffer(command.indexBuffer);
-      if (!shader || !command.vertexFormat) {
-        this.host.stateCache.bindBuffer(this.host.gl.ELEMENT_ARRAY_BUFFER, indexBuffer.handle, () => this.host.gl.bindBuffer(this.host.gl.ELEMENT_ARRAY_BUFFER, indexBuffer.handle));
-      }
+      this.host.stateCache.bindBuffer(this.host.gl.ELEMENT_ARRAY_BUFFER, indexBuffer.handle, () => this.host.gl.bindBuffer(this.host.gl.ELEMENT_ARRAY_BUFFER, indexBuffer.handle));
+    }
+  }
+
+  /** The GL draw call for a prepared `command`, plus counters and strict error check. */
+  private issueDraw(command: DrawCommand): void {
+    if (command.indexBuffer) {
       const type = command.indexType === "uint32" ? this.host.gl.UNSIGNED_INT : this.host.gl.UNSIGNED_SHORT;
       const indexByteSize = command.indexType === "uint32" ? 4 : 2;
       const indexOffset = (command.firstIndex ?? 0) * indexByteSize;
@@ -125,35 +154,24 @@ export class WebGL2DrawCallBinder {
       }
       const location = this.getUniformLocation(shader, name);
       if (location === null) {
-        throw new RenderDeviceError("Material tried to bind a missing shader uniform", "MISSING_UNIFORM", { name });
+        // The name is declared in source (reflection) but the linked program
+        // has no location for it — the driver optimised it out as inactive.
+        // A location-less uniform has no storage, so binding is a no-op; treat
+        // the reflected name as inactive rather than throwing (06-PARITY).
+        this.host.counters.inactiveUniformBindCount += 1;
+        continue;
       }
       if (isTextureBinding(value)) {
         textureUnit += 1;
-        // Last-value check: same texture + sampler + transform → the unit
-        // binding from the previous upload still holds.
-        const lastTexture = valueCache.get(name) as
-          | { texture: unknown; sampler: unknown; offset: readonly number[]; scale: readonly number[]; rotation: number }
-          | undefined;
-        const textureUnchanged =
-          lastTexture !== undefined &&
-          lastTexture.texture === value.texture &&
-          lastTexture.sampler === value.sampler &&
-          lastTexture.rotation === value.rotation &&
-          lastTexture.offset[0] === value.offset[0] &&
-          lastTexture.offset[1] === value.offset[1] &&
-          lastTexture.scale[0] === value.scale[0] &&
-          lastTexture.scale[1] === value.scale[1];
-        if (textureUnchanged) continue;
+        // #1142: no last-value skip for textures. The unit index is positional
+        // (order of this material's texture uniforms), and other draws and
+        // passes rebind units in between, so "same texture as the last upload
+        // for this uniform" does not mean the unit still holds it: a skipped
+        // upload samples whatever the unit holds now. Samplers.bindTextureForUnit
+        // already dedups redundant binds per unit; uniform1i is cheap.
         // lane 06 Q-01-3: pass the declared uniform type so sampler2DArray
         // uniforms bind TEXTURE_2D_ARRAY units even when texture.dimension is absent.
         this.host.samplers.uploadTextureUniform(location, value, textureUnit - 1, shader.reflection.uniformDetails.get(name)?.type);
-        valueCache.set(name, {
-          texture: value.texture,
-          sampler: value.sampler,
-          offset: value.offset,
-          scale: value.scale,
-          rotation: value.rotation
-        });
       } else if (typeof value === "number") {
         if (valueCache.get(name) === value) continue;
         this.host.gl.uniform1f(location, value);
@@ -609,14 +627,121 @@ export class WebGL2DrawCallBinder {
     return shader;
   }
   /**
-   * C-28 (CONTRACTS.md §3.4) — instanced multi-draw seam. Identity fallback:
-   * issues each entry through `draw` until PRD 11 batches it via
-   * `WEBGL_multi_draw`.
+   * C-28 (CONTRACTS.md §3.4) — instanced multi-draw (#180). When
+   * `WEBGL_multi_draw` is present and every entry shares one program, vertex
+   * input, index buffer, topology and render state (uniforms may differ only
+   * in `u_drawId`, which a `gl_DrawID` program does not declare), the batch is
+   * one `multiDrawElementsInstancedWEBGL` call. Otherwise each entry goes
+   * through `draw` (the identity loop is the no-extension fallback).
    */
   multiDrawElementsInstanced(draws: readonly unknown[]): void {
-    for (const draw of draws) {
-      this.draw(draw as DrawCommand);
+    const commands = draws as readonly DrawCommand[];
+    const ext = commands.length > 1 ? this.multiDrawExtension() : null;
+    if (ext && canMultiDraw(commands)) {
+      this.issueMultiDraw(ext, commands);
+      return;
+    }
+    for (const command of commands) {
+      this.draw(command);
     }
   }
 
+  private multiDrawExtension(): WebGLMultiDrawExtension | null {
+    if (this.multiDrawExt === undefined) {
+      const gl = this.host.gl as WebGL2RenderingContext & { getExtension?: (name: string) => unknown };
+      this.multiDrawExt = typeof gl.getExtension === "function"
+        ? (gl.getExtension("WEBGL_multi_draw") as WebGLMultiDrawExtension | null) ?? null
+        : null;
+    }
+    return this.multiDrawExt;
+  }
+
+  private issueMultiDraw(ext: WebGLMultiDrawExtension, commands: readonly DrawCommand[]): void {
+    const first = commands[0]!;
+    this.prepareDraw(first);
+    const count = commands.length;
+    const counts = new Int32Array(count);
+    const offsets = new Int32Array(count);
+    const instances = new Int32Array(count);
+    const indexByteSize = first.indexType === "uint32" ? 4 : 2;
+    for (let index = 0; index < count; index += 1) {
+      const command = commands[index]!;
+      counts[index] = command.indexCount ?? 0;
+      offsets[index] = (command.firstIndex ?? 0) * indexByteSize;
+      instances[index] = Math.max(1, command.instanceCount ?? 1);
+    }
+    const type = first.indexType === "uint32" ? this.host.gl.UNSIGNED_INT : this.host.gl.UNSIGNED_SHORT;
+    ext.multiDrawElementsInstancedWEBGL(this.primitive(first.topology), counts, 0, type, offsets, 0, instances, 0, count);
+    this.host.counters.drawCalls += 1;
+    this.host.counters.multiDrawSubmissions += 1;
+    this.host.counters.multiDrawMembers += count;
+    if (this.host.activeRenderTarget?.sampleCount && this.host.activeRenderTarget.sampleCount > 1) this.host.activeRenderTarget.needsResolve = true;
+    if (this.host.errorCheckMode === "strict") {
+      const drawError = this.host.lifecycle.readError();
+      if (drawError) {
+        throw new RenderDeviceError(`WebGL2 multi-draw failed for ${first.label ?? "unnamed"}: ${drawError}`, "WEBGL_DRAW_FAILED", {
+          label: first.label,
+          stage: "draw",
+          error: drawError
+        });
+      }
+    }
+  }
+
+}
+
+/** The subset of `WEBGL_multi_draw` the binder issues. */
+export interface WebGLMultiDrawExtension {
+  multiDrawElementsInstancedWEBGL(
+    mode: GLenum,
+    counts: Int32Array, countsOffset: number,
+    type: GLenum,
+    offsets: Int32Array, offsetsOffset: number,
+    instanceCounts: Int32Array, instanceCountsOffset: number,
+    drawCount: number
+  ): void;
+}
+
+/**
+ * #180: entries can share one multi-draw call only when everything bound by
+ * `prepareDraw(first)` is identical for all of them. A program that declares
+ * `u_drawId` is the uniform-loop fallback and must be drawn one by one.
+ */
+export function canMultiDraw(commands: readonly DrawCommand[]): boolean {
+  const first = commands[0];
+  if (!first || !first.shader || !first.vertexFormat || !first.indexBuffer) return false;
+  if (first.shader.reflection.uniforms.has("u_drawId")) return false;
+  for (const command of commands) {
+    if (
+      command.shader !== first.shader ||
+      command.vertexBuffer !== first.vertexBuffer ||
+      command.vertexFormat !== first.vertexFormat ||
+      command.indexBuffer !== first.indexBuffer ||
+      command.indexType !== first.indexType ||
+      command.topology !== first.topology ||
+      !sameRenderState(command.renderState, first.renderState) ||
+      command.instanceAttributes !== first.instanceAttributes ||
+      !sameUniformsExceptDrawId(command.uniforms, first.uniforms)
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function sameRenderState(a: DrawCommand["renderState"], b: DrawCommand["renderState"]): boolean {
+  return a === b || (a !== undefined && b !== undefined && JSON.stringify(a) === JSON.stringify(b));
+}
+
+function sameUniformsExceptDrawId(a: DrawCommand["uniforms"], b: DrawCommand["uniforms"]): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  const sizeA = a.size - (a.has("u_drawId") ? 1 : 0);
+  const sizeB = b.size - (b.has("u_drawId") ? 1 : 0);
+  if (sizeA !== sizeB) return false;
+  for (const [name, value] of a) {
+    if (name === "u_drawId") continue;
+    if (!b.has(name) || b.get(name) !== value) return false;
+  }
+  return true;
 }

@@ -1,5 +1,7 @@
 # QR request → lane 09
 
+**Issue:** #1019 (P-64 writeback)
+
 **From:** lane 15 (PRD-15 api/package architecture consolidation)
 **Date:** 2026-10-07
 **Status:** FIXED by lane 15 (courtesy — release gate was broken)

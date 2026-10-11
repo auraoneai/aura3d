@@ -184,7 +184,10 @@ export default async function run(host: HTMLElement, opts?: { variant?: string; 
     distance: hero.followCamera.distance,
     // `position` would pin the eye statically — `offset` keeps it trailing
     // the node each frame (follow mode), aimed at mid-body via targetOffset.
-    offset: [2.4, hero.followCamera.height, 2.6],
+    // The follow eye is `target + offset`, and target already carries the
+    // +1.0 m targetOffset, so subtract it: the eye lands at the spec height
+    // like the three reference (camera.position.y = followCamera.height).
+    offset: [2.4, hero.followCamera.height - 1.0, 2.6],
     targetOffset: [0, 1.0, 0],
     fov: spec.camera.fov,
     near: spec.camera.near,
@@ -233,7 +236,7 @@ export default async function run(host: HTMLElement, opts?: { variant?: string; 
 
   const app = createAuraApp(host, {
     scene: built,
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+    renderer: { qualityProfile: "production" },
     pixelRatio: opts?.dpr ?? spec.resolution.devicePixelRatio,
     resize: false,
     // Live rAF loop — the §17.2 sequence runs in real time so the T4.8 burst

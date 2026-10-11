@@ -41,6 +41,8 @@ export interface AuraWorldDiagnostics {
     readonly trianglesDrawn: number;
     readonly layers: number;
     readonly degraded: boolean;
+    /** Why a degraded terrain drew nothing (program failure, pass never ran, CDLOD empty). */
+    readonly reason?: string;
   }[];
   readonly scatter: readonly {
     readonly name: string;

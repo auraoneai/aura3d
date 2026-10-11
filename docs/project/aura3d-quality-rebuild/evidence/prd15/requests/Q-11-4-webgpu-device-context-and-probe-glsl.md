@@ -1,5 +1,7 @@
 # Q-11-4 — `ProductionWebGPURenderer` self-construction + `webgl2/Probe.ts` inline GLSL (single-renderer, glsl-location)
 
+**Issue:** #1028 (P-64 writeback)
+
 **Owner:** 11 (GPU/tiers) · **Requester:** 15 · **SLA:** 2 working days
 **Gates:** `single-renderer`, `glsl-location` (fail mode since T4.9) — two
 allowlist entries until 2026-11-30.

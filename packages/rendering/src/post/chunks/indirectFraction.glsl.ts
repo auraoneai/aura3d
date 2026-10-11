@@ -2,11 +2,10 @@
  * `prd03.indirectFraction` — C-02 chunk + feature writing the §6.3
  * indirect-fraction into `color0.a` (PRD-03 §6.3).
  *
- * The forward shader computes `radiance = direct + indirect + emissive`; the
- * lane-02 lighting chunk exposes the indirect term as `a3dIndirectRadiance`
- * (request Q-02-1). This chunk's `fragment:end` hook writes
- * `o_color.a = clamp(luminance(indirect) / max(luminance(radiance), 1e-4),
- * 0, 1)` so S2's apply can do `mix(1.0, aoMB, f_ind)` — ambient-dominated
+ * The forward shader computes `a3dColor = direct + indirect + emissive`; this
+ * chunk's `fragment:end` hook writes
+ * `alpha = clamp(luminance(indirectDiffuse + indirectSpecular) /
+ * max(luminance(a3dColor), 1e-4), 0, 1)` so S2's apply can do `mix(1.0, aoMB, f_ind)` — ambient-dominated
  * pixels get full occlusion while emissive, sky and direct-lit pixels stay
  * untouched.
  *
@@ -43,17 +42,28 @@ vec4 a3dWriteIndirectFraction(vec4 color, vec3 indirectRadiance) {
 };
 
 /**
- * `fragment:end` — the alpha write itself. `a3dIndirectRadiance` is the
- * lane-02 lighting chunk's exposed value (Q-02-1); `o_color`/`radiance`
- * naming follows the C-02 generator's forward fragment.
+ * `fragment:end` — the alpha write itself, in the C-02 generator's
+ * forward-fragment scope (`program/ProgramGenerator.ts`
+ * `forwardFragmentSource`): at `fragment:end` the final linear colour is
+ * `a3dColor` (vec3), the alpha is `a3dAlpha`, and the indirect accumulators
+ * `indirectDiffuse`/`indirectSpecular` are always declared (zero on unlit
+ * programs). The generator then writes `outColor = vec4(a3dColor, a3dAlpha)`,
+ * so the fraction goes into `a3dAlpha`. Blended draws keep their real alpha:
+ * overwriting it would change blending (keeping f_ind there needs Q-01-1).
+ *
+ * The previous body wrote `o_color` and read `a3dIndirectRadiance`, which the
+ * generator never declares, so every forward program under `A3D_QR_POST`
+ * failed to compile ("'o_color' : undeclared identifier", #1139).
  */
 export const indirectFractionWriteChunk: ShaderChunk = {
   name: "a3d_prd03_indirectFractionWrite",
   owner: "prd03",
   stage: "fragment",
   requires: ["a3d_prd03_indirectFractionPars"],
-  glsl: `o_color = a3dWriteIndirectFraction(o_color, a3dIndirectRadiance);`,
-  wgsl: `o_color = a3dWriteIndirectFraction(o_color, a3dIndirectRadiance);`
+  glsl: `#ifndef ALPHA_BLEND
+a3dAlpha = a3dWriteIndirectFraction(vec4(a3dColor, a3dAlpha), indirectDiffuse + indirectSpecular).a;
+#endif`,
+  wgsl: `a3dAlpha = a3dWriteIndirectFraction(vec4<f32>(a3dColor, a3dAlpha), indirectDiffuse + indirectSpecular).a;`
 };
 
 export const INDIRECT_FRACTION_BIT = "indirectFraction";

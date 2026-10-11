@@ -15,6 +15,9 @@ import { FXAA_185_FRAGMENT_GLSL } from "../../packages/rendering/src/post/shader
 // @ts-expect-error raw node_modules module (r185 FXAAShader, MIT)
 import { FXAAShader } from "/node_modules/three/examples/jsm/shaders/FXAAShader.js";
 import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
+import { readDefaultFramebuffer } from "./qr-prd03-frame-capture";
+import { contourSteps } from "./qr-prd03-banding-oracle";
+import { postV2ModulesReady } from "@aura3d/rendering";
 
 const LUMA = [0.3, 0.59, 0.11] as const;
 const luma = (p: ArrayLike<number>, i: number) => LUMA[0] * p[i] + LUMA[1] * p[i + 1] + LUMA[2] * p[i + 2];
@@ -39,8 +42,25 @@ function compileGl(gl: WebGL2RenderingContext, vsSource: string, fsSource: strin
   return program;
 }
 
-/** GLSL1 three-side vertex: emits `vUv` for a fullscreen triangle. */
-const THREE_VS = `attribute vec2 position; varying vec2 vUv; void main(){ vUv = position * 0.5 + 0.5; gl_Position = vec4(position, 0.0, 1.0); }`;
+/** three-side vertex: emits `vUv` for a fullscreen triangle (GLSL3, as three's WebGL2 renderer compiles it). */
+const THREE_VS = `#version 300 es\nin vec2 position; out vec2 vUv; void main(){ vUv = position * 0.5 + 0.5; gl_Position = vec4(position, 0.0, 1.0); }`;
+/**
+ * three r185's WebGLProgram prefix for a ShaderMaterial fragment on WebGL2
+ * (`#version 300 es`, default precisions, varying/gl_FragColor mapping).
+ * `FXAAShader.fragmentShader` is the raw body: it uses GLSL3 array
+ * constructors and `texture()`, so compiling it without this prefix fails
+ * as GLSL ES 1.0 (the "No precision specified" CI failure).
+ */
+const THREE_FS_PREFIX = [
+  "#version 300 es",
+  "precision highp float;",
+  "precision highp int;",
+  "#define varying in",
+  "layout(location = 0) out highp vec4 pc_fragColor;",
+  "#define gl_FragColor pc_fragColor",
+  "#define texture2D texture",
+  ""
+].join("\n");
 /** GLSL3 aura-side vertex: gl_VertexID fullscreen triangle (matches LegacyPost). */
 const AURA_VS = `#version 300 es\nvoid main(){ vec2 p = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2)); gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0); }`;
 
@@ -143,7 +163,9 @@ function comparePixels(aura: Uint8Array, three: Uint8Array): { meanAbsDiff: numb
   let sum = 0;
   let max = 0;
   for (let i = 0; i < aura.length; i += 4) {
-    const d = Math.abs(luma(aura, i) - luma(three, i));
+    // Round away float error: the luma weights sum to 1 + 1.4e-14, so an
+    // exact 1-LSB grey difference read 1.0000000000000142 (GPU lane 38117485212).
+    const d = Math.round(Math.abs(luma(aura, i) - luma(three, i)) * 1e6) / 1e6;
     sum += d;
     max = Math.max(max, d);
   }
@@ -175,7 +197,7 @@ export function runFxaaCompare(): { results: Record<string, FxaaCaseResult>; err
   const gl = canvas.getContext("webgl2", { antialias: false })!;
   try {
     const auraProgram = compileGl(gl, AURA_VS, FXAA_185_FRAGMENT_GLSL);
-    const threeProgram = compileGl(gl, THREE_VS, String(FXAAShader.fragmentShader));
+    const threeProgram = compileGl(gl, THREE_VS, THREE_FS_PREFIX + String(FXAAShader.fragmentShader));
     const results: Record<string, FxaaCaseResult> = {};
     for (const [name, pixels] of Object.entries({ line: lineInput(), noise: noiseInput(), checker: checkerInput() })) {
       const source = upload(gl, SIZE, SIZE, pixels);
@@ -219,17 +241,15 @@ export function bandingMetrics(pixels: Uint8Array, width: number, height: number
     const ideal = width / Math.max(1, max - min);
     if (max - min >= 8) worstRatio = Math.max(worstRatio, maxRun / ideal);
   }
-  // Sobel contour count: |G| >= 1 LSB on quantized luma.
-  let contours = 0;
-  for (let y = 1; y < height - 1; y += 1) {
-    for (let x = 1; x < width - 1; x += 1) {
-      const at = (dx: number, dy: number) => Math.round(luma(pixels, ((y + dy) * width + x + dx) * 4));
-      const gx = -at(-1, -1) - 2 * at(-1, 0) - at(-1, 1) + at(1, -1) + 2 * at(1, 0) + at(1, 1);
-      const gy = -at(-1, -1) - 2 * at(0, -1) - at(1, -1) + at(-1, 1) + 2 * at(0, 1) + at(1, 1);
-      if (Math.abs(gx) >= 1 || Math.abs(gy) >= 1) contours += 1;
-    }
-  }
-  return { maxRun, worstRatio, contourFraction: contours / ((width - 2) * (height - 2)) };
+  // 03-S8 contour steps (#944, PRD-03:1658 "no contour steps > 1 LSB"): the
+  // Sobel |G| >= 1 count this replaced fired on every 1-LSB quantization step
+  // and on dither noise (0.176 / 0.895 on smooth gradients), so it could not
+  // pass for any output. `contourSteps` is validated on dithered, undithered
+  // and 2-LSB-banded gradients in prd03-banding-oracle.test.ts.
+  const luma8 = new Float32Array(width * height);
+  for (let p = 0; p < width * height; p += 1) luma8[p] = Math.round(luma(pixels, p * 4));
+  const steps = contourSteps(luma8, width, height);
+  return { maxRun, worstRatio, contourFraction: steps.contourFraction, contourMaskPixels: steps.maskPixels, maxResidualStep: steps.maxResidualStep };
 }
 
 /** Mean |Δluma| edge energy — sharp content scores high, blurred content low. */
@@ -257,11 +277,12 @@ async function mountApp(flags: readonly string[], build: ReturnType<typeof scene
     qualityRebuild: { flags: [...flags] }
   });
   await app.ready();
+  // The v2 stages load deferred; wait so measured frames run the real chain.
+  await postV2ModulesReady();
   app.step(0);
   const canvas = host.querySelector("canvas")!;
   const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
-  const pixels = new Uint8Array(canvas.width * canvas.height * 4);
-  gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  const pixels = readDefaultFramebuffer(gl, canvas.width, canvas.height);
   const size = { width: canvas.width, height: canvas.height };
   app.dispose();
   host.remove();
@@ -281,7 +302,7 @@ export async function runBandingProbe() {
     .add(primitives.box({ name: "crate", size: [0.7, 0.7, 0.7], material: material.pbr({ color: "#232c38", roughness: 0.9 }) }).position(0.4, 0.35, -5))
     .add(effects.fog({ density: 0.045, color: "#0a1220" }))
     .add(effects.antiAlias({ mode: "fxaa" }));
-  const frame = await mountApp(["A3D_QR_POST"], built, 320);
+  const frame = await mountApp(["post"], built, 320);
   return { ...bandingMetrics(frame.pixels, frame.width, frame.height), width: frame.width, height: frame.height };
 }
 
@@ -299,8 +320,8 @@ export async function runDofFocusProbe() {
       }).position(0, 0, -10))
       .add(effects.depthOfField({ focus, intensity: 1 }))
       .add(effects.antiAlias({ mode: "fxaa" }));
-  const sharp = await mountApp(["A3D_QR_POST"], buildScene(0.1), 320);
-  const blurred = await mountApp(["A3D_QR_POST"], buildScene(0.01), 320);
+  const sharp = await mountApp(["post"], buildScene(0.1), 320);
+  const blurred = await mountApp(["post"], buildScene(0.01), 320);
   return {
     sharpEnergy: edgeEnergy(sharp.pixels, sharp.width, sharp.height),
     blurredEnergy: edgeEnergy(blurred.pixels, blurred.width, blurred.height)

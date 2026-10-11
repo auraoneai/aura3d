@@ -45,6 +45,22 @@ float a3dWetnessRoughness(float roughness, vec3 worldPos) {
 
 export const PRD07_WETNESS_CHUNK_NAME = "a3d_prd07_wetness";
 
+/**
+ * #880 / T0-05 — `fragment:material` call chunk (statements only). Appends to
+ * the generator's default material: it runs after `PhysicalMaterial material`
+ * is built and updates its fields in place (no replace). Lit forward items
+ * only — `prd07WetnessSelect` gates on that, since unlit programs have no
+ * `material`. Porosity 1 (fully porous) until a per-material input exists.
+ */
+export const PRD07_WETNESS_APPLY_CHUNK_GLSL = `
+#ifdef A3D_WETNESS
+  material.baseColor = a3dWetnessAlbedo(material.baseColor, 1.0);
+  material.diffuseContribution = material.baseColor * (1.0 - material.metallic);
+  material.specularColorBlended = mix(material.specularColor, material.baseColor, material.metallic);
+  material.roughness = clamp(a3dWetnessRoughness(material.roughness, v_worldPosition), 0.0525, 1.0);
+#endif
+`;
+
 /* ------------------------------------------------------------------ *
  * Global wetness state — driven by the engine (`atmosphere.setWetness`,
  * WeatherVolume). bindUniforms on the prd07.wetness feature reads this

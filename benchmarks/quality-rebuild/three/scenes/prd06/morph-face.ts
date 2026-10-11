@@ -123,6 +123,9 @@ export default async function run(host: HTMLElement, opts?: { variant?: string; 
     scene: spec.id,
     engineVersion: typeof __THREE_VERSION__ === "string" ? __THREE_VERSION__ : "three",
     capabilityLog,
+    // capture.mjs classifies a payload without draws as "no-draw"; report the
+    // last frame's calls like the shared runner (three/common.ts) does.
+    drawCalls: renderer.info.render.calls,
     warnings: [],
     errors,
     loadMs: Math.round(performance.now() - started),

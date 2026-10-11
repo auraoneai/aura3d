@@ -27,9 +27,53 @@ export { rejectEmptyAnimationPose } from "../app/actorAnimationHandle.js";
  * render path has no `SceneCompileContext`; PRD-15 drains this list through
  * `ctx.degrade` (same seam as `takeWorldEnvDegradations`).
  */
+/**
+ * 06-Q061 — the clip-apply/resolve degradation queue is bounded: identical
+ * reports (same code + nodeId + message, i.e. per clip) dedupe into one entry
+ * with an occurrence count, and the queue caps at
+ * MAX_PENDING_CLIP_APPLY_DEGRADATIONS with a dropped-count sentinel on drain.
+ * Per-frame miss/fail pushes can no longer grow the heap over long captures
+ * until lane 15 drains into ctx.degrade (inbound Q-06-1).
+ */
+const MAX_PENDING_CLIP_APPLY_DEGRADATIONS = 64;
 const pendingClipApplyDegradations: Omit<AuraDegradation, "frame">[] = [];
+const pendingDegradationCounts = new Map<string, number>();
+let droppedDegradationCount = 0;
+
+const degradationKey = (entry: Omit<AuraDegradation, "frame">): string =>
+  `${entry.code}|${entry.nodeId ?? ""}|${entry.message}`;
+
+/** @internal — exported for the 06-Q061 bound unit test (tests/qr/prd06/unit/clip-degradation-queue.test.ts). */
+export function pushClipApplyDegradation(entry: Omit<AuraDegradation, "frame">): void {
+  const key = degradationKey(entry);
+  const seen = pendingDegradationCounts.get(key) ?? 0;
+  if (seen > 0) {
+    pendingDegradationCounts.set(key, seen + 1);
+    return;
+  }
+  if (pendingClipApplyDegradations.length >= MAX_PENDING_CLIP_APPLY_DEGRADATIONS) {
+    droppedDegradationCount += 1;
+    return;
+  }
+  pendingDegradationCounts.set(key, 1);
+  pendingClipApplyDegradations.push(entry);
+}
+
 export function takeClipApplyDegradations(): Omit<AuraDegradation, "frame">[] {
-  return pendingClipApplyDegradations.splice(0, pendingClipApplyDegradations.length);
+  const drained = pendingClipApplyDegradations.splice(0, pendingClipApplyDegradations.length);
+  const out = drained.map((entry) => {
+    const count = pendingDegradationCounts.get(degradationKey(entry)) ?? 1;
+    pendingDegradationCounts.delete(degradationKey(entry));
+    return count > 1 ? { ...entry, message: `${entry.message} (x${count} occurrences)` } : entry;
+  });
+  if (droppedDegradationCount > 0) {
+    out.push({
+      code: "capability-degraded",
+      message: `${droppedDegradationCount} clip degradation report(s) dropped after the ${MAX_PENDING_CLIP_APPLY_DEGRADATIONS}-entry queue cap.`
+    });
+    droppedDegradationCount = 0;
+  }
+  return out;
 }
 
 /** Under 3.1 defaults (flag on) a fuzzy-resolution miss is an error; under 3.0 it keeps the legacy first-clip fallback. */
@@ -54,8 +98,23 @@ const animationMaskForRuntime = (runtime: AnimationRuntimeWithMask, spec: AuraAn
 };
 
 const recordClipApplyFailure = (nodeId: string | undefined, message: string, cause?: unknown): void => {
-  pendingClipApplyDegradations.push({ code: "clip-apply-failed", nodeId, message, cause });
+  pushClipApplyDegradation({ code: "clip-apply-failed", nodeId, message, cause });
 };
+
+/**
+ * 06-HANG — queue a clip-resolve failure/timeout for the C-36 drain. It uses
+ * the existing `clip-apply-failed` code (the `AuraDegradationCode` union in
+ * `contracts/compiler.ts` is lane-15 owned); the reason is the message prefix
+ * `ANIMATION_CLIP_RESOLVE_TIMEOUT` / `ANIMATION_CLIP_RESOLVE_FAILED`.
+ */
+export function recordClipResolveDegradation(
+  reason: "ANIMATION_CLIP_RESOLVE_TIMEOUT" | "ANIMATION_CLIP_RESOLVE_FAILED",
+  nodeId: string | undefined,
+  message: string,
+  cause?: unknown
+): void {
+  pushClipApplyDegradation({ code: "clip-apply-failed", nodeId, message: `${reason}: ${message}`, cause });
+}
 
 /**
  * T1.9 (PRD-06 §10) — the per-actor stateful animation state under 3.1
@@ -327,8 +386,9 @@ export function applyProductionActorAnimation(
           state = { baseAction: null, activeClip: null, lastTimeMs: undefined };
           productionActorPoseStates.set(entry.actor, state);
         }
+        const timing = poseMixerCaptureTiming(animation, state.activeClip === null);
         if (state.activeClip !== clipName || state.baseAction === null || !state.baseAction.playing) {
-          const fadeSeconds = animation.crossFade === false ? 0 : animation.crossFade ?? 0.2;
+          const fadeSeconds = timing.fadeSeconds;
           const additiveWanted = animation.blendMode === "additive";
           const effectiveClipName = additiveWanted && typeof runtime.ensureAdditiveClip === "function"
             ? runtime.ensureAdditiveClip(clipName, animation.additiveReference)
@@ -358,13 +418,11 @@ export function applyProductionActorAnimation(
             state.baseAction.setLoop("once", 1);
             state.baseAction.clampWhenFinished = true;
           }
-          const startTime = animation.startTime;
-          if (startTime !== undefined && Number.isFinite(startTime) && startTime > 0) {
-            state.baseAction.time = Math.min(startTime, state.baseAction.clip.duration);
-          }
+          const startTime = timing.startSeconds(state.baseAction.clip.duration);
+          if (startTime > 0) state.baseAction.time = startTime;
           state.activeClip = clipName;
         }
-        state.baseAction?.setEffectiveTimeScale(animation.speed ?? 1);
+        state.baseAction?.setEffectiveTimeScale(timing.timeScale);
         const rawDt = state.lastTimeMs === undefined ? 0 : Math.max(0, (time - state.lastTimeMs) / 1000);
         state.lastTimeMs = time;
         const appScale = actorAnimationAppTimeScale?.() ?? 1;
@@ -477,6 +535,37 @@ export function resolvePrd06Options(
     defaults: appOptions?.defaults ?? (flags.on("A3D_QR_ANIMATION") ? "3.1" : "3.0"),
     mixer: appOptions?.mixer ?? (flags.on("A3D_QR_ANIMATION_POSE_MIXER") ? "pose" : "legacy"),
     tier: appOptions?.tier ?? ctx.quality.tier
+  };
+}
+
+/**
+ * 06-PROMO: start time, first fade and time scale for the flag-on PoseMixer
+ * path, matching the legacy `resolveAnimationSeconds` semantics for
+ * `captureTime`: `loop: false` pins the sampled pose at captureTime (clamped to
+ * the clip), `loop: true` phases the clip by captureTime. The PoseMixer path
+ * used to ignore captureTime (action at 0, a 0.2 s fade-in from rest, then
+ * wall-clock dt), so a pinned capture sampled a different pose — the
+ * 15-animation-skinning / prd06-ik-slope regressions under A3D_QR_ANIMATION
+ * (L4 run 38148470304). Without captureTime the old behaviour is unchanged.
+ */
+export function poseMixerCaptureTiming(
+  animation: Pick<AuraAnimationSpec, "captureTime" | "startTime" | "loop" | "speed" | "crossFade">,
+  firstClip: boolean
+): { readonly fadeSeconds: number; readonly timeScale: number; startSeconds(duration: number): number } {
+  const capture = animation.captureTime !== undefined && Number.isFinite(animation.captureTime)
+    ? Math.max(0, animation.captureTime)
+    : undefined;
+  const pinned = capture !== undefined && animation.loop === false;
+  const authoredFade = animation.crossFade === false ? 0 : animation.crossFade ?? 0.2;
+  return {
+    fadeSeconds: capture !== undefined && firstClip ? 0 : authoredFade,
+    timeScale: pinned ? 0 : animation.speed ?? 1,
+    startSeconds(duration: number): number {
+      const start = capture ?? animation.startTime;
+      if (start === undefined || !Number.isFinite(start) || start <= 0) return 0;
+      if (capture !== undefined && animation.loop !== false && duration > 0) return start % duration;
+      return Math.min(start, duration);
+    }
   };
 }
 

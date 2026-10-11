@@ -1,5 +1,7 @@
 # Q-09-1: `apps/common/src/runtime.ts` — renderer surface collapsed
 
+**Issue:** #1018 (P-64 writeback)
+
 **From:** lane 15 · **To:** lane 09 · **Filed:** 2026-10-06
 
 T2.6 deleted `ProductionWebGL2Renderer`/`ProductionRuntimeRenderer`; the names

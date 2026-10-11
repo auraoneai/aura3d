@@ -93,7 +93,9 @@ const packageEntryPoints = new Map<string, string>([
   ["@recast-navigation/core", "/node_modules/.pnpm/@recast-navigation+core@0.43.1/node_modules/@recast-navigation/core/dist/index.mjs"],
   ["@recast-navigation/wasm", "/node_modules/.pnpm/@recast-navigation+wasm@0.43.1/node_modules/@recast-navigation/wasm/dist/recast-navigation.wasm-compat.js"],
   ["flatbuffers", "/node_modules/.pnpm/flatbuffers@25.9.23/node_modules/flatbuffers/mjs/flatbuffers.js"],
-  ["ktx-parse", "/node_modules/.pnpm/node_modules/ktx-parse/dist/ktx-parse.modern.js"],
+  // #865: two ktx-parse versions in the lockfile, so pnpm does not hoist it to
+  // .pnpm/node_modules; the root node_modules link is the stable path.
+  ["ktx-parse", "/node_modules/ktx-parse/dist/ktx-parse.modern.js"],
   ["three/addons/loaders/GLTFLoader.js", "/node_modules/three/examples/jsm/loaders/GLTFLoader.js"],
   ["three/addons/loaders/DRACOLoader.js", "/node_modules/three/examples/jsm/loaders/DRACOLoader.js"],
   ["three/addons/loaders/KTX2Loader.js", "/node_modules/three/examples/jsm/loaders/KTX2Loader.js"],
@@ -128,6 +130,13 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
   // modules through this handler and re-running ts.transpileModule plus the
   // specifier rewrites per request is what pushes cold module-load past the
   // spec budgets on CI runners. Cache for the server's lifetime only.
+  // #865: a mapped entry point that does not exist on disk is rewritten into a
+  // 404 module URL, which surfaces only as a module-graph load failure (a
+  // spec timeout). Name every missing mapping once, at startup.
+  const missingEntryPoints = [...packageEntryPoints].filter(([, target]) => !existsSync(join(root, target)));
+  if (missingEntryPoints.length > 0) {
+    console.error(`[example-dev-server] mapped package entry points missing on disk (imports of these will 404): ${missingEntryPoints.map(([specifier, target]) => `${specifier} -> ${target}`).join("; ")}`);
+  }
   const transformCache = new Map<string, { mtimeMs: number; output: string | Buffer }>();
   const transformed = (file: string, produce: () => string | Buffer): string | Buffer => {
     const mtimeMs = statSync(file).mtimeMs;

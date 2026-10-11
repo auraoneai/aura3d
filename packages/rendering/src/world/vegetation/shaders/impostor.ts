@@ -8,11 +8,11 @@ import type { ShaderChunk } from "../../../contracts/program.js";
 
 const glsl = /* glsl */ `
 uniform highp sampler2D u_impostorAlbedo;  // 8x8 atlas: albedo RGB + alpha A
-uniform highp sampler2D u_impostorNormalDepth; // 8x8 atlas: normal RG16 + depth BA
+uniform highp sampler2D u_impostorNormalDepth; // 8x8 atlas: tile-space normal XY in RG, depth B, coverage A
 uniform float u_impostorGridDim;           // 8.0
 uniform float u_impostorParallax;          // parallax offset scale
 uniform float u_impostorAlphaCutoff;
-uniform int u_impostorWriteDepth;          // High+ only; Low skips for early-Z
+uniform float u_impostorWriteDepth;          // High+ only; Low skips for early-Z
 
 // World/view direction -> hemi-octahedral UV on the 8x8 grid.
 vec2 a3dOctahedralUV(vec3 dir) {
@@ -25,21 +25,26 @@ vec2 a3dOctahedralUV(vec3 dir) {
 }
 
 // 3 nearest frames in grid space + barycentric weights for one view dir.
+// Frame (i, j) was baked from the direction at oct-UV ((i, j) + 0.5) / grid
+// (tools/impostor-bake impostorViewGrid), so the continuous frame coordinate
+// is octUv * grid - 0.5. The enclosing grid quad is split on its anti-diagonal
+// and the view is blended barycentrically across that triangle's 3 frames.
 void a3dImpostorFrames(vec2 octUv, out vec2 frameUV[3], out vec3 weights) {
-  vec2 grid = octUv * (u_impostorGridDim - 1.0);
-  vec2 cell = floor(grid);
+  float g = u_impostorGridDim;
+  vec2 grid = clamp(octUv * g - 0.5, vec2(0.0), vec2(g - 1.0));
+  vec2 cell = min(floor(grid), vec2(g - 2.0));
   vec2 f = grid - cell;
-  vec2 c1 = cell + vec2(step(0.5, f.x) - 0.5 + 0.5, 0.0);
-  vec2 c2 = cell + vec2(0.0, step(0.5, f.y) - 0.5 + 0.5);
-  vec2 c3 = cell + vec2(1.0, 1.0);
-  float w3 = max(f.x + f.y - 1.0, 0.0);
-  float w1 = max(1.0 - f.x - f.y, 0.0);
-  float w2 = 1.0 - w1 - w3;
-  float sum = max(w1 + w2 + w3, 1e-4);
-  weights = vec3(w1, w2, w3) / sum;
-  frameUV[0] = cell;
-  frameUV[1] = (f.x > f.y) ? c3 : c1;
-  frameUV[2] = (f.x > f.y) ? c1 : c3;
+  if (f.x + f.y < 1.0) {
+    frameUV[0] = cell;
+    frameUV[1] = cell + vec2(1.0, 0.0);
+    frameUV[2] = cell + vec2(0.0, 1.0);
+    weights = vec3(1.0 - f.x - f.y, f.x, f.y);
+  } else {
+    frameUV[0] = cell + vec2(1.0, 1.0);
+    frameUV[1] = cell + vec2(0.0, 1.0);
+    frameUV[2] = cell + vec2(1.0, 0.0);
+    weights = vec3(f.x + f.y - 1.0, 1.0 - f.x, 1.0 - f.y);
+  }
 }
 
 // Atlas UV for frame f with local texel uv in [0,1].
@@ -60,7 +65,7 @@ vec4 a3dImpostorShade(vec2 octUv, vec2 localUv, vec2 frameViewDirXY[3], out vec3
     nd += w[i] * ndi;
   }
   if (albedo.a < u_impostorAlphaCutoff) discard;
-  outNormal = normalize(vec3(nd.xy * 2.0 - 1.0, 0.0)); // XY in impostor space; Z reconstructed by the caller
+  outNormal = vec3(nd.xy * 2.0 - 1.0, 0.0); // XY in impostor (tile) space; the caller reconstructs Z
   outDepth = nd.z;
   return albedo;
 }

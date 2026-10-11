@@ -32,6 +32,7 @@ import { RenderDeviceError, type RenderTarget } from "../RenderDevice";
 import { invertMat4, type Mat4 } from "@aura3d/scene";
 import {
   registeredPostPasses,
+  validatePostPassSpace,
   type PostPassDescriptor,
   type PostPipelineOptions
 } from "../contracts/post";
@@ -164,6 +165,41 @@ function v2State(host: WebGL2DeviceHost): PostV2State {
   return state;
 }
 
+/**
+ * God-ray tint as an RGB triple. The engine bridge compiles
+ * `effects.volumetricFog({ color })` to a `{ r, g, b }` object, while direct
+ * callers pass `[r, g, b]`. Indexing the object as an array gave
+ * `uniform3f(undefined, …)`; the resulting NaN tint went through the additive
+ * blend and turned the whole HDR frame black (shaft-on mean luma 0 on the GPU
+ * lane, runs 38140351314 and 38141069039). Non-finite channels fall back to
+ * the default warm tint.
+ */
+export function godRayColor(color: unknown): [number, number, number] {
+  const fallback: [number, number, number] = [1, 0.96, 0.9];
+  let rgb: unknown[] | undefined;
+  if (Array.isArray(color)) rgb = color;
+  else if (color && typeof color === "object") {
+    const o = color as { r?: unknown; g?: unknown; b?: unknown };
+    rgb = [o.r, o.g, o.b];
+  }
+  if (!rgb) return fallback;
+  return [0, 1, 2].map((i) => (typeof rgb![i] === "number" && Number.isFinite(rgb![i]) ? (rgb![i] as number) : fallback[i]!)) as [number, number, number];
+}
+
+/**
+ * Inserts `#define` lines after the `#version` directive. GLSL ES 3.00
+ * requires `#version 300 es` to be the first line, so prepending defines (as
+ * the DoF ring count and motion-blur tile size did) made the shader a
+ * GLSL ES 1.00 source and the compile failed ("#version must occur first"),
+ * which aborted the whole v2 frame (black output on the GPU lane,
+ * post-quality 38138763970).
+ */
+export function withDefines(source: string, defines: Readonly<Record<string, string | number>>): string {
+  const lines = Object.entries(defines).map(([name, value]) => `#define ${name} ${value}`).join("\n");
+  const match = /^\s*#version[^\n]*\n/.exec(source);
+  return match ? `${match[0]}${lines}\n${source.slice(match[0].length)}` : `${lines}\n${source}`;
+}
+
 function program(state: PostV2State, gl: WebGL2RenderingContext, key: string, fragment: string): WebGLProgram {
   const cached = state.programs.get(key);
   if (cached) return cached;
@@ -195,12 +231,32 @@ function program(state: PostV2State, gl: WebGL2RenderingContext, key: string, fr
   return prog;
 }
 
+/**
+ * Raster state for a fullscreen v2 stage. The legacy present resets the same
+ * set (LegacyPost `prepareFullscreenPresentation`); the v2 draws reset only
+ * depth and blend, so a colour mask, scissor, stencil or cull state left by
+ * the scene draws could leave a stage's output empty — every frame with an
+ * active HDR stage read black on the GPU lane (post-quality 38127246424). The
+ * stage drivers invalidate host.stateCache afterwards (T0-16).
+ */
+function resetFullscreenState(gl: WebGL2RenderingContext): void {
+  gl.colorMask(true, true, true, true);
+  gl.disable(gl.SCISSOR_TEST);
+  gl.disable(gl.STENCIL_TEST);
+  gl.disable(gl.CULL_FACE);
+  gl.disable(gl.POLYGON_OFFSET_FILL);
+  gl.disable(gl.DEPTH_TEST);
+  gl.disable(gl.BLEND);
+  gl.depthMask(false);
+}
+
 function draw(host: WebGL2DeviceHost, state: PostV2State, prog: WebGLProgram, target: GlTarget, textures: readonly WebGLTexture[], uniforms: (gl: WebGL2RenderingContext) => void): void {
   const gl = host.gl;
   gl.bindFramebuffer(gl.FRAMEBUFFER, target.framebuffer);
   gl.viewport(0, 0, target.width, target.height);
   gl.useProgram(prog);
   gl.bindVertexArray(state.vao);
+  resetFullscreenState(gl);
   gl.disable(gl.DEPTH_TEST);
   gl.disable(gl.BLEND);
   for (let i = 0; i < textures.length; i++) {
@@ -246,15 +302,28 @@ out vec4 outColor;
 
 /**
  * Passes visible to the graph: the pipeline bag's `customPasses` first, then
- * the C-13 registry, deduped by id (an engine may stamp the same descriptor
- * into both). Order = insertion order at each anchor.
+ * the C-13 registry (`app.addPostPass` registers there), deduped by id (an
+ * engine may stamp the same descriptor into both). Order = insertion order at
+ * each anchor.
+ *
+ * The registry already rejects a misplaced space at `registerPostPass`. A
+ * bag-supplied pass bypasses that, so it is validated here: a `display` pass
+ * at an HDR anchor (or `linear-hdr` after tonemap) is dropped and recorded as
+ * `POSTPROCESS_SPACE_INVALID:<id>` (T0-17: no per-frame throw; plan-time
+ * `planPostGraph`/`PostGraph.execute` still throw).
  */
-function mergedCustomPasses(pipeline: PostPipelineOptions): readonly PostPassDescriptor[] {
+export function mergedCustomPasses(pipeline: PostPipelineOptions): readonly PostPassDescriptor[] {
   const seen = new Set<string>();
   const out: PostPassDescriptor[] = [];
   for (const pass of [...(pipeline.customPasses ?? []), ...registeredPostPasses()]) {
     if (seen.has(pass.id)) continue;
     seen.add(pass.id);
+    try {
+      validatePostPassSpace(pass);
+    } catch {
+      recordPostSkipped(`POSTPROCESS_SPACE_INVALID:${pass.id}`);
+      continue;
+    }
     out.push(pass);
   }
   return out;
@@ -369,12 +438,23 @@ export interface PostFrameContextBag {
  * same first-frames window three's async `Image` load has. Returns true once
  * both GL textures exist.
  */
+let smaaTexturesLoad: Promise<void> | null = null;
+
+/**
+ * 03-S18a: settles once the in-flight SMAA area/search texture load (if any)
+ * finished, so a probe can wait for S11 to be active instead of guessing a
+ * frame count. Resolves immediately when no load was started.
+ */
+export function smaaTexturesSettled(): Promise<void> {
+  return smaaTexturesLoad ?? Promise.resolve();
+}
+
 function smaaTexturesReady(host: WebGL2DeviceHost, state: PostV2State): boolean {
   const gl = host.gl;
   if (state.smaa.area && state.smaa.search) return true;
   if (!state.smaa.requested) {
     state.smaa.requested = true;
-    void import("./smaa/textures.js").then(async (mod) => {
+    smaaTexturesLoad = import("./smaa/textures.js").then(async (mod) => {
       try {
         const decode = async (dataUrl: string): Promise<ImageBitmap> => {
           const blob = await (await fetch(dataUrl)).blob();
@@ -385,6 +465,10 @@ function smaaTexturesReady(host: WebGL2DeviceHost, state: PostV2State): boolean 
           const tex = gl.createTexture();
           if (!tex) return null;
           gl.bindTexture(gl.TEXTURE_2D, tex);
+          // three uploads these with flipY/premultiply off; the engine may
+          // have left either unpack flag set by an earlier upload.
+          gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+          gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
           gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bitmap);
           gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
           gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
@@ -396,11 +480,15 @@ function smaaTexturesReady(host: WebGL2DeviceHost, state: PostV2State): boolean 
         // three: AreaTex linear, SearchTex nearest, no mipmaps, no flipY.
         state.smaa.area = upload(area, gl.LINEAR);
         state.smaa.search = upload(search, gl.NEAREST);
+        // T0-16: the raw binds above bypass host.stateCache.
+        host.stateCache.invalidate();
       } catch {
         // Decode/upload failed — leave requested so we don't retry-loop;
         // S11 stays skipped (post.skipped shows SMAA only via the plan).
         state.smaa.requested = true;
       }
+    }).catch(() => {
+      // The lazy chunk itself failed to load: S11 stays skipped.
     });
   }
   return false;
@@ -543,7 +631,7 @@ export function runV2HdrStages(
     const directions = ao.directions ?? 4;
     const steps = ao.steps ?? 4;
     const aoRaw = state.pool.acquire({ width: hw, height: hh, format: "rgba8", samples: 1, depth: false });
-    const gtaoSrc = `#define AURA_GTAO_DIRECTIONS ${directions}\n#define AURA_GTAO_STEPS ${steps}\n` + GTAO_GLSL;
+    const gtaoSrc = withDefines(GTAO_GLSL, { AURA_GTAO_DIRECTIONS: directions, AURA_GTAO_STEPS: steps });
     const gtaoProg = program(state, gl, `gtao-${directions}x${steps}`, gtaoSrc);
     const invProj = Float32Array.from(invertMat4(camera.projectionMatrix as unknown as Mat4));
     draw(host, state, gtaoProg, asGlTarget(aoRaw), [asGlTarget(minmaxHalf).colorHandle], (g) => {
@@ -552,6 +640,7 @@ export function runV2HdrStages(
       g.uniformMatrix4fv(g.getUniformLocation(gtaoProg, "u_invProjMatrix"), false, invProj);
       g.uniform1f(g.getUniformLocation(gtaoProg, "u_near"), near);
       g.uniform1f(g.getUniformLocation(gtaoProg, "u_far"), far);
+      g.uniform1i(g.getUniformLocation(gtaoProg, "u_ortho"), ortho ? 1 : 0);
       g.uniform1f(g.getUniformLocation(gtaoProg, "u_radius"), ao.radius ?? 0.35);
       g.uniform1f(g.getUniformLocation(gtaoProg, "u_intensity"), ao.intensity ?? 1);
       g.uniform1f(g.getUniformLocation(gtaoProg, "u_falloff"), ao.falloff ?? 1);
@@ -619,7 +708,7 @@ export function runV2HdrStages(
     const lightUv: [number, number] = clip[2] !== 0
       ? [(clip[0]! / clip[2]) * 0.5 + 0.5, (clip[1]! / clip[2]) * 0.5 + 0.5]
       : [0.5, 0.5];
-    const godSrc = `#define AURA_GODRAY_SAMPLES ${samples}\n` + GODRAYS_GLSL;
+    const godSrc = withDefines(GODRAYS_GLSL, { AURA_GODRAY_SAMPLES: samples });
     const godProg = program(state, gl, `godrays-${samples}`, godSrc);
     draw(host, state, godProg, asGlTarget(godTarget), [asGlTarget(hdr).colorHandle, asGlTarget(minmaxHalf).colorHandle], (g) => {
       g.uniform1i(g.getUniformLocation(godProg, "u_hdr"), 0);
@@ -627,8 +716,8 @@ export function runV2HdrStages(
       g.uniform1f(g.getUniformLocation(godProg, "u_far"), far);
       g.uniform2f(g.getUniformLocation(godProg, "u_lightUv"), lightUv[0], lightUv[1]);
       g.uniform1f(g.getUniformLocation(godProg, "u_lightClipW"), clip[2]!);
-      const c = god.color ?? [1, 0.96, 0.9];
-      g.uniform3f(g.getUniformLocation(godProg, "u_color"), c[0]!, c[1]!, c[2]!);
+      const c = godRayColor(god.color);
+      g.uniform3f(g.getUniformLocation(godProg, "u_color"), c[0], c[1], c[2]);
       g.uniform1f(g.getUniformLocation(godProg, "u_intensity"), god.intensity ?? 0.7);
       g.uniform1f(g.getUniformLocation(godProg, "u_decay"), god.decay ?? 0.94);
       g.uniform1f(g.getUniformLocation(godProg, "u_weight"), god.weight ?? god.intensity ?? 0.7);
@@ -643,6 +732,7 @@ export function runV2HdrStages(
     gl.viewport(0, 0, w, h);
     gl.useProgram(copyProg);
     gl.bindVertexArray(state.vao);
+    resetFullscreenState(gl);
     gl.disable(gl.DEPTH_TEST);
     gl.disable(gl.BLEND);
     gl.activeTexture(gl.TEXTURE0);
@@ -765,7 +855,7 @@ export function runV2HdrStages(
       g.uniform1i(g.getUniformLocation(tileProg, "u_prefilter"), 0);
     });
     const gather = state.pool.acquire({ width: dw, height: dh, format: "rgba16f", samples: 1, depth: false });
-    const gatherSrc = `#define DOF_RINGS ${rings}\n` + DOF_GATHER_GLSL;
+    const gatherSrc = withDefines(DOF_GATHER_GLSL, { DOF_RINGS: rings });
     const gatherProg = program(state, gl, `dof-gather-${rings}`, gatherSrc);
     draw(host, state, gatherProg, asGlTarget(gather), [asGlTarget(prefilter).colorHandle, asGlTarget(nearTile).colorHandle], (g) => {
       g.uniform1i(g.getUniformLocation(gatherProg, "u_prefilter"), 0);
@@ -790,7 +880,7 @@ export function runV2HdrStages(
     const samples = mb.samples ?? 12;
     const tw = Math.max(1, Math.ceil(w / tile)), th = Math.max(1, Math.ceil(h / tile));
     const tileMax = state.pool.acquire({ width: tw, height: th, format: "rgba16f", samples: 1, depth: false });
-    const tileProg = program(state, gl, `mb-tile-${tile}`, `#define MB_TILE_SIZE ${tile}\n` + MB_TILE_MAX_GLSL);
+    const tileProg = program(state, gl, `mb-tile-${tile}`, withDefines(MB_TILE_MAX_GLSL, { MB_TILE_SIZE: tile }));
     draw(host, state, tileProg, asGlTarget(tileMax), [asGlTarget(dilatedVelocity).colorHandle], (g) => {
       g.uniform1i(g.getUniformLocation(tileProg, "u_velocity"), 0);
     });
@@ -954,6 +1044,7 @@ export function runV2LdrTail(
     bindOut(gl, outTarget, w, h);
     gl.useProgram(prog);
     gl.bindVertexArray(state.vao);
+    resetFullscreenState(gl);
     gl.disable(gl.DEPTH_TEST);
     gl.disable(gl.BLEND);
     gl.activeTexture(gl.TEXTURE0);
@@ -1065,6 +1156,7 @@ export function runV2LdrTail(
   bindOut(gl, outTarget, w, h);
   gl.useProgram(prog);
   gl.bindVertexArray(state.vao);
+  resetFullscreenState(gl);
   gl.disable(gl.DEPTH_TEST);
   gl.disable(gl.BLEND);
   gl.activeTexture(gl.TEXTURE0);

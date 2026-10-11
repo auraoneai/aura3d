@@ -13,7 +13,7 @@ const glsl = /* glsl */ `
 uniform vec3 u_sunDirection;       // first directional light, world space
 uniform vec3 u_sunColor;
 uniform vec3 u_skyHorizonColor;    // C-21 sky horizon at the view azimuth
-uniform vec3 u_shIrradiance[9];    // C-09 SH9 stub coefficients
+uniform vec4 u_shIrradiance[9];    // C-09 SH9 stub coefficients (.xyz; vec4: the device rejects 27-float arrays)
 uniform vec3 u_fogColor;           // C-21 linear fog (stub)
 uniform vec2 u_fogNearFar;
 uniform vec3 u_ambientSH;          // flat ambient override (debug only; biomes use IBL)
@@ -34,7 +34,7 @@ vec3 a3dDirectSpecularGGX(vec3 n, vec3 V, vec3 L, float roughness) {
 
 // C-09 SH9 stub irradiance (constant-term approximation on Path S).
 vec3 a3dSampleIrradianceSH(vec3 n) {
-  return u_shIrradiance[0] + u_shIrradiance[1] * n.y + u_shIrradiance[2] * n.z + u_shIrradiance[3] * n.x;
+  return u_shIrradiance[0].xyz + u_shIrradiance[1].xyz * n.y + u_shIrradiance[2].xyz * n.z + u_shIrradiance[3].xyz * n.x;
 }
 
 // Environment specular stand-in: C-21 sky horizon colour modulated by fresnel.

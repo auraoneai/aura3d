@@ -10,6 +10,7 @@ import { describe, expect, it } from "vitest";
 import {
 	computeProgramKey,
 	materialLobes,
+	shaderChunk,
 	QUALITY_TIERS,
 	type QrFlags,
 	type QrFlagName,
@@ -142,8 +143,13 @@ describe("PRD-04 P3-2 materialLobes registry", () => {
 		]);
 		for (const lobe of active) {
 			expect(lobe.glTFExtension, lobe.id).toMatch(/^KHR_materials_/);
-			expect(lobe.chunks.pars).toBe("a3d_prd04_bsdf_lobes_common");
+			// T0-05 pars/call split: pars is a registered declaration chunk whose
+			// requires closure reaches the shared lobe struct; fragment is a call chunk.
+			expect(lobe.chunks.pars.startsWith("a3d_prd04_"), lobe.id).toBe(true);
+			expect(shaderChunk(lobe.chunks.pars), lobe.chunks.pars).toBeDefined();
 			expect(lobe.chunks.fragment.startsWith("a3d_prd04_")).toBe(true);
+			expect(shaderChunk(lobe.chunks.fragment), lobe.chunks.fragment).toBeDefined();
+			if (lobe.chunks.ibl) expect(shaderChunk(lobe.chunks.ibl), lobe.chunks.ibl).toBeDefined();
 		}
 		expect(materialLobes(FLAGS_OFF)).toEqual([]);
 	});

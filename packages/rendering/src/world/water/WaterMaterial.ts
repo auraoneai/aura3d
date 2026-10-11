@@ -76,7 +76,7 @@ void main() {
   transmitted = mix(u_shallowColor, u_deepColor, clamp(1.0 - T.g, 0.0, 1.0)) * a3dSkyIrradiance();
 #endif
   vec3 R = reflect(-V, n);
-  vec3 reflected = u_reflectionMode == 2
+  vec3 reflected = u_reflectionMode > 1.5
     ? a3dWaterPlanarReflection(suv, n)
     : a3dWorldEnvSpecular(R, 0.03);   // mode 0 env; mode 1 SSR arrives via C-13 (stub = env)
   vec3 sunSpec = a3dDirectSpecularGGX(n, V, u_sunDirection, 0.06) * u_sunColor * a3dSunShadowAt(v_worldPosition);

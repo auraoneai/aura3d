@@ -1,5 +1,7 @@
 # Q-01-3 — PbrReference.ts: delete (barrel-only orphan) or import Vec3 from @aura3d/scene/math
 
+**Issue:** #988 (P-64 writeback)
+
 **Status:** OPEN
 **Requesting lane:** 15 (PRD-15 Phase 6, math unification T6.8)
 **Owning lane:** 01 (`packages/rendering/src/PbrReference.ts`)

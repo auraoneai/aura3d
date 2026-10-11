@@ -9,7 +9,7 @@ import { Texture, type TextureCubeFace } from "../Texture.js";
 import type { EnvironmentProbe } from "../contracts/environment.js";
 import { sampleRoomEnvironment } from "./RoomEnvironmentScene.js";
 import { projectCubeToSH9 } from "./SphericalHarmonics.js";
-import { faceUvToDir, prefilterCubeGGX, sampleCube, type PrefilterCubeSource, type PrefilterResult } from "./workers/cpuPrefilter.js";
+import { CUBE_FACE_BASIS, faceUvToDir, prefilterCubeGGX, sampleCube, type PrefilterCubeSource, type PrefilterResult } from "./workers/cpuPrefilter.js";
 
 export const CUBE_FACE_ORDER = ["px", "nx", "py", "ny", "pz", "nz"] as const;
 
@@ -167,9 +167,10 @@ export function buildProbeFromLevels(
 
 /**
  * Linear radiance of the analytic neutral floor (T0-25): constant chosen so the
- * probe's SH9 DC equals the baked `neutral` preset's (1.8945 ≈ c·3.5483).
+ * probe's SH9 DC equals the baked `neutral` preset's (3.7560 ≈ c·3.5483; the
+ * point-lit r185 room, re-baked with the RoomEnvironmentScene fix).
  */
-export const NEUTRAL_FLOOR_RADIANCE = 0.5339295346775188;
+export const NEUTRAL_FLOOR_RADIANCE = 1.0585341933512515;
 
 /**
  * The baked `neutral` preset's SH9 verbatim (`neutral.sh9.f32`, CC0 bake) —
@@ -177,15 +178,15 @@ export const NEUTRAL_FLOOR_RADIANCE = 0.5339295346775188;
  * specular cube lands via `acquire`.
  */
 export const NEUTRAL_FLOOR_SH9 = new Float32Array([
-  1.8945446, 1.8945446, 1.8945446,
-  -1.4085772, -1.4085772, -1.4085772,
-  1.1517786, 1.1517786, 1.1517786,
-  -0.096516535, -0.096516535, -0.096516535,
-  0.12132652, 0.12132652, 0.12132652,
-  1.2429792, 1.2429792, 1.2429792,
-  0.63450480, 0.63450480, 0.63450480,
-  -0.23291537, -0.23291537, -0.23291537,
-  -0.50483990, -0.50483990, -0.50483990
+  3.7560017, 3.7560017, 3.7560017,
+  -1.7286245, -1.7286245, -1.7286245,
+  1.5881586, 1.5881586, 1.5881586,
+  -0.25784275, -0.25784275, -0.25784275,
+  0.19389074, 0.19389074, 0.19389074,
+  1.0348382, 1.0348382, 1.0348382,
+  1.1923468, 1.1923468, 1.1923468,
+  -0.33930653, -0.33930653, -0.33930653,
+  -0.62652594, -0.62652594, -0.62652594
 ]);
 
 /**
@@ -242,14 +243,7 @@ export function cubeFaceViewProjection(
   near = 0.05,
   far = 100
 ): Float32Array {
-  const basis = [
-    [[1, 0, 0], [0, -1, 0], [0, 0, -1]],
-    [[-1, 0, 0], [0, -1, 0], [0, 0, 1]],
-    [[0, 1, 0], [0, 0, 1], [1, 0, 0]],
-    [[0, -1, 0], [0, 0, -1], [1, 0, 0]],
-    [[0, 0, 1], [0, -1, 0], [-1, 0, 0]],
-    [[0, 0, -1], [0, -1, 0], [1, 0, 0]]
-  ] as const;
+  const basis = CUBE_FACE_BASIS; // GL face basis: up = −V, right = U
   const [n, ux, vx] = basis[face]!;
   // view = lookAt along +n with up derived from the face basis (vx is "down" on the face).
   const up: [number, number, number] = [-vx[0], -vx[1], -vx[2]];

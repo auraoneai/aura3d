@@ -1,8 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
 import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
+import { expectRuntimeMatchesDeclared } from "./lib/look";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { canvasBlankCheck, evaluateRequiredCondition } from "@aura3d/game/art";
+// Source imports: the lane jobs do not build package dist/, so the
+// "@aura3d/game/art" export (dist/art/index.js) does not resolve there.
+import { canvasBlankCheck } from "../../../../packages/game/src/art/acceptance/canvasBlankCheck";
+import { evaluateRequiredCondition } from "../../../../packages/game/src/art/acceptance/requiredConditions";
 import { decodePngAsRgba } from "../unit/helpers/png";
 
 /**
@@ -42,7 +46,7 @@ async function shot(page: Page, name: string) {
   const png = await page.screenshot();
   const { rgba, width, height } = decodePngAsRgba(png);
   const result = canvasBlankCheck(rgba, width, height, [], BLANK_LIMITS);
-  expect(result.verdict, `${name} is likely blank`).toBe("pass");
+  expect(result.pass, `${name} is likely blank (dark ${result.darkFraction.toFixed(3)}, ${result.distinctColors} colours)`).toBe(true);
 }
 
 async function readEvidence(page: Page) {
@@ -84,7 +88,7 @@ test.describe("showcase-courier-rush v2 (T2.6)", () => {
       }
       await shot(page, "04-action");
       expect(allMet, "§7.2.1 required conditions not reached by deadline").toBe(true);
-      const delivery = await page.evaluate(() => eval(EVIDENCE + ".delivery") as { completed?: number });
+      const delivery = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".delivery") as { completed?: number }, EVIDENCE);
       expect(delivery.completed ?? 0).toBeGreaterThanOrEqual(1);
 
       // visibilitychange → session.paused === true, resume on visible.
@@ -121,11 +125,11 @@ test.describe("showcase-courier-rush v2 (T2.6)", () => {
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       await page.keyboard.down("KeyW");
-      await expect.poll(async () => page.evaluate(() =>
-        Math.abs((eval(EVIDENCE + ".van") as { speed?: number })?.speed ?? 0)),
+      await expect.poll(async () => page.evaluate((EVIDENCE: string) =>
+        Math.abs((eval(EVIDENCE + ".van") as { speed?: number })?.speed ?? 0), EVIDENCE),
         { timeout: 10_000, intervals: [200] }).toBeGreaterThan(0.5);
       await page.keyboard.up("KeyW");
-      const van = await page.evaluate(() => eval(EVIDENCE + ".van"));
+      const van = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".van"), EVIDENCE);
       expect(van).toBeTruthy();
       expect(errors).toEqual([]);
     } finally {
@@ -153,8 +157,8 @@ test.describe("showcase-courier-rush v2 (T2.6)", () => {
           bubbles: true
         }));
       });
-      await expect.poll(async () => page.evaluate(() =>
-        Math.abs((eval(EVIDENCE + ".van") as { speed?: number })?.speed ?? 0)),
+      await expect.poll(async () => page.evaluate((EVIDENCE: string) =>
+        Math.abs((eval(EVIDENCE + ".van") as { speed?: number })?.speed ?? 0), EVIDENCE),
         { timeout: 10_000, intervals: [200] }).toBeGreaterThan(0.5);
       await page.evaluate(() => {
         const el = document.getElementById("app") ?? document.body;
@@ -180,14 +184,15 @@ test.describe("showcase-courier-rush v2 (T2.6)", () => {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
-      const playLook = await page.evaluate(() =>
-        JSON.stringify(eval(EVIDENCE + ".appliedLook")));
+      const playLook = await page.evaluate((EVIDENCE: string) =>
+        JSON.stringify({ route: eval(EVIDENCE + ".appliedLook"), runtime: (window as unknown as { __AURA3D_GAME__?: { app?: { diagnostics?: () => { appliedLook?: unknown } } } }).__AURA3D_GAME__?.app?.diagnostics?.().appliedLook ?? null }), EVIDENCE);
+      await expectRuntimeMatchesDeclared(APP_DIR, JSON.parse(playLook).runtime);
       for (const scenario of ["autopilot", "traffic", "strike"]) {
         await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&scenario=${scenario}`);
         await expect.poll(() => page.evaluate(() =>
           (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
-        const scenarioLook = await page.evaluate(() =>
-          JSON.stringify(eval(EVIDENCE + ".appliedLook")));
+        const scenarioLook = await page.evaluate((EVIDENCE: string) =>
+          JSON.stringify({ route: eval(EVIDENCE + ".appliedLook"), runtime: (window as unknown as { __AURA3D_GAME__?: { app?: { diagnostics?: () => { appliedLook?: unknown } } } }).__AURA3D_GAME__?.app?.diagnostics?.().appliedLook ?? null }), EVIDENCE);
         expect(scenarioLook, `appliedLook drifted on scenario ${scenario}`).toBe(playLook);
       }
     } finally {

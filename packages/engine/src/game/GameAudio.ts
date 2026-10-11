@@ -141,13 +141,26 @@ export interface GameAudioOptions<TCue extends string = string> {
   readonly qualityRebuild?: { readonly flags?: QrFlagInput };
 }
 
+export interface GameAudioListenerPose {
+  readonly position: readonly [number, number, number];
+  readonly forward: readonly [number, number, number];
+  readonly up: readonly [number, number, number];
+}
+
 export interface GameAudio<TCue extends string = string> {
   readonly evidence: GameAudioEvidence<TCue>;
   unlock(): Promise<GameAudioEvidence<TCue>>;
   cue(cue: TCue): Promise<GameAudioCueEvent<TCue>>;
   /** Play a cue at a world position; attenuation/doppler/occlusion land in `playingNodes`. */
   playPositional(cue: TCue, position: GameAudioVec3, options?: GameAudioPositionalOptions): Promise<GameAudioCueEvent<TCue>>;
+  /** Move the listener; keeps the last orientation set by `setListener`. */
   setListenerPosition(position: GameAudioVec3): GameAudioEvidence<TCue>;
+  /**
+   * C-25-shaped full listener pose (Q-09-6 / #213): position plus orientation, so
+   * spatial panning follows the presented camera. `forward`/`up` need not be unit
+   * length but must be non-zero and finite. `bindFeelSound` prefers this surface.
+   */
+  setListener(pose: GameAudioListenerPose): GameAudioEvidence<TCue>;
   /** Update occlusion on the most recent playing node(s) for a cue. Advisory when nothing is playing. */
   setOcclusion(cue: TCue, amount: number): GameAudioEvidence<TCue>;
   /** Route a foot-IK plant event to its surface-tagged cue. Null when no cue is registered. */
@@ -278,6 +291,9 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
 
   // I1 positional state: listener pose, recently played nodes, ducking, footsteps.
   let listenerPosition: GameAudioVec3 = { x: 0, y: 0, z: 0 };
+  // Orientation survives position-only updates (it used to be hard-coded).
+  let listenerForward: readonly [number, number, number] = [0, 0, -1];
+  let listenerUp: readonly [number, number, number] = [0, 1, 0];
   const playingNodes: GameAudioPlayingNode<TCue>[] = [];
   const MAX_PLAYING_NODES = 32;
   const duckingMusicBus: GameAudioBusId = options.ducking?.musicBus ?? "music";
@@ -316,9 +332,13 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
     if (!engine) {
       const initialVolumes: Partial<Record<GameBusId, number>> = {};
       for (const [busId, volume] of busVolumes) initialVolumes[engineBusOf(busId)] = volume;
-      // C-25 slot resolution: real engine iff provided && A3D_QR_GAME on,
-      // else the silent contract stub (09-CONF conformance: real-or-stub by flag).
-      engine = gameSoundSlot.get(qrFlags)({
+      // C-25: flag on resolves through the contract slot (real engine iff
+      // lane prd09 provided it, else the silent stub — 09-CONF real-or-stub
+      // by flag). Flag off keeps the shipped legacy path, which has always
+      // played through the real game-sound engine: routing it to the silent
+      // stub (#712) muted every flag-off route (flag-off output must not change).
+      const factory = qrGameOn ? gameSoundSlot.get(qrFlags) : createGameSoundEngine;
+      engine = factory({
         context: audioContext as unknown as SoundGraphContext,
         cues: engineCues,
         buses: initialVolumes
@@ -505,9 +525,26 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
       listenerPosition = validateVec3(position, "listener position");
       getEngine()?.setListener({
         position: [position.x, position.y, position.z],
-        forward: [0, 0, -1],
-        up: [0, 1, 0]
+        forward: [...listenerForward],
+        up: [...listenerUp]
       });
+      return snapshot();
+    },
+    setListener(pose) {
+      const tuple = (v: readonly number[] | undefined, label: string, nonZero: boolean): [number, number, number] => {
+        if (!v || v.length !== 3 || !v.every(Number.isFinite)) {
+          throw new Error(`Game audio listener ${label} must be three finite numbers.`);
+        }
+        if (nonZero && Math.hypot(v[0], v[1], v[2]) < 1e-9) {
+          throw new Error(`Game audio listener ${label} must be non-zero.`);
+        }
+        return [v[0], v[1], v[2]];
+      };
+      const position = tuple(pose?.position, "position", false);
+      listenerForward = tuple(pose?.forward, "forward", true);
+      listenerUp = tuple(pose?.up, "up", true);
+      listenerPosition = { x: position[0], y: position[1], z: position[2] };
+      getEngine()?.setListener({ position, forward: [...listenerForward], up: [...listenerUp] });
       return snapshot();
     },
     setOcclusion(cue, amount) {

@@ -26,6 +26,9 @@ on:
     branches: [main]
   schedule:
     - cron: "0 5 * * *"   # 05:00 UTC nightly on main
+  # Run allflags-smoke for one qr/** branch on demand:
+  #   gh workflow run qr-required.yml --ref qr/<branch>
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -268,12 +271,77 @@ jobs:
               - 'package.json'
               - 'pnpm-lock.yaml'
 
+  # Budget (0.6): one run is ~26 GitLab macOS min x cost factor 6. It runs on
+  # main pushes, the nightly schedule, workflow_dispatch, and PRs that carry the
+  # `qr-allflags` label. The label is read on opened/synchronize/reopened, so
+  # add it and then push, or dispatch on the branch. A PR without the label
+  # skips this job; the main push run is the gate of record.
+  # Provider (program-lead ruling 2026-10-11, GitLab quota exhausted): the
+  # flags-bisect runs on GitHub macos-14 by default; set the repository
+  # variable QR_ALLFLAGS_PROVIDER=gitlab to route it to GitLab again. Exactly
+  # one of allflags-smoke-github / allflags-smoke runs. Both fail on any
+  # infrastructure error (quota, missing artifacts) — never green.
+  allflags-smoke-github:
+    name: allflags-smoke (GPU runner)
+    if: >-
+      vars.QR_ALLFLAGS_PROVIDER != 'gitlab' && (
+      github.event_name == 'push' || github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'qr-allflags')))
+    uses: ./.github/workflows/qr-azure-gpu.yml
+    with:
+      suite: flags-bisect
+      # Self-hosted NVIDIA GPU runners (L4 class) by default; vars.QR_GPU_RUNNER
+      # = macos-14 falls back to GitHub Metal (separate baselines per provider).
+      runner: ${{ vars.QR_GPU_RUNNER || 'azure-gpu' }}
+      # flags-bisect compares arms inside one job on one GPU, so any class works.
+      gpu_class: any
+      bench_engines: aura3d
+      allflags_eval: true
+
   allflags-smoke:
+    name: allflags-smoke (GitLab)
     runs-on: ubuntu-latest
     timeout-minutes: 240
-    if: github.event_name != 'schedule'
+    if: >-
+      vars.QR_ALLFLAGS_PROVIDER == 'gitlab' && (
+      github.event_name == 'push' || github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'qr-allflags')))
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      # The GitLab mirror lags the push: mirror-to-gitlab syncs main, and the
+      # qr-gitlab-ci sync job syncs qr/** heads. Triggering at once started the
+      # pipeline on a stale SHA (main run 38076715591: GitLab 2934146937 ran on
+      # b60a669a instead of ee3d8966). Wait until the mirror ref is this SHA.
+      - name: Wait for the GitLab mirror to reach this SHA
+        env:
+          API_TOKEN: ${{ secrets.GITLAB_QR_API_TOKEN }}
+          REF: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+          SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test -n "$API_TOKEN" || { echo "::error::GITLAB_QR_API_TOKEN secret missing"; exit 1; }
+          ref_enc="$(jq -rn --arg r "$REF" '$r|@uri')"
+          head=""; deadline=$((SECONDS + 1800))
+          while [ "$SECONDS" -lt "$deadline" ]; do
+            head="$(curl -fsS --max-time 30 -H "PRIVATE-TOKEN: $API_TOKEN" \
+              "$GITLAB_API/projects/$GITLAB_PROJECT_ID/repository/branches/$ref_enc" | jq -r '.commit.id // empty')" || head=""
+            [ "$head" = "$SHA" ] && { echo "mirror $REF @ $SHA"; exit 0; }
+            base=""
+            if [ -n "$head" ]; then
+              base="$(curl -fsS --max-time 30 -H "PRIVATE-TOKEN: $API_TOKEN" \
+                "$GITLAB_API/projects/$GITLAB_PROJECT_ID/repository/merge_base?refs%5B%5D=$SHA&refs%5B%5D=$head" | jq -r '.id // empty')" || base=""
+            fi
+            if [ -n "$head" ] && [ "$base" = "$SHA" ]; then
+              echo "::error::GitLab $REF already moved past $SHA to $head; this commit cannot be triggered by ref (the newer commit's run is the gate)"
+              exit 1
+            fi
+            sleep 30
+          done
+          echo "::error::GitLab mirror $REF did not reach $SHA within 30 min (head: ${head:-none})"
+          exit 1
+
       - name: Trigger GitLab flags-bisect on this ref
         id: trigger
         env:
@@ -337,8 +405,11 @@ jobs:
             bench-artifacts/benchmarks/quality-rebuild/out/bisect-summary.json \
             process/baselines/allflags-smoke.json "$QR_ALL_FLAGS" "$TRACK0_ISSUE" >> "$GITHUB_STEP_SUMMARY"
 
+  # GitLab-only nightly matrix; paused while the GitLab quota is out
+  # (QR_ALLFLAGS_PROVIDER != gitlab). On GitHub the schedule still runs
+  # allflags-smoke-github, and every main push runs the Quality Gate.
   nightly:
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'schedule' && vars.QR_ALLFLAGS_PROVIDER == 'gitlab'
     runs-on: ubuntu-latest
     timeout-minutes: 240
     steps:
@@ -387,7 +458,7 @@ jobs:
 
   qr-required:
     if: always()
-    needs: [paths, allflags-smoke, ownership, checklist-lint]
+    needs: [paths, allflags-smoke-github, allflags-smoke, ownership, checklist-lint]
     runs-on: ubuntu-latest
     steps:
       - name: Aggregate

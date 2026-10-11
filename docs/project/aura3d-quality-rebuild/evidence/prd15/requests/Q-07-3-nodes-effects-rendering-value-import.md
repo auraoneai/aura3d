@@ -1,5 +1,7 @@
 # Q-07-3: `nodes/effects.ts` imports values from `@aura3d/rendering` — layering violation
 
+**Issue:** #1015 (P-64 writeback)
+
 **From:** lane 15 · **To:** lane 07 · **Filed:** 2026-10-06 · **Status:** OPEN
 
 PRD-15 §6.3 layering: `nodes/` may not import `@aura3d/rendering` values

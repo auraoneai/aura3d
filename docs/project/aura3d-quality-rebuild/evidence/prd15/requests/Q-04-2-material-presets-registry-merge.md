@@ -1,5 +1,7 @@
 # Q-04-2 — material-preset merge into MaterialPresetsRegistry + nodes/material.ts wiring
 
+**Issue:** #1002 (P-64 writeback)
+
 Status: PARTIALLY APPLIED BY LANE 15 (T6.6, qr/prd15-honest-packages)
 
 ## Applied by lane 15 (cross-lane edits, marked)

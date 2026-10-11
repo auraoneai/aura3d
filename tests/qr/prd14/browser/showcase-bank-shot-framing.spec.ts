@@ -36,9 +36,11 @@ test.describe("showcase-bank-shot framing (T2.3)", () => {
         await page.waitForTimeout(700);
         await page.keyboard.up("Space");
         await page.waitForTimeout(400);
-        const framing = await page.evaluate(() =>
-          JSON.parse(JSON.stringify(eval(EVIDENCE + ".framing"))) as
-            { rig?: string; subjectScreenHeightFraction?: number | null });
+        // The evidence expression travels as an argument: page.evaluate runs
+        // in the browser, where Node-side constants are not in scope.
+        const framing = await page.evaluate((expr) =>
+          JSON.parse(JSON.stringify(eval(expr))) as
+            { rig?: string; subjectScreenHeightFraction?: number | null }, EVIDENCE + ".framing");
         expect(framing.rig).toBe("bank-shot.aim-orbit");
         expect(framing.subjectScreenHeightFraction, "rig must report a measured fraction (lane-08 #643)").not.toBeNull();
           expect(framing.subjectScreenHeightFraction!).toBeGreaterThanOrEqual(FRACTION[0]);

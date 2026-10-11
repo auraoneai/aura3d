@@ -1,5 +1,7 @@
 # Q-07-1 — repoint `Decals.ts` imports off the barrel
 
+**Issue:** #1014 (P-64 writeback)
+
 **Lane:** 07 (owns `packages/engine/src/agent-api/Decals.ts`)
 **Requested by:** lane 15 (PRD-15 T3.2)
 **Status:** OPEN

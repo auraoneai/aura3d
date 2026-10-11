@@ -10,6 +10,8 @@
 
 export const DISPLAY_GRADE_GLSL = /* glsl */ `#version 300 es
 precision highp float;
+// GLSL ES 3.00 has no default precision for sampler3D (CI: "'sampler3D' : No precision specified").
+precision highp sampler3D;
 uniform sampler2D u_source;
 uniform sampler3D u_lut3d;
 uniform int u_hasLut;
@@ -40,13 +42,15 @@ void main() {
 `;
 
 /**
- * Display-grade bake: one draw per slice into the 33³ RGBA8 TEXTURE_3D with
+ * Display-grade bake: one draw per slice into the 65³ RGBA8 TEXTURE_3D with
  * `framebufferTextureLayer`. Applies contrast (pivot 0.5), saturation,
  * vibrance and the optional user `.cube` sample, in the display domain —
  * the same math the analytic grade would apply per pixel.
  */
 export const LUT_BAKE_GLSL = /* glsl */ `#version 300 es
 precision highp float;
+// GLSL ES 3.00 has no default precision for sampler3D (CI: "'sampler3D' : No precision specified").
+precision highp sampler3D;
 uniform sampler3D u_userLut;
 uniform int u_hasUserLut;
 uniform float u_lutIntensity;

@@ -3,6 +3,7 @@ import { MaterialInstance } from "./MaterialInstance";
 import { type RenderShaderProgram, type UniformValue } from "./RenderDevice";
 import { TextureBinding, isTextureBinding } from "./TextureBinding";
 import type { ProgramFeatures } from "./contracts/program";
+import { dfgLutBinding } from "./program/DFGLut";
 
 /** C-02 (PRD-01 §8.5): material parameter → generated-program uniform renames.
  * Generated programs name samplers `u_*Map` and read `u_specularIntensity`;
@@ -100,6 +101,12 @@ export class MaterialBinding {
     const diagnostics: string[] = [];
     const warnings: string[] = [];
 
+    // 01-DFG: every generated program with the lane-01 brdf chunk samples the
+    // renderer-owned r185 DFG LUT (one texture, uploaded once per device).
+    if (shader.reflection.uniforms.has("u_dfgLut")) {
+      uniforms.set("u_dfgLut", dfgLutBinding());
+    }
+
     for (const [name, value] of materialLike.getParameters()) {
       const renamed = GENERATED_UNIFORM_RENAMES[name];
       if (renamed && isTextureBinding(value)) {
@@ -118,11 +125,14 @@ export class MaterialBinding {
       }
     }
 
-    for (const attribute of material.requiredAttributes) {
-      if (!shader.reflection.attributes.has(attribute)) {
-        diagnostics.push(`Missing shader attribute: ${attribute}`);
-      }
-    }
+    // #867: `material.requiredAttributes` describes the frozen legacy shader's
+    // inputs. It is NOT the generated program's contract: a generated program
+    // may legitimately not consume an attribute the geometry carries
+    // (tangents → derivative TBN; uv when the record has no maps; on WebGL2 an
+    // unused attribute is also optimized out of the active-attribute
+    // reflection), exactly like three.js ignores unused geometry attributes.
+    // Geometry ⊇ material.requiredAttributes is still enforced by
+    // ForwardPass `validateMaterialGeometryContract` + RenderPipeline.
     // Shader reflection is define-blind, so map-sampler presence is checked
     // from the feature record (an enabled slot must have a bound texture).
     for (const [slot, sampler] of Object.entries(GENERATED_MAP_SAMPLERS)) {

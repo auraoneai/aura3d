@@ -2,6 +2,7 @@ import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { writeAgentSkills } from "./agent-skills.js";
+import { copyTemplateHdris, TEMPLATE_HDRI_DIR, templateAuthorsLook } from "./template-hdri.js";
 
 export const CREATE_AURA3D_TEMPLATES = [
   "product-viewer",
@@ -101,6 +102,9 @@ export function createA3DProject(options: CreateA3DProjectOptions): CreateA3DPro
   }
   packageJson.dependencies = dependencies;
   writeFileSync(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`);
+  // Look presets load /hdri/<file>.hdr; ship the package's HDRI set (sibling of
+  // templates/ under the same root) with every template that authors a look.
+  if (templateAuthorsLook(targetDir)) copyTemplateHdris(resolve(rootDir, TEMPLATE_HDRI_DIR), targetDir);
   const agentSkills = options.agent
     ? writeAgentSkills({ projectDir: targetDir, agent: options.agent, skills: options.skills ?? "core", template })
     : undefined;

@@ -107,7 +107,14 @@ export function sceneCopyTextures(ctx: FrameContributorContext): SceneCopyResult
 export function sceneCopyFallbackPass(ctx: FrameContributorContext): RenderPass {
   return {
     name: "prd10.sceneCopy",
-    reads: [FRAME_RESOURCES.sceneColor, FRAME_RESOURCES.sceneDepth],
+    // No declared reads: nothing in the frame graph writes
+    // `aura.scene.depth` (and `aura.scene.color` is written by the final
+    // transparent pass), so declaring them made `compilePlan` throw "reads
+    // aura.scene.depth, but no pass writes it" on every refracting-water
+    // frame and killed the frame loop. Emitted in `after-opaque`, the pass
+    // orders by insertion after ForwardPass and samples the live depth via
+    // `ctx.sceneDepth` / the blackboard colour.
+    reads: [],
     writes: [SCENE_COPY_COLOR_KEY, SCENE_COPY_DEPTH_KEY],
     execute(rp: RenderPassContext) {
       const device = rp.device;

@@ -10,7 +10,7 @@
  */
 
 import type { QrFlagName, QrFlagValue, QrFlags } from "@aura3d/rendering/contracts";
-import { REMOVED_QR_FLAGS } from "@aura3d/rendering/contracts/flags.state";
+import { QR_FLAG_STATES, REMOVED_QR_FLAGS } from "@aura3d/rendering/contracts/flags.state";
 
 export type QrFlagInput = "all" | readonly string[] | Readonly<Partial<Record<QrFlagName, QrFlagValue>>>;
 
@@ -34,6 +34,46 @@ const SHORT_NAMES: Readonly<Record<string, QrFlagName>> = {
 
 const LANE_FLAGS = Object.values(SHORT_NAMES) as QrFlagName[];
 
+/**
+ * #266 (Q-15-6) — sub-flags whose PRD declares them ON BY DEFAULT under their
+ * lane flag; they exist as kill switches (`-world.biome`), not opt-ins. `all`
+ * expands them like lane flags, and a lane flag resolved on from any source
+ * fills its unset sub-flags after every source applied (explicit values win).
+ * PRD-10 §13 (`worldSubflagOn`) already reads these parent-defaulted, so the
+ * expansion matches it and makes direct `flags.on(sub)` / registry `flag:`
+ * gates agree. Not listed: PRD-01's `A3D_QR_CORE_{GENERATOR,OUTPUT}` (lane 01
+ * resolves them through `qrCoreGeneratorOn`/`qrCoreOutputOn` and pins the raw
+ * value unset under `core`), and opt-in/default-off sub-flags (e.g.
+ * `A3D_QR_POST_VELOCITY_MRT`), which stay explicit-only. Flag states live in
+ * `flags.state.ts`; this table only records parent→sub defaults.
+ */
+const DEFAULT_ON_SUB_FLAGS: Readonly<Partial<Record<QrFlagName, readonly QrFlagName[]>>> = {
+  A3D_QR_WORLD: ["A3D_QR_WORLD_TERRAIN", "A3D_QR_WORLD_WATER", "A3D_QR_WORLD_BIOME"]
+};
+
+function flagValueOn(v: QrFlagValue | undefined): boolean {
+  return v !== undefined && v !== false && v !== "0" && v !== "off" && v !== "";
+}
+
+/** #266: fill unset default-on sub-flags of every lane flag that resolved on. */
+/**
+ * Promotion (§5.3, owner decision 2026-10-11): a flag whose state is
+ * `default-on` in flags.state.ts is on unless some source set it explicitly.
+ * Runs after every source, so `none`, `-x` and `A3D_QR_X=0` still turn it off.
+ */
+function applyDefaultOnStates(out: Record<string, QrFlagValue>): void {
+  for (const [name, state] of Object.entries(QR_FLAG_STATES)) {
+    if (state === "default-on") setEntry(out, name as QrFlagName, true);
+  }
+}
+
+function propagateSubFlags(out: Record<string, QrFlagValue>): void {
+  for (const [parent, subs] of Object.entries(DEFAULT_ON_SUB_FLAGS)) {
+    if (!flagValueOn(out[parent]) || !subs) continue;
+    for (const sub of subs) setEntry(out, sub, true);
+  }
+}
+
 function flagNameFor(short: string): QrFlagName | null {
   const lower = short.toLowerCase();
   if (lower in SHORT_NAMES) return SHORT_NAMES[lower];
@@ -55,18 +95,21 @@ function setEntry(out: Record<string, QrFlagValue>, name: QrFlagName, value: QrF
 
 /** `all` | `none` | comma list of short names with `-name` exclusions and `name=value` values. */
 function applyList(out: Record<string, QrFlagValue>, list: string): void {
-  const trimmed = list.trim();
-  if (trimmed === "all") {
-    for (const flag of LANE_FLAGS) setEntry(out, flag, true);
-    return;
-  }
-  if (trimmed === "none" || trimmed === "") {
+  const tokens = list.split(",").map((t) => t.trim()).filter((t) => t.length > 0);
+  if (tokens.length === 0) {
     for (const flag of LANE_FLAGS) setEntry(out, flag, false);
     return;
   }
-  for (const token of trimmed.split(",")) {
-    const t = token.trim();
-    if (!t) continue;
+  // #625: `all` / `none` are positional tokens too (`route_bank_shot,all`).
+  // First write wins, so explicit tokens apply before the blanket one: in
+  // `all,-world` the explicit `-world` still turns world off. Sub-flags are
+  // filled by propagateSubFlags after every source applied.
+  let blanket: "all" | "none" | null = null;
+  for (const t of tokens) {
+    if (t === "all" || t === "none") {
+      blanket ??= t;
+      continue;
+    }
     const negated = t.startsWith("-");
     const body = negated ? t.slice(1) : t;
     const eq = body.indexOf("=");
@@ -75,6 +118,7 @@ function applyList(out: Record<string, QrFlagValue>, list: string): void {
     const value: QrFlagValue = negated ? false : eq >= 0 ? body.slice(eq + 1) : true;
     setEntry(out, name, value);
   }
+  if (blanket !== null) for (const flag of LANE_FLAGS) setEntry(out, flag, blanket === "all");
 }
 
 function applyInput(out: Record<string, QrFlagValue>, input: QrFlagInput): void {
@@ -135,6 +179,8 @@ export function resolveQrFlags(input: { readonly options?: QrFlagInput; readonly
     if (list !== undefined) applyList(values, list);
     applyPerFlagEnv(values, input.env);
   }
+  applyDefaultOnStates(values);
+  propagateSubFlags(values);
   for (const removed of REMOVED_QR_FLAGS) {
     if (values[removed] !== undefined) {
       delete values[removed];

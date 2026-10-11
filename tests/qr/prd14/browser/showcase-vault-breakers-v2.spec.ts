@@ -1,8 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
 import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
+import { expectRuntimeMatchesDeclared } from "./lib/look";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { canvasBlankCheck, evaluateRequiredCondition } from "@aura3d/game/art";
+// Source imports: the lane jobs do not build package dist/, so the
+// "@aura3d/game/art" export (dist/art/index.js) does not resolve there.
+import { canvasBlankCheck } from "../../../../packages/game/src/art/acceptance/canvasBlankCheck";
+import { evaluateRequiredCondition } from "../../../../packages/game/src/art/acceptance/requiredConditions";
 import { decodePngAsRgba } from "../unit/helpers/png";
 
 /**
@@ -42,7 +46,7 @@ async function shot(page: Page, name: string) {
   const png = await page.screenshot();
   const { rgba, width, height } = decodePngAsRgba(png);
   const result = canvasBlankCheck(rgba, width, height, [], BLANK_LIMITS);
-  expect(result.verdict, `${name} is likely blank`).toBe("pass");
+  expect(result.pass, `${name} is likely blank (dark ${result.darkFraction.toFixed(3)}, ${result.distinctColors} colours)`).toBe(true);
 }
 
 async function readEvidence(page: Page) {
@@ -53,7 +57,7 @@ async function readEvidence(page: Page) {
 }
 
 /** Hold Space for `ms` then release — the plunger serve gesture. */
-async function serve(page: Page, ms = 650) {
+async function plungerServe(page: Page, ms = 650) {
   await page.keyboard.down("Space");
   await page.waitForTimeout(ms);
   await page.keyboard.up("Space");
@@ -78,7 +82,7 @@ test.describe("showcase-vault-breakers v2 (T2.6)", () => {
 
       // §7.2.1 timeline: serve, then flip while the ball is live until a
       // bumper registers (bumperHitsThisBall >= 1 && fx.liveCount > 0).
-      await serve(page);
+      await plungerServe(page);
       await page.waitForTimeout(400);
       await shot(page, "02-opening");
 
@@ -97,9 +101,9 @@ test.describe("showcase-vault-breakers v2 (T2.6)", () => {
         await page.waitForTimeout(260);
         await page.keyboard.up("KeyA");
         await page.keyboard.up("KeyD");
-        const inPlay = await page.evaluate(() =>
-          eval(EVIDENCE + ".ball") as { inPlay?: boolean } | undefined);
-        if (!inPlay?.inPlay) await serve(page, 500);
+        const inPlay = await page.evaluate((EVIDENCE: string) =>
+          eval(EVIDENCE + ".ball") as { inPlay?: boolean } | undefined, EVIDENCE);
+        if (!inPlay?.inPlay) await plungerServe(page, 500);
       }
       await shot(page, "04-action");
       expect(allMet, "§7.2.1 required conditions not reached by deadline").toBe(true);
@@ -137,9 +141,9 @@ test.describe("showcase-vault-breakers v2 (T2.6)", () => {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
-      await serve(page);
-      await expect.poll(async () => page.evaluate(() =>
-        (eval(EVIDENCE + ".ball") as { inPlay?: boolean })?.inPlay ?? false),
+      await plungerServe(page);
+      await expect.poll(async () => page.evaluate((EVIDENCE: string) =>
+        (eval(EVIDENCE + ".ball") as { inPlay?: boolean })?.inPlay ?? false, EVIDENCE),
         { timeout: 15_000, intervals: [300] }).toBe(true);
       // Flip both paddles — activation must not error and sim keeps ticking.
       await page.keyboard.down("KeyA");
@@ -147,7 +151,7 @@ test.describe("showcase-vault-breakers v2 (T2.6)", () => {
       await page.waitForTimeout(400);
       await page.keyboard.up("KeyA");
       await page.keyboard.up("KeyD");
-      const table = await page.evaluate(() => eval(EVIDENCE + ".table"));
+      const table = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".table"), EVIDENCE);
       expect(table).toBeTruthy();
       expect(errors).toEqual([]);
     } finally {
@@ -176,7 +180,7 @@ test.describe("showcase-vault-breakers v2 (T2.6)", () => {
       await page.touchscreen.tap(box.x + box.w * 0.2, box.y + box.h * 0.5);
       await page.touchscreen.tap(box.x + box.w * 0.8, box.y + box.h * 0.5);
       await page.waitForTimeout(400);
-      const table = await page.evaluate(() => eval(EVIDENCE + ".table"));
+      const table = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".table"), EVIDENCE);
       expect(table).toBeTruthy();
       expect(errors).toEqual([]);
     } finally {
@@ -192,14 +196,15 @@ test.describe("showcase-vault-breakers v2 (T2.6)", () => {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
-      const playLook = await page.evaluate(() =>
-        JSON.stringify(eval(EVIDENCE + ".appliedLook")));
+      const playLook = await page.evaluate((EVIDENCE: string) =>
+        JSON.stringify({ route: eval(EVIDENCE + ".appliedLook"), runtime: (window as unknown as { __AURA3D_GAME__?: { app?: { diagnostics?: () => { appliedLook?: unknown } } } }).__AURA3D_GAME__?.app?.diagnostics?.().appliedLook ?? null }), EVIDENCE);
+      await expectRuntimeMatchesDeclared(APP_DIR, JSON.parse(playLook).runtime);
       for (const scenario of ["in-play", "bumper-hit", "drained"]) {
         await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&scenario=${scenario}`);
         await expect.poll(() => page.evaluate(() =>
           (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
-        const scenarioLook = await page.evaluate(() =>
-          JSON.stringify(eval(EVIDENCE + ".appliedLook")));
+        const scenarioLook = await page.evaluate((EVIDENCE: string) =>
+          JSON.stringify({ route: eval(EVIDENCE + ".appliedLook"), runtime: (window as unknown as { __AURA3D_GAME__?: { app?: { diagnostics?: () => { appliedLook?: unknown } } } }).__AURA3D_GAME__?.app?.diagnostics?.().appliedLook ?? null }), EVIDENCE);
         expect(scenarioLook, `appliedLook drifted on scenario ${scenario}`).toBe(playLook);
       }
     } finally {

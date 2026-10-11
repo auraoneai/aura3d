@@ -46,6 +46,30 @@ const prd01InstanceTransformCache = new WeakMap<readonly AuraTransformSpec[], { 
 const prd01InstanceColorCache = new WeakMap<readonly AuraColor[], { fp: number; count: number; result: Float32Array | undefined }>();
 const prd01ModelInstanceCache = new WeakMap<readonly AuraTransformSpec[], { fp: number; node: object; bounds: Float64Array; result: Float32Array }>();
 
+/*
+ * Instanced primitives: `createProductionInstanceTransforms` already folds the
+ * node `size` into every instance matrix (T_i·R_i·S(scale_i ⊙ size)), and the
+ * renderer draws `modelMatrix · instanceMatrix`. The node model matrix must
+ * therefore carry the node TRS only — applying S(size) there too scaled every
+ * instance translation by `size` (a 10,000-box field of 0.3-unit boxes
+ * collapsed to a 0.3× central cluster) and shrank each box a second time.
+ * three.js equivalent: mesh.matrixWorld · instanceMatrix · geometry(size).
+ * The size-less node is memoized per node so the static matrix cache (keyed
+ * on node identity) still hits.
+ */
+const instancedModelNodes = new WeakMap<AuraPrimitiveNode, AuraPrimitiveNode>();
+
+export function instancedPrimitiveModelNode(node: AuraPrimitiveNode): AuraPrimitiveNode {
+  if (!node.instances || node.size === undefined) return node;
+  let sizeless = instancedModelNodes.get(node);
+  if (sizeless === undefined) {
+    const { size: _size, ...rest } = node;
+    sizeless = rest as AuraPrimitiveNode;
+    instancedModelNodes.set(node, sizeless);
+  }
+  return sizeless;
+}
+
 /** PRD-03 Phase 4: measured per-canvas frame delta (seconds) for the §8.8
  * shutter scale — `time` is the seconds timestamp the caller passes. */
 const productionFrameTimes = new WeakMap<HTMLCanvasElement, number>();
@@ -256,7 +280,7 @@ export function createProductionRuntimeRendererInput(
     items.push({
       geometry: resource.geometry,
       material: resource.texturedMaterial ?? resource.material,
-      modelMatrix: prd01ModelMatrixCache?.modelMatrix(currentState.node, resource.bounds, false, time) ?? createModelMatrix(currentState.node, resource.bounds, false, time),
+      modelMatrix: prd01ModelMatrixCache?.modelMatrix(instancedPrimitiveModelNode(currentState.node), resource.bounds, false, time) ?? createModelMatrix(instancedPrimitiveModelNode(currentState.node), resource.bounds, false, time),
       label: `primitive-${primitiveIndex}:${resource.name}:${currentState.node.name ?? currentState.node.primitive}`,
       castShadow: currentState.node.castShadow,
       includeInAutoFrame: false,

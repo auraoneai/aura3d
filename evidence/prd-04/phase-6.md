@@ -1,5 +1,7 @@
 # PRD-04 Phase 6 evidence — WGSL twins, extension matrix, E34 deletions
 
+> **Status (04-EVID, 2026-10-11):** every PASS below is a *local* unit or code-read result. No row here has a remote run id yet, so every browser, capture or CI-gated item is **NOT RUN** until a GitHub macos-14 run on a main commit is cited inline. The S3/S6/S7/S9 probe controls are measured by the lane browser job into `tests/reports/prd04/probes/*.json` (artifact `prd04-material-conformance`); the NOT RUN placeholder stubs were removed (P-56).
+
 Branch: `qr/prd04-materials-p6-wgsl` (stacked on `qr/prd04-materials-p5-pipeline`).
 
 ## P6-1 — `shaders/physical-wgsl/*.wgsl.ts` twins

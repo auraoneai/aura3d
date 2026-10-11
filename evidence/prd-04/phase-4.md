@@ -1,5 +1,7 @@
 # PRD-04 Phase 4 — Transmission, Volume, Dispersion (P4-1..P4-5)
 
+> **Status (04-EVID, 2026-10-11):** every PASS below is a *local* unit or code-read result. No row here has a remote run id yet, so every browser, capture or CI-gated item is **NOT RUN** until a GitHub macos-14 run on a main commit is cited inline. The S3/S6/S7/S9 probe controls are measured by the lane browser job into `tests/reports/prd04/probes/*.json` (artifact `prd04-material-conformance`); the NOT RUN placeholder stubs were removed (P-56).
+
 Scope: `forward/Transmission.ts` contributor + `TransmissionCapturePass`, `prd04.transmissionTarget` material feature, `a3d_prd04_transmission`/`a3d_prd04_volume` chunks (dispersion folded into the volume chunk's `u_prd04Dispersion` term), `usesUnbackedScalarTransmission` E22 gate, `prd04-transmission` scene + browser spec, `evaluateExternalParityTransmission` moved into `tests/qr/prd04/oracles/`. Everything is behind `A3D_QR_MATERIALS` (+ `A3D_QR_MATERIALS_TRANSMISSION` for the capture path); flag-off behaviour is byte-identical.
 
 ## Verification table

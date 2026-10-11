@@ -9,9 +9,12 @@
  * are placed in `stages` for order truth and also reported under `skipped`
  * with reason `post-v2-deferred:phase-N`.
  *
- * GPU execution lives in `webgl2/LegacyPost.ts` (`executePostGraphWebGL2`) and
- * is reached from `renderer/PostprocessExecution.ts`; `PostGraph.execute`
- * remains a no-device entry and still fails closed.
+ * GPU execution lives in `webgl2/LegacyPost.ts` (`executePostGraphWebGL2`),
+ * which drives `post/v2Stages.ts` (`runV2HdrStages` / `runV2LdrTail`) and is
+ * reached from `renderer/PostprocessExecution.ts`. C-13 custom passes
+ * (`app.addPostPass` → the pass registry, plus `pipeline.customPasses`) run at
+ * all five §6.1 anchors there. `PostGraph.execute` is the no-device entry: it
+ * validates and returns the plan the executor runs (03-S18c).
  */
 
 import { defineContractSlot, type QrFlags } from "../contracts/core";
@@ -362,13 +365,20 @@ export function planPostGraph(options: PostPipelineOptions, frame: PostGraphFram
   return { stages, skipped };
 }
 
-/** C-13 stub: the legacy chain's view of the graph (nothing v2 executes). */
-export class LegacyPostGraphStub implements PostGraphLike {
+/** Skip reason for registered custom passes while the legacy chain serves the frame. */
+export const POST_LEGACY_CHAIN_REASON = "legacy-chain:A3D_QR_POST-off";
+
+/**
+ * C-13 slot default: the legacy chain's view of the graph. With `A3D_QR_POST`
+ * off no v2 stage runs, so any registered custom pass is reported as skipped
+ * by the legacy chain (never silently dropped).
+ */
+export class LegacyPostGraph implements PostGraphLike {
   readonly kind = "legacy" as const;
   plan(_options: PostPipelineOptions, _frame: PostGraphFrame): PostGraphReport {
     return {
       stages: [],
-      skipped: registeredPostPasses().map((pass) => ({ name: pass.id, reason: "post-graph-v2-pending" }))
+      skipped: registeredPostPasses().map((pass) => ({ name: pass.id, reason: POST_LEGACY_CHAIN_REASON }))
     };
   }
 }
@@ -379,8 +389,13 @@ export class PostGraph implements PostGraphLike {
   plan(options: PostPipelineOptions, frame: PostGraphFrame): PostGraphReport {
     return planPostGraph(options, frame);
   }
-  execute(_options: PostPipelineOptions, _frame: PostGraphFrame): PostGraphReport {
-    throw new Error("POST_GRAPH_V2_PENDING");
+  /**
+   * No-device entry (03-S18c): validates every custom pass (a display pass
+   * before tonemap throws `POSTPROCESS_SPACE_INVALID:<id>`) and returns the
+   * plan, in execution order, that `runV2HdrStages`/`runV2LdrTail` execute.
+   */
+  execute(options: PostPipelineOptions, frame: PostGraphFrame): PostGraphReport {
+    return planPostGraph(options, frame);
   }
 }
 
@@ -394,7 +409,7 @@ export const postPipelineSlot = defineContractSlot<PostGraphLike>(
   "C-13",
   "prd03",
   "A3D_QR_POST",
-  new LegacyPostGraphStub()
+  new LegacyPostGraph()
 );
 
 /** Resolved graph for these flags; call at mount/compile time, never per draw. */

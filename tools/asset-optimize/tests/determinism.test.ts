@@ -5,17 +5,19 @@
  */
 
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const toolDir = resolve(fileURLToPath(import.meta.url), "..", "..");
 const repoRoot = resolve(toolDir, "../..");
-const hasDeps = existsSync(join(toolDir, "node_modules", "@gltf-transform", "core"));
 const source = readFileSync(join(repoRoot, "fixtures", "asset-corpus", "damaged-helmet.glb"));
 
-describe.runIf(hasDeps)("asset-optimize determinism", () => {
+// Fail closed (05-S5): runs only under tools/asset-optimize/vitest.config.ts,
+// in asset-optimize.yml after the tool deps are installed. No deps-present
+// skip guard: a missing dependency is a red test, not a silent skip.
+describe("asset-optimize determinism", () => {
   it("optimizes damaged-helmet twice to identical sha256", async () => {
     const { optimizeGLB } = await import("../pipeline.js");
     const { ASSET_OPTIMIZE_PROFILES } = await import("../profiles.js");

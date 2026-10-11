@@ -1,5 +1,7 @@
 # PRD-04 Phase 3 evidence — PhysicalMaterial, programFeatures, lobes, ShaderFeatures
 
+> **Status (04-EVID, 2026-10-11):** every PASS below is a *local* unit or code-read result. No row here has a remote run id yet, so every browser, capture or CI-gated item is **NOT RUN** until a GitHub macos-14 run on a main commit is cited inline. The S3/S6/S7/S9 probe controls are measured by the lane browser job into `tests/reports/prd04/probes/*.json` (artifact `prd04-material-conformance`); the NOT RUN placeholder stubs were removed (P-56).
+
 Phase 3 (P3-1..P3-5): `PhysicalMaterial` descriptor + `programFeatures()` on
 all five shipped material classes, the C-03 lobe registry made real
 (`materials/lobes.ts`), and the three PRD-04 ShaderFeatures

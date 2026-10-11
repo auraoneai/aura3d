@@ -1,4 +1,4 @@
-From 3fb079c0ad75f79618d152cfb9f825c310353545 Mon Sep 17 00:00:00 2001
+From d44798c0031fc59c37f4270696aff4c49414c955 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:09:15 +0000
 Subject: [PATCH] migration(showcase-neon-swarm): regenerated patch set
@@ -12,8 +12,8 @@ Subject: [PATCH] migration(showcase-neon-swarm): regenerated patch set
  apps/showcase-neon-swarm/src/legacy/main.ts   | 408 +++++++++---------
  .../showcase-neon-swarm/src/scenario-drive.ts |  22 +
  .../src/scenarios/index.ts                    |  17 +
- apps/showcase-neon-swarm/src/v2/boot.ts       |   4 +-
- 8 files changed, 256 insertions(+), 277 deletions(-)
+ apps/showcase-neon-swarm/src/v2/boot.ts       |  20 +-
+ 8 files changed, 264 insertions(+), 285 deletions(-)
  create mode 100644 apps/showcase-neon-swarm/src/evidence.ts
  create mode 100644 apps/showcase-neon-swarm/src/scenario-drive.ts
  create mode 100644 apps/showcase-neon-swarm/src/scenarios/index.ts
@@ -168,7 +168,7 @@ index df7c0dcfe..fcb2c6921 100644
    // props and instanced swarm. Keeping these rails in one small branch leaves
    // negative space for individual threat silhouettes and keeps the route's
 diff --git a/apps/showcase-neon-swarm/src/legacy/main.ts b/apps/showcase-neon-swarm/src/legacy/main.ts
-index 67b502753..15269925b 100644
+index 67b502753..f93118064 100644
 --- a/apps/showcase-neon-swarm/src/legacy/main.ts
 +++ b/apps/showcase-neon-swarm/src/legacy/main.ts
 @@ -13,9 +13,19 @@
@@ -586,7 +586,7 @@ index 67b502753..15269925b 100644
 +const app = neonGame.app;
 +neonGame.start();
 +
-+bindNeonEvidence(() => collectRouteEvidence());
++bindNeonEvidence(() => collectRouteEvidence() as unknown as Record<string, unknown>);
 +bindNeonDrive({
 +  jumpToWave(target: number): void {
 +    if (target >= 1) startWave(Math.floor(target));
@@ -1095,20 +1095,64 @@ index 000000000..16644c73b
 +  finale
 +];
 diff --git a/apps/showcase-neon-swarm/src/v2/boot.ts b/apps/showcase-neon-swarm/src/v2/boot.ts
-index 2ba556dd6..8633083b7 100644
+index 85ee487ec..4a56f8472 100644
 --- a/apps/showcase-neon-swarm/src/v2/boot.ts
 +++ b/apps/showcase-neon-swarm/src/v2/boot.ts
-@@ -30,8 +30,8 @@ import { swarmWorldNodes } from "./scene/world";
+@@ -5,7 +5,7 @@
+ // Gameplay modules (arena/swarm/waves/player/pickups/run) are unchanged;
+ // audio plays through the legacy cue controller until C-25 lands (R-14-09).
+ import { game as engineGame, scene } from "@aura3d/engine";
+-import { createGame, type Game, lookManifest } from "@aura3d/game";
++import { createGame, type Game } from "@aura3d/game";
+ import { createArenaLayout, playRect, spawnPointOnEdge } from "../gameplay/arena";
+ import { createSwarmSimulation } from "../gameplay/swarm";
+ import {
+@@ -30,7 +30,6 @@ import { swarmWorldNodes } from "./scene/world";
  import { lightingNodes } from "./scene/lighting";
  import { createSwarmRig, fallbackCameraNode } from "./scene/camera";
  import { wireSwarmFx } from "./scene/fx";
 -import { publishSwarmEvidence } from "./evidence";
--import { applySwarmScenario } from "./scenarios";
-+import { publishSwarmEvidence } from "../evidence";
-+import { applySwarmScenario } from "../scenarios";
+ import { applySwarmScenario } from "./scenarios";
+ import { createSwarmRunCtx, INTERMISSION_FIRST_SECONDS } from "./state";
+ import { createSwarmAudioBlock } from "./audio";
+@@ -40,7 +39,6 @@ import { wireSwarmFlow } from "./flow";
+ import { wireSwarmCombat } from "./combat";
+ import { createSwarmHud } from "./hud";
+ import { createSwarmWorld, createSwarmHandle } from "./nodes";
+-import { publishSwarmEvidenceBlock } from "./evidence-block";
+ import { buildSwarmScene } from "./scene-build";
+ import { applyNeonScenario } from "./scenario";
  
- const ROUTE_FLAG = "A3D_QR_ROUTE_NEON_SWARM" as const;
- const SEED_DEFAULT = 20260821;
+@@ -121,6 +119,15 @@ const game = createGame({
+     // art/direction.ts sections. `route_neon_swarm` uses the engine-parseable
+     // underscore form (URL/dispatch form is `route-neon-swarm`).
+     flags: ["route_neon_swarm", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
++  },
++  // T5.8: route evidence rides the shared createGame channel (C-24) —
++  // only the sections games.json requiredConditions read.
++  evidence: {
++    schema: 1,
++    sections: {
++      swarm: (): { killsThisWave: number } => ({ killsThisWave: ctx.killsThisWave }),
++      fx: (): { liveCount: number } => ({ liveCount: game.fx.liveCount })
++    }
+   }
+ });
+ 
+@@ -365,13 +372,6 @@ game.app.onFrame?.(({ dt: rawDt }) => {
+   if (ctx.frame % 6 === 0) syncHud();
+ });
+ 
+-// T2.2-post: appliedLook derives from the C-31 runtime manifest.
+-publishSwarmEvidenceBlock(ctx, {
+-  game, swarm, player, upgrades,
+-  audioCueLog: () => audioCueLog,
+-  bootedAtMs
+-});
+-
+ applyNeonScenario(ctx, { startWave, syncHud, beginIntermission });
+ 
+ // ------------------------------------------------------------------- boot ----
 -- 
-2.34.1
+2.52.0
 

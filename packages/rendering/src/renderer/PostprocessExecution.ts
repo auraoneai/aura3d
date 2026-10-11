@@ -17,21 +17,100 @@ import { webgl2DeviceHost } from "../webgl2/Counters";
 import { executePostGraphWebGL2 } from "../webgl2/LegacyPost";
 import type { TemporalGpuBindings } from "../TemporalHistory";
 import { recordPostSkipped } from "./postSkipped";
+import { guardPostprocessPlan } from "../quality/PostprocessGuard";
+import { renderTargetPoolSlot, type RenderTargetPoolLike } from "../contracts/device";
 export { postProductionBuild, postSkippedReasons, recordPostSkipped, resetPostSkipped } from "./postSkipped";
+
+/* Q-03-1 (#91, C-28/C-13, behind A3D_QR_TIERS): one C-28 pool per device for
+ * the legacy chain's intermediate targets. The slot factory builds a new pool
+ * per call, so the instance is cached here. */
+const postChainPools = new WeakMap<RenderDevice, RenderTargetPoolLike>();
+
+function qrTiersOn(): boolean {
+  return Boolean(rendererQrFlags()?.on("A3D_QR_TIERS"));
+}
+
+function postChainPool(device: RenderDevice): RenderTargetPoolLike {
+  let pool = postChainPools.get(device);
+  if (!pool) {
+    pool = renderTargetPoolSlot.get(rendererQrFlags())(device);
+    postChainPools.set(device, pool);
+  }
+  return pool;
+}
+
+/**
+ * Q-03-1 (#91): under `A3D_QR_TIERS` the plan goes through lane 11's
+ * `guardPostprocessPlan` before any pass runs, so a pass with no GPU
+ * implementation never reaches a CPU readback. Mode comes from
+ * `A3D_QR_STRICT` (throw `POSTPROCESS_PASS_CPU_ONLY`); otherwise dropped
+ * passes are recorded as `POSTPROCESS_PASS_DROPPED:<name>` on the §6.9 skip
+ * registry (`diagnostics().post.skipped`). Flag-off returns the plan as-is.
+ */
+export function guardRendererPostprocessPlan(
+  device: RenderDevice,
+  postprocess: RendererPostProcessOptions,
+  source: RenderTarget,
+  passes: readonly RendererPostProcessPassPlan[]
+): readonly RendererPostProcessPassPlan[] {
+  if (!qrTiersOn()) return passes;
+  const flags = rendererQrFlags();
+  const guarded = guardPostprocessPlan(passes, {
+    mode: flags?.on("A3D_QR_STRICT") ? "throw" : "drop",
+    gpuFusable: Boolean(device.presentLdrPostprocess),
+    hasDepthTexture: Boolean(source.depthTexture),
+    cpuDeterministic: postprocess.execution === "cpu-deterministic"
+  });
+  for (const name of guarded.dropped) recordPostSkipped(`POSTPROCESS_PASS_DROPPED:${name}`);
+  return guarded.passes;
+}
 
 /* v2 module warm cache — the sync `render()` route cannot `import()`; the
  * first flag-on frame fires it, later frames run the real S1–S12 stages. */
 let postV2Modules: typeof import("../post/v2Entry") | undefined;
-let postV2WarmStarted = false;
+
+/* 03-S18c: what the last `tryExecutePostGraphV2` call did — "v2" when the v2
+ * stages (and C-13 custom passes) ran, "v2-modules-loading" while the
+ * deferred bag is still loading, or `legacy-chain:<reason>` when the seam
+ * declined. `null` until a postprocess frame reached the seam (e.g. the
+ * Renderer dropped the chain under core output). */
+let lastPostGraphV2Outcome: string | null = null;
+
+export function postGraphV2LastOutcome(): string | null {
+  return lastPostGraphV2Outcome;
+}
+
+/** Test hook. */
+export function resetPostGraphV2Outcome(): void {
+  lastPostGraphV2Outcome = null;
+}
+
+let postV2WarmPromise: Promise<void> | null = null;
 
 export function warmPostV2Modules(): void {
-  if (postV2WarmStarted) return;
-  postV2WarmStarted = true;
-  void import("../post/v2Entry").then((modules) => {
-    postV2Modules = modules;
-  }).catch(() => {
-    postV2WarmStarted = false;
-  });
+  // Fire-and-forget from the frame path; a failed load is retried next frame.
+  postV2ModulesReady().catch(() => undefined);
+}
+
+/**
+ * Starts (once) and returns the deferred `post/v2Entry` load. The sync
+ * `render()` route runs the v2 stages (S1–S12, C-13 custom passes) only
+ * after this resolves; until then the seam reports `v2-modules-loading`.
+ * Callers that need the first frames on the real v2 chain (the flag-on post
+ * surface at mount, browser probes) await it. Rejection resets the warm so
+ * the next frame retries.
+ */
+export function postV2ModulesReady(): Promise<void> {
+  if (postV2Modules) return Promise.resolve();
+  if (!postV2WarmPromise) {
+    postV2WarmPromise = import("../post/v2Entry").then((modules) => {
+      postV2Modules = modules;
+    }).catch((error: unknown) => {
+      postV2WarmPromise = null;
+      throw error;
+    });
+  }
+  return postV2WarmPromise;
 }
 
 export function collectPostprocess(source: RenderSource | Iterable<RenderItem> | Scene): RendererPostProcessOptions | undefined {
@@ -162,6 +241,57 @@ export class RendererPostprocessPipeline {
   constructor(readonly host: RendererHost) {}
 
   /**
+   * Intermediate chain target. Flag-off: a fresh device target owned by the
+   * frame (`ownedTargets`, disposed by the Renderer). Under `A3D_QR_TIERS`
+   * (Q-03-1, #91): acquired from the C-28 pool and tracked in `pooled`, which
+   * the caller releases back to the pool when the chain finishes.
+   */
+  private chainTarget(label: string, ownedTargets: RenderTarget[], pooled: RenderTarget[] | null): RenderTarget {
+    if (pooled) {
+      const target = postChainPool(this.host.device).acquire({
+        width: this.host.width,
+        height: this.host.height,
+        format: "rgba8",
+        samples: 1,
+        depth: false
+      });
+      pooled.push(target);
+      return target;
+    }
+    const target = this.host.device.createRenderTarget({
+      width: this.host.width,
+      height: this.host.height,
+      label,
+      format: "rgba8",
+      depth: false
+    });
+    ownedTargets.push(target);
+    return target;
+  }
+
+  /** Removes (and records) the flag-on CPU pixel passes; tone mapping, bloom and FXAA have their own passes. */
+  private dropSkippedCpuPasses(passes: readonly RendererPostProcessPassPlan[], cpuDeterministic: boolean): readonly RendererPostProcessPassPlan[] {
+    return passes.filter((pass) => pass.name === "tone-mapping" || pass.name === "bloom" || pass.name === "fxaa" || !this.postCpuPassSkipped(pass.name, cpuDeterministic));
+  }
+
+  /** Every pass was skipped: present the source, or copy it to an explicit output. */
+  private presentUnchanged(current: RenderTarget, outputTarget: RenderTarget | undefined): void {
+    if (outputTarget) {
+      this.host.device.setRenderTarget(current);
+      writePostProcessPixels(this.host.device, current, outputTarget, this.host.device.readPixels(0, 0, current.width, current.height));
+    } else {
+      this.host.device.presentRenderTarget?.(current);
+    }
+  }
+
+  private releaseChainTargets(pooled: RenderTarget[] | null): void {
+    if (!pooled) return;
+    const pool = postChainPool(this.host.device);
+    for (const target of pooled) pool.release(target);
+    pooled.length = 0;
+  }
+
+  /**
    * PRD-03 C-13 / Phase 2: flag-on (`v2` + pipeline bag) on a WebGL2 device
    * routes the present through `executePostGraphWebGL2` — the device
    * internals carve (CONTRACTS §3.1) — instead of the per-pass loop. Returns
@@ -180,12 +310,15 @@ export class RendererPostprocessPipeline {
     // the residue instead of silently falling back to the legacy encode.
     const coreOutput = qrCoreOutputOn(rendererQrFlags());
     if (postprocess.v2 !== true || this.host.device.kind !== "webgl2") {
-      if (coreOutput) recordPostSkipped(postprocess.v2 !== true ? "POSTPROCESS_V2_UNMIGRATED:no-v2-plan" : "POSTPROCESS_V2_UNMIGRATED:backend");
+      const reason = postprocess.v2 !== true ? "no-v2-plan" : "backend";
+      if (coreOutput) recordPostSkipped(`POSTPROCESS_V2_UNMIGRATED:${reason}`);
+      lastPostGraphV2Outcome = `legacy-chain:${reason}`;
       return false;
     }
     const pipeline = postprocess.pipeline;
     if (!pipeline || typeof pipeline !== "object") {
       if (coreOutput) recordPostSkipped("POSTPROCESS_V2_UNMIGRATED:no-pipeline");
+      lastPostGraphV2Outcome = "legacy-chain:no-pipeline";
       return false;
     }
     // Transitional seam: the v2 path delegates to the native fused present,
@@ -196,14 +329,19 @@ export class RendererPostprocessPipeline {
     // fine: pipeline-only effects (vignette/film-grain/CA) emit no plan pass.
     if (postprocess.execution === "cpu-deterministic") {
       if (coreOutput) recordPostSkipped("POSTPROCESS_V2_UNMIGRATED:cpu-deterministic");
+      lastPostGraphV2Outcome = "legacy-chain:cpu-deterministic";
       return false;
     }
     if (passes.length > 0 && !canFuseLdrPostprocess(current, passes)) {
       if (coreOutput) recordPostSkipped(`POSTPROCESS_V2_UNMIGRATED:${unfusedPassNames(passes)}`);
+      lastPostGraphV2Outcome = `legacy-chain:${unfusedPassNames(passes)}`;
       return false;
     }
     warmPostV2Modules();
     v2Modules = v2Modules ?? postV2Modules;
+    // Without the deferred module bag the seam runs the fused present only:
+    // no v2 stage (and no C-13 custom pass) executes this frame.
+    lastPostGraphV2Outcome = v2Modules ? "v2" : "v2-modules-loading";
     const descriptors = passes.map((pass) => ({
       name: pass.name,
       options: pass.options as Readonly<Record<string, unknown>>
@@ -227,12 +365,21 @@ export class RendererPostprocessPipeline {
   }
 
   executePostprocess(postprocess: RendererPostProcessOptions, ownedTargets: RenderTarget[], outputTarget?: RenderTarget): void {
+    const pooled = qrTiersOn() ? [] as RenderTarget[] : null;
+    try {
+      this.executePostprocessChain(postprocess, ownedTargets, outputTarget, pooled);
+    } finally {
+      this.releaseChainTargets(pooled);
+    }
+  }
+
+  private executePostprocessChain(postprocess: RendererPostProcessOptions, ownedTargets: RenderTarget[], outputTarget: RenderTarget | undefined, pooled: RenderTarget[] | null): void {
     const forwardTarget = ownedTargets[0];
     let current = forwardTarget;
     if (!current) {
       throw new RenderDeviceError("Renderer postprocess missing forward render target", "POSTPROCESS_TARGET_MISSING");
     }
-    const passes = createRendererPostprocessPasses(postprocess);
+    let passes = guardRendererPostprocessPlan(this.host.device, postprocess, current, createRendererPostprocessPasses(postprocess));
     if (passes.length === 0) {
       // §6.9: a pipeline-only frame (e.g. vignette + toneMapping:"none")
       // emits no plan passes — the v2 route still applies its stages.
@@ -247,6 +394,14 @@ export class RendererPostprocessPipeline {
     }
     if (this.tryExecutePostGraphV2(postprocess, current, passes, outputTarget)) return;
     if (this.executeFusedLdrPostprocess(current, passes, outputTarget, postprocess.execution === "cpu-deterministic", postprocess.depthRange)) return;
+    // §6.9/T0-17: flag-on CPU pixel passes are recorded and skipped before the
+    // per-pass loop, so a skipped pass costs no readback (the previous
+    // record-and-skip still read the frame back to copy it through).
+    passes = this.dropSkippedCpuPasses(passes, postprocess.execution === "cpu-deterministic");
+    if (passes.length === 0) {
+      this.presentUnchanged(current, outputTarget);
+      return;
+    }
     for (let index = 0; index < passes.length; index += 1) {
       const pass = passes[index]!;
       const nextPass = passes[index + 1];
@@ -257,14 +412,8 @@ export class RendererPostprocessPipeline {
           });
         }
         const isCombinedLast = index + 1 === passes.length - 1;
-        const target = isCombinedLast ? outputTarget : this.host.device.createRenderTarget({
-          width: this.host.width,
-          height: this.host.height,
-          label: "renderer-postprocess-tone-mapping",
-          format: "rgba8",
-          depth: false
-        });
-        if (target) ownedTargets.push(target);
+        const target = isCombinedLast ? outputTarget : this.chainTarget("renderer-postprocess-tone-mapping", ownedTargets, pooled);
+        if (target && isCombinedLast) ownedTargets.push(target);
         this.host.device.setRenderTarget(current);
         const bloomed = bloomFloatPixels(
           this.host.device.readFloatPixels(0, 0, current.width, current.height),
@@ -287,14 +436,8 @@ export class RendererPostprocessPipeline {
         continue;
       }
       const isLast = index === passes.length - 1;
-      const target = isLast ? outputTarget : this.host.device.createRenderTarget({
-        width: this.host.width,
-        height: this.host.height,
-        label: `renderer-postprocess-${pass.name}`,
-        format: "rgba8",
-        depth: false
-      });
-      if (target) ownedTargets.push(target);
+      const target = isLast ? outputTarget : this.chainTarget(`renderer-postprocess-${pass.name}`, ownedTargets, pooled);
+      if (target && isLast) ownedTargets.push(target);
       if (pass.name === "tone-mapping") {
         new ToneMappingPass({
           source: current,
@@ -370,12 +513,21 @@ export class RendererPostprocessPipeline {
   }
 
   async executePostprocessAsync(postprocess: RendererPostProcessOptions, ownedTargets: RenderTarget[], outputTarget?: RenderTarget): Promise<void> {
+    const pooled = qrTiersOn() ? [] as RenderTarget[] : null;
+    try {
+      await this.executePostprocessChainAsync(postprocess, ownedTargets, outputTarget, pooled);
+    } finally {
+      this.releaseChainTargets(pooled);
+    }
+  }
+
+  private async executePostprocessChainAsync(postprocess: RendererPostProcessOptions, ownedTargets: RenderTarget[], outputTarget: RenderTarget | undefined, pooled: RenderTarget[] | null): Promise<void> {
     const forwardTarget = ownedTargets[0];
     let current = forwardTarget;
     if (!current) {
       throw new RenderDeviceError("Renderer postprocess missing forward render target", "POSTPROCESS_TARGET_MISSING");
     }
-    const passes = createRendererPostprocessPasses(postprocess);
+    let passes = guardRendererPostprocessPlan(this.host.device, postprocess, current, createRendererPostprocessPasses(postprocess));
     if (passes.length === 0) {
       const v2ModulesEmpty = postprocess.v2 === true && this.host.device.kind === "webgl2"
         ? await import("../post/v2Entry")
@@ -398,6 +550,14 @@ export class RendererPostprocessPipeline {
       : undefined;
     if (this.tryExecutePostGraphV2(postprocess, current, passes, outputTarget, v2Modules)) return;
     if (await this.executeFusedLdrPostprocessAsync(current, passes, outputTarget, postprocess.execution === "cpu-deterministic", postprocess.depthRange)) return;
+    // §6.9/T0-17: flag-on CPU pixel passes are recorded and skipped before the
+    // per-pass loop, so a skipped pass costs no readback (the previous
+    // record-and-skip still read the frame back to copy it through).
+    passes = this.dropSkippedCpuPasses(passes, postprocess.execution === "cpu-deterministic");
+    if (passes.length === 0) {
+      this.presentUnchanged(current, outputTarget);
+      return;
+    }
     for (let index = 0; index < passes.length; index += 1) {
       const pass = passes[index]!;
       const nextPass = passes[index + 1];
@@ -408,14 +568,8 @@ export class RendererPostprocessPipeline {
           });
         }
         const isCombinedLast = index + 1 === passes.length - 1;
-        const target = isCombinedLast ? outputTarget : this.host.device.createRenderTarget({
-          width: this.host.width,
-          height: this.host.height,
-          label: "renderer-postprocess-tone-mapping",
-          format: "rgba8",
-          depth: false
-        });
-        if (target) ownedTargets.push(target);
+        const target = isCombinedLast ? outputTarget : this.chainTarget("renderer-postprocess-tone-mapping", ownedTargets, pooled);
+        if (target && isCombinedLast) ownedTargets.push(target);
         const bloomed = bloomFloatPixels(
           await this.readRenderTargetFloatPixelsAsync(current),
           current.width,
@@ -437,14 +591,8 @@ export class RendererPostprocessPipeline {
         continue;
       }
       const isLast = index === passes.length - 1;
-      const target = isLast ? outputTarget : this.host.device.createRenderTarget({
-        width: this.host.width,
-        height: this.host.height,
-        label: `renderer-postprocess-${pass.name}`,
-        format: "rgba8",
-        depth: false
-      });
-      if (target) ownedTargets.push(target);
+      const target = isLast ? outputTarget : this.chainTarget(`renderer-postprocess-${pass.name}`, ownedTargets, pooled);
+      if (target && isLast) ownedTargets.push(target);
       if (pass.name === "tone-mapping") {
         const mapped = isHdrRenderTarget(current)
           ? toneMapFloatPixels(await this.readRenderTargetFloatPixelsAsync(current), current.width, current.height, {

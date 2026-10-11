@@ -15,11 +15,14 @@ export default defineConfig({
   testIgnore: ["release-artifacts/**"],
   timeout: 60_000,
   workers: 1,
+  // P-22: a stray test.only must not narrow a CI run to one spec.
+  forbidOnly: !!process.env.CI,
   use: {
     browserName: "chromium",
     headless: true,
     viewport: { width: 800, height: 600 },
     launchOptions: chromiumLaunchOptions,
   },
-  reporter: [["list"], ["json", { outputFile: process.env.PLAYWRIGHT_JSON_OUTPUT_NAME ?? "tests/reports/browser.json" }]]
+  // P-22: fails CI runs that skip a test not covered by tests/support/integrated-pending.json.
+  reporter: [["list"], ["json", { outputFile: process.env.PLAYWRIGHT_JSON_OUTPUT_NAME ?? "tests/reports/browser.json" }], ["./tests/support/noSkipInCiReporter.ts"]]
 });

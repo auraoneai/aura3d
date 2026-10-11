@@ -1454,7 +1454,7 @@ describe("game runtime source gates", () => {
     expect(skylineBinding).toContain("createSkylineLevel()");
     expect(skylineBoot).toContain("engineGame.platformer(level)");
     expect(skylineBoot).toContain("platformerScene");
-    expect(skylineBoot).toContain("platformerScene.toScenePlayer");
+    expect(readSource("apps/showcase-skyline-runner/src/v2/sync.ts")).toContain("platformerScene.toScenePlayer");
     expect(skylineProof).toContain("createSkylineLevel");
     const skylineGeometry = readFileSync("apps/showcase-skyline-runner/src/generated/game-geometry.ts", "utf8");
     expect(skylineGeometry).toContain('"source": "asset-mesh-extracted"');

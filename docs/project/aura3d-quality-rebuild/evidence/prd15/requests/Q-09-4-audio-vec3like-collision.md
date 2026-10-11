@@ -1,5 +1,7 @@
 # Q-09-4 — `Vec3Like` name collision on `@aura3d/audio`
 
+**Issue:** #1022 (P-64 writeback)
+
 - **Requester:** lane 15 (PRD-15 T5.8, `unique-ownership` gate)
 - **Owner:** lane 09
 - **SLA:** 2 working days

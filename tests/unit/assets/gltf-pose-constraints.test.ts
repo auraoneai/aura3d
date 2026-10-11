@@ -6,7 +6,7 @@
  *   - weight 0 equals the pure clip bitwise
  *   - `add` returns a disposer that removes exactly that constraint
  */
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { Scene, SceneNode } from "@aura3d/scene";
 import { AnimationClip } from "../../../packages/animation/src/AnimationClip";
 import { AnimationTrack } from "../../../packages/animation/src/AnimationTrack";
@@ -14,7 +14,8 @@ import { createGLTFSceneAnimationRuntime } from "../../../packages/assets/src";
 import type { GLTFPoseConstraint } from "../../../packages/assets/src/GLTFAnimationRuntime";
 import {
   addPrd06ActorConstraint,
-  clearPrd06ActorConstraints
+  clearPrd06ActorConstraints,
+  prd06ConstraintLaneReady
 } from "../../../packages/engine/src/production-runtime/actor/TypedGLBActorAnimation";
 import type { TypedGLBActor } from "../../../packages/engine/src/production-runtime/TypedGLBActor";
 
@@ -52,6 +53,9 @@ function nodeRotation(scene: Scene, name: string): readonly number[] {
 }
 
 describe("T3.5 — pose constraints on the runtime", () => {
+  // 06-S12: the solver lane loads behind a dynamic import — resolve it once so
+  // synchronous evaluates below see a loaded lane instead of a degrade.
+  beforeAll(() => prd06ConstraintLaneReady());
   it("evaluates constraints in insertion order (later sees earlier writes)", () => {
     const scene = buildChainScene();
     const runtime = createGLTFSceneAnimationRuntime({ scene, clips: [rotationClip("anim", "seg1")] });

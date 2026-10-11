@@ -1,5 +1,8 @@
 # PRD-06 T2.0 — 2d-array texture upload + sampler2DArray texelFetch proof
 
+> **06-REC note (finish phase, G3):** this file cites no passing remote run id; every completion claim below is recorded as **unbacked** until a green lane-workflow/GitLab run id is added next to it.
+
+
 ## What T2.0 requires (PRD-06:1218–1220)
 
 `Texture` `dimension:"2d-array"` + `layers` uploads through

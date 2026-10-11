@@ -66,7 +66,7 @@ export default defineArtDirection({
   standIns: [
     { feature: "K1 deep-space skybox + parallax stars", file: "src/v2/scene/world.ts", request: "R-14-13", removeWhen: "deep-space HDRI admitted" },
     { feature: "K5 atmosphere-shell planets", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "K5 planet kit admitted" },
-    { feature: "K7 courier skiff + restored dock-gate maps", file: "src/v2/scene/props.ts", request: "R-14-07", removeWhen: "K7 craft + gate maps admitted" },
+    { feature: "K7 courier skiff + restored dock-gate maps", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "K7 craft + gate maps admitted" },
     { feature: "K8 thruster/dock loop set", file: "src/v2/audio.ts", request: "R-14-09", removeWhen: "K8 loop clips admitted" }
   ],
   criticalCategories: ["lighting", "pbr_credibility", "environment_world"],

@@ -1,4 +1,4 @@
-From e7368824479e478ed3ded92b94ea1e0c302649b9 Mon Sep 17 00:00:00 2001
+From 52f80f85e78cdb261fb57d209ea45ac03cf18867 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:10:21 +0000
 Subject: [PATCH] migration(showcase-rooftop-buckets): regenerated patch set
@@ -34,7 +34,7 @@ Subject: [PATCH] migration(showcase-rooftop-buckets): regenerated patch set
  .../src/scenarios/pressure.ts                 |  15 +
  .../src/scenarios/spot-clear.ts               |  14 +
  apps/showcase-rooftop-buckets/src/sound.ts    |  83 ++
- apps/showcase-rooftop-buckets/src/v2/boot.ts  |   4 +-
+ apps/showcase-rooftop-buckets/src/v2/boot.ts  |  75 +-
  ...oftopBucketsAmbientRooftopSfx.1f654bd9.wav |   3 -
  ...oftopBucketsAmbientRooftopSfx.6cdec882.wav |   3 -
  .../rooftopBucketsAmbientRooftopSfx.thumb.svg |   1 -
@@ -61,7 +61,7 @@ Subject: [PATCH] migration(showcase-rooftop-buckets): regenerated patch set
  .../rooftopBucketsSwishSfx.cc849aa5.wav       |   3 -
  .../rooftopBucketsSwishSfx.thumb.svg          |   1 -
  src/aura-assets.ts                            | 920 ------------------
- 56 files changed, 510 insertions(+), 2058 deletions(-)
+ 56 files changed, 537 insertions(+), 2102 deletions(-)
  delete mode 100644 apps/showcase-rooftop-buckets/assets/sfx/ambientRooftop.wav
  delete mode 100644 apps/showcase-rooftop-buckets/assets/sfx/boardThud.wav
  delete mode 100644 apps/showcase-rooftop-buckets/assets/sfx/brickMiss.wav
@@ -1243,7 +1243,7 @@ index 66e12be17..60320066a 100644
      instances.box({
        name: "night league glass bay",
 diff --git a/apps/showcase-rooftop-buckets/src/legacy/main.ts b/apps/showcase-rooftop-buckets/src/legacy/main.ts
-index e97eedad8..caca8287c 100644
+index e97eedad8..11f725ff7 100644
 --- a/apps/showcase-rooftop-buckets/src/legacy/main.ts
 +++ b/apps/showcase-rooftop-buckets/src/legacy/main.ts
 @@ -2,7 +2,6 @@
@@ -1970,7 +1970,7 @@ index e97eedad8..caca8287c 100644
    return ev;
  }
  
-+bindRooftopEvidence(collectRouteEvidence);
++bindRooftopEvidence(() => collectRouteEvidence() as unknown as Record<string, unknown>);
 +
  (window as unknown as {
    __RB_PUMP__?: (frames: number) => number;
@@ -2101,7 +2101,7 @@ index e97eedad8..caca8287c 100644
 +    scoreState = updateClocks(scoreState, 13, false).state;
 +  },
 +  cue: (name, volume) => {
-+    audio.playCue(name, volume ?? 0.8);
++    audio.playCue(name as Parameters<typeof audio.playCue>[0], volume ?? 0.8);
 +  },
 +  hideModal: () => {
 +    elModal.classList.add("hidden");
@@ -2489,20 +2489,140 @@ index 000000000..2d2edacb5
 +  };
 +}
 diff --git a/apps/showcase-rooftop-buckets/src/v2/boot.ts b/apps/showcase-rooftop-buckets/src/v2/boot.ts
-index 50d459198..d8f38ee87 100644
+index a913c826a..6a205fa40 100644
 --- a/apps/showcase-rooftop-buckets/src/v2/boot.ts
 +++ b/apps/showcase-rooftop-buckets/src/v2/boot.ts
-@@ -20,8 +20,8 @@ import { skylineNodes, courtNodes } from "./scene/world";
+@@ -4,7 +4,7 @@
+ // Gameplay modules (court/hoop-sim/rim/scoring/shot) are unchanged; audio
+ // plays through the legacy cue map until C-25 game-sfx is real (R-14-10).
+ import { scene } from "@aura3d/engine";
+-import { createGame, type Game, lookManifest } from "@aura3d/game";
++import { createGame, type Game } from "@aura3d/game";
+ import { COURT_SPOTS } from "../gameplay/court";
+ import { initialHoopState, updateHoop, type HoopState } from "../gameplay/rim";
+ import {
+@@ -14,12 +14,11 @@ import {
+   initialScoreState, advanceHeat, recordShotOutcome, updateClocks, type GameScoreState
+ } from "../gameplay/scoring";
+ import direction from "../../art/direction";
+-import { BucketsAudioController, type BucketsAudioCue } from "../legacy/buckets-audio";
++import { createRooftopSound, rooftopCues, type RooftopCue } from "../sound";
+ import { skylineNodes, courtNodes } from "./scene/world";
  import { lightingNodes } from "./scene/lighting";
  import { createRooftopRig, fallbackCameraNode, type RooftopRigState } from "./scene/camera";
  import { wireRooftopFx } from "./scene/fx";
 -import { publishRooftopEvidence } from "./evidence";
--import { applyRooftopScenario } from "./scenarios";
-+import { publishRooftopEvidence } from "../evidence";
-+import { applyRooftopScenario } from "../scenarios";
+ import { applyRooftopScenario } from "./scenarios";
+ import { createRooftopIo, wireRooftopInput } from "./input";
+ import { createRooftopActors } from "./actors";
+@@ -51,19 +50,20 @@ function buildScene() {
  
- const ROUTE_FLAG = "A3D_QR_ROUTE_ROOFTOP_BUCKETS" as const;
+ // ----------------------------------------------------------------- audio -----
  
+-const audio = new BucketsAudioController();
++const audio = createRooftopSound();
+ const audioCueLog: string[] = [];
+ let audioUnlocked = false;
+-function pushCue(cue: BucketsAudioCue, volume = 0.8): void {
++function pushCue(cue: RooftopCue, volume = 0.8): void {
+   audioCueLog.push(cue);
+   if (audioCueLog.length > 64) audioCueLog.shift();
+   audio.playCue(cue, volume);
+ }
+-// Autoplay policy: first gesture kicks the ambient loop; playCue already
+-// swallows play() rejections until then.
++// Autoplay policy: first gesture unlocks the context and kicks the ambient
++// loop; playCue swallows play() rejections until then.
+ const unlockAudio = () => {
+   if (audioUnlocked) return;
+   audioUnlocked = true;
++  void audio.unlock().catch(() => undefined);
+   pushCue("ambientRooftop", 0.4);
+ };
+ window.addEventListener("pointerdown", unlockAudio, { passive: true });
+@@ -92,17 +92,19 @@ const game = createGame({
+     bindings: { aim: "aim-drag", spotLeft: "left-tap", spotRight: "right-tap", shoot: "shoot-hold", pause: "menu" }
+   },
+   sound: {
++    // The per-route WAVs are retired with the migration; v2 cues resolve to
++    // the same shared game-sfx-core pack entries the legacy sound module uses.
+     cues: {
+-      "charge-tick": { asset: "rooftopBucketsChargeTickSfx" },
+-      "rim-clank": { asset: "rooftopBucketsRimClankSfx" },
+-      "board-thud": { asset: "rooftopBucketsBoardThudSfx" },
+-      "swish": { asset: "rooftopBucketsSwishSfx" },
+-      "brick-miss": { asset: "rooftopBucketsBrickMissSfx" },
+-      "fire-ignite": { asset: "rooftopBucketsFireIgniteSfx" },
+-      "gold-ball": { asset: "rooftopBucketsGoldBallSfx" },
+-      "heat-advance": { asset: "rooftopBucketsHeatAdvanceSfx" },
+-      "buzzer-fail": { asset: "rooftopBucketsBuzzerFailSfx" },
+-      "ambient": { asset: "rooftopBucketsAmbientRooftopSfx" }
++      "charge-tick": { id: "charge-tick", ...rooftopCues.chargeTick },
++      "rim-clank": { id: "rim-clank", ...rooftopCues.rimClank },
++      "board-thud": { id: "board-thud", ...rooftopCues.boardThud },
++      "swish": { id: "swish", ...rooftopCues.swish },
++      "brick-miss": { id: "brick-miss", ...rooftopCues.brickMiss },
++      "fire-ignite": { id: "fire-ignite", ...rooftopCues.fireIgnite },
++      "gold-ball": { id: "gold-ball", ...rooftopCues.goldBall },
++      "heat-advance": { id: "heat-advance", ...rooftopCues.heatAdvance },
++      "buzzer-fail": { id: "buzzer-fail", ...rooftopCues.buzzerFail },
++      "ambient": { id: "ambient", ...rooftopCues.ambientRooftop }
+     }
+   },
+   juice: {
+@@ -116,6 +118,16 @@ const game = createGame({
+     // art/direction.ts sections. `route_rooftop_buckets` uses the engine-parseable
+     // underscore form (URL/dispatch form is `route-rooftop-buckets`).
+     flags: ["route_rooftop_buckets", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
++  },
++  // T5.8: route evidence rides the shared createGame channel (C-24) —
++  // only the sections games.json requiredConditions read. Both skinned
++  // actors (scorer + defender) are always mounted in the v2 shell.
++  evidence: {
++    schema: 1,
++    sections: {
++      shot: (): { result: typeof lastResult; meter: number } => ({ result: lastResult, meter: io.charge.power }),
++      characters: (): { skinnedVisible: number } => ({ skinnedVisible: 2 })
++    }
+   }
+ });
+ 
+@@ -336,35 +348,6 @@ game.app.onFrame?.(({ dt: rawDt }) => {
+   if (frame % 6 === 0) syncHud();
+ });
+ 
+-// ------------------------------------------------------------- evidence ------
+-
+-// T2.2-post: appliedLook derives from the C-31 runtime manifest.
+-const appliedLook: Record<string, unknown> = Object.freeze({
+-  ...lookManifest(game.lookSource()),
+-  postPreset: "daylight-outdoor",
+-  exposureEV: direction.lighting.exposureEV,
+-  hdri: direction.lighting.environment.hdri,
+-  rig: "rooftop-buckets.shoulder"
+-});
+-
+-publishRooftopEvidence({
+-  game,
+-  ball: () => ballState,
+-  score: () => scoreState,
+-  hoop: () => hoopState,
+-  chargePower: () => io.charge.power,
+-  spotIndex: () => currentSpotIndex,
+-  lastResult: () => lastResult,
+-  skinnedActors: () => [
+-    { id: "skinned-scorer", tracksApplied: actorTracksApplied("scorer") },
+-    { id: "skinned-defender", tracksApplied: actorTracksApplied("defender") }
+-  ],
+-  appliedLook,
+-  frameCount: () => frame,
+-  bootedAtMs,
+-  audioCueLog: () => audioCueLog
+-});
+-
+ const scenario = new URL(location.href).searchParams.get("scenario");
+ if (scenario) {
+   applyRooftopScenario(scenario, {
 diff --git a/public/aura-assets/rooftopBucketsAmbientRooftopSfx.1f654bd9.wav b/public/aura-assets/rooftopBucketsAmbientRooftopSfx.1f654bd9.wav
 deleted file mode 100644
 index c2aac59fd..000000000
@@ -2719,10 +2839,10 @@ index e83eb7dc2..000000000
 -<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">rooftopBucketsSwishSfx</text></svg>
 \ No newline at end of file
 diff --git a/src/aura-assets.ts b/src/aura-assets.ts
-index 265e75b91..df51f0517 100644
+index 69bc83f31..3e0e9500b 100644
 --- a/src/aura-assets.ts
 +++ b/src/aura-assets.ts
-@@ -231,16 +231,6 @@ type AuraGeneratedAssetDefinitions = {
+@@ -211,16 +211,6 @@ type AuraGeneratedAssetDefinitions = {
    readonly "rooftopAthleteShooter": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
    readonly "rooftopBackboard": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
    readonly "rooftopBall": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
@@ -2739,7 +2859,7 @@ index 265e75b91..df51f0517 100644
    readonly "rooftopCourt": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
    readonly "rooftopDefender": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
    readonly "rooftopDefenderV2": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-@@ -41524,916 +41514,6 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
+@@ -39744,916 +39734,6 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
        }
      },
    },
@@ -3657,5 +3777,5 @@ index 265e75b91..df51f0517 100644
      type: "model",
      format: "glb",
 -- 
-2.34.1
+2.52.0
 

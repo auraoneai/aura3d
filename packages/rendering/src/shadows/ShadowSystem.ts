@@ -2,7 +2,8 @@
  * ShadowSystem — PRD-02 Phase 4 flag-path shadow orchestration: stable-fit
  * CSM for the sun (DirectionalCascadeFitter) + a depth atlas of spot/point
  * tiles (ShadowAtlas), rendered through DepthPass into one 2D depth target
- * per cascade until Q-01-5 provides depth-only targets. Produces the C-11
+ * per cascade (depth-only targets via Q-01-5 when the device supports depth
+ * textures, 02-T1946). Produces the C-11
  * `ShadowFrameUniforms` for the `prd02.shadowFrameUniforms` blackboard key;
  * the flag-path forward binding reads the extra `cascadeTextures` /
  * `localShadowMatrices` fields on the same object.
@@ -13,7 +14,7 @@
  */
 
 import { DepthPass } from "../DepthPass";
-import type { RenderDevice, RenderTarget } from "../RenderDevice";
+import type { RenderDevice, RenderTarget, RenderTargetDescriptor } from "../RenderDevice";
 import type { Texture } from "../Texture";
 import type { RenderItem } from "../contracts/renderItem";
 import type { ShadowCasterVariantKey, ShadowFrameUniforms } from "../contracts/shadows";
@@ -24,6 +25,8 @@ import type { AuraQualityTierSettings } from "../contracts/quality";
 import { fitDirectionalCascades, type CascadeFitterCamera, type DirectionalCascadeFit } from "./DirectionalCascadeFitter";
 import { planLocalShadowAtlas, type AtlasTile } from "./ShadowAtlas";
 import {
+  activeDepthFeatures,
+  depthDeformIncompatibility,
   ensurePrd02DepthFeatures,
   prd02DepthFeatures,
   resolvePrd02ShadowCasterVariant,
@@ -93,7 +96,7 @@ export class Prd02ShadowSystem {
   private lastVariants: string[] = [];
   private lastDropped: string[] = [];
   private readonly shaderLibrary: ShaderLibrary;
-  private readonly depthFeatures: readonly DepthVariantFeature[];
+  private depthFeatures: readonly DepthVariantFeature[];
   private precompiled = false;
 
   constructor(
@@ -117,7 +120,8 @@ export class Prd02ShadowSystem {
           casters,
           mapSize: this.config.mapSize,
           cascadeCount: this.config.cascades,
-          splitLambda: this.config.splitLambda
+          splitLambda: this.config.splitLambda,
+          maxDistance: this.config.maxDistance
         })
       : [];
     const localRequests = (frame.localLights ?? []).map((light) => ({
@@ -146,6 +150,14 @@ export class Prd02ShadowSystem {
       }
     }
 
+    // 02-DEPTH: compose every active C-11 depth feature (all lanes), not only
+    // prd02's own; deform features without a C-18 entry point are reported.
+    this.depthFeatures = activeDepthFeatures(frame.flags);
+    for (const feature of this.depthFeatures) {
+      if (!feature.hooks.includes("vertex:deform")) continue;
+      const reason = depthDeformIncompatibility(feature);
+      if (reason) this.lastDropped.push(`depth.deform:${reason}`);
+    }
     const variantKeys = new Map<string, { key: ShadowCasterVariantKey; features: readonly DepthVariantFeature[] }>();
     const resolve = (item: RenderItem): ShadowCasterVariantKey =>
       resolvePrd02ShadowCasterVariant(item, frame.flags, frame.tier, this.depthFeatures);
@@ -162,6 +174,7 @@ export class Prd02ShadowSystem {
 
   /** One-time async warm-up so steady-state `programCompileCount` delta is 0. */
   async precompile(frame: Omit<ShadowSystemFrame, "sun" | "localLights">): Promise<void> {
+    this.depthFeatures = activeDepthFeatures(frame.flags);
     const variants = new Map<string, { key: ShadowCasterVariantKey; features: readonly DepthVariantFeature[] }>();
     for (const caster of frame.casters) {
       const key = resolvePrd02ShadowCasterVariant(caster, frame.flags, frame.tier, this.depthFeatures);
@@ -173,6 +186,11 @@ export class Prd02ShadowSystem {
 
   get isPrecompiled(): boolean {
     return this.precompiled;
+  }
+
+  /** T0-26: the sun cascade fits of the last `update` (bridge → legacy forward options). */
+  cascadeFits(): readonly DirectionalCascadeFit[] {
+    return this.lastFits;
   }
 
   /** Diagnostics for the C-31 `shadows` section (observed values only). */
@@ -199,30 +217,30 @@ export class Prd02ShadowSystem {
     this.atlasTarget = null;
   }
 
+  /**
+   * 02-T1946: shadow maps only need the sampled depth surface. With
+   * `depth-textures` the targets are depth-only (Q-01-5) — no rgba8 colour
+   * attachment, saving 4·size² bytes per target; otherwise keep the rgba8 +
+   * depth-texture target the device can always build.
+   */
+  private depthTargetDescriptor(size: number, label: string): RenderTargetDescriptor {
+    return this.device.info.capabilities?.includes("depth-textures")
+      ? { width: size, height: size, label, depthOnly: true }
+      : { width: size, height: size, label, format: "rgba8", depth: "texture" };
+  }
+
   private ensureCascadeTarget(index: number): RenderTarget {
     const existing = this.cascadeTargets[index];
     if (existing && !existing.disposed && existing.width === this.config.mapSize) return existing;
     existing?.dispose();
-    const target = this.device.createRenderTarget({
-      width: this.config.mapSize,
-      height: this.config.mapSize,
-      label: `prd02-cascade-${index}`,
-      format: "rgba8",
-      depth: "texture"
-    });
+    const target = this.device.createRenderTarget(this.depthTargetDescriptor(this.config.mapSize, `prd02-cascade-${index}`));
     this.cascadeTargets[index] = target;
     return target;
   }
 
   private ensureAtlasTarget(): RenderTarget {
     if (this.atlasTarget && !this.atlasTarget.disposed) return this.atlasTarget;
-    this.atlasTarget = this.device.createRenderTarget({
-      width: ATLAS_SIZE,
-      height: ATLAS_SIZE,
-      label: "prd02-local-shadow-atlas",
-      format: "rgba8",
-      depth: "texture"
-    });
+    this.atlasTarget = this.device.createRenderTarget(this.depthTargetDescriptor(ATLAS_SIZE, "prd02-local-shadow-atlas"));
     return this.atlasTarget;
   }
 

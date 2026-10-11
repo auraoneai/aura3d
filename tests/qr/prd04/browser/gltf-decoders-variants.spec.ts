@@ -18,6 +18,7 @@ interface ReadyPayload {
   readonly variants: readonly string[];
   readonly variantResults: Record<string, { readonly applied: string; readonly meanLab: readonly number[] }>;
   readonly variantPairwiseDeltaE: readonly number[];
+  readonly variantRoundTripDeltaE: number | null;
   readonly variantUnknown: string;
 }
 
@@ -61,6 +62,9 @@ test.describe("PRD-04 glTF decoders + material variants (P5-2/P5-3)", () => {
     for (const delta of payload!.variantPairwiseDeltaE) {
       expect(delta, `pairwise subject ΔE2000 ${delta}`).toBeGreaterThanOrEqual(10);
     }
+    // 04-S11/S12 control (flag off): re-applying the first variant reproduces it.
+    expect(payload!.variantRoundTripDeltaE, "variant round-trip control measured").not.toBeNull();
+    expect(payload!.variantRoundTripDeltaE!, "variant round-trip ΔE2000 < 1").toBeLessThan(1);
     expect(payload!.variantUnknown).toBe("variant-unknown");
   });
 });

@@ -19,6 +19,7 @@ import type { QrFlags } from "@aura3d/rendering/contracts";
 import { qrCoreOutputOn } from "@aura3d/rendering";
 import type { AuraToneMappingOperator } from "../../contracts/output";
 import { PRD01_OUTPUT_STATE, type Prd01OutputState } from "./diagnostics";
+import { appCanvasOf } from "../../agent-api/app/screenshot.js";
 
 /**
  * C-05 URL reader (Phase 5, §14): games opt in to the tonemap A/B with
@@ -79,6 +80,8 @@ type RendererErrorListener = (e: { readonly code: string; readonly message: stri
 
 function findAppCanvas(app: AuraApp): HTMLCanvasElement | null {
   if (typeof document === "undefined") return null;
+  const own = appCanvasOf(app);
+  if (own) return own;
   const shot = app.screenshot();
   if (shot.width <= 0) return null;
   // The lane bench page mounts exactly one canvas; when several exist the

@@ -34,7 +34,7 @@ precision highp float;
 ${froxel ? "#define FOG_VOLUMETRIC 1\n" : ""}
 in vec3 vWorld;
 out vec4 fragColor;
-${froxel ? `uniform sampler3D u_froxel;\nuniform mat4 u_froxelTransform;\n` : ""}
+${froxel ? `uniform sampler3D u_froxel;\nuniform mat4 u_froxelTransform;\n// Consumer contract of a3d_prd07_fog under FOG_VOLUMETRIC.\nvec4 a3dSampleFroxel(vec3 worldPos) { return texture(u_froxel, (u_froxelTransform * vec4(worldPos, 1.0)).xyz); }\n` : ""}
 ${PRD07_FOG_CHUNK_GLSL}
 void main() {
   vec3 c = a3dApplyFog(vec3(0.5, 0.4, 0.3), vWorld);

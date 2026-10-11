@@ -139,6 +139,12 @@ export class DepthPass extends BaseRenderPass {
         if (typeof cutoff === "number") uniforms.set("u_alphaCutoff", cutoff);
         if (texture !== undefined) uniforms.set("u_baseColorTexture", texture);
       }
+      // 02-DEPTH: selected C-11 features bind their own uniforms (e.g.
+      // prd06.deform's bone texture, prd10.wind's A3DWind/noise).
+      for (const feature of features) {
+        const value = variant.features[feature.id];
+        if (value !== undefined) feature.bindUniforms?.(value, caster, (name, v) => uniforms.set(name, v));
+      }
       const command: DrawCommand = {
         label: `${caster.label ?? "shadow-caster"}:${batch}`,
         topology: caster.geometry.topology,

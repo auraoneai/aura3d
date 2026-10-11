@@ -1,5 +1,7 @@
 # Q-03-12 — phase-6 browser probes fail on merged main (post-plan antiAlias / autoExposure / custom pass)
 
+**Issue:** #997 (P-64 writeback)
+
 **Requesting lane:** 15 (T8.2 gate triage, PR #357)
 **Owning lane:** 03 (PRD-03 post pipeline + the spec itself, `d4f65a884`)
 **Blocking:** `Lane 03 browser specs` job red on every run; assertions were never

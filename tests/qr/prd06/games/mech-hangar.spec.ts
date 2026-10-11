@@ -29,8 +29,9 @@ test.describe("PRD-06 T5.5 mech-hangar §17.4 gates", () => {
   });
 
   test("flag-on: a mech node applies tracks and carries a bound skeleton", async ({ page }) => {
-    // Expected to FAIL until Q-14-5 rigs the mechs — S11 failing control.
-    test.fail();
+    // S11 named gate (P-21): expected-red until Q-14-5 rigs the mechs — the
+    // spec fails ONLY on the named gate below; a timeout or crash fails
+    // honestly.
     test.setTimeout(180_000);
     await page.goto(`${server.origin}/?a3d-qr=animation`, { waitUntil: "domcontentloaded" });
     await waitForApps(page);
@@ -41,7 +42,8 @@ test.describe("PRD-06 T5.5 mech-hangar §17.4 gates", () => {
     const skinnedIds = await listSocketCapableNodeIds(page);
     writeFileSync(join(ARTIFACT_DIR, "skinned-nodes.json"), JSON.stringify(skinnedIds, null, 2));
     const mechs = skinnedIds.filter((id) => /mech|chassis|legs|arms|weapon/i.test(id));
-    expect(mechs.length, `no socket-capable mech nodes (rigged parts absent): ${skinnedIds.join(", ")}`).toBeGreaterThanOrEqual(1);
+    test.fail(mechs.length === 0, "S11 named gate Q-14-5 (#432): no socket-capable mech nodes");
+    expect(mechs.length, `S11 gate (expected-red until Q-14-5 #432): no socket-capable mech nodes (rigged parts absent): ${skinnedIds.join(", ")}`).toBeGreaterThanOrEqual(1);
 
     const probe = await readAnimationState(page, mechs[0]!);
     writeFileSync(join(ARTIFACT_DIR, "state.json"), JSON.stringify(probe, null, 2));
@@ -50,7 +52,9 @@ test.describe("PRD-06 T5.5 mech-hangar §17.4 gates", () => {
   });
 
   test("flag-off (?a3d-qr=none): no socket-capable mech node", async ({ page }) => {
-    test.setTimeout(120_000);
+    // Same mount budget as the flag-on leg: the webkit mount alone exceeded
+    // 120 s in run 37889006118 (test timeout hit inside waitForApps).
+    test.setTimeout(180_000);
     await page.goto(`${server.origin}/?a3d-qr=none`, { waitUntil: "domcontentloaded" });
     await waitForApps(page);
     await page.waitForTimeout(3_000);

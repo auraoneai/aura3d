@@ -1,5 +1,7 @@
 # Q-12-3 — three-compat tool dirs + benchmarks (lane 12)
 
+**Issue:** #1033 (P-64 writeback)
+
 **Filed by:** Lane 15 (PRD-15 T6.2/T6.4)
 **Status:** request — lane 12 decides delete-vs-keep per PRD line 1448/1025
 **PRD refs:** §6.8 (line 909: "`tools/three-compat-*` (30 dirs) and `benchmarks/three-compat/` (owner 12) → request Q-12-3"), request row Q-12-3 (line 1448: delete dirs `script-prune --report` marks unreferenced; decide whether the frozen r185 `head-to-head` inputs stay).

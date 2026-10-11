@@ -4,6 +4,10 @@
  * GPU context and matches fixtures/bsdf/r185-golden.json within 1e-3
  * (2e-3 absolute floor for the DFG-LUT cases — hardware half-float
  * filtering, same bound the CPU oracle test documents). macos-14 CI only.
+ *
+ * The golden is chosen per runner (fixtures/bsdf/r185-goldens.json, matched on
+ * the unmasked WebGL renderer): each device class compares only with three's
+ * own r185 GLSL evaluated on that same class (§0.6). No match fails the spec.
  */
 import { expect, test } from "@playwright/test";
 import { mkdirSync, writeFileSync } from "node:fs";

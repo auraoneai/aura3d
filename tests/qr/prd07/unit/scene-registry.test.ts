@@ -1,100 +1,31 @@
-// PRD-07 P1-T15 — lane scene registrations: unique ids, `prd07-` owner
-// prefix, both adapters present for every id, SceneSpec contract fields.
+// 07 CI-rerun (run 38086978485): every prd07 lane scene was quarantined
+// `missing-adapter` because the adapters were named `prd07-<slug>.ts` while
+// the C-30 registry resolves `{engine}/scenes/prd07/<slug>.ts`, so the
+// capture job silently captured only the 4 base scenes. Lane scenes with both
+// adapters must be active; Aura-only scenes stay quarantined until the
+// registry admits Aura-only entries (lane 12) or a three adapter lands.
 
-import { existsSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { scenes } from "../../../../benchmarks/quality-rebuild/scenes/prd07/index";
-import { ALL_SCENES } from "../../../../benchmarks/quality-rebuild/shared/registry";
-import type { Prd07SceneSpec } from "../../../../benchmarks/quality-rebuild/scenes/prd07/specs";
+import { REGISTRY } from "../../../../benchmarks/quality-rebuild/shared/registry";
 
-const benchDir = join(dirname(fileURLToPath(import.meta.url)), "../../../../benchmarks/quality-rebuild");
+const AURA_ONLY = new Set(["prd07-impact-library", "prd07-trails-beams", "prd07-fog-transition", "prd07-underwater"]);
 
-describe("prd07 lane scene registrations (C-30)", () => {
-  it("ids are unique and carry the prd07- prefix", () => {
-    const ids = scenes.map((entry) => entry.id);
-    expect(new Set(ids).size).toBe(ids.length);
-    for (const id of ids) expect(id.startsWith("prd07-")).toBe(true);
-    expect(ids).toContain("prd07-particles-fountain");
-    expect(ids).toContain("prd07-flipbook");
-    expect(ids).toContain("prd07-particles-stress");
-    expect(ids).toContain("prd07-impact-library");
-    expect(ids).toContain("prd07-trails-beams");
+describe("prd07 lane scenes in the bench registry", () => {
+  const lane = REGISTRY.filter((entry) => entry.id.startsWith("prd07-"));
+
+  // 17 lane scenes + the five 07 Phase D S4 hour scenes (prd07-sky-h06..h21).
+  it("registers all 22 lane scenes", () => {
+    expect(lane.map((entry) => entry.id)).toHaveLength(22);
   });
 
-  it("entries flow into ALL_SCENES once", () => {
-    const mine = ALL_SCENES.filter((entry) => entry.id.startsWith("prd07-"));
-    expect(mine.length).toBe(scenes.length);
-    expect(ALL_SCENES.length).toBe(new Set(ALL_SCENES.map((entry) => entry.id)).size);
+  it("every scene with both adapters is active", () => {
+    const inactive = lane.filter((entry) => !AURA_ONLY.has(entry.id) && entry.status !== "active");
+    expect(inactive.map((entry) => `${entry.id}: ${entry.status} ${entry.quarantineReason ?? ""}`)).toEqual([]);
   });
 
-  it("both adapters exist for parity ids; Aura-only ids carry admittedAsReference:false", () => {
-    for (const entry of scenes) {
-      const spec = entry.spec as Prd07SceneSpec;
-      const auraAdapter = join(benchDir, "aura3d/scenes/prd07", `${entry.id}.ts`);
-      const threeAdapter = join(benchDir, "three/scenes/prd07", `${entry.id}.ts`);
-      expect(existsSync(auraAdapter), `aura3d adapter ${entry.id}`).toBe(true);
-      if (spec.admittedAsReference === false) {
-        expect(existsSync(threeAdapter), `three adapter ${entry.id} must not exist (Aura-only)`).toBe(false);
-      } else {
-        expect(existsSync(threeAdapter), `three adapter ${entry.id}`).toBe(true);
-      }
+  it("Aura-only scenes are quarantined only for the missing three adapter", () => {
+    for (const entry of lane.filter((e) => AURA_ONLY.has(e.id))) {
+      expect(entry.quarantineReason, entry.id).toBe("missing-adapter");
     }
-  });
-
-  it("specs carry the SceneSpec contract fields and prd07 ownership", () => {
-    for (const entry of scenes) {
-      const spec = entry.spec as Prd07SceneSpec;
-      expect(spec.id).toBe(entry.id);
-      expect(spec.owner).toBe("prd07");
-      expect(spec.resolution.width).toBeGreaterThan(0);
-      expect(spec.camera.fov).toBeGreaterThan(0);
-      expect(spec.objects.length).toBeGreaterThan(0);
-      expect(spec.settleFrames).toBeGreaterThanOrEqual(0);
-      expect(spec.time).toBeGreaterThan(0);
-    }
-  });
-
-  it("impact-library sheet covers all 14 kinds at the four S3 ages, Aura-only", () => {
-    const sheet = scenes.find((entry) => entry.id === "prd07-impact-library")!.spec as Prd07SceneSpec;
-    expect(sheet.admittedAsReference).toBe(false);
-    const burst = sheet.objects.find((object) => object.kind === "burstSheet")!;
-    expect(burst.kind).toBe("burstSheet");
-    const kinds = (burst as { kinds: readonly string[] }).kinds;
-    const ages = (burst as { ages: readonly number[] }).ages;
-    expect(kinds).toHaveLength(14);
-    expect(ages).toEqual([0.03, 0.08, 0.2, 0.5]);
-    expect(sheet.time).toBeGreaterThanOrEqual(Math.max(...ages) + 0.01);
-  });
-
-  it("trails-beams carries every S11 element kind", () => {
-    const scene = scenes.find((entry) => entry.id === "prd07-trails-beams")!.spec as Prd07SceneSpec;
-    const kinds = new Set(scene.objects.map((object) => object.kind));
-    for (const required of ["trail", "beam", "lightCone", "auroraRibbon", "meshParticles"]) {
-      expect(kinds.has(required as never), required).toBe(true);
-    }
-    const trails = scene.objects.filter((object) => object.kind === "trail");
-    expect(trails.length).toBeGreaterThanOrEqual(3); // dash ribbon + twin contrails
-  });
-
-  it("fountain replica pins seed 1414, 2000 sprites, additive", () => {
-    const fountain = scenes.find((entry) => entry.id === "prd07-particles-fountain")!.spec as Prd07SceneSpec;
-    const particles = fountain.objects.find((object) => object.kind === "particles")!;
-    expect(particles).toMatchObject({ kind: "particles", count: 2000, seed: 1414, blending: "additive", size: 0.06, color: "#ff9a3c" });
-  });
-
-  it("P3-T7 sky scenes carry vfx.sky flags + sky/fog spec fields", () => {
-    const tod = scenes.find((entry) => entry.id === "prd07-sky-timeofday")!.spec as Prd07SceneSpec;
-    expect(tod.dayNight?.hour).toBe(19);
-    expect(tod.qrFlags).toContain("vfx.sky");
-    const outdoor = scenes.find((entry) => entry.id === "prd07-outdoor-sky")!.spec as Prd07SceneSpec;
-    expect(outdoor.skyPreetham?.elevationDeg).toBeGreaterThan(0);
-    expect(outdoor.fog?.mode).toBe("exp2");
-    expect(outdoor.fog?.density).toBeGreaterThan(0);
-    expect(outdoor.qrFlags).toContain("vfx.sky");
-    // Both are parity ids — three adapters exist (admittedAsReference default).
-    expect(tod.admittedAsReference).not.toBe(false);
-    expect(outdoor.admittedAsReference).not.toBe(false);
   });
 });

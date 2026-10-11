@@ -1,6 +1,11 @@
 /**
- * §5.3 — flag states and defaults. Custodian-owned (PRD 15): state changes are
- * made only at checkpoints (§7), by the PRD 15 lane, from the checkpoint record.
+ * §5.3 — flag states and defaults. Custodian-owned (PRD 15 / G5).
+ *
+ * Owner decision 2026-10-11 (#839): no checkpoint wait. A flag moves to
+ * `default-on` in its own PR as soon as its GPU (L4) screenshots render
+ * correctly, score above flags-off, and the `all` run stays green; the PR
+ * carries the before/after pair. `default-on` is honoured by resolveQrFlags:
+ * the flag is on unless a source sets it explicitly (`none`, `-x`, `=0`).
  */
 
 import type { QrFlagName } from "./core";
@@ -15,7 +20,7 @@ export const QR_FLAG_STATES: Readonly<Partial<Record<QrFlagName, QrFlagState>>> 
   A3D_QR_ASSETS: "dev",
   A3D_QR_ANIMATION: "dev",
   A3D_QR_VFX: "dev",
-  A3D_QR_CAMERA: "dev",
+  A3D_QR_CAMERA: "default-on",
   A3D_QR_GAME: "dev",
   A3D_QR_WORLD: "dev",
   A3D_QR_TIERS: "dev",

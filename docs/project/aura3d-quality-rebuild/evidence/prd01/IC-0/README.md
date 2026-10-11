@@ -9,11 +9,19 @@ runs are produced by `.github/workflows/qr-prd01-core.yml` (browser job, macos-1
 IC-0 run owned by PRD-12 (frozen baseline commit `33d02be3`, GitLab macOS
 artifacts `gitlab-all-<pipelineId>` — see `../prd15/baselines/phase0.json`).
 
+## Status: placeholder (P-56)
+
+**This ledger is a placeholder. No IC-0 run has been recorded for lane 01.**
+Nothing in this directory is evidence until the Runs table cites a remote run
+id (GitHub Actions run or GitLab pipeline id) on a main commit. Row 01-IC0
+(PRD-16) needs the Track 0 exit first (`core` must draw). It replaces the
+placeholder row below with ≥ 48 images, metrics and the run id.
+
 ## Runs
 
 | Run | Commit | Provider | Artifact | Status |
 |---|---|---|---|---|
-| lane capture (flags none+core) | TBD — first PR-A CI run | GitHub macos-14 | `prd01-capture-<sha>` | pending |
+| lane capture (flags none+core) | placeholder (no run yet; 01-IC0) | GitHub macos-14 or GitLab macOS | `prd01-capture-<runId>-<attempt>` | placeholder |
 
 ## Scenes
 

@@ -451,7 +451,15 @@ interface ModelMatrixEntry {
   readonly matrix: Float32Array;
 }
 
-export function createModelMatrixCache(): AuraStaticModelMatrixCache {
+/** `createModelMatrix`'s signature; `createModelMatrixCache` memoizes any implementation of it. */
+export type AuraModelMatrixFn = (node: MatrixNode | undefined, bounds: AuraModelBounds, normalizeToUnit: boolean, time?: number) => Float32Array;
+
+/**
+ * `compose` defaults to the legacy `createModelMatrix`; under `A3D_QR_CORE`
+ * createAuraApp passes the C-06 `compiler/sceneGraph.ts` model matrix so
+ * `rotationOrder`/`quaternion`/group world matrices reach the RenderSource.
+ */
+export function createModelMatrixCache(compose: AuraModelMatrixFn = createModelMatrix): AuraStaticModelMatrixCache {
   const entries = new WeakMap<MatrixNode, ModelMatrixEntry>();
   const scratch = new Float64Array(MODEL_FP_LEN);
   let composed = 0;
@@ -469,7 +477,7 @@ export function createModelMatrixCache(): AuraStaticModelMatrixCache {
     },
     modelMatrix(node, bounds, normalizeToUnit, time = 0) {
       if (node === undefined || node.animation !== undefined) {
-        return createModelMatrix(node, bounds, normalizeToUnit, time);
+        return compose(node, bounds, normalizeToUnit, time);
       }
       fillModelFingerprint(scratch, node, bounds, normalizeToUnit);
       const entry = entries.get(node);
@@ -484,15 +492,17 @@ export function createModelMatrixCache(): AuraStaticModelMatrixCache {
         if (same
           && entry.refs[0] === node.kind
           && entry.refs[1] === (node.kind === "primitive" ? node.primitive : undefined)
-          && entry.refs[2] === (node.kind === "model" ? node.scaleMode : undefined)) {
+          && entry.refs[2] === (node.kind === "model" ? node.scaleMode : undefined)
+          && entry.refs[3] === node.rotationOrder
+          && entry.refs[4] === node.quaternion) {
           hits += 1;
           return entry.matrix;
         }
       }
-      const matrix = createModelMatrix(node, bounds, normalizeToUnit, time);
+      const matrix = compose(node, bounds, normalizeToUnit, time);
       entries.set(node, {
         fp: Float64Array.from(scratch),
-        refs: [node.kind, node.kind === "primitive" ? node.primitive : undefined, node.kind === "model" ? node.scaleMode : undefined],
+        refs: [node.kind, node.kind === "primitive" ? node.primitive : undefined, node.kind === "model" ? node.scaleMode : undefined, node.rotationOrder, node.quaternion],
         matrix
       });
       composed += 1;

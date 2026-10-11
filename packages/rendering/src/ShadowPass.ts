@@ -9,6 +9,7 @@ import { Sampler } from "./Sampler";
 import { ShadowMap } from "./ShadowMap";
 import { type ShaderLibrary } from "./ShaderLibraryCore";
 import { TextureBinding } from "./TextureBinding";
+import { rendererQrFlags } from "./renderer/FrameGraph";
 
 export interface ShadowPassOptions {
   readonly light: Light | null;
@@ -162,13 +163,21 @@ export class ShadowPass {
       return this.renderTarget;
     }
     this.renderTarget?.dispose();
-    this.renderTarget = context.device.createRenderTarget({
-      width: this.shadowMap.size,
-      height: this.shadowMap.size,
-      label: `${this.shadowMap.texture.label}-depth-color`,
-      format: "rgba8",
-      depth: context.device.info.capabilities?.includes("depth-textures") ? "texture" : true
-    });
+    const depthTextures = context.device.info.capabilities?.includes("depth-textures") === true;
+    // 02-T1946: under A3D_QR_LIGHTING a depth-texture shadow map is depth-only
+    // (Q-01-5) — the rgba8 colour attachment was never sampled. Flag-off keeps
+    // the legacy descriptor byte-for-byte.
+    this.renderTarget = context.device.createRenderTarget(
+      depthTextures && rendererQrFlags(context.device).on("A3D_QR_LIGHTING")
+        ? { width: this.shadowMap.size, height: this.shadowMap.size, label: `${this.shadowMap.texture.label}-depth`, depthOnly: true }
+        : {
+            width: this.shadowMap.size,
+            height: this.shadowMap.size,
+            label: `${this.shadowMap.texture.label}-depth-color`,
+            format: "rgba8",
+            depth: depthTextures ? "texture" : true
+          }
+    );
     return this.renderTarget;
   }
 

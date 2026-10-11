@@ -8,7 +8,7 @@
 
 import { registerDiagnosticsSection } from "../contracts/diagnostics.js";
 import { registerAppExtension } from "../contracts/app.js";
-import { DIAGNOSTIC_ONLY_FIELDS } from "../contracts/compiler.js";
+import { DIAGNOSTIC_ONLY_FIELDS, registerOptionCoverage } from "../contracts/compiler.js";
 import { PRD01_DIAGNOSTIC_ONLY_FIELDS } from "../agent-api/compiler/diagnosticOnly.prd01.js";
 import { collectFrameAllocations, collectOutput, collectPrograms, collectResolution } from "./prd01/diagnostics.js";
 import { createPrd01OutputSurface, disposePrd01OutputSurface } from "./prd01/outputSurface.js";
@@ -21,6 +21,17 @@ const diagnosticOnlyTarget = DIAGNOSTIC_ONLY_FIELDS as Record<string, { readonly
 for (const [key, entry] of Object.entries(PRD01_DIAGNOSTIC_ONLY_FIELDS)) {
   diagnosticOnlyTarget[key] ??= entry;
 }
+
+// 01-T1.5 (C-06): rotationOrder/quaternion are consumed by compiler/sceneGraph.ts
+// under A3D_QR_CORE, so they leave the diagnostic-only table (including the
+// PR 0a seed rows) and get option-coverage rows instead.
+for (const key of ["transform.rotationOrder", "transform.quaternion"]) {
+  delete diagnosticOnlyTarget[key];
+}
+registerOptionCoverage([
+  { builder: "transform", field: "rotationOrder", probeValueA: "ZYX", probeValueB: "XYZ", ownerPrd: 1 },
+  { builder: "transform", field: "quaternion", probeValueA: [0, 0, 0, 1], probeValueB: [0, Math.SQRT1_2, 0, Math.SQRT1_2], ownerPrd: 1 }
+]);
 
 registerDiagnosticsSection({ id: "prd01.output", owner: "prd01", flag: "A3D_QR_CORE", key: "output", collect: collectOutput });
 registerDiagnosticsSection({ id: "prd01.resolution", owner: "prd01", flag: "A3D_QR_CORE", key: "resolution", collect: collectResolution });

@@ -1,8 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
 import { APPS, builtDist, serve, watchConsole } from "./lib/serve";
+import { expectRuntimeMatchesDeclared } from "./lib/look";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { canvasBlankCheck, evaluateRequiredCondition } from "@aura3d/game/art";
+// Source imports: the lane jobs do not build package dist/, so the
+// "@aura3d/game/art" export (dist/art/index.js) does not resolve there.
+import { canvasBlankCheck } from "../../../../packages/game/src/art/acceptance/canvasBlankCheck";
+import { evaluateRequiredCondition } from "../../../../packages/game/src/art/acceptance/requiredConditions";
 import { decodePngAsRgba } from "../unit/helpers/png";
 
 /**
@@ -43,7 +47,7 @@ async function shot(page: Page, name: string) {
   const png = await page.screenshot();
   const { rgba, width, height } = decodePngAsRgba(png);
   const result = canvasBlankCheck(rgba, width, height, [], BLANK_LIMITS);
-  expect(result.verdict, `${name} is likely blank`).toBe("pass");
+  expect(result.pass, `${name} is likely blank (dark ${result.darkFraction.toFixed(3)}, ${result.distinctColors} colours)`).toBe(true);
 }
 
 async function readEvidence(page: Page) {
@@ -92,8 +96,8 @@ test.describe("showcase-rooftop-buckets v2 (T2.6)", () => {
           const results = REQUIRED.map((c) => evaluateRequiredCondition(c.expr, ev));
           if (results.every((r) => r.ok)) { allMet = true; break; }
         }
-        const shotState = await page.evaluate(() =>
-          eval(EVIDENCE + ".shot") as { inFlight?: boolean; result?: string | null } | undefined);
+        const shotState = await page.evaluate((EVIDENCE: string) =>
+          eval(EVIDENCE + ".shot") as { inFlight?: boolean; result?: string | null } | undefined, EVIDENCE);
         if (!shotState?.inFlight) {
           // Re-shoot until a make lands (moving-hoop sway can rim-out a look).
           await shootAtSweetSpot(page);
@@ -137,8 +141,8 @@ test.describe("showcase-rooftop-buckets v2 (T2.6)", () => {
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       await shootAtSweetSpot(page);
-      await expect.poll(async () => page.evaluate(() =>
-        (eval(EVIDENCE + ".shot") as { inFlight?: boolean; meter?: number })?.inFlight ?? false),
+      await expect.poll(async () => page.evaluate((EVIDENCE: string) =>
+        (eval(EVIDENCE + ".shot") as { inFlight?: boolean; meter?: number })?.inFlight ?? false, EVIDENCE),
         { timeout: 10_000, intervals: [200] }).toBe(true);
       // Spot change via ArrowRight keeps the route playable without a pointer.
       await page.keyboard.press("ArrowRight");
@@ -180,8 +184,8 @@ test.describe("showcase-rooftop-buckets v2 (T2.6)", () => {
         const el = document.getElementById("app") ?? document.body;
         el.dispatchEvent(new PointerEvent("pointerup", { bubbles: true }));
       });
-      await expect.poll(async () => page.evaluate(() =>
-        (eval(EVIDENCE + ".shot") as { inFlight?: boolean })?.inFlight ?? false),
+      await expect.poll(async () => page.evaluate((EVIDENCE: string) =>
+        (eval(EVIDENCE + ".shot") as { inFlight?: boolean })?.inFlight ?? false, EVIDENCE),
         { timeout: 10_000, intervals: [200] }).toBe(true);
       expect(errors).toEqual([]);
     } finally {
@@ -197,14 +201,15 @@ test.describe("showcase-rooftop-buckets v2 (T2.6)", () => {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
-      const playLook = await page.evaluate(() =>
-        JSON.stringify(eval(EVIDENCE + ".appliedLook")));
+      const playLook = await page.evaluate((EVIDENCE: string) =>
+        JSON.stringify({ route: eval(EVIDENCE + ".appliedLook"), runtime: (window as unknown as { __AURA3D_GAME__?: { app?: { diagnostics?: () => { appliedLook?: unknown } } } }).__AURA3D_GAME__?.app?.diagnostics?.().appliedLook ?? null }), EVIDENCE);
+      await expectRuntimeMatchesDeclared(APP_DIR, JSON.parse(playLook).runtime);
       for (const scenario of ["charged", "made", "brick"]) {
         await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&scenario=${scenario}`);
         await expect.poll(() => page.evaluate(() =>
           (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
-        const scenarioLook = await page.evaluate(() =>
-          JSON.stringify(eval(EVIDENCE + ".appliedLook")));
+        const scenarioLook = await page.evaluate((EVIDENCE: string) =>
+          JSON.stringify({ route: eval(EVIDENCE + ".appliedLook"), runtime: (window as unknown as { __AURA3D_GAME__?: { app?: { diagnostics?: () => { appliedLook?: unknown } } } }).__AURA3D_GAME__?.app?.diagnostics?.().appliedLook ?? null }), EVIDENCE);
         expect(scenarioLook).toBe(playLook);
       }
     } finally {

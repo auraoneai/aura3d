@@ -30,7 +30,7 @@ on:
         default: ""
 
 concurrency:
-  group: qr-prd14-${{ github.ref }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  group: qr-prd14-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
@@ -66,6 +66,7 @@ jobs:
       dirs: ${{ steps.changed.outputs.dirs }}
       flags: ${{ steps.changed.outputs.flags }}
       count: ${{ steps.changed.outputs.count }}
+      skip_ok: ${{ steps.changed.outputs.skip_ok }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -85,6 +86,12 @@ jobs:
           DIRS="$(git diff --name-only "$BASE"...HEAD -- 'apps/' | cut -d/ -f2 | sort -u | paste -sd, -)"
           APPS_TOUCHED="$(git diff --name-only "$BASE"...HEAD -- 'apps/' | wc -l)"
           if [ -n "${GAMES_INPUT:-}" ]; then DIRS="${GAMES_INPUT}"; fi
+          # 14-CI: the nightly run covers all 18 routes so every job executes
+          # on main even when the last commit touched no app.
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            DIRS="$(python3 -c 'import json; print(",".join(e.get("appDir", e["id"]) for e in json.load(open("tools/quality-rebuild-capture/games.json"))["games"]))')"
+            GAMES_INPUT="$DIRS"
+          fi
           echo "changed dirs: ${DIRS:-<none>}"
           if [ "${APPS_TOUCHED:-0}" -gt 0 ] && [ -z "${DIRS:-}" ]; then
             echo "::error:: PR touches apps/** but resolved 0 route dirs — detection broken"
@@ -109,7 +116,7 @@ jobs:
           echo "ids=$IDS" >> "$GITHUB_OUTPUT"
           echo "dirs=${APPDIRS:-$DIRS}" >> "$GITHUB_OUTPUT"
           echo "flags=$FLAGS" >> "$GITHUB_OUTPUT"
-          echo "count=$(tr ',' '\n' <<< "$DIRS" | grep -c . || true)" >> "$GITHUB_OUTPUT"
+          echo "count=$(tr ',' '\n' <<< "$DIRS" | awk 'NF' | wc -l | tr -d ' ')" >> "$GITHUB_OUTPUT"
           # CI-1: downstream jobs may only skip when nothing under apps/**
           # changed and no explicit games input was given. An empty route set
           # on a code-touching PR fails the routes job above instead of
@@ -143,7 +150,9 @@ jobs:
   capture:
     name: Capture changed games + runtime audit (macos-14)
     runs-on: macos-14
-    timeout-minutes: 90
+    # 14-S1..S9: capture + every lane chromium spec for the selected routes
+    # (18 routes on the nightly run, each with a 60 s S9 window).
+    timeout-minutes: 180
     needs: [unit, routes]
     if: needs.routes.outputs.dirs != '' || needs.routes.outputs.skip_ok == 'false'
     env:
@@ -173,12 +182,35 @@ jobs:
         id: capture
         # P-05: capture failures fail the job — no masking.
         run: node tools/quality-rebuild-capture/capture-games.mjs --strict
-      - name: Runtime art-direction audit
-        id: audit
-        # P-05: audit failures fail the job — no masking. Runs even when
-        # capture fails so the audit evidence still lands in the artifact.
+      - name: Static art-direction gates (S4, S5 static half)
+        id: static
         if: always() && needs.routes.outputs.dirs != ''
-        run: pnpm exec playwright test -c tests/qr/prd14/playwright.config.ts tests/qr/prd14/browser/art-direction-audit.spec.ts
+        run: |
+          node scripts/check-route-health.mjs --routes "$A3D_QR_ROUTES"
+          node scripts/check-art-direction.mjs --routes "$A3D_QR_ROUTES"
+      - name: Lane chromium specs for the selected routes (S1, S2, S5-S9)
+        id: specs
+        # P-05: spec failures fail the job — no masking. Includes the runtime
+        # art-direction audit. Runs even when capture fails so the evidence
+        # still lands in the artifact.
+        if: always() && needs.routes.outputs.dirs != ''
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ github.workspace }}/tests/qr/prd14/reports/browser.json
+        run: |
+          # macOS bash 3.2 has no mapfile; the selector exits 1 on a route
+          # with no spec, which fails this step before Playwright starts.
+          node tests/qr/prd14/select-specs.mjs "$A3D_QR_ROUTES" > "$RUNNER_TEMP/prd14-specs.txt"
+          xargs pnpm exec playwright test -c tests/qr/prd14/playwright.config.ts < "$RUNNER_TEMP/prd14-specs.txt"
+      - name: Write S1-S9 evidence (evidence/prd14/<game>/<run-id>/report.json)
+        id: evidence
+        if: always() && needs.routes.outputs.dirs != ''
+        run: |
+          node tests/qr/prd14/write-evidence.mjs \
+            --capture tools/quality-rebuild-capture/out/report.json \
+            --browser tests/qr/prd14/reports/browser.json \
+            --static "${{ steps.static.outcome }}" \
+            --run-id "${{ github.run_id }}" --sha "${{ github.sha }}" \
+            --routes "$A3D_QR_ROUTES"
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -186,15 +218,18 @@ jobs:
           name: prd14-evidence-${{ github.sha }}
           path: |
             tools/quality-rebuild-capture/out/
+            tests/qr/prd14/reports/
             docs/project/aura3d-quality-rebuild/evidence/prd14/
           retention-days: 30
           if-no-files-found: warn
       - name: Report step outcomes
         if: always()
         run: |
-          echo "capture=${{ steps.capture.outcome }} audit=${{ steps.audit.outcome }}"
+          echo "capture=${{ steps.capture.outcome }} static=${{ steps.static.outcome }} specs=${{ steps.specs.outcome }} evidence=${{ steps.evidence.outcome }}"
           test "${{ steps.capture.outcome }}" = "success"
-          test "${{ steps.audit.outcome }}" = "success"
+          test "${{ steps.static.outcome }}" = "success"
+          test "${{ steps.specs.outcome }}" = "success"
+          test "${{ steps.evidence.outcome }}" = "success"
 
   browser-matrix:
     # WEBKIT-FF (PRD-14 §18): WebKit covers S1/S2/S11; Firefox covers the S1
@@ -223,9 +258,14 @@ jobs:
       - run: pnpm exec playwright install webkit firefox
       - name: Build changed games
         run: node tools/quality-rebuild-capture/capture-games.mjs --build-only --local-build
+      - name: Select the specs for the built routes
+        env:
+          A3D_QR_ROUTES: ${{ needs.routes.outputs.dirs }}
+        run: node tests/qr/prd14/select-specs.mjs "$A3D_QR_ROUTES" > "$RUNNER_TEMP/prd14-specs.txt"
       - name: WebKit — S1 dispatch + S2/S11 v2 specs
-        run: pnpm exec playwright test -c tests/qr/prd14/playwright.webkit.config.ts
+        # Only the built routes: each config's testMatch narrows the list.
+        run: xargs pnpm exec playwright test -c tests/qr/prd14/playwright.webkit.config.ts < "$RUNNER_TEMP/prd14-specs.txt"
       - name: Firefox — S1 boot + 60 s timeline
         env:
           A3D_DISPATCH_SOAK_MS: "60000"
-        run: pnpm exec playwright test -c tests/qr/prd14/playwright.firefox.config.ts
+        run: xargs pnpm exec playwright test -c tests/qr/prd14/playwright.firefox.config.ts < "$RUNNER_TEMP/prd14-specs.txt"

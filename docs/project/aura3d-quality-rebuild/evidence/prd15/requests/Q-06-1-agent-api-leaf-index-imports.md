@@ -1,5 +1,7 @@
 # Q-06-1: lane-06 agent-api leaves still import `../index.js` — repoint to leaf sources
 
+**Issue:** #1051 (P-64 writeback)
+
 **From:** lane 15 · **To:** lane 06 · **Filed:** 2026-10-06 · ****Status:** APPLIED BY LANE 15 (2026-10-06)
 
 PRD-15 T3.1 split `agent-api/index.ts` (~14k lines) into leaf modules; the

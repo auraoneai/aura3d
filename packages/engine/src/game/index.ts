@@ -9,5 +9,6 @@ export type {
   GameAudioCueDefinition,
   GameAudioCueEvent,
   GameAudioEvidence,
+  GameAudioListenerPose,
   GameAudioOptions
 } from "./GameAudio.js";

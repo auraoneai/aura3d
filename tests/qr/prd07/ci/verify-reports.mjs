@@ -45,14 +45,23 @@ for (const rp of reports) {
       }
     }
   } else {
-    const rows = r.games ?? r.results ?? [];
-    for (const g of rows) {
+    // capture-games.mjs report.json: games[].{error, runs[].{error,
+    // missingShots, blankShots, timing.readiness}} (summary[] carries a flat
+    // `readiness`; both are read) — the same failure rule as
+    // capture-games.mjs:1083 (T0-11). A game with no runs proves nothing.
+    if (!Array.isArray(r.games) || r.games.length === 0) bad.push(`${rp}: no games in report`);
+    for (const g of r.games ?? []) {
       const id = g.game ?? g.id;
-      const shots = g.shots ?? g.screenshots ?? g.captures ?? [];
-      if (g.status && g.status !== "ready" && g.status !== "ok" && g.status !== "captured") bad.push(`${rp}:${id} status=${g.status}`);
-      if (g.drawCalls === 0) bad.push(`${rp}:${id} drawCalls=0`);
-      if (g.blank === true || g.blankShots > 0) bad.push(`${rp}:${id} blank frame`);
-      if (Array.isArray(shots) && shots.length === 0) bad.push(`${rp}:${id} no screenshots`);
+      if (g.error) bad.push(`${rp}:${id} error=${String(g.error).slice(0, 200)}`);
+      const runs = Array.isArray(g.runs) ? g.runs : [];
+      if (runs.length === 0) bad.push(`${rp}:${id} no runs`);
+      for (const run of runs) {
+        const where = `${rp}:${id}/${run.run ?? run.name ?? "run"}`;
+        if (run.error) bad.push(`${where} error=${String(run.error).slice(0, 200)}`);
+        if (run.missingShots?.length) bad.push(`${where} missing shots: ${run.missingShots.join(",")}`);
+        if (run.blankShots?.length) bad.push(`${where} blank frame: ${run.blankShots.join(",")}`);
+        if ((run.readiness ?? run.timing?.readiness) === "no-draw-timeout") bad.push(`${where} no-draw-timeout`);
+      }
     }
   }
 }

@@ -47,12 +47,14 @@ export const environmentProbeFactorySlot: ContractSlot<(device: RenderDevice) =>
 export function projectCubeToSH9(faces: readonly Float32Array[], faceSize: number): Float32Array {
   const result = new Float32Array(27);
   const faceDirs = [
-    [[1, 0, 0], [0, -1, 0], [0, 0, -1]],   // +x: u=-z? canonical cubemap basis
-    [[-1, 0, 0], [0, -1, 0], [0, 0, 1]],
-    [[0, 1, 0], [0, 0, 1], [1, 0, 0]],
-    [[0, -1, 0], [0, 0, -1], [1, 0, 0]],
-    [[0, 0, 1], [0, -1, 0], [-1, 0, 0]],
-    [[0, 0, -1], [0, -1, 0], [1, 0, 0]]
+    // GL cube-map basis [n, U(+s), V(+t)] (02 IBL fix; matches the lane-02
+    // CUBE_FACE_BASIS — the previous table had U and V swapped on every face).
+    [[1, 0, 0], [0, 0, -1], [0, -1, 0]],
+    [[-1, 0, 0], [0, 0, 1], [0, -1, 0]],
+    [[0, 1, 0], [1, 0, 0], [0, 0, 1]],
+    [[0, -1, 0], [1, 0, 0], [0, 0, -1]],
+    [[0, 0, 1], [1, 0, 0], [0, -1, 0]],
+    [[0, 0, -1], [-1, 0, 0], [0, -1, 0]]
   ] as const;
   const step = 2 / faceSize;
   for (let f = 0; f < 6; f++) {

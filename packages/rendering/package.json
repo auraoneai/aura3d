@@ -46,7 +46,12 @@
     "@aura3d/math": "workspace:*",
     "@aura3d/scene": "workspace:*"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./src/lanes/**/*.ts",
+    "./src/program/ProgramGenerator.ts",
+    "./dist/lanes/**/*.js",
+    "./dist/program/ProgramGenerator.js"
+  ],
   "description": "Render-device abstraction, WebGL2/mock backends, buffers, textures, shader modules, materials, render graphs, lighting, shadows, and particle rendering for Aura3D.",
   "keywords": [
     "aura3d",

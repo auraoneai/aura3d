@@ -148,7 +148,6 @@ const routeHealth = {
     author: assetById.get(id).provenance.author
   })),
   primitiveStatus: {
-    sourceOccurrences: primitiveOccurrences,
     primitiveBudget: routeGate.primitiveBudget,
     role: "authored planets, well/capture guides, prediction beads, dock sparks, and flyby presentation around typed pod/beacons plus typed non-colliding freight world/transit",
     status: "within-stated-role-and-budget"

@@ -2,7 +2,7 @@
 
 import { computeRuntimeAlpha } from "./frameAlpha.js";
 import type { AuraApp, AuraAppTarget, AuraBackend, AuraCreateAppOptions, AuraFrameCallback, AuraFrameInfo, AuraModelNode, AuraPrimitiveNode, AuraSceneSnapshot, WebGLRenderController } from "../nodes/types.js";
-import { isWebGLRenderableNode, productionRenderErrorMessage } from "../compiler/observations.js";
+import { declaresWebGLContent, productionRenderErrorMessage } from "../compiler/observations.js";
 import { createDiagnosticsOverlay, renderDiagnosticPreviewToCanvas, shouldRenderOverlay } from "../public/devtools.js";
 import { createInitialDiagnostics, snapshotDiagnostics, validateSceneAssets } from "../diagnostics.js";
 import { createRuntimeScenePhysics, eulerToQuat, physics, resolveNodePhysicsShape } from "../nodes/physics.js";
@@ -17,7 +17,7 @@ import { AuraMigrationError } from "../compiler/errors.js";
 import { startProductionRender } from "./frameLoop.js";
 import { registerAuraApp, unregisterAuraApp } from "./liveApps.js";
 import { markRouteError, markRouteReady } from "./routeState.js";
-import { captureAuraScreenshot } from "./screenshot.js";
+import { AURA_APP_CANVAS, captureAuraScreenshot } from "./screenshot.js";
 import { attachErrorOverlay } from "./errorOverlay.js";
 import { collectGameRuntimeEvidence as collectGameRuntimeEvidenceV105 } from "../GameEvidence.js";
 import { createGameInput } from "../GameRuntime.js";
@@ -34,6 +34,8 @@ import type { AuraQualityTier } from "@aura3d/rendering/contracts";
 import { createAuraRuntimeNodeRegistry } from "./runtimeNodes.js";
 import { setPrd01ModelMatrixCache } from "../compiler/renderInput.js";
 import { createModelMatrixCache } from "../sceneGraph.js";
+import { flattenAuraSceneSnapshot, modelMatrixFor } from "../compiler/sceneGraph.js";
+import { setPrd01ColorParsing } from "../compiler/color.js";
 import { collectGeneratedCodeWarnings } from "../looks/generatedCodeWarnings.js";
 import { material } from "../nodes/material.js";
 import { assets } from "../AssetDecoders.js";
@@ -72,7 +74,13 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   setTypedGLBActorQrFlags(qrFlags);
   // PRD-01 §15 Phase-6: install the fingerprinted static-node matrix cache on
   // the compiler seam. Flag-off leaves renderInput on verbatim calls (C-01).
-  setPrd01ModelMatrixCache(qrFlags.on("A3D_QR_CORE") ? createModelMatrixCache() : null);
+  // PRD-01 §15 Phase 1 (C-06, 01-S2/T1.5): under the flag the cache composes
+  // through compiler/sceneGraph.ts (rotationOrder, quaternion, group world
+  // matrices) and the snapshot flattens hierarchically. Flag-off: unchanged.
+  setPrd01ModelMatrixCache(qrFlags.on("A3D_QR_CORE") ? createModelMatrixCache(modelMatrixFor(qrFlags)) : null);
+  if (qrFlags.on("A3D_QR_CORE")) renderSnapshot = flattenAuraSceneSnapshot(snapshot, qrFlags);
+  // 01-S5 (C-06): colorUtils helpers delegate to parseAuraColor under the flag.
+  setPrd01ColorParsing(qrFlags.on("A3D_QR_CORE") ? { strict: options.strict ?? qrFlags.on("A3D_QR_STRICT") } : null);
   // T4.5 (PRD-15): under strict the removed renderer.mode/renderer.fallback
   // surface is an AuraMigrationError, not a silent ignore. Flag-off callers
   // keep today's normalization (the fields still work until 4.0.0).
@@ -268,7 +276,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     for (const callback of [...frameCallbacks]) callback(frame);
   };
   const shouldUseProductionRendererForCurrentScene = () =>
-    Boolean(canvas && hasRootRenderableContent(canvas, renderSnapshot.nodes.some(isWebGLRenderableNode)) && typeof window !== "undefined");
+    Boolean(canvas && hasRootRenderableContent(canvas, declaresWebGLContent(renderSnapshot.nodes)) && typeof window !== "undefined");
   const resetDiagnosticsForCurrentScene = (backend: AuraBackend) => {
     const fresh = createInitialDiagnostics(renderSnapshot, options.renderer);
     diagnosticsState.backend = backend;
@@ -333,7 +341,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
      * So the two cases are separated. A renderable scene with no usable canvas now raises a diagnosable
      * error naming the cause, instead of drawing something plausible.
      */
-    const declaresRenderableContent = hasRootRenderableContent(canvas, renderSnapshot.nodes.some(isWebGLRenderableNode));
+    const declaresRenderableContent = hasRootRenderableContent(canvas, declaresWebGLContent(renderSnapshot.nodes));
     /*
      * Scoped to the case that is actually a lie: a canvas WAS supplied, so the caller is looking at
      * pixels, and the scene has renderable content — but WebGL declined it, so those pixels would be a
@@ -402,7 +410,9 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
          */
         () => frameCallbacks.size > 0 || (appPhysicsWorldInstance?.bodies().length ?? 0) > 0,
         // Paused frames render at the app's own simulated clock, so a held frame really is held.
-        () => runtimeTime * 1000
+        () => runtimeTime * 1000,
+        // T0-28: flags resolve once per app; every (re-)mount's renderer gets these.
+        qrFlags
       )
         .then((controller) => {
           markTiming("a3d:mount:renderer-resolved");
@@ -471,7 +481,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     setScene(nextScene) {
       assertMutableFrame();
       snapshot = normalizeSceneSnapshot(nextScene);
-      renderSnapshot = flattenSceneSnapshot(snapshot);
+      renderSnapshot = flattenAuraSceneSnapshot(snapshot, qrFlags);
       runtimeNodes.reset(renderSnapshot);
       // Drop bodies from the previous scene before registering the new ones, so swapping
       // scenes does not leave orphaned bodies colliding with the new level.
@@ -749,5 +759,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     baseDispose();
   };
   registerAuraApp(app);
+  // #1131: diagnostics read the canvas size through this slot, not screenshot().
+  Object.defineProperty(app, AURA_APP_CANVAS, { value: canvas, enumerable: false });
   return app;
 }

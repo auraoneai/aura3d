@@ -10,6 +10,7 @@ import type { AuraWorldDiagnostics } from "../../agent-api/world/runtime.js";
 import { worldStateFor } from "../../agent-api/world/queries.js";
 import { takeWorldEnvDegradations } from "../../agent-api/nodes/environments.world.js";
 import { worldDrawPath } from "./WorldFramePasses.js";
+import { terrainDiagnostics } from "./TerrainRuntime.js";
 
 export function collectWorldDiagnostics(app: AuraApp): AuraWorldDiagnostics {
   const state = worldStateFor(app);
@@ -19,7 +20,7 @@ export function collectWorldDiagnostics(app: AuraApp): AuraWorldDiagnostics {
   if (drawPath === "S") pending.push("C-01:frame-graph", "C-02:program-cache");
   return {
     drawPath,
-    terrain: [],
+    terrain: terrainDiagnostics(),
     scatter: [],
     grass: [],
     water: [],

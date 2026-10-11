@@ -6,6 +6,7 @@ import { resolveQrFlags } from "@aura3d/engine/contracts";
 import {
   createFixedStepDriver,
   createInterpolationStore,
+  createTimeController,
   type AuraInterpolableHandle
 } from "@aura3d/engine/lanes";
 import type { AuraVec3 } from "@aura3d/engine";
@@ -48,6 +49,109 @@ describe("L-4 one render per tick", () => {
     driver.step(2 / 60);
     expect(app.calls.step).toHaveLength(2);
     expect(driver.renderSubmissionsLastTick).toBe(2);
+    driver.dispose();
+  });
+
+  it("renderPerSubstep presents the camera before each substep submission", () => {
+    const log: string[] = [];
+    const app = {
+      advance: () => log.push("advance"),
+      step: () => log.push("step")
+    };
+    const driver = createFixedStepDriver(app, {
+      useRaf: false,
+      flags: interpFlags,
+      renderPerSubstep: true,
+      camera: { present: (dt: number) => log.push(`present:${dt.toFixed(4)}`) }
+    });
+    driver.step(2 / 60);
+    // Each submitted frame must carry this substep's pose, never the previous tick's.
+    expect(log).toEqual(["advance", `present:${(1 / 60).toFixed(4)}`, "step", "advance", `present:${(1 / 60).toFixed(4)}`, "step"]);
+    driver.dispose();
+  });
+
+  it("renderPerSubstep camera clock continues from an already-advanced supplied time controller", () => {
+    const time = createTimeController();
+    time.advance(5); // the app ran 5 s before the driver attached
+    const times: number[] = [];
+    const app = { advance: () => {}, step: () => {} };
+    const driver = createFixedStepDriver(app, {
+      useRaf: false,
+      flags: interpFlags,
+      time,
+      renderPerSubstep: true,
+      camera: { present: (_dt: number, timeMs: number) => times.push(timeMs) }
+    });
+    driver.step(2 / 60);
+    // No rewind: every timestamp continues past the 5 s already elapsed.
+    expect(times.length).toBeGreaterThan(0);
+    expect(times[0]).toBeGreaterThan(5000);
+    driver.dispose();
+  });
+
+  it("renderPerSubstep camera timestamps are strictly monotonic across 0-substep ticks", () => {
+    const times: number[] = [];
+    const app = { advance: () => {}, step: () => {} };
+    const driver = createFixedStepDriver(app, {
+      useRaf: false,
+      flags: interpFlags,
+      renderPerSubstep: true,
+      camera: { present: (_dt: number, timeMs: number) => times.push(timeMs) }
+    });
+    // Sub-fixed tick (debt-only present), then ticks whose first substep follows it.
+    for (const dt of [0.005, 1 / 60 + 0.004, 0.001, 2 / 60, 0.012, 0.03]) driver.step(dt);
+    expect(times.length).toBeGreaterThan(4);
+    for (let i = 1; i < times.length; i += 1) expect(times[i]).toBeGreaterThan(times[i - 1]);
+    driver.dispose();
+  });
+
+  it("renderPerSubstep keeps camera real time advancing on 0-substep ticks (hit-stop)", () => {
+    const presented: number[] = [];
+    const steps: number[] = [];
+    const app = { advance: () => {}, step: (dt: number) => steps.push(dt) };
+    const driver = createFixedStepDriver(app, {
+      useRaf: false,
+      flags: interpFlags,
+      renderPerSubstep: true,
+      camera: { present: (dt: number) => presented.push(dt) }
+    });
+    // Sub-fixed-step tick: no substep, no render, but the camera still advances.
+    driver.step(0.005);
+    expect(steps).toHaveLength(0);
+    expect(presented).toHaveLength(1);
+    expect(presented[0]).toBeCloseTo(0.005, 9);
+    // Across mixed ticks the camera tracks real time. A substep may consume time
+    // the camera already received on an earlier 0-substep tick, so it can lead
+    // by less than one fixed step (the accumulator's own bound); the carried
+    // balance repays that lead on later ticks.
+    const ticks = [0.005, 1 / 60 + 0.004, 2 / 60, 0.001, 0.03];
+    for (const dt of ticks.slice(1)) driver.step(dt);
+    const sum = () => presented.reduce((a, b) => a + b, 0);
+    let total = ticks.reduce((a, b) => a + b, 0);
+    expect(Math.abs(sum() - total)).toBeLessThan(1 / 60);
+    // Long run at an uneven cadence: drift stays bounded, never accumulates.
+    for (let i = 0; i < 600; i += 1) {
+      const dt = i % 7 === 0 ? 0.004 : 0.011 + (i % 5) * 0.003;
+      driver.step(dt);
+      total += dt;
+      expect(Math.abs(sum() - total)).toBeLessThan(1 / 60);
+    }
+    driver.dispose();
+  });
+
+  it("default mode presents the camera once per tick, before the single render", () => {
+    const log: string[] = [];
+    const app = {
+      advance: () => log.push("advance"),
+      step: () => log.push("step")
+    };
+    const driver = createFixedStepDriver(app, {
+      useRaf: false,
+      flags: interpFlags,
+      camera: { present: () => log.push("present") }
+    });
+    driver.step(2 / 60);
+    expect(log).toEqual(["advance", "advance", "present", "step"]);
     driver.dispose();
   });
 

@@ -1644,6 +1644,9 @@ meantime and which criterion moves to the next checkpoint after it lands.
 | Q-14-1 | 14 | Per-route adoption of `world.*` per §1 target table, using `prd10-world-migrate`; delete review-capture world forks (K7) | R21 | standalone acceptance uses lane scenes, not routes |
 | Q-15-6 | 15 | `contracts/flags.ts` `resolveQrFlags`: fill unset `A3D_QR_WORLD_{TERRAIN,WATER,BIOME}` from an enabled `A3D_QR_WORLD` after all flag sources run, so sub-flags are on-by-default per §13 while `-world.biome`/`A3D_QR_WORLD_BIOME=0` still disable | §13 | lane code reads sub-flags via `worldSubflagOn` (parent-default-on); the C-09 env sources keep the `A3D_QR_WORLD_BIOME` registry gate and activate on explicit `world.biome` until this lands |
 | Q-15-7 | 15 | `tests/unit/rendering/environment-preset-pack.test.ts` + `tests/fixtures/b3-preset-pack-rows.json` (both owner 15): adopt `presetPackExposureFactor`/`presetPackSsimReference` and per-preset SSIM references per T6.5 | T6.5 | selectors are exported from `EnvironmentPresetPack.ts` behind `A3D_QR_WORLD_BIOME`; legacy normalized path untouched flag-off |
+| Q-15-8 (#821) | 15 | `packages/rendering/package.json` `sideEffects`: replace `false` with a list covering `./src/lanes/**` and `./dist/lanes/**` so `rendering/src/lanes/prd10.ts` chunk registration survives bundling (FIX-chunks; run 37497949014) | C-02 | explicit `registerPrd10Chunks()` from `engine/src/lanes/prd10.ts` (#829) |
+| Q-01-1 (#822) | 01 | A frame-contributor `passes()`/graph-compile throw degrades to C-36 (flag-off render + reason) instead of killing `frameLoop.ts:133`; ForwardPass loads, not clears, the depth written in `background` (FIX-depth) | C-36, C-01 | lane-10 passes emit only when their producers exist (#820); `qr-prd10-world-pass-depth.spec.ts` stays red until this lands |
+| Q-12-2 (#823) | 12 + 15 | Register T0-33 (FIX-P0-graph, owner 10) as a Track 0 row: a lane-10 culprit for the `$ALL` arm | §2.2 | lane 10 proves it with flags-bisect `none;world` and `$ALL;$ALL,-world` |
 
 PRD 06 (C-26 ground for foot IK), PRD 07 (C-26 height for splashes and rain) and PRD 09 (game runtime hosting
 `app.world` handles) consume C-26 and need no request from PRD 10.
@@ -1818,19 +1821,20 @@ Every task edits only PRD 10-owned paths (§Parallel execution) unless it says "
 repo root; "flag" means `A3D_QR_WORLD` (or the named sub-flag) gates the behaviour.
 
 Phase 1 (day 0):
-- [x] T1.1 `packages/rendering/src/TerrainHeightfield.ts:133-141`: replace the `Math.round` texel pick (`:134-135`) with
+(P-55: T1.1-T1.5 are code-landed but unticked until a main run id is cited; checklist-lint, PRD-16 §4b.)
+- [ ] T1.1 `packages/rendering/src/TerrainHeightfield.ts:133-141`: replace the `Math.round` texel pick (`:134-135`) with
   bilinear interpolation of the 4 neighbours; add `toHeightTexture(fixture): { data: Float32Array; width; height }`.
   Test `tests/qr/prd10/unit/terrain-bilinear.test.ts`: midpoint of a 2×2 ramp equals the mean ±1e-6.
   (landed at `tests/unit/contracts/impl/prd10-terrain-bilinear.test.ts` — `tests/qr/` is not lane-owned or vitest-included)
-- [x] T1.2 `packages/rendering/src/TerrainTiles.ts`: delete `createTerrainTileGrid` and `TerrainTilePlan` (`:15-96`),
+- [ ] T1.2 `packages/rendering/src/TerrainTiles.ts`: delete `createTerrainTileGrid` and `TerrainTilePlan` (`:15-96`),
   replace the `:1-13` header with "budget and query utilities only"; keep a `@deprecated` `createTerrainTileGrid` that
   throws `AuraRuntimeError("removed-world-planner")`. (types kept as `@deprecated` — index.ts re-export is lane-01's)
-- [x] T1.3 `packages/rendering/src/VegetationScatter.ts:134`: claim boundary names `world.scatter` as the runtime and
+- [ ] T1.3 `packages/rendering/src/VegetationScatter.ts:134`: claim boundary names `world.scatter` as the runtime and
   this module as an offline placement helper.
-- [x] T1.4 `packages/rendering/src/EnvironmentPreset.ts`: delete `createNamedEnvironmentPreset` (`:47-128`) after
+- [ ] T1.4 `packages/rendering/src/EnvironmentPreset.ts`: delete `createNamedEnvironmentPreset` (`:47-128`) after
   `rg -n createNamedEnvironmentPreset packages apps examples templates` shows only its definition; leave a throwing
   `@deprecated` export.
-- [x] T1.5 `fixtures/three-compat/environments/manifest.json`: delete `industrial-sunset-puresky`, `spruit-sunrise`,
+- [ ] T1.5 `fixtures/three-compat/environments/manifest.json`: delete `industrial-sunset-puresky`, `spruit-sunrise`,
   `venice-sunset`; `rg` the ids in `benchmarks/` and file Q-12-1 with any hit. (no `benchmarks/` hits — Q-12-1 not needed;
   `flagshipBindings` repointed to the canonical ids; `requirements` corrected to the honest 9 presets / 3 real HDRIs)
 - [ ] T1.6 `packages/engine/src/agent-api/world/types.ts`, `biomes.ts`: types of §7.1.1-7.1.2 re-exporting C-26

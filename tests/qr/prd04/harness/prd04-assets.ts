@@ -24,6 +24,7 @@ import { decodeImageInBrowser } from "/packages/assets/src/gltf/ImageDecode.js";
 import { imageColorSpaceIntent } from "/packages/assets/src/GLTFRenderResources.js";
 import {
   ProductionWebGL2Renderer,
+  rendererProofCapture,
   createProductionEnvironmentLightingResources,
   createProductionPbrHdrPipelineFromRadiance,
   summarizeProductionWebGL2Proof
@@ -161,7 +162,9 @@ async function main(): Promise<void> {
       textureCount: pipeline.metadata.textureCount,
       colorSpaceByImage: [...intent.intent.values()],
       conflicts: intent.conflicts.map((conflict) => `image-${conflict.image}:srgb[${conflict.srgb}]|linear[${conflict.linear}]`),
-      variants: [...new Set(pipeline.resources.materialVariants.map((v) => v.variant))],
+      // GLTFRenderResources carries variants per renderable binding (there is no
+      // resources-level `materialVariants`; reading it threw on every load).
+      variants: [...new Set(pipeline.resources.renderableBindings.flatMap((b) => b.materialVariants.map((v) => v.variant)))],
       variantSelect: variantResult,
       materialsR185,
       materialsTransmission
@@ -182,9 +185,12 @@ async function main(): Promise<void> {
       { width, height },
       { yawRadians: -0.34, pitchRadians: -0.16, paddingRatio: 0.08 }
     );
-    const proof = renderer.renderImportedAsset({
+    // T2.6: `renderImportedAsset` moved off the renderer to `rendererProofCapture`.
+    const proof = rendererProofCapture(renderer, {
       source: staged.source,
       camera: staged.camera,
+      // rendererProofCapture reads the frame size from the device canvas or this.
+      viewport: { width, height },
       metadata: {
         assetId: pipeline.metadata.assetId,
         assetName: pipeline.metadata.assetName,

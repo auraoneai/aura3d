@@ -28,7 +28,7 @@ export interface DirectionalCascadeFit {
   readonly texelWorld: number;
   /** Bounding-sphere radius of the cascade slice (+ casters), before padding. */
   readonly radius: number;
-  /** Texel-snapped light-space ortho centre (x, y) and unsnapped depth mid (z). */
+  /** Texel-snapped light-space ortho centre (x, y) and depth mid (z). */
   readonly center: readonly [number, number, number];
   readonly casterCount: number;
 }
@@ -41,6 +41,12 @@ export interface DirectionalCascadeFitOptions {
   readonly cascadeCount: number;
   readonly splitLambda?: number;
   readonly padding?: number;
+  /**
+   * Shadow distance cap (view-space, PRD-02 §6.4 `maxDistance`): cascades
+   * cover [near, min(far, maxDistance)]. The camera's own far still anchors
+   * the frustum-corner interpolation.
+   */
+  readonly maxDistance?: number;
 }
 
 function invertMat4(m: readonly number[] | Float32Array): Float32Array {
@@ -88,6 +94,24 @@ function ndcToWorld(inv: Float32Array, x: number, y: number, z: number): [number
 
 type V3 = readonly [number, number, number];
 
+/**
+ * #1141: near/far of a perspective camera known only by its view-projection
+ * and eye (structural CameraLikes carry no near/far): distances from the eye
+ * to the unprojected NDC centres of the near and far planes.
+ */
+export function clipRangeFromViewProjection(
+  viewProjection: Float32Array | readonly number[],
+  eye: readonly [number, number, number]
+): { near: number; far: number } | null {
+  let inv: Float32Array;
+  try { inv = invertMat4(viewProjection); } catch { return null; }
+  const n = ndcToWorld(inv, 0, 0, -1);
+  const f = ndcToWorld(inv, 0, 0, 1);
+  const near = Math.hypot(n[0] - eye[0], n[1] - eye[1], n[2] - eye[2]);
+  const far = Math.hypot(f[0] - eye[0], f[1] - eye[1], f[2] - eye[2]);
+  return Number.isFinite(near) && Number.isFinite(far) && far > near && near > 0 ? { near, far } : null;
+}
+
 function lightBasis(direction: V3): { right: V3; up: V3; forward: V3 } {
   const len = Math.hypot(direction[0], direction[1], direction[2]) || 1;
   const fwd: V3 = [direction[0] / len, direction[1] / len, direction[2] / len];
@@ -122,6 +146,112 @@ function itemWorldBounds(item: RenderItem): { min: V3; max: V3 } | null {
   return { min: out.min as unknown as V3, max: out.max as unknown as V3 };
 }
 
+type LightBasis = { right: V3; up: V3; forward: V3 };
+
+function toLight(p: V3, basis: LightBasis): V3 {
+  return [
+    p[0] * basis.right[0] + p[1] * basis.right[1] + p[2] * basis.right[2],
+    p[0] * basis.up[0] + p[1] * basis.up[1] + p[2] * basis.up[2],
+    p[0] * basis.forward[0] + p[1] * basis.forward[1] + p[2] * basis.forward[2]
+  ];
+}
+
+/**
+ * #1141 caster-rectangle fit: the light-space rectangle of all casters
+ * (padded), when it lies inside the slice footprint, plus the depth interval
+ * covering the casters and every in-slice receiver they can shadow.
+ */
+export function casterRectClamp(
+  slicePts: readonly V3[],
+  casterBounds: readonly { min: V3; max: V3 }[],
+  basis: LightBasis,
+  padding: number
+): { extent: number; centerX: number; centerY: number; zMin: number; zMax: number } | null {
+  if (casterBounds.length === 0) return null;
+  let cMin: [number, number, number] = [Infinity, Infinity, Infinity];
+  let cMax: [number, number, number] = [-Infinity, -Infinity, -Infinity];
+  for (const b of casterBounds) {
+    for (const x of [b.min[0], b.max[0]]) for (const y of [b.min[1], b.max[1]]) for (const z of [b.min[2], b.max[2]]) {
+      const l = toLight([x, y, z], basis);
+      cMin = [Math.min(cMin[0], l[0]), Math.min(cMin[1], l[1]), Math.min(cMin[2], l[2])];
+      cMax = [Math.max(cMax[0], l[0]), Math.max(cMax[1], l[1]), Math.max(cMax[2], l[2])];
+    }
+  }
+  if (!cMin.every(Number.isFinite) || !cMax.every(Number.isFinite)) return null;
+  const lightPts = slicePts.map((p) => toLight(p, basis));
+  const fMinX = Math.min(...lightPts.map((p) => p[0])), fMaxX = Math.max(...lightPts.map((p) => p[0]));
+  const fMinY = Math.min(...lightPts.map((p) => p[1])), fMaxY = Math.max(...lightPts.map((p) => p[1]));
+  if (cMin[0] < fMinX || cMax[0] > fMaxX || cMin[1] < fMinY || cMax[1] > fMaxY) return null;
+  const rect = { minX: cMin[0] - padding, maxX: cMax[0] + padding, minY: cMin[1] - padding, maxY: cMax[1] + padding };
+  const receivers = sliceDepthWithinRect(lightPts, rect);
+  return {
+    extent: Math.max(rect.maxX - rect.minX, rect.maxY - rect.minY),
+    centerX: (rect.minX + rect.maxX) / 2,
+    centerY: (rect.minY + rect.maxY) / 2,
+    zMin: Math.min(cMin[2], receivers?.zMin ?? Infinity),
+    zMax: Math.max(cMax[2], receivers?.zMax ?? -Infinity)
+  };
+}
+
+type LightRect = { readonly minX: number; readonly maxX: number; readonly minY: number; readonly maxY: number };
+
+/** Slice corner order: index 2i = near, 2i+1 = far, for NDC corners i = (-1,-1), (-1,1), (1,-1), (1,1). */
+const SLICE_EDGES: readonly (readonly [number, number])[] = [
+  [0, 2], [2, 6], [6, 4], [4, 0], [1, 3], [3, 7], [7, 5], [5, 1], [0, 1], [2, 3], [4, 5], [6, 7]
+];
+const SLICE_FACES: readonly (readonly [number, number, number])[] = [
+  [0, 2, 6], [1, 3, 7], [0, 2, 3], [4, 6, 7], [0, 4, 5], [2, 6, 7]
+];
+
+/**
+ * #1141: light-space depth interval [zMin, zMax] of the receivers a caster
+ * rectangle can shadow — the convex frustum slice `pts` (light space)
+ * intersected with the infinite prism `rect` × (-∞, ∞) along the light.
+ * Extremes of a convex intersection lie on its vertices: slice corners inside
+ * the prism, slice edges crossing a prism wall, and the four prism edges
+ * clipped by the slice faces. Null when the slice misses the prism.
+ */
+export function sliceDepthWithinRect(pts: readonly V3[], rect: LightRect): { zMin: number; zMax: number } | null {
+  const inside = (x: number, y: number): boolean =>
+    x >= rect.minX - 1e-9 && x <= rect.maxX + 1e-9 && y >= rect.minY - 1e-9 && y <= rect.maxY + 1e-9;
+  let zMin = Infinity;
+  let zMax = -Infinity;
+  const add = (z: number): void => { zMin = Math.min(zMin, z); zMax = Math.max(zMax, z); };
+  for (const p of pts) if (inside(p[0], p[1])) add(p[2]);
+  for (const [a, b] of SLICE_EDGES) {
+    const p = pts[a]!, q = pts[b]!;
+    for (const [axis, value] of [[0, rect.minX], [0, rect.maxX], [1, rect.minY], [1, rect.maxY]] as const) {
+      const d = q[axis] - p[axis];
+      if (Math.abs(d) < 1e-12) continue;
+      const t = (value - p[axis]) / d;
+      if (t < 0 || t > 1) continue;
+      const hit = lerp3(p, q, t);
+      if (inside(hit[0], hit[1])) add(hit[2]);
+    }
+  }
+  const centroid = pts.reduce<V3>((s, p) => [s[0] + p[0] / pts.length, s[1] + p[1] / pts.length, s[2] + p[2] / pts.length], [0, 0, 0]);
+  const planes = SLICE_FACES.map(([a, b, c]) => {
+    const pa = pts[a]!, pb = pts[b]!, pc = pts[c]!;
+    let n = cross([pb[0] - pa[0], pb[1] - pa[1], pb[2] - pa[2]], [pc[0] - pa[0], pc[1] - pa[1], pc[2] - pa[2]]);
+    let d = -(n[0] * pa[0] + n[1] * pa[1] + n[2] * pa[2]);
+    // Orient outward: the slice centroid must be on the negative side.
+    if (n[0] * centroid[0] + n[1] * centroid[1] + n[2] * centroid[2] + d > 0) { n = [-n[0], -n[1], -n[2]]; d = -d; }
+    return { n, d };
+  });
+  for (const [x, y] of [[rect.minX, rect.minY], [rect.minX, rect.maxY], [rect.maxX, rect.minY], [rect.maxX, rect.maxY]] as const) {
+    let lo = -Infinity;
+    let hi = Infinity;
+    for (const { n, d } of planes) {
+      const rest = n[0] * x + n[1] * y + d; // n_z·z + rest ≤ 0
+      if (Math.abs(n[2]) < 1e-12) { if (rest > 1e-9) { lo = Infinity; break; } continue; }
+      const bound = -rest / n[2];
+      if (n[2] > 0) hi = Math.min(hi, bound); else lo = Math.max(lo, bound);
+    }
+    if (lo <= hi) { add(lo); add(hi); }
+  }
+  return Number.isFinite(zMin) && Number.isFinite(zMax) ? { zMin, zMax } : null;
+}
+
 /** Stable-fit cascades for one directional light from a C-08 CameraLike. */
 export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): DirectionalCascadeFit[] {
   const vp = options.camera.viewProjectionMatrix;
@@ -129,10 +259,13 @@ export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): D
   const invVp = invertMat4(vp);
   const near = Math.max(1e-3, options.camera.near ?? 0.1);
   const far = Math.max(near + 1e-3, options.camera.far ?? 100);
+  const shadowFar = options.maxDistance !== undefined && Number.isFinite(options.maxDistance) && options.maxDistance > near
+    ? Math.min(far, options.maxDistance)
+    : far;
   const splits = CascadedShadowMaps.computeSplits({
     cascadeCount: options.cascadeCount,
     near,
-    far,
+    far: shadowFar,
     lambda: options.splitLambda ?? 0.75
   });
   const nearCorners = [-1, 1].flatMap((x) => [-1, 1].map((y) => ndcToWorld(invVp, x, y, -1)));
@@ -166,7 +299,6 @@ export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): D
     // point set and preserve 3D distances, so max|p-centroid| is exactly
     // yaw-invariant — a 10° yaw keeps each cascade's radius stable
     // (PRD-02 §6.4 / prd02-17 shimmer) where a light-space AABB extent is not.
-    const centerZ = (min[2]! + max[2]!) / 2;
     let cx0 = 0, cy0 = 0, cz0 = 0;
     for (const p of allPts) { cx0 += p[0]; cy0 += p[1]; cz0 += p[2]; }
     const n = allPts.length;
@@ -175,10 +307,28 @@ export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): D
     for (const p of allPts) {
       radius = Math.max(radius, Math.hypot(p[0] - centroid[0], p[1] - centroid[1], p[2] - centroid[2]));
     }
-    const centerX = centroid[0] * basis.right[0] + centroid[1] * basis.right[1] + centroid[2] * basis.right[2];
-    const centerY = centroid[0] * basis.up[0] + centroid[1] * basis.up[1] + centroid[2] * basis.up[2];
+    let centerX = centroid[0] * basis.right[0] + centroid[1] * basis.right[1] + centroid[2] * basis.right[2];
+    let centerY = centroid[0] * basis.up[0] + centroid[1] * basis.up[1] + centroid[2] * basis.up[2];
     radius = Math.max(radius, 1e-6);
-    const extent = 2 * radius + padding * 2;
+    let extent = 2 * radius + padding * 2;
+    let zLo = min[2]!;
+    let zHi = max[2]!;
+    // #1141: a slice reaching far past a bounded scene (camera far 100 m over a
+    // 14 m set) inflated the ortho to ~130 m — 13× coarser texels and a depth
+    // range that turned the constant compare bias into detached, washed-out
+    // shadows. Shadows exist only where casters project, so when every caster
+    // projects inside the slice's light-space footprint the ortho shrinks to
+    // the caster rectangle (world-fixed, so still shimmer-stable) and depth to
+    // casters ∪ the receivers in that prism. Unbounded/partial cases keep the
+    // bounding-sphere fit above.
+    const clamp = casterRectClamp(frustumPts, casterBounds, basis, padding);
+    if (clamp && clamp.extent < extent) {
+      extent = clamp.extent;
+      centerX = clamp.centerX;
+      centerY = clamp.centerY;
+      zLo = clamp.zMin;
+      zHi = clamp.zMax;
+    }
     const texelWorld = extent / options.mapSize;
     const cx = Math.round(centerX / texelWorld) * texelWorld;
     const cy = Math.round(centerY / texelWorld) * texelWorld;
@@ -187,16 +337,19 @@ export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): D
       basis.right[0], basis.up[0], basis.forward[0], 0,
       basis.right[1], basis.up[1], basis.forward[1], 0,
       basis.right[2], basis.up[2], basis.forward[2], 0,
-      -cx, -cy, -(min[2]! + max[2]!) / 2, 1
+      -cx, -cy, -(zLo + zHi) / 2, 1
     ]);
     const half = extent / 2;
-    const depth = (max[2]! - min[2]!) + depthPad * 2;
+    const depth = (zHi - zLo) + depthPad * 2;
     // view already centres z on (min+max)/2 — the proj z column must NOT
     // translate again (double-centring pushed off-frustum casters past z=1).
+    // #1141: view z runs along `forward` (light travel), so depth must grow
+    // with +z. The old -2/depth flipped it: the less-equal depth pass kept the
+    // surface FARTHEST from the light and receivers behind casters tested lit.
     const proj = new Float32Array([
       1 / half, 0, 0, 0,
       0, 1 / half, 0, 0,
-      0, 0, -2 / depth, 0,
+      0, 0, 2 / depth, 0,
       0, 0, 0, 1
     ]);
     // proj*(view*p): row-major compose proj × view.
@@ -218,6 +371,6 @@ export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): D
           bias[8 + r]! * viewProjection[c * 4 + 2]! + bias[12 + r]! * viewProjection[c * 4 + 3]!;
       }
     }
-    return { index, viewProjection: biased, drawViewProjection: viewProjection, splitFar: split.far, texelWorld, radius, center: [cx, cy, centerZ], casterCount: options.casters.length };
+    return { index, viewProjection: biased, drawViewProjection: viewProjection, splitFar: split.far, texelWorld, radius, center: [cx, cy, (zLo + zHi) / 2], casterCount: options.casters.length };
   });
 }

@@ -1520,7 +1520,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         // postprocess pipeline while keeping native GPU work inside its budget.
         ? Math.min(1, 320 / Math.max(1, window.innerWidth))
         : Math.min(window.devicePixelRatio || 1, 1.75),
-    renderer: { mode: "production", qualityProfile: "production" },
+    renderer: { qualityProfile: "production" },
     scene: createRootStageScene()
   });
   await rootStageApp.ready();
@@ -2260,6 +2260,17 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
       performanceEvidenceReady = sample === performanceSampleCount - 1;
       gameApp.step(1 / 60);
+    }
+    // P-61 (#346 accepted with this fix): the driver is installed before the
+    // warmup windows, so a test can land a hit while the proof still reads
+    // "loading". `pauseOnNextHit` then pauses the round and the paused
+    // early-return in `tickFrame` never republishes the proof, leaving it at
+    // "loading" forever (observed `totalHits: 1`, `status: "loading"`). Once
+    // the performance window has closed, publish the paused status the next
+    // frame would have written.
+    const warmupProof = gameWindow.__AURA_CLASH_ARENA_PROOF__;
+    if (paused && warmupProof?.status === "loading") {
+      gameWindow.__AURA_CLASH_ARENA_PROOF__ = { ...warmupProof, status: "paused" };
     }
     // The deterministic warmup establishes the bounded performance receipt, then the same
     // production frame loop must resume so keyboard input and authored gameplay continue to

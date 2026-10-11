@@ -1,5 +1,8 @@
 # T3.7 — spec-level `play(clip, {rootMotion})` (PRD-06 §6.8, C-19 `AuraRootMotionSpec`)
 
+> **06-REC note (finish phase, G3):** this file cites no passing remote run id; every completion claim below is recorded as **unbacked** until a green lane-workflow/GitLab run id is added next to it.
+
+
 **Branch:** `qr/prd06-pose-foundations` · **Gates:** 6/6 new unit tests, neighboring suites green, tsc + eslint clean.
 
 ## What landed

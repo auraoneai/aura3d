@@ -107,31 +107,55 @@ async function main() {
         const entry = { scene: sceneId, flags, engines: {} };
         for (const engine of engines) {
           const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
-          const url = `${baseUrl}/scenes/prd11/index.html?engine=${engine}&a3d-qr=${flags}`;
+          // `scene=` selects the adapter; without it every id captured tier-ladder.
+          const url = `${baseUrl}/scenes/prd11/index.html?engine=${engine}&scene=${sceneId}&a3d-qr=${flags}`;
           const consoleErrors = [];
           page.on("pageerror", (error) => consoleErrors.push(String(error)));
           const started = Date.now();
+          // Track 0 ready-time attribution: wall-clock phases on the runner side,
+          // plus the adapter's own marks (window.__PRD11_PROGRESS__), also on timeout.
+          const phases = { gotoMs: null, rafHz: null, readyMs: null };
+          const progress = () => page.evaluate(() => window.__PRD11_PROGRESS__ ?? null).catch(() => null);
           try {
             await page.goto(url, { waitUntil: "load", timeout: 60_000 });
+            phases.gotoMs = Date.now() - started;
+            // rAF cadence right after load: headless GPU runners can throttle
+            // rAF (lane 07 saw ~200 s ready even flag-off), which stretches any
+            // frame-count wait. Measured per page so arms stay comparable.
+            phases.rafHz = await page.evaluate(() => new Promise((resolve) => {
+              let frames = 0;
+              const t0 = performance.now();
+              const tick = () => {
+                frames += 1;
+                if (performance.now() - t0 < 1000) requestAnimationFrame(tick);
+                else resolve(Math.round((frames * 1000) / (performance.now() - t0)));
+              };
+              requestAnimationFrame(tick);
+              setTimeout(() => resolve(frames), 5000);
+            })).catch(() => null);
             await page.waitForFunction(() => Boolean(window.__QR_READY__), undefined, { timeout: 120_000, polling: 500 });
+            phases.readyMs = Date.now() - started;
             // Let frame telemetry accumulate >=35 samples before reading.
+            // aura3d reads `diagnostics().frame`; three adapters publish the same
+            // shape through `window.__PRD11_FRAME__()` (P-30 head-to-head p50).
             await page.waitForFunction(() => {
-              const app = window.__PRD11_APP__;
-              if (!app) return false;
               try {
-                return (app.diagnostics().frame?.frames ?? 0) >= 35;
+                const app = window.__PRD11_APP__;
+                const frame = app ? app.diagnostics().frame : window.__PRD11_FRAME__?.();
+                return (frame?.frames ?? 0) >= 35;
               } catch { return false; }
             }, undefined, { timeout: 60_000, polling: 500 }).catch(() => undefined);
             const ready = await page.evaluate(() => window.__QR_READY__ ?? null);
-            const frame = engine === "aura3d" ? await page.evaluate(() => {
-              const app = window.__PRD11_APP__;
-              if (!app) return null;
-              try { return app.diagnostics().frame ?? null; } catch { return null; }
-            }) : null;
-            entry.engines[engine] = { status: ready?.errors?.length ? "error" : "ready", wallMs: Date.now() - started, payload: ready, frame, consoleErrors };
+            const frame = await page.evaluate(() => {
+              try {
+                const app = window.__PRD11_APP__;
+                return (app ? app.diagnostics().frame : window.__PRD11_FRAME__?.()) ?? null;
+              } catch { return null; }
+            });
+            entry.engines[engine] = { status: ready?.errors?.length ? "error" : "ready", wallMs: Date.now() - started, phases, progress: await progress(), payload: ready, frame, consoleErrors };
             console.log(`[prd11-capture] ${sceneId} ${flags} ${engine}: ${entry.engines[engine].status} (${Date.now() - started} ms)`);
           } catch (error) {
-            entry.engines[engine] = { status: "error", wallMs: Date.now() - started, error: String(error?.message ?? error), consoleErrors };
+            entry.engines[engine] = { status: "error", wallMs: Date.now() - started, phases, progress: await progress(), error: String(error?.message ?? error), consoleErrors };
             console.log(`[prd11-capture] ${sceneId} ${flags} ${engine}: error ${String(error?.message ?? error).split("\n")[0]}`);
           } finally {
             await page.close();

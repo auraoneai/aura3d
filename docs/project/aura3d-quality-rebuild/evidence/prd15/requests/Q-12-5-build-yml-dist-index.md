@@ -1,5 +1,7 @@
 # Q-12-5 → to:prd12 (qr-request, CONTRACTS §6.5)
 
+**Issue:** #1036 (P-64 writeback)
+
 **File:** `.github/workflows/build.yml`
 **Owner:** lane 12 (`.github/workflows/` default)
 **Contract served:** PRD-15 T1.7 / §2.3 — the root `dist/index.{js,js.map,d.ts,d.ts.map}` aggregate is deleted (unreachable `export *` aggregate, unpublished).

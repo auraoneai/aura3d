@@ -55,6 +55,11 @@ function float32ArraysEqual(left: Float32Array, right: Float32Array): boolean {
  * T2.6 replaces `skinnedItemLocalBounds` with per-joint AABBs keyed on
  * `paletteKey`; the provider signature is stable across that swap.
  */
+// The C-11 provider contract returns a fresh Float32Array per call; callers
+// consume it immediately (grow a bounds accumulator), so one scratch per
+// provider is safe and keeps the per-frame allocation at zero.
+const worldBoundsScratch = new Float32Array(6);
+
 export const prd06SkinnedBounds: SkinnedBoundsProvider = {
   worldBounds(item: RenderItem): Float32Array | null {
     const skinning = item.skinning;
@@ -65,6 +70,12 @@ export const prd06SkinnedBounds: SkinnedBoundsProvider = {
       [local.min[0], local.min[1], local.min[2]],
       [local.max[0], local.max[1], local.max[2]]
     ).transform(modelMatrix);
-    return Float32Array.of(world.min[0], world.min[1], world.min[2], world.max[0], world.max[1], world.max[2]);
+    worldBoundsScratch[0] = world.min[0];
+    worldBoundsScratch[1] = world.min[1];
+    worldBoundsScratch[2] = world.min[2];
+    worldBoundsScratch[3] = world.max[0];
+    worldBoundsScratch[4] = world.max[1];
+    worldBoundsScratch[5] = world.max[2];
+    return worldBoundsScratch;
   }
 };

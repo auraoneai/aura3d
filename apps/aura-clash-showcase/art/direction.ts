@@ -65,7 +65,8 @@ export default defineArtDirection({
     { feature: "fighting rig subjectHeightFraction 0.5 + separation dolly", file: "src/v2/scene/camera.ts", request: "R-14-10", removeWhen: "C-22 rigs.fighting real" },
     { feature: "rim term team identity", file: "src/v2/scene/materials.ts", request: "R-14-14", removeWhen: "PRD 04 rim real (§8.10)" },
     { feature: "SSR wet floor + rain", file: "src/v2/scene/fx.ts", request: "R-14-14", removeWhen: "C-13 SSR + C-21 rain real" },
-    { feature: "announcer + crowd bed", file: "src/v2/audio.ts", request: "R-14-09", removeWhen: "C-25 game-sfx real" }
+    { feature: "announcer + crowd bed", file: "src/v2/boot.ts", request: "R-14-09", removeWhen: "C-25 game-sfx real" },
+    { feature: "K1 night-city HDRI (kloppenheim dusk stand-in)", file: "src/v2/env-assets.ts", request: "R-14-13", removeWhen: "K1 night-city HDRI admitted" }
   ],
   criticalCategories: ["lighting", "vfx", "animation_quality", "camera"],
   tiers: {

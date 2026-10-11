@@ -25,7 +25,7 @@ export interface HudWidgetBase {
 
 export type HudScoreSpec = HudWidgetBase & { readonly kind: "score"; readonly rollMs?: number; readonly format?: (v: number) => string };
 export type HudTimerSpec = HudWidgetBase & { readonly kind: "timer"; readonly mode: "countdown" | "stopwatch"; readonly warnAt?: number };
-export type HudMeterSpec = HudWidgetBase & { readonly kind: "meter"; readonly max: number; readonly ghost?: boolean; readonly segments?: number; readonly color?: string };
+export type HudMeterSpec = HudWidgetBase & { readonly kind: "meter"; /** Full-scale value; defaults to 1 (the C-24 spec carries no max, #1086). */ readonly max?: number; readonly ghost?: boolean; readonly segments?: number; readonly color?: string };
 export type HudTextSpec = HudWidgetBase & { readonly kind: "combo" | "lives" | "objective" | "speedometer" | "prompt" };
 export type HudMinimapSpec = HudWidgetBase & { readonly kind: "minimap"; readonly size: number; readonly bounds: readonly [number, number, number, number] };
 export type HudIndicatorSpec = HudWidgetBase & { readonly kind: "indicator"; readonly target: () => readonly [number, number] | null };
@@ -86,6 +86,12 @@ export function createWidget(spec: HudWidgetSpec, doc: HudDocument): HudWidgetIn
     case "prompt": return textWidget(spec, doc, "prompt");
     case "minimap": return minimapWidget(spec, doc);
     case "indicator": return indicatorWidget(spec, doc);
+    default: {
+      // #1086: specs arrive untyped through the C-24 contract (`kind: string`);
+      // an unknown kind used to return undefined and crash mountHud on `.el`.
+      const unknown = spec as { kind?: unknown; id?: unknown };
+      throw new Error(`a3g-hud: unsupported widget kind "${String(unknown.kind)}" for "${String(unknown.id)}"`);
+    }
   }
 }
 
@@ -107,12 +113,24 @@ function scoreWidget(spec: HudScoreSpec, doc: HudDocument): HudWidgetInstance {
   let target = 0;
   let shown = 0;
   let applied: HudValue | undefined;
-  const write = () => { value.textContent = format(shown); };
+  // #1086: string values render verbatim (no roll); numbers roll to target.
+  let text: string | null = null;
+  const write = () => { value.textContent = text ?? format(shown); };
   write();
   return {
     spec,
     el: root,
-    apply(v) { applied = v; target = num(v); if (rollSeconds === 0) { shown = target; write(); } },
+    apply(v) {
+      applied = v;
+      if (typeof v === "string") { text = v; write(); return; }
+      const wasText = text !== null;
+      text = null;
+      target = num(v);
+      if (rollSeconds === 0) shown = target;
+      // Leaving a string override repaints even when no roll is pending
+      // (tick() returns early once shown === target).
+      if (rollSeconds === 0 || wasText) write();
+    },
     tick(dt) {
       if (shown === target) return;
       const step = Math.max(1, Math.abs(target - shown) * Math.min(1, (dt / rollSeconds) * 5));
@@ -157,7 +175,7 @@ function meterWidget(spec: HudMeterSpec, doc: HudDocument): HudWidgetInstance {
   let frac = 0;
   let ghostFrac = 0;
   const segments = spec.segments ?? 0;
-  const max = Math.max(1e-6, spec.max);
+  const max = Math.max(1e-6, typeof spec.max === "number" && Number.isFinite(spec.max) ? spec.max : 1);
   const paint = () => {
     fill.style.width = `${(frac * 100).toFixed(2)}%`;
     ghost.style.width = `${(ghostFrac * 100).toFixed(2)}%`;

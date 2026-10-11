@@ -130,7 +130,8 @@ export class ParticleBatchPass {
     this.frameDiagnostics = { drawCalls: 0, instancesDrawn: 0, errors: [] };
     this.frameDepth = resolveSceneDepth(ctx);
     this.frameOutputColorSpace = resolveOutputColorSpace(ctx);
-    if (this.frameDepth.pendingNote) this.note("SOFT_DEPTH_PENDING", null, "scene depth is the C-01 stub; soft particles are off");
+    if (this.frameDepth.pendingNote === "SOFT_DEPTH_PENDING") this.note("SOFT_DEPTH_PENDING", null, "scene depth is the C-01 stub; soft particles are off");
+    else if (this.frameDepth.pendingNote === "SOFT_DEPTH_INVALID_SOURCE") this.note("SOFT_DEPTH_INVALID_SOURCE", null, "aura.scene.depth.copy has no sampleable depth texture; soft particles are off");
 
     const live: BatchState[] = [];
     for (const batch of this.batches.values()) {

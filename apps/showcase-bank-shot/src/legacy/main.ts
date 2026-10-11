@@ -115,10 +115,6 @@ ui.html("#panel", `
     <button id="bs-reset-button" type="button">Re-rack</button>
     <button id="bs-pause-button" type="button">Pause</button>
   </section>
-  <section class="evidence-strip" aria-label="Route evidence">
-    <span>Backend <code id="bs-ev-backend">booting</code></span>
-    <span>Sensors <code id="bs-ev-sensors">0</code> - Bodies <code id="bs-ev-bodies">0</code></span>
-  </section>
 `);
 
 // ---------------------------------------------------------------- audio ------
@@ -524,9 +520,6 @@ function syncHud(): void {
     else chargeBtn.textContent = "Charge + strike";
     chargeBtn.disabled = snap.phase === "rack-won" && snap.sessionComplete;
   }
-  ui.setText("#bs-ev-backend", sim.backend);
-  ui.setText("#bs-ev-sensors", String(sensorEventCount));
-  ui.setText("#bs-ev-bodies", String(sim.world.snapshot().bodies));
   banner.textContent = paused
     ? "PAUSED - P TO RESUME"
     : snap.phase === "rack-won" && snap.sessionComplete

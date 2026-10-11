@@ -24,9 +24,9 @@ import {
   model,
   resolveQrFlags,
   scene,
-  unsafeModelUrl,
   type AuraApp
 } from "@aura3d/engine";
+import { typedProbeModelAsset } from "./probe-asset.js";
 import { setTypedGLBActorQrFlags, setTypedGLBActorQrTransmissionMode } from "@aura3d/engine/lanes";
 import { setRendererQrFlags } from "@aura3d/rendering";
 import { expandPrd04FlagList } from "/benchmarks/quality-rebuild/scenes/prd04/flags.js";
@@ -94,11 +94,19 @@ async function main(): Promise<void> {
     built.camera(camera.perspective({ position: [0, 1.4, 4.5], target: [0, 0.8, 0], fov: 45, near: 0.05, far: 80 }));
     built.add(lights.ambient({ name: "fill", intensity: 0.2, color: "#ffffff" }));
     built.add(lights.directional({ name: "key", position: [4, 5, 3], intensity: 2.2, color: "#fff4e2" }).lookAt(0, 0.5, 0));
-    built.add(model(unsafeModelUrl(assetUrl), { name: "probe", scaleMode: "world" }).position(0, 0, 0));
+    // Typed, hash-verified ref: the production bridge rejects unsafeModelUrl.
+    built.add(model(await typedProbeModelAsset(assetUrl), { name: "probe", scaleMode: "world" }).position(0, 0, 0));
     const app = createAuraApp(stage as HTMLElement, {
       scene: built,
       renderer: { qualityProfile: "production" }, // T0-10/T0-13: deprecated CCR-15-1 mode/fallback dropped — no silent safe-basic mask
       pixelRatio: 1,
+      // createAuraApp re-installs the actor/animation flag seams from its own
+      // qualityRebuild flags (6f263f9c7). Pass the same expanded set the page
+      // installed, or the app resets A3D_QR_MATERIALS to off before the scene
+      // compiles (GPU run 38140816058: flag-on == flag-off pixels).
+      // `flags` is typed readonly string[]; resolveQrFlags accepts the expanded
+      // QrFlagInput object at runtime (applyInput).
+      qualityRebuild: { flags: expandPrd04FlagList(flags) as unknown as readonly string[] },
       resize: false,
       autoStart: false
     });

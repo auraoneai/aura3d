@@ -10,9 +10,10 @@ import { createOverlayDriver } from "../../../packages/game/src/juice/overlay";
 
 // ---------- Risk 1+2: instanceTransforms ----------
 function instancedHarness(capacity: number) {
-  const instances = Array.from({ length: capacity }, () => ({
-    position: { x: 0, y: 0, z: 0 },
-    scale: { x: 1, y: 1, z: 1 }
+  // AuraTransformSpec shape (AuraVec3 tuples), as stubSetInstanceTransforms writes it.
+  const instances: Array<{ position: readonly number[]; scale: readonly number[] }> = Array.from({ length: capacity }, () => ({
+    position: [0, 0, 0],
+    scale: [1, 1, 1]
   }));
   const node = { kind: "primitive", runtime: { id: "n1" }, instances, instanceColors: [] as string[] };
   const app = { scene: { nodes: [node] } } as never;
@@ -32,8 +33,10 @@ describe("stubSetInstanceTransforms capacity (risk 2)", () => {
     const { app, handle, node } = instancedHarness(2);
     const m = new Float32Array(32).fill(0).map((_, i) => (i % 16 < 12 && i % 16 % 4 === 0 ? 1 : 0));
     stubSetInstanceTransforms(handle, app, m, 1);
-    const hidden = node.instances[1] as { scale: { x: number } };
-    expect(hidden.scale.x).toBe(0);
+    // AuraTransformSpec.scale is an AuraVec3 tuple, not {x,y,z}.
+    expect(node.instances[1].scale).toEqual([0, 0, 0]);
+    // The visible slot keeps its decomposed (unit) scale.
+    expect(node.instances[0].scale).toEqual([1, 1, 1]);
   });
 });
 

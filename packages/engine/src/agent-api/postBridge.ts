@@ -15,6 +15,8 @@
 
 import {
   createRendererPostprocessPlanDiagnostics,
+  postGraphV2LastOutcome,
+  postV2ModulesReady,
   postVelocityCoverage,
   volumetricLightDirection,
   type CollectedLight,
@@ -274,7 +276,18 @@ function planForSubmitted(options: RendererPostProcessOptions, width: number, he
 export function collectPostSection(app: AuraApp): PostSectionReport {
   const submitted = (app.canvas ? canvasRecords.get(app.canvas) : undefined) ?? latestSubmittedPostprocess();
   const authoredContext = authoredPostContextFor(app.canvas ?? undefined);
-  const custom = registeredPostPasses().map((pass) => ({ id: pass.id, status: "post-graph-v2-pending" }));
+  // 03-S18c: report what the renderer executed, not what was authored.
+  // Registered C-13 passes run only when the v2 seam ran the stages
+  // (`postGraphV2LastOutcome() === "v2"`); otherwise the reason names the
+  // chain that served the frame (flag off, compat.post "3.0", a WebGPU
+  // backend, cpu-deterministic, unfusable passes, modules still loading, or
+  // `not-executed` when no postprocess frame reached the seam).
+  const customStatus = !authoredContext?.flags.post
+    ? "legacy-chain:A3D_QR_POST-off"
+    : authoredContext.compatPost3
+      ? "legacy-chain:compat.post-3.0"
+      : postGraphV2LastOutcome() ?? "not-executed";
+  const custom = registeredPostPasses().map((pass) => ({ id: pass.id, status: customStatus }));
   const empty = {
     present: false,
     requestedPasses: [],
@@ -458,6 +471,10 @@ export function createPrd03PostSurface(app: AuraApp, ctx: { readonly flags: QrFl
   // §6.8 re-resolution: a C-27 tier change re-records the authored tier so the
   // next postpipeline resolve reads the new `QUALITY_TIERS` row.
   qualityControllerOf(app)?.onChange((event) => recordPostQualityTier(event.to, app.canvas ?? undefined));
+  // Start the deferred v2 stage load at mount, not on the first frame, so the
+  // first frames after `app.ready()` run the real v2 chain (S1–S12 and C-13
+  // custom passes). A failed load is retried by the frame path.
+  if (ctx.flags.on("A3D_QR_POST")) postV2ModulesReady().catch(() => undefined);
   return new Prd03PostSurface(ctx.flags, app.canvas ?? undefined, app);
 }
 
@@ -513,7 +530,7 @@ export const POST_EFFECT_DEPRECATED_FIELDS: Readonly<Record<string, readonly str
 };
 
 export interface PostFieldDiagnostic {
-  readonly code: "POST_FIELD_UNSUPPORTED" | "post-field-deprecated" | "BLOOM_THRESHOLD_BELOW_HDR_WHITE" | "preset-capability-degraded" | "post-tier-disabled";
+  readonly code: "POST_FIELD_UNSUPPORTED" | "post-field-deprecated" | "BLOOM_THRESHOLD_BELOW_HDR_WHITE" | "preset-capability-degraded" | "post-tier-disabled" | "EFFECT_PENDING_GPU_PASS" | "POST_DUPLICATE_STAGE";
   readonly effect: string;
   readonly field?: string;
   readonly message: string;
@@ -691,18 +708,27 @@ export function createRootPostPipeline(
   const ssrNode = effect("screen-space-reflections");
 
   // §6.9/§8.4 (Phase 3): ambient-occlusion and contact-occlusion both target
-  // S2 GTAO — two AO nodes are a pipeline error (`POST_DUPLICATE_STAGE`;
-  // a lane-15 `AuraRuntimeError` union entry is qr-requested). `radius` is
-  // interpreted in metres flag-on; contactOcclusion is ambientOcclusion with
-  // a 0.2 m default radius.
+  // S2 GTAO, and the graph has one AO stage. `radius` is interpreted in
+  // metres flag-on; contactOcclusion is ambientOcclusion with a 0.2 m
+  // default radius.
+  //
+  // T0-29 (#979): six legacy games author both nodes (the post-v2 codemod
+  // merges them, §APIs). Throwing here failed the production mount, so with
+  // `post` on those routes drew 0 calls. The bridge now applies the codemod's
+  // merge at runtime: the ambient-occlusion node drives S2, the extra AO
+  // node is dropped and reported as `POST_DUPLICATE_STAGE` (a diagnostic, not
+  // a mount failure).
   const aoNodes = effectNodes.filter((node): node is AuraEffectNode =>
     node.kind === "effect" && (node.effect === "ambient-occlusion" || node.effect === "contact-occlusion"));
+  const aoNode = aoNodes.find((node) => node.effect === "ambient-occlusion") ?? aoNodes[0];
   if (aoNodes.length > 1) {
-    throw new Error(
-      `POST_DUPLICATE_STAGE: two AO effect nodes (${aoNodes.map((node) => node.effect).join(" + ")}) target stage S2-gtao.`
-    );
+    diagnostics.push({
+      code: "POST_DUPLICATE_STAGE",
+      effect: "S2-gtao",
+      message: `POST_DUPLICATE_STAGE: ${aoNodes.length} AO effect nodes (${aoNodes.map((node) => node.effect).join(" + ")}) target stage S2-gtao; `
+        + `${aoNode!.effect} drives it and the rest are dropped (run the post-v2 codemod to merge contactOcclusion).`
+    });
   }
-  const aoNode = aoNodes[0];
 
   // §6.9: the god-ray light is the strongest DIRECTIONAL light in the
   // compiled RenderSource — direction TOWARD the light for the S4 project.

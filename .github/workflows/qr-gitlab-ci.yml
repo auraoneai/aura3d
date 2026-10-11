@@ -112,7 +112,13 @@ jobs:
             echo "::notice::stale run: $BRANCH is now at $head, this run is $GITHUB_SHA; the newer run syncs it"
             echo "synced=false" >> "$GITHUB_OUTPUT"; exit 0
           fi
+          # Self-hosted runners reuse the work tree: a remote left by an earlier
+          # job made `git remote add` fail ("remote gitlab already exists"), and
+          # the token-bearing URL stayed in .git/config. Replace it, and always
+          # remove it when this step exits.
+          if git remote get-url gitlab >/dev/null 2>&1; then git remote remove gitlab; fi
           git remote add gitlab "$GITLAB_MIRROR_URL"
+          trap 'git remote remove gitlab' EXIT
           git fetch --quiet --no-tags gitlab main || true
           base="$(git rev-parse --verify --quiet gitlab/main || true)"
           range="${base:+$base..}HEAD"

@@ -139,13 +139,66 @@ export function defaultProgramFeatures(material: Material, ctx: MaterialFeatureC
     doubleSided: material.renderState.cullMode === "none",
     vertexColors: attrs.has("a_color"),
     flatShading: paramNumber(material, "u_flatShading") === 1,
-    diffuseModel: paramNumber(material, "u_diffuseModel") === 0 ? "lambert" : "burley",
+    // PRD-01 §8.3: Lambert by default (glTF / three.js); Burley is opt-in
+    // (`u_diffuseModel = 1` → DIFFUSE_BURLEY). 01-GENTEST / C-02 + C-03.
+    diffuseModel: paramNumber(material, "u_diffuseModel") === 1 ? "burley" : "lambert",
     specularAntialiasing: paramNumber(material, "u_specularAntialiasing") !== 0,
     skinning: skinned ? { influences: attrs.has("a_joints1") ? 8 : 4, palette: "uniform" } : undefined,
     morph: attrs.has("a_morphTarget") ? { targetBucket: 4, normals: attrs.has("a_morphNormal"), tangents: attrs.has("a_morphTangent") } : undefined,
     instancing: instanced ? { color: attrs.has("a_instanceColor") } : undefined,
     features
   };
+}
+
+/** Geometry attribute presence test, by shader name (`a_uv`, `a_joints`, …). */
+export type GeometryAttributeTest = (shaderName: string) => boolean;
+
+/** True when the geometry carries a full skin (joints + weights). */
+export function geometryHasSkin(has: GeometryAttributeTest): boolean {
+  return has("a_joints") && has("a_weights");
+}
+
+/**
+ * #867 (games): the program's feature set follows the geometry, as in
+ * three.js. A primitive or procedural mesh with no `a_uv` cannot sample
+ * uv-set-0 maps (they and the extension lobe maps are dropped); no `a_uv1`
+ * drops uv-set-1 maps; no `a_color` drops vertex colors; no joints/weights
+ * drops skinning and the `prd06.deform` bit (morph is texture-driven and
+ * untouched). Normal maps need only uv: the generated program never reads `a_tangent`
+ * (derivative TBN when the geometry has none). Returns `record` itself when
+ * nothing is dropped, so program keys stay stable for complete geometry.
+ */
+export function featuresForGeometry<T extends FeatureRecord>(record: T, has: GeometryAttributeTest): T {
+  const uv0 = has("a_uv");
+  const uv1 = has("a_uv1");
+  const skin = geometryHasSkin(has);
+  let changed = false;
+  const maps = {} as { -readonly [K in keyof ProgramFeatures["maps"]]: ProgramFeatures["maps"][K] };
+  for (const [slot, feature] of Object.entries(record.maps) as [keyof ProgramFeatures["maps"], TextureSlotFeature | undefined][]) {
+    if (!feature) continue;
+    if ((feature.uvSet === 1 ? uv1 : uv0)) maps[slot] = feature;
+    else changed = true;
+  }
+  const extensions = uv0
+    ? record.extensions
+    : record.extensions.map((ext) => {
+        if (ext.maps.length === 0) return ext;
+        changed = true;
+        return { ...ext, maps: [] };
+      });
+  const vertexColors = record.vertexColors && has("a_color");
+  if (vertexColors !== record.vertexColors) changed = true;
+  const skinning = skin ? record.skinning : undefined;
+  if (skinning !== record.skinning) changed = true;
+  let features = record.features;
+  if (!skin && features["prd06.deform"] !== undefined) {
+    const { ["prd06.deform"]: _dropped, ...rest } = features;
+    void _dropped;
+    features = rest;
+    changed = true;
+  }
+  if (!changed) return record;
+  return { ...record, maps, extensions, vertexColors, skinning, features };
 }
 
 /** Allow-listed shader → covered by the generated path. */

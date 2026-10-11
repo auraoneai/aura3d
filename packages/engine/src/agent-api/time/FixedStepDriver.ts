@@ -36,6 +36,24 @@ export interface FixedStepDriverOptions extends AuraLoopOptions {
   readonly resolveHandle?: (id: string) => AuraRuntimeNodeHandle | undefined;
   /** Injection point for tests; defaults to a fresh InterpolationStore. */
   readonly interpolationStore?: InterpolationStore;
+  /**
+   * The app's C-23 controller (`app.time`). When given, the driver advances
+   * and reads THIS controller, so `app.time.hitStop()` / `app.feel` hit-stop
+   * events freeze the loop the app presents. Without it the driver owns a
+   * private controller that nothing else can reach (a global hit-stop issued
+   * on `app.time` would never stall the sim, and its scoped stops would never
+   * expire).
+   */
+  readonly time?: TimeController;
+  /**
+   * The app's C-22 controller (`app.camera`) when it exposes the present
+   * seam. §6.1: the camera updates ONCE per presented tick, after
+   * interpolation resolve, on real dt (layers keep running through hit-stop),
+   * reading interpolated subject positions.
+   */
+  readonly camera?: {
+    present(realDt: number, timeMs: number, subjectPosition?: (id: string) => readonly number[] | undefined): unknown;
+  };
 }
 
 export interface AuraRenderFrame {
@@ -52,16 +70,37 @@ export class FixedStepDriver {
   readonly interpolation: InterpolationStore | null;
 
   private readonly app: FixedStepDriverApp;
+  private readonly camera?: FixedStepDriverOptions["camera"];
   private readonly renderPerSubstep: boolean;
   private readonly fixedDtValue: number;
   private readonly renderCallbacks = new Set<AuraRenderCallback>();
   private rendersLastTick = 0;
   private rendersThisTick = 0;
+  /**
+   * Per-substep mode: real seconds owed to the camera. Substeps present
+   * `fixedDt` each (and may consume time carried from earlier ticks), each
+   * tick adds its real dt, and only a positive balance is presented — so over
+   * any run the camera advances by exactly the real time that elapsed.
+   */
+  private cameraDebt = 0;
+  /**
+   * Per-substep mode: the camera's own clock (seconds), advanced by exactly
+   * the dt of every present. Strictly monotonic across substep and
+   * debt-only presents, so time-keyed rigs (legacy follow treats an equal
+   * timestamp as a duplicate frame) never see a repeated time after a
+   * 0-substep tick (Codex review on #948).
+   */
+  private cameraClock = 0;
 
   constructor(app: FixedStepDriverApp, options: FixedStepDriverOptions = {}) {
     this.app = app;
+    this.camera = options.camera;
     this.renderPerSubstep = options.renderPerSubstep === true;
-    this.time = new TimeController({ resolveHandle: options.resolveHandle });
+    this.time = options.time ?? new TimeController({ resolveHandle: options.resolveHandle });
+    // Continue from the supplied controller's clock: a driver attached to an
+    // already-advanced `options.time` must not rewind time-keyed rigs (legacy
+    // follow snaps on rewind; dolly/path restart their phase). Codex review on #1001.
+    this.cameraClock = this.time.realTime;
     const interpolationEnabled =
       options.interpolation === true ||
       (options.interpolation !== false &&
@@ -137,7 +176,15 @@ export class FixedStepDriver {
     this.app.advance(this.fixedDtValue);
     this.interpolation?.captureCurrent();
     if (this.renderPerSubstep) {
+      // Legacy escape hatch: each substep is a submitted frame, so the camera
+      // must be presented for that substep before it renders; otherwise every
+      // submission shows the previous tick's pose (Codex review on #911).
+      this.cameraClock += this.fixedDtValue;
+      const timeMs = this.cameraClock * 1000;
       this.rendersThisTick += 1;
+      const current = this.interpolation?.resolve(1);
+      this.camera?.present(this.fixedDtValue, timeMs, current ? (id) => current.get(id)?.position : undefined);
+      if (this.camera) this.cameraDebt -= this.fixedDtValue;
       this.app.step(0);
     }
   }
@@ -150,8 +197,25 @@ export class FixedStepDriver {
   private presentTick(realDt: number): void {
     this.time.advance(realDt);
     const alpha = this.loop.snapshot().alpha;
-    this.interpolation?.resolve(alpha);
-    if (!this.renderPerSubstep) this.app.step(0);
+    const resolved = this.interpolation?.resolve(alpha);
+    if (!this.renderPerSubstep) {
+      this.camera?.present(realDt, this.time.realTime * 1000, resolved ? (id) => resolved.get(id)?.position : undefined);
+      this.app.step(0);
+    } else {
+      // Per-substep mode presented `fixedDt` per rendered substep above. Real
+      // time not covered by those substeps (all of it on a 0-substep tick,
+      // e.g. global hit-stop) must still advance the camera — its sequences,
+      // shake, ramps and layers run on real time (Codex review on #946). No
+      // render here: the next submission shows the advanced pose.
+      if (this.camera) {
+        this.cameraDebt += realDt;
+        if (this.cameraDebt > 1e-9) {
+          this.cameraClock += this.cameraDebt;
+          this.camera.present(this.cameraDebt, this.cameraClock * 1000, resolved ? (id) => resolved.get(id)?.position : undefined);
+          this.cameraDebt = 0;
+        }
+      }
+    }
     this.rendersLastTick = this.renderPerSubstep ? this.rendersThisTick : 1;
     this.rendersThisTick = 0;
     const frame: AuraRenderFrame = { alpha, realDt, simTime: this.time.simTime };

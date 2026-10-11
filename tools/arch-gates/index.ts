@@ -5,6 +5,8 @@
 //                              not paired) living under packages/*/src
 //   no-cross-package-relative — import specifiers inside packages/*/src that
 //                              resolve to a DIFFERENT package directory
+//                              (fail mode when they enter packages/<b>/src;
+//                              dated `file` allowlist rows downgrade to warn)
 // Emits a JSON report (stdout or --out) and exits 0 in warn mode; a
 // `--strict` mode turns warnings into a nonzero exit for the enforce-mode
 // flip later in the lane.
@@ -22,6 +24,7 @@ import { checkSingleRenderer } from "./rules/singleRenderer";
 import { checkExportBudget, checkNoEvidenceInRuntime } from "./rules/exportBudget";
 import { checkUniqueOwnership } from "./rules/uniqueOwnership";
 import { checkDepsTruth } from "./rules/depsTruth";
+import { fileAllowed, isExpired, loadAllowlist } from "./rules/shared";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -100,6 +103,7 @@ export function checkNoCrossPackageRelative(root: string): GateFinding[] {
   const findings: GateFinding[] = [];
   const packagesDir = join(root, "packages");
   if (!existsSync(packagesDir)) return findings;
+  const allowlist = loadAllowlist(root);
   const packageRoots = new Map<string, string>();
   for (const pkg of readdirSync(packagesDir, { withFileTypes: true })) {
     if (pkg.isDirectory() && !pkg.name.startsWith(".")) packageRoots.set(pkg.name, join(packagesDir, pkg.name));
@@ -128,9 +132,24 @@ export function checkNoCrossPackageRelative(root: string): GateFinding[] {
             findings.push({ rule: "no-cross-package-relative", file: relative(root, path), detail: `relative specifier "${spec}" escapes packages/ entirely` });
             continue;
           }
-          const owner = rel.split(sep)[0]!;
-          if (owner !== pkgName) {
-            findings.push({ rule: "no-cross-package-relative", file: relative(root, path), detail: `relative specifier "${spec}" enters packages/${owner} (cross-package)` });
+          const [owner, segment] = rel.split(sep);
+          if (owner && owner !== pkgName) {
+            // CI-2 fail mode: `packages/<a>/src/**` reaching into another
+            // package's `src/` tree is dead inside the packed tarball (only
+            // `@aura3d/<b>` subpaths resolve there). Dated allowlist rows
+            // (tools/arch-gates/allowlist.json, `file` key) downgrade to warn
+            // until their expiry; anything else fails the run.
+            const fromRel = relative(root, path).split(sep).join("/");
+            const intoSrc = segment === "src";
+            const entry = intoSrc ? fileAllowed(allowlist, "no-cross-package-relative", fromRel) : null;
+            const allowed = entry !== null && !isExpired(entry);
+            const suffix = entry ? (allowed ? ` (allowlisted until ${entry.expires}: ${entry.reason})` : " (ALLOWLIST EXPIRED)") : "";
+            findings.push({
+              rule: "no-cross-package-relative",
+              file: fromRel,
+              detail: `relative specifier "${spec}" enters packages/${owner} (cross-package)${suffix}`,
+              enforced: intoSrc && !allowed
+            });
           }
         }
       }

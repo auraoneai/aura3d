@@ -1,5 +1,8 @@
 # T2.4 — unified skinned PBR parity (browser evidence)
 
+> **06-REC note (finish phase, G3):** this file cites no passing remote run id; every completion claim below is recorded as **unbacked** until a green lane-workflow/GitLab run id is added next to it.
+
+
 **Spec:** `tests/qr/prd06/browser/skinned-pbr-parity.spec.ts`
 **Harness:** `tests/qr/prd06/browser/skinned-pbr-parity-harness.ts`
 

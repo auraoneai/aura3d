@@ -16,6 +16,8 @@ import {
 import { Material, type RenderState } from "../Material.js";
 import { MaterialInstance } from "../MaterialInstance.js";
 import type { UniformValue } from "../RenderDevice";
+import { TextureBinding } from "../TextureBinding.js";
+import { capturedTransmissionTarget } from "../forward/transmissionTargetStore.js";
 
 /**
  * KHR_texture_transform matrix per PRD-04 §8.9: `T · R · S` with
@@ -118,7 +120,9 @@ const tangentFrameFeature: ShaderFeature = {
   owner: OWNER,
   flag: FLAG,
   hooks: ["vertex:world", "fragment:normal"],
-  chunks: ["a3d_prd04_tangent_frame"],
+  // T0-05 pars/call split: one call chunk per hook (index-mapped); both
+  // require a3d_prd04_tangent_frame_state → a3d_prd04_tangent_frame.
+  chunks: ["a3d_prd04_tangent_frame_vertex_call", "a3d_prd04_tangent_frame_call"],
   select(input: ShaderFeatureSelectInput) {
     const material = input.item.material as ParameterSource | undefined;
     if (!material) return undefined;
@@ -128,8 +132,10 @@ const tangentFrameFeature: ShaderFeature = {
     }
     return undefined;
   },
-  defines(value) {
-    return { A3D_PRD04_TANGENT_FRAME: value === true ? 1 : 0 };
+  defines(value): Readonly<Record<string, string | number | true>> {
+    // Chunk guards are `#ifdef`: emit the define only when active (a `0`
+    // value would still satisfy `#ifdef`).
+    return value === true ? { A3D_PRD04_TANGENT_FRAME: 1 } : {};
   }
 };
 
@@ -157,7 +163,7 @@ const debugViewFeature: ShaderFeature = {
   owner: OWNER,
   flag: FLAG,
   hooks: ["fragment:end"],
-  chunks: ["a3d_prd04_debug_view"],
+  chunks: ["a3d_prd04_debug_view_call"],
   select(input: ShaderFeatureSelectInput) {
     const material = input.item.material as ParameterSource | undefined;
     const v = material?.getParameter("u_prd04DebugView");
@@ -182,8 +188,12 @@ const transmissionTargetFeature: ShaderFeature = {
   id: "prd04.transmissionTarget",
   owner: OWNER,
   flag: "A3D_QR_MATERIALS_TRANSMISSION",
-  hooks: ["fragment:pars", "fragment:indirect"],
-  chunks: ["a3d_prd04_transmission", "a3d_prd04_volume"],
+  // T0-05: declaration only — the refraction itself is the transmission
+  // lobe's `ibl` call (lobe_calls.glsl.ts). Previously `a3d_prd04_volume` was
+  // index-mapped to `fragment:indirect`, splicing function definitions into
+  // `main()` and replacing the default indirect body.
+  hooks: ["fragment:pars"],
+  chunks: ["a3d_prd04_transmission"],
   select(input: ShaderFeatureSelectInput) {
     const material = input.item.material as ParameterSource | undefined;
     if (!material) return undefined;
@@ -193,15 +203,27 @@ const transmissionTargetFeature: ShaderFeature = {
     }
     return undefined;
   },
-  defines(value) {
-    return { A3D_PRD04_TRANSMISSION_TARGET: value === true ? 1 : 0 };
+  defines(value): Readonly<Record<string, string | number | true>> {
+    // `a3d_prd04_transmission` / `a3d_prd04_volume` guard on A3D_TRANSMISSION.
+    return value === true ? { A3D_TRANSMISSION: 1 } : {};
   },
   bindUniforms(_value, item, set) {
+    // T0-05 review: bind the captured opaque-scene copy (the capture pass
+    // records it in transmissionTargetStore); a material-pinned target wins.
     const material = item.material as ParameterSource | undefined;
+    const captured = capturedTransmissionTarget();
     const target = material?.getParameter("u_prd04TransmissionTarget");
-    if (target !== undefined) set("a3d_prd04_transmissionSampler", target);
+    if (target !== undefined) {
+      set("a3d_prd04_transmissionSampler", target);
+    } else if (captured) {
+      set("a3d_prd04_transmissionSampler", new TextureBinding({ name: "a3d_prd04_transmissionSampler", texture: captured.texture, required: false }));
+    }
     const size = material?.getParameter("u_prd04TransmissionTargetSize");
-    if (size !== undefined) set("a3d_prd04_transmissionSamplerSize", size);
+    if (size !== undefined) {
+      set("a3d_prd04_transmissionSamplerSize", size);
+    } else if (captured) {
+      set("a3d_prd04_transmissionSamplerSize", new Float32Array([captured.width, captured.height]));
+    }
   }
 };
 
@@ -217,7 +239,7 @@ export const alphaToCoverageFeature: ShaderFeature = {
   owner: OWNER,
   flag: FLAG,
   hooks: ["fragment:alpha"],
-  chunks: ["a3d_prd04_alpha_a2c"],
+  chunks: ["a3d_prd04_alpha_a2c_call"],
   select(input: ShaderFeatureSelectInput) {
     const material = input.item.material as ParameterSource | undefined;
     if (!material) return undefined;
@@ -227,12 +249,41 @@ export const alphaToCoverageFeature: ShaderFeature = {
       && renderStateOf(material)?.alphaToCoverage === true
       && (input.tier.msaaSamples ?? 0) > 0 ? true : undefined;
   },
-  defines(value) {
-    return { A3D_PRD04_ALPHA_TO_COVERAGE: value === true ? 1 : 0 };
+  defines(value): Readonly<Record<string, string | number | true>> {
+    // ALPHA_TO_COVERAGE also stops the generator's alpha chunk from applying a
+    // second hard cutoff after the smoothstep.
+    return value === true ? { A3D_PRD04_ALPHA_TO_COVERAGE: 1, ALPHA_TO_COVERAGE: 1 } : {};
   }
 };
 
-const FEATURES: readonly ShaderFeature[] = [uvTransformFeature, tangentFrameFeature, debugViewFeature, transmissionTargetFeature, alphaToCoverageFeature];
+/**
+ * `prd04.rim` (#88, R-14-14 §8.10): view-dependent rim emission on lit generated
+ * programs. Selected iff the material carries `u_prd04RimStrength > 0`; the rim
+ * colour defaults to white and the falloff power to 3 when the material omits them.
+ */
+export const rimFeature: ShaderFeature = {
+  id: "prd04.rim",
+  owner: OWNER,
+  flag: FLAG,
+  hooks: ["fragment:emissive"],
+  chunks: ["a3d_prd04_rim_call"],
+  select(input: ShaderFeatureSelectInput) {
+    const material = input.item.material as ParameterSource | undefined;
+    const strength = material?.getParameter("u_prd04RimStrength");
+    return typeof strength === "number" && strength > 0 ? true : undefined;
+  },
+  defines(value): Readonly<Record<string, string | number | true>> {
+    return value === true ? { A3D_PRD04_RIM: 1 } : {};
+  },
+  bindUniforms(_value, item, set) {
+    const material = item.material as ParameterSource | undefined;
+    set("u_prd04RimStrength", material?.getParameter("u_prd04RimStrength") ?? 0);
+    set("u_prd04RimColor", material?.getParameter("u_prd04RimColor") ?? new Float32Array([1, 1, 1]));
+    set("u_prd04RimPower", material?.getParameter("u_prd04RimPower") ?? 3);
+  }
+};
+
+const FEATURES: readonly ShaderFeature[] = [uvTransformFeature, tangentFrameFeature, debugViewFeature, transmissionTargetFeature, alphaToCoverageFeature, rimFeature];
 
 let registered = false;
 

@@ -7,6 +7,8 @@ import { neon } from "../nodes/neon.js";
 import { createPhysicalMaterialSpec } from "../../material-physical/PhysicalMaterialSpec.js";
 import { validateMaterialVisualQA } from "../looks/structuralQA.js";
 import { lazyNamespace } from "../lazyNamespace.js";
+import type { AuraSolarPlanetMaterialPreset } from "../nodes/types.js";
+import { solarPlanetMaterial } from "../nodes/solar.js";
 
 
 /**
@@ -22,7 +24,9 @@ export const AURA_PRESET_DEFAULTS: unique symbol = Symbol.for("aura3d.presetDefa
 export function resolveMaterialSpecDefaults(defaults: AuraMaterialSpec, options: AuraMaterialSpec): AuraMaterialSpec {
   const defaultedKeys = new Set<string>();
   for (const key of Object.keys(defaults)) {
-    if ((options as Record<string, unknown>)[key] === undefined) defaultedKeys.add(key);
+    // An own `undefined` option still wins the spread below (legacy merge shape), so the key's value
+    // did not come from the preset and must not be marked as preset-defaulted.
+    if (!Object.prototype.hasOwnProperty.call(options, key)) defaultedKeys.add(key);
   }
   const spec = { ...defaults, ...options } as AuraMaterialSpec & { [AURA_PRESET_DEFAULTS]?: ReadonlySet<string> };
   spec[AURA_PRESET_DEFAULTS] = defaultedKeys;
@@ -264,6 +268,70 @@ export const material = lazyNamespace(() => ({
     normal: options.normal ?? proceduralTexture("rubber-roughness", { scale: 24, strength: 0.42, contrast: 0.7 }),
     envMapIntensity: options.envMapIntensity ?? 0.26
   }, options, material.blackRubber),
+  /**
+   * #84 (R-14-14 §8.6, Bank Shot): billiard felt. A pure C-03 sheen lobe over a rough diffuse base,
+   * with the fabric procedural normal for the nap. No clearcoat, no metal.
+   */
+  felt: (options: AuraMaterialSpec = {}): AuraMaterialSpec => presetFrom({
+    name: options.name ?? "felt",
+    color: options.color ?? "#0f5132",
+    roughness: options.roughness ?? 0.94,
+    sheen: options.sheen ?? 0.82,
+    sheenRoughness: options.sheenRoughness ?? 0.62,
+    sheenColor: options.sheenColor ?? options.color ?? "#3f8f6a",
+    normal: options.normal ?? proceduralTexture("fabric-normal", { scale: 48, strength: 0.28, contrast: 0.55 }),
+    envMapIntensity: options.envMapIntensity ?? 0.32
+  }, options, material.fabric),
+  /**
+   * #84 (R-14-14 §8.6, Bank Shot rails): high-gloss lacquered wood/plastic. A dielectric base under a
+   * C-03 clearcoat lobe; colour and roughness stay authored-overridable.
+   */
+  lacquer: (options: AuraMaterialSpec = {}): AuraMaterialSpec => presetFrom({
+    name: options.name ?? "lacquer",
+    color: options.color ?? "#5b1a12",
+    roughness: options.roughness ?? 0.38,
+    metallic: options.metallic ?? options.metalness ?? 0,
+    metalness: options.metalness ?? options.metallic ?? 0,
+    clearcoat: options.clearcoat ?? 1,
+    clearcoatRoughness: options.clearcoatRoughness ?? 0.03,
+    envMapIntensity: options.envMapIntensity ?? 1.2
+  }, options, material.clearcoat),
+  /**
+   * #84 (R-14-14 §8.6, Turbo Drift): metallic car paint. A semi-metal base coat under a C-03
+   * clearcoat lobe. The flake normal is not a procedural kind yet (#84 follow-up); the base
+   * roughness carries the metallic sparkle spread meanwhile.
+   */
+  carPaint: (options: AuraMaterialSpec = {}): AuraMaterialSpec => presetFrom({
+    name: options.name ?? "car paint",
+    color: options.color ?? "#b91c1c",
+    roughness: options.roughness ?? 0.32,
+    metallic: options.metallic ?? options.metalness ?? 0.65,
+    metalness: options.metalness ?? options.metallic ?? 0.65,
+    clearcoat: options.clearcoat ?? 1,
+    clearcoatRoughness: options.clearcoatRoughness ?? 0.02,
+    envMapIntensity: options.envMapIntensity ?? 1.5
+  }, options, material.clearcoat),
+  /**
+   * #80 (R-14-14 §8.1) / #258: planet surface presets, delegating to the solar-system preset table
+   * (`nodes/solar.ts`) so both entry points share one definition. Caller options override the preset.
+   */
+  planet: (preset: AuraSolarPlanetMaterialPreset = "rocky", options: AuraMaterialSpec = {}): AuraMaterialSpec =>
+    // Every preset field (not just `name`) is marked preset-defaulted unless the caller supplies it.
+    resolveMaterialSpecDefaults({ ...solarPlanetMaterial(preset), name: `planet ${preset}` }, options),
+  /**
+   * #80 (R-14-14 §8.1): atmosphere / shield shell for a slightly larger sphere around a planet.
+   * Translucent, emissive, unlit-looking (roughness 1, no env): the §8.1 fallback without a rim
+   * term. The rim falloff lobe is #88.
+   */
+  atmosphere: (options: AuraMaterialSpec = {}): AuraMaterialSpec => presetFrom({
+    name: options.name ?? "atmosphere",
+    color: options.color ?? "#60a5fa",
+    emissive: options.emissive ?? options.color ?? "#60a5fa",
+    emissiveIntensity: options.emissiveIntensity ?? 0.6,
+    opacity: options.opacity ?? 0.28,
+    roughness: options.roughness ?? 1,
+    envMapIntensity: options.envMapIntensity ?? 0
+  }, options, material.emissive),
   proceduralTexture,
   proceduralTextures: {
     fabric: (options: Partial<Omit<AuraProceduralTextureSpec, "kind" | "texture">> = {}) => proceduralTexture("fabric-normal", { scale: 18, strength: 0.42, contrast: 0.62, ...options }),
@@ -324,9 +392,16 @@ export const material = lazyNamespace(() => ({
     clearcoatPaint: material.clearcoatPaint(),
     sneakerMesh: material.sneakerMesh(),
     sneakerRubber: material.sneakerRubber(),
-    fabric: material.fabric()
+    fabric: material.fabric(),
+    felt: material.felt(),
+    lacquer: material.lacquer(),
+    carPaint: material.carPaint()
   }),
   inspector: (name: string, spec: AuraMaterialSpec): AuraMaterialInspectorPanel => createMaterialInspector(name, spec),
+  /**
+   * @deprecated Name-heuristic check (#192, PRD-13 T1.11): every result carries
+   * `deprecated: true, kind: "structural-name-heuristic"`. Use `structuralQA.material` instead.
+   */
   visualQA: (nodes: readonly AuraSceneNode[]): AuraMaterialVisualQAResult => validateMaterialVisualQA(nodes),
   capabilityDiagnostics: (input?: AuraMaterialCapabilityInput): AuraMaterialCapabilityDiagnostics =>
     createMaterialCapabilityDiagnostics(input)

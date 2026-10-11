@@ -2,7 +2,10 @@
 /**
  * §2.3 (PRD-16): fold per-flag-set capture reports into bisect-summary.json.
  *
- * Usage: node benchmarks/quality-rebuild/bisect-summary.mjs <out-root> <set1,set2,...>
+ * Usage: node benchmarks/quality-rebuild/bisect-summary.mjs <out-root> "<set1;set2;...>"
+ *
+ * Sets are ';'-separated because a set is itself a comma list of flags
+ * (e.g. "core,lighting,...,strict"); splitting on ',' broke every multi-flag set.
  *
  * Each set's report.json lives at <out-root>/<sanitized-set>/report.json. The
  * summary row is {set, scene, engine, status, drawCalls, error0, mountTiming}
@@ -15,12 +18,12 @@ import { join } from "node:path";
 
 const [, , outRoot, setsArg] = process.argv;
 if (!outRoot || !setsArg) {
-  console.error("usage: bisect-summary.mjs <out-root> <set1,set2,...>");
+  console.error('usage: bisect-summary.mjs <out-root> "<set1;set2;...>"');
   process.exit(2);
 }
 
 const sanitize = (set) => set.replace(/[^A-Za-z0-9_-]/g, "_");
-const sets = setsArg.split(",").filter(Boolean);
+const sets = setsArg.split(";").map((s) => s.trim()).filter(Boolean);
 const summary = { generatedAt: new Date().toISOString(), rows: [], missing: [] };
 
 for (const set of sets) {

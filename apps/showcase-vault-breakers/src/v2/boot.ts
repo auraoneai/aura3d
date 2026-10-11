@@ -2,11 +2,11 @@
 // §6.9.5 "pinball cabinet in a dark arcade": admitted cabinet + FlipperReal +
 // mechanism GLBs, chrome ball, lit inserts, one shadowed key. Gameplay modules
 // (table/ball-flow/flippers/plunger/missions/scoring) are unchanged; audio
-// plays through the legacy cue map until C-25 game-sfx is real (standIn R-14-10).
+// plays through the legacy cue map until C-25 game-sfx is real (standIn R-14-09).
 import { scene } from "@aura3d/engine";
 import { createGame, type Game, lookManifest } from "@aura3d/game";
 import { createTableSimulation, quatToEuler } from "../gameplay/table";
-import { VaultFlow, type VaultGameEvent } from "../gameplay/ball-flow";
+import { VaultFlow } from "../gameplay/ball-flow";
 import { FlipperController } from "../gameplay/flippers";
 import { PlungerController } from "../gameplay/plunger";
 import direction from "../../art/direction";
@@ -15,9 +15,11 @@ import { scoreboardVisibility } from "../legacy/scoreboard";
 import { arcadeRoom, insertBezels, playfieldNodes } from "./scene/world";
 import { lightingNodes } from "./scene/lighting";
 import { createVaultRig, fallbackCameraNode, type VaultRigState } from "./scene/camera";
-import { wireVaultFx, BUMPER_IMPACT_POSITIONS, SLING_IMPACT_POSITIONS } from "./scene/fx";
+import { wireVaultFx } from "./scene/fx";
+import { createEventConsumer } from "./flow-events";
 import { publishVaultEvidence } from "./evidence";
 import { applyVaultScenario } from "./scenarios";
+import { assets } from "../../../../src/aura-assets";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_VAULT_BREAKERS" as const;
 
@@ -69,10 +71,10 @@ const game = createGame({
     theme: "arcade-neon",
     maxScreenFraction: 0.15,
     widgets: [
-      { id: "score", kind: "score", anchor: "top", label: "SCORE" },
-      { id: "ball", kind: "label", anchor: "top-left", label: "BALL" },
-      { id: "mission", kind: "label", anchor: "bottom", label: "MISSION" },
-      { id: "power", kind: "meter", anchor: "right", label: "PLUNGER" }
+      { id: "score", kind: "prompt", anchor: "top", label: "SCORE" },
+      { id: "ball", kind: "prompt", anchor: "top-left", label: "BALL" },
+      { id: "mission", kind: "prompt", anchor: "bottom", label: "MISSION" },
+      { id: "power", kind: "prompt", anchor: "right", label: "PLUNGER" }
     ]
   },
   touch: {
@@ -81,17 +83,17 @@ const game = createGame({
   },
   sound: {
     cues: {
-      "flipper-snap": { asset: "vaultFlipperSnapSfx" },
-      "bumper-hit": { asset: "vaultBumperHitSfx" },
-      "sling-pop": { asset: "vaultSlingPopSfx" },
-      "target-down": { asset: "vaultTargetDownSfx" },
-      "bank-clear": { asset: "vaultBankClearSfx" },
-      "vault-open": { asset: "vaultVaultOpenSfx" },
-      "multiball": { asset: "vaultMultiballSfx" },
-      "ball-drain": { asset: "vaultBallDrainSfx" },
-      "tilt-warn": { asset: "vaultTiltWarnSfx" },
-      "plunger-release": { asset: "vaultPlungerReleaseSfx" },
-      "ramp-roll": { asset: "vaultRampRollSfx" }
+      "flipper-snap": { asset: assets.vaultFlipperSnapSfx },
+      "bumper-hit": { asset: assets.vaultBumperHitSfx },
+      "sling-pop": { asset: assets.vaultSlingPopSfx },
+      "target-down": { asset: assets.vaultTargetDownSfx },
+      "bank-clear": { asset: assets.vaultBankClearSfx },
+      "vault-open": { asset: assets.vaultVaultOpenSfx },
+      "multiball": { asset: assets.vaultMultiballSfx },
+      "ball-drain": { asset: assets.vaultBallDrainSfx },
+      "tilt-warn": { asset: assets.vaultTiltWarnSfx },
+      "plunger-release": { asset: assets.vaultPlungerReleaseSfx },
+      "ramp-roll": { asset: assets.vaultRampRollSfx }
     }
   },
   juice: {
@@ -113,8 +115,6 @@ const game = createGame({
 const fx = wireVaultFx(game);
 let frame = 0;
 let bumperHitsThisBall = 0;
-let bumperIndex = 0;
-let slingIndex = 0;
 let nudgeFlip = false;
 const bootedAtMs = performance.now();
 
@@ -144,62 +144,12 @@ function resolveHandles(): void {
 
 // ------------------------------------------------------------ flow events ----
 
-function consumeEvents(events: readonly VaultGameEvent[]): void {
-  for (const event of events) {
-    switch (event.type) {
-      case "serve":
-        pushCue("plunger-release");
-        bumperHitsThisBall = 0;
-        break;
-      case "bumper": {
-        bumperHitsThisBall += 1;
-        pushCue("bumper-hit");
-        const pos = BUMPER_IMPACT_POSITIONS[bumperIndex % BUMPER_IMPACT_POSITIONS.length];
-        bumperIndex += 1;
-        fx.onBumper(pos);
-        break;
-      }
-      case "sling":
-        pushCue("sling-pop");
-        fx.onSling(SLING_IMPACT_POSITIONS[slingIndex % SLING_IMPACT_POSITIONS.length]);
-        slingIndex += 1;
-        break;
-      case "target-down":
-        pushCue("target-down");
-        fx.onTarget(event.id);
-        break;
-      case "bank-clear":
-      case "all-banks-clear":
-        pushCue("bank-clear");
-        break;
-      case "vault-open":
-        pushCue("vault-open");
-        fx.onVaultOpen();
-        break;
-      case "multiball-start":
-        pushCue("multiball");
-        fx.onMultiball();
-        break;
-      case "orbit-loop":
-        pushCue("ramp-roll");
-        break;
-      case "ball-drain":
-        pushCue("ball-drain");
-        fx.onDrain();
-        break;
-      case "tilt-strike":
-      case "tilt-lock":
-        pushCue("tilt-warn");
-        break;
-      case "game-over":
-        pushCue("ball-drain");
-        void game.hud.banner("GAME OVER", { holdMs: 2600 });
-        break;
-      default:
-        break;
-    }
-  }
-}
+const consumeEvents = createEventConsumer({
+  pushCue,
+  fx,
+  hudBanner: (text, options) => game.hud.banner(text, options),
+  onServe: () => { bumperHitsThisBall = 0; },
+});
 
 // ------------------------------------------------------------- input ---------
 

@@ -10,6 +10,8 @@
  * asset lands it can replace `gustNoiseData` without touching the pack layout.
  */
 import { Texture } from "../../Texture.js";
+import { Sampler } from "../../Sampler.js";
+import { TextureBinding } from "../../TextureBinding.js";
 import { registerShaderFeature, type ShaderFeature } from "../../contracts/program.js";
 import { registerDepthVariantFeature } from "../../contracts/shadows.js";
 
@@ -122,6 +124,29 @@ export function updateWindField(field: WindFieldBinding, spec: WindFieldSpec, ti
  * for world draws flagged `wind:true` and in the depth/distance variants so
  * the C-11 shadow pass bends identically.
  */
+/**
+ * #1143 — generated-path wind state. `prd10.wind` binds these per draw as
+ * plain uniforms (`a3d_prd10_wind_deform`). Zero strength until the world
+ * runtime publishes a spec, so an unset wind leaves geometry in place.
+ */
+const windState = { ubo: new Float32Array(8), assetHeight: 1 };
+let gustBinding: TextureBinding | undefined;
+
+/** Publish the frame's wind for generated-path draws (C-26 spec, seconds, asset height in metres). */
+export function setPrd10WindState(spec: WindFieldSpec | null, timeSeconds: number, assetHeight = 1): void {
+  windState.ubo.set(spec ? packWindUbo(spec, timeSeconds) : new Float32Array(8));
+  windState.assetHeight = assetHeight;
+}
+
+function windGustBinding(): TextureBinding {
+  if (!gustBinding) {
+    const field = createWindField({ direction: [1, 0, 0], strength: 0, gust: 0, gustFrequency: 0, turbulence: 0 });
+    const sampler = new Sampler({ minFilter: "linear", magFilter: "linear", addressU: "repeat", addressV: "repeat" });
+    gustBinding = new TextureBinding({ name: "u_windNoise", texture: field.gustTexture, sampler });
+  }
+  return gustBinding;
+}
+
 export function registerPrd10WindFeatures(): () => void {
   const feature: ShaderFeature = {
     id: "prd10.wind",
@@ -131,8 +156,16 @@ export function registerPrd10WindFeatures(): () => void {
     // (RenderItem has no feature map today; the label prefix is the signal).
     select: (input) => (input.item.label?.startsWith("prd10.wind:") ? 1 : undefined),
     defines: (v): Readonly<Record<string, string | number | true>> => (v ? { A3D_PRD10_WIND: 1 } : {}),
-    chunks: ["a3d_prd10_wind"],
-    hooks: ["vertex:deform"]
+    // #1143: the generated-path chunk (plain uniforms + C-18 `a3dDeform`);
+    // `a3d_prd10_wind` (A3DWind UBO) stays the Path S chunk.
+    chunks: ["a3d_prd10_wind_deform"],
+    hooks: ["vertex:deform"],
+    bindUniforms: (_value, _item, set) => {
+      set("u_windDirStrength", windState.ubo.subarray(0, 4));
+      set("u_windGust", windState.ubo.subarray(4, 8));
+      set("u_windAssetHeight", windState.assetHeight);
+      set("u_windNoise", windGustBinding());
+    }
   };
   const unregShader = registerShaderFeature(feature);
   const unregDepth = registerDepthVariantFeature({ ...feature, passes: ["depth", "distance"] });

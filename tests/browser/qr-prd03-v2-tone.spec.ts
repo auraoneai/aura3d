@@ -56,6 +56,7 @@ test.describe("PRD-03 Phase 2 — v2 single tone-operator eval", () => {
       return (await run()).tone;
     });
     tone = result;
+    console.log("[qr-prd03-v2-tone]", JSON.stringify(result));
     await page.close();
   });
   test.afterAll(async () => {

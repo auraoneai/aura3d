@@ -15,51 +15,123 @@ permissions:
   contents: read
 
 concurrency:
-  group: quality-gate-${{ github.ref }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  group: quality-gate-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
+  # RF8 (lane 12). Two capture arms with disjoint artifact names:
+  #   none  — qr_flags=none, the shipped engine. BLOCKING: metrics and the gate
+  #           verdict read only `*-gate-none-*` artifacts.
+  #   flags — qr_flags=all, the in-development flag set. REPORT-ONLY: its jobs
+  #           still conclude truthfully red or green, and flag-captures-report
+  #           prints each result, but no gate job needs them.
+  # Game-capture shards are 3 x macos-14 jobs per arm. The org has 5 macOS
+  # runners, so on pull_request they starved every other lane (#839). They run
+  # on every main push, workflow_call and dispatch; PRs get the bench + analytic
+  # pixel gate.
   capture-bench:
-    name: Capture benchmark (macos-14)
+    name: Capture benchmark, none (macos-14)
+    uses: ./.github/workflows/quality-rebuild-capture.yml
+    with:
+      games: "showcase-orbital-defense"
+      bench: true
+      qr_flags: "none"
+      artifact_suffix: "-gate-none-bench"
+
+  capture-games-1:
+    name: Capture games shard 1, none (macos-14)
+    if: github.event_name != 'pull_request'
+    uses: ./.github/workflows/quality-rebuild-capture.yml
+    with:
+      games: "aura-clash-showcase,showcase-blockfall-reactor,showcase-skyline-runner,showcase-turbo-drift-circuit,showcase-siege-golf,showcase-aurora-lander"
+      bench: false
+      qr_flags: "none"
+      artifact_suffix: "-gate-none-g1"
+
+  capture-games-2:
+    name: Capture games shard 2, none (macos-14)
+    if: github.event_name != 'pull_request'
+    uses: ./.github/workflows/quality-rebuild-capture.yml
+    with:
+      games: "showcase-neon-swarm,showcase-gravity-post,showcase-courier-rush,showcase-pulse-tunnel,showcase-mech-hangar,showcase-vault-breakers"
+      bench: false
+      qr_flags: "none"
+      artifact_suffix: "-gate-none-g2"
+
+  capture-games-3:
+    name: Capture games shard 3, none (macos-14)
+    if: github.event_name != 'pull_request'
+    uses: ./.github/workflows/quality-rebuild-capture.yml
+    with:
+      games: "showcase-rooftop-buckets,showcase-gallery-shift,showcase-deep-recovery,showcase-patrol-wing,showcase-bank-shot,showcase-orbital-defense"
+      bench: false
+      qr_flags: "none"
+      artifact_suffix: "-gate-none-g3"
+
+  flag-capture-bench:
+    name: Capture benchmark, flags=all, report-only (macos-14)
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
       games: "showcase-orbital-defense"
       bench: true
       qr_flags: "all"
-      artifact_suffix: "-gate-bench"
+      artifact_suffix: "-gate-flags-bench"
 
-  # Game-capture shards are 3 x macos-14 jobs. The org has 5 macOS runners, so on
-  # pull_request they starved every other lane (#839). They run on every main push,
-  # workflow_call and dispatch; PRs get the bench + analytic pixel gate.
-  capture-games-1:
-    name: Capture games shard 1 (macos-14)
+  flag-capture-games-1:
+    name: Capture games shard 1, flags=all, report-only (macos-14)
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
       games: "aura-clash-showcase,showcase-blockfall-reactor,showcase-skyline-runner,showcase-turbo-drift-circuit,showcase-siege-golf,showcase-aurora-lander"
       bench: false
       qr_flags: "all"
-      artifact_suffix: "-gate-g1"
+      artifact_suffix: "-gate-flags-g1"
 
-  capture-games-2:
-    name: Capture games shard 2 (macos-14)
+  flag-capture-games-2:
+    name: Capture games shard 2, flags=all, report-only (macos-14)
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
       games: "showcase-neon-swarm,showcase-gravity-post,showcase-courier-rush,showcase-pulse-tunnel,showcase-mech-hangar,showcase-vault-breakers"
       bench: false
       qr_flags: "all"
-      artifact_suffix: "-gate-g2"
+      artifact_suffix: "-gate-flags-g2"
 
-  capture-games-3:
-    name: Capture games shard 3 (macos-14)
+  flag-capture-games-3:
+    name: Capture games shard 3, flags=all, report-only (macos-14)
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
       games: "showcase-rooftop-buckets,showcase-gallery-shift,showcase-deep-recovery,showcase-patrol-wing,showcase-bank-shot,showcase-orbital-defense"
       bench: false
       qr_flags: "all"
-      artifact_suffix: "-gate-g3"
+      artifact_suffix: "-gate-flags-g3"
+
+  flag-captures-report:
+    name: Flag captures report (report-only, ubuntu-latest)
+    runs-on: ubuntu-latest
+    needs: [flag-capture-bench, flag-capture-games-1, flag-capture-games-2, flag-capture-games-3]
+    if: ${{ !cancelled() }}
+    steps:
+      - name: Print flag-on capture results
+        env:
+          BENCH: ${{ needs.flag-capture-bench.result }}
+          G1: ${{ needs.flag-capture-games-1.result }}
+          G2: ${{ needs.flag-capture-games-2.result }}
+          G3: ${{ needs.flag-capture-games-3.result }}
+        run: |
+          {
+            echo "## Flag-on captures (qr_flags=all) - report-only"
+            echo
+            echo "These results do not feed the gate verdict, which reads only the none captures."
+            echo
+            echo "| Job | Result |"
+            echo "|---|---|"
+            echo "| flag-capture-bench | $BENCH |"
+            echo "| flag-capture-games-1 | $G1 |"
+            echo "| flag-capture-games-2 | $G2 |"
+            echo "| flag-capture-games-3 | $G3 |"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
 
   analytic-pixels:
     name: Analytic pixel specs (macos-14, GPU-guarded)
@@ -96,7 +168,8 @@ jobs:
     name: Metrics (ubuntu-latest)
     runs-on: ubuntu-latest
     needs: [capture-bench, capture-games-1, capture-games-2, capture-games-3]
-    # Shards are skipped on pull_request; failed or cancelled shards still block.
+    # Only the none arm blocks. Shards are skipped on pull_request; failed or
+    # cancelled none shards still block.
     if: >-
       !cancelled() && needs.capture-bench.result == 'success' &&
       !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
@@ -120,9 +193,10 @@ jobs:
           python-version: '3.12'
       - name: Install metric pins
         run: pip install -r tools/quality-gate/metrics/requirements.lock
-      - name: Download capture artifacts
+      - name: Download capture artifacts (none arm only)
         uses: actions/download-artifact@v4
         with:
+          pattern: "*-gate-none-*"
           path: artifacts
       - name: Collect items + run metrics
         run: |

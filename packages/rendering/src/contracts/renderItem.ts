@@ -10,6 +10,7 @@ import type { RenderMaterial, SkinningPaletteBinding } from "../ForwardPass";
 import type { MorphTargetDelta } from "../MorphTarget";
 import type { RenderItemDrawRange, RenderItemInstanceAttribute } from "../ForwardPass";
 import type { Texture } from "../Texture";
+import type { TextureBinding } from "../TextureBinding";
 
 export interface RenderItem {
   readonly geometry: Geometry;
@@ -31,6 +32,14 @@ export interface RenderItem {
    * procedural normal detail by it; absent (or zero) leaves rendering bit-identical.
    */
   readonly wrinkleStrength?: number;
+  /**
+   * PRD-02 S12 (lane-01 half): per-item environment cube override. When set, the
+   * legacy forward path binds this cube (a captured reflection probe) as
+   * `u_environmentCubeMapTexture` instead of the scene environment's cube, and
+   * `environmentCubeMip` overrides the mip count. Absent → bit-identical.
+   */
+  readonly environmentCube?: TextureBinding;
+  readonly environmentCubeMip?: number;
   readonly instanceTransforms?: Float32Array | readonly number[];
   readonly instanceColors?: Float32Array | readonly number[];
   readonly instanceAttributes?: readonly RenderItemInstanceAttribute[];

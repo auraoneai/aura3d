@@ -11,6 +11,10 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
  * other lane-03 browser specs (the `qr-prd03-` ownership slot; the
  * `tests/browser/` dir is the de-facto lane-03 spec home).
  * WebGPU execution parity is Q-11-2 (lane 11, integrated — not gated here).
+ * Runner selection: macos-14 only. The post-quality `browser-gpu` lane
+ * (azure-gpu, NVIDIA L4 on Linux, ANGLE Vulkan) exposes no WebGPU adapter
+ * (run 38127246424: `webgpu-no-adapter`), so this spec is left out of that
+ * job's list rather than skipped; a missing adapter still fails it here.
  */
 
 interface ModuleReport {
@@ -65,17 +69,10 @@ test.describe("PRD-03 Phase 7 — WGSL twins compile (getCompilationInfo)", () =
       const run = (window as { runQrPrd03Wgsl?: () => Promise<WgslRunResult> }).runQrPrd03Wgsl!;
       return await run();
     });
-    // P-22 requireOrSkip: on CI the runner must have a WebGPU adapter — a
-    // missing adapter is a red job, not a skipped spec. Local non-CI runs may
-    // still skip so contributor laptops without WebGPU aren't blocked.
-    if (process.env.CI) {
-      expect(result.error ?? null, "CI runner must expose a WebGPU adapter").toBeNull();
-    } else {
-      test.skip(result.error === "webgpu-unavailable" || result.error === "webgpu-no-adapter",
-        `WebGPU unavailable in this browser (${result.error})`);
-    }
-
-    expect(result.error ?? null).toBeNull();
+    // P-22: no skip. Chromium launches with --enable-unsafe-webgpu
+    // (playwright.config.ts), and this spec runs only on the remote macos-14
+    // lane, so a missing adapter is a red result, never a skipped spec.
+    expect(result.error ?? null, "browser must expose a WebGPU adapter").toBeNull();
     const modules = result.modules!;
     expect(Object.keys(modules)).toHaveLength(35);
     for (const [name, report] of Object.entries(modules)) {

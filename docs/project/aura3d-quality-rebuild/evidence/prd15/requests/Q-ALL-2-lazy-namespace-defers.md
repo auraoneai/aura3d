@@ -1,5 +1,7 @@
 # Q-ALL-2: lane 15 applied `lazyNamespace` defers across cross-lane leaves (ESM-cycle repair)
 
+**Issue:** #1049 (P-64 writeback)
+
 **From:** lane 15 · **To:** lanes 02, 03, 04, 06, 07, 08, 09, 10, 11, 13 ·
 **Filed:** 2026-10-06 · **Status:** APPLIED BY LANE 15 — informational, review-on-merge
 

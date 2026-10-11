@@ -17,6 +17,8 @@
  *    — focus-plane pixels vs no-DoF, bokeh diameter of a distant point light.
  */
 import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
+import { installFrameCapture, readDefaultFramebuffer } from "./qr-prd03-frame-capture";
+import { postV2ModulesReady } from "@aura3d/rendering";
 import { CAMERA_VELOCITY_GLSL } from "../../packages/rendering/src/post/shaders/depthDownsample.glsl";
 
 /* ------------------------------- mat4 helpers --------------------------- */
@@ -126,6 +128,10 @@ function rawContext(size: number): { canvas: HTMLCanvasElement; gl: WebGL2Render
   canvas.width = size;
   canvas.height = size;
   const gl = canvas.getContext("webgl2")!;
+  // RGBA32F/R32F colour attachments are renderable only with this extension;
+  // without it the velocity FBO is incomplete, the draw is a no-op and every
+  // sample reads (0,0) (relative error 1 on main post-quality 38098853109).
+  if (!gl.getExtension("EXT_color_buffer_float")) throw new Error("EXT_color_buffer_float unavailable");
   return { canvas, gl };
 }
 
@@ -220,28 +226,48 @@ async function mountTaaScene(hostSize = 320) {
     pixelRatio: 1,
     resize: false,
     autoStart: false,
-    qualityRebuild: { flags: ["A3D_QR_POST"] }
+    qualityRebuild: { flags: ["post"] }
   });
   await app.ready();
+  // The v2 stages load deferred; wait so measured frames run the real chain.
+  await postV2ModulesReady();
   const canvas = host.querySelector("canvas")!;
   const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
-  const read = () => {
-    const pixels = new Uint8Array(canvas.width * canvas.height * 4);
-    gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-    return pixels;
-  };
+  // Read in the stepping task from the default framebuffer (qr-prd03-frame-capture).
+  const capture = installFrameCapture(app, canvas);
+  const read = () => capture.read();
   return { app, host, read, width: canvas.width, height: canvas.height };
 }
 
-function findCameraNode(app: unknown): { setPosition(x: number, y: number, z: number): unknown } | undefined {
-  const nodes = (app as { nodes?: { all(): readonly { kind: string }[] } }).nodes;
-  return nodes?.all().find((node) => node.kind === "camera") as { setPosition(x: number, y: number, z: number): unknown } | undefined;
+/**
+ * Camera mover over the public `app.camera.setPose` (C-22) — the old
+ * `app.nodes` camera-node lookup does not exist on the runtime, so the pan
+ * and motion-blur probes were reported "untested" (main post-quality
+ * 38098853109). The camera translates; the target moves with it so the view
+ * direction stays fixed (a pure pan).
+ */
+function findCameraNode(app: unknown, target: readonly [number, number, number]): { setPosition(x: number, y: number, z: number): unknown } | undefined {
+  const setPose = (app as { camera?: { setPose?: (p: { position: readonly number[]; target: readonly number[] }) => void } }).camera?.setPose;
+  if (typeof setPose !== "function") return undefined;
+  const camera = (app as { camera: { setPose(p: { position: readonly number[]; target: readonly number[] }): void } }).camera;
+  return {
+    setPosition(x: number, y: number, z: number) {
+      camera.setPose({ position: [x, y, z], target: [x + target[0], target[1], target[2]] });
+    }
+  };
 }
 
 /** Case a: static camera, 1-px line — temporal luma stddev over 32 frames. */
 export async function runTaaStaticProbe() {
   const { app, host, read, width, height } = await mountTaaScene();
   try {
+    // §8.6 case a is the converged (steady-state) shimmer: let the history
+    // accumulate first, then measure 32 frames. Measuring from the seed
+    // frame counted the one-off convergence ramp as temporal noise.
+    for (let i = 0; i < 16; i++) {
+      app.step(1 / 60);
+      await new Promise((r) => requestAnimationFrame(r));
+    }
     const frames: Uint8Array[] = [];
     for (let i = 0; i < 32; i++) {
       app.step(1 / 60);
@@ -272,8 +298,8 @@ export async function runTaaStaticProbe() {
 export async function runTaaPanProbe() {
   const { app, host, read, width, height } = await mountTaaScene();
   try {
-    const cam = findCameraNode(app);
-    if (!cam?.setPosition) return { schema: "taa-pan/v1", untested: "no runtime camera node surface" };
+    const cam = findCameraNode(app, [0, 1.2, -1]);
+    if (!cam?.setPosition) return { schema: "taa-pan/v1", untested: "no app.camera.setPose" };
     const startX = -1.5;
     for (let i = 0; i < 48; i++) {
       cam.setPosition(startX + (i * 3) / 48, 1.5, 5);
@@ -363,16 +389,16 @@ async function mountMotionBlurScene(hostSize = 320) {
     pixelRatio: 1,
     resize: false,
     autoStart: false,
-    qualityRebuild: { flags: ["A3D_QR_POST"] }
+    qualityRebuild: { flags: ["post"] }
   });
   await app.ready();
+  // The v2 stages load deferred; wait so measured frames run the real chain.
+  await postV2ModulesReady();
   const canvas = host.querySelector("canvas")!;
   const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
-  const read = () => {
-    const pixels = new Uint8Array(canvas.width * canvas.height * 4);
-    gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-    return pixels;
-  };
+  // Read in the stepping task from the default framebuffer (qr-prd03-frame-capture).
+  const capture = installFrameCapture(app, canvas);
+  const read = () => capture.read();
   return { app, host, read, width: canvas.width, height: canvas.height };
 }
 
@@ -392,8 +418,8 @@ export async function runMotionBlurProbe() {
   const drive = async (fps: number) => {
     const { app, host, read, width, height } = await mountMotionBlurScene();
     try {
-      const cam = findCameraNode(app);
-      if (!cam?.setPosition) return { untested: "no runtime camera node surface" };
+      const cam = findCameraNode(app, [0, 1, -2]);
+      if (!cam?.setPosition) return { untested: "no app.camera.setPose" };
       const dt = 1 / fps;
       const dx = 0.05; // world units per second of pan
       for (let i = 0; i < 12; i++) {
@@ -417,8 +443,8 @@ export async function runMotionBlurProbe() {
 /* -------------------------------- DoF probe ------------------------------ */
 
 export async function runDofMetricProbe() {
-  const buildScene = (dof: boolean) =>
-    scene()
+  const buildScene = (dof: boolean) => {
+    const base = scene()
       .background("#0c0e12")
       .camera(camera.perspective({ position: [0, 1.6, 3], target: [0, 1.2, 0], fov: 45, near: 0.1, far: 90 }))
       .add(lights.directional({ name: "sun", color: "#f6ecdd", intensity: 1.1, position: [4, 7, 5] }))
@@ -426,8 +452,11 @@ export async function runDofMetricProbe() {
       .add(primitives.plane({ name: "ground", size: [30, 1, 40], material: material.pbr({ color: "#1e232a", roughness: 0.9 }) }).position(0, 0, -10))
       .add(primitives.sphere({ name: "hero", size: [1, 1, 1], material: material.pbr({ color: "#c8503f", roughness: 0.55 }) }).position(0, 1.2, 0))
       .add(primitives.sphere({ name: "bokeh light", size: [0.3, 0.3, 0.3], material: material.pbr({ color: "#000000", emissive: "#ffd9a0", emissiveIntensity: 5, roughness: 1 }) }).position(0, 1.4, -27))
-      .add(...(dof ? [effects.depthOfField({ focusDistance: 3, fStop: 2.8, focalLength: 50 })] : []))
       .add(effects.antiAlias({ mode: "fxaa" }));
+    // `.add()` with no node threw "reading 'kind'" for the DoF-off mount
+    // (main post-quality 38098853109); add the DoF node only when requested.
+    return dof ? base.add(effects.depthOfField({ focusDistance: 3, fStop: 2.8, focalLength: 50 })) : base;
+  };
 
   const mount = async (dof: boolean) => {
     const host = document.createElement("div");
@@ -439,14 +468,15 @@ export async function runDofMetricProbe() {
       pixelRatio: 1,
       resize: false,
       autoStart: false,
-      qualityRebuild: { flags: ["A3D_QR_POST"] }
+      qualityRebuild: { flags: ["post"] }
     });
     await app.ready();
+    // The v2 stages load deferred; wait so measured frames run the real chain.
+    await postV2ModulesReady();
     app.step(0);
     const canvas = host.querySelector("canvas")!;
     const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
-    const pixels = new Uint8Array(canvas.width * canvas.height * 4);
-    gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    const pixels = readDefaultFramebuffer(gl, canvas.width, canvas.height);
     const size = { width: canvas.width, height: canvas.height };
     app.dispose();
     host.remove();
@@ -524,21 +554,21 @@ export async function runTaauProbe() {
       pixelRatio: 1,
       resize: false,
       autoStart: false,
-      qualityRebuild: { flags: ["A3D_QR_POST"] }
+      qualityRebuild: { flags: ["post"] }
     });
     await app.ready();
+    // The v2 stages load deferred; wait so measured frames run the real chain.
+    await postV2ModulesReady();
     const quality = (app as { quality?: { set?: (t: string, o?: { minRenderScale?: number }) => Promise<void> } }).quality;
     if (!quality?.set) { app.dispose(); host.remove(); return { untested: "no app.quality.set" } as const; }
     await quality.set("ultra", { minRenderScale: scale });
+    const capture = installFrameCapture(app, host.querySelector("canvas")!);
     for (let i = 0; i < 24; i++) {
       app.step(1 / 60);
       await new Promise((r) => requestAnimationFrame(r));
     }
-    const canvas = host.querySelector("canvas")!;
-    const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
-    const pixels = new Uint8Array(canvas.width * canvas.height * 4);
-    gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-    const err = lineEdgeError(pixels, canvas.width, canvas.height);
+    const pixels = capture.read();
+    const err = lineEdgeError(pixels, capture.width, capture.height);
     app.dispose();
     host.remove();
     return { err } as const;

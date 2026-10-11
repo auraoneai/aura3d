@@ -1,5 +1,7 @@
 # Q-05-8 — declare `@loaders.gl/*` dependencies used by `@aura3d/assets`
 
+**Issue:** #1007 (P-64 writeback)
+
 **Lane:** 05 (owns `packages/assets/`)
 **Requested by:** lane 15 (PRD-15 T1.6 packed-consumer check)
 **Status:** OPEN

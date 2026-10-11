@@ -1,0 +1,25 @@
+{
+  "$doc": "Per-device r185 goldens for physical-lobes-numeric.spec.ts (PRD-04 P3-4 / 04-S5). lobe-numeric.ts picks the first entry whose rendererMatch (JS regex) matches the unmasked WebGL renderer; no match fails the spec. Each golden is three's own r185 GLSL evaluated on that device class (§0.6: never compare across providers). Add a class by running generate-r185-golden.spec.ts on it and committing the prd04-r185-golden artifact with its run id.",
+  "goldens": [
+    {
+      "id": "nvidia-l4-vulkan",
+      "rendererMatch": "NVIDIA L4 .*Vulkan|Vulkan.*NVIDIA L4",
+      "file": "r185-golden.nvidia-l4-vulkan.json",
+      "provider": "github self-hosted azure-gpu (gpu-l4), ANGLE Vulkan, Chromium new headless",
+      "renderer": "ANGLE (NVIDIA, Vulkan 1.4.312 (NVIDIA NVIDIA L4 (0x000027B8)), NVIDIA)",
+      "generatedBy": "tests/qr/prd04/browser/generate-r185-golden.spec.ts",
+      "runId": 38122146982,
+      "sha": "e1334c9d3a488af985725fb04d47cbccb0ab30f7"
+    },
+    {
+      "id": "llvmpipe",
+      "rendererMatch": "llvmpipe",
+      "file": "r185-golden.json",
+      "provider": "python glsl_eval.py on llvmpipe (also the CPU-oracle reference for r185-oracle.test.ts)",
+      "renderer": "llvmpipe (LLVM 15.0.7, 256 bits)",
+      "generatedBy": "tests/qr/prd04/oracles/generate-r185-golden.py",
+      "runId": null,
+      "sha": null
+    }
+  ]
+}

@@ -15,6 +15,7 @@
  */
 import type { RenderBuffer, RenderDevice, RenderPass, RenderPassContext, RenderShaderProgram, RenderTarget, UniformValue } from "@aura3d/rendering";
 import { Sampler, Texture, TextureBinding, VertexFormat } from "@aura3d/rendering";
+import { qrCoreOutputOn } from "@aura3d/rendering";
 import type { FrameContributorContext, RenderItem } from "@aura3d/rendering/contracts";
 import {
   PLANAR_REFLECTION_KEY,
@@ -64,6 +65,18 @@ interface WaterDeviceState {
 
 const deviceStates = new WeakMap<RenderDevice, WaterDeviceState>();
 const gpuStates = new Map<string, WaterGpuState>();
+/**
+ * Blackboard flag set by the prd10 contributor when this frame ran the
+ * `background` phase (lane 01 runs it only with an environment background).
+ * Producers emitted only in `background` (planar reflections) exist iff set.
+ */
+/** u_waveSpeed is vec4[8] (x used): 32 floats upload as a vec4 array; the device rejects 8-float arrays. */
+function waveSpeedVec4(speed: ArrayLike<number>): Float32Array {
+  const out = new Float32Array(32);
+  for (let i = 0; i < Math.min(8, speed.length); i += 1) out[i * 4] = speed[i]!;
+  return out;
+}
+export const WORLD_BACKGROUND_PHASE_KEY = "prd10.backgroundPhase";
 let frameCtx: FrameContributorContext | null = null;
 
 function deviceState(device: RenderDevice): WaterDeviceState {
@@ -283,9 +296,16 @@ export function waterTransparentPass(ctx: FrameContributorContext): RenderPass {
   // state actually requests them, so reading them unconditionally threw
   // "reads X, but no pass writes it" and killed the frame loop. The opaque
   // read orders water after prd01.opaque on Path S (always emitted).
-  const reads: string[] = ["aura.scene.color.opaque"];
+  // The opaque forward pass writes `aura.scene.color.opaque` only on the
+  // C-23 HDR output path (A3D_QR_CORE_OUTPUT); the legacy path's ForwardPass
+  // writes `color`. Reading the wrong one threw "no pass writes it" under
+  // `world` without `core` and killed the frame loop.
+  const reads: string[] = [qrCoreOutputOn(ctx.flags) ? "aura.scene.color.opaque" : "color"];
   if (terrainRecordIds().length > 0) reads.push("prd10.terrain.color");
-  if (states.some((st) => reflectionRequest(st, tier))) reads.push(PLANAR_REFLECTION_KEY);
+  // Planar reflection producers are emitted in `background` only; on a
+  // colour-background frame they do not exist and water falls back to IBL.
+  const backgroundRan = ctx.blackboard.get(WORLD_BACKGROUND_PHASE_KEY) === true;
+  if (backgroundRan && states.some((st) => reflectionRequest(st, tier))) reads.push(PLANAR_REFLECTION_KEY);
   if (states.some((st) => wantsRefraction(st, tier))) reads.push(SCENE_COPY_COLOR_KEY, SCENE_COPY_DEPTH_KEY);
   return {
     name: "prd10.water",
@@ -331,7 +351,7 @@ export function waterTransparentPass(ctx: FrameContributorContext): RenderPass {
           ["u_worldOffset", new Float32Array([st.centerX, 0, st.centerZ])],
           ["u_waterHeight", record.height],
           ["u_waves", w.waves],
-          ["u_waveSpeed", w.waveSpeed],
+          ["u_waveSpeed", waveSpeedVec4(w.waveSpeed)],
           ["u_waveCount", w.waveCount],
           ["u_time", t],
           ["u_cameraPosition", new Float32Array([camera.position[0], camera.position[1], camera.position[2]])],
@@ -362,7 +382,7 @@ export function waterTransparentPass(ctx: FrameContributorContext): RenderPass {
           ["u_sunDirection", new Float32Array([0.42, -0.9, 0.18])],
           ["u_sunColor", new Float32Array([1.4, 1.35, 1.25])],
           ["u_skyHorizonColor", new Float32Array([0.5, 0.7, 0.9])],
-          ["u_shIrradiance", new Float32Array(27)],
+          ["u_shIrradiance", new Float32Array(36)], // vec4[9]
           ["u_fogColor", new Float32Array([0.6, 0.72, 0.85])],
           ["u_fogNearFar", new Float32Array([200, 1200])],
           ["u_ambientSH", new Float32Array([0.25, 0.28, 0.32])],

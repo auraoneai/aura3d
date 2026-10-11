@@ -4,11 +4,13 @@ import { applyRendererOwnedStaticBatching, applyRendererOwnedStaticMeshConsolida
 import { rendererDeviceIsLost, subscribeRendererDeviceLost, subscribeRendererDeviceRestored } from "./renderer/DeviceLifecycle";
 import { createRendererFrameHooks, toFrameCamera } from "./renderer/FrameGraph";
 import type { FrameCamera } from "./contracts/frameGraph";
+import type { QrFlags } from "./contracts/core";
 import { RendererPostprocessPipeline, collectPostprocess, createPostprocessDiagnostics, defaultPostprocessTargetFormat, postprocessRequiresDepthTexture } from "./renderer/PostprocessExecution";
 import type { RendererHost } from "./renderer/RendererHost";
 import { createRenderer } from "./renderer/RendererFactory";
 import { collectItemBounds, isIterable, renderableWorldBounds, sceneFromSource, toMat4 } from "./renderer/RenderShared";
 import { RendererShadowOrchestrator, collectForwardShadowMap, collectRendererShadowOptions } from "./renderer/ShadowOrchestration";
+import { shadowFrameCamera, type Prd02BridgeFrameCamera } from "./shadows/Prd02ShadowBridge";
 import { type RenderSource } from "./contracts/renderSource";
 import { Bounds3 as SceneBounds3, Camera, DirectionalLight, Light, PerspectiveCamera, PointLight, Scene, SpotLight, identityMat4, invertMat4, multiplyMat4, orthographicMat4, perspectiveMat4, transformPoint, toMathMat4, type Mat4, type Vec3, type SceneNode } from "@aura3d/scene";
 import { Frustum, type Ray } from "@aura3d/math";
@@ -37,9 +39,11 @@ import { resolveCanvasPixelRatio, watchDevicePixelRatio, type AuraResolutionOpti
 import type { AuraQualityTier, AuraQualityTierSettings } from "./contracts/quality";
 import { QUALITY_TIERS } from "./contracts/quality";
 import { MaterialInstance } from "./MaterialInstance";
-import { materialUsesGeneratedProgram } from "./program/MaterialFeatures";
+import { featuresForGeometry, materialUsesGeneratedProgram } from "./program/MaterialFeatures";
+import { selectShaderFeatureBits } from "./program/FeatureSelect";
+import type { ProgramFeatures } from "./contracts/program";
 import { collectWarmupFeatures, ProgramWarmup, type WarmupInput } from "./program/ProgramWarmup";
-import { PRD03_EXPOSURE, rendererQrFlags } from "./renderer/FrameGraph";
+import { PRD03_EXPOSURE, rendererQrFlags, setRendererQrFlags, withRendererQrFlags } from "./renderer/FrameGraph";
 import { qrCoreGeneratorOn, qrCoreOutputOn, rendererOutputPass, rendererProgramCache } from "./renderer/qrSubFlags";
 import { forwardPassFeatureAxes, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
 import { InterleavedTransparentPass } from "./renderer/InterleavedTransparentPass";
@@ -55,11 +59,18 @@ import { createStaticMeshConsolidationCache, type MeshConsolidationInput, type M
  * under `A3D_QR_CORE_OUTPUT`. Flag-off: recorded but never applied (legacy
  * present path is untouched).
  */
+/** #1140: OutputPass dithering default (three.js parity); `output.dithering` overrides. */
+export const DEFAULT_OUTPUT_DITHERING = false;
+
 export interface RendererOutputOptions {
   readonly toneMapping?: AuraToneMappingOperatorLike;
   /** Exposure multiplier (default 1); combined with blackboard `"prd03.exposure"` upstream. */
   readonly exposure?: number;
-  /** Triangular-dither the 8-bit write (default true). */
+  /**
+   * Triangular-dither the 8-bit write. Default false (#1140): three.js does not
+   * dither by default, and the dither noise alone regressed LPIPS vs three on
+   * every promotion scene (L4 run 38156934612). Opt in for banding-prone gradients.
+   */
   readonly dithering?: boolean;
   /** R8 coverage attachment + unmapped-background mix (§6.5; default false). */
   readonly backgroundCoverage?: boolean;
@@ -93,6 +104,12 @@ export interface RendererOptions extends RenderBackendOptions {
   readonly qualityTierName?: AuraQualityTier;
   readonly shaderLibrary?: ShaderLibrary;
   readonly requiredFeatures?: readonly RendererFeature[];
+  /**
+   * T0-28: this renderer's resolved QR flags (`createAuraApp` passes the app's
+   * flags). Bound to the device so two renderers on one page never share
+   * state; absent → the module-level `setRendererQrFlags` default (back-compat).
+   */
+  readonly qrFlags?: QrFlags;
 }
 
 export interface ResizeToDisplayOptions {
@@ -440,8 +457,11 @@ export class Renderer {
   private readonly unsubscribeDprWatch?: () => void;
   /** C-28 FrameStats feeding the governor (intervalMs until lane 11's gpuMs lands). */
   private readonly frameStatsMonitor?: FrameStatsLike;
+  /** PRD-02 S12: private graph for `renderProbeFace` (never the main frame graph). */
+  private probeGraph?: RenderGraph;
   constructor(device: RenderDevice, options: RendererOptions & { readonly shaderLibrary: ShaderLibrary }, temporalHistory: TemporalHistory) {
     this.device = device;
+    if (options.qrFlags) setRendererQrFlags(options.qrFlags, device);
     this.temporalHistory = temporalHistory;
     this.unsubscribeTemporalDeviceLoss = (device as RenderDevice & {onDeviceLost?: (listener: () => void) => () => void}).onDeviceLost?.(() => this.temporalHistory.dispose());
     this.canvas = options.canvas;
@@ -493,6 +513,63 @@ export class Renderer {
   /** C-28 monitor (PRD-01 Phase 6): lane capture reads cpuSubmitMs percentiles. */
   get frameStats(): FrameStatsLike | undefined {
     return this.frameStatsMonitor;
+  }
+
+  /**
+   * PRD-02 S12 (lane-01 half): render `source` into one reflection-probe face.
+   * Signature matches `ReflectionFaceRenderer` (probes/ReflectionProbeSystem.ts)
+   * so it can be passed straight to the probe system:
+   *   new ReflectionProbeSystem(..., (face, target, vp) => renderer.renderProbeFace(scene, face, target, vp))
+   * - `target` may be any size (128/256 px faces): the probe frame is sized to
+   *   it, so RENDER_TARGET_VIEWPORT_MISMATCH does not apply.
+   * - Call it OUTSIDE a frame (before `render`): it opens and closes its own
+   *   device frame and throws FRAME_ALREADY_ACTIVE if one is open (no nesting).
+   * - It uses a private RenderGraph, so the main frame's graph is not cleared.
+   * - Linear output, scene lights + environment, no shadows / post / output
+   *   encode / frame contributors (a probe is radiance input to shading).
+   * Flag-independent; nothing calls it unless a probe system does.
+   */
+  renderProbeFace(source: RenderSource | Iterable<RenderItem> | Scene, face: 0 | 1 | 2 | 3 | 4 | 5, target: RenderTarget, viewProjection: Float32Array | readonly number[]): RenderDeviceDiagnostics {
+    if (target.disposed) {
+      throw new RenderDeviceError("Probe face target is disposed", "RENDER_TARGET_DISPOSED", { face });
+    }
+    const vp = toMat4(viewProjection, "viewProjection", `probe face ${face}`);
+    sceneFromSource(source)?.updateWorldTransforms();
+    const items = collectRenderItems(source, vp).filter((item) => !item.environmentCube);
+    const split = splitForwardItems(items, undefined);
+    const shared: ForwardPassOptions = {
+      items: split.opaque,
+      lights: collectRenderLights(source),
+      environmentLighting: collectEnvironmentLighting(source),
+      environmentFog: collectEnvironmentFog(source),
+      cameraViewProjectionMatrix: vp,
+      outputColorSpace: "linear"
+    };
+    const graph = (this.probeGraph ??= new RenderGraph());
+    graph.clear();
+    // A probe face has no screen-space transmission input: transmission items
+    // draw with the opaque set; transparent items keep splitForwardItems' sort order.
+    graph.addPass(new ForwardPass({ ...shared, items: [...split.opaque, ...split.transmission], framePass: { name: "prd01.probe.opaque", writes: ["aura.probe.color"] } }));
+    if (split.transparent.length > 0) {
+      graph.addPass(new ForwardPass({ ...shared, items: split.transparent.map((entry) => entry.item), framePass: { name: "prd01.probe.transparent", reads: ["aura.probe.color"], writes: ["aura.probe.color"] } }));
+    }
+    const previous = this.device.getRenderTarget?.() ?? null;
+    this.device.beginFrame(target.width, target.height);
+    try {
+      this.device.setRenderTarget(target);
+      this.device.clear(this.clearColor);
+      graph.execute({ device: this.device, width: target.width, height: target.height });
+    } finally {
+      this.device.setRenderTarget(previous);
+      this.device.endFrame();
+      graph.clear();
+    }
+    return this.device.getDiagnostics();
+  }
+
+  /** C-28 (#91): run `fn` under the frameStats "post" scope when a monitor exists. */
+  private scopePost<T>(fn: () => T): T {
+    return this.frameStatsMonitor ? this.frameStatsMonitor.scope("post", fn) : fn();
   }
 
   /** C-05: current output configuration (`app.setOutput` / `renderer.output` seam). */
@@ -633,12 +710,18 @@ export class Renderer {
   render(input: RendererInput): RenderDeviceDiagnostics;
   render(source: RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RenderDeviceDiagnostics;
   render(sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RenderDeviceDiagnostics {
+    // T0-28: ambient `rendererQrFlags()` readers (Lighting, Background, post…)
+    // see this renderer's flags for the duration of the synchronous frame.
+    return withRendererQrFlags(this.device, () => this.renderFrame(sourceOrInput, camera));
+  }
+
+  private renderFrame(sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RenderDeviceDiagnostics {
     this.assertAlive();
     // §6.9: FrameStats samples every render while a governor exists (resolution opt-in).
     this.frameStatsMonitor?.begin(typeof performance !== "undefined" ? performance.now() : Date.now());
     // T0-06: reset the per-frame sync-compile bound for this render.
     {
-      const flags = rendererQrFlags();
+      const flags = rendererQrFlags(this.device);
       if (qrCoreGeneratorOn(flags)) rendererProgramCache(this.device, flags).beginFrame?.();
     }
     const { source, camera: inputCamera } = normalizeRendererInput(sourceOrInput, camera);
@@ -760,7 +843,8 @@ export class Renderer {
           lights,
           ownedTargets,
           ownedShadowPasses,
-          camera: resolvedCamera?.camera
+          camera: resolvedCamera?.camera,
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition)
         })) ?? explicitShadowMap ?? this.executeRendererShadowMap({
           shadowOptions,
           source,
@@ -768,7 +852,8 @@ export class Renderer {
           lights,
           ownedTargets,
           ownedShadowPasses,
-          camera: resolvedCamera?.camera
+          camera: resolvedCamera?.camera,
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition)
         });
       frameHooks.addPasses(this.graph, "shadows", items);
       this.lastShadowEvidence = rendererShadowMap ? {
@@ -916,11 +1001,15 @@ export class Renderer {
             }
           }
         };
-        frameHooks.runPhase("post-hdr", items, postprocess !== undefined);
-        this.executePostprocess(postprocess, ownedTargets, explicitRenderTarget);
+        // C-28 (#91): the post-hdr contributors and the postprocess chain report
+        // under the "post" scope (lane 03 owns the chain internals).
+        this.scopePost(() => {
+          frameHooks.runPhase("post-hdr", items, postprocess !== undefined);
+          this.executePostprocess(postprocess!, ownedTargets, explicitRenderTarget);
+        });
         if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.temporalHistory.commit();
       } else if (qrOutput) {
-        frameHooks.runPhase("post-hdr", items, true);
+        this.scopePost(() => frameHooks.runPhase("post-hdr", items, true));
         this.executeOutputPass(frameHooks, items, ownedTargets[0] ?? null, explicitRenderTarget);
       }
       frameHooks.runPhase("after-output", items);
@@ -959,7 +1048,7 @@ export class Renderer {
     this.frameStatsMonitor?.begin(typeof performance !== "undefined" ? performance.now() : Date.now());
     // T0-06: reset the per-frame sync-compile bound for this render.
     {
-      const flags = rendererQrFlags();
+      const flags = rendererQrFlags(this.device);
       if (qrCoreGeneratorOn(flags)) rendererProgramCache(this.device, flags).beginFrame?.();
     }
     const { source, camera: inputCamera } = normalizeRendererInput(sourceOrInput, camera);
@@ -1081,7 +1170,8 @@ export class Renderer {
           lights,
           ownedTargets,
           ownedShadowPasses,
-          camera: resolvedCamera?.camera
+          camera: resolvedCamera?.camera,
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition)
         })) ?? explicitShadowMap ?? this.executeRendererShadowMap({
           shadowOptions,
           source,
@@ -1089,7 +1179,8 @@ export class Renderer {
           lights,
           ownedTargets,
           ownedShadowPasses,
-          camera: resolvedCamera?.camera
+          camera: resolvedCamera?.camera,
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition)
         });
       frameHooks.addPasses(this.graph, "shadows", items);
       this.lastShadowEvidence = rendererShadowMap ? {
@@ -1237,11 +1328,15 @@ export class Renderer {
             }
           }
         };
-        await frameHooks.runPhaseAsync("post-hdr", items, postprocess !== undefined);
-        await this.executePostprocessAsync(postprocess, ownedTargets, explicitRenderTarget);
+        // C-28 (#91): "post" scope. FrameStats.scope is synchronous, so on the
+        // async path it times the CPU submission up to the first await.
+        await this.scopePost(async () => {
+          await frameHooks.runPhaseAsync("post-hdr", items, postprocess !== undefined);
+          await this.executePostprocessAsync(postprocess!, ownedTargets, explicitRenderTarget);
+        });
         if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.temporalHistory.commit();
       } else if (qrOutput) {
-        await frameHooks.runPhaseAsync("post-hdr", items, true);
+        await this.scopePost(() => frameHooks.runPhaseAsync("post-hdr", items, true));
         this.executeOutputPass(frameHooks, items, ownedTargets[0] ?? null, explicitRenderTarget);
       }
       await frameHooks.runPhaseAsync("after-output", items);
@@ -1295,18 +1390,30 @@ export class Renderer {
     flags: ReturnType<typeof rendererQrFlags>,
     tier: AuraQualityTier
   ): WarmupInput {
-    const materials = new Map<string, import("./Material").Material>();
+    const ctx = { flags, tier: QUALITY_TIERS[tier] };
+    // T0-05: one record per (material revision, selected feature bits) — the
+    // draw key carries `ShaderFeature.select` bits per item, so the warm list
+    // must too or warmed keys never match draw keys.
+    const records = new Map<string, Partial<ProgramFeatures>>();
     for (const item of items) {
       const m = item.material instanceof MaterialInstance ? item.material.baseMaterial : item.material;
-      if (m && materialUsesGeneratedProgram(m)) materials.set(`${m.shaderKey}:${m.getRevision()}`, m);
+      if (!m || !materialUsesGeneratedProgram(m)) continue;
+      const mf = m.programFeatures(ctx);
+      const selected = selectShaderFeatureBits({ item, pass: "forward", tier: ctx.tier, flags });
+      // #867 (games): same geometry-driven feature mask ForwardPass applies.
+      const attrs = item.geometry.vertexBuffer.format.attributes;
+      const has = (name: string) => attrs.some((a) => a.semantic === name || a.shaderName === name);
+      const record = featuresForGeometry({ ...mf, features: { ...mf.features, ...selected } }, has);
+      const geometryMask = ["a_uv", "a_uv1", "a_color", "a_joints", "a_weights"].map((n) => (has(n) ? 1 : 0)).join("");
+      const key = `${m.shaderKey}:${m.getRevision()}:${geometryMask}:${JSON.stringify(Object.entries(record.features).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)))}`;
+      if (!records.has(key)) records.set(key, record);
     }
-    if (materials.size === 0) return { materials: [] };
+    if (records.size === 0) return { materials: [] };
     const clustered = resolveForwardClusteredLighting(lights, this.width, this.height, cameraViewProjection);
     const axes = forwardPassFeatureAxes({ lights, shadowMap, environmentLighting, environmentFog }, clustered !== null);
     clustered?.dispose();
-    const ctx = { flags, tier: QUALITY_TIERS[tier] };
     return {
-      materials: [...materials.values()].map((m) => m.programFeatures(ctx)),
+      materials: [...records.values()],
       lights: [axes.lights],
       shadows: axes.shadows ? [axes.shadows] : [],
       environments: [axes.environment]
@@ -1349,7 +1456,7 @@ export class Renderer {
     shadowMap: ForwardShadowMapOptions | undefined,
     cameraViewProjection: Float32Array | readonly number[] | undefined
   ): void {
-    const flags = rendererQrFlags();
+    const flags = rendererQrFlags(this.device);
     if (!qrCoreGeneratorOn(flags)) return;
     const tier: AuraQualityTier = this.qualityTierName ?? "high";
     const cache = rendererProgramCache(this.device, flags);
@@ -1464,14 +1571,14 @@ export class Renderer {
     rendererOutputPass(this.device).execute(hdrTarget, coverage ? hdrTarget : null, {
       toneMapping: o.toneMapping ?? DEFAULT_TONE_MAPPING,
       exposure: appliedExposure,
-      dithering: o.dithering ?? true,
+      dithering: o.dithering ?? DEFAULT_OUTPUT_DITHERING,
       backgroundCoverage: coverage,
       overlay: o.overlay
     }, explicitRenderTarget ?? "canvas");
     this.lastAppliedOutput = {
       toneMapping: o.toneMapping ?? DEFAULT_TONE_MAPPING,
       exposure: { applied: appliedExposure, source: upstream !== undefined ? "grade" : "output" },
-      dithering: o.dithering ?? true,
+      dithering: o.dithering ?? DEFAULT_OUTPUT_DITHERING,
       targetFormat,
       degraded: targetFormat === "rgba8" ? "rgba8-no-float-target" : this.hdrMsaaMrtDegraded ? "hdr-msaa-mrt-unsupported" : undefined
     };
@@ -1521,6 +1628,7 @@ export class Renderer {
     readonly ownedTargets: RenderTarget[];
     readonly ownedShadowPasses: Array<{ dispose(): void }>;
     readonly camera?: Camera;
+    readonly frameCamera?: Prd02BridgeFrameCamera;
   }): ForwardShadowMapOptions | undefined {
     return this.host.shadows.executeRendererShadowMap(options);
   }

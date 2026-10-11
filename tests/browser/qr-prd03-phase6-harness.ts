@@ -18,6 +18,10 @@
  *    without the pass.
  */
 import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
+import { installFrameCapture } from "./qr-prd03-frame-capture";
+import { postV2ModulesReady } from "@aura3d/rendering";
+import { smaaTexturesSettled } from "../../packages/rendering/src/post/v2Stages";
+import { registerPostPass } from "@aura3d/rendering/contracts";
 
 /* ------------------------------- helpers ------------------------------- */
 
@@ -99,18 +103,18 @@ async function mount(opts: {
         }
       }
       : {}),
-    qualityRebuild: { flags: ["A3D_QR_POST"] }
+    qualityRebuild: { flags: ["post"] }
   });
   await app.ready();
+  // The v2 stages load deferred; wait so measured frames run the real chain.
+  await postV2ModulesReady();
   const canvas = host.querySelector("canvas")!;
   const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
   const width = canvas.width;
   const height = canvas.height;
-  const read = () => {
-    const pixels = new Uint8Array(width * height * 4);
-    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-    return pixels;
-  };
+  // Read in the stepping task from the default framebuffer (qr-prd03-frame-capture).
+  const capture = installFrameCapture(app, canvas);
+  const read = () => capture.read();
   const runFrames = async (n: number, dt = 1 / 60) => {
     for (let i = 0; i < n; i++) {
       insideStep = true;
@@ -153,6 +157,10 @@ export async function runSmaaEdgeProbe() {
   none.host.remove();
 
   const smaa = await mount({ antiAlias: "smaa" });
+  // 03-S18a: the first S11 frame starts the lazy area/search texture load;
+  // wait for it (not a frame count) so the measured frames run SMAA.
+  await smaa.runFrames(1);
+  await smaaTexturesSettled();
   await smaa.runFrames(4);
   const smaaRatio = edgeBandIntermediateRatio(smaa.read(), smaa.width, smaa.height);
   smaa.app.dispose();
@@ -285,7 +293,63 @@ export async function runCustomPassProbe() {
   hdr.app.dispose();
   hdr.host.remove();
 
-  return { schema: "custom-pass/v1", invert: invResult, hdrGate: hdrSample };
+  const order = await runCustomPassOrderProbe();
+  return { schema: "custom-pass/v1", invert: invResult, hdrGate: hdrSample, ...order };
+}
+
+/**
+ * 03-S18c: all five C-13 anchors run, in §6.1 order, on the real v2 chain.
+ * Each pass declares a marker uniform; `runCustomPass` looks it up on its
+ * program when the pass executes, so wrapping `getUniformLocation` traces the
+ * execution order. Passes are added in reverse anchor order so the trace
+ * proves anchor order, not registration order. A `display` pass at
+ * `before-tonemap` must be rejected with `POSTPROCESS_SPACE_INVALID`.
+ */
+const S18C_ANCHORS = ["after-depth", "before-taa", "after-taa", "before-tonemap", "after-tonemap"] as const;
+
+async function runCustomPassOrderProbe(): Promise<{ order: string[]; spaceRejection: string | null }> {
+  const m = await mount({ size: 200 });
+  const proto = WebGL2RenderingContext.prototype;
+  const original = proto.getUniformLocation;
+  const trace: string[] = [];
+  const releases: Array<() => void> = [];
+  try {
+    for (const anchor of [...S18C_ANCHORS].reverse()) {
+      const name = `u_s18c_${anchor.replace(/-/g, "_")}`;
+      releases.push(m.app.addPostPass({
+        name: `s18c-${anchor}`,
+        insertAt: anchor,
+        uniforms: { [name]: 1 },
+        fragment: { glsl: `uniform float ${name};\nvoid main() { outColor = texture(u_color, v_uv) * ${name}; }` }
+      }));
+    }
+    proto.getUniformLocation = function (this: WebGL2RenderingContext, program: WebGLProgram, name: string) {
+      if (name.startsWith("u_s18c_")) trace.push(name.slice("u_s18c_".length).replace(/_/g, "-"));
+      return original.call(this, program, name);
+    };
+    await m.runFrames(1);
+  } finally {
+    proto.getUniformLocation = original;
+    for (const release of releases) release();
+  }
+  let spaceRejection: string | null = null;
+  try {
+    registerPostPass({
+      id: "prd03.s18c-display-before-tonemap",
+      owner: "prd03",
+      flag: "A3D_QR_POST",
+      insertAt: "before-tonemap",
+      space: "display",
+      inputs: ["color"],
+      fragment: { glsl: "void main() { outColor = texture(u_color, v_uv); }" },
+      gpuOnly: true
+    })();
+  } catch (error) {
+    spaceRejection = String(error);
+  }
+  m.app.dispose();
+  m.host.remove();
+  return { order: trace.slice(0, S18C_ANCHORS.length), spaceRejection };
 }
 
 /* --------------------------------- run ---------------------------------- */

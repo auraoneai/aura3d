@@ -47,7 +47,8 @@ describe("C-13 postPipelineSlot (impl: prd03)", () => {
     });
     const plan = postPipelineSlot.stub.plan(baseOptions, { width: 64, height: 64 });
     expect(plan.stages).toEqual([]);
-    expect(plan.skipped.some((s) => s.name === "prd03.test-custom")).toBe(true);
+    expect(plan.skipped.find((s) => s.name === "prd03.test-custom")?.reason).toBe("legacy-chain:A3D_QR_POST-off");
+    expect(plan.skipped.some((s) => s.reason === "post-graph-v2-pending")).toBe(false);
     release();
   });
 
@@ -87,9 +88,22 @@ describe("C-13 postPipelineSlot (impl: prd03)", () => {
     expect(names).not.toContain("S2-gtao");
   });
 
-  it("real execute() fails closed until the GPU chain lands", () => {
+  it("real execute() returns the validated plan (03-S18c: no POST_GRAPH_V2_PENDING)", () => {
     const graph = new PostGraph();
-    expect(() => graph.execute?.(baseOptions, { width: 64, height: 64 })).toThrowError(/POST_GRAPH_V2_PENDING/);
+    const frame = { width: 64, height: 64 };
+    expect(graph.execute(baseOptions, frame)).toEqual(graph.plan(baseOptions, frame));
+    const misplaced = {
+      id: "prd03.test-display-before-tonemap",
+      owner: "prd03" as const,
+      flag: "A3D_QR_POST" as const,
+      insertAt: "before-tonemap" as const,
+      space: "display" as const,
+      inputs: ["color" as const],
+      fragment: { glsl: "void main() {}" },
+      gpuOnly: true as const
+    };
+    expect(() => graph.execute({ ...baseOptions, customPasses: [misplaced] }, frame))
+      .toThrowError(/POSTPROCESS_SPACE_INVALID:prd03\.test-display-before-tonemap/);
   });
 
   it("duplicate custom pass id throws REGISTRY_DUPLICATE", () => {

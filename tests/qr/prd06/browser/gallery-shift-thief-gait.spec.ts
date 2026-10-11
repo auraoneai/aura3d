@@ -107,7 +107,7 @@ test.describe("PRD-06 T0.17 gallery-shift thief gait", () => {
   });
 
   test("thief + guard-2 report tracksApplied every frame and sprint vs sneak hip heights differ", async ({ page }) => {
-    test.setTimeout(780_000);
+    test.setTimeout(180_000);
     await page.goto(`${server.origin}/apps/showcase-gallery-shift/?a3d-qr=animation`, { waitUntil: "domcontentloaded" });
     // Shared-Metal CI runners starve rAF — first-frame plumbing takes minutes.
     // One merged wait (was 180+60+180s serial): app mounted, deterministic
@@ -129,7 +129,7 @@ test.describe("PRD-06 T0.17 gallery-shift thief gait", () => {
         return w.__GS_MOUNT_READY__;
       },
       undefined,
-      { timeout: 420_000, polling: 2_000 }
+      { timeout: 120_000, polling: 2_000 }
     );
 
     // Flag-on `bindRuntimeNode` keeps the binding pending until the C-19
@@ -150,7 +150,7 @@ test.describe("PRD-06 T0.17 gallery-shift thief gait", () => {
         return read("thief") > 0 && read("guard-2") > 0;
       },
       undefined,
-      { timeout: 300_000, polling: 1_000 }
+      { timeout: 45_000, polling: 1_000 }
     );
 
     // Phase-0 exit criteria: tracksApplied > 0 on every pumped frame, thief + guard-2.
@@ -196,10 +196,10 @@ test.describe("PRD-06 T0.17 gallery-shift thief gait", () => {
   });
 
   test("flag-off (?a3d-qr=none) keeps the pre-lane shape — no C-19 api on the thief node", async ({ page }) => {
-    test.setTimeout(300_000);
+    test.setTimeout(180_000);
     await page.goto(`${server.origin}/apps/showcase-gallery-shift/?a3d-qr=none`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => (window.__AURA3D_LIVE_APPS__?.count() ?? 0) > 0, undefined, { timeout: 180_000 });
-    await page.waitForFunction(() => !!window.__GS_PUMP__, undefined, { timeout: 60_000 });
+    await page.waitForFunction(() => (window.__AURA3D_LIVE_APPS__?.count() ?? 0) > 0, undefined, { timeout: 120_000 });
+    await page.waitForFunction(() => !!window.__GS_PUMP__, undefined, { timeout: 30_000 });
     await page.evaluate(() => window.__GS_PUMP__?.(8));
 
     const probe = await readAnimationState(page, "thief");

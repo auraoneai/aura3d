@@ -1,5 +1,7 @@
 # Q-07-4 — `ResidentGPUParticleRenderer` creates its own `webgpu` context (single-renderer gate)
 
+**Issue:** #1016 (P-64 writeback)
+
 **Owner:** 07 (vfx/effects) · **Requester:** 15 · **SLA:** 2 working days
 **Gate:** `single-renderer` (fail mode since T4.9) — finding suppressed by
 `tools/arch-gates/allowlist.json` entry until 2026-11-30.

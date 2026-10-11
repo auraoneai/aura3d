@@ -12,6 +12,7 @@
 import { loadProductionGLTFRenderPipeline } from "/packages/assets/src/asset-corpus/ProductionGLTFRenderPipeline.js";
 import {
   ProductionWebGL2Renderer,
+  rendererProofCapture,
   createProductionEnvironmentLightingResources,
   createProductionPbrHdrPipelineFromRadiance
 } from "/packages/rendering/src/production-runtime/index.js";
@@ -40,34 +41,46 @@ async function run(): Promise<void> {
     const staged: ProductionStagedScene = createProductionProductionStageScene(pipeline.source, pipeline.resources.bounds, { width: canvas.width, height: canvas.height }, stageOptions);
     return { pipeline, staged };
   };
-  const render = (staged: ProductionStagedScene) =>
-    renderer.renderImportedAsset({ source: staged.source, camera: staged.camera, metadata: {} as never });
+  // T2.6: `renderImportedAsset` moved to `rendererProofCapture`, which validates
+  // real mesh/material counts, so pass the pipeline metadata through.
+  const render = (staged: ProductionStagedScene, metadata: unknown) =>
+    rendererProofCapture(renderer, { source: staged.source, camera: staged.camera, metadata: metadata as never, viewport: { width: canvas.width, height: canvas.height } });
 
   // P5-2: baseline vs C-16-decoded variants on one renderer/build.
   const base = await loadAndStage("/fixtures/asset-corpus/damaged-helmet.glb", "helmet");
-  render(base.staged);
+  render(base.staged, base.pipeline.metadata);
   const baseline = await canvasPixels(canvas);
   const mask = subjectMask(baseline);
 
   const decoders = { basePath: DECODER_BASE };
   const draco = await loadAndStage("/fixtures/asset-corpus/damaged-helmet-draco.glb", "helmet-draco", { decoders });
-  render(draco.staged);
+  render(draco.staged, draco.pipeline.metadata);
   const dracoPx = await canvasPixels(canvas);
   const meshopt = await loadAndStage("/fixtures/asset-corpus/damaged-helmet-meshopt.glb", "helmet-meshopt", { decoders });
-  render(meshopt.staged);
+  render(meshopt.staged, meshopt.pipeline.metadata);
   const meshoptPx = await canvasPixels(canvas);
 
   // P5-3: variant rebuild drives visibly different subject colour (mean Lab per variant).
   const shoe = await loadAndStage("/fixtures/asset-corpus/materials-variants-shoe.glb", "shoe");
-  const variants = [...new Set(shoe.pipeline.resources.materialVariants.map((v) => v.variant))].filter(
+  const variants = [...new Set(shoe.pipeline.resources.renderableBindings.flatMap((b) => b.materialVariants.map((v) => v.variant)))].filter(
     (v): v is string => v !== null
   );
   const variantResults: Record<string, { applied: string; meanLab: [number, number, number] }> = {};
   for (const name of variants.slice(0, 3)) {
     const applied = await shoe.pipeline.resources.setMaterialVariant(name);
-    render(shoe.staged);
+    render(shoe.staged, shoe.pipeline.metadata);
     const px = await canvasPixels(canvas);
     variantResults[name] = { applied, meanLab: meanLab(px, subjectMask(px)) };
+  }
+  // 04-S11/S12 control: cycling back to the first variant reproduces it (ΔE < 1), so the
+  // pairwise ≥ 10 gaps are variant-driven, not run-to-run noise. Loaded without QR flags (flag off).
+  let variantRoundTripDeltaE: number | null = null;
+  const first = variants[0];
+  if (first !== undefined && variantResults[first]) {
+    await shoe.pipeline.resources.setMaterialVariant(first);
+    render(shoe.staged, shoe.pipeline.metadata);
+    const again = await canvasPixels(canvas);
+    variantRoundTripDeltaE = deltaE00(variantResults[first]!.meanLab, meanLab(again, subjectMask(again)));
   }
   const unknownResult = await shoe.pipeline.resources.setMaterialVariant("__no-such-variant__");
   const pairwise: number[] = [];
@@ -81,6 +94,7 @@ async function run(): Promise<void> {
     variants,
     variantResults,
     variantPairwiseDeltaE: pairwise,
+    variantRoundTripDeltaE,
     variantUnknown: unknownResult
   };
 }

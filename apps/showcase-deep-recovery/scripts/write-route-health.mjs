@@ -94,7 +94,7 @@ const routeHealth = {
   renderer: { path: "createAuraApp root safe API", mode: "production with safe-basic fallback", nativeWebGPU: false, productionRuntimeClaimed: false },
   primaryAssets: modelIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, role: assetById.get(id).role })),
   audioAssets: audioIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
-  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "subordinate seabed/reef/wreck dressing, lamp volumes, sonar rings, grapple cable, warning beacon, bioluminescent silt, and UI around five typed primary assets", status: "no-primitive-primary-subjects" },
+  primitiveStatus: { primitiveBudget: gate.primitiveBudget, role: "subordinate seabed/reef/wreck dressing, lamp volumes, sonar rings, grapple cable, warning beacon, bioluminescent silt, and UI around five typed primary assets", status: "no-primitive-primary-subjects" },
   gameplay: {
     mission: ["descent", "wreck approach", "standard salvage", "collision breach", "explicit buoy repair", "heavy salvage", "ascent/surface win"],
     authoredMotion: { thrust: true, linearDrag: true, angularDrag: true, neutralBuoyancy: true, worldAndWreckCollision: true },

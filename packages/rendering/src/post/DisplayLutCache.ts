@@ -2,7 +2,7 @@
  * PRD-03 §6.7 S10b — the baked display-grade 3D LUT cache.
  *
  * The analytic display grade (contrast/saturation/vibrance/user .cube at
- * intensity) is constant per frame, so the 33³ RGBA8 bake runs once per
+ * intensity) is constant per frame, so the 65³ RGBA8 bake runs once per
  * unique option set and is reused — the "rebake count 1 across 60 frames"
  * gate. The cache is GL-agnostic: the caller supplies the bake/destroy
  * callbacks; keys are the canonical JSON of the grade inputs.

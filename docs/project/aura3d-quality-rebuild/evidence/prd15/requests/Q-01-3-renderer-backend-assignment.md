@@ -1,5 +1,7 @@
 # Q-01-3 — assign `Renderer.backend` in the constructor
 
+**Issue:** #989 (P-64 writeback)
+
 **Lane:** 01 (owns `packages/rendering/src/Renderer.ts`)
 **Requested by:** lane 15 (PRD-15 T2.1 — C-29 consumer test)
 **Status:** OPEN

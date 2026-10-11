@@ -8,7 +8,10 @@ const wgsl = /* wgsl */ `
 // Beer-Lambert attenuation (r185 volumeAttenuation,
 // transmission_pars_fragment.glsl.js:152-168).
 fn a3dVolumeAttenuation(transmissionDistance: f32, attenuationColor: vec3f, attenuationDistance: f32) -> vec3f {
-	if (attenuationDistance >= 3.4028235e38) {
+	// 04-P6-1 (GPU run 38140816058): Tint rejects 3.4028235e38 ("cannot be
+	// represented as 'f32'"; it rounds past FLT_MAX). The literal below is FLT_MAX
+	// exactly, and only +inf compares greater.
+	if (attenuationDistance > 3.4028234663852886e38) {
 		// Attenuation distance is +∞ (WGSL lacks an infinity test; only +inf exceeds f32 max).
 		return vec3f(1.0);
 	} else {

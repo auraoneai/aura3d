@@ -1,5 +1,7 @@
 # Q-15-1 — unwind the agent-api 100-file SCC (lane 15 self-tracking)
 
+**Issue:** #1043 (P-64 writeback)
+
 **Filed by:** Lane 15 (PRD-15 T6.11)
 **Status:** open — allowlisted until 2026-11-15 (`tools/arch-gates/allowlist.json`)
 **Lane:** 15 (agent-api architecture is lane-15 owned)

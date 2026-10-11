@@ -33,7 +33,6 @@ for (const assetId of assetIds) {
   }
 }
 
-const primitiveOccurrences = Array.from(source.matchAll(/\bprimitives\.[A-Za-z_$][\w$]*/g)).length;
 const acceptanceReportPath = join(repoRoot, "tests/reports/blockfall-reactor-fx/acceptance-states.json");
 if (!existsSync(acceptanceReportPath)) {
   throw new Error("Missing current Blockfall exact acceptance-state report; run the focused browser spec first.");
@@ -79,7 +78,6 @@ const routeHealth = {
     }
   ],
   primitiveStatus: {
-    sourceOccurrences: primitiveOccurrences,
     primitiveBudget: 40,
     role: "falling-block cells, board rails, ghost guides, reactor indicators, and collision visuals inside the typed arcade cabinet",
     status: "gameplay-geometry-with-typed-primary-cabinet"

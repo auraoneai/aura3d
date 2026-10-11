@@ -2079,7 +2079,7 @@ export class WebGPUDevice implements RenderDevice {
     data[167] = 1;
     data[168] = uniformNumber(command.uniforms?.get("u_metallicRoughnessTextureEnabled"), metallicRoughnessBinding ? 1 : 0);
     data[169] = uniformNumber(command.uniforms?.get("u_occlusionTextureEnabled"), occlusionBinding ? 1 : 0);
-    data[170] = 0; // materialFlags.z was u_productColorSmoothing — removed in the PRD 11 Phase 1 freeze
+    data[170] = 0; // materialFlags.z was the product-colour smoothing flag — removed in the PRD 11 Phase 1 freeze
     data[171] = uniformNumber(command.uniforms?.get("u_clusteredLightEnabled"), 0);
     data.set(uniformMat4(command.uniforms?.get("u_normalMatrix")) ?? identityMatrix(), 172);
     const modelMatrix = uniformMat4(command.uniforms?.get("u_modelMatrix")) ?? identityMatrix();

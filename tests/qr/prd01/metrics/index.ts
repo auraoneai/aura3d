@@ -6,3 +6,5 @@ export { deltaE2000, deltaE2000Lab, regionDeltaE2000Stats, rgbToLab } from "./de
 export type { DeltaEStats, Lab, Rgb } from "./deltaE2000";
 export { temporalSigma } from "./temporalSigma";
 export type { TemporalSigmaResult } from "./temporalSigma";
+export { brightMask, capAnalysis, iouOfMasks, linearLuma, meanLumaInMask, silhouetteCircleFit, swatchDeltaE } from "./shapeMetrics";
+export type { CapAnalysis, CircleFit, SwatchDeltaE } from "./shapeMetrics";
