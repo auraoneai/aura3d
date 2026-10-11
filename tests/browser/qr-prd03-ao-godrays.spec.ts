@@ -24,6 +24,7 @@ test.describe("PRD-03 S12/S13 — GTAO grounding and god-ray shafts", () => {
     server = await startExampleDevServer();
     const page = await browser.newPage();
     page.on("pageerror", (err) => console.log("[ao-godrays-pageerror]", String(err).slice(0, 300)));
+    page.on("console", (msg) => { if (msg.text().startsWith("[ao-godrays-tier]")) console.log(msg.text()); });
     await page.goto(`${server.origin}/tests/browser/qr-prd03-ao-godrays-harness.html`);
     await page.waitForFunction(
       () => (window as { qrPrd03AoGodraysReady?: boolean }).qrPrd03AoGodraysReady === true,

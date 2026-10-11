@@ -35,14 +35,14 @@ jobs:
           PY
       - name: Focused game, environment and contract regressions
         if: ${{ !cancelled() }}
-        run: pnpm exec vitest run tests/unit/contracts/C-00-flags.test.ts tests/unit/contracts/C-01-frame-graph.test.ts tests/unit/contracts/impl/prd01-frame-graph.test.ts tests/unit/contracts/impl/prd01-frame-uniforms.test.ts tests/unit/contracts/impl/prd01-instance-buffer.test.ts tests/unit/contracts/impl/prd10-world-graph.test.ts tests/unit/contracts/impl/prd08-camera.test.ts tests/unit/contracts/impl/prd08-time.test.ts tests/unit/engine/game-app-runtime.test.ts tests/unit/game/fx-pool.test.ts tests/unit/game/fx-pool-layer.test.ts tests/unit/game/hud.test.ts tests/unit/environments/production-runtime-hdr-environment-corpus.test.ts tests/unit/contracts/impl/prd02-shadow-pixels.test.ts tests/unit/contracts/impl/prd02-cascade-fitter-bounded.test.ts tests/unit/contracts/impl/prd10-world-uniforms.test.ts tests/unit/contracts/impl/prd10-ready-attribution.test.ts
+        run: pnpm exec vitest run tests/unit/contracts/C-00-flags.test.ts tests/unit/contracts/C-01-frame-graph.test.ts tests/unit/contracts/impl/prd01-frame-graph.test.ts tests/unit/contracts/impl/prd01-frame-uniforms.test.ts tests/unit/contracts/impl/prd01-instance-buffer.test.ts tests/unit/contracts/impl/prd10-world-graph.test.ts tests/unit/contracts/impl/prd08-camera.test.ts tests/unit/contracts/impl/prd08-time.test.ts tests/unit/engine/game-app-runtime.test.ts tests/unit/game/fx-pool.test.ts tests/unit/game/fx-pool-layer.test.ts tests/unit/game/hud.test.ts tests/unit/environments/production-runtime-hdr-environment-corpus.test.ts tests/unit/contracts/impl/prd02-shadow-pixels.test.ts tests/unit/contracts/impl/prd02-cascade-fitter-bounded.test.ts tests/unit/contracts/impl/prd10-world-uniforms.test.ts tests/unit/contracts/impl/prd10-ready-attribution.test.ts tests/unit/contracts/impl/prd10-terrain-wgsl.test.ts tests/unit/contracts/impl/prd10-underwater-post.test.ts tests/unit/contracts/impl/prd10-terrain.test.ts tests/unit/contracts/impl/prd10-water.test.ts tests/unit/game/evidence-channel.test.ts tests/unit/contracts/impl/prd13-looks.test.ts tests/unit/create-aura3d/templates.test.ts
       - name: Generated world effects and showcase regressions
         if: ${{ !cancelled() }}
         run: |
           cat > .consolidation.vitest.config.ts <<'CONFIG'
           import { defineConfig } from 'vitest/config';
           import root from './vitest.config';
-          export default defineConfig({ ...root, test: { ...root.test, include: ['tests/qr/prd10/unit/generated-path-features.test.ts', 'tests/qr/prd14/unit/kits.test.ts', 'tests/qr/prd14/courier-rush/context-loss.test.ts'] } });
+          export default defineConfig({ ...root, test: { ...root.test, include: ['tests/qr/prd10/unit/generated-path-features.test.ts', 'tests/qr/prd05/unit/aura-decoders-plugin.test.ts', 'tests/qr/prd14/unit/kits.test.ts', 'tests/qr/prd14/courier-rush/context-loss.test.ts'] } });
           CONFIG
           pnpm exec vitest run -c .consolidation.vitest.config.ts
       - name: Rendering feature regression suite
@@ -51,6 +51,11 @@ jobs:
       - name: Authoring regression suite
         if: ${{ !cancelled() }}
         run: pnpm exec vitest run -c tests/qr/prd13/vitest.qr-prd13.config.ts
+      - name: Terrain WGSL validation
+        run: |
+          cargo install naga-cli --locked --version 30.0.1
+          pnpm exec tsx benchmarks/quality-rebuild/scenes/prd10/wgsl/emit.ts /tmp/terrain-wgsl
+          for shader in /tmp/terrain-wgsl/*.wgsl; do naga "$shader"; done
       - name: Consolidated types and build
         if: ${{ !cancelled() }}
         run: pnpm typecheck && pnpm build:raw

@@ -68,7 +68,12 @@ const WEBGL_WORLD_NODE_KINDS: ReadonlySet<string> = new Set(["terrain", "water",
  * the diagnostic canvas2d backend, so its terrain never drew (#1175).
  */
 export function declaresWebGLContent(nodes: readonly AuraSceneNode[]): boolean {
-  return nodes.some((node) => isWebGLRenderableNode(node) || WEBGL_WORLD_NODE_KINDS.has((node as { readonly kind: string }).kind));
+  return nodes.some(isWebGLRenderableNode) || countWorldContentNodes(nodes) > 0;
+}
+
+/** Number of PRD-10 world content nodes (terrain/water/grass) — real renderable content drawn by the prd10 contributor. */
+export function countWorldContentNodes(nodes: readonly AuraSceneNode[]): number {
+  return nodes.filter((node) => WEBGL_WORLD_NODE_KINDS.has((node as { readonly kind: string }).kind)).length;
 }
 
 /**

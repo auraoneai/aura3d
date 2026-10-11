@@ -42,7 +42,7 @@ function luma(pixels: Uint8Array, i: number): number {
 /** Diagnostics for the spec artifacts: a PNG, mean luma and the post/output state per render. */
 export const frameDiagnostics: Record<string, { png: string; meanLuma: number; diagnostics: unknown; glErrors?: string[] }> = {};
 
-async function renderFrame(built: ReturnType<typeof scene>, flags: readonly string[], frames = 8, label = ""): Promise<{ pixels: Uint8Array; reads: number }> {
+async function renderFrame(built: ReturnType<typeof scene>, flags: readonly string[], frames = 8, label = "", tier?: "low" | "medium" | "high"): Promise<{ pixels: Uint8Array; reads: number }> {
   const host = document.createElement("div");
   host.style.cssText = `position:fixed;left:-2400px;top:0;width:${SIZE}px;height:${SIZE}px;`;
   document.body.appendChild(host);
@@ -57,6 +57,20 @@ async function renderFrame(built: ReturnType<typeof scene>, flags: readonly stri
   try {
     await app.ready();
     await postV2ModulesReady();
+    if (tier) {
+      // The tier is read at compile time; the scene compiled before ready()
+      // resolved, so re-submit it after recording the tier (GPU run
+      // 38158478621 showed both legs identical without this).
+      // setQualityTier lives on app.post (not flattened onto app); a missing
+      // surface must fail loudly, never leave both legs at the default tier
+      // (GPU runs 38158478621 / 38159826267 rendered identical legs).
+      const post = (app as { post?: { setQualityTier?: (t: string) => void } }).post;
+      if (!post?.setQualityTier) throw new Error("app.post.setQualityTier unavailable");
+      post.setQualityTier(tier);
+      (app as unknown as { setScene(s: unknown): void }).setScene(built);
+      const q = (app as { quality?: { tier?: unknown; current?: unknown } }).quality;
+      console.log(`[ao-godrays-tier] ${label} requested=${tier} surface=${String((post as { qualityTier?: unknown }).qualityTier)} appQuality=${q ? JSON.stringify({ tier: q.tier ?? null, current: q.current ?? null }) : "absent"}`);
+    }
     // Read in the stepping task from the default framebuffer (qr-prd03-frame-capture).
     const canvasEl = host.querySelector("canvas")!;
     const capture = installFrameCapture(app, canvasEl);
@@ -161,8 +175,17 @@ function shaftScene(mode: "off" | "on" | "mask") {
 
 export async function runGodRayShaftProbe() {
   const mask = await renderFrame(shaftScene("mask"), [], 2, "shaft-mask");
-  const off = await renderFrame(shaftScene("off"), ["post"], 8, "shaft-off");
+  // S4-only A/B: both legs carry effects.volumetricFog, so the forward fog
+  // inscatter it drives (compiler/fog.ts:105) lights the pillars equally in
+  // both. Only S4 differs: the "low" post tier drops god rays and nothing
+  // else (PostQualityTiers godRays gate). The old "off" leg had no
+  // volumetricFog, so the forward inscatter on the pillar faces counted as
+  // "god-ray light in the occluded mask" (+71%, GPU run 38151583035).
+  // On leg first, at the default tier with no switch: the recorded tier
+  // carries into the next app (postBridge.ts:176, run 38162635813 showed the
+  // on leg at "low" too), so the "low" leg must come last.
   const on = await renderFrame(shaftScene("on"), ["post"], 8, "shaft-on");
+  const off = await renderFrame(shaftScene("on"), ["post"], 8, "shaft-off", "low");
   // Pillar mask and its bounding rows/columns.
   const pillar = new Uint8Array(SIZE * SIZE);
   let minX = SIZE, maxX = -1, minY = SIZE, maxY = -1;

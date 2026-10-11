@@ -248,15 +248,7 @@ export async function assertTemplateLookFloor(page: Page, options: LookFloorOpti
     // 2–5. Renderer/look evidence via __AURA3D_LIVE_APPS__.
     expect(report.appliedLook, "appliedLook diagnostics missing — is the app mounted via createAuraApp?").not.toBeNull();
     expect(report.lookLintErrors).toEqual([]);
-    /*
-     * §7.1: the hdri-null looks (space, underwater, night-city, polar-night)
-     * carry no environment map by design — diagnostics report
-     * `environment.background === "color"` and leave the intensity at NaN.
-     * Only assert an environment reached the frame when the look declared one.
-     */
-    if (report.appliedLook!.background !== "color") {
       expect(report.appliedLook!.specularIntensity).toBeGreaterThan(0);
-    }
     if (report.appliedLook!.shadowStrength !== null) {
       expect(report.appliedLook!.shadowStrength!).toBeGreaterThanOrEqual(0.8);
     }
