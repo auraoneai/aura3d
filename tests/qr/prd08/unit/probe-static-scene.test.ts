@@ -41,7 +41,10 @@ describe("S8 probe sees static scene nodes", () => {
       { kind: "group", position: [10, 0, 0], children: [{ kind: "primitive", primitive: "box", size: 2, scale: 2 }] },
       { kind: "primitive", primitive: "box", size: [2, 2, 2], rotation: [0, 0.5, 0] },
       { kind: "primitive", primitive: "sphere", size: 1, instances: [{ position: [5, 0, 0] }, { position: [-5, 0, 0] }] },
-      { kind: "model", asset: { id: "x" }, targetHeight: 2, position: [0, 1, 0] },
+      { kind: "model", asset: { id: "x" }, targetMaxDimension: 2, position: [0, 1, 0] },
+      // targetHeight/targetLength fix one axis only (aspect kept) → no safe cube; skipped.
+      { kind: "model", asset: { id: "tall" }, targetHeight: 2 },
+      { kind: "model", asset: { id: "long" }, targetLength: 2 },
       { kind: "model", asset: { id: "unsized" } },
       { kind: "primitive", primitive: "box", size: 1, runtime: { id: "live" } },
       { kind: "primitive", primitive: "box", size: 1, visible: false }
@@ -53,6 +56,20 @@ describe("S8 probe sees static scene nodes", () => {
     expect(boxes[2].min[0]).toBeCloseTo(4.5, 9);
     expect(boxes[3].min[0]).toBeCloseTo(-5.5, 9);
     expect(boxes[4].max).toEqual([1, 2, 1]);
+  });
+
+  it("instance boxes follow the render composition (primitive: instance only; model: instance overrides node)", () => {
+    const boxes = staticSceneProbeBoxes([
+      // Primitive instances render from the instance transform alone (compiler/primitives.ts).
+      { kind: "primitive", primitive: "box", size: 2, position: [100, 0, 0], scale: 3, rotation: [0, 1, 0], instances: [{ position: [1, 0, 0] }] },
+      // Model instances spread the node, then the instance fields override.
+      { kind: "model", asset: { id: "m" }, targetMaxDimension: 2, position: [100, 0, 0], scale: 2, instances: [{ position: [1, 0, 0] }, { position: [5, 0, 0], scale: 1 }] }
+    ] as never);
+    expect(boxes).toHaveLength(3);
+    expect(boxes[0].min).toEqual([0, -1, -1]);
+    expect(boxes[0].max).toEqual([2, 1, 1]);
+    expect(boxes[1].min).toEqual([-1, -2, -2]); // node scale 2 kept, node position overridden
+    expect(boxes[2].min).toEqual([4, -1, -1]); // instance scale 1 overrides node scale 2
   });
 
   it("static and runtime boxes are both cast against", () => {

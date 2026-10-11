@@ -9,10 +9,12 @@
  * - primitives: half-extent = size/2 × scale (box/plane/torus use the size
  *   vector, sphere/cylinder/capsule the max component); any non-zero rotation
  *   widens the box to the half-extent's bounding sphere;
- * - models: only when a target dimension (`targetMaxDimension`,
- *   `targetHeight`, `targetLength`) bounds them without loading the asset;
- *   otherwise they are skipped (asset bounds are not known to the lane);
- * - `instances` expand to one box per instance transform;
+ * - models: only when `targetMaxDimension` bounds every axis without
+ *   loading the asset; otherwise they are skipped (asset bounds are not
+ *   known to the lane; `targetHeight`/`targetLength` fix one axis only);
+ * - `instances` expand to one box per instance, composed exactly as the
+ *   render paths do (primitive: instance transform only; model: node
+ *   transform overridden by instance fields);
  * - nodes with a `runtime` spec are skipped here (the runtime registry
  *   already reports their live bounds), as are invisible nodes.
  * Results are cached per `nodes` array identity: scene specs are replaced,
@@ -56,7 +58,10 @@ function baseHalfExtent(node: StaticNodeLike): AuraVec3 | undefined {
     return [Math.abs(size[0]) / 2, Math.abs(size[1]) / 2, Math.abs(size[2]) / 2];
   }
   if (node.kind === "model") {
-    const d = node.targetMaxDimension ?? node.targetHeight ?? node.targetLength;
+    // Only `targetMaxDimension` bounds every axis; `targetHeight`/`targetLength`
+    // fix one axis and keep the asset's aspect, so a d×d×d cube would
+    // under-bound wide/tall assets (Codex review on #946).
+    const d = node.targetMaxDimension;
     if (typeof d !== "number" || !(d > 0)) return undefined;
     return [d / 2, d / 2, d / 2];
   }
@@ -89,10 +94,12 @@ export function staticSceneProbeBoxes(nodes: readonly SceneCameraNodeLike[]): St
     if (!half) return;
     const id = `static:${node.name ?? node.kind}:${index}`;
     if (node.instances && node.instances.length > 0) {
+      // Match the render paths (compiler/primitives.ts): primitive instances
+      // use only the instance transform; model instances spread the node and
+      // let instance fields override (Codex review on #946).
       node.instances.forEach((inst, i) => {
-        const p = node.position ?? [0, 0, 0];
-        const ip = inst.position ?? [0, 0, 0];
-        out.push(boxFor(`${id}#${i}`, half, [p[0] + ip[0], p[1] + ip[1], p[2] + ip[2]], inst.rotation ?? node.rotation, inst.scale ?? node.scale));
+        const t = node.kind === "model" ? { position: node.position, rotation: node.rotation, scale: node.scale, ...inst } : inst;
+        out.push(boxFor(`${id}#${i}`, half, t.position, t.rotation, t.scale));
       });
       return;
     }
