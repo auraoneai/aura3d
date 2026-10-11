@@ -2,7 +2,8 @@
  * ShadowSystem — PRD-02 Phase 4 flag-path shadow orchestration: stable-fit
  * CSM for the sun (DirectionalCascadeFitter) + a depth atlas of spot/point
  * tiles (ShadowAtlas), rendered through DepthPass into one 2D depth target
- * per cascade until Q-01-5 provides depth-only targets. Produces the C-11
+ * per cascade (depth-only targets via Q-01-5 when the device supports depth
+ * textures, 02-T1946). Produces the C-11
  * `ShadowFrameUniforms` for the `prd02.shadowFrameUniforms` blackboard key;
  * the flag-path forward binding reads the extra `cascadeTextures` /
  * `localShadowMatrices` fields on the same object.
@@ -13,7 +14,7 @@
  */
 
 import { DepthPass } from "../DepthPass";
-import type { RenderDevice, RenderTarget } from "../RenderDevice";
+import type { RenderDevice, RenderTarget, RenderTargetDescriptor } from "../RenderDevice";
 import type { Texture } from "../Texture";
 import type { RenderItem } from "../contracts/renderItem";
 import type { ShadowCasterVariantKey, ShadowFrameUniforms } from "../contracts/shadows";
@@ -199,30 +200,30 @@ export class Prd02ShadowSystem {
     this.atlasTarget = null;
   }
 
+  /**
+   * 02-T1946: shadow maps only need the sampled depth surface. With
+   * `depth-textures` the targets are depth-only (Q-01-5) — no rgba8 colour
+   * attachment, saving 4·size² bytes per target; otherwise keep the rgba8 +
+   * depth-texture target the device can always build.
+   */
+  private depthTargetDescriptor(size: number, label: string): RenderTargetDescriptor {
+    return this.device.info.capabilities?.includes("depth-textures")
+      ? { width: size, height: size, label, depthOnly: true }
+      : { width: size, height: size, label, format: "rgba8", depth: "texture" };
+  }
+
   private ensureCascadeTarget(index: number): RenderTarget {
     const existing = this.cascadeTargets[index];
     if (existing && !existing.disposed && existing.width === this.config.mapSize) return existing;
     existing?.dispose();
-    const target = this.device.createRenderTarget({
-      width: this.config.mapSize,
-      height: this.config.mapSize,
-      label: `prd02-cascade-${index}`,
-      format: "rgba8",
-      depth: "texture"
-    });
+    const target = this.device.createRenderTarget(this.depthTargetDescriptor(this.config.mapSize, `prd02-cascade-${index}`));
     this.cascadeTargets[index] = target;
     return target;
   }
 
   private ensureAtlasTarget(): RenderTarget {
     if (this.atlasTarget && !this.atlasTarget.disposed) return this.atlasTarget;
-    this.atlasTarget = this.device.createRenderTarget({
-      width: ATLAS_SIZE,
-      height: ATLAS_SIZE,
-      label: "prd02-local-shadow-atlas",
-      format: "rgba8",
-      depth: "texture"
-    });
+    this.atlasTarget = this.device.createRenderTarget(this.depthTargetDescriptor(ATLAS_SIZE, "prd02-local-shadow-atlas"));
     return this.atlasTarget;
   }
 
