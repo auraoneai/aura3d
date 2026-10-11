@@ -22,7 +22,9 @@ export const AURA_PRESET_DEFAULTS: unique symbol = Symbol.for("aura3d.presetDefa
 export function resolveMaterialSpecDefaults(defaults: AuraMaterialSpec, options: AuraMaterialSpec): AuraMaterialSpec {
   const defaultedKeys = new Set<string>();
   for (const key of Object.keys(defaults)) {
-    if ((options as Record<string, unknown>)[key] === undefined) defaultedKeys.add(key);
+    // An own `undefined` option still wins the spread below (legacy merge shape), so the key's value
+    // did not come from the preset and must not be marked as preset-defaulted.
+    if (!Object.prototype.hasOwnProperty.call(options, key)) defaultedKeys.add(key);
   }
   const spec = { ...defaults, ...options } as AuraMaterialSpec & { [AURA_PRESET_DEFAULTS]?: ReadonlySet<string> };
   spec[AURA_PRESET_DEFAULTS] = defaultedKeys;
