@@ -19,3 +19,20 @@ describe("declaresWebGLContent", () => {
     expect(declaresWebGLContent([])).toBe(false);
   });
 });
+
+describe("production content rule counts world content (#1175)", () => {
+  const input = (primitives: number, materials: number) =>
+    ({ metadata: { primitiveCount: primitives, meshCount: primitives, materialCount: materials } }) as never;
+  it("accepts a world-only frame and still rejects an empty one", async () => {
+    const { validateProductionRendererInput } = await import("../../../../packages/rendering/src/production-runtime/renderProofs");
+    expect(() => validateProductionRendererInput(input(0, 0), { contributorDrawnNodes: 2 })).not.toThrow();
+    expect(() => validateProductionRendererInput(input(0, 0), { contributorDrawnNodes: 0 })).toThrow(/real mesh primitive/);
+    expect(() => validateProductionRendererInput(input(0, 0))).toThrow(/real mesh primitive/);
+    expect(() => validateProductionRendererInput(input(3, 0))).toThrow(/real material/);
+    expect(() => validateProductionRendererInput(input(3, 1))).not.toThrow();
+  });
+  it("counts terrain/water/grass nodes only", async () => {
+    const { countWorldContentNodes } = await import("../../../../packages/engine/src/agent-api/compiler/observations");
+    expect(countWorldContentNodes([node("terrain"), node("water"), node("primitive"), node("light")])).toBe(2);
+  });
+});

@@ -8,7 +8,7 @@ import { primitive } from "../nodes/primitives.js";
 import { createRendererDiagnosticReport } from "../rendererDiagnostics.js";
 import { clamp01, createViewProjection } from "../sceneMath.js";
 import { resolveCameraFrame } from "./camera.js";
-import { createProductionRuntimeCollectedLights, createProductionRuntimePostprocessObservation, createProductionRuntimeShadowObservation, createProductionTexturesObservation, declaresWebGLContent, isRenderableModelNode, isWebGLRenderableNode } from "./observations.js";
+import { createProductionRuntimeCollectedLights, createProductionRuntimePostprocessObservation, createProductionRuntimeShadowObservation, createProductionTexturesObservation, countWorldContentNodes, isRenderableModelNode } from "./observations.js";
 import { createProductionTextObservation } from "./text.js";
 import { getRootPerformanceQuality, getRootRenderSource } from "../RootRuntimeSupport.js";
 import { Renderer, type RenderBackendKind, type ProductionRendererFeature, type ProductionRendererInput, type RenderDeviceDiagnostics } from "@aura3d/rendering";
@@ -329,19 +329,15 @@ export async function createProductionRuntimeSceneRenderer(
         productionRuntimeLights
       );
     };
-    /*
-   * #1175 follow-up: a scene whose only drawable content is PRD-10 world
-   * nodes (terrain/water/grass, drawn by the prd10 frame contributor) has no
-   * mesh primitive in the production input, so the mesh-primitive
-   * precondition threw "requires at least one real mesh primitive" and the
-   * frame never ran. World-only scenes skip that precondition only; a frame
-   * that still draws nothing fails the mount's NoDrawError check.
+  /*
+   * #1175: PRD-10 world terrain/water/grass nodes are real renderable content
+   * (the prd10 frame contributor draws them with their own geometry and
+   * programs), so they count toward the production content rule alongside
+   * mesh primitives. Without this, a world-only scene failed "requires at least
+   * one real mesh primitive" and never ran a frame.
    */
-  const worldOnlyScene = declaresWebGLContent(snapshot.nodes) && !snapshot.nodes.some(isWebGLRenderableNode);
-  const validateFrameInput = (input: ProductionRendererInput): void => {
-    if (worldOnlyScene && input.metadata.primitiveCount <= 0) return;
-    validateProductionRendererInput(input);
-  };
+  const contributorContent = { contributorDrawnNodes: countWorldContentNodes(snapshot.nodes) };
+  const validateFrameInput = (input: ProductionRendererInput): void => validateProductionRendererInput(input, contributorContent);
   const takePreparedFrame = (time: number): ProductionRendererInput => {
       const prepared = preparedFrame?.time === time ? preparedFrame.input : undefined;
       preparedFrame = undefined;
