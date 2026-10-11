@@ -142,6 +142,69 @@ export interface BloomEnergyCase {
   readonly onMeanLuma?: number;
   readonly pixelCount?: number;
   readonly frameSize?: readonly [number, number];
+  /**
+   * S9 attribution diagnostics (not asserted): bloom-added scene energy
+   * (Σ on − off, × 1/EXPOSURE) in 4-px rings around the sphere centroid, the
+   * halo under alternative masks, and core pixel counts. A linear bloom gives
+   * ring profiles that scale exactly with (strength − 1).
+   */
+  readonly attribution?: {
+    readonly corePixels: number;
+    readonly coreHalfCoveragePixels: number;
+    readonly rings: readonly number[];
+    readonly haloPad4: number;
+    readonly haloPad8: number;
+    /** Halo outside a strength-independent core (off-frame luma ≥ 0.5 · strength) dilated by 2 px. */
+    readonly haloHalfCoverage: number;
+    readonly offEdgeEnergy: number;
+  };
+}
+
+function dilate(core: Uint8Array, width: number, height: number, pad: number): Uint8Array {
+  const mask = new Uint8Array(width * height).fill(1);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (!core[y * width + x]) continue;
+      for (let dy = -pad; dy <= pad; dy++) {
+        for (let dx = -pad; dx <= pad; dx++) {
+          const yy = y + dy, xx = x + dx;
+          if (yy >= 0 && yy < height && xx >= 0 && xx < width) mask[yy * width + xx] = 0;
+        }
+      }
+    }
+  }
+  return mask;
+}
+
+function attribution(off: Frame, on: Frame, strength: number): NonNullable<BloomEnergyCase["attribution"]> {
+  const { width, height } = off;
+  const n = width * height;
+  const coreAny = new Uint8Array(n), coreHalf = new Uint8Array(n);
+  let cx = 0, cy = 0, cw = 0, offEdge = 0;
+  for (let p = 0; p < n; p++) {
+    const l = linearLuma(off.pixels, p * 4) / EXPOSURE;
+    if (l * EXPOSURE > 1e-3) {
+      coreAny[p] = 1;
+      cx += (p % width) * l; cy += Math.floor(p / width) * l; cw += l;
+    }
+    if (l >= 0.5 * strength) coreHalf[p] = 1;
+    else if (coreAny[p]) offEdge += l;
+  }
+  cx /= Math.max(cw, 1e-9); cy /= Math.max(cw, 1e-9);
+  const rings = new Array<number>(16).fill(0);
+  const pad4 = dilate(coreAny, width, height, 4), pad8 = dilate(coreAny, width, height, 8), half2 = dilate(coreHalf, width, height, 2);
+  let h4 = 0, h8 = 0, hh = 0, cAny = 0, cHalf = 0;
+  for (let p = 0; p < n; p++) {
+    const d = (linearLuma(on.pixels, p * 4) - linearLuma(off.pixels, p * 4)) / EXPOSURE;
+    const x = p % width, y = Math.floor(p / width);
+    const ring = Math.min(15, Math.floor(Math.hypot(x - cx, y - cy) / 4));
+    rings[ring]! += d;
+    if (pad4[p]) h4 += d;
+    if (pad8[p]) h8 += d;
+    if (half2[p]) hh += d;
+    cAny += coreAny[p]!; cHalf += coreHalf[p]!;
+  }
+  return { corePixels: cAny, coreHalfCoveragePixels: cHalf, rings, haloPad4: h4, haloPad8: h8, haloHalfCoverage: hh, offEdgeEnergy: offEdge };
 }
 
 async function measure(subject: Subject): Promise<BloomEnergyCase> {
@@ -174,7 +237,8 @@ async function measure(subject: Subject): Promise<BloomEnergyCase> {
     offMeanLuma: meanLuma(off),
     onMeanLuma: meanLuma(on),
     pixelCount: pixelTotal,
-    frameSize: [width, height] as const
+    frameSize: [width, height] as const,
+    ...(subject.kind === "sphere" ? { attribution: attribution(offFrame, onFrame, subject.strength) } : {})
   };
 }
 
