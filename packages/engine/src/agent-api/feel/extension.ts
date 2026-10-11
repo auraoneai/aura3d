@@ -22,6 +22,31 @@ import { createScreenOverlay, type AuraScreenOverlay } from "./ScreenOverlay.js"
 import { probeHaptics, playHaptic } from "@aura3d/input";
 import { bindFeelLintProbe } from "./lint/evidenceOnlyFeel.js";
 
+type ScreenFeelCollector = (ctx: Parameters<NonNullable<FrameContributor["collect"]>>[1]) => void;
+const screenFeelCollectors = new Set<ScreenFeelCollector>();
+let unregisterScreenFeel: (() => void) | null = null;
+const screenFeelContributor: FrameContributor = {
+  id: "prd08.screenFeel",
+  owner: "prd08",
+  flag: "A3D_QR_CAMERA",
+  phases: ["collect"],
+  collect(items: RenderItem[], ctx) {
+    if (!ctx.flags.on("A3D_QR_CAMERA")) return items;
+    for (const collect of screenFeelCollectors) collect(ctx);
+    return items;
+  }
+};
+/** Add one bus's per-frame publisher; the shared contributor lives while any bus does. */
+function addScreenFeelCollector(collect: ScreenFeelCollector): () => void {
+  screenFeelCollectors.add(collect);
+  unregisterScreenFeel ??= registerFrameContributor(screenFeelContributor);
+  return () => {
+    if (!screenFeelCollectors.delete(collect) || screenFeelCollectors.size > 0) return;
+    unregisterScreenFeel?.();
+    unregisterScreenFeel = null;
+  };
+}
+
 interface FrameInfo { readonly dt: number; }
 type OnFrameApp = { onFrame?(cb: (f: FrameInfo) => void): () => void };
 
@@ -182,20 +207,14 @@ export function createAuraFeelBus(app: AuraApp, options: AuraFeelExtensionOption
   // S-3: publish `AuraScreenFeelUniforms` every collected frame on the C-01
   // blackboard under `prd08.screenFeel`; a C-13 consumer reports consumption
   // by setting `prd08.screenFeel.consumed` (facts F-08-5 for PRD 03).
-  const screenFeelContributor: FrameContributor = {
-    id: "prd08.screenFeel",
-    owner: "prd08",
-    flag: "A3D_QR_CAMERA",
-    phases: ["collect"],
-    collect(items: RenderItem[], ctx) {
-      if (!ctx.flags.on("A3D_QR_CAMERA")) return items;
-      ctx.blackboard.set(SCREEN_FEEL_BLACKBOARD_KEY, latest.uniforms);
-      blackboardConsumed.current = ctx.blackboard.get("prd08.screenFeel.consumed") === true;
-      lintFrames += 1;
-      return items;
-    }
-  };
-  const disposeContributor = registerFrameContributor(screenFeelContributor);
+  // The registry rejects duplicate ids, so every live bus shares one
+  // refcounted contributor (two flag-on apps used to throw
+  // REGISTRY_DUPLICATE:prd08.screenFeel from the second createAuraApp).
+  const disposeContributor = addScreenFeelCollector((ctx) => {
+    ctx.blackboard.set(SCREEN_FEEL_BLACKBOARD_KEY, latest.uniforms);
+    blackboardConsumed.current = ctx.blackboard.get("prd08.screenFeel.consumed") === true;
+    lintFrames += 1;
+  });
 
   // F-7b: feed the runtime `look/evidence-only-feel` rule this bus's counters.
   let lintFrames = 0;
