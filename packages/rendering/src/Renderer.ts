@@ -539,9 +539,11 @@ export class Renderer {
     };
     const graph = (this.probeGraph ??= new RenderGraph());
     graph.clear();
-    graph.addPass(new ForwardPass({ ...shared, framePass: { name: "prd01.probe.opaque", writes: ["aura.probe.color"] } }));
+    // A probe face has no screen-space transmission input: transmission items
+    // draw with the opaque set; transparent items keep splitForwardItems' sort order.
+    graph.addPass(new ForwardPass({ ...shared, items: [...split.opaque, ...split.transmission], framePass: { name: "prd01.probe.opaque", writes: ["aura.probe.color"] } }));
     if (split.transparent.length > 0) {
-      graph.addPass(new ForwardPass({ ...shared, items: split.transparent, framePass: { name: "prd01.probe.transparent", reads: ["aura.probe.color"], writes: ["aura.probe.color"] } }));
+      graph.addPass(new ForwardPass({ ...shared, items: split.transparent.map((entry) => entry.item), framePass: { name: "prd01.probe.transparent", reads: ["aura.probe.color"], writes: ["aura.probe.color"] } }));
     }
     const previous = this.device.getRenderTarget?.() ?? null;
     this.device.beginFrame(target.width, target.height);
