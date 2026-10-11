@@ -127,6 +127,9 @@ function definesFor(f: ProgramFeatures, contributions: readonly Contribution[]):
   if (f.backgroundCoverage) d.BACKGROUND_COVERAGE = true;
   if (f.environment === "equirect") d.ENVMAP_TYPE_EQUIRECT = true;
   if (f.environment === "pmrem-cube") d.ENVMAP_TYPE_CUBE_UV = true;
+  // Either sampler provides a3dSampleEnvironment (indirect_default); the
+  // default indirect body and C-03 lobe IBL calls guard on this.
+  if (f.environment !== "none") d.A3D_ENV_SAMPLE = true;
   if (f.fog === "linear") d.FOG_LINEAR = true;
   if (f.fog === "exp2" || f.fog === "height") d.FOG_EXP2 = true;
   if (f.fog === "height") d.FOG_HEIGHT = true;
@@ -399,7 +402,7 @@ function uvExpr(f: ProgramFeatures, slot: keyof ProgramFeatures["maps"]): string
 function defaultIndirectBody(f: ProgramFeatures): string {
   const lines: string[] = [];
   lines.push("  indirectDiffuse += a3dAmbientDiffuse(material.diffuseContribution);");
-  lines.push("#ifdef ENVMAP_TYPE_EQUIRECT");
+  lines.push("#ifdef A3D_ENV_SAMPLE");
   lines.push("  float a3dRoughLod = material.roughness * 8.0;");
   lines.push("  vec3 a3dReflect = reflect(-V, N);");
   lines.push("  vec3 a3dEnvIrradiance = a3dSampleEnvironment(N, 8.0);");

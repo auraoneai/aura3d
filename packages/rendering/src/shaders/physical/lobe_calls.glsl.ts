@@ -123,7 +123,7 @@ export const A3D_PRD04_CLEARCOAT_DIRECT_CALL = chunk("a3d_prd04_clearcoat_direct
 export const A3D_PRD04_CLEARCOAT_IBL_CALL = chunk("a3d_prd04_clearcoat_ibl_call", /* glsl */ `if ( a3dLobes.clearcoat > 0.0 ) {
 	vec3 a3dCcN = a3dLobes.clearcoatNormal;
 	vec3 a3dCcEnv = vec3( 0.0 );
-#ifdef ENVMAP_TYPE_EQUIRECT
+#ifdef A3D_ENV_SAMPLE
 	a3dCcEnv = a3dSampleEnvironment( reflect( -V, a3dCcN ), a3dLobes.clearcoatRoughness * 8.0 );
 #endif
 	vec3 a3dCcIndirect = a3dPrd04ClearcoatIndirect( a3dCcN, V, a3dLobes.clearcoatRoughness, a3dCcEnv );
@@ -171,7 +171,7 @@ export const A3D_PRD04_SHEEN_DIRECT_CALL = chunk("a3d_prd04_sheen_direct_call", 
 
 export const A3D_PRD04_SHEEN_IBL_CALL = chunk("a3d_prd04_sheen_ibl_call", /* glsl */ `if ( max3( a3dLobes.sheenColor ) > 0.0 ) {
 	vec3 a3dShIrradiance = u_environmentColor * u_environmentIntensity;
-#ifdef ENVMAP_TYPE_EQUIRECT
+#ifdef A3D_ENV_SAMPLE
 	a3dShIrradiance += a3dSampleEnvironment( N, 8.0 );
 #endif
 	vec3 a3dShIndirect = a3dPrd04SheenIndirect( N, V, a3dLobes.sheenRoughness, a3dLobes.sheenColor, a3dShIrradiance );
@@ -228,7 +228,7 @@ export const A3D_PRD04_IRIDESCENCE_DIRECT_CALL = chunk("a3d_prd04_iridescence_di
 	directSpecular += radiance * a3dIrNL * ( a3dIrFilm - a3dIrF ) * a3dIrVD;
 }`, ["a3d_prd04_iridescence_pars"]);
 
-export const A3D_PRD04_IRIDESCENCE_IBL_CALL = chunk("a3d_prd04_iridescence_ibl_call", /* glsl */ `#ifdef ENVMAP_TYPE_EQUIRECT
+export const A3D_PRD04_IRIDESCENCE_IBL_CALL = chunk("a3d_prd04_iridescence_ibl_call", /* glsl */ `#ifdef A3D_ENV_SAMPLE
 if ( a3dLobes.iridescence > 0.0 ) {
 	vec3 a3dIrEnv = a3dSampleEnvironment( reflect( -V, N ), material.roughness * 8.0 );
 	vec3 a3dIrSingle = vec3( 0.0 );
@@ -281,7 +281,7 @@ export const A3D_PRD04_ANISOTROPY_DIRECT_CALL = chunk("a3d_prd04_anisotropy_dire
 	directSpecular += radiance * a3dAnNL * ( a3dAnAniso - a3dAnIso );
 }`, ["a3d_prd04_anisotropy_pars"]);
 
-export const A3D_PRD04_ANISOTROPY_IBL_CALL = chunk("a3d_prd04_anisotropy_ibl_call", /* glsl */ `#ifdef ENVMAP_TYPE_EQUIRECT
+export const A3D_PRD04_ANISOTROPY_IBL_CALL = chunk("a3d_prd04_anisotropy_ibl_call", /* glsl */ `#ifdef A3D_ENV_SAMPLE
 if ( a3dLobes.anisotropy > 0.0 ) {
 	vec3 a3dAnBent = a3dPrd04AnisotropyBentNormal( V, N, material.roughness, a3dLobes.anisotropyB, a3dLobes.anisotropy );
 	vec3 a3dAnEnvBent = a3dSampleEnvironment( reflect( -V, a3dAnBent ), material.roughness * 8.0 );
