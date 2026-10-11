@@ -12,6 +12,7 @@ import { provideVelocityHistory } from "../forward/Velocity.js";
 import { registerShaderChunk, registerShaderFeature } from "../contracts/program.js";
 import { registerIndirectFractionShader } from "../post/chunks/indirectFraction.glsl.js";
 import { registerVelocityShader } from "../post/chunks/velocity.glsl.js";
+import { registerScreenFeelConsumer } from "../post/ScreenFeelPass.js";
 
 // C-13: v2 post graph (plans + validates the §6.1 chain; the GPU chain runs in
 // post/v2Stages.ts, including custom passes at all five anchors).
@@ -32,9 +33,16 @@ registerIndirectFractionShader(registerShaderChunk, registerShaderFeature);
 // (`A3D_QR_POST_VELOCITY_MRT`) until Q-01-2 wires the MRT target.
 registerVelocityShader(registerShaderChunk, registerShaderFeature);
 
+// #207 / Q-03-1: the C-13 consumer of lane 08's `prd08.screenFeel` uniforms.
+// The bridge contributor is flag-gated (`A3D_QR_POST`) and registers the
+// `prd03.screenFeel` post pass lazily from its flag-on collect, so flag-off
+// frames and the post-pass registry are unchanged.
+registerScreenFeelConsumer();
+
 export { postPipelineSlot, PostGraph, planPostGraph, resolvePostGraph, type PostGraphLike, type PostGraphFrame } from "../post/PostGraph.js";
 export { velocityHistorySlot, VelocityHistory, postVelocityCoverage, type VelocitySurface, type VelocityUniformBinder, bindVelocityUniforms } from "../forward/Velocity.js";
 export { PostTimer } from "../post/PostTimer.js";
+export { SCREEN_FEEL_PASS_ID, screenFeelFrameState } from "../post/ScreenFeelPass.js";
 // 03-S18c: the renderer-side outcome of the last v2 seam call, so
 // `diagnostics().post.customPasses` reports what executed, not what was authored.
 export { postGraphV2LastOutcome, postV2ModulesReady } from "../renderer/PostprocessExecution.js";
