@@ -67,6 +67,8 @@ test(`sphere silhouette: max radial deviation ≤ 0.5 px (a3d-qr=${FLAGS})`, asy
 });
 
 test(`cylinder cap: IoU ≥ 0.97, luma ±10 %, normal ≤ 10° of +Y (a3d-qr=${FLAGS})`, async ({ page }) => {
+  // Five tool loads (top + four tilted lights) at ~40 s each on the GPU runners.
+  test.setTimeout(600_000);
   const shots: Record<string, { aura: string; three: string }> = {};
   const pageErrors: string[] = [];
   for (const light of ["top", "+x", "-x", "+z", "-z"]) {
@@ -100,6 +102,8 @@ test(`cylinder cap: IoU ≥ 0.97, luma ±10 %, normal ≤ 10° of +Y (a3d-qr=${F
 });
 
 test(`685 boxes → 1 geometry upload (a3d-qr=${FLAGS})`, async ({ page }) => {
+  // Two app mounts (1 box, 685 boxes) in one tool load.
+  test.setTimeout(300_000);
   const pageErrors: string[] = [];
   const report = await openTool<PrimitiveReport>(page, `tools=box-uploads&a3d-qr=${FLAGS}`, pageErrors, 180_000);
   test.info().annotations.push({ type: "metric", description: JSON.stringify(report) });

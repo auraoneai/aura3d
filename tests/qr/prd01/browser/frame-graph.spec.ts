@@ -33,6 +33,8 @@ test("after-opaque sees the scene depth copy (a3d-qr=core)", async ({ page }) =>
   expect(report.depthCopyPublished).toBe(true);
   expect(report.centerDepth).not.toBeNull();
   expect(report.cornerDepth).not.toBeNull();
+  // 128 is the probe's clear sentinel: the depth sample never landed.
+  expect(report.cornerDepth).not.toBe(128);
   // Far plane clears to 1.0; the box in front of the camera is nearer.
   expect(report.cornerDepth!).toBeGreaterThanOrEqual(254);
   expect(report.centerDepth!).toBeLessThan(report.cornerDepth! - 2);

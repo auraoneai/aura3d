@@ -13,7 +13,7 @@ interface DprReport {
   readonly cssHeight: number;
   readonly backingWidth: number;
   readonly backingHeight: number;
-  readonly resolution: { readonly pixelRatio?: number | null } | null;
+  readonly resolution: { readonly effectivePixelRatio?: number | null; readonly devicePixelRatio?: number | null } | null;
   readonly errors: readonly string[];
 }
 
@@ -31,7 +31,8 @@ for (const dsf of [1, 2, 3]) {
       expect(report.errors).toEqual([]);
       expect(report.devicePixelRatio).toBe(dsf);
       expect(report.resolution).not.toBeNull();
-      expect(report.resolution!.pixelRatio).toBe(expected);
+      // C-31 `resolution.effectivePixelRatio` is the ratio actually applied.
+      expect(report.resolution!.effectivePixelRatio).toBe(expected);
       expect(report.backingWidth).toBe(Math.round(report.cssWidth * expected));
       expect(report.backingHeight).toBe(Math.round(report.cssHeight * expected));
       expect(nonFavicon(pageErrors)).toEqual([]);

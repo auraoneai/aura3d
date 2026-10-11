@@ -85,8 +85,12 @@ export async function mountAura(canvas: HTMLCanvasElement, snapshot: AuraSceneSn
   return app;
 }
 
+/** Apps whose first-draw wait already ran (a draw-free scene, e.g. background only, waits once, not per settle). */
+const drawWaited = new WeakSet<AuraApp>();
+
 export async function settleAura(app: AuraApp, frames: number): Promise<void> {
-  const deadline = performance.now() + 30_000;
+  const deadline = drawWaited.has(app) ? 0 : performance.now() + 30_000;
+  drawWaited.add(app);
   while (performance.now() < deadline) {
     app.step(1 / 60);
     const d = app.diagnostics();
@@ -189,14 +193,55 @@ export const OPAQUE_STATE: RenderCommandState = {
   depthCompare: "always"
 };
 
-/** RGBA float readback of the currently bound framebuffer (needs EXT_color_buffer_float). */
-export function readFloatPixels(gl: WebGL2RenderingContext, x: number, y: number, w: number, h: number): Float32Array {
+/**
+ * GL error trace for the device-level tools: `check(step)` drains
+ * `gl.getError()` and records `step: 0x…` for every pending error, so a GPU run
+ * names the step that raised it (a strict-mode device throw only reports the
+ * first later check that saw it). `drain()` clears without recording.
+ */
+export interface GlTrace {
+  readonly entries: string[];
+  check(step: string): void;
+  drain(): void;
+}
+
+export function glTrace(gl: WebGL2RenderingContext): GlTrace {
+  const entries: string[] = [];
+  const read = (): number[] => {
+    const errors: number[] = [];
+    for (let error = gl.getError(); error !== gl.NO_ERROR && errors.length < 8; error = gl.getError()) errors.push(error);
+    return errors;
+  };
+  return {
+    entries,
+    check(step) {
+      for (const error of read()) entries.push(`${step}: 0x${error.toString(16)}`);
+    },
+    drain() {
+      read();
+    }
+  };
+}
+
+/** Float-capable context for the HDR tools: EXT_color_buffer_float enabled before any float target exists. */
+export function enableFloatTargets(gl: WebGL2RenderingContext): boolean {
+  return gl.getExtension("EXT_color_buffer_float") !== null;
+}
+
+/** RGBA float readback of the currently bound framebuffer on a raw context (three reference side). */
+export function readGlFloatPixels(gl: WebGL2RenderingContext, x: number, y: number, w: number, h: number): Float32Array {
   gl.getExtension("EXT_color_buffer_float");
   const out = new Float32Array(w * h * 4);
   gl.readPixels(x, y, w, h, gl.RGBA, gl.FLOAT, out);
   const error = gl.getError();
-  if (error !== gl.NO_ERROR) throw new Error(`readFloatPixels: GL error 0x${error.toString(16)}`);
+  if (error !== gl.NO_ERROR) throw new Error(`readGlFloatPixels: GL error 0x${error.toString(16)}`);
   return out;
+}
+
+/** RGBA float readback of the device's active target through the device's own probe path. */
+export function readFloatPixels(device: { readFloatPixels?(x: number, y: number, w: number, h: number): Float32Array }, x: number, y: number, w: number, h: number): Float32Array {
+  if (!device.readFloatPixels) throw new Error("device has no readFloatPixels");
+  return device.readFloatPixels(x, y, w, h);
 }
 
 export function errorText(error: unknown): string {

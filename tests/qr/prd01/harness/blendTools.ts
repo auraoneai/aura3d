@@ -16,7 +16,7 @@ import * as THREE from "three";
 import { WebGL2Device, type UniformValue } from "../../../../packages/rendering/src";
 import type { RenderCommandState } from "../../../../packages/rendering/src/RenderDevice";
 import { resolveBlendMode, type BlendFactor } from "../../../../packages/rendering/src/contracts/blend";
-import { errorText, fullscreenDraw, OPAQUE_STATE, placeCanvas, readFloatPixels } from "./specKit";
+import { enableFloatTargets, errorText, fullscreenDraw, glTrace, OPAQUE_STATE, placeCanvas, readFloatPixels, readGlFloatPixels, type GlTrace } from "./specKit";
 
 export const BLEND_MODES = ["alpha", "premultiplied", "additive", "multiply"] as const;
 export type SpecBlendMode = (typeof BLEND_MODES)[number];
@@ -100,23 +100,46 @@ export function cpuBlend(mode: SpecBlendMode, src: readonly number[], dst: reado
   return out;
 }
 
+/** GL errors traced per step across the device-side runs (reported as tool errors). */
+const traced: string[] = [];
+
+/**
+ * A WebGL2Device with float color buffers enabled before any target exists.
+ * errorCheckMode "throw-free": every step is traced instead (glTrace), so a GPU
+ * run names the step that raised an error rather than the next strict check.
+ */
+function hdrDevice(canvas: HTMLCanvasElement, label: string): { device: WebGL2Device; trace: GlTrace } {
+  const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true }) as WebGL2RenderingContext;
+  if (!enableFloatTargets(gl)) traced.push(`${label}: EXT_color_buffer_float unavailable`);
+  const device = WebGL2Device.create({ canvas, preserveDrawingBuffer: true });
+  const trace = glTrace(gl);
+  trace.drain();
+  return { device, trace };
+}
+
 function auraParity(canvas: HTMLCanvasElement): Map<SpecBlendMode, Float32Array> {
-  const device = WebGL2Device.create({ canvas, preserveDrawingBuffer: true, errorCheckMode: "strict" });
-  const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
+  const { device, trace } = hdrDevice(canvas, "parity");
   device.beginFrame(W, H);
   const target = device.createRenderTarget({ width: W, height: H, label: "qr-blend-hdr", colorAttachments: [{ format: "rgba16f" }] });
+  trace.check("parity createRenderTarget rgba16f");
   const background = fullscreenDraw(device, "qr-blend-bg", BACKGROUND_FRAGMENT);
   const front = fullscreenDraw(device, "qr-blend-front", FRONT_FRAGMENT);
+  trace.check("parity programs");
   const out = new Map<SpecBlendMode, Float32Array>();
   for (const mode of BLEND_MODES) {
     device.setRenderTarget(target);
     device.clearRenderTarget([0, 0, 0, 0]);
+    trace.check(`parity ${mode} clear`);
     background.draw(OPAQUE_STATE, new Map<string, UniformValue>([["u_size", [W, H]]]));
+    trace.check(`parity ${mode} background draw`);
     front.draw(blendState(mode), new Map<string, UniformValue>([["u_size", [W, H]], ["u_premul", mode === "premultiplied" ? 1 : 0]]));
-    out.set(mode, readFloatPixels(gl, 0, 0, W, H));
+    trace.check(`parity ${mode} front draw`);
+    out.set(mode, readFloatPixels(device, 0, 0, W, H));
+    trace.check(`parity ${mode} readFloatPixels`);
   }
   device.setRenderTarget(null);
   device.endFrame();
+  traced.push(...trace.entries);
   return out;
 }
 
@@ -162,7 +185,7 @@ function threeParity(canvas: HTMLCanvasElement): Map<SpecBlendMode, Float32Array
     renderer.setClearColor(0x000000, 0);
     renderer.clear();
     renderer.render(scene, camera);
-    out.set(mode, readFloatPixels(gl, 0, 0, W, H));
+    out.set(mode, readGlFloatPixels(gl, 0, 0, W, H));
     bg.geometry.dispose();
     (bg.material as THREE.Material).dispose();
     front.geometry.dispose();
@@ -175,11 +198,11 @@ function threeParity(canvas: HTMLCanvasElement): Map<SpecBlendMode, Float32Array
 }
 
 function auraConformance(canvas: HTMLCanvasElement): BlendConformanceRow[] {
-  const device = WebGL2Device.create({ canvas, preserveDrawingBuffer: true, errorCheckMode: "strict" });
-  const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
+  const { device, trace } = hdrDevice(canvas, "conformance");
   device.beginFrame(8, 8);
   const target = device.createRenderTarget({ width: 8, height: 8, label: "qr-blend-c04", colorAttachments: [{ format: "rgba16f" }] });
   const solid = fullscreenDraw(device, "qr-blend-solid", SOLID_FRAGMENT);
+  trace.check("conformance setup");
   const rows: BlendConformanceRow[] = [];
   const frontStraight = [0.8, 0.4, 0.2, 0.5];
   for (const mode of BLEND_MODES) {
@@ -190,7 +213,9 @@ function auraConformance(canvas: HTMLCanvasElement): BlendConformanceRow[] {
       device.clearRenderTarget([0, 0, 0, 0]);
       solid.draw(OPAQUE_STATE, new Map<string, UniformValue>([["u_color", dst]]));
       solid.draw(blendState(mode), new Map<string, UniformValue>([["u_color", src]]));
-      const px = readFloatPixels(gl, 4, 4, 1, 1);
+      trace.check(`conformance ${mode}/${background} draws`);
+      const px = readFloatPixels(device, 4, 4, 1, 1);
+      trace.check(`conformance ${mode}/${background} readFloatPixels`);
       const expected = cpuBlend(mode, src, dst);
       const actual = Array.from(px);
       let maxDiff = 0;
@@ -200,6 +225,7 @@ function auraConformance(canvas: HTMLCanvasElement): BlendConformanceRow[] {
   }
   device.setRenderTarget(null);
   device.endFrame();
+  traced.push(...trace.entries);
   return rows;
 }
 
@@ -234,6 +260,8 @@ export async function runBlendModesTool(stage: HTMLElement): Promise<BlendModesR
   } catch (error) {
     errors.push(`conformance: ${errorText(error)}`);
   }
+  // Any GL error raised by a traced step fails the tool (named by step).
+  errors.push(...traced.map((entry) => `gl: ${entry}`));
   const report: BlendModesReport = { parity, conformance, errors };
   window.__QR_SPEC__ = report;
   return report;
