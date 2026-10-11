@@ -81,11 +81,22 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # prd03-indirect-fraction-compile validates generated GLSL with
+      # glslangValidator and fails on CI when it is missing (#1139).
+      - name: Install glslang
+        run: |
+          if ! command -v glslangValidator >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq glslang-tools
+          fi
+          glslangValidator --version
       # Typecheck stays repo-wide per T0-31 (do not scope the gate away).
       - run: pnpm typecheck:raw
       # 03-CI2: the lane gate runs the lane's own contract units; other lanes'
       # tests/unit/contracts/impl/prdNN-* run in their own lane workflows.
       - run: pnpm exec vitest run tests/unit/contracts/impl/prd03-
+        env:
+          A3D_REQUIRE_GLSLANG: "1"
       - name: Ownership audit (owner of every changed file)
         run: git diff --name-only origin/main...HEAD | xargs -r node tools/qr-ownership/check.mjs
 
