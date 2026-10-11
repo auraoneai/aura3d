@@ -184,6 +184,14 @@ export async function createProductionRuntimeSceneRenderer(
     if (compiled) {
       actorEntries = compiled.actorEntries as ProductionRuntimeActorEntry[];
       primitiveEntries = compiled.primitiveEntries as ProductionRuntimePrimitiveEntry[];
+      // #1142: the C1 textured upgrade above ran on the pre-compile entry list,
+      // which is empty with A3D_QR_COMPILER on — compiled primitives never got
+      // their base-colour/normal/roughness maps. Run it on the compiled set.
+      void upgradeProductionPrimitiveTextures(primitiveEntries, (message) => {
+        textureUpgradeWarnings.add(message);
+      }, webGL2MaxTextureSize(canvas)).catch((error) => {
+        textureUpgradeWarnings.add(`textured upgrade pass failed (${error instanceof Error ? error.message : String(error)}); scalar materials retained`);
+      });
       // C-37: bind the mounted compiled scene so registry add/remove can take the
       // subtree-compile path (no remount) under A3D_QR_COMPILER.
       (runtimeNodes as { attachCompiled?: (scene: unknown) => void } | undefined)?.attachCompiled?.(compiledScene);

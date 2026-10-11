@@ -163,31 +163,15 @@ export class WebGL2DrawCallBinder {
       }
       if (isTextureBinding(value)) {
         textureUnit += 1;
-        // Last-value check: same texture + sampler + transform → the unit
-        // binding from the previous upload still holds.
-        const lastTexture = valueCache.get(name) as
-          | { texture: unknown; sampler: unknown; offset: readonly number[]; scale: readonly number[]; rotation: number }
-          | undefined;
-        const textureUnchanged =
-          lastTexture !== undefined &&
-          lastTexture.texture === value.texture &&
-          lastTexture.sampler === value.sampler &&
-          lastTexture.rotation === value.rotation &&
-          lastTexture.offset[0] === value.offset[0] &&
-          lastTexture.offset[1] === value.offset[1] &&
-          lastTexture.scale[0] === value.scale[0] &&
-          lastTexture.scale[1] === value.scale[1];
-        if (textureUnchanged) continue;
+        // #1142: no last-value skip for textures. The unit index is positional
+        // (order of this material's texture uniforms), and other draws and
+        // passes rebind units in between, so "same texture as the last upload
+        // for this uniform" does not mean the unit still holds it: a skipped
+        // upload samples whatever the unit holds now. Samplers.bindTextureForUnit
+        // already dedups redundant binds per unit; uniform1i is cheap.
         // lane 06 Q-01-3: pass the declared uniform type so sampler2DArray
         // uniforms bind TEXTURE_2D_ARRAY units even when texture.dimension is absent.
         this.host.samplers.uploadTextureUniform(location, value, textureUnit - 1, shader.reflection.uniformDetails.get(name)?.type);
-        valueCache.set(name, {
-          texture: value.texture,
-          sampler: value.sampler,
-          offset: value.offset,
-          scale: value.scale,
-          rotation: value.rotation
-        });
       } else if (typeof value === "number") {
         if (valueCache.get(name) === value) continue;
         this.host.gl.uniform1f(location, value);
