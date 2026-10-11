@@ -10,8 +10,8 @@
  * motion is the camera: per-pixel luma sigma in the spheres mask is then the
  * geometric motion (identical in both engines) plus specular shimmer.
  *
- * Frames are read back synchronously after each draw (drawImage of the WebGL
- * canvas in the same task), cropped to the spheres mask, and reduced in-page
+ * Frames are read back after each draw (drawImage of the WebGL canvas, both
+ * engines with preserveDrawingBuffer), cropped to the spheres mask, and reduced in-page
  * with `metrics.temporalSigma`. Published on `window.__QR_SPEC__`.
  */
 
@@ -24,8 +24,10 @@ import { errorText, HALF_H, HALF_W, mountAura, mountThree, placeCanvas, qrFlagsP
 
 export interface TemporalDollyEngineResult {
   readonly sigma: TemporalSigmaResult;
-  /** Mean mask luma over all frames (sanity: a black frame has sigma 0). */
+  /** Mean mask luma over all frames. */
   readonly meanLuma: number;
+  /** Fraction of mask pixels with alpha > 0 (sanity: an unreadable / cleared drawing buffer reads back 0). */
+  readonly opaqueFraction: number;
   /** Frames whose mask crop differs from the previous frame (sanity: the dolly moved). */
   readonly changedFrames: number;
 }
@@ -104,7 +106,7 @@ function populateThree(target: THREE.Scene): void {
   target.add(floor);
 }
 
-/** Synchronous mask crop of a WebGL canvas right after its draw (no preserveDrawingBuffer needed). */
+/** Mask crop of a WebGL canvas right after its draw. */
 function makeCropper(source: HTMLCanvasElement): () => ImageLike {
   const x = Math.floor(MASK.x * source.width);
   const y = Math.floor(MASK.y * source.height);
@@ -126,15 +128,17 @@ function summarize(frames: readonly ImageLike[]): TemporalDollyEngineResult {
   let lumaSum = 0;
   let lumaCount = 0;
   let changedFrames = 0;
+  let opaque = 0;
   frames.forEach((frame, index) => {
     for (let o = 0; o < frame.data.length; o += 4) {
+      if (frame.data[o + 3]! > 0) opaque += 1;
       lumaSum += 0.2126 * frame.data[o]! + 0.7152 * frame.data[o + 1]! + 0.0722 * frame.data[o + 2]!;
       lumaCount += 1;
     }
     const previous = frames[index - 1];
     if (previous && previous.data.some((v, i) => v !== frame.data[i])) changedFrames += 1;
   });
-  return { sigma: temporalSigma(frames), meanLuma: lumaCount ? lumaSum / lumaCount : 0, changedFrames };
+  return { sigma: temporalSigma(frames), meanLuma: lumaCount ? lumaSum / lumaCount : 0, opaqueFraction: lumaCount ? opaque / lumaCount : 0, changedFrames };
 }
 
 export async function runTemporalDollyTool(stage: HTMLElement): Promise<TemporalDollyReport> {
@@ -147,7 +151,8 @@ export async function runTemporalDollyTool(stage: HTMLElement): Promise<Temporal
 
   try {
     const auraCanvas = placeCanvas(stage, 0, 0, HALF_W, HALF_H, "qr-dolly-aura");
-    app = await mountAura(auraCanvas, buildAuraSnapshot());
+    // preserveDrawingBuffer (01-S11 capture-pdb debug option) keeps the per-step readback independent of compositing.
+    app = await mountAura(auraCanvas, buildAuraSnapshot(), { renderer: { debug: { preserveDrawingBuffer: true } } });
     const crop = makeCropper(auraCanvas);
     const frames: ImageLike[] = [];
     for (let i = 0; i < DOLLY_FRAMES; i += 1) {
