@@ -7,7 +7,7 @@
  * app on `window.__AURA3D_PRD08_HARNESS__`.
  *
  * Query params:
- *   ?scene=orbiters|fighters|chase|wall|drift   harness scene (default orbiters)
+ *   ?scene=orbiters|fighters|chase|wall|drift|tier   harness scene (default orbiters)
  *   ?model=bicycle|unicycle  drift scene vehicle model
  *   ?scripted=1              scripted rAF clock (tick(dtMs) pumps one frame)
  *   ?fixedDt=1/60            loop fixed step seconds (default)
@@ -15,6 +15,8 @@
  *   ?interpolation=0|1       interpolation flag (default on)
  *   ?renderPerSubstep=1      legacy one-render-per-substep behaviour (S1 fail)
  *   ?overload=slow-motion|catch-up   (default: the loop's clamp policy)
+ *   ?coi=1                   served cross-origin isolated (COOP/COEP, dev-server.ts)
+ *                            so performance.now() has 5 µs resolution (S19 CPU)
  */
 import { createAuraApp, type AuraApp } from "@aura3d/engine";
 import { createChaseRig, createFightingRig, createOrbitRig, createRailRig } from "@aura3d/engine/lanes";

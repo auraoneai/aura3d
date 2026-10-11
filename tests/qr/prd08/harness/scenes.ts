@@ -10,6 +10,9 @@
  *   chase              — one subject at 20 u/s straight along +z (S6)
  *   wall               — a box wall on the r = 8 orbit circle (S8 collision)
  *   drift              — one car on `createGameArcadeVehicle` (S12)
+ *   tier               — S19 budgets: a subject circling behind a wall that
+ *                        occludes it from the static camera, plus six pillars
+ *                        the camera probe sweeps (scenarios-tier.ts)
  *
  * Movers that must honour scoped hit-stop scale their step by the handle's
  * own `timeScale` (C-37 member attached by the interpolation store) — the same
@@ -17,7 +20,7 @@
  */
 import { camera, createGameArcadeVehicle, lights, primitives, scene, type AuraRuntimeNodeHandle } from "@aura3d/engine";
 
-export type HarnessSceneKind = "orbiters" | "fighters" | "chase" | "wall" | "drift";
+export type HarnessSceneKind = "orbiters" | "fighters" | "chase" | "wall" | "drift" | "tier";
 
 export interface HarnessNodeSpec {
   readonly id: string;
@@ -225,6 +228,33 @@ function drift(model: "bicycle" | "unicycle"): HarnessScene {
   };
 }
 
+function tier(): HarnessScene {
+  const nodes: HarnessNodeSpec[] = [
+    { id: "tier-subject", position: [3, 0.9, 0], size: [0.8, 1.8, 0.8], color: "#f59e0b" },
+    // Between the static camera ([0,6,14] → [0,1,0]) and the subject circle.
+    { id: "tier-wall", position: [0, 2.5, 7], size: [7, 3, 0.4], color: "#94a3b8" }
+  ];
+  for (let i = 0; i < 6; i += 1) {
+    const a = (i / 6) * Math.PI * 2;
+    nodes.push({ id: `tier-pillar-${i}`, position: [Math.cos(a) * 7, 1.5, Math.sin(a) * 7], size: [0.6, 3, 0.6], color: "#64748b" });
+  }
+  return {
+    kind: "tier",
+    nodes,
+    camera: { position: [0, 6, 14], target: [0, 1, 0], fov: 50 },
+    bind(handles) {
+      const subject = handles[0]!;
+      let simTime = 0;
+      return {
+        move(dt) {
+          simTime += dt;
+          subject.setPosition(Math.cos(simTime * 0.8) * 3, 0.9, Math.sin(simTime * 0.8) * 3);
+        }
+      };
+    }
+  };
+}
+
 /**
  * Resolve the `?scene=` scene. The fighters fixture is fetched from the dev
  * server by default; the unit suite injects the same JSON file's contents.
@@ -247,6 +277,8 @@ export async function loadHarnessScene(
       return chase();
     case "wall":
       return wall();
+    case "tier":
+      return tier();
     case "drift": {
       const model = params.get("model") ?? "bicycle";
       if (model !== "bicycle" && model !== "unicycle") throw new Error(`drift: unknown model ${model}`);

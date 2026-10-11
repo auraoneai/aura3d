@@ -34,7 +34,7 @@ import type {
 import { stubCameraRigFactories } from "../../contracts/camera.js";
 import type { AuraApp, AuraVec3 } from "../index.js";
 import { createCameraController, type AuraCameraControllerImpl } from "./CameraController.js";
-import { createCameraProbe } from "./Probe.js";
+import { cameraProbeBudgetForTier, createCameraProbe, type AuraBudgetedCameraProbe } from "./Probe.js";
 import { createCinematicBarsLayer } from "./layers/cinematicBars.js";
 import { DEFAULT_POSE, createFromSpecRig, type LegacyCameraSpec } from "./rigs/fromSpec.js";
 import {
@@ -47,6 +47,7 @@ import {
   type SceneCameraNodeLike
 } from "./subject.js";
 import { flattenSceneNodes } from "./sceneNodes.js";
+import { createStaticProbeBoxSource } from "./staticBounds.js";
 
 interface FrameInfo {
   readonly dt: number;
@@ -152,6 +153,11 @@ export interface AuraCameraPresentDriverTarget {
   ): AuraCameraPose;
 }
 
+/** The tier-budgeted collision probe the controller casts through (§17). */
+export interface AuraCameraProbeTarget {
+  readonly probe: AuraBudgetedCameraProbe;
+}
+
 /**
  * Build the real controller against an app — exported for tests/harnesses that
  * want the controller without the full createAuraApp mount.
@@ -159,7 +165,7 @@ export interface AuraCameraPresentDriverTarget {
 export function createAuraCameraController(
   app: AuraApp,
   options: AuraCameraExtensionOptions = {}
-): AuraCameraControllerImpl & AuraCameraPresentDriverTarget {
+): AuraCameraControllerImpl & AuraCameraPresentDriverTarget & AuraCameraProbeTarget {
   const registry = app.nodes as RuntimeRegistryLike | undefined;
 
   /*
@@ -273,21 +279,30 @@ export function createAuraCameraController(
     writeSpec = next;
   };
 
+  // S8 / C-9: collision rigs (`collision: true` on chase/orbit/shoulder/
+  // flight) cast against the app's visible runtime-node bounds AND the static
+  // scene nodes (primitives, dimensioned models) — static walls were missed
+  // before (Codex review on #911). Without a
+  // probe the controller's default never hits and a mounted orbit swings
+  // straight through walls. §17/§19: the cast count per presented frame is
+  // capped by the live C-27 tier (`app.quality.tier`, re-read every frame
+  // so `app.quality.set` applies on the next present).
+  const staticBoxes = createStaticProbeBoxSource();
+  const probe = createCameraProbe({
+    budget: () => cameraProbeBudgetForTier((app as { quality?: { tier?: unknown } }).quality?.tier),
+    bounds: () => [
+      ...(registry?.all() ?? [])
+        .filter((h) => h.visible !== false)
+        .map((h) => {
+          const b = h.bounds();
+          return { id: h.id, min: b.min, max: b.max };
+        }),
+      ...staticBoxes(app.scene?.nodes as readonly SceneCameraNodeLike[] | undefined)
+    ]
+  });
   const controller = createCameraController({
     resolveSubject,
-    // S8 / C-9: collision rigs (`collision: true` on chase/orbit/shoulder/
-    // flight) cast against the app's visible runtime-node bounds. Without a
-    // probe the controller's default never hits and a mounted orbit swings
-    // straight through walls.
-    probe: createCameraProbe({
-      bounds: () =>
-        (registry?.all() ?? [])
-          .filter((h) => h.visible !== false)
-          .map((h) => {
-            const b = h.bounds();
-            return { id: h.id, min: b.min, max: b.max };
-          })
-    }),
+    probe,
     specDeps: specDepsFor((app.scene?.camera as LegacyCameraSpec | undefined) ?? {}),
     aspect: () => {
       const canvas = (app as { canvas?: { width: number; height: number } }).canvas;
@@ -344,6 +359,7 @@ export function createAuraCameraController(
       unframe = onFrame.call(app, (f) => {
         rebindIfNeeded();
         subjectClock = f.time;
+        probe.beginFrame();
         controller.update(Math.max(f.dt, 1e-6), f.time * 1000);
         // A zero-dt frame (FixedStepDriver's present-only `step(0)`) cannot
         // move a time-driven rig, so its zero pose delta says nothing about
@@ -363,7 +379,8 @@ export function createAuraCameraController(
    * overrides shadow the raw controller's. */
   const armed = Object.create(controller) as {
     -readonly [K in keyof AuraCameraControllerImpl]: AuraCameraControllerImpl[K];
-  } & AuraCameraPresentDriverTarget;
+  } & AuraCameraPresentDriverTarget & AuraCameraProbeTarget;
+  Object.defineProperty(armed, "probe", { value: probe, enumerable: false });
   /*
    * §6.1 present path: a fixed-step loop (FixedStepDriver) calls this ONCE per
    * presented tick, after interpolation resolve, with REAL dt and the
@@ -382,6 +399,7 @@ export function createAuraCameraController(
     subjectSource = subjectPosition;
     rebindIfNeeded();
     subjectClock = timeMs / 1000;
+    probe.beginFrame();
     try {
       return controller.update(Math.max(realDt, 1e-6), timeMs);
     } finally {
@@ -395,7 +413,7 @@ export function createAuraCameraController(
   armed.addLayer = (layer, order) => { arm(); return controller.addLayer(layer, order); };
   armed.play = (seq) => { arm(); return controller.play(seq); };
   armed.cut = () => { arm(); controller.cut(); };
-  armed.update = (realDt, timeMs) => { arm(); return controller.update(realDt, timeMs); };
+  armed.update = (realDt, timeMs) => { arm(); probe.beginFrame(); return controller.update(realDt, timeMs); };
   armed.shake = Object.create(controller.shake);
   armed.shake.add = (amount: number) => { arm(); controller.shake.add(amount); };
   armed.shake.configure = (o) => { arm(); controller.shake.configure(o); };

@@ -19,6 +19,7 @@
  * (C-11 acceptance).
  */
 import type { FrameContributor, FrameContributorContext, RenderItem } from "@aura3d/rendering/contracts";
+import { cameraProbeBudgetForTier } from "./Probe.js";
 import { springDamp } from "./Spring.js";
 
 export interface AuraOccluderFadeOptions {
@@ -70,10 +71,17 @@ export function createOccluderFade(options: AuraOccluderFadeOptions = {}): AuraO
  * The C-01 collect contributor. `itemToNodeId` maps a draw to a scene node id
  * (default `item.label`); the camera extension supplies one when runtime node
  * ids differ from draw labels.
+ *
+ * §17: `tier` (the live C-27 tier, e.g. `() => app.quality.tier`) gates the
+ * feature — on Low the fade is off and the contributor returns the input
+ * array untouched, so no draw takes the fade program variant.
  */
 export function createOccluderFadeContributor(
   fade: AuraOccluderFade,
-  deps: { readonly itemToNodeId?: (item: RenderItem) => string | undefined } = {}
+  deps: {
+    readonly itemToNodeId?: (item: RenderItem) => string | undefined;
+    readonly tier?: () => unknown;
+  } = {}
 ): FrameContributor {
   const itemToNodeId = deps.itemToNodeId ?? ((item) => item.label);
   return {
@@ -83,6 +91,7 @@ export function createOccluderFadeContributor(
     phases: ["collect"],
     collect(items: RenderItem[], ctx: FrameContributorContext): RenderItem[] {
       if (!ctx.flags.on("A3D_QR_CAMERA")) return items;
+      if (deps.tier && !cameraProbeBudgetForTier(deps.tier()).fade) return items;
       let out: RenderItem[] | null = null;
       for (let i = 0; i < items.length; i++) {
         const item = items[i];

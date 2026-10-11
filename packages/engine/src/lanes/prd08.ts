@@ -112,7 +112,13 @@ export { createTopDownRig, type TopDownRigOptions } from "../agent-api/camera/ri
 export { createAltitudeRig, type AltitudeRigOptions } from "../agent-api/camera/rigs/altitude.js";
 export { createRailRig } from "../agent-api/camera/rigs/rail.js";
 export {
+  CAMERA_PROBE_TIER_BUDGETS,
+  cameraProbeBudgetForTier,
   createCameraProbe,
+  type AuraBudgetedCameraProbe,
+  type AuraCameraProbeBudget,
+  type AuraCameraProbeFrameStats,
+  type AuraCameraProbeTier,
   type AuraCameraProbeDeps,
   type ProbeBoundsEntry,
   type ProbePhysicsEntry
@@ -147,6 +153,7 @@ export { combatFeelEvent, emitCombatFeel, type CombatFeelEvent, type CombatFeelM
 export { createScreenOverlay, type AuraScreenOverlay } from "../agent-api/feel/ScreenOverlay.js";
 export {
   createAuraFeelBus,
+  screenFeelTier,
   SCREEN_FEEL_KEY,
   type AuraFeelExtensionOptions
 } from "../agent-api/feel/extension.js";
