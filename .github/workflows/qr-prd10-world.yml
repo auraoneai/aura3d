@@ -82,7 +82,7 @@ jobs:
       # T1.14/10-CI: every qr-prd10-*.spec.ts on disk runs — no masks, no
       # continue-on-error; a red spec must red the lane.
       - name: prd10 browser specs (all qr-prd10-*.spec.ts)
-        run: pnpm exec playwright test --config playwright.config.ts tests/browser/qr-prd10-chunks.spec.ts tests/browser/qr-prd10-world-pass-depth.spec.ts tests/browser/qr-prd10-time-of-day.spec.ts tests/browser/qr-prd10-flag-off-identity.spec.ts tests/browser/qr-prd10-terrain-cracks.spec.ts tests/browser/qr-prd10-terrain-gpu-cpu.spec.ts tests/browser/qr-prd10-terrain-splat-bake.spec.ts
+        run: pnpm exec playwright test --config playwright.config.ts tests/browser/qr-prd10-chunks.spec.ts tests/browser/qr-prd10-world-pass-depth.spec.ts tests/browser/qr-prd10-time-of-day.spec.ts tests/browser/qr-prd10-flag-off-identity.spec.ts tests/browser/qr-prd10-terrain-cracks.spec.ts tests/browser/qr-prd10-terrain-gpu-cpu.spec.ts tests/browser/qr-prd10-terrain-splat-bake.spec.ts tests/browser/qr-prd10-wind-chunk.spec.ts
       # 10-CI: an empty collection or a skipped test is a red job — never a
       # green report on nothing. Collected/skipped counts come from the JSON
       # report Playwright writes next to the HTML one.
