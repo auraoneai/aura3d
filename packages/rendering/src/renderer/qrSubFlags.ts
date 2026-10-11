@@ -51,6 +51,18 @@ export function rendererProgramCache(device: RenderDevice, flags: QrFlags): Prog
     // T0-05 (a): without `flags` the real generator resolves no ShaderFeature
     // contributors and no C-03 lobes, so no registered chunk ever reaches a
     // generated program.
+    // #1140: if the lane-01 barrel was tree-shaken out of the bundle, the slot
+    // silently hands back the PR-0a stub (legacy pbr-direct for every lit
+    // record: no maps, no instancing → flat frames). Report it loudly.
+    if (!programCacheSlot.provided && qrCoreGeneratorOn(flags)) {
+      const degradation = {
+        code: "program-generator-missing",
+        message: "A3D_QR_CORE generator is on but the C-02 real program cache was never provided (lanes/prd01 not loaded — tree-shaken?); using the stub legacy-PBR cache",
+        ownerPrd: 1
+      };
+      console.error(`[prd01] ${degradation.message}`);
+      degradationSinks.get(device)?.(degradation);
+    }
     cache = programCacheSlot.get(flags)(device, {
       flags,
       onDegradation: (degradation) => degradationSinks.get(device)?.(degradation)

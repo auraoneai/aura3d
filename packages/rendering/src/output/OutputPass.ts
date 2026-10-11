@@ -3,7 +3,7 @@
  * `A3D_QR_CORE_OUTPUT`. Reads the linear-HDR scene target (`u_scene`), applies
  * `u_exposure`, the selected tone-map operator (`TONE_MAP` define), optional
  * BACKGROUND_COVERAGE mix (`u_coverage`, R8), triangular dither
- * (`u_dither == 1`, one LSB of 8-bit), and the C-05 juice overlay — then writes
+ * (`u_dither > 0.5`, one LSB of 8-bit), and the C-05 juice overlay — then writes
  * sRGB-encoded LDR to the canvas (or an LDR target). Programs are cached per
  * variant key `{toneMapping, coverage, overlay}` per device.
  */

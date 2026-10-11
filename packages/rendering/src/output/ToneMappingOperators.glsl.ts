@@ -136,7 +136,9 @@ uniform sampler2D u_scene;
 uniform sampler2D u_coverage;
 #endif
 uniform float u_exposure;
-uniform int u_dither;
+// float, not int: the device uploads numeric uniforms with uniform1f, and
+// glUniform1f on an int uniform is GL_INVALID_OPERATION (#1140).
+uniform float u_dither;
 in vec2 v_uv;
 layout(location = 0) out vec4 outColor;
 #define saturate( a ) clamp( a, 0.0, 1.0 )
@@ -173,7 +175,7 @@ void main() {
   display = mix(clamp(hdr, 0.0, 1.0), display, texture(u_coverage, v_uv).r);
 #endif
   vec3 encoded = a3dLinearToSRGB(clamp(display, 0.0, 1.0));
-  if (u_dither == 1) encoded += a3dTriangularNoise(gl_FragCoord.xy) / 255.0;
+  if (u_dither > 0.5) encoded += a3dTriangularNoise(gl_FragCoord.xy) / 255.0;
 #ifdef OUTPUT_OVERLAY
   encoded = a3dApplyOutputOverlay(encoded, v_uv);
 #endif
