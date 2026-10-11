@@ -24,11 +24,18 @@ jobs:
           lfs: true  # no-op on repos without LFS; required for LFS push-through
       - name: Push all refs to GitLab mirror
         run: |
+          git remote remove gitlab 2>/dev/null || :
           git remote add gitlab "${{ secrets.GITLAB_MIRROR_URL }}"
           # LFS repos: fetch objects for ALL refs (checkout only fetches some).
           # No-op on repos without LFS.
           git lfs fetch --all origin || true
-          # Prune pass first; if a protected/default ref blocks pruning, fall
-          # back to a plain push so content still syncs (prune retried next run).
-          git push gitlab --force --all --prune || git push gitlab --force --all
+          # Mirror every GitHub branch (refs/remotes/origin/*), not only local
+          # ones: a checkout has just one local branch, so `--all --prune`
+          # deleted every other branch on GitLab, including the qr/** branches
+          # the qr-gitlab-ci bridge had just synced. Prune still drops branches
+          # deleted on GitHub. If a protected ref blocks pruning, fall back to a
+          # plain push so content still syncs (prune retried next run).
+          git remote set-head origin -d 2>/dev/null || :   # never mirror origin/HEAD as a branch
+          refspec='refs/remotes/origin/*:refs/heads/*'
+          git push gitlab --force --prune "$refspec" || git push gitlab --force "$refspec"
           git push gitlab --force --tags
