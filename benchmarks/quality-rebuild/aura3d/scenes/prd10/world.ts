@@ -16,6 +16,7 @@ import type { AuraApp, AuraNodeInput } from "@aura3d/engine";
 import { frameContributors } from "@aura3d/rendering/contracts";
 import { world } from "../../../../../packages/engine/src/agent-api/world/index";
 import { terrainRecordFor, terrainRecordIds } from "../../../../../packages/engine/src/agent-api/world/terrain";
+import { terrainDiagnostics } from "../../../../../packages/engine/src/production-runtime/world/TerrainRuntime";
 import type { SceneSpec } from "../../../shared/types";
 
 /** True when the capture's flag list resolves `A3D_QR_WORLD` on (`world`, `all`, `$ALL` lists, …). */
@@ -154,6 +155,7 @@ export function prd10WorldEvidence(app: AuraApp, qrFlags: readonly string[]): Re
       diagnostics,
       flagOn: flags.on("A3D_QR_WORLD"),
       terrainRecords: terrainRecordIds().map((id) => ({ id, grid: terrainRecordFor(id)?.grid != null })),
+      terrainDraws: terrainDiagnostics(),
       contributors: frameContributors(flags as unknown as Parameters<typeof frameContributors>[0]).map((c) => c.id),
       errors: app.diagnostics().errors.slice(0, 5)
     }

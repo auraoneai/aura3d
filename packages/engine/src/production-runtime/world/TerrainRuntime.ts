@@ -332,6 +332,7 @@ function terrainProgram(device: RenderDevice, ds: DeviceTerrainState): RenderSha
     });
   } catch (error) {
     ds.programFailure = error instanceof Error ? error.message : String(error);
+    lastTerrainProgramFailure = `terrain program failed to compile: ${ds.programFailure}`;
   }
   return ds.program; // null on failure -> nothing drawn; degraded surfaces in diagnostics
 }
@@ -383,7 +384,10 @@ export function drawTerrains(
     }
     const ranges = lodBias === 1 ? st.ranges : cdlodRanges(st.ranges.length, st.tree.leafSize, lodBias, record.options.lod?.morphRatio ?? 0.33);
     const nodes = selectCdlodNodes(st.tree, camera.position, ranges, {});
-    if (nodes.length === 0 || nodes.length > st.instCap) continue;
+    if (nodes.length === 0 || nodes.length > st.instCap) {
+      terrainFrameStats.set(id, { id, nodesDrawn: 0, trianglesDrawn: 0, layers: st.layerCount, degraded: true, reason: `CDLOD selected ${nodes.length} nodes (cap ${st.instCap})` });
+      continue;
+    }
     const inst = new Float32Array(nodes.length * 4);
     nodes.forEach((n: (typeof nodes)[number], i: number) => {
       inst[i * 4] = n.origin[0];
@@ -432,8 +436,43 @@ export function drawTerrains(
       shader: ds.program!,
       uniforms
     });
+    terrainFrameStats.set(id, {
+      id,
+      nodesDrawn: nodes.length,
+      trianglesDrawn: nodes.length * Math.floor(st.indexCount / 3),
+      layers: st.layerCount,
+      degraded: false
+    });
   }
 }
+
+/** §7.1.10: last measured terrain draw per terrain id (read by the C-31 world section). */
+export interface TerrainFrameStat {
+  readonly id: string;
+  readonly nodesDrawn: number;
+  readonly trianglesDrawn: number;
+  readonly layers: number;
+  readonly degraded: boolean;
+  readonly reason?: string;
+}
+const terrainFrameStats = new Map<string, TerrainFrameStat>();
+
+/**
+ * Terrain draw diagnostics: every registered terrain reports what the last
+ * terrain pass submitted for it. A terrain whose pass never ran (or ran with
+ * no compiled program) reports 0 nodes and `degraded`, never silence.
+ */
+export function terrainDiagnostics(): readonly TerrainFrameStat[] {
+  return terrainRecordIds().map((id) => terrainFrameStats.get(id) ?? {
+    id,
+    nodesDrawn: 0,
+    trianglesDrawn: 0,
+    layers: terrainRecordFor(id)?.options.layers.length ?? 0,
+    degraded: true,
+    reason: lastTerrainProgramFailure ?? "terrain pass has not executed"
+  });
+}
+let lastTerrainProgramFailure: string | null = null;
 
 /**
  * §9.1 step 2 — terrain re-draw for a planar water reflection. Called from
