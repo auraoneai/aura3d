@@ -1232,6 +1232,43 @@ export type { AnimationFrameVisualInput, AnimationFrameVisualQuality, AnimationM
 // Aura3D Quality Rebuild contract surface (CONTRACTS.md §3.8).
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";
+// #179: PRD 11 Phase 3 batching (planner, pools, multi-draw). Named list, not
+// `export *`: batching's `MAX_GPU_INSTANCES` is a separate const from the
+// ForwardPass one already exported above.
+export {
+  geometryContentKey,
+  materialSpecKey,
+  materialKeyExcludesParameter,
+  REASONS_NOT_BATCHED,
+  planBatches,
+  BatchedGeometryPool,
+  DRAW_DATA_TEXELS_PER_DRAW,
+  DrawDataTexture,
+  buildMultiDrawBatch,
+  multiDrawCommands,
+  submitMultiDrawBatch,
+  PRD11_DRAWID_CHUNK,
+  PRD11_DRAWID_DEPTH_FEATURE,
+  PRD11_DRAWID_FEATURE,
+  registerPrd11DrawIdShader,
+  PRD11_INSTANCE_EMISSIVE_FEATURE,
+  PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK,
+  PRD11_INSTANCE_EMISSIVE_VTX_CHUNK,
+  registerPrd11InstanceEmissiveShader
+} from "./batching/index.js";
+export type {
+  BatchPlan,
+  InstancedBatch,
+  InstancedBatchChunk,
+  MultiDrawGroup,
+  NotBatchedReason,
+  PlanBatchesOptions,
+  PackedGeometryEntry,
+  DrawDataEntry,
+  MultiDrawBatch,
+  PackedDrawCommand,
+  Prd11MultiDrawItem
+} from "./batching/index.js";
 
 // PRD-15 T5.4 restore — names dropped by the §6.1 curation that the
 // deprecated-subpath contract (pre-collapse surface until 4.0.0) requires.

@@ -35,7 +35,7 @@ import { qrCoreGeneratorOn, rendererProgramCache, rendererAuraFrame } from "./re
 // PR 0b-2 re-imports for moved carve-out modules (CONTRACTS.md §3.3).
 import { SkinningPaletteUploadManager, applyGpuMorphUniforms, resolveRenderGeometry } from "./forward/Deform.js";
 import { applyClusteredLightingUniforms, applyForwardShadowMapUniforms, resolveForwardClusteredLighting, selectForwardShadowMap } from "./forward/Lighting.js";
-import { submitDraw } from "./forward/DrawSubmit.js";
+import { flushMultiDrawQueue, submitDraw } from "./forward/DrawSubmit.js";
 import { bindVelocityUniforms } from "./forward/Velocity.js";
 
 export type { RenderItem };
@@ -327,6 +327,8 @@ export class ForwardPass extends BaseRenderPass {
       for (const item of sortForwardRenderItems(this.options.items, this.options.cameraPosition)) {
         this.drawItem(context.device, item);
       }
+      // #181: issue any trailing multi-draw run deferred by `submitDraw`.
+      flushMultiDrawQueue(context.device);
     } finally {
       this.clusteredLighting?.dispose();
       this.clusteredLighting = null;
