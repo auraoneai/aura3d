@@ -222,6 +222,11 @@ jobs:
       - name: Verify capture reports (no non-ready / zero-draw / missing frame)
         if: always()
         run: node tests/qr/prd07/ci/verify-reports.mjs capture
+      - name: Numeric visual checks (vfx vs none frames)
+        # Lane-07 S-rows, numeric half: not blank/flat, vfx changes the frame,
+        # emitter-colour coverage, sky gradient. Writes vfx-pixels.json.
+        if: always()
+        run: node tests/qr/prd07/ci/vfx-pixels.mjs "$EVIDENCE_DIR"
       - name: Upload capture evidence
         if: always()
         uses: actions/upload-artifact@v4
