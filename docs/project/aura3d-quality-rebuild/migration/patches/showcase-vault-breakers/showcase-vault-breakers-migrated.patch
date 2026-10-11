@@ -1,4 +1,4 @@
-From 3a7a7a0f184a1ea119ce4db686617735b101b369 Mon Sep 17 00:00:00 2001
+From dd1b077ca0e5e432d5b71984742733196f641069 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:11:00 +0000
 Subject: [PATCH] migration(showcase-vault-breakers): regenerated patch set
@@ -417,13 +417,13 @@ index 000000000..0cd0b2953
 +  stage("game-over")
 +];
 diff --git a/apps/showcase-vault-breakers/src/v2/boot.ts b/apps/showcase-vault-breakers/src/v2/boot.ts
-index 6c03f8b0e..54c327085 100644
+index b23b19151..985ab773d 100644
 --- a/apps/showcase-vault-breakers/src/v2/boot.ts
 +++ b/apps/showcase-vault-breakers/src/v2/boot.ts
-@@ -17,8 +17,8 @@ import { arcadeRoom, insertBezels, playfieldNodes } from "./scene/world";
- import { lightingNodes } from "./scene/lighting";
+@@ -17,8 +17,8 @@ import { lightingNodes } from "./scene/lighting";
  import { createVaultRig, fallbackCameraNode, type VaultRigState } from "./scene/camera";
- import { wireVaultFx, BUMPER_IMPACT_POSITIONS, SLING_IMPACT_POSITIONS } from "./scene/fx";
+ import { wireVaultFx } from "./scene/fx";
+ import { createEventConsumer } from "./flow-events";
 -import { publishVaultEvidence } from "./evidence";
 -import { applyVaultScenario } from "./scenarios";
 +import { publishVaultEvidence } from "../evidence";
@@ -432,5 +432,5 @@ index 6c03f8b0e..54c327085 100644
  const ROUTE_FLAG = "A3D_QR_ROUTE_VAULT_BREAKERS" as const;
  
 -- 
-2.34.1
+2.52.0
 

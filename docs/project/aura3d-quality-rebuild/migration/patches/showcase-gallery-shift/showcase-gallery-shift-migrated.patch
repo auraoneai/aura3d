@@ -1,4 +1,4 @@
-From 07d17345934f2c0beca79c4c8f20708f39e0c0a9 Mon Sep 17 00:00:00 2001
+From 89647510c1d858fb0645468820515a7ce855ae54 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:08:54 +0000
 Subject: [PATCH] migration(showcase-gallery-shift): regenerated patch set
@@ -496,20 +496,27 @@ index 000000000..14919fd17
 +  }
 +];
 diff --git a/apps/showcase-gallery-shift/src/v2/boot.ts b/apps/showcase-gallery-shift/src/v2/boot.ts
-index c114021a0..ddf86b4c8 100644
+index 49a0ef472..e84411701 100644
 --- a/apps/showcase-gallery-shift/src/v2/boot.ts
 +++ b/apps/showcase-gallery-shift/src/v2/boot.ts
-@@ -42,8 +42,8 @@ import {
+@@ -41,7 +41,7 @@ import {
    type WatcherPose
  } from "../gameplay/vision";
  import { createHeistAudio, type HeistAudioCue } from "../legacy/heist-audio";
 -import { publishGalleryEvidence } from "./evidence";
--import { applyGalleryScenario, galleryScenarioLook, parseGalleryScenario, type GalleryScenario } from "./scenarios";
 +import { publishGalleryEvidence } from "../evidence";
+ import { createGalleryCtx, type FloorRuntime, type Phase } from "./state";
+ import { createHeistAudioBlock } from "./audio";
+ import { createGalleryAnim } from "./anim";
+@@ -50,7 +50,7 @@ import { wireGallerySync } from "./sync";
+ import { createGalleryInput, wireGalleryTouch } from "./input";
+ import { wireGalleryHud } from "./hud";
+ import { wireGalleryUpdate } from "./update";
+-import { applyGalleryScenario, galleryScenarioLook, parseGalleryScenario, type GalleryScenario } from "./scenarios";
 +import { applyGalleryScenario, galleryScenarioLook, parseGalleryScenario, type GalleryScenario } from "../scenarios";
  import { createGalleryRig, galleryCameraSpec } from "./scene/camera";
  import { wireGalleryFx } from "./scene/fx";
  import { galleryLighting } from "./scene/lighting";
 -- 
-2.34.1
+2.52.0
 

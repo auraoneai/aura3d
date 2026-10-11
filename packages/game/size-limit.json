@@ -1,7 +1,7 @@
 [
   {
     "name": "game beacon module (min+gzip)",
-    "path": "src/evidence/beacon.ts",
+    "path": ".size-limit/beacon.min.js",
     "limit": "0.5 kB",
     "gzip": true
   }

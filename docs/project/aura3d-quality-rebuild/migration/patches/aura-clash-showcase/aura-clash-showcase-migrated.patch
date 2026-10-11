@@ -1,4 +1,4 @@
-From 5b6a58df6c4784eee2fcf0e142ab0cec32ebbb82 Mon Sep 17 00:00:00 2001
+From decc4ab49c4432bfc670dad1e8c9d3685e1137c7 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:11:20 +0000
 Subject: [PATCH] migration(aura-clash-showcase): regenerated patch set
@@ -8,16 +8,16 @@ Subject: [PATCH] migration(aura-clash-showcase): regenerated patch set
  apps/aura-clash-showcase/package.json         |   5 +-
  apps/aura-clash-showcase/src/game-evidence.ts |   5 +
  .../src/legacy/capture/PosterScenarios.ts     |   4 +-
- .../src/legacy/playable/AuraClashArenaApp.ts  | 361 +++++++++++-------
+ .../src/legacy/playable/AuraClashArenaApp.ts  | 341 ++++++++++++------
  .../src/legacy/playable/playable.css          |   5 +
- .../playable/audio/auraClashAudioManifest.ts  | 201 +++++++++-
- .../playable/evidence/auraClashArenaProof.ts  | 335 +++++++++++++++-
+ .../playable/audio/auraClashAudioManifest.ts  | 201 ++++++++++-
+ .../playable/evidence/auraClashArenaProof.ts  | 335 ++++++++++++++++-
  .../aura-clash-showcase/src/scenario-drive.ts |  13 +
  .../src/scenarios/index.ts                    |  25 ++
  apps/aura-clash-showcase/src/v2/boot.ts       |   4 +-
  .../tests/flagship-readiness.spec.ts          |  26 +-
  .../tests/playable-smoke.spec.ts              |  30 +-
- 12 files changed, 845 insertions(+), 169 deletions(-)
+ 12 files changed, 840 insertions(+), 154 deletions(-)
  create mode 100644 apps/aura-clash-showcase/src/game-evidence.ts
  create mode 100644 apps/aura-clash-showcase/src/scenario-drive.ts
  create mode 100644 apps/aura-clash-showcase/src/scenarios/index.ts
@@ -77,7 +77,7 @@ index 4fa3fe5ed..ff51d5e87 100644
      composition: "Mid-combat hit frame with hit spark, readable attacker/defender poses, HUD state, and stage depth still visible.",
      evidenceRole: "visual-quality",
 diff --git a/apps/aura-clash-showcase/src/legacy/playable/AuraClashArenaApp.ts b/apps/aura-clash-showcase/src/legacy/playable/AuraClashArenaApp.ts
-index b8e842b47..ab71ecce5 100644
+index 92d1d3ab8..ab71ecce5 100644
 --- a/apps/aura-clash-showcase/src/legacy/playable/AuraClashArenaApp.ts
 +++ b/apps/aura-clash-showcase/src/legacy/playable/AuraClashArenaApp.ts
 @@ -1,5 +1,8 @@
@@ -127,25 +127,15 @@ index b8e842b47..ab71ecce5 100644
    /** AC-A6: advance duck restore timing; call once per frame. */
    update(dt: number): void;
    proof(): AudioProof;
-@@ -455,8 +461,6 @@ export function mountAuraClashArenaApp(): void {
+@@ -455,7 +461,6 @@ export function mountAuraClashArenaApp(): void {
    const root = document.querySelector<HTMLDivElement>("#app");
    if (!root) throw new Error("Missing #app");
    const hudMode = readPlayableHudMode(window.location);
--  const captureMode = new URLSearchParams(window.location.search).get("capture");
--  const reviewCapture = captureMode === "match-start" || captureMode === "combat-impact";
+-
    const testDriverEnabled = hudMode.evidence && new URLSearchParams(window.location.search).has("auraTestDriver");
  
    gameWindow.__AURA_CLASH_VISUAL_REVIEW__ = {
-@@ -497,7 +501,7 @@ export function mountAuraClashArenaApp(): void {
-   };
- 
-   root.innerHTML = `
--    <main class="aca" data-evidence-mode="${hudMode.evidence ? "true" : "false"}" data-training="${hudMode.training ? "true" : "false"}" data-review-capture="${reviewCapture ? "true" : "false"}" tabindex="0" aria-label="Aura Clash Arena playable game">
-+    <main class="aca" data-evidence-mode="${hudMode.evidence ? "true" : "false"}" data-training="${hudMode.training ? "true" : "false"}" tabindex="0" aria-label="Aura Clash Arena playable game">
-       <div class="aca-page-bg" aria-hidden="true"><div class="aca-page-grid"></div></div>
-       <nav class="aca-nav" aria-label="Aura Clash navigation">
-         <h1 class="aca-title"><a class="aca-brand" href="/showcase/aura-clash/playable/"><span></span>Aura Clash Arena</a></h1>
-@@ -511,33 +515,8 @@ export function mountAuraClashArenaApp(): void {
+@@ -510,33 +515,8 @@ export function mountAuraClashArenaApp(): void {
          </div>
        </nav>
  
@@ -181,7 +171,7 @@ index b8e842b47..ab71ecce5 100644
  
        <section class="aca-stage-shell" aria-label="Aura Clash Arena production GLB stage">
          <canvas id="aura-clash-arena-canvas" class="aca-canvas" aria-label="Aura3D production renderer canvas"></canvas>
-@@ -545,25 +524,12 @@ export function mountAuraClashArenaApp(): void {
+@@ -544,25 +524,12 @@ export function mountAuraClashArenaApp(): void {
            <span id="render-status">Loading skinned GLB animation runtime</span>
            <span id="clip-status">clips pending</span>
          </div>
@@ -209,7 +199,7 @@ index b8e842b47..ab71ecce5 100644
  
        <!--
          Evidence prose is collapsed by default so the arena and fighters own the primary
-@@ -692,8 +658,7 @@ export function mountAuraClashArenaApp(): void {
+@@ -691,8 +658,7 @@ export function mountAuraClashArenaApp(): void {
        deterministicReplay: createDeterministicReplayProof(),
        engineCombat: fallbackEngineCombatProof()
      });
@@ -219,12 +209,11 @@ index b8e842b47..ab71ecce5 100644
    });
  }
  
-@@ -703,11 +668,77 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
-   const arenaCanvas = canvas;
+@@ -703,10 +669,76 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
    const searchParams = new URLSearchParams(window.location.search);
    const testDriverEnabled = searchParams.has("auraTestDriver");
--  const combatReviewCapture = searchParams.get("capture") === "combat-impact";
  
+-
    const playerState = createFighter("player", "Mara Volt", "Player one", DEFAULT_PLAYER_X, 1, playerClips);
    const rivalState = createFighter("rival", "Rook Atlas", "Rival AI", DEFAULT_RIVAL_X, -1, rivalClips);
 +  clashSession.fighters.set("player", playerState);
@@ -298,7 +287,7 @@ index b8e842b47..ab71ecce5 100644
    const gameApp = createGameApp(null, {
      autoStart: false,
      loop: {
-@@ -895,6 +926,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
+@@ -894,6 +926,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
  
    const renderedStage = createRenderedArenaStage();
    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -306,37 +295,30 @@ index b8e842b47..ab71ecce5 100644
    const renderPreset = createSideViewGameRenderPreset({
      debugVolumesEnabled: false,
      reducedMotion
-@@ -1368,13 +1400,9 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
+@@ -1367,9 +1400,9 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
          ...(tweaks.backdrop !== "portal"
            ? arenaBackdropRenderItems
            : []),
--        // The review capture retains the complete typed downtown arena and public root stage,
--        // while omitting duplicate primitive stage dressing and animated sign joints that have
--        // independent I03/I04 receipts. Fighters, lighting, shadows, postprocess, and hit effects
--        // remain on the exact production renderer path measured below.
--        ...(combatReviewCapture ? [] : renderedStage.collect(tweaks, frame)),
+-        ...(renderedStage.collect(tweaks, frame)),
 +        ...renderedStage.collect(tweaks, frame),
          // AC-A5: spring-joint neon signs (static rest pose under reduced motion).
--        ...(combatReviewCapture ? [] : hangingSigns.collect({ reducedMotion: reducedMotion || lowHealthTensionActive() })),
+-        ...(hangingSigns.collect({ reducedMotion: reducedMotion || lowHealthTensionActive() })),
 +        ...hangingSigns.collect({ reducedMotion: reducedMotion || lowHealthTensionActive() }),
          // AC-A4: in-scene round/KO ceremony glyphs (single merged geometry per phrase).
          ...ceremony.collect({ text: ceremonyText, showSeconds: ceremonyShowSeconds, elapsedSeconds: frame / 60, reducedMotion }),
          ...collectFighterRenderItems(playerRuntime),
-@@ -1486,11 +1514,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
+@@ -1481,8 +1514,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
    // readback measures lighting without spending minutes on the crowd matrix.
    const rootStageSceneNodes = () => [
      ...rootStageFurniture,
 -    // I03 and the route screenshot contract own typed-crowd adoption. The
--    // critic-facing combat capture reviews fighters, stage, lighting, shadows,
--    // postprocess and effects, so omit the unrelated 28-copy spectator workload
--    // from that explicit capture mode while retaining it in shipped play.
--    ...((stageSpotlightProbeEnabled || combatReviewCapture) ? [] : publicCrowd.nodes)
+-    ...((stageSpotlightProbeEnabled) ? [] : publicCrowd.nodes)
 +    // I03 and the route screenshot contract own typed-crowd adoption.
 +    ...(stageSpotlightProbeEnabled ? [] : publicCrowd.nodes)
    ];
    const createRootStageScene = () => rootStageSceneNodes().reduce((builder, node) => builder.add(node), scene().background("#020406"))
      .add(lights.spot({
-@@ -1513,7 +1538,9 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
+@@ -1505,7 +1538,9 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
    // The root owns this route's sole GPU renderer. Existing actor/stage geometry
    // is explicitly production-runtime compatibility; root spotlights and typed
    // instances are mounted directly in its public scene.
@@ -347,7 +329,7 @@ index b8e842b47..ab71ecce5 100644
      autoStart: false, diagnostics: false,
      // CSS-pixel resolution is a real supported route configuration and keeps
      // the evidence readback bounded; normal users retain the authored DPR cap.
-@@ -1529,8 +1556,20 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
+@@ -1521,8 +1556,20 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
          ? Math.min(1, 320 / Math.max(1, window.innerWidth))
          : Math.min(window.devicePixelRatio || 1, 1.75),
      renderer: { mode: "production", qualityProfile: "production" },
@@ -369,7 +351,7 @@ index b8e842b47..ab71ecce5 100644
    await rootStageApp.ready();
    // Submit one mount frame before evidence sampling. This compiles the live
    // production pipeline and uploads static stage resources without claiming a
-@@ -1628,6 +1667,9 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
+@@ -1620,6 +1667,9 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
      ceremonyText = roundCeremonyTextForRound(roundIndex);
      ceremonyShowSeconds = 0;
      ceremonyIntroRemaining = ROUND_INTRO_SECONDS;
@@ -379,7 +361,7 @@ index b8e842b47..ab71ecce5 100644
      // AC-A1/A2/A3: presentation state resets with the round.
      clipBridges.player.reset();
      clipBridges.rival.reset();
-@@ -1649,12 +1691,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
+@@ -1641,12 +1691,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
      });
    };
  
@@ -393,7 +375,7 @@ index b8e842b47..ab71ecce5 100644
      setPlayerHealth(health: number) {
        playerState.health = clamp(health, 0, START_HEALTH);
        playerState.action = playerState.health <= 0 ? "ko" : playerState.action === "ko" ? "idle" : playerState.action;
-@@ -1819,8 +1856,30 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
+@@ -1811,8 +1856,30 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
        gameApp.step(1 / 60);
      }
    };
@@ -424,7 +406,7 @@ index b8e842b47..ab71ecce5 100644
    function tickFrame(timeMs: number): void {
      const elapsedSeconds = lastTimeMs === 0 ? 1 / 60 : Math.max(0, (timeMs - lastTimeMs) / 1000);
      // Combat/physics retain the bounded simulation step, while camera feedback
-@@ -1831,6 +1890,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
+@@ -1823,6 +1890,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
      lastTimeMs = timeMs;
      frame += 1;
      controls.beginFrame();
@@ -432,7 +414,7 @@ index b8e842b47..ab71ecce5 100644
  
      if (controls.pressed("pause")) {
        paused = !paused;
-@@ -1974,7 +2034,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
+@@ -1966,7 +2034,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
              blockSpark.life = Math.max(blockSpark.life, 0.48);
            }
            const defender = combatResult.blockedBy === "player" ? playerState : rivalState;
@@ -441,7 +423,7 @@ index b8e842b47..ab71ecce5 100644
            clipImpulse = Math.min(1.4, clipImpulse + 0.45);
            audio.cue("guard-break");
            // A guard break is a confirmed combat impact even though it applies guard damage
-@@ -2030,6 +2090,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
+@@ -2022,6 +2090,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
          // AC-A3/A5: a finisher is the biggest slam of the round.
          crowdCheer = Math.min(1, crowdCheer + (callout === "DRAW" ? 0.5 : 1));
          slamImpulse = callout === "KO" ? 1.2 : 0.9;
@@ -450,7 +432,7 @@ index b8e842b47..ab71ecce5 100644
          audio.cue(callout.toLowerCase());
        }
      }
-@@ -2063,7 +2125,11 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
+@@ -2055,7 +2125,11 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
      // AC-A4 ceremony clock: intro countdown clears the round text; round-over text holds.
      if (ceremonyIntroRemaining > 0) {
        ceremonyIntroRemaining = Math.max(0, ceremonyIntroRemaining - dt);
@@ -463,24 +445,7 @@ index b8e842b47..ab71ecce5 100644
      }
      if (ceremonyText !== null) ceremonyShowSeconds += dt;
      updateSparks(sparks, dt);
-@@ -2091,12 +2157,10 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
-     // decay, so every accepted hit has one visible FOV/distance kick.
-     sharedPunch.update(confirmedHitThisFrame ? CAMERA_PUNCH_DURATION_SECONDS / 2 : cameraDt);
-     const renderStartedAt = performance.now();
--    if (!combatReviewCapture) {
--      publicCrowd.update(rootStageApp, {
--        elapsedSeconds: frame / 60, cheer: lowHealthTensionActive() ? Math.min(crowdCheer, 0.12) : crowdCheer,
--        reducedMotion: reducedMotion || lowHealthTensionActive()
--      });
--    }
-+    publicCrowd.update(rootStageApp, {
-+      elapsedSeconds: frame / 60, cheer: lowHealthTensionActive() ? Math.min(crowdCheer, 0.12) : crowdCheer,
-+      reducedMotion: reducedMotion || lowHealthTensionActive()
-+    });
-     rootStageApp.step(dt);
-     renderTimeSamplesMs.push(performance.now() - renderStartedAt);
-     if (renderTimeSamplesMs.length > performanceSampleCount) renderTimeSamplesMs.shift();
-@@ -2111,7 +2175,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
+@@ -2101,7 +2175,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
        scrubOffsetSeconds,
        bufferedSeconds: exchangeReplay.bufferedSeconds()
      });
@@ -489,7 +454,7 @@ index b8e842b47..ab71ecce5 100644
      writeProof({
        root,
        status: performanceEvidenceReady
-@@ -2165,7 +2229,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
+@@ -2155,7 +2229,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
  
    setText(root, "#render-status", "Aura3D production GLB animation runtime ready");
    setText(root, "#clip-status", "jab / cross / sword / guard clips bound");
@@ -498,7 +463,7 @@ index b8e842b47..ab71ecce5 100644
    let frameErrorLogged = false;
    gameWindow.__AURA3D_GAME_RUNTIME__ = gameApp.evidence;
    gameApp.onFrame((_runtimeFrame) => {
-@@ -2237,7 +2301,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
+@@ -2227,7 +2301,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
          engineCombat: engineCombatProof(combatSnapshot)
        });
        gameWindow.__AURA3D_GAME_RUNTIME__ = gameApp.evidence;
@@ -507,7 +472,7 @@ index b8e842b47..ab71ecce5 100644
      }
    });
    // The evidence driver owns frame scheduling, so it must publish one real
-@@ -3293,13 +3357,31 @@ function moveHitStop(id: MoveId): number {
+@@ -3283,13 +3357,31 @@ function moveHitStop(id: MoveId): number {
    return clashHitStopSeconds(id as ClashMoveId);
  }
  
@@ -541,7 +506,7 @@ index b8e842b47..ab71ecce5 100644
    const recoil = moveId === "special" ? 0.9 : moveId === "heavy" ? 0.62 : 0.4;
    defender.pendingImpulse = Math.max(defender.pendingImpulse, recoil);
    attacker.pendingImpulse = Math.max(attacker.pendingImpulse, recoil * 0.35);
-@@ -3683,6 +3765,10 @@ function createPerformanceProof(dt: number, renderSamplesMs: readonly number[],
+@@ -3673,6 +3765,10 @@ function createPerformanceProof(dt: number, renderSamplesMs: readonly number[],
  function createAudioRuntime(): AudioRuntime {
    const recentCues: string[] = [];
    const assetUrls = Object.values(auraClashAudioAssets).map((asset) => asset.url);
@@ -552,7 +517,7 @@ index b8e842b47..ab71ecce5 100644
    const cueEntries = Object.fromEntries(
      Object.values(auraClashAudioManifest).map((definition) => [
        definition.cue,
-@@ -3690,7 +3776,8 @@ function createAudioRuntime(): AudioRuntime {
+@@ -3680,7 +3776,8 @@ function createAudioRuntime(): AudioRuntime {
          id: definition.cue,
          bus: definition.bus,
          volume: definition.volume,
@@ -562,7 +527,7 @@ index b8e842b47..ab71ecce5 100644
        }
      ])
    ) as unknown as Record<keyof typeof auraClashAudioManifest, Parameters<typeof createGameAudio<keyof typeof auraClashAudioManifest>>[0]["cues"][keyof typeof auraClashAudioManifest]>;
-@@ -3702,6 +3789,7 @@ function createAudioRuntime(): AudioRuntime {
+@@ -3692,6 +3789,7 @@ function createAudioRuntime(): AudioRuntime {
      cues: cueEntries
    });
    let koDuckRemaining = 0;
@@ -570,7 +535,7 @@ index b8e842b47..ab71ecce5 100644
  
    function cue(name: string): void {
      const definition = auraClashAudioManifest[name as keyof typeof auraClashAudioManifest];
-@@ -3713,6 +3801,11 @@ function createAudioRuntime(): AudioRuntime {
+@@ -3703,6 +3801,11 @@ function createAudioRuntime(): AudioRuntime {
  
    return {
      cue,
@@ -582,7 +547,7 @@ index b8e842b47..ab71ecce5 100644
      beginKoDuck() {
        koDuckRemaining = auraClashAudioKoDuck.restoreAfterSeconds;
        audio.setBusVolume(auraClashAudioKoDuck.bus, auraClashAudioKoDuck.duckedLevel);
-@@ -3736,6 +3829,7 @@ function createAudioRuntime(): AudioRuntime {
+@@ -3726,6 +3829,7 @@ function createAudioRuntime(): AudioRuntime {
          cueCount: Object.keys(auraClashAudioManifest).length,
          typedAssetCount: assetUrls.length,
          assetUrls,
@@ -590,7 +555,7 @@ index b8e842b47..ab71ecce5 100644
          oscillatorFallback: false,
          audioErrors: evidence.errors,
          // AC-A6 additive telemetry.
-@@ -3758,13 +3852,22 @@ function fallbackAudioProof(enabled: boolean): AudioProof {
+@@ -3748,13 +3852,22 @@ function fallbackAudioProof(enabled: boolean): AudioProof {
      cueCount: Object.keys(auraClashAudioManifest).length,
      typedAssetCount: Object.keys(auraClashAudioAssets).length,
      assetUrls: Object.values(auraClashAudioAssets).map((asset) => asset.url),
@@ -613,7 +578,7 @@ index b8e842b47..ab71ecce5 100644
    player: FighterState,
    rival: FighterState,
    roundTime: number,
-@@ -3774,24 +3877,35 @@ function updateHud(
+@@ -3764,24 +3877,35 @@ function updateHud(
    rivalScore = 0,
    replayControls?: FightHudReplayControlsModel
  ): void {
@@ -666,7 +631,7 @@ index b8e842b47..ab71ecce5 100644
    // Static HUD emphasis only. Renderer-owned crowd/sign items above carry the actual presentation
    // simplification; CSS does not stand in for stage lighting or gameplay effects.
    const hudShell = root.matches(".aca") ? root : root.querySelector<HTMLElement>(".aca");
-@@ -3816,15 +3930,6 @@ function updateHud(
+@@ -3806,15 +3930,6 @@ function updateHud(
    }
  }
  
@@ -682,7 +647,7 @@ index b8e842b47..ab71ecce5 100644
  function writeProof(input: {
    root: HTMLElement;
    status: "loading" | "running" | "paused";
-@@ -3946,7 +4051,7 @@ function writeProof(input: {
+@@ -3936,7 +4051,7 @@ function writeProof(input: {
      ...(input.trainingReplay ? { trainingReplay: input.trainingReplay } : {})
    });
    gameWindow.__AURA_CLASH_ARENA_PROOF__ = proof;
@@ -691,7 +656,7 @@ index b8e842b47..ab71ecce5 100644
      route: proof.route,
      version: proof.version,
      frame: proof.frame,
-@@ -4197,6 +4302,10 @@ interface Controls {
+@@ -4187,6 +4302,10 @@ interface Controls {
    endFrame(): void;
    pressed(action: keyof typeof actionKeys): boolean;
    held(action: keyof typeof actionKeys): boolean;
@@ -702,7 +667,7 @@ index b8e842b47..ab71ecce5 100644
  }
  
  function createControls(root: HTMLElement): Controls {
-@@ -4241,6 +4350,16 @@ function createControls(root: HTMLElement): Controls {
+@@ -4231,6 +4350,16 @@ function createControls(root: HTMLElement): Controls {
      },
      held(action) {
        return heldButtons.has(action) || actionKeys[action].some((code) => heldKeys.has(code));
@@ -719,7 +684,7 @@ index b8e842b47..ab71ecce5 100644
      }
    };
  }
-@@ -4255,29 +4374,11 @@ function isHeld(input: ReturnType<typeof game.input>, controls: Controls, action
+@@ -4245,29 +4374,11 @@ function isHeld(input: ReturnType<typeof game.input>, controls: Controls, action
    return controls.held(action);
  }
  
@@ -750,10 +715,10 @@ index b8e842b47..ab71ecce5 100644
    return Math.min(max, Math.max(min, value));
  }
 diff --git a/apps/aura-clash-showcase/src/legacy/playable/playable.css b/apps/aura-clash-showcase/src/legacy/playable/playable.css
-index dbfba0f09..e666e87ab 100644
+index 00e4d3f7b..76c2a6eb0 100644
 --- a/apps/aura-clash-showcase/src/legacy/playable/playable.css
 +++ b/apps/aura-clash-showcase/src/legacy/playable/playable.css
-@@ -1099,3 +1099,8 @@ body:has(.aca[data-review-capture="true"]) {
+@@ -923,3 +923,8 @@ input {
    color: #ffe978;
    text-shadow: 0 0 8px rgba(255, 233, 120, 0.55);
  }
@@ -1359,7 +1324,7 @@ index 000000000..a097fc4a7
 +  }
 +];
 diff --git a/apps/aura-clash-showcase/src/v2/boot.ts b/apps/aura-clash-showcase/src/v2/boot.ts
-index 79e180b5b..b0291f324 100644
+index af1e968b5..0a8260c9c 100644
 --- a/apps/aura-clash-showcase/src/v2/boot.ts
 +++ b/apps/aura-clash-showcase/src/v2/boot.ts
 @@ -12,8 +12,8 @@ import { auraClashEnvironment, auraClashLights } from "./scene/lighting";
@@ -1486,5 +1451,5 @@ index 1932b53e7..85782bbc3 100644
    await expect.poll(async () => (await readProof(page)).status).toBe("running");
  });
 -- 
-2.34.1
+2.52.0
 

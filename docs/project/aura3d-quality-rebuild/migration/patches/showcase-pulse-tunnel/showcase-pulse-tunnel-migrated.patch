@@ -1,4 +1,4 @@
-From 0faed87ff32f6cb064a4d5d629ca9aa60e1277a1 Mon Sep 17 00:00:00 2001
+From 55c647b8d4ef108794963fd1d81c3cf997418306 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:10:13 +0000
 Subject: [PATCH] migration(showcase-pulse-tunnel): regenerated patch set
@@ -3335,20 +3335,20 @@ index 000000000..af7cc2ade
 +  finale
 +];
 diff --git a/apps/showcase-pulse-tunnel/src/v2/boot.ts b/apps/showcase-pulse-tunnel/src/v2/boot.ts
-index d7452288f..539bf0034 100644
+index 5652507fa..da0165f1a 100644
 --- a/apps/showcase-pulse-tunnel/src/v2/boot.ts
 +++ b/apps/showcase-pulse-tunnel/src/v2/boot.ts
 @@ -20,8 +20,8 @@ import { lightingNodes } from "./scene/lighting";
  import { createPulseRig, fallbackCameraNode } from "./scene/camera";
  import { wirePulseFx } from "./scene/fx";
- import { GATE_MATERIALS, TUNNEL_BG } from "./scene/materials";
+ import { TUNNEL_BG } from "./scene/materials";
 -import { publishPulseEvidence } from "./evidence";
 -import { applyPulseScenario } from "./scenarios";
 +import { publishPulseEvidence } from "../evidence";
 +import { applyPulseScenario } from "../scenarios";
- 
- const ROUTE_FLAG = "A3D_QR_ROUTE_PULSE_TUNNEL" as const;
- const RUN_SECONDS = 90;
+ import { createPulseRunCtx, createPulseSystems, wirePulseRunState, MAX_SHIELDS } from "./run-state";
+ import { createGateVisuals } from "./gate-visuals";
+ import { wirePulseTouch, consumePulseTouch } from "./touch";
 -- 
-2.34.1
+2.52.0
 
