@@ -58,11 +58,18 @@ import { createStaticMeshConsolidationCache, type MeshConsolidationInput, type M
  * under `A3D_QR_CORE_OUTPUT`. Flag-off: recorded but never applied (legacy
  * present path is untouched).
  */
+/** #1140: OutputPass dithering default (three.js parity); `output.dithering` overrides. */
+export const DEFAULT_OUTPUT_DITHERING = false;
+
 export interface RendererOutputOptions {
   readonly toneMapping?: AuraToneMappingOperatorLike;
   /** Exposure multiplier (default 1); combined with blackboard `"prd03.exposure"` upstream. */
   readonly exposure?: number;
-  /** Triangular-dither the 8-bit write (default true). */
+  /**
+   * Triangular-dither the 8-bit write. Default false (#1140): three.js does not
+   * dither by default, and the dither noise alone regressed LPIPS vs three on
+   * every promotion scene (L4 run 38156934612). Opt in for banding-prone gradients.
+   */
   readonly dithering?: boolean;
   /** R8 coverage attachment + unmapped-background mix (§6.5; default false). */
   readonly backgroundCoverage?: boolean;
@@ -1559,14 +1566,14 @@ export class Renderer {
     rendererOutputPass(this.device).execute(hdrTarget, coverage ? hdrTarget : null, {
       toneMapping: o.toneMapping ?? DEFAULT_TONE_MAPPING,
       exposure: appliedExposure,
-      dithering: o.dithering ?? true,
+      dithering: o.dithering ?? DEFAULT_OUTPUT_DITHERING,
       backgroundCoverage: coverage,
       overlay: o.overlay
     }, explicitRenderTarget ?? "canvas");
     this.lastAppliedOutput = {
       toneMapping: o.toneMapping ?? DEFAULT_TONE_MAPPING,
       exposure: { applied: appliedExposure, source: upstream !== undefined ? "grade" : "output" },
-      dithering: o.dithering ?? true,
+      dithering: o.dithering ?? DEFAULT_OUTPUT_DITHERING,
       targetFormat,
       degraded: targetFormat === "rgba8" ? "rgba8-no-float-target" : this.hdrMsaaMrtDegraded ? "hdr-msaa-mrt-unsupported" : undefined
     };

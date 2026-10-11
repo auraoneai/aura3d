@@ -73,3 +73,10 @@ describe("applyGeneratedEnvironmentMapUniforms (cube)", () => {
     expect(uniforms.has("u_environmentCubeMap")).toBe(false);
   });
 });
+
+describe("#1140: OutputPass dithering default", () => {
+  it("is off by default (three.js parity); app.setOutput({ dither: true }) opts in", async () => {
+    const { DEFAULT_OUTPUT_DITHERING } = await import("../../../../packages/rendering/src/Renderer");
+    expect(DEFAULT_OUTPUT_DITHERING).toBe(false);
+  });
+});
