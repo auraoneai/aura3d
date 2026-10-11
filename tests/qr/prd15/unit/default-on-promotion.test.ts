@@ -26,6 +26,14 @@ describe("§5.3 default-on promotion is honoured by resolveQrFlags", () => {
     expect(flags.on("A3D_QR_GAME")).toBe(true);
     expect(flags.on("A3D_QR_CAMERA")).toBe(true);
   });
+
+  it("a programmatic string list is a flag list: \"none\" turns a default-on flag off", () => {
+    expect(resolveQrFlags({ options: "none", env: {} }).on("A3D_QR_CAMERA")).toBe(false);
+    expect(resolveQrFlags({ options: "-camera", env: {} }).on("A3D_QR_CAMERA")).toBe(false);
+    const list = resolveQrFlags({ options: "game", env: {} });
+    expect(list.on("A3D_QR_GAME")).toBe(true);
+    expect(list.on("A3D_QR_CAMERA")).toBe(true);
+  });
 });
 
 describe("§5.3 the real state table", () => {

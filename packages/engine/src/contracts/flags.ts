@@ -12,7 +12,7 @@
 import type { QrFlagName, QrFlagValue, QrFlags } from "@aura3d/rendering/contracts";
 import { QR_FLAG_STATES, REMOVED_QR_FLAGS } from "@aura3d/rendering/contracts/flags.state";
 
-export type QrFlagInput = "all" | readonly string[] | Readonly<Partial<Record<QrFlagName, QrFlagValue>>>;
+export type QrFlagInput = "all" | "none" | (string & {}) | readonly string[] | Readonly<Partial<Record<QrFlagName, QrFlagValue>>>;
 
 const SHORT_NAMES: Readonly<Record<string, QrFlagName>> = {
   core: "A3D_QR_CORE",
@@ -122,8 +122,10 @@ function applyList(out: Record<string, QrFlagValue>, list: string): void {
 }
 
 function applyInput(out: Record<string, QrFlagValue>, input: QrFlagInput): void {
-  if (input === "all") {
-    applyList(out, "all");
+  // Any string ("all", "none", "camera,-post") is a flag list. Before this, "none"
+  // fell through to Object.entries(string), set nothing, and default-on flags won.
+  if (typeof input === "string") {
+    applyList(out, input);
     return;
   }
   if (Array.isArray(input)) {
