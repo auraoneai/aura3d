@@ -471,7 +471,7 @@ export function terrainDiagnostics(): readonly TerrainFrameStat[] {
     trianglesDrawn: 0,
     layers: terrainRecordFor(id)?.options.layers.length ?? 0,
     degraded: true,
-    reason: lastTerrainProgramFailure ?? `terrain pass not drawn (emitted ${terrainPassCounters.emitted}, executed ${terrainPassCounters.executed}, no camera ${terrainPassCounters.noCamera}, last ${terrainPassCounters.lastName || "-"})`
+    reason: lastTerrainProgramFailure ?? `terrain pass not drawn (emitted ${terrainPassCounters.emitted}, executed ${terrainPassCounters.executed}, no camera ${terrainPassCounters.noCamera}, last ${terrainPassCounters.lastName || "-"}; phases ${JSON.stringify(worldPhaseCalls)})`
   });
 }
 let lastTerrainProgramFailure: string | null = null;
@@ -510,6 +510,11 @@ export function terrainAfterOpaquePass(ctx: FrameContributorContext): RenderPass
 
 /** Pass-level counters behind the "not executed" diagnostics reason. */
 const terrainPassCounters = { emitted: 0, executed: 0, noCamera: 0, lastName: "" };
+/** prd10 contributor hook invocations per phase (WorldFramePasses reports them). */
+const worldPhaseCalls: Record<string, number> = {};
+export function noteWorldPhase(phase: string): void {
+  worldPhaseCalls[phase] = (worldPhaseCalls[phase] ?? 0) + 1;
+}
 
 function terrainPass(ctx: FrameContributorContext, name: string, reads: readonly string[]): RenderPass {
   terrainPassCounters.emitted += 1;
