@@ -14,7 +14,7 @@ import type { RenderSource } from "../contracts/renderSource";
 import { collectItemBounds, isIterable, sceneFromSource, toMat4 } from "./RenderShared";
 import type { RendererHost } from "./RendererHost";
 import { rendererQrFlags } from "./FrameGraph";
-import { executePrd02BridgedShadowMap } from "../shadows/Prd02ShadowBridge";
+import { executePrd02BridgedShadowMap, type Prd02BridgeFrameCamera } from "../shadows/Prd02ShadowBridge";
 import { Bounds3 as SceneBounds3, Camera, DirectionalLight, Light, type Mat4, PerspectiveCamera, PointLight, Scene, SpotLight, type Vec3, identityMat4, multiplyMat4, orthographicMat4, perspectiveMat4 } from "@aura3d/scene";
 
 export function collectForwardShadowMap(source: RenderSource | Iterable<RenderItem> | Scene): ForwardShadowMapOptions | undefined {
@@ -289,6 +289,8 @@ export class RendererShadowOrchestrator {
     readonly ownedTargets: RenderTarget[];
     readonly ownedShadowPasses: Array<{ dispose(): void }>;
     readonly camera?: Camera;
+    /** #1141: VP + eye of the frame's (possibly structural) camera, for the prd02 bridge. */
+    readonly frameCamera?: Prd02BridgeFrameCamera;
   }): ForwardShadowMapOptions | undefined {
     if (!options.shadowOptions || options.shadowOptions.enabled === false) {
       return undefined;
@@ -305,6 +307,7 @@ export class RendererShadowOrchestrator {
         source: options.source,
         items: options.items,
         camera: options.camera,
+        ...(options.frameCamera ? { frameCamera: options.frameCamera } : {}),
         flags: rendererQrFlags()
       });
     }

@@ -56,7 +56,7 @@ uniform mat4 u_instanceMatrices[${PRD02_DEPTH_MAX_INSTANCES}];
 uniform float u_instanceCount;
 #endif
 #if A3D_DEPTH_SKINNED
-#include skinning_common
+#include <skinning_common>
 #endif
 void main() {
 #if A3D_DEPTH_ALPHA
