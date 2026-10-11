@@ -149,6 +149,13 @@ describe("C-02 every registered chunk compiles (glslangValidator, GLSL ES 3.00)"
  * never compose them, because the runtime never selects them. Runs only when A3D_GLSL_REPORT_EXCLUDED=1.
  */
 describe.runIf(process.env.A3D_GLSL_REPORT_EXCLUDED === "1")("report-only: raw validation of KNOWN_EXCLUDED features", () => {
+  // An empty list is the goal state: report it (a suite with no test fails vitest).
+  if (Object.keys(KNOWN_EXCLUDED).length === 0) {
+    it("KNOWN_EXCLUDED is empty", () => {
+      expect(excluded.size).toBe(0);
+      console.log("[report-only] KNOWN_EXCLUDED is empty: every registered feature composes on the generator path");
+    });
+  }
   for (const id of Object.keys(KNOWN_EXCLUDED)) {
     it(`${id} (${KNOWN_EXCLUDED[id]})`, () => {
       const feature = registered.find((f) => f.id === id);
