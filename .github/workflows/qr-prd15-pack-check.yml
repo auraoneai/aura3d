@@ -19,7 +19,7 @@ on:
       - "tools/packed-consumer-check/**"
       - ".github/workflows/qr-prd15-pack-check.yml"
   push:
-    branches: ["qr/**"]
+    branches: ["main"]
     paths:
       - "package.json"
       - "aura.exports.json"

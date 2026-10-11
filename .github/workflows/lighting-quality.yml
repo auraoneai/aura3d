@@ -67,8 +67,6 @@ on:
   push:
     branches:
       - "main"
-      - "qr/prd02-*"
-      - "qr/prd02/**"
   schedule:
     - cron: "47 5 * * *"
   workflow_dispatch:
