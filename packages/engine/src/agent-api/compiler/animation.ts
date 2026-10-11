@@ -113,7 +113,7 @@ export function recordClipResolveDegradation(
   message: string,
   cause?: unknown
 ): void {
-  pendingClipApplyDegradations.push({ code: "clip-apply-failed", nodeId, message: `${reason}: ${message}`, cause });
+  pushClipApplyDegradation({ code: "clip-apply-failed", nodeId, message: `${reason}: ${message}`, cause });
 }
 
 /**
