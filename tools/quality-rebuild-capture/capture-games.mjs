@@ -12,6 +12,8 @@
  *
  *   node tools/quality-rebuild-capture/capture-games.mjs                 # 17 production + Orbital from source
  *   node tools/quality-rebuild-capture/capture-games.mjs --build-only    # only build the local-source games
+ *   node tools/quality-rebuild-capture/capture-games.mjs --sourcemap     # T0-29: emit .js.map so crash stacks
+ *                                                                        # map back via map-stack.mjs
  *   node tools/quality-rebuild-capture/capture-games.mjs --skip-build    # reuse .build/ output
  *   node tools/quality-rebuild-capture/capture-games.mjs --local-build   # build + serve all selected games from source
  *   node tools/quality-rebuild-capture/capture-games.mjs --games showcase-bank-shot,aura-clash-showcase
@@ -56,6 +58,9 @@ const sourceOpt = String(opt("--source", "QRC_SOURCE", "")).toLowerCase();
 const prBuild = flag("--pr-build") || (process.env.GITHUB_EVENT_NAME === "pull_request" && sourceOpt !== "production");
 const localBuildAll = flag("--local-build") || truthy(process.env.QRC_LOCAL_BUILD) || prBuild;
 const buildOnly = flag("--build-only");
+// T0-29: sourcemapped game builds so aura-engine-*.js:<line>:<col> crash frames
+// can be attributed (tools/quality-rebuild-capture/map-stack.mjs).
+const sourcemap = flag("--sourcemap") || truthy(process.env.QRC_SOURCEMAP);
 const skipBuild = flag("--skip-build") || truthy(process.env.QRC_SKIP_BUILD);
 const strict = flag("--strict");
 const validateOnly = flag("--validate");
@@ -229,7 +234,7 @@ export default {
     ...build,
     outDir: ${JSON.stringify(outputDir)},
     emptyOutDir: true,
-    sourcemap: false,
+    sourcemap: ${sourcemap ? "true" : "false"},
     reportCompressedSize: false,
     rollupOptions: { ...rollupOptions, input: rollupOptions.input ?? ${JSON.stringify(path.join(appDir, "index.html"))} }
   }
