@@ -8,16 +8,13 @@
  * file (`prd05Assets[id].source`) — the un-optimized GLB — so the spec compares
  * optimized vs source on identical scene composition within each engine.
  */
-import { adapters as auraAdapters } from "/benchmarks/quality-rebuild/aura3d/scenes/prd05/index.js";
-import { adapters as threeAdapters } from "/benchmarks/quality-rebuild/three/scenes/prd05/index.js";
-import { prd05SceneSpecs } from "/benchmarks/quality-rebuild/scenes/prd05/index.js";
+import { adapters as auraAdapters } from "../../../../benchmarks/quality-rebuild/aura3d/scenes/prd05/index.js";
+import { adapters as threeAdapters } from "../../../../benchmarks/quality-rebuild/three/scenes/prd05/index.js";
+import { prd05SceneSpecs } from "../../../../benchmarks/quality-rebuild/scenes/prd05/index.js";
 
-declare global {
-  interface Window {
-    __QR_READY__?: unknown;
-    __QR_ERROR__?: string;
-  }
-}
+// Other harnesses already declare window.__QR_READY__/__QR_ERROR__ globally;
+// write through a local view instead of redeclaring them.
+const qrWindow = window as unknown as { __QR_READY__?: unknown; __QR_ERROR__?: string };
 
 async function main(): Promise<void> {
   const params = new URLSearchParams(window.location.search);
@@ -49,10 +46,10 @@ async function main(): Promise<void> {
   payload.qrFlags = requestedFlags;
   payload.assetVariant = variant;
   document.body.dataset.qrReady = "true";
-  window.__QR_READY__ = payload;
+  qrWindow.__QR_READY__ = payload;
 }
 
 main().catch((error: unknown) => {
-  window.__QR_ERROR__ = error instanceof Error ? `${error.name}: ${error.message}\n${error.stack ?? ""}` : String(error);
+  qrWindow.__QR_ERROR__ = error instanceof Error ? `${error.name}: ${error.message}\n${error.stack ?? ""}` : String(error);
   document.body.dataset.qrError = "true";
 });
