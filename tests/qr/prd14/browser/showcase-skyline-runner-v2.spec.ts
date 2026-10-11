@@ -189,10 +189,14 @@ test.describe("showcase-skyline-runner v2 (T2.6)", () => {
         await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&scenario=${scenario}`);
         await expect.poll(() => page.evaluate(() =>
           (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
-        looks.push(await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".appliedLook"), EVIDENCE));
+        looks.push(await page.evaluate((EVIDENCE: string) => ({ route: eval(EVIDENCE + ".appliedLook"), runtime: (window as unknown as { __AURA3D_GAME__?: { app?: { diagnostics?: () => { appliedLook?: unknown } } } }).__AURA3D_GAME__?.app?.diagnostics?.().appliedLook ?? null }), EVIDENCE));
       }
-      expect(looks[0]?.key).toEqual(looks[1]?.key);
-      expect(looks[0]?.scene).toBe(looks[1]?.scene);
+      const route = looks.map((l) => l.route as Record<string, unknown> | undefined);
+      expect(route[0]?.key).toEqual(route[1]?.key);
+      expect(route[0]?.scene).toBe(route[1]?.scene);
+      // S6: what the renderer actually applied (C-31) is identical too.
+      expect(looks[0]?.runtime, "renderer reports no appliedLook (C-31)").not.toBeNull();
+      expect(looks[0]?.runtime).toEqual(looks[1]?.runtime);
       expect(errors).toEqual([]);
     } finally {
       server.close();

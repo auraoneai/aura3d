@@ -222,13 +222,14 @@ test.describe("showcase-neon-swarm v2 (T2.6)", () => {
       await expect.poll(() => page.evaluate(() =>
         (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       const playLook = await page.evaluate((EVIDENCE: string) =>
-        JSON.stringify(eval(EVIDENCE + ".appliedLook")), EVIDENCE);
+        JSON.stringify({ route: eval(EVIDENCE + ".appliedLook"), runtime: (window as unknown as { __AURA3D_GAME__?: { app?: { diagnostics?: () => { appliedLook?: unknown } } } }).__AURA3D_GAME__?.app?.diagnostics?.().appliedLook ?? null }), EVIDENCE);
+      expect(JSON.parse(playLook).runtime, "renderer reports no appliedLook (C-31)").not.toBeNull();
       for (const scenario of ["wave-two", "finale", "burst-ready"]) {
         await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&scenario=${scenario}`);
         await expect.poll(() => page.evaluate(() =>
           (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
         const scenarioLook = await page.evaluate((EVIDENCE: string) =>
-          JSON.stringify(eval(EVIDENCE + ".appliedLook")), EVIDENCE);
+          JSON.stringify({ route: eval(EVIDENCE + ".appliedLook"), runtime: (window as unknown as { __AURA3D_GAME__?: { app?: { diagnostics?: () => { appliedLook?: unknown } } } }).__AURA3D_GAME__?.app?.diagnostics?.().appliedLook ?? null }), EVIDENCE);
         expect(scenarioLook, `appliedLook drifted on scenario ${scenario}`).toBe(playLook);
       }
     } finally {
