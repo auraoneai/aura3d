@@ -5,7 +5,7 @@
 // PRD-02 flag paths must not alter them). CPU snapshot; the pixel-level
 // flag-off proof is the IC-0 ΔE2000 gate in lane 15.
 
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createProductionRuntimeEnvironment } from "../../../packages/engine/src/agent-api/compiler/environment.js";
 import { createProductionRuntimeCollectedLights, type AuraSceneSnapshot } from "@aura3d/engine";
 import { createProductionRuntimeShadowOptions } from "../../../packages/engine/src/agent-api/compiler/shadows.js";
@@ -65,6 +65,12 @@ function flagOffCpuSnapshot() {
 }
 
 describe("prd02 legacy golden — flag off (85aafcd0 lineage)", () => {
+  // A3D_QR_LIGHTING is default-on (#1238): "off" must be explicit. These
+  // compiler entry points resolve flags from the ambient A3D_QR env.
+  let saved: string | undefined;
+  beforeEach(() => { saved = process.env.A3D_QR; process.env.A3D_QR = "none"; });
+  afterEach(() => { if (saved === undefined) delete process.env.A3D_QR; else process.env.A3D_QR = saved; });
+
   it("CPU RenderSource terms are deep-equal to the golden", () => {
     expect(flagOffCpuSnapshot()).toEqual(GOLDEN);
   });
