@@ -33,6 +33,8 @@ const repoRoot = path.resolve(marketingDir, "..");
 const distDir = path.join(marketingDir, "dist");
 const rootViteConfig = path.join(repoRoot, "vite.config.ts");
 const engineSourceEntry = path.join(repoRoot, "packages", "engine", "src", "agent-api", "index.ts");
+// PRD-15 split the agent API: the game presentation helpers now live in nodes/game.
+const engineGameSource = path.join(repoRoot, "packages", "engine", "src", "agent-api", "nodes", "game", "index.ts");
 
 const showcaseRoutes = [
   "showcase-index",
@@ -112,7 +114,10 @@ function assertEngineBuildContract() {
 }
 
 function assertRequiredEngineSourceHelpers() {
-  const engineSource = readFileSync(engineSourceEntry, "utf8");
+  const engineSource = [engineSourceEntry, engineGameSource]
+    .filter((file) => existsSync(file))
+    .map((file) => readFileSync(file, "utf8"))
+    .join("\n");
   const missingHelpers = requiredPublicGameEngineHelpers.filter((helper) => !engineSource.includes(`${helper}:`));
   if (missingHelpers.length > 0) {
     throw new Error(`@aura3d/engine public game presentation helpers are missing from source game API: ${missingHelpers.join(", ")}`);
