@@ -85,7 +85,12 @@ async function run(): Promise<void> {
   const caps = gl
     ? probeCompressedTextureCapabilities(gl)
     : { astc: false, bptc: false, etc2: false, s3tc: false, s3tcSrgb: false } as const;
-  const MAX_TEXTURE_SIZE = Number(params.get("maxTextureSize") ?? "4096");
+  // Tier caps are the C-27 union (1024 | 2048 | 4096); anything else is a harness error.
+  const requestedMaxTextureSize = Number(params.get("maxTextureSize") ?? "4096");
+  if (requestedMaxTextureSize !== 1024 && requestedMaxTextureSize !== 2048 && requestedMaxTextureSize !== 4096) {
+    throw new Error(`maxTextureSize must be 1024, 2048 or 4096 (got ${requestedMaxTextureSize})`);
+  }
+  const MAX_TEXTURE_SIZE: 1024 | 2048 | 4096 = requestedMaxTextureSize;
   // `?skipRender=1` (decoder-failure spec, windows job): prove decoder-load
   // semantics — sniff + prepareModelDecoders + registry require — without
   // paying the 5-variant GPU render cost under software rasterizers.
