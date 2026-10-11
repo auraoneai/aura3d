@@ -259,6 +259,53 @@ export function createAuraCameraController(
     (liveSpec() && liveSpec() !== writeSpec ? (liveSpec() as LegacyCameraSpec) : boundSpec) ??
     boundSpec;
 
+  /*
+   * Pixels, not evidence. The production renderer reads the camera from its
+   * render snapshot, a shallow copy made at mount (`{ ...snapshot, nodes }`)
+   * that keeps a reference to the authored camera object. Replacing
+   * `app.scene.camera` never reached the GPU (promote run 38151983512:
+   * byte-identical PNGs, NO-EFFECT; fixed in #1202). Until the Q-15-9 renderer
+   * camera-override seam (#645) exists, the presented pose is written into
+   * that renderer-held object (`renderCamera`):
+   * - only pose fields are written (mode, position, target, up, roll, fov,
+   *   near, far, orthographicSize). Authored fields such as `targetNode`,
+   *   `offset` and `smoothing` stay; in perspective/orthographic mode the
+   *   renderer's camera resolver ignores them, so 08-POSE's "targetNode
+   *   survives applyPose" holds. `up`/`roll` are recorded but not yet drawn
+   *   (the renderer has no up/roll consumer; #645 / Q-15-1 #222);
+   * - the authored pose values are backed up at bind and restored when the
+   *   scene's camera changes (setScene / rebind), so a reused builder or spec
+   *   gets its own values back (Codex review on #1202);
+   * - `freezeSpecs` still exposes a frozen copy on `app.scene.camera`, but the
+   *   writes keep going to `renderCamera`, so pixels stay live (Codex review
+   *   on #1202).
+   * Rig inputs and spec deps take copies, so nothing feeds back.
+   */
+  const POSE_KEYS = ["mode", "position", "target", "up", "roll", "fov", "near", "far", "orthographicSize"] as const;
+  let renderCamera: CameraSpecMutable | undefined;
+  let renderCameraBackup: Partial<Record<(typeof POSE_KEYS)[number], unknown>> | undefined;
+
+  const restoreRenderCamera = () => {
+    if (!renderCamera || !renderCameraBackup || Object.isFrozen(renderCamera)) return;
+    const target = renderCamera as Record<string, unknown>;
+    for (const key of POSE_KEYS) {
+      if (key in renderCameraBackup) target[key] = renderCameraBackup[key];
+      else delete target[key];
+    }
+  };
+
+  const adoptRenderCamera = (spec: CameraSpecMutable | undefined) => {
+    if (spec === renderCamera) return;
+    restoreRenderCamera();
+    renderCamera = spec && !Object.isFrozen(spec) ? spec : undefined;
+    renderCameraBackup = undefined;
+    if (renderCamera) {
+      const backup: Partial<Record<(typeof POSE_KEYS)[number], unknown>> = {};
+      for (const key of POSE_KEYS) if (key in renderCamera) backup[key] = renderCamera[key];
+      renderCameraBackup = backup;
+    }
+  };
+
   const applyPose = (pose: AuraCameraPose) => {
     const scene = app.scene as unknown as { camera?: CameraSpecMutable } | undefined;
     if (!scene) return;
@@ -267,35 +314,22 @@ export function createAuraCameraController(
       mode,
       position: pose.position,
       target: pose.target,
+      up: pose.up,
+      roll: pose.roll,
       fov: pose.fov,
       near: pose.near,
-      far: pose.far,
-      orthographicSize: pose.orthographicSize
+      far: pose.far
     };
-    /*
-     * Pixels, not evidence: the production renderer reads the camera from its
-     * own render snapshot, a shallow copy made at mount (`{ ...snapshot,
-     * nodes }`) that keeps a reference to the authored camera object.
-     * Replacing `app.scene.camera` therefore never reached the GPU: every
-     * flag-on frame rendered the authored spec pose (promote run 38151983512:
-     * byte-identical PNGs, verdict NO-EFFECT). So the presented pose is written
-     * INTO the shared authored object, which both snapshots hold. Its
-     * follow/path fields (`targetNode`, `offset`, `smoothing`, ...) are
-     * dropped so the renderer resolves the presented pose verbatim. The bound
-     * rig reads its own copy (`createFromSpecRig({ ...spec })`), so there is
-     * no feedback into its input.
-     * Frozen specs (`freezeSpecs`) and scenes without an authored camera
-     * object fall back to replacement.
-     */
-    const live = scene.camera;
-    if (live && !Object.isFrozen(live)) {
-      for (const key of Object.keys(live)) if (!(key in fields)) delete live[key];
-      Object.assign(live, fields);
-      if (pose.orthographicSize === undefined) delete live.orthographicSize;
-      writeSpec = live;
+    if (pose.orthographicSize !== undefined) fields.orthographicSize = pose.orthographicSize;
+    if (renderCamera) {
+      Object.assign(renderCamera, fields);
+      if (pose.orthographicSize === undefined) delete renderCamera.orthographicSize;
+    }
+    if (renderCamera && scene.camera === renderCamera && !options.freezeSpecs) {
+      writeSpec = renderCamera;
       return;
     }
-    const next: CameraSpecMutable = { ...fields };
+    const next: CameraSpecMutable = { ...(renderCamera ?? {}), ...fields };
     scene.camera = options.freezeSpecs ? Object.freeze(next) : next;
     writeSpec = next;
   };
@@ -357,7 +391,8 @@ export function createAuraCameraController(
     const spec = liveSpec() as LegacyCameraSpec | undefined;
     if (spec && spec !== boundSpec && spec !== (writeSpec as LegacyCameraSpec | undefined)) {
       boundSpec = spec;
-      // Snapshot the authored spec: applyPose later overwrites this object in place.
+      adoptRenderCamera(spec as CameraSpecMutable);
+      // Snapshot the authored spec: applyPose later writes pose fields into this object.
       const authored = { ...spec };
       const rig = createFromSpecRig(authored, specDepsFor(authored));
       controller.use(rig);
@@ -453,7 +488,10 @@ export function createAuraCameraController(
     const spec = liveSpec();
     const scene = app.scene as unknown as { camera?: CameraSpecMutable } | undefined;
     if (spec && scene && !Object.isFrozen(spec)) {
-      scene.camera = Object.freeze({ ...spec });
+      // Route-facing frozen copy; renderCamera keeps receiving the pose.
+      const frozen = Object.freeze({ ...spec });
+      scene.camera = frozen;
+      writeSpec = frozen;
     }
   }
 
