@@ -11,11 +11,10 @@ import { registerWorldFramePasses } from "../production-runtime/world/WorldFrame
 import { registerWorldDiagnosticsSection } from "../production-runtime/world/WorldDiagnostics.js";
 import { registerWorldNodeHandlers } from "../agent-api/compiler/world.js";
 import { registerWorldPhase6 } from "../agent-api/world/register.js";
-import { registerPrd10WindFeatures, registerPrd10FoliageLobe, registerPrd10UnderwaterFeatures } from "@aura3d/rendering/world";
+import { registerPrd10WindFeatures, registerPrd10FoliageLobe, registerPrd10UnderwaterFeatures, registerPrd10Chunks } from "@aura3d/rendering/world";
 // 10-CHUNKS: explicit call — the lanes barrel's side-effect registration is
-// dropped by "sideEffects": false in chunked builds (relative leaf per T0-23
-// until an exported subpath lands).
-import { registerPrd10Chunks } from "../../../rendering/src/lanes/prd10.js";
+// dropped by "sideEffects": false in chunked builds. T0-23: imported through
+// the `@aura3d/rendering/world` subpath, not a cross-package relative path.
 import "../agent-api/compiler/diagnosticOnly.prd10.js";
 
 worldQueriesSlot.provide(createWorldQueries);
