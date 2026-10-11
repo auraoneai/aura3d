@@ -63,6 +63,14 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Lane unit tests
         run: pnpm exec vitest run -c tests/qr/prd11/vitest.config.ts
+      # 11-S10 (PRD-11 Phase 1 freeze): the removed product-path shading and
+      # CPU rasterizer must not come back into the WebGPU device.
+      - name: S10 — no product/rasterizer paths in WebGPUDevice.ts
+        run: |
+          if grep -nE 'productProp|u_productColorSmoothing|rasterizeDraw|colorPixels' packages/rendering/src/WebGPUDevice.ts; then
+            echo "::error::S10: forbidden product/rasterizer identifiers found in WebGPUDevice.ts"
+            exit 1
+          fi
 
   lane-browser:
     name: Lane browser specs (macos-14, ANGLE Metal)
