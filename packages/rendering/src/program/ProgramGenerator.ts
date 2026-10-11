@@ -390,8 +390,9 @@ function defaultIndirectBody(f: ProgramFeatures): string {
   lines.push("#ifdef ENVMAP_TYPE_EQUIRECT");
   lines.push("  float a3dRoughLod = material.roughness * 8.0;");
   lines.push("  vec3 a3dReflect = reflect(-V, N);");
-  lines.push("  indirectSpecular += a3dIndirectSpecular(a3dSampleEnvironment(a3dReflect, a3dRoughLod), V, N, material);");
-  lines.push("  indirectDiffuse += a3dIndirectDiffuse(a3dSampleEnvironment(N, 8.0), V, N, material);");
+  lines.push("  vec3 a3dEnvIrradiance = a3dSampleEnvironment(N, 8.0);");
+  lines.push("  indirectSpecular += a3dIndirectSpecular(a3dSampleEnvironment(a3dReflect, a3dRoughLod), a3dEnvIrradiance, V, N, material);");
+  lines.push("  indirectDiffuse += a3dIndirectDiffuse(a3dEnvIrradiance, V, N, material);");
   lines.push("#endif");
   lines.push("#ifdef USE_OCCLUSION_MAP");
   lines.push(`  float a3dAo = texture(u_occlusionMap, ${uvExpr(f, "occlusion")}).r;`);

@@ -3,6 +3,7 @@ import { MaterialInstance } from "./MaterialInstance";
 import { type RenderShaderProgram, type UniformValue } from "./RenderDevice";
 import { TextureBinding, isTextureBinding } from "./TextureBinding";
 import type { ProgramFeatures } from "./contracts/program";
+import { dfgLutBinding } from "./program/DFGLut";
 
 /** C-02 (PRD-01 §8.5): material parameter → generated-program uniform renames.
  * Generated programs name samplers `u_*Map` and read `u_specularIntensity`;
@@ -99,6 +100,12 @@ export class MaterialBinding {
     const uniforms = into ?? new Map<string, UniformValue>();
     const diagnostics: string[] = [];
     const warnings: string[] = [];
+
+    // 01-DFG: every generated program with the lane-01 brdf chunk samples the
+    // renderer-owned r185 DFG LUT (one texture, uploaded once per device).
+    if (shader.reflection.uniforms.has("u_dfgLut")) {
+      uniforms.set("u_dfgLut", dfgLutBinding());
+    }
 
     for (const [name, value] of materialLike.getParameters()) {
       const renamed = GENERATED_UNIFORM_RENAMES[name];
