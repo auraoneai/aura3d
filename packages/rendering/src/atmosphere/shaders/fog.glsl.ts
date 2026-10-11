@@ -19,7 +19,13 @@ export const PRD07_FOG_CHUNK_GLSL = `
 #endif
 uniform vec4 u_fogA;   // σ_d, σ_h, b, h0 — mode 6: density, heightFalloff, heightReference, legacyMode
 uniform vec4 u_fogB;   // start, maxOpacity, sunInscatter, anisotropy g — mode 6: near, far, maxOpacity, 0
-uniform vec3 u_fogColor; uniform vec3 u_fogAbsorption; uniform float u_fogMode;  // 0 off,1 height,2 exp,3 exp2,4 linear,5 absorption,6 legacy-parity
+// #880: the C-02 generator's fog_default chunk already declares u_fogColor
+// (same meaning) under FOG_LINEAR / FOG_EXP2 / FOG_HEIGHT and is emitted
+// before feature declarations, so share it instead of redeclaring.
+#if !defined(FOG_LINEAR) && !defined(FOG_EXP2) && !defined(FOG_HEIGHT)
+uniform vec3 u_fogColor;
+#endif
+uniform vec3 u_fogAbsorption; uniform float u_fogMode;  // 0 off,1 height,2 exp,3 exp2,4 linear,5 absorption,6 legacy-parity
 uniform float u_fogNear; uniform float u_fogFar;                               // linear (mode 4) + legacy-parity distances
 uniform vec4 u_fogVolumes[2 * A3D_MAX_FOG_VOLUMES];             // centre.xyz+shape, halfSize.xyz+density
 #ifndef A3D_PRD07_FOG_ENV_UNIFORMS
@@ -127,6 +133,9 @@ vec3 a3dApplyFog(vec3 color, vec3 worldPos) {                  // stable entry p
   vec3 r = worldPos - u_cameraPosition; vec3 v = normalize(r);
   if (u_fogMode == 5.0) { vec3 T = exp(-u_fogAbsorption * length(r)); return color * T + u_fogColor * (1.0 - T); }
 #if defined(FOG_VOLUMETRIC)
+  // Consumer contract: a FOG_VOLUMETRIC program defines a3dSampleFroxel()
+  // before this chunk. Forward programs never set FOG_VOLUMETRIC; the froxel
+  // volume is composited there by VolumetricFogPass apply (§8.7).
   vec4 s = a3dSampleFroxel(worldPos);                          // rgb inscatter, a transmittance
   color = color * s.a + s.rgb;                                 // near part from the volume
 #endif
@@ -140,3 +149,15 @@ vec3 a3dApplyFog(vec3 color, vec3 worldPos) {                  // stable entry p
 `;
 
 export const PRD07_FOG_SHADER_MARKER = "a3d_prd07_fog_v2";
+
+/**
+ * #880 / T0-05 — `fragment:fog` call chunk (statements only, inside `main()`).
+ * The declarations above are the pars chunk at `fragment:pars`; this replaces
+ * the generator's default fog body (`a3dColor`, `v_worldPosition` are the
+ * C-02 forward fragment's names).
+ */
+export const PRD07_FOG_APPLY_CHUNK_GLSL = `
+#ifdef A3D_FOG
+  a3dColor = a3dApplyFog(a3dColor, v_worldPosition);
+#endif
+`;
