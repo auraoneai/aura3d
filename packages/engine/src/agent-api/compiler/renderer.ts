@@ -56,6 +56,11 @@ export async function createProductionRuntimeSceneRenderer(
     : modelNodes.length > 0
     ? await (async () => {
         const { createTypedGLBActor } = await import("../../production-runtime/TypedGLBActor.js");
+        // Q-15-1 (#461, C-16 §7.3): with A3D_QR_ASSETS on, compressed GLBs
+        // (meshopt/draco/KTX2) require their decoders from /aura-decoders/
+        // and fail closed with AssetDecoderUnavailable; flag off spreads {}.
+        const { typedGLBActorDecoderOptions } = await import("../AssetDecoders.js");
+        const decoderOptions = typedGLBActorDecoderOptions(flags, undefined);
         return await Promise.all(modelNodes.map(async (node, index) => ({
           node,
           actor: await createTypedGLBActor({
@@ -66,6 +71,7 @@ export async function createProductionRuntimeSceneRenderer(
             height: canvas.height,
             ...(node.hiddenNodeNames ? { hiddenNodeNames: node.hiddenNodeNames } : {}),
             ...(node.role === "primaryWorld" ? { consolidateStaticMeshes: true } : {}),
+            ...decoderOptions,
             ...applyModelTintBridge(node)
           })
         })));
