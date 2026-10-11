@@ -215,6 +215,49 @@ describe("mountHud (PRD-09 1758/1759)", () => {
       )
     ).toThrow(/duplicate widget id/);
   });
+
+  it("#1086: unknown widget kinds fail fast with a named error", () => {
+    const doc = new FakeDoc();
+    const root = doc.createElement("div");
+    expect(() =>
+      mountHud(
+        { root, doc, devAssertions: false, schedule: () => ({ cancel: () => {} }) },
+        { widgets: [{ id: "p1-hp", kind: "healthbar", anchor: "top-left" } as never] }
+      )
+    ).toThrow('a3g-hud: unsupported widget kind "healthbar" for "p1-hp"');
+  });
+
+  it("#1086: meter without max defaults to full scale 1; score renders strings verbatim", () => {
+    const { root, hud, pump } = makeHud({
+      widgets: [
+        { id: "m", kind: "meter", anchor: "top" } as never,
+        { id: "s", kind: "score", anchor: "top-left", rollMs: 0 }
+      ]
+    });
+    hud.set("m", 0.25);
+    hud.set("s", "PAR 3");
+    pump();
+    const hudEl = root.children[0] as FakeEl;
+    const all: FakeEl[] = [];
+    const walk = (n: FakeEl) => { all.push(n); n.children.forEach(walk); };
+    walk(hudEl);
+    const fill = all.find((n) => String(n.className).includes("a3g-meter-fill"))!;
+    expect(fill.style.width).toBe("25.00%");
+    const scoreValue = all.find((n) => n.parent?.dataset.widgetId === "s" && String(n.className).includes("a3g-w-value"))!;
+    expect(scoreValue.textContent).toBe("PAR 3");
+  });
+
+  it("#1086: a rolling score repaints when a string gives way to its current number", () => {
+    const { root, hud, pump } = makeHud({ widgets: [{ id: "s", kind: "score", anchor: "top", rollMs: 300 }] });
+    hud.set("s", "READY");
+    pump();
+    hud.set("s", 0);
+    pump();
+    const hudEl = root.children[0] as FakeEl;
+    const slot = hudEl.children.find((c) => c.dataset.anchor === "top")!;
+    const value = (slot.children[0] as FakeEl).children.find((n) => String(n.className).includes("a3g-w-value"))!;
+    expect(value.textContent).toBe("0");
+  });
 });
 
 describe("screenFraction", () => {
