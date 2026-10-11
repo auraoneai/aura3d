@@ -11,6 +11,10 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
  * other lane-03 browser specs (the `qr-prd03-` ownership slot; the
  * `tests/browser/` dir is the de-facto lane-03 spec home).
  * WebGPU execution parity is Q-11-2 (lane 11, integrated — not gated here).
+ * Runner selection: macos-14 only. The post-quality `browser-gpu` lane
+ * (azure-gpu, NVIDIA L4 on Linux, ANGLE Vulkan) exposes no WebGPU adapter
+ * (run 38127246424: `webgpu-no-adapter`), so this spec is left out of that
+ * job's list rather than skipped; a missing adapter still fails it here.
  */
 
 interface ModuleReport {

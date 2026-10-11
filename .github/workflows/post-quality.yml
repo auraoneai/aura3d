@@ -198,6 +198,11 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - name: Lane 03 post specs on the GPU (@integrated skipped)
         run: |
+          # qr-prd03-wgsl-compile runs only on the macos-14 job above: the
+          # azure-gpu (L4, Linux, ANGLE Vulkan) pool exposes no WebGPU adapter
+          # (navigator.gpu absent / requestAdapter() null, run 38127246424),
+          # and the spec fails without one by design (P-22). It is not
+          # skipped: the macOS lane runs it on every push and dispatch.
           specs=(
             tests/browser/qr-prd03-gpu-probe.spec.ts
             tests/browser/qr-prd03-fxaa.spec.ts
@@ -207,7 +212,6 @@ jobs:
             tests/browser/qr-prd03-post-no-readback.spec.ts
             tests/browser/qr-prd03-phase4.spec.ts
             tests/browser/qr-prd03-capture-dsf2.spec.ts
-            tests/browser/qr-prd03-wgsl-compile.spec.ts
             tests/browser/qr-prd03-phase6.spec.ts
             tests/browser/qr-prd03-bloom-energy.spec.ts
             tests/browser/qr-prd03-s15-mb-dof.spec.ts
