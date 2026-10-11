@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { requireOrSkip } from "../support/requireOrSkip";
 import {
   createTerrainHeightTexture,
   terrainGpuHeightReadback,
@@ -44,16 +45,10 @@ test("terrain GPU height readback == CPU bilinear within 1e-4 m (1000 pts)", asy
       return { error: String(e) } as const;
     }
   }, { srcUpload, srcReadback, grid: { columns: grid.columns, rows: grid.rows, heights: Array.from(grid.heights) }, uvs, heightScale });
-  // P-22 requireOrSkip: on CI the runner must expose WebGL2 — a missing
-  // adapter is a red job, not a skipped spec; local non-CI may skip.
-  if ("error" in gpu) {
-    if (process.env.CI) {
-      expect((gpu as { error?: string }).error ?? null, "CI runner must expose WebGL2").toBeNull();
-    } else {
-      test.skip(true, `webgl2 unavailable in this runner: ${gpu.error}`);
-      return;
-    }
-  }
+  // P-22: CI must expose WebGL2 (a missing adapter or failed program is red);
+  // local non-CI runs skip with the reason.
+  requireOrSkip(test, !("error" in gpu), "webgl2", `runner must expose WebGL2: ${"error" in gpu ? gpu.error : ""}`);
+  if ("error" in gpu) return; // unreachable: requireOrSkip threw or skipped
   const cpu = Float32Array.from(uvs, (uv) => terrainHeightBilinear(grid, uv, heightScale));
   let maxErr = 0;
   for (let i = 0; i < uvs.length; i += 1) {

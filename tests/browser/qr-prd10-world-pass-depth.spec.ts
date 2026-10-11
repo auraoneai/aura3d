@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { requireOrSkip } from "../support/requireOrSkip";
 import { resolveQrFlags } from "@aura3d/engine/contracts";
 import { worldDrawPath } from "../../packages/engine/src/production-runtime/world/WorldFramePasses";
 
@@ -68,7 +69,9 @@ test("Path S background quad occludes/is occluded by depth correctly", async ({ 
     const uHalf = gl.getUniformLocation(prog, "u_half");
     const uClipZ = gl.getUniformLocation(prog, "u_clipZ");
     const uColor = gl.getUniformLocation(prog, "u_color");
-    const clipZOf = (worldZ: number) => 1 - worldZ / 5; // z=3 -> 0.4, z=5 -> 0.0, z=7 -> -0.4
+    // NDC depth grows away from the camera, so nearer world z must map to a
+    // smaller clip z (the old `1 - z/5` inverted it and drew the far box on top).
+    const clipZOf = (worldZ: number) => worldZ / 5 - 1; // z=3 -> -0.4, z=5 -> 0.0, z=7 -> 0.4
     const quad = (cx: number, cy: number, hx: number, hy: number, worldZ: number, color: [number, number, number]) => {
       gl.uniform2f(uCenter, cx, cy);
       gl.uniform2f(uHalf, hx, hy);
@@ -95,14 +98,10 @@ test("Path S background quad occludes/is occluded by depth correctly", async ({ 
     };
   });
 
-  // P-22 requireOrSkip: CI must expose WebGL2 (red, not skip); locals may skip.
-if ("error" in pixels) {
-    if (process.env.CI) {
-      expect((pixels as { error?: string }).error ?? null, "CI runner must expose WebGL2").toBeNull();
-    } else {
-      test.skip(true, "no WebGL2 in runner");
-    }
-  }
+  // P-22: CI must expose WebGL2 (a missing adapter or failed program is red);
+  // local non-CI runs skip with the reason.
+  requireOrSkip(test, !("error" in pixels), "webgl2", `runner must expose WebGL2: ${"error" in pixels ? pixels.error : ""}`);
+  if ("error" in pixels) return; // unreachable: requireOrSkip threw or skipped
   const p = pixels as { left: number[]; right: number[]; center: number[] };
   // Near box (z=3) beats the background (z=5).
   expect(p.left[0]).toBeGreaterThan(150);
