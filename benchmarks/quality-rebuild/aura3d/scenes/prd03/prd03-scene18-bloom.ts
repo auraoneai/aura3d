@@ -1,5 +1,5 @@
 /** Lane prd03 adapter — prd03-scene18-bloom (PRD-03 §16.1). */
-import { runAuraScene } from "../../common";
+import { runAuraScene, type RunOptions } from "../../common";
 import { PRD03_SCENE_SPECS } from "../../../scenes/prd03/specs";
 import { mapThreeUnrealBloom } from "./bloomMapping";
 
@@ -12,4 +12,6 @@ const spec = PRD03_SCENE_SPECS["prd03-scene18-bloom"];
 const bloom = mapThreeUnrealBloom(spec.bloom!.strength, spec.bloom!.radius, spec.bloom!.threshold);
 const mapped = { ...spec, bloom: { strength: bloom.intensity, radius: bloom.scatter, threshold: bloom.threshold } };
 
-export default (host: HTMLElement) => runAuraScene(mapped, host);
+// Forward the harness RunOptions (qrFlags/variant/dpr): without them the
+// spec's lane-default `qrFlags: ["post"]` made the flags-off capture post-on.
+export default (host: HTMLElement, opts?: RunOptions) => runAuraScene(mapped, host, opts);
