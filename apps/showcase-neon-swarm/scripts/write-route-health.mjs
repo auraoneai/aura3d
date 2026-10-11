@@ -189,7 +189,6 @@ const routeHealth = {
     };
   }),
   primitiveStatus: {
-    sourceOccurrences: primitiveOccurrences,
     primitiveBudget: routeGate.primitiveBudget,
     role: "arena, player guides, collectible, boundaries, and effects around typed primary assets and abstract instanced enemies",
     pass: true

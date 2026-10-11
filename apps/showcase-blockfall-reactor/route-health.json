@@ -27,7 +27,6 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 42,
     "primitiveBudget": 40,
     "role": "falling-block cells, board rails, ghost guides, reactor indicators, and collision visuals inside the typed arcade cabinet",
     "status": "gameplay-geometry-with-typed-primary-cabinet"

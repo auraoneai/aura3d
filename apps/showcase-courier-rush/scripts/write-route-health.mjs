@@ -94,7 +94,7 @@ const routeHealth = {
     renderedProbeSha256: assetById.get(id).renderedProbe.sha256
   })),
   audioAssets: audioAssetIds.map((id) => ({ typedRef: `assets.${id}`, quality: assetById.get(id).quality, hash: assetById.get(id).hash, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
-  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "street/zone guides, light pools, feedback, and non-subject set dressing", status: "within-stated-role-and-budget" },
+  primitiveStatus: { primitiveBudget: gate.primitiveBudget, role: "street/zone guides, light pools, feedback, and non-subject set dressing", status: "within-stated-role-and-budget" },
   gameplay: {
     deliveries: 5,
     arc: ["nearby-zone-teach", "cross-traffic", "two-route-choice", "fragile-express-pressure", "combined-final-run"],

@@ -85,7 +85,7 @@ const routeHealth = {
   renderer: { path: "createGameApp root safe API", mode: "production with safe-basic fallback", nativeWebGPU: false, productionRuntimeClaimed: false },
   primaryAssets: modelIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, role: assetById.get(id).role })),
   audioAssets: audioIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
-  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "subordinate felt, rails, slings, target state, lane, drain, lights, scoreboard, and feedback around typed primary assets", status: "no-primitive-primary-subjects" },
+  primitiveStatus: { primitiveBudget: gate.primitiveBudget, role: "subordinate felt, rails, slings, target state, lane, drain, lights, scoreboard, and feedback around typed primary assets", status: "no-primitive-primary-subjects" },
   gameplay: { ballsPerGame: 3, controls: ["charge/release serve", "left/right joint flippers", "nudge/tilt", "pause", "full reset"], keyboardAndTouch: true, rapierBackend: true, motorisedJoints: 2, targetBanks: 5, vaultMultiball: true, deterministicFixedStep: true, deterministicPoseHash: true, reducedMotionPreservesStateTruth: true },
   accessibility: { semanticHeading: true, namedStatusRegions: true, namedTouchControls: 5, minimumTouchTargetPx: 44, keyboardAndTouchParity: true, pass: true },
   performance, deploy,

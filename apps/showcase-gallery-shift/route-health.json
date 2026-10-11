@@ -152,7 +152,6 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 18,
     "primitiveBudget": 20,
     "role": "subordinate floor-two shell, light pools, laser beams, exit/alarm markers, frames, inlays, fixtures, debug-only diagnostics, and UI around typed primary assets",
     "status": "no-primitive-primary-subjects"

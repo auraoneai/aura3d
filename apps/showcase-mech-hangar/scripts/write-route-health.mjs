@@ -140,7 +140,7 @@ const routeHealth = {
     contract: "metre-scale centered origins with root/chest/hips/right-hand sockets; +Z forward and +Y up"
   },
   audioAssets: audioIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
-  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "hangar/pit set dressing, invisible camera anchor, and renderer-owned hit/dust feedback only", status: "no-primitive-primary-subjects" },
+  primitiveStatus: { primitiveBudget: gate.primitiveBudget, role: "hangar/pit set dressing, invisible camera anchor, and renderer-owned hit/dust feedback only", status: "no-primitive-primary-subjects" },
   gameplay: { modes: ["hangar", "arena"], slots: ["chassis", "arms", "legs", "weapon"], choicesPerSlot: 4, selectionMatrixProven: 16, controls: ["move", "jump-thrust", "light", "heavy", "special", "guard", "pause", "rematch", "back-to-hangar"], keyboardAndTouch: true, invalidPlanRejection: true, deterministicAggressionPresets: ["keep-away", "balanced", "rushdown"], reducedMotionGatesCameraFeedback: true },
   performance,
   deploy,

@@ -26,7 +26,6 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 0,
     "primitiveBudget": 0,
     "role": "none",
     "status": "no-primitive-primary-subjects-generated"

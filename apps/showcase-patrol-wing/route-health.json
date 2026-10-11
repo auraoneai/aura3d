@@ -120,7 +120,6 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 47,
     "primitiveBudget": 80,
     "role": "authored terrain/ocean, route rings, pad structure, beacons, return-fire orbs, lighting, and subordinate frontier dressing around four typed primary assets",
     "status": "no-primitive-primary-subjects"

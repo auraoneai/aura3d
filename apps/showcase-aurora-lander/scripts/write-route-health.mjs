@@ -136,7 +136,6 @@ const routeHealth = {
     author: assetById.get(id).provenance.author
   })),
   primitiveStatus: {
-    sourceOccurrences: primitiveOccurrences,
     primitiveBudget: routeGate.primitiveBudget,
     role: "terrain/weather/pad/effect support around typed vehicle and beacon assets",
     pass: true

@@ -195,7 +195,6 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 104,
     "primitiveBudget": 160,
     "role": "abstract tunnel structure, obstacles, arena dressing, telegraph, and state-driven feedback around the typed player craft",
     "status": "within-set-dressing-and-abstract-role-budget"

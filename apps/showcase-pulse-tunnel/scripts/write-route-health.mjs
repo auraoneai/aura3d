@@ -129,7 +129,7 @@ const routeHealth = {
     }
   },
   audioAssets: audioAssetIds.map((id) => ({ typedRef: `assets.${id}`, quality: assetById.get(id).quality, hash: assetById.get(id).hash, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
-  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "abstract tunnel structure, obstacles, arena dressing, telegraph, and state-driven feedback around the typed player craft", status: "within-set-dressing-and-abstract-role-budget" },
+  primitiveStatus: { primitiveBudget: gate.primitiveBudget, role: "abstract tunnel structure, obstacles, arena dressing, telegraph, and state-driven feedback around the typed player craft", status: "within-set-dressing-and-abstract-role-budget" },
   clockContract: { decision: sync.decision, toleranceMs: sync.toleranceMs, naturalFlip: sync.naturalFlip, fallbackFlip: sync.fallbackFlip, measuredDriftSamples: sync.driftSamples, browser: sync.userAgent, claim: "Beat mode is conditional on measured tolerance; this measured profile runs the authored chart in deterministic pattern mode after the proven fallback." },
   gameplay: { runLengthSeconds: 90, sections: ["intro", "build", "drop", "finale"], actions: ["lane-left", "lane-right", "jump", "slide"], mechanics: ["telegraph", "avoid", "collision", "graze", "style", "three-shield-failure", "pause", "restart", "completion"], keyboardAndTouch: true, reducedMotionPreservesTimingAndCollision: true },
   performance,
