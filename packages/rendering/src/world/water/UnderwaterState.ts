@@ -27,34 +27,48 @@ export function isUnderwaterPoint(
 
 // -------------------------------------------------------------------------
 // `prd10.underwaterDistortion` — C-13 post pass in `linear-hdr`, 2-tap UV
-// offset driven by the water normal texture (§8.7). Enabled only while the
-// camera is submerged (the frame contributor flips the blackboard key).
+// offset (§8.7). Enabled only while the camera is submerged (the frame
+// contributor flips the blackboard key).
+//
+// The fragment follows the §6.12 custom-pass contract
+// (`customPassFragmentSource`): the engine prelude already declares
+// `u_color`, `u_depthLinear`, `u_velocity`, `u_texelSize`, `u_time`, `v_uv`
+// and `outColor`, so the pass declares only `u_distortion` and a `main()`.
+// The first body redeclared `u_time`, sampled an unbound `u_scene` and had no
+// `main()` — it could never compile once enabled. C-13 binds no extra
+// textures, so the two taps use an analytic wave field instead of the water
+// detail-normal atlas (§8.7 deviation, recorded in evidence/prd-10/phase-4.md).
 export const UNDERWATER_KEY = "prd10.water.underwater";
 
-const DISTORTION_FRAG = /* glsl */ `
-uniform sampler2D u_scene;
-uniform sampler2D u_normals;   // water detail normal atlas
-uniform float u_time;
+export const UNDERWATER_DISTORTION_GLSL = /* glsl */ `
 uniform vec2 u_distortion;     // amplitude in UV units (~0.004)
-vec4 a3dUnderwaterDistort(sampler2D scene, vec2 uv) {
-  vec2 o1 = texture(u_normals, uv * 3.0 + vec2(u_time * 0.03, 0.0)).xy - 0.5;
-  vec2 o2 = texture(u_normals, uv * 7.0 - vec2(0.0, u_time * 0.05)).xy - 0.5;
-  vec2 duv = uv + (o1 + o2) * u_distortion;
-  return texture(scene, clamp(duv, vec2(0.0), vec2(1.0)));
+vec2 a3dUnderwaterWave(vec2 uv, float t) {
+  vec2 o1 = vec2(sin(uv.y * 41.0 + t * 1.7), cos(uv.x * 37.0 - t * 1.3));
+  vec2 o2 = vec2(sin((uv.x + uv.y) * 73.0 - t * 2.3), cos((uv.x - uv.y) * 67.0 + t * 1.9));
+  return (o1 + 0.5 * o2) / 1.5;
+}
+vec4 a3dUnderwaterDistort(vec2 uv) {
+  vec2 duv = uv + a3dUnderwaterWave(uv, u_time) * u_distortion;
+  return texture(u_color, clamp(duv, vec2(0.0), vec2(1.0)));
+}
+void main() {
+  outColor = a3dUnderwaterDistort(v_uv);
 }
 `;
 
-const DISTORTION_WGSL = /* wgsl */ `
-@group(0) @binding(0) var u_scene : texture_2d<f32>;
-@group(0) @binding(1) var u_normals : texture_2d<f32>;
-@group(0) @binding(2) var u_samp : sampler;
-struct A3dUnderwater { time : f32, distortion : vec2f, pad : f32 };
-@group(0) @binding(3) var<uniform> u : A3dUnderwater;
+export const UNDERWATER_DISTORTION_WGSL = /* wgsl */ `
+@group(0) @binding(0) var u_color : texture_2d<f32>;
+@group(0) @binding(1) var u_samp : sampler;
+struct A3dUnderwater { time : f32, pad : f32, distortion : vec2f };
+@group(0) @binding(2) var<uniform> u : A3dUnderwater;
+fn a3dUnderwaterWave(uv : vec2f, t : f32) -> vec2f {
+  let o1 = vec2f(sin(uv.y * 41.0 + t * 1.7), cos(uv.x * 37.0 - t * 1.3));
+  let o2 = vec2f(sin((uv.x + uv.y) * 73.0 - t * 2.3), cos((uv.x - uv.y) * 67.0 + t * 1.9));
+  return (o1 + 0.5 * o2) / 1.5;
+}
 fn a3dUnderwaterDistort(uv : vec2f) -> vec4f {
-  let o1 = textureSample(u_normals, u_samp, uv * 3.0 + vec2f(u.time * 0.03, 0.0)).xy - vec2f(0.5);
-  let o2 = textureSample(u_normals, u_samp, uv * 7.0 - vec2f(0.0, u.time * 0.05)).xy - vec2f(0.5);
-  let duv = uv + (o1 + o2) * u.distortion;
-  return textureSample(u_scene, u_samp, clamp(duv, vec2f(0.0), vec2f(1.0)));
+  let duv = uv + a3dUnderwaterWave(uv, u.time) * u.distortion;
+  return textureSampleLevel(u_color, u_samp, clamp(duv, vec2f(0.0), vec2f(1.0)), 0.0);
 }
 `;
 
@@ -77,7 +91,7 @@ export function registerPrd10UnderwaterFeatures(): () => void {
     insertAt: "after-depth",
     space: "linear-hdr",
     inputs: ["color"],
-    fragment: { glsl: DISTORTION_FRAG, wgsl: DISTORTION_WGSL },
+    fragment: { glsl: UNDERWATER_DISTORTION_GLSL, wgsl: UNDERWATER_DISTORTION_WGSL },
     enabled: (frame) => frame.blackboard.get(UNDERWATER_KEY) === true,
     uniforms: () => ({ u_distortion: [0.004, 0.004] }),
     gpuOnly: true

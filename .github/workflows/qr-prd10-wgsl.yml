@@ -10,15 +10,25 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - "packages/rendering/src/world/terrain/shaders/**"
+      - "packages/rendering/src/world/**"
+      - "packages/rendering/src/lanes/prd10.ts"
+      - "packages/engine/src/lanes/prd10.ts"
+      - "packages/engine/src/agent-api/world/**"
+      - "packages/engine/src/production-runtime/world/**"
       - "benchmarks/quality-rebuild/scenes/prd10/wgsl/**"
+      - "benchmarks/quality-rebuild/scenes/prd10/bundle/**"
       - "tests/unit/contracts/impl/prd10-terrain-wgsl.test.ts"
       - ".github/workflows/qr-prd10-wgsl.yml"
   push:
     branches: [main]
     paths:
-      - "packages/rendering/src/world/terrain/shaders/**"
+      - "packages/rendering/src/world/**"
+      - "packages/rendering/src/lanes/prd10.ts"
+      - "packages/engine/src/lanes/prd10.ts"
+      - "packages/engine/src/agent-api/world/**"
+      - "packages/engine/src/production-runtime/world/**"
       - "benchmarks/quality-rebuild/scenes/prd10/wgsl/**"
+      - "benchmarks/quality-rebuild/scenes/prd10/bundle/**"
       - "tests/unit/contracts/impl/prd10-terrain-wgsl.test.ts"
       - ".github/workflows/qr-prd10-wgsl.yml"
   workflow_dispatch:
@@ -57,8 +67,8 @@ jobs:
           set -euo pipefail
           shopt -s nullglob
           files=(benchmarks/quality-rebuild/scenes/prd10/wgsl/out/*.wgsl)
-          if [ ${#files[@]} -ne 3 ]; then
-            echo "::error::expected 3 terrain WGSL modules, emit wrote ${#files[@]}"
+          if [ ${#files[@]} -ne 4 ]; then
+            echo "::error::expected 4 lane-10 WGSL modules, emit wrote ${#files[@]}"
             exit 1
           fi
           for f in "${files[@]}"; do
@@ -70,5 +80,36 @@ jobs:
         with:
           name: qr-prd10-wgsl-${{ github.run_id }}
           path: benchmarks/quality-rebuild/scenes/prd10/wgsl/out/
+          if-no-files-found: error
+          retention-days: 30
+
+  # §17.4 bundle numbers, measured by the tools/bundle-size method on a clean
+  # runner. This job records the numbers; it does not yet enforce the
+  # 1.5 KB root-growth budget, which the eager lane barrel misses until the
+  # lazy app-extension seam exists (the row stays unticked; see
+  # evidence/prd-10/bundle.md). The 56 KB world-chunk budget is enforced.
+  bundle:
+    name: §17.4 bundle numbers (macos-14)
+    runs-on: macos-14
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Measure lane-10 bundle numbers
+        run: |
+          set -euo pipefail
+          mkdir -p tests/reports/prd10-bundle
+          pnpm exec tsx --tsconfig tsconfig.base.json benchmarks/quality-rebuild/scenes/prd10/bundle/measure.ts tests/reports/prd10-bundle/prd10-bundle.json
+          node -e 'const r=require("./tests/reports/prd10-bundle/prd10-bundle.json"); if(!r.pass.worldChunkGzip){console.error("world chunk over 56 KB");process.exit(1)}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qr-prd10-bundle-${{ github.run_id }}
+          path: tests/reports/prd10-bundle/
           if-no-files-found: error
           retention-days: 30

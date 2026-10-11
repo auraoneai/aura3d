@@ -10,6 +10,7 @@
  *   terrain-program.wgsl          — TERRAIN_WGSL, the full vertex + fragment program
  *   a3d_prd10_terrain_cdlod.wgsl  — the standalone CDLOD chunk twin
  *   a3d_prd10_terrain_splat.wgsl  — the standalone splat chunk twin
+ *   prd10-underwater-distortion.wgsl — the C-13 underwater post pass twin
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -17,11 +18,13 @@ import path from "node:path";
 import { TERRAIN_WGSL } from "../../../../../packages/rendering/src/world/terrain/shaders/terrain.vert.glsl";
 import { a3d_prd10_terrain_cdlod } from "../../../../../packages/rendering/src/world/terrain/shaders/terrainCdlod";
 import { a3d_prd10_terrain_splat } from "../../../../../packages/rendering/src/world/terrain/shaders/terrainSplat";
+import { UNDERWATER_DISTORTION_WGSL } from "../../../../../packages/rendering/src/world/water/UnderwaterState";
 
 export const PRD10_WGSL_MODULES: Readonly<Record<string, string>> = {
   "terrain-program": TERRAIN_WGSL,
   [a3d_prd10_terrain_cdlod.name]: a3d_prd10_terrain_cdlod.wgsl ?? "",
-  [a3d_prd10_terrain_splat.name]: a3d_prd10_terrain_splat.wgsl ?? ""
+  [a3d_prd10_terrain_splat.name]: a3d_prd10_terrain_splat.wgsl ?? "",
+  "prd10-underwater-distortion": UNDERWATER_DISTORTION_WGSL
 };
 
 const outDir = process.argv[2] ?? path.join("benchmarks", "quality-rebuild", "scenes", "prd10", "wgsl", "out");
