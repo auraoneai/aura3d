@@ -66,7 +66,7 @@ async function render(subject: Subject, bloom: boolean): Promise<Uint8Array> {
     resize: false,
     autoStart: false,
     output: { toneMapping: "linear", exposure: EXPOSURE, dither: false },
-    qualityRebuild: { flags: ["A3D_QR_POST"] }
+    qualityRebuild: { flags: ["post"] }
   } as never);
   try {
     await app.ready();

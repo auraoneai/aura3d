@@ -303,7 +303,7 @@ export async function runBandingProbe() {
     .add(primitives.box({ name: "crate", size: [0.7, 0.7, 0.7], material: material.pbr({ color: "#232c38", roughness: 0.9 }) }).position(0.4, 0.35, -5))
     .add(effects.fog({ density: 0.045, color: "#0a1220" }))
     .add(effects.antiAlias({ mode: "fxaa" }));
-  const frame = await mountApp(["A3D_QR_POST"], built, 320);
+  const frame = await mountApp(["post"], built, 320);
   return { ...bandingMetrics(frame.pixels, frame.width, frame.height), width: frame.width, height: frame.height };
 }
 
@@ -321,8 +321,8 @@ export async function runDofFocusProbe() {
       }).position(0, 0, -10))
       .add(effects.depthOfField({ focus, intensity: 1 }))
       .add(effects.antiAlias({ mode: "fxaa" }));
-  const sharp = await mountApp(["A3D_QR_POST"], buildScene(0.1), 320);
-  const blurred = await mountApp(["A3D_QR_POST"], buildScene(0.01), 320);
+  const sharp = await mountApp(["post"], buildScene(0.1), 320);
+  const blurred = await mountApp(["post"], buildScene(0.01), 320);
   return {
     sharpEnergy: edgeEnergy(sharp.pixels, sharp.width, sharp.height),
     blurredEnergy: edgeEnergy(blurred.pixels, blurred.width, blurred.height)

@@ -226,7 +226,7 @@ async function mountTaaScene(hostSize = 320) {
     pixelRatio: 1,
     resize: false,
     autoStart: false,
-    qualityRebuild: { flags: ["A3D_QR_POST"] }
+    qualityRebuild: { flags: ["post"] }
   });
   await app.ready();
   // The v2 stages load deferred; wait so measured frames run the real chain.
@@ -389,7 +389,7 @@ async function mountMotionBlurScene(hostSize = 320) {
     pixelRatio: 1,
     resize: false,
     autoStart: false,
-    qualityRebuild: { flags: ["A3D_QR_POST"] }
+    qualityRebuild: { flags: ["post"] }
   });
   await app.ready();
   // The v2 stages load deferred; wait so measured frames run the real chain.
@@ -468,7 +468,7 @@ export async function runDofMetricProbe() {
       pixelRatio: 1,
       resize: false,
       autoStart: false,
-      qualityRebuild: { flags: ["A3D_QR_POST"] }
+      qualityRebuild: { flags: ["post"] }
     });
     await app.ready();
     // The v2 stages load deferred; wait so measured frames run the real chain.
@@ -554,7 +554,7 @@ export async function runTaauProbe() {
       pixelRatio: 1,
       resize: false,
       autoStart: false,
-      qualityRebuild: { flags: ["A3D_QR_POST"] }
+      qualityRebuild: { flags: ["post"] }
     });
     await app.ready();
     // The v2 stages load deferred; wait so measured frames run the real chain.

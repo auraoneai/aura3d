@@ -99,8 +99,8 @@ function footprintDistance(px: number, py: number): number {
 }
 
 export async function runAoGroundingProbe() {
-  const off = await renderFrame(aoScene(false), ["A3D_QR_POST"], 8, "ao-off");
-  const on = await renderFrame(aoScene(true), ["A3D_QR_POST"], 8, "ao-on");
+  const off = await renderFrame(aoScene(false), ["post"], 8, "ao-off");
+  const on = await renderFrame(aoScene(true), ["post"], 8, "ao-on");
   let bandOn = 0, bandOff = 0, bandN = 0, openOn = 0, openOff = 0, openN = 0;
   for (let py = 0; py < SIZE; py++) {
     for (let px = 0; px < SIZE; px++) {
@@ -152,8 +152,8 @@ function shaftScene(mode: "off" | "on" | "mask") {
 
 export async function runGodRayShaftProbe() {
   const mask = await renderFrame(shaftScene("mask"), [], 2, "shaft-mask");
-  const off = await renderFrame(shaftScene("off"), ["A3D_QR_POST"], 8, "shaft-off");
-  const on = await renderFrame(shaftScene("on"), ["A3D_QR_POST"], 8, "shaft-on");
+  const off = await renderFrame(shaftScene("off"), ["post"], 8, "shaft-off");
+  const on = await renderFrame(shaftScene("on"), ["post"], 8, "shaft-on");
   // Pillar mask and its bounding rows/columns.
   const pillar = new Uint8Array(SIZE * SIZE);
   let minX = SIZE, maxX = -1, minY = SIZE, maxY = -1;
