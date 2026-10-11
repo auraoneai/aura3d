@@ -107,17 +107,19 @@ export class WebGL2TextureRegistry {
     // to — bind TEXTURE_2D_ARRAY before texStorage3D or the upload is 0x502.
     this.host.gl.bindTexture(texture.dimension === "2d-array" ? this.host.gl.TEXTURE_2D_ARRAY : this.host.gl.TEXTURE_2D, handle);
     if (isCompressedTextureFormat(texture.format)) {
-      // C-16: when A3D_QR_ASSETS is on, the prd05 slot resolves the full
-      // format set (bc7/etc2-rgb8unorm + sRGB internal formats) with real
-      // extension probing; flag-off keeps the legacy resolver untouched.
-      const flags = rendererQrFlags();
-      const slotFormat = resolveCompressedTextureFormatSlot().get(flags)(
-        texture.format, texture.colorSpace, this.host.gl);
-      const compressed = slotFormat !== null
-        ? { internalFormat: slotFormat as GLenum }
-        : flags.on("A3D_QR_ASSETS")
-          ? null
-          : resolveCompressedTextureFormat(this.host.gl, texture.format);
+      // C-16: when A3D_QR_ASSETS is on AND a real provider is registered,
+      // the prd05 slot resolves the full format set (bc7/etc2-rgb8unorm +
+      // sRGB internal formats) with real extension probing, and a null from
+      // it fails closed (RGBA8 fallback or COMPRESSED_TEXTURE_UNSUPPORTED).
+      // Flag off, or no provider registered: the legacy resolver, unchanged
+      // (lane-06 review on #920).
+      const flags = rendererQrFlags(this.host.device);
+      const slot = resolveCompressedTextureFormatSlot();
+      const useSlot = slot.provided && flags.on("A3D_QR_ASSETS");
+      const slotFormat = useSlot ? slot.get(flags)(texture.format, texture.colorSpace, this.host.gl) : null;
+      const compressed = useSlot
+        ? (slotFormat !== null ? { internalFormat: slotFormat as GLenum } : null)
+        : resolveCompressedTextureFormat(this.host.gl, texture.format);
       if (compressed) {
         const uploadLevels = completeUploadLevels(texture.textureLevels);
         for (const [levelIndex, level] of uploadLevels.entries()) {

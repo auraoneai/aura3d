@@ -12,13 +12,14 @@
  * Unit evidence only; the row's "Done when" is the ANGLE Metal assertion in
  * the lane browser run on main.
  */
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import "../../../../packages/rendering/src/lanes/prd05";
 import { Texture, type TextureCompressedFormat } from "../../../../packages/rendering/src/Texture";
 import { WebGL2TextureRegistry } from "../../../../packages/rendering/src/webgl2/TextureUpload";
 import { setRendererQrFlags } from "../../../../packages/rendering/src/renderer/FrameGraph";
 import type { WebGL2DeviceHost } from "../../../../packages/rendering/src/webgl2/DeviceHost";
 import type { QrFlags } from "../../../../packages/rendering/src/contracts/core";
+import { resolveCompressedTextureFormatSlot } from "../../../../packages/rendering/src/contracts/textureFormats";
 
 const ASTC = { COMPRESSED_RGBA_ASTC_4x4_KHR: 0x93b0, COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR: 0x93d0 };
 const S3TC = { COMPRESSED_RGBA_S3TC_DXT1_EXT: 0x83f1, COMPRESSED_RGBA_S3TC_DXT5_EXT: 0x83f3 };
@@ -62,7 +63,17 @@ function compressedInternalFormats(calls: { name: string; args: unknown[] }[]): 
   return calls.filter((call) => call.name === "compressedTexImage2D").map((call) => call.args[2]);
 }
 
-afterEach(() => setRendererQrFlags(FLAGS_OFF));
+afterEach(() => {
+  setRendererQrFlags(FLAGS_OFF);
+  vi.restoreAllMocks();
+});
+
+/** Simulate "no C-16 provider registered" (lane-05 barrel not loaded). */
+function withoutProvider(): void {
+  const slot = resolveCompressedTextureFormatSlot();
+  vi.spyOn(Object.getPrototypeOf(slot), "provided", "get").mockReturnValue(false);
+  expect(slot.provided).toBe(false);
+}
 
 describe("05-C16 TextureUpload consumes the C-16 slot", () => {
   it("A3D_QR_ASSETS on: sRGB ASTC uploads COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR", () => {
@@ -91,5 +102,38 @@ describe("05-C16 TextureUpload consumes the C-16 slot", () => {
     registry.getTextureHandle(compressed("bc1-rgba-unorm", "srgb", true));
     expect(compressedInternalFormats(calls)).toEqual([]);
     expect(calls.some((call) => call.name === "texImage2D")).toBe(true);
+  });
+
+  // Lane-06 review (#920): fail closed only when the provider is registered AND
+  // A3D_QR_ASSETS is on; otherwise the legacy resolver runs unchanged.
+  it("provided × flag on: the slot decides (sRGB ASTC → SRGB8_ALPHA8 constant)", () => {
+    expect(resolveCompressedTextureFormatSlot().provided).toBe(true);
+    setRendererQrFlags(ASSETS_ON);
+    const { registry, calls } = harness({ WEBGL_compressed_texture_astc: ASTC });
+    registry.getTextureHandle(compressed("astc-4x4-rgba-unorm", "srgb"));
+    expect(compressedInternalFormats(calls)).toEqual([ASTC.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR]);
+  });
+
+  it("provided × flag off: legacy resolver", () => {
+    setRendererQrFlags(FLAGS_OFF);
+    const { registry, calls } = harness({ WEBGL_compressed_texture_astc: ASTC });
+    registry.getTextureHandle(compressed("astc-4x4-rgba-unorm", "srgb"));
+    expect(compressedInternalFormats(calls)).toEqual([ASTC.COMPRESSED_RGBA_ASTC_4x4_KHR]);
+  });
+
+  it("unprovided × flag on: legacy resolver, no fail-closed RGBA8 drop", () => {
+    withoutProvider();
+    setRendererQrFlags(ASSETS_ON);
+    const { registry, calls } = harness({ WEBGL_compressed_texture_s3tc: S3TC });
+    registry.getTextureHandle(compressed("bc1-rgba-unorm", "srgb", true));
+    expect(compressedInternalFormats(calls)).toEqual([S3TC.COMPRESSED_RGBA_S3TC_DXT1_EXT]);
+  });
+
+  it("unprovided × flag off: legacy resolver", () => {
+    withoutProvider();
+    setRendererQrFlags(FLAGS_OFF);
+    const { registry, calls } = harness({ WEBGL_compressed_texture_astc: ASTC });
+    registry.getTextureHandle(compressed("astc-4x4-rgba-unorm", "srgb"));
+    expect(compressedInternalFormats(calls)).toEqual([ASTC.COMPRESSED_RGBA_ASTC_4x4_KHR]);
   });
 });
