@@ -97,8 +97,7 @@ fn fs_gtao(@builtin(position) frag_coord: vec4<f32>) -> @location(0) vec4<f32> {
   let uv = frag_coord.xy * texel;
   let view_pos = get_view_position(uv, view_z);
   let view_normal = compute_normal_from_depth(p, texel);
-  // Orthographic: parallel view rays, so the direction to the eye is +Z.
-  let view_dir = select(normalize(-view_pos), vec3<f32>(0.0, 0.0, 1.0), u_params.ortho != 0);
+  let view_dir = normalize(-view_pos);
 
   // radius metres → pixels at this depth, clamped to the march budget.
   let proj_scale = u_params.proj_matrix[1][1] * size.y * 0.5;
