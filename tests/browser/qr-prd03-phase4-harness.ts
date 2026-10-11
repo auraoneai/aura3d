@@ -17,6 +17,7 @@
  *    — focus-plane pixels vs no-DoF, bokeh diameter of a distant point light.
  */
 import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
+import { installFrameCapture, readDefaultFramebuffer } from "./qr-prd03-frame-capture";
 import { postV2ModulesReady } from "@aura3d/rendering";
 import { CAMERA_VELOCITY_GLSL } from "../../packages/rendering/src/post/shaders/depthDownsample.glsl";
 
@@ -225,18 +226,16 @@ async function mountTaaScene(hostSize = 320) {
     pixelRatio: 1,
     resize: false,
     autoStart: false,
-    qualityRebuild: { flags: ["A3D_QR_POST"] }
+    qualityRebuild: { flags: ["post"] }
   });
   await app.ready();
   // The v2 stages load deferred; wait so measured frames run the real chain.
   await postV2ModulesReady();
   const canvas = host.querySelector("canvas")!;
   const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
-  const read = () => {
-    const pixels = new Uint8Array(canvas.width * canvas.height * 4);
-    gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-    return pixels;
-  };
+  // Read in the stepping task from the default framebuffer (qr-prd03-frame-capture).
+  const capture = installFrameCapture(app, canvas);
+  const read = () => capture.read();
   return { app, host, read, width: canvas.width, height: canvas.height };
 }
 
@@ -390,18 +389,16 @@ async function mountMotionBlurScene(hostSize = 320) {
     pixelRatio: 1,
     resize: false,
     autoStart: false,
-    qualityRebuild: { flags: ["A3D_QR_POST"] }
+    qualityRebuild: { flags: ["post"] }
   });
   await app.ready();
   // The v2 stages load deferred; wait so measured frames run the real chain.
   await postV2ModulesReady();
   const canvas = host.querySelector("canvas")!;
   const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
-  const read = () => {
-    const pixels = new Uint8Array(canvas.width * canvas.height * 4);
-    gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-    return pixels;
-  };
+  // Read in the stepping task from the default framebuffer (qr-prd03-frame-capture).
+  const capture = installFrameCapture(app, canvas);
+  const read = () => capture.read();
   return { app, host, read, width: canvas.width, height: canvas.height };
 }
 
@@ -471,7 +468,7 @@ export async function runDofMetricProbe() {
       pixelRatio: 1,
       resize: false,
       autoStart: false,
-      qualityRebuild: { flags: ["A3D_QR_POST"] }
+      qualityRebuild: { flags: ["post"] }
     });
     await app.ready();
     // The v2 stages load deferred; wait so measured frames run the real chain.
@@ -479,8 +476,7 @@ export async function runDofMetricProbe() {
     app.step(0);
     const canvas = host.querySelector("canvas")!;
     const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
-    const pixels = new Uint8Array(canvas.width * canvas.height * 4);
-    gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    const pixels = readDefaultFramebuffer(gl, canvas.width, canvas.height);
     const size = { width: canvas.width, height: canvas.height };
     app.dispose();
     host.remove();
@@ -558,7 +554,7 @@ export async function runTaauProbe() {
       pixelRatio: 1,
       resize: false,
       autoStart: false,
-      qualityRebuild: { flags: ["A3D_QR_POST"] }
+      qualityRebuild: { flags: ["post"] }
     });
     await app.ready();
     // The v2 stages load deferred; wait so measured frames run the real chain.
@@ -566,15 +562,13 @@ export async function runTaauProbe() {
     const quality = (app as { quality?: { set?: (t: string, o?: { minRenderScale?: number }) => Promise<void> } }).quality;
     if (!quality?.set) { app.dispose(); host.remove(); return { untested: "no app.quality.set" } as const; }
     await quality.set("ultra", { minRenderScale: scale });
+    const capture = installFrameCapture(app, host.querySelector("canvas")!);
     for (let i = 0; i < 24; i++) {
       app.step(1 / 60);
       await new Promise((r) => requestAnimationFrame(r));
     }
-    const canvas = host.querySelector("canvas")!;
-    const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
-    const pixels = new Uint8Array(canvas.width * canvas.height * 4);
-    gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-    const err = lineEdgeError(pixels, canvas.width, canvas.height);
+    const pixels = capture.read();
+    const err = lineEdgeError(pixels, capture.width, capture.height);
     app.dispose();
     host.remove();
     return { err } as const;

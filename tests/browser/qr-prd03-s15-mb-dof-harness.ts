@@ -95,7 +95,7 @@ async function motionBlurRun(fps: number, blur: boolean) {
     resize: false,
     autoStart: false,
     output: { toneMapping: "linear", exposure: 1, dither: false },
-    qualityRebuild: { flags: ["A3D_QR_POST"] }
+    qualityRebuild: { flags: ["post"] }
   } as never);
   try {
     await app.ready();
@@ -174,7 +174,7 @@ async function dofRun(dof: boolean) {
     resize: false,
     autoStart: false,
     output: { toneMapping: "linear", exposure: 1, dither: false },
-    qualityRebuild: { flags: ["A3D_QR_POST"] }
+    qualityRebuild: { flags: ["post"] }
   } as never);
   try {
     await app.ready();

@@ -165,6 +165,20 @@ function v2State(host: WebGL2DeviceHost): PostV2State {
   return state;
 }
 
+/**
+ * Inserts `#define` lines after the `#version` directive. GLSL ES 3.00
+ * requires `#version 300 es` to be the first line, so prepending defines (as
+ * the DoF ring count and motion-blur tile size did) made the shader a
+ * GLSL ES 1.00 source and the compile failed ("#version must occur first"),
+ * which aborted the whole v2 frame (black output on the GPU lane,
+ * post-quality 38138763970).
+ */
+export function withDefines(source: string, defines: Readonly<Record<string, string | number>>): string {
+  const lines = Object.entries(defines).map(([name, value]) => `#define ${name} ${value}`).join("\n");
+  const match = /^\s*#version[^\n]*\n/.exec(source);
+  return match ? `${match[0]}${lines}\n${source.slice(match[0].length)}` : `${lines}\n${source}`;
+}
+
 function program(state: PostV2State, gl: WebGL2RenderingContext, key: string, fragment: string): WebGLProgram {
   const cached = state.programs.get(key);
   if (cached) return cached;
@@ -196,12 +210,32 @@ function program(state: PostV2State, gl: WebGL2RenderingContext, key: string, fr
   return prog;
 }
 
+/**
+ * Raster state for a fullscreen v2 stage. The legacy present resets the same
+ * set (LegacyPost `prepareFullscreenPresentation`); the v2 draws reset only
+ * depth and blend, so a colour mask, scissor, stencil or cull state left by
+ * the scene draws could leave a stage's output empty — every frame with an
+ * active HDR stage read black on the GPU lane (post-quality 38127246424). The
+ * stage drivers invalidate host.stateCache afterwards (T0-16).
+ */
+function resetFullscreenState(gl: WebGL2RenderingContext): void {
+  gl.colorMask(true, true, true, true);
+  gl.disable(gl.SCISSOR_TEST);
+  gl.disable(gl.STENCIL_TEST);
+  gl.disable(gl.CULL_FACE);
+  gl.disable(gl.POLYGON_OFFSET_FILL);
+  gl.disable(gl.DEPTH_TEST);
+  gl.disable(gl.BLEND);
+  gl.depthMask(false);
+}
+
 function draw(host: WebGL2DeviceHost, state: PostV2State, prog: WebGLProgram, target: GlTarget, textures: readonly WebGLTexture[], uniforms: (gl: WebGL2RenderingContext) => void): void {
   const gl = host.gl;
   gl.bindFramebuffer(gl.FRAMEBUFFER, target.framebuffer);
   gl.viewport(0, 0, target.width, target.height);
   gl.useProgram(prog);
   gl.bindVertexArray(state.vao);
+  resetFullscreenState(gl);
   gl.disable(gl.DEPTH_TEST);
   gl.disable(gl.BLEND);
   for (let i = 0; i < textures.length; i++) {
@@ -576,7 +610,7 @@ export function runV2HdrStages(
     const directions = ao.directions ?? 4;
     const steps = ao.steps ?? 4;
     const aoRaw = state.pool.acquire({ width: hw, height: hh, format: "rgba8", samples: 1, depth: false });
-    const gtaoSrc = `#define AURA_GTAO_DIRECTIONS ${directions}\n#define AURA_GTAO_STEPS ${steps}\n` + GTAO_GLSL;
+    const gtaoSrc = withDefines(GTAO_GLSL, { AURA_GTAO_DIRECTIONS: directions, AURA_GTAO_STEPS: steps });
     const gtaoProg = program(state, gl, `gtao-${directions}x${steps}`, gtaoSrc);
     const invProj = Float32Array.from(invertMat4(camera.projectionMatrix as unknown as Mat4));
     draw(host, state, gtaoProg, asGlTarget(aoRaw), [asGlTarget(minmaxHalf).colorHandle], (g) => {
@@ -652,7 +686,7 @@ export function runV2HdrStages(
     const lightUv: [number, number] = clip[2] !== 0
       ? [(clip[0]! / clip[2]) * 0.5 + 0.5, (clip[1]! / clip[2]) * 0.5 + 0.5]
       : [0.5, 0.5];
-    const godSrc = `#define AURA_GODRAY_SAMPLES ${samples}\n` + GODRAYS_GLSL;
+    const godSrc = withDefines(GODRAYS_GLSL, { AURA_GODRAY_SAMPLES: samples });
     const godProg = program(state, gl, `godrays-${samples}`, godSrc);
     draw(host, state, godProg, asGlTarget(godTarget), [asGlTarget(hdr).colorHandle, asGlTarget(minmaxHalf).colorHandle], (g) => {
       g.uniform1i(g.getUniformLocation(godProg, "u_hdr"), 0);
@@ -676,6 +710,7 @@ export function runV2HdrStages(
     gl.viewport(0, 0, w, h);
     gl.useProgram(copyProg);
     gl.bindVertexArray(state.vao);
+    resetFullscreenState(gl);
     gl.disable(gl.DEPTH_TEST);
     gl.disable(gl.BLEND);
     gl.activeTexture(gl.TEXTURE0);
@@ -798,7 +833,7 @@ export function runV2HdrStages(
       g.uniform1i(g.getUniformLocation(tileProg, "u_prefilter"), 0);
     });
     const gather = state.pool.acquire({ width: dw, height: dh, format: "rgba16f", samples: 1, depth: false });
-    const gatherSrc = `#define DOF_RINGS ${rings}\n` + DOF_GATHER_GLSL;
+    const gatherSrc = withDefines(DOF_GATHER_GLSL, { DOF_RINGS: rings });
     const gatherProg = program(state, gl, `dof-gather-${rings}`, gatherSrc);
     draw(host, state, gatherProg, asGlTarget(gather), [asGlTarget(prefilter).colorHandle, asGlTarget(nearTile).colorHandle], (g) => {
       g.uniform1i(g.getUniformLocation(gatherProg, "u_prefilter"), 0);
@@ -823,7 +858,7 @@ export function runV2HdrStages(
     const samples = mb.samples ?? 12;
     const tw = Math.max(1, Math.ceil(w / tile)), th = Math.max(1, Math.ceil(h / tile));
     const tileMax = state.pool.acquire({ width: tw, height: th, format: "rgba16f", samples: 1, depth: false });
-    const tileProg = program(state, gl, `mb-tile-${tile}`, `#define MB_TILE_SIZE ${tile}\n` + MB_TILE_MAX_GLSL);
+    const tileProg = program(state, gl, `mb-tile-${tile}`, withDefines(MB_TILE_MAX_GLSL, { MB_TILE_SIZE: tile }));
     draw(host, state, tileProg, asGlTarget(tileMax), [asGlTarget(dilatedVelocity).colorHandle], (g) => {
       g.uniform1i(g.getUniformLocation(tileProg, "u_velocity"), 0);
     });
@@ -987,6 +1022,7 @@ export function runV2LdrTail(
     bindOut(gl, outTarget, w, h);
     gl.useProgram(prog);
     gl.bindVertexArray(state.vao);
+    resetFullscreenState(gl);
     gl.disable(gl.DEPTH_TEST);
     gl.disable(gl.BLEND);
     gl.activeTexture(gl.TEXTURE0);
@@ -1098,6 +1134,7 @@ export function runV2LdrTail(
   bindOut(gl, outTarget, w, h);
   gl.useProgram(prog);
   gl.bindVertexArray(state.vao);
+  resetFullscreenState(gl);
   gl.disable(gl.DEPTH_TEST);
   gl.disable(gl.BLEND);
   gl.activeTexture(gl.TEXTURE0);

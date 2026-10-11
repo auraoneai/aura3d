@@ -19,9 +19,13 @@
  * Strength 1 sits inside the knee and is reported, not asserted.
  */
 import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
+import { frameToPngDataUrl, installFrameCapture, meanLuma, postDiagnostics } from "./qr-prd03-frame-capture";
 import { postV2ModulesReady } from "@aura3d/rendering";
 
-const SIZE = 192;
+// configureCanvas enforces a 320×220 minimum backing store; a smaller host
+// gives a wider canvas than the probe indexes (GPU run 38140351314 read a
+// 320-wide frame with a smaller stride). 320 keeps the canvas square.
+const SIZE = 320;
 const EXPOSURE = 1 / 16;
 
 function srgbToLinear(v: number): number {
@@ -34,6 +38,9 @@ function linearLuma(pixels: Uint8Array, i: number): number {
 }
 
 type Subject = { readonly kind: "sphere"; readonly strength: number } | { readonly kind: "wall" };
+
+/** Diagnostics for the spec artifacts (strength-4 sphere and the wall). */
+export const bloomFrames: Record<string, { png: string; meanLuma: number; diagnostics: unknown }> = {};
 
 async function render(subject: Subject, bloom: boolean): Promise<Uint8Array> {
   const host = document.createElement("div");
@@ -62,21 +69,24 @@ async function render(subject: Subject, bloom: boolean): Promise<Uint8Array> {
     resize: false,
     autoStart: false,
     output: { toneMapping: "linear", exposure: EXPOSURE, dither: false },
-    qualityRebuild: { flags: ["A3D_QR_POST"] }
+    qualityRebuild: { flags: ["post"] }
   } as never);
   try {
     await app.ready();
     // The v2 stages load deferred; wait so measured frames run the real chain.
     await postV2ModulesReady();
-    // The v2 stage modules load on the first flag-on frame; settle a few.
+    // Read each frame in its own task from the default framebuffer
+    // (qr-prd03-frame-capture); settle a few frames first.
+    const capture = installFrameCapture(app, host.querySelector("canvas")!);
     for (let i = 0; i < 8; i++) {
       app.step(1 / 60);
       await new Promise((r) => requestAnimationFrame(r));
     }
-    const canvas = host.querySelector("canvas")!;
-    const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
-    const pixels = new Uint8Array(canvas.width * canvas.height * 4);
-    gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    const pixels = capture.read();
+    const label = `${subject.kind === "sphere" ? `sphere-${subject.strength}` : "wall"}-${bloom ? "on" : "off"}`;
+    if (label.startsWith("sphere-4") || label.startsWith("wall")) {
+      bloomFrames[label] = { png: frameToPngDataUrl(pixels, SIZE, SIZE), meanLuma: meanLuma(pixels), diagnostics: postDiagnostics(app) };
+    }
     return pixels;
   } finally {
     app.dispose();
@@ -110,6 +120,9 @@ export interface BloomEnergyCase {
   /** Bloom-added luma over the whole frame as a fraction of the bloom-off frame's luma. */
   readonly addedFraction: number;
   readonly saturatedFraction: number;
+  readonly offMeanLuma?: number;
+  readonly onMeanLuma?: number;
+  readonly pixelCount?: number;
 }
 
 async function measure(subject: Subject): Promise<BloomEnergyCase> {
@@ -129,15 +142,20 @@ async function measure(subject: Subject): Promise<BloomEnergyCase> {
     haloEnergy: halo / EXPOSURE,
     offEnergy: offTotal / EXPOSURE,
     addedFraction: offTotal > 0 ? (onTotal - offTotal) / offTotal : 0,
-    saturatedFraction: saturated / (SIZE * SIZE)
+    saturatedFraction: saturated / (SIZE * SIZE),
+    // Diagnostics: GPU lane 38127246424 logged frame mean luma 9.55 for a
+    // render whose case reported offEnergy 0 — record both sides here.
+    offMeanLuma: meanLuma(off),
+    onMeanLuma: meanLuma(on),
+    pixelCount: off.length / 4
   };
 }
 
-export async function runQrPrd03BloomEnergy(): Promise<{ readonly schema: "prd03-bloom-energy/v1"; readonly cases: readonly BloomEnergyCase[] }> {
+export async function runQrPrd03BloomEnergy(): Promise<{ readonly schema: "prd03-bloom-energy/v1"; readonly cases: readonly BloomEnergyCase[]; readonly frames: typeof bloomFrames }> {
   const cases: BloomEnergyCase[] = [];
   for (const strength of [0.5, 1, 2, 4, 8]) cases.push(await measure({ kind: "sphere", strength }));
   cases.push(await measure({ kind: "wall" }));
-  return { schema: "prd03-bloom-energy/v1", cases };
+  return { schema: "prd03-bloom-energy/v1", cases, frames: bloomFrames };
 }
 
 (window as { runQrPrd03BloomEnergy?: typeof runQrPrd03BloomEnergy }).runQrPrd03BloomEnergy = runQrPrd03BloomEnergy;

@@ -16,9 +16,13 @@ import { LUT_BAKE_GLSL, DISPLAY_GRADE_GLSL } from "../../packages/rendering/src/
 import { DisplayLutCache } from "../../packages/rendering/src/post/DisplayLutCache";
 import { applyToneOperator } from "../../packages/rendering/src/post/ToneOperators";
 import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
+import { readDefaultFramebuffer } from "./qr-prd03-frame-capture";
 import { postV2ModulesReady } from "@aura3d/rendering";
 
-const VS = `#version 300 es\nvoid main(){ vec2 p = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2)); gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0); }`;
+// The LUT-bake fragment reads `in vec2 v_uv`; a vertex shader without the
+// matching `out` fails to link on strict drivers (GPU lane 38117485212:
+// "FRAGMENT varying v_uv does not match any VERTEX varying").
+const VS = `#version 300 es\nout vec2 v_uv;\nvoid main(){ vec2 p = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2)); v_uv = p; gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0); }`;
 
 function compileGl(gl: WebGL2RenderingContext, fsSource: string): WebGLProgram {
   const compile = (type: number, source: string) => {
@@ -203,8 +207,7 @@ export async function runToneEvalProbe(): Promise<{ perStep: number[]; expected:
     app.step(0);
     const canvas = host.querySelector("canvas")!;
     const gl = canvas.getContext("webgl2")!;
-    const pixels = new Uint8Array(canvas.width * canvas.height * 4);
-    gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    const pixels = readDefaultFramebuffer(gl, canvas.width, canvas.height);
     const post = (app.diagnostics() as { post?: { pipeline?: string } }).post;
     app.dispose();
     const cy = Math.round(canvas.height / 2);

@@ -66,7 +66,7 @@ uniform float u_far;
 uniform float u_aoFallbackStrength;
 uniform bool u_aoMultiBounce;
 out vec4 o_color;
-
+${BILATERAL_WEIGHTS}
 // Jimenez 2016 multi-bounce polynomial, albedoProxy ρ = 0.5.
 float aoMultiBounce(float ao) {
   float a = 2.0404 * 0.5 - 0.3324;

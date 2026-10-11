@@ -52,7 +52,7 @@ export async function runPostNoReadbackProbe(frameCount = 300): Promise<NoReadba
       pixelRatio: 1,
       resize: false,
       autoStart: false,
-      qualityRebuild: { flags: ["A3D_QR_POST"] }
+      qualityRebuild: { flags: ["post"] }
     });
     await app.ready();
     // The v2 stages load deferred; wait so measured frames run the real chain.
