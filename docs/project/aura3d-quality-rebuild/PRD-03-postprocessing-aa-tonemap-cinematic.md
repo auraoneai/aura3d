@@ -1768,28 +1768,28 @@ test. "Flag on" means `A3D_QR_POST` resolved on through `resolveQrFlags`. All br
 remotely (§15.2).
 
 Phase 0 (day 0)
-- [x] `packages/rendering/src/lanes/prd03.ts` and `packages/engine/src/lanes/prd03.ts`: import the
+- [ ] `packages/rendering/src/lanes/prd03.ts` and `packages/engine/src/lanes/prd03.ts`: import the *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   C-13/C-14 slots from `contracts/` and call `provide()` with `post/PostGraph.ts`/`forward/Velocity.ts`
   facades that delegate to the stub behaviour for now. Test: `tests/unit/contracts/impl/prd03-post-graph.test.ts`
   asserts that `slot.get(flags)` returns real only with `A3D_QR_POST` on. The custodian suites
   `C-13-post`/`C-14-velocity` pass for `real`.
-- [x] `packages/engine/src/lanes/prd03.ts`: `registerDiagnosticsSection("post", …)` and
+- [ ] `packages/engine/src/lanes/prd03.ts`: `registerDiagnosticsSection("post", …)` and *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   `("exposure", …)`. Both are populated from `PostprocessExecution.ts` with the executed plan
   (stage name, format, size, `cpu-readback` marker) and the exposure actually sent, not from the
   authored nodes. Test: `tests/unit/agent-api/post-diagnostics.test.ts` builds a scene with
   `colorGrade({exposure:1.05})` and asserts `exposure.applied === 1` with the flag off (truthful)
   and `1.05` with the flag on after Phase 1.
-- [x] `post/PostTimer.ts`: wraps each graph stage in `EXT_disjoint_timer_query_webgl2` queries when
+- [ ] `post/PostTimer.ts`: wraps each graph stage in `EXT_disjoint_timer_query_webgl2` queries when *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   the C-28 probe reports the extension, and returns `gpuMs: undefined` otherwise. Test: a browser
   spec asserts no exception when the extension is absent.
-- [x] `packages/rendering/src/post/ToneOperators.ts`: TS `aces`, `agx`, `neutral`, `reinhard`,
+- [ ] `packages/rendering/src/post/ToneOperators.ts`: TS `aces`, `agx`, `neutral`, `reinhard`, *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   `linear`. Constants come from
   `node_modules/three/src/renderers/shaders/ShaderChunk/tonemapping_pars_fragment.glsl.js:46-200`.
   Commit 64 golden input→output triples per operator, generated once by running the three GLSL in
   a headless WebGL capture on macos-14, together with the generating script
   (`tests/qr/prd03/goldens/generate-tone-goldens.mjs`). Test:
   `tests/unit/rendering/post-tone-operators.test.ts`.
-- [x] `benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd03/`: add the scenes
+- [ ] `benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd03/`: add the scenes *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   `prd03-hdr-bloom`, `prd03-thin-aa`, `prd03-tone-ramp` (+21b), `prd03-ao-grounding`,
   `prd03-dof-bokeh`, `prd03-taa-motion`, `prd03-night-fog-banding` (+25b) and
   `prd03-scene18-bloom` (a copy of base scene 18's inputs, for the held-out bloom check). Each has
@@ -1801,29 +1801,29 @@ Phase 0 (day 0)
   `new WebGPURenderer({ forceWebGL: true })` with a TSL `PostProcessing` chain. Both engines then run
   on WebGL2 on the same runner. Each scene declares `qrFlags: ["post"]` (C-30). Test: the C-30
   registry test lists the 8 ids as `active`.
-- [x] `.github/workflows/post-quality.yml` (macos-14, §15.2) and
+- [ ] `.github/workflows/post-quality.yml` (macos-14, §15.2) and *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   `.github/workflows/qr-prd03-captures.yml`. The capture workflow dispatches
   `tools/quality-rebuild-capture` with `--flags none` and `--flags post` for the 18 games and the
   lane scenes. It also runs `tests/qr/prd03/capture-dsf2.spec.ts`, which loads each game route at
   1440×900 with `deviceScaleFactor: 2` and records `canvas.width / clientWidth`, until Q-12-1
   lands. It uses no secrets.
-- [x] `tools/quality-rebuild/codemods/post-v2.mjs` (pure `AuraCodemod`) and
+- [ ] `tools/quality-rebuild/codemods/post-v2.mjs` (pure `AuraCodemod`) and *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   `packages/aura3d-cli/src/commands/prd03/index.ts` (`registerCodemod`). It is report-only at this
   point. Test: `tests/unit/tools/post-v2-codemod.test.ts` (fixtures in Phase 5).
 - [ ] Commit the baseline captures and `bundle.json` to `evidence/prd03/phase0/`.
 
 Phase 1 (own-module code from day 0; wiring after PR 0b-1 / 0b-2)
-- [x] `agent-api/compiler/postprocess.ts`, flag on: set
+- [ ] `agent-api/compiler/postprocess.ts`, flag on: set *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   `toneMapping.exposure = (options.output?.exposure ?? 1) × (colorGrade.exposure ?? 1)` (replacing
   the literal 1 that came from `index.ts:12898-12904`) and
   `operator = options.output?.toneMapping ?? DEFAULT_TONE_MAPPING`. Test: `post-diagnostics.test.ts`
   asserts the bridge output `toneMapping.exposure === 1.05` for `colorGrade({exposure:1.05})` with
   the flag on and `1` with it off.
-- [x] `agent-api/compiler/postprocess.ts`: read `options.output` (the C-38 pre-declared
+- [ ] `agent-api/compiler/postprocess.ts`: read `options.output` (the C-38 pre-declared *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   `AuraCreateAppOptions.output`) at compile time through `SceneCompileContext`. If PR 0b-1 does not
   pass create options into the context, raise CCR-03-6 to add `SceneCompileContext.output?`.
   Test: a unit test with a fake renderer captures the options.
-- [x] `agent-api/compiler/postprocess.ts` + `renderer/PostprocessExecution.ts`: with the flag on,
+- [ ] `agent-api/compiler/postprocess.ts` + `renderer/PostprocessExecution.ts`: with the flag on, *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   pass `depthRange: { near, far, projection }` from the compiled camera's
   `resolveCameraClipping` result (`RootRuntimeSupport.ts:16-21`) through
   `RendererPostProcessOptions.depthRange` (CCR-03-1) into `presentLdrPostprocess` options, which
@@ -1831,7 +1831,7 @@ Phase 1 (own-module code from day 0; wiring after PR 0b-1 / 0b-2)
   Test: `tests/unit/rendering/post-depth-range.test.ts` asserts the device receives 0.05/100 for a
   default root camera with the flag on and 0.1/1000 with it off. A browser test checks DOF focus
   at 10 m on a 0.05/100 camera.
-- [x] `packages/rendering/src/post/shaders/fxaa.glsl.ts`: a verbatim port of three r185
+- [ ] `packages/rendering/src/post/shaders/fxaa.glsl.ts`: a verbatim port of three r185 *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   `FXAAShader.js` (6.5, 8.13), recomputing luma per tap, with `triangularDither` before the write.
   In `webgl2/LegacyPost.ts`, with the flag on and mode `fxaa`: run the present program with no
   `fxaa` option (`u_hasFxaa = 0`) into a pooled RGBA8 target, then this FXAA program to the output.
@@ -1844,7 +1844,7 @@ Phase 1 (own-module code from day 0; wiring after PR 0b-1 / 0b-2)
     threshold) is unchanged within 1 LSB.
   - (c) A 1-px black/white checkerboard matches three within 2 LSB mean. It is *expected* to blur,
     as three's does; no FXAA variant can tell texture edges from geometry edges.
-- [x] `packages/rendering/src/post/PostAntiAlias.ts` `resolvePostAntiAlias` (7.2), called by
+- [ ] `packages/rendering/src/post/PostAntiAlias.ts` `resolvePostAntiAlias` (7.2), called by *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   `compiler/postprocess.ts`:
   - Mode from C-27 `msaaSamples/postAntiAlias` and the authored `antiAlias` mode. An `antiAlias`
     node whose `postAuthored` lacks `mode` counts as `auto`.
@@ -1855,47 +1855,47 @@ Phase 1 (own-module code from day 0; wiring after PR 0b-1 / 0b-2)
   Test: `tests/unit/rendering/post-tiers.test.ts` asserts that no resolved plan has both
   `sampleCount 4` and `fxaa`, that 3840×2160 msaa resolves to non-msaa, and that the flag-off
   output equals today's `fxaaRequested` logic (`index.ts:12859`).
-- [x] `post/shaders/common.glsl.ts` `triangularDither` (PCG2D hash). Test:
+- [ ] `post/shaders/common.glsl.ts` `triangularDither` (PCG2D hash). Test: *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   `tests/browser/post-banding.spec.ts` renders `prd03-night-fog-banding` on the FXAA path and
   asserts two things: the longest run of identical 8-bit values along the gradient is ≤ 1.5× the
   ideal quantization run, and Sobel on 8-bit luma with threshold 1 finds < 0.5% contour pixels.
 
 Phase 2
-- [x] `packages/rendering/src/post/PostGraph.ts`: stage descriptors `{name, inputs,
+- [ ] `packages/rendering/src/post/PostGraph.ts`: stage descriptors `{name, inputs, *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   outputs:{format, scale}, enabled(options)}`, the fixed order of 6.1, and C-13 insertion-point
   dispatch with `space` validation. Test: `tests/unit/rendering/post-graph-order.test.ts` asserts
   the stage order for every option combination (2^10 enumerations), that no stage before OutputPass
   has an `rgba8` output, and that a `display` pass before tonemap throws
   `POSTPROCESS_SPACE_INVALID:<id>`.
-- [x] `post/PostResources.ts`: a pool keyed `(w,h,format,samples)` on top of C-28
+- [ ] `post/PostResources.ts`: a pool keyed `(w,h,format,samples)` on top of C-28 *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   `renderTargetPoolSlot`, released on resize. Test: a unit test asserts the allocation count is
   constant across 100 frames when the C-28 stub (allocate-per-acquire) is active.
-- [x] `webgl2/LegacyPost.ts` `executePostGraphWebGL2` plus `createLegacyOutputPass` (CCR-03-5), and
+- [ ] `webgl2/LegacyPost.ts` `executePostGraphWebGL2` plus `createLegacyOutputPass` (CCR-03-5), and *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   the `renderer/PostprocessExecution.ts` v2 branch. Test: a browser spec asserts exactly one tone
   operator evaluation per pixel. It renders the HDR ramp through v2 with operator `aces`, compares
   against `ToneOperators.aces`, and requires ≤ 1 LSB with no double-curve signature.
-- [x] `post/shaders/bloom.glsl.ts` per 6.6, plus `postprocess/NativeBloomPyramid.ts`:
+- [ ] `post/shaders/bloom.glsl.ts` per 6.6, plus `postprocess/NativeBloomPyramid.ts`: *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   `bloomNormalization(mips, scatter)` and mips starting at half resolution.
   `resolveBloomPyramidResponseGain` (`:106-109`) stays only for the flag-off path. Tests:
   - `tests/unit/rendering/native-bloom-pyramid.test.ts` (lane 03's): a constant input E above
     threshold yields composite bloom E ±2%, computed through a TS mirror of the up/down weights.
   - Browser: a constant-color HDR quad (luma 2.0, threshold 1.0, knee 0) gives a bloom contribution
     of 1.0 ±3% × intensity.
-- [x] `webgl2/LegacyPost.ts` `normalizeNativeBloomOptions` (moved from `WebGL2Device.ts:4481` in
+- [ ] `webgl2/LegacyPost.ts` `normalizeNativeBloomOptions` (moved from `WebGL2Device.ts:4481` in *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   the 0b-2 carve; if the carve leaves it in the device, it is Q-01-8): with the flag on, accept
   threshold [0,64] and knee [0,1] and drop the softKnee ≤ 0.5 throw (`:4484-4496`). Deprecated
   fields map per 7.1. Test: one unit test per mapping, plus a deprecation diagnostic.
-- [x] `post/shaders/composite.glsl.ts` (S10 linear: exposure, bloom, CA, linear grade),
+- [ ] `post/shaders/composite.glsl.ts` (S10 linear: exposure, bloom, CA, linear grade), *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   `displayGrade.glsl.ts` and `lutBake.glsl.ts` (S10b, 33³ RGBA8, rebaked only when the
   display-grade hash changes). Test: `tests/browser/post-lut.spec.ts` checks a 4096-step ramp LUT
   against the analytic display grade within 1 LSB, and a rebake count of 1 across 60 frames with
   constant params.
-- [x] `post/CubeLut.ts` `parseCubeLut`: supports `LUT_3D_SIZE`, `DOMAIN_MIN/MAX` and comments;
+- [ ] `post/CubeLut.ts` `parseCubeLut`: supports `LUT_3D_SIZE`, `DOMAIN_MIN/MAX` and comments; *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   throws on 1D LUTs and on size > 65. Test: `tests/unit/rendering/post-cube-lut.test.ts` with an
   identity LUT and the fixture `tests/qr/prd03/fixtures/luts/teal-orange-33.cube`.
-- [x] `post/shaders/finalize.glsl.ts`: dither + grain + RCAS, fused with FXAA and S10b. Test:
+- [ ] `post/shaders/finalize.glsl.ts`: dither + grain + RCAS, fused with FXAA and S10b. Test: *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   covered by the banding and FXAA specs run on v2.
-- [x] `packages/engine/src/agent-api/postBridge.ts` `createRootPostPipeline(snapshot, camera,
+- [ ] `packages/engine/src/agent-api/postBridge.ts` `createRootPostPipeline(snapshot, camera, *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   output, tierSettings)`, `POST_EFFECT_FIELDS`, `POST_EFFECT_DEPRECATED_FIELDS`; called from
   `compiler/postprocess.ts` when the flag is on. It applies v2 defaults to fields absent from
   `postAuthored`. Test: `tests/unit/agent-api/post-bridge.test.ts` has one case per field
@@ -1906,47 +1906,47 @@ Phase 2
     (the test fails on an allowlisted but unasserted field);
   - the throw rejects `app.ready()` rather than landing in `diagnostics.errors`;
   - with the flag off, the same scene only warns (`option-ignored`).
-- [x] `nodes/effects.post.ts`: add the inert `postAuthored` field to the six carved factories
+- [ ] `nodes/effects.post.ts`: add the inert `postAuthored` field to the six carved factories *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   (`Object.keys(options)` at call time). Factory defaults stay byte-identical. Test: a snapshot
   test asserts the node objects equal today's except for `postAuthored`, and that the legacy bridge
   output is byte-equal (C-36 conformance "flag-off byte-equal RenderSource").
-- [x] Bundle gate for v2: `Renderer`-side code reaches `post/` only through `import()` taken in
+- [ ] Bundle gate for v2: `Renderer`-side code reaches `post/` only through `import()` taken in *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   `PostprocessExecution.ts` when v2 is selected. Test: `pnpm check:bundle-size` passes for all
   gated targets, and an esbuild metafile assertion in `tests/unit/rendering/post-bundle-split.test.ts`
   shows `post/shaders/*` in a deferred chunk, outside the critical path of the cinematic-scene and
   mini-game starters.
-- [x] `benchmarks/quality-rebuild/aura3d/scenes/prd03/bloomMapping.ts` `mapThreeUnrealBloom(strength,
+- [ ] `benchmarks/quality-rebuild/aura3d/scenes/prd03/bloomMapping.ts` `mapThreeUnrealBloom(strength, *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   radius, threshold): BloomOptionsV2`: calibrate once on `prd03-hdr-bloom` to ±10% halo energy,
   commit the calibration log and freeze the mapping. Use it in `prd03-scene18-bloom`. File Q-12-2
   so the shared `aura3d/common.ts:254-256` adopts it.
 
 Phase 3
-- [x] `post/shaders/depthDownsample.glsl.ts`, `gtao.glsl.ts`, `gtaoDenoise.glsl.ts` per 8.3–8.4,
+- [ ] `post/shaders/depthDownsample.glsl.ts`, `gtao.glsl.ts`, `gtaoDenoise.glsl.ts` per 8.3–8.4, *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   with the 6.3 fallback when `prd03.indirectFraction` is inactive. On v2, legacy SSAO
   (`webgl2/LegacyPost.ts`, from `WebGL2Device.ts:3091-3129`) is not scheduled. Test: a browser test
   on `prd03-ao-grounding` with a 1 m cube on a plane, camera at 8 m, near 0.05/far 100: the AO
   texture mean in a 10 cm band at the contact edge is ≤ 0.75, and ≥ 0.97 on open floor 1 m away.
   The old shader gives ~1.0 everywhere at this distance (19 §C14). `post.skipped` contains
   `AO_INDIRECT_FRACTION_PENDING` while C-02 is a stub.
-- [x] `post/chunks/indirectFraction.glsl.ts`: register feature `prd03.indirectFraction`. Test:
+- [ ] `post/chunks/indirectFraction.glsl.ts`: register feature `prd03.indirectFraction`. Test: *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   `ChunkHarness` compiles it with a mock `a3dIndirectRadiance` input, and a unit test checks `a ≈ 0`
   for emissive-only and `a ≈ 1` for ambient-only inputs in the harness. The forward-pixel version of
   this test is integrated (needs C-02 real, Q-02-1, Q-01-1).
-- [x] `nodes/effects.post.ts` `ambientOcclusion` (`index.ts:3518`) and `contactOcclusion` (`:3528`):
+- [ ] `nodes/effects.post.ts` `ambientOcclusion` (`index.ts:3518`) and `contactOcclusion` (`:3528`): *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   no factory change. The bridge interprets `radius` in metres with the flag on, and
   `contactOcclusion` as `ambientOcclusion({radius: 0.2, ...authored})`. Two AO nodes produce
   `POST_DUPLICATE_STAGE`. Test: bridge unit test.
-- [x] `post/shaders/godrays.glsl.ts` per 8.5. `compiler/postprocess.ts` maps `effects.volumetricFog`
+- [ ] `post/shaders/godrays.glsl.ts` per 8.5. `compiler/postprocess.ts` maps `effects.volumetricFog` *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   nodes (factory `index.ts:3499`, lane 07 file) to S4, with `color` honoured (bridge code from
   `index.ts:12810-12822`) and `lightUv` projected from the strongest directional light. With the
   flag on it no longer emits `volumetric-light`. Test: a browser spec on `prd03-night-fog-banding` 25b
   (sun behind pillars) asserts mean added luma in the shaft mask ≥ 3%, ≤ 0.5% in the occluded
   pillar mask, and a `readPixels` count of 0.
-- [x] `nodes/effects.post.ts`: new factories `vignette`, `filmGrain`, `chromaticAberration` (new
+- [ ] `nodes/effects.post.ts`: new factories `vignette`, `filmGrain`, `chromaticAberration` (new *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   keys, so no collision with lane 07's `effects.ts`; the C-36 duplicate-key test passes). Bridge
   mapping. GPU work in S10/S10b/S12. Test: bridge unit test plus a browser spec where vignette 0.5
   gives corner luma ≤ 0.6 × centre on a flat field.
-- [x] `renderer/PostprocessExecution.ts` (pixel-pass block from `Renderer.ts:1245-1280` and its async
+- [ ] `renderer/PostprocessExecution.ts` (pixel-pass block from `Renderer.ts:1245-1280` and its async *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   twin): with the flag on, throw `POSTPROCESS_PASS_NOT_GPU` unless
   `execution === "cpu-deterministic"`. In production builds (`import.meta.env.PROD` /
   `process.env.NODE_ENV === "production"`) skip the pass and record it instead. Test: a unit test
@@ -1954,13 +1954,13 @@ Phase 3
   `WebGL2RenderingContext.prototype.readPixels`, reads C-28 `counters().readbacks`, and asserts 0
   across 300 frames for each of the 18 games loaded with `?a3d-qr=post` (local-build mode of the
   capture tool).
-- [x] Move the CPU kernels: `PostProcessPass.ts` kernels, `postprocess/EffectComposer.ts`,
+- [ ] Move the CPU kernels: `PostProcessPass.ts` kernels, `postprocess/EffectComposer.ts`, *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   `postprocess/SSAOPass.ts` and `cinematic/{BloomPass,VignettePass,FilmGrainPass,DepthHazePass}.ts`
   go to `packages/rendering/src/reference/`, with the old paths kept as `@deprecated` re-export
   shims (lane 03 files). The `./reference` export is reserved in PR 0a; dropping the root barrel
   re-exports is Q-15-4. Test: an esbuild metafile assertion that the post v2 chunk does not import
   `reference/`.
-- [x] `RendererPostprocessPlan.ts:204-206`: with the flag on, drop the `contact-shadow` pass and emit a
+- [ ] `RendererPostprocessPlan.ts:204-206`: with the flag on, drop the `contact-shadow` pass and emit a *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   deprecation diagnostic. Its `Renderer.ts` dispatch lives in the carved `PostprocessExecution.ts`.
   Test: plan unit test with the flag on and off.
 
@@ -2018,7 +2018,7 @@ Phase 5
   `app.quality.onChange`. `setQualityTier` delegates to `app.quality.set`. Test: a unit table test
   covering every tier × feature cell, with C-27 rows asserted against `QUALITY_TIERS` (no literal
   copies).
-- [x] `tools/quality-rebuild/codemods/post-v2.mjs` complete per section 10, with `--dry-run` printing
+- [ ] `tools/quality-rebuild/codemods/post-v2.mjs` complete per section 10, with `--dry-run` printing *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   a diff and the emissive report. Test: `tests/unit/tools/post-v2-codemod.test.ts` runs fixtures
   copied (read-only) from:
   - `apps/showcase-courier-rush/src/main.ts:295-297` (neonBloom with `softKnee`, colorGrade);
@@ -2029,10 +2029,10 @@ Phase 5
 
   It also asserts that the default file list contains exactly the 17 game showcases plus Aura Clash,
   and that no non-game `apps/showcase-*` file is listed.
-- [x] Run `post-v2 --report` (never `--write`) on the 17 game mains, Aura Clash and
+- [ ] Run `post-v2 --report` (never `--write`) on the 17 game mains, Aura Clash and *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   `examples/neon-corridor-strike`. Commit the reports to `evidence/prd03/phase5/codemod/`, and
   attach them to Q-14-1 and Q-13-1.
-- [x] Append facts F-03-01..05 (section 10 item 5) to CONTRACTS Appendix B, status `proposed`, each
+- [ ] Append facts F-03-01..05 (section 10 item 5) to CONTRACTS Appendix B, status `proposed`, each *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   with the test that will verify it.
 - [ ] Capture all 18 unmodified routes with `?a3d-qr=post` and `none` at DSF1/DSF2/mobile. Assert <!-- unticked 03-REC/P-54: no cited remote run yet (was bulk-ticked by d4f65a88) -->
   no black frame, crash or console error, and the frame-time rule of the Phase 5 exit. Commit to
@@ -2049,7 +2049,7 @@ Phase 6
 - [ ] `app.addPostPass` → C-13 `registerPostPass`, with insertion in `PostGraph`. Test: a browser <!-- unticked 03-REC/P-54: no cited remote run yet (was bulk-ticked by d4f65a88) -->
   spec where a red-channel-invert pass at `after-tonemap` produces the expected readback, and a pass
   at `before-tonemap` receives an RGBA16F input with values > 1 preserved.
-- [x] `apps/postprocessing-bloom/src/main.ts:100-104`: replace the threshold-0.08 Reinhard demo with
+- [ ] `apps/postprocessing-bloom/src/main.ts:100-104`: replace the threshold-0.08 Reinhard demo with *(P-54: code landed; unticked until a remote `run:<id>` on main)*
   an HDR emissive demo on `createAuraApp` using `neon-night`. Add `apps/postprocessing-custom`. Both
   are lane 03 apps.
 
