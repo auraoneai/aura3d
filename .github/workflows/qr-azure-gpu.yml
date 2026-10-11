@@ -30,10 +30,10 @@ on:
         options: [azure-gpu, macos-14]
         default: azure-gpu
       gpu_class:
-        description: "azure-gpu only: pin one GPU class (frames are compared within a class only)"
+        description: "azure-gpu only: l4 | t4 pin a class (needs gpu-l4/gpu-t4 runner labels; baselines); any = first free GPU runner (within-job comparisons such as flags-bisect)"
         type: choice
-        options: [l4, t4]
-        default: l4
+        options: [any, l4, t4]
+        default: any
       bench_scenes:
         description: "Comma-separated benchmark scene ids (empty = all)"
         required: false
@@ -71,7 +71,7 @@ on:
     inputs:
       suite: { type: string, required: false, default: flags-bisect }
       runner: { type: string, required: false, default: azure-gpu }
-      gpu_class: { type: string, required: false, default: l4 }
+      gpu_class: { type: string, required: false, default: any }
       bench_scenes: { type: string, required: false, default: "01-simple-geometry,16-instancing,12-shadows,03-damaged-helmet,08-skinned-character,14-particles" }
       bench_engines: { type: string, required: false, default: aura3d }
       bench_flag_sets: { type: string, required: false, default: "" }
@@ -113,12 +113,12 @@ jobs:
     # Self-hosted GPU runners carry self-hosted,linux,azure-gpu plus a GPU-class
     # label (gpu-l4 | gpu-t4); captures pin one class so L4 and T4 frames are
     # never mixed. Push / schedule / PR events default to azure-gpu + l4.
-    runs-on: ${{ (inputs.runner || 'azure-gpu') == 'azure-gpu' && fromJSON(format('["self-hosted","azure-gpu","gpu-{0}"]', inputs.gpu_class || 'l4')) || inputs.runner }}
+    runs-on: ${{ (inputs.runner || 'azure-gpu') == 'azure-gpu' && ((inputs.gpu_class || 'any') == 'any' && fromJSON('["self-hosted","azure-gpu"]') || fromJSON(format('["self-hosted","azure-gpu","gpu-{0}"]', inputs.gpu_class))) || inputs.runner }}
     timeout-minutes: 180
     env:
       SUITE: ${{ inputs.suite || 'flags-bisect' }}
       RUNNER_KIND: ${{ inputs.runner || 'azure-gpu' }}
-      GPU_CLASS: ${{ (inputs.runner || 'azure-gpu') == 'azure-gpu' && (inputs.gpu_class || 'l4') || 'metal' }}
+      GPU_CLASS: ${{ (inputs.runner || 'azure-gpu') == 'azure-gpu' && (inputs.gpu_class || 'any') || 'metal' }}
       QR_BENCH_OUT: benchmarks/quality-rebuild/out
       QR_BENCH_SCENES: ${{ inputs.bench_scenes || '01-simple-geometry,16-instancing,12-shadows,03-damaged-helmet,08-skinned-character,14-particles' }}
       QR_BENCH_ENGINES: ${{ inputs.bench_engines || 'aura3d' }}
@@ -156,7 +156,14 @@ jobs:
       - name: Record the GPU renderer string (frames compare within this class only)
         run: |
           set -euo pipefail
-          node tools/quality-rebuild-capture/gpu-renderer.mjs | tee -a "$GITHUB_STEP_SUMMARY"
+          node tools/quality-rebuild-capture/gpu-renderer.mjs | tee renderer.txt | tee -a "$GITHUB_STEP_SUMMARY"
+          renderer="$(cat renderer.txt)"
+          # A pinned class must match the GPU actually present (label drift guard).
+          case "$GPU_CLASS" in
+            l4) grep -q " L4" renderer.txt || { echo "::error::gpu_class=l4 but renderer is: $renderer"; exit 1; } ;;
+            t4) grep -q " T4" renderer.txt || { echo "::error::gpu_class=t4 but renderer is: $renderer"; exit 1; } ;;
+          esac
+          mkdir -p "$QR_BENCH_OUT" && cp renderer.txt "$QR_BENCH_OUT/renderer.txt"
           echo "gpu_class: $GPU_CLASS ($RUNNER_KIND, $RUNNER_NAME)" | tee -a "$GITHUB_STEP_SUMMARY"
         env:
           QR_AZURE_GPU_CHROME_ARGS: ${{ vars.QR_AZURE_GPU_CHROME_ARGS }}
@@ -198,7 +205,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: qr-gpu-${{ inputs.suite || 'flags-bisect' }}-${{ inputs.runner || 'azure-gpu' }}-${{ (inputs.runner || 'azure-gpu') == 'azure-gpu' && (inputs.gpu_class || 'l4') || 'metal' }}-${{ github.run_id }}
+          name: qr-gpu-${{ inputs.suite || 'flags-bisect' }}-${{ inputs.runner || 'azure-gpu' }}-${{ (inputs.runner || 'azure-gpu') == 'azure-gpu' && (inputs.gpu_class || 'any') || 'metal' }}-${{ github.run_id }}
           path: |
             benchmarks/quality-rebuild/out/
             tools/quality-rebuild-capture/out/
