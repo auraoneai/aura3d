@@ -869,7 +869,7 @@ async function captureRun(browser, game, run, url, gameDir, options = {}) {
     }
     // T5.5 (§9.6): engine self-reported fps (diagnostics().fps / frameTiming) vs the
     // rAF sampler — disagreement > 20% is recorded as fps-self-report-mismatch.
-    const selfFps = Number(record.engineAtEnd?.[0]?.frameTiming?.fps ?? record.engineAtEnd?.[0]?.fps ?? NaN);
+    const selfFps = Number(record.engineAtEnd?.[0]?.frameTiming?.rafFps ?? record.engineAtEnd?.[0]?.frameTiming?.fps ?? record.engineAtEnd?.[0]?.fps ?? NaN);
     const rafFps = Number(record.fps?.fps ?? NaN);
     if (Number.isFinite(selfFps) && Number.isFinite(rafFps) && rafFps > 0) {
       const rel = Math.abs(selfFps - rafFps) / rafFps;
