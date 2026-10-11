@@ -269,6 +269,21 @@ export class RendererPostprocessPipeline {
     return target;
   }
 
+  /** Removes (and records) the flag-on CPU pixel passes; tone mapping, bloom and FXAA have their own passes. */
+  private dropSkippedCpuPasses(passes: readonly RendererPostProcessPassPlan[], cpuDeterministic: boolean): readonly RendererPostProcessPassPlan[] {
+    return passes.filter((pass) => pass.name === "tone-mapping" || pass.name === "bloom" || pass.name === "fxaa" || !this.postCpuPassSkipped(pass.name, cpuDeterministic));
+  }
+
+  /** Every pass was skipped: present the source, or copy it to an explicit output. */
+  private presentUnchanged(current: RenderTarget, outputTarget: RenderTarget | undefined): void {
+    if (outputTarget) {
+      this.host.device.setRenderTarget(current);
+      writePostProcessPixels(this.host.device, current, outputTarget, this.host.device.readPixels(0, 0, current.width, current.height));
+    } else {
+      this.host.device.presentRenderTarget?.(current);
+    }
+  }
+
   private releaseChainTargets(pooled: RenderTarget[] | null): void {
     if (!pooled) return;
     const pool = postChainPool(this.host.device);
@@ -364,7 +379,7 @@ export class RendererPostprocessPipeline {
     if (!current) {
       throw new RenderDeviceError("Renderer postprocess missing forward render target", "POSTPROCESS_TARGET_MISSING");
     }
-    const passes = guardRendererPostprocessPlan(this.host.device, postprocess, current, createRendererPostprocessPasses(postprocess));
+    let passes = guardRendererPostprocessPlan(this.host.device, postprocess, current, createRendererPostprocessPasses(postprocess));
     if (passes.length === 0) {
       // §6.9: a pipeline-only frame (e.g. vignette + toneMapping:"none")
       // emits no plan passes — the v2 route still applies its stages.
@@ -379,6 +394,14 @@ export class RendererPostprocessPipeline {
     }
     if (this.tryExecutePostGraphV2(postprocess, current, passes, outputTarget)) return;
     if (this.executeFusedLdrPostprocess(current, passes, outputTarget, postprocess.execution === "cpu-deterministic", postprocess.depthRange)) return;
+    // §6.9/T0-17: flag-on CPU pixel passes are recorded and skipped before the
+    // per-pass loop, so a skipped pass costs no readback (the previous
+    // record-and-skip still read the frame back to copy it through).
+    passes = this.dropSkippedCpuPasses(passes, postprocess.execution === "cpu-deterministic");
+    if (passes.length === 0) {
+      this.presentUnchanged(current, outputTarget);
+      return;
+    }
     for (let index = 0; index < passes.length; index += 1) {
       const pass = passes[index]!;
       const nextPass = passes[index + 1];
@@ -504,7 +527,7 @@ export class RendererPostprocessPipeline {
     if (!current) {
       throw new RenderDeviceError("Renderer postprocess missing forward render target", "POSTPROCESS_TARGET_MISSING");
     }
-    const passes = guardRendererPostprocessPlan(this.host.device, postprocess, current, createRendererPostprocessPasses(postprocess));
+    let passes = guardRendererPostprocessPlan(this.host.device, postprocess, current, createRendererPostprocessPasses(postprocess));
     if (passes.length === 0) {
       const v2ModulesEmpty = postprocess.v2 === true && this.host.device.kind === "webgl2"
         ? await import("../post/v2Entry")
@@ -527,6 +550,14 @@ export class RendererPostprocessPipeline {
       : undefined;
     if (this.tryExecutePostGraphV2(postprocess, current, passes, outputTarget, v2Modules)) return;
     if (await this.executeFusedLdrPostprocessAsync(current, passes, outputTarget, postprocess.execution === "cpu-deterministic", postprocess.depthRange)) return;
+    // §6.9/T0-17: flag-on CPU pixel passes are recorded and skipped before the
+    // per-pass loop, so a skipped pass costs no readback (the previous
+    // record-and-skip still read the frame back to copy it through).
+    passes = this.dropSkippedCpuPasses(passes, postprocess.execution === "cpu-deterministic");
+    if (passes.length === 0) {
+      this.presentUnchanged(current, outputTarget);
+      return;
+    }
     for (let index = 0; index < passes.length; index += 1) {
       const pass = passes[index]!;
       const nextPass = passes[index + 1];

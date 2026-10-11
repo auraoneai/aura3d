@@ -19,6 +19,7 @@
  */
 import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
 import { postV2ModulesReady } from "@aura3d/rendering";
+import { smaaTexturesSettled } from "../../packages/rendering/src/post/v2Stages";
 import { registerPostPass } from "@aura3d/rendering/contracts";
 
 /* ------------------------------- helpers ------------------------------- */
@@ -157,6 +158,10 @@ export async function runSmaaEdgeProbe() {
   none.host.remove();
 
   const smaa = await mount({ antiAlias: "smaa" });
+  // 03-S18a: the first S11 frame starts the lazy area/search texture load;
+  // wait for it (not a frame count) so the measured frames run SMAA.
+  await smaa.runFrames(1);
+  await smaaTexturesSettled();
   await smaa.runFrames(4);
   const smaaRatio = edgeBandIntermediateRatio(smaa.read(), smaa.width, smaa.height);
   smaa.app.dispose();
