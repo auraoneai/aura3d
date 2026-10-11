@@ -1649,6 +1649,7 @@ meantime and which criterion moves to the next checkpoint after it lands.
 | Q-12-2 (#823) | 12 + 15 | Register T0-33 (FIX-P0-graph, owner 10) as a Track 0 row: a lane-10 culprit for the `$ALL` arm | §2.2 | lane 10 proves it with flags-bisect `none;world` and `$ALL;$ALL,-world` |
 | Q-15-9 (#177) | 15 | `.github/QR_OWNERSHIP.json`: add `packages/engine/assets/world/` to the owner-10 rule. It resolves to 15 today, but CONTRACTS §4.1 row 10 gives it to 10 (P-61) | §4 | lane 10 writes only the existing `manifest.json`/`noise/`/`water/`/`kits/` under the CONTRACTS carve-out |
 | Q-15-10 (#204) | 15 | Reassign `agent-api/nodes/prefabs/cityBlock.ts` to 10 for the T5.6 `world.street` rebuild | §4 | `cityBlock` stays on the owner-15 implementation; T5.6 stays unticked |
+| Q-15-11 (#1068) | 15 | `engine/src/contracts/app.ts`: add a lazy C-38 app-extension/registration seam so the lane barrel can defer the world runtime to its first world node (§17.4) | C-38 | eager barrel: root growth is measured and reported over budget; §17.4 stays unticked |
 | Q-03-1 (#1065) | 03 | `post/v2Stages.ts`: forward the frame-graph blackboard into the C-13 custom-pass frame context (`state.postBlackboard` is never written), and gate registry passes on `active(flags)` | C-13 | `prd10.underwaterDistortion` cannot enable on the v2 path. A unit proves it is never compiled while `UNDERWATER_KEY` is false |
 
 PRD 06 (C-26 ground for foot IK), PRD 07 (C-26 height for splashes and rain) and PRD 09 (game runtime hosting
