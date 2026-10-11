@@ -56,12 +56,14 @@ function graphFor(opts: { envBackground: boolean; tier: "low" | "medium" | "high
     for (const p of con.passes!("background", c)) graph.addPass(p);
   }
   // prd01.opaque produces the scene color and depth resources the world
-  // passes chain on (same writes the real ForwardPass declares on Path S).
+  // passes chain on. Flags here are `world` without `core`, where the real
+  // legacy ForwardPass writes `color`; the full renderer-path matrix lives in
+  // tests/unit/contracts/impl/prd10-world-graph.test.ts.
   graph.addPass(
     writer(
       "prd01.opaque",
       opts.envBackground ? [ENVIRONMENT_BACKGROUND_COLOR_RESOURCE] : [],
-      ["aura.scene.color.opaque", "aura.scene.depth", "aura.scene.color"]
+      ["color", "aura.scene.color.opaque", "aura.scene.depth", "aura.scene.color"]
     )
   );
   for (const p of con.passes!("after-opaque", c)) graph.addPass(p);

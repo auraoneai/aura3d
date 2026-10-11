@@ -14,8 +14,8 @@
 import { registerFrameContributor } from "@aura3d/rendering/contracts";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import { programCacheSlot } from "@aura3d/rendering/contracts";
-import { terrainBackgroundPass } from "./TerrainRuntime.js";
-import { allWaterStates, waterAfterOpaquePasses, waterBackgroundPasses, waterTransparentPass } from "./WaterRuntime.js";
+import { terrainAfterOpaquePass, terrainBackgroundPass } from "./TerrainRuntime.js";
+import { allWaterStates, waterAfterOpaquePasses, waterBackgroundPasses, waterTransparentPass, WORLD_BACKGROUND_PHASE_KEY } from "./WaterRuntime.js";
 import { terrainRecordIds } from "../../agent-api/world/terrain.js";
 import { timeOfDayRecords } from "../../agent-api/compiler/world.js";
 import { worldSubflagOn } from "../../agent-api/world/flags.js";
@@ -67,11 +67,18 @@ export function registerWorldFramePasses(): () => void {
       // (duplicate "color" writers / reads with no producer) on every Path S
       // frame, even with zero world nodes, and killed the frame loop.
       if (phase === "background" && worldDrawPath(ctx.flags) === "S") {
+        // Lane 01 runs `background` only when an EnvironmentBackgroundPass
+        // exists; record that it ran so later phases know which producers exist.
+        ctx.blackboard.set(WORLD_BACKGROUND_PHASE_KEY, true);
         const passes = waterBackgroundPasses(ctx);
         return terrainRecordIds().length > 0 ? [...passes, terrainBackgroundPass(ctx)] : passes;
       }
       if (phase === "after-opaque" && worldDrawPath(ctx.flags) === "S") {
-        return waterAfterOpaquePasses(ctx);
+        // Colour-background frames skip `background`, so terrain draws here.
+        const late = terrainRecordIds().length > 0 && ctx.blackboard.get(WORLD_BACKGROUND_PHASE_KEY) !== true
+          ? [terrainAfterOpaquePass(ctx)]
+          : [];
+        return [...late, ...waterAfterOpaquePasses(ctx)];
       }
       if (phase === "transparent" && worldDrawPath(ctx.flags) === "S") {
         return allWaterStates().length > 0 ? [waterTransparentPass(ctx)] : [];
