@@ -3,7 +3,8 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { BLOOM_BRIGHT_EXTRACT_GLSL, normalizeNativeBloomOptions } from "../../../../packages/rendering/src/webgl2/LegacyPost";
+import { BLOOM_BRIGHT_EXTRACT_GLSL, nativeBloomResponseGain, normalizeNativeBloomOptions } from "../../../../packages/rendering/src/webgl2/LegacyPost";
+import { resolveBloomPyramidPlan, resolveBloomPyramidResponseGain } from "../../../../packages/rendering/src/postprocess/NativeBloomPyramid";
 
 /**
  * PRD-03 S9 "no hidden gain" (GPU lane run 38141069039): flag-on bloom halo
@@ -26,6 +27,17 @@ describe("S9 native HDR bright extract keeps the excess over threshold (flag-on)
   it("v2 bloom options select the excess weight; flag-off options do not", () => {
     expect(normalizeNativeBloomOptions({ v2: true, threshold: 1, knee: 0.25 }).excess).toBe(true);
     expect(normalizeNativeBloomOptions({ threshold: 0.8 })).not.toHaveProperty("excess");
+  });
+
+  it("flag-on: unauthored quality runs the 5-mip pyramid with no response gain; flag-off unchanged", () => {
+    const v2 = normalizeNativeBloomOptions({ v2: true, threshold: 1 });
+    expect(v2.quality).toBe("cinematic");
+    expect(normalizeNativeBloomOptions({ v2: true, quality: "balanced" }).quality).toBe("balanced");
+    const plan = resolveBloomPyramidPlan(320, 320, "cinematic", true);
+    expect(nativeBloomResponseGain(plan, v2)).toBe(1);
+    const legacy = normalizeNativeBloomOptions({ threshold: 0.8 });
+    expect(legacy.quality).toBe("performance");
+    expect(nativeBloomResponseGain(plan, legacy)).toBe(resolveBloomPyramidResponseGain(plan));
   });
 
   it("the fragment branches on u_excess and keeps the legacy gate for flag-off", () => {
