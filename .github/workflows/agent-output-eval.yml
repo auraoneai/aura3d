@@ -108,7 +108,6 @@ jobs:
           path: tests/reports/release-tarballs
       - name: Run agent cell
         id: cell
-        continue-on-error: true
         run: |
           pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-eval/run.ts \
             --only "${{ matrix.prompt }}" --seeds "${{ matrix.seed }}" \
@@ -157,7 +156,6 @@ jobs:
           merge-multiple: true
       - name: Capture agent dist dirs
         id: capture
-        continue-on-error: true
         env:
           QRC_FLAGS: ${{ matrix.qr_flags }}
           QRC_OUT: tools/agent-templates/out/agent-eval-${{ matrix.qr_flags }}

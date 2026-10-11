@@ -1,0 +1,4 @@
+{
+  "$comment": "P-22 integrated-pending list. A requireOrSkip id listed here (owner, tracking issue, expiry) may skip on CI; the no-skip-in-ci reporter still prints it. Every entry needs an open issue and an expiry; expired entries stop excusing the skip. Never add an entry to make a red run green without an issue.",
+  "entries": []
+}

@@ -121,10 +121,10 @@ jobs:
         run: pnpm audit:external-parity-external-evidence-readiness
 
       - name: Audit broad parity readiness after public smoke
-        run: pnpm audit:external-parity-broad-parity || true
+        run: pnpm audit:external-parity-broad-parity
 
       - name: Audit completion after public smoke
-        run: pnpm audit:external-parity-completion || true
+        run: pnpm audit:external-parity-completion
 
       - name: Verify external parity report freshness after public smoke
         run: pnpm verify:external-parity-report-freshness

@@ -1,8 +1,9 @@
 name: QR-15 architecture gates
 
-# PRD-15 T1.8 — warn-mode architecture gates. Runs tools/arch-gates and
-# uploads the JSON report as an artifact. Warn mode today; a later task in
-# the lane flips the same job to --strict once the findings drain to zero.
+# PRD-15 T1.8 — architecture gates. Runs tools/arch-gates and uploads the JSON
+# report as an artifact. Fail-mode (enforced) findings fail the job; warnings
+# are reported. `--strict` (warnings also fail, allowlisted rows included) is
+# flipped once 15-ARCH drains the allowlist — see tools/arch-gates/index.ts.
 
 on:
   pull_request:
@@ -43,7 +44,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Run architecture gates (warn mode)
+      - name: Run architecture gates (enforced findings fail)
         run: pnpm arch:check -- --out artifacts/arch-gates-report.json
       - uses: actions/upload-artifact@v4
         if: always()
