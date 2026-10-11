@@ -71,10 +71,10 @@ const game = createGame({
     theme: "tabletop",
     maxScreenFraction: 0.15,
     widgets: [
-      { id: "turn", kind: "label", anchor: "top-left", label: "BANK SHOT" },
-      { id: "tray", kind: "tray", anchor: "top-right", label: "SUNK" },
-      { id: "power", kind: "meter", anchor: "bottom", label: "STRIKE" },
-      { id: "score", kind: "score", anchor: "top", label: "SCORE" }
+      { id: "turn", kind: "prompt", anchor: "top-left", label: "BANK SHOT" },
+      { id: "tray", kind: "prompt", anchor: "top-right", label: "SUNK" },
+      { id: "power", kind: "prompt", anchor: "bottom", label: "STRIKE" },
+      { id: "score", kind: "prompt", anchor: "top", label: "SCORE" }
     ]
   },
   touch: {
@@ -284,7 +284,7 @@ function syncHud(): void {
   const snap = rules.snapshot();
   game.hud.set("turn", `RACK ${snap.rack} · ${snap.phase.toUpperCase()}`);
   game.hud.set("tray", snap.potted.join(" "));
-  game.hud.set("power", cueController.state().charge);
+  game.hud.set("power", `${Math.round(cueController.state().charge * 100)}%`);
   game.hud.set("score", String(snap.score));
 }
 

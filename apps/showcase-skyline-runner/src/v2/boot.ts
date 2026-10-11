@@ -85,12 +85,12 @@ const game: Prd09Game<string, string> = createGame({
     theme: "sci-fi-telemetry",
     maxScreenFraction: 0.2,
     widgets: [
-      { id: "act", kind: "label", anchor: "top-left", label: "ACT" },
-      { id: "score", kind: "label", anchor: "top", label: "SCORE" },
-      { id: "lives", kind: "label", anchor: "top-right", label: "LIVES" },
-      { id: "shards", kind: "label", anchor: "top-right", label: "SHARDS" },
-      { id: "flow", kind: "gauge", anchor: "bottom-left", label: "FLOW" },
-      { id: "state", kind: "label", anchor: "bottom", label: "STATUS" }
+      { id: "act", kind: "prompt", anchor: "top-left", label: "ACT" },
+      { id: "score", kind: "prompt", anchor: "top", label: "SCORE" },
+      { id: "lives", kind: "prompt", anchor: "top-right", label: "LIVES" },
+      { id: "shards", kind: "prompt", anchor: "top-right", label: "SHARDS" },
+      { id: "flow", kind: "prompt", anchor: "bottom-left", label: "FLOW" },
+      { id: "state", kind: "prompt", anchor: "bottom", label: "STATUS" }
     ]
   },
   touch: {

@@ -75,11 +75,11 @@ const game = createGame({
     theme: "sci-fi-telemetry",
     maxScreenFraction: 0.15,
     widgets: [
-      { id: "score", kind: "text", anchor: "top-left", label: "SCORE" },
-      { id: "wave", kind: "text", anchor: "top", label: "WAVE" },
-      { id: "integrity", kind: "bar", anchor: "top-right", label: "PLANET" },
-      { id: "heat", kind: "bar", anchor: "bottom-left", label: "HEAT" },
-      { id: "shield", kind: "text", anchor: "bottom-right", label: "SHIELD" }
+      { id: "score", kind: "prompt", anchor: "top-left", label: "SCORE" },
+      { id: "wave", kind: "prompt", anchor: "top", label: "WAVE" },
+      { id: "integrity", kind: "prompt", anchor: "top-right", label: "PLANET" },
+      { id: "heat", kind: "prompt", anchor: "bottom-left", label: "HEAT" },
+      { id: "shield", kind: "prompt", anchor: "bottom-right", label: "SHIELD" }
     ]
   },
   touch: {

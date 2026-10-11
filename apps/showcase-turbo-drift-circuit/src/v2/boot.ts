@@ -76,14 +76,14 @@ const gameShell = createGame({
     theme: "motorsport",
     maxScreenFraction: 0.15,
     widgets: [
-      { id: "speed", kind: "meter", anchor: "bottom-right", label: "KPH" },
-      { id: "tach", kind: "meter", anchor: "bottom-right", label: "RPM" },
-      { id: "gear", kind: "label", anchor: "bottom-right", label: "GEAR" },
-      { id: "lap", kind: "label", anchor: "top-left", label: "LAP" },
-      { id: "position", kind: "score", anchor: "top-right", label: "POS" },
-      { id: "minimap", kind: "label", anchor: "top", label: "MAP" },
-      { id: "lights", kind: "label", anchor: "center", label: "LIGHTS" },
-      { id: "status", kind: "label", anchor: "bottom-left", label: "STATUS" }
+      { id: "speed", kind: "prompt", anchor: "bottom-right", label: "KPH" },
+      { id: "tach", kind: "prompt", anchor: "bottom-right", label: "RPM" },
+      { id: "gear", kind: "prompt", anchor: "bottom-right", label: "GEAR" },
+      { id: "lap", kind: "prompt", anchor: "top-left", label: "LAP" },
+      { id: "position", kind: "prompt", anchor: "top-right", label: "POS" },
+      { id: "minimap", kind: "prompt", anchor: "top", label: "MAP" },
+      { id: "lights", kind: "prompt", anchor: "center", label: "LIGHTS" },
+      { id: "status", kind: "prompt", anchor: "bottom-left", label: "STATUS" }
     ]
   },
   touch: {

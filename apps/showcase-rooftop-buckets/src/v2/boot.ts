@@ -80,11 +80,11 @@ const game = createGame({
     theme: "sports-broadcast",
     maxScreenFraction: 0.15,
     widgets: [
-      { id: "score", kind: "score", anchor: "top-left", label: "SCORE" },
-      { id: "heat", kind: "label", anchor: "top", label: "HEAT" },
-      { id: "clock", kind: "label", anchor: "top-right", label: "CLOCK" },
-      { id: "spot", kind: "label", anchor: "bottom-left", label: "SPOT" },
-      { id: "meter", kind: "meter", anchor: "bottom", label: "CHARGE" }
+      { id: "score", kind: "prompt", anchor: "top-left", label: "SCORE" },
+      { id: "heat", kind: "prompt", anchor: "top", label: "HEAT" },
+      { id: "clock", kind: "prompt", anchor: "top-right", label: "CLOCK" },
+      { id: "spot", kind: "prompt", anchor: "bottom-left", label: "SPOT" },
+      { id: "meter", kind: "prompt", anchor: "bottom", label: "CHARGE" }
     ]
   },
   touch: {

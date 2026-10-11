@@ -57,8 +57,8 @@ export function wireDeepHud(ctx: DeepCtx, deps: {
     lastHudKey = key;
     game.hud.set("objective", OBJECTIVES[missionStage()]);
     game.hud.set("depth", `${depth}m ${zone.name}`);
-    game.hud.set("oxygen", Math.round(ctx.oxygenState.oxygen));
-    game.hud.set("hull", Math.round(ctx.oxygenState.hull));
+    game.hud.set("oxygen", `${Math.round(ctx.oxygenState.oxygen)}%`);
+    game.hud.set("hull", `${Math.round(ctx.oxygenState.hull)}%`);
     game.hud.set("salvage", ctx.bankedTotal);
     game.hud.set("sonar", `${ctx.sonarState.contacts.length} RETURNS · ${Math.max(0, ctx.sonarState.pingCooldownRemaining).toFixed(1)}s`);
     const tethered = ctx.crates.filter((c) => c.tethered).length;

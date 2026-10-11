@@ -30,10 +30,10 @@ export function createMechHud(deps: {
     if (key === hudCache) return;
     hudCache = key;
     game.hud.set("mode", mode === "hangar" ? `HANGAR ${hangar.snapshot().activeSlot.toUpperCase()}` : "PIT");
-    game.hud.set("hp", snap && stats ? snap.player.hp / stats.player.hpMax : 0);
-    game.hud.set("rival", snap && stats ? snap.rival.hp / stats.rival.hpMax : 0);
-    game.hud.set("guard", snap && stats ? snap.player.guard / stats.player.guardMax : 0);
-    game.hud.set("power", snap && stats ? snap.player.power / stats.player.powerMax : 0);
+    game.hud.set("hp", `${Math.round((snap && stats ? snap.player.hp / stats.player.hpMax : 0) * 100)}%`);
+    game.hud.set("rival", `${Math.round((snap && stats ? snap.rival.hp / stats.rival.hpMax : 0) * 100)}%`);
+    game.hud.set("guard", `${Math.round((snap && stats ? snap.player.guard / stats.player.guardMax : 0) * 100)}%`);
+    game.hud.set("power", `${Math.round((snap && stats ? snap.player.power / stats.player.powerMax : 0) * 100)}%`);
     game.hud.set(
       "phase",
       snap ? `${snap.phase.toUpperCase()} ${boutIndex + 1}` : mode === "hangar" ? "ASSEMBLY" : "—"

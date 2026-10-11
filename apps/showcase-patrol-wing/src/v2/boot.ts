@@ -78,12 +78,12 @@ const game = createGame({
     theme: "sci-fi-telemetry",
     maxScreenFraction: 0.16,
     widgets: [
-      { id: "mission", kind: "label", anchor: "top", label: "MISSION" },
-      { id: "patrol", kind: "label", anchor: "top-left", label: "PATROL" },
-      { id: "hull", kind: "gauge", anchor: "top-right", label: "HULL" },
-      { id: "rings", kind: "label", anchor: "bottom-left", label: "RINGS" },
-      { id: "speed", kind: "label", anchor: "bottom", label: "AIRSPEED" },
-      { id: "wave", kind: "label", anchor: "bottom-right", label: "COMBAT" }
+      { id: "mission", kind: "prompt", anchor: "top", label: "MISSION" },
+      { id: "patrol", kind: "prompt", anchor: "top-left", label: "PATROL" },
+      { id: "hull", kind: "prompt", anchor: "top-right", label: "HULL" },
+      { id: "rings", kind: "prompt", anchor: "bottom-left", label: "RINGS" },
+      { id: "speed", kind: "prompt", anchor: "bottom", label: "AIRSPEED" },
+      { id: "wave", kind: "prompt", anchor: "bottom-right", label: "COMBAT" }
     ]
   },
   touch: {

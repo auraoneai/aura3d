@@ -62,11 +62,11 @@ const game = createGame({
     theme: "fighting",
     maxScreenFraction: 0.15,
     widgets: [
-      { id: "health-p1", kind: "bar", anchor: "top-left", label: "MARA VOLT" },
-      { id: "timer", kind: "text", anchor: "top" },
-      { id: "health-p2", kind: "bar", anchor: "top-right", label: "ROOK ATLAS" },
-      { id: "round", kind: "text", anchor: "bottom-left" },
-      { id: "meter", kind: "text", anchor: "bottom-right" }
+      { id: "health-p1", kind: "prompt", anchor: "top-left", label: "MARA VOLT" },
+      { id: "timer", kind: "prompt", anchor: "top" },
+      { id: "health-p2", kind: "prompt", anchor: "top-right", label: "ROOK ATLAS" },
+      { id: "round", kind: "prompt", anchor: "bottom-left" },
+      { id: "meter", kind: "prompt", anchor: "bottom-right" }
     ]
   },
   touch: {
