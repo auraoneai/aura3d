@@ -355,14 +355,19 @@ in vec4 v_color;
  * Bucketed total ({0,1,2,4,8}) is baked so each bucket compiles its own bound;
  * `a3dLegacyLightRadiance` switches on directionKind.w, so packing order is
  * irrelevant. Above 8 / clustered, only the cluster path runs. */
-function defaultLightsBody(f: ProgramFeatures): string {
+function defaultLightsBody(f: ProgramFeatures, lobeDirect: readonly string[] = []): string {
   const lines = ["  vec3 L;"];
+  // C-03 per-light lobe hook (04-LOBES): each active lobe's `direct` call chunk
+  // runs inside every light iteration (bucketed AND clustered) with L, radiance,
+  // V, N, material and the direct accumulators in scope.
+  const direct = lobeDirect.map((s) => indent(indent(s)));
   const total = totalLightCount(f.lights);
   const clustered = f.lights.clustered || total > 8;
   if (!clustered && total > 0) {
     lines.push(`  for (int i = 0; i < ${Math.min(total, 8)}; ++i) {  // bucketed light count`);
     lines.push("    vec3 radiance = a3dLegacyLightRadiance(i * 6, v_worldPosition, L);");
     lines.push("    a3dDirectLight(L, radiance, V, N, material, directDiffuse, directSpecular);");
+    lines.push(...direct);
     lines.push("  }");
   }
   lines.push("#ifdef LIGHTS_CLUSTERED");
@@ -372,6 +377,7 @@ function defaultLightsBody(f: ProgramFeatures): string {
   lines.push("    int lightIndex = int(texelFetch(u_clusterLightIndices, ivec2(j, a3dCluster), 0).r);");
   lines.push("    vec3 radiance = a3dClusteredLightRadiance(lightIndex, v_worldPosition, L);");
   lines.push("    a3dDirectLight(L, radiance, V, N, material, directDiffuse, directSpecular);");
+  lines.push(...direct);
   lines.push("  }");
   lines.push("#endif");
   return lines.join("\n");
@@ -457,7 +463,7 @@ function forwardFragmentSource(f: ProgramFeatures, contributions: readonly Contr
   body.push("  vec3 indirectDiffuse = vec3(0.0);");
   body.push("  vec3 indirectSpecular = vec3(0.0);");
   if (lit) {
-    body.push(lightsHooks.length > 0 ? lightsHooks.map((s) => indent(s)).join("\n") : defaultLightsBody(f));
+    body.push(lightsHooks.length > 0 ? lightsHooks.map((s) => indent(s)).join("\n") : defaultLightsBody(f, lobeChunks.direct));
     // fragment:indirect appends to the default ambient + env body (T0-05);
     // lobe `ibl` calls run last, over the final direct + indirect accumulators.
     body.push(defaultIndirectBody(f));
@@ -551,6 +557,8 @@ function indent(src: string): string {
 interface LobeCalls {
   readonly fragment: string[];
   readonly ibl: string[];
+  /** Per-light call chunks, spliced inside every light loop iteration. */
+  readonly direct: string[];
 }
 
 /** `emissive-strength` → `EMISSIVE_STRENGTH`; `prd10.foliage` → `PRD10_FOLIAGE`; `filmIor` → `FILM_IOR`. */
@@ -565,7 +573,7 @@ function defineToken(id: string): string {
  * `defines`. Unmatched extensions report `extension-lobe-pending`.
  */
 function extensionLobeChunks(f: ProgramFeatures, flags: QrFlags | undefined, state: SpliceState, defines: Record<string, string | number | true>, report: (d: ProgramDegradation) => void): LobeCalls {
-  const out: LobeCalls = { fragment: [], ibl: [] };
+  const out: LobeCalls = { fragment: [], ibl: [], direct: [] };
   if (f.extensions.length === 0) return out;
   const lobes = flags ? materialLobes(flags) : [];
   const matches = (ext: { readonly lobe: string }, lobe: (typeof lobes)[number]) => ext.lobe === lobe.id || (lobe.glTFExtension !== undefined && ext.lobe === lobe.glTFExtension);
@@ -581,6 +589,7 @@ function extensionLobeChunks(f: ProgramFeatures, flags: QrFlags | undefined, sta
   if (f.pass !== "forward" || f.lighting !== "lit") return out;
   const fragmentSeen = new Set<string>();
   const iblSeen = new Set<string>();
+  const directSeen = new Set<string>();
   for (const lobe of lobes) {
     const ext = f.extensions.find((e) => matches(e, lobe));
     if (!ext) continue;
@@ -599,6 +608,12 @@ function extensionLobeChunks(f: ProgramFeatures, flags: QrFlags | undefined, sta
       iblSeen.add(lobe.chunks.ibl);
       out.ibl.push(emitCall(state, lobe.chunks.ibl));
     }
+    if (lobe.chunks.direct && !directSeen.has(lobe.chunks.direct)) {
+      directSeen.add(lobe.chunks.direct);
+      out.direct.push(emitCall(state, lobe.chunks.direct));
+    }
+    // Lobe textures (glTF texCoord 0) need the UV varying even when no core map does.
+    if (ext.maps.length > 0) defines.A3D_NEED_UV0 = true;
   }
   return out;
 }
