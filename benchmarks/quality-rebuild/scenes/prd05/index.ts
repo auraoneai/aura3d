@@ -106,8 +106,10 @@ export const prd05SceneSpecs: Readonly<Record<string, Prd05SceneSpec>> = {
     environment: { hdri: "studioSmall08", intensity: 0.85, rotation: 0 },
     lights: [sun(2.4, [4, 6, 3])],
     objects: [
-      { kind: "model", name: "rock-a", asset: "rockA", position: [-1.6, -0.2, 0], scale: 0.012, castShadow: false, receiveShadow: false },
-      { kind: "model", name: "rock-b", asset: "rockB", position: [1.7, -0.3, -0.6], scale: 0.012, castShadow: false, receiveShadow: false }
+      // Scales from the assets' scene-graph world extents (rockA ≈ 0.25 m, rockB ≈ 3.8 m across);
+      // the earlier 0.012 rendered them at 3 mm / 45 mm, a blank frame on both engines.
+      { kind: "model", name: "rock-a", asset: "rockA", position: [-1.5, -0.2, 0], scale: 6, castShadow: false, receiveShadow: false },
+      { kind: "model", name: "rock-b", asset: "rockB", position: [1.5, 0.3, -0.6], scale: 0.55, castShadow: false, receiveShadow: false }
     ],
     primaryCriterion: "optimized-outdoor-silhouette"
   },
