@@ -1,4 +1,4 @@
-From 195c8bd77d864af8f639acdd61fb5301056a04ab Mon Sep 17 00:00:00 2001
+From e09fddb0108f4e449026f5b213de3076e3134182 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:48 +0000
 Subject: [PATCH] showcase-courier-rush: delete evidence files+blocks (T5.8)
@@ -6,13 +6,13 @@ Subject: [PATCH] showcase-courier-rush: delete evidence files+blocks (T5.8)
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
  .../performance-report.json                   |  20 --
- .../scripts/register-models.mjs               |  34 ---
- .../scripts/write-performance-report.ts       |  55 -----
- .../scripts/write-route-health.mjs            | 135 -----------
- apps/showcase-courier-rush/src/legacy/main.ts | 228 ------------------
+ .../scripts/register-models.mjs               |  34 ----
+ .../scripts/write-performance-report.ts       |  55 ------
+ .../scripts/write-route-health.mjs            | 135 -------------
+ apps/showcase-courier-rush/src/legacy/main.ts | 183 ------------------
  apps/showcase-courier-rush/src/main.ts        |  10 -
- .../src/v2/evidence/index.ts                  |  99 --------
- 7 files changed, 581 deletions(-)
+ .../src/v2/evidence/index.ts                  |  99 ----------
+ 7 files changed, 536 deletions(-)
  delete mode 100644 apps/showcase-courier-rush/performance-report.json
  delete mode 100644 apps/showcase-courier-rush/scripts/register-models.mjs
  delete mode 100644 apps/showcase-courier-rush/scripts/write-performance-report.ts
@@ -148,7 +148,7 @@ index f85cd954c..000000000
 -if (!report.pass) process.exitCode = 1;
 diff --git a/apps/showcase-courier-rush/scripts/write-route-health.mjs b/apps/showcase-courier-rush/scripts/write-route-health.mjs
 deleted file mode 100644
-index 005731d93..000000000
+index ec4e669df..000000000
 --- a/apps/showcase-courier-rush/scripts/write-route-health.mjs
 +++ /dev/null
 @@ -1,135 +0,0 @@
@@ -248,7 +248,7 @@ index 005731d93..000000000
 -    renderedProbeSha256: assetById.get(id).renderedProbe.sha256
 -  })),
 -  audioAssets: audioAssetIds.map((id) => ({ typedRef: `assets.${id}`, quality: assetById.get(id).quality, hash: assetById.get(id).hash, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
--  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "street/zone guides, light pools, feedback, and non-subject set dressing", status: "within-stated-role-and-budget" },
+-  primitiveStatus: { primitiveBudget: gate.primitiveBudget, role: "street/zone guides, light pools, feedback, and non-subject set dressing", status: "within-stated-role-and-budget" },
 -  gameplay: {
 -    deliveries: 5,
 -    arc: ["nearby-zone-teach", "cross-traffic", "two-route-choice", "fragile-express-pressure", "combined-final-run"],
@@ -288,7 +288,7 @@ index 005731d93..000000000
 -writeFileSync(join(appDir, "route-health.json"), JSON.stringify(routeHealth, null, 2) + "\n");
 -console.log(JSON.stringify({ machinePass: true, primitiveOccurrences, performancePass: performance.pass }));
 diff --git a/apps/showcase-courier-rush/src/legacy/main.ts b/apps/showcase-courier-rush/src/legacy/main.ts
-index 1d8cf8353..14afc4108 100644
+index f71bf706a..fd9220bc7 100644
 --- a/apps/showcase-courier-rush/src/legacy/main.ts
 +++ b/apps/showcase-courier-rush/src/legacy/main.ts
 @@ -1,14 +1,3 @@
@@ -314,61 +314,7 @@ index 1d8cf8353..14afc4108 100644
  import { bindCourierDrive, courierDrive } from "../scenario-drive";
  import { assets } from "../../../../src/aura-assets";
  import {
-@@ -67,53 +55,21 @@ import {
-   type VanDriveInput
- } from "../gameplay/van";
- import { createCourierSound, type CourierCue, type CourierSoundController } from "../sound";
--
- interface CourierRouteReadyFlag {
-   readonly ready: boolean;
-   readonly diagnostics?: unknown;
- }
--declare global {
--  interface Window {
--    __COURIER_RUSH_EVIDENCE__?: Record<string, unknown>;
--    __COURIER_RUSH_DEBUG__?: {
--      placeVan(x: number, z: number, heading?: number): void;
--      vanSnapshot(): { x: number; z: number; heading: number; speed: number };
--      pump(frameCount: number): number;
--      present(): Promise<number>;
--    };
--    __AURA3D_ROUTE_READY__?: CourierRouteReadyFlag;
--    __AURA3D_COMPOSITION_PROBE__?: {
--      readonly category: "application";
--      readonly subject: {
--        readonly position: readonly [number, number, number];
--        readonly rotation: readonly [number, number, number];
--        readonly targetSize: number;
--      };
--      setSubjectSuppressed(suppressed: boolean): Promise<void>;
--      settleSubjectPose(): Promise<void>;
--    };
--  }
--}
--
--// ---- diagnostics switches ---------------------------------------------------
- const urlParams = new URLSearchParams(window.location.search);
- const autopilotEnabled = urlParams.get("autopilot") === "1";
- const timerScale = Number(urlParams.get("timerScale") ?? "1") || 1;
- const debugMode = urlParams.get("debug") === "1";
--document.body.dataset.capture = "default";
--
--/** Deterministic shift seed (drives traffic line variation). */
- const SHIFT_SEED = 20260821;
--
--// ---- accessibility ----------------------------------------------------------
- const prefersReducedMotion =
-   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
- const accessibilitySettings = game.accessibility.settings([
-   game.accessibility.reducedMotion({ enabled: prefersReducedMotion })
- ]);
- const reducedMotion = accessibilitySettings.reducedMotion;
--
--// ---- audio ------------------------------------------------------------------
- const courierAudio: CourierSoundController = createCourierSound();
- let audioUnlocked = false;
- const unlockAudio = (): void => {
-@@ -125,8 +81,6 @@ const playCue = (cue: CourierCue): void => {
+@@ -125,8 +113,6 @@ const playCue = (cue: CourierCue): void => {
    if (!audioUnlocked) return;
    void courierAudio.cue(cue);
  };
@@ -377,7 +323,7 @@ index 1d8cf8353..14afc4108 100644
  const input = game.input({
    actions: {
      throttle: ["KeyW", "ArrowUp"],
-@@ -145,33 +99,17 @@ const input = game.input({
+@@ -145,33 +131,17 @@ const input = game.input({
  });
  window.addEventListener("keydown", unlockAudio, { once: true });
  window.addEventListener("pointerdown", unlockAudio, { once: true });
@@ -411,7 +357,7 @@ index 1d8cf8353..14afc4108 100644
  const vanVehicle: GameArcadeVehicle = createGameArcadeVehicle({
    maxSpeed: VAN_TUNE.maxSpeed,
    acceleration: VAN_TUNE.acceleration,
-@@ -180,26 +118,15 @@ const vanVehicle: GameArcadeVehicle = createGameArcadeVehicle({
+@@ -180,26 +150,15 @@ const vanVehicle: GameArcadeVehicle = createGameArcadeVehicle({
    drag: VAN_TUNE.drag,
    steerRate: VAN_TUNE.steerRate
  });
@@ -438,7 +384,7 @@ index 1d8cf8353..14afc4108 100644
  interface ZoneEventRecord {
    readonly type: string;
    readonly zoneId: string;
-@@ -207,7 +134,6 @@ interface ZoneEventRecord {
+@@ -207,7 +166,6 @@ interface ZoneEventRecord {
    readonly deliveryIndex: number;
    readonly timerMsAtEvent: number;
  }
@@ -446,7 +392,7 @@ index 1d8cf8353..14afc4108 100644
  const zoneEvents: ZoneEventRecord[] = [];
  const strikeLog: { source: string; x: number; z: number; timerMs: number }[] = [];
  const observed = {
-@@ -225,16 +151,11 @@ const observed = {
+@@ -225,16 +183,11 @@ const observed = {
    parcelVisibleInBed: false,
    allDeliveriesInsideTimers: false
  };
@@ -463,7 +409,7 @@ index 1d8cf8353..14afc4108 100644
  const chaseCamera = camera.follow({
    // The catalog van needs a +PI/2 mesh correction, while a follow camera needs
    // the simulation's actual heading. A dedicated invisible rig keeps those two
-@@ -256,10 +177,7 @@ const chaseCamera = camera.follow({
+@@ -256,10 +209,7 @@ const chaseCamera = camera.follow({
    // a real collision is framed where the simulation says it occurred.
    smoothing: CHASE_CAMERA.smoothing
  });
@@ -474,9 +420,9 @@ index 1d8cf8353..14afc4108 100644
  const courierGame = createGame({
    id: "showcase-courier-rush",
    target: "#app",
-@@ -412,10 +330,6 @@ const courierGame = createGame({
+@@ -412,10 +362,6 @@ const courierGame = createGame({
  });
- const app = courierGame.runtime;
+ const app = courierGame.app;
  courierGame.start();
 -
 -// ---- juice (PRD-09 §7.6) ----------------------------------------------------
@@ -485,7 +431,7 @@ index 1d8cf8353..14afc4108 100644
  const courierTween = createTweenEngine();
  const courierFx = createFxParticlePass(app.effects);
  const courierJuice = createJuice<"pickup" | "deliver" | "combo" | "strike", CourierCue>({
-@@ -432,8 +346,6 @@ const courierJuice = createJuice<"pickup" | "deliver" | "combo" | "strike", Cour
+@@ -432,8 +378,6 @@ const courierJuice = createJuice<"pickup" | "deliver" | "combo" | "strike", Cour
    tweens: courierTween,
    rumble: createRumbleDriver()
  });
@@ -494,7 +440,7 @@ index 1d8cf8353..14afc4108 100644
  function vanHeadlightPools() {
    return ["left", "right"].map((side) =>
      primitives.box({
-@@ -450,9 +362,6 @@ function vanHeadlightPools() {
+@@ -450,9 +394,6 @@ function vanHeadlightPools() {
        .runtime({ id: "courier-headlight-" + side, tags: ["headlight", "renderer-owned"] })
    );
  }
@@ -504,7 +450,7 @@ index 1d8cf8353..14afc4108 100644
  function vanSpeedStreaks() {
    const streakMaterial = material.emissive({ name: "van speed streak", color: "#5eead4", emissive: "#14b8a6", emissiveIntensity: 1.35, opacity: 0.86 });
    return ["left", "right", "center"].map((side) =>
-@@ -463,13 +372,6 @@ function vanSpeedStreaks() {
+@@ -463,13 +404,6 @@ function vanSpeedStreaks() {
        .runtime({ id: "courier-speed-streak-" + side, tags: ["vehicle-motion", "renderer-owned"] })
    );
  }
@@ -518,7 +464,7 @@ index 1d8cf8353..14afc4108 100644
  function vanTireContactPatches() {
    const contactMaterial = material.emissive({
      name: "courier wet tyre contact reflection",
-@@ -485,12 +387,6 @@ function vanTireContactPatches() {
+@@ -485,12 +419,6 @@ function vanTireContactPatches() {
        .runtime({ id: "courier-tyre-contact-" + corner, tags: ["vehicle-motion", "wet-road-contact", "renderer-owned"] })
    );
  }
@@ -531,7 +477,7 @@ index 1d8cf8353..14afc4108 100644
  function vanLiveryTrimNodes() {
    const trimMaterial = material.emissive({
      name: "courier van cyan service trim",
-@@ -506,8 +402,6 @@ function vanLiveryTrimNodes() {
+@@ -506,8 +434,6 @@ function vanLiveryTrimNodes() {
        .runtime({ id: "courier-van-trim-" + side, tags: ["vehicle-identity", "renderer-owned"] })
    );
  }
@@ -540,7 +486,7 @@ index 1d8cf8353..14afc4108 100644
  function vanRearBumperNode() {
    return primitives.box({
      name: "courier van rear safety bumper",
-@@ -525,8 +419,6 @@ function vanRearBumperNode() {
+@@ -525,8 +451,6 @@ function vanRearBumperNode() {
      .scale([1.42, 0.1, 0.1])
      .runtime({ id: "courier-van-rear-bumper", tags: ["vehicle-contact", "renderer-owned"] });
  }
@@ -549,7 +495,7 @@ index 1d8cf8353..14afc4108 100644
  function vanParcelBeaconNode() {
    return primitives.cylinder({
      name: "courier parcel status beacon",
-@@ -541,8 +433,6 @@ function vanParcelBeaconNode() {
+@@ -541,8 +465,6 @@ function vanParcelBeaconNode() {
      .scale([0.14, 0.12, 0.14])
      .runtime({ id: "courier-parcel-beacon", tags: ["cargo-state", "renderer-owned"] });
  }
@@ -558,7 +504,7 @@ index 1d8cf8353..14afc4108 100644
  function vanRoofBeaconNode() {
    return primitives.cylinder({
      name: "courier van roof beacon",
-@@ -558,13 +448,6 @@ function vanRoofBeaconNode() {
+@@ -558,13 +480,6 @@ function vanRoofBeaconNode() {
      .scale([0.16, 0.1, 0.16])
      .runtime({ id: "courier-van-roof-beacon", tags: ["vehicle-identity", "renderer-owned"] });
  }
@@ -572,7 +518,7 @@ index 1d8cf8353..14afc4108 100644
  function impactFeedbackNodes() {
    const impactMaterial = material.emissive({
      name: "courier traffic impact ember",
-@@ -585,8 +468,6 @@ function impactFeedbackNodes() {
+@@ -585,8 +500,6 @@ function impactFeedbackNodes() {
        .runtime({ id: "courier-impact-slash", tags: ["traffic-contact", "renderer-owned"] })
    ];
  }
@@ -581,7 +527,7 @@ index 1d8cf8353..14afc4108 100644
  function trafficHeadlightNodes() {
    const headlightMaterial = material.emissive({
      name: "courier traffic headlight wash",
-@@ -602,8 +483,6 @@ function trafficHeadlightNodes() {
+@@ -602,8 +515,6 @@ function trafficHeadlightNodes() {
        .runtime({ id: car.id + "-headlight", tags: ["traffic", "vehicle-motion", "renderer-owned"] })
    );
  }
@@ -590,7 +536,7 @@ index 1d8cf8353..14afc4108 100644
  const vanNode = app.nodes.require("courier-van");
  const cameraTargetNode = app.nodes.require("courier-camera-target");
  const parcelNode = app.nodes.require("courier-parcel");
-@@ -627,9 +506,6 @@ for (const car of trafficSim.cars()) {
+@@ -627,9 +538,6 @@ for (const car of trafficSim.cars()) {
    trafficNodes.set(car.id, app.nodes.require(car.id));
    trafficHeadlights.set(car.id, app.nodes.require(car.id + "-headlight"));
  }
@@ -600,7 +546,7 @@ index 1d8cf8353..14afc4108 100644
  const mountedEvidence = {
    schema: "aura3d-showcase-courier-rush/1.0",
    appId: "showcase-courier-rush",
-@@ -708,7 +584,6 @@ const mountedEvidence = {
+@@ -708,7 +616,6 @@ const mountedEvidence = {
    },
    diagnostics: undefined as unknown
  };
@@ -608,7 +554,7 @@ index 1d8cf8353..14afc4108 100644
  function refreshAudioEvidence(): void {
    const proof = courierAudio.proof();
    mountedEvidence.audio.gestureUnlocked = audioUnlocked;
-@@ -718,23 +593,6 @@ function refreshAudioEvidence(): void {
+@@ -718,23 +625,6 @@ function refreshAudioEvidence(): void {
    mountedEvidence.audio.contextState = proof.contextState;
    mountedEvidence.audio.assetUrls = courierAudio.assetUrls.slice();
  }
@@ -632,7 +578,7 @@ index 1d8cf8353..14afc4108 100644
  bindCourierDrive({
    async pumpFrames(frames: number): Promise<void> {
      for (let i = 0; i < frames; i += 1) await app.stepAsync(1 / 60);
-@@ -743,51 +601,6 @@ bindCourierDrive({
+@@ -743,51 +633,6 @@ bindCourierDrive({
      vanVehicle.reset({ x, z, heading, speed: 0, drift: 0 });
    }
  });
@@ -684,7 +630,7 @@ index 1d8cf8353..14afc4108 100644
  const hudHost = document.createElement("div");
  hudHost.className = "a3g-game-hud";
  document.getElementById("app")!.appendChild(hudHost);
-@@ -837,11 +650,9 @@ const touchControls = mountTouchControls(
+@@ -837,11 +682,9 @@ const touchControls = mountTouchControls(
    }
  );
  void touchControls; // visibility is rule-driven; update() runs in the frame loop
@@ -696,7 +642,7 @@ index 1d8cf8353..14afc4108 100644
  function showShiftSummary(input: {
    cleared: boolean;
    failReason: "timer" | "strikes" | null;
-@@ -869,11 +680,9 @@ function showShiftSummary(input: {
+@@ -869,11 +712,9 @@ function showShiftSummary(input: {
      { ms: 6000 }
    );
  }
@@ -708,7 +654,7 @@ index 1d8cf8353..14afc4108 100644
  function syncHud(): void {
    const frame = currentHudFrame();
    navBearingRef.current = frame.arrowBearing;
-@@ -886,20 +695,17 @@ function syncHud(): void {
+@@ -886,20 +727,17 @@ function syncHud(): void {
    const bearing = frame.arrowBearing;
    hud.set("nav", bearing === null ? [0.5, 0.5] : [0.5 + 0.42 * Math.sin(bearing), 0.5 - 0.42 * Math.cos(bearing)]);
  }
@@ -729,7 +675,7 @@ index 1d8cf8353..14afc4108 100644
  function summaryInput(cleared: boolean) {
    return {
      cleared,
-@@ -910,7 +716,6 @@ function summaryInput(cleared: boolean) {
+@@ -910,7 +748,6 @@ function summaryInput(cleared: boolean) {
      earlyDrops: dispatch.earlyDrops
    };
  }
@@ -737,7 +683,7 @@ index 1d8cf8353..14afc4108 100644
  function handleCourierEvents(
    events: readonly CourierEvent[],
    vanX: number,
-@@ -997,23 +802,12 @@ function handleCourierEvents(
+@@ -997,23 +834,12 @@ function handleCourierEvents(
      }
    }
  }
@@ -761,7 +707,7 @@ index 1d8cf8353..14afc4108 100644
  function projectOntoLeg(vanX: number, vanZ: number): void {
    // Advance the progress segment while the van has passed the current one.
    let guard = 0;
-@@ -1038,7 +832,6 @@ function projectOntoLeg(vanX: number, vanZ: number): void {
+@@ -1038,7 +864,6 @@ function projectOntoLeg(vanX: number, vanZ: number): void {
      break;
    }
  }
@@ -769,7 +715,7 @@ index 1d8cf8353..14afc4108 100644
  function autopilotDrive(vanX: number, vanZ: number, heading: number, speed: number): VanDriveInput {
    const target = activeTargetSite(dispatch);
    if (!target) return { throttle: 0, brake: 1, steer: 0, handbrake: false };
-@@ -1158,10 +951,7 @@ function autopilotDrive(vanX: number, vanZ: number, heading: number, speed: numb
+@@ -1158,10 +983,7 @@ function autopilotDrive(vanX: number, vanZ: number, heading: number, speed: numb
        : finalDistance < 2.8 ? 0.14 : vertexTurnSharpness > 0.35 && speed > 7.6 ? 0 : 0.52;
    return { throttle, brake: approachBrake, steer, handbrake: false };
  }
@@ -780,7 +726,7 @@ index 1d8cf8353..14afc4108 100644
  function collisionHits(vanX: number, vanZ: number, vanSpeed: number): PropCollider[] {
    const hits: PropCollider[] = [];
    const colliders: readonly PropCollider[] = [...propColliders, ...trafficSim.staticColliders()];
-@@ -1177,7 +967,6 @@ function collisionHits(vanX: number, vanZ: number, vanSpeed: number): PropCollid
+@@ -1177,7 +999,6 @@ function collisionHits(vanX: number, vanZ: number, vanSpeed: number): PropCollid
    }
    return hits;
  }
@@ -788,7 +734,7 @@ index 1d8cf8353..14afc4108 100644
  function pushOut(vanX: number, vanZ: number, collider: PropCollider): { x: number; z: number } {
    const dx = vanX - collider.x;
    const dz = vanZ - collider.z;
-@@ -1185,8 +974,6 @@ function pushOut(vanX: number, vanZ: number, collider: PropCollider): { x: numbe
+@@ -1185,8 +1006,6 @@ function pushOut(vanX: number, vanZ: number, collider: PropCollider): { x: numbe
    const reach = collider.radius + VAN_COLLIDER_RADIUS;
    return { x: collider.x + (dx / distance) * reach, z: collider.z + (dz / distance) * reach };
  }
@@ -797,7 +743,7 @@ index 1d8cf8353..14afc4108 100644
  app.onFrame(({ dt }) => {
    const stepSeconds = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
    frameCount += 1;
-@@ -1511,7 +1298,6 @@ app.onFrame(({ dt }) => {
+@@ -1511,7 +1330,6 @@ app.onFrame(({ dt }) => {
    syncHud();
    refreshAudioEvidence();
  });
@@ -805,7 +751,7 @@ index 1d8cf8353..14afc4108 100644
  function currentHudFrame() {
    const plan = currentDelivery(dispatch);
    const vanSnap = vanVehicle.snapshot();
-@@ -1539,7 +1325,6 @@ function currentHudFrame() {
+@@ -1539,7 +1357,6 @@ function currentHudFrame() {
      carrying: dispatch.phase === "carrying"
    };
  }
@@ -813,29 +759,6 @@ index 1d8cf8353..14afc4108 100644
  function updateMountedEvidence(): void {
    const vanSnap = vanVehicle.snapshot();
    const activeSite = activeTargetSite(dispatch);
-@@ -1577,21 +1362,8 @@ function updateMountedEvidence(): void {
-   mountedEvidence.gameplay = { ...observed };
-   (mountedEvidence as unknown as { strikeLog: unknown }).strikeLog = strikeLog.slice(-12);
- }
--
- function round3(value: number): number {
-   return Math.round(value * 1000) / 1000;
- }
--
- syncHud();
- radioToast("<strong>Dispatch:</strong> five jobs tonight. Shift starts when you hit the gas.", 4);
--
--void app.ready().then(() => {
--  const diagnostics = app.diagnostics();
--  document.body.dataset.aura3dReady = "true";
--  document.body.dataset.aura3dRuntimeBackend = String(
--    (diagnostics as { runtimeBackend?: string }).runtimeBackend ?? (diagnostics as { backend?: string }).backend ?? ""
--  );
--  window.__AURA3D_ROUTE_READY__ = { ready: true, diagnostics };
--}).catch((error: unknown) => {
--  document.body.dataset.aura3dError = error instanceof Error ? error.message : String(error);
--});
-\ No newline at end of file
 diff --git a/apps/showcase-courier-rush/src/main.ts b/apps/showcase-courier-rush/src/main.ts
 index a298b2c6d..25423d3db 100644
 --- a/apps/showcase-courier-rush/src/main.ts

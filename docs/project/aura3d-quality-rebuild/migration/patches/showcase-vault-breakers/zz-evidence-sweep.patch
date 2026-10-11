@@ -1,4 +1,4 @@
-From e5a980d5e81064c5cfeeba7c7a33ac882cccbaaa Mon Sep 17 00:00:00 2001
+From 12c59d289ffc24d6acb1ccfcafc6da407d9ff117 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:56 +0000
 Subject: [PATCH] showcase-vault-breakers: delete evidence files+blocks (T5.8)
@@ -12,10 +12,10 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../scripts/write-deploy-report.mjs           |  50 --
  .../scripts/write-performance-report.ts       |  65 --
  .../scripts/write-route-health.mjs            |  99 ---
- .../src/legacy/main.ts                        | 149 ----
- apps/showcase-vault-breakers/src/main.ts      |  10 -
+ apps/showcase-vault-breakers/src/evidence.ts  |   8 -
+ .../src/legacy/main.ts                        |   7 -
  .../src/v2/evidence/index.ts                  |  98 ---
- 10 files changed, 1579 deletions(-)
+ 10 files changed, 1435 deletions(-)
  delete mode 100644 apps/showcase-vault-breakers/performance-report.json
  delete mode 100644 apps/showcase-vault-breakers/scripts/build-models.mjs
  delete mode 100644 apps/showcase-vault-breakers/scripts/build-sfx.mjs
@@ -23,6 +23,7 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  delete mode 100644 apps/showcase-vault-breakers/scripts/write-deploy-report.mjs
  delete mode 100644 apps/showcase-vault-breakers/scripts/write-performance-report.ts
  delete mode 100644 apps/showcase-vault-breakers/scripts/write-route-health.mjs
+ delete mode 100644 apps/showcase-vault-breakers/src/evidence.ts
  delete mode 100644 apps/showcase-vault-breakers/src/v2/evidence/index.ts
 
 diff --git a/apps/showcase-vault-breakers/performance-report.json b/apps/showcase-vault-breakers/performance-report.json
@@ -1286,7 +1287,7 @@ index da03b9046..000000000
 -if (!pass) process.exitCode = 1;
 diff --git a/apps/showcase-vault-breakers/scripts/write-route-health.mjs b/apps/showcase-vault-breakers/scripts/write-route-health.mjs
 deleted file mode 100644
-index 7bf1abdda..000000000
+index c3a629c6e..000000000
 --- a/apps/showcase-vault-breakers/scripts/write-route-health.mjs
 +++ /dev/null
 @@ -1,99 +0,0 @@
@@ -1377,7 +1378,7 @@ index 7bf1abdda..000000000
 -  renderer: { path: "createGameApp root safe API", mode: "production with safe-basic fallback", nativeWebGPU: false, productionRuntimeClaimed: false },
 -  primaryAssets: modelIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, role: assetById.get(id).role })),
 -  audioAssets: audioIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
--  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "subordinate felt, rails, slings, target state, lane, drain, lights, scoreboard, and feedback around typed primary assets", status: "no-primitive-primary-subjects" },
+-  primitiveStatus: { primitiveBudget: gate.primitiveBudget, role: "subordinate felt, rails, slings, target state, lane, drain, lights, scoreboard, and feedback around typed primary assets", status: "no-primitive-primary-subjects" },
 -  gameplay: { ballsPerGame: 3, controls: ["charge/release serve", "left/right joint flippers", "nudge/tilt", "pause", "full reset"], keyboardAndTouch: true, rapierBackend: true, motorisedJoints: 2, targetBanks: 5, vaultMultiball: true, deterministicFixedStep: true, deterministicPoseHash: true, reducedMotionPreservesStateTruth: true },
 -  accessibility: { semanticHeading: true, namedStatusRegions: true, namedTouchControls: 5, minimumTouchTargetPx: 44, keyboardAndTouchParity: true, pass: true },
 -  performance, deploy,
@@ -1389,24 +1390,25 @@ index 7bf1abdda..000000000
 -};
 -writeFileSync(join(appDir, "route-health.json"), `${JSON.stringify(routeHealth, null, 2)}\n`);
 -console.log(JSON.stringify({ machinePass: true, models: modelIds.length, audio: audioIds.length, exactArtifacts: exactArtifacts.length, primitiveOccurrences, performancePass: performance.pass }));
+diff --git a/apps/showcase-vault-breakers/src/evidence.ts b/apps/showcase-vault-breakers/src/evidence.ts
+deleted file mode 100644
+index a626180b3..000000000
+--- a/apps/showcase-vault-breakers/src/evidence.ts
++++ /dev/null
+@@ -1,8 +0,0 @@
+-/** Lazy route evidence sections (PRD-09 §6.5). */
+-export type EvidenceCollect = () => Record<string, unknown>;
+-let collect: EvidenceCollect | undefined;
+-export function bindVaultEvidence(fn: EvidenceCollect): void { collect = fn; }
+-export const sections = {
+-  vault: (): Record<string, unknown> =>
+-    (collect ?? (() => ({ status: "unbound" })))()
+-};
 diff --git a/apps/showcase-vault-breakers/src/legacy/main.ts b/apps/showcase-vault-breakers/src/legacy/main.ts
-index 7983f36df..c48f37974 100644
+index 939a05919..eae614db9 100644
 --- a/apps/showcase-vault-breakers/src/legacy/main.ts
 +++ b/apps/showcase-vault-breakers/src/legacy/main.ts
-@@ -1,12 +1,3 @@
--/**
-- * Vault Breakers - route mount (PRD VB-08/10/11/12).
-- *
-- * One Aura3D app per route. The physics table lives in table.ts and the game
-- * state machine in ball-flow.ts; this file owns the scene graph, per-frame
-- * visual sync from body poses, the text3D scoreboard, HUD, audio cue mapping,
-- * and the evidence global. DOM is UI only: every gameplay truth is rendered by
-- * the Aura3D scene.
-- */
- import {
-   camera,
-   effects,
-@@ -29,7 +20,6 @@ import {
+@@ -29,7 +29,6 @@ import {
    createRumbleDriver,
    createTweenEngine
  } from "@aura3d/game";
@@ -1414,174 +1416,19 @@ index 7983f36df..c48f37974 100644
  import { bindVaultDrive, vaultDrive } from "../scenario-drive";
  import { assets } from "../../../../src/aura-assets";
  import { VaultFlow, type VaultGameEvent } from "../gameplay/ball-flow";
-@@ -40,84 +30,17 @@ import { createVaultAudio } from "./pinball-audio";
- import { createScoreboardNodes, scoreboardVisibility, MISSION_LINES } from "./scoreboard";
- import { createVaultBreakersEnvironment } from "./environment";
- import "./styles.css";
--
--type VaultWindow = Window & {
--  __VAULT_BREAKERS_EVIDENCE__?: unknown;
--  __AURA3D_SHOWCASE_VAULT_BREAKERS__?: unknown;
--  __VB_SHOT__?: () => string;
--  __VB_PUMP__?: (frames: number) => number;
--  __VB_SCENARIO__?: (scenario: string) => string;
--};
- const vaultWindow = window as VaultWindow;
--Object.defineProperty(window, "__AURA3D_SHOWCASE_VAULT_BREAKERS__", {
--  configurable: true,
--  get: () => vaultWindow.__VAULT_BREAKERS_EVIDENCE__
--});
- const reducedMotion = typeof window.matchMedia === "function"
-   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
--document.body.dataset.capture = "default";
--// Physics identity (backend / flipper mode / sensor + joint counts) is evidence a
--// reviewer asks for, not HUD a player receives. Opt in with `?evidence=1`.
--document.body.dataset.evidence =
--  new URLSearchParams(window.location.search).get("evidence") === "1" ? "on" : "off";
--
- const APP_ID = "showcase-vault-breakers";
--
--// ---------------------------------------------------------------- HUD markup --
--ui.html("#hud", `
--  <div class="hole-banner" id="vb-banner" aria-live="polite">VAULT BREAKERS - PRESS AND RELEASE SPACE TO SERVE</div>
--  <div class="result-card is-hidden" id="vb-result" data-testid="vault-breakers-result">
--    <h2 id="vb-result-title">Game over</h2>
--    <p id="vb-result-detail"></p>
--    <div class="action-row"><button id="vb-again-button" type="button">Play again</button></div>
--  </div>
- `);
--
--ui.html("#panel", `
--  <section class="vb-brand">
--    <p class="eyebrow">Aura3D Prototype</p>
--    <h1>Vault Breakers</h1>
--    <p class="blurb">Neon pinball. Fire the flippers, bank five target stands, crack the vault, ride the multiball.</p>
--  </section>
--  <section class="stat-grid" aria-label="Table status">
--    <article><span>Score</span><strong id="stat-score">0</strong></article>
--    <article><span>Ball</span><strong id="stat-ball">1 OF 3</strong></article>
--    <article><span>Multiplier</span><strong id="stat-mult">X1</strong></article>
--    <article><span>Banks</span><strong id="stat-banks">0 OF 5</strong></article>
--    <article><span>Balls live</span><strong id="stat-live">0</strong></article>
--    <article><span>Tilt</span><strong id="stat-tilt">0 OF 3</strong></article>
--  </section>
--  <div class="power-meter" aria-label="Plunger power"><span id="vb-power-fill"></span></div>
--  <div class="power-meta"><span id="vb-power-label">Plunger</span><span>hold Space</span></div>
--  <p class="mission-line" id="vb-mission" aria-live="polite">HIT TARGET BANKS  0 DOWN 5 TO GO</p>
--  <ul class="controls-list" aria-label="Keyboard controls">
--    <li>Flippers <b>A</b>/<b>D</b> or <b>&larr;/&rarr;</b></li>
--    <li>Plunger <b>hold Space</b>, release to serve</li>
--    <li>Nudge <b>S</b> (3 strikes tilt)</li>
--    <li>Reset <b>R</b> - Pause <b>P</b></li>
--  </ul>
--  <section class="action-row" aria-label="Game actions">
--    <button id="vb-left-button" type="button">Left flipper</button>
--    <button id="vb-right-button" type="button">Right flipper</button>
--    <button id="vb-plunge-button" type="button">Plunge</button>
--    <button id="vb-reset-button" type="button">Reset</button>
--    <button id="vb-pause-button" type="button">Pause</button>
--  </section>
--  <section class="evidence-strip" aria-label="Route evidence">
--    <span>Backend <code id="vb-ev-backend">booting</code></span>
--    <span>Flipper mode <code id="vb-ev-flipper">joint</code></span>
--    <span>Sensors <code id="vb-ev-sensors">0</code> - Joints <code id="vb-ev-joints">0</code></span>
--  </section>
- `);
--
--// ---------------------------------------------------------------- audio ------
- const audio = createVaultAudio();
- window.addEventListener("pointerdown", () => {
-   void audio.unlock().catch(() => undefined);
- }, { passive: true });
- window.addEventListener("keydown", () => { void audio.unlock(); }, { passive: true });
--
--// ---------------------------------------------------------------- state ------
- const tableSim = createTableSimulation();
- const flippers = new FlipperController(tableSim.flippers);
- const flow = new VaultFlow(flippers, tableSim);
-@@ -132,8 +55,6 @@ let impactRemaining = 0;
- let impactRadius = 0.28;
- let impactOrigin: readonly [number, number, number] = [0, 0.5, 0];
- const touchControlEvents: string[] = [];
--// Neon palette — the typed GLBs keep their authored multi-material identity;
--// these route-owned materials are limited to state accents and gameplay cues.
- const liveBallMaterial = material.metal({
-   name: "neon chrome ball state accent",
-   color: "#dcecf5",
-@@ -173,7 +94,6 @@ const mechanismStateMaterials = {
-   tilt: material.emissive({ name: "neon tilt", color: "#ff0044", emissive: "#cc0033" }),
-   gameOver: material.emissive({ name: "neon game over", color: "#333333", emissive: "#1a1a1a" })
- } as const;
--
- function pushCue(cue: Parameters<typeof audio.cue>[0]): void {
-   void audio.cue(cue).catch(() => undefined);
-   audioCueLog.push(cue);
-@@ -185,7 +105,6 @@ function cueReady(name: string, gapFrames: number): boolean {
-   lastCueFrame.set(name, frameCount);
-   return true;
- }
--
- function triggerImpact(
-   origin: readonly [number, number, number],
-   kind: "amber" | "cyan" | "vault" = "amber",
-@@ -201,7 +120,6 @@ function triggerImpact(
-     .setScale([radius, radius, 0.05])
-     .setVisible(true);
- }
--
- function syncImpact(dt: number): void {
-   if (!impactHandle || impactRemaining <= 0) return;
-   impactRemaining = Math.max(0, impactRemaining - dt);
-@@ -213,8 +131,6 @@ function syncImpact(dt: number): void {
-   const radius = impactRadius * (1.08 + (1 - life) * 1.9);
-   impactHandle.setPosition(impactOrigin[0], impactOrigin[1], impactOrigin[2]).setScale([radius, radius, 0.05 + life * 0.04]);
- }
--
--// ---------------------------------------------------------------- scene ------
- function primitiveNode(visual: PropVisual): AuraSceneNode {
-   const p = visual.primitive!;
-   const visualY = visual.name === "felt" ? visual.position[1] : visual.position[1] + 0.28;
-@@ -243,8 +159,6 @@ function primitiveNode(visual: PropVisual): AuraSceneNode {
-     .scale([p.size[0], p.size[1], p.size[2]])
-     .toJSON();
- }
--
--/** Static physics landmarks used as origins for the renderer-owned impact cue. */
- const BUMPER_IMPACT_POSITIONS = [[-0.9, -1.7], [0.9, -1.7], [0, -0.7]] as const;
- const TARGET_BANK_POSITIONS: Record<string, readonly (readonly [number, number])[]> = {
-   "bank-left-top": [[-2.32, -2.4], [-2.32, -2.8], [-2.32, -3.2]],
-@@ -255,13 +169,11 @@ const TARGET_BANK_POSITIONS: Record<string, readonly (readonly [number, number])
- };
- let bumperImpactIndex = 0;
- let slingImpactIndex = 0;
--
- function targetImpactPosition(id: string): readonly [number, number] {
-   const [bank] = id.split(":");
-   const slot = Number(id.match(/:t(\d+)$/)?.[1] ?? 1);
-   return TARGET_BANK_POSITIONS[bank ?? ""]?.[Math.max(0, Math.min(2, slot))] ?? [0, -2.5] as const;
- }
--
- function visualNodes(): AuraSceneNode[] {
-   const nodes: AuraSceneNode[] = [];
-   for (const v of flow.sim.visuals) {
-@@ -350,7 +262,6 @@ function visualNodes(): AuraSceneNode[] {
-   }
-   return nodes;
- }
--
- function buildScene(): ReturnType<typeof scene> {
-   return scene()
-     .background("#030308")
-@@ -391,8 +302,6 @@ function buildScene(): ReturnType<typeof scene> {
-       fov: 50
-     }));
- }
--
--// ---------------------------------------------------------------- mount ------
- const vaultGame = createGame({
-   id: "showcase-vault-breakers",
-   target: "#app",
-@@ -429,7 +338,6 @@ const app = vaultGame.runtime;
+@@ -418,11 +417,6 @@ const vaultGame = createGame({
+   loop: { fixedDt: 1 / 60, maxSubSteps: 2 },
+   scene: () => buildScene(),
+   qualityRebuild: { flags: ["game"] },
+-  evidence: {
+-    schema: 1,
+-    sections: async () => (await import("../evidence")).sections,
+-    legacyGlobals: ["__AURA3D_SHOWCASE_VAULT_BREAKERS__"]
+-  },
+   scenarios: async () => (await import("../scenarios")).vaultScenarios
+ });
+ const gameApp = vaultGame.runtime;
+@@ -430,7 +424,6 @@ const app = gameApp.app;
  vaultGame.start();
  const input = vaultGame.input!;
  if (!input) throw new Error("Vault Breakers failed to create Aura3D input.");
@@ -1589,238 +1436,6 @@ index 7983f36df..c48f37974 100644
  const vaultTween = createTweenEngine();
  const vaultFx = createFxParticlePass(app.effects);
  const vaultJuice = createJuice<"serve" | "bumper" | "sling" | "target-down" | "bank-clear" | "vault-open" | "multiball" | "drain" | "tilt">({
-@@ -460,7 +368,6 @@ bindVaultDrive({
-   },
-   stage: (id) => stageScenario(id)
- });
--
- let dynamicHandles = new Map<string, AuraRuntimeNodeHandle>();
- const scoreboardHandles = new Map<string, AuraRuntimeNodeHandle>();
- const bankLampHandles = new Map<number, AuraRuntimeNodeHandle>();
-@@ -469,7 +376,6 @@ let doorHandle: AuraRuntimeNodeHandle | undefined;
- let mechanismHandle: AuraRuntimeNodeHandle | undefined;
- let impactHandle: AuraRuntimeNodeHandle | undefined;
- const missionBeaconHandles = new Map<string, AuraRuntimeNodeHandle>();
--
- function resolveHandles(): void {
-   dynamicHandles = new Map();
-   for (const name of flow.sim.dynamicVisualNames) {
-@@ -525,8 +431,6 @@ function resolveHandles(): void {
-   }
- }
- resolveHandles();
--
--// ---------------------------------------------------------------- HUD --------
- const banner = document.getElementById("vb-banner")!;
- const resultCard = document.getElementById("vb-result")!;
- const resultTitle = document.getElementById("vb-result-title")!;
-@@ -534,13 +438,9 @@ const resultDetail = document.getElementById("vb-result-detail")!;
- const againButton = document.getElementById("vb-again-button") as HTMLButtonElement;
- const powerFill = document.getElementById("vb-power-fill")!;
- const powerLabel = document.getElementById("vb-power-label")!;
--
- function hideResultCard(): void {
-   resultCard.classList.add("is-hidden");
- }
--
--// T1.12: cache element refs + last written string so a constant frame writes
--// zero DOM mutations (ui.setText re-resolves the selector every call).
- const hudCache = new Map<string, { el: HTMLElement; text: string }>();
- function hudText(selector: string, value: string): void {
-   let entry = hudCache.get(selector);
-@@ -553,7 +453,6 @@ function hudText(selector: string, value: string): void {
-     entry.text = value;
-   }
- }
--
- function syncHud(): void {
-   const snap = flow.snapshot();
-   hudText("#stat-score", String(snap.score));
-@@ -581,15 +480,12 @@ function syncHud(): void {
-           : snap.multiball ? "MULTIBALL" : snap.missionLine;
-   if (banner.textContent !== bannerText) banner.textContent = bannerText;
- }
--
--// ------------------------------------------------------------- actions -------
- function doServe(charge: number): void {
-   if (flow.serve(charge)) {
-     pushCue("plunger-release");
-     syncHud();
-   }
- }
--
- function togglePause(): void {
-   if (vaultGame.session.paused) vaultGame.session.resume(); else vaultGame.session.pause("user");
-   pushCue("bank-clear");
-@@ -598,7 +494,6 @@ function togglePause(): void {
-   if (vaultGame.session.paused) app.pause();
-   else app.resume();
- }
--
- function resetGame(): void {
-   flow.reset();
-   plunger.cancelCharge();
-@@ -620,7 +515,6 @@ function resetGame(): void {
-   syncHud();
-   publishEvidence();
- }
--
- function consumeEvents(events: readonly VaultGameEvent[]): void {
-   for (const event of events) {
-     switch (event.type) {
-@@ -703,8 +597,6 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
-     }
-   }
- }
--
--// --------------------------------------------------------- per-frame sync ----
- function syncVisuals(): void {
-   // Visual Y offset: matches the offset applied when creating the dynamic visual
-   // nodes (physics Y=0 is playfield level; scene nodes sit 0.28 above to appear
-@@ -746,7 +638,6 @@ function syncVisuals(): void {
-   void mechanismMaterial;
-   for (const [state, handle] of missionBeaconHandles) handle.setVisible(state === mechanismState);
- }
--
- function syncScoreboard(): void {
-   const snap = flow.snapshot();
-   const visibility = scoreboardVisibility({
-@@ -762,7 +653,6 @@ function syncScoreboard(): void {
-   }
-   void MISSION_LINES;
- }
--
- function syncDoor(dt: number): void {
-   if (doorSwing < 0 || doorSwing >= 1 || !doorHandle) return;
-   doorSwing = Math.min(1, doorSwing + dt / 0.6);
-@@ -771,8 +661,6 @@ function syncDoor(dt: number): void {
-   doorHandle.setRotation(0, -1.35 * swing, 0);
-   doorHandle.setPosition(-0.55 * swing, 0.52 + 0.05 * swing, -3.32 - 0.28 * swing);
- }
--
--// ------------------------------------------------------------- evidence ------
- function collectVaultEvidence(): Record<string, unknown> {
-   const snap = flow.snapshot();
-   const flipperSnap = flippers.snapshot();
-@@ -847,29 +735,9 @@ function collectVaultEvidence(): Record<string, unknown> {
-   vaultWindow.__VAULT_BREAKERS_EVIDENCE__ = evidence;
-   return evidence;
- }
--
- function publishEvidence(): void {
-   collectVaultEvidence();
- }
--
--// Renderer-owned capture used by specs and probes (no compositor dependency).
--vaultWindow.__VB_SHOT__ = () => app.screenshot().dataUrl;
--
--/**
-- * Deterministic time pump for specs: headless tabs can throttle rAF to ~1fps,
-- * so long passive waits never advance the sim. Uses the public app.pause() +
-- * app.step() path (docs/api/game-runtime.md "Deterministic stepping") to run
-- * `frames` fixed steps, then resumes the browser loop.
-- */
--vaultWindow.__VB_PUMP__ = (frames: number): number => {
--  app.pause();
--  for (let index = 0; index < frames; index += 1) app.step(1 / 60);
--  app.resume();
--  return app.runtime.frame;
--};
--
--vaultWindow.__VB_SCENARIO__ = (scenario: string): string => vaultDrive().stage(scenario);
--
- function stageScenario(scenario: string): string {
-   resetGame();
-   let events: readonly VaultGameEvent[] = [];
-@@ -893,17 +761,9 @@ function stageScenario(scenario: string): string {
-   publishEvidence();
-   return `${scenario}:${flow.snapshot().phase}:${flow.snapshot().banksDown}:${flow.snapshot().activeBalls}`;
- }
--
--// ---------------------------------------------------------------- input -------
--/*
-- * Keyboard is read through a route-owned window mirror with explicit edge
-- * detection (the sibling showcase routes' discipline): engine game-input stays
-- * configured for touch parity, but keyboard edges must not depend on focus.
-- */
- const manualHeld = new Set<string>();
- const manualPrev = new Map<string, boolean>();
- let spaceTapArmed = false;
--
- function manualEdge(code: string): "pressed" | "released" | "held" | "idle" {
-   const now = manualHeld.has(code);
-   const before = manualPrev.get(code) ?? false;
-@@ -911,13 +771,11 @@ function manualEdge(code: string): "pressed" | "released" | "held" | "idle" {
-   if (!now && before) return "released";
-   return now ? "held" : "idle";
- }
--
- function manualAdvanceFrame(): void {
-   for (const code of ["Space", "KeyA", "KeyD", "ArrowLeft", "ArrowRight", "KeyS", "KeyP", "Escape", "KeyR"]) {
-     manualPrev.set(code, manualHeld.has(code));
-   }
- }
--
- window.addEventListener("keydown", (event) => {
-   if (!event.repeat) manualHeld.add(event.code);
-   if (event.code === "Space" && !plunger.charging && (flow.phase === "attract" || flow.phase === "await-serve")) {
-@@ -945,7 +803,6 @@ window.addEventListener("keydown", (event) => {
-     event.preventDefault();
-   }
- }, { passive: false });
--
- function bindHoldButton(selector: string, onDown: () => void, onUp: () => void): void {
-   let held = false;
-   const begin = (event: Event): void => {
-@@ -990,8 +847,6 @@ bindHoldButton("#vb-plunge-button", () => {
- ui.onClick("#vb-reset-button", () => resetGame());
- ui.onClick("#vb-pause-button", () => togglePause());
- againButton.addEventListener("click", () => resetGame());
--
--// ------------------------------------------------------------- frame loop ----
- gameApp.onFrame(({ dt }) => {
-   vaultTween.tick(dt);
-   input.update(dt);
-@@ -1032,8 +887,4 @@ gameApp.onFrame(({ dt }) => {
-   if (frameCount % 6 === 0 || events.length > 0) syncHud();
-   publishEvidence();
- });
--
--
--
- syncHud();
--publishEvidence();
-diff --git a/apps/showcase-vault-breakers/src/main.ts b/apps/showcase-vault-breakers/src/main.ts
-index c38cec0c9..1ac1bd57b 100644
---- a/apps/showcase-vault-breakers/src/main.ts
-+++ b/apps/showcase-vault-breakers/src/main.ts
-@@ -1,14 +1,6 @@
--// apps/showcase-vault-breakers/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
--// Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-vault-breakers`
--// (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
--// acceptance (§10 step 5).
- import { resolveQrFlags } from "@aura3d/engine/contracts";
--
- const ROUTE_FLAG = "A3D_QR_ROUTE_VAULT_BREAKERS" as const;
- const DEFAULT_ON = false;
--
--/** Accepts `?a3d-qr=…,route-vault-breakers` and `?a3d-qr=…,A3D_QR_ROUTE_VAULT_BREAKERS`.
-- *  Returns undefined when the flag is absent (CCR-14-2 replaces this helper). */
- function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
-   const raw = new URL(loc.href).searchParams.get("a3d-qr");
-   if (raw === null) return undefined;
-@@ -19,11 +11,9 @@ function routeFlagFromUrl(loc: Location, flag: string): boolean | undefined {
-   const wanted = [`route-${slug.replace(/_/g, "-")}`, `route_${slug}`, flag];
-   return tokens.some((t) => wanted.includes(t)) ? true : undefined;
- }
--
- const flags = resolveQrFlags({
-   url: location.href,
-   env: { VITE_A3D_QR: (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_A3D_QR },
-   options: { [ROUTE_FLAG]: routeFlagFromUrl(location, ROUTE_FLAG) ?? DEFAULT_ON }
- });
--
- void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
 diff --git a/apps/showcase-vault-breakers/src/v2/evidence/index.ts b/apps/showcase-vault-breakers/src/v2/evidence/index.ts
 deleted file mode 100644
 index 8b89409af..000000000

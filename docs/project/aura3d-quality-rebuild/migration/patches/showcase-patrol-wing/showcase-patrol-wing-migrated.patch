@@ -1,4 +1,4 @@
-From 4f1b90134ce7b73b5d5e4833ff47320f73947d9d Mon Sep 17 00:00:00 2001
+From 94a459bbd6b0225763689f003e7a33b3996b0c5c Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:10:07 +0000
 Subject: [PATCH] migration(showcase-patrol-wing): regenerated patch set
@@ -12,8 +12,9 @@ Subject: [PATCH] migration(showcase-patrol-wing): regenerated patch set
  .../src/legacy/wing-audio.ts                  |  33 +++-
  .../src/scenario-drive.ts                     |  11 ++
  .../src/scenarios/index.ts                    |  11 ++
- apps/showcase-patrol-wing/src/v2/boot.ts      |   4 +-
- 8 files changed, 175 insertions(+), 98 deletions(-)
+ apps/showcase-patrol-wing/src/v2/boot.ts      |  75 ++------
+ apps/showcase-patrol-wing/src/v2/state.ts     |  10 +-
+ 9 files changed, 194 insertions(+), 160 deletions(-)
  create mode 100644 apps/showcase-patrol-wing/src/evidence.ts
  create mode 100644 apps/showcase-patrol-wing/src/scenario-drive.ts
  create mode 100644 apps/showcase-patrol-wing/src/scenarios/index.ts
@@ -48,7 +49,7 @@ index 000000000..049095dc5
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
 diff --git a/apps/showcase-patrol-wing/src/legacy/main.ts b/apps/showcase-patrol-wing/src/legacy/main.ts
-index 322cfeaf0..ffd7f8891 100644
+index 322cfeaf0..ba7584ccb 100644
 --- a/apps/showcase-patrol-wing/src/legacy/main.ts
 +++ b/apps/showcase-patrol-wing/src/legacy/main.ts
 @@ -14,7 +14,6 @@
@@ -210,7 +211,7 @@ index 322cfeaf0..ffd7f8891 100644
    },
    loop: { fixedDt: FLIGHT_DT, maxSubSteps: 4 },
 -  scene: buildScene()
-+  scene: buildScene(),
++  scene: () => buildScene(),
 +  qualityRebuild: { flags: ["game"] },
 +  evidence: {
 +    schema: 1,
@@ -219,7 +220,7 @@ index 322cfeaf0..ffd7f8891 100644
 +  },
 +  scenarios: async () => (await import("../scenarios")).patrolScenarios
 +});
-+const app = patrolGame.runtime;
++const app = patrolGame.app;
 +patrolGame.start();
 +const input = patrolGame.input!;
 +bindPatrolEvidence(() => collectPatrolEvidence());
@@ -621,27 +622,140 @@ index 000000000..59445d7da
 +  { description: "Cannon exchange + real hull damage.", setup: stage("drone-hit") }
 +];
 diff --git a/apps/showcase-patrol-wing/src/v2/boot.ts b/apps/showcase-patrol-wing/src/v2/boot.ts
-index c5804eb28..6e9443848 100644
+index c5804eb28..c81dcd2c9 100644
 --- a/apps/showcase-patrol-wing/src/v2/boot.ts
 +++ b/apps/showcase-patrol-wing/src/v2/boot.ts
-@@ -24,7 +24,7 @@ import { lightingNodes } from "./scene/lighting";
+@@ -9,7 +9,7 @@
+ // modified; audio plays through the legacy cue controller on admitted sfx
+ // ids until C-25 lands (stand-in R-14-09).
+ import { game as engineGame, scene, type AuraCameraPose, type GameInputController } from "@aura3d/engine";
+-import { createGame, type Game, lookManifest } from "@aura3d/game";
++import { createGame, type Game } from "@aura3d/game";
+ import type { FlightModel } from "../gameplay/flight";
+ import type { PatrolGrade } from "../gameplay/patrol";
+ 
+@@ -24,7 +24,6 @@ import { lightingNodes } from "./scene/lighting";
  import { createPatrolRig, fallbackCameraNode, pointInRigFrame, type PatrolRigState } from "./scene/camera";
  import { wirePatrolFx } from "./scene/fx";
  import { SKY_BG } from "./scene/materials";
 -import { publishPatrolEvidence, type PatrolRouteState, type PatrolRunSnapshot } from "./evidence";
-+import { publishPatrolEvidence, type PatrolRouteState, type PatrolRunSnapshot } from "../evidence";
  import { createPatrolCtx } from "./state";
  import { createPatrolAudioBlock } from "./audio";
  import { createPatrolInput, wirePatrolTouch } from "./input";
-@@ -32,7 +32,7 @@ import { wirePatrolCombat } from "./combat";
- import { wirePatrolSync } from "./sync";
- import { wirePatrolHud } from "./hud";
- import { wirePatrolUpdate } from "./update";
--import { applyPatrolScenario } from "./scenarios";
-+import { applyPatrolScenario } from "../scenarios";
+@@ -122,6 +121,17 @@ const game = createGame({
+     // art/direction.ts sections. `route_patrol_wing` uses the engine-parseable
+     // underscore form (URL/dispatch form is `route-patrol-wing`).
+     flags: ["route_patrol_wing", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
++  },
++  // T5.8: route evidence rides the shared createGame channel (C-24) —
++  // only the sections games.json requiredConditions read.
++  evidence: {
++    schema: 1,
++    sections: {
++      drones: (): { hitsThisSortie: number } => ({ hitsThisSortie: ctx.hitsThisSortie }),
++      rings: (): { inFrame: number } => ({ inFrame: ctx.ringsInFrameNow }),
++      flight: (): { throttle: number } => ({ throttle: Math.round(ctx.flight.throttle * 100) / 100 }),
++      fx: (): { liveCount: number } => ({ liveCount: game.fx.liveCount })
++    }
+   }
+ });
  
- const ROUTE_FLAG = "A3D_QR_ROUTE_PATROL_WING" as const;
+@@ -145,53 +155,6 @@ const updateWired = wirePatrolUpdate(ctx, { game, input, combat, sync, hud: hudW
+ const { updateGameplay } = updateWired;
+ buildCollisions();
  
+-// ------------------------------------------------------------ run snapshot --
+-
+-function runSnapshot(): PatrolRunSnapshot {
+-  const pos = ctx.flight.position;
+-  const e = ctx.flight.euler;
+-  return {
+-    state: ctx.stateValue,
+-    paused: ctx.paused,
+-    patrol: ctx.patrolValue,
+-    hull: ctx.hullValue,
+-    timeInPatrol: ctx.timeInPatrol,
+-    rings: ctx.rings.snapshot(),
+-    cannon: ctx.cannon.snapshot(),
+-    hitsThisSortie: ctx.hitsThisSortie,
+-    dronesDown: ctx.swarm.downCount,
+-    dronesLive: ctx.swarm.liveCount,
+-    currentWave: ctx.currentWave,
+-    spawnedWaves: ctx.spawnedWaves.size,
+-    sensorEventCount: ctx.sensorEventTotal,
+-    combatEventCount: ctx.combatEventTotal,
+-    padSensorLatched: ctx.padSensorLatched,
+-    ringsInFrame: ctx.ringsInFrameNow,
+-    orbsActive: ctx.orbs.filter((orb) => orb.active).length,
+-    ghost: {
+-      recorded: ctx.ghostRecorder.frameCount > 0,
+-      frames: ctx.ghostRecorder.frameCount,
+-      playing: ctx.ghostPlayer?.playing ?? false,
+-      playbackFrame: ctx.ghostPlayer?.frameIndexValue ?? 0
+-    },
+-    flight: {
+-      position: pos,
+-      euler: [e.x, e.y, e.z],
+-      forward: ctx.flight.forward,
+-      throttle: ctx.flight.throttle,
+-      speed: ctx.flight.speed,
+-      altitude: pos[1] - terrainSurface(pos[0], pos[2]),
+-      stalled: ctx.flight.stalled,
+-      grounded: ctx.flight.grounded,
+-      trajectoryHash: ctx.flight.trajectoryFrameCount() > 0 ? ctx.flight.trajectoryHash() : null,
+-      trajectoryFrames: ctx.flight.trajectoryFrameCount()
+-    },
+-    lastGrade: ctx.lastGrade,
+-    bestGrade: ctx.bestRun?.grade ?? null,
+-    touchEngaged: ctx.touchEngaged
+-  };
+-}
+-
+ // ------------------------------------------------------------ rig + boot ----
+ 
+ const rigState: PatrolRigState = {
+@@ -236,20 +199,6 @@ void game.ready().then(() => {
+   };
+ });
+ 
+-publishPatrolEvidence({
+-  game,
+-  run: runSnapshot,
+-  lastRigPose: () => ctx.lastPose,
+-  sceneSwaps: () => sceneSwaps,
+-  // T2.2-post: appliedLook derives from the C-31 runtime manifest.
+-  appliedLook: { ...lookManifest(game.lookSource()), preset: "cinematic-film" },
+-  frameCount: () => ctx.frame,
+-  bootedAtMs,
+-  audioCueLog: () => audioCueLog,
+-  collisionBackend: () => "rapier",
+-  collisionBodyCount: () => ctx.sensorCountValue + ORB_POOL_SIZE + 1
+-});
+-
+ if (scenarioName) {
+   applyPatrolScenario(scenarioName, {
+     launchSortie: () => {
+diff --git a/apps/showcase-patrol-wing/src/v2/state.ts b/apps/showcase-patrol-wing/src/v2/state.ts
+index 1a87587b3..576a8b4cb 100644
+--- a/apps/showcase-patrol-wing/src/v2/state.ts
++++ b/apps/showcase-patrol-wing/src/v2/state.ts
+@@ -5,7 +5,15 @@ import { Cannon } from "../gameplay/weapons";
+ import { GhostPlayer, GhostRecorder } from "../gameplay/ghost";
+ import { PAD_CENTER, PAD_HEADING_YAW, PAD_Y } from "../legacy/sky";
+ import type { AuraCameraPose } from "@aura3d/engine";
+-import type { PatrolRouteState } from "./evidence";
++
++export type PatrolRouteState =
++  | "preflight"
++  | "patrol"
++  | "crashed"
++  | "shot-down"
++  | "incomplete"
++  | "graded"
++  | "campaign-complete";
+ 
+ export interface OrbRuntime {
+   readonly id: string;
 -- 
 2.52.0
 

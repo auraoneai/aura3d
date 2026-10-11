@@ -1,18 +1,18 @@
 {
  "schema": "aura3d.quality-rebuild.route-composition/1",
- "generatedAt": "2026-10-11T02:19:05.553Z",
+ "generatedAt": "2026-10-11T04:53:18.406Z",
  "root": "/tmp/all-shadow",
  "routes": {
   "aura-clash-showcase": {
    "route": "aura-clash-showcase",
    "appDir": "apps/aura-clash-showcase",
    "loc": {
-    "evidence": 387,
-    "presentation": 4040,
-    "gameplay": 43650,
+    "evidence": 1541,
+    "presentation": 3885,
+    "gameplay": 43418,
     "generated": 3862,
-    "classified": 48077,
-    "evidencePct": 0.8
+    "classified": 48844,
+    "evidencePct": 3.2
    },
    "globals": [
     "__AURA3D_CLASH_CROWD_PROBE__",
@@ -47,12 +47,12 @@
    "route": "showcase-blockfall-reactor",
    "appDir": "apps/showcase-blockfall-reactor",
    "loc": {
-    "evidence": 125,
+    "evidence": 253,
     "presentation": 1227,
-    "gameplay": 6001,
+    "gameplay": 5962,
     "generated": 0,
-    "classified": 7353,
-    "evidencePct": 1.7
+    "classified": 7442,
+    "evidencePct": 3.4
    },
    "globals": [
     "__AURA3D_GAME__",
@@ -76,16 +76,15 @@
    "route": "showcase-skyline-runner",
    "appDir": "apps/showcase-skyline-runner",
    "loc": {
-    "evidence": 192,
-    "presentation": 5981,
-    "gameplay": 5589,
+    "evidence": 584,
+    "presentation": 6071,
+    "gameplay": 5629,
     "generated": 2570,
-    "classified": 11762,
-    "evidencePct": 1.6
+    "classified": 12284,
+    "evidencePct": 4.8
    },
    "globals": [
-    "__AURA3D_GAME__",
-    "__AURA3D_SHOWCASE_SKYLINE_RUNNER__"
+    "__AURA3D_GAME__"
    ],
    "captureBranches": {
     "ART": 0,
@@ -105,16 +104,18 @@
    "route": "showcase-turbo-drift-circuit",
    "appDir": "apps/showcase-turbo-drift-circuit",
    "loc": {
-    "evidence": 448,
-    "presentation": 16304,
-    "gameplay": 18986,
+    "evidence": 2597,
+    "presentation": 16245,
+    "gameplay": 19187,
     "generated": 27869,
-    "classified": 35738,
-    "evidencePct": 1.3
+    "classified": 38029,
+    "evidencePct": 6.8
    },
    "globals": [
+    "__AURA3D_COMPOSITION_PROBE__",
     "__AURA3D_GAME__",
     "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__",
+    "__AURA3D_TURBO_ACCEPTANCE_CAPTURE__",
     "__TURBO_DRIFT_SCENARIO__"
    ],
    "captureBranches": {
@@ -126,7 +127,7 @@
    "captureFlag": [],
    "cues": {
     "sample": 1,
-    "synth": 13,
+    "synth": 11,
     "html-audio": 0
    },
    "postPass": null
@@ -135,12 +136,12 @@
    "route": "showcase-siege-golf",
    "appDir": "apps/showcase-siege-golf",
    "loc": {
-    "evidence": 189,
-    "presentation": 1437,
-    "gameplay": 4060,
+    "evidence": 409,
+    "presentation": 1436,
+    "gameplay": 4034,
     "generated": 0,
-    "classified": 5686,
-    "evidencePct": 3.3
+    "classified": 5879,
+    "evidencePct": 7
    },
    "globals": [
     "__AURA3D_GAME__",
@@ -165,12 +166,12 @@
    "route": "showcase-aurora-lander",
    "appDir": "apps/showcase-aurora-lander",
    "loc": {
-    "evidence": 134,
+    "evidence": 203,
     "presentation": 1249,
-    "gameplay": 4707,
+    "gameplay": 4665,
     "generated": 0,
-    "classified": 6090,
-    "evidencePct": 2.2
+    "classified": 6117,
+    "evidencePct": 3.3
    },
    "globals": [
     "__AURA3D_GAME__",
@@ -194,16 +195,17 @@
    "route": "showcase-neon-swarm",
    "appDir": "apps/showcase-neon-swarm",
    "loc": {
-    "evidence": 199,
+    "evidence": 236,
     "presentation": 1872,
     "gameplay": 4290,
     "generated": 0,
-    "classified": 6361,
-    "evidencePct": 3.1
+    "classified": 6398,
+    "evidencePct": 3.7
    },
    "globals": [
     "__AURA3D_GAME__",
     "__AURA3D_SHOWCASE_NEON_SWARM__",
+    "__NEON_SWARM_DEBUG__",
     "__NEON_SWARM_EVIDENCE__"
    ],
    "captureBranches": {
@@ -224,17 +226,22 @@
    "route": "showcase-gravity-post",
    "appDir": "apps/showcase-gravity-post",
    "loc": {
-    "evidence": 136,
-    "presentation": 1299,
-    "gameplay": 4670,
+    "evidence": 430,
+    "presentation": 1268,
+    "gameplay": 4726,
     "generated": 0,
-    "classified": 6105,
-    "evidencePct": 2.2
+    "classified": 6424,
+    "evidencePct": 6.7
    },
    "globals": [
+    "__AURA3D_COMPOSITION_PROBE__",
     "__AURA3D_GAME__",
     "__AURA3D_SHOWCASE_GRAVITY_POST__",
-    "__GRAVITY_POST_EVIDENCE__"
+    "__GRAVITY_POST_CAPTURE__",
+    "__GRAVITY_POST_EVIDENCE_SNAPSHOT__",
+    "__GRAVITY_POST_EVIDENCE__",
+    "__GRAVITY_POST_SIM_STEP__",
+    "__GRAVITY_POST_STEP__"
    ],
    "captureBranches": {
     "ART": 0,
@@ -254,16 +261,19 @@
    "route": "showcase-courier-rush",
    "appDir": "apps/showcase-courier-rush",
    "loc": {
-    "evidence": 155,
-    "presentation": 1344,
-    "gameplay": 3931,
+    "evidence": 188,
+    "presentation": 1347,
+    "gameplay": 3915,
     "generated": 0,
-    "classified": 5430,
-    "evidencePct": 2.9
+    "classified": 5450,
+    "evidencePct": 3.4
    },
    "globals": [
+    "__AURA3D_COMPOSITION_PROBE__",
     "__AURA3D_GAME__",
+    "__AURA3D_ROUTE_READY__",
     "__AURA3D_SHOWCASE_COURIER_RUSH__",
+    "__COURIER_RUSH_DEBUG__",
     "__COURIER_RUSH_EVIDENCE__"
    ],
    "captureBranches": {
@@ -284,16 +294,15 @@
    "route": "showcase-pulse-tunnel",
    "appDir": "apps/showcase-pulse-tunnel",
    "loc": {
-    "evidence": 266,
-    "presentation": 930,
-    "gameplay": 3709,
+    "evidence": 377,
+    "presentation": 936,
+    "gameplay": 3942,
     "generated": 0,
-    "classified": 4905,
-    "evidencePct": 5.4
+    "classified": 5255,
+    "evidencePct": 7.2
    },
    "globals": [
     "__AURA3D_GAME__",
-    "__AURA3D_SHOWCASE_PULSE_TUNNEL__",
     "__PULSE_TUNNEL_EVIDENCE__"
    ],
    "captureBranches": {
@@ -314,12 +323,12 @@
    "route": "showcase-mech-hangar",
    "appDir": "apps/showcase-mech-hangar",
    "loc": {
-    "evidence": 110,
+    "evidence": 159,
     "presentation": 1484,
-    "gameplay": 5582,
+    "gameplay": 5538,
     "generated": 0,
-    "classified": 7176,
-    "evidencePct": 1.5
+    "classified": 7181,
+    "evidencePct": 2.2
    },
    "globals": [
     "__AURA3D_GAME__",
@@ -344,17 +353,20 @@
    "route": "showcase-vault-breakers",
    "appDir": "apps/showcase-vault-breakers",
    "loc": {
-    "evidence": 149,
-    "presentation": 1538,
-    "gameplay": 3336,
+    "evidence": 131,
+    "presentation": 1540,
+    "gameplay": 3350,
     "generated": 0,
-    "classified": 5023,
-    "evidencePct": 3
+    "classified": 5021,
+    "evidencePct": 2.6
    },
    "globals": [
     "__AURA3D_GAME__",
     "__AURA3D_SHOWCASE_VAULT_BREAKERS__",
-    "__VAULT_BREAKERS_EVIDENCE__"
+    "__VAULT_BREAKERS_EVIDENCE__",
+    "__VB_PUMP__",
+    "__VB_SCENARIO__",
+    "__VB_SHOT__"
    ],
    "captureBranches": {
     "ART": 0,
@@ -376,9 +388,9 @@
    "loc": {
     "evidence": 90,
     "presentation": 1405,
-    "gameplay": 4636,
+    "gameplay": 4618,
     "generated": 0,
-    "classified": 6131,
+    "classified": 6113,
     "evidencePct": 1.5
    },
    "globals": [
@@ -405,14 +417,15 @@
    "route": "showcase-gallery-shift",
    "appDir": "apps/showcase-gallery-shift",
    "loc": {
-    "evidence": 117,
+    "evidence": 140,
     "presentation": 2368,
-    "gameplay": 5979,
+    "gameplay": 5942,
     "generated": 0,
-    "classified": 8464,
-    "evidencePct": 1.4
+    "classified": 8450,
+    "evidencePct": 1.7
    },
    "globals": [
+    "__AURA3D_COMPOSITION_PROBE__",
     "__AURA3D_GAME__",
     "__AURA3D_SHOWCASE_GALLERY_SHIFT__",
     "__GALLERY_SHIFT_EVIDENCE__",
@@ -439,17 +452,25 @@
    "route": "showcase-deep-recovery",
    "appDir": "apps/showcase-deep-recovery",
    "loc": {
-    "evidence": 260,
-    "presentation": 1564,
-    "gameplay": 4007,
+    "evidence": 329,
+    "presentation": 1577,
+    "gameplay": 3941,
     "generated": 0,
-    "classified": 5831,
-    "evidencePct": 4.5
+    "classified": 5847,
+    "evidencePct": 5.6
    },
    "globals": [
     "__AURA3D_GAME__",
     "__AURA3D_SHOWCASE_DEEP_RECOVERY__",
-    "__DEEP_RECOVERY_EVIDENCE__"
+    "__DEEP_RECOVERY_EVIDENCE__",
+    "__DR_CAPTURE_PAUSE__",
+    "__DR_CAPTURE_RESUME__",
+    "__DR_IMPACT__",
+    "__DR_PUMP__",
+    "__DR_REPAIR__",
+    "__DR_SET_OXYGEN__",
+    "__DR_TELEPORT_CRATE__",
+    "__DR_TELEPORT__"
    ],
    "captureBranches": {
     "ART": 0,
@@ -469,16 +490,21 @@
    "route": "showcase-patrol-wing",
    "appDir": "apps/showcase-patrol-wing",
    "loc": {
-    "evidence": 111,
+    "evidence": 423,
     "presentation": 2404,
-    "gameplay": 4180,
+    "gameplay": 4132,
     "generated": 0,
-    "classified": 6695,
-    "evidencePct": 1.7
+    "classified": 6959,
+    "evidencePct": 6.1
    },
    "globals": [
     "__AURA3D_GAME__",
-    "__AURA3D_SHOWCASE_PATROL_WING__"
+    "__AURA3D_SHOWCASE_PATROL_WING__",
+    "__PATROL_WING_EVIDENCE__",
+    "__PW_DAMAGE__",
+    "__PW_PUMP__",
+    "__PW_SCENARIO__",
+    "__PW_SHOT__"
    ],
    "captureBranches": {
     "ART": 0,
@@ -499,10 +525,10 @@
    "appDir": "apps/showcase-bank-shot",
    "loc": {
     "evidence": 134,
-    "presentation": 1760,
-    "gameplay": 3508,
+    "presentation": 1759,
+    "gameplay": 3502,
     "generated": 0,
-    "classified": 5402,
+    "classified": 5395,
     "evidencePct": 2.5
    },
    "globals": [
@@ -532,9 +558,9 @@
    "loc": {
     "evidence": 188,
     "presentation": 351,
-    "gameplay": 1382,
+    "gameplay": 1383,
     "generated": 0,
-    "classified": 1921,
+    "classified": 1922,
     "evidencePct": 9.8
    },
    "globals": [
@@ -560,9 +586,9 @@
  },
  "totals": {
   "loc": {
-   "evidence": 3390,
-   "presentation": 48557,
-   "gameplay": 132203,
+   "evidence": 8412,
+   "presentation": 48424,
+   "gameplay": 132174,
    "generated": 34301
   },
   "captureBranches": {
@@ -573,13 +599,8 @@
   },
   "cues": {
    "sample": 38,
-   "synth": 141,
+   "synth": 139,
    "html-audio": 17
   }
- },
- "notes": [
-  "16.1-2: captureBranches all zero — aurora reviewCapture panel, skyline act-palette option, gravity-post visualReviewCapture (42 sites), aura-clash combat-impact divergences converged to shipped values (main-side #728 + sweeps).",
-  "2026-10-10 regen: 17 patch files regenerated onto origin/main b60a669ab (post #637/#684/#728); captureBranches still all zero.",
-  "2026-10-10 regen (#916): 28 patch files (14 routes, migrated + zz-evidence-sweep) regenerated onto origin/main 2c5d63d7c split boot.ts layout; boot.ts import-block conflicts resolved to the #916 sibling-module imports with ./evidence + ./scenarios repointed to ../; bank-shot legacy HUD hunks keep the migrated mountHud/hud.set path."
- ]
+ }
 }

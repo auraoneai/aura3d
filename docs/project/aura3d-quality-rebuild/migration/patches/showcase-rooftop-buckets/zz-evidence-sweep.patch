@@ -1,4 +1,4 @@
-From 86a1ab4da80b12f403f4633d727d9607ff4a4f25 Mon Sep 17 00:00:00 2001
+From 0e54539a6987d0d507141e08204d9848e6eeaa64 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:53 +0000
 Subject: [PATCH] showcase-rooftop-buckets: delete evidence files+blocks (T5.8)
@@ -1752,7 +1752,7 @@ index 29bdc61c2..000000000
 -if (!report.pass) process.exitCode = 1;
 diff --git a/apps/showcase-rooftop-buckets/scripts/write-route-health.mjs b/apps/showcase-rooftop-buckets/scripts/write-route-health.mjs
 deleted file mode 100644
-index 62f9c116f..000000000
+index 7ebf5f811..000000000
 --- a/apps/showcase-rooftop-buckets/scripts/write-route-health.mjs
 +++ /dev/null
 @@ -1,165 +0,0 @@
@@ -1879,7 +1879,7 @@ index 62f9c116f..000000000
 -  renderer: { path: "createGameApp root safe API", mode: "production with safe-basic fallback", nativeWebGPU: false, productionRuntimeClaimed: false },
 -  primaryAssets: modelIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, role: assetById.get(id).role })),
 -  audioAssets: audioIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
--  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "subordinate skyline/court dressing, painted markings, stanchion/net, trajectory guides, and state feedback only", status: "no-primitive-primary-subjects" },
+-  primitiveStatus: { primitiveBudget: gate.primitiveBudget, role: "subordinate skyline/court dressing, painted markings, stanchion/net, trajectory guides, and state feedback only", status: "no-primitive-primary-subjects" },
 -  gameplay: {
 -    heats: 5,
 -    heatModes: ["open", "spots", "pressure", "fire", "gold"],
@@ -1922,7 +1922,7 @@ index 62f9c116f..000000000
 -writeFileSync(join(appDir, "route-health.json"), `${JSON.stringify(routeHealth, null, 2)}\n`);
 -console.log(JSON.stringify({ machinePass: true, models: modelIds.length, audio: audioIds.length, exactArtifacts: exactArtifacts.length, primitiveOccurrences, performancePass: performance.pass }));
 diff --git a/apps/showcase-rooftop-buckets/src/legacy/main.ts b/apps/showcase-rooftop-buckets/src/legacy/main.ts
-index caca8287c..566f8d2d9 100644
+index 11f725ff7..2c41476d9 100644
 --- a/apps/showcase-rooftop-buckets/src/legacy/main.ts
 +++ b/apps/showcase-rooftop-buckets/src/legacy/main.ts
 @@ -1,6 +1,3 @@
@@ -2343,7 +2343,7 @@ index caca8287c..566f8d2d9 100644
 -  return ev;
 -}
 -
--bindRooftopEvidence(collectRouteEvidence);
+-bindRooftopEvidence(() => collectRouteEvidence() as unknown as Record<string, unknown>);
 -
 -(window as unknown as {
 -  __RB_PUMP__?: (frames: number) => number;

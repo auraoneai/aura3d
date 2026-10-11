@@ -1,4 +1,4 @@
-From 9167a5dca8da127eb42bcdf1f4114d9e77e92628 Mon Sep 17 00:00:00 2001
+From 8bc85a24b1d6a99373ff615ff417300570aaeed5 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:47 +0000
 Subject: [PATCH] showcase-bank-shot: delete evidence files+blocks (T5.8)
@@ -10,10 +10,10 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../scripts/register-assets.mjs               |  66 --
  .../scripts/write-deploy-report.mjs           |  70 --
  .../scripts/write-route-health.mjs            | 143 ----
- apps/showcase-bank-shot/src/legacy/main.ts    | 229 -----
+ apps/showcase-bank-shot/src/legacy/main.ts    | 230 -----
  apps/showcase-bank-shot/src/main.ts           |  10 -
  .../src/v2/evidence/index.ts                  | 104 ---
- 8 files changed, 1456 deletions(-)
+ 8 files changed, 1457 deletions(-)
  delete mode 100644 apps/showcase-bank-shot/performance-report.json
  delete mode 100644 apps/showcase-bank-shot/scripts/build-models.mjs
  delete mode 100644 apps/showcase-bank-shot/scripts/register-assets.mjs
@@ -1017,7 +1017,7 @@ index dee490e7c..000000000
 -if (!report.pass) process.exitCode = 1;
 diff --git a/apps/showcase-bank-shot/scripts/write-route-health.mjs b/apps/showcase-bank-shot/scripts/write-route-health.mjs
 deleted file mode 100644
-index 9704ee9b4..000000000
+index 450d79daf..000000000
 --- a/apps/showcase-bank-shot/scripts/write-route-health.mjs
 +++ /dev/null
 @@ -1,143 +0,0 @@
@@ -1130,7 +1130,7 @@ index 9704ee9b4..000000000
 -  primaryAssets: initialPrimaryAssets.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, role: assetById.get(id).role })),
 -  typedModelFamily: modelIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, role: assetById.get(id).role })),
 -  audioAssets: audioIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, license: assetById.get(id).provenance.license, author: assetById.get(id).provenance.author })),
--  primitiveStatus: { sourceOccurrences: primitiveOccurrences, primitiveBudget: gate.primitiveBudget, role: "pool-hall architecture, rail sights, chalk, aim/bank guides, contact marker, and lighting only", status: "no-primitive-primary-subjects" },
+-  primitiveStatus: { primitiveBudget: gate.primitiveBudget, role: "pool-hall architecture, rail sights, chalk, aim/bank guides, contact marker, and lighting only", status: "no-primitive-primary-subjects" },
 -  gameplay: {
 -    racks: 3, rackClocksMs: [240000, 210000, 180000], publicRapierBodies: 34, pocketSensors: 6,
 -    controls: ["aim", "top/draw authored contact nudge", "charge/strike", "ball-in-hand placement", "pause", "full reset"],
@@ -1165,7 +1165,7 @@ index 9704ee9b4..000000000
 -writeFileSync(join(appDir, "route-health.json"), `${JSON.stringify(routeHealth, null, 2)}\n`);
 -console.log(JSON.stringify({ machinePass: true, models: modelIds.length, audio: audioIds.length, exactArtifacts: exactArtifacts.length, primitiveOccurrences, performancePass: performance.pass }));
 diff --git a/apps/showcase-bank-shot/src/legacy/main.ts b/apps/showcase-bank-shot/src/legacy/main.ts
-index 14f0423fa..180388c19 100644
+index a35d0b2b2..4d0a2c48a 100644
 --- a/apps/showcase-bank-shot/src/legacy/main.ts
 +++ b/apps/showcase-bank-shot/src/legacy/main.ts
 @@ -1,15 +1,3 @@
@@ -1192,8 +1192,8 @@ index 14f0423fa..180388c19 100644
  import { assets } from "../../../../src/aura-assets";
  import { CueController, AIM_STEP, SPIN_STEP } from "../gameplay/cue";
  import { RulesEngine, type ShotRecord, type ShotOutcome } from "../gameplay/rules";
-@@ -47,43 +34,13 @@ import { createBankShotSound } from "../sound";
- >>>>>>> /tmp/mig-base/apps/showcase-bank-shot/src/main.ts
+@@ -46,43 +33,12 @@ import { ballEulerFromBody } from "../gameplay/ball-visuals";
+ import { createBankShotSound } from "../sound";
  import { createPoolHallSetDressing } from "./environment";
  import "./styles.css";
 -
@@ -1204,7 +1204,7 @@ index 14f0423fa..180388c19 100644
 -  __BS_SHOT__?: () => string;
 -  __BS_PUMP__?: (frames: number) => number;
 -};
- const bankWindow = window as BankShotWindow;
+-const bankWindow = window as BankShotWindow;
  const portraitComposition = window.innerWidth <= 700 || window.innerHeight > window.innerWidth * 1.25;
 -document.body.dataset.capture = "default";
 -
@@ -1236,7 +1236,7 @@ index 14f0423fa..180388c19 100644
  const audio = createBankShotSound();
  let ambientStarted = false;
  window.addEventListener("pointerdown", () => {
-@@ -102,12 +59,9 @@ window.addEventListener("keydown", () => {
+@@ -101,12 +57,9 @@ window.addEventListener("keydown", () => {
      }
    }).catch(() => undefined);
  }, { passive: true });
@@ -1249,7 +1249,7 @@ index 14f0423fa..180388c19 100644
  let shotInFlight = false;
  let frameCount = 0;
  let sensorEventCount = 0;
-@@ -124,7 +78,6 @@ let pottedThisShot: number[] = [];
+@@ -123,7 +76,6 @@ let pottedThisShot: number[] = [];
  let ghost = { x: CUE_SPOT[0], z: CUE_SPOT[1] };
  let sessionScoreAtRackStart = 0;
  let evidenceScenarioActive = false;
@@ -1257,7 +1257,7 @@ index 14f0423fa..180388c19 100644
  function pushCue(cue: Parameters<typeof audio.cue>[0]): void {
    void audio.cue(cue).catch(() => undefined);
    audioCueLog.push(cue);
-@@ -136,8 +89,6 @@ function cueReady(name: string, gapFrames: number): boolean {
+@@ -135,8 +87,6 @@ function cueReady(name: string, gapFrames: number): boolean {
    lastCueFrame.set(name, frameCount);
    return true;
  }
@@ -1266,7 +1266,7 @@ index 14f0423fa..180388c19 100644
  const AIM_LINE_MATERIAL = material.emissive({ name: "aim line", color: "#38bdf8", emissive: "#0ea5e9", opacity: 0.9 });
  const AIM_BANK_MATERIAL = material.emissive({ name: "aim bank", color: "#f59e0b", emissive: "#d97706", opacity: 0.85 });
  const AIM_MARKER_MATERIAL = material.emissive({ name: "aim marker", color: "#38bdf8", emissive: "#7dd3fc" });
-@@ -170,7 +121,6 @@ function ballModelNode(name: string, typedAsset: string): AuraSceneNode {
+@@ -169,7 +119,6 @@ function ballModelNode(name: string, typedAsset: string): AuraSceneNode {
      .runtime(game.runtimeNode(name, { tags: ["typed-asset", "physics-synced"] }))
      .toJSON();
  }
@@ -1274,7 +1274,7 @@ index 14f0423fa..180388c19 100644
  function visualNodes(): AuraSceneNode[] {
    const nodes: AuraSceneNode[] = [];
    // Typed primary subjects: the table, all 16 balls, the cue stick.
-@@ -260,7 +210,6 @@ function visualNodes(): AuraSceneNode[] {
+@@ -259,7 +208,6 @@ function visualNodes(): AuraSceneNode[] {
  
    return nodes;
  }
@@ -1282,7 +1282,7 @@ index 14f0423fa..180388c19 100644
  function buildScene(): ReturnType<typeof scene> {
    const reducedMotion = typeof window.matchMedia === "function"
      && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-@@ -329,8 +278,6 @@ function buildScene(): ReturnType<typeof scene> {
+@@ -328,8 +276,6 @@ function buildScene(): ReturnType<typeof scene> {
      ])
      .camera(sceneCamera);
  }
@@ -1291,7 +1291,7 @@ index 14f0423fa..180388c19 100644
  const bankGame = createGame({
    id: "showcase-bank-shot",
    target: "#app",
-@@ -366,10 +313,6 @@ const app = bankGame.app;
+@@ -365,10 +311,6 @@ const app = bankGame.app;
  const input = bankGame.input!;
  if (!input) throw new Error("Bank Shot failed to create Aura3D input.");
  bankGame.start();
@@ -1302,7 +1302,7 @@ index 14f0423fa..180388c19 100644
  const bankTween = createTweenEngine();
  const bankFx = createFxParticlePass(app.effects);
  const bankJuice = createJuice<"pot" | "foul" | "cushion" | "combo">({
-@@ -386,7 +329,6 @@ const bankJuice = createJuice<"pot" | "foul" | "cushion" | "combo">({
+@@ -385,7 +327,6 @@ const bankJuice = createJuice<"pot" | "foul" | "cushion" | "combo">({
    tweens: bankTween,
    rumble: createRumbleDriver()
  });
@@ -1310,7 +1310,7 @@ index 14f0423fa..180388c19 100644
  const ballHandles = new Map<string, AuraRuntimeNodeHandle>();
  const ballShadowHandles = new Map<string, AuraRuntimeNodeHandle>();
  const previousBallPositions = new Map<string, readonly [number, number]>();
-@@ -397,7 +339,6 @@ let aimLineHandle: AuraRuntimeNodeHandle | undefined;
+@@ -396,7 +337,6 @@ let aimLineHandle: AuraRuntimeNodeHandle | undefined;
  let aimBankHandle: AuraRuntimeNodeHandle | undefined;
  let aimMarkerHandle: AuraRuntimeNodeHandle | undefined;
  const pocketAccentHandles: AuraRuntimeNodeHandle[] = [];
@@ -1318,7 +1318,7 @@ index 14f0423fa..180388c19 100644
  function resolveHandles(): void {
    tableHandle = app.nodes.get("table") as AuraRuntimeNodeHandle | undefined;
    ballHandles.clear();
-@@ -423,52 +364,6 @@ function resolveHandles(): void {
+@@ -422,52 +362,6 @@ function resolveHandles(): void {
  }
  resolveHandles();
  cueGhostHandle?.setMaterial(GHOST_MATERIAL);
@@ -1371,7 +1371,7 @@ index 14f0423fa..180388c19 100644
  const hudHost = document.createElement("div");
  hudHost.className = "a3g-game-hud";
  document.getElementById("app")!.appendChild(hudHost);
-@@ -487,15 +382,12 @@ const hud = mountHud(
+@@ -486,15 +380,12 @@ const hud = mountHud(
      ]
    }
  );
@@ -1387,7 +1387,7 @@ index 14f0423fa..180388c19 100644
  function syncHud(): void {
    const snap = rules.snapshot();
    const cueState = cueController.state();
-@@ -520,8 +412,6 @@ function syncHud(): void {
+@@ -519,8 +410,6 @@ function syncHud(): void {
              : snap.banner
    );
  }
@@ -1396,7 +1396,7 @@ index 14f0423fa..180388c19 100644
  function doStrike(): void {
    const command = cueController.strike();
    if (!command) return;
-@@ -541,7 +431,6 @@ function doStrike(): void {
+@@ -540,7 +429,6 @@ function doStrike(): void {
    pushCue("cue-strike");
    syncHud();
  }
@@ -1404,7 +1404,7 @@ index 14f0423fa..180388c19 100644
  function consumeShotEvents(): void {
    for (const sensor of sim.consumeSensorEvents()) {
      sensorEventCount += 1;
-@@ -569,7 +458,6 @@ function consumeShotEvents(): void {
+@@ -568,7 +456,6 @@ function consumeShotEvents(): void {
      showToast(pot.ball === 0 ? "SCRATCH" : `BALL ${pot.ball} DOWN`);
    }
  }
@@ -1412,7 +1412,7 @@ index 14f0423fa..180388c19 100644
  function applyOutcome(outcome: ShotOutcome): void {
    if (outcome.rackWon) {
      pushCue("eight-win");
-@@ -609,7 +497,6 @@ function applyOutcome(outcome: ShotOutcome): void {
+@@ -608,7 +495,6 @@ function applyOutcome(outcome: ShotOutcome): void {
      bankJuice.fire("combo", { position: cueBody?.position });
    }
  }
@@ -1420,7 +1420,7 @@ index 14f0423fa..180388c19 100644
  function resolveShotNow(): void {
    if (!shotInFlight) return;
    const facts = sim.shotFacts();
-@@ -644,7 +531,6 @@ function resolveShotNow(): void {
+@@ -643,7 +529,6 @@ function resolveShotNow(): void {
    applyOutcome(outcome);
    syncHud();
  }
@@ -1428,7 +1428,7 @@ index 14f0423fa..180388c19 100644
  function advanceRack(): void {
    if (rules.phase !== "rack-won") return;
    const next = rules.advanceRack();
-@@ -661,7 +547,6 @@ function advanceRack(): void {
+@@ -660,7 +545,6 @@ function advanceRack(): void {
    pushCue("rack-clear");
    syncHud();
  }
@@ -1436,7 +1436,7 @@ index 14f0423fa..180388c19 100644
  function resetSession(): void {
    evidenceScenarioActive = false;
    rules.rerack();
-@@ -678,7 +563,6 @@ function resetSession(): void {
+@@ -677,7 +561,6 @@ function resetSession(): void {
    pushCue("rack-clear");
    syncHud();
  }
@@ -1444,7 +1444,7 @@ index 14f0423fa..180388c19 100644
  function togglePause(): void {
    // Session owns pause state (user + visibility + menu stack).
    if (bankGame.session.paused) {
-@@ -690,13 +574,10 @@ function togglePause(): void {
+@@ -689,13 +572,10 @@ function togglePause(): void {
    }
    syncHud();
  }
@@ -1458,7 +1458,7 @@ index 14f0423fa..180388c19 100644
  function poseLine(
    handle: AuraRuntimeNodeHandle | undefined,
    fromX: number,
-@@ -718,7 +599,6 @@ function poseLine(
+@@ -717,7 +597,6 @@ function poseLine(
    handle.setRotation(0, Math.atan2(-dz, dx), 0);
    handle.setScale([length, thickness, thickness]);
  }
@@ -1466,7 +1466,7 @@ index 14f0423fa..180388c19 100644
  function syncVisuals(): void {
    if (ballHandles.size < 16 || !cueStickHandle || !aimLineHandle || !aimBankHandle || !aimMarkerHandle || !cueGhostHandle) {
      resolveHandles();
-@@ -834,95 +714,6 @@ function syncVisuals(): void {
+@@ -833,95 +712,6 @@ function syncVisuals(): void {
      parkNode(aimBankHandle);
    }
  }
@@ -1562,7 +1562,7 @@ index 14f0423fa..180388c19 100644
  bindBankShotDrive({
    resetForFixture: () => {
      resetSession();
-@@ -956,17 +747,9 @@ bindBankShotDrive({
+@@ -955,17 +745,9 @@ bindBankShotDrive({
      syncHud();
    }
  });
@@ -1580,7 +1580,7 @@ index 14f0423fa..180388c19 100644
  function manualEdge(code: string): "pressed" | "released" | "held" | "idle" {
    const now = manualHeld.has(code);
    const before = manualPrev.get(code) ?? false;
-@@ -974,13 +757,11 @@ function manualEdge(code: string): "pressed" | "released" | "held" | "idle" {
+@@ -973,13 +755,11 @@ function manualEdge(code: string): "pressed" | "released" | "held" | "idle" {
    if (!now && before) return "released";
    return now ? "held" : "idle";
  }
@@ -1594,7 +1594,7 @@ index 14f0423fa..180388c19 100644
  function confirmBallInHand(): void {
    let targetX = ghost.x;
    let targetZ = ghost.z;
-@@ -1006,7 +787,6 @@ function confirmBallInHand(): void {
+@@ -1005,7 +785,6 @@ function confirmBallInHand(): void {
    if (rules.confirmBallInHand()) pushCue("ball-hit");
    syncHud();
  }
@@ -1602,7 +1602,7 @@ index 14f0423fa..180388c19 100644
  window.addEventListener("keydown", (event) => {
    if (!event.repeat) manualHeld.add(event.code);
    if (event.code === "Space" && !event.repeat) {
-@@ -1034,11 +814,6 @@ window.addEventListener("keydown", (event) => {
+@@ -1033,11 +812,6 @@ window.addEventListener("keydown", (event) => {
      event.preventDefault();
    }
  }, { passive: false });
@@ -1614,7 +1614,7 @@ index 14f0423fa..180388c19 100644
  const touchControls = mountTouchControls(
    {
      press: (code) => manualHeld.add(code),
-@@ -1065,10 +840,7 @@ const touchControls = mountTouchControls(
+@@ -1064,10 +838,7 @@ const touchControls = mountTouchControls(
      coarsePointer: () => matchMedia("(pointer: coarse)").matches
    }
  );
@@ -1625,7 +1625,7 @@ index 14f0423fa..180388c19 100644
  bankGame.app.onFrame(({ dt }) => {
    input.update(dt);
    bankTween.tick(dt);
-@@ -1121,6 +893,5 @@ bankGame.app.onFrame(({ dt }) => {
+@@ -1120,6 +891,5 @@ bankGame.app.onFrame(({ dt }) => {
    syncVisuals();
    if (frameCount % 6 === 0) syncHud();
  });

@@ -1,4 +1,4 @@
-From 55c647b8d4ef108794963fd1d81c3cf997418306 Mon Sep 17 00:00:00 2001
+From 881c1561e22670c738c05ec526ee5bc59875121c Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:10:13 +0000
 Subject: [PATCH] migration(showcase-pulse-tunnel): regenerated patch set
@@ -29,11 +29,11 @@ Subject: [PATCH] migration(showcase-pulse-tunnel): regenerated patch set
  .../art-review/pulse-texture-identity-v6.ts   |  164 ---
  apps/showcase-pulse-tunnel/package.json       |    3 +-
  apps/showcase-pulse-tunnel/src/evidence.ts    |   17 +
- apps/showcase-pulse-tunnel/src/legacy/main.ts | 1265 +++--------------
+ apps/showcase-pulse-tunnel/src/legacy/main.ts | 1263 +++--------------
  .../src/scenario-drive.ts                     |   22 +
  .../src/scenarios/index.ts                    |   17 +
- apps/showcase-pulse-tunnel/src/v2/boot.ts     |    4 +-
- 28 files changed, 224 insertions(+), 2427 deletions(-)
+ apps/showcase-pulse-tunnel/src/v2/boot.ts     |   60 +-
+ 28 files changed, 246 insertions(+), 2459 deletions(-)
  delete mode 100644 apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v4-probe.html
  delete mode 100644 apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v4-probe.ts
  delete mode 100644 apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v4.html
@@ -1553,7 +1553,7 @@ index 000000000..797725f5d
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
 diff --git a/apps/showcase-pulse-tunnel/src/legacy/main.ts b/apps/showcase-pulse-tunnel/src/legacy/main.ts
-index d4fef77fd..aa6e8c7ec 100644
+index d4fef77fd..9f1ad60b6 100644
 --- a/apps/showcase-pulse-tunnel/src/legacy/main.ts
 +++ b/apps/showcase-pulse-tunnel/src/legacy/main.ts
 @@ -10,7 +10,6 @@
@@ -1598,37 +1598,15 @@ index d4fef77fd..aa6e8c7ec 100644
  
  // ---- authored presentation constants ---------------------------------------
  
-@@ -93,6 +100,29 @@ const PULSE_CAPTURE_HEADROOM_SECONDS = 1.75;
+@@ -93,6 +100,7 @@ const PULSE_CAPTURE_HEADROOM_SECONDS = 1.75;
  
  // ---- systems ----------------------------------------------------------------
  
-+const pulseTween = createTweenEngine();
-+const pulseFx = createFxParticlePass(app.effects);
-+const pulseJuice = createJuice<
-+  "lane-switch" | "jump" | "slide" | "graze" | "shield-hit" | "shield-break" | "section-rise" | "run-over"
-+>({
-+  events: {
-+    "lane-switch": { fx: { kind: "streak", count: 4, color: "#48d9f2" }, shake: 0.03 },
-+    jump: { fx: { kind: "dust", count: 6, color: "#9fd8ff" } },
-+    slide: { fx: { kind: "dust", count: 6, color: "#8fb4d8" } },
-+    graze: { fx: { kind: "spark", count: 8, color: "#ffe08a" }, shake: 0.05 },
-+    "shield-hit": { flash: { color: "#ff8d5a", peak: 0.14, ms: 150 }, shake: 0.16 },
-+    "shield-break": { flash: { color: "#ff4d4d", peak: 0.24, ms: 260 }, shake: 0.3, hitStop: 0.055, vignette: { amount: 0.32, ms: 420, color: "#26060a" } },
-+    "section-rise": { punch: { fovDeg: 2.2, ms: 170 }, fx: { kind: "ring", count: 14, color: "#48e5ff" } },
-+    "run-over": { flash: { color: "#ffdca8", peak: 0.18, ms: 280 }, vignette: { amount: 0.38, ms: 520, color: "#120812" } }
-+  },
-+  camera: app.camera,
-+  session: pulseGame.session,
-+  fx: pulseFx,
-+  overlay: createOverlayDriver({ app }),
-+  tweens: pulseTween,
-+  rumble: createRumbleDriver()
-+});
 +
  const input = game.input({
    actions: {
      left: ["KeyA", "ArrowLeft"],
-@@ -106,6 +136,20 @@ const input = game.input({
+@@ -106,6 +114,20 @@ const input = game.input({
  });
  
  const tunnelAudio = createTunnelAudio();
@@ -1649,7 +1627,7 @@ index d4fef77fd..aa6e8c7ec 100644
  const player = createPulsePlayer();
  const styleSystem = createPulseStyleSystem();
  const chart = buildPulseChart();
-@@ -163,6 +207,7 @@ const gateSystem = createGateSystem({
+@@ -163,6 +185,7 @@ const gateSystem = createGateSystem({
      if (event.type === "graze") {
        styleSystem.graze();
        void tunnelAudio.sfx("graze");
@@ -1657,7 +1635,7 @@ index d4fef77fd..aa6e8c7ec 100644
        spawnSpark(event.gateId);
        evidence.stats.grazes += 1;
      }
-@@ -200,7 +245,7 @@ const hueBuilders = (Object.keys(HUE_BY_SECTION) as PulseSectionId[]).flatMap((s
+@@ -200,7 +223,7 @@ const hueBuilders = (Object.keys(HUE_BY_SECTION) as PulseSectionId[]).flatMap((s
          })
        })
          .position(position[0], position[1], position[2])
@@ -1666,7 +1644,7 @@ index d4fef77fd..aa6e8c7ec 100644
          .runtime(game.runtimeNode(id, { tags: ["section-hue", `section-${sectionId}`] }));
      });
    }).flat()
-@@ -220,46 +265,6 @@ const glowMaterial = material.emissive({ name: "pulse glider engine glow", color
+@@ -220,46 +243,6 @@ const glowMaterial = material.emissive({ name: "pulse glider engine glow", color
  // renderer-owned neon language; the exact visual frame gets a restrained
  // reactor-steel stage with explicit value separation so the typed actors and
  // exchange read as one place rather than a pile of emissive primitives.
@@ -1713,7 +1691,7 @@ index d4fef77fd..aa6e8c7ec 100644
  
  const gateSlotBuilders = (() => {
    const builders = [];
-@@ -314,7 +319,7 @@ const finaleBeaconBuilder = primitives.torus({ name: 'pulse finale beacon', mate
+@@ -314,7 +297,7 @@ const finaleBeaconBuilder = primitives.torus({ name: 'pulse finale beacon', mate
    // The final review frame is captured near the end of the 90-second lane. Keep
    // the target inside the readable depth band instead of hiding it behind the
    // far end of the fog volume.
@@ -1722,7 +1700,7 @@ index d4fef77fd..aa6e8c7ec 100644
    .runtime(game.runtimeNode('pulse-finale-beacon', { tags: ['finale-landmark', 'set-dressing'] }));
  const finaleTerminalSentryBuilder = model(assets.pulseTerminalSentry, {
    name: "pulse original terminal sentry",
-@@ -323,9 +328,9 @@ const finaleTerminalSentryBuilder = model(assets.pulseTerminalSentry, {
+@@ -323,9 +306,9 @@ const finaleTerminalSentryBuilder = model(assets.pulseTerminalSentry, {
    // The review lens gives the terminal its own, farther right-hand depth plane.
    // It is still purely non-colliding presentation: runner movement, lanes, and
    // the beat chart retain their existing coordinates and authority.
@@ -1734,7 +1712,7 @@ index d4fef77fd..aa6e8c7ec 100644
    .runtime(game.runtimeNode("pulse-finale-terminal-sentry", {
      tags: ["finale-target", "typed-terminal-sentry", "renderer-owned", "non-colliding"]
    }));
-@@ -343,24 +348,7 @@ const finaleArenaShellBuilder = model(assets.pulseReactorEncounterWorld, {
+@@ -343,24 +326,7 @@ const finaleArenaShellBuilder = model(assets.pulseReactorEncounterWorld, {
    // deck, side rails, service uprights, rear bay, and authored review braces
    // still establish a real enclosure; this is a composition correction to the
    // imported asset, not a camera-only pass.
@@ -1760,7 +1738,7 @@ index d4fef77fd..aa6e8c7ec 100644
  })
    .position(0, 0, 0)
    .runtime(game.runtimeNode("pulse-finale-arena-shell", {
-@@ -409,9 +397,9 @@ const finaleShieldVaneBuilders = Array.from({ length: 4 }, (_, index) => {
+@@ -409,9 +375,9 @@ const finaleShieldVaneBuilders = Array.from({ length: 4 }, (_, index) => {
        emissiveIntensity: 0.42
      })
    })
@@ -1772,7 +1750,7 @@ index d4fef77fd..aa6e8c7ec 100644
      .runtime(game.runtimeNode(`pulse-finale-shield-vane-${index}`, {
        tags: ["finale-target", "shield-architecture", "renderer-owned"]
      }));
-@@ -587,7 +575,7 @@ const finaleArenaBuilders = [
+@@ -587,7 +553,7 @@ const finaleArenaBuilders = [
      primitives.torus({ name: "pulse finale arena ring " + (index + 1), material: finaleArenaRingMaterial })
        .position(0, -0.035 + index * 0.006, -1.75)
        .rotate(1.5708, 0, 0)
@@ -1781,7 +1759,7 @@ index d4fef77fd..aa6e8c7ec 100644
        .runtime(game.runtimeNode("pulse-finale-arena-ring-" + index, { tags: ["finale-arena", "renderer-owned", "non-colliding"] }))
    ),
    ...Array.from({ length: 12 }, (_, index) => {
-@@ -599,7 +587,7 @@ const finaleArenaBuilders = [
+@@ -599,7 +565,7 @@ const finaleArenaBuilders = [
      })
        .position(Math.cos(angle) * radius, -0.025, -1.75 + Math.sin(angle) * radius)
        .rotate(0, -angle, 0)
@@ -1790,7 +1768,7 @@ index d4fef77fd..aa6e8c7ec 100644
        .runtime(game.runtimeNode("pulse-finale-groove-" + index, { tags: ["finale-arena", "renderer-owned", "non-colliding"] }));
    }),
    ...Array.from({ length: 18 }, (_, index) => {
-@@ -621,135 +609,14 @@ const finaleArenaBuilders = [
+@@ -621,135 +587,14 @@ const finaleArenaBuilders = [
  // conduits, and the terminal iris all use the same restrained reactor-steel
  // material family and one vanishing point. Every piece is renderer-owned and
  // non-colliding, so the chart and gate system remain the gameplay authority.
@@ -1926,7 +1904,7 @@ index d4fef77fd..aa6e8c7ec 100644
  
  // The encounter stage is intentionally built from a small authored material
  // family rather than a single dark floor.  These inset panels and hazard
-@@ -757,95 +624,16 @@ const reviewProjectileCoreRose = material.emissive({
+@@ -757,95 +602,16 @@ const reviewProjectileCoreRose = material.emissive({
  // cool graphite slabs carry the runners, while the warm seams establish the
  // sentinel's pressure side.  They are renderer-owned set dressing only; the
  // chart, collider, and typed actors remain the gameplay authority.
@@ -2022,7 +2000,7 @@ index d4fef77fd..aa6e8c7ec 100644
  
  // The current typed encounter already establishes the deck and impact shelf,
  // but its upper half still reads as empty negative space in a frozen frame.
-@@ -853,147 +641,10 @@ const reviewArchitectureAccentBuilders = visualReviewCapture
+@@ -853,147 +619,10 @@ const reviewArchitectureAccentBuilders = visualReviewCapture
  // build a continuous reactor-bay silhouette. They are renderer-owned dressing
  // outside all three gameplay lanes; the chart, collider, and typed assets stay
  // the only gameplay authorities.
@@ -2170,7 +2148,7 @@ index d4fef77fd..aa6e8c7ec 100644
  
  // The previous review frame had a deck, side rails, and a handful of flat
  // plates, but the player and sentry still appeared to hover in the same plane
-@@ -1002,124 +653,23 @@ const reviewTerrainBuilders = visualReviewCapture
+@@ -1002,124 +631,23 @@ const reviewTerrainBuilders = visualReviewCapture
  // set-dressing only: no island is part of the chart, lane, or collider model.
  // The low circular profiles deliberately echo the broken basalt forms in Furi
  // while preserving the route's Pulse steel/cyan/rose identity.
@@ -2295,7 +2273,7 @@ index d4fef77fd..aa6e8c7ec 100644
  
  // The typed terminal sentry's authored gunmetal/obsidian shell is intentionally
  // dark, but at the exact review distance its shoulder mass can merge into the
-@@ -1127,153 +677,24 @@ const reviewCombatAccentBuilders = visualReviewCapture
+@@ -1127,153 +655,24 @@ const reviewCombatAccentBuilders = visualReviewCapture
  // attached to the sentry's review pose so its silhouette reads as a deliberate
  // combatant rather than a blocky black cut-out. The GLB remains the only primary
  // character; this is renderer-owned contour support, not a replacement body.
@@ -2449,7 +2427,7 @@ index d4fef77fd..aa6e8c7ec 100644
  
  // Each authored packet now leaves a short, dimmer 3D wake. The wakes are
  // intentionally separate nodes so their direction and depth can be inspected
-@@ -1282,81 +703,25 @@ const reviewProjectileBuilders = visualReviewCapture
+@@ -1282,81 +681,25 @@ const reviewProjectileBuilders = visualReviewCapture
  // wake in the actual X/Z travel direction with one deterministic yaw. The
  // sphere packet remains the bright projectile core; this directional support
  // piece is what makes the two streams read as fire instead of a pile of dots.
@@ -2531,29 +2509,13 @@ index d4fef77fd..aa6e8c7ec 100644
  // Keep the public neonTunnel rails, wall washes, streaks, braces, sparks, and
  // fog, but omit its decorative circular torus bands. The route's thin
  // section-colored frames above own anticipation; thick concentric rings hid
-@@ -1366,137 +731,69 @@ const tunnelBackdrop = prefabs.neonTunnel({ rings: 8 }).filter((node) => {
+@@ -1366,137 +709,53 @@ const tunnelBackdrop = prefabs.neonTunnel({ rings: 8 }).filter((node) => {
    return !name.includes("true circular neon tunnel tube ring");
  });
  
 -const app = createAuraApp("#app", {
 -  scene: scene()
 -    .background(visualReviewCapture ? "#171a38" : "#180b28")
-+const pulseGame = createGame({
-+  id: "showcase-pulse-tunnel",
-+  target: "#app",
-+  scene: () => pulseScene,
-+  physics: {
-+    seed: 20260912,
-+    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
-+  },
-+  scenarios: pulseScenarios,
-+  evidence: {
-+    schema: 1,
-+    sections: async () => (await import("../evidence")).sections,
-+    legacyGlobals: ["__PULSE_TUNNEL_EVIDENCE__", "__AURA3D_SHOWCASE_PULSE_TUNNEL__"]
-+  },
-+  qualityRebuild: { flags: ["game"] }
-+});
 +const pulseScene = scene()
 +    .background( "#180b28")
      .addMany([
@@ -2706,7 +2668,7 @@ index d4fef77fd..aa6e8c7ec 100644
        primitives.sphere({
          name: "pulse shield hit orb",
          material: material.emissive({
-@@ -1518,7 +815,7 @@ const app = createAuraApp("#app", {
+@@ -1518,7 +777,7 @@ const app = createAuraApp("#app", {
          material: material.pbr({ name: "track asphalt", color: "#090d16", roughness: 0.65, metallic: 0.35 })
        })
          .position(0, -0.05, -8)
@@ -2715,7 +2677,7 @@ index d4fef77fd..aa6e8c7ec 100644
          .rotate(-1.5708, 0, 0),
  
        // Left Lane Divider Neon Line
-@@ -1527,7 +824,7 @@ const app = createAuraApp("#app", {
+@@ -1527,7 +786,7 @@ const app = createAuraApp("#app", {
          material: material.emissive({ name: "lane line cyan", color: "#06b6d4", emissive: "#22d3ee", emissiveIntensity: 1.2 })
        })
          .position(-0.6, -0.04, -8)
@@ -2724,7 +2686,7 @@ index d4fef77fd..aa6e8c7ec 100644
          .rotate(-1.5708, 0, 0),
  
        // Right Lane Divider Neon Line
-@@ -1536,7 +833,7 @@ const app = createAuraApp("#app", {
+@@ -1536,7 +795,7 @@ const app = createAuraApp("#app", {
          material: material.emissive({ name: "lane line cyan", color: "#06b6d4", emissive: "#22d3ee", emissiveIntensity: 1.2 })
        })
          .position(0.6, -0.04, -8)
@@ -2733,28 +2695,62 @@ index d4fef77fd..aa6e8c7ec 100644
          .rotate(-1.5708, 0, 0),
  
        // Typed player craft. This release-validated textured spacecraft already
-@@ -1586,16 +883,10 @@ const app = createAuraApp("#app", {
+@@ -1586,15 +845,49 @@ const app = createAuraApp("#app", {
        ...gateSlotBuilders,
        ...sparkBuilders
      ])
 -    .camera(camera.perspective(visualReviewCapture
 -      ? { position: [0.10, 2.72, 6.55], target: [0.02, 0.92, -2.02], fov: 47 }
 -      : { position: [0, 0.72, 3.8], target: [0, 0.32, -8], fov: 50 })),
--  physics: {
--    seed: 20260912,
--    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
--  },
--  diagnostics: false,
--  autoStart: true
--});
 +    .camera(camera.perspective( { position: [0, 0.72, 3.8], target: [0, 0.32, -8], fov: 50 }));
 +
++// createGame calls scene() synchronously, so it mounts after pulseScene exists.
++const pulseGame = createGame({
++  id: "showcase-pulse-tunnel",
++  target: "#app",
++  scene: () => pulseScene,
+   physics: {
+     seed: 20260912,
+     continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
+   },
+-  diagnostics: false,
+-  autoStart: true
++  scenarios: pulseScenarios,
++  evidence: {
++    schema: 1,
++    sections: async () => (await import("../evidence")).sections,
++    legacyGlobals: ["__PULSE_TUNNEL_EVIDENCE__", "__AURA3D_SHOWCASE_PULSE_TUNNEL__"]
++  },
++  qualityRebuild: { flags: ["game"] }
++});
 +const app = pulseGame.app;
 +pulseGame.start();
++
++const pulseTween = createTweenEngine();
++const pulseFx = createFxParticlePass(app.effects);
++const pulseJuice = createJuice<
++  "lane-switch" | "jump" | "slide" | "graze" | "shield-hit" | "shield-break" | "section-rise" | "run-over"
++>({
++  events: {
++    "lane-switch": { fx: { kind: "streak", count: 4, color: "#48d9f2" }, shake: 0.03 },
++    jump: { fx: { kind: "dust", count: 6, color: "#9fd8ff" } },
++    slide: { fx: { kind: "dust", count: 6, color: "#8fb4d8" } },
++    graze: { fx: { kind: "spark", count: 8, color: "#ffe08a" }, shake: 0.05 },
++    "shield-hit": { flash: { color: "#ff8d5a", peak: 0.14, ms: 150 }, shake: 0.16 },
++    "shield-break": { flash: { color: "#ff4d4d", peak: 0.24, ms: 260 }, shake: 0.3, hitStop: 0.055, vignette: { amount: 0.32, ms: 420, color: "#26060a" } },
++    "section-rise": { punch: { fovDeg: 2.2, ms: 170 }, fx: { kind: "ring", count: 14, color: "#48e5ff" } },
++    "run-over": { flash: { color: "#ffdca8", peak: 0.18, ms: 280 }, vignette: { amount: 0.38, ms: 520, color: "#120812" } }
++  },
++  camera: app.camera,
++  session: pulseGame.session,
++  fx: pulseFx,
++  overlay: createOverlayDriver({ app }),
++  tweens: pulseTween,
++  rumble: createRumbleDriver()
+ });
  
  // ---- runtime handles ---------------------------------------------------------
- 
-@@ -1626,60 +917,8 @@ const finaleProjectiles = finaleProjectileBuilders.map((_, index) => requireHand
+@@ -1626,60 +919,14 @@ const finaleProjectiles = finaleProjectileBuilders.map((_, index) => requireHand
  // obscuring the playable lane before any finale encounter existed.  Keep the
  // same renderer-owned modules and IDs, but make their visibility follow the
  // actual finale state just like the typed sentry and shield architecture.
@@ -2773,7 +2769,13 @@ index d4fef77fd..aa6e8c7ec 100644
 -const reviewImpactBursts = reviewImpactBurstBuilders.map((_, index) => requireHandle(`pulse-review-impact-burst-${index}`));
 -const reviewImpactRays = reviewImpactRayBuilders.map((_, index) => requireHandle(`pulse-review-impact-ray-${index}`));
 -const reviewImpactWaves = reviewImpactWaveBuilders.map((_, index) => requireHandle(`pulse-review-impact-wave-${index}`));
-+const finaleArenaDressing: RuntimeNodeHandleLike[] = ! [];
++const finaleArenaDressing: RuntimeNodeHandleLike[] = [
++  requireHandle("pulse-cavern-world-floor"),
++  requireHandle("pulse-finale-arena-dais"),
++  ...Array.from({ length: 3 }, (_, index) => requireHandle(`pulse-finale-arena-ring-${index}`)),
++  ...Array.from({ length: 12 }, (_, index) => requireHandle(`pulse-finale-groove-${index}`)),
++  ...Array.from({ length: 18 }, (_, index) => requireHandle(`pulse-finale-perimeter-${index}`))
++];
  const rainHandles = rainBuilders.map((_, index) => requireHandle("pulse-rain-" + index));
 -const reviewAttackOrigin = visualReviewCapture ? requireHandle("pulse-review-attack-origin") : null;
 -const reviewImpactPlane = visualReviewCapture ? requireHandle("pulse-review-impact-plane") : null;
@@ -2816,7 +2818,7 @@ index d4fef77fd..aa6e8c7ec 100644
  // Preserve each typed asset's authored material separation in review capture.
  // Replacing all sub-materials with one finish collapsed the runner/sentry into
  // high-contrast slabs, hiding the primary silhouettes that the exact frame must
-@@ -1693,23 +932,7 @@ finaleArenaShell.setVisible(false);
+@@ -1693,23 +940,7 @@ finaleArenaShell.setVisible(false);
  finaleTerminalSentry.setVisible(false);
  for (const dressing of finaleArenaDressing) dressing.setVisible(false);
  for (const projectile of finaleProjectiles) projectile.setVisible(false);
@@ -2840,7 +2842,7 @@ index d4fef77fd..aa6e8c7ec 100644
  
  const hueHandles: Record<PulseSectionId, RuntimeNodeHandleLike[]> = {
    intro: hueIds.intro.map(requireHandle),
-@@ -1824,16 +1047,6 @@ const evidence = {
+@@ -1824,16 +1055,6 @@ const evidence = {
    diagnostics: undefined as unknown
  };
  
@@ -2857,7 +2859,7 @@ index d4fef77fd..aa6e8c7ec 100644
  
  /**
   * Test-only fault injection for the sync spec: shifts the drift monitor's readings
-@@ -1870,7 +1083,6 @@ Object.defineProperty(window, "__PULSE_TUNNEL_TEST__", {
+@@ -1870,7 +1091,6 @@ Object.defineProperty(window, "__PULSE_TUNNEL_TEST__", {
  const hudElements = setupPulseHud(document.getElementById("panel"));
  const debugHud = isPulseDebugMode();
  let runState: RunState = "ready";
@@ -2865,7 +2867,7 @@ index d4fef77fd..aa6e8c7ec 100644
  let fogPulseRemaining = 0;
  let hitFlashRemaining = 0;
  let runStartPending = false;
-@@ -1883,10 +1095,13 @@ function applySection(sectionId: PulseSectionId, announce: boolean): void {
+@@ -1883,10 +1103,13 @@ function applySection(sectionId: PulseSectionId, announce: boolean): void {
    if (!evidence.sectionsVisited.includes(sectionId)) evidence.sectionsVisited.push(sectionId);
    tunnelAudio.applySection(sectionId);
    for (const id of Object.keys(hueHandles) as PulseSectionId[]) {
@@ -2881,7 +2883,7 @@ index d4fef77fd..aa6e8c7ec 100644
  }
  
  async function beginRun(): Promise<void> {
-@@ -1924,6 +1139,7 @@ function endRun(reason: string): void {
+@@ -1924,6 +1147,7 @@ function endRun(reason: string): void {
    }
    tunnelAudio.duckForSummary();
    void tunnelAudio.sfx("runOver");
@@ -2889,7 +2891,7 @@ index d4fef77fd..aa6e8c7ec 100644
  }
  
  function restart(): void {
-@@ -1954,7 +1170,7 @@ function restart(): void {
+@@ -1954,7 +1178,7 @@ function restart(): void {
    fogPulseRemaining = 0;
    hitFlashRemaining = 0;
    lastSection = "intro";
@@ -2898,7 +2900,7 @@ index d4fef77fd..aa6e8c7ec 100644
    runState = "ready";
    tunnelAudio.stopStems();
    applySection("intro", false);
-@@ -2002,7 +1218,9 @@ function applyCollision(_event: PulsePassEvent): void {
+@@ -2002,7 +1226,9 @@ function applyCollision(_event: PulsePassEvent): void {
    if (evidence.shields <= 0) {
      endRun("shields-exhausted");
    } else {
@@ -2909,7 +2911,7 @@ index d4fef77fd..aa6e8c7ec 100644
    }
  }
  
-@@ -2023,6 +1241,7 @@ app.onFrame(() => {
+@@ -2023,6 +1249,7 @@ app.onFrame(() => {
    lastFrameTimeMs = nowMs;
    const dt = Math.min(0.05, Math.max(1 / 240, dtRaw || 1 / 60));
    input.update(dt);
@@ -2917,7 +2919,7 @@ index d4fef77fd..aa6e8c7ec 100644
    const startupInput = {
      left: input.pressed("left"),
      right: input.pressed("right"),
-@@ -2042,12 +1261,17 @@ app.onFrame(() => {
+@@ -2042,12 +1269,17 @@ app.onFrame(() => {
      return;
    }
    if (input.pressed("pause") && (runState === "running" || runState === "paused")) {
@@ -2940,7 +2942,7 @@ index d4fef77fd..aa6e8c7ec 100644
      publish();
      return;
    }
-@@ -2064,9 +1288,16 @@ app.onFrame(() => {
+@@ -2064,9 +1296,16 @@ app.onFrame(() => {
    startupInputLatch.jump = false;
    startupInputLatch.slide = false;
    for (const eventName of playerState.events) {
@@ -2960,7 +2962,7 @@ index d4fef77fd..aa6e8c7ec 100644
    }
    gateSystem.update(dt);
    const styleSnapshot = styleSystem.step(dt);
-@@ -2082,23 +1313,6 @@ let lastFrameTimeMs = performance.now();
+@@ -2082,23 +1321,6 @@ let lastFrameTimeMs = performance.now();
  
  const slotFlashStates = new Map<number, boolean>();
  
@@ -2984,7 +2986,7 @@ index d4fef77fd..aa6e8c7ec 100644
  function renderWorld(dt: number): void {
    if (reviewCombatPulse) {
      reviewCombatPulse.ageSeconds += dt;
-@@ -2112,11 +1326,9 @@ function renderWorld(dt: number): void {
+@@ -2112,11 +1334,9 @@ function renderWorld(dt: number): void {
    // filled the frame and the pods still grazed the paint. Slide narrows and
    // drops its center so the canopy (top ~0.36) ducks the 0.38 high-gate bar
    // instead of clipping 0.14 into it as before.
@@ -2999,13 +3001,13 @@ index d4fef77fd..aa6e8c7ec 100644
    // The craft floats: its visual center sits +0.50 above the gameplay feet so
    // the turbine pods clear the deck with a visible hover gap (the old +0.34
    // put the pod undersides exactly on the track paint). Gameplay feet, jump
-@@ -2124,15 +1336,15 @@ function renderWorld(dt: number): void {
+@@ -2124,15 +1344,15 @@ function renderWorld(dt: number): void {
    // higher, and the raised top (0.74) now matches the 0.72 stand collider.
    // Sliding drops the center to +0.24 so the squashed canopy ducks under the
    // high-gate bar instead of riding through it.
 -  const craftCenterY = playerState.sliding && !visualReviewCapture ? 0.24 : 0.50;
 -  shipBody.setPosition(reviewPlayerX, playerState.y + craftCenterY, reviewPlayerZ)
-+  const craftCenterY = playerState.sliding && ! 0.50;
++  const craftCenterY = playerState.sliding ? 0.24 : 0.50;
 +  shipBody.setPosition(shipPlayerX, playerState.y + craftCenterY, shipPlayerZ)
      .setScale(craftScale)
 -    .setRotation(0, visualReviewCapture ? 0.12 : 0, laneBank);
@@ -3021,7 +3023,7 @@ index d4fef77fd..aa6e8c7ec 100644
    const blinking = playerState.invulnRemaining > 0 && Math.floor(performance.now() / 100) % 2 === 0;
    shipBody.setVisible(!blinking);
    shipGlow.setVisible(!blinking);
-@@ -2145,10 +1357,10 @@ function renderWorld(dt: number): void {
+@@ -2145,10 +1365,10 @@ function renderWorld(dt: number): void {
    // well as during live play.  Pausing freezes the clock/input, not the
    // renderer-owned boss silhouette or its last projectile pose.
    const finaleActive = lastSection === "finale" && (runState === "running" || runState === "paused");
@@ -3034,7 +3036,7 @@ index d4fef77fd..aa6e8c7ec 100644
    // The release-probed typed reactor world is the encounter enclosure in both
    // lenses.  V11 is authored as a continuous deck/arch/bay composition (no
    // billboard card), so keeping it visible in the exact review frame restores
-@@ -2169,117 +1381,45 @@ function renderWorld(dt: number): void {
+@@ -2169,117 +1389,45 @@ function renderWorld(dt: number): void {
    // The review packets are the visible exchange. Hide the older gameplay pool
    // in this lens because its small cylinders can alias into flat cards at the
    // final screenshot resolution.
@@ -3165,7 +3167,7 @@ index d4fef77fd..aa6e8c7ec 100644
          // The default playable finale uses the same authored cause/effect
          // relationship as the review lens: cyan lances leave the runner,
          // converge on the active gate impact plane, and rose cutters return
-@@ -2314,67 +1454,10 @@ function renderWorld(dt: number): void {
+@@ -2314,67 +1462,10 @@ function renderWorld(dt: number): void {
          projectile.setVisible(true).setPosition(x, y, z)
            .setScale([0.082 + (localIndex % 2) * 0.012, 0.42, 0.082 + (localIndex % 2) * 0.012])
            .setRotation(Math.PI / 2, (targetX - sourceX) * 0.16, outgoing ? 0.05 : -0.05);
@@ -3236,7 +3238,7 @@ index d4fef77fd..aa6e8c7ec 100644
      rainHandles.forEach((rain, index) => {
        const column = index % 10;
        const depth = Math.floor(index / 10);
-@@ -2391,22 +1474,7 @@ function renderWorld(dt: number): void {
+@@ -2391,22 +1482,7 @@ function renderWorld(dt: number): void {
    } else {
      for (const projectile of finaleProjectiles) projectile.setVisible(false);
      for (const rain of rainHandles) rain.setVisible(false);
@@ -3260,7 +3262,7 @@ index d4fef77fd..aa6e8c7ec 100644
  
    // A collision can enter summary during gateSystem.update(). Do not let the
    // later render pass re-show the just-resolved gate or freeze transient flash
-@@ -2432,12 +1500,7 @@ function renderWorld(dt: number): void {
+@@ -2432,12 +1508,7 @@ function renderWorld(dt: number): void {
      // their broad telegraph slabs obscure the actor exchange in the exact art
      // frame. Keep those obstacles visible in the live route and HUD evidence;
      // suppress only their renderer geometry for this presentation lens.
@@ -3274,7 +3276,7 @@ index d4fef77fd..aa6e8c7ec 100644
      const gate = gates[slot];
      if (!gate) {
        parts.top.setVisible(false);
-@@ -2511,7 +1574,7 @@ function publish(styleSnapshot?: ReturnType<typeof styleSystem.step>): void {
+@@ -2511,7 +1582,7 @@ function publish(styleSnapshot?: ReturnType<typeof styleSystem.step>): void {
    evidence.score = snapshot.score;
    evidence.state = runState;
    evidence.status = acceptedStatus();
@@ -3335,20 +3337,97 @@ index 000000000..af7cc2ade
 +  finale
 +];
 diff --git a/apps/showcase-pulse-tunnel/src/v2/boot.ts b/apps/showcase-pulse-tunnel/src/v2/boot.ts
-index 5652507fa..da0165f1a 100644
+index 2c1032a48..01aff0107 100644
 --- a/apps/showcase-pulse-tunnel/src/v2/boot.ts
 +++ b/apps/showcase-pulse-tunnel/src/v2/boot.ts
-@@ -20,8 +20,8 @@ import { lightingNodes } from "./scene/lighting";
+@@ -6,7 +6,7 @@
+ // player/style) are unchanged; music + sfx play through the legacy
+ // stem-bus tunnel audio until C-25 lands (standIn R-14-09).
+ import { game as engineGame, scene } from "@aura3d/engine";
+-import { createGame, type Game, lookManifest } from "@aura3d/game";
++import { createGame, type Game } from "@aura3d/game";
+ import { pulseSectionAtTime, pulseTimeForBeat } from "../gameplay/beat-clock";
+ import { PULSE_GATE_SPEED, PULSE_PLAYER_Z, PULSE_SPAWN_Z } from "../gameplay/gates";
+ import { createPulseConveyor, PULSE_CONVEYOR_BUDGET } from "../gameplay/conveyor";
+@@ -20,7 +20,6 @@ import { lightingNodes } from "./scene/lighting";
  import { createPulseRig, fallbackCameraNode } from "./scene/camera";
  import { wirePulseFx } from "./scene/fx";
  import { TUNNEL_BG } from "./scene/materials";
 -import { publishPulseEvidence } from "./evidence";
--import { applyPulseScenario } from "./scenarios";
-+import { publishPulseEvidence } from "../evidence";
-+import { applyPulseScenario } from "../scenarios";
+ import { applyPulseScenario } from "./scenarios";
  import { createPulseRunCtx, createPulseSystems, wirePulseRunState, MAX_SHIELDS } from "./run-state";
  import { createGateVisuals } from "./gate-visuals";
- import { wirePulseTouch, consumePulseTouch } from "./touch";
+@@ -131,6 +130,26 @@ const game = createGame({
+     // art/direction.ts sections. `route_pulse_tunnel` uses the engine-parseable
+     // underscore form (URL/dispatch form is `route-pulse-tunnel`).
+     flags: ["route_pulse_tunnel", "game", "camera", "lighting", "post", "materials", "vfx", "world", "tiers", "looks"]
++  },
++  // T5.8: route evidence rides the shared createGame channel (C-24) —
++  // only the sections games.json requiredConditions read.
++  evidence: {
++    schema: 1,
++    sections: {
++      gates: (): { passedOnBeat: number } => ({ passedOnBeat: rs.passedOnBeat }),
++      fx: (): { liveCount: number } => ({ liveCount: game.fx.liveCount }),
++      framing: (): { canvasMatchesViewport: boolean } => {
++        const renderSize = game.app.diagnostics().renderSize;
++        const dpr = window.devicePixelRatio || 1;
++        return {
++          canvasMatchesViewport:
++            game.app.canvas !== undefined &&
++            renderSize !== undefined &&
++            Math.abs(renderSize[0] - window.innerWidth * dpr) <= 2 &&
++            Math.abs(renderSize[1] - window.innerHeight * dpr) <= 2
++        };
++      }
++    }
+   }
+ });
+ 
+@@ -299,43 +318,6 @@ game.app.onFrame?.(({ dt: rawDt }) => {
+   if (frame % 6 === 0) syncHud();
+ });
+ 
+-// ------------------------------------------------------------- evidence ------
+-
+-// T2.2-post: appliedLook derives from the C-31 runtime manifest.
+-const appliedLook: Record<string, unknown> = Object.freeze({
+-  ...lookManifest(game.lookSource()),
+-  postPreset: "neon-night",
+-  exposureEV: direction.lighting.exposureEV,
+-  hdri: direction.lighting.environment.hdri,
+-  rig: "pulse-tunnel.chase"
+-});
+-
+-publishPulseEvidence({
+-  game,
+-  run: () => ({
+-    state: rs.runState,
+-    sectionId: rs.lastSection,
+-    beat: rs.lastBeat,
+-    elapsed: clock.elapsed(),
+-    shields: rs.shields,
+-    passed: rs.passed,
+-    passedOnBeat: rs.passedOnBeat,
+-    grazes: rs.grazes,
+-    collisions: rs.collisions,
+-    finishedReason: rs.finishedReason
+-  }),
+-  player: () => player.snapshot(),
+-  style: () => style.snapshot(),
+-  gates: () => ({
+-    active: gateSystem.activeGates().length,
+-    pending: gateSystem.pendingCount()
+-  }),
+-  clockSample: () => clock.sample(),
+-  appliedLook,
+-  frameCount: () => frame,
+-  bootedAtMs,
+-  audioCueLog: () => audioCueLog
+-});
+ 
+ const params = new URL(location.href).searchParams;
+ const scenario = params.get("scenario");
 -- 
 2.52.0
 
