@@ -386,8 +386,9 @@ export function applyProductionActorAnimation(
           state = { baseAction: null, activeClip: null, lastTimeMs: undefined };
           productionActorPoseStates.set(entry.actor, state);
         }
+        const timing = poseMixerCaptureTiming(animation, state.activeClip === null);
         if (state.activeClip !== clipName || state.baseAction === null || !state.baseAction.playing) {
-          const fadeSeconds = animation.crossFade === false ? 0 : animation.crossFade ?? 0.2;
+          const fadeSeconds = timing.fadeSeconds;
           const additiveWanted = animation.blendMode === "additive";
           const effectiveClipName = additiveWanted && typeof runtime.ensureAdditiveClip === "function"
             ? runtime.ensureAdditiveClip(clipName, animation.additiveReference)
@@ -417,13 +418,11 @@ export function applyProductionActorAnimation(
             state.baseAction.setLoop("once", 1);
             state.baseAction.clampWhenFinished = true;
           }
-          const startTime = animation.startTime;
-          if (startTime !== undefined && Number.isFinite(startTime) && startTime > 0) {
-            state.baseAction.time = Math.min(startTime, state.baseAction.clip.duration);
-          }
+          const startTime = timing.startSeconds(state.baseAction.clip.duration);
+          if (startTime > 0) state.baseAction.time = startTime;
           state.activeClip = clipName;
         }
-        state.baseAction?.setEffectiveTimeScale(animation.speed ?? 1);
+        state.baseAction?.setEffectiveTimeScale(timing.timeScale);
         const rawDt = state.lastTimeMs === undefined ? 0 : Math.max(0, (time - state.lastTimeMs) / 1000);
         state.lastTimeMs = time;
         const appScale = actorAnimationAppTimeScale?.() ?? 1;
@@ -536,6 +535,37 @@ export function resolvePrd06Options(
     defaults: appOptions?.defaults ?? (flags.on("A3D_QR_ANIMATION") ? "3.1" : "3.0"),
     mixer: appOptions?.mixer ?? (flags.on("A3D_QR_ANIMATION_POSE_MIXER") ? "pose" : "legacy"),
     tier: appOptions?.tier ?? ctx.quality.tier
+  };
+}
+
+/**
+ * 06-PROMO: start time, first fade and time scale for the flag-on PoseMixer
+ * path, matching the legacy `resolveAnimationSeconds` semantics for
+ * `captureTime`: `loop: false` pins the sampled pose at captureTime (clamped to
+ * the clip), `loop: true` phases the clip by captureTime. The PoseMixer path
+ * used to ignore captureTime (action at 0, a 0.2 s fade-in from rest, then
+ * wall-clock dt), so a pinned capture sampled a different pose — the
+ * 15-animation-skinning / prd06-ik-slope regressions under A3D_QR_ANIMATION
+ * (L4 run 38148470304). Without captureTime the old behaviour is unchanged.
+ */
+export function poseMixerCaptureTiming(
+  animation: Pick<AuraAnimationSpec, "captureTime" | "startTime" | "loop" | "speed" | "crossFade">,
+  firstClip: boolean
+): { readonly fadeSeconds: number; readonly timeScale: number; startSeconds(duration: number): number } {
+  const capture = animation.captureTime !== undefined && Number.isFinite(animation.captureTime)
+    ? Math.max(0, animation.captureTime)
+    : undefined;
+  const pinned = capture !== undefined && animation.loop === false;
+  const authoredFade = animation.crossFade === false ? 0 : animation.crossFade ?? 0.2;
+  return {
+    fadeSeconds: capture !== undefined && firstClip ? 0 : authoredFade,
+    timeScale: pinned ? 0 : animation.speed ?? 1,
+    startSeconds(duration: number): number {
+      const start = capture ?? animation.startTime;
+      if (start === undefined || !Number.isFinite(start) || start <= 0) return 0;
+      if (capture !== undefined && animation.loop !== false && duration > 0) return start % duration;
+      return Math.min(start, duration);
+    }
   };
 }
 
