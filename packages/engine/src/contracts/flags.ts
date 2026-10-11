@@ -170,7 +170,9 @@ export function qrFlagsWithAnimationMixer(flags: QrFlags, mixer: "pose" | "legac
 
 export function resolveQrFlags(input: { readonly options?: QrFlagInput; readonly url?: URL | string; readonly env?: Readonly<Record<string, string | undefined>> }): QrFlags {
   const values: Record<string, QrFlagValue> = {};
-  if (input.options !== undefined) applyInput(values, input.options);
+  // Precedence (first write wins): URL `a3d-qr` > env (A3D_QR list, then A3D_QR_X) >
+  // programmatic options > flags.state default-on. Runtime overrides must beat
+  // values baked into app code, or `-x` / `none` can't measure a flag (#1232).
   if (input.url !== undefined) {
     const url = typeof input.url === "string" ? new URL(input.url, "http://localhost/") : input.url;
     const list = url.searchParams.get("a3d-qr");
@@ -181,6 +183,7 @@ export function resolveQrFlags(input: { readonly options?: QrFlagInput; readonly
     if (list !== undefined) applyList(values, list);
     applyPerFlagEnv(values, input.env);
   }
+  if (input.options !== undefined) applyInput(values, input.options);
   applyDefaultOnStates(values);
   propagateSubFlags(values);
   for (const removed of REMOVED_QR_FLAGS) {
