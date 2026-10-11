@@ -1108,7 +1108,12 @@ describe("agent API", () => {
     const materialKnobs = material.labParameters();
 
     // C-09 env sources (lane 02, 8e6f298dd): studio is the "preset" source with preset "studio".
-    expect(snapshot.nodes.some((node) => node.kind === "environment" && node.environment === "preset" && (node as { preset?: string }).preset === "studio" && node.intensity === 1.4)).toBe(true);
+    // The runtime emits environment: "preset" although the node type's
+    // `environment` union still lacks "preset" (lane 02 type drift, #879).
+    expect(snapshot.nodes.some((node) => {
+      const env = node as { kind?: string; environment?: string; preset?: string; intensity?: number };
+      return env.kind === "environment" && env.environment === "preset" && env.preset === "studio" && env.intensity === 1.4;
+    })).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "label" && node.name === "revenue label" && node.text === "Revenue")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "label" && node.label === "hud" && node.screenAnchor === "top-right")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "light" && node.light === "rect" && node.width === 2.8)).toBe(true);
