@@ -27,6 +27,7 @@ import { programCacheSlot, type ProgramCacheLike, type ProgramFeatures } from ".
 import { normalizeProgramFeatures } from "./program/ProgramFeatures";
 import { materialFeatureWarning, materialUsesGeneratedProgram } from "./program/MaterialFeatures";
 import { bindShaderFeatureUniforms, selectShaderFeatureBits } from "./program/FeatureSelect";
+import { bindMaterialLobeUniforms } from "./materials/PhysicalFeatures";
 import { QUALITY_TIERS, type AuraQualityTierSettings } from "./contracts/quality";
 import { rendererQrFlags } from "./renderer/FrameGraph";
 import { qrCoreGeneratorOn, rendererProgramCache, rendererAuraFrame } from "./renderer/qrSubFlags";
@@ -387,6 +388,11 @@ export class ForwardPass extends BaseRenderPass {
     if (generated && this.lastProgramFeatures) {
       // C-02 `ShaderFeature.bindUniforms` for the features this draw selected.
       bindShaderFeatureUniforms(this.lastProgramFeatures.features, rendererQrFlags(device), item, (name, value) => uniforms.set(name, value));
+      // C-03 `lobe.bind` (04-LOBES): descriptor factors and lobe textures for the
+      // lobes this record carries. Material parameters stay authoritative.
+      bindMaterialLobeUniforms(this.lastProgramFeatures.extensions, baseMaterial, rendererQrFlags(device), (name, value) => {
+        if (!uniforms.has(name)) uniforms.set(name, value);
+      });
     }
     if (item.skinning && !(generated && this.lastProgramFeatures?.features["prd06.deform"] !== undefined)) {
       // Legacy skinned programs take the u_jointMatrices palette; on the

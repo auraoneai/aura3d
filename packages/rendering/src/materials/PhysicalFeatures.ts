@@ -12,6 +12,7 @@ import type { MaterialExtensionFeature, ProgramFeatures } from "../contracts/pro
 import { QUALITY_TIERS } from "../contracts/quality";
 import { materialLobes, type MaterialFeatureContext, type MaterialLobeInput } from "../contracts/materialLobes";
 import { Texture } from "../Texture";
+import type { UniformValue } from "../RenderDevice";
 import type { PhysicalMapBinding, PhysicalMapSlot, PhysicalMaterialDescriptor, PhysicalFeatureSet } from "./PhysicalMaterial";
 
 export type { PhysicalFeatureSet };
@@ -285,3 +286,42 @@ export function legacyPhysicalDescriptor(options: LegacyPhysicalMaterialOptions)
     textures
   };
 }
+
+/**
+ * 04-LOBES: the C-03 `lobe.bind` caller on the generated path. Resolves the
+ * draw's material to a `MaterialLobeInput` (`PhysicalMaterial.physicalDescriptor`
+ * or a legacy class's `prd04Options`, cached per material) and runs `bind` for
+ * every lobe the program record carries. `set` is the caller's sink; ForwardPass
+ * keeps material parameters authoritative (a lobe default never overwrites a
+ * parameter the material already carries).
+ */
+const lobeInputCache = new WeakMap<object, MaterialLobeInput | null>();
+
+export function materialLobeInputOf(material: object): MaterialLobeInput | undefined {
+  const cached = lobeInputCache.get(material);
+  if (cached !== undefined) return cached ?? undefined;
+  const source = material as { readonly physicalDescriptor?: PhysicalMaterialDescriptor; readonly prd04Options?: LegacyPhysicalMaterialOptions };
+  const input = source.physicalDescriptor
+    ? physicalMaterialLobeInput(source.physicalDescriptor)
+    : source.prd04Options
+      ? physicalMaterialLobeInput(legacyPhysicalDescriptor(source.prd04Options))
+      : undefined;
+  lobeInputCache.set(material, input ?? null);
+  return input;
+}
+
+export function bindMaterialLobeUniforms(
+  extensions: readonly MaterialExtensionFeature[],
+  material: object,
+  flags: MaterialFeatureContext["flags"],
+  set: (uniform: string, value: UniformValue) => void
+): void {
+  if (extensions.length === 0) return;
+  const input = materialLobeInputOf(material);
+  if (!input) return;
+  for (const lobe of materialLobes(flags)) {
+    const active = extensions.some((ext) => ext.lobe === lobe.id || (lobe.glTFExtension !== undefined && ext.lobe === lobe.glTFExtension));
+    if (active) lobe.bind(input, set);
+  }
+}
+
