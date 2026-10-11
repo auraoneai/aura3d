@@ -8,7 +8,7 @@
 import { Texture, type TextureCubeFace } from "../Texture.js";
 import type { EnvironmentProbe } from "../contracts/environment.js";
 import { sampleRoomEnvironment } from "./RoomEnvironmentScene.js";
-import { projectCubeToSH9 } from "./SphericalHarmonics.js";
+import { evaluateSH9Irradiance, projectCubeToSH9 } from "./SphericalHarmonics.js";
 import { CUBE_FACE_BASIS, faceUvToDir, prefilterCubeGGX, sampleCube, type PrefilterCubeSource, type PrefilterResult } from "./workers/cpuPrefilter.js";
 
 export const CUBE_FACE_ORDER = ["px", "nx", "py", "ny", "pz", "nz"] as const;
@@ -323,9 +323,43 @@ function downsampleRgba(src: Float32Array, w: number, h: number): { data: Float3
  * no RGBA8), which fixes the E5 dim/clip problem on the legacy environment
  * path when the flag is on. Mip chain is a CPU box filter.
  */
+/** SH9 cosine irradiance ÷ π per equirect texel (same direction convention as `probeToEquirectTexture`). */
+export function sh9IrradianceEquirect(sh9: Float32Array, width: number, height: number): Float32Array {
+  const out = new Float32Array(width * height * 4);
+  for (let row = 0; row < height; row += 1) {
+    const theta = ((row + 0.5) / height) * Math.PI;
+    const sinT = Math.sin(theta);
+    const cosT = Math.cos(theta);
+    for (let col = 0; col < width; col += 1) {
+      const phi = ((col + 0.5) / width) * 2 * Math.PI - Math.PI;
+      const [r, g, b] = evaluateSH9Irradiance(sh9, [-Math.cos(phi) * sinT, cosT, Math.sin(phi) * sinT]);
+      const i = (row * width + col) * 4;
+      out[i] = Math.max(0, r / Math.PI); out[i + 1] = Math.max(0, g / Math.PI); out[i + 2] = Math.max(0, b / Math.PI); out[i + 3] = 1;
+    }
+  }
+  return out;
+}
+
+/** Mip count to bind so the legacy shader's diffuse lod (mipCount − 1) lands on the irradiance level. */
+export function legacyDiffuseMipCount(texture: Texture, irradianceLevelWidth: number): number {
+  const index = texture.mipLevels.findIndex((level) => level.width === irradianceLevelWidth);
+  return index > 0 ? index + 1 : texture.mipLevels.length;
+}
+
 export function probeToEquirectTexture(
   probe: EnvironmentProbe,
-  options: { readonly width?: number; readonly height?: number } = {}
+  options: {
+    readonly width?: number;
+    readonly height?: number;
+    /**
+     * Replace the mip level of this width with the probe's SH9 cosine
+     * irradiance ÷ π (Lambert-equivalent radiance) — the legacy forward
+     * shader reads its diffuse from the last *bound* mip (see
+     * `legacyDiffuseMipCount`), so that level becomes directional diffuse
+     * instead of a box-filtered 1×1 average (#1141 / 02-S2).
+     */
+    readonly irradianceLevelWidth?: number;
+  } = {}
 ): Texture {
   const width = options.width ?? probe.faceSize * 2;
   const height = options.height ?? probe.faceSize;
@@ -361,7 +395,12 @@ export function probeToEquirectTexture(
   let h = height;
   while (w > 1 || h > 1) {
     const next = downsampleRgba(equirect, w, h);
-    mipLevels.push({ width: next.width, height: next.height, data: faceToHalf(next.data) });
+    const irradiance = options.irradianceLevelWidth === next.width && probe.sh9.length === 27;
+    mipLevels.push({
+      width: next.width,
+      height: next.height,
+      data: faceToHalf(irradiance ? sh9IrradianceEquirect(probe.sh9, next.width, next.height) : next.data)
+    });
     equirect = next.data;
     w = next.width;
     h = next.height;
