@@ -18,6 +18,8 @@ on:
       - "benchmarks/quality-rebuild/**/prd10/**"
       - "tests/unit/contracts/impl/prd10-*.ts"
       - "tests/browser/qr-prd10-*.ts"
+      - "tools/impostor-bake/**"
+      - "benchmarks/quality-rebuild/sentinels.json"
       - ".github/workflows/qr-prd10-world.yml"
   push:
     branches: [main]
@@ -31,6 +33,8 @@ on:
       - "benchmarks/quality-rebuild/**/prd10/**"
       - "tests/unit/contracts/impl/prd10-*.ts"
       - "tests/browser/qr-prd10-*.ts"
+      - "tools/impostor-bake/**"
+      - "benchmarks/quality-rebuild/sentinels.json"
       - ".github/workflows/qr-prd10-world.yml"
   workflow_dispatch:
   # Reusable — other lane/meta workflows may invoke this gate in place.
@@ -71,6 +75,9 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
+      # S8 bakes a real foliage mesh (LFS): fetch only that blob.
+      - name: Fetch S8 foliage LFS blob
+        run: git lfs pull --include="public/aura-assets/propPineTree.12243e81.glb"
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -85,7 +92,7 @@ jobs:
       # T1.14/10-CI: every qr-prd10-*.spec.ts on disk runs — no masks, no
       # continue-on-error; a red spec must red the lane.
       - name: prd10 browser specs (all qr-prd10-*.spec.ts)
-        run: pnpm exec playwright test --config playwright.config.ts tests/browser/qr-prd10-chunks.spec.ts tests/browser/qr-prd10-world-pass-depth.spec.ts tests/browser/qr-prd10-time-of-day.spec.ts tests/browser/qr-prd10-flag-off-identity.spec.ts tests/browser/qr-prd10-terrain-cracks.spec.ts tests/browser/qr-prd10-terrain-gpu-cpu.spec.ts tests/browser/qr-prd10-terrain-splat-bake.spec.ts tests/browser/qr-prd10-wind-chunk.spec.ts tests/browser/qr-prd10-water-gerstner.spec.ts
+        run: pnpm exec playwright test --config playwright.config.ts tests/browser/qr-prd10-chunks.spec.ts tests/browser/qr-prd10-world-pass-depth.spec.ts tests/browser/qr-prd10-time-of-day.spec.ts tests/browser/qr-prd10-flag-off-identity.spec.ts tests/browser/qr-prd10-terrain-cracks.spec.ts tests/browser/qr-prd10-terrain-gpu-cpu.spec.ts tests/browser/qr-prd10-terrain-splat-bake.spec.ts tests/browser/qr-prd10-wind-chunk.spec.ts tests/browser/qr-prd10-water-gerstner.spec.ts tests/browser/qr-prd10-scatter-checksum.spec.ts tests/browser/qr-prd10-impostor.spec.ts
       # 10-CI: an empty collection or a skipped test is a red job — never a
       # green report on nothing. Collected/skipped counts come from the JSON
       # report Playwright writes next to the HTML one.
@@ -197,6 +204,35 @@ jobs:
             }
             if (bad.length) { console.error("prd10 capture failures: " + bad.join("; ")); process.exit(1); }
           JS
+      # S16 / IC-0: the six C-30 sentinels (sentinels.json) captured twice
+      # under `none` in fresh browser contexts; the CIEDE2000 p99 between the
+      # two arms is the IC-0 flag-off noise floor (evidence/prd-10/IC-0.md).
+      - name: Capture sentinels (flags none, arms A and B)
+        if: always()
+        run: |
+          set -euo pipefail
+          scenes="$(node -e 'console.log(require("./benchmarks/quality-rebuild/sentinels.json").scenes.map((s) => s.id).join(","))')"
+          for arm in a b; do
+            node benchmarks/quality-rebuild/capture.mjs \
+              --dist benchmarks/quality-rebuild/dist \
+              --out "$OUT_DIR/sentinels-$arm" \
+              --scenes "$scenes" \
+              --engines aura3d \
+              --flags none \
+              --strict
+          done
+      - uses: actions/setup-python@v5
+        if: always()
+        with:
+          python-version: "3.12"
+      - name: S16 / IC-0 sentinel flag-off noise (CIEDE2000 p99, A vs B)
+        if: always()
+        run: |
+          set -euo pipefail
+          python -m pip install --quiet numpy==2.5.3 Pillow==12.3.0
+          python benchmarks/quality-rebuild/scenes/prd10/sentinel-identity.py \
+            "$OUT_DIR/sentinels-a" "$OUT_DIR/sentinels-b" "$OUT_DIR/sentinel-identity.json" \
+            | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Upload capture evidence
         if: always()
         uses: actions/upload-artifact@v4

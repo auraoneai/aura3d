@@ -31,13 +31,15 @@ const SNAPSHOT = {
 } as never;
 
 test("S16: sentinels.json lists the 6 base scenes", () => {
+  // C-30 sentinel set (T1.16): primitives, glTF PBR, skinning, shadows,
+  // HDRI IBL, instancing — the ids the IC-0 flag-off capture runs.
   expect(sentinels.scenes.map((s: { id: string }) => s.id)).toEqual([
-    "base-01-triangle",
-    "base-02-lit-cube",
-    "base-03-textured",
-    "base-04-shadows",
-    "base-05-environment",
-    "base-06-post"
+    "01-simple-geometry",
+    "03-damaged-helmet",
+    "08-skinned-character",
+    "12-shadows",
+    "13-ibl-only",
+    "16-instancing"
   ]);
 });
 
