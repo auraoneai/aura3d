@@ -18,6 +18,7 @@
  *    without the pass.
  */
 import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
+import { registerPostPass } from "@aura3d/rendering/contracts";
 
 /* ------------------------------- helpers ------------------------------- */
 
@@ -285,7 +286,63 @@ export async function runCustomPassProbe() {
   hdr.app.dispose();
   hdr.host.remove();
 
-  return { schema: "custom-pass/v1", invert: invResult, hdrGate: hdrSample };
+  const order = await runCustomPassOrderProbe();
+  return { schema: "custom-pass/v1", invert: invResult, hdrGate: hdrSample, ...order };
+}
+
+/**
+ * 03-S18c: all five C-13 anchors run, in §6.1 order, on the real v2 chain.
+ * Each pass declares a marker uniform; `runCustomPass` looks it up on its
+ * program when the pass executes, so wrapping `getUniformLocation` traces the
+ * execution order. Passes are added in reverse anchor order so the trace
+ * proves anchor order, not registration order. A `display` pass at
+ * `before-tonemap` must be rejected with `POSTPROCESS_SPACE_INVALID`.
+ */
+const S18C_ANCHORS = ["after-depth", "before-taa", "after-taa", "before-tonemap", "after-tonemap"] as const;
+
+async function runCustomPassOrderProbe(): Promise<{ order: string[]; spaceRejection: string | null }> {
+  const m = await mount({ size: 200 });
+  const proto = WebGL2RenderingContext.prototype;
+  const original = proto.getUniformLocation;
+  const trace: string[] = [];
+  const releases: Array<() => void> = [];
+  try {
+    for (const anchor of [...S18C_ANCHORS].reverse()) {
+      const name = `u_s18c_${anchor.replace(/-/g, "_")}`;
+      releases.push(m.app.addPostPass({
+        name: `s18c-${anchor}`,
+        insertAt: anchor,
+        uniforms: { [name]: 1 },
+        fragment: { glsl: `uniform float ${name};\nvoid main() { outColor = texture(u_color, v_uv) * ${name}; }` }
+      }));
+    }
+    proto.getUniformLocation = function (this: WebGL2RenderingContext, program: WebGLProgram, name: string) {
+      if (name.startsWith("u_s18c_")) trace.push(name.slice("u_s18c_".length).replace(/_/g, "-"));
+      return original.call(this, program, name);
+    };
+    await m.runFrames(1);
+  } finally {
+    proto.getUniformLocation = original;
+    for (const release of releases) release();
+  }
+  let spaceRejection: string | null = null;
+  try {
+    registerPostPass({
+      id: "prd03.s18c-display-before-tonemap",
+      owner: "prd03",
+      flag: "A3D_QR_POST",
+      insertAt: "before-tonemap",
+      space: "display",
+      inputs: ["color"],
+      fragment: { glsl: "void main() { outColor = texture(u_color, v_uv); }" },
+      gpuOnly: true
+    })();
+  } catch (error) {
+    spaceRejection = String(error);
+  }
+  m.app.dispose();
+  m.host.remove();
+  return { order: trace.slice(0, S18C_ANCHORS.length), spaceRejection };
 }
 
 /* --------------------------------- run ---------------------------------- */

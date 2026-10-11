@@ -32,6 +32,7 @@ import { RenderDeviceError, type RenderTarget } from "../RenderDevice";
 import { invertMat4, type Mat4 } from "@aura3d/scene";
 import {
   registeredPostPasses,
+  validatePostPassSpace,
   type PostPassDescriptor,
   type PostPipelineOptions
 } from "../contracts/post";
@@ -246,15 +247,28 @@ out vec4 outColor;
 
 /**
  * Passes visible to the graph: the pipeline bag's `customPasses` first, then
- * the C-13 registry, deduped by id (an engine may stamp the same descriptor
- * into both). Order = insertion order at each anchor.
+ * the C-13 registry (`app.addPostPass` registers there), deduped by id (an
+ * engine may stamp the same descriptor into both). Order = insertion order at
+ * each anchor.
+ *
+ * The registry already rejects a misplaced space at `registerPostPass`. A
+ * bag-supplied pass bypasses that, so it is validated here: a `display` pass
+ * at an HDR anchor (or `linear-hdr` after tonemap) is dropped and recorded as
+ * `POSTPROCESS_SPACE_INVALID:<id>` (T0-17: no per-frame throw; plan-time
+ * `planPostGraph`/`PostGraph.execute` still throw).
  */
-function mergedCustomPasses(pipeline: PostPipelineOptions): readonly PostPassDescriptor[] {
+export function mergedCustomPasses(pipeline: PostPipelineOptions): readonly PostPassDescriptor[] {
   const seen = new Set<string>();
   const out: PostPassDescriptor[] = [];
   for (const pass of [...(pipeline.customPasses ?? []), ...registeredPostPasses()]) {
     if (seen.has(pass.id)) continue;
     seen.add(pass.id);
+    try {
+      validatePostPassSpace(pass);
+    } catch {
+      recordPostSkipped(`POSTPROCESS_SPACE_INVALID:${pass.id}`);
+      continue;
+    }
     out.push(pass);
   }
   return out;

@@ -13,8 +13,8 @@ import { registerShaderChunk, registerShaderFeature } from "../contracts/program
 import { registerIndirectFractionShader } from "../post/chunks/indirectFraction.glsl.js";
 import { registerVelocityShader } from "../post/chunks/velocity.glsl.js";
 
-// C-13: v2 post graph (thin real — plans stages, execute() throws
-// POST_GRAPH_V2_PENDING until Phase 2 wires the GPU chain).
+// C-13: v2 post graph (plans + validates the §6.1 chain; the GPU chain runs in
+// post/v2Stages.ts, including custom passes at all five anchors).
 postPipelineSlot.provide(new PostGraph());
 
 // C-14: camera-level temporal history + velocity-MRT uniform binder
