@@ -27,7 +27,8 @@ import {
 } from "@aura3d/rendering/contracts";
 import { registerDiagnosticsSection } from "../contracts/diagnostics";
 import { registerAppExtension } from "../contracts/app";
-import type { AuraApp, AuraCreateAppOptions } from "../agent-api/index";
+import type { AuraApp } from "../agent-api/index";
+import { parseQualityRendererOptions } from "../agent-api/app/rendererOptions";
 
 interface AuraPercentiles { readonly p50: number; readonly p95: number; readonly p99: number; readonly max: number }
 
@@ -179,15 +180,6 @@ registerDiagnosticsSection<AuraBatchPlanReport>({
  * with `A3D_QR_TIERS` off the flags object reports every lane off, so the
  * contributor stays inactive and flag-off rendering is unchanged.
  */
-function requestedTierFromRendererOptions(options: AuraCreateAppOptions): AuraQualityTier | "auto" {
-  const quality = options.renderer && typeof options.renderer === "object" ? options.renderer.quality : undefined;
-  const tier = typeof quality === "string" ? quality
-    : quality && typeof quality === "object" && typeof (quality as { tier?: unknown }).tier === "string"
-      ? (quality as { tier: string }).tier
-      : undefined;
-  return tier === "low" || tier === "medium" || tier === "high" || tier === "ultra" ? tier : "auto";
-}
-
 const qualityControllerUnregisters = new WeakMap<object, () => void>();
 
 registerAppExtension<"quality">({
@@ -196,22 +188,29 @@ registerAppExtension<"quality">({
   flag: "A3D_QR_TIERS",
   member: "quality",
   create(_app, ctx) {
-    const requested = requestedTierFromRendererOptions(ctx.options);
-    if (!ctx.flags.on("A3D_QR_TIERS")) {
-      return new StubQualityController(requested);
+    // Wave B RendererOptions: one parser for quality/adaptive/targetFrameRate/
+    // batching plus `?aura3d-quality=` / `?aura3d-adaptive=` (every build).
+    const renderer = ctx.options.renderer && typeof ctx.options.renderer === "object" ? ctx.options.renderer : undefined;
+    let parsed: ReturnType<typeof parseQualityRendererOptions>;
+    try {
+      // URL overrides apply only with the lane on, so flag-off apps are unchanged.
+      const search = ctx.flags.on("A3D_QR_TIERS") ? undefined : null;
+      parsed = parseQualityRendererOptions(renderer, search, ctx.options as { readonly performanceQuality?: unknown });
+    } catch (error) {
+      // Flag-off behaviour stays as before (values were never validated); the
+      // strict parse only applies once the lane is on.
+      if (ctx.flags.on("A3D_QR_TIERS")) throw error;
+      return new StubQualityController("auto");
     }
-    const renderer = ctx.options.renderer;
-    const quality = renderer && typeof renderer === "object" ? renderer.quality : undefined;
-    const overrides = quality && typeof quality === "object" && typeof (quality as { overrides?: unknown }).overrides === "object"
-      ? (quality as { overrides: Partial<AuraQualityTierSettings> }).overrides
-      : undefined;
-    const adaptive = renderer && typeof renderer === "object" ? renderer.adaptive : undefined;
-    const targetFrameRate = renderer && typeof renderer === "object" && typeof renderer.targetFrameRate === "number"
-      ? renderer.targetFrameRate
-      : undefined;
-    const controller = new AuraQuality(requested, overrides, {
-      adaptive: adaptive === false ? false : true,
-      targetFrameRate,
+    if (!ctx.flags.on("A3D_QR_TIERS")) {
+      return new StubQualityController(parsed.requested);
+    }
+    // Deprecation warnings only once the lane is on, so flag-off console output is unchanged.
+    for (const warning of parsed.warnings) console.warn(warning);
+    const controller = new AuraQuality(parsed.requested, parsed.overrides as Partial<AuraQualityTierSettings> | undefined, {
+      adaptive: parsed.adaptive,
+      targetFrameRate: parsed.targetFrameRate,
+      requestedSource: parsed.requestedSource,
       coarsePointer: typeof matchMedia === "function" ? matchMedia("(pointer: coarse)").matches : false,
       storage: typeof localStorage !== "undefined" ? localStorage : null
     });
