@@ -247,7 +247,7 @@ export function explicitEnvironmentResolution(
 // ---------- PRD-02 Phase 3 — probe binding (neutral floor + async upgrade) ----------
 
 import type { EnvironmentProbe } from "@aura3d/rendering/contracts";
-import { environmentProbeFactorySlot, type AuraQualityTier, type QrFlags } from "@aura3d/rendering/contracts";
+import { environmentProbeFactorySlot, isEnvironmentProbeFactoryPending, type AuraQualityTier, type QrFlags } from "@aura3d/rendering/contracts";
 // Deep imports: @aura3d/rendering has no "./environment" subpath and contracts
 // don't re-export RenderDevice (lane-15/-01 files); same pattern as
 // FlagshipFoundation's rendering/src deep imports.
@@ -271,6 +271,28 @@ export interface Prd02EnvironmentBindOptions {
   readonly captureRequest?: EnvironmentCaptureRequest;
   /** Called once when the async-acquired (hdri/preset) probe replaces the neutral floor. */
   readonly onUpgrade?: (probe: EnvironmentProbe) => void;
+  /**
+   * Called when the upgrade fails; the neutral floor stays bound. `retryable`
+   * is true while the C-09 factory is still the pending stub, so the caller can
+   * bind again on a later frame once the provider lands.
+   */
+  readonly onUpgradeFailed?: (error: unknown, retryable: boolean) => void;
+}
+
+const warnedEnvironmentUpgradeFailures = new Set<string>();
+
+/** One console warning per distinct failure; never an error or unhandled rejection. */
+function warnEnvironmentUpgradeFailureOnce(message: string): void {
+  if (warnedEnvironmentUpgradeFailures.has(message) || warnedEnvironmentUpgradeFailures.size >= 32) return;
+  warnedEnvironmentUpgradeFailures.add(message);
+  if (typeof console !== "undefined") {
+    console.warn(`[aura3d] environment probe not ready; rendering with the neutral floor (${message})`);
+  }
+}
+
+/** True for the stub's `ENVIRONMENT_PROBE_PENDING:*` rejection. */
+export function isEnvironmentProbePendingError(error: unknown): boolean {
+  return error instanceof Error && error.message.startsWith("ENVIRONMENT_PROBE_PENDING");
 }
 
 export interface Prd02EnvironmentBinding {
@@ -296,8 +318,24 @@ export function bindPrd02EnvironmentProbe(
   options: Prd02EnvironmentBindOptions
 ): Prd02EnvironmentBinding {
   options.attachDevice?.(options.device);
-  const factory = environmentProbeFactorySlot.get(options.flags)(options.device);
-  const cache = options.cache ?? new EnvironmentCache(options.device, factory, defaultProbeLoader(factory));
+  const resolveFactory = () => environmentProbeFactorySlot.get(options.flags)(options.device);
+  const factory = resolveFactory();
+  const cache = options.cache ?? new EnvironmentCache(options.device, factory, defaultProbeLoader(resolveFactory));
+  // three.js PMREM-style async upgrade: the floor draws until the probe lands.
+  // A failure (including the C-09 stub still pending) keeps the floor and is
+  // handled here, so no frame ever sees an unhandled rejection.
+  const upgrade = (acquired: Promise<EnvironmentProbe>): Promise<EnvironmentProbe> => {
+    const pending = acquired.then((probe) => {
+      options.onUpgrade?.(probe);
+      return probe;
+    });
+    pending.catch((error: unknown) => {
+      const retryable = isEnvironmentProbePendingError(error);
+      warnEnvironmentUpgradeFailureOnce(error instanceof Error ? error.message : String(error));
+      options.onUpgradeFailed?.(error, retryable);
+    });
+    return pending;
+  };
   const tier = options.tier;
   const request = resolution.probe;
   // §6.5 `pmrem=cpu`: the CPU prefilter is the lane's sole impl today — the
@@ -308,32 +346,20 @@ export function bindPrd02EnvironmentProbe(
     // GGX prefilter); the baked `neutral` preset upgrades it through
     // `cache.acquire` so specular detail lands without the ~33M-iter pass. A
     // failed load degrades to the floor instead of an unhandled rejection.
-    const pending = cache.acquire({ preset: "neutral", tier }).then((probe) => {
-      options.onUpgrade?.(probe);
-      return probe;
-    });
-    pending.catch(() => {});
+    const pending = upgrade(cache.acquire({ preset: "neutral", tier }));
     return { probe: cache.neutral(tier), pending, resolution, pmremMode };
   }
   const floor = cache.neutral(tier);
   if (typeof request === "object" && "capture" in request) {
     const req = options.captureRequest;
-    if (!req) return { probe: floor, pending: null, resolution, pmremMode };
+    if (!req || isEnvironmentProbeFactoryPending(factory)) return { probe: floor, pending: null, resolution, pmremMode };
     return { probe: factory.fromScene(req, { faceSize: Math.max(128, req.resolution ?? 128) as 128 | 256 | 512 | 1024 }), pending: null, resolution, pmremMode };
   }
   if (typeof request === "object" && "hdri" in request) {
-    const pending = cache.acquire({ url: request.hdri, tier }).then((probe) => {
-      options.onUpgrade?.(probe);
-      return probe;
-    });
-    return { probe: floor, pending, resolution, pmremMode };
+    return { probe: floor, pending: upgrade(cache.acquire({ url: request.hdri, tier })), resolution, pmremMode };
   }
   if (typeof request === "object" && "preset" in request) {
-    const pending = cache.acquire({ preset: request.preset, tier }).then((probe) => {
-      options.onUpgrade?.(probe);
-      return probe;
-    });
-    return { probe: floor, pending, resolution, pmremMode };
+    return { probe: floor, pending: upgrade(cache.acquire({ preset: request.preset, tier })), resolution, pmremMode };
   }
   // spaceBake and any future request kinds: neutral floor, no upgrade.
   return { probe: floor, pending: null, resolution, pmremMode };

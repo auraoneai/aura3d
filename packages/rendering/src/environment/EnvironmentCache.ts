@@ -14,7 +14,7 @@
 
 import type { RenderDevice } from "../RenderDevice.js";
 import { Texture } from "../Texture.js";
-import type { EnvironmentProbe, EnvironmentProbeFactory } from "../contracts/environment.js";
+import { isEnvironmentProbeFactoryPending, type EnvironmentProbe, type EnvironmentProbeFactory } from "../contracts/environment.js";
 import { QUALITY_TIERS, type AuraQualityTier } from "../contracts/quality.js";
 import { decodeHdrEquirect, hdrImageToRgba32f } from "./HdrEquirect.js";
 import { readRgb9e5Cube } from "./Rgb9e5Cube.js";
@@ -172,8 +172,15 @@ async function fetchBytes(url: string): Promise<Uint8Array> {
  * `aura-environments/<name>/` (manifest + RGB9E5 specular cube + baked SH9 —
  * already prefiltered, uploaded as RGBA16F until Q-06-1 native RGB9_E5 lands);
  * `url` fetches an equirect .hdr and runs `factory.fromEquirect`.
+ *
+ * `factory` may be a getter, resolved when a load runs rather than when the
+ * loader is built, so a C-09 provider that registers after the scene compiles
+ * is still used. While the factory is the pending stub, an HDRI load rejects
+ * with `ENVIRONMENT_PROBE_PENDING:fromEquirect` before fetching anything; the
+ * caller keeps the neutral floor bound (see `bindPrd02EnvironmentProbe`).
  */
-export function defaultProbeLoader(factory: EnvironmentProbeFactory): EnvironmentProbeLoader {
+export function defaultProbeLoader(factory: EnvironmentProbeFactory | (() => EnvironmentProbeFactory)): EnvironmentProbeLoader {
+  const resolveFactory = (): EnvironmentProbeFactory => (typeof factory === "function" ? factory() : factory);
   return async (key) => {
     if (key.preset) {
       const manifestBytes = await fetchBytes(`aura-environments/${key.preset}.manifest.json`);
@@ -192,11 +199,12 @@ export function defaultProbeLoader(factory: EnvironmentProbeFactory): Environmen
       });
     }
     if (key.url) {
+      if (isEnvironmentProbeFactoryPending(resolveFactory())) throw new Error("ENVIRONMENT_PROBE_PENDING:fromEquirect");
       const bytes = await fetchBytes(key.url);
       const image = decodeHdrEquirect(bytes);
       // #1153: decode yields RGB; rgba32f needs 4 floats per texel.
       const src = new Texture({ width: image.width, height: image.height, format: "rgba32f", data: hdrImageToRgba32f(image), label: `env-src-${key.url}` });
-      return factory.fromEquirect(src);
+      return resolveFactory().fromEquirect(src);
     }
     throw new Error("ENVIRONMENT_KEY_EMPTY: acquire() needs url or preset");
   };
