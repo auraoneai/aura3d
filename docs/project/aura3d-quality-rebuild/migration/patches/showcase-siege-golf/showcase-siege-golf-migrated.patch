@@ -1,4 +1,4 @@
-From d13028169e558f8b8a9f95f17e5e45cdd23ca904 Mon Sep 17 00:00:00 2001
+From db38f4dfa30615a0865a93cfd42c01880b087707 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:10:29 +0000
 Subject: [PATCH] migration(showcase-siege-golf): regenerated patch set
@@ -572,10 +572,10 @@ index 000000000..1563f5a63
 +  }
 +];
 diff --git a/apps/showcase-siege-golf/src/v2/boot.ts b/apps/showcase-siege-golf/src/v2/boot.ts
-index 469e278fa..37acb955b 100644
+index 20bd69af9..f4b447e2b 100644
 --- a/apps/showcase-siege-golf/src/v2/boot.ts
 +++ b/apps/showcase-siege-golf/src/v2/boot.ts
-@@ -23,8 +23,8 @@ import { lightingNodes } from "./scene/lighting";
+@@ -19,8 +19,8 @@ import { lightingNodes } from "./scene/lighting";
  import { createSiegeRig, fallbackCameraNode } from "./scene/camera";
  import { wireSiegeFx } from "./scene/fx";
  import { RANGE_BG } from "./scene/materials";
@@ -583,9 +583,9 @@ index 469e278fa..37acb955b 100644
 -import { applySiegeScenario } from "./scenarios";
 +import { publishSiegeEvidence } from "../evidence";
 +import { applySiegeScenario } from "../scenarios";
+ import { createSiegeFlowState, wireSiegeHoleFlow } from "./hole-flow";
  
  const ROUTE_FLAG = "A3D_QR_ROUTE_SIEGE_GOLF" as const;
- const AIM_RATE = 0.9; // radians/s while an aim key is held
 -- 
-2.34.1
+2.52.0
 

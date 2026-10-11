@@ -1,4 +1,4 @@
-From 72dc45b347fa76c8605fb4ccbfc067a5b29e304e Mon Sep 17 00:00:00 2001
+From c0223100dc53397bead2dae157c69e619df69add Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:07:51 +0000
 Subject: [PATCH] migration(showcase-deep-recovery): regenerated patch set
@@ -1323,10 +1323,10 @@ index 000000000..9141ee321
 +  }
 +];
 diff --git a/apps/showcase-deep-recovery/src/v2/boot.ts b/apps/showcase-deep-recovery/src/v2/boot.ts
-index 9282fb3a4..b111ca243 100644
+index 3ca2f6010..af8280f86 100644
 --- a/apps/showcase-deep-recovery/src/v2/boot.ts
 +++ b/apps/showcase-deep-recovery/src/v2/boot.ts
-@@ -45,8 +45,8 @@ import { lightingNodes } from "./scene/lighting";
+@@ -44,8 +44,8 @@ import { lightingNodes } from "./scene/lighting";
  import { createDeepRig, fallbackCameraNode } from "./scene/camera";
  import { wireDeepFx } from "./scene/fx";
  import { WATER_BG } from "./scene/materials";
@@ -1334,9 +1334,9 @@ index 9282fb3a4..b111ca243 100644
 -import { applyDeepScenario } from "./scenarios";
 +import { publishDeepEvidence, type DeepRunSnapshot } from "../evidence";
 +import { applyDeepScenario } from "../scenarios";
- 
- const ROUTE_FLAG = "A3D_QR_ROUTE_DEEP_RECOVERY" as const;
- const GRAPPLE_LATCH_RANGE = GRAPPLE_RANGE * 0.94;
+ import { createDeepCtx } from "./state";
+ import { createDeepAudioBlock } from "./audio";
+ import { createDeepInput, wireDeepTouch, touchInputs } from "./input";
 -- 
-2.34.1
+2.52.0
 

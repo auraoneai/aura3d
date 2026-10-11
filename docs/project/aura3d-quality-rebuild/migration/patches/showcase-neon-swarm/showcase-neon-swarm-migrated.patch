@@ -1,4 +1,4 @@
-From 3fb079c0ad75f79618d152cfb9f825c310353545 Mon Sep 17 00:00:00 2001
+From 3cfd0d033a4dce489fa126f789f6962c53d30be3 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:09:15 +0000
 Subject: [PATCH] migration(showcase-neon-swarm): regenerated patch set
@@ -1095,7 +1095,7 @@ index 000000000..16644c73b
 +  finale
 +];
 diff --git a/apps/showcase-neon-swarm/src/v2/boot.ts b/apps/showcase-neon-swarm/src/v2/boot.ts
-index 2ba556dd6..8633083b7 100644
+index 4f03ee8c1..342f44d58 100644
 --- a/apps/showcase-neon-swarm/src/v2/boot.ts
 +++ b/apps/showcase-neon-swarm/src/v2/boot.ts
 @@ -30,8 +30,8 @@ import { swarmWorldNodes } from "./scene/world";
@@ -1106,9 +1106,9 @@ index 2ba556dd6..8633083b7 100644
 -import { applySwarmScenario } from "./scenarios";
 +import { publishSwarmEvidence } from "../evidence";
 +import { applySwarmScenario } from "../scenarios";
- 
- const ROUTE_FLAG = "A3D_QR_ROUTE_NEON_SWARM" as const;
- const SEED_DEFAULT = 20260821;
+ import { createSwarmRunCtx, INTERMISSION_FIRST_SECONDS } from "./state";
+ import { createSwarmAudioBlock } from "./audio";
+ import { createSwarmInput } from "./input";
 -- 
-2.34.1
+2.52.0
 

@@ -1,4 +1,4 @@
-From c2fbb079d77897347d97eebd6d4f537ff7d8bb14 Mon Sep 17 00:00:00 2001
+From b68063d10ed49e42469f7bf94a10811417f55cee Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:08:31 +0000
 Subject: [PATCH] migration(showcase-courier-rush): regenerated patch set
@@ -2086,10 +2086,10 @@ index 000000000..584aeb9a0
 +  };
 +}
 diff --git a/apps/showcase-courier-rush/src/v2/boot.ts b/apps/showcase-courier-rush/src/v2/boot.ts
-index 0e2acb24e..4f31a16c7 100644
+index 751fd059a..f5a806f2e 100644
 --- a/apps/showcase-courier-rush/src/v2/boot.ts
 +++ b/apps/showcase-courier-rush/src/v2/boot.ts
-@@ -26,8 +26,8 @@ import { lightingNodes } from "./scene/lighting";
+@@ -25,8 +25,8 @@ import { lightingNodes } from "./scene/lighting";
  import { createCourierRig, fallbackCameraNode } from "./scene/camera";
  import { wireCourierFx } from "./scene/fx";
  import { createCourierAutopilot } from "./autopilot";
@@ -2097,9 +2097,9 @@ index 0e2acb24e..4f31a16c7 100644
 -import { applyCourierScenario } from "./scenarios";
 +import { publishCourierEvidence } from "../evidence";
 +import { applyCourierScenario } from "../scenarios";
- 
- const ROUTE_FLAG = "A3D_QR_ROUTE_COURIER_RUSH" as const;
- const SHIFT_SEED = 0x5eed_3417;
+ import { createStrikeZoneTools } from "./strike-zone";
+ import { wireCourierTouch } from "./touch-input";
+ import { installCourierContextLoss } from "./context-loss";
 diff --git a/public/aura-assets/courierAmbientCitySfx.995b1230.wav b/public/aura-assets/courierAmbientCitySfx.995b1230.wav
 deleted file mode 100644
 index ef5dbc18f..000000000
@@ -2280,10 +2280,10 @@ index a0b8bff18..000000000
 -<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">courierStrikeHitSfx</text></svg>
 \ No newline at end of file
 diff --git a/src/aura-assets.ts b/src/aura-assets.ts
-index 265e75b91..d8aad7512 100644
+index 4faab9e76..69bc83f31 100644
 --- a/src/aura-assets.ts
 +++ b/src/aura-assets.ts
-@@ -62,17 +62,7 @@ type AuraGeneratedAssetDefinitions = {
+@@ -52,17 +52,7 @@ type AuraGeneratedAssetDefinitions = {
    readonly "blockfallReactorMechanicHero": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
    readonly "blockfallReactorPlasmaRival": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
    readonly "blockfallRotateSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
@@ -2301,7 +2301,7 @@ index 265e75b91..d8aad7512 100644
    readonly "courierTrafficHatch": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
    readonly "courierTrafficSedan": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
    readonly "courierVan": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-@@ -7817,1010 +7807,21 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
+@@ -6897,1010 +6887,21 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
        "role": "unknown"
      },
    },
@@ -3324,7 +3324,7 @@ index 265e75b91..d8aad7512 100644
        "animations": [],
        "animationClips": [],
        "animationMetadata": {
-@@ -8831,14 +7832,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
+@@ -7911,14 +6912,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
          ]
        },
        "humanoid": false,
@@ -3341,7 +3341,7 @@ index 265e75b91..d8aad7512 100644
          ]
        },
        "morphTargets": {
-@@ -8846,51 +7847,190 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
+@@ -7926,51 +6927,190 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
          "targetNames": [],
          "meshes": [],
          "messages": [
@@ -3562,5 +3562,5 @@ index 265e75b91..d8aad7512 100644
    },
    "courierTrafficHatch": {
 -- 
-2.34.1
+2.52.0
 

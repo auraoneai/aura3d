@@ -1,4 +1,4 @@
-From 40f1139ca74a9d5857f239e5cf38da71570db2da Mon Sep 17 00:00:00 2001
+From 9167a5dca8da127eb42bcdf1f4114d9e77e92628 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:47 +0000
 Subject: [PATCH] showcase-bank-shot: delete evidence files+blocks (T5.8)

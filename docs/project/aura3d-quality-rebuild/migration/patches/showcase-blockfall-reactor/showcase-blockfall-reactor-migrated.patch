@@ -1,4 +1,4 @@
-From e7160ec2bb2d04b7fd2e13ecf82706b2263f8cb1 Mon Sep 17 00:00:00 2001
+From 1c91650de6d3fab0baeab29228f1260d96abb9de Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:08:10 +0000
 Subject: [PATCH] migration(showcase-blockfall-reactor): regenerated patch set
@@ -913,10 +913,10 @@ index 000000000..fed064b71
 +  setup: () => { blockfallDrive().stageRotationTrap(); }
 +};
 diff --git a/apps/showcase-blockfall-reactor/src/v2/boot.ts b/apps/showcase-blockfall-reactor/src/v2/boot.ts
-index f74c85d56..13bbea322 100644
+index de6d6db26..4551d5723 100644
 --- a/apps/showcase-blockfall-reactor/src/v2/boot.ts
 +++ b/apps/showcase-blockfall-reactor/src/v2/boot.ts
-@@ -59,8 +59,8 @@ import { blockfallLighting } from "./scene/lighting";
+@@ -58,8 +58,8 @@ import { blockfallLighting } from "./scene/lighting";
  import { createBlockfallRig, blockfallCameraSpec, BASE_POSE } from "./scene/camera";
  import { wireBlockfallFx } from "./scene/fx";
  import { ROOM_BG } from "./scene/materials";
@@ -924,9 +924,9 @@ index f74c85d56..13bbea322 100644
 -import { applyBlockfallScenario, parseBlockfallScenario } from "./scenarios";
 +import { publishBlockfallEvidence } from "../evidence";
 +import { applyBlockfallScenario, parseBlockfallScenario } from "../scenarios";
- 
- const ROUTE_FLAG = "A3D_QR_ROUTE_BLOCKFALL_REACTOR" as const;
- const SIM_STEP = 1 / 60;
+ import { createBlockfallCtx } from "./state";
+ import { createBlockfallAudioBlock } from "./audio";
+ import { createBlockfallInput, wireBlockfallTouch } from "./input";
 -- 
-2.34.1
+2.52.0
 

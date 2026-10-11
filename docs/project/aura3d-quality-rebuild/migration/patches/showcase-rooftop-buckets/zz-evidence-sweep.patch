@@ -1,4 +1,4 @@
-From 24fec28974aca61cc41674a1165b4cc0206be743 Mon Sep 17 00:00:00 2001
+From 86a1ab4da80b12f403f4633d727d9607ff4a4f25 Mon Sep 17 00:00:00 2001
 From: gchahal+1 <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 13:45:53 +0000
 Subject: [PATCH] showcase-rooftop-buckets: delete evidence files+blocks (T5.8)

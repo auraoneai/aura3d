@@ -1,4 +1,4 @@
-From 9e55c5ad05f50b1b39fcef86ac124e7510da8f61 Mon Sep 17 00:00:00 2001
+From e80a35a7c55fc87542c09d3bb4e4edc9205fcf81 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:08:02 +0000
 Subject: [PATCH] migration(showcase-aurora-lander): regenerated patch set
@@ -516,7 +516,7 @@ index 000000000..c1fb5b312
 +  }
 +];
 diff --git a/apps/showcase-aurora-lander/src/v2/boot.ts b/apps/showcase-aurora-lander/src/v2/boot.ts
-index 81023a31c..0e87d243d 100644
+index 96af7347f..1687838e7 100644
 --- a/apps/showcase-aurora-lander/src/v2/boot.ts
 +++ b/apps/showcase-aurora-lander/src/v2/boot.ts
 @@ -44,8 +44,8 @@ import { lightingNodes } from "./scene/lighting";
@@ -527,9 +527,9 @@ index 81023a31c..0e87d243d 100644
 -import { applyAuroraScenario } from "./scenarios";
 +import { publishAuroraEvidence, type AuroraRunSnapshot } from "../evidence";
 +import { applyAuroraScenario } from "../scenarios";
- 
- const ROUTE_FLAG = "A3D_QR_ROUTE_AURORA_LANDER" as const;
- const FIXED_DT = 1 / 60;
+ import { createAuroraCtx } from "./state";
+ import { createLanderAudioBlock, wireLanderAudioUnlock } from "./audio";
+ import { createLanderInput, wireLanderInput } from "./input";
 -- 
 2.52.0
 

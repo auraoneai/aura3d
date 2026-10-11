@@ -1,4 +1,4 @@
-From e7368824479e478ed3ded92b94ea1e0c302649b9 Mon Sep 17 00:00:00 2001
+From bf0f8a15261354565e5fd53d87d1be4d8f259bb8 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:10:21 +0000
 Subject: [PATCH] migration(showcase-rooftop-buckets): regenerated patch set
@@ -2489,10 +2489,10 @@ index 000000000..2d2edacb5
 +  };
 +}
 diff --git a/apps/showcase-rooftop-buckets/src/v2/boot.ts b/apps/showcase-rooftop-buckets/src/v2/boot.ts
-index 50d459198..d8f38ee87 100644
+index a913c826a..dce601dd0 100644
 --- a/apps/showcase-rooftop-buckets/src/v2/boot.ts
 +++ b/apps/showcase-rooftop-buckets/src/v2/boot.ts
-@@ -20,8 +20,8 @@ import { skylineNodes, courtNodes } from "./scene/world";
+@@ -19,8 +19,8 @@ import { skylineNodes, courtNodes } from "./scene/world";
  import { lightingNodes } from "./scene/lighting";
  import { createRooftopRig, fallbackCameraNode, type RooftopRigState } from "./scene/camera";
  import { wireRooftopFx } from "./scene/fx";
@@ -2500,8 +2500,8 @@ index 50d459198..d8f38ee87 100644
 -import { applyRooftopScenario } from "./scenarios";
 +import { publishRooftopEvidence } from "../evidence";
 +import { applyRooftopScenario } from "../scenarios";
- 
- const ROUTE_FLAG = "A3D_QR_ROUTE_ROOFTOP_BUCKETS" as const;
+ import { createRooftopIo, wireRooftopInput } from "./input";
+ import { createRooftopActors } from "./actors";
  
 diff --git a/public/aura-assets/rooftopBucketsAmbientRooftopSfx.1f654bd9.wav b/public/aura-assets/rooftopBucketsAmbientRooftopSfx.1f654bd9.wav
 deleted file mode 100644
@@ -2719,10 +2719,10 @@ index e83eb7dc2..000000000
 -<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">rooftopBucketsSwishSfx</text></svg>
 \ No newline at end of file
 diff --git a/src/aura-assets.ts b/src/aura-assets.ts
-index 265e75b91..df51f0517 100644
+index 69bc83f31..3e0e9500b 100644
 --- a/src/aura-assets.ts
 +++ b/src/aura-assets.ts
-@@ -231,16 +231,6 @@ type AuraGeneratedAssetDefinitions = {
+@@ -211,16 +211,6 @@ type AuraGeneratedAssetDefinitions = {
    readonly "rooftopAthleteShooter": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
    readonly "rooftopBackboard": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
    readonly "rooftopBall": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
@@ -2739,7 +2739,7 @@ index 265e75b91..df51f0517 100644
    readonly "rooftopCourt": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
    readonly "rooftopDefender": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
    readonly "rooftopDefenderV2": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-@@ -41524,916 +41514,6 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
+@@ -39744,916 +39734,6 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
        }
      },
    },
@@ -3657,5 +3657,5 @@ index 265e75b91..df51f0517 100644
      type: "model",
      format: "glb",
 -- 
-2.34.1
+2.52.0
 

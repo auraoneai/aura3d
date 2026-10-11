@@ -1,4 +1,4 @@
-From 588ea59b74297074129c1dbf47011c6437e833b1 Mon Sep 17 00:00:00 2001
+From ceceb1cfa16856905aee4ee722ef08a064ddfb8f Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Fri, 9 Oct 2026 11:09:08 +0000
 Subject: [PATCH] migration(showcase-mech-hangar): regenerated patch set
@@ -629,20 +629,20 @@ index 000000000..ce20a191a
 +  }
 +];
 diff --git a/apps/showcase-mech-hangar/src/v2/boot.ts b/apps/showcase-mech-hangar/src/v2/boot.ts
-index 40f0c5b0c..c51abdbe7 100644
+index ad7b42042..cf447054f 100644
 --- a/apps/showcase-mech-hangar/src/v2/boot.ts
 +++ b/apps/showcase-mech-hangar/src/v2/boot.ts
-@@ -14,8 +14,8 @@ import { MECH_SLOTS, PART_OPTIONS, selectedParts, type BuildSelection, type Part
- import { mountTransformForPart } from "../gameplay/assembly";
- import { createHangarController } from "../legacy/hangar";
+@@ -10,8 +10,8 @@ import direction from "../../art/direction";
+ import type { BoutInputs, BoutSnapshot } from "../gameplay/arena/mech-fight";
+ import { RIVAL_LOADOUTS } from "../gameplay/stats";
  import { createHangarAudio } from "../legacy/hangar-audio";
 -import { publishMechEvidence } from "./evidence";
 -import { applyMechScenario, mechScenarioLook, parseMechScenario, type MechScenario } from "./scenarios";
 +import { publishMechEvidence } from "../evidence";
 +import { applyMechScenario, mechScenarioLook, parseMechScenario, type MechScenario } from "../scenarios";
- import { createMechRig, mechCameraSpec, mechPoseFor, MECH_CAMERA_FOV, MECH_CAMERA_DISTANCE } from "./scene/camera";
- import { wireMechFx } from "./scene/fx";
- import { mechLighting } from "./scene/lighting";
+ import { createMountSystem } from "./mount";
+ import { createMechBoutCtx, wireMechBout } from "./bout";
+ import { wireMechTouch } from "./touch";
 -- 
-2.34.1
+2.52.0
 
