@@ -15,7 +15,7 @@ import { getPrd02Spec } from "../../../../benchmarks/quality-rebuild/scenes/prd0
 import type { Vec3 } from "../../../../benchmarks/quality-rebuild/shared/types";
 import { meanFrameDiff, shadowMask } from "../metrics/regionMetrics";
 import { captureLaneScene, startLaneServer, type LaneServer } from "./lane-page";
-import { boundaryRing, requireLaneApp, setCameraPose, stagePixels } from "./shadow-helpers";
+import { boundaryRing, deviceCounters, requireLaneApp, setCameraPose, stagePixels } from "./shadow-helpers";
 
 const CITY = "prd02-17-large-environment";
 const POLE = "prd02-pole-behind-camera";
@@ -47,12 +47,15 @@ test.describe("02-S5 shadow stability", () => {
     const len = Math.hypot(...forward);
     const step: Vec3 = [(forward[0] / len) * DOLLY_STEP_M, (forward[1] / len) * DOLLY_STEP_M, (forward[2] / len) * DOLLY_STEP_M];
     const frames: PixelBuffer[] = [];
+    let countersAfterFirstMove: Awaited<ReturnType<typeof deviceCounters>> = null;
     for (let frame = 0; frame < DOLLY_FRAMES; frame += 1) {
       const p: Vec3 = [position[0] + step[0] * frame, position[1] + step[1] * frame, position[2] + step[2] * frame];
       const t: Vec3 = [target[0] + step[0] * frame, target[1] + step[1] * frame, target[2] + step[2] * frame];
       expect(await setCameraPose(page, p, t), "app.setScene camera move").toBe(true);
       frames.push(await stagePixels(page));
+      if (frame === 0) countersAfterFirstMove = await deviceCounters(page);
     }
+    const countersAfterDolly = await deviceCounters(page);
     const edge = boundaryRing(shadowMask(frames[0]!, off), frames[0]!, 1);
     const diff = meanFrameDiff(frames, edge);
     // The dolly must reach the renderer: the first and last frames (0.59 m
@@ -61,10 +64,16 @@ test.describe("02-S5 shadow stability", () => {
     // passes trivially (azure-gpu run 38155871625: meanFrameDiff 0).
     const fullFrame = new Uint8Array(frames[0]!.width * frames[0]!.height).fill(255);
     const moved = meanFrameDiff([frames[0]!, frames[frames.length - 1]!], fullFrame);
-    const report = { edgePixels: maskPixelCount(edge), meanFrameDiff: diff, firstToLastFrameDiff: moved };
+    const report = { edgePixels: maskPixelCount(edge), meanFrameDiff: diff, firstToLastFrameDiff: moved, countersAfterFirstMove, countersAfterDolly };
     await testInfo.attach("02-S5-dolly.json", { body: JSON.stringify(report), contentType: "application/json" });
     expect(report.edgePixels, "frame-0 shadow edges").toBeGreaterThan(500);
     expect(moved, `the dolly must change the rendered frame: ${JSON.stringify(report)}`).toBeGreaterThan(MIN_DOLLY_FRAME_DIFF);
+    // The per-frame setScene must re-present the same renderer, programs and
+    // shadow targets; a rebuild per frame would make "stable" meaningless.
+    expect(countersAfterFirstMove?.programCompileCount ?? null, "C-28 programCompileCount reachable from app.diagnostics()").not.toBeNull();
+    for (const key of ["programCompileCount", "renderTargets", "disposedRenderTargets"] as const) {
+      expect(countersAfterDolly?.[key], `${key} across 59 setScene camera moves: ${JSON.stringify(report)}`).toBe(countersAfterFirstMove?.[key]);
+    }
     expect(diff, JSON.stringify(report)).toBeLessThanOrEqual(SHIMMER_MAX);
   });
 

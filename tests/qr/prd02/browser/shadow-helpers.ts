@@ -50,6 +50,45 @@ export async function lightingCounters(page: Page): Promise<{ readPixelsCalls: n
   })()`)) as { readPixelsCalls: number | null; programCompileCount: number | null };
 }
 
+export interface DeviceCounters {
+  readonly programCompileCount: number | null;
+  readonly renderTargets: number | null;
+  readonly disposedRenderTargets: number | null;
+  readonly textures: number | null;
+  readonly disposedTextures: number | null;
+}
+
+/**
+ * Device resource counters (C-28 `RenderDeviceDiagnostics`) from the mounted
+ * app's diagnostics: the first `deviceDiagnostics` object found within four
+ * levels. Lets a spec prove the renderer and its shadow targets persisted
+ * across a sequence of `app.setScene` calls (no recompiles, no target churn).
+ */
+export async function deviceCounters(page: Page): Promise<DeviceCounters | null> {
+  return (await page.evaluate(`(() => {
+    const app = window.__qrPrd02App;
+    const find = (value, depth) => {
+      if (!value || typeof value !== "object" || depth > 4) return null;
+      if (value.deviceDiagnostics && typeof value.deviceDiagnostics === "object") return value.deviceDiagnostics;
+      for (const key of Object.keys(value)) {
+        const hit = find(value[key], depth + 1);
+        if (hit) return hit;
+      }
+      return null;
+    };
+    const d = app && typeof app.diagnostics === "function" ? find(app.diagnostics(), 0) : null;
+    if (!d) return null;
+    const n = (v) => (typeof v === "number" ? v : null);
+    return {
+      programCompileCount: n(d.programCompileCount),
+      renderTargets: n(d.renderTargets),
+      disposedRenderTargets: n(d.disposedRenderTargets),
+      textures: n(d.textures),
+      disposedTextures: n(d.disposedTextures)
+    };
+  })()`)) as DeviceCounters | null;
+}
+
 /** Step the mounted app `frames` times at 60 Hz, one rAF per step. */
 export async function stepFrames(page: Page, frames: number): Promise<void> {
   await page.evaluate(`(async () => {
