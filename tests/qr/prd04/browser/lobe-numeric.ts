@@ -18,6 +18,8 @@ declare global {
 		__A3D_PRD04_LOBE_NUMERIC__?: {
 			status: "running" | "ready" | "error";
 			error?: string;
+			renderer?: string;
+			golden?: { id: string; file: string; runId: number | null };
 			cases?: {
 				fn: string;
 				total: number;
@@ -309,7 +311,28 @@ async function main(): Promise<void> {
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-	const golden = (await (await fetch("/tests/qr/prd04/fixtures/bsdf/r185-golden.json")).json()) as { cases: GoldenCase[] };
+	// Golden per provider/GPU (§0.6: never compare across providers): the
+	// manifest maps an unmasked-renderer regex to the golden generated on that
+	// class of device by generate-r185-golden.spec.ts (or the python/llvmpipe
+	// script). No match = no valid oracle on this runner, which is an error,
+	// never a fallback to another device's golden.
+	const dbg = gl.getExtension("WEBGL_debug_renderer_info");
+	const renderer = dbg ? String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL)) : "unmasked";
+	const manifest = (await (await fetch("/tests/qr/prd04/fixtures/bsdf/r185-goldens.json")).json()) as {
+		goldens: { id: string; rendererMatch: string; file: string; runId?: number | null }[];
+	};
+	const selected = manifest.goldens.find((g) => new RegExp(g.rendererMatch).test(renderer));
+	report.renderer = renderer;
+	if (!selected) {
+		report.status = "error";
+		report.error =
+			`no r185 golden matches renderer "${renderer}" in fixtures/bsdf/r185-goldens.json ` +
+			`(known: ${manifest.goldens.map((g) => `${g.id}=/${g.rendererMatch}/`).join(", ")}). ` +
+			"Generate one on this runner class with generate-r185-golden.spec.ts and commit it from that run.";
+		return;
+	}
+	report.golden = { id: selected.id, file: selected.file, runId: selected.runId ?? null };
+	const golden = (await (await fetch(`/tests/qr/prd04/fixtures/bsdf/${selected.file}`)).json()) as { cases: GoldenCase[] };
 	for (const c of golden.cases) {
 		const total = c.argorder.reduce((acc, k) => acc * c.axes[k]!.length, 1);
 		const entry = { fn: c.fn, total, out: c.out, maxAbs: 0, maxRel: 0, values: [] as (number | null)[], failures: [] as { idx: number; abs: number; rel: number; args?: Record<string, number> }[], log: "" };

@@ -27,6 +27,7 @@ on:
       - "tools/generate-extension-matrix.mjs"
       - "benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd04/**"
       - "tests/qr/prd04/**"
+      - "benchmarks/quality-rebuild/sentinels.json"
       - "fixtures/asset-corpus/**"
       - ".github/workflows/qr-prd04-materials.yml"
   push:
@@ -86,6 +87,10 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: "04-S4: spec-exact glTF import + Duck route (flag-on, flag-off controls)"
+        # PRD-04 §16.1 S4. Named step so the row's run id cites these two files
+        # directly; they also run again in the full lane vitest step below.
+        run: pnpm exec vitest run -c tests/qr/prd04/vitest.config.ts tests/qr/prd04/unit/gltf-material-mapping-spec-exact.test.ts tests/qr/prd04/unit/duck-route-materials.test.ts
       # CI-0/T0-31: lane-scoped typecheck (tests/qr/prd04 + import graph).
       # The repo-wide `pnpm typecheck:raw` gate stays in its own workflow —
       # other lanes' breakers are filed as qr-requests #777/#778/#779.
@@ -99,6 +104,12 @@ jobs:
 
   browser:
     runs-on: macos-14
+    permissions:
+      contents: read
+      actions: read # 04-S1: download the latest main sentinel capture artifact
+    env:
+      PRD04_PERF_TIER: macos-14
+      PRD04_SENTINEL_BASELINE_DIR: tests/reports/prd04/sentinels/baseline
     steps:
       - uses: actions/checkout@v4
         with:
@@ -112,11 +123,30 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install chromium
+      - name: "04-S1: fetch sentinel baseline (latest main prd04-sentinels-none artifact)"
+        # CONTRACTS §6.1 / CI-ROUTING: the S1 baseline is the latest GitHub
+        # macos-14 flag-off sentinel capture on main. With none yet, the step
+        # leaves the directory empty and sentinel-identity.spec.ts FAILS with
+        # "no baseline" — the step never passes S1 by itself.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$PRD04_SENTINEL_BASELINE_DIR"
+          run_id=$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts?name=prd04-sentinels-none&per_page=100" \
+            --jq "[.artifacts[] | select(.expired == false and .workflow_run.head_branch == \"main\" and .workflow_run.id != ${GITHUB_RUN_ID})] | sort_by(.created_at) | last | .workflow_run.id // empty")
+          if [ -z "$run_id" ]; then
+            echo "::warning::no main prd04-sentinels-none artifact yet; 04-S1 will fail with 'no baseline'"
+            exit 0
+          fi
+          gh run download "$run_id" -n prd04-sentinels-none -D "$PRD04_SENTINEL_BASELINE_DIR"
+          echo "PRD04_SENTINEL_BASELINE_RUN_ID=$run_id" >> "$GITHUB_ENV"
+          ls -la "$PRD04_SENTINEL_BASELINE_DIR"
       - name: Browser conformance (ChunkHarness, ANGLE Metal)
         # All PRD-04 unit-gated browser specs: chunk conformance, lobe numeric parity,
         # transmission capture, decoders/variants. Scene captures run in the `capture` job;
         # the integrated (`qr_flags=all`) probes and WGSL twins run in `browser-all`.
-        run: pnpm exec playwright test --config tests/qr/prd04/playwright.config.ts --grep "PRD-04 lobe chunks|PRD-04 physical lobes|PRD-04 transmission|PRD-04 glTF decoders|PRD-04 S3|PRD-04 S6|PRD-04 S7|PRD-04 S9|PRD-04 S16" --grep-invert "qr_flags=all"
+        run: pnpm exec playwright test --config tests/qr/prd04/playwright.config.ts --grep "PRD-04 lobe chunks|PRD-04 physical lobes|PRD-04 transmission|PRD-04 glTF decoders|PRD-04 S1 |PRD-04 S3|PRD-04 S6|PRD-04 S7|PRD-04 S9|PRD-04 S16|PRD-04 r185 golden" --grep-invert "qr_flags=all"
       - name: Extension matrix --check (P6-2 truthful matrix)
         # material-conformance.json was just written by the chunk-conformance spec;
         # the tool fails when the report is missing or the matrices drift from it.
@@ -133,6 +163,21 @@ jobs:
             tests/reports/prd04-decoders-variants.json
             tests/reports/prd04-wgsl-twins.json
             tests/reports/prd04/probes/**/*.json
+            tests/reports/prd04/perf/*.json
+          if-no-files-found: warn
+      - name: "04-S1: upload sentinel captures (next run's baseline when on main)"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd04-sentinels-none
+          path: tests/reports/prd04/sentinels/current/
+          if-no-files-found: warn
+      - name: "04-P1-3: upload regenerated r185 golden (commit to tests/qr/prd04/fixtures/bsdf/ from a main run)"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd04-r185-golden
+          path: tests/reports/prd04/r185-golden/
           if-no-files-found: warn
 
   browser-all:
@@ -145,6 +190,7 @@ jobs:
       # WebGPU adapter and fail (not skip) without one; this macos-14 job is the
       # WebGPU runner (`--enable-unsafe-webgpu`).
       PRD04_FLAGS: "all"
+      PRD04_PERF_TIER: macos-14
       PRD04_CHROMIUM_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist --enable-unsafe-webgpu"
     steps:
       - uses: actions/checkout@v4
@@ -194,6 +240,18 @@ jobs:
           PRD04_SCENES: "prd04-texture-transform,prd04-normal-tangent,prd04-iridescence,prd04-anisotropy,prd04-dispersion,prd04-variants,prd04-ktx2,prd04-tiled-ground,prd04-tinted-hero,prd04-alpha-mask,prd04-damaged-helmet,prd04-transmission,02-pbr-product,03-damaged-helmet,04-clearcoat,05-transmission,06-metal-roughness-sweep,07-sheen-fabric,08-skinned-character"
           PRD04_ENGINES: "aura3d,three"
         run: pnpm exec playwright test --config tests/qr/prd04/playwright.config.ts --grep "lane captures"
+      - name: "04-EVID: package Phase 1 flags-none baselines (prd04-* x 2 engines)"
+        # Runs after a failed capture too, so the partial bundle is uploaded for
+        # inspection; the packager itself exits 1 on any missing/non-ready frame.
+        if: always() && (github.event_name != 'workflow_dispatch' || inputs.flags == 'none')
+        run: node tests/qr/prd04/package-phase1-baselines.mjs
+      - name: "04-EVID: upload Phase 1 baseline bundle (commit from a main run)"
+        if: always() && (github.event_name != 'workflow_dispatch' || inputs.flags == 'none')
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd04-phase1-baselines-none
+          path: tests/reports/prd04/phase-1-baselines/
+          if-no-files-found: warn
       - name: Upload captures
         if: always()
         uses: actions/upload-artifact@v4
