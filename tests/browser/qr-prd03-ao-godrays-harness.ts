@@ -42,7 +42,7 @@ function luma(pixels: Uint8Array, i: number): number {
 /** Diagnostics for the spec artifacts: a PNG, mean luma and the post/output state per render. */
 export const frameDiagnostics: Record<string, { png: string; meanLuma: number; diagnostics: unknown; glErrors?: string[] }> = {};
 
-async function renderFrame(built: ReturnType<typeof scene>, flags: readonly string[], frames = 8, label = ""): Promise<{ pixels: Uint8Array; reads: number }> {
+async function renderFrame(built: ReturnType<typeof scene>, flags: readonly string[], frames = 8, label = "", tier?: "low" | "medium" | "high"): Promise<{ pixels: Uint8Array; reads: number }> {
   const host = document.createElement("div");
   host.style.cssText = `position:fixed;left:-2400px;top:0;width:${SIZE}px;height:${SIZE}px;`;
   document.body.appendChild(host);
@@ -57,6 +57,7 @@ async function renderFrame(built: ReturnType<typeof scene>, flags: readonly stri
   try {
     await app.ready();
     await postV2ModulesReady();
+    if (tier) (app as { setQualityTier?: (t: string) => void }).setQualityTier?.(tier);
     // Read in the stepping task from the default framebuffer (qr-prd03-frame-capture).
     const canvasEl = host.querySelector("canvas")!;
     const capture = installFrameCapture(app, canvasEl);
@@ -161,8 +162,14 @@ function shaftScene(mode: "off" | "on" | "mask") {
 
 export async function runGodRayShaftProbe() {
   const mask = await renderFrame(shaftScene("mask"), [], 2, "shaft-mask");
-  const off = await renderFrame(shaftScene("off"), ["post"], 8, "shaft-off");
-  const on = await renderFrame(shaftScene("on"), ["post"], 8, "shaft-on");
+  // S4-only A/B: both legs carry effects.volumetricFog, so the forward fog
+  // inscatter it drives (compiler/fog.ts:105) lights the pillars equally in
+  // both. Only S4 differs: the "low" post tier drops god rays and nothing
+  // else (PostQualityTiers godRays gate). The old "off" leg had no
+  // volumetricFog, so the forward inscatter on the pillar faces counted as
+  // "god-ray light in the occluded mask" (+71%, GPU run 38151583035).
+  const off = await renderFrame(shaftScene("on"), ["post"], 8, "shaft-off", "low");
+  const on = await renderFrame(shaftScene("on"), ["post"], 8, "shaft-on", "high");
   // Pillar mask and its bounding rows/columns.
   const pillar = new Uint8Array(SIZE * SIZE);
   let minX = SIZE, maxX = -1, minY = SIZE, maxY = -1;
