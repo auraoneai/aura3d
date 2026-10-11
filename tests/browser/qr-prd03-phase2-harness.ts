@@ -44,7 +44,10 @@ function compileGl(gl: WebGL2RenderingContext, fsSource: string): WebGLProgram {
   return program;
 }
 
-const LUT_SIZE = 33;
+// 65³ (#1193 decision): a 33³ grid interpolates the contrast/saturation curve
+// to 2 LSB max on a grey ramp whether stored RGBA8 or RGBA16F (simulated and
+// measured 2 on GPU run 38152510965); 65³ meets the ≤ 1 LSB gate in RGBA8.
+const LUT_SIZE = 65;
 const LUT_PARAMS = { contrast: 1.15, saturation: 1.1, vibrance: 0.25, lutIntensity: 1, userLut: 0 };
 
 /** CPU mirror of LUT_BAKE_GLSL main() — the analytic grade. */
