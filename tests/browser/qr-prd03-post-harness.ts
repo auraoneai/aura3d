@@ -162,7 +162,9 @@ function comparePixels(aura: Uint8Array, three: Uint8Array): { meanAbsDiff: numb
   let sum = 0;
   let max = 0;
   for (let i = 0; i < aura.length; i += 4) {
-    const d = Math.abs(luma(aura, i) - luma(three, i));
+    // Round away float error: the luma weights sum to 1 + 1.4e-14, so an
+    // exact 1-LSB grey difference read 1.0000000000000142 (GPU lane 38117485212).
+    const d = Math.round(Math.abs(luma(aura, i) - luma(three, i)) * 1e6) / 1e6;
     sum += d;
     max = Math.max(max, d);
   }
