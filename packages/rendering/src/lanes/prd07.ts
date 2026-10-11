@@ -15,6 +15,7 @@ import { registerPrd07Chunks, FOG_CHUNK_NAME, FOG_APPLY_CHUNK_NAME, WETNESS_CHUN
 import { registerPrd07VolumeChunk } from "../vfx/shaders/volume.glsl";
 import { prd07WetnessState } from "../atmosphere/shaders/wetness.glsl";
 import { prd07FogSelect, prd07WetnessSelect } from "../vfx/prd07FeaturePars";
+import { bindPrd07FogUniforms } from "../atmosphere/fogUniformStore";
 import { TextureBinding } from "../TextureBinding";
 
 // C-20 / C-21 provides — real implementations keyed by device.
@@ -46,7 +47,10 @@ try {
     defines: (value) => ({ A3D_FOG: 1, ...(value === "volumetric" ? { A3D_FOG_FROXEL_TIER: 1 } : {}) }),
     // #880: pars (declarations) at fragment:pars, call at fragment:fog.
     chunks: [FOG_CHUNK_NAME, FOG_APPLY_CHUNK_NAME],
-    hooks: ["fragment:pars", "fragment:fog"]
+    hooks: ["fragment:pars", "fragment:fog"],
+    // #187/#82 — packed §8.4 uniforms from the prd07.fog contributor (module
+    // store; bindUniforms sees no blackboard). Mode 5 = real absorption.
+    bindUniforms: (_value, _item, set) => bindPrd07FogUniforms(set)
   });
   registerShaderFeature({
     id: "prd07.wetness",

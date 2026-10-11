@@ -28,6 +28,7 @@ import {
   type Vec3
 } from "../atmosphere/HeightFog";
 import { packFogVolumes, type Prd07FogVolume } from "../atmosphere/FogVolumes";
+import { setPrd07ForwardFog } from "../atmosphere/fogUniformStore";
 import { evaluateSky, skyFrame } from "../atmosphere/SkyEval";
 import { RibbonPass } from "./RibbonPass";
 import { DecalPass } from "./DecalPass";
@@ -304,7 +305,10 @@ const fogContributor: FrameContributor = {
       clockNow?: () => number;
       sky?: Record<string, unknown> | null;
     } | undefined;
-    if (!atmosphere) return items;
+    if (!atmosphere) {
+      setPrd07ForwardFog(null);
+      return items;
+    }
     const cam = ctx.camera;
     const forward: readonly [number, number, number] = cam
       ? [-cam.viewMatrix[2], -cam.viewMatrix[6], -cam.viewMatrix[10]]
@@ -318,7 +322,15 @@ const fogContributor: FrameContributor = {
       ? skyHorizonRadiance(sky, azimuth) ?? PRD07_FOG_DEFAULTS.fallbackColor
       : parseFogColor(resolved.color, PRD07_FOG_DEFAULTS.fallbackColor);
     // Legacy generator (C-04 stub) → parity-mode slots; real C-02 → v2 slots.
-    const parity = ctx.flags.values["A3D_QR_CORE"] !== "v2";
+    // #187: keyed on the same gate ForwardPass uses for generated programs
+    // (qrCoreGeneratorOn: A3D_QR_CORE_GENERATOR, else A3D_QR_CORE — `true` or "v2"), so an
+    // absorption spec reaches forward geometry as mode 5, not the legacy
+    // luminance-weighted exp collapse.
+    // Inlined (renderer/qrSubFlags pulls OutputPass into the vfx chunk).
+    const generatorOn = ctx.flags.values["A3D_QR_CORE_GENERATOR"] !== undefined
+      ? ctx.flags.on("A3D_QR_CORE_GENERATOR")
+      : ctx.flags.on("A3D_QR_CORE");
+    const parity = !generatorOn;
     const packed = packV2(resolved, {
       fogColor,
       cameraY: cam?.position[1] ?? 0,
@@ -327,19 +339,30 @@ const fogContributor: FrameContributor = {
     // §6.6 sun inscatter colour — sky radiance at the sun direction (clamped);
     // only multiplied by sunInscatter (default 0) so the approximation is inert.
     let sunColor: Vec3 = [1, 1, 1];
+    let sunDirection: Vec3 = [0, 1, 0];
     if (sky) {
       try {
         const frame = skyFrame(sky as Parameters<typeof skyFrame>[0]);
         const sunDir = frame.preetham?.sunDirection ?? frame.gradient?.sunDirection ?? ([0, 1, 0] as Vec3);
+        sunDirection = sunDir;
         const e = evaluateSky(frame, sunDir);
         sunColor = [Math.min(e[0], 8), Math.min(e[1], 8), Math.min(e[2], 8)];
       } catch {
         // keep the unit fallback
       }
     }
+    const volumes = (atmosphere.fogVolumes?.() ?? []) as readonly Prd07FogVolume[];
+    // #187/#82 — forward geometry on the C-02 path binds these per draw via the
+    // prd07.fog feature's bindUniforms (absorption = mode 5, Beer-Lambert).
+    // No live fog node → mode 0 on forward geometry (IC-0), not default height fog.
+    setPrd07ForwardFog(
+      spec
+        ? { uniforms: packed, volumes, sunDirection, sunColor, cameraPosition: cam ? [cam.position[0], cam.position[1], cam.position[2]] : [0, 0, 0] }
+        : null
+    );
     ctx.blackboard.set("prd07.fog", {
       uniforms: packed,
-      volumes: (atmosphere.fogVolumes?.() ?? []) as readonly Prd07FogVolume[],
+      volumes,
       sunColor,
       affectsBackground: resolved.affectsBackground !== false,
       backgroundDistance: resolved.backgroundDistance ?? cam?.far ?? 1000
