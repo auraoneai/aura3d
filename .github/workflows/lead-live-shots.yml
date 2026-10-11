@@ -40,5 +40,8 @@ jobs:
           ARGS="${{ vars.QR_AZURE_GPU_CHROME_ARGS }}" node s.mjs
       - uses: actions/upload-artifact@v4
         if: always()
-        with: { name: live-games, path: 'shots/*.png
-          shots/report.json' }
+        with:
+          name: live-games
+          path: |
+            shots/*.png
+            shots/report.json
