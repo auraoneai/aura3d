@@ -5,6 +5,7 @@ import {
   TransmissionFrameContributor,
   prd04TransmissionDiagnostics
 } from "../../../../packages/rendering/src/forward/Transmission";
+import { capturedTransmissionTarget } from "../../../../packages/rendering/src/forward/transmissionTargetStore";
 import type { FrameContributorContext } from "../../../../packages/rendering/src/contracts/frameGraph";
 import { QUALITY_TIERS } from "../../../../packages/rendering/src/contracts/quality";
 
@@ -92,5 +93,22 @@ describe("prd04.transmission contributor (P4-1)", () => {
     await medium.passes("transmission", context)[0]!.execute({ device: context.device, width: 1280, height: 720 });
     expect(prd04TransmissionDiagnostics().scale).toBe(0.5);
     medium.dispose();
+  });
+
+  it("04-S10: the captured-target store is set by a capture and cleared on a no-transmission frame and on dispose", async () => {
+    const c = new TransmissionFrameContributor();
+    const context = ctx([TRANSMITTING]);
+    const passes = c.passes("transmission", context);
+    await passes[0]!.execute({ device: context.device, width: 640, height: 360 });
+    expect(capturedTransmissionTarget()?.width).toBe(640);
+    // Next frame has no transmissive item: the stale target must not stay bound.
+    expect(c.passes("transmission", ctx([{ material: { getParameter: () => undefined } }]))).toEqual([]);
+    expect(capturedTransmissionTarget()).toBeUndefined();
+    // Capture again, then dispose: the disposed target is unreachable from the store.
+    const again = c.passes("transmission", context);
+    await again[0]!.execute({ device: context.device, width: 320, height: 180 });
+    expect(capturedTransmissionTarget()?.width).toBe(320);
+    c.dispose();
+    expect(capturedTransmissionTarget()).toBeUndefined();
   });
 });

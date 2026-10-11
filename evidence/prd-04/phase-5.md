@@ -1,5 +1,7 @@
 # PRD-04 Phase 5 — Pipeline fidelity (P5-1..P5-5)
 
+> **Status (04-EVID, 2026-10-11):** every PASS below is a *local* unit or code-read result. No row here has a remote run id yet, so every browser, capture or CI-gated item is **NOT RUN** until a GitHub macos-14 run on a main commit is cited inline. The S3/S6/S7/S9 probe controls are measured by the lane browser job into `tests/reports/prd04/probes/*.json` (artifact `prd04-material-conformance`); the NOT RUN placeholder stubs were removed (P-56).
+
 Scope: `imageColorSpaceIntent` + `colorspace-conflict` load issues + C-16 `colorSpace` decode injection (P5-1); `decoders` pre-scan/registry/`decoder-missing` wiring through `ProductionGLTFRenderPipeline` + `TypedGLBActor` (P5-2); variant rebind already landed in P2 — this phase adds the browser spec coverage (P5-3); MikkTSpace-first tangent generation + strict `tangent-derivative-fallback` (P5-4); `prd04.alphaToCoverage` feature + `renderState.alphaToCoverage` request (P5-5). Everything flag-gated: `decoders` is opt-in, `materialsR185` gates colour-space injection + MikkTSpace + the alphaToCoverage request.
 
 ## Verification table
