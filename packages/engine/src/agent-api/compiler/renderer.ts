@@ -8,7 +8,7 @@ import { primitive } from "../nodes/primitives.js";
 import { createRendererDiagnosticReport } from "../rendererDiagnostics.js";
 import { clamp01, createViewProjection } from "../sceneMath.js";
 import { resolveCameraFrame } from "./camera.js";
-import { createProductionRuntimeCollectedLights, createProductionRuntimePostprocessObservation, createProductionRuntimeShadowObservation, createProductionTexturesObservation, isRenderableModelNode } from "./observations.js";
+import { createProductionRuntimeCollectedLights, createProductionRuntimePostprocessObservation, createProductionRuntimeShadowObservation, createProductionTexturesObservation, declaresWebGLContent, isRenderableModelNode, isWebGLRenderableNode } from "./observations.js";
 import { createProductionTextObservation } from "./text.js";
 import { getRootPerformanceQuality, getRootRenderSource } from "../RootRuntimeSupport.js";
 import { Renderer, type RenderBackendKind, type ProductionRendererFeature, type ProductionRendererInput, type RenderDeviceDiagnostics } from "@aura3d/rendering";
@@ -329,7 +329,20 @@ export async function createProductionRuntimeSceneRenderer(
         productionRuntimeLights
       );
     };
-    const takePreparedFrame = (time: number): ProductionRendererInput => {
+    /*
+   * #1175 follow-up: a scene whose only drawable content is PRD-10 world
+   * nodes (terrain/water/grass, drawn by the prd10 frame contributor) has no
+   * mesh primitive in the production input, so the mesh-primitive
+   * precondition threw "requires at least one real mesh primitive" and the
+   * frame never ran. World-only scenes skip that precondition only; a frame
+   * that still draws nothing fails the mount's NoDrawError check.
+   */
+  const worldOnlyScene = declaresWebGLContent(snapshot.nodes) && !snapshot.nodes.some(isWebGLRenderableNode);
+  const validateFrameInput = (input: ProductionRendererInput): void => {
+    if (worldOnlyScene && input.metadata.primitiveCount <= 0) return;
+    validateProductionRendererInput(input);
+  };
+  const takePreparedFrame = (time: number): ProductionRendererInput => {
       const prepared = preparedFrame?.time === time ? preparedFrame.input : undefined;
       preparedFrame = undefined;
       return prepared ?? buildFrame(time);
@@ -350,7 +363,7 @@ export async function createProductionRuntimeSceneRenderer(
       },
       render(time) {
         const input = takePreparedFrame(time);
-        validateProductionRendererInput(input);
+        validateFrameInput(input);
         latestDeviceDiagnostics = productionRenderer.render(input.source, input.camera);
         getRootRenderSource(canvas)?.onFrame?.(latestDeviceDiagnostics, [...(input.source.collectRenderItems?.() ?? [])]);
         latestFeatures = rendererInteractiveFeatureReport(productionRenderer, latestDeviceDiagnostics, input);
@@ -358,7 +371,7 @@ export async function createProductionRuntimeSceneRenderer(
       },
       async renderAsync(time) {
         const input = takePreparedFrame(time);
-        validateProductionRendererInput(input);
+        validateFrameInput(input);
         latestDeviceDiagnostics = await productionRenderer.renderAsync(input.source, input.camera);
         getRootRenderSource(canvas)?.onFrame?.(latestDeviceDiagnostics, [...(input.source.collectRenderItems?.() ?? [])]);
         latestFeatures = rendererInteractiveFeatureReport(productionRenderer, latestDeviceDiagnostics, input);
