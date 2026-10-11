@@ -206,20 +206,32 @@ jobs:
           retention-days: 14
 
   # GPU visual-proof path for lane-01 fixes (self-hosted NVIDIA L4 scale set,
-  # Vulkan ANGLE): the prd01 browser specs plus the lane capture on a real GPU.
-  # workflow_dispatch only, so PR code (including forks) never reaches the
-  # self-hosted runner. Bench-scene / game GPU capture is qr-azure-gpu.yml's
-  # (lane 12, #956); this job does not duplicate it. Chromium args come from
-  # vars.QR_AZURE_GPU_CHROME_ARGS (same convention as qr-azure-gpu.yml) and the
-  # job fails when it is unset or when the WebGL renderer is software.
+  # Vulkan ANGLE): the prd01 browser specs (sharded across GPU runners) plus
+  # the lane capture on a real GPU. workflow_dispatch only, so PR code
+  # (including forks) never reaches the self-hosted runner. Bench-scene / game
+  # GPU capture is qr-azure-gpu.yml's (lane 12, #956); this job does not
+  # duplicate it. Chromium args come from vars.QR_AZURE_GPU_CHROME_ARGS (same
+  # convention as qr-azure-gpu.yml); each leg fails when it is unset or when
+  # the WebGL renderer is software.
+  #
+  # Every leg bounds its Playwright run with QR_PRD01_GLOBAL_TIMEOUT_MS so a
+  # hanging spec ends the run (red, unfinished specs reported as not run) with
+  # reports written and uploaded, instead of the job timeout killing the
+  # runner before the evidence upload (run 38118187423 lost all of it).
   gpu:
-    name: GPU browser conformance (self-hosted azure-gpu / Vulkan)
+    name: "GPU ${{ matrix.leg }} (self-hosted azure-gpu / Vulkan)"
     if: github.event_name == 'workflow_dispatch'
     runs-on: [self-hosted, azure-gpu]
     needs: build-harness
-    timeout-minutes: 90
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        leg: [specs-1, specs-2, specs-3, specs-4, capture]
     env:
       QR_PRD01_CHANNEL: chromium
+      QR_PRD01_GLOBAL_TIMEOUT_MS: "3000000"
+      PRD01_GPU_LEG: ${{ matrix.leg }}
       PRD01_GPU_FLAGS: ${{ inputs.flags || 'core' }}
       PRD01_GPU_SCENES: ${{ inputs.scenes || '' }}
       QR_AZURE_GPU_CHROME_ARGS: ${{ vars.QR_AZURE_GPU_CHROME_ARGS }}
@@ -253,10 +265,16 @@ jobs:
           mkdir -p tests/qr/prd01/out
           node tests/qr/prd01/gpu-renderer.mjs | tee tests/qr/prd01/out/renderer.txt | tee -a "$GITHUB_STEP_SUMMARY"
           echo "runner: $RUNNER_NAME" | tee -a "$GITHUB_STEP_SUMMARY"
-      - name: Lane browser specs (GPU)
-        run: pnpm exec playwright test --config tests/qr/prd01/playwright.config.ts
+      - name: Lane browser specs (GPU, shard ${{ matrix.leg }})
+        if: startsWith(matrix.leg, 'specs-')
+        timeout-minutes: 60
+        run: |
+          set -euo pipefail
+          shard="${PRD01_GPU_LEG#specs-}"
+          pnpm exec playwright test --config tests/qr/prd01/playwright.config.ts --shard="$shard/4"
       - name: Lane capture (GPU)
-        if: always()
+        if: matrix.leg == 'capture'
+        timeout-minutes: 60
         run: |
           set -euo pipefail
           scene_args=()
@@ -266,7 +284,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: prd01-gpu-${{ github.run_id }}-${{ github.run_attempt }}
+          name: prd01-gpu-${{ matrix.leg }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             tests/qr/prd01/out/
           retention-days: 14

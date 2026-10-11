@@ -16,12 +16,16 @@ const here = dirname(fileURLToPath(import.meta.url));
 // the browser channel; both unset = the macos-14 defaults below.
 const extraArgs = (process.env.QR_PRD01_CHROME_ARGS ?? "").split(/\s+/).filter(Boolean);
 const channel = process.env.QR_PRD01_CHANNEL || undefined;
+// GPU job: bound the whole run so a hanging spec still ends with reports
+// written (unfinished specs are reported, and the run fails). Unset = no bound.
+const globalTimeout = Number(process.env.QR_PRD01_GLOBAL_TIMEOUT_MS ?? "0");
 
 export default defineConfig({
   testDir: here,
   testMatch: ["browser/**/*.spec.ts"],
   timeout: 120_000,
   workers: 1,
+  ...(globalTimeout > 0 ? { globalTimeout } : {}),
   use: {
     baseURL: "http://127.0.0.1:5299",
     browserName: "chromium",
@@ -36,5 +40,5 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 30_000
   },
-  reporter: [["list"], ["json", { outputFile: resolve(here, "out/browser.json") }]]
+  reporter: [["list"], ["json", { outputFile: resolve(here, "out/browser.json") }], ["junit", { outputFile: resolve(here, "out/browser.junit.xml") }]]
 });
