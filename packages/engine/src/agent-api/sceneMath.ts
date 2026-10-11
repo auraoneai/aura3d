@@ -157,7 +157,7 @@ export function createModelMatrix(node: AuraModelNode | AuraPrimitiveNode | Aura
   );
 }
 
-function resolveModelFitScale(
+export function resolveModelFitScale(
   node: AuraModelNode | AuraPrimitiveNode | AuraEffectNode | undefined,
   extent: readonly [number, number, number],
   normalizeToUnit: boolean
@@ -190,7 +190,7 @@ export function animatedPosition(node: AuraModelNode | AuraPrimitiveNode | AuraE
   return [basePosition[0], basePosition[1] + Math.sin(resolveAnimationSeconds(node.animation, time) * speed) * 0.08, basePosition[2]];
 }
 
-function animatedRotation(node: AuraModelNode | AuraPrimitiveNode | AuraEffectNode | AuraLabelNode | undefined, time: number): AuraVec3 {
+export function animatedRotation(node: AuraModelNode | AuraPrimitiveNode | AuraEffectNode | AuraLabelNode | undefined, time: number): AuraVec3 {
   const baseRotation = node?.rotation ?? [0, 0, 0];
   if (!node?.animation) return baseRotation;
   if (node.kind === "model" && !isModelTransformAnimationClip(node.animation.clip)) return baseRotation;
