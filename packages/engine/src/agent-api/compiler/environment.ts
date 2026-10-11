@@ -9,6 +9,22 @@ import { groups } from "../nodes/groups.js";
 import { resolveRendererSceneCategory } from "../rendererDiagnostics.js";
 import { createExternalParityEnvironmentLighting, linearToSrgbChannel, type EnvironmentLightingOptions } from "@aura3d/rendering";
 
+/**
+ * #1141 / 02-S2: the legacy scene-category environment of a scene with no
+ * authored environment and no lights at all is registered in a process-global
+ * WeakSet, so the
+ * renderer's `collectEnvironmentLighting` can put the neutral room in their
+ * place under A3D_QR_LIGHTING (renderer/Background.ts). A WeakSet keyed on
+ * `Symbol.for` leaves the objects byte-identical (flag-off goldens) and works
+ * across duplicated src/dist module instances.
+ */
+const PRD02_LEGACY_FALLBACK_ENVIRONMENTS = Symbol.for("aura3d.prd02.legacyFallbackEnvironments");
+function markLegacyFallbackEnvironment<T extends object>(lighting: T): T {
+  const store = globalThis as { [PRD02_LEGACY_FALLBACK_ENVIRONMENTS]?: WeakSet<object> };
+  (store[PRD02_LEGACY_FALLBACK_ENVIRONMENTS] ??= new WeakSet()).add(lighting);
+  return lighting;
+}
+
 export function createProductionRuntimeEnvironment(snapshot: AuraSceneSnapshot): {
   readonly preset: string;
   readonly intensity: number;
@@ -116,7 +132,15 @@ export function createProductionRuntimeEnvironment(snapshot: AuraSceneSnapshot):
     preset,
     intensity: bundle.lighting.environmentMapIntensity ?? bundle.lighting.intensity,
     evidence: `production bridge submitted generated HDR ${preset} environment lighting through RenderSource.environmentLighting`,
-    lighting: bundle.lighting
+    // Only a scene with no environment *and no lights at all* is a fallback
+    // the neutral room replaces under the flag (PRD-02 §6.2 / migration table:
+    // "with no lights, the neutral environment lights the scene"). A scene
+    // with authored lights keeps today's look; the three references for the
+    // base scenes carry no environment either (GPU run 38150848623: 01/12
+    // went 128 → 187 median with the neutral room added under authored lights).
+    // The bundle object can be shared across scenes with the same preset, so
+    // the marked value is a shallow copy (deep-equal: flag-off output unchanged).
+    lighting: nodes.some((node) => node.kind === "light") ? bundle.lighting : markLegacyFallbackEnvironment({ ...bundle.lighting })
   };
 }
 
