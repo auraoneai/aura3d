@@ -64,7 +64,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: qr-prd09-routes-${{ github.ref }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  group: qr-prd09-routes-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:

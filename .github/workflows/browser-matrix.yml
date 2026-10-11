@@ -9,7 +9,7 @@ on:
       - develop
 
 concurrency:
-  group: browser-matrix-${{ github.ref }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  group: browser-matrix-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:

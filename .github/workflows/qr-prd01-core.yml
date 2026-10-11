@@ -58,7 +58,7 @@ concurrency:
   # One group per caller workflow + event + ref (a qr-required workflow_call
   # never cancels the direct PR run); main runs get a unique group (#844) and
   # are never cancelled. Stale PR / lane-branch runs are superseded.
-  group: qr-prd01-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  group: qr-prd01-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
