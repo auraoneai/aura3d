@@ -930,7 +930,3 @@ run id + SHA + asset hashes recorded in `report.json`. Artifacts are committed u
 | Time to first frame | 1.3-13× three (06: 2,892 ms vs 218 ms) | ≤ 1.5× three |
 | Games overall (research/21) | **1.5-4, mean/median 3.0**, none at 5; fps mostly 5-15 on macos-14, Deep Recovery 0.5-1 | each ≥ 7.0, fleet ≥ 7.2, p50 ≥ 58 fps |
 | All-flags build today | **0/18** bench, **0/9** games, strict 0/18 | 18/18 and 9/9 drawing (Track 0), then the targets above |
-
-
-
-

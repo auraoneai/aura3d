@@ -1,0 +1,3513 @@
+{
+  "aura-clash-showcase": {
+    "A0": {
+      "overall": null,
+      "frames": [],
+      "summary": "no frames captured",
+      "stats": {}
+    },
+    "A": {
+      "overall": 0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "Solid white frame; no 3D scene, HUD, or title UI rendered."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": false,
+          "issue": "Solid white frame; scene did not draw."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": false,
+          "issue": "Solid white frame; scene did not draw."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": false,
+          "issue": "Solid white frame; scene did not draw."
+        },
+        {
+          "name": "desktop-1280x720__05-special.png",
+          "drew": false,
+          "issue": "Solid white frame; scene did not draw."
+        }
+      ],
+      "summary": "All five frames are blank white, so this was a failed capture (likely a page load, WebGL context, or capture-timing failure) and nothing can be judged visually; recapture before scoring.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 255.0,
+          "stddev": 0.0,
+          "blank": true,
+          "hash": "4182fef598"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 255.0,
+          "stddev": 0.0,
+          "blank": true,
+          "hash": "4182fef598"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 255.0,
+          "stddev": 0.0,
+          "blank": true,
+          "hash": "4182fef598"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 255.0,
+          "stddev": 0.0,
+          "blank": true,
+          "hash": "4182fef598"
+        },
+        "desktop-1280x720__05-special.png": {
+          "mean": 255.0,
+          "stddev": 0.0,
+          "blank": true,
+          "hash": "4182fef598"
+        }
+      }
+    },
+    "B0": {
+      "overall": null,
+      "frames": [],
+      "summary": "no frames captured",
+      "stats": {}
+    },
+    "C": {
+      "overall": 0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "Error page: Aura3D renderer MaterialBindingError (missing shader attributes a_uv, a_tangent) on solid red background; no 3D scene drawn."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": false,
+          "issue": "Same renderer error page as frame 01; no 3D scene drawn."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": false,
+          "issue": "Same renderer error page as frame 01; no 3D scene drawn."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": false,
+          "issue": "Same renderer error page as frame 01; no 3D scene drawn."
+        },
+        {
+          "name": "desktop-1280x720__05-special.png",
+          "drew": false,
+          "issue": "Same renderer error page as frame 01; no 3D scene drawn."
+        }
+      ],
+      "summary": "All five frames show the same Aura3D MaterialBindingError page (geometry missing a_uv/a_tangent attributes required by the material), so nothing rendered and there is no visual quality to score.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 66.0,
+          "stddev": 13.6,
+          "blank": false,
+          "hash": "82ca6cb829"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 66.0,
+          "stddev": 13.6,
+          "blank": false,
+          "hash": "82ca6cb829"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 66.0,
+          "stddev": 13.6,
+          "blank": false,
+          "hash": "82ca6cb829"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 66.0,
+          "stddev": 13.6,
+          "blank": false,
+          "hash": "82ca6cb829"
+        },
+        "desktop-1280x720__05-special.png": {
+          "mean": 66.0,
+          "stddev": 13.6,
+          "blank": false,
+          "hash": "82ca6cb829"
+        }
+      }
+    },
+    "B": {
+      "overall": 3.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "No title screen or UI. The scene shows a textured brick building and a metallic knight in bind/T-pose, floating with no contact shadow over a glossy blue plane, against a black void with no sky or IBL backdrop."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Pixel-identical to frame 01. No progression, camera move or HUD; the character is still in T-pose."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Pixel-identical to frame 01. The scene appears frozen or the capture is stuck; there is no gameplay state change."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Pixel-identical to frame 01. No action, VFX, opponent or animation in an 'action' frame; the character is still unanimated in T-pose."
+        },
+        {
+          "name": "desktop-1280x720__05-special.png",
+          "drew": true,
+          "issue": "Pixel-identical to frame 01. No special-move VFX, bloom or aura effects; the cut-off pink and cyan emissive slabs at the frame edges are the only accents."
+        }
+      ],
+      "summary": "The 3D scene draws with decent PBR assets (window-detailed brick building, metallic knight, reflective floor), but all five frames are identical, with an unanimated T-posed character floating shadowless in a black, sky-less void, awkward composition and no VFX or UI, so it reads as a frozen asset-test greybox rather than a functioning game.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 82.6,
+          "stddev": 51.1,
+          "blank": false,
+          "hash": "2922f02991"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 82.6,
+          "stddev": 51.1,
+          "blank": false,
+          "hash": "2922f02991"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 82.6,
+          "stddev": 51.1,
+          "blank": false,
+          "hash": "2922f02991"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 82.6,
+          "stddev": 51.1,
+          "blank": false,
+          "hash": "2922f02991"
+        },
+        "desktop-1280x720__05-special.png": {
+          "mean": 82.6,
+          "stddev": 51.1,
+          "blank": false,
+          "hash": "2922f02991"
+        }
+      }
+    },
+    "note": "B (route+9 lanes) now renders a rooftop scene with a T-posed character where A was blank white, but all five shots are identical; B0 still captures nothing; C crashes (MaterialBindingError: missing a_uv/a_tangent)."
+  },
+  "showcase-aurora-lander": {
+    "A0": {
+      "overall": null,
+      "frames": [],
+      "summary": "no frames captured",
+      "stats": {}
+    },
+    "A": {
+      "overall": 2.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "Scene drew, but the camera looks straight down at flat dark-teal terrain with an unlit emissive ring, a cylinder beam and two low-poly beacon props. No sky or horizon is visible. The right ~20% of the frame is a solid dark panel, which suggests the canvas is not filling the viewport. No title UI is visible."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Pixel-identical to frame 01. There is no camera, lander or state change, so the game looks stalled or not receiving input. The beam occludes the 'SITE 1' label, and the same dark panel covers the right side."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Identical to frames 01-02, with no progression, no lander visible and no VFX. The right-side dead area is still present."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Identical to the previous frames. No action, particles or lander are visible. Shading is flat with only a faint blob shadow, there is no meaningful post or atmosphere, and the right-side dead area remains."
+        }
+      ],
+      "summary": "All four frames are the same static greybox-like top-down view of primitive geometry on murky terrain, with flat materials, no sky, minimal lighting, a canvas that does not fill the viewport, and no visible gameplay progression.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 46.4,
+          "stddev": 41.9,
+          "blank": false,
+          "hash": "6332b563fa"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 46.4,
+          "stddev": 41.9,
+          "blank": false,
+          "hash": "6332b563fa"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 46.4,
+          "stddev": 41.9,
+          "blank": false,
+          "hash": "6332b563fa"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 46.4,
+          "stddev": 41.9,
+          "blank": false,
+          "hash": "6332b563fa"
+        }
+      }
+    },
+    "B0": {
+      "overall": null,
+      "frames": [],
+      "summary": "no frames captured",
+      "stats": {}
+    },
+    "C": {
+      "overall": 0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "Error page: 'Aura3D renderer error: MaterialBindingError: Material binding validation failed: Missing shader attribute: a_uv' (PB.bindGenerated via He.drawItem). Red error overlay on the left ~80% and a dark navy empty strip on the right. No 3D scene rendered."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": false,
+          "issue": "Identical error page (missing a_uv shader attribute); no scene drawn."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": false,
+          "issue": "Identical error page (missing a_uv shader attribute); no scene drawn."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": false,
+          "issue": "Identical error page (missing a_uv shader attribute); no scene drawn."
+        }
+      ],
+      "summary": "All four frames show the same Aura3D MaterialBindingError (missing shader attribute a_uv, likely a mesh without UVs bound to a textured/generated material), so no 3D scene ever rendered and there is nothing to judge visually.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 56.3,
+          "stddev": 27.5,
+          "blank": false,
+          "hash": "a2a5425eda"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 56.3,
+          "stddev": 27.5,
+          "blank": false,
+          "hash": "a2a5425eda"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 56.3,
+          "stddev": 27.5,
+          "blank": false,
+          "hash": "a2a5425eda"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 56.3,
+          "stddev": 27.5,
+          "blank": false,
+          "hash": "a2a5425eda"
+        }
+      }
+    },
+    "B": {
+      "overall": 2.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "Scene drew but no title/UI is visible. Smooth-shaded untextured terrain, flat unlit teal rings and plain cylinders, no visible shadows or sky. The right ~20% of the frame is a flat dark navy strip, likely a canvas sizing or layout gap."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Pixel-identical to frame 01, so the camera and scene did not progress (frozen render loop or stalled capture). The same dark strip appears on the right."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Identical to frames 01 and 02. There is no gameplay change, no lander and no HUD visible."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Identical to all prior frames. No action, VFX or player craft is visible, which points to a static or frozen scene."
+        }
+      ],
+      "summary": "The 3D scene draws, but every frame is the same greybox-level view: untextured terrain, flat emissive rings, primitive pillars, no shadows, sky or post-processing, and an unfilled dark strip on the right, so it reads as a frozen prototype rather than a modern three.js showcase.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 40.0,
+          "stddev": 28.4,
+          "blank": false,
+          "hash": "4cccb6c919"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 40.0,
+          "stddev": 28.4,
+          "blank": false,
+          "hash": "4cccb6c919"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 40.0,
+          "stddev": 28.4,
+          "blank": false,
+          "hash": "4cccb6c919"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 40.0,
+          "stddev": 28.4,
+          "blank": false,
+          "hash": "4cccb6c919"
+        }
+      }
+    },
+    "note": "B's camera moved closer and oblique, with dark terrain occluding the ring and losing A's landers; C crashes (MaterialBindingError: missing a_uv); flags-off still captures nothing; shots remain static in every column. Net worse."
+  },
+  "showcase-bank-shot": {
+    "A0": {
+      "overall": null,
+      "frames": [],
+      "summary": "no frames captured",
+      "stats": {}
+    },
+    "A": {
+      "overall": 3.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "Scene draws but there is no title UI. The canvas leaves a white band across the bottom ~13% of the frame. The felt is overexposed pale blue, the floor hotspot is blown out to white, and the environment is a black void."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Break is visible, but the balls are washed-out pastel spheres with weak specular and almost no contact shadows. The rails use flat orange materials with emissive stripes and read as plastic, not wood. The white bottom band persists."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "An aim line is visible, but there is no cue stick. Ball materials are flat, there is no AO or reflection on the felt, and the floor is unlit beyond the cone."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Pixel-identical to frame 03, so no action or motion was captured. There is no VFX or motion feedback."
+        },
+        {
+          "name": "desktop-1280x720__05-charge.png",
+          "drew": true,
+          "issue": "Identical to frames 03 and 04. No charge meter, cue pull-back or HUD is visible. The white bottom band means the canvas is mis-sized."
+        }
+      ],
+      "summary": "A readable but prototype-grade pool table under a single blown-out spotlight in a black void, with pastel unshaded balls, plastic-looking rails, no cue or HUD, three identical frames and a canvas sizing bug that leaves a white band at the bottom.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 105.5,
+          "stddev": 103.9,
+          "blank": false,
+          "hash": "8451539986"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 105.5,
+          "stddev": 103.8,
+          "blank": false,
+          "hash": "200c5561da"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 105.5,
+          "stddev": 103.8,
+          "blank": false,
+          "hash": "e3111079d1"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 105.5,
+          "stddev": 103.8,
+          "blank": false,
+          "hash": "e3111079d1"
+        },
+        "desktop-1280x720__05-charge.png": {
+          "mean": 105.5,
+          "stddev": 103.8,
+          "blank": false,
+          "hash": "e3111079d1"
+        }
+      }
+    },
+    "B0": {
+      "overall": null,
+      "frames": [],
+      "summary": "no frames captured",
+      "stats": {}
+    },
+    "C": {
+      "overall": 3.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "Scene draws: box-primitive pool table on a floor plane in a black void. No title UI or overlay is visible; the top-right HUD pill is empty."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Pixel-identical to the title frame. No balls, cue or aim line are present, so the opening state does not appear to have rendered or progressed."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Identical to the previous frames. No gameplay change, no balls and no motion are visible; the game state appears stalled."
+        },
+        {
+          "name": "desktop-1280x720__05-charge.png",
+          "drew": true,
+          "issue": "Identical again. There is no cue, power meter or charge VFX; the charge state is not reflected visually."
+        }
+      ],
+      "summary": "A greybox-grade pool table built from untextured box primitives: flat unlit-looking baize, plastic orange rails, a single warm spotlight that blows out the floor, no contact shadows and a pure-black void, with all four frames identical and no balls or cue rendered, which points to a stalled or empty game state.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 77.3,
+          "stddev": 90.6,
+          "blank": false,
+          "hash": "63b58c334c"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 77.3,
+          "stddev": 90.6,
+          "blank": false,
+          "hash": "63b58c334c"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 77.3,
+          "stddev": 90.6,
+          "blank": false,
+          "hash": "63b58c334c"
+        },
+        "desktop-1280x720__05-charge.png": {
+          "mean": 77.3,
+          "stddev": 90.6,
+          "blank": false,
+          "hash": "63b58c334c"
+        }
+      }
+    },
+    "B": {
+      "overall": 3.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "Scene draws (table under warm spotlight) but no title/UI is visible beyond an empty HUD pill top-right."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Pixel-identical to the title frame: no balls, cue, or aim guide, so gameplay state appears not to have started or rendered."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Identical to previous frames, with no balls or motion; the capture shows no progression."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Identical static frame with no action, balls, cue, or VFX visible."
+        },
+        {
+          "name": "desktop-1280x720__05-charge.png",
+          "drew": true,
+          "issue": "Identical static frame with no cue, power meter, or charge feedback; the HUD pill stays empty."
+        }
+      ],
+      "summary": "A greybox-level pool table of flat box rails, an untextured pale-blue felt, and a blown-out warm floor spotlight in a black void renders, but all five frames are identical with no balls, cue, or gameplay, landing at prototype-tech-demo quality.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 83.3,
+          "stddev": 93.8,
+          "blank": false,
+          "hash": "78390afc14"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 83.3,
+          "stddev": 93.8,
+          "blank": false,
+          "hash": "78390afc14"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 83.3,
+          "stddev": 93.8,
+          "blank": false,
+          "hash": "78390afc14"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 83.3,
+          "stddev": 93.8,
+          "blank": false,
+          "hash": "78390afc14"
+        },
+        "desktop-1280x720__05-charge.png": {
+          "mean": 83.3,
+          "stddev": 93.8,
+          "blank": false,
+          "hash": "78390afc14"
+        }
+      }
+    },
+    "note": "Worse: flags-off still captures nothing; after-builds drop A's white letterbox and frame tighter, but every ball is gone, all shots look identical with no play, and C lost 04-action."
+  },
+  "showcase-blockfall-reactor": {
+    "A0": {
+      "overall": null,
+      "frames": [],
+      "summary": "no frames captured",
+      "stats": {}
+    },
+    "A": {
+      "overall": 4.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "3D scene renders, but there is no distinct title treatment and it is the same locked camera as gameplay. The top header panel is cropped off-frame. A photo-studio HDRI backdrop (softboxes, light stands) shows through behind the neon stage and clashes with the arcade setting."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Drew correctly. The board is well lit and the bevelled glossy blocks read well, but surrounding props are flat-shaded boxes. Contact shadows are minimal and the lower third is dead empty dark floor with flat green decals."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Drew correctly. Gameplay state progresses, but the camera, lighting and environment are completely static. There is no VFX, and the side readouts are tiny and hard to read."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Drew correctly, but the action frame is nearly identical to the mid frame. There are no line-clear effects, particles, camera response or lighting reaction, and bloom is limited to a few point glows."
+        }
+      ],
+      "summary": "All frames render a coherent neon arcade reactor with nicely glossy block materials, but primitive-box props, flat lighting, weak shadows, a mismatched photo-studio HDRI backdrop, empty floor composition and zero VFX keep it at a dated-indie/prototype level.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 38.4,
+          "stddev": 45.8,
+          "blank": false,
+          "hash": "38a14b09f3"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 38.3,
+          "stddev": 45.7,
+          "blank": false,
+          "hash": "4536da2bb9"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 39.0,
+          "stddev": 46.1,
+          "blank": false,
+          "hash": "a3cf2bd824"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 39.0,
+          "stddev": 46.1,
+          "blank": false,
+          "hash": "4ced53ac78"
+        }
+      }
+    },
+    "B0": {
+      "overall": null,
+      "frames": [],
+      "summary": "no frames captured",
+      "stats": {}
+    },
+    "C": {
+      "overall": 0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "Solid black frame; no 3D scene, HUD, or title UI rendered."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": false,
+          "issue": "Error page: Aura3D MaterialBindingError, missing shader attributes a_uv and a_tangent, thrown in bindGenerated during drawItem; no scene drawn."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": false,
+          "issue": "Same MaterialBindingError page (missing a_uv/a_tangent); renderer halted, no scene."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": false,
+          "issue": "Same MaterialBindingError page (missing a_uv/a_tangent); renderer halted, no scene."
+        }
+      ],
+      "summary": "Nothing rendered: the title frame is black and every later frame is an Aura3D MaterialBindingError page, because a material requires a_uv and a_tangent attributes that the geometry does not supply, so no visual quality can be judged.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 0.0,
+          "stddev": 0.0,
+          "blank": true,
+          "hash": "8695d74c75"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 66.1,
+          "stddev": 13.6,
+          "blank": false,
+          "hash": "1df5bc1880"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 66.1,
+          "stddev": 13.6,
+          "blank": false,
+          "hash": "1df5bc1880"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 66.1,
+          "stddev": 13.6,
+          "blank": false,
+          "hash": "1df5bc1880"
+        }
+      }
+    },
+    "B": {
+      "overall": 3.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "Scene renders: empty well grid, arcade cabinet, dark stage. No title UI or logo visible; the studio HDRI backdrop (white room, softbox) shows through behind the set and breaks the enclosure."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Pixel-identical to frame 01. No pieces have spawned in the grid, so gameplay has not visibly started; the capture or game may be stalled."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Identical to frames 01-02. The grid is still empty and nothing animates, lights and camera included."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Identical again. There is no action, no blocks and no VFX, so the 'action' frame shows nothing distinct."
+        }
+      ],
+      "summary": "The 3D scene draws a moody neon arcade stage with one decent textured cabinet, but it is mostly flat near-black unshaded boxes with emissive strips, no meaningful shadows or atmosphere, an incongruous studio HDRI leaking through, and an empty, unchanging well across all four frames, which reads as a static greybox-plus-neon prototype.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 34.6,
+          "stddev": 45.0,
+          "blank": false,
+          "hash": "a23edb82a1"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 34.6,
+          "stddev": 45.0,
+          "blank": false,
+          "hash": "a23edb82a1"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 34.6,
+          "stddev": 45.0,
+          "blank": false,
+          "hash": "a23edb82a1"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 34.6,
+          "stddev": 45.0,
+          "blank": false,
+          "hash": "a23edb82a1"
+        }
+      }
+    },
+    "note": "Worse: A0/B0 both capture nothing; A shows pieces stacking, B renders the arcade but an empty board in every shot; C goes black, then MaterialBindingError (missing a_uv/a_tangent)."
+  },
+  "showcase-courier-rush": {
+    "A0": {
+      "overall": 4.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Scene renders: a neon top-down city street with some real props (truck, barriers, pallet ramp, parcel box) mixed with flat emissive box primitives. The bloom is overdriven, so the player vehicle is a blown-out white blob. There are almost no readable shadows, no sky or IBL presence, flat dark materials and little atmospheric depth."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Scene renders, but the camera sits inside or behind tall untextured box buildings that occlude the play space. The player car again clips to white under the bloom, the emissive bars read as floating primitives, and the composition and readability are poor. There is no shadowing or ambient occlusion to ground objects."
+        }
+      ],
+      "summary": "A functional neon-cyberpunk courier game with a clean HUD and a few decent props, held back by greybox-style emissive box geometry, blown-out bloom, missing shadows and atmosphere, and an occluding camera, which places it below dated-indie quality.",
+      "stats": {
+        "desktop-1280x720__02-opening.png": {
+          "mean": 53.3,
+          "stddev": 67.3,
+          "blank": false,
+          "hash": "1e179b8e63"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 48.1,
+          "stddev": 59.3,
+          "blank": false,
+          "hash": "8e20ee4df3"
+        }
+      }
+    },
+    "A": {
+      "overall": 3.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "3D scene renders, but there is no title UI or overlay. The frame is identical to the gameplay frames, which suggests the title state is not distinct or the capture shows the raw scene. Flat-lit box primitives with no visible cast shadows."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Pixel-identical to frame 01: the camera and objects have not moved, the player vehicle is not visible and there is no HUD. Either the game did not start or the simulation is stalled."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Still identical to frames 01-02, so there is no progression mid-run. The scene is a greybox-style corridor of untextured boxes, with emissive strips that have no bloom and a cluttered, unreadable background stack of floating slabs."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "The only change is a car clipping in at the right edge. There is no action, VFX, motion blur or HUD. The textured barriers and car models clash stylistically with the flat untextured environment, lighting is ambient-flat, and there is no meaningful shadowing or IBL."
+        }
+      ],
+      "summary": "The scene draws in every frame, but the capture looks frozen across all four shots, and the visuals sit at prototype greybox level: flat-shaded box buildings, mismatched textured props, no shadows or post effects, and a noisy background.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 81.3,
+          "stddev": 41.7,
+          "blank": false,
+          "hash": "15c644401b"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 81.3,
+          "stddev": 41.7,
+          "blank": false,
+          "hash": "15c644401b"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 81.3,
+          "stddev": 41.7,
+          "blank": false,
+          "hash": "15c644401b"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 81.2,
+          "stddev": 41.7,
+          "blank": false,
+          "hash": "2a8ee4eea7"
+        }
+      }
+    },
+    "B0": {
+      "overall": null,
+      "frames": [],
+      "summary": "no frames captured",
+      "stats": {}
+    },
+    "C": {
+      "overall": 0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "Error page: Aura3D renderer MaterialBindingError (missing shader attributes a_uv, a_tangent) on a red vignette background; no 3D scene rendered."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": false,
+          "issue": "Identical renderer error overlay; MaterialBindingError in bindGenerated/drawItem; no scene drawn."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": false,
+          "issue": "Identical renderer error overlay; no scene drawn."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": false,
+          "issue": "Identical renderer error overlay; no scene drawn."
+        }
+      ],
+      "summary": "All four frames show the same Aura3D MaterialBindingError page, where geometry is missing the a_uv and a_tangent attributes the generated material expects, so nothing in the 3D scene ever rendered and there is no visual quality to assess.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 56.0,
+          "stddev": 17.2,
+          "blank": false,
+          "hash": "a6c3bae767"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 56.0,
+          "stddev": 17.2,
+          "blank": false,
+          "hash": "a6c3bae767"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 56.0,
+          "stddev": 17.2,
+          "blank": false,
+          "hash": "a6c3bae767"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 56.0,
+          "stddev": 17.2,
+          "blank": false,
+          "hash": "a6c3bae767"
+        }
+      }
+    },
+    "B": {
+      "overall": 3.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "3D scene renders but no title UI or overlay is visible. The frame is pixel-identical to the opening frame, so the title state either doesn't exist or wasn't captured distinctly."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Identical to the title frame, so the game state did not visibly advance. The environment is untextured flat-coloured box primitives with emissive strips. There are no meaningful cast or contact shadows (the van and barriers float), and the floating beams and pillars are cluttered with no clear purpose. Only the scanned van, the red car and the barriers are real assets. The van's material has a baked, noisy reflection texture rather than proper PBR. A light haze gives some depth, but there is no sky or IBL, and the composition is busy with poor readability of the play path."
+        }
+      ],
+      "summary": "A few decent scanned vehicle and barrier assets sit in a greybox city of flat pastel boxes with no shadows, little material work and minimal post, landing at prototype-plus level, and the two captured frames are identical.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 80.1,
+          "stddev": 39.8,
+          "blank": false,
+          "hash": "9921794c1b"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 80.1,
+          "stddev": 39.8,
+          "blank": false,
+          "hash": "9921794c1b"
+        }
+      }
+    },
+    "note": "Worse overall: B0 captures nothing, B adds a textured van but loses frames 03\u201304, and C crashes everywhere with MaterialBindingError (missing a_uv/a_tangent); before had gameplay HUD (A0) and four route frames (A)."
+  },
+  "showcase-deep-recovery": {
+    "A0": {
+      "overall": null,
+      "frames": [],
+      "summary": "no frames captured",
+      "stats": {}
+    },
+    "A": {
+      "overall": 0.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "HUD only (status panels, reticle circle, control hints) over a uniform near-black clear colour; no 3D geometry, sky, water volume or lighting visible."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": false,
+          "issue": "Pixel-identical to frame 01: HUD over a solid dark clear colour, no scene rendered; depth 0.0 m and speed 0.0 m/s show no simulation progress."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": false,
+          "issue": "Identical to frames 01-02; 3D scene did not draw, HUD state unchanged (no sonar contacts, 0 CR, tether 0/1)."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": false,
+          "issue": "Identical HUD-only frame; no action, VFX, sonar pulse or geometry visible, so the canvas is likely failing to render or is occluded."
+        },
+        {
+          "name": "desktop-1280x720__05-grapple.png",
+          "drew": false,
+          "issue": "Identical HUD-only frame; no grapple, tether, cargo or seabed rendered, and the game state is frozen at its initial values."
+        }
+      ],
+      "summary": "All five frames are the same HUD overlay on a solid near-black clear colour with frozen state, so the 3D scene never drew and only the clean HUD styling can be credited.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 16.1,
+          "stddev": 13.4,
+          "blank": false,
+          "hash": "d86f56189b"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 16.1,
+          "stddev": 13.4,
+          "blank": false,
+          "hash": "d86f56189b"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 16.1,
+          "stddev": 13.4,
+          "blank": false,
+          "hash": "d86f56189b"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 16.1,
+          "stddev": 13.4,
+          "blank": false,
+          "hash": "d86f56189b"
+        },
+        "desktop-1280x720__05-grapple.png": {
+          "mean": 16.1,
+          "stddev": 13.4,
+          "blank": false,
+          "hash": "d86f56189b"
+        }
+      }
+    },
+    "B0": {
+      "overall": null,
+      "frames": [],
+      "summary": "no frames captured",
+      "stats": {}
+    },
+    "C": {
+      "overall": 1.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "Only HUD panels, a sonar reticle and control hints sit over a near-black solid clear colour. No 3D geometry, seabed, sub, lighting, fog or particles are visible, so the 3D scene appears not to have drawn (HUD-only counts as no-draw)."
+        }
+      ],
+      "summary": "The frame is HUD-only over a solid dark clear colour with no visible 3D scene, so it scores as a no-draw despite a clean, readable UI.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 16.1,
+          "stddev": 13.4,
+          "blank": false,
+          "hash": "d86f56189b"
+        }
+      }
+    },
+    "B": {
+      "overall": 0.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "HUD only over a uniform near-black clear colour; no 3D geometry, lighting or environment visible. The centre reticle is a 2D overlay."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": false,
+          "issue": "Pixel-identical to frame 01: HUD-only on a dark clear colour, depth 0.0 m, speed 0.0 m/s, so no scene drew and the game state did not advance."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": false,
+          "issue": "Identical to previous frames: no 3D scene rendered, only HUD panels and reticle on a black background."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": false,
+          "issue": "Identical HUD-only frame with no visible action, VFX, geometry or sonar returns; the scene did not draw or the simulation is frozen."
+        },
+        {
+          "name": "desktop-1280x720__05-grapple.png",
+          "drew": false,
+          "issue": "Identical HUD-only frame with no grapple, tether, cargo or any 3D content rendered; tether is still 0/1."
+        }
+      ],
+      "summary": "All five frames are the same HUD overlay on a solid near-black clear colour with no 3D scene drawn and a frozen game state, so this capture is a no-draw failure despite a clean, legible HUD.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 16.1,
+          "stddev": 13.4,
+          "blank": false,
+          "hash": "d86f56189b"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 16.1,
+          "stddev": 13.4,
+          "blank": false,
+          "hash": "d86f56189b"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 16.1,
+          "stddev": 13.4,
+          "blank": false,
+          "hash": "d86f56189b"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 16.1,
+          "stddev": 13.4,
+          "blank": false,
+          "hash": "d86f56189b"
+        },
+        "desktop-1280x720__05-grapple.png": {
+          "mean": 16.1,
+          "stddev": 13.4,
+          "blank": false,
+          "hash": "d86f56189b"
+        }
+      }
+    },
+    "note": "Nothing visibly improved: B matches A exactly (same static 0.0 m READY HUD, no contacts, every shot); A0/B0 capture nothing; C got worse, capturing only the title frame."
+  },
+  "showcase-gallery-shift": {
+    "A0": {
+      "overall": null,
+      "frames": [],
+      "summary": "no frames captured",
+      "stats": {}
+    },
+    "A": {
+      "overall": 3.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "Scene draws, but it is a flat-lit greybox of untextured boxes. The white blocky player primitive reads as placeholder. The viewport is letterboxed into the upper-left with a large empty black band below and an empty side panel on the right, which wastes about 40% of the frame. There are no real shadows, AO or sky/IBL, and only a weak bloom smear."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Same greybox composition. The low-poly faceted grey dome/pink box prop and the noisy aliased wireframe clutter on the left look unfinished. A vertical translucent streak artifact crosses the centre. The empty right panel and bottom void remain."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "The player is no longer visible. A large untextured brown slab (likely a near-plane or camera-clipping object) intrudes into the bottom-right and overdraws the black HUD area. A pink plane is clipping at the top and right edges. Readability of the gameplay subject is poor."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Near-identical to the mid frame, with no visible action, VFX or player. A brown/cream slab renders outside the 3D viewport into the black region, which suggests sorting or viewport bugs. A pink planar artifact appears at the top."
+        }
+      ],
+      "summary": "The 3D scene draws in every frame, but it is a flatly lit, untextured sci-fi greybox in a cramped letterboxed viewport with clipping slabs, streak artifacts and no meaningful shadows, atmosphere or VFX, which puts it at prototype level.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 71.8,
+          "stddev": 56.1,
+          "blank": false,
+          "hash": "3fbfab4ebf"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 65.4,
+          "stddev": 53.6,
+          "blank": false,
+          "hash": "dd68262a03"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 67.3,
+          "stddev": 54.1,
+          "blank": false,
+          "hash": "5be67a969d"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 69.1,
+          "stddev": 55.4,
+          "blank": false,
+          "hash": "bde1e6c59e"
+        }
+      }
+    },
+    "B0": {
+      "overall": null,
+      "frames": [],
+      "summary": "no frames captured",
+      "stats": {}
+    },
+    "C": {
+      "overall": 0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "Error page: Aura3D MaterialBindingError 'Missing shader attribute: a_uv' in ON.bindGenerated; no 3D scene rendered, empty dark side panel only"
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": false,
+          "issue": "Identical renderer error overlay (missing a_uv attribute); no scene drawn"
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": false,
+          "issue": "Identical renderer error overlay (missing a_uv attribute); no scene drawn"
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": false,
+          "issue": "Identical renderer error overlay (missing a_uv attribute); no scene drawn"
+        }
+      ],
+      "summary": "All four frames show the same Aura3D MaterialBindingError (a mesh lacks the a_uv attribute its generated material requires), so the scene never rendered and there is nothing visual to grade.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 55.4,
+          "stddev": 28.0,
+          "blank": false,
+          "hash": "a3f25cdda5"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 55.4,
+          "stddev": 28.0,
+          "blank": false,
+          "hash": "a3f25cdda5"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 55.4,
+          "stddev": 28.0,
+          "blank": false,
+          "hash": "a3f25cdda5"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 55.4,
+          "stddev": 28.0,
+          "blank": false,
+          "hash": "a3f25cdda5"
+        }
+      }
+    },
+    "B": {
+      "overall": 2.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "Scene draws, but it is a greybox of untextured boxes with flat lighting and no visible shadows. A large grey foreground slab blocks about 40% of the view, the centre white block is blown out, the bottom-left is a black void, and the right side panel is empty. There is no title UI."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Pixel-identical to frame 01. There is no camera or state change, which suggests the game is frozen or the capture is not progressing."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Pixel-identical to frame 01. No gameplay progression is visible, and the camera is still occluded by the foreground slab."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Pixel-identical to frame 01. There is no action, VFX or player activity, only the same static occluded greybox view."
+        }
+      ],
+      "summary": "The 3D scene renders, but it is a static, prototype-grade greybox: untextured boxes, flat unshadowed lighting, a blown-out centre object, a foreground slab blocking the camera, an empty side panel, and four identical frames showing no progression.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 73.7,
+          "stddev": 57.6,
+          "blank": false,
+          "hash": "2fcf903f4b"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 73.7,
+          "stddev": 57.6,
+          "blank": false,
+          "hash": "2fcf903f4b"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 73.7,
+          "stddev": 57.6,
+          "blank": false,
+          "hash": "2fcf903f4b"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 73.7,
+          "stddev": 57.6,
+          "blank": false,
+          "hash": "2fcf903f4b"
+        }
+      }
+    },
+    "note": "With flags off, neither version captured frames. B adds cyan floor panels, red bars and a foreground walkway but looks frozen across all shots. C crashes with MaterialBindingError (missing a_uv), so it got worse."
+  },
+  "showcase-gravity-post": {
+    "A0": {
+      "overall": 1.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "3D scene did not draw: the viewport is only a dark navy radial-gradient clear colour, with no planets, relay stations, ship, trajectory prediction line or any geometry visible. Only the HUD panels render (mission card, fuel/speed stats, control buttons). The HUD text ('Drag anywhere to aim the launch', 'cyan prediction') implies scene content that is missing, so this is a no-draw or failed-init frame."
+        }
+      ],
+      "summary": "HUD-only frame over a gradient clear colour with no 3D content rendered, so it counts as a no-draw capture and scores below placeholder-primitive level.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 18.1,
+          "stddev": 13.8,
+          "blank": false,
+          "hash": "d36c5542a0"
+        }
+      }
+    },
+    "A": {
+      "overall": 0.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "No 3D scene rendered: the frame shows only a dark navy radial-gradient background inside a thin rounded-border panel, with no geometry, title text, HUD, or UI. It looks like a CSS backdrop or empty canvas, which points to a WebGL init failure, a scene that never loaded, or a capture taken before the first draw."
+        }
+      ],
+      "summary": "The title frame is effectively blank, just a dark radial gradient with a bordered frame and no 3D content, so it counts as a no-draw and nothing can be judged.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 15.4,
+          "stddev": 6.8,
+          "blank": false,
+          "hash": "6f8a7c606e"
+        }
+      }
+    },
+    "B0": {
+      "overall": 1.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "No 3D scene drew. The viewport shows only a dark navy radial-gradient background inside a bordered frame. No planets, relays, trajectory prediction, ship or any geometry is visible, even though the HUD references Sol Relay, Aquaria Post and a cyan prediction line. The HUD (mission card, fuel/speed/score panel, buttons) renders cleanly, but HUD-only counts as no-draw. Likely a WebGL canvas that failed to initialise, is sized to zero, or rendered transparent behind a CSS gradient."
+        }
+      ],
+      "summary": "The frame is effectively a solid gradient clear colour with only a polished HTML HUD overlay, and none of the scene content the HUD describes is drawn.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 18.1,
+          "stddev": 13.8,
+          "blank": false,
+          "hash": "d36c5542a0"
+        }
+      }
+    },
+    "C": {
+      "overall": 0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "Solid black canvas inside the rounded frame; no 3D scene, title, or HUD rendered."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": false,
+          "issue": "Error page: 'Aura3D renderer error' MaterialBindingError, missing shader attributes a_uv and a_tangent (CB.bindGenerated -> He.drawItem). No scene drawn."
+        },
+        {
+          "name": "desktop-1280x720__02a-aim.png",
+          "drew": false,
+          "issue": "Identical renderer error overlay (missing a_uv/a_tangent); no scene drawn."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": false,
+          "issue": "Identical renderer error overlay (missing a_uv/a_tangent); no scene drawn."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": false,
+          "issue": "Identical renderer error overlay (missing a_uv/a_tangent); no scene drawn."
+        },
+        {
+          "name": "desktop-1280x720__05-late-coast.png",
+          "drew": false,
+          "issue": "Identical renderer error overlay (missing a_uv/a_tangent); no scene drawn."
+        }
+      ],
+      "summary": "Nothing rendered in any frame: the title frame is solid black and every later frame is the same Aura3D MaterialBindingError (geometry missing a_uv and a_tangent attributes that the material's shader requires), so there is no visual quality to judge.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 0.7,
+          "stddev": 2.6,
+          "blank": true,
+          "hash": "466260398d"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 62.7,
+          "stddev": 21.4,
+          "blank": false,
+          "hash": "24093fb192"
+        },
+        "desktop-1280x720__02a-aim.png": {
+          "mean": 62.7,
+          "stddev": 21.4,
+          "blank": false,
+          "hash": "24093fb192"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 62.7,
+          "stddev": 21.4,
+          "blank": false,
+          "hash": "24093fb192"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 62.7,
+          "stddev": 21.4,
+          "blank": false,
+          "hash": "24093fb192"
+        },
+        "desktop-1280x720__05-late-coast.png": {
+          "mean": 62.7,
+          "stddev": 21.4,
+          "blank": false,
+          "hash": "24093fb192"
+        }
+      }
+    },
+    "B": {
+      "overall": 0.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "No 3D scene rendered. The frame shows only a dark navy radial-gradient background inside a thin rounded-border panel, with no geometry, title text, HUD or UI. It looks like a CSS backdrop or empty canvas, which points to a WebGL init or scene-load failure or a capture taken before the first draw."
+        }
+      ],
+      "summary": "The title frame is effectively blank, showing only a dark radial-gradient panel with no 3D content or title UI, so the scene did not draw and there is nothing to assess visually.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 15.4,
+          "stddev": 6.8,
+          "blank": false,
+          "hash": "6f8a7c606e"
+        }
+      }
+    },
+    "note": "Nothing improved: B0/B match A0/A (title only, later shots uncaptured); C is worse, with a black title and MaterialBindingError overlays (missing shader attributes a_uv, a_tangent) on every later shot."
+  },
+  "showcase-mech-hangar": {
+    "A0": {
+      "overall": 1.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "The 3D viewport (left ~75% of the frame) is a uniform near-black clear colour with no mech, hangar geometry, lighting or sky visible. Only the HTML side panel renders (part selector, stat bars, asset passport, CTA button). This is HUD-only, a no-draw. The panel itself also overflows: the LEGS card is clipped behind the ENTER button."
+        }
+      ],
+      "summary": "The 3D scene failed to render, leaving an empty dark clear-colour viewport beside a competent but overflowing UI panel, so there is no visual quality to credit.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 20.1,
+          "stddev": 21.8,
+          "blank": false,
+          "hash": "fe9b5a3f8a"
+        }
+      }
+    },
+    "A": {
+      "overall": 2.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "Solid dark navy clear colour with only a faint vertical divider at ~x=817. No 3D scene, title text or UI rendered."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Only frame showing a mech. An untextured grey hi-poly model is interpenetrating a blocky box-primitive mech, which looks like a duplicate or placeholder asset left in. Stray floating orange cubes. Flat unlit-looking materials with no shadows or contact grounding. The right ~26% of the viewport is an empty flat panel."
+        },
+        {
+          "name": "desktop-1280x720__02b-arena-opening.png",
+          "drew": true,
+          "issue": "Empty hangar: box walls, emissive cyan strips and a dark floor pad. The mech and selection ring are gone. No shadows, IBL, fog or post beyond faint glow. The right-side dead panel persists."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Pixel-identical to 02b. The camera and scene are static with no subject or gameplay, so the game appears stalled or the mech is despawned."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Identical to 02b/03. No action, VFX or characters visible in the action beat."
+        },
+        {
+          "name": "desktop-1280x720__05-special.png",
+          "drew": true,
+          "issue": "Identical to 02b/03/04. No special-ability VFX, so the scene is frozen and empty."
+        }
+      ],
+      "summary": "A blank title frame, one frame with a clashing duplicate mech, and four identical empty greybox hangar frames with emissive strips, no shadows/IBL/atmosphere and a dead right-side panel add up to a sub-prototype result.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 14.9,
+          "stddev": 0.5,
+          "blank": true,
+          "hash": "1493a83f28"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 26.5,
+          "stddev": 31.7,
+          "blank": false,
+          "hash": "728d9cde1c"
+        },
+        "desktop-1280x720__02b-arena-opening.png": {
+          "mean": 20.9,
+          "stddev": 21.7,
+          "blank": false,
+          "hash": "fe2212ded7"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 20.9,
+          "stddev": 21.7,
+          "blank": false,
+          "hash": "fe2212ded7"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 20.9,
+          "stddev": 21.7,
+          "blank": false,
+          "hash": "fe2212ded7"
+        },
+        "desktop-1280x720__05-special.png": {
+          "mean": 20.9,
+          "stddev": 21.7,
+          "blank": false,
+          "hash": "fe2212ded7"
+        }
+      }
+    },
+    "B0": {
+      "overall": 0.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "The 3D viewport (left ~75% of the frame) is a solid near-black clear colour with no mech, hangar geometry, lighting or sky visible. Only the HTML side panel rendered: part selectors, stat bars, asset passport and the 'Enter Lock Build' button. This is HUD-only and counts as a no-draw. The panel also overflows: the LEGS passport card is clipped behind the CTA button. The capture is also 1100x618 rather than the labelled 1280x720."
+        }
+      ],
+      "summary": "The 3D scene failed to draw (the viewport is an empty dark clear colour) and only the tidy but text-heavy UI panel is present, so there is effectively no visual quality to assess.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 20.1,
+          "stddev": 21.8,
+          "blank": false,
+          "hash": "fe9b5a3f8a"
+        }
+      }
+    },
+    "C": {
+      "overall": 1.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "Canvas is solid black next to an empty dark side panel. No 3D scene, title text or UI rendered."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Only a few flat untextured boxes with emissive cyan strips are visible. A grey clear colour shows through at upper left, where there is no sky or environment. There is no mech, no shadows, no IBL, no visible post-processing, and the lighting is near-black and unreadable. The right ~25% of the viewport is an empty panel."
+        },
+        {
+          "name": "desktop-1280x720__02b-arena-opening.png",
+          "drew": true,
+          "issue": "Pixel-identical to 02-opening: the camera did not move, nothing animated and no new content appeared. Same placeholder greybox issues."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Pixel-identical to the previous two frames, so the scene looks frozen or stalled with no gameplay progression. Placeholder primitives only and no mech asset."
+        }
+      ],
+      "summary": "The title frame is blank black and the other three frames are an identical, frozen, near-unlit greybox of a few boxes with emissive cyan trim against an exposed grey clear colour, with no mech, materials, shadows, sky or post, which is placeholder-tier and well below modern three.js standards.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 4.0,
+          "stddev": 6.7,
+          "blank": true,
+          "hash": "1ab8f62314"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 30.5,
+          "stddev": 56.7,
+          "blank": false,
+          "hash": "836168b0a1"
+        },
+        "desktop-1280x720__02b-arena-opening.png": {
+          "mean": 30.5,
+          "stddev": 56.7,
+          "blank": false,
+          "hash": "836168b0a1"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 30.5,
+          "stddev": 56.7,
+          "blank": false,
+          "hash": "836168b0a1"
+        }
+      }
+    },
+    "B": {
+      "overall": 2.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "Solid near-black clear colour with only a faint vertical divider at ~x=817; no 3D scene, no title UI."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Drew a sparse greybox hangar: untextured box pillars with cyan emissive strips and a flat floor pad. Extremely underexposed, no mech or hero asset, no visible shadows or IBL, and the right ~25% of the viewport is an empty dark panel."
+        },
+        {
+          "name": "desktop-1280x720__02b-arena-opening.png",
+          "drew": true,
+          "issue": "Pixel-identical to 02-opening; the camera and scene appear frozen, with no arena change."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Identical to the opening frames; no gameplay progression, characters or motion."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Identical static frame; no action, VFX or combat visible despite the 'action' label."
+        },
+        {
+          "name": "desktop-1280x720__05-special.png",
+          "drew": true,
+          "issue": "Identical static frame; no special effect, bloom or particles visible, so the scene appears stuck."
+        }
+      ],
+      "summary": "The title frame is blank, and every other frame is the same frozen, underlit greybox of emissive-trimmed boxes with no mech, materials, shadows, VFX or HUD, so it reads as a stalled placeholder prototype well below modern three.js standards.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 14.9,
+          "stddev": 0.5,
+          "blank": true,
+          "hash": "1493a83f28"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 19.0,
+          "stddev": 21.5,
+          "blank": false,
+          "hash": "2b00d89d59"
+        },
+        "desktop-1280x720__02b-arena-opening.png": {
+          "mean": 19.0,
+          "stddev": 21.5,
+          "blank": false,
+          "hash": "2b00d89d59"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 19.0,
+          "stddev": 21.5,
+          "blank": false,
+          "hash": "2b00d89d59"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 19.0,
+          "stddev": 21.5,
+          "blank": false,
+          "hash": "2b00d89d59"
+        },
+        "desktop-1280x720__05-special.png": {
+          "mean": 19.0,
+          "stddev": 21.5,
+          "blank": false,
+          "hash": "2b00d89d59"
+        }
+      }
+    },
+    "note": "Worse: B loses the mech visible in A's 02-opening, leaving the hangar empty; C adds a white quad artifact top-left and drops 04/05 frames; title and flags-off shots are unchanged."
+  },
+  "showcase-neon-swarm": {
+    "A0": {
+      "overall": 1.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "HUD-only: the stats panel, wave status, title text, control hints and burst button render over a uniform near-black (#05050c-ish) clear colour. There is no arena, grid, drones, player, lighting or any other 3D geometry, so the WebGL scene either failed to draw or was never started behind the title overlay."
+        }
+      ],
+      "summary": "The 3D scene did not draw; only a clean but minimal neon-styled HTML HUD sits over a solid dark clear colour, so there is nothing to evaluate for environment, materials, lighting or post.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 9.6,
+          "stddev": 13.0,
+          "blank": false,
+          "hash": "e7cdaf112c"
+        }
+      }
+    },
+    "A": {
+      "overall": 2.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "Solid near-black clear colour; no 3D scene, title UI, or HUD rendered."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Camera is jammed against the underside of a large scanned/photogrammetry-style mesh that fills about 90% of the frame. Gameplay, the player, and the environment are not visible. There is no sky or IBL, only a flat dark-navy clear colour, and the scene is murky and underlit with no neon palette."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Pixel-identical to frame 02. The camera has not moved and nothing is animating; the view is still occluded by the close-up mesh underside."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Same occluded framing as frames 02-03. Only a sliver of a yellow object appears at the bottom-left edge, so the action is unreadable."
+        },
+        {
+          "name": "desktop-1280x720__05-burst.png",
+          "drew": true,
+          "issue": "A few flat-shaded low-poly green gems appear below the mesh with no glow, bloom, or emissive. The 'burst' VFX is negligible and still blocked by the oversized occluding mesh. The camera is still unchanged."
+        }
+      ],
+      "summary": "The title frame is blank, and every gameplay frame is a static, mis-placed camera staring at the dim underside of a single textured mesh against a flat clear colour, with only a few unlit low-poly gems hinting at a game. The texture and specular detail on the mesh are decent, but composition, lighting, atmosphere, VFX and readability are effectively broken.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 7.0,
+          "stddev": 0.0,
+          "blank": true,
+          "hash": "08581631db"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 35.2,
+          "stddev": 16.8,
+          "blank": false,
+          "hash": "1cf59c333f"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 35.2,
+          "stddev": 16.8,
+          "blank": false,
+          "hash": "1cf59c333f"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 35.3,
+          "stddev": 16.9,
+          "blank": false,
+          "hash": "dd201d436b"
+        },
+        "desktop-1280x720__05-burst.png": {
+          "mean": 35.9,
+          "stddev": 18.1,
+          "blank": false,
+          "hash": "8d0a7339cf"
+        }
+      }
+    },
+    "B0": {
+      "overall": 1.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "No 3D scene rendered: the frame is a near-black solid clear colour (~#05050d) with only DOM/HUD overlays (stats panel, wave status, title text, controls hint, burst button). There is no arena, grid, drones, player, lighting or post-processing visible, which suggests the WebGL canvas failed to draw, is hidden behind the overlay, or the title state intentionally renders nothing. HUD-only counts as no-draw. The HUD typography and neon panel styling are tidy, but they cannot be credited as 3D visual quality."
+        }
+      ],
+      "summary": "The title frame shows only a styled HUD over an empty near-black clear colour with no visible 3D scene, so it is flagged as a no-draw and scored below placeholder-primitive level.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 9.6,
+          "stddev": 13.0,
+          "blank": false,
+          "hash": "e7cdaf112c"
+        }
+      }
+    },
+    "C": {
+      "overall": 0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "Solid black frame; no 3D scene, title UI or HUD rendered."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": false,
+          "issue": "Error page on solid red: 'Aura3D renderer error' with MaterialBindingError (missing shader attributes a_uv and a_tangent) thrown in AB.bindGenerated during He.drawItem; no scene drawn."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": false,
+          "issue": "Same MaterialBindingError page (missing a_uv/a_tangent); renderer halted, no 3D content."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": false,
+          "issue": "Same MaterialBindingError page (missing a_uv/a_tangent); renderer halted, no 3D content."
+        },
+        {
+          "name": "desktop-1280x720__05-burst.png",
+          "drew": false,
+          "issue": "Same MaterialBindingError page (missing a_uv/a_tangent); no burst VFX or scene visible."
+        }
+      ],
+      "summary": "Nothing rendered in any frame: the title is solid black and the other four frames show the same Aura3D MaterialBindingError, where a material requires a_uv and a_tangent but the geometry doesn't provide them, so there is no visual quality to score.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 0.0,
+          "stddev": 0.0,
+          "blank": true,
+          "hash": "8695d74c75"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 65.9,
+          "stddev": 13.5,
+          "blank": false,
+          "hash": "355d4ac980"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 65.9,
+          "stddev": 13.5,
+          "blank": false,
+          "hash": "355d4ac980"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 65.9,
+          "stddev": 13.5,
+          "blank": false,
+          "hash": "355d4ac980"
+        },
+        "desktop-1280x720__05-burst.png": {
+          "mean": 65.9,
+          "stddev": 13.5,
+          "blank": false,
+          "hash": "355d4ac980"
+        }
+      }
+    },
+    "B": {
+      "overall": 2.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "Solid near-black clear colour; no 3D scene, title UI, or HUD rendered."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Camera is jammed against or underneath a large dark scanned-style mesh, filling the frame. Only a sliver of a gold ring is visible at the bottom. No readable environment, player, or composition."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Pixel-identical to the opening frame. The scene appears frozen or the camera is stuck, with no gameplay, swarm, or neon content visible."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Identical to the previous frames. No action, VFX, or motion is visible, and the camera is still clipped into the mesh."
+        },
+        {
+          "name": "desktop-1280x720__05-burst.png",
+          "drew": true,
+          "issue": "Identical to the previous frames. The expected burst VFX is absent, which suggests the simulation or render loop stalled or the camera is misplaced."
+        }
+      ],
+      "summary": "The title frame is blank, and the remaining four frames are identical extreme close-ups of a dark, glossy scanned mesh with a stuck or misplaced camera, showing none of the neon swarm gameplay, lighting, or VFX, so the capture reads as broken despite passable surface material detail.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 7.0,
+          "stddev": 0.0,
+          "blank": true,
+          "hash": "08581631db"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 31.2,
+          "stddev": 17.0,
+          "blank": false,
+          "hash": "18103595a6"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 31.2,
+          "stddev": 17.0,
+          "blank": false,
+          "hash": "18103595a6"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 31.2,
+          "stddev": 17.0,
+          "blank": false,
+          "hash": "18103595a6"
+        },
+        "desktop-1280x720__05-burst.png": {
+          "mean": 31.2,
+          "stddev": 17.0,
+          "blank": false,
+          "hash": "18103595a6"
+        }
+      }
+    },
+    "note": "Essentially unchanged: B0 matches A0, B matches A (same hull close-up, gold arc added, green burst blobs gone); C is worse, crashing every gameplay shot with MaterialBindingError missing a_uv/a_tangent."
+  },
+  "showcase-orbital-defense": {
+    "A0": {
+      "overall": 1.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "Scene draws but is placeholder primitives: a near-flat teal sphere with a soft blob highlight, flat lavender/cyan ring discs, two untextured grey boxes, and two small spheres on a near-black clear colour. There is no starfield, sky or IBL, no visible shadowing, and no title UI or HUD."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Pixel-identical to frame 01. No camera, object or HUD change, so the game appears frozen or not advancing past the initial state."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Pixel-identical to frames 01-02. There are no enemies, projectiles or gameplay progression, so the simulation is likely stalled."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Pixel-identical to the previous frames. This is labelled an action frame but shows no combat, VFX, particles or motion, so the capture does not reflect gameplay."
+        },
+        {
+          "name": "desktop-1280x720__05-shield.png",
+          "drew": true,
+          "issue": "Pixel-identical to the previous frames. No shield effect is visible, and the shield mechanic either never triggered or does not render."
+        }
+      ],
+      "summary": "The 3D scene renders in every frame, but it is placeholder-grade flat-lit primitives on a black clear colour with no sky, materials, shadows, post or VFX, and all five frames are identical, which points to a frozen or non-progressing game state.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 14.4,
+          "stddev": 29.1,
+          "blank": false,
+          "hash": "96f3ae63e9"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 14.4,
+          "stddev": 29.1,
+          "blank": false,
+          "hash": "96f3ae63e9"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 14.4,
+          "stddev": 29.1,
+          "blank": false,
+          "hash": "96f3ae63e9"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 14.4,
+          "stddev": 29.1,
+          "blank": false,
+          "hash": "96f3ae63e9"
+        },
+        "desktop-1280x720__05-shield.png": {
+          "mean": 14.4,
+          "stddev": 29.1,
+          "blank": false,
+          "hash": "96f3ae63e9"
+        }
+      }
+    },
+    "A": {
+      "overall": 2.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "Scene draws but no title/HUD visible; low-poly faceted teal sphere with single specular hotspot, unlit black box enemies, flat orange dot pickups, thin orbit line rings on a flat navy clear colour with sparse point stars."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Nearly identical to title frame; tiny white line projectile is the only VFX. No bloom, glow, trails or atmosphere; enemies read as untextured near-black cuboids."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Player turret moved behind planet and partially occluded; no rim/Fresnel atmosphere on planet, no shadows, enemy boxes lack any material definition or emissive readability."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Labelled action but shows almost no action: one thin projectile streak, no muzzle flash, impacts, particles or explosions; composition static and empty."
+        },
+        {
+          "name": "desktop-1280x720__05-shield.png",
+          "drew": true,
+          "issue": "No visible shield effect at all despite frame label; virtually indistinguishable from frame 04 aside from enemy/pickup positions."
+        }
+      ],
+      "summary": "All five frames render a real 3D scene, but it is placeholder-grade: a visibly faceted low-poly planet, untextured black cuboid enemies, flat-shaded dots and line orbits on a plain dark clear colour with no skybox/IBL, shadows, bloom, particles, atmosphere or visible shield/action VFX, placing it near greybox-prototype level.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 14.9,
+          "stddev": 21.6,
+          "blank": false,
+          "hash": "d8acc0210c"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 14.8,
+          "stddev": 21.4,
+          "blank": false,
+          "hash": "870a25a832"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 14.6,
+          "stddev": 21.0,
+          "blank": false,
+          "hash": "c65fc48a1b"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 14.8,
+          "stddev": 21.4,
+          "blank": false,
+          "hash": "0129fc726e"
+        },
+        "desktop-1280x720__05-shield.png": {
+          "mean": 14.7,
+          "stddev": 21.4,
+          "blank": false,
+          "hash": "57049ded5f"
+        }
+      }
+    },
+    "B0": {
+      "overall": 1.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "Scene drew, but only placeholder primitives are visible: a near-flat teal sphere with a flat purple/cyan ring, two grey boxes and two tiny spheres on a near-black clear colour. There is no title UI, no starfield, sky or IBL, minimal shading, no shadows and no post-processing."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Pixel-identical to the title frame. Nothing has changed, so the game appears frozen or has not started. No HUD, enemies or gameplay are visible."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Pixel-identical to the previous frames. There is no simulation progress, camera movement or VFX."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Pixel-identical again. There is no action, projectiles, explosions or enemies, so the 'action' state is not represented."
+        },
+        {
+          "name": "desktop-1280x720__05-shield.png",
+          "drew": true,
+          "issue": "Pixel-identical again. No shield effect is visible, which suggests the capture or input never progressed past the initial static scene."
+        }
+      ],
+      "summary": "All five frames are the same static greybox of unlit-looking primitives (sphere, ring, boxes) on a flat near-black background, with no sky, HUD, VFX, lighting depth or gameplay progression, which puts it at the placeholder-primitives tier.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 14.4,
+          "stddev": 29.1,
+          "blank": false,
+          "hash": "96f3ae63e9"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 14.4,
+          "stddev": 29.1,
+          "blank": false,
+          "hash": "96f3ae63e9"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 14.4,
+          "stddev": 29.1,
+          "blank": false,
+          "hash": "96f3ae63e9"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 14.4,
+          "stddev": 29.1,
+          "blank": false,
+          "hash": "96f3ae63e9"
+        },
+        "desktop-1280x720__05-shield.png": {
+          "mean": 14.4,
+          "stddev": 29.1,
+          "blank": false,
+          "hash": "96f3ae63e9"
+        }
+      }
+    },
+    "C": {
+      "overall": 1.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "Only a low-poly teal sphere with visible faceting and a single hard specular on a pure black clear colour, plus a nearly invisible dark object below. No title UI, starfield, sky/IBL, atmosphere or post."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Pixel-identical to the title frame. The scene appears frozen or not progressing, with no gameplay, HUD or camera change."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Identical to the previous frames. There are no enemies, defenses, VFX or motion, and the small object under the planet is unreadable against black."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Identical static frame with no action, projectiles, explosions or HUD. The capture likely never left the initial state."
+        }
+      ],
+      "summary": "Every frame shows the same placeholder low-poly sphere with basic Phong-style lighting on a black void, with no environment, materials, atmosphere, VFX or visible game progression, which puts it at placeholder-primitive level.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 4.4,
+          "stddev": 18.7,
+          "blank": true,
+          "hash": "918eb7ca3c"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 4.4,
+          "stddev": 18.7,
+          "blank": true,
+          "hash": "918eb7ca3c"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 4.4,
+          "stddev": 18.7,
+          "blank": true,
+          "hash": "918eb7ca3c"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 4.4,
+          "stddev": 18.7,
+          "blank": true,
+          "hash": "918eb7ca3c"
+        }
+      }
+    },
+    "B": {
+      "overall": 2.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "3D draws but is a low-poly faceted sphere (visible polygon silhouette) with a basic fresnel rim and a single specular hotspot on a near-black clear colour. Sparse point stars, thin line orbit rings, a tiny untextured grey turret and a few dark blob asteroids. No title UI, sky/IBL, atmosphere or post beyond flat shading."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Pixel-identical to frame 01: no gameplay start, HUD, enemies or camera change. Suggests the sim or render is frozen or the capture didn't advance."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Identical to frames 01-02: no mid-game state, threats or motion visible."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Identical static frame: no projectiles, explosions, enemies or any action VFX despite the 'action' label."
+        },
+        {
+          "name": "desktop-1280x720__05-shield.png",
+          "drew": true,
+          "issue": "Identical static frame: no shield effect rendered. The planet's rim glow is the only shield-like element, and it's unchanged from the title frame."
+        }
+      ],
+      "summary": "The scene renders, but all five frames are identical: a faceted low-poly planet with a fresnel rim, sparse stars, line orbits and a placeholder turret on a black clear colour, with no gameplay, VFX, shield effect, shadows, IBL or atmosphere. That is prototype greybox territory, and the capture never shows the game advancing.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 14.7,
+          "stddev": 21.0,
+          "blank": false,
+          "hash": "cf2705f289"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 14.7,
+          "stddev": 21.0,
+          "blank": false,
+          "hash": "cf2705f289"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 14.7,
+          "stddev": 21.0,
+          "blank": false,
+          "hash": "cf2705f289"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 14.7,
+          "stddev": 21.0,
+          "blank": false,
+          "hash": "cf2705f289"
+        },
+        "desktop-1280x720__05-shield.png": {
+          "mean": 14.7,
+          "stddev": 21.0,
+          "blank": false,
+          "hash": "cf2705f289"
+        }
+      }
+    },
+    "note": "B0 matches A0 exactly; B loses A's orange enemies and debris, and its ship sits frozen below the planet in every shot; C drops starfield and orbit rings and misses the shield frame. Worse."
+  },
+  "showcase-patrol-wing": {
+    "A0": {
+      "overall": null,
+      "frames": [],
+      "summary": "no frames captured",
+      "stats": {}
+    },
+    "A": {
+      "overall": 2.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "No 3D scene: only a dark navy gradient frame and an empty right-side HUD panel; title text and menu are also missing."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Low-poly flat-shaded green planetoid against a flat dark clear colour with no sky or IBL. The opaque cream beam reads as an untextured box. Lighting is minimal with no visible shadows. The right HUD panel is empty and covers about 20% of the view. The plane is small and off-centre."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Nearly identical to the opening frame, and the plane has vanished from the pad. The camera is static and the scene looks frozen; rings have only changed from filled to outline. There are no VFX, atmosphere or depth cues."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Pixel-identical to the mid frame: no action, no player craft visible, no motion or effects. This suggests the game state stalled or the camera detached from the player."
+        },
+        {
+          "name": "desktop-1280x720__05-banked-fire.png",
+          "drew": true,
+          "issue": "Identical again: no banking, no projectiles or muzzle VFX, no player visible. The capture shows a frozen scene, not gameplay."
+        }
+      ],
+      "summary": "Title frame failed to draw, and the remaining four show an identical, static, flat-shaded low-poly greybox planetoid on a plain dark clear colour with no sky, shadows, post or VFX, an empty HUD panel and a missing player plane, so it sits at prototype level.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 24.4,
+          "stddev": 3.4,
+          "blank": true,
+          "hash": "95a2514a8e"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 46.8,
+          "stddev": 31.1,
+          "blank": false,
+          "hash": "1541dc7dcd"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 46.6,
+          "stddev": 30.6,
+          "blank": false,
+          "hash": "d64758d6b2"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 46.6,
+          "stddev": 30.6,
+          "blank": false,
+          "hash": "0bb0ac63b0"
+        },
+        "desktop-1280x720__05-banked-fire.png": {
+          "mean": 46.6,
+          "stddev": 30.6,
+          "blank": false,
+          "hash": "0bb0ac63b0"
+        }
+      }
+    },
+    "B0": {
+      "overall": null,
+      "frames": [],
+      "summary": "no frames captured",
+      "stats": {}
+    },
+    "C": {
+      "overall": 0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "Black canvas with only an empty dark-blue side panel (HUD/UI chrome); no 3D scene rendered, no title text visible."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": false,
+          "issue": "Error page: Aura3D MaterialBindingError, missing shader attributes a_uv and a_tangent (thrown in bindGenerated during drawItem); nothing rendered."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": false,
+          "issue": "Same renderer error page (missing a_uv/a_tangent); no scene."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": false,
+          "issue": "Same renderer error page (missing a_uv/a_tangent); no scene."
+        },
+        {
+          "name": "desktop-1280x720__05-banked-fire.png",
+          "drew": false,
+          "issue": "Same renderer error page (missing a_uv/a_tangent); no scene."
+        }
+      ],
+      "summary": "The 3D scene never drew: frame 1 is a black canvas with an empty UI panel, and frames 2-5 show an Aura3D MaterialBindingError because a material needs a_uv/a_tangent attributes the geometry doesn't supply, so there is nothing to judge visually.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 4.8,
+          "stddev": 8.1,
+          "blank": true,
+          "hash": "46af385c86"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 63.0,
+          "stddev": 20.7,
+          "blank": false,
+          "hash": "faa9e12d25"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 63.0,
+          "stddev": 20.7,
+          "blank": false,
+          "hash": "faa9e12d25"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 63.0,
+          "stddev": 20.7,
+          "blank": false,
+          "hash": "faa9e12d25"
+        },
+        "desktop-1280x720__05-banked-fire.png": {
+          "mean": 63.0,
+          "stddev": 20.7,
+          "blank": false,
+          "hash": "faa9e12d25"
+        }
+      }
+    },
+    "B": {
+      "overall": 3.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "No 3D scene drawn: solid dark-navy clear colour with only an empty bordered side panel; no title text or HUD content either."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Scene draws: low-poly green island, runway pad and red prop plane, teal rings. Flat, unshadowed lighting, no visible shadows or ambient occlusion, empty dark flat sky with no IBL or atmosphere, faceted terrain edge. An opaque untextured cream beam slab reads as a placeholder, and the right HUD panel is empty and occludes about 20% of the view."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Pixel-identical to 02: the camera, plane and rings have not moved, which suggests the simulation is frozen or gameplay did not progress. The same flat-lighting and empty-panel issues apply."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Identical to 02 and 03: no action, VFX or motion is visible in the 'action' frame, and the plane is still parked on the pad."
+        },
+        {
+          "name": "desktop-1280x720__05-banked-fire.png",
+          "drew": true,
+          "issue": "Identical to 02-04: no banking, firing, projectiles or muzzle VFX, so the capture shows a static, stuck scene."
+        }
+      ],
+      "summary": "The title frame failed to render and the remaining four frames are an identical frozen shot of a flat-lit, shadowless low-poly island with a decent plane model but placeholder-grade sky, lighting and post, which puts it at early prototype level.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 24.4,
+          "stddev": 3.4,
+          "blank": true,
+          "hash": "95a2514a8e"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 44.0,
+          "stddev": 29.0,
+          "blank": false,
+          "hash": "d7afe03b70"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 44.0,
+          "stddev": 29.0,
+          "blank": false,
+          "hash": "d7afe03b70"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 44.0,
+          "stddev": 29.0,
+          "blank": false,
+          "hash": "d7afe03b70"
+        },
+        "desktop-1280x720__05-banked-fire.png": {
+          "mean": 44.0,
+          "stddev": 29.0,
+          "blank": false,
+          "hash": "d7afe03b70"
+        }
+      }
+    },
+    "note": "Essentially nothing: A0/B0 both capture no frames, B matches A apart from slightly brighter ring markers, and C is worse, with a black title and MaterialBindingError (missing a_uv/a_tangent) on every gameplay shot."
+  },
+  "showcase-pulse-tunnel": {
+    "A0": {
+      "overall": 3.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "Scene renders: neon box-primitive tunnel with flat translucent side planes and a reasonably modelled dark hover-car. Little PBR or material response, no shadows or sky/IBL, and only faint glow. The HUD panel covers the top ~25% of the view, and a translucent vertical strip with guide lines cuts through the centre of the composition."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Scene renders but the player vehicle is absent because of the game-over state, leaving only the primitive tunnel. Faint floor light pools and sparse particles add some depth, but the environment is greybox-level geometry with emissive colours. The run-over banner and HUD dominate the top of the frame."
+        }
+      ],
+      "summary": "Both frames draw a cohesive synthwave neon tunnel, but it is built from unlit box primitives and flat translucent planes with minimal lighting, materials, post or atmosphere, so it reads as a stylish prototype above greybox but well short of dated-indie polish.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 38.9,
+          "stddev": 42.6,
+          "blank": false,
+          "hash": "6d544116fa"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 42.9,
+          "stddev": 40.7,
+          "blank": false,
+          "hash": "a7dbc4b0a6"
+        }
+      }
+    },
+    "A": {
+      "overall": 3.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "Scene renders but there is no title UI or branding. It is effectively identical to the gameplay frames. The tunnel is a short set of flat-colour box frames and translucent wall planes floating in a black void, with no sky or environment beyond."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Near pixel-identical to the title frame, with no visible progression or motion. The tunnel geometry ends abruptly, the floor plane edge is plainly visible, and roughly 60% of the frame is empty dark clear colour."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "The ship banks left, revealing lane lines. The ship model is decent but under-lit and murky against dark materials. Bloom is weak, there is no fog or depth falloff, no shadows, and the wall planes read as flat translucent quads."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Essentially identical to frames 1 and 2. The 'action' shows no speed effects, particles, obstacles or HUD, which suggests the game is static or stalled. The composition stays tiny in the frame centre."
+        }
+      ],
+      "summary": "A neon-synthwave tunnel with a reasonably modelled hover-ship, but the environment is a small greybox of emissive bars and translucent planes adrift in black void, with minimal post, no atmosphere or VFX, and three of four frames essentially identical, landing at prototype tier.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 25.9,
+          "stddev": 36.8,
+          "blank": false,
+          "hash": "eff6eb59d6"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 25.8,
+          "stddev": 36.4,
+          "blank": false,
+          "hash": "4c8a384a94"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 26.2,
+          "stddev": 36.9,
+          "blank": false,
+          "hash": "3c9e9b58a4"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 25.8,
+          "stddev": 36.4,
+          "blank": false,
+          "hash": "298a9aecbe"
+        }
+      }
+    },
+    "B0": {
+      "overall": 4.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "Scene draws: neon synthwave tunnel of flat emissive box frames and translucent side panels around a dark glossy racer with glowing wheels and some env reflections. The geometry is mostly unlit primitive bars and quads with no real shadows, fog or bloom glow falloff, and the tunnel floor reads as flat black. The HUD panel covers the top ~25% of the frame and the touch buttons clutter the composition. The car is the strongest asset but is crushed to near-black with little rim definition, and the scene has no atmospheric depth beyond converging lines."
+        }
+      ],
+      "summary": "Coherent neon-tunnel art direction with a decent hero car, but the environment is built from flat emissive primitives with minimal lighting, post or atmosphere, and a heavy HUD obscures the frame, landing it at dated indie/prototype level.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 38.9,
+          "stddev": 42.6,
+          "blank": false,
+          "hash": "b498cfeb58"
+        }
+      }
+    },
+    "C": {
+      "overall": 0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "Error page: Aura3D renderer MaterialBindingError 'Missing shader attribute: a_uv' (kB.bindGenerated via He.drawItem); no 3D scene rendered, only a red error overlay on a dark background"
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": false,
+          "issue": "Same MaterialBindingError overlay (missing a_uv); scene never drew"
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": false,
+          "issue": "Same MaterialBindingError overlay (missing a_uv); scene never drew"
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": false,
+          "issue": "Same MaterialBindingError overlay (missing a_uv); scene never drew"
+        }
+      ],
+      "summary": "All four frames show the same Aura3D renderer error page (material binding failed on a geometry missing the a_uv attribute in the tunnel-audio bundle), so nothing rendered and there is no visual quality to assess.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 63.5,
+          "stddev": 19.2,
+          "blank": false,
+          "hash": "8c384c7acb"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 63.5,
+          "stddev": 19.1,
+          "blank": false,
+          "hash": "af2e30b0cc"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 63.5,
+          "stddev": 19.1,
+          "blank": false,
+          "hash": "af2e30b0cc"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 63.5,
+          "stddev": 19.1,
+          "blank": false,
+          "hash": "af2e30b0cc"
+        }
+      }
+    },
+    "B": {
+      "overall": 3.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "Scene draws: neon rectangular tunnel frames, two translucent flat side panels, and a black primitive vehicle with emissive wheel rings. The vehicle is unlit black geometry with almost no material read. Opaque grey disc particles clutter the focal point. The scene fills only the centre of a dark frame, with large empty margins."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Grey circular sprite particles are overused and look like unshaded placeholder billboards. They obscure the vehicle and the floor. There are no shadows, no sky or IBL, and only minimal bloom on the neon edges. The floor is a flat black quad."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Nearly identical to frame 02, with no visible progression, obstacles or environment variation. Particle spam dominates readability. The tunnel depth is conveyed only by nested flat-colour frames."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "The 'action' frame is indistinguishable from the mid frame. There is no gameplay readability, no motion blur or speed cues beyond the particles, and no HUD. Composition is static and centred, with the camera locked behind the primitive ship."
+        }
+      ],
+      "summary": "All frames render a coherent neon-synthwave palette, but the scene is greybox-level primitives with unlit black geometry, placeholder grey disc particles and minimal post, placing it at prototype tier around 3.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 29.0,
+          "stddev": 44.4,
+          "blank": false,
+          "hash": "b8e8cddb33"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 35.7,
+          "stddev": 51.9,
+          "blank": false,
+          "hash": "4935bf0c77"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 34.4,
+          "stddev": 50.7,
+          "blank": false,
+          "hash": "0095360ca8"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 35.6,
+          "stddev": 51.9,
+          "blank": false,
+          "hash": "ece683f791"
+        }
+      }
+    },
+    "note": "B0 matches A0 on title but lost the 03-mid frame. B adds a pink ring burst and white particle spray that obscures the car. C crashes every shot with a MaterialBindingError: missing a_uv."
+  },
+  "showcase-rooftop-buckets": {
+    "A0": {
+      "overall": null,
+      "frames": [],
+      "summary": "no frames captured",
+      "stats": {}
+    },
+    "A": {
+      "overall": 2.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "Scene draws, but the hero character is in an unanimated T-pose with a mirror-chrome shirt, facing the camera and blocking the centre of frame. The environment is untextured pastel boxes and flat emissive panels. The ball racks use faceted low-poly spheres. There are no visible shadows and no hoop is visible."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Identical to frame 1 except for one floating ball near the top. Shot clock and heat time are unchanged (8.0 / 45s), and the character is still in a T-pose with no shooting animation."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Pixel-identical to frame 1. The ball is gone and the timers are frozen, so the game state appears stalled or input was not registered."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Pixel-identical to frame 1. No action, VFX, ball flight or score change appears in the 'action' frame."
+        },
+        {
+          "name": "desktop-1280x720__05-charge.png",
+          "drew": true,
+          "issue": "Pixel-identical to frame 1. The charge meter still reads Ready, with no charge feedback or VFX, and the timers are frozen."
+        }
+      ],
+      "summary": "The scene renders in every frame, but it is a greybox-grade rooftop of flat pastel boxes with no shadows. A T-posed chrome-shirted character occludes the view, a duplicate head appears behind him, and the gameplay state is frozen across four of the five frames, which puts it at early-prototype quality.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 97.5,
+          "stddev": 49.8,
+          "blank": false,
+          "hash": "a854d50076"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 97.6,
+          "stddev": 49.7,
+          "blank": false,
+          "hash": "44908afa80"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 97.5,
+          "stddev": 49.8,
+          "blank": false,
+          "hash": "a854d50076"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 97.5,
+          "stddev": 49.8,
+          "blank": false,
+          "hash": "a854d50076"
+        },
+        "desktop-1280x720__05-charge.png": {
+          "mean": 97.5,
+          "stddev": 49.7,
+          "blank": false,
+          "hash": "ce3265c8ad"
+        }
+      }
+    },
+    "B0": {
+      "overall": null,
+      "frames": [],
+      "summary": "no frames captured",
+      "stats": {}
+    },
+    "C": {
+      "overall": 0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "HUD only (title bar, score panel, charge meter, controls) over a solid black canvas; no 3D scene rendered."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": false,
+          "issue": "Error page: Aura3D MaterialBindingError, missing shader attributes a_uv, a_tangent, a_joints, a_weights in VB.bindGenerated/He.drawItem; no scene drawn."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": false,
+          "issue": "Same MaterialBindingError page on red background; no scene drawn."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": false,
+          "issue": "Same MaterialBindingError page on red background; no scene drawn."
+        },
+        {
+          "name": "desktop-1280x720__05-charge.png",
+          "drew": false,
+          "issue": "Same MaterialBindingError page on red background; no scene drawn."
+        }
+      ],
+      "summary": "The 3D scene never rendered in any frame: frame 1 shows only the HUD over black, and frames 2-5 show an Aura3D MaterialBindingError because the geometry lacks the a_uv/a_tangent/a_joints/a_weights attributes the generated material shader requires, so there is nothing to score visually.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 5.3,
+          "stddev": 13.9,
+          "blank": true,
+          "hash": "1376417301"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 67.0,
+          "stddev": 14.8,
+          "blank": false,
+          "hash": "7090b354ec"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 67.0,
+          "stddev": 14.8,
+          "blank": false,
+          "hash": "7090b354ec"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 67.0,
+          "stddev": 14.8,
+          "blank": false,
+          "hash": "7090b354ec"
+        },
+        "desktop-1280x720__05-charge.png": {
+          "mean": 67.0,
+          "stddev": 14.8,
+          "blank": false,
+          "hash": "7090b354ec"
+        }
+      }
+    },
+    "B": {
+      "overall": 2.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "3D scene draws, but there is no distinct title screen; it shows the gameplay HUD. The scene is untextured box buildings with flat emissive panels, a T-posed metallic humanoid with no animation, and racks of faceted low-poly spheres. Lighting is flat, with no readable contact shadows, a plain gradient-less sky and heavy bloom/lens-flare haze. The camera clips a blurry foreground rail, and the charge HUD panel overlaps the player."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Pixel-identical to frame 01: shot clock still 8.0, heat time still 45s, score 0. The game state appears frozen or the capture is not advancing."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Identical to frames 01 and 02. There is no mid-game progression, ball motion or state change, so the capture is likely stalled or input is not registering."
+        },
+        {
+          "name": "desktop-1280x720__05-charge.png",
+          "drew": true,
+          "issue": "Identical to the other frames. The charge meter still reads 'Ready' with no fill, so the charge action did not register or the render loop is frozen."
+        }
+      ],
+      "summary": "The scene renders, but it is a prototype-grade greybox of untextured boxes, a T-posed figure and low-poly spheres under flat lighting with heavy bloom, and all four frames are identical, which suggests frozen gameplay or capture.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 89.4,
+          "stddev": 47.4,
+          "blank": false,
+          "hash": "d703490eca"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 89.4,
+          "stddev": 47.4,
+          "blank": false,
+          "hash": "d703490eca"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 89.4,
+          "stddev": 47.4,
+          "blank": false,
+          "hash": "d703490eca"
+        },
+        "desktop-1280x720__05-charge.png": {
+          "mean": 89.4,
+          "stddev": 47.4,
+          "blank": false,
+          "hash": "d703490eca"
+        }
+      }
+    },
+    "note": "B swaps A's T-posed human for a small skinned figure holding an orange ball but loses 04-action; C is worse: black title, then MaterialBindingError screens (missing a_joints/a_weights); flags-off still captures nothing."
+  },
+  "showcase-siege-golf": {
+    "A0": {
+      "overall": null,
+      "frames": [],
+      "summary": "no frames captured",
+      "stats": {}
+    },
+    "A": {
+      "overall": 3.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "Scene renders, but a static top-down view of low-poly kit assets on a flat blue clear colour. No title UI is visible beyond an empty HUD bar. A second dark crate floats mid-course."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Nearly identical to the title frame. No visible ball, player or gameplay feedback. The empty HUD bar is the only UI."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "The only change is a tiny, barely readable ball near the back wall. The camera and composition are static, and lighting is flat with weak contact shadows."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Visually indistinguishable from the opening. There is no action, VFX or motion, and the ball is not readable."
+        },
+        {
+          "name": "desktop-1280x720__05-charge.png",
+          "drew": true,
+          "issue": "There is no visible charge or aim indicator. The HUD bar stays empty, and the frame is effectively identical to the others."
+        }
+      ],
+      "summary": "A clean but flat low-poly kit scene: flat clear-colour sky, an unlit dark ground slab, minimal shadowing, no IBL, post or VFX, a frozen camera, and near-identical frames with no readable gameplay feedback, placing it at prototype-plus level.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 162.1,
+          "stddev": 52.2,
+          "blank": false,
+          "hash": "9df7aaec80"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 162.3,
+          "stddev": 52.0,
+          "blank": false,
+          "hash": "a4e97f9f5c"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 162.3,
+          "stddev": 52.0,
+          "blank": false,
+          "hash": "46c0183dc1"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 162.3,
+          "stddev": 52.0,
+          "blank": false,
+          "hash": "a4e97f9f5c"
+        },
+        "desktop-1280x720__05-charge.png": {
+          "mean": 162.3,
+          "stddev": 52.0,
+          "blank": false,
+          "hash": "a4e97f9f5c"
+        }
+      }
+    },
+    "B0": {
+      "overall": null,
+      "frames": [],
+      "summary": "no frames captured",
+      "stats": {}
+    },
+    "C": {
+      "overall": 0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "Solid black frame; only an empty HUD pill (top-right) is visible, no 3D scene drawn."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": false,
+          "issue": "Error page: Aura3D MaterialBindingError, missing shader attributes a_uv and a_tangent (bindGenerated during drawItem in hole-flow bundle)."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": false,
+          "issue": "Same Aura3D renderer error page (missing a_uv/a_tangent); no scene rendered."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": false,
+          "issue": "Same Aura3D renderer error page (missing a_uv/a_tangent); no scene rendered."
+        },
+        {
+          "name": "desktop-1280x720__05-charge.png",
+          "drew": false,
+          "issue": "Same Aura3D renderer error page (missing a_uv/a_tangent); no scene rendered."
+        }
+      ],
+      "summary": "No frame drew any 3D content: the title is black with an empty HUD element, and every gameplay frame is a renderer error page caused by a mesh missing the UV and tangent attributes that its material requires, so there is nothing to judge visually.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 0.1,
+          "stddev": 1.4,
+          "blank": true,
+          "hash": "77c26b323c"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 65.9,
+          "stddev": 13.5,
+          "blank": false,
+          "hash": "0f481aecef"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 65.9,
+          "stddev": 13.5,
+          "blank": false,
+          "hash": "0f481aecef"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 65.9,
+          "stddev": 13.5,
+          "blank": false,
+          "hash": "0f481aecef"
+        },
+        "desktop-1280x720__05-charge.png": {
+          "mean": 65.9,
+          "stddev": 13.5,
+          "blank": false,
+          "hash": "0f481aecef"
+        }
+      }
+    },
+    "B": {
+      "overall": 3.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "Scene draws but no title UI/branding; empty dark HUD bar top-right; flat unlit-looking shading with no cast shadows, flat clear-colour sky, base sits on an untextured dark void plane"
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Pixel-identical to frame 01; no ball, club, or player visible, so no sign gameplay has started"
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Pixel-identical to frames 01-02; camera and state frozen, no progression"
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Pixel-identical; no action, projectile, VFX or motion despite 'action' label; floating crate targets lack grounding/shadows"
+        },
+        {
+          "name": "desktop-1280x720__05-charge.png",
+          "drew": true,
+          "issue": "Pixel-identical; charge meter (HUD bar) stays empty, no aim indicator or charge feedback, so input/state likely not reaching the game"
+        }
+      ],
+      "summary": "A coherent but flat low-poly castle mini-golf diorama renders in every frame, but the image is static and identical across all five (likely frozen or not receiving input), with no shadows, IBL, atmosphere, post or VFX, a clear-colour sky, and a void ground plane, which puts it at prototype level.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 159.0,
+          "stddev": 54.6,
+          "blank": false,
+          "hash": "f4171a2456"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 159.0,
+          "stddev": 54.6,
+          "blank": false,
+          "hash": "f4171a2456"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 159.0,
+          "stddev": 54.6,
+          "blank": false,
+          "hash": "f4171a2456"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 159.0,
+          "stddev": 54.6,
+          "blank": false,
+          "hash": "f4171a2456"
+        },
+        "desktop-1280x720__05-charge.png": {
+          "mean": 159.0,
+          "stddev": 54.6,
+          "blank": false,
+          "hash": "f4171a2456"
+        }
+      }
+    },
+    "note": "No visible improvement: B matches A nearly identically, A0/B0 still capture nothing, and C is worse, showing a black title then MaterialBindingError (missing a_uv/a_tangent shader attributes) on every shot."
+  },
+  "showcase-skyline-runner": {
+    "A0": {
+      "overall": 0.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "No 3D scene rendered: only a flat dark-navy clear colour with a faint vertical banding gradient behind the HUD overlay (title card, score/coins/ember/lives/district panel, relay dots, objective banner, ghost toggle, touch control pad and key legend). No geometry, lighting, sky or characters are visible, and the District label is truncated ('Steel Da...'). The HUD alone counts as no-draw."
+        }
+      ],
+      "summary": "The frame shows only a polished HUD over a solid clear colour, with no 3D scene drawn, so it is a no-draw capture that scores near zero on the scale.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 37.2,
+          "stddev": 11.2,
+          "blank": false,
+          "hash": "bed104d171"
+        }
+      }
+    },
+    "A": {
+      "overall": 2.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "Scene draws, but there is no title UI or branding; it looks like a gameplay frame. The environment is greybox: flat untextured boxes for buildings, icosahedron clusters under thin slab platforms, a flat dark ground, and no sky or IBL. Visible shadows are absent, and the polished illustrated character reads as a flat billboard sprite that clashes stylistically with the primitives."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Identical static camera and scene to frame 1, with only the character moved. A stray magenta wireframe gate/marker reads as a debug or placeholder object. The character has no contact shadow or grounding, the scene is crushed dark-blue with low contrast, and the lower third is empty."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Camera still locked, so the composition is unchanged. The character is drifting to the right edge and about to leave the frame, which suggests the camera is not following the player. No VFX, no parallax or depth layering, and minimal atmosphere beyond a flat dark fog tone."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "The player character has left the frame entirely, leaving only static greybox primitives. Nothing reads as action: no effects, motion, or feedback. The 'action' frame is effectively an empty environment shot caused by a camera-follow failure."
+        }
+      ],
+      "summary": "The 3D scene draws in all frames, but it is a dark, flatly lit greybox of untextured boxes and icosahedra with no sky, shadows, or VFX, a debug-looking marker, and a locked camera that loses the player; only the well-illustrated but stylistically mismatched character sprite lifts it above placeholder level.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 27.6,
+          "stddev": 20.3,
+          "blank": false,
+          "hash": "1681392a3e"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 27.5,
+          "stddev": 20.2,
+          "blank": false,
+          "hash": "05cbc73ec8"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 27.4,
+          "stddev": 19.5,
+          "blank": false,
+          "hash": "5bed0e5a0b"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 26.3,
+          "stddev": 15.2,
+          "blank": false,
+          "hash": "8decd8529e"
+        }
+      }
+    },
+    "B0": {
+      "overall": 0.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "No 3D scene rendered. The frame is a flat dark-navy clear colour with only HUD/DOM overlays (title card, score/coins/ember/lives/district panel, relay pips, objective banner, ghost toggle, touch control pad, key legend). No geometry, lighting, sky, or character is visible, which points to a WebGL canvas that failed to draw, was occluded, or was captured before the first render."
+        }
+      ],
+      "summary": "HUD-only no-draw frame: the UI chrome is clean and readable, but the 3D scene is entirely absent, leaving a solid clear colour behind the overlays.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 37.2,
+          "stddev": 11.2,
+          "blank": false,
+          "hash": "bed104d171"
+        }
+      }
+    },
+    "C": {
+      "overall": 0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "Error page: Aura3D renderer MaterialBindingError 'Missing shader attribute: a_uv' on a red background; no 3D scene drawn."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": false,
+          "issue": "Identical renderer error page (Missing shader attribute: a_uv); no 3D scene drawn."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": false,
+          "issue": "Identical renderer error page (Missing shader attribute: a_uv); no 3D scene drawn."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": false,
+          "issue": "Identical renderer error page (Missing shader attribute: a_uv); no 3D scene drawn."
+        }
+      ],
+      "summary": "Every frame is the same Aura3D MaterialBindingError page: a material requires the a_uv attribute but the geometry lacks UVs, thrown in BE.bindGenerated from Ve.drawItem. Rendering never ran, so there is nothing to judge visually and the score is 0.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 62.3,
+          "stddev": 13.8,
+          "blank": false,
+          "hash": "a2e9d9d8eb"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 62.3,
+          "stddev": 13.8,
+          "blank": false,
+          "hash": "a2e9d9d8eb"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 62.3,
+          "stddev": 13.8,
+          "blank": false,
+          "hash": "a2e9d9d8eb"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 62.3,
+          "stddev": 13.8,
+          "blank": false,
+          "hash": "a2e9d9d8eb"
+        }
+      }
+    },
+    "B": {
+      "overall": 1.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "3D scene drew but has no title/UI. It shows flat-shaded low-poly primitives (icosahedron clusters, thin slabs, box buildings) on a flat mustard/orange backdrop, with smeared horizontal streak artifacts across the top and bottom bands that look like stretched or clamped textures, or depth/precision problems."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Pixel-identical to frame 01. There is no camera or game-state change, so the game is likely frozen or not advancing. It has the same streak artifacts, no shadows, and no lighting variation."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Identical to frames 01 and 02. There is no progression, no player readability (only a tiny magenta outline square), and no VFX."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Identical to all prior frames. The 'action' frame shows no motion, effects or gameplay, which points to a stalled sim or a capture that did not advance."
+        }
+      ],
+      "summary": "The 3D scene drew, but all four frames are identical captures of placeholder-grade flat-coloured primitives with no shadows, no meaningful lighting or IBL, broken streaky backdrop bands and no visible progression, which puts it at placeholder level on the scale.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 62.7,
+          "stddev": 39.7,
+          "blank": false,
+          "hash": "974c56d2aa"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 62.7,
+          "stddev": 39.7,
+          "blank": false,
+          "hash": "974c56d2aa"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 62.7,
+          "stddev": 39.7,
+          "blank": false,
+          "hash": "974c56d2aa"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 62.7,
+          "stddev": 39.7,
+          "blank": false,
+          "hash": "974c56d2aa"
+        }
+      }
+    },
+    "note": "Flags-off unchanged; B swaps blue night for an orange sunset palette but loses the player and stays static across shots; C crashes with MaterialBindingError (missing a_uv), so overall it got worse."
+  },
+  "showcase-turbo-drift-circuit": {
+    "A0": {
+      "overall": null,
+      "frames": [],
+      "summary": "no frames captured",
+      "stats": {}
+    },
+    "A": {
+      "overall": 2.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "3D scene drew, but there is no title UI or HUD. The camera sits at ground level, so a flat untextured green ground plane fills about 80% of the frame. The sky is a flat dark purple clear colour. Props (teal box, orange cones, red block, guardrail, tyres) are clipped against the top edge. There is no visible shadowing, IBL or post. A white band at the bottom suggests the canvas is not filling the viewport."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Pixel-identical to frame 01. The scene appears frozen or not progressing. It has the same bad near-ground camera framing and untextured flat-shaded primitives."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Identical to frames 01-02. There is no car, motion, gameplay change or HUD, and the camera is still embedded at grass level."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Identical to the other frames. The action shot shows no player vehicle, VFX, motion blur, drift smoke or HUD. The scene is effectively a static greybox with a broken camera placement."
+        }
+      ],
+      "summary": "The scene renders, but all four frames are an identical, frozen, ground-clipped view of flat-coloured placeholder primitives under a solid clear-colour sky, with no visible car, shadows, materials, atmosphere or HUD, placing it at prototype-greybox level.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 94.9,
+          "stddev": 64.5,
+          "blank": false,
+          "hash": "3666cb4d23"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 94.9,
+          "stddev": 64.5,
+          "blank": false,
+          "hash": "3666cb4d23"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 94.9,
+          "stddev": 64.5,
+          "blank": false,
+          "hash": "3666cb4d23"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 94.9,
+          "stddev": 64.5,
+          "blank": false,
+          "hash": "3666cb4d23"
+        }
+      }
+    },
+    "B0": {
+      "overall": null,
+      "frames": [],
+      "summary": "no frames captured",
+      "stats": {}
+    },
+    "C": {
+      "overall": 1.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "3D scene draws, but it is untextured primitive boxes and cones on a flat green plane with a grey clear-colour sky. The camera is badly placed at ground level, looking at a dark-red slab, with large objects clipping the top edge. There is no visible title UI, no meaningful shadows, and no IBL; only a heavy vignette."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Pixel-identical to the title frame, so the camera and scene appear frozen or the game did not progress. The same greybox primitives and poor framing remain, there is no car or track visible in a readable way, and no HUD is visible."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Again identical to frames 1 and 2, so there is no gameplay motion, VFX, or state change mid-session. The camera may be stuck or input never applied. The scene is flat-shaded placeholder geometry with no atmosphere or depth cues."
+        }
+      ],
+      "summary": "All three frames are the same static, badly framed shot of untextured primitive boxes on a flat green plane under a clear grey sky, so the scene renders but reads as placeholder greybox with an apparently frozen camera and no visible gameplay.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 55.1,
+          "stddev": 33.4,
+          "blank": false,
+          "hash": "68871b6ab6"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 55.1,
+          "stddev": 33.4,
+          "blank": false,
+          "hash": "68871b6ab6"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 55.1,
+          "stddev": 33.4,
+          "blank": false,
+          "hash": "68871b6ab6"
+        }
+      }
+    },
+    "B": {
+      "overall": 2.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": true,
+          "issue": "Scene draws, but the camera sits at ground level facing a flat grass plane that fills about 80% of the frame. Visible assets are flat-shaded primitives: a teal box, a red box, cone trees and a fence. There are no visible shadows, the sky is a flat dark purple, and no title UI or car is visible."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": true,
+          "issue": "Pixel-identical to frame 01. The camera has not moved and the game state has not advanced, so the frame is effectively frozen. Composition is unreadable and no player vehicle is visible."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": true,
+          "issue": "Identical to frames 01 and 02, with no gameplay progression. The camera appears clipped low or misplaced. The only post effect is a heavy vignette, and there is no lighting depth or atmosphere."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": true,
+          "issue": "Identical to all previous frames: there is no action, no VFX, no car and no HUD. This points to a stalled or stuck capture, or a broken camera rig. Materials are flat Lambert with no PBR, no IBL and no shadows."
+        }
+      ],
+      "summary": "The scene renders, but all four frames are an identical, frozen, badly framed ground-level view of flat-shaded primitive props on a featureless grass plane under a flat sky, so it reads as an early greybox prototype with no visible car, gameplay or lighting quality.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 56.9,
+          "stddev": 19.8,
+          "blank": false,
+          "hash": "c570f49df2"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 56.9,
+          "stddev": 19.8,
+          "blank": false,
+          "hash": "c570f49df2"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 56.9,
+          "stddev": 19.8,
+          "blank": false,
+          "hash": "c570f49df2"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 56.9,
+          "stddev": 19.8,
+          "blank": false,
+          "hash": "c570f49df2"
+        }
+      }
+    },
+    "note": "Little changed: flags-off still captures nothing; B drops the white bottom bar and adds vignette but shows the same static field; C adds a dark red box yet loses the 04-action frame."
+  },
+  "showcase-vault-breakers": {
+    "A0": {
+      "overall": null,
+      "frames": [],
+      "summary": "no frames captured",
+      "stats": {}
+    },
+    "A": {
+      "overall": 0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "Main viewport is a flat slate-grey (#3d414d-ish) clear colour with an empty dark side panel; no geometry, text, or HUD rendered."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": false,
+          "issue": "Identical to title frame: solid grey canvas and empty side panel, the 3D scene never drew."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": false,
+          "issue": "Identical solid grey clear colour; no scene, no HUD content, no change from previous frames."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": false,
+          "issue": "Identical solid grey clear colour during the supposed action phase; renderer or scene init likely failed and the page shell rendered alone."
+        }
+      ],
+      "summary": "All four frames are the same empty page shell (a rounded grey canvas showing only its clear colour beside a blank dark panel), so the 3D scene never rendered and there is nothing to judge visually.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 51.3,
+          "stddev": 23.5,
+          "blank": false,
+          "hash": "5cb6951dad"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 51.3,
+          "stddev": 23.5,
+          "blank": false,
+          "hash": "5cb6951dad"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 51.3,
+          "stddev": 23.5,
+          "blank": false,
+          "hash": "5cb6951dad"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 51.3,
+          "stddev": 23.5,
+          "blank": false,
+          "hash": "5cb6951dad"
+        }
+      }
+    },
+    "B0": {
+      "overall": null,
+      "frames": [],
+      "summary": "no frames captured",
+      "stats": {}
+    },
+    "C": {
+      "overall": 0.5,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "Main canvas is solid black and the right-side panel is an empty dark rounded rectangle with no text or HUD; the 3D scene did not render."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": false,
+          "issue": "Identical to the title frame: black canvas and an empty side panel, so no scene geometry, lighting or UI content drew."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": false,
+          "issue": "Identical solid-black canvas with an empty side panel; no 3D draw and no progression since earlier frames."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": false,
+          "issue": "Identical solid-black canvas with an empty side panel; still no render in the action frame, which suggests a WebGL/context or asset-load failure or a stalled render loop."
+        }
+      ],
+      "summary": "All four frames show only a black canvas beside an empty page-layout panel, so 'showcase-vault-breakers' never drew a 3D scene and there is nothing to judge visually beyond the failed render.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 4.4,
+          "stddev": 7.0,
+          "blank": true,
+          "hash": "6decffdc85"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 4.4,
+          "stddev": 7.0,
+          "blank": true,
+          "hash": "6decffdc85"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 4.4,
+          "stddev": 7.0,
+          "blank": true,
+          "hash": "6decffdc85"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 4.4,
+          "stddev": 7.0,
+          "blank": true,
+          "hash": "6decffdc85"
+        }
+      }
+    },
+    "B": {
+      "overall": 0.0,
+      "frames": [
+        {
+          "name": "desktop-1280x720__01-title.png",
+          "drew": false,
+          "issue": "No 3D scene rendered: the main viewport is a flat solid slate-grey (#3d414d-ish) rounded panel and the side panel is empty dark navy. No geometry, text, or HUD content is visible."
+        },
+        {
+          "name": "desktop-1280x720__02-opening.png",
+          "drew": false,
+          "issue": "Pixel-identical to the title frame: a solid grey canvas and an empty side panel. The scene never drew."
+        },
+        {
+          "name": "desktop-1280x720__03-mid.png",
+          "drew": false,
+          "issue": "Identical solid grey viewport with no geometry, lighting, or UI content. The render loop is likely not running, or the WebGL context or scene failed to initialise."
+        },
+        {
+          "name": "desktop-1280x720__04-action.png",
+          "drew": false,
+          "issue": "Identical solid clear-colour frame. No action, VFX, or HUD is visible, so the capture is still stuck in an empty layout shell."
+        }
+      ],
+      "summary": "All four frames are the same empty page layout with a solid grey canvas and a blank side panel, so the 3D scene never rendered and there is nothing to grade visually.",
+      "stats": {
+        "desktop-1280x720__01-title.png": {
+          "mean": 51.3,
+          "stddev": 23.5,
+          "blank": false,
+          "hash": "5cb6951dad"
+        },
+        "desktop-1280x720__02-opening.png": {
+          "mean": 51.3,
+          "stddev": 23.5,
+          "blank": false,
+          "hash": "5cb6951dad"
+        },
+        "desktop-1280x720__03-mid.png": {
+          "mean": 51.3,
+          "stddev": 23.5,
+          "blank": false,
+          "hash": "5cb6951dad"
+        },
+        "desktop-1280x720__04-action.png": {
+          "mean": 51.3,
+          "stddev": 23.5,
+          "blank": false,
+          "hash": "5cb6951dad"
+        }
+      }
+    },
+    "note": "Nothing improved: flags-off still captures no frames (A0/B0), B matches A's empty gray panel plus sidebar, and C is worse, rendering an all-black canvas with no game content."
+  }
+}
