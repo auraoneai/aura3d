@@ -77,6 +77,9 @@ export const prd06MorphFace: MorphFaceSpec = {
   time: 0,
   settleFrames: 4,
   owner: "prd06",
+  referenceProfile: "contract",
+  brokenControls: [],
+  primaryCriterion: "Morph-target face weights visibly deform the head silhouette (GPU morph path)",
   qrFlags: ["animation"],
   admittedAsReference: false,
   morphFace: {
