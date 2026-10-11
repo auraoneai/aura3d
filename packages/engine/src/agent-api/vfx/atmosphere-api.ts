@@ -8,7 +8,6 @@ import type { AuraHeightFogSpec, AuraSkySpec } from "../../contracts/atmosphere"
 import { StubAppAtmosphere } from "../../contracts/atmosphere";
 import { ProductionEffectSystem, type AppLike } from "../../production-runtime/effects/ProductionEffectSystem";
 import { attachVfxBridge } from "./bridge";
-import { bindPrd07RendererFlags } from "@aura3d/rendering";
 import { bindPrd07FogRuntime } from "../compiler/fog";
 import { prd07SystemFor } from "./effects-api";
 
@@ -16,7 +15,6 @@ export function createAtmosphereExtension(app: AuraApp, ctx: { flags: QrFlags })
   if (!ctx.flags.on("A3D_QR_VFX_SKY") && !ctx.flags.on("A3D_QR_VFX") && !ctx.flags.on("A3D_QR_VFX_FOG")) {
     return new StubAppAtmosphere();
   }
-  bindPrd07RendererFlags(ctx.flags);
   const system = prd07SystemFor(app) ?? new ProductionEffectSystem(app as unknown as AppLike);
   // §6.5 — flag-on hides the tagged prd07.legacySky.* primitives.
   system.setSkyFlagOn(ctx.flags.on("A3D_QR_VFX_SKY"));
