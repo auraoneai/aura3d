@@ -23,7 +23,10 @@ describe("Q-15-1: compiler forwards C-16 decoder options to every typed-GLB acto
       const calls = source.split("createTypedGLBActor({").slice(1);
       expect(calls.length).toBeGreaterThan(0);
       for (const call of calls) {
-        const body = call.slice(0, call.indexOf("})"));
+        // Every call ends with the tint-bridge spread; the options before it are the call body.
+        const end = call.indexOf("applyModelTintBridge(");
+        expect(end, "createTypedGLBActor call shape changed; update this contract").toBeGreaterThan(0);
+        const body = call.slice(0, end);
         expect(body, "createTypedGLBActor call without decoder options").toMatch(/\.\.\.(decoderOptions|typedGLBActorDecoderOptions\()/);
       }
     });
