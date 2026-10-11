@@ -71,7 +71,10 @@ permissions:
   contents: read
 
 concurrency:
-  group: post-quality-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
+  # main + dispatch get run_id in the group: cancel-in-progress false does not
+  # stop GitHub replacing a PENDING run in a shared group (lighting-quality
+  # main runs 38184180415, 38182964974 were cancelled that way).
+  group: post-quality-${{ github.ref }}${{ (github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main') && format('-r-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
