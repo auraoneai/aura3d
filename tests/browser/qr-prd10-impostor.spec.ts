@@ -114,9 +114,30 @@ test("S8: impostor bake is deterministic and impostor/LOD0 IoU ≥ 0.9 at 8 view
     const target = (w.__a3dBakeTarget as (...a: unknown[]) => { fb: WebGLFramebuffer })(gl, size);
     const lookPerspective = w.__a3dLookPerspective as (...a: unknown[]) => { mvp: Float32Array; eye: number[] };
     const drawMesh = w.__a3dDrawMesh as (...a: unknown[]) => void;
+    // Visual proof: an 8×2 contact sheet (row 0 LOD0, row 1 impostor) on sky blue.
+    const sheet = document.createElement("canvas");
+    sheet.width = size * evalDirs.length;
+    sheet.height = size * 2;
+    const ctx2d = sheet.getContext("2d")!;
+    ctx2d.fillStyle = "#9db8cf";
+    ctx2d.fillRect(0, 0, sheet.width, sheet.height);
+    const stash = (px: Uint8Array, col: number, row: number): void => {
+      const img = ctx2d.createImageData(size, size);
+      for (let y = 0; y < size; y += 1) {
+        // GL rows are bottom-up; ImageData is top-down
+        img.data.set(px.subarray((size - 1 - y) * size * 4, (size - y) * size * 4), y * size * 4);
+      }
+      const tmp = document.createElement("canvas");
+      tmp.width = size;
+      tmp.height = size;
+      tmp.getContext("2d")!.putImageData(img, 0, 0);
+      ctx2d.drawImage(tmp, col * size, row * size);
+    };
+    let lastPx = new Uint8Array(0);
     const mask = (): Uint8Array => {
       const px = new Uint8Array(size * size * 4);
       gl.readPixels(0, 0, size, size, gl.RGBA, gl.UNSIGNED_BYTE, px);
+      lastPx = px;
       const m = new Uint8Array(size * size);
       for (let i = 0; i < m.length; i += 1) m[i] = px[i * 4 + 3]! > 0 ? 1 : 0;
       return m;
@@ -136,6 +157,7 @@ test("S8: impostor bake is deterministic and impostor/LOD0 IoU ≥ 0.9 at 8 view
       clear();
       drawMesh(gl, res, mvp, 0);
       const a = mask();
+      stash(lastPx, views8.length, 0);
       clear();
       gl.useProgram(prog);
       gl.bindVertexArray(quadVao);
@@ -161,6 +183,7 @@ test("S8: impostor bake is deterministic and impostor/LOD0 IoU ≥ 0.9 at 8 view
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       gl.bindVertexArray(null);
       const b = mask();
+      stash(lastPx, views8.length, 1);
       let inter = 0;
       let uni = 0;
       let na = 0;
@@ -174,7 +197,7 @@ test("S8: impostor bake is deterministic and impostor/LOD0 IoU ≥ 0.9 at 8 view
       views8.push({ dir, iou: uni === 0 ? 0 : inter / uni, lod0: na, impostor: nb });
     }
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    return { hash1, hash2, atlasCoverage, views: views8, glError: gl.getError() };
+    return { hash1, hash2, atlasCoverage, views: views8, glError: gl.getError(), sheet: sheet.toDataURL("image/png") };
   }, {
     mesh: meshForPage(mesh),
     tiles: plan.tiles,
@@ -189,8 +212,10 @@ test("S8: impostor bake is deterministic and impostor/LOD0 IoU ≥ 0.9 at 8 view
   });
 
   expect("error" in result ? result.error : null, "CI runner must expose WebGL2 and compile the impostor program").toBeNull();
-  const r = result as { hash1: string; hash2: string; atlasCoverage: number; views: { dir: number[]; iou: number; lod0: number; impostor: number }[]; glError: number };
+  const { sheet, ...r } = result as { sheet: string; hash1: string; hash2: string; atlasCoverage: number; views: { dir: number[]; iou: number; lod0: number; impostor: number }[]; glError: number };
   mkdirSync("tests/reports", { recursive: true });
+  writeFileSync("tests/reports/qr-prd10-impostor.png", Buffer.from(sheet.replace(/^data:image\/png;base64,/, ""), "base64"));
+  await test.info().attach("impostor-vs-lod0", { path: "tests/reports/qr-prd10-impostor.png", contentType: "image/png" });
   writeFileSync("tests/reports/qr-prd10-impostor.json", `${JSON.stringify({ glb: GLB, node: SPECIES_NODE, grid: VIEWS, tile: TILE, planHash: plan.planHash, ...r }, null, 2)}\n`);
   test.info().annotations.push({ type: "S8", description: `atlas sha256 ${r.hash1} / ${r.hash2}; IoU ${r.views.map((v) => v.iou.toFixed(3)).join(", ")}` });
 

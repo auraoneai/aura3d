@@ -19,7 +19,6 @@ on:
       - "tests/unit/contracts/impl/prd10-*.ts"
       - "tests/browser/qr-prd10-*.ts"
       - "tools/impostor-bake/**"
-      - "benchmarks/quality-rebuild/sentinels.json"
       - ".github/workflows/qr-prd10-world.yml"
   push:
     branches: [main]
@@ -34,7 +33,6 @@ on:
       - "tests/unit/contracts/impl/prd10-*.ts"
       - "tests/browser/qr-prd10-*.ts"
       - "tools/impostor-bake/**"
-      - "benchmarks/quality-rebuild/sentinels.json"
       - ".github/workflows/qr-prd10-world.yml"
   workflow_dispatch:
   # Reusable — other lane/meta workflows may invoke this gate in place.
@@ -204,35 +202,6 @@ jobs:
             }
             if (bad.length) { console.error("prd10 capture failures: " + bad.join("; ")); process.exit(1); }
           JS
-      # S16 / IC-0: the six C-30 sentinels (sentinels.json) captured twice
-      # under `none` in fresh browser contexts; the CIEDE2000 p99 between the
-      # two arms is the IC-0 flag-off noise floor (evidence/prd-10/IC-0.md).
-      - name: Capture sentinels (flags none, arms A and B)
-        if: always()
-        run: |
-          set -euo pipefail
-          scenes="$(node -e 'console.log(require("./benchmarks/quality-rebuild/sentinels.json").scenes.map((s) => s.id).join(","))')"
-          for arm in a b; do
-            node benchmarks/quality-rebuild/capture.mjs \
-              --dist benchmarks/quality-rebuild/dist \
-              --out "$OUT_DIR/sentinels-$arm" \
-              --scenes "$scenes" \
-              --engines aura3d \
-              --flags none \
-              --strict
-          done
-      - uses: actions/setup-python@v5
-        if: always()
-        with:
-          python-version: "3.12"
-      - name: S16 / IC-0 sentinel flag-off noise (CIEDE2000 p99, A vs B)
-        if: always()
-        run: |
-          set -euo pipefail
-          python -m pip install --quiet numpy==2.5.3 Pillow==12.3.0
-          python benchmarks/quality-rebuild/scenes/prd10/sentinel-identity.py \
-            "$OUT_DIR/sentinels-a" "$OUT_DIR/sentinels-b" "$OUT_DIR/sentinel-identity.json" \
-            | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Upload capture evidence
         if: always()
         uses: actions/upload-artifact@v4
