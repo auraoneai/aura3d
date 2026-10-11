@@ -38,7 +38,7 @@ import { resolveCanvasPixelRatio, watchDevicePixelRatio, type AuraResolutionOpti
 import type { AuraQualityTier, AuraQualityTierSettings } from "./contracts/quality";
 import { QUALITY_TIERS } from "./contracts/quality";
 import { MaterialInstance } from "./MaterialInstance";
-import { materialUsesGeneratedProgram } from "./program/MaterialFeatures";
+import { featuresForGeometry, materialUsesGeneratedProgram } from "./program/MaterialFeatures";
 import { selectShaderFeatureBits } from "./program/FeatureSelect";
 import type { ProgramFeatures } from "./contracts/program";
 import { collectWarmupFeatures, ProgramWarmup, type WarmupInput } from "./program/ProgramWarmup";
@@ -1388,9 +1388,13 @@ export class Renderer {
       if (!m || !materialUsesGeneratedProgram(m)) continue;
       const mf = m.programFeatures(ctx);
       const selected = selectShaderFeatureBits({ item, pass: "forward", tier: ctx.tier, flags });
-      const features = { ...mf.features, ...selected };
-      const key = `${m.shaderKey}:${m.getRevision()}:${JSON.stringify(Object.entries(features).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)))}`;
-      if (!records.has(key)) records.set(key, { ...mf, features });
+      // #867 (games): same geometry-driven feature mask ForwardPass applies.
+      const attrs = item.geometry.vertexBuffer.format.attributes;
+      const has = (name: string) => attrs.some((a) => a.semantic === name || a.shaderName === name);
+      const record = featuresForGeometry({ ...mf, features: { ...mf.features, ...selected } }, has);
+      const geometryMask = ["a_uv", "a_uv1", "a_color", "a_joints", "a_weights"].map((n) => (has(n) ? 1 : 0)).join("");
+      const key = `${m.shaderKey}:${m.getRevision()}:${geometryMask}:${JSON.stringify(Object.entries(record.features).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)))}`;
+      if (!records.has(key)) records.set(key, record);
     }
     if (records.size === 0) return { materials: [] };
     const clustered = resolveForwardClusteredLighting(lights, this.width, this.height, cameraViewProjection);

@@ -2,7 +2,7 @@ import { Geometry } from "./Geometry";
 import { type CollectedLight } from "./LightCollector";
 import { LightUniforms } from "./LightUniforms";
 import { Material, type RenderState } from "./Material";
-import { MaterialBinding } from "./MaterialBinding";
+import { MaterialBinding, MaterialBindingError } from "./MaterialBinding";
 import { MaterialInstance } from "./MaterialInstance";
 import { type InstanceVertexAttribute, type RenderBuffer, type RenderDevice, RenderDeviceError, type RenderShaderProgram, type UniformValue } from "./RenderDevice";
 import { RenderPipeline } from "./RenderPipeline";
@@ -25,7 +25,7 @@ import { type VertexFormat } from "./VertexFormat";
 import { type ClusteredForwardLightingResources } from "./ClusteredForwardLighting";
 import { programCacheSlot, type ProgramCacheLike, type ProgramFeatures } from "./contracts/program";
 import { normalizeProgramFeatures } from "./program/ProgramFeatures";
-import { materialFeatureWarning, materialUsesGeneratedProgram } from "./program/MaterialFeatures";
+import { featuresForGeometry, geometryHasSkin, materialFeatureWarning, materialUsesGeneratedProgram } from "./program/MaterialFeatures";
 import { bindShaderFeatureUniforms, selectShaderFeatureBits } from "./program/FeatureSelect";
 import { bindMaterialLobeUniforms } from "./materials/PhysicalFeatures";
 import { QUALITY_TIERS, type AuraQualityTierSettings } from "./contracts/quality";
@@ -340,11 +340,11 @@ export class ForwardPass extends BaseRenderPass {
     const material = item.material ?? new UnlitMaterial();
     const baseMaterial = getBaseMaterial(material);
     this.applyLightUniforms(material);
-    const shader = this.getShader(baseMaterial, device, item);
+    let shader = this.getShader(baseMaterial, device, item);
     if (shader === undefined) return; // A3D_QR_CORE_GENERATOR async-skip (C-02 §A.2)
     // Generated iff getShader resolved a generated program for this draw (a
     // compile-failed fallback or an unskinnable skinned item is a legacy draw).
-    const generated = this.lastProgramFeatures !== undefined;
+    let generated = this.lastProgramFeatures !== undefined;
     if (item.instanceTransforms && baseMaterial.renderState.cullMode !== "none" && instancedItemNeedsPerInstanceCullState(item)) {
       for (const expanded of expandInstancedRenderItem(item)) {
         this.drawItem(device, expanded);
@@ -367,10 +367,31 @@ export class ForwardPass extends BaseRenderPass {
       }
       return;
     }
-    const uniforms = generated ? this.acquireUniformPacket(device) : new Map<string, UniformValue>();
-    const binding = generated
-      ? this.materialBinding.bindGenerated(material, shader, this.lastProgramFeatures, uniforms)
-      : this.materialBinding.bind(material, shader);
+    let uniforms = generated ? this.acquireUniformPacket(device) : new Map<string, UniformValue>();
+    // #867 (games): binding validation never kills the frame. A generated
+    // draw that fails validation falls back to the legacy shaderKey program;
+    // a legacy draw that fails is skipped with one warning. Strict throws.
+    let binding: ReturnType<MaterialBinding["bind"]> | null = null;
+    try {
+      binding = generated
+        ? this.materialBinding.bindGenerated(material, shader, this.lastProgramFeatures, uniforms)
+        : this.materialBinding.bind(material, shader);
+    } catch (error) {
+      if (!(error instanceof MaterialBindingError) || rendererQrFlags(device).on("A3D_QR_STRICT")) throw error;
+      warnBindingOnce(item, baseMaterial, error, generated);
+      if (!generated) return;
+      this.lastProgramFeatures = undefined;
+      generated = false;
+      shader = this.legacyShader(baseMaterial, device);
+      uniforms = new Map<string, UniformValue>();
+      try {
+        binding = this.materialBinding.bind(material, shader);
+      } catch (legacyError) {
+        if (!(legacyError instanceof MaterialBindingError)) throw legacyError;
+        warnBindingOnce(item, baseMaterial, legacyError, false);
+        return;
+      }
+    }
     if (!generated) for (const [k, v] of binding.uniforms) uniforms.set(k, v);
     applyClusteredLightingUniforms(this.clusteredLighting, shader, uniforms);
     applyEnvironmentLightingUniforms(this.options.environmentLighting, item, shader, uniforms);
@@ -396,9 +417,10 @@ export class ForwardPass extends BaseRenderPass {
         if (!uniforms.has(name)) uniforms.set(name, value);
       });
     }
-    if (item.skinning && !(generated && this.lastProgramFeatures?.features["prd06.deform"] !== undefined)) {
+    if (item.skinning && !generated) {
       // Legacy skinned programs take the u_jointMatrices palette; on the
-      // generated path prd06.deform's bindUniforms binds the bone texture.
+      // generated path prd06.deform's bindUniforms binds the bone texture, and
+      // a generated draw without it has no skin attributes (featuresForGeometry).
       this.skinningPaletteUploads.bind(item, item.skinning, baseMaterial, shader, uniforms, device);
     }
     const instanceBinding = item.instanceTransforms ? this.applyInstanceBinding(device, item, shader, uniforms, generated) : { count: 1 };
@@ -494,7 +516,9 @@ export class ForwardPass extends BaseRenderPass {
       // deform feature (prd06.deform, A3D_QR_ANIMATION) selected this item,
       // the generated program has no skinning, so the draw keeps the legacy
       // skinned shaderKey program instead of rendering the bind pose.
-      if (item?.skinning && this.lastProgramFeatures.features["prd06.deform"] === undefined) {
+      // A skinned item whose geometry has no joints/weights draws unskinned on
+      // the generated program (features follow the geometry, #867 games).
+      if (item?.skinning && geometryHasSkin((a) => geometryHasAttribute(item.geometry, a)) && this.lastProgramFeatures.features["prd06.deform"] === undefined) {
         this.lastProgramFeatures = undefined;
         return this.legacyShader(material, device);
       }
@@ -547,10 +571,12 @@ export class ForwardPass extends BaseRenderPass {
     // T0-05: registered ShaderFeatures select their bits per draw (C-02 §A.2:
     // at acquire time); the warmup applies the same selection per item.
     const selected = item ? selectShaderFeatureBits({ item, pass: "forward", tier, flags }) : {};
+    // #867 (games): the feature set follows what the geometry carries
+    // (three.js semantics): no uv → no uv maps, no joints/weights → no skin.
+    const record = item ? featuresForGeometry({ ...mf, features: { ...mf.features, ...selected } }, (a) => geometryHasAttribute(item.geometry, a)) : { ...mf, features: { ...mf.features, ...selected } };
     return normalizeProgramFeatures({
-      ...mf,
+      ...record,
       ...axes,
-      features: { ...mf.features, ...selected },
       // Phase 6: instancing is item-driven — a material's own feature record
       // only declares it when authored instanced; the draw's program must
       // cover the union (attribute matrices are the only generated path).
@@ -917,6 +943,18 @@ function resolveDrawRange(geometry: Geometry, range: RenderItemDrawRange | undef
     });
   }
   return range;
+}
+
+const warnedBindings = new WeakMap<Material, Set<string>>();
+
+/** One console warning per (material, item label, path) for a non-fatal binding failure. */
+function warnBindingOnce(item: RenderItem, material: Material, error: MaterialBindingError, generated: boolean): void {
+  const key = `${item.label ?? ""}|${generated ? "generated" : "legacy"}`;
+  const seen = warnedBindings.get(material) ?? new Set<string>();
+  if (seen.has(key)) return;
+  seen.add(key);
+  warnedBindings.set(material, seen);
+  console.warn(`[prd01] ${generated ? "generated draw falls back to the legacy program" : "draw skipped"} for "${item.label ?? material.name}": ${error.message}`);
 }
 
 function geometryHasAttribute(geometry: Geometry, attribute: string): boolean {
