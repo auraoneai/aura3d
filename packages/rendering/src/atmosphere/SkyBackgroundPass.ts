@@ -85,8 +85,13 @@ export class SkyBackgroundPass {
     }
   }
 
-  /** Fullscreen draw into the current target with the given VP matrix. */
-  drawSky(viewProjection: Float32Array): void {
+  /**
+   * Fullscreen draw into the current target with the given VP matrix.
+   * `depthTested` (after-opaque sky): the far-plane triangle (z = 0.999999)
+   * depth-tests less-equal against the bound forward depth, so it fills only
+   * pixels no opaque geometry covered.
+   */
+  drawSky(viewProjection: Float32Array, depthTested = false): void {
     const defines = skyProgramDefines(this.frame, { fog: this.fog !== null });
     const program = this.program(defines);
     const geometry = fullscreenTriangle();
@@ -114,7 +119,9 @@ export class SkyBackgroundPass {
       vertexCount: 3,
       shader: program,
       uniforms,
-      renderState: { depthTest: false, depthWrite: false, cullMode: "none", blend: false, depthCompare: "always" }
+      renderState: depthTested
+        ? { depthTest: true, depthWrite: false, cullMode: "none", blend: false, depthCompare: "less-equal" }
+        : { depthTest: false, depthWrite: false, cullMode: "none", blend: false, depthCompare: "always" }
     });
   }
 
@@ -172,6 +179,12 @@ export class SkyDrawPass extends BaseRenderPass {
   execute(_context: RenderPassContext): void {
     if (!this.spec) return;
     skyPassFor(this.device).drawSky(this.viewProjection);
+  }
+
+  /** After-opaque fallback draw (no environment background this frame). */
+  executeDepthTested(): void {
+    if (!this.spec) return;
+    skyPassFor(this.device).drawSky(this.viewProjection, true);
   }
 }
 

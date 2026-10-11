@@ -246,14 +246,26 @@ const meshContributor: FrameContributor = {
   }
 };
 
+/**
+ * The Renderer runs the `background` phase only when the frame has an
+ * environment background (HDRI or a lane-02 probe). A sky node over a colour
+ * background therefore never drew. The contributor marks the frame's
+ * blackboard when it drew in `background`; otherwise it draws in
+ * `after-opaque`, depth-tested against the forward depth so the sky fills
+ * only uncovered pixels (lane-07 S4/S5).
+ */
+const SKY_DRAWN_KEY = "prd07.sky.drawnInBackground";
+
 const skyContributor: FrameContributor = {
   id: "prd07.sky",
   owner: "prd07",
   flag: "A3D_QR_VFX_SKY",
-  phases: ["background"],
-  passes: (_phase, ctx) => {
+  phases: ["background", "after-opaque"],
+  passes: (phase, ctx) => {
     const atmosphere = (ctx.source as Prd07FrameSource).atmosphere;
     if (!atmosphere?.sky) return [];
+    if (phase === "after-opaque" && ctx.blackboard.get(SKY_DRAWN_KEY) === true) return [];
+    if (phase === "background") ctx.blackboard.set(SKY_DRAWN_KEY, true);
     const pass = skyDrawPassFor(ctx.device);
     pass.setSpec(atmosphere.sky, ctx.timeSeconds);
     pass.setViewProjection(contextViewProjection(ctx));
@@ -282,7 +294,13 @@ const skyContributor: FrameContributor = {
           }
         : null
     );
-    return [pass];
+    if (phase === "background") return [pass];
+    return [{
+      name: "prd07.sky.late",
+      reads: [prd07OpaqueColorResource(ctx)],
+      writes: ["prd07.sky.late.color"],
+      execute: () => pass.executeDepthTested()
+    }];
   }
 };
 
