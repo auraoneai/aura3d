@@ -22,9 +22,9 @@ import {
   model,
   resolveQrFlags,
   scene,
-  unsafeModelUrl,
   type AuraApp
 } from "@aura3d/engine";
+import { typedProbeModelAsset } from "./probe-asset.js";
 import { setTypedGLBActorQrFlags, setTypedGLBActorQrTransmissionMode } from "@aura3d/engine/lanes";
 import { setRendererQrFlags } from "@aura3d/rendering";
 import { decodePngDataUrl } from "/benchmarks/quality-rebuild/scenes/prd04/metrics.js";
@@ -80,7 +80,8 @@ async function main(): Promise<void> {
     );
   }
   built.add(
-    model(unsafeModelUrl(assetUrl), { name: "probe", scaleMode: "world", castShadow: false, receiveShadow: false }).position(
+    // Typed, hash-verified ref: the production bridge rejects unsafeModelUrl.
+    model(await typedProbeModelAsset(assetUrl), { name: "probe", scaleMode: "world", castShadow: false, receiveShadow: false }).position(
       0,
       0,
       0
