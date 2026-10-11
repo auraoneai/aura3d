@@ -43,6 +43,14 @@ const ensureRenderingLane = (): void => {
     }
   );
 };
+/**
+ * 06-S12: resolves once the lazy rendering-lane chunk is loaded. Frame-path
+ * callers degrade without it; synchronous consumers (unit tests) await this.
+ */
+export function prd06RenderingLaneReady(): Promise<unknown> {
+  ensureRenderingLane();
+  return renderingLaneLoading!;
+}
 import { setPoseMixerBlendFlagProvider } from "@aura3d/animation/lanes";
 import { registerDiagnosticsSection } from "../contracts/diagnostics.js";
 import { DIAGNOSTIC_ONLY_FIELDS, registerOptionCoverage } from "../contracts/compiler.js";
