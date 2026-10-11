@@ -1,3 +1,4 @@
+import { assetMarkLabel, assetPhaseMark } from "./assetPhaseMarks";
 import { GLTFLoader, type GLTFAsset, type GLTFDracoDecoder, type GLTFMeshoptDecoder } from "./GLTFLoader";
 import { LoadContext } from "./LoadContext";
 
@@ -83,12 +84,15 @@ async function parseGLTFAssetForCache(
     readonly meshoptDecoder?: GLTFMeshoptDecoder;
   }
 ): Promise<GLTFAsset> {
+  const label = assetMarkLabel(options.url);
+  assetPhaseMark(`glb-parse:start:${label}`);
   try {
     const asset = await new GLTFLoader({
       ...(options.dracoDecoder ? { dracoDecoder: options.dracoDecoder } : {}),
       ...(options.meshoptDecoder ? { meshoptDecoder: options.meshoptDecoder } : {})
     }).load({ url: options.url }, new LoadContext());
     entry.asset = asset;
+    assetPhaseMark(`glb-parse:end:${label}`);
     return asset;
   } catch (error) {
     // Failures are never cached: drop the entry so the next load starts clean.
