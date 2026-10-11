@@ -75,6 +75,30 @@ describe("presented pose reaches the renderer's camera (pixels)", () => {
     expect((renderSnapshot.camera as { position: number[] }).position).toEqual([7, 8, 9]);
   });
 
+  it("app.setScene reusing the same camera object keeps updates reaching the renderer", () => {
+    const shared = { position: [0, 2, 6], target: [0, 0, 0], fov: 50 } as Record<string, unknown>;
+    const callbacks = new Set<FrameCb>();
+    let renderSnapshot = { camera: shared, nodes: [] as unknown[] };
+    const app = {
+      scene: { camera: shared, nodes: [] as unknown[] },
+      nodes: { all: () => [], get: () => undefined },
+      onFrame(cb: FrameCb) {
+        callbacks.add(cb);
+        return () => callbacks.delete(cb);
+      },
+      setScene(next: { camera: Record<string, unknown>; nodes: unknown[] }) {
+        this.scene = next as never;
+        renderSnapshot = { ...next, nodes: [...next.nodes] }; // remount: shallow copy, same camera object
+      }
+    };
+    const camera = createAuraCameraController(app as unknown as AuraApp);
+    // Same camera object, new scene wrapper (AuraSceneBuilder.toJSON() reuse).
+    (app as unknown as { setScene(n: unknown): void }).setScene({ camera: shared, nodes: [] });
+    camera.setPose({ position: [9, 9, 9], target: [0, 1, 0] });
+    for (const cb of [...callbacks]) cb({ dt: 1 / 60, time: 0.016 });
+    expect((renderSnapshot.camera as { position: number[] }).position).toEqual([9, 9, 9]);
+  });
+
   it("app.setScene restores the outgoing authored camera even when the camera is idle", () => {
     const authored = { mode: "follow", targetNode: "hero", position: [0, 2, 6], target: [0, 0, 0], fov: 50 };
     const callbacks = new Set<FrameCb>();
