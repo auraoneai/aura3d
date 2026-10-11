@@ -282,55 +282,20 @@ jobs:
   # one of allflags-smoke-github / allflags-smoke runs. Both fail on any
   # infrastructure error (quota, missing artifacts) — never green.
   allflags-smoke-github:
-    name: allflags-smoke (GitHub macos-14)
-    runs-on: macos-14
-    timeout-minutes: 150
+    name: allflags-smoke (GPU runner)
     if: >-
       vars.QR_ALLFLAGS_PROVIDER != 'gitlab' && (
       github.event_name == 'push' || github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'qr-allflags')))
-    env:
-      QR_BENCH_OUT: benchmarks/quality-rebuild/out
-      QR_BENCH_CHROME_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          lfs: false
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 11.1.3
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install chromium
-      - name: flags-bisect (6 probes x none / $ALL / $ALL,strict)
-        id: bisect
-        env:
-          QR_BENCH_SCENES: ${{ env.QR_PROBES }}
-          QR_BENCH_ENGINES: aura3d
-        run: |
-          set -euo pipefail
-          export QR_BENCH_FLAG_SETS="none;$QR_ALL_FLAGS;$QR_ALL_FLAGS,strict"
-          # ci.sh exits non-zero when the `none` control fails (bisect-summary);
-          # the evaluation below still runs on the written summary.
-          bash benchmarks/quality-rebuild/ci.sh
-      - name: Evaluate bisect-summary.json
-        if: ${{ !cancelled() }}
-        run: |
-          set -euo pipefail
-          test -f "$QR_BENCH_OUT/bisect-summary.json" || { echo "::error::no bisect-summary.json was written"; exit 1; }
-          node benchmarks/quality-rebuild/allflags-smoke-eval.mjs \
-            "$QR_BENCH_OUT/bisect-summary.json" process/baselines/allflags-smoke.json "$QR_ALL_FLAGS" "$TRACK0_ISSUE" >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: allflags-smoke-${{ github.run_id }}
-          path: benchmarks/quality-rebuild/out/
-          retention-days: 30
-          if-no-files-found: error
+    uses: ./.github/workflows/qr-azure-gpu.yml
+    with:
+      suite: flags-bisect
+      # macos-14 (Metal) until the self-hosted GPU scale set exists; set
+      # vars.QR_GPU_RUNNER=azure-gpu to move Track 0 there (re-baseline IC-0).
+      runner: ${{ vars.QR_GPU_RUNNER || 'macos-14' }}
+      bench_engines: aura3d
+      allflags_eval: true
 
   allflags-smoke:
     name: allflags-smoke (GitLab)

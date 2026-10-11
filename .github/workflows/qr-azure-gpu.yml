@@ -1,0 +1,191 @@
+name: QR GPU suites
+
+# Track 0 / lane-12 GPU suites on a configurable runner (program-lead ruling
+# 2026-10-11): GitLab macOS is out (quota), GitHub macos-14 (Metal) is the
+# default, and `runner: azure-gpu` targets the self-hosted GPU scale set
+# (labels self-hosted + azure-gpu) once it exists. Same suites as the GitLab
+# qr:benchmark / qr:games jobs, driven by benchmarks/quality-rebuild/ci.sh and
+# tools/quality-rebuild-capture/capture-games.mjs.
+#
+#   suite=benchmark     ci.sh over bench_scenes x bench_engines with qr_flags
+#   suite=flags-bisect  ci.sh, one build, every ';'-separated bench_flag_sets
+#   suite=games         capture-games.mjs (games, viewports, qr_flags)
+#
+# Never compare frames across runner types or providers (macos-14 vs GitLab vs
+# azure-gpu): each provider keeps its own baselines (IC-0 per provider).
+# Honest failures: a red `none` control, a missing summary or a missing
+# artifact fails the job; nothing here is masked.
+
+on:
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: "benchmark | flags-bisect | games"
+        type: choice
+        options: [benchmark, flags-bisect, games]
+        default: flags-bisect
+      runner:
+        description: "macos-14 (Metal) | azure-gpu (self-hosted GPU)"
+        type: choice
+        options: [macos-14, azure-gpu]
+        default: macos-14
+      bench_scenes:
+        description: "Comma-separated benchmark scene ids (empty = all)"
+        required: false
+        default: "01-simple-geometry,16-instancing,12-shadows,03-damaged-helmet,08-skinned-character,14-particles"
+      bench_engines:
+        description: "aura3d | three | aura3d,three"
+        type: choice
+        options: [aura3d, three, "aura3d,three"]
+        default: aura3d
+      bench_flag_sets:
+        description: "';'-separated flag sets for flags-bisect (empty = none;$ALL;$ALL,strict)"
+        required: false
+        default: ""
+      qr_flags:
+        description: "Flag set for benchmark / games (none | all | comma list)"
+        required: false
+        default: "none"
+      games:
+        description: "Comma-separated game ids for suite=games (empty = all 18)"
+        required: false
+        default: ""
+      viewports:
+        description: "Game viewports WIDTHxHEIGHT, comma-separated"
+        required: false
+        default: "1280x720"
+      sourcemap:
+        description: "suite=games: sourcemapped builds + mapped crash table (T0-29)"
+        type: boolean
+        default: false
+      allflags_eval:
+        description: "Evaluate bisect-summary.json with the §2.5 allflags-smoke gate"
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      suite: { type: string, required: false, default: flags-bisect }
+      runner: { type: string, required: false, default: macos-14 }
+      bench_scenes: { type: string, required: false, default: "01-simple-geometry,16-instancing,12-shadows,03-damaged-helmet,08-skinned-character,14-particles" }
+      bench_engines: { type: string, required: false, default: aura3d }
+      bench_flag_sets: { type: string, required: false, default: "" }
+      qr_flags: { type: string, required: false, default: "none" }
+      games: { type: string, required: false, default: "" }
+      viewports: { type: string, required: false, default: "1280x720" }
+      sourcemap: { type: boolean, required: false, default: false }
+      allflags_eval: { type: boolean, required: false, default: false }
+  push:
+    branches: [main]
+    paths:
+      - "benchmarks/quality-rebuild/**"
+      - "tools/quality-rebuild-capture/**"
+      - ".github/workflows/qr-azure-gpu.yml"
+  pull_request:
+    paths:
+      - "benchmarks/quality-rebuild/**"
+      - "tools/quality-rebuild-capture/**"
+      - ".github/workflows/qr-azure-gpu.yml"
+  schedule:
+    - cron: "30 4 * * *"   # nightly flags-bisect control on main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qr-gpu-${{ github.ref }}-${{ inputs.suite || 'default' }}${{ github.ref == 'refs/heads/main' && format('-main-{0}', github.run_id) || '' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  QR_ALL_FLAGS: "core,lighting,post,materials,assets,animation,vfx,camera,game,world,tiers,looks,compiler"
+  TRACK0_ISSUE: "375"
+
+jobs:
+  gpu-suite:
+    name: "QR GPU ${{ inputs.suite || 'flags-bisect' }} (${{ inputs.runner || 'macos-14' }})"
+    # Fork PR heads never reach a self-hosted runner.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ${{ (inputs.runner == 'azure-gpu' && fromJSON('["self-hosted","azure-gpu"]')) || inputs.runner || 'macos-14' }}
+    timeout-minutes: 180
+    env:
+      SUITE: ${{ inputs.suite || 'flags-bisect' }}
+      RUNNER_KIND: ${{ inputs.runner || 'macos-14' }}
+      QR_BENCH_OUT: benchmarks/quality-rebuild/out
+      QR_BENCH_SCENES: ${{ inputs.bench_scenes || '01-simple-geometry,16-instancing,12-shadows,03-damaged-helmet,08-skinned-character,14-particles' }}
+      QR_BENCH_ENGINES: ${{ inputs.bench_engines || 'aura3d' }}
+      IN_FLAG_SETS: ${{ inputs.bench_flag_sets || '' }}
+      QRC_FLAGS: ${{ inputs.qr_flags || 'none' }}
+      QRC_GAMES: ${{ inputs.games || '' }}
+      QRC_VIEWPORTS: ${{ inputs.viewports || '1280x720' }}
+      QRC_SOURCEMAP: ${{ inputs.sourcemap && 'true' || 'false' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          lfs: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+
+      - name: Chromium GPU flags for this runner
+        run: |
+          set -euo pipefail
+          case "$RUNNER_KIND" in
+            macos-14) args="--use-angle=metal --enable-gpu --ignore-gpu-blocklist" ;;
+            # Linux NVIDIA: flags are confirmed by the program lead once the
+            # scale set is verified; until then fail loudly instead of guessing.
+            azure-gpu) args="${QR_AZURE_GPU_CHROME_ARGS:-}"
+              test -n "$args" || { echo "::error::azure-gpu Chromium flags not configured (vars.QR_AZURE_GPU_CHROME_ARGS)"; exit 1; } ;;
+            *) echo "::error::unknown runner '$RUNNER_KIND'"; exit 1 ;;
+          esac
+          echo "QR_BENCH_CHROME_ARGS=$args" >> "$GITHUB_ENV"
+        env:
+          QR_AZURE_GPU_CHROME_ARGS: ${{ vars.QR_AZURE_GPU_CHROME_ARGS }}
+
+      - name: Run suite
+        id: suite
+        run: |
+          set -euo pipefail
+          case "$SUITE" in
+            flags-bisect)
+              export QR_BENCH_FLAG_SETS="${IN_FLAG_SETS:-none;$QR_ALL_FLAGS;$QR_ALL_FLAGS,strict}"
+              bash benchmarks/quality-rebuild/ci.sh ;;
+            benchmark)
+              bash benchmarks/quality-rebuild/ci.sh ;;
+            games)
+              export QRC_LOCAL_BUILD=true
+              node tools/quality-rebuild-capture/capture-games.mjs --build-only
+              node tools/quality-rebuild-capture/capture-games.mjs --skip-build ;;
+            *) echo "::error::unknown suite '$SUITE'"; exit 1 ;;
+          esac
+
+      - name: Sourcemapped crash table (T0-29)
+        if: ${{ !cancelled() && inputs.sourcemap && (inputs.suite || 'flags-bisect') == 'games' }}
+        run: |
+          set -euo pipefail
+          test -f tools/quality-rebuild-capture/out/report.json || { echo "::error::no capture report to map"; exit 1; }
+          node tools/quality-rebuild-capture/map-stack.mjs --report tools/quality-rebuild-capture/out/report.json \
+            tools/quality-rebuild-capture/.build | tee tools/quality-rebuild-capture/out/crash-table.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: allflags-smoke evaluation (§2.5)
+        if: ${{ !cancelled() && inputs.allflags_eval }}
+        run: |
+          set -euo pipefail
+          test -f "$QR_BENCH_OUT/bisect-summary.json" || { echo "::error::no bisect-summary.json was written"; exit 1; }
+          node benchmarks/quality-rebuild/allflags-smoke-eval.mjs \
+            "$QR_BENCH_OUT/bisect-summary.json" process/baselines/allflags-smoke.json "$QR_ALL_FLAGS" "$TRACK0_ISSUE" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload results (report.json, bisect-summary.json, PNGs)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qr-gpu-${{ inputs.suite || 'flags-bisect' }}-${{ inputs.runner || 'macos-14' }}-${{ github.run_id }}
+          path: |
+            benchmarks/quality-rebuild/out/
+            tools/quality-rebuild-capture/out/
+          retention-days: 30
+          if-no-files-found: error
