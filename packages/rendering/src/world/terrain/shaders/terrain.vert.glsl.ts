@@ -3,8 +3,18 @@
  * the `a3d_prd10_terrain_cdlod` / `a3d_prd10_terrain_splat` chunk bodies so the
  * vertex displacement is bit-identical to the harnessed chunk.
  */
-import { terrainCdlodGlsl, terrainCdlodWgsl } from "./terrainCdlod.js";
-import { terrainSplatGlsl, terrainSplatWgsl } from "./terrainSplat.js";
+import {
+  terrainCdlodGlsl,
+  terrainCdlodWgslBindings,
+  terrainCdlodWgslFunctions,
+  terrainCdlodWgslUniformStruct
+} from "./terrainCdlod.js";
+import {
+  terrainSplatGlsl,
+  terrainSplatWgslBindings,
+  terrainSplatWgslFunctions,
+  terrainSplatWgslUniformStruct
+} from "./terrainSplat.js";
 
 export const TERRAIN_VERT_GLSL = /* glsl */ `#version 300 es
 precision highp float;
@@ -68,31 +78,90 @@ void main() {
 }
 `;
 
-/** WGSL Path-G mirror (composed from the chunk bodies like the GLSL path). */
+/**
+ * T2.4 — WGSL twin of the Path S terrain program (TERRAIN_VERT_GLSL +
+ * TERRAIN_FRAG_GLSL), composed from the same chunk function bodies.
+ *
+ * Bind layout (one module, no collisions):
+ *   @group(0): 0 `u_terrain` (CDLOD), 1 `u_height`, 2 `u_camera`, 3 `u_view`
+ *   @group(1): 0..6 splat/hole/layer/macro textures, 7 `u_samp`, 8 `u_terrainFrag`
+ * The fragment entry takes every derivative first, in uniform control flow,
+ * and defers `discard` to the end, so the layer loop uses explicit-gradient
+ * fetches (`textureSampleGrad`) exactly like the GLSL implicit-derivative path.
+ * Validated by naga in `qr-prd10-wgsl.yml`; WebGPU consumption needs #260.
+ */
 export const TERRAIN_WGSL = /* wgsl */ `
-${terrainCdlodWgsl}
-${terrainSplatWgsl}
-@vertex
-fn terrainVs(@location(0) a_grid : vec2f, @location(1) a_node : vec4f) -> TerrainVsOut {
-  var out_ : TerrainVsOut;
-  let pos = a3dTerrainCdlod(a_grid, a_node);
-  out_.position = vec4f(pos, 1.0); // u_viewProjection multiply lands with the Path G UBO group
-  out_.terrainUv = vec2f(0.0);
-  out_.worldPosition = pos;
-  return out_;
-}
+${terrainCdlodWgslUniformStruct}
+${terrainSplatWgslUniformStruct}
+struct A3dTerrainView {
+  viewProjection : mat4x4f,
+  ambient : vec3f,
+  keyLightDir : vec3f,        // direction light travels (e.g. sun -> scene)
+  keyLightColor : vec3f,
+};
+${terrainCdlodWgslBindings}
+@group(0) @binding(3) var<uniform> u_view : A3dTerrainView;
+${terrainSplatWgslBindings}
+${terrainCdlodWgslFunctions}
+${terrainSplatWgslFunctions}
 struct TerrainVsOut {
   @builtin(position) position : vec4f,
   @location(0) terrainUv : vec2f,
   @location(1) worldPosition : vec3f,
 };
+
+@vertex
+fn terrainVs(@location(0) a_grid : vec2f, @location(1) a_node : vec4f) -> TerrainVsOut {
+  let v = a3dTerrainCdlod(a_grid, a_node);
+  var o : TerrainVsOut;
+  o.position = u_view.viewProjection * vec4f(v.world, 1.0);
+  o.terrainUv = v.uv;
+  o.worldPosition = v.world;
+  return o;
+}
+
 @fragment
 fn terrainFs(in_ : TerrainVsOut) -> @location(0) vec4f {
-  if (a3dTerrainDiscardHole(in_.terrainUv)) { discard; }
-  let n = a3dTerrainMacroNormal(in_.terrainUv);
-  let w = a3dTerrainSplatWeights(in_.terrainUv, 8);
-  var albedo = vec3f(w[0], w[1], w[2]); // placeholder until Path G material lands
-  _ = n;
-  return vec4f(albedo, 1.0);
+  let uv = in_.terrainUv;
+  let xz = in_.worldPosition.xz;
+  // Uniform control flow: all derivatives before any branch, loop or discard.
+  let dUvDx = dpdx(uv);
+  let dUvDy = dpdy(uv);
+  let dXZDx = dpdx(xz);
+  let dXZDy = dpdy(xz);
+  let hole = a3dTerrainDiscardHole(uv);
+  let n = a3dTerrainMacroNormal(uv);
+  let layerCount = u_terrainFrag.layerCount;
+  var w = a3dTerrainSplatWeights(uv, dUvDx, dUvDy, layerCount);
+  let viewDist = distance(u_camera, in_.worldPosition);
+  w = a3dTerrainHeightBlend(w, xz, dXZDx, dXZDy, viewDist, layerCount);
+  let macroN = textureSampleGrad(u_macroVariation, u_samp, xz / 256.0, dXZDx / 256.0, dXZDy / 256.0).r;
+  let rot = mat2x2f(0.80902, 0.58779, -0.58779, 0.80902); // rot(0.62) second-scale anti-tiling
+  var albedo = vec3f(0.0);
+  var roughness = 0.0;
+  for (var i = 0; i < 8; i = i + 1) {
+    if (i >= layerCount) { break; }
+    let params = u_terrainFrag.layerParams[i];
+    let tint = u_terrainFrag.layerTintOrm[i].rgb;
+    if (u_terrainFrag.solidMode == 0) {
+      let inv = 1.0 / max(params.x, 1e-3);
+      let uvA = xz * inv;
+      let gAx = dXZDx * inv;
+      let gAy = dXZDy * inv;
+      let ah = mix(textureSampleGrad(u_layerAlbedoHeight, u_samp, uvA, i, gAx, gAy),
+                   textureSampleGrad(u_layerAlbedoHeight, u_samp, rot * uvA, i, rot * gAx, rot * gAy),
+                   clamp(macroN * 2.0, 0.0, 1.0));
+      albedo = albedo + ah.rgb * tint * w[i];
+      roughness = roughness + textureSampleGrad(u_layerOrm, u_samp, uvA, i, gAx, gAy).g * w[i];
+    } else {
+      albedo = albedo + tint * w[i];
+      roughness = roughness + 0.85 * w[i];
+    }
+    roughness = roughness + u_terrainFrag.layerTintOrm[i].a * w[i];
+  }
+  if (hole) { discard; }
+  let ndl = max(dot(n, -u_view.keyLightDir), 0.0);
+  let col = albedo * (u_view.ambient + u_view.keyLightColor * ndl);
+  return vec4f(col, 1.0);
 }
 `;
