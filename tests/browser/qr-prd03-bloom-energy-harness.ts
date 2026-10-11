@@ -22,7 +22,10 @@ import { camera, createAuraApp, effects, lights, material, primitives, scene } f
 import { frameToPngDataUrl, installFrameCapture, meanLuma, postDiagnostics } from "./qr-prd03-frame-capture";
 import { postV2ModulesReady } from "@aura3d/rendering";
 
-const SIZE = 192;
+// configureCanvas enforces a 320×220 minimum backing store; a smaller host
+// gives a wider canvas than the probe indexes (GPU run 38140351314 read a
+// 320-wide frame with a smaller stride). 320 keeps the canvas square.
+const SIZE = 320;
 const EXPOSURE = 1 / 16;
 
 function srgbToLinear(v: number): number {

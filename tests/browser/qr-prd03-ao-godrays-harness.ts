@@ -5,7 +5,7 @@
  * not by eye.
  *
  * S13 `prd03-ao-grounding` (PRD-03:2161, fallback path): a 1 m box resting on
- * a lit floor, seen straight down through an orthographic camera (64 px/m).
+ * a lit floor, seen straight down through an orthographic camera (80 px/m).
  * Contact band = floor pixels 0–10 cm outside the box footprint; open floor =
  * floor pixels ≥ 1 m from the box. Asserted: the contact band is ≥ 15 %
  * darker with AO on, and the open floor changes ≤ 2 %.
@@ -22,7 +22,10 @@ import { camera, createAuraApp, effects, lights, material, primitives, scene } f
 import { frameToPngDataUrl, installFrameCapture, meanLuma, postDiagnostics, traceGlErrors } from "./qr-prd03-frame-capture";
 import { postV2ModulesReady } from "@aura3d/rendering";
 
-const SIZE = 256;
+// configureCanvas enforces a 320×220 minimum backing store; a smaller host
+// gives a wider canvas than the probe indexes (GPU run 38140351314 read a
+// 320-wide frame with a smaller stride). 320 keeps the canvas square.
+const SIZE = 320;
 
 let insideStep = false;
 let readsDuringSteps = 0;
@@ -79,7 +82,8 @@ async function renderFrame(built: ReturnType<typeof scene>, flags: readonly stri
 
 /* --------------------------------- S13 ---------------------------------- */
 
-const ORTHO_HALF = 2; // metres: 4 m across SIZE px → 64 px/m
+const ORTHO_HALF = 2; // metres: 4 m across SIZE px → 80 px/m
+const PX_M = 1 / (SIZE / (2 * ORTHO_HALF)); // metres per pixel
 
 function aoScene(ao: boolean) {
   const base = scene()
@@ -109,8 +113,8 @@ export async function runAoGroundingProbe() {
     for (let px = 0; px < SIZE; px++) {
       const d = footprintDistance(px, py);
       const i = (py * SIZE + px) * 4;
-      // 1 px guard on both sides of the 0–10 cm band (64 px/m → 6.4 px band).
-      if (d > 1 / 64 && d <= 0.1 - 1 / 64) { bandOn += luma(on.pixels, i); bandOff += luma(off.pixels, i); bandN++; }
+      // 1 px guard on both sides of the 0–10 cm band (80 px/m → 8 px band).
+      if (d > PX_M && d <= 0.1 - PX_M) { bandOn += luma(on.pixels, i); bandOff += luma(off.pixels, i); bandN++; }
       if (d >= 1) { openOn += luma(on.pixels, i); openOff += luma(off.pixels, i); openN++; }
     }
   }
