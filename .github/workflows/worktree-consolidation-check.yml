@@ -35,7 +35,7 @@ jobs:
           PY
       - name: Focused game, environment and contract regressions
         if: ${{ !cancelled() }}
-        run: pnpm exec vitest run tests/unit/engine/game-app-runtime.test.ts tests/unit/game/fx-pool-layer.test.ts tests/unit/game/hud.test.ts tests/unit/environments/production-runtime-hdr-environment-corpus.test.ts tests/unit/contracts/impl/prd02-shadow-pixels.test.ts tests/unit/contracts/impl/prd02-cascade-fitter-bounded.test.ts tests/unit/contracts/impl/prd10-world-uniforms.test.ts tests/unit/contracts/impl/prd10-ready-attribution.test.ts
+        run: pnpm exec vitest run tests/unit/contracts/C-00-flags.test.ts tests/unit/contracts/C-01-frame-graph.test.ts tests/unit/contracts/impl/prd01-frame-graph.test.ts tests/unit/contracts/impl/prd01-frame-uniforms.test.ts tests/unit/contracts/impl/prd01-instance-buffer.test.ts tests/unit/contracts/impl/prd10-world-graph.test.ts tests/unit/contracts/impl/prd08-camera.test.ts tests/unit/contracts/impl/prd08-time.test.ts tests/unit/engine/game-app-runtime.test.ts tests/unit/game/fx-pool-layer.test.ts tests/unit/game/hud.test.ts tests/unit/environments/production-runtime-hdr-environment-corpus.test.ts tests/unit/contracts/impl/prd02-shadow-pixels.test.ts tests/unit/contracts/impl/prd02-cascade-fitter-bounded.test.ts tests/unit/contracts/impl/prd10-world-uniforms.test.ts tests/unit/contracts/impl/prd10-ready-attribution.test.ts
       - name: Generated world effects and showcase regressions
         if: ${{ !cancelled() }}
         run: |

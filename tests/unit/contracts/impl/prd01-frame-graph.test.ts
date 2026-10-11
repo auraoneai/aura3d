@@ -25,7 +25,7 @@ import {
 } from "../../../../packages/rendering/src/renderer/FrameGraph";
 
 const ON = resolveQrFlags({ env: { A3D_QR_CORE: "v2" } });
-const OFF = resolveQrFlags({ env: {} });
+const OFF = resolveQrFlags({ env: { A3D_QR_CORE: "0" } });
 
 const disposers: (() => void)[] = [];
 afterEach(() => {

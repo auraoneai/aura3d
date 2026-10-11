@@ -113,7 +113,7 @@ describe("prd01 frame uniforms (C-08)", () => {
   });
 
   it("frameUniformsSlot provides the stub off-flag and the real impl on-flag", () => {
-    const off = frameUniformsSlot.get(resolveQrFlags({}));
+    const off = frameUniformsSlot.get(resolveQrFlags({ options: ["-core"] }));
     expect(off(new MockRenderDevice()).buffer).toBeNull(); // stub
     const on = frameUniformsSlot.get(resolveQrFlags({ env: { A3D_QR_CORE: "v2" } }));
     const uniforms = on(new MockRenderDevice());
