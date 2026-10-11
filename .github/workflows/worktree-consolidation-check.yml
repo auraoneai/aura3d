@@ -1,0 +1,40 @@
+name: Worktree consolidation checks
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  focused:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Verify remote HDRI payloads
+        run: |
+          git lfs pull --include='fixtures/environment-corpus/hdri/*.hdr'
+          python3 - <<'PY'
+          import hashlib, pathlib, subprocess
+          for path in subprocess.check_output(['git','ls-files','fixtures/environment-corpus/hdri/*.hdr'], text=True).splitlines():
+              pointer = subprocess.check_output(['git','show','HEAD:'+path], text=True)
+              fields = dict(line.split(' ',1) for line in pointer.splitlines())
+              data = pathlib.Path(path).read_bytes()
+              assert len(data) == int(fields['size']), path
+              assert hashlib.sha256(data).hexdigest() == fields['oid'].split(':')[1], path
+              print('verified', path, len(data))
+          PY
+      - name: Focused game, environment and contract regressions
+        run: pnpm exec vitest run tests/unit/game/fx-pool-layer.test.ts tests/unit/game/hud.test.ts tests/unit/environments/production-runtime-hdr-environment-corpus.test.ts tests/unit/contracts/impl/prd02-shadow-pixels.test.ts tests/unit/contracts/impl/prd10-world-uniforms.test.ts tests/unit/contracts/impl/prd10-ready-attribution.test.ts
+      - name: Generated world effects and showcase regressions
+        run: |
+          cat > .consolidation.vitest.config.ts <<'CONFIG'
+          import { defineConfig } from 'vitest/config';
+          import root from './vitest.config';
+          export default defineConfig({ ...root, test: { ...root.test, include: ['tests/qr/prd10/unit/generated-path-features.test.ts', 'tests/qr/prd14/unit/kits.test.ts', 'tests/qr/prd14/courier-rush/context-loss.test.ts'] } });
+          CONFIG
+          pnpm exec vitest run -c .consolidation.vitest.config.ts
