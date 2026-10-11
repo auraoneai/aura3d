@@ -117,6 +117,9 @@ export interface BloomEnergyCase {
   /** Bloom-added luma over the whole frame as a fraction of the bloom-off frame's luma. */
   readonly addedFraction: number;
   readonly saturatedFraction: number;
+  readonly offMeanLuma?: number;
+  readonly onMeanLuma?: number;
+  readonly pixelCount?: number;
 }
 
 async function measure(subject: Subject): Promise<BloomEnergyCase> {
@@ -136,7 +139,12 @@ async function measure(subject: Subject): Promise<BloomEnergyCase> {
     haloEnergy: halo / EXPOSURE,
     offEnergy: offTotal / EXPOSURE,
     addedFraction: offTotal > 0 ? (onTotal - offTotal) / offTotal : 0,
-    saturatedFraction: saturated / (SIZE * SIZE)
+    saturatedFraction: saturated / (SIZE * SIZE),
+    // Diagnostics: GPU lane 38127246424 logged frame mean luma 9.55 for a
+    // render whose case reported offEnergy 0 — record both sides here.
+    offMeanLuma: meanLuma(off),
+    onMeanLuma: meanLuma(on),
+    pixelCount: off.length / 4
   };
 }
 

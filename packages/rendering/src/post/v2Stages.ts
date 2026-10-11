@@ -196,12 +196,32 @@ function program(state: PostV2State, gl: WebGL2RenderingContext, key: string, fr
   return prog;
 }
 
+/**
+ * Raster state for a fullscreen v2 stage. The legacy present resets the same
+ * set (LegacyPost `prepareFullscreenPresentation`); the v2 draws reset only
+ * depth and blend, so a colour mask, scissor, stencil or cull state left by
+ * the scene draws could leave a stage's output empty — every frame with an
+ * active HDR stage read black on the GPU lane (post-quality 38127246424). The
+ * stage drivers invalidate host.stateCache afterwards (T0-16).
+ */
+function resetFullscreenState(gl: WebGL2RenderingContext): void {
+  gl.colorMask(true, true, true, true);
+  gl.disable(gl.SCISSOR_TEST);
+  gl.disable(gl.STENCIL_TEST);
+  gl.disable(gl.CULL_FACE);
+  gl.disable(gl.POLYGON_OFFSET_FILL);
+  gl.disable(gl.DEPTH_TEST);
+  gl.disable(gl.BLEND);
+  gl.depthMask(false);
+}
+
 function draw(host: WebGL2DeviceHost, state: PostV2State, prog: WebGLProgram, target: GlTarget, textures: readonly WebGLTexture[], uniforms: (gl: WebGL2RenderingContext) => void): void {
   const gl = host.gl;
   gl.bindFramebuffer(gl.FRAMEBUFFER, target.framebuffer);
   gl.viewport(0, 0, target.width, target.height);
   gl.useProgram(prog);
   gl.bindVertexArray(state.vao);
+  resetFullscreenState(gl);
   gl.disable(gl.DEPTH_TEST);
   gl.disable(gl.BLEND);
   for (let i = 0; i < textures.length; i++) {
@@ -676,6 +696,7 @@ export function runV2HdrStages(
     gl.viewport(0, 0, w, h);
     gl.useProgram(copyProg);
     gl.bindVertexArray(state.vao);
+    resetFullscreenState(gl);
     gl.disable(gl.DEPTH_TEST);
     gl.disable(gl.BLEND);
     gl.activeTexture(gl.TEXTURE0);
@@ -987,6 +1008,7 @@ export function runV2LdrTail(
     bindOut(gl, outTarget, w, h);
     gl.useProgram(prog);
     gl.bindVertexArray(state.vao);
+    resetFullscreenState(gl);
     gl.disable(gl.DEPTH_TEST);
     gl.disable(gl.BLEND);
     gl.activeTexture(gl.TEXTURE0);
@@ -1098,6 +1120,7 @@ export function runV2LdrTail(
   bindOut(gl, outTarget, w, h);
   gl.useProgram(prog);
   gl.bindVertexArray(state.vao);
+  resetFullscreenState(gl);
   gl.disable(gl.DEPTH_TEST);
   gl.disable(gl.BLEND);
   gl.activeTexture(gl.TEXTURE0);
