@@ -36,9 +36,9 @@ export class WebGL2Counters {
 /* frame contributor (and unit tests), so flag-off rendering is          */
 /* byte-identical.                                                     */
 /*                                                                     */
-/* Per-frame fields are cleared by each wrapped `resetFrameCounters()`   */
-/* call (the contributor calls it at `collect`). Live gauges stay        */
-/* cumulative. `liveVertexArrays` stays `null` until Q-01-1 gives the    */
+/* Per-frame fields are cleared by `beginPrd11CounterFrame()` (the        */
+/* contributor calls it at `collect`) or a wrapped `resetFrameCounters()`. */
+/* Live gauges are sampled. `liveVertexArrays` stays `null` until Q-01-1 gives the    */
 /* lane access to the draw binder's VAO cache.                           */
 /* ------------------------------------------------------------------ */
 
@@ -126,16 +126,73 @@ export function installPrd11DeviceCounters(device: RenderDevice): void {
   const originalCounters = typeof device.counters === "function" ? device.counters.bind(device) : null;
   const originalReset = typeof device.resetFrameCounters === "function" ? device.resetFrameCounters.bind(device) : null;
   const originalDiagnostics = typeof device.getDiagnostics === "function" ? device.getDiagnostics.bind(device) : null;
+  const host = webgl2DeviceHost(device);
 
-  device.counters = (): DeviceCounters => {
+  // T11-COUNTERS (PRD-16 T0-35): per-frame fields are O(1) — WebGL2 devices read
+  // the lane-01 host counters directly instead of the native `counters()`, which
+  // runs the full `getDiagnostics()` resource walk. The live gauges (which need
+  // that walk) are sampled: refreshed after a wrapped create call or every
+  // `PRD11_LIVE_GAUGE_SAMPLE_INTERVAL` reads, so disposals show within that window.
+  const gauges: Prd11LiveGauges = {
+    liveBuffers: 0, textureBytes: 0, renderTargetBytes: 0,
+    dirty: true, readsSinceSample: 0, samples: 0
+  };
+  gaugeStates.set(device, gauges);
+  for (const name of ["createBuffer", "createRenderTarget", "createTexture"]) {
+    wrapDirty(device, name, gauges);
+  }
+
+  const hostPerFrame = (): Prd11HostPerFrame | null => {
+    if (host) {
+      return {
+        drawCalls: host.counters.drawCalls,
+        readbacks: host.counters.readbacks,
+        programCompiles: host.counters.programCompiles
+      };
+    }
     const base = originalCounters ? originalCounters() : null;
+    return base ? { drawCalls: base.drawCalls, readbacks: base.readbacks, programCompiles: base.programCompiles } : null;
+  };
+
+  frameBegins.set(device, () => {
+    state.drawCalls = 0;
+    state.bufferCreates = 0;
+    state.textureUploads = 0;
+    state.readbacks = 0;
+    state.renderTargetsCreated = 0;
+    state.programCompiles = 0;
+    baselines.set(device, hostPerFrame());
+  });
+
+  const sampleGauges = (): void => {
+    gauges.readsSinceSample += 1;
+    if (!gauges.dirty && gauges.readsSinceSample < PRD11_LIVE_GAUGE_SAMPLE_INTERVAL) return;
     const diag = originalDiagnostics
       ? (originalDiagnostics() as { buffers?: number; textureBytes?: number; gpuTargetBytes?: number })
       : null;
-    // Overlapping fields are counted both at lane-01 call sites (base) and by
+    gauges.liveBuffers = diag?.buffers ?? 0;
+    gauges.textureBytes = diag?.textureBytes ?? 0;
+    gauges.renderTargetBytes = diag?.gpuTargetBytes ?? 0;
+    gauges.dirty = false;
+    gauges.readsSinceSample = 0;
+    gauges.samples += 1;
+  };
+
+  device.counters = (): DeviceCounters => {
+    const base = hostPerFrame();
+    const baseline = baselines.get(device) ?? null;
+    sampleGauges();
+    // T11-RESET: host counters are never zeroed by lane 11; the per-frame host
+    // value is the delta since the lane's frame-begin snapshot (or the raw value
+    // if lane-01 reset it in between, e.g. `beginFrame` zeroing drawCalls).
+    const hostDelta = (field: keyof Prd11HostPerFrame): number => {
+      const now = base?.[field] ?? 0;
+      const start = baseline?.[field] ?? 0;
+      return now >= start ? now - start : now;
+    };
+    // Overlapping fields are counted both at lane-01 call sites (host) and by
     // these wrappers (state); `Math.max` merges them without double-counting.
-    const merged = (field: "drawCalls" | "readbacks" | "programCompiles"): number =>
-      Math.max(state[field], base?.[field] ?? 0);
+    const merged = (field: keyof Prd11HostPerFrame): number => Math.max(state[field], hostDelta(field));
     return {
       drawCalls: merged("drawCalls"),
       bufferCreates: state.bufferCreates,
@@ -143,25 +200,69 @@ export function installPrd11DeviceCounters(device: RenderDevice): void {
       readbacks: merged("readbacks"),
       renderTargetsCreated: state.renderTargetsCreated,
       programCompiles: merged("programCompiles"),
-      liveBuffers: diag?.buffers ?? 0,
+      liveBuffers: gauges.liveBuffers,
       // Measured by lane-01 code today (draw-binder VAO cache); 0 when a device
-      // has no counters/diagnostics of its own. C-28 types this `number`, so a
-      // null "unmeasured" sentinel is not available here.
-      liveVertexArrays: base?.liveVertexArrays ?? 0,
-      textureBytes: diag?.textureBytes ?? 0,
-      renderTargetBytes: diag?.gpuTargetBytes ?? 0
+      // has no host. C-28 types this `number`, so a null "unmeasured" sentinel
+      // is not available here.
+      liveVertexArrays: host ? host.drawBinder.vertexArrayCache.size : 0,
+      textureBytes: gauges.textureBytes,
+      renderTargetBytes: gauges.renderTargetBytes
     };
   };
 
   device.resetFrameCounters = (): void => {
     originalReset?.();
-    state.drawCalls = 0;
-    state.bufferCreates = 0;
-    state.textureUploads = 0;
-    state.readbacks = 0;
-    state.renderTargetsCreated = 0;
-    state.programCompiles = 0;
+    frameBegins.get(device)!();
+    baselines.set(device, null);
   };
+}
+
+interface Prd11HostPerFrame {
+  drawCalls: number;
+  readbacks: number;
+  programCompiles: number;
+}
+
+interface Prd11LiveGauges {
+  liveBuffers: number;
+  textureBytes: number;
+  renderTargetBytes: number;
+  dirty: boolean;
+  readsSinceSample: number;
+  /** Number of `getDiagnostics()` walks taken (test/audit read). */
+  samples: number;
+}
+
+/** Live gauges are re-sampled at least once per this many `counters()` reads. */
+export const PRD11_LIVE_GAUGE_SAMPLE_INTERVAL = 30;
+
+const gaugeStates = new WeakMap<RenderDevice, Prd11LiveGauges>();
+const baselines = new WeakMap<RenderDevice, Prd11HostPerFrame | null>();
+const frameBegins = new WeakMap<RenderDevice, () => void>();
+
+function wrapDirty(device: RenderDevice, name: string, gauges: Prd11LiveGauges): void {
+  const owner = device as unknown as Record<string, unknown>;
+  const original = owner[name] as ((this: RenderDevice, ...args: unknown[]) => unknown) | undefined;
+  if (typeof original !== "function") return;
+  owner[name] = function wrapped(this: RenderDevice, ...args: unknown[]): unknown {
+    gauges.dirty = true;
+    return original.apply(this, args);
+  };
+}
+
+/**
+ * T11-RESET (PRD-16 T0-35): lane-11 frame boundary. Zeroes only the lane's own
+ * per-frame counter state and snapshots the host's per-frame counters; it never
+ * calls the device's `resetFrameCounters()`, so lane-01 host `drawCalls` /
+ * `readbacks` keep their flag-off values mid-frame. No-op before install.
+ */
+export function beginPrd11CounterFrame(device: RenderDevice): void {
+  frameBegins.get(device)?.();
+}
+
+/** Test/audit read: how many full `getDiagnostics()` walks `counters()` has taken. */
+export function prd11LiveGaugeSamples(device: RenderDevice): number {
+  return gaugeStates.get(device)?.samples ?? 0;
 }
 
 /** Test/audit read of the installed per-frame state; `null` when not installed. */
