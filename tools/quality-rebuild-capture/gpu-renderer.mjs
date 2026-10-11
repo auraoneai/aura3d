@@ -4,7 +4,7 @@
  * fail when there is no WebGL2 context or the renderer is software
  * (SwiftShader / llvmpipe): a GPU suite must never run on a software GPU.
  */
-import { chromium } from "playwright";
+import { chromium } from "@playwright/test";
 
 const args = (process.env.QR_CHROMIUM_ARGS ?? "").split(/\s+/).filter(Boolean);
 const browser = await chromium.launch({ args });
