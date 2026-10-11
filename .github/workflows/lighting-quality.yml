@@ -130,6 +130,10 @@ jobs:
       # is a missing module (the 2/5 lane.spec failure in run 37774324490).
       - name: build package dist
         run: pnpm build
+      # 02-S8/S10 pixel specs render lane.html from the lane bundle
+      # (tests/qr/prd02/browser/lane-page.ts throws if it is missing).
+      - name: build lane bundle
+        run: pnpm exec vite build --config benchmarks/quality-rebuild/scenes/prd02/vite.lane.config.ts
       - run: pnpm exec playwright install chromium
       - name: prd02 browser specs
         run: pnpm exec playwright test tests/qr/prd02/browser --config tests/qr/prd02/playwright.prd02.config.ts

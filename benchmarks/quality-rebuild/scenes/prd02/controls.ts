@@ -5,7 +5,7 @@
  */
 import type { SceneSpec } from "../../shared/types";
 
-export type Prd02BrokenControl = "no-shadows" | "no-ibl";
+export type Prd02BrokenControl = "no-shadows" | "no-ibl" | "no-background";
 
 export function applyBrokenControl(spec: SceneSpec, control: string): SceneSpec {
   if (control === "no-shadows") {
@@ -23,6 +23,13 @@ export function applyBrokenControl(spec: SceneSpec, control: string): SceneSpec 
   }
   if (control === "no-ibl") {
     return { ...spec, environment: undefined };
+  }
+  if (control === "no-background") {
+    // 02-S8 control (`background: false`): the HDRI backdrop becomes its
+    // solid fallback colour; IBL lighting stays.
+    return spec.background.kind === "hdri"
+      ? { ...spec, background: { kind: "color", color: spec.background.fallbackColor } }
+      : spec;
   }
   throw new Error(`Unknown broken control "${control}"`);
 }
