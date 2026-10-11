@@ -15,6 +15,7 @@ import {
   type ReflectionFaceRenderer
 } from "./ReflectionProbeSystem";
 import { IrradianceVolumeSystem, type IrradianceVolumeSpec } from "./IrradianceVolume";
+import { prd02ProbeBindings } from "./ProbeBoxProjection";
 import { prd02SubFlagOff, readPrd02KillSwitches, SUB_FLAG_PROBES } from "../passes/Prd02SubFlags";
 
 export const PROBES_SUB_FLAG = "A3D_QR_LIGHTING_PROBES";
@@ -25,6 +26,11 @@ export const PROBE_RENDER_FACE_KEY = "prd02.probeRenderFace";
 export const ENV_SPECULAR_BLACKBOARD_KEY = "prd02.envSpecular";
 /** PRD-03 SSR seam: roughness → probe mip LOD. */
 export const ROUGHNESS_TO_LOD_BLACKBOARD_KEY = "prd02.roughnessToLod";
+/**
+ * 02-S12: per-item `a3d_prd02_probe_box` uniforms (Map<RenderItem, bindings>)
+ * for the forward consumer — lane 01's per-item env override reads this.
+ */
+export const PROBE_BINDINGS_BLACKBOARD_KEY = "prd02.probeBindings";
 
 interface ProbesState {
   reflections: ReflectionProbeSystem;
@@ -134,8 +140,14 @@ class Prd02ProbesRenderPass extends BaseRenderPass {
     state.reflections.update();
     state.irradiance.update();
     const assignments = new Map<unknown, ProbeAssignment>();
-    for (const item of ctx.items) assignments.set(item, state.reflections.assign(item));
+    const bindings = new Map<unknown, ReturnType<typeof prd02ProbeBindings>>();
+    for (const item of ctx.items) {
+      const assignment = state.reflections.assign(item);
+      assignments.set(item, assignment);
+      if (assignment.a || assignment.b) bindings.set(item, prd02ProbeBindings(assignment));
+    }
     ctx.blackboard.set(PROBE_SELECTION_BLACKBOARD_KEY, assignments);
+    ctx.blackboard.set(PROBE_BINDINGS_BLACKBOARD_KEY, bindings);
     if (state.irradiance.get()) ctx.blackboard.set(IRRADIANCE_VOLUME_BLACKBOARD_KEY, state.irradiance.get());
     // §6.6 hand-off for PRD-03 SSR: the dominant captured env (first probe,
     // else null) + the roughness→LOD map against its mip chain.
