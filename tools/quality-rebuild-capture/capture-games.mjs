@@ -12,6 +12,8 @@
  *
  *   node tools/quality-rebuild-capture/capture-games.mjs                 # 17 production + Orbital from source
  *   node tools/quality-rebuild-capture/capture-games.mjs --build-only    # only build the local-source games
+ *   node tools/quality-rebuild-capture/capture-games.mjs --sourcemap     # T0-29: emit .js.map so crash stacks
+ *                                                                        # map back via map-stack.mjs
  *   node tools/quality-rebuild-capture/capture-games.mjs --skip-build    # reuse .build/ output
  *   node tools/quality-rebuild-capture/capture-games.mjs --local-build   # build + serve all selected games from source
  *   node tools/quality-rebuild-capture/capture-games.mjs --games showcase-bank-shot,aura-clash-showcase
@@ -56,6 +58,9 @@ const sourceOpt = String(opt("--source", "QRC_SOURCE", "")).toLowerCase();
 const prBuild = flag("--pr-build") || (process.env.GITHUB_EVENT_NAME === "pull_request" && sourceOpt !== "production");
 const localBuildAll = flag("--local-build") || truthy(process.env.QRC_LOCAL_BUILD) || prBuild;
 const buildOnly = flag("--build-only");
+// T0-29: sourcemapped game builds so aura-engine-*.js:<line>:<col> crash frames
+// can be attributed (tools/quality-rebuild-capture/map-stack.mjs).
+const sourcemap = flag("--sourcemap") || truthy(process.env.QRC_SOURCEMAP);
 const skipBuild = flag("--skip-build") || truthy(process.env.QRC_SKIP_BUILD);
 const strict = flag("--strict");
 const validateOnly = flag("--validate");
@@ -66,7 +71,9 @@ const includeAlt = !flag("--no-alt-routes");
 const channelOpt = opt("--channel", "QRC_CHANNEL", "chromium");
 const channel = channelOpt === "headless-shell" ? "" : channelOpt;
 const executablePath = opt("--executable", "QRC_EXECUTABLE", "");
-const gpuArgs = opt("--gpu-args", "QRC_GPU_ARGS", "--use-angle=metal --enable-gpu --ignore-gpu-blocklist")
+// QR_CHROMIUM_ARGS (provider-neutral) overrides the macOS Metal default, e.g.
+// Linux NVIDIA runners: --headless=new --use-angle=vulkan --enable-features=Vulkan.
+const gpuArgs = opt("--gpu-args", "QRC_GPU_ARGS", process.env.QR_CHROMIUM_ARGS || "--use-angle=metal --enable-gpu --ignore-gpu-blocklist")
   .split(/\s+/).filter(Boolean);
 const gameTimeoutMs = Number(opt("--game-timeout", "QRC_GAME_TIMEOUT_MS", "420000"));
 const runTimeoutMs = Number(opt("--run-timeout", "QRC_RUN_TIMEOUT_MS", "150000"));
@@ -229,7 +236,7 @@ export default {
     ...build,
     outDir: ${JSON.stringify(outputDir)},
     emptyOutDir: true,
-    sourcemap: false,
+    sourcemap: ${sourcemap ? "true" : "false"},
     reportCompressedSize: false,
     rollupOptions: { ...rollupOptions, input: rollupOptions.input ?? ${JSON.stringify(path.join(appDir, "index.html"))} }
   }
@@ -864,7 +871,7 @@ async function captureRun(browser, game, run, url, gameDir, options = {}) {
     }
     // T5.5 (§9.6): engine self-reported fps (diagnostics().fps / frameTiming) vs the
     // rAF sampler — disagreement > 20% is recorded as fps-self-report-mismatch.
-    const selfFps = Number(record.engineAtEnd?.[0]?.frameTiming?.fps ?? record.engineAtEnd?.[0]?.fps ?? NaN);
+    const selfFps = Number(record.engineAtEnd?.[0]?.frameTiming?.rafFps ?? record.engineAtEnd?.[0]?.frameTiming?.fps ?? record.engineAtEnd?.[0]?.fps ?? NaN);
     const rafFps = Number(record.fps?.fps ?? NaN);
     if (Number.isFinite(selfFps) && Number.isFinite(rafFps) && rafFps > 0) {
       const rel = Math.abs(selfFps - rafFps) / rafFps;

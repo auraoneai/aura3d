@@ -101,7 +101,8 @@ function startStaticServer(root) {
 function launchArgs() {
   const common = ["--ignore-gpu-blocklist", "--enable-gpu-rasterization", "--disable-background-timer-throttling", "--disable-renderer-backgrounding", "--force-color-profile=srgb"];
   // CI contract (.github/workflows/quality-rebuild-capture.yml): QR_BENCH_CHROME_ARGS overrides the GPU flags.
-  const override = (process.env.QR_BENCH_CHROME_ARGS ?? "").split(/\s+/).filter(Boolean);
+  // QR_CHROMIUM_ARGS is the provider-neutral name (GPU runners: Vulkan ANGLE).
+  const override = (process.env.QR_CHROMIUM_ARGS || process.env.QR_BENCH_CHROME_ARGS || "").split(/\s+/).filter(Boolean);
   if (override.length > 0) return [...new Set([...common, ...override])];
   if (process.platform === "darwin") return [...common, "--use-angle=metal", "--enable-gpu"];
   // Linux runners have no GPU: SwiftShader is the deterministic software fallback.
@@ -198,6 +199,18 @@ async function captureOne(browser, baseUrl, scene, engine, outDir, timeoutMs, fl
   } catch (error) {
     result.error = String(error?.stack ?? error).slice(0, 4000);
     result.status = /timeout|timed out/i.test(result.error) ? "capture-timeout" : "page-error";
+    // T0-12: on a timeout the ready payload (and its mountTiming) never
+    // arrives; read the page's a3d:* / qr:harness:* marks directly so the
+    // report names the phase the page was stuck in.
+    try {
+      result.marks = await page.evaluate(() => performance.getEntriesByType("mark")
+        .filter((m) => m.name.startsWith("a3d:") || m.name.startsWith("qr:harness:"))
+        .map((m) => ({ name: m.name, t: Math.round(m.startTime) })));
+      result.lastMark = result.marks.at(-1) ?? null;
+      result.pageAgeMs = await page.evaluate(() => Math.round(performance.now()));
+    } catch {
+      // page unusable; marks stay absent
+    }
     try {
       const target = join(outDir, scene, `${engine}.png`);
       await page.locator("#stage").screenshot({ path: target, timeout: 10_000 });
@@ -457,6 +470,7 @@ async function main() {
           const slot = suffix ? `${engine}${suffix}` : engine;
           entry.engines[slot] = result;
           console.log(`[quality-rebuild] ${scene} ${slot}: ${result.status} in ${result.wallMs} ms${result.error ? ` (${result.error.split("\n")[0]})` : ""}`);
+          if (result.marks) console.log(`[quality-rebuild] ${scene} ${slot}: last mark ${result.lastMark ? `${result.lastMark.name} @ ${result.lastMark.t} ms` : "none"} of page age ${result.pageAgeMs} ms (${result.marks.length} marks)`);
           if (args.calibrate) {
             const repeats = [];
             for (let repeat = 1; repeat <= 4; repeat += 1) {

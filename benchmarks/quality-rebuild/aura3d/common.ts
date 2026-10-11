@@ -517,11 +517,19 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
   // Wait for the HDRI chain to swap in (or fail loudly). T0-10: bounded by
   // the adapter deadline and abandoned on recorded errors — after a failed
   // mount the chain can never resolve.
+  // T0-12: only a *pending* chain is worth waiting for. hdriStatus "none" (or
+  // no environment diagnostics at all) means no chain exists — the flags-off
+  // path never starts one — and the loop used to spin to the adapter deadline
+  // (0.8 x timeout = 96 s), which was the whole 87-110 s ready time and the
+  // 6/6 control timeouts (Round 1, GPU run 38117264282). A pending chain gets
+  // at most HDRI_PENDING_MS before the capture proceeds on the fallback.
   if (spec.environment) {
-    const hdriDeadline = Math.min(performance.now() + 180_000, adapterDeadline);
+    const HDRI_PENDING_MS = 20_000;
+    const hdriDeadline = Math.min(performance.now() + HDRI_PENDING_MS, adapterDeadline);
     while (performance.now() < hdriDeadline) {
       const environment = rendererDiagnostics(app)?.environment;
       if (environment?.iblPixelBacked || environment?.hdriStatus === "ready" || environment?.hdriStatus === "fallback") break;
+      if (environment?.hdriStatus !== "pending") break;
       if (app.diagnostics().errors.length > 0) break;
       app.step(0);
       await sleep(100);
