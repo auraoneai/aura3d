@@ -46,7 +46,7 @@ on:
       suite:
         description: "specs = the lane browser gates; bench = benchmark-scene capture on macos-14 (ANGLE Metal)"
         type: choice
-        options: [specs, bench]
+        options: [specs, bench, phases]
         default: specs
       bench_scenes:
         description: "suite=bench: comma-separated benchmark scene ids"
@@ -60,6 +60,10 @@ on:
         description: "suite=bench: aura3d | three | aura3d,three"
         required: false
         default: "aura3d,three"
+      phase_flag_sets:
+        description: "suite=phases: ';'-separated flag sets for the QR05-DIAG GLB mount-phase spec"
+        required: false
+        default: "none;core,lighting,post,materials,assets,animation,vfx,camera,game,world,tiers,looks,compiler"
       bench_runner:
         description: "suite=bench: azure-gpu (self-hosted NVIDIA L4/T4, ANGLE Vulkan) | macos-14 (ANGLE Metal). Never compare frames across runner types."
         type: choice
@@ -199,5 +203,40 @@ jobs:
         with:
           name: prd05-bench-${{ inputs.bench_runner }}-${{ github.run_id }}
           path: benchmarks/quality-rebuild/out/
+          retention-days: 30
+          if-no-files-found: error
+
+  # Track 0 #375 ready-time attribution (lane-05 GLB load phases): streams
+  # a3d:* marks, long tasks and main-thread heartbeat gaps from the real
+  # benchmark page (benchmark vite dev server) for 03/08. Red until the
+  # scenes publish __QR_READY__ inside 30 s; the JSON reports are the output.
+  phases:
+    if: github.event_name == 'workflow_dispatch' && inputs.suite == 'phases'
+    runs-on: ${{ inputs.bench_runner == 'macos-14' && 'macos-14' || fromJSON('["self-hosted","azure-gpu"]') }}
+    timeout-minutes: 60
+    env:
+      PRD05_CHROMIUM_ARGS: ${{ inputs.bench_runner == 'macos-14' && '--use-angle=metal --enable-gpu --ignore-gpu-blocklist' || '--use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist' }}
+      PRD05_PHASE_FLAG_SETS: ${{ inputs.phase_flag_sets }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: GLB mount phases (QR05-DIAG)
+        run: pnpm exec playwright test --config tests/qr/prd05/playwright.config.ts --project=chromium --grep "QR05-DIAG"
+      - name: Upload phase reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd05-phases-${{ inputs.bench_runner }}-${{ github.run_id }}
+          path: tests/reports/prd05-glb-mount-phases.*.json
           retention-days: 30
           if-no-files-found: error
