@@ -18,7 +18,7 @@ import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import { hdriAssets } from "../../../shared/assets";
 import type { CapabilityEntry, CapabilityStatus, ReadyPayload } from "../../../shared/types";
 import { prd05Assets } from "../../../scenes/prd05/assets";
-import { THREE_BASIS_TRANSCODER_PATH } from "./common";
+import { prd05HdriUrl, prd05ModelUrl, threeBasisTranscoderPath, type Prd05UrlOptions } from "../../../scenes/prd05/urls";
 import { prd05SceneSpecs } from "../../../scenes/prd05/index";
 
 interface LodChain {
@@ -55,7 +55,8 @@ const pickLevel = (coverage: number, thresholds: readonly number[]): number => {
   return thresholds.length - 1;
 };
 
-export default async (host: HTMLElement, _opts?: { qrFlags?: readonly string[] }): Promise<ReadyPayload> => {
+export default async (host: HTMLElement, opts?: { qrFlags?: readonly string[] } & Prd05UrlOptions): Promise<ReadyPayload> => {
+  const urls: Prd05UrlOptions = opts ?? {};
   const started = performance.now();
   const log = new CapabilityLog();
   const errors: string[] = [];
@@ -81,7 +82,7 @@ export default async (host: HTMLElement, _opts?: { qrFlags?: readonly string[] }
     const pmrem = new THREE.PMREMGenerator(renderer);
     pmrem.compileEquirectangularShader();
     try {
-      const hdr = await new RGBELoader().loadAsync(hdriEntry.url);
+      const hdr = await new RGBELoader().loadAsync(prd05HdriUrl(hdriEntry, urls));
       hdr.mapping = THREE.EquirectangularReflectionMapping;
       scene.environment = pmrem.fromEquirectangular(hdr).texture;
       scene.environmentIntensity = spec.environment?.intensity ?? 1;
@@ -164,7 +165,7 @@ export default async (host: HTMLElement, _opts?: { qrFlags?: readonly string[] }
   }));
   gltfLoader.setMeshoptDecoder(MeshoptDecoder);
   const ktx2 = new KTX2Loader()
-    .setTranscoderPath(THREE_BASIS_TRANSCODER_PATH)
+    .setTranscoderPath(threeBasisTranscoderPath(urls))
     .detectSupport(renderer);
   gltfLoader.setKTX2Loader(ktx2);
   log.add("optimized-decoders", "supported", "GLTFLoader + MeshoptDecoder + KTX2Loader + MSFT_lod plugin");
@@ -186,7 +187,7 @@ export default async (host: HTMLElement, _opts?: { qrFlags?: readonly string[] }
     }
     const entry = prd05Assets[object.asset];
     try {
-      const gltf = await gltfLoader.loadAsync(entry.url);
+      const gltf = await gltfLoader.loadAsync(prd05ModelUrl(entry, urls));
       const root = gltf.scene;
       root.name = object.name;
       root.position.set(...object.position);

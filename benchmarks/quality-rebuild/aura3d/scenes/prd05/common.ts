@@ -26,11 +26,9 @@ import { hdriAssets } from "../../../shared/assets";
 import type { CapabilityEntry, CapabilityStatus, ReadyPayload } from "../../../shared/types";
 import { prd05Assets, type Prd05AssetEntry } from "../../../scenes/prd05/assets";
 import type { Prd05SceneSpec } from "../../../scenes/prd05/spec";
+import { prd05HdriUrl, prd05ModelUrl, type Prd05UrlOptions } from "../../../scenes/prd05/urls";
 
 declare const __AURA3D_VERSION__: string;
-
-// Served URLs (dist `/qr-assets/`), never repo paths: capture.mjs serves only the built dist.
-const assetUrl = (entry: Prd05AssetEntry): string => entry.url;
 
 class CapabilityLog {
   readonly entries: CapabilityEntry[] = [];
@@ -39,32 +37,40 @@ class CapabilityLog {
   }
 }
 
-function prd05ModelDefinition(entry: Prd05AssetEntry) {
+// URLs come from scenes/prd05/urls.ts: dist `/qr-assets/` by default (capture.mjs
+// serves only the built dist), repo paths under a repo-root dev server.
+function prd05ModelDefinition(entry: Prd05AssetEntry, urls: Prd05UrlOptions) {
   return {
     type: "model" as const,
     format: "glb",
-    url: assetUrl(entry),
+    url: prd05ModelUrl(entry, urls),
     hash: entry.sha256,
     metadata: { license: entry.provenance, sourcePath: entry.source, provenance: { profile: entry.profile } }
   };
 }
 
-const auraModelAssets = defineAuraAssets(
-  Object.fromEntries(Object.values(prd05Assets).map((entry) => [entry.id, prd05ModelDefinition(entry)]))
-);
-
-function hdriDefinition(id: keyof typeof hdriAssets) {
-  const entry = hdriAssets[id];
-  return { type: "texture" as const, format: "hdr", url: entry.url, hash: entry.sha256, metadata: { license: entry.provenance, sourcePath: entry.repoPath } };
+function auraModelAssetsFor(urls: Prd05UrlOptions) {
+  return defineAuraAssets(
+    Object.fromEntries(Object.values(prd05Assets).map((entry) => [entry.id, prd05ModelDefinition(entry, urls)]))
+  );
 }
 
-const auraHdriAssets = defineAuraAssets({
-  studioSmall08: hdriDefinition("studioSmall08"),
-  autumnFieldPuresky: hdriDefinition("autumnFieldPuresky"),
-  kloppenheim06Puresky: hdriDefinition("kloppenheim06Puresky")
-});
+function hdriDefinition(id: keyof typeof hdriAssets, urls: Prd05UrlOptions) {
+  const entry = hdriAssets[id];
+  return { type: "texture" as const, format: "hdr", url: prd05HdriUrl(entry, urls), hash: entry.sha256, metadata: { license: entry.provenance, sourcePath: entry.repoPath } };
+}
 
-function buildScene(spec: Prd05SceneSpec, log: CapabilityLog): AuraSceneSnapshot {
+function auraHdriAssetsFor(urls: Prd05UrlOptions) {
+  return defineAuraAssets({
+    studioSmall08: hdriDefinition("studioSmall08", urls),
+    autumnFieldPuresky: hdriDefinition("autumnFieldPuresky", urls),
+    kloppenheim06Puresky: hdriDefinition("kloppenheim06Puresky", urls)
+  });
+}
+
+function buildScene(spec: Prd05SceneSpec, log: CapabilityLog, urls: Prd05UrlOptions): AuraSceneSnapshot {
+  const auraModelAssets = auraModelAssetsFor(urls);
+  const auraHdriAssets = auraHdriAssetsFor(urls);
   const built = scene();
   if (spec.background.kind === "hdri") {
     built.background(spec.background.fallbackColor);
@@ -128,7 +134,7 @@ function buildScene(spec: Prd05SceneSpec, log: CapabilityLog): AuraSceneSnapshot
 
 const nextFrame = (): Promise<void> => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
-export interface Prd05AuraSceneOptions {
+export interface Prd05AuraSceneOptions extends Prd05UrlOptions {
   readonly qrFlags?: readonly string[];
 }
 
@@ -143,7 +149,7 @@ export async function runPrd05AuraScene(spec: Prd05SceneSpec, host: HTMLElement,
   host.style.height = `${spec.resolution.height}px`;
 
   const app: AuraApp = createAuraApp(host, {
-    scene: buildScene(spec, log),
+    scene: buildScene(spec, log, options),
     renderer: { qualityProfile: "production" },
     pixelRatio: spec.resolution.devicePixelRatio,
     ...(qrFlags.length > 0 ? { qualityRebuild: { flags: [...qrFlags] } } : {}),
@@ -194,6 +200,7 @@ export async function runPrd05AuraScene(spec: Prd05SceneSpec, host: HTMLElement,
     loadMs: Math.round(performance.now() - started),
     qrFlags: [...qrFlags],
     extra: {
+      assetVariant: options.sourceAssets === true ? "source" : "optimized",
       backend: diagnostics.backend,
       renderSize: diagnostics.renderSize,
       assets,

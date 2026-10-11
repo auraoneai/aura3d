@@ -58,6 +58,7 @@ interface GltfBufferViewLike {
   readonly byteOffset?: number;
   readonly byteLength: number;
   readonly byteStride?: number;
+  readonly extensions?: Readonly<Record<string, unknown>>;
 }
 
 interface GltfJsonFull extends AdmissionGltfJson {
@@ -71,6 +72,10 @@ function accessorView(json: GltfJsonFull, index: number): AccessorView | undefin
   const accessor = (json.accessors as readonly { readonly componentType?: number; readonly count?: number; readonly type?: string; readonly bufferView?: number; readonly byteOffset?: number }[] | undefined)?.[index];
   if (!accessor || accessor.count === undefined || accessor.type === undefined || accessor.componentType === undefined) return undefined;
   const view = json.bufferViews?.[accessor.bufferView ?? -1];
+  // EXT_meshopt_compression bufferViews address a virtual decoded buffer —
+  // byteOffset is not an offset into the file's BIN chunk. Treat those
+  // accessors as unmeasurable (skipped) rather than indexing out of range.
+  if (view?.extensions?.EXT_meshopt_compression !== undefined) return undefined;
   const componentBytes = COMPONENT_BYTES[accessor.componentType];
   const count = TYPE_COUNT[accessor.type];
   if (componentBytes === undefined || count === undefined) return undefined;
@@ -168,11 +173,17 @@ export function measureTexelDensity(json: AdmissionGltfJson, bin: Buffer | undef
       const positions = accessorView(full, attrs.POSITION);
       const uvs = accessorView(full, attrs.TEXCOORD_0);
       const textureSize = materialTextureSize(full, bin, primitive.material);
-      if (!positions || !uvs || !textureSize || textureSize[0] <= 0 || textureSize[1] <= 0) {
-        skipped.triangles += Math.floor((positions?.count ?? 0) / 3);
+      const indexView = typeof primitive.indices === "number" ? accessorView(full, primitive.indices) : undefined;
+      // An indexed primitive whose index accessor is unreadable (e.g. an
+      // EXT_meshopt_compression bufferView) must be skipped, not read as
+      // non-indexed — that would pair the wrong vertices into triangles.
+      const indicesUnreadable = typeof primitive.indices === "number" && !indexView;
+      if (!positions || !uvs || indicesUnreadable || !textureSize || textureSize[0] <= 0 || textureSize[1] <= 0) {
+        const indexCountRaw = typeof primitive.indices === "number" ? full.accessors?.[primitive.indices]?.count : undefined;
+        const vertexCountRaw = full.accessors?.[attrs.POSITION]?.count;
+        skipped.triangles += Math.floor(((indexCountRaw ?? vertexCountRaw ?? 0) as number) / 3);
         continue;
       }
-      const indexView = typeof primitive.indices === "number" ? accessorView(full, primitive.indices) : undefined;
       const indexCount = indexView?.count ?? positions.count;
       for (let i = 0; i + 2 < indexCount; i += 3) {
         const [a, b, c] = indexView
