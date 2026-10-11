@@ -29,6 +29,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { inflateSync } from "node:zlib";
+import { captureFlagList, captureUrlWithFlags } from "./capture-flags.mjs";
 
 const toolDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(toolDir, "..", "..");
@@ -92,8 +93,10 @@ const selectedGames = gamesConfig.games.filter((g) => requestedIds.length === 0 
 const isLocal = (game) => localBuildAll || game.deployed === false;
 
 // C-33 (PR 0b-3): --flags passthrough. Appends `a3d-qr=<list>` to every captured URL; the
-// engine's resolveQrFlags reads the same param. Per-game `qrFlags[]` union in on top.
+// engine's resolveQrFlags reads the same param. Per-game `qrFlags[]` union in on top unless
+// --flags-exact / QRC_FLAGS_EXACT=1 makes the requested list the entire list (#626).
 const qrFlags = opt("--flags", "QRC_FLAGS", "none");
+const qrFlagsExact = flag("--flags-exact") || truthy(process.env.QRC_FLAGS_EXACT);
 // T1.13: extra 01-title recaptures per run so title determinism can be measured on the runner.
 const titleRepeats = Math.max(0, Number(opt("--title-repeats", "QRC_TITLE_REPEATS", "0")) || 0);
 if (qrFlags !== "none" && qrFlags !== "all" && !/^[A-Za-z0-9_,.-]+$/.test(qrFlags)) {
@@ -101,9 +104,7 @@ if (qrFlags !== "none" && qrFlags !== "all" && !/^[A-Za-z0-9_,.-]+$/.test(qrFlag
   process.exit(2);
 }
 function captureUrlFor(game, route) {
-  const flags = [...new Set([...(game.qrFlags ?? []), ...(qrFlags === "none" ? [] : [qrFlags])])];
-  if (!flags.length) return route;
-  return `${route}${route.includes("?") ? "&" : "?"}a3d-qr=${encodeURIComponent(flags.join(","))}`;
+  return captureUrlWithFlags(route, captureFlagList(game.qrFlags, qrFlags, qrFlagsExact));
 }
 
 // C-33 (PR 0b-3): capture step plugins. Every ./steps/*.mjs default-exports (or exports a
