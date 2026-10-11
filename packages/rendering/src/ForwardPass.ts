@@ -339,7 +339,9 @@ export class ForwardPass extends BaseRenderPass {
     this.applyLightUniforms(material);
     const shader = this.getShader(baseMaterial, device, item);
     if (shader === undefined) return; // A3D_QR_CORE_GENERATOR async-skip (C-02 §A.2)
-    const generated = qrCoreGeneratorOn(rendererQrFlags(device)) && materialUsesGeneratedProgram(baseMaterial);
+    // Generated iff getShader resolved a generated program for this draw (a
+    // compile-failed fallback or an unskinnable skinned item is a legacy draw).
+    const generated = this.lastProgramFeatures !== undefined;
     if (item.instanceTransforms && baseMaterial.renderState.cullMode !== "none" && instancedItemNeedsPerInstanceCullState(item)) {
       for (const expanded of expandInstancedRenderItem(item)) {
         this.drawItem(device, expanded);
@@ -386,7 +388,9 @@ export class ForwardPass extends BaseRenderPass {
       // C-02 `ShaderFeature.bindUniforms` for the features this draw selected.
       bindShaderFeatureUniforms(this.lastProgramFeatures.features, rendererQrFlags(device), item, (name, value) => uniforms.set(name, value));
     }
-    if (item.skinning) {
+    if (item.skinning && !(generated && this.lastProgramFeatures?.features["prd06.deform"] !== undefined)) {
+      // Legacy skinned programs take the u_jointMatrices palette; on the
+      // generated path prd06.deform's bindUniforms binds the bone texture.
       this.skinningPaletteUploads.bind(item, item.skinning, baseMaterial, shader, uniforms, device);
     }
     const instanceBinding = item.instanceTransforms ? this.applyInstanceBinding(device, item, shader, uniforms, generated) : { count: 1 };
@@ -478,6 +482,14 @@ export class ForwardPass extends BaseRenderPass {
       const warning = materialFeatureWarning(material);
       if (warning) console.warn(`[prd01] ${warning}`);
       this.lastProgramFeatures = this.programFeaturesFor(material, device, item);
+      // #867: a skinned draw needs its program to skin. When no registered
+      // deform feature (prd06.deform, A3D_QR_ANIMATION) selected this item,
+      // the generated program has no skinning, so the draw keeps the legacy
+      // skinned shaderKey program instead of rendering the bind pose.
+      if (item?.skinning && this.lastProgramFeatures.features["prd06.deform"] === undefined) {
+        this.lastProgramFeatures = undefined;
+        return this.legacyShader(material, device);
+      }
       const handle = this.programCache(device).acquire(this.lastProgramFeatures);
       if (handle.status === "failed") {
         // T0-03: the cache already emitted `program-compile-failed` (C-36) +
@@ -486,12 +498,19 @@ export class ForwardPass extends BaseRenderPass {
         if (flags.on("A3D_QR_STRICT")) {
           throw new RenderDeviceError(`generated program failed to compile: ${handle.error ?? handle.key}`, "PROGRAM_COMPILE_FAILED", { key: handle.key });
         }
+        // The fallback draw is a legacy draw: bind it as one.
+        this.lastProgramFeatures = undefined;
       } else {
         // async-skip: a not-yet-ready program skips the draw this frame
         // (C-02 §A.2 semantics; warm-then-block warmup renders them ready up front).
         return handle.status === "ready" ? handle.program : undefined;
       }
     }
+    return this.legacyShader(material, device);
+  }
+
+  /** Frozen legacy shaderKey program (flag-off path, and generated-path fallbacks). */
+  private legacyShader(material: Material, device: RenderDevice): RenderShaderProgram {
     const cacheKey = shaderCacheKey(material);
     const shaderCache = getForwardPassShaderCache(device, this.shaderLibrary);
     let module = shaderCache.get(cacheKey);
