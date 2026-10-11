@@ -15,6 +15,7 @@
 
 import {
   createRendererPostprocessPlanDiagnostics,
+  postGraphV2LastOutcome,
   postVelocityCoverage,
   volumetricLightDirection,
   type CollectedLight,
@@ -274,11 +275,17 @@ function planForSubmitted(options: RendererPostProcessOptions, width: number, he
 export function collectPostSection(app: AuraApp): PostSectionReport {
   const submitted = (app.canvas ? canvasRecords.get(app.canvas) : undefined) ?? latestSubmittedPostprocess();
   const authoredContext = authoredPostContextFor(app.canvas ?? undefined);
-  // 03-S18c: registered C-13 passes run in the v2 chain (all five §6.1
-  // anchors) when `A3D_QR_POST` is on and compat.post is not "3.0"; otherwise
-  // the legacy chain serves the frame and skips them.
-  const v2Active = Boolean(authoredContext?.flags.post) && !authoredContext?.compatPost3;
-  const customStatus = v2Active ? "v2" : "legacy-chain:A3D_QR_POST-off";
+  // 03-S18c: report what the renderer executed, not what was authored.
+  // Registered C-13 passes run only when the v2 seam ran the stages
+  // (`postGraphV2LastOutcome() === "v2"`); otherwise the reason names the
+  // chain that served the frame (flag off, compat.post "3.0", a WebGPU
+  // backend, cpu-deterministic, unfusable passes, modules still loading, or
+  // `not-executed` when no postprocess frame reached the seam).
+  const customStatus = !authoredContext?.flags.post
+    ? "legacy-chain:A3D_QR_POST-off"
+    : authoredContext.compatPost3
+      ? "legacy-chain:compat.post-3.0"
+      : postGraphV2LastOutcome() ?? "not-executed";
   const custom = registeredPostPasses().map((pass) => ({ id: pass.id, status: customStatus }));
   const empty = {
     present: false,

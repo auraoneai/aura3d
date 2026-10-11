@@ -24,6 +24,22 @@ export { postProductionBuild, postSkippedReasons, recordPostSkipped, resetPostSk
 let postV2Modules: typeof import("../post/v2Entry") | undefined;
 let postV2WarmStarted = false;
 
+/* 03-S18c: what the last `tryExecutePostGraphV2` call did — "v2" when the v2
+ * stages (and C-13 custom passes) ran, "v2-modules-loading" while the
+ * deferred bag is still loading, or `legacy-chain:<reason>` when the seam
+ * declined. `null` until a postprocess frame reached the seam (e.g. the
+ * Renderer dropped the chain under core output). */
+let lastPostGraphV2Outcome: string | null = null;
+
+export function postGraphV2LastOutcome(): string | null {
+  return lastPostGraphV2Outcome;
+}
+
+/** Test hook. */
+export function resetPostGraphV2Outcome(): void {
+  lastPostGraphV2Outcome = null;
+}
+
 export function warmPostV2Modules(): void {
   if (postV2WarmStarted) return;
   postV2WarmStarted = true;
@@ -180,12 +196,15 @@ export class RendererPostprocessPipeline {
     // the residue instead of silently falling back to the legacy encode.
     const coreOutput = qrCoreOutputOn(rendererQrFlags());
     if (postprocess.v2 !== true || this.host.device.kind !== "webgl2") {
-      if (coreOutput) recordPostSkipped(postprocess.v2 !== true ? "POSTPROCESS_V2_UNMIGRATED:no-v2-plan" : "POSTPROCESS_V2_UNMIGRATED:backend");
+      const reason = postprocess.v2 !== true ? "no-v2-plan" : "backend";
+      if (coreOutput) recordPostSkipped(`POSTPROCESS_V2_UNMIGRATED:${reason}`);
+      lastPostGraphV2Outcome = `legacy-chain:${reason}`;
       return false;
     }
     const pipeline = postprocess.pipeline;
     if (!pipeline || typeof pipeline !== "object") {
       if (coreOutput) recordPostSkipped("POSTPROCESS_V2_UNMIGRATED:no-pipeline");
+      lastPostGraphV2Outcome = "legacy-chain:no-pipeline";
       return false;
     }
     // Transitional seam: the v2 path delegates to the native fused present,
@@ -196,14 +215,19 @@ export class RendererPostprocessPipeline {
     // fine: pipeline-only effects (vignette/film-grain/CA) emit no plan pass.
     if (postprocess.execution === "cpu-deterministic") {
       if (coreOutput) recordPostSkipped("POSTPROCESS_V2_UNMIGRATED:cpu-deterministic");
+      lastPostGraphV2Outcome = "legacy-chain:cpu-deterministic";
       return false;
     }
     if (passes.length > 0 && !canFuseLdrPostprocess(current, passes)) {
       if (coreOutput) recordPostSkipped(`POSTPROCESS_V2_UNMIGRATED:${unfusedPassNames(passes)}`);
+      lastPostGraphV2Outcome = `legacy-chain:${unfusedPassNames(passes)}`;
       return false;
     }
     warmPostV2Modules();
     v2Modules = v2Modules ?? postV2Modules;
+    // Without the deferred module bag the seam runs the fused present only:
+    // no v2 stage (and no C-13 custom pass) executes this frame.
+    lastPostGraphV2Outcome = v2Modules ? "v2" : "v2-modules-loading";
     const descriptors = passes.map((pass) => ({
       name: pass.name,
       options: pass.options as Readonly<Record<string, unknown>>
