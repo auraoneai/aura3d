@@ -34,10 +34,7 @@ export type SkinningCpuFallbackReason =
   /** The shader has no data-texture palette uniforms, so palettes above the uniform cap fall back. */
   | "shader-lacks-data-texture-palette"
   /** No joint-palette uniforms at all on this shader — CPU skinning is the only option. */
-  | "shader-lacks-skinning-uniforms"
-  /** The skinning geometry contract failed (unweighted/non-normalized weights, bad
-   *  joint indices): the item draws unskinned rather than aborting the pass. */
-  | "skinning-geometry-contract";
+  | "shader-lacks-skinning-uniforms";
 
 export interface SkinningPaletteDecision {
   readonly jointCount: number;

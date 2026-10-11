@@ -33,6 +33,7 @@ import { prd06SkinnedBounds } from "../renderer/SkinnedBounds.js";
  * semantics `resolveQrFlags` defines: `?a3d-qr=` first, then `A3D_QR` /
  * `VITE_A3D_QR`, then per-flag `A3D_QR_<NAME>`). Registry default: off.
  */
+let fallbackFlags: QrFlags | null = null;
 
 const SHORT_LANE: Readonly<Record<string, QrFlagName>> = {
   core: "A3D_QR_CORE",
@@ -111,13 +112,12 @@ function resolveEnvironmentFlags(): QrFlags {
   };
 }
 
-/** Resolved lane flags: installed renderer flags win; URL/env fallback otherwise.
- *  Resolved fresh each call — caching the fallback once per process can leave it
- *  disagreeing with `rendererQrFlags()` after a renderer installs its own flags. */
+/** Resolved lane flags: installed renderer flags win; URL/env fallback otherwise. */
 export function prd06QrFlags(): QrFlags {
   const installed = rendererQrFlags();
   if (Object.keys(installed.values).length > 0) return installed;
-  return resolveEnvironmentFlags();
+  fallbackFlags ??= resolveEnvironmentFlags();
+  return fallbackFlags;
 }
 
 export function prd06FlagsOn(name: QrFlagName): boolean {
