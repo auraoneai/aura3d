@@ -19,6 +19,7 @@ import { wireVaultFx } from "./scene/fx";
 import { createEventConsumer } from "./flow-events";
 import { publishVaultEvidence } from "./evidence";
 import { applyVaultScenario } from "./scenarios";
+import { assets } from "../../../../src/aura-assets";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_VAULT_BREAKERS" as const;
 
@@ -82,17 +83,17 @@ const game = createGame({
   },
   sound: {
     cues: {
-      "flipper-snap": { asset: "vaultFlipperSnapSfx" },
-      "bumper-hit": { asset: "vaultBumperHitSfx" },
-      "sling-pop": { asset: "vaultSlingPopSfx" },
-      "target-down": { asset: "vaultTargetDownSfx" },
-      "bank-clear": { asset: "vaultBankClearSfx" },
-      "vault-open": { asset: "vaultVaultOpenSfx" },
-      "multiball": { asset: "vaultMultiballSfx" },
-      "ball-drain": { asset: "vaultBallDrainSfx" },
-      "tilt-warn": { asset: "vaultTiltWarnSfx" },
-      "plunger-release": { asset: "vaultPlungerReleaseSfx" },
-      "ramp-roll": { asset: "vaultRampRollSfx" }
+      "flipper-snap": { asset: assets.vaultFlipperSnapSfx },
+      "bumper-hit": { asset: assets.vaultBumperHitSfx },
+      "sling-pop": { asset: assets.vaultSlingPopSfx },
+      "target-down": { asset: assets.vaultTargetDownSfx },
+      "bank-clear": { asset: assets.vaultBankClearSfx },
+      "vault-open": { asset: assets.vaultVaultOpenSfx },
+      "multiball": { asset: assets.vaultMultiballSfx },
+      "ball-drain": { asset: assets.vaultBallDrainSfx },
+      "tilt-warn": { asset: assets.vaultTiltWarnSfx },
+      "plunger-release": { asset: assets.vaultPlungerReleaseSfx },
+      "ramp-roll": { asset: assets.vaultRampRollSfx }
     }
   },
   juice: {

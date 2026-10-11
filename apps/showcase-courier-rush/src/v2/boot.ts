@@ -116,16 +116,16 @@ const game = createGame({
   },
   sound: {
     cues: {
-      "engine": { asset: "courierEngineSfx" },
-      "ambient-city": { asset: "courierAmbientCitySfx" },
-      "dispatch": { asset: "courierDispatchBlipSfx" },
-      "pickup": { asset: "courierParcelPickupSfx" },
-      "drop": { asset: "courierParcelDropSfx" },
-      "early-bonus": { asset: "courierEarlyBonusSfx" },
-      "strike": { asset: "courierStrikeHitSfx" },
-      "horn": { asset: "courierHornNearSfx" },
-      "shift-clear": { asset: "courierShiftClearSfx" },
-      "shift-fail": { asset: "courierShiftFailSfx" }
+      "engine": { asset: assets.courierEngineSfx },
+      "ambient-city": { asset: assets.courierAmbientCitySfx },
+      "dispatch": { asset: assets.courierDispatchBlipSfx },
+      "pickup": { asset: assets.courierParcelPickupSfx },
+      "drop": { asset: assets.courierParcelDropSfx },
+      "early-bonus": { asset: assets.courierEarlyBonusSfx },
+      "strike": { asset: assets.courierStrikeHitSfx },
+      "horn": { asset: assets.courierHornNearSfx },
+      "shift-clear": { asset: assets.courierShiftClearSfx },
+      "shift-fail": { asset: assets.courierShiftFailSfx }
     }
   },
   juice: {

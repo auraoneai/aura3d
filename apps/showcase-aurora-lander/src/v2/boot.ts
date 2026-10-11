@@ -51,6 +51,7 @@ import { createLanderAudioBlock, wireLanderAudioUnlock } from "./audio";
 import { createLanderInput, wireLanderInput } from "./input";
 import { wireAuroraRuntime } from "./runtime";
 import { wireAuroraRender } from "./render";
+import { assets } from "../../../../src/aura-assets";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_AURORA_LANDER" as const;
 const FIXED_DT = 1 / 60;
@@ -119,16 +120,16 @@ const game = createGame({
   },
   sound: {
     cues: {
-      "thrust-loop": { asset: "auroraThrustLoopSfx" },
-      "rcs-puff": { asset: "auroraRcsPuffSfx" },
-      "pad-lock": { asset: "auroraPadLockSfx" },
-      "fuel-low": { asset: "auroraFuelLowSfx" },
-      "gust-warn": { asset: "auroraGustWarnSfx" },
-      "touch-soft": { asset: "auroraTouchSoftSfx" },
-      "touch-hard": { asset: "auroraTouchHardSfx" },
-      "crash": { asset: "auroraCrashSfx" },
-      "site-clear": { asset: "auroraSiteClearSfx" },
-      "ambient-wind": { asset: "auroraAmbientWindSfx" }
+      "thrust-loop": { asset: assets.auroraThrustLoopSfx },
+      "rcs-puff": { asset: assets.auroraRcsPuffSfx },
+      "pad-lock": { asset: assets.auroraPadLockSfx },
+      "fuel-low": { asset: assets.auroraFuelLowSfx },
+      "gust-warn": { asset: assets.auroraGustWarnSfx },
+      "touch-soft": { asset: assets.auroraTouchSoftSfx },
+      "touch-hard": { asset: assets.auroraTouchHardSfx },
+      "crash": { asset: assets.auroraCrashSfx },
+      "site-clear": { asset: assets.auroraSiteClearSfx },
+      "ambient-wind": { asset: assets.auroraAmbientWindSfx }
     }
   },
   juice: {

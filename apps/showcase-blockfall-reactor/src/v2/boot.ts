@@ -65,6 +65,7 @@ import { createBlockfallAudioBlock } from "./audio";
 import { createBlockfallInput, wireBlockfallTouch } from "./input";
 import { wireBlockfallSync } from "./sync";
 import { wireBlockfallFlow } from "./flow";
+import { assets } from "../../../../src/aura-assets";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_BLOCKFALL_REACTOR" as const;
 const SIM_STEP = 1 / 60;
@@ -131,16 +132,16 @@ const game = createGame({
   },
   sound: {
     cues: {
-      move: { asset: "blockfallMoveSfx" },
-      rotate: { asset: "blockfallRotateSfx" },
-      "hold-swap": { asset: "blockfallHoldSwapSfx" },
-      "hard-drop": { asset: "blockfallHardDropSlamSfx" },
-      lock: { asset: "blockfallLockThudSfx" },
-      "line-clear": { asset: "blockfallLineClearSfx" },
-      quad: { asset: "blockfallQuadFanfareSfx" },
-      "level-up": { asset: "blockfallLevelUpSfx" },
-      "game-over": { asset: "blockfallGameOverStingSfx" },
-      "ambient-hum": { asset: "blockfallReactorHumLoop" }
+      move: { asset: assets.blockfallMoveSfx },
+      rotate: { asset: assets.blockfallRotateSfx },
+      "hold-swap": { asset: assets.blockfallHoldSwapSfx },
+      "hard-drop": { asset: assets.blockfallHardDropSlamSfx },
+      lock: { asset: assets.blockfallLockThudSfx },
+      "line-clear": { asset: assets.blockfallLineClearSfx },
+      quad: { asset: assets.blockfallQuadFanfareSfx },
+      "level-up": { asset: assets.blockfallLevelUpSfx },
+      "game-over": { asset: assets.blockfallGameOverStingSfx },
+      "ambient-hum": { asset: assets.blockfallReactorHumLoop }
     }
   },
   juice: {

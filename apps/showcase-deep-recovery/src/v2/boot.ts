@@ -125,17 +125,17 @@ const game = createGame({
   },
   sound: {
     cues: {
-      "sonar-ping": { asset: "deepRecoverySonarPingSfx" },
-      "sonar-return": { asset: "deepRecoverySonarReturnSfx" },
-      "hull-creak": { asset: "deepRecoveryHullCreakSfx" },
-      "breach-alarm": { asset: "deepRecoveryBreachAlarmSfx" },
-      "patch-seal": { asset: "deepRecoveryPatchSealSfx" },
-      "grapple-latch": { asset: "deepRecoveryGrappleLatchSfx" },
-      "crate-bank": { asset: "deepRecoveryCrateBankSfx" },
-      "oxygen-warn": { asset: "deepRecoveryOxygenWarnSfx" },
-      "blackout": { asset: "deepRecoveryBlackoutSfx" },
-      "surface-break": { asset: "deepRecoverySurfaceBreakSfx" },
-      "ambient-deep": { asset: "deepRecoveryAmbientDeepSfx" }
+      "sonar-ping": { asset: assets.deepRecoverySonarPingSfx },
+      "sonar-return": { asset: assets.deepRecoverySonarReturnSfx },
+      "hull-creak": { asset: assets.deepRecoveryHullCreakSfx },
+      "breach-alarm": { asset: assets.deepRecoveryBreachAlarmSfx },
+      "patch-seal": { asset: assets.deepRecoveryPatchSealSfx },
+      "grapple-latch": { asset: assets.deepRecoveryGrappleLatchSfx },
+      "crate-bank": { asset: assets.deepRecoveryCrateBankSfx },
+      "oxygen-warn": { asset: assets.deepRecoveryOxygenWarnSfx },
+      "blackout": { asset: assets.deepRecoveryBlackoutSfx },
+      "surface-break": { asset: assets.deepRecoverySurfaceBreakSfx },
+      "ambient-deep": { asset: assets.deepRecoveryAmbientDeepSfx }
     },
     reverb: "underwater"
   },

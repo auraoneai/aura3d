@@ -33,6 +33,7 @@ import { wirePatrolSync } from "./sync";
 import { wirePatrolHud } from "./hud";
 import { wirePatrolUpdate } from "./update";
 import { applyPatrolScenario } from "./scenarios";
+import { assets } from "../../../../src/aura-assets";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_PATROL_WING" as const;
 
@@ -97,17 +98,17 @@ const game = createGame({
   },
   sound: {
     cues: {
-      "engine-loop": { asset: "patrolWingEngineLoopSfx" },
-      "ring-chime": { asset: "patrolWingRingChimeSfx" },
-      "cannon-fire": { asset: "patrolWingCannonFireSfx" },
-      "drone-hit": { asset: "patrolWingDroneHitSfx" },
-      "drone-down": { asset: "patrolWingDroneDownSfx" },
-      "hull-alarm": { asset: "patrolWingHullAlarmSfx" },
-      "shot-down": { asset: "patrolWingShotDownSfx" },
-      "crash-thud": { asset: "patrolWingCrashThudSfx" },
-      touchdown: { asset: "patrolWingTouchdownSfx" },
-      "patrol-clear": { asset: "patrolWingPatrolClearSfx" },
-      "ambient-wind": { asset: "patrolWingAmbientWindSfx" }
+      "engine-loop": { asset: assets.patrolWingEngineLoopSfx },
+      "ring-chime": { asset: assets.patrolWingRingChimeSfx },
+      "cannon-fire": { asset: assets.patrolWingCannonFireSfx },
+      "drone-hit": { asset: assets.patrolWingDroneHitSfx },
+      "drone-down": { asset: assets.patrolWingDroneDownSfx },
+      "hull-alarm": { asset: assets.patrolWingHullAlarmSfx },
+      "shot-down": { asset: assets.patrolWingShotDownSfx },
+      "crash-thud": { asset: assets.patrolWingCrashThudSfx },
+      touchdown: { asset: assets.patrolWingTouchdownSfx },
+      "patrol-clear": { asset: assets.patrolWingPatrolClearSfx },
+      "ambient-wind": { asset: assets.patrolWingAmbientWindSfx }
     }
   },
   juice: {
