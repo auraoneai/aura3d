@@ -14,7 +14,6 @@ import {
   prd11LatestBatchPlanReport,
   prd11LatestQualityDiagnostics,
   prd11LatestTelemetry,
-  prd11SetRendererQrFlags,
   registerAuraQualityController,
   type Prd11FrameTelemetry
 } from "@aura3d/rendering";
@@ -169,10 +168,12 @@ registerDiagnosticsSection<AuraBatchPlanReport>({
 
 /**
  * C-38 `quality` extension (C-27 seam). Phase 0 mounts the PR 0a stub
- * controller — the real governor/controller lands in later phases — and uses
- * the extension's resolved-flags context to forward flags into the renderer's
- * frame-contributor gate (`setRendererQrFlags`), which `createAuraApp`
- * resolves but never wires into `renderer/FrameGraph.ts`.
+ * controller — the real governor/controller lands in later phases.
+ *
+ * T11-GLOBALFLAGS: the extension no longer writes the module-level renderer
+ * flag store. Since T0-28 (#914) `createAuraApp` passes the app's flags into
+ * `Renderer.create({ qrFlags })`, bound per device, so `frameContributors`
+ * gates on this app's `A3D_QR_TIERS` without arming other apps or lanes.
  *
  * The extension itself is registered unconditionally (flag metadata only);
  * with `A3D_QR_TIERS` off the flags object reports every lane off, so the
@@ -195,7 +196,6 @@ registerAppExtension<"quality">({
   flag: "A3D_QR_TIERS",
   member: "quality",
   create(_app, ctx) {
-    prd11SetRendererQrFlags(ctx.flags);
     const requested = requestedTierFromRendererOptions(ctx.options);
     if (!ctx.flags.on("A3D_QR_TIERS")) {
       return new StubQualityController(requested);
