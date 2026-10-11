@@ -238,6 +238,11 @@ function base(id: string, index: number, title: string, purpose: string) {
     settleFrames: 4,
     owner: "prd07" as const,
     referenceProfile: "contract" as const,
+    // C-30 registry required fields: without them every lane scene was
+    // quarantined and the capture job silently dropped it. No region masks
+    // or broken-control variants are defined for the lane scenes yet.
+    masks: [] as const,
+    brokenControls: [] as const,
     qrFlags: ["vfx"] as const
   };
 }
