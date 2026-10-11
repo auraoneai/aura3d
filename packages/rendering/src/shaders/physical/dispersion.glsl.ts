@@ -17,7 +17,9 @@ import type { ShaderChunk } from "../../contracts/program";
 import A3D_PRD04_DISPERSION_WGSL from "../physical-wgsl/dispersion.wgsl.js";
 
 const glsl = /* glsl */ `
-#if defined( A3D_TRANSMISSION ) && defined( A3D_DISPERSION )
+// A3D_LOBE_DISPERSION: the C-02 generator's define for an active dispersion lobe
+// (T0-05); A3D_DISPERSION stays accepted for the ChunkHarness / direct callers.
+#if defined( A3D_TRANSMISSION ) && ( defined( A3D_DISPERSION ) || defined( A3D_LOBE_DISPERSION ) )
 
 // Per-band IOR spread (r185 transmission_pars_fragment.glsl.js:180-182):
 // halfSpread = ( ior - 1 ) * 0.025 * dispersion.

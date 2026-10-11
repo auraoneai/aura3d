@@ -1,6 +1,7 @@
 /**
  * a3d_prd04_transmission_copy — fullscreen blit used by the T0-18(c)
- * GPU-side transmission-target copy in `forward/Transmission.ts`.
+ * GPU-side transmission-target copy in `forward/Transmission.ts` (PRD-04 P4-2;
+ * lane-original, no r185 port).
  *
  * Lives under `shaders/physical/` because the arch-gate `glsl-location`
  * (PRD-15 §6.12) only permits `#version` template strings inside

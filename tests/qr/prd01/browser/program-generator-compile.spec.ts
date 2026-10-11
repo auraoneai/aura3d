@@ -25,7 +25,11 @@ test("generated programs compile+link on WebGL2", async ({ page }) => {
   const report = (await page.evaluate(
     () => (window as unknown as { __QR_PROGRAM_COMPILE__?: { cases: ProgramCompileCase[]; errors: string[] } }).__QR_PROGRAM_COMPILE__
   ))!;
-  expect(report.cases.length).toBeGreaterThanOrEqual(13);
+  // 13 base records + 11 T0-05 lobe/feature records (core,materials).
+  expect(report.cases.length).toBeGreaterThanOrEqual(24);
+  for (const name of ["lobe-clearcoat", "lobe-sheen", "lobe-transmission", "lobe-all"]) {
+    expect(report.cases.map((c) => c.name)).toContain(name);
+  }
   for (const c of report.cases) {
     expect(c.vertexOk, `${c.name} vertex: ${c.infoLog ?? ""}`).toBe(true);
     expect(c.fragmentOk, `${c.name} fragment: ${c.infoLog ?? ""}`).toBe(true);

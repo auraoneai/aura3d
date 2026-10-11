@@ -38,6 +38,15 @@ PhysicalMaterial a3dMakeMaterial(vec3 baseColor, float metallic, float roughness
 }
 
 vec3 F_Schlick(vec3 f0, float f90, float dotVH) { float f = pow(1.0 - dotVH, 5.0); return f0 * (1.0 - f) + f90 * f; }
+// Scalar overload + inverse (r185 bsdfs.glsl.js F_Schlick / Schlick_to_F0) for
+// the C-03 iridescence lobe (lane 04 Q-01-5).
+float F_Schlick(float f0, float f90, float dotVH) { float f = pow(1.0 - dotVH, 5.0); return f0 * (1.0 - f) + f90 * f; }
+vec3 Schlick_to_F0(vec3 f, float f90, float dotVH) {
+  float x = clamp(1.0 - dotVH, 0.0, 1.0);
+  float x2 = x * x;
+  float x5 = clamp(x * x2 * x2, 0.0, 0.9999);
+  return (f - vec3(f90) * x5) / (1.0 - x5);
+}
 
 float V_GGX_SmithCorrelated(float a, float dotNL, float dotNV) {
   float a2 = pow2(a);

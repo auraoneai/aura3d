@@ -1,8 +1,9 @@
 # Decision record — PRD-01 default tone-mapping operator (Q-12-1)
 
-**Status:** filed — awaiting lane-12 G-PANEL review (A/B capture matrix
-pending on the lane browser job). `DEFAULT_TONE_MAPPING` stays `"aces"`
-until this record is closed with the panel outcome.
+**Status:** placeholder (P-56). Filed, awaiting the lane-12 G-PANEL review.
+No A/B capture has run, so no run id is recorded and this record is not
+evidence (01-T5). `DEFAULT_TONE_MAPPING` stays `"aces"` until this record is
+closed with the panel outcome and a remote run id.
 
 **Question (Q-12-1):** which operator does PRD-01 ship as
 `DEFAULT_TONE_MAPPING` — `"aces"` or `"agx"`?
