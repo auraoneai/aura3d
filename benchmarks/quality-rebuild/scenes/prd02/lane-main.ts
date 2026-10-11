@@ -68,9 +68,11 @@ async function runRenderMode(): Promise<void> {
             // Shadow-pixels GPU evidence: cascade depth stats of the flag-path
             // bridge after the ready frame (empty when the bridge did not run).
             const laneRenderer = (app as unknown as Record<symbol, { device?: unknown } | undefined>)[Symbol.for("a3d.prd01.renderer")];
-            const laneDevice = laneRenderer?.device as never | undefined;
-            const shadowDepth = laneDevice ? prd02ShadowDepthProbe(laneDevice) : [];
-            const prd02ShadowBridge = laneDevice ? prd02ShadowBridgeReason(laneDevice) : "no-lane-renderer";
+            // Without the renderer symbol the probe falls back to the device
+            // the bridge last ran on ("never-ran" = bridge not reached).
+            const laneDevice = (laneRenderer?.device as never | undefined) ?? undefined;
+            const shadowDepth = prd02ShadowDepthProbe(laneDevice);
+            const prd02ShadowBridge = prd02ShadowBridgeReason(laneDevice);
             return { ...(probeNodes > 0 ? { prd02ProbeNodes: probeNodes } : {}), prd02ShadowDepth: shadowDepth, prd02ShadowBridge };
           }
         });

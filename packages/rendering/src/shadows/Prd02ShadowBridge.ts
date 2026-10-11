@@ -176,17 +176,20 @@ const bridgedFrames = new WeakMap<RenderDevice, Prd02BridgedShadowFrame>();
 /** Last bridge outcome per device ("rendered" or the bail-out reason) — lane-page GPU evidence. */
 const bridgeReasons = new WeakMap<RenderDevice, string>();
 
-/** Last bridge outcome for `device`: "rendered", a bail-out reason, or "never-ran". */
-export function prd02ShadowBridgeReason(device: RenderDevice): string {
-  return bridgeReasons.get(device) ?? "never-ran";
+/** Device the bridge last ran on (lane pages cannot always reach the renderer). */
+let lastBridgeDevice: RenderDevice | null = null;
+
+/** Last bridge outcome for `device` (default: the last bridged device): "rendered", a bail-out reason, or "never-ran". */
+export function prd02ShadowBridgeReason(device: RenderDevice | null = lastBridgeDevice): string {
+  return device ? bridgeReasons.get(device) ?? "never-ran" : "never-ran";
 }
 
 /**
  * GPU evidence probe for the lane page: cascade depth statistics of the
  * bridge's shadow system on `device` (empty before the bridge first runs).
  */
-export function prd02ShadowDepthProbe(device: RenderDevice): ReturnType<Prd02ShadowSystem["readCascadeDepthStats"]> {
-  return shadowSystems.get(device)?.system.readCascadeDepthStats() ?? [];
+export function prd02ShadowDepthProbe(device: RenderDevice | null = lastBridgeDevice): ReturnType<Prd02ShadowSystem["readCascadeDepthStats"]> {
+  return device ? shadowSystems.get(device)?.system.readCascadeDepthStats() ?? [] : [];
 }
 
 
@@ -250,6 +253,7 @@ export interface Prd02BridgeInput {
 export function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardShadowMapOptions | undefined {
   bridgedFrames.delete(input.device);
   const observed = takeFrameObservation(input.device);
+  lastBridgeDevice = input.device;
   const bail = (reason: string): undefined => {
     bridgeReasons.set(input.device, reason);
     return undefined;
