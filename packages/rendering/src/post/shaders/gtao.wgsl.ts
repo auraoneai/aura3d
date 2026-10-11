@@ -25,7 +25,9 @@ struct GtaoParams {
   distance_exponent: f32,
   thickness: f32,
   frame_index: i32,
-  _pad: vec3<f32>,
+  // 1 = orthographic (parallel rays, no 1/z screen scale); was padding.
+  ortho: i32,
+  _pad: vec2<f32>,
 };
 
 @group(0) @binding(0) var<uniform> u_params: GtaoParams;
@@ -47,8 +49,13 @@ fn fetch_view_z(p: vec2<i32>) -> f32 {
 }
 
 fn get_view_position(uv: vec2<f32>, view_z: f32) -> vec3<f32> {
-  // Linear viewZ reconstruction: shoot the ndc.xy ray to the far plane,
-  // normalize to unit view-depth, scale by viewZ.
+  if (u_params.ortho != 0) {
+    // Orthographic: parallel rays; unproject at any depth, set z directly.
+    let o = u_params.inv_proj_matrix * vec4<f32>(uv * 2.0 - vec2<f32>(1.0), 0.0, 1.0);
+    return vec3<f32>(o.xy / o.w, -view_z);
+  }
+  // Perspective: shoot the ndc.xy ray to the far plane, normalize to unit
+  // view-depth, scale by viewZ.
   let view = u_params.inv_proj_matrix * vec4<f32>(uv * 2.0 - vec2<f32>(1.0), 1.0, 1.0);
   let ray = view.xyz / view.w;
   return ray * (view_z / -ray.z);
@@ -94,7 +101,7 @@ fn fs_gtao(@builtin(position) frag_coord: vec4<f32>) -> @location(0) vec4<f32> {
 
   // radius metres → pixels at this depth, clamped to the march budget.
   let proj_scale = u_params.proj_matrix[1][1] * size.y * 0.5;
-  let radius_px = clamp(u_params.radius * proj_scale / view_z, 4.0, 96.0);
+  let radius_px = clamp(u_params.radius * proj_scale / select(view_z, 1.0, u_params.ortho != 0), 4.0, 96.0);
 
   let jitter = ign4(frag_coord.xy) + f32(u_params.frame_index) * GOLDEN_ANGLE;
   var ao = 0.0;

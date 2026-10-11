@@ -136,6 +136,12 @@ export class CompiledSceneImpl implements CompiledScene {
   environmentProbe: EnvironmentProbe | null = null;
   /** Fingerprint of the `resolution.probe` request the live binding was made for. */
   environmentProbeRequest: string | undefined;
+  /**
+   * #1142: state of the async C-09 probe acquire. Flag-on (compiler +
+   * lighting) the probe owns IBL, so readiness must wait for it like the
+   * legacy HDR chain; `undefined` = no probe binding (legacy path owns IBL).
+   */
+  environmentProbeStatus: "pending" | "ready" | "fallback" | undefined;
   private disposed = false;
   private readonly rawSceneNodes: readonly AuraSceneNode[];
 
@@ -475,6 +481,16 @@ function updateCompiledSceneReal(
             onUpgrade: (probe) => { impl.environmentProbe = probe; }
           });
           impl.environmentProbe = binding.probe;
+          if (binding.pending) {
+            impl.environmentProbeStatus = "pending";
+            const key = requestKey;
+            binding.pending.then(
+              () => { if (impl.environmentProbeRequest === key) impl.environmentProbeStatus = "ready"; },
+              () => { if (impl.environmentProbeRequest === key) impl.environmentProbeStatus = "fallback"; }
+            );
+          } else {
+            impl.environmentProbeStatus = "ready";
+          }
         }
         const probed = mergedSource as RenderSource & {
           environmentLighting?: EnvironmentLightingOptions | false;

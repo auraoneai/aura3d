@@ -32,15 +32,20 @@ export abstract class BaseScreen implements ShellScreen {
     this.el = doc.createElement("div");
     this.el.className = `a3g-screen ${cls} a3g-hidden`;
     this.el.setAttribute("aria-hidden", "true");
+    // Hidden inline as well as by class: routes that do not load a stylesheet
+    // rule for `.a3g-screen.a3g-hidden` must never show a closed screen.
+    this.el.style.display = "none";
   }
   show(): void {
     this.visible = true;
     this.el.classList.remove("a3g-hidden");
+    this.el.style.display = "";
     this.el.setAttribute("aria-hidden", "false");
   }
   hide(): void {
     this.visible = false;
     this.el.classList.add("a3g-hidden");
+    this.el.style.display = "none";
     this.el.setAttribute("aria-hidden", "true");
   }
   dispose(): void {

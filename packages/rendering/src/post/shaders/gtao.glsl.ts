@@ -36,6 +36,7 @@ uniform mat4 u_projMatrix;
 uniform mat4 u_invProjMatrix;
 uniform float u_near;
 uniform float u_far;
+uniform bool u_ortho;
 uniform float u_radius;
 uniform float u_intensity;
 uniform float u_falloff;
@@ -65,9 +66,18 @@ float fetchViewZ(ivec2 p) {
 }
 
 vec3 getViewPosition(vec2 uv, float viewZ) {
-  // Linear viewZ reconstruction: shoot the ndc.xy ray to the far plane,
-  // normalize to unit view-depth, scale by viewZ (viewZ is optical-axis
-  // depth, positive in front of the camera).
+  // viewZ is optical-axis depth, positive in front of the camera.
+  if (u_ortho) {
+    // Orthographic: rays are parallel, so x/y do not scale with depth.
+    // Unproject the pixel at any depth and set z directly. (The perspective
+    // ray-scale below turned every floor pixel's position into a point on a
+    // ray through the origin, so flat floors read as occluded: open floor
+    // 34% darker on GPU run 38141069039.)
+    vec4 view = u_invProjMatrix * vec4(uv * 2.0 - 1.0, 0.0, 1.0);
+    return vec3(view.xy / view.w, -viewZ);
+  }
+  // Perspective: shoot the ndc.xy ray to the far plane, normalize to unit
+  // view-depth, scale by viewZ.
   vec4 view = u_invProjMatrix * vec4(uv * 2.0 - 1.0, 1.0, 1.0);
   vec3 ray = view.xyz / view.w;
   return ray * (viewZ / -ray.z);
@@ -113,7 +123,8 @@ void main() {
 
   // radius metres → pixels at this depth, clamped to the march budget.
   float projScale = u_projMatrix[1][1] * size.y * 0.5;
-  float radiusPx = clamp(u_radius * projScale / viewZ, 4.0, 96.0);
+  // Orthographic projection has no 1/z: P[1][1] maps view units to ndc directly.
+  float radiusPx = clamp(u_radius * projScale / (u_ortho ? 1.0 : viewZ), 4.0, 96.0);
 
   float jitter = ign4(gl_FragCoord.xy) + float(u_frameIndex) * GOLDEN_ANGLE;
   float ao = 0.0;

@@ -60,6 +60,8 @@ async function renderFrame(built: ReturnType<typeof scene>, flags: readonly stri
     // Read in the stepping task from the default framebuffer (qr-prd03-frame-capture).
     const canvasEl = host.querySelector("canvas")!;
     const capture = installFrameCapture(app, canvasEl);
+    const rendererErrors: string[] = [];
+    (app as { onRendererError?: (cb: (e: unknown) => void) => void }).onRendererError?.((e) => rendererErrors.push(String((e as { message?: string; code?: string }).code ?? "") + " " + String((e as { message?: string }).message ?? e).slice(0, 300)));
     const errors = label ? traceGlErrors(canvasEl.getContext("webgl2") as WebGL2RenderingContext) : null;
     const before = readsDuringSteps;
     for (let i = 0; i < frames; i++) {
@@ -71,7 +73,7 @@ async function renderFrame(built: ReturnType<typeof scene>, flags: readonly stri
     const reads = readsDuringSteps - before;
     const pixels = capture.read();
     errors?.uninstall();
-    if (label) frameDiagnostics[label] = { png: frameToPngDataUrl(pixels, SIZE, SIZE), meanLuma: meanLuma(pixels), diagnostics: postDiagnostics(app), glErrors: errors?.entries };
+    if (label) frameDiagnostics[label] = { png: frameToPngDataUrl(pixels, SIZE, SIZE), meanLuma: meanLuma(pixels), diagnostics: { rendererErrors, ...(postDiagnostics(app) as object) }, glErrors: errors?.entries };
     return { pixels, reads };
   } finally {
     insideStep = false;

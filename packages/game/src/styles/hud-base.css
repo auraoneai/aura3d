@@ -18,7 +18,7 @@
 .a3g-a-bottom-right { grid-area: 3/3; flex-direction: column; justify-content: flex-end; align-items: flex-end; }
 .a3g-w { background: var(--a3g-bg); border: 1px solid var(--a3g-edge); border-radius: var(--a3g-radius);
   padding: 4px 10px; box-shadow: var(--a3g-glow); font-size: 15px; line-height: 1.2; white-space: nowrap; }
-.a3g-w.a3g-hidden, .a3g-mobile-hidden { display: none; }
+.a3g-w.a3g-hidden { display: none; }
 .a3g-w-label { display: block; font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
   color: var(--a3g-fg-dim); }
 .a3g-w-value { font-weight: 700; font-variant-numeric: tabular-nums; }

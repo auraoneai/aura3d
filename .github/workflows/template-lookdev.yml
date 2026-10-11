@@ -23,6 +23,10 @@ on:
         type: boolean
         required: false
         default: false
+      source_ref:
+        description: "Git tag whose packages/create-aura3d/templates are captured (e.g. v3.0.1 for 13-BASE); empty = this commit's templates. Packages and the capture tool stay at this commit."
+        required: false
+        default: ""
   push:
     branches: [main]
     paths:
@@ -50,6 +54,7 @@ jobs:
       QRC_TEMPLATES: ${{ github.event_name == 'workflow_dispatch' && inputs.templates || '' }}
       QRC_FLAGS: ${{ github.event_name == 'workflow_dispatch' && inputs.qr_flags || 'none' }}
       QRC_SKIP_PACK: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_pack && 'true' || 'false' }}
+      QRC_SOURCE_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.source_ref || '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -77,6 +82,20 @@ jobs:
 
       - name: Install Playwright Chromium
         run: pnpm exec playwright install chromium
+
+      # 13-BASE: replace the template tree with the tagged one (removing
+      # templates added after the tag) while keeping this commit's packages
+      # and capture tool. The ref arrives via env, never interpolated.
+      - name: Check out templates from source_ref
+        if: env.QRC_SOURCE_REF != ''
+        run: |
+          case "$QRC_SOURCE_REF" in
+            -*|*[!A-Za-z0-9._/-]*) echo "invalid source_ref: $QRC_SOURCE_REF" >&2; exit 2 ;;
+          esac
+          git fetch --depth=1 origin tag "$QRC_SOURCE_REF"
+          rm -rf packages/create-aura3d/templates
+          git checkout "$QRC_SOURCE_REF" -- packages/create-aura3d/templates
+          ls packages/create-aura3d/templates
 
       - name: Capture templates
         id: capture

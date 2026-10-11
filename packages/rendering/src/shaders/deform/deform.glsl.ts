@@ -17,7 +17,13 @@ export const A3D_PRD06_DEFORM_GLSL = /* glsl */ `
 #ifdef A3D_HAS_TANGENT
 layout(location = 3) in vec4 a_tangent;
 #endif
+// Wind composes after morph/skin through its canonical C-18 entry.
+#define A3D_DEFORM_ENTRY 1
+#ifdef A3D_PRD10_WIND
+void a3dDeformBeforeWind(out vec4 localPos, out vec3 localNormal, out vec4 localTangent) {
+#else
 void a3dDeform(out vec4 localPos, out vec3 localNormal, out vec4 localTangent) {
+#endif
 #ifdef A3D_DEPTH_ONLY
   vec3 p = a_position;
   vec3 n = vec3(0.0); vec4 tg = vec4(0.0, 0.0, 0.0, 1.0);

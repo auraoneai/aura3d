@@ -1,0 +1,199 @@
+/**
+ * #1140 (Track 0): `A3D_QR_CORE` frames collapsed to flat colours on the GPU
+ * (03-damaged-helmet 2,329 → 31 colours, near-white; 16-instancing 1,148 → 17).
+ *
+ * Root cause: `@aura3d/rendering` declared `"sideEffects": false`, so a
+ * production bundler (Vite/Rollup, esbuild) dropped `src/lanes/prd01.ts` — it
+ * exports nothing, it only calls `programCacheSlot.provide(...)` — and the
+ * `installProgramGenerator(...)` call in `program/ProgramGenerator.ts`. The C-02
+ * slot then returned its PR-0a stub, which compiles the legacy `pbr-direct`
+ * program for every lit record: no texture maps, no instancing, the generated
+ * binding contract fed to a legacy program. The unit suites never saw it: they
+ * import source directly and nothing is tree-shaken.
+ *
+ * This test bundles the rendering entry the way the benchmark build does and
+ * checks that the lane-01 provides survive tree-shaking.
+ */
+
+import { readdirSync, readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { build } from "esbuild";
+import { describe, expect, it } from "vitest";
+import { programCacheSlot } from "../../../../packages/rendering/src/contracts/program";
+import { resolveQrFlags } from "../../../../packages/engine/src/contracts/flags";
+import { rendererProgramCache, setRendererProgramDegradationSink } from "../../../../packages/rendering/src/renderer/qrSubFlags";
+import { MockRenderDevice } from "@aura3d/rendering";
+
+const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
+const renderingDir = join(repoRoot, "packages/rendering");
+
+async function bundleRenderingEntry(): Promise<string> {
+  // Consumer-shaped entry: imports one symbol from the package index, exactly
+  // like engine code does. Everything else is subject to tree-shaking.
+  const result = await build({
+    stdin: {
+      contents: `export { Renderer } from ${JSON.stringify(join(renderingDir, "src/index.ts"))};`,
+      resolveDir: repoRoot,
+      loader: "ts",
+      sourcefile: "entry-1140.ts"
+    },
+    bundle: true,
+    write: false,
+    format: "esm",
+    platform: "browser",
+    treeShaking: true,
+    minify: false,
+    logLevel: "silent"
+  });
+  return result.outputFiles[0]!.text;
+}
+
+describe("#1140: lane barrels survive production tree-shaking", () => {
+  it("keeps the C-02 real program cache and the generator install in a bundled build", async () => {
+    const bundle = await bundleRenderingEntry();
+    // lanes/prd01.ts: C-02/C-07/C-08 real providers.
+    expect(bundle).toMatch(/programCacheSlot\.provide\(/);
+    expect(bundle).toMatch(/frameUniformsSlot\.provide\(/);
+    expect(bundle).toMatch(/instanceBufferSlot\.provide\(/);
+    // program/ProgramGenerator.ts: the real generator installs itself on import.
+    expect(bundle).toMatch(/installProgramGenerator\(\(features\) => generateProgramImpl\(features\)\)/);
+  }, 120_000);
+
+  it("keeps every lane barrel's top-level provide/register call in a bundled build", async () => {
+    const bundle = await bundleRenderingEntry();
+    const lanesDir = join(renderingDir, "src/lanes");
+    const barrels = readdirSync(lanesDir).filter((f) => /^prd\d\d\.ts$/.test(f));
+    const missing: string[] = [];
+    let checked = 0;
+    for (const file of barrels) {
+      const source = readFileSync(join(lanesDir, file), "utf8");
+      // Column-0 call statements are the barrel's import-time side effects.
+      for (const match of source.matchAll(/^([A-Za-z_$][\w$]*(?:\(\))?(?:\.[A-Za-z_$][\w$]*)*)\(/gm)) {
+        const callee = match[1]!;
+        // esbuild may suffix a renamed binding (`registerShaderChunk2`).
+        const parts = callee.split(".").map((p) => p.replace(/\(\)$/, "").replace(/[$]/g, "\\$"));
+        const head = `${parts[0]}\\d*${callee.split(".")[0]!.endsWith("()") ? "\\(\\)" : ""}`;
+        const pattern = new RegExp(`(^|[^\\w$.])${[head, ...parts.slice(1)].join("\\.")}\\(`, "m");
+        checked += 1;
+        if (!pattern.test(bundle)) missing.push(`${file}: ${callee}(`);
+      }
+    }
+    expect(checked).toBeGreaterThan(40);
+    expect(missing).toEqual([]);
+  }, 120_000);
+
+  it("declares every lane barrel and the generator as side-effectful in package.json", () => {
+    const pkg = JSON.parse(readFileSync(join(renderingDir, "package.json"), "utf8")) as { sideEffects?: unknown };
+    expect(Array.isArray(pkg.sideEffects)).toBe(true);
+    const globs = pkg.sideEffects as string[];
+    expect(globs).toContain("./src/lanes/**/*.ts");
+    expect(globs).toContain("./dist/lanes/**/*.js");
+    expect(globs).toContain("./src/program/ProgramGenerator.ts");
+    expect(globs).toContain("./dist/program/ProgramGenerator.js");
+    // Every barrel file is under the lanes glob (no barrel lives elsewhere).
+    const barrels = readdirSync(join(renderingDir, "src/lanes")).filter((f) => /^prd\d\d\.ts$/.test(f));
+    expect(barrels.length).toBeGreaterThanOrEqual(15);
+  });
+});
+
+describe("#1140: a missing C-02 provider is reported, never silent", () => {
+  it("emits program-generator-missing when A3D_QR_CORE is on but the real cache was not provided", () => {
+    // Simulate the tree-shaken bundle: shadow `provided` (a prototype getter)
+    // with an own `false` for the duration of the call.
+    Object.defineProperty(programCacheSlot, "provided", { value: false, configurable: true });
+    const device = new MockRenderDevice();
+    const seen: string[] = [];
+    setRendererProgramDegradationSink(device, (d) => seen.push(d.code));
+    const errors: unknown[] = [];
+    const original = console.error;
+    console.error = (...args: unknown[]) => { errors.push(args); };
+    try {
+      rendererProgramCache(device, resolveQrFlags({ env: { A3D_QR_CORE: "v2" } }));
+    } finally {
+      console.error = original;
+      delete (programCacheSlot as { provided?: boolean }).provided;
+      setRendererProgramDegradationSink(device, undefined);
+    }
+    expect(seen).toEqual(["program-generator-missing"]);
+    expect(errors.length).toBe(1);
+  });
+
+  it("stays silent when the real cache is provided", () => {
+    Object.defineProperty(programCacheSlot, "provided", { value: true, configurable: true });
+    const device = new MockRenderDevice();
+    const seen: string[] = [];
+    setRendererProgramDegradationSink(device, (d) => seen.push(d.code));
+    try {
+      rendererProgramCache(device, resolveQrFlags({ env: { A3D_QR_CORE: "v2" } }));
+    } finally {
+      delete (programCacheSlot as { provided?: boolean }).provided;
+      setRendererProgramDegradationSink(device, undefined);
+    }
+    expect(seen).toEqual([]);
+  });
+});
+
+describe("#1140: OutputPass dither uniform matches the device upload", () => {
+  it("declares u_dither as float (the device sets numbers with uniform1f; an int uniform raised GL_INVALID_OPERATION)", async () => {
+    const { outputFragmentGlsl } = await import("../../../../packages/rendering/src/output/ToneMappingOperators.glsl");
+    const src = outputFragmentGlsl({ toneMapping: "aces", backgroundCoverage: false, overlay: false });
+    expect(src).toMatch(/uniform float u_dither;/);
+    expect(src).not.toMatch(/uniform int u_dither;/);
+  });
+});
+
+describe("#1140: generated programs get the environment map the flag-off path samples", () => {
+  it("binds u_environmentMap + intensity/rotation/maxLod/encoding from environmentMapTexture", async () => {
+    const { applyGeneratedEnvironmentMapUniforms } = await import("../../../../packages/rendering/src/ForwardPass");
+    const { Texture, TextureBinding, Sampler } = await import("@aura3d/rendering");
+    const texture = new Texture({ width: 2, height: 1, colorSpace: "srgb", data: new Uint8Array([16, 64, 255, 255, 255, 180, 80, 255]) });
+    const env = {
+      color: [1, 1, 1],
+      intensity: 0.1,
+      environmentMapTexture: new TextureBinding({ name: "u_environmentMapTexture", texture, sampler: new Sampler({ addressU: "repeat" }), expectedColorSpace: "srgb", required: true }),
+      environmentMapIntensity: 0.45,
+      environmentMapRotation: 0.15,
+      environmentMapMipCount: 5,
+      environmentMapEncoding: "rgbe"
+    } as never;
+    const shader = { reflection: { uniforms: new Map([["u_environmentMap", {}]]) } } as never;
+    const uniforms = new Map<string, unknown>();
+    applyGeneratedEnvironmentMapUniforms(env, { label: "t" } as never, shader, uniforms as never);
+    const bound = uniforms.get("u_environmentMap") as InstanceType<typeof TextureBinding>;
+    expect(bound.name).toBe("u_environmentMap");
+    expect(bound.texture).toBe(texture);
+    expect(uniforms.get("u_environmentMapIntensity")).toBe(0.45);
+    expect(uniforms.get("u_environmentMapRotation")).toBe(0.15);
+    expect(uniforms.get("u_environmentMapMaxLod")).toBe(4);
+    expect(uniforms.get("u_environmentMapEncoding")).toBe(1);
+  });
+
+  it("zeroes the contribution (never leaves the sampler unbound) without a 2D map", async () => {
+    const { applyGeneratedEnvironmentMapUniforms } = await import("../../../../packages/rendering/src/ForwardPass");
+    const shader = { reflection: { uniforms: new Map([["u_environmentMap", {}]]) } } as never;
+    const uniforms = new Map<string, unknown>();
+    applyGeneratedEnvironmentMapUniforms({ color: [1, 1, 1], intensity: 1, proceduralMap: {} } as never, { label: "t" } as never, shader, uniforms as never);
+    expect(uniforms.get("u_environmentMapIntensity")).toBe(0);
+  });
+});
+
+describe("#1140: generated instanced programs keep per-instance colour", () => {
+  it("forwards a_instanceColor to the fragment and multiplies base colour (legacy instanced-pbr parity)", async () => {
+    await import("../../../../packages/rendering/src/lanes/prd01");
+    const { generateProgramImpl } = await import("../../../../packages/rendering/src/program/ProgramGenerator");
+    const { normalizeProgramFeatures } = await import("../../../../packages/rendering/src/program/ProgramFeatures");
+    const flags = resolveQrFlags({ env: { A3D_QR_CORE: "v2" } });
+    const lit = { dir: 1, point: 0, spot: 0, rect: 0, clustered: false, hemisphere: false } as const;
+    const withColor = generateProgramImpl(normalizeProgramFeatures({ pass: "forward", lighting: "lit", lights: lit, instancing: { color: true } }), { flags });
+    expect(withColor.defines.USE_INSTANCING_COLOR).toBe(true);
+    expect(withColor.vertex).toMatch(/#ifdef USE_INSTANCING_COLOR\nout vec4 v_instanceColor;/);
+    expect(withColor.vertex).toContain("v_instanceColor = a_instanceColor;");
+    expect(withColor.fragment).toMatch(/#ifdef USE_INSTANCING_COLOR\nin vec4 v_instanceColor;/);
+    expect(withColor.fragment).toContain("a3dBaseColor *= v_instanceColor;");
+    // Base colour is modulated before PhysicalMaterial is built (albedo, not post-lighting tint).
+    expect(withColor.fragment.indexOf("a3dBaseColor *= v_instanceColor;")).toBeLessThan(withColor.fragment.indexOf("PhysicalMaterial material = a3dMakeMaterial("));
+    const noColor = generateProgramImpl(normalizeProgramFeatures({ pass: "forward", lighting: "lit", lights: lit, instancing: { color: false } }), { flags });
+    expect(noColor.defines.USE_INSTANCING_COLOR).toBeUndefined();
+  });
+});

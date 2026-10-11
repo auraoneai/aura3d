@@ -24,7 +24,7 @@ import {
   type CdlodTree,
   type SplatBakeResult
 } from "@aura3d/rendering/world";
-import { TERRAIN_FRAG_GLSL, TERRAIN_VERT_GLSL } from "@aura3d/rendering/world";
+import { TERRAIN_FRAG_SOLID_GLSL, TERRAIN_VERT_GLSL } from "@aura3d/rendering/world";
 import {
   evalSplatRules,
   defaultSplatRules,
@@ -226,10 +226,12 @@ function buildTerrainState(device: RenderDevice, ds: DeviceTerrainState, record:
   const tree = buildCdlodTree(grid, record.size, [record.origin[0], record.origin[2]], levels);
   const morphRatio = record.options.lod?.morphRatio ?? 0.33;
   const ranges = cdlodRanges(levels, tree.leafSize, 1, morphRatio);
-  const morph = new Float32Array(16);
+  // u_morph is vec4[8] (x start, y end): 32 floats upload as a vec4 array;
+  // a 16-float vec2[8] was uploaded as a mat4 (INVALID_OPERATION).
+  const morph = new Float32Array(32);
   for (const r of ranges) {
-    morph[r.lod * 2] = r.morphStart;
-    morph[r.lod * 2 + 1] = r.morphEnd;
+    morph[r.lod * 4] = r.morphStart;
+    morph[r.lod * 4 + 1] = r.morphEnd;
   }
   const splatRes = 256;
   const { tex0, tex1 } = bakeSplat(record, splatRes); // CPU fallback (kept — also feeds tests)
@@ -327,11 +329,13 @@ function terrainProgram(device: RenderDevice, ds: DeviceTerrainState): RenderSha
     ds.program = device.createShaderProgram({
       label: "prd10.terrain",
       vertex: TERRAIN_VERT_GLSL,
-      fragment: TERRAIN_FRAG_GLSL,
+      // Tint-only program: Path S binds no layer texture arrays (#752).
+      fragment: TERRAIN_FRAG_SOLID_GLSL,
       marker: "prd10.terrain"
     });
   } catch (error) {
     ds.programFailure = error instanceof Error ? error.message : String(error);
+    lastTerrainProgramFailure = `terrain program failed to compile: ${ds.programFailure}`;
   }
   return ds.program; // null on failure -> nothing drawn; degraded surfaces in diagnostics
 }
@@ -383,7 +387,10 @@ export function drawTerrains(
     }
     const ranges = lodBias === 1 ? st.ranges : cdlodRanges(st.ranges.length, st.tree.leafSize, lodBias, record.options.lod?.morphRatio ?? 0.33);
     const nodes = selectCdlodNodes(st.tree, camera.position, ranges, {});
-    if (nodes.length === 0 || nodes.length > st.instCap) continue;
+    if (nodes.length === 0 || nodes.length > st.instCap) {
+      terrainFrameStats.set(id, { id, nodesDrawn: 0, trianglesDrawn: 0, layers: st.layerCount, degraded: true, reason: `CDLOD selected ${nodes.length} nodes (cap ${st.instCap})` });
+      continue;
+    }
     const inst = new Float32Array(nodes.length * 4);
     nodes.forEach((n: (typeof nodes)[number], i: number) => {
       inst[i * 4] = n.origin[0];
@@ -408,7 +415,6 @@ export function drawTerrains(
       ["u_terrainWorldSize", Math.min(record.size[0], record.size[1])],
       ["u_terrainHeightScale", record.heightScale],
       ["u_layerCount", st.layerCount],
-      ["u_solidMode", 1],
       ["u_layerParams", st.layerParams],
       ["u_layerTintOrm", st.layerTintOrm],
       ["u_ambient", new Float32Array([0.25, 0.28, 0.32])],
@@ -432,8 +438,43 @@ export function drawTerrains(
       shader: ds.program!,
       uniforms
     });
+    terrainFrameStats.set(id, {
+      id,
+      nodesDrawn: nodes.length,
+      trianglesDrawn: nodes.length * Math.floor(st.indexCount / 3),
+      layers: st.layerCount,
+      degraded: false
+    });
   }
 }
+
+/** §7.1.10: last measured terrain draw per terrain id (read by the C-31 world section). */
+export interface TerrainFrameStat {
+  readonly id: string;
+  readonly nodesDrawn: number;
+  readonly trianglesDrawn: number;
+  readonly layers: number;
+  readonly degraded: boolean;
+  readonly reason?: string;
+}
+const terrainFrameStats = new Map<string, TerrainFrameStat>();
+
+/**
+ * Terrain draw diagnostics: every registered terrain reports what the last
+ * terrain pass submitted for it. A terrain whose pass never ran (or ran with
+ * no compiled program) reports 0 nodes and `degraded`, never silence.
+ */
+export function terrainDiagnostics(): readonly TerrainFrameStat[] {
+  return terrainRecordIds().map((id) => terrainFrameStats.get(id) ?? {
+    id,
+    nodesDrawn: 0,
+    trianglesDrawn: 0,
+    layers: terrainRecordFor(id)?.options.layers.length ?? 0,
+    degraded: true,
+    reason: lastTerrainProgramFailure ?? `terrain pass not drawn (emitted ${terrainPassCounters.emitted}, executed ${terrainPassCounters.executed}, no camera ${terrainPassCounters.noCamera}, last ${terrainPassCounters.lastName || "-"}; phases ${JSON.stringify(worldPhaseCalls)})`
+  });
+}
+let lastTerrainProgramFailure: string | null = null;
 
 /**
  * §9.1 step 2 — terrain re-draw for a planar water reflection. Called from
@@ -467,7 +508,17 @@ export function terrainAfterOpaquePass(ctx: FrameContributorContext): RenderPass
   return terrainPass(ctx, "prd10.terrain.late", []);
 }
 
+/** Pass-level counters behind the "not executed" diagnostics reason. */
+const terrainPassCounters = { emitted: 0, executed: 0, noCamera: 0, lastName: "" };
+/** prd10 contributor hook invocations per phase (WorldFramePasses reports them). */
+const worldPhaseCalls: Record<string, number> = {};
+export function noteWorldPhase(phase: string): void {
+  worldPhaseCalls[phase] = (worldPhaseCalls[phase] ?? 0) + 1;
+}
+
 function terrainPass(ctx: FrameContributorContext, name: string, reads: readonly string[]): RenderPass {
+  terrainPassCounters.emitted += 1;
+  terrainPassCounters.lastName = name;
   return {
     name,
     // T0-33: the `background` variant reads the environment background colour
@@ -476,11 +527,15 @@ function terrainPass(ctx: FrameContributorContext, name: string, reads: readonly
     reads,
     writes: ["prd10.terrain.color"],
     execute(rp: RenderPassContext) {
+      terrainPassCounters.executed += 1;
       const device = rp.device;
       const ds = deviceState(device);
       if (!terrainProgram(device, ds)) return;
       const camera = ctx.camera;
-      if (!camera) return;
+      if (!camera) {
+        terrainPassCounters.noCamera += 1;
+        return;
+      }
       drawTerrains(ctx, device, ds, camera, camera.viewProjectionMatrix);
     }
   };

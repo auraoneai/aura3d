@@ -63,8 +63,8 @@ for (const preset of ["calm", "moderate", "rough"] as const) {
         if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return { error: gl.getProgramInfoLog(prog) ?? "link" };
         gl.useProgram(prog);
         gl.uniform4fv(gl.getUniformLocation(prog, "u_waves"), new Float32Array(waves));
-        gl.uniform1fv(gl.getUniformLocation(prog, "u_waveSpeed"), new Float32Array(speed));
-        gl.uniform1i(gl.getUniformLocation(prog, "u_waveCount"), count);
+        gl.uniform4fv(gl.getUniformLocation(prog, "u_waveSpeed"), new Float32Array(speed.flatMap((v) => [v, 0, 0, 0]))); // vec4[8], x used
+        gl.uniform1f(gl.getUniformLocation(prog, "u_waveCount"), count);
         gl.uniform1f(gl.getUniformLocation(prog, "u_time"), time);
 
         const vao = gl.createVertexArray();

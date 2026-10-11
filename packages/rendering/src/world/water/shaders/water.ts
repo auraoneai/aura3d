@@ -26,7 +26,7 @@ uniform vec3 u_scatterColor;
 uniform vec3 u_deepColor;                // Low path: no SceneColorCopy
 uniform vec3 u_shallowColor;
 uniform float u_refractionStrength;
-uniform int u_reflectionMode;            // 0: env specular, 1: C-13 SSR, 2: planar
+uniform float u_reflectionMode;            // 0: env specular, 1: C-13 SSR, 2: planar
 uniform float u_reflectionDistort;
 uniform float u_time;
 uniform sampler2D u_foam;

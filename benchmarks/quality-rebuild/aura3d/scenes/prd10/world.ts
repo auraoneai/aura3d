@@ -12,8 +12,11 @@
  * source tree, so the terrain/water registries are the ones the engine reads.
  */
 import { resolveQrFlags } from "@aura3d/engine";
-import type { AuraNodeInput } from "@aura3d/engine";
+import type { AuraApp, AuraNodeInput } from "@aura3d/engine";
+import { frameContributors } from "@aura3d/rendering/contracts";
 import { world } from "../../../../../packages/engine/src/agent-api/world/index";
+import { terrainRecordFor, terrainRecordIds } from "../../../../../packages/engine/src/agent-api/world/terrain";
+import { terrainDiagnostics } from "../../../../../packages/engine/src/production-runtime/world/TerrainRuntime";
 import type { SceneSpec } from "../../../shared/types";
 
 /** True when the capture's flag list resolves `A3D_QR_WORLD` on (`world`, `all`, `$ALL` lists, …). */
@@ -129,4 +132,33 @@ export function prd10SpecFor(spec: SceneSpec, on: boolean): SceneSpec {
 export function prd10WorldNodes(sceneId: string, on: boolean): readonly AuraNodeInput[] {
   const entry = WORLD_SCENES[sceneId];
   return on && entry ? entry.nodes() : [];
+}
+
+/**
+ * ReadyPayload.extra.world: what the world runtime actually did this capture
+ * (C-36 world diagnostics, registered terrain records with resolved grids, and
+ * whether the prd10 frame contributor is active for the app's flags) so a
+ * none-vs-world frame difference — or its absence — is attributable.
+ */
+export function prd10WorldEvidence(app: AuraApp, qrFlags: readonly string[]): Readonly<Record<string, unknown>> {
+  // The engine's own C-31 "world" section (collected by the engine's module
+  // instances), not this adapter's imports.
+  let diagnostics: unknown = null;
+  try {
+    diagnostics = (app.diagnostics() as unknown as { world?: unknown }).world ?? null;
+  } catch (error) {
+    diagnostics = { error: error instanceof Error ? error.message : String(error) };
+  }
+  // Same (array) input createAuraApp resolves, so this is the app's flag view.
+  const flags = resolveQrFlags({ options: [...qrFlags], env: {} });
+  return {
+    world: {
+      diagnostics,
+      flagOn: flags.on("A3D_QR_WORLD"),
+      terrainRecords: terrainRecordIds().map((id) => ({ id, grid: terrainRecordFor(id)?.grid != null })),
+      terrainDraws: terrainDiagnostics(),
+      contributors: frameContributors(flags as unknown as Parameters<typeof frameContributors>[0]).map((c) => c.id),
+      errors: app.diagnostics().errors.slice(0, 5)
+    }
+  };
 }

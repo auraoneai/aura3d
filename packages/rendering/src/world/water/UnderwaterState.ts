@@ -8,13 +8,16 @@
  * `prd10.underwaterDistortion` post pass.
  *
  * `registerPrd10Caustics()` lands the `a3d_prd10_caustics` chunk as the C-02
- * ShaderFeature `prd10.caustics` (hook `fragment:lights`, define
+ * ShaderFeature `prd10.caustics` (hooks `fragment:pars` + `fragment:indirect`, define
  * `A3D_PRD10_CAUSTICS`) so Path G materials pick up the direct-sun boost
  * automatically; Path S programs link the chunk explicitly.
  */
 import { registerShaderFeature, type ShaderFeatureSelectInput } from "../../contracts/program.js";
 import { registerPostPass } from "../../contracts/post.js";
 import { a3d_prd10_caustics } from "./shaders/caustics.js";
+import { Texture } from "../../Texture.js";
+import { Sampler } from "../../Sampler.js";
+import { TextureBinding } from "../../TextureBinding.js";
 
 /** True when `point` sits under the water surface at `timeSeconds`. */
 export function isUnderwaterPoint(
@@ -58,6 +61,47 @@ fn a3dUnderwaterDistort(uv : vec2f) -> vec4f {
 }
 `;
 
+/**
+ * #1143 — generated-path caustics state, bound per draw by `prd10.caustics`.
+ * Strength 0 (boost 1.0) and a 1×1 black atlas until the water runtime
+ * publishes its atlas, so the sampler is always bound to a 2D texture.
+ */
+export interface Prd10CausticsState {
+  readonly atlas?: Texture | null;
+  readonly scale?: number;
+  readonly strength?: number;
+  readonly waterHeight?: number;
+  /** Direction toward the sun (normalized in-shader). */
+  readonly sunDirection?: readonly [number, number, number];
+}
+
+const REPEAT = new Sampler({ minFilter: "linear", magFilter: "linear", addressU: "repeat", addressV: "repeat" });
+let fallbackAtlas: Texture | undefined;
+let causticsState: Required<Omit<Prd10CausticsState, "atlas">> & { atlasBinding: TextureBinding | undefined } = {
+  scale: 2,
+  strength: 0,
+  waterHeight: 0,
+  sunDirection: [0.42, 0.9, 0.18],
+  atlasBinding: undefined
+};
+
+export function setPrd10CausticsState(state: Prd10CausticsState): void {
+  causticsState = {
+    scale: state.scale ?? causticsState.scale,
+    strength: state.strength ?? causticsState.strength,
+    waterHeight: state.waterHeight ?? causticsState.waterHeight,
+    sunDirection: state.sunDirection ?? causticsState.sunDirection,
+    atlasBinding: state.atlas ? new TextureBinding({ name: "u_causticAtlas", texture: state.atlas, sampler: REPEAT }) : state.atlas === null ? undefined : causticsState.atlasBinding
+  };
+}
+
+function causticAtlasBinding(): TextureBinding {
+  if (causticsState.atlasBinding) return causticsState.atlasBinding;
+  fallbackAtlas ??= new Texture({ width: 1, height: 1, format: "rgba8", colorSpace: "linear", label: "prd10-caustics-fallback", data: new Uint8Array([0, 0, 0, 255]) });
+  causticsState.atlasBinding = new TextureBinding({ name: "u_causticAtlas", texture: fallbackAtlas, sampler: REPEAT });
+  return causticsState.atlasBinding;
+}
+
 /** Register `prd10.caustics` + `prd10.underwaterDistortion`; returns unregister. */
 export function registerPrd10UnderwaterFeatures(): () => void {
   const unCaustics = registerShaderFeature({
@@ -67,8 +111,19 @@ export function registerPrd10UnderwaterFeatures(): () => void {
     select: (input: ShaderFeatureSelectInput) =>
       input.item.label?.startsWith("prd10.caustics:") ? 1 : undefined,
     defines: (v): Readonly<Record<string, string | number | true>> => (v ? { A3D_PRD10_CAUSTICS: 1 } : {}),
-    chunks: ["a3d_prd10_caustics"],
-    hooks: ["fragment:lights"]
+    // #1143 (C-02 pars/call split): declarations at fragment:pars, the boost
+    // call appended at fragment:indirect so the default light loop still runs
+    // (a fragment:lights claim would replace it). `a3d_prd10_caustics` stays
+    // the Path S chunk.
+    chunks: ["a3d_prd10_caustics_pars", "a3d_prd10_caustics_apply"],
+    hooks: ["fragment:pars", "fragment:indirect"],
+    bindUniforms: (_value, _item, set) => {
+      set("u_causticAtlas", causticAtlasBinding());
+      set("u_causticScale", causticsState.scale);
+      set("u_causticStrength", causticsState.strength);
+      set("u_waterHeight", causticsState.waterHeight);
+      set("u_causticSunDir", new Float32Array(causticsState.sunDirection));
+    }
   });
   const unDistortion = registerPostPass({
     id: "prd10.underwaterDistortion",

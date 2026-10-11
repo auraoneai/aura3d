@@ -1,0 +1,34 @@
+{
+  "$schema": "../kit.schema.json",
+  "schemaVersion": 1,
+  "kit": "K7",
+  "name": "Vehicle set",
+  "consumers": [
+    "showcase-turbo-drift-circuit",
+    "showcase-courier-rush",
+    "showcase-patrol-wing",
+    "showcase-deep-recovery",
+    "showcase-aurora-lander",
+    "showcase-orbital-defense"
+  ],
+  "budget": {
+    "summary": "<= 6 MB each",
+    "maxBytesRaw": 6000000,
+    "maxBytesShipped": null
+  },
+  "contents": [
+    "formula car hero >= 30k tris with BC/N/ORM",
+    "van with separate wheels",
+    "aircraft (existing Meshy 60k)",
+    "drones x2 >= 5k",
+    "sub",
+    "lander >= 3k"
+  ],
+  "lookdev": {
+    "runId": null,
+    "reviewer": null,
+    "verdict": "pending"
+  },
+  "files": [],
+  "notes": "Scaffold: no candidate files staged yet. Verdict stays pending until files are staged and a human reviewer accepts them on the three r185 look-dev pane."
+}

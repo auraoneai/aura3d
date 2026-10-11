@@ -17,9 +17,17 @@ import type {
 } from "@aura3d/engine/contracts";
 import type { AuraVec3 } from "@aura3d/engine";
 import type { GameSessionImpl } from "./session/GameSession";
+import { runTransition, type TransitionDriver } from "./shell/transition";
 
 export class GameShellImpl implements GameShell {
-  public constructor(private readonly session: GameSessionImpl) {}
+  /**
+   * `transitionDriver` (DOM `.a3g-overlay` fade, §6.2) makes `transition()`
+   * cover the remount gap; without one (node/tests) it runs straight through.
+   */
+  public constructor(
+    private readonly session: GameSessionImpl,
+    private readonly transitionDriver?: TransitionDriver
+  ) {}
 
   public get state() {
     return this.session.state;
@@ -30,11 +38,11 @@ export class GameShellImpl implements GameShell {
     return "retry";
   }
 
-  public async transition<T>(run: () => T | Promise<T>, _spec?: TransitionSpec): Promise<T> {
+  public async transition<T>(run: () => T | Promise<T>, spec?: TransitionSpec): Promise<T> {
     const from = this.session.state;
     this.session.transition("transitioning");
     try {
-      return await run();
+      return this.transitionDriver ? await runTransition(this.transitionDriver, run, spec) : await run();
     } finally {
       this.session.transition(from === "transitioning" ? "playing" : from);
     }

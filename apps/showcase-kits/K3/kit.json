@@ -1,0 +1,31 @@
+{
+  "$schema": "../kit.schema.json",
+  "schemaVersion": 1,
+  "kit": "K3",
+  "name": "Outdoor nature kit",
+  "consumers": [
+    "showcase-turbo-drift-circuit",
+    "showcase-siege-golf",
+    "showcase-patrol-wing",
+    "showcase-skyline-runner"
+  ],
+  "budget": {
+    "summary": "<= 30 MB -> <= 10 MB",
+    "maxBytesRaw": 30000000,
+    "maxBytesShipped": 10000000
+  },
+  "contents": [
+    "terrain splat set (grass/rock/sand/dirt, 2k each, ORM+N)",
+    "3 conifer + 3 deciduous trees with 3 LODs + impostor",
+    "rocks x6",
+    "grass card clumps",
+    "hedge modules"
+  ],
+  "lookdev": {
+    "runId": null,
+    "reviewer": null,
+    "verdict": "pending"
+  },
+  "files": [],
+  "notes": "Scaffold: no candidate files staged yet. Verdict stays pending until files are staged and a human reviewer accepts them on the three r185 look-dev pane."
+}

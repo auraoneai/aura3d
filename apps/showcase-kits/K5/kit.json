@@ -1,0 +1,29 @@
+{
+  "$schema": "../kit.schema.json",
+  "schemaVersion": 1,
+  "kit": "K5",
+  "name": "Space kit",
+  "consumers": [
+    "showcase-orbital-defense",
+    "showcase-gravity-post",
+    "showcase-aurora-lander"
+  ],
+  "budget": {
+    "summary": "<= 24 MB -> <= 8 MB",
+    "maxBytesRaw": 24000000,
+    "maxBytesShipped": 8000000
+  },
+  "contents": [
+    "planet albedo/normal/night-lights/clouds (Earth-like, gas giant, rocky, ice; 4k/2k)",
+    "starfield HDRI (K1)",
+    "nebula layer",
+    "asteroid set"
+  ],
+  "lookdev": {
+    "runId": null,
+    "reviewer": null,
+    "verdict": "pending"
+  },
+  "files": [],
+  "notes": "Scaffold: no candidate files staged yet. Verdict stays pending until files are staged and a human reviewer accepts them on the three r185 look-dev pane."
+}

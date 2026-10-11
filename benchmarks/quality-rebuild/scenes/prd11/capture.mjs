@@ -36,6 +36,34 @@ const wantWebgpuProbe = process.argv.includes("--webgpu-probe");
 
 const launchArgs = () => (process.env.QR_BENCH_CHROME_ARGS ?? "--use-angle=metal --enable-gpu --ignore-gpu-blocklist").split(/\s+/).filter(Boolean);
 
+async function startProfile(page) {
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Profiler.enable");
+  await cdp.send("Profiler.setSamplingInterval", { interval: 1000 });
+  await cdp.send("Profiler.start");
+  return cdp;
+}
+
+/** Top 30 functions by self time (ms) from a CDP CPU profile. */
+async function stopProfile(cdp) {
+  let profileTimeout;
+  const stopped = await Promise.race([
+    cdp.send("Profiler.stop"),
+    new Promise((_, reject) => profileTimeout = setTimeout(() => reject(new Error("Profiler.stop timeout")), 60_000))
+  ]).finally(() => clearTimeout(profileTimeout));
+  const { nodes, samples, timeDeltas } = stopped.profile;
+  const byId = new Map(nodes.map((node) => [node.id, node]));
+  const self = new Map();
+  for (let i = 0; i < samples.length; i += 1) {
+    const node = byId.get(samples[i]);
+    if (!node) continue;
+    const frame = node.callFrame;
+    const key = `${frame.functionName || "(anonymous)"} ${String(frame.url).replace(/^.*\/(packages|node_modules|benchmarks)\//, "$1/")}:${frame.lineNumber + 1}`;
+    self.set(key, (self.get(key) ?? 0) + (timeDeltas[i] ?? 0) / 1000);
+  }
+  return [...self.entries()].sort((a, b) => b[1] - a[1]).slice(0, 30).map(([fn, ms]) => ({ fn, selfMs: Math.round(ms) }));
+}
+
 async function main() {
   mkdirSync(outDir, { recursive: true });
   const server = await createServer({
@@ -116,6 +144,12 @@ async function main() {
           // plus the adapter's own marks (window.__PRD11_PROGRESS__), also on timeout.
           const phases = { gotoMs: null, rafHz: null, readyMs: null };
           const progress = () => page.evaluate(() => window.__PRD11_PROGRESS__ ?? null).catch(() => null);
+          // QR_PRD11_PROFILE=1: V8 sampling profile of the aura3d page, summarised
+          // as top self-time functions — attributes where a minutes-long
+          // app.step goes (GPU run 38118205812: first step ~245 s, none and tiers alike).
+          const profiler = engine === "aura3d" && process.env.QR_PRD11_PROFILE === "1"
+            ? await startProfile(page).catch(() => null)
+            : null;
           try {
             await page.goto(url, { waitUntil: "load", timeout: 60_000 });
             phases.gotoMs = Date.now() - started;
@@ -158,6 +192,9 @@ async function main() {
             entry.engines[engine] = { status: "error", wallMs: Date.now() - started, phases, progress: await progress(), error: String(error?.message ?? error), consoleErrors };
             console.log(`[prd11-capture] ${sceneId} ${flags} ${engine}: error ${String(error?.message ?? error).split("\n")[0]}`);
           } finally {
+            if (profiler && entry.engines[engine]) {
+              entry.engines[engine].profileTop = await stopProfile(profiler).catch((error) => [{ error: String(error?.message ?? error) }]);
+            }
             await page.close();
           }
         }

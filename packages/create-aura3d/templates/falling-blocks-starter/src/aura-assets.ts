@@ -1,39 +1,43 @@
 import { defineAuraAssets } from "@aura3d/engine";
 
 export const assets = defineAuraAssets({
-  // Bevelled Kenney platformer block (CC0). One GLB drives every cell: the
+  // Uniform library crate (CC0/Quaternius). One GLB drives every cell: the
   // settled board is a single instanced mesh and the active/hold/frame/flash
   // surfaces reuse the same asset scaled per role.
-  blockCell: {
+  quaterniusCubeCrate: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/kenneyPlatformerBlockGrass.8cd2f9ec.glb",
-    bounds: [1.962, 2.0, 1.962],
-    hash: "sha256-8cd2f9ec083b2b7cfe89d95c53ef8adf369d1e5e6adf125f063122d4998c336f",
+    url: "/aura-assets/quaternius-cube-crate.glb",
+    bounds: [2.021, 2.021, 2.021],
+    hash: "sha256-e0c4c5946b53ba314ec6e22bdb5d3329e4a2f0950b3c477a88e0d456d85baea8",
     metadata: {
       materials: [],
       animations: [],
       textures: [],
-      license: "CC0-1.0",
-      author: "Kenney",
-      sourcePage: "https://kenney.nl/assets/platformer-kit",
-      role: "prop"
+      libraryId: "quaternius-cube-crate",
+      libraryKit: "props/industrial-urban",
+      license: "CC0",
+      attribution: "Quaternius",
+      sourcePage: "https://poly.pizza/m/YAghI6GBls"
     }
   },
-  cabinetModel: {
+  // Modular wall panel stands in for the arcade cabinet silhouette until a
+  // cabinet prop is admitted to the kit (#481 mapping approximation).
+  quaterniusWallModular: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/showcaseBlockfallCabinet.679d52fe.glb",
-    bounds: [2, 2, 3.27],
-    hash: "sha256-679d52fe0c7bf99373fc873f3c3892548f6c5758ae9c81be91f09acae6a35a36",
+    url: "/aura-assets/quaternius-wall-modular.glb",
+    bounds: [2.001, 2.005, 0.438],
+    hash: "sha256-052a5ff5a468c946dcfe170d907a0c4554a96c7f253c89ff54e72fdf048d22c6",
     metadata: {
-      materials: ["arcade_machine"],
+      materials: [],
       animations: [],
-      textures: ["image-0", "image-1", "image-2", "image-3"],
-      license: "CC-BY-4.0",
-      author: "Dmitry Blagodaryov",
-      sourcePage: "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-012/f73986356b6e4d72b7a889279837aec2.glb",
-      thumbnailUrl: "/aura-assets/showcaseBlockfallCabinet.thumb.svg"
+      textures: [],
+      libraryId: "quaternius-wall-modular",
+      libraryKit: "environments/modular",
+      license: "CC0",
+      attribution: "Quaternius",
+      sourcePage: "https://poly.pizza/m/itasw0GWNf"
     }
   }
 } as const);

@@ -3,6 +3,8 @@
 Skill: `packages/aura3d-cli/skills/aura3d-threejs-migration/SKILL.md` (PRD D4).
 Run on 2026-09-25 in the Aura3D monorepo against the
 `three-compat-custom-threejs-migration` template. Lightweight commands only.
+That template has since been renamed `custom-scene` (#700); the paths below are
+recorded as run, and the old name remains a one-minor `--template` alias.
 
 ## Goal
 

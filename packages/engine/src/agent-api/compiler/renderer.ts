@@ -187,6 +187,8 @@ export async function createProductionRuntimeSceneRenderer(
     const compiledScene = await compileScene(snapshot, sceneCompileCtx);
     markTiming("a3d:mount:compile-scene:resolved");
     const compiled = asRuntimeCompiled(compiledScene);
+    const probeStatus = (): "pending" | "ready" | "fallback" | undefined =>
+      (compiledScene as { environmentProbeStatus?: "pending" | "ready" | "fallback" }).environmentProbeStatus;
     if (compiled) {
       actorEntries = compiled.actorEntries as ProductionRuntimeActorEntry[];
       primitiveEntries = compiled.primitiveEntries as ProductionRuntimePrimitiveEntry[];
@@ -257,8 +259,11 @@ export async function createProductionRuntimeSceneRenderer(
             : productionEnvironment.evidence,
           // B3 iblPixelBacked: true only after the HDR chain swaps the live
           // lighting object. Procedural first frames and fallbacks never claim it.
-          iblPixelBacked: hdriState.status === "ready",
-          hdriStatus: hdriState.status,
+          // #1142: when the compiled C-09 probe owns IBL (compiler + lighting),
+          // a still-pending probe acquire keeps the scene "pending" too, so
+          // captures wait for real specular instead of the analytic floor.
+          iblPixelBacked: hdriState.status === "ready" && probeStatus() !== "pending",
+          hdriStatus: probeStatus() === "pending" && hdriState.status !== "none" ? "pending" : hdriState.status,
           ...(hdriState.dualProbe === undefined ? {} : { dualProbe: hdriState.dualProbe }),
           ...(productionEnvironment.hdriRotation === undefined ? {} : { hdriRotation: productionEnvironment.hdriRotation })
         },

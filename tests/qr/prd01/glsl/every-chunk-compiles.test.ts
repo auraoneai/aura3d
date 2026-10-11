@@ -100,10 +100,8 @@ function compileAll(label: string, record: ProgramFeatures): string[] {
  * that became compatible fails too (remove it). Not a mask: excluded features
  * never reach a generated program at runtime either.
  */
-const KNOWN_EXCLUDED: Readonly<Record<string, string>> = {
-  "prd10.caustics": "#1143 (fragment body-hook chunk declares a uniform; needs pars/call split)",
-  "prd10.wind": "#881 (vertex:deform chunk must define a3dDeform(inout vec4, inout vec3, inout vec4))"
-};
+// #1143 fixed prd10.caustics (pars/call split) and prd10.wind (C-18 a3dDeform).
+const KNOWN_EXCLUDED: Readonly<Record<string, string>> = {};
 
 const registered = shaderFeaturesFor(ALL_STRICT);
 const excluded = new Map(registered.flatMap((f) => {

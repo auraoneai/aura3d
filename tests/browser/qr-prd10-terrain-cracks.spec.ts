@@ -81,10 +81,10 @@ test("terrain CDLOD: 0 crack pixels over 120 dolly frames across LOD seams", asy
   const levels = 4;
   const tree = buildCdlodTree(grid, size, [0, 0], levels);
   const ranges = cdlodRanges(levels, tree.leafSize, 1, 0.33);
-  const morph = new Float32Array(16);
+  const morph = new Float32Array(32); // u_morph is vec4[8]
   for (const r of ranges) {
-    morph[r.lod * 2] = r.morphStart;
-    morph[r.lod * 2 + 1] = r.morphEnd;
+    morph[r.lod * 4] = r.morphStart;
+    morph[r.lod * 4 + 1] = r.morphEnd;
   }
 
   // Dolly: 120 camera positions sweeping diagonally so nodes flip LOD mid-run.
@@ -189,7 +189,7 @@ test("terrain CDLOD: 0 crack pixels over 120 dolly frames across LOD seams", asy
     gl.uniform4f(u("u_terrain"), 0, 0, size[0], size[1]);
     gl.uniform1f(u("u_heightScale"), heightScale);
     gl.uniform2f(u("u_heightTexSize"), columns, rows);
-    gl.uniform2fv(u("u_morph"), new Float32Array(morph));
+    gl.uniform4fv(u("u_morph"), new Float32Array(morph));
     gl.uniform1f(u("u_gridDim"), patchN);
     gl.uniform1i(u("u_height"), 0);
     gl.enable(gl.DEPTH_TEST);

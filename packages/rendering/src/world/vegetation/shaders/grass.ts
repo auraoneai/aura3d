@@ -9,7 +9,7 @@ import type { ShaderChunk } from "../../../contracts/program.js";
 
 const glsl = /* glsl */ `
 uniform vec4 u_grassChunk;   // chunkOriginXZ, chunkSize, seed
-uniform int u_grassBladeCount;
+uniform float u_grassBladeCount; // float: no int uniform upload (#491)
 uniform float u_grassRadius; // density falloff radius from the camera
 uniform float u_grassBladeHeight;
 uniform float u_grassBladeWidth;
