@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('[{{"ref":"{0}","flags":"{1}","label":"{2}"}}]', inputs.ref, inputs.flags, inputs.label) || '[{"ref":"afb475c2f093b4d5f2501a218203729c1c8bb117","flags":"none","label":"A-before"},{"ref":"322d78b1391f1c8293cc8e714c7d8a6ba7541343","flags":"none","label":"B-after"},{"ref":"322d78b1391f1c8293cc8e714c7d8a6ba7541343","flags":"all","label":"C-after-all"},{"ref":"322d78b1391f1c8293cc8e714c7d8a6ba7541343","flags":"none","label":"D-diag","games":"aura-clash-showcase,showcase-orbital-defense"}]') }}
+        include: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('[{{"ref":"{0}","flags":"{1}","label":"{2}"}}]', inputs.ref, inputs.flags, inputs.label) || '[{"ref":"322d78b1391f1c8293cc8e714c7d8a6ba7541343","flags":"none","label":"B0-after-off","strip":"true"},{"ref":"afb475c2f093b4d5f2501a218203729c1c8bb117","flags":"none","label":"A0-before-off","strip":"true"}]') }}
     env:
       QRC_LOCAL_BUILD: "true"
       QRC_NO_MOBILE: "true"
@@ -73,6 +73,10 @@ jobs:
           await b.close();
           JS
           cp /tmp/probe.mjs ./qr-lead-probe.mjs && node ./qr-lead-probe.mjs | tee -a "$GITHUB_STEP_SUMMARY"; rm -f ./qr-lead-probe.mjs
+      - name: Strip per-game games.json qrFlags (true flags-off; workflow branch only, #626)
+        if: ${{ matrix.strip == 'true' }}
+        run: |
+          node -e 'const f="tools/quality-rebuild-capture/games.json";const fs=require("fs");const d=JSON.parse(fs.readFileSync(f));for(const g of d.games)delete g.qrFlags;if(d.defaults)delete d.defaults.qrFlags;fs.writeFileSync(f,JSON.stringify(d,null,2));console.log("stripped qrFlags from",d.games.length,"games")'
       - name: Build all 18 games from source
         run: node tools/quality-rebuild-capture/capture-games.mjs --build-only --no-alt-routes
       - name: Capture
