@@ -17,7 +17,7 @@ import { AuraMigrationError } from "../compiler/errors.js";
 import { startProductionRender } from "./frameLoop.js";
 import { registerAuraApp, unregisterAuraApp } from "./liveApps.js";
 import { markRouteError, markRouteReady } from "./routeState.js";
-import { captureAuraScreenshot } from "./screenshot.js";
+import { AURA_APP_CANVAS, captureAuraScreenshot } from "./screenshot.js";
 import { attachErrorOverlay } from "./errorOverlay.js";
 import { collectGameRuntimeEvidence as collectGameRuntimeEvidenceV105 } from "../GameEvidence.js";
 import { createGameInput } from "../GameRuntime.js";
@@ -759,5 +759,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     baseDispose();
   };
   registerAuraApp(app);
+  // #1131: diagnostics read the canvas size through this slot, not screenshot().
+  Object.defineProperty(app, AURA_APP_CANVAS, { value: canvas, enumerable: false });
   return app;
 }
