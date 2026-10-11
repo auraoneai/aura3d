@@ -1,4 +1,4 @@
-import { defineConfig } from "@playwright/test";
+import { defineConfig, type ReporterDescription } from "@playwright/test";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import baseConfig from "../../../playwright.config";
@@ -20,12 +20,11 @@ const baseLaunch = (baseConfig.use?.launchOptions ?? {}) as { args?: string[] };
  * keeping the same reporters.
  */
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
-type ReporterEntry = string | readonly [string, ...unknown[]];
-const reporter = (Array.isArray(baseConfig.reporter) ? (baseConfig.reporter as ReporterEntry[]) : []).map((entry) => {
-  const [name, ...rest] = typeof entry === "string" ? [entry] : entry;
-  const anchored = name.startsWith("./") || name.startsWith("../") ? resolve(REPO_ROOT, name) : name;
-  return [anchored, ...rest];
-}) as NonNullable<Parameters<typeof defineConfig>[0]["reporter"]>;
+const anchor = (name: string): string =>
+  name.startsWith("./") || name.startsWith("../") ? resolve(REPO_ROOT, name) : name;
+const reporter: ReporterDescription[] = (Array.isArray(baseConfig.reporter) ? (baseConfig.reporter as ReporterDescription[]) : []).map(
+  ([name, options]) => (options === undefined ? [anchor(name)] : [anchor(name), options])
+);
 
 export default defineConfig({
   ...baseConfig,
