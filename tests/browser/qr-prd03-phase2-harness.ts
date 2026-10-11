@@ -211,7 +211,12 @@ export async function runToneEvalProbe(): Promise<{ perStep: number[]; expected:
     const halfWidth = 3.75 * (canvas.width / canvas.height);
     const cx = (i: number) => Math.round(((-4.5 + i * 1.8) / (2 * halfWidth) + 0.5) * canvas.width);
     const perStep = LADDER.map((_, i) => pixels[(cy * canvas.width + Math.min(canvas.width - 1, Math.max(0, cx(i)))) * 4]!);
-    const expected = [...LADDER].map((e) => Math.round(applyToneOperator("aces", [e, e, e], 1)[0]! * 255));
+    // The canvas holds the sRGB-encoded display value (the v2 OutputPass
+    // writes outputColorSpace "srgb"), so the oracle is sRGB(aces(E)), not
+    // the linear operator output (main 38098853109: step 0 off by exactly
+    // the encode, 80 LSB).
+    const srgb = (c: number) => (c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055);
+    const expected = [...LADDER].map((e) => Math.round(srgb(applyToneOperator("aces", [e, e, e], 1)[0]!) * 255));
     return { perStep, expected, pipeline: post?.pipeline ?? null };
   } catch (error) {
     return { perStep: [], expected: [], pipeline: null, error: error instanceof Error ? error.message : String(error) };
