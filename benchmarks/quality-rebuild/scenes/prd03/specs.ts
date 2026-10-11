@@ -36,7 +36,7 @@ function primitive(
   };
 }
 
-function base(id: string, index: number, title: string, purpose: string, primaryCriterion: string): Pick<SceneSpec, "id" | "index" | "title" | "purpose" | "resolution" | "toneMapping" | "exposure" | "time" | "settleFrames" | "owner" | "qrFlags" | "primaryCriterion"> {
+function base(id: string, index: number, title: string, purpose: string, primaryCriterion: string): Pick<SceneSpec, "id" | "index" | "title" | "purpose" | "resolution" | "toneMapping" | "exposure" | "time" | "settleFrames" | "owner" | "qrFlags" | "primaryCriterion" | "referenceProfile" | "masks" | "brokenControls"> {
   return {
     id,
     index,
@@ -49,7 +49,14 @@ function base(id: string, index: number, title: string, purpose: string, primary
     settleFrames: SETTLE_FRAMES,
     owner: "prd03",
     qrFlags: ["post"],
-    primaryCriterion
+    primaryCriterion,
+    // Required for `active` registry status (C-30). Without them every prd03
+    // scene was quarantined `missing-registry-fields`, dropped from
+    // __QR_SCENES__, and `suite=promote promote_flag=post` never rendered a
+    // lane scene (only base scenes, which author no post effect).
+    referenceProfile: "contract",
+    masks: ["object-id"],
+    brokenControls: []
   };
 }
 
