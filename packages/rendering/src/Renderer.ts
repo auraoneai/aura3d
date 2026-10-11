@@ -10,6 +10,7 @@ import type { RendererHost } from "./renderer/RendererHost";
 import { createRenderer } from "./renderer/RendererFactory";
 import { collectItemBounds, isIterable, renderableWorldBounds, sceneFromSource, toMat4 } from "./renderer/RenderShared";
 import { RendererShadowOrchestrator, collectForwardShadowMap, collectRendererShadowOptions } from "./renderer/ShadowOrchestration";
+import { shadowFrameCamera, type Prd02BridgeFrameCamera } from "./shadows/Prd02ShadowBridge";
 import { type RenderSource } from "./contracts/renderSource";
 import { Bounds3 as SceneBounds3, Camera, DirectionalLight, Light, PerspectiveCamera, PointLight, Scene, SpotLight, identityMat4, invertMat4, multiplyMat4, orthographicMat4, perspectiveMat4, transformPoint, toMathMat4, type Mat4, type Vec3, type SceneNode } from "@aura3d/scene";
 import { Frustum, type Ray } from "@aura3d/math";
@@ -835,7 +836,8 @@ export class Renderer {
           lights,
           ownedTargets,
           ownedShadowPasses,
-          camera: resolvedCamera?.camera
+          camera: resolvedCamera?.camera,
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition)
         })) ?? explicitShadowMap ?? this.executeRendererShadowMap({
           shadowOptions,
           source,
@@ -843,7 +845,8 @@ export class Renderer {
           lights,
           ownedTargets,
           ownedShadowPasses,
-          camera: resolvedCamera?.camera
+          camera: resolvedCamera?.camera,
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition)
         });
       frameHooks.addPasses(this.graph, "shadows", items);
       this.lastShadowEvidence = rendererShadowMap ? {
@@ -1160,7 +1163,8 @@ export class Renderer {
           lights,
           ownedTargets,
           ownedShadowPasses,
-          camera: resolvedCamera?.camera
+          camera: resolvedCamera?.camera,
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition)
         })) ?? explicitShadowMap ?? this.executeRendererShadowMap({
           shadowOptions,
           source,
@@ -1168,7 +1172,8 @@ export class Renderer {
           lights,
           ownedTargets,
           ownedShadowPasses,
-          camera: resolvedCamera?.camera
+          camera: resolvedCamera?.camera,
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition)
         });
       frameHooks.addPasses(this.graph, "shadows", items);
       this.lastShadowEvidence = rendererShadowMap ? {
@@ -1616,6 +1621,7 @@ export class Renderer {
     readonly ownedTargets: RenderTarget[];
     readonly ownedShadowPasses: Array<{ dispose(): void }>;
     readonly camera?: Camera;
+    readonly frameCamera?: Prd02BridgeFrameCamera;
   }): ForwardShadowMapOptions | undefined {
     return this.host.shadows.executeRendererShadowMap(options);
   }
