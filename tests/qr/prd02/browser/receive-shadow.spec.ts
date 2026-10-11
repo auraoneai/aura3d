@@ -21,7 +21,7 @@ import { captureLaneScene, startLaneServer, type LaneServer } from "./lane-page"
 const SCENE = "prd02-contact-cube";
 
 async function fixtureMatched(page: Page): Promise<number> {
-  return (await page.evaluate("() => (window.__qrPrd02Fixture ? window.__qrPrd02Fixture.matched : 0)")) as number;
+  return (await page.evaluate("window.__qrPrd02Fixture ? window.__qrPrd02Fixture.matched : 0")) as number;
 }
 
 test.describe("02-T1923 receiveShadow:false", () => {

@@ -9,6 +9,10 @@
  *  - mask helpers: per-object projected discs, boundary rings, connected
  *    components and pixel-space boxes.
  *  - `linearLuma` for the PRD's "mean linear luma" wording (S2).
+ *
+ * Page scripts are passed as self-invoking strings (`(() => ...)()`): a bare
+ * `"() => ..."` string evaluates to the function object, which Playwright
+ * 1.59 neither calls nor serializes (azure-gpu run 38117996666).
  */
 import type { Page } from "@playwright/test";
 import sharp from "sharp";
@@ -33,28 +37,28 @@ export async function stagePixels(page: Page): Promise<PixelBuffer> {
 
 /** Throws unless lane-main.ts published the mounted Aura app. */
 export async function requireLaneApp(page: Page): Promise<void> {
-  const ok = await page.evaluate("() => Boolean(window.__qrPrd02App)");
+  const ok = await page.evaluate("Boolean(window.__qrPrd02App)");
   if (!ok) throw new Error("lane page did not publish window.__qrPrd02App (lane-main.ts collectExtra hook)");
 }
 
 /** Read the C-38 `app.lighting.diagnostics()` counters from the mounted app. */
 export async function lightingCounters(page: Page): Promise<{ readPixelsCalls: number | null; programCompileCount: number | null }> {
-  return (await page.evaluate(`() => {
+  return (await page.evaluate(`(() => {
     const app = window.__qrPrd02App;
     const d = app && app.lighting && typeof app.lighting.diagnostics === "function" ? app.lighting.diagnostics() : null;
     return { readPixelsCalls: d ? d.readPixelsCalls : null, programCompileCount: d ? d.programCompileCount : null };
-  }`)) as { readPixelsCalls: number | null; programCompileCount: number | null };
+  })()`)) as { readPixelsCalls: number | null; programCompileCount: number | null };
 }
 
 /** Step the mounted app `frames` times at 60 Hz, one rAF per step. */
 export async function stepFrames(page: Page, frames: number): Promise<void> {
-  await page.evaluate(`async () => {
+  await page.evaluate(`(async () => {
     const app = window.__qrPrd02App;
     for (let i = 0; i < ${Math.max(0, Math.floor(frames))}; i += 1) {
       app.step(1 / 60);
       await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
     }
-  }`);
+  })()`);
 }
 
 /**
@@ -63,7 +67,7 @@ export async function stepFrames(page: Page, frames: number): Promise<void> {
  * frame. Returns false when neither surface exists.
  */
 export async function setCameraPose(page: Page, position: Vec3, target: Vec3): Promise<boolean> {
-  return (await page.evaluate(`async () => {
+  return (await page.evaluate(`(async () => {
     const app = window.__qrPrd02App;
     const position = ${JSON.stringify(position)};
     const target = ${JSON.stringify(target)};
@@ -83,7 +87,7 @@ export async function setCameraPose(page: Page, position: Vec3, target: Vec3): P
     app.step(0);
     await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
     return moved;
-  }`)) as boolean;
+  })()`)) as boolean;
 }
 
 const SRGB_TO_LINEAR = (() => {
