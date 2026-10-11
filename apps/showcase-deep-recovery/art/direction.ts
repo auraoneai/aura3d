@@ -66,7 +66,7 @@ export default defineArtDirection({
   standIns: [
     { feature: "§8.3 absorption fog + caustics/god-rays stack", file: "src/v2/scene/world.ts", request: "R-14-13", removeWhen: "underwater shader stack admitted" },
     { feature: "K3 seabed + wreck splat", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "K3 terrain/wreck kit admitted" },
-    { feature: "textured sub + barnacle decals", file: "src/v2/scene/props.ts", request: "R-14-07", removeWhen: "sub GLB admitted" },
+    { feature: "textured sub + barnacle decals", file: "src/v2/scene/world.ts", request: "R-14-07", removeWhen: "sub GLB admitted" },
     { feature: "K8 underwater loop set", file: "src/v2/audio.ts", request: "R-14-09", removeWhen: "K8 loop clips admitted" }
   ],
   criticalCategories: ["lighting", "atmospheric_effects", "environment_world"],

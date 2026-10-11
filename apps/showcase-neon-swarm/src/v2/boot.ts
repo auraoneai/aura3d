@@ -3,7 +3,7 @@
 // two live instanced drone pools (360 grunt / 96 elite), seeded five-ctx.wave
 // campaign with intermission upgrade doors, pulse overlap fire, radial burst.
 // Gameplay modules (arena/swarm/waves/player/pickups/run) are unchanged;
-// audio plays through the legacy cue controller until C-25 lands (R-14-10).
+// audio plays through the legacy cue controller until C-25 lands (R-14-09).
 import { game as engineGame, scene } from "@aura3d/engine";
 import { createGame, type Game, lookManifest } from "@aura3d/game";
 import { createArenaLayout, playRect, spawnPointOnEdge } from "../gameplay/arena";

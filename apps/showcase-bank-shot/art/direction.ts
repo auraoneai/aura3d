@@ -64,7 +64,7 @@ export default defineArtDirection({
     { feature: "aim-orbit + overhead roll camera rig", file: "src/v2/scene/camera.ts", request: "R-14-10", removeWhen: "C-22 rigs.orbit/static real" },
     { feature: "sheen felt + clearcoat balls/rails", file: "src/v2/scene/materials.ts", request: "R-14-14", removeWhen: "PRD 04 sheen/clearcoat real (§8.6)" },
     { feature: "spot-cone haze (High/Ultra)", file: "src/v2/scene/fx.ts", request: "R-14-14", removeWhen: "C-21 volumetric spot real" },
-    { feature: "sampled billiards cues", file: "src/v2/audio.ts", request: "R-14-09", removeWhen: "C-25 game-sfx real" }
+    { feature: "sampled billiards cues", file: "src/v2/audio-map.ts", request: "R-14-09", removeWhen: "C-25 game-sfx real" }
   ],
   criticalCategories: ["material_quality", "lighting", "shadows"],
   tiers: {

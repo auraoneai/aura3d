@@ -67,7 +67,8 @@ export default defineArtDirection({
     { feature: "orbital camera 25-35° above plane + slow drift", file: "src/v2/scene/camera.ts", request: "R-14-10", removeWhen: "C-22 rigs.orbit/topDown real" },
     { feature: "planet day/night terminator + atmosphere rim", file: "src/v2/scene/materials.ts", request: "R-14-14", removeWhen: "PRD 04 material.planet/atmosphere real (§8.1)" },
     { feature: "shield additive Fresnel + hex mask", file: "src/v2/scene/fx.ts", request: "R-14-14", removeWhen: "PRD 04 §8.1 shield variant real" },
-    { feature: "laser/explosion/shield cues + hum bed", file: "src/v2/audio.ts", request: "R-14-09", removeWhen: "C-25 game-sfx real" }
+    { feature: "laser/explosion/shield cues + hum bed", file: "src/v2/boot.ts", request: "R-14-09", removeWhen: "C-25 game-sfx real" },
+    { feature: "K1 deep-space starfield IBL (nightCinematic stand-in)", file: "src/v2/scene/lighting.ts", request: "R-14-13", removeWhen: "K1 starfield .hdr admitted" }
   ],
   criticalCategories: ["environment_world", "modeling_assets", "vfx"],
   tiers: {

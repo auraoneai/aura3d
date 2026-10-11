@@ -6,7 +6,7 @@
 // (loading.sceneSwaps stays 0 — a §7.2.1 required condition).
 // Gameplay modules (shot/course/hole-flow/score/structures/solutions) are
 // unchanged; audio plays through the legacy cue controller until C-25
-// lands (standIn R-14-10).
+// lands (standIn R-14-09).
 import { game as engineGame, scene } from "@aura3d/engine";
 import { createGame, type Game, lookManifest } from "@aura3d/game";
 import { SIEGE_GOLF_HOLES } from "../gameplay/course";
