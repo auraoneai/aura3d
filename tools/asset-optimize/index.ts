@@ -10,7 +10,8 @@
  *
  * CLI: `tsx --tsconfig tsconfig.base.json tools/asset-optimize/index.ts
  *        [--ids a,b] [--profile id] [--geometry meshopt|draco|none]
- *        [--dry-run] [--allow-local-small] [--ktx <path>] [--report <path>]`
+ *        [--dry-run] [--allow-local-small] [--ktx <path>] [--report <path>]
+ *        [--manifest <dir-with-aura.assets.json>]`
  */
 
 import { createHash } from "node:crypto";
@@ -24,7 +25,6 @@ import type { AssetQualityCheck } from "../../packages/aura3d-cli/src/contracts/
 import { readAssetManifest, writeAssetManifest } from "../../packages/aura3d-cli/src/asset-manifest.js";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const DERIVED_DIR = join(repoRoot, "public", "aura-assets");
 const LOCAL_KTX2_MAX_SOURCE_BYTES = 5 * 1024 * 1024;
 
 const GLB_MAGIC = 0x46546c67;
@@ -130,6 +130,10 @@ export interface OptimizeAssetsOptions {
   readonly blenderBinary?: string;
   readonly reportPath?: string;
   readonly writeManifest?: boolean;
+  /** Directory holding the aura.assets.json to read/update (default: repo root).
+   *  Set it to a template/app dir so its manifest entries can earn `derived`
+   *  records — the default repo-root manifest cannot carry template assets. */
+  readonly manifestDir?: string;
   readonly log?: (line: string) => void;
 }
 
@@ -179,7 +183,8 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
   const log = options.log ?? ((line: string) => console.log(line));
   const inCi = process.env.CI === "true" || process.env.GITHUB_ACTIONS === "true";
   const ktxBinary = findKtxBinary(options.ktxBinary);
-  const manifest = readAssetManifest(repoRoot);
+  const manifestDir = resolve(options.manifestDir ?? repoRoot);
+  const manifest = readAssetManifest(manifestDir);
   const rows: OptimizeRow[] = [];
 
   if (options.files?.length) {
@@ -231,7 +236,7 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
 
   for (const entry of modelEntries) {
     const rel = (entry as { source?: string }).source ?? entry.outputPath;
-    const sourcePath = join(repoRoot, rel);
+    const sourcePath = join(manifestDir, rel);
     if (!existsSync(sourcePath)) {
       log(`skip ${entry.id}: missing source ${rel}`);
       continue;
@@ -279,7 +284,9 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
     const url = `/aura-assets/${entry.id}.${hash8}.glb`;
     const outputPath = `public/aura-assets/${entry.id}.${hash8}.glb`;
     const checks = gateChecks(result.budget.triangles, profile, result.flags);
-    const derivedDir = options.outDir ? join(repoRoot, options.outDir) : DERIVED_DIR;
+    const derivedDir = options.outDir
+      ? join(manifestDir, options.outDir)
+      : join(manifestDir, "public", "aura-assets");
 
     if (!options.dryRun) {
       mkdirSync(derivedDir, { recursive: true });
@@ -297,7 +304,7 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
       }
 
       if (options.writeManifest !== false) {
-        const fresh = readAssetManifest(repoRoot);
+        const fresh = readAssetManifest(manifestDir);
         const target = fresh.assets.find((a) => a.id === entry.id);
         if (target) {
           (target as { derived?: unknown }).derived = {
@@ -314,7 +321,7 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
             lods: [],
             measurements: { before: result.budgetBefore, after: result.budget }
           };
-          writeAssetManifest(repoRoot, fresh);
+          writeAssetManifest(manifestDir, fresh);
         }
       }
     }
@@ -353,6 +360,7 @@ async function main(): Promise<number> {
     remote: argv.includes("--remote") ? (readFlag(argv, "--remote") !== "false") : undefined,
     blenderBinary: readFlag(argv, "--blender"),
     writeManifest: !argv.includes("--no-manifest"),
+    manifestDir: readFlag(argv, "--manifest"),
     ktxBinary: readFlag(argv, "--ktx"),
     log: (line) => console.log(line)
   });
