@@ -196,16 +196,17 @@ export async function runToneEvalProbe(): Promise<{
       .background("#000000")
       .camera(camera.orthographic({ position: [0, 0, 10], target: [0, 0, 0], orthographicSize: 3.75 }));
     built = built.add(lights.ambient({ name: "off", intensity: 0, color: "#000000" }));
-    // GPU lane 38141069039 read 0 at every ladder step: `primitives.plane` is
-    // the horizontal XZ ground plane (size is a Vec3; `[1.4, 1.4]` left z
+    // GPU lane 38141069039 read 0 at the ladder: `primitives.plane` is the
+    // horizontal XZ ground plane (size is a Vec3; `[1.4, 1.4]` left z
     // undefined), so from this camera on +Z every step was edge-on and
-    // nothing was drawn. Thin boxes face the camera.
+    // nothing was drawn. Thin boxes face the camera, laid out compactly
+    // (x ∈ ±2.55) so all six stay in frame whatever the ortho extent.
     LADDER.forEach((e, i) => {
       built = built.add(primitives.box({
         name: `step-${e}`,
-        size: [1.4, 1.4, 0.05],
+        size: [0.6, 0.6, 0.05],
         material: material.pbr({ color: "#000000", emissive: "#ffffff", emissiveIntensity: e, roughness: 1 })
-      }).position(-4.5 + i * 1.8, 0, 0));
+      }).position(-2.25 + i * 0.9, 0, 0));
     });
     // No bloom here: bloom adds energy above threshold by design (S9), so a
     // 1-LSB single-tone-eval oracle cannot hold for the E ≥ 2 steps with it
@@ -234,9 +235,28 @@ export async function runToneEvalProbe(): Promise<{
     const settled = readDefaultFramebuffer(gl, canvas.width, canvas.height);
     app.dispose();
     const cy = Math.round(canvas.height / 2);
-    const halfWidth = 3.75 * (canvas.width / canvas.height);
-    const cx = (i: number) => Math.round(((-4.5 + i * 1.8) / (2 * halfWidth) + 0.5) * canvas.width);
-    const sample = (frame: Uint8Array) => LADDER.map((_, i) => frame[(cy * canvas.width + Math.min(canvas.width - 1, Math.max(0, cx(i)))) * 4]!);
+    // Locate the six patches on the centre row instead of predicting their
+    // pixel x from the ortho extent (GPU 38149518225 read the two middle
+    // patches exactly — 227/242 — but the predicted outer columns fell off
+    // their patches). Each patch is a run of lit pixels; sample its middle.
+    const runCenters = (frame: Uint8Array): number[] => {
+      const centers: number[] = [];
+      let start = -1;
+      for (let x = 0; x <= canvas.width; x++) {
+        const lit = x < canvas.width && frame[(cy * canvas.width + x) * 4]! > 8;
+        if (lit && start < 0) start = x;
+        if (!lit && start >= 0) {
+          if (x - start >= 4) centers.push(Math.floor((start + x - 1) / 2));
+          start = -1;
+        }
+      }
+      return centers;
+    };
+    const sample = (frame: Uint8Array) => {
+      const centers = runCenters(frame);
+      if (centers.length !== LADDER.length) throw new Error(`expected ${LADDER.length} ladder patches on the centre row, found ${centers.length}`);
+      return centers.map((x) => frame[(cy * canvas.width + x) * 4]!);
+    };
     const perStep = sample(pixels);
     const perStepSettled = sample(settled);
     // The canvas holds the sRGB-encoded display value (the v2 OutputPass

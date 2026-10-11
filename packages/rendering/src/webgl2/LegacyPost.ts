@@ -27,8 +27,9 @@ export interface NativeBloomOptions {
   readonly shoulder: number;
   /**
    * PRD-03 §6.6 (flag-on `v2` stamp only): the HDR bright extract keeps the
-   * soft-knee *excess* over threshold, so an input of excess E blooms E (S9
-   * "no hidden gain"). Absent flag-off: the legacy full-colour gate.
+   * soft-knee *excess* over threshold and the composite applies no response
+   * gain, so an input of excess E blooms E · intensity (S9 "no hidden gain").
+   * Absent flag-off: the legacy full-colour gate and response heuristic.
    */
   readonly excess?: true;
 }
@@ -361,7 +362,7 @@ export class WebGL2LegacyPostPipeline {
           this.host.gl.uniform1i(this.host.gl.getUniformLocation(pyramidComposite, "u_hdr"), sourceIsHdr ? 1 : 0);
           this.host.gl.uniform1f(
             this.host.gl.getUniformLocation(pyramidComposite, "u_intensity"),
-            bloomOptions.intensity * resolveBloomPyramidResponseGain(plan)
+            bloomOptions.intensity * nativeBloomResponseGain(plan, bloomOptions)
           );
           this.host.gl.drawArrays(this.host.gl.TRIANGLES, 0, 3);
           ldrSourceHandle = bloomResources.textures[1];
@@ -1289,7 +1290,7 @@ export class WebGL2LegacyPostPipeline {
       mipCount,
       targetCount: options.quality === "performance" ? 2 : plan.mips.length * 2 + 1,
       targetBytes: (options.quality === "performance" ? pingPongBytes : plan.targetBytes + accumulatorBytes + pingPongBytes),
-      compositeGain: options.intensity * resolveBloomPyramidResponseGain(plan),
+      compositeGain: options.intensity * nativeBloomResponseGain(plan, options),
       threshold: options.threshold,
       intensity: options.intensity,
       softKnee: options.softKnee,
@@ -2438,6 +2439,16 @@ function normalizeLdrDepthRange(range: { readonly near: number; readonly far: nu
   return { near, far };
 }
 
+/**
+ * Composite response for the native bloom. Flag-on (`excess`, §6.6): the
+ * normalized pyramid weights sum to 1 and nothing else scales the halo, so an
+ * excess E composites as E · intensity ("no hidden gain"). Flag-off keeps the
+ * legacy `resolveBloomPyramidResponseGain` heuristic (deleted in Phase 8).
+ */
+export function nativeBloomResponseGain(plan: BloomPyramidPlan, options: Pick<NativeBloomOptions, "excess">): number {
+  return options.excess === true ? 1 : resolveBloomPyramidResponseGain(plan);
+}
+
 export function normalizeNativeBloomOptions(options: Readonly<Record<string, unknown>>): NativeBloomOptions {
   // PRD-03 §7.2 carve (0b-2): flag-on (`v2` stamp) accepts the HDR option
   // ranges — threshold [0,64], `knee` ratio [0,1] — and drops the
@@ -2482,7 +2493,10 @@ export function normalizeNativeBloomOptions(options: Readonly<Record<string, unk
   }
   let quality: BloomQualityPreset;
   try {
-    quality = normalizeBloomQualityPreset(options.quality);
+    // Flag-on S9: an unauthored quality runs the 5-mip pyramid (the
+    // UnrealBloomPass-class wide halo) instead of the single 1-scale blur,
+    // whose few-pixel fringe left the halo below one display LSB.
+    quality = v2 && options.quality === undefined ? "cinematic" : normalizeBloomQualityPreset(options.quality);
   } catch {
     throw new RenderDeviceError("Bloom quality must be one of performance|balanced|cinematic.", "INVALID_POSTPROCESS_OPTIONS", { quality: options.quality });
   }
