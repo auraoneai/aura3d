@@ -47,11 +47,11 @@ jobs:
         # package.json carries exact pins so `npm install` is deterministic.
         run: npm install --no-audit --no-fund --prefix tools/asset-optimize
 
-      - name: optimize determinism test
-        # PRD-16 05-S5: the pipeline must be byte-deterministic — this job is
-        # the only place tools/asset-optimize/node_modules exists, so the
-        # runIf(hasDeps) guard in the spec only goes live here.
-        run: node_modules/.bin/vitest run tests/unit/asset-optimize/determinism.test.ts
+      - name: asset-optimize tool tests (determinism, MSFT_lod, profiles)
+        # PRD-16 05-S5: the pipeline must be byte-deterministic. This job is
+        # the only place tools/asset-optimize/node_modules exists, so the tool
+        # suite runs here under its own config, with no skip guards.
+        run: node_modules/.bin/vitest run --config tools/asset-optimize/vitest.config.ts
 
       - name: install ktx from tool-versions.json
         id: ktx
