@@ -65,6 +65,18 @@ export interface TextureFilterAnisotropicExtension {
 
 export const WEBGL_CUBE_FACES: readonly TextureCubeFace[] = ["px", "nx", "py", "ny", "pz", "nz"];
 
+/**
+ * #621 (01-RTARRAY): immutable storage (`texStorage2D/3D`) only accepts SIZED
+ * internal formats. `resolveRenderTargetFormat("rgba8")` returns unsized
+ * `gl.RGBA`, which is valid for the `texImage2D` 2d path but makes
+ * texStorage raise INVALID_ENUM and allocate nothing, so cube/array colour
+ * framebuffers come out incomplete (GPU run 38143556299: "array: WebGL render
+ * target framebuffer status is invalid"). Float formats are already sized.
+ */
+export function renderTargetStorageFormat(gl: Pick<WebGL2RenderingContext, "RGBA" | "RGBA8">, internalFormat: GLenum): GLenum {
+  return internalFormat === gl.RGBA ? gl.RGBA8 : internalFormat;
+}
+
 /** C-08 named uniform-block → binding-point assignment applied post-link (T0-02). */
 const NAMED_UNIFORM_BLOCK_BINDINGS: ReadonlyArray<readonly [blockName: string, binding: number]> = [
   ["AuraFrame", AURA_FRAME_BINDING],
@@ -1079,9 +1091,9 @@ export class WebGL2Device implements RenderDevice {
       if (dimension === "2d") {
         gl.texImage2D(textureTarget, 0, textureFormat.internalFormat, descriptor.width, descriptor.height, 0, gl.RGBA, textureFormat.type, null);
       } else if (dimension === "cube") {
-        gl.texStorage2D(textureTarget, 1, textureFormat.internalFormat, descriptor.width, descriptor.height);
+        gl.texStorage2D(textureTarget, 1, renderTargetStorageFormat(gl, textureFormat.internalFormat), descriptor.width, descriptor.height);
       } else {
-        gl.texStorage3D(textureTarget, 1, textureFormat.internalFormat, descriptor.width, descriptor.height, layerCount);
+        gl.texStorage3D(textureTarget, 1, renderTargetStorageFormat(gl, textureFormat.internalFormat), descriptor.width, descriptor.height, layerCount);
       }
     }
 
