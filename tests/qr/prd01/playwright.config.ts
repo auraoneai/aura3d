@@ -11,6 +11,12 @@ import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
+// GPU job (qr-prd01-core.yml `gpu`): QR_PRD01_CHROME_ARGS appends the runner's
+// Chromium GPU flags (vars.QR_AZURE_GPU_CHROME_ARGS) and QR_PRD01_CHANNEL picks
+// the browser channel; both unset = the macos-14 defaults below.
+const extraArgs = (process.env.QR_PRD01_CHROME_ARGS ?? "").split(/\s+/).filter(Boolean);
+const channel = process.env.QR_PRD01_CHANNEL || undefined;
+
 export default defineConfig({
   testDir: here,
   testMatch: ["browser/**/*.spec.ts"],
@@ -21,7 +27,8 @@ export default defineConfig({
     browserName: "chromium",
     headless: true,
     viewport: { width: 1280, height: 720 },
-    launchOptions: { args: ["--enable-unsafe-webgpu", "--ignore-gpu-blocklist"] }
+    ...(channel ? { channel } : {}),
+    launchOptions: { args: [...new Set(["--enable-unsafe-webgpu", "--ignore-gpu-blocklist", ...extraArgs])] }
   },
   webServer: {
     command: `node ${resolve(here, "serve.mjs")} --root ${resolve(here, "harness/dist")} --port 5299`,
