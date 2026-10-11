@@ -4,7 +4,7 @@
  * regardless of flag state (chunks are dead code until a feature selects
  * them), and re-exports the PR-B math modules.
  */
-import { registerShaderChunk } from "../contracts/program.js";
+import { registerShaderChunk, registerShaderFeature } from "../contracts/program.js";
 import { SH9_CHUNK, environmentProbeFactorySlot } from "../contracts/environment.js";
 import { SHADOW_LOOKUP_CHUNK } from "../contracts/shadows.js";
 import { createEnvironmentProbeFactory } from "../environment/EnvironmentProbeFactory.js";
@@ -40,11 +40,14 @@ import { createPrd02ShadowsContributor } from "../shadows/Prd02ShadowsContributo
 import { createPrd02ContactShadowsContributor } from "../passes/Prd02ContactShadowsContributor.js";
 import { createPrd02ProbesContributor } from "../probes/Prd02ProbesContributor.js";
 import { ensurePrd02DepthFeatures } from "../shadows/Prd02DepthShaderLibrary.js";
+import { PRD02_SHADOW_FILTER_FEATURE } from "../shadows/Prd02ShadowFilter.js";
 
 registerFrameContributor(createPrd02ShadowsContributor());
 registerFrameContributor(createPrd02ContactShadowsContributor());
 registerFrameContributor(createPrd02ProbesContributor());
 ensurePrd02DepthFeatures();
+// 02-T1945: tier shadow filter → A3D_SHADOW_FILTER for the lookup chunk.
+registerShaderFeature(PRD02_SHADOW_FILTER_FEATURE);
 
 // Named re-exports (not `export *`): the root barrel merges contracts/index
 // and lanes/index, and contract names like `projectCubeToSH9` /
