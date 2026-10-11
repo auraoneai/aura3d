@@ -15,6 +15,7 @@ import { runAuraScene } from "../../aura3d/common";
 import { runThreeScene } from "../../three/common";
 import type { ReadyPayload } from "../../shared/types";
 import { applyBrokenControl } from "./controls";
+import { applyThreeRoomEnvironment, installReceiveShadowFixture } from "./fixtures";
 import { getPrd02Spec } from "./specs";
 
 declare global {
@@ -22,6 +23,8 @@ declare global {
     __QR_READY__?: ReadyPayload;
     __QR_ERROR__?: unknown;
     __qrPrd02?: unknown;
+    /** The mounted Aura app (render mode), for specs that drive frames after READY. */
+    __qrPrd02App?: unknown;
   }
 }
 
@@ -42,9 +45,22 @@ async function runRenderMode(): Promise<void> {
     const qrFlags = qrParam === null
       ? undefined
       : qrParam === "none" ? [] : qrParam.split(",").map((flag) => flag.trim()).filter(Boolean);
+    // 02-T1923: the receive-shadow controls also register the C-01 collect
+    // fixture (production items get `receiveShadow` only after Q-15-5/Q-04-2).
+    if (engine !== "three" && control) installReceiveShadowFixture(control);
     const payload = engine === "three"
-      ? await runThreeScene(spec, host)
-      : await runAuraScene(spec, host, qrFlags !== undefined ? { qrFlags } : {});
+      ? await runThreeScene(spec, host).then((ready) => {
+          applyThreeRoomEnvironment(sceneId);
+          return ready;
+        })
+      : await runAuraScene(spec, host, {
+          ...(qrFlags !== undefined ? { qrFlags } : {}),
+          // Shadow specs (S5/S6) step frames and read diagnostics after READY.
+          collectExtra: (app) => {
+            window.__qrPrd02App = app;
+            return {};
+          }
+        });
     window.__QR_READY__ = payload;
   } catch (error) {
     window.__QR_ERROR__ = { message: String(error), stack: error instanceof Error ? error.stack : undefined };

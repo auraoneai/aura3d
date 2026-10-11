@@ -401,6 +401,36 @@ export const prd02Specs = {
     primaryCriterion: "cascade-boundary-and-shimmer",
     primaryRegion: "shadow-receiver"
   },
+  "prd02-pole-behind-camera": {
+    id: "prd02-pole-behind-camera",
+    index: 110,
+    title: "Pole behind the camera",
+    purpose: "A tall pole 3 m behind the camera under a low sun from behind — its shadow must still reach the view (02-S5, casters come from the pre-cull collect snapshot)",
+    resolution: RESOLUTION,
+    toneMapping: "aces-filmic",
+    exposure: 1,
+    time: CAPTURE_TIME,
+    settleFrames: SETTLE_FRAMES,
+    camera: { position: [0, 1.6, 6], target: [0, 0.4, -4], fov: 50, near: 0.1, far: 80 },
+    background: { kind: "color", color: "#9fb0c2" },
+    lights: [
+      { kind: "ambient", name: "ambient", color: "#ffffff", intensity: 0.15 },
+      sun(3, [0, 6, 29], true)
+    ],
+    objects: [
+      ground(60, { color: "#9a9fa5", roughness: 0.9, metalness: 0 }),
+      primitive("pole behind camera", "cylinder", [0.5, 6, 0.5], [0.6, 3, 9], { color: "#8d949c", roughness: 0.7, metalness: 0.2 })
+    ],
+    shadows: defaultShadows(30),
+    owner: "prd02",
+    referenceProfile: "contract",
+    qrFlags: ["lighting"],
+    dprs: [1],
+    masks: ["shadow-receiver"],
+    brokenControls: ["no-shadows"],
+    primaryCriterion: "off-screen-caster",
+    primaryRegion: "shadow-receiver"
+  },
   "prd02-softbox": {
     id: "prd02-softbox",
     index: 108,

@@ -5,7 +5,7 @@
  */
 import type { SceneSpec } from "../../shared/types";
 
-export type Prd02BrokenControl = "no-shadows" | "no-ibl" | "no-background";
+export type Prd02BrokenControl = "no-shadows" | "no-ibl" | "no-background" | "receive-shadow-off" | "receive-shadow-on";
 
 export function applyBrokenControl(spec: SceneSpec, control: string): SceneSpec {
   if (control === "no-shadows") {
@@ -30,6 +30,18 @@ export function applyBrokenControl(spec: SceneSpec, control: string): SceneSpec 
     return spec.background.kind === "hdri"
       ? { ...spec, background: { kind: "color", color: spec.background.fallbackColor } }
       : spec;
+  }
+  if (control === "receive-shadow-off" || control === "receive-shadow-on") {
+    // 02-T1923: the ground planes ask for `receiveShadow: false` (or keep
+    // true). The lane page also registers the C-01 collect fixture that
+    // stamps the same value on the Aura render items (scenes/prd02/fixtures.ts).
+    const receive = control === "receive-shadow-on";
+    return {
+      ...spec,
+      objects: spec.objects.map((object) =>
+        object.kind === "primitive" && object.shape === "plane" ? { ...object, receiveShadow: receive } : object
+      )
+    };
   }
   throw new Error(`Unknown broken control "${control}"`);
 }
