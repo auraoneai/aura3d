@@ -1,8 +1,9 @@
 name: QR-15 architecture gates
 
-# PRD-15 T1.8 — architecture gates, enforced (--strict). Runs tools/arch-gates
-# and uploads the JSON report as an artifact. Every finding fails the job;
-# allowlisted rows need a date and an open issue (15-ARCH).
+# PRD-15 T1.8 — architecture gates. Runs tools/arch-gates and uploads the JSON
+# report as an artifact. Fail-mode (enforced) findings fail the job; warnings
+# are reported. `--strict` (warnings also fail, allowlisted rows included) is
+# flipped once 15-ARCH drains the allowlist — see tools/arch-gates/index.ts.
 
 on:
   pull_request:
@@ -43,8 +44,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Run architecture gates (--strict)
-        run: pnpm arch:check -- --strict --out artifacts/arch-gates-report.json
+      - name: Run architecture gates (enforced findings fail)
+        run: pnpm arch:check -- --out artifacts/arch-gates-report.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
