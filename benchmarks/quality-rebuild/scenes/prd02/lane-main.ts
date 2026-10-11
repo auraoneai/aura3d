@@ -17,7 +17,7 @@ import type { ReadyPayload } from "../../shared/types";
 import { applyBrokenControl } from "./controls";
 import { applyAuraProbes, applyThreeLightProbe, applyThreeRoomEnvironment, installReceiveShadowFixture } from "./fixtures";
 import { getPrd02Spec } from "./specs";
-import { prd02ShadowBridgeReason, prd02ShadowDepthProbe } from "@aura3d/rendering/lanes";
+import { prd02LastBridgeDevice, prd02ShadowBridgeReason, prd02ShadowDepthProbe } from "@aura3d/rendering/lanes";
 
 declare global {
   interface Window {
@@ -73,7 +73,10 @@ async function runRenderMode(): Promise<void> {
             const laneDevice = (laneRenderer?.device as never | undefined) ?? undefined;
             const shadowDepth = prd02ShadowDepthProbe(laneDevice);
             const prd02ShadowBridge = prd02ShadowBridgeReason(laneDevice);
-            return { ...(probeNodes > 0 ? { prd02ProbeNodes: probeNodes } : {}), prd02ShadowDepth: shadowDepth, prd02ShadowBridge };
+            // Draw tap: what the GPU forward draws of shadow receivers were
+            // handed over the next two frames (binding, enable, strength).
+            const prd02ShadowDraws = await tapShadowReceiverDraws(laneDevice ?? (prd02LastBridgeDevice() as never));
+            return { ...(probeNodes > 0 ? { prd02ProbeNodes: probeNodes } : {}), prd02ShadowDepth: shadowDepth, prd02ShadowBridge, prd02ShadowDraws };
           }
         });
     window.__QR_READY__ = payload;
@@ -97,4 +100,36 @@ if (params.get("mode") === "metrics") {
   void runMetricsMode();
 } else {
   void runRenderMode();
+}
+
+/** Records shadow uniforms of up to 8 forward draws over two frames (GPU evidence). */
+async function tapShadowReceiverDraws(device: { draw?: (command: unknown) => void } | null | undefined): Promise<unknown[]> {
+  if (!device || typeof device.draw !== "function") return [];
+  const original = device.draw;
+  const seen: unknown[] = [];
+  device.draw = function (this: unknown, command: unknown) {
+    const c = command as { label?: string; shader?: { label?: string }; uniforms?: ReadonlyMap<string, unknown> };
+    const u = c.uniforms;
+    if (seen.length < 8 && u?.get && u.has?.("u_shadowMapEnabled")) {
+      const binding = u.get("u_shadowMapTexture") as { texture?: { label?: string; format?: string } | null; sampler?: unknown } | undefined;
+      const matrix = u.get("u_shadowMapMatrix") as Float32Array | undefined;
+      seen.push({
+        label: c.label ?? null,
+        shader: c.shader?.label ?? null,
+        enabled: u.get("u_shadowMapEnabled"),
+        strength: u.get("u_shadowMapStrength"),
+        texture: binding?.texture?.label ?? null,
+        format: binding?.texture?.format ?? null,
+        sampler: binding?.sampler ?? null,
+        matrix: matrix ? Array.from(matrix).map((v) => Math.round(v * 1e4) / 1e4) : null
+      });
+    }
+    return original.call(this, command);
+  };
+  try {
+    for (let i = 0; i < 2; i += 1) await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+  } finally {
+    device.draw = original;
+  }
+  return seen;
 }

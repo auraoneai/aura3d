@@ -189,7 +189,7 @@ export {
   bindShadowFrameUniforms
 } from "../shadows/ShadowFrameBinding.js";
 // Shadow-pixels GPU evidence probe (lane page diagnostics).
-export { prd02ShadowBridgeReason, prd02ShadowDepthProbe } from "../shadows/Prd02ShadowBridge.js";
+export { prd02LastBridgeDevice, prd02ShadowBridgeReason, prd02ShadowDepthProbe } from "../shadows/Prd02ShadowBridge.js";
 export {
   createPrd02ShadowsContributor,
   shadowSystemConfigFromSource,

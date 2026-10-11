@@ -179,6 +179,11 @@ const bridgeReasons = new WeakMap<RenderDevice, string>();
 /** Device the bridge last ran on (lane pages cannot always reach the renderer). */
 let lastBridgeDevice: RenderDevice | null = null;
 
+/** The device the bridge last ran on (lane-page GPU evidence probes). */
+export function prd02LastBridgeDevice(): RenderDevice | null {
+  return lastBridgeDevice;
+}
+
 /** Last bridge outcome for `device` (default: the last bridged device): "rendered", a bail-out reason, or "never-ran". */
 export function prd02ShadowBridgeReason(device: RenderDevice | null = lastBridgeDevice): string {
   return device ? bridgeReasons.get(device) ?? "never-ran" : "never-ran";

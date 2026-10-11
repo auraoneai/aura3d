@@ -58,14 +58,14 @@ test("prd02 shadow chain: cascade depth is written and shadowed texels are darke
   // runAuraScene nests collectExtra fields under `extra` (aura3d/common.ts).
   const ready = auraOn.payload as {
     shadows?: unknown;
-    extra?: { prd02ShadowDepth?: DepthStat[]; prd02ShadowBridge?: string; shadows?: unknown };
+    extra?: { prd02ShadowDepth?: DepthStat[]; prd02ShadowBridge?: string; prd02ShadowDraws?: unknown[]; shadows?: unknown };
   } | null;
   const depth = (ready?.extra?.prd02ShadowDepth ?? []) as DepthStat[];
   const bridge = ready?.extra?.prd02ShadowBridge ?? (ready ? "no-extra" : "no-payload");
   const mask = shadowMask(threeOn.pixels, threeOff.pixels);
   const lit = meanLumaIn(auraOff.pixels, mask);
   const shadowed = meanLumaIn(auraOn.pixels, mask);
-  const evidence = { bridge, depth, readyShadows: ready?.shadows ?? null, rendererShadows: ready?.extra?.shadows ?? null, maskPixels: lit.count, auraNoShadowsLuma: lit.mean, auraDefaultLuma: shadowed.mean };
+  const evidence = { bridge, depth, draws: ready?.extra?.prd02ShadowDraws ?? null, readyShadows: ready?.shadows ?? null, rendererShadows: ready?.extra?.shadows ?? null, maskPixels: lit.count, auraNoShadowsLuma: lit.mean, auraDefaultLuma: shadowed.mean };
   await testInfo.attach("shadow-chain.json", { body: JSON.stringify(evidence, null, 2), contentType: "application/json" });
   console.log(`[prd02-shadow-chain] ${JSON.stringify(evidence)}`);
 
