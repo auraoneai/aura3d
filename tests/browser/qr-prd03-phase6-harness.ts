@@ -18,6 +18,7 @@
  *    without the pass.
  */
 import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
+import { postV2ModulesReady } from "@aura3d/rendering";
 import { registerPostPass } from "@aura3d/rendering/contracts";
 
 /* ------------------------------- helpers ------------------------------- */
@@ -103,6 +104,8 @@ async function mount(opts: {
     qualityRebuild: { flags: ["A3D_QR_POST"] }
   });
   await app.ready();
+  // The v2 stages load deferred; wait so measured frames run the real chain.
+  await postV2ModulesReady();
   const canvas = host.querySelector("canvas")!;
   const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
   const width = canvas.width;

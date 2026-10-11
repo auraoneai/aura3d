@@ -16,6 +16,7 @@
 import {
   createRendererPostprocessPlanDiagnostics,
   postGraphV2LastOutcome,
+  postV2ModulesReady,
   postVelocityCoverage,
   volumetricLightDirection,
   type CollectedLight,
@@ -470,6 +471,10 @@ export function createPrd03PostSurface(app: AuraApp, ctx: { readonly flags: QrFl
   // §6.8 re-resolution: a C-27 tier change re-records the authored tier so the
   // next postpipeline resolve reads the new `QUALITY_TIERS` row.
   qualityControllerOf(app)?.onChange((event) => recordPostQualityTier(event.to, app.canvas ?? undefined));
+  // Start the deferred v2 stage load at mount, not on the first frame, so the
+  // first frames after `app.ready()` run the real v2 chain (S1–S12 and C-13
+  // custom passes). A failed load is retried by the frame path.
+  if (ctx.flags.on("A3D_QR_POST")) postV2ModulesReady().catch(() => undefined);
   return new Prd03PostSurface(ctx.flags, app.canvas ?? undefined, app);
 }
 

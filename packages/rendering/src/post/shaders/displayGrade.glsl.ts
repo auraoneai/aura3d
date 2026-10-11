@@ -10,6 +10,8 @@
 
 export const DISPLAY_GRADE_GLSL = /* glsl */ `#version 300 es
 precision highp float;
+// GLSL ES 3.00 has no default precision for sampler3D (CI: "'sampler3D' : No precision specified").
+precision highp sampler3D;
 uniform sampler2D u_source;
 uniform sampler3D u_lut3d;
 uniform int u_hasLut;
@@ -47,6 +49,8 @@ void main() {
  */
 export const LUT_BAKE_GLSL = /* glsl */ `#version 300 es
 precision highp float;
+// GLSL ES 3.00 has no default precision for sampler3D (CI: "'sampler3D' : No precision specified").
+precision highp sampler3D;
 uniform sampler3D u_userLut;
 uniform int u_hasUserLut;
 uniform float u_lutIntensity;

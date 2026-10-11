@@ -16,6 +16,7 @@
  * pending marker and the stage list.
  */
 import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
+import { postV2ModulesReady } from "@aura3d/rendering";
 
 export interface NoReadbackResult {
   readonly frames: number;
@@ -54,6 +55,8 @@ export async function runPostNoReadbackProbe(frameCount = 300): Promise<NoReadba
       qualityRebuild: { flags: ["A3D_QR_POST"] }
     });
     await app.ready();
+    // The v2 stages load deferred; wait so measured frames run the real chain.
+    await postV2ModulesReady();
 
     const canvas = host.querySelector("canvas");
     const gl = canvas?.getContext("webgl2") as WebGL2RenderingContext | null;

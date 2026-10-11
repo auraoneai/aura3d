@@ -17,6 +17,7 @@
  *    — focus-plane pixels vs no-DoF, bokeh diameter of a distant point light.
  */
 import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
+import { postV2ModulesReady } from "@aura3d/rendering";
 import { CAMERA_VELOCITY_GLSL } from "../../packages/rendering/src/post/shaders/depthDownsample.glsl";
 
 /* ------------------------------- mat4 helpers --------------------------- */
@@ -223,6 +224,8 @@ async function mountTaaScene(hostSize = 320) {
     qualityRebuild: { flags: ["A3D_QR_POST"] }
   });
   await app.ready();
+  // The v2 stages load deferred; wait so measured frames run the real chain.
+  await postV2ModulesReady();
   const canvas = host.querySelector("canvas")!;
   const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
   const read = () => {
@@ -366,6 +369,8 @@ async function mountMotionBlurScene(hostSize = 320) {
     qualityRebuild: { flags: ["A3D_QR_POST"] }
   });
   await app.ready();
+  // The v2 stages load deferred; wait so measured frames run the real chain.
+  await postV2ModulesReady();
   const canvas = host.querySelector("canvas")!;
   const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
   const read = () => {
@@ -442,6 +447,8 @@ export async function runDofMetricProbe() {
       qualityRebuild: { flags: ["A3D_QR_POST"] }
     });
     await app.ready();
+    // The v2 stages load deferred; wait so measured frames run the real chain.
+    await postV2ModulesReady();
     app.step(0);
     const canvas = host.querySelector("canvas")!;
     const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
@@ -527,6 +534,8 @@ export async function runTaauProbe() {
       qualityRebuild: { flags: ["A3D_QR_POST"] }
     });
     await app.ready();
+    // The v2 stages load deferred; wait so measured frames run the real chain.
+    await postV2ModulesReady();
     const quality = (app as { quality?: { set?: (t: string, o?: { minRenderScale?: number }) => Promise<void> } }).quality;
     if (!quality?.set) { app.dispose(); host.remove(); return { untested: "no app.quality.set" } as const; }
     await quality.set("ultra", { minRenderScale: scale });

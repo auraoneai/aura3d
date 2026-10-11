@@ -68,7 +68,6 @@ export function guardRendererPostprocessPlan(
 /* v2 module warm cache — the sync `render()` route cannot `import()`; the
  * first flag-on frame fires it, later frames run the real S1–S12 stages. */
 let postV2Modules: typeof import("../post/v2Entry") | undefined;
-let postV2WarmStarted = false;
 
 /* 03-S18c: what the last `tryExecutePostGraphV2` call did — "v2" when the v2
  * stages (and C-13 custom passes) ran, "v2-modules-loading" while the
@@ -86,14 +85,32 @@ export function resetPostGraphV2Outcome(): void {
   lastPostGraphV2Outcome = null;
 }
 
+let postV2WarmPromise: Promise<void> | null = null;
+
 export function warmPostV2Modules(): void {
-  if (postV2WarmStarted) return;
-  postV2WarmStarted = true;
-  void import("../post/v2Entry").then((modules) => {
-    postV2Modules = modules;
-  }).catch(() => {
-    postV2WarmStarted = false;
-  });
+  // Fire-and-forget from the frame path; a failed load is retried next frame.
+  postV2ModulesReady().catch(() => undefined);
+}
+
+/**
+ * Starts (once) and returns the deferred `post/v2Entry` load. The sync
+ * `render()` route runs the v2 stages (S1–S12, C-13 custom passes) only
+ * after this resolves; until then the seam reports `v2-modules-loading`.
+ * Callers that need the first frames on the real v2 chain (the flag-on post
+ * surface at mount, browser probes) await it. Rejection resets the warm so
+ * the next frame retries.
+ */
+export function postV2ModulesReady(): Promise<void> {
+  if (postV2Modules) return Promise.resolve();
+  if (!postV2WarmPromise) {
+    postV2WarmPromise = import("../post/v2Entry").then((modules) => {
+      postV2Modules = modules;
+    }).catch((error: unknown) => {
+      postV2WarmPromise = null;
+      throw error;
+    });
+  }
+  return postV2WarmPromise;
 }
 
 export function collectPostprocess(source: RenderSource | Iterable<RenderItem> | Scene): RendererPostProcessOptions | undefined {

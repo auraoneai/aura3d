@@ -19,6 +19,7 @@
  * Strength 1 sits inside the knee and is reported, not asserted.
  */
 import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
+import { postV2ModulesReady } from "@aura3d/rendering";
 
 const SIZE = 192;
 const EXPOSURE = 1 / 16;
@@ -65,6 +66,8 @@ async function render(subject: Subject, bloom: boolean): Promise<Uint8Array> {
   } as never);
   try {
     await app.ready();
+    // The v2 stages load deferred; wait so measured frames run the real chain.
+    await postV2ModulesReady();
     // The v2 stage modules load on the first flag-on frame; settle a few.
     for (let i = 0; i < 8; i++) {
       app.step(1 / 60);

@@ -66,6 +66,8 @@ void main() {
 
 export const FINALIZE_FXAA_FUSED_GLSL = /* glsl */ `#version 300 es
 precision highp float;
+// GLSL ES 3.00 has no default precision for sampler3D (CI: "'sampler3D' : No precision specified").
+precision highp sampler3D;
 #define AURA_LUMA_ALPHA 1
 uniform sampler2D u_source;
 uniform sampler3D u_lut3d;
