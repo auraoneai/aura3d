@@ -1,5 +1,7 @@
 # Q-01-4: request — public frame-size accessor on `Renderer`
 
+**Issue:** #990 (P-64 writeback)
+
 **From:** lane 15 · **To:** lane 01 (C-29 `Renderer` owner) · **Filed:** 2026-10-06
 
 T2.9 moved `A3DRenderer.evidence()` to

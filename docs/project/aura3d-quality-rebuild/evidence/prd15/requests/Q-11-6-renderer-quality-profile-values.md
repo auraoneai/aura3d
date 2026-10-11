@@ -1,5 +1,7 @@
 # Q-11-6 — lane 11 owns `AuraRendererQualityProfile` values in `app/rendererOptions.ts`
 
+**Issue:** #1030 (P-64 writeback)
+
 - **Requester:** lane 15 (PRD-15 T5.7, CCR-15-1)
 - **Owner:** lane 11
 - **SLA:** 2 working days

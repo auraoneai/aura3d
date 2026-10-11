@@ -1,5 +1,7 @@
 # Q-15-2 — four duplicate public symbol declarations (unique-ownership)
 
+**Issue:** #1044 (P-64 writeback)
+
 **Filed by:** Lane 15 (PRD-15 T6.11)
 **Status:** open — allowlisted until 2026-11-15 (`tools/arch-gates/allowlist.json`)
 

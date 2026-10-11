@@ -1,5 +1,7 @@
 # Q-ALL-1 — deps-truth residual findings on non-lane-15 manifests
 
+**Issue:** #1047 (P-64 writeback)
+
 **Filed by:** Lane 15 (PRD-15 T6.11)
 **Status:** request — lane 15 does not edit foreign manifests
 **PRD refs:** T6.11 (line 1730), research/13 §9 "Declared vs actual dependencies".

@@ -1,5 +1,7 @@
 # Q-13-16 — workspace-alias scaffold bundles deadlocked on the mount dynamic import (vite preview)
 
+**Issue:** #507 (P-64 writeback)
+
 Requested from lane 15, Phase 8 (PR #357 CI). Edits landed on lane-13-owned
 surfaces as a cross-lane CI unblock; filing for ownership review per §12.4.
 

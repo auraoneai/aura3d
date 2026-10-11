@@ -1,5 +1,7 @@
 # Q-01-5 — move the pending model-matrix/transform range into `compiler/sceneGraph.ts`
 
+**Issue:** #991 (P-64 writeback)
+
 **Lane:** 01 (owns `packages/engine/src/agent-api/compiler/sceneGraph.ts` per CONTRACTS §3.2/§4.1)
 **Requested by:** lane 15 (PRD-15 T3.8)
 **Status:** OPEN

@@ -1,5 +1,7 @@
 # Q-12-8: prd12-gate.test.ts has 2 type errors (repo typecheck)
 
+**Issue:** #1039 (P-64 writeback)
+
 **To:** lane 12 (`tests/unit/contracts/impl/prd12-gate.test.ts` owner)
 **From:** lane 15 (Phase 8 verification)
 **Status:** FIXED ON qr/prd15-40-removal (courtesy fix; semantics-preserving)

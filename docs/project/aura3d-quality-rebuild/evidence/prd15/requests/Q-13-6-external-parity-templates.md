@@ -1,5 +1,7 @@
 # Q-13-6 → to:prd13 (qr-request, CONTRACTS §6.5)
 
+**Issue:** #704 (P-64 writeback)
+
 **Files:** `templates/external-parity-asset-gallery`, `templates/external-parity-interactive-scene`,
 `templates/external-parity-material-studio`, `templates/external-parity-product-viewer` (root `templates/` is 13's)
 **Contract served:** PRD-15 T1.5 / §6.6 — the 4 parity templates are superseded by `templates/production-*`,

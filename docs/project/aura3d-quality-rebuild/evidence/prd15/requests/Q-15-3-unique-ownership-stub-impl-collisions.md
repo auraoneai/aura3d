@@ -1,5 +1,7 @@
 # Q-15-3 — unique-ownership collisions surfaced at the Phase-8 gate pass
 
+**Issue:** #1046 (P-64 writeback)
+
 Requester: lane 15 (Phase-8 arch-gate pass, 2026-10-07).
 Kind: §12.4 cross-lane request — records name collisions the `unique-ownership`
 gate enforces, why each exists, and the owner expected to converge it.

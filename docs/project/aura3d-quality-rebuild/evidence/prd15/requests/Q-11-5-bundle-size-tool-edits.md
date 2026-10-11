@@ -1,5 +1,7 @@
 # Q-11-5 — forced edits inside `tools/bundle-size/` (11-owned) driven by PRD-15 Phase 4
 
+**Issue:** #1029 (P-64 writeback)
+
 **Owner:** 11 (GPU/tiers) · **Requester:** 15 · **SLA:** 2 working days
 **Status of edits:** already applied by lane 15 because the tool could not run
 otherwise; this request records the boundary crossing so you can review, amend,

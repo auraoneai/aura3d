@@ -1,5 +1,7 @@
 # Q-08-2 — lane 08 converges `@aura3d/input` index names onto their owners
 
+**Issue:** #1017 (P-64 writeback)
+
 - **Requester:** lane 15 (PRD-15 T5.8, `unique-ownership` gate)
 - **Owner:** lane 08
 - **SLA:** 2 working days

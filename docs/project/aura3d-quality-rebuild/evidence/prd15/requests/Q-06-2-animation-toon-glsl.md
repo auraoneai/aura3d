@@ -1,5 +1,7 @@
 # Q-06-2 — inline GLSL in `animation/AnimationToonMaterial.ts` (glsl-location gate)
 
+**Issue:** #1010 (P-64 writeback)
+
 **Owner:** 06 (animation) · **Requester:** 15 · **SLA:** 2 working days
 **Gate:** `glsl-location` (fail mode since T4.9) — allowlist entry until
 2026-11-30.

@@ -1,5 +1,7 @@
 # T2.8 deviation: `engine/src/threejs-example-parity/` has live consumers
 
+**Issue:** #962 (P-64 writeback)
+
 PRD-15 T2.8's deletion is gated on `rg -l "threejs-example-parity" apps
 examples templates packages tests` showing only the files themselves and their
 own tests. Reality:

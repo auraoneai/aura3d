@@ -1,5 +1,7 @@
 # Q-10-1 — BiomeEnvironmentRegistry.ts relocation + VegetationScatter.ts decision
 
+**Issue:** #1023 (P-64 writeback)
+
 **Status:** OPEN
 **Requesting lane:** 15 (PRD-15 Phase 6, honest packages T6.5)
 **Owning lane:** 10 (PRD-10, world-building/environment systems)
