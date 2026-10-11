@@ -34,9 +34,9 @@ function buildScene() {
       primitives.box({ name: "rail s", material: RAIL }).position(0, 0.05, 0.53).scale([2.1, 0.1, 0.08]),
       primitives.box({ name: "rail e", material: RAIL }).position(1.03, 0.05, 0).scale([0.08, 0.1, 1.0]),
       primitives.box({ name: "rail w", material: RAIL }).position(-1.03, 0.05, 0).scale([0.08, 0.1, 1.0]),
-      primitives.sphere({ name: "cue ball", material: CUE_BALL }).position(-0.6, 0.03, 0).scale([0.06, 0.06, 0.06]),
+      primitives.sphere({ name: "cue ball", material: CUE_BALL }).position(-0.6, 0.03, 0).scale([0.06, 0.06, 0.06]).runtime({ id: "cue-ball" }),
       primitives.sphere({ name: "red ball", material: RED_BALL }).position(0.3, 0.03, -0.05).scale([0.06, 0.06, 0.06]),
-      primitives.sphere({ name: "eight ball", material: BLACK_BALL }).position(0.36, 0.03, 0.04).scale([0.06, 0.06, 0.06]),
+      primitives.sphere({ name: "eight ball", material: BLACK_BALL }).position(0.36, 0.03, 0.04).scale([0.06, 0.06, 0.06]).runtime({ id: "eight-ball" }),
       primitives.sphere({ name: "spark marker", material: SPARK }).position(0, 0.3, 0).scale([0.04, 0.04, 0.04]),
       ...(FX_MARKERS ? [instances.sphere({
         name: "fx markers",
@@ -46,7 +46,7 @@ function buildScene() {
           { position: [-0.2, 0.1, -0.3], scale: 0.05 },
           { position: [0.1, 0.1, -0.3], scale: 0.05 }
         ]
-      })] : []),
+      }).runtime({ id: "fx-markers" })] : []),
       lights.point({ name: "pendant", color: "#fff3d0", intensity: 4.0 }).position(0, 1.6, 0),
       lights.ambient({ name: "room", color: "#35435a", intensity: 0.2 })
     ]);
@@ -91,7 +91,7 @@ async function main(): Promise<void> {
         description: "cue ball pots the red ball corner-right",
         async setup(g) {
           g.session.transition("playing");
-          const cue = g.app.scene.node("cue ball");
+          const cue = g.app.nodes.require("cue-ball");
           cue.setPosition(-0.35, 0.03, 0.01);
           await new Promise((r) => setTimeout(r, 120));
           cue.setPosition(0.22, 0.03, -0.04);
@@ -124,8 +124,8 @@ async function main(): Promise<void> {
     game.app.onFrame(({ dt }) => {
       t += dt;
       const cueDt = game.sessionImpl.scaledDt(dt, "cue");
-      const cue = game.app.scene.node("cue ball");
-      const eight = game.app.scene.node("eight ball");
+      const cue = game.app.nodes.require("cue-ball");
+      const eight = game.app.nodes.require("eight-ball");
       const cuePos = cue.position;
       const eightPos = eight.position;
       cue.setPosition(cuePos[0] + cueDt * 0.5, cuePos[1], cuePos[2]);

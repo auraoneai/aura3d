@@ -24,10 +24,10 @@ const game = createGame({
         primitives.box({ name: "mat", material: MAT }).position(0, -0.01, 0).scale([3.2, 0.02, 3.2]),
         primitives.box({ name: "apron", material: APRON }).position(0, -0.06, 0).scale([3.6, 0.08, 3.6]),
         // Striker advances and swings; target is the hit-stoppable actor.
-        primitives.capsule({ name: "striker", material: STRIKER }).position(-0.7, 0.45, 0).scale([0.16, 0.36, 0.16]),
-        primitives.capsule({ name: "target", material: TARGET }).position(0.7, 0.45, 0).scale([0.16, 0.36, 0.16]),
+        primitives.capsule({ name: "striker", material: STRIKER }).position(-0.7, 0.45, 0).scale([0.16, 0.36, 0.16]).runtime({ id: "striker" }),
+        primitives.capsule({ name: "target", material: TARGET }).position(0.7, 0.45, 0).scale([0.16, 0.36, 0.16]).runtime({ id: "target" }),
         // Third, uninvolved animated node: orbits a corner post every frame.
-        primitives.sphere({ name: "corner beacon", material: BEACON }).position(1.5, 1.1, 1.5).scale([0.05, 0.05, 0.05]),
+        primitives.sphere({ name: "corner beacon", material: BEACON }).position(1.5, 1.1, 1.5).scale([0.05, 0.05, 0.05]).runtime({ id: "corner-beacon" }),
         lights.point({ name: "key", color: "#fff0d8", intensity: 3.0 }).position(0, 2.4, 0.6),
         lights.ambient({ name: "room", color: "#2b3450", intensity: 0.25 })
       ]),
@@ -38,7 +38,7 @@ const game = createGame({
       description: "striker lands a jab; target hit-stops, beacon keeps orbiting",
       async setup(g) {
         g.session.transition("playing");
-        const striker = g.app.scene.node("striker");
+        const striker = g.app.nodes.require("striker");
         striker.setPosition(0.45, 0.45, 0);
         await new Promise((r) => setTimeout(r, 60));
         g.session.hitStop(0.045, { actors: ["target"] });
@@ -61,8 +61,8 @@ let t = 0;
 game.app.onFrame(({ dt }) => {
   t += dt;
   const targetDt = game.sessionImpl.scaledDt(dt, "target");
-  const target = game.app.scene.node("target");
-  const beacon = game.app.scene.node("corner beacon");
+  const target = game.app.nodes.require("target");
+  const beacon = game.app.nodes.require("corner-beacon");
   const pos = target.position;
   target.setPosition(pos[0], pos[1] + targetDt * 0.3, pos[2]);
   beacon.setPosition(

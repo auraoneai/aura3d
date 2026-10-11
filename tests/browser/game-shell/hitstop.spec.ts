@@ -33,12 +33,12 @@ async function trackHit(
   return page.evaluate(
     async ([globalKey, actorId, struckName, controlName]) => {
       const g = (window as unknown as Record<string, { game: unknown }>)[globalKey]!.game as {
-        app: { scene: { node(id: string): { position: readonly number[] } } };
+        app: { nodes: { require(id: string): { position: readonly number[] } } };
         session: { hitStop(seconds: number, o?: { actors?: readonly string[] }): void };
       };
       const hook = window.__AURA3D_GAME_TEST__!;
-      const struck = g.app.scene.node(struckName);
-      const control = g.app.scene.node(controlName);
+      const struck = g.app.nodes.require(struckName);
+      const control = g.app.nodes.require(controlName);
       const track = { struck: [] as number[][], control: [] as number[][] };
       g.session.hitStop(0.045, { actors: [actorId] });
       for (let i = 0; i < 5; i += 1) {
@@ -74,7 +74,7 @@ withServer((getServer) => {
       const g = window.__AURA3D_SHELL__!.game as { sessionImpl: { isFrozen(a?: string): boolean } };
       return !g.sessionImpl.isFrozen("cue");
     });
-    assertHitStop(await trackHit(page, "__AURA3D_SHELL__", "cue", "cue ball", "eight ball"));
+    assertHitStop(await trackHit(page, "__AURA3D_SHELL__", "cue", "cue-ball", "eight-ball"));
   });
 
   test("fighter fixture: light-hit freezes the target, beacon keeps orbiting", async ({ page }) => {
@@ -99,6 +99,6 @@ withServer((getServer) => {
       const fx = (window as unknown as { __AURA3D_FIXTURE__: { game: { sessionImpl: { isFrozen(a?: string): boolean } } } }).__AURA3D_FIXTURE__;
       return !fx.game.sessionImpl.isFrozen("target");
     });
-    assertHitStop(await trackHit(page, "__AURA3D_FIXTURE__", "target", "target", "corner beacon"));
+    assertHitStop(await trackHit(page, "__AURA3D_FIXTURE__", "target", "target", "corner-beacon"));
   });
 });

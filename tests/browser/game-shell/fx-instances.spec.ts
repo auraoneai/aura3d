@@ -28,12 +28,12 @@ withServer((getServer) => {
     const probe = await page.evaluate(() => {
       const g = window.__AURA3D_SHELL__!.game as {
         app: {
-          scene: { node(id: string): Record<string, unknown> };
+          nodes: { require(id: string): Record<string, unknown> };
           diagnostics?: () => { drawCalls?: number; draws?: number };
         };
       };
-      const node = g.app.scene.node("fx markers") as Record<string, unknown> & {
-        setInstanceTransforms?: (matrices: ArrayLike<number>, colors?: ArrayLike<number>) => void;
+      const node = g.app.nodes.require("fx-markers") as Record<string, unknown> & {
+        setInstanceTransforms?: (matrices: Float32Array, count: number, colors?: Float32Array) => void;
       };
       const hasApi = typeof node.setInstanceTransforms === "function";
       const diag = g.app.diagnostics?.() ?? {};
@@ -48,20 +48,21 @@ withServer((getServer) => {
     // model matrix — same shape the FX layer writes per frame.
     await page.evaluate(() => {
       const g = window.__AURA3D_SHELL__!.game as {
-        app: { scene: { node(id: string): { setInstanceTransforms(m: number[], c?: number[]): void } } };
+        app: { nodes: { require(id: string): { setInstanceTransforms(m: Float32Array, count: number, c?: Float32Array): void } } };
       };
-      const node = g.app.scene.node("fx markers");
+      const node = g.app.nodes.require("fx-markers");
       const identity = (x: number, y: number, z: number, s: number) => [
         s, 0, 0, 0,
         0, s, 0, 0,
         0, 0, s, 0,
         x, y, z, 1
       ];
-      node.setInstanceTransforms([
+      // C-37 signature: (matrices: Float32Array, count, colors?).
+      node.setInstanceTransforms(new Float32Array([
         ...identity(0.7, 0.4, 0.2, 0.05),
         ...identity(-0.2, 0.1, -0.3, 0.05),
         ...identity(0.1, 0.1, -0.3, 0.05)
-      ]);
+      ]), 3);
     });
     await stepFrames(page, 1);
 

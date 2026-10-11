@@ -5,6 +5,10 @@
  * `fx.burst("spark", …)` → frames N+1…N+6 ≥ 0.15 % of canvas pixels within
  * ΔE2000 < 12 of the spark color near the projected point (standalone: DOM
  * overlay path; integrated canvas readback asserts the same once C-05 lands).
+ *
+ * The flash is measured on the page screenshot: with A3D_QR_CORE off the
+ * juice overlay is the DOM `.a3g-juice-overlay` layer above the canvas, which
+ * a canvas readback cannot see (what the player sees is the composite).
  */
 import { expect, test, loadHarness, stepFrames, withServer } from "./support";
 
@@ -12,6 +16,24 @@ type Pixels = number[] | null;
 
 async function snap(page: Parameters<typeof loadHarness>[0]): Promise<Pixels> {
   return page.evaluate(() => window.__AURA3D_SHELL__!.readPixels?.() ?? null);
+}
+
+/** Page-composite pixels (canvas + DOM layers), same 4×4 stride as readPixels. */
+async function snapPage(page: Parameters<typeof loadHarness>[0]): Promise<Pixels> {
+  const png = await page.screenshot({ clip: { x: 0, y: 0, width: 1280, height: 720 } });
+  return page.evaluate(async (b64) => {
+    const blob = await (await fetch(`data:image/png;base64,${b64}`)).blob();
+    const bitmap = await createImageBitmap(blob);
+    const probe = document.createElement("canvas");
+    probe.width = bitmap.width;
+    probe.height = bitmap.height;
+    const ctx = probe.getContext("2d")!;
+    ctx.drawImage(bitmap, 0, 0);
+    const data = ctx.getImageData(0, 0, bitmap.width, bitmap.height).data;
+    const out: number[] = [];
+    for (let i = 0; i < data.length; i += 16 * 4) out.push(data[i], data[i + 1], data[i + 2]);
+    return out;
+  }, png.toString("base64"));
 }
 
 function luma(px: Pixels): number {
@@ -32,7 +54,7 @@ withServer((getServer) => {
   test("flash envelope: +25 luma at N+1, 0-diff at N+13", async ({ page }) => {
     await loadHarness(page, getServer(), "?scenario=frozen&animate=0");
     await stepFrames(page, 2);
-    const frameN = await snap(page);
+    const frameN = await snapPage(page);
 
     await page.evaluate(() => {
       const g = window.__AURA3D_SHELL__!.game as {
@@ -41,13 +63,13 @@ withServer((getServer) => {
       g.juice.flash("#ffffff", { peak: 0.6, ms: 200 });
     });
     await stepFrames(page, 1);
-    const frameN1 = await snap(page);
+    const frameN1 = await snapPage(page);
 
     expect(luma(frameN1) - luma(frameN), "flash did not raise mean luma by ≥ 25").toBeGreaterThanOrEqual(25);
 
     // Envelope is exp-decay to exactly 0 at ms=200 ≈ 12 frames; N+13 is clear.
     for (let i = 0; i < 12; i += 1) await stepFrames(page, 1);
-    const frameN13 = await snap(page);
+    const frameN13 = await snapPage(page);
     expect(maxChannelDiff(frameN13, frameN), "envelope did not return to 0").toBe(0);
   });
 
