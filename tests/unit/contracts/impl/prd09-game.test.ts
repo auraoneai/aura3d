@@ -88,19 +88,24 @@ describe("PRD-09 C-24 slot + session impl", () => {
     expect(time.scale).toBe(0.5);
   });
 
-  it("captureFromUrl: ?capture=review resolves play and warns once", () => {
-    const warnings: string[] = [];
-    const origWarn = console.warn;
-    console.warn = (m: unknown) => { warnings.push(String(m)); };
+  it("captureFromUrl: ?capture=review resolves play and never reads a forbidden param (#979)", () => {
+    // PRD-12 §6.6 forbidden-param probe: reading capture/review/overview/debug
+    // fails the game's capture record (T0-29 crash table, track0 run 38137341790).
+    const FORBIDDEN = new Set(["capture", "review", "debug", "a3d-debug", "qr-debug", "overview"]);
+    const reads: string[] = [];
+    const proto = URLSearchParams.prototype;
+    const orig = { get: proto.get, has: proto.has, getAll: proto.getAll };
+    proto.get = function (this: URLSearchParams, key: string) { reads.push(key); return orig.get.call(this, key); };
+    proto.has = function (this: URLSearchParams, key: string) { reads.push(key); return orig.has.call(this, key); };
+    proto.getAll = function (this: URLSearchParams, key: string) { reads.push(key); return orig.getAll.call(this, key); };
     try {
-      const url = new URL("http://x/play?capture=review");
-      expect(captureFromUrl(url)).toEqual({ mode: "play" });
-      captureFromUrl(url);
-      captureFromUrl(url);
-      expect(warnings.length).toBe(1);
+      expect(captureFromUrl(new URL("http://x/play?capture=review"))).toEqual({ mode: "play" });
+      expect(captureFromUrl(new URL("http://x/play?capture=overview&debug=1"))).toEqual({ mode: "play" });
+      expect(captureFromUrl(new URL("http://x/?scenario=s1&capture=review"))).toMatchObject({ mode: "scenario", scenario: "s1" });
     } finally {
-      console.warn = origWarn;
+      Object.assign(proto, orig);
     }
+    expect(reads.filter((k) => FORBIDDEN.has(k))).toEqual([]);
   });
 
   it("captureFromUrl parses scenario/seed/freezeAt/cameraPose", () => {
